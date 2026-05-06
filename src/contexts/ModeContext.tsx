@@ -1,0 +1,68 @@
+'use client';
+
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+
+export type LearningMode = 'beginner' | 'intermediate' | 'advanced';
+
+export interface ModeContextType {
+    mode: LearningMode;
+    setMode: (mode: LearningMode) => void;
+}
+
+const STORAGE_KEY = 'netsim_learning_mode';
+const DEFAULT_MODE: LearningMode = 'beginner';
+
+const ModeContext = createContext<ModeContextType | undefined>(undefined);
+
+export function ModeProvider({ children }: { children: React.ReactNode }) {
+    const [mode, setModeState] = useState<LearningMode>(DEFAULT_MODE);
+    const [isHydrated, setIsHydrated] = useState(false);
+
+    // Load mode from localStorage on mount
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved && isValidMode(saved)) {
+                setModeState(saved as LearningMode);
+            }
+        } catch {
+            // ignore persistence failures
+        }
+        setIsHydrated(true);
+    }, []);
+
+    // Persist mode to localStorage when it changes
+    useEffect(() => {
+        if (!isHydrated) return;
+        try {
+            localStorage.setItem(STORAGE_KEY, mode);
+        } catch {
+            // ignore persistence failures
+        }
+    }, [mode, isHydrated]);
+
+    const setMode = (newMode: LearningMode) => {
+        if (isValidMode(newMode)) {
+            setModeState(newMode);
+        }
+    };
+
+    const value = useMemo(() => ({
+        mode,
+        setMode,
+    }), [mode]);
+
+    return <ModeContext.Provider value={value}>{children}</ModeContext.Provider>;
+}
+
+export function useMode() {
+    const context = useContext(ModeContext);
+    if (!context) {
+        throw new Error('useMode must be used within ModeProvider');
+    }
+    return context;
+}
+
+function isValidMode(value: unknown): value is LearningMode {
+    return value === 'beginner' || value === 'intermediate' || value === 'advanced';
+}

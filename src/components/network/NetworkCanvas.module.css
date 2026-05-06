@@ -1,0 +1,310 @@
+/**
+ * NetworkCanvas Styles
+ * 
+ * Styles for the network canvas component including grid, devices, and interactions.
+ */
+
+.networkCanvas {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background-color: #fafafa;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.networkCanvas svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Device rendering */
+.deviceGroup {
+    cursor: grab;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+}
+
+.deviceGroup.noTransition {
+    transition: none !important;
+}
+
+.deviceGroup:hover {
+    opacity: 0.95;
+}
+
+.deviceGroup.dragging {
+    cursor: grabbing;
+    opacity: 0.8;
+}
+
+.deviceGroup.selected {
+    filter: drop-shadow(0 2px 8px rgba(0, 102, 255, 0.3));
+}
+
+/* Grid background */
+.gridLine {
+    stroke: #f0f0f0;
+    stroke-width: 0.5;
+    pointer-events: none;
+}
+
+/* Connection lines */
+.connectionLine {
+    stroke: #0066ff;
+    stroke-width: 2;
+    fill: none;
+    pointer-events: none;
+}
+
+.connectionLine.inactive {
+    stroke: #999999;
+    stroke-dasharray: 5, 5;
+}
+
+.connectionLine.error {
+    stroke: #ff3333;
+}
+
+/* Device status indicator */
+.statusIndicator {
+    transition: fill 0.3s ease;
+}
+
+.statusIndicator.online {
+    fill: #00cc66;
+}
+
+.statusIndicator.offline {
+    fill: #999999;
+}
+
+.statusIndicator.error {
+    fill: #ff3333;
+}
+
+/* Device label */
+.deviceLabel {
+    font-size: 12px;
+    font-weight: 500;
+    fill: #1a1a1a;
+    text-anchor: middle;
+    pointer-events: none;
+    user-select: none;
+}
+
+.deviceLabel.selected {
+    font-weight: 700;
+    fill: #0066ff;
+}
+
+/* IP address label */
+.ipLabel {
+    font-size: 10px;
+    fill: #666666;
+    text-anchor: middle;
+    pointer-events: none;
+    user-select: none;
+    opacity: 0.7;
+}
+
+/* Selection box */
+.selectionBox {
+    fill: rgba(0, 102, 255, 0.1);
+    stroke: #0066ff;
+    stroke-width: 2;
+    stroke-dasharray: 4, 4;
+    pointer-events: none;
+}
+
+/* Zoom and pan controls */
+.controls {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 10;
+}
+
+.controlGroup {
+    display: flex;
+    gap: 4px;
+    background-color: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.controlButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background-color: transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #4b5563;
+}
+
+.controlButton:hover {
+    background-color: #f3f4f6;
+    color: #0066ff;
+    border-color: #e5e7eb;
+}
+
+.controlButton:active {
+    background-color: #e5e7eb;
+}
+
+.controlButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Grid toggle */
+.gridToggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: white;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: #4b5563;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.gridToggle:hover {
+    background-color: #f3f4f6;
+    border-color: #0066ff;
+    color: #0066ff;
+}
+
+.gridToggle.active {
+    background-color: #e6f2ff;
+    border-color: #0066ff;
+    color: #0066ff;
+}
+
+.controlLabel {
+    display: inline-block;
+}
+
+/* Zoom level display */
+.zoomLevel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 600;
+    min-width: 48px;
+}
+
+/* High contrast mode */
+.networkCanvas.highContrast {
+    background-color: #ffffff;
+    border: 2px solid #000000;
+}
+
+.networkCanvas.highContrast .gridLine {
+    stroke: #e0e0e0;
+    stroke-width: 1;
+}
+
+.networkCanvas.highContrast .deviceLabel {
+    fill: #000000;
+    font-weight: 700;
+}
+
+.networkCanvas.highContrast .ipLabel {
+    fill: #000000;
+    opacity: 1;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .controls {
+        bottom: 8px;
+        right: 8px;
+        gap: 4px;
+        padding: 4px;
+    }
+
+    .controlButton {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+    }
+
+    .deviceLabel {
+        font-size: 10px;
+    }
+
+    .ipLabel {
+        font-size: 8px;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(10px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.networkCanvas {
+    animation: fadeIn 0.3s ease;
+}
+
+/* Accessibility */
+.networkCanvas:focus-within {
+    outline: 2px solid #0066ff;
+    outline-offset: 2px;
+}
+
+/* Prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+
+    .networkCanvas,
+    .deviceGroup,
+    .controlButton,
+    .gridToggle {
+        animation: none;
+        transition: none;
+    }
+}

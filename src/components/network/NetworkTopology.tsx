@@ -5693,21 +5693,21 @@ export function NetworkTopology({
         <div className="flex-1 relative flex flex-col">
           {/* Palette Sheet (Triggered from Top Toolbar) */}
           <Sheet open={isPaletteOpen} onOpenChange={setIsPaletteOpen}>
-            <SheetContent side="bottom" className={`${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white'} rounded-t-[2rem] p-0 palette`}>
+            <SheetContent side="left" className={`${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white'} p-0 palette w-[300px] sm:w-[350px] border-r border-slate-800/20 shadow-2xl transition-all duration-300`}>
               <SheetHeader className="p-6 border-b border-slate-800/50">
                 <SheetTitle className="text-lg font-bold flex items-center gap-2">
                   <Plus className="w-5 h-5 text-red-500" />
                   {t.addDeviceOrCable}
                 </SheetTitle>
               </SheetHeader>
-              <div className="p-6 space-y-8">
+              <div className="p-6 space-y-8 overflow-y-auto max-h-[calc(100vh-100px)]">
                 {/* Devices Section */}
                 <div className="space-y-4">
-                  <p className="text-[10px] font-bold  tracking-widest text-slate-500 ml-1">{t.devices}</p>
-                  <div className="grid grid-cols-5 gap-3">
+                  <p className="text-[10px] font-bold  tracking-widest text-slate-500 ml-1 uppercase">{t.devices}</p>
+                  <div className="grid grid-cols-2 gap-3">
                     <button
                       onClick={() => { addDevice('pc'); setIsPaletteOpen(false); }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700' : 'bg-slate-50 border-slate-200 active:bg-slate-100'
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-blue-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-blue-500/50'
                         }`}
                     >
                       <div className='text-blue-500'>
@@ -5719,7 +5719,7 @@ export function NetworkTopology({
                     </button>
                     <button
                       onClick={() => { addDevice('switch'); setIsPaletteOpen(false); }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700' : 'bg-slate-50 border-slate-200 active:bg-slate-100'
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-green-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-green-500/50'
                         }`}
                     >
                       <div className='text-green-500'>
@@ -5731,7 +5731,7 @@ export function NetworkTopology({
                     </button>
                     <button
                       onClick={() => { addDevice('switch', 'L3'); setIsPaletteOpen(false); }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700' : 'bg-slate-50 border-slate-200 active:bg-slate-100'
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-purple-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-purple-500/50'
                         }`}
                     >
                       <div className='text-purple-500'>
@@ -5745,7 +5745,7 @@ export function NetworkTopology({
                     </button>
                     <button
                       onClick={() => { addDevice('router'); setIsPaletteOpen(false); }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700' : 'bg-slate-50 border-slate-200 active:bg-slate-100'
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-purple-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-purple-500/50'
                         }`}
                     >
                       <div className='text-purple-500'>
@@ -5757,7 +5757,7 @@ export function NetworkTopology({
                     </button>
                     <button
                       onClick={() => { addDevice('iot'); setIsPaletteOpen(false); }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700' : 'bg-slate-50 border-slate-200 active:bg-slate-100'
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-cyan-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-cyan-500/50'
                         }`}
                     >
                       <div className='text-cyan-500'>
@@ -5771,18 +5771,18 @@ export function NetworkTopology({
                 </div>
 
                 {/* Cables Section - Button Group with Color Coding */}
-                <div className="space-y-2">
-                  <p className="text-[10px] font-bold tracking-widest text-slate-500 ml-1">{t.cableTypes}</p>
-                  <div className={`flex items-center rounded-lg border overflow-hidden ${isDark ? 'border-slate-700 bg-slate-800/50' : 'border-slate-200 bg-slate-50'}`}>
+                <div className="space-y-3">
+                  <p className="text-[10px] font-bold tracking-widest text-slate-500 ml-1 uppercase">{t.cableTypes}</p>
+                  <div className={`flex flex-col gap-2 rounded-xl border p-2 ${isDark ? 'border-slate-700/50 bg-slate-800/30' : 'border-slate-200 bg-slate-50/50'}`}>
                     {(['straight', 'crossover', 'console'] as CableType[]).map((type) => (
                       <button
                         key={type}
                         onClick={() => { onCableChange({ ...cableInfo, cableType: type }); setIsPaletteOpen(false); }}
-                        className={`flex-1 flex flex-col items-center gap-1.5 p-3 transition-all
+                        className={`flex items-center gap-3 p-3 rounded-lg transition-all
                           ${isDark ? 'hover:bg-slate-700/50' : 'hover:bg-slate-200/50'}
                           ${cableInfo.cableType === type
-                            ? isDark ? 'bg-slate-700/80' : 'bg-slate-200/80'
-                            : ''
+                            ? isDark ? 'bg-slate-700/80 border border-slate-600' : 'bg-white border border-slate-200 shadow-sm'
+                            : 'border border-transparent'
                           }
                           ${type === 'straight'
                             ? (cableInfo.cableType === type ? 'text-blue-400' : 'text-blue-500 hover:text-blue-400')
@@ -5791,16 +5791,25 @@ export function NetworkTopology({
                               : (cableInfo.cableType === type ? 'text-cyan-400' : 'text-cyan-500 hover:text-cyan-400')
                           }`}
                       >
-                        {type === 'straight' ? (
-                          <Cable className="w-5 h-5" />
-                        ) : type === 'crossover' ? (
-                          <Strikethrough className="w-5 h-5" />
-                        ) : (
-                          <Usb className="w-5 h-5" />
-                        )}
-                        <span className="text-[10px] font-bold">
-                          {type === 'straight' ? t.straight : type === 'crossover' ? t.crossover : t.console}
-                        </span>
+                        <div className={`p-2 rounded-md ${cableInfo.cableType === type ? (isDark ? 'bg-slate-800' : 'bg-slate-50') : ''}`}>
+                          {type === 'straight' ? (
+                            <Cable className="w-5 h-5" />
+                          ) : type === 'crossover' ? (
+                            <Strikethrough className="w-5 h-5" />
+                          ) : (
+                            <Usb className="w-5 h-5" />
+                          )}
+                        </div>
+                        <div className="flex flex-col items-start">
+                          <span className="text-xs font-bold capitalize">
+                            {type === 'straight' ? t.straight : type === 'crossover' ? t.crossover : t.console}
+                          </span>
+                          <span className="text-[9px] opacity-60">
+                            {type === 'straight' ? (isTR ? 'Standart ethernet bağlantısı' : 'Standard ethernet connection') :
+                              type === 'crossover' ? (isTR ? 'Benzer cihazlar arası' : 'Between similar devices') :
+                                (isTR ? 'Yönetim konsol bağlantısı' : 'Management console connection')}
+                          </span>
+                        </div>
                       </button>
                     ))}
                   </div>

@@ -239,7 +239,7 @@ export function useDeviceManager() {
     // Prevent creating state for empty/invalid device IDs
     if (!deviceId || deviceId.trim() === '') {
       console.warn('Attempted to create device state with empty ID');
-      return createInitialState(initialMac, 'WS-C2960-24TT-L');
+      return createInitialState(initialMac || '', 'WS-C2960-24TT-L');
     }
 
     let deviceState = deviceStates.get(deviceId);

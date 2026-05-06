@@ -1,0 +1,409 @@
+/**
+ * Color Palette CSS Variables
+ * Defines all color variables for the Network Simulator UI/UX
+ * Supports light mode, dark mode, and high-contrast mode
+ */
+
+/* ============================================================================
+   Light Mode (Default)
+   ============================================================================ */
+
+:root {
+    /* Primary Colors - Vibrant, modern colors for student appeal */
+    --color-primary-blue: #0066FF;
+    --color-primary-green: #00CC66;
+    --color-primary-orange: #FF9900;
+    --color-primary-red: #FF3333;
+    --color-primary-purple: #9933FF;
+
+    /* Secondary Colors - Light backgrounds and hover states */
+    --color-secondary-light-blue: #E6F2FF;
+    --color-secondary-light-green: #E6FFCC;
+    --color-secondary-light-orange: #FFEECC;
+    --color-secondary-light-red: #FFCCCC;
+    --color-secondary-light-purple: #F0E6FF;
+
+    /* Neutral Colors - Text and backgrounds */
+    --color-neutral-dark-gray: #1A1A1A;
+    --color-neutral-medium-gray: #666666;
+    --color-neutral-light-gray: #F5F5F5;
+    --color-neutral-white: #FFFFFF;
+    --color-neutral-black: #000000;
+
+    /* Device Type Colors */
+    --color-device-pc: var(--color-primary-blue);
+    --color-device-router: var(--color-primary-green);
+    --color-device-switch: var(--color-primary-orange);
+    --color-device-iot: var(--color-primary-purple);
+    --color-device-firewall: var(--color-primary-red);
+    --color-device-loadbalancer: var(--color-primary-blue);
+
+    /* Device Status Colors */
+    --color-status-online: var(--color-primary-green);
+    --color-status-offline: var(--color-primary-red);
+
+    /* Connection Type Colors */
+    --color-connection-ethernet: var(--color-primary-blue);
+    --color-connection-wireless: var(--color-primary-purple);
+    --color-connection-serial: var(--color-primary-orange);
+
+    /* Semantic Colors */
+    --color-success: var(--color-primary-green);
+    --color-error: var(--color-primary-red);
+    --color-warning: var(--color-primary-orange);
+    --color-info: var(--color-primary-blue);
+
+    /* Text Colors */
+    --color-text-primary: var(--color-neutral-dark-gray);
+    --color-text-secondary: var(--color-neutral-medium-gray);
+    --color-text-tertiary: #999999;
+    --color-text-disabled: #CCCCCC;
+
+    /* Background Colors */
+    --color-bg-primary: var(--color-neutral-white);
+    --color-bg-secondary: var(--color-neutral-light-gray);
+    --color-bg-tertiary: #EEEEEE;
+
+    /* Border Colors */
+    --color-border-primary: #DDDDDD;
+    --color-border-secondary: #EEEEEE;
+    --color-border-light: #F0F0F0;
+
+    /* Interactive Colors */
+    --color-hover-bg: var(--color-secondary-light-blue);
+    --color-active-bg: #D9E8FF;
+    --color-focus-ring: var(--color-primary-blue);
+
+    /* Achievement Colors */
+    --color-achievement-gold: #FFD700;
+    --color-achievement-silver: #C0C0C0;
+    --color-achievement-bronze: #CD7F32;
+
+    /* High Contrast Mode (disabled by default) */
+    --color-high-contrast-text: var(--color-neutral-black);
+    --color-high-contrast-background: var(--color-neutral-white);
+    --color-high-contrast-border: var(--color-neutral-black);
+}
+
+/* ============================================================================
+   Dark Mode
+   ============================================================================ */
+
+.dark {
+    /* Primary Colors - Adjusted for dark backgrounds */
+    --color-primary-blue: #4D94FF;
+    --color-primary-green: #33DD99;
+    --color-primary-orange: #FFAA33;
+    --color-primary-red: #FF6666;
+    --color-primary-purple: #BB66FF;
+
+    /* Secondary Colors - Dark backgrounds and hover states */
+    --color-secondary-light-blue: #1A3A66;
+    --color-secondary-light-green: #1A4D33;
+    --color-secondary-light-orange: #664D1A;
+    --color-secondary-light-red: #661A1A;
+    --color-secondary-light-purple: #4D1A66;
+
+    /* Neutral Colors - Inverted for dark mode */
+    --color-neutral-dark-gray: #E0E0E0;
+    --color-neutral-medium-gray: #999999;
+    --color-neutral-light-gray: #2A2A2A;
+    --color-neutral-white: #1A1A1A;
+    --color-neutral-black: #FFFFFF;
+
+    /* Text Colors */
+    --color-text-primary: #FFFFFF;
+    --color-text-secondary: #CCCCCC;
+    --color-text-tertiary: #999999;
+    --color-text-disabled: #666666;
+
+    /* Background Colors */
+    --color-bg-primary: #0F0F0F;
+    --color-bg-secondary: #1A1A1A;
+    --color-bg-tertiary: #252525;
+
+    /* Border Colors */
+    --color-border-primary: #333333;
+    --color-border-secondary: #2A2A2A;
+    --color-border-light: #1F1F1F;
+
+    /* Interactive Colors */
+    --color-hover-bg: #1A3A66;
+    --color-active-bg: #0D2847;
+    --color-focus-ring: #4D94FF;
+
+    /* Achievement Colors - Adjusted for dark mode */
+    --color-achievement-gold: #FFD700;
+    --color-achievement-silver: #E8E8E8;
+    --color-achievement-bronze: #E8A76B;
+}
+
+/* ============================================================================
+   High Contrast Mode
+   ============================================================================ */
+
+.high-contrast {
+    /* Primary Colors - High saturation for maximum contrast */
+    --color-primary-blue: #0000FF;
+    --color-primary-green: #00AA00;
+    --color-primary-orange: #FF6600;
+    --color-primary-red: #CC0000;
+    --color-primary-purple: #7700CC;
+
+    /* Secondary Colors - High contrast backgrounds */
+    --color-secondary-light-blue: #CCDDFF;
+    --color-secondary-light-green: #CCFFCC;
+    --color-secondary-light-orange: #FFDDCC;
+    --color-secondary-light-red: #FFCCCC;
+    --color-secondary-light-purple: #DDCCFF;
+
+    /* Neutral Colors - Pure black and white */
+    --color-neutral-dark-gray: #000000;
+    --color-neutral-medium-gray: #333333;
+    --color-neutral-light-gray: #FFFFFF;
+    --color-neutral-white: #FFFFFF;
+    --color-neutral-black: #000000;
+
+    /* Text Colors - Maximum contrast */
+    --color-text-primary: #000000;
+    --color-text-secondary: #000000;
+    --color-text-tertiary: #000000;
+    --color-text-disabled: #666666;
+
+    /* Background Colors */
+    --color-bg-primary: #FFFFFF;
+    --color-bg-secondary: #F0F0F0;
+    --color-bg-tertiary: #E0E0E0;
+
+    /* Border Colors - Thick, visible borders */
+    --color-border-primary: #000000;
+    --color-border-secondary: #000000;
+    --color-border-light: #333333;
+
+    /* Interactive Colors */
+    --color-hover-bg: #FFFF00;
+    --color-active-bg: #FFFF00;
+    --color-focus-ring: #0000FF;
+
+    /* Achievement Colors - High contrast */
+    --color-achievement-gold: #FF9900;
+    --color-achievement-silver: #000000;
+    --color-achievement-bronze: #CC6600;
+}
+
+.dark.high-contrast {
+    /* Primary Colors - High saturation for dark mode */
+    --color-primary-blue: #66CCFF;
+    --color-primary-green: #66FF66;
+    --color-primary-orange: #FFCC00;
+    --color-primary-red: #FF6666;
+    --color-primary-purple: #FF66FF;
+
+    /* Secondary Colors - High contrast dark backgrounds */
+    --color-secondary-light-blue: #003366;
+    --color-secondary-light-green: #003300;
+    --color-secondary-light-orange: #663300;
+    --color-secondary-light-red: #330000;
+    --color-secondary-light-purple: #330033;
+
+    /* Neutral Colors - Pure black and white */
+    --color-neutral-dark-gray: #FFFFFF;
+    --color-neutral-medium-gray: #CCCCCC;
+    --color-neutral-light-gray: #000000;
+    --color-neutral-white: #000000;
+    --color-neutral-black: #FFFFFF;
+
+    /* Text Colors - Maximum contrast */
+    --color-text-primary: #FFFFFF;
+    --color-text-secondary: #FFFFFF;
+    --color-text-tertiary: #CCCCCC;
+    --color-text-disabled: #666666;
+
+    /* Background Colors */
+    --color-bg-primary: #000000;
+    --color-bg-secondary: #0F0F0F;
+    --color-bg-tertiary: #1A1A1A;
+
+    /* Border Colors - Thick, visible borders */
+    --color-border-primary: #FFFFFF;
+    --color-border-secondary: #FFFFFF;
+    --color-border-light: #CCCCCC;
+
+    /* Interactive Colors */
+    --color-hover-bg: #FFFF00;
+    --color-active-bg: #FFFF00;
+    --color-focus-ring: #66CCFF;
+
+    /* Achievement Colors - High contrast dark mode */
+    --color-achievement-gold: #FFFF00;
+    --color-achievement-silver: #FFFFFF;
+    --color-achievement-bronze: #FFAA00;
+}
+
+/* ============================================================================
+   Utility Classes for Color Application
+   ============================================================================ */
+
+/* Text color utilities */
+.text-primary {
+    color: var(--color-text-primary);
+}
+
+.text-secondary {
+    color: var(--color-text-secondary);
+}
+
+.text-tertiary {
+    color: var(--color-text-tertiary);
+}
+
+.text-disabled {
+    color: var(--color-text-disabled);
+}
+
+/* Background color utilities */
+.bg-primary {
+    background-color: var(--color-bg-primary);
+}
+
+.bg-secondary {
+    background-color: var(--color-bg-secondary);
+}
+
+.bg-tertiary {
+    background-color: var(--color-bg-tertiary);
+}
+
+/* Border color utilities */
+.border-primary {
+    border-color: var(--color-border-primary);
+}
+
+.border-secondary {
+    border-color: var(--color-border-secondary);
+}
+
+.border-light {
+    border-color: var(--color-border-light);
+}
+
+/* Semantic color utilities */
+.text-success {
+    color: var(--color-success);
+}
+
+.text-error {
+    color: var(--color-error);
+}
+
+.text-warning {
+    color: var(--color-warning);
+}
+
+.text-info {
+    color: var(--color-info);
+}
+
+.bg-success {
+    background-color: var(--color-success);
+}
+
+.bg-error {
+    background-color: var(--color-error);
+}
+
+.bg-warning {
+    background-color: var(--color-warning);
+}
+
+.bg-info {
+    background-color: var(--color-info);
+}
+
+/* Device type color utilities */
+.device-pc {
+    color: var(--color-device-pc);
+}
+
+.device-router {
+    color: var(--color-device-router);
+}
+
+.device-switch {
+    color: var(--color-device-switch);
+}
+
+.device-iot {
+    color: var(--color-device-iot);
+}
+
+.device-firewall {
+    color: var(--color-device-firewall);
+}
+
+.device-loadbalancer {
+    color: var(--color-device-loadbalancer);
+}
+
+/* Device status color utilities */
+.status-online {
+    color: var(--color-status-online);
+}
+
+.status-offline {
+    color: var(--color-status-offline);
+}
+
+/* Connection type color utilities */
+.connection-ethernet {
+    color: var(--color-connection-ethernet);
+}
+
+.connection-wireless {
+    color: var(--color-connection-wireless);
+}
+
+.connection-serial {
+    color: var(--color-connection-serial);
+}
+
+/* Focus ring utilities */
+.focus-ring {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+}
+
+.focus-ring:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+}
+
+/* High contrast mode specific utilities */
+.high-contrast .border-thick {
+    border-width: 2px;
+}
+
+.high-contrast .focus-ring {
+    outline-width: 3px;
+}
+
+/* Accessibility: Ensure sufficient contrast in all modes */
+@media (prefers-contrast: more) {
+    :root {
+        --color-text-secondary: #333333;
+        --color-text-tertiary: #555555;
+    }
+
+    .dark {
+        --color-text-secondary: #DDDDDD;
+        --color-text-tertiary: #BBBBBB;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+        animation: none !important;
+    }
+}

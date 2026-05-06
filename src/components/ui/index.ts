@@ -38,6 +38,7 @@ export {
 } from './tooltip';
 export { TooltipWrapper } from './TooltipWrapper';
 export { ShortcutBadge } from './ShortcutBadge';
+export { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs';
 export {
   AlertDialog,
   AlertDialogAction,
@@ -66,3 +67,51 @@ export {
   DropdownMenuRadioGroup,
 } from './dropdown-menu';
 export { SidebarProvider } from './sidebar';
+export {
+  Heading1,
+  Heading2,
+  Heading3,
+  Body,
+  Small,
+  Caption,
+  Monospace,
+  Text,
+  ResponsiveTypography,
+} from './typography';
+export {
+  Icon,
+  DeviceIcon,
+  ActionIcon,
+  StatusIcon,
+  IconButton,
+  IconBadge,
+  IconGrid,
+  ICON_SIZES,
+  DEVICE_ICONS,
+  ACTION_ICONS,
+  STATUS_ICONS,
+  type IconSize,
+  type DeviceIconName,
+  type ActionIconName,
+  type StatusIconName,
+} from './icon';
+export {
+  FadeIn,
+  FadeOut,
+  SlideIn,
+  Scale,
+  Bounce,
+  Pulse,
+  Spin,
+  Shimmer,
+  Transition,
+  Stagger,
+  Confetti,
+  ReducedMotion,
+} from './animations';
+export { DevicePalette, type DevicePaletteProps } from './DevicePalette';
+export { NetworkCanvas, type NetworkCanvasProps } from './NetworkCanvas';
+export { DeviceConfigurationPanel, type DeviceConfigurationPanelProps } from './DeviceConfigurationPanel';
+export { AchievementPanel, type AchievementPanelProps } from './AchievementPanel';
+export { HelpPanel, type HelpPanelProps } from './HelpPanel';
+export { ErrorMessage, ErrorContainer, type ErrorMessageProps, type ErrorContainerProps } from './ErrorMessage';
