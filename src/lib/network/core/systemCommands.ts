@@ -10,6 +10,7 @@ export const systemHandlers: Record<string, CommandHandler> = {
   'configure terminal': cmdConfigureTerminal,
   'exit': cmdExit,
   'end': cmdEnd,
+  'abort': cmdEnd,
   'do': cmdDo,
 };
 

@@ -22,6 +22,14 @@ export const lineHandlers: Record<string, CommandHandler> = {
   'autocommand': cmdAutocommand,
   'no autocommand': cmdNoAutocommand,
   'privilege level': cmdPrivilegeLevel,
+  'line aux': cmdLineAux,
+  'line': cmdLine,
+  'transport output': cmdStubSuccess,
+  'transport preferred': cmdStubSuccess,
+  'history size': cmdHistory,
+  'access-class': cmdStubSuccess,
+  'session-limit': cmdStubSuccess,
+  'lockable': cmdStubSuccess,
 };
 
 /**
@@ -528,6 +536,29 @@ function cmdNoAutocommand(state: any, input: string, ctx: any): any {
     success: true,
     newState: { security: newSecurity }
   };
+}
+
+/**
+ * Stub Success
+ */
+function cmdStubSuccess(state: any, input: string, ctx: any): any {
+  return { success: true };
+}
+
+/**
+ * Line AUX
+ */
+function cmdLineAux(state: any, input: string, ctx: any): any {
+  return { success: true, newState: { currentMode: 'line', currentLine: 'aux 0' } };
+}
+
+/**
+ * Line (generic)
+ */
+function cmdLine(state: any, input: string, ctx: any): any {
+  const match = input.match(/^line\s+(\S+)\s+(\d+)(?:\s+(\d+))?$/i);
+  if (!match) return { success: false, error: '% Invalid line command' };
+  return { success: true, newState: { currentMode: 'line', currentLine: `${match[1]} ${match[2]}` } };
 }
 
 /**

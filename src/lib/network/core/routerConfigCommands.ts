@@ -6,9 +6,11 @@ import type { CommandHandler } from './commandTypes';
 
 export const routerConfigHandlers: Record<string, CommandHandler> = {
     'network': cmdRouterNetwork,
+    'router-config network': cmdRouterNetwork,
     'router-id': cmdRouterId,
     'passive-interface': cmdPassiveInterface,
-    'default-information': cmdDefaultInformation,
+    'default-information originate': cmdDefaultInformation,
+    'default-information always': cmdDefaultInformation,
 };
 
 // Router subcommands in OSPF/RIP config mode

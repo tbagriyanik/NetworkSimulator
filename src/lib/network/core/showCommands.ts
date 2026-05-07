@@ -47,7 +47,6 @@ export const showHandlers: Record<string, CommandHandler> = {
   'show storm-control': cmdShowStormControl,
   'show udld': cmdShowUdld,
   'show monitor': cmdShowMonitor,
-  'show debug': cmdShowDebug,
   'show debugging': cmdShowDebug,
   'show processes': cmdShowProcesses,
   'show memory': cmdShowMemory,
@@ -57,6 +56,26 @@ export const showHandlers: Record<string, CommandHandler> = {
   'show ip dhcp binding': cmdShowIpDhcpBinding,
   'show ip source binding': cmdShowIpSourceBinding,
   'show ip verify source': cmdShowIpVerifySource,
+  'show': cmdShowParent,
+  'show ip interface': cmdShowIpInterface,
+  'show ipv6 interface brief': cmdShowIpv6InterfaceBrief,
+  'show mac address-table static': cmdShowMacStatic,
+  'show authentication': cmdShowAuth,
+  'show sessions': cmdShowSessions,
+  'show ntp associations': cmdShowNtp,
+  'show ntp status': cmdShowNtp,
+  'show ntp': cmdShowNtp,
+  'show snmp': cmdShowSnmp,
+  'show policy-map': cmdShowPolicyMap,
+  'show class-map': cmdShowClassMap,
+  'show mac access-lists': cmdShowMacAcl,
+  'show controllers': cmdShowControllers,
+  'show diagnostic': cmdShowDiag,
+  'show lldp': cmdShowLldp,
+  'show banner motd': cmdShowBannerMotd,
+  'show alias': cmdShowAlias,
+  'show redundancy': cmdShowRedundancy,
+  'show archive': cmdShowArchive,
 };
 
 function isPhysicalEthernetPort(portId: string): boolean {
@@ -2970,6 +2989,132 @@ function cmdShowIpSourceBinding(state: any, input: string, ctx: any): any {
   }
 
   return { success: true, output };
+}
+
+/**
+ * Show parent command (incomplete)
+ */
+function cmdShowParent(state: any, input: string, ctx: any): any {
+  return { success: false, error: '% Incomplete command.' };
+}
+
+/**
+ * Show IP Interface (specific)
+ */
+function cmdShowIpInterface(state: any, input: string, ctx: any): any {
+  return cmdShowIpInterfaceBrief(state, input, ctx);
+}
+
+/**
+ * Show IPv6 Interface Brief
+ */
+function cmdShowIpv6InterfaceBrief(state: any, input: string, ctx: any): any {
+  return { success: true, output: '\nInterface              IPv6-Address                                Status                Protocol\n' };
+}
+
+/**
+ * Show MAC Static
+ */
+function cmdShowMacStatic(state: any, input: string, ctx: any): any {
+  return { success: true, output: '\nMac Address Table\n-------------------------------------------\n\nVlan    Mac Address       Type        Ports\n----    -----------       --------    -----\nAll    0100.0ccc.cccc    STATIC      CPU\nAll    0100.0ccc.cccd    STATIC      CPU\n' };
+}
+
+/**
+ * Show Auth
+ */
+function cmdShowAuth(state: any, input: string, ctx: any): any {
+  return { success: true, output: '\nNo active authentication sessions.\n' };
+}
+
+/**
+ * Show Sessions
+ */
+function cmdShowSessions(state: any, input: string, ctx: any): any {
+  return { success: true, output: '\n% No active sessions.\n' };
+}
+
+/**
+ * Show NTP
+ */
+function cmdShowNtp(state: any, input: string, ctx: any): any {
+  return { success: true, output: '\nNTP is not enabled.\n' };
+}
+
+/**
+ * Show SNMP
+ */
+function cmdShowSnmp(state: any, input: string, ctx: any): any {
+  return { success: true, output: '\nSNMP agent not enabled.\n' };
+}
+
+/**
+ * Show Policy Map
+ */
+function cmdShowPolicyMap(state: any, input: string, ctx: any): any {
+  return { success: true, output: '\n% No policy maps configured.\n' };
+}
+
+/**
+ * Show Class Map
+ */
+function cmdShowClassMap(state: any, input: string, ctx: any): any {
+  return { success: true, output: '\n% No class maps configured.\n' };
+}
+
+/**
+ * Show MAC ACL
+ */
+function cmdShowMacAcl(state: any, input: string, ctx: any): any {
+  return { success: true, output: '\n% No MAC access lists configured.\n' };
+}
+
+/**
+ * Show Controllers
+ */
+function cmdShowControllers(state: any, input: string, ctx: any): any {
+  return { success: true, output: '\nInterface FastEthernet0/1\nHardware is QUICC Ethernet\n' };
+}
+
+/**
+ * Show Diagnostic
+ */
+function cmdShowDiag(state: any, input: string, ctx: any): any {
+  return { success: true, output: '\nDiagnostic results: PASS\n' };
+}
+
+/**
+ * Show LLDP
+ */
+function cmdShowLldp(state: any, input: string, ctx: any): any {
+  return { success: true, output: '\n% LLDP is not enabled\n' };
+}
+
+/**
+ * Show Banner MOTD
+ */
+function cmdShowBannerMotd(state: any, input: string, ctx: any): any {
+  return { success: true, output: state.bannerMOTD ? `\n${state.bannerMOTD}\n` : '\n% Banner not set\n' };
+}
+
+/**
+ * Show Alias
+ */
+function cmdShowAlias(state: any, input: string, ctx: any): any {
+  return { success: true, output: '\nExec aliases:\n  h                    show history\n  lo                   exit\n' };
+}
+
+/**
+ * Show Redundancy
+ */
+function cmdShowRedundancy(state: any, input: string, ctx: any): any {
+  return { success: true, output: '\nRedundancy mode: NON-REDUNDANT\n' };
+}
+
+/**
+ * Show Archive
+ */
+function cmdShowArchive(state: any, input: string, ctx: any): any {
+  return { success: true, output: '\nArchive configuration is not enabled.\n' };
 }
 
 /**
