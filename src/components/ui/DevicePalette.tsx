@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
+import { Search } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useMode } from '@/contexts/ModeContext';
 import { MODE_FEATURES, DEVICE_TYPE_COLORS, TOUCH_TARGET_SIZE } from '@/constants/ui-ux';
 import type { DeviceType } from '@/types/ui-ux';
@@ -109,22 +111,29 @@ export function DevicePalette({
     };
 
     return (
-        <Card className={`w-full ${className}`}>
-            <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Device Palette</CardTitle>
+        <Card className={cn("w-full border-none shadow-none bg-transparent", className)}>
+            <CardHeader className="pb-4 px-0">
+                <CardTitle className="text-xl font-black tracking-tight text-primary uppercase">
+                    Device <span className="text-cyan-500">Palette</span>
+                </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-                {/* Search Input */}
-                <Input
-                    placeholder="Search devices..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full"
-                    aria-label="Search devices by name or description"
-                />
+            <CardContent className="space-y-6 px-0">
+                {/* Search Input - Minimalist */}
+                <div className="relative group">
+                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                        <Search className="w-4 h-4 text-primary/30 group-focus-within:text-cyan-500 transition-colors" />
+                    </div>
+                    <Input
+                        placeholder="Filter hardware..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-10 h-11 bg-primary/5 border-primary/5 rounded-2xl focus:bg-transparent transition-all"
+                        aria-label="Search devices by name or description"
+                    />
+                </div>
 
-                {/* Device Grid - Responsive layout with mobile touch targets */}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-96 overflow-y-auto">
+                {/* Device Grid - Vibrant Minimalist Cards */}
+                <div className="grid grid-cols-2 gap-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                     {filteredDevices.length > 0 ? (
                         filteredDevices.map((deviceType) => {
                             const metadata = deviceMetadata[deviceType];
@@ -135,40 +144,48 @@ export function DevicePalette({
                                 <Tooltip key={deviceType} delayDuration={200}>
                                     <TooltipTrigger asChild>
                                         <div
-                                            draggable
-                                            onDragStart={(e) => handleDragStart(deviceType, e)}
-                                            onDragEnd={handleDragEnd}
-                                            onClick={() => handleDeviceClick(deviceType)}
-                                            onMouseEnter={() => setHoveredDevice(deviceType)}
-                                            onMouseLeave={() => setHoveredDevice(null)}
-                                            className="p-3 rounded-lg border-2 cursor-move transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-                                            style={{
-                                                borderColor: isHovered ? color : '#e5e7eb',
-                                                backgroundColor: `${color}10`,
-                                                minHeight: `${TOUCH_TARGET_SIZE}px`,
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                boxShadow: isHovered ? `0 4px 12px ${color}40` : 'none',
-                                            }}
-                                            role="button"
-                                            tabIndex={0}
-                                            aria-label={`${metadata.label} - ${metadata.description}`}
-                                            aria-pressed={isHovered}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter' || e.key === ' ') {
-                                                    e.preventDefault();
-                                                    handleDeviceClick(deviceType);
-                                                }
-                                            }}
+                                          draggable
+                                          onDragStart={(e) => handleDragStart(deviceType, e)}
+                                          onDragEnd={handleDragEnd}
+                                          onClick={() => handleDeviceClick(deviceType)}
+                                          onMouseEnter={() => setHoveredDevice(deviceType)}
+                                          onMouseLeave={() => setHoveredDevice(null)}
+                                          className={cn(
+                                            "relative group p-4 rounded-3xl border-2 cursor-grab active:cursor-grabbing transition-all duration-300 active:scale-95 hardware-accelerated",
+                                            isHovered ? "shadow-2xl -translate-y-1" : "shadow-sm"
+                                          )}
+                                          style={{
+                                            borderColor: isHovered ? color : 'transparent',
+                                            backgroundColor: isHovered ? `${color}15` : 'rgba(var(--primary), 0.03)',
+                                            minHeight: `120px`,
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                          }}
+                                          role="button"
+                                          tabIndex={0}
                                         >
-                                            <div className="flex flex-col items-center gap-2">
-                                                <Icon name={metadata.icon} size={24} style={{ color }} />
-                                                <div className="text-center">
-                                                    <div className="text-sm font-semibold">{metadata.label}</div>
-                                                    <div className="text-xs text-gray-500">{metadata.description}</div>
-                                                </div>
+                                          {/* Accent Glow */}
+                                          {isHovered && (
+                                            <div
+                                              className="absolute inset-0 rounded-3xl blur-xl opacity-20 pointer-events-none transition-opacity"
+                                              style={{ backgroundColor: color }}
+                                            />
+                                          )}
+
+                                          <div className="relative flex flex-col items-center gap-3">
+                                            <div
+                                              className="p-3 rounded-2xl transition-transform duration-500 group-hover:scale-110"
+                                              style={{ backgroundColor: `${color}20` }}
+                                            >
+                                              <Icon name={metadata.icon} size={28} style={{ color }} />
                                             </div>
+                                            <div className="text-center">
+                                                <div className="text-xs font-black tracking-widest uppercase mb-1">{metadata.label}</div>
+                                                <div className="text-[10px] font-bold opacity-40 uppercase tracking-tighter line-clamp-1">{metadata.description}</div>
+                                            </div>
+                                          </div>
                                         </div>
                                     </TooltipTrigger>
                                     <TooltipContent side="right" className="max-w-xs">

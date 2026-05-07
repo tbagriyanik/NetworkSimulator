@@ -132,7 +132,7 @@ const clampToBounds = (x: number, y: number): { x: number; y: number } => {
  * Renders a network topology canvas with SVG for efficient rendering.
  * Supports device placement, selection, zoom/pan, and grid snapping.
  */
-export const NetworkCanvas = React.forwardRef<HTMLDivElement, NetworkCanvasProps>(
+export const NetworkCanvas = React.memo(React.forwardRef<HTMLDivElement, NetworkCanvasProps>(
     (
         {
             devices,
@@ -987,6 +987,6 @@ export const NetworkCanvas = React.forwardRef<HTMLDivElement, NetworkCanvasProps
             </div>
         );
     }
-);
+)));
 
 NetworkCanvas.displayName = 'NetworkCanvas';

@@ -1,9 +1,10 @@
 'use client';
 
+import React, { useRef, useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { TaskDefinition, TaskContext, getTaskStatus } from '@/lib/network/taskDefinitions';
 import { SwitchState } from '@/lib/network/types';
-import { useRef, useEffect, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface TaskCardProps {
@@ -14,7 +15,7 @@ interface TaskCardProps {
   isDark: boolean;
 }
 
-export function TaskCard({ tasks, state, context, color, isDark }: TaskCardProps) {
+export const TaskCard = React.memo(({ tasks, state, context, color, isDark }: TaskCardProps) => {
   const { t } = useLanguage();
   // Use ref to track previous completed tasks (avoids infinite loop)
   const prevCompletedRef = useRef<Set<string>>(new Set());
@@ -66,7 +67,12 @@ export function TaskCard({ tasks, state, context, color, isDark }: TaskCardProps
   }, [score, maxScore]);
 
   return (
-    <div className={`relative rounded-xl p-4 ${isDark ? 'bg-slate-800/50' : 'bg-white/80'} backdrop-blur-sm border ${isDark ? 'border-slate-700' : 'border-slate-200'} transition-all duration-300 hover:shadow-lg overflow-hidden`}>
+    <div className={cn(
+      "relative rounded-3xl p-5 transition-all duration-500 overflow-hidden hardware-accelerated",
+      isDark ? "bg-zinc-950/40 border-white/10 shadow-black/40" : "bg-white/40 border-black/5 shadow-zinc-200/50",
+      "border backdrop-blur-2xl shadow-2xl",
+      isCategoryComplete && "ring-2 ring-emerald-500/30"
+    )}>
       {/* Celebration Overlay */}
       {showCelebration && (
         <div className="absolute inset-0 z-10 pointer-events-none flex items-center justify-center bg-green-500/10 backdrop-blur-[1px]">
@@ -97,23 +103,32 @@ export function TaskCard({ tasks, state, context, color, isDark }: TaskCardProps
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <h3 className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-slate-800'} flex items-center gap-2`}>
-          <svg className={`w-4 h-4 ${isCategoryComplete ? 'text-green-400 animate-bounce' : 'text-cyan-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 00-2 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-          </svg>
-          {t.tasks}
-        </h3>
-        <Badge className={`bg-gradient-to-r ${isCategoryComplete ? 'from-green-500 to-emerald-600' : color} text-white border-0 transition-all duration-500 ${isCategoryComplete ? 'scale-110 shadow-lg shadow-green-500/20' : 'hover:scale-105'}`}>
-          {score}/{maxScore}
-        </Badge>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[10px] font-black tracking-[0.2em] opacity-40 uppercase">System Checks</span>
+          <h3 className={cn("text-lg font-black tracking-tight flex items-center gap-2", isDark ? "text-white" : "text-zinc-950")}>
+            {t.tasks}
+            {isCategoryComplete && <span className="text-emerald-500 animate-pulse">✓</span>}
+          </h3>
+        </div>
+        <div className={cn(
+          "px-3 py-1.5 rounded-2xl font-black text-xs tabular-nums shadow-lg transition-all duration-500",
+          isCategoryComplete
+            ? "bg-emerald-500 text-zinc-950 shadow-emerald-500/40 scale-110"
+            : "bg-primary text-primary-foreground shadow-primary/20"
+        )}>
+          {score} / {maxScore}
+        </div>
       </div>
 
-      {/* Progress bar */}
-      <div className={`h-1.5 rounded-full ${isDark ? 'bg-slate-700' : 'bg-slate-200'} mb-4 overflow-hidden`}>
+      {/* Progress bar - Minimalist */}
+      <div className="relative h-2 w-full rounded-full bg-primary/10 mb-6 overflow-hidden">
         <div
-          className={`h-full bg-gradient-to-r ${isCategoryComplete ? 'from-green-400 to-emerald-500' : color} rounded-full progress-fill`}
-          style={{ '--progress-width': `${progressWidth}%` } as React.CSSProperties}
+          className={cn(
+            "h-full transition-all duration-1000 ease-out rounded-full",
+            isCategoryComplete ? "bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.5)]" : "bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.4)]"
+          )}
+          style={{ width: `${progressWidth}%` }}
         />
       </div>
 
@@ -129,21 +144,23 @@ export function TaskCard({ tasks, state, context, color, isDark }: TaskCardProps
           return (
             <div
               key={task.id}
-              className={`p-2.5 rounded-lg border transition-all duration-300 ${isAnimating ? 'ring-2 ring-green-400/50 scale-[1.02] z-10' : ''
-                }`}
-              style={{
-                backgroundColor: completed
-                  ? (isDark ? 'rgba(34, 197, 94, 0.1)' : 'rgba(34, 197, 94, 0.05)')
-                  : (isDark ? 'rgba(51, 65, 85, 0.3)' : 'rgba(241, 245, 249, 1)'),
-                borderColor: completed ? 'rgba(34, 197, 94, 0.2)' : 'transparent'
-              }}
+              className={cn(
+                "p-3 rounded-2xl border-2 transition-all duration-300 hardware-accelerated",
+                isAnimating && "ring-4 ring-emerald-500/20 scale-[1.03] z-10 shadow-xl",
+                completed
+                  ? "bg-emerald-500/5 border-emerald-500/20"
+                  : isDark ? "bg-white/5 border-transparent" : "bg-black/5 border-transparent",
+                "hover:border-primary/10"
+              )}
             >
               {/* Task Header */}
-              <div className="flex items-center gap-2 mb-1">
-                <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 ${completed
-                  ? 'bg-green-500 text-white shadow-lg shadow-green-500/20'
-                  : isDark ? 'bg-slate-600 text-slate-400' : 'bg-slate-200 text-slate-500'
-                  }`}>
+              <div className="flex items-center gap-3 mb-1.5">
+                <div className={cn(
+                  "w-6 h-6 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-500 shadow-md",
+                  completed
+                    ? "bg-emerald-500 text-zinc-950 shadow-emerald-500/30"
+                    : isDark ? "bg-zinc-800 text-zinc-500" : "bg-white text-zinc-400"
+                )}>
                   {completed ? (
                     <svg
                       className="w-3 h-3 checkmark-draw"
@@ -157,8 +174,10 @@ export function TaskCard({ tasks, state, context, color, isDark }: TaskCardProps
                     <span className="text-xs font-bold">{task.weight}</span>
                   )}
                 </div>
-                <span className={`text-sm font-medium transition-all duration-500 ${completed ? 'text-green-500 line-through opacity-70' : isDark ? 'text-slate-200' : 'text-slate-800'
-                  }`}>
+                <span className={cn(
+                  "text-xs font-black tracking-tight transition-all duration-500 uppercase",
+                  completed ? "text-emerald-500 line-through opacity-50" : isDark ? "text-zinc-100" : "text-zinc-900"
+                )}>
                   {name}
                 </span>
                 {/* WLAN0 Icon */}
@@ -223,4 +242,6 @@ export function TaskCard({ tasks, state, context, color, isDark }: TaskCardProps
       </div>
     </div>
   );
-}
+});
+
+TaskCard.displayName = 'TaskCard';
