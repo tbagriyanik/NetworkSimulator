@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { CanvasDevice, CanvasConnection, CanvasNote } from '@/components/network/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
+import { createTabSpecificStorage, getTabSpecificKey } from './tabStorage';
 
 // Environment settings types
 export type EnvironmentBackground = 'none' | 'house' | 'twoStoryGarage' | 'greenhouse';
@@ -340,7 +341,7 @@ export const useAppStore = create<AppState>()(
         {
             name: STORE_KEY,
             version: STORE_VERSION,
-            storage: createJSONStorage(() => localStorage),
+            storage: createTabSpecificStorage(),
             partialize: (state: AppState) => ({
                 topology: state.topology,
                 deviceStates: state.deviceStates,
@@ -404,49 +405,9 @@ export const useAppStore = create<AppState>()(
     )
 );
 
-// Cross-tab synchronization for persisted Zustand state.
-// When another tab writes to the same storage key, hydrate current tab store snapshot.
-if (typeof window !== 'undefined') {
-    const syncFlag = '__netsim_store_sync_initialized__';
-    const globalRef = window as unknown as Record<string, unknown>;
-
-    if (!globalRef[syncFlag]) {
-        window.addEventListener('storage', (event: StorageEvent) => {
-            if (event.key !== 'network-simulator-storage' || !event.newValue) return;
-
-            try {
-                const parsed = JSON.parse(event.newValue) as {
-                    state?: Partial<AppState>;
-                };
-                const nextState = parsed.state;
-                if (!nextState) return;
-
-                useAppStore.setState((prev) => ({
-                    ...prev,
-                    ...(nextState.topology ? {
-                        topology: {
-                            ...prev.topology,
-                            ...nextState.topology,
-                            // Merge environment separately to preserve partial updates
-                            environment: nextState.topology.environment
-                                ? { ...prev.topology.environment, ...nextState.topology.environment }
-                                : prev.topology.environment
-                        }
-                    } : {}),
-                    ...(nextState.deviceStates ? { deviceStates: nextState.deviceStates } : {}),
-                    ...(nextState.activeTab ? { activeTab: nextState.activeTab } : {}),
-                    ...(typeof nextState.activePanel !== 'undefined' ? { activePanel: nextState.activePanel } : {}),
-                    ...(typeof nextState.sidebarOpen === 'boolean' ? { sidebarOpen: nextState.sidebarOpen } : {}),
-                    ...(nextState.graphicsQuality ? { graphicsQuality: nextState.graphicsQuality } : {}),
-                }));
-            } catch {
-                // Ignore malformed payloads from storage.
-            }
-        });
-
-        globalRef[syncFlag] = true;
-    }
-}
+// Cross-tab synchronization disabled for tab-specific storage.
+// Each tab now maintains its own isolated data to prevent conflicts.
+// If cross-tab sync is needed in the future, implement a separate mechanism.
 
 // ─── Selectors for granular state access ───
 // These selectors prevent cascading re-renders by allowing components to subscribe to specific state slices

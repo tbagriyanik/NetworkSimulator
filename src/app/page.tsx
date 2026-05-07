@@ -7,6 +7,7 @@ import { SwitchState, CableInfo } from '@/lib/network/types';
 import { ensureDeviceStatesMap } from '@/lib/network/networkUtils';
 import { useDeviceManager } from '@/hooks/useDeviceManager';
 import { useModalDragResize } from '@/hooks/useModalDragResize';
+import { useMultiTabWarning } from '@/hooks/useMultiTabWarning';
 import useAppStore, { useTopologyDevices, useTopologyConnections, useTopologyNotes, useZoom, usePan, useActiveTab } from '@/lib/store/appStore';
 import { NetworkTopology } from '@/components/network/NetworkTopology';
 import { cn, normalizeMAC } from '@/lib/utils';
@@ -347,6 +348,9 @@ function RefreshDeviceListToast({
 export default function Home() {
   const { t, language, setLanguage } = useLanguage();
   const { theme, effectiveTheme, setTheme } = useTheme();
+  
+  // Multi-tab warning system
+  const { showWarning, tabCount, acknowledgeWarning, clearCurrentTabData } = useMultiTabWarning();
 
   // Refs moved to top to avoid TDZ errors
   const navigationHistoryRef = useRef<{ tab: TabType; deviceId?: string; program?: string }[]>([{ tab: 'topology' }]);
@@ -4181,6 +4185,39 @@ ${state.bannerMOTD}
           <div className="fixed inset-0 z-[9998] bg-background">
             <AppSkeleton />
           </div>
+        )}
+
+        {/* Multi-Tab Warning Dialog */}
+        {showWarning && (
+          <AlertDialog open={showWarning}>
+            <AlertDialogContent className="max-w-md">
+              <AlertDialogHeader>
+                <AlertDialogTitle className="flex items-center gap-2 text-blue-600">
+                  <Monitor className="h-5 w-5" />
+                  Multiple Tabs Active
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  You have {tabCount} tabs of Network Simulator open. Each tab now saves its own data independently, so you can work in multiple tabs without conflicts.
+                  <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                    <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                      ✅ Each tab has isolated storage
+                    </p>
+                    <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                      Your work in each tab is saved separately
+                    </p>
+                  </div>
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={clearCurrentTabData}>
+                  Clear This Tab
+                </AlertDialogCancel>
+                <AlertDialogAction onClick={acknowledgeWarning}>
+                  Got It
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         )}
 
         {/* Main Content with transition */}
