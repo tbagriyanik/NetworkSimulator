@@ -1643,7 +1643,7 @@ export const commandPatterns: Record<string, CommandPattern> = {
     maxArgs: 1
   },
   'do': {
-    pattern: /^do\s*(.*)$/i,
+    pattern: /^do\s+(.*)$/i,
     modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'router-config', 'dhcp-config'],
     minArgs: 0,
     maxArgs: 10
@@ -1991,7 +1991,7 @@ export const commandPatterns: Record<string, CommandPattern> = {
 };
 
 // Komut alias'larını çöz - Gelişmiş versiyon
-function resolveAliases(input: string): string {
+export function resolveAliases(input: string): string {
   const trimmed = input.trim().toLowerCase();
 
   // Tam eşleşme - direkt alias
@@ -2005,12 +2005,23 @@ function resolveAliases(input: string): string {
     .sort((a, b) => b[0].length - a[0].length);
 
   for (const [alias, full] of sortedAliases) {
-    // Alias ile başlıyor ve devamında bir şey varsa
-    if (trimmed === alias.toLowerCase()) {
+    const aliasLower = alias.toLowerCase();
+    const fullLower = full.toLowerCase();
+
+    // Alias ile tam eşleşme
+    if (trimmed === aliasLower) {
       return full;
     }
-    // Alias ile başlıyor ve boşluk veya başka karakterle devam ediyorsa
-    if (trimmed.startsWith(alias.toLowerCase() + ' ')) {
+
+    // Alias ile başlıyor ve boşlukla devam ediyorsa (prefix match)
+    if (trimmed.startsWith(aliasLower + ' ')) {
+      // Eğer zaten tam komutla (veya onun prefix'iyle) başlıyorsa genişletme yapma
+      // Bu, "clear mac address-table" gibi komutların "clear mac" alias'ı yüzünden
+      // "clear mac address-table address-table" haline gelmesini önler.
+      if (trimmed === fullLower || trimmed.startsWith(fullLower + ' ')) {
+        continue;
+      }
+
       const rest = input.trim().substring(alias.length).trim();
       return full + ' ' + rest;
     }

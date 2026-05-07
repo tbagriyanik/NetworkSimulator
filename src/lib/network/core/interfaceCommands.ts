@@ -35,8 +35,6 @@ export const interfaceHandlers: Record<string, CommandHandler> = {
   'duplex': cmdDuplex,
   'description': cmdDescription,
   'switchport mode': cmdSwitchportMode,
-  'switchport mode access': cmdSwitchportModeAccess,
-  'switchport mode trunk': cmdSwitchportModeTrunk,
   'switchport access vlan': cmdSwitchportAccessVlan,
   'switchport trunk native vlan': cmdSwitchportTrunkNativeVlan,
   'switchport trunk allowed vlan': cmdSwitchportTrunkAllowedVlan,
@@ -46,7 +44,7 @@ export const interfaceHandlers: Record<string, CommandHandler> = {
   'switchport port-security mac-address sticky': cmdSwitchportPortSecuritySticky,
   'no switchport': cmdNoSwitchport,
   'spanning-tree portfast': cmdSpanningTreePortfast,
-  'spanning-tree bpduguard enable': cmdSpanningTreeBpduguard,
+  'spanning-tree bpduguard': cmdSpanningTreeBpduguard,
   'ip address': cmdIpAddress,
   'no ip address': cmdNoIpAddress,
   'ip default-gateway': cmdIpDefaultGateway,
@@ -91,6 +89,40 @@ export const interfaceHandlers: Record<string, CommandHandler> = {
   'spanning-tree bpduguard disable': cmdSpanningTreeBpduguardDisable,
   'spanning-tree cost': cmdSpanningTreeCost,
   'spanning-tree priority': cmdSpanningTreePriority,
+  'ipv6 address': cmdIpv6Address,
+  'switchport voice': cmdSwitchportVoiceVlan,
+  'channel-protocol': cmdStubSuccess,
+  'priority-queue out': cmdStubSuccess,
+  'queue-set': cmdStubSuccess,
+  'tx-queue': cmdStubSuccess,
+  'power inline': cmdStubSuccess,
+  'power inline consumption': cmdStubSuccess,
+  'ip directed-broadcast': cmdStubSuccess,
+  'ip arp inspection limit': cmdStubSuccess,
+  'carrier-delay': cmdStubSuccess,
+  'delay': cmdStubSuccess,
+  'load-interval': cmdStubSuccess,
+  'switchport trunk encapsulation': cmdSwitchportTrunkEncapsulation,
+  'encapsulation dot1q': cmdEncapsulationDot1q,
+  'switchport protected': cmdSwitchportProtected,
+  'switchport block': cmdSwitchportBlock,
+  'switchport port-security mac-address': cmdSwitchportPortSecurityMacAddress,
+  'switchport port-security aging time': cmdSwitchportPortSecurityAgingTime,
+  'switchport port-security aging type': cmdSwitchportPortSecurityAgingType,
+  'storm-control': cmdStormControl,
+  'storm-control action': cmdStormControlAction,
+  'mls qos trust': cmdMlsQosTrust,
+  'mls qos cos': cmdMlsQosCos,
+  'ip dhcp snooping trust': cmdIpDhcpSnoopingTrust,
+  'no ip dhcp snooping trust': cmdNoIpDhcpSnoopingTrust,
+  'ip arp inspection trust': cmdIpArpInspectionTrust,
+  'no ip arp inspection trust': cmdNoIpArpInspectionTrust,
+  'bandwidth': cmdBandwidth,
+  'keepalive': cmdKeepalive,
+  'ip proxy-arp': cmdIpProxyArp,
+  'ip verify source': cmdIpVerifySource,
+  'udld enable': cmdUdldEnable,
+  'udld port': cmdUdldEnable,
 };
 
 /**
@@ -1698,6 +1730,25 @@ function cmdSpanningTreeCost(state: any, input: string, ctx: any): any {
 }
 
 /**
+ * Stub Success
+ */
+function cmdStubSuccess(state: any, input: string, ctx: any): any {
+  return { success: true };
+}
+
+/**
+ * IPv6 Address
+ */
+function cmdIpv6Address(state: any, input: string, ctx: any): any {
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: '% No interface selected' };
+  const match = input.match(/^ipv6\s+address\s+([0-9a-fA-F:]+)\/(\d+)$/i);
+  if (!match) return { success: false, error: '% Invalid IPv6 address' };
+  const updatePort = (port: any) => ({ ...port, ipv6Address: match[1], ipv6Prefix: parseInt(match[2]) });
+  const newPorts = applyToSelectedPorts(state, updatePort);
+  return { success: true, newState: { ports: newPorts } };
+}
+
+/**
  * Spanning-Tree Priority - Set STP port priority
  */
 function cmdSpanningTreePriority(state: any, input: string, ctx: any): any {
@@ -2042,27 +2093,3 @@ function cmdSwitchportPortSecurityAgingType(state: any, input: string, ctx: any)
   };
 }
 
-// Register new interface handlers
-Object.assign(interfaceHandlers, {
-  'switchport trunk encapsulation': cmdSwitchportTrunkEncapsulation,
-  'encapsulation dot1q': cmdEncapsulationDot1q,
-  'switchport protected': cmdSwitchportProtected,
-  'switchport block': cmdSwitchportBlock,
-  'switchport port-security mac-address': cmdSwitchportPortSecurityMacAddress,
-  'switchport port-security aging time': cmdSwitchportPortSecurityAgingTime,
-  'switchport port-security aging type': cmdSwitchportPortSecurityAgingType,
-  'storm-control': cmdStormControl,
-  'storm-control action': cmdStormControlAction,
-  'mls qos trust': cmdMlsQosTrust,
-  'mls qos cos': cmdMlsQosCos,
-  'ip dhcp snooping trust': cmdIpDhcpSnoopingTrust,
-  'no ip dhcp snooping trust': cmdNoIpDhcpSnoopingTrust,
-  'ip arp inspection trust': cmdIpArpInspectionTrust,
-  'no ip arp inspection trust': cmdNoIpArpInspectionTrust,
-  'bandwidth': cmdBandwidth,
-  'keepalive': cmdKeepalive,
-  'ip proxy-arp': cmdIpProxyArp,
-  'ip verify source': cmdIpVerifySource,
-  'udld enable': cmdUdldEnable,
-  'udld port': cmdUdldEnable,
-});

@@ -1454,7 +1454,6 @@ export const commandAliases: Record<string, string> = {
   'logging synchronous': 'logging synchronous',
 
   // Exec-timeout
-  'exec': 'exec-timeout',
   'exec-': 'exec-timeout',
   'exec-t': 'exec-timeout',
   'exec-ti': 'exec-timeout',
