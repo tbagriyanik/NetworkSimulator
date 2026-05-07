@@ -18,6 +18,7 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'vtp domain': cmdVtpDomain,
   'spanning-tree mode': cmdSpanningTreeMode,
   'spanning-tree vlan': cmdSpanningTreeVlan,
+  'spanning-tree portfast': cmdSpanningTreePortfastDefault,
   'no spanning-tree': cmdNoSpanningTree,
   'service password-encryption': cmdServicePasswordEncryption,
   'no service password-encryption': cmdNoServicePasswordEncryption,
@@ -34,6 +35,7 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'ip default-gateway': cmdIpDefaultGateway,
   'no ip default-gateway': cmdNoIpDefaultGateway,
   'ip domain-name': cmdIpDomainName,
+  'ip domain lookup': cmdIpDomainLookup,
   'ip domain-lookup': cmdIpDomainLookup,
   'no ip domain-lookup': cmdNoIpDomainLookup,
   'ip routing': cmdIpRouting,
@@ -63,6 +65,37 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'no ip http server': cmdNoIpHttpServer,
   // SSH version
   'ip ssh version': cmdIpSshVersion,
+  'ip dhcp snooping vlan': cmdIpDhcpSnoopingVlan,
+  'ip arp inspection': cmdIpArpInspection,
+  'errdisable recovery': cmdErrdisableRecovery,
+  'errdisable recovery cause': cmdErrdisableRecovery,
+  'vtp password': cmdVtpPassword,
+  'ntp server': cmdNtpServer,
+  'clock timezone': cmdClockTimezone,
+  'ip name-server': cmdIpNameServer,
+  'system mtu': cmdSystemMtu,
+  'sdm prefer': cmdSdmPrefer,
+  'ipv6 unicast-routing': cmdIpv6UnicastRouting,
+  'ip ssh authentication-retries': cmdIpSshAuthRetries,
+  'crypto key generate rsa': cmdCryptoKeyGenerateRsa,
+  'ip dhcp pool': cmdIpDhcpPool,
+  'no ip dhcp pool': cmdNoIpDhcpPool,
+  'ip dhcp excluded-address': cmdIpDhcpExcludedAddress,
+  'no ip dhcp excluded-address': cmdNoIpDhcpExcludedAddress,
+  'cdp timer': cmdStubSuccess,
+  'cdp holdtime': cmdStubSuccess,
+  'snmp-server community': cmdStubSuccess,
+  'snmp-server contact': cmdStubSuccess,
+  'snmp-server location': cmdStubSuccess,
+  'archive': cmdStubSuccess,
+  'alias': cmdStubSuccess,
+  'macro': cmdStubSuccess,
+  'default interface': cmdStubSuccess,
+  'configure replace': cmdStubSuccess,
+  'mac access-list': cmdStubSuccess,
+  'class-map': cmdStubSuccess,
+  'policy-map': cmdStubSuccess,
+  'template': cmdStubSuccess,
 };
 
 /**
@@ -1577,28 +1610,9 @@ function cmdNoIpDhcpExcludedAddress(state: any, input: string, ctx: any): any {
 }
 
 // Register new global config handlers
-Object.assign(globalConfigHandlers, {
-  'ip dhcp snooping vlan': cmdIpDhcpSnoopingVlan,
-  'ip arp inspection': cmdIpArpInspection,
-  'spanning-tree vlan': cmdSpanningTreeVlan,
-  'spanning-tree portfast default': cmdSpanningTreePortfastDefault,
-  'errdisable recovery': cmdErrdisableRecovery,
-  'errdisable recovery cause': cmdErrdisableRecovery,
-  'vtp password': cmdVtpPassword,
-  'ntp server': cmdNtpServer,
-  'clock timezone': cmdClockTimezone,
-  'ip name-server': cmdIpNameServer,
-  'ip domain-lookup': cmdIpDomainLookup,
-  'system mtu': cmdSystemMtu,
-  'sdm prefer': cmdSdmPrefer,
-  'ipv6 unicast-routing': cmdIpv6UnicastRouting,
-  'ip ssh authentication-retries': cmdIpSshAuthRetries,
-  'crypto key generate rsa': cmdCryptoKeyGenerateRsa,
-  // DHCP pool
-  'ip dhcp pool': cmdIpDhcpPool,
-  'no ip dhcp pool': cmdNoIpDhcpPool,
-  'ip dhcp excluded-address': cmdIpDhcpExcludedAddress,
-  'no ip dhcp excluded-address': cmdNoIpDhcpExcludedAddress,
-});
+
+function cmdStubSuccess(state: any, input: string, ctx: any): any {
+  return { success: true };
+}
 
 // ── End of Handlers ──────────────────────────────────────────────────────────

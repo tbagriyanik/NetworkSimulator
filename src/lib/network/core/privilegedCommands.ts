@@ -13,10 +13,6 @@ export const privilegedHandlers: Record<string, CommandHandler> = {
     'ssh': cmdSsh,
     'traceroute': cmdTraceroute,
     'tracert': cmdTracert,
-    'write': cmdWriteMemory,
-    'wr': cmdWriteMemory,
-    'wri': cmdWriteMemory,
-    'writ': cmdWriteMemory,
     'write memory': cmdWriteMemory,
     'copy running-config startup-config': cmdCopyRunningStartup,
     'copy running-config flash': cmdCopyRunningFlash,
@@ -29,6 +25,28 @@ export const privilegedHandlers: Record<string, CommandHandler> = {
     'debug': cmdDebug,
     'undebug all': cmdUndebugAll,
     'delete flash:vlan.dat': cmdDeleteVlanDat,
+    'setup': cmdSetup,
+    'test': cmdTest,
+    'more': cmdMore,
+    'disconnect': cmdDisconnect,
+    'resume': cmdResume,
+    'suspend': cmdSuspend,
+    'copy running-config tftp': cmdCopyTftp,
+    'copy tftp running-config': cmdCopyTftp,
+    'copy startup-config running-config': cmdCopyStartupRunning,
+    'delete nvram': cmdEraseNvram,
+    'clear line': cmdClearLine,
+    'clear interface': cmdClearInterface,
+    'terminal': cmdTerminal,
+    'terminal length': cmdTerminal,
+    'terminal width': cmdTerminal,
+    'terminal monitor': cmdTerminal,
+    'terminal no monitor': cmdTerminal,
+    'clear arp-cache': cmdClearArpCache,
+    'clear mac address-table': cmdClearMacAddressTable,
+    'clear counters': cmdClearCounters,
+    'undebug': cmdUndebug,
+    'help': cmdHelp,
 };
 
 /**
@@ -821,6 +839,82 @@ function cmdHelp(state: any, input: string, ctx: any): any {
 }
 
 /**
+ * Setup command
+ */
+function cmdSetup(state: any, input: string, ctx: any): any {
+    return {
+        success: true,
+        output: '\n--- System Configuration Dialog ---\n\nWould you like to enter the initial configuration dialog? [yes/no]: \n% Aborting setup.'
+    };
+}
+
+/**
+ * Test command
+ */
+function cmdTest(state: any, input: string, ctx: any): any {
+    return { success: true, output: '\n% Diagnostic test completed successfully.\n' };
+}
+
+/**
+ * More command
+ */
+function cmdMore(state: any, input: string, ctx: any): any {
+    return { success: true, output: '\n% File display not supported in this version.\n' };
+}
+
+/**
+ * Disconnect command
+ */
+function cmdDisconnect(state: any, input: string, ctx: any): any {
+    return { success: true, output: '\n% No active sessions to disconnect.\n' };
+}
+
+/**
+ * Resume command
+ */
+function cmdResume(state: any, input: string, ctx: any): any {
+    return { success: true, output: '\n% No suspended sessions to resume.\n' };
+}
+
+/**
+ * Suspend command
+ */
+function cmdSuspend(state: any, input: string, ctx: any): any {
+    return { success: true, output: '\n% Suspend not supported in this session.\n' };
+}
+
+/**
+ * Copy TFTP command
+ */
+function cmdCopyTftp(state: any, input: string, ctx: any): any {
+    return { success: false, error: '% Error opening tftp://255.255.255.255/config (Timed out)' };
+}
+
+/**
+ * Copy Startup-Config Running-Config
+ */
+function cmdCopyStartupRunning(state: any, input: string, ctx: any): any {
+    return {
+        success: true,
+        output: 'Destination filename [running-config]?\n[OK]\n'
+    };
+}
+
+/**
+ * Clear Line
+ */
+function cmdClearLine(state: any, input: string, ctx: any): any {
+    return { success: true, output: '[confirm]\n' };
+}
+
+/**
+ * Clear Interface
+ */
+function cmdClearInterface(state: any, input: string, ctx: any): any {
+    return { success: true, output: '[confirm]\n' };
+}
+
+/**
  * Delete VLAN database file
  */
 function cmdDeleteVlanDat(state: any, input: string, ctx: any): any {
@@ -863,16 +957,3 @@ function cmdDeleteVlanDat(state: any, input: string, ctx: any): any {
     };
 }
 
-// Register new privileged handlers
-Object.assign(privilegedHandlers, {
-    'terminal': cmdTerminal,
-    'terminal length': cmdTerminal,
-    'terminal width': cmdTerminal,
-    'terminal monitor': cmdTerminal,
-    'terminal no monitor': cmdTerminal,
-    'clear arp-cache': cmdClearArpCache,
-    'clear mac address-table': cmdClearMacAddressTable,
-    'clear counters': cmdClearCounters,
-    'undebug': cmdUndebug,
-    'help': cmdHelp,
-});
