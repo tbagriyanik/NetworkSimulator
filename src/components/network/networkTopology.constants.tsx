@@ -20,6 +20,7 @@ export const DEVICE_ICON_COLORS = {
   iot: '#16cbf9',
   switch: '#22c55e',
   router: '#a855f7',
+  firewall: '#ef4444',
 } as const;
 
 export const DEVICE_ICONS = {
@@ -56,6 +57,11 @@ export const DEVICE_ICONS = {
     <svg className="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke={DEVICE_ICON_COLORS.router} viewBox="0 0 24 24">
       <circle strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} cx={DEVICE_ICON_PATHS.router.circle.cx} cy={DEVICE_ICON_PATHS.router.circle.cy} r={DEVICE_ICON_PATHS.router.circle.r} />
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={DEVICE_ICON_PATHS.router.paths} />
+    </svg>
+  ),
+  firewall: (
+    <svg className="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke={DEVICE_ICON_COLORS.firewall} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM8 11h8M8 15h8" />
     </svg>
   ),
 };

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { DEVICE_ICON_COLORS } from './networkTopology.constants';
+import { DEVICE_ICON_COLORS, STROKE_COLORS } from './networkTopology.constants';
 import type { DeviceType } from './networkTopology.types';
 
 export interface DeviceIconProps {
@@ -28,9 +28,11 @@ export function DeviceIcon({
       ? DEVICE_ICON_COLORS.pc
       : type === 'iot'
         ? DEVICE_ICON_COLORS.iot  // IoT için varsayılan renk
-        : type === 'router'
-          ? DEVICE_ICON_COLORS.router
-          : (isSwitch && switchModel === 'WS-C3650-24PS' ? '#a855f7' : DEVICE_ICON_COLORS.switch)
+        : type === 'firewall'
+          ? '#ef4444' // Red color for firewall
+          : type === 'router'
+            ? DEVICE_ICON_COLORS.router
+            : (isSwitch && switchModel === 'WS-C3650-24PS' ? '#a855f7' : DEVICE_ICON_COLORS.switch)
   );
 
   const strokeWidth = active ? 2 : 1.25;
@@ -67,6 +69,21 @@ export function DeviceIcon({
           <path strokeLinecap="round" strokeLinejoin="round" d="M4.925 19.067a10 10 0 0 1 0-14.134" />
           <path strokeLinecap="round" strokeLinejoin="round" d="M7.753 16.239a6 6 0 0 1 0-8.478" />
           <circle cx="12" cy="12" r="2" />
+        </svg>
+      );
+    case 'firewall':
+      return (
+        <svg {...svgProps}>
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M8 11h8M8 15h8"
+          />
         </svg>
       );
     case 'router':

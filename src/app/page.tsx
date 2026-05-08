@@ -198,6 +198,7 @@ import { AppSkeleton } from '@/components/ui/AppSkeleton';
 import { AppErrorBoundary } from '@/components/ui/AppErrorBoundary';
 import { SwitchModel } from '@/lib/network/switchModels';
 import { EnvironmentSettingsPanel } from '@/components/network/EnvironmentSettingsPanel';
+import { FirewallPanel } from '@/components/network/FirewallPanel';
 
 const PCPanel = dynamic(() => import('@/components/network/PCPanel').then((m) => m.PCPanel), { ssr: false });
 const RouterPanel = dynamic(() => import('@/components/network/RouterPanel').then((m) => m.RouterPanel), { ssr: false });
@@ -379,6 +380,8 @@ export default function Home() {
   // Track last executed command for guided mode
   const [lastCommand, setLastCommand] = useState<string>('');
   const [showPCPanel, setShowPCPanel] = useState(false);
+  const [showFirewallPanel, setShowFirewallPanel] = useState(false);
+  const [activeFirewallId, setActiveFirewallId] = useState<string | null>(null);
   const [pcPanelInitialTab, setPcPanelInitialTab] = useState<'home' | 'desktop' | 'terminal' | 'settings' | 'services' | 'wireless' | 'iot'>('home');
   const [showPCDeviceId, setShowPCDeviceId] = useState<string>('pc-1');
   const [showRouterPanel, setShowRouterPanel] = useState(false);
@@ -979,12 +982,16 @@ export default function Home() {
     cliModalSize,
     pcModalPosition,
     pcModalSize,
+    firewallModalPosition,
+    firewallModalSize,
     setTasksModalPosition,
     setTasksModalSize,
     setCliModalPosition,
     setCliModalSize,
     setPcModalPosition,
     setPcModalSize,
+    setFirewallModalPosition,
+    setFirewallModalSize,
     handlePointerDown,
     handleResizeStart,
   } = useModalDragResize({ width: 1200, height: 700 }, graphicsQuality);
@@ -2365,6 +2372,9 @@ ${state.bannerMOTD}
       getOrCreatePCOutputs(deviceId, topologyDevices);
       setPcPanelInitialTab('home');
       setShowPCPanel(true);
+    } else if (device === 'firewall') {
+      setActiveFirewallId(deviceId);
+      setShowFirewallPanel(true);
     } else if (device === 'router' || device === 'switchL2' || device === 'switchL3') {
       // Switch or Router - set as CLI device and open CLI modal
       const deviceObj = topologyDevices?.find(d => d.id === deviceId);
@@ -3023,7 +3033,7 @@ ${state.bannerMOTD}
 
   // History pushState for back button tracking
   useEffect(() => {
-    const anyModalOpen = showMobileMenu || !!confirmDialog || !!saveDialog || showPCPanel || showRouterPanel || showTerminalModal || showTasksModal || showAboutModal || showProjectPicker || showOnboarding;
+    const anyModalOpen = showMobileMenu || !!confirmDialog || !!saveDialog || showPCPanel || showFirewallPanel || showRouterPanel || showTerminalModal || showTasksModal || showAboutModal || showProjectPicker || showOnboarding;
     if (anyModalOpen && !modalHistoryPushedRef.current) {
       window.history.pushState({ modal: true }, '');
       modalHistoryPushedRef.current = true;
@@ -3935,7 +3945,7 @@ ${state.bannerMOTD}
 
       if (e.key === 'Enter') {
         // Don't handle Enter when any modal/panel is open
-        if (showTasksModal || showTerminalModal || showAboutModal || showPCPanel || showRouterPanel || showProjectPicker || showOnboarding || !!confirmDialog?.show || !!saveDialog?.show) {
+        if (showTasksModal || showTerminalModal || showAboutModal || showPCPanel || showFirewallPanel || showRouterPanel || showProjectPicker || showOnboarding || !!confirmDialog?.show || !!saveDialog?.show) {
           return;
         }
         if (confirmDialog?.show) {
@@ -5189,6 +5199,111 @@ ${state.bannerMOTD}
             </DialogContent>
           </Dialog>
 
+          {/* Firewall Configuration Modal */}
+          <Dialog open={showFirewallPanel} onOpenChange={setShowFirewallPanel} modal={false}>
+            <DialogContent
+              showCloseButton={false}
+              onEscapeKeyDown={(e) => e.preventDefault()}
+              className={cn(
+                "p-0 overflow-visible flex flex-col top-auto left-auto translate-x-0 translate-y-0 shadow-[0_35px_120px_rgba(15,23,42,0.35)] liquid-glass-light",
+                isDark
+                  ? "bg-slate-950/80 border-white/10 backdrop-blur-2xl"
+                  : "bg-white/70 border-white/70 backdrop-blur-2xl"
+              )}
+              data-modal-content
+              style={{
+                position: 'fixed',
+                left: typeof window !== 'undefined' && window.innerWidth >= 768 ? firewallModalPosition.x : 0,
+                top: typeof window !== 'undefined' && window.innerWidth >= 768 ? firewallModalPosition.y : 0,
+                width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${firewallModalSize.width}px` : '100vw',
+                height: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${firewallModalSize.height}px` : '100vh',
+                maxWidth: 'none',
+                maxHeight: 'none',
+                borderRadius: typeof window !== 'undefined' && window.innerWidth >= 768 ? '1rem' : 0,
+                borderWidth: 3,
+              }}
+            >
+              <div className={cn(
+                "relative flex flex-col h-full overflow-visible",
+                typeof window !== 'undefined' && window.innerWidth >= 768 ? 'rounded-2xl' : 'rounded-none'
+              )}>
+                <DialogHeader
+                  className={cn(
+                    "p-3 sm:p-4 border-b cursor-grab active:cursor-grabbing select-none touch-none sticky top-0 z-10 backdrop-blur-xl",
+                    isDark ? "border-white/10 bg-slate-900/75" : "border-white/70 bg-white/80"
+                  )}
+                  data-modal-header
+                  onPointerDown={(e) => handlePointerDown(e, 'firewall')}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 flex-1">
+                      <DialogTitle className={isDark ? 'text-white font-semibold' : 'text-slate-900 font-semibold'}>
+                        {isTR ? 'Firewall Yapılandırması' : 'Firewall Configuration'} - {topologyDevices?.find((d: any) => d.id === activeFirewallId)?.name || activeFirewallId}
+                      </DialogTitle>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 hover:bg-red-500 hover:text-white dark:hover:bg-red-600"
+                        onClick={() => setShowFirewallPanel(false)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </DialogHeader>
+                <div className="flex-1 overflow-y-auto rounded-b-2xl p-4 custom-scrollbar">
+                  {activeFirewallId && (
+                    <FirewallPanel
+                      device={topologyDevices.find(d => d.id === activeFirewallId)!}
+                      t={t}
+                      theme={theme}
+                      isDevicePoweredOff={topologyDevices.find(d => d.id === activeFirewallId)?.status === 'offline'}
+                      onUpdateRules={(rules) => {
+                        handleDeviceUpdate({
+                          detail: {
+                            deviceId: activeFirewallId,
+                            config: { firewallRules: rules }
+                          }
+                        });
+                      }}
+                    />
+                  )}
+                </div>
+                {/* Resize handles - hidden on mobile */}
+                {typeof window !== 'undefined' && window.innerWidth >= 768 && (
+                  <>
+                    <div
+                      className="absolute left-0 top-0 bottom-0 w-[10px] cursor-ew-resize select-none touch-none bg-transparent hover:bg-red-500/10"
+                      onPointerDown={(e) => handleResizeStart(e, 'w', 'firewall')}
+                    />
+                    <div
+                      className="absolute -right-[5px] top-0 bottom-0 w-[10px] cursor-ew-resize select-none touch-none rounded-r-lg bg-transparent hover:bg-red-500/20"
+                      onPointerDown={(e) => handleResizeStart(e, 'e', 'firewall')}
+                    />
+                    <div
+                      className="absolute -bottom-[5px] left-[10px] right-8 z-20 h-[10px] cursor-ns-resize select-none touch-none rounded-b-lg bg-transparent hover:bg-red-500/20"
+                      onPointerDown={(e) => handleResizeStart(e, 's', 'firewall')}
+                    />
+                    <TooltipWrapper title={t.resizeAction}>
+                      <div
+                        className="absolute -bottom-2 -right-2 z-20 h-7 w-7 cursor-se-resize select-none touch-none rounded-tl-lg rounded-br-lg border border-slate-400/30 bg-slate-500/30 text-slate-100/80 hover:bg-red-500/30 hover:text-white flex items-center justify-center"
+                        onPointerDown={(e) => handleResizeStart(e, 'se', 'firewall')}
+                      >
+                        <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                          <path d="M6 13L13 6" />
+                          <path d="M9.5 13L13 9.5" />
+                          <path d="M12.5 13L13 12.5" />
+                        </svg>
+                      </div>
+                    </TooltipWrapper>
+                  </>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+
           {/* PC Terminal Modal */}
           <Dialog open={showPCPanel} onOpenChange={setShowPCPanel} modal={false}>
             <DialogContent
@@ -5736,6 +5851,27 @@ ${state.bannerMOTD}
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>{t.addIoT}</TooltipContent>
+                      </Tooltip>
+                      {/* Firewall Button */}
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 p-0 text-red-500 hover:bg-red-500/10"
+                            onClick={() => {
+                              if (typeof window !== 'undefined') {
+                                const event = new CustomEvent('add-device', { detail: 'firewall' });
+                                window.dispatchEvent(event);
+                              }
+                            }}
+                          >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM8 11h8M8 15h8" />
+                            </svg>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Add Firewall</TooltipContent>
                       </Tooltip>
                     </div>
 

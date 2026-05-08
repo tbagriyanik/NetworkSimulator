@@ -91,7 +91,8 @@ function cmdPing(state: any, input: string, ctx: any): any {
             ctx.devices,
             ctx.connections || [],
             ctx.deviceStates,
-            ctx.language
+            ctx.language,
+            { protocol: 'icmp' }
         );
 
         // Handle port security violations - update state if needed
@@ -193,7 +194,8 @@ function cmdTelnet(state: any, input: string, ctx: any): any {
             ctx.devices,
             ctx.connections || [],
             ctx.deviceStates,
-            ctx.language
+            ctx.language,
+            { protocol: 'tcp', port }
         );
 
         if (!connectivity.success) {
@@ -271,7 +273,8 @@ function cmdSsh(state: any, input: string, ctx: any): any {
             ctx.devices,
             ctx.connections || [],
             ctx.deviceStates,
-            ctx.language
+            ctx.language,
+            { protocol: 'tcp', port: '22' }
         );
 
         if (!connectivity.success) {
@@ -593,7 +596,8 @@ function cmdTraceroute(state: any, input: string, ctx: any): any {
             ctx.devices,
             ctx.connections || [],
             ctx.deviceStates,
-            ctx.language
+            ctx.language,
+            { protocol: 'icmp' }
         );
 
         if (connectivity.success) {
@@ -685,7 +689,8 @@ function cmdTracert(state: any, input: string, ctx: any): any {
             ctx.devices,
             ctx.connections || [],
             ctx.deviceStates,
-            ctx.language
+            ctx.language,
+            { protocol: 'icmp' }
         );
 
         if (connectivity.success) {

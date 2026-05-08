@@ -1,6 +1,6 @@
 import { CableInfo, CableType, SwitchState } from '@/lib/network/types';
 
-export type DeviceType = 'pc' | 'iot' | 'switchL2' | 'switchL3' | 'router';
+export type DeviceType = 'pc' | 'iot' | 'switchL2' | 'switchL3' | 'router' | 'firewall';
 export type CanvasPortMode = 'access' | 'trunk' | 'routed' | 'dynamic-auto' | 'dynamic-desirable' | 'dot1q-tunnel';
 export type CanvasPortStatus = 'connected' | 'disconnected' | 'notconnect' | 'blocked' | 'disabled' | 'err-disabled';
 
@@ -67,6 +67,16 @@ export interface NetworkTopologyProps {
   packetPanelZIndex?: number;
 }
 
+export interface FirewallRule {
+  id: string;
+  sourceIp: string;
+  targetIp: string;
+  port: string;
+  protocol: 'tcp' | 'udp' | 'icmp' | 'any';
+  action: 'allow' | 'deny';
+  enabled: boolean;
+}
+
 export interface CanvasDevice {
   id: string;
   type: DeviceType;
@@ -120,9 +130,18 @@ export interface CanvasDevice {
   };
   iot?: {
     sensorType: 'temperature' | 'sound' | 'motion' | 'humidity' | 'light';
+    kind?: 'cooler' | 'lamp' | 'heater' | 'sensor';
     collaborationEnabled?: boolean;
     dataStore?: string;
+    rules?: Array<{
+      id: string;
+      condition: string; // e.g., "temperature > 25"
+      action: string;    // e.g., "ON"
+      enabled: boolean;
+    }>;
+    value?: number | boolean; // Current value/state of the device
   };
+  firewallRules?: FirewallRule[];
 }
 
 export interface CanvasConnection {

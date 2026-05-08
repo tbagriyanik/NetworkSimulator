@@ -451,7 +451,8 @@ export function checkConnectivity(
   devices: CanvasDevice[],
   _connections: CanvasConnection[],
   deviceStates?: Map<string, SwitchState>,
-  language: 'tr' | 'en' = 'tr'
+  language: 'tr' | 'en' = 'tr',
+  options?: { protocol?: 'tcp' | 'udp' | 'icmp' | 'any'; port?: string }
 ): { success: boolean; hops: string[]; hopIds: string[]; targetId?: string; error?: string; portSecurityViolations?: Array<{ deviceId: string; portId: string; action: string; mac: string }> } {
   const safeDeviceStates = ensureDeviceStatesMap(deviceStates);
   const isSwitchDeviceType = (type: DeviceType) => type === 'switchL2' || type === 'switchL3';
@@ -1156,6 +1157,48 @@ export function checkConnectivity(
     }
   }
 
+  // 7. Firewall Logic - Check rules for any firewalls in the path
+  const sourceIpForFirewall = getPrimaryDeviceIp(sourceId, devices, deviceStates);
+  for (const stepDeviceId of path) {
+    const device = devices.find(d => d.id === stepDeviceId);
+    if (device?.type === 'firewall') {
+      const rules = device.firewallRules || [];
+      let allowed = false; // Default: DENY ALL
+
+      // Evaluate rules in order
+      for (const rule of rules) {
+        if (!rule.enabled) continue;
+
+        const sourceMatch = rule.sourceIp === '*' || rule.sourceIp === sourceIpForFirewall;
+        const targetMatch = rule.targetIp === '*' || rule.targetIp === resolvedTargetIp;
+        const protocolMatch = rule.protocol === 'any' || rule.protocol === (options?.protocol || 'icmp');
+        const portMatch = rule.port === '*' || rule.port === (options?.port || '*');
+
+        if (sourceMatch && targetMatch && protocolMatch && portMatch) {
+          if (rule.action === 'allow') {
+            allowed = true;
+          } else {
+            allowed = false;
+          }
+          // In a simple firewall, we might stop at the first match
+          break;
+        }
+      }
+
+      if (!allowed) {
+        return {
+          success: false,
+          hops: hopNames.slice(0, path.indexOf(stepDeviceId) + 1),
+          hopIds: path.slice(0, path.indexOf(stepDeviceId) + 1),
+          targetId: targetDevice.id,
+          error: language === 'tr'
+            ? `Paket firewall (${device.name}) tarafından engellendi (Default Deny).`
+            : `Packet blocked by firewall (${device.name}) (Default Deny).`
+        };
+      }
+    }
+  }
+
   // 3. Layer 3 Logic (Simplified for simulation)
   // For a "kusursuz" (flawless) system, we should check subnets
   // But for now, if physical path exists and IPs are in same subnet or routed, it's a success
@@ -1180,7 +1223,8 @@ export function checkDeviceConnectivity(
   targetId: string,
   devices: CanvasDevice[],
   connections: CanvasConnection[],
-  deviceStates?: Map<string, SwitchState>
+  deviceStates?: Map<string, SwitchState>,
+  options?: { protocol?: 'tcp' | 'udp' | 'icmp' | 'any'; port?: string }
 ): { success: boolean; hops: string[]; hopIds: string[]; targetId?: string; error?: string } {
   const safeDeviceStates = ensureDeviceStatesMap(deviceStates);
   const sourceDevice = devices.find(d => d.id === sourceId);
@@ -1214,7 +1258,7 @@ export function checkDeviceConnectivity(
     return { success: false, hops: [], hopIds: [], error: 'Request timed out.' };
   }
 
-  return checkConnectivity(sourceId, targetIp, devices, connections, deviceStates);
+  return checkConnectivity(sourceId, targetIp, devices, connections, deviceStates, undefined, options);
 }
 
 /**
@@ -1226,7 +1270,8 @@ export function getPingDiagnostics(
   devices: CanvasDevice[],
   connections: CanvasConnection[],
   deviceStates?: Map<string, SwitchState>,
-  language: 'tr' | 'en' = 'tr'
+  language: 'tr' | 'en' = 'tr',
+  options?: { protocol?: 'tcp' | 'udp' | 'icmp' | 'any'; port?: string }
 ): { success: boolean; reasons: string[] } {
   const reasons: string[] = [];
   const sourceDevice = devices.find(d => d.id === sourceId);
@@ -1331,7 +1376,7 @@ export function getPingDiagnostics(
   }
 
   // 7. Check physical connectivity
-  const result = checkConnectivity(sourceId, resolvedTargetIp, devices, connections, deviceStates, language);
+  const result = checkConnectivity(sourceId, resolvedTargetIp, devices, connections, deviceStates, language, options);
   if (!result.success) {
     if (result.error) {
       reasons.push(result.error);

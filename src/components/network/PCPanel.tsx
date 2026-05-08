@@ -450,6 +450,7 @@ export function PCPanel({
   );
 
   const [iotSensorType, setIotSensorType] = useState<'temperature' | 'sound' | 'motion' | 'humidity' | 'light'>('temperature');
+  const [iotKind, setIotKind] = useState<'cooler' | 'lamp' | 'heater' | 'sensor'>('sensor');
   const [iotCollaborationEnabled, setIotCollaborationEnabled] = useState(false);
   const [iotDataStore, setIotDataStore] = useState('');
 
@@ -591,6 +592,7 @@ export function PCPanel({
   useEffect(() => {
     if (!selectedIotDevice) return;
     setIotSensorType(selectedIotDevice.iot?.sensorType || 'temperature');
+    setIotKind(selectedIotDevice.iot?.kind || 'sensor');
     setIotCollaborationEnabled(!!selectedIotDevice.iot?.collaborationEnabled);
     setIotDataStore(selectedIotDevice.iot?.dataStore || '');
   }, [selectedIotDevice]);
@@ -699,6 +701,7 @@ export function PCPanel({
         config: {
           iot: {
             sensorType: iotSensorType,
+            kind: iotKind,
             collaborationEnabled: iotCollaborationEnabled,
             dataStore: iotDataStore,
           }
@@ -726,7 +729,7 @@ export function PCPanel({
       saveIotConfigRef.current(false);
     }, 500);
     return () => clearTimeout(handler);
-  }, [selectedIotDeviceId, iotSensorType, iotCollaborationEnabled, iotDataStore]);
+  }, [selectedIotDeviceId, iotSensorType, iotKind, iotCollaborationEnabled, iotDataStore]);
 
   // Keep syncToGlobal in a ref to avoid circular dependency with topology updates
   const syncToGlobalRef = useRef(syncToGlobal);
@@ -1473,7 +1476,7 @@ export function PCPanel({
   }, [topologyDevices, topologyConnections]);
 
   const canReachTargetIp = useCallback((targetIp: string) => {
-    const result = checkConnectivity(deviceId, targetIp, topologyDevices as any, topologyConnections as any, deviceStates || new Map(), t.language as 'tr' | 'en');
+    const result = checkConnectivity(deviceId, targetIp, topologyDevices as any, topologyConnections as any, deviceStates || new Map(), t.language as 'tr' | 'en', { protocol: 'icmp' });
     return result.success;
   }, [deviceId, topologyDevices, topologyConnections, deviceStates, t.language]);
 
@@ -1851,7 +1854,10 @@ export function PCPanel({
       if (targetDevice && targetDevice.type === 'iot') {
         const isActive = targetDevice.iot?.collaborationEnabled ?? true;
         const isPoweredOff = targetDevice.status === 'offline';
-        const iotDevicePage = generateIotDevicePageContent(targetDevice.id, targetDevice.name || targetDevice.id, language, isActive, isPoweredOff);
+        const kind = targetDevice.iot?.kind || 'sensor';
+        const rules = targetDevice.iot?.rules || [];
+        const sensorType = targetDevice.iot?.sensorType || 'temperature';
+        const iotDevicePage = generateIotDevicePageContent(targetDevice.id, targetDevice.name || targetDevice.id, language, isActive, isPoweredOff, kind, rules, sensorType);
         setHttpAppContent(iotDevicePage);
         setHttpAppTitle(`${targetDevice.name || targetDevice.id} ${language === 'tr' ? 'Yönetimi' : 'Management'}`);
         setHttpAppDeviceId(targetDevice.id);
@@ -1887,6 +1893,23 @@ export function PCPanel({
         addLocalOutput('error', t.dnsGatewayRequired);
         return;
       }
+    }
+
+    // Check firewall for HTTP traffic
+    const connectivityResult = checkConnectivity(deviceId, resolvedTargetIp, topologyDevices as any, topologyConnections as any, deviceStates || new Map(), t.language as 'tr' | 'en', { protocol: 'tcp', port: '80' });
+    if (!connectivityResult.success && connectivityResult.error?.includes('firewall')) {
+      setHttpAppDeviceId(null);
+      setHttpAppTitle('Access Denied');
+      setHttpAppContent(`
+        <main style="padding:32px;font-family:system-ui,-apple-system,Segoe UI,sans-serif;text-align:center;">
+          <div style="font-size:64px;margin-bottom:16px;">🛡️</div>
+          <h1 style="margin:0 0 8px;font-size:24px;color:#dc3545;">${language === 'tr' ? 'Erişim Engellendi' : 'Access Denied'}</h1>
+          <p style="margin:0 0 12px;font-size:16px;color:#666;">${connectivityResult.error}</p>
+          <code style="display:inline-block;padding:6px 10px;border-radius:8px;background:#f8d7da;color:#721c24;font-size:13px;">${displayUrl}</code>
+        </main>
+      `);
+      addLocalOutput('error', connectivityResult.error);
+      return;
     }
 
     const httpServer = findHttpServerByTarget(resolvedTargetIp);
@@ -2278,8 +2301,33 @@ export function PCPanel({
           addLocalOutput(
             'success',
             language === 'tr'
-              ? `IoT cihaz "${targetDevice.name || deviceId}" okuma ${active ? 'aktif edildi.' : 'pasif edildi.'}`
-              : `IoT device "${targetDevice.name || deviceId}" reading ${active ? 'activated.' : 'deactivated.'}`
+              ? `IoT cihaz "${targetDevice.name || deviceId}" durumu ${active ? 'aktif edildi.' : 'pasif edildi.'}`
+              : `IoT device "${targetDevice.name || deviceId}" status ${active ? 'activated.' : 'deactivated.'}`
+          );
+        }
+      }
+
+      // Handle update IoT rules message
+      if (data.type === 'update-iot-rules') {
+        const { deviceId, rules } = data;
+        const targetDevice = topologyDevices.find((d) => d.id === deviceId);
+        if (targetDevice && targetDevice.type === 'iot') {
+          window.dispatchEvent(new CustomEvent('update-topology-device-config', {
+            detail: {
+              deviceId: deviceId,
+              config: {
+                iot: {
+                  ...targetDevice.iot,
+                  rules: rules,
+                },
+              },
+            },
+          }));
+          addLocalOutput(
+            'success',
+            language === 'tr'
+              ? `IoT cihaz "${targetDevice.name || deviceId}" kuralları güncellendi.`
+              : `IoT device "${targetDevice.name || deviceId}" rules updated.`
           );
         }
       }
@@ -3206,7 +3254,7 @@ export function PCPanel({
             return;
           }
 
-          const result = checkConnectivity(deviceId, targetIp, topologyDevices as any, topologyConnections as any, deviceStates || new Map(), t.language as 'tr' | 'en');
+          const result = checkConnectivity(deviceId, targetIp, topologyDevices as any, topologyConnections as any, deviceStates || new Map(), t.language as 'tr' | 'en', { protocol: 'icmp' });
           if (result.success) {
             const pingTargetDisplay = dnsResolved ? `${target} [${targetIp}]` : targetIp;
 
@@ -3237,7 +3285,8 @@ export function PCPanel({
             await addMultilineOutput('output', `Pinging ${pingTargetDisplay} with 32 bytes of data:\nReply from ${targetIp}: bytes=32 time=${formatTime(time1)} TTL=128\nReply from ${targetIp}: bytes=32 time=${formatTime(time2)} TTL=128\nReply from ${targetIp}: bytes=32 time=${formatTime(time3)} TTL=128\nReply from ${targetIp}: bytes=32 time=${formatTime(time4)} TTL=128\n\nPing statistics for ${pingTargetDisplay}:\n    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)`, 100);
           } else {
             const pingTargetDisplay = dnsResolved ? `${target} [${targetIp}]` : targetIp;
-            await addMultilineOutput('output', `Pinging ${pingTargetDisplay} with 32 bytes of data:\nRequest timed out.\nRequest timed out.\nRequest timed out.\nRequest timed out.\n\nPing statistics for ${pingTargetDisplay}:\n    Packets: Sent = 4, Received = 0, Lost = 4 (100% loss)`, 100);
+            const errorMsg = result.error ? `\n${result.error}` : '\nRequest timed out.';
+            await addMultilineOutput('output', `Pinging ${pingTargetDisplay} with 32 bytes of data:${errorMsg}${errorMsg}${errorMsg}${errorMsg}\n\nPing statistics for ${pingTargetDisplay}:\n    Packets: Sent = 4, Received = 0, Lost = 4 (100% loss)`, 100);
           }
         }
       } else if (cmd === 'nslookup') {
@@ -3278,6 +3327,8 @@ export function PCPanel({
         }
       } else if (cmd === 'telnet' || cmd === 'ssh') {
         const isSsh = cmd === 'ssh';
+        const protocol = isSsh ? 'tcp' : 'tcp'; // both use TCP
+        const defaultPort = isSsh ? '22' : '23';
         const targetSpec = args[0];
         const extraPort = args[1];
 
@@ -3342,7 +3393,7 @@ export function PCPanel({
         }
 
         // Check connectivity
-        const result = checkConnectivity(deviceId, targetIp, topologyDevices as any, topologyConnections as any, deviceStates || new Map(), t.language as 'tr' | 'en');
+        const result = checkConnectivity(deviceId, targetIp, topologyDevices as any, topologyConnections as any, deviceStates || new Map(), t.language as 'tr' | 'en', { protocol: 'tcp', port });
 
         if (result.success && result.targetId) {
           // Find target device to see if it's a switch or router
@@ -3414,7 +3465,7 @@ export function PCPanel({
             return;
           }
           addLocalOutput('output', `Tracing route to ${target} over a maximum of 30 hops:\n`);
-          const result = checkConnectivity(deviceId, resolvedTarget, topologyDevices as any, topologyConnections as any, deviceStates || new Map(), t.language as 'tr' | 'en');
+          const result = checkConnectivity(deviceId, resolvedTarget, topologyDevices as any, topologyConnections as any, deviceStates || new Map(), t.language as 'tr' | 'en', { protocol: 'tcp', port });
 
           if (result.hops && result.hops.length > 0) {
             let hopOutput = '';
@@ -4850,18 +4901,33 @@ export function PCPanel({
                                   />
                                 </div>
 
-                                <div className="space-y-2">
-                                  <label className="text-xs font-bold text-slate-500">{language === 'tr' ? 'Sensör Tipi' : 'Sensor Type'}</label>
-                                  <Select value={iotSensorType} onValueChange={(v) => setIotSensorType(v as any)}>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="temperature">{language === 'tr' ? 'Isı' : 'Temperature'}</SelectItem>
-                                      <SelectItem value="sound">{language === 'tr' ? 'Ses' : 'Sound'}</SelectItem>
-                                      <SelectItem value="motion">{language === 'tr' ? 'Hareket' : 'Motion'}</SelectItem>
-                                      <SelectItem value="humidity">{language === 'tr' ? 'Nem' : 'Humidity'}</SelectItem>
-                                      <SelectItem value="light">{language === 'tr' ? 'Işık' : 'Light'}</SelectItem>
-                                    </SelectContent>
-                                  </Select>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                  <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-500">{language === 'tr' ? 'Cihaz Türü' : 'Device Kind'}</label>
+                                    <Select value={iotKind} onValueChange={(v) => setIotKind(v as any)}>
+                                      <SelectTrigger><SelectValue /></SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="sensor">{language === 'tr' ? 'Sensör' : 'Sensor'}</SelectItem>
+                                        <SelectItem value="cooler">{language === 'tr' ? 'Soğutucu' : 'Cooler'}</SelectItem>
+                                        <SelectItem value="lamp">{language === 'tr' ? 'Lamba' : 'Lamp'}</SelectItem>
+                                        <SelectItem value="heater">{language === 'tr' ? 'Isıtıcı' : 'Heater'}</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-500">{language === 'tr' ? 'Sensör Tipi' : 'Sensor Type'}</label>
+                                    <Select value={iotSensorType} onValueChange={(v) => setIotSensorType(v as any)}>
+                                      <SelectTrigger><SelectValue /></SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="temperature">{language === 'tr' ? 'Isı' : 'Temperature'}</SelectItem>
+                                        <SelectItem value="sound">{language === 'tr' ? 'Ses' : 'Sound'}</SelectItem>
+                                        <SelectItem value="motion">{language === 'tr' ? 'Hareket' : 'Motion'}</SelectItem>
+                                        <SelectItem value="humidity">{language === 'tr' ? 'Nem' : 'Humidity'}</SelectItem>
+                                        <SelectItem value="light">{language === 'tr' ? 'Işık' : 'Light'}</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
                                 </div>
 
 
