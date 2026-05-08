@@ -1,5 +1,6 @@
 
 import { CanvasDevice } from '@/components/network/networkTopology.types';
+import { sanitizeHTML } from '@/lib/security/sanitizer';
 
 export const generateIotWebPanelContent = (
   iotDevices: CanvasDevice[],
@@ -65,33 +66,20 @@ export const generateIotWebPanelContent = (
             : (isActive ? (isTurkish ? 'Aktif' : 'Active') : (isTurkish ? 'Pasif' : 'Inactive'));
         const statusClass = isPoweredOff ? 'offline' : isConnectedToNetwork ? (isActive ? 'online' : 'online-inactive') : (isActive ? 'active' : 'inactive');
 
-        const kindLabels: Record<string, string> = isTurkish ? {
-          cooler: 'Soğutucu',
-          lamp: 'Lamba',
-          heater: 'Isıtıcı',
-          sensor: 'Sensör'
-        } : {
-          cooler: 'Cooler',
-          lamp: 'Lamp',
-          heater: 'Heater',
-          sensor: 'Sensor'
-        };
-        const kindLabel = kindLabels[device.iot?.kind || 'sensor'] || (isTurkish ? 'Cihaz' : 'Device');
+        const safeName = sanitizeHTML(device.name || device.id);
+        const safeId = sanitizeHTML(device.id);
 
         return `
       <div class="iot-device-card ${cardClass}">
         <div class="device-info">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span class="device-name">${device.name || device.id}</span>
-            <span style="font-size: 10px; padding: 2px 6px; background: rgba(0,0,0,0.05); border-radius: 4px; color: #666;">${kindLabel}</span>
-          </div>
+          <span class="device-name">${safeName}</span>
           <div class="device-details">
             <span class="device-ip">${isTurkish ? 'IP' : 'IP'}: ${device.ip || '-'}</span>
             <span class="device-mac">${isTurkish ? 'MAC' : 'MAC'}: ${device.macAddress || '-'}</span>
           </div>
           <div class="device-status ${statusClass}">${statusText}</div>
         </div>
-        <button onclick="window.parent.postMessage({ type: 'open-iot-device', deviceId: '${device.id}' }, '*')" class="connect-button">
+        <button onclick="window.parent.postMessage({ type: 'open-iot-device', deviceId: '${safeId}' }, '*')" class="connect-button">
           ${isTurkish ? 'Bağlan' : 'Connect'}
         </button>
       </div>
@@ -590,22 +578,8 @@ export const generateIotDevicePageContent = (
   sensorType: string = 'temperature'
 ): string => {
   const isTurkish = language === 'tr';
-  const rulesHtml = rules && rules.length > 0
-    ? rules.map(rule => `
-      <div class="rule-item">
-        <span>${rule.condition} &rarr; ${rule.action}</span>
-        <button onclick="deleteRule('${rule.id}')" class="delete-rule-btn">&times;</button>
-      </div>
-    `).join('')
-    : `<p style="font-size: 12px; color: #888; font-style: italic;">${isTurkish ? 'Kural tanımlanmamış' : 'No rules defined'}</p>`;
-
-  const kindIcons: Record<string, string> = {
-    cooler: '❄️',
-    lamp: '💡',
-    heater: '🔥',
-    sensor: '📊'
-  };
-  const icon = kindIcons[kind] || '📱';
+  const safeName = sanitizeHTML(deviceName);
+  const safeId = sanitizeHTML(deviceId);
 
   return `
     <!DOCTYPE html>
@@ -613,7 +587,7 @@ export const generateIotDevicePageContent = (
       <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>${isTurkish ? 'IoT Cihaz Yönetimi' : 'IoT Device Management'}: ${deviceName}</title>
+        <title>${isTurkish ? 'IoT Cihaz Yönetimi' : 'IoT Device Management'}: ${safeName}</title>
         <style>
           body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -818,12 +792,11 @@ export const generateIotDevicePageContent = (
       </head>
       <body>
         <div class="device-panel">
-          <div class="device-visual" id="deviceVisual">${icon}</div>
-          <h1>${deviceName} ${isTurkish ? 'Yönetimi' : 'Management'}</h1>
+          <h1>${safeName} ${isTurkish ? 'Yönetimi' : 'Management'}</h1>
           
           <div class="device-info">
-            <p><strong>${isTurkish ? 'Cihaz ID' : 'Device ID'}:</strong> ${deviceId}</p>
-            <p><strong>${isTurkish ? 'Cihaz Tipi' : 'Device Kind'}:</strong> ${kind.charAt(0).toUpperCase() + kind.slice(1)}</p>
+            <p><strong>${isTurkish ? 'Cihaz ID' : 'Device ID'}:</strong> ${safeId}</p>
+            <p><strong>${isTurkish ? 'Cihaz Adı' : 'Device Name'}:</strong> ${safeName}</p>
             <p><strong>${isTurkish ? 'Güç Durumu' : 'Power Status'}:</strong> ${isPoweredOff ? (isTurkish ? 'Kapalı' : 'Off') : (isTurkish ? 'Açık' : 'On')}</p>
             <p><strong>${isTurkish ? 'Durum' : 'Status'}:</strong> <span id="statusText" class="${isActive ? 'status-active' : 'status-inactive'}">${isActive ? (isTurkish ? 'Aktif' : 'Active') : (isTurkish ? 'Pasif' : 'Inactive')}</span></p>
           </div>
@@ -897,46 +870,18 @@ export const generateIotDevicePageContent = (
             const statusMessage = document.getElementById('statusMessage');
             const deviceVisual = document.getElementById('deviceVisual');
 
-            const active = toggle.checked;
-            statusText.textContent = active ? '${isTurkish ? 'Aktif' : 'Active'}' : '${isTurkish ? 'Pasif' : 'Inactive'}';
-            statusText.className = active ? 'status-text status-active' : 'status-text status-inactive';
-            statusMessage.textContent = active ? '${isTurkish ? 'Cihaz aktif' : 'Device is active'}' : '${isTurkish ? 'Cihaz pasif' : 'Device is inactive'}';
-            statusMessage.className = active ? 'status-text status-active' : 'status-text status-inactive';
-            deviceVisual.style.filter = active ? 'grayscale(0)' : 'grayscale(1)';
-
-            window.parent.postMessage({ type: 'toggle-iot-device', deviceId, active }, '*');
-          }
-
-          function addRule() {
-            const sensor = document.getElementById('sensorSelect').value;
-            const operator = document.getElementById('operatorSelect').value;
-            const threshold = document.getElementById('thresholdInput').value;
-            const action = document.getElementById('actionSelect').value;
-
-            const condition = sensor + ' ' + operator + ' ' + threshold;
-            const newRule = {
-              id: Math.random().toString(36).substr(2, 9),
-              condition,
-              action,
-              enabled: true
-            };
-
-            rules.push(newRule);
-            updateRuleList();
-            saveRules();
-          }
-
-          function deleteRule(id) {
-            rules = rules.filter(r => r.id !== id);
-            updateRuleList();
-            saveRules();
-          }
-
-          function updateRuleList() {
-            const list = document.getElementById('ruleList');
-            if (rules.length === 0) {
-              list.innerHTML = '<p style="font-size: 12px; color: #888; font-style: italic;">${isTurkish ? 'Kural tanımlanmamış' : 'No rules defined'}</p>';
-              return;
+            if (toggle.checked) {
+              statusText.textContent = '${isTurkish ? 'Aktif' : 'Active'}';
+              statusText.className = 'status-text status-active';
+              statusMessage.textContent = '${isTurkish ? 'Cihaz aktif' : 'Device is active'}';
+              statusMessage.className = 'status-text status-active';
+              window.parent.postMessage({ type: 'toggle-iot-device', deviceId: '${safeId}', active: true }, '*');
+            } else {
+              statusText.textContent = '${isTurkish ? 'Pasif' : 'Inactive'}';
+              statusText.className = 'status-text status-inactive';
+              statusMessage.textContent = '${isTurkish ? 'Cihaz pasif' : 'Device is inactive'}';
+              statusMessage.className = 'status-text status-inactive';
+              window.parent.postMessage({ type: 'toggle-iot-device', deviceId: '${safeId}', active: false }, '*');
             }
             list.innerHTML = rules.map(rule => \`
               <div class="rule-item">

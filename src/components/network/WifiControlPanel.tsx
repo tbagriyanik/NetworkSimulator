@@ -2,6 +2,7 @@
 
 import { CanvasDevice } from './networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
+import { sanitizeHTML } from '@/lib/security/sanitizer';
 
 export interface WifiAdminConfig {
   enabled: boolean;
@@ -52,6 +53,14 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig): string {
   const { wifi, deviceName, deviceIp, deviceId, connectedIotDevices = [], availableIotDevices = [], username, password, language = 'en' } = config;
   const isTurkish = language === 'tr';
 
+  const safeDeviceName = sanitizeHTML(deviceName);
+  const safeDeviceIp = sanitizeHTML(deviceIp);
+  const safeDeviceId = sanitizeHTML(deviceId || '');
+  const safeUsername = sanitizeHTML(username || '');
+  const safePassword = sanitizeHTML(password || '');
+  const safeSsid = sanitizeHTML(wifi.ssid || '');
+  const safeWifiPassword = sanitizeHTML(wifi.password || '');
+
   const securityOptions = [
     { value: 'open', label: isTurkish ? 'Açık (Güvenlik Yok)' : 'Open (No Security)' },
     { value: 'wpa', label: isTurkish ? 'WPA Kişisel' : 'WPA Personal' },
@@ -85,7 +94,7 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig): string {
     <div class="form-group">
       <label for="wifi-password">${isTurkish ? 'WiFi Parolası / Güvenlik Anahtarı' : 'WiFi Password / Security Key'}</label>
       <div style="position:relative;display:flex;align-items:center;">
-        <input type="password" id="wifi-password" name="password" value="${wifi.password || ''}" placeholder="${isTurkish ? 'Parola girin (en az 8 karakter)' : 'Enter password (min 8 characters)'}" minlength="8" aria-describedby="wifi-password-hint" style="padding-right:2.2rem;width:100%;">
+        <input type="password" id="wifi-password" name="password" value="${safeWifiPassword}" placeholder="${isTurkish ? 'Parola girin (en az 8 karakter)' : 'Enter password (min 8 characters)'}" minlength="8" aria-describedby="wifi-password-hint" style="padding-right:2.2rem;width:100%;">
         <button type="button" onclick="(function(btn){var inp=document.getElementById('wifi-password');if(inp.type==='password'){inp.type='text';btn.innerHTML='&#128065;&#65039;';}else{inp.type='password';btn.innerHTML='&#128065;';}})(this)" tabindex="-1" style="position:absolute;right:0.5rem;background:none;border:none;cursor:pointer;font-size:1rem;color:#888;padding:0;line-height:1;" title="${isTurkish ? 'Parolayı Göster/Gizle' : 'Show/Hide password'}">&#128065;</button>
       </div>
       <span class="hint" id="wifi-password-hint">${isTurkish ? 'En az 8 karakter gereklidir' : 'Minimum 8 characters required'}</span>
@@ -114,7 +123,7 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig): string {
     <div id="login-form" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px;">
       <div style="background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); padding: 40px; width: 100%; max-width: 400px;">
         <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="font-size: 24px; font-weight: 600; color: #333; margin-bottom: 10px;">${deviceName}</h1>
+          <h1 style="font-size: 24px; font-weight: 600; color: #333; margin-bottom: 10px;">${safeDeviceName}</h1>
           <p style="color: #666; font-size: 14px;">${isTurkish ? 'IoT Cihaz Yönetimi' : 'IoT Device Management'}</p>
         </div>
         <form id="auth-form" onsubmit="handleLogin(event)">
@@ -149,7 +158,7 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${deviceName} - ${isTurkish ? 'Kablosuz Ayarları' : 'Wireless Settings'}</title>
+  <title>${safeDeviceName} - ${isTurkish ? 'Kablosuz Ayarları' : 'Wireless Settings'}</title>
   <style>
     * {
       margin: 0;
@@ -519,10 +528,10 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig): string {
   ${mainContent}
   <div class="container">
     <div class="header">
-      <h1>🔧 ${deviceName}</h1>
+      <h1>🔧 ${safeDeviceName}</h1>
       <div class="subtitle">${isTurkish ? 'Kablosuz Ağ Yönetimi' : 'Wireless Network Administration'}</div>
       <div class="device-info">
-        <span>📍 IP: ${deviceIp}</span>
+        <span>📍 IP: ${safeDeviceIp}</span>
         <span>📡 WLAN Interface: wlan0</span>
       </div>
     </div>
@@ -560,7 +569,7 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig): string {
       <form id="wifi-form">
         <div class="form-group">
           <label for="wifi-ssid">${isTurkish ? 'Ağ Adı (SSID)' : 'Network Name (SSID)'}</label>
-          <input type="text" id="wifi-ssid" name="ssid" value="${wifi.ssid || ''}" placeholder="${isTurkish ? 'WiFi ağ adınızı girin' : 'Enter your WiFi network name'}" maxlength="32" aria-describedby="wifi-ssid-hint">
+          <input type="text" id="wifi-ssid" name="ssid" value="${safeSsid}" placeholder="${isTurkish ? 'WiFi ağ adınızı girin' : 'Enter your WiFi network name'}" maxlength="32" aria-describedby="wifi-ssid-hint">
           <span class="hint" id="wifi-ssid-hint">${isTurkish ? 'Bu ad kablosuz istemciler tarafından görülecektir (gizlenmediği sürece)' : 'This name will be visible to wireless clients (unless hidden)'}</span>
         </div>
         
@@ -619,17 +628,21 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig): string {
         ${connectedIotDevices.length > 0 ? `
         <div class="iot-device-list" style="margin-bottom:25px;">
           <p style="color:#6c757d;margin-bottom:15px;font-size:13px;">${isTurkish ? 'Bağlı IoT cihazlarını yönetin:' : 'Manage connected IoT devices:'}</p>
-          ${connectedIotDevices.map(device => `
-            <div class="iot-device-card connected" data-device-id="${device.id}" style="display:flex;align-items:center;justify-content:space-between;padding:15px;background:#f8f9fa;border-radius:10px;margin-bottom:10px;border:1px solid #e9ecef;cursor:pointer;" onclick="focusDeviceInTopology('${device.id}')">
+          ${connectedIotDevices.map(device => {
+            const safeIotName = sanitizeHTML(device.name);
+            const safeIotId = sanitizeHTML(device.id);
+            const safeIotIp = sanitizeHTML(device.ip || '');
+            return `
+            <div class="iot-device-card connected" data-device-id="${safeIotId}" style="display:flex;align-items:center;justify-content:space-between;padding:15px;background:#f8f9fa;border-radius:10px;margin-bottom:10px;border:1px solid #e9ecef;cursor:pointer;" onclick="focusDeviceInTopology('${safeIotId}')">
               <div style="display:flex;align-items:center;gap:12px;">               
                 <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg, ${device.isWired ? '#22c55e 0%, #16a34a 100%' : '#16cbf9 0%, #0ea5e9 100%'});display:flex;align-items:center;justify-content:center;color:white;font-size:18px;">
                   ${device.isWired ? '🔌' : '🛜'}
                 </div>
                 <div>
-                  <div style="font-weight:600;color:#333;">${device.name}</div>
+                  <div style="font-weight:600;color:#333;">${safeIotName}</div>
                   <div style="font-size:12px;color:#6c757d;">
                     ${isTurkish ? 'Sensör' : 'Sensor'}: ${device.sensorType}
-                    ${device.ip ? `<span style="margin-left:8px;padding:2px 6px;background:#e0f2fe;border-radius:4px;color:#0369a1;font-family:monospace;">${device.ip}</span>` : ''}
+                    ${device.ip ? `<span style="margin-left:8px;padding:2px 6px;background:#e0f2fe;border-radius:4px;color:#0369a1;font-family:monospace;">${safeIotIp}</span>` : ''}
                   </div>
                 </div>
               </div>
@@ -637,15 +650,15 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig): string {
                 <span style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;background:${device.connected ? '#dcfce7' : '#fef3c7'};color:${device.connected ? '#166534' : '#92400e'};">
                   ${device.connected ? (isTurkish ? '● Bağlı' : '● Connected') : (isTurkish ? '○ Bağlı Değil' : '○ Disconnected')}
                 </span>
-                <button type="button" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:none;border-radius:6px;background:#2563eb;color:white;cursor:pointer;transition:all 0.2s;" onclick="event.stopPropagation();renewIotDevice('${device.id}')" title="${isTurkish ? 'IP Yenile' : 'IP Renew'}" aria-label="${isTurkish ? 'IP Yenile' : 'IP Renew'}">
+                <button type="button" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:none;border-radius:6px;background:#2563eb;color:white;cursor:pointer;transition:all 0.2s;" onclick="event.stopPropagation();renewIotDevice('${safeIotId}')" title="${isTurkish ? 'IP Yenile' : 'IP Renew'}" aria-label="${isTurkish ? 'IP Yenile' : 'IP Renew'}">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.5 6.36L3 21"></path><path d="M3 12a9 9 0 0 1 15.5-6.36L21 3"></path><path d="M3 21v-6h6"></path><path d="M21 3v6h-6"></path></svg>
                 </button>
-                <button type="button" style="display:flex; align-items:center; justify-content:center; width:32px; height:32px; padding:0; border:none; border-radius:6px; background:#ef4444; color:white; cursor:pointer; transition:all 0.2s;" onclick="event.stopPropagation();disconnectIotDevice('${device.id}')" title="${isTurkish ? 'Bağlantıyı Kes' : 'Disconnect'}" aria-label="${isTurkish ? 'Bağlantıyı Kes' : 'Disconnect'}">
+                <button type="button" style="display:flex; align-items:center; justify-content:center; width:32px; height:32px; padding:0; border:none; border-radius:6px; background:#ef4444; color:white; cursor:pointer; transition:all 0.2s;" onclick="event.stopPropagation();disconnectIotDevice('${safeIotId}')" title="${isTurkish ? 'Bağlantıyı Kes' : 'Disconnect'}" aria-label="${isTurkish ? 'Bağlantıyı Kes' : 'Disconnect'}">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                 </button>               
               </div>
             </div>
-          `).join('')}
+          `;}).join('')}
         </div>
         ` : `
         <div style="text-align:center;padding:30px;color:#6c757d;">
@@ -660,40 +673,47 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig): string {
         ${availableIotDevices.filter(d => !d.currentSsid).length > 0 ? `
         <div class="available-iot-list" style="margin-bottom:25px;">
           <p style="color:#6c757d;margin-bottom:15px;font-size:13px;"><strong>${isTurkish ? 'Bağlı Olmayan Cihazlar:' : 'Unconnected Devices:'}</strong> ${isTurkish ? 'Bu ağa bağlanmak için seçin:' : 'Select to connect to this network:'}</p>
-          ${availableIotDevices.filter(d => !d.currentSsid).map(device => `
-            <div class="iot-device-card available" data-device-id="${device.id}" style="display:flex;align-items:center;justify-content:space-between;padding:15px;background:#f8f9fa;border-radius:10px;margin-bottom:10px;border:2px solid #e9ecef;cursor:pointer;transition:all 0.3s;" onclick="event.stopPropagation(); focusDeviceInTopology('${device.id}'); toggleIotDeviceSelection('${device.id}')">
+          ${availableIotDevices.filter(d => !d.currentSsid).map(device => {
+            const safeIotName = sanitizeHTML(device.name);
+            const safeIotId = sanitizeHTML(device.id);
+            return `
+            <div class="iot-device-card available" data-device-id="${safeIotId}" style="display:flex;align-items:center;justify-content:space-between;padding:15px;background:#f8f9fa;border-radius:10px;margin-bottom:10px;border:2px solid #e9ecef;cursor:pointer;transition:all 0.3s;" onclick="event.stopPropagation(); focusDeviceInTopology('${safeIotId}'); toggleIotDeviceSelection('${safeIotId}')">
               <div style="display:flex;align-items:center;gap:12px;">
-                <input type="checkbox" class="iot-checkbox" data-device-id="${device.id}" style="width:20px;height:20px;cursor:pointer;" onclick="event.stopPropagation(); focusDeviceInTopology('${device.id}'); toggleIotDeviceSelection('${device.id}')">
+                <input type="checkbox" class="iot-checkbox" data-device-id="${safeIotId}" style="width:20px;height:20px;cursor:pointer;" onclick="event.stopPropagation(); focusDeviceInTopology('${safeIotId}'); toggleIotDeviceSelection('${safeIotId}')">
                 <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);display:flex;align-items:center;justify-content:center;color:white;font-size:18px;">
                   🛜
                 </div>
                 <div>
-                  <div style="font-weight:600;color:#333;">${device.name}</div>
+                  <div style="font-weight:600;color:#333;">${safeIotName}</div>
                   <div style="font-size:12px;color:#6c757d;">${isTurkish ? 'Sensör' : 'Sensor'}: ${device.sensorType} • <strong>${isTurkish ? 'Bağlı Değil' : 'Unconnected'}</strong></div>
                 </div>
               </div>
             </div>
-          `).join('')}
+          `;}).join('')}
         </div>
         ` : ''}
         
         ${availableIotDevices.filter(d => d.currentSsid && d.currentSsid !== '${wifi.ssid}').length > 0 ? `
         <div class="available-iot-list" style="margin-bottom:25px;">
           <p style="color:#6c757d;margin-bottom:15px;font-size:13px;"><strong>${isTurkish ? 'Diğer Ağlarda:' : 'On Other Networks:'}</strong> ${isTurkish ? 'Bu ağa geçmek için seçin:' : 'Select to switch to this network:'}</p>
-          ${availableIotDevices.filter(d => d.currentSsid && d.currentSsid !== '${wifi.ssid}').map(device => `
-            <div class="iot-device-card available" data-device-id="${device.id}" style="display:flex;align-items:center;justify-content:space-between;padding:15px;background:#f8f9fa;border-radius:10px;margin-bottom:10px;border:2px solid #e9ecef;cursor:pointer;transition:all 0.3s;" onclick="event.stopPropagation(); focusDeviceInTopology('${device.id}'); toggleIotDeviceSelection('${device.id}')">
+          ${availableIotDevices.filter(d => d.currentSsid && d.currentSsid !== wifi.ssid).map(device => {
+            const safeIotName = sanitizeHTML(device.name);
+            const safeIotId = sanitizeHTML(device.id);
+            const safeCurrentSsid = sanitizeHTML(device.currentSsid || '');
+            return `
+            <div class="iot-device-card available" data-device-id="${safeIotId}" style="display:flex;align-items:center;justify-content:space-between;padding:15px;background:#f8f9fa;border-radius:10px;margin-bottom:10px;border:2px solid #e9ecef;cursor:pointer;transition:all 0.3s;" onclick="event.stopPropagation(); focusDeviceInTopology('${safeIotId}'); toggleIotDeviceSelection('${safeIotId}')">
               <div style="display:flex;align-items:center;gap:12px;">
-                <input type="checkbox" class="iot-checkbox" data-device-id="${device.id}" style="width:20px;height:20px;cursor:pointer;" onclick="event.stopPropagation(); focusDeviceInTopology('${device.id}'); toggleIotDeviceSelection('${device.id}')">
+                <input type="checkbox" class="iot-checkbox" data-device-id="${safeIotId}" style="width:20px;height:20px;cursor:pointer;" onclick="event.stopPropagation(); focusDeviceInTopology('${safeIotId}'); toggleIotDeviceSelection('${safeIotId}')">
                 <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg, #f59e0b 0%, #d97706 100%);display:flex;align-items:center;justify-content:center;color:white;font-size:18px;">
                   🛜
                 </div>
                 <div>
-                  <div style="font-weight:600;color:#333;">${device.name}</div>
-                  <div style="font-size:12px;color:#6c757d;">${isTurkish ? 'Sensör' : 'Sensor'}: ${device.sensorType} • ${isTurkish ? 'Ağ' : 'On'}: ${device.currentSsid}</div>
+                  <div style="font-weight:600;color:#333;">${safeIotName}</div>
+                  <div style="font-size:12px;color:#6c757d;">${isTurkish ? 'Sensör' : 'Sensor'}: ${device.sensorType} • ${isTurkish ? 'Ağ' : 'On'}: ${safeCurrentSsid}</div>
                 </div>
               </div>
             </div>
-          `).join('')}
+          `;}).join('')}
         </div>
         ` : ''}
         
@@ -737,7 +757,7 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig): string {
         <div style="background:#f8f9fa;padding:20px;border-radius:10px;">
           <h3 style="margin-bottom:15px;font-size:16px;color:#333;">${isTurkish ? 'Ağ Bilgisi' : 'Network Information'}</h3>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
-            <div><strong>SSID:</strong> ${wifi.ssid || (isTurkish ? 'Yapılandırılmadı' : 'Not configured')}</div>
+            <div><strong>SSID:</strong> ${safeSsid || (isTurkish ? 'Yapılandırılmadı' : 'Not configured')}</div>
             <div><strong>${isTurkish ? 'Güvenlik' : 'Security'}:</strong> ${wifi.security.toUpperCase()}</div>
             <div><strong>${isTurkish ? 'Kanal' : 'Channel'}:</strong> ${wifi.channel}</div>
             <div><strong>${isTurkish ? 'Mod' : 'Mode'}:</strong> ${wifi.mode.toUpperCase()}</div>
@@ -756,7 +776,7 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig): string {
       </div>
     
     <div class="footer">
-      © Network Simulator Router Administration | Model: ${deviceName} | Firmware: v1.0.0
+      © Network Simulator Router Administration | Model: ${safeDeviceName} | Firmware: v1.0.0
     </div>
   </div>
   
@@ -811,7 +831,7 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig): string {
       try {
         window.parent.postMessage({
           type: 'router-admin-save-wifi',
-          deviceId: '${deviceId || ''}',
+          deviceId: '${safeDeviceId}',
           payload: {
             enabled,
             ssid,
@@ -981,9 +1001,9 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig): string {
               deviceId: deviceId,
               payload: {
                 iotDeviceId: deviceId,
-                ssid: '${wifi.ssid || ''}',
+                ssid: '${safeSsid}',
                 security: '${wifi.security}',
-                password: '${wifi.password || ''}',
+                password: '${safeWifiPassword}',
                 channel: '${wifi.channel}'
               }
             }, '*');
@@ -1012,8 +1032,8 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig): string {
       event.preventDefault();
       const usernameInput = document.getElementById('login-username').value;
       const passwordInput = document.getElementById('login-password').value;
-      const expectedUsername = '${username || ''}';
-      const expectedPassword = '${password || ''}';
+      const expectedUsername = '${safeUsername}';
+      const expectedPassword = '${safePassword}';
 
       if (usernameInput === expectedUsername && passwordInput === expectedPassword) {
         document.getElementById('login-form').style.display = 'none';

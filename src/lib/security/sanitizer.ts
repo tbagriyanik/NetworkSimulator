@@ -3,9 +3,13 @@
  */
 
 export function sanitizeHTML(input: string): string {
-    const div = document.createElement('div');
-    div.textContent = input;
-    return div.innerHTML;
+    if (!input) return '';
+    return input
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
 
 /**
