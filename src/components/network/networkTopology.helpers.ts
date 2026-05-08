@@ -4,11 +4,13 @@ export const DEVICE_DIMENSIONS = {
   iot: { width: 90, height: 99 },
   router: { width: 90, height: 80 },
   switch: { width: 130, height: 80 },
+  firewall: { width: 90, height: 80 },
 } as const;
 
 export const getDeviceDimensions = (type: string) => {
   if (type === 'pc' || type === 'iot') return DEVICE_DIMENSIONS.pc;
   if (type === 'router') return DEVICE_DIMENSIONS.router;
+  if (type === 'firewall') return DEVICE_DIMENSIONS.firewall;
   return DEVICE_DIMENSIONS.switch;
 };
 

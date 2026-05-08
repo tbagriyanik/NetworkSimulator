@@ -573,6 +573,9 @@ export const generateIotDevicePageContent = (
   language: string,
   isActive: boolean = true,
   isPoweredOff: boolean = false,
+  kind: string = 'sensor',
+  rules: any[] = [],
+  sensorType: string = 'temperature'
 ): string => {
   const isTurkish = language === 'tr';
   const safeName = sanitizeHTML(deviceName);
@@ -717,6 +720,74 @@ export const generateIotDevicePageContent = (
           .back-button:hover {
             background-color: #5a6268;
           }
+          .programming-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: left;
+          }
+          .programming-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          }
+          .rule-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+          }
+          .rule-form select, .rule-form input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+          }
+          .add-rule-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+          }
+          .rule-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+          }
+          .rule-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            border: 1px solid #eee;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+          }
+          .delete-rule-btn {
+            background: none;
+            border: none;
+            color: #dc3545;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0 5px;
+          }
+          .device-visual {
+            font-size: 48px;
+            margin-bottom: 15px;
+            filter: grayscale(${isActive ? 0 : 1});
+            transition: all 0.3s ease;
+          }
         </style>
       </head>
       <body>
@@ -747,22 +818,57 @@ export const generateIotDevicePageContent = (
             </div>
           </div>
 
-          <button type="button" class="back-button" onclick="goBack()">
+          <div class="programming-section ${isPoweredOff ? 'toggle-disabled' : ''}">
+            <div class="programming-title">
+              <span>⚙️ ${isTurkish ? 'Basit Programlama' : 'Simple Programming'}</span>
+            </div>
+
+            <div class="rule-form">
+              <div style="font-size: 12px; margin-bottom: 5px; font-weight: 500;">${isTurkish ? 'Yeni Kural Ekle:' : 'Add New Rule:'}</div>
+              <div style="display: flex; align-items: center; gap: 5px;">
+                <span style="font-size: 12px;">IF</span>
+                <select id="sensorSelect">
+                  <option value="${sensorType}">${sensorType}</option>
+                </select>
+                <select id="operatorSelect">
+                  <option value=">">&gt;</option>
+                  <option value="<">&lt;</option>
+                  <option value="==">=</option>
+                </select>
+                <input type="number" id="thresholdInput" style="width: 50px;" value="25">
+              </div>
+              <div style="display: flex; align-items: center; gap: 5px;">
+                <span style="font-size: 12px;">THEN</span>
+                <select id="actionSelect">
+                  <option value="ON">${isTurkish ? 'AÇ' : 'TURN ON'}</option>
+                  <option value="OFF">${isTurkish ? 'KAPAT' : 'TURN OFF'}</option>
+                </select>
+                <button class="add-rule-btn" onclick="addRule()">${isTurkish ? 'Ekle' : 'Add'}</button>
+              </div>
+            </div>
+
+            <div class="rule-list" id="ruleList">
+              ${rulesHtml}
+            </div>
+          </div>
+
+          <button type="button" class="back-button" onclick="goBack()" style="margin-top: 20px;">
             ${isTurkish ? 'Listeye Dön' : 'Back to List'}
           </button>
         </div>
 
         <script>
           const isPoweredOff = ${isPoweredOff};
+          const deviceId = '${deviceId}';
+          let rules = ${JSON.stringify(rules || [])};
+
           function toggleDevice() {
-            // Prevent toggling if device is powered off
-            if (isPoweredOff) {
-              return;
-            }
+            if (isPoweredOff) return;
 
             const toggle = document.getElementById('deviceToggle');
             const statusText = document.getElementById('statusText');
             const statusMessage = document.getElementById('statusMessage');
+            const deviceVisual = document.getElementById('deviceVisual');
 
             if (toggle.checked) {
               statusText.textContent = '${isTurkish ? 'Aktif' : 'Active'}';
@@ -777,6 +883,16 @@ export const generateIotDevicePageContent = (
               statusMessage.className = 'status-text status-inactive';
               window.parent.postMessage({ type: 'toggle-iot-device', deviceId: '${safeId}', active: false }, '*');
             }
+            list.innerHTML = rules.map(rule => \`
+              <div class="rule-item">
+                <span>\${rule.condition} &rarr; \${rule.action}</span>
+                <button onclick="deleteRule('\${rule.id}')" class="delete-rule-btn">&times;</button>
+              </div>
+            \`).join('');
+          }
+
+          function saveRules() {
+            window.parent.postMessage({ type: 'update-iot-rules', deviceId, rules }, '*');
           }
 
           function goBack() {

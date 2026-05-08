@@ -6,7 +6,7 @@ export interface ModalSize { width: number; height: number }
 interface DragState {
     active: boolean;
     type: 'drag' | 'resize';
-    modal: 'tasks' | 'cli' | 'pc';
+    modal: 'tasks' | 'cli' | 'pc' | 'firewall';
     direction?: string;
     startX: number;
     startY: number;
@@ -20,9 +20,10 @@ const STORAGE_KEYS = {
     tasks: { position: 'tasks-modal-position', size: 'tasks-modal-size' },
     cli: { position: 'cli-modal-position', size: 'cli-modal-size' },
     pc: { position: 'pc-modal-position', size: 'pc-modal-size' },
+    firewall: { position: 'firewall-modal-position', size: 'firewall-modal-size' },
 } as const;
 
-function loadModalLayout(modal: 'tasks' | 'cli' | 'pc', defaultSize: ModalSize) {
+function loadModalLayout(modal: 'tasks' | 'cli' | 'pc' | 'firewall', defaultSize: ModalSize) {
     if (typeof window === 'undefined') return { position: null, size: defaultSize };
     const maxW = window.innerWidth - 40;
     const maxH = window.innerHeight - 40;
@@ -62,6 +63,8 @@ export function useModalDragResize(defaultSize: ModalSize = { width: 1200, heigh
     const [cliModalSize, setCliModalSize] = useState<ModalSize>(defaultSize);
     const [pcModalPosition, setPcModalPosition] = useState<ModalPosition>({ x: 20, y: 20 });
     const [pcModalSize, setPcModalSize] = useState<ModalSize>({ width: 800, height: 600 });
+    const [firewallModalPosition, setFirewallModalPosition] = useState<ModalPosition>({ x: 20, y: 20 });
+    const [firewallModalSize, setFirewallModalSize] = useState<ModalSize>({ width: 600, height: 500 });
 
     // Load persisted layout after hydration
     useEffect(() => {
@@ -76,11 +79,15 @@ export function useModalDragResize(defaultSize: ModalSize = { width: 1200, heigh
         const pc = loadModalLayout('pc', { width: 800, height: 600 });
         if (pc.position) setPcModalPosition(pc.position);
         setPcModalSize(pc.size);
+
+        const firewall = loadModalLayout('firewall', { width: 600, height: 500 });
+        if (firewall.position) setFirewallModalPosition(firewall.position);
+        setFirewallModalSize(firewall.size);
     }, []);
 
     // Persist on change - Optimized to only save occasionally or on mouse up
     // We'll move the actual saving to handlePointerUp to avoid synchronous localStorage hits during drag
-    const persistLayout = useCallback((modal: 'tasks' | 'cli' | 'pc', pos: ModalPosition, size: ModalSize) => {
+    const persistLayout = useCallback((modal: 'tasks' | 'cli' | 'pc' | 'firewall', pos: ModalPosition, size: ModalSize) => {
         localStorage.setItem(STORAGE_KEYS[modal].position, JSON.stringify(pos));
         localStorage.setItem(STORAGE_KEYS[modal].size, JSON.stringify(size));
     }, []);
@@ -94,6 +101,8 @@ export function useModalDragResize(defaultSize: ModalSize = { width: 1200, heigh
     const cliModalSizeRef = useRef(cliModalSize);
     const pcModalPositionRef = useRef(pcModalPosition);
     const pcModalSizeRef = useRef(pcModalSize);
+    const firewallModalPositionRef = useRef(firewallModalPosition);
+    const firewallModalSizeRef = useRef(firewallModalSize);
     const modalElementRef = useRef<HTMLElement | null>(null);
 
     useEffect(() => { tasksModalPositionRef.current = tasksModalPosition; }, [tasksModalPosition]);
@@ -102,8 +111,10 @@ export function useModalDragResize(defaultSize: ModalSize = { width: 1200, heigh
     useEffect(() => { cliModalSizeRef.current = cliModalSize; }, [cliModalSize]);
     useEffect(() => { pcModalPositionRef.current = pcModalPosition; }, [pcModalPosition]);
     useEffect(() => { pcModalSizeRef.current = pcModalSize; }, [pcModalSize]);
+    useEffect(() => { firewallModalPositionRef.current = firewallModalPosition; }, [firewallModalPosition]);
+    useEffect(() => { firewallModalSizeRef.current = firewallModalSize; }, [firewallModalSize]);
 
-    const handlePointerDown = useCallback((e: React.PointerEvent, modalType: 'tasks' | 'cli' | 'pc') => {
+    const handlePointerDown = useCallback((e: React.PointerEvent, modalType: 'tasks' | 'cli' | 'pc' | 'firewall') => {
         const header = (e.target as HTMLElement).closest('[data-modal-header]');
         if (!header) return;
         if ((e.target as HTMLElement).closest('button, input, select, textarea, a')) return;
@@ -118,8 +129,8 @@ export function useModalDragResize(defaultSize: ModalSize = { width: 1200, heigh
         const modalElement = (e.currentTarget as HTMLElement).closest('[data-modal-content]') as HTMLElement;
         modalElementRef.current = modalElement;
 
-        const pos = modalType === 'tasks' ? tasksModalPositionRef.current : modalType === 'cli' ? cliModalPositionRef.current : pcModalPositionRef.current;
-        const size = modalType === 'tasks' ? tasksModalSizeRef.current : modalType === 'cli' ? cliModalSizeRef.current : pcModalSizeRef.current;
+        const pos = modalType === 'tasks' ? tasksModalPositionRef.current : modalType === 'cli' ? cliModalPositionRef.current : modalType === 'pc' ? pcModalPositionRef.current : firewallModalPositionRef.current;
+        const size = modalType === 'tasks' ? tasksModalSizeRef.current : modalType === 'cli' ? cliModalSizeRef.current : modalType === 'pc' ? pcModalSizeRef.current : firewallModalSizeRef.current;
 
         dragStateRef.current = {
             active: true, type: 'drag', modal: modalType,
@@ -132,7 +143,7 @@ export function useModalDragResize(defaultSize: ModalSize = { width: 1200, heigh
     const handleResizeStart = useCallback((
         e: React.PointerEvent,
         direction: 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw',
-        modalType: 'tasks' | 'cli' | 'pc',
+        modalType: 'tasks' | 'cli' | 'pc' | 'firewall',
     ) => {
         e.preventDefault();
         e.stopPropagation();
@@ -144,8 +155,8 @@ export function useModalDragResize(defaultSize: ModalSize = { width: 1200, heigh
         const modalElement = (e.currentTarget as HTMLElement).closest('[data-modal-content]') as HTMLElement;
         modalElementRef.current = modalElement;
 
-        const pos = modalType === 'tasks' ? tasksModalPositionRef.current : modalType === 'cli' ? cliModalPositionRef.current : pcModalPositionRef.current;
-        const size = modalType === 'tasks' ? tasksModalSizeRef.current : modalType === 'cli' ? cliModalSizeRef.current : pcModalSizeRef.current;
+        const pos = modalType === 'tasks' ? tasksModalPositionRef.current : modalType === 'cli' ? cliModalPositionRef.current : modalType === 'pc' ? pcModalPositionRef.current : firewallModalPositionRef.current;
+        const size = modalType === 'tasks' ? tasksModalSizeRef.current : modalType === 'cli' ? cliModalSizeRef.current : modalType === 'pc' ? pcModalSizeRef.current : firewallModalSizeRef.current;
 
         dragStateRef.current = {
             active: true, type: 'resize', modal: modalType, direction,
@@ -241,8 +252,8 @@ export function useModalDragResize(defaultSize: ModalSize = { width: 1200, heigh
                 modalElement.style.transition = '';
 
                 // Update React state only once at the end
-                const setPosition = ds.modal === 'tasks' ? setTasksModalPosition : ds.modal === 'cli' ? setCliModalPosition : setPcModalPosition;
-                const setSize = ds.modal === 'tasks' ? setTasksModalSize : ds.modal === 'cli' ? setCliModalSize : setPcModalSize;
+                const setPosition = ds.modal === 'tasks' ? setTasksModalPosition : ds.modal === 'cli' ? setCliModalPosition : ds.modal === 'pc' ? setPcModalPosition : setFirewallModalPosition;
+                const setSize = ds.modal === 'tasks' ? setTasksModalSize : ds.modal === 'cli' ? setCliModalSize : ds.modal === 'pc' ? setPcModalSize : setFirewallModalSize;
 
                 setPosition(finalPos);
                 setSize(finalSize);
@@ -276,12 +287,16 @@ export function useModalDragResize(defaultSize: ModalSize = { width: 1200, heigh
         cliModalSize,
         pcModalPosition,
         pcModalSize,
+        firewallModalPosition,
+        firewallModalSize,
         setTasksModalPosition,
         setTasksModalSize,
         setCliModalPosition,
         setCliModalSize,
         setPcModalPosition,
         setPcModalSize,
+        setFirewallModalPosition,
+        setFirewallModalSize,
         handlePointerDown,
         handleResizeStart,
     };

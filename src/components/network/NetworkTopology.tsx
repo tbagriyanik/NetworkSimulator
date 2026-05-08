@@ -5,6 +5,7 @@ import { flushSync } from 'react-dom';
 import useAppStore, { useTopologyDevices, useTopologyConnections, useTopologyNotes } from '@/lib/store/appStore';
 import { SwitchState, CableType, CableInfo, isCableCompatible } from '@/lib/network/types';
 import { checkDeviceConnectivity, getPingDiagnostics, getWirelessSignalStrength, getWirelessDistance } from '@/lib/network/connectivity';
+import { processIotRules } from '@/lib/network/iotLogic';
 import { generateRandomLinkLocalIpv4 } from '@/lib/network/linkLocal';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -51,7 +52,7 @@ const generateMacAddress = (): string => {
 
 // Drag item from palette
 interface DragItem {
-  type: 'pc' | 'iot' | 'switch' | 'router';
+  type: 'pc' | 'iot' | 'switch' | 'router' | 'firewall';
   icon: React.ReactNode;
 }
 
@@ -89,6 +90,11 @@ const DEVICE_ICONS: Record<DeviceType | 'switch', React.ReactNode> = {
     <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="#a855f7" viewBox="0 0 24 24">
       <circle strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} cx="12" cy="12" r="9" />
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 5v14M5 12h14M12 5l-2 2m2-2l2 2m-2 12l-2-2m2 2l2-2M5 12l2-2m-2 2l2 2M19 12l-2-2m2 2l-2 2" />
+    </svg>
+  ),
+  firewall: (
+    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="#ef4444" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM8 11h8M8 15h8" />
     </svg>
   ),
 };
@@ -182,14 +188,19 @@ export function NetworkTopology({
   // Use hook to preserve window positions during network refresh
   const { refreshNetworkWithPositions } = useNetworkRefreshWithPositions(onRefreshNetwork || (() => { }));
 
-  // Force continuous updates for IoT measurements
+  // Force continuous updates for IoT measurements and rule processing
   const [iotUpdateTrigger, setIotUpdateTrigger] = useState(0);
   useEffect(() => {
     const interval = setInterval(() => {
       setIotUpdateTrigger(prev => prev + 1);
+
+      // Process IoT rules periodically
+      processIotRules(latestDevicesRef.current, environment, (deviceId, updates) => {
+        setDevices(prev => prev.map(d => d.id === deviceId ? { ...d, ...updates } : d));
+      });
     }, 1000); // Update every second
     return () => clearInterval(interval);
-  }, []);
+  }, [environment, setDevices]);
 
   const [zoom, setZoom] = useState(zoomProp ?? DEFAULT_ZOOM);
   const [pan, setPan] = useState(panProp ?? { x: 0, y: 0 });
@@ -559,10 +570,10 @@ export function NetworkTopology({
   const [hopPacketInfos, setHopPacketInfos] = useState<import('./PingPacketInfoPanel').HopPacketInfo[]>([]);
 
   // Refs
-  const deviceCounterRef = useRef<{ pc: number; iot: number; switch: number; router: number }>({ pc: 0, iot: 0, switch: 0, router: 0 });
-  const getCounterKey = useCallback((type: DeviceType | string): 'pc' | 'iot' | 'switch' | 'router' => {
+  const deviceCounterRef = useRef<{ pc: number; iot: number; switch: number; router: number; firewall: number }>({ pc: 0, iot: 0, switch: 0, router: 0, firewall: 0 });
+  const getCounterKey = useCallback((type: DeviceType | string): 'pc' | 'iot' | 'switch' | 'router' | 'firewall' => {
     if (type === 'switchL2' || type === 'switchL3' || type === 'switch') return 'switch';
-    if (type === 'pc' || type === 'router') return type;
+    if (type === 'pc' || type === 'router' || type === 'firewall') return type as any;
     if (type === 'iot') return 'iot';
     return 'pc';
   }, []);
@@ -2158,7 +2169,7 @@ export function NetworkTopology({
   }, [devices, deviceStates]);
 
   // Add device from palette button
-  const addDevice = useCallback((type: 'pc' | 'iot' | 'switch' | 'router', layer?: 'L2' | 'L3') => {
+  const addDevice = useCallback((type: 'pc' | 'iot' | 'switch' | 'router' | 'firewall', layer?: 'L2' | 'L3') => {
     saveToHistory();
     deviceCounterRef.current[type]++;
 
@@ -2211,7 +2222,12 @@ export function NetworkTopology({
           ]
           : type === 'switch'
             ? switchLayer === 'L3' ? generateL3SwitchPorts() : generateSwitchPorts()
-            : generateRouterPorts(),
+            : type === 'firewall'
+              ? [
+                  { id: 'gi0/0', label: 'Gi0/0', status: 'disconnected' as const },
+                  { id: 'gi0/1', label: 'Gi0/1', status: 'disconnected' as const },
+                ]
+              : generateRouterPorts(),
       iot: type === 'iot'
         ? { sensorType: 'temperature', collaborationEnabled: false, dataStore: '' }
         : undefined,
@@ -2302,6 +2318,7 @@ export function NetworkTopology({
       else if (deviceType === 'switchL3') addDevice('switch', 'L3');
       else if (deviceType === 'router') addDevice('router');
       else if (deviceType === 'iot') addDevice('iot');
+      else if (deviceType === 'firewall') addDevice('firewall');
     };
     const handleTogglePingMode = () => {
       setPingMode(m => !m);
@@ -2908,7 +2925,7 @@ export function NetworkTopology({
   // Sync device counters with current devices to prevent ID collisions
   useEffect(() => {
     if (devices.length > 0) {
-      const counters = { pc: 0, iot: 0, switch: 0, router: 0 };
+      const counters = { pc: 0, iot: 0, switch: 0, router: 0, firewall: 0 };
       devices.forEach(d => {
         const match = d.id.match(/^(\w+)-(\d+)$/);
         if (match) {
@@ -3512,10 +3529,10 @@ export function NetworkTopology({
       return;
     }
 
-    // Get detailed diagnostics
-    const diagnostics = getPingDiagnostics(sourceId, targetIp, devices, connections, deviceStates, language);
+    // Get detailed diagnostics - Using ICMP for standard ping animation
+    const diagnostics = getPingDiagnostics(sourceId, targetIp, devices, connections, deviceStates, language, { protocol: 'icmp' });
 
-    const connectivity = checkDeviceConnectivity(sourceId, targetId, devices, connections, deviceStates);
+    const connectivity = checkDeviceConnectivity(sourceId, targetId, devices, connections, deviceStates, { protocol: 'icmp' });
     if (!connectivity.success) {
       const errorMessage = diagnostics.reasons.length > 0
         ? diagnostics.reasons[0]
@@ -3543,7 +3560,7 @@ export function NetworkTopology({
         hopCount: 0,
         isPaused: true,
         showPacketPanel: true,
-        failedAtHop: partialPath.length - 1,
+        failedAtHop: Math.max(0, partialPath.length - 2),
       });
 
       // Store resume callback — animation will run to the last reachable hop then stop with error
@@ -4416,18 +4433,22 @@ export function NetworkTopology({
     const deviceFill = isDark
       ? (device.type === 'iot'
         ? 'url(#iotGradientDark)'
-        : isPcLike
-          ? 'url(#pcGradientDark)'
-          : isSwitchDevice(device.type)
-            ? 'url(#switchGradientDark)'
-            : 'url(#routerGradientDark)')
+        : device.type === 'firewall'
+          ? 'url(#firewallGradientDark)'
+          : isPcLike
+            ? 'url(#pcGradientDark)'
+            : isSwitchDevice(device.type)
+              ? 'url(#switchGradientDark)'
+              : 'url(#routerGradientDark)')
       : (device.type === 'iot'
         ? 'url(#iotGradientLight)'
-        : isPcLike
-          ? 'url(#pcGradientLight)'
-          : isSwitchDevice(device.type)
-            ? 'url(#switchGradientLight)'
-            : 'url(#routerGradientLight)');
+        : device.type === 'firewall'
+          ? 'url(#firewallGradientLight)'
+          : isPcLike
+            ? 'url(#pcGradientLight)'
+            : isSwitchDevice(device.type)
+              ? 'url(#switchGradientLight)'
+              : 'url(#routerGradientLight)');
 
     // Calculate device height based on number of ports (8 per row for switch/router)
     const portsPerRow = isPcLike ? 2 : 8;
@@ -4500,7 +4521,16 @@ export function NetworkTopology({
         )}
 
         {/* Device body */}
-        {device.type === 'router' ? (
+        {device.type === 'firewall' ? (
+          <path
+            d={`M 0 ${deviceHeight} L 0 5 Q 0 0 5 0 L ${deviceWidth - 5} 0 Q ${deviceWidth} 0 ${deviceWidth} 5 L ${deviceWidth} ${deviceHeight} L 0 ${deviceHeight} Z`}
+            fill={deviceFill}
+            stroke={isSelected ? '#06b6d4' : isDark ? '#ef4444' : '#cbd5e1'}
+            strokeWidth={isSelected ? 2.5 : 1.5}
+            className={isDragging ? '' : 'transition-all duration-150'}
+            filter="url(#deviceShadow)"
+          />
+        ) : device.type === 'router' ? (
           <path
             d={`M ${20} 0 L ${deviceWidth - 20} 0 Q ${deviceWidth} 0 ${deviceWidth} 20 L ${deviceWidth} ${deviceHeight} L 0 ${deviceHeight} L 0 20 Q 0 0 20 0`}
             fill={deviceFill}
@@ -4534,7 +4564,7 @@ export function NetworkTopology({
             rx={8}
             fill={deviceFill}
             stroke={isSelected ? '#06b6d4' : isDark
-              ? (device.type === 'pc' ? '#3b82f6' : device.type === 'iot' ? '#f97316' : isSwitchDeviceType(device.type) ? '#22c55e' : '#a855f7')
+              ? (device.type === 'pc' ? '#3b82f6' : device.type === 'iot' ? '#f97316' : device.type === 'firewall' ? '#ef4444' : isSwitchDeviceType(device.type) ? '#22c55e' : '#a855f7')
               : '#cbd5e1'}
             strokeWidth={isSelected ? 2.5 : 1.5}
             className={isDragging ? '' : 'transition-all duration-150'}
@@ -4543,7 +4573,13 @@ export function NetworkTopology({
         )}
         {/* Device body highlight for 3D effect in dark mode */}
         {isDark && (
-          device.type === 'router' ? (
+          device.type === 'firewall' ? (
+            <path
+              d={`M 2 5 Q 2 2 5 2 L ${deviceWidth - 5} 2 Q ${deviceWidth - 2} 2 ${deviceWidth - 2} 5 L ${deviceWidth - 2} ${deviceHeight / 3} L 2 ${deviceHeight / 3} Z`}
+              fill="white"
+              opacity="0.08"
+            />
+          ) : device.type === 'router' ? (
             <path
               d={`M ${22} 2 L ${deviceWidth - 22} 2 Q ${deviceWidth - 2} 2 ${deviceWidth - 2} 20 L ${deviceWidth - 2} ${deviceHeight / 3} L 2 ${deviceHeight / 3} L 2 20 Q 2 2 22 2`}
               fill="white"
@@ -5767,6 +5803,18 @@ export function NetworkTopology({
                         {isTR ? 'IoT Ekle' : 'Add IoT'}
                       </span>
                     </button>
+                    <button
+                      onClick={() => { addDevice('firewall'); setIsPaletteOpen(false); }}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-red-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-red-500/50'
+                        }`}
+                    >
+                      <div className='text-red-500'>
+                        {DEVICE_ICONS['firewall']}
+                      </div>
+                      <span className="text-xs font-bold text-center">
+                        {isTR ? 'Firewall' : 'Firewall'}
+                      </span>
+                    </button>
                   </div>
                 </div>
 
@@ -6070,6 +6118,11 @@ export function NetworkTopology({
                     <stop offset="30%" stopColor="#7c3aed" />
                     <stop offset="100%" stopColor="#5b21b6" />
                   </linearGradient>
+                  <linearGradient id="firewallGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#ef4444" />
+                    <stop offset="30%" stopColor="#dc2626" />
+                    <stop offset="100%" stopColor="#991b1b" />
+                  </linearGradient>
                   <linearGradient id="iotGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">
                     <stop offset="0%" stopColor="#f89d5c" />
                     <stop offset="30%" stopColor="#ef9463" />
@@ -6087,6 +6140,10 @@ export function NetworkTopology({
                   <linearGradient id="routerGradientLight" x1="0%" y1="0%" x2="0%" y2="100%">
                     <stop offset="0%" stopColor="#f5f3ff" />
                     <stop offset="100%" stopColor="#ede9fe" />
+                  </linearGradient>
+                  <linearGradient id="firewallGradientLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="#fee2e2" />
+                    <stop offset="100%" stopColor="#fecaca" />
                   </linearGradient>
                   <linearGradient id="iotGradientLight" x1="0%" y1="0%" x2="0%" y2="100%">
                     <stop offset="0%" stopColor="#ffedd5" />

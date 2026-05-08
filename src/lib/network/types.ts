@@ -264,8 +264,8 @@ export type CableType = 'straight' | 'crossover' | 'console' | 'wireless';
 export interface CableInfo {
   connected: boolean;
   cableType: CableType;
-  sourceDevice: 'pc' | 'iot' | 'switchL2' | 'switchL3' | 'router';
-  targetDevice: 'pc' | 'iot' | 'switchL2' | 'switchL3' | 'router';
+  sourceDevice: 'pc' | 'iot' | 'switchL2' | 'switchL3' | 'router' | 'firewall';
+  targetDevice: 'pc' | 'iot' | 'switchL2' | 'switchL3' | 'router' | 'firewall';
   sourcePort?: string;  // Port ID (e.g., 'eth0', 'com1', 'console', 'fa0/1')
   targetPort?: string;  // Port ID
 }
@@ -290,6 +290,13 @@ export const CABLE_COMPATIBILITY: Record<string, CableType[]> = {
   'switch-switch': ['straight', 'crossover'],
   'pc-console': ['console'],
   'console-pc': ['console'],
+  'firewall-switch': ['straight', 'crossover'],
+  'switch-firewall': ['straight', 'crossover'],
+  'firewall-router': ['straight', 'crossover'],
+  'router-firewall': ['straight', 'crossover'],
+  'firewall-pc': ['straight', 'crossover'],
+  'pc-firewall': ['straight', 'crossover'],
+  'firewall-firewall': ['crossover'],
 };
 
 // Console portu olup olmadığını kontrol et
@@ -326,7 +333,7 @@ export function isCableCompatible(cable: CableInfo): boolean {
   }
 
   // Normal Ethernet bağlantıları için standart kurallar
-  const normalize = (t: CableInfo['sourceDevice']): 'pc' | 'switch' | 'router' =>
+  const normalize = (t: CableInfo['sourceDevice']): 'pc' | 'switch' | 'router' | 'firewall' =>
     t === 'switchL2' || t === 'switchL3'
       ? 'switch'
       : t === 'iot'

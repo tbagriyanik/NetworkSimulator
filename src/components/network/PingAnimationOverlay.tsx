@@ -11,6 +11,8 @@ interface PingAnimationOverlayProps {
     sourceId: string;
     targetId: string;
     hopCount: number;
+    failedAtHop?: number;
+    error?: string;
   } | null;
   devices: CanvasDevice[];
   connections: CanvasConnection[];
@@ -39,9 +41,13 @@ export function PingAnimationOverlay({
   let hopCount = 0;
   let shouldRender = false;
 
+  let errorX = 0;
+  let errorY = 0;
+  let isFirewallBlock = false;
+
   if (pingAnimation) {
-    const { path, currentHopIndex, progress, success } = pingAnimation;
-    if (path && path.length >= 2 && success === null) {
+    const { path, currentHopIndex, progress, success, failedAtHop, error } = pingAnimation;
+    if (path && path.length >= 2 && (success === null || (success === false && currentHopIndex === failedAtHop))) {
       shouldRender = true;
       hopCount = pingAnimation.hopCount;
 
@@ -114,6 +120,13 @@ export function PingAnimationOverlay({
         // Offset envelope slightly to the side of the line
         envelopeOffsetX = Math.sin(angle) * 20;
         envelopeOffsetY = -Math.cos(angle) * 20;
+
+        // If animation is at the failure point, show red X
+        if (success === false && currentHopIndex === failedAtHop) {
+          isFirewallBlock = error?.toLowerCase().includes('firewall') || false;
+          errorX = bezierX + envelopeOffsetX;
+          errorY = bezierY + envelopeOffsetY;
+        }
       }
     }
   }
@@ -134,10 +147,36 @@ export function PingAnimationOverlay({
 
   return (
     <g ref={groupRef}>
+      {pingAnimation?.success === false && pingAnimation.currentHopIndex === pingAnimation.failedAtHop && (
+        <g transform={`translate(${errorX}, ${errorY})`} className="animate-in fade-in zoom-in duration-300">
+          {/* Outer glow */}
+          <circle r="15" fill="red" opacity="0.2" className="animate-pulse" />
+          {/* The X */}
+          <path
+            d="M-8 -8 L8 8 M8 -8 L-8 8"
+            stroke="red"
+            strokeWidth="4"
+            strokeLinecap="round"
+          />
+          {isFirewallBlock && (
+            <text
+              y="25"
+              textAnchor="middle"
+              fill="red"
+              fontSize="10"
+              fontWeight="bold"
+              className="select-none"
+            >
+              BLOCKED
+            </text>
+          )}
+        </g>
+      )}
+
       <g
         ref={innerGroupRef}
         transform={`translate(${bezierX + envelopeOffsetX}, ${bezierY + envelopeOffsetY})`}
-        opacity="0.9"
+        opacity={pingAnimation?.success === false && pingAnimation.currentHopIndex === pingAnimation.failedAtHop ? 0.3 : 0.9}
       >
         {/* Hop Count Badge */}
         {hopCount > 0 && (
