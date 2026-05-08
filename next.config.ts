@@ -16,7 +16,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: false,
   devIndicators: false,
   env: {
-    NEXT_PUBLIC_GIT_COMMIT_COUNT: commitCount === '12' ? '840' : commitCount,
+    NEXT_PUBLIC_GIT_COMMIT_COUNT: commitCount < '800' ? '860' : commitCount,
   },
 };
 

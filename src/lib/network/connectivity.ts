@@ -1147,12 +1147,11 @@ export function checkConnectivity(
     const device = devices.find(d => d.id === stepDeviceId);
     if (device?.type === 'firewall') {
       const rules = device.firewallRules || [];
-      let allowed = rules.length === 0; // Default: ALLOW ALL if no rules
+      const enabledRules = rules.filter(r => r.enabled);
+      let allowed = enabledRules.length === 0; // Default: ALLOW ALL if no enabled rules
 
-      // Evaluate rules in order
-      for (const rule of rules) {
-        if (!rule.enabled) continue;
-
+      // Evaluate enabled rules in order
+      for (const rule of enabledRules) {
         const sourceMatch = rule.sourceIp === '*' || rule.sourceIp === sourceIpForFirewall;
         const targetMatch = rule.targetIp === '*' || rule.targetIp === resolvedTargetIp;
 
