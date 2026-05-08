@@ -1475,8 +1475,8 @@ export function PCPanel({
       }));
   }, [topologyDevices, topologyConnections]);
 
-  const canReachTargetIp = useCallback((targetIp: string) => {
-    const result = checkConnectivity(deviceId, targetIp, topologyDevices as any, topologyConnections as any, deviceStates || new Map(), t.language as 'tr' | 'en', { protocol: 'icmp' });
+  const canReachTargetIp = useCallback((targetIp: string, options: { protocol?: 'tcp' | 'udp' | 'icmp' | 'any'; port?: string } = { protocol: 'icmp' }) => {
+    const result = checkConnectivity(deviceId, targetIp, topologyDevices as any, topologyConnections as any, deviceStates || new Map(), t.language as 'tr' | 'en', options);
     return result.success;
   }, [deviceId, topologyDevices, topologyConnections, deviceStates, t.language]);
 
@@ -1670,7 +1670,7 @@ export function PCPanel({
     const configuredDnsServer = topologyDevices.find(
       (d) => d.type === 'pc' && d.ip === pcDNS && d.services?.dns?.enabled && (d.services?.dns?.records?.length || 0) > 0
     );
-    if (!configuredDnsServer?.ip || !canReachTargetIp(configuredDnsServer.ip)) return null;
+    if (!configuredDnsServer?.ip || !canReachTargetIp(configuredDnsServer.ip, { protocol: 'udp', port: '53' })) return null;
 
     // Support CNAME-like records in PC DNS service:
     // domain -> another domain -> ... -> final IPv4 address
@@ -1765,13 +1765,13 @@ export function PCPanel({
     const pcByIp = topologyDevices.find(
       (d) => d.type === 'pc' && d.ip === target && d.services?.http?.enabled
     );
-    if (pcByIp && pcByIp.ip && canReachTargetIp(pcByIp.ip)) return pcByIp;
+    if (pcByIp && pcByIp.ip && canReachTargetIp(pcByIp.ip, { protocol: 'tcp', port: '80' })) return pcByIp;
 
     // Check for router/switch devices with HTTP service enabled
     const routerByIp = topologyDevices.find(
       (d) => (d.type === 'router' || d.type === 'switchL2' || d.type === 'switchL3') && d.ip === target && d.services?.http?.enabled
     );
-    if (routerByIp && routerByIp.ip && canReachTargetIp(routerByIp.ip)) return routerByIp;
+    if (routerByIp && routerByIp.ip && canReachTargetIp(routerByIp.ip, { protocol: 'tcp', port: '80' })) return routerByIp;
 
     // Fallback: look into deviceStates interface IPs (e.g., VLAN/SVI, routed ports) for devices that have HTTP enabled
     if (deviceStates) {
@@ -1781,7 +1781,7 @@ export function PCPanel({
         if (!topoDevice || (topoDevice.type !== 'router' && topoDevice.type !== 'switchL2' && topoDevice.type !== 'switchL3')) continue;
         const ports = state.ports || {};
         const match = Object.values(ports).find((port: any) => port?.ipAddress === target);
-        if (match && canReachTargetIp(target)) {
+        if (match && canReachTargetIp(target, { protocol: 'tcp', port: '80' })) {
           return {
             ...topoDevice,
             ip: target
@@ -1798,13 +1798,13 @@ export function PCPanel({
     const resolvedPc = topologyDevices.find(
       (d) => d.type === 'pc' && d.ip === dnsResult.address && d.services?.http?.enabled
     ) || null;
-    if (resolvedPc?.ip && canReachTargetIp(resolvedPc.ip)) return resolvedPc;
+    if (resolvedPc?.ip && canReachTargetIp(resolvedPc.ip, { protocol: 'tcp', port: '80' })) return resolvedPc;
 
     // Check resolved address for router/switch with HTTP service enabled
     const resolvedRouter = topologyDevices.find(
       (d) => (d.type === 'router' || d.type === 'switchL2' || d.type === 'switchL3') && d.ip === dnsResult.address && d.services?.http?.enabled
     ) || null;
-    if (resolvedRouter?.ip && canReachTargetIp(resolvedRouter.ip)) return resolvedRouter;
+    if (resolvedRouter?.ip && canReachTargetIp(resolvedRouter.ip, { protocol: 'tcp', port: '80' })) return resolvedRouter;
 
     // DNS fallback via deviceStates interfaces
     if (deviceStates) {
@@ -1814,7 +1814,7 @@ export function PCPanel({
         if (!topoDevice || (topoDevice.type !== 'router' && topoDevice.type !== 'switchL2' && topoDevice.type !== 'switchL3')) continue;
         const ports = state.ports || {};
         const match = Object.values(ports).find((port: any) => port?.ipAddress === dnsResult.address);
-        if (match && canReachTargetIp(match.ipAddress || dnsResult.address)) {
+        if (match && canReachTargetIp(match.ipAddress || dnsResult.address, { protocol: 'tcp', port: '80' })) {
           return {
             ...topoDevice,
             ip: match.ipAddress || dnsResult.address

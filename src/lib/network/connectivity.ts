@@ -1019,7 +1019,8 @@ export function checkConnectivity(
     }
   }
 
-  // 5. Enforce same-VLAN ping for L2-only simulation
+  // 5. Enforce same-VLAN communication for L2-only simulation
+  let l2ConnectivityPossible = false;
   if (deviceStates) {
     const getDeviceVlanForIp = (deviceId: string, ip: string): number | null => {
       const device = devices.find(d => d.id === deviceId);
@@ -1055,51 +1056,43 @@ export function checkConnectivity(
     const isSourceL3 = sourceVlan === null;
     const isTargetL3 = targetVlan === null;
 
-    // Allow same-VLAN communication
     // Only block if both are L2 devices AND in different VLANs
     if (!isSourceL3 && !isTargetL3 && sourceVlan !== null && targetVlan !== null) {
       // Same VLAN: allow communication
       if (sourceVlan === targetVlan) {
-        // PCs in same VLAN can ping each other
-        return {
-          success: true,
-          hops: hopNames,
-          hopIds: path,
-          targetId: targetDevice.id,
-          portSecurityViolations
-        };
-      }
-      // Different VLANs: check if router with ipRouting is in path
-      let hasL3RouterInPath = false;
-      for (const pathDeviceId of path) {
-        const pathDevice = devices.find(d => d.id === pathDeviceId);
-        const pathState = deviceStates?.get(pathDeviceId);
-        if ((pathDevice?.type === 'router' || pathDevice?.type === 'switchL3') && pathState?.ipRouting) {
-          hasL3RouterInPath = true;
-          break;
-        }
-      }
-
-      // If router with routing is in path, allow different VLANs (router handles inter-VLAN routing)
-      if (hasL3RouterInPath) {
-        routingRequired = true; // Different VLANs require routing
-        // Continue to section 6 for routing logic
+        l2ConnectivityPossible = true;
       } else {
-        return {
-          success: false,
-          hops: hopNames,
-          hopIds: path,
-          targetId: targetDevice.id,
-          error: `VLAN mismatch: source VLAN ${sourceVlan}, target VLAN ${targetVlan}.`
-        };
+        // Different VLANs: check if router with ipRouting is in path
+        let hasL3RouterInPath = false;
+        for (const pathDeviceId of path) {
+          const pathDevice = devices.find(d => d.id === pathDeviceId);
+          const pathState = deviceStates?.get(pathDeviceId);
+          if ((pathDevice?.type === 'router' || pathDevice?.type === 'switchL3') && pathState?.ipRouting) {
+            hasL3RouterInPath = true;
+            break;
+          }
+        }
+
+        // If router with routing is in path, allow different VLANs (router handles inter-VLAN routing)
+        if (hasL3RouterInPath) {
+          routingRequired = true; // Different VLANs require routing
+        } else {
+          return {
+            success: false,
+            hops: hopNames,
+            hopIds: path,
+            targetId: targetDevice.id,
+            error: `VLAN mismatch: source VLAN ${sourceVlan}, target VLAN ${targetVlan}.`
+          };
+        }
       }
     }
   }
 
   // 6. Layer 3 Routing Logic - Check if routing is possible between different subnets/VLANs
+  let l3ConnectivityPossible = false;
   if (deviceStates) {
     const sourceState = deviceStates.get(sourceId);
-    const targetState = deviceStates.get(targetDevice.id);
 
     // Check if source has routing capability and a route to target
     if (sourceState?.ipRouting) {
@@ -1107,46 +1100,34 @@ export function checkConnectivity(
       const route = findRoute(resolvedTargetIp, sourceRoutes);
 
       if (route) {
-        // Route found - allow communication through L3 routing
-        return {
-          success: true,
-          hops: hopNames,
-          hopIds: path,
-          targetId: targetDevice.id,
-          error: undefined,
-          portSecurityViolations
-        };
+        l3ConnectivityPossible = true;
       }
     }
 
-    // Check if there's a router in the path that can route between VLANs
-    for (const deviceId of path) {
-      const state = deviceStates.get(deviceId);
-      const device = devices.find(d => d.id === deviceId);
+    if (!l3ConnectivityPossible) {
+      // Check if there's a router in the path that can route between VLANs
+      for (const deviceId of path) {
+        const state = deviceStates.get(deviceId);
+        const device = devices.find(d => d.id === deviceId);
 
-      if (state?.ipRouting && (device?.type === 'router' || device?.type === 'switchL3')) {
-        // Router in path - check if it has routes to both source and target networks
-        const routes = getRoutingTable(deviceId, deviceStates);
-        // Get source IP from device data
-        const srcIp = getPrimaryDeviceIp(sourceId, devices, deviceStates);
-        const sourceRoute = findRoute(srcIp, routes);
-        const targetRoute = findRoute(resolvedTargetIp, routes);
+        if (state?.ipRouting && (device?.type === 'router' || device?.type === 'switchL3')) {
+          // Router in path - check if it has routes to both source and target networks
+          const routes = getRoutingTable(deviceId, deviceStates);
+          // Get source IP from device data
+          const srcIp = getPrimaryDeviceIp(sourceId, devices, deviceStates);
+          const sourceRoute = findRoute(srcIp, routes);
+          const targetRoute = findRoute(resolvedTargetIp, routes);
 
-        if (sourceRoute && targetRoute) {
-          return {
-            success: true,
-            hops: hopNames,
-            hopIds: path,
-            targetId: targetDevice.id,
-            error: undefined,
-            portSecurityViolations
-          };
+          if (sourceRoute && targetRoute) {
+            l3ConnectivityPossible = true;
+            break;
+          }
         }
       }
     }
 
     // If routing was required but no router in the path could handle it
-    if (routingRequired) {
+    if (routingRequired && !l3ConnectivityPossible) {
       return {
         success: false,
         hops: hopNames,
@@ -1157,13 +1138,16 @@ export function checkConnectivity(
     }
   }
 
+  // Fallback for simple topologies without advanced device states
+  const basicConnectivityPossible = !deviceStates && !routingRequired;
+
   // 7. Firewall Logic - Check rules for any firewalls in the path
   const sourceIpForFirewall = getPrimaryDeviceIp(sourceId, devices, deviceStates);
   for (const stepDeviceId of path) {
     const device = devices.find(d => d.id === stepDeviceId);
     if (device?.type === 'firewall') {
       const rules = device.firewallRules || [];
-      let allowed = false; // Default: DENY ALL
+      let allowed = rules.length === 0; // Default: ALLOW ALL if no rules
 
       // Evaluate rules in order
       for (const rule of rules) {
@@ -1171,16 +1155,25 @@ export function checkConnectivity(
 
         const sourceMatch = rule.sourceIp === '*' || rule.sourceIp === sourceIpForFirewall;
         const targetMatch = rule.targetIp === '*' || rule.targetIp === resolvedTargetIp;
-        const protocolMatch = rule.protocol === 'any' || rule.protocol === (options?.protocol || 'icmp');
-        const portMatch = rule.port === '*' || rule.port === (options?.port || '*');
+
+        // Protocol matching
+        const requestedProtocol = options?.protocol || 'icmp';
+        const protocolMatch = rule.protocol === 'any' || rule.protocol === requestedProtocol;
+
+        // Port matching
+        let portMatch = true;
+        if (rule.port !== '*') {
+          if (requestedProtocol === 'tcp' || requestedProtocol === 'udp') {
+            portMatch = rule.port === (options?.port || '*');
+          } else {
+            // Rule specifies a port but protocol doesn't support them (like ICMP)
+            portMatch = false;
+          }
+        }
 
         if (sourceMatch && targetMatch && protocolMatch && portMatch) {
-          if (rule.action === 'allow') {
-            allowed = true;
-          } else {
-            allowed = false;
-          }
-          // In a simple firewall, we might stop at the first match
+          allowed = rule.action === 'allow';
+          // Stop at first matching rule
           break;
         }
       }
@@ -1192,21 +1185,18 @@ export function checkConnectivity(
           hopIds: path.slice(0, path.indexOf(stepDeviceId) + 1),
           targetId: targetDevice.id,
           error: language === 'tr'
-            ? `Paket firewall (${device.name}) tarafından engellendi (Default Deny).`
-            : `Packet blocked by firewall (${device.name}) (Default Deny).`
+            ? `Paket firewall (${device.name}) kuralı nedeniyle engellendi.`
+            : `Packet blocked by firewall (${device.name}) rule.`
         };
       }
     }
   }
 
-  // 3. Layer 3 Logic (Simplified for simulation)
-  // For a "kusursuz" (flawless) system, we should check subnets
-  // But for now, if physical path exists and IPs are in same subnet or routed, it's a success
-  // Currently, we'll assume if they have IPs and physical path, they can talk (Layer 2 focus)
-
-  const sourceDevice = devices.find(d => d.id === sourceId);
-  if (!getPrimaryDeviceIp(sourceId, devices, deviceStates) && !isManagementIpSet(sourceId, deviceStates)) {
-    return { success: false, hops: [], hopIds: [], error: 'Source has no IP address.' };
+  if (!l2ConnectivityPossible && !l3ConnectivityPossible && !basicConnectivityPossible) {
+      // If we got here and no connectivity was confirmed, double check management IPs
+      if (!getPrimaryDeviceIp(sourceId, devices, deviceStates) && !isManagementIpSet(sourceId, deviceStates)) {
+        return { success: false, hops: [], hopIds: [], error: 'Source has no IP address.' };
+      }
   }
 
   return {

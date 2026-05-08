@@ -159,16 +159,27 @@ export function PingAnimationOverlay({
             strokeLinecap="round"
           />
           {isFirewallBlock && (
-            <text
-              y="25"
-              textAnchor="middle"
-              fill="red"
-              fontSize="10"
-              fontWeight="bold"
-              className="select-none"
-            >
-              BLOCKED
-            </text>
+            <g transform="translate(0, 25)">
+              <rect
+                x="-25"
+                y="-8"
+                width="50"
+                height="16"
+                rx="4"
+                fill="red"
+                className="animate-pulse"
+              />
+              <text
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fill="white"
+                fontSize="10"
+                fontWeight="black"
+                className="select-none"
+              >
+                BLOCKED
+              </text>
+            </g>
           )}
         </g>
       )}
