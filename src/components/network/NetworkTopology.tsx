@@ -199,9 +199,14 @@ export function NetworkTopology({
       setIotUpdateTrigger(prev => prev + 1);
 
       // Process IoT rules periodically
-      processIotRules(latestDevicesRef.current, environment, (deviceId, updates) => {
+      const deviceUpdated = processIotRules(latestDevicesRef.current, environment, (deviceId, updates) => {
         setDevices(prev => prev.map(d => d.id === deviceId ? { ...d, ...updates } : d));
       });
+      
+      // Trigger topology re-render if any IoT device state changed
+      if (deviceUpdated) {
+        setIotUpdateTrigger(prev => prev + 1);
+      }
     }, 1000); // Update every second
     return () => clearInterval(interval);
   }, [environment, setDevices]);
@@ -4944,13 +4949,73 @@ export function NetworkTopology({
               />
             )}
             {device.type === 'iot' && (
-              <g transform="translate(1, 1)" stroke="#14b8a6" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" filter="url(#wifiIconShadow)">
-                <path d="M16.247 7.761a6 6 0 0 1 0 8.478" />
-                <path d="M19.075 4.933a10 10 0 0 1 0 14.134" />
-                <path d="M4.925 19.067a10 10 0 0 1 0-14.134" />
-                <path d="M7.753 16.239a6 6 0 0 1 0-8.478" />
-                <circle cx="12" cy="12" r="2" fill="#14b8a6" />
-              </g>
+              (() => {
+                const iotKind = device.iot?.kind;
+                const isActive = device.iot?.collaborationEnabled ?? true;
+                
+                // Show different icons and colors based on IoT kind and state
+                if (iotKind === 'lamp') {
+                  return (
+                    <g transform="translate(1, 1)" filter="url(#wifiIconShadow)">
+                      {/* Lamp bulb - different appearance based on state */}
+                      <circle 
+                        cx="12" 
+                        cy="12" 
+                        r="8" 
+                        fill={isActive ? '#fbbf24' : '#94a3b8'} 
+                        stroke={isActive ? '#f59e0b' : '#64748b'} 
+                        strokeWidth="2"
+                      />
+                      {/* Light rays - only show when active */}
+                      {isActive && (
+                        <>
+                          <path d="M12 2 L12 6" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" />
+                          <path d="M12 2 L8 4" stroke="#fbbf24" strokeWidth="1.5" strokeLinecap="round" />
+                          <path d="M12 2 L16 4" stroke="#fbbf24" strokeWidth="1.5" strokeLinecap="round" />
+                          <path d="M12 2 L10 5" stroke="#fbbf24" strokeWidth="1.5" strokeLinecap="round" />
+                          <path d="M12 2 L14 5" stroke="#fbbf24" strokeWidth="1.5" strokeLinecap="round" />
+                        </>
+                      )}
+                      {/* Lamp base */}
+                      <rect x="10" y="18" width="4" height="2" fill={isDark ? '#475569' : '#94a3b8'} />
+                    </g>
+                  );
+                } else if (iotKind === 'heater') {
+                  return (
+                    <g transform="translate(1, 1)" filter="url(#wifiIconShadow)">
+                      {/* Heater flame - animated when active */}
+                      <path 
+                        d="M12 18 Q10 15 10 12 Q10 9 12 6 Q14 9 18 12" 
+                        fill={isActive ? '#ef4444' : '#94a3b8'} 
+                        className={isActive ? 'animate-pulse' : ''}
+                      />
+                      <circle cx="12" cy="20" r="2" fill={isDark ? '#475569' : '#94a3b8'} />
+                    </g>
+                  );
+                } else if (iotKind === 'cooler') {
+                  return (
+                    <g transform="translate(1, 1)" filter="url(#wifiIconShadow)">
+                      {/* Cooler fan blades */}
+                      <g className={isActive ? 'animate-spin' : ''} style={{ transformOrigin: '12px 12px' }}>
+                        <path d="M12 8 L16 12 L14 16 L12 14 L10 16 L8 12 Z" fill={isActive ? '#06b6d4' : '#94a3b8'} />
+                        <path d="M12 16 L16 16 L14 20 L12 18 L10 20 L8 16 Z" fill={isActive ? '#06b6d4' : '#94a3b8'} />
+                      </g>
+                      <circle cx="12" cy="12" r="2" fill={isDark ? '#475569' : '#94a3b8'} />
+                    </g>
+                  );
+                } else {
+                  // Default IoT icon for sensors
+                  return (
+                    <g transform="translate(1, 1)" stroke="#14b8a6" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" filter="url(#wifiIconShadow)">
+                      <path d="M16.247 7.761a6 6 0 0 1 0 8.478" />
+                      <path d="M19.075 4.933a10 10 0 0 1 0 14.134" />
+                      <path d="M4.925 19.067a10 10 0 0 1 0-14.134" />
+                      <path d="M7.753 16.239a6 6 0 0 1 0-8.478" />
+                      <circle cx="12" cy="12" r="2" fill="#14b8a6" />
+                    </g>
+                  );
+                }
+              })()
             )}
             {isSwitchDeviceType(device.type) && (
               <path
@@ -5002,7 +5067,66 @@ export function NetworkTopology({
           </TooltipTrigger>
           {!isDraggingInteractionDisabled && !(isPanning || isSelecting || isDrawingConnection) && (
             <TooltipContent>
-              {isPoweredOff ? t.powerOn : t.powerOff}
+              {(() => {
+                // IoT cihazları için özel arkaplan görevi göster
+                if (device.type === 'iot' && device.iot) {
+                  const iotKind = device.iot.kind;
+                  const isActive = device.iot.collaborationEnabled ?? true;
+                  const rules = device.iot.rules || [];
+                  
+                  if (iotKind === 'lamp' || iotKind === 'heater' || iotKind === 'cooler') {
+                    return (
+                      <div className="space-y-2">
+                        <div className="font-bold text-sm mb-1">
+                          {iotKind === 'lamp' ? (language === 'tr' ? '💡 Lamba' : '💡 Lamp') :
+                           iotKind === 'heater' ? (language === 'tr' ? '🔥 Isıtıcı' : '🔥 Heater') :
+                           (language === 'tr' ? '❄️ Soğutucu' : '❄️ Cooler')}
+                        </div>
+                        <div className="text-xs">
+                          {language === 'tr' ? 'Durum:' : 'Status:'} {isActive ? (language === 'tr' ? 'Açık' : 'ON') : (language === 'tr' ? 'Kapalı' : 'OFF')}
+                        </div>
+                        {rules.length > 0 && (
+                          <div className="mt-2 pt-2 border-t border-slate-300 dark:border-slate-600">
+                            <div className="text-xs font-semibold mb-1">
+                              {language === 'tr' ? '📋 Otomatik Kurallar:' : '📋 Auto Rules:'}
+                            </div>
+                            {rules.map((rule, index) => (
+                              <div key={index} className="text-xs py-1">
+                                <span className="font-mono">
+                                  IF {rule.condition} → {rule.action}
+                                </span>
+                                <span className={`ml-2 ${rule.enabled ? 'text-green-500' : 'text-slate-400'}`}>
+                                  {rule.enabled ? (language === 'tr' ? '✅ Aktif' : '✅ Active') : (language === 'tr' ? '❌ Pasif' : '❌ Inactive')}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                          {language === 'tr' ? '💡 İpucu: Sensör değerlerine göre otomatik açılır/kapanır' : '💡 Tip: Automatically turns on/off based on sensor values'}
+                        </div>
+                      </div>
+                    );
+                  } else if (iotKind === 'sensor') {
+                    return (
+                      <div className="space-y-2">
+                        <div className="font-bold text-sm mb-1">
+                          📡 {language === 'tr' ? 'Sensör' : 'Sensor'}
+                        </div>
+                        <div className="text-xs">
+                          {language === 'tr' ? 'Tür:' : 'Type:'} {device.iot.sensorType}
+                        </div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                          {language === 'tr' ? '💡 Veri toplar ve diğer cihazları kontrol eder' : '💡 Collects data and controls other devices'}
+                        </div>
+                      </div>
+                    );
+                  }
+                }
+                
+                // Default tooltip for other devices
+                return isPoweredOff ? t.powerOn : t.powerOff;
+              })()}
             </TooltipContent>
           )}
         </Tooltip>

@@ -7,6 +7,8 @@ export const processIotRules = (
   environment: EnvironmentSettings,
   updateDevice: (deviceId: string, updates: Partial<CanvasDevice>) => void
 ) => {
+  let deviceUpdated = false;
+  
   devices.forEach(device => {
     if (device.type === 'iot' && device.iot?.rules && device.iot.rules.length > 0) {
       device.iot.rules.forEach(rule => {
@@ -49,13 +51,18 @@ export const processIotRules = (
             updateDevice(targetId, {
               iot: { ...targetDevice.iot!, collaborationEnabled: true }
             });
+            deviceUpdated = true; // Mark that a device was updated
           } else if (finalAction === 'OFF' && isCurrentlyActive) {
             updateDevice(targetId, {
               iot: { ...targetDevice.iot!, collaborationEnabled: false }
             });
+            deviceUpdated = true; // Mark that a device was updated
           }
         }
       });
     }
   });
+  
+  // Return flag to trigger topology re-render if any device was updated
+  return deviceUpdated;
 };
