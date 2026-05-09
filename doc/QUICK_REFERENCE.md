@@ -114,6 +114,7 @@ import { LoadingSpinner, ProgressIndicator, StatusIndicator, EmptyState } from '
 | `validateVLANId` | VLAN ID | `validateVLANId(10)` |
 | `validatePort` | Port numarası | `validatePort(8080)` |
 | `validateSubnetMask` | Subnet mask | `validateSubnetMask('255.255.255.0')` |
+| `isIpv6` | IPv6 mı? | `isIpv6('2001:db8::1')` |
 | `validateRequired` | Zorunlu alan | `validateRequired(value, 'fieldName')` |
 | `validateNumberRange` | Sayı aralığı | `validateNumberRange(5, 1, 10, 'count')` |
 
@@ -329,6 +330,35 @@ if (error) {
 
 ---
 
-**Güncelleme Tarihi**: 2026-05-03  
+## 🌐 IPv6 Yönlendirme (RIPng & OSPFv3)
+
+### 1️⃣ Global Etkinleştirme
+```
+Router(config)# ipv6 unicast-routing
+```
+
+### 2️⃣ RIPng Yapılandırma
+```
+Router(config)# ipv6 router rip TEST
+Router(config)# interface gi0/0
+Router(config-if)# ipv6 rip TEST enable
+```
+
+### 3️⃣ OSPFv3 Yapılandırma
+```
+Router(config)# ipv6 router ospf 1
+Router(config)# interface gi0/0
+Router(config-if)# ipv6 ospf 1 area 0
+```
+
+### 4️⃣ Doğrulama
+```
+Router# show ipv6 route
+Router# show ipv6 interface brief
+```
+
+---
+
+**Güncelleme Tarihi**: 2026-05-15
 **Versiyon**: 1.0  
 **Durum**: ✅ Hazır

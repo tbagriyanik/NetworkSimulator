@@ -1464,3 +1464,67 @@ PC-2# ipconfig (Windows) veya ifconfig (Linux)
 - Kontrol edin: Aynı subnet'te mi? (192.168.10.x)
 - Kontrol edin: Gateway doğru mu? (192.168.10.1)
 - Kontrol edin: Switch port'ları aktif mi? (show interfaces status)
+
+---
+
+## IPv6 Yönlendirme Yapılandırması Örneği (OSPFv3)
+
+**Amaç:** İki router arasında OSPFv3 kullanarak IPv6 bağlantısı sağlamak.
+
+### Topoloji Oluşturma
+1. **Cihazlar:**
+   - 2 adet Router (R1, R2)
+   - 2 adet PC (PC-1, PC-2)
+
+2. **Bağlantılar:**
+   - R1 Gi0/1 -> R2 Gi0/1 (Crossover kablo)
+   - PC-1 Eth0 -> R1 Gi0/0 (Straight kablo)
+   - PC-2 Eth0 -> R2 Gi0/0 (Straight kablo)
+
+### Router-1 Yapılandırması
+
+```
+R1# enable
+R1# configure terminal
+R1(config)# ipv6 unicast-routing
+R1(config)# interface gi0/0
+R1(config-if)# ipv6 address 2001:db8:1::1/64
+R1(config-if)# no shutdown
+R1(config-if)# ipv6 ospf 1 area 0
+R1(config-if)# exit
+R1(config)# interface gi0/1
+R1(config-if)# ipv6 address 2001:db8:12::1/64
+R1(config-if)# no shutdown
+R1(config-if)# ipv6 ospf 1 area 0
+R1(config-if)# exit
+R1(config)# ipv6 router ospf 1
+R1(config-router)# exit
+```
+
+### Router-2 Yapılandırması
+
+```
+R2# enable
+R2# configure terminal
+R2(config)# ipv6 unicast-routing
+R2(config)# interface gi0/0
+R2(config-if)# ipv6 address 2001:db8:2::1/64
+R2(config-if)# no shutdown
+R2(config-if)# ipv6 ospf 1 area 0
+R2(config-if)# exit
+R2(config)# interface gi0/1
+R2(config-if)# ipv6 address 2001:db8:12::2/64
+R2(config-if)# no shutdown
+R2(config-if)# ipv6 ospf 1 area 0
+R2(config-if)# exit
+R2(config)# ipv6 router ospf 1
+R2(config-router)# exit
+```
+
+### Doğrulama
+
+```
+R1# show ipv6 route
+R1# show ipv6 interface brief
+PC-1# ping 2001:db8:2::10 (PC-2'nin IPv6 adresi)
+```

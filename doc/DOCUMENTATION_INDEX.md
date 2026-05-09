@@ -365,13 +365,14 @@ Kod/
 - [x] Entegrasyon rehberi yazıldı
 - [x] Proje raporu hazırlandı
 - [x] İndeks oluşturuldu
+- [x] IPv6 Yönlendirme dokümantasyonu eklendi
 
 ---
 
 ## 📅 Güncelleme Tarihi
 
-**Son Güncelleme**: 2026-05-03  
-**Versiyon**: 1.0.0  
+**Son Güncelleme**: 2026-05-15
+**Versiyon**: 1.1.0
 **Durum**: ✅ Tamamlandı
 
 ---

@@ -33,11 +33,12 @@ Bu dosya README'den çıkarılan uzun açıklamaları ve ayrıntılı proje notl
 
 ### Routing
 
-- Static routing ve administrative distance.
+- IPv4 ve IPv6 Static routing (prefix/length desteği).
 - Router ve L3 switch üzerinde route doğrulama.
-- RIP dynamic routing örnekleri.
-- `show ip route` çıktılarında connected/static/RIP gösterimi.
-- Ping animasyonu route ve VLAN/STP durumunu dikkate alır.
+- RIP ve OSPF dynamic routing desteği.
+- **IPv6 Yönlendirme**: RIPng ve OSPFv3 protokolleri.
+- `show ip route` ve `show ipv6 route` çıktılarında protokol bazlı ayrım.
+- Ping animasyonu IPv4/IPv6 route ve VLAN/STP durumunu dikkate alır.
 
 ### Wireless ve IoT
 
@@ -126,13 +127,13 @@ Kod metriklerinde uygulama kodu ile örnek veri ve dokümanlar ayrı raporlanır
 - Paket yakalama/izleme ekranı.
 - Rehberli ders sayısını artırma.
 - Otomatik lab değerlendirme.
-- IPv6 kapsamını genişletme.
+- IPv6 mobil ve DHCPv6 desteği.
 
 ### Uzun Vadeli Plan
 
 - Çok kullanıcılı lab paylaşımı.
 - Gelişmiş QoS ve trafik şekillendirme.
-- IPv6 kapsamını genişletme.
+- BGP ve IS-IS protokol desteği.
 - Sertifika hazırlık senaryoları.
 
 ## Kurulum

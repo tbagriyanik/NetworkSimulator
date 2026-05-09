@@ -18,12 +18,19 @@ Live app: [network2026.vercel.app](https://network2026.vercel.app)
 - **Interactive Topology Canvas**: PCs, IoT devices, L2/L3 Switches, and Routers.
 - **Realistic CLI/Console**: Command history, suggestion lists, help output, and Geist Mono terminal font.
 - **Advanced Switching**: VLAN, Trunking, Native VLAN, VTP, EtherChannel, STP/PVST, and Port Security.
-- **Robust Routing**: Static routing, L3 Switching, RIP, OSPF patterns, and `show ip route` analysis.
+- **Robust Routing**: IPv4/IPv6 Static routing, L3 Switching, RIP, OSPF patterns, RIPng, OSPFv3, and `show ip route` analysis.
 - **Wireless & IoT**: WiFi AP/Client modes, web-based WiFi management, IoT control panels, and sensor simulation.
 - **Guided Lesson Mode**: Step-by-step tasks with automatic completion detection and progress tracking.
 - **Modern UI/UX**: Keyboard shortcuts, glassmorphism effects, shimmer loading, and accessible design.
 
-### Recent Updates (v1.6.0)
+### Recent Updates (v1.7.0)
+
+- **IPv6 Routing Protocols (RIPng & OSPFv3)**:
+  - Added support for **RIPng** (RIP next generation) for IPv6.
+  - Added support for **OSPFv3** (OSPF for IPv6) with multi-area capability.
+  - Implemented **IPv6 Static Routing** with prefix/length notation.
+  - New show commands: `show ipv6 route` and `show ipv6 interface brief`.
+  - Realistic IPv6 prefix matching and shorthand expansion logic.
 
 - **Bug Fixes & Stability Improvements (May 8, 2026)**:
   - Fixed React hooks immutability errors (`latestDevicesRef`, ref synchronization)
@@ -88,12 +95,19 @@ Live app: [network2026.vercel.app](https://network2026.vercel.app)
 - **Etkileşimli Topoloji Tuvali**: PC, IoT, L2/L3 Switch ve Router cihazları.
 - **Gerçekçi CLI/Console**: Komut geçmişi, öneri listesi, yardım çıktısı ve Geist Mono terminal fontu.
 - **Gelişmiş Switching**: VLAN, Trunking, Native VLAN, VTP, EtherChannel, STP/PVST ve Port Security.
-- **Kapsamlı Routing**: Statik yönlendirme, L3 Switch yönlendirme, RIP, OSPF kalıpları ve `show ip route` çıktıları.
+- **Kapsamlı Routing**: IPv4/IPv6 Statik yönlendirme, L3 Switch yönlendirme, RIP, OSPF, RIPng, OSPFv3 ve `show ip route` çıktıları.
 - **Wireless ve IoT**: WiFi AP/Client modları, web tabanlı WiFi yönetimi, IoT paneli ve sensör simülasyonu.
 - **Rehberli Ders Modu**: Otomatik tamamlama algılama ve ilerleme takibi ile adım adım görevler.
 - **Modern UI/UX**: Klavye kısayolları, glassmorphism efektleri, shimmer loading ve erişilebilir tasarım.
 
-### Son Güncellemeler (v1.6.0)
+### Son Güncellemeler (v1.7.0)
+
+- **IPv6 Yönlendirme Protokolleri (RIPng & OSPFv3)**:
+  - IPv6 için **RIPng** desteği eklendi.
+  - Çoklu alan (multi-area) destekli **OSPFv3** eklendi.
+  - Prefix/uzunluk notasyonu ile **IPv6 Statik Rotalar** eklendi.
+  - Yeni show komutları: `show ipv6 route` ve `show ipv6 interface brief`.
+  - Gerçekçi IPv6 prefix eşleştirme ve kısa yazım (shorthand) genişletme mantığı.
 
 - **Hata Düzeltmeleri ve Kararlılık İyileştirmeleri (8 Mayıs 2026)**:
   - React hooks immutability hataları düzeltildi (`latestDevicesRef`, ref senkronizasyonu)

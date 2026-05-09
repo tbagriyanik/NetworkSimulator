@@ -74,6 +74,15 @@
 
 **Dosya**: `src/components/ui/ConfirmationDialog.tsx`
 
+### 8. **IPv6 Yönlendirme Desteği (v1.7.0)**
+- ✅ RIPng ve OSPFv3 protokol desteği
+- ✅ IPv6 Statik yönlendirme (prefix/length)
+- ✅ Otomatik IPv6 kısa yazım (::) genişletme
+- ✅ `show ipv6 route` ve `show ipv6 interface brief`
+- ✅ IPv6 prefix maskeleme ve eşleştirme mantığı
+
+**Dosya**: `src/lib/network/routing.ts`, `src/lib/network/core/*`
+
 ### 8. **İyileştirilmiş Yükleme Durumları**
 - ✅ `ProgressIndicator` - İlerleme göstergesi
 - ✅ `StatusIndicator` - Durum göstergesi
@@ -264,6 +273,6 @@ Detaylı bilgi için `ERROR_HANDLING_GUIDE.md` dosyasını okuyun.
 
 ---
 
-**Güncelleme Tarihi**: 2026-05-03  
-**Versiyon**: 1.0  
+**Güncelleme Tarihi**: 2026-05-15
+**Versiyon**: 1.1
 **Durum**: ✅ Tamamlandı

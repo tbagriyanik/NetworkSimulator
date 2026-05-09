@@ -64,8 +64,10 @@ The simulator supports **100+ commands** across multiple configuration modes.
 | `erase nvram` | Erase NVRAM filesystem |
 | `delete flash:vlan.dat` | Delete VLAN database file |
 | `reload` | Reload the device |
-| `ip route <network> <mask> <next-hop>` | Add static route |
-| `no ip route <network> <mask> <next-hop>` | Remove static route |
+| `ip route <network> <mask> <next-hop>` | Add static IPv4 route |
+| `no ip route <network> <mask|next-hop>` | Remove static IPv4 route |
+| `ipv6 route <prefix>/<len> <next-hop>` | Add static IPv6 route |
+| `no ipv6 route <prefix>/<len> [next-hop]` | Remove static IPv6 route |
 | `debug <type>` | Enable debugging (requires argument, e.g., `debug ip packet`) |
 | `undebug all` | Disable all debugging |
 | `undebug` | Disable all debugging (alias) |
@@ -143,6 +145,11 @@ The simulator supports **100+ commands** across multiple configuration modes.
 | `system mtu <size>` | Set system MTU |
 | `errdisable recovery` | Configure errdisable recovery |
 | `ipv6 unicast-routing` | Enable IPv6 routing |
+| `no ipv6 unicast-routing` | Disable IPv6 routing |
+| `ipv6 router rip <name>` | Enable RIPng routing process |
+| `ipv6 router ospf <id>` | Enable OSPFv3 routing process |
+| `no ipv6 router rip <name>` | Disable RIPng |
+| `no ipv6 router ospf <id>` | Disable OSPFv3 |
 | `crypto key generate rsa` | Generate RSA keys for SSH |
 | `ip ssh authentication-retries <n>` | Set SSH retry limit |
 | `snmp-server community <str> {RO\|RW}` | Set SNMP community |
@@ -208,6 +215,8 @@ The simulator supports **100+ commands** across multiple configuration modes.
 | `no keepalive` | Disable keepalive |
 | `no name` | Remove interface name (VLAN) |
 | `ipv6 address <ip>/<prefix>` | Assign IPv6 address |
+| `ipv6 rip <name> enable` | Enable RIPng on interface |
+| `ipv6 ospf <id> area <area>` | Enable OSPFv3 on interface |
 | `ip verify source` | Enable IP Source Guard |
 | `ip dhcp snooping trust` | Set interface as trusted for DHCP |
 | `ip arp inspection trust` | Set interface as trusted for DAI |
@@ -292,7 +301,8 @@ The simulator supports **100+ commands** across multiple configuration modes.
 | `show vlan [brief]` | Display VLAN information |
 | `show mac address-table` | Display MAC address table |
 | `show cdp neighbors` | Display CDP neighbors |
-| `show ip route` | Display routing table |
+| `show ip route` | Display IPv4 routing table |
+| `show ipv6 route` | Display IPv6 routing table |
 | `show ipv6 interface brief` | Display IPv6 interface summary |
 | `show clock` | Display system clock |
 | `show flash` | Display flash contents |
