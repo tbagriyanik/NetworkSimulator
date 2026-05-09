@@ -90,6 +90,10 @@ export const interfaceHandlers: Record<string, CommandHandler> = {
   'spanning-tree cost': cmdSpanningTreeCost,
   'spanning-tree priority': cmdSpanningTreePriority,
   'ipv6 address': cmdIpv6Address,
+  'ipv6 rip enable': cmdIpv6Rip,
+  'ipv6 ospf area': cmdIpv6Ospf,
+  'no ipv6 rip enable': cmdNoIpv6Rip,
+  'no ipv6 ospf area': cmdNoIpv6Ospf,
   'switchport voice': cmdSwitchportVoiceVlan,
   'channel-protocol': cmdStubSuccess,
   'priority-queue out': cmdStubSuccess,
@@ -1744,6 +1748,104 @@ function cmdIpv6Address(state: any, input: string, ctx: any): any {
   const match = input.match(/^ipv6\s+address\s+([0-9a-fA-F:]+)\/(\d+)$/i);
   if (!match) return { success: false, error: '% Invalid IPv6 address' };
   const updatePort = (port: any) => ({ ...port, ipv6Address: match[1], ipv6Prefix: parseInt(match[2]) });
+  const newPorts = applyToSelectedPorts(state, updatePort);
+  return { success: true, newState: { ports: newPorts } };
+}
+
+/**
+ * IPv6 RIP Enable
+ */
+function cmdIpv6Rip(state: any, input: string, ctx: any): any {
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: '% No interface selected' };
+  const match = input.match(/^ipv6\s+rip\s+(\S+)\s+enable$/i);
+  if (!match) return { success: false, error: '% Invalid command' };
+
+  const processName = match[1];
+  const updatePort = (port: any) => ({
+    ...port,
+    ipv6Rip: { enabled: true, processName }
+  });
+  const newPorts = applyToSelectedPorts(state, updatePort);
+
+  // Also add route if IP exists
+  const targetPorts = Array.isArray(state.selectedInterfaces) ? state.selectedInterfaces : [state.currentInterface];
+  const ipv6DynamicRoutes = [...(state.ipv6DynamicRoutes || [])];
+
+  targetPorts.forEach(pId => {
+    const port = state.ports[pId];
+    if (port && port.ipv6Address && port.ipv6Prefix) {
+      ipv6DynamicRoutes.push({
+        destination: port.ipv6Address,
+        prefixLength: port.ipv6Prefix,
+        nextHop: 'directly connected',
+        metric: 1,
+        type: 'dynamic'
+      });
+    }
+  });
+
+  return { success: true, newState: { ports: newPorts, ipv6DynamicRoutes } };
+}
+
+/**
+ * IPv6 OSPF Area
+ */
+function cmdIpv6Ospf(state: any, input: string, ctx: any): any {
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: '% No interface selected' };
+  const match = input.match(/^ipv6\s+ospf\s+(\d+)\s+area\s+(\d+)$/i);
+  if (!match) return { success: false, error: '% Invalid command' };
+
+  const processId = match[1];
+  const area = match[2];
+  const updatePort = (port: any) => ({
+    ...port,
+    ipv6Ospf: { enabled: true, processId, area }
+  });
+  const newPorts = applyToSelectedPorts(state, updatePort);
+
+  // Also add route if IP exists
+  const targetPorts = Array.isArray(state.selectedInterfaces) ? state.selectedInterfaces : [state.currentInterface];
+  const ipv6DynamicRoutes = [...(state.ipv6DynamicRoutes || [])];
+
+  targetPorts.forEach(pId => {
+    const port = state.ports[pId];
+    if (port && port.ipv6Address && port.ipv6Prefix) {
+      ipv6DynamicRoutes.push({
+        destination: port.ipv6Address,
+        prefixLength: port.ipv6Prefix,
+        nextHop: 'directly connected',
+        metric: 1,
+        type: 'dynamic',
+        area: parseInt(area)
+      });
+    }
+  });
+
+  return { success: true, newState: { ports: newPorts, ipv6DynamicRoutes } };
+}
+
+/**
+ * No IPv6 RIP
+ */
+function cmdNoIpv6Rip(state: any, input: string, ctx: any): any {
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: '% No interface selected' };
+  const updatePort = (port: any) => ({
+    ...port,
+    ipv6Rip: { enabled: false }
+  });
+  const newPorts = applyToSelectedPorts(state, updatePort);
+  return { success: true, newState: { ports: newPorts } };
+}
+
+/**
+ * No IPv6 OSPF
+ */
+function cmdNoIpv6Ospf(state: any, input: string, ctx: any): any {
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: '% No interface selected' };
+  const updatePort = (port: any) => ({
+    ...port,
+    ipv6Ospf: { enabled: false }
+  });
   const newPorts = applyToSelectedPorts(state, updatePort);
   return { success: true, newState: { ports: newPorts } };
 }

@@ -76,6 +76,13 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'system mtu': cmdSystemMtu,
   'sdm prefer': cmdSdmPrefer,
   'ipv6 unicast-routing': cmdIpv6UnicastRouting,
+  'no ipv6 unicast-routing': cmdNoIpv6UnicastRouting,
+  'ipv6 route': cmdIpv6Route,
+  'no ipv6 route': cmdNoIpv6Route,
+  'ipv6 router rip': cmdIpv6RouterRip,
+  'ipv6 router ospf': cmdIpv6RouterOspf,
+  'no ipv6 router rip': cmdNoIpv6RouterRip,
+  'no ipv6 router ospf': cmdNoIpv6RouterOspf,
   'ip ssh authentication-retries': cmdIpSshAuthRetries,
   'crypto key generate rsa': cmdCryptoKeyGenerateRsa,
   'ip dhcp pool': cmdIpDhcpPool,
@@ -1497,6 +1504,163 @@ function cmdSdmPrefer(state: any, input: string, ctx: any): any {
 function cmdIpv6UnicastRouting(state: any, input: string, ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: '% Invalid command at this mode' };
   return { success: true, newState: { ipv6Enabled: true } };
+}
+
+/**
+ * No IPv6 Unicast-Routing
+ */
+function cmdNoIpv6UnicastRouting(state: any, input: string, ctx: any): any {
+  if (state.currentMode !== 'config') return { success: false, error: '% Invalid command at this mode' };
+  return { success: true, newState: { ipv6Enabled: false } };
+}
+
+/**
+ * IPv6 Route - Add static IPv6 route
+ */
+function cmdIpv6Route(state: any, input: string, ctx: any): any {
+  if (state.currentMode !== 'config') {
+    return { success: false, error: '% Invalid command at this mode' };
+  }
+
+  const match = input.match(/^ipv6\s+route\s+([0-9a-fA-F:]+\/\d+)\s+(\S+)(?:\s+(\d+))?$/i);
+  if (!match) {
+    return { success: false, error: '% Invalid ipv6 route command' };
+  }
+
+  const [, prefix, nextHop, adminDistance] = match;
+  const [destination, prefixLength] = prefix.split('/');
+  const metric = adminDistance ? parseInt(adminDistance, 10) : 1;
+
+  const newStaticRoutes = [...(state.ipv6StaticRoutes || [])];
+  const filteredRoutes = newStaticRoutes.filter(
+    (route: any) => !(route.destination === destination && route.prefixLength === parseInt(prefixLength))
+  );
+  filteredRoutes.push({
+    destination,
+    prefixLength: parseInt(prefixLength),
+    nextHop,
+    metric,
+    type: 'static'
+  });
+
+  return {
+    success: true,
+    newState: {
+      ipv6StaticRoutes: filteredRoutes,
+      ipv6Enabled: true
+    }
+  };
+}
+
+/**
+ * No IPv6 Route - Remove static IPv6 route
+ */
+function cmdNoIpv6Route(state: any, input: string, ctx: any): any {
+  if (state.currentMode !== 'config') {
+    return { success: false, error: '% Invalid command at this mode' };
+  }
+
+  const match = input.match(/^no\s+ipv6\s+route\s+([0-9a-fA-F:]+\/\d+)(?:\s+(\S+))?$/i);
+  if (!match) {
+    return { success: false, error: '% Invalid no ipv6 route command' };
+  }
+
+  const [, prefix, nextHop] = match;
+  const [destination, prefixLength] = prefix.split('/');
+
+  let newStaticRoutes = (state.ipv6StaticRoutes || []).filter(
+    (route: any) => {
+      const matchDest = route.destination === destination && route.prefixLength === parseInt(prefixLength);
+      if (nextHop) {
+        return !(matchDest && route.nextHop === nextHop);
+      }
+      return !matchDest;
+    }
+  );
+
+  return {
+    success: true,
+    newState: { ipv6StaticRoutes: newStaticRoutes }
+  };
+}
+
+/**
+ * IPv6 Router RIP
+ */
+function cmdIpv6RouterRip(state: any, input: string, ctx: any): any {
+  if (state.currentMode !== 'config') {
+    return { success: false, error: '% Invalid command at this mode' };
+  }
+
+  const match = input.match(/^ipv6\s+router\s+rip\s+(\S+)$/i);
+  if (!match) return { success: false, error: '% Invalid command' };
+
+  return {
+    success: true,
+    output: `RIPng process "${match[1]}" started`,
+    newState: {
+      routingProtocol: 'ripng',
+      ipv6Enabled: true,
+      currentMode: 'router-config'
+    }
+  };
+}
+
+/**
+ * IPv6 Router OSPF
+ */
+function cmdIpv6RouterOspf(state: any, input: string, ctx: any): any {
+  if (state.currentMode !== 'config') {
+    return { success: false, error: '% Invalid command at this mode' };
+  }
+
+  const match = input.match(/^ipv6\s+router\s+ospf\s+(\d+)$/i);
+  if (!match) return { success: false, error: '% Invalid command' };
+
+  return {
+    success: true,
+    output: `OSPFv3 process ${match[1]} started`,
+    newState: {
+      routingProtocol: 'ospfv3',
+      ipv6Enabled: true,
+      ospfv3ProcessId: match[1],
+      currentMode: 'router-config'
+    }
+  };
+}
+
+/**
+ * No IPv6 Router RIP
+ */
+function cmdNoIpv6RouterRip(state: any, input: string, ctx: any): any {
+  if (state.currentMode !== 'config') {
+    return { success: false, error: '% Invalid command at this mode' };
+  }
+
+  return {
+    success: true,
+    newState: {
+      routingProtocol: 'none',
+      ipv6DynamicRoutes: []
+    }
+  };
+}
+
+/**
+ * No IPv6 Router OSPF
+ */
+function cmdNoIpv6RouterOspf(state: any, input: string, ctx: any): any {
+  if (state.currentMode !== 'config') {
+    return { success: false, error: '% Invalid command at this mode' };
+  }
+
+  return {
+    success: true,
+    newState: {
+      routingProtocol: 'none',
+      ipv6DynamicRoutes: []
+    }
+  };
 }
 
 /**

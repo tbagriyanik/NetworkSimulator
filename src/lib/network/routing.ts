@@ -3,11 +3,13 @@ import { SwitchState } from './types';
 import { checkBasicL2Connectivity } from './basicConnectivity';
 
 export interface Route {
-  destination: string;      // e.g., "192.168.2.0"
-  subnetMask: string;       // e.g., "255.255.255.0"
-  nextHop: string;          // e.g., "192.168.1.1" or interface name
+  destination: string;      // e.g., "192.168.2.0" or "2001:db8:1::"
+  subnetMask?: string;       // e.g., "255.255.255.0" (for IPv4)
+  prefixLength?: number;     // e.g., 64 (for IPv6)
+  nextHop: string;          // e.g., "192.168.1.1" or "2001:db8:1::1" or interface name
   metric?: number;          // Administrative distance/metric
   type: 'connected' | 'static' | 'dynamic'; // Route type
+  area?: number;            // For OSPF
 }
 
 export interface RoutingTable {
@@ -68,6 +70,7 @@ function checkL3Routing(
   const routingTable = buildRoutingTable(sourceId, devices, connections, deviceStates);
 
   // Find route to target
+  const isTargetIpv6 = isIpv6(targetIp);
   const route = findRoute(targetIp, routingTable);
   if (!route) {
     return { success: false, hops: [], error: 'No route to destination' };
@@ -119,16 +122,30 @@ function buildRoutingTable(
         type: 'connected'
       });
     }
+    if (port.ipv6Address && port.ipv6Prefix) {
+      routes.push({
+        destination: port.ipv6Address,
+        prefixLength: port.ipv6Prefix,
+        nextHop: portId,
+        type: 'connected'
+      });
+    }
   }
 
   // Static routes
   if (state.staticRoutes) {
     routes.push(...state.staticRoutes);
   }
+  if (state.ipv6StaticRoutes) {
+    routes.push(...state.ipv6StaticRoutes);
+  }
 
   // Dynamic routes (simplified OSPF/RIP)
   if (state.dynamicRoutes) {
     routes.push(...state.dynamicRoutes);
+  }
+  if (state.ipv6DynamicRoutes) {
+    routes.push(...state.ipv6DynamicRoutes);
   }
 
   return routes;
@@ -144,15 +161,30 @@ export function findRoute(destinationIp: string, routingTable: Route[]): Route |
   let bestRoute: Route | null = null;
   let bestPrefixLength = -1;
 
+  const isTargetIpv6 = isIpv6(destinationIp);
+
   for (const route of routingTable) {
-    if (!route.destination || !route.subnetMask) {
+    if (!route.destination) {
       continue;
     }
-    if (isIpInNetwork(destinationIp, route.destination, route.subnetMask)) {
-      const prefixLength = getPrefixLength(route.subnetMask);
-      if (prefixLength > bestPrefixLength) {
-        bestPrefixLength = prefixLength;
-        bestRoute = route;
+
+    const isRouteIpv6 = isIpv6(route.destination);
+    if (isTargetIpv6 !== isRouteIpv6) continue;
+
+    if (isTargetIpv6) {
+      if (route.prefixLength !== undefined && isIpv6InNetwork(destinationIp, route.destination, route.prefixLength)) {
+        if (route.prefixLength > bestPrefixLength) {
+          bestPrefixLength = route.prefixLength;
+          bestRoute = route;
+        }
+      }
+    } else {
+      if (route.subnetMask && isIpInNetwork(destinationIp, route.destination, route.subnetMask)) {
+        const prefixLength = getPrefixLength(route.subnetMask);
+        if (prefixLength > bestPrefixLength) {
+          bestPrefixLength = prefixLength;
+          bestRoute = route;
+        }
       }
     }
   }
@@ -167,11 +199,60 @@ function isIpInNetwork(ip: string, network: string, subnetMask: string): boolean
   if (!ip || !network || !subnetMask) {
     return false;
   }
-  const ipNum = ipToNumber(ip);
-  const networkNum = ipToNumber(network);
-  const maskNum = ipToNumber(subnetMask);
+  try {
+    const ipNum = ipToNumber(ip);
+    const networkNum = ipToNumber(network);
+    const maskNum = ipToNumber(subnetMask);
 
-  return (ipNum & maskNum) === (networkNum & maskNum);
+    return (ipNum & maskNum) === (networkNum & maskNum);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check if address is IPv6
+ */
+export function isIpv6(address: string): boolean {
+  return address.includes(':');
+}
+
+/**
+ * Expand IPv6 shorthand address
+ */
+export function expandIpv6(address: string): string {
+  if (!address.includes('::')) return address;
+  const parts = address.split('::');
+  const left = parts[0] ? parts[0].split(':') : [];
+  const right = parts[1] ? parts[1].split(':') : [];
+  const missing = 8 - (left.length + right.length);
+  const middle = Array(missing).fill('0');
+  return [...left, ...middle, ...right].map(p => p.padStart(4, '0')).join(':');
+}
+
+/**
+ * Check if IPv6 address is in network
+ */
+export function isIpv6InNetwork(address: string, network: string, prefixLength: number): boolean {
+  try {
+    const fullAddress = expandIpv6(address).split(':').map(p => parseInt(p, 16));
+    const fullNetwork = expandIpv6(network).split(':').map(p => parseInt(p, 16));
+
+    let bitsRemaining = prefixLength;
+    for (let i = 0; i < 8; i++) {
+      if (bitsRemaining <= 0) break;
+      const bitsInThisGroup = Math.min(bitsRemaining, 16);
+      const mask = (0xFFFF << (16 - bitsInThisGroup)) & 0xFFFF;
+
+      if ((fullAddress[i] & mask) !== (fullNetwork[i] & mask)) {
+        return false;
+      }
+      bitsRemaining -= bitsInThisGroup;
+    }
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -250,7 +331,7 @@ function findPathToNextHop(
     const neighborId = conn.sourceDeviceId === sourceId ? conn.targetDeviceId : conn.sourceDeviceId;
     const neighborDevice = devices.find(d => d.id === neighborId);
 
-    if (neighborDevice && (neighborDevice.ip === nextHop || neighborDevice.name === nextHop)) {
+    if (neighborDevice && (neighborDevice.ip === nextHop || neighborDevice.ipv6 === nextHop || neighborDevice.name === nextHop)) {
       return { success: true, hops: [neighborDevice.name] };
     }
   }
@@ -335,16 +416,31 @@ export function getRoutingTable(
         type: 'connected'
       });
     }
+    if (port.ipv6Address && port.ipv6Prefix) {
+      routes.push({
+        destination: port.ipv6Address,
+        prefixLength: port.ipv6Prefix,
+        nextHop: portId,
+        metric: 0,
+        type: 'connected'
+      });
+    }
   }
 
   // Static routes
   if (state.staticRoutes) {
     routes.push(...state.staticRoutes);
   }
+  if (state.ipv6StaticRoutes) {
+    routes.push(...state.ipv6StaticRoutes);
+  }
 
   // Dynamic routes
   if (state.dynamicRoutes) {
     routes.push(...state.dynamicRoutes);
+  }
+  if (state.ipv6DynamicRoutes) {
+    routes.push(...state.ipv6DynamicRoutes);
   }
 
   return routes.sort((a, b) => {

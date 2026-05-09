@@ -19,6 +19,24 @@ export const commandPatterns: Record<string, CommandPattern> = {
     minArgs: 0,
     maxArgs: 0
   },
+  'no ipv6 unicast-routing': {
+    pattern: /^no\s+ipv6\s+unicast-routing$/i,
+    modes: ['config'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'ipv6 route': {
+    pattern: /^ipv6\s+route\s+([0-9a-fA-F:]+\/\d+)\s+(\S+)(?:\s+(\d+))?$/i,
+    modes: ['config'],
+    minArgs: 2,
+    maxArgs: 3
+  },
+  'no ipv6 route': {
+    pattern: /^no\s+ipv6\s+route\s+([0-9a-fA-F:]+\/\d+)(?:\s+(\S+))?$/i,
+    modes: ['config'],
+    minArgs: 1,
+    maxArgs: 2
+  },
   'disable': {
     pattern: /^disable$/i,
     modes: ['privileged'],
@@ -292,11 +310,35 @@ export const commandPatterns: Record<string, CommandPattern> = {
     minArgs: 0,
     maxArgs: 1
   },
+  'ipv6 router rip': {
+    pattern: /^ipv6\s+router\s+rip\s+(\S+)$/i,
+    modes: ['config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'ipv6 router ospf': {
+    pattern: /^ipv6\s+router\s+ospf\s+(\d+)$/i,
+    modes: ['config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
   'no router rip': {
     pattern: /^no\s+router\s+rip$/i,
     modes: ['config'],
     minArgs: 0,
     maxArgs: 0
+  },
+  'no ipv6 router rip': {
+    pattern: /^no\s+ipv6\s+router\s+rip\s+(\S+)$/i,
+    modes: ['config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'no ipv6 router ospf': {
+    pattern: /^no\s+ipv6\s+router\s+ospf\s+(\d+)$/i,
+    modes: ['config'],
+    minArgs: 1,
+    maxArgs: 1
   },
   'no router ospf': {
     pattern: /^no\s+router\s+ospf$/i,
@@ -410,10 +452,40 @@ export const commandPatterns: Record<string, CommandPattern> = {
     minArgs: 2,
     maxArgs: 2
   },
+  'ipv6 rip enable': {
+    pattern: /^ipv6\s+rip\s+(\S+)\s+enable$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 2,
+    maxArgs: 2
+  },
+  'ipv6 ospf area': {
+    pattern: /^ipv6\s+ospf\s+(\d+)\s+area\s+(\d+)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 2,
+    maxArgs: 2
+  },
+  'no ipv6 rip enable': {
+    pattern: /^no\s+ipv6\s+rip\s+(\S+)\s+enable$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 2,
+    maxArgs: 2
+  },
+  'no ipv6 ospf area': {
+    pattern: /^no\s+ipv6\s+ospf\s+(\d+)\s+area\s+(\d+)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 2,
+    maxArgs: 2
+  },
   'errdisable recovery cause': {
     pattern: /^errdisable\s+recovery\s+cause\s+(.+)$/i,
     modes: ['config'],
     minArgs: 1,
+    maxArgs: 1
+  },
+  'show ipv6 route': {
+    pattern: /^show\s+ipv6\s+route(\s+(.+))?$/i,
+    modes: ['privileged', 'config', 'interface', 'config-if-range', 'vlan', 'line'],
+    minArgs: 0,
     maxArgs: 1
   },
   'mls qos': {

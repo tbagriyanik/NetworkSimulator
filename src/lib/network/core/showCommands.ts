@@ -58,6 +58,7 @@ export const showHandlers: Record<string, CommandHandler> = {
   'show ip verify source': cmdShowIpVerifySource,
   'show': cmdShowParent,
   'show ip interface': cmdShowIpInterface,
+  'show ipv6 route': cmdShowIpv6Route,
   'show ipv6 interface brief': cmdShowIpv6InterfaceBrief,
   'show mac address-table static': cmdShowMacStatic,
   'show authentication': cmdShowAuth,
@@ -3042,7 +3043,77 @@ function cmdShowIpInterface(state: any, input: string, ctx: any): any {
  * Show IPv6 Interface Brief
  */
 function cmdShowIpv6InterfaceBrief(state: any, input: string, ctx: any): any {
-  return { success: true, output: '\nInterface              IPv6-Address                                Status                Protocol\n' };
+  let output = '\nInterface              IPv6-Address                                Status                Protocol\n';
+
+  Object.keys(state.ports || {}).forEach(portName => {
+    const port = state.ports[portName];
+    const status = port.shutdown ? 'administratively down' : 'up';
+    const protocol = port.shutdown ? 'down' : 'up';
+
+    if (port.ipv6Address && port.ipv6Prefix) {
+      const addr = `${port.ipv6Address}/${port.ipv6Prefix}`;
+      output += `${portName.padEnd(22)} ${addr.padEnd(43)} ${status.padEnd(21)} ${protocol}\n`;
+    } else {
+      output += `${portName.padEnd(22)} unassigned                                  ${status.padEnd(21)} ${protocol}\n`;
+    }
+  });
+
+  return { success: true, output };
+}
+
+/**
+ * Show IPv6 Route
+ */
+function cmdShowIpv6Route(state: any, input: string, ctx: any): any {
+  let output = '\n';
+
+  if (!state.ipv6Enabled) {
+    output += '% IPv6 routing is not enabled\n';
+    return { success: true, output };
+  }
+
+  const routes: string[] = [];
+
+  // Connected routes
+  Object.keys(state.ports || {}).forEach(portName => {
+    const port = state.ports[portName];
+    if (port.ipv6Address && port.ipv6Prefix && !port.shutdown) {
+      routes.push(`C   ${port.ipv6Address}/${port.ipv6Prefix} [0/0]\n     via ${portName}, directly connected`);
+      routes.push(`L   ${port.ipv6Address}/128 [0/0]\n     via ${portName}, receive`);
+    }
+  });
+
+  // Static routes
+  if (state.ipv6StaticRoutes && state.ipv6StaticRoutes.length > 0) {
+    state.ipv6StaticRoutes.forEach((route: any) => {
+      const metric = route.metric || 1;
+      routes.push(`S   ${route.destination}/${route.prefixLength} [${metric}/0]\n     via ${route.nextHop}`);
+    });
+  }
+
+  // Dynamic routes
+  if (state.ipv6DynamicRoutes && state.ipv6DynamicRoutes.length > 0) {
+    state.ipv6DynamicRoutes.forEach((route: any) => {
+      const metric = route.metric || 1;
+      const code = state.routingProtocol === 'ospfv3' ? 'O' : 'R';
+      routes.push(`${code}   ${route.destination}/${route.prefixLength} [${code === 'O' ? 110 : 120}/${metric}]\n     via ${route.nextHop}`);
+    });
+  }
+
+  output += `IPv6 Routing Table - default - ${routes.length} entries\n`;
+  output += 'Codes: C - Connected, L - Local, S - Static, U - Per-user Static route\n';
+  output += '       B - BGP, R - RIP, I1 - ISIS L1, I2 - IS-IS L2\n';
+  output += '       IA - IS-IS interarea, IS - IS-IS summary, D - EIGRP, EX - EIGRP external\n';
+  output += '       O - OSPF Intra, OI - OSPF Inter, OE1 - OSPF ext 1, OE2 - OSPF ext 2\n';
+  output += '       ON1 - OSPF NSSA ext 1, ON2 - OSPF NSSA ext 2\n\n';
+
+  if (routes.length === 0) {
+    output += 'No IPv6 routes found\n';
+  } else {
+    output += routes.join('\n') + '\n';
+  }
+
+  return { success: true, output };
 }
 
 /**

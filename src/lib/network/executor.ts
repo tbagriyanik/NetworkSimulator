@@ -153,6 +153,9 @@ export const commandHelp: Record<string, Record<string, string[]>> = {
     ...npfx('show ip', 'verify', ['source']),
     ...npfx('show ip', 'source', ['binding']),
     ...npfx('show ip', 'arp', ['inspection']),
+    ...multi('show ipv6', ['interface', 'route']),
+    ...npfx('show ipv6', 'interface', ['brief']),
+    ...npfx('show ipv6', 'route', ['']),
     'ip': ['route', 'default-gateway', 'domain-name', 'ssh', 'dhcp', 'verify', 'source', 'arp'],
     ...npfx('ip', 'route', ['route']),
     ...npfx('ip', 'dhcp', ['pool', 'excluded-address', 'snooping']),
@@ -334,10 +337,13 @@ export const commandHelp: Record<string, Record<string, string[]>> = {
     'interface Wlan-id': [''],
     'interface wlan-id': [''],
 
-    'ipv6': ['unicast-routing', 'address', 'route'],
+    'ipv6': ['unicast-routing', 'address', 'route', 'router'],
     ...npfx('ipv6', 'unicast-routing', [''], 15),
     ...npfx('ipv6', 'address', ['<ipv6-address>'], 7),
     ...npfx('ipv6', 'route', ['<ipv6-prefix>', '<next-hop>'], 5),
+    ...npfx('ipv6', 'router', ['rip', 'ospf']),
+    ...npfx('ipv6 router', 'rip', ['<name>']),
+    ...npfx('ipv6 router', 'ospf', ['<process-id>']),
 
     'crypto': ['key'],
     ...npfx('crypto', 'key', ['generate'], 3),
@@ -489,8 +495,14 @@ export const commandHelp: Record<string, Record<string, string[]>> = {
 
 
 
-    ...single('i', ['ip']),
+    ...single('i', ['ip', 'ipv6']),
     'ip': ['address', 'helper-address', 'default-gateway', 'dhcp', 'verify', 'arp'],
+    'ipv6': ['address', 'rip', 'ospf'],
+    ...npfx('ipv6', 'address', []),
+    ...npfx('ipv6', 'rip', ['<name>']),
+    ...npfx('ipv6 rip <name>', 'enable', ['enable']),
+    ...npfx('ipv6', 'ospf', ['<process-id>']),
+    ...npfx('ipv6 ospf <process-id>', 'area', ['<area-id>']),
     ...npfx('ip', 'address', []),
     ...npfx('ip', 'default-gateway', ['']),
     ...npfx('ip', 'dhcp', ['snooping']),

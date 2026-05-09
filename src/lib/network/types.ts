@@ -57,6 +57,15 @@ export interface Port {
   staticMacs?: string[]; // Static MAC addresses for port security
   ipv6Address?: string;         // For CCNA 1 v7 support
   ipv6Prefix?: number;
+  ipv6Rip?: {
+    enabled: boolean;
+    processName?: string;
+  };
+  ipv6Ospf?: {
+    enabled: boolean;
+    processId?: string;
+    area?: string;
+  };
   isRoutedPort?: boolean;       // For L3 switch routed ports
   isSubinterface?: boolean;     // For subinterfaces (e.g., gi0/0.10)
   parentInterface?: string;     // Parent interface for subinterfaces
@@ -172,7 +181,9 @@ export interface SwitchState {
   isLayer3Switch?: boolean;        // L3 switch capability
   staticRoutes?: Route[];          // Static routing table
   dynamicRoutes?: Route[];         // Dynamic routing table
-  routingProtocol?: 'none' | 'rip' | 'ospf'; // Routing protocol
+  ipv6StaticRoutes?: Route[];      // IPv6 static routing table
+  ipv6DynamicRoutes?: Route[];     // IPv6 dynamic routing table
+  routingProtocol?: 'none' | 'rip' | 'ospf' | 'ripng' | 'ospfv3'; // Routing protocol
   // DHCP pool CLI config (ip dhcp pool <name>)
   currentDhcpPool?: string;
   dhcpPools?: Record<string, {
@@ -395,9 +406,11 @@ export function formatPortId(type: 'fastethernet' | 'gigabitethernet', module: n
 
 // Route interface for routing functionality
 export interface Route {
-  destination: string;      // e.g., "192.168.2.0"
-  subnetMask: string;       // e.g., "255.255.255.0"
-  nextHop: string;          // e.g., "192.168.1.1" or interface name
+  destination: string;      // e.g., "192.168.2.0" or "2001:db8:1::"
+  subnetMask?: string;      // e.g., "255.255.255.0" (for IPv4)
+  prefixLength?: number;     // e.g., 64 (for IPv6)
+  nextHop: string;          // e.g., "192.168.1.1" or "2001:db8:1::1" or interface name
   metric?: number;          // Administrative distance/metric
   type: 'connected' | 'static' | 'dynamic'; // Route type
+  area?: number;            // For OSPF
 }
