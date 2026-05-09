@@ -569,7 +569,10 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
     createIotDevice('iot-temp', 'Sera-Sicaklik', 30, 300, 'temperature'),
     createIotDevice('iot-hum', 'Sera-Nem', 180, 340, 'humidity'),
     createIotDevice('iot-light', 'Sera-Isik', 330, 300, 'light'),
-    createIotDevice('iot-motion', 'Sera-Kapi', 480, 320, 'motion')
+    createIotDevice('iot-motion', 'Sera-Kapi', 480, 320, 'motion'),
+    createIotDevice('iot-heater', 'Sera-Isitici', 120, 470, 'temperature'),
+    createIotDevice('iot-cooler', 'Sera-Sogutucu', 300, 470, 'temperature'),
+    createIotDevice('iot-lamp', 'Sera-Lamba', 480, 470, 'light')
   ];
 
   // Configure R1 for Greenhouse WiFi with WPA2 security
@@ -706,17 +709,109 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
   greenhouseDevices[5].ports[0].subnetMask = '255.255.255.0';
   greenhouseDevices[5].ports[0].wifi = { ssid: 'GreenHouse-Network', security: 'wpa2', channel: '2.4GHz', mode: 'client' };
 
+  greenhouseDevices[6].wifi = {
+    enabled: true,
+    ssid: 'GreenHouse-Network',
+    security: 'wpa2',
+    password: 'sera',
+    channel: '2.4GHz',
+    mode: 'client'
+  };
+  greenhouseDevices[6].ip = '192.168.2.111';
+  greenhouseDevices[6].subnet = '255.255.255.0';
+  greenhouseDevices[6].gateway = '192.168.2.1';
+  greenhouseDevices[6].ports[0].status = 'connected';
+  greenhouseDevices[6].ports[0].ipAddress = '192.168.2.111';
+  greenhouseDevices[6].ports[0].subnetMask = '255.255.255.0';
+  greenhouseDevices[6].ports[0].wifi = { ssid: 'GreenHouse-Network', security: 'wpa2', channel: '2.4GHz', mode: 'client' };
+  greenhouseDevices[6].iot = {
+    ...greenhouseDevices[6].iot,
+    sensorType: 'temperature',
+    kind: 'heater',
+    dataFlowDirection: 'output',
+    value: false
+  };
+
+  greenhouseDevices[7].wifi = {
+    enabled: true,
+    ssid: 'GreenHouse-Network',
+    security: 'wpa2',
+    password: 'sera',
+    channel: '2.4GHz',
+    mode: 'client'
+  };
+  greenhouseDevices[7].ip = '192.168.2.112';
+  greenhouseDevices[7].subnet = '255.255.255.0';
+  greenhouseDevices[7].gateway = '192.168.2.1';
+  greenhouseDevices[7].ports[0].status = 'connected';
+  greenhouseDevices[7].ports[0].ipAddress = '192.168.2.112';
+  greenhouseDevices[7].ports[0].subnetMask = '255.255.255.0';
+  greenhouseDevices[7].ports[0].wifi = { ssid: 'GreenHouse-Network', security: 'wpa2', channel: '2.4GHz', mode: 'client' };
+  greenhouseDevices[7].iot = {
+    ...greenhouseDevices[7].iot,
+    sensorType: 'temperature',
+    kind: 'cooler',
+    dataFlowDirection: 'output',
+    value: false
+  };
+
+  greenhouseDevices[8].wifi = {
+    enabled: true,
+    ssid: 'GreenHouse-Network',
+    security: 'wpa2',
+    password: 'sera',
+    channel: '2.4GHz',
+    mode: 'client'
+  };
+  greenhouseDevices[8].ip = '192.168.2.113';
+  greenhouseDevices[8].subnet = '255.255.255.0';
+  greenhouseDevices[8].gateway = '192.168.2.1';
+  greenhouseDevices[8].ports[0].status = 'connected';
+  greenhouseDevices[8].ports[0].ipAddress = '192.168.2.113';
+  greenhouseDevices[8].ports[0].subnetMask = '255.255.255.0';
+  greenhouseDevices[8].ports[0].wifi = { ssid: 'GreenHouse-Network', security: 'wpa2', channel: '2.4GHz', mode: 'client' };
+  greenhouseDevices[8].iot = {
+    ...greenhouseDevices[8].iot,
+    sensorType: 'light',
+    kind: 'lamp',
+    dataFlowDirection: 'output',
+    value: false
+  };
+
+  greenhouseDevices[2].iot = {
+    ...greenhouseDevices[2].iot,
+    sensorType: 'temperature',
+    kind: 'sensor',
+    dataFlowDirection: 'input',
+    rules: [
+      { id: 'gh-temp-hot', condition: 'iot:iot-temp:temperature > 28', action: 'iot-cooler:ON', enabled: true },
+      { id: 'gh-temp-cooler-off', condition: 'iot:iot-temp:temperature < 26', action: 'iot-cooler:OFF', enabled: true },
+      { id: 'gh-temp-cold', condition: 'iot:iot-temp:temperature < 18', action: 'iot-heater:ON', enabled: true },
+      { id: 'gh-temp-heater-off', condition: 'iot:iot-temp:temperature > 20', action: 'iot-heater:OFF', enabled: true }
+    ]
+  };
+  greenhouseDevices[4].iot = {
+    ...greenhouseDevices[4].iot,
+    sensorType: 'light',
+    kind: 'sensor',
+    dataFlowDirection: 'input',
+    rules: [
+      { id: 'gh-light-dark', condition: 'iot:iot-light:light < 45', action: 'iot-lamp:ON', enabled: true },
+      { id: 'gh-light-bright', condition: 'iot:iot-light:light > 60', action: 'iot-lamp:OFF', enabled: true }
+    ]
+  };
+
   const greenhouseConnections: CanvasConnection[] = [];
   const greenhouseNotes: CanvasNote[] = [
     {
       id: 'greenhouse-note',
       text: isTr
-        ? 'Amaç: Güvenli WiFi ağı ile IoT sensörlerini bağlayarak sera ortamını izlemek.\n\n🌱 AKILLI SERA KROKİSİ:\n1) R1 (Router) WPA2 korumalı WiFi ağı: GreenHouse-Network (şifre: sera)\n2) 4 IoT Sensör: Sıcaklık (2.101), Nem (2.102), Işık (2.103), Kapı/Hareket (2.104)\n3) PC-1 ile WiFi panelinden (wget 192.168.2.1) sensörleri izleyin\n4) IoT Panel: wget http://iot-panel (admin/admin) ile cihazları yönetin\n5) Görev: ping 192.168.2.101 ile sensör erişimini test edin'
-        : '🌱 SMART GREENHOUSE SKETCH:\n1) R1 (Router) WPA2 secured WiFi: GreenHouse-Network (password: sera)\n2) 4 IoT Sensors: Temperature (.101), Humidity (.102), Light (.103), Door/Motion (.104)\n3) Monitor sensors from PC-1 via WiFi panel (wget 192.168.2.1)\n4) IoT Panel: wget http://iot-panel (admin/admin) to manage devices\n5) Task: Test sensor access with ping 192.168.2.101',
+        ? 'Amaç: Güvenli WiFi ağı ile IoT sensörleri ve aktüatörlerle sera ortamını izlemek.\n\nAKILLI SERA KROKISI:\n1) R1 (Router) WPA2 korumalı WiFi ağı: GreenHouse-Network (şifre: sera)\n2) 4 IoT Sensör: Sıcaklık (2.101), Nem (2.102), Işık (2.103), Kapı/Hareket (2.104)\n3) 3 Aktüatör: Isıtıcı (2.111), Soğutucu (2.112), Lamba (2.113)\n4) Basit programlama hazır: sıcaklık ısıtıcı/soğutucuyu, ışık sensörü lambayı otomatik yönetir\n5) PC-1 ile WiFi panelinden (wget 192.168.2.1) sensörleri izleyin\n6) IoT Panel: wget http://iot-panel (admin/admin) ile cihazları ve kuralları yönetin'
+        : 'SMART GREENHOUSE SKETCH:\n1) R1 (Router) WPA2 secured WiFi: GreenHouse-Network (password: sera)\n2) 4 IoT Sensors: Temperature (.101), Humidity (.102), Light (.103), Door/Motion (.104)\n3) 3 Actuators: Heater (.111), Cooler (.112), Lamp (.113)\n4) Simple programming is preconfigured: temperature drives heater/cooler, light drives lamp automatically\n5) Monitor sensors from PC-1 via WiFi panel (wget 192.168.2.1)\n6) IoT Panel: wget http://iot-panel (admin/admin) to manage devices and rules',
       x: 500,
       y: 60,
       width: 480,
-      height: 180,
+      height: 220,
       color: '#10b981',
       font: 'verdana',
       fontSize: 12,
