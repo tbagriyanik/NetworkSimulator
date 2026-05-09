@@ -70,7 +70,7 @@ Bu dosya README'den çıkarılan uzun açıklamaları ve ayrıntılı proje notl
 - Skeleton ekranlar ve dinamik bileşen yükleme.
 - Klavye kısayolları, ARIA etiketleri ve ekran okuyucu iyileştirmeleri.
 
-## Proje Metrikleri (v1.7.0)
+## Proje Metrikleri (v1.6.1)
 
 Kod metriklerinde uygulama kodu ile örnek veri ve dokümanlar ayrı raporlanır.
 

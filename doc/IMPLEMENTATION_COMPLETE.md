@@ -90,7 +90,7 @@ Uygulamada kapsamlı hata kontrolü ve UI/UX iyileştirmeleri başarıyla uygula
 - [x] `IMPROVEMENTS_SUMMARY.md` - İyileştirmeler özeti
 - [x] `IMPLEMENTATION_COMPLETE.md` - Bu dosya
 
-### ✅ Faz 4: IPv6 Yönlendirme (v1.7.0)
+### ✅ Faz 4: IPv6 Yönlendirme (v1.6.1)
 
 #### 10. IPv6 Protokol Desteği
 - [x] **RIPng** (RIP next generation) desteği

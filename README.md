@@ -23,7 +23,7 @@ Live app: [network2026.vercel.app](https://network2026.vercel.app)
 - **Guided Lesson Mode**: Step-by-step tasks with automatic completion detection and progress tracking.
 - **Modern UI/UX**: Keyboard shortcuts, glassmorphism effects, shimmer loading, and accessible design.
 
-### Recent Updates (v1.7.0)
+### Recent Updates (v1.6.1)
 
 - **IPv6 Routing Protocols (RIPng & OSPFv3)**:
   - Added support for **RIPng** (RIP next generation) for IPv6.
@@ -100,7 +100,7 @@ Live app: [network2026.vercel.app](https://network2026.vercel.app)
 - **Rehberli Ders Modu**: Otomatik tamamlama algılama ve ilerleme takibi ile adım adım görevler.
 - **Modern UI/UX**: Klavye kısayolları, glassmorphism efektleri, shimmer loading ve erişilebilir tasarım.
 
-### Son Güncellemeler (v1.7.0)
+### Son Güncellemeler (v1.6.1)
 
 - **IPv6 Yönlendirme Protokolleri (RIPng & OSPFv3)**:
   - IPv6 için **RIPng** desteği eklendi.
