@@ -223,6 +223,15 @@ export interface SwitchState {
     };
   };
   spanningTreePriority?: number;
+  firewallRules?: Array<{
+    id: string;
+    sourceIp: string;
+    targetIp: string;
+    port: string;
+    protocol: 'tcp' | 'udp' | 'icmp' | 'any';
+    action: 'allow' | 'deny';
+    enabled: boolean;
+  }>;
 }
 
 export interface StartupConfig {

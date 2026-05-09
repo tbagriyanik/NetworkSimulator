@@ -380,6 +380,16 @@ export function buildRunningConfig(state: SwitchState): string[] {
     }
     lines.push('!');
 
+    if (state.switchLayer === 'FW' && state.firewallRules && state.firewallRules.length > 0) {
+        state.firewallRules.forEach((rule, index) => {
+            const statusPrefix = rule.enabled === false ? 'inactive ' : '';
+            lines.push(
+                `access-list OUTSIDE-IN line ${index + 1} extended ${statusPrefix}${rule.action} ${rule.protocol} ${rule.sourceIp} ${rule.targetIp} eq ${rule.port}`
+            );
+        });
+        lines.push('!');
+    }
+
     lines.push('end');
 
     return lines;

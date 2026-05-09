@@ -698,7 +698,7 @@ export function PCPanel({
     // Determine data flow direction based on kind
     const dataFlowDirection: 'input' | 'output' | 'input/output' =
       iotKind === 'sensor' ? 'input' :
-      (iotKind === 'cooler' || iotKind === 'lamp' || iotKind === 'heater') ? 'output' : 'input';
+        (iotKind === 'cooler' || iotKind === 'lamp' || iotKind === 'heater') ? 'output' : 'input';
     window.dispatchEvent(new CustomEvent('update-topology-device-config', {
       detail: {
         deviceId: selectedIotDeviceId,
@@ -4905,20 +4905,6 @@ export function PCPanel({
                                   onClick={() => {
                                     navigateToProgram('desktop');
                                     setTimeout(() => {
-                                      setInput('curl http://iot-panel');
-                                      void executeCommand('curl http://iot-panel');
-                                    }, 300);
-                                  }}
-                                >
-                                  {language === 'tr' ? 'Web Paneli Aç' : 'Open Web Panel'}
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="h-7 px-3 text-xs font-semibold"
-                                  onClick={() => {
-                                    navigateToProgram('desktop');
-                                    setTimeout(() => {
                                       setInput('curl 192.168.1.1');
                                       void executeCommand('curl 192.168.1.1');
                                     }, 300);
@@ -4926,6 +4912,20 @@ export function PCPanel({
                                 >
                                   {language === 'tr' ? 'Kablosuz Ayarları Aç' : 'Open Wireless Settings'}
                                 </Button>
+                                <Button
+                                  size="sm"
+                                  className="h-7 px-3 text-xs font-semibold bg-cyan-600 hover:bg-cyan-700 text-white"
+                                  onClick={() => {
+                                    navigateToProgram('desktop');
+                                    setTimeout(() => {
+                                      setInput('curl http://iot-panel');
+                                      void executeCommand('curl http://iot-panel');
+                                    }, 300);
+                                  }}
+                                >
+                                  {language === 'tr' ? 'Web Paneli Aç' : 'Open Web Panel'}
+                                </Button>
+
                               </div>
                             </div>
 
@@ -5173,42 +5173,57 @@ export function PCPanel({
                           style={mobileVerticalScrollStyle}
                         >
                           <div className={`rounded-2xl border p-5 space-y-5 ${isDark ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white'}`}>
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-3 text-purple-500">
                                 <Network className="w-5 h-5" />
                                 <h3 className="text-sm font-black tracking-widest ">
                                   {language === 'tr' ? 'Wi-Fi (Wireless Fidelity) Bağlantısı' : 'Wi-Fi (Wireless Fidelity) Connection'}
                                 </h3>
                               </div>
-                              <button
-                                type="button"
-                                role="switch"
-                                aria-checked={wifiEnabled}
-                                onClick={() => {
-                                  const enabled = !wifiEnabled;
-                                  setWifiEnabled(enabled);
-                                  dispatchDeviceConfig({
-                                    wifi: {
-                                      enabled: enabled,
-                                      ssid: wifiSSID,
-                                      bssid: wifiBSSID,
-                                      security: wifiSecurity,
-                                      password: wifiPassword,
-                                      channel: wifiChannel,
-                                      mode: 'client'
-                                    }
-                                  });
-                                }}
-                                className={`relative inline-flex h-7 w-14 shrink-0 items-center rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60 ${wifiEnabled
-                                  ? 'bg-purple-500 border-purple-400'
-                                  : (isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-200 border-slate-300')
-                                  }`}
-                              >
-                                <span
-                                  className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 ${wifiEnabled ? 'translate-x-8' : 'translate-x-1'
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  size="sm"
+                                  className="h-7 px-3 text-xs font-semibold bg-cyan-600 hover:bg-cyan-700 text-white"
+                                  onClick={() => {
+                                    navigateToProgram('desktop');
+                                    setTimeout(() => {
+                                      setInput('curl 192.168.1.1');
+                                      void executeCommand('curl 192.168.1.1');
+                                    }, 300);
+                                  }}
+                                >
+                                  {language === 'tr' ? 'Kablosuz Ayarları Aç' : 'Open Wireless Settings'}
+                                </Button>
+                                <button
+                                  type="button"
+                                  role="switch"
+                                  aria-checked={wifiEnabled}
+                                  onClick={() => {
+                                    const enabled = !wifiEnabled;
+                                    setWifiEnabled(enabled);
+                                    dispatchDeviceConfig({
+                                      wifi: {
+                                        enabled: enabled,
+                                        ssid: wifiSSID,
+                                        bssid: wifiBSSID,
+                                        security: wifiSecurity,
+                                        password: wifiPassword,
+                                        channel: wifiChannel,
+                                        mode: 'client'
+                                      }
+                                    });
+                                  }}
+                                  className={`relative inline-flex h-7 w-14 shrink-0 items-center rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60 ${wifiEnabled
+                                    ? 'bg-purple-500 border-purple-400'
+                                    : (isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-200 border-slate-300')
                                     }`}
-                                />
-                              </button>
+                                >
+                                  <span
+                                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 ${wifiEnabled ? 'translate-x-8' : 'translate-x-1'
+                                      }`}
+                                  />
+                                </button>
+                              </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -6056,9 +6071,9 @@ export function PCPanel({
                         </div>
                       )}
                     </div>
-                    <Button 
-                      size="sm" 
-                      type="submit" 
+                    <Button
+                      size="sm"
+                      type="submit"
                       variant="default"
                       className="shrink-0 bg-blue-600 hover:bg-blue-700 text-white"
                     >

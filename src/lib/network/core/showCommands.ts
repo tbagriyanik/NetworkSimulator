@@ -2764,17 +2764,32 @@ function cmdShowIpArpInspection(state: any, input: string, ctx: any): any {
  * Show Access-Lists
  */
 function cmdShowAccessLists(state: any, input: string, ctx: any): any {
-  if (!state.accessLists || Object.keys(state.accessLists).length === 0) {
+  const hasClassicAcls = !!state.accessLists && Object.keys(state.accessLists).length > 0;
+  const firewallRules = Array.isArray(state.firewallRules) ? state.firewallRules : [];
+  const hasFirewallAcls = firewallRules.length > 0;
+
+  if (!hasClassicAcls && !hasFirewallAcls) {
     return { success: true, output: '\n% No access lists configured\n' };
   }
 
   let output = '\n';
-  Object.entries(state.accessLists).forEach(([aclId, rules]: [string, any]) => {
-    output += `Standard IP access list ${aclId}\n`;
-    rules.forEach((rule: string, index: number) => {
-      output += `    ${(index + 1) * 10} ${rule}\n`;
+
+  if (hasClassicAcls) {
+    Object.entries(state.accessLists).forEach(([aclId, rules]: [string, any]) => {
+      output += `Standard IP access list ${aclId}\n`;
+      rules.forEach((rule: string, index: number) => {
+        output += `    ${(index + 1) * 10} ${rule}\n`;
+      });
     });
-  });
+  }
+
+  if (hasFirewallAcls) {
+    output += 'access-list OUTSIDE-IN\n';
+    firewallRules.forEach((rule: any, index: number) => {
+      const inactive = rule.enabled === false ? 'inactive ' : '';
+      output += `    line ${index + 1} extended ${inactive}${rule.action} ${rule.protocol} ${rule.sourceIp} ${rule.targetIp} eq ${rule.port}\n`;
+    });
+  }
 
   return { success: true, output };
 }

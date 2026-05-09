@@ -793,6 +793,21 @@ export default function Home() {
         return next;
       });
     }
+
+    if (config.firewallRules) {
+      setDeviceStates((prev) => {
+        const state = prev.get(deviceId);
+        if (!state) return prev;
+        const updatedState = {
+          ...state,
+          firewallRules: config.firewallRules,
+        };
+        updatedState.runningConfig = buildRunningConfig(updatedState);
+        const next = new Map(prev);
+        next.set(deviceId, updatedState);
+        return next;
+      });
+    }
   }, [setTopologyDevices, setDeviceStates]);
 
   // Listen for device config updates from PCPanel
