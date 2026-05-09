@@ -3327,9 +3327,6 @@ export function PCPanel({
         const url = args[0];
         if (!url) {
           addLocalOutput('output', `Usage: ${cmd} <url>`);
-        } else if (url === 'firewall-panel') {
-           window.dispatchEvent(new CustomEvent('trigger-open-firewall'));
-           addLocalOutput('success', language === 'tr' ? 'Firewall paneli açılıyor...' : 'Opening firewall panel...');
         } else {
           // Always open in the built-in browser modal instead of new tab
           openWebPage(url, args[1]);
@@ -6000,7 +5997,12 @@ export function PCPanel({
                         </div>
                       )}
                     </div>
-                    <Button size="sm" type="submit" className="shrink-0">
+                    <Button 
+                      size="sm" 
+                      type="submit" 
+                      variant="default"
+                      className="shrink-0 bg-blue-600 hover:bg-blue-700 text-white"
+                    >
                       {language === 'tr' ? 'Git' : 'Go'}
                     </Button>
                   </form>

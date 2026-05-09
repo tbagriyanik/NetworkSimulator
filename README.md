@@ -2,7 +2,7 @@
 
 A modern browser-based network simulator for learning switching, routing, wireless, IoT, and CLI workflows.
 
-![Version](https://img.shields.io/badge/version-1.6.0-blue)
+![Version](https://img.shields.io/badge/version-1.6.1-blue)
 ![Stack](https://img.shields.io/badge/stack-Next.js%2016.2%20|%20React%2019%20|%20TypeScript%205.9%20|%20Tailwind%204-green)
 ![FOSS](https://img.shields.io/badge/FOSS-Free%20Open%20Source-brightgreen)
 ![Total Lines](https://img.shields.io/badge/total--lines-72450+-lightgrey)

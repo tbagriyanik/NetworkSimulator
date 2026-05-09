@@ -185,7 +185,10 @@ export interface SwitchState {
   dynamicRoutes?: Route[];         // Dynamic routing table
   ipv6StaticRoutes?: Route[];      // IPv6 static routing table
   ipv6DynamicRoutes?: Route[];     // IPv6 dynamic routing table
-  routingProtocol?: 'none' | 'rip' | 'ospf' | 'ripng' | 'ospfv3'; // Routing protocol
+  routingProtocol?: 'none' | 'rip' | 'ospf' | 'ripng' | 'ospfv3' | 'eigrp' | 'bgp'; // Routing protocol
+  autoSummary?: boolean;           // Auto-summary for routing protocols
+  eigrpAs?: string;                // EIGRP AS number
+  bgpAs?: string;                  // BGP AS number
   // DHCP pool CLI config (ip dhcp pool <name>)
   currentDhcpPool?: string;
   dhcpPools?: Record<string, {

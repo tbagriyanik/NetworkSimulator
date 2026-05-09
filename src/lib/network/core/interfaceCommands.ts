@@ -1841,7 +1841,7 @@ function cmdIpv6Rip(state: any, input: string, ctx: any): any {
   const targetPorts = Array.isArray(state.selectedInterfaces) ? state.selectedInterfaces : [state.currentInterface];
   const ipv6DynamicRoutes = [...(state.ipv6DynamicRoutes || [])];
 
-  targetPorts.forEach(pId => {
+  targetPorts.forEach((pId: string) => {
     const port = state.ports[pId];
     if (port && port.ipv6Address && port.ipv6Prefix) {
       ipv6DynamicRoutes.push({
@@ -1877,7 +1877,7 @@ function cmdIpv6Ospf(state: any, input: string, ctx: any): any {
   const targetPorts = Array.isArray(state.selectedInterfaces) ? state.selectedInterfaces : [state.currentInterface];
   const ipv6DynamicRoutes = [...(state.ipv6DynamicRoutes || [])];
 
-  targetPorts.forEach(pId => {
+  targetPorts.forEach((pId: string) => {
     const port = state.ports[pId];
     if (port && port.ipv6Address && port.ipv6Prefix) {
       ipv6DynamicRoutes.push({

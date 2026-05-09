@@ -2157,4 +2157,5 @@ export const commandAliases: Record<string, string> = {
   'setup': 'setup'
 };
 
-
+// Export a default initial switch state for testing
+export const initialSwitchState = createInitialState();

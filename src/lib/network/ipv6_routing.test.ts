@@ -19,6 +19,8 @@ describe('IPv6 Routing CLI', () => {
           vlan: 1,
           mode: 'routed',
           type: 'gigabitethernet',
+          duplex: 'full',
+          speed: '1000',
           shutdown: false,
         }
       }
