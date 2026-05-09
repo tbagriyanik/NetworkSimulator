@@ -947,9 +947,12 @@ function handleConsoleConnect(state: SwitchState, language: 'tr' | 'en'): Comman
   // Calculate interface counts for boot message (Reported counts as per user request)
   const isRouter = state.version.modelName.includes('1900') || state.version.modelName.includes('C1900') || state.version.modelName.includes('ISR 4451 X');
   const isL3Switch = state.version.modelName.includes('3650');
+  const isFirewall = state.deviceType === 'firewall' || state.switchLayer === 'FW' || state.version.modelName.includes('ASA') || state.version.modelName.includes('Firepower');
 
   const reportedFeCount = isRouter ? 0 : 24;
-  const reportedGiCount = (isRouter || isL3Switch) ? 4 : 2;
+  const reportedGiCount = isFirewall
+    ? 2
+    : (isRouter || isL3Switch) ? 4 : 2;
   const wlanCount = Object.values(state.ports || {}).filter((p: any) => p.id.startsWith('wlan')).length;
 
   let ifaceSummary = '';
@@ -975,7 +978,7 @@ function handleConsoleConnect(state: SwitchState, language: 'tr' | 'en'): Comman
     bootMessages = language === 'tr' ?
       `System Bootstrap, Version 15.1(4)M4, RELEASE SOFTWARE (fc1)
 Technical Support: http://yunus.sf.net
-Copyright (c) 1994-2026 by Network Systems, Inc.
+Copyright (c) 1996-2026 by Network Systems, Inc.
 ISR4451/K9 platform with 4096 K bytes of memory
 
 ${syslog}
@@ -994,7 +997,7 @@ Extracting files from flash:c1900-universalk9-mz.SPA.154-3.M.bin...
 ${ifaceSummary}` :
       `System Bootstrap, Version 15.1(4)M4, RELEASE SOFTWARE (fc1)
 Technical Support: http://yunus.sf.net
-Copyright (c) 1994-2026 by Network Systems, Inc.
+Copyright (c) 1996-2026 by Network Systems, Inc.
 ISR4451/K9 platform with 4096 K bytes of memory
 
 ${syslog}
@@ -1017,7 +1020,7 @@ ${ifaceSummary}`;
     bootMessages = language === 'tr' ?
       `System Bootstrap, Version 12.2(55r)SE, RELEASE SOFTWARE (fc1)
 Technical Support: http://yunus.sf.net
-Copyright (c) 1994-2026 by Network Systems, Inc.
+Copyright (c) 1996-2026 by Network Systems, Inc.
 C3650 platform with 131072 K bytes of memory
 
 ${syslog}
@@ -1036,7 +1039,7 @@ Extracting files from flash:C3650-ipbase-mz.152-2.SE4.bin...
 ${ifaceSummary}` :
       `System Bootstrap, Version 12.2(55r)SE, RELEASE SOFTWARE (fc1)
 Technical Support: http://yunus.sf.net
-Copyright (c) 1994-2026 by Network Systems, Inc.
+Copyright (c) 1996-2026 by Network Systems, Inc.
 C3650 platform with 131072 K bytes of memory
 
 ${syslog}
@@ -1059,7 +1062,7 @@ ${ifaceSummary}`;
     bootMessages = language === 'tr' ?
       `System Bootstrap, Version 12.2(11r)EA1, RELEASE SOFTWARE (fc1)
 Technical Support: http://yunus.sf.net
-Copyright (c) 1994-2026 by Network Systems, Inc.
+Copyright (c) 1996-2026 by Network Systems, Inc.
 C2960 platform with 65536 K bytes of memory
 
 ${syslog}
@@ -1078,7 +1081,7 @@ Extracting files from flash:c2960-lanbase-mz.152-2.E6.bin...
 ${ifaceSummary}` :
       `System Bootstrap, Version 12.2(11r)EA1, RELEASE SOFTWARE (fc1)
 Technical Support: http://yunus.sf.net
-Copyright (c) 1994-2026 by Network Systems, Inc.
+Copyright (c) 1996-2026 by Network Systems, Inc.
 C2960 platform with 65536 K bytes of memory
 
 ${syslog}
@@ -1146,9 +1149,12 @@ function handleTelnetConnect(state: SwitchState, language: 'tr' | 'en'): Command
   // Calculate interface counts for boot message (Reported counts as per user request)
   const isRouter = state.version.modelName.includes('1900') || state.version.modelName.includes('C1900') || state.version.modelName.includes('ISR 4451 X');
   const isL3Switch = state.version.modelName.includes('3650');
+  const isFirewall = state.deviceType === 'firewall' || state.switchLayer === 'FW' || state.version.modelName.includes('ASA') || state.version.modelName.includes('Firepower');
 
   const reportedFeCount = isRouter ? 0 : 24;
-  const reportedGiCount = (isRouter || isL3Switch) ? 4 : 2;
+  const reportedGiCount = isFirewall
+    ? 2
+    : (isRouter || isL3Switch) ? 4 : 2;
   const wlanCount = Object.values(state.ports || {}).filter((p: any) => p.id.startsWith('wlan')).length;
 
   let ifaceSummary = '';
@@ -1174,7 +1180,7 @@ function handleTelnetConnect(state: SwitchState, language: 'tr' | 'en'): Command
     bootMessages = language === 'tr' ?
       `System Bootstrap, Version 15.1(4)M4, RELEASE SOFTWARE (fc1)
 Technical Support: http://yunus.sf.net
-Copyright (c) 1994-2026 by Network Systems, Inc.
+Copyright (c) 1996-2026 by Network Systems, Inc.
 ISR4451/K9 platform with 4096 K bytes of memory
 
 ${syslog}
@@ -1185,7 +1191,7 @@ Extracting files from flash:c1900-universalk9-mz.SPA.154-3.M.bin...
 ${ifaceSummary}` :
       `System Bootstrap, Version 15.1(4)M4, RELEASE SOFTWARE (fc1)
 Technical Support: http://yunus.sf.net
-Copyright (c) 1994-2026 by Network Systems, Inc.
+Copyright (c) 1996-2026 by Network Systems, Inc.
 ISR4451/K9 platform with 4096 K bytes of memory
 
 ${syslog}
@@ -1200,7 +1206,7 @@ ${ifaceSummary}`;
     bootMessages = language === 'tr' ?
       `System Bootstrap, Version 12.2(55r)SE, RELEASE SOFTWARE (fc1)
 Technical Support: http://yunus.sf.net
-Copyright (c) 1994-2026 by Network Systems, Inc.
+Copyright (c) 1996-2026 by Network Systems, Inc.
 C3650 platform with 131072 K bytes of memory
 
 ${syslog}
@@ -1211,7 +1217,7 @@ Extracting files from flash:C3650-ipbase-mz.152-2.SE4.bin...
 ${ifaceSummary}` :
       `System Bootstrap, Version 12.2(55r)SE, RELEASE SOFTWARE (fc1)
 Technical Support: http://yunus.sf.net
-Copyright (c) 1994-2026 by Network Systems, Inc.
+Copyright (c) 1996-2026 by Network Systems, Inc.
 C3650 platform with 131072 K bytes of memory
 
 ${syslog}
@@ -1226,7 +1232,7 @@ ${ifaceSummary}`;
     bootMessages = language === 'tr' ?
       `System Bootstrap, Version 12.2(11r)EA1, RELEASE SOFTWARE (fc1)
 Technical Support: http://yunus.sf.net
-Copyright (c) 1994-2026 by Network Systems, Inc.
+Copyright (c) 1996-2026 by Network Systems, Inc.
 C2960 platform with 65536 K bytes of memory
 
 ${syslog}
@@ -1237,7 +1243,7 @@ Extracting files from flash:c2960-lanbase-mz.152-2.E6.bin...
 ${ifaceSummary}` :
       `System Bootstrap, Version 12.2(11r)EA1, RELEASE SOFTWARE (fc1)
 Technical Support: http://yunus.sf.net
-Copyright (c) 1994-2026 by Network Systems, Inc.
+Copyright (c) 1996-2026 by Network Systems, Inc.
 C2960 platform with 65536 K bytes of memory
 
 ${syslog}

@@ -1703,7 +1703,7 @@ export default function Home() {
 
 System Bootstrap, Version 15.1(4)M4, RELEASE SOFTWARE (fc1)
 Technical Support: http://yunus.sf.net
-Copyright (c) 1994-2026 by Network Systems, Inc.
+Copyright (c) 1996-2026 by Network Systems, Inc.
 ` },
               {
                 id: `boot-2-${suffix}`, type: 'output', content: `ISR4451/K9 platform with 4096 K bytes of memory
@@ -1737,7 +1737,7 @@ ${state.bannerMOTD}
 
 System Bootstrap, Version 12.2(55r)SE, RELEASE SOFTWARE (fc1)
 Technical Support: http://yunus.sf.net
-Copyright (c) 1994-2026 by Network Systems, Inc.
+Copyright (c) 1996-2026 by Network Systems, Inc.
 ` },
               {
                 id: `boot-2-${suffix}`, type: 'output', content: `C3650 platform with 131072 K bytes of memory
@@ -1771,7 +1771,7 @@ ${state.bannerMOTD}
 
 System Bootstrap, Version 12.2(11r)EA1, RELEASE SOFTWARE (fc1)
 Technical Support: http://yunus.sf.net
-Copyright (c) 1994-2026 by Network Systems, Inc.
+Copyright (c) 1996-2026 by Network Systems, Inc.
 ` },
               {
                 id: `boot-2-${suffix}`, type: 'output', content: `C2960 platform with 65536 K bytes of memory

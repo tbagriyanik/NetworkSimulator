@@ -123,9 +123,11 @@ function getSwitchDisplayProfile(state: any) {
   const modelName = state.version?.modelName || '';
   const isRouter = modelName.includes('ISR') || modelName.includes('4451') || modelName.includes('1900');
   const isL3 = switchModel === 'WS-C3650-24PS' || (isRouter && !switchModel.includes('2960'));
-  const isFirewall = state.deviceType === 'firewall' || modelName.includes('ASA') || modelName.includes('Firepower');
+  const isFirewall = state.deviceType === 'firewall' || state.switchLayer === 'FW' || modelName.includes('ASA') || modelName.includes('Firepower');
 
   if (isFirewall) {
+    const reportedGiCount = 2;
+
     return {
       switchModel: 'Cisco ASA 5506-X',
       isL3: false,
@@ -137,7 +139,7 @@ function getSwitchDisplayProfile(state: any) {
       systemImage: 'flash:asa964-17-smp-k8.bin',
       processor: 'Cisco ASA 5506-X (Intel Celeron) processor (revision 01) with 8192K bytes of memory',
       reportedFeCount: 0,
-      reportedGiCount: 2,
+      reportedGiCount,
     };
   }
 
@@ -240,38 +242,38 @@ function cmdShowRunningConfig(
     // Interface configurations (skip for firewalls as they have their own interface config above)
     if (!isFirewall) {
       Object.entries(state.ports || {}).forEach(([portId, port]: [string, any]) => {
-      if (port.description || port.ipAddress || port.mode !== 'access' || port.vlan !== 1 || port.shutdown !== false) {
-        output += `interface ${portId}\n`;
-        const portDescription = port.description || port.name;
-        if (portDescription) {
-          output += ` description ${portDescription}\n`;
-        }
-        if (port.mode === 'trunk') {
-          output += ` switchport mode trunk\n`;
-        } else if (port.mode === 'dynamic-auto') {
-          output += ` switchport mode dynamic auto\n`;
-        } else if (port.mode === 'dynamic-desirable') {
-          output += ` switchport mode dynamic desirable\n`;
-        } else if (port.mode === 'dot1q-tunnel') {
-          output += ` switchport mode dot1q-tunnel\n`;
-        }
-
-        if (port.mode === 'trunk') {
-          if (port.trunkAllowedVlans && port.trunkAllowedVlans !== '1-4094') {
-            output += ` switchport trunk allowed vlan ${port.trunkAllowedVlans}\n`;
+        if (port.description || port.ipAddress || port.mode !== 'access' || port.vlan !== 1 || port.shutdown !== false) {
+          output += `interface ${portId}\n`;
+          const portDescription = port.description || port.name;
+          if (portDescription) {
+            output += ` description ${portDescription}\n`;
           }
-        } else if (port.vlan && port.vlan !== 1) {
-          output += ` switchport access vlan ${port.vlan}\n`;
+          if (port.mode === 'trunk') {
+            output += ` switchport mode trunk\n`;
+          } else if (port.mode === 'dynamic-auto') {
+            output += ` switchport mode dynamic auto\n`;
+          } else if (port.mode === 'dynamic-desirable') {
+            output += ` switchport mode dynamic desirable\n`;
+          } else if (port.mode === 'dot1q-tunnel') {
+            output += ` switchport mode dot1q-tunnel\n`;
+          }
+
+          if (port.mode === 'trunk') {
+            if (port.trunkAllowedVlans && port.trunkAllowedVlans !== '1-4094') {
+              output += ` switchport trunk allowed vlan ${port.trunkAllowedVlans}\n`;
+            }
+          } else if (port.vlan && port.vlan !== 1) {
+            output += ` switchport access vlan ${port.vlan}\n`;
+          }
+          if (port.ipAddress) {
+            output += ` ip address ${port.ipAddress} ${port.subnetMask || '255.255.255.0'}\n`;
+          }
+          if (port.shutdown) {
+            output += ` shutdown\n`;
+          }
+          output += '!\n';
         }
-        if (port.ipAddress) {
-          output += ` ip address ${port.ipAddress} ${port.subnetMask || '255.255.255.0'}\n`;
-        }
-        if (port.shutdown) {
-          output += ` shutdown\n`;
-        }
-        output += '!\n';
-      }
-    });
+      });
     }
 
     // VLAN configurations
@@ -495,7 +497,7 @@ function cmdShowVersion(
 
   let output = `\nNetwork NOS Software, ${softwareImage}\n`;
   output += 'Technical Support: http://yunus.sf.net\n';
-  output += 'Copyright (c) 1986-2026 by Network Systems, Inc.\n\n';
+  output += 'Copyright (c) 1996-2026 by Network Systems, Inc.\n\n';
   output += `ROM: Bootstrap program is ${rom}\n`;
   output += `BOOTLDR: ${bootldr}\n\n`;
   output += `Switch uptime is ${state.uptime || '1 day, 2 hours, 3 minutes'}\n`;
@@ -503,11 +505,11 @@ function cmdShowVersion(
   output += `${processor}\n`;
   output += 'Processor board ID FOC1234X5YZ\n';
   output += 'Last reload reason: power-on\n\n';
-  
+
   if (reportedFeCount > 0) {
     output += `${reportedFeCount} FastEthernet/IEEE 802.3 interface(s)\n`;
   }
-  
+
   if (reportedGiCount > 0) {
     output += `${reportedGiCount} Gigabit Ethernet/IEEE 802.3 interface(s)\n`;
   }
@@ -809,7 +811,7 @@ function cmdShowIpInterfaceBrief(
     const port = state.ports[portName];
     // Skip ports that are part of a channel group (show in PoX instead)
     if (port.channelGroup) return;
-    
+
     const status = port.shutdown ? 'administratively down' : 'up';
     const protocol = port.shutdown ? 'down' : 'up';
     const description = port.description || port.name || '';
@@ -2511,7 +2513,7 @@ function cmdShowVtpStatus(state: any, input: string, ctx: any): any {
  */
 function cmdShowEtherchannel(state: any, input: string, ctx: any): any {
   const lowerInput = input.toLowerCase();
-  
+
   // Parse options: summary, detail, port, load-balance
   let option = '';
   let subArg = '';
@@ -2644,8 +2646,8 @@ function cmdShowEtherchannel(state: any, input: string, ctx: any): any {
     output += 'Group Port-channel     Protocol Ports\n';
     output += '------+---------------+---------+------------------------\n';
     Object.entries(groups).forEach(([group, ports]) => {
-const mode = state.ports[ports[0]]?.channelMode || 'on';
-    output += `${group.padEnd(7)}Po${group.padEnd(14)}${mode.toUpperCase().padEnd(10)}${ports.join(', ')}\n`;
+      const mode = state.ports[ports[0]]?.channelMode || 'on';
+      output += `${group.padEnd(7)}Po${group.padEnd(14)}${mode.toUpperCase().padEnd(10)}${ports.join(', ')}\n`;
     });
     return { success: true, output };
   }
@@ -2892,20 +2894,20 @@ function cmdShowIpDhcpPool(state: any, input: string, ctx: any): any {
 
 function cmdShowIpDhcpBinding(state: any, input: string, ctx: any): any {
   let output = '\nIP address       Client-ID/              Lease expiration        Type\n' +
-               '                 Hardware address\n';
+    '                 Hardware address\n';
 
   const devices = ctx.devices || [];
   const sourceDeviceId = ctx.sourceDeviceId;
   const connections = ctx.connections || [];
-  
+
   // Find devices that received DHCP from this device
   // A device is considered a DHCP client if its ipConfigMode is 'dhcp' 
   // and it's connected (directly or indirectly) to this device.
-  const dhcpClients = devices.filter((d: any) => 
-    (d.type === 'pc' || d.type === 'iot') && 
-    d.ipConfigMode === 'dhcp' && 
-    d.ip && 
-    d.ip !== '0.0.0.0' && 
+  const dhcpClients = devices.filter((d: any) =>
+    (d.type === 'pc' || d.type === 'iot') &&
+    d.ipConfigMode === 'dhcp' &&
+    d.ip &&
+    d.ip !== '0.0.0.0' &&
     !d.ip.startsWith('169.254.')
   );
 
@@ -2916,9 +2918,9 @@ function cmdShowIpDhcpBinding(state: any, input: string, ctx: any): any {
       // Check if this client's IP belongs to one of our pools
       const cliPools = state.dhcpPools || {};
       const servicePools = state.services?.dhcp?.pools || [];
-      
+
       let belongsToOurPool = false;
-      
+
       // Check CLI pools
       for (const poolName in cliPools) {
         const pool = cliPools[poolName];
@@ -2929,7 +2931,7 @@ function cmdShowIpDhcpBinding(state: any, input: string, ctx: any): any {
           }
         }
       }
-      
+
       // Check Service pools
       if (!belongsToOurPool) {
         for (const pool of servicePools) {
@@ -2950,9 +2952,9 @@ function cmdShowIpDhcpBinding(state: any, input: string, ctx: any): any {
         output += `${client.ip.padEnd(16)} ${clientId.padEnd(23)} Infinite                Automatic\n`;
       }
     });
-    
+
     if (output.endsWith('Hardware address\n')) {
-       output += '% No bindings found\n';
+      output += '% No bindings found\n';
     }
   }
 
@@ -2965,9 +2967,9 @@ function isIpInNetwork(ip: string, network: string, mask: string): boolean {
     const ipParts = ip.split('.').map(Number);
     const netParts = network.split('.').map(Number);
     const maskParts = mask.split('.').map(Number);
-    
+
     if (ipParts.length !== 4 || netParts.length !== 4 || maskParts.length !== 4) return false;
-    
+
     for (let i = 0; i < 4; i++) {
       if ((ipParts[i] & maskParts[i]) !== (netParts[i] & maskParts[i])) {
         return false;

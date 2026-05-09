@@ -1844,7 +1844,7 @@
         {
           "id": "boot-1-1773599929526",
           "type": "output",
-          "content": "\n\nSystem Bootstrap, Version 12.1(11r)EA1, RELEASE SOFTWARE (fc1)\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1986-2026 by Systems, Inc.\n"
+          "content": "\n\nSystem Bootstrap, Version 12.1(11r)EA1, RELEASE SOFTWARE (fc1)\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1996-2026 by Systems, Inc.\n"
         },
         {
           "id": "boot-2-1773599929526",
@@ -2095,7 +2095,7 @@
         {
           "id": "boot-1-1773599932050",
           "type": "output",
-          "content": "\n\nSystem Bootstrap, Version 12.1(11r)EA1, RELEASE SOFTWARE (fc1)\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1986-2026 by Systems, Inc.\n"
+          "content": "\n\nSystem Bootstrap, Version 12.1(11r)EA1, RELEASE SOFTWARE (fc1)\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1996-2026 by Systems, Inc.\n"
         },
         {
           "id": "boot-2-1773599932050",
@@ -2125,7 +2125,7 @@
         {
           "id": "boot-1-1773600339679",
           "type": "output",
-          "content": "\n\nSystem Bootstrap, Version 12.1(11r)EA1, RELEASE SOFTWARE (fc1)\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1986-2026 by Systems, Inc.\n"
+          "content": "\n\nSystem Bootstrap, Version 12.1(11r)EA1, RELEASE SOFTWARE (fc1)\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1996-2026 by Systems, Inc.\n"
         },
         {
           "id": "boot-2-1773600339679",
@@ -2150,7 +2150,7 @@
         {
           "id": "boot-1-68A4.3408.9BBF",
           "type": "output",
-          "content": "\n\nSystem Bootstrap, Version 12.2(11r)EA1, RELEASE SOFTWARE (fc1)\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1994-2026 by Network Systems, Inc.\n"
+          "content": "\n\nSystem Bootstrap, Version 12.2(11r)EA1, RELEASE SOFTWARE (fc1)\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1996-2026 by Network Systems, Inc.\n"
         },
         {
           "id": "boot-2-68A4.3408.9BBF",
@@ -2185,7 +2185,7 @@
         {
           "id": "boot-1-1773600349888",
           "type": "output",
-          "content": "\n\nSystem Bootstrap, Version 12.1(11r)EA1, RELEASE SOFTWARE (fc1)\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1986-2026 by Systems, Inc.\n"
+          "content": "\n\nSystem Bootstrap, Version 12.1(11r)EA1, RELEASE SOFTWARE (fc1)\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1996-2026 by Systems, Inc.\n"
         },
         {
           "id": "boot-2-1773600349888",
@@ -2215,7 +2215,7 @@
         {
           "id": "boot-1-1773600352472",
           "type": "output",
-          "content": "\n\nSystem Bootstrap, Version 12.1(11r)EA1, RELEASE SOFTWARE (fc1)\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1986-2026 by Systems, Inc.\n"
+          "content": "\n\nSystem Bootstrap, Version 12.1(11r)EA1, RELEASE SOFTWARE (fc1)\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1996-2026 by Systems, Inc.\n"
         },
         {
           "id": "boot-2-1773600352472",

@@ -114,6 +114,7 @@ export interface SwitchState {
   macAddress: string; // Unique base MAC address for the device
   switchModel: SwitchModel; // Switch model (L2 or L3)
   switchLayer: SwitchLayer; // Layer 2 or Layer 3
+  deviceType?: 'pc' | 'router' | 'switch' | 'iot' | 'firewall' | 'loadbalancer'; // Device type for identification
   currentMode: CommandMode;
   currentInterface?: string;
   selectedInterfaces?: string[];  // interface range için çoklu port seçimi

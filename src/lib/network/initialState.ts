@@ -144,10 +144,10 @@ function createInitialFirewallPorts(baseMac?: string): Record<string, Port> {
     type: 'fastethernet'
   };
 
-  // GigabitEthernet 1/1 - 1/8 (ASA portları)
-  for (let i = 1; i <= 8; i++) {
-    const portId = `gi1/${i}`;
-    const portMacNumber = parseInt(firewallBaseMac.replace(/\./g, ''), 16) + i;
+  // Firewall default interfaces: GigabitEthernet0/0 and GigabitEthernet0/1
+  for (let i = 0; i <= 1; i++) {
+    const portId = `gi0/${i}`;
+    const portMacNumber = parseInt(firewallBaseMac.replace(/\./g, ''), 16) + i + 1;
     const portMac = formatMacFromNumber(portMacNumber);
 
     ports[portId] = {
@@ -414,6 +414,7 @@ export function createInitialFirewallState(mac?: string): SwitchState {
     macAddress,
     switchModel: 'ASA-5506-X' as any,
     switchLayer: 'FW',
+    deviceType: 'firewall',
     currentMode: 'user',
     consoleAuthenticated: false,
     ipRouting: true,

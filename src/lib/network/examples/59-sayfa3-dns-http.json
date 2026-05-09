@@ -939,7 +939,7 @@
         {
           "id": "boot-1",
           "type": "output",
-          "content": "\n\nSystem Bootstrap, Version 12.1(11r)EA1, RELEASE SOFTWARE (fc1)\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1986-2026 by Systems, Inc.\n"
+          "content": "\n\nSystem Bootstrap, Version 12.1(11r)EA1, RELEASE SOFTWARE (fc1)\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1996-2026 by Systems, Inc.\n"
         },
         {
           "id": "boot-2",
@@ -1126,7 +1126,7 @@
         {
           "id": "boot-1",
           "type": "output",
-          "content": "\n\nSystem Bootstrap, Version 12.1(11r)EA1, RELEASE SOFTWARE (fc1)\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1986-2026 by Systems, Inc.\n"
+          "content": "\n\nSystem Bootstrap, Version 12.1(11r)EA1, RELEASE SOFTWARE (fc1)\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1996-2026 by Systems, Inc.\n"
         },
         {
           "id": "boot-2",
@@ -1161,7 +1161,7 @@
         {
           "id": "boot-1-0000.0000.0016",
           "type": "output",
-          "content": "\n\nSystem Bootstrap, Version 12.1(11r)EA1, RELEASE SOFTWARE (fc1)\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1986-2026 by Systems, Inc.\n"
+          "content": "\n\nSystem Bootstrap, Version 12.1(11r)EA1, RELEASE SOFTWARE (fc1)\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1996-2026 by Systems, Inc.\n"
         },
         {
           "id": "boot-2-0000.0000.0016",
