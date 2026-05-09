@@ -587,6 +587,32 @@ export const generateIotDevicePageContent = (
   const safeId = sanitizeHTML(deviceId);
   // Use safeJSONForHTML for embedding strings in <script> blocks to prevent XSS and logic corruption.
   const jsId = safeJSONForHTML(deviceId);
+  const sensorTypeLabels: Record<string, string> = {
+    temperature: isTurkish ? 'Isı (Sıcaklık)' : 'Temperature',
+    light: isTurkish ? 'Işık' : 'Light',
+    humidity: isTurkish ? 'Nem' : 'Humidity',
+    sound: isTurkish ? 'Ses' : 'Sound',
+    motion: isTurkish ? 'Hareket' : 'Motion',
+  };
+  const topologySensorDevices = allDevices.filter(d =>
+    d.type === 'iot' &&
+    d.iot?.sensorType &&
+    (
+      d.iot?.dataFlowDirection === 'input' ||
+      d.iot?.dataFlowDirection === 'input/output' ||
+      d.iot?.kind === 'sensor' ||
+      !d.iot?.dataFlowDirection
+    )
+  );
+  const sensorOptionsHtml = topologySensorDevices.length > 0
+    ? topologySensorDevices.map(d => {
+        const sensor = d.iot?.sensorType || 'temperature';
+        const label = sensorTypeLabels[sensor] || sensor;
+        return `<option value="iot:${sanitizeHTML(d.id)}:${sanitizeHTML(sensor)}">${sanitizeHTML(d.name || d.id)} (${label})</option>`;
+      }).join('')
+    : Object.entries(sensorTypeLabels).map(([value, label]) => (
+        `<option value="${value}">${label}</option>`
+      )).join('');
 
   return `
     <!DOCTYPE html>
@@ -837,11 +863,7 @@ export const generateIotDevicePageContent = (
                 <div style="display: flex; align-items: center; gap: 5px;">
                   <span style="font-size: 12px; min-width: 35px;">IF</span>
                   <select id="sensorSelect" style="flex: 1;">
-                    <option value="temperature">${isTurkish ? 'Isı (Sıcaklık)' : 'Temperature'}</option>
-                    <option value="light">${isTurkish ? 'Işık' : 'Light'}</option>
-                    <option value="humidity">${isTurkish ? 'Nem' : 'Humidity'}</option>
-                    <option value="sound">${isTurkish ? 'Ses' : 'Sound'}</option>
-                    <option value="motion">${isTurkish ? 'Hareket' : 'Motion'}</option>
+                    ${sensorOptionsHtml}
                   </select>
                   <select id="operatorSelect">
                     <option value=">">&gt;</option>
@@ -903,7 +925,8 @@ export const generateIotDevicePageContent = (
             const newRule = {
               id: Math.random().toString(36).substr(2, 9),
               condition,
-              action: fullAction
+              action: fullAction,
+              enabled: true
             };
 
             rules.push(newRule);

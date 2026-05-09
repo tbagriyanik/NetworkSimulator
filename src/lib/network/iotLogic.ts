@@ -19,6 +19,30 @@ const getSensorReading = (sensor: string, environment: EnvironmentSettings): num
   }
 };
 
+const getRuleSensorReading = (
+  sensorReference: string,
+  devices: CanvasDevice[],
+  environment: EnvironmentSettings
+): number => {
+  if (!sensorReference.startsWith('iot:')) {
+    return getSensorReading(sensorReference, environment);
+  }
+
+  const [, sensorDeviceId, fallbackSensorType] = sensorReference.split(':');
+  const sensorDevice = devices.find(d => d.id === sensorDeviceId);
+
+  if (!sensorDevice || sensorDevice.type !== 'iot') {
+    return 0;
+  }
+
+  if (sensorDevice.status === 'offline' || sensorDevice.iot?.collaborationEnabled === false) {
+    return 0;
+  }
+
+  const sensorType = sensorDevice.iot?.sensorType || fallbackSensorType;
+  return getSensorReading(sensorType, environment);
+};
+
 export const processIotRules = (
   devices: CanvasDevice[],
   environment: EnvironmentSettings,
@@ -27,15 +51,18 @@ export const processIotRules = (
   let deviceUpdated = false;
   
   devices.forEach(device => {
+    if (device.type !== 'iot') return;
+    if (device.status === 'offline' || device.iot?.collaborationEnabled === false) return;
+
     if (device.type === 'iot' && device.iot?.rules && device.iot.rules.length > 0) {
       device.iot.rules.forEach(rule => {
-        if (!rule.enabled) return;
+        if (rule.enabled === false) return;
 
         const { condition, action } = rule;
         const [sensor, operator, thresholdStr] = condition.split(' ');
         const threshold = parseFloat(thresholdStr);
 
-        const sensorValue = getSensorReading(sensor, environment);
+        const sensorValue = getRuleSensorReading(sensor, devices, environment);
 
         let conditionMet = false;
         switch (operator) {
@@ -55,7 +82,7 @@ export const processIotRules = (
           const targetDevice = devices.find(d => d.id === targetId);
           if (!targetDevice || targetDevice.type !== 'iot') return;
 
-          if (targetDevice.iot?.collaborationEnabled === false) {
+          if (targetDevice.status === 'offline' || targetDevice.iot?.collaborationEnabled === false) {
             return;
           }
 

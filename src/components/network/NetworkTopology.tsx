@@ -5,7 +5,6 @@ import { flushSync } from 'react-dom';
 import useAppStore, { useTopologyDevices, useTopologyConnections, useTopologyNotes } from '@/lib/store/appStore';
 import { SwitchState, CableType, CableInfo, isCableCompatible } from '@/lib/network/types';
 import { checkDeviceConnectivity, getPingDiagnostics, getWirelessSignalStrength, getWirelessDistance } from '@/lib/network/connectivity';
-import { processIotRules } from '@/lib/network/iotLogic';
 import { generateRandomLinkLocalIpv4 } from '@/lib/network/linkLocal';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -192,24 +191,14 @@ export function NetworkTopology({
   // Get environment settings (moved here to be used in useEffect below)
   const environment = useEnvironment();
 
-  // Force continuous updates for IoT measurements and rule processing
+  // Force continuous updates for IoT measurements
   const [iotUpdateTrigger, setIotUpdateTrigger] = useState(0);
   useEffect(() => {
     const interval = setInterval(() => {
       setIotUpdateTrigger(prev => prev + 1);
-
-      // Process IoT rules periodically
-      const deviceUpdated = processIotRules(latestDevicesRef.current, environment, (deviceId, updates) => {
-        setDevices(prev => prev.map(d => d.id === deviceId ? { ...d, ...updates } : d));
-      });
-
-      // Trigger topology re-render if any IoT device state changed
-      if (deviceUpdated) {
-        setIotUpdateTrigger(prev => prev + 1);
-      }
-    }, 250); // Fast background poll for IoT automation
+    }, 250);
     return () => clearInterval(interval);
-  }, [environment, setDevices]);
+  }, []);
 
   const [zoom, setZoom] = useState(zoomProp ?? DEFAULT_ZOOM);
   const [pan, setPan] = useState(panProp ?? { x: 0, y: 0 });
@@ -2221,7 +2210,6 @@ export function NetworkTopology({
 
   // All refs are now updated in useEffect to avoid accessing refs during render
   // This keeps refs fresh for event handlers without violating React rules
-  /* eslint-disable react-hooks/immutability */
   useEffect(() => {
     latestDevicesRef.current = devices;
     latestConnectionsRef.current = connections;
@@ -2267,8 +2255,6 @@ export function NetworkTopology({
     touchDragStartPos,
     touchDragOffset,
   ]);
-  /* eslint-enable react-hooks/immutability */
-
   const getNextNoteId = useCallback(() => {
     const existingIds = new Set(latestNotesRef.current.map((n) => n.id));
     let next = noteCounterRef.current + 1;
@@ -2796,7 +2782,7 @@ export function NetworkTopology({
   }, [language]);
 
   const getIotOpenCloseStatus = useCallback((device: CanvasDevice) => {
-    const isOn = device.iot?.value ?? false;
+    const isOn = device.status !== 'offline' && device.iot?.collaborationEnabled !== false && (device.iot?.value ?? false);
     return language === 'tr' ? (isOn ? 'Açık' : 'Kapalı') : (isOn ? 'On' : 'Off');
   }, [language]);
 
@@ -4483,6 +4469,19 @@ export function NetworkTopology({
             : isSwitchDevice(device.type)
               ? (device.switchModel === 'WS-C3650-24PS' ? '#a855f7' : STATUS_COLORS.online)
               : '#a855f7'));
+    const isIotEffectivelyOn = device.type === 'iot' &&
+      device.status !== 'offline' &&
+      device.iot?.collaborationEnabled !== false &&
+      device.iot?.value === true;
+    const iotGlowColor = isIotEffectivelyOn
+      ? (device.iot?.kind === 'lamp'
+        ? '#facc15'
+        : device.iot?.kind === 'cooler'
+          ? '#38bdf8'
+          : device.iot?.kind === 'heater'
+            ? '#ef4444'
+            : null)
+      : null;
 
     return (
       <g
@@ -4538,6 +4537,18 @@ export function NetworkTopology({
               opacity="0.5"
             />
           )
+        )}
+
+        {device.type === 'iot' && iotGlowColor && (
+          <path
+            d={`M -6 -6 L ${deviceWidth + 6 - 10} -6 Q ${deviceWidth + 6} -6 ${deviceWidth + 6} 8 L ${deviceWidth + 6} ${deviceHeight + 6} L 8 ${deviceHeight + 6} Q -6 ${deviceHeight + 6} -6 ${deviceHeight + 6 - 10} L -6 -6 Z`}
+            fill="none"
+            stroke={iotGlowColor}
+            strokeWidth="7"
+            opacity={isSelected ? 0.4 : 0.7}
+            strokeLinejoin="round"
+            style={{ filter: `drop-shadow(0 0 6px ${iotGlowColor}) drop-shadow(0 100px 112px ${iotGlowColor})` }}
+          />
         )}
 
         {/* Device body */}
@@ -5068,25 +5079,25 @@ export function NetworkTopology({
                   const isActive = device.iot.collaborationEnabled ?? true;
                   const rules = device.iot.rules || [];
 
-                if (iotKind === 'lamp' || iotKind === 'heater' || iotKind === 'cooler') {
-                  return (
-                    <div className="space-y-2">
-                      <div className="font-bold text-sm mb-1">
-                        {iotKind === 'lamp' ? (language === 'tr' ? '💡 Lamba' : '💡 Lamp') :
+                  if (iotKind === 'lamp' || iotKind === 'heater' || iotKind === 'cooler') {
+                    return (
+                      <div className="space-y-2">
+                        <div className="font-bold text-sm mb-1">
+                          {iotKind === 'lamp' ? (language === 'tr' ? '💡 Lamba' : '💡 Lamp') :
                             iotKind === 'heater' ? (language === 'tr' ? '🔥 Isıtıcı' : '🔥 Heater') :
                               (language === 'tr' ? '❄️ Soğutucu' : '❄️ Cooler')}
-                      </div>
-                      <div className="text-xs">
-                        {language === 'tr' ? 'Cihaz Durumu:' : 'Device Status:'} {isActive ? (language === 'tr' ? 'Aktif' : 'Active') : (language === 'tr' ? 'Pasif' : 'Inactive')}
-                      </div>
-                      <div className="text-xs">
-                        {language === 'tr' ? 'Güç Durumu:' : 'Power Status:'} {getIotPowerStatus(device)}
-                      </div>
-                      <div className="text-xs">
-                        {language === 'tr' ? 'Açık/Kapalı:' : 'Open/Closed:'} {getIotOpenCloseStatus(device)}
-                      </div>
-                      {rules.length > 0 && (
-                        <div className="mt-2 pt-2 border-t border-slate-300 dark:border-slate-600">
+                        </div>
+                        <div className="text-xs">
+                          {language === 'tr' ? 'Cihaz Durumu:' : 'Device Status:'} {isActive ? (language === 'tr' ? 'Aktif' : 'Active') : (language === 'tr' ? 'Pasif' : 'Inactive')}
+                        </div>
+                        <div className="text-xs">
+                          {language === 'tr' ? 'Güç Durumu:' : 'Power Status:'} {getIotPowerStatus(device)}
+                        </div>
+                        <div className="text-xs">
+                          {language === 'tr' ? 'Açık/Kapalı:' : 'Open/Closed:'} {getIotOpenCloseStatus(device)}
+                        </div>
+                        {rules.length > 0 && (
+                          <div className="mt-2 pt-2 border-t border-slate-300 dark:border-slate-600">
                             <div className="text-xs font-semibold mb-1">
                               {language === 'tr' ? '📋 Otomatik Kurallar:' : '📋 Auto Rules:'}
                             </div>
@@ -5679,138 +5690,138 @@ export function NetworkTopology({
           {/* Palette Sheet (Triggered from Top Toolbar) */}
           <Sheet open={isPaletteOpen} onOpenChange={setIsPaletteOpen}>
             <SheetContent side="left" className={`${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white'} p-0 palette w-[300px] sm:w-[350px] border-r border-slate-800/20 shadow-2xl transition-all duration-300 custom-scrollbar`}>
-                <SheetHeader className="p-6 border-b border-slate-800/50">
-                  <SheetTitle className="text-lg font-bold flex items-center gap-2">
-                    <Plus className="w-5 h-5 text-red-500" />
-                    {t.addDeviceOrCable}
-                  </SheetTitle>
-                </SheetHeader>
-                <div className="p-6 space-y-8 overflow-y-auto max-h-[calc(100vh-100px)] custom-scrollbar">
-                  {/* Devices Section */}
-                  <div className="space-y-4">
-                    <p className="text-[10px] font-bold  tracking-widest text-slate-500 ml-1 uppercase">{t.devices}</p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        onClick={() => { addDevice('pc'); setIsPaletteOpen(false); }}
-                        className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-blue-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-blue-500/50'
-                          }`}
-                      >
-                        <div className='text-blue-500'>
-                          {DEVICE_ICONS['pc']}
-                        </div>
-                        <span className="text-xs font-bold text-center">
-                          {t.addPc}
-                        </span>
-                      </button>
-                      <button
-                        onClick={() => { addDevice('switch'); setIsPaletteOpen(false); }}
-                        className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-green-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-green-500/50'
-                          }`}
-                      >
-                        <div className='text-green-500'>
-                          {DEVICE_ICONS['switch']}
-                        </div>
-                        <span className="text-xs font-bold text-center">
-                          {isTR ? 'L2 Switch' : 'L2 Switch'}
-                        </span>
-                      </button>
-                      <button
-                        onClick={() => { addDevice('switch', 'L3'); setIsPaletteOpen(false); }}
-                        className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-purple-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-purple-500/50'
-                          }`}
-                      >
-                        <div className='text-purple-500'>
-                          <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="#a855f7" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 12h14M5 12a2 2 0 0 1 -2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2M5 12a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 -2-2m-2-4h.01M17 16h.01" />
-                          </svg>
-                        </div>
-                        <span className="text-xs font-bold text-center">
-                          {isTR ? 'L3 Switch' : 'L3 Switch'}
-                        </span>
-                      </button>
-                      <button
-                        onClick={() => { addDevice('router'); setIsPaletteOpen(false); }}
-                        className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-purple-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-purple-500/50'
-                          }`}
-                      >
-                        <div className='text-purple-500'>
-                          {DEVICE_ICONS['router']}
-                        </div>
-                        <span className="text-xs font-bold text-center">
-                          {t.addRouter}
-                        </span>
-                      </button>
-                      <button
-                        onClick={() => { addDevice('iot'); setIsPaletteOpen(false); }}
-                        className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-cyan-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-cyan-500/50'
-                          }`}
-                      >
-                        <div className='text-cyan-500'>
-                          {DEVICE_ICONS['iot']}
-                        </div>
-                        <span className="text-xs font-bold text-center">
-                          {isTR ? 'IoT Ekle' : 'Add IoT'}
-                        </span>
-                      </button>
-                      <button
-                        onClick={() => { addDevice('firewall'); setIsPaletteOpen(false); }}
-                        className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-red-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-red-500/50'
-                          }`}
-                      >
-                        <div className='text-red-500'>
-                          {DEVICE_ICONS['firewall']}
-                        </div>
-                        <span className="text-xs font-bold text-center">
-                          {isTR ? 'Firewall' : 'Firewall'}
-                        </span>
-                      </button>
-                    </div>
+              <SheetHeader className="p-6 border-b border-slate-800/50">
+                <SheetTitle className="text-lg font-bold flex items-center gap-2">
+                  <Plus className="w-5 h-5 text-red-500" />
+                  {t.addDeviceOrCable}
+                </SheetTitle>
+              </SheetHeader>
+              <div className="p-6 space-y-8 overflow-y-auto max-h-[calc(100vh-100px)] custom-scrollbar">
+                {/* Devices Section */}
+                <div className="space-y-4">
+                  <p className="text-[10px] font-bold  tracking-widest text-slate-500 ml-1 uppercase">{t.devices}</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => { addDevice('pc'); setIsPaletteOpen(false); }}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-blue-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-blue-500/50'
+                        }`}
+                    >
+                      <div className='text-blue-500'>
+                        {DEVICE_ICONS['pc']}
+                      </div>
+                      <span className="text-xs font-bold text-center">
+                        {t.addPc}
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => { addDevice('switch'); setIsPaletteOpen(false); }}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-green-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-green-500/50'
+                        }`}
+                    >
+                      <div className='text-green-500'>
+                        {DEVICE_ICONS['switch']}
+                      </div>
+                      <span className="text-xs font-bold text-center">
+                        {isTR ? 'L2 Switch' : 'L2 Switch'}
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => { addDevice('switch', 'L3'); setIsPaletteOpen(false); }}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-purple-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-purple-500/50'
+                        }`}
+                    >
+                      <div className='text-purple-500'>
+                        <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="#a855f7" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 12h14M5 12a2 2 0 0 1 -2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2M5 12a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 -2-2m-2-4h.01M17 16h.01" />
+                        </svg>
+                      </div>
+                      <span className="text-xs font-bold text-center">
+                        {isTR ? 'L3 Switch' : 'L3 Switch'}
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => { addDevice('router'); setIsPaletteOpen(false); }}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-purple-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-purple-500/50'
+                        }`}
+                    >
+                      <div className='text-purple-500'>
+                        {DEVICE_ICONS['router']}
+                      </div>
+                      <span className="text-xs font-bold text-center">
+                        {t.addRouter}
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => { addDevice('iot'); setIsPaletteOpen(false); }}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-cyan-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-cyan-500/50'
+                        }`}
+                    >
+                      <div className='text-cyan-500'>
+                        {DEVICE_ICONS['iot']}
+                      </div>
+                      <span className="text-xs font-bold text-center">
+                        {isTR ? 'IoT Ekle' : 'Add IoT'}
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => { addDevice('firewall'); setIsPaletteOpen(false); }}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-red-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-red-500/50'
+                        }`}
+                    >
+                      <div className='text-red-500'>
+                        {DEVICE_ICONS['firewall']}
+                      </div>
+                      <span className="text-xs font-bold text-center">
+                        {isTR ? 'Firewall' : 'Firewall'}
+                      </span>
+                    </button>
                   </div>
+                </div>
 
-                  {/* Cables Section - Button Group with Color Coding */}
-                  <div className="space-y-3">
-                    <p className="text-[10px] font-bold tracking-widest text-slate-500 ml-1 uppercase">{t.cableTypes}</p>
-                    <div className={`flex flex-col gap-2 rounded-xl border p-2 ${isDark ? 'border-slate-700/50 bg-slate-800/30' : 'border-slate-200 bg-slate-50/50'}`}>
-                      {(['straight', 'crossover', 'console'] as CableType[]).map((type) => (
-                        <button
-                          key={type}
-                          onClick={() => { onCableChange({ ...cableInfo, cableType: type }); setIsPaletteOpen(false); }}
-                          className={`flex items-center gap-3 p-3 rounded-lg transition-all
+                {/* Cables Section - Button Group with Color Coding */}
+                <div className="space-y-3">
+                  <p className="text-[10px] font-bold tracking-widest text-slate-500 ml-1 uppercase">{t.cableTypes}</p>
+                  <div className={`flex flex-col gap-2 rounded-xl border p-2 ${isDark ? 'border-slate-700/50 bg-slate-800/30' : 'border-slate-200 bg-slate-50/50'}`}>
+                    {(['straight', 'crossover', 'console'] as CableType[]).map((type) => (
+                      <button
+                        key={type}
+                        onClick={() => { onCableChange({ ...cableInfo, cableType: type }); setIsPaletteOpen(false); }}
+                        className={`flex items-center gap-3 p-3 rounded-lg transition-all
                             ${isDark ? 'hover:bg-slate-700/50' : 'hover:bg-slate-200/50'}
                             ${cableInfo.cableType === type
-                              ? isDark ? 'bg-slate-700/80 border border-slate-600' : 'bg-white border border-slate-200 shadow-sm'
-                              : 'border border-transparent'
-                            }
+                            ? isDark ? 'bg-slate-700/80 border border-slate-600' : 'bg-white border border-slate-200 shadow-sm'
+                            : 'border border-transparent'
+                          }
                             ${type === 'straight'
-                              ? (cableInfo.cableType === type ? 'text-blue-400' : 'text-blue-500 hover:text-blue-400')
-                              : type === 'crossover'
-                                ? (cableInfo.cableType === type ? 'text-orange-400' : 'text-orange-500 hover:text-orange-400')
-                                : (cableInfo.cableType === type ? 'text-cyan-400' : 'text-cyan-500 hover:text-cyan-400')
-                            }`}
-                        >
-                          <div className={`p-2 rounded-md ${cableInfo.cableType === type ? (isDark ? 'bg-slate-800' : 'bg-slate-50') : ''}`}>
-                            {type === 'straight' ? (
-                              <Cable className="w-5 h-5" />
-                            ) : type === 'crossover' ? (
-                              <Strikethrough className="w-5 h-5" />
-                            ) : (
-                              <Usb className="w-5 h-5" />
-                            )}
-                          </div>
-                          <div className="flex flex-col items-start">
-                            <span className="text-xs font-bold capitalize">
-                              {type === 'straight' ? t.straight : type === 'crossover' ? t.crossover : t.console}
-                            </span>
-                            <span className="text-[9px] opacity-60">
-                              {type === 'straight' ? (isTR ? 'Standart ethernet bağlantısı' : 'Standard ethernet connection') :
-                                type === 'crossover' ? (isTR ? 'Benzer cihazlar arası' : 'Between similar devices') :
-                                  (isTR ? 'Yönetim konsol bağlantısı' : 'Management console connection')}
-                            </span>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
+                            ? (cableInfo.cableType === type ? 'text-blue-400' : 'text-blue-500 hover:text-blue-400')
+                            : type === 'crossover'
+                              ? (cableInfo.cableType === type ? 'text-orange-400' : 'text-orange-500 hover:text-orange-400')
+                              : (cableInfo.cableType === type ? 'text-cyan-400' : 'text-cyan-500 hover:text-cyan-400')
+                          }`}
+                      >
+                        <div className={`p-2 rounded-md ${cableInfo.cableType === type ? (isDark ? 'bg-slate-800' : 'bg-slate-50') : ''}`}>
+                          {type === 'straight' ? (
+                            <Cable className="w-5 h-5" />
+                          ) : type === 'crossover' ? (
+                            <Strikethrough className="w-5 h-5" />
+                          ) : (
+                            <Usb className="w-5 h-5" />
+                          )}
+                        </div>
+                        <div className="flex flex-col items-start">
+                          <span className="text-xs font-bold capitalize">
+                            {type === 'straight' ? t.straight : type === 'crossover' ? t.crossover : t.console}
+                          </span>
+                          <span className="text-[9px] opacity-60">
+                            {type === 'straight' ? (isTR ? 'Standart ethernet bağlantısı' : 'Standard ethernet connection') :
+                              type === 'crossover' ? (isTR ? 'Benzer cihazlar arası' : 'Between similar devices') :
+                                (isTR ? 'Yönetim konsol bağlantısı' : 'Management console connection')}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
                   </div>
+                </div>
                 <div className="h-4" />
               </div>
             </SheetContent>

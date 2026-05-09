@@ -704,6 +704,7 @@ export function PCPanel({
         deviceId: selectedIotDeviceId,
         config: {
           iot: {
+            ...selectedIotDevice?.iot,
             sensorType: iotSensorType,
             kind: iotKind,
             dataFlowDirection,
@@ -719,7 +720,7 @@ export function PCPanel({
         description: language === 'tr' ? 'Seçili IoT nesnesi güncellendi.' : 'Selected IoT object updated.',
       });
     }
-  }, [selectedIotDeviceId, iotSensorType, iotKind, iotCollaborationEnabled, iotDataStore, language]);
+  }, [selectedIotDeviceId, selectedIotDevice, iotSensorType, iotKind, iotCollaborationEnabled, iotDataStore, language]);
 
   // Keep saveIotConfig in a ref to avoid circular dependency
   const saveIotConfigRef = useRef(saveIotConfig);

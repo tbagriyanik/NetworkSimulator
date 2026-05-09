@@ -8,7 +8,7 @@ import { ensureDeviceStatesMap } from '@/lib/network/networkUtils';
 import { useDeviceManager } from '@/hooks/useDeviceManager';
 import { useModalDragResize } from '@/hooks/useModalDragResize';
 import { useMultiTabWarning } from '@/hooks/useMultiTabWarning';
-import useAppStore, { useTopologyDevices, useTopologyConnections, useTopologyNotes, useZoom, usePan, useActiveTab } from '@/lib/store/appStore';
+import useAppStore, { useTopologyDevices, useTopologyConnections, useTopologyNotes, useZoom, usePan, useActiveTab, useEnvironment } from '@/lib/store/appStore';
 import { NetworkTopology } from '@/components/network/NetworkTopology';
 import { cn, normalizeMAC } from '@/lib/utils';
 import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType, CanvasPortStatus } from '@/components/network/networkTopology.types';
@@ -16,6 +16,7 @@ import { getPrompt } from '@/lib/network/executor';
 import { formatErrorForUser, errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
 import { checkDeviceConnectivity, getDeviceWifiConfig, getWirelessSignalStrength } from '@/lib/network/connectivity';
 import { generateRandomLinkLocalIpv4 } from '@/lib/network/linkLocal';
+import { processIotRules } from '@/lib/network/iotLogic';
 import { calculatePVST } from '@/lib/network/core/showCommands';
 import type { TerminalOutput } from '@/components/network/Terminal';
 import { BOOT_PROGRESS_MARKER } from '@/components/network/Terminal';
@@ -507,6 +508,7 @@ export default function Home() {
   const zoom = useZoom();
   const pan = usePan();
   const activeTab = useActiveTab();
+  const environment = useEnvironment();
   const { setDevices, setConnections, setNotes, setZoom, setPan, setActiveTab, graphicsQuality, setGraphicsQuality } = useAppStore();
 
   const focusDeviceInTopology = useCallback((deviceId?: string, targetZoom?: number, deviceData?: CanvasDevice) => {
@@ -677,13 +679,49 @@ export default function Home() {
     }
   }, [activeDeviceId]);
 
+  const applyIotAutomationPass = useCallback((devices: CanvasDevice[]) => {
+    if (!devices.some((device) => device.type === 'iot' && device.iot?.rules?.some((rule) => rule.enabled !== false))) {
+      return devices;
+    }
+
+    let nextDevices = devices;
+    let didUpdate = false;
+
+    processIotRules(devices, environment, (deviceId, updates) => {
+      didUpdate = true;
+      nextDevices = nextDevices.map((device) =>
+        device.id === deviceId
+          ? {
+              ...device,
+              ...updates,
+              iot: updates.iot ? { ...device.iot, ...updates.iot } : device.iot,
+            }
+          : device
+      );
+    });
+
+    return didUpdate ? nextDevices : devices;
+  }, [environment]);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setTopologyDevices((prev) => applyIotAutomationPass(prev));
+    }, 250);
+
+    return () => window.clearInterval(interval);
+  }, [applyIotAutomationPass, setTopologyDevices]);
+
   // Function to update device configuration
   const updateDeviceConfig = useCallback((deviceId: string, config: any) => {
     // Update topology devices using functional update to avoid stale closure
     setTopologyDevices(prev =>
       prev.map((d) =>
         d.id === deviceId
-          ? { ...d, ...config }
+          ? {
+              ...d,
+              ...config,
+              iot: config.iot ? { ...d.iot, ...config.iot } : d.iot,
+            }
           : d
       )
     );
@@ -3668,8 +3706,9 @@ ${state.bannerMOTD}
         };
       });
 
-      // Update topology devices with STP-synced ports
-      setTopologyDevices(stpSyncedDevices);
+      // Update topology devices with STP-synced ports, then run one explicit IoT automation pass for F5 refresh.
+      const iotProcessedDevices = applyIotAutomationPass(stpSyncedDevices);
+      setTopologyDevices(iotProcessedDevices);
 
       const allDhcpPools: Array<{ startIp: string; maxUsers: number }> = [];
       dhcpServerActiveCount = 0;
@@ -3677,7 +3716,7 @@ ${state.bannerMOTD}
       dhcpClientWithLeaseCount = 0;
       dhcpClientNoLeaseCount = 0;
 
-      stpSyncedDevices.forEach((device) => {
+      iotProcessedDevices.forEach((device) => {
         const state = portSecurityUpdatedStates.get(device.id);
         const topologyPools = device.services?.dhcp?.pools || [];
         const runtimePools = state?.services?.dhcp?.pools || [];
@@ -3702,7 +3741,7 @@ ${state.bannerMOTD}
         cliPools.forEach((p: any) => allDhcpPools.push({ startIp: p.startIp, maxUsers: Number(p.maxUsers || 50) }));
       });
 
-      stpSyncedDevices.forEach((device) => {
+      iotProcessedDevices.forEach((device) => {
         if (device.type !== 'pc' && device.type !== 'iot' || device.ipConfigMode !== 'dhcp') return;
         const state = portSecurityUpdatedStates.get(device.id);
         const runtimeIp = state?.ports?.['eth0']?.ipAddress || state?.ports?.['wlan0']?.ipAddress || '';
@@ -3715,7 +3754,7 @@ ${state.bannerMOTD}
         else dhcpClientNoLeaseCount++;
       });
 
-      const refreshDeviceSummaries = buildRefreshDeviceSummaries(stpSyncedDevices, portSecurityUpdatedStates);
+      const refreshDeviceSummaries = buildRefreshDeviceSummaries(iotProcessedDevices, portSecurityUpdatedStates);
 
       // Reset DHCP renewal ref to allow fresh leases on refresh
       dhcpRenewalDoneRef.current = false;
@@ -3825,7 +3864,7 @@ ${state.bannerMOTD}
         showRefreshPanel();
       }
     }
-  }, [assignDhcpLeaseForPc, buildLinkLocalLease, topologyDevices, topologyConnections, deviceStates, setDeviceStates, setTopologyConnections, language, t, pcOutputs]);
+  }, [applyIotAutomationPass, assignDhcpLeaseForPc, buildLinkLocalLease, topologyDevices, topologyConnections, deviceStates, setDeviceStates, setTopologyConnections, language, t, pcOutputs]);
 
   // Automatically trigger DHCP refresh when wireless clients connect
   useEffect(() => {
