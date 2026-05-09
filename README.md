@@ -25,6 +25,13 @@ Live app: [network2026.vercel.app](https://network2026.vercel.app)
 
 ### Recent Updates (v1.6.1)
 
+- **Firewall & IoT Persistence Update (May 9, 2026)**:
+  - Firewall rules are now persisted when re-selecting devices.
+  - Firewall rules are synchronized into device runtime state (`deviceStates`).
+  - Firewall rules are included in generated `running-config` output.
+  - `show access-lists` now displays firewall ACL-style rules (`OUTSIDE-IN`) when present.
+  - IoT and firewall interaction paths now use the same persisted rule source.
+
 - **IPv6 Routing Protocols (RIPng & OSPFv3)**:
   - Added support for **RIPng** (RIP next generation) for IPv6.
   - Added support for **OSPFv3** (OSPF for IPv6) with multi-area capability.
@@ -101,6 +108,13 @@ Live app: [network2026.vercel.app](https://network2026.vercel.app)
 - **Modern UI/UX**: Klavye kısayolları, glassmorphism efektleri, shimmer loading ve erişilebilir tasarım.
 
 ### Son Güncellemeler (v1.6.1)
+
+- **Firewall ve IoT Kalıcılık Güncellemesi (9 Mayıs 2026)**:
+  - Firewall kuralları cihaz yeniden seçildiğinde korunur.
+  - Firewall kuralları çalışma anı durumuna (`deviceStates`) senkronlanır.
+  - Firewall kuralları üretilen `running-config` çıktısına dahil edilir.
+  - `show access-lists`, kural varsa firewall ACL benzeri satırlarını (`OUTSIDE-IN`) gösterir.
+  - IoT-firewall etkileşimlerinde aynı kalıcı kural kaynağı kullanılır.
 
 - **IPv6 Yönlendirme Protokolleri (RIPng & OSPFv3)**:
   - IPv6 için **RIPng** desteği eklendi.

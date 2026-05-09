@@ -606,6 +606,9 @@ IoT cihazlarını kablosuz ağa bağlayarak ve DHCP üzerinden otomatik IP alara
    - http://iot-panel üzerinden IoT cihazlarını yönet
    - Sensör verilerini izle
    - Cihazların DHCP üzerinden IP aldığını doğrula (192.168.1.100+)
+   - Firewall eklediysen `show access-lists` ile `OUTSIDE-IN` kurallarını doğrula
+   - Firewall kuralı ekledikten sonra başka cihaz seçip geri dön: kurallar korunmuş olmalı
+   - `show running-config` içinde firewall ACL satırlarının yer aldığını doğrula
 
 ### 15. Greenhouse Sketch (Smart Farm)
 **ID:** `greenhouse-iot-lab`  
