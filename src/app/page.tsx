@@ -203,12 +203,11 @@ import { FirewallPanel } from '@/components/network/FirewallPanel';
 
 const PCPanel = dynamic(() => import('@/components/network/PCPanel').then((m) => m.PCPanel), { ssr: false });
 const RouterPanel = dynamic(() => import('@/components/network/RouterPanel').then((m) => m.RouterPanel), { ssr: false });
-const Terminal = dynamic(() => import('@/components/network/Terminal').then((m) => m.Terminal), { ssr: false });
+const UnifiedDevicePanel = dynamic(() => import('@/components/network/UnifiedDevicePanel').then((m) => m.UnifiedDevicePanel), { ssr: false });
 const PortPanel = dynamic(() => import('@/components/network/PortPanel').then((m) => m.PortPanel), { ssr: false });
 const VlanPanel = dynamic(() => import('@/components/network/VlanPanel').then((m) => m.VlanPanel), { ssr: false });
 const SecurityPanel = dynamic(() => import('@/components/network/SecurityPanel').then((m) => m.SecurityPanel), { ssr: false });
 const ConfigPanel = dynamic(() => import('@/components/network/ConfigPanel').then((m) => m.ConfigPanel), { ssr: false });
-const TaskCard = dynamic(() => import('@/components/network/TaskCard').then((m) => m.TaskCard), { ssr: false });
 const LazyAboutModal = dynamic(() => import('@/components/network/LazyAboutModal').then((m) => m.LazyAboutModal), { ssr: false });
 
 type TabType = 'topology' | 'cmd' | 'terminal' | 'tasks';
@@ -391,8 +390,8 @@ export default function Home() {
   const [showPCDeviceId, setShowPCDeviceId] = useState<string>('pc-1');
   const [showRouterPanel, setShowRouterPanel] = useState(false);
   const [showRouterDeviceId, setShowRouterDeviceId] = useState<string>('router-1');
-  const [showTasksModal, setShowTasksModal] = useState(false);
-  const [showTerminalModal, setShowTerminalModal] = useState(false);
+  const [showUnifiedDeviceModal, setShowUnifiedDeviceModal] = useState(false);
+  const [unifiedDeviceActiveTab, setUnifiedDeviceActiveTab] = useState<'console' | 'settings'>('console');
   const [deviceSearchQuery, setDeviceSearchQuery] = useState('');
   const [focusDeviceId, setFocusDeviceId] = useState<string | null>(null);
   const [isAppLoading, setIsLoading] = useState(true);
@@ -1050,26 +1049,21 @@ export default function Home() {
 
   // Modal drag/resize — managed by useModalDragResize hook
   const {
-    tasksModalPosition,
-    tasksModalSize,
-    cliModalPosition,
-    cliModalSize,
     pcModalPosition,
     pcModalSize,
     firewallModalPosition,
     firewallModalSize,
-    setTasksModalPosition,
-    setTasksModalSize,
-    setCliModalPosition,
-    setCliModalSize,
+    unifiedModalPosition,
+    unifiedModalSize,
     setPcModalPosition,
     setPcModalSize,
     setFirewallModalPosition,
     setFirewallModalSize,
+    setUnifiedModalPosition,
+    setUnifiedModalSize,
     handlePointerDown,
     handleResizeStart,
   } = useModalDragResize({ width: 1200, height: 700 }, graphicsQuality);
-  const isTasksNarrow = tasksModalSize.width < 1100;
 
   // Get current state helper
   const getCurrentState = useCallback((): ProjectState => ({
@@ -1965,8 +1959,7 @@ ${state.bannerMOTD}
       // Close all overlay panels when loading a project
       setShowPCPanel(false);
       setShowRouterPanel(false);
-      setShowTerminalModal(false);
-      setShowTasksModal(false);
+      setShowUnifiedDeviceModal(false);
       setRefreshNetworkReport(null);
 
       // Increment topology key to force remount
@@ -2017,7 +2010,7 @@ ${state.bannerMOTD}
       });
       return false;
     }
-  }, [setDeviceStates, setDeviceOutputs, setPcOutputs, setPcHistories, setTopologyDevices, setTopologyConnections, setTopologyNotes, setCableInfo, setActiveDeviceId, setActiveDeviceType, setSelectedDevice, setActiveTab, setTopologyKey, setHasUnsavedChanges, resetHistory, toast, setZoom, setPan, language, normalizeDeviceType, applyLinkLocalToUnconfiguredHosts, setShowPCPanel, setShowRouterPanel, setShowTerminalModal, setShowTasksModal, setRefreshNetworkReport]);
+  }, [setDeviceStates, setDeviceOutputs, setPcOutputs, setPcHistories, setTopologyDevices, setTopologyConnections, setTopologyNotes, setCableInfo, setActiveDeviceId, setActiveDeviceType, setSelectedDevice, setActiveTab, setTopologyKey, setHasUnsavedChanges, resetHistory, toast, setZoom, setPan, language, normalizeDeviceType, applyLinkLocalToUnconfiguredHosts, setShowPCPanel, setShowRouterPanel, setShowUnifiedDeviceModal, setRefreshNetworkReport]);
 
   // Persistence: Load from localStorage on mount
   useEffect(() => {
@@ -2261,7 +2254,8 @@ ${state.bannerMOTD}
 
     // Handle tasks tab as modal
     if (tabId === 'tasks') {
-      setShowTasksModal(true);
+      setUnifiedDeviceActiveTab('settings');
+      setShowUnifiedDeviceModal(true);
       return;
     }
 
@@ -2284,7 +2278,8 @@ ${state.bannerMOTD}
         const deviceState = getOrCreateDeviceState(activeDeviceId, deviceObj.type, deviceObj.name, deviceObj.macAddress, deviceObj.switchModel);
         getOrCreateDeviceOutputs(activeDeviceId, deviceState);
       }
-      setShowTerminalModal(true);
+      setUnifiedDeviceActiveTab('console');
+      setShowUnifiedDeviceModal(true);
       return;
     }
 
@@ -2456,7 +2451,8 @@ ${state.bannerMOTD}
 
       setActiveDeviceId(deviceId);
       setActiveDeviceType(device);
-      setShowTerminalModal(true);
+      setUnifiedDeviceActiveTab('console');
+      setShowUnifiedDeviceModal(true);
     }
   }, [getOrCreateDeviceState, getOrCreateDeviceOutputs, topologyDevices, setDeviceTabWithHistory, setShowPCDeviceId, setActiveDeviceId, setActiveDeviceType]);
 
@@ -3073,8 +3069,7 @@ ${state.bannerMOTD}
       setSaveDialog(null);
       setShowPCPanel(false);
       setShowRouterPanel(false);
-      setShowTerminalModal(false);
-      setShowTasksModal(false);
+      setShowUnifiedDeviceModal(false);
       setShowAboutModal(false);
       setShowProjectPicker(false);
       setShowOnboarding(false);
@@ -3102,11 +3097,11 @@ ${state.bannerMOTD}
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [setShowMobileMenu, setConfirmDialog, setSaveDialog, setShowPCPanel, setShowRouterPanel, setShowTerminalModal, setShowTasksModal, setShowAboutModal, setShowProjectPicker, setShowOnboarding, setActiveTab, setActiveDeviceId, setActiveDeviceType]);
+  }, [setShowMobileMenu, setConfirmDialog, setSaveDialog, setShowPCPanel, setShowRouterPanel, setShowUnifiedDeviceModal, setShowAboutModal, setShowProjectPicker, setShowOnboarding, setActiveTab, setActiveDeviceId, setActiveDeviceType]);
 
   // History pushState for back button tracking
   useEffect(() => {
-    const anyModalOpen = showMobileMenu || !!confirmDialog || !!saveDialog || showPCPanel || showFirewallPanel || showRouterPanel || showTerminalModal || showTasksModal || showAboutModal || showProjectPicker || showOnboarding;
+    const anyModalOpen = showMobileMenu || !!confirmDialog || !!saveDialog || showPCPanel || showFirewallPanel || showRouterPanel || showUnifiedDeviceModal || showAboutModal || showProjectPicker || showOnboarding;
     if (anyModalOpen && !modalHistoryPushedRef.current) {
       window.history.pushState({ modal: true }, '');
       modalHistoryPushedRef.current = true;
@@ -3114,7 +3109,7 @@ ${state.bannerMOTD}
     if (!anyModalOpen) {
       modalHistoryPushedRef.current = false;
     }
-  }, [showMobileMenu, confirmDialog, saveDialog, showPCPanel, showRouterPanel, showTerminalModal, showTasksModal, showAboutModal, showProjectPicker, showOnboarding]);
+  }, [showMobileMenu, confirmDialog, saveDialog, showPCPanel, showRouterPanel, showUnifiedDeviceModal, showAboutModal, showProjectPicker, showOnboarding]);
 
   // Helper: tab açıklamaları (tooltip için)
   const getTabDescription = useCallback((tabId: TabType): string => {
@@ -3932,8 +3927,7 @@ ${state.bannerMOTD}
         setSaveDialog(null);
         setShowPCPanel(false);
         setShowRouterPanel(false);
-        setShowTerminalModal(false);
-        setShowTasksModal(false);
+        setShowUnifiedDeviceModal(false);
         setShowAboutModal(false);
         setShowProjectPicker(false);
         setShowOnboarding(false);
@@ -3998,7 +3992,7 @@ ${state.bannerMOTD}
       if (e.key === 'Tab') {
         // Tab key navigation - only cycle devices in topology if no panel is open
         // If a panel is open (PC panel, Router panel, etc.), let the panel handle Tab navigation
-        if (activeTab === 'topology' && topologyDevices.length > 0 && !showPCPanel && !showRouterPanel && !showTerminalModal) {
+        if (activeTab === 'topology' && topologyDevices.length > 0 && !showPCPanel && !showRouterPanel && !showUnifiedDeviceModal) {
           e.preventDefault();
 
           // Cancel current selection if multiple devices are selected or all devices are selected
@@ -4019,7 +4013,7 @@ ${state.bannerMOTD}
 
       if (e.key === 'Enter') {
         // Don't handle Enter when any modal/panel is open
-        if (showTasksModal || showTerminalModal || showAboutModal || showPCPanel || showFirewallPanel || showRouterPanel || showProjectPicker || showOnboarding || !!confirmDialog?.show || !!saveDialog?.show) {
+        if (showUnifiedDeviceModal || showAboutModal || showPCPanel || showFirewallPanel || showRouterPanel || showProjectPicker || showOnboarding || !!confirmDialog?.show || !!saveDialog?.show) {
           return;
         }
         if (confirmDialog?.show) {
@@ -4039,7 +4033,8 @@ ${state.bannerMOTD}
               getOrCreateDeviceOutputs(device.id, deviceState);
               setActiveDeviceId(device.id);
               setActiveDeviceType(device.type);
-              setShowTerminalModal(true);
+              setUnifiedDeviceActiveTab('console');
+              setShowUnifiedDeviceModal(true);
             } else {
               handleDeviceDoubleClick(device.type, device.id);
             }
@@ -5126,152 +5121,38 @@ ${state.bannerMOTD}
             </AlertDialogContent>
           </AlertDialog>
 
-          {/* Tasks Modal */}
-          <Dialog open={showTasksModal} onOpenChange={setShowTasksModal} modal={false}>
-            <DialogContent
-              showCloseButton={false}
-              onEscapeKeyDown={(e) => e.preventDefault()}
-              className={`bg-white border-slate-200 p-0 overflow-visible flex flex-col top-auto left-auto translate-x-0 translate-y-0 liquid-glass-light`}
-              data-modal-content
-              style={{
-                position: 'fixed',
-                left: typeof window !== 'undefined' && window.innerWidth >= 768 ? tasksModalPosition.x : 0,
-                top: typeof window !== 'undefined' && window.innerWidth >= 768 ? tasksModalPosition.y : 0,
-                width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${tasksModalSize.width}px` : '100vw',
-                height: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${tasksModalSize.height}px` : '100vh',
-                maxWidth: 'none',
-                maxHeight: 'none',
-                borderRadius: typeof window !== 'undefined' && window.innerWidth >= 768 ? '1rem' : 0,
-                borderWidth: 3,
-              }}
-            >
-              <div className="relative flex flex-col h-full rounded-2xl shadow-2xl overflow-visible">
-                <DialogHeader
-                  className={cn(
-                    "p-3 sm:p-4 border-b cursor-grab active:cursor-grabbing select-none touch-none sticky top-0 z-10",
-                    isDark ? "border-slate-700 bg-slate-800" : "border-slate-100 bg-white"
-                  )}
-                  data-modal-header
-                  onPointerDown={(e) => handlePointerDown(e, 'tasks')}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 flex-1">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                      <DialogTitle className={isDark ? 'text-white font-semibold' : 'text-slate-900 font-semibold'}>
-                        {t.tasks}
-                      </DialogTitle>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <TooltipWrapper title={t.switchTerminal}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 hover:bg-slate-300 dark:hover:bg-slate-600"
-                          onClick={() => {
-                            setShowTasksModal(false);
-                            setShowTerminalModal(true);
-                          }}
-                        >
-                          <TerminalIcon className="h-5 w-5" />
-                        </Button>
-                      </TooltipWrapper>
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 hover:bg-red-500 hover:text-white dark:hover:bg-red-600"
-                        onClick={() => setShowTasksModal(false)}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                  <DialogDescription className="sr-only">
-                    {t.deviceTasksAndConfig}
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="flex-1 overflow-y-auto p-3 sm:p-4">
-                  <div className={`grid gap-4 ${isTasksNarrow ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-3'}`}>
-                    <div className={`${isTasksNarrow ? '' : 'lg:col-span-2'} overflow-y-auto custom-scrollbar`}>
-                      <PortPanel
-                        ports={state.ports}
-                        t={t}
-                        theme={theme}
-                        deviceName={state.hostname}
-                        deviceModel={activeDeviceType === 'router' ? 'ISR 4451 X' : (state.switchModel || 'WS-C2960-24TT-L')}
-                        activeDeviceId={activeDeviceId}
-                        isDevicePoweredOff={topologyDevices.some(d => d.id === activeDeviceId && d.status === 'offline')}
-                        topologyDevices={topologyDevices}
-                        onTogglePower={toggleDevicePower}
-                        topologyConnections={topologyConnections || undefined}
-                      />
-                      <VlanPanel
-                        vlans={state.vlans}
-                        ports={state.ports}
-                        deviceName={state.hostname}
-                        deviceModel={activeDeviceType === 'router' ? 'ISR 4451 X' : (state.switchModel || 'WS-C2960-24TT-L')}
-                        deviceId={activeDeviceId}
-                        onTogglePower={toggleDevicePower}
-                        onExecuteCommand={handleCommand}
-                        t={t}
-                        theme={theme}
-                        activeDeviceType={activeDeviceType}
-                        isDevicePoweredOff={topologyDevices.some(d => d.id === activeDeviceId && d.status === 'offline')}
-                      />
-                      <SecurityPanel
-                        security={state.security}
-                        t={t}
-                        theme={theme}
-                        deviceId={activeDeviceId}
-                        isDevicePoweredOff={topologyDevices.some(d => d.id === activeDeviceId && d.status === 'offline')}
-                        onTogglePower={toggleDevicePower}
-                      />
-                    </div>
-                    {activeDeviceType !== 'pc' && (
-                      <div className="overflow-y-auto custom-scrollbar">
-                        <TaskCard
-                          tasks={activeDeviceTasks}
-                          state={state}
-                          context={taskContext}
-                          color="from-red-500 to-rose-500"
-                          isDark={isDark}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-                {/* Resize handles - hidden on mobile */}
-                {typeof window !== 'undefined' && window.innerWidth >= 768 && (
-                  <>
-                    <div
-                      className="absolute left-0 top-0 bottom-0 w-[10px] cursor-ew-resize select-none touch-none bg-transparent hover:bg-cyan-500/10"
-                      onPointerDown={(e) => handleResizeStart(e, 'w', 'tasks')}
-                    />
-                    <div
-                      className="absolute right-[-5px] top-0 bottom-0 w-[5px] cursor-ew-resize select-none touch-none rounded-r-lg bg-transparent hover:bg-cyan-500/20"
-                      onPointerDown={(e) => handleResizeStart(e, 'e', 'tasks')}
-                    />
-                    <div
-                      className="absolute left-[10px] right-2 bottom-0 h-[10px] cursor-ns-resize select-none touch-none rounded-b-lg bg-transparent hover:bg-cyan-500/20"
-                      onPointerDown={(e) => handleResizeStart(e, 's', 'tasks')}
-                    />
-                    <TooltipWrapper title={t.resizeAction}>
-                      <div
-                        className="absolute bottom-0 right-0 z-20 h-7 w-7 cursor-se-resize select-none touch-none rounded-tl-lg rounded-br-lg border border-slate-400/30 dark:border-slate-500/30 bg-slate-500/30 text-slate-100/80 hover:bg-cyan-500/30 hover:text-white flex items-center justify-center"
-                        onPointerDown={(e) => handleResizeStart(e, 'se', 'tasks')}
-                      >
-                        <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                          <path d="M6 13L13 6" />
-                          <path d="M9.5 13L13 9.5" />
-                          <path d="M12.5 13L13 12.5" />
-                        </svg>
-                      </div>
-                    </TooltipWrapper>
-                  </>
-                )}
-              </div>
-            </DialogContent>
-          </Dialog>
+          {/* Unified Device Panel (CLI + Tasks) */}
+          <UnifiedDevicePanel
+            isOpen={showUnifiedDeviceModal}
+            onOpenChange={setShowUnifiedDeviceModal}
+            activeTab={unifiedDeviceActiveTab}
+            onTabChange={setUnifiedDeviceActiveTab}
+            deviceId={activeDeviceId}
+            deviceType={activeDeviceType}
+            deviceStates={deviceStates}
+            topologyDevices={topologyDevices}
+            topologyConnections={topologyConnections}
+            handleCommand={handleCommand}
+            handleClearTerminal={handleClearTerminal}
+            toggleDevicePower={toggleDevicePower}
+            handleUpdateHistory={handleUpdateHistory}
+            confirmDialog={confirmDialog}
+            setConfirmDialog={setConfirmDialog}
+            t={t}
+            theme={theme}
+            language={language}
+            isDark={isDark}
+            isExecutingCommand={isExecutingCommand}
+            output={output}
+            prompt={prompt}
+            state={state}
+            activeDeviceTasks={activeDeviceTasks}
+            taskContext={taskContext}
+            modalPosition={unifiedModalPosition}
+            modalSize={unifiedModalSize}
+            handlePointerDown={handlePointerDown}
+            handleResizeStart={handleResizeStart}
+          />
 
           {/* Firewall Configuration Modal */}
           <Dialog open={showFirewallPanel} onOpenChange={(open) => {
@@ -5517,145 +5398,6 @@ ${state.bannerMOTD}
                       <div
                         className="absolute -bottom-2 -right-2 z-20 h-7 w-7 cursor-se-resize select-none touch-none rounded-tl-lg rounded-br-lg border border-slate-400/30 bg-slate-500/30 text-slate-100/80 hover:bg-cyan-500/30 hover:text-white flex items-center justify-center"
                         onPointerDown={(e) => handleResizeStart(e, 'se', 'pc')}
-                      >
-                        <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                          <path d="M6 13L13 6" />
-                          <path d="M9.5 13L13 9.5" />
-                          <path d="M12.5 13L13 12.5" />
-                        </svg>
-                      </div>
-                    </TooltipWrapper>
-                  </>
-                )}
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          {/* Terminal Full-Screen Modal */}
-          <Dialog open={showTerminalModal} onOpenChange={setShowTerminalModal} modal={false}>
-            <DialogContent
-              showCloseButton={false}
-              onEscapeKeyDown={(e) => e.preventDefault()}
-              className={`bg-white border-slate-200 p-0 overflow-visible flex flex-col top-auto left-auto translate-x-0 translate-y-0 liquid-glass-light`}
-              data-modal-content
-              style={{
-                position: 'fixed',
-                left: typeof window !== 'undefined' && window.innerWidth >= 768 ? cliModalPosition.x : 0,
-                top: typeof window !== 'undefined' && window.innerWidth >= 768 ? cliModalPosition.y : 0,
-                width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${cliModalSize.width}px` : '100vw',
-                height: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${cliModalSize.height}px` : '100vh',
-                maxWidth: 'none',
-                maxHeight: 'none',
-                borderRadius: typeof window !== 'undefined' && window.innerWidth >= 768 ? '1rem' : 0,
-                borderWidth: 3,
-              }}
-            >
-              <div className="relative flex flex-col h-full rounded-2xl shadow-2xl overflow-visible">
-                <DialogHeader
-                  className={cn(
-                    "p-3 sm:p-4 border-b cursor-grab active:cursor-grabbing select-none touch-none sticky top-0 z-10",
-                    isDark ? "border-slate-700 bg-slate-800" : "border-slate-100 bg-white"
-                  )}
-                  data-modal-header
-                  onPointerDown={(e) => handlePointerDown(e, 'cli')}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 flex-1">
-                      <DialogTitle className={isDark ? 'text-white font-semibold' : 'text-slate-900 font-semibold'}>
-                        {t.cliInterface}
-                      </DialogTitle>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <TooltipWrapper title={t.switchTasks}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 hover:bg-slate-300 dark:hover:bg-slate-600"
-                          onClick={() => {
-                            setShowTerminalModal(false);
-                            setShowTasksModal(true);
-                          }}
-                        >
-                          <ShieldCheck className="h-3 w-3" />
-                        </Button>
-                      </TooltipWrapper>
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 hover:bg-red-500 hover:text-white dark:hover:bg-red-600"
-                        onClick={() => setShowTerminalModal(false)}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                  <DialogDescription className="sr-only">
-                    {t.cliInterface}
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="flex-1 overflow-hidden rounded-b-2xl">
-                  <Terminal
-                    key="cli-terminal"
-                    className="h-full"
-                    deviceId={activeDeviceId}
-                    deviceName={
-                      (() => {
-                        const deviceState = deviceStates.get(activeDeviceId);
-                        return deviceState?.hostname || activeDeviceId;
-                      })()
-                    }
-                    prompt={prompt}
-                    state={state}
-                    onCommand={handleCommand}
-                    onClear={handleClearTerminal}
-                    output={output}
-                    isLoading={isExecutingCommand}
-                    isConnectionError={topologyDevices.some(d => d.id === activeDeviceId && d.status === 'offline')}
-                    connectionErrorMessage={t.connectionError}
-                    isPoweredOff={topologyDevices.some(d => d.id === activeDeviceId && d.status === 'offline')}
-                    onTogglePower={toggleDevicePower}
-                    onClose={() => setShowTerminalModal(false)}
-                    t={t}
-                    theme={theme}
-                    language={language}
-                    onUpdateHistory={handleUpdateHistory}
-                    confirmDialog={confirmDialog}
-                    setConfirmDialog={setConfirmDialog}
-                    device={topologyDevices.find(d => d.id === activeDeviceId)}
-                    devices={topologyDevices}
-                    deviceStates={deviceStates}
-                    onRequestFocus={() => {
-                      requestAnimationFrame(() => {
-                        const el = document.querySelector('[data-terminal-input]') as HTMLInputElement | null;
-                        const terminal = document.querySelector('[data-terminal-scroll]') as HTMLDivElement | null;
-                        if (terminal) {
-                          terminal.scrollTop = terminal.scrollHeight;
-                        }
-                        el?.focus();
-                      });
-                    }}
-                  />
-                </div>
-                {/* Resize handles - hidden on mobile */}
-                {typeof window !== 'undefined' && window.innerWidth >= 768 && (
-                  <>
-                    <div
-                      className="absolute left-0 top-0 bottom-0 w-[10px] cursor-ew-resize select-none touch-none bg-transparent hover:bg-cyan-500/10"
-                      onPointerDown={(e) => handleResizeStart(e, 'w', 'cli')}
-                    />
-                    <div
-                      className="absolute -right-[5px] top-0 bottom-0 w-[10px] cursor-ew-resize select-none touch-none rounded-r-lg bg-transparent hover:bg-cyan-500/20"
-                      onPointerDown={(e) => handleResizeStart(e, 'e', 'cli')}
-                    />
-                    <div
-                      className="absolute -bottom-[5px] left-[10px] right-8 z-20 h-[10px] cursor-ns-resize select-none touch-none rounded-b-lg bg-transparent hover:bg-cyan-500/20"
-                      onPointerDown={(e) => handleResizeStart(e, 's', 'cli')}
-                    />
-                    <TooltipWrapper title={t.resizeAction}>
-                      <div
-                        className="absolute -bottom-2 -right-2 z-20 h-7 w-7 cursor-se-resize select-none touch-none rounded-tl-lg rounded-br-lg border border-slate-400/30 bg-slate-500/30 text-slate-100/80 hover:bg-cyan-500/30 hover:text-white flex items-center justify-center"
-                        onPointerDown={(e) => handleResizeStart(e, 'se', 'cli')}
                       >
                         <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
                           <path d="M6 13L13 6" />
@@ -6215,7 +5957,8 @@ ${state.bannerMOTD}
                       if (device) {
                         setActiveDeviceType(device.type);
                       }
-                      setShowTasksModal(true);
+                      setUnifiedDeviceActiveTab('settings');
+                      setShowUnifiedDeviceModal(true);
                     }}
                     clearSelectionTrigger={clearSelectionTrigger}
                   />
@@ -6508,7 +6251,7 @@ ${state.bannerMOTD}
             lastCompletedStep={lastCompletedStep}
             isCurrentStepReady={isCurrentStepReady}
             lastCommand={lastCommand}
-            deviceAccessed={showTerminalModal ? (activeDeviceType === 'switchL2' || activeDeviceType === 'switchL3' ? 'switch' : activeDeviceType === 'router' ? 'router' : 'pc') : null}
+            deviceAccessed={showUnifiedDeviceModal ? (activeDeviceType === 'switchL2' || activeDeviceType === 'switchL3' ? 'switch' : activeDeviceType === 'router' ? 'router' : 'pc') : null}
             deviceState={state}
             topologyConnections={topologyConnections}
             topologyDevices={topologyDevices}

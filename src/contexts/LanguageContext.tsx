@@ -95,6 +95,10 @@ export interface Translations {
   completeWithTab: string;
   completedAt: string;
   configure: string;
+  portStatus: string;
+  vlanManagement: string;
+  securityAndAcl: string;
+  tasksAndScore: string;
   confirm: string;
   confirmReset: string;
   confirmResetDescription: string;
@@ -409,6 +413,7 @@ export interface Translations {
   quickActions: string;
   quickCommands: string;
   quickSettings: string;
+  quickSettingsAndTasks: string;
   realTimeUpdate: string;
   redo: string;
   refresh: string;
@@ -704,6 +709,11 @@ const translations: Record<Language, Translations> = {
     commandsFound: 'komut bulundu',
     completeWithTab: 'ile tamamla',
     completedAt: 'Tamamlandı',
+    configAndMonitor: 'yapılandırma ve izleme paneli',
+    portStatus: 'Port Durumu',
+    vlanManagement: 'VLAN Yönetimi',
+    securityAndAcl: 'Güvenlik ve ACL',
+    tasksAndScore: 'Görevler ve Puanlama',
     configure: 'Yapılandır',
     confirm: 'Onayla',
     confirmReset: 'Cihazı Sıfırla',
@@ -1019,6 +1029,7 @@ const translations: Record<Language, Translations> = {
     quickActions: 'Hızlı işlemler',
     quickCommands: 'Hızlı Komutlar',
     quickSettings: 'Hızlı Ayarlar',
+    quickSettingsAndTasks: 'Hızlı Ayarlar & Görevler',
     realTimeUpdate: 'Gerçek zamanlı güncelleme aktif',
     redo: 'Yinele',
     refresh: 'Yenile',
@@ -1312,6 +1323,11 @@ const translations: Record<Language, Translations> = {
     commandsFound: 'commands found',
     completeWithTab: 'to complete',
     completedAt: 'Completed at',
+    configAndMonitor: 'configuration and monitoring panel',
+    portStatus: 'Port Status',
+    vlanManagement: 'VLAN Management',
+    securityAndAcl: 'Security and ACL',
+    tasksAndScore: 'Tasks and Scoring',
     configure: 'Configure',
     confirm: 'Confirm',
     confirmReset: 'Reset Device',
@@ -1627,6 +1643,7 @@ const translations: Record<Language, Translations> = {
     quickActions: 'Quick actions',
     quickCommands: 'Quick Commands',
     quickSettings: 'Quick Settings',
+    quickSettingsAndTasks: 'Quick Settings & Tasks',
     realTimeUpdate: 'Real-time update active',
     redo: 'Redo',
     refresh: 'Refresh',
