@@ -707,15 +707,6 @@ function cmdShowInterfaceTrunk(
 
   const portIds = Object.keys(state.ports || {}).filter(isPhysicalEthernetPort);
 
-  const trunkPorts = portIds.filter((portId) => {
-    const port = state.ports?.[portId];
-    return isDtpCapableMode(port?.mode);
-  });
-
-  if (trunkPorts.length === 0) {
-    return { success: true, output: '\nNo trunking ports found\n!\n' };
-  }
-
   const hasActiveConnection = (portId: string) =>
     connections.some((conn: any) =>
       (conn.sourceDeviceId === sourceDeviceId && conn.sourcePort === portId) ||
@@ -734,6 +725,23 @@ function cmdShowInterfaceTrunk(
     const peerPort = peerState?.ports?.[peerPortId];
     return { peerPortId, peerPort };
   };
+
+  // Only include ports that are actually trunking (not just DTP-capable)
+  const trunkPorts = portIds.filter((portId) => {
+    const port = state.ports?.[portId];
+    if (!isDtpCapableMode(port?.mode)) return false;
+
+    const connected = hasActiveConnection(portId);
+    const peer = connected ? getPeerPortState(portId) : null;
+    const peerCapable = peer?.peerPort ? isDtpCapableMode(peer.peerPort.mode) : false;
+    const isActuallyTrunking = connected && (port.mode === 'trunk' || peerCapable);
+
+    return isActuallyTrunking;
+  });
+
+  if (trunkPorts.length === 0) {
+    return { success: true, output: '\nNo trunking ports found\n!\n' };
+  }
 
   let output = '\nPort        Mode         Encapsulation  Status        Native vlan\n';
 
