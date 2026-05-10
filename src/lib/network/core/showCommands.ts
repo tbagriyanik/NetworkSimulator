@@ -21,6 +21,7 @@ export const showHandlers: Record<string, CommandHandler> = {
   'show flash': cmdShowFlash,
   'show boot': cmdShowBoot,
   'show spanning-tree': cmdShowSpanningTree,
+  'show spanning-tree interface': cmdShowSpanningTreeInterface,
   'show port-security': cmdShowPortSecurity,
   'show wireless': cmdShowWireless,
   'show wlan summary': cmdShowWlanSummary,
@@ -36,6 +37,10 @@ export const showHandlers: Record<string, CommandHandler> = {
   'show arp': cmdShowArp,
   'show ip arp': cmdShowArp,
   'show mls qos': cmdShowMlsQos,
+  'show policy-map': cmdShowPolicyMap,
+  'show policy-map interface': cmdShowPolicyMapInterface,
+  'show qos interface': cmdShowQosInterface,
+  'show queuing interface': cmdShowQueuingInterface,
   'show ip arp inspection': cmdShowIpArpInspection,
   'show access-lists': cmdShowAccessLists,
   'show history': cmdShowHistory,
@@ -67,7 +72,6 @@ export const showHandlers: Record<string, CommandHandler> = {
   'show ntp status': cmdShowNtp,
   'show ntp': cmdShowNtp,
   'show snmp': cmdShowSnmp,
-  'show policy-map': cmdShowPolicyMap,
   'show class-map': cmdShowClassMap,
   'show mac access-lists': cmdShowMacAcl,
   'show controllers': cmdShowControllers,
@@ -541,31 +545,64 @@ function cmdShowInterfaces(
   Object.keys(state.ports || {}).forEach(portName => {
     const port = state.ports[portName];
     const description = port.description || port.name || '';
+    const stats = port.statistics || {};
 
-    output += `${portName} is ${port.shutdown ? 'administratively down' : 'up'}, line protocol is ${port.shutdown ? 'down' : 'up'}\n`;
+    // Admin and operational status
+    const adminStatus = port.adminStatus || (port.shutdown ? 'down' : 'up');
+    const operStatus = port.operStatus || (port.shutdown ? 'down' : 'up');
+    const lineProtocol = port.lineProtocol || (port.shutdown ? 'down' : 'up');
+
+    output += `${portName} is ${adminStatus}, line protocol is ${lineProtocol}\n`;
+
     const hardwareType = port.type === 'gigabitethernet' ? 'Gigabit Ethernet' : 'Fast Ethernet';
     output += `  Hardware is ${hardwareType}, address is ${port.macAddress || '0000.0000.0000'}\n`;
+
     if (port.ipAddress && port.subnetMask) {
       output += `  Internet address is ${port.ipAddress}/${port.subnetMask}\n`;
     }
+
     output += `  Description: ${description}\n`;
-    const bw = port.type === 'gigabitethernet' ? '1000000' : '100000';
-    output += `  MTU 1500 bytes, BW ${bw} Kbit/sec\n`;
-    output += `  Full-duplex, ${port.speed === 'auto' ? (port.type === 'gigabitethernet' ? '1000' : '100') : port.speed}Mb/s\n`;
+
+    // MTU and Bandwidth
+    const mtu = port.mtu || 1500;
+    const bandwidth = port.bandwidth || (port.type === 'gigabitethernet' ? 1000000 : 100000);
+    output += `  MTU ${mtu} bytes, BW ${bandwidth} Kbit/sec\n`;
+
+    // Speed and Duplex
+    const actualSpeed = port.speed === 'auto' ? (port.type === 'gigabitethernet' ? '1000' : '100') : port.speed;
+    const duplexMode = port.duplex === 'half' ? 'Half' : 'Full';
+    output += `  ${duplexMode}-duplex, ${actualSpeed}Mb/s\n`;
+
+    // Encapsulation for trunks
+    if (port.mode === 'trunk' && port.encapsulation) {
+      output += `  Encapsulation ${port.encapsulation}\n`;
+    }
+
     output += `  input flow-control is off, output flow-control is unsupported\n`;
     output += `  ARP type: ARPA, ARP Timeout ${port.arpTimeout || '04:00:00'}\n`;
-    output += `  Last input never, last output never, output hang never\n`;
+
+    // Last input/output times
+    const lastInput = stats.lastInput ? new Date(stats.lastInput).toLocaleTimeString() : 'never';
+    const lastOutput = stats.lastOutput ? new Date(stats.lastOutput).toLocaleTimeString() : 'never';
+    output += `  Last input ${lastInput}, last output ${lastOutput}, output hang never\n`;
+
+    // Queueing strategy
+    const ingressQ = port.qos?.ingressQueue || 75;
+    const egressQ = port.qos?.egressQueue || 40;
     output += `  Queueing strategy: fifo\n`;
-    output += `  Output queue 0/40, 0 drops; input queue 0/75, 0 drops\n`;
-    output += `  5 minute input rate 0 bits/sec, 0 packets/sec\n`;
-    output += `  5 minute output rate 0 bits/sec, 0 packets/sec\n`;
-    output += `     0 packets input, 0 bytes, 0 no buffer\n`;
-    output += `     Received 0 broadcasts, 0 runts, 0 giants, 0 throttles\n`;
-    output += `     0 input errors, 0 CRC, 0 frame, 0 overrun, 0 ignored\n`;
+    output += `  Output queue 0/${egressQ}, ${stats.drops || 0} drops; input queue 0/${ingressQ}, ${stats.drops || 0} drops\n`;
+
+    output += `  5 minute input rate ${stats.inputBytes || 0} bits/sec, ${stats.inputPackets || 0} packets/sec\n`;
+    output += `  5 minute output rate ${stats.outputBytes || 0} bits/sec, ${stats.outputPackets || 0} packets/sec\n`;
+
+    // Statistics section
+    output += `     ${stats.inputPackets || 0} packets input, ${stats.inputBytes || 0} bytes, 0 no buffer\n`;
+    output += `     Received 0 broadcasts, ${stats.runts || 0} runts, ${stats.giants || 0} giants, ${stats.throttles || 0} throttles\n`;
+    output += `     ${stats.inputErrors || 0} input errors, ${stats.crcErrors || 0} CRC, 0 frame, ${stats.overruns || 0} overrun, 0 ignored\n`;
     output += `     0 watchdog, 0 multicast, 0 pause input\n`;
-    output += `     0 packets output, 0 bytes, 0 underruns\n`;
-    output += `     0 output errors, 0 collisions, 1 interface resets\n`;
-    output += `     0 unknown protocol, 0 dropped\n`;
+    output += `     ${stats.outputPackets || 0} packets output, ${stats.outputBytes || 0} bytes, ${stats.underruns || 0} underruns\n`;
+    output += `     ${stats.outputErrors || 0} output errors, ${stats.collisions || 0} collisions, ${stats.resets || 1} interface resets\n`;
+    output += `     0 unknown protocol, ${stats.drops || 0} dropped\n`;
     output += `     0 babbles, 0 late collision, 0 deferred\n`;
     output += `     0 lost carrier, 0 no carrier, 0 PAUSE output\n`;
     output += '!\n\n';
@@ -630,7 +667,9 @@ function cmdShowInterface(
       output += `  Internet address is ${ipAddress}/${subnetMask}\n`;
     }
     output += `  Description: ${vlan.name}\n`;
-    output += `  MTU 1500 bytes, BW 1000000 Kbit/sec\n`;
+    const mtu = 1500;
+    const bandwidth = 1000000;
+    output += `  MTU ${mtu} bytes, BW ${bandwidth} Kbit/sec\n`;
     output += `  ARP type: ARPA, ARP Timeout 04:00:00\n`;
     output += `  Last input never, last output never, output hang never\n`;
     output += `  Queueing strategy: fifo\n`;
@@ -670,23 +709,42 @@ function cmdShowInterface(
     output += `  Internet address is ${port.ipAddress}/${port.subnetMask}\n`;
   }
   output += `  Description: ${description}\n`;
-  const bw = port.type === 'gigabitethernet' ? '1000000' : '100000';
-  output += `  MTU 1500 bytes, BW ${bw} Kbit/sec\n`;
-  output += `  Full-duplex, ${port.speed === 'auto' ? (port.type === 'gigabitethernet' ? '1000' : '100') : port.speed}Mb/s\n`;
+
+  const stats = port.statistics || {};
+  const mtu = port.mtu || 1500;
+  const bandwidth = port.bandwidth || (port.type === 'gigabitethernet' ? 1000000 : 100000);
+  output += `  MTU ${mtu} bytes, BW ${bandwidth} Kbit/sec\n`;
+
+  const actualSpeed = port.speed === 'auto' ? (port.type === 'gigabitethernet' ? '1000' : '100') : port.speed;
+  const duplexMode = port.duplex === 'half' ? 'Half' : 'Full';
+  output += `  ${duplexMode}-duplex, ${actualSpeed}Mb/s\n`;
+
+  if (port.mode === 'trunk' && port.encapsulation) {
+    output += `  Encapsulation ${port.encapsulation}\n`;
+  }
+
   output += `  input flow-control is off, output flow-control is unsupported\n`;
   output += `  ARP type: ARPA, ARP Timeout ${port.arpTimeout || '04:00:00'}\n`;
-  output += `  Last input never, last output never, output hang never\n`;
+
+  const lastInput = stats.lastInput ? new Date(stats.lastInput).toLocaleTimeString() : 'never';
+  const lastOutput = stats.lastOutput ? new Date(stats.lastOutput).toLocaleTimeString() : 'never';
+  output += `  Last input ${lastInput}, last output ${lastOutput}, output hang never\n`;
+
+  const ingressQ = port.qos?.ingressQueue || 75;
+  const egressQ = port.qos?.egressQueue || 40;
   output += `  Queueing strategy: fifo\n`;
-  output += `  Output queue 0/40, 0 drops; input queue 0/75, 0 drops\n`;
-  output += `  5 minute input rate 0 bits/sec, 0 packets/sec\n`;
-  output += `  5 minute output rate 0 bits/sec, 0 packets/sec\n`;
-  output += `     0 packets input, 0 bytes, 0 no buffer\n`;
-  output += `     Received 0 broadcasts, 0 runts, 0 giants, 0 throttles\n`;
-  output += `     0 input errors, 0 CRC, 0 frame, 0 overrun, 0 ignored\n`;
+  output += `  Output queue 0/${egressQ}, ${stats.drops || 0} drops; input queue 0/${ingressQ}, ${stats.drops || 0} drops\n`;
+
+  output += `  5 minute input rate ${stats.inputBytes || 0} bits/sec, ${stats.inputPackets || 0} packets/sec\n`;
+  output += `  5 minute output rate ${stats.outputBytes || 0} bits/sec, ${stats.outputPackets || 0} packets/sec\n`;
+
+  output += `     ${stats.inputPackets || 0} packets input, ${stats.inputBytes || 0} bytes, 0 no buffer\n`;
+  output += `     Received 0 broadcasts, ${stats.runts || 0} runts, ${stats.giants || 0} giants, ${stats.throttles || 0} throttles\n`;
+  output += `     ${stats.inputErrors || 0} input errors, ${stats.crcErrors || 0} CRC, 0 frame, ${stats.overruns || 0} overrun, 0 ignored\n`;
   output += `     0 watchdog, 0 multicast, 0 pause input\n`;
-  output += `     0 packets output, 0 bytes, 0 underruns\n`;
-  output += `     0 output errors, 0 collisions, 1 interface resets\n`;
-  output += `     0 unknown protocol, 0 dropped\n`;
+  output += `     ${stats.outputPackets || 0} packets output, ${stats.outputBytes || 0} bytes, ${stats.underruns || 0} underruns\n`;
+  output += `     ${stats.outputErrors || 0} output errors, ${stats.collisions || 0} collisions, ${stats.resets || 1} interface resets\n`;
+  output += `     0 unknown protocol, ${stats.drops || 0} dropped\n`;
   output += `     0 babbles, 0 late collision, 0 deferred\n`;
   output += `     0 lost carrier, 0 no carrier, 0 PAUSE output\n`;
   output += '!\n\n';
@@ -2133,6 +2191,72 @@ function cmdShowSpanningTree(
 }
 
 /**
+ * Show Spanning Tree Interface
+ */
+function cmdShowSpanningTreeInterface(
+  state: any,
+  input: string,
+  ctx: any
+): any {
+  const match = input.match(/show\s+spanning-tree\s+interface\s+(\S+)(?:\s+detail)?/i);
+  const interfaceName = match?.[1];
+  const isDetail = input.toLowerCase().includes('detail');
+
+  if (!interfaceName) {
+    return { success: false, error: '% Usage: show spanning-tree interface <interface> [detail]' };
+  }
+
+  const port = (state.ports || {})[interfaceName.toLowerCase()];
+  if (!port) {
+    return { success: false, error: `% Interface ${interfaceName} not found` };
+  }
+
+  let output = `\nSpanning Tree Protocol for interface ${interfaceName}\n`;
+  const stp = port.spanningTree;
+
+  if (!stp) {
+    output += '  Spanning Tree not configured on this interface\n';
+  } else {
+    output += `  Port Role: ${stp.role || 'disabled'}\n`;
+    output += `  Port State: ${stp.state || 'disabled'}\n`;
+
+    if (stp.portfast) {
+      output += `  Portfast: enabled\n`;
+    }
+    if (stp.bpduguard) {
+      output += `  BPDU Guard: enabled\n`;
+    }
+
+    if (isDetail) {
+      output += `\n  Designated Root Maintenance\n`;
+      output += `    Priority: 32768\n`;
+      output += `    Cost: 0\n`;
+      output += `    Port: 0\n`;
+      output += `    Hello Time: 2\n`;
+      output += `    Max Age: 20\n`;
+      output += `    Forward Delay: 15\n`;
+
+      output += `\n  Port Role State Transitions\n`;
+      output += `    Forward Transitions: 1\n`;
+      output += `    Blocked Transitions: 0\n`;
+
+      if (stp.instances && Object.keys(stp.instances).length > 0) {
+        output += `\n  MSTP Instances:\n`;
+        Object.keys(stp.instances).forEach(instId => {
+          const inst = stp.instances![instId as any];
+          output += `    Instance ${instId}:\n`;
+          output += `      Role: ${inst.role || 'disabled'}\n`;
+          output += `      State: ${inst.state || 'disabled'}\n`;
+        });
+      }
+    }
+  }
+
+  output += '!\n';
+  return { success: true, output };
+}
+
+/**
  * Show Port Security
  */
 function cmdShowPortSecurity(
@@ -2476,14 +2600,18 @@ function cmdShowIpDhcpSnooping(state: any, input: string, ctx: any): any {
  * Show Interfaces Status
  */
 function cmdShowInterfacesStatus(state: any, input: string, ctx: any): any {
-  let output = '\nPort      Name               Status       Vlan       Duplex  Speed Type\n';
+  let output = '\nPort      Name               Status       Vlan       Duplex  Speed  Type                  Encap\n';
   Object.keys(state.ports || {}).forEach(portName => {
     const port = state.ports[portName];
     const status = port.shutdown ? 'notconnect' : 'connected';
-    const vlan = port.accessVlan || port.vlan || 1;
-    const duplex = port.duplex || 'a-full';
-    const speed = port.speed || 'a-100';
-    output += `${portName.padEnd(10)}${(port.description || port.name || '').padEnd(19)}${status.padEnd(13)}${String(vlan).padEnd(11)}${duplex.padEnd(8)}${speed.padEnd(6)}10/100BaseTX\n`;
+    const operStatus = port.operStatus || status;
+    const vlan = port.mode === 'trunk' ? 'trunk' : (port.accessVlan || port.vlan || 1);
+    const duplex = port.duplex === 'half' ? 'half' : (port.duplex === 'full' ? 'full' : 'a-full');
+    const speedVal = port.speed === 'auto' ? (port.type === 'gigabitethernet' ? 'a-1000' : 'a-100') : port.speed;
+    const typeStr = port.type === 'gigabitethernet' ? '10/100/1000BaseTX' : '10/100BaseTX';
+    const encap = port.encapsulation || (port.mode === 'trunk' ? '802.1q' : '-');
+
+    output += `${portName.padEnd(10)}${(port.description || port.name || '').padEnd(19)}${String(operStatus).padEnd(13)}${String(vlan).padEnd(11)}${duplex.padEnd(8)}${speedVal.padEnd(7)}${typeStr.padEnd(21)}${encap}\n`;
   });
   return { success: true, output };
 }
@@ -2847,8 +2975,56 @@ function cmdShowErrdisableRecovery(state: any, input: string, ctx: any): any {
  * Show Storm-Control
  */
 function cmdShowStormControl(state: any, input: string, ctx: any): any {
-  let output = '\nInterface Filter State   Upper        Lower        Current\n';
-  output += '---------  ------------ ------------ ------------ ---------\n';
+  const match = input.match(/show\s+storm-control\s+(?:interface\s+)?(\S+)?/i);
+  const interfaceName = match?.[1];
+
+  if (interfaceName) {
+    const port = (state.ports || {})[interfaceName.toLowerCase()];
+    if (!port) {
+      return { success: false, error: `% Interface ${interfaceName} not found` };
+    }
+
+    let output = `\nStorm Control for interface ${interfaceName}\n`;
+    const sc = port.stormControl;
+
+    if (!sc || (!sc.broadcast?.enabled && !sc.multicast?.enabled && !sc.unicast?.enabled)) {
+      output += '  Storm control is not enabled on this interface\n';
+    } else {
+      if (sc.broadcast?.enabled) {
+        output += `  Broadcast:\n`;
+        output += `    Status: enabled\n`;
+        output += `    Threshold: ${sc.broadcast.threshold || 'unlimited'}\n`;
+        output += `    Action: ${sc.broadcast.action || 'shutdown'}\n`;
+      }
+      if (sc.multicast?.enabled) {
+        output += `  Multicast:\n`;
+        output += `    Status: enabled\n`;
+        output += `    Threshold: ${sc.multicast.threshold || 'unlimited'}\n`;
+        output += `    Action: ${sc.multicast.action || 'shutdown'}\n`;
+      }
+      if (sc.unicast?.enabled) {
+        output += `  Unicast:\n`;
+        output += `    Status: enabled\n`;
+        output += `    Threshold: ${sc.unicast.threshold || 'unlimited'}\n`;
+        output += `    Action: ${sc.unicast.action || 'shutdown'}\n`;
+      }
+    }
+    output += '!\n';
+    return { success: true, output };
+  }
+
+  // Global storm control list
+  let output = '\nInterface   Broadcast      Multicast       Unicast\n';
+  output += '---------   ----------     ----------     ----------\n';
+  Object.keys(state.ports || {}).forEach(portName => {
+    const port = (state.ports || {})[portName];
+    const sc = port.stormControl;
+    const bc = sc?.broadcast?.enabled ? 'enabled' : 'disabled';
+    const mc = sc?.multicast?.enabled ? 'enabled' : 'disabled';
+    const uc = sc?.unicast?.enabled ? 'enabled' : 'disabled';
+    output += `${portName.padEnd(10)}${bc.padEnd(16)}${mc.padEnd(16)}${uc}\n`;
+  });
+  output += '!\n';
   return { success: true, output };
 }
 
@@ -2856,7 +3032,41 @@ function cmdShowStormControl(state: any, input: string, ctx: any): any {
  * Show UDLD
  */
 function cmdShowUdld(state: any, input: string, ctx: any): any {
-  return { success: true, output: '\nGlobal UDLD information\n  Message interval: 15\n  Time out interval: 5\n' };
+  const match = input.match(/show\s+udld\s+(?:interface\s+)?(\S+)?/i);
+  const interfaceName = match?.[1];
+
+  let output = '\nGlobal UDLD information\n';
+  output += '  Message interval: 15 seconds\n';
+  output += '  Time out interval: 5 seconds\n';
+  output += '  Mode: normal\n\n';
+
+  if (interfaceName) {
+    const port = (state.ports || {})[interfaceName.toLowerCase()];
+    if (!port) {
+      return { success: false, error: `% Interface ${interfaceName} not found` };
+    }
+
+    output += `UDLD Status for interface ${interfaceName}\n`;
+    const udld = port.udld;
+    output += `  Admin: ${udld?.enabled ? 'enabled' : 'disabled'}\n`;
+    output += `  Mode: ${udld?.mode || 'normal'}\n`;
+    output += `  Bidirectional Status: ${udld?.bidirectionalStatus || 'unknown'}\n`;
+    output += `  Last Probe Time: ${udld?.lastProbeTime ? new Date(udld.lastProbeTime).toLocaleString() : 'never'}\n`;
+  } else {
+    output += 'Interface        Admin  State\n';
+    output += '--------         -----  -----\n';
+    Object.keys(state.ports || {}).forEach(portName => {
+      const port = (state.ports || {})[portName];
+      if (port && port.udld) {
+        const admin = port.udld.enabled ? 'enable' : 'disable';
+        const state = port.udld.bidirectionalStatus || 'unknown';
+        output += `${portName.padEnd(16)}${admin.padEnd(7)}${state}\n`;
+      }
+    });
+  }
+
+  output += '!\n';
+  return { success: true, output };
 }
 
 /**
@@ -3283,5 +3493,144 @@ function cmdShowIpVerifySource(state: any, input: string, ctx: any): any {
     output += '% No interfaces configured with IP verify source\n';
   }
 
+  return { success: true, output };
+}
+
+/**
+ * Show Policy Map Interface
+ */
+function cmdShowPolicyMapInterface(state: any, input: string, ctx: any): any {
+  const match = input.match(/show\s+policy-map\s+interface\s+(\S+)?/i);
+  const interfaceName = match?.[1];
+
+  let output = '';
+
+  if (interfaceName) {
+    const port = (state.ports || {})[interfaceName.toLowerCase()];
+    if (!port) {
+      return { success: false, error: `% Interface ${interfaceName} not found` };
+    }
+
+    if (!port.qos?.policyMap) {
+      output += `\nInterface ${interfaceName}\n`;
+      output += `  Service Policy output: not configured\n`;
+      output += `  Service Policy input: not configured\n`;
+    } else {
+      output += `\nInterface ${interfaceName}\n`;
+      output += `  Service Policy output: ${port.qos.policyMap}\n`;
+      if (port.qos.enabled) {
+        output += `    Class ${port.qos.policyMap}\n`;
+        output += `      Output Queue: ${port.qos.egressQueue || 40}\n`;
+        if (port.qos.shaping?.enabled) {
+          output += `      Shaping rate: ${port.qos.shaping.rate} bps\n`;
+        }
+        if (port.qos.policing?.enabled) {
+          output += `      Police rate: ${port.qos.policing.rate} bps\n`;
+        }
+      }
+    }
+  } else {
+    output += '\nPolicy Map output\n';
+    output += '  No configured policy maps\n';
+  }
+
+  output += '!\n';
+  return { success: true, output };
+}
+
+/**
+ * Show QoS Interface
+ */
+function cmdShowQosInterface(state: any, input: string, ctx: any): any {
+  const match = input.match(/show\s+qos\s+interface\s+(\S+)?/i);
+  const interfaceName = match?.[1];
+
+  let output = '';
+
+  if (interfaceName) {
+    const port = (state.ports || {})[interfaceName.toLowerCase()];
+    if (!port) {
+      return { success: false, error: `% Interface ${interfaceName} not found` };
+    }
+
+    output += `\nInterface ${interfaceName}\n`;
+    output += `QoS is ${port.qos?.enabled ? 'enabled' : 'disabled'}\n`;
+
+    if (port.qos?.enabled) {
+      output += `  Queue Strategy: FIFO\n`;
+      output += `  Egress Queue Depth: ${port.qos.egressQueue || 40}\n`;
+      output += `  Ingress Queue Depth: ${port.qos.ingressQueue || 75}\n`;
+
+      if (port.qos.shaping?.enabled) {
+        output += `  Traffic Shaping:\n`;
+        output += `    Rate: ${port.qos.shaping.rate} bits/sec\n`;
+      }
+
+      if (port.qos.policing?.enabled) {
+        output += `  Traffic Policing:\n`;
+        output += `    Rate: ${port.qos.policing.rate} bits/sec\n`;
+        output += `    Burst: ${port.qos.policing.burst} bytes\n`;
+      }
+
+      if (port.qos.priorityQueue?.enabled) {
+        output += `  Priority Queue: enabled\n`;
+        output += `    Limit: ${port.qos.priorityQueue.limit || 'unlimited'}\n`;
+      }
+    }
+  } else {
+    output += '\nInterface         QoS Status\n';
+    output += '----------        ----------\n';
+    Object.keys(state.ports || {}).forEach(portName => {
+      const port = (state.ports || {})[portName];
+      output += `${portName.padEnd(18)}${port.qos?.enabled ? 'enabled' : 'disabled'}\n`;
+    });
+  }
+
+  output += '!\n';
+  return { success: true, output };
+}
+
+/**
+ * Show Queueing Interface
+ */
+function cmdShowQueuingInterface(state: any, input: string, ctx: any): any {
+  const match = input.match(/show\s+queuing\s+interface\s+(\S+)?/i);
+  const interfaceName = match?.[1];
+
+  let output = '';
+
+  if (interfaceName) {
+    const port = (state.ports || {})[interfaceName.toLowerCase()];
+    if (!port) {
+      return { success: false, error: `% Interface ${interfaceName} not found` };
+    }
+
+    output += `\nInterface ${interfaceName}\n`;
+    output += `  Queueing Strategy: FIFO\n`;
+    output += `  Output Queue: ${port.qos?.egressQueue || 40} (max threshold)\n`;
+    output += `  Input Queue: ${port.qos?.ingressQueue || 75} (max threshold)\n`;
+
+    const stats = port.statistics || {};
+    output += `\nQueue Statistics:\n`;
+    output += `  Enqueued: ${stats.outputPackets || 0} packets\n`;
+    output += `  Dropped: ${stats.drops || 0} packets\n`;
+    output += `  Overruns: ${stats.overruns || 0}\n`;
+
+    if (port.qos?.priorityQueue?.enabled) {
+      output += `\nPriority Queue:\n`;
+      output += `  Status: enabled\n`;
+      output += `  Limit: ${port.qos.priorityQueue.limit || 'unlimited'}\n`;
+    }
+  } else {
+    output += '\nInterface         Queue Strategy  Threshold\n';
+    output += '----------        --------------  ---------\n';
+    Object.keys(state.ports || {}).forEach(portName => {
+      const port = (state.ports || {})[portName];
+      const threshold = port.qos?.egressQueue || 40;
+      output += `${portName.padEnd(18)}FIFO             ${threshold}\n`;
+    });
+  }
+
+  output += '!\n';
   return { success: true, output };
 }

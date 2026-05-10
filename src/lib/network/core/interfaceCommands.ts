@@ -106,8 +106,9 @@ export const interfaceHandlers: Record<string, CommandHandler> = {
   'ip directed-broadcast': cmdStubSuccess,
   'ip arp inspection limit': cmdStubSuccess,
   'carrier-delay': cmdStubSuccess,
-  'delay': cmdStubSuccess,
+  'delay': cmdDelay,
   'load-interval': cmdStubSuccess,
+  'mtu': cmdMtu,
   'switchport trunk encapsulation': cmdSwitchportTrunkEncapsulation,
   'encapsulation dot1q': cmdEncapsulationDot1q,
   'switchport protected': cmdSwitchportProtected,
@@ -2146,6 +2147,41 @@ function cmdBandwidth(state: any, input: string, ctx: any): any {
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
   return { success: true, output: `Bandwidth set to ${match[1]} kbps`, newState: { ports: newPorts } };
+}
+
+/**
+ * Delay
+ */
+function cmdDelay(state: any, input: string, ctx: any): any {
+  if (!isInInterfaceMode(state)) return { success: false, error: '% Invalid command at this mode' };
+  const match = input.match(/^delay\s+(\d+)$/i);
+  if (!match) return { success: false, error: '% Invalid delay command' };
+  const delayValue = parseInt(match[1]);
+  const updatePort = (port: any) => ({ ...port, delay: delayValue });
+  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (!state.currentInterface) return { success: false, error: '% No interface selected' };
+  const newPorts = { ...state.ports };
+  newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
+  return { success: true, output: `Delay set to ${delayValue} microseconds`, newState: { ports: newPorts } };
+}
+
+/**
+ * MTU
+ */
+function cmdMtu(state: any, input: string, ctx: any): any {
+  if (!isInInterfaceMode(state)) return { success: false, error: '% Invalid command at this mode' };
+  const match = input.match(/^mtu\s+(\d+)$/i);
+  if (!match) return { success: false, error: '% Invalid MTU command' };
+  const mtuValue = parseInt(match[1]);
+  if (mtuValue < 68 || mtuValue > 65535) {
+    return { success: false, error: '% MTU must be between 68 and 65535' };
+  }
+  const updatePort = (port: any) => ({ ...port, mtu: mtuValue });
+  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (!state.currentInterface) return { success: false, error: '% No interface selected' };
+  const newPorts = { ...state.ports };
+  newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
+  return { success: true, output: `MTU set to ${mtuValue} bytes`, newState: { ports: newPorts } };
 }
 
 /**

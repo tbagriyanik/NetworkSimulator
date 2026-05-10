@@ -100,7 +100,7 @@ function cmdPing(state: any, input: string, ctx: any): any {
         if (connectivity.portSecurityViolations && connectivity.portSecurityViolations.length > 0) {
             // Create new deviceStates Map with updated ports
             updatedDeviceStates = new Map<string, SwitchState>(ctx.deviceStates);
-            
+
             connectivity.portSecurityViolations.forEach(violation => {
                 if (violation.action === 'shutdown') {
                     const deviceState = updatedDeviceStates!.get(violation.deviceId);
@@ -782,11 +782,11 @@ function cmdTerminal(state: any, input: string, ctx: any): any {
 function cmdClearArpCache(state: any, input: string, ctx: any): any {
     const deviceId = ctx.sourceDeviceId;
     const deviceStates = ctx.deviceStates;
-    
+
     if (deviceId && deviceStates) {
         clearArpCache(deviceId, deviceStates);
     }
-    
+
     return { success: true, output: '' };
 }
 
@@ -797,7 +797,7 @@ function cmdClearMacAddressTable(state: any, input: string, ctx: any): any {
     const deviceId = ctx.sourceDeviceId;
     const deviceStates = ctx.deviceStates;
     const args = input.trim().split(/\s+/).slice(2); // Skip "clear mac address-table"
-    
+
     if (deviceId && deviceStates) {
         if (args.length === 0 || args[0] === '') {
             // Clear all entries
@@ -810,7 +810,7 @@ function cmdClearMacAddressTable(state: any, input: string, ctx: any): any {
             clearStaticMacEntries(deviceId, deviceStates);
         }
     }
-    
+
     return { success: true, output: '' };
 }
 
@@ -818,7 +818,73 @@ function cmdClearMacAddressTable(state: any, input: string, ctx: any): any {
  * Clear Counters
  */
 function cmdClearCounters(state: any, input: string, ctx: any): any {
-    return { success: true, output: 'Clear "show interface" counters on all interfaces [confirm]\n' };
+    // Parse input to see if specific interface is mentioned
+    const match = input.match(/clear\s+counters\s+(?:interface\s+)?(\S+)?/i);
+    const interfaceName = match?.[1];
+
+    const newState = JSON.parse(JSON.stringify(state));
+
+    if (interfaceName) {
+        // Clear counters for specific interface
+        const port = newState.ports?.[interfaceName.toLowerCase()];
+        if (!port) {
+            return { success: false, error: `% Interface ${interfaceName} not found` };
+        }
+        // Reset statistics for this port
+        port.statistics = {
+            inputPackets: 0,
+            outputPackets: 0,
+            inputBytes: 0,
+            outputBytes: 0,
+            inputErrors: 0,
+            outputErrors: 0,
+            crcErrors: 0,
+            collisions: 0,
+            runts: 0,
+            giants: 0,
+            throttles: 0,
+            resets: 1,
+            drops: 0,
+            overruns: 0,
+            underruns: 0,
+            lastCleared: Date.now()
+        };
+        return {
+            success: true,
+            output: `Clear "show interface" counters on interface ${interfaceName}\n`,
+            newState
+        };
+    } else {
+        // Clear counters for all interfaces
+        Object.keys(newState.ports || {}).forEach(portName => {
+            const port = newState.ports[portName];
+            if (port) {
+                port.statistics = {
+                    inputPackets: 0,
+                    outputPackets: 0,
+                    inputBytes: 0,
+                    outputBytes: 0,
+                    inputErrors: 0,
+                    outputErrors: 0,
+                    crcErrors: 0,
+                    collisions: 0,
+                    runts: 0,
+                    giants: 0,
+                    throttles: 0,
+                    resets: 1,
+                    drops: 0,
+                    overruns: 0,
+                    underruns: 0,
+                    lastCleared: Date.now()
+                };
+            }
+        });
+        return {
+            success: true,
+            output: 'Clear "show interface" counters on all interfaces\n',
+            newState
+        };
+    }
 }
 
 /**
@@ -847,9 +913,9 @@ function cmdHelp(state: any, input: string, ctx: any): any {
  * Setup command
  */
 function cmdSetup(state: any, input: string, ctx: any): any {
-    return { 
-        success: true, 
-        output: '\n--- System Configuration Dialog ---\n\nWould you like to enter the initial configuration dialog? [yes/no]: \n% Aborting setup.' 
+    return {
+        success: true,
+        output: '\n--- System Configuration Dialog ---\n\nWould you like to enter the initial configuration dialog? [yes/no]: \n% Aborting setup.'
     };
 }
 
@@ -899,9 +965,9 @@ function cmdCopyTftp(state: any, input: string, ctx: any): any {
  * Copy Startup-Config Running-Config
  */
 function cmdCopyStartupRunning(state: any, input: string, ctx: any): any {
-    return { 
-        success: true, 
-        output: 'Destination filename [running-config]?\n[OK]\n' 
+    return {
+        success: true,
+        output: 'Destination filename [running-config]?\n[OK]\n'
     };
 }
 

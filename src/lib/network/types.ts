@@ -91,6 +91,111 @@ export interface Port {
       state?: 'forwarding' | 'blocking' | 'listening' | 'learning' | 'disabled';
     }>;
   };
+  // Link layer properties
+  mtu?: number;                    // Maximum Transmission Unit (default 1500)
+  adminStatus?: 'up' | 'down';     // Admin status (from config: shutdown/no shutdown)
+  operStatus?: 'up' | 'down';      // Operational status (actual port state)
+  lineProtocol?: 'up' | 'down';    // Line protocol status
+  encapsulation?: 'isl' | '802.1q' | 'native' | 'dot1q-tunnel'; // Trunk encapsulation type
+  // QoS & Performance properties
+  qos?: {
+    enabled: boolean;
+    policyMap?: string;           // Service policy name
+    ingressQueue?: number;        // Input queue size
+    egressQueue?: number;         // Output queue size
+    priorityQueue?: {
+      enabled: boolean;
+      limit?: number;
+    };
+    shaping?: {
+      enabled: boolean;
+      rate?: number;              // bits per second
+    };
+    policing?: {
+      enabled: boolean;
+      rate?: number;              // bits per second
+      burst?: number;
+    };
+  };
+  bandwidth?: number;               // Bandwidth in kbps (for routing protocols)
+  delay?: number;                   // Delay in microseconds (for routing protocols)
+  // Statistics & Counters
+  statistics?: {
+    inputPackets?: number;
+    outputPackets?: number;
+    inputBytes?: number;
+    outputBytes?: number;
+    inputErrors?: number;
+    outputErrors?: number;
+    crcErrors?: number;
+    collisions?: number;
+    runts?: number;                 // Frames < 64 bytes
+    giants?: number;                // Frames > 1500 bytes
+    throttles?: number;
+    resets?: number;
+    drops?: number;
+    overruns?: number;
+    underruns?: number;
+    lastInput?: number;             // Timestamp of last input
+    lastOutput?: number;            // Timestamp of last output
+    lastCleared?: number;           // Timestamp when stats cleared
+  };
+  // Trunk specific properties
+  trunkAllowedVlans?: number[] | string;  // VLAN range (e.g., "1-4094,except 1002-1005")
+  trunkNativeVlan?: number;               // VLAN that doesn't get tagged
+  vlanPruning?: {
+    enabled: boolean;
+    prunedVlans?: number[];
+  };
+  // Congestion & Flow Control
+  congestion?: {
+    level?: 'low' | 'medium' | 'high';
+    flowControl?: boolean;
+    pauseFrames?: number;
+  };
+  // Link aggregation details
+  linkAggregation?: {
+    enabled: boolean;
+    groupId?: number;
+    portInGroup?: number;
+    totalPortsInGroup?: number;
+    activePortsInGroup?: number;
+  };
+  // Port monitor (SPAN) settings
+  portMonitor?: {
+    source?: boolean;
+    destination?: boolean;
+    direction?: 'rx' | 'tx' | 'both';
+  };
+  // BPDU Guard & related features
+  bpduGuard?: boolean;
+  bpduFilter?: boolean;
+  rootGuard?: boolean;
+  // Storm control
+  stormControl?: {
+    broadcast?: {
+      enabled: boolean;
+      threshold?: number;         // percentage or pps
+      action?: 'shutdown' | 'trap';
+    };
+    multicast?: {
+      enabled: boolean;
+      threshold?: number;
+      action?: 'shutdown' | 'trap';
+    };
+    unicast?: {
+      enabled: boolean;
+      threshold?: number;
+      action?: 'shutdown' | 'trap';
+    };
+  };
+  // UDLD - Unidirectional Link Detection
+  udld?: {
+    enabled: boolean;
+    mode?: 'normal' | 'aggressive';
+    lastProbeTime?: number;
+    bidirectionalStatus?: 'up' | 'down' | 'unknown';
+  };
 }
 
 export interface Vlan {
