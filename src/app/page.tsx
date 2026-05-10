@@ -16,6 +16,7 @@ import { getPrompt } from '@/lib/network/executor';
 import { formatErrorForUser, errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
 import { checkDeviceConnectivity, getDeviceWifiConfig, getWirelessSignalStrength } from '@/lib/network/connectivity';
 import { generateRandomLinkLocalIpv4 } from '@/lib/network/linkLocal';
+import { safeParse, safeStringify } from '@/lib/network/serialization';
 import { processIotRules } from '@/lib/network/iotLogic';
 import { calculatePVST } from '@/lib/network/core/showCommands';
 import type { TerminalOutput } from '@/components/network/Terminal';
@@ -508,7 +509,14 @@ export default function Home() {
   const pan = usePan();
   const activeTab = useActiveTab();
   const environment = useEnvironment();
-  const { setDevices, setConnections, setNotes, setZoom, setPan, setActiveTab, graphicsQuality, setGraphicsQuality } = useAppStore();
+  const setDevices = useAppStore((state) => state.setDevices);
+  const setConnections = useAppStore((state) => state.setConnections);
+  const setNotes = useAppStore((state) => state.setNotes);
+  const setZoom = useAppStore((state) => state.setZoom);
+  const setPan = useAppStore((state) => state.setPan);
+  const setActiveTab = useAppStore((state) => state.setActiveTab);
+  const graphicsQuality = useAppStore((state) => state.graphicsQuality);
+  const setGraphicsQuality = useAppStore((state) => state.setGraphicsQuality);
 
   const focusDeviceInTopology = useCallback((deviceId?: string, targetZoom?: number, deviceData?: CanvasDevice) => {
     if (!deviceId && !deviceData) return;
@@ -1671,7 +1679,7 @@ export default function Home() {
         activeTab
       };
 
-      localStorage.setItem('netsim_autosave', JSON.stringify(projectData));
+      localStorage.setItem('netsim_autosave', safeStringify(projectData));
       autosaveTimerRef.current = null;
       setLastSaveTime(new Date().toLocaleTimeString());
       setHasUnsavedChanges(false);
@@ -1685,11 +1693,11 @@ export default function Home() {
   }, [deviceStates, deviceOutputs, pcOutputs, pcHistories, topologyDevices, topologyConnections, topologyNotes, cableInfo, activeDeviceId, activeDeviceType, activeTab, isAppLoading, zoom, pan]);
 
   // Load project from JSON data
-  const loadProjectData = useCallback((projectData: any, options?: { keepActiveDevice?: boolean }) => {
+  const loadProjectData = useCallback((projectData: unknown, options?: { keepActiveDevice?: boolean }) => {
     try {
       const shouldKeepActiveDevice = options?.keepActiveDevice === true;
-      const data = (projectData && typeof projectData === 'object') ? projectData : {};
-      const topology = (data.topology && typeof data.topology === 'object') ? data.topology : {};
+      const data = (projectData && typeof projectData === 'object') ? projectData as Record<string, unknown> : {};
+      const topology = (data.topology && typeof data.topology === 'object') ? data.topology as Record<string, unknown> : {};
       const safeDevices = Array.isArray(data.devices) ? data.devices : [];
       const safeDeviceOutputs = Array.isArray(data.deviceOutputs) ? data.deviceOutputs : [];
       const safePcOutputs = Array.isArray(data.pcOutputs) ? data.pcOutputs : [];
@@ -1697,7 +1705,19 @@ export default function Home() {
       const safeTopologyDevices = Array.isArray(topology.devices) ? topology.devices : [];
       const safeTopologyConnections = Array.isArray(topology.connections) ? topology.connections : [];
       const safeTopologyNotes = Array.isArray(topology.notes) ? topology.notes : [];
-      const safeCableInfo = (data.cableInfo && typeof data.cableInfo === 'object') ? data.cableInfo : null;
+      const safeCableInfo = (data.cableInfo && typeof data.cableInfo === 'object') ? data.cableInfo as Record<string, unknown> : null;
+      const safePan = (data.pan && typeof data.pan === 'object') ? data.pan as Record<string, unknown> : null;
+      const safeTopologyPan = (topology.pan && typeof topology.pan === 'object') ? topology.pan as Record<string, unknown> : null;
+      const resolvedActiveTab = data.activeTab === 'cmd' || data.activeTab === 'terminal' || data.activeTab === 'tasks' || data.activeTab === 'topology'
+        ? data.activeTab
+        : 'topology';
+      const normalizeCableType = (value: unknown): 'straight' | 'crossover' | 'console' | 'wireless' => {
+        if (value === 'straight' || value === 'crossover' || value === 'console' || value === 'wireless') return value;
+        if (value === 'cross') return 'crossover';
+        if (value === 'rollover') return 'console';
+        if (value === 'fiber') return 'wireless';
+        return 'straight';
+      };
 
       // Load device states
       if (safeDevices.length > 0) {
@@ -1894,14 +1914,14 @@ ${state.bannerMOTD}
         setTopologyConnections(safeTopologyConnections);
         setTopologyNotes(safeTopologyNotes);
         if (typeof topology.zoom === 'number') setZoom(topology.zoom);
-        if (topology.pan && typeof topology.pan.x === 'number' && typeof topology.pan.y === 'number') setPan(topology.pan);
+        if (safeTopologyPan && typeof safeTopologyPan.x === 'number' && typeof safeTopologyPan.y === 'number') setPan({ x: safeTopologyPan.x, y: safeTopologyPan.y });
       } else {
         // Empty project fallback
         setTopologyDevices([]);
         setTopologyConnections([]);
         setTopologyNotes([]);
         setZoom(typeof data.zoom === 'number' ? data.zoom : 1.0);
-        setPan(data.pan && typeof data.pan.x === 'number' && typeof data.pan.y === 'number' ? data.pan : { x: 0, y: 0 });
+        setPan(safePan && typeof safePan.x === 'number' && typeof safePan.y === 'number' ? { x: safePan.x, y: safePan.y } : { x: 0, y: 0 });
       }
 
       // Sync STP state from deviceStates to topologyDevices ports
@@ -1951,7 +1971,8 @@ ${state.bannerMOTD}
       // Load cable info
       if (safeCableInfo) {
         setCableInfo({
-          ...safeCableInfo,
+          connected: typeof safeCableInfo.connected === 'boolean' ? safeCableInfo.connected : false,
+          cableType: normalizeCableType(safeCableInfo.cableType),
           sourceDevice: normalizeDeviceType(typeof safeCableInfo.sourceDevice === 'string' ? safeCableInfo.sourceDevice : 'pc'),
           targetDevice: normalizeDeviceType(typeof safeCableInfo.targetDevice === 'string' ? safeCableInfo.targetDevice : 'switchL2'),
         });
@@ -1969,7 +1990,7 @@ ${state.bannerMOTD}
       setActiveDeviceType(normalizeDeviceType(typeof data.activeDeviceType === 'string' ? data.activeDeviceType : 'switchL2'));
 
       // Load active tab
-      setActiveTab(data.activeTab === 'cmd' || data.activeTab === 'terminal' || data.activeTab === 'ports' || data.activeTab === 'vlan' || data.activeTab === 'security' || data.activeTab === 'topology' ? data.activeTab : 'topology');
+      setActiveTab(resolvedActiveTab);
 
       // Close all overlay panels when loading a project
       setShowPCPanel(false);
@@ -1984,7 +2005,7 @@ ${state.bannerMOTD}
       // Reset history with the loaded state
       resetHistory({
         topologyDevices: applyLinkLocalToUnconfiguredHosts(
-          (projectData.topology?.devices || [])
+          (safeTopologyDevices || [])
             .filter((device: CanvasDevice) => device.id && device.id.trim() !== '')
             .map((device: CanvasDevice) => ({
               ...device,
@@ -1995,15 +2016,16 @@ ${state.bannerMOTD}
         topologyNotes: safeTopologyNotes,
         deviceStates: new Map(
           safeDevices
-            ?.filter((item: any) => item.id && item.id.trim() !== '')
-            ?.map((item: any) => [item.id, item.state]) || []
+            ?.filter((item: { id?: string; state?: SwitchState }) => !!item.id && item.id.trim() !== '')
+            ?.map((item: { id: string; state: SwitchState }) => [item.id, item.state]) || []
         ),
-        deviceOutputs: new Map(safeDeviceOutputs.map((item: any) => [item.id, item.outputs])),
-        pcOutputs: new Map(safePcOutputs.map((item: any) => [item.id, item.outputs])),
-        pcHistories: new Map(safePcHistories.map((item: any) => [item.id, item.history])),
+        deviceOutputs: new Map(safeDeviceOutputs.map((item: { id: string; outputs: TerminalOutput[] }) => [item.id, item.outputs])),
+        pcOutputs: new Map(safePcOutputs.map((item: { id: string; outputs: PCOutputLine[] }) => [item.id, item.outputs])),
+        pcHistories: new Map(safePcHistories.map((item: { id: string; history: string[] }) => [item.id, item.history])),
         cableInfo: safeCableInfo
           ? {
-            ...safeCableInfo,
+            connected: typeof safeCableInfo.connected === 'boolean' ? safeCableInfo.connected : false,
+            cableType: normalizeCableType(safeCableInfo.cableType),
             sourceDevice: normalizeDeviceType(typeof safeCableInfo.sourceDevice === 'string' ? safeCableInfo.sourceDevice : 'pc'),
             targetDevice: normalizeDeviceType(typeof safeCableInfo.targetDevice === 'string' ? safeCableInfo.targetDevice : 'switchL2'),
           }
@@ -2011,8 +2033,8 @@ ${state.bannerMOTD}
         activeDeviceId: shouldKeepActiveDevice ? (typeof data.activeDeviceId === 'string' ? data.activeDeviceId : 'switch-1') : '',
         activeDeviceType: normalizeDeviceType(typeof data.activeDeviceType === 'string' ? data.activeDeviceType : 'switchL2'),
         zoom: typeof data.zoom === 'number' ? data.zoom : 1.0,
-        pan: data.pan && typeof data.pan.x === 'number' && typeof data.pan.y === 'number' ? data.pan : { x: 0, y: 0 },
-        activeTab: data.activeTab === 'cmd' || data.activeTab === 'terminal' || data.activeTab === 'ports' || data.activeTab === 'vlan' || data.activeTab === 'security' || data.activeTab === 'topology' ? data.activeTab : 'topology'
+        pan: safePan && typeof safePan.x === 'number' && typeof safePan.y === 'number' ? { x: safePan.x, y: safePan.y } : { x: 0, y: 0 },
+        activeTab: resolvedActiveTab
       });
 
       return true;
@@ -2032,11 +2054,12 @@ ${state.bannerMOTD}
     const savedData = localStorage.getItem('netsim_autosave');
     if (savedData) {
       try {
-        const projectData = JSON.parse(savedData);
+        const projectData = safeParse<unknown>(savedData);
         loadProjectData(projectData, { keepActiveDevice: true });
         // Load last save time from timestamp
-        if (projectData.timestamp) {
-          const date = new Date(projectData.timestamp);
+        const parsedProject = (projectData && typeof projectData === 'object') ? projectData as Record<string, unknown> : null;
+        if (parsedProject?.timestamp) {
+          const date = new Date(String(parsedProject.timestamp));
           setLastSaveTime(date.toLocaleTimeString());
         } else {
           setLastSaveTime(new Date().toLocaleTimeString());
@@ -2773,7 +2796,7 @@ ${state.bannerMOTD}
     };
 
     // Optimization: Use no indentation to reduce file size
-    const blob = new Blob([JSON.stringify(projectData)], { type: 'application/json' });
+    const blob = new Blob([safeStringify(projectData)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -3458,6 +3481,11 @@ ${state.bannerMOTD}
     let dhcpServerNoPoolCount = 0;
     let dhcpClientWithLeaseCount = 0;
     let dhcpClientNoLeaseCount = 0;
+    let duplicateIpCount = 0;
+    let duplicateMacCount = 0;
+    let subnetMismatchCount = 0;
+    let loopDetectedCount = 0;
+    let vlanInconsistencyCount = 0;
 
     if (topologyDevices && deviceStates) {
       const { sanitizedConnections, invalidCount } = validateTopologyConnections(topologyDevices, topologyConnections);
@@ -3781,6 +3809,86 @@ ${state.bannerMOTD}
 
       const refreshDeviceSummaries = buildRefreshDeviceSummaries(iotProcessedDevices, portSecurityUpdatedStates);
 
+      const ipOwners = new Map<string, string[]>();
+      const macOwners = new Map<string, string[]>();
+      const rememberIdentity = (deviceName: string, ip?: string, mac?: string) => {
+        if (ip && isValidIpv4(ip)) {
+          const owners = ipOwners.get(ip) || [];
+          owners.push(deviceName);
+          ipOwners.set(ip, owners);
+        }
+        if (mac) {
+          const normalized = normalizeMAC(mac || '').toLowerCase();
+          if (normalized) {
+            const owners = macOwners.get(normalized) || [];
+            owners.push(deviceName);
+            macOwners.set(normalized, owners);
+          }
+        }
+      };
+
+      iotProcessedDevices.forEach((device) => {
+        const state = portSecurityUpdatedStates.get(device.id);
+        const deviceName = device.name || device.id;
+        rememberIdentity(deviceName, device.ip, device.macAddress);
+        Object.values(state?.ports || {}).forEach((port: any) => {
+          rememberIdentity(`${deviceName}:${String(port?.id || '')}`, port?.ipAddress, port?.macAddress);
+        });
+      });
+      duplicateIpCount = Array.from(ipOwners.values()).filter((owners) => owners.length > 1).length;
+      duplicateMacCount = Array.from(macOwners.values()).filter((owners) => owners.length > 1).length;
+
+      iotProcessedDevices.forEach((device) => {
+        if ((device.type !== 'pc' && device.type !== 'iot') || !device.gateway || !isValidIpv4(device.ip) || !isValidIpv4(device.subnet)) return;
+        if (!isSameSubnetByMask(device.ip, device.gateway, device.subnet)) subnetMismatchCount++;
+      });
+
+      const graph = new Map<string, string[]>();
+      const addEdge = (a: string, b: string) => {
+        graph.set(a, [...(graph.get(a) || []), b]);
+        graph.set(b, [...(graph.get(b) || []), a]);
+      };
+      sanitizedConnections.forEach((connection) => {
+        if (connection.active === false) return;
+        addEdge(connection.sourceDeviceId, connection.targetDeviceId);
+      });
+      const visited = new Set<string>();
+      const hasCycle = (node: string, parent: string | null): boolean => {
+        visited.add(node);
+        for (const next of graph.get(node) || []) {
+          if (!visited.has(next)) {
+            if (hasCycle(next, node)) return true;
+          } else if (next !== parent) {
+            return true;
+          }
+        }
+        return false;
+      };
+      for (const node of graph.keys()) {
+        if (!visited.has(node) && hasCycle(node, null)) {
+          loopDetectedCount = 1;
+          break;
+        }
+      }
+
+      sanitizedConnections.forEach((connection) => {
+        if (connection.active === false) return;
+        const aState = portSecurityUpdatedStates.get(connection.sourceDeviceId);
+        const bState = portSecurityUpdatedStates.get(connection.targetDeviceId);
+        const aPort = aState?.ports?.[connection.sourcePort];
+        const bPort = bState?.ports?.[connection.targetPort];
+        if (!aPort || !bPort) return;
+        const aTrunk = aPort.mode === 'trunk';
+        const bTrunk = bPort.mode === 'trunk';
+        if (aTrunk && bTrunk) {
+          if (Number(aPort.nativeVlan || 1) !== Number(bPort.nativeVlan || 1)) vlanInconsistencyCount++;
+          return;
+        }
+        const aVlan = Number(aPort.accessVlan || aPort.vlan || 1);
+        const bVlan = Number(bPort.accessVlan || bPort.vlan || 1);
+        if (aVlan !== bVlan) vlanInconsistencyCount++;
+      });
+
       // Reset DHCP renewal ref to allow fresh leases on refresh
       dhcpRenewalDoneRef.current = false;
 
@@ -3796,6 +3904,13 @@ ${state.bannerMOTD}
         const topologyMessage = invalidCount > 0
           ? `${t.topologyInvalidConnections.replace('X', String(invalidCount))}`
           : '';
+        const validationMessages = [
+          duplicateIpCount > 0 ? `⚠ Duplicate IP: ${duplicateIpCount}` : '',
+          duplicateMacCount > 0 ? `⚠ Duplicate MAC: ${duplicateMacCount}` : '',
+          subnetMismatchCount > 0 ? `⚠ Subnet mismatch: ${subnetMismatchCount}` : '',
+          loopDetectedCount > 0 ? `⚠ Loop detected` : '',
+          vlanInconsistencyCount > 0 ? `⚠ VLAN inconsistency: ${vlanInconsistencyCount}` : '',
+        ].filter(Boolean);
 
         if (totalDevices > 0 || dhcpClients.length > 0) {
           const wifiMessages = [];
@@ -3826,6 +3941,14 @@ ${state.bannerMOTD}
               title: `📶 ${t.wirelessStatus}`,
               description: wifiMessages.join('\n'),
               duration: 4000,
+            });
+          }
+
+          if (validationMessages.length > 0) {
+            toast({
+              title: language === 'tr' ? 'Topoloji Doğrulama Uyarıları' : 'Topology Validation Warnings',
+              description: validationMessages.join('\n'),
+              duration: 5000,
             });
           }
 
@@ -4165,7 +4288,7 @@ ${state.bannerMOTD}
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const projectData = JSON.parse(e.target?.result as string);
+        const projectData = safeParse<unknown>(e.target?.result as string);
         if (loadProjectData(projectData)) {
           setHasUnsavedChanges(false);
           // Close guided mode panel if open

@@ -5,6 +5,7 @@ import { buildRunningConfig } from './configBuilder';
 import { canAssignIPToPhysicalPort } from '../switchModels';
 import { encryptMd5Password, encryptType7Password } from '../crypto';
 import { calculatePVST } from './showCommands';
+import { getDeviceCapabilities } from '../capabilities';
 
 // Global config (hostname, vlan, vtp, spanning-tree, security, ip domain-name, etc.)
 
@@ -140,9 +141,8 @@ function cmdIpRouting(state: any, input: string, ctx: any): any {
 
   // Check if device supports routing (router or L3 switch)
   const currentDevice = ctx.devices?.find((d: any) => d.id === ctx.sourceDeviceId);
-  const isRouter = currentDevice?.type === 'router';
-  const isL3Switch = canAssignIPToPhysicalPort(state.switchModel);
-  if (!isRouter && !isL3Switch) {
+  const capabilities = getDeviceCapabilities(currentDevice || null, state.switchModel);
+  if (!capabilities.routing) {
     return {
       success: false,
       error: `% Invalid command. Layer 2 switch (${state.switchModel}) does not support IP routing.\nIP routing is only supported on routers and Layer 3 switches.`
@@ -165,9 +165,8 @@ function cmdIpRoute(state: any, input: string, ctx: any): any {
 
   // Check if device supports routing (router or L3 switch)
   const currentDevice = ctx.devices?.find((d: any) => d.id === ctx.sourceDeviceId);
-  const isRouter = currentDevice?.type === 'router';
-  const isL3Switch = canAssignIPToPhysicalPort(state.switchModel);
-  if (!isRouter && !isL3Switch) {
+  const capabilities = getDeviceCapabilities(currentDevice || null, state.switchModel);
+  if (!capabilities.routing) {
     return {
       success: false,
       error: `% Invalid command. Layer 2 switch (${state.switchModel}) does not support static routing.\nStatic routing is only supported on routers and Layer 3 switches.`
@@ -318,9 +317,8 @@ function cmdNoIpRoute(state: any, input: string, ctx: any): any {
 
   // Check if device supports routing (router or L3 switch)
   const currentDevice = ctx.devices?.find((d: any) => d.id === ctx.sourceDeviceId);
-  const isRouter = currentDevice?.type === 'router';
-  const isL3Switch = canAssignIPToPhysicalPort(state.switchModel);
-  if (!isRouter && !isL3Switch) {
+  const capabilities = getDeviceCapabilities(currentDevice || null, state.switchModel);
+  if (!capabilities.routing) {
     return {
       success: false,
       error: `% Invalid command. Layer 2 switch (${state.switchModel}) does not support static routing.\nStatic routing is only supported on routers and Layer 3 switches.`

@@ -4012,6 +4012,22 @@ export function NetworkTopology({
     setPingMode(false);
   }, []);
 
+  useEffect(() => {
+    return () => {
+      pingIsPausedRef.current = false;
+      pingStepModeRef.current = false;
+      pingResumeCallbackRef.current = null;
+      if (pingAnimationRef.current) {
+        cancelAnimationFrame(pingAnimationRef.current);
+        pingAnimationRef.current = null;
+      }
+      if (pingCleanupTimeoutRef.current) {
+        clearTimeout(pingCleanupTimeoutRef.current);
+        pingCleanupTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
   // Listen for global ping animation trigger
   useEffect(() => {
     const handlePingTrigger = (event: any) => {
