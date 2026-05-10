@@ -1,0 +1,348 @@
+'use client';
+
+import React, { useMemo, useEffect } from 'react';
+import { ModalPosition, ModalSize } from '@/hooks/useModalDragResize';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import {
+  Terminal as TerminalIcon,
+  Settings,
+  X,
+  ShieldCheck,
+  Network,
+  Cpu,
+  Layers
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import dynamic from 'next/dynamic';
+import type { DeviceType } from './networkTopology.types';
+
+const Terminal = dynamic(() => import('./Terminal').then(m => m.Terminal), { ssr: false });
+const PortPanel = dynamic(() => import('./PortPanel').then(m => m.PortPanel), { ssr: false });
+const VlanPanel = dynamic(() => import('./VlanPanel').then(m => m.VlanPanel), { ssr: false });
+const SecurityPanel = dynamic(() => import('./SecurityPanel').then(m => m.SecurityPanel), { ssr: false });
+const TaskCard = dynamic(() => import('./TaskCard').then(m => m.TaskCard), { ssr: false });
+
+interface UnifiedDevicePanelProps {
+    isOpen: boolean;
+    onOpenChange: (open: boolean) => void;
+    activeTab: 'console' | 'settings';
+    onTabChange: (tab: 'console' | 'settings') => void;
+    deviceId: string;
+    deviceType: DeviceType;
+    deviceStates: Map<string, any>;
+    topologyDevices: any[];
+    topologyConnections: any[];
+    handleCommand: (command: string) => Promise<void>;
+    handleClearTerminal: () => void;
+    toggleDevicePower: (deviceId: string) => void;
+    handleUpdateHistory: (deviceId: string, history: string[]) => void;
+    confirmDialog: any;
+    setConfirmDialog: (dialog: any) => void;
+    t: any;
+    theme: string;
+    language: string;
+    isDark: boolean;
+    isExecutingCommand: boolean;
+    output: any[];
+    prompt: string;
+    state: any;
+    activeDeviceTasks: any[];
+    taskContext: any;
+    // Position/Size from parent hook
+    modalPosition: ModalPosition;
+    modalSize: ModalSize;
+    handlePointerDown: (e: React.PointerEvent, modalType: any) => void;
+    handleResizeStart: (e: React.PointerEvent, direction: any, modalType: any) => void;
+}
+
+export function UnifiedDevicePanel({
+    isOpen,
+    onOpenChange,
+    activeTab,
+    onTabChange,
+    deviceId,
+    deviceType,
+    deviceStates,
+    topologyDevices,
+    topologyConnections,
+    handleCommand,
+    handleClearTerminal,
+    toggleDevicePower,
+    handleUpdateHistory,
+    confirmDialog,
+    setConfirmDialog,
+    t,
+    theme,
+    language,
+    isDark,
+    isExecutingCommand,
+    output,
+    prompt,
+    state,
+    activeDeviceTasks,
+    taskContext,
+    modalPosition,
+    modalSize,
+    handlePointerDown,
+    handleResizeStart
+}: UnifiedDevicePanelProps) {
+
+    const isNarrow = modalSize.width < 1100;
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+    const deviceName = useMemo(() => {
+        const deviceState = deviceStates.get(deviceId);
+        return deviceState?.hostname || deviceId;
+    }, [deviceStates, deviceId]);
+
+    const deviceModel = useMemo(() => {
+        if (deviceType === 'router') return 'ISR 4451 X';
+        return state?.switchModel || 'WS-C2960-24TT-L';
+    }, [deviceType, state]);
+
+    const isOffline = useMemo(() => {
+        return topologyDevices.some(d => d.id === deviceId && d.status === 'offline');
+    }, [topologyDevices, deviceId]);
+
+    // Handle focus on terminal
+    const focusActiveTerminalInput = () => {
+        requestAnimationFrame(() => {
+            const el = document.querySelector('input[type="text"], input[type="password"]') as HTMLInputElement | null;
+            el?.focus();
+        });
+    };
+
+    useEffect(() => {
+        if (isOpen && activeTab === 'console') {
+            focusActiveTerminalInput();
+        }
+    }, [isOpen, activeTab]);
+
+    return (
+        <Dialog open={isOpen} onOpenChange={onOpenChange} modal={false}>
+            <DialogContent
+                showCloseButton={false}
+                onEscapeKeyDown={(e) => e.preventDefault()}
+                className={cn(
+                    "p-0 overflow-visible flex flex-col top-auto left-auto translate-x-0 translate-y-0 liquid-glass-light",
+                    isDark ? "bg-slate-950/80 border-slate-800" : "bg-white border-slate-200"
+                )}
+                data-modal-content
+                style={{
+                    position: 'fixed',
+                    left: isMobile ? 0 : modalPosition.x,
+                    top: isMobile ? 0 : modalPosition.y,
+                    width: isMobile ? '100vw' : `${modalSize.width}px`,
+                    height: isMobile ? '100vh' : `${modalSize.height}px`,
+                    maxWidth: 'none',
+                    maxHeight: 'none',
+                    borderRadius: isMobile ? 0 : '1rem',
+                    borderWidth: 3,
+                    zIndex: 50
+                }}
+            >
+                <div className="relative flex flex-col h-full rounded-2xl shadow-2xl overflow-hidden">
+                    {/* Header with Tabs */}
+                    <DialogHeader
+                        className={cn(
+                            "p-0 border-b cursor-grab active:cursor-grabbing select-none touch-none sticky top-0 z-10",
+                            isDark ? "border-slate-800 bg-slate-900/90" : "border-slate-100 bg-white"
+                        )}
+                        data-modal-header
+                        onPointerDown={(e) => handlePointerDown(e, 'deviceUnified')}
+                    >
+                        <div className="flex items-center justify-between px-3 py-1.5 sm:px-4 sm:py-2">
+                            <Tabs value={activeTab} onValueChange={(v: any) => onTabChange(v)} className="w-auto">
+                                <TabsList className={cn("h-9 p-1", isDark ? "bg-slate-800" : "bg-slate-100")}>
+                                    <TabsTrigger value="console" className="flex items-center gap-2 px-3 h-7">
+                                        <TerminalIcon className="w-3.5 h-3.5" />
+                                        <span className="hidden sm:inline">{t.cliInterface}</span>
+                                        <span className="sm:hidden">K</span>
+                                    </TabsTrigger>
+                                    <TabsTrigger value="settings" className="flex items-center gap-2 px-3 h-7">
+                                        <Settings className="w-3.5 h-3.5" />
+                                        <span className="hidden sm:inline">{t.quickSettingsAndTasks}</span>
+                                        <span className="sm:hidden">A</span>
+                                    </TabsTrigger>
+                                </TabsList>
+                            </Tabs>
+
+                            <div className="flex items-center gap-3 min-w-0 flex-1 justify-center px-4">
+                                <div className={cn(
+                                    "flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-medium max-w-full truncate",
+                                    isDark ? "bg-slate-800/50 border-slate-700 text-slate-300" : "bg-slate-100 border-slate-200 text-slate-600"
+                                )}>
+                                    <div className={cn("w-2 h-2 rounded-full shrink-0", isOffline ? "bg-red-500" : "bg-green-500")} />
+                                    <span className="truncate">{deviceName}</span>
+                                    <span className="opacity-50 text-[10px] uppercase">{deviceType}</span>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-1">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 hover:bg-red-500 hover:text-white dark:hover:bg-red-600 transition-colors"
+                                    onClick={() => onOpenChange(false)}
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                        <DialogTitle className="sr-only">
+                            {deviceName} - {activeTab === 'console' ? t.cliInterface : t.quickSettingsAndTasks}
+                        </DialogTitle>
+                        <DialogDescription className="sr-only">
+                            {deviceType} {t.configAndMonitor}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {/* Content */}
+                    <div className="flex-1 overflow-hidden relative">
+                        <Tabs value={activeTab} className="h-full">
+                            <TabsContent value="console" className="h-full m-0 p-0 overflow-hidden">
+                                <Terminal
+                                    key={`unified-terminal-${deviceId}`}
+                                    className="h-full"
+                                    deviceId={deviceId}
+                                    deviceName={deviceName}
+                                    prompt={prompt}
+                                    state={state}
+                                    onCommand={handleCommand}
+                                    onClear={handleClearTerminal}
+                                    output={output}
+                                    isLoading={isExecutingCommand}
+                                    isConnectionError={isOffline}
+                                    connectionErrorMessage={t.connectionError}
+                                    isPoweredOff={isOffline}
+                                    onTogglePower={() => toggleDevicePower(deviceId)}
+                                    onClose={() => onOpenChange(false)}
+                                    t={t}
+                                    theme={theme}
+                                    language={language}
+                                    onUpdateHistory={handleUpdateHistory}
+                                    confirmDialog={confirmDialog}
+                                    setConfirmDialog={setConfirmDialog}
+                                    device={topologyDevices.find(d => d.id === deviceId)}
+                                    devices={topologyDevices}
+                                    deviceStates={deviceStates}
+                                    onRequestFocus={focusActiveTerminalInput}
+                                />
+                            </TabsContent>
+                            <TabsContent value="settings" className="h-full m-0 p-0 overflow-y-auto custom-scrollbar">
+                                <div className="p-4 sm:p-6">
+                                    <div className={cn(
+                                        "grid gap-6",
+                                        isNarrow ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-3"
+                                    )}>
+                                        <div className={cn(isNarrow ? "" : "lg:col-span-2", "space-y-6")}>
+                                            <div className="space-y-4">
+                                                <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                                                    <Network className="w-4 h-4" />
+                                                    {t.portStatus}
+                                                </div>
+                                                <PortPanel
+                                                    ports={state?.ports || {}}
+                                                    t={t}
+                                                    theme={theme}
+                                                    deviceName={deviceName}
+                                                    deviceModel={deviceModel}
+                                                    activeDeviceId={deviceId}
+                                                    isDevicePoweredOff={isOffline}
+                                                    topologyDevices={topologyDevices}
+                                                    onTogglePower={toggleDevicePower}
+                                                    topologyConnections={topologyConnections}
+                                                />
+                                            </div>
+
+                                            <div className="space-y-4 pt-2">
+                                                <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                                                    <Layers className="w-4 h-4" />
+                                                    {t.vlanManagement}
+                                                </div>
+                                                <VlanPanel
+                                                    vlans={state?.vlans || []}
+                                                    ports={state?.ports || {}}
+                                                    deviceName={deviceName}
+                                                    deviceModel={deviceModel}
+                                                    deviceId={deviceId}
+                                                    onTogglePower={toggleDevicePower}
+                                                    onExecuteCommand={handleCommand}
+                                                    t={t}
+                                                    theme={theme}
+                                                    activeDeviceType={deviceType}
+                                                    isDevicePoweredOff={isOffline}
+                                                />
+                                            </div>
+
+                                            <div className="space-y-4 pt-2">
+                                                <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                                                    <ShieldCheck className="w-4 h-4" />
+                                                    {t.securityAndAcl}
+                                                </div>
+                                                <SecurityPanel
+                                                    security={state?.security || {}}
+                                                    t={t}
+                                                    theme={theme}
+                                                    deviceId={deviceId}
+                                                    isDevicePoweredOff={isOffline}
+                                                    onTogglePower={toggleDevicePower}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-6">
+                                            <div className="space-y-4 sticky top-0">
+                                                <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                                                    <Cpu className="w-4 h-4" />
+                                                    {t.tasksAndScore}
+                                                </div>
+                                                <TaskCard
+                                                    tasks={activeDeviceTasks}
+                                                    state={state}
+                                                    context={taskContext}
+                                                    color="from-indigo-500 to-purple-600"
+                                                    isDark={isDark}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </TabsContent>
+                        </Tabs>
+                    </div>
+
+                    {/* Resize handles - hidden on mobile */}
+                    {!isMobile && (
+                        <>
+                            <div
+                                className="absolute left-0 top-0 bottom-0 w-1.5 cursor-ew-resize select-none touch-none hover:bg-primary/20 z-20"
+                                onPointerDown={(e) => handleResizeStart(e, 'w', 'deviceUnified')}
+                            />
+                            <div
+                                className="absolute right-0 top-0 bottom-0 w-1.5 cursor-ew-resize select-none touch-none hover:bg-primary/20 z-20"
+                                onPointerDown={(e) => handleResizeStart(e, 'e', 'deviceUnified')}
+                            />
+                            <div
+                                className="absolute left-0 bottom-0 right-0 h-1.5 cursor-ns-resize select-none touch-none hover:bg-primary/20 z-20"
+                                onPointerDown={(e) => handleResizeStart(e, 's', 'deviceUnified')}
+                            />
+                            <div
+                                className="absolute right-0 bottom-0 w-6 h-6 cursor-se-resize select-none touch-none flex items-center justify-center text-slate-400 hover:text-primary z-30"
+                                onPointerDown={(e) => handleResizeStart(e, 'se', 'deviceUnified')}
+                            >
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                                    <path d="M11 5L5 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                                    <path d="M11 9L9 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                                </svg>
+                            </div>
+                        </>
+                    )}
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
