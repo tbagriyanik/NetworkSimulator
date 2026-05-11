@@ -930,12 +930,16 @@ export const generateIotDevicePageContent = (
             </div>
 
             <div class="rule-list" id="ruleList">
-              ${(rules || []).map(rule => `
+              ${(rules || []).map(rule => {
+                const safeCondition = sanitizeHTML(rule.condition);
+                const safeAction = sanitizeHTML(rule.action);
+                const jsRuleId = safeJSONForHTML(rule.id).replace(/"/g, '&quot;');
+                return `
                 <div class="rule-item">
-                  <span>${rule.condition} → ${rule.action}</span>
-                  <button onclick="deleteRule('${rule.id}')" class="delete-rule-btn">×</button>
+                  <span>${safeCondition} &rarr; ${safeAction}</span>
+                  <button onclick="deleteRule(${jsRuleId})" class="delete-rule-btn">&times;</button>
                 </div>
-              `).join('')}
+              `;}).join('')}
             </div>
           </div>
           `}
@@ -949,6 +953,16 @@ export const generateIotDevicePageContent = (
           const isPoweredOff = ${isPoweredOff};
           const deviceId = ${safeJSONForHTML(deviceId)};
           let rules = ${safeJSONForHTML(rules || [])};
+
+          function escapeHtml(text) {
+            if (!text) return '';
+            return String(text)
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&#039;');
+          }
 
           function addRule() {
             if (isPoweredOff) return;
@@ -985,12 +999,14 @@ export const generateIotDevicePageContent = (
             const list = document.getElementById('ruleList');
             if (!list) return;
             list.innerHTML = rules.map(rule => {
-              const safeCondition = rule.condition.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-              const safeAction = rule.action.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+              const safeCondition = escapeHtml(rule.condition);
+              const safeAction = escapeHtml(rule.action);
+              // Correctly escape the ID for attribute context
+              const jsId = JSON.stringify(rule.id).replace(/"/g, '&quot;');
               return \`
                 <div class="rule-item">
                   <span>\${safeCondition} &rarr; \${safeAction}</span>
-                  <button onclick="deleteRule('\${rule.id}')" class="delete-rule-btn">&times;</button>
+                  <button onclick="deleteRule(\${jsId})" class="delete-rule-btn">&times;</button>
                 </div>
               \`;
             }).join('');
