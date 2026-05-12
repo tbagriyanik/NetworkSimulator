@@ -3,6 +3,17 @@ import { SwitchState } from '../types';
 const TIMESTAMP = '2026-02-26 22:00:00';
 
 /**
+ * Convert subnet mask to wildcard mask (inverse)
+ */
+function subnetMaskToWildcard(subnetMask: string): string {
+    if (!subnetMask) return '0.0.0.0';
+    
+    const octets = subnetMask.split('.').map(Number);
+    const wildcardOctets = octets.map(octet => 255 - octet);
+    return wildcardOctets.join('.');
+}
+
+/**
  * Pure function that generates the running config lines for a given SwitchState.
  * Returns one config line per array entry (no \n characters).
  * Mirrors the generateConfig() logic in ConfigPanel.tsx.
@@ -304,17 +315,13 @@ export function buildRunningConfig(state: SwitchState): string[] {
         if (state.autoSummary === false) lines.push(' no auto-summary');
         lines.push('!');
     } else if (state.routingProtocol === 'ospf') {
-        lines.push(`router ospf ${state.version.nosVersion ? '1' : '1'}`);
+        lines.push(`router ospf 1`);
         (state.dynamicRoutes || []).forEach(r => {
-            if (r.type === 'dynamic') lines.push(`  network ${r.destination} ${r.subnetMask} area ${r.metric || 0}`);
+            if (r.type === 'dynamic' && r.subnetMask) {
+                const wildcardMask = subnetMaskToWildcard(r.subnetMask);
+                lines.push(`  network ${r.destination} ${wildcardMask} area ${r.metric || 0}`);
+            }
         });
-        lines.push('!');
-    } else if (state.routingProtocol === 'eigrp') {
-        lines.push(`router eigrp ${state.eigrpAs || '100'}`);
-        (state.dynamicRoutes || []).forEach(r => {
-            if (r.type === 'dynamic') lines.push(`  network ${r.destination} ${r.subnetMask}`);
-        });
-        if (state.autoSummary === false) lines.push(' no auto-summary');
         lines.push('!');
     } else if (state.routingProtocol === 'bgp') {
         lines.push(`router bgp ${state.bgpAs || '65000'}`);
