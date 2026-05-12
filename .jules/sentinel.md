@@ -17,3 +17,8 @@
 **Vulnerability:** XSS in IoT Device Page due to incomplete sanitization in the client-side `updateRuleList` function compared to the server-side initial render.
 **Learning:** When generating HTML that includes both static content and client-side update logic (e.g., using `innerHTML`), sanitization must be duplicated or shared. Helper functions available on the server (like `sanitizeHTML`) are not automatically available in the client-side `<script>` context.
 **Prevention:** Include a simple, robust `escapeHtml` helper function within the generated `<script>` block to ensure consistent sanitization for all dynamic UI updates. Always sanitize both the initial server-side render and the subsequent client-side updates.
+
+## 2026-05-15 - [Recursive Protocol Stripping for Input Sanitization]
+**Vulnerability:** XSS bypass in `sanitizeInput` due to single-pass removal of the `javascript:` protocol. An attacker could nest characters (e.g., `javas<javascript:>cript:`) such that the removal of inner tags or a previous protocol occurrence leaves behind a new, valid malicious protocol.
+**Learning:** Security filters that rely on string replacement can often be bypassed using recursion or nesting if they only perform a single pass. For sensitive protocols like `javascript:`, the removal must be complete and robust against these transformations.
+**Prevention:** Use a recursive or multi-pass approach (e.g., a `do-while` loop) when stripping malicious patterns to ensure that any remaining fragments do not reform into a malicious payload after initial replacements.

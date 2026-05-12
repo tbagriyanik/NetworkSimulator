@@ -39,10 +39,15 @@ export function sanitizeHTTPContent(input: string): string {
 }
 
 export function sanitizeInput(input: string): string {
-    return input
-        .replace(/[<>`]/g, '')
-        .replace(/javascript:/gi, '')
-        .trim();
+    let sanitized = input.replace(/[<>`]/g, '').trim();
+    // Remove "javascript:" recursively to prevent bypasses like "javas<javascript:>cript:"
+    // where inner tags are removed first, leaving behind a malicious payload.
+    let prev;
+    do {
+        prev = sanitized;
+        sanitized = sanitized.replace(/javascript:/gi, '');
+    } while (sanitized !== prev);
+    return sanitized;
 }
 
 export function sanitizeObject<T>(value: T): T {
@@ -105,10 +110,14 @@ export function validateMACAddress(mac: string): boolean {
     return macRegex.test(mac);
 }
 
+/**
+ * Validates if a string is a valid URL and uses safe protocols (http/https).
+ * Explicitly rejects dangerous protocols like javascript:
+ */
 export function validateURL(url: string): boolean {
     try {
-        new URL(url);
-        return true;
+        const parsed = new URL(url);
+        return ['http:', 'https:'].includes(parsed.protocol);
     } catch {
         return false;
     }
