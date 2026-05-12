@@ -565,12 +565,7 @@ export function checkConnectivity(
   if (!targetDevice && deviceStates) {
     const safeDeviceStates = ensureDeviceStatesMap(deviceStates);
     for (const [id, state] of safeDeviceStates.entries()) {
-      // Check management IP (SVI)
-      if (state.ports['vlan1']?.ipAddress === resolvedTargetIp) {
-        targetDevice = devices.find(d => d.id === id);
-        break;
-      }
-      // Check physical interface IPs (for Routers)
+      // Check all interfaces (SVI, physical, loopback)
       for (const portId in state.ports) {
         if (state.ports[portId].ipAddress === resolvedTargetIp) {
           targetDevice = devices.find(d => d.id === id);
@@ -1128,12 +1123,15 @@ export function checkConnectivity(
 
     // If routing was required but no router in the path could handle it
     if (routingRequired && !l3ConnectivityPossible) {
+      // For different subnets, routing MUST be possible through an L3 device
       return {
         success: false,
         hops: hopNames,
         hopIds: path,
         targetId: targetDevice.id,
-        error: language === 'tr' ? 'Yönlendirme başarısız: Geçerli bir rota bulunamadı.' : 'Routing failed: No valid route found.'
+        error: language === 'tr' 
+          ? 'Yönlendirme başarısız: Geçerli bir rota bulunamadı.' 
+          : 'Routing failed: No valid route found.'
       };
     }
   }
@@ -1415,9 +1413,32 @@ export function getPingDiagnostics(
 
   // 10. Check routing if needed
   if (!isSourceInSameSubnet || !isTargetInSameSubnet) {
-    const sourceState = deviceStates?.get(sourceId);
-    if (!sourceState?.ipRouting) {
-      reasons.push('Kaynak cihazda IP routing etkin değil');
+    const sourceDeviceObj = devices.find(d => d.id === sourceId);
+    const isSourceL3Capable = sourceDeviceObj?.type === 'router' || sourceDeviceObj?.type === 'switchL3';
+    
+    // If source is a router/L3-switch, it must have ip routing enabled
+    if (isSourceL3Capable) {
+      const sourceState = deviceStates?.get(sourceId);
+      if (!sourceState?.ipRouting) {
+        reasons.push(language === 'tr' ? 'Kaynak cihazda IP routing etkin değil' : 'IP routing is not enabled on the source device');
+        return { success: false, reasons };
+      }
+    }
+    
+    // Check if there's a router or L3 switch in path (already calculated in section 9)
+    let hasL3RouterInPath = false;
+    for (const pathDeviceId of result.hopIds) {
+      const pathDevice = devices.find(d => d.id === pathDeviceId);
+      const pathState = deviceStates?.get(pathDeviceId);
+      if ((pathDevice?.type === 'router' || pathDevice?.type === 'switchL3') && pathState?.ipRouting) {
+        hasL3RouterInPath = true;
+        break;
+      }
+    }
+
+    // If source is not a router, there must be a router/L3-switch in the path
+    if (!hasL3RouterInPath && !isSourceL3Capable) {
+      reasons.push(language === 'tr' ? 'Farklı subnetler arası iletişim için bir router/L3-switch gereklidir' : 'A router/L3-switch is required for communication between different subnets');
       return { success: false, reasons };
     }
   }

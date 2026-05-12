@@ -64,7 +64,7 @@ import { RouterIcon, SwitchIcon } from '@/components/network/PCPanelWidgets';
 // Existing RouterInfoPopover stays unchanged for routers
 
 // New SwitchInfoPopover component for L2 and L3 switches
-function SwitchInfoPopover({ router, routerState, t, language, isDark, onClose, handleDeviceDoubleClick, onOpenPanel, topologyConnections }: RouterInfoPopoverProps) {
+function SwitchInfoPopover({ router, routerState, t, language, isDark, onClose, handleDeviceDoubleClick, onOpenPanel, topologyConnections, onFocus, zIndex }: RouterInfoPopoverProps & { onFocus: () => void; zIndex: number }) {
   // Reuse the same draggable logic as RouterInfoPopover
   const [position, setPosition] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -132,8 +132,9 @@ function SwitchInfoPopover({ router, routerState, t, language, isDark, onClose, 
   const connectedPorts = topologyConnections?.filter(conn => conn.sourceDeviceId === router.id || conn.targetDeviceId === router.id).length || 0;
 
   return (
-    <div ref={containerRef} className={cn("hidden md:block fixed z-40 animate-scale-in")}
-      style={{ bottom: `${position.y}px`, right: `${position.x}px` }} onMouseDown={handleDragStart}>
+    <div ref={containerRef} className={cn("hidden md:block fixed animate-scale-in")}
+      style={{ bottom: `${position.y}px`, right: `${position.x}px`, zIndex }} 
+      onMouseDown={(e) => { onFocus(); handleDragStart(e); }}>
       <div className={`rounded-2xl border shadow-2xl backdrop-blur-md min-w-[200px] max-w-[280px] ${isDark ? 'bg-zinc-950/40 border-zinc-800/50 text-zinc-100 shadow-black/40' : 'bg-white/40 border-zinc-200/50 text-zinc-900 shadow-zinc-200/50'}`}>
         <div className={`flex items-center justify-between px-2 py-1.5 border-b ${isDark ? 'border-slate-700/50' : 'border-slate-200/50'} ${isDraggingUI ? 'cursor-grabbing' : 'cursor-grab'}`}>
           <div className="flex items-center gap-1.5">
@@ -419,7 +420,7 @@ export default function Home() {
   } | null>(null);
 
   // Which overlay panel is on top — last clicked wins
-  const [focusedOverlay, setFocusedOverlay] = useState<'refresh' | 'packet'>('packet');
+  const [focusedOverlay, setFocusedOverlay] = useState<'refresh' | 'packet' | 'pc-info' | 'router-info' | 'switch-info'>('packet');
 
   // Mobile detection
   const isMobile = useIsMobile();
@@ -6142,6 +6143,8 @@ ${state.bannerMOTD}
                         setSelectedDevice(null);
                         setActiveDeviceId('');
                       }}
+                      onFocus={() => setFocusedOverlay('pc-info')}
+                      zIndex={focusedOverlay === 'pc-info' ? 36 : 25}
                       handleDeviceDoubleClick={handleDeviceDoubleClick}
                       onOpenPanel={(id) => {
                         setShowPCDeviceId(id);
@@ -6153,8 +6156,31 @@ ${state.bannerMOTD}
                     />
                   )}
 
+                  {/* Switch Info Popover - Bottom Right Mini Panel */}
+                  {activeDeviceId && (topologyDevices?.find(d => d.id === activeDeviceId)?.type === 'switchL2' || topologyDevices?.find(d => d.id === activeDeviceId)?.type === 'switchL3') && topologyDevices && (
+                    <SwitchInfoPopover
+                      router={topologyDevices.find(d => d.id === activeDeviceId)!}
+                      routerState={deviceStates.get(activeDeviceId)}
+                      t={t}
+                      language={language}
+                      isDark={isDark}
+                      onClose={() => {
+                        setSelectedDevice(null);
+                        setActiveDeviceId('');
+                      }}
+                      onFocus={() => setFocusedOverlay('switch-info')}
+                      zIndex={focusedOverlay === 'switch-info' ? 36 : 25}
+                      handleDeviceDoubleClick={handleDeviceDoubleClick}
+                      onOpenPanel={(id) => {
+                        setShowRouterDeviceId(id);
+                        setShowRouterPanel(true);
+                      }}
+                      topologyConnections={topologyConnections}
+                    />
+                  )}
+
                   {/* Router Info Popover - Bottom Right Mini Panel */}
-                  {activeDeviceId && (activeDeviceId.startsWith('router-') || topologyDevices?.find(d => d.id === activeDeviceId)?.type === 'router' || topologyDevices?.find(d => d.id === activeDeviceId)?.type === 'switchL3') && topologyDevices && (
+                  {activeDeviceId && (activeDeviceId.startsWith('router-') || topologyDevices?.find(d => d.id === activeDeviceId)?.type === 'router') && topologyDevices && (
                     <RouterInfoPopover
                       router={topologyDevices.find(d => d.id === activeDeviceId)!}
                       routerState={deviceStates.get(activeDeviceId)}
@@ -6165,6 +6191,8 @@ ${state.bannerMOTD}
                         setSelectedDevice(null);
                         setActiveDeviceId('');
                       }}
+                      onFocus={() => setFocusedOverlay('router-info')}
+                      zIndex={focusedOverlay === 'router-info' ? 36 : 25}
                       handleDeviceDoubleClick={handleDeviceDoubleClick}
                       onOpenPanel={(id) => {
                         setShowRouterDeviceId(id);
@@ -6439,13 +6467,15 @@ interface PCInfoPopoverProps {
   language: 'tr' | 'en';
   isDark: boolean;
   onClose: () => void;
+  onFocus: () => void;
+  zIndex: number;
   handleDeviceDoubleClick: (type: DeviceType, id: string) => void;
   onOpenPanel: (id: string) => void;
   topologyDevices: CanvasDevice[];
   deviceStates: Map<string, SwitchState>;
 }
 
-function PCInfoPopover({ pc, t, language, isDark, onClose, handleDeviceDoubleClick, onOpenPanel, topologyDevices, deviceStates }: PCInfoPopoverProps) {
+function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zIndex, handleDeviceDoubleClick, onOpenPanel, topologyDevices, deviceStates }: PCInfoPopoverProps) {
   // Draggable position state
   const [position, setPosition] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -6551,12 +6581,13 @@ function PCInfoPopover({ pc, t, language, isDark, onClose, handleDeviceDoubleCli
   return (
     <div
       ref={containerRef}
-      className={cn("hidden md:block fixed z-40 animate-scale-in")}
+      className={cn("hidden md:block fixed  animate-scale-in")}
       style={{
         bottom: `${position.y}px`,
         right: `${position.x}px`,
+        zIndex
       }}
-      onMouseDown={handleDragStart}
+      onMouseDown={(e) => { onFocus(); handleDragStart(e); }}
     >
       <div
         className={`rounded-2xl border shadow-2xl backdrop-blur-md min-w-[200px] max-w-[260px] ${isDark ? 'bg-zinc-950/40 border-zinc-800/50 text-zinc-100 shadow-black/40' : 'bg-white/40 border-zinc-200/50 text-zinc-900 shadow-zinc-200/50'}`}
@@ -6707,12 +6738,14 @@ interface RouterInfoPopoverProps {
   language: 'tr' | 'en';
   isDark: boolean;
   onClose: () => void;
+  onFocus: () => void;
+  zIndex: number;
   handleDeviceDoubleClick: (type: DeviceType, id: string) => void;
   onOpenPanel: (id: string) => void;
   topologyConnections: CanvasConnection[];
 }
 
-function RouterInfoPopover({ router, routerState, t, language, isDark, onClose, handleDeviceDoubleClick, onOpenPanel, topologyConnections }: RouterInfoPopoverProps) {
+function RouterInfoPopover({ router, routerState, t, language, isDark, onClose, onFocus, zIndex, handleDeviceDoubleClick, onOpenPanel, topologyConnections }: RouterInfoPopoverProps) {
   // Draggable position state
   const [position, setPosition] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -6841,12 +6874,13 @@ function RouterInfoPopover({ router, routerState, t, language, isDark, onClose, 
   return (
     <div
       ref={containerRef}
-      className={cn("hidden md:block fixed z-40 animate-scale-in")}
+      className={cn("hidden md:block fixed  animate-scale-in")}
       style={{
         bottom: `${position.y}px`,
         right: `${position.x}px`,
+        zIndex
       }}
-      onMouseDown={handleDragStart}
+      onMouseDown={(e) => { onFocus(); handleDragStart(e); }}
     >
       <div
         className={`rounded-2xl border shadow-2xl backdrop-blur-md min-w-[200px] max-w-[280px] ${isDark ? 'bg-zinc-950/40 border-zinc-800/50 text-zinc-100 shadow-black/40' : 'bg-white/40 border-zinc-200/50 text-zinc-900 shadow-zinc-200/50'}`}

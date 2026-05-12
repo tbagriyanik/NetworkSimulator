@@ -1431,17 +1431,17 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
 
   // Example 6: Inter-VLAN Routing (L3 Switch)
   const l3RoutingDevices = [
-    createPcDevice('pc-1', 'PC-1', 40, 120, '192.168.10.10', 10),
-    createPcDevice('pc-2', 'PC-2', 40, 260, '192.168.20.10', 20),
-    createPcDevice('pc-3', 'PC-3', 40, 400, '192.168.30.10', 30),
-    createPcDevice('pc-4', 'PC-4', 40, 540, '192.168.40.10', 40),
+    createPcDevice('pc-1', 'PC-1', 40, 120, '192.168.10.10', 10, '192.168.10.1'),
+    createPcDevice('pc-2', 'PC-2', 40, 260, '192.168.20.10', 20, '192.168.20.1'),
+    createPcDevice('pc-3', 'PC-3', 40, 400, '192.168.30.10', 30, '192.168.30.1'),
+    createPcDevice('pc-4', 'PC-4', 40, 540, '192.168.40.10', 40, '192.168.40.1'),
     createL3SwitchDevice('switch-1', 'L3SW1', 260, 330)
   ];
   const l3RoutingConnections: CanvasConnection[] = [];
   connectPorts(l3RoutingDevices, l3RoutingConnections, 'pc-1', 'eth0', 'switch-1', 'gi1/0/1');
   connectPorts(l3RoutingDevices, l3RoutingConnections, 'pc-2', 'eth0', 'switch-1', 'gi1/0/2');
-  connectPorts(l3RoutingDevices, l3RoutingConnections, 'pc-3', 'eth0', 'switch-1', 'gi1/1/1');
-  connectPorts(l3RoutingDevices, l3RoutingConnections, 'pc-4', 'eth0', 'switch-1', 'gi1/1/2');
+  connectPorts(l3RoutingDevices, l3RoutingConnections, 'pc-3', 'eth0', 'switch-1', 'gi1/0/3');
+  connectPorts(l3RoutingDevices, l3RoutingConnections, 'pc-4', 'eth0', 'switch-1', 'gi1/0/4');
   const l3RoutingNotes: CanvasNote[] = [
     {
       id: 'l3-routing-note',
@@ -1461,19 +1461,19 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
   const l3RoutingState = createInitialState(undefined, 'WS-C3650-24PS');
   l3RoutingState.hostname = 'L3SW1';
   l3RoutingState.ipRouting = true;
-  l3RoutingState.vlans[10] = { id: 10, name: 'VLAN10', status: 'active', ports: ['GI1/1/1'] };
-  l3RoutingState.vlans[20] = { id: 20, name: 'VLAN20', status: 'active', ports: ['GI1/1/2'] };
-  l3RoutingState.vlans[30] = { id: 30, name: 'VLAN30', status: 'active', ports: ['GI1/1/3'] };
-  l3RoutingState.vlans[40] = { id: 40, name: 'VLAN40', status: 'active', ports: ['GI1/1/4'] };
+  l3RoutingState.vlans[10] = { id: 10, name: 'VLAN10', status: 'active', ports: ['GI1/0/1'] };
+  l3RoutingState.vlans[20] = { id: 20, name: 'VLAN20', status: 'active', ports: ['GI1/0/2'] };
+  l3RoutingState.vlans[30] = { id: 30, name: 'VLAN30', status: 'active', ports: ['GI1/0/3'] };
+  l3RoutingState.vlans[40] = { id: 40, name: 'VLAN40', status: 'active', ports: ['GI1/0/4'] };
   l3RoutingState.ports['vlan1'] = { id: 'vlan1', name: '', status: 'connected', vlan: 1, mode: 'access', duplex: 'auto', speed: 'auto', shutdown: false, type: 'gigabitethernet', ipAddress: '192.168.1.1', subnetMask: '255.255.255.0' };
   l3RoutingState.ports['vlan10'] = { id: 'vlan10', name: '', status: 'connected', vlan: 10, mode: 'access', duplex: 'auto', speed: 'auto', shutdown: false, type: 'gigabitethernet', ipAddress: '192.168.10.1', subnetMask: '255.255.255.0' };
   l3RoutingState.ports['vlan20'] = { id: 'vlan20', name: '', status: 'connected', vlan: 20, mode: 'access', duplex: 'auto', speed: 'auto', shutdown: false, type: 'gigabitethernet', ipAddress: '192.168.20.1', subnetMask: '255.255.255.0' };
   l3RoutingState.ports['vlan30'] = { id: 'vlan30', name: '', status: 'connected', vlan: 30, mode: 'access', duplex: 'auto', speed: 'auto', shutdown: false, type: 'gigabitethernet', ipAddress: '192.168.30.1', subnetMask: '255.255.255.0' };
   l3RoutingState.ports['vlan40'] = { id: 'vlan40', name: '', status: 'connected', vlan: 40, mode: 'access', duplex: 'auto', speed: 'auto', shutdown: false, type: 'gigabitethernet', ipAddress: '192.168.40.1', subnetMask: '255.255.255.0' };
-  l3RoutingState.ports['gi1/1/1'] = { ...l3RoutingState.ports['gi1/1/1'], vlan: 10, mode: 'access', status: 'connected' };
-  l3RoutingState.ports['gi1/1/2'] = { ...l3RoutingState.ports['gi1/1/2'], vlan: 20, mode: 'access', status: 'connected' };
-  l3RoutingState.ports['gi1/1/3'] = { ...l3RoutingState.ports['gi1/1/3'], vlan: 30, mode: 'access', status: 'connected' };
-  l3RoutingState.ports['gi1/1/4'] = { ...l3RoutingState.ports['gi1/1/4'], vlan: 40, mode: 'access', status: 'connected' };
+  l3RoutingState.ports['gi1/0/1'] = { ...l3RoutingState.ports['gi1/0/1'], vlan: 10, mode: 'access', status: 'connected' };
+  l3RoutingState.ports['gi1/0/2'] = { ...l3RoutingState.ports['gi1/0/2'], vlan: 20, mode: 'access', status: 'connected' };
+  l3RoutingState.ports['gi1/0/3'] = { ...l3RoutingState.ports['gi1/0/3'], vlan: 30, mode: 'access', status: 'connected' };
+  l3RoutingState.ports['gi1/0/4'] = { ...l3RoutingState.ports['gi1/0/4'], vlan: 40, mode: 'access', status: 'connected' };
 
   // Example 7: Static Routing
   const staticRoutingDevices = [
