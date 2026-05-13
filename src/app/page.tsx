@@ -4,8 +4,9 @@ import { useState, useCallback, useRef, useEffect, useMemo, useLayoutEffect } fr
 import dynamic from 'next/dynamic';
 
 import { SwitchState, CableInfo } from '@/lib/network/types';
-import { ensureDeviceStatesMap } from '@/lib/network/networkUtils';
 import { useDeviceManager } from '@/hooks/useDeviceManager';
+import { useNetworkLogic } from '@/hooks/useNetworkLogic';
+import { useProjectPersistence } from '@/hooks/useProjectPersistence';
 import { useModalDragResize } from '@/hooks/useModalDragResize';
 import { useMultiTabWarning } from '@/hooks/useMultiTabWarning';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -15,10 +16,8 @@ import { cn, normalizeMAC } from '@/lib/utils';
 import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType, CanvasPortStatus } from '@/components/network/networkTopology.types';
 import { getPrompt } from '@/lib/network/executor';
 import { formatErrorForUser, errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
-import { checkDeviceConnectivity, getDeviceWifiConfig, getWirelessSignalStrength } from '@/lib/network/connectivity';
 import { generateRandomLinkLocalIpv4 } from '@/lib/network/linkLocal';
 import { safeParse, safeStringify } from '@/lib/network/serialization';
-import { processIotRules } from '@/lib/network/iotLogic';
 import { calculatePVST } from '@/lib/network/core/showCommands';
 import type { TerminalOutput } from '@/components/network/Terminal';
 import { BOOT_PROGRESS_MARKER } from '@/components/network/Terminal';
@@ -91,6 +90,11 @@ import { useGuidedMode } from '@/hooks/useGuidedMode';
 
 import { DeviceIcon } from '@/components/network/DeviceIcon';
 import { PCInfoPopover, SwitchInfoPopover, RouterInfoPopover } from '@/components/network/DeviceInfoPopovers';
+import { AppHeader } from '@/components/network/AppHeader';
+import { AppFooter } from '@/components/network/AppFooter';
+import { TopologyToolbar } from '@/components/network/TopologyToolbar';
+import { ProjectPickerDialog } from '@/components/network/ProjectPickerDialog';
+import { OnboardingDialog } from '@/components/network/OnboardingDialog';
 import { GuidedModePanel } from '@/components/network/GuidedModePanel';
 import { AppSkeleton } from '@/components/ui/AppSkeleton';
 import { AppErrorBoundary } from '@/components/ui/AppErrorBoundary';
@@ -408,6 +412,10 @@ export default function Home() {
   const pan = usePan();
   const activeTab = useActiveTab();
   const environment = useEnvironment();
+
+  // Network logic functions (must come after Zustand selectors to avoid TDZ)
+  const networkLogic = useNetworkLogic(deviceStates, topologyConnections, environment);
+
   const setDevices = useAppStore((state) => state.setDevices);
   const setConnections = useAppStore((state) => state.setConnections);
   const setNotes = useAppStore((state) => state.setNotes);
@@ -585,37 +593,13 @@ export default function Home() {
     }
   }, [activeDeviceId]);
 
-  const applyIotAutomationPass = useCallback((devices: CanvasDevice[]) => {
-    if (!devices.some((device) => device.type === 'iot' && device.iot?.rules?.some((rule) => rule.enabled !== false))) {
-      return devices;
-    }
-
-    let nextDevices = devices;
-    let didUpdate = false;
-
-    processIotRules(devices, environment, (deviceId, updates) => {
-      didUpdate = true;
-      nextDevices = nextDevices.map((device) =>
-        device.id === deviceId
-          ? {
-            ...device,
-            ...updates,
-            iot: updates.iot ? { ...device.iot, ...updates.iot } : device.iot,
-          }
-          : device
-      );
-    });
-
-    return didUpdate ? nextDevices : devices;
-  }, [environment]);
-
   useEffect(() => {
     const interval = window.setInterval(() => {
-      setTopologyDevices((prev) => applyIotAutomationPass(prev));
+      setTopologyDevices((prev) => networkLogic.applyIotAutomationPass(prev));
     }, 250);
 
     return () => window.clearInterval(interval);
-  }, [applyIotAutomationPass, setTopologyDevices]);
+  }, [networkLogic.applyIotAutomationPass, setTopologyDevices]);
 
   // Function to update device configuration
   const updateDeviceConfig = useCallback((deviceId: string, config: any) => {
@@ -1197,339 +1181,10 @@ export default function Home() {
     securityTasks.filter(task => getTaskStatus(task, state, taskContext)).length +
     (activeDeviceType !== 'switchL2' ? wirelessTasks.filter(task => getTaskStatus(task, state, taskContext)).length : 0) : 0;
 
-  const normalizeDeviceType = useCallback((type: string): DeviceType => {
-    if (type === 'switch') return 'switchL2';
-    if (type === 'switchL2' || type === 'switchL3' || type === 'pc' || type === 'iot' || type === 'router' || type === 'firewall') return type;
-    throw new Error(`Unknown device type: ${type}`);
-  }, []);
-
-  const isValidIpv4 = useCallback((value?: string) => {
-    if (!value) return false;
-    const parts = value.split('.');
-    if (parts.length !== 4) return false;
-    return parts.every((part) => {
-      const n = Number(part);
-      return Number.isInteger(n) && n >= 0 && n <= 255;
-    });
-  }, []);
-
-  const isSameSubnetByMask = useCallback((left?: string, right?: string, mask?: string) => {
-    if (!isValidIpv4(left) || !isValidIpv4(right) || !isValidIpv4(mask)) return false;
-    const safeLeft = left as string;
-    const safeRight = right as string;
-    const safeMask = mask as string;
-    const leftParts = safeLeft.split('.').map(Number);
-    const rightParts = safeRight.split('.').map(Number);
-    const maskParts = safeMask.split('.').map(Number);
-    return leftParts.every((part, index) => (part & maskParts[index]) === (rightParts[index] & maskParts[index]));
-  }, [isValidIpv4]);
-
-  const getPortAccessVlan = useCallback((port: any) => Number(port?.accessVlan || port?.vlan || 1), []);
-
-  const getPeerPortVlan = useCallback((ownerDeviceId: string, ownerPortId: string, devices: CanvasDevice[]) => {
-    const connection = topologyConnections.find((conn) =>
-      conn.active !== false &&
-      (
-        (conn.sourceDeviceId === ownerDeviceId && conn.sourcePort === ownerPortId) ||
-        (conn.targetDeviceId === ownerDeviceId && conn.targetPort === ownerPortId)
-      )
-    );
-    if (!connection) return null;
-
-    const peerDeviceId = connection.sourceDeviceId === ownerDeviceId ? connection.targetDeviceId : connection.sourceDeviceId;
-    const peerPortId = connection.sourceDeviceId === ownerDeviceId ? connection.targetPort : connection.sourcePort;
-    const peerPort = deviceStates?.get(peerDeviceId)?.ports?.[peerPortId];
-    if (!peerPort) return null;
-    if (peerPort.mode === 'trunk') return 1;
-    return getPortAccessVlan(peerPort);
-  }, [deviceStates, getPortAccessVlan, topologyConnections]);
-
-  const inferEndpointVlan = useCallback((device: CanvasDevice, devices: CanvasDevice[]) => {
-    // For WiFi clients, find the AP and use its wlan0 VLAN
-    if (device.wifi?.enabled && device.wifi?.mode === 'client' && device.wifi?.bssid) {
-      const ap = devices.find(d => d.id === device.wifi?.bssid);
-      if (ap) {
-        const apWlan = deviceStates?.get(ap.id)?.ports?.['wlan0'];
-        if (apWlan) return getPortAccessVlan(apWlan);
-      }
-    }
-
-    const connection = topologyConnections.find((conn) =>
-      conn.active !== false &&
-      (conn.sourceDeviceId === device.id || conn.targetDeviceId === device.id)
-    );
-    if (!connection) return Number(device.vlan || 1);
-
-    const peerDeviceId = connection.sourceDeviceId === device.id ? connection.targetDeviceId : connection.sourceDeviceId;
-    const peerPortId = connection.sourceDeviceId === device.id ? connection.targetPort : connection.sourcePort;
-    const peerPort = deviceStates?.get(peerDeviceId)?.ports?.[peerPortId];
-    if (!peerPort) return Number(device.vlan || 1);
-    if (peerPort.mode === 'trunk') return 1;
-    return getPortAccessVlan(peerPort);
-  }, [deviceStates, getPortAccessVlan, topologyConnections]);
-
-  const getServerPoolVlan = useCallback((
-    serverDevice: CanvasDevice,
-    serverState: SwitchState | undefined,
-    poolGateway: string,
-    poolStartIp: string,
-    poolSubnetMask: string,
-    devices: CanvasDevice[]
-  ) => {
-    if (!isValidIpv4(poolSubnetMask)) return null;
-    const anchorIp = isValidIpv4(poolGateway) ? poolGateway : poolStartIp;
-    if (!isValidIpv4(anchorIp)) return null;
-
-    const ports = serverState?.ports || {};
-    for (const [portId, port] of Object.entries(ports)) {
-      if (!port?.ipAddress || port.shutdown) continue;
-      const effectiveMask = port.subnetMask || poolSubnetMask;
-      if (!isValidIpv4(effectiveMask) || !isSameSubnetByMask(port.ipAddress, anchorIp, effectiveMask)) continue;
-
-      const sviMatch = portId.match(/^vlan(\d+)$/i);
-      if (sviMatch) return parseInt(sviMatch[1], 10) || 1;
-      if (port.mode === 'trunk') return 1;
-      if (port.accessVlan || port.vlan) return getPortAccessVlan(port);
-
-      const peerVlan = getPeerPortVlan(serverDevice.id, portId, devices);
-      return peerVlan ?? 1;
-    }
-
-    if (isSameSubnetByMask(serverDevice.ip, anchorIp, poolSubnetMask)) {
-      return inferEndpointVlan(serverDevice, devices);
-    }
-
-    return null;
-  }, [getPeerPortVlan, getPortAccessVlan, inferEndpointVlan, isSameSubnetByMask, isValidIpv4]);
-
-  const hasActivePathBetweenDevices = useCallback((
-    sourceDeviceId: string,
-    targetDeviceId: string,
-    devices: CanvasDevice[],
-    states?: Map<string, SwitchState>,
-    connectionsOverride?: CanvasConnection[]
-  ) => {
-    if (sourceDeviceId === targetDeviceId) return true;
-
-    const byId = new Map(devices.map((device) => [device.id, device]));
-    const activeStates = states ?? deviceStates;
-    const isDeviceUsable = (deviceId: string) => {
-      const device = byId.get(deviceId);
-      return !!device && device.status !== 'offline';
-    };
-    const isPortUsable = (deviceId: string, portId: string) => {
-      const statePort = activeStates?.get(deviceId)?.ports?.[portId];
-      if (statePort?.shutdown || statePort?.status === 'err-disabled' || statePort?.status === 'disabled') {
-        return false;
-      }
-
-      const devicePort = byId.get(deviceId)?.ports?.find((port) => port.id === portId);
-      return !(devicePort?.shutdown || devicePort?.status === 'err-disabled' || devicePort?.status === 'disabled');
-    };
-
-    if (!isDeviceUsable(sourceDeviceId) || !isDeviceUsable(targetDeviceId)) return false;
-
-    const visited = new Set<string>([sourceDeviceId]);
-    const queue = [sourceDeviceId];
-
-    const activeConnections = [...(connectionsOverride ?? topologyConnections)];
-    // Add established wireless connections to the search path
-    devices.forEach(pc => {
-      const pcWifi = getDeviceWifiConfig(pc, activeStates);
-      if (pcWifi?.enabled && (pcWifi.mode === 'client' || pcWifi.mode === 'sta') && pcWifi.ssid) {
-        devices.forEach(ap => {
-          if (ap.id === pc.id) return;
-          const apWifi = getDeviceWifiConfig(ap, activeStates);
-          if (apWifi?.enabled && apWifi.mode === 'ap' && apWifi.ssid === pcWifi.ssid) {
-            // Check password/security match
-            if ((apWifi.security || 'open') === (pcWifi.security || 'open') &&
-              (apWifi.security === 'open' || apWifi.password === pcWifi.password)) {
-              activeConnections.push({
-                id: `wireless-dhcp-${pc.id}-${ap.id}`,
-                sourceDeviceId: pc.id,
-                sourcePort: 'wlan0',
-                targetDeviceId: ap.id,
-                targetPort: 'wlan0',
-                cableType: 'wireless',
-                active: true
-              } as any);
-            }
-          }
-        });
-      }
-    });
-
-    while (queue.length > 0) {
-      const currentId = queue.shift();
-      if (!currentId) continue;
-      if (currentId === targetDeviceId) return true;
-
-      for (const connection of activeConnections) {
-        if (connection.active === false) continue;
-
-        const isSourceSide = connection.sourceDeviceId === currentId;
-        const isTargetSide = connection.targetDeviceId === currentId;
-        if (!isSourceSide && !isTargetSide) continue;
-
-        const neighborId = isSourceSide ? connection.targetDeviceId : connection.sourceDeviceId;
-        if (visited.has(neighborId) || !isDeviceUsable(neighborId)) continue;
-        if (!isPortUsable(connection.sourceDeviceId, connection.sourcePort)) continue;
-        if (!isPortUsable(connection.targetDeviceId, connection.targetPort)) continue;
-
-        visited.add(neighborId);
-        queue.push(neighborId);
-      }
-    }
-
-    return false;
-  }, [deviceStates, topologyConnections]);
-
-  const isDhcpPoolCompatibleForClient = useCallback((
-    pcDevice: CanvasDevice,
-    serverDevice: CanvasDevice,
-    serverState: SwitchState | undefined,
-    poolGateway: string,
-    poolStartIp: string,
-    poolSubnetMask: string,
-    devices: CanvasDevice[],
-    activeStates?: Map<string, SwitchState>,
-    connectionsOverride?: CanvasConnection[]
-  ) => {
-    const states = activeStates ?? deviceStates;
-
-    if (!hasActivePathBetweenDevices(pcDevice.id, serverDevice.id, devices, states, connectionsOverride)) {
-      return false;
-    }
-
-    const clientVlan = inferEndpointVlan(pcDevice, devices);
-    const serverVlan = getServerPoolVlan(serverDevice, serverState, poolGateway, poolStartIp, poolSubnetMask, devices);
-    return serverVlan !== null && clientVlan === serverVlan;
-  }, [deviceStates, getServerPoolVlan, hasActivePathBetweenDevices, inferEndpointVlan]);
-
-  const buildLinkLocalLease = useCallback((pcDevice: CanvasDevice, devices: CanvasDevice[]) => {
-    const usedIps = new Set(
-      devices
-        .filter((d) => d.id !== pcDevice.id && isValidIpv4(d.ip) && d.ip !== '0.0.0.0')
-        .map((d) => d.ip as string)
-    );
-    return {
-      ip: generateRandomLinkLocalIpv4(usedIps),
-      subnet: '255.255.0.0',
-      gateway: '0.0.0.0',
-      dns: '0.0.0.0',
-    };
-  }, [isValidIpv4]);
-
-  const assignDhcpLeaseForPc = useCallback((pcDevice: CanvasDevice, currentDevices: CanvasDevice[], currentStates?: Map<string, SwitchState>, currentConnections?: CanvasConnection[]) => {
-    const safeDeviceStates = ensureDeviceStatesMap(currentStates ?? deviceStates);
-    const usedIps = () => new Set(currentDevices.filter((d) => d.id !== pcDevice.id && d.ip && d.ip !== '0.0.0.0').map((d) => d.ip));
-
-    for (const serverDevice of currentDevices) {
-      if (serverDevice.id === pcDevice.id || serverDevice.type !== 'pc') continue;
-      const pools = serverDevice.services?.dhcp?.enabled ? (serverDevice.services?.dhcp?.pools || []) : [];
-
-      for (const pool of pools) {
-        if (!pool.startIp || !pool.subnetMask) continue;
-        if (!isDhcpPoolCompatibleForClient(pcDevice, serverDevice, undefined, pool.defaultGateway || '', pool.startIp, pool.subnetMask, currentDevices, safeDeviceStates, currentConnections)) {
-          continue;
-        }
-
-        const startParts = pool.startIp.split('.').map(Number);
-        if (startParts.length !== 4) continue;
-        const assignedIps = usedIps();
-        for (let i = 0; i < (pool.maxUsers || 50); i++) {
-          const candidate = `${startParts[0]}.${startParts[1]}.${startParts[2]}.${startParts[3] + i}`;
-          if (!assignedIps.has(candidate)) {
-            return {
-              ip: candidate,
-              subnet: pool.subnetMask || '255.255.255.0',
-              gateway: pool.defaultGateway || '0.0.0.0',
-              dns: pool.dnsServer || '8.8.8.8'
-            };
-          }
-        }
-      }
-    }
-
-    for (const [deviceId_, state] of safeDeviceStates.entries()) {
-      if (deviceId_ === pcDevice.id) continue;
-      const serverDevice = currentDevices.find((d) => d.id === deviceId_);
-      if (!serverDevice || (serverDevice.type !== 'router' && serverDevice.type !== 'switchL2' && serverDevice.type !== 'switchL3')) continue;
-
-      const cliPools = state.dhcpPools || {};
-      for (const poolName in cliPools) {
-        const pool = cliPools[poolName];
-        if (!pool.network || !pool.subnetMask) continue;
-        const networkParts = pool.network.split('.').map(Number);
-        if (networkParts.length !== 4) continue;
-        const poolGateway = pool.defaultRouter || `${networkParts[0]}.${networkParts[1]}.${networkParts[2]}.1`;
-        const poolStartIp = `${networkParts[0]}.${networkParts[1]}.${networkParts[2]}.100`;
-        if (!isDhcpPoolCompatibleForClient(pcDevice, serverDevice, state, poolGateway, poolStartIp, pool.subnetMask, currentDevices, safeDeviceStates, currentConnections)) {
-          continue;
-        }
-
-        const assignedIps = usedIps();
-        for (let i = 100; i < 254; i++) {
-          const candidate = `${networkParts[0]}.${networkParts[1]}.${networkParts[2]}.${i}`;
-          if (!assignedIps.has(candidate)) {
-            return {
-              ip: candidate,
-              subnet: pool.subnetMask || '255.255.255.0',
-              gateway: poolGateway,
-              dns: pool.dnsServer || '8.8.8.8'
-            };
-          }
-        }
-      }
-
-      const pools = state.services?.dhcp?.pools || [];
-      for (const pool of pools) {
-        if (!pool.startIp || !pool.subnetMask) continue;
-        if (!isDhcpPoolCompatibleForClient(pcDevice, serverDevice, state, pool.defaultGateway || '', pool.startIp, pool.subnetMask, currentDevices, safeDeviceStates, currentConnections)) {
-          continue;
-        }
-
-        const startParts = pool.startIp.split('.').map(Number);
-        if (startParts.length !== 4) continue;
-        const assignedIps = usedIps();
-        for (let i = 0; i < (pool.maxUsers || 50); i++) {
-          const candidate = `${startParts[0]}.${startParts[1]}.${startParts[2]}.${startParts[3] + i}`;
-          if (!assignedIps.has(candidate)) {
-            return {
-              ip: candidate,
-              subnet: pool.subnetMask || '255.255.255.0',
-              gateway: pool.defaultGateway || '0.0.0.0',
-              dns: pool.dnsServer || '8.8.8.8'
-            };
-          }
-        }
-      }
-    }
-
-    return null;
-  }, [deviceStates, isDhcpPoolCompatibleForClient]);
-
-  const applyLinkLocalToUnconfiguredHosts = useCallback((devices: CanvasDevice[]) => {
-    const usedIps = new Set<string>();
-    devices.forEach((device) => {
-      if (isValidIpv4(device.ip) && device.ip !== '0.0.0.0') usedIps.add(device.ip);
-    });
-
-    return devices.map((device) => {
-      if (device.type !== 'pc' && device.type !== 'iot') return device;
-      if (isValidIpv4(device.ip) && device.ip !== '0.0.0.0') return device;
-
-      const linkLocalIp = generateRandomLinkLocalIpv4(usedIps);
-      usedIps.add(linkLocalIp);
-      return {
-        ...device,
-        ip: linkLocalIp,
-        subnet: device.subnet || '255.255.0.0',
-        gateway: device.gateway || '0.0.0.0',
-        dns: device.dns || '0.0.0.0',
-      };
-    });
-  }, [isValidIpv4]);
+  const { normalizeDeviceType, isValidIpv4, isSameSubnetByMask, getPortAccessVlan, getPeerPortVlan,
+    inferEndpointVlan, getServerPoolVlan, hasActivePathBetweenDevices, isDhcpPoolCompatibleForClient,
+    buildLinkLocalLease, assignDhcpLeaseForPc, applyLinkLocalToUnconfiguredHosts,
+    applyIotAutomationPass: iotAutomationPass } = networkLogic;
 
   // Persistence: Save to localStorage
   useEffect(() => {
@@ -3661,7 +3316,7 @@ ${state.bannerMOTD}
       });
 
       // Update topology devices with STP-synced ports, then run one explicit IoT automation pass for F5 refresh.
-      const iotProcessedDevices = applyIotAutomationPass(stpSyncedDevices);
+      const iotProcessedDevices = iotAutomationPass(stpSyncedDevices);
       setTopologyDevices(iotProcessedDevices);
 
       const allDhcpPools: Array<{ startIp: string; maxUsers: number }> = [];
@@ -3935,7 +3590,7 @@ ${state.bannerMOTD}
         showRefreshPanel();
       }
     }
-  }, [applyIotAutomationPass, assignDhcpLeaseForPc, buildLinkLocalLease, topologyDevices, topologyConnections, deviceStates, setDeviceStates, setTopologyConnections, language, t, pcOutputs]);
+  }, [iotAutomationPass, assignDhcpLeaseForPc, buildLinkLocalLease, topologyDevices, topologyConnections, deviceStates, setDeviceStates, setTopologyConnections, language, t, pcOutputs]);
 
   // Automatically trigger DHCP refresh when wireless clients connect
   useEffect(() => {
@@ -4363,751 +4018,81 @@ ${state.bannerMOTD}
         {/* Main Content with transition */}
         <div className="flex flex-col flex-1 animate-fade-in w-full max-w-[1920px] mx-auto">
           {/* Header */}
-          <header className={`liquid-glass sticky top-0 z-1 border-b px-5 py-3 pb-0`}>
-            <div className="w-full">
-              <div className="flex items-center justify-between">
-                {/* Logo & Title */}
-                <TooltipWrapper title={t.reloadPage}>
-                  <Button
-                    variant="ghost"
-                    onClick={() => {
-                      if (typeof window !== 'undefined') {
-                        window.location.reload();
-                      }
-                    }}
-                    className="flex items-center gap-3 p-2"
-                  >
-                    <div className="p-1 flex items-center justify-center">
-                      <img src="/favicon.png" alt="Logo" className="w-7 h-7 object-contain" />
-                    </div>
-                    <div className="hidden md:flex flex-col">
-                      <h2 className="text-lg font-bold tracking-tight bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent leading-none">
-                        {t.title}
-                      </h2>
-                      <p className="text-xs font-medium mt-1 text-slate-400 dark:text-slate-500">{t.subtitle}</p>
-                    </div>
-                  </Button>
-                </TooltipWrapper>
+          <AppHeader
+            t={t}
+            isDark={isDark}
+            theme={theme}
+            language={language}
+            setLanguage={setLanguage}
+            setTheme={setTheme}
+            graphicsQuality={graphicsQuality}
+            setGraphicsQuality={setGraphicsQuality}
+            activeTab={activeTab}
+            activeDeviceType={activeDeviceType}
+            activeDeviceId={activeDeviceId}
+            topologyDevices={topologyDevices}
+            deviceStates={deviceStates}
+            totalScore={totalScore}
+            maxScore={maxScore}
+            canUndo={canUndo}
+            canRedo={canRedo}
+            hasHydrated={hasHydrated}
+            handleUndo={handleUndo}
+            handleRedo={handleRedo}
+            handleNewProject={handleNewProject}
+            handleSaveProject={handleSaveProject}
+            handleLoadProject={handleLoadProject}
+            fileInputRef={fileInputRef}
+            showMobileMenu={showMobileMenu}
+            setShowMobileMenu={setShowMobileMenu}
+            setShowProjectPicker={setShowProjectPicker}
+            setShowOnboarding={setShowOnboarding}
+            setOnboardingStep={setOnboardingStep}
+            handleRefreshNetwork={handleRefreshNetwork}
+            setIsEnvironmentPanelOpen={setIsEnvironmentPanelOpen}
+            isGuidedModeActive={isGuidedModeActive}
+            isPanelMinimized={isPanelMinimized}
+            expandPanel={expandPanel}
+            setShowAboutModal={setShowAboutModal}
+          />
 
-                {/* Total Score - Desktop - Hidden for PC devices or when no devices exist */}
-                {activeDeviceType !== 'pc' && topologyDevices && topologyDevices.length > 0 && activeDeviceId && (
-                  <div className="hidden md:flex items-center gap-4">
-                    <div className="flex flex-col items-end gap-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black tracking-wider text-slate-400 dark:text-slate-500">
-                          {t.labProgress}
-                        </span>
-                        <span
-                          key={totalScore}
-                          className={`text-[10px] font-black tabular-nums px-1.5 py-0.5 rounded-full animate-scale-in ${totalScore >= maxScore * 0.7 ? 'bg-emerald-500/10 text-emerald-400' :
-                            totalScore >= maxScore * 0.4 ? 'bg-amber-500/10 text-amber-400' :
-                              'bg-rose-500/10 text-rose-400'
-                            }`}
-                        >
-                          {Math.round((totalScore / maxScore) * 100)}%
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-24 rounded-full overflow-hidden p-[px] bg-slate-200 dark:bg-slate-800">
-                          <div
-                            className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full progress-fill"
-                            style={{ '--progress-width': `${(totalScore / maxScore) * 100}%` } as React.CSSProperties}
-                          />
-                        </div>
-                        <div className="flex items-baseline gap-0.5">
-                          <span className="text-xs font-black tabular-nums text-slate-900 dark:text-white">
-                            {totalScore}
-                          </span>
-                          <span className="text-[10px] font-bold opacity-30 text-slate-500 dark:text-slate-400">
-                            /{maxScore}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Right Controls - Integrated Toolbar */}
-                <div className="flex items-center gap-2 sticky top-0 z-10">
-                  {/* Unified Toolbar */}
-                  <div className="flex items-center gap-1 px-2 py-1.5 rounded-xl border bg-slate-100 border-slate-200 dark:bg-slate-800/40 dark:border-slate-800">
-                    {/* Undo/Redo Group */}
-                    {activeTab === 'topology' && (
-                      <div className="hidden items-center gap-1 sm:hidden">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 ui-hover-surface text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400" onClick={handleUndo} disabled={hasHydrated && !canUndo}>
-                              <Undo2 className={`w-4 h-4 ${!canUndo ? 'opacity-30' : ''}`} />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>{t.undo}</TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className={`h-8 w-8 ui-hover-surface ${isDark ? 'text-slate-300 hover:text-blue-400' : 'text-slate-600 hover:text-blue-600'}`} onClick={handleRedo} disabled={hasHydrated && !canRedo}>
-                              <Redo2 className={`w-4 h-4 ${!canRedo ? 'opacity-30' : ''}`} />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>{t.redo}</TooltipContent>
-                        </Tooltip>
-                        <div className="w-px h-4 mx-1 bg-slate-300 hidden md:block dark:bg-slate-700" />
-                      </div>
-                    )}
-
-                    {/* Project Controls - Desktop only */}
-                    <div className="hidden md:flex items-center">
-                      <div className="flex items-center rounded-lg border overflow-hidden bg-white border-slate-200 dark:bg-slate-800/50 dark:border-slate-700">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <button
-                              className="h-8 w-8 flex items-center justify-center transition-all hover:bg-slate-200/50 text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400 dark:hover:bg-slate-700/50"
-                              onClick={handleNewProject}
-                            >
-                              <File className="w-4 h-4" />
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent className="flex items-center gap-2">
-                            <span>{t.newProject}</span>
-                            <ShortcutBadge shortcut="Alt+N" variant="primary" />
-                          </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <button
-                              className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-slate-200/50", isDark ? 'text-slate-300 hover:text-blue-400 hover:bg-slate-700/50' : 'text-slate-600 hover:text-blue-600')}
-                              onClick={() => fileInputRef.current?.click()}
-                            >
-                              <FolderOpen className="w-4 h-4" />
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent className="flex items-center gap-2">
-                            <span>{t.loadProject}</span>
-                            <ShortcutBadge shortcut="Ctrl+O" variant="primary" />
-                          </TooltipContent>
-                        </Tooltip>
-
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <button
-                              className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-slate-200/50", isDark ? 'text-slate-300 hover:text-blue-400 hover:bg-slate-700/50' : 'text-slate-600 hover:text-blue-600')}
-                              onClick={handleSaveProject}
-                            >
-                              <Save className="w-4 h-4" />
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent className="flex items-center gap-2">
-                            <span>{t.saveProject}</span>
-                            <ShortcutBadge shortcut="Ctrl+S" variant="success" />
-                          </TooltipContent>
-                        </Tooltip>
-
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <button className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-slate-200/50", isDark ? 'text-slate-300 hover:text-blue-400 hover:bg-slate-700/50' : 'text-slate-500 hover:text-blue-600')} onClick={() => setShowAboutModal(true)}>
-                              <Info className="w-4 h-4" />
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent className="flex items-center gap-2">
-                            <span>{t.contactTitle}</span>
-                            <ShortcutBadge shortcut="F1" variant="warning" />
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
-                    </div>
-                    <input ref={fileInputRef} type="file" accept=".json" onChange={handleLoadProject} className="hidden" />
-
-                    {/* Info & Settings - Info button moved to Project Controls group */}
-                    <div className={`w-px h-4 mx-1 ${isDark ? 'bg-slate-700' : 'bg-slate-300'} hidden md:block`} />
-                    <button
-                      onClick={() => setLanguage(language === 'tr' ? 'en' : 'tr')}
-                      className={cn("text-[10px] font-bold h-7 px-1.5 flex items-center gap-1 rounded transition-all ui-hover-surface", isDark ? 'text-slate-300 hover:text-purple-300' : 'text-slate-500 hover:text-purple-600')}
-                    >
-                      <Languages className="w-3.5 h-3.5" />
-                      {language.toUpperCase()}
-                    </button>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          className={cn("h-7 w-7 rounded flex items-center justify-center transition-all ui-hover-surface", isDark ? 'text-slate-300 hover:text-yellow-300' : 'text-slate-500 hover:text-yellow-600')}
-                          onClick={() => setTheme(isDark ? 'light' : 'dark')}
-                        >
-                          {isDark ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent>{isDark ? t.lightMode : t.darkMode}</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          className={cn("h-7 w-7 rounded flex items-center justify-center transition-all ui-hover-surface", graphicsQuality === 'high' ? (isDark ? 'text-slate-300 hover:text-green-300' : 'text-slate-500 hover:text-green-600') : (isDark ? 'text-slate-300 hover:text-orange-300' : 'text-slate-500 hover:text-orange-600'))}
-                          onClick={() => setGraphicsQuality(graphicsQuality === 'high' ? 'low' : 'high')}
-                        >
-                          {graphicsQuality === 'high' ? <Sparkles className="w-4 h-4" /> : <Cloud className="w-4 h-4" />}
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent>{graphicsQuality !== 'high' ? t.highRes : t.lowRes}</TooltipContent>
-                    </Tooltip>
-                  </div>
-                </div>
-
-                {/* Mobile Menu */}
-                <Sheet open={showMobileMenu} onOpenChange={setShowMobileMenu}>
-                  <SheetTrigger asChild>
-                    <Button variant="outline" size="icon" className="md:hidden">
-                      <Menu className="w-5 h-5" />
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="right" className={`${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white'} p-0 w-72`}>
-                    <SheetHeader className="p-4 text-left border-b border-slate-800/50">
-                      <SheetTitle className="text-lg font-black flex items-center gap-2">
-                        <div className="p-1 flex items-center justify-center">
-                          <img src="/favicon.png" alt="Logo" className="w-5 h-5 object-contain" />
-                        </div>
-                        {t.title}
-                      </SheetTitle>
-                      <SheetDescription className="sr-only">
-                        Main navigation and project controls
-                      </SheetDescription>
-                    </SheetHeader>
-                    <ScrollArea className="h-[calc(100vh-80px)]">
-                      <div className="p-3 space-y-4">
-                        {/* Quick actions (primary) */}
-                        <div className={`p-3 rounded-xl border ${isDark ? 'bg-slate-800/30 border-slate-800/50' : 'bg-slate-50 border-slate-200'}`}>
-
-                          <div className="grid grid-cols-2 gap-2">
-                            <Button
-                              variant="secondary"
-                              className={`justify-start gap-2 h-9 text-xs font-bold ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
-                              onClick={() => { setShowProjectPicker(true); setShowMobileMenu(false); }}
-                            >
-                              <File className="w-3.5 h-3.5" /> {t.new}
-                            </Button>
-                            <Button
-                              variant="secondary"
-                              className={`justify-start gap-2 h-9 text-xs font-bold ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
-                              onClick={() => { handleSaveProject(); setShowMobileMenu(false); }}
-                            >
-                              <Save className="w-3.5 h-3.5" /> {t.saveLabel}
-                            </Button>
-                            <Button
-                              variant="secondary"
-                              className={`justify-start gap-2 h-9 text-xs font-bold ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
-                              onClick={() => { fileInputRef.current?.click(); setShowMobileMenu(false); }}
-                            >
-                              <FolderOpen className="w-3.5 h-3.5" /> {t.load}
-                            </Button>
-                            <Button
-                              variant="secondary"
-                              className={cn("justify-start gap-2 h-9 text-xs font-bold", isDark ? "hover:text-cyan-400" : "hover:text-cyan-600")}
-                              onClick={() => { setShowOnboarding(true); setOnboardingStep(0); setShowMobileMenu(false); }}
-                            >
-                              <Compass className="w-3.5 h-3.5" /> {t.tour}
-                            </Button>
-                            <Button
-                              variant="outline"
-                              className={`justify-start gap-2 h-9 text-xs font-bold ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
-                              onClick={() => setLanguage(language === 'tr' ? 'en' : 'tr')}
-                            >
-                              <Languages className="w-3.5 h-3.5" />
-                              {language === 'tr' ? t.english : t.turkish}
-                            </Button>
-                            <Button
-                              variant="outline"
-                              className={`justify-start gap-2 h-9 text-xs font-bold ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
-                              onClick={() => setTheme(isDark ? 'light' : 'dark')}
-                            >
-                              {isDark ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-                              {isDark ? t.lightMode : t.darkMode}
-                            </Button>
-
-                            {/* Help Button */}
-                            <Button
-                              variant="outline"
-                              className={`w-full justify-start gap-2 h-9 text-xs font-bold ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
-                              onClick={() => { setShowAboutModal(true); setShowMobileMenu(false); }}
-                            >
-                              <Info className="w-3.5 h-3.5" />
-                              {t.help}
-                            </Button>
-                          </div>
-                        </div>
+          <ProjectPickerDialog
+            open={showProjectPicker}
+            onOpenChange={setShowProjectPicker}
+            t={t}
+            isDark={isDark}
+            language={language}
+            projectPickerTab={projectPickerTab}
+            setProjectPickerTab={setProjectPickerTab}
+            projectSearchQuery={projectSearchQuery}
+            setProjectSearchQuery={setProjectSearchQuery}
+            groupedExampleProjects={groupedExampleProjects}
+            exampleLevelLabels={exampleLevelLabels}
+            exampleLevelHints={exampleLevelHints}
+            exampleLevelOrder={exampleLevelOrder}
+            getAvailableProjects={getAvailableProjects}
+            runWithSaveGuard={runWithSaveGuard}
+            resetToEmptyProject={resetToEmptyProject}
+            applyExampleProject={applyExampleProject}
+            startGuidedProject={startGuidedProject}
+            loadProjectData={loadProjectData}
+            setZoom={setZoom}
+            setPan={setPan}
+            closeProjectPicker={() => setShowProjectPicker(false)}
+          />
 
 
-                        {/* Lab Progress Mobile - Hidden for PC devices or when no devices exist */}
-                        {activeDeviceType !== 'pc' && topologyDevices && topologyDevices.length > 0 && activeDeviceId && (
-                          <div className={`p-3 rounded-xl ${isDark ? 'bg-slate-800/30' : 'bg-slate-50'} border ${isDark ? 'border-slate-800/50' : 'border-slate-200'}`}>
-                            <div className="flex items-center justify-between mb-1.5">
-                              <span className="text-xs font-bold tracking-[0.15em] text-slate-500">{t.labProgress}</span>
-                              <span className="text-xs font-bold text-cyan-400">{Math.round((totalScore / maxScore) * 100)}%</span>
-                            </div>
-                            <div className={`h-1.5 w-full rounded-full ${isDark ? 'bg-slate-800' : 'bg-slate-200'} overflow-hidden mb-1.5`}>
-                              <div
-                                className="h-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)] transition-all duration-500"
-                                style={{ width: `${(totalScore / maxScore) * 100}%` }}
-                              />
-                            </div>
-                            <p className={`text-center text-xs font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{totalScore} / {maxScore} {t.pts}</p>
-                          </div>
-                        )}
-                      </div>
-                    </ScrollArea>
-                  </SheetContent>
-                </Sheet>
-              </div>
-            </div>
-
-            {/* Desktop Tabs & Device Selector */}
-            <div className="flex items-end gap-1 mt-4 pt-1 overflow-x-auto no-scrollbar">
-              {/* Mobile-only Quick Action Tools (Add, Zoom & Connect) */}
-              <div className="flex md:hidden items-center gap-1.5 mr-auto">
-                {activeTab === 'topology' && (
-                  <div className="flex items-center gap-1 p-1 rounded-xl border bg-white border-slate-200 shadow-sm dark:bg-slate-900/40 dark:border-slate-800">
-                    {/* Add Button (Device, Cable, Note) */}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="px-2.5 py-1.5 h-auto text-red-500 hover:bg-red-500/10"
-                          onClick={() => {
-                            if (typeof window !== 'undefined') {
-                              const event = new CustomEvent('trigger-topology-palette');
-                              window.dispatchEvent(event);
-                            }
-                          }}
-                        >
-                          <Plus className="w-7 h-7" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>{t.addDeviceOrCable}</TooltipContent>
-                    </Tooltip>
-
-                    <div className="w-px h-4 bg-slate-200 mx-0.5 dark:bg-slate-800" />
-
-                    {/* Connect Button */}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-9 w-9 text-cyan-500 hover:bg-cyan-500/10"
-                          onClick={() => {
-                            if (typeof window !== 'undefined') {
-                              const event = new CustomEvent('trigger-topology-connect');
-                              window.dispatchEvent(event);
-                            }
-                          }}
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 0 0 -5.656 0l-4 4a4 4 0 1 0 5.656 5.656l1.102-1.101m-.758-4.899a4 4 0 0 0 5.656 0l4-4a4 4 0 0 0 -5.656-5.656l-1.1 1.1" />
-                          </svg>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>{t.connectDevices}</TooltipContent>
-                    </Tooltip>
-
-                    <div className="w-px h-4 bg-slate-200 mx-0.5 dark:bg-slate-800" />
-
-                    {/* Refresh Network Button */}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-9 w-9 text-pink-500 hover:bg-pink-500/10"
-                          onClick={handleRefreshNetwork}
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                          </svg>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent className="flex items-center gap-2">
-                        <span>{t.refreshNetworkF5}</span>
-                        <ShortcutBadge shortcut="F5" variant="danger" />
-                      </TooltipContent>
-                    </Tooltip>
-
-                    <div className="w-px h-4 bg-slate-200 mx-0.5 dark:bg-slate-800" />
-
-                    {/* Environment Settings Button */}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-9 w-9 text-emerald-500 hover:bg-emerald-500/10"
-                          onClick={() => setIsEnvironmentPanelOpen(true)}
-                        >
-                          <Leaf className="w-5 h-5" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>{t.environmentSettings}</TooltipContent>
-                    </Tooltip>
-
-                    {/* Guided Mode Button - Show only when active but minimized */}
-                    {isGuidedModeActive && isPanelMinimized && (
-                      <>
-                        <div className="w-px h-4 bg-slate-200 mx-0.5 dark:bg-slate-800" />
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-9 w-9 text-blue-500 hover:bg-blue-500/10 animate-pulse"
-                              onClick={expandPanel}
-                            >
-                              <BookOpen className="w-5 h-5" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>{t.openGuidedLesson}</TooltipContent>
-                        </Tooltip>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </header>
-
-          <Dialog open={showProjectPicker} onOpenChange={(open) => { setShowProjectPicker(open); if (!open) setProjectSearchQuery(''); }}>
-            <DialogContent className={`${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} sm:max-w-2xl md:max-w-3xl w-[98vw] max-w-[1400px] h-[95vh] max-h-[1000px] p-0 overflow-hidden flex flex-col shadow-2xl rounded-none md:rounded-3xl liquid-glass-light`}>
-              <div className='flex flex-col flex-1 overflow-hidden h-full max-w-full'>
-                <div className='p-4 md:p-8 pb-2 md:pb-4 space-y-4'>
-                  <DialogHeader className='rounded-2xl md:rounded-3xl border border-transparent bg-gradient-to-r p-4 md:p-6 flex items-center justify-between flex-row'>
-                    <DialogTitle className='text-xl bg-gradient-to-br from-white to-slate-900 bg-clip-text text-transparent break-words'>{t.openNewProject}</DialogTitle>
-                    <Button
-                      variant='outline'
-                      size='sm'
-                      className={`flex items-center gap-2 text-xs px-3 py-1.5 h-8 ${isDark ? 'text-slate-200 border-slate-700 hover:bg-slate-800 hover:text-cyan-400' : 'text-slate-700 border-slate-300 hover:bg-slate-100 hover:text-cyan-600'}`}
-                      onClick={() => { setShowProjectPicker(false); runWithSaveGuard(() => { resetToEmptyProject(); }); }}
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      {t.emptyProject}
-                    </Button>
-                    <DialogDescription className="sr-only">
-                      {language === 'tr'
-                        ? 'Yeni proje penceresi: boş projeyle başlayın veya hazır örneklerden birini seçin.'
-                        : 'New project dialog: start with an empty project or choose one of the ready examples.'}
-                    </DialogDescription>
-                  </DialogHeader>
-
-                  {/* Tab Buttons - Modern Style */}
-                  <div className={`flex items-end gap-1 border-b ${isDark ? 'border-slate-700/50' : 'border-slate-200'}`}>
-                    <button
-                      onClick={() => setProjectPickerTab('all')}
-                      className={cn(
-                        'relative inline-flex items-center gap-2 rounded-t-lg border border-b-0 px-4 py-2.5 text-sm font-semibold transition-all duration-200 ease-out focus-ring-animate',
-                        projectPickerTab === 'all'
-                          ? isDark
-                            ? 'bg-slate-900 text-blue-400 border-slate-600 shadow-[0_-2px_8px_rgba(0,0,0,0.3)]'
-                            : 'bg-white text-blue-600 border-slate-300 shadow-[0_-2px_8px_rgba(0,0,0,0.08)]'
-                          : isDark
-                            ? 'bg-slate-950/40 text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/60'
-                            : 'bg-slate-100/80 text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-50'
-                      )}
-                      role="tab"
-                      aria-selected={projectPickerTab === 'all'}
-                    >
-                      <FolderOpen className="w-4 h-4" />
-                      <span className="uppercase tracking-wide text-xs">{language === 'tr' ? t.openNewProject : 'All Projects'}</span>
-                    </button>
-                    <button
-                      onClick={() => setProjectPickerTab('guided')}
-                      className={cn(
-                        'relative inline-flex items-center gap-2 rounded-t-lg border border-b-0 px-4 py-2.5 text-sm font-semibold transition-all duration-200 ease-out focus-ring-animate',
-                        projectPickerTab === 'guided'
-                          ? isDark
-                            ? 'bg-slate-900 text-emerald-400 border-slate-600 shadow-[0_-2px_8px_rgba(0,0,0,0.3)]'
-                            : 'bg-white text-emerald-600 border-slate-300 shadow-[0_-2px_8px_rgba(0,0,0,0.08)]'
-                          : isDark
-                            ? 'bg-slate-950/40 text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/60'
-                            : 'bg-slate-100/80 text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-50'
-                      )}
-                      role="tab"
-                      aria-selected={projectPickerTab === 'guided'}
-                    >
-                      <BookOpen className="w-4 h-4" />
-                      <span className="uppercase tracking-wide text-xs">{language === 'tr' ? 'Rehberli Ders' : 'Guided Lesson'}</span>
-                    </button>
-                  </div>
-
-                  {/* Search Box */}
-                  <div className={`relative rounded-xl border px-4 py-2.5 flex items-center gap-2 ${isDark ? 'bg-slate-900/40 border-slate-800/60' : 'bg-white/50 border-slate-200/60'}`}>
-                    <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    <input
-                      type="text"
-                      value={projectSearchQuery}
-                      placeholder={t.searchProjects}
-                      onChange={(e) => setProjectSearchQuery(e.target.value)}
-                      autoFocus
-                      className={`flex-1 bg-transparent outline-none text-sm ${isDark ? 'text-white placeholder-slate-500' : 'text-slate-900 placeholder-slate-400'}`}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          // Find the first filtered project across all levels
-                          let firstProject: any = null;
-                          for (const level of exampleLevelOrder) {
-                            const projects = groupedExampleProjects[level] || [];
-                            const filtered = projects.filter(project =>
-                              project.title.toLowerCase().includes(projectSearchQuery.toLowerCase()) ||
-                              project.description.toLowerCase().includes(projectSearchQuery.toLowerCase()) ||
-                              project.tag.toLowerCase().includes(projectSearchQuery.toLowerCase()) ||
-                              (project.detail && project.detail.toLowerCase().includes(projectSearchQuery.toLowerCase()))
-                            );
-                            if (filtered.length > 0) {
-                              firstProject = filtered[0];
-                              break;
-                            }
-                          }
-
-                          if (firstProject) {
-                            // If found, open that project
-                            setShowProjectPicker(false);
-                            runWithSaveGuard(() => applyExampleProject(firstProject.data));
-                          } else {
-                            // If not found or empty, open empty project
-                            setShowProjectPicker(false);
-                            runWithSaveGuard(() => { resetToEmptyProject(); });
-                          }
-                        }
-                      }}
-                    />
-                    {projectSearchQuery && (
-                      <button
-                        onClick={() => setProjectSearchQuery('')}
-                        className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <div className='flex-1 overflow-y-auto overflow-x-hidden px-4 md:px-12 pb-12 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent'>
-                  <div className='flex flex-col gap-12 max-w-full'>
-                    {/* Guided Mode Projects Section */}
-                    {projectPickerTab === 'guided' && (
-                      <div className='flex flex-col gap-8'>
-                        <section className='space-y-4 md:space-y-6 w-full'>
-                          <div className='flex items-center gap-3 md:gap-4 px-1 md:px-2'>
-                            <p className='text-[10px] md:text-xs font-black tracking-[0.3em] md:tracking-[0.4em] text-emerald-500 dark:text-emerald-400 whitespace-nowrap'>
-                              {language === 'tr' ? 'Rehberli Dersler' : 'Guided Lessons'}
-                            </p>
-                            <p className={`text-[10px] md:text-xs ${isDark ? 'text-slate-500' : 'text-slate-500'} truncate`}>
-                              {language === 'tr' ? 'Adım adım öğrenme deneyimi' : 'Step-by-step learning experience'}
-                            </p>
-                            <div className={`h-px flex-1 ${isDark ? 'bg-emerald-800/60' : 'bg-emerald-200'}`} />
-                          </div>
-
-                          <div className='grid grid-cols-1 gap-6 w-full max-w-full'>
-                            {getAvailableProjects(language)
-                              .filter(guidedProject =>
-                                projectSearchQuery.trim() === '' ||
-                                guidedProject.title.toLowerCase().includes(projectSearchQuery.toLowerCase()) ||
-                                guidedProject.description.toLowerCase().includes(projectSearchQuery.toLowerCase()) ||
-                                guidedProject.tag.toLowerCase().includes(projectSearchQuery.toLowerCase()) ||
-                                (guidedProject.detail && guidedProject.detail.toLowerCase().includes(projectSearchQuery.toLowerCase()))
-                              )
-                              .map((guidedProject) => (
-                                <Button
-                                  key={guidedProject.id}
-                                  variant='ghost'
-                                  className={`group h-auto min-h-[140px] md:min-h-[180px] flex-col items-start gap-3 md:gap-5 p-5 md:p-8 rounded-2xl md:rounded-[2rem] border-2 text-left transition-all duration-300 hover:translate-y-[-4px] active:scale-[0.98] ${isDark ? 'border-emerald-800/40 bg-emerald-900/10 hover:bg-emerald-900/30 hover:border-emerald-500/50' : 'border-emerald-200/50 bg-emerald-50/30 hover:bg-emerald-50 hover:border-emerald-500/40'} w-full overflow-hidden shadow-sm hover:shadow-2xl relative`}
-                                  onClick={() => {
-                                    setShowProjectPicker(false);
-                                    runWithSaveGuard(() => {
-                                      // Reset zoom and pan first
-                                      setZoom(1.0);
-                                      setPan({ x: 0, y: 0 });
-                                      startGuidedProject(guidedProject);
-                                      loadProjectData(guidedProject.data);
-                                    });
-                                  }}
-                                >
-                                  <div className='flex items-center justify-between w-full gap-4 overflow-hidden flex-nowrap'>
-                                    <span className={`font-black text-base md:text-2xl leading-none transition-colors duration-300 break-words flex-1 min-w-0 ${isDark ? 'group-hover:text-emerald-400 text-emerald-100' : 'group-hover:text-emerald-600 text-black'}`}>
-                                      {guidedProject.title}
-                                    </span>
-                                    <span className={`text-[8px] md:text-[10px] font-black tracking-[0.2em] px-3 py-1.5 rounded-full whitespace-nowrap border shrink-0 flex-shrink-0 ${isDark ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-emerald-100 text-emerald-600 border-emerald-200'}`}>
-                                      {guidedProject.tag}
-                                    </span>
-                                  </div>
-                                  <p className={`text-[11px] md:text-sm leading-relaxed font-medium italic transition-colors whitespace-normal break-words w-full ${isDark ? 'text-slate-300/80 group-hover:text-slate-200' : 'text-slate-600 group-hover:text-slate-800'}`}>
-                                    {guidedProject.description}
-                                  </p>
-
-                                  {/* Info Bar */}
-                                  <div className='mt-auto pt-3 flex items-center gap-4 w-full border-t border-slate-800/10 dark:border-slate-700/50'>
-                                    <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
-                                      <Clock className="w-3 h-3" />
-                                      {guidedProject.estimatedTimeMinutes} {language === 'tr' ? 'dk' : 'min'}
-                                    </div>
-                                    <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
-                                      <Target className="w-3 h-3" />
-                                      {guidedProject.steps.length} {language === 'tr' ? 'adım' : 'steps'}
-                                    </div>
-                                    <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400 capitalize">
-                                      <BookOpen className="w-3 h-3" />
-                                      {guidedProject.difficulty === 'beginner'
-                                        ? (language === 'tr' ? 'Başlangıç' : 'Beginner')
-                                        : guidedProject.difficulty === 'intermediate'
-                                          ? (language === 'tr' ? 'Orta' : 'Intermediate')
-                                          : guidedProject.difficulty === 'advanced'
-                                            ? (language === 'tr' ? 'İleri' : 'Advanced')
-                                            : guidedProject.difficulty}
-                                    </div>
-                                  </div>
-
-                                  {guidedProject.detail && (
-                                    <div className='pt-2 flex items-center gap-2 w-full'>
-                                      <div className='w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-amber-500 shrink-0 shadow-[0_0_8px_rgba(245,158,11,0.5)]' />
-                                      <span className={`text-[8px] md:text-[11px] font-bold tracking-wide whitespace-normal break-words w-full ${isDark ? 'text-amber-400/80' : 'text-amber-700/80'}`}>
-                                        {guidedProject.detail}
-                                      </span>
-                                    </div>
-                                  )}
-                                </Button>
-                              ))}
-                            {getAvailableProjects(language).filter(guidedProject =>
-                              projectSearchQuery.trim() === '' ||
-                              guidedProject.title.toLowerCase().includes(projectSearchQuery.toLowerCase()) ||
-                              guidedProject.description.toLowerCase().includes(projectSearchQuery.toLowerCase()) ||
-                              guidedProject.tag.toLowerCase().includes(projectSearchQuery.toLowerCase()) ||
-                              (guidedProject.detail && guidedProject.detail.toLowerCase().includes(projectSearchQuery.toLowerCase()))
-                            ).length === 0 && (
-                                <div className={`text-center py-12 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                                  <p className="text-sm">
-                                    {language === 'tr' ? 'Aramanızla eşleşen rehberli ders bulunamadı.' : 'No guided lessons found matching your search.'}
-                                  </p>
-                                </div>
-                              )}
-                          </div>
-                        </section>
-                      </div>
-                    )}
-
-                    {/* Bottom Section: Examples organized in levels */}
-                    {projectPickerTab === 'all' && (
-                      <div className='flex flex-col gap-16'>
-                        {exampleLevelOrder.map((level) => {
-                          const projects = groupedExampleProjects[level];
-                          if (!projects || projects.length === 0) return null;
-
-                          // Filter projects based on search query
-                          const filteredProjects = projectSearchQuery.trim() === ''
-                            ? projects
-                            : projects.filter(project =>
-                              project.title.toLowerCase().includes(projectSearchQuery.toLowerCase()) ||
-                              project.description.toLowerCase().includes(projectSearchQuery.toLowerCase()) ||
-                              project.tag.toLowerCase().includes(projectSearchQuery.toLowerCase()) ||
-                              (project.detail && project.detail.toLowerCase().includes(projectSearchQuery.toLowerCase()))
-                            );
-
-                          if (filteredProjects.length === 0) return null;
-
-                          return (
-                            <section key={level} className='space-y-4 md:space-y-6 w-full'>
-                              <div className='flex items-center gap-3 md:gap-4 px-1 md:px-2'>
-                                <p className={`text-[10px] md:text-xs font-black tracking-[0.3em] md:tracking-[0.4em] whitespace-nowrap ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>
-                                  {exampleLevelLabels[level]}
-                                </p>
-                                <p className={`text-[10px] md:text-xs ${isDark ? 'text-slate-500' : 'text-slate-500'} truncate`}>
-                                  {exampleLevelHints[level]}
-                                </p>
-                                <div className={`h-px flex-1 ${isDark ? 'bg-blue-500/60' : 'bg-blue-400/60'}`} />
-                              </div>
-
-                              <div className='grid grid-cols-1 gap-6 w-full max-w-full'>
-                                {filteredProjects.map((example) => {
-                                  const isBasicLevel = level === 'basic';
-                                  return (
-                                    <Button
-                                      key={example.id}
-                                      variant='ghost'
-                                      className={`group h-auto min-h-[120px] md:min-h-[160px] flex-col items-start gap-3 md:gap-5 p-5 md:p-8 rounded-2xl md:rounded-[2rem] border-2 text-left transition-all duration-300 hover:translate-y-[-4px] active:scale-[0.98] ${isDark ? 'border-slate-800/40 bg-slate-900/20 hover:bg-slate-900/80 hover:border-cyan-500/30' : 'border-slate-200/50 bg-white hover:bg-slate-50 hover:border-blue-500/20'} w-full overflow-hidden shadow-sm hover:shadow-2xl`}
-                                      onClick={() => { setShowProjectPicker(false); runWithSaveGuard(() => applyExampleProject(example.data, example.id)); }}
-                                    >
-                                      <div className='flex items-center justify-between w-full gap-4 overflow-hidden flex-nowrap'>
-                                        <span className={`font-black text-base md:text-2xl leading-none transition-colors duration-300 break-words flex-1 min-w-0 ${isDark ? 'group-hover:text-cyan-400' : 'group-hover:text-blue-600'}`}>{example.title}</span>
-                                        <span className={`text-[8px] md:text-[10px] font-black  tracking-[0.2em] px-3 py-1.5 rounded-full whitespace-nowrap border shrink-0 flex-shrink-0 ${isDark ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20' : 'bg-blue-50 text-blue-600 border-blue-100'}`}>{example.tag}</span>
-                                      </div>
-                                      <p className={`text-[11px] md:text-sm leading-relaxed font-medium italic transition-colors whitespace-normal break-words break-all w-full ${isDark ? 'text-slate-400/80 group-hover:text-slate-200' : 'text-slate-600 group-hover:text-slate-800'}`}>{example.description}</p>
-                                      {example.detail && (
-                                        <div className='mt-auto pt-2 md:pt-4 flex items-center gap-2 md:gap-3 w-full border-t border-slate-800/10 dark:border-slate-800/50'>
-                                          <div className='w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-amber-500 shrink-0 shadow-[0_0_8px_rgba(245,158,11,0.5)]' />
-                                          <span className={`text-[8px] md:text-[11px] font-bold tracking-wide whitespace-normal break-words break-all w-full ${isDark ? 'text-amber-400/80' : 'text-amber-700/80'}`}>{example.detail}</span>
-                                        </div>
-                                      )}
-                                    </Button>
-                                  );
-                                })}
-                              </div>
-                            </section>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-
-
-          <Dialog
+          <OnboardingDialog
             open={showOnboarding}
-            onOpenChange={(open) => {
-              if (!open) closeOnboardingForever();
-              else setShowOnboarding(true);
-            }}
-          >
-            <DialogContent className={`${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} sm:max-w-2xl md:max-w-3xl p-0 overflow-hidden liquid-glass-light`}>
-              {/* Progress Bar */}
-              <div className="w-full h-1 bg-slate-200 dark:bg-slate-800">
-                <div
-                  className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-300"
-                  style={{ width: `${((onboardingStep + 1) / onboardingSteps.length) * 100}%` }}
-                />
-              </div>
-
-              <DialogHeader className="px-8 pt-6 pb-2 cursor-grab active:cursor-grabbing select-none" data-drag-handle>
-                <div className="flex items-center justify-between gap-4 mb-2">
-                  <DialogTitle className={`text-2xl md:text-3xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                    {onboardingSteps[onboardingStep]?.title}
-                  </DialogTitle>
-                  <span className={`text-sm font-bold px-3 py-1.5 rounded-full ${isDark ? 'bg-slate-800 text-cyan-400 border border-slate-700' : 'bg-slate-100 text-cyan-600 border border-slate-200'}`}>
-                    {onboardingStep + 1} / {onboardingSteps.length}
-                  </span>
-                </div>
-                <DialogDescription className={`text-base md:text-lg leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-                  {onboardingSteps[onboardingStep]?.description}
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="flex items-center justify-between gap-4 px-8 py-6 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-200 dark:border-slate-800 mt-4">
-                <Button variant="ghost" onClick={closeOnboardingForever} className="text-xs font-semibold">
-                  {t.skip}
-                </Button>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={prevOnboarding}
-                    disabled={onboardingStep === 0}
-                    className="text-xs font-semibold"
-                  >
-                    {t.back}
-                  </Button>
-                  <Button onClick={nextOnboarding} className="bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-semibold">
-                    {onboardingStep >= onboardingSteps.length - 1
-                      ? t.finish
-                      : t.next}
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+            onOpenChange={setShowOnboarding}
+            t={t}
+            isDark={isDark}
+            onboardingStep={onboardingStep}
+            onboardingSteps={onboardingSteps}
+            closeOnboardingForever={closeOnboardingForever}
+            prevOnboarding={prevOnboarding}
+            nextOnboarding={nextOnboarding}
+          />
 
 
           {/* Global Dialogs (AlertDialog for better z-index and standard behavior) */}
@@ -5488,501 +4473,31 @@ ${state.bannerMOTD}
             <div className="w-full flex-1 flex flex-col min-h-0 overflow-hidden">
               {/* Tab Content - Always render but hide non-active */}
               <div className={`flex-1 flex flex-col min-h-0 ${activeTab === 'topology' ? 'flex' : 'hidden'} print:flex`}>
-                {/* Topology Toolbar - Fixed at top */}
+                {/* Topology Toolbar */}
                 {activeTab === 'topology' && (
-                  <div className="sticky top-0 z-30 px-4 py-2 border-b backdrop-blur-md bg-background/95 hidden md:flex items-center gap-3">
-                    {/* Reset View Button */}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className={`h-8 w-8 ${isDark
-                            ? 'text-teal-400 hover:text-slate-300 hover:bg-teal-400/10'
-                            : 'text-teal-600 hover:text-slate-600 hover:bg-teal-600/10'
-                            }`}
-                          onClick={() => {
-                            setZoom(1.0);
-                            setPan({ x: 0, y: 0 });
-                          }}
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                          </svg>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>{t.resetView}</TooltipContent>
-                    </Tooltip>
-                    {/* Active Device Dropdown */}
-                    <DropdownMenu onOpenChange={(open) => { if (!open) setDeviceSearchQuery(''); }}>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border transition-all ${isDark
-                            ? 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:border-slate-600'
-                            : 'bg-white border-slate-200 text-slate-700 hover:text-slate-900 hover:border-slate-400'
-                            }`}
-                        >
-                          <div className="flex items-center gap-2">
-                            {activeDeviceId && (topologyDevices.some(d => d.id === activeDeviceId)) ? (
-                              <>
-                                {(() => {
-                                  const activeTopologyDevice = topologyDevices.find(d => d.id === activeDeviceId);
-                                  const status = activeTopologyDevice?.status || 'online';
-                                  const statusColor =
-                                    status === 'offline'
-                                      ? 'bg-rose-500'
-                                      : status === 'online'
-                                        ? 'bg-emerald-400'
-                                        : 'bg-amber-400';
-                                  const statusLabel =
-                                    language === 'tr'
-                                      ? status === 'offline'
-                                        ? 'Kapalı'
-                                        : status === 'online'
-                                          ? 'Çevrimiçi'
-                                          : 'Bilinmeyen'
-                                      : status === 'offline'
-                                        ? 'Offline'
-                                        : status === 'online'
-                                          ? 'Online'
-                                          : 'Unknown';
-                                  return (
-                                    <>
-                                      <TooltipWrapper title={statusLabel}>
-                                        <span
-                                          className="w-2 h-2 rounded-full mr-0.5"
-                                        >
-                                          <span className={`block w-2 h-2 rounded-full ${statusColor} shadow-[0_0_6px_rgba(45,212,191,0.8)]`} />
-                                        </span>
-                                      </TooltipWrapper>
-                                      <DeviceIcon
-                                        type={activeDeviceType}
-                                        switchModel={activeTopologyDevice?.switchModel}
-                                        className="w-5 h-5"
-                                      />
-                                      <span className="text-xs font-bold">
-                                        {truncateWithEllipsis(deviceStates.get(activeDeviceId)?.hostname || activeDeviceId, 15)}
-                                      </span>
-                                    </>
-                                  );
-                                })()}
-                              </>
-                            ) : (
-                              <>
-                                <Plus className="w-4 h-4 text-slate-500" />
-                                <span className="text-sm font-bold text-slate-500">
-                                  {t.selectDeviceDropdown}
-                                </span>
-                              </>
-                            )}
-                          </div>
-                          <ChevronDown className="w-3 h-3 opacity-50" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className={`${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white'} w-48`}>
-                        <DropdownMenuLabel className="text-[11px] font-bold  tracking-widest text-slate-500 py-2">
-                          {topologyDevices.length > 0 ? t.selectDevice : t.addDevicesFirst}
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {topologyDevices.length > 0 && (
-                          <div className="px-2 pb-1.5">
-                            <div className="relative">
-                              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" />
-                              <Input
-                                value={deviceSearchQuery}
-                                onChange={e => setDeviceSearchQuery(e.target.value)}
-                                placeholder={t.searchShort}
-                                className="h-7 pl-6 pr-7 text-xs"
-                                autoFocus
-                                onKeyDown={e => e.stopPropagation()}
-                              />
-                              {deviceSearchQuery && (
-                                <button
-                                  onClick={() => setDeviceSearchQuery('')}
-                                  className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-                                >
-                                  <X className="w-3 h-3" />
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                        <ScrollArea className={topologyDevices.length > 0 ? "h-56" : "h-auto"}>
-                          {topologyDevices.length > 0 ? (
-                            topologyDevices
-                              .filter(device => {
-                                if (!deviceSearchQuery.trim()) return true;
-                                const q = deviceSearchQuery.toLowerCase();
-                                const name = (deviceStates.get(device.id)?.hostname || device.name).toLowerCase();
-                                return name.includes(q) || device.type.toLowerCase().includes(q);
-                              })
-                              .map((device) => {
-                                const currentDeviceState = deviceStates.get(device.id);
-                                const displayName = currentDeviceState?.hostname || device.name;
-                                const status = device.status || 'online';
-                                const statusColor =
-                                  status === 'offline'
-                                    ? 'bg-rose-500'
-                                    : status === 'online'
-                                      ? 'bg-emerald-400'
-                                      : 'bg-amber-400';
-
-                                return (
-                                  <DropdownMenuItem
-                                    key={device.id}
-                                    className={`flex items-center gap-2 py-1.5 cursor-pointer ${activeDeviceId === device.id ? 'bg-violet-500/10 text-violet-400' : ''}`}
-                                    onClick={() => { handleDeviceSelectFromMenu(device.type, device.id, device.switchModel, device.name); setDeviceSearchQuery(''); }}
-                                  >
-                                    <div className="flex items-center gap-2 cursor-pointer">
-                                      <span className={`w-1.5 h-1.5 rounded-full ${statusColor}`} />
-                                      <DeviceIcon
-                                        type={device.type}
-                                        switchModel={device.switchModel}
-                                        className="w-5 h-5"
-                                      />
-                                      <div className="flex flex-col">
-                                        <span className="text-xs font-bold leading-none">{truncateWithEllipsis(displayName, 12)}</span>
-                                        <span className="text-[10px] opacity-50 capitalize">{device.type}</span>
-                                      </div>
-                                    </div>
-                                  </DropdownMenuItem>
-                                );
-                              })
-                          ) : (
-                            <div className="p-3 text-center text-[11px] text-slate-500 italic">
-                              {t.noDevicesInTopology}
-                            </div>
-                          )}
-                        </ScrollArea>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    {/* Device Buttons */}
-                    <div className={`flex items-center gap-0 p-1 rounded-xl border ${isDark ? 'bg-slate-900/40 border-slate-700/30' : 'bg-blue-50/50 border-blue-100/50'}`}>
-                      {/* PC Button */}
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 p-0 text-blue-500 hover:bg-blue-500/10"
-                            onClick={() => {
-                              if (typeof window !== 'undefined') {
-                                const event = new CustomEvent('add-device', { detail: 'pc' });
-                                window.dispatchEvent(event);
-                              }
-                            }}
-                          >
-                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 0 0 2-2V5a2 2 0 0 0 -2-2H5a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2z" />
-                            </svg>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>{t.addPC}</TooltipContent>
-                      </Tooltip>
-                      {/* L2 Switch Button */}
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 p-0 text-green-500 hover:bg-green-500/10"
-                            onClick={() => {
-                              if (typeof window !== 'undefined') {
-                                const event = new CustomEvent('add-device', { detail: 'switchL2' });
-                                window.dispatchEvent(event);
-                              }
-                            }}
-                          >
-                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 0 1 -2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2M5 12a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 -2-2m-2-4h.01M17 16h.01" />
-                            </svg>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>{t.addL2Switch}</TooltipContent>
-                      </Tooltip>
-                      {/* L3 Switch Button */}
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 p-0 text-purple-500 hover:bg-purple-500/10"
-                            onClick={() => {
-                              if (typeof window !== 'undefined') {
-                                const event = new CustomEvent('add-device', { detail: 'switchL3' });
-                                window.dispatchEvent(event);
-                              }
-                            }}
-                          >
-                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 0 1 -2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2M5 12a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 -2-2m-2-4h.01M17 16h.01" />
-                            </svg>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>{t.addL3Switch}</TooltipContent>
-                      </Tooltip>
-                      {/* Router Button */}
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 p-0 text-purple-500 hover:bg-purple-500/10"
-                            onClick={() => {
-                              if (typeof window !== 'undefined') {
-                                const event = new CustomEvent('add-device', { detail: 'router' });
-                                window.dispatchEvent(event);
-                              }
-                            }}
-                          >
-                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <circle cx="12" cy="12" r="9" strokeWidth={2} />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v14M5 12h14M12 5l-2 2m2-2l2 2m-2 12l-2-2m2 2l2-2M5 12l2-2m-2 2l2 2M19 12l-2-2m2 2l-2 2" />
-                            </svg>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>{t.addRouter}</TooltipContent>
-                      </Tooltip>
-                      {/* IoT Button */}
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 p-0 text-cyan-500 hover:bg-cyan-500/10"
-                            onClick={() => {
-                              if (typeof window !== 'undefined') {
-                                const event = new CustomEvent('add-device', { detail: 'iot' });
-                                window.dispatchEvent(event);
-                              }
-                            }}
-                          >
-                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16.247 7.761a6 6 0 0 1 0 8.478" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.075 4.933a10 10 0 0 1 0 14.134" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.925 19.067a10 10 0 0 1 0-14.134" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7.753 16.239a6 6 0 0 1 0-8.478" />
-                              <circle strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} cx="12" cy="12" r="2" />
-                            </svg>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>{t.addIoT}</TooltipContent>
-                      </Tooltip>
-                      {/* Firewall Button */}
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 p-0 text-red-500 hover:bg-red-500/10"
-                            onClick={() => {
-                              if (typeof window !== 'undefined') {
-                                const event = new CustomEvent('add-device', { detail: 'firewall' });
-                                window.dispatchEvent(event);
-                              }
-                            }}
-                          >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="m9 12 2 2 4-4"></path>
-                            </svg>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>{t.addFirewall}</TooltipContent>
-                      </Tooltip>
-                    </div>
-
-                    {/* Cable Type Buttons */}
-                    <div className={`flex items-center rounded-lg border overflow-hidden ${isDark ? 'bg-slate-800/50 border-slate-800' : 'bg-slate-100 border-slate-200'}`}>
-                      {(['straight', 'crossover', 'console'] as ('straight' | 'crossover' | 'console')[]).map((type) => (
-                        <Tooltip key={type}>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className={`h-8 px-2 flex items-center gap-1 text-xs font-bold
-                                ${cableInfo.cableType === type
-                                  ? isDark
-                                    ? 'bg-slate-700/80'
-                                    : 'bg-slate-200/80'
-                                  : ''
-                                }
-                                ${type === 'straight'
-                                  ? (cableInfo.cableType === type ? 'text-blue-400' : 'text-blue-500 hover:text-blue-400')
-                                  : type === 'crossover'
-                                    ? (cableInfo.cableType === type ? 'text-orange-400' : 'text-orange-500 hover:text-orange-400')
-                                    : (cableInfo.cableType === type ? 'text-cyan-400' : 'text-cyan-500 hover:text-cyan-400')
-                                }`}
-                              onClick={() => setCableInfo({ ...cableInfo, cableType: type })}
-                            >
-                              {type === 'straight' ? (
-                                <Cable className="w-4 h-4" />
-                              ) : type === 'crossover' ? (
-                                <Strikethrough className="w-4 h-4" />
-                              ) : (
-                                <Usb className="w-4 h-4" />
-                              )}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {type === 'straight'
-                              ? t.straightCable
-                              : type === 'crossover'
-                                ? t.crossoverCable
-                                : t.consoleCable}
-                          </TooltipContent>
-                        </Tooltip>
-                      ))}
-                    </div>
-
-                    <div className={`w-px h-4 ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`} />
-
-                    {/* Connect Button */}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-cyan-500 hover:bg-cyan-500/10"
-                          onClick={() => {
-                            if (typeof window !== 'undefined') {
-                              const event = new CustomEvent('trigger-topology-connect');
-                              window.dispatchEvent(event);
-                            }
-                          }}
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 0 0 -5.656 0l-4 4a4 4 0 1 0 5.656 5.656l1.102-1.101m-.758-4.899a4 4 0 0 0 5.656 0l4-4a4 4 0 0 0 -5.656-5.656l-1.1 1.1" />
-                          </svg>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>{t.connectDevices}</TooltipContent>
-                    </Tooltip>
-
-                    {/* Ping Button */}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-amber-500 hover:bg-amber-500/10"
-                          onClick={() => {
-                            const event = new CustomEvent('toggle-ping-mode');
-                            window.dispatchEvent(event);
-                          }}
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="Turquoise" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                          </svg>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent className="flex items-center gap-2">
-                        <span>{t.ping}</span>
-                        <ShortcutBadge shortcut="P" variant="warning" />
-                      </TooltipContent>
-                    </Tooltip>
-
-                    {/* Add Note Button */}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-slate-500 hover:bg-slate-500/10"
-                          onClick={() => {
-                            const event = new CustomEvent('add-note');
-                            window.dispatchEvent(event);
-                          }}
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="orange" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 0 0 -2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>{t.addNote}</TooltipContent>
-                    </Tooltip>
-
-
-
-                    {/* Environment Settings Button */}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-emerald-500 hover:bg-emerald-500/10"
-                          onClick={() => setIsEnvironmentPanelOpen(true)}
-                        >
-                          <Leaf className="w-4 h-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>{t.environmentSettings}</TooltipContent>
-                    </Tooltip>
-
-                    <div className={`w-px h-4 ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`} />
-
-                    {/* Undo Button */}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-slate-500 hover:bg-slate-500/10"
-                          onClick={handleUndo}
-                          disabled={hasHydrated && !canUndo}
-                        >
-                          <Undo2 className={`w-4 h-4 ${!canUndo ? 'opacity-100' : ''}`} />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent className="flex items-center gap-2">
-                        <span>{t.undo}</span>
-                        <ShortcutBadge shortcut="Ctrl+Z" variant="primary" />
-                      </TooltipContent>
-                    </Tooltip>
-
-                    {/* Redo Button */}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-slate-500 hover:bg-slate-500/10"
-                          onClick={handleRedo}
-                          disabled={hasHydrated && !canRedo}
-                        >
-                          <Redo2 className={`w-4 h-4 ${!canRedo ? 'opacity-100' : ''}`} />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent className="flex items-center gap-2">
-                        <span>{t.redo}</span>
-                        <ShortcutBadge shortcut="Ctrl+Y" variant="primary" />
-                      </TooltipContent>
-                    </Tooltip>
-
-                    <div className={`w-px h-4 ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`} />
-                    {/* Refresh Network Button */}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-pink-500 hover:bg-pink-500/10"
-                          onClick={handleRefreshNetwork}
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                          </svg>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent className="flex items-center gap-2">
-                        <span>{t.refreshNetworkF5}</span>
-                        <ShortcutBadge shortcut="F5" variant="danger" />
-                      </TooltipContent>
-                    </Tooltip>
-
-                  </div>
+                  <TopologyToolbar
+                    t={t}
+                    isDark={isDark}
+                    language={language}
+                    topologyDevices={topologyDevices}
+                    deviceStates={deviceStates}
+                    activeDeviceId={activeDeviceId}
+                    activeDeviceType={activeDeviceType}
+                    cableInfo={cableInfo}
+                    deviceSearchQuery={deviceSearchQuery}
+                    canUndo={canUndo}
+                    canRedo={canRedo}
+                    hasHydrated={hasHydrated}
+                    setDeviceSearchQuery={setDeviceSearchQuery}
+                    setCableInfo={setCableInfo}
+                    setZoom={setZoom}
+                    setPan={setPan}
+                    handleDeviceSelectFromMenu={handleDeviceSelectFromMenu}
+                    handleUndo={handleUndo}
+                    handleRedo={handleRedo}
+                    handleRefreshNetwork={handleRefreshNetwork}
+                    setIsEnvironmentPanelOpen={setIsEnvironmentPanelOpen}
+                  />
                 )}
                 {/* Network Topology fills remaining space */}
                 <div ref={topologyContainerRef} className="flex-1 w-full h-full min-h-0">
@@ -6176,145 +4691,22 @@ ${state.bannerMOTD}
           }
           </main>
 
-          {/* Footer - Save Status & Hints */}
-          <footer className={`hidden md:block fixed bottom-0 inset-x-0 z-2 border-t backdrop-blur-xl transition-all h-[44px] pb-[50px] ${isDark ? 'bg-zinc-950/95 border-zinc-900' : 'bg-white/95 border-zinc-200'
-            } ${showProjectPicker || showOnboarding || activeTab === 'terminal' ? 'hidden' : ''}`}>
-            <div className="w-full px-5 py-2 pb-[10px]">
-              <div className="flex items-center justify-between gap-4">
-                {/* Save Status */}
-                <div className="flex items-center gap-3">
-                  <div className={`hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg border ${isDark ? 'bg-zinc-900/50 border-zinc-800' : 'bg-zinc-50 border-zinc-200'
-                    }`}>
-                    <span className={`flex items-center gap-1.5 text-xs font-semibold ${hasUnsavedChanges ? 'text-amber-500' : 'text-emerald-500'
-                      }`}>
-                      <span className={`w-2 h-2 rounded-full ${hasUnsavedChanges ? 'bg-amber-500' : 'bg-emerald-500'
-                        }`} />
-                      {hasUnsavedChanges
-                        ? t.unsaved
-                        : t.saved}
-                    </span>
-                    {lastSaveTime && (
-                      <span className={`text-[11px] ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
-                        {t.lastSavedAt + lastSaveTime}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Quick Hints */}
-                  <div className={`hidden md:flex items-center gap-2 whitespace-nowrap`}>
-                    <span className={`text-[11px] font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                      {t.tips}
-                    </span>
-                    <span className={`text-[11px] ${isDark ? 'text-slate-300' : 'text-slate-700'} whitespace-nowrap`}>
-                      {activeTab === 'topology' && (
-                        <>
-                          <kbd className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-700'
-                            }`}>TAB</kbd>
-                          <span className="mx-1">{t.tabToNext}</span>
-                          <kbd className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-700'
-                            }`}>Ctrl+S</kbd>
-                          <span className="mx-1">{t.saveLabel}</span>
-                          <span className={`mx-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>|</span>
-                          <span className={`text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                            {topologyDevices?.length || 0} {t.devicesCount}
-                          </span>
-                          <span className={`mx-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>|</span>
-                          {/* Interaction Shortcuts Legend */}
-                          <div className={`flex items-center gap-1 text-[10px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                            <span className="font-semibold">LeftMB</span>:{t.pan}
-                            <span className="mx-1">·</span>
-                            <span className="font-semibold">MidMB</span>:{t.boxSelect}
-                            <span className="mx-1">·</span>
-                            <span className="font-semibold">RightMB</span>:{t.menu}
-                            <span className="mx-1">·</span>
-                            <span className="font-semibold">Wheel</span>:Zoom
-                          </div>
-                        </>
-                      )}
-                      {(activeTab === 'cmd' || activeTab === 'terminal') && (
-                        <span className="text-[11px] italic">{t.clickIconsToRun}</span>
-                      )}
-                    </span>
-                  </div>
-
-                  {/* Task Event Notification - Positioned at top-left of footer */}
-                  {lastTaskEvent && Date.now() - lastTaskEvent.timestamp < 5000 && (
-                    <div className={`absolute -top-12 left-4 md:flex items-center gap-2 px-3 py-1.5 rounded-lg border shadow-lg animate-slide-up z-[10000] ${lastTaskEvent.type === 'completed'
-                      ? isDark ? 'bg-green-500/10 border-green-500/30' : 'bg-green-50 border-green-200'
-                      : isDark ? 'bg-orange-500/10 border-orange-500/30' : 'bg-orange-50 border-orange-200'
-                      }`}>
-                      <span className={`text-xs font-semibold flex items-center gap-1.5 ${lastTaskEvent.type === 'completed'
-                        ? 'text-green-500'
-                        : 'text-orange-500'
-                        }`}>
-                        <span className={`w-2 h-2 rounded-full ${lastTaskEvent.type === 'completed'
-                          ? 'bg-green-500'
-                          : 'bg-orange-500'
-                          }`} />
-                        {lastTaskEvent.type === 'completed'
-                          ? t.taskCompleted
-                          : t.taskFailed}
-                      </span>
-                      <span className={`text-[11px] font-bold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-                        {lastTaskEvent.taskName}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Lab Progress - Hidden for PC devices or when no devices exist */}
-                {activeDeviceType !== 'pc' && topologyDevices && topologyDevices.length > 0 && activeDeviceId && totalScore > 0 && (
-                  <div className={`hidden md:flex items-center gap-2`}>
-                    <span className={`text-[11px] font-bold  tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
-                      {t.labProgress}
-                    </span>
-                    <div className={`w-20 h-1.5 rounded-full ${isDark ? 'bg-slate-700' : 'bg-slate-200'} overflow-hidden`}>
-                      <div
-                        className="h-full bg-cyan-500 shadow-[0_0_6px_rgba(6,182,212,0.5)] transition-all duration-300"
-                        style={{ width: `${(totalScore / maxScore) * 100}%` }}
-                      />
-                    </div>
-                    <span className={`text-[11px] font-bold ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`}>
-                      {Math.round((totalScore / maxScore) * 100)}%
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </footer>
-
-          {/* Mobile Footer - Hints */}
-          <footer className={`md:hidden fixed bottom-0 inset-x-0 z-2 border-t backdrop-blur-xl transition-all h-[36px] ${isDark ? 'bg-slate-900/95 border-slate-800' : 'bg-white/95 border-slate-200'
-            } ${showProjectPicker || showOnboarding || activeTab === 'terminal' ? 'hidden' : ''}`}>
-            <div className="w-full px-3 py-1.5">
-              <div className="flex items-center justify-between gap-2">
-                {/* Mobile Hints */}
-                <div className="flex items-center gap-2">
-                  {activeTab === 'topology' && (
-                    <>
-                      <span className="text-[10px] text-slate-500 font-medium">
-                        {language === 'tr' ? 'Çift tık: Terminal' : 'Double tap: Terminal'}
-                      </span>
-                      <span className="text-slate-300">·</span>
-                      <span className="text-[10px] text-slate-500 font-medium">
-                        {language === 'tr' ? 'Uzun bas: Menü' : 'Long press: Menu'}
-                      </span>
-                    </>
-                  )}
-                </div>
-
-                {/* Save Status - Mobile */}
-                <div className="flex items-center gap-1.5">
-                  <span className={`w-1.5 h-1.5 rounded-full ${hasUnsavedChanges ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'
-                    }`} />
-                  <span className={`text-[10px] font-semibold ${hasUnsavedChanges ? 'text-amber-400' : 'text-emerald-400'
-                    }`}>
-                    {hasUnsavedChanges ? (language === 'tr' ? 'Kaydedilmedi' : 'Unsaved') : (language === 'tr' ? 'Kaydedildi' : 'Saved')}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </footer>
+          <AppFooter
+            t={t}
+            isDark={isDark}
+            language={language}
+            activeTab={activeTab}
+            activeDeviceType={activeDeviceType}
+            activeDeviceId={activeDeviceId}
+            hasUnsavedChanges={hasUnsavedChanges}
+            lastSaveTime={lastSaveTime}
+            totalScore={totalScore}
+            maxScore={maxScore}
+            topologyDevices={topologyDevices}
+            lastTaskEvent={lastTaskEvent}
+            showProjectPicker={showProjectPicker}
+            showOnboarding={showOnboarding}
+          />
 
           <LazyAboutModal
             isOpen={showAboutModal}

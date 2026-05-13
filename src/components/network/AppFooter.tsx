@@ -1,97 +1,168 @@
 'use client';
 
-import { SwitchState } from '@/lib/network/types';
-import type { DeviceType } from './networkTopology.types';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useTheme } from '@/contexts/ThemeContext';
-import { cn } from '@/lib/utils';
+import type { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
+import type { Translations } from '@/contexts/LanguageContext';
 
 interface AppFooterProps {
-  state: SwitchState;
-  selectedDevice: DeviceType | null;
-  activeDeviceId: string;
-  activeDeviceName?: string;
+  t: Translations;
   isDark: boolean;
-  isCLIActive?: boolean;
+  language: 'tr' | 'en';
+  activeTab: string;
+  activeDeviceType: DeviceType;
+  activeDeviceId: string;
+  hasUnsavedChanges: boolean;
+  lastSaveTime: string | null;
+  totalScore: number;
+  maxScore: number;
+  topologyDevices: CanvasDevice[];
+  lastTaskEvent: { type: 'completed' | 'failed'; taskName: string; timestamp: number } | null;
+  showProjectPicker: boolean;
+  showOnboarding: boolean;
 }
 
-export function AppFooter({ state, selectedDevice, activeDeviceId, activeDeviceName, isDark, isCLIActive = true }: AppFooterProps) {
-  const { language, t } = useLanguage();
-  const { theme } = useTheme();
-  const dark = isDark;
-
-  // Get device info
-  const deviceName = activeDeviceName || state.hostname;
-  const deviceType = activeDeviceId.includes('pc') ? 'PC' : activeDeviceId.includes('router') ? 'Router' : 
-    (state.switchModel === 'WS-C3650-24PS' ? 'C3650' : 'Switch');
-
+export function AppFooter({
+  t, isDark, language, activeTab, activeDeviceType, activeDeviceId,
+  hasUnsavedChanges, lastSaveTime, totalScore, maxScore,
+  topologyDevices, lastTaskEvent, showProjectPicker, showOnboarding,
+}: AppFooterProps) {
   return (
-    <footer
-      className={cn(
-        "mt-6 rounded-2xl p-4 border shadow-sm transition-colors duration-200",
-        dark ? "bg-zinc-900/80 border-zinc-800 text-zinc-100" : "bg-white/80 border-zinc-200 text-zinc-900",
-        "backdrop-blur-md"
-      )}
-    >
-      <div className="flex flex-wrap items-center justify-between gap-6">
-        {/* Selected Device Info */}
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-3">
-            <div className={cn(
-              "p-2 rounded-lg",
-              deviceType === 'PC' ? 'bg-blue-500/10 text-blue-500' :
-              deviceType === 'Router' ? 'bg-indigo-500/10 text-indigo-500' :
-              deviceType === 'C3650' ? 'bg-purple-500/10 text-purple-500' :
-              'bg-emerald-500/10 text-emerald-500'
-            )}>
-              {deviceType === 'PC' ? (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-              ) : deviceType === 'Router' ? (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.14 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
-                </svg>
-              ) : (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
-                </svg>
+    <>
+      {/* Desktop Footer */}
+      <footer className={`hidden md:block fixed bottom-0 inset-x-0 z-2 border-t backdrop-blur-xl transition-all h-[44px] pb-[50px] ${isDark ? 'bg-zinc-950/95 border-zinc-900' : 'bg-white/95 border-zinc-200'
+        } ${showProjectPicker || showOnboarding || activeTab === 'terminal' ? 'hidden' : ''}`}>
+        <div className="w-full px-5 py-2 pb-[10px]">
+          <div className="flex items-center justify-between gap-4">
+            {/* Save Status */}
+            <div className="flex items-center gap-3">
+              <div className={`hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg border ${isDark ? 'bg-zinc-900/50 border-zinc-800' : 'bg-zinc-50 border-zinc-200'
+                }`}>
+                <span className={`flex items-center gap-1.5 text-xs font-semibold ${hasUnsavedChanges ? 'text-amber-500' : 'text-emerald-500'
+                  }`}>
+                  <span className={`w-2 h-2 rounded-full ${hasUnsavedChanges ? 'bg-amber-500' : 'bg-emerald-500'
+                    }`} />
+                  {hasUnsavedChanges
+                    ? t.unsaved
+                    : t.saved}
+                </span>
+                {lastSaveTime && (
+                  <span className={`text-[11px] ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+                    {t.lastSavedAt + lastSaveTime}
+                  </span>
+                )}
+              </div>
+
+              {/* Quick Hints */}
+              <div className={`hidden md:flex items-center gap-2 whitespace-nowrap`}>
+                <span className={`text-[11px] font-medium ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                  {t.tips}
+                </span>
+                <span className={`text-[11px] ${isDark ? 'text-slate-300' : 'text-slate-700'} whitespace-nowrap`}>
+                  {activeTab === 'topology' && (
+                    <>
+                      <kbd className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-700'
+                        }`}>TAB</kbd>
+                      <span className="mx-1">{t.tabToNext}</span>
+                      <kbd className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${isDark ? 'bg-slate-700 text-slate-300' : 'bg-slate-200 text-slate-700'
+                        }`}>Ctrl+S</kbd>
+                      <span className="mx-1">{t.saveLabel}</span>
+                      <span className={`mx-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>|</span>
+                      <span className={`text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                        {topologyDevices?.length || 0} {t.devicesCount}
+                      </span>
+                      <span className={`mx-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>|</span>
+                      <div className={`flex items-center gap-1 text-[10px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                        <span className="font-semibold">LeftMB</span>:{t.pan}
+                        <span className="mx-1">·</span>
+                        <span className="font-semibold">MidMB</span>:{t.boxSelect}
+                        <span className="mx-1">·</span>
+                        <span className="font-semibold">RightMB</span>:{t.menu}
+                        <span className="mx-1">·</span>
+                        <span className="font-semibold">Wheel</span>:Zoom
+                      </div>
+                    </>
+                  )}
+                  {(activeTab === 'cmd' || activeTab === 'terminal') && (
+                    <span className="text-[11px] italic">{t.clickIconsToRun}</span>
+                  )}
+                </span>
+              </div>
+
+              {/* Task Event Notification */}
+              {lastTaskEvent && Date.now() - lastTaskEvent.timestamp < 5000 && (
+                <div className={`absolute -top-12 left-4 md:flex items-center gap-2 px-3 py-1.5 rounded-lg border shadow-lg animate-slide-up z-[10000] ${lastTaskEvent.type === 'completed'
+                  ? isDark ? 'bg-green-500/10 border-green-500/30' : 'bg-green-50 border-green-200'
+                  : isDark ? 'bg-orange-500/10 border-orange-500/30' : 'bg-orange-50 border-orange-200'
+                  }`}>
+                  <span className={`text-xs font-semibold flex items-center gap-1.5 ${lastTaskEvent.type === 'completed'
+                    ? 'text-green-500'
+                    : 'text-orange-500'
+                    }`}>
+                    <span className={`w-2 h-2 rounded-full ${lastTaskEvent.type === 'completed'
+                      ? 'bg-green-500'
+                      : 'bg-orange-500'
+                      }`} />
+                    {lastTaskEvent.type === 'completed'
+                      ? t.taskCompleted
+                      : t.taskFailed}
+                  </span>
+                  <span className={`text-[11px] font-bold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                    {lastTaskEvent.taskName}
+                  </span>
+                </div>
               )}
             </div>
-            <div>
-              <div className={cn("text-[10px] font-medium uppercase tracking-wider opacity-60")}>
-                {t.activeSystem}
+
+            {/* Lab Progress */}
+            {activeDeviceType !== 'pc' && topologyDevices && topologyDevices.length > 0 && activeDeviceId && totalScore > 0 && (
+              <div className={`hidden md:flex items-center gap-2`}>
+                <span className={`text-[11px] font-bold tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
+                  {t.labProgress}
+                </span>
+                <div className={`w-20 h-1.5 rounded-full ${isDark ? 'bg-slate-700' : 'bg-slate-200'} overflow-hidden`}>
+                  <div
+                    className="h-full bg-cyan-500 shadow-[0_0_6px_rgba(6,182,212,0.5)] transition-all duration-300"
+                    style={{ width: `${(totalScore / maxScore) * 100}%` }}
+                  />
+                </div>
+                <span className={`text-[11px] font-bold ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`}>
+                  {Math.round((totalScore / maxScore) * 100)}%
+                </span>
               </div>
-              <div className="text-sm font-bold tracking-tight">
-                {deviceName}
-              </div>
-            </div>
+            )}
           </div>
+        </div>
+      </footer>
 
-          <div className={cn("h-8 w-px", dark ? "bg-zinc-800" : "bg-zinc-200")} />
-
-          <div className="flex items-center gap-6">
-            <div className="flex flex-col">
-              <div className="text-[10px] font-medium uppercase tracking-wider opacity-60">{t.nosVersion}</div>
-              <div className="text-xs font-mono font-medium text-blue-500">{state.version.nosVersion}</div>
+      {/* Mobile Footer */}
+      <footer className={`md:hidden fixed bottom-0 inset-x-0 z-2 border-t backdrop-blur-xl transition-all h-[36px] ${isDark ? 'bg-slate-900/95 border-slate-800' : 'bg-white/95 border-slate-200'
+        } ${showProjectPicker || showOnboarding || activeTab === 'terminal' ? 'hidden' : ''}`}>
+        <div className="w-full px-3 py-1.5">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              {activeTab === 'topology' && (
+                <>
+                  <span className="text-[10px] text-slate-500 font-medium">
+                    {language === 'tr' ? 'Çift tık: Terminal' : 'Double tap: Terminal'}
+                  </span>
+                  <span className="text-slate-300">·</span>
+                  <span className="text-[10px] text-slate-500 font-medium">
+                    {language === 'tr' ? 'Uzun bas: Menü' : 'Long press: Menu'}
+                  </span>
+                </>
+              )}
             </div>
 
-            <div className="flex flex-col">
-              <div className="text-[10px] font-medium uppercase tracking-wider opacity-60">{t.model}</div>
-              <div className="text-xs font-medium">{state.version.modelName}</div>
-            </div>
-
-            <div className="flex flex-col">
-              <div className="text-[10px] font-medium uppercase tracking-wider opacity-60">{t.activePorts}</div>
-              <div className="text-xs font-mono font-bold">
-                <span className="text-blue-500">{Object.values(state.ports).filter(p => p.status === 'connected' && !p.shutdown).length}</span>
-                <span className="mx-1 opacity-20">/</span>
-                <span className="opacity-60">{Object.keys(state.ports).length}</span>
-              </div>
+            <div className="flex items-center gap-1.5">
+              <span className={`w-1.5 h-1.5 rounded-full ${hasUnsavedChanges ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'
+                }`} />
+              <span className={`text-[10px] font-semibold ${hasUnsavedChanges ? 'text-amber-400' : 'text-emerald-400'
+                }`}>
+                {hasUnsavedChanges ? (language === 'tr' ? 'Kaydedilmedi' : 'Unsaved') : (language === 'tr' ? 'Kaydedildi' : 'Saved')}
+              </span>
             </div>
           </div>
         </div>
-      </div>
-    </footer>
+      </footer>
+    </>
   );
 }
