@@ -50,19 +50,37 @@ export function sanitizeInput(input: string): string {
     return sanitized;
 }
 
+const DANGEROUS_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
+/**
+ * Recursively sanitizes an object or array to prevent XSS and Prototype Pollution.
+ * Strings are sanitized via sanitizeInput.
+ * Objects skip dangerous keys like __proto__, constructor, and prototype.
+ * Array/Object structure is preserved.
+ */
 export function sanitizeObject<T>(value: T): T {
     if (typeof value === 'string') {
         return sanitizeInput(value) as T;
     }
 
     if (Array.isArray(value)) {
-        return value.map(item => sanitizeObject(item)) as T;
+        return value.map(item => sanitizeObject(item)) as any;
     }
 
-    if (value && typeof value === 'object') {
+    if (value !== null && typeof value === 'object') {
+        // Return original object if it's not a plain object (e.g. Date, RegExp)
+        if (Object.prototype.toString.call(value) !== '[object Object]') {
+            return value;
+        }
+
         const result: Record<string, any> = {};
+
         Object.entries(value as Record<string, any>).forEach(([key, entry]) => {
-            result[sanitizeInput(key)] = sanitizeObject(entry);
+            const sanitizedKey = sanitizeInput(key);
+            // Skip keys that could be used for prototype pollution
+            if (!DANGEROUS_KEYS.has(sanitizedKey.toLowerCase())) {
+                result[sanitizedKey] = sanitizeObject(entry);
+            }
         });
         return result as T;
     }
@@ -134,12 +152,15 @@ export function escapeJSON(obj: any): string {
 
 /**
  * Encodes data as a JSON string safe for embedding in HTML <script> tags or attributes.
- * Prevents XSS by escaping < and > to their unicode equivalents.
+ * Prevents XSS by escaping <, >, &, and ' to their unicode equivalents.
+ * Unicode escaping ensures characters are interpreted correctly in both HTML and JS contexts.
  */
 export function safeJSONForHTML(data: any): string {
     return JSON.stringify(data)
         .replace(/</g, '\\u003c')
-        .replace(/>/g, '\\u003e');
+        .replace(/>/g, '\\u003e')
+        .replace(/&/g, '\\u0026')
+        .replace(/'/g, '\\u0027');
 }
 
 export function safeParseJSON<T>(value: string, fallback: T): T {

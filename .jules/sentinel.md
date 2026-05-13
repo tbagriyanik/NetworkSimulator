@@ -22,3 +22,8 @@
 **Vulnerability:** XSS bypass in `sanitizeInput` due to single-pass removal of the `javascript:` protocol. An attacker could nest characters (e.g., `javas<javascript:>cript:`) such that the removal of inner tags or a previous protocol occurrence leaves behind a new, valid malicious protocol.
 **Learning:** Security filters that rely on string replacement can often be bypassed using recursion or nesting if they only perform a single pass. For sensitive protocols like `javascript:`, the removal must be complete and robust against these transformations.
 **Prevention:** Use a recursive or multi-pass approach (e.g., a `do-while` loop) when stripping malicious patterns to ensure that any remaining fragments do not reform into a malicious payload after initial replacements.
+
+## 2026-05-20 - [Prototype Pollution Protection in Object Sanitization]
+**Vulnerability:** Prototype Pollution in `sanitizeObject` due to recursive merging of user-provided keys without filtering internal JavaScript properties like `__proto__`.
+**Learning:** Security utilities that recursively process objects must explicitly block internal properties to prevent attackers from corrupting the application's base object prototypes. Furthermore, when implementing these filters, care must be taken to maintain the original data structures (e.g., using `Array.isArray`) to avoid accidental coercion of Arrays into Objects, which can cause functional regressions in typed systems.
+**Prevention:** Always use a static blacklist or whitelist of keys when performing recursive object operations. Explicitly verify and preserve the object's type (Plain Object vs Array vs Null) at each step of the recursion to maintain data integrity.
