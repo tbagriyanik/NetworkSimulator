@@ -4002,6 +4002,12 @@ export function NetworkTopology({
     resume();
   }, []);
 
+  const handleEnvelopeClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    handlePingPause();
+    if (onPacketPanelFocus) onPacketPanelFocus();
+  }, [handlePingPause, onPacketPanelFocus]);
+
   const handlePingClose = useCallback(() => {
     pingIsPausedRef.current = false;
     pingStepModeRef.current = false;
@@ -6797,11 +6803,7 @@ export function NetworkTopology({
                         <g 
                           transform={`translate(${envelopeX}, ${envelopeY})`}
                           className="cursor-pointer"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handlePingPause();
-                            if (onPacketPanelFocus) onPacketPanelFocus();
-                          }}
+                          onClick={handleEnvelopeClick}
                         >
                           <rect x="-10" y="-7" width="20" height="14" rx="2" fill="#06b6d4" stroke="#0891b2" strokeWidth="1.5" />
                           <path d="M-8 -3 L0 4 L8 -3" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

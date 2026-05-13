@@ -16,6 +16,8 @@ interface PingAnimationOverlayProps {
   } | null;
   devices: CanvasDevice[];
   connections: CanvasConnection[];
+  getPortPosition: (device: CanvasDevice, portId: string) => { x: number; y: number };
+  getDeviceCenter: (device: CanvasDevice) => { x: number; y: number };
   language: 'tr' | 'en';
   onPause?: () => void;
   onFocus?: () => void;

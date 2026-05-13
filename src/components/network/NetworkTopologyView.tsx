@@ -250,6 +250,8 @@ export const NetworkTopologyView = React.memo(
       pingSource,
       startPingAnimation,
       pingAnimation,
+      handlePingPause,
+      onPacketPanelFocus,
     } = props;
 
     // Pre-compute canvas dimensions once per render (avoid 6 repeated calls)
@@ -576,6 +578,8 @@ export const NetworkTopologyView = React.memo(
                     getPortPosition={getPortPosition}
                     getDeviceCenter={props.getDeviceCenter}
                     language={language}
+                    onPause={handlePingPause}
+                    onFocus={onPacketPanelFocus}
                   />
                 )}
               </g>
