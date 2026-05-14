@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
+import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { cn } from '@/lib/utils';
 import { Info, Terminal, Search, X, ChevronDown, Compass, Mail, Loader2, MessageSquare, Bug, Lightbulb, Check } from 'lucide-react';
 import { getCommandCategories } from './networkTopology.commands';
@@ -145,19 +146,21 @@ export function AboutModal({ isOpen, onClose, onStartTour }: AboutModalProps) {
   return (
     <Dialog open={isOpen}>
       <DialogContent showCloseButton={false} className="sm:max-w-[600px] md:max-w-2xl lg:max-w-3xl h-[85vh] flex flex-col p-0 gap-0 overflow-hidden liquid-glass-light">
-        <button
-          type="button"
-          onClick={onClose}
-          className={cn(
-            'absolute right-4 top-4 z-20 rounded-md p-1.5 transition-colors',
-            isDark
-              ? 'text-slate-400 hover:bg-slate-800 hover:text-slate-100'
-              : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
-          )}
-          aria-label={t.close}
-        >
-          <X className="w-4 h-4" />
-        </button>
+        <TooltipWrapper title={t.close}>
+          <button
+            type="button"
+            onClick={onClose}
+            className={cn(
+              'absolute right-4 top-4 z-20 rounded-md p-1.5 transition-colors',
+              isDark
+                ? 'text-slate-400 hover:bg-slate-800 hover:text-slate-100'
+                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+            )}
+            aria-label={t.close}
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </TooltipWrapper>
         <DialogHeader className="p-6 pb-2 shrink-0">
           <DialogTitle className="sr-only">
             {activeTab === 'about' ? t.aboutTitle : t.commandReference}
@@ -210,12 +213,15 @@ export function AboutModal({ isOpen, onClose, onStartTour }: AboutModalProps) {
                   )}
                 />
                 {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className={cn('absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full transition-colors', isDark ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-slate-100 text-slate-500')}
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
+                  <TooltipWrapper title={t.clearSearch}>
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className={cn('absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full transition-colors', isDark ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-slate-100 text-slate-500')}
+                      aria-label={t.clearSearch}
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </TooltipWrapper>
                 )}
               </div>
 

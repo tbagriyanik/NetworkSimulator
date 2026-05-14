@@ -75,6 +75,7 @@ export interface Translations {
   channelLabel: string;
   channelShort: string;
   clear: string;
+  clearSearch: string;
   clearTerminal: string;
   clearTerminalBtn: string;
   clearTerminalConfirm: string;
@@ -691,6 +692,7 @@ const translations: Record<Language, Translations> = {
     channelLabel: 'Kanal:',
     channelShort: 'Kanal',
     clear: 'Temizle',
+    clearSearch: 'Aramayı Temizle',
     clearTerminal: 'Terminali Temizle',
     clearTerminalBtn: 'Temizle',
     clearTerminalConfirm: 'Terminal çıktısı temizlenecek. Devam etmek istiyor musunuz?',
@@ -1305,6 +1307,7 @@ const translations: Record<Language, Translations> = {
     channelLabel: 'Channel:',
     channelShort: 'Ch',
     clear: 'Clear',
+    clearSearch: 'Clear Search',
     clearTerminal: 'Clear Terminal',
     clearTerminalBtn: 'Clear',
     clearTerminalConfirm: 'Terminal output will be cleared. Do you want to continue?',

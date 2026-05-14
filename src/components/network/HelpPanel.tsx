@@ -5,6 +5,7 @@ import { Translations } from '@/contexts/LanguageContext';
 import { HelpCircle, X, Terminal, ChevronDown, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-breakpoint';
+import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { getCommandCategories } from './networkTopology.commands';
 
 interface HelpPanelProps {
@@ -128,22 +129,24 @@ export function HelpPanel({ t, theme, initialOpen = false, onClose }: HelpPanelP
               </p>
             </div>
           </div>
-          <button
-            onClick={() => {
-              setOpen(false);
-              onClose?.();
-            }}
-            className={cn(
-              'absolute right-4 top-4 p-1.5 rounded-md transition-colors cursor-pointer',
-              isDark
-                ? 'hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100'
-                : 'hover:bg-zinc-200 text-zinc-500 hover:text-zinc-900'
-            )}
-            aria-label={isTR ? 'Kapat' : 'Close'}
-            type="button"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <TooltipWrapper title={t.close}>
+            <button
+              onClick={() => {
+                setOpen(false);
+                onClose?.();
+              }}
+              className={cn(
+                'absolute right-4 top-4 p-1.5 rounded-md transition-colors cursor-pointer',
+                isDark
+                  ? 'hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100'
+                  : 'hover:bg-zinc-200 text-zinc-500 hover:text-zinc-900'
+              )}
+              aria-label={t.close}
+              type="button"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </TooltipWrapper>
         </div>
 
         {/* Search Bar - Fixed at top */}
@@ -168,18 +171,20 @@ export function HelpPanel({ t, theme, initialOpen = false, onClose }: HelpPanelP
               )}
             />
             {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className={cn(
-                  'absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-all duration-200',
-                  isDark
-                    ? 'hover:bg-slate-700 text-slate-400 hover:text-slate-200'
-                    : 'hover:bg-slate-200 text-slate-500 hover:text-slate-700'
-                )}
-                aria-label={isTR ? 'Aramayı temizle' : 'Clear search'}
-              >
-                <X className="w-4 h-4" />
-              </button>
+              <TooltipWrapper title={t.clearSearch}>
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className={cn(
+                    'absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-all duration-200',
+                    isDark
+                      ? 'hover:bg-slate-700 text-slate-400 hover:text-slate-200'
+                      : 'hover:bg-slate-200 text-slate-500 hover:text-slate-700'
+                  )}
+                  aria-label={t.clearSearch}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </TooltipWrapper>
             )}
           </div>
 
