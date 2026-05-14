@@ -4501,11 +4501,12 @@ export function PCPanel({
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
                               {renderNetworkInput("IP Address", pcIP, (newIp) => {
                                 setPcIP(newIp);
-                                if (validateIP(newIp)) {
-                                  const duplicateDevice = topologyDevices.find(d => d.id !== deviceId && d.ip === newIp);
-                                  if (duplicateDevice) {
-                                    setErrors(prev => ({ ...prev, ip: language === 'tr' ? `Bu IP adresi zaten ${duplicateDevice.name || duplicateDevice.id} tarafından kullanılıyor` : `This IP address is already used by ${duplicateDevice.name || duplicateDevice.id}` }));
-                                  } else {
+                                  if (validateIP(newIp)) {
+                                    const duplicateDevices = topologyDevices.filter(d => d.id !== deviceId && d.ip === newIp);
+                                    if (duplicateDevices.length > 0) {
+                                      const names = duplicateDevices.map(d => d.name || d.id).join(', ');
+                                      setErrors(prev => ({ ...prev, ip: language === 'tr' ? `Bu IP adresi zaten ${names} tarafından kullanılıyor` : `This IP address is already used by ${names}` }));
+                                    } else {
                                     setErrors(prev => { const { ip, ...rest } = prev; return rest; });
                                   }
                                 }

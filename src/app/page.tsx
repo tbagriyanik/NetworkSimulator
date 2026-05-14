@@ -58,7 +58,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
-import { ChevronDown, ChevronUp, Menu, Plus, Save, FolderOpen, Languages, Sun, Moon, Network, ShieldCheck, Database, Info, File, Layers, Terminal as TerminalIcon, Undo2, Redo2, Link2, Pencil, StickyNote, Sparkles, Cloud, Search, Monitor, X, Compass, Leaf, Server, GripHorizontal, Square, Minus, Strikethrough, Cable, Usb, BookOpen, Target, Clock, GraduationCap, Settings as SettingsIcon, Power, Filter } from "lucide-react";
+import { ChevronDown, ChevronUp, Menu, Plus, Save, FolderOpen, Languages, Sun, Moon, Network, ShieldCheck, Database, Info, File, Layers, Terminal as TerminalIcon, Undo2, Redo2, Link2, Pencil, StickyNote, Sparkles, Cloud, Search, Monitor, X, Compass, Leaf, Server, GripHorizontal, Square, Minus, Strikethrough, Cable, Usb, BookOpen, Target, Clock, GraduationCap, Settings as SettingsIcon, Power, Filter, RefreshCw } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -3239,8 +3239,16 @@ ${state.bannerMOTD}
         const topologyMessage = invalidCount > 0
           ? `${t.topologyInvalidConnections.replace('X', String(invalidCount))}`
           : '';
+        const duplicateIpDetails = Array.from(ipOwners.entries())
+          .filter(([, owners]) => owners.length > 1)
+          .map(([ip, owners]) => `${ip}: ${owners.join(', ')}`)
+          .join('\n');
         const validationMessages = [
-          duplicateIpCount > 0 ? `⚠ Duplicate IP: ${duplicateIpCount}` : '',
+          duplicateIpCount > 0
+            ? (language === 'tr'
+              ? `⚠ Duplicate IP (${duplicateIpCount}):\n${duplicateIpDetails}`
+              : `⚠ Duplicate IP (${duplicateIpCount}):\n${duplicateIpDetails}`)
+            : '',
           duplicateMacCount > 0 ? `⚠ Duplicate MAC: ${duplicateMacCount}` : '',
           subnetMismatchCount > 0 ? `⚠ Subnet mismatch: ${subnetMismatchCount}` : '',
           invalidGatewayCount > 0 ? `⚠ Invalid gateway: ${invalidGatewayCount}` : '',
@@ -4398,17 +4406,27 @@ ${state.bannerMOTD}
                 <div className="p-4 space-y-3">
                   <div className="flex items-center justify-between cursor-grab active:cursor-grabbing" data-drag-handle>
                     <h3 className="text-sm font-bold flex items-center gap-2">
-                      <span className="text-blue-500 text-lg">🔄</span>
+                      
                       {refreshNetworkReport.title}
                     </h3>
-                    <TooltipWrapper title={t.close}>
-                      <button
-                        onClick={() => setRefreshNetworkReport(prev => prev ? { ...prev, show: false } : null)}
-                        className="w-5 h-5 rounded-md bg-red-500 hover:bg-red-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0"
-                      >
-                        <X className="w-3 h-3 text-white pointer-events-none" />
-                      </button>
-                    </TooltipWrapper>
+                    <div className="flex items-center gap-1">
+                      <TooltipWrapper title={t.refreshNetwork}>
+                        <button
+                          onClick={() => { handleRefreshNetwork(); }}
+                          className="w-5 h-5 rounded-md bg-blue-500 hover:bg-blue-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0"
+                        >
+                          <RefreshCw className="w-3 h-3 text-white pointer-events-none" />
+                        </button>
+                      </TooltipWrapper>
+                      <TooltipWrapper title={t.close}>
+                        <button
+                          onClick={() => setRefreshNetworkReport(prev => prev ? { ...prev, show: false } : null)}
+                          className="w-5 h-5 rounded-md bg-red-500 hover:bg-red-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0"
+                        >
+                          <X className="w-3 h-3 text-white pointer-events-none" />
+                        </button>
+                      </TooltipWrapper>
+                    </div>
                   </div>
 
                   <div className="space-y-2 text-xs">
