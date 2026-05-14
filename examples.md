@@ -401,425 +401,20 @@ Router-on-a-Stick kullanarak tek bir router interface'i üzerinden farklı VLAN'
    - vlan 20
      name VLAN20
    - exit
-   - interface fa0/1
+   - interface gi1/0/1
      switchport mode access
      switchport access vlan 10
    - exit
-   - interface fa0/2
+   - interface gi1/0/2
      switchport mode access
      switchport access vlan 20
    - exit
-   - interface gi0/1
-     switchport mode trunk
-   - exit
-
-3. **Router Konfigürasyonu:**
-   - R1 terminaline gir: enable, conf t
-   - interface gi0/0
-     no shutdown
-   - exit
-   - interface gi0/0.10
-     encapsulation dot1q 10
-     ip address 192.168.10.1 255.255.255.0
-   - exit
-   - interface gi0/0.20
-     encapsulation dot1q 20
-     ip address 192.168.20.1 255.255.255.0
-   - exit
-
-4. **PC IP ve Gateway Konfigürasyonu:**
-   - PC-1: IP 192.168.10.10, GW 192.168.10.1, VLAN 10
-   - PC-2: IP 192.168.20.10, GW 192.168.20.1, VLAN 20
-
-5. **Test:**
-   - PC-1 <-> PC-2 ping
-
-### 11. Legacy Inter-VLAN Routing
-**ID:** `legacy-routing`  
-**Tag:** LEGACY ROUTING  
-**Description:** Router connects to VLANs with 2 separate physical interfaces (no trunk).  
-**Details:** 2 router interfaces, access ports, ip routing auto-enabled.  
-
-**Kısa Tanıtım:**
-Router üzerinde ayrı fiziksel interface'ler kullanarak VLAN'lar arası routing sağlamayı öğreneceksiniz.
-
-**Adım Adım Proje Yapımı:**
-1. **Topoloji Oluşturma:**
-   - 1 adet Switch (SW1) ekle
-   - 1 adet Router (R1) ekle
-   - 2 adet PC (PC-1, PC-2) ekle
-   - PC-1 Eth0 -> SW1 Fa0/2 (Straight kablo)
-   - PC-2 Eth0 -> SW1 Fa0/12 (Straight kablo)
-   - R1 Gi0/1 -> SW1 Fa0/11 (Crossover kablo)
-   - R1 Gi0/0 -> SW1 Fa0/1 (Crossover kablo)
-
-2. **Switch Konfigürasyonu:**
-   - SW1 terminaline gir: enable, conf t
-   - vlan 10
-     name VLAN10
-   - exit
-   - vlan 20
-     name VLAN20
-   - exit
-   - interface fa0/2
+   - interface gi1/0/3
      switchport mode access
-     switchport access vlan 10
-   - exit
-   - interface fa0/12
-     switchport mode access
-     switchport access vlan 20
-   - exit
-   - interface fa0/11
-     switchport mode access
-     switchport access vlan 10
-   - exit
-   - interface fa0/1
-     switchport mode access
-     switchport access vlan 20
-   - exit
-
-3. **Router Konfigürasyonu:**
-   - R1 terminaline gir: enable, conf t
-   - interface gi0/1
-     ip address 192.168.0.1 255.255.255.0
-     no shutdown
-   - exit
-   - interface gi0/0
-     ip address 192.168.1.1 255.255.255.0
-     no shutdown
-   - exit
-
-4. **PC IP ve Gateway Konfigürasyonu:**
-   - PC-1: IP 192.168.0.2, GW 192.168.0.1
-   - PC-2: IP 192.168.1.2, GW 192.168.1.1
-
-5. **Test:**
-   - PC-1 <-> PC-2 ping
-
-### 12. Port-Security
-**ID:** `port-security`  
-**Tag:** SECURITY  
-**Description:** Port-security enabled on Fa0/3.  
-
-**Kısa Tanıtım:**
-Switch port'unda port-security yapılandırarak sadece izin verilen MAC adreslerinin bağlanmasına izin vermeyi öğreneceksiniz.
-
-**Adım Adım Proje Yapımı:**
-1. **Topoloji Oluşturma:**
-   - 1 adet Switch (SW1) ekle
-   - 1 adet PC (PC-1) ekle
-   - PC-1 Eth0 -> SW1 Fa0/3 (Straight kablo)
-
-2. **Switch Konfigürasyonu:**
-   - SW1 terminaline gir: enable, conf t
-   - interface fa0/3
-     switchport mode access
-     switchport port-security
-     switchport port-security maximum 1
-     switchport port-security violation shutdown
-     switchport port-security mac-address sticky
-   - exit
-
-3. **PC Konfigürasyonu:**
-   - PC-1: IP 192.168.1.10, Subnet 255.255.255.0
-   - PC-1 MAC adresi otomatik öğrenilir (sticky)
-
-4. **Doğrulama:**
-   - show port-security interface fa0/3
-   - show port-security address
-
-5. **Test:**
-   - PC-1'den trafik gönder (ping)
-   - Farklı bir MAC adresi bağlanırsa port shutdown olur
-
-### 13. Wireless Network (WiFi)
-**ID:** `wifi-intermediate`  
-**Tag:** WiFi  
-**Description:** Router AP and two PCs wireless connectivity.  
-**Details:** SSID: HomeWiFi, Router AP mode.  
-
-**Kısa Tanıtım:**
-Router AP modunda kablosuz ağ oluşturarak PC'lerin kablosuz bağlanmasını öğreneceksiniz.
-
-**Adım Adım Proje Yapımı:**
-1. **Topoloji Oluşturma:**
-   - 1 adet Router (R1) ekle
-   - 2 adet PC (PC-1, PC-2) ekle
-
-2. **Router Konfigürasyonu (AP Mode):**
-   - R1 terminaline gir: enable, conf t
-   - interface wlan0
-     ip address 192.168.1.1 255.255.255.0
-     no shutdown
-   - exit
-   - wlan HomeWiFi 1 HomeWiFi
-   - exit
-
-3. **PC WiFi Konfigürasyonu:**
-   - PC-1 ve PC-2: WiFi Client moduna ayarla
-   - SSID: HomeWiFi seç
-
-4. **PC IP Konfigürasyonu:**
-   - PC-1: IP 192.168.1.10, GW 192.168.1.1
-   - PC-2: IP 192.168.1.20, GW 192.168.1.1
-
-5. **Test:**
-   - PC-1 <-> PC-2 ping
-   - WiFi kontrol paneline eriş
-
-### 14. IoT WiFi Lab
-**ID:** `iot-wifi-lab`  
-**Tag:** IoT  
-**Description:** 3 IoT devices (Temp, Humidity, Motion), WiFi open PC and Router with DHCP.  
-**Details:** SSID: IoT-Network (Open), DHCP enabled.  
-
-**Kısa Tanıtım:**
-IoT cihazlarını kablosuz ağa bağlayarak ve DHCP üzerinden otomatik IP alarak sensör verilerini izlemeyi öğreneceksiniz.
-
-**Adım Adım Proje Yapımı:**
-1. **Topoloji Oluşturma:**
-   - 1 adet Router (R1) ekle
-   - 1 adet PC (PC-1) ekle
-   - 3 adet IoT cihazı (Temp, Humidity, Motion) ekle
-
-2. **Router WiFi ve DHCP Konfigürasyonu:**
-   - R1 terminaline gir: enable, conf t
-   - interface wlan0
-     ip address 192.168.1.1 255.255.255.0
-     no shutdown
-   - exit
-   - wlan IoT-Network 0 IoT-Network
-   - ip dhcp pool iot-pool
-     network 192.168.1.0 255.255.255.0
-     default-router 192.168.1.1
-   - exit
-
-3. **IoT Cihazlarını Bağla:**
-   - Her IoT cihazını IoT-Network WiFi'na bağla
-   - IP yapılandırmasını DHCP olarak ayarla
-
-4. **PC Konfigürasyonu:**
-   - PC-1: IoT-Network WiFi'na bağla
-   - IP yapılandırmasını DHCP olarak ayarla (Otomatik IP alır)
-
-5. **Test:**
-   - http://iot-panel üzerinden IoT cihazlarını yönet
-   - Sensör verilerini izle
-   - Cihazların DHCP üzerinden IP aldığını doğrula (192.168.1.100+)
-   - Firewall eklediysen `show access-lists` ile `OUTSIDE-IN` kurallarını doğrula
-   - Firewall kuralı ekledikten sonra başka cihaz seçip geri dön: kurallar korunmuş olmalı
-   - `show running-config` içinde firewall ACL satırlarının yer aldığını doğrula
-
-### 15. Greenhouse Sketch (Smart Farm)
-**ID:** `greenhouse-iot-lab`  
-**Tag:** ENV  
-**Description:** 4 IoT sensors (Temp/Humidity/Light/Door), WPA2 WiFi, environmental monitoring.  
-**Details:** SSID: GreenHouse-Network (WPA2), Password: sera2026.  
-
-**Kısa Tanıtım:**
-Güvenli WiFi ağı ile IoT sensörlerini bağlayarak sera ortamını izlemeyi öğreneceksiniz.
-
-**Adım Adım Proje Yapımı:**
-1. **Topoloji Oluşturma:**
-   - 1 adet Router (R1) ekle
-   - 1 adet PC (PC-1) ekle
-   - 4 adet IoT sensörü (Temp, Humidity, Light, Door) ekle
-
-2. **Router WPA2 WiFi Konfigürasyonu:**
-   - R1 terminaline gir: enable, conf t
-   - interface wlan0
-     ip address 192.168.1.1 255.255.255.0
-     no shutdown
-   - exit
-   - wlan GreenHouse-Network 2 sera2026
-   - exit
-
-3. **IoT Sensörlerini Bağla:**
-   - Her sensörü GreenHouse-Network WiFi'na bağla (WPA2)
-
-4. **PC Konfigürasyonu:**
-   - PC-1: GreenHouse-Network WiFi'na bağla
-   - IP: 192.168.1.10, GW 192.168.1.1
-
-5. **Test:**
-   - Sera ortamını izle
-   - Sensör verilerini kontrol et
-
-### 16. DNS + HTTP Test
-**ID:** `dns-http`  
-**Tag:** DNS/HTTP  
-**Description:** Send HTTP requests and use nslookup to verify server services.  
-**Details:** curl / wget 192.168.1.10 / curl / wget a10.com / nslookup a10.com.  
-
-**Kısa Tanıtım:**
-DNS ve HTTP sunucuları yapılandırarak domain name çözümü ve web erişimi sağlamayı öğreneceksiniz.
-
-**Adım Adım Proje Yapımı:**
-1. **Topoloji Oluşturma:**
-   - 1 adet Router (R1) ekle
-   - 1 adet PC (PC-1) ekle
-   - Bağlantıları kur
-
-2. **Router DNS Konfigürasyonu:**
-   - R1 terminaline gir: enable, conf t
-   - ip dns server
-   - ip host a10.com 192.168.1.10
-   - exit
-
-3. **HTTP Sunucusu Başlat:**
-   - Router'da HTTP servisini aktifleştir
-
-4. **PC Konfigürasyonu:**
-   - PC-1: IP 192.168.1.10, DNS 192.168.1.1
-
-5. **Test:**
-   - nslookup a10.com
-   - curl a10.com
-   - Browser'da a10.com'a eriş
-
-### 17. DHCP Distribution Scenario
-**ID:** `dhcp-distribution`  
-**Tag:** DHCP  
-**Description:** Observe DHCP server handing out IPs to PC1 & PC2 while PC3 stays static.  
-**Details:** Verify with `sh ip dhcp binding` on the server.  
-
-**Kısa Tanıtım:**
-DHCP sunucusunun IP dağıtımını ve statik IP yapılandırmasını karşılaştırmayı öğreneceksiniz.
-
-**Adım Adım Proje Yapımı:**
-1. **Topoloji Oluşturma:**
-   - 1 adet Router (R1) ekle
-   - 1 adet Switch (SW1) ekle
-   - 3 adet PC (PC-1, PC-2, PC-3) ekle
-
-2. **Router DHCP Konfigürasyonu:**
-   - R1 terminaline gir: enable, conf t
-   - ip dhcp pool LAN
-     network 192.168.1.0 255.255.255.0
-     default-router 192.168.1.1
-   - exit
-
-3. **PC Konfigürasyonu:**
-   - PC-1 ve PC-2: DHCP moduna ayarla
-   - PC-3: Statik IP (192.168.1.100)
-
-4. **Test:**
-   - PC-1 ve PC-2: ipconfig /renew
-   - R1'de: show ip dhcp binding
-   - PC-3 statik IP ile çalışmaya devam eder
-
-### 18. 2 Switch Trunk Application
-**ID:** `trunk-2switch`  
-**Tag:** TRUNK  
-**Description:** 2 switches, trunk connection, VLAN 100/200 access ports.  
-**Details:** SW-1: Fa0/1=VLAN100, Fa0/11=VLAN200 | SW-2: Fa0/1=VLAN100, Fa0/11=VLAN200.  
-
-**Kısa Tanıtım:**
-İki switch arasında trunk bağlantısı ile birden fazla VLAN trafiğini taşımayı öğreneceksiniz.
-
-**Adım Adım Proje Yapımı:**
-1. **Topoloji Oluşturma:**
-   - 2 adet Switch (SW-1, SW-2) ekle
-   - 4 adet PC ekle
-   - SW-1 Gi0/1 -> SW-2 Gi0/1 (Crossover kablo)
-   - PC'leri ilgili port'lara bağla
-
-2. **SW-1 Konfigürasyonu:**
-   - SW-1 terminaline gir: enable, conf t
-   - vlan 100
-     name VLAN100
-   - exit
-   - vlan 200
-     name VLAN200
-   - exit
-   - interface fa0/1
-     switchport mode access
-     switchport access vlan 100
-   - exit
-   - interface fa0/11
-     switchport mode access
-     switchport access vlan 200
-   - exit
-   - interface gi0/1
-     switchport mode trunk
-   - exit
-
-3. **SW-2 Konfigürasyonu:**
-   - Aynı yapılandırma SW-1 ile aynı
-
-4. **PC IP Konfigürasyonu:**
-   - VLAN 100 PC'ler: 192.168.100.x subnet
-   - VLAN 200 PC'ler: 192.168.200.x subnet
-
-5. **Test:**
-   - Aynı VLAN'daki PC'ler switch'ler arası iletişim kurabilir
-
----
-
-## Advanced Level
-
-### 19. Inter-VLAN Routing (L3 Switch)
-**ID:** `l3-routing`  
-**Tag:** L3 ROUTING  
-**Description:** 4 VLANs, L3 switch, inter-VLAN routing enabled.  
-**Details:** ip routing, VLAN 10/20/30/40 SVI.  
-
-**Kısa Tanıtım:**
-L3 Switch üzerinde SVI interface'leri kullanarak farklı VLAN'lar arası routing sağlamayı öğreneceksiniz.
-
-**Adım Adım Proje Yapımı:**
-1. **Topoloji Oluşturma:**
-   - 1 adet L3 Switch (L3SW1) ekle
-   - 4 adet PC (PC-1, PC-2, PC-3, PC-4) ekle
-   - PC-1 Eth0 -> L3SW1 Fa0/1 (Straight kablo)
-   - PC-2 Eth0 -> L3SW1 Fa0/2 (Straight kablo)
-   - PC-3 Eth0 -> L3SW1 Fa0/3 (Straight kablo)
-   - PC-4 Eth0 -> L3SW1 Fa0/4 (Straight kablo)
-
-2. **L3SW1 Konfigürasyonu:**
-   - L3SW1 terminaline gir: enable, conf t
-   - ip routing
-   - vlan 10
-     name VLAN10
-   - exit
-   - vlan 20
-     name VLAN20
-   - exit
-   - vlan 30
-     name VLAN30
-   - exit
-   - vlan 40
-     name VLAN40
-   - exit
-   - interface vlan 10
-     ip address 192.168.10.1 255.255.255.0
-     no shutdown
-   - exit
-   - interface vlan 20
-     ip address 192.168.20.1 255.255.255.0
-     no shutdown
-   - exit
-   - interface vlan 30
-     ip address 192.168.30.1 255.255.255.0
-     no shutdown
-   - exit
-   - interface vlan 40
-     ip address 192.168.40.1 255.255.255.0
-     no shutdown
-   - exit
-   - interface range fa0/1-4
-     switchport mode access
-   - exit
-   - interface fa0/1
-     switchport access vlan 10
-   - exit
-   - interface fa0/2
-     switchport access vlan 20
-   - exit
-   - interface fa0/3
      switchport access vlan 30
    - exit
-   - interface fa0/4
+   - interface gi1/0/4
+     switchport mode access
      switchport access vlan 40
    - exit
 
@@ -1155,11 +750,11 @@ PVST kullanarak her VLAN için ayrı STP instance'ı oluşturarak load balancing
 1. **Topoloji Oluşturma:**
    - 2 adet L3 Switch (Switch2, Switch4) ekle
    - 8 adet PC ekle (PC4-PC11)
-   - Switch2 Gi0/1 -> Switch4 Gi0/1 (Crossover kablo)
-   - PC4-PC5 -> Switch2 Fa0/1-2 (VLAN 10)
-   - PC6-PC7 -> Switch2 Fa0/3-4 (VLAN 20)
-   - PC8-PC9 -> Switch4 Fa0/1-2 (VLAN 10)
-   - PC10-PC11 -> Switch4 Fa0/3-4 (VLAN 20)
+    - Switch2 Gi1/0/5 -> Switch4 Gi1/0/5 (Crossover kablo)
+    - PC4-PC5 -> Switch2 Gi1/0/1-2 (VLAN 10)
+    - PC6-PC7 -> Switch2 Gi1/0/3-4 (VLAN 20)
+    - PC8-PC9 -> Switch4 Gi1/0/1-2 (VLAN 10)
+    - PC10-PC11 -> Switch4 Gi1/0/3-4 (VLAN 20)
 
 2. **Switch2 Konfigürasyonu:**
    - Switch2 terminaline gir: enable, conf t
@@ -1178,21 +773,22 @@ PVST kullanarak her VLAN için ayrı STP instance'ı oluşturarak load balancing
      ip address 192.168.20.1 255.255.255.0
      no shutdown
    - exit
-   - interface gi0/1
-     switchport mode trunk
-   - exit
-   - interface range fa0/1-2
-     switchport mode access
-     switchport access vlan 10
-   - exit
-   - interface range fa0/3-4
-     switchport mode access
-     switchport access vlan 20
-   - exit
+    - interface gi1/0/5
+      switchport trunk encapsulation dot1q
+      switchport mode trunk
+    - exit
+    - interface range gi1/0/1-2
+      switchport mode access
+      switchport access vlan 10
+    - exit
+    - interface range gi1/0/3-4
+      switchport mode access
+      switchport access vlan 20
+    - exit
 
 3. **Switch4 Konfigürasyonu:**
-   - Switch4 terminaline gir: enable, conf t
-   - Aynı yapılandırma Switch2 ile manyetik
+    - Switch4 terminaline gir: enable, conf t
+    - Aynı yapılandırma Switch2 ile aynı
  
 4. **PC IP Konfigürasyonu:**
    - VLAN 10 PC'ler: IP 192.168.10.x, GW 192.168.10.1
@@ -1220,11 +816,13 @@ L3 switch'ler ve router arasında static routing yapılandırarak farklı ağlar
 2. **ML1 Konfigürasyonu:**
    - enable, conf t
    - ip routing
-   - interface fa0/1
+   - interface gi1/0/1
+     no switchport
      ip address 192.168.1.1 255.255.255.0
      no shutdown
    - exit
-   - interface fa0/2
+   - interface gi1/0/2
+     no switchport
      ip address 10.0.0.1 255.0.0.0
      no shutdown
    - exit
@@ -1246,11 +844,13 @@ L3 switch'ler ve router arasında static routing yapılandırarak farklı ağlar
 4. **ML2 Konfigürasyonu:**
    - enable, conf t
    - ip routing
-   - interface fa0/1
+   - interface gi1/0/1
+     no switchport
      ip address 20.0.0.2 255.0.0.0
      no shutdown
    - exit
-   - interface fa0/2
+   - interface gi1/0/2
+     no switchport
      ip address 192.168.2.1 255.255.255.0
      no shutdown
    - exit
@@ -1273,20 +873,22 @@ L3 switch'ler arasında RIP dynamic routing yapılandırarak otomatik route öğ
    - 2 adet L3 Switch (ML0, ML1) ekle
    - 2 adet L2 Switch (Switch0-L2, Switch3-L2) ekle
    - 4 adet PC (PC0-PC3) ekle
-   - PC0-PC1 -> Switch0-L2 Fa0/1-2
-   - Switch0-L2 Fa0/24 -> ML0 Fa0/23
-   - ML0 Fa0/24 -> ML1 Fa0/24 (Crossover)
-   - ML1 Fa0/23 -> Switch3-L2 Fa0/24
-   - Switch3-L2 Fa0/1-2 -> PC2-PC3
+    - PC0-PC1 -> Switch0-L2 Fa0/1-2
+    - Switch0-L2 Fa0/24 -> ML0 Gi1/0/23
+    - ML0 Gi1/0/24 -> ML1 Gi1/0/24 (Crossover)
+    - ML1 Gi1/0/23 -> Switch3-L2 Fa0/24
+    - Switch3-L2 Fa0/1-2 -> PC2-PC3
 
 2. **ML0 Konfigürasyonu:**
    - enable, conf t
    - ip routing
-   - interface fa0/23
+   - interface gi1/0/23
+     no switchport
      ip address 192.168.1.1 255.255.255.0
      no shutdown
    - exit
-   - interface fa0/24
+   - interface gi1/0/24
+     no switchport
      ip address 192.168.2.1 255.255.255.0
      no shutdown
    - exit
@@ -1298,11 +900,13 @@ L3 switch'ler arasında RIP dynamic routing yapılandırarak otomatik route öğ
 3. **ML1 Konfigürasyonu:**
    - enable, conf t
    - ip routing
-   - interface fa0/24
+   - interface gi1/0/24
+     no switchport
      ip address 192.168.2.2 255.255.255.0
      no shutdown
    - exit
-   - interface fa0/23
+   - interface gi1/0/23
+     no switchport
      ip address 192.168.3.1 255.255.255.0
      no shutdown
    - exit
