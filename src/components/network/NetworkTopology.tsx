@@ -166,6 +166,13 @@ export function NetworkTopology({
 
   // Zustand store state - using granular selectors to prevent cascading re-renders
   const topologyDevices = useTopologyDevices();
+  // BOLT: Memoize device map for O(1) lookups instead of repeated O(n) .find() calls
+  const deviceMap = useMemo(() => {
+    const map = new Map<string, CanvasDevice>();
+    topologyDevices.forEach(d => map.set(d.id, d));
+    return map;
+  }, [topologyDevices]);
+
   const topologyConnections = useTopologyConnections();
   const topologyNotes = useTopologyNotes();
   const { setDevices, setConnections, setNotes, graphicsQuality } = useAppStore();
@@ -316,8 +323,8 @@ export function NetworkTopology({
     });
 
     const vConnections = connections.filter(conn => {
-      const source = devices.find(d => d.id === conn.sourceDeviceId);
-      const target = devices.find(d => d.id === conn.targetDeviceId);
+      const source = deviceMap.get(conn.sourceDeviceId);
+      const target = deviceMap.get(conn.targetDeviceId);
       if (!source || !target) return false;
 
       // Check if either end is visible
@@ -366,10 +373,10 @@ export function NetworkTopology({
 
   // Handle external focus device request (e.g., from WiFi admin panel) - selection only
   useEffect(() => {
-    if (focusDeviceId && devices.find(d => d.id === focusDeviceId)) {
+    if (focusDeviceId && deviceMap.get(focusDeviceId)) {
       setSelectedDeviceIds([focusDeviceId]);
     }
-  }, [focusDeviceId, devices]);
+  }, [focusDeviceId, deviceMap]);
 
   // Select all state
   const [selectAllMode, setSelectAllMode] = useState(false);
@@ -591,8 +598,8 @@ export function NetworkTopology({
   const portTooltipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const deviceTooltipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const configuringDeviceData = useMemo(
-    () => devices.find((d) => d.id === configuringDevice) || null,
-    [configuringDevice, devices]
+    () => (configuringDevice ? deviceMap.get(configuringDevice) : null) || null,
+    [configuringDevice, deviceMap]
   );
 
   const isValidIpv4 = useCallback((value: string) => {
@@ -611,7 +618,7 @@ export function NetworkTopology({
 
   // Start device config (Name and IP)
   const startDeviceConfig = useCallback((deviceId: string) => {
-    const device = devices.find(d => d.id === deviceId);
+    const device = deviceMap.get(deviceId);
     if (device) {
       setConfiguringDevice(deviceId);
       setTempNameValue(device.name);
@@ -1481,7 +1488,7 @@ export function NetworkTopology({
     if (!canvasRef.current) return;
 
     const rect = canvasRef.current.getBoundingClientRect();
-    const device = devices.find((d) => d.id === deviceId);
+    const device = deviceMap.get(deviceId);
     if (!device) return;
 
     // Ping mode: handle immediately on mousedown for better Chrome compatibility
@@ -1519,7 +1526,7 @@ export function NetworkTopology({
         : [...selectedDeviceIds, deviceId];
 
       // Update parent component with the first selected device
-      const firstSelectedDevice = devices.find(d => d.id === newSelectedIds[0]);
+      const firstSelectedDevice = deviceMap.get(newSelectedIds[0]);
       if (firstSelectedDevice && newSelectedIds.length > 0) {
         onDeviceSelect(firstSelectedDevice.type === 'router' ? 'router' : firstSelectedDevice.type, newSelectedIds[0], undefined, firstSelectedDevice.name);
       }
@@ -1645,7 +1652,7 @@ export function NetworkTopology({
 
     const touch = e.touches[0];
     const rect = canvasRef.current.getBoundingClientRect();
-    const device = devices.find((d) => d.id === deviceId);
+    const device = deviceMap.get(deviceId);
     if (!device) return;
 
     // Save current state before touch drag starts (for undo)
@@ -1954,7 +1961,7 @@ export function NetworkTopology({
         case 'Enter':
           e.preventDefault();
           if (selectedDeviceIds.length === 1) {
-            const selectedDevice = devices.find(d => d.id === selectedDeviceIds[0]);
+            const selectedDevice = deviceMap.get(selectedDeviceIds[0]);
             if (selectedDevice) {
               handleDeviceDoubleClick(selectedDevice);
             }
@@ -1976,7 +1983,7 @@ export function NetworkTopology({
     e.stopPropagation();
     if (isActuallyDraggingRef.current || isTouchDraggingRef.current) return;
 
-    const device = devices.find((d) => d.id === deviceId);
+    const device = deviceMap.get(deviceId);
     if (!device) return;
 
     const port = device.ports.find((p) => p.id === portId);
@@ -2051,8 +2058,8 @@ export function NetworkTopology({
       );
 
       // Update cable info
-      const sourceDevice = devices.find((d) => d.id === connectionStart.deviceId);
-      const targetDevice = devices.find((d) => d.id === deviceId);
+      const sourceDevice = deviceMap.get(connectionStart.deviceId);
+      const targetDevice = deviceMap.get(deviceId);
       if (sourceDevice && targetDevice) {
         onCableChange({
           ...cableInfo,
@@ -2747,7 +2754,7 @@ export function NetworkTopology({
     if (deviceState?.ports?.[portId]) {
       return deviceState.ports[portId];
     }
-    const device = devices.find(d => d.id === deviceId);
+    const device = deviceMap.get(deviceId);
     return device?.ports.find(p => p.id === portId);
   }, [deviceStates, devices]);
 
@@ -2828,7 +2835,7 @@ export function NetworkTopology({
   }, [language, environment, getIotOpenCloseStatus, t.passive]);
 
   const getLivePortVlanText = useCallback((deviceId: string, portId: string) => {
-    const device = devices.find(d => d.id === deviceId);
+    const device = deviceMap.get(deviceId);
     const livePort = getLivePort(deviceId, portId);
     if (!device || !livePort) return '1';
 
@@ -2852,7 +2859,7 @@ export function NetworkTopology({
   }, [connections, devices, getLivePort]);
 
   const showPortTooltip = useCallback((e: ReactMouseEvent | MouseEvent, deviceId: string, portId: string) => {
-    const device = devices.find(d => d.id === deviceId);
+    const device = deviceMap.get(deviceId);
     const port = getLivePort(deviceId, portId);
     if (!device || !port) return;
 
@@ -2891,7 +2898,7 @@ export function NetworkTopology({
   }, [setPortTooltip]);
 
   const showDeviceTooltip = useCallback((deviceId: string) => {
-    const device = devices.find(d => d.id === deviceId);
+    const device = deviceMap.get(deviceId);
     if (!device) return;
 
     const canvasRect = canvasRef.current?.getBoundingClientRect?.();
@@ -3240,7 +3247,7 @@ export function NetworkTopology({
           }
           if (selectedDeviceIds.length > 0) {
             const firstId = selectedDeviceIds[0];
-            const firstDevice = devices.find(d => d.id === firstId);
+            const firstDevice = deviceMap.get(firstId);
             setSelectedDeviceIds([firstId]);
             if (firstDevice) onDeviceSelect(firstDevice.type === 'router' ? 'router' : firstDevice.type, firstId, undefined, firstDevice.name);
           }
@@ -3356,7 +3363,7 @@ export function NetworkTopology({
         e.preventDefault();
         if (!pingMode) {
           if (selectedDeviceIds.length === 1) {
-            const selectedDevice = devices.find(d => d.id === selectedDeviceIds[0]);
+            const selectedDevice = deviceMap.get(selectedDeviceIds[0]);
             setPingSource(selectedDevice || null);
           } else {
             setPingSource(null);
@@ -3410,8 +3417,8 @@ export function NetworkTopology({
         }
 
         if (nextDeviceId && sourcePortId && targetPortId) {
-          const sourceDevice = devices.find(d => d.id === current.deviceId);
-          const targetDevice = devices.find(d => d.id === nextDeviceId);
+          const sourceDevice = deviceMap.get(current.deviceId);
+          const targetDevice = deviceMap.get(nextDeviceId);
 
           if (sourceDevice && targetDevice) {
             // Check if devices are powered on
@@ -3509,7 +3516,7 @@ export function NetworkTopology({
     setErrorToast(null);
 
     const getDevicePrimaryIp = (deviceId: string): string => {
-      const device = devices.find(d => d.id === deviceId);
+      const device = deviceMap.get(deviceId);
       if (device?.ip) return device.ip;
       if (device?.ipv6) return device.ipv6;
 
@@ -3637,8 +3644,8 @@ export function NetworkTopology({
             setPingMode(false);
             return;
           }
-          const fromDev = devices.find(d => d.id === fromId);
-          const toDev = devices.find(d => d.id === toId);
+          const fromDev = deviceMap.get(fromId);
+          const toDev = deviceMap.get(toId);
           const dx = (toDev?.x ?? 0) - (fromDev?.x ?? 0);
           const dy = (toDev?.y ?? 0) - (fromDev?.y ?? 0);
           const dist = Math.sqrt(dx * dx + dy * dy);
@@ -3745,8 +3752,8 @@ export function NetworkTopology({
 
     // Calculate distance-based duration for stable animation on long cables
     const calculateHopDuration = (fromId: string, toId: string): number => {
-      const fromDevice = devices.find(d => d.id === fromId);
-      const toDevice = devices.find(d => d.id === toId);
+      const fromDevice = deviceMap.get(fromId);
+      const toDevice = deviceMap.get(toId);
 
       if (!fromDevice || !toDevice) return hopDuration;
 
@@ -3993,7 +4000,7 @@ export function NetworkTopology({
           (c.sourceDeviceId === fromId && c.targetDeviceId === toId) ||
           (c.sourceDeviceId === toId && c.targetDeviceId === fromId)
         );
-        const toDevice = devices.find(d => d.id === toId);
+        const toDevice = deviceMap.get(toId);
         const isWifi = conn?.cableType === 'wireless';
         const isRouter = toDevice?.type === 'router';
         const currentSegmentHopCountIncrement = (isWifi || isRouter) ? 1 : 0;
@@ -4195,8 +4202,8 @@ export function NetworkTopology({
 
   // Handle external focus device request - pan to center
   useEffect(() => {
-    if (focusDeviceId && devices.find(d => d.id === focusDeviceId)) {
-      const device = devices.find(d => d.id === focusDeviceId);
+    if (focusDeviceId && deviceMap.get(focusDeviceId)) {
+      const device = deviceMap.get(focusDeviceId);
       if (device && canvasRef.current) {
         const deviceCenter = getDeviceCenter(device);
         const { width: canvasWidth, height: canvasHeight } = canvasRef.current.getBoundingClientRect();
@@ -4247,8 +4254,8 @@ export function NetworkTopology({
 
   // Render connection SVG (Visual line only)
   const renderConnectionLine = (conn: CanvasConnection, connIndex: number) => {
-    const sourceDevice = devices.find((d) => d.id === conn.sourceDeviceId);
-    const targetDevice = devices.find((d) => d.id === conn.targetDeviceId);
+    const sourceDevice = deviceMap.get(conn.sourceDeviceId);
+    const targetDevice = deviceMap.get(conn.targetDeviceId);
     if (!sourceDevice || !targetDevice) return null;
 
     // Get port positions for more accurate connection lines
@@ -4411,8 +4418,8 @@ export function NetworkTopology({
 
   // Render connection interaction handles (Trash Icon) - Should be rendered LAST to stay on top
   const renderConnectionHandle = (conn: CanvasConnection) => {
-    const sourceDevice = devices.find((d) => d.id === conn.sourceDeviceId);
-    const targetDevice = devices.find((d) => d.id === conn.targetDeviceId);
+    const sourceDevice = deviceMap.get(conn.sourceDeviceId);
+    const targetDevice = deviceMap.get(conn.targetDeviceId);
     if (!sourceDevice || !targetDevice) return null;
 
     const source = getPortPosition(sourceDevice, conn.sourcePort);
@@ -4522,8 +4529,8 @@ export function NetworkTopology({
     const deviceConnections = connections.filter(c => c.sourceDeviceId === device.id || c.targetDeviceId === device.id);
     const hasConnection = deviceConnections.length > 0;
     const hasError = deviceConnections.some(conn => {
-      const source = devices.find(d => d.id === conn.sourceDeviceId);
-      const target = devices.find(d => d.id === conn.targetDeviceId);
+      const source = deviceMap.get(conn.sourceDeviceId);
+      const target = deviceMap.get(conn.targetDeviceId);
       if (!source || !target) return false;
       return conn.cableType === 'console'
         ? !isCableCompatible({
@@ -5656,7 +5663,7 @@ export function NetworkTopology({
 
     // Use the port position stored in connectionStart.point
     const source = connectionStart.point;
-    const sourceDevice = devices.find(d => d.ports.some(p => p.id === connectionStart.portId));
+    const sourceDevice = deviceMap.get(connectionStart.deviceId);
 
     return (
       <>
@@ -6017,7 +6024,7 @@ export function NetworkTopology({
                     e.preventDefault();
                     console.log('[Toolbar] Cancel clicked');
                     const firstId = selectedDeviceIds[0];
-                    const firstDevice = devices.find(d => d.id === firstId);
+                    const firstDevice = deviceMap.get(firstId);
                     setSelectedDeviceIds(firstId ? [firstId] : []);
                     if (firstDevice) onDeviceSelect(firstDevice.type === 'router' ? 'router' : firstDevice.type, firstId, undefined, firstDevice.name);
                   }}
@@ -6087,7 +6094,7 @@ export function NetworkTopology({
             }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && selectedDeviceIds.length === 1) {
-                const selectedDevice = devices.find(d => d.id === selectedDeviceIds[0]);
+                const selectedDevice = deviceMap.get(selectedDeviceIds[0]);
                 if (selectedDevice) {
                   handleDeviceDoubleClick(selectedDevice);
                 }
@@ -6492,8 +6499,8 @@ export function NetworkTopology({
 
                   {/* Visual Connection Lines (Behind devices) */}
                   {connections.map((conn, index) => {
-                    const sourceDevice = devices.find((d) => d.id === conn.sourceDeviceId);
-                    const targetDevice = devices.find((d) => d.id === conn.targetDeviceId);
+                    const sourceDevice = deviceMap.get(conn.sourceDeviceId);
+                    const targetDevice = deviceMap.get(conn.targetDeviceId);
                     if (!sourceDevice || !targetDevice) return null;
 
                     const sameDeviceConnections = connections.filter(
@@ -6832,8 +6839,8 @@ export function NetworkTopology({
 
                     if (!path || path.length < 2 || success !== null) return null;
 
-                    const fromDevice = devices.find(d => d.id === path[currentHopIndex]);
-                    const toDevice = devices.find(d => d.id === path[currentHopIndex + 1]);
+                    const fromDevice = deviceMap.get(path[currentHopIndex]);
+                    const toDevice = deviceMap.get(path[currentHopIndex + 1]);
                     if (!fromDevice || !toDevice) return null;
 
                     const conn = connections.find(
@@ -7190,8 +7197,8 @@ export function NetworkTopology({
 
               {/* Connections */}
               {connections.map((conn) => {
-                const sourceDevice = devices.find(d => d.id === conn.sourceDeviceId);
-                const targetDevice = devices.find(d => d.id === conn.targetDeviceId);
+                const sourceDevice = deviceMap.get(conn.sourceDeviceId);
+                const targetDevice = deviceMap.get(conn.targetDeviceId);
                 if (!sourceDevice || !targetDevice) return null;
 
                 const sourceX = sourceDevice.x + ((sourceDevice.type === 'pc' || sourceDevice.type === 'iot') ? 45 : 50);
@@ -7357,7 +7364,7 @@ export function NetworkTopology({
         onDeleteDevices={(ids) => { saveToHistory(); ids.forEach(id => deleteDevice(id)); setSelectedDeviceIds([]); }}
         onStartConfig={startDeviceConfig}
         onStartPing={(id) => {
-          const device = devices.find(d => d.id === id);
+          const device = deviceMap.get(id);
           if (device) {
             setPingMode(true);
             setPingSource(device);
@@ -7591,10 +7598,10 @@ export function NetworkTopology({
           success={pingAnimation.success}
           isReturn={!!pingAnimation.isReturn}
           errorMessage={pingAnimation.error}
-          sourceName={devices.find(d => d.id === pingAnimation.sourceId)?.name ?? pingAnimation.sourceId}
-          targetName={devices.find(d => d.id === pingAnimation.targetId)?.name ?? pingAnimation.targetId}
-          sourceIp={devices.find(d => d.id === pingAnimation.sourceId)?.ip ?? ''}
-          targetIp={devices.find(d => d.id === pingAnimation.targetId)?.ip ?? ''}
+          sourceName={deviceMap.get(pingAnimation.sourceId)?.name ?? pingAnimation.sourceId}
+          targetName={deviceMap.get(pingAnimation.targetId)?.name ?? pingAnimation.targetId}
+          sourceIp={deviceMap.get(pingAnimation.sourceId)?.ip ?? ''}
+          targetIp={deviceMap.get(pingAnimation.targetId)?.ip ?? ''}
         />
       )}
 
@@ -7692,8 +7699,8 @@ export function NetworkTopology({
             );
 
             // Update cable info
-            const sourceDevice = devices.find((d) => d.id === selectedSourcePort!.deviceId);
-            const targetDevice = devices.find((d) => d.id === deviceId);
+            const sourceDevice = deviceMap.get(selectedSourcePort!.deviceId);
+            const targetDevice = deviceMap.get(deviceId);
             if (sourceDevice && targetDevice) {
               onCableChange({
                 ...cableInfo,
@@ -7729,7 +7736,7 @@ export function NetworkTopology({
             >
               <div className="flex items-center gap-2 mb-1">
                 <div className={`w-2 h-2 rounded-full ${(() => {
-                  const dev = devices.find(d => d.id === portTooltip.deviceId);
+                  const dev = deviceMap.get(portTooltip.deviceId);
                   const prt = dev?.ports.find(p => p.id === portTooltip.portId);
                   const devState = deviceStates?.get(portTooltip.deviceId);
                   const simPort = devState?.ports?.[portTooltip.portId];
@@ -7748,7 +7755,7 @@ export function NetworkTopology({
               <div className="space-y-0.5">
                 <div className="text-xs font-bold">
                   {(() => {
-                    const dev = devices.find(d => d.id === portTooltip.deviceId);
+                    const dev = deviceMap.get(portTooltip.deviceId);
                     if (dev?.type === 'iot') {
                       const kind = dev.iot?.kind;
                       const isControllable = kind === 'lamp' || kind === 'heater' || kind === 'cooler';
@@ -7785,7 +7792,7 @@ export function NetworkTopology({
                   {language === 'tr' ? 'Durum:' : 'Status:'}{' '}
                   <span className={
                     (() => {
-                      const dev = devices.find(d => d.id === portTooltip.deviceId);
+                      const dev = deviceMap.get(portTooltip.deviceId);
                       const prt = dev?.ports.find(p => p.id === portTooltip.portId);
                       const devState = deviceStates?.get(portTooltip.deviceId);
                       const simPort = devState?.ports?.[portTooltip.portId];
@@ -7797,7 +7804,7 @@ export function NetworkTopology({
                     })()
                   }>
                     {(() => {
-                      const dev = devices.find(d => d.id === portTooltip.deviceId);
+                      const dev = deviceMap.get(portTooltip.deviceId);
                       const prt = dev?.ports.find(p => p.id === portTooltip.portId);
                       const devState = deviceStates?.get(portTooltip.deviceId);
                       const simPort = devState?.ports?.[portTooltip.portId];
@@ -7828,7 +7835,7 @@ export function NetworkTopology({
                 </div>
 
                 {(() => {
-                  const dev = devices.find(d => d.id === portTooltip.deviceId);
+                  const dev = deviceMap.get(portTooltip.deviceId);
                   const prt = dev?.ports.find(p => p.id === portTooltip.portId);
                   if (prt?.ipAddress) {
                     return (
@@ -7843,7 +7850,7 @@ export function NetworkTopology({
                   return null;
                 })()}
 
-                {devices.find(d => d.id === portTooltip.deviceId)?.ports.find(p => p.id === portTooltip.portId)?.status === 'connected' && (
+                {deviceMap.get(portTooltip.deviceId)?.ports.find(p => p.id === portTooltip.portId)?.status === 'connected' && (
                   <div className="text-[10px] opacity-70">
                     {language === 'tr' ? 'Fiziksel bağlantı aktif' : 'Physical link active'}
                   </div>
@@ -7878,7 +7885,7 @@ export function NetworkTopology({
               <div className="flex items-center gap-2 mb-2 pb-2 border-b border-white/10">
                 <div className={`p-1.5 rounded-lg ${isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-cyan-50 text-cyan-600'}`}>
                   {(() => {
-                    const dev = devices.find(d => d.id === deviceTooltip.deviceId);
+                    const dev = deviceMap.get(deviceTooltip.deviceId);
                     if (dev?.type === 'pc' || dev?.type === 'iot') return <Monitor className="w-3.5 h-3.5" />;
                     if (dev?.type === 'router') return <Network className="w-3.5 h-3.5" />;
                     return <Laptop className="w-3.5 h-3.5" />;
@@ -7886,17 +7893,17 @@ export function NetworkTopology({
                 </div>
                 <div>
                   <div className="text-[10px] font-black tracking-widest opacity-30 leading-none">
-                    {devices.find(d => d.id === deviceTooltip.deviceId)?.type.toUpperCase()}
+                    {deviceMap.get(deviceTooltip.deviceId)?.type.toUpperCase()}
                   </div>
                   <div className="text-sm font-black tracking-tight leading-none mt-1">
-                    {devices.find(d => d.id === deviceTooltip.deviceId)?.name}
+                    {deviceMap.get(deviceTooltip.deviceId)?.name}
                   </div>
                 </div>
               </div>
 
               <div className="space-y-1.5">
                 {(() => {
-                  const dev = devices.find(d => d.id === deviceTooltip.deviceId);
+                  const dev = deviceMap.get(deviceTooltip.deviceId);
                   if (!dev) return null;
 
                   return (
