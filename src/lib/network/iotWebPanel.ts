@@ -655,10 +655,10 @@ export const generateIotDevicePageContent = (
     ? topologySensorDevices.map(d => {
         const sensor = d.iot?.sensorType || 'temperature';
         const label = sensorTypeLabels[sensor] || sensor;
-        return `<option value="iot:${sanitizeHTML(d.id)}:${sanitizeHTML(sensor)}">${sanitizeHTML(d.name || d.id)} (${label})</option>`;
+        return `<option value="iot:${sanitizeHTML(d.id)}:${sanitizeHTML(sensor)}">${sanitizeHTML(d.name || d.id)} (${sanitizeHTML(label)})</option>`;
       }).join('')
     : Object.entries(sensorTypeLabels).map(([value, label]) => (
-        `<option value="${value}">${label}</option>`
+        `<option value="${sanitizeHTML(value)}">${sanitizeHTML(label)}</option>`
       )).join('');
 
   return `
@@ -924,7 +924,7 @@ export const generateIotDevicePageContent = (
                   <select id="targetDeviceSelect" style="flex: 1;">
                     <option value="this">${isTurkish ? 'Bu Cihaz' : 'This Device'}</option>
                     ${allDevices.filter(d => d.id !== deviceId && d.type === 'iot' && (d.iot?.dataFlowDirection === 'output' || d.iot?.dataFlowDirection === 'input/output' || d.iot?.kind === 'cooler' || d.iot?.kind === 'lamp' || d.iot?.kind === 'heater')).map(d => `
-                      <option value="${sanitizeHTML(d.id)}">${sanitizeHTML(d.name || d.id)} ${d.iot?.kind ? '(' + (isTurkish ? (d.iot.kind === 'cooler' ? 'Soğutucu' : d.iot.kind === 'lamp' ? 'Lamba' : d.iot.kind === 'heater' ? 'Isıtıcı' : d.iot.kind) : d.iot.kind) + ')' : ''}</option>
+                      <option value="${sanitizeHTML(d.id)}">${sanitizeHTML(d.name || d.id)} ${d.iot?.kind ? '(' + sanitizeHTML(isTurkish ? (d.iot.kind === 'cooler' ? 'Soğutucu' : d.iot.kind === 'lamp' ? 'Lamba' : d.iot.kind === 'heater' ? 'Isıtıcı' : d.iot.kind) : d.iot.kind) + ')' : ''}</option>
                     `).join('')}
                   </select>
                   <select id="actionSelect">

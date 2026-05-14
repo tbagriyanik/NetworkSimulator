@@ -27,3 +27,8 @@
 **Vulnerability:** Prototype Pollution in `sanitizeObject` due to recursive merging of user-provided keys without filtering internal JavaScript properties like `__proto__`.
 **Learning:** Security utilities that recursively process objects must explicitly block internal properties to prevent attackers from corrupting the application's base object prototypes. Furthermore, when implementing these filters, care must be taken to maintain the original data structures (e.g., using `Array.isArray`) to avoid accidental coercion of Arrays into Objects, which can cause functional regressions in typed systems.
 **Prevention:** Always use a static blacklist or whitelist of keys when performing recursive object operations. Explicitly verify and preserve the object's type (Plain Object vs Array vs Null) at each step of the recursion to maintain data integrity.
+
+## 2026-05-22 - [Sanitization of Device-Derived Metadata in HTML Panels]
+**Vulnerability:** XSS in IoT Device Page due to unsanitized interpolation of device `sensorType` and `kind` properties into `<option>` labels and dropdown text.
+**Learning:** Even internal metadata properties like device types or sensor labels can become XSS vectors if they are derived from state that could potentially be manipulated or if they contain characters that break the HTML context. Unlike IDs, which are often used in JS context, these labels are often used in text nodes or attribute values.
+**Prevention:** Apply `sanitizeHTML()` to all device-derived metadata (names, labels, types, descriptions) before injecting them into HTML templates. This complements the `safeJSONForHTML` pattern used for script/attribute contexts by protecting the visible text content.
