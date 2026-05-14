@@ -94,14 +94,9 @@ import { PCInfoPopover, SwitchInfoPopover, RouterInfoPopover } from '@/component
 import { AppHeader } from '@/components/network/AppHeader';
 import { AppFooter } from '@/components/network/AppFooter';
 import { TopologyToolbar } from '@/components/network/TopologyToolbar';
-import { ProjectPickerDialog } from '@/components/network/ProjectPickerDialog';
-import { OnboardingDialog } from '@/components/network/OnboardingDialog';
-import { GuidedModePanel } from '@/components/network/GuidedModePanel';
 import { AppSkeleton } from '@/components/ui/AppSkeleton';
 import { AppErrorBoundary } from '@/components/ui/AppErrorBoundary';
 import { SwitchModel } from '@/lib/network/switchModels';
-import { EnvironmentSettingsPanel } from '@/components/network/EnvironmentSettingsPanel';
-import { FirewallPanel } from '@/components/network/FirewallPanel';
 
 const PCPanel = dynamic(() => import('@/components/network/PCPanel').then((m) => m.PCPanel), { ssr: false });
 const RouterPanel = dynamic(() => import('@/components/network/RouterPanel').then((m) => m.RouterPanel), { ssr: false });
@@ -111,6 +106,11 @@ const VlanPanel = dynamic(() => import('@/components/network/VlanPanel').then((m
 const SecurityPanel = dynamic(() => import('@/components/network/SecurityPanel').then((m) => m.SecurityPanel), { ssr: false });
 const ConfigPanel = dynamic(() => import('@/components/network/ConfigPanel').then((m) => m.ConfigPanel), { ssr: false });
 const LazyAboutModal = dynamic(() => import('@/components/network/LazyAboutModal').then((m) => m.LazyAboutModal), { ssr: false });
+const ProjectPickerDialog = dynamic(() => import('@/components/network/ProjectPickerDialog').then((m) => m.ProjectPickerDialog), { ssr: false });
+const GuidedModePanel = dynamic(() => import('@/components/network/GuidedModePanel').then((m) => m.GuidedModePanel), { ssr: false });
+const FirewallPanel = dynamic(() => import('@/components/network/FirewallPanel').then((m) => m.FirewallPanel), { ssr: false });
+const EnvironmentSettingsPanel = dynamic(() => import('@/components/network/EnvironmentSettingsPanel').then((m) => m.EnvironmentSettingsPanel), { ssr: false });
+const OnboardingDialog = dynamic(() => import('@/components/network/OnboardingDialog').then((m) => m.OnboardingDialog), { ssr: false });
 
 type TabType = 'topology' | 'cmd' | 'terminal' | 'tasks';
 

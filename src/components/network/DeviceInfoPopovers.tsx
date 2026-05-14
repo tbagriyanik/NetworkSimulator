@@ -210,7 +210,7 @@ export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zInde
                 }
               }}
               disabled={!pc?.type || !pc?.id}
-              className={`flex-1 py-1 rounded-lg text-xs font-bold transition-colors ${isDark ? 'bg-cyan-600 hover:bg-cyan-700 text-white disabled:bg-slate-700 disabled:text-slate-500' : 'bg-blue-600 hover:bg-blue-700 text-white disabled:bg-slate-300 disabled:text-slate-500'}`}
+              className={`flex-1 py-1 rounded-lg text-xs font-bold transition-colors ${isDark ? 'bg-cyan-700 hover:bg-cyan-600 text-white disabled:bg-slate-700 disabled:text-slate-500' : 'bg-blue-600 hover:bg-blue-700 text-white disabled:bg-slate-300 disabled:text-slate-500'}`}
             >
               {t.open}
             </button>
