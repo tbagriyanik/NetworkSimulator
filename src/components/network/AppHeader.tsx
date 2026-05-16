@@ -94,7 +94,7 @@ export function AppHeader({
               className="flex items-center gap-3 p-2"
             >
               <div className="p-1 flex items-center justify-center">
-                <img src="/favicon.png" alt="Logo" className="w-7 h-7 object-contain" />
+                <img src="/app.png" alt="Logo" className="w-7 h-7 object-contain" />
               </div>
               <div className="hidden md:flex flex-col">
                 <h2 className="text-lg font-bold tracking-tight bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent leading-none">
@@ -276,7 +276,7 @@ export function AppHeader({
               <SheetHeader className="p-4 text-left border-b border-slate-800/50">
                 <SheetTitle className="text-lg font-black flex items-center gap-2">
                   <div className="p-1 flex items-center justify-center">
-                    <img src="/favicon.png" alt="Logo" className="w-5 h-5 object-contain" />
+                    <img src="/app.png" alt="Logo" className="w-5 h-5 object-contain" />
                   </div>
                   {t.title}
                 </SheetTitle>

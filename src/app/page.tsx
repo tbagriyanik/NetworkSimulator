@@ -2762,13 +2762,13 @@ ${state.bannerMOTD}
     let dhcpServerNoPoolCount = 0;
     let dhcpClientWithLeaseCount = 0;
     let dhcpClientNoLeaseCount = 0;
-      let duplicateIpCount = 0;
-      let duplicateMacCount = 0;
-      let subnetMismatchCount = 0;
-      let invalidGatewayCount = 0;
-      let disconnectedLinkCount = 0;
-      let loopDetectedCount = 0;
-      let vlanInconsistencyCount = 0;
+    let duplicateIpCount = 0;
+    let duplicateMacCount = 0;
+    let subnetMismatchCount = 0;
+    let invalidGatewayCount = 0;
+    let disconnectedLinkCount = 0;
+    let loopDetectedCount = 0;
+    let vlanInconsistencyCount = 0;
 
     if (topologyDevices && deviceStates) {
       const { sanitizedConnections, invalidCount } = validateTopologyConnections(topologyDevices, topologyConnections);
@@ -3683,7 +3683,7 @@ ${state.bannerMOTD}
             <div className="flex flex-col items-center animate-scale-in">
               <div className="relative mb-8">
                 <div className="p-2 animate-glitch">
-                  <img src="/favicon.png" alt="Logo" className="w-16 h-16 object-contain" />
+                  <img src="/app.png" alt="Logo" className="w-16 h-16 object-contain" />
                 </div>
                 {/* Glitch overlays */}
                 <div className="absolute inset-0 p-4 rounded-2xl bg-red-500/30 animate-glitch-skew mix-blend-screen" />
@@ -4332,85 +4332,85 @@ ${state.bannerMOTD}
 
             </div>
 
-{/* Network Refresh Report - Top Right Toast */}
-          {
-            refreshNetworkReport?.show && (
-              <div
-                data-draggable-id="refresh-network-report"
-                className={`fixed top-20 right-4 w-full max-w-sm rounded-xl border shadow-2xl animate-in slide-in-from-right-full duration-300 backdrop-blur-md select-none ${isDark
-                  ? 'bg-zinc-950/40 border-zinc-800/50 text-zinc-100 shadow-black/40'
-                  : 'bg-white/40 border-zinc-200/50 text-zinc-900 shadow-zinc-200/50'
-                  }`}
-                style={{
-                  zIndex: focusedOverlay === 'refresh' ? 35 : 30,
-                  // On mobile, ensure it's below header (60px) + some margin
-                  ...(isMobile ? { top: '80px' } : {})
-                }}
-                onMouseDown={() => setFocusedOverlay('refresh')}
-              >
-                <div className="p-4 space-y-3">
-                  <div className="flex items-center justify-between cursor-grab active:cursor-grabbing" data-drag-handle>
-                    <h3 className="text-sm font-bold flex items-center gap-2">
-                      
-                      {refreshNetworkReport.title}
-                    </h3>
-                    <div className="flex items-center gap-1">
-                      <TooltipWrapper title={t.refreshNetwork}>
-                        <button
-                          onClick={() => { handleRefreshNetwork(); }}
-                          className="w-5 h-5 rounded-md bg-blue-500 hover:bg-blue-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0"
-                        >
-                          <RefreshCw className="w-3 h-3 text-white pointer-events-none" />
-                        </button>
-                      </TooltipWrapper>
-                      <TooltipWrapper title={t.close}>
-                        <button
-                          onClick={() => setRefreshNetworkReport(prev => prev ? { ...prev, show: false } : null)}
-                          className="w-5 h-5 rounded-md bg-red-500 hover:bg-red-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0"
-                        >
-                          <X className="w-3 h-3 text-white pointer-events-none" />
-                        </button>
-                      </TooltipWrapper>
+            {/* Network Refresh Report - Top Right Toast */}
+            {
+              refreshNetworkReport?.show && (
+                <div
+                  data-draggable-id="refresh-network-report"
+                  className={`fixed top-20 right-4 w-full max-w-sm rounded-xl border shadow-2xl animate-in slide-in-from-right-full duration-300 backdrop-blur-md select-none ${isDark
+                    ? 'bg-zinc-950/40 border-zinc-800/50 text-zinc-100 shadow-black/40'
+                    : 'bg-white/40 border-zinc-200/50 text-zinc-900 shadow-zinc-200/50'
+                    }`}
+                  style={{
+                    zIndex: focusedOverlay === 'refresh' ? 35 : 30,
+                    // On mobile, ensure it's below header (60px) + some margin
+                    ...(isMobile ? { top: '80px' } : {})
+                  }}
+                  onMouseDown={() => setFocusedOverlay('refresh')}
+                >
+                  <div className="p-4 space-y-3">
+                    <div className="flex items-center justify-between cursor-grab active:cursor-grabbing" data-drag-handle>
+                      <h3 className="text-sm font-bold flex items-center gap-2">
+
+                        {refreshNetworkReport.title}
+                      </h3>
+                      <div className="flex items-center gap-1">
+                        <TooltipWrapper title={t.refreshNetwork}>
+                          <button
+                            onClick={() => { handleRefreshNetwork(); }}
+                            className="w-5 h-5 rounded-md bg-blue-500 hover:bg-blue-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0"
+                          >
+                            <RefreshCw className="w-3 h-3 text-white pointer-events-none" />
+                          </button>
+                        </TooltipWrapper>
+                        <TooltipWrapper title={t.close}>
+                          <button
+                            onClick={() => setRefreshNetworkReport(prev => prev ? { ...prev, show: false } : null)}
+                            className="w-5 h-5 rounded-md bg-red-500 hover:bg-red-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0"
+                          >
+                            <X className="w-3 h-3 text-white pointer-events-none" />
+                          </button>
+                        </TooltipWrapper>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="space-y-2 text-xs">
-                    {refreshNetworkReport.dhcpMessages.length > 0 && (
-                      <div className="flex flex-wrap gap-x-3 gap-y-1 opacity-80">
-                        {refreshNetworkReport.dhcpMessages.map((msg, i) => (
-                          <div key={i} className="flex items-center gap-1.5">
-                            <span>{msg}</span>
-                          </div>
-                        ))}
+                    <div className="space-y-2 text-xs">
+                      {refreshNetworkReport.dhcpMessages.length > 0 && (
+                        <div className="flex flex-wrap gap-x-3 gap-y-1 opacity-80">
+                          {refreshNetworkReport.dhcpMessages.map((msg, i) => (
+                            <div key={i} className="flex items-center gap-1.5">
+                              <span>{msg}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {refreshNetworkReport.stpMessage && (
+                        <div className="text-pink-500 font-medium py-0.5 px-2 bg-pink-500/10 rounded-lg w-fit">
+                          {refreshNetworkReport.stpMessage}
+                        </div>
+                      )}
+
+                      {refreshNetworkReport.portSecurityMessage && (
+                        <div className="text-red-500 font-medium py-0.5 px-2 bg-red-500/10 rounded-lg w-fit">
+                          {refreshNetworkReport.portSecurityMessage}
+                        </div>
+                      )}
+
+                      {refreshNetworkReport.topologyMessage && (
+                        <div className="text-amber-500 font-medium py-0.5 px-2 bg-amber-500/10 rounded-lg w-fit">
+                          {refreshNetworkReport.topologyMessage}
+                        </div>
+                      )}
+
+                      <div className={`pt-2 border-t ${isDark ? 'border-zinc-800' : 'border-zinc-100'}`}>
+                        <RefreshDeviceListToast devices={refreshNetworkReport.devices} language={language} />
                       </div>
-                    )}
-
-                    {refreshNetworkReport.stpMessage && (
-                      <div className="text-pink-500 font-medium py-0.5 px-2 bg-pink-500/10 rounded-lg w-fit">
-                        {refreshNetworkReport.stpMessage}
-                      </div>
-                    )}
-
-                    {refreshNetworkReport.portSecurityMessage && (
-                      <div className="text-red-500 font-medium py-0.5 px-2 bg-red-500/10 rounded-lg w-fit">
-                        {refreshNetworkReport.portSecurityMessage}
-                      </div>
-                    )}
-
-                    {refreshNetworkReport.topologyMessage && (
-                      <div className="text-amber-500 font-medium py-0.5 px-2 bg-amber-500/10 rounded-lg w-fit">
-                        {refreshNetworkReport.topologyMessage}
-                      </div>
-                    )}
-
-                    <div className={`pt-2 border-t ${isDark ? 'border-zinc-800' : 'border-zinc-100'}`}>
-                      <RefreshDeviceListToast devices={refreshNetworkReport.devices} language={language} />
                     </div>
                   </div>
                 </div>
-              </div>
-            )
-          }
+              )
+            }
           </main>
 
           <AppFooter

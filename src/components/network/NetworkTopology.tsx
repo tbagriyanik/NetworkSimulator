@@ -2776,6 +2776,20 @@ export function NetworkTopology({
     setSelectedNoteIds([noteId]);
   }, [notes, saveToHistory]);
 
+  const handleNoteResizeTouchStart = useCallback((e: React.TouchEvent, noteId: string) => {
+    e.stopPropagation();
+    if (!canvasRef.current || e.touches.length !== 1) return;
+
+    const touch = e.touches[0];
+    const note = notes.find((n) => n.id === noteId);
+    if (!note) return;
+
+    saveToHistory();
+    setResizingNoteId(noteId);
+    setNoteResizeStart({ x: touch.clientX, y: touch.clientY, width: note.width, height: note.height });
+    setSelectedNoteIds([noteId]);
+  }, [notes, saveToHistory]);
+
   // Handle note dragging and resizing with mouse move
   useEffect(() => {
     let animationFrameId: number;
@@ -6969,16 +6983,7 @@ export function NetworkTopology({
                           }}
                           onTouchStart={(e) => {
                             e.preventDefault();
-                            if (e.touches.length === 1) {
-                              const touch = e.touches[0];
-                              const currentNote = notes.find((n) => n.id === note.id);
-                              if (currentNote) {
-                                saveToHistory();
-                                setResizingNoteId(currentNote.id);
-                                setNoteResizeStart({ x: touch.clientX, y: touch.clientY, width: currentNote.width, height: currentNote.height });
-                                setSelectedNoteIds([currentNote.id]);
-                              }
-                            }
+                            handleNoteResizeTouchStart(e, note.id);
                           }}
                           className="absolute right-1 bottom-1 z-10 w-4 h-4 cursor-se-resize opacity-50 hover:opacity-100 transition-opacity touch-manipulation"
                         >

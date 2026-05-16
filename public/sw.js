@@ -8,8 +8,8 @@ const RUNTIME_CACHE = `netsim-runtime-${CACHE_VERSION}`;
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
-  '/icon-192x192.svg',
-  '/icon-512x512.svg',
+  '/icon192.svg',
+  '/icon512.svg',
   '/favicon.svg',
 ];
 
@@ -51,10 +51,10 @@ self.addEventListener('activate', (event) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
             // Delete old caches
-            if (cacheName !== STATIC_CACHE && 
-                cacheName !== DYNAMIC_CACHE && 
-                cacheName !== RUNTIME_CACHE &&
-                !cacheName.includes(CACHE_VERSION)) {
+            if (cacheName !== STATIC_CACHE &&
+              cacheName !== DYNAMIC_CACHE &&
+              cacheName !== RUNTIME_CACHE &&
+              !cacheName.includes(CACHE_VERSION)) {
               console.log('Service Worker: Clearing old cache', cacheName);
               return caches.delete(cacheName);
             }
@@ -103,9 +103,9 @@ function getCacheStrategy(request) {
   const url = new URL(request.url);
 
   // Static assets - cache first
-  if (request.destination === 'image' || 
-      request.destination === 'font' ||
-      request.url.match(/\.(css|js|svg|png|jpg|jpeg|gif|ico|woff|woff2)$/i)) {
+  if (request.destination === 'image' ||
+    request.destination === 'font' ||
+    request.url.match(/\.(css|js|svg|png|jpg|jpeg|gif|ico|woff|woff2)$/i)) {
     return CACHE_STRATEGIES.CACHE_FIRST;
   }
 
@@ -146,24 +146,24 @@ async function cacheFirst(request) {
 // Network first strategy
 async function networkFirst(request) {
   const cache = await caches.open(DYNAMIC_CACHE);
-  
+
   try {
     const networkResponse = await fetch(request);
-    
+
     // Cache successful responses
     if (networkResponse && networkResponse.status === 200) {
       cache.put(request, networkResponse.clone());
     }
-    
+
     return networkResponse;
   } catch (error) {
     console.log('Network failed, trying cache:', request.url);
     const cachedResponse = await cache.match(request);
-    
+
     if (cachedResponse) {
       return cachedResponse;
     }
-    
+
     // If both fail and it's a document, return offline page
     if (request.destination === 'document') {
       const offlineResponse = await caches.match('/');
@@ -171,7 +171,7 @@ async function networkFirst(request) {
         return offlineResponse;
       }
     }
-    
+
     throw error;
   }
 }
@@ -180,7 +180,7 @@ async function networkFirst(request) {
 async function staleWhileRevalidate(request) {
   const cache = await caches.open(DYNAMIC_CACHE);
   const cachedResponse = await cache.match(request);
-  
+
   // Fetch in background
   const fetchPromise = fetch(request).then((networkResponse) => {
     if (networkResponse && networkResponse.status === 200) {
@@ -190,12 +190,12 @@ async function staleWhileRevalidate(request) {
   }).catch((error) => {
     console.error('Background fetch failed:', error);
   });
-  
+
   // Return cached version immediately if available
   if (cachedResponse) {
     return cachedResponse;
   }
-  
+
   // Otherwise wait for network
   return fetchPromise;
 }
