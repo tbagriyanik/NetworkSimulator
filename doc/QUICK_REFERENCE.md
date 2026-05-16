@@ -359,6 +359,6 @@ Router# show ipv6 interface brief
 
 ---
 
-**Güncelleme Tarihi**: 2026-05-15
+**Güncelleme Tarihi**: 2026-05-16
 **Versiyon**: 1.0  
 **Durum**: ✅ Hazır

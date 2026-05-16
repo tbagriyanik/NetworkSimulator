@@ -67,6 +67,8 @@
 | `Escape` | Cancel selection / Close mode | Seçimi iptal et / Modu kapat |
 | `Ctrl + Scroll` | Zoom in / out | Yakınlaştır / Uzaklaştır |
 | `Space + Drag` | Pan canvas | Canvas'ı kaydır |
+| `Arrow Keys` | Move selected device(s) | Seçili cihaz(lar)ı taşı |
+| `Shift + Arrow Keys` | Move selected device(s) faster | Seçili cihaz(lar)ı daha hızlı taşı |
 | `F1` | Open / close help panel | Yardım panelini aç / kapat |
 | `F5` | Refresh network topology | Ağ topolojisini yenile |
 | `Double-click` | Open device panel | Cihaz panelini aç |
@@ -120,6 +122,8 @@
 - **Ctrl + Drag** snaps devices to 16px grid / `Ctrl + Drag` cihazları ızgaraya yapıştırır
 - **Double-click** any device to open its panel / Cihaza çift tık paneli açar
 - **Space + Drag** pans the canvas when zoomed in / `Boşluk + Sürükle` yakınlaştırınca tuvali kaydırır
+- **Arrow Keys** move selected devices on topology / `Ok Tuşları` topolojide seçili cihazları taşır
+- **Shift + Arrow Keys** moves selected devices faster / `Shift + Ok Tuşları` daha hızlı taşır
 - **P** and **N** control ping packet animation playback / `P` ve `N` ping animasyonunu kontrol eder
 - **F5** refreshes the network topology / `F5` topolojiyi yeniler
 - Config panel shows live `running-config` / Config paneli canlı `running-config` gösterir

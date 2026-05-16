@@ -3559,6 +3559,32 @@ export function NetworkTopology({
         }
       }
 
+      // Arrow keys move selected devices on topology
+      if (!isEditable && selectedDeviceIds.length > 0 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const step = e.shiftKey ? 32 : 16;
+        let deltaX = 0;
+        let deltaY = 0;
+
+        if (e.key === 'ArrowUp') deltaY = -step;
+        if (e.key === 'ArrowDown') deltaY = step;
+        if (e.key === 'ArrowLeft') deltaX = -step;
+        if (e.key === 'ArrowRight') deltaX = step;
+
+        if (deltaX !== 0 || deltaY !== 0) {
+          e.preventDefault();
+          e.stopPropagation();
+          saveToHistory();
+          setDevices((prev) =>
+            prev.map((device) =>
+              selectedDeviceIds.includes(device.id)
+                ? { ...device, x: device.x + deltaX, y: device.y + deltaY }
+                : device
+            )
+          );
+          return;
+        }
+      }
+
       // Ctrl Shortcuts - skip if input is focused
       if ((e.ctrlKey || e.metaKey) && !isEditable) {
         // Ctrl+A to select all

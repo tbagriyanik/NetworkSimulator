@@ -9,6 +9,8 @@ A browser-based network simulator for learning switching, routing, wireless, IoT
 
 **Live app:** [network2026.vercel.app](https://network2026.vercel.app)
 
+Keyboard update (2026-05-16): Selected device(s) can be moved with arrow keys on topology (`Shift + Arrow` for faster movement).
+
 ---
 
 ## Quick Start
@@ -21,8 +23,8 @@ npm install && npm run dev
 
 | Metric | Value |
 | --- | ---: |
-| Code | 103,498 |
-| Source Files | 261 |
+| Code | 92,265 |
+| Source Files | 263 |
 | Example Projects | 39 |
 | Guided Lessons | 3 |
 | CLI Command Families | 180+ |
