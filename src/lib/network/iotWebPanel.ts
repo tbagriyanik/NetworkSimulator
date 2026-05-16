@@ -1005,18 +1005,25 @@ export const generateIotDevicePageContent = (
           function updateRuleList() {
             const list = document.getElementById('ruleList');
             if (!list) return;
-            list.innerHTML = rules.map(rule => {
-              const safeCondition = escapeHtml(rule.condition);
-              const safeAction = escapeHtml(rule.action);
-              // Correctly escape the ID for attribute context
-              const jsId = JSON.stringify(rule.id).replace(/"/g, '&quot;');
-              return \`
-                <div class="rule-item">
-                  <span>\${safeCondition} &rarr; \${safeAction}</span>
-                  <button onclick="deleteRule(\${jsId})" class="delete-rule-btn">&times;</button>
-                </div>
-              \`;
-            }).join('');
+            list.textContent = '';
+            rules.forEach(rule => {
+              const row = document.createElement('div');
+              row.className = 'rule-item';
+
+              const label = document.createElement('span');
+              label.textContent = rule.condition + ' → ' + rule.action;
+
+              const delBtn = document.createElement('button');
+              delBtn.className = 'delete-rule-btn';
+              delBtn.textContent = '×';
+              delBtn.addEventListener('click', function () {
+                deleteRule(rule.id);
+              });
+
+              row.appendChild(label);
+              row.appendChild(delBtn);
+              list.appendChild(row);
+            });
           }
 
           function toggleDevice() {

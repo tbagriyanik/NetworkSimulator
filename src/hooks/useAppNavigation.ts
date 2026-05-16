@@ -198,6 +198,10 @@ export function useAppNavigation(options: UseAppNavigationOptions) {
   }, [applyDeviceSelection, focusDeviceInTopology, setZoom]);
 
   const switchTabOrTopology = useCallback((tabId: TabType, activeDeviceId: string, activeDeviceType: DeviceType) => {
+    if (!activeDeviceId || activeDeviceId.trim() === '') {
+      setActiveTab('topology');
+      return;
+    }
     const deviceObj = topologyDevices?.find(d => d.id === activeDeviceId);
 
     if (tabId === 'cmd') {

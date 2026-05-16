@@ -25,6 +25,7 @@ import { formatErrorForUser, errorHandler, STORAGE_ERRORS } from '@/lib/errors/e
 import { generateRandomLinkLocalIpv4 } from '@/lib/network/linkLocal';
 import { safeParse, safeStringify } from '@/lib/network/serialization';
 import { calculatePVST } from '@/lib/network/core/showCommands';
+import { createInitialState } from '@/lib/network/initialState';
 import type { TerminalOutput } from '@/components/network/Terminal';
 import { BOOT_PROGRESS_MARKER } from '@/components/network/Terminal';
 import {
@@ -980,11 +981,19 @@ export default function Home() {
 
   // Legacy state for compatibility with other panels (uses active device's state)
   const state = useMemo(() => {
+    if (!activeDeviceId || activeDeviceId.trim() === '') {
+      return createInitialState();
+    }
     const activeDevice = (topologyDevices || []).find(d => d.id === activeDeviceId);
     const resolvedType = activeDevice?.type ?? activeDeviceType;
     return getOrCreateDeviceState(activeDeviceId, resolvedType, activeDevice?.name, activeDevice?.macAddress, activeDevice?.switchModel);
   }, [activeDeviceId, activeDeviceType, topologyDevices, deviceStates, getOrCreateDeviceState]);
-  const output = getOrCreateDeviceOutputs(activeDeviceId, state);
+  const output = useMemo(() => {
+    if (!activeDeviceId || activeDeviceId.trim() === '') {
+      return [] as TerminalOutput[];
+    }
+    return getOrCreateDeviceOutputs(activeDeviceId, state);
+  }, [activeDeviceId, state, getOrCreateDeviceOutputs]);
   const isTaskSystemEnabled = activeDeviceType === 'switchL2' || activeDeviceType === 'switchL3' || activeDeviceType === 'router';
   const activeDeviceTasks = useMemo(
     () => isTaskSystemEnabled
@@ -2155,19 +2164,24 @@ ${state.bannerMOTD}
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    const sanitizedName = projectName.replace(/[^a-zA-Z0-9\s_-]/g, '').trim().replace(/\s+/g, '-').substring(0, 60) || 'network-project';
-    a.download = `${sanitizedName}-${new Date().toISOString().slice(0, 10)}.json`;
+    const baseProjectName = projectName
+      .replace(/\.json$/i, '')
+      .replace(/-\d{4}-\d{2}-\d{2}$/i, '');
+    const sanitizedName = baseProjectName.replace(/[^a-zA-Z0-9\s_-]/g, '').trim().replace(/\s+/g, '-').substring(0, 60) || 'network-project';
+    const savedFileName = `${sanitizedName}-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = savedFileName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    setProjectName(savedFileName);
     setHasUnsavedChanges(false);
     setLastSaveTime(new Date().toLocaleTimeString());
     toast({
       title: t.projectSaved,
       description: t.jsonDownloaded,
     });
-  }, [deviceStates, deviceOutputs, pcOutputs, pcHistories, topologyDevices, topologyConnections, topologyNotes, cableInfo, activeDeviceId, activeDeviceType, setHasUnsavedChanges, setLastSaveTime, language, projectName]);
+  }, [deviceStates, deviceOutputs, pcOutputs, pcHistories, topologyDevices, topologyConnections, topologyNotes, cableInfo, activeDeviceId, activeDeviceType, setHasUnsavedChanges, setLastSaveTime, language, projectName, setProjectName]);
 
   // Handle Project Saving (Wrapper)
   function handleSaveProject() {
@@ -2259,6 +2273,7 @@ ${state.bannerMOTD}
 
     // Close guided mode panel if open
     closeGuidedMode();
+    setProjectName('Untitled');
 
     // Close network refresh report if open
     setRefreshNetworkReport(null);
