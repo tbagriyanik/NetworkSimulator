@@ -1,3 +1,5 @@
+import { logger } from '@/lib/logger';
+
 /**
  * Bundle Size Optimization
  * Optimizes bundle size with code splitting, lazy loading, and asset optimization
@@ -190,7 +192,7 @@ class CodeSplittingManager {
             this.loadedChunks.add(chunkName);
             return chunk;
         } catch (error) {
-            console.error(`Failed to load chunk ${chunkName}:`, error);
+            logger.error(`Failed to load chunk ${chunkName}:`, error);
             throw error;
         } finally {
             this.loadingPromises.delete(chunkName);
@@ -470,7 +472,7 @@ class BundleSizeMonitor {
         }
 
         if (warnings.length > 0) {
-            console.warn('Bundle size warnings:', warnings);
+            logger.warn('Bundle size warnings:', warnings);
         }
     }
 
@@ -519,7 +521,7 @@ class BundleOptimizationOrchestrator {
     }
 
     async performFullOptimization(): Promise<void> {
-        console.log('Starting bundle optimization...');
+        logger.info('Starting bundle optimization...');
 
         // 1. Analyze current bundle
         const analysis = await this.bundleAnalyzer.analyzeBundle();
@@ -538,13 +540,13 @@ class BundleOptimizationOrchestrator {
         await this.assetOptimizer.preloadCriticalAssets();
 
         // 5. Generate reports
-        console.log(this.bundleAnalyzer.generateReport());
-        console.log(this.codeSplitter.getChunkInfo());
-        console.log(this.assetOptimizer.getOptimizationReport());
-        console.log(this.treeShaker.getTreeShakingReport());
-        console.log(this.sizeMonitor.getSizeReport());
+        logger.info(this.bundleAnalyzer.generateReport());
+        logger.info(this.codeSplitter.getChunkInfo());
+        logger.info(this.assetOptimizer.getOptimizationReport());
+        logger.info(this.treeShaker.getTreeShakingReport());
+        logger.info(this.sizeMonitor.getSizeReport());
 
-        console.log('Bundle optimization completed!');
+        logger.info('Bundle optimization completed!');
     }
 
     async loadComponent(componentName: string): Promise<any> {

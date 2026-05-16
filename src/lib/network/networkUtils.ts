@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { SwitchState } from './types';
 
 /**
@@ -11,7 +12,7 @@ export function ensureDeviceStatesMap(deviceStates: Map<string, SwitchState> | R
   try {
     return new Map(Object.entries(deviceStates));
   } catch (err) {
-    console.error('Failed to convert deviceStates to Map:', err);
+    logger.error('Failed to convert deviceStates to Map:', err);
     return new Map();
   }
 }

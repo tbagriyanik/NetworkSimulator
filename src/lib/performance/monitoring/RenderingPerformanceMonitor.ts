@@ -1,3 +1,5 @@
+import { logger } from '@/lib/logger';
+
 /**
  * RenderingPerformanceMonitor - Tracks rendering performance metrics
  * 
@@ -95,7 +97,7 @@ export class RenderingPerformanceMonitor {
                 buffered: true,
             });
         } catch (e) {
-            console.warn('Paint observer initialization failed:', e);
+            logger.warn('Paint observer initialization failed:', e);
         }
 
         try {
@@ -113,7 +115,7 @@ export class RenderingPerformanceMonitor {
                 buffered: true,
             });
         } catch (e) {
-            console.warn('Layout observer initialization failed:', e);
+            logger.warn('Layout observer initialization failed:', e);
         }
     }
 
@@ -204,7 +206,7 @@ export class RenderingPerformanceMonitor {
      */
     private logFrameDropWarning(fps: number, context?: string): void {
         const message = `Frame drop detected: FPS ${fps} below threshold ${this.fpsThreshold}${context ? ` (${context})` : ''}`;
-        console.warn(`[PerformanceMonitor] ${message}`);
+        logger.warn(`[PerformanceMonitor] ${message}`);
     }
 
     /**

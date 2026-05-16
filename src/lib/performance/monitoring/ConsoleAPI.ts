@@ -5,6 +5,7 @@
  * Provides window.performance.getMetrics() API for debugging
  */
 
+import { logger } from '@/lib/logger';
 import { getRenderingPerformanceMonitor } from './RenderingPerformanceMonitor';
 
 /**
@@ -63,7 +64,7 @@ export function initializePerformanceConsoleAPI(): void {
          */
         logMetrics: () => {
             const metrics = monitor.getMetrics();
-            console.table(metrics);
+            logger.debug('Performance Metrics:', metrics);
             return metrics;
         },
 
@@ -73,7 +74,7 @@ export function initializePerformanceConsoleAPI(): void {
          */
         logFrameDrops: () => {
             const history = monitor.getFrameDropHistory();
-            console.table(history);
+            logger.debug('Frame Drop History:', history);
             return history;
         },
     };
@@ -84,7 +85,7 @@ export function initializePerformanceConsoleAPI(): void {
     // Also expose via window.__PERFORMANCE__ for easier access
     window.__PERFORMANCE__ = customPerformance;
 
-    console.log(
+    logger.debug(
         '[PerformanceMonitor] Console API initialized. Use window.performance.getMetrics() or window.__PERFORMANCE__.getMetrics()'
     );
 }

@@ -26,6 +26,7 @@ import { generateRandomLinkLocalIpv4 } from '@/lib/network/linkLocal';
 import { WifiSignalMeter, IoTSensorDisplay } from './PCPanelWidgets';
 import { expandCommandContext, DESKTOP_COMMANDS } from './pcPanel.utils';
 import { errorHandler, STORAGE_ERRORS, DHCP_ERRORS, CLIPBOARD_ERRORS, DEVICE_ERRORS } from '@/lib/errors/errorHandler';
+import { logger } from '@/lib/logger';
 
 
 interface OutputLine {
@@ -2078,14 +2079,13 @@ export function PCPanel({
         const iotDeviceId = payload.iotDeviceId;
 
         if (!iotDeviceId) {
-          console.warn('No iotDeviceId provided');
+          logger.warn('No iotDeviceId provided');
           return;
         }
 
-        // Find the existing IoT device in topology
         const iotDevice = topologyDevices.find((d) => d.id === iotDeviceId);
         if (!iotDevice || iotDevice.type !== 'iot') {
-          console.warn('IoT device not found or wrong type:', iotDeviceId);
+          logger.warn('IoT device not found or wrong type:', iotDeviceId);
           return;
         }
 
@@ -2187,14 +2187,13 @@ export function PCPanel({
         const iotDeviceId = payload.iotDeviceId;
 
         if (!iotDeviceId) {
-          console.warn('No iotDeviceId provided for disconnect');
+          logger.warn('No iotDeviceId provided for disconnect');
           return;
         }
 
-        // Find the existing IoT device in topology
         const iotDevice = topologyDevices.find((d) => d.id === iotDeviceId);
         if (!iotDevice || iotDevice.type !== 'iot') {
-          console.warn('IoT device not found or wrong type for disconnect:', iotDeviceId);
+          logger.warn('IoT device not found or wrong type for disconnect:', iotDeviceId);
           return;
         }
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { logger } from '@/lib/logger';
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Breakpoint, getBreakpointFromWidth } from '@/lib/design-tokens';
 import { LayoutConfig, DEFAULT_LAYOUT_CONFIG } from '@/lib/layout/responsive';
@@ -53,7 +54,7 @@ export function LayoutProvider({ children }: { children: ReactNode }) {
                     const prefs = JSON.parse(saved);
                     if (prefs.sidebarCollapsed !== undefined) setSidebarCollapsed(prefs.sidebarCollapsed);
                 } catch (e) {
-                    console.error('Failed to restore layout preferences:', e);
+                    logger.error('Failed to restore layout preferences:', e);
                 }
             }
         }
@@ -80,7 +81,7 @@ export function LayoutProvider({ children }: { children: ReactNode }) {
                     if (prefs.sidebarCollapsed !== undefined) setSidebarCollapsed(prefs.sidebarCollapsed);
                     if (prefs.panelLayout !== undefined) setPanelLayout(prefs.panelLayout);
                 } catch (e) {
-                    console.error('Failed to restore layout preferences:', e);
+                    logger.error('Failed to restore layout preferences:', e);
                 }
             }
         }

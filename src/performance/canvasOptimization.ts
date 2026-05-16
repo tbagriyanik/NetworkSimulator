@@ -1,3 +1,5 @@
+import { logger } from '@/lib/logger';
+
 /**
  * Canvas Rendering Optimization
  * Optimizes canvas rendering for large networks with viewport culling, throttling, and lazy loading
@@ -241,7 +243,7 @@ class LazyIconLoader {
             this.loadedIcons.add(deviceType);
             return icon;
         } catch (error) {
-            console.warn(`Failed to load icon for ${deviceType}:`, error);
+            logger.warn(`Failed to load icon for ${deviceType}:`, error);
             return this.defaultIcon;
         } finally {
             this.loadingPromises.delete(deviceType);

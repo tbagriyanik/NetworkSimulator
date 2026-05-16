@@ -32,6 +32,7 @@ import { CABLE_COLORS, DRAG_THRESHOLD, LONG_PRESS_DURATION, VIRTUAL_CANVAS_WIDTH
 import { calculateSTPState } from '@/lib/network/core/showCommands';
 import { errorHandler, CLIPBOARD_ERRORS } from '@/lib/errors/errorHandler';
 import { PingPacketInfoPanel, buildHopPacketInfos } from './PingPacketInfoPanel';
+import { logger } from '@/lib/logger';
 
 const allocatedMacAddresses = new Set<string>();
 const generateMacAddress = (): string => {
@@ -873,18 +874,18 @@ export function NetworkTopology({
 
   // Handle alignment for multiple selected devices
   const handleAlign = useCallback((type: 'top' | 'bottom' | 'left' | 'right' | 'h-center' | 'v-center') => {
-    console.log('[handleAlign] called with type:', type, 'selectedDeviceIds:', selectedDeviceIds);
+    logger.debug('[handleAlign] called with type:', type, 'selectedDeviceIds:', selectedDeviceIds);
     if (selectedDeviceIds.length < 2) {
-      console.log('[handleAlign] early return - less than 2 devices selected');
+      logger.debug('[handleAlign] early return - less than 2 devices selected');
       return;
     }
     saveToHistory();
 
     setDevices(prev => {
       const selectedDevices = prev.filter(d => selectedDeviceIds.includes(d.id));
-      console.log('[handleAlign] selectedDevices:', selectedDevices.map(d => ({ id: d.id, x: d.x, y: d.y })));
+      logger.debug('[handleAlign] selectedDevices:', selectedDevices.map(d => ({ id: d.id, x: d.x, y: d.y })));
       if (selectedDevices.length < 2) {
-        console.log('[handleAlign] early return from setDevices - less than 2 devices found');
+        logger.debug('[handleAlign] early return from setDevices - less than 2 devices found');
         return prev;
       }
 
@@ -894,14 +895,14 @@ export function NetworkTopology({
       switch (type) {
         case 'top':
           targetY = Math.min(...selectedDevices.map(sd => sd.y));
-          console.log('[handleAlign] top alignment - targetY:', targetY);
+          logger.debug('[handleAlign] top alignment - targetY:', targetY);
           break;
         case 'bottom':
           targetY = Math.max(...selectedDevices.map(sd => sd.y));
           break;
         case 'left':
           targetX = Math.min(...selectedDevices.map(sd => sd.x));
-          console.log('[handleAlign] left alignment - targetX:', targetX);
+          logger.debug('[handleAlign] left alignment - targetX:', targetX);
           break;
         case 'right':
           targetX = Math.max(...selectedDevices.map(sd => sd.x));
@@ -929,7 +930,7 @@ export function NetworkTopology({
         return updatedDevice;
       });
 
-      console.log('[handleAlign] result:', result.filter(d => selectedDeviceIds.includes(d.id)).map(d => ({ id: d.id, x: d.x, y: d.y })));
+      logger.debug('[handleAlign] result:', result.filter(d => selectedDeviceIds.includes(d.id)).map(d => ({ id: d.id, x: d.x, y: d.y })));
       return result;
     });
   }, [selectedDeviceIds, saveToHistory]);
@@ -6156,7 +6157,7 @@ export function NetworkTopology({
                 } backdrop-blur-md`}
               onClick={(e) => {
                 e.stopPropagation();
-                console.log('[Toolbar] Container clicked');
+                logger.debug('[Toolbar] Container clicked');
               }}
               onMouseDown={(e) => {
                 e.stopPropagation();
@@ -6171,7 +6172,7 @@ export function NetworkTopology({
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
-                    console.log('[Toolbar] Align left clicked');
+                    logger.debug('[Toolbar] Align left clicked');
                     handleAlign('left');
                   }}
                   className={`p-1.5 rounded-lg transition-colors ${isDark ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-600'}`}
@@ -6186,7 +6187,7 @@ export function NetworkTopology({
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
-                    console.log('[Toolbar] Align top clicked');
+                    logger.debug('[Toolbar] Align top clicked');
                     handleAlign('top');
                   }}
                   className={`p-1.5 rounded-lg transition-colors ${isDark ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-600'}`}
@@ -6205,7 +6206,7 @@ export function NetworkTopology({
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
-                    console.log('[Toolbar] Power toggle clicked');
+                    logger.debug('[Toolbar] Power toggle clicked');
                     saveToHistory();
                     togglePowerDevices(selectedDeviceIds);
                   }}
@@ -6222,7 +6223,7 @@ export function NetworkTopology({
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
-                    console.log('[Toolbar] Cancel clicked');
+                    logger.debug('[Toolbar] Cancel clicked');
                     const firstId = selectedDeviceIds[0];
                     const firstDevice = deviceMap.get(firstId);
                     setSelectedDeviceIds(firstId ? [firstId] : []);
@@ -6238,7 +6239,7 @@ export function NetworkTopology({
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
-                    console.log('[Toolbar] Delete clicked');
+                    logger.debug('[Toolbar] Delete clicked');
                     saveToHistory();
                     selectedDeviceIds.forEach(id => deleteDevice(id));
                     setSelectedDeviceIds([]);

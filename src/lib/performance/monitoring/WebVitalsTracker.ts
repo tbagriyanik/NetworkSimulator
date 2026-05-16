@@ -4,6 +4,7 @@
  * Integrates with web-vitals library and provides analytics reporting
  */
 
+import { logger } from '@/lib/logger';
 import {
     onCLS,
     onFCP,
@@ -119,7 +120,7 @@ export class WebVitalsTracker {
         ].filter((fn) => typeof fn === 'function');
 
         if (this.config.enableLogging) {
-            console.log('[WebVitalsTracker] Started tracking Web Vitals');
+            logger.debug('[WebVitalsTracker] Started tracking Web Vitals');
         }
     }
 
@@ -137,7 +138,7 @@ export class WebVitalsTracker {
         this.isTracking = false;
 
         if (this.config.enableLogging) {
-            console.log('[WebVitalsTracker] Stopped tracking Web Vitals');
+            logger.debug('[WebVitalsTracker] Stopped tracking Web Vitals');
         }
     }
 
@@ -192,10 +193,10 @@ export class WebVitalsTracker {
         threshold: number
     ): void {
         const message = `[WebVitalsTracker] ${metric} exceeded threshold: ${value.toFixed(2)}ms > ${threshold.toFixed(2)}ms`;
-        console.warn(message);
+        logger.warn(message);
 
         if (this.config.enableLogging) {
-            console.log(message);
+            logger.debug(message);
         }
     }
 

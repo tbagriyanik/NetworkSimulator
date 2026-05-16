@@ -5,6 +5,7 @@
  * smooth transitions, system theme detection, and accessibility preferences.
  */
 
+import { logger } from '@/lib/logger';
 import type { ThemeVariant, ThemeDefinition } from '../design-tokens/types';
 import { themeConfig, getTheme } from '../design-tokens';
 
@@ -101,7 +102,7 @@ export class ThemeEngine {
                 this.mediaQueries.highContrast.addEventListener('change', this.handleHighContrastChange.bind(this));
             }
         } catch (error) {
-            console.warn('Failed to setup media query listeners:', error);
+            logger.warn('Failed to setup media query listeners:', error);
         }
     }
 
@@ -228,7 +229,7 @@ export class ThemeEngine {
                 this.state = { ...this.state, ...parsed };
             }
         } catch (error) {
-            console.warn('Failed to load persisted theme state:', error);
+            logger.warn('Failed to load persisted theme state:', error);
         }
     }
 
@@ -243,7 +244,7 @@ export class ThemeEngine {
             };
             localStorage.setItem(this.config.storageKey, JSON.stringify(toStore));
         } catch (error) {
-            console.warn('Failed to persist theme state:', error);
+            logger.warn('Failed to persist theme state:', error);
         }
     }
 
@@ -252,7 +253,7 @@ export class ThemeEngine {
             try {
                 listener(this.state);
             } catch (error) {
-                console.error('Theme listener error:', error);
+                logger.error('Theme listener error:', error);
             }
         });
     }

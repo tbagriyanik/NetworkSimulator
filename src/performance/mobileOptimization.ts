@@ -1,3 +1,5 @@
+import { logger } from '@/lib/logger';
+
 /**
  * Mobile Performance Optimization
  * Optimizes performance for mobile devices with bundle size minimization, lazy loading, and touch optimization
@@ -229,7 +231,7 @@ class LazyLoadManager {
             this.loadedModules.add(moduleName);
             return loadedModule;
         } catch (error) {
-            console.error(`Failed to load module ${moduleName}:`, error);
+            logger.error(`Failed to load module ${moduleName}:`, error);
             throw error;
         } finally {
             this.loadingPromises.delete(moduleName);
@@ -409,7 +411,7 @@ class MemoryManager {
             });
         }
 
-        console.log('Memory cleanup performed');
+        logger.debug('Memory cleanup performed');
     }
 
     // Object pooling for frequently created/destroyed objects

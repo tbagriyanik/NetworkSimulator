@@ -14,6 +14,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import useAppStore, { useTopologyDevices, useTopologyConnections, useTopologyNotes, useZoom, usePan, useActiveTab, useEnvironment } from '@/lib/store/appStore';
 import { NetworkTopology } from '@/components/network/NetworkTopology';
 import { cn, normalizeMAC } from '@/lib/utils';
+import { logger, getFromStorage, setToStorage } from '@/lib/logger';
 import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType, CanvasPortStatus } from '@/components/network/networkTopology.types';
 import { getPrompt } from '@/lib/network/executor';
 import { formatErrorForUser, errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
@@ -714,11 +715,13 @@ export default function Home() {
     return () => window.removeEventListener('message', handleMessage);
   }, []);
 
-  // Initialize graphics quality to 'high' for first-time visitors
   useEffect(() => {
-    const appStoreData = localStorage.getItem('network-simulator-storage');
-    if (!appStoreData) {
-      // First-time visitor: ensure graphics quality is set to high
+    try {
+      const appStoreData = localStorage.getItem('network-simulator-storage');
+      if (!appStoreData) {
+        setGraphicsQuality('high');
+      }
+    } catch {
       setGraphicsQuality('high');
     }
   }, [setGraphicsQuality]);
@@ -731,9 +734,9 @@ export default function Home() {
     }
   }, [topologyKey]);
 
-  // Initialize defaults on mount to avoid hydration mismatch
   useEffect(() => {
-    const savedData = localStorage.getItem('netsim_autosave');
+    let savedData: string | null = null;
+    try { savedData = localStorage.getItem('netsim_autosave'); } catch { /* storage unavailable */ }
     if (!savedData) {
       setTopologyDevices([
         {
@@ -1130,7 +1133,7 @@ export default function Home() {
         activeTab
       };
 
-      localStorage.setItem('netsim_autosave', safeStringify(projectData));
+      try { localStorage.setItem('netsim_autosave', safeStringify(projectData)); } catch { /* storage unavailable */ }
       autosaveTimerRef.current = null;
       setLastSaveTime(new Date().toLocaleTimeString());
       setHasUnsavedChanges(false);
@@ -1502,7 +1505,8 @@ ${state.bannerMOTD}
 
   // Persistence: Load from localStorage on mount
   useEffect(() => {
-    const savedData = localStorage.getItem('netsim_autosave');
+    let savedData: string | null = null;
+    try { savedData = localStorage.getItem('netsim_autosave'); } catch { /* storage unavailable */ }
     if (savedData) {
       try {
         const projectData = safeParse<unknown>(savedData);
@@ -4028,10 +4032,10 @@ ${state.bannerMOTD}
                         className="h-7 w-7 hover:bg-amber-500/20 hover:text-amber-500"
                         onClick={() => {
                           if (activeFirewallId) {
-                            console.log('Firewall power toggle:', activeFirewallId, 'Current status:', topologyDevices.find(d => d.id === activeFirewallId)?.status);
+                            logger.debug('Firewall power toggle:', activeFirewallId, 'Current status:', topologyDevices.find(d => d.id === activeFirewallId)?.status);
                             toggleDevicePower(activeFirewallId);
                           } else {
-                            console.log('No active firewall ID');
+                            logger.debug('No active firewall ID');
                           }
                         }}
                         title={t.power}

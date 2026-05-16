@@ -1,3 +1,5 @@
+import { logger } from '@/lib/logger';
+
 // Window Position Manager
 // Preserves and restores modal/dialog window positions during network refresh
 
@@ -51,7 +53,7 @@ export function saveWindowPositions(): void {
                         size: JSON.parse(sizeData),
                     };
                 } catch (e) {
-                    console.warn(`Failed to parse ${name} window layout:`, e);
+                    logger.warn(`Failed to parse ${name} window layout:`, e);
                 }
             }
         });
@@ -70,7 +72,7 @@ export function saveWindowPositions(): void {
                         };
                     }
                 } catch (e) {
-                    console.warn(`Failed to parse draggable dialog ${dialogId} position:`, e);
+                    logger.warn(`Failed to parse draggable dialog ${dialogId} position:`, e);
                 }
             }
         });
@@ -78,7 +80,7 @@ export function saveWindowPositions(): void {
         // Store backup
         localStorage.setItem(WINDOW_POSITIONS_KEY, JSON.stringify(layouts));
     } catch (error) {
-        console.error('Failed to save window positions:', error);
+        logger.error('Failed to save window positions:', error);
     }
 }
 
@@ -107,7 +109,7 @@ export function restoreWindowPositions(): void {
                     localStorage.setItem(modalKeys[index], JSON.stringify(layout.position));
                     localStorage.setItem(sizeKeys[index], JSON.stringify(layout.size));
                 } catch (e) {
-                    console.warn(`Failed to restore ${name} window layout:`, e);
+                    logger.warn(`Failed to restore ${name} window layout:`, e);
                 }
             }
         });
@@ -119,12 +121,12 @@ export function restoreWindowPositions(): void {
                 try {
                     localStorage.setItem(`draggable_position_${dialogId}`, JSON.stringify(layout.position));
                 } catch (e) {
-                    console.warn(`Failed to restore draggable dialog ${dialogId} position:`, e);
+                    logger.warn(`Failed to restore draggable dialog ${dialogId} position:`, e);
                 }
             }
         });
     } catch (error) {
-        console.error('Failed to restore window positions:', error);
+        logger.error('Failed to restore window positions:', error);
     }
 }
 
@@ -136,7 +138,7 @@ export function clearWindowPositionsBackup(): void {
         if (typeof window === 'undefined') return;
         localStorage.removeItem(WINDOW_POSITIONS_KEY);
     } catch (error) {
-        console.error('Failed to clear window positions backup:', error);
+        logger.error('Failed to clear window positions backup:', error);
     }
 }
 
@@ -149,7 +151,7 @@ export function getWindowPositionsBackup(): AllWindowLayouts | null {
         const backup = localStorage.getItem(WINDOW_POSITIONS_KEY);
         return backup ? JSON.parse(backup) : null;
     } catch (error) {
-        console.error('Failed to get window positions backup:', error);
+        logger.error('Failed to get window positions backup:', error);
         return null;
     }
 }

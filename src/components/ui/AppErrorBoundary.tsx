@@ -4,6 +4,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { logger } from '@/lib/logger';
 
 type Props = {
   children: React.ReactNode;
@@ -28,17 +29,12 @@ export class AppErrorBoundary extends React.Component<Props, State> {
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     this.props.onError?.(error, info);
 
-    // Log error to console in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error caught by boundary:', error, info);
-    }
+    logger.error('Error caught by boundary:', error, info);
 
-    // Increment error count
     this.setState(prev => ({ errorCount: prev.errorCount + 1 }));
 
-    // If too many errors, show persistent error UI
     if (this.state.errorCount > 2) {
-      console.error('Multiple errors detected. Application may be unstable.');
+      logger.error('Multiple errors detected. Application may be unstable.');
     }
   }
 

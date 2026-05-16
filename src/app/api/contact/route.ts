@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { NextRequest, NextResponse } from 'next/server';
 
 interface ContactFormData {
@@ -90,7 +91,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse>>
 
     if (!CONTACT_SUBMISSION_URL) {
       // Log to console for local development
-      console.log('📧 Contact Form Submission (Local):', {
+      logger.debug('📧 Contact Form Submission (Local):', {
         name,
         email,
         type,
@@ -127,7 +128,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse>>
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ External Submission Error:', {
+        logger.error('❌ External Submission Error:', {
           status: response.status,
           statusText: response.statusText,
           body: errorText,
@@ -143,7 +144,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse>>
         );
       }
 
-      console.log('✅ Contact Form Submitted:', { email, type });
+      logger.debug('✅ Contact Form Submitted:', { email, type });
 
       return NextResponse.json(
         {
@@ -153,7 +154,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse>>
         { status: 200 }
       );
     } catch (fetchError) {
-      console.error('❌ Network Error:', fetchError);
+      logger.error('❌ Network Error:', fetchError);
 
       return NextResponse.json(
         {
@@ -165,7 +166,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse>>
       );
     }
   } catch (error) {
-    console.error('❌ Unexpected Error:', error);
+    logger.error('❌ Unexpected Error:', error);
 
     return NextResponse.json(
       {

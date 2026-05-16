@@ -4,6 +4,7 @@
  * Uses lucide-react as the icon library
  */
 
+import { logger } from '@/lib/logger';
 import React from 'react';
 import * as LucideIcons from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -263,7 +264,7 @@ export const Icon = React.forwardRef<SVGSVGElement, IconProps>(
         const IconComponent = (LucideIcons as any)[name];
 
         if (!IconComponent) {
-            console.warn(`Icon "${name}" not found in lucide-react`);
+            logger.warn(`Icon "${name}" not found in lucide-react`);
             return null;
         }
 

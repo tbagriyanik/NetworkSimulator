@@ -1,3 +1,5 @@
+import { logger } from '@/lib/logger';
+
 export interface ErrorInfo {
     code: string;
     message: string;
@@ -93,7 +95,7 @@ export class ErrorHandler {
 
         // Log to console in development
         if (process.env.NODE_ENV === 'development') {
-            console.error(`[${errorInfo.code}]`, errorInfo.message, errorInfo.context);
+            logger.error(`[${errorInfo.code}]`, errorInfo.message, errorInfo.context);
         }
 
         // Notify listeners

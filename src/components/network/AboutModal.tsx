@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { logger } from '@/lib/logger';
 import {
   Dialog,
   DialogContent,
@@ -100,7 +101,7 @@ export function AboutModal({ isOpen, onClose, onStartTour }: AboutModalProps) {
         setSubmitStatus('error');
       }
     } catch (error) {
-      console.error('Contact submission error:', error);
+      logger.error('Contact submission error:', error);
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);

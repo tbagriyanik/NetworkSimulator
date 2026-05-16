@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useCallback } from 'react';
 import { saveWindowPositions, restoreWindowPositions, clearWindowPositionsBackup } from '@/lib/storage/windowPositionManager';
 
@@ -25,13 +26,13 @@ export function useNetworkRefreshWithPositions(onRefreshNetwork: () => void | Pr
                 clearWindowPositionsBackup();
             }, 100);
         } catch (error) {
-            console.error('Error during network refresh with position preservation:', error);
+            logger.error('Error during network refresh with position preservation:', error);
             // Still try to restore positions even if refresh failed
             try {
                 restoreWindowPositions();
                 clearWindowPositionsBackup();
             } catch (restoreError) {
-                console.error('Failed to restore positions after error:', restoreError);
+                logger.error('Failed to restore positions after error:', restoreError);
             }
         }
     }, [onRefreshNetwork]);

@@ -3,6 +3,7 @@
 import { CanvasDevice } from './networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { sanitizeHTML, safeJSONForHTML } from '@/lib/security/sanitizer';
+import { logger } from '@/lib/logger';
 
 export interface WifiAdminConfig {
   enabled: boolean;
@@ -855,7 +856,7 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig): string {
           }
         }, '*');
       } catch (err) {
-        console.warn('Could not sync router settings to parent:', err);
+        logger.warn('Could not sync router settings to parent:', err);
       }
     });
     

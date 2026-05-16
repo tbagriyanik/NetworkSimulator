@@ -1,3 +1,5 @@
+import { logger } from '@/lib/logger';
+
 /**
  * Security utilities for input sanitization and data protection
  */
@@ -216,7 +218,7 @@ export function secureLocalStorage() {
                 const serialized = JSON.stringify(value);
                 localStorage.setItem(sanitizedKey, serialized);
             } catch (e) {
-                console.error('Failed to set item in localStorage:', e);
+                logger.error('Failed to set item in localStorage:', e);
             }
         },
 
@@ -226,7 +228,7 @@ export function secureLocalStorage() {
                 const item = localStorage.getItem(sanitizedKey);
                 return item ? JSON.parse(item) : null;
             } catch (e) {
-                console.error('Failed to get item from localStorage:', e);
+                logger.error('Failed to get item from localStorage:', e);
                 return null;
             }
         },
@@ -236,7 +238,7 @@ export function secureLocalStorage() {
                 const sanitizedKey = sanitizeInput(key);
                 localStorage.removeItem(sanitizedKey);
             } catch (e) {
-                console.error('Failed to remove item from localStorage:', e);
+                logger.error('Failed to remove item from localStorage:', e);
             }
         },
 
@@ -244,7 +246,7 @@ export function secureLocalStorage() {
             try {
                 localStorage.clear();
             } catch (e) {
-                console.error('Failed to clear localStorage:', e);
+                logger.error('Failed to clear localStorage:', e);
             }
         },
     };

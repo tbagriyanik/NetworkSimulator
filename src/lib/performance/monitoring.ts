@@ -1,3 +1,5 @@
+import { logger } from '@/lib/logger';
+
 export interface PerformanceMetrics {
     fcp: number | null; // First Contentful Paint
     lcp: number | null; // Largest Contentful Paint
@@ -81,7 +83,7 @@ class PerformanceMonitor {
                 paintObserver.observe({ entryTypes: ['paint'] });
                 this.observers.set('paint', paintObserver);
             } catch (e) {
-                console.warn('Paint observer not supported:', e);
+                logger.warn('Paint observer not supported:', e);
             }
 
             // Observe Largest Contentful Paint (LCP)
@@ -95,7 +97,7 @@ class PerformanceMonitor {
                 lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
                 this.observers.set('lcp', lcpObserver);
             } catch (e) {
-                console.warn('LCP observer not supported:', e);
+                logger.warn('LCP observer not supported:', e);
             }
 
             // Observe Layout Shift (CLS)
@@ -112,7 +114,7 @@ class PerformanceMonitor {
                 clsObserver.observe({ entryTypes: ['layout-shift'] });
                 this.observers.set('cls', clsObserver);
             } catch (e) {
-                console.warn('CLS observer not supported:', e);
+                logger.warn('CLS observer not supported:', e);
             }
 
             // Observe First Input Delay (FID)
@@ -125,7 +127,7 @@ class PerformanceMonitor {
                 fidObserver.observe({ entryTypes: ['first-input'] });
                 this.observers.set('fid', fidObserver);
             } catch (e) {
-                console.warn('FID observer not supported:', e);
+                logger.warn('FID observer not supported:', e);
             }
 
             // Observe interaction timing (INP approximation)
@@ -141,7 +143,7 @@ class PerformanceMonitor {
                 inpObserver.observe({ type: 'event', buffered: true, durationThreshold: 16 } as any);
                 this.observers.set('inp', inpObserver);
             } catch (e) {
-                console.warn('INP observer not supported:', e);
+                logger.warn('INP observer not supported:', e);
             }
 
             // Observe Long Tasks for responsiveness budget
@@ -156,7 +158,7 @@ class PerformanceMonitor {
                 longTaskObserver.observe({ entryTypes: ['longtask'] });
                 this.observers.set('longtask', longTaskObserver);
             } catch (e) {
-                console.warn('Long task observer not supported:', e);
+                logger.warn('Long task observer not supported:', e);
             }
         }
 

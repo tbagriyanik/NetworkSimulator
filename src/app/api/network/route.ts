@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { NextRequest, NextResponse } from 'next/server';
 import { executeCommand, getPrompt } from '@/lib/network/executor';
 import { SwitchState } from '@/lib/network/types';
@@ -52,7 +53,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Network API Error:', error);
+    logger.error('Network API Error:', error);
     return NextResponse.json({
       error: 'Sunucu hatası oluştu'
     }, { status: 500 });

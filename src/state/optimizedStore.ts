@@ -5,6 +5,7 @@
  * **Validates: Requirements 8.4, 8.5**
  */
 
+import { logger } from '@/lib/logger';
 import { create } from 'zustand';
 import { subscribeWithSelector, devtools, persist } from 'zustand/middleware';
 import { shallow } from 'zustand/shallow';
@@ -767,15 +768,13 @@ export const useLogStateChanges = () => {
         const unsubscribe = (store as any).subscribe(
             (state: any) => state,
             (state: any, prevState: any) => {
-                console.group('State Change');
-                console.log('Previous:', prevState);
-                console.log('Current:', state);
-                console.log('Changes:', {
+                logger.debug('State Change: Previous:', prevState);
+                logger.debug('State Change: Current:', state);
+                logger.debug('State Change: Changes:', {
                     devices: Object.keys(state.devices).length - Object.keys(prevState.devices).length,
                     connections: Object.keys(state.connections).length - Object.keys(prevState.connections).length,
                     selectedDevices: state.selectedDeviceIds.size - prevState.selectedDeviceIds.size,
                 });
-                console.groupEnd();
             },
             {
                 equalityFn: shallow,
@@ -851,5 +850,5 @@ export const batchUpdates = (updates: Array<() => void>) => {
 export const resetStore = () => {
     // Reset store to initial state - this should be called from a component
     // that has access to the store hook
-    console.warn('resetStore should be called from a React component with access to useNetworkStore');
+    logger.warn('resetStore should be called from a React component with access to useNetworkStore');
 };

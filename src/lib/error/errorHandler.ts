@@ -5,6 +5,7 @@
  * **Validates: Requirements 12.1, 12.2, 12.3, 12.4, 12.5**
  */
 
+import { logger } from '@/lib/logger';
 import type { ErrorContext } from '@/types/ui-ux';
 
 export type { ErrorContext };
@@ -399,7 +400,7 @@ export function getRecoveryActions(error: ErrorContext): RecoveryAction[] {
                 label: 'Reset to Defaults',
                 action: () => {
                     // Implementation would reset configuration
-                    console.log('Resetting configuration to defaults...');
+                    logger.debug('Resetting configuration to defaults...');
                 },
             });
             break;
@@ -410,7 +411,7 @@ export function getRecoveryActions(error: ErrorContext): RecoveryAction[] {
                 label: 'Test Connection',
                 action: () => {
                     // Implementation would test connection
-                    console.log('Testing connection...');
+                    logger.debug('Testing connection...');
                 },
             });
             break;
@@ -421,7 +422,7 @@ export function getRecoveryActions(error: ErrorContext): RecoveryAction[] {
                 label: 'Retry Save',
                 action: () => {
                     // Implementation would retry save
-                    console.log('Retrying save operation...');
+                    logger.debug('Retrying save operation...');
                 },
             });
             break;
@@ -432,7 +433,7 @@ export function getRecoveryActions(error: ErrorContext): RecoveryAction[] {
                 label: 'Reset Simulation',
                 action: () => {
                     // Implementation would reset simulation
-                    console.log('Resetting simulation...');
+                    logger.debug('Resetting simulation...');
                 },
             });
             actions.push({
@@ -440,7 +441,7 @@ export function getRecoveryActions(error: ErrorContext): RecoveryAction[] {
                 label: 'Validate Network',
                 action: () => {
                     // Implementation would validate network
-                    console.log('Validating network...');
+                    logger.debug('Validating network...');
                 },
             });
             break;

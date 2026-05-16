@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { getActiveTabCount, clearTabData, getTabId } from '@/lib/store/tabStorage';
@@ -49,7 +50,7 @@ export function useMultiTabWarning() {
       });
     } catch (error) {
       // Silently fail to avoid breaking the app
-      console.warn('Multi-tab warning check failed:', error);
+      logger.warn('Multi-tab warning check failed:', error);
     }
   }, [toast]);
 
@@ -64,7 +65,7 @@ export function useMultiTabWarning() {
         hasAcknowledged: true,
       }));
     } catch (error) {
-      console.warn('Failed to acknowledge multi-tab warning:', error);
+      logger.warn('Failed to acknowledge multi-tab warning:', error);
     }
   }, []);
 
@@ -79,7 +80,7 @@ export function useMultiTabWarning() {
         duration: 3000,
       });
     } catch (error) {
-      console.warn('Failed to clear tab data:', error);
+      logger.warn('Failed to clear tab data:', error);
     }
   }, [toast]);
 
@@ -97,7 +98,7 @@ export function useMultiTabWarning() {
         clearInterval(interval);
       };
     } catch (error) {
-      console.warn('Multi-tab warning initialization failed:', error);
+      logger.warn('Multi-tab warning initialization failed:', error);
     }
   }, [checkTabCount]);
 

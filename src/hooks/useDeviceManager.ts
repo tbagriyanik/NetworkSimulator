@@ -10,6 +10,7 @@ import { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppFeedback } from '@/hooks/useAppFeedback';
 import { formatErrorForUser } from '@/lib/errors/errorHandler';
+import { logger } from '@/lib/logger';
 
 const isSwitchDeviceType = (type?: DeviceType | string) => type === 'switchL2' || type === 'switchL3';
 const resolveSwitchBootType = (switchModel?: string): 'switchL2' | 'switchL3' =>
@@ -247,7 +248,7 @@ export function useDeviceManager() {
   const getOrCreateDeviceState = useCallback((deviceId: string, deviceType: DeviceType, initialHostname?: string, initialMac?: string, switchModel?: string): SwitchState => {
     // Prevent creating state for empty/invalid device IDs
     if (!deviceId || deviceId.trim() === '') {
-      console.warn('Attempted to create device state with empty ID');
+      logger.warn('Attempted to create device state with empty ID');
       return createInitialState(initialMac || '', 'WS-C2960-24TT-L');
     }
 

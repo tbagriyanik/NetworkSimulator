@@ -1,24 +1,22 @@
 'use client';
 
 import { useEffect } from 'react';
+import { logger } from '@/lib/logger';
 
 export function ServiceWorkerRegister() {
   useEffect(() => {
     if ('serviceWorker' in navigator && typeof window !== 'undefined') {
-      // Register service worker
       navigator.serviceWorker
         .register('/sw.js')
         .then((registration) => {
-          console.log('Service Worker registered successfully:', registration.scope);
-          
-          // Check for updates
+          logger.info('Service Worker registered successfully:', registration.scope);
+
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
             if (newWorker) {
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // New content is available; refresh to get it
-                  console.log('New service worker available, refreshing...');
+                  logger.info('New service worker available, refreshing...');
                   window.location.reload();
                 }
               });
@@ -26,7 +24,7 @@ export function ServiceWorkerRegister() {
           });
         })
         .catch((error) => {
-          console.error('Service Worker registration failed:', error);
+          logger.error('Service Worker registration failed:', error);
         });
     }
   }, []);
