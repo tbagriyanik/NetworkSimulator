@@ -64,7 +64,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/icon-192x192.svg" />
+        <link rel="apple-touch-icon" href="/icon192.svg" />
       </head>
       <body
         className={`${inriaSans.variable} ${geistMono.variable} antialiased`}
