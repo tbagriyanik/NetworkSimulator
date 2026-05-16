@@ -11,6 +11,9 @@ import { useAppNavigation } from '@/hooks/useAppNavigation';
 import { useDrag } from '@/hooks/useDrag';
 import { useMultiTabWarning } from '@/hooks/useMultiTabWarning';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { usePanels } from '@/hooks/usePanels';
+import { useRefreshReport } from '@/hooks/useRefreshReport';
+import { useDeviceSelection } from '@/hooks/useDeviceSelection';
 import useAppStore, { useTopologyDevices, useTopologyConnections, useTopologyNotes, useZoom, usePan, useActiveTab, useEnvironment } from '@/lib/store/appStore';
 import { NetworkTopology } from '@/components/network/NetworkTopology';
 import { cn, normalizeMAC } from '@/lib/utils';
@@ -271,47 +274,48 @@ export default function Home() {
   const modalHistoryPushedRef = useRef(false);
 
   // State moved to top to avoid TDZ errors
-  const [activeDeviceId, setActiveDeviceId] = useState<string>('switch-1');
-  const [activeDeviceType, setActiveDeviceType] = useState<DeviceType>('switchL2');
+  const {
+    showPCPanel, setShowPCPanel,
+    showFirewallPanel, setShowFirewallPanel,
+    activeFirewallId, setActiveFirewallId,
+    firewallActiveTab, setFirewallActiveTab,
+    pcPanelInitialTab, setPcPanelInitialTab,
+    showPCDeviceId, setShowPCDeviceId,
+    showRouterPanel, setShowRouterPanel,
+    showRouterDeviceId, setShowRouterDeviceId,
+    showUnifiedDeviceModal, setShowUnifiedDeviceModal,
+    unifiedDeviceActiveTab, setUnifiedDeviceActiveTab,
+    showAboutModal, setShowAboutModal,
+    showMobileMenu, setShowMobileMenu,
+    isEnvironmentPanelOpen, setIsEnvironmentPanelOpen,
+    showProjectPicker, setShowProjectPicker,
+    projectPickerTab, setProjectPickerTab,
+    showOnboarding, setShowOnboarding,
+    onboardingStep, setOnboardingStep,
+    closeAllPanels,
+  } = usePanels();
+  const { refreshNetworkReport, setRefreshNetworkReport, clearRefreshReport } = useRefreshReport();
+  const {
+    activeDeviceId, setActiveDeviceId,
+    activeDeviceType, setActiveDeviceType,
+    selectedDevice, setSelectedDevice,
+    clearSelectionTrigger, setClearSelectionTrigger,
+    deviceSearchQuery, setDeviceSearchQuery,
+    focusDeviceId, setFocusDeviceId,
+    clearSelection,
+  } = useDeviceSelection();
+
   const [loadedExampleId, setLoadedExampleId] = useState<string | null>(null);
   const [topologyKey, setTopologyKey] = useState(0);
-  const [selectedDevice, setSelectedDevice] = useState<DeviceType | null>(null);
-  const [clearSelectionTrigger, setClearSelectionTrigger] = useState<number>(0);
   // Track last executed command for guided mode
   const [lastCommand, setLastCommand] = useState<string>('');
-  const [showPCPanel, setShowPCPanel] = useState(false);
-  const [showFirewallPanel, setShowFirewallPanel] = useState(false);
-  const [activeFirewallId, setActiveFirewallId] = useState<string | null>(null);
-  const [firewallActiveTab, setFirewallActiveTab] = useState<'console' | 'settings'>('console');
-  const [pcPanelInitialTab, setPcPanelInitialTab] = useState<'home' | 'desktop' | 'terminal' | 'settings' | 'services' | 'wireless' | 'iot'>('home');
-  const [showPCDeviceId, setShowPCDeviceId] = useState<string>('pc-1');
-  const [showRouterPanel, setShowRouterPanel] = useState(false);
-  const [showRouterDeviceId, setShowRouterDeviceId] = useState<string>('router-1');
-  const [showUnifiedDeviceModal, setShowUnifiedDeviceModal] = useState(false);
-  const [unifiedDeviceActiveTab, setUnifiedDeviceActiveTab] = useState<'console' | 'settings'>('console');
-  const [deviceSearchQuery, setDeviceSearchQuery] = useState('');
-  const [focusDeviceId, setFocusDeviceId] = useState<string | null>(null);
   const [isAppLoading, setIsLoading] = useState(true);
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [hasHydrated, setHasHydrated] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [lastSaveTime, setLastSaveTime] = useState<string | null>(null);
-  const [showAboutModal, setShowAboutModal] = useState(false);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [isEnvironmentPanelOpen, setIsEnvironmentPanelOpen] = useState(false);
-  const [showProjectPicker, setShowProjectPicker] = useState(false);
-  const [projectPickerTab, setProjectPickerTab] = useState<'all' | 'guided'>('all');
   const [projectSearchQuery, setProjectSearchQuery] = useState('');
-  const [refreshNetworkReport, setRefreshNetworkReport] = useState<{
-    show: boolean;
-    title: string;
-    dhcpMessages: string[];
-    stpMessage: string;
-    portSecurityMessage: string;
-    topologyMessage: string;
-    devices: RefreshDeviceSummary[];
-  } | null>(null);
 
   // Which overlay panel is on top — last clicked wins
   const [focusedOverlay, setFocusedOverlay] = useState<'refresh' | 'packet' | 'pc-info' | 'router-info' | 'switch-info'>('packet');
@@ -336,8 +340,6 @@ export default function Home() {
     isCurrentStepReady,
     getAvailableProjects
   } = useGuidedMode();
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [onboardingStep, setOnboardingStep] = useState(0);
   const [cableInfo, setCableInfo] = useState<CableInfo>({
     connected: true,
     cableType: 'straight',
@@ -3953,19 +3955,19 @@ ${state.bannerMOTD}
               data-modal-content
               style={{
                 position: 'fixed',
-                left: typeof window !== 'undefined' && window.innerWidth >= 768 ? firewallDrag.position.x : 0,
-                top: typeof window !== 'undefined' && window.innerWidth >= 768 ? firewallDrag.position.y : 0,
-                width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${firewallDrag.size.width}px` : '100vw',
-                height: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${firewallDrag.size.height}px` : '100vh',
+                left: !isMobile ? firewallDrag.position.x : 0,
+                top: !isMobile ? firewallDrag.position.y : 0,
+                width: !isMobile ? `${firewallDrag.size.width}px` : '100vw',
+                height: !isMobile ? `${firewallDrag.size.height}px` : '100vh',
                 maxWidth: 'none',
                 maxHeight: 'none',
-                borderRadius: typeof window !== 'undefined' && window.innerWidth >= 768 ? '1rem' : 0,
+                borderRadius: !isMobile ? '1rem' : 0,
                 borderWidth: 3,
               }}
             >
               <div className={cn(
                 "relative flex flex-col h-full overflow-visible",
-                typeof window !== 'undefined' && window.innerWidth >= 768 ? 'rounded-2xl' : 'rounded-none'
+                !isMobile ? 'rounded-2xl' : 'rounded-none'
               )}>
                 <DialogHeader
                   className={cn(
@@ -4047,7 +4049,7 @@ ${state.bannerMOTD}
                   )}
                 </div>
                 {/* Resize handles - hidden on mobile */}
-                {typeof window !== 'undefined' && window.innerWidth >= 768 && (
+                {!isMobile && (
                   <>
                     <div
                       className="absolute left-0 top-0 bottom-0 w-[10px] cursor-ew-resize select-none touch-none bg-transparent hover:bg-red-500/10"
@@ -4093,19 +4095,19 @@ ${state.bannerMOTD}
               data-modal-content
               style={{
                 position: 'fixed',
-                left: typeof window !== 'undefined' && window.innerWidth >= 768 ? pcDrag.position.x : 0,
-                top: typeof window !== 'undefined' && window.innerWidth >= 768 ? pcDrag.position.y : 0,
-                width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${pcDrag.size.width}px` : '100vw',
-                height: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${pcDrag.size.height}px` : '100vh',
+                left: !isMobile ? pcDrag.position.x : 0,
+                top: !isMobile ? pcDrag.position.y : 0,
+                width: !isMobile ? `${pcDrag.size.width}px` : '100vw',
+                height: !isMobile ? `${pcDrag.size.height}px` : '100vh',
                 maxWidth: 'none',
                 maxHeight: 'none',
-                borderRadius: typeof window !== 'undefined' && window.innerWidth >= 768 ? '1rem' : 0,
+                borderRadius: !isMobile ? '1rem' : 0,
                 borderWidth: 3,
               }}
             >
               <div className={cn(
                 "relative flex flex-col h-full overflow-visible",
-                typeof window !== 'undefined' && window.innerWidth >= 768 ? 'rounded-2xl' : 'rounded-none'
+                !isMobile ? 'rounded-2xl' : 'rounded-none'
               )}>
                 <DialogHeader
                   className={cn(
@@ -4159,7 +4161,7 @@ ${state.bannerMOTD}
                   />
                 </div>
                 {/* Resize handles - hidden on mobile */}
-                {typeof window !== 'undefined' && window.innerWidth >= 768 && (
+                {!isMobile && (
                   <>
                     <div
                       className="absolute left-0 top-0 bottom-0 w-[10px] cursor-ew-resize select-none touch-none bg-transparent hover:bg-cyan-500/10"

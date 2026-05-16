@@ -13,6 +13,14 @@
  */
 
 import { logger } from '@/lib/logger';
+import { sanitizeSVG } from '@/lib/security/svgSanitizer';
+import { validateURL } from '@/lib/security/sanitizer';
+
+const SVG_FETCH_TIMEOUT_MS = 5000;
+
+const ALLOWED_SVG_HOSTS = new Set<string>([
+  // Same-origin is always allowed (checked dynamically)
+]);
 
 const svgCache = new Map<string, string>();
 
@@ -21,25 +29,71 @@ const svgCache = new Map<string, string>();
  * @param url - URL to the SVG file
  * @returns Promise resolving to SVG content string
  */
+function isAllowedSVGUrl(url: string): boolean {
+    try {
+        const parsed = new URL(url, window.location.origin);
+
+        // Relative URLs (no host) are always allowed
+        if (!parsed.host || parsed.host === window.location.host) {
+            return true;
+        }
+
+        // Check against allowed external hosts
+        return ALLOWED_SVG_HOSTS.has(parsed.host);
+    } catch {
+        return false;
+    }
+}
+
 export async function fetchSVG(url: string): Promise<string> {
+    // Allow relative URLs (same-origin), validate absolute ones
+    if (!url.startsWith('/')) {
+        if (!validateURL(url)) {
+            throw new Error(`Invalid or disallowed URL: ${url}`);
+        }
+
+        // Restrict to allowed origins for absolute URLs
+        if (!isAllowedSVGUrl(url)) {
+            throw new Error(`SVG fetch from disallowed host: ${url}`);
+        }
+    }
+
     // Check cache first
     if (svgCache.has(url)) {
         return svgCache.get(url)!;
     }
 
     try {
-        const response = await fetch(url);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), SVG_FETCH_TIMEOUT_MS);
+
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
         if (!response.ok) {
             throw new Error(`Failed to fetch SVG: ${response.statusText}`);
         }
 
-        const content = await response.text();
+        // Validate Content-Type
+        const contentType = response.headers.get('content-type') || '';
+        if (!contentType.includes('image/svg+xml') && !contentType.includes('text/plain') && !contentType.includes('application/xml')) {
+            logger.warn(`Unexpected Content-Type for SVG fetch from ${url}: ${contentType}`);
+        }
+
+        let content = await response.text();
+
+        // Sanitize SVG content before caching
+        content = sanitizeSVG(content);
 
         // Cache the content
         svgCache.set(url, content);
 
         return content;
     } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+            logger.error(`SVG fetch timed out for ${url}`);
+            throw new Error(`SVG fetch timed out for ${url}`);
+        }
         logger.error(`Error fetching SVG from ${url}:`, error);
         throw error;
     }
@@ -74,8 +128,9 @@ export function inlineSVG(
     svgContent: string,
     attributes?: Record<string, string>
 ): string {
-    // Parse SVG content to add attributes
-    let inlinedSVG = svgContent;
+    // Sanitize SVG content to prevent XSS
+    const sanitized = sanitizeSVG(svgContent);
+    let inlinedSVG = sanitized;
 
     if (attributes && Object.keys(attributes).length > 0) {
         // Add attributes to the SVG element

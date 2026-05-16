@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import DOMPurify from 'isomorphic-dompurify';
 
 /**
  * Security utilities for input sanitization and data protection
@@ -15,29 +16,26 @@ export function sanitizeHTML(input: string): string {
 }
 
 /**
- * Sanitize HTML content allowing only <b> and <i> tags for HTTP service content
- * This removes all other HTML tags and dangerous attributes while preserving formatting
+ * Sanitize HTML content allowing only <b>, <i>, and <u> tags for HTTP service content.
+ * Uses DOMPurify whitelist-based sanitization to prevent XSS.
  */
 export function sanitizeHTTPContent(input: string): string {
-    // First, escape all HTML to make it safe
-    const escaped = input
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+    if (!input) return '';
 
-    // Then selectively allow <b> and <i> tags by converting them back
-    // We use a safe pattern that only matches properly formatted tags
-    let result = escaped
-        .replace(/&lt;u&gt;/g, '<u>')
-        .replace(/&lt;\/u&gt;/g, '</u>')
-        .replace(/&lt;b&gt;/g, '<b>')
-        .replace(/&lt;\/b&gt;/g, '</b>')
-        .replace(/&lt;i&gt;/g, '<i>')
-        .replace(/&lt;\/i&gt;/g, '</i>');
-
-    return result;
+    try {
+        return DOMPurify.sanitize(input, {
+            ALLOWED_TAGS: ['b', 'i', 'u'],
+            ALLOWED_ATTR: [],
+        });
+    } catch {
+        // Fallback: escape everything if DOMPurify fails
+        return input
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
 }
 
 export function sanitizeInput(input: string): string {
@@ -109,20 +107,15 @@ export function validateIPAddress(ip: string): boolean {
 export function validateSubnetMask(subnet: string): boolean {
     if (!validateIPAddress(subnet)) return false;
 
-    const parts = subnet.split('.').map((p) => parseInt(p, 10));
-    let foundZero = false;
+    const num = subnet.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0) >>> 0;
 
-    for (const part of parts) {
-        const binary = part.toString(2).padStart(8, '0');
-        if (foundZero && binary.includes('1')) {
-            return false; // Invalid subnet mask pattern
-        }
-        if (binary.includes('0')) {
-            foundZero = true;
-        }
-    }
+    // All zeros or all ones are not valid subnet masks
+    if (num === 0 || num === 0xFFFFFFFF) return false;
 
-    return true;
+    // A valid subnet mask has contiguous 1s followed by contiguous 0s.
+    // In the bitwise inversion, adding 1 yields exactly one bit set.
+    const inverted = (~num) >>> 0;
+    return (inverted & (inverted + 1)) === 0;
 }
 
 export function validateMACAddress(mac: string): boolean {
@@ -252,14 +245,31 @@ export function secureLocalStorage() {
     };
 }
 
-export function hashString(str: string): string {
+/**
+ * Non-cryptographic string hash (djb2 variant).
+ * Fast, deterministic, but NOT suitable for security purposes (not collision-resistant).
+ * Use sha256() when cryptographic hashing is needed.
+ */
+export function nonSecurityHash(str: string): string {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
         const char = str.charCodeAt(i);
         hash = (hash << 5) - hash + char;
-        hash = hash & hash; // Convert to 32bit integer
+        hash = hash & hash;
     }
     return Math.abs(hash).toString(16);
+}
+
+/**
+ * Cryptographically secure SHA-256 hash using Web Crypto API.
+ * Suitable for security-sensitive operations.
+ */
+export async function sha256(str: string): Promise<string> {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 export function generateSecureToken(length: number = 32): string {

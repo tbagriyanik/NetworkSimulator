@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeInput, validateURL, safeJSONForHTML, sanitizeObject } from './sanitizer';
+import { sanitizeInput, sanitizeHTTPContent, validateURL, validateSubnetMask, safeJSONForHTML, sanitizeObject, nonSecurityHash, sha256 } from './sanitizer';
+import { sanitizeSVG } from './svgSanitizer';
 
 describe('Security Utils - sanitizer.ts', () => {
     describe('sanitizeInput', () => {
@@ -111,6 +112,101 @@ describe('Security Utils - sanitizer.ts', () => {
             expect(typeof result.obj).toBe('object');
             expect(Array.isArray(result.obj)).toBe(false);
             expect(result.obj.x).toBe(1);
+        });
+    });
+
+    describe('sanitizeHTTPContent', () => {
+        it('should allow <b>, <i>, <u> tags', () => {
+            const result = sanitizeHTTPContent('<b>bold</b> <i>italic</i> <u>underline</u>');
+            expect(result).toContain('<b>bold</b>');
+            expect(result).toContain('<i>italic</i>');
+            expect(result).toContain('<u>underline</u>');
+        });
+
+        it('should strip dangerous tags like <script>', () => {
+            const result = sanitizeHTTPContent('<script>alert(1)</script>');
+            expect(result).not.toContain('<script>');
+        });
+
+        it('should remove event handler attributes', () => {
+            const result = sanitizeHTTPContent('<b onclick="alert(1)">text</b>');
+            expect(result).not.toContain('onclick');
+        });
+
+        it('should return empty string for empty input', () => {
+            expect(sanitizeHTTPContent('')).toBe('');
+        });
+    });
+
+    describe('sanitizeSVG', () => {
+        it('should remove script tags', () => {
+            const result = sanitizeSVG('<svg><script>alert(1)</script><path d="M0 0"/></svg>');
+            expect(result).not.toContain('<script>');
+        });
+
+        it('should remove onload event handlers', () => {
+            const result = sanitizeSVG('<svg onload="alert(1)"><path d="M0 0"/></svg>');
+            expect(result).not.toContain('onload');
+        });
+
+        it('should strip foreignObject tags', () => {
+            const result = sanitizeSVG('<svg><foreignObject><div>text</div></foreignObject><path d="M0 0"/></svg>');
+            expect(result.toLowerCase()).not.toContain('foreignobject');
+        });
+
+        it('should preserve valid SVG structure', () => {
+            const result = sanitizeSVG('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="red"/></svg>');
+            expect(result).toContain('viewBox');
+            expect(result).toContain('path');
+            expect(result).toContain('fill="red"');
+        });
+
+        it('should return empty string for empty input', () => {
+            expect(sanitizeSVG('')).toBe('');
+        });
+    });
+
+    describe('validateSubnetMask', () => {
+        it('should accept valid subnet masks', () => {
+            expect(validateSubnetMask('255.255.255.0')).toBe(true);
+            expect(validateSubnetMask('255.0.0.0')).toBe(true);
+            expect(validateSubnetMask('255.255.0.0')).toBe(true);
+            expect(validateSubnetMask('255.255.255.252')).toBe(true);
+        });
+
+        it('should reject invalid subnet masks', () => {
+            expect(validateSubnetMask('0.0.0.1')).toBe(false);
+            expect(validateSubnetMask('0.255.255.0')).toBe(false);
+            expect(validateSubnetMask('255.255.255.1')).toBe(false);
+            expect(validateSubnetMask('not-an-ip')).toBe(false);
+            expect(validateSubnetMask('')).toBe(false);
+        });
+    });
+
+    describe('nonSecurityHash', () => {
+        it('should produce deterministic output', () => {
+            expect(nonSecurityHash('hello')).toBe(nonSecurityHash('hello'));
+        });
+
+        it('should produce different output for different inputs', () => {
+            expect(nonSecurityHash('hello')).not.toBe(nonSecurityHash('world'));
+        });
+
+        it('should return a hex string', () => {
+            expect(nonSecurityHash('test')).toMatch(/^[0-9a-f]+$/);
+        });
+    });
+
+    describe('sha256', () => {
+        it('should produce deterministic output', async () => {
+            const a = await sha256('hello');
+            const b = await sha256('hello');
+            expect(a).toBe(b);
+        });
+
+        it('should produce a 64-character hex string', async () => {
+            const result = await sha256('test');
+            expect(result).toMatch(/^[0-9a-f]{64}$/);
         });
     });
 });

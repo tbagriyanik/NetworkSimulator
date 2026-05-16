@@ -17,18 +17,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://yunus.sf.net';
+
 export const metadata: Metadata = {
   title: "Network Simulator",
   description: "Interactive Network NOS switch simulator for learning network configuration. Practice CLI commands, VLAN management, and security settings.",
   keywords: ["Network", "Switch", "Simulator", "NOS", "Network", "CLI", "VLAN", "Learning"],
   authors: [{ name: "Network Simulator Team" }],
+  metadataBase: new URL(siteUrl),
   icons: {
     icon: "/favicon.svg",
   },
   openGraph: {
     title: "Network Simulator",
     description: "Practice Network NOS commands in an interactive web-based simulator",
-    url: "https://yunus.sf.net",
+    url: siteUrl,
     siteName: "Network Simulator",
     type: "website",
   },
