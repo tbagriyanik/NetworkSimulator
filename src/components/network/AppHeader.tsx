@@ -336,6 +336,68 @@ export function AppHeader({
                       </Button>
                       <Button
                         variant="outline"
+                        className={`justify-start gap-2 h-9 text-xs font-bold ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        onClick={() => setGraphicsQuality(graphicsQuality === 'high' ? 'low' : 'high')}
+                      >
+                        {graphicsQuality === 'high' ? <Sparkles className="w-3.5 h-3.5" /> : <Cloud className="w-3.5 h-3.5" />}
+                        {graphicsQuality !== 'high' ? t.highRes : t.lowRes}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className={`justify-start gap-2 h-9 text-xs font-bold ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        onClick={() => {
+                          if (typeof window !== 'undefined') {
+                            const event = new CustomEvent('trigger-topology-palette');
+                            window.dispatchEvent(event);
+                          }
+                          setShowMobileMenu(false);
+                        }}
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        {t.addDeviceOrCable}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className={`justify-start gap-2 h-9 text-xs font-bold ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        onClick={() => {
+                          if (typeof window !== 'undefined') {
+                            const event = new CustomEvent('trigger-topology-connect');
+                            window.dispatchEvent(event);
+                          }
+                          setShowMobileMenu(false);
+                        }}
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 0 0 -5.656 0l-4 4a4 4 0 1 0 5.656 5.656l1.102-1.101m-.758-4.899a4 4 0 0 0 5.656 0l4-4a4 4 0 0 0 -5.656-5.656l-1.1 1.1" />
+                        </svg>
+                        {t.connectDevices}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className={`justify-start gap-2 h-9 text-xs font-bold ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        onClick={() => {
+                          handleRefreshNetwork();
+                          setShowMobileMenu(false);
+                        }}
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        {t.refreshNetworkF5}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className={`justify-start gap-2 h-9 text-xs font-bold ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        onClick={() => {
+                          setIsEnvironmentPanelOpen(true);
+                          setShowMobileMenu(false);
+                        }}
+                      >
+                        <Leaf className="w-3.5 h-3.5" />
+                        {t.environmentSettings}
+                      </Button>
+                      <Button
+                        variant="outline"
                         className={`w-full justify-start gap-2 h-9 text-xs font-bold ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
                         onClick={() => { setShowAboutModal(true); setShowMobileMenu(false); }}
                       >
@@ -371,87 +433,8 @@ export function AppHeader({
       {/* Desktop Tabs & Device Selector */}
       <div className="flex items-end gap-1 mt-4 pt-1 overflow-x-auto no-scrollbar">
         <div className="flex md:hidden items-center gap-1.5 mr-auto">
-          {activeTab === 'topology' && (
-            <div className="flex items-center gap-1 p-1 rounded-xl border bg-white border-slate-200 shadow-sm dark:bg-slate-900/40 dark:border-slate-800">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    aria-label={t.addDeviceOrCable}
-                    variant="ghost"
-                    size="icon"
-                    className="px-2.5 py-1.5 h-auto text-red-500 hover:bg-red-500/10"
-                    onClick={() => {
-                      if (typeof window !== 'undefined') {
-                        const event = new CustomEvent('trigger-topology-palette');
-                        window.dispatchEvent(event);
-                      }
-                    }}
-                  >
-                    <Plus className="w-7 h-7" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t.addDeviceOrCable}</TooltipContent>
-              </Tooltip>
-              <div className="w-px h-4 bg-slate-200 mx-0.5 dark:bg-slate-800" />
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    aria-label={t.connectDevices}
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 text-cyan-500 hover:bg-cyan-500/10"
-                    onClick={() => {
-                      if (typeof window !== 'undefined') {
-                        const event = new CustomEvent('trigger-topology-connect');
-                        window.dispatchEvent(event);
-                      }
-                    }}
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 0 0 -5.656 0l-4 4a4 4 0 1 0 5.656 5.656l1.102-1.101m-.758-4.899a4 4 0 0 0 5.656 0l4-4a4 4 0 0 0 -5.656-5.656l-1.1 1.1" />
-                    </svg>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t.connectDevices}</TooltipContent>
-              </Tooltip>
-              <div className="w-px h-4 bg-slate-200 mx-0.5 dark:bg-slate-800" />
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    aria-label={t.refreshNetworkF5}
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 text-pink-500 hover:bg-pink-500/10"
-                    onClick={handleRefreshNetwork}
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent className="flex items-center gap-2">
-                  <span>{t.refreshNetworkF5}</span>
-                  <ShortcutBadge shortcut="F5" variant="danger" />
-                </TooltipContent>
-              </Tooltip>
-              <div className="w-px h-4 bg-slate-200 mx-0.5 dark:bg-slate-800" />
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    aria-label={t.environmentSettings}
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9 text-emerald-500 hover:bg-emerald-500/10"
-                    onClick={() => setIsEnvironmentPanelOpen(true)}
-                  >
-                    <Leaf className="w-5 h-5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t.environmentSettings}</TooltipContent>
-              </Tooltip>
-              {isGuidedModeActive && isPanelMinimized && (
+          {isGuidedModeActive && isPanelMinimized && (
                 <>
-                  <div className="w-px h-4 bg-slate-200 mx-0.5 dark:bg-slate-800" />
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
@@ -468,8 +451,6 @@ export function AppHeader({
                   </Tooltip>
                 </>
               )}
-            </div>
-          )}
         </div>
       </div>
     </header>

@@ -2,6 +2,8 @@
 
 import type { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
 import type { Translations } from '@/contexts/LanguageContext';
+import { Button } from '@/components/ui/button';
+import { Plus, Link2, RefreshCw, Leaf } from 'lucide-react';
 
 interface AppFooterProps {
   t: Translations;
@@ -19,12 +21,15 @@ interface AppFooterProps {
   lastTaskEvent: { type: 'completed' | 'failed'; taskName: string; timestamp: number } | null;
   showProjectPicker: boolean;
   showOnboarding: boolean;
+  handleRefreshNetwork: () => void;
+  setIsEnvironmentPanelOpen: (v: boolean) => void;
 }
 
 export function AppFooter({
   t, isDark, language, activeTab, activeDeviceType, activeDeviceId,
   hasUnsavedChanges, lastSaveTime, projectName, totalScore, maxScore,
   topologyDevices, lastTaskEvent, showProjectPicker, showOnboarding,
+  handleRefreshNetwork, setIsEnvironmentPanelOpen,
 }: AppFooterProps) {
   return (
     <>
@@ -142,13 +147,50 @@ export function AppFooter({
             <div className="flex items-center gap-2">
               {activeTab === 'topology' && (
                 <>
-                  <span className="text-[10px] text-slate-500 font-medium">
-                    {language === 'tr' ? 'Çift tık: Terminal' : 'Double tap: Terminal'}
-                  </span>
-                  <span className="text-slate-300">·</span>
-                  <span className="text-[10px] text-slate-500 font-medium">
-                    {language === 'tr' ? 'Uzun bas: Menü' : 'Long press: Menu'}
-                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-red-500 hover:bg-red-500/10"
+                    onClick={() => {
+                      if (typeof window !== 'undefined') {
+                        window.dispatchEvent(new CustomEvent('trigger-topology-palette'));
+                      }
+                    }}
+                    aria-label={t.addDeviceOrCable}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-cyan-500 hover:bg-cyan-500/10"
+                    onClick={() => {
+                      if (typeof window !== 'undefined') {
+                        window.dispatchEvent(new CustomEvent('trigger-topology-connect'));
+                      }
+                    }}
+                    aria-label={t.connectDevices}
+                  >
+                    <Link2 className="w-3.5 h-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-pink-500 hover:bg-pink-500/10"
+                    onClick={handleRefreshNetwork}
+                    aria-label={t.refreshNetworkF5}
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-emerald-500 hover:bg-emerald-500/10"
+                    onClick={() => setIsEnvironmentPanelOpen(true)}
+                    aria-label={t.environmentSettings}
+                  >
+                    <Leaf className="w-3.5 h-3.5" />
+                  </Button>
                 </>
               )}
             </div>

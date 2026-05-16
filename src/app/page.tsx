@@ -4521,6 +4521,8 @@ ${state.bannerMOTD}
             lastTaskEvent={lastTaskEvent}
             showProjectPicker={showProjectPicker}
             showOnboarding={showOnboarding}
+            handleRefreshNetwork={handleRefreshNetwork}
+            setIsEnvironmentPanelOpen={setIsEnvironmentPanelOpen}
           />
 
           {showAboutModal && <LazyAboutModal
