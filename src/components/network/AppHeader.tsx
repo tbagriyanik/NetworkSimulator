@@ -87,7 +87,7 @@ export function AppHeader({
           <TooltipWrapper title={t.reloadPage}>
             <Button
               variant="ghost"
-              aria-label={`${t.title} - ${t.subtitle}. ${t.reloadPage}`}
+              aria-label={`${t.title} ${t.subtitle} ${t.reloadPage}`}
               onClick={() => {
                 if (typeof window !== 'undefined') {
                   window.location.reload();

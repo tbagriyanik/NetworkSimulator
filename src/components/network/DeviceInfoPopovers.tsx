@@ -41,8 +41,8 @@ interface PCInfoPopoverProps {
 }
 
 export function SwitchInfoPopover({ router, routerState, t, language, isDark, onClose, handleDeviceDoubleClick, onOpenPanel, topologyConnections, onFocus, zIndex }: RouterInfoPopoverProps & { onFocus: () => void; zIndex: number }) {
-  const { containerRef, isDragging, handleDragStart, position } = useDrag({
-    storageKey: 'switch-info-position',
+  const { containerRef, handleDragStart, position } = useDrag({
+    storageKey: `switch-info-pos-${router.id}`,
     defaultPosition: { x: 16, y: 96 },
     origin: 'bottom-right',
   });
@@ -54,15 +54,18 @@ export function SwitchInfoPopover({ router, routerState, t, language, isDark, on
   return (
     <div ref={containerRef} className={cn("hidden md:block fixed animate-scale-in")}
       style={{ bottom: `${position.y}px`, right: `${position.x}px`, zIndex }}
-      onMouseDown={(e) => { onFocus(); handleDragStart(e); }}>
+      onPointerDown={onFocus}>
       <div className="rounded-2xl border shadow-2xl min-w-[200px] max-w-[280px] liquid-glass-strong">
-        <div className={`flex items-center justify-between px-3 py-2 border-b cursor-grab select-none ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}>
+        <div
+          className={`flex items-center justify-between px-3 py-2 border-b cursor-grab select-none ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}
+          onPointerDown={handleDragStart}
+        >
           <div className="flex items-center gap-1.5">
             <SwitchIcon className="w-3.5 h-3.5 text-purple-500" />
             <span className={`font-semibold text-sm ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{router.name || router.id}</span>
           </div>
           <TooltipWrapper title={t.close}>
-            <button onClick={onClose} className={`w-5 h-5 rounded-md cursor-pointer transition-colors inline-flex items-center justify-center shrink-0 ${isDark ? 'bg-white/10 hover:bg-red-500/80 text-slate-300 hover:text-white border border-white/15' : 'bg-black/8 hover:bg-red-500 text-slate-500 hover:text-white border border-black/10'}`}>
+            <button onClick={(e) => { e.stopPropagation(); onClose(); }} className={`w-5 h-5 rounded-md cursor-pointer transition-colors inline-flex items-center justify-center shrink-0 ${isDark ? 'bg-white/10 hover:bg-red-500/80 text-slate-300 hover:text-white border border-white/15' : 'bg-black/8 hover:bg-red-500 text-slate-500 hover:text-white border border-black/10'}`}>
               <X className="w-3 h-3 pointer-events-none" />
             </button>
           </TooltipWrapper>
@@ -81,8 +84,8 @@ export function SwitchInfoPopover({ router, routerState, t, language, isDark, on
 }
 
 export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zIndex, handleDeviceDoubleClick, onOpenPanel, topologyDevices, deviceStates }: PCInfoPopoverProps) {
-  const { containerRef, isDragging, handleDragStart, position } = useDrag({
-    storageKey: 'pc-info-position',
+  const { containerRef, handleDragStart, position } = useDrag({
+    storageKey: `pc-info-pos-${pc.id}`,
     defaultPosition: { x: 16, y: 96 },
     origin: 'bottom-right',
   });
@@ -96,16 +99,19 @@ export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zInde
         right: `${position.x}px`,
         zIndex
       }}
-      onMouseDown={(e) => { onFocus(); handleDragStart(e); }}
+      onPointerDown={onFocus}
     >
       <div className="rounded-2xl border shadow-2xl min-w-[200px] max-w-[260px] liquid-glass-strong">
-        <div className={`flex items-center justify-between px-3 py-2 border-b cursor-grab select-none ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}>
+        <div
+          className={`flex items-center justify-between px-3 py-2 border-b cursor-grab select-none ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}
+          onPointerDown={handleDragStart}
+        >
           <div className="flex items-center gap-1.5">
             <Monitor className="w-3.5 h-3.5 text-blue-500" />
             <span className={`font-semibold text-sm ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{pc?.name || pc?.id || 'Unknown'}</span>
           </div>
           <TooltipWrapper title={t.close}>
-            <button onClick={onClose} className={`w-5 h-5 rounded-md cursor-pointer transition-colors inline-flex items-center justify-center shrink-0 ${isDark ? 'bg-white/10 hover:bg-red-500/80 text-slate-300 hover:text-white border border-white/15' : 'bg-black/8 hover:bg-red-500 text-slate-500 hover:text-white border border-black/10'}`}>
+            <button onClick={(e) => { e.stopPropagation(); onClose(); }} className={`w-5 h-5 rounded-md cursor-pointer transition-colors inline-flex items-center justify-center shrink-0 ${isDark ? 'bg-white/10 hover:bg-red-500/80 text-slate-300 hover:text-white border border-white/15' : 'bg-black/8 hover:bg-red-500 text-slate-500 hover:text-white border border-black/10'}`}>
               <X className="w-3 h-3 pointer-events-none" />
             </button>
           </TooltipWrapper>
@@ -235,8 +241,8 @@ export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zInde
 }
 
 export function RouterInfoPopover({ router, routerState, t, language, isDark, onClose, onFocus, zIndex, handleDeviceDoubleClick, onOpenPanel, topologyConnections }: RouterInfoPopoverProps) {
-  const { containerRef, isDragging, handleDragStart, position } = useDrag({
-    storageKey: 'router-info-position',
+  const { containerRef, handleDragStart, position } = useDrag({
+    storageKey: `router-info-pos-${router.id}`,
     defaultPosition: { x: 16, y: 96 },
     origin: 'bottom-right',
   });
@@ -263,10 +269,13 @@ export function RouterInfoPopover({ router, routerState, t, language, isDark, on
         right: `${position.x}px`,
         zIndex
       }}
-      onMouseDown={(e) => { onFocus(); handleDragStart(e); }}
+      onPointerDown={onFocus}
     >
       <div className="rounded-2xl border shadow-2xl min-w-[200px] max-w-[280px] liquid-glass-strong">
-        <div className={`flex items-center justify-between px-3 py-2 border-b cursor-grab select-none ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}>
+        <div
+          className={`flex items-center justify-between px-3 py-2 border-b cursor-grab select-none ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}
+          onPointerDown={handleDragStart}
+        >
           <div className="flex items-center gap-1.5">
             {router.type.startsWith('switch') ? <SwitchIcon isL3={router.type === 'switchL3'} className="w-3.5 h-3.5 text-purple-500" /> : <RouterIcon className="w-3.5 h-3.5 text-purple-500" />}
             <span className={`font-semibold text-sm ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{router.name || router.id}</span>

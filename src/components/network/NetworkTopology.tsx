@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo, MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from 'react';
 import { flushSync } from 'react-dom';
+import dynamic from 'next/dynamic';
 import useAppStore, { useTopologyDevices, useTopologyConnections, useTopologyNotes } from '@/lib/store/appStore';
 import { SwitchState, CableType, CableInfo, isCableCompatible } from '@/lib/network/types';
 import { checkDeviceConnectivity, getPingDiagnostics, getWirelessSignalStrength, getWirelessDistance } from '@/lib/network/connectivity';
@@ -23,7 +24,6 @@ import { ConnectionLine } from './ConnectionLine';
 import { DeviceNode } from './DeviceNode';
 import LazyNetworkTopologyContextMenu from './LazyNetworkTopologyContextMenu';
 import { LazyNetworkTopologyPortSelectorModal } from './LazyNetworkTopologyPortSelectorModal';
-import { EnvironmentSettingsPanel } from './EnvironmentSettingsPanel';
 import { useEnvironment } from '@/lib/store/appStore';
 import { Plus, Power, Trash2, Monitor, Network, Laptop, X, Cable, Strikethrough, Usb } from "lucide-react";
 import { cn, normalizeMAC } from '@/lib/utils';
@@ -31,8 +31,13 @@ import { getDeviceWidth, getDeviceHeight, isPcLike, isSwitchDevice, isRouterDevi
 import { CABLE_COLORS, DRAG_THRESHOLD, LONG_PRESS_DURATION, VIRTUAL_CANVAS_WIDTH_MOBILE, VIRTUAL_CANVAS_HEIGHT_MOBILE, VIRTUAL_CANVAS_WIDTH_DESKTOP, VIRTUAL_CANVAS_HEIGHT_DESKTOP, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, NOTE_COLORS, NOTE_FONTS_DESKTOP as NOTE_FONTS, NOTE_FONT_SIZES, NOTE_OPACITY as NOTE_OPACITY_OPTIONS, PC_PORT_SPACING, PORT_SPACING, PORT_START_X, PORT_START_Y, PORT_COLORS, STATUS_COLORS, STROKE_COLORS } from './networkTopology.constants';
 import { calculateSTPState } from '@/lib/network/core/showCommands';
 import { errorHandler, CLIPBOARD_ERRORS } from '@/lib/errors/errorHandler';
-import { PingPacketInfoPanel, buildHopPacketInfos } from './PingPacketInfoPanel';
+import { buildHopPacketInfos } from './PingPacketInfoPanel';
 import { logger } from '@/lib/logger';
+
+const PingPacketInfoPanel = dynamic(
+  () => import('./PingPacketInfoPanel').then((m) => m.PingPacketInfoPanel),
+  { ssr: false }
+);
 
 const allocatedMacAddresses = new Set<string>();
 const generateMacAddress = (): string => {
@@ -353,6 +358,12 @@ export function NetworkTopology({
   const [selectedNoteIds, setSelectedNoteIds] = useState<string[]>([]);
   const [snapToGrid, setSnapToGrid] = useState(true); // Snap-to-grid toggle
   const canvasRef = useRef<HTMLDivElement>(null);
+  const canvasRectRef = useRef<DOMRect | null>(null);
+
+  const updateCanvasRect = useCallback(() => {
+    if (!canvasRef.current) return;
+    canvasRectRef.current = canvasRef.current.getBoundingClientRect();
+  }, []);
 
   // Ping mode state
   const [pingMode, setPingMode] = useState(false);
@@ -444,6 +455,17 @@ export function NetworkTopology({
 
     return { visibleDevices: vDevices, visibleConnections: vConnections };
   }, [devices, connections, zoom, pan, isActive, canvasDimensions, visibleDeviceIds, visibleConnectionIds, updateViewport]);
+
+  useEffect(() => {
+    updateCanvasRect();
+    const handleUpdate = () => updateCanvasRect();
+    window.addEventListener('resize', handleUpdate, { passive: true });
+    window.addEventListener('scroll', handleUpdate, { passive: true, capture: true });
+    return () => {
+      window.removeEventListener('resize', handleUpdate);
+      window.removeEventListener('scroll', handleUpdate, { capture: true } as EventListenerOptions);
+    };
+  }, [updateCanvasRect]);
 
   const devicesSortedForRender = useMemo(() => {
     return [...visibleDevices].sort((a, b) => {
@@ -1233,7 +1255,7 @@ export function NetworkTopology({
         });
       } else if (isSelectingRef.current && canvasRef.current) {
         // Rectangle selection update
-        const rect = canvasRef.current.getBoundingClientRect();
+        const rect = canvasRectRef.current ?? canvasRef.current.getBoundingClientRect();
         const currentX = (e.clientX - rect.left - panRef.current.x) / zoomRef.current;
         const currentY = (e.clientY - rect.top - panRef.current.y) / zoomRef.current;
 
@@ -1300,7 +1322,7 @@ export function NetworkTopology({
 
           dragAnimationFrameRef.current = requestAnimationFrame(() => {
             if (!canvasRef.current) { dragAnimationFrameRef.current = null; return; }
-            const rect = canvasRef.current.getBoundingClientRect();
+            const rect = canvasRectRef.current ?? canvasRef.current.getBoundingClientRect();
             const currentPan = panRef.current;
             const currentZoom = zoomRef.current;
             const currentDragStartPos = dragStartPosRef.current;
@@ -1367,7 +1389,7 @@ export function NetworkTopology({
         if (mousePosAnimationFrameRef.current !== null) return;
 
         mousePosAnimationFrameRef.current = requestAnimationFrame(() => {
-          const rect = canvasRef.current?.getBoundingClientRect();
+          const rect = canvasRectRef.current ?? canvasRef.current?.getBoundingClientRect();
           if (!rect) {
             mousePosAnimationFrameRef.current = null;
             return;

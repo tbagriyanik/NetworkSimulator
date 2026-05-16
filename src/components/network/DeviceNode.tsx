@@ -45,7 +45,7 @@ export const DeviceNode = memo(function DeviceNode({
       role="button"
       tabIndex={0}
       data-device-id={device.id}
-      aria-label={`${device.type} ${device.name}`}
+      aria-label={device.name}
       aria-describedby={`device-desc-${device.id}`}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {

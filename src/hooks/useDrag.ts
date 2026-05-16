@@ -109,6 +109,7 @@ export function useDrag(options: UseDragOptions = {}): UseDragReturn {
   const positionRef = useRef(position);
   const sizeRef = useRef(size);
   const animFrameRef = useRef<number | null>(null);
+  const liveDragPosRef = useRef<DragPosition | null>(null);
 
   const [isDragging, setIsDragging] = useState(false);
   useEffect(() => { positionRef.current = position; }, [position]);
@@ -211,16 +212,15 @@ export function useDrag(options: UseDragOptions = {}): UseDragReturn {
           if (ds2.mode === 'drag-only' && ds2.origin === 'bottom-right') {
             const newX = ds2.startPosX - dx;
             const newY = ds2.startPosY - dy;
-            el.style.right = `${newX}px`;
-            el.style.bottom = `${newY}px`;
+            liveDragPosRef.current = { x: newX, y: newY };
+            el.style.transform = `translate(${dx}px, ${dy}px)`;
           } else {
             const newX = ds2.startPosX + dx;
             const newY = ds2.startPosY + dy;
-            el.style.left = `${newX}px`;
-            el.style.top = `${newY}px`;
-            el.style.transform = 'none';
+            liveDragPosRef.current = { x: newX, y: newY };
+            el.style.transform = `translate(${dx}px, ${dy}px)`;
           }
-          el.style.willChange = 'left, top';
+          el.style.willChange = 'transform';
           el.style.transition = 'none';
         } else if (ds2.type === 'resize' && ds2.direction) {
           const dx2 = e.clientX - ds2.startX;
@@ -251,16 +251,21 @@ export function useDrag(options: UseDragOptions = {}): UseDragReturn {
         ds.element.style.willChange = '';
         ds.element.style.transition = '';
         ds.element.style.cursor = '';
+        ds.element.style.transform = '';
 
         let finalX: number, finalY: number;
         let finalW = ds.startW, finalH = ds.startH;
 
         if (ds.origin === 'bottom-right' && ds.mode === 'drag-only') {
-          finalX = parseInt(ds.element.style.right) || ds.startPosX;
-          finalY = parseInt(ds.element.style.bottom) || ds.startPosY;
+          finalX = liveDragPosRef.current?.x ?? ds.startPosX;
+          finalY = liveDragPosRef.current?.y ?? ds.startPosY;
+          ds.element.style.right = `${finalX}px`;
+          ds.element.style.bottom = `${finalY}px`;
         } else {
-          finalX = parseInt(ds.element.style.left) || ds.startPosX;
-          finalY = parseInt(ds.element.style.top) || ds.startPosY;
+          finalX = liveDragPosRef.current?.x ?? ds.startPosX;
+          finalY = liveDragPosRef.current?.y ?? ds.startPosY;
+          ds.element.style.left = `${finalX}px`;
+          ds.element.style.top = `${finalY}px`;
         }
 
         if (ds.type === 'resize') {
@@ -294,6 +299,7 @@ export function useDrag(options: UseDragOptions = {}): UseDragReturn {
       }
 
       setIsDragging(false);
+      liveDragPosRef.current = null;
       dragRef.current = null;
     };
 
@@ -335,13 +341,19 @@ export function GlobalDragManager() {
     active: boolean;
     el: HTMLElement | null;
     startX: number; startY: number;
+    grabOffsetX: number; grabOffsetY: number;
     offsetX: number; offsetY: number;
+    deltaX: number; deltaY: number;
+    liveX: number; liveY: number;
     animFrame: number | null;
     id: string | null;
   }>({
     active: false, el: null,
     startX: 0, startY: 0,
+    grabOffsetX: 0, grabOffsetY: 0,
     offsetX: 0, offsetY: 0,
+    liveX: 0, liveY: 0,
+    deltaX: 0, deltaY: 0,
     animFrame: null, id: null,
   });
 
@@ -361,13 +373,25 @@ export function GlobalDragManager() {
       e.preventDefault();
       e.stopPropagation();
       const rect = dialog.getBoundingClientRect();
+      // Normalize positioning before drag: use viewport-absolute left/top.
+      // This prevents jumps when the element was previously centered with transform.
+      dialog.style.position = 'fixed';
+      dialog.style.left = `${rect.left}px`;
+      dialog.style.top = `${rect.top}px`;
+      dialog.style.right = 'auto';
+      dialog.style.bottom = 'auto';
+      dialog.style.transform = 'none';
       state.active = true;
       state.el = dialog;
       state.id = id;
       state.startX = e.clientX;
       state.startY = e.clientY;
+      state.grabOffsetX = e.clientX - rect.left;
+      state.grabOffsetY = e.clientY - rect.top;
       state.offsetX = rect.left;
       state.offsetY = rect.top;
+      state.deltaX = 0;
+      state.deltaY = 0;
       document.body.style.cursor = 'grabbing';
       document.body.style.userSelect = 'none';
     };
@@ -377,13 +401,19 @@ export function GlobalDragManager() {
       if (state.animFrame !== null) cancelAnimationFrame(state.animFrame);
       state.animFrame = requestAnimationFrame(() => {
         if (!state.active || !state.el) return;
-        const newX = state.offsetX + (e.clientX - state.startX);
-        const newY = state.offsetY + (e.clientY - state.startY);
+        const newX = e.clientX - state.grabOffsetX;
+        const newY = e.clientY - state.grabOffsetY;
+        const dx = newX - state.offsetX;
+        const dy = newY - state.offsetY;
+        state.liveX = newX;
+        state.liveY = newY;
+        state.deltaX = dx;
+        state.deltaY = dy;
         state.el.style.position = 'fixed';
-        state.el.style.left = `${newX}px`;
-        state.el.style.top = `${newY}px`;
-        state.el.style.transform = 'none';
-        state.el.style.willChange = 'left, top';
+        state.el.style.left = `${state.offsetX}px`;
+        state.el.style.top = `${state.offsetY}px`;
+        state.el.style.transform = `translate(${dx}px, ${dy}px)`;
+        state.el.style.willChange = 'transform';
         state.el.style.transition = 'none';
       });
     };
@@ -393,14 +423,16 @@ export function GlobalDragManager() {
       if (!state.active || !state.el) { state.active = false; return; }
       state.el.style.willChange = '';
       state.el.style.transition = '';
+      state.el.style.transform = 'none';
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
-      const finalLeft = parseInt(state.el.style.left) || state.offsetX;
-      const finalTop = parseInt(state.el.style.top) || state.offsetY;
+      const finalLeft = state.offsetX + state.deltaX;
+      const finalTop = state.offsetY + state.deltaY;
       const margin = 16;
       const rect = state.el.getBoundingClientRect();
       const clampedLeft = Math.max(margin - rect.width, Math.min(finalLeft, window.innerWidth - margin));
       const clampedTop = Math.max(margin - rect.height, Math.min(finalTop, window.innerHeight - margin));
+      state.el.style.position = 'fixed';
       state.el.style.left = `${clampedLeft}px`;
       state.el.style.top = `${clampedTop}px`;
       if (state.id) {
