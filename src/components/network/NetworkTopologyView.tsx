@@ -452,7 +452,7 @@ export const NetworkTopologyView = React.memo(
                     <DeviceNode
                       key={device.id}
                       device={device}
-                      isSelected={selectedDeviceIds.includes(device.id)}
+                      isSelected={selectedDeviceIds.includes(device.id) || activeDeviceId === device.id}
                       isDragging={isCurrentlyDragging}
                       isActive={activeDeviceId === device.id}
                       isDark={isDark}

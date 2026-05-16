@@ -350,6 +350,7 @@ export function NetworkTopology({
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [selectedDeviceIds, setSelectedDeviceIds] = useState<string[]>(activeDeviceId ? [activeDeviceId] : []);
+  const [selectedNoteIds, setSelectedNoteIds] = useState<string[]>([]);
   const [snapToGrid, setSnapToGrid] = useState(true); // Snap-to-grid toggle
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -1118,6 +1119,20 @@ export function NetworkTopology({
       // Left click on empty canvas - PAN start
       e.preventDefault();
 
+      // Cancel active interaction modes on empty canvas click
+      setSelectedDeviceIds([]);
+      setSelectedNoteIds([]);
+      setSelectAllMode(false);
+      if (pingMode || pingSource) {
+        setPingMode(false);
+        setPingSource(null);
+        setPingResult(null);
+      }
+      if (isDrawingConnectionRef.current) {
+        setIsDrawingConnection(false);
+        setConnectionStart(null);
+      }
+
       const currentPan = panRef.current;
       const ps = { x: e.clientX - currentPan.x, y: e.clientY - currentPan.y };
       setPanStart(ps);
@@ -1439,6 +1454,13 @@ export function NetworkTopology({
           setSelectedDeviceIds([]);
           selectedDeviceIdsRef.current = [];
           if (onDeviceSelect) onDeviceSelect(null as any, null as any, undefined, null as any);
+          setSelectedNoteIds([]);
+          setPingMode(false);
+          setPingSource(null);
+          setPingResult(null);
+          setIsDrawingConnection(false);
+          setConnectionStart(null);
+          setContextMenu(null);
         }
       }
 
@@ -1720,6 +1742,8 @@ export function NetworkTopology({
   const handleDeviceClick = useCallback((e: ReactMouseEvent, device: CanvasDevice) => {
     e.stopPropagation();
 
+    setContextMenu(null);
+
     // Don't handle click if we were dragging (check ref to avoid stale closure)
     if (wasDraggingRef.current) return;
 
@@ -1734,11 +1758,12 @@ export function NetworkTopology({
 
     // Only handle selection if Shift was NOT pressed during mousedown
     setSelectedDeviceIds([device.id]);
+    setSelectedNoteIds([]);
     // Notify parent component - select device, don't open terminal
     onDeviceSelect(device.type, device.id, isSwitchDeviceType(device.type) ? device.switchModel : undefined, device.name);
     // Focus canvas for keyboard navigation
     canvasRef.current?.focus();
-  }, [onDeviceSelect, pingMode, pingSource, devices, connections, deviceStates]);
+  }, [onDeviceSelect, pingMode, pingSource, devices, connections, deviceStates, setContextMenu]);
 
   // Handle device double click - open terminal
   const handleDeviceDoubleClick = useCallback((device: CanvasDevice) => {
@@ -2377,7 +2402,6 @@ export function NetworkTopology({
   }, [devices.length, saveToHistory, generateUniqueHostname, generateUniqueLinkLocalIp, onDeviceSelect, canvasDimensions, pan, zoom]);
 
   // Note management functions
-  const [selectedNoteIds, setSelectedNoteIds] = useState<string[]>([]);
   const [noteClipboard, setNoteClipboard] = useState('');
   const [noteTextSelection, setNoteTextSelection] = useState<{ noteId: string; start: number; end: number } | null>(null);
 
@@ -2745,7 +2769,7 @@ export function NetworkTopology({
     setDraggedNoteId(noteId);
     setNoteDragStart({ x: e.clientX, y: e.clientY });
     setSelectedNoteIds([noteId]);
-  }, [notes, saveToHistory]);
+  }, [notes, saveToHistory, setSelectedNoteIds]);
 
   // Handle note header touch start (mobile)
   const handleNoteHeaderTouchStart = useCallback((e: React.TouchEvent, noteId: string) => {
@@ -2760,7 +2784,7 @@ export function NetworkTopology({
     setDraggedNoteId(noteId);
     setNoteDragStart({ x: touch.clientX, y: touch.clientY });
     setSelectedNoteIds([noteId]);
-  }, [notes, saveToHistory]);
+  }, [notes, saveToHistory, setSelectedNoteIds]);
 
   // Handle note resize start
   const handleNoteResizeStart = useCallback((e: ReactMouseEvent, noteId: string) => {
@@ -2774,7 +2798,7 @@ export function NetworkTopology({
     setResizingNoteId(noteId);
     setNoteResizeStart({ x: e.clientX, y: e.clientY, width: note.width, height: note.height });
     setSelectedNoteIds([noteId]);
-  }, [notes, saveToHistory]);
+  }, [notes, saveToHistory, setSelectedNoteIds]);
 
   const handleNoteResizeTouchStart = useCallback((e: React.TouchEvent, noteId: string) => {
     e.stopPropagation();
@@ -2788,7 +2812,7 @@ export function NetworkTopology({
     setResizingNoteId(noteId);
     setNoteResizeStart({ x: touch.clientX, y: touch.clientY, width: note.width, height: note.height });
     setSelectedNoteIds([noteId]);
-  }, [notes, saveToHistory]);
+  }, [notes, saveToHistory, setSelectedNoteIds]);
 
   // Handle note dragging and resizing with mouse move
   useEffect(() => {
@@ -3411,7 +3435,7 @@ export function NetworkTopology({
     setNotes((prev) => [...prev, ...newNotes]);
     setSelectedNoteIds(newNotes.map(n => n.id));
     setContextMenu(null);
-  }, [notesClipboard, saveToHistory, getNextNoteId, setNotes]);
+  }, [notesClipboard, saveToHistory, getNextNoteId, setNotes, setSelectedNoteIds]);
 
   // Handle key events: ESC to close context menu, DELETE to remove devices, Ctrl+A to select all
   useEffect(() => {
@@ -6273,10 +6297,19 @@ export function NetworkTopology({
             onMouseLeave={() => setPingCursorPos(null)}
             onClick={() => {
               canvasRef.current?.focus();
+              setSelectedDeviceIds([]);
+              setSelectedNoteIds([]);
+              setSelectAllMode(false);
+              if (pingMode || pingSource) {
+                setPingMode(false);
+                setPingSource(null);
+                setPingResult(null);
+              }
               if (isDrawingConnection) {
                 setIsDrawingConnection(false);
                 setConnectionStart(null);
               }
+              setContextMenu(null);
             }}
             onContextMenu={(e) => {
               // Show text editing options if editing a note
@@ -6744,7 +6777,7 @@ export function NetworkTopology({
                       <DeviceNode
                         key={device.id}
                         device={device}
-                        isSelected={selectedDeviceIds.includes(device.id) || (pingMode && pingSource?.id === device.id)}
+                        isSelected={selectedDeviceIds.includes(device.id) || activeDeviceId === device.id || (pingMode && pingSource?.id === device.id)}
                         isDragging={isCurrentlyDragging}
                         isActive={activeDeviceId === device.id}
                         isDark={isDark}
@@ -6783,6 +6816,7 @@ export function NetworkTopology({
                         style={{ backgroundColor: note.color, fontFamily: note.font, opacity: note.opacity }}
                         onClick={(e) => {
                           e.stopPropagation();
+                          setContextMenu(null);
                           if ((e as any).shiftKey) {
                             setSelectedNoteIds((prev) => prev.includes(note.id) ? prev.filter(id => id !== note.id) : [...prev, note.id]);
                           } else {
@@ -8272,3 +8306,5 @@ const normalizeWifiMode = (mode: string | undefined) => {
   if (normalized === 'ap' || normalized === 'client' || normalized === 'disabled') return normalized;
   return 'disabled';
 };
+
+
