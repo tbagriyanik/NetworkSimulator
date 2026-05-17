@@ -19,8 +19,6 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-
 import { ExamProject, ExamTask } from '@/lib/network/examMode';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/use-breakpoint';
@@ -281,49 +279,49 @@ export function ExamModePanel({
           </div>
         </div>
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-2 divide-x divide-slate-200 dark:divide-slate-700 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 shrink-0">
-          <div className="flex flex-col items-center py-3">
-            <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">{t.score}</span>
-            <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-black text-rose-500">{score}</span>
-              <span className="text-xs text-slate-400">/ 100</span>
-            </div>
-          </div>
-          <div className="flex flex-col items-center py-3">
-            <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">{t.examTime}</span>
-            <div className={cn("flex items-center gap-1.5", isOverTime && "text-red-500 animate-pulse")}>
-              <Clock className="w-4 h-4" />
-              <span className="text-xl font-mono font-bold">
-                {timeLeft !== null ? formatTime(timeLeft) : '--:--'}
-              </span>
-            </div>
-          </div>
-        </div>
+        {/* Score + Checklist */}
+        <div className="flex-1 overflow-y-auto min-h-0 custom-scrollbar">
+            <div className="flex flex-col">
+              {/* Stats Row */}
+              <div className="grid grid-cols-2 divide-x divide-slate-200 dark:divide-slate-700 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                <div className="flex flex-col items-center py-3">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">{t.score}</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-2xl font-black text-rose-500">{score}</span>
+                    <span className="text-xs text-slate-400">/ 100</span>
+                  </div>
+                </div>
+                <div className="flex flex-col items-center py-3">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">{t.examTime}</span>
+                  <div className={cn("flex items-center gap-1.5", isOverTime && "text-red-500 animate-pulse")}>
+                    <Clock className="w-4 h-4" />
+                    <span className="text-xl font-mono font-bold">
+                      {timeLeft !== null ? formatTime(timeLeft) : '--:--'}
+                    </span>
+                  </div>
+                </div>
+              </div>
 
-        {/* Overtime Alert */}
-        {isOverTime && (
-            <div className="px-4 py-2 bg-red-500/10 border-b border-red-500/20 flex items-center gap-2 text-[11px] text-red-600 dark:text-red-400 font-bold shrink-0">
-                <AlertTriangle className="w-3 h-3" />
-                {language === 'tr' ? 'SÜRE DOLDU!' : 'TIME EXPIRED!'}
-            </div>
-        )}
+              {/* Overtime Alert */}
+              {isOverTime && (
+                  <div className="px-4 py-2 bg-red-500/10 border-b border-red-500/20 flex items-center gap-2 text-[11px] text-red-600 dark:text-red-400 font-bold">
+                      <AlertTriangle className="w-3 h-3" />
+                      {language === 'tr' ? 'SÜRE DOLDU!' : 'TIME EXPIRED!'}
+                  </div>
+              )}
 
-        {/* Checklist */}
-        <div className="flex-1 overflow-hidden flex flex-col min-h-0">
-          <button
-            onClick={() => setIsChecklistExpanded(!isChecklistExpanded)}
-            className="flex items-center justify-between w-full px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shrink-0"
-          >
-            <div className="flex items-center gap-2">
-              <Target className="w-3.5 h-3.5" />
-              {t.checklist} ({completedCount}/{project.tasks.length})
-            </div>
-            {isChecklistExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          </button>
-          {isChecklistExpanded && (
-            <div className="flex-1 overflow-hidden min-h-0">
-              <ScrollArea className="h-full">
+              {/* Checklist */}
+              <button
+                onClick={() => setIsChecklistExpanded(!isChecklistExpanded)}
+                className="flex items-center justify-between w-full px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700"
+              >
+                <div className="flex items-center gap-2">
+                  <Target className="w-3.5 h-3.5" />
+                  {t.checklist} ({completedCount}/{project.tasks.length})
+                </div>
+                {isChecklistExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              </button>
+              {isChecklistExpanded && (
                 <div className="p-3 space-y-2">
                   {project.tasks.map((task) => (
                     <div
@@ -361,13 +359,12 @@ export function ExamModePanel({
                     </div>
                   ))}
                 </div>
-              </ScrollArea>
+              )}
             </div>
-          )}
         </div>
 
         {/* Footer */}
-        {!isFinishedState && (
+        {!isFinishedState && !isOverTime && (
           <div className="p-3 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-700">
             <Button
               className="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold h-9 rounded-lg"

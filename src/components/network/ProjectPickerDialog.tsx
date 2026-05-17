@@ -334,7 +334,7 @@ export function ProjectPickerDialog({
             ref={scrollRef}
             tabIndex={0}
             onKeyDown={handleGridKeyDown}
-            className='flex-1 overflow-y-auto overflow-x-hidden px-4 md:px-12 pb-12 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:ring-inset'
+            className='flex-1 overflow-y-auto overflow-x-hidden px-4 md:px-12 pb-12 custom-scrollbar focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:ring-inset'
           >
             <div className='flex flex-col gap-12 max-w-full'>
               {/* Guided Mode Projects Section */}
