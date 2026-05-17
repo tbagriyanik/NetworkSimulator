@@ -226,6 +226,21 @@ export interface Translations {
   environmentSettings: string;
   errorPrefix: string;
   ethernet: string;
+  exam: string;
+  exams: string;
+  startExam: string;
+  examMode: string;
+  score: string;
+  checklist: string;
+  examDescription: string;
+  finishExam: string;
+  examResult: string;
+  examTime: string;
+  examCompleted: string;
+  examTasks: string;
+  examPoints: string;
+  examStarted: string;
+  examStatus: string;
   exit: string;
   exitPingMode: string;
   expand: string;
@@ -843,6 +858,21 @@ const translations: Record<Language, Translations> = {
     environmentSettings: 'Ayarlar',
     errorPrefix: 'HATA',
     ethernet: 'Ethernet',
+    exam: 'Sınav',
+    exams: 'Sınavlar',
+    startExam: 'Sınavı Başlat',
+    examMode: 'Sınav Modu',
+    score: 'Puan',
+    checklist: 'Kontrol Listesi',
+    examDescription: 'Sınav Açıklaması',
+    finishExam: 'Sınavı Bitir',
+    examResult: 'Sınav Sonucu',
+    examTime: 'Sınav Süresi',
+    examCompleted: 'Sınav Tamamlandı',
+    examTasks: 'Sınav Görevleri',
+    examPoints: 'Sınav Puanı',
+    examStarted: 'Sınav Başladı',
+    examStatus: 'Sınav Durumu',
     exit: 'Çık',
     exitPingMode: 'Ping modundan çık (ESC)',
     expand: 'Genişlet',
@@ -1458,6 +1488,21 @@ const translations: Record<Language, Translations> = {
     environmentSettings: 'Settings',
     errorPrefix: 'ERROR',
     ethernet: 'Ethernet',
+    exam: 'Exam',
+    exams: 'Exams',
+    startExam: 'Start Exam',
+    examMode: 'Exam Mode',
+    score: 'Score',
+    checklist: 'Checklist',
+    examDescription: 'Exam Description',
+    finishExam: 'Finish Exam',
+    examResult: 'Exam Result',
+    examTime: 'Exam Time',
+    examCompleted: 'Exam Completed',
+    examTasks: 'Exam Tasks',
+    examPoints: 'Exam Points',
+    examStarted: 'Exam Started',
+    examStatus: 'Exam Status',
     exit: 'Exit',
     exitPingMode: 'Exit ping mode (ESC)',
     expand: 'Expand',

@@ -7,7 +7,9 @@ import { Plus, FolderOpen, X, BookOpen, Clock, Target, Search } from 'lucide-rea
 import type { Translations } from '@/contexts/LanguageContext';
 import type { ExampleProject, ExampleProjectLevel } from '@/lib/network/exampleProjects';
 import type { GuidedProject } from '@/lib/network/guidedMode';
+import type { ExamProject } from '@/lib/network/examMode';
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { GraduationCap } from 'lucide-react';
 
 interface ProjectPickerDialogProps {
   open: boolean;
@@ -15,8 +17,8 @@ interface ProjectPickerDialogProps {
   t: Translations;
   isDark: boolean;
   language: 'tr' | 'en';
-  projectPickerTab: 'all' | 'guided';
-  setProjectPickerTab: (tab: 'all' | 'guided') => void;
+  projectPickerTab: 'all' | 'guided' | 'exam';
+  setProjectPickerTab: (tab: 'all' | 'guided' | 'exam') => void;
   projectSearchQuery: string;
   setProjectSearchQuery: (q: string) => void;
   groupedExampleProjects: Record<ExampleProjectLevel, ExampleProject[]>;
@@ -24,9 +26,11 @@ interface ProjectPickerDialogProps {
   exampleLevelHints: Record<ExampleProjectLevel, string>;
   exampleLevelOrder: ExampleProjectLevel[];
   getAvailableProjects: (lang: 'tr' | 'en') => GuidedProject[];
+  getAvailableExams: (lang: 'tr' | 'en') => ExamProject[];
   resetToEmptyProject: () => void;
   applyExampleProject: (data: any, exampleId?: string) => void;
   startGuidedProject: (project: GuidedProject) => void;
+  startExamProject: (project: ExamProject) => void;
   loadProjectData: (data: unknown) => boolean;
   setZoom: (zoom: number) => void;
   setPan: (pan: { x: number; y: number }) => void;
@@ -38,9 +42,9 @@ export function ProjectPickerDialog({
   projectPickerTab, setProjectPickerTab,
   projectSearchQuery, setProjectSearchQuery,
   groupedExampleProjects, exampleLevelLabels, exampleLevelHints, exampleLevelOrder,
-  getAvailableProjects,
+  getAvailableProjects, getAvailableExams,
   resetToEmptyProject, applyExampleProject,
-  startGuidedProject, loadProjectData,
+  startGuidedProject, startExamProject, loadProjectData,
   setZoom, setPan,
   closeProjectPicker,
 }: ProjectPickerDialogProps) {
@@ -63,6 +67,17 @@ export function ProjectPickerDialog({
           gp.tag.toLowerCase().includes(q) ||
           (gp.detail && gp.detail.toLowerCase().includes(q));
         if (match) result.push(gp.id);
+      });
+    } else if (projectPickerTab === 'exam') {
+      const q = projectSearchQuery.trim().toLowerCase();
+      const examProjects = getAvailableExams(language);
+      examProjects.forEach((ep) => {
+        const match = q === '' ||
+          ep.title.toLowerCase().includes(q) ||
+          ep.description.toLowerCase().includes(q) ||
+          ep.tag.toLowerCase().includes(q) ||
+          (ep.detail && ep.detail.toLowerCase().includes(q));
+        if (match) result.push(ep.id);
       });
     } else {
       const q = projectSearchQuery.trim().toLowerCase();
@@ -187,6 +202,24 @@ export function ProjectPickerDialog({
                 <BookOpen className="w-4 h-4" />
                 <span className="uppercase tracking-wide text-xs">{language === 'tr' ? 'Rehberli Ders' : 'Guided Lesson'}</span>
               </button>
+              <button
+                onClick={() => setProjectPickerTab('exam')}
+                className={cn(
+                  'relative inline-flex items-center gap-2 rounded-t-lg border border-b-0 px-4 py-2.5 text-sm font-semibold transition-all duration-200 ease-out focus-ring-animate',
+                  projectPickerTab === 'exam'
+                    ? isDark
+                      ? 'bg-slate-900 text-rose-400 border-slate-600 shadow-[0_-2px_8px_rgba(0,0,0,0.3)]'
+                      : 'bg-white text-rose-600 border-slate-300 shadow-[0_-2px_8px_rgba(0,0,0,0.08)]'
+                    : isDark
+                      ? 'bg-slate-950/40 text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/60'
+                      : 'bg-slate-100/80 text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-50'
+                )}
+                role="tab"
+                aria-selected={projectPickerTab === 'exam'}
+              >
+                <GraduationCap className="w-4 h-4" />
+                <span className="uppercase tracking-wide text-xs">{language === 'tr' ? 'Sınav' : 'Exam'}</span>
+              </button>
             </div>
 
             {/* Search Box */}
@@ -238,6 +271,23 @@ export function ProjectPickerDialog({
                         loadProjectData(guided.data);
                         return;
                       }
+                    }
+                    // If still not found, search exams
+                    if (!firstProject) {
+                        const exam = getAvailableExams(language).find(proj =>
+                          proj.title.toLowerCase().includes(q) ||
+                          proj.description.toLowerCase().includes(q) ||
+                          proj.tag.toLowerCase().includes(q) ||
+                          (proj.detail && proj.detail.toLowerCase().includes(q))
+                        );
+                        if (exam) {
+                          closeProjectPicker();
+                          setZoom(1.0);
+                          setPan({ x: 0, y: 0 });
+                          startExamProject(exam);
+                          loadProjectData(exam.data);
+                          return;
+                        }
                     }
                     if (firstProject) {
                       closeProjectPicker();
@@ -360,6 +410,107 @@ export function ProjectPickerDialog({
                           <div className={`text-center py-12 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                             <p className="text-sm">
                               {language === 'tr' ? 'Aramanızla eşleşen rehberli ders bulunamadı.' : 'No guided lessons found matching your search.'}
+                            </p>
+                          </div>
+                        )}
+                    </div>
+                  </section>
+                </div>
+              )}
+
+              {/* Exam Mode Projects Section */}
+              {projectPickerTab === 'exam' && (
+                <div className='flex flex-col gap-8'>
+                  <section className='space-y-4 md:space-y-6 w-full'>
+                    <div className='flex items-center gap-3 md:gap-4 px-1 md:px-2'>
+                      <p className='text-[10px] md:text-xs font-black tracking-[0.3em] md:tracking-[0.4em] text-rose-500 dark:text-rose-400 whitespace-nowrap'>
+                        {language === 'tr' ? 'SINAVLAR' : 'EXAMS'}
+                      </p>
+                      <p className={`text-[10px] md:text-xs ${isDark ? 'text-slate-500' : 'text-slate-500'} truncate`}>
+                        {language === 'tr' ? 'Bilginizi test edin' : 'Test your knowledge'}
+                      </p>
+                      <div className={`h-px flex-1 ${isDark ? 'bg-rose-800/60' : 'bg-rose-200'}`} />
+                    </div>
+
+                    <div className='grid grid-cols-1 gap-6 w-full max-w-full'>
+                      {getAvailableExams(language)
+                        .filter((examProject, idx) => {
+                          const q = projectSearchQuery.trim().toLowerCase();
+                          return q === '' ||
+                            examProject.title.toLowerCase().includes(q) ||
+                            examProject.description.toLowerCase().includes(q) ||
+                            examProject.tag.toLowerCase().includes(q) ||
+                            (examProject.detail && examProject.detail.toLowerCase().includes(q)) ||
+                            String(idx + 1).includes(q);
+                        })
+                        .map((examProject: ExamProject, idx) => (
+                          <Button
+                            key={examProject.id}
+                            data-project-id={examProject.id}
+                            variant='ghost'
+                            className={`group h-auto min-h-[140px] md:min-h-[180px] flex-col items-start gap-3 md:gap-5 p-5 md:p-8 rounded-2xl md:rounded-[2rem] border-2 text-left transition-all duration-300 hover:translate-y-[-4px] active:scale-[0.98] ${isDark ? 'border-rose-800/40 bg-rose-900/10 hover:bg-rose-900/30 hover:border-rose-500/50' : 'border-rose-200/50 bg-rose-50/30 hover:bg-rose-50 hover:border-rose-500/40'} w-full overflow-hidden shadow-sm hover:shadow-2xl relative ${selectedProjectId === examProject.id ? (isDark ? 'ring-2 ring-rose-400 ring-offset-2 ring-offset-slate-900' : 'ring-2 ring-rose-500 ring-offset-2 ring-offset-white') : ''}`}
+                            onClick={() => {
+                              closeProjectPicker();
+                              setZoom(1.0);
+                              setPan({ x: 0, y: 0 });
+                              startExamProject(examProject);
+                              loadProjectData(examProject.data);
+                            }}
+                          >
+                            <div className='flex items-center justify-between w-full gap-4 overflow-hidden flex-nowrap'>
+                              <span className={`font-black text-base md:text-2xl leading-none transition-colors duration-300 break-words flex-1 min-w-0 ${isDark ? 'group-hover:text-rose-400 text-rose-100' : 'group-hover:text-rose-600 text-black'}`}>
+                                <span className={`${isDark ? 'text-slate-500' : 'text-slate-400'} mr-2`}>{idx + 1}.</span>{examProject.title}
+                              </span>
+                              <span className={`text-[8px] md:text-[10px] font-black tracking-[0.2em] px-3 py-1.5 rounded-full whitespace-nowrap border shrink-0 flex-shrink-0 ${isDark ? 'bg-rose-500/20 text-rose-400 border-rose-500/30' : 'bg-rose-100 text-rose-600 border-rose-200'}`}>
+                                {examProject.tag}
+                              </span>
+                            </div>
+                            <p className={`text-[11px] md:text-sm leading-relaxed font-medium italic transition-colors whitespace-normal break-words w-full ${isDark ? 'text-slate-300/80 group-hover:text-slate-200' : 'text-slate-600 group-hover:text-slate-800'}`}>
+                              {examProject.description}
+                            </p>
+
+                            <div className='mt-auto pt-3 flex items-center gap-4 w-full border-t border-slate-800/10 dark:border-slate-700/50'>
+                              <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
+                                <Clock className="w-3 h-3" />
+                                {examProject.durationMinutes} {language === 'tr' ? 'dk' : 'min'}
+                              </div>
+                              <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
+                                <Target className="w-3 h-3" />
+                                {examProject.tasks.length} {language === 'tr' ? 'görev' : 'tasks'}
+                              </div>
+                              <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400 capitalize">
+                                <GraduationCap className="w-3 h-3" />
+                                {examProject.difficulty === 'beginner'
+                                  ? (language === 'tr' ? 'Başlangıç' : 'Beginner')
+                                  : examProject.difficulty === 'intermediate'
+                                    ? (language === 'tr' ? 'Orta' : 'Intermediate')
+                                    : examProject.difficulty === 'advanced'
+                                      ? (language === 'tr' ? 'İleri' : 'Advanced')
+                                      : examProject.difficulty}
+                              </div>
+                            </div>
+
+                            {examProject.detail && (
+                              <div className='pt-2 flex items-center gap-2 w-full'>
+                                <div className='w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-rose-500 shrink-0 shadow-[0_0_8px_rgba(244,63,94,0.5)]' />
+                                <span className={`text-[8px] md:text-[11px] font-bold tracking-wide whitespace-normal break-words w-full ${isDark ? 'text-rose-400/80' : 'text-rose-700/80'}`}>
+                                  {examProject.detail}
+                                </span>
+                              </div>
+                            )}
+                          </Button>
+                        ))}
+                      {getAvailableExams(language).filter((examProject) => {
+                        const q = projectSearchQuery.trim().toLowerCase();
+                        return q === '' ||
+                          examProject.title.toLowerCase().includes(q) ||
+                          examProject.description.toLowerCase().includes(q) ||
+                          examProject.tag.toLowerCase().includes(q) ||
+                          (examProject.detail && examProject.detail.toLowerCase().includes(q));
+                      }).length === 0 && (
+                          <div className={`text-center py-12 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                            <p className="text-sm">
+                              {language === 'tr' ? 'Aramanızla eşleşen sınav bulunamadı.' : 'No exams found matching your search.'}
                             </p>
                           </div>
                         )}

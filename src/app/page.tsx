@@ -96,9 +96,11 @@ import {
 } from '@/lib/network/taskDefinitions';
 import { exampleProjects, type ExampleProject, type ExampleProjectLevel } from '@/lib/network/exampleProjects';
 import { getGuidedProjects, type GuidedProject } from '@/lib/network/guidedMode';
+import { getExamProjects, type ExamProject } from '@/lib/network/examMode';
 import { buildRunningConfig } from '@/lib/network/core/configBuilder';
 import { performanceMonitor } from '@/lib/performance/monitoring';
 import { useGuidedMode } from '@/hooks/useGuidedMode';
+import { useExamMode } from '@/hooks/useExamMode';
 
 import { DeviceIcon } from '@/components/network/DeviceIcon';
 import { PCInfoPopover, SwitchInfoPopover, RouterInfoPopover } from '@/components/network/DeviceInfoPopovers';
@@ -115,6 +117,7 @@ const UnifiedDevicePanel = dynamic(() => import('@/components/network/UnifiedDev
 const LazyAboutModal = dynamic(() => import('@/components/network/LazyAboutModal').then((m) => m.LazyAboutModal));
 const ProjectPickerDialog = dynamic(() => import('@/components/network/ProjectPickerDialog').then((m) => m.ProjectPickerDialog));
 const GuidedModePanel = dynamic(() => import('@/components/network/GuidedModePanel').then((m) => m.GuidedModePanel));
+const ExamModePanel = dynamic(() => import('@/components/network/ExamModePanel').then((m) => m.ExamModePanel));
 const FirewallPanel = dynamic(() => import('@/components/network/FirewallPanel').then((m) => m.FirewallPanel));
 const EnvironmentSettingsPanel = dynamic(() => import('@/components/network/EnvironmentSettingsPanel').then((m) => m.EnvironmentSettingsPanel));
 const OnboardingDialog = dynamic(() => import('@/components/network/OnboardingDialog').then((m) => m.OnboardingDialog));
@@ -348,6 +351,20 @@ export default function Home() {
     isCurrentStepReady,
     getAvailableProjects
   } = useGuidedMode();
+
+  // Exam Mode hook
+  const {
+    activeExam,
+    isExamActive,
+    isPanelMinimized: isExamPanelMinimized,
+    startExam: startExamProject,
+    finishExam,
+    togglePanelMinimize: toggleExamPanelMinimize,
+    expandPanel: expandExamPanel,
+    checkTasks: checkExamTasks,
+    currentScore: examScore,
+    getAvailableExams
+  } = useExamMode();
   const [cableInfo, setCableInfo] = useState<CableInfo>({
     connected: true,
     cableType: 'straight',
@@ -356,12 +373,14 @@ export default function Home() {
   });
   const [lastTaskEvent, setLastTaskEvent] = useState<{ type: 'completed' | 'failed'; taskName: string; timestamp: number } | null>(null);
 
-  // Track project name from guided mode
+  // Track project name from guided/exam mode
   useEffect(() => {
     if (activeGuidedProject) {
       setProjectName(activeGuidedProject.title);
+    } else if (activeExam) {
+      setProjectName(activeExam.title);
     }
-  }, [activeGuidedProject]);
+  }, [activeGuidedProject, activeExam]);
 
   // Persist project name across refreshes
   useEffect(() => {
@@ -480,7 +499,9 @@ export default function Home() {
     setShowAboutModal(false);
     setShowProjectPicker(false);
     setShowOnboarding(false);
-    setRefreshNetworkReport(prev => prev ? { ...prev, show: false } : null);
+    if (!isExamActive) {
+        setRefreshNetworkReport(prev => prev ? { ...prev, show: false } : null);
+    }
     window.dispatchEvent(new CustomEvent('close-menus-broadcast', { detail: { source: 'escape' } }));
   }, []);
 
@@ -2282,8 +2303,9 @@ ${state.bannerMOTD}
     setShowPCPanel(false);
     setShowRouterPanel(false);
 
-    // Close guided mode panel if open
+    // Close guided/exam mode panel if open
     closeGuidedMode();
+    finishExam();
     setProjectName('Untitled');
 
     // Close network refresh report if open
@@ -3739,8 +3761,9 @@ ${state.bannerMOTD}
       }
     }
     setShowProjectPicker(false);
-    // Close guided mode panel if open (unless it's a guided project itself)
+    // Close guided/exam mode panel if open (unless it's a guided project itself)
     closeGuidedMode();
+    finishExam();
 
     // Reset zoom and pan to top-left
     setZoom(1.0);
@@ -3899,9 +3922,11 @@ ${state.bannerMOTD}
             exampleLevelHints={exampleLevelHints}
             exampleLevelOrder={exampleLevelOrder}
             getAvailableProjects={getAvailableProjects}
+            getAvailableExams={getAvailableExams}
             resetToEmptyProject={resetToEmptyProject}
             applyExampleProject={applyExampleProject}
             startGuidedProject={startGuidedProject}
+            startExamProject={startExamProject}
             loadProjectData={loadProjectData}
             setZoom={setZoom}
             setPan={setPan}
@@ -4558,6 +4583,21 @@ ${state.bannerMOTD}
             topologyConnections={topologyConnections}
             topologyDevices={topologyDevices}
             onCheckAutoComplete={checkStepCompletionWithContext}
+          />}
+
+          {/* Exam Mode Panel */}
+          {isExamActive && <ExamModePanel
+            project={activeExam}
+            onClose={finishExam}
+            onMinimize={toggleExamPanelMinimize}
+            isMinimized={isExamPanelMinimized}
+            score={examScore}
+            lastCommand={lastCommand}
+            deviceAccessed={showUnifiedDeviceModal ? (activeDeviceType === 'switchL2' || activeDeviceType === 'switchL3' ? 'switch' : activeDeviceType === 'router' ? 'router' : 'pc') : null}
+            deviceState={state}
+            topologyConnections={topologyConnections}
+            topologyDevices={topologyDevices}
+            onCheckTasks={checkExamTasks}
           />}
         </div>
       </div>

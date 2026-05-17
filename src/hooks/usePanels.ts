@@ -17,7 +17,7 @@ interface PanelState {
   showMobileMenu: boolean;
   isEnvironmentPanelOpen: boolean;
   showProjectPicker: boolean;
-  projectPickerTab: 'all' | 'guided';
+  projectPickerTab: 'all' | 'guided' | 'exam';
   showOnboarding: boolean;
   onboardingStep: number;
 }
@@ -37,7 +37,7 @@ interface PanelActions {
   setShowMobileMenu: Dispatch<SetStateAction<boolean>>;
   setIsEnvironmentPanelOpen: Dispatch<SetStateAction<boolean>>;
   setShowProjectPicker: Dispatch<SetStateAction<boolean>>;
-  setProjectPickerTab: Dispatch<SetStateAction<'all' | 'guided'>>;
+  setProjectPickerTab: Dispatch<SetStateAction<'all' | 'guided' | 'exam'>>;
   setShowOnboarding: Dispatch<SetStateAction<boolean>>;
   setOnboardingStep: Dispatch<SetStateAction<number>>;
   closeAllPanels: () => void;
@@ -58,7 +58,7 @@ export function usePanels(): PanelState & PanelActions {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isEnvironmentPanelOpen, setIsEnvironmentPanelOpen] = useState(false);
   const [showProjectPicker, setShowProjectPicker] = useState(false);
-  const [projectPickerTab, setProjectPickerTab] = useState<'all' | 'guided'>('all');
+  const [projectPickerTab, setProjectPickerTab] = useState<'all' | 'guided' | 'exam'>('all');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
 
