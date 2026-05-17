@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/collapsible';
 import { ExamProject, ExamTask } from '@/lib/network/examMode';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useIsMobile } from '@/hooks/use-breakpoint';
 
 interface ExamModePanelProps {
   project: ExamProject | null;
@@ -34,6 +35,8 @@ interface ExamModePanelProps {
   onMinimize: () => void;
   isMinimized: boolean;
   score: number;
+  isFinished?: boolean;
+  onFinish?: () => void;
   // Auto-completion context
   lastCommand?: string;
   deviceAccessed?: 'switch' | 'router' | 'pc' | null;
@@ -56,6 +59,8 @@ export function ExamModePanel({
   onMinimize,
   isMinimized,
   score,
+  isFinished = false,
+  onFinish,
   lastCommand,
   deviceAccessed,
   deviceState,
@@ -65,6 +70,7 @@ export function ExamModePanel({
   onOpenEditor
 }: ExamModePanelProps) {
   const { t, language } = useLanguage();
+  const isMobile = useIsMobile();
 
   const [isChecklistExpanded, setIsChecklistExpanded] = useState(true);
   const [position, setPosition] = useState({ x: 0, y: 80 });
@@ -72,6 +78,8 @@ export function ExamModePanel({
   // Elapsed time since exam started
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [timeLeft, setTimeLimit] = useState<number | null>(null);
+
+  const isFinishedState = isFinished || !!project?.finishedAt;
 
   useEffect(() => {
     if (!project?.startedAt) return;
@@ -84,10 +92,17 @@ export function ExamModePanel({
       setTimeLimit(Math.max(0, limitSec - diff));
     };
 
+    if (isFinishedState && project.finishedAt) {
+      const diff = Math.floor((new Date(project.finishedAt).getTime() - new Date(project.startedAt).getTime()) / 1000);
+      setElapsedSeconds(diff);
+      setTimeLimit(Math.max(0, limitSec - diff));
+      return;
+    }
+
     update();
     const id = setInterval(update, 1000);
     return () => clearInterval(id);
-  }, [project?.startedAt, project?.durationMinutes]);
+  }, [project?.startedAt, project?.durationMinutes, project?.finishedAt, isFinishedState]);
 
   const formatTime = (totalSec: number) => {
     const h = Math.floor(totalSec / 3600);
@@ -99,8 +114,9 @@ export function ExamModePanel({
 
   // Set initial position
   useEffect(() => {
-    setPosition({ x: window.innerWidth - 336, y: 80 });
-  }, []);
+    const panelWidth = isMobile ? Math.min(320, window.innerWidth - 16) : 320;
+    setPosition({ x: Math.max(0, window.innerWidth - panelWidth - 16), y: 80 });
+  }, [isMobile]);
 
   const [isDragging, setIsDragging] = useState(false);
   const [hasDragged, setHasDragged] = useState(false);
@@ -109,7 +125,7 @@ export function ExamModePanel({
 
   // Auto-check tasks when context changes
   useEffect(() => {
-    if (onCheckTasks && project) {
+    if (onCheckTasks && project && !isFinishedState) {
         onCheckTasks({
           lastCommand,
           deviceAccessed,
@@ -118,7 +134,7 @@ export function ExamModePanel({
           topologyDevices
         });
     }
-  }, [lastCommand, deviceAccessed, deviceState, topologyConnections, topologyDevices, onCheckTasks, project]);
+  }, [lastCommand, deviceAccessed, deviceState, topologyConnections, topologyDevices, onCheckTasks, project, isFinishedState]);
 
   // Drag handlers
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -210,7 +226,7 @@ export function ExamModePanel({
   return (
     <div
       className={cn(
-        "fixed z-50 w-80 flex flex-col rounded-xl overflow-hidden",
+        "fixed z-50 w-[320px] max-w-[calc(100vw-16px)] flex flex-col rounded-xl overflow-hidden",
         isDragging && "cursor-default"
       )}
       style={{
@@ -231,17 +247,25 @@ export function ExamModePanel({
         <div
           data-drag-handle
           className={cn(
-            "flex items-center justify-between p-4 bg-gradient-to-r from-rose-500 to-rose-600 text-white",
+            "flex items-center justify-between p-4 bg-gradient-to-r text-white",
             "cursor-default select-none",
-            isOverTime && "from-red-600 to-red-700"
+            isFinishedState
+              ? "from-emerald-500 to-emerald-600"
+              : isOverTime
+                ? "from-red-600 to-red-700"
+                : "from-rose-500 to-rose-600"
           )}
           onMouseDown={handleMouseDown}
         >
           <div className="flex items-center gap-2">
             <GripHorizontal className="w-4 h-4 opacity-50" />
-            <GraduationCap className="w-5 h-5" />
+            {isFinishedState ? <CheckCircle2 className="w-5 h-5" /> : <GraduationCap className="w-5 h-5" />}
             <div>
-              <h3 className="font-semibold text-sm">{t.examMode}</h3>
+              <h3 className="font-semibold text-sm">
+                {isFinishedState
+                  ? (language === 'tr' ? 'Sınav Tamamlandı' : 'Exam Completed')
+                  : t.examMode}
+              </h3>
               <p className="text-xs text-rose-100 truncate max-w-[160px]">{project.title}</p>
             </div>
           </div>
@@ -255,11 +279,8 @@ export function ExamModePanel({
                 <Settings className="w-4 h-4" />
               </button>
             )}
-            <button onClick={onMinimize} className="p-1.5 rounded-md hover:bg-black/10 transition-colors">
+            <button onClick={onMinimize} className="p-1.5 rounded-md hover:bg-black/10 transition-colors" title={language === 'tr' ? 'Küçült' : 'Minimize'}>
               <ChevronDown className="w-4 h-4" />
-            </button>
-            <button onClick={onClose} className="p-1.5 rounded-md hover:bg-black/10 transition-colors">
-              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -350,16 +371,25 @@ export function ExamModePanel({
 
         {/* Footer */}
         <div className="p-3 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-700">
-          <Button
-            className="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold h-9 rounded-lg"
-            onClick={() => {
-                if (window.confirm(language === 'tr' ? 'Sınavı bitirmek istediğinize emin misiniz?' : 'Are you sure you want to finish the exam?')) {
-                    onClose();
-                }
-            }}
-          >
-            {t.finishExam}
-          </Button>
+          {isFinishedState ? (
+            <Button
+              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold h-9 rounded-lg"
+              onClick={onClose}
+            >
+              {language === 'tr' ? 'Kapat' : 'Close'}
+            </Button>
+          ) : (
+            <Button
+              className="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold h-9 rounded-lg"
+              onClick={() => {
+                  if (window.confirm(language === 'tr' ? 'Sınavı bitirmek istediğinize emin misiniz?' : 'Are you sure you want to finish the exam?')) {
+                      onFinish?.();
+                  }
+              }}
+            >
+              {t.finishExam}
+            </Button>
+          )}
         </div>
       </div>
     </div>

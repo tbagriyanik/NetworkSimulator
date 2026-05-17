@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useIsMobile } from '@/hooks/use-breakpoint';
 import { ExamTask, ExamProject } from '@/lib/network/examMode';
 
 type TranslationObject = { tr: string; en: string };
@@ -66,6 +67,7 @@ export function ExamEditorPanel({
   isDark
 }: ExamEditorPanelProps) {
   const { t, language } = useLanguage();
+  const isMobile = useIsMobile();
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
 
   if (!isOpen || !activeExam) return null;
@@ -87,7 +89,7 @@ export function ExamEditorPanel({
   return (
     <div
       className={cn(
-        "fixed inset-y-0 right-0 w-[450px] z-[100] shadow-2xl flex flex-col transition-all duration-300 transform",
+        "fixed inset-y-0 right-0 w-full sm:w-[450px] max-w-[100vw] z-[100] shadow-2xl flex flex-col transition-all duration-300 transform",
         isOpen ? "translate-x-0" : "translate-x-full",
         isDark ? "bg-slate-900 border-l border-slate-800" : "bg-white border-l border-slate-200"
       )}

@@ -229,7 +229,7 @@ export function AppHeader({
                   </Tooltip>
                 </div>
               </div>
-              <input ref={fileInputRef} type="file" accept=".json" onChange={handleLoadProject} className="hidden" />
+              <input ref={fileInputRef} type="file" accept=".json,.exam" onChange={handleLoadProject} className="hidden" />
 
               {/* Settings & Theme */}
               <div className={`w-px h-4 mx-1 ${isDark ? 'bg-slate-700' : 'bg-slate-300'} hidden md:block`} />

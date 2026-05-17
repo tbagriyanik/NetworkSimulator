@@ -358,9 +358,11 @@ export default function Home() {
   const {
     activeExam,
     isExamActive,
+    isExamFinished,
     isPanelMinimized: isExamPanelMinimized,
     startExam: startExamProject,
     finishExam,
+    closeExam,
     togglePanelMinimize: toggleExamPanelMinimize,
     expandPanel: expandExamPanel,
     isEditorOpen,
@@ -2323,7 +2325,7 @@ ${state.bannerMOTD}
 
     // Close guided/exam mode panel if open
     closeGuidedMode();
-    finishExam();
+    closeExam();
     setProjectName('Untitled');
 
     // Close network refresh report if open
@@ -3800,7 +3802,7 @@ ${state.bannerMOTD}
     setShowProjectPicker(false);
     // Close guided/exam mode panel if open (unless it's a guided project itself)
     closeGuidedMode();
-    finishExam();
+    closeExam();
 
     // Reset zoom and pan to top-left
     setZoom(1.0);
@@ -4625,9 +4627,11 @@ ${state.bannerMOTD}
           {/* Exam Mode Panel */}
           {isExamActive && !isEditorOpen && <ExamModePanel
             project={activeExam}
-            onClose={finishExam}
+            onClose={closeExam}
             onMinimize={toggleExamPanelMinimize}
             isMinimized={isExamPanelMinimized}
+            isFinished={isExamFinished}
+            onFinish={finishExam}
             score={examScore}
             lastCommand={lastCommand}
             deviceAccessed={showUnifiedDeviceModal ? (activeDeviceType === 'switchL2' || activeDeviceType === 'switchL3' ? 'switch' : activeDeviceType === 'router' ? 'router' : 'pc') : null}

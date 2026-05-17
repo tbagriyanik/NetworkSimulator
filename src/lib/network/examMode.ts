@@ -261,8 +261,8 @@ export const getExamProjects = (language: 'tr' | 'en'): ExamProject[] => {
             {
               id: 'exam-intro',
               text: isTr
-                ? '📝 TEMEL AĞ BİLGİSİ SINAVI\n\nBu bir sınavdır. İpucu veya yardım sunulmaz.\nGörevleri tamamladıkça puanınız güncellenecektir.\n\nBaşarılar!'
-                : '📝 BASIC NETWORKING EXAM\n\nThis is an exam. No hints or help are provided.\nYour score will be updated as you complete tasks.\n\nGood luck!',
+                ? '📝 TEMEL AĞ BİLGİSİ SINAVI\n\nŞu anda bir sınavdasınız. \nGörevleri tamamladıkça puanınız güncellenecektir.\n\nBaşarılar!'
+                : '📝 BASIC NETWORKING EXAM\n\nThis is an exam.\nYour score will be updated as you complete tasks.\n\nGood luck!',
               x: 450,
               y: 80,
               width: 350,
