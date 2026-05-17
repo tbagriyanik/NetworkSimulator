@@ -96,7 +96,7 @@ import {
 } from '@/lib/network/taskDefinitions';
 import { exampleProjects, type ExampleProject, type ExampleProjectLevel } from '@/lib/network/exampleProjects';
 import { getGuidedProjects, type GuidedProject } from '@/lib/network/guidedMode';
-import { getExamProjects, type ExamProject } from '@/lib/network/examMode';
+import { getExamProjects, type ExamProject, generateExamFromProject } from '@/lib/network/examMode';
 import { buildRunningConfig } from '@/lib/network/core/configBuilder';
 import { performanceMonitor } from '@/lib/performance/monitoring';
 import { useGuidedMode } from '@/hooks/useGuidedMode';
@@ -3981,6 +3981,19 @@ ${state.bannerMOTD}
     startExamProject(project);
   }, [startExamProject, closeGuidedMode]);
 
+  const handleConvertProjectToExam = useCallback((projectData: any) => {
+    closeExam();
+    closeGuidedMode();
+    const exam = generateExamFromProject(projectData, language);
+    startExamProject(exam);
+    loadProjectData(projectData);
+    toggleEditor(true);
+    toast({
+      title: language === 'tr' ? 'Proje Dönüştürüldü' : 'Project Converted',
+      description: language === 'tr' ? 'Görevler otomatik olarak çıkarıldı ve Sınav Düzenleyici açıldı.' : 'Tasks were automatically extracted and Exam Editor opened.',
+    });
+  }, [closeExam, closeGuidedMode, language, startExamProject, loadProjectData, toggleEditor, toast]);
+
   const handleStartGuidedProject = useCallback((project: GuidedProject) => {
     closeExam();
     startGuidedProject(project);
@@ -4144,6 +4157,7 @@ ${state.bannerMOTD}
             setPan={setPan}
             closeProjectPicker={() => setShowProjectPicker(false)}
             onOpenFile={() => fileInputRef.current?.click()}
+            onConvertProjectToExam={handleConvertProjectToExam}
           />}
 
 

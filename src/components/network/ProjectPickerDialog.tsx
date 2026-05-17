@@ -36,6 +36,7 @@ interface ProjectPickerDialogProps {
   setPan: (pan: { x: number; y: number }) => void;
   closeProjectPicker: () => void;
   onOpenFile: () => void;
+  onConvertProjectToExam: (projectData: any) => void;
 }
 
 export function ProjectPickerDialog({
@@ -49,9 +50,11 @@ export function ProjectPickerDialog({
   setZoom, setPan,
   closeProjectPicker,
   onOpenFile,
+  onConvertProjectToExam,
 }: ProjectPickerDialogProps) {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const convertInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setSelectedProjectId(null);
@@ -187,6 +190,37 @@ export function ProjectPickerDialog({
                 >
                   <GraduationCap className="w-3.5 h-3.5" />
                   {t.examTemplate}
+                </Button>
+                <input
+                  type="file"
+                  ref={convertInputRef}
+                  className="hidden"
+                  accept=".json"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      try {
+                        const projectData = JSON.parse(event.target?.result as string);
+                        closeProjectPicker();
+                        onConvertProjectToExam(projectData);
+                      } catch (err) {
+                        console.error('Failed to parse project data for conversion', err);
+                      }
+                    };
+                    reader.readAsText(file);
+                    e.target.value = '';
+                  }}
+                />
+                <Button
+                  variant='outline'
+                  size='sm'
+                  className={`flex items-center gap-2 text-xs px-3 py-1.5 h-8 ${isDark ? 'text-purple-300 border-purple-700/50 hover:bg-purple-900/30 hover:text-purple-300' : 'text-purple-600 border-purple-300 hover:bg-purple-50 hover:text-purple-700'}`}
+                  onClick={() => convertInputRef.current?.click()}
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  {t.convertProjectToExam}
                 </Button>
 
               </div>

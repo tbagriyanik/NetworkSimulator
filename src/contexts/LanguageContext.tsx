@@ -33,6 +33,7 @@ export interface Translations {
   addRouterShort: string;
   addSwitch: string;
   addSwitchShort: string;
+  convertProjectToExam: string;
   advancedHint: string;
   align: string;
   alignLeft: string;
@@ -678,6 +679,7 @@ const translations: Record<Language, Translations> = {
     addRouterShort: 'Router Ekle',
     addSwitch: 'Switch Ekle',
     addSwitchShort: 'Switch Ekle',
+    convertProjectToExam: 'Projeyi Sınava Dönüştür',
     advancedHint: 'Kapsamlı kurulum ve doğrulama laboratuvarları',
     align: 'Hizala',
     alignLeft: 'Sola Hizala',
@@ -1321,6 +1323,7 @@ const translations: Record<Language, Translations> = {
     addRouterShort: 'Add Router',
     addSwitch: 'Add Switch',
     addSwitchShort: 'Add Switch',
+    convertProjectToExam: 'Convert Project to Exam',
     advancedHint: 'Comprehensive setup and verification labs',
     align: 'Align',
     alignLeft: 'Align Left',

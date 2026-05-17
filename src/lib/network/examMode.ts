@@ -550,3 +550,138 @@ export const getExamProjects = (language: 'tr' | 'en'): ExamProject[] => {
     }
   ];
 };
+
+/**
+ * Automatically generates exam tasks from a project data object.
+ * Analyzes connections, hostnames, IP configs, and VLANs.
+ */
+export function generateExamFromProject(projectData: any, language: 'tr' | 'en'): ExamProject {
+  const isTr = language === 'tr';
+  const tasks: ExamTask[] = [];
+
+  const addDeviceTask = (deviceId: string, title: { tr: string; en: string }, desc: { tr: string; en: string }, type: ExamTask['checkType'], params: any) => {
+    tasks.push({
+      id: `task-${deviceId}-${tasks.length}`,
+      title,
+      description: desc,
+      weight: 0, // Will be balanced later
+      checkType: type,
+      checkParams: params,
+      completed: false
+    });
+  };
+
+  // 1. Hostname Tasks
+  if (Array.isArray(projectData.devices)) {
+    projectData.devices.forEach((d: any) => {
+      if (d.state?.hostname && d.state.hostname !== 'Switch' && d.state.hostname !== 'Router' && d.state.hostname !== 'L3-Switch') {
+        addDeviceTask(d.id,
+          { tr: `${d.id} Hostname Ayarı`, en: `${d.id} Hostname Config` },
+          { tr: `${d.id} cihazının ismini "${d.state.hostname}" olarak ayarlayın.`, en: `Set hostname of ${d.id} to "${d.state.hostname}".` },
+          'command',
+          { commandPattern: `hostname ${d.state.hostname}` }
+        );
+      }
+    });
+  }
+
+  // 2. Physical Connection Tasks
+  if (projectData.topology?.connections?.length > 0) {
+    projectData.topology.connections.forEach((conn: any) => {
+      addDeviceTask(conn.sourceDeviceId,
+        { tr: 'Fiziksel Bağlantı', en: 'Physical Connection' },
+        {
+          tr: `${conn.sourceDeviceId} (${conn.sourcePort}) ile ${conn.targetDeviceId} (${conn.targetPort}) arasını bağlayın.`,
+          en: `Connect ${conn.sourceDeviceId} (${conn.sourcePort}) to ${conn.targetDeviceId} (${conn.targetPort}).`
+        },
+        'connection',
+        {
+          sourceDevice: conn.sourceDeviceId,
+          sourcePort: conn.sourcePort,
+          targetDevice: conn.targetDeviceId,
+          targetPort: conn.targetPort,
+          cableType: conn.cableType
+        }
+      );
+    });
+  }
+
+  // 3. PC IP Configuration Tasks
+  if (projectData.topology?.devices) {
+    projectData.topology.devices.forEach((d: any) => {
+      if (d.type === 'pc' && d.ip && d.ip !== '0.0.0.0') {
+        addDeviceTask(d.id,
+          { tr: `${d.name} IP Yapılandırması`, en: `${d.name} IP Configuration` },
+          {
+            tr: `${d.name} cihazına ${d.ip}/${d.subnet} IP adresini ve ${d.gateway || 'yok'} gateway değerini atayın.`,
+            en: `Assign IP ${d.ip}/${d.subnet} and gateway ${d.gateway || 'none'} to ${d.name}.`
+          },
+          'config',
+          { configKey: `pc.${d.id}.ip`, configValue: d.ip, subnetMask: d.subnet }
+        );
+      }
+    });
+  }
+
+  // 4. VLAN & Interface Tasks (Simplified)
+  if (Array.isArray(projectData.devices)) {
+    projectData.devices.forEach((d: any) => {
+      // VLANs
+      if (d.state?.vlans) {
+        Object.values(d.state.vlans).forEach((vlan: any) => {
+          if (vlan.id > 1) {
+            addDeviceTask(d.id,
+              { tr: `VLAN ${vlan.id} Oluşturma`, en: `Create VLAN ${vlan.id}` },
+              { tr: `${d.id} üzerinde VLAN ${vlan.id} (${vlan.name}) oluşturun.`, en: `Create VLAN ${vlan.id} (${vlan.name}) on ${d.id}.` },
+              'command',
+              { commandPattern: `vlan ${vlan.id}` }
+            );
+          }
+        });
+      }
+
+      // Interface IPs (Router/L3 Switch)
+      if (d.state?.ports) {
+        Object.values(d.state.ports).forEach((p: any) => {
+          if (p.ipAddress && p.ipAddress !== '0.0.0.0' && !p.isSubinterface) {
+            addDeviceTask(d.id,
+              { tr: `${p.id} IP Yapılandırması`, en: `${p.id} IP Configuration` },
+              {
+                tr: `${d.id} cihazının ${p.id} arayüzüne ${p.ipAddress} IP adresini atayın.`,
+                en: `Assign IP ${p.ipAddress} to interface ${p.id} on ${d.id}.`
+              },
+              'command',
+              { commandPattern: `ip address ${p.ipAddress}` }
+            );
+          }
+        });
+      }
+    });
+  }
+
+  // Equalize weights to sum up to 100
+  if (tasks.length > 0) {
+    const baseWeight = Math.floor(100 / tasks.length);
+    tasks.forEach(t => t.weight = baseWeight);
+
+    // Add remainder to the first task
+    const total = tasks.reduce((sum, t) => sum + t.weight, 0);
+    if (total < 100) {
+      tasks[0].weight += (100 - total);
+    }
+  }
+
+  return {
+    id: `exam-custom-${Date.now()}`,
+    tag: isTr ? 'ÖZEL SINAV' : 'CUSTOM EXAM',
+    title: isTr ? 'Dönüştürülmüş Sınav' : 'Converted Exam',
+    description: isTr ? 'Otomatik olarak bir projeden dönüştürüldü' : 'Automatically converted from a project',
+    level: 'intermediate',
+    isExam: true,
+    isCustom: true,
+    tasks,
+    durationMinutes: 30,
+    difficulty: 'intermediate',
+    data: projectData
+  };
+}
