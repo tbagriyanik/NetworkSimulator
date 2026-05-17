@@ -2266,6 +2266,24 @@ export function resolveAliases(input: string): string {
   return input;
 }
 
+// Levenshtein mesafesi hesaplama (bulanık eşleşme için)
+function getLevenshteinDistance(a: string, b: string): number {
+  const matrix = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+  for (let j = 1; j <= b.length; j++) matrix[0][j] = j;
+
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j - 1] + cost
+      );
+    }
+  }
+  return matrix[a.length][b.length];
+}
+
 // Komut parse et
 export function parseCommand(input: string, currentMode: CommandMode, state?: any): ParsedCommand | null {
   const capabilities = state ? getDeviceCapabilities(state, state.switchModel) : undefined;
@@ -2441,6 +2459,19 @@ export function validateCommand(
         error: getModeError(parsed.rawInput, currentMode)
       };
     }
+
+    // Cihaz uyumluluk kontrolü (Akıllı Destek)
+    if (state) {
+      const compatibility = checkDeviceCompatibility(name, state);
+      if (!compatibility.valid) {
+        return {
+          valid: false,
+          reason: 'unknown-command', // IOS gibi 'invalid' yerine cihaz uyumsuzluğunu belirtiyoruz
+          error: compatibility.error
+        };
+      }
+    }
+
     return { valid: true, reason: 'ok', matchedPattern: name };
   }
 
@@ -2496,6 +2527,75 @@ function getInvalidCommandError(input: string, failedTokenIndex?: number): strin
   return `${cleanedInput}
 ${indicator}
 % Invalid input detected at '^' marker.`;
+
+  if (currentMode) {
+    const cmdTokens = cleanedInput.toLowerCase().split(/\s+/);
+    const firstWord = cmdTokens[0];
+
+    // Mevcut mod için geçerli komutların ilk kelimelerini topla
+    const validFirstWords = new Set<string>();
+    Object.entries(commandPatterns).forEach(([name, pattern]) => {
+      if (pattern.modes.includes(currentMode)) {
+        validFirstWords.add(name.split(/\s+/)[0]);
+      }
+    });
+
+    // En yakın 3 komutu bul
+    const suggestions = Array.from(validFirstWords)
+      .map(word => ({ word, distance: getLevenshteinDistance(firstWord, word) }))
+      .filter(item => item.distance <= 2)
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, 3);
+
+    if (suggestions.length > 0) {
+      const suggestionStr = suggestions.map(s => s.word).join(', ');
+      errorMsg += `\n\nBunu mu demek istediniz? (Did you mean?): ${suggestionStr}`;
+    }
+  }
+
+  return errorMsg;
+}
+
+/**
+ * Cihaz ve komut uyumluluğunu kontrol eder (Akıllı Yardımcı)
+ */
+export function checkDeviceCompatibility(commandName: string, state: any): { valid: boolean; error?: string } {
+  const deviceType = state.deviceType || (state.isLayer3Switch ? 'switchL3' : 'switchL2');
+  const model = state.switchModel || '';
+
+  // 1. Router üzerinde Switchport komutları
+  if (deviceType === 'router' && commandName.startsWith('switchport')) {
+    return {
+      valid: false,
+      error: `\n% Bu cihaz bir Router'dır. Router arayüzleri 'switchport' (L2) modunda çalışmaz.\n% Router portları varsayılan olarak L3 (ip address) modundadır.\n\n% (This device is a Router. Router interfaces do not support 'switchport' commands.)`
+    };
+  }
+
+  // 2. L2 Switch üzerinde L3 komutları (no switchport, ip routing, vs.)
+  if (deviceType === 'switchL2' && (commandName === 'no switchport' || commandName === 'ip routing')) {
+    return {
+      valid: false,
+      error: `\n% Bu cihaz bir Katman 2 (L2) Switch'tir (${model}).\n% L3 yönlendirme veya 'no switchport' (routed port) özelliğini desteklemez.\n% Bu özellikler için Katman 3 (L3) bir switch veya Router kullanmalısınız.\n\n% (This is a Layer 2 switch. It does not support IP routing or 'no switchport' commands.)`
+    };
+  }
+
+  // 3. Router üzerinde VLAN veritabanı komutları (vlan <id>)
+  if (deviceType === 'router' && commandName === 'vlan' && state.currentMode === 'config') {
+    return {
+      valid: false,
+      error: `\n% Router üzerinde global 'vlan' komutu kullanılmaz.\n% VLAN'lar arası yönlendirme için alt-arayüzleri (sub-interfaces) kullanın.\n% Örn: interface gi0/0.10 -> encapsulation dot1Q 10\n\n% (Routers do not use global 'vlan' commands. Use sub-interfaces for inter-VLAN routing.)`
+    };
+  }
+
+  // 4. Firewall (ASA) spesifik olmayan ama interface modunda olan komutlar
+  if (deviceType === 'firewall' && (commandName.startsWith('switchport') || commandName === 'vlan')) {
+    return {
+      valid: false,
+      error: `\n% ASA Firewall üzerinde bu komut desteklenmez.\n% ASA arayüz yapılandırması için 'nameif', 'security-level' ve 'ip address' kullanın.\n\n% (This command is not supported on ASA Firewall. Use nameif, security-level, and ip address.)`
+    };
+  }
+
+  return { valid: true };
 }
 
 function calculateCaretPosition(input: string, tokenIndex: number): number {

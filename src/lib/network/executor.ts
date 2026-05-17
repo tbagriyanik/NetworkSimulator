@@ -797,6 +797,60 @@ function getInlineHelp(mode: CommandMode, partialInput: string, prompt: string):
   return lines.join('\n');
 }
 
+/**
+ * Akıllı ipucu sistemi - Mevcut duruma göre sonraki adımı önerir
+ */
+function getSmartHint(state: SwitchState, lang: 'tr' | 'en'): string {
+  const isTr = lang === 'tr';
+  const mode = state.currentMode;
+
+  if (mode === 'user') {
+    return isTr
+      ? "\n💡 İpucu: Yapılandırma yapmak için 'enable' komutuyla ayrıcalıklı moda geçin."
+      : "\n💡 Hint: Enter privileged mode with 'enable' command to start configuration.";
+  }
+
+  if (mode === 'privileged') {
+    if (!state.hostname || state.hostname === 'Switch' || state.hostname === 'Router') {
+      return isTr
+        ? "\n💡 İpucu: Cihaza isim vermek için 'conf t' yazıp 'hostname <isim>' komutunu kullanın."
+        : "\n💡 Hint: Use 'conf t' followed by 'hostname <name>' to name your device.";
+    }
+    return isTr
+      ? "\n💡 İpucu: Yapılandırma moduna girmek için 'configure terminal' kullanın."
+      : "\n💡 Hint: Use 'configure terminal' to enter configuration mode.";
+  }
+
+  if (mode === 'config') {
+    const hasVlans = Object.keys(state.vlans || {}).length > 1; // vlan1 default
+    if (!hasVlans && state.deviceType?.startsWith('switch')) {
+      return isTr
+        ? "\n💡 İpucu: Yeni bir sanal ağ oluşturmak için 'vlan <id>' komutunu kullanın."
+        : "\n💡 Hint: Use 'vlan <id>' to create a new virtual network.";
+    }
+    return isTr
+      ? "\n💡 İpucu: Bir portu yapılandırmak için 'interface <port-id>' komutunu kullanın (Örn: int fa0/1)."
+      : "\n💡 Hint: Use 'interface <port-id>' to configure a port (e.g., int fa0/1).";
+  }
+
+  if (mode === 'interface') {
+    const portId = state.currentInterface || '';
+    const port = state.ports[portId];
+    if (port && port.shutdown) {
+      return isTr
+        ? `\n💡 İpucu: ${portId} portunu aktif hale getirmek için 'no shutdown' komutunu kullanın.`
+        : `\n💡 Hint: Use 'no shutdown' command to enable port ${portId}.`;
+    }
+    if (port && port.mode === 'access' && !port.accessVlan) {
+      return isTr
+        ? "\n💡 İpucu: Bu portu bir VLAN'a atamak için 'switchport access vlan <id>' kullanın."
+        : "\n💡 Hint: Use 'switchport access vlan <id>' to assign this port to a VLAN.";
+    }
+  }
+
+  return '';
+}
+
 // --- Core executor ---
 export function executeCommand(
   state: SwitchState,
@@ -906,7 +960,13 @@ export function executeCommand(
       partialInput = cmdToProcess.trim().substring(0, idx).trim();
     }
     const prompt = getModePrompt(state.currentMode, state.hostname);
-    const helpOutput = getInlineHelp(state.currentMode, partialInput, prompt);
+    let helpOutput = getInlineHelp(state.currentMode, partialInput, prompt);
+
+    // Add smart hint to help output if it's a general help request
+    if (partialInput === '') {
+      helpOutput += getSmartHint(state, language);
+    }
+
     return {
       success: true,
       output: helpOutput
