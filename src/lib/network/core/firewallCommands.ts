@@ -3,7 +3,10 @@ import { CommandHandler } from '../executor';
 export const firewallHandlers: Record<string, CommandHandler> = {
   'nameif': (state, input) => {
     if (state.currentInterface && state.ports[state.currentInterface]) {
-      const name = input.split(/\s+/)[1];
+      const parts = input.trim().split(/\s+/);
+      const name = parts[1];
+      if (!name) return { success: false, error: '% Incomplete command.' };
+
       const port = state.ports[state.currentInterface];
       const updatedPort = { ...port, nameif: name };
 
@@ -30,7 +33,11 @@ export const firewallHandlers: Record<string, CommandHandler> = {
   },
   'security-level': (state, input) => {
     if (state.currentInterface && state.ports[state.currentInterface]) {
-      const level = parseInt(input.split(/\s+/)[1]);
+      const parts = input.trim().split(/\s+/);
+      const levelStr = parts[1];
+      if (!levelStr) return { success: false, error: '% Incomplete command.' };
+
+      const level = parseInt(levelStr);
       if (isNaN(level) || level < 0 || level > 100) {
         return { success: false, error: '% Error: Security level must be between 0 and 100' };
       }

@@ -96,10 +96,6 @@ export function cmdRouterNetwork(state: any, input: string, ctx: any): any {
  * router-id - Set router ID
  */
 function cmdRouterId(state: any, input: string, ctx: any): any {
-    if (state.currentMode !== 'router-config') {
-        return { success: false, error: iosModeError() };
-    }
-
     const match = input.match(/^router-id\s+([0-9.]+)$/i);
     if (!match) {
         return { success: false, error: '% Invalid router-id command' };
@@ -116,10 +112,6 @@ function cmdRouterId(state: any, input: string, ctx: any): any {
  * passive-interface - Disable sending updates on interface
  */
 function cmdPassiveInterface(state: any, input: string, ctx: any): any {
-    if (state.currentMode !== 'router-config') {
-        return { success: false, error: iosModeError() };
-    }
-
     const match = input.match(/^passive-interface\s+(\S+)$/i);
     if (!match) {
         return { success: false, error: '% Invalid passive-interface command' };
@@ -138,7 +130,7 @@ function cmdPassiveInterface(state: any, input: string, ctx: any): any {
  * neighbor remote-as - Configure BGP neighbor
  */
 function cmdNeighborRemoteAs(state: any, input: string, ctx: any): any {
-    if (state.currentMode !== 'router-config' || state.routingProtocol !== 'bgp') {
+    if (state.routingProtocol !== 'bgp') {
         return { success: false, error: iosModeError() };
     }
 
@@ -160,10 +152,6 @@ function cmdNeighborRemoteAs(state: any, input: string, ctx: any): any {
  * no auto-summary
  */
 function cmdNoAutoSummary(state: any, input: string, ctx: any): any {
-    if (state.currentMode !== 'router-config') {
-        return { success: false, error: iosModeError() };
-    }
-
     return {
         success: true,
         newState: { autoSummary: false }
@@ -174,10 +162,6 @@ function cmdNoAutoSummary(state: any, input: string, ctx: any): any {
  * default-information - Control distribution of default route
  */
 function cmdDefaultInformation(state: any, input: string, ctx: any): any {
-    if (state.currentMode !== 'router-config') {
-        return { success: false, error: iosModeError() };
-    }
-
     const match = input.match(/^default-information\s+(originate|always)$/i);
     if (!match) {
         return { success: false, error: '% Invalid default-information command' };

@@ -1,6 +1,7 @@
 // Network Command Parser
 import { CommandMode, ParsedCommand, CommandValidationResult } from './types';
 import { commandAliases } from './initialState';
+import { getDeviceCapabilities } from './capabilities';
 
 // Komut yapıları
 interface CommandPattern {
@@ -8,6 +9,7 @@ interface CommandPattern {
   modes: CommandMode[];
   minArgs: number;
   maxArgs: number;
+  capability?: 'routing' | 'switching' | 'firewall';
 }
 
 // Desteklenen komutlar ve pattern'leri
@@ -79,13 +81,15 @@ export const commandPatterns: Record<string, CommandPattern> = {
     pattern: /^vlan\s+(\d+)(\s+name\s+(.+))?$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 3
+    maxArgs: 3,
+    capability: 'switching'
   },
   'no vlan': {
     pattern: /^no\s+vlan\s+(\d+)$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 1,
+    capability: 'switching'
   },
   'enable password': {
     pattern: /^enable\s+password\s+(.+)$/i,
@@ -223,13 +227,15 @@ export const commandPatterns: Record<string, CommandPattern> = {
     pattern: /^ip\s+routing$/i,
     modes: ['config'],
     minArgs: 0,
-    maxArgs: 0
+    maxArgs: 0,
+    capability: 'routing'
   },
   'no ip routing': {
     pattern: /^no\s+ip\s+routing$/i,
     modes: ['config'],
     minArgs: 0,
-    maxArgs: 0
+    maxArgs: 0,
+    capability: 'routing'
   },
   'ip route': {
     pattern: /^ip\s+route\s+([0-9.]+)\s+([0-9.]+)\s+(\S+)(?:\s+(\d+))?$/i,
@@ -302,61 +308,71 @@ export const commandPatterns: Record<string, CommandPattern> = {
     pattern: /^router\s+rip$/i,
     modes: ['config'],
     minArgs: 0,
-    maxArgs: 0
+    maxArgs: 0,
+    capability: 'routing'
   },
   'router ospf': {
     pattern: /^router\s+ospf\s*(\d*)$/i,
     modes: ['config'],
     minArgs: 0,
-    maxArgs: 1
+    maxArgs: 1,
+    capability: 'routing'
   },
   'ipv6 router rip': {
     pattern: /^ipv6\s+router\s+rip\s+(\S+)$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 1,
+    capability: 'routing'
   },
   'ipv6 router ospf': {
     pattern: /^ipv6\s+router\s+ospf\s+(\d+)$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 1,
+    capability: 'routing'
   },
   'no router rip': {
     pattern: /^no\s+router\s+rip$/i,
     modes: ['config'],
     minArgs: 0,
-    maxArgs: 0
+    maxArgs: 0,
+    capability: 'routing'
   },
   'no ipv6 router rip': {
     pattern: /^no\s+ipv6\s+router\s+rip\s+(\S+)$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 1,
+    capability: 'routing'
   },
   'no ipv6 router ospf': {
     pattern: /^no\s+ipv6\s+router\s+ospf\s+(\d+)$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 1,
+    capability: 'routing'
   },
   'no router ospf': {
     pattern: /^no\s+router\s+ospf$/i,
     modes: ['config'],
     minArgs: 0,
-    maxArgs: 0
+    maxArgs: 0,
+    capability: 'routing'
   },
   'no router eigrp': {
     pattern: /^no\s+router\s+eigrp\s*(\d*)$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 1,
+    capability: 'routing'
   },
   'no router bgp': {
     pattern: /^no\s+router\s+bgp\s*(\d*)$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 1,
+    capability: 'routing'
   },
   // Router config subcommands
   'network': {
@@ -462,31 +478,36 @@ export const commandPatterns: Record<string, CommandPattern> = {
     pattern: /^spanning-tree\s+mode\s+(pvst|rapid-pvst|mst)$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 1,
+    capability: 'switching'
   },
   'spanning-tree vlan': {
     pattern: /^spanning-tree\s+vlan\s+(\d+)(?:\s+(priority|root)(?:\s+(primary|secondary|\d+))?)?$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 4
+    maxArgs: 4,
+    capability: 'switching'
   },
   'spanning-tree portfast': {
     pattern: /^spanning-tree\s+portfast(\s+(default|edge|bpduguard\s+(enable|disable)))?$/i,
     modes: ['config', 'interface', 'config-if-range'],
     minArgs: 0,
-    maxArgs: 2
+    maxArgs: 2,
+    capability: 'switching'
   },
   'spanning-tree bpduguard': {
     pattern: /^spanning-tree\s+bpduguard\s+(enable|disable)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 1,
+    capability: 'switching'
   },
   'no spanning-tree': {
     pattern: /^no\s+spanning-tree(\s+vlan\s+(\d+))?$/i,
     modes: ['config'],
     minArgs: 0,
-    maxArgs: 2
+    maxArgs: 2,
+    capability: 'switching'
   },
   'errdisable recovery': {
     pattern: /^errdisable\s+recovery\s+(cause|interval)\s+(.+)$/i,
@@ -632,13 +653,15 @@ export const commandPatterns: Record<string, CommandPattern> = {
     pattern: /^nameif\s+(\S+)$/i,
     modes: ['interface'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 1,
+    capability: 'firewall'
   },
   'security-level': {
     pattern: /^security-level\s+(\d+)$/i,
     modes: ['interface'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 1,
+    capability: 'firewall'
   },
 
   // Interface komutları - interface ÖNCE gelmeli (daha spesifik)
@@ -712,133 +735,155 @@ export const commandPatterns: Record<string, CommandPattern> = {
     pattern: /^switchport\s+mode\s+(access|trunk|dynamic\s+(auto|desirable)|dot1q-tunnel)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 2
+    maxArgs: 2,
+    capability: 'switching'
   },
   'no switchport': {
     pattern: /^no\s+switchport$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 0,
-    maxArgs: 0
+    maxArgs: 0,
+    capability: 'switching'
   },
   'no switchport mode': {
     pattern: /^no\s+switchport\s+mode$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 0,
-    maxArgs: 0
+    maxArgs: 0,
+    capability: 'switching'
   },
   'switchport access vlan': {
     pattern: /^switchport\s+access\s+vlan\s+(\d+)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 1,
+    capability: 'switching'
   },
   'no switchport access vlan': {
     pattern: /^no\s+switchport\s+access\s+vlan$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 0,
-    maxArgs: 0
+    maxArgs: 0,
+    capability: 'switching'
   },
   'switchport trunk allowed vlan': {
     pattern: /^switchport\s+trunk\s+allowed\s+vlan\s+(.+)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 1,
+    capability: 'switching'
   },
   'switchport trunk native vlan': {
     pattern: /^switchport\s+trunk\s+native\s+vlan\s+(\d+)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 1,
+    capability: 'switching'
   },
   'switchport trunk encapsulation': {
     pattern: /^switchport\s+trunk\s+encapsulation\s+(dot1q|isl|negotiate)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 1,
+    capability: 'switching'
   },
   'encapsulation dot1q': {
     pattern: /^encapsulation\s+dot1q\s+(\d+)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
     maxArgs: 1
+    // Capability omitted - used by both routers and switches
   },
   'switchport nonegotiate': {
     pattern: /^switchport\s+nonegotiate$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 0,
-    maxArgs: 0
+    maxArgs: 0,
+    capability: 'switching'
   },
   'switchport protected': {
     pattern: /^switchport\s+protected$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 0,
-    maxArgs: 0
+    maxArgs: 0,
+    capability: 'switching'
   },
   'switchport block': {
     pattern: /^switchport\s+block\s+(unicast|multicast)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 1,
+    capability: 'switching'
   },
   'switchport port-security': {
     pattern: /^switchport\s+port-security$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 0,
-    maxArgs: 0
+    maxArgs: 0,
+    capability: 'switching'
   },
   'no switchport port-security': {
     pattern: /^no\s+switchport\s+port-security$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 0,
-    maxArgs: 0
+    maxArgs: 0,
+    capability: 'switching'
   },
   'switchport port-security maximum': {
     pattern: /^switchport\s+port-security\s+maximum\s+(\d+)(\s+vlan\s+(.+))?$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 3
+    maxArgs: 3,
+    capability: 'switching'
   },
   'switchport port-security violation': {
     pattern: /^switchport\s+port-security\s+violation\s+(protect|restrict|shutdown)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 1,
+    capability: 'switching'
   },
   'switchport port-security mac-address': {
     pattern: /^switchport\s+port-security\s+mac-address\s+(.+?)(\s+vlan\s+(\d+))?$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 3
+    maxArgs: 3,
+    capability: 'switching'
   },
   'switchport port-security mac-address sticky': {
     pattern: /^switchport\s+port-security\s+mac-address\s+sticky$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 0,
-    maxArgs: 0
+    maxArgs: 0,
+    capability: 'switching'
   },
   'switchport port-security aging time': {
     pattern: /^switchport\s+port-security\s+aging\s+time\s+(\d+)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 1,
+    capability: 'switching'
   },
   'switchport port-security aging type': {
     pattern: /^switchport\s+port-security\s+aging\s+type\s+(absolute|inactivity)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 1,
+    capability: 'switching'
   },
   'switchport voice vlan': {
     pattern: /^switchport\s+voice\s+vlan\s+(\d+|dot1p|none|untagged)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 1,
+    capability: 'switching'
   },
   'switchport voice': {
     pattern: /^switchport\s+voice\s+(.+)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 1,
+    capability: 'switching'
   },
   'cdp enable': {
     pattern: /^cdp\s+enable$/i,
@@ -857,6 +902,41 @@ export const commandPatterns: Record<string, CommandPattern> = {
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
     maxArgs: 3
+  },
+  'ssid': {
+    pattern: /^ssid\s+(.+)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 1,
+    maxArgs: 1,
+    capability: 'routing' // Routers/APs
+  },
+  'encryption': {
+    pattern: /^encryption\s+(open|wpa|wpa2|wpa3)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 1,
+    maxArgs: 1,
+    capability: 'routing'
+  },
+  'wifi-password': {
+    pattern: /^wifi-password\s+(.+)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 1,
+    maxArgs: 1,
+    capability: 'routing'
+  },
+  'wifi-channel': {
+    pattern: /^wifi-channel\s+(2\.4ghz|5ghz)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 1,
+    maxArgs: 1,
+    capability: 'routing'
+  },
+  'wifi-mode': {
+    pattern: /^wifi-mode\s+(ap|client|disabled)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 1,
+    maxArgs: 1,
+    capability: 'routing'
   },
   'no channel-group': {
     pattern: /^no\s+channel-group\s+(\d+)$/i,
@@ -946,25 +1026,29 @@ export const commandPatterns: Record<string, CommandPattern> = {
     pattern: /^wlan\s+(\S+)\s+(\d+)\s+(\S+)$/i,
     modes: ['config'],
     minArgs: 3,
-    maxArgs: 3
+    maxArgs: 3,
+    capability: 'routing'
   },
   'security wpa psk set-key': {
     pattern: /^security\s+wpa\s+psk\s+set-key\s+ascii\s+0\s+(.+)$/i,
     modes: ['config'],
     minArgs: 5,
-    maxArgs: 5
+    maxArgs: 5,
+    capability: 'routing'
   },
   'channel': {
     pattern: /^channel\s+(\d+)$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 1,
+    capability: 'routing'
   },
   'station-role': {
     pattern: /^station-role\s+root$/i,
     modes: ['config'],
     minArgs: 2,
-    maxArgs: 2
+    maxArgs: 2,
+    capability: 'routing'
   },
   'ip address': {
     pattern: /^ip\s+address\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?:\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|\/(\d|[12]\d|3[0-2]))(\s+secondary)?$/i,
@@ -2183,8 +2267,9 @@ export function resolveAliases(input: string): string {
 }
 
 // Komut parse et
-export function parseCommand(input: string, currentMode: CommandMode): ParsedCommand | null {
-  const resolvedInput = expandKeywordPrefixes(resolveAliases(input), currentMode);
+export function parseCommand(input: string, currentMode: CommandMode, state?: any): ParsedCommand | null {
+  const capabilities = state ? getDeviceCapabilities(state, state.switchModel) : undefined;
+  const resolvedInput = expandKeywordPrefixes(resolveAliases(input), currentMode, capabilities);
   const trimmed = resolvedInput.trim();
 
   if (!trimmed) return null;
@@ -2232,12 +2317,18 @@ function isKeywordToken(token: string): boolean {
   return /^[a-z0-9-]+$/i.test(token);
 }
 
-function ensureCommandTree(mode: CommandMode): CommandTreeNode {
-  if (commandTreeByMode[mode]) return commandTreeByMode[mode]!;
+function ensureCommandTree(mode: CommandMode, capabilities?: any): CommandTreeNode {
+  // If we have specific capabilities, we don't cache since trees might differ per device
   const root = createNode();
 
   for (const [patternName, pattern] of Object.entries(commandPatterns)) {
     if (!pattern.modes.includes(mode)) continue;
+
+    // Filter by capability if provided
+    if (capabilities && pattern.capability) {
+      if (!capabilities[pattern.capability]) continue;
+    }
+
     const tokens = patternName.toLowerCase().split(/\s+/).filter(isKeywordToken);
     if (tokens.length === 0) continue;
     let current = root;
@@ -2248,7 +2339,6 @@ function ensureCommandTree(mode: CommandMode): CommandTreeNode {
     current.terminalPatterns.push(patternName);
   }
 
-  commandTreeByMode[mode] = root;
   return root;
 }
 
@@ -2256,11 +2346,11 @@ function tokenize(input: string): string[] {
   return input.trim().toLowerCase().split(/\s+/).filter(Boolean);
 }
 
-function expandKeywordPrefixes(input: string, currentMode: CommandMode): string {
+function expandKeywordPrefixes(input: string, currentMode: CommandMode, capabilities?: any): string {
   const rawTokens = input.trim().split(/\s+/).filter(Boolean);
   if (rawTokens.length === 0) return input;
 
-  let frontier: CommandTreeNode[] = [ensureCommandTree(currentMode)];
+  let frontier: CommandTreeNode[] = [ensureCommandTree(currentMode, capabilities)];
   const expanded = [...rawTokens];
 
   for (let i = 0; i < rawTokens.length; i++) {
@@ -2280,20 +2370,30 @@ function expandKeywordPrefixes(input: string, currentMode: CommandMode): string 
   return expanded.join(' ');
 }
 
-function resolveByCommandTree(input: string, currentMode: CommandMode): { kind: 'ok' | 'ambiguous' | 'incomplete'; candidates?: string[] } {
+function resolveByCommandTree(input: string, currentMode: CommandMode, capabilities?: any): { kind: 'ok' | 'ambiguous' | 'incomplete'; candidates?: string[]; failedTokenIndex?: number } {
   const tokens = tokenize(input);
   if (tokens.length === 0) return { kind: 'ok' };
 
-  let frontier: CommandTreeNode[] = [ensureCommandTree(currentMode)];
-  for (const token of tokens) {
+  let frontier: CommandTreeNode[] = [ensureCommandTree(currentMode, capabilities)];
+  let failedTokenIndex = -1;
+
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
     const next: CommandTreeNode[] = [];
     for (const node of frontier) {
       for (const [keyword, child] of node.children.entries()) {
         if (keyword.startsWith(token)) next.push(child);
       }
     }
-    if (next.length === 0) return { kind: 'ok' };
+    if (next.length === 0) {
+        failedTokenIndex = i;
+        break;
+    }
     frontier = next;
+  }
+
+  if (failedTokenIndex !== -1) {
+    return { kind: 'ok', failedTokenIndex };
   }
 
   const terminal = frontier.flatMap(n => n.terminalPatterns);
@@ -2321,11 +2421,19 @@ export function validateCommand(
 
   const input = parsed.rawInput.toLowerCase();
   const resolvedInput = resolveAliases(parsed.rawInput);
+  const capabilities = state ? getDeviceCapabilities(state, state.switchModel) : undefined;
 
   // Exact pattern match must win over prefix-tree ambiguity.
   for (const [name, pattern] of Object.entries(commandPatterns)) {
     const match = resolvedInput.match(pattern.pattern);
     if (!match) continue;
+
+    // Check capability
+    if (capabilities && pattern.capability && !capabilities[pattern.capability]) {
+        // If capability mismatch, treat as unknown command to get proper caret positioning
+        continue;
+    }
+
     if (!pattern.modes.includes(currentMode)) {
       return {
         valid: false,
@@ -2336,7 +2444,7 @@ export function validateCommand(
     return { valid: true, reason: 'ok', matchedPattern: name };
   }
 
-  const treeResolution = resolveByCommandTree(resolvedInput, currentMode);
+  const treeResolution = resolveByCommandTree(resolvedInput, currentMode, capabilities);
   if (treeResolution.kind === 'ambiguous') {
     const options = (treeResolution.candidates || []).join(', ');
     return { valid: false, reason: 'ambiguous', error: `% Ambiguous command${options ? `: ${options}` : ''}` };
@@ -2347,10 +2455,11 @@ export function validateCommand(
   }
 
   // Eşleşme bulunamadı
+  const failedTokenIndex = treeResolution.failedTokenIndex;
   return {
     valid: false,
     reason: 'unknown-command',
-    error: getInvalidCommandError(parsed.rawInput, state)
+    error: getInvalidCommandError(parsed.rawInput, failedTokenIndex)
   };
 }
 
@@ -2368,9 +2477,9 @@ function getModeError(input: string, currentMode: CommandMode): string {
     'dhcp-config': 'DHCP Pool Configuration',
   };
 
-  const firstNonSpace = input.search(/\S|$/);
+  const indicatorPos = calculateCaretPosition(input, 0);
   const cleanedInput = input.replace(/\s+$/g, '');
-  const indicator = ' '.repeat(Math.max(0, firstNonSpace)) + '^';
+  const indicator = ' '.repeat(indicatorPos) + '^';
 
   return `${cleanedInput}
 ${indicator}
@@ -2380,13 +2489,30 @@ Bu komut bu modda kullanılamaz. Mevcut mod: ${modeNames[currentMode]}`;
 }
 
 // Geçersiz komut hatası
-function getInvalidCommandError(input: string, state?: any): string {
-  const firstNonSpace = input.search(/\S|$/);
+function getInvalidCommandError(input: string, failedTokenIndex?: number): string {
+  const indicatorPos = calculateCaretPosition(input, failedTokenIndex ?? 0);
   const cleanedInput = input.replace(/\s+$/g, '');
-  const indicator = ' '.repeat(Math.max(0, firstNonSpace)) + '^';
+  const indicator = ' '.repeat(indicatorPos) + '^';
   return `${cleanedInput}
 ${indicator}
 % Invalid input detected at '^' marker.`;
+}
+
+function calculateCaretPosition(input: string, tokenIndex: number): number {
+    const tokens = input.split(/(\s+)/);
+    let pos = 0;
+    let currentTokenCount = 0;
+
+    for (let i = 0; i < tokens.length; i++) {
+        if (tokens[i].trim() !== '') {
+            if (currentTokenCount === tokenIndex) {
+                return pos;
+            }
+            currentTokenCount++;
+        }
+        pos += tokens[i].length;
+    }
+    return pos;
 }
 
 // Komut için gereken argümanları al

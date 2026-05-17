@@ -589,30 +589,25 @@ export function normalizePortId(input: string): string | null {
   // Boşlukları kaldır ve küçük harfe çevir (örn: "gig 0/1" -> "gig0/1")
   const lower = input.toLowerCase().trim().replace(/\s+/g, '');
 
-  // Match GigabitEthernet1/0/1 (L3 switch üç parçalı port) veya GigabitEthernet1/1 (ASA)
-  const giThreePart = lower.match(/^(?:gigabitethernet|gigabit|gig|gi)(\d+)\/(\d+)\/(\d+)$/);
-  if (giThreePart) {
-    return `gi${giThreePart[1]}/${giThreePart[2]}/${giThreePart[3]}`;
+  // Match three-part port: GigabitEthernet1/0/1
+  const threePartMatch = lower.match(/^(?:gigabitethernet|gigabit|gig|gi|fastethernet|fast|fa)(\d+)\/(\d+)\/(\d+)$/);
+  if (threePartMatch) {
+    const prefix = lower.startsWith('f') ? 'fa' : 'gi';
+    return `${prefix}${threePartMatch[1]}/${threePartMatch[2]}/${threePartMatch[3]}`;
   }
 
+  // Match subinterface: Gi0/1.10
   const subMatch = lower.match(/^(?:fa|fastethernet|fast|gi|gig|gigabit|gigabitethernet)(\d+)\/(\d+)\.(\d+)$/);
   if (subMatch) {
-    const prefix = lower.startsWith('fa') || lower.startsWith('fast') ? 'fa' : 'gi';
+    const prefix = lower.startsWith('f') ? 'fa' : 'gi';
     return `${prefix}${subMatch[1]}/${subMatch[2]}.${subMatch[3]}`;
   }
 
-  // Fa0/1, fa0/1, FastEthernet0/1, fastethernet0/1, fast 0/1 formatlarını kabul et
-  // Daha uzun eşleşmeler önce (fastethernet > fast > fa) - regex backtracking için
-  const faMatch = lower.match(/^(?:fastethernet|fast|fa)(\d+)\/(\d+)$/);
-  if (faMatch) {
-    return `fa${faMatch[1]}/${faMatch[2]}`;
-  }
-
-  // Gi0/1, gi0/1, GigabitEthernet0/1, gigabitethernet0/1, gig 0/1 formatlarını kabul et
-  // Daha uzun eşleşmeler önce (gigabitethernet > gigabit > gig > gi)
-  const giMatch = lower.match(/^(?:gigabitethernet|gigabit|gig|gi)(\d+)\/(\d+)$/);
-  if (giMatch) {
-    return `gi${giMatch[1]}/${giMatch[2]}`;
+  // Match two-part port: Fa0/1, Gi0/1
+  const twoPartMatch = lower.match(/^(?:fastethernet|fast|fa|gigabitethernet|gigabit|gig|gi)(\d+)\/(\d+)$/);
+  if (twoPartMatch) {
+    const prefix = lower.startsWith('f') ? 'fa' : 'gi';
+    return `${prefix}${twoPartMatch[1]}/${twoPartMatch[2]}`;
   }
 
   // Match ASA format GigabitEthernet1/1 (fallback, after three-part check)

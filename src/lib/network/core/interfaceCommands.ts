@@ -414,12 +414,6 @@ function cmdNoSwitchport(state: any, input: string, ctx: any): any {
     return { success: false, error: iosModeError() };
   }
 
-  // Validate support using comprehensive checker
-  const validation = validateNoSwitchportSupport(state.switchModel);
-  if (!validation.valid) {
-    return { success: false, error: validation.error };
-  }
-
   // Don't allow on VLAN interfaces
   if (isVlanInterfaceName(state.currentInterface)) {
     return { success: false, error: '% Invalid command on VLAN interface' };
@@ -469,11 +463,6 @@ function cmdNoSwitchport(state: any, input: string, ctx: any): any {
 function cmdSwitchportMode(state: any, input: string, ctx: any): any {
   if (!isInInterfaceMode(state) || !state.currentInterface) {
     return { success: false, error: iosModeError() };
-  }
-
-  // Routers do not support switchport mode commands on interfaces
-  if (state.deviceType === 'router') {
-    return { success: false, error: "% Invalid input detected at '^' marker." };
   }
 
   const match = input.match(/^switchport\s+mode\s+(access|trunk|dynamic\s+auto|dynamic\s+desirable|dot1q-tunnel)$/i);
@@ -1044,7 +1033,7 @@ function expandInterfaceRange(rangeSpec: string, state: any): string[] {
       continue;
     }
 
-    const match = part.match(/^(fastethernet|gigabitethernet|gigabit|fastethernet|fa|gig|gi)(\d+(?:\/\d+)?)\/(\d+)(?:-(\d+))?$/);
+    const match = part.match(/^(fastethernet|gigabitethernet|gigabit|fa|gig|gi)(\d+(?:\/\d+)*)\/(\d+)(?:-(\d+))?$/);
     if (!match) continue;
 
     const prefix = match[1].startsWith('f') ? 'fa' : 'gi';
@@ -1099,11 +1088,6 @@ function applyToSelectedPorts(state: any, updater: (port: any) => any) {
  * SSID - Set Wireless SSID
  */
 function cmdSsid(state: any, input: string, ctx: any): any {
-  // Check if device is a switch - switches don't have wireless capabilities
-  const device = ctx.devices?.find((d: any) => d.id === ctx.sourceDeviceId);
-  if (device && (device.type === 'switchL2' || device.type === 'switchL3')) {
-    return { success: false, error: '% Invalid command. Switches do not support wireless SSID configuration.\nSSID configuration is only available on Wireless LAN Controllers (WLC) or autonomous APs.\nWLC command: wlan MySSID 1 MySSID' };
-  }
   if (!isInInterfaceMode(state) || !state.currentInterface) {
     return { success: false, error: '% No interface selected' };
   }
@@ -1127,11 +1111,6 @@ function cmdSsid(state: any, input: string, ctx: any): any {
  * Encryption - Set Wireless Security
  */
 function cmdEncryption(state: any, input: string, ctx: any): any {
-  // Check if device is a switch - switches don't have wireless capabilities
-  const device = ctx.devices?.find((d: any) => d.id === ctx.sourceDeviceId);
-  if (device && (device.type === 'switchL2' || device.type === 'switchL3')) {
-    return { success: false, error: '% Invalid command. Switches have no radio to encrypt wireless traffic.\nWireless security configuration is only available on Wireless LAN Controllers (WLC) or autonomous APs.\nWLC command: security wpa psk set-key ascii 0 password' };
-  }
   if (!isInInterfaceMode(state) || !state.currentInterface) {
     return { success: false, error: '% No interface selected' };
   }
@@ -1155,11 +1134,6 @@ function cmdEncryption(state: any, input: string, ctx: any): any {
  * Wifi-Password - Set Wireless Key
  */
 function cmdWifiPassword(state: any, input: string, ctx: any): any {
-  // Check if device is a switch - wifi-password is not a valid command
-  const device = ctx.devices?.find((d: any) => d.id === ctx.sourceDeviceId);
-  if (device && (device.type === 'switchL2' || device.type === 'switchL3')) {
-    return { success: false, error: '% Invalid command. wifi-password is not a valid command.\nWireless password configuration is only available on Wireless LAN Controllers (WLC) or autonomous APs.\nWLC command: security wpa psk set-key ascii 0 password' };
-  }
   if (!isInInterfaceMode(state) || !state.currentInterface) {
     return { success: false, error: '% No interface selected' };
   }
@@ -1183,11 +1157,6 @@ function cmdWifiPassword(state: any, input: string, ctx: any): any {
  * Channel - Set Wireless Channel/Band
  */
 function cmdWifiChannel(state: any, input: string, ctx: any): any {
-  // Check if device is a switch - switches can't change RF channels
-  const device = ctx.devices?.find((d: any) => d.id === ctx.sourceDeviceId);
-  if (device && (device.type === 'switchL2' || device.type === 'switchL3')) {
-    return { success: false, error: '% Invalid command. Switches cannot change RF channels.\nWireless channel configuration is only available on Wireless LAN Controllers (WLC) or autonomous APs.\nWLC command: channel <num> under RF profile' };
-  }
   if (!isInInterfaceMode(state) || !state.currentInterface) {
     return { success: false, error: '% No interface selected' };
   }
@@ -1211,11 +1180,6 @@ function cmdWifiChannel(state: any, input: string, ctx: any): any {
  * Wifi-Mode - Set Wireless Mode
  */
 function cmdWifiMode(state: any, input: string, ctx: any): any {
-  // Check if device is a switch - switches don't have Wi-Fi mode
-  const device = ctx.devices?.find((d: any) => d.id === ctx.sourceDeviceId);
-  if (device && (device.type === 'switchL2' || device.type === 'switchL3')) {
-    return { success: false, error: '% Invalid command. Switches do not have Wi-Fi mode.\nWireless mode configuration is only available on autonomous APs.\nAutonomous AP command: station-role root' };
-  }
   if (!isInInterfaceMode(state) || !state.currentInterface) {
     return { success: false, error: '% No interface selected' };
   }
@@ -1239,12 +1203,6 @@ function cmdWifiMode(state: any, input: string, ctx: any): any {
  * WLAN - Create WLAN configuration (WLC only)
  */
 function cmdWlan(state: any, input: string, ctx: any): any {
-  // Check if device is a switch - WLC commands are not valid on switches
-  const device = ctx.devices?.find((d: any) => d.id === ctx.sourceDeviceId);
-  if (device && (device.type === 'switchL2' || device.type === 'switchL3')) {
-    return { success: false, error: '% Invalid command. WLAN configuration is only available on Wireless LAN Controllers (WLC).' };
-  }
-
   const match = input.match(/^wlan\s+(\S+)\s+(\d+)\s+(\S+)$/i);
   if (!match) {
     return { success: false, error: '% Invalid WLAN command. Usage: wlan <name> <id> <ssid>' };
@@ -1274,12 +1232,6 @@ function cmdWlan(state: any, input: string, ctx: any): any {
  * Security WPA PSK Set-Key - Set WPA password (WLC only)
  */
 function cmdSecurityWpaPsk(state: any, input: string, ctx: any): any {
-  // Check if device is a switch - WLC commands are not valid on switches
-  const device = ctx.devices?.find((d: any) => d.id === ctx.sourceDeviceId);
-  if (device && (device.type === 'switchL2' || device.type === 'switchL3')) {
-    return { success: false, error: '% Invalid command. Security configuration is only available on Wireless LAN Controllers (WLC).' };
-  }
-
   const match = input.match(/^security\s+wpa\s+psk\s+set-key\s+ascii\s+0\s+(.+)$/i);
   if (!match) {
     return { success: false, error: '% Invalid security command. Usage: security wpa psk set-key ascii 0 <password>' };
@@ -1303,12 +1255,6 @@ function cmdSecurityWpaPsk(state: any, input: string, ctx: any): any {
  * Channel - Set RF channel (WLC only)
  */
 function cmdChannel(state: any, input: string, ctx: any): any {
-  // Check if device is a switch - WLC commands are not valid on switches
-  const device = ctx.devices?.find((d: any) => d.id === ctx.sourceDeviceId);
-  if (device && (device.type === 'switchL2' || device.type === 'switchL3')) {
-    return { success: false, error: '% Invalid command. Channel configuration is only available on Wireless LAN Controllers (WLC).' };
-  }
-
   const match = input.match(/^channel\s+(\d+)$/i);
   if (!match) {
     return { success: false, error: '% Invalid channel command. Usage: channel <num>' };
@@ -1333,12 +1279,6 @@ function cmdChannel(state: any, input: string, ctx: any): any {
  * Station-Role - Set AP mode (AP only)
  */
 function cmdStationRole(state: any, input: string, ctx: any): any {
-  // Check if device is a switch - station-role is not valid on switches
-  const device = ctx.devices?.find((d: any) => d.id === ctx.sourceDeviceId);
-  if (device && (device.type === 'switchL2' || device.type === 'switchL3')) {
-    return { success: false, error: '% Invalid command. Station-role configuration is only available on autonomous Access Points (AP).' };
-  }
-
   const match = input.match(/^station-role\s+root$/i);
   if (!match) {
     return { success: false, error: '% Invalid station-role command. Usage: station-role root' };
