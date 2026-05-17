@@ -390,6 +390,22 @@ export default function Home() {
   useEffect(() => {
     if (activeGuidedProject) {
       setProjectName(activeGuidedProject.title);
+
+      // Auto-focus target device for the current step to act as a "Wizard pointer"
+      if (guidedStepIndex < activeGuidedProject.steps.length) {
+        const step = activeGuidedProject.steps[guidedStepIndex];
+        const targetId = step.checkParams?.targetDeviceId || step.checkParams?.sourceDevice;
+        if (targetId) {
+          const device = topologyDevices.find(d => d.id === targetId);
+          if (device) {
+            setFocusDeviceId(targetId);
+            // Pan and zoom to the target device
+            focusDeviceInTopology(targetId, 1.0, device);
+            // Auto-clear focus after 3 seconds so it doesn't stay locked
+            setTimeout(() => setFocusDeviceId(null), 3000);
+          }
+        }
+      }
     } else if (activeExam) {
       setProjectName(activeExam.title);
       // Auto-open editor for blank templates
@@ -4774,6 +4790,7 @@ ${state.bannerMOTD}
             isCurrentStepReady={isCurrentStepReady}
             lastCommand={lastCommand}
             deviceAccessed={showUnifiedDeviceModal ? (activeDeviceType === 'switchL2' || activeDeviceType === 'switchL3' ? 'switch' : activeDeviceType === 'router' ? 'router' : 'pc') : null}
+            deviceAccessedId={showUnifiedDeviceModal ? activeDeviceId : null}
             deviceState={state}
             topologyConnections={topologyConnections}
             topologyDevices={topologyDevices}

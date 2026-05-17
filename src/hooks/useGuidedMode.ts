@@ -32,6 +32,7 @@ interface UseGuidedModeReturn {
   checkStepCompletionWithContext: (context: {
     lastCommand?: string;
     deviceAccessed?: 'switch' | 'router' | 'pc' | null;
+    deviceAccessedId?: string | null;
     deviceState?: any;
     topologyConnections?: any[];
     topologyDevices?: any[];
@@ -44,6 +45,8 @@ interface UseGuidedModeReturn {
   progress: number;
   completedCount: number;
   totalSteps: number;
+  currentPoints: number;
+  totalPoints: number;
   isAllCompleted: boolean;
   getAvailableProjects: (language: 'tr' | 'en') => GuidedProject[];
 }
@@ -138,6 +141,18 @@ export function useGuidedMode(): UseGuidedModeReturn {
     return activeProject?.steps.length || 0;
   }, [activeProject]);
 
+  const totalPoints = useMemo(() => {
+    if (!activeProject) return 0;
+    return activeProject.steps.reduce((acc, step) => acc + (step.points || 0), 0);
+  }, [activeProject]);
+
+  const currentPoints = useMemo(() => {
+    if (!activeProject) return 0;
+    return activeProject.steps
+      .filter(s => s.completed)
+      .reduce((acc, step) => acc + (step.points || 0), 0);
+  }, [activeProject]);
+
   const isAllCompleted = useMemo(() => {
     if (!activeProject) return false;
     return completedCount === totalSteps;
@@ -172,8 +187,12 @@ export function useGuidedMode(): UseGuidedModeReturn {
   const completeStep = useCallback((stepId: string) => {
     if (!activeProject) return;
 
+    let points = 0;
     setActiveProject(prev => {
       if (!prev) return null;
+
+      const step = prev.steps.find(s => s.id === stepId);
+      points = step?.points || 0;
 
       const updatedSteps = prev.steps.map(s =>
         s.id === stepId ? { ...s, completed: true, completedAt: new Date() } : s
@@ -190,9 +209,9 @@ export function useGuidedMode(): UseGuidedModeReturn {
     // Auto-expand panel when step completes
     setIsPanelMinimized(false);
 
-    // Dispatch celebration event
+    // Dispatch celebration event with points
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('guided-step-completed'));
+      window.dispatchEvent(new CustomEvent('guided-step-completed', { detail: { points } }));
     }
   }, [activeProject]);
 
@@ -258,6 +277,7 @@ export function useGuidedMode(): UseGuidedModeReturn {
   const checkStepCompletionWithContext = useCallback((context: {
     lastCommand?: string;
     deviceAccessed?: 'switch' | 'router' | 'pc' | null;
+    deviceAccessedId?: string | null;
     deviceState?: any;
     topologyConnections?: any[];
     topologyDevices?: any[];
@@ -304,6 +324,8 @@ export function useGuidedMode(): UseGuidedModeReturn {
     progress,
     completedCount,
     totalSteps,
+    currentPoints,
+    totalPoints,
     isAllCompleted,
     getAvailableProjects
   };

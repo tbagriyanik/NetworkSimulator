@@ -433,6 +433,13 @@ export interface Translations {
   projectLoaded: string;
   projectSaved: string;
   pts: string;
+  earnedPoints: string;
+  totalScore: string;
+  lessonCompleted: string;
+  pointsEarned: string;
+  tutorialWizard: string;
+  wizardSupported: string;
+  openWizard: string;
   quickActions: string;
   quickCommands: string;
   quickSettings: string;
@@ -1071,6 +1078,13 @@ const translations: Record<Language, Translations> = {
     projectLoaded: 'Proje yüklendi',
     projectSaved: 'Proje kaydedildi',
     pts: 'puan',
+    earnedPoints: 'Kazanılan Puan',
+    totalScore: 'Toplam Skor',
+    lessonCompleted: 'Ders Tamamlandı',
+    pointsEarned: 'Puan Kazanıldı',
+    tutorialWizard: 'Öğretici Sihirbaz',
+    wizardSupported: 'Sihirbaz Destekli',
+    openWizard: 'Yardımcı Sihirbazı Aç',
     quickActions: 'Hızlı işlemler',
     quickCommands: 'Hızlı Komutlar',
     quickSettings: 'Hızlı Ayarlar',
@@ -1707,6 +1721,13 @@ const translations: Record<Language, Translations> = {
     projectLoaded: 'Project loaded',
     projectSaved: 'Project saved',
     pts: 'pts',
+    earnedPoints: 'Earned Points',
+    totalScore: 'Total Score',
+    lessonCompleted: 'Lesson Completed',
+    pointsEarned: 'Points Earned',
+    tutorialWizard: 'Tutorial Wizard',
+    wizardSupported: 'Wizard Supported',
+    openWizard: 'Open Assistant Wizard',
     quickActions: 'Quick actions',
     quickCommands: 'Quick Commands',
     quickSettings: 'Quick Settings',

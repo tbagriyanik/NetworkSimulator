@@ -3,7 +3,7 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Plus, FolderOpen, X, BookOpen, Clock, Target, Search } from 'lucide-react';
+import { Plus, FolderOpen, X, BookOpen, Clock, Target, Search, Wand2, Sparkles } from 'lucide-react';
 import type { Translations } from '@/contexts/LanguageContext';
 import type { ExampleProject, ExampleProjectLevel } from '@/lib/network/exampleProjects';
 import type { GuidedProject } from '@/lib/network/guidedMode';
@@ -391,9 +391,17 @@ export function ProjectPickerDialog({
                             }}
                           >
                             <div className='flex items-center justify-between w-full gap-4 overflow-hidden flex-nowrap'>
-                              <span className={`font-black text-base md:text-2xl leading-none transition-colors duration-300 break-words flex-1 min-w-0 ${isDark ? 'group-hover:text-emerald-400 text-emerald-100' : 'group-hover:text-emerald-600 text-black'}`}>
-                                <span className={`${isDark ? 'text-slate-500' : 'text-slate-400'} mr-2`}>{idx + 1}.</span>{guidedProject.title}
-                              </span>
+                              <div className="flex flex-col gap-1 flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <Wand2 className="w-4 h-4 text-amber-500" />
+                                  <span className="text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest">
+                                    {t.wizardSupported}
+                                  </span>
+                                </div>
+                                <span className={`font-black text-base md:text-2xl leading-none transition-colors duration-300 break-words ${isDark ? 'group-hover:text-emerald-400 text-emerald-100' : 'group-hover:text-emerald-600 text-black'}`}>
+                                  <span className={`${isDark ? 'text-slate-500' : 'text-slate-400'} mr-2`}>{idx + 1}.</span>{guidedProject.title}
+                                </span>
+                              </div>
                               <span className={`text-[8px] md:text-[10px] font-black tracking-[0.2em] px-3 py-1.5 rounded-full whitespace-nowrap border shrink-0 flex-shrink-0 ${isDark ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-emerald-100 text-emerald-600 border-emerald-200'}`}>
                                 {guidedProject.tag}
                               </span>
@@ -410,6 +418,10 @@ export function ProjectPickerDialog({
                               <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
                                 <Target className="w-3 h-3" />
                                 {guidedProject.steps.length} {language === 'tr' ? 'adım' : 'steps'}
+                              </div>
+                              <div className="flex items-center gap-1 text-[10px] text-amber-500 dark:text-amber-400 font-bold">
+                                <Sparkles className="w-3 h-3 fill-current" />
+                                {guidedProject.totalPoints || guidedProject.steps.reduce((acc, s) => acc + (s.points || 0), 0)} {t.pts}
                               </div>
                               <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400 capitalize">
                                 <BookOpen className="w-3 h-3" />

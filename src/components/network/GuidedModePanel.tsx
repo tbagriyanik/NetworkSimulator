@@ -13,7 +13,9 @@ import {
   ChevronUp,
   X,
   BookOpen,
-  Move
+  Move,
+  Sparkles,
+  Wand2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -40,12 +42,14 @@ interface GuidedModePanelProps {
   // Auto-completion context
   lastCommand?: string;
   deviceAccessed?: 'switch' | 'router' | 'pc' | null;
+  deviceAccessedId?: string | null;
   deviceState?: any;
   topologyConnections?: any[];
   topologyDevices?: any[];
   onCheckAutoComplete?: (context: {
     lastCommand?: string;
     deviceAccessed?: 'switch' | 'router' | 'pc' | null;
+    deviceAccessedId?: string | null;
     deviceState?: any;
     topologyConnections?: any[];
     topologyDevices?: any[];
@@ -64,6 +68,7 @@ export function GuidedModePanel({
   isCurrentStepReady = false,
   lastCommand,
   deviceAccessed,
+  deviceAccessedId,
   deviceState,
   topologyConnections,
   topologyDevices,
@@ -138,6 +143,14 @@ export function GuidedModePanel({
     if (activeStepRef.current) {
       activeStepRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+
+    // Auto-expand active step instructions
+    if (project && currentStepIndex < project.steps.length) {
+      const step = project.steps[currentStepIndex];
+      if (step.detailedInstructions && !expandedSteps.includes(step.id)) {
+        setExpandedSteps(prev => [...prev, step.id]);
+      }
+    }
   }, [currentStepIndex, project]);
 
   // Auto-check completion when context changes
@@ -148,6 +161,7 @@ export function GuidedModePanel({
         onCheckAutoComplete({
           lastCommand,
           deviceAccessed,
+          deviceAccessedId,
           deviceState,
           topologyConnections,
           topologyDevices
@@ -428,6 +442,14 @@ export function GuidedModePanel({
   const completedCount = project?.steps.filter(s => s.completed).length || 0;
   const isAllCompleted = project ? completedCount === project.steps.length : false;
 
+  const currentPoints = React.useMemo(() => {
+    return project?.steps
+      .filter(s => s.completed)
+      .reduce((acc, s) => acc + (s.points || 0), 0) || 0;
+  }, [project]);
+
+  const totalPoints = project?.totalPoints || project?.steps.reduce((acc, s) => acc + (s.points || 0), 0) || 0;
+
   useEffect(() => {
     if (project && isAllCompleted) {
       triggerLessonCompleteCelebration();
@@ -436,13 +458,20 @@ export function GuidedModePanel({
 
   // Listen for step completion event from useGuidedMode
   useEffect(() => {
-    const handleStepCompleted = () => {
+    const handleStepCompleted = (e: any) => {
+      const points = e.detail?.points || 0;
+      if (points > 0) {
+        toast({
+          title: language === 'tr' ? `+${points} ${t.pointsEarned}!` : `+${points} ${t.pointsEarned}!`,
+          description: language === 'tr' ? 'Harika iş!' : 'Great job!',
+        });
+      }
       triggerStepCelebration();
     };
 
     window.addEventListener('guided-step-completed', handleStepCompleted);
     return () => window.removeEventListener('guided-step-completed', handleStepCompleted);
-  }, [triggerStepCelebration]);
+  }, [triggerStepCelebration, language, t.pointsEarned]);
 
   if (!project) return null;
 
@@ -496,9 +525,9 @@ export function GuidedModePanel({
           onTouchStart={handleTouchStart}
         >
           <GripHorizontal className="w-4 h-4 opacity-60" />
-          <BookOpen className="w-5 h-5" />
+          <Wand2 className="w-5 h-5" />
           <span className="text-sm font-semibold">
-            {language === 'tr' ? 'Rehberli Dersi Aç' : 'Open Guided Lesson'}
+            {t.openWizard}
           </span>
           <div className="w-12 h-1.5 bg-white/30 rounded-full overflow-hidden ml-2">
             <div
@@ -549,18 +578,23 @@ export function GuidedModePanel({
         <div
           data-drag-handle
           className={cn(
-            "flex items-center justify-between p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white",
-            "cursor-default active:cursor-default select-none"
+            "flex items-center justify-between p-4 bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 text-white",
+            "cursor-default active:cursor-default select-none shadow-inner"
           )}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
         >
           <div className="flex items-center gap-2">
             <GripHorizontal className="w-4 h-4 opacity-50" />
-            <BookOpen className="w-5 h-5" />
+            <div className="relative">
+              <Wand2 className="w-5 h-5" />
+              <Sparkles className="w-3 h-3 absolute -top-1 -right-1 text-amber-300 animate-pulse" />
+            </div>
             <div>
-              <h3 className="font-semibold text-sm">{t.guidedMode}</h3>
-              <p className="text-xs text-blue-100 truncate max-w-[160px]">{project.title}</p>
+              <h3 className="font-bold text-xs uppercase tracking-tighter">
+                {t.tutorialWizard}
+              </h3>
+              <p className="text-[10px] text-blue-100/80 truncate max-w-[160px] font-medium">{project.title}</p>
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -581,15 +615,24 @@ export function GuidedModePanel({
           </div>
         </div>
 
-        {/* Progress Bar */}
+        {/* Progress Bar & Points */}
         <div className="px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-1">
             <span className="text-xs text-slate-500 dark:text-slate-400">{t.progress}</span>
             <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-              {completedCount} {t.of} {project.steps.length}
+              {completedCount} / {project.steps.length}
             </span>
           </div>
-          <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">{t.totalScore}</span>
+            <div className="flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-amber-500 fill-amber-500" />
+              <span className="text-sm font-black text-amber-600 dark:text-amber-400 tabular-nums">
+                {currentPoints} <span className="text-[10px] text-slate-400 font-normal">/ {totalPoints}</span>
+              </span>
+            </div>
+          </div>
+          <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-blue-500 via-blue-400 to-green-500 transition-all duration-500"
               style={{ width: `${progress}%` }}
@@ -719,7 +762,7 @@ export function GuidedModePanel({
 
                   {/* Step Content */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between gap-2">
                       <span className={cn(
                         "text-xs font-medium",
                         isActive && "text-blue-600 dark:text-blue-400",
@@ -728,6 +771,16 @@ export function GuidedModePanel({
                       )}>
                         {step.order}. {step.title[language]}
                       </span>
+                      {step.points && (
+                        <span className={cn(
+                          "text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0",
+                          isCompleted
+                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                            : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                        )}>
+                          {step.points} {t.pts}
+                        </span>
+                      )}
                     </div>
 
                     {isActive && (
