@@ -68,7 +68,7 @@ const nextConfig: NextConfig = {
     ];
   },
   env: {
-    NEXT_PUBLIC_GIT_COMMIT_COUNT: (commitCount < '900') ? '1020' : commitCount,
+    NEXT_PUBLIC_GIT_COMMIT_COUNT: (commitCount < '900') ? '1030' : commitCount,
   },
 };
 

@@ -552,12 +552,12 @@ export function GuidedModePanel({
   }
 
   return (
-      <div
-        ref={panelRef}
-        className={cn(
-          "fixed z-50 w-80 flex flex-col rounded-xl overflow-hidden",
-          isDragging && "cursor-default"
-        )}
+    <div
+      ref={panelRef}
+      className={cn(
+        "fixed z-50 w-80 flex flex-col rounded-xl overflow-hidden",
+        isDragging && "cursor-default"
+      )}
       style={{
         left: position.x,
         top: position.y,
@@ -591,7 +591,7 @@ export function GuidedModePanel({
               <Sparkles className="w-3 h-3 absolute -top-1 -right-1 text-amber-300 animate-pulse" />
             </div>
             <div>
-              <h3 className="font-bold text-xs uppercase tracking-tighter">
+              <h3 className="font-bold text-xs tracking-tighter">
                 {t.tutorialWizard}
               </h3>
               <p className="text-[10px] text-blue-100/80 truncate max-w-[160px] font-medium">{project.title}</p>

@@ -214,7 +214,7 @@ export function ProjectPickerDialog({
                 aria-selected={projectPickerTab === 'all'}
               >
                 <FolderOpen className="w-4 h-4" />
-                <span className="uppercase tracking-wide text-xs">{t.allProjects}</span>
+                <span className="tracking-wide text-xs">{t.allProjects}</span>
               </button>
               <button
                 onClick={() => setProjectPickerTab('guided')}
@@ -232,7 +232,7 @@ export function ProjectPickerDialog({
                 aria-selected={projectPickerTab === 'guided'}
               >
                 <BookOpen className="w-4 h-4" />
-                <span className="uppercase tracking-wide text-xs">{t.guidedMode}</span>
+                <span className="tracking-wide text-xs">{t.guidedMode}</span>
               </button>
               <button
                 onClick={() => setProjectPickerTab('exam')}
@@ -250,7 +250,7 @@ export function ProjectPickerDialog({
                 aria-selected={projectPickerTab === 'exam'}
               >
                 <GraduationCap className="w-4 h-4" />
-                <span className="uppercase tracking-wide text-xs">{t.exam}</span>
+                <span className="tracking-wide text-xs">{t.exam}</span>
               </button>
             </div>
 
@@ -306,22 +306,22 @@ export function ProjectPickerDialog({
                     }
                     // If still not found, search exams
                     if (!firstProject) {
-                        const exam = getAvailableExams(language)
-                          .filter((proj: any) => proj.id !== 'exam-template-blank')
-                          .find(proj =>
+                      const exam = getAvailableExams(language)
+                        .filter((proj: any) => proj.id !== 'exam-template-blank')
+                        .find(proj =>
                           proj.title.toLowerCase().includes(q) ||
                           proj.description.toLowerCase().includes(q) ||
                           proj.tag.toLowerCase().includes(q) ||
                           (proj.detail && proj.detail.toLowerCase().includes(q))
                         );
-                        if (exam) {
-                          closeProjectPicker();
-                          setZoom(1.0);
-                          setPan({ x: 0, y: 0 });
-                          startExamProject(exam);
-                          loadProjectData(exam.data);
-                          return;
-                        }
+                      if (exam) {
+                        closeProjectPicker();
+                        setZoom(1.0);
+                        setPan({ x: 0, y: 0 });
+                        startExamProject(exam);
+                        loadProjectData(exam.data);
+                        return;
+                      }
                     }
                     if (firstProject) {
                       closeProjectPicker();
@@ -391,13 +391,7 @@ export function ProjectPickerDialog({
                             }}
                           >
                             <div className='flex items-center justify-between w-full gap-4 overflow-hidden flex-nowrap'>
-                              <div className="flex flex-col gap-1 flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <Wand2 className="w-4 h-4 text-amber-500" />
-                                  <span className="text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest">
-                                    {t.wizardSupported}
-                                  </span>
-                                </div>
+                              <div className="flex flex-col gap-1 flex-1 min-w-0">                                
                                 <span className={`font-black text-base md:text-2xl leading-none transition-colors duration-300 break-words ${isDark ? 'group-hover:text-emerald-400 text-emerald-100' : 'group-hover:text-emerald-600 text-black'}`}>
                                   <span className={`${isDark ? 'text-slate-500' : 'text-slate-400'} mr-2`}>{idx + 1}.</span>{guidedProject.title}
                                 </span>
@@ -550,13 +544,13 @@ export function ProjectPickerDialog({
                       {getAvailableExams(language)
                         .filter(ep => ep.id !== 'exam-template-blank')
                         .filter((examProject) => {
-                        const q = projectSearchQuery.trim().toLowerCase();
-                        return q === '' ||
-                          examProject.title.toLowerCase().includes(q) ||
-                          examProject.description.toLowerCase().includes(q) ||
-                          examProject.tag.toLowerCase().includes(q) ||
-                          (examProject.detail && examProject.detail.toLowerCase().includes(q));
-                      }).length === 0 && (
+                          const q = projectSearchQuery.trim().toLowerCase();
+                          return q === '' ||
+                            examProject.title.toLowerCase().includes(q) ||
+                            examProject.description.toLowerCase().includes(q) ||
+                            examProject.tag.toLowerCase().includes(q) ||
+                            (examProject.detail && examProject.detail.toLowerCase().includes(q));
+                        }).length === 0 && (
                           <div className={`text-center py-12 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                             <p className="text-sm">
                               {language === 'tr' ? 'Aramanızla eşleşen sınav bulunamadı.' : 'No exams found matching your search.'}

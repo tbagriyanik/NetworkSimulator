@@ -3981,6 +3981,11 @@ ${state.bannerMOTD}
     startExamProject(project);
   }, [startExamProject, closeGuidedMode]);
 
+  const handleStartGuidedProject = useCallback((project: GuidedProject) => {
+    closeExam();
+    startGuidedProject(project);
+  }, [startGuidedProject, closeExam]);
+
   const isDark = (effectiveTheme ?? theme) === 'dark';
 
   // Helper function to truncate long names with an ellipsis
@@ -4132,7 +4137,7 @@ ${state.bannerMOTD}
             getAvailableExams={getAvailableExams}
             resetToEmptyProject={resetToEmptyProject}
             applyExampleProject={applyExampleProject}
-            startGuidedProject={startGuidedProject}
+            startGuidedProject={handleStartGuidedProject}
             startExamProject={startExamFromCatalog}
             loadProjectData={loadProjectData}
             setZoom={setZoom}

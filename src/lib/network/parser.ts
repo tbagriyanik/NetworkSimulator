@@ -2490,7 +2490,7 @@ export function validateCommand(
   return {
     valid: false,
     reason: 'unknown-command',
-    error: getInvalidCommandError(parsed.rawInput, failedTokenIndex)
+    error: getInvalidCommandError(parsed.rawInput, failedTokenIndex, currentMode)
   };
 }
 
@@ -2520,13 +2520,24 @@ Bu komut bu modda kullanılamaz. Mevcut mod: ${modeNames[currentMode]}`;
 }
 
 // Geçersiz komut hatası
-function getInvalidCommandError(input: string, failedTokenIndex?: number): string {
+export function getInvalidCommandError(
+  input: string,
+  failedTokenIndexOrState?: number | any,
+  currentMode?: CommandMode
+): string {
+  let failedTokenIndex: number | undefined = undefined;
+  if (typeof failedTokenIndexOrState === 'number') {
+    failedTokenIndex = failedTokenIndexOrState;
+  } else if (failedTokenIndexOrState && typeof failedTokenIndexOrState === 'object') {
+    if (!currentMode && 'currentMode' in failedTokenIndexOrState) {
+      currentMode = failedTokenIndexOrState.currentMode;
+    }
+  }
+
   const indicatorPos = calculateCaretPosition(input, failedTokenIndex ?? 0);
   const cleanedInput = input.replace(/\s+$/g, '');
   const indicator = ' '.repeat(indicatorPos) + '^';
-  return `${cleanedInput}
-${indicator}
-% Invalid input detected at '^' marker.`;
+  let errorMsg = `${cleanedInput}\n${indicator}\n% Invalid input detected at '^' marker.`;
 
   if (currentMode) {
     const cmdTokens = cleanedInput.toLowerCase().split(/\s+/);
@@ -2535,7 +2546,7 @@ ${indicator}
     // Mevcut mod için geçerli komutların ilk kelimelerini topla
     const validFirstWords = new Set<string>();
     Object.entries(commandPatterns).forEach(([name, pattern]) => {
-      if (pattern.modes.includes(currentMode)) {
+      if (pattern.modes.includes(currentMode!)) {
         validFirstWords.add(name.split(/\s+/)[0]);
       }
     });
