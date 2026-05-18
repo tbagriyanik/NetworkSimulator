@@ -557,9 +557,29 @@ export const getExamProjects = (language: 'tr' | 'en'): ExamProject[] => {
  */
 export function generateExamFromProject(projectData: any, language: 'tr' | 'en'): ExamProject {
   const isTr = language === 'tr';
-  const tasks: ExamTask[] = [];
+  let tasks: ExamTask[] = [];
+
+  // 0. Use existing tasks/steps if present, but filter out completed ones (except connections)
+  const sourceItems = projectData.tasks || projectData.steps || [];
+  if (sourceItems.length > 0) {
+    tasks = sourceItems
+      .filter((item: any) => !item.completed || item.checkType === 'connection')
+      .map((item: any) => ({
+        ...item,
+        id: item.id || `task-${Date.now()}-${Math.random()}`,
+        completed: false,
+        completedAt: undefined
+      }));
+  }
 
   const addDeviceTask = (deviceId: string, title: { tr: string; en: string }, desc: { tr: string; en: string }, type: ExamTask['checkType'], params: any) => {
+    // Deduplication - don't add the same task twice
+    const isDuplicate = tasks.some(t =>
+      t.checkType === type &&
+      JSON.stringify(t.checkParams) === JSON.stringify(params)
+    );
+    if (isDuplicate) return;
+
     tasks.push({
       id: `task-${deviceId}-${tasks.length}`,
       title,
@@ -640,7 +660,7 @@ export function generateExamFromProject(projectData: any, language: 'tr' | 'en')
         });
       }
 
-      // Interface IPs (Router/L3 Switch)
+      // Interface IPs (Router/L3 Switch) & WLAN
       if (d.state?.ports) {
         Object.values(d.state.ports).forEach((p: any) => {
           if (p.ipAddress && p.ipAddress !== '0.0.0.0' && !p.isSubinterface) {
@@ -654,7 +674,73 @@ export function generateExamFromProject(projectData: any, language: 'tr' | 'en')
               { commandPattern: `ip address ${p.ipAddress}` }
             );
           }
+
+          if (p.wifi?.ssid) {
+            addDeviceTask(d.id,
+              { tr: `${p.id} WLAN Yapılandırması`, en: `${p.id} WLAN Configuration` },
+              {
+                tr: `${d.id} cihazının ${p.id} arayüzünde SSID="${p.wifi.ssid}" olacak şekilde kablosuz ağ oluşturun.`,
+                en: `Configure wireless network on ${d.id} interface ${p.id} with SSID="${p.wifi.ssid}".`
+              },
+              'config',
+              {
+                configKey: `ports.${p.id}.wifi.ssid`,
+                configValue: p.wifi.ssid
+              }
+            );
+          }
         });
+      }
+
+      // DHCP Pools
+      if (d.state?.dhcpPools) {
+        Object.entries(d.state.dhcpPools).forEach(([name, pool]: [string, any]) => {
+          addDeviceTask(d.id,
+            { tr: `DHCP Havuzu: ${name}`, en: `DHCP Pool: ${name}` },
+            {
+              tr: `${d.id} üzerinde "${name}" isminde, ${pool.network} ağını dağıtan bir DHCP havuzu oluşturun.`,
+              en: `Create a DHCP pool named "${name}" on ${d.id} for network ${pool.network}.`
+            },
+            'config',
+            {
+              configKey: `dhcpPools.${name}.network`,
+              configValue: pool.network
+            }
+          );
+        });
+      }
+
+      // DNS & HTTP Services
+      if (d.state?.services) {
+        const s = d.state.services;
+        if (s.dns?.enabled) {
+          addDeviceTask(d.id,
+            { tr: 'DNS Servisini Etkinleştir', en: 'Enable DNS Service' },
+            { tr: `${d.id} üzerinde DNS servisini aktif edin.`, en: `Enable DNS service on ${d.id}.` },
+            'config',
+            { configKey: 'services.dns.enabled', configValue: true }
+          );
+
+          if (s.dns.records?.length > 0) {
+            s.dns.records.forEach((rec: any) => {
+              addDeviceTask(d.id,
+                { tr: `DNS Kaydı: ${rec.domain}`, en: `DNS Record: ${rec.domain}` },
+                { tr: `${rec.domain} alan adını ${rec.address} IP adresine yönlendirin.`, en: `Add DNS record for ${rec.domain} pointing to ${rec.address}.` },
+                'config',
+                { configKey: 'services.dns.records', configValue: [rec] }
+              );
+            });
+          }
+        }
+
+        if (s.http?.enabled) {
+          addDeviceTask(d.id,
+            { tr: 'HTTP Servisini Etkinleştir', en: 'Enable HTTP Service' },
+            { tr: `${d.id} üzerinde HTTP servisini aktif edin.`, en: `Enable HTTP service on ${d.id}.` },
+            'config',
+            { configKey: 'services.http.enabled', configValue: true }
+          );
+        }
       }
     });
   }

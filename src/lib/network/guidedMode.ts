@@ -617,6 +617,11 @@ export const checkStepCompletion = (
           if (property === 'vlan') return Number(port.vlan) === Number(configValue) || Number(port.accessVlan) === Number(configValue);
           if (property === 'mode') return port.mode === configValue;
           if (property === 'enabled' && configKey.includes('portSecurity')) return port.portSecurity?.enabled === configValue;
+
+          // WiFi checks
+          if (property === 'ssid' && port.wifi) return port.wifi.ssid === configValue;
+          if (property === 'password' && port.wifi) return port.wifi.password === configValue;
+          if (property === 'security' && port.wifi) return port.wifi.security === configValue;
         }
       }
       

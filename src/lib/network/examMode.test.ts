@@ -64,4 +64,55 @@ describe('generateExamFromProject', () => {
     const totalWeight = exam.tasks.reduce((sum, t) => sum + t.weight, 0);
     expect(totalWeight).toBe(100);
   });
+
+  it('should extract DHCP, DNS, HTTP and WLAN tasks', () => {
+    const projectData = {
+      devices: [
+        {
+          id: 'router-1',
+          state: {
+            dhcpPools: {
+              'LAN': { network: '192.168.1.0' }
+            },
+            services: {
+              dns: { enabled: true, records: [{ domain: 'lab.com', address: '1.2.3.4' }] },
+              http: { enabled: true }
+            },
+            ports: {
+              'wlan0': { id: 'wlan0', wifi: { ssid: 'Guest' } }
+            }
+          }
+        }
+      ],
+      topology: { devices: [], connections: [] }
+    };
+
+    const exam = generateExamFromProject(projectData, 'en');
+
+    expect(exam.tasks.some(t => t.checkParams?.configKey === 'dhcpPools.LAN.network')).toBe(true);
+    expect(exam.tasks.some(t => t.checkParams?.configKey === 'services.dns.enabled')).toBe(true);
+    expect(exam.tasks.some(t => t.checkParams?.configKey === 'services.dns.records')).toBe(true);
+    expect(exam.tasks.some(t => t.checkParams?.configKey === 'services.http.enabled')).toBe(true);
+    expect(exam.tasks.some(t => t.checkParams?.configKey === 'ports.wlan0.wifi.ssid')).toBe(true);
+  });
+
+  it('should filter out completed tasks from the project', () => {
+    const projectData = {
+      tasks: [
+        { id: 't1', title: { tr: 'C1', en: 'C1' }, checkType: 'connection', completed: true },
+        { id: 't2', title: { tr: 'C2', en: 'C2' }, checkType: 'command', completed: true },
+        { id: 't3', title: { tr: 'C3', en: 'C3' }, checkType: 'command', completed: false }
+      ],
+      topology: { devices: [], connections: [] }
+    };
+
+    const exam = generateExamFromProject(projectData, 'en');
+
+    // Connection task should remain even if completed
+    expect(exam.tasks.some(t => t.id === 't1')).toBe(true);
+    // Completed non-connection task should be filtered out
+    expect(exam.tasks.some(t => t.id === 't2')).toBe(false);
+    // Incomplete task should remain
+    expect(exam.tasks.some(t => t.id === 't3')).toBe(true);
+  });
 });
