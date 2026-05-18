@@ -68,7 +68,7 @@ const nextConfig: NextConfig = {
     ];
   },
   env: {
-    NEXT_PUBLIC_GIT_COMMIT_COUNT: String(countInt < 900 ? 1040 : countInt),
+    NEXT_PUBLIC_GIT_COMMIT_COUNT: String(countInt < 900 ? 1050 : countInt),
   },
 };
 

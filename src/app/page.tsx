@@ -357,7 +357,10 @@ export default function Home() {
     expandPanel,
     checkStepCompletionWithContext,
     isCurrentStepReady,
-    getAvailableProjects
+    getAvailableProjects,
+    isAllCompleted,
+    currentPoints,
+    totalPoints
   } = useGuidedMode();
 
   // Exam Mode hook
@@ -441,15 +444,25 @@ export default function Home() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
 
-  // Record guided lesson completion
+  // Record guided lesson completion when all steps done
   const prevGuidedRef = useRef(activeGuidedProject);
+  const prevAllDoneRef = useRef(false);
+  useEffect(() => {
+    if (activeGuidedProject && isAllCompleted && !prevAllDoneRef.current) {
+      const lessonName = typeof activeGuidedProject.title === 'string' ? activeGuidedProject.title : (activeGuidedProject.title as any)?.tr || (activeGuidedProject.title as any)?.en || 'Guided Lesson';
+      addGuidedLessonRecord(lessonName, currentPoints, totalPoints);
+    }
+    prevAllDoneRef.current = !!isAllCompleted;
+  }, [isAllCompleted, activeGuidedProject, currentPoints, totalPoints]);
+
+  // Record guided lesson completion on close
   useEffect(() => {
     const prev = prevGuidedRef.current;
     if (prev && !activeGuidedProject && prev.steps.every(s => s.completed)) {
-      const totalPoints = prev.steps.reduce((sum, s) => sum + (s.points || 0), 0);
-      const earnedPoints = prev.steps.filter(s => s.completed).reduce((sum, s) => sum + (s.points || 0), 0);
       const lessonName = typeof prev.title === 'string' ? prev.title : (prev.title as any)?.tr || (prev.title as any)?.en || 'Guided Lesson';
-      addGuidedLessonRecord(lessonName, earnedPoints, totalPoints);
+      const earned = prev.steps.filter(s => s.completed).reduce((sum, s) => sum + (s.points || 0), 0);
+      const total = prev.steps.reduce((sum, s) => sum + (s.points || 0), 0);
+      addGuidedLessonRecord(lessonName, earned, total);
     }
     prevGuidedRef.current = activeGuidedProject;
   }, [activeGuidedProject]);
@@ -3955,6 +3968,7 @@ ${state.bannerMOTD}
             closeGuidedMode();
             closeExam();
             setRefreshNetworkReport(null);
+            addProjectRecord(loadedName);
             document.body.style.cursor = '';
             toast({
               title: `"${loadedName}" ${language === 'tr' ? 'projesi yüklendi' : 'project is loaded'}`,
@@ -4004,6 +4018,7 @@ ${state.bannerMOTD}
   const applyExampleProject = useCallback((projectData: any, exampleId?: string) => {
     loadProjectData(projectData);
     setRefreshNetworkReport(null);
+    let loadedTitle = projectName;
     if (exampleId) {
       setLoadedExampleId(exampleId);
       // Look up example project title
@@ -4012,6 +4027,7 @@ ${state.bannerMOTD}
         if (projects) {
           const found = projects.find(p => p.id === exampleId);
           if (found) {
+            loadedTitle = found.title;
             setProjectName(found.title);
             break;
           }
@@ -4023,6 +4039,9 @@ ${state.bannerMOTD}
     closeGuidedMode();
     closeExam();
 
+    // Record example project as an achievement
+    addProjectRecord(loadedTitle);
+
     // Reset zoom and pan to top-left
     setZoom(1.0);
     setPan({ x: 0, y: 0 });
@@ -4030,7 +4049,7 @@ ${state.bannerMOTD}
     if (typeof window !== 'undefined') {
       window.scrollTo(0, 0);
     }
-  }, [loadProjectData, setShowProjectPicker, setZoom, setPan, closeGuidedMode, setProjectName, setLoadedExampleId, setRefreshNetworkReport, groupedExampleProjects, exampleLevelOrder]);
+  }, [loadProjectData, setShowProjectPicker, setZoom, setPan, closeGuidedMode, setProjectName, setLoadedExampleId, setRefreshNetworkReport, groupedExampleProjects, exampleLevelOrder, projectName, addProjectRecord]);
 
   const startExamFromCatalog = useCallback((project: ExamProject) => {
     setIsExamLoadedFromFile(false);

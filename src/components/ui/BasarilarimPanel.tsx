@@ -46,11 +46,10 @@ interface FlatItem {
 }
 
 export function BasarilarimPanel({ t, language, isDark, onClose, zIndex }: BasarilarimPanelProps) {
-  const { containerRef, handleDragStart, position } = useDrag({
+  const { containerRef, handleDragStart, position, setPosition } = useDrag({
     storageKey: 'basarilarim-panel-pos',
     defaultPosition: { x: 16, y: 96 },
     origin: 'bottom-right',
-    disableSnap: true,
   });
 
   const [refreshKey, setRefreshKey] = useState(0);
@@ -117,6 +116,18 @@ export function BasarilarimPanel({ t, language, isDark, onClose, zIndex }: Basar
     return result;
   }, [t, refreshKey]);
 
+  // Clamp after content change so panel top stays inside viewport
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const panelH = el.offsetHeight;
+    if (panelH === 0) return;
+    const topEdgeY = position.y + panelH;
+    if (topEdgeY > window.innerHeight - 16) {
+      setPosition({ x: position.x, y: Math.max(16, window.innerHeight - panelH - 16) });
+    }
+  }, [items, items.length]);
+
   const IconMap: Record<FlatItem['type'], typeof Clock> = {
     session: Clock,
     project: FileText,
@@ -130,7 +141,7 @@ export function BasarilarimPanel({ t, language, isDark, onClose, zIndex }: Basar
       className={cn("hidden md:block fixed animate-scale-in")}
       style={{ bottom: `${position.y}px`, right: `${position.x}px`, zIndex }}
     >
-      <div className={`rounded-2xl border shadow-2xl w-[340px] max-h-[500px] flex flex-col backdrop-blur-md ${isDark ? 'bg-zinc-950/40 border-zinc-800/50 shadow-black/40' : 'bg-white/40 border-zinc-200/50 shadow-zinc-200/50'}`}>
+      <div className={`rounded-2xl border shadow-2xl w-[340px] flex flex-col backdrop-blur-md ${isDark ? 'bg-zinc-950/40 border-zinc-800/50 shadow-black/40' : 'bg-white/40 border-zinc-200/50 shadow-zinc-200/50'}`}>
         <div
           className={`flex items-center justify-between px-3 py-2 border-b cursor-grab active:cursor-grabbing select-none shrink-0 ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}
           onPointerDown={handleDragStart}
@@ -145,7 +156,7 @@ export function BasarilarimPanel({ t, language, isDark, onClose, zIndex }: Basar
             </button>
           </TooltipWrapper>
         </div>
-        <div className="overflow-y-auto flex-1">
+        <div className="overflow-y-auto max-h-[280px] custom-scrollbar">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
               <Trophy className="w-8 h-8 text-slate-400 mb-2" />

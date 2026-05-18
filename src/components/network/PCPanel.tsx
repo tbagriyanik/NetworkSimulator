@@ -4415,7 +4415,7 @@ export function PCPanel({
 
                       {activeTab === 'settings' && (
                         <div
-                          className="flex-1 min-h-0 p-3 overflow-y-auto overflow-x-hidden"
+                          className="flex-1 min-h-0 p-3 overflow-y-auto overflow-x-hidden custom-scrollbar"
                           style={mobileVerticalScrollStyle}
                         >
                           <div className={`p-4 rounded-xl border space-y-4 ${isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-slate-200 shadow-sm'}`}>
@@ -4593,7 +4593,7 @@ export function PCPanel({
                           </div>
 
                           {/* Service Content */}
-                          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+                          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar">
                             {activeServiceTab === 'dns' && (
                               <div className="p-3">
                                 <div className={`rounded-xl border p-4 space-y-4 ${isDark ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white'}`}>
@@ -4940,7 +4940,7 @@ export function PCPanel({
                       )}
 
                       {activeTab === 'iot' && (
-                        <div className="flex-1 min-h-0 p-3 overflow-y-auto overflow-x-hidden" style={mobileVerticalScrollStyle}>
+                        <div className="flex-1 min-h-0 p-3 overflow-y-auto overflow-x-hidden custom-scrollbar" style={mobileVerticalScrollStyle}>
                           <div className={`rounded-2xl border p-4 space-y-4 ${isDark ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white'}`}>
                             <div className="flex items-center justify-between gap-2 text-cyan-500">
                               <div className="flex items-center gap-2">
@@ -5227,7 +5227,7 @@ export function PCPanel({
 
                       {activeTab === 'wireless' && (
                         <div
-                          className="flex-1 min-h-0 p-3 overflow-y-auto overflow-x-hidden"
+                          className="flex-1 min-h-0 p-3 overflow-y-auto overflow-x-hidden custom-scrollbar"
                           style={mobileVerticalScrollStyle}
                         >
                           <div className={`rounded-2xl border p-5 space-y-5 ${isDark ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white'}`}>
@@ -5326,7 +5326,7 @@ export function PCPanel({
                                         <button type="button" onClick={() => setSsidDropdownOpen(o => !o)} className="text-slate-200 hover:text-white text-xs">▾</button>
                                       </div>
                                       {ssidDropdownOpen && (
-                                        <div className={`absolute z-50 w-full mt-1 rounded-md border shadow-lg max-h-48 overflow-y-auto overflow-x-hidden ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
+                                        <div className={`absolute z-50 w-full mt-1 rounded-md border shadow-lg max-h-48 overflow-y-auto overflow-x-hidden custom-scrollbar ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-200'}`}>
                                           {filtered.length === 0 && (
                                             <div className={`px-3 py-2 text-xs ${isDark ? 'text-slate-200' : 'text-slate-400'}`}>
                                               {language === 'tr' ? 'Ağ bulunamadı' : 'No networks found'}
@@ -5925,7 +5925,7 @@ export function PCPanel({
                                           Tab ↹ {t.completeWithTab}
                                         </span>
                                       </div>
-                                      <div className="max-h-40 overflow-y-auto overflow-x-hidden mobile-scroll font-geist-mono">
+                                      <div className="max-h-40 overflow-y-auto overflow-x-hidden mobile-scroll custom-scrollbar font-geist-mono">
                                         {renderAutocompleteSuggestions.map((cmd, idx) => (
                                           <button
                                             key={`${cmd}-${idx}`}
@@ -6110,7 +6110,7 @@ export function PCPanel({
                         className={`mt-1 w-full text-xs rounded-md px-2 py-1 border ${isDark ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-700'}`}
                       />
                       {showUrlSuggestions && filteredSuggestions.length > 0 && (
-                        <div className={`absolute top-full left-0 right-0 mt-1 rounded-md border shadow-lg max-h-48 overflow-y-auto overflow-x-hidden z-50 ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-300'}`}>
+                        <div className={`absolute top-full left-0 right-0 mt-1 rounded-md border shadow-lg max-h-48 overflow-y-auto overflow-x-hidden custom-scrollbar z-50 ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-300'}`}>
                           {filteredSuggestions.slice(0, 10).map((suggestion, index) => (
                             <button
                               key={index}
