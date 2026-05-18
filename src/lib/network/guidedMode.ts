@@ -189,156 +189,497 @@ export const basicLanGuidedSteps: GuidedStep[] = [
 // 3. VLAN Yapılandırma
 export const vlanGuidedSteps: GuidedStep[] = [
   {
-    id: 'vlan-create-vlan10',
+    id: 'vlan-open-terminal',
     order: 1,
+    title: { tr: 'Terminali Aç', en: 'Open Terminal' },
+    description: { tr: 'Switch terminalini açın', en: 'Open the switch terminal' },
+    hint: { tr: 'Switch üzerine çift tıklayın.', en: 'Double-click on the switch.' },
+    checkType: 'deviceAccess',
+    checkParams: { deviceType: 'switch' },
+    completed: false,
+    points: 5
+  },
+  {
+    id: 'vlan-enable',
+    order: 2,
+    title: { tr: 'Enable Modu', en: 'Enable Mode' },
+    description: { tr: 'Ayrıcalıklı moda geçin', en: 'Enter privileged EXEC mode' },
+    hint: { tr: '"enable" yazın.', en: 'Type "enable".' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'enable' },
+    completed: false,
+    points: 5
+  },
+  {
+    id: 'vlan-conf-t',
+    order: 3,
+    title: { tr: 'Yapılandırma Modu', en: 'Config Mode' },
+    description: { tr: 'Global yapılandırma moduna geçin', en: 'Enter global configuration mode' },
+    hint: { tr: '"conf t" yazın.', en: 'Type "conf t".' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'conf' },
+    completed: false,
+    points: 5
+  },
+  {
+    id: 'vlan-create-10',
+    order: 4,
     title: { tr: 'VLAN 10 Oluştur', en: 'Create VLAN 10' },
-    description: { tr: 'VLAN 10\'u oluşturun ve SALES ismini verin', en: 'Create VLAN 10 and name it SALES' },
-    hint: { tr: 'vlan 10 -> name SALES', en: 'vlan 10 -> name SALES' },
+    description: { tr: 'VLAN 10\'u oluşturun', en: 'Create VLAN 10' },
+    hint: { tr: '"vlan 10" yazın.', en: 'Type "vlan 10".' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'vlan 10' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'vlan-name-10',
+    order: 5,
+    title: { tr: 'VLAN İsimlendir', en: 'Name VLAN' },
+    description: { tr: 'VLAN 10\'a SALES ismini verin', en: 'Name VLAN 10 as SALES' },
+    hint: { tr: '"name SALES" yazın.', en: 'Type "name SALES".' },
     checkType: 'config',
     checkParams: { configKey: 'vlans.10.name', configValue: 'SALES' },
     completed: false,
-    points: 15
+    points: 10
   },
   {
-    id: 'vlan-assign-port',
-    order: 2,
-    title: { tr: 'Port VLAN Atama', en: 'Assign Port to VLAN' },
-    description: { tr: 'Fa0/1 portunu VLAN 10\'a atayın', en: 'Assign Fa0/1 port to VLAN 10' },
-    hint: { tr: 'int fa0/1 -> sw acc vlan 10', en: 'int fa0/1 -> sw acc vlan 10' },
+    id: 'vlan-int-fa01',
+    order: 6,
+    title: { tr: 'Arayüz Seçimi', en: 'Interface Selection' },
+    description: { tr: 'FastEthernet 0/1 arayüzüne girin', en: 'Enter FastEthernet 0/1 interface' },
+    hint: { tr: '"int fa0/1" yazın.', en: 'Type "int fa0/1".' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'interface fa0/1' },
+    completed: false,
+    points: 5
+  },
+  {
+    id: 'vlan-assign-10',
+    order: 7,
+    title: { tr: 'VLAN Atama', en: 'Assign VLAN' },
+    description: { tr: 'Arayüzü VLAN 10\'a atayın', en: 'Assign the interface to VLAN 10' },
+    hint: { tr: '"switchport access vlan 10" yazın.', en: 'Type "switchport access vlan 10".' },
     checkType: 'config',
     checkParams: { configKey: 'ports.fa0/1.vlan', configValue: 10 },
     completed: false,
-    points: 20
+    points: 10
   }
 ];
 
 // 4. Router DHCP Yapılandırma
 export const routerDhcpGuidedSteps: GuidedStep[] = [
   {
-    id: 'dhcp-router-int',
+    id: 'dhcp-open-terminal',
     order: 1,
-    title: { tr: 'Router Arayüzü', en: 'Router Interface' },
-    description: { tr: 'Gi0/0 arayüzüne 192.168.1.1 IP adresi atayın', en: 'Assign 192.168.1.1 to Gi0/0' },
-    hint: { tr: 'int gi0/0 -> ip add 192.168.1.1 255.255.255.0 -> no shut', en: 'int gi0/0 -> ip add 192.168.1.1 255.255.255.0 -> no shut' },
+    title: { tr: 'Terminali Aç', en: 'Open Terminal' },
+    description: { tr: 'Router terminalini açın', en: 'Open the router terminal' },
+    hint: { tr: 'Router üzerine çift tıklayın.', en: 'Double-click on the router.' },
+    checkType: 'deviceAccess',
+    checkParams: { deviceType: 'router' },
+    completed: false,
+    points: 5
+  },
+  {
+    id: 'dhcp-enable',
+    order: 2,
+    title: { tr: 'Enable Modu', en: 'Enable Mode' },
+    description: { tr: 'Ayrıcalıklı moda geçin', en: 'Enter privileged EXEC mode' },
+    hint: { tr: '"enable" yazın.', en: 'Type "enable".' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'enable' },
+    completed: false,
+    points: 5
+  },
+  {
+    id: 'dhcp-conf-t',
+    order: 3,
+    title: { tr: 'Yapılandırma Modu', en: 'Config Mode' },
+    description: { tr: 'Global yapılandırma moduna geçin', en: 'Enter global configuration mode' },
+    hint: { tr: '"conf t" yazın.', en: 'Type "conf t".' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'conf' },
+    completed: false,
+    points: 5
+  },
+  {
+    id: 'dhcp-int-gi00',
+    order: 4,
+    title: { tr: 'Arayüz Seçimi', en: 'Interface Selection' },
+    description: { tr: 'GigabitEthernet 0/0 arayüzüne girin', en: 'Enter GigabitEthernet 0/0 interface' },
+    hint: { tr: '"int gi0/0" yazın.', en: 'Type "int gi0/0".' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'interface gi0/0' },
+    completed: false,
+    points: 5
+  },
+  {
+    id: 'dhcp-ip-add',
+    order: 5,
+    title: { tr: 'IP Adresi Ata', en: 'Assign IP Address' },
+    description: { tr: 'Arayüze 192.168.1.1 IP adresi atayın', en: 'Assign 192.168.1.1 IP to the interface' },
+    hint: { tr: '"ip add 192.168.1.1 255.255.255.0" yazın.', en: 'Type "ip add 192.168.1.1 255.255.255.0".' },
     checkType: 'config',
     checkParams: { configKey: 'interfaces.gi0/0.ip', configValue: '192.168.1.1' },
     completed: false,
-    points: 20
+    points: 10
   },
   {
-    id: 'dhcp-pool-net',
-    order: 2,
-    title: { tr: 'DHCP Havuzu', en: 'DHCP Pool' },
-    description: { tr: 'LAN isminde havuz oluşturun ve 192.168.1.0 ağını tanımlayın', en: 'Create pool LAN and define network 192.168.1.0' },
-    hint: { tr: 'ip dhcp pool LAN -> network 192.168.1.0 255.255.255.0', en: 'ip dhcp pool LAN -> network 192.168.1.0 255.255.255.0' },
+    id: 'dhcp-no-shut',
+    order: 6,
+    title: { tr: 'Arayüzü Aç', en: 'Enable Interface' },
+    description: { tr: 'Arayüzü aktif hale getirin', en: 'Enable the interface' },
+    hint: { tr: '"no shutdown" yazın.', en: 'Type "no shutdown".' },
     checkType: 'config',
-    checkParams: { configKey: 'dhcpPools.LAN', configValue: { network: '192.168.1.0', subnetMask: '255.255.255.0' } },
+    checkParams: { configKey: 'interfaces.gi0/0.shutdown', configValue: false },
     completed: false,
-    points: 30
+    points: 5
+  },
+  {
+    id: 'dhcp-exit-if',
+    order: 7,
+    title: { tr: 'Arayüzden Çık', en: 'Exit Interface' },
+    description: { tr: 'Arayüz yapılandırmasından çıkın', en: 'Exit interface configuration' },
+    hint: { tr: '"exit" yazın.', en: 'Type "exit".' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'exit' },
+    completed: false,
+    points: 5
+  },
+  {
+    id: 'dhcp-pool-create',
+    order: 8,
+    title: { tr: 'Havuz Oluştur', en: 'Create Pool' },
+    description: { tr: 'LAN isminde bir DHCP havuzu oluşturun', en: 'Create a DHCP pool named LAN' },
+    hint: { tr: '"ip dhcp pool LAN" yazın.', en: 'Type "ip dhcp pool LAN".' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'ip dhcp pool LAN' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'dhcp-pool-net-conf',
+    order: 9,
+    title: { tr: 'Ağ Tanımla', en: 'Define Network' },
+    description: { tr: 'Dağıtılacak ağ adresini tanımlayın', en: 'Define the network address to be distributed' },
+    hint: { tr: '"network 192.168.1.0 255.255.255.0" yazın.', en: 'Type "network 192.168.1.0 255.255.255.0".' },
+    checkType: 'config',
+    checkParams: { configKey: 'dhcpPools.LAN.network', configValue: '192.168.1.0' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'dhcp-pool-gw',
+    order: 10,
+    title: { tr: 'Varsayılan Ağ Geçidi', en: 'Default Gateway' },
+    description: { tr: 'Havuz için varsayılan ağ geçidini tanımlayın', en: 'Define the default gateway for the pool' },
+    hint: { tr: '"default-router 192.168.1.1" yazın.', en: 'Type "default-router 192.168.1.1".' },
+    checkType: 'config',
+    checkParams: { configKey: 'dhcpPools.LAN.defaultRouter', configValue: '192.168.1.1' },
+    completed: false,
+    points: 10
   }
 ];
 
 // 5. Statik Yönlendirme
 export const staticRoutingGuidedSteps: GuidedStep[] = [
   {
-    id: 'static-r1-route',
+    id: 'static-open-terminal',
     order: 1,
-    title: { tr: 'R1 Statik Rota', en: 'R1 Static Route' },
-    description: { tr: 'R1 üzerinde 192.168.2.0 ağına rota ekleyin', en: 'Configure static route to 192.168.2.0 on R1' },
-    hint: { tr: 'ip route 192.168.2.0 255.255.255.0 10.0.0.2', en: 'ip route 192.168.2.0 255.255.255.0 10.0.0.2' },
+    title: { tr: 'R1 Terminali', en: 'R1 Terminal' },
+    description: { tr: 'R1 router terminalini açın', en: 'Open R1 router terminal' },
+    hint: { tr: 'R1 üzerine çift tıklayın.', en: 'Double-click on R1.' },
+    checkType: 'deviceAccess',
+    checkParams: { deviceType: 'router', targetDeviceId: 'router-1' },
+    completed: false,
+    points: 5
+  },
+  {
+    id: 'static-enable',
+    order: 2,
+    title: { tr: 'Enable Modu', en: 'Enable Mode' },
+    description: { tr: 'Ayrıcalıklı moda geçin', en: 'Enter privileged EXEC mode' },
+    hint: { tr: '"enable" yazın.', en: 'Type "enable".' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'enable' },
+    completed: false,
+    points: 5
+  },
+  {
+    id: 'static-conf-t',
+    order: 3,
+    title: { tr: 'Yapılandırma Modu', en: 'Config Mode' },
+    description: { tr: 'Global yapılandırma moduna geçin', en: 'Enter global configuration mode' },
+    hint: { tr: '"conf t" yazın.', en: 'Type "conf t".' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'conf' },
+    completed: false,
+    points: 5
+  },
+  {
+    id: 'static-r1-route-add',
+    order: 4,
+    title: { tr: 'R1 Rota Ekle', en: 'R1 Add Route' },
+    description: { tr: '192.168.2.0 ağına giden rotayı ekleyin', en: 'Add route to 192.168.2.0 network' },
+    hint: { tr: '"ip route 192.168.2.0 255.255.255.0 10.0.0.2" yazın.', en: 'Type "ip route 192.168.2.0 255.255.255.0 10.0.0.2".' },
     checkType: 'config',
     checkParams: { targetDeviceId: 'router-1', configKey: 'staticRoutes', configValue: { destination: '192.168.2.0' } },
     completed: false,
-    points: 25
+    points: 15
   },
   {
-    id: 'static-r2-route',
-    order: 2,
-    title: { tr: 'R2 Statik Rota', en: 'R2 Static Route' },
-    description: { tr: 'R2 üzerinde 192.168.1.0 ağına rota ekleyin', en: 'Configure static route to 192.168.1.0 on R2' },
-    hint: { tr: 'ip route 192.168.1.0 255.255.255.0 10.0.0.1', en: 'ip route 192.168.1.0 255.255.255.0 10.0.0.1' },
+    id: 'static-r2-open',
+    order: 5,
+    title: { tr: 'R2 Terminali', en: 'R2 Terminal' },
+    description: { tr: 'R2 router terminalini açın', en: 'Open R2 router terminal' },
+    hint: { tr: 'R2 üzerine çift tıklayın.', en: 'Double-click on R2.' },
+    checkType: 'deviceAccess',
+    checkParams: { deviceType: 'router', targetDeviceId: 'router-2' },
+    completed: false,
+    points: 5
+  },
+  {
+    id: 'static-r2-route-add',
+    order: 6,
+    title: { tr: 'R2 Rota Ekle', en: 'R2 Add Route' },
+    description: { tr: '192.168.1.0 ağına giden rotayı ekleyin', en: 'Add route to 192.168.1.0 network' },
+    hint: { tr: '"ip route 192.168.1.0 255.255.255.0 10.0.0.1" yazın.', en: 'Type "ip route 192.168.1.0 255.255.255.0 10.0.0.1".' },
     checkType: 'config',
     checkParams: { targetDeviceId: 'router-2', configKey: 'staticRoutes', configValue: { destination: '192.168.1.0' } },
     completed: false,
-    points: 25
+    points: 15
   }
 ];
 
 // 6. Port Güvenliği
 export const portSecurityGuidedSteps: GuidedStep[] = [
   {
-    id: 'ps-enable',
+    id: 'ps-open-terminal',
     order: 1,
-    title: { tr: 'Port Güvenliğini Aç', en: 'Enable Port Security' },
-    description: { tr: 'Fa0/1 portunda port-security özelliğini açın', en: 'Enable port-security on Fa0/1' },
-    hint: { tr: 'int fa0/1 -> sw port-security', en: 'int fa0/1 -> sw port-security' },
+    title: { tr: 'Terminali Aç', en: 'Open Terminal' },
+    description: { tr: 'Switch terminalini açın', en: 'Open the switch terminal' },
+    hint: { tr: 'Switch üzerine çift tıklayın.', en: 'Double-click on the switch.' },
+    checkType: 'deviceAccess',
+    checkParams: { deviceType: 'switch' },
+    completed: false,
+    points: 5
+  },
+  {
+    id: 'ps-enable',
+    order: 2,
+    title: { tr: 'Enable Modu', en: 'Enable Mode' },
+    description: { tr: 'Ayrıcalıklı moda geçin', en: 'Enter privileged EXEC mode' },
+    hint: { tr: '"enable" yazın.', en: 'Type "enable".' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'enable' },
+    completed: false,
+    points: 5
+  },
+  {
+    id: 'ps-conf-t',
+    order: 3,
+    title: { tr: 'Yapılandırma Modu', en: 'Config Mode' },
+    description: { tr: 'Global yapılandırma moduna geçin', en: 'Enter global configuration mode' },
+    hint: { tr: '"conf t" yazın.', en: 'Type "conf t".' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'conf' },
+    completed: false,
+    points: 5
+  },
+  {
+    id: 'ps-int-fa01',
+    order: 4,
+    title: { tr: 'Arayüz Seçimi', en: 'Interface Selection' },
+    description: { tr: 'FastEthernet 0/1 arayüzüne girin', en: 'Enter FastEthernet 0/1 interface' },
+    hint: { tr: '"int fa0/1" yazın.', en: 'Type "int fa0/1".' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'interface fa0/1' },
+    completed: false,
+    points: 5
+  },
+  {
+    id: 'ps-mode-access',
+    order: 5,
+    title: { tr: 'Erişim Modu', en: 'Access Mode' },
+    description: { tr: 'Portu access moduna alın', en: 'Set port to access mode' },
+    hint: { tr: '"switchport mode access" yazın.', en: 'Type "switchport mode access".' },
+    checkType: 'config',
+    checkParams: { configKey: 'ports.fa0/1.mode', configValue: 'access' },
+    completed: false,
+    points: 5
+  },
+  {
+    id: 'ps-enable-feat',
+    order: 6,
+    title: { tr: 'Güvenliği Aç', en: 'Enable Security' },
+    description: { tr: 'Port güvenliğini etkinleştirin', en: 'Enable port security' },
+    hint: { tr: '"switchport port-security" yazın.', en: 'Type "switchport port-security".' },
     checkType: 'config',
     checkParams: { configKey: 'ports.fa0/1.portSecurity.enabled', configValue: true },
     completed: false,
-    points: 25
+    points: 10
   },
   {
-    id: 'ps-sticky',
-    order: 2,
+    id: 'ps-sticky-mac',
+    order: 7,
     title: { tr: 'Sticky MAC', en: 'Sticky MAC' },
-    description: { tr: 'MAC adreslerini kalıcı (sticky) olarak öğrenmeyi açın', en: 'Enable sticky MAC address learning' },
-    hint: { tr: 'sw port-security mac-address sticky', en: 'sw port-security mac-address sticky' },
+    description: { tr: 'MAC adreslerini kalıcı öğrenmeyi açın', en: 'Enable sticky MAC address learning' },
+    hint: { tr: '"switchport port-security mac-address sticky" yazın.', en: 'Type "switchport port-security mac-address sticky".' },
     checkType: 'command',
     checkParams: { commandPattern: 'mac-address sticky' },
     completed: false,
-    points: 25
+    points: 10
+  },
+  {
+    id: 'ps-max-1',
+    order: 8,
+    title: { tr: 'Maksimum MAC', en: 'Max MAC' },
+    description: { tr: 'Maksimum 1 MAC adresine izin verin', en: 'Allow maximum 1 MAC address' },
+    hint: { tr: '"switchport port-security maximum 1" yazın.', en: 'Type "switchport port-security maximum 1".' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'maximum 1' },
+    completed: false,
+    points: 10
   }
 ];
 
 // 7. RIP Dinamik Yönlendirme
 export const ripRoutingGuidedSteps: GuidedStep[] = [
   {
-    id: 'rip-start',
+    id: 'rip-open-terminal',
     order: 1,
+    title: { tr: 'Terminali Aç', en: 'Open Terminal' },
+    description: { tr: 'Router terminalini açın', en: 'Open the router terminal' },
+    hint: { tr: 'Router üzerine çift tıklayın.', en: 'Double-click on the router.' },
+    checkType: 'deviceAccess',
+    checkParams: { deviceType: 'router' },
+    completed: false,
+    points: 5
+  },
+  {
+    id: 'rip-enable',
+    order: 2,
+    title: { tr: 'Enable Modu', en: 'Enable Mode' },
+    description: { tr: 'Ayrıcalıklı moda geçin', en: 'Enter privileged EXEC mode' },
+    hint: { tr: '"enable" yazın.', en: 'Type "enable".' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'enable' },
+    completed: false,
+    points: 5
+  },
+  {
+    id: 'rip-conf-t',
+    order: 3,
+    title: { tr: 'Yapılandırma Modu', en: 'Config Mode' },
+    description: { tr: 'Global yapılandırma moduna geçin', en: 'Enter global configuration mode' },
+    hint: { tr: '"conf t" yazın.', en: 'Type "conf t".' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'conf' },
+    completed: false,
+    points: 5
+  },
+  {
+    id: 'rip-start-proc',
+    order: 4,
     title: { tr: 'RIP Başlat', en: 'Start RIP' },
-    description: { tr: 'Router üzerinde RIP protokolünü başlatın', en: 'Start RIP protocol on the router' },
+    description: { tr: 'RIP yönlendirme protokolünü başlatın', en: 'Start RIP routing protocol' },
     hint: { tr: '"router rip" yazın.', en: 'Type "router rip".' },
     checkType: 'config',
     checkParams: { configKey: 'routingProtocol', configValue: 'rip' },
     completed: false,
-    points: 30
+    points: 10
   },
   {
-    id: 'rip-net-1',
-    order: 2,
-    title: { tr: 'Ağ Ekle', en: 'Add Network' },
-    description: { tr: '192.168.1.0 ağını RIP\'e ekleyin', en: 'Add network 192.168.1.0 to RIP' },
-    hint: { tr: 'network 192.168.1.0', en: 'network 192.168.1.0' },
+    id: 'rip-version-2',
+    order: 5,
+    title: { tr: 'RIP Versiyon', en: 'RIP Version' },
+    description: { tr: 'Versiyon 2\'yi seçin', en: 'Set version to 2' },
+    hint: { tr: '"version 2" yazın.', en: 'Type "version 2".' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'version 2' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'rip-net-1-add',
+    order: 6,
+    title: { tr: 'Ağ 1 Ekle', en: 'Add Network 1' },
+    description: { tr: '192.168.1.0 ağını ekleyin', en: 'Add 192.168.1.0 network' },
+    hint: { tr: '"network 192.168.1.0" yazın.', en: 'Type "network 192.168.1.0".' },
     checkType: 'command',
     checkParams: { commandPattern: 'network 192.168.1.0' },
     completed: false,
-    points: 35
+    points: 15
+  },
+  {
+    id: 'rip-no-auto',
+    order: 7,
+    title: { tr: 'Auto-Summary Kapat', en: 'No Auto-Summary' },
+    description: { tr: 'Otomatik özetlemeyi kapatın', en: 'Disable automatic summarization' },
+    hint: { tr: '"no auto-summary" yazın.', en: 'Type "no auto-summary".' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'auto-summary' },
+    completed: false,
+    points: 5
   }
 ];
 
 // 8. DNS ve HTTP Servisleri
 export const servicesGuidedSteps: GuidedStep[] = [
   {
-    id: 'srv-http-on',
+    id: 'srv-open-server',
     order: 1,
-    title: { tr: 'HTTP Sunucu', en: 'HTTP Server' },
-    description: { tr: 'Sunucu cihazında HTTP servisini aktif edin', en: 'Enable HTTP service on the Server' },
-    hint: { tr: 'Server > Desktop > HTTP > On', en: 'Server > Desktop > HTTP > On' },
+    title: { tr: 'Sunucu Paneli', en: 'Server Panel' },
+    description: { tr: 'Sunucu cihazını açın', en: 'Open the server device' },
+    hint: { tr: 'Server-Web üzerine çift tıklayın.', en: 'Double-click on Server-Web.' },
+    checkType: 'deviceAccess',
+    checkParams: { targetDeviceId: 'server-1' },
+    completed: false,
+    points: 5
+  },
+  {
+    id: 'srv-http-enable',
+    order: 2,
+    title: { tr: 'HTTP Servisi', en: 'HTTP Service' },
+    description: { tr: 'HTTP servisini aktif edin', en: 'Enable HTTP service' },
+    hint: { tr: 'HTTP sekmesinden "On" seçin.', en: 'Select "On" from HTTP tab.' },
     checkType: 'config',
     checkParams: { targetDeviceId: 'server-1', configKey: 'services.http.enabled', configValue: true },
     completed: false,
-    points: 25
+    points: 15
   },
   {
-    id: 'srv-dns-rec',
-    order: 2,
+    id: 'srv-open-dns',
+    order: 3,
+    title: { tr: 'DNS Sunucu', en: 'DNS Server' },
+    description: { tr: 'DNS sunucusunu açın', en: 'Open the DNS server' },
+    hint: { tr: 'DNS-Server üzerine çift tıklayın.', en: 'Double-click on DNS-Server.' },
+    checkType: 'deviceAccess',
+    checkParams: { targetDeviceId: 'dns-server-1' },
+    completed: false,
+    points: 5
+  },
+  {
+    id: 'srv-dns-enable',
+    order: 4,
+    title: { tr: 'DNS Servisi', en: 'DNS Service' },
+    description: { tr: 'DNS servisini aktif edin', en: 'Enable DNS service' },
+    hint: { tr: 'DNS sekmesinden "On" seçin.', en: 'Select "On" from DNS tab.' },
+    checkType: 'config',
+    checkParams: { targetDeviceId: 'dns-server-1', configKey: 'services.dns.enabled', configValue: true },
+    completed: false,
+    points: 15
+  },
+  {
+    id: 'srv-dns-add-rec',
+    order: 5,
     title: { tr: 'DNS Kaydı', en: 'DNS Record' },
-    description: { tr: 'www.lab.com için 192.168.1.10 adresine kayıt ekleyin', en: 'Add DNS record for www.lab.com to 192.168.1.10' },
-    hint: { tr: 'DNS Server > DNS > Add Name/Address', en: 'DNS Server > DNS > Add Name/Address' },
+    description: { tr: 'Kayıt ekleyin (www.lab.com -> 192.168.1.10)', en: 'Add record (www.lab.com -> 192.168.1.10)' },
+    hint: { tr: 'İsim ve IP girip "Add" basın.', en: 'Enter name and IP, then press "Add".' },
     checkType: 'config',
     checkParams: { targetDeviceId: 'dns-server-1', configKey: 'services.dns.records', configValue: [{ domain: 'www.lab.com', address: '192.168.1.10' }] },
     completed: false,
-    points: 35
+    points: 20
   }
 ];
 

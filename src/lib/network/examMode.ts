@@ -559,11 +559,11 @@ export function generateExamFromProject(projectData: any, language: 'tr' | 'en')
   const isTr = language === 'tr';
   let tasks: ExamTask[] = [];
 
-  // 0. Use existing tasks/steps if present, but filter out completed ones (except connections)
+  // 0. Use existing tasks/steps if present, but filter out completed ones and connection tasks.
   const sourceItems = projectData.tasks || projectData.steps || [];
   if (sourceItems.length > 0) {
     tasks = sourceItems
-      .filter((item: any) => !item.completed || item.checkType === 'connection')
+      .filter((item: any) => !item.completed && item.checkType !== 'connection')
       .map((item: any) => ({
         ...item,
         id: item.id || `task-${Date.now()}-${Math.random()}`,
