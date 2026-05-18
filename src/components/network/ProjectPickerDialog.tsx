@@ -151,34 +151,39 @@ export function ProjectPickerDialog({
       <DialogContent className={`${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} sm:max-w-2xl md:max-w-3xl w-[98vw] max-w-[1400px] h-[95vh] max-h-[1000px] p-0 overflow-hidden flex flex-col shadow-2xl rounded-none md:rounded-3xl liquid-glass-light`}>
         <div className='flex flex-col flex-1 overflow-hidden h-full max-w-full'>
           <div className='p-4 md:p-8 pb-2 md:pb-4 space-y-4'>
-            <DialogHeader className='rounded-2xl md:rounded-3xl border border-transparent bg-gradient-to-r p-4 md:p-6 flex items-center justify-between flex-row'>
-              <DialogTitle className='text-xl bg-gradient-to-br from-white to-slate-900 bg-clip-text text-transparent break-words'>{t.openNewProject}</DialogTitle>
-              <div className='flex items-center gap-2'>
+            <DialogHeader className='rounded-2xl md:rounded-3xl border border-transparent bg-gradient-to-r p-4 md:p-6 flex items-start md:items-center justify-between flex-col md:flex-row gap-4'>
+              <div className="flex items-center justify-between w-full">
+                <DialogTitle className='text-xl bg-gradient-to-br from-white to-slate-900 bg-clip-text text-transparent break-words'>{t.openNewProject}</DialogTitle>
+                <div className='flex items-center gap-2'>
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    className={`flex items-center gap-2 text-xs px-3 py-1.5 h-8 ${isDark ? 'text-slate-200 border-slate-700 hover:bg-slate-800 hover:text-cyan-400' : 'text-slate-700 border-slate-300 hover:bg-slate-100 hover:text-cyan-600'}`}
+                    onClick={() => { closeProjectPicker(); resetToEmptyProject(); }}
+                  >
+                    <File className="w-3.5 h-3.5" />
+                    {t.emptyProject}
+                  </Button>
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    className={`flex items-center gap-2 text-xs px-3 py-1.5 h-8 ${isDark ? 'text-sky-300 border-sky-700/50 hover:bg-sky-900/30 hover:text-sky-300' : 'text-sky-600 border-sky-300 hover:bg-sky-50 hover:text-sky-700'}`}
+                    onClick={() => {
+                      closeProjectPicker();
+                      onOpenFile();
+                    }}
+                  >
+                    <FolderOpen className="w-3.5 h-3.5" />
+                    {language === 'tr' ? 'Dosya Aç' : 'Open File'}
+                  </Button>
+                </div>
+              </div>
+
+              <div className='flex items-center gap-2 w-full md:w-auto justify-end'>
                 <Button
                   variant='outline'
                   size='sm'
-                  className={`flex items-center gap-2 text-xs px-3 py-1.5 h-8 ${isDark ? 'text-slate-200 border-slate-700 hover:bg-slate-800 hover:text-cyan-400' : 'text-slate-700 border-slate-300 hover:bg-slate-100 hover:text-cyan-600'}`}
-                  onClick={() => { closeProjectPicker(); resetToEmptyProject(); }}
-                >
-                  <File className="w-3.5 h-3.5" />
-                  {t.emptyProject}
-                </Button>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  className={`flex items-center gap-2 text-xs px-3 py-1.5 h-8 ${isDark ? 'text-sky-300 border-sky-700/50 hover:bg-sky-900/30 hover:text-sky-300' : 'text-sky-600 border-sky-300 hover:bg-sky-50 hover:text-sky-700'}`}
-                  onClick={() => {
-                    closeProjectPicker();
-                    onOpenFile();
-                  }}
-                >
-                  <FolderOpen className="w-3.5 h-3.5" />
-                  {language === 'tr' ? 'Dosya Aç' : 'Open File'}
-                </Button>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  className={`flex items-center gap-2 text-xs px-3 py-1.5 h-8 ${isDark ? 'text-rose-300 border-rose-700/50 hover:bg-rose-900/30 hover:text-rose-300' : 'text-rose-600 border-rose-300 hover:bg-rose-50 hover:text-rose-700'}`}
+                  className={`flex-1 md:flex-initial flex items-center gap-2 text-xs px-3 py-1.5 h-8 ${isDark ? 'text-rose-300 border-rose-700/50 hover:bg-rose-900/30 hover:text-rose-300' : 'text-rose-600 border-rose-300 hover:bg-rose-50 hover:text-rose-700'}`}
                   onClick={() => {
                     const examTemplate = getAvailableExams(language).find((ep: any) => ep.id === 'exam-template-blank');
                     if (examTemplate) {
@@ -216,13 +221,12 @@ export function ProjectPickerDialog({
                 <Button
                   variant='outline'
                   size='sm'
-                  className={`flex items-center gap-2 text-xs px-3 py-1.5 h-8 ${isDark ? 'text-purple-300 border-purple-700/50 hover:bg-purple-900/30 hover:text-purple-300' : 'text-purple-600 border-purple-300 hover:bg-purple-50 hover:text-purple-700'}`}
+                  className={`flex-1 md:flex-initial flex items-center gap-2 text-xs px-3 py-1.5 h-8 ${isDark ? 'text-purple-300 border-purple-700/50 hover:bg-purple-900/30 hover:text-purple-300' : 'text-purple-600 border-purple-300 hover:bg-purple-50 hover:text-purple-700'}`}
                   onClick={() => convertInputRef.current?.click()}
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   {t.convertProjectToExam}
                 </Button>
-
               </div>
               <DialogDescription className="sr-only">
                 {language === 'tr'

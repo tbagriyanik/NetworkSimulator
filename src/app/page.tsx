@@ -371,6 +371,7 @@ export default function Home() {
     updateTask,
     deleteTask,
     updateExamMeta,
+    moveTask,
     smartBalanceWeights,
     exportExamFile,
     checkTasks: checkExamTasks,
@@ -4845,6 +4846,7 @@ ${state.bannerMOTD}
               updateTask={updateTask}
               deleteTask={deleteTask}
               updateExamMeta={updateExamMeta}
+              moveTask={moveTask}
               smartBalanceWeights={smartBalanceWeights}
               exportExamFile={(projData) => {
                 // Export final student .exam file using current project state

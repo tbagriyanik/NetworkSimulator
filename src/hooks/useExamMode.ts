@@ -18,6 +18,7 @@ interface UseExamModeReturn {
   updateTask: (id: string, updates: any) => void;
   deleteTask: (id: string) => void;
   updateExamMeta: (updates: Partial<ExamProject>) => void;
+  moveTask: (id: string, direction: 'up' | 'down') => void;
   smartBalanceWeights: () => void;
   exportExamFile: (projectData: any) => void;
   checkTasks: (context: {
@@ -143,6 +144,22 @@ export function useExamMode(): UseExamModeReturn {
     });
   }, []);
 
+  const moveTask = useCallback((id: string, direction: 'up' | 'down') => {
+    setActiveExam(prev => {
+      if (!prev) return null;
+      const index = prev.tasks.findIndex(t => t.id === id);
+      if (index === -1) return prev;
+      if (direction === 'up' && index === 0) return prev;
+      if (direction === 'down' && index === prev.tasks.length - 1) return prev;
+
+      const newTasks = [...prev.tasks];
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      [newTasks[index], newTasks[targetIndex]] = [newTasks[targetIndex], newTasks[index]];
+
+      return { ...prev, tasks: newTasks };
+    });
+  }, []);
+
   const smartBalanceWeights = useCallback(() => {
     setActiveExam(prev => {
       if (!prev || prev.tasks.length === 0) return prev;
@@ -240,6 +257,7 @@ export function useExamMode(): UseExamModeReturn {
     updateTask,
     deleteTask,
     updateExamMeta,
+    moveTask,
     smartBalanceWeights,
     exportExamFile,
     checkTasks,

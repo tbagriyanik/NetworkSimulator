@@ -48,6 +48,7 @@ interface ExamEditorPanelProps {
   updateTask: (id: string, updates: Partial<ExamTask>) => void;
   deleteTask: (id: string) => void;
   updateExamMeta: (updates: Partial<ExamProject>) => void;
+  moveTask: (id: string, direction: 'up' | 'down') => void;
   smartBalanceWeights: () => void;
   exportExamFile: (projectData: any) => void;
   projectData: any;
@@ -62,6 +63,7 @@ export function ExamEditorPanel({
   updateTask,
   deleteTask,
   updateExamMeta,
+  moveTask,
   smartBalanceWeights,
   exportExamFile,
   projectData,
@@ -383,7 +385,31 @@ export function ExamEditorPanel({
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-0.5 md:gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-slate-500 hover:text-purple-500 hover:bg-purple-500/10"
+                          disabled={index === 0}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            moveTask(task.id, 'up');
+                          }}
+                        >
+                          <ChevronUp className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-slate-500 hover:text-purple-500 hover:bg-purple-500/10"
+                          disabled={index === activeExam.tasks.length - 1}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            moveTask(task.id, 'down');
+                          }}
+                        >
+                          <ChevronDown className="w-4 h-4" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -395,7 +421,6 @@ export function ExamEditorPanel({
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>
-                        {expandedTaskId === task.id ? <ChevronUp className="w-4 h-4 opacity-40" /> : <ChevronDown className="w-4 h-4 opacity-40" />}
                       </div>
                     </div>
 
