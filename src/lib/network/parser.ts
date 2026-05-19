@@ -81,15 +81,13 @@ export const commandPatterns: Record<string, CommandPattern> = {
     pattern: /^vlan\s+(\d+)(\s+name\s+(.+))?$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 3,
-    capability: 'switching'
+    maxArgs: 3
   },
   'no vlan': {
     pattern: /^no\s+vlan\s+(\d+)$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'switching'
+    maxArgs: 1
   },
   'enable password': {
     pattern: /^enable\s+password\s+(.+)$/i,
@@ -2603,12 +2601,7 @@ export function checkDeviceCompatibility(commandName: string, state: any): { val
     return { valid: false, error: unsupported(commandName) };
   }
 
-  // 3. Router üzerinde VLAN veritabanı komutları (vlan <id>)
-  if (deviceType === 'router' && commandName === 'vlan' && state.currentMode === 'config') {
-    return { valid: false, error: unsupported(commandName) };
-  }
-
-  // 4. Firewall (ASA) spesifik olmayan ama interface modunda olan komutlar
+  // 3. Firewall (ASA) spesifik olmayan ama interface modunda olan komutlar
   if (deviceType === 'firewall' && (commandName.startsWith('switchport') || commandName === 'vlan')) {
     return { valid: false, error: unsupported(commandName) };
   }

@@ -977,6 +977,44 @@ function processCommandResult(
   return result;
 }
 
+function applyPipeFilterOutput(
+  output: string,
+  filter: { type: 'include' | 'exclude' | 'begin' | 'section'; query: string }
+): string {
+  const lines = output.split('\n');
+  const q = filter.query.toLowerCase();
+  const matchLine = (line: string) => line.toLowerCase().includes(q);
+
+  if (filter.type === 'include') {
+    return lines.filter(matchLine).join('\n');
+  }
+
+  if (filter.type === 'exclude') {
+    return lines.filter((line) => !matchLine(line)).join('\n');
+  }
+
+  if (filter.type === 'begin') {
+    const idx = lines.findIndex(matchLine);
+    return idx >= 0 ? lines.slice(idx).join('\n') : '';
+  }
+
+  // section: include matched parent line and its indented sub-lines.
+  const out: string[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    if (!matchLine(lines[i])) continue;
+    out.push(lines[i]);
+    for (let j = i + 1; j < lines.length; j++) {
+      const ln = lines[j];
+      if (ln.startsWith(' ') || ln.startsWith('\t') || ln.trim() === '!') {
+        out.push(ln);
+        continue;
+      }
+      break;
+    }
+  }
+  return out.join('\n');
+}
+
 // --- Core executor ---
 export function executeCommand(
   state: SwitchState,
@@ -1029,6 +1067,7 @@ export function executeCommand(
   }
 
   let cmdToProcess = input.trim();
+  let pipeFilter: { type: 'include' | 'exclude' | 'begin' | 'section'; query: string } | null = null;
   const lowerInput = cmdToProcess.toLowerCase();
 
   if (state.currentMode === 'privileged') {
@@ -1036,7 +1075,14 @@ export function executeCommand(
     if (lowerInput.startsWith('sh ip int br')) cmdToProcess = 'show ip interface brief';
     if (lowerInput.startsWith('show ip interfaces br')) cmdToProcess = 'show ip interface brief';
     if (lowerInput.startsWith('show ip interfaces brief')) cmdToProcess = 'show ip interface brief';
-    if (lowerInput.startsWith('sh run')) cmdToProcess = 'show running-config';
+    if (lowerInput.startsWith('sh run')) {
+      const pipeIndex = cmdToProcess.indexOf('|');
+      if (pipeIndex >= 0) {
+        cmdToProcess = `show running-config ${cmdToProcess.slice(pipeIndex)}`;
+      } else {
+        cmdToProcess = 'show running-config';
+      }
+    }
     if (lowerInput.startsWith('sh ip ro')) cmdToProcess = 'show ip route';
     if (lowerInput === 'sh ssh' || lowerInput === 'show ssh') cmdToProcess = 'show ssh';
     if (lowerInput === 'wr') cmdToProcess = 'write memory';
@@ -1193,6 +1239,15 @@ export function executeCommand(
     }, cmdToProcess, state.currentMode, state, language);
   }
 
+  const pipeMatch = cmdToProcess.match(/^(.*?)\s*\|\s*(include|exclude|begin|section)\s+(.+)$/i);
+  if (pipeMatch) {
+    pipeFilter = {
+      type: pipeMatch[2].toLowerCase() as 'include' | 'exclude' | 'begin' | 'section',
+      query: pipeMatch[3].trim(),
+    };
+    cmdToProcess = pipeMatch[1].trim();
+  }
+
   const commandInput = parsed.resolvedInput || parsed.rawInput;
   let handler = commandHandlers[commandName];
 
@@ -1206,7 +1261,11 @@ export function executeCommand(
   if (!handler) {
     return { success: true };
   }
-  return processCommandResult(handler(state, commandInput, ctx), cmdToProcess, state.currentMode, state, language);
+  let result = handler(state, commandInput, ctx);
+  if (pipeFilter && result.success && typeof result.output === 'string') {
+    result = { ...result, output: applyPipeFilterOutput(result.output, pipeFilter) };
+  }
+  return processCommandResult(result, cmdToProcess, state.currentMode, state, language);
 }
 
 // --- Session helpers (kept local) ---
