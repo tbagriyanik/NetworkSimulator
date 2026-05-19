@@ -1130,6 +1130,69 @@ export function executeCommand(
     sourceDeviceId,
   };
 
+  const inferredDeviceType = state.deviceType === 'switch'
+    ? (state.switchLayer === 'L3' ? 'switchL3' : 'switchL2')
+    : (state.deviceType || (state.switchLayer === 'FW' ? 'firewall' : state.switchLayer === 'L3' ? 'switchL3' : 'switchL2'));
+  const capabilities = getDeviceCapabilities({ type: inferredDeviceType as any } as any, state.switchModel);
+
+  const requiresSwitching = [
+    'vlan', 'no vlan', 'switchport', 'spanning-tree', 'vtp', 'show vlan',
+    'show mac address-table', 'show spanning-tree', 'show port-security',
+    'show interface trunk', 'show interfaces trunk', 'show etherchannel',
+    'show storm-control', 'show udld'
+  ];
+  const requiresRouting = [
+    'ip route', 'no ip route', 'router rip', 'router ospf', 'router eigrp',
+    'ipv6 route', 'no ipv6 route', 'ipv6 router', 'show ip route', 'show ipv6 route',
+    'show ip protocols', 'show ip ospf', 'show ip ospf neighbor'
+  ];
+  const requiresFirewall = [
+    'access-group', 'object network', 'object-group', 'nat', 'same-security-traffic'
+  ];
+
+  const needsSwitching = requiresSwitching.some(prefix => commandName === prefix || commandName.startsWith(`${prefix} `));
+  const needsRouting = requiresRouting.some(prefix => commandName === prefix || commandName.startsWith(`${prefix} `));
+  const needsFirewall = requiresFirewall.some(prefix => commandName === prefix || commandName.startsWith(`${prefix} `));
+
+  const isFirewall = state.deviceType === 'firewall' || state.switchLayer === 'FW' || (state.version?.modelName || '').includes('ASA');
+  const isL3Switch = state.switchModel === 'WS-C3650-24PS';
+  const isL2Switch = state.switchModel === 'WS-C2960-24TT-L';
+  const isRouter = state.deviceType === 'router' || (!isFirewall && !state.deviceType?.startsWith('switch') && capabilities.routing);
+
+  const l3OnlyCommands = [
+    'show ip route', 'show ipv6 route', 'show ip protocols', 'show ip ospf', 'show ip ospf neighbor',
+    'show mls qos', 'show sdm prefer', 'show ip verify source', 'show ip source binding'
+  ];
+  const switchOnlyCommands = [
+    'show vlan', 'show vlan brief', 'show spanning-tree', 'show port-security', 'show mac address-table',
+    'show interfaces trunk', 'show interface trunk', 'show vtp status', 'show etherchannel', 'show udld',
+    'show storm-control', 'show errdisable recovery', 'show errdisable detect'
+  ];
+  const firewallOnlyCommands = ['access-group', 'nat', 'object network', 'object-group'];
+
+  const isL3OnlyCmd = l3OnlyCommands.some(prefix => commandName === prefix || commandName.startsWith(`${prefix} `));
+  const isSwitchOnlyCmd = switchOnlyCommands.some(prefix => commandName === prefix || commandName.startsWith(`${prefix} `));
+  const isFirewallOnlyCmd = firewallOnlyCommands.some(prefix => commandName === prefix || commandName.startsWith(`${prefix} `));
+  const deviceLabel = isFirewall
+    ? 'firewall'
+    : isRouter
+      ? 'router'
+      : isL3Switch
+        ? 'Layer 3 switch'
+        : 'Layer 2 switch';
+
+  if ((needsSwitching && !capabilities.switching) ||
+      (needsRouting && !capabilities.routing) ||
+      (needsFirewall && !capabilities.firewall) ||
+      (isL3OnlyCmd && !(isL3Switch || isRouter)) ||
+      (isSwitchOnlyCmd && !(isL2Switch || isL3Switch)) ||
+      (isFirewallOnlyCmd && !isFirewall)) {
+    return processCommandResult({
+      success: false,
+      error: `% Invalid input detected at '^' marker.\n${commandName} is not supported on this ${deviceLabel}.`
+    }, cmdToProcess, state.currentMode, state, language);
+  }
+
   const commandInput = parsed.resolvedInput || parsed.rawInput;
   let handler = commandHandlers[commandName];
 

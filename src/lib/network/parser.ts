@@ -2578,37 +2578,33 @@ export function checkDeviceCompatibility(commandName: string, state: any): { val
     : (state.deviceType === 'firewall'
       ? 'firewall'
       : (isLayer3 ? 'switchL3' : (state.deviceType || 'switchL2')));
+  const deviceLabel = deviceType === 'switchL2'
+    ? 'Layer 2 switch'
+    : deviceType === 'switchL3'
+      ? 'Layer 3 switch'
+      : deviceType === 'router'
+        ? 'router'
+        : 'firewall';
+  const unsupported = (cmd: string) => `% Invalid input detected at '^' marker.\n${cmd} is not supported on this ${deviceLabel}.`;
 
   // 1. Router üzerinde Switchport komutları
   if (deviceType === 'router' && commandName.startsWith('switchport')) {
-    return {
-      valid: false,
-      error: `% Invalid input detected at '^' marker.`
-    };
+    return { valid: false, error: unsupported(commandName) };
   }
 
   // 2. L2 Switch üzerinde L3 komutları (no switchport, ip routing, vs.)
   if (deviceType === 'switchL2' && (commandName === 'no switchport' || commandName === 'ip routing')) {
-    return {
-      valid: false,
-      error: `% Invalid input detected at '^' marker.`
-    };
+    return { valid: false, error: unsupported(commandName) };
   }
 
   // 3. Router üzerinde VLAN veritabanı komutları (vlan <id>)
   if (deviceType === 'router' && commandName === 'vlan' && state.currentMode === 'config') {
-    return {
-      valid: false,
-      error: `% Invalid input detected at '^' marker.`
-    };
+    return { valid: false, error: unsupported(commandName) };
   }
 
   // 4. Firewall (ASA) spesifik olmayan ama interface modunda olan komutlar
   if (deviceType === 'firewall' && (commandName.startsWith('switchport') || commandName === 'vlan')) {
-    return {
-      valid: false,
-      error: `% Invalid input detected at '^' marker.`
-    };
+    return { valid: false, error: unsupported(commandName) };
   }
 
   return { valid: true };
