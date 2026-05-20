@@ -1,6 +1,7 @@
 // Network Command Parser
 import { CommandMode, ParsedCommand, CommandValidationResult } from './types';
 import { commandAliases } from './initialState';
+import { IOS_ERRORS, iosModeError } from "./core/iosErrors";
 import { getDeviceCapabilities } from './capabilities';
 
 // Komut yapıları
@@ -2448,7 +2449,7 @@ function tokenize(input: string): string[] {
   return input.trim().toLowerCase().split(/\s+/).filter(Boolean);
 }
 
-function expandKeywordPrefixes(input: string, currentMode: CommandMode, capabilities?: any): string {
+export function expandKeywordPrefixes(input: string, currentMode: CommandMode, capabilities?: any): string {
   const rawTokens = input.trim().split(/\s+/).filter(Boolean);
   if (rawTokens.length === 0) return input;
 
@@ -2562,11 +2563,11 @@ export function validateCommand(
   const treeResolution = resolveByCommandTree(resolvedInput, currentMode, capabilities);
   if (treeResolution.kind === 'ambiguous') {
     const options = (treeResolution.candidates || []).join(', ');
-    return { valid: false, reason: 'ambiguous', error: `% Ambiguous command${options ? `: ${options}` : ''}` };
+    return { valid: false, reason: 'ambiguous', error: IOS_ERRORS.ambiguous };
   }
   if (treeResolution.kind === 'incomplete') {
     const options = (treeResolution.candidates || []).join(', ');
-    return { valid: false, reason: 'incomplete', error: `% Incomplete command${options ? `. Expected: ${options}` : ''}` };
+    return { valid: false, reason: 'incomplete', error: IOS_ERRORS.incomplete };
   }
 
   // Eşleşme bulunamadı
@@ -2597,12 +2598,7 @@ function getModeError(input: string, currentMode: CommandMode): string {
   const indicatorPos = calculateCaretPosition(input, 0);
   const cleanedInput = input.replace(/\s+$/g, '');
   const indicator = ' '.repeat(indicatorPos) + '^';
-
-  return `${cleanedInput}
-${indicator}
-% Invalid input detected at '^' marker.
-
-Bu komut bu modda kullanılamaz. Mevcut mod: ${modeNames[currentMode]}`;
+  return `${cleanedInput}\n${indicator}\n${iosModeError(input, currentMode)}`;
 }
 
 // Geçersiz komut hatası
@@ -2623,7 +2619,7 @@ export function getInvalidCommandError(
   const indicatorPos = calculateCaretPosition(input, failedTokenIndex ?? 0);
   const cleanedInput = input.replace(/\s+$/g, '');
   const indicator = ' '.repeat(indicatorPos) + '^';
-  let errorMsg = `${cleanedInput}\n${indicator}\n% Invalid input detected at '^' marker.`;
+  let errorMsg = `${cleanedInput}\n${indicator}\n${IOS_ERRORS.invalidInput}`;
 
   if (currentMode) {
     const cmdTokens = cleanedInput.toLowerCase().split(/\s+/);
@@ -2672,7 +2668,7 @@ export function checkDeviceCompatibility(commandName: string, state: any): { val
       : deviceType === 'router'
         ? 'router'
         : 'firewall';
-  const unsupported = (cmd: string) => `% Invalid input detected at '^' marker.\n${cmd} is not supported on this ${deviceLabel}.`;
+  const unsupported = (cmd: string) => `${IOS_ERRORS.invalidInput}\n${cmd} is not supported on this ${deviceLabel}.`;
 
   // 1. Router üzerinde Switchport komutları
   if (deviceType === 'router' && (commandName.startsWith('switchport') || commandName === 'vlan' || commandName === 'no vlan')) {
