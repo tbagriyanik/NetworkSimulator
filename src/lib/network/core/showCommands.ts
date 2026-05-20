@@ -7,6 +7,7 @@ import { buildRunningConfig } from './configBuilder';
 
 export const showHandlers: Record<string, CommandHandler> = {
   'show running-config': cmdShowRunningConfig,
+  'show running-config interface': cmdShowRunningConfigInterface,
   'show startup-config': cmdShowStartupConfig,
   'show version': cmdShowVersion,
   'show interfaces': cmdShowInterfaces,
@@ -87,6 +88,7 @@ export const showHandlers: Record<string, CommandHandler> = {
   'show ip protocols': cmdShowIpProtocols,
   'show ip ospf neighbor': cmdShowIpOspfNeighbor,
   'show ip ospf': cmdShowIpOspf,
+  'show ip ospf interface': cmdShowIpOspfInterface,
 };
 
 function isPhysicalEthernetPort(portId: string): boolean {
@@ -205,6 +207,14 @@ function cmdShowRunningConfig(
   input: string,
   ctx: any
 ): any {
+  // Check if specific interface is requested via interface keyword in parser
+  const match = input.match(/show\s+(?:running-config|run|running)(?:\s+interface\s+(\S+))?/i);
+  const interfaceName = match?.[1];
+
+  if (interfaceName) {
+    return cmdShowRunningConfigInterface(state, input, ctx);
+  }
+
   let output = '\nBuilding configuration...\n\n';
   const lines = buildRunningConfig(state as any);
   const configText = lines.join('\n');
@@ -213,6 +223,54 @@ function cmdShowRunningConfig(
 
   output += '\nend\n';
   return { success: true, output };
+}
+
+/**
+ * Show Running Configuration Interface
+ */
+function cmdShowRunningConfigInterface(
+  state: any,
+  input: string,
+  ctx: any
+): any {
+  const match = input.match(/show\s+(?:running-config|run|running)\s+interface\s+(\S+)/i);
+  const interfaceName = match?.[1];
+
+  if (!interfaceName) {
+    return { success: false, error: '% Incomplete command.' };
+  }
+
+  const normalized = interfaceName.toLowerCase();
+  const port = state.ports?.[normalized];
+
+  if (!port) {
+    return { success: false, error: `% Interface ${interfaceName} not found` };
+  }
+
+  const lines = buildRunningConfig(state as any);
+  const interfaceLines: string[] = [];
+  let inInterface = false;
+
+  const searchName = `interface ${interfaceName}`;
+  for (const line of lines) {
+    if (line.toLowerCase().startsWith('interface ') && line.toLowerCase().includes(normalized)) {
+      inInterface = true;
+      interfaceLines.push(line);
+    } else if (inInterface) {
+      if (line === '!') {
+        inInterface = false;
+        interfaceLines.push(line);
+        break;
+      }
+      interfaceLines.push(line);
+    }
+  }
+
+  if (interfaceLines.length === 0) {
+    return { success: true, output: '\n% Interface configuration not found\n' };
+  }
+
+  return { success: true, output: '\nBuilding configuration...\n\n' + interfaceLines.join('\n') + '\n' };
 }
 
 /**
@@ -371,6 +429,55 @@ function cmdShowStartupConfig(
   }
 
   output += 'end\n';
+
+  return { success: true, output };
+}
+
+/**
+ * Show IP OSPF Interface
+ */
+function cmdShowIpOspfInterface(state: any, input: string, ctx: any): any {
+  if (state.routingProtocol !== 'ospf') {
+    return { success: true, output: '\n% OSPF is not enabled\n' };
+  }
+
+  const match = input.match(/show\s+ip\s+ospf\s+interface\s*(\S+)?/i);
+  const interfaceName = match?.[1];
+
+  let output = '\n';
+
+  const portEntries = interfaceName
+    ? (state.ports?.[interfaceName.toLowerCase()] ? [[interfaceName.toLowerCase(), state.ports[interfaceName.toLowerCase()]]] : [])
+    : Object.entries(state.ports || {});
+
+  if (interfaceName && portEntries.length === 0) {
+    return { success: false, error: `% Interface ${interfaceName} not found` };
+  }
+
+  let found = false;
+  (portEntries as [string, any][]).forEach(([name, port]) => {
+    if (port.ipAddress && !port.shutdown) {
+      found = true;
+      output += `${name} is up, line protocol is up\n`;
+      output += `  Internet Address ${port.ipAddress}/${getPrefixLength(port.subnetMask)}, Area 0\n`;
+      output += `  Process ID 1, Router ID ${state.ip || '192.168.1.1'}, Network Type BROADCAST, Cost: ${getSTPCost(port)}\n`;
+      output += `  Transmit Delay is 1 sec, State DR, Priority 1\n`;
+      output += `  Designated Router (ID) ${state.ip || '192.168.1.1'}, Interface address ${port.ipAddress}\n`;
+      output += `  Backup Designated router (ID) 0.0.0.0, Interface address 0.0.0.0\n`;
+      output += `  Timer intervals configured, Hello 10, Dead 40, Wait 40, Retransmit 5\n`;
+      output += `    Hello due in 00:00:07\n`;
+      output += `  Index 1/1, flood queue length 0\n`;
+      output += `  Next 0x0(0)/0x0(0)\n`;
+      output += `  Last flood scan length is 0, maximum is 0\n`;
+      output += `  Last flood scan time is 0 msec, maximum is 0 msec\n`;
+      output += `  Neighbor Count is 0, Adjacent neighbor count is 0\n`;
+      output += `  Suppress hello for 0 neighbor(s)\n\n`;
+    }
+  });
+
+  if (!found) {
+    output += '% OSPF not enabled on any interface\n';
+  }
 
   return { success: true, output };
 }
@@ -748,6 +855,12 @@ function cmdShowIpInterfaceBrief(
   input: string,
   ctx: any
 ): any {
+  // Check if specific interface requested instead of brief
+  const match = input.match(/show\s+ip\s+interface\s+(?!brief|br)(\S+)/i);
+  if (match) {
+    return cmdShowIpInterface(state, input, ctx);
+  }
+
   let output = '\nInterface              IP-Address      OK? Method Status                Protocol \n';
   const modelName = String(state?.version?.modelName || '');
   const isRouter = modelName.includes('ISR') || modelName.includes('4451') || modelName.includes('1900') || state?.deviceType === 'router';
@@ -1045,6 +1158,10 @@ function cmdShowIpRoute(
     return { success: true, output };
   }
 
+  // Parse filter
+  const match = input.match(/show\s+ip\s+route\s*(ospf|rip|static|connected)?/i);
+  const filter = match?.[1]?.toLowerCase();
+
   output += 'Codes: C - connected, S - static, I - IGRP, R - RIP, M - mobile, B - BGP\n';
   output += '       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area\n';
   output += '       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2\n';
@@ -1057,54 +1174,58 @@ function cmdShowIpRoute(
 
   // Connected routes - show network address instead of interface IP
   let hasConnectedRoutes = false;
-  Object.keys(state.ports || {}).forEach(portName => {
-    const port = state.ports[portName];
-    if (port.ipAddress && port.subnetMask && !port.shutdown) {
-      hasConnectedRoutes = true;
-      const prefixLength = getPrefixLength(port.subnetMask);
-      const networkAddress = getNetworkAddress(port.ipAddress, port.subnetMask);
-      const formattedPortName = formatPortName(portName);
-      output += `C     ${networkAddress}/${prefixLength} is directly connected, ${formattedPortName}\n`;
-    }
-  });
-
-  // Add routes to connected networks via topology
-  const connections = ctx.connections || [];
-  const sourceDeviceId = ctx.sourceDeviceId;
-  const devices = ctx.devices || [];
-
-  if (connections && connections.length > 0) {
-    connections.forEach((conn: any) => {
-      if (conn.sourceDeviceId === sourceDeviceId || conn.targetDeviceId === sourceDeviceId) {
-        const isSource = conn.sourceDeviceId === sourceDeviceId;
-        const localPort = isSource ? conn.sourcePort : conn.targetPort;
-        const connectedDeviceId = isSource ? conn.targetDeviceId : conn.sourceDeviceId;
-
-        const connectedDevice = devices.find((d: any) => d.id === connectedDeviceId);
-
-        if (connectedDevice?.ip && connectedDevice?.subnet) {
-          const prefixLength = getPrefixLength(connectedDevice.subnet);
-          const networkAddress = getNetworkAddress(connectedDevice.ip, connectedDevice.subnet);
-          const formattedPortName = formatPortName(localPort);
-          output += `C     ${networkAddress}/${prefixLength} is directly connected, ${formattedPortName}\n`;
-          hasConnectedRoutes = true;
-        }
+  if (!filter || filter === 'connected') {
+    Object.keys(state.ports || {}).forEach(portName => {
+      const port = state.ports[portName];
+      if (port.ipAddress && port.subnetMask && !port.shutdown) {
+        hasConnectedRoutes = true;
+        const prefixLength = getPrefixLength(port.subnetMask);
+        const networkAddress = getNetworkAddress(port.ipAddress, port.subnetMask);
+        const formattedPortName = formatPortName(portName);
+        output += `C     ${networkAddress}/${prefixLength} is directly connected, ${formattedPortName}\n`;
       }
     });
+
+    // Add routes to connected networks via topology
+    const connections = ctx.connections || [];
+    const sourceDeviceId = ctx.sourceDeviceId;
+    const devices = ctx.devices || [];
+
+    if (connections && connections.length > 0) {
+      connections.forEach((conn: any) => {
+        if (conn.sourceDeviceId === sourceDeviceId || conn.targetDeviceId === sourceDeviceId) {
+          const isSource = conn.sourceDeviceId === sourceDeviceId;
+          const localPort = isSource ? conn.sourcePort : conn.targetPort;
+          const connectedDeviceId = isSource ? conn.targetDeviceId : conn.sourceDeviceId;
+
+          const connectedDevice = devices.find((d: any) => d.id === connectedDeviceId);
+
+          if (connectedDevice?.ip && connectedDevice?.subnet) {
+            const prefixLength = getPrefixLength(connectedDevice.subnet);
+            const networkAddress = getNetworkAddress(connectedDevice.ip, connectedDevice.subnet);
+            const formattedPortName = formatPortName(localPort);
+            output += `C     ${networkAddress}/${prefixLength} is directly connected, ${formattedPortName}\n`;
+            hasConnectedRoutes = true;
+          }
+        }
+      });
+    }
   }
 
   // Static routes - convert subnet mask to CIDR notation
   // Support both 'mask' and 'subnetMask', 'network' and 'destination' property names
-  if (state.staticRoutes && state.staticRoutes.length > 0) {
-    state.staticRoutes.forEach((route: any) => {
-      const mask = route.mask || route.subnetMask;
-      const network = route.network || route.destination;
-      if (mask && network) {
-        const prefixLength = getPrefixLength(mask);
-        const metric = route.metric || 1;
-        output += `S     ${network}/${prefixLength} [${metric}/0] via ${route.nextHop}${route.interface ? ` ${route.interface}` : ''}\n`;
-      }
-    });
+  if (!filter || filter === 'static') {
+    if (state.staticRoutes && state.staticRoutes.length > 0) {
+      state.staticRoutes.forEach((route: any) => {
+        const mask = route.mask || route.subnetMask;
+        const network = route.network || route.destination;
+        if (mask && network) {
+          const prefixLength = getPrefixLength(mask);
+          const metric = route.metric || 1;
+          output += `S     ${network}/${prefixLength} [${metric}/0] via ${route.nextHop}${route.interface ? ` ${route.interface}` : ''}\n`;
+        }
+      });
+    }
   }
 
   // Dynamic routes (RIP, OSPF, EIGRP, BGP)
@@ -1116,12 +1237,15 @@ function cmdShowIpRoute(
         const prefixLength = getPrefixLength(mask);
         let code = 'R';
         let ad = 120;
-        if (state.routingProtocol === 'ospf') { code = 'O'; ad = 110; }
-        else if (state.routingProtocol === 'eigrp') { code = 'D'; ad = 90; }
-        else if (state.routingProtocol === 'bgp') { code = 'B'; ad = 20; }
+        let protocol = 'rip';
+        if (state.routingProtocol === 'ospf') { code = 'O'; ad = 110; protocol = 'ospf'; }
+        else if (state.routingProtocol === 'eigrp') { code = 'D'; ad = 90; protocol = 'eigrp'; }
+        else if (state.routingProtocol === 'bgp') { code = 'B'; ad = 20; protocol = 'bgp'; }
 
-        const metric = route.metric || 1;
-        output += `${code.padEnd(6)}${network}/${prefixLength} [${ad}/${metric}] via ${route.nextHop}, 00:00:11, ${route.interface || ''}\n`;
+        if (!filter || filter === protocol) {
+          const metric = route.metric || 1;
+          output += `${code.padEnd(6)}${network}/${prefixLength} [${ad}/${metric}] via ${route.nextHop}, 00:00:11, ${route.interface || ''}\n`;
+        }
       }
     });
   }
@@ -3337,7 +3461,48 @@ function cmdShowParent(state: any, input: string, ctx: any): any {
  * Show IP Interface (specific)
  */
 function cmdShowIpInterface(state: any, input: string, ctx: any): any {
-  return cmdShowIpInterfaceBrief(state, input, ctx);
+  const match = input.match(/show\s+ip\s+interface\s*(\S+)?/i);
+  const interfaceName = match?.[1];
+
+  const renderInterfaceIPInfo = (name: string, port: any) => {
+    let out = `${name} is ${port.shutdown ? 'administratively down' : 'up'}, line protocol is ${port.shutdown ? 'down' : 'up'}\n`;
+    out += `  Internet address is ${port.ipAddress || 'unassigned'}/${port.subnetMask || ''}\n`;
+    out += `  Broadcast address is 255.255.255.255\n`;
+    out += `  Address determined by setup command\n`;
+    out += `  MTU is 1500 bytes\n`;
+    out += `  Helper address is ${port.helperAddresses?.join(', ') || 'not set'}\n`;
+    out += `  Directed broadcast forwarding is disabled\n`;
+    out += `  Outgoing access list is ${port.accessGroupOut || 'not set'}\n`;
+    out += `  Inbound  access list is ${port.accessGroupIn || 'not set'}\n`;
+    out += `  Proxy ARP is ${port.proxyArp ? 'enabled' : 'disabled'}\n`;
+    out += `  Local Proxy ARP is disabled\n`;
+    out += `  Security level is not set\n`;
+    out += `  Split horizon is enabled\n`;
+    out += `  ICMP redirects are always sent\n`;
+    out += `  ICMP unreachables are always sent\n`;
+    out += `  ICMP mask replies are never sent\n`;
+    out += `  IP fast switching is enabled\n`;
+    out += `  IP flow switching is disabled\n`;
+    out += `  IP CEF switching is enabled\n`;
+    return out;
+  };
+
+  if (!interfaceName) {
+    let output = '\n';
+    Object.entries(state.ports || {}).forEach(([name, port]: [string, any]) => {
+      output += renderInterfaceIPInfo(name, port) + '!\n';
+    });
+    return { success: true, output };
+  }
+
+  const normalized = interfaceName.toLowerCase();
+  const port = state.ports?.[normalized];
+
+  if (!port) {
+    return { success: false, error: `% Interface ${interfaceName} not found` };
+  }
+
+  return { success: true, output: '\n' + renderInterfaceIPInfo(interfaceName, port) };
 }
 
 /**

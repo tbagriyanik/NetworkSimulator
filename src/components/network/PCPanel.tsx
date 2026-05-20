@@ -3487,10 +3487,10 @@ export function PCPanel({
         } else {
           addLocalOutput('output', 'Usage: arp -a');
         }
-      } else if (cmd === 'tracert') {
+      } else if (cmd === 'tracert' || cmd === 'traceroute') {
         const target = args[0];
         if (!target) {
-          addLocalOutput('output', 'Usage: tracert <target_name_or_address>');
+          addLocalOutput('output', `Usage: ${cmd} <target_name_or_address>`);
         } else {
           const resolvedTarget = resolveDeviceNameTarget(target)?.ip || target;
           if (isLoopbackTarget(resolvedTarget)) {
@@ -3540,7 +3540,7 @@ export function PCPanel({
           60
         );
       } else if (cmd === 'help' || cmd === '?') {
-        addLocalOutput('output', `Available commands: ipconfig, ping, tracert, telnet, ssh, netstat, nbtstat, getmac, nslookup, curl, wget, arp, hostname, dir, ver, cls, exit, quit, snake`);
+        addLocalOutput('output', `Available commands: ipconfig, ping, tracert, traceroute, telnet, ssh, netstat, nbtstat, getmac, nslookup, curl, wget, arp, hostname, dir, ver, cls, exit, quit, snake`);
       } else if (cmd === 'cls') {
         setPcOutput([]);
       } else if (cmd === 'exit' || cmd === 'quit') {

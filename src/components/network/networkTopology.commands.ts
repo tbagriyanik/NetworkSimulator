@@ -29,7 +29,7 @@ export function getCommandCategories(isTR: boolean): CommandDefinition[] {
       cmds: [
         ['ping <host> [s] [c]', isTR ? 'Bağlantı testi (ICMP)' : 'Ping host (ICMP)'],
         ['traceroute <host>', isTR ? 'Rota izleme' : 'Trace route'],
-        ['tracert <host>', isTR ? 'Rota izleme (Takma isim)' : 'Trace route (Alias)'],
+        ['clock set <hh:mm:ss> <day> <month> <year>', isTR ? 'Sistem saatini ayarla' : 'Set system clock'],
         ['telnet <host> [port]', isTR ? 'Telnet bağlantısı' : 'Telnet connection'],
         ['ssh [-l user] <host>', isTR ? 'SSH bağlantısı' : 'SSH connection'],
         ['write memory', isTR ? 'Yapılandırmayı kaydet' : 'Save configuration'],
@@ -109,11 +109,6 @@ export function getCommandCategories(isTR: boolean): CommandDefinition[] {
         ['macro name <name>', isTR ? 'Komut makrosu' : 'Define command macro'],
         ['sdm prefer <template>', isTR ? 'SDM şablonu' : 'Set SDM template'],
         ['ip arp inspection vlan <id>', isTR ? 'DAI (ARP Denetimi)' : 'Enable DAI on VLAN'],
-        ['iot sensor <tip>', isTR ? 'IoT sensör tipi (temperature|humidity|motion|light|sound)' : 'IoT sensor type (temperature|humidity|motion|light|sound)'],
-        ['iot name <isim>', isTR ? 'IoT cihaz adı' : 'Set IoT device name'],
-        ['iot wifi ssid <ssid>', isTR ? 'IoT WiFi SSID' : 'Set IoT WiFi SSID'],
-        ['iot wifi password <şifre>', isTR ? 'IoT WiFi şifresi' : 'Set IoT WiFi password'],
-        ['iot wifi security <tip>', isTR ? 'IoT WiFi güvenliği (open|wpa|wpa2|wpa3)' : 'Set IoT WiFi security (open|wpa|wpa2|wpa3)'],
       ]
     },
     {
@@ -266,6 +261,8 @@ export function getCommandCategories(isTR: boolean): CommandDefinition[] {
         ['show interface <name>', isTR ? 'Arayüz ayrıntısı' : 'Interface details'],
         ['show ip interface brief', isTR ? 'Arayüz özeti' : 'IP interface brief'],
         ['show ip interface', isTR ? 'IP arayüz detay' : 'IP interface details'],
+        ['show ip protocols', isTR ? 'Yönlendirme protokolleri' : 'IP routing protocols'],
+        ['show ip ospf [neighbor|interface]', isTR ? 'OSPF detayları' : 'OSPF details'],
         ['show ip arp', isTR ? 'ARP tablosu' : 'ARP table'],
         ['show ipv6 interface brief', isTR ? 'IPv6 arayüz özeti' : 'IPv6 interface brief'],
         ['show vlan [brief]', isTR ? 'VLAN listesi' : 'VLAN list'],

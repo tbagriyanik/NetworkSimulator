@@ -13,7 +13,6 @@ export const privilegedHandlers: Record<string, CommandHandler> = {
     'telnet': cmdTelnet,
     'ssh': cmdSsh,
     'traceroute': cmdTraceroute,
-    'tracert': cmdTracert,
     'write memory': cmdWriteMemory,
     'copy running-config startup-config': cmdCopyRunningStartup,
     'copy running-config flash': cmdCopyRunningFlash,
@@ -47,6 +46,8 @@ export const privilegedHandlers: Record<string, CommandHandler> = {
     'clear mac address-table': cmdClearMacAddressTable,
     'clear counters': cmdClearCounters,
     'undebug': cmdUndebug,
+    'clock set': cmdClockSet,
+    'no debug all': cmdUndebugAll,
     'help': cmdHelp,
 };
 
@@ -679,101 +680,6 @@ function cmdTraceroute(state: any, input: string, ctx: any): any {
     return { success: false, error: '% Traceroute requires network context' };
 }
 
-/**
- * Tracert - Trace route to destination 
- */
-function cmdTracert(state: any, input: string, ctx: any): any {
-    if (state.currentMode !== 'privileged') {
-        return { success: false, error: iosModeError() };
-    }
-
-    const match = input.match(/^tracert\s+([0-9.]+|[\w.-]+)$/i);
-    if (!match) {
-        return { success: false, error: '% Invalid tracert command. Use: tracert <host>' };
-    }
-
-    const host = match[1];
-
-    if (ctx?.sourceDeviceId && Array.isArray(ctx.devices)) {
-        const connectivity = checkConnectivity(
-            ctx.sourceDeviceId,
-            host,
-            ctx.devices,
-            ctx.connections || [],
-            ctx.deviceStates,
-            ctx.language,
-            { protocol: 'icmp' }
-        );
-
-        if (connectivity.success) {
-            // Resolve hostname to show IP address
-            let resolvedIp = host;
-            const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
-            if (!ipRegex.test(host)) {
-                // For external domains, we'll simulate the IP
-                const knownDomains: Record<string, string> = {
-                    'a10.com': '52.8.34.123',
-                    'portal.local': '192.0.2.10',
-                    'docs.local': '192.0.2.20',
-                    'search.local': '192.0.2.30',
-                    'mail.local': '192.0.2.40',
-                    'files.local': '192.0.2.50',
-                    'social.local': '192.0.2.70',
-                };
-                resolvedIp = knownDomains[host.toLowerCase()] || 'Unknown';
-            }
-
-            let output = `\nTracing route to ${host} [${resolvedIp}] over a maximum of 30 hops\n`;
-
-            // Use the hops from connectivity result
-            if (connectivity.hops && connectivity.hops.length > 0) {
-                for (let i = 0; i < connectivity.hops.length; i++) {
-                    const hop = connectivity.hops[i];
-                    const hopTime1 = Math.floor(Math.random() * 20) + 1; // 1-20ms
-                    const hopTime2 = Math.floor(Math.random() * 20) + 1; // 1-20ms
-                    const hopTime3 = Math.floor(Math.random() * 20) + 1; // 1-20ms
-                    output += `  ${i + 1}    <1 ms    <1 ms    <1 ms ${hop}\n`;
-                }
-            } else {
-                // Fallback hops
-                const hops = Math.floor(Math.random() * 3) + 2; // 2-4 hops
-                for (let i = 1; i <= hops; i++) {
-                    const hopTime1 = Math.floor(Math.random() * 20) + 1; // 1-20ms
-                    const hopTime2 = Math.floor(Math.random() * 20) + 1; // 1-20ms
-                    const hopTime3 = Math.floor(Math.random() * 20) + 1; // 1-20ms
-                    output += `  ${i}    <1 ms    <1 ms    <1 ms ${connectivity.targetId || '192.168.1.1'}\n`;
-                }
-            }
-
-            output += `\nTrace complete.\n`;
-            return { success: true, output, triggerPingAnimation: connectivity.targetId };
-        } else {
-            // For failed connections, still try to show resolved IP
-            let resolvedIp = host;
-            const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
-            if (!ipRegex.test(host)) {
-                const knownDomains: Record<string, string> = {
-                    'a10.com': '52.8.34.123',
-                    'portal.local': '192.0.2.10',
-                    'docs.local': '192.0.2.20',
-                    'search.local': '192.0.2.30',
-                    'mail.local': '192.0.2.40',
-                    'files.local': '192.0.2.50',
-                    'social.local': '192.0.2.70',
-                };
-                resolvedIp = knownDomains[host.toLowerCase()] || 'Unknown';
-            }
-
-            return {
-                success: false,
-                output: `\nTracing route to ${host} [${resolvedIp}] over a maximum of 30 hops\n  1    *        *        *     Request timed out.\n`,
-                error: connectivity.error || `Request timed out.`,
-            };
-        }
-    }
-
-    return { success: false, error: '% Tracert requires network context' };
-}
 
 /**
  * Terminal - Set terminal parameters
@@ -906,7 +812,24 @@ function cmdUndebug(state: any, input: string, ctx: any): any {
     return {
         success: true,
         output: 'All possible debugging has been turned off',
-        newState: { debugEnabled: false }
+        newState: { debugs: {} }
+    };
+}
+
+/**
+ * Clock Set
+ */
+function cmdClockSet(state: any, input: string, ctx: any): any {
+    const match = input.match(/^clock\s+set\s+(\d{1,2}:\d{1,2}:\d{1,2})\s+(\d{1,2})\s+(\w+)\s+(\d{4})$/i);
+    if (!match) return { success: false, error: '% Invalid input' };
+
+    const [, time, day, month, year] = match;
+    return {
+        success: true,
+        output: '',
+        newState: {
+            systemClock: { time, day, month, year }
+        }
     };
 }
 

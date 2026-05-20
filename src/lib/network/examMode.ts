@@ -562,7 +562,7 @@ function extractCliCommandsFromNotes(notes: any[]): string[] {
 
   const knownCliVerbs = [
     'enable', 'disable', 'configure', 'conf', 'hostname', 'interface',
-    'ip', 'ipv6', 'vlan', 'name', 'no', 'show', 'do', 'ping', 'traceroute', 'tracert',
+    'ip', 'ipv6', 'vlan', 'name', 'no', 'show', 'do', 'ping', 'traceroute',
     'switchport', 'username', 'banner', 'motd', 'line', 'router',
     'network', 'passive-interface', 'default-router', 'dns-server', 'domain-name',
     'dhcp', 'lease', 'excluded-address', 'exit', 'end',
@@ -580,7 +580,7 @@ function extractCliCommandsFromNotes(notes: any[]): string[] {
     'storm-control', 'port-security', 'dot1x',
     'default', 'set', 'reset', 'restart', 'startup',
     'help', 'telnet', 'shutdown', 'state', 'active', 'suspend',
-    'ipconfig', 'ifconfig', 'arp', 'tracert', 'nslookup',
+    'ipconfig', 'ifconfig', 'arp', 'nslookup',
     'ip host', 'wget', 'curl', 'snake', 'ssh', 'crypto',
   ];
 

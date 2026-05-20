@@ -96,7 +96,7 @@ const npfx = (base: string, cmd: string, completions: string[], minLen = 1): Rec
 // Helper: Single letter or exact match
 const single = (char: string, completions: string[]): Record<string, string[]> => ({ [char]: completions });
 
-// Helper: Multi-prefix for ambiguous first letters (e.g., 't' -> ['telnet','tracert'])
+// Helper: Multi-prefix for ambiguous first letters (e.g., 't' -> ['telnet'])
 const multi = (char: string, completions: string[]): Record<string, string[]> => {
   const result: Record<string, string[]> = { [char]: completions };
   completions.forEach(cmd => {
@@ -126,8 +126,9 @@ export const commandHelp: Record<string, Record<string, string[]>> = {
     'show': ['version', 'ssh'],
   },
   privileged: {
-    '': ['configure', 'disable', 'show', 'clear', 'debug', 'undebug', 'terminal', 'write', 'ping', 'telnet', 'ssh', 'traceroute', 'reload', 'exit', 'copy', 'erase', 'delete', 'ip', '?', 'help'],
-    ...multi('c', ['configure', 'clear', 'copy']),
+    '': ['configure', 'disable', 'show', 'clear', 'clock', 'debug', 'undebug', 'terminal', 'write', 'ping', 'telnet', 'ssh', 'traceroute', 'reload', 'exit', 'copy', 'erase', 'delete', 'ip', '?', 'help'],
+    ...multi('c', ['configure', 'clear', 'copy', 'clock']),
+    ...pfx('clock', ['set']),
     ...pfx('configure', ['terminal']),
     ...npfx('configure', 'terminal', ['terminal']),
     ...multi('d', ['disable', 'delete', 'debug']),
@@ -144,8 +145,9 @@ export const commandHelp: Record<string, Record<string, string[]>> = {
     ...pfx('clear', ['arp-cache', 'mac', 'counters', 'ip']),
     ...npfx('clear', 'mac', ['address-table'], 3),
     ...npfx('clear', 'ip', ['route', 'arp'], 2),
-    ...pfx('show', ['running-config', 'interfaces', 'vlan', 'version', 'mac', 'cdp', 'ip', 'spanning-tree', 'port-security', 'wireless', 'ssh', 'etherchannel', 'monitor', 'udld', 'storm-control', 'sdm', 'system', 'mls', 'environment', 'inventory', 'errdisable', 'users', 'history', 'debug', 'access-lists']),
-    ...npfx('show', 'running-config', ['running-config'], 14),
+    ...pfx('show', ['running-config', 'interfaces', 'vlan', 'version', 'mac', 'cdp', 'ip', 'spanning-tree', 'port-security', 'wireless', 'ssh', 'etherchannel', 'monitor', 'udld', 'storm-control', 'sdm', 'system', 'mls', 'environment', 'inventory', 'errdisable', 'users', 'history', 'debug', 'access-lists', 'redundancy', 'archive']),
+    ...npfx('show', 'running-config', ['running-config', 'interface'], 14),
+    ...npfx('show running-config', 'interface', ['<interface-name>']),
     ...multi('show i', ['interfaces', 'ip']),
     ...npfx('show', 'interfaces', ['status', 'trunk'], 10),
     ...npfx('show interface', 'trunk', ['trunk'], 5),
@@ -155,8 +157,12 @@ export const commandHelp: Record<string, Record<string, string[]>> = {
     ...multi('show c', ['cdp', 'clock', 'clear']),
     ...npfx('show', 'cdp', ['neighbors'], 3),
     ...multi('show ip', ['interface', 'route', 'dhcp', 'verify', 'source', 'arp']),
-    ...npfx('show ip', 'interface', ['brief'], 9),
-    ...npfx('show ip', 'route', ['route'], 5),
+    ...npfx('show ip', 'interface', ['brief', '<interface-name>'], 9),
+    ...npfx('show ip', 'route', ['ospf', 'rip', 'static', 'connected'], 5),
+    ...npfx('show ip', 'ospf', ['neighbor', 'interface']),
+    ...npfx('show ip ospf', 'neighbor', ['']),
+    ...npfx('show ip ospf', 'interface', ['']),
+    ...npfx('show ip', 'protocols', ['']),
     ...npfx('show ip', 'dhcp', ['snooping', 'pool', 'binding']),
     ...npfx('show ip', 'verify', ['source']),
     ...npfx('show ip', 'source', ['binding']),
@@ -532,7 +538,7 @@ export const commandHelp: Record<string, Record<string, string[]>> = {
     'do ip route': ['<network>', '<destination>'],
   },
   interface: {
-    '': ['shutdown', 'no', 'speed', 'duplex', 'description', 'switchport', 'cdp', 'spanning-tree', 'channel-group', 'ip', 'ssid', 'encryption', 'wifi-password', 'channel', 'wifi-mode', 'storm-control', 'udld', 'monitor', 'power', 'station-role', 'mac-filter', 'exit', 'end', 'do', '?', 'help'],
+    '': ['shutdown', 'no', 'speed', 'duplex', 'description', 'switchport', 'cdp', 'spanning-tree', 'channel-group', 'ip', 'ssid', 'encryption', 'channel', 'storm-control', 'udld', 'monitor', 'power', 'station-role', 'mac-filter', 'exit', 'end', 'do', '?', 'help'],
     ...multi('s', ['shutdown', 'speed', 'spanning-tree', 'ssid', 'station-role']),
     ...pfx('ssid', ['<SSID>']),
     ...pfx('encryption', ['open', 'wpa', 'wpa2', 'wpa3', 'mode']),
@@ -629,9 +635,6 @@ export const commandHelp: Record<string, Record<string, string[]>> = {
     'channel-group 1': ['mode'],
     ...npfx('channel-group 1', 'mode', ['active', 'passive', 'on', 'desirable', 'auto']),
 
-    ...pfx('wifi-password', ['<password>']),
-    ...pfx('wifi-channel', ['2.4GHz', '5GHz']),
-    ...pfx('wifi-mode', ['ap', 'client', 'disabled']),
 
     ...pfx('debug', ['ip', 'spanning-tree', 'all', 'cdp', 'dhcp', 'vlan', 'port-security']),
     ...pfx('undebug', ['all', 'ip', 'spanning-tree', 'cdp']),
@@ -1121,6 +1124,7 @@ const commandDescriptions: Record<string, Record<string, string>> = {
   privileged: {
     'configure': 'Yapılandırma moduna gir (Enter configuration mode)',
     'disable': 'Ayrıcalıklı moddan çık (Exit privileged mode)',
+    'clock': 'Sistem saatini ayarla (Manage the system clock)',
     'show': 'Cihaz bilgilerini göster (Display device information)',
     'clear': 'Önbelleği temizle (Clear cache/counters)',
     'debug': 'Hata ayıklama etkinleştir (Enable debugging)',
@@ -1181,9 +1185,7 @@ const commandDescriptions: Record<string, Record<string, string>> = {
     'ip': 'IP protokolü ayarları (IP protocol settings)',
     'ssid': 'Kablosuz ağ adı ayarla (Set wireless network name)',
     'encryption': 'Şifreleme türü ayarla (Set encryption type)',
-    'wifi-password': 'Kablosuz ağ şifresi ayarla (Set wireless network password)',
     'channel': 'Kablosuz kanal ayarla (Set wireless channel)',
-    'wifi-mode': 'Kablosuz mod ayarla (Set wireless mode)',
     'storm-control': 'Fırtına kontrolü ayarları (Storm control settings)',
     'udld': 'UDLD ayarları (UDLD settings)',
     'monitor': 'Port izleme ayarları (Port monitoring settings)',

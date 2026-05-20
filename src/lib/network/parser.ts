@@ -23,7 +23,7 @@ export const commandPatterns: Record<string, CommandPattern> = {
   },
   'show ipv6 dhcp pool': {
     pattern: /^show\s+ipv6\s+dhcp\s+pool(?:\s+(\S+))?$/i,
-    modes: ['privileged', 'config', 'interface', 'config-if-range', 'vlan', 'line'],
+    modes: ['user', 'privileged'],
     minArgs: 0,
     maxArgs: 1
   },
@@ -69,11 +69,11 @@ export const commandPatterns: Record<string, CommandPattern> = {
     minArgs: 0,
     maxArgs: 0
   },
-  'abort': {
-    pattern: /^abort$/i,
-    modes: ['config'],
-    minArgs: 0,
-    maxArgs: 0
+  'clock set': {
+    pattern: /^clock\s+set\s+(\d{1,2}:\d{1,2}:\d{1,2})\s+(\d{1,2})\s+(\w+)\s+(\d{4})$/i,
+    modes: ['privileged'],
+    minArgs: 4,
+    maxArgs: 4
   },
 
   // Global config komutları
@@ -243,7 +243,7 @@ export const commandPatterns: Record<string, CommandPattern> = {
   },
   'ip route': {
     pattern: /^ip\s+route\s+([0-9.]+)\s+([0-9.]+)\s+(\S+)(?:\s+(\d+))?$/i,
-    modes: ['config', 'privileged'],
+    modes: ['config'],
     minArgs: 3,
     maxArgs: 4
   },
@@ -294,6 +294,34 @@ export const commandPatterns: Record<string, CommandPattern> = {
     modes: ['config'],
     minArgs: 0,
     maxArgs: 2
+  },
+  'show ip protocols': {
+    pattern: /^show\s+ip\s+protocols$/i,
+    modes: ['user', 'privileged'],
+    minArgs: 0,
+    maxArgs: 0,
+    capability: 'routing'
+  },
+  'show ip ospf': {
+    pattern: /^show\s+ip\s+ospf(?:\s+(\d+))?$/i,
+    modes: ['user', 'privileged'],
+    minArgs: 0,
+    maxArgs: 1,
+    capability: 'routing'
+  },
+  'show ip ospf neighbor': {
+    pattern: /^show\s+ip\s+ospf\s+neighbor(?:\s+(\S+))?$/i,
+    modes: ['user', 'privileged'],
+    minArgs: 0,
+    maxArgs: 1,
+    capability: 'routing'
+  },
+  'show ip ospf interface': {
+    pattern: /^show\s+ip\s+ospf\s+interface(?:\s+(\S+))?$/i,
+    modes: ['user', 'privileged'],
+    minArgs: 0,
+    maxArgs: 1,
+    capability: 'routing'
   },
   'cdp run': {
     pattern: /^cdp\s+run$/i,
@@ -557,7 +585,7 @@ export const commandPatterns: Record<string, CommandPattern> = {
   },
   'show ipv6 route': {
     pattern: /^show\s+ipv6\s+route(\s+(.+))?$/i,
-    modes: ['privileged', 'config', 'interface', 'config-if-range', 'vlan', 'line'],
+    modes: ['user', 'privileged'],
     minArgs: 0,
     maxArgs: 1
   },
@@ -926,27 +954,6 @@ export const commandPatterns: Record<string, CommandPattern> = {
     maxArgs: 1,
     capability: 'routing'
   },
-  'wifi-password': {
-    pattern: /^wifi-password\s+(.+)$/i,
-    modes: ['interface', 'config-if-range'],
-    minArgs: 1,
-    maxArgs: 1,
-    capability: 'routing'
-  },
-  'wifi-channel': {
-    pattern: /^wifi-channel\s+(2\.4ghz|5ghz)$/i,
-    modes: ['interface', 'config-if-range'],
-    minArgs: 1,
-    maxArgs: 1,
-    capability: 'routing'
-  },
-  'wifi-mode': {
-    pattern: /^wifi-mode\s+(ap|client|disabled)$/i,
-    modes: ['interface', 'config-if-range'],
-    minArgs: 1,
-    maxArgs: 1,
-    capability: 'routing'
-  },
   'no channel-group': {
     pattern: /^no\s+channel-group\s+(\d+)$/i,
     modes: ['interface', 'config-if-range'],
@@ -1060,7 +1067,7 @@ export const commandPatterns: Record<string, CommandPattern> = {
     capability: 'routing'
   },
   'ip address': {
-    pattern: /^ip\s+address\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?:\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|\/(\d|[12]\d|3[0-2]))(\s+secondary)?$/i,
+    pattern: /^ip\s+address\s+(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?:\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|\/(\d|[12]\d|3[0-2]))(\s+secondary)?|dhcp)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
     maxArgs: 3
@@ -1360,10 +1367,10 @@ export const commandPatterns: Record<string, CommandPattern> = {
     maxArgs: 0
   },
   'show running-config': {
-    pattern: /^show(\s+running-config|\s+run|\s+running)(\s+\|\s+(include|section|begin|exclude)\s+(.+))?$/i,
+    pattern: /^show(\s+running-config|\s+run|\s+running)(?:\s+interface\s+(\S+))?(\s+\|\s+(include|section|begin|exclude)\s+(.+))?$/i,
     modes: ['privileged'],
     minArgs: 0,
-    maxArgs: 4
+    maxArgs: 5
   },
   'show startup-config': {
     pattern: /^show\s+startup-config$/i,
@@ -1373,43 +1380,43 @@ export const commandPatterns: Record<string, CommandPattern> = {
   },
   'show interfaces status': {
     pattern: /^show\s+interfaces?\s+status$/i,
-    modes: ['privileged', 'config', 'interface', 'config-if-range', 'vlan', 'line'],
+    modes: ['user', 'privileged'],
     minArgs: 0,
     maxArgs: 0
   },
   'show interface trunk': {
     pattern: /^show\s+interface\s+trunk$/i,
-    modes: ['privileged', 'config', 'interface', 'config-if-range', 'vlan', 'line'],
+    modes: ['user', 'privileged'],
     minArgs: 0,
     maxArgs: 0
   },
   'show interfaces trunk': {
     pattern: /^show\s+interfaces?\s+trunk$/i,
-    modes: ['privileged', 'config', 'interface', 'config-if-range', 'vlan', 'line'],
+    modes: ['user', 'privileged'],
     minArgs: 0,
     maxArgs: 0
   },
   'show interfaces': {
     pattern: /^show(\s+interfaces?|\s+int)(\s+(status|description|counter|\S+))?$/i,
-    modes: ['privileged', 'config', 'interface', 'config-if-range', 'vlan', 'line'],
+    modes: ['user', 'privileged'],
     minArgs: 0,
     maxArgs: 2
   },
   'show interface': {
     pattern: /^show\s+interface\s+(.+)$/i,
-    modes: ['privileged', 'config', 'interface', 'config-if-range', 'vlan', 'line'],
+    modes: ['user', 'privileged'],
     minArgs: 1,
     maxArgs: 1
   },
   'show vlan brief': {
     pattern: /^show(\s+vlan|\s+vl)\s*(brief|br)?$/i,
-    modes: ['privileged', 'config', 'interface', 'config-if-range', 'vlan', 'line'],
+    modes: ['user', 'privileged'],
     minArgs: 0,
     maxArgs: 1
   },
   'show vlan': {
     pattern: /^show\s+vlan(\s+(id|name)\s+(.+))?$/i,
-    modes: ['privileged', 'config', 'interface', 'config-if-range', 'vlan', 'line'],
+    modes: ['user', 'privileged'],
     minArgs: 0,
     maxArgs: 3
   },
@@ -1421,49 +1428,49 @@ export const commandPatterns: Record<string, CommandPattern> = {
   },
   'show mac address-table': {
     pattern: /^show\s+mac(?:\s*(?:address\-table|address|addr))?(\s+(.+)?)?$/i,
-    modes: ['privileged', 'config', 'interface', 'config-if-range', 'vlan', 'line'],
+    modes: ['user', 'privileged'],
     minArgs: 0,
     maxArgs: 2
   },
   'show cdp neighbors': {
     pattern: /^show\s+cdp\s+(neighbors?|nei|ne)(\s+(detail|det))?$/i,
-    modes: ['privileged', 'config', 'interface', 'config-if-range', 'vlan', 'line'],
+    modes: ['user', 'privileged'],
     minArgs: 0,
     maxArgs: 2
   },
   'show cdp': {
     pattern: /^show\s+cdp(\s+(interface|interfaces|entry)\s*(.+)?)?$/i,
-    modes: ['privileged', 'config', 'interface', 'config-if-range', 'vlan', 'line'],
+    modes: ['user', 'privileged'],
     minArgs: 0,
     maxArgs: 2
   },
   'show ip interface brief': {
     pattern: /^show\s+ip\s+(?:int(?:erfaces?)?)\s+(brief|br)$/i,
-    modes: ['privileged', 'config', 'interface', 'config-if-range', 'vlan', 'line'],
+    modes: ['user', 'privileged'],
     minArgs: 1,
     maxArgs: 1
   },
   'show ip interface': {
-    pattern: /^show\s+ip\s+interface\s+(gigabitethernet|fastethernet|gi|fa)(\d+\/\d+)$/i,
-    modes: ['privileged'],
-    minArgs: 2,
-    maxArgs: 2
+    pattern: /^show\s+ip\s+interface(?:\s+(\S+))?$/i,
+    modes: ['user', 'privileged'],
+    minArgs: 0,
+    maxArgs: 1
   },
   'show ip route': {
-    pattern: /^show\s+ip\s+route(\s+(.+))?$/i,
-    modes: ['privileged', 'config', 'interface', 'config-if-range', 'vlan', 'line'],
+    pattern: /^show\s+ip\s+route(?:\s+(ospf|rip|static|connected))?$/i,
+    modes: ['user', 'privileged'],
     minArgs: 0,
-    maxArgs: 0
+    maxArgs: 1
   },
   'show ipv6 interface brief': {
     pattern: /^show\s+ipv6\s+interface\s+brief$/i,
-    modes: ['privileged', 'config', 'interface', 'config-if-range', 'vlan', 'line'],
+    modes: ['user', 'privileged'],
     minArgs: 0,
     maxArgs: 0
   },
   'show spanning-tree': {
     pattern: /^show\s+spanning-tree(\s+(vlan|interface|detail|summary)\s*(.+)?)?$/i,
-    modes: ['privileged', 'config', 'interface', 'config-if-range', 'vlan', 'line'],
+    modes: ['user', 'privileged'],
     minArgs: 0,
     maxArgs: 2
   },
@@ -1487,7 +1494,7 @@ export const commandPatterns: Record<string, CommandPattern> = {
   },
   'show etherchannel': {
     pattern: /^show\s+etherchannel(\s+(summary|detail|port|load-balance)\s*(.+)?)?$/i,
-    modes: ['privileged', 'config', 'interface', 'config-if-range', 'vlan', 'line'],
+    modes: ['user', 'privileged'],
     minArgs: 0,
     maxArgs: 2
   },
@@ -1625,13 +1632,13 @@ export const commandPatterns: Record<string, CommandPattern> = {
   },
   'show arp': {
     pattern: /^show\s+arp(\s+(.+))?$/i,
-    modes: ['privileged', 'config', 'interface', 'config-if-range', 'vlan', 'line'],
+    modes: ['user', 'privileged'],
     minArgs: 0,
     maxArgs: 1
   },
   'show ip arp': {
     pattern: /^show\s+ip\s+arp(\s+(.+))?$/i,
-    modes: ['privileged', 'config', 'interface', 'config-if-range', 'vlan', 'line'],
+    modes: ['user', 'privileged'],
     minArgs: 0,
     maxArgs: 1
   },
@@ -1887,12 +1894,6 @@ export const commandPatterns: Record<string, CommandPattern> = {
   },
 
   // Tracert (traceroute equivalent)
-  'tracert': {
-    pattern: /^tracert\s+([0-9a-fA-F:.]+|[\w.-]+)$/i,
-    modes: ['privileged'],
-    minArgs: 1,
-    maxArgs: 1
-  },
 
   // Telnet
   'telnet': {
@@ -1998,8 +1999,14 @@ export const commandPatterns: Record<string, CommandPattern> = {
   'undebug all': {
     pattern: /^undebug\s+all$/i,
     modes: ['privileged'],
-    minArgs: 1,
-    maxArgs: 1
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'no debug all': {
+    pattern: /^no\s+debug\s+all$/i,
+    modes: ['privileged'],
+    minArgs: 0,
+    maxArgs: 0
   },
   'undebug': {
     pattern: /^undebug(\s+(.+))?$/i,
@@ -2791,11 +2798,6 @@ Mevcut komutlar:
   vtp domain <name>         - VTP domain ayarla
   cdp run                   - CDP'yi etkinleştir
   no cdp run                - CDP'yi devre dışı bırak
-  iot sensor <tip>          - IoT sensör tipi (temperature|humidity|motion|light|sound)
-  iot name <isim>           - IoT cihaz adı
-  iot wifi ssid <ssid>      - IoT WiFi SSID
-  iot wifi password <şifre> - IoT WiFi şifresi
-  iot wifi security <tip>   - IoT WiFi güvenliği (open|wpa|wpa2|wpa3)
   router rip                - RIP yönlendirme etkinleştir
   router ospf <id>          - OSPF yönlendirme etkinleştir
   no router rip             - RIP yönlendirme devre dışı

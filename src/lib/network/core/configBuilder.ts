@@ -164,18 +164,11 @@ export function buildRunningConfig(state: SwitchState): string[] {
                     : port.wifi.mode === 'client'
                         ? 'client'
                         : 'ap';
-                lines.push(` wifi-mode ${wifiMode}`);
                 if (port.wifi.ssid) {
                     lines.push(` ssid ${port.wifi.ssid}`);
                 }
                 if (port.wifi.security && port.wifi.security !== 'open') {
                     lines.push(` encryption ${port.wifi.security}`);
-                }
-                if (port.wifi.password) {
-                    lines.push(` wifi-password ${port.wifi.password}`);
-                }
-                if (port.wifi.channel) {
-                    lines.push(` wifi-channel ${port.wifi.channel}`);
                 }
             }
             if (!port.shutdown) {

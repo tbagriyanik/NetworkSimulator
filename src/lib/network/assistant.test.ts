@@ -84,7 +84,7 @@ describe('CLI Assistant Logic', () => {
       security: { users: [] },
     } as any;
 
-    const result = executeCommand(state, 'do x', 'tr');
+    const result = executeCommand(state, 'do xyzzy', 'tr');
     expect(result.success).toBe(false);
     expect(result.error).toContain('Tahmini Öneriler');
     expect(result.error).toContain('show');

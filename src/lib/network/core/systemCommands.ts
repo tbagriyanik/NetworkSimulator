@@ -12,7 +12,6 @@ export const systemHandlers: Record<string, CommandHandler> = {
   'configure terminal': cmdConfigureTerminal,
   'exit': cmdExit,
   'end': cmdEnd,
-  'abort': cmdEnd,
   'do': cmdDo,
 };
 
@@ -339,7 +338,7 @@ function cmdDo(
       if (matched === 'undebug all') {
         return withOriginalMode(privilegedHandlers['undebug all'](privilegedState, normalizedInput, ctx));
       }
-      if (matched === 'ping' || matched === 'traceroute' || matched === 'tracert' || matched === 'telnet' || matched === 'ssh') {
+      if (matched === 'ping' || matched === 'traceroute' || matched === 'telnet' || matched === 'ssh') {
         const h = privilegedHandlers[matched];
         if (h) return withOriginalMode(h(privilegedState, normalizedInput, ctx));
       }

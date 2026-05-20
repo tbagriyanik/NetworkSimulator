@@ -61,9 +61,6 @@ export const interfaceHandlers: Record<string, CommandHandler> = {
   'station-role': cmdStationRole,
   'ssid': cmdSsid,
   'encryption': cmdEncryption,
-  'wifi-password': cmdWifiPassword,
-  'wifi-channel': cmdWifiChannel,
-  'wifi-mode': cmdWifiMode,
   // No commands for interface
   'no description': cmdNoDescription,
   'no switchport mode': cmdNoSwitchportMode,
@@ -817,9 +814,27 @@ function cmdIpAddress(state: any, input: string, ctx: any): any {
     return { success: false, error: '% No interface selected' };
   }
 
-  const match = input.match(/^ip\s+address\s+(\d{1,3}(?:\.\d{1,3}){3})(?:\s+(\d{1,3}(?:\.\d{1,3}){3})|\/(\d|[12]\d|3[0-2]))$/i);
+  const match = input.match(/^ip\s+address\s+(?:(\d{1,3}(?:\.\d{1,3}){3})(?:\s+(\d{1,3}(?:\.\d{1,3}){3})|\/(\d|[12]\d|3[0-2]))|dhcp)$/i);
   if (!match) {
-    return { success: false, error: '% Invalid input: ip address <ip> <mask> or ip address <ip>/<prefix>' };
+    return { success: false, error: '% Invalid input: ip address <ip> <mask> or ip address <ip>/<prefix> or ip address dhcp' };
+  }
+
+  const isDhcp = input.toLowerCase().endsWith('dhcp');
+
+  if (isDhcp) {
+    const newPorts = applyToSelectedPorts(state, (port: any) => ({
+      ...port,
+      ipConfigMode: 'dhcp',
+      ipAddress: undefined,
+      subnetMask: undefined,
+      mode: 'routed',
+      isRoutedPort: true
+    }));
+    return {
+      success: true,
+      output: `\nInterface ${state.currentInterface} configured to acquire IP via DHCP\n`,
+      newState: { ports: newPorts }
+    };
   }
 
   const [, ip, dottedMask, prefixLength] = match;
@@ -1178,77 +1193,6 @@ function cmdEncryption(state: any, input: string, ctx: any): any {
   return { success: true, newState: { ports: newPorts, runningConfig: buildRunningConfig(updatedState) } };
 }
 
-/**
- * Wifi-Password - Set Wireless Key
- */
-function cmdWifiPassword(state: any, input: string, ctx: any): any {
-  if (!isInInterfaceMode(state) || !state.currentInterface) {
-    return { success: false, error: '% No interface selected' };
-  }
-  if (!state.currentInterface.toLowerCase().startsWith('wlan')) {
-    return { success: false, error: '% Wireless commands are only valid on WLAN interfaces' };
-  }
-
-  const match = input.match(/^wifi-password\s+(.+)$/i);
-  if (!match) return { success: false, error: '% Invalid password' };
-
-  const password = match[1].trim();
-  const newPorts = applyToSelectedPorts(state, (port: any) => ({
-    ...port,
-    wifi: { ...port.wifi, password }
-  }));
-
-  const updatedState = { ...state, ports: newPorts };
-  return { success: true, newState: { ports: newPorts, runningConfig: buildRunningConfig(updatedState) } };
-}
-
-/**
- * Channel - Set Wireless Channel/Band
- */
-function cmdWifiChannel(state: any, input: string, ctx: any): any {
-  if (!isInInterfaceMode(state) || !state.currentInterface) {
-    return { success: false, error: '% No interface selected' };
-  }
-  if (!state.currentInterface.toLowerCase().startsWith('wlan')) {
-    return { success: false, error: '% Wireless commands are only valid on WLAN interfaces' };
-  }
-
-  const match = input.match(/^wifi-channel\s+(2\.4ghz|5ghz)$/i);
-  if (!match) return { success: false, error: '% Invalid channel (2.4ghz, 5ghz)' };
-
-  const channel = match[1].toLowerCase() === '2.4ghz' ? '2.4GHz' : '5GHz';
-  const newPorts = applyToSelectedPorts(state, (port: any) => ({
-    ...port,
-    wifi: { ...port.wifi, channel }
-  }));
-
-  const updatedState = { ...state, ports: newPorts };
-  return { success: true, newState: { ports: newPorts, runningConfig: buildRunningConfig(updatedState) } };
-}
-
-/**
- * Wifi-Mode - Set Wireless Mode
- */
-function cmdWifiMode(state: any, input: string, ctx: any): any {
-  if (!isInInterfaceMode(state) || !state.currentInterface) {
-    return { success: false, error: '% No interface selected' };
-  }
-  if (!state.currentInterface.toLowerCase().startsWith('wlan')) {
-    return { success: false, error: '% Wireless commands are only valid on WLAN interfaces' };
-  }
-
-  const match = input.match(/^wifi-mode\s+(ap|client|disabled)$/i);
-  if (!match) return { success: false, error: '% Invalid mode (ap, client, disabled)' };
-
-  const mode = match[1].toLowerCase();
-  const newPorts = applyToSelectedPorts(state, (port: any) => ({
-    ...port,
-    wifi: { ...port.wifi, mode: normalizeWifiMode(mode) }
-  }));
-
-  const updatedState = { ...state, ports: newPorts };
-  return { success: true, newState: { ports: newPorts, runningConfig: buildRunningConfig(updatedState) } };
-}
 
 /**
  * WLAN - Create WLAN configuration (WLC only)
