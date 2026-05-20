@@ -37,6 +37,10 @@ export function getPrompt(state: SwitchState): string {
       return `${hostname}(config-router)#`;
     case 'dhcp-config':
       return `${hostname}(dhcp-config)#`;
+    case 'ssid-config':
+      return `${hostname}(config-ssid)#`;
+    case 'dot11-config':
+      return `${hostname}(config-if)#`;
     default:
       return `${hostname}>`;
   }
@@ -52,6 +56,7 @@ import { lineHandlers } from './core/lineCommands';
 import { privilegedHandlers } from './core/privilegedCommands';
 import { dhcpConfigHandlers } from './core/dhcpConfigCommands';
 import { firewallHandlers } from './core/firewallCommands';
+import { wirelessHandlers } from './core/wirelessCommands';
 
 // --- Command handler types & context ---
 export interface CommandContext {
@@ -208,7 +213,9 @@ export const commandHelp: Record<string, Record<string, string[]>> = {
     ...npfx('erase', 'nvram', ['nvram']),
   },
   config: {
-    '': ['hostname', 'interface', 'vlan', 'enable', 'service', 'username', 'line', 'banner', 'ip', 'ipv6', 'crypto', 'snmp-server', 'ntp', 'clock', 'archive', 'alias', 'macro', 'no', 'spanning-tree', 'vtp', 'cdp', 'exit', 'end', 'do', '?', 'help'],
+    '': ['hostname', 'interface', 'vlan', 'enable', 'service', 'username', 'line', 'banner', 'ip', 'ipv6', 'crypto', 'snmp-server', 'ntp', 'clock', 'archive', 'alias', 'macro', 'no', 'spanning-tree', 'vtp', 'cdp', 'dot11', 'exit', 'end', 'do', '?', 'help'],
+    ...pfx('dot11', ['ssid']),
+    ...npfx('dot11', 'ssid', ['<ssid-name>']),
     ...pfx('banner', ['motd', 'login', 'exec']),
     ...npfx('banner', 'motd', ['']),
     ...npfx('banner', 'login', ['']),
@@ -525,10 +532,16 @@ export const commandHelp: Record<string, Record<string, string[]>> = {
     'do ip route': ['<network>', '<destination>'],
   },
   interface: {
-    '': ['shutdown', 'no', 'speed', 'duplex', 'description', 'switchport', 'cdp', 'spanning-tree', 'channel-group', 'ip', 'ssid', 'encryption', 'wifi-password', 'channel', 'wifi-mode', 'storm-control', 'udld', 'monitor', 'power', 'exit', 'end', 'do', '?', 'help'],
-    ...multi('s', ['shutdown', 'speed', 'spanning-tree', 'ssid']),
+    '': ['shutdown', 'no', 'speed', 'duplex', 'description', 'switchport', 'cdp', 'spanning-tree', 'channel-group', 'ip', 'ssid', 'encryption', 'wifi-password', 'channel', 'wifi-mode', 'storm-control', 'udld', 'monitor', 'power', 'station-role', 'mac-filter', 'exit', 'end', 'do', '?', 'help'],
+    ...multi('s', ['shutdown', 'speed', 'spanning-tree', 'ssid', 'station-role']),
     ...pfx('ssid', ['<SSID>']),
-    ...pfx('encryption', ['open', 'wpa', 'wpa2', 'wpa3']),
+    ...pfx('encryption', ['open', 'wpa', 'wpa2', 'wpa3', 'mode']),
+    ...npfx('encryption', 'mode', ['ciphers']),
+    ...npfx('encryption mode', 'ciphers', ['aes-ccm', 'tkip', 'aes-tkip']),
+    ...pfx('station-role', ['root', 'repeater', 'client']),
+    ...pfx('mac-filter', ['allow', 'deny']),
+    ...npfx('mac-filter', 'allow', ['<mac-address>']),
+    ...npfx('mac-filter', 'deny', ['<mac-address>']),
     ...pfx('shutdown', ['shutdown']),
 
     ...multi('sp', ['speed', 'spanning-tree']),
@@ -2435,6 +2448,9 @@ const commandHandlers: Record<string, CommandHandler> = {
 
   // Line commands
   ...lineHandlers,
+
+  // Wireless commands
+  ...wirelessHandlers,
 
   // DHCP pool sub-commands (exclude generic 'network' to avoid shadowing router 'network')
   ...Object.fromEntries(Object.entries(dhcpConfigHandlers).filter(([k]) => k !== 'network')),

@@ -6,4 +6,6 @@ export const IOS_ERRORS = {
   badPasswords: '% Bad passwords'
 } as const;
 
-export const iosModeError = (): string => IOS_ERRORS.invalidInput;
+export const iosModeError = (currentMode?: string, expectedMode?: string, language?: 'tr' | 'en'): string => {
+  return IOS_ERRORS.invalidInput;
+};

@@ -2232,6 +2232,74 @@ export const commandPatterns: Record<string, CommandPattern> = {
     maxArgs: 1
   },
 
+  // Wireless commands
+  'dot11 ssid': {
+    pattern: /^dot11\s+ssid\s+(\S+)$/i,
+    modes: ['config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'authentication': {
+    pattern: /^authentication\s+(.+)$/i,
+    modes: ['ssid-config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'authentication key-management': {
+    pattern: /^authentication\s+key-management\s+wpa\s+version\s+(\d+)$/i,
+    modes: ['ssid-config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'wpa-psk': {
+    pattern: /^wpa-psk\s+(?:ascii|hex)\s+(.+)$/i,
+    modes: ['ssid-config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'guest-mode': {
+    pattern: /^guest-mode$/i,
+    modes: ['ssid-config'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'interface dot11radio': {
+    pattern: /^interface\s+dot11radio\s+(\d+)$/i,
+    modes: ['config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'encryption mode': {
+    pattern: /^encryption\s+mode\s+ciphers\s+(.+)$/i,
+    modes: ['dot11-config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'dot11 channel': {
+    pattern: /^channel\s+(\d+)$/i,
+    modes: ['dot11-config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'dot11 power': {
+    pattern: /^power\s+(\d+|full|half|quarter|eighth)$/i,
+    modes: ['dot11-config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'dot11 station-role': {
+    pattern: /^station-role\s+(\S+)$/i,
+    modes: ['dot11-config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'dot11 mac-filter': {
+    pattern: /^mac-filter\s+(?:allow|deny)\s+(.+)$/i,
+    modes: ['dot11-config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+
   // ── End of Configuration ──────────────────────────────────────────────────
 };
 
@@ -2257,7 +2325,7 @@ export function resolveAliases(input: string): string {
     if (trimmed === aliasLower) {
       return full;
     }
-    
+
     // Alias ile başlıyor ve boşlukla devam ediyorsa (prefix match)
     if (trimmed.startsWith(aliasLower + ' ')) {
       // Eğer zaten tam komutla (veya onun prefix'iyle) başlıyorsa genişletme yapma
@@ -2413,8 +2481,8 @@ function resolveByCommandTree(input: string, currentMode: CommandMode, capabilit
       }
     }
     if (next.length === 0) {
-        failedTokenIndex = i;
-        break;
+      failedTokenIndex = i;
+      break;
     }
     frontier = next;
   }
@@ -2457,8 +2525,8 @@ export function validateCommand(
 
     // Check capability
     if (capabilities && pattern.capability && !capabilities[pattern.capability]) {
-        // If capability mismatch, treat as unknown command to get proper caret positioning
-        continue;
+      // If capability mismatch, treat as unknown command to get proper caret positioning
+      continue;
     }
 
     if (!pattern.modes.includes(currentMode)) {
@@ -2515,6 +2583,8 @@ function getModeError(input: string, currentMode: CommandMode): string {
     vlan: 'VLAN Configuration',
     'router-config': 'Router Configuration',
     'dhcp-config': 'DHCP Pool Configuration',
+    'ssid-config': 'SSID Configuration',
+    'dot11-config': 'Dot11 Radio Configuration',
   };
 
   const indicatorPos = calculateCaretPosition(input, 0);
@@ -2616,20 +2686,20 @@ export function checkDeviceCompatibility(commandName: string, state: any): { val
 }
 
 function calculateCaretPosition(input: string, tokenIndex: number): number {
-    const tokens = input.split(/(\s+)/);
-    let pos = 0;
-    let currentTokenCount = 0;
+  const tokens = input.split(/(\s+)/);
+  let pos = 0;
+  let currentTokenCount = 0;
 
-    for (let i = 0; i < tokens.length; i++) {
-        if (tokens[i].trim() !== '') {
-            if (currentTokenCount === tokenIndex) {
-                return pos;
-            }
-            currentTokenCount++;
-        }
-        pos += tokens[i].length;
+  for (let i = 0; i < tokens.length; i++) {
+    if (tokens[i].trim() !== '') {
+      if (currentTokenCount === tokenIndex) {
+        return pos;
+      }
+      currentTokenCount++;
     }
-    return pos;
+    pos += tokens[i].length;
+  }
+  return pos;
 }
 
 // Komut için gereken argümanları al
@@ -2878,6 +2948,26 @@ Mevcut komutlar:
   domain-name <alan-adı>      - Alan adı
   exit                        - Config mode'a dön
   end                         - Privileged mode'a dön
+`,
+    'ssid-config': `
+Mevcut komutlar:
+  authentication <open|shared|network-eap> - Kimlik doğrulama türü
+  authentication key-management wpa version <2|3> - WPA versiyonu
+  wpa-psk ascii <şifre>       - WPA önceden paylaşılan anahtar
+  guest-mode                  - Konuk modunu etkinleştir
+  exit                        - Config mode'a dön
+  end                         - Privileged mode'a dön
+`,
+    'dot11-config': `
+Mevcut komutlar:
+  encryption mode ciphers <aes-ccm|tkip|aes-tkip> - Şifreleme algoritması
+  ssid <ssid-adı>             - SSID bağlama
+  channel <kanal>             - Radyo kanalı
+  power <full|half|quarter|eighth|dBm> - İletim gücü
+  station-role <root|repeater|client> - İstasyon rolü
+  mac-filter <allow|deny> <MAC> - MAC adres filtresi
+  exit                        - Config mode'a dön
+  end                         - Privileged mode'a dön
 `
   };
 
@@ -3107,6 +3197,26 @@ Available commands:
   dns-server <ip>             - DNS server
   lease <days> [hours] [minutes] - Lease time (or infinite)
   domain-name <domain>        - Domain name
+  exit                        - Return to config mode
+  end                         - Return to privileged mode
+`,
+    'ssid-config': `
+Available commands:
+  authentication <open|shared|network-eap> - Authentication type
+  authentication key-management wpa version <2|3> - WPA version
+  wpa-psk ascii <password>    - WPA pre-shared key
+  guest-mode                  - Enable guest mode
+  exit                        - Return to config mode
+  end                         - Return to privileged mode
+`,
+    'dot11-config': `
+Available commands:
+  encryption mode ciphers <aes-ccm|tkip|aes-tkip> - Encryption cipher
+  ssid <ssid-name>            - SSID binding
+  channel <channel>           - Radio channel
+  power <full|half|quarter|eighth|dBm> - Transmit power
+  station-role <root|repeater|client> - Station role
+  mac-filter <allow|deny> <MAC> - MAC address filter
   exit                        - Return to config mode
   end                         - Return to privileged mode
 `

@@ -9,7 +9,9 @@ export type CommandMode =
   | 'line'           // Switch(config-line)#
   | 'vlan'           // Switch(config-vlan)#
   | 'router-config'  // Router(config-router)#
-  | 'dhcp-config';   // Router(dhcp-config)#
+  | 'dhcp-config'    // Router(dhcp-config)#
+  | 'ssid-config'    // Router(config-ssid)#
+  | 'dot11-config';  // Router(config-if)# [dot11Radio]
 
 export type PortStatus = 'connected' | 'notconnect' | 'disabled' | 'blocked' | 'err-disabled';
 export type PortMode = 'access' | 'trunk' | 'routed' | 'dynamic-auto' | 'dynamic-desirable' | 'dot1q-tunnel';
@@ -343,6 +345,33 @@ export interface SwitchState {
     action: 'allow' | 'deny';
     enabled: boolean;
   }>;
+  // Wireless configuration
+  wirelessConfig?: Record<string, {
+    name: string;
+    authentication: 'open' | 'shared' | 'network-eap';
+    keyManagement: 'none' | 'wpa';
+    wpaVersion: 2 | 3;
+    presharedKey: string;
+    encryption: 'none' | 'aes-ccm' | 'tkip' | 'aes-tkip';
+    guestMode: boolean;
+  }>;
+  wirelessRadios?: Record<string, {
+    id: string;
+    frequency: '2.4GHz' | '5GHz';
+    channel: number;
+    power: string;
+    ssid: string;
+    encryption: string;
+    stationRole: 'root' | 'repeater' | 'client';
+    shutdown: boolean;
+    macFilter?: {
+      enabled: boolean;
+      allowList: string[];
+      denyList: string[];
+    };
+  }>;
+  currentSsid?: string;
+  currentRadio?: string;
 }
 
 export interface StartupConfig {

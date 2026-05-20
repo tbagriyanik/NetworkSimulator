@@ -8,8 +8,21 @@ export const expandCommandContext = (mode: keyof typeof commandHelp, rawValue: s
     const contextTokens = hasTrailingSpace ? tokens : tokens.slice(0, -1);
     const currentWord = hasTrailingSpace ? '' : (tokens[tokens.length - 1] || '').toLowerCase();
     const contextKey = contextTokens.join(' ').toLowerCase();
-    const candidates = contextTokens.length === 0 ? (helpTree[''] || []) : (helpTree[contextKey] || []);
-    return { candidates, currentWord, contextTokens };
+
+    // Get all candidates
+    let candidates = contextTokens.length === 0 ? (helpTree[''] || []) : (helpTree[contextKey] || []);
+
+    // Filter candidates based on currentWord (for TAB completion)
+    const filteredCandidates = currentWord
+        ? candidates.filter(c => c.toLowerCase().startsWith(currentWord))
+        : candidates;
+
+    return {
+        candidates: filteredCandidates,
+        currentWord,
+        contextTokens,
+        allCandidates: candidates // Keep all candidates for ? help
+    };
 };
 
 /** Available commands in the PC desktop (CMD) terminal */

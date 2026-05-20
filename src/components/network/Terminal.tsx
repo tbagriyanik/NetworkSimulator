@@ -507,7 +507,19 @@ export function Terminal({
       candidates = patternCandidates;
     }
 
-    return { candidates, currentWord, contextTokens, hasTrailingSpace };
+    // 3. Filter candidates based on currentWord (for TAB completion)
+    // This ensures TAB shows only matching options
+    const filteredCandidates = currentWord
+      ? candidates.filter(c => c.toLowerCase().startsWith(currentWord))
+      : candidates;
+
+    return {
+      candidates: filteredCandidates,
+      currentWord,
+      contextTokens,
+      hasTrailingSpace,
+      allCandidates: candidates // Keep all candidates for ? help
+    };
   }, []);
 
   // Syntax Highlighting for Commands
@@ -661,6 +673,7 @@ export function Terminal({
       return {
         ...base,
         candidates: helpTree['configure'],
+        allCandidates: helpTree['configure'],
         contextTokens: ['configure']
       };
     }
@@ -722,7 +735,10 @@ export function Terminal({
       return;
     }
 
-    const { candidates, currentWord, contextTokens } = getAutocompleteContext(value);
+    const context = getAutocompleteContext(value);
+    const { candidates, currentWord, contextTokens, allCandidates } = context;
+
+    // Use filtered candidates for TAB completion
     const matches = candidates.filter(
       opt => opt !== '?' && opt.toLowerCase().startsWith(currentWord)
     );
@@ -743,7 +759,8 @@ export function Terminal({
         setInput(originalContext ? `${originalContext} ${completion} ` : `${completion} `);
       }
     } else if (value.trim()) {
-      // No matches - trigger help by appending ?
+      // No matches - show help with all available options
+      // This shows available commands/parameters for the current context
       onCommand(value.trim() + ' ?');
     }
   }, [input, tabCycleIndex, lastTabInput, getAutocompleteContext, onCommand]);
