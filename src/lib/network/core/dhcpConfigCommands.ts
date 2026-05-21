@@ -157,5 +157,108 @@ export const dhcpConfigHandlers: Record<string, CommandHandler> = {
     'lease': cmdDhcpLease,
     'domain-name': cmdDhcpDomainName,
     'address prefix': cmdIpv6DhcpAddressPrefix,
+    'no network': cmdNoDhcpNetwork,
+    'no default-router': cmdNoDhcpDefaultRouter,
+    'no dns-server': cmdNoDhcpDnsServer,
+    'no domain-name': cmdNoDhcpDomainName,
+    'no address prefix': cmdNoIpv6DhcpAddressPrefix,
 };
 
+/**
+ * no network - Remove network from DHCP pool
+ */
+function cmdNoDhcpNetwork(state: any, input: string, ctx: any): any {
+    if (state.currentMode !== 'dhcp-config') return { success: false, error: iosModeError() };
+    const poolName = state.currentDhcpPool;
+    if (!poolName) return { success: false, error: '% No active DHCP pool' };
+
+    const pools = { ...(state.dhcpPools || {}) };
+    if (pools[poolName]) {
+        delete pools[poolName].network;
+        delete pools[poolName].subnetMask;
+    }
+
+    const services = { ...state.services };
+    if (services.dhcp && services.dhcp.pools) {
+        const p = services.dhcp.pools.find((pool: any) => pool.poolName === poolName);
+        if (p) {
+            delete p.subnetMask;
+            delete p.startIp;
+        }
+    }
+
+    const updatedState = { ...state, dhcpPools: pools, services };
+    return { success: true, newState: { dhcpPools: pools, services, runningConfig: buildRunningConfig(updatedState) } };
+}
+
+/**
+ * no default-router
+ */
+function cmdNoDhcpDefaultRouter(state: any, input: string, ctx: any): any {
+    if (state.currentMode !== 'dhcp-config') return { success: false, error: iosModeError() };
+    const poolName = state.currentDhcpPool;
+    if (!poolName) return { success: false, error: '% No active DHCP pool' };
+
+    const pools = { ...(state.dhcpPools || {}) };
+    if (pools[poolName]) delete pools[poolName].defaultRouter;
+
+    const services = { ...state.services };
+    if (services.dhcp && services.dhcp.pools) {
+        const p = services.dhcp.pools.find((pool: any) => pool.poolName === poolName);
+        if (p) delete p.defaultGateway;
+    }
+
+    const updatedState = { ...state, dhcpPools: pools, services };
+    return { success: true, newState: { dhcpPools: pools, services, runningConfig: buildRunningConfig(updatedState) } };
+}
+
+/**
+ * no dns-server
+ */
+function cmdNoDhcpDnsServer(state: any, input: string, ctx: any): any {
+    if (state.currentMode !== 'dhcp-config') return { success: false, error: iosModeError() };
+    const poolName = state.currentDhcpPool;
+    if (!poolName) return { success: false, error: '% No active DHCP pool' };
+
+    const pools = { ...(state.dhcpPools || {}) };
+    if (pools[poolName]) delete pools[poolName].dnsServer;
+
+    const services = { ...state.services };
+    if (services.dhcp && services.dhcp.pools) {
+        const p = services.dhcp.pools.find((pool: any) => pool.poolName === poolName);
+        if (p) delete p.dnsServer;
+    }
+
+    const updatedState = { ...state, dhcpPools: pools, services };
+    return { success: true, newState: { dhcpPools: pools, services, runningConfig: buildRunningConfig(updatedState) } };
+}
+
+/**
+ * no domain-name
+ */
+function cmdNoDhcpDomainName(state: any, input: string, ctx: any): any {
+    if (state.currentMode !== 'dhcp-config') return { success: false, error: iosModeError() };
+    const poolName = state.currentDhcpPool;
+    if (!poolName) return { success: false, error: '% No active DHCP pool' };
+
+    const pools = { ...(state.dhcpPools || {}) };
+    if (pools[poolName]) delete pools[poolName].domainName;
+
+    const updatedState = { ...state, dhcpPools: pools };
+    return { success: true, newState: { dhcpPools: pools, runningConfig: buildRunningConfig(updatedState) } };
+}
+
+/**
+ * no address prefix
+ */
+function cmdNoIpv6DhcpAddressPrefix(state: any, input: string, ctx: any): any {
+    if (state.currentMode !== 'dhcp-config') return { success: false, error: iosModeError() };
+    const poolName = state.currentIpv6DhcpPool;
+    if (!poolName) return { success: false, error: '% No active IPv6 DHCP pool' };
+
+    const pools = { ...(state.ipv6DhcpPools || {}) };
+    if (pools[poolName]) delete pools[poolName].addressPrefix;
+
+    const updatedState = { ...state, ipv6DhcpPools: pools };
+    return { success: true, newState: { ipv6DhcpPools: pools, runningConfig: buildRunningConfig(updatedState) } };
+}

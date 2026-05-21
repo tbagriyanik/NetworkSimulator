@@ -179,7 +179,7 @@ export const commandHelp: Record<string, Record<string, string[]>> = {
     ...pfx('write', ['memory']),
   },
   'config': {
-    '': ['access-list', 'alias', 'archive', 'banner', 'cdp', 'channel', 'class-map', 'clock', 'crypto', 'default', 'do', 'dot11', 'enable', 'end', 'errdisable', 'exit', 'help', 'hostname', 'interface', 'ip', 'ipv6', 'line', 'mac', 'macro', 'mls', 'monitor', 'no', 'ntp', 'policy-map', 'router', 'sdm', 'security', 'service', 'snmp-server', 'spanning-tree', 'station-role', 'system', 'template', 'username', 'vlan', 'vtp', 'wlan'],
+    '': ['access-list', 'alias', 'archive', 'banner', 'cdp', 'channel', 'class-map', 'clock', 'crypto', 'default', 'do', 'dot11', 'enable', 'end', 'errdisable', 'exit', 'hostname', 'interface', 'iot', 'ip', 'ipv6', 'line', 'mac', 'macro', 'mls', 'monitor', 'no', 'ntp', 'policy-map', 'router', 'sdm', 'security', 'service', 'snmp-server', 'spanning-tree', 'station-role', 'system', 'template', 'username', 'vlan', 'vtp', 'wlan'],
     ...pfx('banner', ['exec', 'login', 'motd']),
     ...pfx('cdp', ['holdtime', 'run', 'timer']),
     ...pfx('clock', ['timezone']),
@@ -193,7 +193,8 @@ export const commandHelp: Record<string, Record<string, string[]>> = {
     ...pfx('errdisable', ['recovery']),
     'errdisable recovery': ['cause'],
     ...pfx('interface', ['dot11radio', 'range']),
-    ...pfx('ip', ['access-list', 'arp', 'default-gateway', 'dhcp', 'domain', 'domain-lookup', 'domain-name', 'http', 'name-server', 'route', 'routing', 'ssh']),
+    ...pfx('iot', ['sensor', 'name', 'wifi']),
+    ...pfx('ip', ['access-list', 'arp', 'default-gateway', 'dhcp', 'domain', 'domain-lookup', 'domain-name', 'host', 'http', 'name-server', 'route', 'routing', 'ssh']),
     'ip arp': ['inspection'],
     'ip dhcp': ['excluded-address', 'pool', 'snooping'],
     'ip dhcp snooping': ['vlan'],
@@ -211,18 +212,19 @@ export const commandHelp: Record<string, Record<string, string[]>> = {
     'no banner': ['exec', 'login', 'motd'],
     'no cdp': ['run'],
     'no enable': ['password', 'secret'],
-    'no ip': ['access-list', 'default-gateway', 'dhcp', 'domain-lookup', 'http', 'route', 'routing', 'ssh'],
+    'no ip': ['access-list', 'default-gateway', 'dhcp', 'domain-lookup', 'host', 'http', 'route', 'routing', 'ssh'],
     'no ip dhcp': ['excluded-address', 'pool', 'snooping'],
     'no ip http': ['server'],
     'no ip ssh': ['time-out'],
-    'no ipv6': ['route', 'router', 'unicast-routing'],
+    'no ipv6': ['dhcp', 'route', 'router', 'unicast-routing'],
+    'no ipv6 dhcp': ['pool'],
     'no ipv6 router': ['ospf', 'rip'],
     'no mls': ['qos'],
     'no monitor': ['session'],
     'no router': ['bgp', 'eigrp', 'ospf', 'rip'],
     'no service': ['password-encryption'],
     ...pfx('ntp', ['server']),
-    ...pfx('router', ['ospf', 'rip']),
+    ...pfx('router', ['bgp', 'eigrp', 'ospf', 'rip']),
     ...pfx('sdm', ['prefer']),
     ...pfx('security', ['wpa']),
     'security wpa': ['psk'],
@@ -342,18 +344,19 @@ export const commandHelp: Record<string, Record<string, string[]>> = {
     ...pfx('no', ['name']),
   },
   'dhcp-config': {
-    '': ['address', 'default-router', 'dhcp-config', 'dns-server', 'do', 'domain-name', 'end', 'exit', 'lease'],
+    '': ['address', 'default-router', 'dns-server', 'do', 'domain-name', 'end', 'exit', 'lease', 'network', 'no'],
     ...pfx('address', ['prefix']),
-    ...pfx('dhcp-config', ['network']),
+    ...pfx('no', ['address', 'default-router', 'dns-server', 'domain-name', 'network']),
     ...pfx('do', ['show']),
+    ...pfx('network', []),
   },
   'router-config': {
-    '': ['default-information', 'do', 'end', 'exit', 'neighbor', 'network', 'no', 'passive-interface', 'router-config', 'router-id'],
+    '': ['default-information', 'do', 'end', 'exit', 'neighbor', 'network', 'no', 'passive-interface', 'router-id'],
     ...pfx('default-information', ['always', 'originate']),
     ...pfx('do', ['show']),
     ...pfx('neighbor', ['remote-as']),
-    ...pfx('no', ['auto-summary']),
-    ...pfx('router-config', ['network']),
+    ...pfx('no', ['auto-summary', 'neighbor', 'network', 'passive-interface', 'router-id']),
+    ...pfx('network', []),
   },
   'ssid-config': {
     '': ['authentication', 'guest-mode', 'wpa-psk'],
@@ -1808,6 +1811,11 @@ const commandHandlers: Record<string, CommandHandler> = {
 
   // DHCP pool sub-commands (exclude generic 'network' to avoid shadowing router 'network')
   ...Object.fromEntries(Object.entries(dhcpConfigHandlers).filter(([k]) => k !== 'network')),
+  'network': (state, input, ctx) => {
+    if (state.currentMode === 'dhcp-config') return dhcpConfigHandlers['network'](state, input, ctx);
+    if (state.currentMode === 'router-config') return routerConfigHandlers['network'](state, input, ctx);
+    return { success: false, error: iosModeError() };
+  }
 };
 
 

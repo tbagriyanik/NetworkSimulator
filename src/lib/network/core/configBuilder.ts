@@ -89,6 +89,14 @@ export function buildRunningConfig(state: SwitchState): string[] {
         lines.push('!');
     }
 
+    // IoT Config
+    if (state.iotConfig) {
+        if (state.iotConfig.sensorType) lines.push(`iot sensor ${state.iotConfig.sensorType}`);
+        if (state.iotConfig.name) lines.push(`iot name ${state.iotConfig.name}`);
+        if (state.iotConfig.wifiSsid) lines.push(`iot wifi ${state.iotConfig.wifiSsid}`);
+        lines.push('!');
+    }
+
     // IPv6 Routing
     if (state.ipv6Enabled) {
         lines.push('ipv6 unicast-routing');

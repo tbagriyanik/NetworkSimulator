@@ -14,6 +14,11 @@ export const routerConfigHandlers: Record<string, CommandHandler> = {
     'passive-interface': cmdPassiveInterface,
     'default-information originate': cmdDefaultInformation,
     'default-information always': cmdDefaultInformation,
+    'no network': cmdNoRouterNetwork,
+    'no neighbor remote-as': cmdNoNeighborRemoteAs,
+    'no neighbor': cmdNoNeighborRemoteAs,
+    'no passive-interface': cmdNoPassiveInterface,
+    'no router-id': cmdNoRouterId,
 };
 
 // Router subcommands in OSPF/RIP config mode
@@ -89,6 +94,64 @@ export function cmdRouterNetwork(state: any, input: string, ctx: any): any {
                 { destination: network, subnetMask: wildcard, nextHop: 'directly connected', metric: 1, type: 'dynamic', area: parseInt(area) }
             ]
         }
+    };
+}
+
+/**
+ * no network - Remove network from routing process
+ */
+function cmdNoRouterNetwork(state: any, input: string, ctx: any): any {
+    const match = input.match(/^no\s+network\s+([0-9.]+)(?:\s+[0-9.]+)?(?:\s+area\s+\d+)?$/i);
+    if (!match) return { success: false, error: '% Invalid no network command' };
+
+    const network = match[1];
+    const dynamicRoutes = (state.dynamicRoutes || []).filter((r: any) => r.destination !== network);
+
+    return {
+        success: true,
+        newState: { dynamicRoutes }
+    };
+}
+
+/**
+ * no neighbor <ip> remote-as <as>
+ */
+function cmdNoNeighborRemoteAs(state: any, input: string, ctx: any): any {
+    const match = input.match(/^no\s+neighbor\s+([0-9.]+)(?:\s+remote-as\s+\d+)?$/i);
+    if (!match) return { success: false, error: '% Invalid no neighbor command' };
+
+    const neighborIp = match[1];
+    const bgpNeighbors = (state.bgpNeighbors || []).filter((n: any) => n.ip !== neighborIp);
+
+    return {
+        success: true,
+        newState: { bgpNeighbors }
+    };
+}
+
+/**
+ * no passive-interface <name>
+ */
+function cmdNoPassiveInterface(state: any, input: string, ctx: any): any {
+    const match = input.match(/^no\s+passive-interface\s+(\S+)$/i);
+    if (!match) return { success: false, error: '% Invalid no passive-interface command' };
+
+    const iface = match[1];
+    const passiveInterfaces = (state.passiveInterfaces || []).filter((p: any) => p !== iface);
+
+    return {
+        success: true,
+        newState: { passiveInterfaces }
+    };
+}
+
+/**
+ * no router-id
+ */
+function cmdNoRouterId(state: any, input: string, ctx: any): any {
+    return {
+        success: true,
+        newState: { routerId: undefined }
     };
 }
 

@@ -28,6 +28,12 @@ export const commandPatterns: Record<string, CommandPattern> = {
     minArgs: 2,
     maxArgs: 2
   },
+  'no ip host': {
+    pattern: /^no\s+ip\s+host\s+(\S+)(?:\s+[0-9.]+)?$/i,
+    modes: ['config'],
+    minArgs: 1,
+    maxArgs: 2
+  },
   'show ipv6 dhcp pool': {
     pattern: /^show\s+ipv6\s+dhcp\s+pool(?:\s+(\S+))?$/i,
     modes: ['user', 'privileged'],
@@ -361,6 +367,18 @@ export const commandPatterns: Record<string, CommandPattern> = {
     minArgs: 0,
     maxArgs: 1
   },
+  'router eigrp': {
+    pattern: /^router\s+eigrp\s+(\d+)$/i,
+    modes: ['config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'router bgp': {
+    pattern: /^router\s+bgp\s+(\d+)$/i,
+    modes: ['config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
   'ipv6 router rip': {
     pattern: /^ipv6\s+router\s+rip\s+(\S+)$/i,
     modes: ['config'],
@@ -412,15 +430,9 @@ export const commandPatterns: Record<string, CommandPattern> = {
   // Router config subcommands
   'network': {
     pattern: /^network\s+([0-9.]+)(?:\s+([0-9.]+))?(?:\s+area\s+(\d+)|(?:\s+mask\s+([0-9.]+)))?$/i,
-    modes: ['router-config'],
+    modes: ['router-config', 'dhcp-config'],
     minArgs: 1,
     maxArgs: 4
-  },
-  'dhcp-config network': {
-    pattern: /^network\s+(\d+\.\d+\.\d+\.\d+)\s+(\d+\.\d+\.\d+\.\d+)$/i,
-    modes: ['dhcp-config'],
-    minArgs: 2,
-    maxArgs: 2
   },
   'neighbor remote-as': {
     pattern: /^neighbor\s+([0-9.]+)\s+remote-as\s+(\d+)$/i,
@@ -430,6 +442,12 @@ export const commandPatterns: Record<string, CommandPattern> = {
   },
   'ipv6 dhcp pool': {
     pattern: /^ipv6\s+dhcp\s+pool\s+(\S+)$/i,
+    modes: ['config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'no ipv6 dhcp pool': {
+    pattern: /^no\s+ipv6\s+dhcp\s+pool\s+(\S+)$/i,
     modes: ['config'],
     minArgs: 1,
     maxArgs: 1
@@ -477,13 +495,6 @@ export const commandPatterns: Record<string, CommandPattern> = {
     maxArgs: 0
   },
 
-  // Alias for subcommands in router config
-  'router-config network': {
-    pattern: /^network\s+([0-9.]+)(\s+([0-9.]+))?(\s+area\s+(\d+))?$/i,
-    modes: ['router-config'],
-    minArgs: 1,
-    maxArgs: 4
-  },
 
   'cdp timer': {
     pattern: /^cdp\s+timer\s+(\d+)$/i,
@@ -2311,6 +2322,24 @@ export const commandPatterns: Record<string, CommandPattern> = {
   'dot11 mac-filter': {
     pattern: /^mac-filter\s+(?:allow|deny)\s+(.+)$/i,
     modes: ['dot11-config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'iot sensor': {
+    pattern: /^iot\s+sensor\s+(.+)$/i,
+    modes: ['config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'iot name': {
+    pattern: /^iot\s+name\s+(.+)$/i,
+    modes: ['config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'iot wifi': {
+    pattern: /^iot\s+wifi\s+(.+)$/i,
+    modes: ['config'],
     minArgs: 1,
     maxArgs: 1
   },

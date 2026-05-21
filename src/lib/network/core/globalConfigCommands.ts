@@ -120,6 +120,11 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'ip access-list': cmdIpAccessList,
   'no ip access-list': cmdNoIpAccessList,
   'ip host': cmdIpHost,
+  'no ip host': cmdNoIpHost,
+  'no ipv6 dhcp pool': cmdNoIpv6DhcpPool,
+  'iot sensor': cmdIotSensor,
+  'iot name': cmdIotName,
+  'iot wifi': cmdIotWifi,
 };
 
 /**
@@ -220,6 +225,41 @@ function cmdIpRoute(state: any, input: string, ctx: any): any {
       ipRouting: true
     }
   };
+}
+
+/**
+ * no ip host <name>
+ */
+function cmdNoIpHost(state: any, input: string, ctx: any): any {
+  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  const match = input.match(/^no\s+ip\s+host\s+(\S+)(?:\s+[0-9.]+)?$/i);
+  if (!match) return { success: false, error: '% Invalid no ip host command' };
+
+  const hostName = match[1];
+  const services = { ...state.services };
+  if (services.dns && services.dns.records) {
+    services.dns.records = services.dns.records.filter((r: any) => r.domain !== hostName);
+  }
+
+  const updatedState = { ...state, services };
+  return { success: true, newState: { services, runningConfig: buildRunningConfig(updatedState) } };
+}
+
+/**
+ * no ipv6 dhcp pool <name>
+ */
+function cmdNoIpv6DhcpPool(state: any, input: string, ctx: any): any {
+  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  const match = input.match(/^no\s+ipv6\s+dhcp\s+pool\s+(\S+)$/i);
+  if (!match) return { success: false, error: '% Invalid no ipv6 dhcp pool command' };
+
+  const poolName = match[1];
+  const pools = { ...(state.ipv6DhcpPools || {}) };
+  if (!pools[poolName]) return { success: false, error: `% DHCP pool ${poolName} not found` };
+  delete pools[poolName];
+
+  const updatedState = { ...state, ipv6DhcpPools: pools };
+  return { success: true, newState: { ipv6DhcpPools: pools, runningConfig: buildRunningConfig(updatedState) } };
 }
 
 /**
@@ -2126,6 +2166,59 @@ function cmdNoAliasExec(state: any, input: string, ctx: any): any {
       execAliases,
       runningConfig: buildRunningConfig(updatedState)
     }
+  };
+}
+
+// IoT Handlers
+
+/**
+ * iot sensor <type>
+ */
+function cmdIotSensor(state: any, input: string, ctx: any): any {
+  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  const match = input.match(/^iot\s+sensor\s+(.+)$/i);
+  if (!match) return { success: false, error: '% Incomplete command' };
+  const type = match[1];
+  const iotConfig = { ...(state.iotConfig || {}), sensorType: type };
+  const updatedState = { ...state, iotConfig };
+  return {
+    success: true,
+    output: `IoT sensor type set to ${type}`,
+    newState: { iotConfig, runningConfig: buildRunningConfig(updatedState) }
+  };
+}
+
+/**
+ * iot name <name>
+ */
+function cmdIotName(state: any, input: string, ctx: any): any {
+  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  const match = input.match(/^iot\s+name\s+(.+)$/i);
+  if (!match) return { success: false, error: '% Incomplete command' };
+  const name = match[1];
+  const iotConfig = { ...(state.iotConfig || {}), name };
+  const updatedState = { ...state, iotConfig };
+  return {
+    success: true,
+    output: `IoT device name set to ${name}`,
+    newState: { iotConfig, runningConfig: buildRunningConfig(updatedState) }
+  };
+}
+
+/**
+ * iot wifi <ssid>
+ */
+function cmdIotWifi(state: any, input: string, ctx: any): any {
+  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  const match = input.match(/^iot\s+wifi\s+(.+)$/i);
+  if (!match) return { success: false, error: '% Incomplete command' };
+  const ssid = match[1];
+  const iotConfig = { ...(state.iotConfig || {}), wifiSsid: ssid };
+  const updatedState = { ...state, iotConfig };
+  return {
+    success: true,
+    output: `IoT wifi SSID set to ${ssid}`,
+    newState: { iotConfig, runningConfig: buildRunningConfig(updatedState) }
   };
 }
 

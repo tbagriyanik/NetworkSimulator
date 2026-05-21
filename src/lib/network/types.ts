@@ -381,6 +381,12 @@ export interface SwitchState {
   currentSsid?: string;
   currentRadio?: string;
   execAliases?: Record<string, string>;
+  // IoT specific configuration
+  iotConfig?: {
+    sensorType?: string;
+    name?: string;
+    wifiSsid?: string;
+  };
 }
 
 export interface StartupConfig {
