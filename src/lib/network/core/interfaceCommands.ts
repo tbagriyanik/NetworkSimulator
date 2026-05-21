@@ -2211,6 +2211,18 @@ function cmdSwitchportBlock(state: any, input: string, ctx: any): any {
  */
 function cmdSwitchportPortSecurityMacAddress(state: any, input: string, ctx: any): any {
   if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+
+  // Check if it's the sticky variant
+  if (/^switchport\s+port-security\s+mac-address\s+sticky$/i.test(input)) {
+    if (!state.currentInterface) return { success: false, error: '% No interface selected' };
+    const newPorts = { ...state.ports };
+    if (!newPorts[state.currentInterface].portSecurity) {
+      newPorts[state.currentInterface].portSecurity = {};
+    }
+    newPorts[state.currentInterface].portSecurity.sticky = true;
+    return { success: true, newState: { ports: newPorts } };
+  }
+
   const match = input.match(/^switchport\s+port-security\s+mac-address\s+([0-9a-fA-F.:-]+)$/i);
   if (!match) return { success: false, error: '% Invalid mac-address command' };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };

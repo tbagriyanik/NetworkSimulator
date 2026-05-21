@@ -229,7 +229,7 @@ function cmdRouterEigrp(state: any, input: string, ctx: any): any {
     return { success: false, error: iosModeError() };
   }
 
-  if (!canAssignIPToPhysicalPort(state.switchModel)) {
+  if (state.deviceType !== 'router' && !canAssignIPToPhysicalPort(state.switchModel)) {
     return {
       success: false,
       error: `% Invalid command. Layer 2 switch (${state.switchModel}) does not support routing protocols.`
@@ -1080,8 +1080,8 @@ function cmdRouterRip(state: any, input: string, ctx: any): any {
     return { success: false, error: iosModeError() };
   }
 
-  // Check if device supports routing (L3 switch only)
-  if (!canAssignIPToPhysicalPort(state.switchModel)) {
+  // Check if device supports routing (routers and L3 switches only)
+  if (state.deviceType !== 'router' && !canAssignIPToPhysicalPort(state.switchModel)) {
     return {
       success: false,
       error: `% Invalid command. Layer 2 switch (${state.switchModel}) does not support routing protocols.\nRouting protocols are only supported on Layer 3 switches.`
@@ -1110,8 +1110,8 @@ function cmdRouterOspf(state: any, input: string, ctx: any): any {
     return { success: false, error: iosModeError() };
   }
 
-  // Check if device supports routing (L3 switch only)
-  if (!canAssignIPToPhysicalPort(state.switchModel)) {
+  // Check if device supports routing (routers and L3 switches only)
+  if (state.deviceType !== 'router' && !canAssignIPToPhysicalPort(state.switchModel)) {
     return {
       success: false,
       error: `% Invalid command. Layer 2 switch (${state.switchModel}) does not support routing protocols.\nRouting protocols are only supported on Layer 3 switches.`

@@ -238,15 +238,13 @@ export const commandPatterns: Record<string, CommandPattern> = {
     pattern: /^ip\s+routing$/i,
     modes: ['config'],
     minArgs: 0,
-    maxArgs: 0,
-    capability: 'routing'
+    maxArgs: 0
   },
   'no ip routing': {
     pattern: /^no\s+ip\s+routing$/i,
     modes: ['config'],
     minArgs: 0,
-    maxArgs: 0,
-    capability: 'routing'
+    maxArgs: 0
   },
   'ip route': {
     pattern: /^ip\s+route\s+([0-9.]+)\s+([0-9.]+)\s+(\S+)(?:\s+(\d+))?$/i,
@@ -318,29 +316,25 @@ export const commandPatterns: Record<string, CommandPattern> = {
     pattern: /^show\s+ip\s+protocols$/i,
     modes: ['user', 'privileged'],
     minArgs: 0,
-    maxArgs: 0,
-    capability: 'routing'
+    maxArgs: 0
   },
   'show ip ospf': {
     pattern: /^show\s+ip\s+ospf(?:\s+(\d+))?$/i,
     modes: ['user', 'privileged'],
     minArgs: 0,
-    maxArgs: 1,
-    capability: 'routing'
+    maxArgs: 1
   },
   'show ip ospf neighbor': {
     pattern: /^show\s+ip\s+ospf\s+neighbor(?:\s+(\S+))?$/i,
     modes: ['user', 'privileged'],
     minArgs: 0,
-    maxArgs: 1,
-    capability: 'routing'
+    maxArgs: 1
   },
   'show ip ospf interface': {
     pattern: /^show\s+ip\s+ospf\s+interface(?:\s+(\S+))?$/i,
     modes: ['user', 'privileged'],
     minArgs: 0,
-    maxArgs: 1,
-    capability: 'routing'
+    maxArgs: 1
   },
   'cdp run': {
     pattern: /^cdp\s+run$/i,
@@ -359,71 +353,61 @@ export const commandPatterns: Record<string, CommandPattern> = {
     pattern: /^router\s+rip$/i,
     modes: ['config'],
     minArgs: 0,
-    maxArgs: 0,
-    capability: 'routing'
+    maxArgs: 0
   },
   'router ospf': {
     pattern: /^router\s+ospf\s*(\d*)$/i,
     modes: ['config'],
     minArgs: 0,
-    maxArgs: 1,
-    capability: 'routing'
+    maxArgs: 1
   },
   'ipv6 router rip': {
     pattern: /^ipv6\s+router\s+rip\s+(\S+)$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'routing'
+    maxArgs: 1
   },
   'ipv6 router ospf': {
     pattern: /^ipv6\s+router\s+ospf\s+(\d+)$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'routing'
+    maxArgs: 1
   },
   'no router rip': {
     pattern: /^no\s+router\s+rip$/i,
     modes: ['config'],
     minArgs: 0,
-    maxArgs: 0,
-    capability: 'routing'
+    maxArgs: 0
   },
   'no ipv6 router rip': {
     pattern: /^no\s+ipv6\s+router\s+rip\s+(\S+)$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'routing'
+    maxArgs: 1
   },
   'no ipv6 router ospf': {
     pattern: /^no\s+ipv6\s+router\s+ospf\s+(\d+)$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'routing'
+    maxArgs: 1
   },
   'no router ospf': {
     pattern: /^no\s+router\s+ospf$/i,
     modes: ['config'],
     minArgs: 0,
-    maxArgs: 0,
-    capability: 'routing'
+    maxArgs: 0
   },
   'no router eigrp': {
     pattern: /^no\s+router\s+eigrp\s*(\d*)$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'routing'
+    maxArgs: 1
   },
   'no router bgp': {
     pattern: /^no\s+router\s+bgp\s*(\d*)$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'routing'
+    maxArgs: 1
   },
   // Router config subcommands
   'network': {
@@ -792,8 +776,7 @@ export const commandPatterns: Record<string, CommandPattern> = {
     pattern: /^switchport\s+mode\s+(access|trunk|dynamic\s+(auto|desirable)|dot1q-tunnel)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 2,
-    capability: 'switching'
+    maxArgs: 2
   },
   'no switchport': {
     pattern: /^no\s+switchport$/i,
@@ -805,43 +788,37 @@ export const commandPatterns: Record<string, CommandPattern> = {
     pattern: /^no\s+switchport\s+mode$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 0,
-    maxArgs: 0,
-    capability: 'switching'
+    maxArgs: 0
   },
   'switchport access vlan': {
     pattern: /^switchport\s+access\s+vlan\s+(\d+)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'switching'
+    maxArgs: 1
   },
   'no switchport access vlan': {
     pattern: /^no\s+switchport\s+access\s+vlan$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 0,
-    maxArgs: 0,
-    capability: 'switching'
+    maxArgs: 0
   },
   'switchport trunk allowed vlan': {
     pattern: /^switchport\s+trunk\s+allowed\s+vlan\s+(.+)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'switching'
+    maxArgs: 1
   },
   'switchport trunk native vlan': {
     pattern: /^switchport\s+trunk\s+native\s+vlan\s+(\d+)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'switching'
+    maxArgs: 1
   },
   'switchport trunk encapsulation': {
     pattern: /^switchport\s+trunk\s+encapsulation\s+(dot1q|isl|negotiate)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'switching'
+    maxArgs: 1
   },
   'encapsulation dot1q': {
     pattern: /^encapsulation\s+dot1q\s+(\d+)$/i,
@@ -854,92 +831,79 @@ export const commandPatterns: Record<string, CommandPattern> = {
     pattern: /^switchport\s+nonegotiate$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 0,
-    maxArgs: 0,
-    capability: 'switching'
+    maxArgs: 0
   },
   'switchport protected': {
     pattern: /^switchport\s+protected$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 0,
-    maxArgs: 0,
-    capability: 'switching'
+    maxArgs: 0
   },
   'switchport block': {
     pattern: /^switchport\s+block\s+(unicast|multicast)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'switching'
+    maxArgs: 1
   },
   'switchport port-security': {
     pattern: /^switchport\s+port-security$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 0,
-    maxArgs: 0,
-    capability: 'switching'
+    maxArgs: 0
   },
   'no switchport port-security': {
     pattern: /^no\s+switchport\s+port-security$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 0,
-    maxArgs: 0,
-    capability: 'switching'
+    maxArgs: 0
   },
   'switchport port-security maximum': {
     pattern: /^switchport\s+port-security\s+maximum\s+(\d+)(\s+vlan\s+(.+))?$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 3,
-    capability: 'switching'
+    maxArgs: 3
   },
   'switchport port-security violation': {
     pattern: /^switchport\s+port-security\s+violation\s+(protect|restrict|shutdown)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'switching'
+    maxArgs: 1
   },
   'switchport port-security mac-address': {
     pattern: /^switchport\s+port-security\s+mac-address\s+(.+?)(\s+vlan\s+(\d+))?$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 3,
-    capability: 'switching'
+    maxArgs: 3
   },
   'switchport port-security mac-address sticky': {
     pattern: /^switchport\s+port-security\s+mac-address\s+sticky$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 0,
-    maxArgs: 0,
-    capability: 'switching'
+    maxArgs: 0
   },
   'switchport port-security aging time': {
     pattern: /^switchport\s+port-security\s+aging\s+time\s+(\d+)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'switching'
+    maxArgs: 1
   },
   'switchport port-security aging type': {
     pattern: /^switchport\s+port-security\s+aging\s+type\s+(absolute|inactivity)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'switching'
+    maxArgs: 1
   },
   'switchport voice vlan': {
     pattern: /^switchport\s+voice\s+vlan\s+(\d+|dot1p|none|untagged)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'switching'
+    maxArgs: 1
   },
   'switchport voice': {
     pattern: /^switchport\s+voice\s+(.+)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'switching'
+    maxArgs: 1
   },
   'cdp enable': {
     pattern: /^cdp\s+enable$/i,
@@ -2386,7 +2350,7 @@ export function resolveAliases(input: string): string {
       }
 
       const rest = input.trim().substring(alias.length).trim();
-      return full + ' ' + rest;
+      return rest ? full + ' ' + rest : full;
     }
   }
 
