@@ -108,7 +108,8 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'snmp-server contact': cmdStubSuccess,
   'snmp-server location': cmdStubSuccess,
   'archive': cmdStubSuccess,
-  'alias': cmdStubSuccess,
+  'alias': cmdAliasExec,
+  'no alias': cmdNoAliasExec,
   'macro': cmdStubSuccess,
   'default interface': cmdStubSuccess,
   'configure replace': cmdStubSuccess,
@@ -2050,6 +2051,79 @@ function cmdIpHost(state: any, input: string, ctx: any): any {
     success: true,
     newState: {
       services,
+      runningConfig: buildRunningConfig(updatedState)
+    }
+  };
+}
+
+/**
+ * Alias Exec - Define a command alias in exec mode
+ */
+function cmdAliasExec(state: any, input: string, ctx: any): any {
+  if (state.currentMode !== 'config') {
+    return { success: false, error: iosModeError() };
+  }
+
+  const match = input.match(/^alias\s+(exec|configure|interface|line)\s+(\S+)\s+(.+)$/i);
+  if (!match) {
+    return { success: false, error: '% Invalid alias command' };
+  }
+
+  const mode = match[1].toLowerCase();
+  const aliasName = match[2];
+  const aliasCommand = match[3];
+
+  if (mode !== 'exec') {
+    return { success: true, output: `% ${mode} mode aliases not supported yet` };
+  }
+
+  const execAliases = { ...(state.execAliases || {}) };
+  execAliases[aliasName.toLowerCase()] = aliasCommand;
+
+  const updatedState = { ...state, execAliases };
+  return {
+    success: true,
+    output: `% ${input.trim()} configured`,
+    newState: {
+      execAliases,
+      runningConfig: buildRunningConfig(updatedState)
+    }
+  };
+}
+
+/**
+ * No Alias Exec - Remove a command alias
+ */
+function cmdNoAliasExec(state: any, input: string, ctx: any): any {
+  if (state.currentMode !== 'config') {
+    return { success: false, error: iosModeError() };
+  }
+
+  const match = input.match(/^no\s+alias\s+(exec|configure|interface|line)\s+(\S+)$/i);
+  if (!match) {
+    return { success: false, error: '% Invalid no alias command' };
+  }
+
+  const mode = match[1].toLowerCase();
+  const aliasName = match[2].toLowerCase();
+
+  if (mode !== 'exec') {
+    return { success: true, output: `% ${mode} mode aliases not supported yet` };
+  }
+
+  if (!state.execAliases || !state.execAliases[aliasName]) {
+    return { success: false, error: `% Alias ${aliasName} not found` };
+  }
+
+  const execAliases = { ...state.execAliases };
+  delete execAliases[aliasName];
+
+  const updatedState = { ...state, execAliases };
+  return {
+    success: true,
+    output: `% no alias exec ${aliasName} configured`,
+    newState: {
+      execAliases,
       runningConfig: buildRunningConfig(updatedState)
     }
   };

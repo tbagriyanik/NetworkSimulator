@@ -519,36 +519,31 @@ export const commandPatterns: Record<string, CommandPattern> = {
     pattern: /^spanning-tree\s+mode\s+(pvst|rapid-pvst|mst)$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'switching'
+    maxArgs: 1
   },
   'spanning-tree vlan': {
     pattern: /^spanning-tree\s+vlan\s+(\d+)(?:\s+(priority|root)(?:\s+(primary|secondary|\d+))?)?$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 4,
-    capability: 'switching'
+    maxArgs: 4
   },
   'spanning-tree portfast': {
     pattern: /^spanning-tree\s+portfast(\s+(default|edge|bpduguard\s+(enable|disable)))?$/i,
     modes: ['config', 'interface', 'config-if-range'],
     minArgs: 0,
-    maxArgs: 2,
-    capability: 'switching'
+    maxArgs: 2
   },
   'spanning-tree bpduguard': {
     pattern: /^spanning-tree\s+bpduguard\s+(enable|disable)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'switching'
+    maxArgs: 1
   },
   'no spanning-tree': {
     pattern: /^no\s+spanning-tree(\s+vlan\s+(\d+))?$/i,
     modes: ['config'],
     minArgs: 0,
-    maxArgs: 2,
-    capability: 'switching'
+    maxArgs: 2
   },
   'errdisable recovery': {
     pattern: /^errdisable\s+recovery\s+(cause|interval)\s+(.+)$/i,
@@ -681,6 +676,12 @@ export const commandPatterns: Record<string, CommandPattern> = {
     modes: ['config'],
     minArgs: 3,
     maxArgs: 3
+  },
+  'no alias': {
+    pattern: /^no\s+alias\s+(exec|configure|interface|line)\s+(\S+)$/i,
+    modes: ['config'],
+    minArgs: 2,
+    maxArgs: 2
   },
   'macro': {
     pattern: /^macro\s+(name|global|auto\s+(execute|processing))\s+(.+)$/i,
@@ -1417,7 +1418,7 @@ export const commandPatterns: Record<string, CommandPattern> = {
   },
   'show cdp neighbors': {
     pattern: /^show\s+cdp\s+(neighbors?|nei|ne)(\s+(detail|det))?$/i,
-    modes: ['user', 'privileged'],
+    modes: ['user', 'privileged', 'config', 'interface', 'config-if-range', 'line', 'vlan', 'dhcp-config', 'router-config'],
     minArgs: 0,
     maxArgs: 2
   },
@@ -2318,8 +2319,34 @@ export const commandPatterns: Record<string, CommandPattern> = {
 };
 
 // Komut alias'larını çöz - Gelişmiş versiyon
-export function resolveAliases(input: string): string {
+export function resolveAliases(input: string, state?: any): string {
   const trimmed = input.trim().toLowerCase();
+
+  // Önce kullanıcı tanımlı exec alias'larını kontrol et (runtime)
+  if (state?.execAliases) {
+    const userAliases = state.execAliases;
+    // Tam eşleşme
+    if (userAliases[trimmed]) {
+      return userAliases[trimmed];
+    }
+    // Kısmi eşleşme (prefix match)
+    const sortedUserAliases = Object.entries(userAliases)
+      .sort((a, b) => b[0].length - a[0].length);
+    for (const [alias, full] of sortedUserAliases as [string, string][]) {
+      const aliasLower = alias.toLowerCase();
+      const fullLower = full.toLowerCase();
+      if (trimmed === aliasLower) {
+        return full;
+      }
+      if (trimmed.startsWith(aliasLower + ' ')) {
+        if (trimmed === fullLower || trimmed.startsWith(fullLower + ' ')) {
+          continue;
+        }
+        const rest = input.trim().substring(alias.length).trim();
+        return rest ? full + ' ' + rest : full;
+      }
+    }
+  }
 
   // Tam eşleşme - direkt alias
   if (commandAliases[trimmed]) {
@@ -2378,7 +2405,7 @@ export function getLevenshteinDistance(a: string, b: string): number {
 // Komut parse et
 export function parseCommand(input: string, currentMode: CommandMode, state?: any): ParsedCommand | null {
   const capabilities = state ? getDeviceCapabilities(state, state.switchModel) : undefined;
-  const resolvedInput = expandKeywordPrefixes(resolveAliases(input), currentMode, capabilities);
+  const resolvedInput = expandKeywordPrefixes(resolveAliases(input, state), currentMode, capabilities);
   const trimmed = resolvedInput.trim();
 
   if (!trimmed) return null;
@@ -2529,7 +2556,7 @@ export function validateCommand(
 ): CommandValidationResult {
 
   const input = parsed.rawInput.toLowerCase();
-  const resolvedInput = resolveAliases(parsed.rawInput);
+  const resolvedInput = resolveAliases(parsed.rawInput, state);
   const capabilities = state ? getDeviceCapabilities(state, state.switchModel) : undefined;
 
   // Exact pattern match must win over prefix-tree ambiguity.

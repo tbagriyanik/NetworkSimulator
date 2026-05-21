@@ -3757,7 +3757,17 @@ function cmdShowBannerMotd(state: any, input: string, ctx: any): any {
  * Show Alias
  */
 function cmdShowAlias(state: any, input: string, ctx: any): any {
-  return { success: true, output: '\nExec aliases:\n  h                    show history\n  lo                   exit\n' };
+  let output = '\nExec aliases:\n';
+  const builtIn: Record<string, string> = { 'h': 'show history', 'lo': 'exit' };
+  const allAliases = { ...builtIn, ...(state.execAliases || {}) };
+  if (Object.keys(allAliases).length === 0) {
+    output += '  (none)\n';
+  } else {
+    for (const [name, cmd] of Object.entries(allAliases)) {
+      output += `  ${name.padEnd(20)} ${cmd}\n`;
+    }
+  }
+  return { success: true, output };
 }
 
 /**

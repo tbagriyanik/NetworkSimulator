@@ -380,6 +380,7 @@ export interface SwitchState {
   }>;
   currentSsid?: string;
   currentRadio?: string;
+  execAliases?: Record<string, string>;
 }
 
 export interface StartupConfig {

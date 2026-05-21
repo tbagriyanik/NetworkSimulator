@@ -1337,7 +1337,9 @@ export function Terminal({
                       : `${t.pressEnterToConfirm} [confirm]`}
                   </div>
                 )}
-                <div className={cn(
+                <div
+                  onClick={() => inputRef.current?.focus()}
+                  className={cn(
                   "flex items-center gap-3 px-3 py-2 bg-background rounded-lg border flex-1 group focus-within:ring-1 transition-all shadow-inner",
                   state.awaitingPassword || localPasswordPrompt
                     ? "border-amber-500/50 focus-within:ring-amber-500/50"

@@ -514,7 +514,7 @@ const commandDescriptions: Record<string, Record<string, string>> = {
   },
 };
 
-function getInlineHelp(mode: CommandMode, partialInput: string, prompt: string): string {
+function getInlineHelp(mode: CommandMode, partialInput: string, prompt: string, state?: any): string {
   const modeCommands = commandHelp[mode] || commandHelp.user;
   const modeDescriptions = commandDescriptions[mode] || commandDescriptions.user;
   const lower = partialInput.toLowerCase().trim();
@@ -603,6 +603,60 @@ function getInlineHelp(mode: CommandMode, partialInput: string, prompt: string):
       }
       suggestions = patternSuggestions;
     }
+
+    // 4. User-defined exec alias support
+    if (suggestions.length === 0 && state?.execAliases) {
+      const userAliases = state.execAliases;
+      // Check if input (or its prefix) matches a user alias
+      const sortedUserAliases = Object.entries(userAliases)
+        .sort((a, b) => b[0].length - a[0].length);
+      for (const [alias, fullCommand] of sortedUserAliases as [string, string][]) {
+        const aliasLower = alias.toLowerCase();
+        // Exact match: "si ?" — resolve and show sub-commands of the resolved command
+        if (lower === aliasLower) {
+          const resolvedPrefix = fullCommand.trim().toLowerCase();
+          // Look up in commandHelp
+          if (modeCommands[resolvedPrefix]) {
+            suggestions = [...modeCommands[resolvedPrefix]];
+          } else {
+            // Prefix match on resolved command
+            for (const key of Object.keys(modeCommands)) {
+              if (key.startsWith(resolvedPrefix) && key !== resolvedPrefix) {
+                const remaining = key.substring(resolvedPrefix.length).trim();
+                if (remaining) {
+                  const nextWord = remaining.split(' ')[0];
+                  if (nextWord && !suggestions.includes(nextWord)) {
+                    suggestions.push(nextWord);
+                  }
+                }
+              }
+            }
+          }
+          break;
+        }
+        // Prefix match: "si s" where alias is "si" — resolve and show sub-commands
+        if (lower.startsWith(aliasLower + ' ')) {
+          const rest = lower.substring(aliasLower.length).trim();
+          const resolvedPrefix = (fullCommand + ' ' + rest).trim().toLowerCase();
+          if (modeCommands[resolvedPrefix]) {
+            suggestions = [...modeCommands[resolvedPrefix]];
+          } else {
+            for (const key of Object.keys(modeCommands)) {
+              if (key.startsWith(resolvedPrefix) && key !== resolvedPrefix) {
+                const remaining = key.substring(resolvedPrefix.length).trim();
+                if (remaining) {
+                  const nextWord = remaining.split(' ')[0];
+                  if (nextWord && !suggestions.includes(nextWord)) {
+                    suggestions.push(nextWord);
+                  }
+                }
+              }
+            }
+          }
+          break;
+        }
+      }
+    }
   }
 
   const lines: string[] = [];
@@ -612,7 +666,7 @@ function getInlineHelp(mode: CommandMode, partialInput: string, prompt: string):
 
   // Check if current input is already a complete command
   let canCR = false;
-  const resolved = expandKeywordPrefixes(resolveAliases(trimmedInput), mode);
+  const resolved = expandKeywordPrefixes(resolveAliases(trimmedInput, state), mode);
   for (const [name, pattern] of Object.entries(commandPatterns)) {
     if (pattern.modes.includes(mode)) {
       if (pattern.pattern.test(resolved)) {
@@ -751,6 +805,28 @@ export function getEstimatedSuggestions(
   if (isEntireInputPrefix) {
     effectivePrefix = inputClean;
     effectiveLastWord = '';
+  }
+
+  // Kullanıcı tanımlı alias desteği
+  if (state?.execAliases) {
+    const sortedUserAliases = Object.entries(state.execAliases)
+      .sort((a, b) => b[0].length - a[0].length);
+    for (const [alias, fullCommand] of sortedUserAliases as [string, string][]) {
+      const aliasLower = alias.toLowerCase();
+      // Tam eşleşme: "si" → "show interfaces"
+      if (inputClean === aliasLower) {
+        effectivePrefix = fullCommand.trim().toLowerCase();
+        effectiveLastWord = '';
+        break;
+      }
+      // Prefix eşleşme: "si " ile başlayan → resolved komut + kalan
+      if (inputClean.startsWith(aliasLower + ' ')) {
+        const rest = inputClean.substring(aliasLower.length).trim();
+        effectivePrefix = (fullCommand.trim().toLowerCase() + ' ' + rest).trim();
+        effectiveLastWord = '';
+        break;
+      }
+    }
   }
 
   const validNextWords = new Set<string>();
@@ -1006,7 +1082,7 @@ export function executeCommand(
       partialInput = cmdToProcess.trim().substring(0, idx).trim();
     }
     const prompt = getModePrompt(state.currentMode, state.hostname);
-    let helpOutput = getInlineHelp(state.currentMode, partialInput, prompt);
+    let helpOutput = getInlineHelp(state.currentMode, partialInput, prompt, state);
 
     // Add smart hint to help output if it's a general help request
     if (partialInput === '') {
@@ -1019,7 +1095,7 @@ export function executeCommand(
     };
   }
 
-  const parsed = parseCommand(cmdToProcess, state.currentMode);
+  const parsed = parseCommand(cmdToProcess, state.currentMode, state);
 
   if (!parsed) {
     return { success: true, output: '' };
