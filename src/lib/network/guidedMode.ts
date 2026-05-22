@@ -1069,41 +1069,49 @@ export const getProgressPercentage = (steps: GuidedStep[]): number => {
   return Math.round((getCompletedStepsCount(steps) / steps.length) * 100);
 };
 
-// CLI Rehberli Dersler - 30 Pratik Ders
+// CLI Rehberli Dersler - 61 Adım
 export const cliGuidedLessons: GuidedStep[] = [
-  // Bölüm 1: Temel Modu Komutları
+  // ===== TÜM SWITCH İŞLEMLERİ (1-35) =====
+  // Bölüm 1: Temel Mod Komutları (Switch)
   {
-    id: 'cli-lesson-1-1',
+    id: 'cli-lesson-1-1a',
     order: 1,
-    title: { tr: 'Ders 1: Modu Değiştirme ve Yardım Sistemi', en: 'Lesson 1: Mode Switching and Help System' },
-    description: { tr: 'Enable/disable modları ve yardım komutlarını öğrenin', en: 'Learn enable/disable modes and help commands' },
-    hint: { tr: 'switch-1: enable komutu ile ayrıcalıklı moda geçin', en: 'switch-1: Use enable command to enter privileged mode' },
-    detailedInstructions: {
-      tr: ['switch-1 cihazına çift tıklayın', 'Terminal panelini açın', 'enable yazıp Enter\'a basın', 'disable yazıp Enter\'a basın', 'help yazıp Enter\'a basın'],
-      en: ['Double-click switch-1', 'Open terminal panel', 'Type enable and press Enter', 'Type disable and press Enter', 'Type help and press Enter']
-    },
+    title: { tr: 'Ders 1: Enable Komutu', en: 'Lesson 1: Enable Command' },
+    description: { tr: 'Ayrıcalıklı moda geçmek için enable komutunu kullanın', en: 'Use enable command to enter privileged mode' },
+    hint: { tr: 'switch-1: enable yazın', en: 'switch-1: Type enable' },
     checkType: 'command',
-    checkParams: { commandPattern: 'enable|disable|help' },
+    checkParams: { commandPattern: 'enable' },
     completed: false,
-    points: 10
+    points: 5
   },
   {
-    id: 'cli-lesson-1-2',
+    id: 'cli-lesson-1-1b',
     order: 2,
-    title: { tr: 'Ders 2: Bağlantı Testi - Ping Komutu', en: 'Lesson 2: Connectivity Test - Ping Command' },
-    description: { tr: 'Ping komutu ile ağ bağlantısını test edin', en: 'Test network connectivity with ping command' },
-    hint: { tr: 'pc-1: ping 192.168.1.2 yazıp Enter\'a basın', en: 'pc-1: Type ping 192.168.1.2 and press Enter' },
+    title: { tr: 'Ders 2: Disable Komutu', en: 'Lesson 2: Disable Command' },
+    description: { tr: 'Kullanıcı moduna dönmek için disable komutunu kullanın', en: 'Use disable command to return to user mode' },
+    hint: { tr: 'switch-1: disable yazın', en: 'switch-1: Type disable' },
     checkType: 'command',
-    checkParams: { commandPattern: 'ping' },
+    checkParams: { commandPattern: 'disable' },
     completed: false,
-    points: 15
+    points: 5
+  },
+  {
+    id: 'cli-lesson-1-1c',
+    order: 3,
+    title: { tr: 'Ders 3: Help Komutu', en: 'Lesson 3: Help Command' },
+    description: { tr: 'Yardım sistemini kullanın', en: 'Use the help system' },
+    hint: { tr: 'switch-1: help yazın', en: 'switch-1: Type help' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'help' },
+    completed: false,
+    points: 5
   },
   {
     id: 'cli-lesson-1-3a',
-    order: 3,
-    title: { tr: 'Ders 3a: Konfigürasyonu Görüntüle', en: 'Lesson 3a: View Configuration' },
+    order: 4,
+    title: { tr: 'Ders 4: Konfigürasyonu Görüntüle', en: 'Lesson 4: View Configuration' },
     description: { tr: 'show running-config komutunu kullanın', en: 'Use show running-config command' },
-    hint: { tr: 'switch-1: show running-config yazıp konfigürasyonu görün', en: 'switch-1: Type show running-config to view configuration' },
+    hint: { tr: 'switch-1: show running-config yazın', en: 'switch-1: Type show running-config' },
     checkType: 'command',
     checkParams: { commandPattern: 'show running-config' },
     completed: false,
@@ -1111,43 +1119,43 @@ export const cliGuidedLessons: GuidedStep[] = [
   },
   {
     id: 'cli-lesson-1-3b',
-    order: 3.5,
-    title: { tr: 'Ders 3b: Konfigürasyonu Kaydet', en: 'Lesson 3b: Save Configuration' },
+    order: 5,
+    title: { tr: 'Ders 5: Konfigürasyonu Kaydet', en: 'Lesson 5: Save Configuration' },
     description: { tr: 'write memory komutunu kullanın', en: 'Use write memory command' },
-    hint: { tr: 'switch-1: write memory yazıp konfigürasyonu kaydedin', en: 'switch-1: Type write memory to save configuration' },
+    hint: { tr: 'switch-1: write memory yazın', en: 'switch-1: Type write memory' },
     checkType: 'command',
-    checkParams: { commandPattern: 'write memory|copy running-config startup-config' },
+    checkParams: { commandPattern: 'write memory' },
     completed: false,
     points: 10
   },
-  // Bölüm 2: Global Konfigürasyon
+  // Bölüm 2: Global Konfigürasyon (Switch)
   {
     id: 'cli-lesson-2-1a',
-    order: 4,
-    title: { tr: 'Ders 4a: Hostname Ayarla', en: 'Lesson 4a: Set Hostname' },
-    description: { tr: 'Hostname komutunu öğrenin', en: 'Learn hostname command' },
-    hint: { tr: 'switch-1: conf t yazıp hostname SW-Lab yazın', en: 'switch-1: Type conf t then hostname SW-Lab' },
+    order: 6,
+    title: { tr: 'Ders 6: Hostname Ayarla', en: 'Lesson 6: Set Hostname' },
+    description: { tr: 'Switch\'e SW-Lab ismini verin', en: 'Give the switch the name SW-Lab' },
+    hint: { tr: 'switch-1: hostname SW-Lab yazın', en: 'switch-1: Type hostname SW-Lab' },
     checkType: 'command',
-    checkParams: { commandPattern: 'hostname' },
+    checkParams: { commandPattern: 'hostname SW-Lab' },
     completed: false,
     points: 10
   },
   {
     id: 'cli-lesson-2-1b',
-    order: 4.5,
-    title: { tr: 'Ders 4b: Banner Ayarla', en: 'Lesson 4b: Set Banner' },
-    description: { tr: 'Banner komutunu öğrenin', en: 'Learn banner command' },
-    hint: { tr: 'switch-1: banner motd yazıp hoşgeldiniz mesajı yazın', en: 'switch-1: Type banner motd and enter welcome message' },
+    order: 7,
+    title: { tr: 'Ders 7: Banner Ayarla', en: 'Lesson 7: Set Banner' },
+    description: { tr: 'Banner komutunu kullanın', en: 'Use banner command' },
+    hint: { tr: 'switch-1: banner motd yazın', en: 'switch-1: Type banner motd' },
     checkType: 'command',
-    checkParams: { commandPattern: 'banner' },
+    checkParams: { commandPattern: 'banner motd' },
     completed: false,
     points: 10
   },
   {
     id: 'cli-lesson-2-1c',
-    order: 5,
-    title: { tr: 'Ders 4c: Enable Secret Ayarla', en: 'Lesson 4c: Set Enable Secret' },
-    description: { tr: 'Enable secret komutunu öğrenin', en: 'Learn enable secret command' },
+    order: 8,
+    title: { tr: 'Ders 8: Enable Secret Ayarla', en: 'Lesson 8: Set Enable Secret' },
+    description: { tr: 'Enable secret komutunu kullanın', en: 'Learn enable secret command' },
     hint: { tr: 'switch-1: enable secret password yazın', en: 'switch-1: Type enable secret password' },
     checkType: 'command',
     checkParams: { commandPattern: 'enable secret' },
@@ -1156,9 +1164,9 @@ export const cliGuidedLessons: GuidedStep[] = [
   },
   {
     id: 'cli-lesson-2-2a',
-    order: 6,
-    title: { tr: 'Ders 5a: DNS Sunucusu Ayarla', en: 'Lesson 5a: Set DNS Server' },
-    description: { tr: 'DNS sunucusu komutunu öğrenin', en: 'Learn DNS server command' },
+    order: 9,
+    title: { tr: 'Ders 9: DNS Sunucusu Ayarla', en: 'Lesson 9: Set DNS Server' },
+    description: { tr: 'DNS sunucusu komutunu kullanın', en: 'Learn DNS server command' },
     hint: { tr: 'switch-1: ip name-server 8.8.8.8 yazın', en: 'switch-1: Type ip name-server 8.8.8.8' },
     checkType: 'command',
     checkParams: { commandPattern: 'ip name-server' },
@@ -1167,9 +1175,9 @@ export const cliGuidedLessons: GuidedStep[] = [
   },
   {
     id: 'cli-lesson-2-2b',
-    order: 6.5,
-    title: { tr: 'Ders 5b: Saat Dilimi Ayarla', en: 'Lesson 5b: Set Timezone' },
-    description: { tr: 'Saat dilimi komutunu öğrenin', en: 'Learn timezone command' },
+    order: 10,
+    title: { tr: 'Ders 10: Saat Dilimi Ayarla', en: 'Lesson 10: Set Timezone' },
+    description: { tr: 'Saat dilimi komutunu kullanın', en: 'Learn timezone command' },
     hint: { tr: 'switch-1: clock timezone UTC 0 yazın', en: 'switch-1: Type clock timezone UTC 0' },
     checkType: 'command',
     checkParams: { commandPattern: 'clock timezone' },
@@ -1178,144 +1186,99 @@ export const cliGuidedLessons: GuidedStep[] = [
   },
   {
     id: 'cli-lesson-2-2c',
-    order: 7,
-    title: { tr: 'Ders 5c: NTP Sunucusu Ayarla', en: 'Lesson 5c: Set NTP Server' },
-    description: { tr: 'NTP sunucusu komutunu öğrenin', en: 'Learn NTP server command' },
+    order: 11,
+    title: { tr: 'Ders 11: NTP Sunucusu Ayarla', en: 'Lesson 11: Set NTP Server' },
+    description: { tr: 'NTP sunucusu komutunu kullanın', en: 'Learn NTP server command' },
     hint: { tr: 'switch-1: ntp server 192.168.1.1 yazın', en: 'switch-1: Type ntp server 192.168.1.1' },
     checkType: 'command',
     checkParams: { commandPattern: 'ntp server' },
     completed: false,
     points: 10
   },
-  // Bölüm 3: Arayüz Konfigürasyonu
+  // Bölüm 3: Arayüz Konfigürasyonu (Switch)
   {
-    id: 'cli-lesson-3-1',
-    order: 6,
-    title: { tr: 'Ders 6: Temel Arayüz Ayarları', en: 'Lesson 6: Basic Interface Settings' },
-    description: { tr: 'Arayüz IP adresi ve no shutdown komutlarını kullanın', en: 'Use interface IP address and no shutdown commands' },
-    hint: { tr: 'switch-1: int fa0/1 yazıp no shutdown yazın', en: 'switch-1: Type int fa0/1 then no shutdown' },
+    id: 'cli-lesson-3-1a',
+    order: 12,
+    title: { tr: 'Ders 12: Arayüz Seçimi', en: 'Lesson 12: Interface Selection' },
+    description: { tr: 'FastEthernet 0/1 arayüzüne girin', en: 'Enter FastEthernet 0/1 interface' },
+    hint: { tr: 'switch-1: interface fa0/1 yazın', en: 'switch-1: Type interface fa0/1' },
     checkType: 'command',
-    checkParams: { commandPattern: 'interface|no shutdown|ip address' },
+    checkParams: { commandPattern: 'interface fa0/1' },
     completed: false,
-    points: 15
+    points: 10
+  },
+  {
+    id: 'cli-lesson-3-1b',
+    order: 13,
+    title: { tr: 'Ders 13: Arayüzü Aktifleştir', en: 'Lesson 13: Activate Interface' },
+    description: { tr: 'no shutdown komutu ile arayüzü aktif hale getirin', en: 'Use no shutdown to activate the interface' },
+    hint: { tr: 'switch-1: no shutdown yazın', en: 'switch-1: Type no shutdown' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'no shutdown' },
+    completed: false,
+    points: 10
   },
   {
     id: 'cli-lesson-3-2',
-    order: 7,
-    title: { tr: 'Ders 7: Arayüz Aralığı Konfigürasyonu', en: 'Lesson 7: Interface Range Configuration' },
-    description: { tr: 'Birden fazla arayüzü aynı anda yapılandırın', en: 'Configure multiple interfaces at once' },
+    order: 14,
+    title: { tr: 'Ders 14: Arayüz Aralığı', en: 'Lesson 14: Interface Range' },
+    description: { tr: 'Birden fazla arayüzü aynı anda seçin', en: 'Select multiple interfaces at once' },
     hint: { tr: 'switch-1: interface range fa0/1 - 5 yazın', en: 'switch-1: Type interface range fa0/1 - 5' },
     checkType: 'command',
     checkParams: { commandPattern: 'interface range' },
     completed: false,
     points: 15
   },
-  // Bölüm 4: VLAN Yönetimi
+  // Bölüm 4: VLAN Yönetimi (Switch)
   {
     id: 'cli-lesson-4-1a',
-    order: 8,
-    title: { tr: 'Ders 8a: VLAN Oluştur', en: 'Lesson 8a: Create VLAN' },
-    description: { tr: 'VLAN oluşturun', en: 'Create a VLAN' },
+    order: 15,
+    title: { tr: 'Ders 15: VLAN Oluştur', en: 'Lesson 15: Create VLAN' },
+    description: { tr: 'VLAN 10 oluşturun', en: 'Create VLAN 10' },
     hint: { tr: 'switch-1: vlan 10 yazın', en: 'switch-1: Type vlan 10' },
     checkType: 'command',
-    checkParams: { commandPattern: 'vlan' },
+    checkParams: { commandPattern: 'vlan 10' },
     completed: false,
     points: 10
   },
   {
     id: 'cli-lesson-4-1b',
-    order: 8.5,
-    title: { tr: 'Ders 8b: VLAN İsimlendir', en: 'Lesson 8b: Name VLAN' },
-    description: { tr: 'VLAN\'a isim verin', en: 'Give the VLAN a name' },
+    order: 16,
+    title: { tr: 'Ders 16: VLAN İsimlendir', en: 'Lesson 16: Name VLAN' },
+    description: { tr: 'VLAN\'a SALES ismini verin', en: 'Give the VLAN the name SALES' },
     hint: { tr: 'switch-1: name SALES yazın', en: 'switch-1: Type name SALES' },
     checkType: 'command',
-    checkParams: { commandPattern: 'name' },
+    checkParams: { commandPattern: 'name SALES' },
     completed: false,
     points: 10
   },
   {
     id: 'cli-lesson-4-2',
-    order: 9,
-    title: { tr: 'Ders 9: Arayüzleri VLAN\'a Atama', en: 'Lesson 9: Assigning Interfaces to VLAN' },
-    description: { tr: 'Arayüzleri VLAN\'lara atayın', en: 'Assign interfaces to VLANs' },
+    order: 17,
+    title: { tr: 'Ders 17: VLAN Atama', en: 'Lesson 17: Assign VLAN' },
+    description: { tr: 'Arayüzü VLAN 10\'a atayın', en: 'Assign interface to VLAN 10' },
     hint: { tr: 'switch-1: switchport access vlan 10 yazın', en: 'switch-1: Type switchport access vlan 10' },
     checkType: 'command',
-    checkParams: { commandPattern: 'switchport access vlan' },
+    checkParams: { commandPattern: 'switchport access vlan 10' },
     completed: false,
     points: 15
   },
   {
     id: 'cli-lesson-4-3',
-    order: 10,
-    title: { tr: 'Ders 10: Trunk Portları', en: 'Lesson 10: Trunk Ports' },
-    description: { tr: 'Trunk portlarını yapılandırın', en: 'Configure trunk ports' },
+    order: 18,
+    title: { tr: 'Ders 18: Trunk Portu', en: 'Lesson 18: Trunk Port' },
+    description: { tr: 'Trunk portu yapılandırın', en: 'Configure trunk port' },
     hint: { tr: 'switch-1: switchport mode trunk yazın', en: 'switch-1: Type switchport mode trunk' },
     checkType: 'command',
     checkParams: { commandPattern: 'switchport mode trunk' },
     completed: false,
     points: 15
   },
-  // Bölüm 5: Yönlendirme
-  {
-    id: 'cli-lesson-5-1',
-    order: 11,
-    title: { tr: 'Ders 11: Statik Yönlendirme', en: 'Lesson 11: Static Routing' },
-    description: { tr: 'Statik rotalar ekleyin', en: 'Add static routes' },
-    hint: { tr: 'router-1: ip route 192.168.2.0 255.255.255.0 192.168.1.2 yazın', en: 'router-1: Type ip route 192.168.2.0 255.255.255.0 192.168.1.2' },
-    checkType: 'command',
-    checkParams: { commandPattern: 'ip route' },
-    completed: false,
-    points: 20
-  },
-  {
-    id: 'cli-lesson-5-2a',
-    order: 12,
-    title: { tr: 'Ders 12a: RIP Başlat', en: 'Lesson 12a: Start RIP' },
-    description: { tr: 'RIP yönlendirme protokolünü başlatın', en: 'Start RIP routing protocol' },
-    hint: { tr: 'router-1: router rip yazın', en: 'router-1: Type router rip' },
-    checkType: 'command',
-    checkParams: { commandPattern: 'router rip' },
-    completed: false,
-    points: 15
-  },
-  {
-    id: 'cli-lesson-5-2b',
-    order: 12.5,
-    title: { tr: 'Ders 12b: Ağ Ekle', en: 'Lesson 12b: Add Network' },
-    description: { tr: 'Ağ adresini ekleyin', en: 'Add network address' },
-    hint: { tr: 'router-1: network 192.168.1.0 yazın', en: 'router-1: Type network 192.168.1.0' },
-    checkType: 'command',
-    checkParams: { commandPattern: 'network' },
-    completed: false,
-    points: 15
-  },
-  {
-    id: 'cli-lesson-5-3a',
-    order: 13,
-    title: { tr: 'Ders 13a: OSPF Başlat', en: 'Lesson 13a: Start OSPF' },
-    description: { tr: 'OSPF yönlendirme protokolünü başlatın', en: 'Start OSPF routing protocol' },
-    hint: { tr: 'router-1: router ospf 1 yazın', en: 'router-1: Type router ospf 1' },
-    checkType: 'command',
-    checkParams: { commandPattern: 'router ospf' },
-    completed: false,
-    points: 15
-  },
-  {
-    id: 'cli-lesson-5-3b',
-    order: 13.5,
-    title: { tr: 'Ders 13b: Router ID Ayarla', en: 'Lesson 13b: Set Router ID' },
-    description: { tr: 'Router ID\'yi ayarlayın', en: 'Set the router ID' },
-    hint: { tr: 'router-1: router-id 1.1.1.1 yazın', en: 'router-1: Type router-id 1.1.1.1' },
-    checkType: 'command',
-    checkParams: { commandPattern: 'router-id' },
-    completed: false,
-    points: 15
-  },
-  // Bölüm 6: Güvenlik
+  // Bölüm 5: Güvenlik (Switch)
   {
     id: 'cli-lesson-6-1a',
-    order: 14,
-    title: { tr: 'Ders 14a: Port Güvenliğini Aç', en: 'Lesson 14a: Enable Port Security' },
+    order: 19,
+    title: { tr: 'Ders 19: Port Güvenliği', en: 'Lesson 19: Port Security' },
     description: { tr: 'Port güvenliğini etkinleştirin', en: 'Enable port security' },
     hint: { tr: 'switch-1: switchport port-security yazın', en: 'switch-1: Type switchport port-security' },
     checkType: 'command',
@@ -1325,9 +1288,9 @@ export const cliGuidedLessons: GuidedStep[] = [
   },
   {
     id: 'cli-lesson-6-1b',
-    order: 14.5,
-    title: { tr: 'Ders 14b: Sticky MAC Ekle', en: 'Lesson 14b: Add Sticky MAC' },
-    description: { tr: 'Sticky MAC adresini ekleyin', en: 'Add sticky MAC address' },
+    order: 20,
+    title: { tr: 'Ders 20: Sticky MAC', en: 'Lesson 20: Sticky MAC' },
+    description: { tr: 'MAC adreslerini kalıcı öğrenmeyi açın', en: 'Enable sticky MAC learning' },
     hint: { tr: 'switch-1: switchport port-security mac-address sticky yazın', en: 'switch-1: Type switchport port-security mac-address sticky' },
     checkType: 'command',
     checkParams: { commandPattern: 'mac-address sticky' },
@@ -1335,88 +1298,77 @@ export const cliGuidedLessons: GuidedStep[] = [
     points: 15
   },
   {
-    id: 'cli-lesson-6-2a',
-    order: 15,
-    title: { tr: 'Ders 15a: RSA Anahtarı Oluştur', en: 'Lesson 15a: Generate RSA Key' },
-    description: { tr: 'RSA anahtarı oluşturun', en: 'Generate RSA key' },
-    hint: { tr: 'router-1: crypto key generate rsa yazın', en: 'router-1: Type crypto key generate rsa' },
+    id: 'cli-lesson-8-5a',
+    order: 21,
+    title: { tr: 'Ders 21: DHCP Snooping Aç', en: 'Lesson 21: Enable DHCP Snooping' },
+    description: { tr: 'DHCP Snooping özelliğini etkinleştirin', en: 'Enable DHCP snooping globally' },
+    hint: { tr: 'switch-1: ip dhcp snooping yazın', en: 'switch-1: Type ip dhcp snooping' },
     checkType: 'command',
-    checkParams: { commandPattern: 'crypto key generate rsa' },
+    checkParams: { commandPattern: 'ip dhcp snooping' },
     completed: false,
-    points: 15
+    points: 10
   },
   {
-    id: 'cli-lesson-6-2b',
-    order: 15.5,
-    title: { tr: 'Ders 15b: SSH Versiyonu Ayarla', en: 'Lesson 15b: Set SSH Version' },
-    description: { tr: 'SSH versiyonunu ayarlayın', en: 'Set SSH version' },
-    hint: { tr: 'router-1: ip ssh version 2 yazın', en: 'router-1: Type ip ssh version 2' },
+    id: 'cli-lesson-8-5b',
+    order: 22,
+    title: { tr: 'Ders 22: DHCP Snooping VLAN', en: 'Lesson 22: DHCP Snooping VLAN' },
+    description: { tr: 'VLAN\'lar için DHCP Snooping yapılandırın', en: 'Configure DHCP snooping for VLANs' },
+    hint: { tr: 'switch-1: ip dhcp snooping vlan 1,10,20 yazın', en: 'switch-1: Type ip dhcp snooping vlan 1,10,20' },
     checkType: 'command',
-    checkParams: { commandPattern: 'ip ssh version' },
+    checkParams: { commandPattern: 'ip dhcp snooping vlan' },
     completed: false,
-    points: 15
+    points: 10
+  },
+  // Bölüm 6: İleri Switch Konuları
+  {
+    id: 'cli-lesson-9-2a',
+    order: 23,
+    title: { tr: 'Ders 23: GigabitEthernet Arayüz', en: 'Lesson 23: GigabitEthernet Interface' },
+    description: { tr: 'GigabitEthernet 0/1 arayüzüne girin', en: 'Enter GigabitEthernet 0/1 interface' },
+    hint: { tr: 'switch-1: interface gi0/1 yazın', en: 'switch-1: Type interface gi0/1' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'interface gi0/1' },
+    completed: false,
+    points: 10
   },
   {
-    id: 'cli-lesson-6-3',
-    order: 16,
-    title: { tr: 'Ders 16: Kullanıcı Yönetimi', en: 'Lesson 16: User Management' },
-    description: { tr: 'Yerel kullanıcılar oluşturun', en: 'Create local users' },
-    hint: { tr: 'router-1: username admin privilege 15 secret password yazın', en: 'router-1: Type username admin privilege 15 secret password' },
+    id: 'cli-lesson-9-2b',
+    order: 24,
+    title: { tr: 'Ders 24: EtherChannel', en: 'Lesson 24: EtherChannel' },
+    description: { tr: 'EtherChannel kanal grubu oluşturun', en: 'Create EtherChannel group' },
+    hint: { tr: 'switch-1: channel-group 1 mode active yazın', en: 'switch-1: Type channel-group 1 mode active' },
     checkType: 'command',
-    checkParams: { commandPattern: 'username' },
+    checkParams: { commandPattern: 'channel-group' },
     completed: false,
-    points: 20
-  },
-  // Bölüm 7: Kablosuz
-  {
-    id: 'cli-lesson-7-1',
-    order: 17,
-    title: { tr: 'Ders 17: WLC Konfigürasyonu', en: 'Lesson 17: WLC Configuration' },
-    description: { tr: 'Kablosuz LAN Denetleyicisini yapılandırın', en: 'Configure Wireless LAN Controller' },
-    hint: { tr: 'router-1: conf t yazıp wlan MyNetwork 1 MySSID yazın', en: 'router-1: Type conf t then wlan MyNetwork 1 MySSID' },
-    checkType: 'command',
-    checkParams: { commandPattern: 'wlan' },
-    completed: false,
-    points: 20
+    points: 10
   },
   {
-    id: 'cli-lesson-7-2',
-    order: 18,
-    title: { tr: 'Ders 18: Access Point Konfigürasyonu', en: 'Lesson 18: Access Point Configuration' },
-    description: { tr: 'Access Point\'i yapılandırın', en: 'Configure Access Point' },
-    hint: { tr: 'router-1: conf t yazıp station-role root yazın', en: 'router-1: Type conf t then station-role root' },
+    id: 'cli-lesson-9-3a',
+    order: 25,
+    title: { tr: 'Ders 25: QoS Etkinleştir', en: 'Lesson 25: Enable QoS' },
+    description: { tr: 'QoS özelliğini etkinleştirin', en: 'Enable QoS globally' },
+    hint: { tr: 'switch-1: mls qos yazın', en: 'switch-1: Type mls qos' },
     checkType: 'command',
-    checkParams: { commandPattern: 'station-role|ssid' },
+    checkParams: { commandPattern: 'mls qos' },
     completed: false,
-    points: 20
-  },
-  // Bölüm 8: Hata Ayıklama
-  {
-    id: 'cli-lesson-8-1a',
-    order: 19,
-    title: { tr: 'Ders 19a: Debug Başlat', en: 'Lesson 19a: Start Debug' },
-    description: { tr: 'Debug komutunu kullanın', en: 'Use debug command' },
-    hint: { tr: 'router-1: debug ip packet yazın', en: 'router-1: Type debug ip packet' },
-    checkType: 'command',
-    checkParams: { commandPattern: 'debug' },
-    completed: false,
-    points: 15
+    points: 10
   },
   {
-    id: 'cli-lesson-8-1b',
-    order: 19.5,
-    title: { tr: 'Ders 19b: Debug Kapat', en: 'Lesson 19b: Stop Debug' },
-    description: { tr: 'Undebug komutunu kullanın', en: 'Use undebug command' },
-    hint: { tr: 'router-1: undebug all yazın', en: 'router-1: Type undebug all' },
+    id: 'cli-lesson-9-3b',
+    order: 26,
+    title: { tr: 'Ders 26: QoS Trust', en: 'Lesson 26: QoS Trust' },
+    description: { tr: 'Arayüzde CoS güvenini ayarlayın', en: 'Set CoS trust on interface' },
+    hint: { tr: 'switch-1: mls qos trust cos yazın', en: 'switch-1: Type mls qos trust cos' },
     checkType: 'command',
-    checkParams: { commandPattern: 'undebug' },
+    checkParams: { commandPattern: 'mls qos trust' },
     completed: false,
-    points: 15
+    points: 10
   },
+  // Bölüm 7: Görüntüleme ve Hata Ayıklama (Switch)
   {
     id: 'cli-lesson-8-2a',
-    order: 20,
-    title: { tr: 'Ders 20a: Arayüzleri Göster', en: 'Lesson 20a: Show Interfaces' },
+    order: 27,
+    title: { tr: 'Ders 27: Arayüzleri Göster', en: 'Lesson 27: Show Interfaces' },
     description: { tr: 'show interfaces komutunu kullanın', en: 'Use show interfaces command' },
     hint: { tr: 'switch-1: show interfaces yazın', en: 'switch-1: Type show interfaces' },
     checkType: 'command',
@@ -1425,20 +1377,9 @@ export const cliGuidedLessons: GuidedStep[] = [
     points: 10
   },
   {
-    id: 'cli-lesson-8-2b',
-    order: 20.5,
-    title: { tr: 'Ders 20b: Rotaları Göster', en: 'Lesson 20b: Show Routes' },
-    description: { tr: 'show ip route komutunu kullanın', en: 'Use show ip route command' },
-    hint: { tr: 'router-1: show ip route yazın', en: 'router-1: Type show ip route' },
-    checkType: 'command',
-    checkParams: { commandPattern: 'show ip route' },
-    completed: false,
-    points: 10
-  },
-  {
     id: 'cli-lesson-8-2c',
-    order: 21,
-    title: { tr: 'Ders 20c: VLAN\'ları Göster', en: 'Lesson 20c: Show VLANs' },
+    order: 28,
+    title: { tr: 'Ders 28: VLAN\'ları Göster', en: 'Lesson 28: Show VLANs' },
     description: { tr: 'show vlan komutunu kullanın', en: 'Use show vlan command' },
     hint: { tr: 'switch-1: show vlan yazın', en: 'switch-1: Type show vlan' },
     checkType: 'command',
@@ -1448,8 +1389,8 @@ export const cliGuidedLessons: GuidedStep[] = [
   },
   {
     id: 'cli-lesson-8-3a',
-    order: 22,
-    title: { tr: 'Ders 21a: STP Göster', en: 'Lesson 21a: Show STP' },
+    order: 29,
+    title: { tr: 'Ders 29: STP Göster', en: 'Lesson 29: Show STP' },
     description: { tr: 'show spanning-tree komutunu kullanın', en: 'Use show spanning-tree command' },
     hint: { tr: 'switch-1: show spanning-tree yazın', en: 'switch-1: Type show spanning-tree' },
     checkType: 'command',
@@ -1459,10 +1400,10 @@ export const cliGuidedLessons: GuidedStep[] = [
   },
   {
     id: 'cli-lesson-8-3b',
-    order: 22.5,
-    title: { tr: 'Ders 21b: STP Modu Ayarla', en: 'Lesson 21b: Set STP Mode' },
+    order: 30,
+    title: { tr: 'Ders 30: STP Modu Ayarla', en: 'Lesson 30: Set STP Mode' },
     description: { tr: 'spanning-tree mode komutunu kullanın', en: 'Use spanning-tree mode command' },
-    hint: { tr: 'switch-1: conf t yazıp spanning-tree mode rapid-pvst yazın', en: 'switch-1: Type conf t then spanning-tree mode rapid-pvst' },
+    hint: { tr: 'switch-1: spanning-tree mode rapid-pvst yazın', en: 'switch-1: Type spanning-tree mode rapid-pvst' },
     checkType: 'command',
     checkParams: { commandPattern: 'spanning-tree mode' },
     completed: false,
@@ -1470,8 +1411,8 @@ export const cliGuidedLessons: GuidedStep[] = [
   },
   {
     id: 'cli-lesson-8-4a',
-    order: 23,
-    title: { tr: 'Ders 22a: CDP Komşuları Göster', en: 'Lesson 22a: Show CDP Neighbors' },
+    order: 31,
+    title: { tr: 'Ders 31: CDP Komşuları Göster', en: 'Lesson 31: Show CDP Neighbors' },
     description: { tr: 'show cdp neighbors komutunu kullanın', en: 'Use show cdp neighbors command' },
     hint: { tr: 'switch-1: show cdp neighbors yazın', en: 'switch-1: Type show cdp neighbors' },
     checkType: 'command',
@@ -1481,8 +1422,8 @@ export const cliGuidedLessons: GuidedStep[] = [
   },
   {
     id: 'cli-lesson-8-4b',
-    order: 23.5,
-    title: { tr: 'Ders 22b: CDP Aç', en: 'Lesson 22b: Enable CDP' },
+    order: 32,
+    title: { tr: 'Ders 32: CDP Aç', en: 'Lesson 32: Enable CDP' },
     description: { tr: 'cdp run komutunu kullanın', en: 'Use cdp run command' },
     hint: { tr: 'switch-1: cdp run yazın', en: 'switch-1: Type cdp run' },
     checkType: 'command',
@@ -1491,92 +1432,318 @@ export const cliGuidedLessons: GuidedStep[] = [
     points: 15
   },
   {
-    id: 'cli-lesson-8-5',
-    order: 23,
-    title: { tr: 'Ders 23: DHCP Snooping', en: 'Lesson 23: DHCP Snooping' },
-    description: { tr: 'DHCP Snooping\'i yapılandırın', en: 'Configure DHCP Snooping' },
-    hint: { tr: 'switch-1: conf t yazıp ip dhcp snooping yazın, ardından ip dhcp snooping vlan 1,10,20 yazın', en: 'switch-1: Type conf t then ip dhcp snooping, then ip dhcp snooping vlan 1,10,20' },
+    id: 'cli-lesson-9-5a',
+    order: 33,
+    title: { tr: 'Ders 33: Envanter Göster', en: 'Lesson 33: Show Inventory' },
+    description: { tr: 'show inventory komutunu kullanın', en: 'Use show inventory command' },
+    hint: { tr: 'switch-1: show inventory yazın', en: 'switch-1: Type show inventory' },
     checkType: 'command',
-    checkParams: { commandPattern: 'ip dhcp snooping' },
+    checkParams: { commandPattern: 'show inventory' },
     completed: false,
-    points: 20
-  },
-  // Bölüm 9: İleri Konular
-  {
-    id: 'cli-lesson-9-1',
-    order: 24,
-    title: { tr: 'Ders 24: DHCP Sunucusu', en: 'Lesson 24: DHCP Server' },
-    description: { tr: 'DHCP sunucusunu yapılandırın', en: 'Configure DHCP server' },
-    hint: { tr: 'router-1: conf t yazıp ip dhcp pool LAN yazın, ardından network ve default-router ayarlayın', en: 'router-1: Type conf t then ip dhcp pool LAN, then set network and default-router' },
-    checkType: 'command',
-    checkParams: { commandPattern: 'ip dhcp pool|network|default-router' },
-    completed: false,
-    points: 20
+    points: 10
   },
   {
-    id: 'cli-lesson-9-2',
-    order: 25,
-    title: { tr: 'Ders 25: EtherChannel', en: 'Lesson 25: EtherChannel' },
-    description: { tr: 'EtherChannel\'ı yapılandırın', en: 'Configure EtherChannel' },
-    hint: { tr: 'switch-1: conf t yazıp int gi0/1 yazıp channel-group 1 mode active yazın', en: 'switch-1: Type conf t then int gi0/1 then channel-group 1 mode active' },
+    id: 'cli-lesson-9-5b',
+    order: 34,
+    title: { tr: 'Ders 34: Ortam Göster', en: 'Lesson 34: Show Environment' },
+    description: { tr: 'show environment komutunu kullanın', en: 'Use show environment command' },
+    hint: { tr: 'switch-1: show environment yazın', en: 'switch-1: Type show environment' },
     checkType: 'command',
-    checkParams: { commandPattern: 'channel-group' },
+    checkParams: { commandPattern: 'show environment' },
     completed: false,
-    points: 20
+    points: 10
   },
   {
-    id: 'cli-lesson-9-3',
-    order: 26,
-    title: { tr: 'Ders 26: QoS Konfigürasyonu', en: 'Lesson 26: QoS Configuration' },
-    description: { tr: 'QoS\'u yapılandırın', en: 'Configure QoS' },
-    hint: { tr: 'switch-1: conf t yazıp mls qos yazın, ardından int gi0/1 yazıp mls qos trust cos yazın', en: 'switch-1: Type conf t then mls qos, then int gi0/1 then mls qos trust cos' },
+    id: 'cli-lesson-9-5c',
+    order: 35,
+    title: { tr: 'Ders 35: Bellek Göster', en: 'Lesson 35: Show Memory' },
+    description: { tr: 'show memory komutunu kullanın', en: 'Use show memory command' },
+    hint: { tr: 'switch-1: show memory yazın', en: 'switch-1: Type show memory' },
     checkType: 'command',
-    checkParams: { commandPattern: 'mls qos' },
+    checkParams: { commandPattern: 'show memory' },
     completed: false,
-    points: 20
+    points: 10
+  },
+  // ===== PC İŞLEMİ (36) =====
+  {
+    id: 'cli-lesson-1-2',
+    order: 36,
+    title: { tr: 'Ders 36: Ping Komutu', en: 'Lesson 36: Ping Command' },
+    description: { tr: 'Ping komutu ile ağ bağlantısını test edin', en: 'Test network connectivity with ping command' },
+    hint: { tr: 'pc-1: ping 192.168.1.2 yazın', en: 'pc-1: Type ping 192.168.1.2' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'ping' },
+    completed: false,
+    points: 15
+  },
+  // ===== TÜM ROUTER İŞLEMLERİ (37-61) =====
+  // Bölüm 8: Yönlendirme (Router)
+  {
+    id: 'cli-lesson-5-1',
+    order: 37,
+    title: { tr: 'Ders 37: Statik Yönlendirme', en: 'Lesson 37: Static Routing' },
+    description: { tr: 'Statik rota ekleyin', en: 'Add static route' },
+    hint: { tr: 'router-1: ip route 192.168.2.0 255.255.255.0 192.168.1.2 yazın', en: 'router-1: Type ip route 192.168.2.0 255.255.255.0 192.168.1.2' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'ip route' },
+    completed: false,
+    points: 15
   },
   {
-    id: 'cli-lesson-9-4',
-    order: 27,
-    title: { tr: 'Ders 27: IPv6 Konfigürasyonu', en: 'Lesson 27: IPv6 Configuration' },
-    description: { tr: 'IPv6\'yı yapılandırın', en: 'Configure IPv6' },
-    hint: { tr: 'router-1: conf t yazıp ipv6 unicast-routing yazın, ardından int gi0/0 yazıp ipv6 address 2001::1/64 yazın', en: 'router-1: Type conf t then ipv6 unicast-routing, then int gi0/0 then ipv6 address 2001::1/64' },
+    id: 'cli-lesson-5-2a',
+    order: 38,
+    title: { tr: 'Ders 38: RIP Başlat', en: 'Lesson 38: Start RIP' },
+    description: { tr: 'RIP yönlendirme protokolünü başlatın', en: 'Start RIP routing protocol' },
+    hint: { tr: 'router-1: router rip yazın', en: 'router-1: Type router rip' },
     checkType: 'command',
-    checkParams: { commandPattern: 'ipv6' },
+    checkParams: { commandPattern: 'router rip' },
     completed: false,
-    points: 20
+    points: 10
   },
   {
-    id: 'cli-lesson-9-5',
-    order: 28,
-    title: { tr: 'Ders 28: Sistem Yönetimi', en: 'Lesson 28: System Management' },
-    description: { tr: 'Sistem yönetimi komutlarını kullanın', en: 'Use system management commands' },
-    hint: { tr: 'switch-1: show inventory, show environment, show memory yazın', en: 'switch-1: Type show inventory, show environment, show memory' },
+    id: 'cli-lesson-5-2b',
+    order: 39,
+    title: { tr: 'Ders 39: Ağ Ekle', en: 'Lesson 39: Add Network' },
+    description: { tr: 'RIP\'e ağ adresini ekleyin', en: 'Add network address to RIP' },
+    hint: { tr: 'router-1: network 192.168.1.0 yazın', en: 'router-1: Type network 192.168.1.0' },
     checkType: 'command',
-    checkParams: { commandPattern: 'show inventory|show environment|show memory' },
+    checkParams: { commandPattern: 'network 192.168.1.0' },
     completed: false,
-    points: 20
+    points: 10
+  },
+  {
+    id: 'cli-lesson-5-3a',
+    order: 40,
+    title: { tr: 'Ders 40: OSPF Başlat', en: 'Lesson 40: Start OSPF' },
+    description: { tr: 'OSPF yönlendirme protokolünü başlatın', en: 'Start OSPF routing protocol' },
+    hint: { tr: 'router-1: router ospf 1 yazın', en: 'router-1: Type router ospf 1' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'router ospf' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'cli-lesson-5-3b',
+    order: 41,
+    title: { tr: 'Ders 41: Router ID', en: 'Lesson 41: Router ID' },
+    description: { tr: 'OSPF Router ID\'yi ayarlayın', en: 'Set OSPF router ID' },
+    hint: { tr: 'router-1: router-id 1.1.1.1 yazın', en: 'router-1: Type router-id 1.1.1.1' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'router-id' },
+    completed: false,
+    points: 10
+  },
+  // Bölüm 9: Güvenlik (Router)
+  {
+    id: 'cli-lesson-6-2a',
+    order: 42,
+    title: { tr: 'Ders 42: RSA Anahtarı', en: 'Lesson 42: RSA Key' },
+    description: { tr: 'RSA anahtarı oluşturun', en: 'Generate RSA key' },
+    hint: { tr: 'router-1: crypto key generate rsa yazın', en: 'router-1: Type crypto key generate rsa' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'crypto key generate rsa' },
+    completed: false,
+    points: 15
+  },
+  {
+    id: 'cli-lesson-6-2b',
+    order: 43,
+    title: { tr: 'Ders 43: SSH Versiyonu', en: 'Lesson 43: SSH Version' },
+    description: { tr: 'SSH versiyon 2\'yi ayarlayın', en: 'Set SSH version 2' },
+    hint: { tr: 'router-1: ip ssh version 2 yazın', en: 'router-1: Type ip ssh version 2' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'ip ssh version 2' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'cli-lesson-6-3',
+    order: 44,
+    title: { tr: 'Ders 44: Kullanıcı Yönetimi', en: 'Lesson 44: User Management' },
+    description: { tr: 'Yerel kullanıcı oluşturun', en: 'Create local user' },
+    hint: { tr: 'router-1: username admin privilege 15 secret password yazın', en: 'router-1: Type username admin privilege 15 secret password' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'username' },
+    completed: false,
+    points: 15
+  },
+  // Bölüm 10: Kablosuz (Router)
+  {
+    id: 'cli-lesson-7-1',
+    order: 45,
+    title: { tr: 'Ders 45: WLAN Oluştur', en: 'Lesson 45: Create WLAN' },
+    description: { tr: 'Kablosuz ağ oluşturun', en: 'Create a wireless network' },
+    hint: { tr: 'router-1: wlan MyNetwork 1 MySSID yazın', en: 'router-1: Type wlan MyNetwork 1 MySSID' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'wlan' },
+    completed: false,
+    points: 15
+  },
+  {
+    id: 'cli-lesson-7-2a',
+    order: 46,
+    title: { tr: 'Ders 46: Station Role', en: 'Lesson 46: Station Role' },
+    description: { tr: 'Access Point rolünü ayarlayın', en: 'Set access point role' },
+    hint: { tr: 'router-1: station-role root yazın', en: 'router-1: Type station-role root' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'station-role' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'cli-lesson-7-2b',
+    order: 47,
+    title: { tr: 'Ders 47: SSID Ayarla', en: 'Lesson 47: Set SSID' },
+    description: { tr: 'Kablosuz ağ SSID\'sini ayarlayın', en: 'Set wireless network SSID' },
+    hint: { tr: 'router-1: ssid MySSID yazın', en: 'router-1: Type ssid MySSID' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'ssid' },
+    completed: false,
+    points: 10
+  },
+  // Bölüm 11: Hata Ayıklama (Router)
+  {
+    id: 'cli-lesson-8-1a',
+    order: 48,
+    title: { tr: 'Ders 48: Debug Başlat', en: 'Lesson 48: Start Debug' },
+    description: { tr: 'Debug komutunu kullanın', en: 'Use debug command' },
+    hint: { tr: 'router-1: debug ip packet yazın', en: 'router-1: Type debug ip packet' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'debug ip packet' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'cli-lesson-8-1b',
+    order: 49,
+    title: { tr: 'Ders 49: Debug Kapat', en: 'Lesson 49: Stop Debug' },
+    description: { tr: 'Undebug komutunu kullanın', en: 'Use undebug command' },
+    hint: { tr: 'router-1: undebug all yazın', en: 'router-1: Type undebug all' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'undebug all' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'cli-lesson-8-2b',
+    order: 50,
+    title: { tr: 'Ders 50: Rotaları Göster', en: 'Lesson 50: Show Routes' },
+    description: { tr: 'show ip route komutunu kullanın', en: 'Use show ip route command' },
+    hint: { tr: 'router-1: show ip route yazın', en: 'router-1: Type show ip route' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'show ip route' },
+    completed: false,
+    points: 10
+  },
+  // Bölüm 12: İleri Router Konuları
+  {
+    id: 'cli-lesson-9-1a',
+    order: 51,
+    title: { tr: 'Ders 51: DHCP Havuzu Oluştur', en: 'Lesson 51: Create DHCP Pool' },
+    description: { tr: 'DHCP havuzu oluşturun', en: 'Create a DHCP pool' },
+    hint: { tr: 'router-1: ip dhcp pool LAN yazın', en: 'router-1: Type ip dhcp pool LAN' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'ip dhcp pool LAN' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'cli-lesson-9-1b',
+    order: 52,
+    title: { tr: 'Ders 52: DHCP Ağı', en: 'Lesson 52: DHCP Network' },
+    description: { tr: 'DHCP havuzu için ağ tanımlayın', en: 'Define network for DHCP pool' },
+    hint: { tr: 'router-1: network 192.168.1.0 255.255.255.0 yazın', en: 'router-1: Type network 192.168.1.0 255.255.255.0' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'network 192.168.1.0' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'cli-lesson-9-1c',
+    order: 53,
+    title: { tr: 'Ders 53: DHCP Varsayılan Ağ Geçidi', en: 'Lesson 53: DHCP Default Gateway' },
+    description: { tr: 'DHCP havuzu için varsayılan ağ geçidini ayarlayın', en: 'Set default gateway for DHCP pool' },
+    hint: { tr: 'router-1: default-router 192.168.1.1 yazın', en: 'router-1: Type default-router 192.168.1.1' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'default-router 192.168.1.1' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'cli-lesson-9-4a',
+    order: 54,
+    title: { tr: 'Ders 54: IPv6 Yönlendirme', en: 'Lesson 54: IPv6 Routing' },
+    description: { tr: 'IPv6 yönlendirmeyi etkinleştirin', en: 'Enable IPv6 routing' },
+    hint: { tr: 'router-1: ipv6 unicast-routing yazın', en: 'router-1: Type ipv6 unicast-routing' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'ipv6 unicast-routing' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'cli-lesson-9-4b',
+    order: 55,
+    title: { tr: 'Ders 55: IPv6 Arayüz Adresi', en: 'Lesson 55: IPv6 Interface Address' },
+    description: { tr: 'Arayüze IPv6 adresi atayın', en: 'Assign IPv6 address to interface' },
+    hint: { tr: 'router-1: ipv6 address 2001::1/64 yazın', en: 'router-1: Type ipv6 address 2001::1/64' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'ipv6 address' },
+    completed: false,
+    points: 10
   },
   {
     id: 'cli-lesson-9-6',
-    order: 29,
-    title: { tr: 'Ders 29: Komut Takma Adları', en: 'Lesson 29: Command Aliases' },
-    description: { tr: 'Komut takma adları oluşturun', en: 'Create command aliases' },
-    hint: { tr: 'router-1: conf t yazıp alias exec si show interfaces yazın', en: 'router-1: Type conf t then alias exec si show interfaces' },
+    order: 56,
+    title: { tr: 'Ders 56: Komut Takma Adı', en: 'Lesson 56: Command Alias' },
+    description: { tr: 'Komut takma adı oluşturun', en: 'Create command alias' },
+    hint: { tr: 'router-1: alias exec si show interfaces yazın', en: 'router-1: Type alias exec si show interfaces' },
     checkType: 'command',
-    checkParams: { commandPattern: 'alias' },
+    checkParams: { commandPattern: 'alias exec' },
     completed: false,
-    points: 20
+    points: 15
   },
   {
-    id: 'cli-lesson-9-7',
-    order: 30,
-    title: { tr: 'Ders 30: Erişim Kontrol Listeleri (ACL)', en: 'Lesson 30: Access Control Lists (ACL)' },
-    description: { tr: 'Standart ACL oluşturun ve arayüze uygulayın', en: 'Create standard ACL and apply to interface' },
-    hint: { tr: 'router-1: conf t yazıp access-list 1 deny host 192.168.1.10 yazın, ardından access-list 1 permit any yazın, sonra int gi0/0 yazıp ip access-group 1 out yazın', en: 'router-1: Type conf t then access-list 1 deny host 192.168.1.10, then access-list 1 permit any, then int gi0/0 then ip access-group 1 out' },
+    id: 'cli-lesson-9-7a',
+    order: 57,
+    title: { tr: 'Ders 57: ACL Reddet', en: 'Lesson 57: ACL Deny' },
+    description: { tr: 'Standart ACL ile bir hostu reddedin', en: 'Deny a host with standard ACL' },
+    hint: { tr: 'router-1: access-list 1 deny host 192.168.1.10 yazın', en: 'router-1: Type access-list 1 deny host 192.168.1.10' },
     checkType: 'command',
-    checkParams: { commandPattern: 'access-list|ip access-group' },
+    checkParams: { commandPattern: 'access-list 1 deny' },
     completed: false,
-    points: 20
+    points: 10
+  },
+  {
+    id: 'cli-lesson-9-7b',
+    order: 58,
+    title: { tr: 'Ders 58: ACL İzin Ver', en: 'Lesson 58: ACL Permit' },
+    description: { tr: 'ACL ile tüm trafiğe izin verin', en: 'Permit all traffic with ACL' },
+    hint: { tr: 'router-1: access-list 1 permit any yazın', en: 'router-1: Type access-list 1 permit any' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'access-list 1 permit' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'cli-lesson-9-7c',
+    order: 59,
+    title: { tr: 'Ders 59: Arayüz Seçimi', en: 'Lesson 59: Interface Selection' },
+    description: { tr: 'GigabitEthernet 0/0 arayüzüne girin', en: 'Enter GigabitEthernet 0/0 interface' },
+    hint: { tr: 'router-1: interface gi0/0 yazın', en: 'router-1: Type interface gi0/0' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'interface gi0/0' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'cli-lesson-9-7d',
+    order: 60,
+    title: { tr: 'Ders 60: ACL Uygula', en: 'Lesson 60: Apply ACL' },
+    description: { tr: 'ACL\'yi arayüze uygulayın', en: 'Apply ACL to interface' },
+    hint: { tr: 'router-1: ip access-group 1 out yazın', en: 'router-1: Type ip access-group 1 out' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'ip access-group 1' },
+    completed: false,
+    points: 10
   }
 ];

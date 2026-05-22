@@ -3,7 +3,7 @@
 ![Version](https://img.shields.io/badge/version-1.6.5-blue)
 ![Stack](https://img.shields.io/badge/stack-Next.js%2016.2%20|%20React%2019%20|%20TypeScript%206.0%20|%20Tailwind%204-green)
 ![FOSS](https://img.shields.io/badge/FOSS-Free%20Open%20Source-brightgreen)
-![Total Lines](https://img.shields.io/badge/total--lines-101787-lightgrey)
+![Total Lines](https://img.shields.io/badge/total--lines-97689-lightgrey)
 
 A browser-based network simulator for learning switching, routing, wireless, IoT, CLI, and exam workflows. TR/EN interface support.
 
@@ -124,13 +124,13 @@ npm install && npm run dev
 
 | Metric / Metrik | Value / Değer |
 | --- | ---: |
-| Total Lines / Toplam Satır | 101,787 |
-| Source Code Lines / Kaynak Kod Satırı | 96,618 |
+| Total Lines / Toplam Satır | 97,689 |
+| Source Code Lines / Kaynak Kod Satırı | 92,520 |
 | Documentation Lines / Dokümantasyon Satırı | 5,169 |
 | Source Files / Kaynak Dosya | 262 |
 | Documentation Files / Dokümantasyon Dosya | 14 |
 | Example Projects / Örnek Proje | 39 |
-| Guided Lessons / Rehberli Ders | 8 |
+| Guided Lessons / Rehberli Ders | 9 |
 | Exams / Sınav | 3 |
 | CLI Command Families / CLI Komut Ailesi | 180+ |
 
@@ -145,13 +145,6 @@ npm install && npm run dev
 | [doc/CLI_COMMANDS.md](doc/CLI_COMMANDS.md) | CLI commands reference / CLI komut referansı |
 | [doc/QUICK_REFERENCE.md](doc/QUICK_REFERENCE.md) | Quick reference & code snippets / Hızlı referans & kod parçacıkları |
 | [doc/GOOGLE_SHEETS_SETUP.md](doc/GOOGLE_SHEETS_SETUP.md) | Google Sheets integration / Google Sheets entegrasyonu |
-| [doc/L3_SWITCH_CONFIGURATION.md](doc/L3_SWITCH_CONFIGURATION.md) | L3 switch configuration guide / L3 anahtar yapılandırma kılavuzu |
-| [doc/ERROR_HANDLING_GUIDE.md](doc/ERROR_HANDLING_GUIDE.md) | Error handling reference / Hata yönetimi referansı |
-| [doc/INTEGRATION_GUIDE.md](doc/INTEGRATION_GUIDE.md) | API integration guide / API entegrasyon kılavuzu |
-| [doc/WIRELESS_CONFIGURATION_GUIDE.md](doc/WIRELESS_CONFIGURATION_GUIDE.md) | Wireless configuration guide / Kablosuz yapılandırma kılavuzu |
-| [doc/WIRELESS_FEATURE_SUMMARY.md](doc/WIRELESS_FEATURE_SUMMARY.md) | Wireless features overview / Kablosuz özellikleri özeti |
-| [doc/WIRELESS_IMPLEMENTATION_SUMMARY.md](doc/WIRELESS_IMPLEMENTATION_SUMMARY.md) | Wireless implementation details / Kablosuz uygulama detayları |
-| [doc/WIRELESS_README.md](doc/WIRELESS_README.md) | Wireless module documentation / Kablosuz modülü belgelendirmesi |
 
 ## Architecture / Mimari
 
