@@ -1,6 +1,7 @@
 import { IOS_ERRORS, iosModeError } from './iosErrors';
 import type { CommandHandler } from './commandTypes';
 import { ensureDeviceStatesMap } from '../networkUtils';
+import { isRouterModel } from '../switchModels';
 import { buildRunningConfig } from './configBuilder';
 
 // Show komutları (show running-config, show vlan, show ip route, vs.)
@@ -137,7 +138,7 @@ function getSTPCost(port: any): number {
 function getSwitchDisplayProfile(state: any) {
   const switchModel = state.switchModel || 'WS-C2960-24TT-L';
   const modelName = state.version?.modelName || '';
-  const isRouter = modelName.includes('ISR') || modelName.includes('4451') || modelName.includes('1900');
+  const isRouter = isRouterModel(modelName) || isRouterModel(switchModel);
   const isL3 = switchModel === 'WS-C3650-24PS' || (isRouter && !switchModel.includes('2960'));
   const isFirewall = state.deviceType === 'firewall' || state.switchLayer === 'FW' || modelName.includes('ASA') || modelName.includes('Firepower');
 
@@ -920,7 +921,7 @@ function cmdShowIpInterfaceBrief(
 
   let output = '\nInterface              IP-Address      OK? Method Status                Protocol \n';
   const modelName = String(state?.version?.modelName || '');
-  const isRouter = modelName.includes('ISR') || modelName.includes('4451') || modelName.includes('1900') || state?.deviceType === 'router';
+  const isRouter = isRouterModel(modelName) || isRouterModel(state?.switchModel) || state?.deviceType === 'router';
   const toDisplayName = (portName: string) => {
     if (!isRouter) return portName;
     const p = String(portName);

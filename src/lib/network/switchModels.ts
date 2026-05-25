@@ -77,17 +77,25 @@ export function getSwitchInfo(model: SwitchModel | string | undefined): SwitchMo
 
 export function isLayer2Switch(model: SwitchModel | string | undefined): boolean {
     if (!model) return false;
+    // Routers are not L2 switches
+    if (isRouterModel(model)) return false;
     return getSwitchLayer(model as SwitchModel) === 'L2';
 }
 
 export function isLayer3Switch(model: SwitchModel | string | undefined): boolean {
     if (!model) return false;
-    return getSwitchLayer(model as SwitchModel) === 'L3';
+    return getSwitchLayer(model as SwitchModel) === 'L3' || isRouterModel(model);
+}
+
+export function isRouterModel(model: string | undefined): boolean {
+    if (!model) return false;
+    const m = model.toUpperCase();
+    return m.includes('ISR') || m.includes('4451') || m.includes('1900') || m.includes('ASR') || m.includes('7200');
 }
 
 export function canAssignIPToPhysicalPort(model: SwitchModel | string | undefined): boolean {
     if (!model) return true; // Default to allowing IP assignment if model is unknown (for routers)
-    return isLayer3Switch(model) || model === 'ASA-5506-X';
+    return isLayer3Switch(model) || model === 'ASA-5506-X' || isRouterModel(model);
 }
 
 export function getAvailableSwitchModels(): SwitchModel[] {

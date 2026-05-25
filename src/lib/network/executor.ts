@@ -4,6 +4,7 @@ import { checkConnectivity } from './connectivity';
 import { addStaticRoute, removeStaticRoute, getRoutingTable } from './routing';
 import { parseCommand, validateCommand, getHelpContent, commandPatterns, getLevenshteinDistance, expandKeywordPrefixes, resolveAliases } from './parser';
 import { getDeviceCapabilities } from './capabilities';
+import { isRouterModel } from './switchModels';
 import { getModePrompt } from './initialState';
 import { isValidMAC, normalizeMAC } from '../utils';
 import { ensureDeviceStatesMap } from './networkUtils';
@@ -1228,7 +1229,7 @@ function handleConsoleConnect(state: SwitchState, language: 'tr' | 'en'): Comman
   let output = '';
 
   // Calculate interface counts for boot message (Reported counts as per user request)
-  const isRouter = state.version.modelName.includes('1900') || state.version.modelName.includes('C1900') || state.version.modelName.includes('ISR 4451 X');
+  const isRouter = isRouterModel(state.version.modelName) || isRouterModel(state.switchModel);
   const isL3Switch = state.version.modelName.includes('3650');
   const isFirewall = state.deviceType === 'firewall' || state.switchLayer === 'FW' || state.version.modelName.includes('ASA') || state.version.modelName.includes('Firepower');
 
@@ -1427,7 +1428,7 @@ function handleTelnetConnect(state: SwitchState, language: 'tr' | 'en'): Command
   let output = '';
 
   // Calculate interface counts for boot message (Reported counts as per user request)
-  const isRouter = state.version.modelName.includes('1900') || state.version.modelName.includes('C1900') || state.version.modelName.includes('ISR 4451 X');
+  const isRouter = isRouterModel(state.version.modelName) || isRouterModel(state.switchModel);
   const isL3Switch = state.version.modelName.includes('3650');
   const isFirewall = state.deviceType === 'firewall' || state.switchLayer === 'FW' || state.version.modelName.includes('ASA') || state.version.modelName.includes('Firepower');
 
@@ -1513,6 +1514,14 @@ Copyright (c) 1996-2026 by Network Systems, Inc.
 C2960 platform with 65536 K bytes of memory
 
 ${syslog}
+Load/bootstrap symbols loaded
+Reading all bootflash vectors
+POST: CPU Ethernet port Check PASS
+CPU memory test . . . . . . . . . . . . . OK
+Board initialization completed
+Initializing flash file system
+
+Booting flash:l2switch-software.bin...OK!
 Extracting files from flash:l2switch-software.bin...
   ########## [OK]
   0 bytes remaining in flash device
@@ -1524,6 +1533,14 @@ Copyright (c) 1996-2026 by Network Systems, Inc.
 C2960 platform with 65536 K bytes of memory
 
 ${syslog}
+Load/bootstrap symbols loaded
+Reading all bootflash vectors
+POST: CPU Ethernet port Check PASS
+CPU memory test . . . . . . . . . . . . . OK
+Board initialization completed
+Initializing flash file system
+
+Booting flash:l2switch-software.bin...OK!
 Extracting files from flash:l2switch-software.bin...
   ########## [OK]
   0 bytes remaining in flash device
@@ -1817,6 +1834,3 @@ const commandHandlers: Record<string, CommandHandler> = {
     return { success: false, error: iosModeError() };
   }
 };
-
-
-

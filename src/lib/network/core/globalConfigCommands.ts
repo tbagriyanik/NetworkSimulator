@@ -164,9 +164,10 @@ function cmdIpRouting(state: any, input: string, ctx: any): any {
   const currentDevice = ctx.devices?.find((d: any) => d.id === ctx.sourceDeviceId);
   const capabilities = getDeviceCapabilities(currentDevice || null, state.switchModel);
   if (!capabilities.routing) {
+    const deviceLabel = state.deviceType === 'router' ? 'router' : (isLayer3Switch(state.switchModel) ? 'Layer 3 switch' : 'Layer 2 switch');
     return {
       success: false,
-      error: `% Invalid command. Layer 2 switch (${state.switchModel}) does not support IP routing.\nIP routing is only supported on routers and Layer 3 switches.`
+      error: `% Invalid command. ${deviceLabel} (${state.switchModel}) does not support IP routing.\nIP routing is only supported on routers and Layer 3 switches.`
     };
   }
 
@@ -197,9 +198,10 @@ function cmdIpRoute(state: any, input: string, ctx: any): any {
   const currentDevice = ctx.devices?.find((d: any) => d.id === ctx.sourceDeviceId);
   const capabilities = getDeviceCapabilities(currentDevice || null, state.switchModel);
   if (!capabilities.routing) {
+    const deviceLabel = state.deviceType === 'router' ? 'router' : (isLayer3Switch(state.switchModel) ? 'Layer 3 switch' : 'Layer 2 switch');
     return {
       success: false,
-      error: `% Invalid command. Layer 2 switch (${state.switchModel}) does not support static routing.\nStatic routing is only supported on routers and Layer 3 switches.`
+      error: `% Invalid command. ${deviceLabel} (${state.switchModel}) does not support static routing.\nStatic routing is only supported on routers and Layer 3 switches.`
     };
   }
 
@@ -270,10 +272,11 @@ function cmdRouterEigrp(state: any, input: string, ctx: any): any {
     return { success: false, error: iosModeError() };
   }
 
+  const deviceLabel = state.deviceType === 'router' ? 'router' : (isLayer3Switch(state.switchModel) ? 'Layer 3 switch' : 'Layer 2 switch');
   if (state.deviceType !== 'router' && !canAssignIPToPhysicalPort(state.switchModel)) {
     return {
       success: false,
-      error: `% Invalid command. Layer 2 switch (${state.switchModel}) does not support routing protocols.`
+      error: `% Invalid command. ${deviceLabel} (${state.switchModel}) does not support routing protocols.`
     };
   }
 
@@ -325,10 +328,11 @@ function cmdRouterBgp(state: any, input: string, ctx: any): any {
     return { success: false, error: iosModeError() };
   }
 
+  const deviceLabel = state.deviceType === 'router' ? 'router' : (isLayer3Switch(state.switchModel) ? 'Layer 3 switch' : 'Layer 2 switch');
   if (!canAssignIPToPhysicalPort(state.switchModel)) {
     return {
       success: false,
-      error: `% Invalid command. Layer 2 switch (${state.switchModel}) does not support routing protocols.`
+      error: `% Invalid command. ${deviceLabel} (${state.switchModel}) does not support routing protocols.`
     };
   }
 
@@ -384,9 +388,10 @@ function cmdNoIpRoute(state: any, input: string, ctx: any): any {
   const currentDevice = ctx.devices?.find((d: any) => d.id === ctx.sourceDeviceId);
   const capabilities = getDeviceCapabilities(currentDevice || null, state.switchModel);
   if (!capabilities.routing) {
+    const deviceLabel = state.deviceType === 'router' ? 'router' : (isLayer3Switch(state.switchModel) ? 'Layer 3 switch' : 'Layer 2 switch');
     return {
       success: false,
-      error: `% Invalid command. Layer 2 switch (${state.switchModel}) does not support static routing.\nStatic routing is only supported on routers and Layer 3 switches.`
+      error: `% Invalid command. ${deviceLabel} (${state.switchModel}) does not support static routing.\nStatic routing is only supported on routers and Layer 3 switches.`
     };
   }
 
@@ -1123,9 +1128,10 @@ function cmdRouterRip(state: any, input: string, ctx: any): any {
 
   // Check if device supports routing (routers and L3 switches only)
   if (state.deviceType !== 'router' && !canAssignIPToPhysicalPort(state.switchModel)) {
+    const deviceLabel = state.deviceType === 'router' ? 'router' : (isLayer3Switch(state.switchModel) ? 'Layer 3 switch' : 'Layer 2 switch');
     return {
       success: false,
-      error: `% Invalid command. Layer 2 switch (${state.switchModel}) does not support routing protocols.\nRouting protocols are only supported on Layer 3 switches.`
+      error: `% Invalid command. ${deviceLabel} (${state.switchModel}) does not support routing protocols.\nRouting protocols are only supported on Layer 3 switches.`
     };
   }
 
@@ -1153,9 +1159,10 @@ function cmdRouterOspf(state: any, input: string, ctx: any): any {
 
   // Check if device supports routing (routers and L3 switches only)
   if (state.deviceType !== 'router' && !canAssignIPToPhysicalPort(state.switchModel)) {
+    const deviceLabel = state.deviceType === 'router' ? 'router' : (isLayer3Switch(state.switchModel) ? 'Layer 3 switch' : 'Layer 2 switch');
     return {
       success: false,
-      error: `% Invalid command. Layer 2 switch (${state.switchModel}) does not support routing protocols.\nRouting protocols are only supported on Layer 3 switches.`
+      error: `% Invalid command. ${deviceLabel} (${state.switchModel}) does not support routing protocols.\nRouting protocols are only supported on Layer 3 switches.`
     };
   }
 

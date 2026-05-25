@@ -3,7 +3,7 @@
  * Implements proper L3 switch behavior 
  */
 
-import { isLayer3Switch, isLayer2Switch } from '../switchModels';
+import { isLayer3Switch, isLayer2Switch, isRouterModel } from '../switchModels';
 
 /**
  * Validates that a device supports routed ports (no switchport)
@@ -18,7 +18,7 @@ export function validateNoSwitchportSupport(
 } {
     // If model is missing, allow known L3 device types and block others with IOS-like error.
     if (!switchModel) {
-        if (deviceType === 'switchL3') {
+        if (deviceType === 'switchL3' || deviceType === 'router') {
             return { valid: true };
         }
         return {
@@ -28,10 +28,10 @@ export function validateNoSwitchportSupport(
     }
 
     if (!isLayer3Switch(switchModel)) {
-        const layer = isLayer2Switch(switchModel) ? 'Layer 2' : 'unknown';
+        const layer = isLayer2Switch(switchModel) ? 'Layer 2 switch' : 'device';
         return {
             valid: false,
-            error: `% Invalid command. ${layer} switch (${switchModel}) does not support routed ports.\n'no switchport' is only available on Layer 3 switches.`
+            error: `% Invalid command. ${layer} (${switchModel}) does not support routed ports.\n'no switchport' is only available on Layer 3 switches.`
         };
     }
 
@@ -51,14 +51,17 @@ export function validateIpRoutingSupport(
     requiresReload?: boolean;
 } {
     if (!switchModel) {
+        if (currentState?.deviceType === 'router') {
+            return { valid: true };
+        }
         return { valid: false, error: 'Switch model not specified' };
     }
 
     if (!isLayer3Switch(switchModel)) {
-        const layer = isLayer2Switch(switchModel) ? 'Layer 2' : 'unknown';
+        const layer = isLayer2Switch(switchModel) ? 'Layer 2 switch' : 'device';
         return {
             valid: false,
-            error: `% Invalid command. ${layer} switch (${switchModel}) does not support IP routing.\nIP routing is only supported on routers and Layer 3 switches.`
+            error: `% Invalid command. ${layer} (${switchModel}) does not support IP routing.\nIP routing is only supported on routers and Layer 3 switches.`
         };
     }
 
