@@ -16,6 +16,11 @@ export function validateNoSwitchportSupport(
     valid: boolean;
     error?: string;
 } {
+    // Routers always support routed ports (no switchport is redundant but valid or might be used to convert back)
+    if (deviceType === 'router') {
+        return { valid: true };
+    }
+
     // If model is missing, allow known L3 device types and block others with IOS-like error.
     if (!switchModel) {
         if (deviceType === 'switchL3') {
@@ -50,6 +55,11 @@ export function validateIpRoutingSupport(
     error?: string;
     requiresReload?: boolean;
 } {
+    // Routers always support IP routing
+    if (currentState?.deviceType === 'router') {
+        return { valid: true };
+    }
+
     if (!switchModel) {
         return { valid: false, error: 'Switch model not specified' };
     }
@@ -225,6 +235,7 @@ export function validateL3SwitchPrerequisites(state: any): {
     valid: boolean;
     prerequisites: {
         isL3Switch: boolean;
+        isRouter: boolean;
         ipRoutingEnabled: boolean;
         sdmPreferConfigured: boolean;
         hasActivePorts: boolean;
@@ -233,13 +244,15 @@ export function validateL3SwitchPrerequisites(state: any): {
 } {
     const errors: string[] = [];
 
-    const isL3 = isLayer3Switch(state.switchModel);
+    const isRouter = state.deviceType === 'router';
+    const isL3 = isLayer3Switch(state.switchModel) || isRouter;
+
     if (!isL3) {
-        errors.push(`Device is ${isLayer2Switch(state.switchModel) ? 'Layer 2' : 'unknown'} switch, not L3`);
+        errors.push(`Device is ${isLayer2Switch(state.switchModel) ? 'Layer 2' : 'unknown'} switch, not L3/Router`);
     }
 
     const ipRoutingEnabled = !!state.ipRouting;
-    if (!ipRoutingEnabled && isL3) {
+    if (!ipRoutingEnabled && isL3 && !isRouter) {
         errors.push('IP routing is not enabled - use: ip routing');
     }
 
@@ -255,7 +268,8 @@ export function validateL3SwitchPrerequisites(state: any): {
     return {
         valid: errors.length === 0,
         prerequisites: {
-            isL3Switch: isL3,
+            isL3Switch: isL3 && !isRouter,
+            isRouter,
             ipRoutingEnabled,
             sdmPreferConfigured: sdmConfigured,
             hasActivePorts

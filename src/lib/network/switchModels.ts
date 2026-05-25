@@ -61,11 +61,21 @@ export const SWITCH_MODELS: Record<SwitchModel, SwitchModelInfo> = {
 };
 
 export function getSwitchLayer(model: SwitchModel | string | undefined): SwitchLayer {
-    if (!model || !SWITCH_MODELS[model as SwitchModel]) {
-        // Default to L2 for unknown models
-        return 'L2';
+    if (!model) return 'L2';
+
+    // Check known switch models first
+    if (SWITCH_MODELS[model as SwitchModel]) {
+        return SWITCH_MODELS[model as SwitchModel].layer;
     }
-    return SWITCH_MODELS[model as SwitchModel].layer;
+
+    // Check for router models - typically contain ISR, 4451, 1900, 2901 etc.
+    const upperModel = model.toUpperCase();
+    if (upperModel.includes('ISR') || upperModel.includes('4451') || upperModel.includes('1900') || upperModel.includes('2901') || upperModel.includes('ROUTER')) {
+        return 'L3';
+    }
+
+    // Default to L2 for unknown models
+    return 'L2';
 }
 
 export function getSwitchInfo(model: SwitchModel | string | undefined): SwitchModelInfo | undefined {
@@ -87,7 +97,17 @@ export function isLayer3Switch(model: SwitchModel | string | undefined): boolean
 
 export function canAssignIPToPhysicalPort(model: SwitchModel | string | undefined): boolean {
     if (!model) return true; // Default to allowing IP assignment if model is unknown (for routers)
-    return isLayer3Switch(model) || model === 'ASA-5506-X';
+
+    // Check known L3 models
+    if (isLayer3Switch(model) || model === 'ASA-5506-X' || model === 'FW') return true;
+
+    // Check for router models explicitly if not caught by getSwitchLayer/isLayer3Switch
+    const upperModel = model.toUpperCase();
+    if (upperModel.includes('ISR') || upperModel.includes('4451') || upperModel.includes('1900') || upperModel.includes('2901') || upperModel.includes('ROUTER')) {
+        return true;
+    }
+
+    return false;
 }
 
 export function getAvailableSwitchModels(): SwitchModel[] {

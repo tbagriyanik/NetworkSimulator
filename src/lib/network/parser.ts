@@ -2433,10 +2433,14 @@ export function getLevenshteinDistance(a: string, b: string): number {
 
 // Komut parse et
 export function parseCommand(input: string, currentMode: CommandMode, state?: any): ParsedCommand | null {
+  const model = state?.switchModel || '';
+  const isRouter = state?.deviceType === 'router' || (typeof model === 'string' && (model.includes('ISR') || model.includes('4451')));
+  const isFirewall = state?.deviceType === 'firewall' || state?.switchLayer === 'FW' || (typeof model === 'string' && model.includes('ASA'));
+
   const inferredDeviceType = state
-    ? (state.deviceType === 'switch'
+    ? (isRouter ? 'router' : (isFirewall ? 'firewall' : (state.deviceType === 'switch'
       ? (state.switchLayer === 'L3' ? 'switchL3' : 'switchL2')
-      : state.deviceType || (state.switchLayer === 'FW' ? 'firewall' : state.switchLayer === 'L3' ? 'switchL3' : 'switchL2'))
+      : state.deviceType || (state.switchLayer === 'L3' ? 'switchL3' : 'switchL2'))))
     : 'switchL2';
   const capabilities = state ? getDeviceCapabilities({ type: inferredDeviceType } as any, state.switchModel) : undefined;
   const resolvedInput = expandKeywordPrefixes(resolveAliases(input, state), currentMode, capabilities);
@@ -2590,10 +2594,14 @@ export function validateCommand(
 
   const input = parsed.rawInput.toLowerCase();
   const resolvedInput = resolveAliases(parsed.rawInput, state);
+  const model = state?.switchModel || '';
+  const isRouter = state?.deviceType === 'router' || (typeof model === 'string' && (model.includes('ISR') || model.includes('4451')));
+  const isFirewall = state?.deviceType === 'firewall' || state?.switchLayer === 'FW' || (typeof model === 'string' && model.includes('ASA'));
+
   const inferredDeviceType = state
-    ? (state.deviceType === 'switch'
+    ? (isRouter ? 'router' : (isFirewall ? 'firewall' : (state.deviceType === 'switch'
       ? (state.switchLayer === 'L3' ? 'switchL3' : 'switchL2')
-      : state.deviceType || (state.switchLayer === 'FW' ? 'firewall' : state.switchLayer === 'L3' ? 'switchL3' : 'switchL2'))
+      : state.deviceType || (state.switchLayer === 'L3' ? 'switchL3' : 'switchL2'))))
     : 'switchL2';
   const capabilities = state ? getDeviceCapabilities({ type: inferredDeviceType } as any, state.switchModel) : undefined;
 
@@ -2725,13 +2733,15 @@ export function getInvalidCommandError(
  */
 export function checkDeviceCompatibility(commandName: string, state: any): { valid: boolean; error?: string } {
   const model = state.switchModel || '';
+  const isRouter = state.deviceType === 'router' || (typeof model === 'string' && (model.includes('ISR') || model.includes('4451')));
+  const isFirewall = state.deviceType === 'firewall' || state.switchLayer === 'FW' || (typeof model === 'string' && model.includes('ASA'));
   const isModelL3 = typeof model === 'string' && model.includes('3650');
-  const isLayer3 = state.isLayer3Switch || state.switchLayer === 'L3' || isModelL3;
-  const deviceType = state.deviceType === 'router'
+  const isLayer3 = state.isLayer3Switch || state.switchLayer === 'L3' || isModelL3 || isRouter;
+
+  const deviceType = isRouter
     ? 'router'
-    : (state.deviceType === 'firewall'
-      ? 'firewall'
-      : (isLayer3 ? 'switchL3' : (state.deviceType || 'switchL2')));
+    : (isFirewall ? 'firewall' : (isLayer3 ? 'switchL3' : 'switchL2'));
+
   const deviceLabel = deviceType === 'switchL2'
     ? 'Layer 2 switch'
     : deviceType === 'switchL3'

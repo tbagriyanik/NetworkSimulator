@@ -990,6 +990,8 @@ function cmdIpAddress(state: any, input: string, ctx: any): any {
 
   // Layer 2 switch check - prevent IP assignment on physical ports
   // Apply this guard only for switch devices; routers must allow physical IP addressing.
+  const model = state.switchModel || '';
+  const isRouter = state.deviceType === 'router' || (typeof model === 'string' && (model.includes('ISR') || model.includes('4451')));
   const isSwitchDevice =
     (state.deviceType === 'switchL2' ||
       state.deviceType === 'switchL3' ||
@@ -997,7 +999,7 @@ function cmdIpAddress(state: any, input: string, ctx: any): any {
       state.switchLayer === 'L3' ||
       state.switchModel === 'WS-C2960-24TT-L' ||
       state.switchModel === 'WS-C3650-24PS') &&
-    state.deviceType !== 'router'; // Routers must be excluded from this check
+    !isRouter; // Routers must be excluded from this check
   if (isSwitchDevice && !canAssignIPToPhysicalPort(state.switchModel)) {
     const port = state.ports[state.currentInterface];
     if (port && (port.type === 'fastethernet' || port.type === 'gigabitethernet')) {

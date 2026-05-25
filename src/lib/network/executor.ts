@@ -1129,9 +1129,13 @@ export function executeCommand(
     sourceDeviceId,
   };
 
+  const model = state.switchModel || '';
+  const isRouter = state.deviceType === 'router' || (typeof model === 'string' && (model.includes('ISR') || model.includes('4451')));
+  const isFirewall = state.deviceType === 'firewall' || state.switchLayer === 'FW' || (typeof model === 'string' && model.includes('ASA'));
+
   const inferredDeviceType = state.deviceType === 'switch'
     ? (state.switchLayer === 'L3' ? 'switchL3' : 'switchL2')
-    : (state.deviceType || (state.switchLayer === 'FW' ? 'firewall' : state.switchLayer === 'L3' ? 'switchL3' : 'switchL2'));
+    : (isRouter ? 'router' : (isFirewall ? 'firewall' : (state.deviceType || (state.switchLayer === 'L3' ? 'switchL3' : 'switchL2'))));
   const capabilities = getDeviceCapabilities({ type: inferredDeviceType as any } as any, state.switchModel);
 
   const requiresSwitching = [
@@ -1153,10 +1157,8 @@ export function executeCommand(
   const needsRouting = requiresRouting.some(prefix => commandName === prefix || commandName.startsWith(`${prefix} `));
   const needsFirewall = requiresFirewall.some(prefix => commandName === prefix || commandName.startsWith(`${prefix} `));
 
-  const isFirewall = state.deviceType === 'firewall' || state.switchLayer === 'FW' || (state.version?.modelName || '').includes('ASA');
   const isL3Switch = state.switchModel === 'WS-C3650-24PS';
   const isL2Switch = state.switchModel === 'WS-C2960-24TT-L';
-  const isRouter = state.deviceType === 'router' || (!isFirewall && !state.deviceType?.startsWith('switch') && capabilities.routing);
 
   const l3OnlyCommands = [
     'show ip route', 'show ipv6 route', 'show ip protocols', 'show ip ospf', 'show ip ospf neighbor',
