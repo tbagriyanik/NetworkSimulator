@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import type { Translations } from '@/contexts/LanguageContext';
 
 interface OnboardingStep {
@@ -79,19 +80,21 @@ export function OnboardingDialog({
           />
         </div>
 
-        <DialogHeader className="px-8 pt-6 pb-2 cursor-default active:cursor-default select-none" data-drag-handle>
-          <div className="flex items-center justify-between gap-4 mb-2">
-            <DialogTitle className={`text-2xl md:text-3xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-              {onboardingSteps[onboardingStep]?.title}
-            </DialogTitle>
-            <span className={`text-sm font-bold px-3 py-1.5 rounded-full ${isDark ? 'bg-slate-800 text-cyan-400 border border-slate-700' : 'bg-slate-100 text-cyan-600 border border-slate-200'}`}>
-              {onboardingStep + 1} / {onboardingSteps.length}
-            </span>
-          </div>
-          <DialogDescription className={`text-base md:text-lg leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-            {onboardingSteps[onboardingStep]?.description}
-          </DialogDescription>
-        </DialogHeader>
+        <ScrollArea className="flex-1 min-h-0">
+          <DialogHeader className="px-8 pt-6 pb-2 cursor-default active:cursor-default select-none" data-drag-handle>
+            <div className="flex items-center justify-between gap-4 mb-2">
+              <DialogTitle className={`text-2xl md:text-3xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                {onboardingSteps[onboardingStep]?.title}
+              </DialogTitle>
+              <span className={`text-sm font-bold px-3 py-1.5 rounded-full ${isDark ? 'bg-slate-800 text-cyan-400 border border-slate-700' : 'bg-slate-100 text-cyan-600 border border-slate-200'}`}>
+                {onboardingStep + 1} / {onboardingSteps.length}
+              </span>
+            </div>
+            <DialogDescription className={`text-base md:text-lg leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+              {onboardingSteps[onboardingStep]?.description}
+            </DialogDescription>
+          </DialogHeader>
+        </ScrollArea>
 
         <div className="flex items-center justify-between gap-4 px-8 py-6 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-200 dark:border-slate-800 mt-4">
           <Button variant="ghost" onClick={closeOnboardingForever} className="text-xs font-semibold">
