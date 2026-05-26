@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import type { Translations } from '@/contexts/LanguageContext';
@@ -26,6 +27,37 @@ export function OnboardingDialog({
   onboardingStep, onboardingSteps,
   closeOnboardingForever, prevOnboarding, nextOnboarding,
 }: OnboardingDialogProps) {
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const minSwipeDistance = 50;
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      if (onboardingStep < onboardingSteps.length - 1) {
+        nextOnboarding();
+      }
+    } else if (isRightSwipe) {
+      if (onboardingStep > 0) {
+        prevOnboarding();
+      }
+    }
+  };
+
   return (
     <Dialog
       open={open}
@@ -33,7 +65,12 @@ export function OnboardingDialog({
         if (!open) closeOnboardingForever();
       }}
     >
-      <DialogContent className={`${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} sm:max-w-2xl md:max-w-3xl p-0 overflow-hidden liquid-glass-light`}>
+      <DialogContent
+        className={`${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} sm:max-w-2xl md:max-w-3xl p-0 overflow-hidden liquid-glass-light`}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         {/* Progress Bar */}
         <div className="w-full h-1 bg-slate-200 dark:bg-slate-800">
           <div

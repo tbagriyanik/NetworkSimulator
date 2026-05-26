@@ -275,6 +275,77 @@ export const l3SwitchDhcpExamTasks: ExamTask[] = [
   }
 ];
 
+// Exam tasks - VLAN Trunking & VTP
+export const vlanTrunkingExamTasks: ExamTask[] = [
+  {
+    id: 'exam-vtp-mode-server',
+    title: { tr: 'VTP Mode Server', en: 'VTP Mode Server' },
+    description: { tr: 'SW1 cihazını VTP server moduna alın.', en: 'Set SW1 to VTP server mode.' },
+    weight: 20,
+    checkType: 'command',
+    checkParams: { commandPattern: 'vtp mode server' },
+    completed: false
+  },
+  {
+    id: 'exam-vtp-domain',
+    title: { tr: 'VTP Domain', en: 'VTP Domain' },
+    description: { tr: 'VTP domain adını "SINAV" olarak belirleyin.', en: 'Set VTP domain name to "SINAV".' },
+    weight: 20,
+    checkType: 'command',
+    checkParams: { commandPattern: 'vtp domain SINAV' },
+    completed: false
+  },
+  {
+    id: 'exam-trunk-config',
+    title: { tr: 'Trunk Yapılandırması', en: 'Trunk Configuration' },
+    description: { tr: 'Gi0/1 portunu trunk moduna alın.', en: 'Configure Gi0/1 as a trunk port.' },
+    weight: 30,
+    checkType: 'command',
+    checkParams: { commandPattern: 'switchport mode trunk' },
+    completed: false
+  },
+  {
+    id: 'exam-vlan-creation',
+    title: { tr: 'VLAN Oluşturma', en: 'VLAN Creation' },
+    description: { tr: 'VLAN 50 oluşturun ve ismini "IDARI" yapın.', en: 'Create VLAN 50 and name it "IDARI".' },
+    weight: 30,
+    checkType: 'command',
+    checkParams: { commandPattern: 'vlan 50' },
+    completed: false
+  }
+];
+
+// Exam tasks - Standard ACL
+export const basicAclExamTasks: ExamTask[] = [
+  {
+    id: 'exam-acl-create',
+    title: { tr: 'Standard ACL Oluşturma', en: 'Create Standard ACL' },
+    description: { tr: '10 numaralı standard ACL oluşturun ve 192.168.1.10 hostunu engelleyin.', en: 'Create standard ACL 10 and deny host 192.168.1.10.' },
+    weight: 40,
+    checkType: 'command',
+    checkParams: { commandPattern: 'access-list 10 deny host 192.168.1.10' },
+    completed: false
+  },
+  {
+    id: 'exam-acl-permit-any',
+    title: { tr: 'ACL Permit Any', en: 'ACL Permit Any' },
+    description: { tr: 'ACL 10 listesine diğer tüm trafiğe izin veren kuralı ekleyin.', en: 'Add a rule to ACL 10 to permit all other traffic.' },
+    weight: 20,
+    checkType: 'command',
+    checkParams: { commandPattern: 'access-list 10 permit any' },
+    completed: false
+  },
+  {
+    id: 'exam-acl-apply',
+    title: { tr: 'ACL Uygulama', en: 'Apply ACL' },
+    description: { tr: 'ACL 10\'u Gi0/0 arayüzüne giriş (in) yönünde uygulayın.', en: 'Apply ACL 10 to Gi0/0 interface in the "in" direction.' },
+    weight: 40,
+    checkType: 'command',
+    checkParams: { commandPattern: 'ip access-group 10 in' },
+    completed: false
+  }
+];
+
 export const getExamProjects = (language: 'tr' | 'en'): ExamProject[] => {
   const isTr = language === 'tr';
 
@@ -547,6 +618,95 @@ export const getExamProjects = (language: 'tr' | 'en'): ExamProject[] => {
       tasks: l3SwitchDhcpExamTasks,
       durationMinutes: 25,
       difficulty: 'advanced'
+    },
+    {
+      id: 'exam-vtp-1',
+      tag: isTr ? 'SINAV' : 'EXAM',
+      title: isTr ? 'VLAN Trunking & VTP Sınavı' : 'VLAN Trunking & VTP Exam',
+      description: isTr
+        ? 'VTP yönetimi ve trunk bağlantı becerileri'
+        : 'VTP management and trunk connection skills',
+      detail: isTr
+        ? 'Switchler arası VLAN senkronizasyonu için VTP ve trunk yapılandırın.'
+        : 'Configure VTP and trunk for VLAN synchronization between switches.',
+      data: {
+        version: '1.0',
+        timestamp: new Date().toISOString(),
+        devices: [],
+        topology: {
+          devices: [
+            {
+              id: 'switch-1',
+              type: 'switchL2',
+              name: 'SW1',
+              x: 200,
+              y: 200,
+              status: 'online',
+              ports: [
+                { id: 'gi0/1', label: 'Gi0/1', status: 'disconnected' as const }
+              ]
+            },
+            {
+              id: 'switch-2',
+              type: 'switchL2',
+              name: 'SW2',
+              x: 500,
+              y: 200,
+              status: 'online',
+              ports: [
+                { id: 'gi0/1', label: 'Gi0/1', status: 'disconnected' as const }
+              ]
+            }
+          ],
+          connections: []
+        },
+        activeDeviceId: 'switch-1',
+        activeDeviceType: 'switchL2'
+      } as any,
+      level: 'intermediate',
+      isExam: true,
+      tasks: vlanTrunkingExamTasks,
+      durationMinutes: 20,
+      difficulty: 'intermediate'
+    },
+    {
+      id: 'exam-acl-1',
+      tag: isTr ? 'SINAV' : 'EXAM',
+      title: isTr ? 'Standard ACL Sınavı' : 'Standard ACL Exam',
+      description: isTr
+        ? 'Erişim kontrol listeleri ile trafik filtreleme'
+        : 'Traffic filtering with access control lists',
+      detail: isTr
+        ? 'Router üzerinde belirli bir hostun erişimini kısıtlayan ACL yapılandırın.'
+        : 'Configure ACL on router to restrict access of a specific host.',
+      data: {
+        version: '1.0',
+        timestamp: new Date().toISOString(),
+        devices: [],
+        topology: {
+          devices: [
+            {
+              id: 'router-1',
+              type: 'router',
+              name: 'R1',
+              x: 400,
+              y: 200,
+              status: 'online',
+              ports: [
+                { id: 'gi0/0', label: 'Gi0/0', status: 'disconnected' as const }
+              ]
+            }
+          ],
+          connections: []
+        },
+        activeDeviceId: 'router-1',
+        activeDeviceType: 'router'
+      } as any,
+      level: 'advanced',
+      isExam: true,
+      tasks: basicAclExamTasks,
+      durationMinutes: 20,
+      difficulty: 'advanced'
     }
   ];
 };
@@ -772,8 +932,15 @@ export function generateExamFromProject(projectData: any, language: 'tr' | 'en')
   // 0. Use existing tasks/steps if present, but filter out completed ones and connection tasks.
   const sourceItems = projectData.tasks || projectData.steps || [];
   if (sourceItems.length > 0) {
+    const seenItems = new Set<string>();
     tasks = sourceItems
-      .filter((item: any) => !item.completed && item.checkType !== 'connection')
+      .filter((item: any) => {
+        if (item.completed || item.checkType === 'connection') return false;
+        const key = `${item.checkType}-${JSON.stringify(item.checkParams)}`;
+        if (seenItems.has(key)) return false;
+        seenItems.add(key);
+        return true;
+      })
       .map((item: any) => ({
         ...item,
         id: item.id || `task-${Date.now()}-${Math.random()}`,

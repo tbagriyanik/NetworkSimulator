@@ -703,6 +703,21 @@ button,
   animation: toast-progress 5s linear forwards;
 }
 
+/* Marquee animation for long text in buttons */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  33% { transform: translateX(0); }
+  66% { transform: translateX(calc(-100% + 140px)); }
+  100% { transform: translateX(0); }
+}
+
+.animate-marquee-hover:hover span {
+  display: inline-block;
+  animation: marquee 5s linear infinite;
+  white-space: nowrap;
+  padding-right: 20px;
+}
+
 /* Focus ring animation */
 @keyframes focus-pulse {
 

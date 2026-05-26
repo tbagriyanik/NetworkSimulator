@@ -90,7 +90,7 @@ export function isLayer3Switch(model: SwitchModel | string | undefined): boolean
 export function isRouterModel(model: string | undefined): boolean {
     if (!model) return false;
     const m = model.toUpperCase();
-    return m.includes('ISR') || m.includes('4451') || m.includes('1900') || m.includes('ASR') || m.includes('7200');
+    return m.includes('ISR') || m.includes('4451') || m.includes('1900') || m.includes('2900') || m.includes('ASR') || m.includes('7200');
 }
 
 export function canAssignIPToPhysicalPort(model: SwitchModel | string | undefined): boolean {

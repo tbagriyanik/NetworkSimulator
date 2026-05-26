@@ -299,7 +299,7 @@ export function ProjectPickerDialog({
               <input
                 type="text"
                 value={projectSearchQuery}
-                placeholder={t.searchProjects}
+                placeholder={language === 'tr' ? 'Ara...' : 'Search...'}
                 onChange={(e) => setProjectSearchQuery(e.target.value)}
                 autoFocus
                 className={`flex-1 bg-transparent outline-none text-sm ${isDark ? 'text-white placeholder-slate-500' : 'text-slate-900 placeholder-slate-400'}`}

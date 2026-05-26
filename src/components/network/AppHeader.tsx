@@ -309,24 +309,24 @@ export function AppHeader({
                     <div className="grid grid-cols-2 gap-2">
                       <Button
                         variant="secondary"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
                         onClick={() => { setShowProjectPicker(true); setShowMobileMenu(false); }}
                       >
-                        <File className="w-3.5 h-3.5" /> {t.new}
+                        <File className="w-3.5 h-3.5 flex-shrink-0" /> <span>{t.new}</span>
                       </Button>
                       <Button
                         variant="secondary"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
                         onClick={() => { handleSaveProject(); setShowMobileMenu(false); }}
                       >
-                        <Save className="w-3.5 h-3.5" /> {t.saveLabel}
+                        <Save className="w-3.5 h-3.5 flex-shrink-0" /> <span>{t.saveLabel}</span>
                       </Button>
                       <Button
                         variant="secondary"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
                         onClick={() => { fileInputRef.current?.click(); setShowMobileMenu(false); }}
                       >
-                        <FolderOpen className="w-3.5 h-3.5" /> {t.load}
+                        <FolderOpen className="w-3.5 h-3.5 flex-shrink-0" /> <span>{t.load}</span>
                       </Button>
                     </div>
                   </div>
@@ -336,27 +336,31 @@ export function AppHeader({
                     <div className="grid grid-cols-2 gap-2">
                       <Button
                         variant="outline"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
                         onClick={() => setLanguage(language === 'tr' ? 'en' : 'tr')}
                       >
-                        <Languages className="w-3.5 h-3.5" />
-                        {language === 'tr' ? t.english : t.turkish}
+                        <Languages className="w-3.5 h-3.5 flex-shrink-0" />
+                        <span>{language === 'tr' ? t.english : t.turkish}</span>
                       </Button>
                       <Button
                         variant="outline"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
                         onClick={() => setTheme(isDark ? 'light' : 'dark')}
                       >
-                        {isDark ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-                        {isDark ? t.lightMode : t.darkMode}
+                        <div className="flex-shrink-0">
+                          {isDark ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+                        </div>
+                        <span>{isDark ? t.lightMode : t.darkMode}</span>
                       </Button>
                       <Button
                         variant="outline"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
                         onClick={() => setGraphicsQuality(graphicsQuality === 'high' ? 'low' : 'high')}
                       >
-                        {graphicsQuality === 'high' ? <Sparkles className="w-3.5 h-3.5" /> : <Cloud className="w-3.5 h-3.5" />}
-                        {graphicsQuality !== 'high' ? t.highRes : t.lowRes}
+                        <div className="flex-shrink-0">
+                          {graphicsQuality === 'high' ? <Sparkles className="w-3.5 h-3.5" /> : <Cloud className="w-3.5 h-3.5" />}
+                        </div>
+                        <span>{graphicsQuality !== 'high' ? t.highRes : t.lowRes}</span>
                       </Button>
                     </div>
                   </div>
@@ -366,7 +370,7 @@ export function AppHeader({
                     <div className="grid grid-cols-2 gap-2">
                       <Button
                         variant="outline"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
                         onClick={() => {
                           if (typeof window !== 'undefined') {
                             const event = new CustomEvent('trigger-topology-palette');
@@ -375,12 +379,12 @@ export function AppHeader({
                           setShowMobileMenu(false);
                         }}
                       >
-                        <Plus className="w-3.5 h-3.5" />
-                        {t.addDeviceOrCable}
+                        <Plus className="w-3.5 h-3.5 flex-shrink-0" />
+                        <span>{t.addDeviceOrCable}</span>
                       </Button>
                       <Button
                         variant="outline"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
                         onClick={() => {
                           if (typeof window !== 'undefined') {
                             const event = new CustomEvent('trigger-topology-connect');
@@ -389,38 +393,42 @@ export function AppHeader({
                           setShowMobileMenu(false);
                         }}
                       >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 0 0 -5.656 0l-4 4a4 4 0 1 0 5.656 5.656l1.102-1.101m-.758-4.899a4 4 0 0 0 5.656 0l4-4a4 4 0 0 0 -5.656-5.656l-1.1 1.1" />
-                        </svg>
-                        {t.connectDevices}
+                        <div className="flex-shrink-0">
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 0 0 -5.656 0l-4 4a4 4 0 1 0 5.656 5.656l1.102-1.101m-.758-4.899a4 4 0 0 0 5.656 0l4-4a4 4 0 0 0 -5.656-5.656l-1.1 1.1" />
+                          </svg>
+                        </div>
+                        <span>{t.connectDevices}</span>
                       </Button>
                       <Button
                         variant="outline"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
                         onClick={() => {
                           handleRefreshNetwork();
                           setShowMobileMenu(false);
                         }}
                       >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        {t.refreshNetworkF5}
+                        <div className="flex-shrink-0">
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                        </div>
+                        <span>{t.refreshNetworkF5}</span>
                       </Button>
                       <Button
                         variant="outline"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
                         onClick={() => {
                           setIsEnvironmentPanelOpen(true);
                           setShowMobileMenu(false);
                         }}
                       >
-                        <Leaf className="w-3.5 h-3.5" />
-                        {t.environmentSettings}
+                        <Leaf className="w-3.5 h-3.5 flex-shrink-0" />
+                        <span>{t.environmentSettings}</span>
                       </Button>
                       <Button
                         variant="outline"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
                         onClick={() => {
                           if (typeof window !== 'undefined') {
                             const event = new CustomEvent('toggle-ping-mode');
@@ -429,8 +437,8 @@ export function AppHeader({
                           setShowMobileMenu(false);
                         }}
                       >
-                        <Mail className="w-3.5 h-3.5" />
-                        {t.ping}
+                        <Mail className="w-3.5 h-3.5 flex-shrink-0" />
+                        <span>{t.ping}</span>
                       </Button>
                     </div>
                   </div>
@@ -440,25 +448,25 @@ export function AppHeader({
                     <div className="grid grid-cols-2 gap-2">
                       <Button
                         variant="secondary"
-                        className={cn("justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap", isDark ? "hover:text-amber-400" : "hover:text-amber-600")}
+                        className={cn("justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover", isDark ? "hover:text-amber-400" : "hover:text-amber-600")}
                         onClick={() => { setShowBasarilarim(!showBasarilarim); setShowMobileMenu(false); }}
                       >
-                        <Trophy className="w-3.5 h-3.5" /> {t.basarilarim}
+                        <Trophy className="w-3.5 h-3.5 flex-shrink-0" /> <span>{t.basarilarim}</span>
                       </Button>
                       <Button
                         variant="secondary"
-                        className={cn("justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap", isDark ? "hover:text-cyan-400" : "hover:text-cyan-600")}
+                        className={cn("justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover", isDark ? "hover:text-cyan-400" : "hover:text-cyan-600")}
                         onClick={() => { setShowOnboarding(true); setOnboardingStep(0); setShowMobileMenu(false); }}
                       >
-                        <Compass className="w-3.5 h-3.5" /> {t.tour}
+                        <Compass className="w-3.5 h-3.5 flex-shrink-0" /> <span>{t.tour}</span>
                       </Button>
                       <Button
                         variant="outline"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
                         onClick={() => { setShowAboutModal(true); setShowMobileMenu(false); }}
                       >
-                        <Info className="w-3.5 h-3.5" />
-                        {t.help}
+                        <Info className="w-3.5 h-3.5 flex-shrink-0" />
+                        <span>{t.help}</span>
                       </Button>
                     </div>
                   </div>

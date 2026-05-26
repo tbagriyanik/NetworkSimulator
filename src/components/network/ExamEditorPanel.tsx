@@ -5,7 +5,7 @@ import {
   X, Plus, Trash2, Save, Wand2, Shield,
   ChevronDown, ChevronUp, AlertCircle, Info,
   Settings, CheckCircle2, Layout, Type, Target,
-  Monitor, Network, FileText
+  Monitor, Network, FileText, GripVertical
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -73,6 +73,8 @@ export function ExamEditorPanel({
   const { t, language } = useLanguage();
   const isMobile = useIsMobile();
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
+  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
+  const [touchDragInfo, setTouchDragInfo] = useState<{ id: string; startIndex: number; currentIndex: number } | null>(null);
 
   if (!isOpen || !activeExam) return null;
 
@@ -347,16 +349,82 @@ export function ExamEditorPanel({
             ) : (
               <div className="space-y-3">
                 {activeExam.tasks.map((task, index) => (
-                  <Card key={task.id} className={cn(
-                    "overflow-hidden transition-all duration-200",
-                    isDark ? "bg-slate-800/40 border-slate-700" : "bg-white border-slate-200",
-                    expandedTaskId === task.id ? "ring-1 ring-purple-500/50" : ""
-                  )}>
+                  <Card
+                    key={task.id}
+                    data-task-index={index}
+                    draggable
+                    onDragStart={(e) => {
+                      setDraggedTaskId(task.id);
+                      e.dataTransfer.effectAllowed = 'move';
+                      // For styling during drag
+                      setTimeout(() => {
+                        const target = e.target as HTMLElement;
+                        target.style.opacity = '0.4';
+                      }, 0);
+                    }}
+                    onDragEnd={(e) => {
+                      setDraggedTaskId(null);
+                      const target = e.target as HTMLElement;
+                      target.style.opacity = '1';
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = 'move';
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (draggedTaskId && draggedTaskId !== task.id) {
+                        const fromIndex = activeExam.tasks.findIndex(t => t.id === draggedTaskId);
+                        const toIndex = index;
+                        if (fromIndex !== -1) {
+                          const diff = toIndex - fromIndex;
+                          const direction = diff > 0 ? 'down' : 'up';
+                          const steps = Math.abs(diff);
+                          for (let i = 0; i < steps; i++) {
+                            moveTask(draggedTaskId, direction);
+                          }
+                        }
+                      }
+                    }}
+                    className={cn(
+                      "overflow-hidden transition-all duration-200",
+                      isDark ? "bg-slate-800/40 border-slate-700" : "bg-white border-slate-200",
+                      expandedTaskId === task.id ? "ring-1 ring-purple-500/50" : "",
+                      draggedTaskId === task.id ? "opacity-40" : "",
+                      touchDragInfo?.id === task.id && "ring-2 ring-purple-500 border-purple-500 scale-[1.02] shadow-xl z-10"
+                    )}
+                  >
                     <div
                       className="p-3 flex items-center justify-between cursor-pointer group"
                       onClick={() => setExpandedTaskId(expandedTaskId === task.id ? null : task.id)}
                     >
                       <div className="flex items-center gap-3 min-w-0">
+                        <div
+                          className="flex items-center gap-1.5 cursor-grab active:cursor-grabbing text-slate-400 hover:text-purple-500 touch-none"
+                          onTouchStart={(e) => {
+                            setTouchDragInfo({ id: task.id, startIndex: index, currentIndex: index });
+                          }}
+                          onTouchMove={(e) => {
+                            if (!touchDragInfo) return;
+                            const touch = e.touches[0];
+                            const element = document.elementFromPoint(touch.clientX, touch.clientY);
+                            const card = element?.closest('[data-task-index]');
+                            if (card) {
+                              const newIndex = parseInt(card.getAttribute('data-task-index') || '');
+                              if (!isNaN(newIndex) && newIndex !== touchDragInfo.currentIndex) {
+                                const direction = newIndex > touchDragInfo.currentIndex ? 'down' : 'up';
+                                moveTask(touchDragInfo.id, direction);
+                                setTouchDragInfo({ ...touchDragInfo, currentIndex: newIndex });
+                              }
+                            }
+                          }}
+                          onTouchEnd={() => {
+                            setTouchDragInfo(null);
+                          }}
+                        >
+                          <GripVertical className="w-4 h-4" />
+                          <span className="text-[10px] font-black opacity-30 select-none">:::</span>
+                        </div>
                         <div className="w-6 h-6 rounded-full bg-slate-500/10 flex items-center justify-center text-[10px] font-bold">
                           {index + 1}
                         </div>
