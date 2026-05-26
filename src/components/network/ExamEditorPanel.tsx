@@ -144,7 +144,7 @@ export function ExamEditorPanel({
       </div>
 
       <ScrollArea className="flex-1 min-h-0">
-        <div className="p-4 space-y-6 pb-20">
+        <div className="p-4 space-y-6 pb-32">
           {/* Exam Details */}
           <section className="space-y-4">
             <div className="flex items-center justify-between">
