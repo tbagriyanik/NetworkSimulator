@@ -22,16 +22,15 @@ export function HelpPanel({ t, theme, initialOpen = false, onClose }: HelpPanelP
     system: true,
     privileged: false,
     global: false,
+    'examples-dhcp': false,
+    'examples-wifi': false,
+    'examples-vlan': false,
+    'knowledge-stp': false,
+    'knowledge-dhcp': false,
+    'knowledge-vlan': false,
     interface: false,
-    wireless: false,
-    line: false,
-    router: false,
-    dhcp: false,
     show: false,
-    keyboard: true,
-    desktop: true,
-    'network-terms': true,
-    abbreviations: false,
+    keyboard: false,
   });
 
   const isDark = theme === 'dark';
@@ -204,15 +203,23 @@ export function HelpPanel({ t, theme, initialOpen = false, onClose }: HelpPanelP
               <p className={cn('font-semibold mb-2', isDark ? 'text-slate-200' : 'text-slate-700')}>
                 {isTR ? 'Komut Modları:' : 'Command Modes:'}
               </p>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                <span className={isDark ? 'text-emerald-400' : 'text-emerald-600'}>User (&gt;)</span>
-                <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>{isTR ? 'Temel komutlar' : 'Basic commands'}</span>
-                <span className={isDark ? 'text-emerald-400' : 'text-emerald-600'}>Privileged (#)</span>
-                <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>{isTR ? 'Tüm komutlar' : 'All commands'}</span>
-                <span className={isDark ? 'text-emerald-400' : 'text-emerald-600'}>Config (config)#</span>
-                <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>{isTR ? 'Global yapılandırma' : 'Global config'}</span>
-                <span className={isDark ? 'text-emerald-400' : 'text-emerald-600'}>Interface (config-if)#</span>
-                <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>{isTR ? 'Arayüz yapılandırması' : 'Interface config'}</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
+                <div className="flex items-center gap-2">
+                  <span className={cn("font-mono px-1 rounded", isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600')}>Router&gt;</span>
+                  <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>{isTR ? 'Kullanıcı Modu' : 'User Mode'}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={cn("font-mono px-1 rounded", isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600')}>Router#</span>
+                  <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>{isTR ? 'Ayrıcalıklı Mod' : 'Privileged Mode'}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={cn("font-mono px-1 rounded", isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600')}>(config)#</span>
+                  <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>{isTR ? 'Global Yapılandırma' : 'Global Config'}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={cn("font-mono px-1 rounded", isDark ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600')}>(config-if)#</span>
+                  <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>{isTR ? 'Arayüz Yapılandırma' : 'Interface Config'}</span>
+                </div>
               </div>
             </div>
           )}
@@ -270,18 +277,47 @@ export function HelpPanel({ t, theme, initialOpen = false, onClose }: HelpPanelP
 
                 {isExp && (
                   <div className={cn('border-t', isDark ? 'border-slate-700' : 'border-slate-200')}>
-                    <table className="w-full text-xs">
-                      <tbody>
-                        {cat.cmds.map(([cmd, desc], idx) => (
-                          <tr key={idx} className={cn('border-b last:border-b-0', isDark ? 'border-slate-800 hover:bg-slate-800/50' : 'border-slate-100 hover:bg-slate-50')}>
-                            <td className="p-2 w-1/2">
-                              <code className={cn('font-mono text-[11px]', isDark ? 'text-emerald-400' : 'text-emerald-600')}>{cmd}</code>
-                            </td>
-                            <td className={cn('p-2', isDark ? 'text-slate-200' : 'text-slate-600')}>{desc}</td>
-                          </tr>
+                    {cat.type === 'info' ? (
+                      <div className="p-4 space-y-4">
+                        {cat.cmds.map(([title, content], idx) => (
+                          <div key={idx} className="space-y-1.5">
+                            <h4 className={cn('font-bold text-sm', isDark ? 'text-emerald-400' : 'text-emerald-600')}>
+                              {title}
+                            </h4>
+                            <p className={cn('text-xs leading-relaxed', isDark ? 'text-slate-300' : 'text-slate-600')}>
+                              {content}
+                            </p>
+                          </div>
                         ))}
-                      </tbody>
-                    </table>
+                      </div>
+                    ) : (
+                      <table className="w-full text-xs">
+                        <tbody>
+                          {cat.cmds.map(([cmd, desc, mode], idx) => (
+                            <tr key={idx} className={cn('border-b last:border-b-0', isDark ? 'border-slate-800 hover:bg-slate-800/50' : 'border-slate-100 hover:bg-slate-50')}>
+                              <td className="p-2 w-[45%]">
+                                <div className="flex flex-wrap items-center gap-1.5">
+                                  {mode && (
+                                    <span className={cn(
+                                      'font-mono text-[10px] px-1 rounded',
+                                      isDark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'
+                                    )}>
+                                      {mode}
+                                    </span>
+                                  )}
+                                  <code className={cn('font-mono text-[11px] break-all', isDark ? 'text-emerald-400' : 'text-emerald-600')}>
+                                    {cmd}
+                                  </code>
+                                </div>
+                              </td>
+                              <td className={cn('p-2 align-top', isDark ? 'text-slate-200' : 'text-slate-600')}>
+                                {desc}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
                   </div>
                 )}
               </div>
