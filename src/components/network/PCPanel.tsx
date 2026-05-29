@@ -5965,7 +5965,7 @@ export function PCPanel({
                                   ? 'border-amber-500/50 focus-within:ring-amber-500/50'
                                   : 'border-input focus-within:ring-primary/50'
                                   }`}>
-                                  <span className={`font-geist-mono font-bold text-xs select-none opacity-40 group-focus-within:opacity-100 transition-opacity shrink-0 ${activeTab === 'terminal' && isConsoleConnected && (consoleNeedsPassword || consoleConfirmDialog?.show || consoleReloadPending)
+                                  <span className={`font-geist-mono font-bold text-[10px] sm:text-xs select-none opacity-40 group-focus-within:opacity-100 transition-opacity shrink-0 truncate max-w-[80px] sm:max-w-none md:max-w-[150px] ${activeTab === 'terminal' && isConsoleConnected && (consoleNeedsPassword || consoleConfirmDialog?.show || consoleReloadPending)
                                     ? 'text-amber-400'
                                     : 'text-primary'
                                     }`}>
@@ -6003,7 +6003,7 @@ export function PCPanel({
                                         }, 300);
                                       }
                                     }}
-                                    className="flex-1 bg-transparent border-none outline-none font-geist-mono text-[13px]"
+                                    className="flex-1 bg-transparent border-none outline-none font-geist-mono text-[16px] sm:text-[13px]"
                                     placeholder={
                                       activeTab === 'terminal' && isConsoleConnected && (consoleNeedsPassword || consoleConfirmDialog?.show || consoleReloadPending)
                                         ? (consoleNeedsPassword
@@ -6184,7 +6184,7 @@ export function PCPanel({
                     className="flex items-center gap-2 flex-1 min-w-0"
                   >
                     <div className="flex flex-col flex-1 min-w-0 relative">
-                      <span className="text-sm font-semibold truncate">{httpAppTitle}</span>
+                                      <span className="text-[10px] sm:text-sm font-semibold truncate">{httpAppTitle}</span>
                       <input
                         ref={urlInputRef}
                         value={httpAppUrl || ''}
@@ -6223,7 +6223,7 @@ export function PCPanel({
                           }
                         }}
                         placeholder="http://"
-                        className={`mt-1 w-full text-xs rounded-md px-2 py-1 border ${isDark ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-700'}`}
+                                        className={`mt-1 w-full text-[16px] sm:text-xs rounded-md px-2 py-1 border ${isDark ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-700'}`}
                       />
                       {showUrlSuggestions && filteredSuggestions.length > 0 && (
                         <div className={`absolute top-full left-0 right-0 mt-1 rounded-md border shadow-lg max-h-48 overflow-y-auto overflow-x-hidden custom-scrollbar z-50 ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-300'}`}>

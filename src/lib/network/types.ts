@@ -38,6 +38,8 @@ export interface Port {
   previousStatus?: PortStatus;  // shutdown öncesi durum (no shutdown için)
   ipAddress?: string;           // For L3 ports or SVI
   subnetMask?: string;
+  stpCost?: number;             // Manual STP path cost
+  arpTimeout?: string;          // ARP timeout setting
   macAddress?: string;         // Per-port MAC address (for router ports)
   allowedVlans?: number[] | 'all'; // For trunk ports
   accessGroupIn?: string;       // Inbound ACL name/ID
@@ -122,6 +124,10 @@ export interface Port {
   };
   bandwidth?: number;               // Bandwidth in kbps (for routing protocols)
   delay?: number;                   // Delay in microseconds (for routing protocols)
+  stpPriority?: number;
+  dhcpSnoopingTrust?: boolean;
+  ipVerifySource?: boolean;
+  ipVerifySourcePortSecurity?: boolean;
   // Statistics & Counters
   statistics?: {
     inputPackets?: number;
@@ -378,6 +384,18 @@ export interface SwitchState {
       denyList: string[];
     };
   }>;
+  wlans?: Record<string, {
+    name: string;
+    ssid: string;
+  }>;
+  ip?: string; // Device management/primary IP
+  ospfProcessId?: string;
+  ospfRouterId?: string;
+  sshTimeout?: number;
+  sshAuthenticationRetries?: number;
+  dhcpOption82?: boolean;
+  dhcpSnoopingVlans?: string[];
+  accessLists?: Record<string, string[]>;
   currentSsid?: string;
   currentRadio?: string;
   execAliases?: Record<string, string>;
@@ -391,9 +409,13 @@ export interface SwitchState {
 
 export interface StartupConfig {
   hostname: string;
+  version?: string;
   ports: Record<string, Port>;
   vlans: Record<number, Vlan>;
   security: SecurityConfig;
+  spanningTree?: {
+    mode: string;
+  };
   bannerMOTD?: string;
   bannerLogin?: string;
   bannerExec?: string;
@@ -589,9 +611,12 @@ export function formatPortId(type: 'fastethernet' | 'gigabitethernet', module: n
 // Route interface for routing functionality
 export interface Route {
   destination: string;      // e.g., "192.168.2.0" or "2001:db8:1::"
+  network?: string;         // Alias for destination
+  mask?: string;            // Alias for subnetMask
   subnetMask?: string;      // e.g., "255.255.255.0" (for IPv4)
   prefixLength?: number;     // e.g., 64 (for IPv6)
   nextHop: string;          // e.g., "192.168.1.1" or "2001:db8:1::1" or interface name
+  interface?: string;       // Exit interface name
   metric?: number;          // Administrative distance/metric
   type: 'connected' | 'static' | 'dynamic'; // Route type
   area?: number;            // For OSPF

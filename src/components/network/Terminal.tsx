@@ -1161,18 +1161,18 @@ export function Terminal({
       )}
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" onClick={() => setSearchOpen(true)} className={cn("h-8 w-8 rounded-lg text-slate-600 hover:text-slate-900", isDark && "text-slate-300 hover:text-slate-100")} aria-controls="search-dialog">
+          <Button variant="ghost" size="icon" onClick={() => setSearchOpen(true)} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-slate-600 hover:text-slate-900", isDark && "text-slate-300 hover:text-slate-100")} aria-controls="search-dialog">
             <Search className="w-4 h-4" aria-hidden="true" />
           </Button>
         </TooltipTrigger>
         <TooltipContent className="flex items-center gap-2">
           {t.search}
-          <ShortcutBadge shortcut="Ctrl+F" variant="primary" />
+          {!isMobile && <ShortcutBadge shortcut="Ctrl+F" variant="primary" />}
         </TooltipContent>
       </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" onClick={handleCopyAll} className={cn("h-8 w-8 rounded-lg text-slate-600 hover:text-slate-900", isDark && "text-slate-300 hover:text-slate-100")}>
+          <Button variant="ghost" size="icon" onClick={handleCopyAll} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-slate-600 hover:text-slate-900", isDark && "text-slate-300 hover:text-slate-100")}>
             <Copy className="w-4 h-4" aria-hidden="true" />
           </Button>
         </TooltipTrigger>
@@ -1180,7 +1180,7 @@ export function Terminal({
       </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" onClick={exportTerminal} className={cn("h-8 w-8 rounded-lg text-slate-600 hover:text-slate-900", isDark && "text-slate-300 hover:text-slate-100")}>
+          <Button variant="ghost" size="icon" onClick={exportTerminal} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-slate-600 hover:text-slate-900", isDark && "text-slate-300 hover:text-slate-100")}>
             <Download className="w-4 h-4" aria-hidden="true" />
           </Button>
         </TooltipTrigger>
@@ -1188,7 +1188,7 @@ export function Terminal({
       </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" onClick={() => setShowSettings(!showSettings)} className={cn("h-8 w-8 rounded-lg text-slate-600 hover:text-slate-900", showSettings && "bg-accent", isDark && "text-slate-300 hover:text-slate-100")}>
+          <Button variant="ghost" size="icon" onClick={() => setShowSettings(!showSettings)} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-slate-600 hover:text-slate-900", showSettings && "bg-accent", isDark && "text-slate-300 hover:text-slate-100")}>
             <Type className="w-4 h-4" aria-hidden="true" />
           </Button>
         </TooltipTrigger>
@@ -1197,7 +1197,7 @@ export function Terminal({
       <div className={cn("w-px h-4 mx-1", isDark ? "bg-slate-600" : "bg-border")} />
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" onClick={() => onTogglePower?.(deviceId)} className={cn("h-8 w-8 rounded-lg", isPoweredOff ? "text-rose-500" : "text-emerald-500")}>
+          <Button variant="ghost" size="icon" onClick={() => onTogglePower?.(deviceId)} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg", isPoweredOff ? "text-rose-500" : "text-emerald-500")}>
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v10" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636a9 9 0 1 1-12.728 0" />
@@ -1209,17 +1209,17 @@ export function Terminal({
       {isMobile && onQuickSettings && (
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" onClick={onQuickSettings} className={cn("h-8 w-8 rounded-lg text-slate-600 hover:text-slate-900", isDark && "text-slate-300 hover:text-slate-100")}>
+            <Button variant="ghost" size="icon" onClick={onQuickSettings} className={cn("h-9 w-9 rounded-lg text-slate-600 hover:text-slate-900", isDark && "text-slate-300 hover:text-slate-100")}>
               <Settings className="w-4 h-4" aria-hidden="true" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>{t.quickSettingsAndTasks}</TooltipContent>
         </Tooltip>
       )}
-      {isMobile && device?.type === 'firewall' && onClose && (
+      {isMobile && (device?.type === 'firewall' || device?.type === 'pc' || device?.type === 'iot') && onClose && (
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-red-500 hover:text-white dark:hover:bg-red-600">
+            <Button variant="ghost" size="icon" onClick={onClose} className="h-9 w-9 rounded-lg hover:bg-red-500 hover:text-white dark:hover:bg-red-600">
               <X className="w-4 h-4" aria-hidden="true" />
             </Button>
           </TooltipTrigger>
@@ -1296,9 +1296,9 @@ export function Terminal({
               <div className="space-y-1.5">
                 {/* Show all output with natural scrolling */}
                 {displayedLines.filter(line => line != null).map((line, i) => (
-                  <div key={line.id} className="animate-in fade-in slide-in-from-left-1 duration-200">
+                  <div key={line.id} className="animate-in fade-in slide-in-from-left-1 duration-200 break-words overflow-hidden">
                     {line.type === 'command' ? (
-                      <div className="flex gap-2 text-cyan-500 font-bold group">
+                      <div className="flex gap-2 text-cyan-500 font-bold group flex-wrap">
                         {deviceIconInfo && (
                           <span className={`shrink-0 ${deviceIconInfo.color}`}>
                             {deviceIconInfo.icon === RouterIcon ? (
@@ -1315,7 +1315,7 @@ export function Terminal({
                       </div>
                     ) : (
                       <div className={cn(
-                        "whitespace-pre-wrap",
+                        "whitespace-pre-wrap break-words overflow-hidden",
                         line.type === 'error' ? "text-rose-500" : (line.type === 'success' ? "text-emerald-500" : (isDark ? "text-slate-300" : "text-slate-700"))
                       )}>
                         {line.content === BOOT_PROGRESS_MARKER
@@ -1353,7 +1353,7 @@ export function Terminal({
                 <div
                   onClick={() => inputRef.current?.focus()}
                   className={cn(
-                  "flex items-center gap-3 px-3 py-2 bg-background rounded-lg border flex-1 group focus-within:ring-1 transition-all shadow-inner",
+                  "flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 bg-background rounded-lg border flex-1 group focus-within:ring-1 transition-all shadow-inner overflow-hidden",
                   state.awaitingPassword || localPasswordPrompt
                     ? "border-amber-500/50 focus-within:ring-amber-500/50"
                     : confirmDialog?.show || isReloadConfirmationPending
@@ -1373,7 +1373,7 @@ export function Terminal({
                     </span>
                   )}
                   <span className={cn(
-                    "font-geist-mono font-bold text-xs select-none opacity-40 group-focus-within:opacity-100 transition-opacity shrink-0",
+                    "font-geist-mono font-bold text-[10px] sm:text-xs select-none opacity-40 group-focus-within:opacity-100 transition-opacity shrink-0 truncate max-w-[80px] sm:max-w-none md:max-w-[150px]",
                     state.awaitingPassword || localPasswordPrompt || confirmDialog?.show || isReloadConfirmationPending
                       ? "text-amber-400"
                       : "text-primary"
@@ -1400,7 +1400,7 @@ export function Terminal({
                       }
                     }}
                     disabled={isInputDisabled}
-                    className="flex-1 bg-transparent border-none outline-none font-geist-mono text-[13px] placeholder:text-muted-foreground/50"
+                    className="flex-1 bg-transparent border-none outline-none font-geist-mono text-[16px] sm:text-[13px] placeholder:text-muted-foreground/50 min-w-0"
                     placeholder={
                       state.awaitingPassword || localPasswordPrompt
                         ? t.enterPassword
@@ -1455,7 +1455,7 @@ export function Terminal({
               {shouldShowAutocomplete && (
                 <div
                   ref={autocompleteRef}
-                  className="absolute bottom-20 left-4 z-20 w-[min(420px,calc(100%-2rem))]"
+                  className="absolute bottom-16 sm:bottom-20 left-2 sm:left-4 z-20 w-[min(420px,calc(100%-1rem))]"
                 >
                   <div className={cn(
                     "rounded-lg border shadow-xl overflow-hidden",

@@ -264,7 +264,7 @@ function RefreshDeviceListToast({
   );
 }
 
-export default function Home() {
+export default function Home({ initialProjectId }: { initialProjectId?: string }) {
   const { t, language, setLanguage } = useLanguage();
   const { theme, effectiveTheme, setTheme } = useTheme();
   const isTR = language === 'tr';
@@ -1704,8 +1704,35 @@ ${state.bannerMOTD}
     }
   }, [setDeviceStates, setDeviceOutputs, setPcOutputs, setPcHistories, setTopologyDevices, setTopologyConnections, setTopologyNotes, setCableInfo, setActiveDeviceId, setActiveDeviceType, setSelectedDevice, setActiveTab, setTopologyKey, setHasUnsavedChanges, resetHistory, toast, setZoom, setPan, language, normalizeDeviceType, applyLinkLocalToUnconfiguredHosts, setShowPCPanel, setShowRouterPanel, setShowUnifiedDeviceModal, setRefreshNetworkReport]);
 
-  // Persistence: Load from localStorage on mount
+  // Persistence: Load from URL ID or localStorage on mount
   useEffect(() => {
+    if (initialProjectId) {
+      // 1. Try example projects
+      const examples = exampleProjects(language);
+      const example = examples.find(p => p.id === initialProjectId);
+      if (example) {
+        applyExampleProject(example.data, example.id);
+        return;
+      }
+
+      // 2. Try guided projects (Lessons)
+      const lessons = getGuidedProjects(language);
+      const lesson = lessons.find(p => p.id === initialProjectId);
+      if (lesson) {
+        handleStartGuidedProject(lesson);
+        // Note: applyExampleProject or startGuidedProject handles topology loading
+        return;
+      }
+
+      // 3. Try exams
+      const exams = getExamProjects(language);
+      const exam = exams.find(p => p.id === initialProjectId);
+      if (exam) {
+        startExamFromCatalog(exam);
+        return;
+      }
+    }
+
     let savedData: string | null = null;
     try { savedData = localStorage.getItem('netsim_autosave'); } catch { /* storage unavailable */ }
     if (savedData) {
@@ -3211,6 +3238,7 @@ ${state.bannerMOTD}
         if (!state) return;
 
         stpUpdatedStates = calculatePVST(state, {
+          language,
           connections: sanitizedConnections,
           devices: refreshedDevices,
           deviceStates: stpUpdatedStates,
@@ -3910,7 +3938,7 @@ ${state.bannerMOTD}
         const firstSwitchState = deviceStates.get(firstSwitch.id);
         if (!firstSwitchState) return;
 
-        const allUpdatedStates = calculatePVST(firstSwitchState, ctx, firstSwitch.id);
+        const allUpdatedStates = calculatePVST(firstSwitchState, { ...ctx, language }, firstSwitch.id);
         setDeviceStates(allUpdatedStates);
       }
     };

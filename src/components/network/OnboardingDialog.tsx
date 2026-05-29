@@ -67,7 +67,7 @@ export function OnboardingDialog({
       }}
     >
       <DialogContent
-        className={`${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} sm:max-w-2xl md:max-w-3xl p-0 overflow-hidden liquid-glass-light`}
+        className={`${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} w-[95vw] sm:max-w-2xl md:max-w-3xl p-0 overflow-hidden liquid-glass-light max-h-[90vh] flex flex-col`}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -81,22 +81,22 @@ export function OnboardingDialog({
         </div>
 
         <ScrollArea className="flex-1 min-h-0">
-          <DialogHeader className="px-8 pt-6 pb-2 cursor-default active:cursor-default select-none" data-drag-handle>
-            <div className="flex items-center justify-between gap-4 mb-2">
-              <DialogTitle className={`text-2xl md:text-3xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+          <DialogHeader className="px-4 sm:px-8 pt-4 sm:pt-6 pb-2 cursor-default active:cursor-default select-none" data-drag-handle>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 mb-2">
+              <DialogTitle className={`text-xl sm:text-2xl md:text-3xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
                 {onboardingSteps[onboardingStep]?.title}
               </DialogTitle>
               <span className={`text-sm font-bold px-3 py-1.5 rounded-full ${isDark ? 'bg-slate-800 text-cyan-400 border border-slate-700' : 'bg-slate-100 text-cyan-600 border border-slate-200'}`}>
                 {onboardingStep + 1} / {onboardingSteps.length}
               </span>
             </div>
-            <DialogDescription className={`text-base md:text-lg leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+            <DialogDescription className={`text-sm sm:text-base md:text-lg leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
               {onboardingSteps[onboardingStep]?.description}
             </DialogDescription>
           </DialogHeader>
         </ScrollArea>
 
-        <div className="flex items-center justify-between gap-4 px-8 py-6 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-200 dark:border-slate-800 mt-4">
+        <div className="flex items-center justify-between gap-4 px-4 sm:px-8 py-4 sm:py-6 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-200 dark:border-slate-800 mt-auto">
           <Button variant="ghost" onClick={closeOnboardingForever} className="text-xs font-semibold">
             {t.skip}
           </Button>

@@ -1,5 +1,5 @@
-import { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/networkTopology.types';
-import { CableInfo, SwitchState, isCableCompatible } from './types';
+import { CanvasDevice, CanvasConnection, DeviceType, CanvasPort } from '@/components/network/networkTopology.types';
+import { CableInfo, SwitchState, isCableCompatible, Port } from './types';
 import { findRoute, ipToNumber, getRoutingTable, isIpv6InNetwork } from './routing';
 import { performArpResolution, getMacFromArpCache } from './arp';
 import { processFrameMacLearning } from './macLearning';
@@ -50,7 +50,6 @@ const getVlanSpecificSTPBlocking = (
   deviceId: string,
   portId: string,
   vlanId: number,
-  devices: CanvasDevice[],
   connections: CanvasConnection[],
   deviceStates?: Map<string, SwitchState>
 ): boolean => {
@@ -59,7 +58,7 @@ const getVlanSpecificSTPBlocking = (
   const state = deviceStates.get(deviceId);
   if (!state) return false;
 
-  const port = state.ports[portId];
+  const port: Port = state.ports[portId];
   if (!port) return false;
 
   // If port is shutdown, it's not blocking (it's just down)
@@ -142,7 +141,7 @@ export function getDeviceWifiConfig(device: CanvasDevice | undefined, deviceStat
   if (!device) return undefined;
   const safeDeviceStates = ensureDeviceStatesMap(deviceStates);
   const state = safeDeviceStates?.get(device.id);
-  const wlanState = state?.ports['wlan0'];
+  const wlanState: Port | undefined = state?.ports['wlan0'];
   const defaultMode: WifiMode = device.type === 'pc' ? 'client' : 'ap';
 
   if (wlanState?.wifi?.ssid) {
@@ -455,7 +454,7 @@ export function checkConnectivity(
   options?: { protocol?: 'tcp' | 'udp' | 'icmp' | 'any'; port?: string }
 ): { success: boolean; hops: string[]; hopIds: string[]; targetId?: string; error?: string; portSecurityViolations?: Array<{ deviceId: string; portId: string; action: string; mac: string }> } {
   const safeDeviceStates = ensureDeviceStatesMap(deviceStates);
-  const isSwitchDeviceType = (type: DeviceType) => type === 'switchL2' || type === 'switchL3';
+  const isSwitchDeviceType = (type: string): boolean => type === 'switchL2' || type === 'switchL3';
 
   // Track port security violations for React state updates
   const portSecurityViolations: Array<{ deviceId: string; portId: string; action: string; mac: string }> = [];
@@ -636,7 +635,7 @@ export function checkConnectivity(
     }
   }
 
-  const getPortVlan = (port: any): number => {
+  const getPortVlan = (port: Port | CanvasPort | undefined): number => {
     return Number(port?.accessVlan || port?.vlan || 1);
   };
 
@@ -669,7 +668,7 @@ export function checkConnectivity(
     }
 
     // For access ports, the VLAN assigned to the active port is the device VLAN
-    const accessPort = Object.values(state.ports).find((port: any) => !port.shutdown && port.mode === 'access' && getPortVlan(port) !== 1);
+    const accessPort = Object.values(state.ports).find((port: Port) => !port.shutdown && port.mode === 'access' && getPortVlan(port) !== 1);
     if (accessPort) return getPortVlan(accessPort);
 
     return 1;
@@ -718,8 +717,8 @@ export function checkConnectivity(
 
           // Check STP blocking state using VLAN-specific STP calculation
           // In PVST, each VLAN has its own STP instance with potentially different root bridges
-          const isSrcSTPBlocking = getVlanSpecificSTPBlocking(currentId, srcPortId, sourceVlan, devices, connections, deviceStates);
-          const isDstSTPBlocking = getVlanSpecificSTPBlocking(neighborId, dstPortId, sourceVlan, devices, connections, deviceStates);
+          const isSrcSTPBlocking = getVlanSpecificSTPBlocking(currentId, srcPortId, sourceVlan, connections, deviceStates);
+          const isDstSTPBlocking = getVlanSpecificSTPBlocking(neighborId, dstPortId, sourceVlan, connections, deviceStates);
 
           // Validate cable type for this physical link (e.g. console vs ethernet, straight vs crossover).
           const isCableOk = isConnectionCableCompatible(conn, srcDevice, dstDevice);
@@ -1055,7 +1054,7 @@ export function checkConnectivity(
       }
 
       // Check routed physical interfaces (L3)
-      const onPhysical = Object.values(state.ports).some((p: any) => p.ipAddress === ip && p.mode === 'routed');
+      const onPhysical = Object.values(state.ports).some((p: Port) => p.ipAddress === ip && p.mode === 'routed');
       if (onPhysical) return null;
 
       return getDeviceVlan(device, state);

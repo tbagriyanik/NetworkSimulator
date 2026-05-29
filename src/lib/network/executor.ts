@@ -1,5 +1,5 @@
 // Network Command Executor (refactored with handler map)
-import { SwitchState, CommandMode, CommandResult } from './types';
+import { SwitchState, CommandMode, CommandResult, Port } from './types';
 import { checkConnectivity } from './connectivity';
 import { addStaticRoute, removeStaticRoute, getRoutingTable } from './routing';
 import { parseCommand, validateCommand, getHelpContent, commandPatterns, getLevenshteinDistance, expandKeywordPrefixes, resolveAliases } from './parser';
@@ -60,19 +60,7 @@ import { firewallHandlers } from './core/firewallCommands';
 import { wirelessHandlers } from './core/wirelessCommands';
 
 // --- Command handler types & context ---
-export interface CommandContext {
-  language: 'tr' | 'en';
-  devices?: CanvasDevice[];
-  connections?: CanvasConnection[];
-  deviceStates: Map<string, SwitchState>;
-  sourceDeviceId?: string;
-}
-
-export type CommandHandler = (
-  state: SwitchState,
-  input: string,
-  ctx: CommandContext
-) => CommandResult;
+import { CommandContext, CommandHandler } from './core/commandTypes';
 
 // --- Inline help tree ---
 // Helper: Generate prefixes for a command (e.g., 'telnet' -> 't','te','tel'...)
@@ -518,7 +506,7 @@ const commandDescriptions: Record<string, Record<string, string>> = {
   },
 };
 
-function getInlineHelp(mode: CommandMode, partialInput: string, prompt: string, state?: any): string {
+function getInlineHelp(mode: CommandMode, partialInput: string, prompt: string, state?: SwitchState): string {
   const modeCommands = commandHelp[mode] || commandHelp.user;
   const modeDescriptions = commandDescriptions[mode] || commandDescriptions.user;
   const lower = partialInput.toLowerCase().trim();
@@ -768,7 +756,7 @@ function getSmartHint(state: SwitchState, lang: 'tr' | 'en'): string {
 
   if (mode === 'interface') {
     const portId = state.currentInterface || '';
-    const port = state.ports[portId];
+    const port: Port | undefined = state.ports[portId];
     if (port && port.shutdown) {
       return isTr
         ? `\n💡 İpucu: ${portId} portunu aktif hale getirmek için 'no shutdown' komutunu kullanın.`

@@ -644,7 +644,7 @@ function cmdSwitchportAccessVlan(state: any, input: string, ctx: any): any {
     const port = newPorts[portId];
     if (!port) return;
 
-    const oldVlanId = Number((port as any).accessVlan || port.vlan || 1);
+    const oldVlanId = Number(port.accessVlan || port.vlan || 1);
     const targetVlanId = vlanIdNum;
 
     // Remove port from previous VLAN membership
@@ -1433,7 +1433,7 @@ function cmdNoSwitchportAccessVlan(state: any, input: string, ctx: any): any {
     const port = newPorts[portId];
     if (!port) return;
 
-    const oldVlanId = Number((port as any).accessVlan || port.vlan || 1);
+    const oldVlanId = Number(port.accessVlan || port.vlan || 1);
     const targetVlanId = 1;
 
     if (newVlans[oldVlanId]) {

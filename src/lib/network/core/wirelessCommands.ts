@@ -1,5 +1,5 @@
 import { IOS_ERRORS, iosModeError } from './iosErrors';
-import type { CommandHandler } from '../executor';
+import type { CommandHandler } from './commandTypes';
 
 /**
  * Wireless Configuration Commands
@@ -491,46 +491,50 @@ export const cmdShowWireless: CommandHandler = (state, input, ctx) => {
 
     // Show SSID configurations
     if (state.wirelessConfig && Object.keys(state.wirelessConfig).length > 0) {
-        if (ctx.language === 'tr') {
-            output += 'SSID Yapılandırmaları:\n';
-        } else {
-            output += 'SSID Configurations:\n';
-        }
+        if (state.wirelessConfig) {
+            if (ctx.language === 'tr') {
+                output += 'SSID Yapılandırmaları:\n';
+            } else {
+                output += 'SSID Configurations:\n';
+            }
 
-        for (const [ssidName, config] of Object.entries(state.wirelessConfig)) {
-            output += `\n  SSID: ${ssidName}\n`;
-            output += `    ${ctx.language === 'tr' ? 'Kimlik Doğrulama' : 'Authentication'}: ${config.authentication}\n`;
-            output += `    ${ctx.language === 'tr' ? 'Anahtar Yönetimi' : 'Key Management'}: ${config.keyManagement}\n`;
-            if (config.keyManagement === 'wpa') {
-                output += `    WPA ${ctx.language === 'tr' ? 'Versiyonu' : 'Version'}: ${config.wpaVersion}\n`;
+            for (const [ssidName, config] of Object.entries(state.wirelessConfig)) {
+                output += `\n  SSID: ${ssidName}\n`;
+                output += `    ${ctx.language === 'tr' ? 'Kimlik Doğrulama' : 'Authentication'}: ${config.authentication}\n`;
+                output += `    ${ctx.language === 'tr' ? 'Anahtar Yönetimi' : 'Key Management'}: ${config.keyManagement}\n`;
+                if (config.keyManagement === 'wpa') {
+                    output += `    WPA ${ctx.language === 'tr' ? 'Versiyonu' : 'Version'}: ${config.wpaVersion}\n`;
+                }
+                if (config.presharedKey) {
+                    output += `    ${ctx.language === 'tr' ? 'Önceden Paylaşılan Anahtar' : 'Pre-Shared Key'}: ${config.presharedKey}\n`;
+                }
+                output += `    ${ctx.language === 'tr' ? 'Konuk Modu' : 'Guest Mode'}: ${config.guestMode ? 'Etkin' : 'Devre Dışı'}\n`;
             }
-            if (config.presharedKey) {
-                output += `    ${ctx.language === 'tr' ? 'Önceden Paylaşılan Anahtar' : 'Pre-Shared Key'}: ${config.presharedKey}\n`;
-            }
-            output += `    ${ctx.language === 'tr' ? 'Konuk Modu' : 'Guest Mode'}: ${config.guestMode ? 'Etkin' : 'Devre Dışı'}\n`;
         }
     }
 
     // Show radio configurations
     if (state.wirelessRadios && Object.keys(state.wirelessRadios).length > 0) {
-        output += `\n\n${ctx.language === 'tr' ? 'Radyo Yapılandırmaları' : 'Radio Configurations'}:\n`;
+        if (state.wirelessRadios) {
+            output += `\n\n${ctx.language === 'tr' ? 'Radyo Yapılandırmaları' : 'Radio Configurations'}:\n`;
 
-        for (const [radioId, radio] of Object.entries(state.wirelessRadios)) {
-            output += `\n  ${ctx.language === 'tr' ? 'Radyo' : 'Radio'} ${radioId} (${radio.frequency}):\n`;
-            output += `    ${ctx.language === 'tr' ? 'SSID' : 'SSID'}: ${radio.ssid || 'Tanımlanmamış'}\n`;
-            output += `    ${ctx.language === 'tr' ? 'Kanal' : 'Channel'}: ${radio.channel}\n`;
-            output += `    ${ctx.language === 'tr' ? 'Güç' : 'Power'}: ${radio.power}\n`;
-            output += `    ${ctx.language === 'tr' ? 'Şifreleme' : 'Encryption'}: ${radio.encryption}\n`;
-            output += `    ${ctx.language === 'tr' ? 'İstasyon Rolü' : 'Station Role'}: ${radio.stationRole}\n`;
-            output += `    ${ctx.language === 'tr' ? 'Durum' : 'Status'}: ${radio.shutdown ? 'Kapalı' : 'Açık'}\n`;
+            for (const [radioId, radio] of Object.entries(state.wirelessRadios)) {
+                output += `\n  ${ctx.language === 'tr' ? 'Radyo' : 'Radio'} ${radioId} (${radio.frequency}):\n`;
+                output += `    ${ctx.language === 'tr' ? 'SSID' : 'SSID'}: ${radio.ssid || 'Tanımlanmamış'}\n`;
+                output += `    ${ctx.language === 'tr' ? 'Kanal' : 'Channel'}: ${radio.channel}\n`;
+                output += `    ${ctx.language === 'tr' ? 'Güç' : 'Power'}: ${radio.power}\n`;
+                output += `    ${ctx.language === 'tr' ? 'Şifreleme' : 'Encryption'}: ${radio.encryption}\n`;
+                output += `    ${ctx.language === 'tr' ? 'İstasyon Rolü' : 'Station Role'}: ${radio.stationRole}\n`;
+                output += `    ${ctx.language === 'tr' ? 'Durum' : 'Status'}: ${radio.shutdown ? 'Kapalı' : 'Açık'}\n`;
 
-            if (radio.macFilter) {
-                output += `    ${ctx.language === 'tr' ? 'MAC Filtresi' : 'MAC Filter'}: Etkin\n`;
-                if (radio.macFilter.allowList.length > 0) {
-                    output += `      ${ctx.language === 'tr' ? 'İzin Verilen' : 'Allow List'}: ${radio.macFilter.allowList.join(', ')}\n`;
-                }
-                if (radio.macFilter.denyList.length > 0) {
-                    output += `      ${ctx.language === 'tr' ? 'Reddedilen' : 'Deny List'}: ${radio.macFilter.denyList.join(', ')}\n`;
+                if (radio.macFilter) {
+                    output += `    ${ctx.language === 'tr' ? 'MAC Filtresi' : 'MAC Filter'}: Etkin\n`;
+                    if (radio.macFilter.allowList.length > 0) {
+                        output += `      ${ctx.language === 'tr' ? 'İzin Verilen' : 'Allow List'}: ${radio.macFilter.allowList.join(', ')}\n`;
+                    }
+                    if (radio.macFilter.denyList.length > 0) {
+                        output += `      ${ctx.language === 'tr' ? 'Reddedilen' : 'Deny List'}: ${radio.macFilter.denyList.join(', ')}\n`;
+                    }
                 }
             }
         }

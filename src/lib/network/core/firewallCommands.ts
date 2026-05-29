@@ -1,4 +1,4 @@
-import { CommandHandler } from '../executor';
+import { CommandHandler } from './commandTypes';
 
 export const firewallHandlers: Record<string, CommandHandler> = {
   'nameif': (state, input) => {

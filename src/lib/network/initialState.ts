@@ -238,7 +238,7 @@ export function createInitialState(mac?: string, switchModel: 'WS-C2960-24TT-L' 
 
   // VLAN'lara portları ata
   Object.values(ports).forEach(port => {
-    const vlanId = Number((port as any).accessVlan || port.vlan || 1);
+    const vlanId = Number(port.accessVlan || port.vlan || 1);
     if (!port.shutdown && vlans[vlanId]) {
       vlans[vlanId].ports.push(port.id.toUpperCase());
     }
