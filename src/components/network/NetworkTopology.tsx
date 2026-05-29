@@ -288,6 +288,30 @@ export function NetworkTopology({
   }, [topologyDevices]);
 
   const topologyConnections = useTopologyConnections();
+
+  // BOLT: Pre-calculate connection metadata (total and index for parallel cables)
+  // This reduces O(C^2) operations in the render loop to O(C) pre-calculation + O(1) lookups.
+  const connectionMeta = useMemo(() => {
+    const meta = new Map<string, { index: number; total: number }>();
+    const groupMap = new Map<string, string[]>();
+
+    // Group connections by endpoint pairs (agnostic of direction)
+    topologyConnections.forEach(conn => {
+      const pair = [conn.sourceDeviceId, conn.targetDeviceId].sort().join(':');
+      if (!groupMap.has(pair)) groupMap.set(pair, []);
+      groupMap.get(pair)!.push(conn.id);
+    });
+
+    // Assign indices and totals
+    groupMap.forEach(ids => {
+      const total = ids.length;
+      ids.forEach((id, index) => {
+        meta.set(id, { index, total });
+      });
+    });
+
+    return meta;
+  }, [topologyConnections]);
   const topologyNotes = useTopologyNotes();
   const { setDevices, setConnections, setNotes, graphicsQuality } = useAppStore();
 
@@ -4778,12 +4802,10 @@ export function NetworkTopology({
     const source = getPortPosition(sourceDevice, conn.sourcePort);
     const target = getPortPosition(targetDevice, conn.targetPort);
 
-    const sameDeviceConnections = connections.filter(
-      c => (c.sourceDeviceId === conn.sourceDeviceId && c.targetDeviceId === conn.targetDeviceId) ||
-        (c.sourceDeviceId === conn.targetDeviceId && c.targetDeviceId === conn.sourceDeviceId)
-    );
-    const sameConnIndex = sameDeviceConnections.findIndex(c => c.id === conn.id);
-    const totalSameConns = sameDeviceConnections.length;
+    // BOLT: Optimized lookup for parallel connection metadata
+    const meta = connectionMeta.get(conn.id) || { index: 0, total: 1 };
+    const sameConnIndex = meta.index;
+    const totalSameConns = meta.total;
 
     const offset = totalSameConns > 1
       ? (sameConnIndex - (totalSameConns - 1) / 2) * (20 / Math.max(totalSameConns - 1, 1))
@@ -6852,17 +6874,15 @@ export function NetworkTopology({
                   )}
 
                   {/* Visual Connection Lines (Behind devices) */}
-                  {connections.map((conn, index) => {
+                  {/* BOLT: Use visibleConnections for culling and O(1) meta lookup */}
+                  {visibleConnections.map((conn) => {
                     const sourceDevice = deviceMap.get(conn.sourceDeviceId);
                     const targetDevice = deviceMap.get(conn.targetDeviceId);
                     if (!sourceDevice || !targetDevice) return null;
 
-                    const sameDeviceConnections = connections.filter(
-                      c => (c.sourceDeviceId === conn.sourceDeviceId && c.targetDeviceId === conn.targetDeviceId) ||
-                        (c.sourceDeviceId === conn.targetDeviceId && c.targetDeviceId === conn.sourceDeviceId)
-                    );
-                    const sameConnIndex = sameDeviceConnections.findIndex(c => c.id === conn.id);
-                    const totalSameConns = sameDeviceConnections.length;
+                    const meta = connectionMeta.get(conn.id) || { index: 0, total: 1 };
+                    const sameConnIndex = meta.index;
+                    const totalSameConns = meta.total;
 
                     return (
                       <ConnectionLine
@@ -6885,7 +6905,8 @@ export function NetworkTopology({
                   {renderTempConnection()}
 
                   {/* Connection interaction handles (Trash icons) */}
-                  {connections.map((conn) => renderConnectionHandle(conn))}
+                  {/* BOLT: Use visibleConnections for culling */}
+                  {visibleConnections.map((conn) => renderConnectionHandle(conn))}
 
                   {/* Devices */}                  {devicesSortedForRender.map((device) => {
                     const isCurrentlyDragging = (draggedDevice === device.id && isActuallyDragging) ||
