@@ -354,7 +354,7 @@ export const comprehensiveFinalExamTasks: ExamTask[] = [
     description: { tr: 'PC-1 cihazını AS-1 Switch\'inin Fa0/1 portuna bağlayın.', en: 'Connect PC-1 to Fa0/1 port of AS-1 Switch.' },
     weight: 5,
     checkType: 'connection',
-    checkParams: { sourceDevice: 'pc-1', targetDevice: 'as-1', targetPort: 'fa0/1', cableType: 'straight' },
+      checkParams: { sourceDevice: 'pc-1', sourcePort: 'eth0', targetDevice: 'as-1', targetPort: 'fa0/1', cableType: 'straight' },
     completed: false
   },
   {

@@ -1139,9 +1139,9 @@ export const checkStepCompletion = (
             if (!cableTypeMatch) return false;
           }
           const sourceMatch = conn.sourceDeviceId === params.sourceDevice &&
-            conn.sourcePort === params.sourcePort;
+            (!params.sourcePort || conn.sourcePort === params.sourcePort);
           const targetMatch = conn.targetDeviceId === params.targetDevice &&
-            conn.targetPort === params.targetPort;
+            (!params.targetPort || conn.targetPort === params.targetPort);
           return sourceMatch && targetMatch;
         });
       }
