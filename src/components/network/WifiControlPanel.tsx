@@ -158,9 +158,9 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig): string {
     <div id="main-content" style="display: ${username && password ? 'none' : 'block'};">
   `;
 
-  const contentEnd = username && password ? `
+  const contentEnd = `
     </div>
-  ` : '';
+  `;
 
   return `
 <!DOCTYPE html>
@@ -741,7 +741,7 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig): string {
         </div>
         ` : ''}
         
-        ${(availableIotDevices.filter(d => !d.currentSsid).length > 0 || availableIotDevices.filter(d => d.currentSsid && d.currentSsid !== '${wifi.ssid}').length > 0) ? `
+        ${(availableIotDevices.filter(d => !d.currentSsid).length > 0 || availableIotDevices.filter(d => d.currentSsid && d.currentSsid !== wifi.ssid).length > 0) ? `
         <div class="actions" style="margin-top:20px;">
           <button type="button" class="btn btn-primary" onclick="saveSelectedIotDevices()" id="save-iot-btn">
             💾 ${isTurkish ? 'Seçili Cihazları Bağla' : 'Connect Selected Devices'}
@@ -1127,10 +1127,11 @@ export function getRouterWifiConfig(device: CanvasDevice, state?: SwitchState): 
  * Generate router admin page content for HTTP access
  */
 export function generateRouterAdminPage(device: CanvasDevice, language: string, state?: SwitchState, connectedIotDevices?: ConnectedIoTDevice[], availableIotDevices?: AvailableIoTDevice[], username?: string, password?: string): string {
+  const interfaceIp = state?.ports ? Object.values(state.ports).find((p: any) => p?.ipAddress && !p.shutdown)?.ipAddress : undefined;
   const config: RouterWebConfig = {
     wifi: getRouterWifiConfig(device, state),
     deviceName: device.name,
-    deviceIp: device.ip || '192.168.1.1',
+    deviceIp: interfaceIp || device.ip || '192.168.1.1',
     deviceId: device.id,
     adminPassword: 'admin',
     username: username,

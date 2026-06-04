@@ -1294,6 +1294,10 @@ export function PCPanel({
   );
   const httpAppSrcDoc = useMemo(() => {
     if (!httpAppContent) return '';
+    const trimmed = httpAppContent.trim();
+    if (trimmed.startsWith('<!DOCTYPE') || trimmed.startsWith('<html')) {
+      return httpAppContent;
+    }
     return `<!doctype html>
 <html>
   <head>
