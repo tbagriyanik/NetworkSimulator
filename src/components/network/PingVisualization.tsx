@@ -12,6 +12,7 @@ import type { DeviceConfig, Connection } from '@/types/ui-ux';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // ============================================================================
 // Types
@@ -342,6 +343,8 @@ export const PingResultPanel: React.FC<PingResultPanelProps> = ({
     devices,
     onClear,
 }) => {
+    const { language } = useLanguage();
+
     const getDeviceName = (deviceId: string) => {
         return devices.find(d => d.id === deviceId)?.name || deviceId;
     };
@@ -360,10 +363,10 @@ export const PingResultPanel: React.FC<PingResultPanelProps> = ({
         <Card className="w-full">
             <CardHeader className="pb-2">
                 <div className="flex justify-between items-center">
-                    <CardTitle className="text-base">Ping Results</CardTitle>
+                    <CardTitle className="text-base">{language === 'tr' ? 'Ping Sonuçları' : 'Ping Results'}</CardTitle>
                     {results.length > 0 && (
                         <Button variant="ghost" size="sm" onClick={onClear}>
-                            Clear
+                            {language === 'tr' ? 'Temizle' : 'Clear'}
                         </Button>
                     )}
                 </div>
@@ -371,7 +374,7 @@ export const PingResultPanel: React.FC<PingResultPanelProps> = ({
             <CardContent>
                 {results.length === 0 ? (
                     <div className="text-sm text-gray-500 text-center py-4">
-                        No ping results yet. Start a ping to see results.
+                        {language === 'tr' ? 'Henüz ping sonucu yok. Ping göndererek sonuçları görün.' : 'No ping results yet. Start a ping to see results.'}
                     </div>
                 ) : (
                     <>
@@ -381,34 +384,34 @@ export const PingResultPanel: React.FC<PingResultPanelProps> = ({
                                 <div className="text-lg font-semibold text-blue-600">
                                     {stats.sent}
                                 </div>
-                                <div className="text-xs text-blue-500">Sent</div>
+                                <div className="text-xs text-blue-500">{language === 'tr' ? 'Gönderilen' : 'Sent'}</div>
                             </div>
                             <div className="bg-green-50 rounded p-2">
                                 <div className="text-lg font-semibold text-green-600">
                                     {stats.received}
                                 </div>
-                                <div className="text-xs text-green-500">Received</div>
+                                <div className="text-xs text-green-500">{language === 'tr' ? 'Alınan' : 'Received'}</div>
                             </div>
                             <div className="bg-red-50 rounded p-2">
                                 <div className="text-lg font-semibold text-red-600">
                                     {stats.lost}
                                 </div>
-                                <div className="text-xs text-red-500">Lost</div>
+                                <div className="text-xs text-red-500">{language === 'tr' ? 'Kayıp' : 'Lost'}</div>
                             </div>
                         </div>
 
                         {stats.received > 0 && (
                             <div className="grid grid-cols-3 gap-2 mb-4 text-center text-xs">
                                 <div>
-                                    <span className="text-gray-500">Avg:</span>{' '}
+                                    <span className="text-gray-500">{language === 'tr' ? 'Ort:' : 'Avg:'}</span>{' '}
                                     <span className="font-medium">{stats.avgTime.toFixed(1)}ms</span>
                                 </div>
                                 <div>
-                                    <span className="text-gray-500">Min:</span>{' '}
+                                    <span className="text-gray-500">{language === 'tr' ? 'Min:' : 'Min:'}</span>{' '}
                                     <span className="font-medium">{stats.minTime.toFixed(1)}ms</span>
                                 </div>
                                 <div>
-                                    <span className="text-gray-500">Max:</span>{' '}
+                                    <span className="text-gray-500">{language === 'tr' ? 'Maks:' : 'Max:'}</span>{' '}
                                     <span className="font-medium">{stats.maxTime.toFixed(1)}ms</span>
                                 </div>
                             </div>
@@ -443,7 +446,7 @@ export const PingResultPanel: React.FC<PingResultPanelProps> = ({
                                             </span>
                                         ) : (
                                             <span className="text-red-600">
-                                                {result.errorMessage || 'Failed'}
+                                                {result.errorMessage || (language === 'tr' ? 'Başarısız' : 'Failed')}
                                             </span>
                                         )}
                                     </div>
@@ -466,12 +469,14 @@ export const PingPacketInfo: React.FC<PingPacketInfoProps> = ({
     result,
     devices,
 }) => {
+    const { language } = useLanguage();
+
     if (!result) {
         return (
             <Card className="w-full">
                 <CardContent className="p-4">
                     <div className="text-sm text-gray-500 text-center">
-                        Select a ping result to view packet details
+                        {language === 'tr' ? 'Paket detaylarını görmek için bir ping sonucu seçin' : 'Select a ping result to view packet details'}
                     </div>
                 </CardContent>
             </Card>
@@ -485,45 +490,45 @@ export const PingPacketInfo: React.FC<PingPacketInfoProps> = ({
     return (
         <Card className="w-full">
             <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Packet Information</CardTitle>
+                <CardTitle className="text-sm">{language === 'tr' ? 'Paket Bilgisi' : 'Packet Information'}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
                 <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div className="text-gray-500">Source:</div>
+                    <div className="text-gray-500">{language === 'tr' ? 'Kaynak:' : 'Source:'}</div>
                     <div className="font-medium">{getDeviceName(result.sourceDeviceId)}</div>
 
-                    <div className="text-gray-500">Target:</div>
+                    <div className="text-gray-500">{language === 'tr' ? 'Hedef:' : 'Target:'}</div>
                     <div className="font-medium">{getDeviceName(result.targetDeviceId)}</div>
 
-                    <div className="text-gray-500">Status:</div>
+                    <div className="text-gray-500">{language === 'tr' ? 'Durum:' : 'Status:'}</div>
                     <div className={result.success ? 'text-green-600' : 'text-red-600'}>
-                        {result.success ? '✓ Success' : '✗ Failed'}
+                        {result.success ? (language === 'tr' ? '✓ Başarılı' : '✓ Success') : (language === 'tr' ? '✗ Başarısız' : '✗ Failed')}
                     </div>
 
                     {result.success && (
                         <>
-                            <div className="text-gray-500">Response Time:</div>
+                            <div className="text-gray-500">{language === 'tr' ? 'Yanıt Süresi:' : 'Response Time:'}</div>
                             <div className="font-medium">{result.responseTime.toFixed(2)} ms</div>
 
                             <div className="text-gray-500">TTL:</div>
                             <div className="font-medium">{result.ttl}</div>
 
-                            <div className="text-gray-500">Packet Size:</div>
-                            <div className="font-medium">{result.packetSize} bytes</div>
+                            <div className="text-gray-500">{language === 'tr' ? 'Paket Boyutu:' : 'Packet Size:'}</div>
+                            <div className="font-medium">{result.packetSize} {language === 'tr' ? 'bayt' : (result.packetSize <= 1 ? 'byte' : 'bytes')}</div>
                         </>
                     )}
 
                     {result.path.length > 0 && (
                         <>
-                            <div className="text-gray-500">Path:</div>
-                            <div className="font-medium">{result.path.length} hops</div>
+                            <div className="text-gray-500">{language === 'tr' ? 'Yol:' : 'Path:'}</div>
+                            <div className="font-medium">{result.path.length} {language === 'tr' ? 'hop' : (result.path.length <= 1 ? 'hop' : 'hops')}</div>
                         </>
                     )}
                 </div>
 
                 {result.path.length > 0 && (
                     <div className="mt-3">
-                        <div className="text-xs text-gray-500 mb-1">Routing Path:</div>
+                        <div className="text-xs text-gray-500 mb-1">{language === 'tr' ? 'Yönlendirme Yolu:' : 'Routing Path:'}</div>
                         <div className="flex flex-wrap items-center gap-1 text-xs">
                             {result.path.map((deviceId, index) => (
                                 <React.Fragment key={deviceId}>
@@ -541,7 +546,7 @@ export const PingPacketInfo: React.FC<PingPacketInfoProps> = ({
 
                 {result.errorMessage && (
                     <div className="mt-3 p-2 bg-red-50 rounded text-xs text-red-600">
-                        Error: {result.errorMessage}
+                        {language === 'tr' ? 'Hata:' : 'Error:'} {result.errorMessage}
                     </div>
                 )}
             </CardContent>

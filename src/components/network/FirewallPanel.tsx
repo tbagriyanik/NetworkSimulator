@@ -229,7 +229,7 @@ export function FirewallPanel({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="any">Any</SelectItem>
+                        <SelectItem value="any">{t.language === 'tr' ? 'Herhangi' : 'Any'}</SelectItem>
                         <SelectItem value="tcp">TCP</SelectItem>
                         <SelectItem value="udp">UDP</SelectItem>
                         <SelectItem value="icmp">ICMP</SelectItem>

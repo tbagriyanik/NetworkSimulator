@@ -384,7 +384,7 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
                 <div className="flex justify-between items-center mb-2">
                   <div className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>{t.gigabitPorts}</div>
                   {consolePort && (
-                    <div className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-500'} pr-4`}>Console</div>
+                    <div className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-500'} pr-4`}>{t.language === 'tr' ? 'Konsol' : 'Console'}</div>
                   )}
                 </div>
                 <div className="flex gap-2 justify-center items-start flex-wrap">

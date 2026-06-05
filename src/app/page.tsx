@@ -3576,13 +3576,13 @@ ${state.bannerMOTD}
       const showRefreshPanel = () => {
         const totalDevices = connectedWirelessClients.length + activeAPs.length + disconnectedPCs.length + disconnectedAPs.length;
         const stpMessage = stpUpdatedCount > 0
-          ? `✓ ${t.stpSwitchesUpdated.replace('X', String(stpUpdatedCount))}`
+          ? `✓ ${language === 'tr' ? t.stpSwitchesUpdated.replace('X', String(stpUpdatedCount)) : `STP: ${stpUpdatedCount} ${stpUpdatedCount === 1 ? 'switch updated' : 'switches updated'}`}`
           : '';
         const portSecurityMessage = (portSecurityViolationCount > 0 || portSecurityRecoveredCount > 0)
           ? `🔒 ${t.portSecurityBlocked.replace('X', String(portSecurityViolationCount)).replace('Y', String(portSecurityRecoveredCount))}`
           : '';
         const topologyMessage = invalidCount > 0
-          ? `${t.topologyInvalidConnections.replace('X', String(invalidCount))}`
+          ? `${language === 'tr' ? t.topologyInvalidConnections.replace('X', String(invalidCount)) : `Topology: ${invalidCount} ${invalidCount === 1 ? 'invalid connection disabled' : 'invalid connections disabled'}`}`
           : '';
         const duplicateIpDetails = Array.from(ipOwners.entries())
           .filter(([, owners]) => owners.length > 1)
@@ -3607,7 +3607,7 @@ ${state.bannerMOTD}
           if (connectedWirelessClients.length > 0) {
             wifiMessages.push(language === 'tr'
               ? `✓ ${connectedWirelessClients.length} kablosuz istemci bağlandı`
-              : `✓ ${connectedWirelessClients.length} wireless clients connected`);
+              : `✓ ${connectedWirelessClients.length} wireless client${connectedWirelessClients.length > 1 ? 's' : ''} connected`);
           }
           if (activeAPs.length > 0) {
             wifiMessages.push(language === 'tr'
@@ -3617,12 +3617,12 @@ ${state.bannerMOTD}
           if (disconnectedPCs.length > 0) {
             wifiMessages.push(language === 'tr'
               ? `⚠ ${disconnectedPCs.length} kablosuz istemci bağlantı yok`
-              : `⚠ ${disconnectedPCs.length} wireless clients disconnected`);
+              : `⚠ ${disconnectedPCs.length} wireless client${disconnectedPCs.length > 1 ? 's' : ''} disconnected`);
           }
           if (disconnectedAPs.length > 0) {
             wifiMessages.push(language === 'tr'
               ? `⚠ ${disconnectedAPs.length} AP istemci yok`
-              : `⚠ ${disconnectedAPs.length} AP no clients`);
+              : `⚠ ${disconnectedAPs.length} AP no client${disconnectedAPs.length > 1 ? 's' : ''}`);
           }
 
           // Show combined WiFi status as a single toast
@@ -3645,10 +3645,10 @@ ${state.bannerMOTD}
           const dhcpMessages = [
             language === 'tr'
               ? `DHCP: ${dhcpServerActiveCount} sunucu aktif`
-              : `DHCP: ${dhcpServerActiveCount} active servers`,
+              : `DHCP: ${dhcpServerActiveCount} ${dhcpServerActiveCount <= 1 ? 'active server' : 'active servers'}`,
             language === 'tr'
               ? `${dhcpClientWithLeaseCount} istemci kiraladı`
-              : `${dhcpClientWithLeaseCount} clients leased`,
+              : `${dhcpClientWithLeaseCount} ${dhcpClientWithLeaseCount <= 1 ? 'client leased' : 'clients leased'}`,
           ];
           if (dhcpServerNoPoolCount > 0) {
             dhcpMessages.push(language === 'tr'
@@ -3676,7 +3676,7 @@ ${state.bannerMOTD}
             ? ''
             : (language === 'tr'
               ? `DHCP: ${dhcpServerActiveCount} sunucu aktif, ${dhcpClientWithLeaseCount} lease`
-              : `DHCP: ${dhcpServerActiveCount} active servers, ${dhcpClientWithLeaseCount} leases`);
+              : `DHCP: ${dhcpServerActiveCount} ${dhcpServerActiveCount <= 1 ? 'active server' : 'active servers'}, ${dhcpClientWithLeaseCount} ${dhcpClientWithLeaseCount <= 1 ? 'lease' : 'leases'}`);
 
           setRefreshNetworkReport({
             show: true,
@@ -4188,7 +4188,7 @@ ${state.bannerMOTD}
                   Multiple Tabs Active
                 </AlertDialogTitle>
                 <AlertDialogDescription>
-                  You have {tabCount} tabs of Network Simulator open. Each tab now saves its own data independently, so you can work in multiple tabs without conflicts.
+                  You have {tabCount} tab{tabCount > 1 ? 's' : ''} of Network Simulator open. Each tab now saves its own data independently, so you can work in multiple tabs without conflicts.
                   <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
                     <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
                       ✅ Each tab has isolated storage

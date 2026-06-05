@@ -84,8 +84,8 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig): string {
   ];
 
   const modeOptions = [
-    { value: 'ap', label: 'Access Point (AP)' },
-    { value: 'client', label: 'Client Mode' },
+    { value: 'ap', label: isTurkish ? 'Erişim Noktası (AP)' : 'Access Point (AP)' },
+    { value: 'client', label: isTurkish ? 'İstemci Modu' : 'Client Mode' },
   ];
 
   const securitySelect = securityOptions.map(opt =>
@@ -642,7 +642,7 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig): string {
         <div class="status-card" style="margin-bottom:20px;">
           <div class="status-info">
             <h3>${isTurkish ? 'IoT Ağı' : 'IoT Network'}</h3>
-            <p>${connectedIotDevices.length} ${isTurkish ? 'cihaz bu AP\'ye bağlı' : 'device(s) connected to this AP'}</p>
+            <p>${connectedIotDevices.length} ${isTurkish ? "cihaz bu AP'ye bağlı" : (connectedIotDevices.length === 1 ? 'device connected to this AP' : 'devices connected to this AP')}</p>
           </div>
           <span class="status-badge">${connectedIotDevices.filter(d => d.connected).length} ${isTurkish ? 'Aktif' : 'Active'}</span>
         </div>
@@ -773,7 +773,7 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig): string {
           <div class="status-card">
             <div class="status-info">
               <h3>${isTurkish ? 'Bağlı İstemciler' : 'Connected Clients'}</h3>
-              <p>${connectedIotDevices.filter(d => d.connected).length} ${isTurkish ? 'IoT cihazı' : 'IoT device(s)'}</p>
+              <p>${connectedIotDevices.filter(d => d.connected).length} ${isTurkish ? 'IoT cihazı' : (connectedIotDevices.filter(d => d.connected).length === 1 ? 'IoT device' : 'IoT devices')}</p>
             </div>
             <span class="status-badge">${connectedIotDevices.length} ${isTurkish ? 'Toplam' : 'Total'}</span>
           </div>
@@ -1053,7 +1053,7 @@ window.parent.postMessage({ type: 'router-admin-toast', payload: { type: 'error'
           btn.style.background = '';
           btn.disabled = false;
           clearIotSelection();
-          alert('✅ ' + successCount + ' ${isTurkish ? 'IoT cihazı ağa bağlandı!' : 'IoT device(s) connected to the network!'}');
+          alert('✅ ' + successCount + ${isTurkish ? "' IoT cihazı ağa bağlandı!'" : "(successCount === 1 ? ' IoT device connected to the network!' : ' IoT devices connected to the network!')"});
         }, 1500);
       }, deviceIds.length * 100 + 500);
     };

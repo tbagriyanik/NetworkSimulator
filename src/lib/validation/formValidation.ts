@@ -34,7 +34,7 @@ export const validatePassword = (password: string, minLength = 8): ValidationErr
     if (password.length < minLength) {
         return {
             field: 'password',
-            message: `Password must be at least ${minLength} characters`,
+            message: `Password must be at least ${minLength} character${minLength > 1 ? 's' : ''}`,
             code: 'PASSWORD_TOO_SHORT',
         };
     }

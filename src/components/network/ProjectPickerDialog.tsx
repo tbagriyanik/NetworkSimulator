@@ -450,7 +450,7 @@ export function ProjectPickerDialog({
                               </div>
                               <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
                                 <Target className="w-3 h-3" />
-                                {guidedProject.steps.length} {language === 'tr' ? 'adım' : 'steps'}
+                                {guidedProject.steps.length} {language === 'tr' ? 'adım' : (guidedProject.steps.length <= 1 ? 'step' : 'steps')}
                               </div>
                               <div className="flex items-center gap-1 text-[10px] text-amber-500 dark:text-amber-400 font-bold">
                                 <Sparkles className="w-3 h-3 fill-current" />
@@ -556,7 +556,7 @@ export function ProjectPickerDialog({
                               </div>
                               <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
                                 <Target className="w-3 h-3" />
-                                {examProject.tasks.length} {language === 'tr' ? 'görev' : 'tasks'}
+                                {examProject.tasks.length} {language === 'tr' ? 'görev' : (examProject.tasks.length <= 1 ? 'task' : 'tasks')}
                               </div>
                               <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400 capitalize">
                                 <GraduationCap className="w-3 h-3" />

@@ -4621,7 +4621,7 @@ export function PCPanel({
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
-                              {renderNetworkInput("IP Address", pcIP, (newIp) => {
+                              {renderNetworkInput(language === 'tr' ? 'IP Adresi' : 'IP Address', pcIP, (newIp) => {
                                 setPcIP(newIp);
                                 if (validateIP(newIp)) {
                                   const duplicateDevices = topologyDevices.filter(d => d.id !== deviceId && d.ip === newIp);
@@ -4648,29 +4648,29 @@ export function PCPanel({
                                 }
                               }, "192.168.1.100", errors.ip, ipConfigMode === 'dhcp')}
 
-                              {renderNetworkInput("Subnet Mask", pcSubnet, (newSubnet) => {
+                              {renderNetworkInput(language === 'tr' ? 'Alt Ağ Maskesi' : 'Subnet Mask', pcSubnet, (newSubnet) => {
                                 setPcSubnet(newSubnet);
                                 setTimeout(() => dispatchDeviceConfig({ subnet: newSubnet, ipConfigMode: 'static' }), 500);
                               }, "255.255.255.0", errors.subnet, ipConfigMode === 'dhcp')}
 
-                              {renderNetworkInput("Gateway", pcGateway, (newGateway) => {
+                              {renderNetworkInput(language === 'tr' ? 'Ağ Geçidi' : 'Gateway', pcGateway, (newGateway) => {
                                 setPcGateway(newGateway);
                                 dispatchDeviceConfig({ gateway: newGateway });
                               }, "192.168.1.1", errors.gateway)}
 
-                              {renderNetworkInput("DNS Server", pcDNS, (newDNS) => {
+                              {renderNetworkInput(language === 'tr' ? 'DNS Sunucusu' : 'DNS Server', pcDNS, (newDNS) => {
                                 setPcDNS(newDNS);
                                 dispatchDeviceConfig({ dns: newDNS });
                               }, "8.8.8.8", errors.dns)}
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 pt-2 border-t border-slate-800/10 dark:border-slate-800/50">
-                              {renderNetworkInput("IPv6 Address", pcIPv6, (newIPv6) => {
+                              {renderNetworkInput(language === 'tr' ? 'IPv6 Adresi' : 'IPv6 Address', pcIPv6, (newIPv6) => {
                                 setPcIPv6(newIPv6);
                                 dispatchDeviceConfig({ ipv6: newIPv6 });
                               }, "2001:db8:acad:1::10", errors.ipv6)}
 
-                              {renderNetworkInput("IPv6 Prefix", pcIPv6Prefix, (newPrefix) => {
+                              {renderNetworkInput(language === 'tr' ? 'IPv6 Öneki' : 'IPv6 Prefix', pcIPv6Prefix, (newPrefix) => {
                                 setPcIPv6Prefix(newPrefix);
                                 dispatchDeviceConfig({ ipv6Prefix: newPrefix });
                               }, "64")}
@@ -5242,37 +5242,37 @@ export function PCPanel({
                                       <div className="space-y-3">
                                         <div className="flex items-center justify-between">
                                           <div className="flex-1">
-                                            <div className="text-[11px] font-semibold text-slate-500 mb-1">IP Address</div>
+                                            <div className="text-[11px] font-semibold text-slate-500 mb-1">{language === 'tr' ? 'IP Adresi' : 'IP Address'}</div>
                                             <div className={`text-sm font-mono ${selectedIotDevice?.ip ? 'text-cyan-600 dark:text-cyan-300' : 'text-slate-200'}`}>
-                                              {selectedIotDevice?.ip || 'Not assigned'}
+                                              {selectedIotDevice?.ip || (language === 'tr' ? 'Atanmamış' : 'Not assigned')}
                                             </div>
                                           </div>
                                         </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                           <div>
-                                            <div className="text-[11px] font-semibold text-slate-500 mb-1">MAC Address</div>
-                                            <div className="text-sm font-mono text-slate-600 dark:text-slate-200">{selectedIotDevice?.macAddress ? normalizeMAC(selectedIotDevice.macAddress) : 'N/A'}</div>
+                                            <div className="text-[11px] font-semibold text-slate-500 mb-1">{language === 'tr' ? 'MAC Adresi' : 'MAC Address'}</div>
+                                            <div className="text-sm font-mono text-slate-600 dark:text-slate-200">{selectedIotDevice?.macAddress ? normalizeMAC(selectedIotDevice.macAddress) : (language === 'tr' ? 'Yok' : 'N/A')}</div>
                                           </div>
                                           <div>
-                                            <div className="text-[11px] font-semibold text-slate-500 mb-1">Gateway</div>
+                                            <div className="text-[11px] font-semibold text-slate-500 mb-1">{language === 'tr' ? 'Ağ Geçidi' : 'Gateway'}</div>
                                             <div className="text-sm font-mono text-slate-600 dark:text-slate-200">{selectedIotDevice?.gateway || '-'}</div>
                                           </div>
                                           <div>
-                                            <div className="text-[11px] font-semibold text-slate-500 mb-1">Subnet Mask</div>
+                                            <div className="text-[11px] font-semibold text-slate-500 mb-1">{language === 'tr' ? 'Alt Ağ Maskesi' : 'Subnet Mask'}</div>
                                             <div className="text-sm font-mono text-slate-600 dark:text-slate-200">{selectedIotDevice?.subnet || '-'}</div>
                                           </div>
                                           <div>
-                                            <div className="text-[11px] font-semibold text-slate-500 mb-1">Status</div>
+                                            <div className="text-[11px] font-semibold text-slate-500 mb-1">{language === 'tr' ? 'Durum' : 'Status'}</div>
                                             <div className={`text-sm font-semibold ${isIotConnected ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                                               {isIotConnected ? (
                                                 <span className="flex items-center gap-1.5">
                                                   <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                                                  Online
+                                                  {language === 'tr' ? 'Çevrimiçi' : 'Online'}
                                                 </span>
                                               ) : (
                                                 <span className="flex items-center gap-1.5">
                                                   <span className="w-2 h-2 rounded-full bg-red-500"></span>
-                                                  Offline
+                                                  {language === 'tr' ? 'Çevrimdışı' : 'Offline'}
                                                 </span>
                                               )}
                                             </div>
@@ -5296,7 +5296,7 @@ export function PCPanel({
                                             }}
                                           >
                                             <Globe className="w-4 h-4 mr-2" />
-                                            Ping
+                                            {language === 'tr' ? 'Ping Gönder' : 'Ping'}
                                           </Button>
                                         )}
                                         <Button
@@ -5516,7 +5516,7 @@ export function PCPanel({
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="open">Open</SelectItem>
+                                    <SelectItem value="open">{language === 'tr' ? 'Açık' : 'Open'}</SelectItem>
                                     <SelectItem value="wpa">WPA</SelectItem>
                                     <SelectItem value="wpa2">WPA2 Personal</SelectItem>
                                     <SelectItem value="wpa3">WPA3</SelectItem>

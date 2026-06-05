@@ -168,7 +168,7 @@ export function generateDeviceAriaLabel(props: DeviceAriaProps): string {
         parts.push(`IP address ${props.ipAddress}`);
     }
 
-    parts.push(`${props.connectionCount} connections`);
+    parts.push(`${props.connectionCount} connection${props.connectionCount > 1 ? 's' : ''}`);
 
     if (props.isSelected) {
         parts.push('selected');

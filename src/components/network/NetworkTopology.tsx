@@ -5564,7 +5564,7 @@ export function NetworkTopology({
                             {rules.map((rule, index) => (
                               <div key={index} className="text-xs py-1">
                                 <span className="font-mono">
-                                  IF {rule.condition} → {rule.action}
+                                  {language === 'tr' ? 'EĞER' : 'IF'} {rule.condition} → {rule.action}
                                 </span>
                                 <span className={`ml-2 ${rule.enabled ? 'text-green-500' : 'text-slate-400'}`}>
                                   {rule.enabled ? (language === 'tr' ? '✅ Aktif' : '✅ Active') : (language === 'tr' ? '❌ Pasif' : '❌ Inactive')}

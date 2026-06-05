@@ -390,7 +390,7 @@ export const validateDHCPRange = (
     if (rangeSize > 253) {
         return {
             field: fieldName,
-            message: `DHCP range too large (${rangeSize} addresses). Consider a smaller range (max 253)`,
+            message: `DHCP range too large (${rangeSize} address${rangeSize > 1 ? 'es' : ''}). Consider a smaller range (max 253)`,
             code: 'DHCP_RANGE_TOO_LARGE',
             severity: 'warning',
         };
@@ -431,7 +431,7 @@ export const validateLeaseTime = (leaseTime: number, fieldName = 'dhcp.leaseTime
     if (leaseTime > 168) { // 1 week
         return {
             field: fieldName,
-            message: `Lease time ${leaseTime} hours is very long. Typical values: 8-24 hours`,
+            message: `Lease time ${leaseTime} hour${leaseTime > 1 ? 's' : ''} is very long. Typical values: 8-24 hours`,
             code: 'DHCP_LEASE_TOO_LONG',
             severity: 'warning',
         };

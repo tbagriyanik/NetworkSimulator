@@ -940,10 +940,10 @@ export const NetworkCanvas = React.memo(React.forwardRef<HTMLDivElement, Network
                         className={cn(styles.gridToggle, { [styles.active]: snapToGrid })}
                         onClick={() => onSnapToGridChange?.(!snapToGrid)}
                         title={t.gridSnapping}
-                        aria-label="Toggle Grid Snapping"
+                        aria-label={t.language === 'tr' ? 'Izgaraya Yapıştırmayı Aç/Kapat' : 'Toggle Grid Snapping'}
                     >
                         <Grid size={16} />
-                        <span className={styles.controlLabel}>Grid</span>
+                        <span className={styles.controlLabel}>{t.language === 'tr' ? 'Izgara' : 'Grid'}</span>
                     </button>
 
                     {/* Alignment controls - only show if multiple devices selected */}
@@ -953,7 +953,7 @@ export const NetworkCanvas = React.memo(React.forwardRef<HTMLDivElement, Network
                                 className={styles.controlButton}
                                 onClick={alignDevicesLeft}
                                 title={t.alignLeft}
-                                aria-label="Align Left"
+                                aria-label={t.language === 'tr' ? 'Sola Hizala' : 'Align Left'}
                             >
                                 <AlignLeft size={16} />
                             </button>
@@ -961,7 +961,7 @@ export const NetworkCanvas = React.memo(React.forwardRef<HTMLDivElement, Network
                                 className={styles.controlButton}
                                 onClick={alignDevicesCenter}
                                 title={t.alignCenter}
-                                aria-label="Align Center"
+                                aria-label={t.language === 'tr' ? 'Ortala' : 'Align Center'}
                             >
                                 <AlignCenter size={16} />
                             </button>

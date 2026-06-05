@@ -849,7 +849,7 @@ export const getGuidedProjects = (language: 'tr' | 'en'): GuidedProject[] => {
       id: 'guided-cli-basics',
       tag: 'CLI',
       title: isTr ? 'CLI Temelleri' : 'CLI Basics',
-      description: isTr ? 'Cisco IOS komut satırına giriş yapın' : 'Introduction to Cisco IOS command line',
+      description: isTr ? 'NOS komut satırına giriş yapın' : 'Introduction to NOS command line',
       detail: isTr ? 'Enable ve Global Config modlarına geçiş.' : 'Switching to Enable and Global Config modes.',
       data: {
         version: '1.0', timestamp: new Date().toISOString(), devices: [], deviceOutputs: [], pcOutputs: [], pcHistories: [],
@@ -1158,9 +1158,9 @@ export const checkStepCompletion = (
       }
 
       if (!targetState && !step.checkParams.configKey.startsWith('pc.') &&
-          !step.checkParams.configKey.startsWith('iot.') &&
-          !step.checkParams.configKey.startsWith('firewall.') &&
-          !step.checkParams.configKey.startsWith('services.')) {
+        !step.checkParams.configKey.startsWith('iot.') &&
+        !step.checkParams.configKey.startsWith('firewall.') &&
+        !step.checkParams.configKey.startsWith('services.')) {
         return false;
       }
 

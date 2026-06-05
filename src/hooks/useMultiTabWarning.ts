@@ -35,7 +35,7 @@ export function useMultiTabWarning() {
           setTimeout(() => {
             toast({
               title: "Multiple Tabs Detected",
-              description: `You have ${tabCount} tabs open. Each tab saves its own data independently. This is normal behavior.`,
+              description: `You have ${tabCount} tab${tabCount > 1 ? 's' : ''} open. Each tab saves its own data independently. This is normal behavior.`,
               variant: "default",
               duration: 8000,
             });

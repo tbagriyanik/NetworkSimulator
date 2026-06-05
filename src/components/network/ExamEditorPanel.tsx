@@ -598,7 +598,7 @@ export function ExamEditorPanel({
                                 <div className="space-y-2">
                                   <div className="grid grid-cols-2 gap-2">
                                     <div className="space-y-1">
-                                      <label className="text-[9px] font-bold opacity-50 uppercase ml-1">Key</label>
+                                      <label className="text-[9px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Anahtar' : 'Key'}</label>
                                       <div className="flex gap-1">
                                         <Input
                                           value={task.checkParams?.configKey || ''}
@@ -640,7 +640,7 @@ export function ExamEditorPanel({
                                       </div>
                                     </div>
                                     <div className="space-y-1">
-                                      <label className="text-[9px] font-bold opacity-50 uppercase ml-1">Value</label>
+                                      <label className="text-[9px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Değer' : 'Value'}</label>
                                       <div className="flex gap-1">
                                         <Input
                                           value={task.checkParams?.configValue || ''}

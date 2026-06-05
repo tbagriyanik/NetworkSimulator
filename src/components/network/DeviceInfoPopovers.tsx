@@ -110,7 +110,7 @@ export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zInde
         >
           <div className="flex items-center gap-1.5">
             <Monitor className="w-3.5 h-3.5 text-blue-500" />
-            <span className={`font-semibold text-sm ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{pc?.name || pc?.id || 'Unknown'}</span>
+            <span className={`font-semibold text-sm ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{pc?.name || pc?.id || (language === 'tr' ? 'Bilinmiyor' : 'Unknown')}</span>
           </div>
           <TooltipWrapper title={t.close}>
             <button onClick={(e) => { e.stopPropagation(); onClose(); }} className={`w-5 h-5 rounded-md bg-red-500 hover:bg-red-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0`}>
@@ -122,38 +122,38 @@ export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zInde
           <div className="p-2 space-y-1 text-xs">
             <TooltipWrapper title={t.copy}>
               <div className="flex justify-between items-center cursor-pointer hover:bg-slate-500/10 rounded px-1 transition-colors" onClick={() => navigator.clipboard.writeText(pc?.ip || '0.0.0.0')}>
-                <span className="opacity-50">IP</span>
+                <span className="opacity-50">{language === 'tr' ? 'IP Adresi' : 'IP'}</span>
                 <span className="font-mono text-blue-500">{pc?.ip || '0.0.0.0'}</span>
               </div>
             </TooltipWrapper>
             <TooltipWrapper title={t.copy}>
               <div className="flex justify-between items-center cursor-pointer hover:bg-slate-500/10 rounded px-1 transition-colors" onClick={() => navigator.clipboard.writeText(pc?.subnet || '255.255.255.0')}>
-                <span className="opacity-50">Subnet</span>
+                <span className="opacity-50">{language === 'tr' ? 'Alt Ağ' : 'Subnet'}</span>
                 <span className="font-mono opacity-80">{pc?.subnet || '255.255.255.0'}</span>
               </div>
             </TooltipWrapper>
             <TooltipWrapper title={t.copy}>
               <div className="flex justify-between items-center cursor-pointer hover:bg-slate-500/10 rounded px-1 transition-colors" onClick={() => navigator.clipboard.writeText(pc?.gateway || '0.0.0.0')}>
-                <span className="opacity-50">GW</span>
+                <span className="opacity-50">{language === 'tr' ? 'Ağ Geçidi' : 'GW'}</span>
                 <span className="font-mono opacity-80">{pc?.gateway || '0.0.0.0'}</span>
               </div>
             </TooltipWrapper>
             <TooltipWrapper title={t.copy}>
               <div className="flex justify-between items-center cursor-pointer hover:bg-slate-500/10 rounded px-1 transition-colors" onClick={() => navigator.clipboard.writeText(pc?.ipv6 || '::')}>
-                <span className="opacity-50">IPv6</span>
+                <span className="opacity-50">{language === 'tr' ? 'IPv6 Adresi' : 'IPv6'}</span>
                 <span className="font-mono opacity-80">{pc?.ipv6 || '::'}</span>
               </div>
             </TooltipWrapper>
             <TooltipWrapper title={t.copy}>
               <div className="flex justify-between items-center cursor-pointer hover:bg-slate-500/10 rounded px-1 transition-colors" onClick={() => navigator.clipboard.writeText(pc?.macAddress ? normalizeMAC(pc.macAddress) : 'N/A')}>
-                <span className="opacity-50">MAC</span>
-                <span className="font-mono opacity-30 text-xs">{pc?.macAddress ? normalizeMAC(pc.macAddress) : 'N/A'}</span>
+                <span className="opacity-50">{language === 'tr' ? 'MAC Adresi' : 'MAC'}</span>
+                <span className="font-mono opacity-30 text-xs">{pc?.macAddress ? normalizeMAC(pc.macAddress) : (language === 'tr' ? 'Yok' : 'N/A')}</span>
               </div>
             </TooltipWrapper>
             {pc?.wifi && pc.wifi.enabled && (
               <div className="pt-1 border-t border-slate-500/20">
                 <div className="flex justify-between items-center mb-1">
-                  <span className="opacity-50">WiFi</span>
+                  <span className="opacity-50">{language === 'tr' ? 'Kablosuz' : 'WiFi'}</span>
                   <span className="text-xs font-bold text-purple-500">{t.active}</span>
                 </div>
                 <div className="flex gap-2 text-xs">

@@ -4,6 +4,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { logger } from '@/lib/logger';
 
 type Props = {
@@ -72,6 +73,7 @@ function ErrorFallback({
   onReset,
 }: ErrorFallbackProps) {
   const { theme } = useTheme();
+  const { language } = useLanguage();
   const isDark = theme === 'dark';
 
   return (
@@ -93,7 +95,7 @@ function ErrorFallback({
           className={`text-xl font-bold text-center mb-2 ${isDark ? 'text-white' : 'text-slate-900'
             }`}
         >
-          {fallbackTitle || 'Oops! Something went wrong'}
+          {fallbackTitle || (language === 'tr' ? 'Bir şeyler ters gitti!' : 'Oops! Something went wrong')}
         </h1>
 
         <p
@@ -101,7 +103,7 @@ function ErrorFallback({
             }`}
         >
           {fallbackDescription ||
-            'We encountered an unexpected error. Please try refreshing the page or contact support if the problem persists.'}
+            (language === 'tr' ? 'Beklenmeyen bir hata oluştu. Lütfen sayfayı yenilemeyi deneyin veya sorun devam ederse destek ekibiyle iletişime geçin.' : 'We encountered an unexpected error. Please try refreshing the page or contact support if the problem persists.')}
         </p>
 
         {error && process.env.NODE_ENV === 'development' && (
@@ -111,7 +113,7 @@ function ErrorFallback({
               : 'bg-slate-100 text-slate-700'
               }`}
           >
-            <p className="font-bold mb-1">Error Details:</p>
+            <p className="font-bold mb-1">{language === 'tr' ? 'Hata Detayları:' : 'Error Details:'}</p>
             <p>{error.message}</p>
           </div>
         )}
@@ -123,14 +125,14 @@ function ErrorFallback({
             variant="default"
           >
             <RefreshCw className="w-4 h-4" />
-            Try Again
+            {language === 'tr' ? 'Tekrar Dene' : 'Try Again'}
           </Button>
           <Button
             onClick={() => window.location.href = '/'}
             variant="outline"
             className="flex-1"
           >
-            Go Home
+            {language === 'tr' ? 'Ana Sayfaya Dön' : 'Go Home'}
           </Button>
         </div>
       </div>

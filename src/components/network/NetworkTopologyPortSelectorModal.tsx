@@ -140,7 +140,7 @@ export function NetworkTopologyPortSelectorModal({
                     </span>
                   </div>
                   <div className={`text-xs font-bold tracking-widest ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                    {device.ports.filter(p => p.status === 'disconnected').length} {t.freePorts}
+                    {device.ports.filter(p => p.status === 'disconnected').length} {language === 'tr' ? t.freePorts : (device.ports.filter(p => p.status === 'disconnected').length <= 1 ? 'free port' : 'free ports')}
                   </div>
                 </div>
 

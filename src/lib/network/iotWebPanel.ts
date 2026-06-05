@@ -908,7 +908,7 @@ export const generateIotDevicePageContent = (
               <div style="font-size: 12px; margin-bottom: 5px; font-weight: 500;">${isTurkish ? 'Yeni Kural Ekle:' : 'Add New Rule:'}</div>
               <div style="display: flex; flex-direction: column; gap: 8px;">
                 <div style="display: flex; align-items: center; gap: 5px;">
-                  <span style="font-size: 12px; min-width: 35px;">IF</span>
+                  <span style="font-size: 12px; min-width: 35px;">${isTurkish ? 'EĞER' : 'IF'}</span>
                   <select id="sensorSelect" style="flex: 1;">
                     ${sensorOptionsHtml}
                   </select>
@@ -920,7 +920,7 @@ export const generateIotDevicePageContent = (
                   <input type="number" id="thresholdInput" style="width: 50px;" value="25">
                 </div>
                 <div style="display: flex; align-items: center; gap: 5px;">
-                  <span style="font-size: 12px; min-width: 35px;">THEN</span>
+                  <span style="font-size: 12px; min-width: 35px;">${isTurkish ? 'O ZAMAN' : 'THEN'}</span>
                   <select id="targetDeviceSelect" style="flex: 1;">
                     <option value="this">${isTurkish ? 'Bu Cihaz' : 'This Device'}</option>
                     ${allDevices.filter(d => d.id !== deviceId && d.type === 'iot' && (d.iot?.dataFlowDirection === 'output' || d.iot?.dataFlowDirection === 'input/output' || d.iot?.kind === 'cooler' || d.iot?.kind === 'lamp' || d.iot?.kind === 'heater')).map(d => `

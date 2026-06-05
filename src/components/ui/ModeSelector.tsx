@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useMode, LearningMode } from '@/contexts/ModeContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
@@ -10,34 +11,35 @@ export interface ModeSelectorProps {
     showLabel?: boolean;
 }
 
-const MODES: Array<{ value: LearningMode; label: string; description: string }> = [
+const MODES = (language: string): Array<{ value: LearningMode; label: string; description: string }> => [
     {
         value: 'beginner',
-        label: 'Beginner',
-        description: 'Limited devices, simplified interface',
+        label: language === 'tr' ? 'Başlangıç' : 'Beginner',
+        description: language === 'tr' ? 'Sınırlı cihazlar, basitleştirilmiş arayüz' : 'Limited devices, simplified interface',
     },
     {
         value: 'intermediate',
-        label: 'Intermediate',
-        description: 'All devices, standard features',
+        label: language === 'tr' ? 'Orta Seviye' : 'Intermediate',
+        description: language === 'tr' ? 'Tüm cihazlar, standart özellikler' : 'All devices, standard features',
     },
     {
         value: 'advanced',
-        label: 'Advanced',
-        description: 'All features, compact interface',
+        label: language === 'tr' ? 'İleri Seviye' : 'Advanced',
+        description: language === 'tr' ? 'Tüm özellikler, kompakt arayüz' : 'All features, compact interface',
     },
 ];
 
 export function ModeSelector({ className, showLabel = true }: ModeSelectorProps) {
     const { mode, setMode } = useMode();
+    const { language } = useLanguage();
 
     return (
         <div className={cn('flex flex-col gap-3', className)}>
             {showLabel && (
-                <Label className="text-sm font-semibold">Learning Mode</Label>
+                <Label className="text-sm font-semibold">{language === 'tr' ? 'Öğrenme Modu' : 'Learning Mode'}</Label>
             )}
             <div className="flex gap-2">
-                {MODES.map((m) => (
+                {MODES(language).map((m) => (
                     <label
                         key={m.value}
                         className="flex items-center gap-2 cursor-pointer"
@@ -49,7 +51,7 @@ export function ModeSelector({ className, showLabel = true }: ModeSelectorProps)
                             checked={mode === m.value}
                             onChange={(e) => setMode(e.target.value as LearningMode)}
                             className="w-4 h-4 cursor-pointer"
-                            aria-label={`${m.label} mode: ${m.description}`}
+                            aria-label={language === 'tr' ? `${m.label} modu: ${m.description}` : `${m.label} mode: ${m.description}`}
                         />
                         <span className="text-sm font-medium">{m.label}</span>
                     </label>
