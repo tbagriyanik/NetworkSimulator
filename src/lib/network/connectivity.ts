@@ -51,7 +51,8 @@ const getVlanSpecificSTPBlocking = (
   portId: string,
   vlanId: number,
   connections: CanvasConnection[],
-  deviceStates?: Map<string, SwitchState>
+  deviceStates?: Map<string, SwitchState>,
+  existingConnection?: CanvasConnection
 ): boolean => {
   if (!deviceStates) return false;
 
@@ -66,7 +67,7 @@ const getVlanSpecificSTPBlocking = (
 
   // Check if the connection is active - if the link is down, STP should reconverge
   // and blocked ports should become forwarding (backup path)
-  const connection = connections.find(c =>
+  const connection = existingConnection || connections.find(c =>
     (c.sourceDeviceId === deviceId && c.sourcePort === portId) ||
     (c.targetDeviceId === deviceId && c.targetPort === portId)
   );
@@ -355,16 +356,26 @@ function simulateDnsLookup(hostname: string): string | null {
 function resolveHostname(
   hostname: string,
   devices: CanvasDevice[],
-  deviceStates?: Map<string, SwitchState>
+  deviceStates?: Map<string, SwitchState>,
+  deviceMap?: Map<string, CanvasDevice>
 ): string | null {
   // Clean hostname (remove www., convert to lowercase)
   const cleanHostname = hostname.toLowerCase().replace(/^www\./, '');
 
   // 1. Check exact hostname matches against device names
-  for (const device of devices) {
-    const deviceName = device.name?.toLowerCase();
-    if (deviceName === cleanHostname && device.ip) {
-      return device.ip;
+  if (deviceMap) {
+    for (const device of deviceMap.values()) {
+      const deviceName = device.name?.toLowerCase();
+      if (deviceName === cleanHostname && device.ip) {
+        return device.ip;
+      }
+    }
+  } else {
+    for (const device of devices) {
+      const deviceName = device.name?.toLowerCase();
+      if (deviceName === cleanHostname && device.ip) {
+        return device.ip;
+      }
     }
   }
 
@@ -375,7 +386,7 @@ function resolveHostname(
       const deviceHostname = state.hostname?.toLowerCase();
       if (deviceHostname === cleanHostname) {
         // Find the device and get its IP
-        const device = devices.find(d => d.id === deviceId);
+        const device = deviceMap ? deviceMap.get(deviceId) : devices.find(d => d.id === deviceId);
         if (device?.ip) return device.ip;
 
         // Check interfaces for IP if device IP is not set
@@ -403,7 +414,7 @@ function resolveHostname(
         const deviceHostname = state.hostname?.toLowerCase();
 
         if (deviceDomain === domain && deviceHostname === baseHostname) {
-          const device = devices.find(d => d.id === deviceId);
+          const device = deviceMap ? deviceMap.get(deviceId) : devices.find(d => d.id === deviceId);
           if (device?.ip) return device.ip;
 
           // Check interfaces for IP
@@ -419,10 +430,19 @@ function resolveHostname(
   }
 
   // 4. Fallback: check if any device name contains the hostname as substring
-  for (const device of devices) {
-    const deviceName = device.name?.toLowerCase();
-    if (deviceName && deviceName.includes(cleanHostname) && device.ip) {
-      return device.ip;
+  if (deviceMap) {
+    for (const device of deviceMap.values()) {
+      const deviceName = device.name?.toLowerCase();
+      if (deviceName && deviceName.includes(cleanHostname) && device.ip) {
+        return device.ip;
+      }
+    }
+  } else {
+    for (const device of devices) {
+      const deviceName = device.name?.toLowerCase();
+      if (deviceName && deviceName.includes(cleanHostname) && device.ip) {
+        return device.ip;
+      }
     }
   }
 
@@ -480,6 +500,10 @@ export function checkConnectivity(
     for (const pc of pcDevices) {
       const pcWifi = getDeviceWifiConfig(pc, deviceStates);
       if (!pcWifi || !pcWifi.enabled || !pcWifi.ssid || (pcWifi.mode !== 'client' && pcWifi.mode !== 'sta')) continue;
+
+      const targetSsid = pcWifi.ssid.toLowerCase();
+      const connectedAps: Array<{ ap: CanvasDevice, dist: number }> = [];
+
       for (const ap of apDevices) {
         // Check AP in deviceStates first
         const apState = deviceStates.get(ap.id);
@@ -491,29 +515,38 @@ export function checkConnectivity(
           apWifi = ap.wifi;
         }
 
-        if (apWifi && (wlan?.shutdown === false || !wlan?.shutdown) && (apWifi.mode || 'ap').toLowerCase() === 'ap' && (apWifi.ssid || '').toLowerCase() === (pcWifi.ssid || '').toLowerCase()) {
+        if (apWifi && (wlan?.shutdown === false || !wlan?.shutdown) && (apWifi.mode || 'ap').toLowerCase() === 'ap' && (apWifi.ssid || '').toLowerCase() === targetSsid) {
           if (!pcWifi.bssid || pcWifi.bssid === ap.id) {
             const apSecurity = (apWifi.security || 'open').toLowerCase();
             const pcSecurity = (pcWifi.security || 'open').toLowerCase();
             if (apSecurity === pcSecurity) {
               if (apSecurity === 'open' || apWifi.password === pcWifi.password) {
-                // No signal = no connection
-                const signalStrength = getWirelessSignalStrength(pc, devices, deviceStates);
-                if (signalStrength > 0) {
-                  connections.push({
-                    id: `wireless-${pc.id}-${ap.id}`,
-                    sourceDeviceId: pc.id,
-                    sourcePort: 'wlan0',
-                    targetDeviceId: ap.id,
-                    targetPort: 'wlan0',
-                    cableType: 'wireless',
-                    active: true
-                  } as CanvasConnection);
+                // BOLT: Calculate distance directly to avoid redundant O(N) scans
+                const dx = (pc.x || 0) - (ap.x || 0);
+                const dy = (pc.y || 0) - (ap.y || 0);
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                // No signal if too far
+                if (dist < 550) {
+                  connectedAps.push({ ap, dist });
                 }
               }
             }
           }
         }
+      }
+
+      // Add all reachable APs as potential paths
+      for (const { ap } of connectedAps) {
+        connections.push({
+          id: `wireless-${pc.id}-${ap.id}`,
+          sourceDeviceId: pc.id,
+          sourcePort: 'wlan0',
+          targetDeviceId: ap.id,
+          targetPort: 'wlan0',
+          cableType: 'wireless',
+          active: true
+        } as CanvasConnection);
       }
     }
   }
@@ -548,7 +581,7 @@ export function checkConnectivity(
     // Check if this is an external domain
     isExternal = isExternalDomain(targetIp, devices, deviceStates);
 
-    const resolvedIp = resolveHostname(targetIp, devices, deviceStates);
+    const resolvedIp = resolveHostname(targetIp, devices, deviceStates, deviceMap);
     if (!resolvedIp) {
       return { success: false, hops: [], hopIds: [], error: 'Request timed out.' };
     }
@@ -557,7 +590,7 @@ export function checkConnectivity(
 
   // For external domains, simulate successful internet routing
   if (isExternal) {
-    const sourceDevice = devices.find(d => d.id === sourceId);
+    const sourceDevice = deviceMap.get(sourceId);
     if (sourceDevice) {
       // Simulate internet routing path
       const hops = ['Internet Gateway', 'ISP Router', 'External Network'];
@@ -575,31 +608,25 @@ export function checkConnectivity(
   }
 
   // 1. Find target device by IP (supports both IPv4 and IPv6)
-  // First check topology devices (PCs usually)
-  // BOLT: Use pre-calculated deviceMap if possible, but IP search still needs a scan if we don't have an ipMap
-  let targetDevice = devices.find(d =>
-    d.ip === resolvedTargetIp ||
-    (d.ipv6 && d.ipv6.toLowerCase() === resolvedTargetIp.toLowerCase())
-  );
+  // BOLT: Pre-calculate an ipMap for O(1) device resolution
+  const ipMap = new Map<string, string>(); // IP -> deviceId
+  for (const d of devices) {
+    if (d.ip) ipMap.set(d.ip, d.id);
+    if (d.ipv6) ipMap.set(d.ipv6.toLowerCase(), d.id);
+  }
 
-  // Then check Switch/Router management/interface IPs if not found
-  if (!targetDevice && deviceStates) {
-    const safeDeviceStates = ensureDeviceStatesMap(deviceStates);
-    for (const [id, state] of safeDeviceStates.entries()) {
-      // Check all interfaces (SVI, physical, loopback) — both IPv4 and IPv6
+  if (deviceStates) {
+    for (const [id, state] of deviceStates.entries()) {
       for (const portId in state.ports) {
         const port = state.ports[portId];
-        if (
-          port.ipAddress === resolvedTargetIp ||
-          (port.ipv6Address && port.ipv6Address.toLowerCase() === resolvedTargetIp.toLowerCase())
-        ) {
-          targetDevice = deviceMap.get(id);
-          break;
-        }
+        if (port.ipAddress) ipMap.set(port.ipAddress, id);
+        if (port.ipv6Address) ipMap.set(port.ipv6Address.toLowerCase(), id);
       }
-      if (targetDevice) break;
     }
   }
+
+  const targetDeviceId = ipMap.get(resolvedTargetIp.toLowerCase());
+  let targetDevice = targetDeviceId ? deviceMap.get(targetDeviceId) : undefined;
 
   if (!targetDevice) {
     return { success: false, hops: [], hopIds: [], error: 'Request timed out.' };
@@ -607,19 +634,20 @@ export function checkConnectivity(
 
   // 1.5. Perform ARP resolution if target is in same subnet
   // ARP is needed for L2 communication to resolve IP to MAC
-  const sourceDeviceForArp = devices.find(d => d.id === sourceId);
-  if (sourceDeviceForArp && deviceStates && targetDevice.macAddress) {
+  const sourceDeviceForArp = deviceMap.get(sourceId);
+  if (sourceDeviceForArp && deviceStates && targetDevice?.macAddress) {
     const sourceState = deviceStates.get(sourceId);
     if (sourceState) {
       // Check if source and target are in same subnet
-      const sourceIp = getPrimaryDeviceIp(sourceId, devices, deviceStates);
-      const sourceSubnet = getSubnetForDeviceIp(sourceId, sourceIp, devices, deviceStates) || '255.255.255.0';
+      const sourceIp = getPrimaryDeviceIp(sourceId, devices, deviceStates, false, sourceDeviceForArp);
+      const sourceSubnet = getSubnetForDeviceIp(sourceId, sourceIp, devices, deviceStates, sourceDeviceForArp) || '255.255.255.0';
       const targetSubnet = targetDevice.subnet || '255.255.255.0';
 
       if (isIpInSubnet(sourceIp, resolvedTargetIp, sourceSubnet)) {
         // Same subnet - perform ARP resolution
         // Find the interface through which we'll send the ARP
-        const sourceConn = connections.find(c => c.sourceDeviceId === sourceId || c.targetDeviceId === sourceId);
+        // BOLT: Use pre-calculated adjList for O(1) connection lookup
+        const sourceConn = adjList.get(sourceId)?.[0]?.conn;
         const interfaceName = sourceConn ? (sourceConn.sourceDeviceId === sourceId ? sourceConn.sourcePort : sourceConn.targetPort) : 'unknown';
 
         // Perform ARP resolution (simulated)
@@ -641,9 +669,10 @@ export function checkConnectivity(
 
   const getDeviceVlan = (device: CanvasDevice, state?: SwitchState): number | null => {
     if (device.type === 'pc' || device.type === 'iot') {
-      const connectedConn = connections.find(conn =>
-        conn.sourceDeviceId === device.id || conn.targetDeviceId === device.id
-      );
+      // BOLT: Use pre-calculated adjList for O(1) connection lookup
+      const neighbors = adjList.get(device.id);
+      const connectedConn = neighbors?.[0]?.conn;
+
       if (connectedConn && deviceStates) {
         const peerDeviceId = connectedConn.sourceDeviceId === device.id ? connectedConn.targetDeviceId : connectedConn.sourceDeviceId;
         const peerPortId = connectedConn.sourceDeviceId === device.id ? connectedConn.targetPort : connectedConn.sourcePort;
@@ -675,7 +704,7 @@ export function checkConnectivity(
   };
 
   const getFallbackVlanFromPath = (deviceId: string): number => {
-    const device = devices.find(d => d.id === deviceId);
+    const device = deviceMap.get(deviceId);
     const state = deviceStates?.get(deviceId);
     if (!device) return 1;
     const vlan = getDeviceVlan(device, state);
@@ -710,15 +739,15 @@ export function checkConnectivity(
           const srcDevice = deviceMap.get(currentId);
           const dstDevice = deviceMap.get(neighborId);
 
-          const isSrcShutdown = isPortShutdown(currentId, srcPortId, devices, deviceStates);
-          const isDstShutdown = isPortShutdown(neighborId, dstPortId, devices, deviceStates);
+          const isSrcShutdown = isPortShutdown(currentId, srcPortId, devices, deviceStates, srcDevice);
+          const isDstShutdown = isPortShutdown(neighborId, dstPortId, devices, deviceStates, dstDevice);
           const isSrcPoweredOff = !isDevicePoweredOn(srcDevice);
           const isDstPoweredOff = !isDevicePoweredOn(dstDevice);
 
           // Check STP blocking state using VLAN-specific STP calculation
           // In PVST, each VLAN has its own STP instance with potentially different root bridges
-          const isSrcSTPBlocking = getVlanSpecificSTPBlocking(currentId, srcPortId, sourceVlan, connections, deviceStates);
-          const isDstSTPBlocking = getVlanSpecificSTPBlocking(neighborId, dstPortId, sourceVlan, connections, deviceStates);
+          const isSrcSTPBlocking = getVlanSpecificSTPBlocking(currentId, srcPortId, sourceVlan, connections, deviceStates, conn);
+          const isDstSTPBlocking = getVlanSpecificSTPBlocking(neighborId, dstPortId, sourceVlan, connections, deviceStates, conn);
 
           // Validate cable type for this physical link (e.g. console vs ethernet, straight vs crossover).
           const isCableOk = isConnectionCableCompatible(conn, srcDevice, dstDevice);
@@ -1286,13 +1315,32 @@ export function getPingDiagnostics(
   options?: { protocol?: 'tcp' | 'udp' | 'icmp' | 'any'; port?: string }
 ): { success: boolean; reasons: string[] } {
   const reasons: string[] = [];
-  const sourceDevice = devices.find(d => d.id === sourceId);
+  const deviceMap = new Map<string, CanvasDevice>();
+  const ipMap = new Map<string, string>(); // IP -> deviceId
+
+  for (const d of devices) {
+    deviceMap.set(d.id, d);
+    if (d.ip) ipMap.set(d.ip, d.id);
+    if (d.ipv6) ipMap.set(d.ipv6.toLowerCase(), d.id);
+  }
+
+  if (deviceStates) {
+    for (const [id, state] of deviceStates.entries()) {
+      for (const portId in state.ports) {
+        const port = state.ports[portId];
+        if (port.ipAddress) ipMap.set(port.ipAddress, id);
+        if (port.ipv6Address) ipMap.set(port.ipv6Address.toLowerCase(), id);
+      }
+    }
+  }
+
+  const sourceDevice = deviceMap.get(sourceId);
 
   // Resolve hostname to IP if necessary
   let resolvedTargetIp = targetIp;
   const isIpAddress = (val: string) => /^(\d{1,3}\.){3}\d{1,3}$/.test(val) || val.includes(':');
   if (!isIpAddress(targetIp)) {
-    const resolvedIp = resolveHostname(targetIp, devices, deviceStates);
+    const resolvedIp = resolveHostname(targetIp, devices, deviceStates, deviceMap);
     if (!resolvedIp) {
       reasons.push('Hostname could not be resolved');
       return { success: false, reasons };
@@ -1301,28 +1349,8 @@ export function getPingDiagnostics(
   }
 
   const isTargetIpv6 = resolvedTargetIp.includes(':');
-  let targetDevice = devices.find(d =>
-    d.ip === resolvedTargetIp ||
-    (d.ipv6 && d.ipv6.toLowerCase() === resolvedTargetIp.toLowerCase())
-  );
-
-  // Resolve target for routers/switches if not found in topology IPs
-  if (!targetDevice && deviceStates) {
-    const safeDeviceStates = ensureDeviceStatesMap(deviceStates);
-    for (const [id, state] of safeDeviceStates.entries()) {
-      for (const pId in state.ports) {
-        const port = state.ports[pId];
-        if (
-          port.ipAddress === resolvedTargetIp ||
-          (port.ipv6Address && port.ipv6Address.toLowerCase() === resolvedTargetIp.toLowerCase())
-        ) {
-          targetDevice = devices.find(d => d.id === id);
-          break;
-        }
-      }
-      if (targetDevice) break;
-    }
-  }
+  const targetDeviceId = ipMap.get(resolvedTargetIp.toLowerCase());
+  let targetDevice = targetDeviceId ? deviceMap.get(targetDeviceId) : undefined;
 
   // 1. Check source device exists and is powered on
   if (!sourceDevice) {
@@ -1429,7 +1457,7 @@ export function getPingDiagnostics(
     // Check if there's a router in path (ROAS)
     let hasL3RouterInPath = false;
     for (const pathDeviceId of result.hopIds) {
-      const pathDevice = devices.find(d => d.id === pathDeviceId);
+      const pathDevice = deviceMap.get(pathDeviceId);
       const pathState = deviceStates?.get(pathDeviceId);
       if ((pathDevice?.type === 'router' || pathDevice?.type === 'switchL3') && pathState?.ipRouting) {
         hasL3RouterInPath = true;
@@ -1445,9 +1473,9 @@ export function getPingDiagnostics(
 
   // 10. Check routing if different subnets (only when routing is relevant)
   if (!isTargetIpv6) {
-    const sourceDeviceObj = devices.find(d => d.id === sourceId);
+    const sourceDeviceObj = sourceDevice;
     const isSourceL3Capable = sourceDeviceObj?.type === 'router' || sourceDeviceObj?.type === 'switchL3';
-    
+
     // If source is a router/L3-switch, it must have ip routing enabled
     if (isSourceL3Capable) {
       const sourceState = deviceStates?.get(sourceId);
@@ -1460,7 +1488,7 @@ export function getPingDiagnostics(
     // Check if there's a router or L3 switch in path (already calculated in section 9)
     let hasL3RouterInPath = false;
     for (const pathDeviceId of result.hopIds) {
-      const pathDevice = devices.find(d => d.id === pathDeviceId);
+      const pathDevice = deviceMap.get(pathDeviceId);
       const pathState = deviceStates?.get(pathDeviceId);
       if ((pathDevice?.type === 'router' || pathDevice?.type === 'switchL3') && pathState?.ipRouting) {
         hasL3RouterInPath = true;
@@ -1502,10 +1530,13 @@ function getPrimaryDeviceIp(
   deviceId: string,
   devices: CanvasDevice[],
   deviceStates?: Map<string, SwitchState>,
-  preferIpv6: boolean = false
+  preferIpv6: boolean = false,
+  device?: CanvasDevice
 ): string {
   const safeDeviceStates = ensureDeviceStatesMap(deviceStates);
-  const device = devices.find(d => d.id === deviceId);
+  if (!device) {
+    device = devices.find(d => d.id === deviceId);
+  }
 
   if (preferIpv6 && device?.ipv6) return device.ipv6;
   if (device?.ip) return device.ip;
@@ -1527,7 +1558,8 @@ function getSubnetForDeviceIp(
   deviceId: string,
   ip: string,
   devices: CanvasDevice[],
-  deviceStates?: Map<string, SwitchState>
+  deviceStates?: Map<string, SwitchState>,
+  device?: CanvasDevice
 ): string {
   if (!ip) return '';
 
@@ -1540,10 +1572,13 @@ function getSubnetForDeviceIp(
     }
   }
 
-  return devices.find(d => d.id === deviceId)?.subnet || '';
+  if (!device) {
+    device = devices.find(d => d.id === deviceId);
+  }
+  return device?.subnet || '';
 }
 
-function isPortShutdown(deviceId: string, portId: string, devices: CanvasDevice[], deviceStates?: Map<string, SwitchState>): boolean {
+function isPortShutdown(deviceId: string, portId: string, devices: CanvasDevice[], deviceStates?: Map<string, SwitchState>, device?: CanvasDevice): boolean {
   // Check deviceStates (Switch/Router)
   const safeDeviceStates = ensureDeviceStatesMap(deviceStates);
   if (safeDeviceStates) {
@@ -1554,7 +1589,9 @@ function isPortShutdown(deviceId: string, portId: string, devices: CanvasDevice[
   }
 
   // Check topology (PCs)
-  const device = devices.find(d => d.id === deviceId);
+  if (!device) {
+    device = devices.find(d => d.id === deviceId);
+  }
   if (device) {
     const port = device.ports.find(p => p.id === portId);
     if (portId === 'wlan0' && device.type === 'pc') {
