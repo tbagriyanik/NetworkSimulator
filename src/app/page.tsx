@@ -3591,15 +3591,15 @@ ${state.bannerMOTD}
         const validationMessages = [
           duplicateIpCount > 0
             ? (language === 'tr'
-              ? `⚠ Duplicate IP (${duplicateIpCount}):\n${duplicateIpDetails}`
+              ? `⚠ Yinelenen IP (${duplicateIpCount}):\n${duplicateIpDetails}`
               : `⚠ Duplicate IP (${duplicateIpCount}):\n${duplicateIpDetails}`)
             : '',
-          duplicateMacCount > 0 ? `⚠ Duplicate MAC: ${duplicateMacCount}` : '',
-          subnetMismatchCount > 0 ? `⚠ Subnet mismatch: ${subnetMismatchCount}` : '',
-          invalidGatewayCount > 0 ? `⚠ Invalid gateway: ${invalidGatewayCount}` : '',
-          disconnectedLinkCount > 0 ? `⚠ Disconnected link: ${disconnectedLinkCount}` : '',
-          loopDetectedCount > 0 ? `⚠ Loop detected` : '',
-          vlanInconsistencyCount > 0 ? `⚠ VLAN inconsistency: ${vlanInconsistencyCount}` : '',
+          duplicateMacCount > 0 ? (language === 'tr' ? `⚠ Yinelenen MAC: ${duplicateMacCount}` : `⚠ Duplicate MAC: ${duplicateMacCount}`) : '',
+          subnetMismatchCount > 0 ? (language === 'tr' ? `⚠ Alt ağ uyumsuzluğu: ${subnetMismatchCount}` : `⚠ Subnet mismatch: ${subnetMismatchCount}`) : '',
+          invalidGatewayCount > 0 ? (language === 'tr' ? `⚠ Geçersiz ağ geçidi: ${invalidGatewayCount}` : `⚠ Invalid gateway: ${invalidGatewayCount}`) : '',
+          disconnectedLinkCount > 0 ? (language === 'tr' ? `⚠ Kopuk bağlantı: ${disconnectedLinkCount}` : `⚠ Disconnected link: ${disconnectedLinkCount}`) : '',
+          loopDetectedCount > 0 ? (language === 'tr' ? `⚠ Döngü algılandı` : `⚠ Loop detected`) : '',
+          vlanInconsistencyCount > 0 ? (language === 'tr' ? `⚠ VLAN tutarsızlığı: ${vlanInconsistencyCount}` : `⚠ VLAN inconsistency: ${vlanInconsistencyCount}`) : '',
         ].filter(Boolean);
 
         if (totalDevices > 0 || dhcpClients.length > 0) {

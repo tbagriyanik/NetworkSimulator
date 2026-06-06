@@ -3545,6 +3545,22 @@ export function NetworkTopology({
     setContextMenu(null);
   }, [notesClipboard, saveToHistory, getNextNoteId, setNotes, setSelectedNoteIds]);
 
+  const handlePingClose = useCallback(() => {
+    pingIsPausedRef.current = false;
+    pingStepModeRef.current = false;
+    if (pingAnimationRef.current) {
+      cancelAnimationFrame(pingAnimationRef.current);
+      pingAnimationRef.current = null;
+    }
+    if (pingCleanupTimeoutRef.current) {
+      clearTimeout(pingCleanupTimeoutRef.current);
+      pingCleanupTimeoutRef.current = null;
+    }
+    setPingAnimation(null);
+    setHopPacketInfos([]);
+    setPingMode(false);
+  }, []);
+
   // Handle key events: ESC to close context menu, DELETE to remove devices, Ctrl+A to select all
   useEffect(() => {
     const handleCloseBroadcast = (e: any) => {
@@ -3579,6 +3595,14 @@ export function NetworkTopology({
 
       // ESC to close context menu
       if (key === 'escape') {
+        if (packetPopupHop !== null) {
+          setPacketPopupHop(null);
+          return;
+        }
+        if (pingAnimation) {
+          handlePingClose();
+          return;
+        }
         setContextMenu(null);
         // Cancel ping mode
         if (pingMode) {
@@ -3722,7 +3746,7 @@ export function NetworkTopology({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('close-menus-broadcast', handleCloseBroadcast);
     };
-  }, [selectedDeviceIds, selectedNoteIds, deleteDevice, deleteNote, configuringDevice, cancelDeviceConfig, selectAllDevices, saveToHistory, devices, onDeviceDelete, isDrawingConnection, isPaletteOpen, handleUndo, handleRedo, copyDevice, cutDevice, pasteDevice, pingSource, pingMode, showPortSelector, toggleFullscreen, isFullscreen, resetView, onFullscreenChange, isExamActive, cancelConnectionDrawing]);
+  }, [selectedDeviceIds, selectedNoteIds, deleteDevice, deleteNote, configuringDevice, cancelDeviceConfig, selectAllDevices, saveToHistory, devices, onDeviceDelete, isDrawingConnection, isPaletteOpen, handleUndo, handleRedo, copyDevice, cutDevice, pasteDevice, pingSource, pingMode, showPortSelector, toggleFullscreen, isFullscreen, resetView, onFullscreenChange, isExamActive, cancelConnectionDrawing, handlePingClose, packetPopupHop, setPacketPopupHop, pingAnimation, setPingResult, deviceMap, onDeviceSelect]);
 
   // Find path between devices using BFS
   const findPath = useCallback((sourceId: string, targetId: string): string[] | null => {
@@ -4484,22 +4508,6 @@ export function NetworkTopology({
     if (onPacketPanelFocus) onPacketPanelFocus();
     if (pingAnimation) setPacketPopupHop(pingAnimation.currentHopIndex);
   }, [handlePingPause, onPacketPanelFocus, pingAnimation]);
-
-  const handlePingClose = useCallback(() => {
-    pingIsPausedRef.current = false;
-    pingStepModeRef.current = false;
-    if (pingAnimationRef.current) {
-      cancelAnimationFrame(pingAnimationRef.current);
-      pingAnimationRef.current = null;
-    }
-    if (pingCleanupTimeoutRef.current) {
-      clearTimeout(pingCleanupTimeoutRef.current);
-      pingCleanupTimeoutRef.current = null;
-    }
-    setPingAnimation(null);
-    setHopPacketInfos([]);
-    setPingMode(false);
-  }, []);
 
   useEffect(() => {
     return () => {

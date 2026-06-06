@@ -848,13 +848,19 @@ window.parent.postMessage({ type: 'router-admin-toast', payload: { type: 'error'
       // Show success message (simulated)
       const btn = document.querySelector('.btn-primary');
       const originalText = btn.innerHTML;
-      btn.innerHTML = '✓ ${isTurkish ? 'Kaydedildi!' : 'Saved!'}';
+      btn.innerHTML = (isTurkish ? '✓ Kaydedildi!' : '✓ Saved!');
       btn.style.background = 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)';
       
       setTimeout(() => {
         btn.innerHTML = originalText;
         btn.style.background = '';
-        window.parent.postMessage({ type: 'router-admin-toast', payload: { type: 'success', message: 'WiFi settings saved successfully!' } }, window.parent.location.origin);
+        window.parent.postMessage({
+          type: 'router-admin-toast',
+          payload: {
+            type: 'success',
+            message: isTurkish ? 'Wi-Fi ayarları başarıyla kaydedildi!' : 'Wi-Fi settings saved successfully!'
+          }
+        }, window.parent.location.origin);
       }, 1000);
 
       try {

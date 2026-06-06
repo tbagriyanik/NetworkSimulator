@@ -1090,11 +1090,11 @@ export function Terminal({
     try {
       const allText = output.map(line => line.type === 'command' ? `${line.prompt || prompt}${line.content}` : line.content).join('\n');
       await navigator.clipboard.writeText(allText);
-      toast({ title: t.copy, description: 'Terminal output copied to clipboard.' });
+      toast({ title: t.copy, description: language === 'tr' ? 'Terminal çıktısı panoya kopyalandı.' : 'Terminal output copied to clipboard.' });
     } catch {
-      toast({ title: t.copy, description: 'Clipboard access was blocked.', variant: "destructive" });
+      toast({ title: t.copy, description: language === 'tr' ? 'Pano erişimi engellendi.' : 'Clipboard access was blocked.', variant: "destructive" });
     }
-  }, [output, prompt, t]);
+  }, [output, prompt, t, language]);
 
   const exportTerminal = () => {
     const text = output.map(line => `${line.prompt || (line.type === 'command' ? prompt : '')}${line.content}`).join('\n');

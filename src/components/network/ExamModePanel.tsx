@@ -222,7 +222,7 @@ export function ExamModePanel({
         <div
           data-drag-handle
           className={cn(
-            "flex items-center gap-2 px-4 py-3 rounded-xl shadow-2xl border-2 cursor-default transition-all",
+            "flex items-center gap-2 px-4 py-3 rounded-xl shadow-2xl border-2 cursor-grab active:cursor-grabbing transition-all",
             "bg-gradient-to-r from-rose-500 to-rose-600 border-rose-400 text-white",
             isOverTime && "animate-pulse from-red-600 to-red-700"
           )}
@@ -271,7 +271,7 @@ export function ExamModePanel({
           data-drag-handle
           className={cn(
             "flex items-center justify-between p-4 bg-gradient-to-r text-white",
-            "cursor-default select-none",
+            "cursor-grab active:cursor-grabbing select-none",
             isFinishedState
               ? "from-emerald-500 to-emerald-600"
               : isOverTime

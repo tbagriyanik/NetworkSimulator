@@ -102,6 +102,7 @@ export function useModalDragResize(defaultSize: ModalSize = { width: 1200, heigh
     // Refs to always hold latest values for drag handlers
     const dragStateRef = useRef<DragState | null>(null);
     const pendingMoveRef = useRef<{ x: number; y: number } | null>(null);
+    const dragHandleRef = useRef<HTMLElement | null>(null);
     const tasksModalPositionRef = useRef(tasksModalPosition);
     const tasksModalSizeRef = useRef(tasksModalSize);
     const cliModalPositionRef = useRef(cliModalPosition);
@@ -135,6 +136,8 @@ export function useModalDragResize(defaultSize: ModalSize = { width: 1200, heigh
 
         // Capture pointer for smoother dragging across the whole screen
         (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+        dragHandleRef.current = e.currentTarget as HTMLElement;
+        dragHandleRef.current.style.cursor = 'grabbing';
 
         // Find the modal element (DialogContent)
         const modalElement = (e.currentTarget as HTMLElement).closest('[data-modal-content]') as HTMLElement;
@@ -261,6 +264,9 @@ export function useModalDragResize(defaultSize: ModalSize = { width: 1200, heigh
                 // Clean up styles
                 modalElement.style.willChange = '';
                 modalElement.style.transition = '';
+                if (dragHandleRef.current) {
+                    dragHandleRef.current.style.cursor = '';
+                }
 
                 // Update React state only once at the end
                 const setPosition = ds.modal === 'tasks' ? setTasksModalPosition : ds.modal === 'cli' ? setCliModalPosition : ds.modal === 'pc' ? setPcModalPosition : ds.modal === 'firewall' ? setFirewallModalPosition : setUnifiedModalPosition;
@@ -275,6 +281,10 @@ export function useModalDragResize(defaultSize: ModalSize = { width: 1200, heigh
 
             dragStateRef.current = null;
             modalElementRef.current = null;
+            if (dragHandleRef.current) {
+                dragHandleRef.current.style.cursor = '';
+                dragHandleRef.current = null;
+            }
         };
 
         window.addEventListener('pointermove', handlePointerMove, { passive: true });

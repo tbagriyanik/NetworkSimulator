@@ -517,7 +517,7 @@ export function GuidedModePanel({
         <div
           data-drag-handle
           className={cn(
-            "flex items-center gap-2 px-4 py-3 rounded-xl shadow-2xl border-2 cursor-default transition-all",
+            "flex items-center gap-2 px-4 py-3 rounded-xl shadow-2xl border-2 cursor-grab active:cursor-grabbing transition-all",
             "bg-gradient-to-r from-blue-500 to-blue-600 border-blue-400 text-white",
             "animate-pulse",
             isDragging && "cursor-default"
@@ -579,7 +579,7 @@ export function GuidedModePanel({
           data-drag-handle
           className={cn(
             "flex items-center justify-between p-4 bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 text-white",
-            "cursor-default active:cursor-default select-none shadow-inner"
+            "cursor-grab active:cursor-grabbing select-none shadow-inner"
           )}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}

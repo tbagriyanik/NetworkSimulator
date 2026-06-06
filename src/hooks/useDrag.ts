@@ -400,6 +400,7 @@ export function GlobalDragManager() {
     deltaX: 0, deltaY: 0,
     animFrame: null, id: null,
   });
+  const activeHandleRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const state = dragRef.current;
@@ -416,6 +417,8 @@ export function GlobalDragManager() {
 
       e.preventDefault();
       e.stopPropagation();
+      activeHandleRef.current = handle as HTMLElement;
+      activeHandleRef.current.style.cursor = 'grabbing';
       const rect = dialog.getBoundingClientRect();
       // Normalize positioning before drag: use viewport-absolute left/top.
       // This prevents jumps when the element was previously centered with transform.
@@ -487,6 +490,10 @@ export function GlobalDragManager() {
       state.active = false;
       state.el = null;
       state.id = null;
+      if (activeHandleRef.current) {
+        activeHandleRef.current.style.cursor = '';
+        activeHandleRef.current = null;
+      }
     };
 
     document.addEventListener('mousedown', handleDown);
@@ -495,6 +502,7 @@ export function GlobalDragManager() {
 
     return () => {
       if (state.animFrame !== null) cancelAnimationFrame(state.animFrame);
+      if (activeHandleRef.current) activeHandleRef.current.style.cursor = '';
       document.removeEventListener('mousedown', handleDown);
       document.removeEventListener('mousemove', handleMove);
       document.removeEventListener('mouseup', handleUp);

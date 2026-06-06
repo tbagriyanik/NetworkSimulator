@@ -412,7 +412,12 @@ export function PingPacketInfoPanel({
 
     React.useEffect(() => {
         if (!isDraggingPanel) return;
-        const stopDragging = () => setIsDraggingPanel(false);
+        const stopDragging = () => {
+            setIsDraggingPanel(false);
+            if (panelRef.current) {
+                panelRef.current.style.cursor = '';
+            }
+        };
         window.addEventListener('pointerup', stopDragging);
         window.addEventListener('pointercancel', stopDragging);
         return () => {
@@ -476,8 +481,11 @@ export function PingPacketInfoPanel({
             <div
                 className={`flex items-center justify-between px-3 py-2 border-b rounded-t-2xl ${isMobile ? 'cursor-default' : 'cursor-grab active:cursor-grabbing select-none'} ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}
                 data-drag-handle
-                onPointerDown={() => {
-                    if (!isMobile) setIsDraggingPanel(true);
+                onPointerDown={(e) => {
+                    if (!isMobile) {
+                        (e.currentTarget as HTMLElement).style.cursor = 'grabbing';
+                        setIsDraggingPanel(true);
+                    }
                 }}
             >
                 {/* Left: icon + title + badges */}
