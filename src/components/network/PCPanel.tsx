@@ -1110,7 +1110,10 @@ export function PCPanel({
         return;
       }
       if (e.key === 'Escape') {
+        e.preventDefault();
         setGameActive(false);
+        setActiveTab('terminal');
+        inputRef.current?.focus();
         return;
       }
       if (gameOver && e.key === ' ') {

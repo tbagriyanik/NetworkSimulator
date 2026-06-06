@@ -2806,8 +2806,8 @@ Mevcut komutlar:
     show vlan brief       - VLAN özetini göster
     show version          - Sistem versiyonunu göster
     show mac address-table - MAC adres tablosunu göster
-    show ip source binding - IP source binding'leri göster
-    show ip verify source - IP verify source yapılandırmasını göster
+    show ip source binding - Kaynak bağlamalarını göster
+    show ip verify source - IP source guard yapılandırmasını göster
     show cdp neighbors    - CDP komşularını göster
     show spanning-tree    - Spanning-tree durumunu göster
     show port-security    - Port güvenlik durumunu göster
@@ -2857,7 +2857,7 @@ Mevcut komutlar:
   banner motd #<mesaj>#     - MOTD banner ayarla
   ip default-gateway <ip>   - Varsayılan ağ geçidi
   ip domain-name <name>     - Domain adı
-  ip dhcp snooping          - DHCP snooping etkinleştir
+  ip dhcp snooping          - DHCP snooping'i etkinleştir
   ip dhcp snooping vlan <vlan> - DHCP snooping VLAN ayarla
   ip arp inspection vlan <vlan> - ARP inspection VLAN ayarla
   spanning-tree mode <mode> - STP modu ayarla
@@ -2866,9 +2866,9 @@ Mevcut komutlar:
   cdp run                   - CDP'yi etkinleştir
   no cdp run                - CDP'yi devre dışı bırak
   router rip                - RIP yönlendirme etkinleştir
-  router ospf <id>          - OSPF yönlendirme etkinleştir
+  router ospf <id>          - OSPF yönlendirmesini etkinleştir
   no router rip             - RIP yönlendirme devre dışı
-  no router ospf            - OSPF yönlendirme devre dışı
+  no router ospf            - OSPF yönlendirmesini devre dışı bırak
   exit                      - Privileged mode'a dön
   end                       - Privileged mode'a dön
   do <command>              - Privileged komutlarını çalıştır

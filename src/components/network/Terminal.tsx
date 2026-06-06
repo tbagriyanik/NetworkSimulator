@@ -922,6 +922,17 @@ export function Terminal({
         setInput('');
         return;
       }
+      if (searchOpen) {
+        e.preventDefault();
+        setSearchOpen(false);
+        setSearchQuery('');
+        return;
+      }
+      if (showSettings) {
+        e.preventDefault();
+        setShowSettings(false);
+        return;
+      }
       // Close terminal with ESC when no dialogs are active
       if (onClose) {
         e.preventDefault();
