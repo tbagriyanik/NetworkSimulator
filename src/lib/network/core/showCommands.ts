@@ -101,10 +101,6 @@ function isPhysicalEthernetPort(portId: string): boolean {
   return (p.startsWith('fa') || p.startsWith('gi')) && !p.includes('.') && !p.startsWith('vlan') && !p.startsWith('wlan') && p !== 'console';
 }
 
-function isDtpCapableMode(mode: string | undefined): mode is 'trunk' | 'dynamic-auto' | 'dynamic-desirable' {
-  return mode === 'trunk' || mode === 'dynamic-auto' || mode === 'dynamic-desirable';
-}
-
 function getAllowedVlansString(port: Port | undefined): string {
   const allowed = port?.allowedVlans ?? port?.trunkAllowedVlans;
   if (!allowed) return '1-4094';
@@ -791,15 +787,14 @@ function cmdShowInterfaceTrunk(
     return { peerPortId, peerPort };
   };
 
-  // Only include ports that are actually trunking (not just DTP-capable)
+  // A static trunk is operational only when both connected switch ports are trunk.
   const trunkPorts = portIds.filter((portId) => {
     const port = state.ports?.[portId];
-    if (!isDtpCapableMode(port?.mode)) return false;
+    if (port?.mode !== 'trunk') return false;
 
     const connected = hasActiveConnection(portId);
     const peer = connected ? getPeerPortState(portId) : null;
-    const peerCapable = peer?.peerPort ? isDtpCapableMode(peer.peerPort.mode) : false;
-    const isActuallyTrunking = connected && (port.mode === 'trunk' || peerCapable);
+    const isActuallyTrunking = connected && peer?.peerPort?.mode === 'trunk';
 
     return isActuallyTrunking;
   });
@@ -822,8 +817,7 @@ function cmdShowInterfaceTrunk(
           port.mode === 'dynamic-desirable' ? 'desirable' :
             'on';
 
-    const peerCapable = peer?.peerPort ? isDtpCapableMode(peer.peerPort.mode) : false;
-    const status = connected && (port.mode === 'trunk' || peerCapable) ? 'trunking' : 'not-trunking';
+    const status = connected && peer?.peerPort?.mode === 'trunk' ? 'trunking' : 'not-trunking';
     const nativeVlan = getNativeVlanString(port);
 
     output += `${String(portId).padEnd(11)} ${String(mode).padEnd(12)} ${'802.1q'.padEnd(13)} ${String(status).padEnd(12)} ${nativeVlan}\n`;

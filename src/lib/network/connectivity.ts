@@ -1002,6 +1002,37 @@ export function checkConnectivity(
     }
   }
 
+  // 3.5. A switch-to-switch trunk is operational only when both link endpoints are trunk.
+  if (deviceStates && path.length >= 2) {
+    for (let i = 0; i < path.length - 1; i++) {
+      const aId = path[i];
+      const bId = path[i + 1];
+      const a = deviceMap.get(aId);
+      const b = deviceMap.get(bId);
+      const conn = pathConnections.get(`${aId}-${bId}`);
+      if (!a || !b || !conn || !isSwitchDeviceType(a.type) || !isSwitchDeviceType(b.type)) continue;
+
+      const aPortId = conn.sourceDeviceId === aId ? conn.sourcePort : conn.targetPort;
+      const bPortId = conn.sourceDeviceId === bId ? conn.sourcePort : conn.targetPort;
+      const aPort = deviceStates.get(aId)?.ports?.[aPortId];
+      const bPort = deviceStates.get(bId)?.ports?.[bPortId];
+      const aIsTrunk = aPort?.mode === 'trunk';
+      const bIsTrunk = bPort?.mode === 'trunk';
+
+      if (aIsTrunk !== bIsTrunk) {
+        return {
+          success: false,
+          hops: hopNames.slice(0, i + 2),
+          hopIds: path.slice(0, i + 2),
+          targetId: targetDevice.id,
+          error: language === 'tr'
+            ? `Trunk kurulamadı: ${a.name} ${aPortId} ve ${b.name} ${bPortId} portlarının ikisi de trunk modunda olmalı.`
+            : `Trunk failed: both ${a.name} ${aPortId} and ${b.name} ${bPortId} must be in trunk mode.`
+        };
+      }
+    }
+  }
+
   // 4. VLAN check across the path
   if (deviceStates) {
     for (let i = 1; i < path.length - 1; i++) {
