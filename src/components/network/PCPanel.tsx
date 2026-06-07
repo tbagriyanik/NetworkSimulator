@@ -5144,7 +5144,7 @@ export function PCPanel({
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
-                              {renderNetworkInpulanguage === 'tr' ? 'IP Adresi' : 'IP Address', pcIP, (newIp) => {
+                              {renderNetworkInput(language === 'tr' ? 'IP Adresi' : 'IP Address', pcIP, (newIp) => {
                                 setPcIP(newIp);
                                 setErrors(prev => { const { ip, ...rest } = prev; return rest; });
                               }, "192.168.1.100", errors.ip, ipConfigMode === 'dhcp',
@@ -5152,7 +5152,7 @@ export function PCPanel({
                                 (e) => { if (e.key === 'Enter') validateIpField(e.currentTarget.value); }
                               )}
 
-                              {renderNetworkInpulanguage === 'tr' ? 'Alt Ağ Maskesi' : 'Subnet Mask', pcSubnet, (newSubnet) => {
+                              {renderNetworkInput(language === 'tr' ? 'Alt Ağ Maskesi' : 'Subnet Mask', pcSubnet, (newSubnet) => {
                                 setPcSubnet(newSubnet);
                                 setErrors(prev => { const { subnet: _, ...rest } = prev; return rest; });
                               }, "255.255.255.0", errors.subnet, ipConfigMode === 'dhcp',
@@ -5160,12 +5160,12 @@ export function PCPanel({
                                 (e) => { if (e.key === 'Enter') validateSubnetField(e.currentTarget.value); }
                               )}
 
-                              {renderNetworkInpulanguage === 'tr' ? 'Ağ Geçidi' : 'Gateway', pcGateway, (newGateway) => {
+                              {renderNetworkInput(language === 'tr' ? 'Ağ Geçidi' : 'Gateway', pcGateway, (newGateway) => {
                                 setPcGateway(newGateway);
                                 dispatchDeviceConfig({ gateway: newGateway });
                               }, "192.168.1.1", errors.gateway)}
 
-                              {renderNetworkInpulanguage === 'tr' ? 'DNS Sunucusu' : 'DNS Server', pcDNS, (newDNS) => {
+                              {renderNetworkInput(language === 'tr' ? 'DNS Sunucusu' : 'DNS Server', pcDNS, (newDNS) => {
                                 setPcDNS(newDNS);
                                 dispatchDeviceConfig({ dns: newDNS });
                               }, "8.8.8.8", errors.dns)}
@@ -5230,12 +5230,12 @@ export function PCPanel({
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 pt-2 border-t border-slate-800/10 dark:border-slate-800/50">
-                              {renderNetworkInpulanguage === 'tr' ? 'IPv6 Adresi' : 'IPv6 Address', pcIPv6, (newIPv6) => {
+                              {renderNetworkInput(language === 'tr' ? 'IPv6 Adresi' : 'IPv6 Address', pcIPv6, (newIPv6) => {
                                 setPcIPv6(newIPv6);
                                 dispatchDeviceConfig({ ipv6: newIPv6 });
                               }, "2001:db8:acad:1::10", errors.ipv6)}
 
-                              {renderNetworkInpulanguage === 'tr' ? 'IPv6 Öneki' : 'IPv6 Prefix', pcIPv6Prefix, (newPrefix) => {
+                              {renderNetworkInput(language === 'tr' ? 'IPv6 Öneki' : 'IPv6 Prefix', pcIPv6Prefix, (newPrefix) => {
                                 setPcIPv6Prefix(newPrefix);
                                 dispatchDeviceConfig({ ipv6Prefix: newPrefix });
                               }, "64")}
