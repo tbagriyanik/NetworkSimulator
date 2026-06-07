@@ -18,20 +18,56 @@ Bu rehber, ağ simülasyonundaki iletişim formunu Google Sheets'e nasıl bağla
 
 ```javascript
 function doPost(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var data = JSON.parse(e.postData.contents);
-  
-  sheet.appendRow([
-    data.timestamp,
-    data.name,
-    data.email,
-    data.type,
-    data.message,
-    data.userAgent
-  ]);
-  
-  return ContentService.createTextOutput(JSON.stringify({ "result": "success" }))
-    .setMimeType(ContentService.MimeType.JSON);
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var data;
+    
+    // Hem JSON hem de Form Post desteği için
+    if (e.postData.type == "application/json") {
+      data = JSON.parse(e.postData.contents);
+    } else {
+      data = e.parameter;
+    }
+    
+    // Değişkenleri tanımlayalım (Mail içinde de kullanabilmek için)
+    var timestamp = data.timestamp || new Date().toISOString();
+    var name = data.name || "İsimsiz";
+    var email = data.email || "E-posta yok";
+    var type = data.type || "belirsiz";
+    var message = data.message || "";
+    var userAgent = data.userAgent || "";
+
+    // Veriyi sayfaya ekle
+    sheet.appendRow([timestamp, name, email, type, message, userAgent]);
+    
+    // ---- E-POSTA GÖNDERME BÖLÜMÜ ----    
+    var konu = "NetSim Mesajı: " + name;
+    
+    var icerik = "Merhaba,\n\n" +
+                 "Form üzerinden yeni bir mesaj alındı. Detaylar aşağıdadır:\n\n" +
+                 "Tarih: " + timestamp + "\n" +
+                 "İsim: " + name + "\n" +
+                 "E-posta: " + email + "\n" +
+                 "Tür: " + type + "\n" +
+                 "Mesaj: " + message + "\n" +
+                 "User Agent: " + userAgent + "\n\n" +
+                 "İyi çalışmalar.";
+
+    // Mail gönderme fonksiyonu, mail atması istemiyor iseniz aşağıdaki 57.satırı // ile açıklama satırı yapınız
+    yollaMail(konu, icerik);
+    // ----------------------------------
+    
+    return ContentService.createTextOutput(JSON.stringify({ "result": "success" }))
+      .setMimeType(ContentService.MimeType.JSON);
+      
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ "result": "error", "error": err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function yollaMail(konu, icerik) {
+  MailApp.sendEmail("KENDIMAILADRESINIZ@gmail.com",konu,icerik);
 }
 ```
 

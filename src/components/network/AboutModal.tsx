@@ -29,6 +29,9 @@ type TabType = 'help' | 'about' | 'contact';
 export function AboutModal({ isOpen, onClose, onStartTour }: AboutModalProps) {
   const { t } = useLanguage();
   const { theme } = useTheme();
+  const CONTACT_NAME_MAX_LENGTH = 64;
+  const CONTACT_EMAIL_MAX_LENGTH = 254;
+  const CONTACT_MESSAGE_MAX_LENGTH = 1000;
   const [activeTab, setActiveTab] = useState<TabType>('help');
   const version = process.env.NEXT_PUBLIC_GIT_COMMIT_COUNT;
   const isDark = theme === 'dark';
@@ -325,8 +328,12 @@ export function AboutModal({ isOpen, onClose, onStartTour }: AboutModalProps) {
                         <label className="text-xs font-bold opacity-50 px-1">{t.contactName}</label>
                         <input
                           type="text"
+                          maxLength={CONTACT_NAME_MAX_LENGTH}
                           value={contactData.name}
-                          onChange={e => { setContactData(prev => ({ ...prev, name: e.target.value })); setValidationErrors(prev => ({ ...prev, name: '' })); }}
+                          onChange={e => {
+                            setContactData(prev => ({ ...prev, name: e.target.value.slice(0, CONTACT_NAME_MAX_LENGTH) }));
+                            setValidationErrors(prev => ({ ...prev, name: '' }));
+                          }}
                           className={cn(
                             "w-full px-4 py-2.5 rounded-xl border outline-none transition-all",
                             validationErrors.name
@@ -335,14 +342,21 @@ export function AboutModal({ isOpen, onClose, onStartTour }: AboutModalProps) {
                           )}
                           placeholder={t.contactPlaceholderName}
                         />
+                        <div className={cn("px-1 text-[10px] text-right", isDark ? "text-slate-500" : "text-slate-400")}>
+                          {contactData.name.length}/{CONTACT_NAME_MAX_LENGTH}
+                        </div>
                         {validationErrors.name && <p className="text-[10px] text-red-500 px-1">{validationErrors.name}</p>}
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold opacity-50 px-1">{t.contactEmail}</label>
                         <input
                           type="email"
+                          maxLength={CONTACT_EMAIL_MAX_LENGTH}
                           value={contactData.email}
-                          onChange={e => { setContactData(prev => ({ ...prev, email: e.target.value })); setValidationErrors(prev => ({ ...prev, email: '' })); }}
+                          onChange={e => {
+                            setContactData(prev => ({ ...prev, email: e.target.value.slice(0, CONTACT_EMAIL_MAX_LENGTH) }));
+                            setValidationErrors(prev => ({ ...prev, email: '' }));
+                          }}
                           className={cn(
                             "w-full px-4 py-2.5 rounded-xl border outline-none transition-all",
                             validationErrors.email
@@ -351,6 +365,9 @@ export function AboutModal({ isOpen, onClose, onStartTour }: AboutModalProps) {
                           )}
                           placeholder={t.contactPlaceholderEmail}
                         />
+                        <div className={cn("px-1 text-[10px] text-right", isDark ? "text-slate-500" : "text-slate-400")}>
+                          {contactData.email.length}/{CONTACT_EMAIL_MAX_LENGTH}
+                        </div>
                         {validationErrors.email && <p className="text-[10px] text-red-500 px-1">{validationErrors.email}</p>}
                       </div>
                     </div>
@@ -392,8 +409,12 @@ export function AboutModal({ isOpen, onClose, onStartTour }: AboutModalProps) {
                       <label className="text-xs font-bold opacity-50 px-1">{t.contactMessage}</label>
                       <textarea
                         rows={5}
+                        maxLength={CONTACT_MESSAGE_MAX_LENGTH}
                         value={contactData.message}
-                        onChange={e => { setContactData(prev => ({ ...prev, message: e.target.value })); setValidationErrors(prev => ({ ...prev, message: '' })); }}
+                        onChange={e => {
+                          setContactData(prev => ({ ...prev, message: e.target.value.slice(0, CONTACT_MESSAGE_MAX_LENGTH) }));
+                          setValidationErrors(prev => ({ ...prev, message: '' }));
+                        }}
                         className={cn(
                           "w-full px-4 py-3 rounded-xl border outline-none transition-all resize-none",
                           validationErrors.message
@@ -402,6 +423,10 @@ export function AboutModal({ isOpen, onClose, onStartTour }: AboutModalProps) {
                         )}
                         placeholder={t.contactPlaceholderMessage}
                       />
+                      <div className={cn("flex items-center justify-between px-1 text-[10px]", isDark ? "text-slate-500" : "text-slate-400")}>
+                        <span>{isTR ? 'Maksimum mesaj uzunluğu' : 'Maximum message length'}: {CONTACT_MESSAGE_MAX_LENGTH}</span>
+                        <span>{contactData.message.length}/{CONTACT_MESSAGE_MAX_LENGTH}</span>
+                      </div>
                       {validationErrors.message && <p className="text-[10px] text-red-500 px-1">{validationErrors.message}</p>}
                     </div>
 

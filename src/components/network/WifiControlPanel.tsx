@@ -105,7 +105,7 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig): string {
     <div class="form-group">
       <label for="wifi-password">${isTurkish ? 'WiFi Parolası / Güvenlik Anahtarı' : 'WiFi Password / Security Key'}</label>
       <div style="position:relative;display:flex;align-items:center;">
-        <input type="password" id="wifi-password" name="password" value="${safeWifiPassword}" placeholder="${isTurkish ? 'Parola girin (en az 8 karakter)' : 'Enter password (min 8 characters)'}" minlength="8" aria-describedby="wifi-password-hint" style="padding-right:2.2rem;width:100%;">
+        <input type="password" id="wifi-password" name="password" value="${safeWifiPassword}" placeholder="${isTurkish ? 'Parola girin (en az 8 karakter)' : 'Enter password (min 8 characters)'}" minlength="8" aria-describedby="wifi-password-hint" style="padding-right:2.2rem;width:100%;border:1px solid #d1d5db;border-radius:8px;box-sizing:border-box;">
         <button type="button" onclick="(function(btn){var inp=document.getElementById('wifi-password');if(inp.type==='password'){inp.type='text';btn.innerHTML='&#128065;&#65039;';}else{inp.type='password';btn.innerHTML='&#128065;';}})(this)" tabindex="-1" style="position:absolute;right:0.5rem;background:none;border:none;cursor:pointer;font-size:1rem;color:#888;padding:0;line-height:1;" title="${isTurkish ? 'Parolayı Göster/Gizle' : 'Show/Hide password'}">&#128065;</button>
       </div>
       <span class="hint" id="wifi-password-hint">${isTurkish ? 'En az 8 karakter gereklidir' : 'Minimum 8 characters required'}</span>
@@ -140,11 +140,11 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig): string {
         <form id="auth-form" onsubmit="handleLogin(event)">
           <div style="margin-bottom: 20px;">
             <label style="display: block; font-size: 13px; font-weight: 500; color: #333; margin-bottom: 8px;">${isTurkish ? 'Kullanıcı Adı' : 'Username'}</label>
-            <input type="text" id="login-username" required style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+          <input type="text" id="login-username" maxlength="255" required style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
           </div>
           <div style="margin-bottom: 25px;">
             <label style="display: block; font-size: 13px; font-weight: 500; color: #333; margin-bottom: 8px;">${isTurkish ? 'Parola' : 'Password'}</label>
-            <input type="password" id="login-password" required style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+            <input type="password" id="login-password" maxlength="255" required style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
           </div>
           <button type="submit" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;">
             ${isTurkish ? 'Giriş Yap' : 'Login'}
