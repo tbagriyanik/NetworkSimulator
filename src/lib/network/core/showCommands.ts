@@ -1466,16 +1466,6 @@ function cmdShowClock(
   _input: string,
   ctx: CommandContext
 ): any {
-  const localNtp = state.services?.ntp;
-  if (localNtp?.enabled && localNtp.date && localNtp.time) {
-    const [y, m, d] = localNtp.date.split('-');
-    const formattedDate = `${d}.${m}.${y}`;
-    return {
-      success: true,
-      output: `\n*${localNtp.time} UTC ${formattedDate}\n`
-    };
-  }
-
   const serverIps = state.ntpServers || [];
   for (const serverIp of serverIps) {
     // Check reachability if devices/connections are available in context
@@ -1514,6 +1504,16 @@ function cmdShowClock(
         output: `\n*${time} UTC ${day}.${mm}.${year}\n`
       };
     }
+  }
+
+  const localNtp = state.services?.ntp;
+  if (localNtp?.enabled && localNtp.date && localNtp.time) {
+    const [y, m, d] = localNtp.date.split('-');
+    const formattedDate = `${d}.${m}.${y}`;
+    return {
+      success: true,
+      output: `\n*${localNtp.time} UTC ${formattedDate}\n`
+    };
   }
 
   if (state.systemClock) {

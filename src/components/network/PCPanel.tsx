@@ -2062,14 +2062,34 @@ export function PCPanel({
     if (!normalized) return null;
 
     if (!isValidIpv4(pcDNS)) return null;
-    const configuredDnsServer = topologyDevices.find(
-      (d) => d.type === 'pc' && d.ip === pcDNS && d.services?.dns?.enabled && (d.services?.dns?.records?.length || 0) > 0
-    );
-    if (!configuredDnsServer?.ip || !canReachTargetIp(configuredDnsServer.ip, { protocol: 'udp', port: '53' })) return null;
 
-    // Support CNAME-like records in PC DNS service:
+    let dnsServerDevice = topologyDevices.find(
+      (d) => d.ip === pcDNS && d.services?.dns?.enabled && (d.services?.dns?.records?.length || 0) > 0
+    );
+
+    let records = dnsServerDevice?.services?.dns?.records || [];
+
+    // Also check deviceStates for DNS records (e.g. from a Router)
+    if (deviceStates) {
+      for (const [id, state] of deviceStates.entries()) {
+        if (state.services?.dns?.enabled && (state.services.dns.records?.length || 0) > 0) {
+          const topoDev = topologyDevices.find(d => d.id === id);
+          // Check if this device has the IP we're looking for on ANY of its interfaces
+          const hasIp = topoDev?.ip === pcDNS || Object.values(state.ports).some(p => p.ipAddress === pcDNS);
+
+          if (hasIp) {
+            dnsServerDevice = topoDev || { id, name: state.hostname, ip: pcDNS } as any;
+            records = state.services.dns.records;
+            break;
+          }
+        }
+      }
+    }
+
+    if (!dnsServerDevice?.ip || !canReachTargetIp(pcDNS, { protocol: 'udp', port: '53' })) return null;
+
+    // Support CNAME-like records in DNS service:
     // domain -> another domain -> ... -> final IPv4 address
-    const records = configuredDnsServer.services?.dns?.records || [];
     const visited = new Set<string>();
     let currentDomain = normalized;
 
@@ -2077,20 +2097,20 @@ export function PCPanel({
       if (visited.has(currentDomain)) return null;
       visited.add(currentDomain);
 
-      const record = records.find((r) => r.domain.toLowerCase() === currentDomain);
+      const record = (records || []).find((r: any) => r.domain.toLowerCase() === currentDomain);
       if (!record) return null;
 
       const value = record.address.trim().toLowerCase();
       if (!value) return null;
       if (isValidIpv4(value)) {
-        return { address: value, server: configuredDnsServer };
+        return { address: value, server: dnsServerDevice };
       }
 
       currentDomain = value;
     }
 
     return null;
-  }, [canReachTargetIp, isValidIpv4, pcDNS, topologyDevices]);
+  }, [canReachTargetIp, isValidIpv4, pcDNS, topologyDevices, deviceStates]);
 
   const getDnsRecordDisplay = useCallback((record: { domain: string; address: string }) => {
     const chain: string[] = [record.domain, record.address.trim()];
@@ -2164,7 +2184,7 @@ export function PCPanel({
 
     // Check for PC HTTP servers
     const pcByIp = topologyDevices.find(
-      (d) => d.type === 'pc' && d.ip === target && d.services?.http?.enabled
+      (d) => d.ip === target && d.services?.http?.enabled
     );
     if (pcByIp && pcByIp.ip && canReachTargetIp(pcByIp.ip, { protocol: 'tcp', port: '80' })) return pcByIp;
 
@@ -2197,7 +2217,7 @@ export function PCPanel({
 
     // Check resolved address for PC HTTP server
     const resolvedPc = topologyDevices.find(
-      (d) => d.type === 'pc' && d.ip === dnsResult.address && d.services?.http?.enabled
+      (d) => d.ip === dnsResult.address && d.services?.http?.enabled
     ) || null;
     if (resolvedPc?.ip && canReachTargetIp(resolvedPc.ip, { protocol: 'tcp', port: '80' })) return resolvedPc;
 
@@ -3068,7 +3088,6 @@ export function PCPanel({
       const pcServers = topologyDevices.filter(
         (d) =>
           d.id !== deviceId &&
-          d.type === 'pc' &&
           d.services?.dhcp?.enabled &&
           (d.services?.dhcp?.pools?.length || 0) > 0 &&
           !!d.ip &&
@@ -3233,7 +3252,6 @@ export function PCPanel({
     const pcServers = topologyDevices.filter(
       (d) =>
         d.id !== deviceId &&
-        d.type === 'pc' &&
         d.services?.dhcp?.enabled &&
         (d.services?.dhcp?.pools?.length || 0) > 0 &&
         !!d.ip &&
@@ -3640,7 +3658,7 @@ export function PCPanel({
       return;
     }
     addLocalOutput('output', '200 Command okay.');
-  }, [ftpSession, addLocalOutput]);
+  }, [ftpSession, addLocalOutput, topologyDevices]);
 
   const executeCommand = async (cmdToExecute?: string) => {
     const command = (cmdToExecute || input).trim();
@@ -6573,7 +6591,7 @@ export function PCPanel({
                             ) : gameActive && activeTab === 'desktop' ? (
                               <div className="flex-1 flex flex-col items-center justify-center gap-3">
                                 <div className={`text-xs ${isDark ? 'text-slate-200' : 'text-slate-600'}`}>
-                                  {gameLanguage === 'tr'
+                                  {gameLlanguage === 'tr'
                                     ? `Skor: ${gameScore} | Çıkış: ESC | Yeniden: SPACE`
                                     : `Score: ${gameScore} | Exit: ESC | Restart: SPACE`}
                                 </div>
@@ -6605,7 +6623,7 @@ export function PCPanel({
                                 </div>
                                 {gameOver && (
                                   <div className="text-rose-500 font-bold text-sm">
-                                    {gameLanguage === 'tr' ? 'Oyun Bitti!' : 'Game Over!'}
+                                    {gameLlanguage === 'tr' ? 'Oyun Bitti!' : 'Game Over!'}
                                   </div>
                                 )}
                                 {/* Mobile Touch Controls */}
@@ -6628,7 +6646,7 @@ export function PCPanel({
                                     onClick={() => gameOver && (() => { setSnake([{ x: 10, y: 10 }]); setFood({ x: 15, y: 15 }); setDirection({ x: 1, y: 0 }); setGameScore(0); setGameOver(false); })()}
                                     className={`w-12 h-12 rounded-lg flex items-center justify-center text-xs font-bold ${gameOver ? 'bg-emerald-500 text-white' : (isDark ? 'bg-slate-800' : 'bg-slate-100')}`}
                                   >
-                                    {gameOver ? (gameLanguage === 'tr' ? 'YENİ' : 'NEW') : ''}
+                                    {gameOver ? (gameLlanguage === 'tr' ? 'YENİ' : 'NEW') : ''}
                                   </button>
                                   <button
                                     onClick={() => direction.x === 0 && setDirection({ x: 1, y: 0 })}
