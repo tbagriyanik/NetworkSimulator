@@ -4121,9 +4121,10 @@ export function PCPanel({
           ? deviceStates?.get(targetDevice?.id || deviceByIp!.id)
           : undefined;
         const ftpService =
-          targetState?.services?.ftp ||
-          targetDevice?.services?.ftp ||
-          deviceByIp?.services?.ftp;
+          targetDevice?.services?.ftp?.enabled ? targetDevice.services.ftp :
+          deviceByIp?.services?.ftp?.enabled ? deviceByIp.services.ftp :
+          targetState?.services?.ftp?.enabled ? targetState.services.ftp :
+          undefined;
         if (!ftpService?.enabled) {
           addLocalOutput('error', `FTP service is not enabled on ${targetIp}.`);
           return;
@@ -5735,7 +5736,7 @@ export function PCPanel({
                                     <div className={`rounded-lg border flex flex-col ${isDark ? 'border-slate-800 bg-slate-950' : 'border-slate-200 bg-slate-50'}`}>
                                       <div className="p-3 border-b flex items-center justify-between">
                                         <div className="text-xs font-bold">{language === 'tr' ? 'Gelen Kutusu' : 'Inbox'}</div>
-                                        <div className="text-[10px] opacity-60">{serviceMailInbox.length} {language === 'tr' ? 'mesaj' : serviceMailInbox.length === 1 ? 'message' : 'messages'}</div>
+                                        <div className="text-[10px] opacity-60">{serviceMailInbox.length} {language === 'tr' ? 'mesaj' : serviceMailInbox.length <= 1 ? 'message' : 'messages'}</div>
                                       </div>
                                       <div className="flex-1 p-2 max-h-48 overflow-y-auto custom-scrollbar space-y-2">
                                         {serviceMailInbox.length === 0 ? (
@@ -5775,7 +5776,7 @@ export function PCPanel({
                                     <div className={`rounded-lg border flex flex-col ${isDark ? 'border-slate-800 bg-slate-950' : 'border-slate-200 bg-slate-50'}`}>
                                       <div className="p-3 border-b flex items-center justify-between">
                                         <div className="text-xs font-bold">{language === 'tr' ? 'Gönderilenler' : 'Sent'}</div>
-                                        <div className="text-[10px] opacity-60">{serviceMailSent.length} {language === 'tr' ? 'mesaj' : serviceMailSent.length === 1 ? 'message' : 'messages'}</div>
+                                        <div className="text-[10px] opacity-60">{serviceMailSent.length} {language === 'tr' ? 'mesaj' : serviceMailSent.length <= 1 ? 'message' : 'messages'}</div>
                                       </div>
                                       <div className="flex-1 p-2 max-h-48 overflow-y-auto custom-scrollbar space-y-2">
                                         {serviceMailSent.length === 0 ? (
