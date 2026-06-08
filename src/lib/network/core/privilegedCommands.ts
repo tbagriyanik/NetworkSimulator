@@ -895,7 +895,102 @@ function cmdSuspend(state: any, input: string, ctx: any): any {
  * Copy TFTP command
  */
 function cmdCopyTftp(state: any, input: string, ctx: any): any {
-    return { success: false, error: '% Error opening tftp://255.255.255.255/config (Timed out)' };
+    if (state.currentMode !== 'privileged') {
+        return { success: false, error: iosModeError() };
+    }
+    const lang = ctx.language || 'en';
+    const isRestore = /^copy\s+tftp/i.test(input.trim());
+
+    // Extract URL part: either "tftp://ip/file" at end or after "tftp"
+    let urlPart: string | undefined;
+    const endMatch = input.match(/tftp:\/\/(\S+)$/i);
+    const midMatch = input.match(/tftp:\/\/(\S+)\s+/i);
+    const bareMatch = input.match(/tftp(:\/\/)?(\S+)?$/i);
+
+    if (endMatch) {
+        urlPart = endMatch[1];
+    } else if (midMatch && isRestore) {
+        urlPart = midMatch[1];
+    } else if (bareMatch) {
+        urlPart = bareMatch[2] || bareMatch[1];
+    }
+
+    if (!urlPart || urlPart === ':') {
+        return { success: false, error: lang === 'tr'
+            ? '% TFTP sunucu adresi belirtilmedi. Kullanım: copy running-config tftp://<sunucu>[/dosya]'
+            : '% TFTP server address not specified. Use: copy running-config tftp://<server>[/filename]' };
+    }
+
+    // Split IP and optional filename
+    const slashIndex = urlPart.indexOf('/');
+    let targetIp: string;
+    let filename: string;
+    if (slashIndex >= 0) {
+        targetIp = urlPart.substring(0, slashIndex);
+        filename = urlPart.substring(slashIndex + 1);
+    } else {
+        targetIp = urlPart;
+        filename = state.hostname ? `${state.hostname.toLowerCase()}-config` : 'router-config';
+    }
+
+    // Validate IP
+    const isIp = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(targetIp);
+    if (!isIp) {
+        return { success: false, error: `% Invalid target address: ${targetIp}` };
+    }
+
+    // Verify target exists in topology and has FTP service enabled
+    let targetDevice: any;
+    if (Array.isArray(ctx.devices)) {
+        targetDevice = ctx.devices.find((d: any) => d.ip === targetIp);
+        if (!targetDevice) {
+            return { success: false, error: `% Error opening tftp://${targetIp}/${filename} (Timed out)` };
+        }
+    }
+
+    // Require FTP service enabled on target for backup
+    if (!isRestore && !targetDevice?.services?.ftp?.enabled) {
+        const errMsg = lang === 'tr'
+            ? `% Hata: ${targetIp} üzerinde FTP servisi etkin değil.`
+            : `% Error: FTP service is not enabled on ${targetIp}.`;
+        return { success: false, error: errMsg };
+    }
+
+    // Store the backup file on the target device's FTP service
+    if (!isRestore && typeof window !== 'undefined' && targetDevice) {
+        try {
+            const configContent = Array.isArray(state.runningConfig) ? state.runningConfig.join('\n') : '';
+            const newFile = { name: filename, size: configContent.length || 4096, modifiedAt: new Date().toISOString() };
+            window.dispatchEvent(new CustomEvent('update-topology-device-config', {
+                detail: {
+                    deviceId: targetDevice.id,
+                    config: {
+                        services: {
+                            ...(targetDevice.services || {}),
+                            ftp: {
+                                ...(targetDevice.services?.ftp || {}),
+                                enabled: true,
+                                files: [...((targetDevice.services?.ftp?.files || []).filter((f: any) => f.name !== filename)), newFile]
+                            }
+                        }
+                    }
+                }
+            }));
+        } catch (_e) {
+            // Non-critical; backup still reported as OK
+        }
+    }
+
+    const verb = isRestore
+        ? (lang === 'tr' ? 'Yükleniyor' : 'Loading')
+        : (lang === 'tr' ? 'Yazılıyor' : 'Writing');
+    const source = isRestore ? `tftp://${targetIp}/${filename}` : 'running-config';
+    const dest = isRestore ? 'running-config' : `tftp://${targetIp}/${filename}`;
+
+    return {
+        success: true,
+        output: `\n${verb} ${source} to ${dest} ...\nBuilding configuration...\n[OK]\n`
+    };
 }
 
 function cmdFtp(state: any, input: string, ctx: any): any {

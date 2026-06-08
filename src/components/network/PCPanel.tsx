@@ -3657,6 +3657,37 @@ export function PCPanel({
     }
   };
 
+  const executeFtpPut = useCallback((fileName: string) => {
+    const session = ftpSession;
+    if (!session) return;
+    const newFile = { name: fileName, size: 1024, modifiedAt: new Date().toISOString() };
+    const nextFiles = [...(session.files || []), newFile];
+    setFtpSession({ ...session, files: nextFiles });
+
+    if (session.targetDeviceId) {
+      const targetDev = topologyDevices.find(d => d.id === session.targetDeviceId);
+      if (targetDev) {
+        window.dispatchEvent(new CustomEvent('update-topology-device-config', {
+          detail: {
+            deviceId: session.targetDeviceId,
+            config: {
+              services: {
+                ...targetDev.services,
+                ftp: {
+                  ...targetDev.services?.ftp,
+                  enabled: true,
+                  files: [...((targetDev.services?.ftp?.files || []).filter((f: any) => f.name !== fileName)), newFile]
+                }
+              }
+            }
+          }
+        }));
+      }
+    }
+
+    addLocalOutput('output', `150 Opening BINARY mode data connection for ${fileName}\n226 Transfer complete.`);
+  }, [ftpSession, addLocalOutput, topologyDevices]);
+
   const handleFtpSessionCommand = useCallback((cmdLine: string) => {
     const session = ftpSession;
     if (!session) return;
@@ -3667,7 +3698,7 @@ export function PCPanel({
       return;
     }
     if (cmd === 'help' || cmd === '?') {
-      addLocalOutput('output', 'Commands: ls, dir, get <file>, quit, bye, exit');
+      addLocalOutput('output', 'Commands: put, ls, dir, get <file>, quit, bye, exit');
       return;
     }
     if (cmd === 'ls' || cmd === 'dir') {
@@ -3686,40 +3717,13 @@ export function PCPanel({
       addLocalOutput('output', `150 Opening BINARY mode data connection for ${fileName}\n226 Transfer complete.`);
       return;
     }
-    const putMatch = cmdLine.trim().match(/^(put|send|mput)\s+(.+)/i);
+    const putMatch = cmdLine.trim().match(/^(put|send|mput)(?:\s+(.+))?$/i);
     if (putMatch) {
-      const fileName = putMatch[2];
-      const newFile = { name: fileName, size: 1024, modifiedAt: new Date().toISOString() };
-      const nextFiles = [...(session.files || []), newFile];
-      setFtpSession({ ...session, files: nextFiles });
-
-      // Synchronize with global topology state
-      if (session.targetDeviceId) {
-        const targetDev = topologyDevices.find(d => d.id === session.targetDeviceId);
-        if (targetDev) {
-          window.dispatchEvent(new CustomEvent('update-topology-device-config', {
-            detail: {
-              deviceId: session.targetDeviceId,
-              config: {
-                services: {
-                  ...targetDev.services,
-                  ftp: {
-                    ...targetDev.services?.ftp,
-                    enabled: true,
-                    files: [...(targetDev.services?.ftp?.files || []), newFile]
-                  }
-                }
-              }
-            }
-          }));
-        }
-      }
-
-      addLocalOutput('output', `150 Opening BINARY mode data connection for ${fileName}\n226 Transfer complete.`);
+      setIsFtpFilePickerOpen(true);
       return;
     }
     addLocalOutput('output', '200 Command okay.');
-  }, [ftpSession, addLocalOutput, topologyDevices]);
+  }, [ftpSession, addLocalOutput, topologyDevices, setIsFtpFilePickerOpen]);
 
   const executeCommand = async (cmdToExecute?: string) => {
     const command = (cmdToExecute || input).trim();
@@ -5650,8 +5654,8 @@ export function PCPanel({
                                       {language === 'tr' ? 'Dosya Listesi' : 'File List'}
                                     </div>
                                     <div className={`rounded-lg border divide-y ${isDark ? 'border-slate-800 divide-slate-800' : 'border-slate-200 divide-slate-200'}`}>
-                                      {(serviceFtpFiles.length > 0 ? serviceFtpFiles : []).map((file) => (
-                                        <div key={file.name} className="flex items-center justify-between gap-3 px-3 py-2 text-xs">
+                                      {(serviceFtpFiles.length > 0 ? serviceFtpFiles : []).map((file, idx) => (
+                                        <div key={`${file.name}-${idx}`} className="flex items-center justify-between gap-3 px-3 py-2 text-xs">
                                           <div className="min-w-0">
                                             <div className="font-mono truncate">{file.name}</div>
                                             <div className="opacity-50">
@@ -7135,7 +7139,7 @@ export function PCPanel({
                   { name: 'image.jpg', size: 256000 },
                   { name: 'notes.txt', size: 1024 },
                 ].map((file) => (
-                  <div key={file.name} className="flex items-center justify-between p-3">
+                  <div key={`${file.name}-${file.size}`} className="flex items-center justify-between p-3">
                     <div className="flex flex-col">
                       <span className="text-sm font-medium">{file.name}</span>
                       <span className="text-xs opacity-50">{Math.round(file.size / 1024)} KB</span>
@@ -7143,7 +7147,7 @@ export function PCPanel({
                     <Button
                       size="sm"
                       onClick={() => {
-                        handleFtpSessionCommand(`put ${file.name}`);
+                        executeFtpPut(file.name);
                         setIsFtpFilePickerOpen(false);
                       }}
                     >

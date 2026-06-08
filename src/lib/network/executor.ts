@@ -129,7 +129,7 @@ export const commandHelp: Record<string, Record<string, string[]>> = {
     ...pfx('configure', ['terminal']),
     ...pfx('copy', ['flash', 'running-config', 'startup-config', 'tftp']),
     'copy flash': ['startup-config'],
-    'copy running-config': ['flash', 'startup-config', 'tftp'],
+    'copy running-config': ['flash', 'startup-config', 'tftp:'],
     'copy startup-config': ['running-config'],
     'copy tftp': ['running-config'],
     ...pfx('delete', ['flash:vlan.dat', 'nvram']),

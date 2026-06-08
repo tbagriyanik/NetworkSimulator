@@ -1802,17 +1802,18 @@ export const commandPatterns: Record<string, CommandPattern> = {
     maxArgs: 1
   },
   'copy running-config tftp': {
-    pattern: /^copy\s+running-config\s+tftp$/i,
+    pattern: /^cop[y]*\s+run[ning\-config]*\s+tftp(?:[:]\/\/(\S+))?$/i,
     modes: ['privileged'],
     minArgs: 0,
-    maxArgs: 0
+    maxArgs: 1
   },
   'copy tftp running-config': {
-    pattern: /^copy\s+tftp\s+running-config$/i,
+    pattern: /^cop[y]*\s+tftp(?:[:]\/\/(\S+))?\s+run[ning\-config]*$/i,
     modes: ['privileged'],
     minArgs: 0,
-    maxArgs: 0
+    maxArgs: 1
   },
+
   'ftp': {
     pattern: /^ftp(?:\s+(\S+))?$/i,
     modes: ['user', 'privileged'],
