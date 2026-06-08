@@ -6967,8 +6967,7 @@ export function PCPanel({
                       size="sm"
                       onClick={() => {
                         handleFtpSessionCommand(`put ${file.name}`);
-                        // Optionally close modal or show success in modal
-                        // setIsFtpFilePickerOpen(false);
+                        setIsFtpFilePickerOpen(false);
                       }}
                     >
                       <Download className="w-4 h-4 mr-2 rotate-180" />
