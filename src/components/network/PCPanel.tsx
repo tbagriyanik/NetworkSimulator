@@ -7123,39 +7123,75 @@ export function PCPanel({
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>
-                {language === 'tr' ? 'FTP Dosya Yükleme' : 'FTP File Upload'}
+                {language === 'tr' ? 'FTP Dosya Transferi' : 'FTP File Transfer'}
               </DialogTitle>
               <DialogDescription>
                 {language === 'tr'
-                  ? `${ftpSession.host} sunucusuna yüklemek için bir dosya seçin.`
-                  : `Select a file to upload to ${ftpSession.host}.`}
+                  ? `${ftpSession.host} sunucusuna bağlanıldı. Dosyaları indirin veya yükleyin.`
+                  : `Connected to ${ftpSession.host}. Download or upload files.`}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              <div className={`rounded-lg border divide-y ${isDark ? 'border-slate-800 divide-slate-800' : 'border-slate-200 divide-slate-200'}`}>
-                {[
-                  { name: 'budget.xlsx', size: 45056 },
-                  { name: 'report.pdf', size: 124000 },
-                  { name: 'image.jpg', size: 256000 },
-                  { name: 'notes.txt', size: 1024 },
-                ].map((file) => (
-                  <div key={`${file.name}-${file.size}`} className="flex items-center justify-between p-3">
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium">{file.name}</span>
-                      <span className="text-xs opacity-50">{Math.round(file.size / 1024)} KB</span>
+              {/* Server files for download */}
+              <div>
+                <h4 className="text-sm font-semibold mb-2">
+                  {language === 'tr' ? 'Sunucu Dosyaları (İndir)' : 'Server Files (Download)'}
+                </h4>
+                <div className={`rounded-lg border divide-y ${isDark ? 'border-slate-800 divide-slate-800' : 'border-slate-200 divide-slate-200'}`}>
+                  {ftpSession.files.length === 0 ? (
+                    <div className="p-3 text-sm opacity-50">
+                      {language === 'tr' ? '(sunucuda dosya yok)' : '(no files on server)'}
                     </div>
-                    <Button
-                      size="sm"
-                      onClick={() => {
-                        executeFtpPut(file.name);
-                        setIsFtpFilePickerOpen(false);
-                      }}
-                    >
-                      <Download className="w-4 h-4 mr-2 rotate-180" />
-                      {language === 'tr' ? 'Yükle' : 'Upload'}
-                    </Button>
-                  </div>
-                ))}
+                  ) : ftpSession.files.map((file, idx) => (
+                    <div key={`srv-${file.name}-${idx}`} className="flex items-center justify-between p-3">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">{file.name}</span>
+                        <span className="text-xs opacity-50">{Math.round((file.size || 0) / 1024)} KB</span>
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          handleFtpSessionCommand(`get ${file.name}`);
+                          setIsFtpFilePickerOpen(false);
+                        }}
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        {language === 'tr' ? 'İndir' : 'Download'}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {/* Upload local files */}
+              <div>
+                <h4 className="text-sm font-semibold mb-2">
+                  {language === 'tr' ? 'Yerel Dosyaları Yükle' : 'Upload Local Files'}
+                </h4>
+                <div className={`rounded-lg border divide-y ${isDark ? 'border-slate-800 divide-slate-800' : 'border-slate-200 divide-slate-200'}`}>
+                  {[
+                    { name: 'budget.xlsx', size: 45056 },
+                    { name: 'report.pdf', size: 124000 },
+                    { name: 'image.jpg', size: 256000 },
+                    { name: 'notes.txt', size: 1024 },
+                  ].map((file) => (
+                    <div key={`upl-${file.name}-${file.size}`} className="flex items-center justify-between p-3">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">{file.name}</span>
+                        <span className="text-xs opacity-50">{Math.round(file.size / 1024)} KB</span>
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          executeFtpPut(file.name);
+                          setIsFtpFilePickerOpen(false);
+                        }}
+                      >
+                        <Download className="w-4 h-4 mr-2 rotate-180" />
+                        {language === 'tr' ? 'Yükle' : 'Upload'}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </DialogContent>
