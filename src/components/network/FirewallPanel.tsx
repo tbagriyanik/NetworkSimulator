@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Trash2, CheckCircle2, XCircle, GripVertical, Terminal as TerminalIcon, Filter, X } from 'lucide-react';
+import { Plus, Trash2, CheckCircle2, XCircle, GripVertical, Terminal as TerminalIcon, Filter, X, Zap } from 'lucide-react';
 import { toast } from "@/hooks/use-toast";
 import { Translations } from '@/contexts/LanguageContext';
 import { Terminal } from './Terminal';
@@ -77,9 +77,10 @@ export function FirewallPanel({
     enabled: true
   });
 
-  const handleAddRule = useCallback(() => {
+  const handleAddRule = useCallback((overrideRule?: Partial<FirewallRule>) => {
     const rule: FirewallRule = {
       ...newRule,
+      ...overrideRule,
       id: Math.random().toString(36).substr(2, 9)
     };
     const updatedRules = [...rules, rule];
@@ -89,6 +90,27 @@ export function FirewallPanel({
       description: t.language === 'tr' ? 'Firewall kuralı başarıyla eklendi.' : 'Firewall rule added successfully.',
     });
   }, [newRule, rules, onUpdateRules, t.language]);
+
+  const addServiceRule = (service: string) => {
+    let protocol: 'tcp' | 'udp' | 'icmp' | 'any' = 'tcp';
+    let port = '*';
+    let action: 'allow' | 'deny' = 'allow';
+
+    switch (service) {
+      case 'http': port = '80'; break;
+      case 'https': port = '443'; break;
+      case 'ftp': port = '21'; break;
+      case 'ssh': port = '22'; break;
+      case 'telnet': port = '23'; break;
+      case 'smtp': port = '25'; break;
+      case 'dns': protocol = 'udp'; port = '53'; break;
+      case 'ntp': protocol = 'udp'; port = '123'; break;
+      case 'icmp': protocol = 'icmp'; port = '*'; break;
+      case 'deny-all': protocol = 'any'; port = '*'; action = 'deny'; break;
+    }
+
+    handleAddRule({ protocol, port, action, sourceIp: '*', targetIp: '*' });
+  };
 
   const handleDeleteRule = useCallback((id: string) => {
     const updatedRules = rules.filter(r => r.id !== id);
@@ -254,12 +276,31 @@ export function FirewallPanel({
                   </div>
                 </div>
                 <Button
-                  onClick={handleAddRule}
+                  onClick={() => handleAddRule()}
                   className="w-full h-8 bg-red-600 hover:bg-red-700 text-white text-xs font-bold"
                   disabled={isDevicePoweredOff}
                 >
                   <Plus className="w-4 h-4 mr-1" /> {t.language === 'tr' ? 'Kural Ekle' : 'Add Rule'}
                 </Button>
+              </div>
+
+              <div className={`p-4 rounded-xl border ${isDark ? 'bg-slate-950/50 border-slate-800' : 'bg-white border-slate-200'} space-y-3`}>
+                <div className="flex items-center gap-2 mb-1">
+                  <Zap className="w-3 h-3 text-amber-500" />
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">{t.language === 'tr' ? 'Hızlı Servisler' : 'Quick Services'}</span>
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  <Button variant="outline" size="sm" className="h-7 text-[10px] px-1" onClick={() => addServiceRule('http')} disabled={isDevicePoweredOff}>HTTP</Button>
+                  <Button variant="outline" size="sm" className="h-7 text-[10px] px-1" onClick={() => addServiceRule('https')} disabled={isDevicePoweredOff}>HTTPS</Button>
+                  <Button variant="outline" size="sm" className="h-7 text-[10px] px-1" onClick={() => addServiceRule('ftp')} disabled={isDevicePoweredOff}>FTP</Button>
+                  <Button variant="outline" size="sm" className="h-7 text-[10px] px-1" onClick={() => addServiceRule('ssh')} disabled={isDevicePoweredOff}>SSH</Button>
+                  <Button variant="outline" size="sm" className="h-7 text-[10px] px-1" onClick={() => addServiceRule('telnet')} disabled={isDevicePoweredOff}>TELNET</Button>
+                  <Button variant="outline" size="sm" className="h-7 text-[10px] px-1" onClick={() => addServiceRule('smtp')} disabled={isDevicePoweredOff}>SMTP</Button>
+                  <Button variant="outline" size="sm" className="h-7 text-[10px] px-1" onClick={() => addServiceRule('dns')} disabled={isDevicePoweredOff}>DNS</Button>
+                  <Button variant="outline" size="sm" className="h-7 text-[10px] px-1" onClick={() => addServiceRule('ntp')} disabled={isDevicePoweredOff}>NTP</Button>
+                  <Button variant="outline" size="sm" className="h-7 text-[10px] px-1" onClick={() => addServiceRule('icmp')} disabled={isDevicePoweredOff}>ICMP</Button>
+                  <Button variant="destructive" size="sm" className="h-7 text-[10px] px-1" onClick={() => addServiceRule('deny-all')} disabled={isDevicePoweredOff}>DENY ALL</Button>
+                </div>
               </div>
 
               <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">

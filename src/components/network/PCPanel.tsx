@@ -6591,7 +6591,7 @@ export function PCPanel({
                             ) : gameActive && activeTab === 'desktop' ? (
                               <div className="flex-1 flex flex-col items-center justify-center gap-3">
                                 <div className={`text-xs ${isDark ? 'text-slate-200' : 'text-slate-600'}`}>
-                                  {gameLlanguage === 'tr'
+                                  {gameLanguage === 'tr'
                                     ? `Skor: ${gameScore} | Çıkış: ESC | Yeniden: SPACE`
                                     : `Score: ${gameScore} | Exit: ESC | Restart: SPACE`}
                                 </div>
@@ -6623,7 +6623,7 @@ export function PCPanel({
                                 </div>
                                 {gameOver && (
                                   <div className="text-rose-500 font-bold text-sm">
-                                    {gameLlanguage === 'tr' ? 'Oyun Bitti!' : 'Game Over!'}
+                                    {gameLanguage === 'tr' ? 'Oyun Bitti!' : 'Game Over!'}
                                   </div>
                                 )}
                                 {/* Mobile Touch Controls */}
@@ -6646,7 +6646,7 @@ export function PCPanel({
                                     onClick={() => gameOver && (() => { setSnake([{ x: 10, y: 10 }]); setFood({ x: 15, y: 15 }); setDirection({ x: 1, y: 0 }); setGameScore(0); setGameOver(false); })()}
                                     className={`w-12 h-12 rounded-lg flex items-center justify-center text-xs font-bold ${gameOver ? 'bg-emerald-500 text-white' : (isDark ? 'bg-slate-800' : 'bg-slate-100')}`}
                                   >
-                                    {gameOver ? (gameLlanguage === 'tr' ? 'YENİ' : 'NEW') : ''}
+                                    {gameOver ? (gameLanguage === 'tr' ? 'YENİ' : 'NEW') : ''}
                                   </button>
                                   <button
                                     onClick={() => direction.x === 0 && setDirection({ x: 1, y: 0 })}

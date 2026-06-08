@@ -1235,17 +1235,28 @@ export function checkConnectivity(
         const targetMatch = rule.targetIp === '*' || rule.targetIp === 'any' || rule.targetIp === resolvedTargetIp;
 
         // Protocol matching
-        const requestedProtocol = options?.protocol || 'icmp';
-        const protocolMatch = rule.protocol === 'any' || rule.protocol === requestedProtocol;
+        const requestedProtocol = options?.protocol || 'any';
+        // protocolMatch is true if:
+        // 1. Requested is 'any' (checking general reachability)
+        // 2. Rule protocol is 'any' (wildcard rule)
+        // 3. Exact protocol match
+        const protocolMatch = requestedProtocol === 'any' || rule.protocol === 'any' || rule.protocol === requestedProtocol;
 
         // Port matching
         let portMatch = true;
         if (rule.port !== '*' && rule.port !== 'any') {
-          if (requestedProtocol === 'tcp' || requestedProtocol === 'udp') {
-            portMatch = rule.port === (options?.port || '*');
-          } else {
-            // Rule specifies a port but protocol doesn't support them (like ICMP)
-            portMatch = false;
+          // If we requested a specific port, it must match the rule's port
+          if (options?.port && options.port !== '*') {
+            portMatch = rule.port === options.port;
+          }
+          // If the rule specifies a port, but the request doesn't (requested any),
+          // we consider it a match for the purpose of "is any communication possible".
+          else if (requestedProtocol !== 'any') {
+            // If requesting a protocol that has ports (TCP/UDP) but no specific port,
+            // and the rule has a port, it's NOT a match because the rule is more specific.
+            if (requestedProtocol === 'tcp' || requestedProtocol === 'udp') {
+              portMatch = false;
+            }
           }
         }
 
