@@ -2079,7 +2079,7 @@ export function PCPanel({
 
           if (hasIp) {
             dnsServerDevice = topoDev || { id, name: state.hostname, ip: pcDNS } as any;
-            records = state.services.dns.records;
+            records = state.services?.dns?.records || [];
             break;
           }
         }

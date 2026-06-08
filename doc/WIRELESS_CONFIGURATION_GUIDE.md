@@ -2,7 +2,7 @@
 
 ## Genel Bakış
 
-Network Simulator'da wireless cihazlar (Access Point, Router) için WiFi ayarları gerçek Cisco komutları ile yapılabilir. Bu rehber, SSID yapılandırması, güvenlik ayarları, kanal seçimi, güç ayarları ve MAC filtreleme işlemlerini açıklar.
+Network Simulator'da wireless cihazlar (Access Point, Router) için WiFi ayarları gerçek komutları ile yapılabilir. Bu rehber, SSID yapılandırması, güvenlik ayarları, kanal seçimi, güç ayarları ve MAC filtreleme işlemlerini açıklar.
 
 ## Desteklenen Wireless Komutları
 
@@ -292,7 +292,7 @@ Radio Configurations:
 
 ## Ek Kaynaklar
 
-- Cisco Wireless LAN Controller Configuration Guide
+- Wireless LAN Controller Configuration Guide
 - IEEE 802.11 Wireless Standards
 - WPA2/WPA3 Security Standards
 - Network Simulator Documentation

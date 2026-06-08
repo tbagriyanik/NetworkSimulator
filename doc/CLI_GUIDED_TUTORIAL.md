@@ -1181,7 +1181,7 @@ ICMP echo reply received from 192.168.1.2
 
 ---
 
-### 📌 Ders 22: CDP (Cisco Discovery Protocol) Kullanımı
+### 📌 Ders 22: CDP (Discovery Protocol) Kullanımı
 
 **Cihaz Türü:** Switch veya Router  
 **Zorluk Seviyesi:** ⭐⭐ Orta

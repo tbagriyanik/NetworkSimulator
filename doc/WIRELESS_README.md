@@ -2,7 +2,7 @@
 
 ## 📖 Giriş
 
-Network Simulator'da wireless cihazlar (Access Point, Router) için WiFi ayarlarını gerçek Cisco komutları ile yapabilirsiniz.
+Network Simulator'da wireless cihazlar (Access Point, Router) için WiFi ayarlarını gerçek komutları ile yapabilirsiniz.
 
 ## 🚀 Hızlı Başlangıç
 
@@ -147,7 +147,7 @@ Sorularınız veya sorunlarınız için:
 
 ## 📝 Notlar
 
-- Tüm komutlar gerçek Cisco komutlarına uyumludur
+- Tüm komutlar gerçek komutlarına uyumludur
 - Türkçe ve İngilizce hata mesajları desteklenir
 - Konfigürasyon otomatik olarak kaydedilir
 

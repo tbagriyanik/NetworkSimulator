@@ -2874,8 +2874,8 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       height: 350,
       color: '#3b82f6',
       font: 'verdana',
-      fontSize: 14,
-      opacity: 0.8
+      fontSize: 12,
+      opacity: 0.75
     }
   ];
 

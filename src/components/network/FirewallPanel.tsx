@@ -78,11 +78,7 @@ export function FirewallPanel({
   });
 
   const dropdownOptions = useMemo(() => {
-    return [
-      { label: t.language === 'tr' ? 'Herhangi' : 'Any', value: 'any', protocol: 'any', port: '*' },
-      { label: 'TCP', value: 'tcp', protocol: 'tcp', port: '*' },
-      { label: 'UDP', value: 'udp', protocol: 'udp', port: '*' },
-      { label: 'ICMP (*)', value: 'icmp', protocol: 'icmp', port: '*' },
+    const portRules = [
       { label: 'DNS (53)', value: 'dns', protocol: 'udp', port: '53' },
       { label: 'FTP (21)', value: 'ftp', protocol: 'tcp', port: '21' },
       { label: 'HTTP (80)', value: 'http', protocol: 'tcp', port: '80' },
@@ -91,7 +87,15 @@ export function FirewallPanel({
       { label: 'SMTP (25)', value: 'smtp', protocol: 'tcp', port: '25' },
       { label: 'SSH (22)', value: 'ssh', protocol: 'tcp', port: '22' },
       { label: 'TELNET (23)', value: 'telnet', protocol: 'tcp', port: '23' },
-    ].sort((a, b) => a.label.localeCompare(b.label));
+    ].sort((a, b) => parseInt(a.port) - parseInt(b.port));
+
+    return [
+      { label: t.language === 'tr' ? 'Herhangi' : 'Any', value: 'any', protocol: 'any', port: '*' },
+      ...portRules,
+      { label: 'TCP', value: 'tcp', protocol: 'tcp', port: '*' },
+      { label: 'UDP', value: 'udp', protocol: 'udp', port: '*' },
+      { label: 'ICMP (*)', value: 'icmp', protocol: 'icmp', port: '*' },
+    ];
   }, [t.language]);
 
   const currentSelectValue = useMemo(() => {
@@ -358,6 +362,22 @@ function DraggableRuleItem({
   onMove,
   t
 }: DraggableRuleItemProps) {
+  const getProtocolDisplayName = (protocol: string, port: string) => {
+    if (port === '*' || port === 'any') return protocol;
+    const knownServices: Record<string, string> = {
+      'tcp:21': 'FTP',
+      'tcp:22': 'SSH',
+      'tcp:23': 'TELNET',
+      'tcp:25': 'SMTP',
+      'udp:53': 'DNS',
+      'tcp:80': 'HTTP',
+      'udp:123': 'NTP',
+      'tcp:443': 'HTTPS',
+    };
+    return knownServices[`${protocol}:${port}`] || protocol;
+  };
+  const displayName = getProtocolDisplayName(rule.protocol, rule.port);
+
   const [isDragging, setIsDragging] = useState(false);
   const [dragOverPosition, setDragOverPosition] = useState<'above' | 'below' | null>(null);
 
@@ -442,7 +462,7 @@ function DraggableRuleItem({
             <span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${rule.action === 'allow' ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>
               {rule.action.toUpperCase()}
             </span>
-            <span className="text-[10px] font-bold text-slate-500 uppercase">{rule.protocol}</span>
+            <span className="text-[10px] font-bold text-slate-500 uppercase">{displayName}</span>
           </div>
           <div className="text-xs font-mono truncate">
             {rule.sourceIp} &rarr; {rule.targetIp}:{rule.port}
