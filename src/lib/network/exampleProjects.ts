@@ -2782,7 +2782,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
     createPcDevice('pc-mail', 'PC-MAIL', 650, 100, '192.168.1.50', 1),
     createPcDevice('pc-ntp', 'PC-NTP', 800, 100, '192.168.1.60', 1),
     createSwitchDevice('switch-1', 'SW1', 425, 300)
-  ];
+  ].map(dev => ({ ...dev, dns: '192.168.1.10' }));
 
   // Configure DNS Service
   servicesLabDevices[0].services = {
