@@ -77,6 +77,18 @@ export function FirewallPanel({
     enabled: true
   });
 
+  const services = useMemo(() => [
+    { name: 'DNS', port: '53', protocol: 'udp' },
+    { name: 'FTP', port: '21', protocol: 'tcp' },
+    { name: 'HTTP', port: '80', protocol: 'tcp' },
+    { name: 'HTTPS', port: '443', protocol: 'tcp' },
+    { name: 'ICMP', port: '*', protocol: 'icmp' },
+    { name: 'NTP', port: '123', protocol: 'udp' },
+    { name: 'SMTP', port: '25', protocol: 'tcp' },
+    { name: 'SSH', port: '22', protocol: 'tcp' },
+    { name: 'TELNET', port: '23', protocol: 'tcp' },
+  ].sort((a, b) => a.name.localeCompare(b.name)), []);
+
   const handleAddRule = useCallback((overrideRule?: Partial<FirewallRule>) => {
     const rule: FirewallRule = {
       ...newRule,
@@ -91,26 +103,6 @@ export function FirewallPanel({
     });
   }, [newRule, rules, onUpdateRules, t.language]);
 
-  const addServiceRule = (service: string) => {
-    let protocol: 'tcp' | 'udp' | 'icmp' | 'any' = 'tcp';
-    let port = '*';
-    let action: 'allow' | 'deny' = 'allow';
-
-    switch (service) {
-      case 'http': port = '80'; break;
-      case 'https': port = '443'; break;
-      case 'ftp': port = '21'; break;
-      case 'ssh': port = '22'; break;
-      case 'telnet': port = '23'; break;
-      case 'smtp': port = '25'; break;
-      case 'dns': protocol = 'udp'; port = '53'; break;
-      case 'ntp': protocol = 'udp'; port = '123'; break;
-      case 'icmp': protocol = 'icmp'; port = '*'; break;
-      case 'deny-all': protocol = 'any'; port = '*'; action = 'deny'; break;
-    }
-
-    handleAddRule({ protocol, port, action, sourceIp: '*', targetIp: '*' });
-  };
 
   const handleDeleteRule = useCallback((id: string) => {
     const updatedRules = rules.filter(r => r.id !== id);
@@ -244,7 +236,14 @@ export function FirewallPanel({
                     <label className="text-[10px] font-bold text-slate-500 uppercase">{t.language === 'tr' ? 'Protokol' : 'Protocol'}</label>
                     <Select
                       value={newRule.protocol}
-                      onValueChange={(v: any) => setNewRule({ ...newRule, protocol: v })}
+                      onValueChange={(v: any) => {
+                        const service = services.find(s => s.name.toLowerCase() === v);
+                        if (service) {
+                          setNewRule({ ...newRule, protocol: service.protocol as any, port: service.port });
+                        } else {
+                          setNewRule({ ...newRule, protocol: v });
+                        }
+                      }}
                       disabled={isDevicePoweredOff}
                     >
                       <SelectTrigger className="h-8 text-xs">
@@ -255,6 +254,11 @@ export function FirewallPanel({
                         <SelectItem value="tcp">TCP</SelectItem>
                         <SelectItem value="udp">UDP</SelectItem>
                         <SelectItem value="icmp">ICMP</SelectItem>
+                        {services.map(s => (
+                          <SelectItem key={s.name} value={s.name.toLowerCase()}>
+                            {s.name} ({s.port})
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -284,32 +288,6 @@ export function FirewallPanel({
                 </Button>
               </div>
 
-              <div className={`p-4 rounded-xl border ${isDark ? 'bg-slate-950/50 border-slate-800' : 'bg-white border-slate-200'} space-y-3`}>
-                <div className="flex items-center gap-2 mb-1">
-                  <Zap className="w-3 h-3 text-amber-500" />
-                  <span className="text-[10px] font-bold text-slate-500 uppercase">{t.language === 'tr' ? 'Hızlı Servisler' : 'Quick Services'}</span>
-                </div>
-                <Select
-                  disabled={isDevicePoweredOff}
-                  onValueChange={(v) => addServiceRule(v)}
-                >
-                  <SelectTrigger className="h-8 text-xs">
-                    <SelectValue placeholder={t.language === 'tr' ? 'Servis seçin...' : 'Select service...'} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="http">HTTP (80)</SelectItem>
-                    <SelectItem value="https">HTTPS (443)</SelectItem>
-                    <SelectItem value="ftp">FTP (21)</SelectItem>
-                    <SelectItem value="ssh">SSH (22)</SelectItem>
-                    <SelectItem value="telnet">TELNET (23)</SelectItem>
-                    <SelectItem value="smtp">SMTP (25)</SelectItem>
-                    <SelectItem value="dns">DNS (53)</SelectItem>
-                    <SelectItem value="ntp">NTP (123)</SelectItem>
-                    <SelectItem value="icmp">ICMP (*)</SelectItem>
-                    <SelectItem value="deny-all" className="text-red-500 font-bold">DENY ALL</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
 
               <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
                 {rules.length === 0 ? (
