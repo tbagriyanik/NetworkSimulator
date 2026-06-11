@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { isRateLimited } from '@/lib/security/rateLimiter';
 import { NextRequest, NextResponse } from 'next/server';
 
 interface ContactFormData {
@@ -56,6 +57,32 @@ function validateContactData(data: any): { valid: boolean; errors: string[] } {
  */
 export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse>> {
   try {
+    // Rate limiting: 5 submissions per hour per IP
+    const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
+    const { allowed, remaining, resetTime } = isRateLimited(
+      `contact_${ip}`,
+      5,
+      60 * 60 * 1000
+    );
+
+    if (!allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Too many requests. Please try again later.',
+          code: 'RATE_LIMIT_EXCEEDED',
+        },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': '5',
+            'X-RateLimit-Remaining': String(remaining),
+            'X-RateLimit-Reset': String(Math.ceil(resetTime / 1000)),
+          },
+        }
+      );
+    }
+
     // Parse request body
     let body: any;
     try {
