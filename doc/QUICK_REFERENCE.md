@@ -300,7 +300,7 @@ if (error) {
 
 - **Detaylı Rehber**: `ERROR_HANDLING_GUIDE.md`
 - **Entegrasyon Rehberi**: `INTEGRATION_GUIDE.md`
-- **İyileştirmeler Özeti**: `IMPROVEMENTS_SUMMARY.md`
+- **İyileştirmeler**: `SERVICE_FEATURES.md` (PC Servis Özellikleri)
 
 ---
 
@@ -359,6 +359,6 @@ Router# show ipv6 interface brief
 
 ---
 
-**Güncelleme Tarihi**: 2026-05-18
-**Versiyon**: 1.2
+**Güncelleme Tarihi**: 2026-06-12
+**Versiyon**: 1.7.0
 **Durum**: ✅ Hazır

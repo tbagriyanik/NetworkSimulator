@@ -71,6 +71,17 @@ Bu klasör, Network Simulator 2026 projesi için tüm dokümantasyon dosyaların
 
 ---
 
+### 📦 [SERVICE_FEATURES.md](SERVICE_FEATURES.md)
+**PC Servis Özellikleri (FTP, Mail, NTP, DNS, HTTP, DHCP)**
+- FTP dosya yükleme/indirme/silme
+- Mail gönderme/alma
+- NTP zaman senkronizasyonu
+- CLI üzerinden servis komutları
+
+**Okuma Süresi**: 10 dakika
+
+---
+
 ### 📡 [WIRELESS_CONFIGURATION_GUIDE.md](WIRELESS_CONFIGURATION_GUIDE.md)
 **Kablosuz Ağ Yapılandırma Rehberi**
 - SSID yönetimi
@@ -221,7 +232,7 @@ const response = await apiClient.post('/api/contact', data);
 
 | Metrik | Değer |
 |--------|-------|
-| **Dokümantasyon Sayfaları** | 12 |
+| **Dokümantasyon Sayfaları** | 13 |
 | **Toplam Okuma Süresi** | ~270 dakika |
 
 ---
@@ -242,6 +253,17 @@ const response = await apiClient.post('/api/contact', data);
 ✅ L3 Anahtarlama  
 ✅ Google Sheets Entegrasyonu  
 ✅ Kapsamlı Dokümantasyon  
+✅ PC Servis Özellikleri (FTP, Mail, NTP, DNS, HTTP, DHCP)  
+✅ Güvenlik Duvarı Servis Entegrasyonu  
+✅ Kablosuz Gösterge Paneli  
+✅ IoT Panel Sekmeleri  
+✅ Sensör Geliştirmeleri (Hareket, Ses, Işık)  
+✅ Pencere Notları  
+✅ API Hız Sınırlama  
+✅ Başarım Sistemi (Rozetler)  
+✅ Sınav Modu  
+✅ Rehberli Mod ve Eğitim Sihirbazı  
+✅ Akıllı CLI Asistanı  
 
 ---
 
@@ -295,9 +317,9 @@ const response = await apiClient.post('/api/contact', data);
 
 ## 📅 Bilgi
 
-**Versiyon**: 1.3.0  
+**Versiyon**: 1.7.0  
 **Durum**: ✅ Güncel  
-**Tarih**: 2026-06-05  
+**Tarih**: 2026-06-12  
 
 ---
 

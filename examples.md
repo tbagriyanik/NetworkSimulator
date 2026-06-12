@@ -1,6 +1,6 @@
 # Network Simulator 2026 - Example Projects
 
-This document provides detailed descriptions of all 39 example projects available in the Network Simulator 2026.
+This document provides detailed descriptions of all 40 example projects available in the Network Simulator 2026.
 
 ## Table of Contents
 
@@ -769,11 +769,36 @@ Static NAT ile birebir adres eşlemesi.
 5. **Doğrulama:**
     - Dış istemciden `203.0.113.10` adresine erişimi test edin.
 
+### 22. All Services Lab (DNS, HTTP, FTP, MAIL, NTP, DHCP)
+**ID:** `all-services-lab`  
+**Tag:** SERVICES  
+**Description:** A comprehensive lab featuring basic network services (DNS, HTTP, DHCP, FTP, MAIL, NTP) running on PCs.  
+**Details:** DNS: 1.10, HTTP: 1.20, DHCP: 1.30, FTP: 1.40, MAIL: 1.50, NTP: 1.60
+
+**Kısa Tanıtım:**
+PC'ler üzerinde çalışan temel ağ servislerinin bir arada bulunduğu kapsamlı laboratuvar.
+
+**Adım Adım Proje Yapımı:**
+1. **Topoloji:**
+   - 1 adet Switch (SW1) ve 6 adet PC (PC-DNS, PC-HTTP, PC-DHCP, PC-FTP, PC-MAIL, PC-NTP) ekleyin.
+   - Tüm PC'leri SW1'e bağlayın.
+2. **IP Yapılandırması:**
+   - PC-DNS: `192.168.1.10/24`
+   - PC-HTTP: `192.168.1.20/24`
+   - PC-DHCP: `192.168.1.30/24`
+   - PC-FTP: `192.168.1.40/24`
+   - PC-MAIL: `192.168.1.50/24`
+   - PC-NTP: `192.168.1.60/24`
+3. **Servis Konfigürasyonu:**
+   - Her PC'de ilgili servisi (DNS, HTTP, DHCP, FTP, MAIL, NTP) etkinleştirin.
+4. **Test:**
+   - PC'ler arası servis erişimini test edin (nslookup, wget, ftp, ping).
+
 ---
 
 ## Advanced Level
 
-### 22. Inter-VLAN Routing (L3 Switch)
+### 40. Inter-VLAN Routing (L3 Switch)
 **ID:** `l3-routing`  
 **Tag:** L3 ROUTING  
 **Description:** L3 switch üzerinde dört VLAN arası routing aktiftir.  
@@ -830,7 +855,7 @@ L3 switch üzerinde dört VLAN arası routing aktiftir.
    - show ip route (routing tablosunu gör)
    - Tüm PC'ler birbirine ping atabilir
 
-### 23. Static Routing Lab
+### 40. Static Routing Lab
 **ID:** `static-routing`  
 **Tag:** ROUTING  
 **Description:** İki router arası statik yönlendirme ile farklı subnetler arası iletişim.  
@@ -887,7 +912,7 @@ L3 switch üzerinde dört VLAN arası routing aktiftir.
    - show ip route (statik rotaları gör)
    - PC-1 ping 192.168.20.10 (PC-2)
 
-### 24. EtherChannel Lab
+### 40. EtherChannel Lab
 **ID:** `etherchannel`  
 **Tag:** ETHERCHANNEL  
 **Description:** LACP ile birden fazla link tek bir mantıksal bağlantıda birleştirilir.  
@@ -946,7 +971,7 @@ LACP ile birden fazla link tek bir mantıksal bağlantıda birleştirilir.
    - show spanning-tree (STP durumunu kontrol et)
    - PC-1 ping 192.168.10.11 (PC-2)
 
-### 25. STP Redundant Links
+### 40. STP Redundant Links
 **ID:** `stp-redundant`  
 **Tag:** STP  
 **Description:** Rapid-PVST redundant linklerde loop önlemek için STP kullanır.  
@@ -1006,7 +1031,7 @@ Rapid-PVST redundant linklerde loop önlemek için STP kullanır.
 
 ⚠️ Not: Ağı Yenile (F5)
 
-### 26. STP Triangle Topology
+### 40. STP Triangle Topology
 **ID:** `stp-triangle`  
 **Tag:** STP  
 **Description:** Üç switch triangle topolojisinde STP bir portu bloke eder.  
@@ -1050,7 +1075,7 @@ Rapid-PVST redundant linklerde loop önlemek için STP kullanır.
 
 ⚠️ Not: Ağı Yenile (F5)
 
-### 27. Campus Network
+### 40. Campus Network
 **ID:** `campus-network`  
 **Tag:** CAMPUS  
 **Description:** Core router iki access switch arası routing sağlar.  
@@ -1115,7 +1140,7 @@ Core router iki access switch arası routing sağlar.
 6. **Test:**
    - PC-1 ping 192.168.20.10 (PC-2)
 
-### 28. STP 3 Switch PVST
+### 40. STP 3 Switch PVST
 **ID:** `stp-3switch-pvst`  
 **Tag:** STP  
 **Description:** PVST ile her VLAN için farklı root bridge yük dengelemesi sağlanır.  
@@ -1148,7 +1173,7 @@ PVST ile her VLAN için farklı root bridge yük dengelemesi sağlanır.
    - show spanning-tree vlan 20
    - Her VLAN farklı root kullanır
 
-### 29. 2 L3 Switch VLAN (AG1/AG2)
+### 40. 2 L3 Switch VLAN (AG1/AG2)
 **ID:** `l3-switch-2vlan`  
 **Tag:** L3 VLAN  
 **Description:** İki L3 switch SVI gateway ile VLAN 10 ve 20 arası routing sağlar.  
@@ -1207,7 +1232,7 @@ PVST ile her VLAN için farklı root bridge yük dengelemesi sağlanır.
 5. **Test:**
    - Tüm PC'ler birbirine ping atabilir
 
-### 30. L3 Switch Static Routing
+### 40. L3 Switch Static Routing
 **ID:** `static-l3-routing`  
 **Tag:** STATIK ROUTING  
 **Description:** Multilayer switchler ve router statik rotalarla ağlar arası iletişim sağlar.  
@@ -1271,7 +1296,7 @@ Multilayer switchler ve router statik rotalarla ağlar arası iletişim sağlar.
    - show ip route (statik rotaları gör)
    - PC'ler arası ping testi
 
-### 31. RIP Dynamic Routing
+### 40. RIP Dynamic Routing
 **ID:** `rip-dynamic-routing`  
 **Tag:** RIP ROUTING  
 **Description:** RIP dinamik yönlendirme protokolü otomatik route öğrenimi sağlar.  
@@ -1335,7 +1360,7 @@ RIP dinamik yönlendirme protokolü otomatik route öğrenimi sağlar.
    - show ip route (dinamik rotaları gör)
    - PC0 ping 192.168.3.10 (PC2)
 
-### 32. ACL Extended 
+### 40. ACL Extended 
 **ID:** `acl-extended-basic`  
 **Tag:** ACL  
 **Description:** Extended ACL ile protokol/port bazlı filtreleme.  
@@ -1361,7 +1386,7 @@ Extended ACL ile protokol/port bazlı filtreleme.
    - Ping ve diğer trafik türleri engellenmeli.
     - `show access-lists` ile sayaçları kontrol edin.
 
-### 33. NAT Dynamic 
+### 40. NAT Dynamic 
 **ID:** `nat-dynamic-basic`  
 **Tag:** NAT  
 **Description:** NAT havuzu ile dinamik çeviri.  
@@ -1383,7 +1408,7 @@ NAT havuzu ile dinamik çeviri.
    - İç istemcilerden dış ağa trafik oluşturun.
    - `show ip nat translations` ve `show ip nat statistics` komutlarını kontrol edin.
 
-### 34. NAT PAT 
+### 40. NAT PAT 
 **ID:** `nat-pat-basic`  
 **Tag:** NAT  
 **Description:** PAT (NAT overload) ile çoktan-bire çeviri.  
@@ -1406,7 +1431,7 @@ PAT (NAT overload) ile çoktan-bire çeviri.
    - Birden fazla PC’den eşzamanlı web/ping testi yapın.
    - `show ip nat translations` içinde port bazlı eşleşmeleri görün.
 
-### 35. HSRP Redundancy 
+### 40. HSRP Redundancy 
 **ID:** `hsrp-redundancy-basic`  
 **Tag:** HSRP  
 **Description:** Varsayılan ağ geçidi yedekliliği için HSRP.  
@@ -1430,7 +1455,7 @@ Varsayılan ağ geçidi yedekliliği için HSRP.
    - Primary arayüzünü kapatıp gateway erişimini test edin.
    - `show standby brief` ile active/standby durumlarını doğrulayın.
 
-### 36. OSPF Multi-Area 
+### 40. OSPF Multi-Area 
 **ID:** `ospf-multi-area-1`  
 **Tag:** OSPF  
 **Description:** Area 0 ve Area 10 ile çok alanlı OSPF.  
@@ -1455,7 +1480,7 @@ Area 0 ve Area 10 ile çok alanlı OSPF.
    - `show ip route ospf`
    - Farklı alanlardaki istemciler arası ping testi.
 
-### 37. OSPF Multi-Area 
+### 40. OSPF Multi-Area 
 **ID:** `ospf-multi-area-2`  
 **Tag:** OSPF  
 **Description:** ABR üzerinden farklı OSPF alanlarının omurgaya bağlanması.  
@@ -1478,7 +1503,7 @@ ABR üzerinden farklı OSPF alanlarının omurgaya bağlanması.
    - Stub area’dan dış alanlara erişimi doğrulayın.
    - Routing tablosunda özet rota davranışını kontrol edin.
 
-### 38. EIGRP Basic 
+### 40. EIGRP Basic 
 **ID:** `eigrp-basic-1`  
 **Tag:** EIGRP  
 **Description:** Temel EIGRP komutları ile dinamik yönlendirme kurulumu.  
@@ -1502,7 +1527,7 @@ Temel EIGRP komutları ile dinamik yönlendirme kurulumu.
    - `show ip route eigrp`
    - Uçtan uca ping ile erişim testi.
 
-### 39. IPv6 Advanced Lab (DHCPv6 & OSPFv3)
+### 40. IPv6 Advanced Lab (DHCPv6 & OSPFv3)
 **ID:** `ipv6-advanced-lab`  
 **Tag:** IPv6  
 **Description:** IPv6 adresleme, DHCPv6 havuzları ve OSPFv3 dinamik yönlendirme.  
@@ -1525,9 +1550,9 @@ IPv6 adresleme, DHCPv6 havuzları ve OSPFv3 dinamik yönlendirme.
 | Level | Count |
 |-------|-------|
 | Basic | 9 |
-| Intermediate | 12 |
+| Intermediate | 13 |
 | Advanced | 18 |
-| **Total Examples** | **39** |
+| **Total Examples** | **40** |
 | **Total Code Lines** | **15,650** |
 
 ## Getting Started

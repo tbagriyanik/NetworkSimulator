@@ -246,6 +246,7 @@ doc/
 ├── ERROR_HANDLING_GUIDE.md         (Detaylı rehber)
 ├── INTEGRATION_GUIDE.md            (Entegrasyon rehberi)
 ├── USAGE.md                        (Kullanım kılavuzu)
+├── SERVICE_FEATURES.md             (PC Servis özellikleri)
 ├── WIRELESS_CONFIGURATION_GUIDE.md (Kablosuz rehberi)
 ├── WIRELESS_README.md              (Kablosuz hızlı başlangıç)
 ├── L3_SWITCH_CONFIGURATION.md      (L3 anahtarlama)
@@ -329,7 +330,8 @@ doc/
 | L3_SWITCH_CONFIGURATION.md | — | 15 min |
 | GOOGLE_SHEETS_SETUP.md | — | 15 min |
 | DOCUMENTATION_INDEX.md | — | 10 min |
-| **Toplam (12 dosya)** | — | **~270-345 min** |
+| SERVICE_FEATURES.md | — | 10 min |
+| **Toplam (13 dosya)** | — | **~280-355 min** |
 
 ---
 
@@ -554,8 +556,8 @@ doc/
 
 ## 📅 Güncelleme Tarihi
 
-**Son Güncelleme**: 2026-06-05
-**Versiyon**: 1.4.0
+**Son Güncelleme**: 2026-06-12
+**Versiyon**: 1.7.0
 **Durum**: ✅ Güncel
 
 ---

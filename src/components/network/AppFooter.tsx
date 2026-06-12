@@ -64,14 +64,15 @@ export function AppFooter({
                     }`} />
                   {lastSaveTime && (
                     <span className={`text-[11px] ${isDark ? 'text-slate-300' : 'text-slate-500'}`}>
-                      {t.lastSavedAt + lastSaveTime}
-                    {projectName !== 'Untitled' && (
-                      <>
-                        <span className={`mx-1.5 ${isDark ? 'text-slate-600' : 'text-slate-300'}`}>•</span>
-                        <span className="font-medium">{projectName}</span>
-                      </>
-                    )}
-                  </span>
+                      <span className="w-[100px] inline-block text-left truncate">
+                        {t.lastSavedAt + lastSaveTime}
+                      </span>
+                      {projectName !== 'Untitled' && (
+                        <>
+                          <span className="font-medium w-[120px] inline-block text-left truncate">{projectName}</span>
+                        </>
+                      )}
+                    </span>
                   )}
                 </div>
               </TooltipWrapper>
