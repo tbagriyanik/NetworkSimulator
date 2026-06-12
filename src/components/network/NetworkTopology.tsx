@@ -5579,7 +5579,7 @@ export function NetworkTopology({
                 if (iotKind === 'lamp') {
                   return (
                     <g transform="translate(1, 1)" filter="url(#wifiIconShadow)">
-                      <text x="12" y="16" textAnchor="middle" fontSize="15" opacity={isActive ? 1 : 0.45}>🏮</text>
+                      <text x="12" y="16" textAnchor="middle" fontSize="15" opacity={isActive ? 1 : 0.45}>💡</text>
                     </g>
                   );
                 } else if (iotKind === 'heater') {
@@ -5670,7 +5670,7 @@ export function NetworkTopology({
                     return (
                       <div className="space-y-2">
                         <div className="font-bold text-sm mb-1">
-                          {iotKind === 'lamp' ? (language === 'tr' ? '🏮 Lamba' : '🏮 Lamp') :
+                          {iotKind === 'lamp' ? (language === 'tr' ? '💡 Lamba' : '💡 Lamp') :
                             iotKind === 'heater' ? (language === 'tr' ? '♨️ Isıtıcı' : '♨️ Heater') :
                               (language === 'tr' ? '🧊 Soğutucu' : '🧊 Cooler')}
                         </div>

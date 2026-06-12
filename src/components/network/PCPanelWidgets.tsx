@@ -52,7 +52,7 @@ export const WifiSignalMeter = ({ strength }: { strength: number }) => {
 const getDeviceIcon = (device: CanvasDevice): string => {
     const kind = device.iot?.kind;
     const sensorType = device.iot?.sensorType;
-    if (kind === 'lamp') return '🏮';
+    if (kind === 'lamp') return '💡';
     if (kind === 'heater') return '♨️';
     if (kind === 'cooler') return '🧊';
     if (sensorType === 'temperature') return '🌡️';
@@ -168,7 +168,7 @@ export const IoTSensorDisplay = ({
         
         // Special handling for lamp devices: use distinct on/off visuals
         const displayIcon = device.iot?.kind === 'lamp' 
-            ? (isActive ? '🏮' : '🏮')
+            ? (isActive ? '💡' : '💡')
             : deviceIcon;
 
         return (
