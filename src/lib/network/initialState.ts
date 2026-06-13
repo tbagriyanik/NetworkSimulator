@@ -519,6 +519,7 @@ export function buildStartupConfig(state: SwitchState): StartupConfig {
     mlsQosEnabled: state.mlsQosEnabled,
     dhcpSnoopingEnabled: state.dhcpSnoopingEnabled,
     ntpServers: state.ntpServers ? [...state.ntpServers] : undefined,
+    ntpTimeOffset: state.services?.ntp?.timeOffset,
     ipv6Enabled: state.ipv6Enabled,
     ipRouting: state.ipRouting
   };
@@ -579,14 +580,16 @@ export function applyStartupConfig(baseState: SwitchState, startup: StartupConfi
     ntpServers: startup.ntpServers ? [...startup.ntpServers] : undefined,
     services: {
       ...baseState.services,
-      ntp: startup.ntpServers && startup.ntpServers.length > 0
-        ? {
-            ...baseState.services?.ntp,
-            enabled: true,
-            server: startup.ntpServers[0],
-            timezone: baseState.services?.ntp?.timezone || 'UTC',
-          }
-        : baseState.services?.ntp,
+      ntp: {
+        ...(baseState.services?.ntp || { enabled: false, timezone: 'UTC' }),
+        ...(startup.ntpServers && startup.ntpServers.length > 0
+          ? {
+              enabled: true,
+              server: startup.ntpServers[0],
+            }
+          : {}),
+        timeOffset: (startup as any).ntpTimeOffset,
+      },
     },
     ipv6Enabled: startup.ipv6Enabled,
     ipRouting: startup.ipRouting

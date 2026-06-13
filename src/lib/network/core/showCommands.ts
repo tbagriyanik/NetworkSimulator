@@ -1467,6 +1467,8 @@ function cmdShowClock(
   ctx: CommandContext
 ): any {
   const serverIps = state.ntpServers || [];
+  
+  // Önce NTP sunucularına bağlanmayı dene
   for (const serverIp of serverIps) {
     // Check reachability if devices/connections are available in context
     if (ctx.devices && ctx.connections && ctx.sourceDeviceId) {
@@ -1479,16 +1481,40 @@ function cmdShowClock(
         ctx.language,
         { protocol: 'udp', port: '123' }
       );
-      if (!reachable.success) continue;
+      
+      // Debug için: bağlantı durumunu kontrol et
+      if (!reachable.success) {
+        // Bağlantı başarısız, bir sonraki sunucuyu dene
+        continue;
+      }
 
       // Get NTP server's state to retrieve time offset
       let timeOffset = 0;
+      let serverState = null;
+
+      // If the target is a PC/Server NTP server, read date and time from services config directly
+      const targetDev = ctx.devices?.find((d: any) => d.id === reachable.targetId);
+      if (targetDev && targetDev.type !== 'switchL2' && targetDev.type !== 'switchL3' && targetDev.type !== 'router') {
+        const targetNtp = targetDev.services?.ntp;
+        if (targetNtp?.enabled && targetNtp.date && targetNtp.time) {
+          const [y, m, d] = targetNtp.date.split('-');
+          const formattedDate = `${d}.${m}.${y}`;
+          return {
+            success: true,
+            output: `\n*${targetNtp.time} UTC ${formattedDate}\n`
+          };
+        }
+      }
+
       if (reachable.targetId && ctx.deviceStates) {
-        const serverState = ctx.deviceStates.get(reachable.targetId);
+        serverState = ctx.deviceStates.get(reachable.targetId);
         if (serverState?.services?.ntp?.timeOffset !== undefined) {
           timeOffset = serverState.services.ntp.timeOffset;
         }
       }
+
+      // Debug için: timeOffset değerini kontrol et
+      console.log(`NTP Debug: Server ${serverIp}, timeOffset=${timeOffset}, serverState NTP enabled=${serverState?.services?.ntp?.enabled}`);
 
       // NTP server reachable – return synced time with offset applied
       const now = new Date();
@@ -1502,19 +1528,9 @@ function cmdShowClock(
         output: `\n*${time} UTC ${day}.${month}.${year}\n`
       };
     }
-
-    // Fallback without offset if no devices/connections
-    const now = new Date();
-    const time = now.toTimeString().slice(0, 8);
-    const day = String(now.getDate()).padStart(2, '0');
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const year = now.getFullYear();
-    return {
-      success: true,
-      output: `\n*${time} UTC ${day}.${month}.${year}\n`
-    };
   }
 
+  // Eğer NTP sunucusuna bağlanılamazsa, local NTP config'i kontrol et
   const localNtp = state.services?.ntp;
   if (localNtp?.enabled) {
     if (localNtp.timeOffset !== undefined) {
@@ -1540,6 +1556,7 @@ function cmdShowClock(
     }
   }
 
+  // Eğer NTP yoksa, systemClock'u kontrol et
   if (state.systemClock) {
     const { time, day, month, year } = state.systemClock as { time: string; day: string; month: string; year: string };
     const monthMap: Record<string, string> = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06', Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' };
@@ -1550,6 +1567,7 @@ function cmdShowClock(
     };
   }
 
+  // Hiçbiri yoksa, gerçek zamanı göster
   const now = new Date();
   return {
     success: true,

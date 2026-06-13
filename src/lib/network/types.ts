@@ -473,6 +473,7 @@ export interface StartupConfig {
   mlsQosEnabled?: boolean;
   dhcpSnoopingEnabled?: boolean;
   ntpServers?: string[];
+  ntpTimeOffset?: number;
   ipv6Enabled?: boolean;
   ipRouting: boolean;
 }

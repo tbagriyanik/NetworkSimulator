@@ -860,7 +860,11 @@ function cmdClockSet(state: any, input: string, ctx: any): any {
         ...state.services,
         ntp: {
             ...state.services?.ntp,
-            timeOffset
+            timeOffset,
+            enabled: true,
+            timezone: state.services?.ntp?.timezone || 'UTC',
+            date: configuredDate.toISOString().slice(0, 10),
+            time: configuredDate.toTimeString().slice(0, 8),
         }
     };
 

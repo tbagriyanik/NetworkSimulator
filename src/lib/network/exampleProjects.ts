@@ -167,6 +167,23 @@ const deterministicMac = (seed: string, scope: string = 'example-projects') => {
   return `${base.slice(0, 4)}.${base.slice(4, 8)}.${base.slice(8, 12)}`;
 };
 
+const deterministicIpv6 = (seed: string, vlan: number = 1): string => {
+  const input = seed;
+  let hash = 2166136261;
+  for (let i = 0; i < input.length; i += 1) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  
+  const hash32 = (hash >>> 0) & 0xffffffff;
+  
+  // 2001:db8:acad:VLAN::HOST formatında IPv6 adresi oluştur
+  const subnet = vlan.toString(16);
+  const host = (hash32 & 0xffff).toString(16).toLowerCase();
+  
+  return `2001:db8:acad:${subnet}::${host}`;
+};
+
 const createSwitchDevice = (id: string, name: string, x: number, y: number, ip: string = ''): CanvasDevice => ({
   id,
   type: 'switchL2',
@@ -207,7 +224,7 @@ const createL3SwitchDevice = (id: string, name: string, x: number, y: number): C
   ]
 });
 
-const createPcDevice = (id: string, name: string, x: number, y: number, ip: string, vlan: number, gateway?: string): CanvasDevice => ({
+const createPcDevice = (id: string, name: string, x: number, y: number, ip: string, vlan: number, gateway?: string, ipv6?: string): CanvasDevice => ({
   id,
   type: 'pc',
   name,
@@ -216,6 +233,7 @@ const createPcDevice = (id: string, name: string, x: number, y: number, ip: stri
   ip,
   vlan,
   gateway,
+  ipv6: ipv6 || deterministicIpv6(id, vlan),
   macAddress: deterministicMac(id),
   status: 'online',
   ports: [
@@ -2731,7 +2749,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
     createPcDevice('pc-2', 'PC-2', 850, 150, '', 1)
   ];
   ipv6LabDevices[0].ipv6 = '2001:DB8:1::10';
-  ipv6LabDevices[3].ipv6 = '2001:DB8:2::10';
+  ipv6LabDevices[3].ipv6 = '2001:DB8:2::20';
 
   const ipv6LabConnections: CanvasConnection[] = [];
   connectPorts(ipv6LabDevices, ipv6LabConnections, 'pc-1', 'eth0', 'router-1', 'gi0/0');
@@ -2742,8 +2760,8 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
     {
       id: 'ipv6-lab-note',
       text: isTr
-        ? '🌐 IPv6 Gelişmiş Laboratuvar (Routing, DHCPv6, OSPFv3):\n\n1) IPv6 Unicast Routing: Cihazlarda IPv6 yönlendirmeyi etkinleştirin.\n2) Adresleme: \n   - R1 Gi0/0: 2001:DB8:1::1/64\n   - R1-R2 Link: 2001:DB8:AC::/64\n   - R2 Gi0/0: 2001:DB8:2::1/64\n3) DHCPv6: R1 ve R2 üzerinde PC\'ler için IPv6 havuzları oluşturun.\n4) Yönlendirme (OSPFv3):\n   - R1: ipv6 router ospf 1, area 0\n   - R2: ipv6 router ospf 1, area 0\n\nTest: PC-1 > ping 2001:DB8:2::10'
-        : '🌐 IPv6 Advanced Lab (Routing, DHCPv6, OSPFv3):\n\n1) IPv6 Unicast Routing: Enable IPv6 routing on devices.\n2) Addressing: \n   - R1 Gi0/0: 2001:DB8:1::1/64\n   - R1-R2 Link: 2001:DB8:AC::/64\n   - R2 Gi0/0: 2001:DB8:2::1/64\n3) DHCPv6: Configure IPv6 pools for PCs on R1 and R2.\n4) Routing (OSPFv3):\n   - R1: ipv6 router ospf 1, area 0\n   - R2: ipv6 router ospf 1, area 0\n\nTest: PC-1 > ping 2001:DB8:2::10',
+        ? '🌐 IPv6 Gelişmiş Laboratuvar (Routing, DHCPv6, OSPFv3):\n\n1) IPv6 Unicast Routing: Cihazlarda IPv6 yönlendirmeyi etkinleştirin.\n2) Adresleme: \n   - R1 Gi0/0: 2001:DB8:1::1/64\n   - R1-R2 Link: 2001:DB8:AC::/64\n   - R2 Gi0/0: 2001:DB8:2::1/64\n3) DHCPv6: R1 ve R2 üzerinde PC\'ler için IPv6 havuzları oluşturun.\n4) Yönlendirme (OSPFv3):\n   - R1: ipv6 router ospf 1, area 0\n   - R2: ipv6 router ospf 1, area 0\n\nTest: PC-1 > ping 2001:DB8:2::20'
+        : '🌐 IPv6 Advanced Lab (Routing, DHCPv6, OSPFv3):\n\n1) IPv6 Unicast Routing: Enable IPv6 routing on devices.\n2) Addressing: \n   - R1 Gi0/0: 2001:DB8:1::1/64\n   - R1-R2 Link: 2001:DB8:AC::/64\n   - R2 Gi0/0: 2001:DB8:2::1/64\n3) DHCPv6: Configure IPv6 pools for PCs on R1 and R2.\n4) Routing (OSPFv3):\n   - R1: ipv6 router ospf 1, area 0\n   - R2: ipv6 router ospf 1, area 0\n\nTest: PC-1 > ping 2001:DB8:2::20',
       x: 250,
       y: 300,
       width: 500,

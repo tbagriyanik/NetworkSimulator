@@ -139,9 +139,9 @@ export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zInde
               </div>
             </TooltipWrapper>
             <TooltipWrapper title={t.copy}>
-              <div className="flex justify-between items-center cursor-pointer hover:bg-slate-500/10 rounded px-1 transition-colors" onClick={() => navigator.clipboard.writeText(pc?.ipv6 || '::')}>
+              <div className="flex justify-between items-center cursor-pointer hover:bg-slate-500/10 rounded px-1 transition-colors" onClick={() => navigator.clipboard.writeText(`${pc?.ipv6 || '2001:db8:acad:1::10'}/${pc?.ipv6Prefix || '64'}`)}>
                 <span className="opacity-50">{language === 'tr' ? 'IPv6 Adresi' : 'IPv6'}</span>
-                <span className="font-mono opacity-80">{pc?.ipv6 || '::'}</span>
+                <span className="font-mono opacity-80">{pc?.ipv6 || '2001:db8:acad:1::10'}<span className="opacity-50">/{pc?.ipv6Prefix || '64'}</span></span>
               </div>
             </TooltipWrapper>
             <TooltipWrapper title={t.copy}>

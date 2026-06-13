@@ -16,3 +16,15 @@ export function generateRandomLinkLocalIpv4(usedIps?: Set<string>, maxAttempts =
   return `169.254.${(Date.now() >>> 8) % 254 + 1}.${Date.now() % 254 + 1}`;
 }
 
+export function generateRandomLinkLocalIpv6(usedIps?: Set<string>, maxAttempts = 512): string {
+  // fe80::/10 is link-local. We generate a random /64 interface ID.
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    const p1 = Math.floor(Math.random() * 65536).toString(16);
+    const p2 = Math.floor(Math.random() * 65536).toString(16);
+    const p3 = Math.floor(Math.random() * 65536).toString(16);
+    const p4 = Math.floor(Math.random() * 65536).toString(16);
+    const candidate = `fe80::${p1}:${p2}:${p3}:${p4}`;
+    if (!usedIps || !usedIps.has(candidate)) return candidate;
+  }
+  return `fe80::${Math.floor(Math.random() * 65536).toString(16)}:${Math.floor(Math.random() * 65536).toString(16)}`;
+}

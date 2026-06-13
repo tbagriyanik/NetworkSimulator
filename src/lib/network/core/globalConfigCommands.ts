@@ -1640,6 +1640,7 @@ function cmdNtpServer(state: any, input: string, ctx: any): any {
       timezone: state.services?.ntp?.timezone || 'UTC',
       date,
       time,
+      timeOffset: state.services?.ntp?.timeOffset || 0,
     },
   };
 

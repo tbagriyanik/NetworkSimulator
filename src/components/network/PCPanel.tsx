@@ -539,12 +539,12 @@ export function PCPanel({
   }, [language]);
 
   const ntpPanelTime = useMemo(() => {
-    if (!serviceNtpEnabled) return currentTime;
+    if (!serviceNtpEnabled && !serviceNtpServer.trim()) return currentTime;
     const date = serviceNtpDate || currentTime.toISOString().slice(0, 10);
     const time = serviceNtpTime || currentTime.toTimeString().slice(0, 8);
     const combined = new Date(`${date}T${time}`);
     return Number.isNaN(combined.getTime()) ? currentTime : combined;
-  }, [currentTime, serviceNtpDate, serviceNtpEnabled, serviceNtpTime]);
+  }, [currentTime, serviceNtpDate, serviceNtpEnabled, serviceNtpTime, serviceNtpServer]);
 
   const ntpServerSuggestions = useMemo(() => ([
     { value: 'pool.ntp.org', label: 'pool.ntp.org' },
@@ -567,10 +567,10 @@ export function PCPanel({
 
   const ntpSyncState = useMemo(() => {
     const serverIp = serviceNtpServer.trim();
-    if (!serviceNtpEnabled || !serverIp) return null;
+    if (!serviceNtpEnabled && !serverIp) return null;
 
     // local-clock: use real system time
-    if (serverIp === 'local-clock') {
+    if (serverIp === 'local-clock' || (!serverIp && serviceNtpEnabled)) {
       const now = new Date();
       return {
         date: now.toISOString().slice(0, 10),
@@ -583,13 +583,51 @@ export function PCPanel({
     const canReach = checkConnectivity(deviceId, serverIp, topologyDevices as any, topologyConnections as any, deviceStates || new Map(), language as 'tr' | 'en', { protocol: 'any' });
     if (!canReach.success) return null;
 
+    let serverDate = '';
+    let serverTime = '';
+
+    if (canReach.targetId) {
+      const targetDev = topologyDevices.find(d => d.id === canReach.targetId);
+      if (targetDev) {
+        if (targetDev.type === 'switchL2' || targetDev.type === 'switchL3' || targetDev.type === 'router') {
+          const devState = deviceStates?.get(canReach.targetId);
+          if (devState?.services?.ntp?.enabled) {
+            const timeOffset = devState.services.ntp.timeOffset || 0;
+            const adjustedTime = new Date(new Date().getTime() + timeOffset);
+            serverDate = adjustedTime.toISOString().slice(0, 10);
+            serverTime = adjustedTime.toTimeString().slice(0, 8);
+          }
+        } else {
+          // PC/Server
+          if (targetDev.services?.ntp?.enabled) {
+            serverDate = targetDev.services.ntp.date || '';
+            serverTime = targetDev.services.ntp.time || '';
+          }
+        }
+      }
+    }
+
+    if (serverDate && serverTime) {
+      const serverDateTime = new Date(`${serverDate}T${serverTime}`);
+      if (!Number.isNaN(serverDateTime.getTime())) {
+        const offset = serverDateTime.getTime() - new Date().getTime();
+        return {
+          date: serverDate,
+          time: serverTime,
+          realtime: false,
+          offset,
+        };
+      }
+    }
+
     const now = new Date();
     return {
       date: now.toISOString().slice(0, 10),
       time: now.toTimeString().slice(0, 8),
       realtime: true,
+      offset: 0,
     };
-  }, [deviceId, isValidIpAddress, serviceNtpEnabled, serviceNtpServer, topologyConnections, topologyDevices, language]);
+  }, [deviceId, isValidIpAddress, serviceNtpEnabled, serviceNtpServer, topologyConnections, topologyDevices, deviceStates, language]);
 
   useEffect(() => {
     if (!ntpSyncState) {
@@ -603,12 +641,21 @@ export function PCPanel({
       return () => clearInterval(timer);
     }
 
-    const next = new Date(`${ntpSyncState!.date}T${ntpSyncState!.time}`);
-    if (!Number.isNaN(next.getTime())) {
-      setCurrentTime(next);
-      setServiceNtpDate(ntpSyncState!.date);
-      setServiceNtpTime(ntpSyncState!.time);
-    }
+    // Tick every second with the offset applied
+    const offset = ntpSyncState.offset || 0;
+    const timer = setInterval(() => {
+      const adjusted = new Date(new Date().getTime() + offset);
+      setCurrentTime(adjusted);
+      setServiceNtpDate(adjusted.toISOString().slice(0, 10));
+      setServiceNtpTime(adjusted.toTimeString().slice(0, 8));
+    }, 1000);
+
+    const initialAdjusted = new Date(new Date().getTime() + offset);
+    setCurrentTime(initialAdjusted);
+    setServiceNtpDate(initialAdjusted.toISOString().slice(0, 10));
+    setServiceNtpTime(initialAdjusted.toTimeString().slice(0, 8));
+
+    return () => clearInterval(timer);
   }, [ntpSyncState]);
 
   const applyNtpServerTime = useCallback((serverAddress: string) => {
@@ -618,9 +665,33 @@ export function PCPanel({
     const canReach = checkConnectivity(deviceId, normalized, topologyDevices as any, topologyConnections as any, deviceStates || new Map(), language as 'tr' | 'en', { protocol: 'any' });
     if (!canReach.success) return null;
 
-    const now = new Date();
-    const nextDate = now.toISOString().slice(0, 10);
-    const nextTime = now.toTimeString().slice(0, 8);
+    let serverDate = '';
+    let serverTime = '';
+
+    if (canReach.targetId) {
+      const targetDev = topologyDevices.find(d => d.id === canReach.targetId);
+      if (targetDev) {
+        if (targetDev.type === 'switchL2' || targetDev.type === 'switchL3' || targetDev.type === 'router') {
+          const devState = deviceStates?.get(canReach.targetId);
+          if (devState?.services?.ntp?.enabled) {
+            const timeOffset = devState.services.ntp.timeOffset || 0;
+            const adjustedTime = new Date(new Date().getTime() + timeOffset);
+            serverDate = adjustedTime.toISOString().slice(0, 10);
+            serverTime = adjustedTime.toTimeString().slice(0, 8);
+          }
+        } else {
+          // PC/Server
+          if (targetDev.services?.ntp?.enabled) {
+            serverDate = targetDev.services.ntp.date || '';
+            serverTime = targetDev.services.ntp.time || '';
+          }
+        }
+      }
+    }
+
+    const nextDate = serverDate || new Date().toISOString().slice(0, 10);
+    const nextTime = serverTime || new Date().toTimeString().slice(0, 8);
+
     const syncedDateTime = new Date(`${nextDate}T${nextTime}`);
     if (!Number.isNaN(syncedDateTime.getTime())) {
       setCurrentTime(syncedDateTime);
@@ -639,7 +710,7 @@ export function PCPanel({
               : 'custom'
     );
     return { date: nextDate, time: nextTime };
-  }, [deviceId, isValidIpAddress, topologyConnections, topologyDevices, language]);
+  }, [deviceId, isValidIpAddress, topologyConnections, topologyDevices, deviceStates, language]);
 
   useEffect(() => {
     if (!serviceNtpEnabled) return;
@@ -2119,10 +2190,10 @@ export function PCPanel({
     const normalized = domain.trim().toLowerCase();
     if (!normalized) return null;
 
-    if (!isValidIpv4(pcDNS)) return null;
+    if (!isValidIpv4(pcDNS) && !isValidIpv6(pcDNS)) return null;
 
     let dnsServerDevice = topologyDevices.find(
-      (d) => d.ip === pcDNS && d.services?.dns?.enabled && (d.services?.dns?.records?.length || 0) > 0
+      (d) => (d.ip === pcDNS || d.ipv6 === pcDNS) && d.services?.dns?.enabled && (d.services?.dns?.records?.length || 0) > 0
     );
 
     let records = dnsServerDevice?.services?.dns?.records || [];
@@ -2133,7 +2204,7 @@ export function PCPanel({
         if (state.services?.dns?.enabled && (state.services.dns.records?.length || 0) > 0) {
           const topoDev = topologyDevices.find(d => d.id === id);
           // Check if this device has the IP we're looking for on ANY of its interfaces
-          const hasIp = topoDev?.ip === pcDNS || Object.values(state.ports).some(p => p.ipAddress === pcDNS);
+          const hasIp = topoDev?.ip === pcDNS || topoDev?.ipv6 === pcDNS || Object.values(state.ports).some(p => p.ipAddress === pcDNS || p.ipv6Address === pcDNS);
 
           if (hasIp) {
             dnsServerDevice = topoDev || { id, name: state.hostname, ip: pcDNS } as any;
@@ -2144,10 +2215,10 @@ export function PCPanel({
       }
     }
 
-    if (!dnsServerDevice?.ip || !canReachTargetIp(pcDNS, { protocol: 'udp', port: '53' })) return null;
+    if ((!dnsServerDevice?.ip && !dnsServerDevice?.ipv6) || !canReachTargetIp(pcDNS, { protocol: 'udp', port: '53' })) return null;
 
     // Support CNAME-like records in DNS service:
-    // domain -> another domain -> ... -> final IPv4 address
+    // domain -> another domain -> ... -> final IP address
     const visited = new Set<string>();
     let currentDomain = normalized;
 
@@ -2160,7 +2231,7 @@ export function PCPanel({
 
       const value = record.address.trim().toLowerCase();
       if (!value) return null;
-      if (isValidIpv4(value)) {
+      if (isValidIpv4(value) || isValidIpv6(value)) {
         return { address: value, server: dnsServerDevice };
       }
 
@@ -2168,15 +2239,18 @@ export function PCPanel({
     }
 
     return null;
-  }, [canReachTargetIp, isValidIpv4, pcDNS, topologyDevices, deviceStates]);
+  }, [canReachTargetIp, isValidIpv4, isValidIpv6, pcDNS, topologyDevices, deviceStates]);
 
   const getDnsRecordDisplay = useCallback((record: { domain: string; address: string }) => {
     const chain: string[] = [record.domain, record.address.trim()];
     const startAddress = record.address.trim().toLowerCase();
-    const recordType = !startAddress || isValidIpv4(startAddress)
-      ? (language === 'tr' ? 'A Kaydı (Address Record)' : 'A Record (Address Record)')
+    const isIp = !startAddress || isValidIpv4(startAddress) || isValidIpv6(startAddress);
+    const recordType = isIp
+      ? (isValidIpv6(startAddress)
+          ? (language === 'tr' ? 'AAAA Kaydı (IPv6 Address)' : 'AAAA Record (IPv6 Address)')
+          : (language === 'tr' ? 'A Kaydı (Address Record)' : 'A Record (Address Record)'))
       : (language === 'tr' ? 'CNAME Kaydı (Canonical Name Record)' : 'CNAME Record (Canonical Name Record)');
-    if (!startAddress || isValidIpv4(startAddress)) {
+    if (isIp) {
       return `${recordType}: ${chain.join(' -> ')}`;
     }
 
@@ -2192,7 +2266,7 @@ export function PCPanel({
       chain.push(nextAddress);
 
       const normalizedNext = nextAddress.toLowerCase();
-      if (isValidIpv4(normalizedNext)) break;
+      if (isValidIpv4(normalizedNext) || isValidIpv6(normalizedNext)) break;
       if (visited.has(normalizedNext)) break;
 
       visited.add(normalizedNext);
@@ -2200,7 +2274,7 @@ export function PCPanel({
     }
 
     return `${recordType}: ${chain.join(' -> ')}`;
-  }, [isValidIpv4, language, serviceDnsRecords]);
+  }, [isValidIpv4, isValidIpv6, language, serviceDnsRecords]);
 
   const serviceTabClass = (tab: 'dns' | 'http' | 'dhcp' | 'ftp' | 'mail' | 'ntp') => cn(
     'relative inline-flex items-center gap-2 rounded-t-lg border border-b-0 px-4 py-2.5 text-xs font-semibold transition-all duration-200 ease-out focus-ring-animate',
@@ -2235,36 +2309,45 @@ export function PCPanel({
     if (!normalizedTarget) return null;
 
     // Localhost should always resolve to the current PC first.
-    if (normalizedTarget === '127.0.0.1') {
+    if (normalizedTarget === '127.0.0.1' || normalizedTarget === '::1') {
       const selfDevice = topologyDevices.find((d) => d.id === deviceId);
       if (selfDevice && selfDevice.services?.http?.enabled) return selfDevice;
     }
 
     // Check for PC HTTP servers
     const pcByIp = topologyDevices.find(
-      (d) => d.ip === target && d.services?.http?.enabled
+      (d) => (d.ip === target || d.ipv6?.toLowerCase() === normalizedTarget) && d.services?.http?.enabled
     );
-    if (pcByIp && pcByIp.ip && canReachTargetIp(pcByIp.ip, { protocol: 'tcp', port: '80' })) return pcByIp;
+    if (pcByIp) {
+      const targetAddress = pcByIp.ipv6 && normalizedTarget === pcByIp.ipv6.toLowerCase() ? pcByIp.ipv6 : pcByIp.ip;
+      if (targetAddress && canReachTargetIp(targetAddress, { protocol: 'tcp', port: '80' })) return pcByIp;
+    }
 
     // Check for router/switch devices with HTTP service enabled
     const routerByIp = topologyDevices.find(
-      (d) => (d.type === 'router' || d.type === 'switchL2' || d.type === 'switchL3') && d.ip === target && d.services?.http?.enabled
+      (d) => (d.type === 'router' || d.type === 'switchL2' || d.type === 'switchL3') && (d.ip === target || d.ipv6?.toLowerCase() === normalizedTarget) && d.services?.http?.enabled
     );
-    if (routerByIp && routerByIp.ip && canReachTargetIp(routerByIp.ip, { protocol: 'tcp', port: '80' })) return routerByIp;
+    if (routerByIp) {
+      const targetAddress = routerByIp.ipv6 && normalizedTarget === routerByIp.ipv6.toLowerCase() ? routerByIp.ipv6 : routerByIp.ip;
+      if (targetAddress && canReachTargetIp(targetAddress, { protocol: 'tcp', port: '80' })) return routerByIp;
+    }
 
-    // Fallback: look into deviceStates interface IPs (e.g., VLAN/SVI, routed ports) for devices that have HTTP enabled
+    // Fallback: look into deviceStates interface IPs for devices that have HTTP enabled
     if (deviceStates) {
       for (const [stateId, state] of deviceStates.entries()) {
         if (!state?.services?.http?.enabled) continue;
         const topoDevice = topologyDevices.find(d => d.id === stateId);
         if (!topoDevice || (topoDevice.type !== 'router' && topoDevice.type !== 'switchL2' && topoDevice.type !== 'switchL3')) continue;
         const ports = state.ports || {};
-        const match = Object.values(ports).find((port: any) => port?.ipAddress === target);
-        if (match && canReachTargetIp(target, { protocol: 'tcp', port: '80' })) {
-          return {
-            ...topoDevice,
-            ip: target
-          };
+        const match = Object.values(ports).find((port: any) => port?.ipAddress === target || port?.ipv6Address?.toLowerCase() === normalizedTarget);
+        if (match) {
+          const matchIp = match.ipv6Address && normalizedTarget === match.ipv6Address.toLowerCase() ? match.ipv6Address : (match.ipAddress || target);
+          if (canReachTargetIp(matchIp, { protocol: 'tcp', port: '80' })) {
+            return {
+              ...topoDevice,
+              ip: matchIp
+            };
+          }
         }
       }
     }
@@ -2275,15 +2358,15 @@ export function PCPanel({
 
     // Check resolved address for PC HTTP server
     const resolvedPc = topologyDevices.find(
-      (d) => d.ip === dnsResult.address && d.services?.http?.enabled
+      (d) => (d.ip === dnsResult.address || d.ipv6?.toLowerCase() === dnsResult.address.toLowerCase()) && d.services?.http?.enabled
     ) || null;
-    if (resolvedPc?.ip && canReachTargetIp(resolvedPc.ip, { protocol: 'tcp', port: '80' })) return resolvedPc;
+    if (resolvedPc && canReachTargetIp(dnsResult.address, { protocol: 'tcp', port: '80' })) return resolvedPc;
 
     // Check resolved address for router/switch with HTTP service enabled
     const resolvedRouter = topologyDevices.find(
-      (d) => (d.type === 'router' || d.type === 'switchL2' || d.type === 'switchL3') && d.ip === dnsResult.address && d.services?.http?.enabled
+      (d) => (d.type === 'router' || d.type === 'switchL2' || d.type === 'switchL3') && (d.ip === dnsResult.address || d.ipv6?.toLowerCase() === dnsResult.address.toLowerCase()) && d.services?.http?.enabled
     ) || null;
-    if (resolvedRouter?.ip && canReachTargetIp(resolvedRouter.ip, { protocol: 'tcp', port: '80' })) return resolvedRouter;
+    if (resolvedRouter && canReachTargetIp(dnsResult.address, { protocol: 'tcp', port: '80' })) return resolvedRouter;
 
     // DNS fallback via deviceStates interfaces
     if (deviceStates) {
@@ -2292,12 +2375,15 @@ export function PCPanel({
         const topoDevice = topologyDevices.find(d => d.id === stateId);
         if (!topoDevice || (topoDevice.type !== 'router' && topoDevice.type !== 'switchL2' && topoDevice.type !== 'switchL3')) continue;
         const ports = state.ports || {};
-        const match = Object.values(ports).find((port: any) => port?.ipAddress === dnsResult.address);
-        if (match && canReachTargetIp(match.ipAddress || dnsResult.address, { protocol: 'tcp', port: '80' })) {
-          return {
-            ...topoDevice,
-            ip: match.ipAddress || dnsResult.address
-          };
+        const match = Object.values(ports).find((port: any) => port?.ipAddress === dnsResult.address || port?.ipv6Address?.toLowerCase() === dnsResult.address.toLowerCase());
+        if (match) {
+          const matchIp = match.ipv6Address && dnsResult.address.toLowerCase() === match.ipv6Address.toLowerCase() ? match.ipv6Address : (match.ipAddress || dnsResult.address);
+          if (canReachTargetIp(matchIp, { protocol: 'tcp', port: '80' })) {
+            return {
+              ...topoDevice,
+              ip: matchIp
+            };
+          }
         }
       }
     }
@@ -2359,20 +2445,34 @@ export function PCPanel({
       }
     }
 
+    // Strip brackets from IPv6 hostnames if present (e.g. [2001:db8::1] -> 2001:db8::1)
+    if (lookupTarget.startsWith('[') && lookupTarget.endsWith(']')) {
+      lookupTarget = lookupTarget.slice(1, -1);
+    }
+
     const target = lookupTarget.trim() || '192.168.1.10';
     const namedTarget = resolveDeviceNameTarget(target);
     const resolvedTargetIp = namedTarget?.ip || target;
-    if (!isLoopbackTarget(resolvedTargetIp) && isValidIpv4(resolvedTargetIp) && !hasGatewayForTarget(resolvedTargetIp)) {
-      addLocalOutput('error', t.targetGatewayRequired);
-      return;
-    }
-    if (!isValidIpv4(resolvedTargetIp)) {
-      if (!isValidIpv4(pcDNS)) {
+
+    const isIpV6 = isValidIpv6(resolvedTargetIp);
+    if (!isIpV6 && !isValidIpv4(resolvedTargetIp)) {
+      // Domain lookup
+      if (!isValidIpv4(pcDNS) && !isValidIpv6(pcDNS)) {
         addLocalOutput('error', t.dnsAddressRequired);
         return;
       }
-      if (!hasGatewayForTarget(pcDNS)) {
+      if (isValidIpv4(pcDNS) && !hasGatewayForTarget(pcDNS)) {
         addLocalOutput('error', t.dnsGatewayRequired);
+        return;
+      }
+    } else if (isValidIpv4(resolvedTargetIp)) {
+      if (!isLoopbackTarget(resolvedTargetIp) && !hasGatewayForTarget(resolvedTargetIp)) {
+        addLocalOutput('error', t.targetGatewayRequired);
+        return;
+      }
+    } else if (isIpV6) {
+      if (!pcIPv6) {
+        addLocalOutput('error', language === 'tr' ? 'PC\'de IPv6 adresi yapılandırılmamış.' : 'IPv6 address is not configured on this PC.');
         return;
       }
     }
@@ -2423,7 +2523,7 @@ export function PCPanel({
       setHttpAppDeviceId(null);
       addLocalOutput('html', httpServer.services?.http?.content || 'Merhaba Dünya!');
     }
-  }, [addLocalOutput, deviceStates, findHttpServerByTarget, getAvailableIotDevices, getConnectedIotDevices, hasGatewayForTarget, isLoopbackTarget, isValidIpv4, language, normalizeLookupTarget, pcDNS, resolveDeviceNameTarget, t, iotDevices, topologyDevices, generateIotWebPanelContent, generateIotDevicePageContent, httpAppDeviceId, topologyConnections]);
+  }, [addLocalOutput, deviceStates, findHttpServerByTarget, getAvailableIotDevices, getConnectedIotDevices, hasGatewayForTarget, isLoopbackTarget, isValidIpv4, isValidIpv6, language, normalizeLookupTarget, pcDNS, resolveDeviceNameTarget, t, iotDevices, topologyDevices, generateIotWebPanelContent, generateIotDevicePageContent, httpAppDeviceId, topologyConnections, pcIPv6]);
 
   useEffect(() => {
     const handleRouterAdminMessage = (event: MessageEvent) => {
@@ -5352,7 +5452,7 @@ export function PCPanel({
                                   dispatchDeviceConfig({
                                     services: {
                                       ntp: {
-                                        enabled: serviceNtpEnabled,
+                                        enabled: serviceNtpEnabled || (trimmedValue !== '' && isValidIpAddress(trimmedValue)),
                                         server: value,
                                         date: syncedTime?.date || serviceNtpDate,
                                         time: syncedTime?.time || serviceNtpTime
@@ -6106,7 +6206,7 @@ export function PCPanel({
                                 <div className={`rounded-xl border p-4 space-y-4 ${isDark ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white'}`}>
                                   <div className="flex items-center justify-between gap-3">
                                     <div>
-                                      <h3 className="text-sm font-bold">NTP Client</h3>
+                                      <h3 className="text-sm font-bold">NTP Server</h3>
                                       <p className={`text-xs ${isDark ? 'text-slate-200' : 'text-slate-500'}`}>
                                         {language === 'tr' ? 'Hizmeti aç/kapa ve tarih/saat ayarlayın.' : 'Toggle the service and set the date/time.'}
                                       </p>
@@ -7018,7 +7118,19 @@ export function PCPanel({
                                           return (
                                             <div className="flex items-center gap-2 group">
                                               <span>{highlightText(label)}</span>
-                                              <span className="font-mono">{highlightText(value)}</span>
+                                              <span 
+                                                className="font-mono cursor-pointer hover:text-emerald-400 transition-colors"
+                                                onClick={() => {
+                                                  navigator.clipboard.writeText(value.trim());
+                                                  toast({
+                                                    title: language === 'tr' ? 'Kopyalandı' : 'Copied',
+                                                    description: `${value.trim()} ${language === 'tr' ? 'panoya kopyalandı' : 'copied to clipboard'}`,
+                                                  });
+                                                }}
+                                                title={language === 'tr' ? 'Tıkla ve kopyala' : 'Click to copy'}
+                                              >
+                                                {highlightText(value)}
+                                              </span>
                                               <button
                                                 onClick={() => {
                                                   navigator.clipboard.writeText(value.trim());
@@ -7042,7 +7154,19 @@ export function PCPanel({
                                           return (
                                             <div className="flex items-center gap-2 group">
                                               <span>{highlightText(label)}</span>
-                                              <span className="font-mono">{highlightText(value)}</span>
+                                              <span 
+                                                className="font-mono cursor-pointer hover:text-emerald-400 transition-colors"
+                                                onClick={() => {
+                                                  navigator.clipboard.writeText(value.trim());
+                                                  toast({
+                                                    title: language === 'tr' ? 'Kopyalandı' : 'Copied',
+                                                    description: `${value.trim()} ${language === 'tr' ? 'panoya kopyalandı' : 'copied to clipboard'}`,
+                                                  });
+                                                }}
+                                                title={language === 'tr' ? 'Tıkla ve kopyala' : 'Click to copy'}
+                                              >
+                                                {highlightText(value)}
+                                              </span>
                                               <button
                                                 onClick={() => {
                                                   navigator.clipboard.writeText(value.trim());
@@ -7067,13 +7191,83 @@ export function PCPanel({
                                           return (
                                             <div className="flex items-center gap-2 group">
                                               <span>{highlightText(label)}</span>
-                                              <span className="font-mono text-cyan-400">{highlightText(ipValue)}</span>
+                                              <span 
+                                                className="font-mono text-cyan-400 cursor-pointer hover:text-emerald-400 transition-colors"
+                                                onClick={() => {
+                                                  navigator.clipboard.writeText(ipValue);
+                                                  toast({
+                                                    title: language === 'tr' ? 'Kopyalandı' : 'Copied',
+                                                    description: `${ipValue} ${language === 'tr' ? 'panoya kopyalandı' : 'copied to clipboard'}`,
+                                                  });
+                                                }}
+                                                title={language === 'tr' ? 'Tıkla ve kopyala' : 'Click to copy'}
+                                              >
+                                                {highlightText(ipValue)}
+                                              </span>
                                               <button
                                                 onClick={() => {
                                                   navigator.clipboard.writeText(ipValue);
                                                   toast({
                                                     title: language === 'tr' ? 'Kopyalandı' : 'Copied',
                                                     description: `${ipValue} ${language === 'tr' ? 'panoya kopyalandı' : 'copied to clipboard'}`,
+                                                  });
+                                                }}
+                                                className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-slate-700/30 ${isDark ? 'text-slate-400 hover:text-emerald-400' : 'text-slate-500 hover:text-emerald-600'}`}
+                                                title={language === 'tr' ? 'Kopyala' : 'Copy'}
+                                              >
+                                                <Copy className="w-3 h-3" />
+                                              </button>
+                                            </div>
+                                          );
+                                        }
+                                        // General IP address detection for ping, nslookup, tracert, netstat, etc.
+                                        // IPv4 pattern with optional port: \d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(?::\d+)?
+                                        // IPv6 pattern (simplified): ([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}
+                                        // Also match standalone IP addresses
+                                        const ipAddressMatch = line.content.match(/(Reply from |Address: |\[|TCP\s+|UDP\s+|^|\s)(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(?::\d+)?|([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4})(\]|:| |$)/);
+                                        if (ipAddressMatch) {
+                                          const [, prefix, ipAddress, , suffix] = ipAddressMatch;
+                                          const fullMatch = ipAddressMatch[0];
+                                          const beforeIp = line.content.substring(0, line.content.indexOf(fullMatch));
+                                          const afterIp = line.content.substring(line.content.indexOf(fullMatch) + fullMatch.length);
+                                          
+                                          // Extract just the IP address without port if present
+                                          let cleanIpAddress = ipAddress;
+                                          if (ipAddress.includes(':')) {
+                                            // Check if it's IPv6 or IPv4 with port
+                                            if (ipAddress.includes('.') && ipAddress.includes(':')) {
+                                              // IPv4 with port, e.g., 192.168.1.1:80
+                                              const parts = ipAddress.split(':');
+                                              if (parts.length === 2) {
+                                                cleanIpAddress = parts[0];
+                                              }
+                                            }
+                                            // IPv6 addresses also contain colons, but we keep them as is
+                                          }
+                                          
+                                          return (
+                                            <div className="flex items-center gap-2 group">
+                                              <span>{highlightText(beforeIp)}</span>
+                                              <span 
+                                                className="font-mono cursor-pointer hover:text-emerald-400 transition-colors"
+                                                onClick={() => {
+                                                  navigator.clipboard.writeText(cleanIpAddress);
+                                                  toast({
+                                                    title: language === 'tr' ? 'Kopyalandı' : 'Copied',
+                                                    description: `${cleanIpAddress} ${language === 'tr' ? 'panoya kopyalandı' : 'copied to clipboard'}`,
+                                                  });
+                                                }}
+                                                title={language === 'tr' ? 'Tıkla ve kopyala' : 'Click to copy'}
+                                              >
+                                                {highlightText(fullMatch)}
+                                              </span>
+                                              <span>{highlightText(afterIp)}</span>
+                                              <button
+                                                onClick={() => {
+                                                  navigator.clipboard.writeText(cleanIpAddress);
+                                                  toast({
+                                                    title: language === 'tr' ? 'Kopyalandı' : 'Copied',
+                                                    description: `${cleanIpAddress} ${language === 'tr' ? 'panoya kopyalandı' : 'copied to clipboard'}`,
                                                   });
                                                 }}
                                                 className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-slate-700/30 ${isDark ? 'text-slate-400 hover:text-emerald-400' : 'text-slate-500 hover:text-emerald-600'}`}

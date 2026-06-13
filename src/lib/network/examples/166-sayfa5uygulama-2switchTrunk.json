@@ -2651,7 +2651,7 @@
           "mode": "client"
         },
         "ipConfigMode": "static",
-        "ipv6": "2001:db8:acad:1::10",
+        "ipv6": "2001:db8:acad:1::20",
         "ipv6Prefix": "64",
         "services": {
           "dns": {
@@ -2694,7 +2694,7 @@
         "gateway": "192.168.1.1",
         "dns": "8.8.8.8",
         "ipConfigMode": "static",
-        "ipv6": "2001:db8:acad:1::10",
+        "ipv6": "2001:db8:acad:1::11",
         "ipv6Prefix": "64",
         "services": {
           "dns": {
@@ -3085,7 +3085,7 @@
           "mode": "client"
         },
         "ipConfigMode": "static",
-        "ipv6": "2001:db8:acad:1::10",
+        "ipv6": "2001:db8:acad:1::21",
         "ipv6Prefix": "64",
         "services": {
           "dns": {

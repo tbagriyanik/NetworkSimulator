@@ -1205,7 +1205,7 @@
         "subnet": "255.0.0.0",
         "gateway": "192.168.1.1",
         "dns": "8.8.8.8",
-        "ipv6": "2001:db8:acad:1::10",
+        "ipv6": "2001:db8:acad:1::4",
         "ipv6Prefix": "64",
         "services": {
           "dns": {
@@ -1523,7 +1523,7 @@
         "subnet": "255.255.255.0",
         "gateway": "192.168.1.1",
         "dns": "8.8.8.8",
-        "ipv6": "2001:db8:acad:1::10",
+        "ipv6": "2001:db8:acad:1::11",
         "ipv6Prefix": "64",
         "services": {
           "dns": {
@@ -1560,7 +1560,7 @@
         "subnet": "255.0.0.0",
         "gateway": "192.168.1.1",
         "dns": "8.8.8.8",
-        "ipv6": "2001:db8:acad:1::10",
+        "ipv6": "2001:db8:acad:1::5",
         "ipv6Prefix": "64",
         "services": {
           "dns": {
@@ -1597,7 +1597,7 @@
         "subnet": "255.255.255.0",
         "gateway": "192.168.1.1",
         "dns": "8.8.8.8",
-        "ipv6": "2001:db8:acad:1::10",
+        "ipv6": "2001:db8:acad:1::100",
         "ipv6Prefix": "64",
         "services": {
           "dns": {

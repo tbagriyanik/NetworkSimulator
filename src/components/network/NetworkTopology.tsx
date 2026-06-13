@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import useAppStore, { useTopologyDevices, useTopologyConnections, useTopologyNotes } from '@/lib/store/appStore';
 import { SwitchState, CableType, CableInfo, isCableCompatible } from '@/lib/network/types';
 import { checkDeviceConnectivity, getPingDiagnostics, getWirelessSignalStrength, getWirelessDistance } from '@/lib/network/connectivity';
-import { generateRandomLinkLocalIpv4 } from '@/lib/network/linkLocal';
+import { generateRandomLinkLocalIpv4, generateRandomLinkLocalIpv6 } from '@/lib/network/linkLocal';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -2440,6 +2440,14 @@ export function NetworkTopology({
     return generateRandomLinkLocalIpv4(usedIps);
   }, [devices]);
 
+  const generateUniqueLinkLocalIpv6 = useCallback((reservedIps: string[] = []) => {
+    const usedIps = new Set([
+      ...devices.map((d) => d.ipv6).filter(Boolean) as string[],
+      ...reservedIps.filter(Boolean),
+    ]);
+    return generateRandomLinkLocalIpv6(usedIps);
+  }, [devices]);
+
   const generateUniqueHostname = useCallback((baseName: string, reservedNames: string[] = []) => {
     const normalize = (value: string) => value.trim().toLowerCase();
     const usedNames = new Set<string>();
@@ -2495,12 +2503,14 @@ export function NetworkTopology({
         : `${type.toUpperCase()}-${deviceCounterRef.current[type]}`;
 
     const initialLinkLocalIp = (type === 'pc' || type === 'iot') ? generateUniqueLinkLocalIp() : '';
+    const initialLinkLocalIpv6 = (type === 'pc' || type === 'iot') ? generateUniqueLinkLocalIpv6() : '';
     const newDevice: CanvasDevice = {
       id: `${type}-${deviceCounterRef.current[type]}`,
       type: resolvedType,
       name: generateUniqueHostname(baseName),
       macAddress: generateMacAddress(),
       ip: initialLinkLocalIp,
+      ipv6: initialLinkLocalIpv6,
       subnet: (type === 'pc' || type === 'iot') ? '255.255.0.0' : undefined,
       gateway: (type === 'pc' || type === 'iot') ? '0.0.0.0' : undefined,
       dns: (type === 'pc' || type === 'iot') ? '0.0.0.0' : undefined,
@@ -2538,7 +2548,7 @@ export function NetworkTopology({
     // Pass the switchModel directly to avoid race condition
     onDeviceSelect(resolvedType, newDevice.id, newDevice.switchModel, newDevice.name, true, newDevice);
 
-  }, [devices.length, saveToHistory, generateUniqueHostname, generateUniqueLinkLocalIp, onDeviceSelect, canvasDimensions, pan, zoom, isExamActive, isExamEditorOpen]);
+  }, [devices.length, saveToHistory, generateUniqueHostname, generateUniqueLinkLocalIp, generateUniqueLinkLocalIpv6, onDeviceSelect, canvasDimensions, pan, zoom, isExamActive, isExamEditorOpen]);
 
   // Note management functions
   const [noteClipboard, setNoteClipboard] = useState('');
@@ -3566,6 +3576,7 @@ export function NetworkTopology({
 
     const newDevices: CanvasDevice[] = [];
     const reservedIps: string[] = [];
+    const reservedIpv6s: string[] = [];
     const reservedHostnames: string[] = [];
 
     clipboard.forEach(device => {
@@ -3577,8 +3588,13 @@ export function NetworkTopology({
       const baseName = `${type.toUpperCase()}-${deviceCounterRef.current[counterKey]}`;
       const hostname = generateUniqueHostname(baseName, reservedHostnames);
       const generatedIp = type === 'pc' || type === 'iot' ? generateUniqueLinkLocalIp(reservedIps) : '';
+      const generatedIpv6 = type === 'pc' || type === 'iot' ? generateUniqueLinkLocalIpv6(reservedIpv6s) : '';
+      
       if (generatedIp) {
         reservedIps.push(generatedIp);
+      }
+      if (generatedIpv6) {
+        reservedIpv6s.push(generatedIpv6);
       }
       reservedHostnames.push(hostname);
 
@@ -3598,7 +3614,7 @@ export function NetworkTopology({
 
     setDevices(prev => [...prev, ...newDevices]);
     setContextMenu(null);
-  }, [clipboard, saveToHistory, generateUniqueHostname, generateUniqueLinkLocalIp, getCounterKey]);
+  }, [clipboard, saveToHistory, generateUniqueHostname, generateUniqueLinkLocalIp, generateUniqueLinkLocalIpv6, getCounterKey]);
 
   // Paste notes
   const pasteNotes = useCallback((x: number, y: number) => {
