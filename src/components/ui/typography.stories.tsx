@@ -88,15 +88,15 @@ export const Headings = () => (
 export const BodyText = () => (
     <div className="space-y-4 p-8 max-w-2xl">
         <Body>
-            This is body text. It's used for the main content of the application. The
+            This is body text. It&apos;s used for the main content of the application. The
             font size is 16px with a line height of 1.5 for optimal readability.
         </Body>
         <Small>
-            This is small text. It's used for secondary information and labels. The
+            This is small text. It&apos;s used for secondary information and labels. The
             font size is 14px.
         </Small>
         <Caption>
-            This is caption text. It's used for hints, captions, and very small text.
+            This is caption text. It&apos;s used for hints, captions, and very small text.
             The font size is 12px.
         </Caption>
     </div>
@@ -154,7 +154,7 @@ export const ResponsiveText = () => (
             tabletSize="body"
             desktopSize="body"
         >
-            This text is responsive - it's smaller on mobile and larger on desktop
+            This text is responsive - it&apos;s smaller on mobile and larger on desktop
         </ResponsiveTypography>
     </div>
 );

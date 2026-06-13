@@ -21,7 +21,7 @@ export const systemHandlers: Record<string, CommandHandler> = {
 function cmdEnable(
   state: any,
   input: string,
-  ctx: any
+  _ctx: any
 ): any {
   // Check if already in privileged mode
   if (state.currentMode === 'privileged') {
@@ -75,8 +75,8 @@ function cmdEnable(
  */
 function cmdDisable(
   state: any,
-  input: string,
-  ctx: any
+  _input: string,
+  _ctx: any
 ): any {
   if (state.currentMode !== 'privileged') {
     return { success: false, error: iosModeError() };
@@ -95,8 +95,8 @@ function cmdDisable(
  */
 function cmdConfigureTerminal(
   state: any,
-  input: string,
-  ctx: any
+  _input: string,
+  _ctx: any
 ): any {
   if (state.currentMode !== 'privileged') {
     return { success: false, error: iosModeError() };
@@ -115,8 +115,8 @@ function cmdConfigureTerminal(
  */
 function cmdExit(
   state: any,
-  input: string,
-  ctx: any
+  _input: string,
+  _ctx: any
 ): any {
   switch (state.currentMode) {
     case 'interface':
@@ -191,8 +191,8 @@ function cmdExit(
  */
 function cmdEnd(
   state: any,
-  input: string,
-  ctx: any
+  _input: string,
+  _ctx: any
 ): any {
   // Handle all sub-modes and return to privileged
   switch (state.currentMode) {
@@ -239,7 +239,7 @@ function cmdEnd(
 function cmdDo(
   state: any,
   input: string,
-  ctx: any
+  _ctx: any
 ): any {
   const withOriginalMode = (result: any) => {
     if (result?.newState) result.newState = { ...result.newState, currentMode: originalMode };

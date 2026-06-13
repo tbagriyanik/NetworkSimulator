@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { cn } from '@/lib/utils';
 import { Info, Terminal, Search, X, ChevronDown, Compass, Mail, Loader2, MessageSquare, Bug, Lightbulb, Check } from 'lucide-react';
+import Image from 'next/image';
 import { getCommandCategories } from './networkTopology.commands';
 
 interface AboutModalProps {
@@ -290,7 +291,7 @@ export function AboutModal({ isOpen, onClose, onStartTour }: AboutModalProps) {
                   </a>
                 </div>
                 <div className="flex justify-center">
-                  <img src="/app.png" alt="Logo" width="64" height="64" className="w-16 h-16 object-contain" />
+                  <Image src="/app.png" alt="Logo" width={64} height={64} className="w-16 h-16 object-contain" />
                 </div>
                 <div className="text-xs text-slate-500 text-center">Version: {version}</div>
               </div>

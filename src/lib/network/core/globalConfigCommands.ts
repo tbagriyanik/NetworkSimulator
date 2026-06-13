@@ -1512,7 +1512,7 @@ function cmdSpanningTreeVlan(state: any, input: string, ctx: any): any {
   if (!match) return { success: false, error: '% Invalid spanning-tree vlan command' };
 
   const vlanId = parseInt(match[1]);
-  let subCommand = match[2]; // 'priority' or 'root' or undefined
+  const subCommand = match[2]; // 'priority' or 'root' or undefined
   const value = match[3]; // priority value, 'primary', 'secondary', or undefined
 
   const lang = ctx.language || 'en';
@@ -1833,7 +1833,7 @@ function cmdNoIpv6Route(state: any, input: string, ctx: any): any {
   const [, prefix, nextHop] = match;
   const [destination, prefixLength] = prefix.split('/');
 
-  let newStaticRoutes = (state.ipv6StaticRoutes || []).filter(
+  const newStaticRoutes = (state.ipv6StaticRoutes || []).filter(
     (route: any) => {
       const matchDest = route.destination === destination && route.prefixLength === parseInt(prefixLength);
       if (nextHop) {

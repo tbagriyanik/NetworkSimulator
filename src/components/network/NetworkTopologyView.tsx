@@ -150,8 +150,7 @@ const arePropsEqual = (prevProps: NetworkTopologyViewProps, nextProps: NetworkTo
   return true;
 };
 
-export const NetworkTopologyView = React.memo(
-  (props: NetworkTopologyViewProps) => {
+const NetworkTopologyViewInner = (props: NetworkTopologyViewProps) => {
     const { t } = useLanguage();
     const zoomInputRef = React.useRef<HTMLInputElement>(null);
     const {
@@ -781,6 +780,7 @@ export const NetworkTopologyView = React.memo(
         />
       </div>
     );
-  },
-  arePropsEqual
-);
+};
+
+export const NetworkTopologyView = React.memo(NetworkTopologyViewInner, arePropsEqual);
+NetworkTopologyView.displayName = 'NetworkTopologyView';
