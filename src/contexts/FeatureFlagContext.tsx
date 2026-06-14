@@ -30,7 +30,7 @@ export function FeatureFlagProvider({ children }: { children: React.ReactNode })
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        setFlags({ ...defaultFlags, ...JSON.parse(saved) });
+        setTimeout(() => setFlags({ ...defaultFlags, ...JSON.parse(saved) }), 0);
       }
     } catch {
       // ignore malformed flag payloads

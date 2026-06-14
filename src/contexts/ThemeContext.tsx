@@ -109,23 +109,23 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
       // Detect system theme
       const systemTheme = detectSystemTheme();
-      setSystemThemePreference(systemTheme);
+      setTimeout(() => setSystemThemePreference(systemTheme), 0);
 
       // Determine effective theme (only use system theme if explicitly set to 'auto')
       const effective = validTheme === 'auto' ? systemTheme : validTheme;
-      setEffectiveTheme(effective);
-      setThemeState(validTheme);
+      setTimeout(() => setEffectiveTheme(effective), 0);
+      setTimeout(() => setThemeState(validTheme), 0);
 
       // Apply theme immediately without transition on first load
       applyTheme(effective);
     } catch {
       // Fallback to dark theme
-      setEffectiveTheme('dark');
-      setThemeState('dark');
+      setTimeout(() => setEffectiveTheme('dark'), 0);
+      setTimeout(() => setThemeState('dark'), 0);
       applyTheme('dark');
     }
 
-    setInitialized(true);
+    setTimeout(() => setInitialized(true), 0);
   }, [initialized]);
 
   // Setup system theme change listener
@@ -169,7 +169,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
       // Only apply if effective theme changed
       if (effective !== effectiveTheme) {
-        setEffectiveTheme(effective);
+        setTimeout(() => setEffectiveTheme(effective), 0);
         applyTheme(effective, () => setIsTransitioning(true), () => setIsTransitioning(false));
       }
 

@@ -2,6 +2,7 @@
 
 import type { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
 import type { Translations } from '@/contexts/LanguageContext';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Link2, RefreshCw, Leaf } from 'lucide-react';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
@@ -43,6 +44,19 @@ export function AppFooter({
 
     return `${count} ${getDeviceCountLabel(count)}`;
   };
+
+  const [isTaskEventRecent, setIsTaskEventRecent] = useState(false);
+
+  useEffect(() => {
+    if (!lastTaskEvent) {
+      setTimeout(() => setIsTaskEventRecent(false), 0);
+      return;
+    }
+    const check = () => setIsTaskEventRecent(Date.now() - lastTaskEvent.timestamp < 5000);
+    check();
+    const id = setInterval(check, 1000);
+    return () => clearInterval(id);
+  }, [lastTaskEvent]);
 
   return (
     <>
@@ -113,7 +127,7 @@ export function AppFooter({
               </div>
 
               {/* Task Event Notification */}
-              {lastTaskEvent && Date.now() - lastTaskEvent.timestamp < 5000 && (
+              {isTaskEventRecent && lastTaskEvent && (
                 <div className={`absolute -top-12 left-4 md:flex items-center gap-2 px-3 py-1.5 rounded-lg border shadow-lg animate-slide-up z-[10000] ${lastTaskEvent.type === 'completed'
                   ? isDark ? 'bg-green-500/10 border-green-500/30' : 'bg-green-50 border-green-200'
                   : isDark ? 'bg-orange-500/10 border-orange-500/30' : 'bg-orange-50 border-orange-200'

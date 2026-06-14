@@ -54,7 +54,7 @@ export function HighContrastToggle({
     // Initialize high contrast state
     useEffect(() => {
         const isHC = theme === 'high-contrast';
-        setIsHighContrast(isHC);
+        setTimeout(() => setIsHighContrast(isHC), 0);
     }, [theme]);
 
     const handleToggle = () => {

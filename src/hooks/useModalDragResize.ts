@@ -72,24 +72,19 @@ export function useModalDragResize(defaultSize: ModalSize = { width: 1200, heigh
     // Load persisted layout after hydration
     useEffect(() => {
         const tasks = loadModalLayout('tasks', defaultSize);
-        if (tasks.position) setTasksModalPosition(tasks.position);
-        setTasksModalSize(tasks.size);
+        setTimeout(() => { if (tasks.position) setTasksModalPosition(tasks.position); setTasksModalSize(tasks.size); }, 0);
 
         const cli = loadModalLayout('cli', defaultSize);
-        if (cli.position) setCliModalPosition(cli.position);
-        setCliModalSize(cli.size);
+        setTimeout(() => { if (cli.position) setCliModalPosition(cli.position); setCliModalSize(cli.size); }, 0);
 
         const pc = loadModalLayout('pc', { width: 800, height: 600 });
-        if (pc.position) setPcModalPosition(pc.position);
-        setPcModalSize(pc.size);
+        setTimeout(() => { if (pc.position) setPcModalPosition(pc.position); setPcModalSize(pc.size); }, 0);
 
         const firewall = loadModalLayout('firewall', { width: 600, height: 500 });
-        if (firewall.position) setFirewallModalPosition(firewall.position);
-        setFirewallModalSize(firewall.size);
+        setTimeout(() => { if (firewall.position) setFirewallModalPosition(firewall.position); setFirewallModalSize(firewall.size); }, 0);
 
         const unified = loadModalLayout('deviceUnified', defaultSize);
-        if (unified.position) setUnifiedModalPosition(unified.position);
-        setUnifiedModalSize(unified.size);
+        setTimeout(() => { if (unified.position) setUnifiedModalPosition(unified.position); setUnifiedModalSize(unified.size); }, 0);
     }, []);
 
     // Persist on change - Optimized to only save occasionally or on mouse up

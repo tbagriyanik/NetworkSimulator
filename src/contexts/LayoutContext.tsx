@@ -37,11 +37,11 @@ export function LayoutProvider({ children }: { children: ReactNode }) {
     // Auto-adjust panel layout based on breakpoint
     useEffect(() => {
         if (breakpoint === 'mobile') {
-            setPanelLayout('overlay');
+            setTimeout(() => setPanelLayout('overlay'), 0);
         } else if (breakpoint === 'tablet') {
-            setPanelLayout('stacked');
+            setTimeout(() => setPanelLayout('stacked'), 0);
         } else {
-            setPanelLayout('docked');
+            setTimeout(() => setPanelLayout('docked'), 0);
         }
     }, [breakpoint]);
 
@@ -52,7 +52,7 @@ export function LayoutProvider({ children }: { children: ReactNode }) {
             if (saved) {
                 try {
                     const prefs = JSON.parse(saved);
-                    if (prefs.sidebarCollapsed !== undefined) setSidebarCollapsed(prefs.sidebarCollapsed);
+                    if (prefs.sidebarCollapsed !== undefined) setTimeout(() => setSidebarCollapsed(prefs.sidebarCollapsed), 0);
                 } catch (e) {
                     logger.error('Failed to restore layout preferences:', e);
                 }

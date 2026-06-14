@@ -93,7 +93,7 @@ export const IoTSensorDisplay = ({
     useEffect(() => {
         // Only show sensor data for input devices
         if (isActuator || !device?.iot?.sensorType || !device.iot?.collaborationEnabled) {
-            setHistory([]);
+            setTimeout(() => setHistory([]), 0);
             return;
         }
 

@@ -371,10 +371,10 @@ export function PingPacketInfoPanel({
                     const vw = window.innerWidth;
                     const vh = window.innerHeight;
                     const margin = 16;
-                    setPos({
+                    setTimeout(() => setPos({
                         x: Math.max(margin - 780, Math.min(parsed.x, vw - margin)),
                         y: Math.max(HEADER_SAFE_TOP, Math.min(parsed.y, vh - margin)),
-                    });
+                    }), 0);
                 }
             }
         } catch (e) {

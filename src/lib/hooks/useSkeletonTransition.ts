@@ -11,8 +11,8 @@ export function useSkeletonTransition(isLoading: boolean, minDisplayTime: number
 
     useEffect(() => {
         if (isLoading) {
-            setShowSkeleton(true);
-            setIsTransitioning(false);
+            setTimeout(() => setShowSkeleton(true), 0);
+            setTimeout(() => setIsTransitioning(false), 0);
             return;
         }
 

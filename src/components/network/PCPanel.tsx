@@ -264,26 +264,26 @@ export function PCPanel({
   // Load history when component mounts or deviceId changes
   useEffect(() => {
     const globalHistory = pcHistories?.get(deviceId) || [];
-    setDesktopHistory(globalHistory);
-    setDesktopHistoryIndex(-1);
+    setTimeout(() => setDesktopHistory(globalHistory), 0);
+    setTimeout(() => setDesktopHistoryIndex(-1), 0);
   }, [deviceId, pcHistories]);
 
   // Sync with global history if it changes externally
   useEffect(() => {
     const globalHistory = pcHistories?.get(deviceId) || [];
-    setDesktopHistory(prevHistory => {
+    setTimeout(() => setDesktopHistory(prevHistory => {
       if (JSON.stringify(globalHistory) !== JSON.stringify(prevHistory)) {
         return globalHistory;
       }
       return prevHistory;
-    });
-    setDesktopHistoryIndex(-1);
+    }), 0);
+    setTimeout(() => setDesktopHistoryIndex(-1), 0);
   }, [pcHistories, deviceId]);
 
   // Reset per-tab command cursor when tab changes.
   useEffect(() => {
-    if (activeTab === 'desktop') setDesktopHistoryIndex(-1);
-    if (activeTab === 'terminal') setConsoleHistoryIndex(-1);
+    if (activeTab === 'desktop') setTimeout(() => setDesktopHistoryIndex(-1), 0);
+    if (activeTab === 'terminal') setTimeout(() => setConsoleHistoryIndex(-1), 0);
   }, [activeTab]);
 
   // Get device from topology
@@ -309,7 +309,7 @@ export function PCPanel({
 
   // Hostname initialization only on mount
   useEffect(() => {
-    setInternalPcHostname(deviceFromTopology?.name || deviceId);
+    setTimeout(() => setInternalPcHostname(deviceFromTopology?.name || deviceId), 0);
   }, []);
 
   const [pcMAC, setPcMAC] = useState(deviceFromTopology?.macAddress || defaultConfig.mac);
@@ -636,9 +636,9 @@ export function PCPanel({
     }, 1000);
 
     const initialAdjusted = new Date(new Date().getTime() + offset);
-    setCurrentTime(initialAdjusted);
-    setServiceNtpDate(initialAdjusted.toISOString().slice(0, 10));
-    setServiceNtpTime(initialAdjusted.toTimeString().slice(0, 8));
+    setTimeout(() => setCurrentTime(initialAdjusted), 0);
+    setTimeout(() => setServiceNtpDate(initialAdjusted.toISOString().slice(0, 10)), 0);
+    setTimeout(() => setServiceNtpTime(initialAdjusted.toTimeString().slice(0, 8)), 0);
 
     return () => clearInterval(timer);
   }, [ntpSyncState]);
@@ -912,20 +912,20 @@ export function PCPanel({
 
   useEffect(() => {
     if (!iotDevices.length) {
-      setSelectedIotDeviceId('');
+      setTimeout(() => setSelectedIotDeviceId(''), 0);
       return;
     }
     if (!selectedIotDeviceId || !iotDevices.some((d) => d.id === selectedIotDeviceId)) {
-      setSelectedIotDeviceId(iotDevices[0].id);
+      setTimeout(() => setSelectedIotDeviceId(iotDevices[0].id), 0);
     }
   }, [iotDevices, selectedIotDeviceId]);
 
   useEffect(() => {
     if (!selectedIotDevice) return;
-    setIotSensorType(selectedIotDevice.iot?.sensorType || 'temperature');
-    setIotKind(selectedIotDevice.iot?.kind || 'sensor');
-    setIotCollaborationEnabled(!!selectedIotDevice.iot?.collaborationEnabled);
-    setIotDataStore(selectedIotDevice.iot?.dataStore || '');
+    setTimeout(() => setIotSensorType(selectedIotDevice.iot?.sensorType || 'temperature'), 0);
+    setTimeout(() => setIotKind(selectedIotDevice.iot?.kind || 'sensor'), 0);
+    setTimeout(() => setIotCollaborationEnabled(!!selectedIotDevice.iot?.collaborationEnabled), 0);
+    setTimeout(() => setIotDataStore(selectedIotDevice.iot?.dataStore || ''), 0);
   }, [selectedIotDevice]);
 
   // When tablet powers on or opens, navigate to initial or home screen
@@ -934,7 +934,7 @@ export function PCPanel({
     if (isVisible) {
       if (!isPcPoweredOff) {
         const targetTab = initialTab || 'home';
-        setActiveTab(targetTab);
+        setTimeout(() => setActiveTab(targetTab), 0);
         tabletHistoryRef.current = [targetTab];
         tabletHistoryIndexRef.current = 0;
         onNavigate?.(targetTab);
@@ -1317,7 +1317,7 @@ export function PCPanel({
   useEffect(() => {
     if (!httpAppDeviceId && (httpAppUrl === 'iot-panel' || httpAppUrl === 'http://iot-panel')) {
       const iotPanelContent = generateIotWebPanelContent(iotDevices, language, undefined, undefined, topologyConnections);
-      setHttpAppContent(iotPanelContent);
+      setTimeout(() => setHttpAppContent(iotPanelContent), 0);
     }
   }, [iotDevices, topologyConnections, language, httpAppUrl, httpAppDeviceId]);
   const [browserWindow, setBrowserWindow] = useState(() => {
@@ -1442,21 +1442,21 @@ export function PCPanel({
   // Sync pcOutput when deviceId changes or pcOutputs prop updates
   useEffect(() => {
     if (pcOutputs?.has(deviceId)) {
-      setPcOutput(pcOutputs.get(deviceId)!);
+      setTimeout(() => setPcOutput(pcOutputs.get(deviceId)!), 0);
     } else {
-      setPcOutput([{
+      setTimeout(() => setPcOutput([{
         id: '1',
         type: 'output',
         content: 'OS [Version 10.0.26200.8037]\n(c) OS Corporation. All rights reserved.\n'
-      }]);
+      }]), 0);
     }
   }, [deviceId, pcOutputs]);
 
   // Disconnect console when PC powers off
   useEffect(() => {
     if (isPcPoweredOff && isConsoleConnected) {
-      setIsConsoleConnected(false);
-      setConsoleConnectionTime(0);
+      setTimeout(() => setIsConsoleConnected(false), 0);
+      setTimeout(() => setConsoleConnectionTime(0), 0);
       // Don't clear connectedDeviceId so we can reconnect when power comes back on
     }
   }, [isPcPoweredOff, isConsoleConnected]);
@@ -1467,8 +1467,8 @@ export function PCPanel({
       // Auto-reconnect to the same device
       const device = topologyDevices.find(d => d.id === connectedDeviceId);
       if (device && device.status !== 'offline') {
-        setConsoleConnectionTime(Date.now());
-        setIsConsoleConnected(true);
+        setTimeout(() => setConsoleConnectionTime(Date.now()), 0);
+        setTimeout(() => setIsConsoleConnected(true), 0);
       }
     }
   }, [isPcPoweredOff, connectedDeviceId, isConsoleConnected, topologyDevices]);
@@ -1825,16 +1825,16 @@ export function PCPanel({
         description: t.consolePasswordErrorDescription,
         variant: 'destructive',
       });
-      setConsolePasswordAttempted(false);
-      setIsConsoleConnected(false);
-      setConnectedDeviceId(null);
+      setTimeout(() => setConsolePasswordAttempted(false), 0);
+      setTimeout(() => setIsConsoleConnected(false), 0);
+      setTimeout(() => setConnectedDeviceId(null), 0);
     } else if (consolePasswordAttempted && !consoleAwaitingPassword && consoleAuthenticated) {
-      setIsConsoleConnected(true);
-      setConsolePasswordAttempted(false);
+      setTimeout(() => setIsConsoleConnected(true), 0);
+      setTimeout(() => setConsolePasswordAttempted(false), 0);
     } else if (consolePasswordAttempted && !consoleAwaitingPassword && !consoleAuthenticated) {
-      setConsolePasswordAttempted(false);
-      setIsConsoleConnected(false);
-      setConnectedDeviceId(null);
+      setTimeout(() => setConsolePasswordAttempted(false), 0);
+      setTimeout(() => setIsConsoleConnected(false), 0);
+      setTimeout(() => setConnectedDeviceId(null), 0);
     }
   }, [consoleAuthenticated, consoleAwaitingPassword, consolePasswordAttempted, connectedDeviceId, t]);
 
@@ -2930,12 +2930,12 @@ export function PCPanel({
 
   useEffect(() => {
     if (!httpAppContent || !isMobile || typeof window === 'undefined') return;
-    setBrowserWindow((prev) => ({
+    setTimeout(() => setBrowserWindow((prev) => ({
       ...prev,
       x: 8,
       y: Math.max(80, prev.y),
       width: Math.max(280, window.innerWidth - 16),
-    }));
+    })), 0);
   }, [httpAppContent, isMobile]);
 
   useEffect(() => {

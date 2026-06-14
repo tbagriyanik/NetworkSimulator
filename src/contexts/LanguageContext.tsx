@@ -1998,14 +1998,14 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const saved = localStorage.getItem('language') as Language | null;
     if (saved && (saved === 'tr' || saved === 'en')) {
-      setLanguage(saved);
+      setTimeout(() => setLanguage(saved), 0);
     } else {
       // Sistem dilini algıla ve kullan
       const systemLang = getSystemLanguage();
-      setLanguage(systemLang);
+      setTimeout(() => setLanguage(systemLang), 0);
       localStorage.setItem('language', systemLang);
     }
-    setMounted(true);
+    setTimeout(() => setMounted(true), 0);
   }, []);
 
   const handleSetLanguage = (lang: Language) => {

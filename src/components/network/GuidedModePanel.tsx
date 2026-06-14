@@ -128,7 +128,7 @@ export function GuidedModePanel({
 
   // Set initial position on mount (client-side only)
   useEffect(() => {
-    setPosition({ x: window.innerWidth - 336, y: 80 });
+    setTimeout(() => setPosition({ x: window.innerWidth - 336, y: 80 }), 0);
   }, []);
   const [isDragging, setIsDragging] = useState(false);
   const [hasDragged, setHasDragged] = useState(false);
@@ -147,7 +147,7 @@ export function GuidedModePanel({
     if (project && currentStepIndex < project.steps.length) {
       const step = project.steps[currentStepIndex];
       if (step.detailedInstructions && !expandedSteps.includes(step.id)) {
-        setExpandedSteps(prev => [...prev, step.id]);
+        setTimeout(() => setExpandedSteps(prev => [...prev, step.id]), 0);
       }
     }
   }, [currentStepIndex, project]);

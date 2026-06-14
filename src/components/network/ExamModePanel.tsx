@@ -101,7 +101,7 @@ export function ExamModePanel({
   }, [project?.startedAt, project?.durationMinutes, project?.finishedAt, isFinishedState]);
 
   useEffect(() => {
-    setHasAutoFinished(false);
+    setTimeout(() => setHasAutoFinished(false), 0);
   }, [project?.startedAt, project?.finishedAt]);
 
   const formatTime = (totalSec: number) => {
@@ -115,7 +115,7 @@ export function ExamModePanel({
   // Set initial position
   useEffect(() => {
     const panelWidth = isMobile ? Math.min(320, window.innerWidth - 16) : 320;
-    setPosition({ x: Math.max(0, window.innerWidth - panelWidth - 16), y: 80 });
+    setTimeout(() => setPosition({ x: Math.max(0, window.innerWidth - panelWidth - 16), y: 80 }), 0);
   }, [isMobile]);
 
   const [isDragging, setIsDragging] = useState(false);
@@ -132,7 +132,7 @@ export function ExamModePanel({
   }, []);
   useEffect(() => {
     if (timeLeft !== null && timeLeft <= 0 && !isFinishedState && onFinish) {
-      setHasAutoFinished(true);
+      setTimeout(() => setHasAutoFinished(true), 0);
       onFinish();
     }
   }, [timeLeft, isFinishedState, onFinish]);
@@ -140,7 +140,7 @@ export function ExamModePanel({
   // Auto-finish when full score is reached
   useEffect(() => {
     if (score >= 100 && !isFinishedState && onFinish) {
-      setHasAutoFinished(true);
+      setTimeout(() => setHasAutoFinished(true), 0);
       onFinish();
     }
   }, [score, isFinishedState, onFinish]);

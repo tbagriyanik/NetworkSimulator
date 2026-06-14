@@ -44,7 +44,7 @@ export function useExamMode(): UseExamModeReturn {
 
   // Load from localStorage after mount
   useEffect(() => {
-    setIsMounted(true);
+    setTimeout(() => setIsMounted(true), 0);
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
@@ -57,7 +57,7 @@ export function useExamMode(): UseExamModeReturn {
             completedAt: t.completedAt ? new Date(t.completedAt) : undefined
           }));
         }
-        setActiveExam(parsed);
+        setTimeout(() => setActiveExam(parsed), 0);
       } catch (e) {
         console.error('Failed to load exam state', e);
       }

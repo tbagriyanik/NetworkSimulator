@@ -57,7 +57,7 @@ export function ProjectPickerDialog({
   const convertInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setSelectedProjectId(null);
+    setTimeout(() => setSelectedProjectId(null), 0);
   }, [open, projectPickerTab, projectSearchQuery]);
 
   const visibleProjectIds = useMemo<string[]>(() => {

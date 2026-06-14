@@ -64,7 +64,7 @@ export function HelpPanel({ t, theme, initialOpen = false, onClose }: HelpPanelP
       filteredCategories.forEach(cat => {
         newExpanded[cat.id] = true;
       });
-      setExpanded(prev => ({ ...prev, ...newExpanded }));
+      setTimeout(() => setExpanded(prev => ({ ...prev, ...newExpanded })), 0);
     }
   }, [searchQuery, filteredCategories]);
 

@@ -210,8 +210,8 @@ export function Terminal({
   useEffect(() => {
     const globalHistory = state.commandHistory || [];
     if (JSON.stringify(globalHistory) !== JSON.stringify(history)) {
-      setHistory(globalHistory);
-      setHistoryIndex(-1);
+      setTimeout(() => setHistory(globalHistory), 0);
+      setTimeout(() => setHistoryIndex(-1), 0);
     }
   }, [state.commandHistory, deviceId]);
 
@@ -584,7 +584,7 @@ export function Terminal({
 
   useEffect(() => {
     if (state.awaitingPassword || confirmDialog?.show || isReloadConfirmationPending) {
-      setInput('');
+      setTimeout(() => setInput(''), 0);
       setTimeout(() => inputRef.current?.focus(), 0);
     }
   }, [state.awaitingPassword, confirmDialog?.show, isReloadConfirmationPending]);
@@ -592,7 +592,7 @@ export function Terminal({
   useEffect(() => {
     // Keep password mode strictly tied to live device state.
     // Old password-prompt lines can remain in output history and must not lock input.
-    setLocalPasswordPrompt(!!state.awaitingPassword);
+    setTimeout(() => setLocalPasswordPrompt(!!state.awaitingPassword), 0);
   }, [state.awaitingPassword]);
 
   const handleSubmit = async (cmdToExecute?: string) => {

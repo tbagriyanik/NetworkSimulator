@@ -14,7 +14,7 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setWindowWidth(window.innerWidth);
+      setTimeout(() => setWindowWidth(window.innerWidth), 0);
       const handleResize = () => setWindowWidth(window.innerWidth);
       window.addEventListener('resize', handleResize);
       return () => window.removeEventListener('resize', handleResize);

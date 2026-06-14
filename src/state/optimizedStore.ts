@@ -791,11 +791,19 @@ export const useLogStateChanges = () => {
 
 export const usePerformanceMonitor = () => {
     const store = useNetworkStore();
-    const metrics = useRef({
-        renderTimes: [] as number[],
+    const metrics = useRef<{
+        renderTimes: number[];
+        updateCount: number;
+        startTime: number;
+    }>({
+        renderTimes: [],
         updateCount: 0,
-        startTime: Date.now(),
+        startTime: 0,
     });
+
+    useEffect(() => {
+        metrics.current.startTime = Date.now();
+    }, []);
 
     const recordRenderTime = useCallback((renderTime: number) => {
         metrics.current.renderTimes.push(renderTime);

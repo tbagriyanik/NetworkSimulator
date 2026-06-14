@@ -63,10 +63,10 @@ export function useResponsive(options: ResponsiveOptions = {}): ResponsiveState 
 
     useEffect(() => {
         // Set initial dimensions
-        setWidth(window.innerWidth);
-        setHeight(window.innerHeight);
-        setOrientation(window.innerWidth > window.innerHeight ? 'landscape' : 'portrait');
-        setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+        setTimeout(() => setWidth(window.innerWidth), 0);
+        setTimeout(() => setHeight(window.innerHeight), 0);
+        setTimeout(() => setOrientation(window.innerWidth > window.innerHeight ? 'landscape' : 'portrait'), 0);
+        setTimeout(() => setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0), 0);
 
         const handleResize = () => {
             setWidth(window.innerWidth);
@@ -121,7 +121,7 @@ export function useMediaQuery(query: string): boolean {
 
     useEffect(() => {
         const mediaQuery = window.matchMedia(query);
-        setMatches(mediaQuery.matches);
+        setTimeout(() => setMatches(mediaQuery.matches), 0);
 
         const handleChange = (event: MediaQueryListEvent) => {
             setMatches(event.matches);

@@ -233,7 +233,7 @@ export const PingAnimation: React.FC<PingAnimationProps> = ({
 
     useEffect(() => {
         if (!isPlaying || path.length < 2) {
-            setProgress(0);
+            setTimeout(() => setProgress(0), 0);
             return;
         }
 

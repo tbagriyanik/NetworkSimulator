@@ -23,12 +23,12 @@ export function ModeProvider({ children }: { children: React.ReactNode }) {
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved && isValidMode(saved)) {
-                setModeState(saved as LearningMode);
+                setTimeout(() => setModeState(saved as LearningMode), 0);
             }
         } catch {
             // ignore persistence failures
         }
-        setIsHydrated(true);
+        setTimeout(() => setIsHydrated(true), 0);
     }, []);
 
     // Persist mode to localStorage when it changes

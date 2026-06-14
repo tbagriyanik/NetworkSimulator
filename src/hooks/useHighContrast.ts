@@ -70,11 +70,11 @@ export function useHighContrast(): HighContrastState & {
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
-                setEnabled(saved === 'true');
+                setTimeout(() => setEnabled(saved === 'true'), 0);
             } else {
                 // Check system preference
                 const prefersHighContrast = window.matchMedia('(prefers-contrast: high)').matches;
-                setEnabled(prefersHighContrast);
+                setTimeout(() => setEnabled(prefersHighContrast), 0);
             }
         } catch {
             // Ignore storage errors

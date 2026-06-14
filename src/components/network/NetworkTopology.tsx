@@ -282,7 +282,7 @@ export function NetworkTopology({
   // Force re-render when deviceStates changes (for WiFi icon updates)
   const [, setDeviceStatesVersion] = useState(0);
   useEffect(() => {
-    setDeviceStatesVersion(prev => prev + 1);
+    setTimeout(() => setDeviceStatesVersion(prev => prev + 1), 0);
   }, [deviceStates]);
 
   // Use hook to preserve window positions during network refresh
@@ -358,14 +358,14 @@ export function NetworkTopology({
   useEffect(() => {
     if (zoomProp !== undefined && zoomProp !== zoom) {
       syncingZoomFromPropRef.current = true;
-      setZoom(zoomProp);
+      setTimeout(() => setZoom(zoomProp), 0);
     }
   }, [zoomProp]);
 
   useEffect(() => {
     if (panProp !== undefined && (panProp.x !== pan.x || panProp.y !== pan.y)) {
       syncingPanFromPropRef.current = true;
-      setPan(panProp);
+      setTimeout(() => setPan(panProp), 0);
     }
   }, [panProp]);
 
@@ -490,10 +490,10 @@ export function NetworkTopology({
   useEffect(() => {
     if (activeDeviceId) {
       // Only sync if the prop device is not already part of our selection
-      setSelectedDeviceIds(prev => {
+      setTimeout(() => setSelectedDeviceIds(prev => {
         if (prev.includes(activeDeviceId)) return prev;
         return [activeDeviceId];
-      });
+      }), 0);
     }
     // If activeDeviceId becomes null (panel closed), we specifically DON'T clear 
     // the selection here to satisfy the user request.
@@ -502,7 +502,7 @@ export function NetworkTopology({
   // Handle external focus device request (e.g., from WiFi admin panel) - selection only
   useEffect(() => {
     if (focusDeviceId && deviceMap.get(focusDeviceId)) {
-      setSelectedDeviceIds([focusDeviceId]);
+      setTimeout(() => setSelectedDeviceIds([focusDeviceId]), 0);
     }
   }, [focusDeviceId, deviceMap]);
 
@@ -512,9 +512,9 @@ export function NetworkTopology({
   // Handle external clear selection trigger (e.g., from Tab key)
   useEffect(() => {
     if (clearSelectionTrigger !== undefined) {
-      setSelectedDeviceIds([]);
+      setTimeout(() => setSelectedDeviceIds([]), 0);
       selectedDeviceIdsRef.current = [];
-      setSelectAllMode(false);
+      setTimeout(() => setSelectAllMode(false), 0);
     }
   }, [clearSelectionTrigger]);
 

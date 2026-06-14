@@ -88,7 +88,7 @@ export function useMultiTabWarning() {
     if (typeof window === 'undefined') return;
 
     try {
-      checkTabCount();
+      setTimeout(() => checkTabCount(), 0);
 
       const interval = setInterval(checkTabCount, 3000);
 

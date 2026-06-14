@@ -173,11 +173,11 @@ function RefreshDeviceListToast({
 
   useEffect(() => {
     if (!devices.length) {
-      setSelectedId(null);
+      setTimeout(() => setSelectedId(null), 0);
       return;
     }
     if (!selectedId || !devices.some((device) => device.id === selectedId)) {
-      setSelectedId(devices[0].id);
+      setTimeout(() => setSelectedId(devices[0].id), 0);
     }
   }, [devices, selectedId]);
 
@@ -304,7 +304,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   useEffect(() => {
     try {
       const savedName = localStorage.getItem('lastProjectName');
-      if (savedName) setProjectName(savedName);
+      if (savedName) setTimeout(() => setProjectName(savedName), 0);
     } catch { /* ignore */ }
   }, []);
   const [projectSearchQuery, setProjectSearchQuery] = useState('');
@@ -380,7 +380,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   // Track project name from guided/exam mode
   useEffect(() => {
     if (activeGuidedProject) {
-      setProjectName(activeGuidedProject.title);
+      setTimeout(() => setProjectName(activeGuidedProject.title), 0);
 
       // Auto-focus target device for the current step to act as a "Wizard pointer"
       if (guidedStepIndex < activeGuidedProject.steps.length) {
@@ -398,7 +398,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
         }
       }
     } else if (activeExam) {
-      setProjectName(activeExam.title);
+      setTimeout(() => setProjectName(activeExam.title), 0);
       // Auto-open editor for blank templates
       if (activeExam.isCustom && activeExam.tasks.length === 0) {
         toggleEditor(true);
@@ -583,7 +583,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   }, [closeAllPanels, closeEscLikeWindows]);
 
   useEffect(() => {
-    setHasHydrated(true);
+    setTimeout(() => setHasHydrated(true), 0);
   }, []);
 
   // Bootstrap performance monitoring in development without affecting production UX.
@@ -1251,7 +1251,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   useEffect(() => {
     if (!isTaskSystemEnabled) {
       prevTaskStatusRef.current.clear();
-      setLastTaskEvent(null);
+      setTimeout(() => setLastTaskEvent(null), 0);
       return;
     }
 
@@ -1818,14 +1818,14 @@ ${state.bannerMOTD}
     if (savedData) {
       try {
         const projectData = safeParse<unknown>(savedData);
-        loadProjectData(projectData, { keepActiveDevice: true });
+        setTimeout(() => loadProjectData(projectData, { keepActiveDevice: true }), 0);
         // Load last save time from timestamp
         const parsedProject = (projectData && typeof projectData === 'object') ? projectData as Record<string, unknown> : null;
         if (parsedProject?.timestamp) {
           const date = new Date(String(parsedProject.timestamp));
-          setLastSaveTime(date.toLocaleTimeString());
+          setTimeout(() => setLastSaveTime(date.toLocaleTimeString()), 0);
         } else {
-          setLastSaveTime(new Date().toLocaleTimeString());
+          setTimeout(() => setLastSaveTime(new Date().toLocaleTimeString()), 0);
         }
       } catch (e) {
         errorHandler.logError(STORAGE_ERRORS.LOAD_FAILED({ operation: 'autosave', error: String(e) }));
@@ -1980,7 +1980,7 @@ ${state.bannerMOTD}
           setLoadedExampleId(null); // Reset after processing
         })();
       } else {
-        setLoadedExampleId(null);
+        setTimeout(() => setLoadedExampleId(null), 0);
       }
     }
   }, [assignDhcpLeaseForPc, buildLinkLocalLease, loadedExampleId, topologyDevices, deviceStates, toast, language, setTopologyDevices]);
@@ -2679,7 +2679,7 @@ ${state.bannerMOTD}
 
     if (topologyChanged) {
       setTopologyDevices(updatedTopologyDevices);
-      setHasUnsavedChanges(true);
+      setTimeout(() => setHasUnsavedChanges(true), 0);
     }
   }, [deviceStates, topologyDevices, setDeviceStates, setTopologyDevices, setHasUnsavedChanges]);
 
@@ -2723,7 +2723,7 @@ ${state.bannerMOTD}
 
     if (topologyChanged) {
       setTopologyDevices(updatedTopologyDevices);
-      setHasUnsavedChanges(true);
+      setTimeout(() => setHasUnsavedChanges(true), 0);
     }
   }, [deviceStates, topologyDevices, setTopologyDevices, setHasUnsavedChanges]);
 

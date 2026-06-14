@@ -143,7 +143,7 @@ export function AboutModal({ isOpen, onClose, onStartTour }: AboutModalProps) {
       filteredHelpCategories.forEach(cat => {
         newExpanded[cat.id] = true;
       });
-      setExpandedHelp(prev => ({ ...prev, ...newExpanded }));
+      setTimeout(() => setExpandedHelp(prev => ({ ...prev, ...newExpanded })), 0);
     }
   }, [searchQuery, filteredHelpCategories]);
 

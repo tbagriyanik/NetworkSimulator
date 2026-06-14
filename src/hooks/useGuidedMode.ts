@@ -86,19 +86,19 @@ export function useGuidedMode(): UseGuidedModeReturn {
 
   // Load from localStorage after mount (client-side only)
   useEffect(() => {
-    setIsMounted(true);
+    setTimeout(() => setIsMounted(true), 0);
     const savedProject = localStorage.getItem(STORAGE_KEY);
     const savedStepIndex = localStorage.getItem(`${STORAGE_KEY}_stepIndex`);
     const savedMinimized = localStorage.getItem(`${STORAGE_KEY}_minimized`);
 
     if (savedProject) {
-      setActiveProject(deserializeProject(savedProject));
+      setTimeout(() => setActiveProject(deserializeProject(savedProject)), 0);
     }
     if (savedStepIndex) {
-      setCurrentStepIndex(parseInt(savedStepIndex, 10));
+      setTimeout(() => setCurrentStepIndex(parseInt(savedStepIndex, 10)), 0);
     }
     if (savedMinimized) {
-      setIsPanelMinimized(savedMinimized === 'true');
+      setTimeout(() => setIsPanelMinimized(savedMinimized === 'true'), 0);
     }
   }, []);
 
@@ -163,8 +163,8 @@ export function useGuidedMode(): UseGuidedModeReturn {
     // Find the next incomplete step
     const nextIndex = activeProject.steps.findIndex(s => !s.completed);
     if (nextIndex !== -1 && nextIndex !== currentStepIndex) {
-      setCurrentStepIndex(nextIndex);
-      setIsCurrentStepReady(false); // Reset readiness when moving to new step
+      setTimeout(() => setCurrentStepIndex(nextIndex), 0);
+      setTimeout(() => setIsCurrentStepReady(false), 0); // Reset readiness when moving to new step
     }
   }, [activeProject?.steps, activeProject, currentStepIndex]);
 
