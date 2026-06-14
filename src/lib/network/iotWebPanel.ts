@@ -622,11 +622,11 @@ export const generateIotDevicePageContent = (
   language: string,
   isActive: boolean = true,
   isPoweredOff: boolean = false,
-  kind: string = 'sensor',
+  _kind: string = 'sensor',
   rules: IotRule[] = [],
-  sensorType: string = 'temperature',
-  iotDevices: CanvasDevice[] = [],
-  dataFlowDirection: 'input' | 'output' | 'input/output' = 'input',
+  _sensorType: string = 'temperature',
+  _iotDevices: CanvasDevice[] = [],
+  _dataFlowDirection: 'input' | 'output' | 'input/output' = 'input',
   allDevices: CanvasDevice[] = []
 ): string => {
   const isTurkish = language === 'tr';

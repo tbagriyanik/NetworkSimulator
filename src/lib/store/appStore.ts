@@ -1,8 +1,8 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
 import { CanvasDevice, CanvasConnection, CanvasNote } from '@/components/network/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
-import { createTabSpecificStorage, getTabSpecificKey } from './tabStorage';
+import { createTabSpecificStorage } from './tabStorage';
 import { errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
 
 // Environment settings types
@@ -16,7 +16,6 @@ export interface EnvironmentSettings {
 }
 
 const VALID_DEVICE_TYPES = new Set(['pc', 'iot', 'switchL2', 'switchL3', 'router', 'firewall']);
-const VALID_NOTE_FONTS = new Set(['Arial', 'Courier', 'Georgia', 'Times New Roman', 'Verdana', 'monospace', 'sans-serif', 'serif']);
 const VALID_NOTE_SIZES = new Set([10, 12, 16, 20]);
 const VALID_NOTE_OPACITIES = new Set([0.25, 0.5, 0.75, 1]);
 
@@ -421,7 +420,7 @@ export const useAppStore = create<AppState>()(
                     } as AppState;
                 }
             },
-            onRehydrateStorage: () => (state, error) => {
+            onRehydrateStorage: () => (_state, error) => {
                 if (typeof window === 'undefined') return;
 
                 if (error) {
@@ -503,3 +502,4 @@ export const useUIState = () => useAppStore(state => ({
 export const useEnvironment = () => useAppStore(state => state.topology.environment);
 
 export default useAppStore;
+

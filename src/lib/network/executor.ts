@@ -1,16 +1,13 @@
 // Network Command Executor (refactored with handler map)
 import { SwitchState, CommandMode, CommandResult, Port } from './types';
-import { checkConnectivity } from './connectivity';
-import { addStaticRoute, removeStaticRoute, getRoutingTable } from './routing';
-import { parseCommand, validateCommand, getHelpContent, commandPatterns, getLevenshteinDistance, expandKeywordPrefixes, resolveAliases } from './parser';
+import { parseCommand, validateCommand, commandPatterns, getLevenshteinDistance, expandKeywordPrefixes, resolveAliases } from './parser';
 import { getDeviceCapabilities } from './capabilities';
 import { isRouterModel } from './switchModels';
 import { getModePrompt } from './initialState';
-import { isValidMAC, normalizeMAC } from '../utils';
 import { ensureDeviceStatesMap } from './networkUtils';
 import { encryptMd5Password, decryptType7Password } from './crypto';
 import { IOS_ERRORS, iosModeError } from './core/iosErrors';
-import type { CanvasDevice, CanvasConnection, CanvasPort } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
 
 /**
  * Generate CLI prompt string based on current switch state
@@ -71,19 +68,6 @@ const pfx = (cmd: string, completions: string[], minLen = 1): Record<string, str
   }
   return result;
 };
-
-// Helper: Generate prefixes for nested commands (e.g., 'show version')
-const npfx = (base: string, cmd: string, completions: string[], minLen = 1): Record<string, string[]> => {
-  const result: Record<string, string[]> = {};
-  const prefix = base + ' ';
-  for (let i = minLen; i <= cmd.length; i++) {
-    result[prefix + cmd.slice(0, i)] = completions;
-  }
-  return result;
-};
-
-// Helper: Single letter or exact match
-const single = (char: string, completions: string[]): Record<string, string[]> => ({ [char]: completions });
 
 // Helper: Multi-prefix for ambiguous first letters (e.g., 't' -> ['telnet'])
 const multi = (char: string, completions: string[]): Record<string, string[]> => {
@@ -669,7 +653,7 @@ function getInlineHelp(mode: CommandMode, partialInput: string, prompt: string, 
   // Check if current input is already a complete command
   let canCR = false;
   const resolved = expandKeywordPrefixes(resolveAliases(trimmedInput, state), mode);
-  for (const [name, pattern] of Object.entries(commandPatterns)) {
+  for (const [_name, pattern] of Object.entries(commandPatterns)) {
     if (pattern.modes.includes(mode)) {
       if (pattern.pattern.test(resolved)) {
         canCR = true;
@@ -1602,7 +1586,7 @@ ${ifaceSummary}`;
   };
 }
 
-function handleSshConnect(state: SwitchState, language: 'tr' | 'en', requestedUser?: string): CommandResult {
+function handleSshConnect(state: SwitchState, _language: 'tr' | 'en', requestedUser?: string): CommandResult {
   const existingSessions = Array.isArray(state.sshSessions) ? state.sshSessions : [];
   const nextSourceIndex = existingSessions.length;
   const user = requestedUser || state.sshLastUser || state.hostname || 'admin';
@@ -1827,7 +1811,7 @@ function formatBytes(bytes: number) {
 function handleFtpSessionCommand(
   state: SwitchState,
   input: string,
-  language: 'tr' | 'en',
+  _language: 'tr' | 'en',
   ctx: { devices?: CanvasDevice[]; connections?: CanvasConnection[]; deviceStates?: Map<string, SwitchState>; sourceDeviceId?: string }
 ): CommandResult {
   const session = state.ftpSession;
@@ -1915,7 +1899,7 @@ function handleFtpSessionCommand(
 function handleMailSessionCommand(
   state: SwitchState,
   input: string,
-  language: 'tr' | 'en',
+  _language: 'tr' | 'en',
   ctx: { devices?: CanvasDevice[]; connections?: CanvasConnection[]; deviceStates?: Map<string, SwitchState>; sourceDeviceId?: string }
 ): CommandResult {
   const session = state.mailSession;
@@ -2032,3 +2016,4 @@ const commandHandlers: Record<string, CommandHandler> = {
     return { success: false, error: iosModeError() };
   }
 };
+

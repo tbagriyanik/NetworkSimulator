@@ -1,5 +1,5 @@
 'use client';
-import { IOS_ERRORS, iosModeError } from './iosErrors';
+import { iosModeError } from './iosErrors';
 
 import type { CommandHandler } from './commandTypes';
 
@@ -27,7 +27,7 @@ export const routerConfigHandlers: Record<string, CommandHandler> = {
  * network - Add network to routing process
  * Note: This command is only available in router-config mode via routerConfigHandlers
  */
-export function cmdRouterNetwork(state: any, input: string, ctx: any): any {
+export function cmdRouterNetwork(state: any, input: string, _ctx: any): any {
     // Check if EIGRP network (network + wildcard)
     if (state.routingProtocol === 'eigrp') {
         const eigrpMatch = input.match(/^network\s+([0-9.]+)\s+([0-9.]+)$/i);
@@ -100,7 +100,7 @@ export function cmdRouterNetwork(state: any, input: string, ctx: any): any {
 /**
  * no network - Remove network from routing process
  */
-function cmdNoRouterNetwork(state: any, input: string, ctx: any): any {
+function cmdNoRouterNetwork(state: any, input: string, _ctx: any): any {
     const match = input.match(/^no\s+network\s+([0-9.]+)(?:\s+[0-9.]+)?(?:\s+area\s+\d+)?$/i);
     if (!match) return { success: false, error: '% Invalid no network command' };
 
@@ -116,7 +116,7 @@ function cmdNoRouterNetwork(state: any, input: string, ctx: any): any {
 /**
  * no neighbor <ip> remote-as <as>
  */
-function cmdNoNeighborRemoteAs(state: any, input: string, ctx: any): any {
+function cmdNoNeighborRemoteAs(state: any, input: string, _ctx: any): any {
     const match = input.match(/^no\s+neighbor\s+([0-9.]+)(?:\s+remote-as\s+\d+)?$/i);
     if (!match) return { success: false, error: '% Invalid no neighbor command' };
 
@@ -132,7 +132,7 @@ function cmdNoNeighborRemoteAs(state: any, input: string, ctx: any): any {
 /**
  * no passive-interface <name>
  */
-function cmdNoPassiveInterface(state: any, input: string, ctx: any): any {
+function cmdNoPassiveInterface(state: any, input: string, _ctx: any): any {
     const match = input.match(/^no\s+passive-interface\s+(\S+)$/i);
     if (!match) return { success: false, error: '% Invalid no passive-interface command' };
 
@@ -148,7 +148,7 @@ function cmdNoPassiveInterface(state: any, input: string, ctx: any): any {
 /**
  * no router-id
  */
-function cmdNoRouterId(state: any, input: string, ctx: any): any {
+function cmdNoRouterId(_state: any, _input: string, _ctx: any): any {
     return {
         success: true,
         newState: { routerId: undefined }
@@ -158,7 +158,7 @@ function cmdNoRouterId(state: any, input: string, ctx: any): any {
 /**
  * router-id - Set router ID
  */
-function cmdRouterId(state: any, input: string, ctx: any): any {
+function cmdRouterId(_state: any, input: string, _ctx: any): any {
     const match = input.match(/^router-id\s+([0-9.]+)$/i);
     if (!match) {
         return { success: false, error: '% Invalid router-id command' };
@@ -174,7 +174,7 @@ function cmdRouterId(state: any, input: string, ctx: any): any {
 /**
  * passive-interface - Disable sending updates on interface
  */
-function cmdPassiveInterface(state: any, input: string, ctx: any): any {
+function cmdPassiveInterface(state: any, input: string, _ctx: any): any {
     const match = input.match(/^passive-interface\s+(\S+)$/i);
     if (!match) {
         return { success: false, error: '% Invalid passive-interface command' };
@@ -192,7 +192,7 @@ function cmdPassiveInterface(state: any, input: string, ctx: any): any {
 /**
  * neighbor remote-as - Configure BGP neighbor
  */
-function cmdNeighborRemoteAs(state: any, input: string, ctx: any): any {
+function cmdNeighborRemoteAs(state: any, input: string, _ctx: any): any {
     if (state.routingProtocol !== 'bgp') {
         return { success: false, error: iosModeError() };
     }
@@ -214,7 +214,7 @@ function cmdNeighborRemoteAs(state: any, input: string, ctx: any): any {
 /**
  * no auto-summary
  */
-function cmdNoAutoSummary(state: any, input: string, ctx: any): any {
+function cmdNoAutoSummary(_state: any, _input: string, _ctx: any): any {
     return {
         success: true,
         newState: { autoSummary: false }
@@ -224,7 +224,7 @@ function cmdNoAutoSummary(state: any, input: string, ctx: any): any {
 /**
  * default-information - Control distribution of default route
  */
-function cmdDefaultInformation(state: any, input: string, ctx: any): any {
+function cmdDefaultInformation(_state: any, input: string, _ctx: any): any {
     const match = input.match(/^default-information\s+(originate|always)$/i);
     if (!match) {
         return { success: false, error: '% Invalid default-information command' };
@@ -238,3 +238,4 @@ function cmdDefaultInformation(state: any, input: string, ctx: any): any {
         }
     };
 }
+

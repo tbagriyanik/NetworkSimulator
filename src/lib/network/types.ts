@@ -587,12 +587,6 @@ function isConsolePort(portId: string | undefined): boolean {
   return port === 'console' || port === 'com1' || port === 'com';
 }
 
-// Ethernet portu olup olmadığını kontrol et
-function isEthernetPort(portId: string | undefined): boolean {
-  if (!portId) return false;
-  const port = portId.toLowerCase();
-  return port.startsWith('eth') || port.startsWith('fa') || port.startsWith('gi');
-}
 
 export function isCableCompatible(cable: CableInfo): boolean {
   if (!cable.connected) return false;

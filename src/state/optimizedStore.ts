@@ -158,7 +158,6 @@ const createMemoizedSelector = <T, R>(
 
 // Device Selectors
 const selectDevices = (state: NetworkState) => state.devices;
-const selectDeviceIds = (state: NetworkState) => Object.keys(state.devices);
 const selectDeviceCount = (state: NetworkState) => Object.keys(state.devices).length;
 const selectSelectedDevices = (state: NetworkState) =>
     Object.fromEntries(
@@ -170,7 +169,6 @@ const selectDevicesByType = (type: Device['type']) => (state: NetworkState) =>
 
 // Connection Selectors
 const selectConnections = (state: NetworkState) => state.connections;
-const selectConnectionIds = (state: NetworkState) => Object.keys(state.connections);
 const selectConnectionCount = (state: NetworkState) => Object.keys(state.connections).length;
 const selectSelectedConnections = (state: NetworkState) =>
     Object.fromEntries(
@@ -841,9 +839,9 @@ export const usePerformanceMonitor = () => {
 // Utility Functions
 // ============================================================================
 
-export const createOptimizedSelector = <T, R>(
+export const createOptimizedSelector = <R>(
     selector: (state: NetworkState) => R,
-    equalityFn?: (a: R, b: R) => boolean
+    _equalityFn?: (a: R, b: R) => boolean
 ) => {
     // This should be used inside a React component or custom hook
     // Return the selector function to be used with useNetworkStore

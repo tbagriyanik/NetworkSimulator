@@ -70,7 +70,6 @@ function checkL3Routing(
   const routingTable = buildRoutingTable(sourceId, devices, connections, deviceStates);
 
   // Find route to target
-  const isTargetIpv6 = isIpv6(targetIp);
   const route = findRoute(targetIp, routingTable);
   if (!route) {
     return { success: false, hops: [], error: 'No route to destination' };
@@ -104,8 +103,8 @@ function hasRoutingCapability(device: CanvasDevice, state: SwitchState): boolean
  */
 function buildRoutingTable(
   deviceId: string,
-  devices: CanvasDevice[],
-  connections: CanvasConnection[],
+  _devices: CanvasDevice[],
+  _connections: CanvasConnection[],
   deviceStates: Map<string, SwitchState>
 ): Route[] {
   const routes: Route[] = [];
@@ -390,7 +389,7 @@ function findPathToNextHop(
   nextHop: string,
   devices: CanvasDevice[],
   connections: CanvasConnection[],
-  deviceStates: Map<string, SwitchState>
+  _deviceStates: Map<string, SwitchState>
 ): { success: boolean; hops: string[] } {
   // Simplified path finding - in reality, this would be more complex
   // For now, assume we can reach the next hop if it's directly connected

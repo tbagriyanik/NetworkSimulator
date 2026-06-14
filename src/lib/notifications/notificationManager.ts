@@ -88,8 +88,8 @@ class NotificationManager {
     async confirm(
         title: string,
         description?: string,
-        confirmText = 'Confirm',
-        cancelText = 'Cancel'
+        _confirmText = 'Confirm',
+        _cancelText = 'Cancel'
     ): Promise<boolean> {
         return new Promise(resolve => {
             toast({

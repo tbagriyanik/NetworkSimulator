@@ -599,7 +599,7 @@ export function applyStartupConfig(baseState: SwitchState, startup: StartupConfi
 }
 
 // Mode prompt'ları
-export function getModePrompt(mode: CommandMode, hostname: string, context?: string): string {
+export function getModePrompt(mode: CommandMode, hostname: string, _context?: string): string {
   switch (mode) {
     case 'user':
       return `${hostname}>`;
@@ -2231,3 +2231,4 @@ export const commandAliases: Record<string, string> = {
 
 // Export a default initial switch state for testing
 export const initialSwitchState = createInitialState();
+

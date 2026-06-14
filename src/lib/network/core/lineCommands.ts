@@ -1,4 +1,4 @@
-import { IOS_ERRORS, iosModeError } from './iosErrors';
+import { iosModeError } from './iosErrors';
 import type { CommandHandler } from './commandTypes';
 
 // Line (console/vty) komutları (line console, password, login, transport input, vs.)
@@ -36,7 +36,7 @@ export const lineHandlers: Record<string, CommandHandler> = {
 /**
  * Line Console
  */
-function cmdLineConsole(state: any, input: string, ctx: any): any {
+function cmdLineConsole(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -58,7 +58,7 @@ function cmdLineConsole(state: any, input: string, ctx: any): any {
 /**
  * Line VTY
  */
-function cmdLineVty(state: any, input: string, ctx: any): any {
+function cmdLineVty(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -80,7 +80,7 @@ function cmdLineVty(state: any, input: string, ctx: any): any {
 /**
  * Password - Set line password
  */
-function cmdPassword(state: any, input: string, ctx: any): any {
+function cmdPassword(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'line' || !state.currentLine) {
     return { success: false, error: iosModeError() };
   }
@@ -113,7 +113,7 @@ function cmdPassword(state: any, input: string, ctx: any): any {
 /**
  * Login - Enable password checking on line
  */
-function cmdLogin(state: any, input: string, ctx: any): any {
+function cmdLogin(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'line' || !state.currentLine) {
     return { success: false, error: iosModeError() };
   }
@@ -144,7 +144,7 @@ function cmdLogin(state: any, input: string, ctx: any): any {
 /**
  * No Login - Disable password checking on line
  */
-function cmdNoLogin(state: any, input: string, ctx: any): any {
+function cmdNoLogin(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'line' || !state.currentLine) {
     return { success: false, error: iosModeError() };
   }
@@ -174,7 +174,7 @@ function cmdNoLogin(state: any, input: string, ctx: any): any {
 /**
  * Transport Input - Set allowed protocols for line
  */
-function cmdTransportInput(state: any, input: string, ctx: any): any {
+function cmdTransportInput(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'line' || !state.currentLine) {
     return { success: false, error: iosModeError() };
   }
@@ -212,7 +212,7 @@ function cmdTransportInput(state: any, input: string, ctx: any): any {
 /**
  * Logging Synchronous
  */
-function cmdLoggingSynchronous(state: any, input: string, ctx: any): any {
+function cmdLoggingSynchronous(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'line' || !state.currentLine) {
     return { success: false, error: iosModeError() };
   }
@@ -235,7 +235,7 @@ function cmdLoggingSynchronous(state: any, input: string, ctx: any): any {
 /**
  * Exec-Timeout
  */
-function cmdExecTimeout(state: any, input: string, ctx: any): any {
+function cmdExecTimeout(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'line' || !state.currentLine) {
     return { success: false, error: iosModeError() };
   }
@@ -271,7 +271,7 @@ function cmdExecTimeout(state: any, input: string, ctx: any): any {
 /**
  * No Password - Remove line password
  */
-function cmdNoPassword(state: any, input: string, ctx: any): any {
+function cmdNoPassword(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'line' || !state.currentLine) {
     return { success: false, error: iosModeError() };
   }
@@ -299,7 +299,7 @@ function cmdNoPassword(state: any, input: string, ctx: any): any {
 /**
  * No Transport Input - Reset transport input
  */
-function cmdNoTransportInput(state: any, input: string, ctx: any): any {
+function cmdNoTransportInput(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'line' || !state.currentLine) {
     return { success: false, error: iosModeError() };
   }
@@ -322,7 +322,7 @@ function cmdNoTransportInput(state: any, input: string, ctx: any): any {
 /**
  * No Logging Synchronous - Disable logging synchronous
  */
-function cmdNoLoggingSynchronous(state: any, input: string, ctx: any): any {
+function cmdNoLoggingSynchronous(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'line' || !state.currentLine) {
     return { success: false, error: iosModeError() };
   }
@@ -345,7 +345,7 @@ function cmdNoLoggingSynchronous(state: any, input: string, ctx: any): any {
 /**
  * No Exec-Timeout - Reset exec timeout to default
  */
-function cmdNoExecTimeout(state: any, input: string, ctx: any): any {
+function cmdNoExecTimeout(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'line' || !state.currentLine) {
     return { success: false, error: iosModeError() };
   }
@@ -373,7 +373,7 @@ function cmdNoExecTimeout(state: any, input: string, ctx: any): any {
 /**
  * History - Set command history size
  */
-function cmdHistory(state: any, input: string, ctx: any): any {
+function cmdHistory(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'line' || !state.currentLine) {
     return { success: false, error: iosModeError() };
   }
@@ -407,7 +407,7 @@ function cmdHistory(state: any, input: string, ctx: any): any {
 /**
  * No History - Disable command history
  */
-function cmdNoHistory(state: any, input: string, ctx: any): any {
+function cmdNoHistory(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'line' || !state.currentLine) {
     return { success: false, error: iosModeError() };
   }
@@ -435,7 +435,7 @@ function cmdNoHistory(state: any, input: string, ctx: any): any {
 /**
  * Exec - Enable EXEC mode on line
  */
-function cmdExec(state: any, input: string, ctx: any): any {
+function cmdExec(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'line' || !state.currentLine) {
     return { success: false, error: iosModeError() };
   }
@@ -463,7 +463,7 @@ function cmdExec(state: any, input: string, ctx: any): any {
 /**
  * No Exec - Disable EXEC mode on line
  */
-function cmdNoExec(state: any, input: string, cmd: any): any {
+function cmdNoExec(state: any, _input: string, _cmd: any): any {
   if (state.currentMode !== 'line' || !state.currentLine) {
     return { success: false, error: iosModeError() };
   }
@@ -491,7 +491,7 @@ function cmdNoExec(state: any, input: string, cmd: any): any {
 /**
  * Autocommand - Run command on connection
  */
-function cmdAutocommand(state: any, input: string, ctx: any): any {
+function cmdAutocommand(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'line' || !state.currentLine) {
     return { success: false, error: iosModeError() };
   }
@@ -519,7 +519,7 @@ function cmdAutocommand(state: any, input: string, ctx: any): any {
 /**
  * No Autocommand - Remove autocommand
  */
-function cmdNoAutocommand(state: any, input: string, ctx: any): any {
+function cmdNoAutocommand(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'line' || !state.currentLine) {
     return { success: false, error: iosModeError() };
   }
@@ -542,21 +542,21 @@ function cmdNoAutocommand(state: any, input: string, ctx: any): any {
 /**
  * Stub Success
  */
-function cmdStubSuccess(state: any, input: string, ctx: any): any {
+function cmdStubSuccess(_state: any, _input: string, _ctx: any): any {
   return { success: true };
 }
 
 /**
  * Line AUX
  */
-function cmdLineAux(state: any, input: string, ctx: any): any {
+function cmdLineAux(_state: any, _input: string, _ctx: any): any {
   return { success: true, newState: { currentMode: 'line', currentLine: 'aux 0' } };
 }
 
 /**
  * Line (generic)
  */
-function cmdLine(state: any, input: string, ctx: any): any {
+function cmdLine(_state: any, input: string, _ctx: any): any {
   const match = input.match(/^line\s+(\S+)\s+(\d+)(?:\s+(\d+))?$/i);
   if (!match) return { success: false, error: '% Invalid line command' };
   return { success: true, newState: { currentMode: 'line', currentLine: `${match[1]} ${match[2]}` } };
@@ -565,7 +565,7 @@ function cmdLine(state: any, input: string, ctx: any): any {
 /**
  * Privilege Level - Set privilege level for line
  */
-function cmdPrivilegeLevel(state: any, input: string, ctx: any): any {
+function cmdPrivilegeLevel(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'line' || !state.currentLine) {
     return { success: false, error: iosModeError() };
   }
@@ -594,4 +594,5 @@ function cmdPrivilegeLevel(state: any, input: string, ctx: any): any {
     newState: { security: newSecurity }
   };
 }
+
 

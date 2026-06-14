@@ -183,11 +183,6 @@ export function buildRunningConfig(state: SwitchState): string[] {
         if (isWlan) {
             // WLAN interface: only wifi-specific commands, no switchport
             if (port.wifi) {
-                const wifiMode = port.wifi.mode === 'disabled'
-                    ? 'disabled'
-                    : port.wifi.mode === 'client'
-                        ? 'client'
-                        : 'ap';
                 if (port.wifi.ssid) {
                     lines.push(` ssid ${port.wifi.ssid}`);
                 }

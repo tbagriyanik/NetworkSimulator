@@ -2489,8 +2489,6 @@ interface CommandTreeNode {
   terminalPatterns: string[];
 }
 
-const commandTreeByMode: Partial<Record<CommandMode, CommandTreeNode>> = {};
-
 function createNode(): CommandTreeNode {
   return { children: new Map<string, CommandTreeNode>(), terminalPatterns: [] };
 }
@@ -2601,7 +2599,6 @@ export function validateCommand(
   state?: any
 ): CommandValidationResult {
 
-  const input = parsed.rawInput.toLowerCase();
   const resolvedInput = resolveAliases(parsed.rawInput, state);
   const inferredDeviceType = state
     ? (state.deviceType === 'switch'
@@ -2646,11 +2643,9 @@ export function validateCommand(
 
   const treeResolution = resolveByCommandTree(resolvedInput, currentMode, capabilities);
   if (treeResolution.kind === 'ambiguous') {
-    const options = (treeResolution.candidates || []).join(', ');
     return { valid: false, reason: 'ambiguous', error: IOS_ERRORS.ambiguous };
   }
   if (treeResolution.kind === 'incomplete') {
-    const options = (treeResolution.candidates || []).join(', ');
     return { valid: false, reason: 'incomplete', error: IOS_ERRORS.incomplete };
   }
 
@@ -2665,20 +2660,6 @@ export function validateCommand(
 
 // Mode hatası mesajı
 function getModeError(input: string, currentMode: CommandMode): string {
-  const modeNames: Record<CommandMode, string> = {
-    user: 'User EXEC',
-    privileged: 'Privileged EXEC',
-    config: 'Global Configuration',
-    interface: 'Interface Configuration',
-    'config-if-range': 'Interface Range Configuration',
-    line: 'Line Configuration',
-    vlan: 'VLAN Configuration',
-    'router-config': 'Router Configuration',
-    'dhcp-config': 'DHCP Pool Configuration',
-    'ssid-config': 'SSID Configuration',
-    'dot11-config': 'Dot11 Radio Configuration',
-  };
-
   const indicatorPos = calculateCaretPosition(input, 0);
   const cleanedInput = input.replace(/\s+$/g, '');
   const indicator = ' '.repeat(indicatorPos) + '^';

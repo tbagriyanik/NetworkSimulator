@@ -4,7 +4,7 @@
  */
 
 import type { Achievement, StudentProgress } from '@/types/ui-ux';
-import { XP_THRESHOLDS, XP_REWARDS, ACHIEVEMENT_CATEGORIES } from '@/constants/ui-ux';
+import { XP_THRESHOLDS, XP_REWARDS } from '@/constants/ui-ux';
 
 const STORAGE_KEY = 'netsim_student_progress';
 
@@ -267,3 +267,4 @@ export function updateStreakIfNeeded(progress: StudentProgress): StudentProgress
 
     return progress;
 }
+

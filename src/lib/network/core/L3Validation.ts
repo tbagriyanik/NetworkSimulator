@@ -3,7 +3,7 @@
  * Implements proper L3 switch behavior 
  */
 
-import { isLayer3Switch, isLayer2Switch, isRouterModel } from '../switchModels';
+import { isLayer3Switch, isLayer2Switch } from '../switchModels';
 
 /**
  * Validates that a device supports routed ports (no switchport)

@@ -7,12 +7,7 @@ import { canAssignIPToPhysicalPort, isLayer3Switch } from '../switchModels';
 import { encryptMd5Password, encryptType7Password } from '../crypto';
 import { calculatePVST } from './showCommands';
 import { getDeviceCapabilities } from '../capabilities';
-import {
-  validateIpRoutingSupport,
-  validateIpRoutingEnabled,
-  getIpAddressPurpose,
-  validateL3SwitchPrerequisites
-} from './L3Validation';
+import { validateIpRoutingSupport } from './L3Validation';
 
 // Global config (hostname, vlan, vtp, spanning-tree, security, ip domain-name, etc.)
 
@@ -133,7 +128,7 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
 /**
  * Hostname - Set device hostname
  */
-function cmdHostname(state: any, input: string, ctx: any): any {
+function cmdHostname(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -152,7 +147,7 @@ function cmdHostname(state: any, input: string, ctx: any): any {
 /**
  * IP Routing - Enable IP routing
  */
-function cmdIpRouting(state: any, input: string, ctx: any): any {
+function cmdIpRouting(state: any, _input: string, ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -235,7 +230,7 @@ function cmdIpRoute(state: any, input: string, ctx: any): any {
 /**
  * no ip host <name>
  */
-function cmdNoIpHost(state: any, input: string, ctx: any): any {
+function cmdNoIpHost(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
   const match = input.match(/^no\s+ip\s+host\s+(\S+)(?:\s+[0-9.]+)?$/i);
   if (!match) return { success: false, error: '% Invalid no ip host command' };
@@ -253,7 +248,7 @@ function cmdNoIpHost(state: any, input: string, ctx: any): any {
 /**
  * no ipv6 dhcp pool <name>
  */
-function cmdNoIpv6DhcpPool(state: any, input: string, ctx: any): any {
+function cmdNoIpv6DhcpPool(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
   const match = input.match(/^no\s+ipv6\s+dhcp\s+pool\s+(\S+)$/i);
   if (!match) return { success: false, error: '% Invalid no ipv6 dhcp pool command' };
@@ -270,7 +265,7 @@ function cmdNoIpv6DhcpPool(state: any, input: string, ctx: any): any {
 /**
  * Router EIGRP - Enable EIGRP routing
  */
-function cmdRouterEigrp(state: any, input: string, ctx: any): any {
+function cmdRouterEigrp(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -304,7 +299,7 @@ function cmdRouterEigrp(state: any, input: string, ctx: any): any {
 /**
  * No Router EIGRP
  */
-function cmdNoRouterEigrp(state: any, input: string, ctx: any): any {
+function cmdNoRouterEigrp(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -326,7 +321,7 @@ function cmdNoRouterEigrp(state: any, input: string, ctx: any): any {
 /**
  * Router BGP - Enable BGP routing
  */
-function cmdRouterBgp(state: any, input: string, ctx: any): any {
+function cmdRouterBgp(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -360,7 +355,7 @@ function cmdRouterBgp(state: any, input: string, ctx: any): any {
 /**
  * No Router BGP
  */
-function cmdNoRouterBgp(state: any, input: string, ctx: any): any {
+function cmdNoRouterBgp(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -427,7 +422,7 @@ function cmdNoIpRoute(state: any, input: string, ctx: any): any {
 /**
  * IP SSH Time-Out
  */
-function cmdIpSshTimeOut(state: any, input: string, ctx: any): any {
+function cmdIpSshTimeOut(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -446,7 +441,7 @@ function cmdIpSshTimeOut(state: any, input: string, ctx: any): any {
 /**
  * IP DHCP Snooping - Enable DHCP snooping
  */
-function cmdIpDhcpSnooping(state: any, input: string, ctx: any): any {
+function cmdIpDhcpSnooping(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -460,7 +455,7 @@ function cmdIpDhcpSnooping(state: any, input: string, ctx: any): any {
 /**
  * MLS QoS - Enable MLS QoS
  */
-function cmdMlsQos(state: any, input: string, ctx: any): any {
+function cmdMlsQos(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -474,7 +469,7 @@ function cmdMlsQos(state: any, input: string, ctx: any): any {
 /**
  * Username - Create username
  */
-function cmdUsername(state: any, input: string, ctx: any): any {
+function cmdUsername(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -505,85 +500,6 @@ function cmdUsername(state: any, input: string, ctx: any): any {
       }
     }
   };
-}
-
-/**
- * Normalize interface name to the short key used in state.ports
- * e.g. "FastEthernet 0/1" -> "fa0/1"
- *      "GigabitEthernet0/0" -> "gi0/0"
- *      "fastethernet0/1" -> "fa0/1"
- */
-function normalizeInterfaceName(raw: string): string {
-  const s = raw.trim().toLowerCase().replace(/\s+/g, '');
-  if (s.startsWith('gigabitethernet')) return 'gi' + s.slice('gigabitethernet'.length);
-  if (s.startsWith('fastethernet')) return 'fa' + s.slice('fastethernet'.length);
-  if (s.startsWith('ethernet')) return 'e' + s.slice('ethernet'.length);
-  if (s.startsWith('port-channel')) return 'po' + s.slice('port-channel'.length);
-  // already short (gi0/0, fa0/1, wlan0, vlan1 …)
-  return s;
-}
-
-/**
- * Interface - Enter interface configuration
- * Note: Physical interfaces are handled by interfaceCommands.ts to validate port existence
- * Only VLAN interface handling is here
- */
-function cmdInterface(state: any, input: string, ctx: any): any {
-  if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
-  }
-
-  const match = input.match(/^interface\s+(.+)$/i);
-  if (!match) {
-    return { success: false, error: '% Invalid interface command' };
-  }
-
-  const iface = match[1].trim().toLowerCase();
-
-  // Only handle VLAN interfaces here - physical interfaces handled by interfaceCommands.ts
-  if (iface.startsWith('vlan')) {
-    const vlanMatch = iface.match(/^vlan\s+(\d+)$/i);
-    if (!vlanMatch) {
-      return { success: false, error: '% Invalid VLAN interface' };
-    }
-    const vlanId = vlanMatch[1];
-    const vlanIdNum = parseInt(vlanId, 10);
-    const vlanPortId = `vlan${vlanIdNum}`;
-    const newVlans = { ...state.vlans };
-    const newPorts = { ...state.ports };
-    if (!newVlans[vlanId]) {
-      newVlans[vlanId] = {
-        id: vlanIdNum,
-        name: `VLAN${vlanId}`,
-        status: 'active',
-        ports: []
-      };
-    }
-    if (!newPorts[vlanPortId]) {
-      newPorts[vlanPortId] = {
-        id: vlanPortId,
-        name: `Vlan${vlanIdNum}`,
-        type: 'vlan',
-        vlan: vlanIdNum,
-        status: 'up',
-        shutdown: false,
-        mode: 'routed'
-      };
-    }
-    return {
-      success: true,
-      newState: {
-        vlans: newVlans,
-        ports: newPorts,
-        currentMode: 'interface',
-        currentInterface: vlanPortId
-      }
-    };
-  }
-
-  // Non-VLAN interfaces are handled by interfaceCommands.ts
-  // This should not be reached since 'interface' is in interfaceHandlers
-  return { success: false, error: '% Interface command not found' };
 }
 
 /**
@@ -681,7 +597,7 @@ function cmdNoVlan(state: any, input: string, ctx: any): any {
 /**
  * VLAN Name
  */
-function cmdVlanName(state: any, input: string, ctx: any): any {
+function cmdVlanName(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'vlan' || state.currentVlan == null) {
     return { success: false, error: iosModeError() };
   }
@@ -718,7 +634,7 @@ function cmdVlanName(state: any, input: string, ctx: any): any {
 /**
  * VLAN State
  */
-function cmdVlanState(state: any, input: string, ctx: any): any {
+function cmdVlanState(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'vlan' || state.currentVlan == null) {
     return { success: false, error: iosModeError() };
   }
@@ -755,7 +671,7 @@ function cmdVlanState(state: any, input: string, ctx: any): any {
 /**
  * VTP Mode
  */
-function cmdVtpMode(state: any, input: string, ctx: any): any {
+function cmdVtpMode(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -774,7 +690,7 @@ function cmdVtpMode(state: any, input: string, ctx: any): any {
 /**
  * VTP Domain
  */
-function cmdVtpDomain(state: any, input: string, ctx: any): any {
+function cmdVtpDomain(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -793,7 +709,7 @@ function cmdVtpDomain(state: any, input: string, ctx: any): any {
 /**
  * Spanning-Tree Mode
  */
-function cmdSpanningTreeMode(state: any, input: string, ctx: any): any {
+function cmdSpanningTreeMode(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -817,7 +733,7 @@ function cmdSpanningTreeMode(state: any, input: string, ctx: any): any {
 /**
  * Service Password-Encryption
  */
-function cmdServicePasswordEncryption(state: any, input: string, ctx: any): any {
+function cmdServicePasswordEncryption(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -836,7 +752,7 @@ function cmdServicePasswordEncryption(state: any, input: string, ctx: any): any 
 /**
  * No Service Password-Encryption
  */
-function cmdNoServicePasswordEncryption(state: any, input: string, ctx: any): any {
+function cmdNoServicePasswordEncryption(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -855,7 +771,7 @@ function cmdNoServicePasswordEncryption(state: any, input: string, ctx: any): an
 /**
  * Enable Secret
  */
-function cmdEnableSecret(state: any, input: string, ctx: any): any {
+function cmdEnableSecret(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -883,7 +799,7 @@ function cmdEnableSecret(state: any, input: string, ctx: any): any {
 /**
  * Enable Password
  */
-function cmdEnablePassword(state: any, input: string, ctx: any): any {
+function cmdEnablePassword(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -913,7 +829,7 @@ function cmdEnablePassword(state: any, input: string, ctx: any): any {
 /**
  * No Enable Secret
  */
-function cmdNoEnableSecret(state: any, input: string, ctx: any): any {
+function cmdNoEnableSecret(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -929,7 +845,7 @@ function cmdNoEnableSecret(state: any, input: string, ctx: any): any {
 /**
  * No Enable Password
  */
-function cmdNoEnablePassword(state: any, input: string, ctx: any): any {
+function cmdNoEnablePassword(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -945,7 +861,7 @@ function cmdNoEnablePassword(state: any, input: string, ctx: any): any {
 /**
  * Banner MOTD
  */
-function cmdBannerMotd(state: any, input: string, ctx: any): any {
+function cmdBannerMotd(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -964,7 +880,7 @@ function cmdBannerMotd(state: any, input: string, ctx: any): any {
 /**
  * No Banner MOTD
  */
-function cmdNoBannerMotd(state: any, input: string, ctx: any): any {
+function cmdNoBannerMotd(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -978,7 +894,7 @@ function cmdNoBannerMotd(state: any, input: string, ctx: any): any {
 /**
  * Banner Login
  */
-function cmdBannerLogin(state: any, input: string, ctx: any): any {
+function cmdBannerLogin(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -997,7 +913,7 @@ function cmdBannerLogin(state: any, input: string, ctx: any): any {
 /**
  * No Banner Login
  */
-function cmdNoBannerLogin(state: any, input: string, ctx: any): any {
+function cmdNoBannerLogin(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1011,7 +927,7 @@ function cmdNoBannerLogin(state: any, input: string, ctx: any): any {
 /**
  * Banner Exec
  */
-function cmdBannerExec(state: any, input: string, ctx: any): any {
+function cmdBannerExec(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1030,7 +946,7 @@ function cmdBannerExec(state: any, input: string, ctx: any): any {
 /**
  * No Banner Exec
  */
-function cmdNoBannerExec(state: any, input: string, ctx: any): any {
+function cmdNoBannerExec(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1044,7 +960,7 @@ function cmdNoBannerExec(state: any, input: string, ctx: any): any {
 /**
  * IP Default-Gateway
  */
-function cmdIpDefaultGateway(state: any, input: string, ctx: any): any {
+function cmdIpDefaultGateway(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1063,7 +979,7 @@ function cmdIpDefaultGateway(state: any, input: string, ctx: any): any {
 /**
  * No IP Default-Gateway
  */
-function cmdNoIpDefaultGateway(state: any, input: string, ctx: any): any {
+function cmdNoIpDefaultGateway(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1077,7 +993,7 @@ function cmdNoIpDefaultGateway(state: any, input: string, ctx: any): any {
 /**
  * IP Domain-Name
  */
-function cmdIpDomainName(state: any, input: string, ctx: any): any {
+function cmdIpDomainName(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1096,7 +1012,7 @@ function cmdIpDomainName(state: any, input: string, ctx: any): any {
 /**
  * CDP Run
  */
-function cmdCdpRun(state: any, input: string, ctx: any): any {
+function cmdCdpRun(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1110,7 +1026,7 @@ function cmdCdpRun(state: any, input: string, ctx: any): any {
 /**
  * No CDP Run
  */
-function cmdNoCdpRun(state: any, input: string, ctx: any): any {
+function cmdNoCdpRun(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1124,7 +1040,7 @@ function cmdNoCdpRun(state: any, input: string, ctx: any): any {
 /**
  * Router RIP - Enable RIP routing
  */
-function cmdRouterRip(state: any, input: string, ctx: any): any {
+function cmdRouterRip(state: any, _input: string, ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1155,7 +1071,7 @@ function cmdRouterRip(state: any, input: string, ctx: any): any {
 /**
  * Router OSPF - Enable OSPF routing
  */
-function cmdRouterOspf(state: any, input: string, ctx: any): any {
+function cmdRouterOspf(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1188,7 +1104,7 @@ function cmdRouterOspf(state: any, input: string, ctx: any): any {
 /**
  * No Router RIP - Disable RIP routing
  */
-function cmdNoRouterRip(state: any, input: string, ctx: any): any {
+function cmdNoRouterRip(state: any, _input: string, ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1209,7 +1125,7 @@ function cmdNoRouterRip(state: any, input: string, ctx: any): any {
 /**
  * No Router OSPF - Disable OSPF routing
  */
-function cmdNoRouterOspf(state: any, input: string, ctx: any): any {
+function cmdNoRouterOspf(state: any, _input: string, ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1230,7 +1146,7 @@ function cmdNoRouterOspf(state: any, input: string, ctx: any): any {
 /**
  * IP HTTP Server - Enable HTTP server
  */
-function cmdIpHttpServer(state: any, input: string, ctx: any): any {
+function cmdIpHttpServer(state: any, _input: string, ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1257,7 +1173,7 @@ function cmdIpHttpServer(state: any, input: string, ctx: any): any {
 /**
  * No IP HTTP Server - Disable HTTP server
  */
-function cmdNoIpHttpServer(state: any, input: string, ctx: any): any {
+function cmdNoIpHttpServer(state: any, _input: string, ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1284,7 +1200,7 @@ function cmdNoIpHttpServer(state: any, input: string, ctx: any): any {
 /**
  * No IP Domain Lookup - Disable domain lookup
  */
-function cmdNoIpDomainLookup(state: any, input: string, ctx: any): any {
+function cmdNoIpDomainLookup(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1298,7 +1214,7 @@ function cmdNoIpDomainLookup(state: any, input: string, ctx: any): any {
 /**
  * No IP Routing - Disable IP routing
  */
-function cmdNoIpRouting(state: any, input: string, ctx: any): any {
+function cmdNoIpRouting(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1312,7 +1228,7 @@ function cmdNoIpRouting(state: any, input: string, ctx: any): any {
 /**
  * No IP SSH Time-Out
  */
-function cmdNoIpSshTimeOut(state: any, input: string, ctx: any): any {
+function cmdNoIpSshTimeOut(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1379,7 +1295,7 @@ function cmdNoSpanningTree(state: any, input: string, ctx: any): any {
 /**
  * No MLS QoS - Disable MLS QoS
  */
-function cmdNoMlsQos(state: any, input: string, ctx: any): any {
+function cmdNoMlsQos(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1393,7 +1309,7 @@ function cmdNoMlsQos(state: any, input: string, ctx: any): any {
 /**
  * No IP DHCP Snooping - Disable DHCP snooping
  */
-function cmdNoIpDhcpSnooping(state: any, input: string, ctx: any): any {
+function cmdNoIpDhcpSnooping(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1407,7 +1323,7 @@ function cmdNoIpDhcpSnooping(state: any, input: string, ctx: any): any {
 /**
  * No Username - Remove username
  */
-function cmdNoUsername(state: any, input: string, ctx: any): any {
+function cmdNoUsername(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1435,7 +1351,7 @@ function cmdNoUsername(state: any, input: string, ctx: any): any {
 /**
  * No Interface - Delete interface config (for VLAN interfaces)
  */
-function cmdNoInterface(state: any, input: string, ctx: any): any {
+function cmdNoInterface(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1468,7 +1384,7 @@ function cmdNoInterface(state: any, input: string, ctx: any): any {
 /**
  * IP SSH Version - Set SSH version
  */
-function cmdIpSshVersion(state: any, input: string, ctx: any): any {
+function cmdIpSshVersion(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1489,7 +1405,7 @@ function cmdIpSshVersion(state: any, input: string, ctx: any): any {
 /**
  * IP DHCP Snooping VLAN
  */
-function cmdIpDhcpSnoopingVlan(state: any, input: string, ctx: any): any {
+function cmdIpDhcpSnoopingVlan(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
   const match = input.match(/^ip\s+dhcp\s+snooping\s+vlan\s+(.+)$/i);
   if (!match) return { success: false, error: '% Invalid command' };
@@ -1500,7 +1416,7 @@ function cmdIpDhcpSnoopingVlan(state: any, input: string, ctx: any): any {
 /**
  * IP ARP Inspection VLAN
  */
-function cmdIpArpInspection(state: any, input: string, ctx: any): any {
+function cmdIpArpInspection(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
   return { success: true, output: 'ARP inspection configured', newState: { arpInspectionEnabled: true } };
 }
@@ -1600,7 +1516,7 @@ function cmdSpanningTreeVlan(state: any, input: string, ctx: any): any {
 /**
  * Spanning-Tree Portfast (global)
  */
-function cmdSpanningTreePortfastDefault(state: any, input: string, ctx: any): any {
+function cmdSpanningTreePortfastDefault(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
   return { success: true, output: 'PortFast will be configured in all non-trunking ports', newState: { spanningTreePortfastDefault: true } };
 }
@@ -1608,7 +1524,7 @@ function cmdSpanningTreePortfastDefault(state: any, input: string, ctx: any): an
 /**
  * Errdisable Recovery
  */
-function cmdErrdisableRecovery(state: any, input: string, ctx: any): any {
+function cmdErrdisableRecovery(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
   return { success: true, output: 'Errdisable recovery configured' };
 }
@@ -1616,7 +1532,7 @@ function cmdErrdisableRecovery(state: any, input: string, ctx: any): any {
 /**
  * VTP Password
  */
-function cmdVtpPassword(state: any, input: string, ctx: any): any {
+function cmdVtpPassword(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
   const match = input.match(/^vtp\s+password\s+(\S+)$/i);
   if (!match) return { success: false, error: '% Invalid vtp password command' };
@@ -1626,7 +1542,7 @@ function cmdVtpPassword(state: any, input: string, ctx: any): any {
 /**
  * NTP Server
  */
-function cmdNtpServer(state: any, input: string, ctx: any): any {
+function cmdNtpServer(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
   const match = input.match(/^ntp\s+server\s+(\S+)$/i);
   if (!match) return { success: false, error: '% Invalid ntp server command' };
@@ -1667,7 +1583,7 @@ function cmdNtpServer(state: any, input: string, ctx: any): any {
 /**
  * Clock Timezone
  */
-function cmdClockTimezone(state: any, input: string, ctx: any): any {
+function cmdClockTimezone(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
   const match = input.match(/^clock\s+timezone\s+(\S+)\s+([+-]?\d+)(?:\s+(\d+))?$/i);
   if (!match) return { success: false, error: '% Invalid clock timezone command' };
@@ -1677,7 +1593,7 @@ function cmdClockTimezone(state: any, input: string, ctx: any): any {
 /**
  * IP Name-Server
  */
-function cmdIpNameServer(state: any, input: string, ctx: any): any {
+function cmdIpNameServer(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
   const match = input.match(/^ip\s+name-server\s+(\S+)$/i);
   if (!match) return { success: false, error: '% Invalid ip name-server command' };
@@ -1687,7 +1603,7 @@ function cmdIpNameServer(state: any, input: string, ctx: any): any {
 /**
  * IP Domain Lookup (re-enable)
  */
-function cmdIpDomainLookup(state: any, input: string, ctx: any): any {
+function cmdIpDomainLookup(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
   return { success: true, newState: { domainLookup: true } };
 }
@@ -1695,7 +1611,7 @@ function cmdIpDomainLookup(state: any, input: string, ctx: any): any {
 /**
  * System MTU
  */
-function cmdSystemMtu(state: any, input: string, ctx: any): any {
+function cmdSystemMtu(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
   const match = input.match(/^system\s+mtu\s+(\d+)$/i);
   if (!match) return { success: false, error: '% Invalid system mtu command' };
@@ -1705,7 +1621,7 @@ function cmdSystemMtu(state: any, input: string, ctx: any): any {
 /**
  * SDM Prefer
  */
-function cmdSdmPrefer(state: any, input: string, ctx: any): any {
+function cmdSdmPrefer(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
 
   const match = input.match(/^sdm\s+prefer\s+(\S+)(?:\s+(\S+))?/i);
@@ -1735,20 +1651,16 @@ function cmdSdmPrefer(state: any, input: string, ctx: any): any {
   }
 
   let output = '';
-  let requiresReload = false;
 
   if (template === 'lanbase-routing' || template === 'routing') {
     output = `Changes to the SDM preferences will take effect after reload.\n`;
     output += `This template will configure: 16384 IPv4 ACL entries, 2048 QoS labels, 16384 IPv4 Multicast entries\n`;
-    requiresReload = true;
   } else if (template === 'lanbase') {
     output = `Changes to the SDM preferences will take effect after reload.\n`;
     output += `This template will configure: 8192 IPv4 ACL entries, 2048 QoS labels, 2048 IPv4 Multicast entries\n`;
-    requiresReload = true;
   } else if (template === 'desktop') {
     output = `Changes to the SDM preferences will take effect after reload.\n`;
     output += `This template will configure: 4096 IPv4 ACL entries, 512 QoS labels, 256 IPv4 Multicast entries\n`;
-    requiresReload = true;
   } else {
     output = `Current SDM template is: ${template}\n`;
   }
@@ -1769,7 +1681,7 @@ function cmdSdmPrefer(state: any, input: string, ctx: any): any {
 /**
  * IPv6 Unicast-Routing
  */
-function cmdIpv6UnicastRouting(state: any, input: string, ctx: any): any {
+function cmdIpv6UnicastRouting(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
   return { success: true, newState: { ipv6Enabled: true } };
 }
@@ -1777,7 +1689,7 @@ function cmdIpv6UnicastRouting(state: any, input: string, ctx: any): any {
 /**
  * No IPv6 Unicast-Routing
  */
-function cmdNoIpv6UnicastRouting(state: any, input: string, ctx: any): any {
+function cmdNoIpv6UnicastRouting(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
   return { success: true, newState: { ipv6Enabled: false } };
 }
@@ -1785,7 +1697,7 @@ function cmdNoIpv6UnicastRouting(state: any, input: string, ctx: any): any {
 /**
  * IPv6 Route - Add static IPv6 route
  */
-function cmdIpv6Route(state: any, input: string, ctx: any): any {
+function cmdIpv6Route(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1823,7 +1735,7 @@ function cmdIpv6Route(state: any, input: string, ctx: any): any {
 /**
  * No IPv6 Route - Remove static IPv6 route
  */
-function cmdNoIpv6Route(state: any, input: string, ctx: any): any {
+function cmdNoIpv6Route(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1855,7 +1767,7 @@ function cmdNoIpv6Route(state: any, input: string, ctx: any): any {
 /**
  * IPv6 Router RIP
  */
-function cmdIpv6RouterRip(state: any, input: string, ctx: any): any {
+function cmdIpv6RouterRip(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1877,7 +1789,7 @@ function cmdIpv6RouterRip(state: any, input: string, ctx: any): any {
 /**
  * IPv6 Router OSPF
  */
-function cmdIpv6RouterOspf(state: any, input: string, ctx: any): any {
+function cmdIpv6RouterOspf(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1900,7 +1812,7 @@ function cmdIpv6RouterOspf(state: any, input: string, ctx: any): any {
 /**
  * No IPv6 Router RIP
  */
-function cmdNoIpv6RouterRip(state: any, input: string, ctx: any): any {
+function cmdNoIpv6RouterRip(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1917,7 +1829,7 @@ function cmdNoIpv6RouterRip(state: any, input: string, ctx: any): any {
 /**
  * No IPv6 Router OSPF
  */
-function cmdNoIpv6RouterOspf(state: any, input: string, ctx: any): any {
+function cmdNoIpv6RouterOspf(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1934,7 +1846,7 @@ function cmdNoIpv6RouterOspf(state: any, input: string, ctx: any): any {
 /**
  * IP SSH Authentication-Retries
  */
-function cmdIpSshAuthRetries(state: any, input: string, ctx: any): any {
+function cmdIpSshAuthRetries(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
   const match = input.match(/^ip\s+ssh\s+authentication-retries\s+(\d+)$/i);
   if (!match) return { success: false, error: '% Invalid command' };
@@ -1946,7 +1858,7 @@ function cmdIpSshAuthRetries(state: any, input: string, ctx: any): any {
 /**
  * Crypto Key Generate RSA
  */
-function cmdCryptoKeyGenerateRsa(state: any, input: string, ctx: any): any {
+function cmdCryptoKeyGenerateRsa(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
   return { success: true, output: 'The name for the keys will be: ' + (state.hostname || 'Switch') + '.' + (state.domainName || 'local') + '\nChoose the size of the key modulus in the range of 360 to 4096 for your\nGeneral Purpose Keys. Choosing a key modulus greater than 512 may take\na few minutes.\n\nHow many bits in the modulus [512]: \n% Generating 1024 bit RSA keys, keys will be non-exportable...\n[OK] (elapsed time was 1 seconds)\n' };
 }
@@ -1954,7 +1866,7 @@ function cmdCryptoKeyGenerateRsa(state: any, input: string, ctx: any): any {
 /**
  * ip dhcp pool <name> - Enter DHCP pool configuration mode
  */
-function cmdIpDhcpPool(state: any, input: string, ctx: any): any {
+function cmdIpDhcpPool(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -1999,7 +1911,7 @@ function cmdIpDhcpPool(state: any, input: string, ctx: any): any {
 /**
  * no ip dhcp pool <name> - Remove a DHCP pool
  */
-function cmdNoIpDhcpPool(state: any, input: string, ctx: any): any {
+function cmdNoIpDhcpPool(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -2026,7 +1938,7 @@ function cmdNoIpDhcpPool(state: any, input: string, ctx: any): any {
 /**
  * ipv6 dhcp pool <name> - Enter IPv6 DHCP pool configuration mode
  */
-function cmdIpv6DhcpPool(state: any, input: string, ctx: any): any {
+function cmdIpv6DhcpPool(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -2054,7 +1966,7 @@ function cmdIpv6DhcpPool(state: any, input: string, ctx: any): any {
 /**
  * ip dhcp excluded-address <low> [<high>]
  */
-function cmdIpDhcpExcludedAddress(state: any, input: string, ctx: any): any {
+function cmdIpDhcpExcludedAddress(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -2064,7 +1976,7 @@ function cmdIpDhcpExcludedAddress(state: any, input: string, ctx: any): any {
 /**
  * no ip dhcp excluded-address <low> [<high>]
  */
-function cmdNoIpDhcpExcludedAddress(state: any, input: string, ctx: any): any {
+function cmdNoIpDhcpExcludedAddress(state: any, _input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -2074,7 +1986,7 @@ function cmdNoIpDhcpExcludedAddress(state: any, input: string, ctx: any): any {
 /**
  * IP Access-List (Named)
  */
-function cmdIpAccessList(state: any, input: string, ctx: any): any {
+function cmdIpAccessList(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: '% Invalid command' };
 
   const match = input.match(/^ip\s+access-list\s+(standard|extended)\s+(\S+)$/i);
@@ -2087,7 +1999,7 @@ function cmdIpAccessList(state: any, input: string, ctx: any): any {
 /**
  * No IP Access-List
  */
-function cmdNoIpAccessList(state: any, input: string, ctx: any): any {
+function cmdNoIpAccessList(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: '% Invalid command' };
 
   const match = input.match(/^no\s+ip\s+access-list\s+(standard|extended)\s+(\S+)$/i);
@@ -2103,7 +2015,7 @@ function cmdNoIpAccessList(state: any, input: string, ctx: any): any {
 /**
  * IP Host - DNS mapping
  */
-function cmdIpHost(state: any, input: string, ctx: any): any {
+function cmdIpHost(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
 
   const match = input.match(/^ip\s+host\s+(\S+)\s+(\d{1,3}(?:\.\d{1,3}){3})$/i);
@@ -2138,7 +2050,7 @@ function cmdIpHost(state: any, input: string, ctx: any): any {
 /**
  * Alias Exec - Define a command alias in exec mode
  */
-function cmdAliasExec(state: any, input: string, ctx: any): any {
+function cmdAliasExec(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -2173,7 +2085,7 @@ function cmdAliasExec(state: any, input: string, ctx: any): any {
 /**
  * No Alias Exec - Remove a command alias
  */
-function cmdNoAliasExec(state: any, input: string, ctx: any): any {
+function cmdNoAliasExec(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
@@ -2213,7 +2125,7 @@ function cmdNoAliasExec(state: any, input: string, ctx: any): any {
 /**
  * iot sensor <type>
  */
-function cmdIotSensor(state: any, input: string, ctx: any): any {
+function cmdIotSensor(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
   const match = input.match(/^iot\s+sensor\s+(.+)$/i);
   if (!match) return { success: false, error: '% Incomplete command' };
@@ -2230,7 +2142,7 @@ function cmdIotSensor(state: any, input: string, ctx: any): any {
 /**
  * iot name <name>
  */
-function cmdIotName(state: any, input: string, ctx: any): any {
+function cmdIotName(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
   const match = input.match(/^iot\s+name\s+(.+)$/i);
   if (!match) return { success: false, error: '% Incomplete command' };
@@ -2247,7 +2159,7 @@ function cmdIotName(state: any, input: string, ctx: any): any {
 /**
  * ip nat pool <name> <start> <end> netmask <mask>
  */
-function cmdIpNatPool(state: any, input: string, ctx: any): any {
+function cmdIpNatPool(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
   const match = input.match(/^ip\s+nat\s+pool\s+(\S+)\s+([0-9.]+)\s+([0-9.]+)\s+netmask\s+([0-9.]+)$/i);
   if (!match) return { success: false, error: '% Invalid NAT pool command' };
@@ -2262,7 +2174,7 @@ function cmdIpNatPool(state: any, input: string, ctx: any): any {
 /**
  * ip nat inside source static <local> <global>
  */
-function cmdIpNatInsideSourceStatic(state: any, input: string, ctx: any): any {
+function cmdIpNatInsideSourceStatic(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
   const match = input.match(/^ip\s+nat\s+inside\s+source\s+static\s+([0-9.]+)\s+([0-9.]+)$/i);
   if (!match) return { success: false, error: '% Invalid static NAT command' };
@@ -2277,7 +2189,7 @@ function cmdIpNatInsideSourceStatic(state: any, input: string, ctx: any): any {
 /**
  * ip nat inside source list <acl> {pool <name> | interface <name>} overload
  */
-function cmdIpNatInsideSourceList(state: any, input: string, ctx: any): any {
+function cmdIpNatInsideSourceList(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
 
   const interfaceMatch = input.match(/^ip\s+nat\s+inside\s+source\s+list\s+(\d+)\s+interface\s+(\S+)\s+overload$/i);
@@ -2303,7 +2215,7 @@ function cmdIpNatInsideSourceList(state: any, input: string, ctx: any): any {
 /**
  * iot wifi <ssid>
  */
-function cmdIotWifi(state: any, input: string, ctx: any): any {
+function cmdIotWifi(state: any, input: string, _ctx: any): any {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
   const match = input.match(/^iot\s+wifi\s+(.+)$/i);
   if (!match) return { success: false, error: '% Incomplete command' };
@@ -2319,7 +2231,7 @@ function cmdIotWifi(state: any, input: string, ctx: any): any {
 
 // Register new global config handlers
 
-function cmdStubSuccess(state: any, input: string, ctx: any): any {
+function cmdStubSuccess(_state: any, input: string, _ctx: any): any {
   return { success: true, output: `% ${input.trim()} configured` };
 }
 

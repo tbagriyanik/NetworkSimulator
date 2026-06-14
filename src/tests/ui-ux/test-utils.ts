@@ -9,7 +9,6 @@ import type {
     NetworkState,
     Achievement,
     StudentProgress,
-    LearningMode,
 } from '@/types/ui-ux';
 
 /**

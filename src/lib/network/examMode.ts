@@ -1610,7 +1610,7 @@ export function generateExamFromProject(projectData: any, language: 'tr' | 'en')
     const rawTotal = tasks.reduce((sum, t) => sum + t.weight, 0);
     if (rawTotal > 0) {
       let assigned = 0;
-      tasks.forEach((t, i) => {
+      tasks.forEach((t, _i) => {
         const scaled = Math.round((t.weight / rawTotal) * 100);
         t.weight = scaled;
         assigned += scaled;
@@ -1645,3 +1645,4 @@ export function generateExamFromProject(projectData: any, language: 'tr' | 'en')
     data: projectData
   };
 }
+

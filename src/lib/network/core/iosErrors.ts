@@ -8,7 +8,7 @@ export const IOS_ERRORS = {
   marker: '^'
 } as const;
 
-export const iosModeError = (input?: string, currentMode?: string, language: 'tr' | 'en' = 'tr'): string => {
+export const iosModeError = (_input?: string, currentMode?: string, language: 'tr' | 'en' = 'tr'): string => {
   const modeNames: Record<string, string> = {
     user: 'User EXEC',
     privileged: 'Privileged EXEC',
@@ -30,3 +30,4 @@ export const iosModeError = (input?: string, currentMode?: string, language: 'tr
   }
   return `% Command not available in ${modeName} mode.`;
 };
+

@@ -1,4 +1,4 @@
-import { createJSONStorage, StateStorage } from 'zustand/middleware';
+import { createJSONStorage } from 'zustand/middleware';
 
 const TAB_STORAGE_PREFIX = 'netsim-tab-';
 const TAB_ID_KEY = 'netsim-current-tab-id';
@@ -106,3 +106,4 @@ export function getActiveTabCount(): number {
   
   return Math.max(1, tabIds.size);
 }
+

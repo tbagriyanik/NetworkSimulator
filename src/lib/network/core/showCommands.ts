@@ -1,4 +1,4 @@
-import { IOS_ERRORS, iosModeError } from './iosErrors';
+import { IOS_ERRORS } from './iosErrors';
 import type { CommandHandler, CommandContext } from './commandTypes';
 import { ensureDeviceStatesMap } from '../networkUtils';
 import { isRouterModel } from '../switchModels';
@@ -192,16 +192,7 @@ function getSwitchDisplayProfile(state: SwitchState) {
   };
 }
 
-/**
- * Show - Display summary information
- */
-function cmdShow(
-  state: SwitchState,
-  input: string,
-  _ctx: CommandContext
-): any {
-  return { success: false, error: '% Incomplete command. Use "show ?" for available show commands' };
-}
+
 
 /**
  * Show Running Configuration
@@ -235,7 +226,7 @@ function cmdShowRunningConfig(
 function cmdShowRunningConfigInterface(
   state: SwitchState,
   input: string,
-  ctx: CommandContext
+  _ctx: CommandContext
 ): any {
   const match = input.match(/show\s+(?:running-config|run|running)\s+interface\s+(\S+)/i);
   const interfaceName = match?.[1];
@@ -255,7 +246,6 @@ function cmdShowRunningConfigInterface(
   const interfaceLines: string[] = [];
   let inInterface = false;
 
-  const searchName = `interface ${interfaceName}`;
   for (const line of lines) {
     if (line.toLowerCase().startsWith('interface ') && line.toLowerCase().includes(normalized)) {
       inInterface = true;
@@ -282,7 +272,7 @@ function cmdShowRunningConfigInterface(
  */
 function cmdShowStartupConfig(
   state: SwitchState,
-  input: string,
+  _input: string,
   _ctx: CommandContext
 ): any {
   const { systemImage } = getSwitchDisplayProfile(state);
@@ -491,7 +481,7 @@ function cmdShowIpOspfInterface(state: SwitchState, input: string, _ctx: Command
  */
 function cmdShowVersion(
   state: SwitchState,
-  input: string,
+  _input: string,
   _ctx: CommandContext
 ): any {
   const { switchModel, softwareImage, rom, bootldr, systemImage, processor, reportedFeCount, reportedGiCount } = getSwitchDisplayProfile(state);
@@ -543,7 +533,7 @@ function cmdShowVersion(
  */
 function cmdShowInterfaces(
   state: SwitchState,
-  input: string,
+  _input: string,
   _ctx: CommandContext
 ): any {
   let output = '';
@@ -555,7 +545,6 @@ function cmdShowInterfaces(
 
     // Admin and operational status
     const adminStatus = port.adminStatus || (port.shutdown ? 'down' : 'up');
-    const operStatus = port.operStatus || (port.shutdown ? 'down' : 'up');
     const lineProtocol = port.lineProtocol || (port.shutdown ? 'down' : 'up');
 
     output += `${portName} is ${adminStatus}, line protocol is ${lineProtocol}\n`;
@@ -763,7 +752,7 @@ function cmdShowInterface(
  */
 function cmdShowInterfaceTrunk(
   state: SwitchState,
-  input: string,
+  _input: string,
   ctx: CommandContext
 ): any {
   const connections = ctx.connections || [];
@@ -852,7 +841,7 @@ function cmdShowInterfaceTrunk(
 /**
  * Show Standby - Display HSRP status
  */
-function cmdShowStandby(state: SwitchState, input: string, _ctx: CommandContext): any {
+function cmdShowStandby(state: SwitchState, _input: string, _ctx: CommandContext): any {
   let output = '\n';
   let found = false;
 
@@ -886,7 +875,7 @@ function cmdShowStandby(state: SwitchState, input: string, _ctx: CommandContext)
 /**
  * Show IP NAT Translations
  */
-function cmdShowIpNatTranslations(state: SwitchState, input: string, _ctx: CommandContext): any {
+function cmdShowIpNatTranslations(state: SwitchState, _input: string, _ctx: CommandContext): any {
   let output = '\nPro Inside global      Inside local       Outside local      Outside global\n';
   const translations = state.natTranslations || [];
   const staticTranslations = state.natStaticTranslations || [];
@@ -913,7 +902,7 @@ function cmdShowIpNatTranslations(state: SwitchState, input: string, _ctx: Comma
 /**
  * Show IP NAT Statistics
  */
-function cmdShowIpNatStatistics(state: SwitchState, input: string, _ctx: CommandContext): any {
+function cmdShowIpNatStatistics(state: SwitchState, _input: string, _ctx: CommandContext): any {
   let output = '\nTotal active translations: ' + (state.natTranslations?.length || 0) + ' (0 static, 0 dynamic; 0 extended)\n';
   output += 'Peak translations: 0, occurred 00:00:00 ago\n';
   output += 'Outside interfaces:\n';
@@ -939,7 +928,7 @@ function cmdShowIpNatStatistics(state: SwitchState, input: string, _ctx: Command
 /**
  * Show Hosts - Display DNS host mapping
  */
-function cmdShowHosts(state: SwitchState, input: string, _ctx: CommandContext): any {
+function cmdShowHosts(state: SwitchState, _input: string, _ctx: CommandContext): any {
   let output = '\nDefault domain is not set\n';
   output += 'Name servers are unassigned\n\n';
   output += 'Host                      Address\n';
@@ -1027,7 +1016,7 @@ function cmdShowIpInterfaceBrief(
  */
 function cmdShowVlan(
   state: SwitchState,
-  input: string,
+  _input: string,
   _ctx: CommandContext
 ): any {
   let output = '\n\nVLAN Name                             Status    Ports\n';
@@ -1085,7 +1074,7 @@ function cmdShowVlan(
  */
 function cmdShowMacAddressTable(
   state: SwitchState,
-  input: string,
+  _input: string,
   ctx: CommandContext
 ): any {
   let output = '\nMac Address Table\n';
@@ -1196,7 +1185,7 @@ function formatMacAddressSimple(mac: string): string {
  */
 function cmdShowCdpNeighbors(
   state: SwitchState,
-  input: string,
+  _input: string,
   ctx: CommandContext
 ): any {
   let output = '\nCapability Codes: R - Router, T - Trans Bridge, B - Source Route Bridge\n';
@@ -1378,7 +1367,7 @@ function cmdShowIpRoute(
 /**
  * Show IP Protocols
  */
-function cmdShowIpProtocols(state: SwitchState, input: string, _ctx: CommandContext): any {
+function cmdShowIpProtocols(state: SwitchState, _input: string, _ctx: CommandContext): any {
   if (!state.routingProtocol) {
     return { success: true, output: '\n% No routing protocols configured\n' };
   }
@@ -1449,7 +1438,7 @@ function cmdShowIpProtocols(state: SwitchState, input: string, _ctx: CommandCont
 /**
  * Show IP OSPF Neighbor
  */
-function cmdShowIpOspfNeighbor(state: SwitchState, input: string, _ctx: CommandContext): any {
+function cmdShowIpOspfNeighbor(state: SwitchState, _input: string, _ctx: CommandContext): any {
   if (state.routingProtocol !== 'ospf') {
     return { success: true, output: '\n% OSPF is not enabled\n' };
   }
@@ -1477,7 +1466,7 @@ function cmdShowIpOspfNeighbor(state: SwitchState, input: string, _ctx: CommandC
 /**
  * Show IP OSPF
  */
-function cmdShowIpOspf(state: SwitchState, input: string, _ctx: CommandContext): any {
+function cmdShowIpOspf(state: SwitchState, _input: string, _ctx: CommandContext): any {
   if (state.routingProtocol !== 'ospf') {
     return { success: true, output: '\n% OSPF is not enabled\n' };
   }
@@ -1667,7 +1656,7 @@ function cmdShowClock(
  */
 function cmdShowFlash(
   state: SwitchState,
-  input: string,
+  _input: string,
   _ctx: CommandContext
 ): any {
   const { bootImage } = getSwitchDisplayProfile(state);
@@ -1716,7 +1705,7 @@ function cmdShowFlash(
  */
 function cmdShowBoot(
   state: SwitchState,
-  input: string,
+  _input: string,
   _ctx: CommandContext
 ): any {
   const { systemImage } = getSwitchDisplayProfile(state);
@@ -1898,49 +1887,6 @@ export function calculateSTPState(
     }
   });
 
-  // Now find the path to root bridge among directly connected switches
-  let rootPortId: string | null = null;
-  let lowestRootPortNum = Infinity;
-  const connectionsToRoot = connectedSwitches.filter(sw => sw.deviceId === rootBridgeId);
-
-  // Check if there are multiple paths to the root bridge
-  if (connectionsToRoot.length > 1) {
-    let bestPathCost = Infinity;
-    let bestNeighborPriority = Infinity;
-    let bestNeighborMac = '';
-    let bestNeighborPortNum = Infinity;
-    let bestPortId = '';
-
-    connectionsToRoot.forEach(conn => {
-      const port = state.ports[conn.portId];
-      const portCost = getSTPCost(port);
-      const connectedState = deviceStates.get?.(conn.deviceId);
-      const neighborPriority = connectedState?.spanningTreePriority || 32768;
-      const neighborMac = conn.macAddress;
-      const neighborPortNum = getPortNumber(conn.portId);
-
-      // Compare path cost first, then neighbor BID (priority + MAC), then neighbor port ID
-      if (portCost < bestPathCost ||
-        (portCost === bestPathCost && neighborPriority < bestNeighborPriority) ||
-        (portCost === bestPathCost && neighborPriority === bestNeighborPriority &&
-          neighborMac.localeCompare(bestNeighborMac) < 0) ||
-        (portCost === bestPathCost && neighborPriority === bestNeighborPriority &&
-          neighborMac === bestNeighborMac && neighborPortNum < bestNeighborPortNum)) {
-        bestPathCost = portCost;
-        bestNeighborPriority = neighborPriority;
-        bestNeighborMac = neighborMac;
-        bestNeighborPortNum = neighborPortNum;
-        bestPortId = conn.portId;
-      }
-    });
-
-    rootPortId = bestPortId;
-    lowestRootPortNum = getPortNumber(bestPortId);
-  } else if (connectionsToRoot.length === 1) {
-    rootPortId = connectionsToRoot[0].portId;
-    lowestRootPortNum = getPortNumber(rootPortId);
-  }
-
   const isRootBridge = rootBridgeId === sourceDeviceId;
 
   // Dijkstra's algorithm to find shortest path to root bridge
@@ -2063,11 +2009,8 @@ export function calculateSTPState(
           const neighborPathCost = neighborRootInfo?.pathCost ?? Infinity;
 
           // Get port costs
-          const myPortCost = getSTPCost(port);
           const neighborDevice = devices.find((d: any) => d.id === neighbor.deviceId);
           const neighborState = deviceStates.get?.(neighbor.deviceId);
-          const neighborPortObj = neighborState?.ports?.[neighbor.portId];
-          const neighborPortCost = getSTPCost(neighborPortObj);
 
           // Calculate root path cost if we use this port
           // My advertised cost = my path cost to root
@@ -2293,38 +2236,17 @@ function cmdShowSpanningTree(
 
   const myMac = state.macAddress || 'FFFF.FFFF.FFFF';
   let lowestMac = myMac;
-  let rootBridgeId = sourceDeviceId;
 
   connectedSwitches.forEach((sw) => {
     if (sw.macAddress.localeCompare(lowestMac) < 0) {
       lowestMac = sw.macAddress;
-      rootBridgeId = sw.deviceId;
     }
   });
-
-  const isRootBridge = rootBridgeId === sourceDeviceId;
-  let rootPortId: string | null = null;
-
-  if (!isRootBridge) {
-    const connectionsToRoot = connectedSwitches.filter(sw => sw.deviceId === rootBridgeId);
-    if (connectionsToRoot.length > 0) {
-      let minPortNum = Infinity;
-      connectionsToRoot.forEach(conn => {
-        const portNum = getPortNumber(conn.portId);
-        if (portNum < minPortNum) {
-          minPortNum = portNum;
-          rootPortId = conn.portId;
-        }
-      });
-    }
-  }
 
   // Get VLAN-based spanning tree configuration
   const spanningTreeVlans = state.spanningTreeVlans || {};
 
   vlans.forEach((vlanId: string) => {
-    const vlan = state.vlans?.[Number(vlanId)];
-    const _vlanName = vlan?.name || `VLAN${vlanId}`;
 
     // Get VLAN-based priority for this switch
     const myVlanPriority = (spanningTreeVlans[vlanId]?.priority ? parseInt(spanningTreeVlans[vlanId].priority) : state.spanningTreePriority) || 32768;
@@ -2684,7 +2606,7 @@ function cmdShowSpanningTreeInterface(
  */
 function cmdShowPortSecurity(
   state: SwitchState,
-  input: string,
+  _input: string,
   _ctx: CommandContext
 ): any {
   let output = '\nSecure Port  MaxSecureAddr  CurrentAddr  SecurityViolation  Security Action\n';
@@ -2852,7 +2774,7 @@ function cmdDoShow(
  */
 function cmdShowWireless(
   state: SwitchState,
-  input: string,
+  _input: string,
   ctx: CommandContext
 ): any {
   // Check if device is a switch - show wireless is not a switch command
@@ -2895,7 +2817,7 @@ function cmdShowWireless(
  */
 function cmdShowWlanSummary(
   state: SwitchState,
-  input: string,
+  _input: string,
   ctx: CommandContext
 ): any {
   // Check if device is a switch - show wlan summary is not a switch command
@@ -2928,7 +2850,7 @@ function cmdShowWlanSummary(
  */
 function cmdShowApSummary(
   state: SwitchState,
-  input: string,
+  _input: string,
   ctx: CommandContext
 ): any {
   // Check if device is a switch - show ap summary is not a switch command
@@ -2959,7 +2881,7 @@ function cmdShowApSummary(
  */
 function cmdShowSsh(
   state: SwitchState,
-  input: string,
+  _input: string,
   _ctx: CommandContext
 ): any {
   const version = state.sshVersion || 2;
@@ -2997,7 +2919,7 @@ function cmdShowSsh(
 /**
  * Show IP DHCP Snooping
  */
-function cmdShowIpDhcpSnooping(state: SwitchState, input: string, _ctx: CommandContext): any {
+function cmdShowIpDhcpSnooping(state: SwitchState, _input: string, _ctx: CommandContext): any {
   const enabled = state.dhcpSnoopingEnabled ?? false;
   const vlans: string[] = state.dhcpSnoopingVlans ?? [];
 
@@ -3022,7 +2944,7 @@ function cmdShowIpDhcpSnooping(state: SwitchState, input: string, _ctx: CommandC
 /**
  * Show Interfaces Status
  */
-function cmdShowInterfacesStatus(state: SwitchState, input: string, _ctx: CommandContext): any {
+function cmdShowInterfacesStatus(state: SwitchState, _input: string, _ctx: CommandContext): any {
   let output = '\nPort      Name               Status       Vlan       Duplex  Speed  Type                  Encap\n';
   Object.keys(state.ports || {}).forEach(portName => {
     const port = state.ports[portName];
@@ -3042,7 +2964,7 @@ function cmdShowInterfacesStatus(state: SwitchState, input: string, _ctx: Comman
 /**
  * Show CDP (brief)
  */
-function cmdShowCdp(state: SwitchState, input: string, _ctx: CommandContext): any {
+function cmdShowCdp(state: SwitchState, _input: string, _ctx: CommandContext): any {
   const enabled = state.cdpEnabled !== false;
   let output = '\nGlobal CDP information:\n';
   output += `  CDP is ${enabled ? 'enabled' : 'disabled'}\n`;
@@ -3054,7 +2976,7 @@ function cmdShowCdp(state: SwitchState, input: string, _ctx: CommandContext): an
 /**
  * Show VTP Status
  */
-function cmdShowVtpStatus(state: SwitchState, input: string, _ctx: CommandContext): any {
+function cmdShowVtpStatus(state: SwitchState, _input: string, _ctx: CommandContext): any {
   let output = '\nVTP Version capable             : 1 to 3\n';
   output += `VTP version running             : 2\n`;
   output += `VTP Domain Name                 : ${state.vtpDomain || ''}\n`;
@@ -3077,15 +2999,11 @@ function cmdShowVtpStatus(state: SwitchState, input: string, _ctx: CommandContex
  * Show EtherChannel Summary
  */
 function cmdShowEtherchannel(state: SwitchState, input: string, _ctx: CommandContext): any {
-  const lowerInput = input.toLowerCase();
-
   // Parse options: summary, detail, port, load-balance
   let option = '';
-  let subArg = '';
   const optMatch = input.match(/^show\s+etherchannel\s+(\w+)\s*(.*)$/i);
   if (optMatch) {
     option = optMatch[1].toLowerCase();
-    subArg = optMatch[2].trim();
   }
 
   // show etherchannel load-balance
@@ -3249,13 +3167,12 @@ function cmdShowEtherchannel(state: SwitchState, input: string, _ctx: CommandCon
 /**
  * Show ARP / Show IP ARP
  */
-function cmdShowArp(state: SwitchState, input: string, _ctx: CommandContext): any {
+function cmdShowArp(state: SwitchState, _input: string, _ctx: CommandContext): any {
   let output = '\nProtocol  Address          Age (min)  Hardware Addr   Type   Interface\n';
 
   // Use real ARP cache from state
   const arpCache = state.arpCache || [];
   const now = Date.now();
-  const ARP_TIMEOUT = 14400000; // 4 hours in milliseconds
 
   const arpEntries: { protocol: string; address: string; age: string; mac: string; type: string; interface: string }[] = [];
 
@@ -3307,7 +3224,7 @@ function cmdShowArp(state: SwitchState, input: string, _ctx: CommandContext): an
 /**
  * Show MLS QoS
  */
-function cmdShowMlsQos(state: SwitchState, input: string, _ctx: CommandContext): any {
+function cmdShowMlsQos(state: SwitchState, _input: string, _ctx: CommandContext): any {
   const enabled = state.mlsQosEnabled ?? false;
   return { success: true, output: `\nQoS is ${enabled ? 'enabled' : 'disabled'}\n` };
 }
@@ -3315,14 +3232,14 @@ function cmdShowMlsQos(state: SwitchState, input: string, _ctx: CommandContext):
 /**
  * Show IP ARP Inspection
  */
-function cmdShowIpArpInspection(state: SwitchState, input: string, _ctx: CommandContext): any {
+function cmdShowIpArpInspection(_state: SwitchState, _input: string, _ctx: CommandContext): any {
   return { success: true, output: '\nSource Mac Validation      : Disabled\nDestination Mac Validation : Disabled\nIP Address Validation      : Disabled\n\n Vlan     Configuration    Operation   ACL Match          Static ACL\n------   -------------    ---------   ---------          ----------\n' };
 }
 
 /**
  * Show Access-Lists
  */
-function cmdShowAccessLists(state: SwitchState, input: string, _ctx: CommandContext): any {
+function cmdShowAccessLists(state: SwitchState, _input: string, _ctx: CommandContext): any {
   const hasClassicAcls = !!state.accessLists && Object.keys(state.accessLists).length > 0;
   const firewallRules = Array.isArray(state.firewallRules) ? state.firewallRules : [];
   const hasFirewallAcls = firewallRules.length > 0;
@@ -3357,7 +3274,7 @@ function cmdShowAccessLists(state: SwitchState, input: string, _ctx: CommandCont
 /**
  * Show History
  */
-function cmdShowHistory(state: SwitchState, input: string, _ctx: CommandContext): any {
+function cmdShowHistory(state: SwitchState, _input: string, _ctx: CommandContext): any {
   const history = state.commandHistory || [];
   let output = '\n';
   history.slice(-20).forEach((cmd: string) => { output += `  ${cmd}\n`; });
@@ -3535,7 +3452,7 @@ function cmdShowSystemMtu(_state: SwitchState, _input: string, _ctx: CommandCont
   return { success: true, output: '\nSystem MTU size is 1500 bytes\nSystem Jumbo MTU size is 1500 bytes\nRouting MTU size is 1500 bytes\n' };
 }
 
-function cmdShowIpDhcpPool(state: SwitchState, input: string, _ctx: CommandContext): any {
+function cmdShowIpDhcpPool(state: SwitchState, _input: string, _ctx: CommandContext): any {
   const pools = state.dhcpPools || {};
   const poolNames = Object.keys(pools);
   if (poolNames.length === 0) {
@@ -3657,10 +3574,7 @@ function isIpInNetwork(ip: string, network: string, mask: string): boolean {
 /**
  * Show IP Source Binding
  */
-function cmdShowIpSourceBinding(state: SwitchState, input: string, _ctx: CommandContext): any {
-  // Parse optional filter (vlan or interface)
-  const match = input.match(/show\s+ip\s+source\s+binding(?:\s+(vlan\s+\d+|interface\s+\S+))?/i);
-  const filter = match?.[1];
+function cmdShowIpSourceBinding(state: SwitchState, _input: string, _ctx: CommandContext): any {
 
   let output = '\nMacAddress          IpAddress       Lease(sec)  Type           VLAN  Interface\n';
   output += '------------------  --------------  ----------  -------------  ----  --------------------\n';
@@ -4158,5 +4072,6 @@ function cmdShowQueuingInterface(state: SwitchState, input: string, _ctx: Comman
   output += '!\n';
   return { success: true, output };
 }
+
 
 

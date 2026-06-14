@@ -156,7 +156,7 @@ export const cmdWpaPsk: CommandHandler = (state, input, ctx) => {
 };
 
 // Guest Mode (SSID broadcast)
-export const cmdGuestMode: CommandHandler = (state, input, ctx) => {
+export const cmdGuestMode: CommandHandler = (state, _input, _ctx) => {
     if (state.currentMode !== 'ssid-config') {
         return { success: false, error: iosModeError() };
     }
@@ -171,7 +171,7 @@ export const cmdGuestMode: CommandHandler = (state, input, ctx) => {
 };
 
 // Exit SSID config mode
-export const cmdExitSsidConfig: CommandHandler = (state, input, ctx) => {
+export const cmdExitSsidConfig: CommandHandler = (state, _input, _ctx) => {
     if (state.currentMode !== 'ssid-config') {
         return { success: false, error: iosModeError() };
     }
@@ -459,7 +459,7 @@ export const cmdMacFilter: CommandHandler = (state, input, ctx) => {
 };
 
 // Exit dot11 config mode
-export const cmdExitDot11Config: CommandHandler = (state, input, ctx) => {
+export const cmdExitDot11Config: CommandHandler = (state, _input, _ctx) => {
     if (state.currentMode !== 'dot11-config') {
         return { success: false, error: iosModeError() };
     }
@@ -476,7 +476,7 @@ export const cmdExitDot11Config: CommandHandler = (state, input, ctx) => {
 };
 
 // Show wireless configuration
-export const cmdShowWireless: CommandHandler = (state, input, ctx) => {
+export const cmdShowWireless: CommandHandler = (state, _input, ctx) => {
     if (!['privileged', 'user'].includes(state.currentMode)) {
         return { success: false, error: iosModeError() };
     }
@@ -559,3 +559,4 @@ export const wirelessHandlers: Record<string, CommandHandler> = {
     'dot11 mac-filter': cmdMacFilter,
     'show wireless': cmdShowWireless,
 };
+
