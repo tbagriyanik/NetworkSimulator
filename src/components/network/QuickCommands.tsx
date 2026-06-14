@@ -66,9 +66,6 @@ export function QuickCommands({ currentMode, onExecuteCommand, t, theme, languag
   };
 
   const cardBg = isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200';
-  const textPrimary = isDark ? 'text-slate-300' : 'text-slate-700';
-  const textMuted = isDark ? 'text-slate-500' : 'text-slate-400';
-  const kbdBg = isDark ? 'bg-slate-700' : 'bg-slate-200';
 
   return (
     <ModernPanel
@@ -111,7 +108,7 @@ export function QuickCommands({ currentMode, onExecuteCommand, t, theme, languag
             ))}
           </div>
         ) : (
-          <div className={`text-xs ${textMuted} text-center py-2 ${isMobile ? 'text-[9px]' : ''}`}>
+          <div className={`text-xs text-muted-foreground text-center py-2 ${isMobile ? 'text-[9px]' : ''}`}>
             {t.noCommandsAvailable}
           </div>
         )}

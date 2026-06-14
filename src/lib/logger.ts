@@ -1,7 +1,5 @@
 const IS_DEV = process.env.NODE_ENV === 'development';
 
-type LogLevel = 'debug' | 'info' | 'warn' | 'error';
-
 const LOG_PREFIX = {
   debug: '[DEBUG]',
   info: '[INFO]',
@@ -13,7 +11,7 @@ function shouldLog(): boolean {
   return IS_DEV;
 }
 
-function formatMessage(prefix: string, message: unknown, ...args: unknown[]): string {
+function formatMessage(prefix: string, message: unknown, ..._args: unknown[]): string {
   const msg = typeof message === 'string' ? message : JSON.stringify(message);
   return `${prefix} ${msg}`;
 }

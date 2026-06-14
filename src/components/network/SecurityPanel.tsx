@@ -3,7 +3,7 @@
 import { SecurityConfig } from '@/lib/network/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+
 import { Translations } from '@/contexts/LanguageContext';
 import { ShieldCheck } from 'lucide-react';
 
@@ -12,9 +12,7 @@ interface SecurityPanelProps {
   security: SecurityConfig;
   t: Translations;
   theme: string;
-  deviceId?: string;
   isDevicePoweredOff?: boolean;
-  onTogglePower?: (deviceId: string) => void;
 }
 
 export type { SecurityPanelProps };
@@ -26,7 +24,7 @@ interface SecurityItem {
   weight: number;
 }
 
-export function SecurityPanel({ security, t, theme, deviceId, isDevicePoweredOff = false, onTogglePower }: SecurityPanelProps) {
+export function SecurityPanel({ security, t, theme, isDevicePoweredOff = false }: SecurityPanelProps) {
   const isDark = theme === 'dark';
 
   const securityItems: SecurityItem[] = [
@@ -69,24 +67,6 @@ export function SecurityPanel({ security, t, theme, deviceId, isDevicePoweredOff
       weight: 20
     }
   ];
-
-  const totalScore = securityItems.reduce((acc, item) => {
-    return acc + (item.enabled ? item.weight : 0);
-  }, 0);
-
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return isDark ? 'text-green-400' : 'text-green-600';
-    if (score >= 60) return isDark ? 'text-yellow-400' : 'text-yellow-600';
-    if (score >= 40) return isDark ? 'text-orange-400' : 'text-orange-600';
-    return isDark ? 'text-red-400' : 'text-red-600';
-  };
-
-  const getScoreText = (score: number) => {
-    if (score >= 80) return t.goodSecurity;
-    if (score >= 60) return t.mediumSecurity;
-    if (score >= 40) return t.lowSecurity;
-    return t.criticalSecurity;
-  };
 
   const cardBg = isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200';
   const innerBg = isDark ? 'bg-slate-900' : 'bg-slate-100';

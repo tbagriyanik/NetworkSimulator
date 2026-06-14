@@ -3,7 +3,6 @@
 import { CanvasDevice } from './networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { sanitizeHTML, safeJSONForHTML } from '@/lib/security/sanitizer';
-import { logger } from '@/lib/logger';
 
 export interface WifiAdminConfig {
   enabled: boolean;
@@ -60,9 +59,6 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab:
   const safeDeviceIp = sanitizeHTML(deviceIp);
   const safeSsid = sanitizeHTML(wifi.ssid || '');
   const safeWifiPassword = sanitizeHTML(wifi.password || '');
-  const safeUsername = sanitizeHTML(username || '');
-  const safePassword = sanitizeHTML(password || '');
-
   // JSON stringified versions for use in <script> blocks to prevent logic corruption and XSS
   const jsUsername = safeJSONForHTML(username || '');
   const jsPassword = safeJSONForHTML(password || '');

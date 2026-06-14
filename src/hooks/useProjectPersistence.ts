@@ -1,16 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { toast } from "@/hooks/use-toast";
-import { safeParse, safeStringify } from '@/lib/network/serialization';
+import { safeStringify } from '@/lib/network/serialization';
 import { errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
-import { BOOT_PROGRESS_MARKER } from '@/components/network/Terminal';
-import type { TerminalOutput } from '@/components/network/Terminal';
 import type { CanvasDevice, CanvasConnection, CanvasNote, DeviceType } from '@/components/network/networkTopology.types';
 import type { SwitchState, CableInfo } from '@/lib/network/types';
-import type { Translations } from '@/contexts/LanguageContext';
-import type { RefreshNetworkReport } from '@/hooks/useRefreshReport';
 import type { ProjectState } from '@/hooks/useHistory';
+import { Translations } from '@/contexts/LanguageContext';
+import type { TerminalOutput } from '@/components/network/Terminal';
+import { BOOT_PROGRESS_MARKER } from '@/components/network/Terminal';
+import type { RefreshNetworkReport } from '@/hooks/useRefreshReport';
 
 interface PCOutputLine {
   id: string;
@@ -71,14 +71,13 @@ export function useProjectPersistence(options: ProjectPersistenceOptions) {
     t, language, topologyDevices, topologyConnections, topologyNotes,
     deviceStates, deviceOutputs, pcOutputs, pcHistories,
     cableInfo, activeDeviceId, activeDeviceType, activeTab,
-    zoom, pan, normalizeDeviceType, applyLinkLocalToUnconfiguredHosts,
+    normalizeDeviceType, applyLinkLocalToUnconfiguredHosts,
     setDeviceStates, setDeviceOutputs, setPcOutputs, setPcHistories,
     setTopologyDevices, setTopologyConnections, setTopologyNotes,
     setCableInfo, setActiveDeviceId, setActiveDeviceType, setSelectedDevice,
-    setActiveTab, setZoom, setPan, setHasUnsavedChanges, setLastSaveTime,
+    setActiveTab, setZoom, setPan, setHasUnsavedChanges,
     setShowPCPanel, setShowRouterPanel, setShowUnifiedDeviceModal,
-    setRefreshNetworkReport, setIsAppLoading, resetHistory, setTopologyKey,
-    handleRefreshNetwork,
+    setRefreshNetworkReport, resetHistory, setTopologyKey,
   } = options;
 
   const loadProjectData = useCallback((projectData: unknown, options?: { keepActiveDevice?: boolean }): boolean => {

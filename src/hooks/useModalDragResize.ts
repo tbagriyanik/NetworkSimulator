@@ -57,7 +57,7 @@ function loadModalLayout(modal: 'tasks' | 'cli' | 'pc' | 'firewall' | 'deviceUni
     return { position, size };
 }
 
-export function useModalDragResize(defaultSize: ModalSize = { width: 1200, height: 700 }, graphicsQuality: 'high' | 'low' = 'high') {
+export function useModalDragResize(defaultSize: ModalSize = { width: 1200, height: 700 }) {
     const [tasksModalPosition, setTasksModalPosition] = useState<ModalPosition>({ x: 20, y: 20 });
     const [tasksModalSize, setTasksModalSize] = useState<ModalSize>(defaultSize);
     const [cliModalPosition, setCliModalPosition] = useState<ModalPosition>({ x: 20, y: 20 });
@@ -101,7 +101,6 @@ export function useModalDragResize(defaultSize: ModalSize = { width: 1200, heigh
 
     // Refs to always hold latest values for drag handlers
     const dragStateRef = useRef<DragState | null>(null);
-    const pendingMoveRef = useRef<{ x: number; y: number } | null>(null);
     const dragHandleRef = useRef<HTMLElement | null>(null);
     const tasksModalPositionRef = useRef(tasksModalPosition);
     const tasksModalSizeRef = useRef(tasksModalSize);
@@ -241,7 +240,7 @@ export function useModalDragResize(defaultSize: ModalSize = { width: 1200, heigh
             });
         };
 
-        const handlePointerUp = (e: PointerEvent) => {
+        const handlePointerUp = (_e: PointerEvent) => {
             if (animationFrameId !== null) {
                 cancelAnimationFrame(animationFrameId);
                 animationFrameId = null;

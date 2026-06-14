@@ -20,7 +20,6 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { DeviceIcon } from '@/components/network/DeviceIcon';
-import { cn } from '@/lib/utils';
 import { ChevronDown, Plus, Undo2, Redo2, Search, X, Cable, Strikethrough, Usb, Leaf } from 'lucide-react';
 import type { Translations } from '@/contexts/LanguageContext';
 import type { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';

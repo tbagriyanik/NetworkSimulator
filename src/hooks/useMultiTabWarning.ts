@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { getActiveTabCount, clearTabData, getTabId } from '@/lib/store/tabStorage';
+import { getActiveTabCount, clearTabData } from '@/lib/store/tabStorage';
 
 interface TabWarningState {
   showWarning: boolean;
@@ -88,10 +88,8 @@ export function useMultiTabWarning() {
     if (typeof window === 'undefined') return;
 
     try {
-      // Initial check
       checkTabCount();
 
-      // Set up interval to check tab count
       const interval = setInterval(checkTabCount, 3000);
 
       return () => {
@@ -99,6 +97,7 @@ export function useMultiTabWarning() {
       };
     } catch (error) {
       logger.warn('Multi-tab warning initialization failed:', error);
+      return;
     }
   }, [checkTabCount]);
 

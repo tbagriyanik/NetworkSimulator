@@ -34,7 +34,7 @@ export function useAppNavigation(options: UseAppNavigationOptions) {
 
   // Track bridge observer for navigation cleanup
   useEffect(() => {
-    const handlePopState = (e: PopStateEvent) => {
+    const handlePopState = (_e: PopStateEvent) => {
       if (isInternalNavRef.current) {
         isInternalNavRef.current = false;
         return;
@@ -197,7 +197,7 @@ export function useAppNavigation(options: UseAppNavigationOptions) {
     pendingFocusDeviceRef.current = null;
   }, [applyDeviceSelection, focusDeviceInTopology, setZoom]);
 
-  const switchTabOrTopology = useCallback((tabId: TabType, activeDeviceId: string, activeDeviceType: DeviceType) => {
+  const switchTabOrTopology = useCallback((tabId: TabType, activeDeviceId: string, _activeDeviceType: DeviceType) => {
     if (!activeDeviceId || activeDeviceId.trim() === '') {
       setActiveTab('topology');
       return;

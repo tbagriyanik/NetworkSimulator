@@ -8,13 +8,11 @@ import { Button } from '@/components/ui/button';
 import {
     Terminal as TerminalIcon,
     Settings,
-    Power,
-    Funnel,
     X,
     ShieldCheck,
     Network,
+    Layers,
     Cpu,
-    Layers
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
@@ -290,9 +288,7 @@ export function UnifiedDevicePanel({
                                                     security={state?.security || {}}
                                                     t={t}
                                                     theme={theme}
-                                                    deviceId={deviceId}
                                                     isDevicePoweredOff={isOffline}
-                                                    onTogglePower={toggleDevicePower}
                                                 />
                                             </div>
                                         </div>
@@ -308,7 +304,6 @@ export function UnifiedDevicePanel({
                                                         tasks={activeDeviceTasks}
                                                         state={state}
                                                         context={taskContext}
-                                                        color="from-indigo-500 to-purple-600"
                                                         isDark={isDark}
                                                     />
                                                 </div>

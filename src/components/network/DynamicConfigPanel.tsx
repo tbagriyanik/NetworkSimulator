@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
 import { SkeletonConfigPanel } from './SkeletonConfigPanel';
 import { AppErrorBoundary } from '@/components/ui/AppErrorBoundary';
-import { ConfigPanel, type ConfigPanelProps } from './ConfigPanel';
+import { type ConfigPanelProps } from './ConfigPanel';
 
 const ConfigPanelComponent = dynamic(() => import('./ConfigPanel').then(mod => ({ default: mod.ConfigPanel })), {
     loading: () => <SkeletonConfigPanel />,

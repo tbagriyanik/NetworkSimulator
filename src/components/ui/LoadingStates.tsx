@@ -3,7 +3,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Loader2, Wifi, Server, Database, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
+import { Loader2, Server, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
 
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';

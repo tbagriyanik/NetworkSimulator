@@ -1,23 +1,21 @@
 'use client';
 
 import { useState, useRef, useEffect, KeyboardEvent, useCallback, useMemo, ClipboardEvent } from 'react';
-import { useSwitchState } from '@/lib/store/appStore';
 import { SwitchState } from '@/lib/network/types';
-import { useLanguage, Translations } from '@/contexts/LanguageContext';
-import { useTheme } from '@/contexts/ThemeContext';
-import { checkConnectivity, getWirelessSignalStrength, getDeviceWifiConfig } from '@/lib/network/connectivity';
+import { Translations } from '@/contexts/LanguageContext';
+import { getDeviceWifiConfig, getWirelessSignalStrength } from '@/lib/network/connectivity';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Laptop, Monitor, Terminal as TerminalIcon, X, CornerDownLeft, Command, Globe, Network, ShieldCheck, History, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Search, Copy, Save, Trash2, Download, Settings, Wifi, Type } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Laptop, X, CornerDownLeft, Search, Copy, Trash2, Download, Settings, Wifi, Type } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ShortcutBadge } from '@/components/ui/ShortcutBadge';
 import { toast } from "@/hooks/use-toast";
 import { commandHelp } from '@/lib/network/executor';
 import { commandPatterns } from '@/lib/network/parser';
 import { ModernPanel } from '@/components/ui/ModernPanel';
 import { cn } from '@/lib/utils';
-import { useIsMobile, useIsTablet, useIsDesktop } from '@/hooks/use-breakpoint';
+import { useIsMobile } from '@/hooks/use-breakpoint';
 import type { CanvasDevice } from './networkTopology.types';
 import { RouterIcon, SwitchIcon } from './PCPanelWidgets';
 
@@ -106,7 +104,6 @@ export function Terminal({
   output,
   isLoading,
   isConnectionError = false,
-  connectionErrorMessage,
   isPoweredOff = false,
   onTogglePower,
   onClose,
@@ -117,7 +114,6 @@ export function Terminal({
   onUpdateHistory,
   confirmDialog,
   setConfirmDialog,
-  onRequestFocus,
   className,
   title,
   device,
@@ -191,8 +187,7 @@ export function Terminal({
 
   const isDark = theme === 'dark';
   const isMobile = useIsMobile();
-  const isTablet = useIsTablet();
-  const isDesktop = useIsDesktop();
+
 
   // Determine device icon and color
   const deviceIconInfo = useMemo(() => {
@@ -247,8 +242,6 @@ export function Terminal({
   const isLoadingRef = useRef<boolean>(isLoading);
   const awaitingPasswordRef = useRef<boolean>(!!state.awaitingPassword);
   const confirmDialogOpenRef = useRef<boolean>(!!confirmDialog?.show);
-  const reloadConfirmPendingRef = useRef<boolean>(false);
-
   useEffect(() => {
     historyRef.current = history;
   }, [history]);
@@ -737,7 +730,7 @@ export function Terminal({
     }
 
     const context = getAutocompleteContext(value);
-    const { candidates, currentWord, contextTokens, allCandidates } = context;
+    const { candidates, currentWord, contextTokens } = context;
 
     // Use filtered candidates for TAB completion
     const matches = candidates.filter(
@@ -1126,7 +1119,6 @@ export function Terminal({
 
   const getSignalIcon = (strength: number) => {
     if (strength === 0) return null;
-    const bars = Math.ceil(strength);
     return (
       <div className="flex items-center gap-1">
         <Wifi className={cn(
@@ -1306,7 +1298,7 @@ export function Terminal({
             ) : (
               <div className="space-y-1.5">
                 {/* Show all output with natural scrolling */}
-                {displayedLines.filter(line => line != null).map((line, i) => (
+                {displayedLines.filter(line => line != null).map((line) => (
                   <div key={line.id} className="animate-in fade-in slide-in-from-left-1 duration-200 break-words overflow-hidden">
                     {line.type === 'command' ? (
                       <div className="flex gap-2 text-cyan-500 font-bold group flex-wrap">

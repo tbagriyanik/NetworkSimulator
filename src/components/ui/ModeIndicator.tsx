@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+
 import { useMode } from '@/contexts/ModeContext';
 import { getModeName, getModeDescription } from '@/utils/modeFiltering';
 import { cn } from '@/lib/utils';

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, KeyboardEvent, useCallback, useMemo, type CSSProperties } from 'react';
-import { useSwitchState, useAppStore, useEnvironment } from '@/lib/store/appStore';
+import { useEnvironment } from '@/lib/store/appStore';
 import { CableInfo, SwitchState } from '@/lib/network/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -20,7 +20,7 @@ import { ShortcutBadge } from '@/components/ui/ShortcutBadge';
 import { toast } from "@/hooks/use-toast";
 import { isValidMAC, normalizeMAC, cn } from "@/lib/utils";
 import { ModernPanel } from '@/components/ui/ModernPanel';
-import { useIsMobile, useIsDesktop } from '@/hooks/use-breakpoint';
+import { useIsMobile } from '@/hooks/use-breakpoint';
 import { sanitizeHTTPContent } from '@/lib/security/sanitizer';
 import { generateRouterAdminPage, isRouterDevice } from '@/components/network/WifiControlPanel';
 import { generateIotWebPanelContent, generateIotDevicePageContent } from '@/lib/network/iotWebPanel';
@@ -78,7 +78,6 @@ interface PCPanelProps {
 
 export function PCPanel({
   deviceId,
-  cableInfo,
   isVisible,
   initialTab,
   className,
@@ -102,7 +101,6 @@ export function PCPanel({
 
   // Responsive hooks
   const isMobile = useIsMobile();
-  const isDesktop = useIsDesktop();
 
   // Helper to render network input fields to avoid repetition
   const renderNetworkInput = useCallback((
@@ -135,14 +133,8 @@ export function PCPanel({
   // Ref for click-outside detection
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Use granular selector for device state to prevent cascading re-renders
-  const deviceState = useSwitchState(deviceId);
-
   const terminalBg = isDark ? 'bg-black' : 'bg-slate-50';
   const textColor = isDark ? 'text-slate-300' : 'text-slate-700';
-  const cmdColor = isDark ? 'text-slate-100' : 'text-slate-900';
-  const inputBg = isDark ? 'bg-black/50' : 'bg-white';
-  const inputBorder = isDark ? 'border-slate-800' : 'border-slate-300';
 
   const [activeTab, setActiveTab] = useState<PCActiveTab>(initialTab || 'home');
   const activeTabRef = useRef<PCActiveTab>(activeTab);
@@ -333,7 +325,6 @@ export function PCPanel({
   );
   const [dnsFormDomain, setDnsFormDomain] = useState('');
   const [dnsFormAddress, setDnsFormAddress] = useState('');
-  const [editingDnsIndex, setEditingDnsIndex] = useState<number | null>(null);
   const [serviceHttpEnabled, setServiceHttpEnabled] = useState(deviceFromTopology?.services?.http?.enabled ?? false);
   const [serviceHttpContent, setServiceHttpContent] = useState(deviceFromTopology?.services?.http?.content || 'Merhaba Dünya!');
   const [serviceFtpEnabled, setServiceFtpEnabled] = useState(deviceFromTopology?.services?.ftp?.enabled ?? false);
@@ -345,7 +336,6 @@ export function PCPanel({
   const [serviceMailDomain, setServiceMailDomain] = useState(deviceFromTopology?.services?.mail?.domain || 'local.lan');
   const [serviceMailUsername, setServiceMailUsername] = useState(deviceFromTopology?.services?.mail?.username || 'user');
   const [serviceMailPassword, setServiceMailPassword] = useState(deviceFromTopology?.services?.mail?.password || 'mail123');
-  const [showMailPassword, setShowMailPassword] = useState(false);
   const [serviceMailInbox, setServiceMailInbox] = useState<any[]>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -381,7 +371,7 @@ export function PCPanel({
   const [serviceNtpEnabled, setServiceNtpEnabled] = useState(deviceFromTopology?.services?.ntp?.enabled ?? false);
   const [serviceNtpServer, setServiceNtpServer] = useState(deviceFromTopology?.services?.ntp?.server || '');
   const [serviceNtpServerError, setServiceNtpServerError] = useState('');
-  const [serviceNtpServerPreset, setServiceNtpServerPreset] = useState<'pool.ntp.org' | 'time.google.com' | 'time.cloudflare.com' | 'local-clock' | 'custom'>(
+  const [, setServiceNtpServerPreset] = useState<'pool.ntp.org' | 'time.google.com' | 'time.cloudflare.com' | 'local-clock' | 'custom'>(
     (deviceFromTopology?.services?.ntp?.server === 'pool.ntp.org'
       ? 'pool.ntp.org'
       : deviceFromTopology?.services?.ntp?.server === 'time.google.com'
@@ -546,12 +536,7 @@ export function PCPanel({
     return Number.isNaN(combined.getTime()) ? currentTime : combined;
   }, [currentTime, serviceNtpDate, serviceNtpEnabled, serviceNtpTime, serviceNtpServer]);
 
-  const ntpServerSuggestions = useMemo(() => ([
-    { value: 'pool.ntp.org', label: 'pool.ntp.org' },
-    { value: 'time.google.com', label: 'time.google.com' },
-    { value: 'time.cloudflare.com', label: 'time.cloudflare.com' },
-    { value: 'local-clock', label: language === 'tr' ? 'Yerel Saat' : 'Local Clock' },
-  ]), [language]);
+
 
   const isValidIpAddress = useCallback((value: string) => {
     const parts = value.trim().split('.');
@@ -907,7 +892,6 @@ export function PCPanel({
 
       setDnsFormDomain('');
       setDnsFormAddress('');
-      setEditingDnsIndex(null);
       setDhcpForm({
         poolName: '',
         defaultGateway: '',
@@ -1429,7 +1413,7 @@ export function PCPanel({
       }
     };
 
-    const handlePopState = (e: PopStateEvent) => {
+    const handlePopState = (_e: PopStateEvent) => {
       if (handleNavigation()) {
         // Re-push state to prevent browser from actually going back to previous page
         // only if we want to stay in the panel
@@ -1493,8 +1477,7 @@ export function PCPanel({
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<HTMLDivElement>(null);
   const httpContentRef = useRef<HTMLTextAreaElement>(null);
-  const commandQueueRef = useRef<string[]>([]);
-  const isProcessingQueueRef = useRef(false);
+
   const prevIpConfigModeRef = useRef(ipConfigMode);
 
   const highlightText = useCallback((text: string) => {
@@ -1635,12 +1618,11 @@ export function PCPanel({
 
   // Auto-focus input when visible, tab changes, or command completes
   useEffect(() => {
-    if (isVisible && (activeTab === 'desktop' || activeTab === 'terminal')) {
-      const timer = setTimeout(() => {
-        inputRef.current?.focus();
-      }, 100);
-      return () => clearTimeout(timer);
-    }
+    if (!isVisible || (activeTab !== 'desktop' && activeTab !== 'terminal')) return;
+    const timer = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
+    return () => clearTimeout(timer);
   }, [isVisible, activeTab, pcOutput, activeConsoleOutput]);
 
   // Always keep CMD/Console views pinned to the latest output
@@ -2569,7 +2551,7 @@ export function PCPanel({
       }
 
       // IoT messages are always accepted (deviceId in payload)
-      const isIoTMessage = data.type === 'router-admin-connect-iot' || data.type === 'router-admin-disconnect-iot' || data.type === 'router-admin-renew-iot';
+
 
       const allocateIotIpConfig = (routerDeviceId: string, excludeDeviceId?: string) => {
         const routerDevice = topologyDevices.find((d) => d.id === routerDeviceId);
@@ -4020,8 +4002,6 @@ export function PCPanel({
         }
       } else if (cmd === 'telnet' || cmd === 'ssh') {
         const isSsh = cmd === 'ssh';
-        const protocol = isSsh ? 'tcp' : 'tcp'; // both use TCP
-        const defaultPort = isSsh ? '22' : '23';
         const targetSpec = args[0];
         const extraPort = args[1];
 
@@ -4416,9 +4396,6 @@ export function PCPanel({
         // User typed something else - send as command (will fail on switch)
       }
 
-      const parts = command.split(' ');
-      const cmd = parts[0].toLowerCase().replace(/ı/g, 'i').replace(/İ/g, 'i').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-
       // Console tab: do not mirror remote commands into local PC CMD output.
       if (onExecuteDeviceCommand && connectedDeviceId) {
         try {
@@ -4787,7 +4764,7 @@ export function PCPanel({
     }
   };
 
-  const recentCommands = (activeTab === 'terminal' ? consoleHistory : desktopHistory).slice(0, 10);
+
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString(language === 'tr' ? 'tr-TR' : 'en-US', { hour: '2-digit', minute: '2-digit' });
@@ -4842,7 +4819,7 @@ export function PCPanel({
       buttonClass: isDark ? 'text-sky-300 border-sky-400/20 bg-sky-500/10' : 'text-sky-700 border-sky-200 bg-sky-50/90',
     },
   ], [language, isDark]);
-  const activeAppMeta = launcherApps.find((app) => app.tab === activeTab);
+
 
   if (!isVisible) return null;
 
@@ -7226,7 +7203,7 @@ export function PCPanel({
                                         // Also match standalone IP addresses
                                         const ipAddressMatch = line.content.match(/(Reply from |Address: |\[|TCP\s+|UDP\s+|^|\s)(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(?::\d+)?|([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4})(\]|:| |$)/);
                                         if (ipAddressMatch) {
-                                          const [, prefix, ipAddress, , suffix] = ipAddressMatch;
+                                          const [, , ipAddress] = ipAddressMatch;
                                           const fullMatch = ipAddressMatch[0];
                                           const beforeIp = line.content.substring(0, line.content.indexOf(fullMatch));
                                           const afterIp = line.content.substring(line.content.indexOf(fullMatch) + fullMatch.length);

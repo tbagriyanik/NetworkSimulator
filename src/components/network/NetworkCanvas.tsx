@@ -30,10 +30,8 @@ import {
     AlignCenter,
     AlignRight,
     AlignJustify,
-    MousePointer2,
-    Hand
 } from 'lucide-react';
-import { CanvasDevice, CanvasConnection, CanvasPort } from './networkTopology.types';
+import { CanvasDevice, CanvasConnection } from './networkTopology.types';
 import { DeviceIcon } from './DeviceIcon';
 import { useLanguage } from '@/contexts/LanguageContext';
 import styles from './NetworkCanvas.module.css';
@@ -46,8 +44,6 @@ const MAX_ZOOM = 3;
 const GRID_SIZE = 16;
 const DEVICE_WIDTH = 80;
 const DEVICE_HEIGHT = 100;
-const PORT_RADIUS = 6;
-const DRAG_THRESHOLD = 5;
 const CANVAS_WIDTH = 2000;
 const CANVAS_HEIGHT = 2000;
 const COLLISION_PADDING = 10; // Padding around device for collision detection
@@ -111,13 +107,6 @@ const checkCollision = (
 };
 
 /**
- * Check if device is within canvas bounds
- */
-const isWithinBounds = (x: number, y: number): boolean => {
-    return x >= 0 && y >= 0 && x + DEVICE_WIDTH <= CANVAS_WIDTH && y + DEVICE_HEIGHT <= CANVAS_HEIGHT;
-};
-
-/**
  * Clamp coordinates to canvas bounds
  */
 const clampToBounds = (x: number, y: number): { x: number; y: number } => {
@@ -152,7 +141,7 @@ export const NetworkCanvas = React.memo(React.forwardRef<HTMLDivElement, Network
             highContrastMode = false,
             className,
         },
-        ref
+        _ref
     ) => {
         const { t } = useLanguage();
         // Local state
@@ -198,33 +187,6 @@ export const NetworkCanvas = React.memo(React.forwardRef<HTMLDivElement, Network
                 };
             },
             [internalPan, internalZoom]
-        );
-
-        /**
-         * Convert canvas coordinates to screen coordinates
-         */
-        const canvasToScreen = useCallback(
-            (canvasX: number, canvasY: number) => {
-                return {
-                    x: canvasX * internalZoom + internalPan.x,
-                    y: canvasY * internalZoom + internalPan.y,
-                };
-            },
-            [internalPan, internalZoom]
-        );
-
-        /**
-         * Apply grid snapping to coordinates
-         */
-        const snapToGridCoords = useCallback(
-            (x: number, y: number) => {
-                if (!snapToGrid) return { x, y };
-                return {
-                    x: Math.round(x / GRID_SIZE) * GRID_SIZE,
-                    y: Math.round(y / GRID_SIZE) * GRID_SIZE,
-                };
-            },
-            [snapToGrid]
         );
 
         /**
@@ -525,7 +487,7 @@ export const NetworkCanvas = React.memo(React.forwardRef<HTMLDivElement, Network
          * Handle canvas mouse up for rectangle selection
          */
         const handleCanvasMouseUp = useCallback(
-            (e: React.MouseEvent) => {
+            (_e: React.MouseEvent) => {
                 if (!isRectSelecting || !rectSelectStart || !rectSelectEnd) {
                     setIsRectSelecting(false);
                     setRectSelectStart(null);

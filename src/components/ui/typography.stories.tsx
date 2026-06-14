@@ -3,7 +3,6 @@
  * Demonstrates all typography components and their usage
  */
 
-import React from 'react';
 import {
     Heading1,
     Heading2,

@@ -33,7 +33,7 @@ function collectPageResources(): string[] {
   return Array.from(urls);
 }
 
-function sendResourcesToSW(registration: ServiceWorkerRegistration) {
+function sendResourcesToSW(_registration: ServiceWorkerRegistration) {
   if (!navigator.serviceWorker.controller) return;
   const urls = collectPageResources();
   if (urls.length > 0) {

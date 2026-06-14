@@ -20,8 +20,7 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from '@/lib/utils';
 import {
-  ChevronDown, ChevronUp, Menu, Plus, Save, FolderOpen, Languages, Sun, Moon, File, Undo2, Redo2, BookOpen, Leaf, Compass, Info, Sparkles, Cloud, Activity, Trophy,
-  LetterTextIcon,
+  Menu, Plus, Save, FolderOpen, Languages, Sun, Moon, File, Undo2, Redo2, BookOpen, Leaf, Compass, Info, Sparkles, Cloud, Trophy,
   Mail
 } from 'lucide-react';
 import type { Translations } from '@/contexts/LanguageContext';
@@ -72,10 +71,10 @@ interface AppHeaderProps {
 }
 
 export function AppHeader({
-  t, isDark, theme, language, setLanguage, setTheme,
+  t, isDark, language, setLanguage, setTheme,
   graphicsQuality, setGraphicsQuality,
   activeTab, activeDeviceType, activeDeviceId,
-  topologyDevices, deviceStates,
+  topologyDevices,
   totalScore, maxScore, canUndo, canRedo, hasHydrated,
   handleUndo, handleRedo, handleNewProject, handleSaveProject, handleLoadProject,
   fileInputRef, showMobileMenu, setShowMobileMenu,

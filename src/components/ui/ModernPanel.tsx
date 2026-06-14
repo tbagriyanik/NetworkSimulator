@@ -31,12 +31,11 @@ export interface ModernPanelProps {
 }
 
 export function ModernPanel({
-    id,
     title,
     children,
     onClose,
     resizable = true,
-    collapsible = true,
+    collapsible: _collapsible = true,
     defaultWidth = 400,
     defaultHeight = 600,
     minWidth = 250,
@@ -46,7 +45,6 @@ export function ModernPanel({
     headerAction,
     headerStart,
     footer,
-    mobileAutoHeight = false,
     noPadding = false,
     hideTitle = false,
     hideHeader = false,
@@ -56,7 +54,6 @@ export function ModernPanel({
     const { panelLayout } = useLayout();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
-    const [isCollapsed, setIsCollapsed] = useState(false);
     const [width, setWidth] = useState(defaultWidth);
     const [height, setHeight] = useState(defaultHeight);
     const [isMobile, setIsMobile] = useState(false);
@@ -171,7 +168,6 @@ export function ModernPanel({
     const isOverlay = panelLayout === 'overlay';
     const isStacked = panelLayout === 'stacked';
     const canResize = resizable && isOverlay && !isMobile;
-    const canCollapse = collapsible && !isMobile;
     const overlayMobileStyle: React.CSSProperties = {};
     if (isOverlay && isMobile) {
         overlayMobileStyle.width = 'calc(100vw - 10px)';

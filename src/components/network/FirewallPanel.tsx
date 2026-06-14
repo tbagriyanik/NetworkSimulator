@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Trash2, CheckCircle2, XCircle, GripVertical, Terminal as TerminalIcon, Filter, X, Zap } from 'lucide-react';
+import { Plus, Trash2, CheckCircle2, XCircle, GripVertical, Terminal as TerminalIcon, Filter } from 'lucide-react';
 import { toast } from "@/hooks/use-toast";
 import { Translations } from '@/contexts/LanguageContext';
 import { Terminal } from './Terminal';

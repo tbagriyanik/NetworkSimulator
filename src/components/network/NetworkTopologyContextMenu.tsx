@@ -2,9 +2,7 @@ import { useState, useEffect, type RefObject } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Trash2, Undo2, Redo2, Scissors, Copy, ClipboardPaste,
-  MousePointer2, ExternalLink, Mail, Shield, Layers,
-  Database, Terminal as TerminalIcon, CheckSquare, Power, ListTodo,
-  RefreshCw
+  RefreshCw, CheckSquare, ExternalLink, Mail, Power, ListTodo
 } from 'lucide-react';
 import { NOTE_COLORS, NOTE_FONT_SIZES, NOTE_OPACITY } from './networkTopology.constants';
 import { CanvasDevice, CanvasNote, ContextMenuState } from './networkTopology.types';
@@ -13,7 +11,6 @@ interface NetworkTopologyContextMenuProps {
   contextMenu: ContextMenuState | null;
   contextMenuRef: RefObject<HTMLDivElement | null>;
   isDark: boolean;
-  language: string;
   noteFonts: string[];
   notes: CanvasNote[];
   devices: CanvasDevice[];
@@ -26,11 +23,6 @@ interface NetworkTopologyContextMenuProps {
   isExamActive?: boolean;
   onClose: () => void;
   onUpdateNoteStyle: (id: string, style: any) => void;
-  onNoteCut: (id: string) => void;
-  onNoteCopy: (id: string) => void;
-  onNotePaste: (id: string) => void;
-  onNoteDeleteText: (id: string) => void;
-  onNoteSelectAllText: (id: string) => void;
   onDuplicateNote: (id: string) => void;
   onPasteNotes: (x: number, y: number) => void;
   onUndo: () => void;
@@ -41,7 +33,6 @@ interface NetworkTopologyContextMenuProps {
   onCopyDevices: (ids: string[]) => void;
   onPasteDevice?: () => void;
   onDeleteDevices: (ids: string[]) => void;
-  onStartConfig: (id: string) => void;
   onStartPing: (id: string) => void;
   onTogglePowerDevices: (ids: string[]) => void;
   onSaveToHistory: () => void;
@@ -54,7 +45,6 @@ export default function NetworkTopologyContextMenu({
   contextMenu,
   contextMenuRef,
   isDark,
-  language,
   noteFonts,
   notes,
   devices,
@@ -67,11 +57,6 @@ export default function NetworkTopologyContextMenu({
   isExamActive = false,
   onClose,
   onUpdateNoteStyle,
-  onNoteCut,
-  onNoteCopy,
-  onNotePaste,
-  onNoteDeleteText,
-  onNoteSelectAllText,
   onDuplicateNote,
   onPasteNotes,
   onUndo,
@@ -82,7 +67,6 @@ export default function NetworkTopologyContextMenu({
   onCopyDevices,
   onPasteDevice,
   onDeleteDevices,
-  onStartConfig,
   onStartPing,
   onTogglePowerDevices,
   onSaveToHistory,

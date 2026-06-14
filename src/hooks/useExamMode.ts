@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { ExamProject, ExamTask, getExamProjects, encryptExamData } from '@/lib/network/examMode';
+import { ExamProject, getExamProjects, encryptExamData } from '@/lib/network/examMode';
 import { checkStepCompletion } from '@/lib/network/guidedMode';
 
 interface UseExamModeReturn {

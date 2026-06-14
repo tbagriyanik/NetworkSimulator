@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 
 // ============================================================================
@@ -142,7 +142,7 @@ export function useResponsiveValue<T>(
     values: { mobile: T; tablet?: T; desktop?: T; wide?: T },
     defaultValue: T
 ): T {
-    const { breakpoint, isMobile, isTablet, isDesktop } = useResponsive();
+    const { isMobile, isTablet, isDesktop } = useResponsive();
 
     return useMemo(() => {
         if (isMobile) return values.mobile;
@@ -301,7 +301,6 @@ export function useZoomLevel(): number {
     useEffect(() => {
         const detectZoom = () => {
             // Calculate zoom level from device pixel ratio and window dimensions
-            const pixelRatio = window.devicePixelRatio || 1;
             const zoomLevel = window.outerWidth / window.innerWidth;
             setZoom(Math.round(zoomLevel * 100) / 100);
         };

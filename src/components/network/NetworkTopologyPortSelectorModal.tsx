@@ -118,7 +118,7 @@ export function NetworkTopologyPortSelectorModal({
             const isSwitch = device.type === 'switchL2' || device.type === 'switchL3';
             // In the "connect cable" panel, we want to show all ports regardless of cable type
             // But we still separate them by availability for better UX
-            const filteredPorts = device.ports.filter((p) => {
+            const filteredPorts = device.ports.filter((_p) => {
               // Only filter out the source device when selecting the target
               if (portSelectorStep === 'target' && selectedSourcePort?.deviceId === device.id) return false;
               return true;

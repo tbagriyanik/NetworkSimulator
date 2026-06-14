@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect, useMemo, useLayoutEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 
 import { SwitchState, CableInfo } from '@/lib/network/types';
 import { useDeviceManager } from '@/hooks/useDeviceManager';
 import { useNetworkLogic } from '@/hooks/useNetworkLogic';
-import { useProjectPersistence } from '@/hooks/useProjectPersistence';
 import { useAppNavigation } from '@/hooks/useAppNavigation';
 import { useDrag } from '@/hooks/useDrag';
 import { useMultiTabWarning } from '@/hooks/useMultiTabWarning';
@@ -18,7 +17,7 @@ import { useRefreshReport } from '@/hooks/useRefreshReport';
 import { useDeviceSelection } from '@/hooks/useDeviceSelection';
 import useAppStore, { useTopologyDevices, useTopologyConnections, useTopologyNotes, useZoom, usePan, useActiveTab, useEnvironment } from '@/lib/store/appStore';
 import { cn, normalizeMAC } from '@/lib/utils';
-import { logger, getFromStorage, setToStorage } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType, CanvasPortStatus } from '@/components/network/networkTopology.types';
 import { getPrompt } from '@/lib/network/executor';
 import { formatErrorForUser, errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
@@ -39,22 +38,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
-} from "@/components/ui/dropdown-menu";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -66,18 +49,10 @@ const NetworkTopology = dynamic(
   () => import('@/components/network/NetworkTopology').then((m) => m.NetworkTopology),
   { ssr: false }
 );
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
-import { ChevronDown, ChevronUp, Menu, Plus, Save, FolderOpen, Languages, Sun, Moon, Network, ShieldCheck, Database, Info, File, Layers, Terminal as TerminalIcon, Undo2, Redo2, Link2, Pencil, StickyNote, Sparkles, Cloud, Search, Monitor, X, Compass, Leaf, Server, GripHorizontal, Square, Minus, Strikethrough, Cable, Usb, BookOpen, Target, Clock, GraduationCap, Settings as SettingsIcon, Power, Filter, RefreshCw } from "lucide-react";
+
+import { Network, Monitor, X, Power, Filter, RefreshCw } from "lucide-react";
 import { Button } from '@/components/ui/button';
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip";
 import { TooltipWrapper } from "@/components/ui/TooltipWrapper";
-import { ShortcutBadge } from "@/components/ui/ShortcutBadge";
 import { useLanguage, Translations } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { toast } from "@/hooks/use-toast";
@@ -103,8 +78,7 @@ import { useGuidedMode } from '@/hooks/useGuidedMode';
 import { useExamMode } from '@/hooks/useExamMode';
 import { decryptExamData } from '@/lib/network/examMode';
 
-import { DeviceIcon } from '@/components/network/DeviceIcon';
-import { PCInfoPopover, SwitchInfoPopover, RouterInfoPopover } from '@/components/network/DeviceInfoPopovers';
+import { PCInfoPopover, RouterInfoPopover } from '@/components/network/DeviceInfoPopovers';
 import { BasarilarimPanel } from '@/components/ui/BasarilarimPanel';
 import { addSessionDuration, addGuidedLessonRecord, addExamRecord, addProjectRecord } from '@/utils/achievementRecords';
 import { AppHeader } from '@/components/network/AppHeader';
@@ -112,7 +86,7 @@ import { AppFooter } from '@/components/network/AppFooter';
 import { TopologyToolbar } from '@/components/network/TopologyToolbar';
 import { AppSkeleton } from '@/components/ui/AppSkeleton';
 import { AppErrorBoundary } from '@/components/ui/AppErrorBoundary';
-import { SwitchModel } from '@/lib/network/switchModels';
+
 
 const PCPanel = dynamic(() => import('@/components/network/PCPanel').then((m) => m.PCPanel));
 const RouterPanel = dynamic(() => import('@/components/network/RouterPanel').then((m) => m.RouterPanel));
@@ -145,7 +119,6 @@ interface TabDefinition {
 }
 
 const SWITCH_DEVICE_TYPES: DeviceType[] = ['switchL2', 'switchL3'];
-const isSwitchDeviceType = (type?: DeviceType) => type === 'switchL2' || type === 'switchL3';
 
 const ALL_TABS: TabDefinition[] = [
   {
@@ -305,7 +278,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     onboardingStep, setOnboardingStep,
     closeAllPanels,
   } = usePanels();
-  const { refreshNetworkReport, setRefreshNetworkReport, clearRefreshReport } = useRefreshReport();
+  const { refreshNetworkReport, setRefreshNetworkReport } = useRefreshReport();
   const {
     activeDeviceId, setActiveDeviceId,
     activeDeviceType, setActiveDeviceType,
@@ -313,7 +286,6 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     clearSelectionTrigger, setClearSelectionTrigger,
     deviceSearchQuery, setDeviceSearchQuery,
     focusDeviceId, setFocusDeviceId,
-    clearSelection,
   } = useDeviceSelection();
 
   const [loadedExampleId, setLoadedExampleId] = useState<string | null>(null);
@@ -323,7 +295,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   const [isAppLoading, setIsLoading] = useState(true);
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [hasHydrated, setHasHydrated] = useState(false);
-  const [showContent, setShowContent] = useState(false);
+
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [lastSaveTime, setLastSaveTime] = useState<string | null>(null);
   const [projectName, setProjectName] = useState<string>('Untitled');
@@ -382,7 +354,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     finishExam,
     closeExam,
     togglePanelMinimize: toggleExamPanelMinimize,
-    expandPanel: expandExamPanel,
+
     isEditorOpen,
     toggleEditor,
     addTask,
@@ -536,7 +508,6 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     getOrCreateDeviceOutputs,
     getOrCreatePCOutputs,
     handleCommandForDevice,
-    resetAll
   } = useDeviceManager();
 
   // Zustand store state - using granular selectors to prevent cascading re-renders
@@ -575,9 +546,9 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   });
   const {
     setActiveTabWithHistory, setDeviceTabWithHistory, handlePCPanelNavigate,
-    switchTabOrTopology, applyDeviceSelection, handleDeviceSelectFromCanvas,
+    handleDeviceSelectFromCanvas,
     handleDeviceSelectFromMenu, focusDeviceInTopology,
-    navigationHistoryRef, currentNavIndexRef, isInternalNavRef, activeTabRef,
+    activeTabRef,
     pendingFocusDeviceRef, topologyContainerRef,
   } = nav;
   // Wrapper to match PCPanel's single-arg onNavigate signature
@@ -1198,6 +1169,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
       if (isApplyingHistoryRef.current) {
         isApplyingHistoryRef.current = false;
       }
+      return;
     }
   }, [topologyDevices, topologyConnections, topologyNotes, deviceStates, deviceOutputs, pcOutputs, pcHistories, cableInfo, activeDeviceId, activeDeviceType, zoom, pan, activeTab, isAppLoading, pushState]);
 
@@ -1225,7 +1197,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
 
     const skeletonTimer = setTimeout(() => {
       setShowSkeleton(false);
-      setTimeout(() => setShowContent(true), 100);
+      null
     }, skeletonMs);
 
     return () => {
@@ -1234,11 +1206,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     };
   }, []);
 
-  // Initialize with empty Map if undefined to prevent SSR errors
-  const safeDeviceStates = deviceStates || new Map();
-  const safeDeviceOutputs = deviceOutputs || new Map();
-  const safePcOutputs = pcOutputs || new Map();
-  const safePcHistories = pcHistories || new Map();
+
 
   // Legacy state for compatibility with other panels (uses active device's state)
   const state = useMemo(() => {
@@ -1320,33 +1288,13 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   // Calculate max possible score
   const maxScore = activeDeviceTasks.reduce((acc, task) => acc + task.weight, 0);
 
-  // Per-tab task completion counts for badges
-  const completedTasks = isTaskSystemEnabled ? portTasks.filter(task => getTaskStatus(task, state, taskContext)).length +
-    vlanTasks.filter(task => getTaskStatus(task, state, taskContext)).length +
-    securityTasks.filter(task => getTaskStatus(task, state, taskContext)).length +
-    (activeDeviceType !== 'switchL2' ? wirelessTasks.filter(task => getTaskStatus(task, state, taskContext)).length : 0) : 0;
 
-  const { normalizeDeviceType, isValidIpv4, isSameSubnetByMask, getPortAccessVlan, getPeerPortVlan,
-    inferEndpointVlan, getServerPoolVlan, hasActivePathBetweenDevices, isDhcpPoolCompatibleForClient,
+
+  const { normalizeDeviceType, isValidIpv4, isSameSubnetByMask,
     buildLinkLocalLease, assignDhcpLeaseForPc, applyLinkLocalToUnconfiguredHosts,
     applyIotAutomationPass: iotAutomationPass } = networkLogic;
 
-  // Persistence hook (provides load/save/autosave operations)
-  const persistence = useProjectPersistence({
-    t, language, topologyDevices, topologyConnections, topologyNotes,
-    deviceStates, deviceOutputs, pcOutputs, pcHistories,
-    cableInfo, activeDeviceId, activeDeviceType, activeTab,
-    zoom, pan, normalizeDeviceType, applyLinkLocalToUnconfiguredHosts,
-    setDeviceStates, setDeviceOutputs, setPcOutputs, setPcHistories,
-    setTopologyDevices: setDevices, setTopologyConnections: setConnections, setTopologyNotes: setNotes,
-    setCableInfo, setActiveDeviceId, setActiveDeviceType, setSelectedDevice,
-    setActiveTab: (tab: string) => setActiveTab(tab as any), setZoom, setPan,
-    setHasUnsavedChanges, setLastSaveTime,
-    setShowPCPanel, setShowRouterPanel, setShowUnifiedDeviceModal,
-    setRefreshNetworkReport, setIsAppLoading: setIsLoading,
-    resetHistory: (state: any) => resetHistory(state),
-    setTopologyKey: (fn: (prev: number) => number) => setTopologyKey(fn),
-  });
+
 
   // Persistence: Save to localStorage
   useEffect(() => {
@@ -2059,47 +2007,6 @@ ${state.bannerMOTD}
     }
   }, [activeDeviceType, activeTab]);
 
-  // Broadcast to other components (like NetworkTopology)
-  const broadcastCloseMenus = useCallback((source: string) => {
-    window.dispatchEvent(new CustomEvent('close-menus-broadcast', { detail: { source } }));
-  }, []);
-
-  const closeLocalMenus = useCallback((exclude?: string) => {
-    if (exclude !== 'mobile') setShowMobileMenu(false);
-    if (exclude !== 'modal') {
-      setConfirmDialog(null);
-      setSaveDialog(null);
-    }
-  }, [setShowMobileMenu, setConfirmDialog, setSaveDialog]);
-
-  const openMobileMenu = useCallback(() => {
-    const nextState = !showMobileMenu;
-    if (nextState) {
-      closeLocalMenus('mobile');
-      broadcastCloseMenus('mobile');
-    }
-    setShowMobileMenu(nextState);
-  }, [showMobileMenu, closeLocalMenus, broadcastCloseMenus]);
-
-  const resetTopologyView = useCallback(() => {
-    const nextZoom = 1.0;
-    const PADDING = 10;
-    setZoom(nextZoom);
-
-    if (topologyDevices.length === 0 && topologyNotes.length === 0) {
-      setPan({ x: 0, y: 0 });
-      return;
-    }
-
-    const minDeviceX = topologyDevices.reduce((acc, d) => Math.min(acc, d.x), Infinity);
-    const minDeviceY = topologyDevices.reduce((acc, d) => Math.min(acc, d.y), Infinity);
-    const minNoteX = topologyNotes.reduce((acc, n) => Math.min(acc, n.x), Infinity);
-    const minNoteY = topologyNotes.reduce((acc, n) => Math.min(acc, n.y), Infinity);
-    const minX = Math.min(minDeviceX, minNoteX);
-    const minY = Math.min(minDeviceY, minNoteY);
-
-    setPan({ x: PADDING - minX * nextZoom, y: PADDING - minY * nextZoom });
-  }, [topologyDevices, topologyNotes, setZoom, setPan]);
 
 
 
@@ -2138,20 +2045,6 @@ ${state.bannerMOTD}
     return result;
   }, [handleCommandForDevice, topologyDevices, topologyConnections, setActiveDeviceId, setActiveDeviceType, setLastCommand]);
 
-  const handleReset = () => {
-    setConfirmDialog({
-      show: true,
-      message: t.resetConfirm,
-      action: 'reset',
-      onConfirm: () => {
-        setConfirmDialog(null);
-        resetAll(topologyDevices);
-        if (typeof window !== 'undefined') {
-          window.location.reload();
-        }
-      }
-    });
-  };
 
   const handleClearTerminal = () => {
     setDeviceOutputs(prev => {
@@ -2196,54 +2089,6 @@ ${state.bannerMOTD}
     }
   }, [getOrCreateDeviceState, getOrCreateDeviceOutputs, topologyDevices, setDeviceTabWithHistory, setShowPCDeviceId, setActiveDeviceId, setActiveDeviceType]);
 
-  // Handle topology change from NetworkTopology component
-  const handleTopologyChange = useCallback((devices: CanvasDevice[], connections: CanvasConnection[], notes: CanvasNote[]) => {
-    setTopologyDevices(devices);
-    setTopologyConnections(connections);
-    setTopologyNotes(notes);
-    setHasUnsavedChanges(true);
-
-    // Sync port status from topology to deviceStates
-    setDeviceStates(prev => {
-      const newMap = new Map(prev);
-      let changed = false;
-
-      devices.forEach(topoDevice => {
-        const state = newMap.get(topoDevice.id);
-        if (state && state.ports) {
-          const updatedPorts = { ...state.ports };
-          let portChanged = false;
-
-          topoDevice.ports.forEach(topoPort => {
-            const statePort = updatedPorts[topoPort.id];
-            if (statePort) {
-              // Translate UI status → simulator status
-              // UI 'connected' → simulator 'connected'
-              // UI 'disconnected' → simulator 'notconnect'
-              const targetSimStatus = topoPort.status === 'connected' ? 'connected' : 'notconnect';
-              if (statePort.status !== targetSimStatus) {
-                updatedPorts[topoPort.id] = {
-                  ...statePort,
-                  status: targetSimStatus
-                };
-                portChanged = true;
-              }
-            }
-          });
-
-          if (portChanged) {
-            newMap.set(topoDevice.id, {
-              ...state,
-              ports: updatedPorts
-            });
-            changed = true;
-          }
-        }
-      });
-
-      return changed ? newMap : prev;
-    });
-  }, [setTopologyDevices, setTopologyConnections, setTopologyNotes, setHasUnsavedChanges, setDeviceStates]);
 
   // Handle device deletion - update active device if needed
   const handleDeviceDelete = useCallback((deviceId: string) => {
@@ -2929,21 +2774,6 @@ ${state.bannerMOTD}
     }
   }, [showMobileMenu, confirmDialog, saveDialog, showPCPanel, showRouterPanel, showUnifiedDeviceModal, showAboutModal, showProjectPicker, showOnboarding]);
 
-  // Helper: tab açıklamaları (tooltip için)
-  const getTabDescription = useCallback((tabId: TabType): string => {
-    switch (tabId) {
-      case 'topology':
-        return t.tabDescTopology;
-      case 'cmd':
-        return t.tabDescCmd;
-      case 'terminal':
-        return t.tabDescTerminal;
-      case 'tasks':
-        return t.tabDescTasks;
-      default:
-        return '';
-    }
-  }, [t]);
 
   // Onboarding content + controls
   const onboardingSteps = [
@@ -3020,12 +2850,6 @@ ${state.bannerMOTD}
     ...tab,
     label: t[tab.labelKey as keyof typeof t] as string
   }));
-
-  const handleTabHoverGlow = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    e.currentTarget.style.setProperty('--mx', `${e.clientX - rect.left}px`);
-    e.currentTarget.style.setProperty('--my', `${e.clientY - rect.top}px`);
-  }, []);
 
   // Refresh network connections and WiFi status
   const handleRefreshNetwork = useCallback(() => {
@@ -3858,6 +3682,7 @@ ${state.bannerMOTD}
       }, 2000); // Debounce refresh by 2 seconds
       return () => clearTimeout(timer);
     }
+    return;
   }, [topologyDevices, topologyConnections, handleRefreshNetwork]);
 
   // Handle key events: ESC to close, ENTER to confirm
@@ -4251,14 +4076,6 @@ ${state.bannerMOTD}
 
   const isDark = (effectiveTheme ?? theme) === 'dark';
 
-  // Helper function to truncate long names with an ellipsis
-  const truncateWithEllipsis = useCallback((text: string, maxLength: number) => {
-    if (text.length <= maxLength) {
-      return text;
-    }
-    return text.substring(0, maxLength) + '...';
-  }, []);
-
   return (
     <AppErrorBoundary fallbackTitle={t.applicationError}>
       <div className={cn("h-dvh w-full flex flex-col relative transition-colors duration-700 overflow-x-hidden", isAppLoading ? 'bg-slate-950' : (isDark ? 'bg-slate-950' : 'bg-slate-50'))}>
@@ -4415,7 +4232,6 @@ ${state.bannerMOTD}
 
           {showOnboarding && <OnboardingDialog
             open={showOnboarding}
-            onOpenChange={setShowOnboarding}
             t={t}
             isDark={isDark}
             onboardingStep={onboardingStep}
@@ -4787,7 +4603,6 @@ ${state.bannerMOTD}
             onClose={() => setShowRouterPanel(false)}
             topologyDevices={topologyDevices || undefined}
             deviceStates={deviceStates}
-            cableInfo={cableInfo}
           />}
 
           {/* Main Content - Fits between header and footer with scroll */}

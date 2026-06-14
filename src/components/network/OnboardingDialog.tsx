@@ -13,7 +13,6 @@ interface OnboardingStep {
 
 interface OnboardingDialogProps {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
   t: Translations;
   isDark: boolean;
   onboardingStep: number;
@@ -24,7 +23,7 @@ interface OnboardingDialogProps {
 }
 
 export function OnboardingDialog({
-  open, onOpenChange, t, isDark,
+  open, t, isDark,
   onboardingStep, onboardingSteps,
   closeOnboardingForever, prevOnboarding, nextOnboarding,
 }: OnboardingDialogProps) {

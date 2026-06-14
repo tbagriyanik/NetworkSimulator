@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import type { Achievement, StudentProgress } from '@/types/ui-ux';
 import { ACHIEVEMENT_CATEGORIES } from '@/constants/ui-ux';
 import {

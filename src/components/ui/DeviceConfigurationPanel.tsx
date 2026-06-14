@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useMode } from '@/contexts/ModeContext';
 import { MODE_FEATURES, VALIDATION_RULES } from '@/constants/ui-ux';
 import type { DeviceConfig } from '@/types/ui-ux';

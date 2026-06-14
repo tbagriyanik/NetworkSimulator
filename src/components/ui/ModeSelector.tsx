@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+
 import { useMode, LearningMode } from '@/contexts/ModeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Label } from '@/components/ui/label';

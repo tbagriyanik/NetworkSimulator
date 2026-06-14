@@ -11,24 +11,20 @@ export function useSkeletonTransition(isLoading: boolean, minDisplayTime: number
 
     useEffect(() => {
         if (isLoading) {
-            // Show skeleton immediately
             setShowSkeleton(true);
             setIsTransitioning(false);
-        } else {
-            // Ensure skeleton shows for minimum time to avoid flashing
-            const timer = setTimeout(() => {
-                setIsTransitioning(true);
-                // After fade-out animation completes, hide skeleton
-                const fadeOutTimer = setTimeout(() => {
-                    setShowSkeleton(false);
-                    setIsTransitioning(false);
-                }, 400); // Match the fade-out animation duration
-
-                return () => clearTimeout(fadeOutTimer);
-            }, minDisplayTime);
-
-            return () => clearTimeout(timer);
+            return;
         }
+
+        const timer = setTimeout(() => {
+            setIsTransitioning(true);
+            setTimeout(() => {
+                setShowSkeleton(false);
+                setIsTransitioning(false);
+            }, 400);
+        }, minDisplayTime);
+
+        return () => clearTimeout(timer);
     }, [isLoading, minDisplayTime]);
 
     return {

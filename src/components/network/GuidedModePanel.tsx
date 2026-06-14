@@ -12,20 +12,17 @@ import {
   ChevronDown,
   ChevronUp,
   X,
-  BookOpen,
-  Move,
   Sparkles,
   Wand2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger
 } from '@/components/ui/collapsible';
-import { GuidedStep, GuidedProject, getProgressPercentage } from '@/lib/network/guidedMode';
+import { GuidedProject, getProgressPercentage } from '@/lib/network/guidedMode';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { TutorialAnimationPlayer } from './TutorialAnimationPlayer';
 
@@ -62,13 +59,10 @@ interface GuidedModePanelProps {
 export function GuidedModePanel({
   project,
   currentStepIndex,
-  onStepComplete,
   onStepUncomplete,
   onClose,
   onMinimize,
   isMinimized,
-  lastCompletedStep,
-  isCurrentStepReady = false,
   lastCommand,
   deviceAccessed,
   deviceAccessedId,
@@ -141,7 +135,6 @@ export function GuidedModePanel({
   const dragRef = useRef<{ startX: number; startY: number; initialX: number; initialY: number } | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const scrollViewportRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to current step when it changes
   const activeStepRef = useRef<HTMLDivElement>(null);
@@ -268,38 +261,6 @@ export function GuidedModePanel({
     };
   }, [position]);
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging || !dragRef.current) return;
-
-    // Cancel previous animation frame
-    if (animationFrameRef.current !== null) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
-
-    animationFrameRef.current = requestAnimationFrame(() => {
-      if (!isDragging || !dragRef.current) return;
-
-      const dx = e.clientX - dragRef.current.startX;
-      const dy = e.clientY - dragRef.current.startY;
-
-      // Mark as dragged if moved significantly
-      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-        setHasDragged(true);
-      }
-
-      setPosition({
-        x: Math.max(0, Math.min(window.innerWidth - 320, dragRef.current.initialX + dx)),
-        y: Math.max(0, Math.min(window.innerHeight - 200, dragRef.current.initialY + dy))
-      });
-    });
-  }, [isDragging]);
-
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-    dragRef.current = null;
-    // Reset hasDragged after a short delay to allow click to complete
-    setTimeout(() => setHasDragged(false), 100);
-  }, []);
 
   // Touch handlers for mobile
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -319,39 +280,6 @@ export function GuidedModePanel({
     };
   }, [position]);
 
-  const handleTouchMove = useCallback((e: TouchEvent) => {
-    if (!isDragging || !dragRef.current) return;
-
-    // Cancel previous animation frame
-    if (animationFrameRef.current !== null) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
-
-    animationFrameRef.current = requestAnimationFrame(() => {
-      if (!isDragging || !dragRef.current) return;
-
-      const touch = e.touches[0];
-      const dx = touch.clientX - dragRef.current.startX;
-      const dy = touch.clientY - dragRef.current.startY;
-
-      // Mark as dragged if moved significantly
-      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-        setHasDragged(true);
-      }
-
-      setPosition({
-        x: Math.max(0, Math.min(window.innerWidth - 320, dragRef.current.initialX + dx)),
-        y: Math.max(0, Math.min(window.innerHeight - 200, dragRef.current.initialY + dy))
-      });
-    });
-  }, [isDragging]);
-
-  const handleTouchEnd = useCallback(() => {
-    setIsDragging(false);
-    dragRef.current = null;
-    // Reset hasDragged after a short delay to allow click to complete
-    setTimeout(() => setHasDragged(false), 100);
-  }, []);
 
   useEffect(() => {
     if (isDragging) {
@@ -443,6 +371,7 @@ export function GuidedModePanel({
         window.removeEventListener('touchend', handleTouchEnd);
       };
     }
+    return;
   }, [isDragging]);
 
   // Trigger celebration when all steps are completed
@@ -744,8 +673,6 @@ export function GuidedModePanel({
             {project.steps.map((step, index) => {
               const isActive = index === currentStepIndex;
               const isCompleted = step.completed;
-              const isFuture = index > currentStepIndex;
-
               return (
                 <div
                   key={step.id}

@@ -46,9 +46,11 @@ export function useNetworkLogic(
     return leftParts.every((part, index) => (part & maskParts[index]) === (rightParts[index] & maskParts[index]));
   }, [isValidIpv4]);
 
-  const getPortAccessVlan = useCallback((port: any): number => Number(port?.accessVlan || port?.vlan || 1), []);
+  const getPortAccessVlan = useCallback((port: { accessVlan?: string | number; vlan?: number }): number => {
+    return Number(port.accessVlan) || port.vlan || 1;
+  }, []);
 
-  const getPeerPortVlan = useCallback((ownerDeviceId: string, ownerPortId: string, devices: CanvasDevice[]): number | null => {
+  const getPeerPortVlan = useCallback((ownerDeviceId: string, ownerPortId: string, _devices: CanvasDevice[]): number | null => {
     const conns = topologyConnectionsRef.current;
     const dStates = deviceStatesRef.current;
     const connection = conns.find((conn) =>

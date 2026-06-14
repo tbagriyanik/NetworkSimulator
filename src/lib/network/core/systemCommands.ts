@@ -21,7 +21,7 @@ export const systemHandlers: Record<string, CommandHandler> = {
 function cmdEnable(
   state: any,
   input: string,
-  _ctx: any
+  ctx: any
 ): any {
   // Check if already in privileged mode
   if (state.currentMode === 'privileged') {
@@ -76,7 +76,7 @@ function cmdEnable(
 function cmdDisable(
   state: any,
   _input: string,
-  _ctx: any
+  ctx: any
 ): any {
   if (state.currentMode !== 'privileged') {
     return { success: false, error: iosModeError() };
@@ -96,7 +96,7 @@ function cmdDisable(
 function cmdConfigureTerminal(
   state: any,
   _input: string,
-  _ctx: any
+  ctx: any
 ): any {
   if (state.currentMode !== 'privileged') {
     return { success: false, error: iosModeError() };
@@ -116,7 +116,7 @@ function cmdConfigureTerminal(
 function cmdExit(
   state: any,
   _input: string,
-  _ctx: any
+  ctx: any
 ): any {
   switch (state.currentMode) {
     case 'interface':
@@ -192,7 +192,7 @@ function cmdExit(
 function cmdEnd(
   state: any,
   _input: string,
-  _ctx: any
+  ctx: any
 ): any {
   // Handle all sub-modes and return to privileged
   switch (state.currentMode) {
@@ -239,7 +239,7 @@ function cmdEnd(
 function cmdDo(
   state: any,
   input: string,
-  _ctx: any
+  ctx: any
 ): any {
   const withOriginalMode = (result: any) => {
     if (result?.newState) result.newState = { ...result.newState, currentMode: originalMode };
@@ -348,6 +348,7 @@ function cmdDo(
   // Unknown command
   return { success: false, error: `% Invalid input detected at '^' marker.\n${subCommand ? `% ${subCommand}` : ''}` };
 }
+
 
 
 

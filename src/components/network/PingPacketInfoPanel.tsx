@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import React from 'react';
 import { CanvasDevice, CanvasConnection } from './networkTopology.types';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { X } from 'lucide-react';
@@ -336,7 +336,6 @@ export function PingPacketInfoPanel({
     isPaused,
     hopPacketInfos,
     currentHopIndex,
-    totalHops,
     onPlay,
     onPause,
     onNext,
@@ -352,7 +351,6 @@ export function PingPacketInfoPanel({
     errorMessage,
     sourceName,
     targetName,
-    sourceIp,
     targetIp,
 }: PingPacketInfoPanelProps) {
     const t = language === 'tr' ? tr : en;
@@ -759,10 +757,8 @@ export function buildHopPacketInfos(
 ): HopPacketInfo[] {
     if (!path || path.length < 2) return [];
 
-    const sourceDevice = devices.find(d => d.id === path[0]);
     const targetDevice = devices.find(d => d.id === path[path.length - 1]);
 
-    const originalSrcIp = sourceDevice?.ip || sourceDevice?.ipv6 || '0.0.0.0';
     const originalDstIp = targetDevice?.ip || targetDevice?.ipv6 || '0.0.0.0';
 
     const isIPv6 = (targetIp && targetIp.includes(':')) || originalDstIp.includes(':');

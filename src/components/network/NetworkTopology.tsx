@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo, Mou
 import { flushSync } from 'react-dom';
 import dynamic from 'next/dynamic';
 import useAppStore, { useTopologyDevices, useTopologyConnections, useTopologyNotes } from '@/lib/store/appStore';
-import { SwitchState, CableType, CableInfo, isCableCompatible } from '@/lib/network/types';
+import { CableType, isCableCompatible } from '@/lib/network/types';
 import { checkDeviceConnectivity, getPingDiagnostics, getWirelessSignalStrength, getWirelessDistance } from '@/lib/network/connectivity';
 import { generateRandomLinkLocalIpv4, generateRandomLinkLocalIpv6 } from '@/lib/network/linkLocal';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -16,20 +16,18 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TooltipWrapper } from "@/components/ui/TooltipWrapper";
 import { ShortcutBadge } from "@/components/ui/ShortcutBadge";
-import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType, CanvasPort, NetworkTopologyProps } from './networkTopology.types';
+import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType, NetworkTopologyProps } from './networkTopology.types';
 import { generateSwitchPorts, generateL3SwitchPorts, generateRouterPorts } from './networkTopology.portGenerators';
 import { useCanvasHistory } from '@/hooks/useCanvasHistory';
-import { DeviceIcon } from './DeviceIcon';
 import { ConnectionLine } from './ConnectionLine';
 import { DeviceNode } from './DeviceNode';
 import LazyNetworkTopologyContextMenu from './LazyNetworkTopologyContextMenu';
 import { LazyNetworkTopologyPortSelectorModal } from './LazyNetworkTopologyPortSelectorModal';
 import { useEnvironment } from '@/lib/store/appStore';
 import { Plus, Power, Trash2, Monitor, Network, Laptop, X, Cable, Strikethrough, Usb } from "lucide-react";
-import { cn, normalizeMAC } from '@/lib/utils';
-import { getDeviceWidth, getDeviceHeight, isPcLike, isSwitchDevice, isRouterDevice } from './networkTopology.helpers';
-import { CABLE_COLORS, DRAG_THRESHOLD, LONG_PRESS_DURATION, VIRTUAL_CANVAS_WIDTH_MOBILE, VIRTUAL_CANVAS_HEIGHT_MOBILE, VIRTUAL_CANVAS_WIDTH_DESKTOP, VIRTUAL_CANVAS_HEIGHT_DESKTOP, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, NOTE_COLORS, NOTE_FONTS_DESKTOP as NOTE_FONTS, NOTE_FONT_SIZES, NOTE_OPACITY as NOTE_OPACITY_OPTIONS, PC_PORT_SPACING, PORT_SPACING, PORT_START_X, PORT_START_Y, PORT_COLORS, STATUS_COLORS, STROKE_COLORS } from './networkTopology.constants';
-import { calculateSTPState } from '@/lib/network/core/showCommands';
+import { normalizeMAC } from '@/lib/utils';
+import { getDeviceWidth, getDeviceHeight } from './networkTopology.helpers';
+import { CABLE_COLORS, DRAG_THRESHOLD, LONG_PRESS_DURATION, VIRTUAL_CANVAS_WIDTH_MOBILE, VIRTUAL_CANVAS_HEIGHT_MOBILE, VIRTUAL_CANVAS_WIDTH_DESKTOP, VIRTUAL_CANVAS_HEIGHT_DESKTOP, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, NOTE_COLORS, NOTE_FONTS_DESKTOP as NOTE_FONTS, NOTE_FONT_SIZES, NOTE_OPACITY as NOTE_OPACITY_OPTIONS, PC_PORT_SPACING, PORT_SPACING, PORT_START_X, PORT_START_Y, PORT_COLORS, STATUS_COLORS } from './networkTopology.constants';
 import { errorHandler, CLIPBOARD_ERRORS } from '@/lib/errors/errorHandler';
 import { buildHopPacketInfos } from './PingPacketInfoPanel';
 import { logger } from '@/lib/logger';
@@ -52,12 +50,6 @@ const generateMacAddress = (seed?: number): string => {
   }
   return `${hex.slice(0, 4)}.${hex.slice(4, 8)}.${hex.slice(8, 12)}`;
 };
-
-// Drag item from palette
-interface DragItem {
-  type: 'pc' | 'iot' | 'switch' | 'router' | 'firewall';
-  icon: React.ReactNode;
-}
 
 const DEVICE_ICONS: Record<DeviceType | 'switch', React.ReactNode> = {
   pc: (
@@ -214,18 +206,13 @@ function PacketPopup({ hopIndex, info, language, onClose, isDark }: {
 export function NetworkTopology({
   cableInfo,
   onCableChange,
-  selectedDevice,
   onDeviceSelect,
   onDeviceDoubleClick,
   onTopologyChange,
   onDeviceDelete,
-  initialDevices,
-  initialConnections,
-  initialNotes,
   isActive = true,
   activeDeviceId,
   deviceStates,
-  onDeviceRename,
   onRefreshNetwork,
   focusDeviceId,
   zoom: zoomProp,
@@ -245,36 +232,6 @@ export function NetworkTopology({
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const isTR = language === 'tr';
-
-  // Default devices for initial state
-  const defaultDevices: CanvasDevice[] = [
-    {
-      id: 'pc-1',
-      type: 'pc',
-      name: 'PC-1',
-      macAddress: generateMacAddress(1),
-      ip: '192.168.1.10',
-      x: 100,
-      y: 150,
-      status: 'online',
-      ports: [
-        { id: 'eth0', label: 'Eth0', status: 'disconnected' },
-        { id: 'com1', label: 'COM1', status: 'disconnected' },
-      ],
-    },
-    {
-      id: 'switch-1',
-      type: 'switchL2',
-      name: 'Switch-1',
-      macAddress: generateMacAddress(2),
-      ip: '',
-      x: 300,
-      y: 150,
-      status: 'online',
-      switchModel: 'WS-C2960-24TT-L',
-      ports: generateSwitchPorts(),
-    },
-  ];
 
   // Zustand store state - using granular selectors to prevent cascading re-renders
   const topologyDevices = useTopologyDevices();
@@ -329,7 +286,7 @@ export function NetworkTopology({
   }, [deviceStates]);
 
   // Use hook to preserve window positions during network refresh
-  const { refreshNetworkWithPositions } = useNetworkRefreshWithPositions(onRefreshNetwork || (() => { }));
+  useNetworkRefreshWithPositions(onRefreshNetwork || (() => { }));
 
   // Get environment settings (moved here to be used in useEffect below)
   const environment = useEnvironment();
@@ -436,7 +393,7 @@ export function NetworkTopology({
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [selectedDeviceIds, setSelectedDeviceIds] = useState<string[]>(activeDeviceId ? [activeDeviceId] : []);
   const [selectedNoteIds, setSelectedNoteIds] = useState<string[]>([]);
-  const [snapToGrid, setSnapToGrid] = useState(true); // Snap-to-grid toggle
+  const [snapToGrid] = useState(true); // Snap-to-grid toggle
   const canvasRef = useRef<HTMLDivElement>(null);
   const canvasRectRef = useRef<DOMRect | null>(null);
 
@@ -448,7 +405,7 @@ export function NetworkTopology({
   // Ping mode state
   const [pingMode, setPingMode] = useState(false);
   const [pingSource, setPingSource] = useState<CanvasDevice | null>(null);
-  const [pingResult, setPingResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [_pingResult, setPingResult] = useState<{ success: boolean; message: string } | null>(null);
   const [pingCursorPos, setPingCursorPos] = useState<{ x: number; y: number } | null>(null);
   const startPingAnimationRef = useRef<((sourceId: string, targetId: string) => void) | null>(null);
 
@@ -550,7 +507,7 @@ export function NetworkTopology({
   }, [focusDeviceId, deviceMap]);
 
   // Select all state
-  const [selectAllMode, setSelectAllMode] = useState(false);
+  const [_selectAllMode, setSelectAllMode] = useState(false);
 
   // Handle external clear selection trigger (e.g., from Tab key)
   useEffect(() => {
@@ -569,7 +526,7 @@ export function NetworkTopology({
 
   // Drag state with position tracking
   const [draggedDevice, setDraggedDevice] = useState<string | null>(null);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [_dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [dragStartPos, setDragStartPos] = useState<{ x: number, y: number } | null>(null);
   const [dragStartDevicePositions, setDragStartDevicePositions] = useState<{ [key: string]: { x: number, y: number } }>({});
   const [isActuallyDragging, setIsActuallyDragging] = useState(false);
@@ -577,8 +534,6 @@ export function NetworkTopology({
   // Drag performance - use ref for animation frame throttling
   const dragAnimationFrameRef = useRef<number | null>(null);
   const lastDragPositionRef = useRef<{ x: number; y: number } | null>(null);
-  const devicePositionRef = useRef<{ [key: string]: { x: number; y: number } }>({});
-
   // Ref to track if we were dragging (for click handler to check without stale closure)
   const wasDraggingRef = useRef(false);
 
@@ -599,7 +554,6 @@ export function NetworkTopology({
   const snapToGridRef = useRef(true);
   const isDrawingConnectionRef = useRef(false);
   const panAnimationFrameRef = useRef<number | null>(null);
-  const momentumAnimationFrameRef = useRef<number | null>(null);
   const velocityRef = useRef({ x: 0, y: 0 });
   const lastMouseMoveTimeRef = useRef<number>(0);
   const lastMouseMovePosRef = useRef({ x: 0, y: 0 });
@@ -649,7 +603,7 @@ export function NetworkTopology({
 
   // Clipboard state for copy/cut/paste
   const [clipboard, setClipboard] = useState<CanvasDevice[]>([]);
-  const [notesClipboard, setNotesClipboard] = useState<CanvasNote[]>([]);
+  const [notesClipboard] = useState<CanvasNote[]>([]);
 
   // Always-fresh refs: updated on every render so event handlers never get stale values
   const latestDevicesRef = useRef<CanvasDevice[]>([]);
@@ -690,10 +644,6 @@ export function NetworkTopology({
   const [configError, setConfigError] = useState('');
   const configInputRef = useRef<HTMLInputElement>(null);
 
-  // Rename state
-  const [renamingDevice, setRenamingDevice] = useState<string | null>(null);
-  const [renameValue, setRenameValue] = useState('');
-
   // UI state
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
 
@@ -706,7 +656,7 @@ export function NetworkTopology({
   const [touchDragStartPos, setTouchDragStartPos] = useState<{ x: number; y: number } | null>(null);
   const [touchDragOffset, setTouchDragOffset] = useState({ x: 0, y: 0 });
   const [lastTouchDistance, setLastTouchDistance] = useState<number | null>(null);
-  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+  const [_touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
   const [longPressTimer, setLongPressTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [lastTapTime, setLastTapTime] = useState(0);
   const [lastTappedDevice, setLastTappedDevice] = useState<string | null>(null);
@@ -749,7 +699,7 @@ export function NetworkTopology({
     isReturn?: boolean;       // true = paket geri dönüyor (Echo Reply)
     failedAtHop?: number;     // başarısız olduğu hop index
   } | null>(null);
-  const [errorToast, setErrorToast] = useState<{ message: string; details?: string } | null>(null);
+  const [errorToast, setErrorToast] = useState<{ message: string; details?: string; type?: 'success' | 'error' } | null>(null);
   // Hop packet infos for the packet analysis panel
   const [hopPacketInfos, setHopPacketInfos] = useState<import('./PingPacketInfoPanel').HopPacketInfo[]>([]);
   const [packetPopupHop, setPacketPopupHop] = useState<number | null>(null);
@@ -1044,16 +994,6 @@ export function NetworkTopology({
     return Math.sqrt(dx * dx + dy * dy);
   }, []);
 
-  // Get canvas coordinates from screen coordinates
-  const getCanvasCoords = useCallback((clientX: number, clientY: number) => {
-    if (!canvasRef.current) return { x: 0, y: 0 };
-    const rect = canvasRef.current.getBoundingClientRect();
-    return {
-      x: (clientX - rect.left - pan.x) / zoom,
-      y: (clientY - rect.top - pan.y) / zoom,
-    };
-  }, [pan, zoom]);
-
   // Zoom mouse drag/scroll handlers
   const handleZoomMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -1291,8 +1231,6 @@ export function NetworkTopology({
   useEffect(() => {
     const CANVAS_W_D = VIRTUAL_CANVAS_WIDTH_DESKTOP;
     const CANVAS_H_D = VIRTUAL_CANVAS_HEIGHT_DESKTOP;
-    const CANVAS_W_M = VIRTUAL_CANVAS_WIDTH_MOBILE;
-    const CANVAS_H_M = VIRTUAL_CANVAS_HEIGHT_MOBILE;
 
     const handleMouseMove = (e: globalThis.MouseEvent) => {
       // Always update mouse position ref for motion detection and other proximity features
@@ -1640,8 +1578,6 @@ export function NetworkTopology({
 
       if (isTouchDraggingRef.current) {
         if (e.cancelable) e.preventDefault();
-        const rect = canvasRef.current.getBoundingClientRect();
-        const currentPan = panRef.current;
         const currentZoom = zoomRef.current;
         const currentTouchDragStartPos = touchDragStartPosRef.current;
 
@@ -1999,7 +1935,6 @@ export function NetworkTopology({
     }
 
     if (isTouchDragging && touchDragStartPos) {
-      const rect = canvasRef.current.getBoundingClientRect();
       const dx = (touch.clientX - touchDragStartPos.x) / zoom;
       const dy = (touch.clientY - touchDragStartPos.y) / zoom;
       const initialPositions = dragStartDevicePositionsRef.current;
@@ -2185,10 +2120,6 @@ export function NetworkTopology({
       // Zoom to center of visible viewport (what user actually sees)
       const viewportCenterX = rect.width / 2;
       const viewportCenterY = rect.height / 2;
-
-      // Convert viewport center to canvas coordinates
-      const cursorX = viewportCenterX + pan.x;
-      const cursorY = viewportCenterY + pan.y;
 
       const zoomSensitivity = 0.0015;
       const delta = -e.deltaY;
@@ -2756,28 +2687,6 @@ export function NetworkTopology({
     );
   }, [saveToHistory]);
 
-  const handleNoteTextContextMenu = useCallback((e: ReactMouseEvent, noteId: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const textarea = noteTextareaRefs.current[noteId];
-    if (textarea) {
-      setNoteTextSelection({
-        noteId,
-        start: textarea.selectionStart ?? 0,
-        end: textarea.selectionEnd ?? 0,
-      });
-    }
-
-    setContextMenu({
-      x: e.clientX,
-      y: e.clientY,
-      deviceId: null,
-      noteId,
-      mode: 'note-edit',
-    });
-  }, []);
-
   const handleNoteTextCopy = useCallback(async (noteId: string) => {
     const textarea = noteTextareaRefs.current[noteId];
     const note = latestNotesRef.current.find((n) => n.id === noteId);
@@ -2883,7 +2792,6 @@ export function NetworkTopology({
     e.stopPropagation();
     if (!canvasRef.current) return;
 
-    const rect = canvasRef.current.getBoundingClientRect();
     const note = notes.find((n) => n.id === noteId);
     if (!note) return;
 
@@ -3497,14 +3405,6 @@ export function NetworkTopology({
     }
   }, [isFullscreen, onFullscreenChange]);
 
-  // Clear canvas
-  const clearCanvas = useCallback(() => {
-    setDevices([]);
-    setConnections([]);
-    setSelectedDeviceIds([]);
-    deviceCounterRef.current = { pc: 0, iot: 0, switch: 0, router: 0, firewall: 0 };
-  }, []);
-
   // Copy devices
   const copyDevice = useCallback((ids: string[]) => {
     const selectedDevices = devices.filter(d => ids.includes(d.id));
@@ -3525,19 +3425,6 @@ export function NetworkTopology({
     setContextMenu(null);
   }, [devices, deleteDevice]);
 
-  // Confirm rename
-  const confirmRename = useCallback(() => {
-    if (isExamActive) return;
-    if (renamingDevice && renameValue.trim()) {
-      saveToHistory();
-      setDevices(prev => prev.map(d =>
-        d.id === renamingDevice ? { ...d, name: renameValue.trim() } : d
-      ));
-      onDeviceRename?.(renamingDevice, renameValue.trim());
-    }
-    setRenamingDevice(null);
-    setRenameValue('');
-  }, [renamingDevice, renameValue, saveToHistory, onDeviceRename, isExamActive]);
   // Paste devices
   const pasteDevice = useCallback(() => {
     if (clipboard.length === 0) return;
@@ -4641,17 +4528,9 @@ export function NetworkTopology({
     };
   }, [setDevices, saveToHistory, deleteConnection]);
 
-  // Toast notification state
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-
   // Get device position (center based on device type)
   const getDeviceCenter = useCallback((device: CanvasDevice) => {
     const deviceWidth = getDeviceWidth(device.type);
-    const iconColor = device.status === 'online'
-      ? STATUS_COLORS.online
-      : STATUS_COLORS.offline;
-    const portsPerRow = 8;
-    const numRows = Math.ceil(device.ports.length / portsPerRow);
     const deviceHeight = getDeviceHeight(device.type, device.ports.length);
     return { x: device.x + deviceWidth / 2, y: device.y + deviceHeight / 2 };
   }, []);
@@ -4707,170 +4586,6 @@ export function NetworkTopology({
       y: device.y + startY + row * rowSpacing
     };
   }, [getDeviceCenter]);
-
-  // Render connection SVG (Visual line only)
-  const renderConnectionLine = (conn: CanvasConnection, connIndex: number) => {
-    const sourceDevice = deviceMap.get(conn.sourceDeviceId);
-    const targetDevice = deviceMap.get(conn.targetDeviceId);
-    if (!sourceDevice || !targetDevice) return null;
-
-    // Get port positions for more accurate connection lines
-    const source = getPortPosition(sourceDevice, conn.sourcePort);
-    const target = getPortPosition(targetDevice, conn.targetPort);
-
-    // Check cable compatibility - use pink color for incompatible cables
-    const cableInfoForConnection: CableInfo = {
-      connected: true,
-      cableType: conn.cableType,
-      sourceDevice: sourceDevice.type,
-      targetDevice: targetDevice.type,
-      sourcePort: conn.sourcePort,
-      targetPort: conn.targetPort,
-    };
-    const isCompatible = conn.cableType === 'console'
-      ? isCableCompatible(cableInfoForConnection)
-      : true;
-
-    // Check if either port is in STP blocking state
-    const sourceState = deviceStates?.get(conn.sourceDeviceId);
-    const targetState = deviceStates?.get(conn.targetDeviceId);
-
-    // Try to find port with case-insensitive matching
-    const sourcePort = sourceState?.ports?.[conn.sourcePort] ||
-      Object.values(sourceState?.ports || {}).find(p => p.id.toLowerCase() === conn.sourcePort.toLowerCase());
-    const targetPort = targetState?.ports?.[conn.targetPort] ||
-      Object.values(targetState?.ports || {}).find(p => p.id.toLowerCase() === conn.targetPort.toLowerCase());
-
-    const isSourcePortBlocked = sourcePort?.spanningTree?.state === 'blocking' || sourcePort?.spanningTree?.role === 'alternate';
-    const isTargetPortBlocked = targetPort?.spanningTree?.state === 'blocking' || targetPort?.spanningTree?.role === 'alternate';
-    const isSTPBlocked = isSourcePortBlocked || isTargetPortBlocked;
-
-    // Use gray color for STP blocked cables
-    const color = isSTPBlocked ? '#9ca3af' : (isCompatible ? CABLE_COLORS[conn.cableType].primary : CABLE_COLORS.error.primary);
-
-    // Calculate parallel offset for multiple connections between same devices
-    const sameDeviceConnections = connections.filter(
-      c => (c.sourceDeviceId === conn.sourceDeviceId && c.targetDeviceId === conn.targetDeviceId) ||
-        (c.sourceDeviceId === conn.targetDeviceId && c.targetDeviceId === conn.sourceDeviceId)
-    );
-    const sameConnIndex = sameDeviceConnections.findIndex(c => c.id === conn.id);
-    const totalSameConns = sameDeviceConnections.length;
-
-    // Calculate offset for parallel lines (spread out from center)
-    const maxOffset = 20;
-    const offset = totalSameConns > 1
-      ? (sameConnIndex - (totalSameConns - 1) / 2) * (maxOffset / Math.max(totalSameConns - 1, 1))
-      : 0;
-
-    // Calculate control points for smooth curve with offset
-    const midX = (source.x + target.x) / 2;
-    const midY = (source.y + target.y) / 2;
-
-    // Apply perpendicular offset for parallel lines
-    const dx = target.x - source.x;
-    const dy = target.y - source.y;
-    const len = Math.sqrt(dx * dx + dy * dy) || 1;
-    const perpX = -dy / len * offset;
-    const perpY = dx / len * offset;
-
-    const controlPoint1 = {
-      x: midX + perpX,
-      y: source.y + perpY + Math.abs(offset) * 0.5
-    };
-    const controlPoint2 = {
-      x: midX + perpX,
-      y: target.y + perpY - Math.abs(offset) * 0.5
-    };
-
-    return (
-      <g key={`line-${conn.id}`}>
-        {/* Visual Connection line */}
-        <path
-          d={`M ${source.x} ${source.y} C ${controlPoint1.x} ${controlPoint1.y}, ${controlPoint2.x} ${controlPoint2.y}, ${target.x} ${target.y}`}
-          stroke={isCompatible ? color : '#ef4444'}
-          strokeWidth={3}
-          fill="none"
-          strokeDasharray={isCompatible ? 'none' : '6,3'}
-          className="pointer-events-none"
-        />
-
-        {/* Animated data flow - only for compatible cables and non-blocked ports */}
-        {conn.active && isCompatible && !isSTPBlocked && (
-          <>
-            <circle r="4" fill={color}>
-              <animateMotion
-                dur="2s"
-                repeatCount="indefinite"
-                path={`M ${source.x} ${source.y} C ${controlPoint1.x} ${controlPoint1.y}, ${controlPoint2.x} ${controlPoint2.y}, ${target.x} ${target.y}`}
-              />
-            </circle>
-            <circle r="4" fill={color}>
-              <animateMotion
-                dur="2s"
-                repeatCount="indefinite"
-                begin="1s"
-                path={`M ${target.x} ${target.y} C ${controlPoint2.x} ${controlPoint2.y}, ${controlPoint1.x} ${controlPoint1.y}, ${source.x} ${source.y}`}
-              />
-            </circle>
-          </>
-        )}
-        {/* Connection label */}
-        {totalSameConns > 1 ? (
-          <>
-            <text
-              x={midX + perpX}
-              y={midY + perpY - 8}
-              fill="none"
-              stroke={isDark ? '#0f172a' : '#ffffff'}
-              strokeWidth="4"
-              strokeLinejoin="round"
-              fontSize="10"
-              textAnchor="middle"
-              className="pointer-events-none select-none"
-            >
-              {conn.sourcePort} ↔ {conn.targetPort}
-            </text>
-            <text
-              x={midX + perpX}
-              y={midY + perpY - 8}
-              fill={color}
-              fontSize="10"
-              textAnchor="middle"
-              className="pointer-events-none select-none"
-            >
-              {conn.sourcePort} ↔ {conn.targetPort}
-            </text>
-          </>
-        ) : (
-          <>
-            <text
-              x={midX}
-              y={midY - 10}
-              fill="none"
-              stroke={isDark ? '#0f172a' : '#ffffff'}
-              strokeWidth="4"
-              strokeLinejoin="round"
-              fontSize="10"
-              textAnchor="middle"
-              className="pointer-events-none select-none"
-            >
-              {conn.sourcePort} ↔ {conn.targetPort}
-            </text>
-            <text
-              x={midX}
-              y={midY - 10}
-              fill={color}
-              fontSize="10"
-              textAnchor="middle"
-              className="pointer-events-none select-none"
-            >
-              {conn.sourcePort} ↔ {conn.targetPort}
-            </text>
-          </>
-        )}
-      </g>
-    );
-  };
 
   // Render connection interaction handles (Trash Icon) - Should be rendered LAST to stay on top
   const renderConnectionHandle = (conn: CanvasConnection) => {
@@ -6164,7 +5879,6 @@ export function NetworkTopology({
 
     // Use the port position stored in connectionStart.point
     const source = connectionStart.point;
-    const sourceDevice = deviceMap.get(connectionStart.deviceId);
 
     return (
       <>
@@ -7394,9 +7108,6 @@ export function NetworkTopology({
                     const envelopeX = bezierX + (tangentDy / tangentLen * 20);
                     const envelopeY = bezierY + (-tangentDx / tangentLen * 20);
 
-                    const glowFilter = graphicsQuality === 'high'
-                      ? 'url(#packetGlow)'
-                      : undefined;
                     return (
                       <g key="ping-animation" opacity={0.9}>
                         <g
@@ -8588,16 +8299,16 @@ export function NetworkTopology({
 
 
       {/* Toast Notification */}
-      {toast && (
+      {errorToast && (
         <div
           role="alert"
           aria-live="polite"
-          className={`fixed bottom-4 left-4 px-4 py-3 rounded-lg shadow-lg text-sm font-medium transition-all duration-300 z-40 ${toast.type === 'success'
+          className={`fixed bottom-4 left-4 px-4 py-3 rounded-lg shadow-lg text-sm font-medium transition-all duration-300 z-40 ${errorToast.type === 'success'
             ? isDark ? 'bg-emerald-500/20 border border-emerald-500/50 text-emerald-300' : 'bg-emerald-50 border border-emerald-200 text-emerald-700'
             : isDark ? 'bg-red-500/20 border border-red-500/50 text-red-300' : 'bg-red-50 border border-red-200 text-red-700'
             }`}
         >
-          {toast.message}
+          {errorToast.message}
         </div>
       )}
     </div>

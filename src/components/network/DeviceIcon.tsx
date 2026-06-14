@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
 import { cn } from '@/lib/utils';
-import { DEVICE_ICON_COLORS, STROKE_COLORS } from './networkTopology.constants';
+import { DEVICE_ICON_COLORS } from './networkTopology.constants';
 import type { DeviceType } from './networkTopology.types';
 
 export interface DeviceIconProps {

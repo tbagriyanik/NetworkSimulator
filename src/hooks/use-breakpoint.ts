@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { breakpoints as designTokenBreakpoints, getBreakpointFromWidth as getDesignTokenBreakpoint } from '@/lib/design-tokens';
 import type { Breakpoint as DesignBreakpoint } from '@/lib/design-tokens';
 
@@ -20,8 +20,6 @@ export interface BreakpointState {
 const MOBILE_MAX = designTokenBreakpoints.mobile.max;      // 640
 const TABLET_MIN = designTokenBreakpoints.tablet.min;       // 641
 const TABLET_MAX = designTokenBreakpoints.tablet.max;       // 1024
-const DESKTOP_MIN = designTokenBreakpoints.desktop.min;     // 1025
-
 function getDeviceCategory(width: number): DeviceCategory {
   if (width <= MOBILE_MAX) return 'mobile';
   if (width >= TABLET_MIN && width <= TABLET_MAX) return 'tablet';

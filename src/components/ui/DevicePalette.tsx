@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useMode } from '@/contexts/ModeContext';
-import { MODE_FEATURES, DEVICE_TYPE_COLORS, TOUCH_TARGET_SIZE } from '@/constants/ui-ux';
+import { MODE_FEATURES, DEVICE_TYPE_COLORS } from '@/constants/ui-ux';
 import type { DeviceType } from '@/types/ui-ux';
 import { Icon } from './icon';
 import { Input } from './input';

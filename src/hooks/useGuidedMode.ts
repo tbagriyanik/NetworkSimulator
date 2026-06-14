@@ -3,11 +3,9 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { 
   GuidedProject, 
-  GuidedStep, 
-  getNextIncompleteStep, 
-  getCompletedStepsCount,
   checkStepCompletion,
-  getGuidedProjects
+  getGuidedProjects,
+  getCompletedStepsCount
 } from '@/lib/network/guidedMode';
 
 interface UseGuidedModeReturn {

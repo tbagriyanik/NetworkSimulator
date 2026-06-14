@@ -1,5 +1,4 @@
 import { Breakpoint, breakpoints as CENTRAL_BREAKPOINTS } from '@/lib/design-tokens';
-import { ResponsiveGridValue } from './grid';
 
 export interface ResponsiveValue<T> {
     mobile?: T;

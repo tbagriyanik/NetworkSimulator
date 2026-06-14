@@ -36,8 +36,6 @@ export interface UseDragOptions {
   mode?: DragMode;
   /** Which corner the position is relative to (for positioning style) */
   origin?: OriginCorner;
-  /** Whether to skip elements with data-modal-content attribute */
-  skipModalContent?: boolean;
   /** Whether to disable edge snapping completely */
   disableSnap?: boolean;
 }
@@ -91,7 +89,6 @@ export function useDrag(options: UseDragOptions = {}): UseDragReturn {
     minSize = { width: 200, height: 150 },
     mode = 'drag-only',
     origin = 'top-left',
-    skipModalContent = false,
     disableSnap = false,
   } = options;
 

@@ -2,7 +2,6 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 import { TaskDefinition, TaskContext, getTaskStatus } from '@/lib/network/taskDefinitions';
 import { SwitchState } from '@/lib/network/types';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -11,11 +10,10 @@ interface TaskCardProps {
   tasks: TaskDefinition[];
   state: SwitchState;
   context: TaskContext;
-  color: string;
   isDark: boolean;
 }
 
-export const TaskCard = React.memo(({ tasks, state, context, color, isDark }: TaskCardProps) => {
+export const TaskCard = React.memo(({ tasks, state, context, isDark }: TaskCardProps) => {
   const { t } = useLanguage();
   // Use ref to track previous completed tasks (avoids infinite loop)
   const prevCompletedRef = useRef<Set<string>>(new Set());
@@ -134,7 +132,7 @@ export const TaskCard = React.memo(({ tasks, state, context, color, isDark }: Ta
 
       {/* Task List */}
       <div className="space-y-2">
-        {tasks.map((task, index) => {
+        {tasks.map((task, _index) => {
           const completed = getTaskStatus(task, state, context);
           const name = task.name[context.language];
           const description = task.description[context.language];
@@ -195,10 +193,6 @@ export const TaskCard = React.memo(({ tasks, state, context, color, isDark }: Ta
                     let isConnected = false;
                     if (wlanState?.wifi?.mode === 'ap' && wlanState?.wifi?.ssid) {
                       // Router AP: check if any PC is connected
-                      const apSsid = wlanState.wifi.ssid;
-                      const apPass = wlanState.wifi.password || '';
-                      const apSecurity = wlanState.wifi.security || 'open';
-
                       // Simple check: if SSID is set and not empty, consider it as having potential connections
                       isConnected = true;
                     }

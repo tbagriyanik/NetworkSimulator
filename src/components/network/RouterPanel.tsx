@@ -1,14 +1,13 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { CableInfo, SwitchState, Port } from '@/lib/network/types';
+import { SwitchState, Port } from '@/lib/network/types';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Separator } from '@/components/ui/separator';
 import {
   X,
   Wifi,
@@ -30,7 +29,6 @@ import { RouterIcon } from './PCPanelWidgets';
 
 interface RouterPanelProps {
   deviceId: string;
-  cableInfo: CableInfo;
   isVisible: boolean;
   onClose: () => void;
   topologyDevices?: CanvasDevice[];
@@ -49,7 +47,6 @@ interface DhcpPoolInfo {
 
 export function RouterPanel({
   deviceId,
-  cableInfo,
   isVisible,
   onClose,
   topologyDevices = [],
@@ -86,7 +83,7 @@ export function RouterPanel({
     if (routerState?.dhcpPools) {
       return Object.entries(routerState.dhcpPools).map(([name, pool]) => ({
         poolName: name,
-        ...pool
+        ...(pool as Record<string, unknown>)
       } as DhcpPoolInfo));
     }
     return [];

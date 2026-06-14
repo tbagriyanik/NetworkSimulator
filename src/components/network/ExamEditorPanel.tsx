@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   X, Plus, Trash2, Save, Wand2, Shield,
   ChevronDown, ChevronUp, AlertCircle, Info,
-  Settings, CheckCircle2, Layout, Type, Target,
-  Monitor, Network, FileText, GripVertical
+  Settings, Target,
+  Monitor, FileText, GripVertical
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,9 +20,6 @@ import {
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -36,8 +33,7 @@ import {
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useIsMobile } from '@/hooks/use-breakpoint';
-import { ExamTask, ExamProject } from '@/lib/network/examMode';
+import { ExamProject, ExamTask } from '@/lib/network/examMode';
 
 type TranslationObject = { tr: string; en: string };
 
@@ -71,7 +67,6 @@ export function ExamEditorPanel({
   isDark
 }: ExamEditorPanelProps) {
   const { t, language } = useLanguage();
-  const isMobile = useIsMobile();
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [touchDragInfo, setTouchDragInfo] = useState<{ id: string; startIndex: number; currentIndex: number } | null>(null);
@@ -401,7 +396,7 @@ export function ExamEditorPanel({
                       <div className="flex items-center gap-3 min-w-0">
                         <div
                           className="flex items-center gap-1.5 cursor-grab active:cursor-grabbing text-slate-400 hover:text-purple-500 touch-none"
-                          onTouchStart={(e) => {
+                          onTouchStart={() => {
                             setTouchDragInfo({ id: task.id, startIndex: index, currentIndex: index });
                           }}
                           onTouchMove={(e) => {

@@ -155,6 +155,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       };
     } catch {
       // System theme detection not supported
+      return;
     }
   }, [initialized, theme]);
 

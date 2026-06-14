@@ -52,7 +52,7 @@ export function useMobileBack() {
     // Initial check
     checkForOpenOverlays();
 
-    const handlePopState = (e: PopStateEvent) => {
+    const handlePopState = (_e: PopStateEvent) => {
       if (hasPushedStateRef.current) {
         hasPushedStateRef.current = false;
         

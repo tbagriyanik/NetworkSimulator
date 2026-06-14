@@ -23,11 +23,7 @@ interface DeviceNodeProps {
 
 export const DeviceNode = memo(function DeviceNode({
   device,
-  isSelected,
   isDragging,
-  isDark,
-  isActive,
-  iotUpdateTrigger,
   onMouseDown,
   onPointerDown,
   onClick,

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { ErrorContext } from '@/types/ui-ux';
 import { Card, CardContent } from './card';
 import { Button } from './button';

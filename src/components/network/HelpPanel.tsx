@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Translations } from '@/contexts/LanguageContext';
-import { HelpCircle, X, Terminal, ChevronDown, Search } from 'lucide-react';
+import { X, Terminal, ChevronDown, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-breakpoint';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { getCommandCategories } from './networkTopology.commands';
 
@@ -34,7 +33,6 @@ export function HelpPanel({ t, theme, initialOpen = false, onClose }: HelpPanelP
   });
 
   const isDark = theme === 'dark';
-  const isMobile = useIsMobile();
   const lang = t.language || 'en';
   const isTR = lang === 'tr';
 

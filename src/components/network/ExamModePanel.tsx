@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { toast } from "@/hooks/use-toast";
 import {
   CheckCircle2,
   Circle,
@@ -10,16 +9,13 @@ import {
   Target,
   ChevronDown,
   ChevronUp,
-  X,
   GraduationCap,
   Settings,
-  Move,
-  Trophy,
   AlertTriangle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { ExamProject, ExamTask } from '@/lib/network/examMode';
+import { ExamProject } from '@/lib/network/examMode';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/use-breakpoint';
 
@@ -53,7 +49,6 @@ interface ExamModePanelProps {
 
 export function ExamModePanel({
   project,
-  onClose,
   onMinimize,
   isMinimized,
   score,
@@ -76,7 +71,7 @@ export function ExamModePanel({
   const [position, setPosition] = useState({ x: 0, y: 80 });
 
   // Elapsed time since exam started
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [, setElapsedSeconds] = useState(0);
   const [timeLeft, setTimeLimit] = useState<number | null>(null);
   const [hasAutoFinished, setHasAutoFinished] = useState(false);
 
@@ -216,6 +211,7 @@ export function ExamModePanel({
         }
       };
     }
+    return;
   }, [isDragging]);
 
   if (!project) return null;

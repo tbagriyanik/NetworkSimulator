@@ -56,7 +56,7 @@ export const serializeNetworkState = (
     state: NetworkState,
     options: ExportOptions = {}
 ): string => {
-    const { pretty = true, includeMetadata = true, indent = 2 } = options;
+    const { pretty = true, includeMetadata: _includeMetadata = true, indent = 2 } = options;
 
     const data: ParsedConfig = {
         version: '1.0.0',

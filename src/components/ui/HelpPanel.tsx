@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { GuidedModeStep } from '@/types/ui-ux';
 import { Card, CardContent, CardHeader, CardTitle } from './card';
 import { Button } from './button';

@@ -23,26 +23,6 @@ const maxWidthClasses = {
     full: 'max-w-full',
 };
 
-const paddingClasses = {
-    0: 'p-0',
-    4: 'p-1',
-    8: 'p-2',
-    12: 'p-3',
-    16: 'p-4',
-    24: 'p-6',
-    32: 'p-8',
-};
-
-const marginClasses = {
-    0: 'm-0',
-    4: 'm-1',
-    8: 'm-2',
-    12: 'm-3',
-    16: 'm-4',
-    24: 'm-6',
-    32: 'm-8',
-};
-
 /**
  * Container Component
  * 

@@ -1,8 +1,7 @@
-import { CanvasDevice, CanvasConnection, DeviceType, CanvasPort } from '@/components/network/networkTopology.types';
+import { CanvasDevice, CanvasConnection, CanvasPort } from '@/components/network/networkTopology.types';
 import { CableInfo, SwitchState, isCableCompatible, Port } from './types';
 import { findRoute, ipToNumber, getRoutingTable, isIpv6InNetwork } from './routing';
-import { performArpResolution, getMacFromArpCache } from './arp';
-import { processFrameMacLearning } from './macLearning';
+import { performArpResolution } from './arp';
 import { ensureDeviceStatesMap } from './networkUtils';
 
 export type WifiMode = 'ap' | 'client' | 'disabled' | 'sta';
@@ -93,11 +92,6 @@ const getVlanSpecificSTPBlocking = (
   // If no VLAN-specific instance is defined, do NOT fall back to VLAN 1.
   // Returning false allows pathfinding to continue without incorrectly blocking a VLAN path.
   return false;
-};
-
-const getPortNumber = (portId: string): number => {
-  const match = portId.match(/(\d+)/);
-  return match ? parseInt(match[1], 10) : 0;
 };
 
 /**
@@ -280,7 +274,7 @@ function isExternalDomain(hostname: string, devices: CanvasDevice[], deviceState
   // Check if it matches any configured hostname
   if (deviceStates) {
     const safeDeviceStates = ensureDeviceStatesMap(deviceStates);
-    for (const [deviceId, state] of safeDeviceStates.entries()) {
+    for (const [, state] of safeDeviceStates.entries()) {
       const deviceHostname = state.hostname?.toLowerCase();
       if (deviceHostname === cleanHostname) {
         return false;
@@ -413,7 +407,7 @@ function resolveHostname(
     // Check devices with matching domain
     if (deviceStates) {
       const safeDeviceStates = ensureDeviceStatesMap(deviceStates);
-      for (const [deviceId, state] of safeDeviceStates.entries()) {
+    for (const [deviceId, state] of safeDeviceStates.entries()) {
         const deviceDomain = state.domainName?.toLowerCase();
         const deviceHostname = state.hostname?.toLowerCase();
 
@@ -649,7 +643,6 @@ export function checkConnectivity(
       // BOLT: Use pre-resolved safeDeviceStates
       const sourceIp = getPrimaryDeviceIp(sourceId, devices, safeDeviceStates, false, sourceDeviceForArp);
       const sourceSubnet = getSubnetForDeviceIp(sourceId, sourceIp, devices, safeDeviceStates, sourceDeviceForArp) || '255.255.255.0';
-      const targetSubnet = targetDevice.subnet || '255.255.255.0';
 
       if (isIpInSubnet(sourceIp, resolvedTargetIp, sourceSubnet)) {
         // Same subnet - perform ARP resolution
@@ -662,7 +655,6 @@ export function checkConnectivity(
         performArpResolution(
           sourceId,
           resolvedTargetIp,
-          targetDevice.id,
           targetDevice.macAddress,
           interfaceName,
           deviceStates
@@ -864,7 +856,6 @@ export function checkConnectivity(
     if (!isInSameSubnet) {
       // Different subnets - check if there's a Layer-3 routing device in path with proper routes
       let hasL3Gateway = false;
-      let routerDeviceId: string | null = null;
 
       // Find the first L3 device in the path (the one that will actually route the packet)
       for (const deviceId of path) {
@@ -877,7 +868,6 @@ export function checkConnectivity(
           const route = findRoute(resolvedTargetIp, routingTable);
           if (route) {
             hasL3Gateway = true;
-            routerDeviceId = deviceId;
             break;
           } else {
             // First L3 device in path doesn't have a route - packet will be dropped
@@ -912,7 +902,6 @@ export function checkConnectivity(
               const conn = adjList.get(router.id)?.find(n => n.neighborId === pathDeviceId)?.conn;
               if (conn) {
                 hasL3Gateway = true;
-                routerDeviceId = router.id;
                 // Add router to path (insert before the connected device)
                 const pathIndex = path.indexOf(pathDeviceId);
                 if (pathIndex !== -1) {
@@ -1811,7 +1800,7 @@ function isManagementIpSet(deviceId: string, deviceStates?: Map<string, SwitchSt
 }
 
 /**
- * Evaluate Cisco-style ACL (Standard or Extended)
+ * Evaluate ACL (Standard or Extended)
  */
 export function evaluateAcl(
   aclId: string,
@@ -1905,7 +1894,7 @@ export function evaluateAcl(
 }
 
 /**
- * Match IP with Cisco-style wildcard mask (inverse mask)
+ * Match IP with wildcard mask (inverse mask)
  */
 function matchIpWithWildcard(ip: string, ruleIp: string, wildcard: string): boolean {
   try {

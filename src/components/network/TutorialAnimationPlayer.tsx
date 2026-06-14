@@ -1,15 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Monitor, MousePointer2, Plus, ArrowRight, Terminal, Laptop, Server, Cable } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Monitor, MousePointer2, Terminal, Server } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface TutorialAnimationPlayerProps {
   animationId: string;
-  isDark?: boolean;
 }
 
-export function TutorialAnimationPlayer({ animationId, isDark }: TutorialAnimationPlayerProps) {
+export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayerProps) {
   const [frame, setFrame] = useState(0);
   const [windowWidth, setWindowWidth] = useState(1200);
 
@@ -20,6 +19,7 @@ export function TutorialAnimationPlayer({ animationId, isDark }: TutorialAnimati
       window.addEventListener('resize', handleResize);
       return () => window.removeEventListener('resize', handleResize);
     }
+    return;
   }, []);
 
   useEffect(() => {

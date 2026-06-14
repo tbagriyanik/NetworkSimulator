@@ -229,7 +229,7 @@ export function useTouchDrag(options: TouchDragOptions) {
     );
 
     const handleTouchEnd = useCallback(
-        (e: React.TouchEvent | React.MouseEvent) => {
+        (_e: React.TouchEvent | React.MouseEvent) => {
             if (!isDragging) return;
 
             setIsDragging(false);

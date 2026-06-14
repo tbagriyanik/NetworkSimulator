@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { GripHorizontal, Monitor, X, SettingsIcon } from 'lucide-react';
+import { Monitor, X, SettingsIcon } from 'lucide-react';
 import { SwitchIcon, RouterIcon } from '@/components/network/PCPanelWidgets';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { cn, normalizeMAC } from '@/lib/utils';
-import { errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
+
 import { useDrag } from '@/hooks/useDrag';
 import { getWirelessSignalStrength } from '@/lib/network/connectivity';
 import type { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/networkTopology.types';
@@ -40,7 +39,7 @@ interface PCInfoPopoverProps {
   deviceStates: Map<string, SwitchState>;
 }
 
-export function SwitchInfoPopover({ router, routerState, t, language, isDark, onClose, handleDeviceDoubleClick, onOpenPanel, topologyConnections, onFocus, zIndex }: RouterInfoPopoverProps & { onFocus: () => void; zIndex: number }) {
+export function SwitchInfoPopover({ router, routerState, t, isDark, onClose, topologyConnections, onFocus, zIndex }: RouterInfoPopoverProps & { onFocus: () => void; zIndex: number }) {
   const { containerRef, handleDragStart, position } = useDrag({
     storageKey: `switch-info-pos-${router.id}`,
     defaultPosition: { x: 16, y: 96 },
@@ -251,7 +250,7 @@ export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zInde
   );
 }
 
-export function RouterInfoPopover({ router, routerState, t, language, isDark, onClose, onFocus, zIndex, handleDeviceDoubleClick, onOpenPanel, topologyConnections }: RouterInfoPopoverProps) {
+export function RouterInfoPopover({ router, routerState, t, isDark, onClose, onFocus, zIndex, handleDeviceDoubleClick, onOpenPanel, topologyConnections }: RouterInfoPopoverProps) {
   const { containerRef, handleDragStart, position } = useDrag({
     storageKey: `router-info-pos-${router.id}`,
     defaultPosition: { x: 16, y: 96 },

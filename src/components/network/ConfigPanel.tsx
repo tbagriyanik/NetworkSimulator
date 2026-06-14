@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { Translations } from '@/contexts/LanguageContext';
 import { ModernPanel } from '@/components/ui/ModernPanel';
-import { Save, FileText } from 'lucide-react';
+import { Save } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-breakpoint';
@@ -24,9 +24,8 @@ export type { ConfigPanelProps };
 
 const TIMESTAMP = '2026-02-26 22:00:00';
 
-export function ConfigPanel({ state, onExecuteCommand, isDevicePoweredOff = false, t, theme, className, title }: ConfigPanelProps) {
+export function ConfigPanel({ state, onExecuteCommand, isDevicePoweredOff = false, t, className, title }: ConfigPanelProps) {
   const [isSaving, setIsSaving] = useState(false);
-  const isDark = theme === 'dark';
 
   // Responsive hooks
   const isMobile = useIsMobile();

@@ -6,7 +6,6 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { ANIMATION_DURATIONS, ANIMATION_EASING } from '@/constants/ui-ux';
 import {
-    prefersReducedMotion,
     getSafeAnimationDuration,
     debounceAnimationFrame,
     throttleAnimationFrame,

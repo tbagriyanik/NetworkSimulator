@@ -19,7 +19,7 @@ export const RouterIcon = ({ className = 'w-5 h-5' }: { className?: string }) =>
 );
 
 /** Switch icon with L2 (green) and L3 (purple) support */
-export const SwitchIcon = ({ className = 'w-5 h-5', isL3 = false }: { className?: string; isL3?: boolean }) => (
+export const SwitchIcon = ({ className = 'w-5 h-5' }: { className?: string; isL3?: boolean }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 12h14M5 12a2 2 0 0 1 -2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2M5 12a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 -2-2m-2-4h.01M17 16h.01" />
     </svg>

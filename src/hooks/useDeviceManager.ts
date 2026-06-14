@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { SwitchState, Port } from '@/lib/network/types';
+import { SwitchState } from '@/lib/network/types';
 import { createInitialState, createInitialRouterState, createInitialFirewallState, applyStartupConfig, buildStartupConfig } from '@/lib/network/initialState';
 import { buildRunningConfig } from '@/lib/network/core/configBuilder';
 import { executeCommand, getPrompt } from '@/lib/network/executor';
@@ -8,8 +8,7 @@ import type { TerminalOutput } from '@/components/network/Terminal';
 import { BOOT_PROGRESS_MARKER } from '@/components/network/Terminal';
 import { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/networkTopology.types';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAppFeedback } from '@/hooks/useAppFeedback';
-import { formatErrorForUser } from '@/lib/errors/errorHandler';
+
 import { logger } from '@/lib/logger';
 
 const isSwitchDeviceType = (type?: DeviceType | string) => type === 'switchL2' || type === 'switchL3';
@@ -27,7 +26,6 @@ interface PCOutputLine {
 
 export function useDeviceManager() {
   const { toast } = useToast();
-  const { notifyErrorInfo } = useAppFeedback();
   const { language } = useLanguage();
 
   const [deviceStates, setDeviceStates] = useState<Map<string, SwitchState>>(new Map());
@@ -493,7 +491,6 @@ export function useDeviceManager() {
     // Handle cancellation token
     if (command === '__CANCEL__') {
       setIsLoading(false);
-      const deviceState = deviceStates.get(deviceId) || (deviceId.includes('router') ? createInitialRouterState() : createInitialState());
       getOrCreateDeviceOutputs(deviceId);
       setDeviceOutputs(prev => {
         const newMap = new Map(prev);

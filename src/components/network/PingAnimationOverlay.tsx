@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { CanvasDevice, CanvasConnection } from './networkTopology.types';
 
 interface PingAnimationOverlayProps {
@@ -79,7 +79,6 @@ export function PingAnimationOverlay({
         }
 
         const midX = (source.x + target.x) / 2;
-        const midY = (source.y + target.y) / 2;
 
         const sameDeviceConnections = connections.filter(
           c => (c.sourceDeviceId === fromDevice.id && c.targetDeviceId === toDevice.id) ||

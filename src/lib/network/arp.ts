@@ -86,7 +86,6 @@ export function clearArpCache(deviceId: string, deviceStates: Map<string, Switch
 export function performArpResolution(
   sourceDeviceId: string,
   targetIp: string,
-  targetDeviceId: string,
   targetMac: string,
   interfaceName: string,
   deviceStates: Map<string, SwitchState>
