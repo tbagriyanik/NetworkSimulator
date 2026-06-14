@@ -55,6 +55,7 @@ export class ViewportCuller {
     setNodes(nodes: Node[]): void {
         this.nodeMap.clear();
         nodes.forEach(node => this.nodeMap.set(node.id, node));
+        this.invalidateCache();
     }
 
     /**
@@ -64,6 +65,7 @@ export class ViewportCuller {
     setConnections(connections: Connection[]): void {
         this.connectionMap.clear();
         connections.forEach(conn => this.connectionMap.set(conn.id, conn));
+        this.invalidateCache();
     }
 
     /**
