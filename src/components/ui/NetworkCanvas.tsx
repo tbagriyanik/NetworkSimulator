@@ -242,7 +242,7 @@ export function NetworkCanvas({
         const devicesToAlign = devices.filter((d) => deviceIds.includes(d.id));
         if (devicesToAlign.length === 0) return;
 
-        let alignmentType: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom' | 'distribute-h' | 'distribute-v' = alignment as any;
+        const alignmentType: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom' | 'distribute-h' | 'distribute-v' = alignment as any;
 
         switch (alignmentType) {
             case 'left': {

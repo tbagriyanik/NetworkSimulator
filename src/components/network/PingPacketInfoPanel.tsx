@@ -832,8 +832,8 @@ export function buildHopPacketInfos(
 
         // Calculate hop-specific IP addresses
         // For router hops, use interface IPs; for end devices, use device IPs
-        let hopSrcIp = isIPv6 ? (fromDev?.ipv6 || fromDev?.ip || '::') : (fromDev?.ip || '0.0.0.0');
-        let hopDstIp = isIPv6 ? (toDev?.ipv6 || toDev?.ip || '::') : (toDev?.ip || '0.0.0.0');
+        const hopSrcIp = isIPv6 ? (fromDev?.ipv6 || fromDev?.ip || '::') : (fromDev?.ip || '0.0.0.0');
+        const hopDstIp = isIPv6 ? (toDev?.ipv6 || toDev?.ip || '::') : (toDev?.ip || '0.0.0.0');
 
         // Use configured device/interface addresses only; do not synthesize router interface IPs.
 

@@ -460,81 +460,53 @@ export function NetworkTopology({
   const { visibleDeviceIds, visibleConnectionIds, updateViewport } = useSpatialPartitioning(
     devices,
     connections,
-    { cellSize: 256, margin: 100, enabled: devices.length > 100 }
+    { cellSize: 256, margin: 100, enabled: true }
   );
 
-  const { visibleDevices, visibleConnections } = useMemo(() => {
+  const { visibleDevices, visibleConnections, visibleNotes } = useMemo(() => {
     // If not active, or no dimensions, return all items to prevent them from disappearing
     // when calculating visibility while the container has 0 width/height.
-    if (!isActive || canvasDimensions.width === 0) return { visibleDevices: devices, visibleConnections: connections };
+    if (!isActive || canvasDimensions.width === 0) return { visibleDevices: devices, visibleConnections: connections, visibleNotes: notes };
 
     const { width, height } = canvasDimensions;
 
     // If container has 0 width or height (e.g. hidden by CSS), don't filter out things
     if (width === 0 || height === 0 || !zoom || zoom <= 0) {
-      return { visibleDevices: devices, visibleConnections: connections };
+      return { visibleDevices: devices, visibleConnections: connections, visibleNotes: notes };
     }
 
-    // Use spatial partitioning if enabled (for large topologies)
-    if (devices.length > 100) {
-      // Update viewport for spatial partitioning
-      updateViewport({
-        x: pan.x,
-        y: pan.y,
-        width,
-        height,
-        zoom,
-      });
+    // Update viewport for spatial partitioning
+    updateViewport({
+      x: pan.x,
+      y: pan.y,
+      width,
+      height,
+      zoom,
+    });
 
-      // Filter devices and connections using spatial partitioning results
-      const vDevices = devices.filter(d => visibleDeviceIds.includes(d.id));
-      const vConnections = connections.filter(c => visibleConnectionIds.includes(c.id));
-
-      return { visibleDevices: vDevices, visibleConnections: vConnections };
-    }
-
-    // Fallback to simple viewport culling for small topologies
     const margin = 100; // Extra margin to prevent pop-in
 
-    const vDevices = devices.filter(device => {
-      const x = device.x * zoom + pan.x;
-      const y = device.y * zoom + pan.y;
-      const deviceWidth = getDeviceWidth(device.type) * zoom;
-      const deviceHeight = 100 * zoom;
+    // Filter devices and connections using spatial partitioning results
+    const vDevices = devices.filter(d => visibleDeviceIds.includes(d.id));
+    const vConnections = connections.filter(c => visibleConnectionIds.includes(c.id));
+
+    // Simple viewport culling for notes (not in spatial partitioner)
+    const vNotes = notes.filter(note => {
+      const x = note.x * zoom + pan.x;
+      const y = note.y * zoom + pan.y;
+      const noteWidth = note.width * zoom;
+      const noteHeight = note.height * zoom;
 
       return (
-        x + deviceWidth + margin > 0 &&
+        x + noteWidth + margin > 0 &&
         x - margin < width &&
-        y + deviceHeight + margin > 0 &&
+        y + noteHeight + margin > 0 &&
         y - margin < height
       );
     });
 
-    const vConnections = connections.filter(conn => {
-      const source = deviceMap.get(conn.sourceDeviceId);
-      const target = deviceMap.get(conn.targetDeviceId);
-      if (!source || !target) return false;
-
-      // Check if either end is visible
-      const sourceVisible = vDevices.some(d => d.id === source.id);
-      const targetVisible = vDevices.some(d => d.id === target.id);
-      if (sourceVisible || targetVisible) return true;
-
-      const minX = Math.min(source.x, target.x) * zoom + pan.x;
-      const maxX = Math.max(source.x, target.x) * zoom + pan.x;
-      const minY = Math.min(source.y, target.y) * zoom + pan.y;
-      const maxY = Math.max(source.y, target.y) * zoom + pan.y;
-
-      return (
-        maxX + margin > 0 &&
-        minX - margin < width &&
-        maxY + margin > 0 &&
-        minY - margin < height
-      );
-    });
-
-    return { visibleDevices: vDevices, visibleConnections: vConnections };
-  }, [devices, connections, zoom, pan, isActive, canvasDimensions, visibleDeviceIds, visibleConnectionIds, updateViewport]);
+    return { visibleDevices: vDevices, visibleConnections: vConnections, visibleNotes: vNotes };
+  }, [devices, connections, notes, zoom, pan, isActive, canvasDimensions, visibleDeviceIds, visibleConnectionIds, updateViewport]);
 
   useEffect(() => {
     updateCanvasRect();
@@ -7097,7 +7069,7 @@ export function NetworkTopology({
                   })}
 
                   {/* Notes */}
-                  {notes.map((note) => (
+                  {visibleNotes.map((note) => (
                     <foreignObject
                       key={note.id}
                       x={note.x}
@@ -7845,7 +7817,7 @@ export function NetworkTopology({
               })}
 
               {/* Notes */}
-              {notes.map((note) => (
+              {visibleNotes.map((note) => (
                 <g key={note.id}>
                   {/* Note background */}
                   <rect

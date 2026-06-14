@@ -633,7 +633,7 @@ export function checkConnectivity(
   }
 
   const targetDeviceId = ipMap.get(resolvedTargetIp.toLowerCase());
-  let targetDevice = targetDeviceId ? deviceMap.get(targetDeviceId) : undefined;
+  const targetDevice = targetDeviceId ? deviceMap.get(targetDeviceId) : undefined;
 
   if (!targetDevice) {
     return { success: false, hops: [], hopIds: [], error: 'Request timed out.' };
@@ -1543,7 +1543,7 @@ export function getPingDiagnostics(
 
   const isTargetIpv6 = resolvedTargetIp.includes(':');
   const targetDeviceId = ipMap.get(resolvedTargetIp.toLowerCase());
-  let targetDevice = targetDeviceId ? deviceMap.get(targetDeviceId) : undefined;
+  const targetDevice = targetDeviceId ? deviceMap.get(targetDeviceId) : undefined;
 
   // 1. Check source device exists and is powered on
   if (!sourceDevice) {

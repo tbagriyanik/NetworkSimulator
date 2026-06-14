@@ -1960,7 +1960,7 @@ ${state.bannerMOTD}
       if (pcDevices.length > 0) {
         (async () => {
           // Process all PCs and show a single combined toast
-          let currentTopology = [...topologyDevices];
+          const currentTopology = [...topologyDevices];
           let hasOverallChanges = false;
           const assignments: Array<{ name: string, ip: string }> = [];
 
@@ -2802,7 +2802,7 @@ ${state.bannerMOTD}
     if (!topologyDevices) return;
 
     let topologyChanged = false;
-    let simulatorChanged = false;
+    const simulatorChanged = false;
     const newDeviceStates = new Map(deviceStates);
 
     const updatedTopologyDevices = topologyDevices.map(device => {
@@ -3258,10 +3258,10 @@ ${state.bannerMOTD}
     };
 
     let refreshCount = 0;
-    let disconnectedPCs: string[] = [];
-    let disconnectedAPs: string[] = [];
-    let connectedWirelessClients: string[] = [];
-    let activeAPs: string[] = [];
+    const disconnectedPCs: string[] = [];
+    const disconnectedAPs: string[] = [];
+    const connectedWirelessClients: string[] = [];
+    const activeAPs: string[] = [];
     let dhcpServerActiveCount = 0;
     let dhcpServerNoPoolCount = 0;
     let dhcpClientWithLeaseCount = 0;
@@ -3383,7 +3383,7 @@ ${state.bannerMOTD}
       // 8.5. DHCP Assignment - Do this before showing the refresh panel
       const dhcpClients = refreshedDevices.filter(d => (d.type === 'pc' || d.type === 'iot') && d.ipConfigMode === 'dhcp');
       const dhcpAssignments: Array<{ name: string, ip: string }> = [];
-      let finalDevicesForRefresh = [...refreshedDevices];
+      const finalDevicesForRefresh = [...refreshedDevices];
 
       if (dhcpClients.length > 0) {
         dhcpClients.forEach(pc => {

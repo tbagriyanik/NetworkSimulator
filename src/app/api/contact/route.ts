@@ -21,10 +21,10 @@ interface ApiResponse {
 /**
  * Validate contact form data
  */
-function validateContactData(data: any): { valid: boolean; errors: string[] } {
+function validateContactData(data: Partial<ContactFormData>): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
 
-  if (!data.name || typeof data.name !== 'string' || data.name.trim().length === 0) {
+  if (!data.name || data.name.trim().length === 0) {
     errors.push('Name is required');
   }
 
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse>>
     }
 
     // Parse request body
-    let body: any;
+    let body: Partial<ContactFormData>;
     try {
       body = await req.json();
     } catch {

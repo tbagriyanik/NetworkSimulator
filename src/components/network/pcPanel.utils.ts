@@ -10,7 +10,7 @@ export const expandCommandContext = (mode: keyof typeof commandHelp, rawValue: s
     const contextKey = contextTokens.join(' ').toLowerCase();
 
     // Get all candidates
-    let candidates = contextTokens.length === 0 ? (helpTree[''] || []) : (helpTree[contextKey] || []);
+    const candidates = contextTokens.length === 0 ? (helpTree[''] || []) : (helpTree[contextKey] || []);
 
     // Filter candidates based on currentWord (for TAB completion)
     const filteredCandidates = currentWord
