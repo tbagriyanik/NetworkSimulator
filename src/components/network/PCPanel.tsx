@@ -201,7 +201,7 @@ export function PCPanel({
   const [fontSize, setFontSize] = useState<number>(() => {
     try {
       return parseInt(localStorage.getItem('terminal-font-size') || '13', 10);
-    } catch (err) {
+    } catch (_err) {
       errorHandler.logError(STORAGE_ERRORS.LOCAL_STORAGE_UNAVAILABLE({ key: 'terminal-font-size', operation: 'read' }));
       return 13;
     }
@@ -212,7 +212,7 @@ export function PCPanel({
     setFontSize(val);
     try {
       localStorage.setItem('terminal-font-size', String(val));
-    } catch (err) {
+    } catch (_err) {
       errorHandler.logError(STORAGE_ERRORS.LOCAL_STORAGE_UNAVAILABLE({ key: 'terminal-font-size', operation: 'write', value: val }));
     }
   };
@@ -341,7 +341,7 @@ export function PCPanel({
       try {
         const stored = localStorage.getItem(`mail_inbox_${deviceId}`);
         if (stored) return JSON.parse(stored);
-      } catch (e) {}
+      } catch (_e) { }
     }
     return deviceFromTopology?.services?.mail?.inbox || [];
   });
@@ -350,7 +350,7 @@ export function PCPanel({
       try {
         const stored = localStorage.getItem(`mail_sent_${deviceId}`);
         if (stored) return JSON.parse(stored);
-      } catch (e) {}
+      } catch (_e) { }
     }
     return deviceFromTopology?.services?.mail?.sent || [];
   });
@@ -487,7 +487,7 @@ export function PCPanel({
                 }
                 if (!routerInSameSubnet) return false;
               }
-            } catch (err) {
+            } catch (_err) {
               // Invalid IP format, skip silently - expected for malformed IPs
               if (process.env.NODE_ENV === 'development') {
                 errorHandler.logError(new Error('Router IP validation failed'), { deviceId: otherDevice.id, ip: otherDevice.ip, pcIP, pcSubnet });
@@ -859,7 +859,7 @@ export function PCPanel({
       setServiceMailDomain(deviceFromTopology?.services?.mail?.domain || 'local.lan');
       setServiceMailUsername(deviceFromTopology?.services?.mail?.username || 'user');
       setServiceMailPassword(deviceFromTopology?.services?.mail?.password || 'mail123');
-      
+
       let inboxFromStorage = null;
       let sentFromStorage = null;
       if (typeof window !== 'undefined') {
@@ -868,7 +868,7 @@ export function PCPanel({
           if (storedInbox) inboxFromStorage = JSON.parse(storedInbox);
           const storedSent = localStorage.getItem(`mail_sent_${deviceId}`);
           if (storedSent) sentFromStorage = JSON.parse(storedSent);
-        } catch(_e) {}
+        } catch (_e) { }
       }
       setServiceMailInbox(inboxFromStorage || deviceFromTopology?.services?.mail?.inbox || []);
       setServiceMailSent(sentFromStorage || deviceFromTopology?.services?.mail?.sent || []);
@@ -924,10 +924,15 @@ export function PCPanel({
     if (!selectedIotDeviceId) return;
     const device = iotDevices.find((d) => d.id === selectedIotDeviceId);
     if (!device) return;
-    setIotSensorType(device.iot?.sensorType || 'temperature');
-    setIotKind(device.iot?.kind || 'sensor');
-    setIotCollaborationEnabled(!!device.iot?.collaborationEnabled);
-    setIotDataStore(device.iot?.dataStore || '');
+    // Defer state updates outside the effect to avoid cascading renders
+    const timer = setTimeout(() => {
+      setIotSensorType(device.iot?.sensorType || 'temperature');
+      setIotKind(device.iot?.kind || 'sensor');
+      setIotCollaborationEnabled(!!device.iot?.collaborationEnabled);
+      setIotDataStore(device.iot?.dataStore || '');
+    }, 0);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedIotDeviceId]);
 
   // When tablet powers on or opens, navigate to initial or home screen
@@ -1648,7 +1653,7 @@ export function PCPanel({
         title: t.copyToastSuccessTitle,
         description: t.copyToastSuccessDescription,
       });
-    } catch (err) {
+    } catch (_err) {
       errorHandler.logError(CLIPBOARD_ERRORS.COPY_FAILED({ contentLength: pcOutput.length, activeTab }));
       toast({
         title: t.copyToastFailureTitle,
@@ -2231,8 +2236,8 @@ export function PCPanel({
     const isIp = !startAddress || isValidIpv4(startAddress) || isValidIpv6(startAddress);
     const recordType = isIp
       ? (isValidIpv6(startAddress)
-          ? (language === 'tr' ? 'AAAA Kaydı (IPv6 Address)' : 'AAAA Record (IPv6 Address)')
-          : (language === 'tr' ? 'A Kaydı (Address Record)' : 'A Record (Address Record)'))
+        ? (language === 'tr' ? 'AAAA Kaydı (IPv6 Address)' : 'AAAA Record (IPv6 Address)')
+        : (language === 'tr' ? 'A Kaydı (Address Record)' : 'A Record (Address Record)'))
       : (language === 'tr' ? 'CNAME Kaydı (Canonical Name Record)' : 'CNAME Record (Canonical Name Record)');
     if (isIp) {
       return `${recordType}: ${chain.join(' -> ')}`;
@@ -4230,9 +4235,9 @@ export function PCPanel({
           : undefined;
         const ftpService =
           targetDevice?.services?.ftp?.enabled ? targetDevice.services.ftp :
-          deviceByIp?.services?.ftp?.enabled ? deviceByIp.services.ftp :
-          targetState?.services?.ftp?.enabled ? targetState.services.ftp :
-          undefined;
+            deviceByIp?.services?.ftp?.enabled ? deviceByIp.services.ftp :
+              targetState?.services?.ftp?.enabled ? targetState.services.ftp :
+                undefined;
         if (!ftpService?.enabled) {
           addLocalOutput('error', `FTP service is not enabled on ${targetIp}.`);
           return;
@@ -4272,7 +4277,7 @@ export function PCPanel({
           try {
             const stored = localStorage.getItem(`mail_inbox_${deliveredDevice.id}`);
             if (stored) existingInbox = JSON.parse(stored);
-          } catch(_e) {}
+          } catch (_e) { }
         }
         const updatedInbox = [newInboxEntry, ...existingInbox];
         if (typeof window !== 'undefined') {
@@ -5968,7 +5973,7 @@ export function PCPanel({
                                               try {
                                                 const stored = localStorage.getItem(`mail_inbox_${targetDevice.id}`);
                                                 if (stored) existingInbox = JSON.parse(stored);
-                                              } catch (e) {}
+                                              } catch (_e) { }
                                             }
                                             const updatedInbox = [newInboxEntry, ...existingInbox];
                                             if (typeof window !== 'undefined') {
@@ -7097,7 +7102,7 @@ export function PCPanel({
                                           return (
                                             <div className="flex items-center gap-2 group">
                                               <span>{highlightText(label)}</span>
-                                              <span 
+                                              <span
                                                 className="font-mono cursor-pointer hover:text-emerald-400 transition-colors"
                                                 onClick={() => {
                                                   navigator.clipboard.writeText(value.trim());
@@ -7133,7 +7138,7 @@ export function PCPanel({
                                           return (
                                             <div className="flex items-center gap-2 group">
                                               <span>{highlightText(label)}</span>
-                                              <span 
+                                              <span
                                                 className="font-mono cursor-pointer hover:text-emerald-400 transition-colors"
                                                 onClick={() => {
                                                   navigator.clipboard.writeText(value.trim());
@@ -7170,7 +7175,7 @@ export function PCPanel({
                                           return (
                                             <div className="flex items-center gap-2 group">
                                               <span>{highlightText(label)}</span>
-                                              <span 
+                                              <span
                                                 className="font-mono text-cyan-400 cursor-pointer hover:text-emerald-400 transition-colors"
                                                 onClick={() => {
                                                   navigator.clipboard.writeText(ipValue);
@@ -7209,7 +7214,7 @@ export function PCPanel({
                                           const fullMatch = ipAddressMatch[0];
                                           const beforeIp = line.content.substring(0, line.content.indexOf(fullMatch));
                                           const afterIp = line.content.substring(line.content.indexOf(fullMatch) + fullMatch.length);
-                                          
+
                                           // Extract just the IP address without port if present
                                           let cleanIpAddress = ipAddress;
                                           if (ipAddress.includes(':')) {
@@ -7223,11 +7228,11 @@ export function PCPanel({
                                             }
                                             // IPv6 addresses also contain colons, but we keep them as is
                                           }
-                                          
+
                                           return (
                                             <div className="flex items-center gap-2 group">
                                               <span>{highlightText(beforeIp)}</span>
-                                              <span 
+                                              <span
                                                 className="font-mono cursor-pointer hover:text-emerald-400 transition-colors"
                                                 onClick={() => {
                                                   navigator.clipboard.writeText(cleanIpAddress);
@@ -7289,9 +7294,9 @@ export function PCPanel({
                                 <div
                                   onClick={() => inputRef.current?.focus()}
                                   className={`flex items-center gap-3 px-3 py-2 bg-background rounded-lg border flex-1 group focus-within:ring-1 transition-all shadow-inner ${isMobile ? 'px-3 py-2' : ''} ${activeTab === 'terminal' && isConsoleConnected && (consoleNeedsPassword || consoleConfirmDialog?.show || consoleReloadPending)
-                                  ? 'border-amber-500/50 focus-within:ring-amber-500/50'
-                                  : 'border-input focus-within:ring-primary/50'
-                                  }`}>
+                                    ? 'border-amber-500/50 focus-within:ring-amber-500/50'
+                                    : 'border-input focus-within:ring-primary/50'
+                                    }`}>
                                   <span className={`font-geist-mono font-bold text-[10px] sm:text-xs select-none opacity-40 group-focus-within:opacity-100 transition-opacity shrink-0 truncate max-w-[80px] sm:max-w-none md:max-w-[150px] ${activeTab === 'terminal' && isConsoleConnected && (consoleNeedsPassword || consoleConfirmDialog?.show || consoleReloadPending)
                                     ? 'text-amber-400'
                                     : 'text-primary'
@@ -7594,7 +7599,7 @@ export function PCPanel({
                     className="flex items-center gap-2 flex-1 min-w-0"
                   >
                     <div className="flex flex-col flex-1 min-w-0 relative">
-                                      <span className="text-[10px] sm:text-sm font-semibold truncate">{httpAppTitle}</span>
+                      <span className="text-[10px] sm:text-sm font-semibold truncate">{httpAppTitle}</span>
                       <input
                         ref={urlInputRef}
                         value={httpAppUrl || ''}
@@ -7633,7 +7638,7 @@ export function PCPanel({
                           }
                         }}
                         placeholder="http://"
-                                        className={`mt-1 w-full text-[16px] sm:text-xs rounded-md px-2 py-1 border ${isDark ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-700'}`}
+                        className={`mt-1 w-full text-[16px] sm:text-xs rounded-md px-2 py-1 border ${isDark ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-700'}`}
                       />
                       {showUrlSuggestions && filteredSuggestions.length > 0 && (
                         <div className={`absolute top-full left-0 right-0 mt-1 rounded-md border shadow-lg max-h-48 overflow-y-auto overflow-x-hidden custom-scrollbar z-50 ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-300'}`}>

@@ -100,7 +100,7 @@ export function ModernPanel({
         if ('setPointerCapture' in panelRef.current && e instanceof PointerEvent) {
             try {
                 panelRef.current.setPointerCapture((e as PointerEvent).pointerId);
-            } catch (err) {
+            } catch (_err) {
                 // Ignore if not a PointerEvent
             }
         }
@@ -145,7 +145,7 @@ export function ModernPanel({
             if (panelRef.current && 'releasePointerCapture' in panelRef.current && upEvent instanceof PointerEvent) {
                 try {
                     panelRef.current.releasePointerCapture((upEvent as PointerEvent).pointerId);
-                } catch (err) {
+                } catch (_err) {
                     // Ignore if not a PointerEvent
                 }
             }
@@ -200,7 +200,7 @@ export function ModernPanel({
         if ('setPointerCapture' in panelRef.current && e instanceof PointerEvent) {
             try {
                 panelRef.current.setPointerCapture((e as PointerEvent).pointerId);
-            } catch (err) {
+            } catch (_err) {
                 // Ignore if not a PointerEvent
             }
         }
@@ -246,7 +246,7 @@ export function ModernPanel({
             if (panelRef.current && 'releasePointerCapture' in panelRef.current && upEvent instanceof PointerEvent) {
                 try {
                     panelRef.current.releasePointerCapture((upEvent as PointerEvent).pointerId);
-                } catch (err) {
+                } catch (_err) {
                     // Ignore if not a PointerEvent
                 }
             }
