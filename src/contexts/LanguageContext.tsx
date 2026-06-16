@@ -21,6 +21,7 @@ export interface Translations {
   addIoT: string;
   addFirewall: string;
   addIotDevice: string;
+  addWLC: string;
   addL2Switch: string;
   addL3Switch: string;
   addNote: string;
@@ -647,6 +648,7 @@ export interface Translations {
   wirelessClientsDisconnected: string;
   wireless: string;
   serial: string;
+  serialCable: string;
   wirelessStatus: string;
   yes: string;
   language: Language;
@@ -676,6 +678,7 @@ const translations: Record<Language, Translations> = {
     addIoT: 'IoT Ekle',
     addFirewall: 'Firewall Ekle',
     addIotDevice: 'IoT cihazı ekle',
+    addWLC: 'WLC Ekle',
     addL2Switch: 'L2 Switch ekle',
     addL3Switch: 'L3 Switch ekle',
     addNote: 'Not',
@@ -1302,6 +1305,7 @@ const translations: Record<Language, Translations> = {
     wirelessClientsDisconnected: 'X kablosuz istemci bağlantı yok',
     wireless: 'Kablosuz',
     serial: 'Seri',
+    serialCable: 'Seri Kablo',
     wirelessStatus: 'Kablosuz Ağ Durumu',
     yes: 'Evet',
     language: 'tr',
@@ -1329,6 +1333,7 @@ const translations: Record<Language, Translations> = {
     addIoT: 'Add IoT',
     addFirewall: 'Add Firewall',
     addIotDevice: 'Add IoT device',
+    addWLC: 'Add WLC',
     addL2Switch: 'Add L2 Switch',
     addL3Switch: 'Add L3 Switch',
     addNote: 'Add Note',
@@ -1955,6 +1960,7 @@ const translations: Record<Language, Translations> = {
     wirelessClientsDisconnected: 'X wireless client(s) disconnected',
     wireless: 'Wireless',
     serial: 'Serial',
+    serialCable: 'Serial cable',
     wirelessStatus: 'Wireless Status',
     yes: 'Yes',
     language: 'en',

@@ -23,8 +23,7 @@ import { DeviceIcon } from '@/components/network/DeviceIcon';
 import { ChevronDown, Plus, Undo2, Redo2, Search, X, Cable, Strikethrough, Usb, Leaf } from 'lucide-react';
 import type { Translations } from '@/contexts/LanguageContext';
 import type { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
-import type { SwitchState } from '@/lib/network/types';
-import type { CableInfo } from '@/lib/network/types';
+import type { SwitchState, CableType, CableInfo } from '@/lib/network/types';
 import useAppStore from '@/lib/store/appStore';
 
 interface TopologyToolbarProps {
@@ -390,16 +389,46 @@ export function TopologyToolbar({
             </TooltipTrigger>
             <TooltipContent>{t.addFirewall}</TooltipContent>
           </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                aria-label={t.addWLC}
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 p-0 text-amber-500 hover:bg-amber-500/10"
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    const event = new CustomEvent('add-device', { detail: 'wlc' });
+                    window.dispatchEvent(event);
+                  }
+                }}
+              >
+                <svg className={`w-8 h-8 ${toolbarGlowClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                  <circle cx="12" cy="12" r="9" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14M12 5l-2 2m2-2l2 2m-2 12l-2-2m2 2l2-2M5 12l2-2m-2 2l2 2M19 12l-2-2m2 2l-2 2" />
+                  <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.3" />
+                </svg>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{t.addWLC}</TooltipContent>
+          </Tooltip>
         </div>
       )}
 
       {/* Cable Type Buttons */}
       <div className={`flex items-center rounded-lg border overflow-hidden ${isDark ? 'bg-slate-800/50 border-slate-800' : 'bg-slate-100 border-slate-200'}`}>
-        {(['straight', 'crossover', 'console'] as const).map((type) => (
+        {(['straight', 'crossover', 'serial', 'console'] as CableType[]).map((type) => {
+          const colorMap: Record<string, string> = {
+            straight: cableInfo.cableType === type ? 'text-blue-400' : 'text-blue-500 hover:text-blue-400',
+            crossover: cableInfo.cableType === type ? 'text-orange-400' : 'text-orange-500 hover:text-orange-400',
+            serial: cableInfo.cableType === type ? 'text-lime-400' : 'text-lime-500 hover:text-lime-400',
+            console: cableInfo.cableType === type ? 'text-cyan-400' : 'text-cyan-500 hover:text-cyan-400',
+          };
+          return (
           <Tooltip key={type}>
             <TooltipTrigger asChild>
               <Button
-                aria-label={type === 'straight' ? t.straightCable : type === 'crossover' ? t.crossoverCable : t.consoleCable}
+                aria-label={type === 'straight' ? t.straightCable : type === 'crossover' ? t.crossoverCable : type === 'serial' ? t.serialCable : t.consoleCable}
                 variant="ghost"
                 size="sm"
                 className={`h-8 px-2 flex items-center gap-1 text-xs font-bold
@@ -407,28 +436,30 @@ export function TopologyToolbar({
                     ? isDark ? 'bg-slate-700/80' : 'bg-slate-200/80'
                     : ''
                   }
-                  ${type === 'straight'
-                    ? (cableInfo.cableType === type ? 'text-blue-400' : 'text-blue-500 hover:text-blue-400')
-                    : type === 'crossover'
-                      ? (cableInfo.cableType === type ? 'text-orange-400' : 'text-orange-500 hover:text-orange-400')
-                      : (cableInfo.cableType === type ? 'text-cyan-400' : 'text-cyan-500 hover:text-cyan-400')
-                  }`}
+                  ${colorMap[type] || colorMap.console}`}
                 onClick={() => setCableInfo({ ...cableInfo, cableType: type })}
               >
                 {type === 'straight' ? (
                   <Cable className="w-4 h-4" />
                 ) : type === 'crossover' ? (
                   <Strikethrough className="w-4 h-4" />
+                ) : type === 'serial' ? (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7C5 4 4 5 4 7z" />
+                    <circle cx="9" cy="12" r="1" fill="currentColor" />
+                    <circle cx="15" cy="12" r="1" fill="currentColor" />
+                  </svg>
                 ) : (
                   <Usb className="w-4 h-4" />
                 )}
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              {type === 'straight' ? t.straightCable : type === 'crossover' ? t.crossoverCable : t.consoleCable}
+              {type === 'straight' ? t.straightCable : type === 'crossover' ? t.crossoverCable : type === 'serial' ? t.serialCable : t.consoleCable}
             </TooltipContent>
           </Tooltip>
-        ))}
+          );
+        })}
       </div>
 
       <div className={`w-px h-4 ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`} />
