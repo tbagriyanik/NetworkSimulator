@@ -260,7 +260,10 @@ const createRouterDevice = (id: string, name: string, x: number, y: number, ip: 
       { id: 'gi0/1', label: 'Gi0/1', status: 'disconnected' as const, macAddress: deterministicMac(`${id}:gi0/1`) },
       { id: 'gi0/2', label: 'Gi0/2', status: 'disconnected' as const, macAddress: deterministicMac(`${id}:gi0/2`) },
       { id: 'gi0/3', label: 'Gi0/3', status: 'disconnected' as const, macAddress: deterministicMac(`${id}:gi0/3`) },
-      { id: 'wlan0', label: 'WLAN0', status: 'disconnected' as const, macAddress: deterministicMac(`${id}:wlan0`) }
+      { id: 's0/0/0', label: 'S0/0/0', status: 'disconnected' as const, macAddress: deterministicMac(`${id}:s0/0/0`) },
+      { id: 's0/1/0', label: 'S0/1/0', status: 'disconnected' as const, macAddress: deterministicMac(`${id}:s0/1/0`) },
+      { id: 's0/2/0', label: 'S0/2/0', status: 'disconnected' as const, macAddress: deterministicMac(`${id}:s0/2/0`) },
+      { id: 'wlan0', label: 'WLAN0', status: 'disconnected' as const, shutdown: true, macAddress: deterministicMac(`${id}:wlan0`) }
     ]
   };
 };

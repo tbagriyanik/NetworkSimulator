@@ -61,6 +61,45 @@
             "shutdown": false,
             "type": "gigabitethernet",
             "allowedVlans": "all"
+          },
+          "s0/0/0": {
+            "id": "s0/0/0",
+            "name": "",
+            "status": "notconnect",
+            "vlan": 1,
+            "mode": "access",
+            "voiceVlan": "none",
+            "duplex": "auto",
+            "speed": "auto",
+            "shutdown": false,
+            "type": "serial",
+            "allowedVlans": "all"
+          },
+          "s0/1/0": {
+            "id": "s0/1/0",
+            "name": "",
+            "status": "notconnect",
+            "vlan": 1,
+            "mode": "access",
+            "voiceVlan": "none",
+            "duplex": "auto",
+            "speed": "auto",
+            "shutdown": false,
+            "type": "serial",
+            "allowedVlans": "all"
+          },
+          "s0/2/0": {
+            "id": "s0/2/0",
+            "name": "",
+            "status": "notconnect",
+            "vlan": 1,
+            "mode": "access",
+            "voiceVlan": "none",
+            "duplex": "auto",
+            "speed": "auto",
+            "shutdown": false,
+            "type": "serial",
+            "allowedVlans": "all"
           }
         },
         "vlans": {
@@ -1449,6 +1488,24 @@
             "speed": "auto",
             "duplex": "auto",
             "shutdown": false
+          },
+          {
+            "id": "s0/0/0",
+            "label": "S0/0/0",
+            "status": "disconnected",
+            "macAddress": "0000.0000.0001:s0/0/0"
+          },
+          {
+            "id": "s0/1/0",
+            "label": "S0/1/0",
+            "status": "disconnected",
+            "macAddress": "0000.0000.0001:s0/1/0"
+          },
+          {
+            "id": "s0/2/0",
+            "label": "S0/2/0",
+            "status": "disconnected",
+            "macAddress": "0000.0000.0001:s0/2/0"
           }
         ],
         "subnet": "255.255.255.0",
