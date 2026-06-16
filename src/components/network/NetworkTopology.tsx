@@ -4846,16 +4846,42 @@ export function NetworkTopology({
         {device.type === 'iot' && device.status !== 'offline' && device.iot?.collaborationEnabled !== false && (
           <>
             {device.iot?.sensorType === 'motion' && (
-              <circle
-                cx={deviceWidth / 2}
-                cy={deviceHeight / 2}
-                r={75}
-                fill={isDark ? 'rgba(6, 182, 212, 0.05)' : 'rgba(6, 182, 212, 0.05)'}
-                stroke={isDark ? 'rgba(6, 182, 212, 0.15)' : 'rgba(6, 182, 212, 0.1)'}
-                strokeWidth="1"
-                strokeDasharray="4 2"
-                style={{ pointerEvents: 'none' }}
-              />
+              <>
+                <circle
+                  cx={deviceWidth / 2}
+                  cy={deviceHeight / 2}
+                  r={75}
+                  fill={isDark ? 'rgba(6, 182, 212, 0.05)' : 'rgba(6, 182, 212, 0.05)'}
+                  stroke={isDark ? 'rgba(6, 182, 212, 0.15)' : 'rgba(6, 182, 212, 0.1)'}
+                  strokeWidth="1"
+                  strokeDasharray="4 2"
+                  style={{ pointerEvents: 'none' }}
+                />
+                {graphicsQuality === 'high' && device.iot?.value === true && (
+                  <>
+                    <circle
+                      cx={deviceWidth / 2}
+                      cy={deviceHeight / 2}
+                      r={20}
+                      fill="none"
+                      stroke={isDark ? 'rgba(6, 182, 212, 0.6)' : 'rgba(6, 182, 212, 0.5)'}
+                      strokeWidth="2"
+                      className="iot-motion-ping"
+                      style={{ pointerEvents: 'none', transformOrigin: `${deviceWidth / 2}px ${deviceHeight / 2}px` }}
+                    />
+                    <circle
+                      cx={deviceWidth / 2}
+                      cy={deviceHeight / 2}
+                      r={20}
+                      fill="none"
+                      stroke={isDark ? 'rgba(6, 182, 212, 0.4)' : 'rgba(6, 182, 212, 0.3)'}
+                      strokeWidth="2"
+                      className="iot-motion-ping-delayed"
+                      style={{ pointerEvents: 'none', transformOrigin: `${deviceWidth / 2}px ${deviceHeight / 2}px` }}
+                    />
+                  </>
+                )}
+              </>
             )}
             {device.iot?.sensorType === 'sound' && (
               <>
@@ -4873,7 +4899,8 @@ export function NetworkTopology({
                       stroke={isDark ? `rgba(34, 197, 94, ${opacity})` : `rgba(34, 197, 94, ${opacity * 0.8})`}
                       strokeWidth="1"
                       strokeDasharray="4 2"
-                      style={{ pointerEvents: 'none' }}
+                      className={graphicsQuality === 'high' ? 'iot-sound-pulse' : ''}
+                      style={{ pointerEvents: 'none', ...(graphicsQuality === 'high' ? { transformOrigin: `${deviceWidth / 2}px ${deviceHeight / 2}px` } : {}) }}
                     />
                   );
                 })()}

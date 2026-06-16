@@ -1,5 +1,5 @@
 import { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/networkTopology.types';
-import { SwitchState } from './types';
+import { Port, SwitchState } from './types';
 import { checkBasicL2Connectivity } from './basicConnectivity';
 
 export interface Route {
@@ -14,6 +14,19 @@ export interface Route {
 
 export interface RoutingTable {
   [deviceId: string]: Route[];
+}
+
+const EIGRP_BANDWIDTH_REFERENCE = 10_000_000;
+const EIGRP_METRIC_SCALE = 256;
+
+interface EigrpNetworkStatement {
+  destination: string;
+  wildcardMask: string;
+}
+
+interface LinkPorts {
+  sourcePortId: string;
+  targetPortId: string;
 }
 
 /**

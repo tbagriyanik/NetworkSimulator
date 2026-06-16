@@ -3,7 +3,7 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { FolderOpen, X, BookOpen, Clock, Target, Search, Sparkles, File } from 'lucide-react';
+import { FolderOpen, X, BookOpen, Clock, Target, Search, Sparkles, File, FilePlus } from 'lucide-react';
 import type { Translations } from '@/contexts/LanguageContext';
 import type { ExampleProject, ExampleProjectLevel } from '@/lib/network/exampleProjects';
 import type { GuidedProject } from '@/lib/network/guidedMode';
@@ -29,6 +29,7 @@ interface ProjectPickerDialogProps {
   getAvailableExams: (lang: 'tr' | 'en') => ExamProject[];
   resetToEmptyProject: () => void;
   applyExampleProject: (data: unknown, exampleId?: string) => void;
+  applyExampleProjectAsTemplate: (data: unknown, exampleId?: string) => void;
   startGuidedProject: (project: GuidedProject) => void;
   startExamProject: (project: ExamProject) => void;
   loadProjectData: (data: unknown) => boolean;
@@ -45,7 +46,7 @@ export function ProjectPickerDialog({
   projectSearchQuery, setProjectSearchQuery,
   groupedExampleProjects, exampleLevelLabels, exampleLevelHints, exampleLevelOrder,
   getAvailableProjects, getAvailableExams,
-  resetToEmptyProject, applyExampleProject,
+  resetToEmptyProject, applyExampleProject, applyExampleProjectAsTemplate,
   startGuidedProject, startExamProject, loadProjectData,
   setZoom, setPan,
   closeProjectPicker,
@@ -646,25 +647,38 @@ export function ProjectPickerDialog({
                             {filteredProjects.map((example) => {
                               const num = projectNumMap.get(example.id) || 0;
                               return (
-                                <Button
-                                  key={example.id}
-                                  data-project-id={example.id}
-                                  variant='ghost'
-                                  className={`group h-auto min-h-[120px] md:min-h-[160px] flex-col items-start gap-3 md:gap-5 p-5 md:p-8 rounded-2xl md:rounded-[2rem] border-2 text-left transition-all duration-300 hover:translate-y-[-4px] active:scale-[0.98] ${isDark ? 'border-slate-800/40 bg-slate-900/20 hover:bg-slate-900/80 hover:border-cyan-500/30' : 'border-slate-200/50 bg-white hover:bg-slate-50 hover:border-blue-500/20'} w-full overflow-hidden shadow-sm hover:shadow-2xl ${selectedProjectId === example.id ? (isDark ? 'ring-2 ring-cyan-400 ring-offset-2 ring-offset-slate-900' : 'ring-2 ring-blue-500 ring-offset-2 ring-offset-white') : ''}`}
-                                  onClick={() => { closeProjectPicker(); applyExampleProject(example.data, example.id); }}
-                                >
-                                  <div className='flex items-center justify-between w-full gap-4 overflow-hidden flex-nowrap'>
-                                    <span className={`font-black text-base md:text-2xl leading-none transition-colors duration-300 break-words flex-1 min-w-0 ${isDark ? 'group-hover:text-cyan-400' : 'group-hover:text-blue-600'}`}><span className={`${isDark ? 'text-slate-500' : 'text-slate-400'} mr-2`}>{num}.</span>{example.title}</span>
-                                    <span className={`text-[8px] md:text-[10px] font-black tracking-[0.2em] px-3 py-1.5 rounded-full whitespace-nowrap border shrink-0 flex-shrink-0 ${isDark ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20' : 'bg-blue-50 text-blue-600 border-blue-100'}`}>{example.tag}</span>
-                                  </div>
-                                  <p className={`text-[11px] md:text-sm leading-relaxed font-medium italic transition-colors whitespace-normal break-words break-all w-full ${isDark ? 'text-slate-400/80 group-hover:text-slate-200' : 'text-slate-600 group-hover:text-slate-800'}`}>{example.description}</p>
-                                  {example.detail && (
-                                    <div className='mt-auto pt-2 md:pt-4 flex items-center gap-2 md:gap-3 w-full border-t border-slate-800/10 dark:border-slate-800/50'>
-                                      <div className='w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-amber-500 shrink-0 shadow-[0_0_8px_rgba(245,158,11,0.5)]' />
-                                      <span className={`text-[8px] md:text-[11px] font-bold tracking-wide whitespace-normal break-words break-all w-full ${isDark ? 'text-amber-400/80' : 'text-amber-700/80'}`}>{example.detail}</span>
+                                  <Button
+                                    key={example.id}
+                                    data-project-id={example.id}
+                                    variant='ghost'
+                                    className={`group h-auto min-h-[120px] md:min-h-[160px] flex-col items-start gap-3 md:gap-5 p-5 md:p-8 rounded-2xl md:rounded-[2rem] border-2 text-left transition-all duration-300 hover:translate-y-[-4px] active:scale-[0.98] ${isDark ? 'border-slate-800/40 bg-slate-900/20 hover:bg-slate-900/80 hover:border-cyan-500/30' : 'border-slate-200/50 bg-white hover:bg-slate-50 hover:border-blue-500/20'} w-full overflow-hidden shadow-sm hover:shadow-2xl ${selectedProjectId === example.id ? (isDark ? 'ring-2 ring-cyan-400 ring-offset-2 ring-offset-slate-900' : 'ring-2 ring-blue-500 ring-offset-2 ring-offset-white') : ''}`}
+                                    onClick={() => { closeProjectPicker(); applyExampleProject(example.data, example.id); }}
+                                  >
+                                    <div className='flex items-center justify-between w-full gap-4 overflow-hidden flex-nowrap'>
+                                      <span className={`font-black text-base md:text-2xl leading-none transition-colors duration-300 break-words flex-1 min-w-0 ${isDark ? 'group-hover:text-cyan-400' : 'group-hover:text-blue-600'}`}><span className={`${isDark ? 'text-slate-500' : 'text-slate-400'} mr-2`}>{num}.</span>{example.title}</span>
+                                      <span className={`text-[8px] md:text-[10px] font-black tracking-[0.2em] px-3 py-1.5 rounded-full whitespace-nowrap border shrink-0 flex-shrink-0 ${isDark ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20' : 'bg-blue-50 text-blue-600 border-blue-100'}`}>{example.tag}</span>
                                     </div>
-                                  )}
-                                </Button>
+                                    <p className={`text-[11px] md:text-sm leading-relaxed font-medium italic transition-colors whitespace-normal break-words break-all w-full ${isDark ? 'text-slate-400/80 group-hover:text-slate-200' : 'text-slate-600 group-hover:text-slate-800'}`}>{example.description}</p>
+                                    <div className='flex items-center gap-2 w-full pt-2 md:pt-4 border-t border-slate-800/10 dark:border-slate-800/50'>
+                                      {example.detail && (
+                                        <div className='flex-1 min-w-0 flex items-center gap-2 md:gap-3'>
+                                          <div className='w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-amber-500 shrink-0 shadow-[0_0_8px_rgba(245,158,11,0.5)]' />
+                                          <span className={`text-[8px] md:text-[11px] font-bold tracking-wide whitespace-normal break-words break-all w-full ${isDark ? 'text-amber-400/80' : 'text-amber-700/80'}`}>{example.detail}</span>
+                                        </div>
+                                      )}
+                                      <span
+                                        onClick={(e) => { e.stopPropagation(); closeProjectPicker(); applyExampleProjectAsTemplate(example.data, example.id); }}
+                                        className={`flex-shrink-0 inline-flex items-center gap-1 text-[10px] md:text-xs font-bold px-2 py-1 rounded-lg cursor-pointer transition-colors
+                                          ${isDark
+                                            ? 'text-emerald-400 hover:text-emerald-300 bg-emerald-900/30 hover:bg-emerald-900/50 border border-emerald-700/40'
+                                            : 'text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200'}`}
+                                        title={language === 'tr' ? 'Şablondan Başla (boş ayarlar)' : 'Start from Template (empty settings)'}
+                                      >
+                                        <FilePlus className="w-3 h-3" />
+                                        {language === 'tr' ? 'Şablondan Başla' : 'From Template'}
+                                      </span>
+                                    </div>
+                                  </Button>
                               );
                             })}
                           </div>

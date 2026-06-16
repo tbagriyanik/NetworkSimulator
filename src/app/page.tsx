@@ -24,7 +24,7 @@ import { formatErrorForUser, errorHandler, STORAGE_ERRORS } from '@/lib/errors/e
 import { generateRandomLinkLocalIpv4 } from '@/lib/network/linkLocal';
 import { safeParse, safeStringify } from '@/lib/network/serialization';
 import { calculatePVST } from '@/lib/network/core/showCommands';
-import { createInitialState } from '@/lib/network/initialState';
+import { createInitialState, createInitialRouterState, createInitialFirewallState } from '@/lib/network/initialState';
 import type { TerminalOutput } from '@/components/network/Terminal';
 import { BOOT_PROGRESS_MARKER } from '@/components/network/Terminal';
 import {
@@ -4054,6 +4054,104 @@ ${state.bannerMOTD}
     doLoad();
   }, [loadProjectData, setHasUnsavedChanges, t.invalidProjectFile, t.failedLoadProject, language, setZoom, setPan, closeGuidedMode, closeExam, setProjectName, hasUnsavedChanges, handleSaveProject, setSaveDialog, t.unsavedChangesConfirm, startExamProject]);
 
+  const applyExampleProjectAsTemplate = useCallback((projectData: unknown, exampleId?: string) => {
+    const data = (projectData && typeof projectData === 'object') ? projectData as Record<string, unknown> : {};
+    const topology = (data.topology && typeof data.topology === 'object') ? data.topology as Record<string, unknown> : {};
+    const safeTopologyDevices = Array.isArray(topology.devices) ? topology.devices as CanvasDevice[] : [];
+    const safeTopologyConnections = Array.isArray(topology.connections) ? topology.connections : [];
+    const safeTopologyNotes = Array.isArray(topology.notes) ? topology.notes as CanvasNote[] : [];
+
+    // Create fresh initial states for each managed device
+    const freshDeviceStates: { id: string; state: SwitchState }[] = [];
+    safeTopologyDevices.forEach(device => {
+      if (device.type === 'switchL2' || device.type === 'switchL3') {
+        freshDeviceStates.push({
+          id: device.id,
+          state: createInitialState(device.macAddress, device.switchModel === 'WS-C3650-24PS' ? 'WS-C3650-24PS' : 'WS-C2960-24TT-L')
+        });
+      } else if (device.type === 'router') {
+        freshDeviceStates.push({
+          id: device.id,
+          state: createInitialRouterState(device.macAddress)
+        });
+      } else if (device.type === 'firewall') {
+        freshDeviceStates.push({
+          id: device.id,
+          state: createInitialFirewallState(device.macAddress)
+        });
+      }
+    });
+
+    // Modify notes to indicate template mode
+    const templatePrefix = language === 'tr'
+      ? '⚠️ Şablon (Cihazlar yapılandırılmamıştır)\n▸ Aşağıdaki adımları kendiniz uygulayın\n\n'
+      : '⚠️ Template (Devices are not configured)\n▸ Apply the steps below yourself\n\n';
+    const templateNotes: CanvasNote[] = safeTopologyNotes.length > 0
+      ? safeTopologyNotes.map((note: CanvasNote) => ({
+        ...note,
+        text: note.text.includes('⚠️ Şablon') || note.text.includes('⚠️ Template')
+          ? note.text
+          : templatePrefix + note.text
+      }))
+      : [{
+        id: 'template-note',
+        text: templatePrefix + (language === 'tr'
+          ? 'Cihazları yapılandırmak için terminali kullanın.'
+          : 'Use the terminal to configure devices.'),
+        x: 100, y: 100, width: 350, height: 120,
+        color: '#fbbf24', font: 'monospace', fontSize: 16, opacity: 0.75
+      } as unknown as CanvasNote];
+
+    const templateData: Record<string, unknown> = {
+      version: '1.0',
+      timestamp: new Date().toISOString(),
+      devices: freshDeviceStates,
+      deviceOutputs: [],
+      pcOutputs: [],
+      pcHistories: [],
+      topology: {
+        devices: safeTopologyDevices,
+        connections: safeTopologyConnections,
+        notes: templateNotes
+      },
+      cableInfo: (data.cableInfo && typeof data.cableInfo === 'object') ? data.cableInfo : {
+        connected: true, cableType: 'straight', sourceDevice: 'pc', targetDevice: 'switchL2'
+      },
+      activeDeviceId: freshDeviceStates[0]?.id || safeTopologyDevices[0]?.id || 'switch-1',
+      activeDeviceType: safeTopologyDevices[0]?.type || 'switchL2',
+      activeTab: 'topology',
+      zoom: 1.0,
+      pan: { x: 0, y: 0 }
+    };
+
+    loadProjectData(templateData);
+    setRefreshNetworkReport(null);
+    let loadedTitle = projectName;
+    if (exampleId) {
+      setLoadedExampleId(exampleId);
+      for (const level of exampleLevelOrder) {
+        const projects = groupedExampleProjects[level];
+        if (projects) {
+          const found = projects.find(p => p.id === exampleId);
+          if (found) {
+            loadedTitle = language === 'tr' ? `${found.title} (Şablon)` : `${found.title} (Template)`;
+            setProjectName(loadedTitle);
+            break;
+          }
+        }
+      }
+    }
+    setShowProjectPicker(false);
+    closeGuidedMode();
+    closeExam();
+    addProjectRecord(loadedTitle);
+    setZoom(1.0);
+    setPan({ x: 0, y: 0 });
+    if (typeof window !== 'undefined') {
+      window.scrollTo(0, 0);
+    }
+  }, [loadProjectData, setShowProjectPicker, setZoom, setPan, closeGuidedMode, setProjectName, setLoadedExampleId, setRefreshNetworkReport, groupedExampleProjects, exampleLevelOrder, projectName, addProjectRecord, language]);
+
   const applyExampleProject = useCallback((projectData: unknown, exampleId?: string) => {
     loadProjectData(projectData);
     setRefreshNetworkReport(null);
@@ -4261,6 +4359,7 @@ ${state.bannerMOTD}
             getAvailableExams={getAvailableExams}
             resetToEmptyProject={resetToEmptyProject}
             applyExampleProject={applyExampleProject}
+            applyExampleProjectAsTemplate={applyExampleProjectAsTemplate}
             startGuidedProject={handleStartGuidedProject}
             startExamProject={startExamFromCatalog}
             loadProjectData={loadProjectData}
