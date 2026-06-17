@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Laptop, X, CornerDownLeft, Search, Copy, Trash2, Download, Settings, Wifi, Type } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { ShortcutBadge } from '@/components/ui/ShortcutBadge';
 import { toast } from "@/hooks/use-toast";
 import { commandHelp } from '@/lib/network/executor';
@@ -32,7 +33,7 @@ export const BOOT_PROGRESS_MARKER = '\x00BOOT_PROGRESS\x00';
 // Global set — animasyon tamamlanan boot id'lerini tutar, tab değişiminde sıfırlanmaz
 const completedBootIds = new Set<string>();
 
-function BootProgressBar({ id, isDark, onDone }: { id: string; isDark: boolean; onDone: (id: string) => void }) {
+function BootProgressBar({ id, isDark, onDone, readyText = "Ready!" }: { id: string; isDark: boolean; onDone: (id: string) => void; readyText?: string }) {
   const [filled, setFilled] = useState(0);
   const [done, setDone] = useState(false);
   const total = 10;
@@ -41,21 +42,21 @@ function BootProgressBar({ id, isDark, onDone }: { id: string; isDark: boolean; 
 
   useEffect(() => {
     if (filled < total) {
-      const t = setTimeout(() => setFilled(f => f + 1), 180);
-      return () => clearTimeout(t);
+      const timer = setTimeout(() => setFilled(f => f + 1), 180);
+      return () => clearTimeout(timer);
     } else {
-      const t = setTimeout(() => {
+      const timer = setTimeout(() => {
         setDone(true);
         onDoneRef.current(id);
       }, 200);
-      return () => clearTimeout(t);
+      return () => clearTimeout(timer);
     }
   }, [filled, id]);
 
   return (
     <span className={`font-mono ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
       {done ? (
-        <span className="font-bold">{'#'.repeat(total)} Ready!</span>
+        <span className="font-bold">{'#'.repeat(total)} {readyText}</span>
       ) : (
         <span className="inline-block min-w-[12ch]">{'#'.repeat(filled)}<span className="opacity-30">{'#'.repeat(total - filled)}</span></span>
       )}
@@ -1162,72 +1163,53 @@ export function Terminal({
       {wifiSignalStrength !== null && wifiSignalStrength > 0 && (
         <div className={cn("w-px h-4 mx-1", isDark ? "bg-slate-600" : "bg-border")} />
       )}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" onClick={() => setSearchOpen(true)} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-slate-600 hover:text-slate-900", isDark && "text-slate-300 hover:text-slate-100")} aria-controls="search-dialog">
-            <Search className="w-4 h-4" aria-hidden="true" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent className="flex items-center gap-2">
+      <TooltipWrapper title={
+        <div className="flex items-center gap-2">
           {t.search}
           {!isMobile && <ShortcutBadge shortcut="Ctrl+F" variant="primary" />}
-        </TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" onClick={handleCopyAll} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-slate-600 hover:text-slate-900", isDark && "text-slate-300 hover:text-slate-100")}>
-            <Copy className="w-4 h-4" aria-hidden="true" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{t.copy}</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" onClick={exportTerminal} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-slate-600 hover:text-slate-900", isDark && "text-slate-300 hover:text-slate-100")}>
-            <Download className="w-4 h-4" aria-hidden="true" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{t.exportLabel}</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" onClick={() => setShowSettings(!showSettings)} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-slate-600 hover:text-slate-900", showSettings && "bg-accent", isDark && "text-slate-300 hover:text-slate-100")}>
-            <Type className="w-4 h-4" aria-hidden="true" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>Yazıtipi</TooltipContent>
-      </Tooltip>
+        </div>
+      }>
+        <Button variant="ghost" size="icon" onClick={() => setSearchOpen(true)} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-slate-600 hover:text-slate-900", isDark && "text-slate-300 hover:text-slate-100")} aria-controls="search-dialog">
+          <Search className="w-4 h-4" aria-hidden="true" />
+        </Button>
+      </TooltipWrapper>
+      <TooltipWrapper title={t.copy}>
+        <Button variant="ghost" size="icon" onClick={handleCopyAll} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-slate-600 hover:text-slate-900", isDark && "text-slate-300 hover:text-slate-100")}>
+          <Copy className="w-4 h-4" aria-hidden="true" />
+        </Button>
+      </TooltipWrapper>
+      <TooltipWrapper title={t.exportLabel}>
+        <Button variant="ghost" size="icon" onClick={exportTerminal} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-slate-600 hover:text-slate-900", isDark && "text-slate-300 hover:text-slate-100")}>
+          <Download className="w-4 h-4" aria-hidden="true" />
+        </Button>
+      </TooltipWrapper>
+      <TooltipWrapper title={t.fontLabel}>
+        <Button variant="ghost" size="icon" onClick={() => setShowSettings(!showSettings)} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-slate-600 hover:text-slate-900", showSettings && "bg-accent", isDark && "text-slate-300 hover:text-slate-100")}>
+          <Type className="w-4 h-4" aria-hidden="true" />
+        </Button>
+      </TooltipWrapper>
       <div className={cn("w-px h-4 mx-1", isDark ? "bg-slate-600" : "bg-border")} />
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" onClick={() => onTogglePower?.(deviceId)} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg", isPoweredOff ? "text-rose-500" : "text-emerald-500")}>
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v10" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636a9 9 0 1 1-12.728 0" />
-            </svg>
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{t.power}</TooltipContent>
-      </Tooltip>
+      <TooltipWrapper title={t.power}>
+        <Button variant="ghost" size="icon" onClick={() => onTogglePower?.(deviceId)} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg", isPoweredOff ? "text-rose-500" : "text-emerald-500")}>
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v10" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636a9 9 0 1 1-12.728 0" />
+          </svg>
+        </Button>
+      </TooltipWrapper>
       {isMobile && onQuickSettings && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" onClick={onQuickSettings} className={cn("h-9 w-9 rounded-lg text-slate-600 hover:text-slate-900", isDark && "text-slate-300 hover:text-slate-100")}>
-              <Settings className="w-4 h-4" aria-hidden="true" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{t.quickSettingsAndTasks}</TooltipContent>
-        </Tooltip>
+        <TooltipWrapper title={t.quickSettingsAndTasks}>
+          <Button variant="ghost" size="icon" onClick={onQuickSettings} className={cn("h-9 w-9 rounded-lg text-slate-600 hover:text-slate-900", isDark && "text-slate-300 hover:text-slate-100")}>
+            <Settings className="w-4 h-4" aria-hidden="true" />
+          </Button>
+        </TooltipWrapper>
       )}
       {isMobile && (device?.type === 'firewall' || device?.type === 'pc' || device?.type === 'iot') && onClose && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" onClick={onClose} className="h-9 w-9 rounded-lg hover:bg-red-500 hover:text-white dark:hover:bg-red-600">
-              <X className="w-4 h-4" aria-hidden="true" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{t.close || 'Close'}</TooltipContent>
-        </Tooltip>
+        <TooltipWrapper title={t.close || 'Close'}>
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-9 w-9 rounded-lg hover:bg-red-500 hover:text-white dark:hover:bg-red-600">
+            <X className="w-4 h-4" aria-hidden="true" />
+          </Button>
+        </TooltipWrapper>
       )}
     </div>
   );
@@ -1266,6 +1248,7 @@ export function Terminal({
             </label>
             <input
               type="range" min="10" max="20" value={fontSize}
+              aria-label={t.fontSizeLabel}
               onChange={(e) => { const v = parseInt(e.target.value); setFontSize(v); try { localStorage.setItem('terminal-font-size', String(v)); } catch { } }}
               className="flex-1 h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
             />
@@ -1323,8 +1306,8 @@ export function Terminal({
                       )}>
                         {line.content === BOOT_PROGRESS_MARKER
                           ? (completedBootIds.has(line.id)
-                            ? <span className={`font-mono font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>{'#'.repeat(10)} Ready!</span>
-                            : <BootProgressBar key={line.id} id={line.id} isDark={isDark} onDone={(id) => { completedBootIds.add(id); setBootVersion(v => v + 1); }} />)
+                            ? <span className={`font-mono font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>{'#'.repeat(10)} {t.bootReady}</span>
+                            : <BootProgressBar key={line.id} id={line.id} isDark={isDark} readyText={t.bootReady} onDone={(id) => { completedBootIds.add(id); setBootVersion(v => v + 1); }} />)
                           : highlightText(line.content)}
                       </div>
                     )}
