@@ -1,6 +1,6 @@
 # 💻 Network CLI Commands Reference
 
-The simulator supports **200+ commands** across multiple configuration modes.
+The simulator supports **280+ commands** across multiple configuration modes.
 
 ## Keyboard Shortcuts
 
@@ -55,8 +55,7 @@ The simulator supports **200+ commands** across multiple configuration modes.
 | Command | Description |
 |---------|-------------|
 | `ping <host> [size] [count]` | Test connectivity to host with ICMP |
-| `traceroute <host>` | Trace route to destination (Unix style) |
-| `tracert <host>` | Trace route to destination (Win style) |
+| `traceroute <host>` | Trace route to destination |
 | `telnet <host> [port]` | Connect to remote device via Telnet |
 | `ssh [-l username] <host>` | Connect via SSH |
 | `ftp [host]` | Open an interactive FTP session with login prompt, file listing, get/put, and quit |
@@ -64,23 +63,43 @@ The simulator supports **200+ commands** across multiple configuration modes.
 | `write memory` | Save running configuration to NVRAM |
 | `copy running-config startup-config` | Save configuration |
 | `copy running-config flash:[:filename]` | Save configuration to flash |
+| `copy running-config tftp:` | Upload config to TFTP server |
 | `copy flash:[:filename] startup-config` | Restore configuration from flash |
+| `copy flash:[:filename] running-config` | Merge flash config into running config |
+| `copy startup-config running-config` | Merge startup config into running config |
+| `copy tftp: running-config` | Download and merge config from TFTP |
+| `copy tftp: flash:` | Download file from TFTP to flash |
 | `erase startup-config` | Erase startup configuration |
-| `erase nvram` | Erase NVRAM filesystem |
+| `erase nvram:` | Erase NVRAM filesystem |
 | `delete flash:vlan.dat` | Delete VLAN database file |
+| `delete nvram:` | Delete NVRAM contents |
 | `reload` | Reload the device |
+| `clock set <hh:mm:ss> <day> <month> <year>` | Set system clock |
+| `more <filename>` | Display contents of a file |
+| `setup` | Enter initial setup dialog |
+| `test <type>` | Run diagnostics |
+| `configure replace <url>` | Replace running config with file |
+| `disconnect` | Disconnect network connection |
+| `resume <n>` | Resume a suspended session |
+| `suspend` | Suspend current session (Ctrl+Z) |
 | `ip route <network> <mask> <next-hop>` | Add static IPv4 route |
 | `no ip route <network> <mask|next-hop>` | Remove static IPv4 route |
 | `ipv6 route <prefix>/<len> <next-hop>` | Add static IPv6 route |
 | `no ipv6 route <prefix>/<len> [next-hop]` | Remove static IPv6 route |
 | `debug <type>` | Enable debugging (requires argument, e.g., `debug ip packet`) |
+| `no debug <type>` | Disable specific debugging |
+| `no debug all` | Disable all debugging |
 | `undebug all` | Disable all debugging |
 | `undebug` | Disable all debugging (alias) |
-| `terminal [length\|width\|monitor]` | Set terminal parameters |
+| `terminal length <n>` | Set terminal page length |
+| `terminal width <n>` | Set terminal width |
+| `terminal monitor` | Enable terminal monitoring |
 | `terminal no monitor` | Disable terminal monitoring |
 | `clear arp-cache` | Clear ARP cache |
 | `clear mac address-table` | Clear MAC address table |
 | `clear counters` | Clear interface counters |
+| `clear line <n>` | Clear a terminal line |
+| `clear interface <name>` | Clear interface counters |
 | `do <command>` | Execute privileged command from config mode |
 | `help` | Display help system information |
 
@@ -101,7 +120,11 @@ The simulator supports **200+ commands** across multiple configuration modes.
 | `ip default-gateway <ip>` | Set default gateway |
 | `no ip default-gateway` | Remove default gateway |
 | `ip domain-name <name>` | Set domain name |
-| `no ip domain lookup` | Disable DNS lookup |
+| `no ip domain-name` | Remove domain name |
+| `ip domain-lookup` | Enable DNS lookup |
+| `no ip domain-lookup` | Disable DNS lookup |
+| `ip host <name> <ip>` | Add static hostname-to-IP mapping |
+| `no ip host <name>` | Remove static host mapping |
 | `ip http server` | Enable HTTP server |
 | `no ip http server` | Disable HTTP server |
 | `ftp` service panel | Manage FTP credentials and files in PC services |
@@ -137,6 +160,8 @@ The simulator supports **200+ commands** across multiple configuration modes.
 | `no username <name>` | Remove user |
 | `cdp run` | Enable CDP globally |
 | `no cdp run` | Disable CDP |
+| `cdp timer <sec>` | Set CDP update interval |
+| `cdp holdtime <sec>` | Set CDP hold time |
 | `mls qos` | Enable MLS QoS |
 | `no mls qos` | Disable MLS QoS |
 | `router rip` | Enable RIP routing |
@@ -146,13 +171,17 @@ The simulator supports **200+ commands** across multiple configuration modes.
 | `ip dhcp pool <name>` | Create DHCP pool / enter dhcp-config mode |
 | `no ip dhcp pool <name>` | Remove DHCP pool |
 | `ip dhcp excluded-address <low> [<high>]` | Exclude addresses from DHCP |
+| `no ip dhcp excluded-address <low> [<high>]` | Remove excluded address range |
 | `ntp server <ip>` | Configure NTP server |
 | `clock timezone <name> <offset>` | Set timezone |
 | `ip name-server <ip>` | Configure DNS server |
 | `system mtu <size>` | Set system MTU |
-| `errdisable recovery` | Configure errdisable recovery |
+| `errdisable recovery` | Configure errdisable recovery (all causes) |
+| `errdisable recovery cause <cause>` | Configure errdisable recovery per cause |
 | `ipv6 unicast-routing` | Enable IPv6 routing |
 | `no ipv6 unicast-routing` | Disable IPv6 routing |
+| `ipv6 dhcp pool <name>` | Create IPv6 DHCP pool / enter dhcp-config mode |
+| `no ipv6 dhcp pool <name>` | Remove IPv6 DHCP pool |
 | `ipv6 router rip <name>` | Enable RIPng routing process |
 | `ipv6 router ospf <id>` | Enable OSPFv3 routing process |
 | `no ipv6 router rip <name>` | Disable RIPng |
@@ -164,9 +193,15 @@ The simulator supports **200+ commands** across multiple configuration modes.
 | `snmp-server location <text>` | Set SNMP location |
 | `archive` | Enter archive config mode |
 | `alias <mode> <name> <cmd>` | Create command alias |
+| `no alias <name>` | Remove command alias |
 | `macro name <name>` | Define command macro |
 | `sdm prefer <template>` | Set SDM template |
 | `ip arp inspection vlan <id>` | Enable DAI on VLAN |
+| `default interface <name>` | Reset interface to default configuration |
+| `mac access-list extended <name>` | Create named MAC access list |
+| `class-map [match-all\|match-any] <name>` | Create QoS class map |
+| `policy-map <name>` | Create QoS policy map |
+| `template <name>` | Enter template configuration mode |
 | `access-list <id> <action> <condition>` | Create numbered ACL (1-99 standard, 100-199 extended) |
 | `ip access-group <id> {in|out}` | Apply ACL to interface |
 | `ip access-list {standard|extended} <name>` | Create named ACL |
@@ -233,11 +268,25 @@ The simulator supports **200+ commands** across multiple configuration modes.
 | `no monitor session` | Remove monitoring |
 | `no udld` | Disable UDLD on interface |
 | `no ip proxy-arp` | Disable proxy ARP |
+| `ip proxy-arp` | Enable proxy ARP |
+| `ip directed-broadcast` | Enable directed broadcast forwarding |
+| `no ip directed-broadcast` | Disable directed broadcast |
+| `keepalive` | Enable keepalive |
 | `no keepalive` | Disable keepalive |
+| `mtu <size>` | Set interface MTU |
+| `channel-protocol {lacp\|pagp}` | Set EtherChannel protocol |
+| `priority-queue out` | Enable priority queue on interface |
+| `queue-set <n>` | Apply QoS queue set |
+| `tx-queue <n>` | Configure transmit queue |
+| `power inline consumption <watt>` | Set PoE power limit |
+| `encapsulation dot1q <vlan>` | Set 802.1Q encapsulation on subinterface |
+| `standby <group> ipv6 <ip>` | Configure HSRP for IPv6 |
+| `ip arp inspection limit <pps>` | Set ARP inspection rate limit |
 | `no name` | Remove interface name (VLAN) |
 | `ipv6 address <ip>/<prefix>` | Assign IPv6 address |
 | `ipv6 rip <name> enable` | Enable RIPng on interface |
 | `ipv6 ospf <id> area <area>` | Enable OSPFv3 on interface |
+| `ipv6 dhcp server <pool-name>` | Enable IPv6 DHCP server on interface |
 | `ip verify source` | Enable IP Source Guard |
 | `ip dhcp snooping trust` | Set interface as trusted for DHCP |
 | `ip arp inspection trust` | Set interface as trusted for DAI |
@@ -265,6 +314,7 @@ The simulator supports **200+ commands** across multiple configuration modes.
 | `ap dot11 5-ghz <cmd>` | Configure 5 GHz radio on AP | WLC only |
 | `authentication open` | Set open authentication (in ssid-config) | WLC/AP |
 | `authentication shared` | Set shared key auth (in ssid-config) | WLC/AP |
+| `authentication key-management wpa version <2\|3>` | Set WPA key management (in ssid-config) | WLC/AP |
 | `mbssid` | Enable MBSSID (in ssid-config) | WLC/AP |
 | `no mbssid` | Disable MBSSID (in ssid-config) | WLC/AP |
 | `guest-mode` | Enable guest mode (in ssid-config) | WLC/AP |
@@ -280,6 +330,10 @@ The simulator supports **200+ commands** across multiple configuration modes.
 | `world-mode dot11d {1\|-1}` | Enable 802.11d world mode (in dot11-config) | WLC/AP |
 | `security wpa psk set-key ascii 0 <password>` | Set WPA PSK key | WLC/AP |
 | `no security wpa psk` | Remove WPA PSK key | WLC/AP |
+| `wpa-psk <password>` | Set WPA pre-shared key (dot11-config) | WLC/AP |
+| `encryption mode ciphers {tkip\|aes\|tkip aes}` | Set encryption cipher (dot11-config) | WLC/AP |
+| `mac-filter` | Enable MAC filter (dot11-config) | WLC/AP |
+| `interface dot11radio <n>` | Enter dot11 radio interface config | WLC/AP |
 | `show wlan summary` | Display WLAN summary | WLC only |
 | `show ap summary` | Display AP summary | WLC only |
 
@@ -287,6 +341,7 @@ The simulator supports **200+ commands** across multiple configuration modes.
 | Command | Description |
 |---------|-------------|
 | `line console <n>` | Enter console line config |
+| `line aux <n>` | Enter auxiliary line config |
 | `line vty <start> <end>` | Enter VTY line config |
 | `password <password>` | Set line password |
 | `no password` | Remove line password |
@@ -329,23 +384,37 @@ The simulator supports **200+ commands** across multiple configuration modes.
 | Command | Description |
 |---------|-------------|
 | `network <ip> [wildcard] area <id>` | Add network to OSPF area |
+| `no network <ip> [wildcard] area <id>` | Remove network from OSPF |
 | `network <ip>` | Add RIP network |
+| `no network <ip>` | Remove RIP network |
 | `router-id <ip>` | Set router ID |
+| `no router-id` | Reset router ID to default |
 | `passive-interface <intf>` | Set passive interface |
+| `no passive-interface <intf>` | Enable routing updates on interface |
 | `default-information {originate\|always}` | Control default route |
+| `area <id> range <ip> <mask>` | Summarize routes at area boundary |
+| `area <id> stub` | Configure area as stub |
+| `area <id> nssa` | Configure area as NSSA |
+| `neighbor <ip> remote-as <asn>` | Configure BGP neighbor |
+| `no neighbor <ip> [remote-as]` | Remove BGP neighbor |
 
 ### Router Configuration Commands (EIGRP)
 | Command | Description |
 |---------|-------------|
+| `router eigrp <as>` | Enable EIGRP routing process |
+| `no router eigrp <as>` | Disable EIGRP routing process |
 | `network <ip> [wildcard]` | Advertise network via EIGRP |
 | `no network <ip> [wildcard]` | Remove EIGRP network |
 | `eigrp router-id <ip>` | Set EIGRP router ID |
+| `no eigrp router-id` | Reset EIGRP router ID |
 | `passive-interface <intf>` | Suppress routing updates |
 | `no passive-interface <intf>` | Enable routing updates |
 
 ### Router Configuration Commands (BGP)
 | Command | Description |
 |---------|-------------|
+| `router bgp <as>` | Enable BGP routing process |
+| `no router bgp <as>` | Disable BGP routing process |
 | `bgp router-id <ip>` | Set BGP router ID |
 | `network <ip> mask <mask>` | Advertise network via BGP |
 | `no network <ip> mask <mask>` | Remove BGP network |
@@ -357,8 +426,18 @@ The simulator supports **200+ commands** across multiple configuration modes.
 |---------|-------------|
 | `ipv6 router rip <name>` | Enter RIPng config mode |
 | `ipv6 router ospf <id>` | Enter OSPFv3 config mode |
+| `no ipv6 router rip <name>` | Disable RIPng |
+| `no ipv6 router ospf <id>` | Disable OSPFv3 |
 | `ipv6 ospf <id> area <area>` | Enable OSPFv3 on interface |
 | `ipv6 rip <name> enable` | Enable RIPng on interface |
+
+### IPv6 DHCP Pool Configuration Commands (`ipv6-dhcp-config` mode)
+| Command | Description |
+|---------|-------------|
+| `address prefix <prefix>` | Set IPv6 address prefix for clients |
+| `no address prefix <prefix>` | Remove address prefix |
+| `dns-server <ipv6>` | Set DNS server for clients |
+| `domain-name <name>` | Set domain name for clients |
 
 ### IoT CLI Commands
 > **Note**: These commands are available in global config mode on IoT-capable devices.
@@ -370,6 +449,8 @@ The simulator supports **200+ commands** across multiple configuration modes.
 | `iot threshold <name> <value>` | Set sensor threshold |
 | `no iot sensor <name>` | Remove sensor config |
 | `no iot actuator <name>` | Remove actuator config |
+| `iot name <name>` | Set IoT device name |
+| `iot wifi <ssid> [password]` | Configure IoT WiFi connection |
 | `iot display <text>` | Send text to IoT display |
 
 ### Firewall Configuration Commands
@@ -386,15 +467,19 @@ The simulator supports **200+ commands** across multiple configuration modes.
 |---------|-------------|
 | `network <address> <mask>` | Set pool network and subnet mask |
 | `default-router <ip>` | Set default gateway for clients |
+| `no default-router` | Remove default gateway |
 | `dns-server <ip>` | Set DNS server for clients |
+| `no dns-server` | Remove DNS server |
 | `lease <days> [hours] [minutes]` | Set lease duration (or `infinite`) |
 | `domain-name <name>` | Set domain name for clients |
+| `no domain-name` | Remove domain name |
 
 ### Show Commands
 | Command | Description |
 |---------|-------------|
 | `show` | Requires additional keywords (use `show ?`) |
 | `show running-config` | Display running configuration |
+| `show running-config interface <name>` | Display running config for specific interface |
 | `show startup-config` | Display startup configuration |
 | `show version` | Display version information |
 | `show interfaces` | Display all interfaces |
@@ -402,8 +487,13 @@ The simulator supports **200+ commands** across multiple configuration modes.
 | `show interface <name>` | Display specific interface |
 | `show ip interface brief` | Display IP interface summary |
 | `show ip interface` | Display IP interface summary (alias) |
+| `show ip protocols` | Display routing protocol configuration |
+| `show ip ssh` | Display SSH configuration and status |
+| `show ip source binding` | Display IP source guard bindings |
+| `show ip verify source` | Display IP source guard verification |
 | `show vlan [brief]` | Display VLAN information |
 | `show mac address-table` | Display MAC address table |
+| `show mac address-table static` | Display static MAC address entries |
 | `show cdp neighbors` | Display CDP neighbors |
 | `show ip route` | Display IPv4 routing table |
 | `show ipv6 route` | Display IPv6 routing table |
@@ -412,9 +502,20 @@ The simulator supports **200+ commands** across multiple configuration modes.
 | `show flash` | Display flash contents |
 | `show boot` | Display boot information |
 | `show spanning-tree` | Display STP information |
+| `show spanning-tree interface <name>` | Display STP information for specific interface |
 | `show port-security` | Display port security status |
 | `show wireless` | Display wireless status | WLC only |
 | `show ssh` | Display SSH status |
+| `show hosts` | Display static hostname-to-IP mappings |
+| `show sessions` | Display active sessions |
+| `show controllers` | Display interface controller status |
+| `show redundancy` | Display redundancy/HSRP status |
+| `show banner motd` | Display MOTD banner |
+| `show class-map` | Display QoS class maps |
+| `show policy-map` | Display QoS policy maps |
+| `show ipv6 dhcp pool` | Display IPv6 DHCP pools |
+| `show ip ospf neighbor` | Display OSPF neighbors |
+| `show ip ospf interface` | Display OSPF interface status |
 | `show debugging` | Display debugging status |
 | `do show <command>` | Execute show command from config mode |
 | `show ip dhcp snooping` | Display DHCP snooping |
@@ -444,6 +545,7 @@ The simulator supports **200+ commands** across multiple configuration modes.
 | `show sdm prefer` | Display SDM template |
 | `show system mtu` | Display MTU settings |
 | `show ntp status` | Display NTP status |
+| `show ntp associations` | Display NTP associations |
 | `show snmp` | Display SNMP info |
 | `show archive` | Display archive status |
 | `show alias` | Display command aliases |
