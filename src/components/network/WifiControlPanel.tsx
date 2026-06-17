@@ -128,7 +128,7 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab:
 
   const loginFormHTML = username && password ? `
     <div id="login-form" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px;">
-      <div style="background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); padding: 40px; width: 100%; max-width: 400px;">
+      <div style="background: white; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.12); padding: 40px; width: 100%; max-width: 400px;">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="font-size: 24px; font-weight: 600; color: #333; margin-bottom: 10px;">${safeDeviceName}</h1>
           <p style="color: #666; font-size: 14px;">${isTurkish ? 'IoT Cihaz Yönetimi' : 'IoT Device Management'}</p>
@@ -185,7 +185,7 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab:
       margin: 0 auto;
       background: #fff;
       border-radius: 12px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
       overflow: hidden;
     }
     
@@ -425,7 +425,7 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab:
     
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(42,82,152,0.3);
+      box-shadow: 0 4px 12px rgba(42,82,152,0.15);
     }
     
     .btn-secondary {
@@ -531,7 +531,7 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab:
     /* Custom Confirm Modal */
     .custom-confirm-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
     .custom-confirm-overlay.active { display: flex; }
-    .custom-confirm-box { background: white; border-radius: 12px; padding: 24px; max-width: 400px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center; }
+    .custom-confirm-box { background: white; border-radius: 12px; padding: 24px; max-width: 400px; width: 90%; box-shadow: 0 8px 30px rgba(0,0,0,0.12); text-align: center; }
     .custom-confirm-box h3 { margin: 0 0 12px 0; font-size: 16px; color: #333; }
     .custom-confirm-box p { margin: 0 0 20px 0; font-size: 14px; color: #666; }
     .custom-confirm-actions { display: flex; gap: 10px; justify-content: center; }
@@ -539,7 +539,7 @@ export function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab:
     .confirm-cancel-btn { background: #e9ecef; color: #495057; }
     .confirm-cancel-btn:hover { background: #dee2e6; }
     .confirm-ok-btn { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white; }
-    .confirm-ok-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(220,53,69,0.4); }
+    .confirm-ok-btn:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(220,53,69,0.2); }
   </style>
 </head>
 <body>

@@ -497,8 +497,7 @@ export function GuidedModePanel({
     >
       <div
         className={cn(
-          "flex flex-col rounded-xl shadow-2xl border overflow-hidden",
-          "bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl",
+          "flex flex-col rounded-xl shadow-2xl border overflow-hidden liquid-glass-light",
           "border-slate-200/50 dark:border-slate-700/50",
           "max-h-full"
         )}

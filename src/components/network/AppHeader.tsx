@@ -482,7 +482,7 @@ export function AppHeader({
                       </div>
                       <div className={`h-1.5 w-full rounded-full ${isDark ? 'bg-slate-800' : 'bg-slate-200'} overflow-hidden mb-1.5`}>
                         <div
-                          className="h-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)] transition-all duration-500"
+                          className="h-full bg-cyan-500 shadow-[0_0_3px_rgba(6,182,212,0.2)] transition-all duration-500"
                           style={{ width: `${(totalScore / maxScore) * 100}%` }}
                         />
                       </div>

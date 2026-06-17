@@ -28,7 +28,7 @@ function PortSelectorFallback() {
     return (
         <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-slate-950/40" />
-            <div className="liquid-glass-light relative w-full max-w-2xl rounded-[2.5rem] bg-slate-900/75 border-white/10 backdrop-blur-2xl border shadow-2xl overflow-hidden flex flex-col transition-all duration-500">
+            <div className="liquid-glass-light relative w-full max-w-2xl rounded-[2.5rem] bg-slate-900/75 border-white/10 backdrop-blur-xl border shadow-2xl overflow-hidden flex flex-col transition-all duration-500">
                 <div className="px-8 py-6 border-b border-slate-800/50 bg-slate-800/30">
                     <div className="h-8 bg-slate-700 rounded animate-pulse mb-4" />
                     <div className="h-6 bg-slate-700 rounded animate-pulse" />

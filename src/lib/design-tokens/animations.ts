@@ -220,7 +220,7 @@ export const animationPresets = {
     },
     'focus-glow': {
         transition: `box-shadow ${animationDurations.fast} ${easingFunctions.easeOut}`,
-        boxShadow: '0 0 0 3px var(--color-ring), 0 0 20px var(--color-ring)',
+        boxShadow: '0 0 0 2px var(--color-ring), 0 0 8px var(--color-ring)',
     },
 };
 

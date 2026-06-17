@@ -182,7 +182,7 @@ export const IoTSensorDisplay = ({
                             <div className={`text-2xl font-bold ${statusColor}`}>{statusText}</div>
                         </div>
                         <div className={`p-3 rounded-full ${isDark ? 'bg-slate-700' : 'bg-white'}`}>
-                            <span className={`text-4xl transition-all duration-300 ${isActive ? 'opacity-100 drop-shadow-lg' : 'opacity-40 grayscale'}`}>
+                            <span className={`text-4xl transition-all duration-300 ${isActive ? 'opacity-100 drop-shadow-sm' : 'opacity-40 grayscale'}`}>
                                 {displayIcon}
                             </span>
                         </div>

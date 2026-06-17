@@ -487,41 +487,41 @@ button,
   }
 }
 
-/* Liquid Glass Effects */
+/* Liquid Glass Effects - subtle */
 .liquid-glass {
-  backdrop-filter: blur(28px) saturate(180%);
-  background-color: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(16px) saturate(140%);
+  background-color: rgba(255, 255, 255, 0.45);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  box-shadow: 0 2px 12px 0 rgba(31, 38, 135, 0.06);
 }
 
 .dark .liquid-glass {
-  background-color: rgba(15, 23, 42, 0.65);
+  background-color: rgba(15, 23, 42, 0.7);
   border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.25);
 }
 
 .liquid-glass-light {
-  backdrop-filter: blur(12px) saturate(150%);
-  background-color: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(8px) saturate(130%);
+  background-color: rgba(255, 255, 255, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+  box-shadow: 0 2px 8px 0 rgba(31, 38, 135, 0.04);
 }
 
 .dark .liquid-glass-light {
-  background-color: rgba(15, 23, 42, 0.45);
+  background-color: rgba(15, 23, 42, 0.5);
   border-color: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.15);
 }
 
 .liquid-glass-strong {
-  backdrop-filter: blur(40px) saturate(200%);
-  background-color: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(24px) saturate(160%);
+  background-color: rgba(255, 255, 255, 0.65);
   border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .dark .liquid-glass-strong {
-  background-color: rgba(2, 6, 23, 0.85);
+  background-color: rgba(2, 6, 23, 0.88);
   border-color: rgba(255, 255, 255, 0.12);
 }
 
@@ -906,6 +906,21 @@ body.graphics-low .shadow-2xl,
 body.graphics-low [class*="shadow-"] {
   box-shadow: none !important;
 }
+
+/* Subtle shadows across the app - reduce glow intensity on hover/active states */
+.shadow-sm { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.03); }
+.shadow { box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04); }
+.shadow-md { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.04); }
+.shadow-lg { box-shadow: 0 6px 12px -3px rgb(0 0 0 / 0.06), 0 3px 5px -4px rgb(0 0 0 / 0.04); }
+.shadow-xl { box-shadow: 0 12px 20px -5px rgb(0 0 0 / 0.06), 0 5px 8px -6px rgb(0 0 0 / 0.04); }
+.shadow-2xl { box-shadow: 0 15px 35px -12px rgb(0 0 0 / 0.08); }
+
+.dark .shadow-sm { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.15); }
+.dark .shadow { box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.2), 0 1px 2px -1px rgb(0 0 0 / 0.15); }
+.dark .shadow-md { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.2), 0 2px 4px -2px rgb(0 0 0 / 0.15); }
+.dark .shadow-lg { box-shadow: 0 6px 12px -3px rgb(0 0 0 / 0.2), 0 3px 5px -4px rgb(0 0 0 / 0.15); }
+.dark .shadow-xl { box-shadow: 0 12px 20px -5px rgb(0 0 0 / 0.2), 0 5px 8px -6px rgb(0 0 0 / 0.15); }
+.dark .shadow-2xl { box-shadow: 0 15px 35px -12px rgb(0 0 0 / 0.25); }
 
 @media print {
   @page {

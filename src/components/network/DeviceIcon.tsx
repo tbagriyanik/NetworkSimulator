@@ -44,7 +44,7 @@ export function DeviceIcon({
     strokeWidth,
     className: cn(
       'transition-all duration-200',
-      active && 'filter drop-shadow-[0_0_4px_rgba(0,0,0,0.2)] dark:drop-shadow-[0_0_4px_rgba(255,255,255,0.1)]',
+        active && 'filter drop-shadow-[0_0_1px_rgba(0,0,0,0.1)] dark:drop-shadow-[0_0_1px_rgba(255,255,255,0.05)]',
       className
     )
   };

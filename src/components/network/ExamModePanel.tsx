@@ -266,8 +266,7 @@ export function ExamModePanel({
     >
       <div
         className={cn(
-          "flex flex-col rounded-xl shadow-2xl border overflow-hidden",
-          "bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl",
+          "flex flex-col rounded-xl shadow-2xl border overflow-hidden liquid-glass-light",
           "border-slate-200 dark:border-slate-700",
           "max-h-full"
         )}

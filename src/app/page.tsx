@@ -4510,10 +4510,10 @@ ${state.bannerMOTD}
                 setFirewallActiveTab('console');
               }}
               className={cn(
-                "p-0 overflow-visible flex flex-col top-auto left-auto translate-x-0 translate-y-0 shadow-[0_35px_120px_rgba(15,23,42,0.35)] liquid-glass-light",
+                "p-0 overflow-visible flex flex-col top-auto left-auto translate-x-0 translate-y-0 shadow-[0_15px_50px_rgba(15,23,42,0.12)] liquid-glass-light",
                 isDark
-                  ? "bg-slate-950/80 border-white/10 backdrop-blur-2xl"
-                  : "bg-white/70 border-white/70 backdrop-blur-2xl"
+                  ? "bg-slate-950/80 border-white/10 backdrop-blur-xl"
+                  : "bg-white/70 border-white/70 backdrop-blur-xl"
               )}
               data-modal-content
               data-disable-snap="true"
@@ -4646,10 +4646,10 @@ ${state.bannerMOTD}
               showCloseButton={false}
               onEscapeKeyDown={(e) => e.preventDefault()}
               className={cn(
-                "p-0 overflow-visible flex flex-col top-auto left-auto translate-x-0 translate-y-0 shadow-[0_35px_120px_rgba(15,23,42,0.35)] liquid-glass-light",
+                "p-0 overflow-visible flex flex-col top-auto left-auto translate-x-0 translate-y-0 shadow-[0_15px_50px_rgba(15,23,42,0.12)] liquid-glass-light",
                 isDark
-                  ? "bg-slate-950/80 border-white/10 backdrop-blur-2xl"
-                  : "bg-white/70 border-white/70 backdrop-blur-2xl"
+                  ? "bg-slate-950/80 border-white/10 backdrop-blur-xl"
+                  : "bg-white/70 border-white/70 backdrop-blur-xl"
               )}
               data-modal-content
               style={{

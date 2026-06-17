@@ -4935,7 +4935,7 @@ export function NetworkTopology({
           <>
             <defs>
               <filter id="selectionGlowFilter" x="-50%" y="-50%" width="200%" height="200%">
-                <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#f97316" floodOpacity="0.50" />
+                <feDropShadow dx="0" dy="0" stdDeviation="2" floodColor="#f97316" floodOpacity="0.25" />
               </filter>
             </defs>
             {device.type === 'firewall' ? (
@@ -5055,7 +5055,7 @@ export function NetworkTopology({
             strokeWidth="7"
             opacity={isSelected ? 0.4 : 0.7}
             strokeLinejoin="round"
-            style={{ filter: `drop-shadow(0 0 6px ${iotGlowColor}) drop-shadow(0 100px 112px ${iotGlowColor})` }}
+            style={{ filter: `drop-shadow(0 0 2px ${iotGlowColor})` }}
           />
         )}
 
@@ -5064,7 +5064,7 @@ export function NetworkTopology({
           <>
             <defs>
               <filter id="deviceShadow" x="-50%" y="-50%" width="200%" height="200%">
-                <feDropShadow dx="2" dy="3" stdDeviation="3" floodOpacity={isDark ? "0.3" : "0.2"} />
+                <feDropShadow dx="1" dy="2" stdDeviation="1.5" floodOpacity={isDark ? "0.15" : "0.1"} />
               </filter>
             </defs>
             <path
@@ -6522,11 +6522,11 @@ export function NetworkTopology({
                   </clipPath>
                   {/* Device Shadow Filter */}
                   <filter id="deviceShadow" x="-50%" y="-50%" width="200%" height="200%">
-                    <feDropShadow dx="2" dy="3" stdDeviation="3" floodOpacity={isDark ? "0.3" : "0.2"} />
+                    <feDropShadow dx="1" dy="2" stdDeviation="1.5" floodOpacity={isDark ? "0.15" : "0.1"} />
                   </filter>
-                  {/* WiFi Icon Shadow Filter - More pronounced for visibility */}
+                  {/* WiFi Icon Shadow Filter */}
                   <filter id="wifiIconShadow" x="-50%" y="-50%" width="200%" height="200%">
-                    <feDropShadow dx="0.5" dy="1" stdDeviation="1.5" floodOpacity={isDark ? "0.9" : "0.5"} />
+                    <feDropShadow dx="0.5" dy="1" stdDeviation="1" floodOpacity={isDark ? "0.4" : "0.25"} />
                   </filter>
                   {/* Canvas background gradient */}
                   <radialGradient id="canvasBgGradient" cx="46%" cy="30%" r="88%">
@@ -7585,7 +7585,7 @@ export function NetworkTopology({
                   )}
                 </radialGradient>
                 <filter id="packetGlow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="4" result="blur" />
+                  <feGaussianBlur stdDeviation="2" result="blur" />
                   <feMerge>
                     <feMergeNode in="blur" />
                     <feMergeNode in="SourceGraphic" />

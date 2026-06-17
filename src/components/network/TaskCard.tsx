@@ -112,8 +112,8 @@ export const TaskCard = React.memo(({ tasks, state, context, isDark }: TaskCardP
         <div className={cn(
           "px-3 py-1.5 rounded-2xl font-black text-xs tabular-nums shadow-lg transition-all duration-500",
           isCategoryComplete
-            ? "bg-emerald-500 text-zinc-950 shadow-emerald-500/40 scale-110"
-            : "bg-zinc-800 text-white dark:bg-white dark:text-zinc-900 shadow-black/20"
+            ? "bg-emerald-500 text-zinc-950 shadow-emerald-500/15 scale-110"
+            : "bg-zinc-800 text-white dark:bg-white dark:text-zinc-900 shadow-black/10"
         )}>
           {score} / {maxScore}
         </div>
@@ -124,7 +124,7 @@ export const TaskCard = React.memo(({ tasks, state, context, isDark }: TaskCardP
         <div
           className={cn(
             "h-full transition-all duration-1000 ease-out rounded-full",
-            isCategoryComplete ? "bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.5)]" : "bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.4)]"
+            isCategoryComplete ? "bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.2)]" : "bg-cyan-500 shadow-[0_0_3px_rgba(6,182,212,0.15)]"
           )}
           style={{ width: `${progressWidth}%` }}
         />
@@ -154,9 +154,9 @@ export const TaskCard = React.memo(({ tasks, state, context, isDark }: TaskCardP
               {/* Task Header */}
               <div className="flex items-center gap-3 mb-1.5">
                 <div className={cn(
-                  "w-6 h-6 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-500 shadow-md",
+                  "w-6 h-6 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-500 shadow-sm",
                   completed
-                    ? "bg-emerald-500 text-zinc-950 shadow-emerald-500/30"
+                    ? "bg-emerald-500 text-zinc-950 shadow-emerald-500/10"
                     : isDark ? "bg-zinc-800 text-zinc-500" : "bg-white text-zinc-400"
                 )}>
                   {completed ? (

@@ -108,9 +108,9 @@ export function ExamEditorPanel({
   return (
     <div
       className={cn(
-        "fixed inset-y-0 right-0 w-full sm:w-[500px] md:w-[550px] lg:w-[600px] max-w-[100vw] z-[100] shadow-2xl flex flex-col transition-all duration-300 transform",
+        "fixed inset-y-0 right-0 w-full sm:w-[500px] md:w-[550px] lg:w-[600px] max-w-[100vw] z-[100] shadow-2xl flex flex-col transition-all duration-300 transform liquid-glass-light",
         isOpen ? "translate-x-0" : "translate-x-full",
-        isDark ? "bg-slate-900 border-l border-slate-800" : "bg-white border-l border-slate-200"
+        isDark ? "border-l border-slate-800" : "border-l border-slate-200"
       )}
     >
       {/* Header */}

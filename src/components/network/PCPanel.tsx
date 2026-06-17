@@ -4838,7 +4838,7 @@ export function PCPanel({
       >
         <div className="shrink-0 px-2 pt-2 md:px-2 md:pt-2">
           <div className={cn(
-            "mx-auto flex items-center justify-between gap-2 rounded-xl border px-2 py-1.5 md:px-3 md:py-2 backdrop-blur-2xl shadow-[0_20px_60px_rgba(15,23,42,0.16)]",
+            "mx-auto flex items-center justify-between gap-2 rounded-xl border px-2 py-1.5 md:px-3 md:py-2 backdrop-blur-xl shadow-[0_10px_30px_rgba(15,23,42,0.08)]",
             isDark
               ? "border-white/10 bg-slate-900/70 text-slate-100"
               : "border-white/60 bg-white/70 text-slate-900"
@@ -4853,7 +4853,7 @@ export function PCPanel({
                 </div>
               </div>
               <div className={cn(
-                "pointer-events-auto flex items-center gap-1 rounded-full border px-1.5 py-1 md:px-2 md:py-1.5 backdrop-blur-2xl shadow-lg ml-auto",
+                "pointer-events-auto flex items-center gap-1 rounded-full border px-1.5 py-1 md:px-2 md:py-1.5 backdrop-blur-xl shadow-sm ml-auto",
                 isDark ? "border-white/10 bg-slate-900/70" : "border-white/80 bg-white/85"
               )}>
                 {/* Back Button - Shows when not on home */}
@@ -4984,7 +4984,7 @@ export function PCPanel({
           <div className="mx-auto flex h-full min-h-0 w-full max-w-[1500px] items-center justify-center overflow-hidden">
             <div
               className={cn(
-                "relative flex h-full min-h-0 w-full flex-col overflow-hidden shadow-[0_30px_120px_rgba(15,23,42,0.28)]",
+                "relative flex h-full min-h-0 w-full flex-col overflow-hidden shadow-[0_15px_50px_rgba(15,23,42,0.1)]",
                 isMobile
                   ? (isDark
                     ? "max-w-[430px] rounded-[2.5rem] border-[10px] border-slate-950 bg-transparent"
@@ -5007,7 +5007,7 @@ export function PCPanel({
                   <div className="absolute inset-0 z-40 bg-black flex flex-col items-center justify-center">
                     <div className="relative">
                       <div className="absolute inset-0 bg-red-500/20 blur-3xl rounded-full animate-pulse" />
-                      <svg className="w-16 h-16 text-red-600 drop-shadow-xl relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <svg className="w-16 h-16 text-red-600 drop-shadow-md relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v10" />
                         <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636a9 9 0 1 1-12.728 0" />
                       </svg>
@@ -5212,7 +5212,7 @@ export function PCPanel({
                           style={mobileVerticalScrollStyle}
                         >
                           <div className={cn(
-                            "relative flex h-full min-h-0 flex-col overflow-hidden rounded-[2rem] border shadow-[0_24px_80px_rgba(15,23,42,0.22)]",
+                            "relative flex h-full min-h-0 flex-col overflow-hidden rounded-[2rem] border shadow-[0_12px_40px_rgba(15,23,42,0.08)]",
                             isDark ? "border-white/10 bg-slate-950/45" : "border-white/80 bg-white/55"
                           )}>
                             <div className="pointer-events-none absolute inset-0">
@@ -6367,9 +6367,9 @@ export function PCPanel({
                                     role="switch"
                                     aria-checked={iotCollaborationEnabled}
                                     onClick={() => setIotCollaborationEnabled((prev) => !prev)}
-                                    className={`relative inline-flex h-7 w-14 items-center rounded-full border transition-all duration-300 shrink-0 ${iotCollaborationEnabled ? 'bg-cyan-500 border-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.4)]' : (isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-200 border-slate-300')}`}
+                                    className={`relative inline-flex h-7 w-14 items-center rounded-full border transition-all duration-300 shrink-0 ${iotCollaborationEnabled ? 'bg-cyan-500 border-cyan-400 shadow-[0_0_3px_rgba(6,182,212,0.15)]' : (isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-200 border-slate-300')}`}
                                   >
-                                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform duration-300 ${iotCollaborationEnabled ? 'translate-x-8' : 'translate-x-1'}`} />
+                                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-300 ${iotCollaborationEnabled ? 'translate-x-8' : 'translate-x-1'}`} />
                                   </button>
                                   <span className={`text-[9px] font-bold ${iotCollaborationEnabled ? 'text-cyan-500' : 'text-slate-200'}`}>
                                     {language === 'tr' ? 'AKTİF' : 'ACTIVE'}
@@ -6398,9 +6398,9 @@ export function PCPanel({
                                         }));
                                       }
                                     }}
-                                    className={`relative inline-flex h-7 w-14 items-center rounded-full border transition-all duration-300 shrink-0 ${selectedIotDevice?.status !== 'offline' ? 'bg-emerald-500 border-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.4)]' : (isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-200 border-slate-300')}`}
+                                    className={`relative inline-flex h-7 w-14 items-center rounded-full border transition-all duration-300 shrink-0 ${selectedIotDevice?.status !== 'offline' ? 'bg-emerald-500 border-emerald-400 shadow-[0_0_3px_rgba(16,185,129,0.15)]' : (isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-200 border-slate-300')}`}
                                   >
-                                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform duration-300 ${selectedIotDevice?.status !== 'offline' ? 'translate-x-8' : 'translate-x-1'}`} />
+                                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-300 ${selectedIotDevice?.status !== 'offline' ? 'translate-x-8' : 'translate-x-1'}`} />
                                   </button>
                                   <span className={`text-[9px] font-bold ${selectedIotDevice?.status !== 'offline' ? 'text-emerald-500' : 'text-slate-200'}`}>
                                     {language === 'tr' ? 'AÇIK' : 'ON'}
@@ -6995,11 +6995,11 @@ export function PCPanel({
                                       <div
                                         key={idx}
                                         className={`w-[10px] h-[10px] ${isHead
-                                          ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]'
+                                          ? 'bg-emerald-400 shadow-[0_0_2px_rgba(52,211,153,0.3)]'
                                           : isBody
                                             ? 'bg-emerald-600'
                                             : isFood
-                                              ? 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.9)] animate-pulse'
+                                              ? 'bg-rose-500 shadow-[0_0_3px_rgba(244,63,94,0.3)] animate-pulse'
                                               : (isDark ? 'bg-slate-800' : 'bg-slate-100')
                                           }`}
                                       />

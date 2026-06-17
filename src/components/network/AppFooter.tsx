@@ -159,7 +159,7 @@ export function AppFooter({
                 </span>
                 <div className={`w-20 h-1.5 rounded-full ${isDark ? 'bg-slate-700' : 'bg-slate-200'} overflow-hidden`}>
                   <div
-                    className="h-full bg-cyan-500 shadow-[0_0_6px_rgba(6,182,212,0.5)] transition-all duration-300"
+                    className="h-full bg-cyan-500 shadow-[0_0_2px_rgba(6,182,212,0.2)] transition-all duration-300"
                     style={{ width: `${(totalScore / maxScore) * 100}%` }}
                   />
                 </div>

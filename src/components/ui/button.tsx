@@ -21,17 +21,17 @@ const buttonVariants = cva(
           "hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100 shadow-none before:hidden",
         link: "text-primary underline-offset-4 hover:underline shadow-none before:hidden",
         'glass-primary':
-          "border-cyan-500/30 text-white shadow-cyan-500/10 bg-cyan-600/80 hover:bg-cyan-500 hover:border-cyan-400 hover:shadow-cyan-500/30 backdrop-blur-md rounded-lg text-xs font-semibold",
+          "border-cyan-500/20 text-white shadow-cyan-500/5 bg-cyan-600/80 hover:bg-cyan-500 hover:border-cyan-400 hover:shadow-cyan-500/15 backdrop-blur-md rounded-lg text-xs font-semibold",
         'glass-secondary':
-          "border-slate-700/50 text-slate-300 shadow-slate-900/40 bg-slate-800/80 hover:bg-slate-700 hover:border-slate-600 hover:text-white backdrop-blur-md rounded-lg text-xs font-semibold dark:bg-slate-900/60 dark:border-slate-800 dark:hover:bg-slate-800 dark:hover:border-slate-700",
+          "border-slate-700/40 text-slate-300 shadow-slate-900/30 bg-slate-800/80 hover:bg-slate-700 hover:border-slate-600 hover:text-white backdrop-blur-md rounded-lg text-xs font-semibold dark:bg-slate-900/60 dark:border-slate-800 dark:hover:bg-slate-800 dark:hover:border-slate-700",
         'glass-success':
-          "border-emerald-500/30 text-white shadow-emerald-500/10 bg-emerald-600/80 hover:bg-emerald-500 hover:border-emerald-400 hover:shadow-emerald-500/30 backdrop-blur-md rounded-lg text-xs font-semibold",
+          "border-emerald-500/20 text-white shadow-emerald-500/5 bg-emerald-600/80 hover:bg-emerald-500 hover:border-emerald-400 hover:shadow-emerald-500/15 backdrop-blur-md rounded-lg text-xs font-semibold",
         'glass-danger':
-          "border-rose-500/30 text-white shadow-rose-500/10 bg-rose-600/80 hover:bg-rose-500 hover:border-rose-400 hover:shadow-rose-500/30 backdrop-blur-md rounded-lg text-xs font-semibold",
+          "border-rose-500/20 text-white shadow-rose-500/5 bg-rose-600/80 hover:bg-rose-500 hover:border-rose-400 hover:shadow-rose-500/15 backdrop-blur-md rounded-lg text-xs font-semibold",
         'glass-warning':
-          "border-amber-500/30 text-white shadow-amber-500/10 bg-amber-600/80 hover:bg-amber-500 hover:border-amber-400 hover:shadow-amber-500/30 backdrop-blur-md rounded-lg text-xs font-semibold",
+          "border-amber-500/20 text-white shadow-amber-500/5 bg-amber-600/80 hover:bg-amber-500 hover:border-amber-400 hover:shadow-amber-500/15 backdrop-blur-md rounded-lg text-xs font-semibold",
         'glass-indigo':
-          "border-indigo-500/30 text-white shadow-indigo-500/10 bg-indigo-600/80 hover:bg-indigo-500 hover:border-indigo-400 hover:shadow-indigo-500/30 backdrop-blur-md rounded-lg text-xs font-semibold",
+          "border-indigo-500/20 text-white shadow-indigo-500/5 bg-indigo-600/80 hover:bg-indigo-500 hover:border-indigo-400 hover:shadow-indigo-500/15 backdrop-blur-md rounded-lg text-xs font-semibold",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

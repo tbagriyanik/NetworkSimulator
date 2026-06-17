@@ -38,7 +38,7 @@ export function NetworkTopologyPortSelectorModal({
   return (
     <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-950/40" />
-      <div className={`liquid-glass-light relative w-full max-w-2xl rounded-[2.5rem] ${isDark ? 'bg-slate-900/75 border-white/10 backdrop-blur-2xl' : 'bg-white/70 border-white/70 backdrop-blur-2xl'} border shadow-2xl overflow-hidden flex flex-col transition-all duration-500`}>
+      <div className={`liquid-glass-light relative w-full max-w-2xl rounded-[2.5rem] ${isDark ? 'bg-slate-900/75 border-white/10 backdrop-blur-xl' : 'bg-white/70 border-white/70 backdrop-blur-xl'} border shadow-2xl overflow-hidden flex flex-col transition-all duration-500`}>
         <div className={`px-8 py-6 border-b ${isDark ? 'border-slate-800/50 bg-slate-800/30' : 'border-slate-100 bg-slate-50/50'}`}>
           <div className="flex items-center justify-between gap-6">
             <div className="flex items-center gap-4">
@@ -62,8 +62,8 @@ export function NetworkTopologyPortSelectorModal({
           </div>
 
           <div className="mt-8 flex items-center gap-4">
-            <div className={`flex-1 h-1.5 rounded-full transition-all duration-500 ${portSelectorStep === 'source' ? 'bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.4)]' : 'bg-emerald-500/40'}`} />
-            <div className={`flex-1 h-1.5 rounded-full transition-all duration-500 ${portSelectorStep === 'target' ? 'bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.4)]' : (isDark ? 'bg-slate-800' : 'bg-slate-200')}`} />
+            <div className={`flex-1 h-1.5 rounded-full transition-all duration-500 ${portSelectorStep === 'source' ? 'bg-cyan-500 shadow-[0_0_3px_rgba(6,182,212,0.2)]' : 'bg-emerald-500/40'}`} />
+            <div className={`flex-1 h-1.5 rounded-full transition-all duration-500 ${portSelectorStep === 'target' ? 'bg-cyan-500 shadow-[0_0_3px_rgba(6,182,212,0.2)]' : (isDark ? 'bg-slate-800' : 'bg-slate-200')}`} />
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-6">
@@ -183,21 +183,21 @@ export function NetworkTopologyPortSelectorModal({
                     if (!isConnected) {
                       if (isConsolePrt) {
                         dotCls = 'bg-cyan-500';
-                        dotGlow = 'shadow-[0_0_7px_rgba(6,182,212,0.8)]';
+                        dotGlow = 'shadow-[0_0_3px_rgba(6,182,212,0.3)]';
                         cardCls = isDark
                           ? 'bg-cyan-950/20 border-cyan-800/50 hover:border-cyan-400 hover:bg-cyan-900/30'
                           : 'bg-cyan-50 border-cyan-200 hover:border-cyan-400 shadow-sm';
                         textCls = 'text-cyan-400 group-hover:text-cyan-300';
                       } else if (isGigabit) {
                         dotCls = 'bg-orange-500';
-                        dotGlow = 'shadow-[0_0_7px_rgba(249,115,22,0.8)]';
+                        dotGlow = 'shadow-[0_0_3px_rgba(249,115,22,0.3)]';
                         cardCls = isDark
                           ? 'bg-orange-950/20 border-orange-800/50 hover:border-orange-400 hover:bg-orange-900/30'
                           : 'bg-orange-50 border-orange-200 hover:border-orange-400 shadow-sm';
                         textCls = 'text-orange-400 group-hover:text-orange-300';
                       } else if (isFastEth) {
                         dotCls = 'bg-blue-500';
-                        dotGlow = 'shadow-[0_0_7px_rgba(59,130,246,0.8)]';
+                        dotGlow = 'shadow-[0_0_3px_rgba(59,130,246,0.3)]';
                         cardCls = isDark
                           ? 'bg-blue-950/20 border-blue-800/50 hover:border-blue-400 hover:bg-blue-900/30'
                           : 'bg-blue-50 border-blue-200 hover:border-blue-400 shadow-sm';

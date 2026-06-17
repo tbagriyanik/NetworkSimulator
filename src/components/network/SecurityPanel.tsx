@@ -100,7 +100,7 @@ export function SecurityPanel({ security, t, theme, isDevicePoweredOff = false }
               style={{ animationDelay: `${index * 50}ms` }}
             >
               <div className="flex items-center gap-2 min-w-0">
-                <div className={`w-2 h-2 rounded-full flex-shrink-0 transition-all duration-300 ${item.enabled ? 'bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.5)]' : 'bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.5)]'
+                <div className={`w-2 h-2 rounded-full flex-shrink-0 transition-all duration-300 ${item.enabled ? 'bg-green-500 shadow-[0_0_2px_rgba(34,197,94,0.2)]' : 'bg-red-500 shadow-[0_0_2px_rgba(239,68,68,0.2)]'
                   } ${item.enabled ? 'animate-pulse' : ''}`} />
                 <div className="min-w-0">
                   <div className={`text-xs sm:text-sm ${textPrimary} truncate transition-colors`}>{item.name}</div>

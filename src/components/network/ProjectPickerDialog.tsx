@@ -573,7 +573,7 @@ export function ProjectPickerDialog({
 
                             {examProject.detail && (
                               <div className='pt-2 flex items-center gap-2 w-full'>
-                                <div className='w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-rose-500 shrink-0 shadow-[0_0_8px_rgba(244,63,94,0.5)]' />
+                                <div className='w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-rose-500 shrink-0 shadow-[0_0_3px_rgba(244,63,94,0.2)]' />
                                 <span className={`text-[8px] md:text-[11px] font-bold tracking-wide whitespace-normal break-words w-full ${isDark ? 'text-rose-400/80' : 'text-rose-700/80'}`}>
                                   {examProject.detail}
                                 </span>
@@ -662,7 +662,7 @@ export function ProjectPickerDialog({
                                     <div className='flex items-center gap-2 w-full pt-2 md:pt-4 border-t border-slate-800/10 dark:border-slate-800/50'>
                                       {example.detail && (
                                         <div className='flex-1 min-w-0 flex items-center gap-2 md:gap-3'>
-                                          <div className='w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-amber-500 shrink-0 shadow-[0_0_8px_rgba(245,158,11,0.5)]' />
+<div className='w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-amber-500 shrink-0 shadow-[0_0_3px_rgba(245,158,11,0.2)]' />
                                           <span className={`text-[8px] md:text-[11px] font-bold tracking-wide whitespace-normal break-words break-all w-full ${isDark ? 'text-amber-400/80' : 'text-amber-700/80'}`}>{example.detail}</span>
                                         </div>
                                       )}

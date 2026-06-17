@@ -73,7 +73,7 @@ export function TopologyToolbar({
   const isHighQuality = graphicsQuality === 'high';
   // Register Home key shortcut for reset view
   const toolbarGlowClass = isHighQuality
-    ? 'drop-shadow-[0_0_4px_rgba(34,211,238,0.28)] dark:drop-shadow-[0_0_4px_rgba(34,211,238,0.22)]'
+    ? 'drop-shadow-[0_0_2px_rgba(34,211,238,0.15)] dark:drop-shadow-[0_0_2px_rgba(34,211,238,0.12)]'
     : '';
 
   useKeyboardShortcuts([
@@ -154,7 +154,7 @@ export function TopologyToolbar({
                       <>
                         <TooltipWrapper title={statusLabel}>
                           <span className="w-2 h-2 rounded-full mr-0.5">
-                            <span className={`block w-2 h-2 rounded-full ${statusColor} shadow-[0_0_6px_rgba(45,212,191,0.8)]`} />
+                            <span className={`block w-2 h-2 rounded-full ${statusColor} shadow-[0_0_2px_rgba(45,212,191,0.3)]`} />
                           </span>
                         </TooltipWrapper>
                         <DeviceIcon

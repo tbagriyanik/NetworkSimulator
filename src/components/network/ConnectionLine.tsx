@@ -162,7 +162,7 @@ export const ConnectionLine = memo(function ConnectionLine({
         vectorEffect="non-scaling-stroke"
         style={{
           filter: isHovered ?
-            'drop-shadow(0 0 4px ' + color + ') drop-shadow(0 0 8px ' + color + ') drop-shadow(0 0 16px ' + color + ') drop-shadow(0 0 24px ' + color + ')' :
+            'drop-shadow(0 0 2px ' + color + ') drop-shadow(0 0 4px ' + color + ')' :
             'none',
           transition: 'all 0.2s ease'
         }}

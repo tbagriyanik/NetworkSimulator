@@ -36,12 +36,12 @@ interface PortPanelProps {
 }
 
 const ledColorClasses: Record<PortLEDColor, string> = {
-  green: 'bg-green-500 shadow-[0_0_4px_rgba(34,197,94,0.4)]',
+  green: 'bg-green-500 shadow-[0_0_2px_rgba(34,197,94,0.2)]',
   gray: 'bg-zinc-500 transition-colors',
-  orange: 'bg-orange-500 shadow-[0_0_4px_rgba(249,115,22,0.4)]',
-  white: 'bg-white shadow-[0_0_4px_rgba(255,255,255,0.3)] border border-zinc-300',
+  orange: 'bg-orange-500 shadow-[0_0_2px_rgba(249,115,22,0.2)]',
+  white: 'bg-white shadow-[0_0_1px_rgba(255,255,255,0.2)] border border-zinc-300',
   off: 'bg-zinc-700 transition-colors',
-  red: 'bg-red-500 shadow-[0_0_4px_rgba(239,68,68,0.4)]'
+  red: 'bg-red-500 shadow-[0_0_2px_rgba(239,68,68,0.2)]'
 };
 
 export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDeviceId, isDevicePoweredOff = false, topologyDevices = [], onTogglePower, topologyConnections, onClose }: PortPanelProps) {
