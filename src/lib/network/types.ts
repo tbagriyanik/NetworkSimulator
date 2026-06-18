@@ -11,7 +11,8 @@ export type CommandMode =
   | 'router-config'  // Router(config-router)#
   | 'dhcp-config'    // Router(dhcp-config)#
   | 'ssid-config'    // Router(config-ssid)#
-  | 'dot11-config';  // Router(config-if)# [dot11Radio]
+  | 'dot11-config'   // Router(config-if)# [dot11Radio]
+  | 'config-std-nacl'; // Router(config-std-nacl)# - Named standard ACL
 
 export type PortStatus = 'connected' | 'notconnect' | 'disabled' | 'blocked' | 'err-disabled';
 export type PortMode = 'access' | 'trunk' | 'routed' | 'dynamic-auto' | 'dynamic-desirable' | 'dot1q-tunnel';
@@ -72,6 +73,9 @@ export interface Port {
     processId?: string;
     area?: string;
   };
+  ospfEnabled?: boolean;
+  ospfProcessId?: string;
+  ospfArea?: string;
   ipv6DhcpServer?: string;
   isRoutedPort?: boolean;       // For L3 switch routed ports
   isSubinterface?: boolean;     // For subinterfaces (e.g., gi0/0.10)
@@ -462,6 +466,7 @@ export interface SwitchState {
   dhcpOption82?: boolean;
   dhcpSnoopingVlans?: string[];
   accessLists?: Record<string, string[]>;
+  currentNamedAcl?: string;  // Current named ACL being configured
   currentSsid?: string;
   currentRadio?: string;
   execAliases?: Record<string, string>;

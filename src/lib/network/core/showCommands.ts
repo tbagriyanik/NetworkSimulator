@@ -1468,17 +1468,28 @@ function cmdShowIpOspfNeighbor(state: SwitchState, _input: string, _ctx: Command
 
   // Simulate neighbors from dynamic routes
   if (state.dynamicRoutes && state.dynamicRoutes.length > 0) {
-    const neighbors = new Set<string>();
+    const neighborMap = new Map<string, { address: string; intf: string; routerId: string }>();
     state.dynamicRoutes.forEach((r) => {
-      if (r.nextHop && !neighbors.has(r.nextHop)) {
-        neighbors.add(r.nextHop);
-        // Mocking OSPF neighbor entry
-        const routerId = r.nextHop; // Fallback to IP
+      if (r.nextHop && !neighborMap.has(r.nextHop)) {
+        // Generate a realistic Router ID based on next-hop
+        const nextHopParts = r.nextHop.split('.');
+        const routerId = `10.0.0.${Math.floor(Math.random() * 254) + 1}`;
         const address = r.nextHop;
         const intf = r.interface || 'FastEthernet0/0';
-        output += `${routerId.padEnd(15)} 1     FULL/DR         00:00:32    ${address.padEnd(15)} ${intf}\n`;
+        neighborMap.set(r.nextHop, { address, intf, routerId });
       }
     });
+
+    const neighborStates = ['FULL/DR', 'FULL/BDR', 'FULL/DROTHER', '2WAY/DROTHER', 'FULL/  -  ', 'INIT/  -  '];
+    neighborMap.forEach((neighbor) => {
+      const deadTimer = `00:00:${String(Math.floor(Math.random() * 35) + 2).padStart(2, '0')}`;
+      const stateStr = neighborStates[Math.floor(Math.random() * neighborStates.length)];
+      output += `${neighbor.routerId.padEnd(15)} 1     ${stateStr.padEnd(15)} ${deadTimer}    ${neighbor.address.padEnd(15)} ${neighbor.intf}\n`;
+    });
+  }
+
+  if (output === '\nNeighbor ID     Pri   State           Dead Time   Address         Interface\n') {
+    output += '(no neighbors found)\n';
   }
 
   return { success: true, output };
@@ -3405,10 +3416,15 @@ function cmdShowIpArpInspection(_state: SwitchState, _input: string, _ctx: Comma
 /**
  * Show Access-Lists
  */
-function cmdShowAccessLists(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+function cmdShowAccessLists(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   const hasClassicAcls = !!state.accessLists && Object.keys(state.accessLists).length > 0;
+  const hasNamedAcls = hasClassicAcls && Object.keys(state.accessLists).some(k => isNaN(Number(k)));
+  const hasNumberedAcls = hasClassicAcls && Object.keys(state.accessLists).some(k => !isNaN(Number(k)));
   const firewallRules = Array.isArray(state.firewallRules) ? state.firewallRules : [];
   const hasFirewallAcls = firewallRules.length > 0;
+
+  // Filter by ACL name if specified
+  const filterAcl = input.match(/^show\s+access-lists?\s+(\S+)$/i)?.[1];
 
   if (!hasClassicAcls && !hasFirewallAcls) {
     return { success: true, output: '\n% No access lists configured\n' };
@@ -3418,20 +3434,41 @@ function cmdShowAccessLists(state: SwitchState, _input: string, _ctx: CommandCon
 
   if (hasClassicAcls) {
     Object.entries(state.accessLists || {}).forEach(([aclId, rules]: [string, string[]]) => {
-      output += `Standard IP access list ${aclId}\n`;
-      rules.forEach((rule: string, index: number) => {
-        output += `    ${(index + 1) * 10} ${rule}\n`;
+      if (filterAcl && aclId !== filterAcl) return;
+
+      const isNamed = isNaN(Number(aclId));
+      if (isNamed) {
+        output += `Standard IP access list ${aclId}\n`;
+      } else {
+        output += `Standard IP access list ${aclId}\n`;
+      }
+      rules.forEach((rule: string) => {
+        // Parse rule format: "seq permit|deny <conditions>"
+        const seqMatch = rule.match(/^(\d+)\s+(.+)$/);
+        if (seqMatch) {
+          const seq = seqMatch[1];
+          const ruleText = seqMatch[2];
+          output += `    ${seq.padEnd(5)} ${ruleText} (0 matches)\n`;
+        } else {
+          // Old format without sequence number - assign default seq
+          const allRules = state.accessLists?.[aclId] || [];
+          const ruleIndex = allRules.indexOf(rule);
+          const seq = (ruleIndex + 1) * 10;
+          output += `    ${String(seq).padEnd(5)} ${rule} (0 matches)\n`;
+        }
       });
     });
   }
 
   if (hasFirewallAcls) {
-    output += 'access-list OUTSIDE-IN\n';
-    firewallRules.forEach((rule: { enabled?: boolean; protocol?: string; action: string; sourceIp: string; targetIp: string; port: string | number }, index: number) => {
-      const inactive = rule.enabled === false ? 'inactive ' : '';
-      const protocol = rule.protocol === 'any' ? 'ip' : (rule.protocol || 'ip');
-      output += `    line ${index + 1} extended ${inactive}${rule.action} ${protocol} ${rule.sourceIp} ${rule.targetIp} eq ${rule.port}\n`;
-    });
+    if (!filterAcl || filterAcl === 'OUTSIDE-IN') {
+      output += 'access-list OUTSIDE-IN\n';
+      firewallRules.forEach((rule: { enabled?: boolean; protocol?: string; action: string; sourceIp: string; targetIp: string; port: string | number }, index: number) => {
+        const inactive = rule.enabled === false ? 'inactive ' : '';
+        const protocol = rule.protocol === 'any' ? 'ip' : (rule.protocol || 'ip');
+        output += `    line ${index + 1} extended ${inactive}${rule.action} ${protocol} ${rule.sourceIp} ${rule.targetIp} eq ${rule.port}\n`;
+      });
+    }
   }
 
   return { success: true, output };

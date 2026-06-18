@@ -112,6 +112,8 @@ export const interfaceHandlers: Record<string, CommandHandler> = {
   'ipv6 address': cmdIpv6Address,
   'ipv6 rip enable': cmdIpv6Rip,
   'ipv6 ospf area': cmdIpv6Ospf,
+  'ip ospf area': cmdIpOspfArea,
+  'no ip ospf area': cmdNoIpOspfArea,
   'ipv6 dhcp server': cmdIpv6DhcpServer,
   'no ipv6 rip enable': cmdNoIpv6Rip,
   'no ipv6 ospf area': cmdNoIpv6Ospf,
@@ -234,6 +236,37 @@ function cmdInterface(state: SwitchState, input: string, _ctx: CommandContext): 
         selectedInterfaces: [vlanPortId],
         ports: newPorts,
         vlans: newVlans
+      }
+    };
+  }
+
+  // Loopback interface - always create virtual interface
+  const loopbackMatch = interfaceName.match(/^(?:loopback|lo)\s*(\d+)$/i);
+  if (loopbackMatch) {
+    const loopbackId = loopbackMatch[1];
+    const normalizedLoopback = `loopback${loopbackId}`;
+    const newPorts = { ...state.ports };
+    if (!newPorts[normalizedLoopback]) {
+      newPorts[normalizedLoopback] = {
+        id: normalizedLoopback,
+        name: `Loopback${loopbackId}`,
+        type: 'gigabitethernet',
+        vlan: 1,
+        status: 'connected',
+        shutdown: false,
+        mode: 'routed',
+        duplex: 'auto',
+        speed: 'auto',
+        isRoutedPort: true
+      };
+    }
+    return {
+      success: true,
+      newState: {
+        currentMode: 'interface',
+        currentInterface: normalizedLoopback,
+        selectedInterfaces: [normalizedLoopback],
+        ports: newPorts
       }
     };
   }
@@ -1623,13 +1656,15 @@ function cmdAccessList(state: SwitchState, input: string, _ctx: CommandContext):
     return { success: false, error: iosModeError() };
   }
 
-  const match = input.match(/^access-list\s+(\d+)\s+(permit|deny)\s+(.+)$/i);
+  const match = input.match(/^access-list\s+(\d+)\s+(?:(\d+)\s+)?(permit|deny)\s+(.+)$/i);
   if (!match) {
     return { success: false, error: '% Invalid access-list command' };
   }
 
   const aclId = match[1];
-  const ruleBody = match[3].trim();
+  const seqNum = match[2] ? parseInt(match[2], 10) : undefined;
+  const action = match[3];
+  const ruleBody = match[4].trim();
   if (/\*/.test(ruleBody)) {
     return { success: false, error: "% Invalid input detected at '^' marker." };
   }
@@ -1640,39 +1675,94 @@ function cmdAccessList(state: SwitchState, input: string, _ctx: CommandContext):
       return { success: false, error: "% Invalid input detected at '^' marker." };
     }
   }
-  const rule = `${match[2]} ${ruleBody}`;
+
   const accessLists = { ...(state.accessLists || {}) };
-  accessLists[aclId] = [...(accessLists[aclId] || []), rule];
+  const existingRules = accessLists[aclId] || [];
+
+  // Determine sequence number
+  let effectiveSeq: number;
+  if (seqNum) {
+    effectiveSeq = seqNum;
+  } else {
+    // Auto-assign: find the highest existing seq + 10, starting at 10
+    const maxSeq = existingRules.reduce((max: number, r: string) => {
+      const s = parseInt(r, 10);
+      return !isNaN(s) && s > max ? s : max;
+    }, 0);
+    effectiveSeq = maxSeq === 0 ? 10 : maxSeq + 10;
+  }
+
+  // Insert the rule with sequence number prefix
+  const newRule = `${effectiveSeq} ${action} ${ruleBody}`;
+  const newRules = [...existingRules];
+
+  // Insert at correct position based on sequence number
+  const insertIndex = newRules.findIndex((r: string) => {
+    const s = parseInt(r, 10);
+    return !isNaN(s) && s > effectiveSeq;
+  });
+  if (insertIndex >= 0) {
+    newRules.splice(insertIndex, 0, newRule);
+  } else {
+    newRules.push(newRule);
+  }
+
+  accessLists[aclId] = newRules;
 
   return {
     success: true,
-    output: `Access-list ${aclId} rule added`,
+    output: `Access-list ${aclId} rule added (sequence ${effectiveSeq})`,
     newState: { accessLists }
   };
 }
 
 /**
- * No Access-List - Remove ACL
+ * No Access-List - Remove ACL or single rule by sequence number
+ * Supports: no access-list <id> (remove entire ACL)
+ *           no access-list <id> <seq> (remove specific rule)
  */
 function cmdNoAccessList(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
     return { success: false, error: iosModeError() };
   }
 
-  const match = input.match(/^no\s+access-list\s+(\d+)$/i);
+  const match = input.match(/^no\s+access-list\s+(\d+)(?:\s+(\d+))?$/i);
   if (!match) {
     return { success: false, error: '% Invalid access-list command' };
   }
 
   const aclId = match[1];
-  const accessLists = { ...(state.accessLists || {}) };
-  delete accessLists[aclId];
+  const seqToRemove = match[2]; // Optional sequence number for single rule deletion
 
-  return {
-    success: true,
-    output: `Access-list ${aclId} removed`,
-    newState: { accessLists }
-  };
+  const accessLists = { ...(state.accessLists || {}) };
+
+  if (seqToRemove) {
+    // Remove single rule by sequence number
+    if (!accessLists[aclId]) {
+      return { success: false, error: `% Access-list ${aclId} not found` };
+    }
+    const ruleExists = accessLists[aclId].some((r: string) => r.startsWith(seqToRemove + ' '));
+    if (!ruleExists) {
+      return { success: false, error: `% Rule with sequence ${seqToRemove} not found in access-list ${aclId}` };
+    }
+    accessLists[aclId] = accessLists[aclId].filter((r: string) => !r.startsWith(seqToRemove + ' '));
+    if (accessLists[aclId].length === 0) {
+      delete accessLists[aclId];
+    }
+    return {
+      success: true,
+      output: `Access-list ${aclId} rule ${seqToRemove} removed`,
+      newState: { accessLists }
+    };
+  } else {
+    // Remove entire ACL
+    delete accessLists[aclId];
+    return {
+      success: true,
+      output: `Access-list ${aclId} removed`,
+      newState: { accessLists }
+    };
+  }
 }
 
 /**
@@ -2023,6 +2113,46 @@ function cmdIpv6Ospf(state: SwitchState, input: string, _ctx: CommandContext): C
   });
 
   return { success: true, newState: { ports: newPorts, ipv6DynamicRoutes } };
+}
+
+/**
+ * IP OSPF Area - Enable OSPF on interface (IPv4)
+ */
+function cmdIpOspfArea(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: '% No interface selected' };
+  const match = input.match(/^ip\s+ospf\s+(\d+)\s+area\s+(\d+)$/i);
+  if (!match) return { success: false, error: '% Invalid command' };
+
+  const processId = match[1];
+  const area = match[2];
+  const updatePort = (port: Port) => ({
+    ...port,
+    ospfEnabled: true,
+    ospfProcessId: processId,
+    ospfArea: area
+  });
+  const newPorts = applyToSelectedPorts(state, updatePort);
+
+  return { success: true, newState: { ports: newPorts } };
+}
+
+/**
+ * No IP OSPF Area - Disable OSPF on interface (IPv4)
+ */
+function cmdNoIpOspfArea(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: '% No interface selected' };
+  const match = input.match(/^no\s+ip\s+ospf\s+(\d+)\s+area\s+(\d+)$/i);
+  if (!match) return { success: false, error: '% Invalid command' };
+
+  const updatePort = (port: Port) => ({
+    ...port,
+    ospfEnabled: false,
+    ospfProcessId: undefined,
+    ospfArea: undefined
+  });
+  const newPorts = applyToSelectedPorts(state, updatePort);
+
+  return { success: true, newState: { ports: newPorts } };
 }
 
 /**

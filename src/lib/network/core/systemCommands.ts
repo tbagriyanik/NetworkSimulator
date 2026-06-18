@@ -167,6 +167,14 @@ function cmdExit(
           currentMode: 'config'
         }
       };
+    case 'config-std-nacl':
+      return {
+        success: true,
+        newState: {
+          currentMode: 'config',
+          currentNamedAcl: undefined
+        }
+      };
     case 'dhcp-config':
       return {
         success: true,
@@ -202,6 +210,14 @@ function cmdEnd(
     case 'line':
     case 'vlan':
     case 'router-config':
+    case 'config-std-nacl':
+      return {
+        success: true,
+        newState: {
+          currentMode: 'privileged',
+          currentNamedAcl: undefined
+        }
+      };
     case 'dhcp-config':
       return {
         success: true,

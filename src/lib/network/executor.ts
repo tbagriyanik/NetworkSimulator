@@ -37,6 +37,8 @@ export function getPrompt(state: SwitchState): string {
       return `${hostname}(dhcp-config)#`;
     case 'ssid-config':
       return `${hostname}(config-ssid)#`;
+    case 'config-std-nacl':
+      return `${hostname}(config-std-nacl)#`;
     case 'dot11-config':
       return `${hostname}(config-if)#`;
     default:
@@ -354,6 +356,11 @@ export const commandHelp: Record<string, Record<string, string[]>> = {
     '': ['dot11', 'encryption'],
     ...pfx('dot11', ['channel', 'mac-filter', 'power', 'station-role']),
     ...pfx('encryption', ['mode']),
+  },
+  'config-std-nacl': {
+    '': ['do', 'end', 'exit', 'help', 'no', 'permit', 'deny'],
+    ...pfx('do', ['show']),
+    ...pfx('no', ['permit', 'deny']),
   },
 };
 

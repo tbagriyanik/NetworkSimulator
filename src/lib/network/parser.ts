@@ -72,14 +72,14 @@ export const commandPatterns: Record<string, CommandPattern> = {
     maxArgs: 0
   },
   'exit': {
-    pattern: /^(exit|quit)$/i,
-    modes: ['privileged', 'config', 'interface', 'config-if-range', 'line', 'vlan', 'dhcp-config', 'router-config'],
+    pattern: /^exit$/i,
+    modes: ['privileged', 'config', 'interface', 'config-if-range', 'line', 'vlan', 'dhcp-config', 'router-config', 'config-std-nacl'],
     minArgs: 0,
     maxArgs: 0
   },
   'end': {
     pattern: /^end$/i,
-    modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'dhcp-config', 'router-config'],
+    modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'dhcp-config', 'router-config', 'config-std-nacl'],
     minArgs: 0,
     maxArgs: 0
   },
@@ -581,6 +581,18 @@ export const commandPatterns: Record<string, CommandPattern> = {
     minArgs: 2,
     maxArgs: 2
   },
+  'ip ospf area': {
+    pattern: /^ip\s+ospf\s+(\d+)\s+area\s+(\d+)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 2,
+    maxArgs: 2
+  },
+  'no ip ospf area': {
+    pattern: /^no\s+ip\s+ospf\s+(\d+)\s+area\s+(\d+)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 2,
+    maxArgs: 2
+  },
   'no ipv6 ospf area': {
     pattern: /^no\s+ipv6\s+ospf\s+(\d+)\s+area\s+(\d+)$/i,
     modes: ['interface', 'config-if-range'],
@@ -720,7 +732,7 @@ export const commandPatterns: Record<string, CommandPattern> = {
 
   // Interface komutları - interface ÖNCE gelmeli (daha spesifik)
   'interface': {
-    pattern: /^interface\s+(?!r(?:ange)?\s)(fa|fastethernet|gi|gig|gigabitethernet|e|ethernet|po|port-channel|vlan)?\s*(.+)$/i,
+    pattern: /^interface\s+(?!r(?:ange)?\s)(fa|fastethernet|gi|gig|gigabitethernet|e|ethernet|po|port-channel|vlan|loopback|lo)?\s*(.+)$/i,
     modes: ['config'],
     minArgs: 1,
     maxArgs: 1
@@ -1909,7 +1921,7 @@ export const commandPatterns: Record<string, CommandPattern> = {
   // Yardım
   'help': {
     pattern: /^(\?|help)$/i,
-    modes: ['user', 'privileged', 'config', 'interface', 'config-if-range', 'line', 'vlan'],
+    modes: ['user', 'privileged', 'config', 'interface', 'config-if-range', 'line', 'vlan', 'config-std-nacl'],
     minArgs: 0,
     maxArgs: 0
   },
@@ -1917,13 +1929,13 @@ export const commandPatterns: Record<string, CommandPattern> = {
   // Do komutları (config moddan show çalıştırma)
   'do show': {
     pattern: /^do\s+(sh(?:ow)?\s+.+)$/i,
-    modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'router-config', 'dhcp-config'],
+    modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'router-config', 'dhcp-config', 'config-std-nacl'],
     minArgs: 1,
     maxArgs: 1
   },
   'do': {
     pattern: /^do\s+(.*)$/i,
-    modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'router-config', 'dhcp-config'],
+    modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'router-config', 'dhcp-config', 'config-std-nacl'],
     minArgs: 0,
     maxArgs: 10
   },
@@ -2122,12 +2134,37 @@ export const commandPatterns: Record<string, CommandPattern> = {
     maxArgs: 0
   },
 
-  // Access-list
+  // Access-list (numbered)
   'access-list': {
-    pattern: /^access-list\s+(\d+)\s+(permit|deny)\s+(.+)$/i,
+    pattern: /^access-list\s+(\d+)\s+(?:\d+\s+)?(permit|deny)\s+(.+)$/i,
     modes: ['config'],
     minArgs: 3,
-    maxArgs: 3
+    maxArgs: 4
+  },
+  // Named ACL sub-mode commands
+  'permit (named-acl)': {
+    pattern: /^permit\s+(.+)$/i,
+    modes: ['config-std-nacl'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'deny (named-acl)': {
+    pattern: /^deny\s+(.+)$/i,
+    modes: ['config-std-nacl'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'no permit (named-acl)': {
+    pattern: /^no\s+permit\s+(.+)$/i,
+    modes: ['config-std-nacl'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'no deny (named-acl)': {
+    pattern: /^no\s+deny\s+(.+)$/i,
+    modes: ['config-std-nacl'],
+    minArgs: 1,
+    maxArgs: 1
   },
   'ip access-list': {
     pattern: /^ip\s+access-list\s+(standard|extended)\s+(\S+)$/i,
@@ -2136,10 +2173,10 @@ export const commandPatterns: Record<string, CommandPattern> = {
     maxArgs: 2
   },
   'no access-list': {
-    pattern: /^no\s+access-list\s+(\d+)$/i,
+    pattern: /^no\s+access-list\s+(\d+)(?:\s+(\d+))?$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 2
   },
   'no ip access-list': {
     pattern: /^no\s+ip\s+access-list\s+(standard|extended)\s+(\S+)$/i,

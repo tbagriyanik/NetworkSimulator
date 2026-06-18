@@ -115,6 +115,10 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'policy-map': cmdStubSuccess,
   'template': cmdStubSuccess,
   'ip access-list': cmdIpAccessList,
+  'permit (named-acl)': cmdNamedAclPermit,
+  'deny (named-acl)': cmdNamedAclDeny,
+  'no permit (named-acl)': cmdNamedAclNoPermit,
+  'no deny (named-acl)': cmdNamedAclNoDeny,
   'no ip access-list': cmdNoIpAccessList,
   'ip host': cmdIpHost,
   'no ip host': cmdNoIpHost,
@@ -1997,8 +2001,109 @@ function cmdIpAccessList(state: SwitchState, input: string, _ctx: CommandContext
   const match = input.match(/^ip\s+access-list\s+(standard|extended)\s+(\S+)$/i);
   if (!match) return { success: false, error: '% Invalid ip access-list command' };
 
-  // For simulation simplicity, we'll just success and maybe in the future add a sub-mode
-  return { success: true, output: `IP access-list ${match[2]} configured` };
+  const aclName = match[2];
+  const accessLists = { ...(state.accessLists || {}) };
+  if (!accessLists[aclName]) {
+    accessLists[aclName] = [];
+  }
+
+  return {
+    success: true,
+    output: '',
+    newState: {
+      currentMode: 'config-std-nacl',
+      currentNamedAcl: aclName,
+      accessLists
+    }
+  };
+}
+
+/**
+ * Permit (Named ACL sub-mode) - Add permit rule to named ACL
+ */
+function cmdNamedAclPermit(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config-std-nacl' || !state.currentNamedAcl) {
+    return { success: false, error: iosModeError() };
+  }
+
+  const match = input.match(/^permit\s+(.+)$/i);
+  if (!match) return { success: false, error: '% Invalid permit command' };
+
+  const rule = `permit ${match[1]}`;
+  const accessLists = { ...(state.accessLists || {}) };
+  const aclName = state.currentNamedAcl;
+  accessLists[aclName] = [...(accessLists[aclName] || []), rule];
+
+  return {
+    success: true,
+    newState: { accessLists }
+  };
+}
+
+/**
+ * Deny (Named ACL sub-mode) - Add deny rule to named ACL
+ */
+function cmdNamedAclDeny(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config-std-nacl' || !state.currentNamedAcl) {
+    return { success: false, error: iosModeError() };
+  }
+
+  const match = input.match(/^deny\s+(.+)$/i);
+  if (!match) return { success: false, error: '% Invalid deny command' };
+
+  const rule = `deny ${match[1]}`;
+  const accessLists = { ...(state.accessLists || {}) };
+  const aclName = state.currentNamedAcl;
+  accessLists[aclName] = [...(accessLists[aclName] || []), rule];
+
+  return {
+    success: true,
+    newState: { accessLists }
+  };
+}
+
+/**
+ * No Permit (Named ACL sub-mode) - Remove specific permit rule
+ */
+function cmdNamedAclNoPermit(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config-std-nacl' || !state.currentNamedAcl) {
+    return { success: false, error: iosModeError() };
+  }
+
+  const match = input.match(/^no\s+permit\s+(.+)$/i);
+  if (!match) return { success: false, error: '% Invalid command' };
+
+  const rule = `permit ${match[1]}`;
+  const aclName = state.currentNamedAcl;
+  const accessLists = { ...(state.accessLists || {}) };
+  accessLists[aclName] = (accessLists[aclName] || []).filter((r: string) => r !== rule);
+
+  return {
+    success: true,
+    newState: { accessLists }
+  };
+}
+
+/**
+ * No Deny (Named ACL sub-mode) - Remove specific deny rule
+ */
+function cmdNamedAclNoDeny(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config-std-nacl' || !state.currentNamedAcl) {
+    return { success: false, error: iosModeError() };
+  }
+
+  const match = input.match(/^no\s+deny\s+(.+)$/i);
+  if (!match) return { success: false, error: '% Invalid command' };
+
+  const rule = `deny ${match[1]}`;
+  const aclName = state.currentNamedAcl;
+  const accessLists = { ...(state.accessLists || {}) };
+  accessLists[aclName] = (accessLists[aclName] || []).filter((r: string) => r !== rule);
+
+  return {
+    success: true,
+    newState: { accessLists }
+  };
 }
 
 /**

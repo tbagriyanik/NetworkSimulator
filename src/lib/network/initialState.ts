@@ -771,6 +771,8 @@ export function getModePrompt(mode: CommandMode, hostname: string, _context?: st
       return `${hostname}(config-vlan)#`;
     case 'line':
       return `${hostname}(config-line)#`;
+    case 'config-std-nacl':
+      return `${hostname}(config-std-nacl)#`;
     case 'router-config':
       return `${hostname}(config-router)#`;
     default:
@@ -822,6 +824,12 @@ export function normalizePortId(input: string): string | null {
     return `s${serialTwoPart[1]}/${serialTwoPart[2]}/0`;
   }
 
+  // Loopback interface: loopback0, lo0, Loopback0, etc.
+  const loopbackMatch = lower.match(/^(?:loopback|lo)\s*(\d+)$/);
+  if (loopbackMatch) {
+    return `loopback${loopbackMatch[1]}`;
+  }
+
   // Wlan0 formatını kabul et
   if (lower === 'wlan0') {
     return 'wlan0';
@@ -862,9 +870,6 @@ export const commandAliases: Record<string, string> = {
   'configure termi': 'configure terminal',
   'configure termin': 'configure terminal',
   'configure termina': 'configure terminal',
-  'c': 'configure',
-  'c t': 'configure terminal',
-  'ct': 'configure terminal',
 
   // Show commands
   'sh': 'show',

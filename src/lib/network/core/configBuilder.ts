@@ -495,6 +495,30 @@ export function buildRunningConfig(state: SwitchState): string[] {
     }
     lines.push('!');
 
+    // Standard and named ACLs
+    if (state.accessLists && Object.keys(state.accessLists).length > 0) {
+        Object.entries(state.accessLists).forEach(([aclId, rules]) => {
+            const isNamed = isNaN(Number(aclId));
+            if (isNamed) {
+                lines.push(`ip access-list standard ${aclId}`);
+                rules.forEach((rule: string) => {
+                    const seqMatch = rule.match(/^(\d+)\s+(.+)$/);
+                    if (seqMatch) {
+                        lines.push(` ${seqMatch[2]}`);
+                    } else {
+                        lines.push(` ${rule}`);
+                    }
+                });
+                lines.push('exit');
+            } else {
+                rules.forEach((rule: string) => {
+                    lines.push(`access-list ${aclId} ${rule}`);
+                });
+            }
+        });
+        lines.push('!');
+    }
+
     if (state.switchLayer === 'FW' && state.firewallRules && state.firewallRules.length > 0) {
         state.firewallRules.forEach((rule, index) => {
             const statusPrefix = rule.enabled === false ? 'inactive ' : '';
