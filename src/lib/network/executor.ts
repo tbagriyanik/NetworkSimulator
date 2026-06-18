@@ -1017,40 +1017,47 @@ export function executeCommand(
 
   let cmdToProcess = input.trim();
   let pipeFilter: { type: 'include' | 'exclude' | 'begin' | 'section'; query: string } | null = null;
-  const lowerInput = cmdToProcess.toLowerCase();
+
+  // Extract pipe filter early so shortcuts operate on the base command only
+  const pipeMatch = cmdToProcess.match(/^(.*?)\s*\|\s*(include|exclude|begin|section)\s+(.+)$/i);
+  let cmdBase = cmdToProcess;
+  if (pipeMatch) {
+    cmdBase = pipeMatch[1].trim();
+    pipeFilter = {
+      type: pipeMatch[2].toLowerCase() as 'include' | 'exclude' | 'begin' | 'section',
+      query: pipeMatch[3].trim(),
+    };
+  }
+
+  const lowerBase = cmdBase.toLowerCase();
 
   if (state.currentMode === 'privileged') {
-    if (lowerInput === 'conf t') cmdToProcess = 'configure terminal';
-    if (lowerInput.startsWith('sh ip int br')) cmdToProcess = 'show ip interface brief';
-    if (lowerInput.startsWith('show ip interfaces br')) cmdToProcess = 'show ip interface brief';
-    if (lowerInput.startsWith('show ip interfaces brief')) cmdToProcess = 'show ip interface brief';
-    if (lowerInput.startsWith('sh run')) {
-      const pipeIndex = cmdToProcess.indexOf('|');
-      if (pipeIndex >= 0) {
-        cmdToProcess = `show running-config ${cmdToProcess.slice(pipeIndex)}`;
-      } else {
-        cmdToProcess = 'show running-config';
-      }
-    }
-    if (lowerInput.startsWith('sh ip ro')) cmdToProcess = 'show ip route';
-    if (lowerInput === 'sh ssh' || lowerInput === 'show ssh') cmdToProcess = 'show ssh';
-    if (lowerInput === 'wr') cmdToProcess = 'write memory';
-    if (lowerInput.startsWith('sh eth')) cmdToProcess = 'show etherchannel';
-    if (lowerInput.startsWith('sh etherch')) cmdToProcess = 'show etherchannel';
-    if (lowerInput.startsWith('show etherc')) cmdToProcess = 'show etherchannel';
+    if (lowerBase === 'conf t') { cmdBase = 'configure terminal'; }
+    else if (lowerBase.startsWith('sh ip int br')) { cmdBase = 'show ip interface brief'; }
+    else if (lowerBase.startsWith('show ip interfaces br')) { cmdBase = 'show ip interface brief'; }
+    else if (lowerBase.startsWith('show ip interfaces brief')) { cmdBase = 'show ip interface brief'; }
+    else if (lowerBase.startsWith('sh run')) { cmdBase = 'show running-config'; }
+    else if (lowerBase.startsWith('sh ip ro')) { cmdBase = 'show ip route'; }
+    else if (lowerBase === 'sh ssh' || lowerBase === 'show ssh') { cmdBase = 'show ssh'; }
+    else if (lowerBase === 'wr') { cmdBase = 'write memory'; }
+    else if (lowerBase.startsWith('sh eth')) { cmdBase = 'show etherchannel'; }
+    else if (lowerBase.startsWith('sh etherch')) { cmdBase = 'show etherchannel'; }
+    else if (lowerBase.startsWith('show etherc')) { cmdBase = 'show etherchannel'; }
   } else if (state.currentMode === 'user') {
-    if (lowerInput === 'en') cmdToProcess = 'enable';
+    if (lowerBase === 'en') { cmdBase = 'enable'; }
   } else if (state.currentMode === 'config') {
-    if (lowerInput.startsWith('int fa')) cmdToProcess = cmdToProcess.replace(/int fa/i, 'interface fastethernet');
-    if (lowerInput.startsWith('int gig')) cmdToProcess = cmdToProcess.replace(/int gig/i, 'interface gigabitethernet');
-    if (lowerInput.startsWith('int gi')) cmdToProcess = cmdToProcess.replace(/int gi/i, 'interface gigabitethernet');
-    if (lowerInput.startsWith('int vlan')) cmdToProcess = cmdToProcess.replace(/int vlan/i, 'interface vlan');
-    if (lowerInput.startsWith('show ip interfaces br')) cmdToProcess = 'show ip interface brief';
-    if (lowerInput.startsWith('show ip interfaces brief')) cmdToProcess = 'show ip interface brief';
-    if (lowerInput === 'show interface trunk') cmdToProcess = 'show interfaces trunk';
-    if (lowerInput.startsWith('show cdp neighbor')) cmdToProcess = 'show cdp neighbors';
-    if (lowerInput === 'show mac address') cmdToProcess = 'show mac address-table';
+    if (lowerBase.startsWith('int fa')) { cmdBase = cmdBase.replace(/int fa/i, 'interface fastethernet'); }
+    else if (lowerBase.startsWith('int gig')) { cmdBase = cmdBase.replace(/int gig/i, 'interface gigabitethernet'); }
+    else if (lowerBase.startsWith('int gi')) { cmdBase = cmdBase.replace(/int gi/i, 'interface gigabitethernet'); }
+    else if (lowerBase.startsWith('int vlan')) { cmdBase = cmdBase.replace(/int vlan/i, 'interface vlan'); }
+    else if (lowerBase.startsWith('show ip interfaces br')) { cmdBase = 'show ip interface brief'; }
+    else if (lowerBase.startsWith('show ip interfaces brief')) { cmdBase = 'show ip interface brief'; }
+    else if (lowerBase === 'show interface trunk') { cmdBase = 'show interfaces trunk'; }
+    else if (lowerBase.startsWith('show cdp neighbor')) { cmdBase = 'show cdp neighbors'; }
+    else if (lowerBase === 'show mac address') { cmdBase = 'show mac address-table'; }
   }
+
+  cmdToProcess = cmdBase;
 
   // Special handling for enable command when no password is set
   // Direct console access (no remote session) can bypass this check
@@ -1196,15 +1203,6 @@ export function executeCommand(
       success: false,
       error: `% Invalid input detected at '^' marker.\n${commandName} is not supported on this ${deviceLabel}.`
     }, cmdToProcess, state.currentMode, state, language);
-  }
-
-  const pipeMatch = cmdToProcess.match(/^(.*?)\s*\|\s*(include|exclude|begin|section)\s+(.+)$/i);
-  if (pipeMatch) {
-    pipeFilter = {
-      type: pipeMatch[2].toLowerCase() as 'include' | 'exclude' | 'begin' | 'section',
-      query: pipeMatch[3].trim(),
-    };
-    cmdToProcess = pipeMatch[1].trim();
   }
 
   const commandInput = parsed.resolvedInput || parsed.rawInput;

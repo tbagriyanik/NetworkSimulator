@@ -6,6 +6,7 @@ import { buildRunningConfig } from './configBuilder';
 import { SwitchState, Port, CommandResult, Route } from '../types';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
 import { checkConnectivity } from '../connectivity';
+import { normalizePortId } from '../initialState';
 
 // Show komutları (show running-config, show vlan, show ip route, vs.)
 
@@ -4017,8 +4018,46 @@ function cmdShowMacAcl(_state: SwitchState, _input: string, _ctx: CommandContext
 /**
  * Show Controllers
  */
-function cmdShowControllers(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  return { success: true, output: '\nInterface FastEthernet0/1\nHardware is QUICC Ethernet\n' };
+function cmdShowControllers(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
+  const ifaceMatch = input.match(/^show\s+controllers\s+(.+)$/i);
+  if (!ifaceMatch) {
+    return { success: true, output: '\n% Incomplete command.\n' };
+  }
+
+  const requestedInterface = ifaceMatch[1].trim();
+  const normalized = normalizePortId(requestedInterface) || requestedInterface.toLowerCase().replace(/\s+/g, '');
+  const port = (state.ports || {})[normalized];
+
+  if (!port) {
+    return { success: false, error: `% Interface ${requestedInterface} not found` };
+  }
+
+  if (port.type !== 'serial') {
+    return { success: true, output: `\nInterface ${requestedInterface}\nHardware is QUICC Ethernet\n` };
+  }
+
+  const connections = ctx.connections || [];
+  const sourceDeviceId = ctx.sourceDeviceId;
+  const conn = sourceDeviceId
+    ? connections.find(c =>
+        c.active !== false &&
+        ((c.sourceDeviceId === sourceDeviceId && c.sourcePort === normalized) ||
+         (c.targetDeviceId === sourceDeviceId && c.targetPort === normalized))
+      )
+    : undefined;
+
+  if (!conn) {
+    return { success: true, output: `\nInterface ${requestedInterface}\nNo cable attached\n` };
+  }
+
+  const isSourcePort = conn.sourceDeviceId === sourceDeviceId && conn.sourcePort === normalized;
+  const clockRate = port.clockRate || 2000000;
+
+  if (isSourcePort) {
+    return { success: true, output: `\nInterface ${requestedInterface}\nDCE V.35, clock rate ${clockRate}\nCable type : V.35 DCE cable\n` };
+  }
+
+  return { success: true, output: `\nInterface ${requestedInterface}\nDTE V.35 serial cable attached\nCable type : V.35 DTE cable\n` };
 }
 
 /**
