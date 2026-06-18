@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
-import { ensureDeviceStatesMap } from './networkUtils';
-import { checkDeviceConnectivity, getPingDiagnostics, evaluateAcl } from './connectivity';
-import { SwitchState } from './types';
+import { ensureDeviceStatesMap } from '@/lib/network/networkUtils';
+import { checkDeviceConnectivity, getPingDiagnostics, evaluateAcl } from '@/lib/network/connectivity';
+import { SwitchState } from '@/lib/network/types';
 import { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
 
-vi.mock('./networkUtils', () => ({
+vi.mock('@/lib/network/networkUtils', () => ({
   ensureDeviceStatesMap: vi.fn((deviceStates) => deviceStates || new Map()),
 }));
 
@@ -17,7 +17,7 @@ describe('Connectivity Functions', () => {
     });
 
     it('should return the same map when provided', () => {
-      const originalMap = new Map([['device1', { id: 'device1' }]]) as unknown as Map<string, import('./types').SwitchState>;
+      const originalMap = new Map([['device1', { id: 'device1' }]]) as unknown as Map<string, import('@/lib/network/types').SwitchState>;
       const result = ensureDeviceStatesMap(originalMap);
       expect(result).toBe(originalMap);
     });

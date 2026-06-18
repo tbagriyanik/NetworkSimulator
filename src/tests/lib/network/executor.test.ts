@@ -1,24 +1,24 @@
 import { describe, it, expect, vi } from 'vitest';
-import { SwitchState, CommandMode } from './types';
-import { getPrompt } from './executor';
+import { SwitchState, CommandMode } from '@/lib/network/types';
+import { getPrompt } from '@/lib/network/executor';
 
-vi.mock('./capabilities', () => ({
+vi.mock('@/lib/network/capabilities', () => ({
   getDeviceCapabilities: vi.fn(() => ({ switching: true, routing: false, firewall: false })),
 }));
 
-vi.mock('./switchModels', () => ({
+vi.mock('@/lib/network/switchModels', () => ({
   isRouterModel: vi.fn(() => false),
 }));
 
-vi.mock('./initialState', () => ({
+vi.mock('@/lib/network/initialState', () => ({
   getModePrompt: vi.fn(() => ''),
 }));
 
-vi.mock('./networkUtils', () => ({
+vi.mock('@/lib/network/networkUtils', () => ({
   ensureDeviceStatesMap: vi.fn((deviceStates) => deviceStates || new Map()),
 }));
 
-vi.mock('./core/iosErrors', () => ({
+vi.mock('@/lib/network/core/iosErrors', () => ({
   IOS_ERRORS: { unknown: 'Unknown command' },
   iosModeError: vi.fn(() => 'Mode error'),
 }));

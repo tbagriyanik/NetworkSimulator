@@ -164,7 +164,7 @@ export const ConnectionLine = memo(function ConnectionLine({
         vectorEffect="non-scaling-stroke"
         style={{
           filter: isHovered || (graphicsQuality === 'high' && isEffectivelyActive) ?
-            'drop-shadow(0 0 2px ' + color + ') drop-shadow(0 0 4px ' + color + ')' :
+            'drop-shadow(0 0 0.5px ' + color + ') drop-shadow(0 0 1px ' + color + ')' :
             'none',
           transition: 'all 0.2s ease'
         }}
@@ -175,12 +175,12 @@ export const ConnectionLine = memo(function ConnectionLine({
         <path
           d={pathD}
           stroke={color}
-          strokeWidth={2.5}
+          strokeWidth={0.4}
           fill="none"
           className="pointer-events-none"
           vectorEffect="non-scaling-stroke"
           style={{
-            opacity: 0.01,
+            opacity: 0.004,
             filter: 'url(#connectionGlowFilter)',
           }}
         />

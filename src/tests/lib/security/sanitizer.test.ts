@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeInput } from './sanitizer';
+import { sanitizeInput } from '@/lib/security/sanitizer';
 
 describe('sanitizeInput', () => {
   it('should remove javascript: schemes', () => {
@@ -8,7 +8,6 @@ describe('sanitizeInput', () => {
   });
 
   it('should remove data: schemes', () => {
-    // Current implementation: data:text/html -> text/html
     expect(sanitizeInput('data:text/html')).toBe('text/html');
   });
 
@@ -21,7 +20,6 @@ describe('sanitizeInput', () => {
   });
 
   it('should handle nested/recursive schemes', () => {
-    // javascript:data:alert(1) -> data:alert(1) -> alert(1)
     expect(sanitizeInput('javascript:data:alert(1)')).toBe('alert(1)');
     expect(sanitizeInput('java<javascript:>script:alert(1)')).toBe('alert(1)');
   });

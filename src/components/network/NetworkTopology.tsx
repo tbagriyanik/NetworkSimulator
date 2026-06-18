@@ -7738,7 +7738,7 @@ export function NetworkTopology({
                   </feMerge>
                 </filter>
                 <filter id="connectionGlowFilter" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="1.5" result="blur" />
+                  <feGaussianBlur stdDeviation="0.2" result="blur" />
                 </filter>
               </defs>
 

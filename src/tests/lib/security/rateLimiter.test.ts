@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { isRateLimited, cleanupRateLimits } from './rateLimiter';
+import { isRateLimited, cleanupRateLimits } from '@/lib/security/rateLimiter';
 
 describe('RateLimiter', () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    cleanupRateLimits(); // We need a way to clear the map for tests
+    cleanupRateLimits();
   });
 
   it('should allow requests within limit', () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { isRouterModel, isLayer2Switch, isLayer3Switch } from './switchModels';
-import { getDeviceCapabilities } from './capabilities';
+import { isRouterModel, isLayer2Switch, isLayer3Switch } from '@/lib/network/switchModels';
+import { getDeviceCapabilities } from '@/lib/network/capabilities';
 import type { DeviceType } from '@/components/network/networkTopology.types';
 
 describe('Router Identification and Capabilities', () => {

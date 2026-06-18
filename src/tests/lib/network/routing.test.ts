@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isIpv6, expandIpv6, isIpv6InNetwork, ipToNumber } from './routing';
+import { isIpv6, expandIpv6, isIpv6InNetwork, ipToNumber } from '@/lib/network/routing';
 
 describe('IPv6 Utilities', () => {
   describe('isIpv6', () => {

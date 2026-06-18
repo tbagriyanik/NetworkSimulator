@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateExamFromProject, ProjectData } from './examMode';
+import { generateExamFromProject, ProjectData } from '@/lib/network/examMode';
 
 describe('generateExamFromProject', () => {
   it('should generate an exam with tasks from project data', () => {

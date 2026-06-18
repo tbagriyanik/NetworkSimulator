@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeSVG } from './svgSanitizer';
+import { sanitizeSVG } from '@/lib/security/svgSanitizer';
 
 describe('sanitizeSVG', () => {
   it('should remove dangerous tags', () => {

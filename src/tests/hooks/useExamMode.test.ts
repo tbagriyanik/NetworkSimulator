@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useExamMode } from './useExamMode';
+import { useExamMode } from '@/hooks/useExamMode';
 import { ExamProject } from '@/lib/network/examMode';
 
 // Mock localStorage
