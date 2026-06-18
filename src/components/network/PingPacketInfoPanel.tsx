@@ -75,6 +75,7 @@ const tr = {
     crossover: 'Çapraz Kablo',
     fiber: 'Fiber Optik',
     console: 'Konsol',
+    serial: 'Seri Kablo',
     changed: 'Değişti',
     macChanged: 'MAC değişti — yönlendirme',
     ipSame: 'IP aynı kaldı — uçtan uca',
@@ -123,6 +124,7 @@ const en = {
     crossover: 'Crossover',
     fiber: 'Fiber Optic',
     console: 'Console',
+    serial: 'Serial Cable',
     changed: 'Changed',
     macChanged: 'MAC changed — routing',
     ipSame: 'IP unchanged — end-to-end',
@@ -149,6 +151,7 @@ function getCableLabel(cableType: string, t: typeof tr) {
     if (cableType === 'crossover') return t.crossover;
     if (cableType === 'fiber') return t.fiber;
     if (cableType === 'console') return t.console;
+    if (cableType === 'serial') return t.serial;
     return t.wired;
 }
 
@@ -156,6 +159,7 @@ function getCableColor(cableType: string) {
     if (cableType === 'crossover') return '#f97316'; // turuncu
     if (cableType === 'fiber') return '#f59e0b';
     if (cableType === 'console') return '#6b7280';
+    if (cableType === 'serial') return '#84cc16'; // lime
     return '#3b82f6'; // mavi — wireless ve straight (Ethernet)
 }
 
@@ -187,6 +191,15 @@ function CableIcon({ cableType, color, width = 56, isMobile = false }: { cableTy
                 <line x1="32" y1="4" x2="48" y2="4" stroke={color} strokeWidth="2" />
                 <polygon points="48,1 56,4 48,7" fill={color} />
                 <polygon points="48,7 56,10 48,13" fill={color} />
+            </svg>
+        );
+    }
+    if (cableType === 'serial') {
+        // Seri kablo — şimşek/zigzag
+        return (
+            <svg width={w} height="14" viewBox="0 0 56 14" fill="none">
+                <polyline points="2,10 14,3 24,11 34,3 44,11 54,4" stroke={color} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                <polygon points="54,1 58,4 54,7" fill={color} />
             </svg>
         );
     }

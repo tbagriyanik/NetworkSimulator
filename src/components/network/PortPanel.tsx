@@ -179,6 +179,16 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
               <div className={isDark ? 'text-slate-300' : 'text-slate-600'}>
                 <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>{t.status}:</span> {statusLabel}
               </div>
+              {port.type === 'serial' && port.serialEncapsulation && (
+                <div className={isDark ? 'text-slate-300' : 'text-slate-600'}>
+                  <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>Encapsulation:</span> {port.serialEncapsulation.toUpperCase()}
+                </div>
+              )}
+              {port.type === 'serial' && port.dce !== undefined && (
+                <div className={isDark ? 'text-slate-300' : 'text-slate-600'}>
+                  <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>Role:</span> {port.dce ? 'DCE' : 'DTE'}
+                </div>
+              )}
             </div>
           </TooltipContent>
         </Tooltip>
@@ -255,6 +265,18 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
                 {port.spanningTree.state === 'learning' && 'LRN'}
               </div>
             )}
+            {port.ipAddress && (
+              <div className={isDark ? 'text-slate-300' : 'text-slate-600'}>
+                <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>IP:</span>{' '}
+                <span className="text-amber-400">{port.ipAddress}{port.subnetMask ? `/${port.subnetMask}` : ''}</span>
+              </div>
+            )}
+            {port.ipv6Address && (
+              <div className={isDark ? 'text-slate-300' : 'text-slate-600'}>
+                <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>IPv6:</span>{' '}
+                <span className="text-amber-400">{port.ipv6Address}{port.ipv6Prefix ? `/${port.ipv6Prefix}` : ''}</span>
+              </div>
+            )}
             <div className={isDark ? 'text-slate-300' : 'text-slate-600'}>
               <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>{t.mode}:</span> <span className="capitalize">{port.mode}</span>
             </div>
@@ -267,6 +289,21 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
             <div className={isDark ? 'text-slate-300' : 'text-slate-600'}>
               <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>{t.duplex}:</span> {port.duplex === 'auto' ? 'Auto' : <span className="capitalize">{port.duplex}</span>}
             </div>
+            {port.type === 'serial' && port.serialEncapsulation && (
+              <div className={isDark ? 'text-slate-300' : 'text-slate-600'}>
+                <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>Encapsulation:</span> {port.serialEncapsulation.toUpperCase()}
+              </div>
+            )}
+            {port.type === 'serial' && port.dce !== undefined && (
+              <div className={isDark ? 'text-slate-300' : 'text-slate-600'}>
+                <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>Role:</span> {port.dce ? 'DCE' : 'DTE'}
+              </div>
+            )}
+            {peerId && (
+              <div className={isDark ? 'text-slate-300' : 'text-slate-600'}>
+                <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>Connected to:</span> {peerId}
+              </div>
+            )}
             {(port.description || port.name) && (
               <div className={isDark ? 'text-slate-300' : 'text-slate-600'}>
                 <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>{t.description}:</span> {port.description || port.name}

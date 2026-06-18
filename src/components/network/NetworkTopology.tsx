@@ -3904,8 +3904,8 @@ export function NetworkTopology({
 
       // Find all connected devices
       for (const conn of connections) {
-        // Only allow data path cables: Ethernet (straight/crossover) and WiFi (wireless)
-        if (conn.cableType !== 'straight' && conn.cableType !== 'crossover' && conn.cableType !== 'wireless') continue;
+        // Only allow data path cables: Ethernet (straight/crossover), Serial WAN, and WiFi (wireless)
+        if (conn.cableType !== 'straight' && conn.cableType !== 'crossover' && conn.cableType !== 'wireless' && conn.cableType !== 'serial') continue;
 
         let nextDeviceId: string | null = null;
         let sourcePortId: string | null = null;
