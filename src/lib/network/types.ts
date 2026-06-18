@@ -12,7 +12,8 @@ export type CommandMode =
   | 'dhcp-config'    // Router(dhcp-config)#
   | 'ssid-config'    // Router(config-ssid)#
   | 'dot11-config'   // Router(config-if)# [dot11Radio]
-  | 'config-std-nacl'; // Router(config-std-nacl)# - Named standard ACL
+  | 'config-std-nacl'  // Router(config-std-nacl)# - Named standard ACL
+  | 'config-ext-nacl'; // Router(config-ext-nacl)# - Named extended ACL
 
 export type PortStatus = 'connected' | 'notconnect' | 'disabled' | 'blocked' | 'err-disabled';
 export type PortMode = 'access' | 'trunk' | 'routed' | 'dynamic-auto' | 'dynamic-desirable' | 'dot1q-tunnel';
@@ -466,7 +467,9 @@ export interface SwitchState {
   dhcpOption82?: boolean;
   dhcpSnoopingVlans?: string[];
   accessLists?: Record<string, string[]>;
-  currentNamedAcl?: string;  // Current named ACL being configured
+  currentNamedAcl?: string;  // Current named standard ACL being configured
+  currentExtendedAcl?: string;  // Current named extended ACL being configured
+  aclMatchCounters?: Record<string, Record<string, number>>;  // ACL name → rule index → match count
   currentSsid?: string;
   currentRadio?: string;
   execAliases?: Record<string, string>;

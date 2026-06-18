@@ -1807,6 +1807,12 @@ function isManagementIpSet(deviceId: string, deviceStates?: Map<string, SwitchSt
 /**
  * Evaluate ACL (Standard or Extended)
  */
+function incrementAclCounter(state: SwitchState, aclId: string, ruleIndex: number): void {
+  if (!state.aclMatchCounters) state.aclMatchCounters = {};
+  if (!state.aclMatchCounters[aclId]) state.aclMatchCounters[aclId] = {};
+  state.aclMatchCounters[aclId][ruleIndex] = (state.aclMatchCounters[aclId][ruleIndex] || 0) + 1;
+}
+
 export function evaluateAcl(
   aclId: string,
   state: SwitchState,
@@ -1819,14 +1825,19 @@ export function evaluateAcl(
   if (!rules || rules.length === 0) return 'none';
 
   const aclNum = parseInt(aclId);
-  const isExtended = (aclNum >= 100 && aclNum <= 199) || isNaN(aclNum); // Named ACLs often treated as extended in simulation
+  // Named ACLs and extended numbered ACLs (100-199, 2000-2699 modern)
+  const isExtended = (aclNum >= 100 && aclNum <= 199) || (aclNum >= 2000 && aclNum <= 2699) || isNaN(aclNum);
 
-  for (const rule of rules) {
-    const parts = rule.trim().split(/\s+/);
+  for (let ruleIdx = 0; ruleIdx < rules.length; ruleIdx++) {
+    const rule = rules[ruleIdx];
+    // Extract rule body: skip optional sequence number prefix
+    const seqMatch = rule.match(/^\d+\s+(.+)$/);
+    const ruleContent = seqMatch ? seqMatch[1] : rule;
+    const parts = ruleContent.trim().split(/\s+/);
     const action = parts[0].toLowerCase() as 'permit' | 'deny';
     const body = parts.slice(1);
 
-    if (!isExtended && aclNum < 100) {
+    if (!isExtended) {
       // Standard ACL: [permit|deny] <source> [wildcard]
       let srcIp = body[0];
       let srcWildcard = '0.0.0.0';
@@ -1841,6 +1852,7 @@ export function evaluateAcl(
       }
 
       if (matchIpWithWildcard(sourceIp, srcIp, srcWildcard)) {
+        incrementAclCounter(state, aclId, ruleIdx);
         return action;
       }
     } else {
@@ -1891,6 +1903,7 @@ export function evaluateAcl(
         if (port !== 'any' && port !== rulePort) continue;
       }
 
+      incrementAclCounter(state, aclId, ruleIdx);
       return action;
     }
   }

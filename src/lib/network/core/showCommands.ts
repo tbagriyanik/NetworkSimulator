@@ -3429,31 +3429,26 @@ function cmdShowAccessLists(state: SwitchState, input: string, _ctx: CommandCont
   let output = '\n';
 
   if (hasClassicAcls) {
-    Object.entries(state.accessLists || {}).forEach(([aclId, rules]: [string, string[]]) => {
-      if (filterAcl && aclId !== filterAcl) return;
+      Object.entries(state.accessLists || {}).forEach(([aclId, rules]: [string, string[]]) => {
+        if (filterAcl && aclId !== filterAcl) return;
 
-      const isNamed = isNaN(Number(aclId));
-      if (isNamed) {
         output += `Standard IP access list ${aclId}\n`;
-      } else {
-        output += `Standard IP access list ${aclId}\n`;
-      }
-      rules.forEach((rule: string) => {
-        // Parse rule format: "seq permit|deny <conditions>"
-        const seqMatch = rule.match(/^(\d+)\s+(.+)$/);
-        if (seqMatch) {
-          const seq = seqMatch[1];
-          const ruleText = seqMatch[2];
-          output += `    ${seq.padEnd(5)} ${ruleText} (0 matches)\n`;
-        } else {
-          // Old format without sequence number - assign default seq
-          const allRules = state.accessLists?.[aclId] || [];
-          const ruleIndex = allRules.indexOf(rule);
-          const seq = (ruleIndex + 1) * 10;
-          output += `    ${String(seq).padEnd(5)} ${rule} (0 matches)\n`;
-        }
+        rules.forEach((rule: string, ruleIndex: number) => {
+          // Parse rule format: "seq permit|deny <conditions>"
+          const seqMatch = rule.match(/^(\d+)\s+(.+)$/);
+          let seq: string;
+          let ruleText: string;
+          if (seqMatch) {
+            seq = seqMatch[1];
+            ruleText = seqMatch[2];
+          } else {
+            seq = String((ruleIndex + 1) * 10);
+            ruleText = rule;
+          }
+          const matches = state.aclMatchCounters?.[aclId]?.[ruleIndex] || 0;
+          output += `    ${seq.padEnd(5)} ${ruleText} (${matches} ${matches === 1 ? 'match' : 'matches'})\n`;
+        });
       });
-    });
   }
 
   if (hasFirewallAcls) {

@@ -73,13 +73,13 @@ export const commandPatterns: Record<string, CommandPattern> = {
   },
   'exit': {
     pattern: /^exit$/i,
-    modes: ['privileged', 'config', 'interface', 'config-if-range', 'line', 'vlan', 'dhcp-config', 'router-config', 'config-std-nacl'],
+    modes: ['privileged', 'config', 'interface', 'config-if-range', 'line', 'vlan', 'dhcp-config', 'router-config', 'config-std-nacl', 'config-ext-nacl'],
     minArgs: 0,
     maxArgs: 0
   },
   'end': {
     pattern: /^end$/i,
-    modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'dhcp-config', 'router-config', 'config-std-nacl'],
+    modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'dhcp-config', 'router-config', 'config-std-nacl', 'config-ext-nacl'],
     minArgs: 0,
     maxArgs: 0
   },
@@ -1921,7 +1921,7 @@ export const commandPatterns: Record<string, CommandPattern> = {
   // Yardım
   'help': {
     pattern: /^(\?|help)$/i,
-    modes: ['user', 'privileged', 'config', 'interface', 'config-if-range', 'line', 'vlan', 'config-std-nacl'],
+    modes: ['user', 'privileged', 'config', 'interface', 'config-if-range', 'line', 'vlan', 'config-std-nacl', 'config-ext-nacl'],
     minArgs: 0,
     maxArgs: 0
   },
@@ -1935,7 +1935,7 @@ export const commandPatterns: Record<string, CommandPattern> = {
   },
   'do': {
     pattern: /^do\s+(.*)$/i,
-    modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'router-config', 'dhcp-config', 'config-std-nacl'],
+    modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'router-config', 'dhcp-config', 'config-std-nacl', 'config-ext-nacl'],
     minArgs: 0,
     maxArgs: 10
   },
@@ -2165,6 +2165,30 @@ export const commandPatterns: Record<string, CommandPattern> = {
     modes: ['config-std-nacl'],
     minArgs: 1,
     maxArgs: 1
+  },
+  'permit (ext-named-acl)': {
+    pattern: /^permit\s+(.+)$/i,
+    modes: ['config-ext-nacl'],
+    minArgs: 1,
+    maxArgs: 10
+  },
+  'deny (ext-named-acl)': {
+    pattern: /^deny\s+(.+)$/i,
+    modes: ['config-ext-nacl'],
+    minArgs: 1,
+    maxArgs: 10
+  },
+  'no permit (ext-named-acl)': {
+    pattern: /^no\s+permit\s+(.+)$/i,
+    modes: ['config-ext-nacl'],
+    minArgs: 1,
+    maxArgs: 10
+  },
+  'no deny (ext-named-acl)': {
+    pattern: /^no\s+deny\s+(.+)$/i,
+    modes: ['config-ext-nacl'],
+    minArgs: 1,
+    maxArgs: 10
   },
   'ip access-list': {
     pattern: /^ip\s+access-list\s+(standard|extended)\s+(\S+)$/i,
@@ -3180,6 +3204,16 @@ Mevcut komutlar (Named Standart ACL):
   exit                     - Global config mode'a dön
   end                      - Privileged EXEC mode'a dön
   do <komut>               - Ayrıcalıklı komut çalıştır
+`,
+  'config-ext-nacl': `
+Mevcut komutlar (Named Extended ACL):
+  permit <protokol> <kaynak> <wildcard> [port] <hedef> <wildcard> [port] - İzin verilen kural ekle
+  deny <protokol> <kaynak> <wildcard> [port] <hedef> <wildcard> [port] - Reddedilen kural ekle
+  no permit ...             - İzin verilen kural kaldır
+  no deny ...               - Reddedilen kural kaldır
+  exit                      - Global config mode'a dön
+  end                       - Privileged EXEC mode'a dön
+  do <komut>                - Ayrıcalıklı komut çalıştır
 `
   };
 
@@ -3512,6 +3546,16 @@ Available commands (Named Standard ACL):
   exit                     - Return to global config mode
   end                      - Return to privileged EXEC mode
   do <command>             - Execute privileged command
+`,
+  'config-ext-nacl': `
+Available commands (Named Extended ACL):
+  permit <proto> <src> <wildcard> [port] <dst> <wildcard> [port] - Add permit rule
+  deny <proto> <src> <wildcard> [port] <dst> <wildcard> [port] - Add deny rule
+  no permit ...             - Remove permit rule
+  no deny ...               - Remove deny rule
+  exit                      - Return to global config mode
+  end                       - Return to privileged EXEC mode
+  do <command>              - Execute privileged command
 `
   };
 

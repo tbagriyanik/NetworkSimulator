@@ -119,6 +119,10 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'deny (named-acl)': cmdNamedAclDeny,
   'no permit (named-acl)': cmdNamedAclNoPermit,
   'no deny (named-acl)': cmdNamedAclNoDeny,
+  'permit (ext-named-acl)': cmdExtAclPermit,
+  'deny (ext-named-acl)': cmdExtAclDeny,
+  'no permit (ext-named-acl)': cmdExtAclNoPermit,
+  'no deny (ext-named-acl)': cmdExtAclNoDeny,
   'no ip access-list': cmdNoIpAccessList,
   'ip host': cmdIpHost,
   'no ip host': cmdNoIpHost,
@@ -1867,9 +1871,29 @@ function cmdIpSshAuthRetries(state: SwitchState, input: string, _ctx: CommandCon
 /**
  * Crypto Key Generate RSA
  */
-function cmdCryptoKeyGenerateRsa(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+function cmdCryptoKeyGenerateRsa(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
-  return { success: true, output: 'The name for the keys will be: ' + (state.hostname || 'Switch') + '.' + (state.domainName || 'local') + '\nChoose the size of the key modulus in the range of 360 to 4096 for your\nGeneral Purpose Keys. Choosing a key modulus greater than 512 may take\na few minutes.\n\nHow many bits in the modulus [512]: \n% Generating 1024 bit RSA keys, keys will be non-exportable...\n[OK] (elapsed time was 1 seconds)\n' };
+
+  // Use the parser that already handles this; extract modulus from input
+  const match = input.match(/^crypto\s+key\s+generate\s+rsa(?:\s+modulus\s+(\d+))?$/i);
+  const modulus = match?.[1] ? parseInt(match[1], 10) : 1024;
+
+  // Validate modulus range (IOS allows 360-4096, default 512)
+  const validModulus = modulus >= 360 && modulus <= 4096 ? modulus : 1024;
+
+  const hostPart = state.hostname || 'Switch';
+  const domainPart = state.domainName || 'local';
+
+  return {
+    success: true,
+    output: `The name for the keys will be: ${hostPart}.${domainPart}\n`
+      + `Choose the size of the key modulus in the range of 360 to 4096 for your\n`
+      + `General Purpose Keys. Choosing a key modulus greater than 512 may take\n`
+      + `a few minutes.\n\n`
+      + `How many bits in the modulus [512]: ${validModulus}\n`
+      + `% Generating ${validModulus} bit RSA keys, keys will be non-exportable...\n`
+      + `[OK] (elapsed time was 1 seconds)\n`
+  };
 }
 
 /**
@@ -2001,10 +2025,23 @@ function cmdIpAccessList(state: SwitchState, input: string, _ctx: CommandContext
   const match = input.match(/^ip\s+access-list\s+(standard|extended)\s+(\S+)$/i);
   if (!match) return { success: false, error: '% Invalid ip access-list command' };
 
+  const aclType = match[1].toLowerCase();
   const aclName = match[2];
   const accessLists = { ...(state.accessLists || {}) };
   if (!accessLists[aclName]) {
     accessLists[aclName] = [];
+  }
+
+  if (aclType === 'extended') {
+    return {
+      success: true,
+      output: '',
+      newState: {
+        currentMode: 'config-ext-nacl',
+        currentExtendedAcl: aclName,
+        accessLists
+      }
+    };
   }
 
   return {
@@ -2104,6 +2141,83 @@ function cmdNamedAclNoDeny(state: SwitchState, input: string, _ctx: CommandConte
     success: true,
     newState: { accessLists }
   };
+}
+
+// ─── Extended ACL Sub-mode Handlers ───────────────────────────────────────
+
+/**
+ * Permit (Extended Named ACL sub-mode) - Add extended permit rule
+ * Format: permit <protocol> <src> <src-wildcard> [eq|neq|lt|gt <port>] <dst> <dst-wildcard> [eq|neq|lt|gt <port>]
+ */
+function cmdExtAclPermit(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config-ext-nacl' || !state.currentExtendedAcl) {
+    return { success: false, error: iosModeError() };
+  }
+
+  const match = input.match(/^permit\s+(.+)$/i);
+  if (!match) return { success: false, error: '% Invalid permit command' };
+
+  const aclName = state.currentExtendedAcl;
+  const accessLists = { ...(state.accessLists || {}) };
+  accessLists[aclName] = [...(accessLists[aclName] || []), `permit ${match[1]}`];
+
+  return { success: true, newState: { accessLists } };
+}
+
+/**
+ * Deny (Extended Named ACL sub-mode) - Add extended deny rule
+ */
+function cmdExtAclDeny(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config-ext-nacl' || !state.currentExtendedAcl) {
+    return { success: false, error: iosModeError() };
+  }
+
+  const match = input.match(/^deny\s+(.+)$/i);
+  if (!match) return { success: false, error: '% Invalid deny command' };
+
+  const aclName = state.currentExtendedAcl;
+  const accessLists = { ...(state.accessLists || {}) };
+  accessLists[aclName] = [...(accessLists[aclName] || []), `deny ${match[1]}`];
+
+  return { success: true, newState: { accessLists } };
+}
+
+/**
+ * No Permit (Extended Named ACL sub-mode)
+ */
+function cmdExtAclNoPermit(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config-ext-nacl' || !state.currentExtendedAcl) {
+    return { success: false, error: iosModeError() };
+  }
+
+  const match = input.match(/^no\s+permit\s+(.+)$/i);
+  if (!match) return { success: false, error: '% Invalid command' };
+
+  const rule = `permit ${match[1]}`;
+  const aclName = state.currentExtendedAcl;
+  const accessLists = { ...(state.accessLists || {}) };
+  accessLists[aclName] = (accessLists[aclName] || []).filter((r: string) => r !== rule);
+
+  return { success: true, newState: { accessLists } };
+}
+
+/**
+ * No Deny (Extended Named ACL sub-mode)
+ */
+function cmdExtAclNoDeny(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config-ext-nacl' || !state.currentExtendedAcl) {
+    return { success: false, error: iosModeError() };
+  }
+
+  const match = input.match(/^no\s+deny\s+(.+)$/i);
+  if (!match) return { success: false, error: '% Invalid command' };
+
+  const rule = `deny ${match[1]}`;
+  const aclName = state.currentExtendedAcl;
+  const accessLists = { ...(state.accessLists || {}) };
+  accessLists[aclName] = (accessLists[aclName] || []).filter((r: string) => r !== rule);
+
+  return { success: true, newState: { accessLists } };
 }
 
 /**

@@ -773,6 +773,8 @@ export function getModePrompt(mode: CommandMode, hostname: string, _context?: st
       return `${hostname}(config-line)#`;
     case 'config-std-nacl':
       return `${hostname}(config-std-nacl)#`;
+    case 'config-ext-nacl':
+      return `${hostname}(config-ext-nacl)#`;
     case 'router-config':
       return `${hostname}(config-router)#`;
     default:
@@ -1054,7 +1056,6 @@ export const commandAliases: Record<string, string> = {
   'interf': 'interface',
   'interfa': 'interface',
   'interfac': 'interface',
-  'i': 'interface',
 
   // Interface range
   'int r': 'interface range',

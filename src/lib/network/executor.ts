@@ -39,6 +39,8 @@ export function getPrompt(state: SwitchState): string {
       return `${hostname}(config-ssid)#`;
     case 'config-std-nacl':
       return `${hostname}(config-std-nacl)#`;
+    case 'config-ext-nacl':
+      return `${hostname}(config-ext-nacl)#`;
     case 'dot11-config':
       return `${hostname}(config-if)#`;
     default:
@@ -358,6 +360,11 @@ export const commandHelp: Record<string, Record<string, string[]>> = {
     ...pfx('encryption', ['mode']),
   },
   'config-std-nacl': {
+    '': ['do', 'end', 'exit', 'help', 'no', 'permit', 'deny'],
+    ...pfx('do', ['show']),
+    ...pfx('no', ['permit', 'deny']),
+  },
+  'config-ext-nacl': {
     '': ['do', 'end', 'exit', 'help', 'no', 'permit', 'deny'],
     ...pfx('do', ['show']),
     ...pfx('no', ['permit', 'deny']),

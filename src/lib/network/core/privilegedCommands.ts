@@ -1036,124 +1036,12 @@ function cmdCopyTftp(state: SwitchState, input: string, ctx: CommandContext): Co
     };
 }
 
-function cmdFtp(_state: SwitchState, input: string, ctx: CommandContext): CommandResult {
-    const lang = ctx.language || 'en';
-    const host = input.split(/\s+/).slice(1).join(' ').trim();
-    if (!host) {
-        return {
-            success: true,
-            output: lang === 'tr'
-                ? 'FTP oturumu hazır. Kullanım: ftp <host>'
-                : 'FTP session ready. Usage: ftp <host>'
-        };
-    }
-    return {
-        success: true,
-        output: lang === 'tr'
-            ? `ftp ${host}\nName (${host}:): `
-            : `ftp ${host}\nName (${host}:): `,
-        newState: {
-            ftpSession: {
-                host,
-                stage: 'username'
-            }
-        }
-    };
+function cmdFtp(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+    return { success: false, error: '% Unknown command or computer name' };
 }
 
-function cmdMail(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
-    const lang = ctx.language || 'en';
-    const parts = input.trim().split(/\s+/);
-    
-    // Direct sending: mail <address> <subject> [body...]
-    if (parts.length > 2) {
-        const address = parts[1];
-        const subject = parts[2];
-        const body = parts.slice(3).join(' ') || subject;
-        
-        const recipient = address.split('@')[0];
-        const domain = address.includes('@') ? address.split('@')[1] : address;
-        
-        const delivered = ctx.devices?.map((device: CanvasDevice) => ({ device, state: ctx.deviceStates?.get(device.id) }))
-            .find((entry: { device: CanvasDevice; state: SwitchState | undefined }) => {
-                const mail = entry.state?.services?.mail;
-                if (!mail?.enabled) return false;
-                if (mail.username === recipient && mail.domain === domain) return true;
-                const isIpMatch = entry.device.ip === domain || Object.values(entry.state?.ports || {}).some((p: Port) => p.ipAddress === domain);
-                const isNameMatch = entry.device.name === recipient || entry.state?.hostname === recipient;
-                return isIpMatch && isNameMatch;
-            });
-            
-        if (delivered?.device && delivered.state) {
-            const timestamp = new Date().toISOString();
-            const sourceMail = state.services?.mail;
-            // Best effort to get source IP, fallback to hostname
-            const sourceIp = Object.values(state.ports || {}).map((p: Port) => p.ipAddress).find(ip => !!ip) || 'local';
-            const sourceAddress = sourceMail?.username && sourceMail?.domain 
-                ? `${sourceMail.username}@${sourceMail.domain}` 
-                : `${state.hostname}@${sourceIp}`;
-                
-            let currentInbox = delivered.state.services?.mail?.inbox || [];
-            if (typeof window !== 'undefined') {
-              try {
-                const storedInbox = window.localStorage.getItem(`mail_inbox_${delivered.device.id}`);
-                if (storedInbox) currentInbox = JSON.parse(storedInbox);
-              } catch(_e) {}
-            }
-            const inbox = [{ from: sourceAddress, subject, body, timestamp }, ...currentInbox];
-            if (typeof window !== 'undefined') window.localStorage.setItem(`mail_inbox_${delivered.device.id}`, JSON.stringify(inbox));
-
-            let currentSent = sourceMail?.sent || [];
-            if (ctx.sourceDeviceId && typeof window !== 'undefined') {
-              try {
-                const storedSent = window.localStorage.getItem(`mail_sent_${ctx.sourceDeviceId}`);
-                if (storedSent) currentSent = JSON.parse(storedSent);
-              } catch(_e) {}
-            }
-            const sent = [{ to: address, subject, body, timestamp }, ...currentSent];
-            if (ctx.sourceDeviceId && typeof window !== 'undefined') window.localStorage.setItem(`mail_sent_${ctx.sourceDeviceId}`, JSON.stringify(sent));
-            
-            const updated = new Map(ctx.deviceStates || []);
-            updated.set(delivered.device.id, { 
-                ...delivered.state, 
-                services: { ...(delivered.state.services || {}), mail: { ...(delivered.state.services?.mail || {}), enabled: !!delivered.state.services?.mail?.enabled, inbox } } 
-            });
-            const newSenderState = { 
-                ...state, 
-                services: { ...(state.services || {}), mail: { ...(state.services?.mail || {}), enabled: !!state.services?.mail?.enabled, sent } } 
-            };
-            if (ctx.sourceDeviceId) {
-                updated.set(ctx.sourceDeviceId, newSenderState);
-            }
-            return { success: true, output: '\n250 Message accepted for delivery.\n', deviceStates: updated, newState: newSenderState };
-        }
-        return { success: false, output: '\n550 Recipient mailbox unavailable.\n' };
-    }
-
-    // Interactive session: mail <address>
-    const address = parts.slice(1).join(' ').trim();
-    if (!address) {
-        return {
-            success: true,
-            output: lang === 'tr'
-                ? 'Mail komutu hazır. Kullanım: mail <address> [konu] [mesaj]'
-                : 'Mail command ready. Usage: mail <address> [subject] [message]'
-        };
-    }
-    return {
-        success: true,
-        output: lang === 'tr'
-            ? `mail ${address}\nPassword: `
-            : `mail ${address}\nPassword: `,
-        newState: {
-            mailSession: {
-                address,
-                stage: 'password',
-                username: address.split('@')[0] || address,
-                domain: address.includes('@') ? address.split('@')[1] : undefined
-            }
-        }
-    };
+function cmdMail(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+    return { success: false, error: '% Unknown command or computer name' };
 }
 
 /**

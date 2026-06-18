@@ -340,8 +340,10 @@ function cmdShutdown(state: SwitchState, _input: string, ctx: CommandContext): C
     if (newPorts[vlanPortKey]) {
       newPorts[vlanPortKey] = { ...newPorts[vlanPortKey], shutdown: true };
     }
+    const portName = state.currentInterface;
     return {
       success: true,
+      output: `%LINK-5-CHANGED: Interface ${portName}, changed state to administratively down\n%LINEPROTO-5-UPDOWN: Line protocol on Interface ${portName}, changed state to down\n`,
       newState: { ports: newPorts }
     };
   }
@@ -356,9 +358,11 @@ function cmdShutdown(state: SwitchState, _input: string, ctx: CommandContext): C
 
   // Return the new ports for the current device and the updated states for all switches
   const finalPorts = myUpdatedState ? myUpdatedState.ports : newPorts;
+  const portName = state.currentInterface;
 
   return {
     success: true,
+    output: `%LINK-5-CHANGED: Interface ${portName}, changed state to administratively down\n%LINEPROTO-5-UPDOWN: Line protocol on Interface ${portName}, changed state to down\n`,
     newState: { ports: finalPorts },
     deviceStates: allUpdatedStates
   };
@@ -379,8 +383,10 @@ function cmdNoShutdown(state: SwitchState, _input: string, ctx: CommandContext):
     if (newPorts[vlanPortKey]) {
       newPorts[vlanPortKey] = { ...newPorts[vlanPortKey], shutdown: false };
     }
+    const portName = state.currentInterface;
     return {
       success: true,
+      output: `%LINK-3-UPDOWN: Interface ${portName}, changed state to up\n%LINEPROTO-5-UPDOWN: Line protocol on Interface ${portName}, changed state to up\n`,
       newState: { ports: newPorts }
     };
   }
@@ -395,9 +401,11 @@ function cmdNoShutdown(state: SwitchState, _input: string, ctx: CommandContext):
 
   // Return the new ports for the current device and the updated states for all switches
   const finalPorts = myUpdatedState ? myUpdatedState.ports : newPorts;
+  const portName = state.currentInterface;
 
   return {
     success: true,
+    output: `%LINK-3-UPDOWN: Interface ${portName}, changed state to up\n%LINEPROTO-5-UPDOWN: Line protocol on Interface ${portName}, changed state to up\n`,
     newState: { ports: finalPorts },
     deviceStates: allUpdatedStates
   };
