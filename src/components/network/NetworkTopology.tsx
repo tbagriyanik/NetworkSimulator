@@ -175,8 +175,10 @@ function PacketPopup({ hopIndex, info, language, onClose, isDark }: {
 
     const handleUp = () => {
       if (dragRef.current && containerRef.current) {
-        const dx = parseFloat(containerRef.current.style.transform.match(/translate3d\(([-\d.]+)px/) ? containerRef.current.style.transform.match(/translate3d\(([-\d.]+)px/)![1] : '0');
-        const dy = parseFloat(containerRef.current.style.transform.match(/, ([-\d.]+)px/) ? containerRef.current.style.transform.match(/, ([-\d.]+)px/)![1] : '0');
+        const matchX = containerRef.current.style.transform.match(/translate3d\(([-\d.]+)px/);
+        const matchY = containerRef.current.style.transform.match(/, ([-\d.]+)px/);
+        const dx = parseFloat(matchX ? matchX[1] : '0');
+        const dy = parseFloat(matchY ? matchY[1] : '0');
         const finalX = dragRef.current.startPosX + (isFinite(dx) ? dx : 0);
         const finalY = dragRef.current.startPosY + (isFinite(dy) ? dy : 0);
         const clamped = clamp(finalX, finalY);
