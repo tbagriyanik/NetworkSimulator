@@ -49,6 +49,8 @@ export const privilegedHandlers: Record<string, CommandHandler> = {
     'clock set': cmdClockSet,
     'no debug all': cmdUndebugAll,
     'help': cmdHelp,
+    'ip route': cmdIpRoute,
+    'no ip route': cmdNoIpRoute,
 };
 
 /**
