@@ -15,6 +15,7 @@ import { validateIpRoutingSupport } from './L3Validation';
 
 export const globalConfigHandlers: Record<string, CommandHandler> = {
   'hostname': cmdHostname,
+  'no hostname': cmdNoHostname,
   'vlan': cmdVlan,
   'no vlan': cmdNoVlan,
   'name': cmdVlanName,
@@ -150,6 +151,16 @@ function cmdHostname(state: SwitchState, input: string, _ctx: CommandContext): C
   return {
     success: true,
     newState: { hostname: match[1] }
+  };
+}
+
+function cmdNoHostname(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') {
+    return { success: false, error: iosModeError() };
+  }
+  return {
+    success: true,
+    newState: { hostname: 'Switch' }
   };
 }
 

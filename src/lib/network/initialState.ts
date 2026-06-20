@@ -787,22 +787,22 @@ export function normalizePortId(input: string): string | null {
   // Boşlukları kaldır ve küçük harfe çevir (örn: "gig 0/1" -> "gig0/1")
   const lower = input.toLowerCase().trim().replace(/\s+/g, '');
 
-  // Match three-part port: GigabitEthernet1/0/1
-  const threePartMatch = lower.match(/^(?:gigabitethernet|gigabit|gig|gi|fastethernet|fast|fa)(\d+)\/(\d+)\/(\d+)$/);
+  // Match three-part port: GigabitEthernet1/0/1 (supports single-letter prefix: f, g, s)
+  const threePartMatch = lower.match(/^(?:gigabitethernet|gigabit|gig|gi|g|fastethernet|fast|fa|f|serial|s)(\d+)\/(\d+)\/(\d+)$/);
   if (threePartMatch) {
     const prefix = lower.startsWith('f') ? 'fa' : 'gi';
     return `${prefix}${threePartMatch[1]}/${threePartMatch[2]}/${threePartMatch[3]}`;
   }
 
-  // Match subinterface: Gi0/1.10
-  const subMatch = lower.match(/^(?:fa|fastethernet|fast|gi|gig|gigabit|gigabitethernet)(\d+)\/(\d+)\.(\d+)$/);
+  // Match subinterface: Gi0/1.10 (supports single-letter prefix: f, g)
+  const subMatch = lower.match(/^(?:fa|fastethernet|fast|f|gi|gig|gigabit|gigabitethernet|g)(\d+)\/(\d+)\.(\d+)$/);
   if (subMatch) {
     const prefix = lower.startsWith('f') ? 'fa' : 'gi';
     return `${prefix}${subMatch[1]}/${subMatch[2]}.${subMatch[3]}`;
   }
 
-  // Match two-part port: Fa0/1, Gi0/1
-  const twoPartMatch = lower.match(/^(?:fastethernet|fast|fa|gigabitethernet|gigabit|gig|gi)(\d+)\/(\d+)$/);
+  // Match two-part port: Fa0/1, Gi0/1 (supports single-letter prefix: f, g)
+  const twoPartMatch = lower.match(/^(?:fastethernet|fast|fa|f|gigabitethernet|gigabit|gig|gi|g)(\d+)\/(\d+)$/);
   if (twoPartMatch) {
     const prefix = lower.startsWith('f') ? 'fa' : 'gi';
     return `${prefix}${twoPartMatch[1]}/${twoPartMatch[2]}`;
@@ -814,14 +814,14 @@ export function normalizePortId(input: string): string | null {
     return `gi${asaMatch[1]}/${asaMatch[2]}`;
   }
 
-  // Serial interface: S0/0/0, Serial0/0/0, S0/0/1, etc.
-  const serialMatch = lower.match(/^(?:serial|s)(\d+)\/(\d+)\/(\d+)$/);
+  // Serial interface: S0/0/0, Serial0/0/0, S0/0/1, Se0/0/0, etc.
+  const serialMatch = lower.match(/^(?:serial|se|s)(\d+)\/(\d+)\/(\d+)$/);
   if (serialMatch) {
     return `s${serialMatch[1]}/${serialMatch[2]}/${serialMatch[3]}`;
   }
 
-  // Two-part serial: S0/0
-  const serialTwoPart = lower.match(/^(?:serial|s)(\d+)\/(\d+)$/);
+  // Two-part serial: S0/0, Se0/0
+  const serialTwoPart = lower.match(/^(?:serial|se|s)(\d+)\/(\d+)$/);
   if (serialTwoPart) {
     return `s${serialTwoPart[1]}/${serialTwoPart[2]}/0`;
   }

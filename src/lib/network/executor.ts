@@ -192,7 +192,7 @@ export const commandHelp: Record<string, Record<string, string[]>> = {
     ...pfx('mac', ['access-list']),
     ...pfx('mls', ['qos']),
     ...pfx('monitor', ['session']),
-    ...pfx('no', ['access-list', 'banner', 'cdp', 'enable', 'interface', 'ip', 'ipv6', 'mls', 'monitor', 'router', 'service', 'spanning-tree', 'username', 'vlan']),
+    ...pfx('no', ['access-list', 'banner', 'cdp', 'enable', 'hostname', 'interface', 'ip', 'ipv6', 'mls', 'monitor', 'router', 'service', 'spanning-tree', 'username', 'vlan']),
     'no banner': ['exec', 'login', 'motd'],
     'no cdp': ['run'],
     'no enable': ['password', 'secret'],

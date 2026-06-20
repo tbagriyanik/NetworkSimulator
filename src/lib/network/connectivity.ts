@@ -455,6 +455,76 @@ function resolveHostname(
 }
 
 /**
+ * Check serial encapsulation compatibility between two ports on a serial link.
+ * Both ends must use the same encapsulation (HDLC or PPP).
+ * For PPP with authentication, checks that auth is configured on both sides.
+ */
+function checkSerialEncapsulation(
+  srcDeviceId: string,
+  srcPortId: string,
+  dstDeviceId: string,
+  dstPortId: string,
+  deviceStates: Map<string, SwitchState>
+): boolean {
+  const srcState = deviceStates.get(srcDeviceId);
+  const dstState = deviceStates.get(dstDeviceId);
+  if (!srcState || !dstState) return true;
+
+  const srcPort = srcState.ports[srcPortId];
+  const dstPort = dstState.ports[dstPortId];
+  if (!srcPort || !dstPort) return true;
+
+  // Only check serial ports
+  if (srcPort.type !== 'serial' && dstPort.type !== 'serial') return true;
+  if (srcPort.type === 'serial' && dstPort.type !== 'serial') return false;
+  if (srcPort.type !== 'serial' && dstPort.type === 'serial') return false;
+
+  const srcEncap = srcPort.serialEncapsulation || 'hdlc';
+  const dstEncap = dstPort.serialEncapsulation || 'hdlc';
+
+  // Both ends must use the same encapsulation
+  if (srcEncap !== dstEncap) return false;
+
+  // PPP authentication check
+  if (srcEncap === 'ppp') {
+    const srcAuth = srcPort.pppAuth || 'none';
+    const dstAuth = dstPort.pppAuth || 'none';
+
+    // If one side requires authentication, both must authenticate
+    if (srcAuth !== 'none' || dstAuth !== 'none') {
+      // Both sides must have authentication configured
+      if (srcAuth === 'none' || dstAuth === 'none') return false;
+
+      // PAP: validate credentials match
+      if (srcAuth === 'pap' && dstAuth === 'pap') {
+        const srcUser = srcPort.pppPapUsername || '';
+        const srcPass = srcPort.pppPapPassword || '';
+        const dstUser = dstPort.pppPapUsername || '';
+        const dstPass = dstPort.pppPapPassword || '';
+        // In a real PPP link, the credentials are sent and verified
+        // Source's sent-username/password should match target's expected credentials
+        if (srcUser && srcPass && dstUser && dstPass) {
+          if (srcUser !== dstUser || srcPass !== dstPass) return false;
+        }
+      }
+
+      // CHAP: shared secret must match (simplified)
+      if (srcAuth === 'chap' && dstAuth === 'chap') {
+        const srcUser = srcPort.pppPapUsername || '';
+        const srcPass = srcPort.pppPapPassword || '';
+        const dstUser = dstPort.pppPapUsername || '';
+        const dstPass = dstPort.pppPapPassword || '';
+        if (srcUser && srcPass && dstUser && dstPass) {
+          if (srcUser !== dstUser || srcPass !== dstPass) return false;
+        }
+      }
+    }
+  }
+
+  return true;
+}
+
+/**
  * Robust Network connectivity checker for simulation
  * Checks if two devices can communicate based on:
  * 1. Physical connection (Topology)
@@ -758,10 +828,13 @@ export function checkConnectivity(
           const isSrcSTPBlocking = getVlanSpecificSTPBlocking(currentId, srcPortId, sourceVlan, connections, safeDeviceStates, conn);
           const isDstSTPBlocking = getVlanSpecificSTPBlocking(neighborId, dstPortId, sourceVlan, connections, safeDeviceStates, conn);
 
-          // Validate cable type for this physical link (e.g. console vs ethernet, straight vs crossover).
+           // Validate cable type for this physical link (e.g. console vs ethernet, straight vs crossover).
           const isCableOk = isConnectionCableCompatible(conn, srcDevice, dstDevice);
 
-          if (!isSrcShutdown && !isDstShutdown && !isSrcPoweredOff && !isDstPoweredOff && !isSrcSTPBlocking && !isDstSTPBlocking && isCableOk) {
+           // Check serial encapsulation match on both ends of a serial link
+          const isSerialEncapOk = checkSerialEncapsulation(currentId, srcPortId, neighborId, dstPortId, safeDeviceStates);
+
+          if (!isSrcShutdown && !isDstShutdown && !isSrcPoweredOff && !isDstPoweredOff && !isSrcSTPBlocking && !isDstSTPBlocking && isCableOk && isSerialEncapOk) {
             visited.add(neighborId);
             parent.set(neighborId, currentId);
             queue.push(neighborId);

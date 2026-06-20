@@ -97,6 +97,12 @@ export const commandPatterns: Record<string, CommandPattern> = {
     minArgs: 1,
     maxArgs: 1
   },
+  'no hostname': {
+    pattern: /^no\s+hostname$/i,
+    modes: ['config'],
+    minArgs: 0,
+    maxArgs: 0
+  },
   'vlan': {
     pattern: /^vlan\s+(\d+)(\s+name\s+(.+))?$/i,
     modes: ['config'],
@@ -732,13 +738,13 @@ export const commandPatterns: Record<string, CommandPattern> = {
 
   // Interface komutları - interface ÖNCE gelmeli (daha spesifik)
   'interface': {
-    pattern: /^interface\s+(?!r(?:ange)?\s)(fa|fastethernet|gi|gig|gigabitethernet|e|ethernet|po|port-channel|vlan|loopback|lo)?\s*(.+)$/i,
+    pattern: /^interface\s+(?!r(?:ange)?\s)(f(?:a(?:st(?:ethernet)?)?)?|g(?:i(?:g(?:abit(?:ethernet)?)?)?)?|e(?:thernet)?|se(?:rial)?|po(?:\s*port-channel)?|vlan|loopback|lo)?\s*(.+)$/i,
     modes: ['config'],
     minArgs: 1,
     maxArgs: 1
   },
   'interface range': {
-    pattern: /^interface\s+r(?:ange)?\s+(?:(?:fa|fastethernet|gi|gig|gigabitethernet|e|ethernet|po|port-channel|vlan)\s*)?(.+)$/i,
+    pattern: /^interface\s+r(?:ange)?\s+(?:(?:f(?:a(?:st(?:ethernet)?)?)?|g(?:i(?:g(?:abit(?:ethernet)?)?)?)?|e(?:thernet)?|se(?:rial)?|po(?:\s*port-channel)?|vlan)\s*)?(.+)$/i,
     modes: ['config'],
     minArgs: 1,
     maxArgs: 1
@@ -1117,10 +1123,10 @@ export const commandPatterns: Record<string, CommandPattern> = {
     maxArgs: 3
   },
   'no ip address': {
-    pattern: /^no\s+ip\s+address$/i,
+    pattern: /^no\s+ip\s+address(?:\s+\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(?:\s+\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})?)?$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 0,
-    maxArgs: 0
+    maxArgs: 3
   },
   'ip helper-address': {
     pattern: /^ip\s+helper-address\s+([0-9.]+|[\w.-]+)$/i,

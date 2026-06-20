@@ -1,5 +1,6 @@
 import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import nextTypescript from "eslint-config-next/typescript";
+import react from "eslint-plugin-react";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -7,6 +8,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const eslintConfig = [...nextCoreWebVitals, ...nextTypescript, {
+  plugins: {
+    react,
+  },
+  settings: {
+    react: {
+      version: "detect",
+    },
+  },
   rules: {
     // TypeScript rules
     "@typescript-eslint/no-explicit-any": "warn",
@@ -42,6 +51,11 @@ const eslintConfig = [...nextCoreWebVitals, ...nextTypescript, {
     "no-undef": "off",
     "no-unreachable": "off",
     "no-useless-escape": "off",
+  },
+}, {
+  files: ["**/*.cjs"],
+  rules: {
+    "@typescript-eslint/no-require-imports": "off",
   },
 }, {
   ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts", "examples/**", "skills", "playwright_verify.ts"]
