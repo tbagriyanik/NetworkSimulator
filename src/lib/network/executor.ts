@@ -382,6 +382,8 @@ const commandDescriptions: Record<string, Record<string, string>> = {
     'ping': 'Ağ bağlantısını test et (Test network connectivity)',
     'telnet': 'Telnet ile uzak cihaza bağlan (Connect to remote device via Telnet)',
     'ssh': 'SSH ile uzak cihaza bağlan (Connect to remote device via SSH)',
+    'ftp': 'FTP oturumu aç (Open FTP session) ℹ️ Sim-only',
+    'mail': 'Mail oturumu aç (Open Mail session) ℹ️ Sim-only',
     'traceroute': 'Hedef cihaza giden yolu göster (Display route to destination)',
     '?': 'Yardım göster (Display help)',
     'help': 'Yardım göster (Display help)',
@@ -406,6 +408,12 @@ const commandDescriptions: Record<string, Record<string, string>> = {
     'erase': 'Dosya sil (Erase files)',
     'delete': 'Dosya sil (Delete files)',
     'ip': 'IP protokolü ayarları (IP protocol settings)',
+    'setup': 'Başlangıç kurulum diyaloğuna gir (Enter initial setup dialog) ⚠️ Stub',
+    'test': 'Tanılama testlerini çalıştır (Run diagnostics) ⚠️ Stub',
+    'more': 'Dosya içeriğini göster (Display contents of a file) ⚠️ Stub',
+    'disconnect': 'Ağ bağlantısını kes (Disconnect network connection) ⚠️ Stub',
+    'resume': 'Askıya alınmış oturuma dön (Resume a suspended session) ⚠️ Stub',
+    'suspend': 'Mevcut oturumu askıya al (Suspend current session) ⚠️ Stub',
     '?': 'Yardım göster (Display help)',
     'help': 'Yardım göster (Display help)',
   },
@@ -421,16 +429,21 @@ const commandDescriptions: Record<string, Record<string, string>> = {
     'ip': 'IP protokolü ayarları (IP protocol settings)',
     'ipv6': 'IPv6 protokolü ayarları (IPv6 protocol settings)',
     'crypto': 'Şifreleme ayarları (Encryption settings)',
-    'snmp-server': 'SNMP sunucusu ayarları (SNMP server settings)',
+    'snmp-server': 'SNMP sunucusu ayarları (SNMP server settings) ⚠️ Stub',
     'ntp': 'NTP ayarları (NTP settings)',
     'clock': 'Saat ayarları (Clock settings)',
-    'archive': 'Arşiv ayarları (Archive settings)',
+    'archive': 'Arşiv ayarları (Archive settings) ⚠️ Stub',
     'alias': 'Komut takma adı oluştur (Create command alias)',
-    'macro': 'Makro oluştur (Create macro)',
+    'macro': 'Makro oluştur (Create macro) ⚠️ Stub',
     'no': 'Komutu iptal et (Negate command)',
     'spanning-tree': 'Spanning Tree ayarları (Spanning Tree settings)',
     'vtp': 'VLAN Trunking Protocol ayarları (VTP settings)',
     'cdp': 'CDP ayarları (CDP settings)',
+    'monitor': 'Port izleme (SPAN) ayarları (Configure port monitoring) ⚠️ Stub',
+    'class-map': 'QoS sınıf haritası oluştur (Create QoS class map) ⚠️ Stub',
+    'policy-map': 'QoS politika haritası oluştur (Create QoS policy map) ⚠️ Stub',
+    'template': 'Şablon yapılandırmasına gir (Enter template configuration) ⚠️ Stub',
+    'sdm': 'SDM tercihini ayarla (Set SDM preference)',
     'exit': 'Yapılandırma modundan çık (Exit configuration mode)',
     'end': 'Yapılandırma modundan çık (Exit configuration mode)',
     'do': 'Ayrıcalıklı komut çalıştır (Execute privileged command)',
@@ -454,7 +467,17 @@ const commandDescriptions: Record<string, Record<string, string>> = {
     'storm-control': 'Fırtına kontrolü ayarları (Storm control settings)',
     'udld': 'UDLD ayarları (UDLD settings)',
     'monitor': 'Port izleme ayarları (Port monitoring settings)',
-    'power': 'PoE güç ayarları (PoE power settings)',
+    'power': 'PoE güç ayarları (PoE power settings) ⚠️ Stub',
+    'channel-protocol': 'EtherChannel protokolünü seç (Set EtherChannel protocol) ⚠️ Stub',
+    'priority-queue': 'Öncelikli kuyruk ayarları (Priority queue settings) ⚠️ Stub',
+    'bandwidth': 'Bant genişliğini ayarla (Set bandwidth)',
+    'delay': 'Gecikme değerini ayarla (Set delay)',
+    'mtu': 'MTU değerini ayarla (Set MTU)',
+    'encapsulation': 'Kapsülleme türünü ayarla (Set encapsulation type)',
+    'clock': 'Saat hızı ayarları (Clock rate settings)',
+    'ppp': 'PPP ayarları (PPP settings)',
+    'udld': 'UDLD ayarları (UDLD settings)',
+    'keepalive': 'Keepalive süresini ayarla (Set keepalive interval)',
     'exit': 'Arayüz yapılandırmasından çık (Exit interface configuration)',
     'end': 'Yapılandırma modundan çık (Exit configuration mode)',
     'do': 'Ayrıcalıklı komut çalıştır (Execute privileged command)',
@@ -470,6 +493,10 @@ const commandDescriptions: Record<string, Record<string, string>> = {
     'logging': 'Günlüğe kaydetme ayarları (Logging settings)',
     'history': 'Komut geçmişi ayarları (Command history settings)',
     'privilege': 'Ayrıcalık seviyesi ayarla (Set privilege level)',
+    'access-class': 'Erişim kontrol listesini hatta bağla (Apply ACL to line)',
+    'session-limit': 'Maksimum oturum sayısını ayarla (Set session limit) ⚠️ Stub',
+    'autocommand': 'Otomatik komut ayarla (Set auto-command) ⚠️ Stub',
+    'lockable': 'Hat kilitlemeyi etkinleştir (Enable line locking) ⚠️ Stub',
     'exit': 'Hat yapılandırmasından çık (Exit line configuration)',
     'end': 'Yapılandırma modundan çık (Exit configuration mode)',
     'do': 'Ayrıcalıklı komut çalıştır (Execute privileged command)',
@@ -493,6 +520,7 @@ const commandDescriptions: Record<string, Record<string, string>> = {
     'router-id': 'Router kimliği ayarla (Set router ID)',
     'passive-interface': 'Pasif arayüz ayarla (Set passive interface)',
     'default-information': 'Varsayılan rota bilgisi (Default route information)',
+    'neighbor': 'BGP komşusu yapılandır (Configure BGP neighbor)',
     'no': 'Komutu iptal et (Negate command)',
     'debug': 'Hata ayıklama etkinleştir (Enable debugging)',
     'undebug': 'Hata ayıklamayı devre dışı bırak (Disable debugging)',
@@ -1107,7 +1135,11 @@ export function executeCommand(
 
     // Add smart hint to help output if it's a general help request
     if (partialInput === '') {
-      helpOutput += getSmartHint(state, language);
+      // In Exam mode, we don't show any smart hints or educational notes.
+      const helpLevel = useAppStore.getState().helpLevel;
+      if (helpLevel !== 'exam') {
+        helpOutput += getSmartHint(state, language);
+      }
     }
 
     return {

@@ -86,6 +86,7 @@ interface AppState {
     activePanel: 'port' | 'vlan' | 'security' | 'config' | null;
     sidebarOpen: boolean;
     graphicsQuality: 'high' | 'low';
+    helpLevel: 'beginner' | 'intermediate' | 'exam';
 
     // Actions
     setDevices: (devices: CanvasDevice[] | ((prev: CanvasDevice[]) => CanvasDevice[])) => void;
@@ -115,6 +116,7 @@ interface AppState {
     setActivePanel: (panel: 'port' | 'vlan' | 'security' | 'config' | null) => void;
     setSidebarOpen: (open: boolean) => void;
     setGraphicsQuality: (quality: 'high' | 'low') => void;
+    setHelpLevel: (level: 'beginner' | 'intermediate' | 'exam') => void;
 
     // Reset
     resetAll: () => void;
@@ -150,6 +152,7 @@ const initialState: Omit<AppState, keyof ReturnType<typeof createActions>> = {
     activePanel: null,
     sidebarOpen: true,
     graphicsQuality: 'high',
+    helpLevel: 'beginner',
 };
 
 const STORE_KEY = 'network-simulator-storage';
@@ -379,6 +382,7 @@ const createActions = (set: (partial: Partial<AppState> | ((state: AppState) => 
     setActivePanel: (panel: 'port' | 'vlan' | 'security' | 'config' | null) => set({ activePanel: panel }),
     setSidebarOpen: (open: boolean) => set({ sidebarOpen: open }),
     setGraphicsQuality: (quality: 'high' | 'low') => set({ graphicsQuality: quality }),
+    setHelpLevel: (level: 'beginner' | 'intermediate' | 'exam') => set({ helpLevel: level }),
 
     // Reset
     resetAll: () => set({
@@ -387,6 +391,7 @@ const createActions = (set: (partial: Partial<AppState> | ((state: AppState) => 
         activeTab: 'topology',
         activePanel: null,
         graphicsQuality: 'high',
+        helpLevel: 'beginner',
     }),
 });
 
@@ -408,6 +413,7 @@ export const useAppStore = create<AppState>()(
                 activePanel: state.activePanel,
                 sidebarOpen: state.sidebarOpen,
                 graphicsQuality: state.graphicsQuality,
+                helpLevel: state.helpLevel,
             }),
             migrate: (persistedState: unknown, version: number) => {
                 try {
@@ -488,6 +494,7 @@ export const usePCOutput = (deviceId: string) => useAppStore(state => state.devi
 export const useActiveTab = () => useAppStore(state => state.activeTab);
 export const useActivePanel = () => useAppStore(state => state.activePanel);
 export const useSidebarOpen = () => useAppStore(state => state.sidebarOpen);
+export const useHelpLevel = () => useAppStore(state => state.helpLevel);
 
 // Combined selectors for common use cases
 export const useTopologyState = () => useAppStore(state => state.topology);
@@ -496,6 +503,7 @@ export const useUIState = () => useAppStore(state => ({
     activeTab: state.activeTab,
     activePanel: state.activePanel,
     sidebarOpen: state.sidebarOpen,
+    helpLevel: state.helpLevel,
 }));
 
 // Environment selector

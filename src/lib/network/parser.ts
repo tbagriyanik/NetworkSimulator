@@ -1,6 +1,7 @@
 // Network Command Parser
 import { CommandMode, ParsedCommand, CommandValidationResult, SwitchState } from './types';
 import { commandAliases } from './initialState';
+import useAppStore from '../store/appStore';
 import { IOS_ERRORS, iosModeError } from "./core/iosErrors";
 import { getDeviceCapabilities, type DeviceCapabilities } from './capabilities';
 import type { DeviceType } from '@/components/network/networkTopology.types';
@@ -2941,6 +2942,14 @@ export function getInvalidCommandError(
   failedTokenIndexOrState?: number | Partial<SwitchState>,
   currentMode?: CommandMode
 ): string {
+  // Access global state safely (SSR friendly)
+  let helpLevel: 'beginner' | 'intermediate' | 'exam' = 'beginner';
+  if (typeof window !== 'undefined') {
+    try {
+      helpLevel = useAppStore.getState().helpLevel;
+    } catch (_e) { /* ignore */ }
+  }
+
   let failedTokenIndex: number | undefined = undefined;
   if (typeof failedTokenIndexOrState === 'number') {
     failedTokenIndex = failedTokenIndexOrState;
@@ -2955,9 +2964,24 @@ export function getInvalidCommandError(
   const indicator = ' '.repeat(indicatorPos) + '^';
   let errorMsg = `${cleanedInput}\n${indicator}\n${IOS_ERRORS.invalidInput}`;
 
-  if (currentMode) {
+  if (currentMode && helpLevel !== 'exam') {
     const cmdTokens = cleanedInput.toLowerCase().split(/\s+/);
     const firstWord = cmdTokens[0];
+
+    // Educational hints for specific commands (Bilingual)
+    if (firstWord === 'interface' || firstWord === 'int') {
+      errorMsg += `\n💡 İpucu: "interface" komutundan sonra bir arayüz adı bekleniyor. (Hint: "interface" command expects an interface name like "fa0/1")`;
+    } else if (firstWord === 'vlan') {
+      errorMsg += `\n💡 İpucu: "vlan" komutundan sonra bir numara bekleniyor. (Hint: "vlan" command expects a number (1-4094))`;
+    } else if (firstWord === 'ip' && cmdTokens[1] === 'address') {
+      errorMsg += `\n💡 İpucu: "ip address" komutu bir IP ve alt ağ maskesi bekler. (Hint: "ip address" command expects an IP and subnet mask)`;
+    } else if (firstWord === 'access-list') {
+      errorMsg += `\n💡 İpucu: "access-list" komutu bir numara, permit/deny ve koşul bekler. (Hint: "access-list" command expects a number, permit/deny and condition)`;
+    } else if (firstWord === 'line' && (cmdTokens[1] === 'vty' || cmdTokens[1] === 'console' || cmdTokens[1] === 'con')) {
+      errorMsg += `\n💡 İpucu: "line" komutundan sonra hat tipi ve numarası bekleniyor. (Hint: "line" command expects line type and number)`;
+    } else if (firstWord === 'router' && (cmdTokens[1] === 'ospf' || cmdTokens[1] === 'rip' || cmdTokens[1] === 'eigrp')) {
+      errorMsg += `\n💡 İpucu: "router" komutundan sonra protokol ve ID bekleniyor. (Hint: "router" command expects protocol and AS/Process ID)`;
+    }
 
     // Mevcut mod için geçerli komutların ilk kelimelerini topla
     const validFirstWords = new Set<string>();

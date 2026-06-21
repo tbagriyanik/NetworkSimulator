@@ -1079,12 +1079,28 @@ function cmdCopyTftp(state: SwitchState, input: string, ctx: CommandContext): Co
     };
 }
 
-function cmdFtp(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-    return { success: false, error: '% Unknown command or computer name' };
+function cmdFtp(_state: SwitchState, _input: string, ctx: CommandContext): CommandResult {
+    const isTr = ctx.language === 'tr';
+    return {
+        success: false,
+        error: '% Unknown command or computer name',
+        realismLevel: 'sim-only',
+        hint: isTr
+            ? "Bu komut sadece PC terminalinde interaktif oturum açmak için kullanılır."
+            : "This command is only used to open an interactive session on the PC terminal."
+    };
 }
 
-function cmdMail(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-    return { success: false, error: '% Unknown command or computer name' };
+function cmdMail(_state: SwitchState, _input: string, ctx: CommandContext): CommandResult {
+    const isTr = ctx.language === 'tr';
+    return {
+        success: false,
+        error: '% Unknown command or computer name',
+        realismLevel: 'sim-only',
+        hint: isTr
+            ? "Bu komut sadece PC terminalinde interaktif oturum açmak için kullanılır."
+            : "This command is only used to open an interactive session on the PC terminal."
+    };
 }
 
 /**

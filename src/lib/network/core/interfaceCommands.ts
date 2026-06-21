@@ -432,7 +432,14 @@ function cmdSpeed(state: SwitchState, input: string, ctx: CommandContext): Comma
   return {
     success: true,
     newState: myUpdatedState || { ports: newPorts },
-    deviceStates: allUpdatedStates
+    deviceStates: allUpdatedStates,
+    hint: normalizedMode === 'access' ? {
+      tr: '💡 Gerçek dünyada: Access portlar genelde PC, IP Telefon veya yazıcı gibi uç cihazlara bağlanır.',
+      en: '💡 In the real world: Access ports are typically connected to end devices like PCs, IP Phones, or printers.'
+    } : normalizedMode === 'trunk' ? {
+      tr: '💡 Gerçek dünyada: Trunk portlar üzerinden birden fazla VLAN trafiği taşınabilir, genelde switchler arası bağlantıda kullanılır.',
+      en: '💡 In the real world: Trunk ports can carry traffic for multiple VLANs, typically used for inter-switch connections.'
+    } : undefined
   };
 }
 
@@ -662,7 +669,11 @@ function cmdSwitchportMode(state: SwitchState, input: string, ctx: CommandContex
   return {
     success: true,
     newState: myUpdatedState || { ports: newPorts },
-    deviceStates: allUpdatedStates
+    deviceStates: allUpdatedStates,
+    hint: {
+      tr: '💡 Gerçek dünyada: "no shutdown" komutu arayüzü fiziksel olarak aktif hale getirir. Yeni cihazlarda portlar genelde "shutdown" durumundadır.',
+      en: '💡 In the real world: The "no shutdown" command physically activates the interface. On new devices, ports are usually in "shutdown" state by default.'
+    }
   };
 }
 
@@ -1028,7 +1039,11 @@ function cmdIpAddress(state: SwitchState, input: string, _ctx: CommandContext): 
   return {
     success: true,
     output,
-    newState: { ports: newPorts, runningConfig: buildRunningConfig(updatedState) }
+    newState: { ports: newPorts, runningConfig: buildRunningConfig(updatedState) },
+    hint: {
+      tr: '💡 Gerçek dünyada: Bir arayüze IP verildiğinde o arayüz L3 (katman 3) çalışmaya başlar. Cihazlar arası yönlendirme için IP gereklidir.',
+      en: '💡 In the real world: When an IP is assigned to an interface, it starts operating at L3 (layer 3). IPs are required for routing between devices.'
+    }
   };
 }
 
@@ -2001,8 +2016,16 @@ function cmdSpanningTreeCost(state: SwitchState, input: string, ctx: CommandCont
 /**
  * Stub Success
  */
-function cmdStubSuccess(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  return { success: true };
+function cmdStubSuccess(_state: SwitchState, input: string, ctx: CommandContext): CommandResult {
+  const isTr = ctx.language === 'tr';
+  return {
+    success: true,
+    output: `% ${input.trim()} configured`,
+    realismLevel: 'stub',
+    hint: isTr
+      ? `Bu komut kabul edildi ancak simülasyonu henüz mevcut değil.`
+      : `This command is accepted but its simulation is not yet implemented.`
+  };
 }
 
 /**

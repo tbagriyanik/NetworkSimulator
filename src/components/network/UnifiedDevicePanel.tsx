@@ -48,6 +48,7 @@ interface UnifiedDevicePanelProps {
     t: Translations;
     theme: string;
     language: string;
+    helpLevel: 'beginner' | 'intermediate' | 'exam';
     isDark: boolean;
     isExecutingCommand: boolean;
     output: TerminalOutput[];
@@ -81,6 +82,7 @@ export function UnifiedDevicePanel({
     t,
     theme,
     language,
+    helpLevel,
     isDark,
     isExecutingCommand,
     output,
@@ -229,6 +231,7 @@ export function UnifiedDevicePanel({
                                     t={t}
                                     theme={theme}
                                     language={language}
+                                    helpLevel={helpLevel}
                                     onUpdateHistory={handleUpdateHistory}
                                     confirmDialog={confirmDialog}
                                     setConfirmDialog={setConfirmDialog}

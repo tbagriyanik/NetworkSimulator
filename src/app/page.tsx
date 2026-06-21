@@ -523,6 +523,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   const pan = usePan();
   const activeTab = useActiveTab();
   const environment = useEnvironment();
+  const helpLevel = useAppStore(state => state.helpLevel);
 
   // Network logic functions (must come after Zustand selectors to avoid TDZ)
   const networkLogic = useNetworkLogic(deviceStates, topologyConnections, environment);
@@ -4370,6 +4371,8 @@ ${state.bannerMOTD}
             setShowAboutModal={setShowAboutModal}
             showBasarilarim={showBasarilarim}
             setShowBasarilarim={setShowBasarilarim}
+            helpLevel={helpLevel}
+            setHelpLevel={(level) => useAppStore.getState().setHelpLevel(level)}
           />
 
           {showProjectPicker && <ProjectPickerDialog
@@ -4506,6 +4509,7 @@ ${state.bannerMOTD}
             t={t}
             theme={theme}
             language={language}
+            helpLevel={helpLevel}
             isDark={isDark}
             isExecutingCommand={isExecutingCommand}
             output={output}

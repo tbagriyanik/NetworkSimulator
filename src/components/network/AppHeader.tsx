@@ -21,7 +21,7 @@ import {
 import { cn } from '@/lib/utils';
 import {
   Menu, Plus, Save, FolderOpen, Languages, Sun, Moon, File, Undo2, Redo2, BookOpen, Leaf, Compass, Info, Sparkles, Cloud, Trophy,
-  Mail
+  Mail, GraduationCap
 } from 'lucide-react';
 import type { Translations } from '@/contexts/LanguageContext';
 import type { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
@@ -44,6 +44,8 @@ interface AppHeaderProps {
   activeDeviceId: string;
   topologyDevices: CanvasDevice[];
   deviceStates: Map<string, SwitchState>;
+  helpLevel: 'beginner' | 'intermediate' | 'exam';
+  setHelpLevel: (level: 'beginner' | 'intermediate' | 'exam') => void;
   totalScore: number;
   maxScore: number;
   canUndo: boolean;
@@ -82,6 +84,7 @@ export function AppHeader({
   handleRefreshNetwork, setIsEnvironmentPanelOpen,
   isGuidedModeActive, isPanelMinimized, expandPanel, setShowAboutModal,
   showBasarilarim, setShowBasarilarim,
+  helpLevel, setHelpLevel
 }: AppHeaderProps) {
   return (
     <header className={`liquid-glass fixed top-0 left-0 right-0 z-[50] border-b px-5 py-2 pb-0`}>
@@ -281,6 +284,40 @@ export function AppHeader({
                   </button>
                 </TooltipTrigger>
                 <TooltipContent>{graphicsQuality !== 'high' ? t.highRes : t.lowRes}</TooltipContent>
+              </Tooltip>
+              <div className={`w-px h-4 mx-1 ${isDark ? 'bg-slate-700' : 'bg-slate-300'} hidden md:block`} />
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    aria-label={'Difficulty Level'}
+                    className={cn(
+                      "h-7 w-7 rounded flex items-center justify-center transition-all ui-hover-surface",
+                      helpLevel === 'beginner' ? 'text-emerald-500' : helpLevel === 'intermediate' ? 'text-amber-500' : 'text-rose-500'
+                    )}
+                    onClick={() => {
+                      const next: Record<string, 'beginner' | 'intermediate' | 'exam'> = {
+                        beginner: 'intermediate',
+                        intermediate: 'exam',
+                        exam: 'beginner'
+                      };
+                      setHelpLevel(next[helpLevel]);
+                    }}
+                  >
+                    <GraduationCap className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div className="flex flex-col gap-1">
+                    <span className="font-bold">{language === 'tr' ? 'Yardım Seviyesi' : 'Help Level'}</span>
+                    <span className="text-[10px] opacity-80">
+                      {helpLevel === 'beginner'
+                        ? (language === 'tr' ? '🟢 Başlangıç (Full İpucu)' : '🟢 Beginner (Full Hints)')
+                        : helpLevel === 'intermediate'
+                        ? (language === 'tr' ? '🟡 Orta (Sadece Hata İpucu)' : '🟡 Intermediate (Errors Only)')
+                        : (language === 'tr' ? '🔴 Sınav (Hiç İpucu Yok)' : '🔴 Exam (No Hints)')}
+                    </span>
+                  </div>
+                </TooltipContent>
               </Tooltip>
             </div>
           </div>

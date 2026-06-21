@@ -75,27 +75,27 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `delete nvram:` | Delete NVRAM contents |
 | `reload` | Reload the device |
 | `clock set <hh:mm:ss> <day> <month> <year>` | Set system clock |
-| `more <filename>` | Display contents of a file |
-| `setup` | Enter initial setup dialog |
-| `test <type>` | Run diagnostics |
-| `configure replace <url>` | Replace running config with file |
-| `disconnect` | Disconnect network connection |
-| `resume <n>` | Resume a suspended session |
-| `suspend` | Suspend current Telnet/SSH session (Ctrl+Shift+6 then X) |
+| `more <filename>` | ⚠️ Stub - Display contents of a file |
+| `setup` | ⚠️ Stub - Enter initial setup dialog |
+| `test <type>` | ⚠️ Stub - Run diagnostics |
+| `configure replace <url>` | ⚠️ Stub - Replace running config with file |
+| `disconnect` | ⚠️ Stub - Disconnect network connection |
+| `resume <n>` | ⚠️ Stub - Resume a suspended session |
+| `suspend` | ⚠️ Stub - Suspend current Telnet/SSH session (Ctrl+Shift+6 then X) |
 | `debug <type>` | Enable debugging (requires argument, e.g., `debug ip packet`) |
 | `no debug <type>` | Disable specific debugging |
 | `no debug all` | Disable all debugging |
 | `undebug all` | Disable all debugging |
 | `undebug` | Disable all debugging (alias) |
-| `terminal length <n>` | Set terminal page length |
-| `terminal width <n>` | Set terminal width |
+| `terminal length <n>` | ⚠️ Stub - Set terminal page length |
+| `terminal width <n>` | ⚠️ Stub - Set terminal width |
 | `terminal monitor` | Enable terminal monitoring |
-| `terminal no monitor` | Disable terminal monitoring |
+| `terminal no monitor` | ⚠️ Stub - Disable terminal monitoring |
 | `clear arp-cache` | Clear ARP cache |
 | `clear mac address-table` | Clear MAC address table |
 | `clear counters` | Clear interface counters |
-| `clear line <n>` | Clear a terminal line |
-| `clear interface <name>` | Clear interface counters |
+| `clear line <n>` | ⚠️ Stub - Clear a terminal line |
+| `clear interface <name>` | ⚠️ Stub - Clear interface counters |
 | `do <command>` | Execute privileged command from config mode |
 | `help` | Display help system information |
 | `show access-lists` | Display all access lists |
@@ -125,8 +125,8 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `no ip host <name>` | Remove static host mapping |
 | `ip http server` | Enable HTTP server |
 | `no ip http server` | Disable HTTP server |
-| `ftp` service panel *(simulator-specific, PC only)* | Manage FTP credentials and files in PC services |
-| `mail` service panel *(simulator-specific, PC only)* | Manage mail service settings in PC services |
+| `ftp` service panel | *(simulator-specific, PC only)* Manage FTP credentials and files in PC services |
+| `mail` service panel | *(simulator-specific, PC only)* Manage mail service settings in PC services |
 | `ip ssh version {1\|2}` | Set SSH version |
 | `ip ssh time-out <seconds>` | Set SSH timeout |
 | `no ip ssh time-out` | Remove SSH timeout |
@@ -158,8 +158,8 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `no username <name>` | Remove user |
 | `cdp run` | Enable CDP globally |
 | `no cdp run` | Disable CDP |
-| `cdp timer <sec>` | Set CDP update interval |
-| `cdp holdtime <sec>` | Set CDP hold time |
+| `cdp timer <sec>` | ⚠️ Stub - Set CDP update interval |
+| `cdp holdtime <sec>` | ⚠️ Stub - Set CDP hold time |
 | `mls qos` | Enable MLS QoS |
 | `no mls qos` | Disable MLS QoS |
 | `router rip` | Enable RIP routing |
@@ -186,20 +186,20 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `no ipv6 router ospf <id>` | Disable OSPFv3 |
 | `crypto key generate rsa` | Generate RSA keys for SSH |
 | `ip ssh authentication-retries <n>` | Set SSH retry limit |
-| `snmp-server community <str> {RO\|RW}` | Set SNMP community |
-| `snmp-server contact <text>` | Set SNMP contact |
-| `snmp-server location <text>` | Set SNMP location |
-| `archive` | Enter archive config mode |
+| `snmp-server community <str> {RO\|RW}` | ⚠️ Stub - Set SNMP community |
+| `snmp-server contact <text>` | ⚠️ Stub - Set SNMP contact |
+| `snmp-server location <text>` | ⚠️ Stub - Set SNMP location |
+| `archive` | ⚠️ Stub - Enter archive config mode |
 | `alias <mode> <name> <cmd>` | Create command alias |
 | `no alias <name>` | Remove command alias |
-| `macro name <name>` | Define command macro |
+| `macro name <name>` | ⚠️ Stub - Define command macro |
 | `sdm prefer <template>` | Set SDM template |
 | `ip arp inspection vlan <id>` | Enable DAI on VLAN |
-| `default interface <name>` | Reset interface to default configuration |
-| `mac access-list extended <name>` | Create named MAC access list |
-| `class-map [match-all\|match-any] <name>` | Create QoS class map |
-| `policy-map <name>` | Create QoS policy map |
-| `template <name>` | Enter template configuration mode |
+| `default interface <name>` | ⚠️ Stub - Reset interface to default configuration |
+| `mac access-list extended <name>` | ⚠️ Stub - Create named MAC access list |
+| `class-map [match-all\|match-any] <name>` | ⚠️ Stub - Create QoS class map |
+| `policy-map <name>` | ⚠️ Stub - Create QoS policy map |
+| `template <name>` | ⚠️ Stub - Enter template configuration mode |
 | `access-list <id> <action> <condition>` | Create numbered ACL (1-99 standard, 100-199 extended) |
 | `ip access-list {standard|extended} <name>` | Create named ACL |
 | `no access-list <id>` | Remove numbered ACL |
@@ -261,8 +261,8 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `channel-group <n> mode {on\|active\|passive}` | Configure EtherChannel |
 | `no channel-group` | Remove from channel |
 | `debug` / `no debug` | Interface debugging |
-| `monitor session <n>` | Configure SPAN/RSPAN |
-| `no monitor session` | Remove monitoring |
+| `monitor session <n>` | ⚠️ Stub - Configure SPAN/RSPAN |
+| `no monitor session` | ⚠️ Stub - Remove monitoring |
 | `no udld` | Disable UDLD on interface |
 | `no ip proxy-arp` | Disable proxy ARP |
 | `ip proxy-arp` | Enable proxy ARP |
@@ -271,14 +271,14 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `keepalive` | Enable keepalive |
 | `no keepalive` | Disable keepalive |
 | `mtu <size>` | Set interface MTU |
-| `channel-protocol {lacp\|pagp}` | Set EtherChannel protocol |
-| `priority-queue out` | Enable priority queue on interface |
-| `queue-set <n>` | Apply QoS queue set |
-| `tx-queue <n>` | Configure transmit queue |
-| `power inline consumption <watt>` | Set PoE power limit |
+| `channel-protocol {lacp\|pagp}` | ⚠️ Stub - Set EtherChannel protocol |
+| `priority-queue out` | ⚠️ Stub - Enable priority queue on interface |
+| `queue-set <n>` | ⚠️ Stub - Apply QoS queue set |
+| `tx-queue <n>` | ⚠️ Stub - Configure transmit queue |
+| `power inline consumption <watt>` | ⚠️ Stub - Set PoE power limit |
 | `encapsulation dot1q <vlan>` | Set 802.1Q encapsulation on subinterface |
 | `standby <group> ipv6 <ip>` | Configure HSRP for IPv6 |
-| `ip arp inspection limit <pps>` | Set ARP inspection rate limit |
+| `ip arp inspection limit <pps>` | ⚠️ Stub - Set ARP inspection rate limit |
 | `ipv6 address <ip>/<prefix>` | Assign IPv6 address |
 | `ipv6 rip <name> enable` | Enable RIPng on interface |
 | `ipv6 ospf <id> area <area>` | Enable OSPFv3 on interface |
@@ -287,11 +287,11 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `ip dhcp snooping trust` | Set interface as trusted for DHCP |
 | `ip arp inspection trust` | Set interface as trusted for DAI |
 | `storm-control {broadcast\|multicast\|unicast} level <%>` | Set storm control |
-| `power inline {auto\|static\|never}` | Configure PoE |
+| `power inline {auto\|static\|never}` | ⚠️ Stub - Configure PoE |
 | `bandwidth <kbps>` | Set interface bandwidth |
 | `delay <tens-of-ms>` | Set interface delay |
-| `carrier-delay <ms>` | Set carrier delay |
-| `load-interval <sec>` | Set load statistics interval |
+| `carrier-delay <ms>` | ⚠️ Stub - Set carrier delay |
+| `load-interval <sec>` | ⚠️ Stub - Set load statistics interval |
 | `mls qos trust {cos\|dscp}` | Set QoS trust state |
 | `mls qos cos <val>` | Set default CoS value |
 | `ip access-group <id> {in|out}` | Apply IPv4 ACL to interface |
@@ -552,6 +552,17 @@ The simulator supports **400+ commands** across multiple configuration modes.
 - **DHCP Pool Mode** `(dhcp-config)#` - DHCP pool configuration
 - **SSID Config Mode** `(config-ssid)#` - SSID security parameters (authentication, guest-mode, mbssid)
 - **Dot11 Config Mode** `(config-dot11)#` - Wireless radio/dot11 interface configuration (channel, speed, power, station-role)
+- **Standard ACL Mode** `(config-std-nacl)#` - Named standard access-list rules
+- **Extended ACL Mode** `(config-ext-nacl)#` - Named extended access-list rules
+
+### ACL Configuration Commands (std/ext-nacl mode)
+| Command | Description |
+|---------|-------------|
+| `permit <condition>` | Add a permit rule |
+| `deny <condition>` | Add a deny rule |
+| `no permit <condition>` | Remove a permit rule |
+| `no deny <condition>` | Remove a deny rule |
+| `exit` | Return to global configuration mode |
 
 ## Features
 - **Tab Completion**: Auto-complete commands with TAB

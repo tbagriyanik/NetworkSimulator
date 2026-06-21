@@ -597,7 +597,14 @@ export function useDeviceManager() {
         if (result.requiresPassword && result.passwordPrompt) {
           newOutputs.push({ id: `${now}-pw`, type: 'password-prompt', content: result.passwordPrompt, timestamp: now });
         } else if (result.output) {
-          newOutputs.push({ id: `${now}-out`, type: 'output', content: result.output, timestamp: now });
+          newOutputs.push({
+            id: `${now}-out`,
+            type: 'output',
+            content: result.output,
+            timestamp: now,
+            realismLevel: result.realismLevel,
+            hint: result.hint
+          });
         }
 
         // Apply updatedDeviceStates if present (for global STP recalculation)

@@ -150,7 +150,11 @@ function cmdHostname(state: SwitchState, input: string, _ctx: CommandContext): C
 
   return {
     success: true,
-    newState: { hostname: match[1] }
+    newState: { hostname: match[1] },
+    hint: {
+      tr: '💡 Gerçek dünyada: Anlamlı bir hostname cihazı ağda tanımlamayı kolaylaştırır (örn: Kat2-SW).',
+      en: '💡 In the real world: A meaningful hostname makes it easier to identify the device in the network (e.g., Floor2-SW).'
+    }
   };
 }
 
@@ -565,7 +569,11 @@ function cmdVlan(state: SwitchState, input: string, ctx: CommandContext): Comman
   return {
     success: true,
     newState: myUpdatedState || updatedCurrentState,
-    updatedDeviceStates: allUpdatedStates
+    updatedDeviceStates: allUpdatedStates,
+    hint: {
+      tr: `💡 İpucu: VLAN ${vlanId} oluşturuldu. Şimdi 'name' komutu ile isim verebilir veya arayüzleri bu VLAN'a atayabilirsiniz.`,
+      en: `💡 Hint: VLAN ${vlanId} created. Now you can give it a name using the 'name' command or assign interfaces to this VLAN.`
+    }
   };
 }
 
@@ -2435,8 +2443,16 @@ function cmdIpNatInsideSourceList(state: SwitchState, input: string, _ctx: Comma
 
 // Register new global config handlers
 
-function cmdStubSuccess(_state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  return { success: true, output: `% ${input.trim()} configured` };
+function cmdStubSuccess(_state: SwitchState, input: string, ctx: CommandContext): CommandResult {
+  const isTr = ctx.language === 'tr';
+  return {
+    success: true,
+    output: `% ${input.trim()} configured`,
+    realismLevel: 'stub',
+    hint: isTr
+      ? `Bu komut kabul edildi ancak simülasyonu henüz mevcut değil.`
+      : `This command is accepted but its simulation is not yet implemented.`
+  };
 }
 
 // ── End of Handlers ──────────────────────────────────────────────────────────
