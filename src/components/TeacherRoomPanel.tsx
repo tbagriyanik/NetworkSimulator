@@ -90,18 +90,31 @@ export function TeacherRoomPanel() {
   const { t } = useLanguage();
   const [roomCodeInput, setRoomCodeInput] = useState('');
   const [activeCode, setActiveCode] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleCreate = async () => {
     const code = generateRoomCode();
+    setIsLoading(true);
+    setError(null);
     try {
-      await fetch('/api/room', {
+      const res = await fetch('/api/room', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code }),
       });
-    } catch {}
-    setRoomCodeInput(code);
-    setActiveCode(code);
+      const json = await res.json();
+      if (json.success) {
+        setRoomCodeInput(code);
+        setActiveCode(code);
+      } else {
+        setError(json.error || 'Failed to create room');
+      }
+    } catch {
+      setError(t.language === 'tr' ? 'Bağlantı hatası' : 'Connection error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleJoinMonitor = () => {
@@ -142,8 +155,9 @@ export function TeacherRoomPanel() {
         <div className="p-4 space-y-4">
           {!activeCode ? (
             <>
-              <Button onClick={handleCreate} className="w-full">
-                {t.roomCreateBtn}
+              {error && <p className="text-xs text-destructive text-center font-bold mb-2">{error}</p>}
+              <Button onClick={handleCreate} className="w-full" disabled={isLoading}>
+                {isLoading ? '...' : t.roomCreateBtn}
               </Button>
 
               <div className="flex items-center gap-2">

@@ -30,6 +30,7 @@
 | **Turkish Training Booklet**: Comprehensive Turkish language training booklet covering networking fundamentals, CLI, routing, WAN, wireless, and security. | **Türkçe Eğitim Kitapçığı**: Ağ temelleri, CLI, yönlendirme, WAN, kablosuz ve güvenlik konularını kapsayan kapsamlı Türkçe eğitim kitapçığı. |
 | **Serial Encapsulation**: HDLC and PPP encapsulation mismatch detection during connectivity checks. | **Seri Kapsülleme**: Bağlantı kontrolleri sırasında HDLC ve PPP kapsülleme uyumsuzluğu tespiti. |
 | **No Hostname Command**: Reset device hostname to default with `no hostname` command. | **No Hostname Komutu**: `no hostname` komutu ile cihaz hostname'ini varsayılana sıfırlama. |
+| **Room Tracking System**: Real-time teacher-student progress monitoring via room codes and Vercel KV persistence. | **Oda Takip Sistemi**: Oda kodları ve Vercel KV kalıcılığı ile gerçek zamanlı öğretmen-öğrenci ilerleme takibi. |
 
 ---
 
@@ -53,6 +54,7 @@
 | **Link-Local**: Automatic link-local addressing (169.254.x.x) | **Link-Yerel**: Otomatik link-yerel adresleme (169.254.x.x) |
 | **Connectivity Testing**: Ping, traceroute, extended ping | **Bağlantı Testi**: Ping, traceroute, genişletilmiş ping |
 | **Serialization**: Export/import network topologies as JSON | **Serileştirme**: Ağ topolojilerini JSON olarak dışa/içe aktarma |
+| **Room Tracking**: Teacher-student progress monitoring via room codes | **Oda Takibi**: Oda kodları üzerinden öğretmen-öğrenci ilerleme takibi |
 
 ### 🖥️ CLI Engine / CLI Motoru
 

@@ -3,23 +3,24 @@ import type { RoomData, StudentProgress } from './roomTypes';
 
 const redisUrl = process.env.KV_REST_API_URL;
 const redisToken = process.env.KV_REST_API_TOKEN;
-if (!redisUrl || !redisToken) throw new Error('Missing KV_REST_API_URL or KV_REST_API_TOKEN env vars');
-const redis = new Redis({ url: redisUrl, token: redisToken });
+const redis = (redisUrl && redisToken) ? new Redis({ url: redisUrl, token: redisToken }) : null;
 
 const ROOM_TTL = 60 * 60 * 4;
 
 export async function createRoom(code: string): Promise<RoomData> {
-  const key = `room:${code}`;
-  const existing = await redis.get<RoomData>(key);
-  if (existing) return existing;
+  if (!redis) throw new Error('Redis not initialized');
+  const metaKey = `room:${code}:meta`;
+  const existing = await redis.get<{ code: string; createdAt: number }>(metaKey);
 
-  const room: RoomData = {
+  if (!existing) {
+    await redis.set(metaKey, { code, createdAt: Date.now() }, { ex: ROOM_TTL });
+  }
+
+  return {
     code,
-    createdAt: Date.now(),
+    createdAt: existing?.createdAt ?? Date.now(),
     students: {},
   };
-  await redis.set(key, room, { ex: ROOM_TTL });
-  return room;
 }
 
 export async function updateStudent(
@@ -27,30 +28,48 @@ export async function updateStudent(
   studentId: string,
   data: Partial<StudentProgress>,
 ): Promise<StudentProgress | null> {
-  const key = `room:${roomCode}`;
-  const room = await redis.get<RoomData>(key);
-  if (!room) return null;
+  if (!redis) throw new Error('Redis not initialized');
+  const metaKey = `room:${roomCode}:meta`;
+  const studentsKey = `room:${roomCode}:students`;
 
-  const existing = room.students[studentId] ?? {
+  // Check if room exists
+  const meta = await redis.get(metaKey);
+  if (!meta) return null;
+
+  // Get existing student data from Hash
+  const existing = await redis.hget<StudentProgress>(studentsKey, studentId);
+
+  const updated: StudentProgress = {
     studentId,
-    displayName: '',
-    currentTask: '',
-    completedTasks: 0,
-    totalTasks: 0,
-    joinedAt: Date.now(),
+    displayName: data.displayName ?? existing?.displayName ?? '',
+    currentTask: data.currentTask ?? existing?.currentTask ?? '',
+    completedTasks: data.completedTasks ?? existing?.completedTasks ?? 0,
+    totalTasks: data.totalTasks ?? existing?.totalTasks ?? 0,
+    projectFile: data.projectFile ?? existing?.projectFile,
+    durationMinutes: data.durationMinutes ?? existing?.durationMinutes,
+    joinedAt: existing?.joinedAt ?? Date.now(),
     lastSeen: Date.now(),
   };
 
-  if (!existing.joinedAt) existing.joinedAt = Date.now();
+  await redis.hset(studentsKey, { [studentId]: updated });
+  // Refresh TTL for both meta and students
+  await redis.expire(metaKey, ROOM_TTL);
+  await redis.expire(studentsKey, ROOM_TTL);
 
-  room.students[studentId] = { ...existing, ...data, lastSeen: Date.now() };
-  await redis.set(key, room, { ex: ROOM_TTL });
-  return room.students[studentId];
+  return updated;
 }
 
 export async function getRoomStudents(roomCode: string): Promise<StudentProgress[]> {
-  const key = `room:${roomCode}`;
-  const room = await redis.get<RoomData>(key);
-  if (!room) return [];
-  return Object.values(room.students);
+  if (!redis) throw new Error('Redis not initialized');
+  const studentsKey = `room:${roomCode}:students`;
+  const allStudents = await redis.hgetall<Record<string, StudentProgress>>(studentsKey);
+  if (!allStudents) return [];
+  return Object.values(allStudents);
+}
+
+export async function checkRoomExists(code: string): Promise<boolean> {
+  if (!redis) return false;
+  const metaKey = `room:${code}:meta`;
+  const exists = await redis.exists(metaKey);
+  return exists === 1;
 }

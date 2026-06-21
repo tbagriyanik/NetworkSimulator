@@ -18,6 +18,8 @@ export function RoomJoinDialog() {
   const { t } = useLanguage();
   const [code, setCode] = useState('');
   const [name, setName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!showRoomJoinDialog) return;
@@ -26,9 +28,23 @@ export function RoomJoinDialog() {
     return () => window.removeEventListener('mobile-back-pressed', handleMobileBack);
   }, [showRoomJoinDialog, setShowRoomJoinDialog]);
 
-  const handleJoin = () => {
+  const handleJoin = async () => {
     if (code.trim().length >= 4 && name.trim().length > 0) {
-      joinRoom(code.trim(), name.trim());
+      setIsLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(`/api/room/${code.trim().toUpperCase()}`);
+        const json = await res.json();
+        if (json.success && json.data.exists) {
+          joinRoom(code.trim(), name.trim());
+        } else {
+          setError(t.language === 'tr' ? 'Oda bulunamadı' : 'Room not found');
+        }
+      } catch {
+        setError(t.language === 'tr' ? 'Bağlantı hatası' : 'Connection error');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -68,12 +84,13 @@ export function RoomJoinDialog() {
               maxLength={50}
               onKeyDown={e => { if (e.key === 'Enter') handleJoin(); }}
             />
+            {error && <p className="text-[10px] font-bold text-red-500 px-1">{error}</p>}
             <Button
               className="w-full"
               onClick={handleJoin}
-              disabled={code.trim().length < 4 || !name.trim()}
+              disabled={code.trim().length < 4 || !name.trim() || isLoading}
             >
-              {t.roomJoinBtn}
+              {isLoading ? '...' : t.roomJoinBtn}
             </Button>
           </div>
         )}

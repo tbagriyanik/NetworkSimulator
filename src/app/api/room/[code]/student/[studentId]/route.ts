@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateStudent } from '@/lib/roomStore';
 import type { RoomApiResponse, StudentProgress } from '@/lib/roomTypes';
+import { isRateLimited } from '@/lib/security/rateLimiter';
 
 interface RouteParams {
   code: string;
@@ -12,6 +13,22 @@ export async function PATCH(
   { params }: { params: Promise<RouteParams> },
 ): Promise<NextResponse<RoomApiResponse<StudentProgress>>> {
   try {
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'unknown';
+    const { allowed } = isRateLimited(`room_update_${ip}`, 30, 60 * 1000); // 30 updates per minute
+
+    if (!allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Too many updates', code: 'RATE_LIMIT_EXCEEDED' },
+        { status: 429 },
+      );
+    }
+
+    if (process.env.NEXT_PUBLIC_IS_ROOM_ENABLED !== 'true') {
+      return NextResponse.json(
+        { success: false, error: 'Room system is disabled', code: 'DISABLED' },
+        { status: 503 },
+      );
+    }
     const { code, studentId } = await params;
 
     if (!code || !studentId) {

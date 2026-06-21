@@ -41,10 +41,11 @@ npm install @upstash/redis
 src/
 ├── lib/
 │   ├── roomTypes.ts          # Tip tanımları (StudentProgress, RoomData)
-│   └── roomStore.ts          # KV işlemleri (createRoom, updateStudent, getRoomStudents)
+│   └── roomStore.ts          # KV işlemleri (createRoom, updateStudent, getRoomStudents, checkRoomExists)
 ├── app/api/room/
 │   ├── route.ts              # POST /api/room — oda oluşturma
 │   └── [code]/
+│       ├── route.ts          # GET /api/room/:code — oda varlık kontrolü
 │       ├── students/
 │       │   └── route.ts      # GET /api/room/:code/students — öğrenci listesi
 │       └── student/
@@ -58,7 +59,6 @@ src/
 └── components/
     ├── RoomJoinDialog.tsx     # Öğrenci katılım dialog'u
     ├── TeacherRoomPanel.tsx   # Öğretmen paneli (oda oluşturma + izleme)
-    └── TeacherRoomView.tsx    # (opsiyonel) Tek başına kullanılabilecek öğretmen görünümü
 ```
 
 ---
@@ -74,6 +74,12 @@ Oda oluşturur. Aynı kod tekrar gönderilirse mevcut odayı döndürür.
 ```
 
 → `{ "success": true, "data": { "code": "AG7X2", "createdAt": ..., "students": {} } }`
+
+### `GET /api/room/:code`
+
+Odanın var olup olmadığını kontrol eder.
+
+→ `{ "success": true, "data": { "exists": true } }`
 
 ### `PATCH /api/room/:code/student/:studentId`
 
@@ -132,7 +138,8 @@ Oturum bilgileri `localStorage`'da saklanır:
 | **Polling** (gerçek zamanlı değil) | Vercel serverless WebSocket tutamaz; 4sn öğretmen / 5sn öğrenci polling |
 | **Doğrulama yok** | `studentId` localStorage UUID'sidir, gerçek hesap değildir |
 | **4 saat TTL** | Redis key'leri 4 saat sonra otomatik silinir, her yazımda yenilenir |
-| **Sunucu doğrulaması** | Minimal: alan uzunluğu, sayısal sınırlar. Sahte veri gönderilebilir |
+| **Atomik Güncelleme** | Öğrenci verileri Redis **Hash** yapısında tutulur (`HSET`), böylece yarış durumları (race conditions) önlenir |
+| **Hız Sınırlama** | API rotalarında IP bazlı `rateLimiter` uygulanmıştır |
 | **@upstash/redis** | Doğrudan Upstash Redis bağlantısı — `roomStore.ts` içinde `KV_REST_API_URL` ve `KV_REST_API_TOKEN` env değişkenlerini kullanır |
 
 ---
@@ -144,11 +151,3 @@ Oturum bilgileri `localStorage`'da saklanır:
 | `ESC` | Öğretmen panelini / Katıl dialog'unu kapatır |
 | Mobil back (Android donanım tuşu) | Açık paneli/dialog'u kapatır |
 | Kapat (X) butonu (kırmızı) | Paneli kapatır |
-
----
-
-## 8. Gelecek İyileştirmeler
-
-1. Öğrenci katılım ekranı mevcut Radix UI + Tailwind tasarım sistemine göre yeniden giydirilebilir
-2. Polling yerine Vercel KV pub/sub veya Pusher ile gerçek zamanlı bildirim eklenebilir
-3. `roomStore.ts` ve API route'ları için Vitest testleri eklenebilir (mevcut suite ile tutarlı)

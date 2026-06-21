@@ -34,6 +34,7 @@ export function AboutModal({ isOpen, onClose, onStartTour }: AboutModalProps) {
   const CONTACT_MESSAGE_MAX_LENGTH = 1000;
   const [activeTab, setActiveTab] = useState<TabType>('help');
   const version = process.env.NEXT_PUBLIC_GIT_COMMIT_COUNT;
+  const isContactEnabled = process.env.NEXT_PUBLIC_IS_CONTACT_ENABLED === 'true';
   const isDark = theme === 'dark';
   const lang = (t as unknown as Record<string, string>).language || 'en';
   const isTR = lang === 'tr';
@@ -177,13 +178,15 @@ export function AboutModal({ isOpen, onClose, onStartTour }: AboutModalProps) {
               <Terminal className="w-4 h-4" />
               {t.commandReference}
             </button>
-            <button
-              onClick={() => setActiveTab('contact')}
-              className={tabButtonClass('contact')}
-            >
-              <Mail className="w-4 h-4" />
-              {t.contactTitle}
-            </button>
+            {isContactEnabled && (
+              <button
+                onClick={() => setActiveTab('contact')}
+                className={tabButtonClass('contact')}
+              >
+                <Mail className="w-4 h-4" />
+                {t.contactTitle}
+              </button>
+            )}
             <button
               onClick={() => setActiveTab('about')}
               className={tabButtonClass('about')}

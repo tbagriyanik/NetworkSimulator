@@ -4245,6 +4245,7 @@ ${state.bannerMOTD}
   }, [startGuidedProject, closeExam]);
 
   const isDark = (effectiveTheme ?? theme) === 'dark';
+  const isRoomEnabled = process.env.NEXT_PUBLIC_IS_ROOM_ENABLED === 'true';
 
   return (
     <AppErrorBoundary fallbackTitle={t.applicationError}>
@@ -4810,30 +4811,32 @@ ${state.bannerMOTD}
                     handleRedo={handleRedo}
                     handleRefreshNetwork={handleRefreshNetwork}
                     setIsEnvironmentPanelOpen={setIsEnvironmentPanelOpen}
-                    onOpenStudentJoin={() => setShowRoomJoinDialog(true)}
-                    onOpenTeacherPanel={() => setShowTeacherPanel(true)}
+                    onOpenStudentJoin={isRoomEnabled ? () => setShowRoomJoinDialog(true) : undefined}
+                    onOpenTeacherPanel={isRoomEnabled ? () => setShowTeacherPanel(true) : undefined}
                   />
                 )}
 
                 {/* Room Controls — floating buttons above footer (mobile only) */}
-                <div className="fixed bottom-16 left-3 z-30 flex gap-1.5 md:hidden">
-                  <button
-                    onClick={() => setShowRoomJoinDialog(true)}
-                    className="flex items-center gap-1.5 rounded-lg border border-slate-200/50 dark:border-slate-700/50 bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg px-2.5 py-1.5 text-xs font-medium shadow-lg hover:bg-white/90 dark:hover:bg-slate-800/90 transition-all"
-                    title={t.roomStudentJoin}
-                  >
-                    <Users className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">{t.roomStudentJoin}</span>
-                  </button>
-                  <button
-                    onClick={() => setShowTeacherPanel(true)}
-                    className="flex items-center gap-1.5 rounded-lg border border-slate-200/50 dark:border-slate-700/50 bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg px-2.5 py-1.5 text-xs font-medium shadow-lg hover:bg-white/90 dark:hover:bg-slate-800/90 transition-all"
-                    title={t.roomTeacherOpen}
-                  >
-                    <Monitor className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">{t.roomTeacherOpen}</span>
-                  </button>
-                </div>
+                {isRoomEnabled && (
+                  <div className="fixed bottom-16 left-3 z-30 flex gap-1.5 md:hidden">
+                    <button
+                      onClick={() => setShowRoomJoinDialog(true)}
+                      className="flex items-center gap-1.5 rounded-lg border border-slate-200/50 dark:border-slate-700/50 bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg px-2.5 py-1.5 text-xs font-medium shadow-lg hover:bg-white/90 dark:hover:bg-slate-800/90 transition-all"
+                      title={t.roomStudentJoin}
+                    >
+                      <Users className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">{t.roomStudentJoin}</span>
+                    </button>
+                    <button
+                      onClick={() => setShowTeacherPanel(true)}
+                      className="flex items-center gap-1.5 rounded-lg border border-slate-200/50 dark:border-slate-700/50 bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg px-2.5 py-1.5 text-xs font-medium shadow-lg hover:bg-white/90 dark:hover:bg-slate-800/90 transition-all"
+                      title={t.roomTeacherOpen}
+                    >
+                      <Monitor className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">{t.roomTeacherOpen}</span>
+                    </button>
+                  </div>
+                )}
 
                 {/* Network Topology fills remaining space */}
                 <div ref={topologyContainerRef} className="flex-1 w-full h-full min-h-0 overflow-hidden relative">

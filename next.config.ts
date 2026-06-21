@@ -71,6 +71,8 @@ const nextConfig: NextConfig = {
   },
   env: {
     NEXT_PUBLIC_GIT_COMMIT_COUNT: String(countInt),
+    NEXT_PUBLIC_IS_ROOM_ENABLED: String(!!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)),
+    NEXT_PUBLIC_IS_CONTACT_ENABLED: String(!!process.env.GOOGLE_SHEETS_CONTACT_URL),
   },
 };
 
