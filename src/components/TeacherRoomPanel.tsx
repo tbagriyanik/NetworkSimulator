@@ -102,7 +102,7 @@ function RoomMonitor({ roomCode, onClose }: { roomCode: string; onClose: () => v
   const totalStudents = students.length;
 
   const thClass = (field: SortField) =>
-    `text-[10px] font-semibold px-1.5 py-1 text-left cursor-pointer select-none whitespace-nowrap hover:bg-muted/60 transition-colors ${
+    `text-xs font-semibold px-2 py-1.5 text-left cursor-pointer select-none whitespace-nowrap hover:bg-muted/60 transition-colors ${
       sortField === field ? 'text-primary' : 'text-muted-foreground'
     }`;
 
@@ -132,7 +132,7 @@ function RoomMonitor({ roomCode, onClose }: { roomCode: string; onClose: () => v
       {error && <p className="text-xs text-destructive">{t.roomConnError}</p>}
 
       <div className="max-h-[calc(85vh-14rem)] overflow-y-auto">
-        <table className="w-full border-collapse text-xs">
+        <table className="w-full border-collapse text-sm">
           <thead className="sticky top-0 bg-background dark:bg-slate-950 z-10">
             <tr className="border-b border-border">
               <th className={thClass('name')} onClick={() => handleSort('name')}>{t.roomSortName}{sortIcon('name')}</th>
@@ -147,28 +147,27 @@ function RoomMonitor({ roomCode, onClose }: { roomCode: string; onClose: () => v
               const duration = Math.floor((now - s.joinedAt) / 60000);
               return (
                 <tr key={s.studentId} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                  <td className="px-1.5 py-1.5">
+                  <td className="px-2 py-2">
                     <span className="font-medium truncate block max-w-[120px]" title={s.displayName}>
                       {s.displayName}
                     </span>
                   </td>
-                  <td className="px-1.5 py-1.5 tabular-nums text-muted-foreground">
+                  <td className="px-2 py-2 tabular-nums text-muted-foreground">
                     {duration} {t.roomDuration}
                     {s.durationMinutes && duration > s.durationMinutes && (
-                      <span className="ml-1 text-[9px] text-destructive font-semibold">{t.roomTimeUp}</span>
+                      <span className="ml-1 text-[10px] text-destructive font-semibold">{t.roomTimeUp}</span>
                     )}
                   </td>
-                  <td className="px-1.5 py-1.5 text-right">
-                    <div className="flex items-center justify-end gap-1.5">
-                      <span className="tabular-nums font-medium w-8 text-right">{Math.round(progress)}%</span>
-                      <div className="h-1.5 w-10 overflow-hidden rounded-full bg-muted shrink-0">
+                  <td className="px-2 py-2 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <span className="tabular-nums font-medium text-right">{Math.round(progress)}%</span>
+                      <div className="h-2 w-12 overflow-hidden rounded-full bg-muted shrink-0">
                         <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${progress}%` }} />
                       </div>
                     </div>
                   </td>
-                  <td className="px-1.5 py-1.5 tabular-nums text-muted-foreground">
-                    <span>{s.completedTasks}/{s.totalTasks}</span>
-                    {s.projectFile && <span className="ml-1 text-[9px] text-muted-foreground/60">({s.projectFile})</span>}
+                  <td className="px-2 py-2 tabular-nums text-muted-foreground">
+                    <span title={s.projectFile || undefined}>{s.completedTasks}/{s.totalTasks}</span>
                   </td>
                 </tr>
               );
@@ -184,7 +183,7 @@ function RoomMonitor({ roomCode, onClose }: { roomCode: string; onClose: () => v
 }
 
 export function TeacherRoomPanel() {
-  const { showTeacherPanel, setShowTeacherPanel } = useRoom();
+  const { showTeacherPanel, setShowTeacherPanel, studentRoomCode } = useRoom();
   const { t } = useLanguage();
   const [roomCodeInput, setRoomCodeInput] = useState(() => localStorage.getItem('teacher-room-code') || '');
   const [activeCode, setActiveCode] = useState('');
@@ -249,7 +248,7 @@ export function TeacherRoomPanel() {
     };
   }, [showTeacherPanel, setShowTeacherPanel]);
 
-  if (!showTeacherPanel) return null;
+  if (!showTeacherPanel || studentRoomCode) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-start justify-center pt-12" onClick={() => setShowTeacherPanel(false)}>

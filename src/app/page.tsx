@@ -843,7 +843,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
             ntp: {
               ...state.services?.ntp,
               ...(c.services as CanvasDevice['services'])?.ntp,
-               enabled: (c.services as CanvasDevice['services'])?.ntp?.enabled ?? state.services?.ntp?.enabled ?? false,
+              enabled: (c.services as CanvasDevice['services'])?.ntp?.enabled ?? state.services?.ntp?.enabled ?? false,
             },
           },
         };
@@ -4816,7 +4816,7 @@ ${state.bannerMOTD}
                     handleRefreshNetwork={handleRefreshNetwork}
                     setIsEnvironmentPanelOpen={setIsEnvironmentPanelOpen}
                     onOpenStudentJoin={isRoomEnabled ? () => setShowRoomJoinDialog(true) : undefined}
-                    onOpenTeacherPanel={isRoomEnabled ? () => setShowTeacherPanel(true) : undefined}
+                    onOpenTeacherPanel={isRoomEnabled && !studentRoomCode ? () => setShowTeacherPanel(true) : undefined}
                   />
                 )}
 
@@ -4831,14 +4831,16 @@ ${state.bannerMOTD}
                       <Users className="w-3.5 h-3.5" />
                       <span className="hidden sm:inline">{t.roomStudentJoin}</span>
                     </button>
-                    <button
-                      onClick={() => setShowTeacherPanel(true)}
-                      className="flex items-center gap-1.5 rounded-lg border border-slate-200/50 dark:border-slate-700/50 bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg px-2.5 py-1.5 text-xs font-medium shadow-lg hover:bg-white/90 dark:hover:bg-slate-800/90 transition-all"
-                      title={t.roomTeacherOpen}
-                    >
-                      <Monitor className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">{t.roomTeacherOpen}</span>
-                    </button>
+                    {!studentRoomCode && (
+                      <button
+                        onClick={() => setShowTeacherPanel(true)}
+                        className="flex items-center gap-1.5 rounded-lg border border-slate-200/50 dark:border-slate-700/50 bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg px-2.5 py-1.5 text-xs font-medium shadow-lg hover:bg-white/90 dark:hover:bg-slate-800/90 transition-all"
+                        title={t.roomTeacherOpen}
+                      >
+                        <Monitor className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">{t.roomTeacherOpen}</span>
+                      </button>
+                    )}
                   </div>
                 )}
 
