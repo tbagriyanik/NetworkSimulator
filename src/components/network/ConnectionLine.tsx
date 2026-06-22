@@ -13,7 +13,7 @@ interface ConnectionLineProps {
   getPortPosition: (device: CanvasDevice, portId: string) => { x: number; y: number };
   CABLE_COLORS: Record<string, { primary: string; bg: string; text: string; border: string }>;
   isHovered?: boolean;
-  onMouseEnter?: () => void;
+  onMouseEnter?: (e: React.MouseEvent<SVGPathElement>) => void;
   onMouseLeave?: () => void;
   showAnimation?: boolean;
   showLabel?: boolean;
@@ -84,7 +84,6 @@ export const ConnectionLine = memo(function ConnectionLine({
 
   // Calculate control points for smooth curve with offset
   const midX = (source.x + target.x) / 2;
-  const midY = (source.y + target.y) / 2;
 
   // Apply perpendicular offset for parallel lines
   const dx = target.x - source.x;
@@ -163,6 +162,7 @@ export const ConnectionLine = memo(function ConnectionLine({
         className="pointer-events-none"
         vectorEffect="non-scaling-stroke"
         style={{
+          opacity: isHovered ? 0.6 : 0.25,
           filter: isHovered || (graphicsQuality === 'high' && isEffectivelyActive) ?
             'drop-shadow(0 0 0.5px ' + color + ') drop-shadow(0 0 1px ' + color + ')' :
             'none',
@@ -189,14 +189,14 @@ export const ConnectionLine = memo(function ConnectionLine({
       {/* Animated data flow - only for compatible cables and NOT during dragging */}
       {showAnimation && isEffectivelyActive && !isDragging && (
         <>
-          <circle r={Math.max(2, 4 / zoom)} fill={color}>
+          <circle r={Math.max(2, 4 / zoom)} fill={color} opacity={0.25}>
             <animateMotion
               dur="2s"
               repeatCount="indefinite"
               path={pathD}
             />
           </circle>
-          <circle r={Math.max(2, 4 / zoom)} fill={color}>
+          <circle r={Math.max(2, 4 / zoom)} fill={color} opacity={0.25}>
             <animateMotion
               dur="2s"
               repeatCount="indefinite"
@@ -206,61 +206,82 @@ export const ConnectionLine = memo(function ConnectionLine({
           </circle>
         </>
       )}
-      {/* Connection label */}
-      {showLabel && (totalSameConns > 1 ? (
-        <>
-          <text
-            x={midX + perpX}
-            y={midY + perpY - 8}
-            fill="none"
-            stroke={isDark ? '#0f172a' : '#ffffff'}
-            strokeWidth="4"
-            vectorEffect="non-scaling-stroke"
-            strokeLinejoin="round"
-            fontSize="10"
-            textAnchor="middle"
-            className="pointer-events-none select-none"
-          >
-            {connection.sourcePort} ↔ {connection.targetPort}
-          </text>
-          <text
-            x={midX + perpX}
-            y={midY + perpY - 8}
-            fill={color}
-            fontSize="10"
-            textAnchor="middle"
-            className="pointer-events-none select-none"
-          >
-            {connection.sourcePort} ↔ {connection.targetPort}
-          </text>
-        </>
-      ) : (
-        <>
-          <text
-            x={midX}
-            y={midY - 10}
-            fill="none"
-            stroke={isDark ? '#0f172a' : '#ffffff'}
-            strokeWidth="4"
-            strokeLinejoin="round"
-            fontSize="10"
-            textAnchor="middle"
-            className="pointer-events-none select-none"
-          >
-            {connection.sourcePort} ↔ {connection.targetPort}
-          </text>
-          <text
-            x={midX}
-            y={midY - 10}
-            fill={color}
-            fontSize="10"
-            textAnchor="middle"
-            className="pointer-events-none select-none"
-          >
-            {connection.sourcePort} ↔ {connection.targetPort}
-          </text>
-        </>
-      ))}
+      {/* Connection label - port names near device edges, shown only on hover */}
+      {showLabel && (() => {
+        const getPointOnPath = (t: number) => {
+          if (isWireless) {
+            return { x: source.x + (target.x - source.x) * t, y: source.y + (target.y - source.y) * t };
+          }
+          const mt = 1 - t;
+          const cx = mt*mt*mt*source.x + 3*mt*mt*t*controlPoint1.x + 3*mt*t*t*controlPoint2.x + t*t*t*target.x;
+          const cy = mt*mt*mt*source.y + 3*mt*mt*t*controlPoint1.y + 3*mt*t*t*controlPoint2.y + t*t*t*target.y;
+          return { x: cx, y: cy };
+        };
+        const srcPos = getPointOnPath(0.07);
+        const tgtPos = getPointOnPath(0.93);
+        const srcOffsetY = -8;
+        const tgtOffsetY = 14;
+        return (
+          <>
+            <text
+              x={srcPos.x + perpX}
+              y={srcPos.y + perpY + srcOffsetY}
+              fill="none"
+              stroke={isDark ? '#0f172a' : '#ffffff'}
+              strokeWidth="1"
+              vectorEffect="non-scaling-stroke"
+              strokeLinejoin="round"
+              fontSize="11"
+              textAnchor="middle"
+              className="pointer-events-none select-none"
+              fontWeight="bold"
+              opacity={isHovered ? 0.9 : 0.75}
+            >
+              {connection.sourcePort}
+            </text>
+            <text
+              x={srcPos.x + perpX}
+              y={srcPos.y + perpY + srcOffsetY}
+              fill={color}
+              fontSize="11"
+              textAnchor="middle"
+              className="pointer-events-none select-none"
+              fontWeight="bold"
+              opacity={isHovered ? 0.9 : 0.75}
+            >
+              {connection.sourcePort}
+            </text>
+            <text
+              x={tgtPos.x + perpX}
+              y={tgtPos.y + perpY + tgtOffsetY}
+              fill="none"
+              stroke={isDark ? '#0f172a' : '#ffffff'}
+              strokeWidth="1"
+              vectorEffect="non-scaling-stroke"
+              strokeLinejoin="round"
+              fontSize="11"
+              textAnchor="middle"
+              className="pointer-events-none select-none"
+              fontWeight="bold"
+              opacity={isHovered ? 0.9 : 0.75}
+            >
+              {connection.targetPort}
+            </text>
+            <text
+              x={tgtPos.x + perpX}
+              y={tgtPos.y + perpY + tgtOffsetY}
+              fill={color}
+              fontSize="11"
+              textAnchor="middle"
+              className="pointer-events-none select-none"
+              fontWeight="bold"
+              opacity={isHovered ? 0.9 : 0.75}
+            >
+              {connection.targetPort}
+            </text>
+          </>
+        );
+      })()}
     </g>
   );
 }, (prevProps, nextProps) => {

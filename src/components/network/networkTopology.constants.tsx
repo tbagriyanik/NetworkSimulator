@@ -185,3 +185,6 @@ export const STROKE_COLORS = {
   slateLight: '#cbd5e1',
   slateDark: '#0f172a',
 } as const;
+
+// Selection highlight color for devices and notes
+export const SELECTION_HIGHLIGHT_COLOR = '#5ad57d';
