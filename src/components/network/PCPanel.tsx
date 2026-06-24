@@ -333,19 +333,26 @@ export function PCPanel({
     const newRecords = serviceDnsRecords.filter((r) => r.domain.toLowerCase() !== domain);
     newRecords.push({ domain, address });
     setServiceDnsRecords(newRecords);
-    dispatchDeviceConfig({
-      services: {
-        dns: { enabled: serviceDnsEnabled, records: newRecords },
-        http: { enabled: serviceHttpEnabled, content: serviceHttpContent },
-        ftp: { enabled: serviceFtpEnabled },
-        mail: { enabled: serviceMailEnabled, domain: serviceMailDomain, username: serviceMailUsername, password: serviceMailPassword, inbox: serviceMailInbox, sent: serviceMailSent },
-        dhcp: { enabled: serviceDhcpEnabled, pools: serviceDhcpPools }
+
+    // Get current values from state variables that are defined below
+    // Note: Since these are in a closure, we need to be careful with ordering or use refs
+    // For now, let's fix the ordering of declarations in this file.
+
+    window.dispatchEvent(new CustomEvent('update-topology-device-config', {
+      detail: {
+        deviceId,
+        config: {
+          services: {
+            dns: { enabled: serviceDnsEnabled, records: newRecords }
+          }
+        }
       }
-    });
+    }));
+
     setDnsFormDomain('');
     setDnsFormAddress('');
     setTimeout(() => { isDnsEditingRef.current = false; }, 1000);
-  }, [dnsFormDomain, dnsFormAddress, serviceDnsRecords, dispatchDeviceConfig, serviceDnsEnabled, serviceHttpEnabled, serviceHttpContent, serviceFtpEnabled, serviceMailEnabled, serviceMailDomain, serviceMailUsername, serviceMailPassword, serviceMailInbox, serviceMailSent, serviceDhcpEnabled, serviceDhcpPools, setServiceHttpContent]);
+  }, [dnsFormDomain, dnsFormAddress, serviceDnsRecords, deviceId, serviceDnsEnabled]);
 
   const [serviceHttpEnabled, setServiceHttpEnabled] = useState(deviceFromTopology?.services?.http?.enabled ?? false);
   const [serviceHttpContent, setServiceHttpContent] = useState(deviceFromTopology?.services?.http?.content || t.helloWorld);

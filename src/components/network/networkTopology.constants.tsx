@@ -86,6 +86,8 @@ export const CABLE_COLORS: Record<CableType | 'error', { primary: string; bg: st
 
 export const DRAG_THRESHOLD = 5;
 export const LONG_PRESS_DURATION = 500; // ms
+export const TOOLTIP_DELAY = 150; // ms
+export const TOOLTIP_OFFSET_Y = -15; // px
 export const MOMENTUM_THRESHOLD = 8; // Velocity threshold for momentum scroll
 export const MOMENTUM_DECAY = 0.92; // Exponential decay factor per frame
 export const MOMENTUM_MIN_SPEED = 0.5; // Stop momentum when velocity falls below this
