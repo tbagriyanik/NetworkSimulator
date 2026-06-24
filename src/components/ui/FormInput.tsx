@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useId } from 'react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
@@ -30,11 +30,17 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
             isLoading,
             className,
             disabled,
+            id: providedId,
             ...props
         },
         ref
     ) => {
         const { theme } = useTheme();
+        const generatedId = useId();
+        const id = providedId || generatedId;
+        const errorId = `${id}-error`;
+        const hintId = `${id}-hint`;
+
         const isDark = theme === 'dark';
         const hasError = !!error;
         const showSuccess = showValidation && isValid && !hasError;
@@ -43,6 +49,7 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
             <div className="w-full space-y-2">
                 {label && (
                     <label
+                        htmlFor={id}
                         className={cn(
                             'text-sm font-medium',
                             isDark ? 'text-slate-300' : 'text-slate-700',
@@ -67,7 +74,13 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
 
                     <Input
                         ref={ref}
+                        id={id}
                         disabled={disabled || isLoading}
+                        aria-invalid={hasError ? 'true' : undefined}
+                        aria-describedby={cn(
+                            hasError ? errorId : undefined,
+                            hint && !hasError ? hintId : undefined
+                        )}
                         className={cn(
                             'transition-all',
                             icon && 'pl-10',
@@ -101,14 +114,14 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
                 </div>
 
                 {error && (
-                    <p className="text-sm text-red-500 flex items-center gap-1">
+                    <p id={errorId} className="text-sm text-red-500 flex items-center gap-1">
                         <AlertCircle className="w-4 h-4" />
                         {error}
                     </p>
                 )}
 
                 {hint && !error && (
-                    <p className={cn('text-xs', isDark ? 'text-slate-500' : 'text-slate-500')}>
+                    <p id={hintId} className={cn('text-xs', isDark ? 'text-slate-500' : 'text-slate-500')}>
                         {hint}
                     </p>
                 )}

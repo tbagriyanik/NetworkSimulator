@@ -324,6 +324,29 @@ export function PCPanel({
   );
   const [dnsFormDomain, setDnsFormDomain] = useState('');
   const [dnsFormAddress, setDnsFormAddress] = useState('');
+
+  const handleAddDnsRecord = useCallback(() => {
+    isDnsEditingRef.current = true;
+    const domain = dnsFormDomain.trim().toLowerCase();
+    const address = dnsFormAddress.trim();
+    if (!domain || !address) return;
+    const newRecords = serviceDnsRecords.filter((r) => r.domain.toLowerCase() !== domain);
+    newRecords.push({ domain, address });
+    setServiceDnsRecords(newRecords);
+    dispatchDeviceConfig({
+      services: {
+        dns: { enabled: serviceDnsEnabled, records: newRecords },
+        http: { enabled: serviceHttpEnabled, content: serviceHttpContent },
+        ftp: { enabled: serviceFtpEnabled },
+        mail: { enabled: serviceMailEnabled, domain: serviceMailDomain, username: serviceMailUsername, password: serviceMailPassword, inbox: serviceMailInbox, sent: serviceMailSent },
+        dhcp: { enabled: serviceDhcpEnabled, pools: serviceDhcpPools }
+      }
+    });
+    setDnsFormDomain('');
+    setDnsFormAddress('');
+    setTimeout(() => { isDnsEditingRef.current = false; }, 1000);
+  }, [dnsFormDomain, dnsFormAddress, serviceDnsRecords, dispatchDeviceConfig, serviceDnsEnabled, serviceHttpEnabled, serviceHttpContent, serviceFtpEnabled, serviceMailEnabled, serviceMailDomain, serviceMailUsername, serviceMailPassword, serviceMailInbox, serviceMailSent, serviceDhcpEnabled, serviceDhcpPools, setServiceHttpContent]);
+
   const [serviceHttpEnabled, setServiceHttpEnabled] = useState(deviceFromTopology?.services?.http?.enabled ?? false);
   const [serviceHttpContent, setServiceHttpContent] = useState(deviceFromTopology?.services?.http?.content || t.helloWorld);
   const [serviceFtpEnabled, setServiceFtpEnabled] = useState(deviceFromTopology?.services?.ftp?.enabled ?? false);
@@ -5535,34 +5558,16 @@ export function PCPanel({
                                       value={dnsFormDomain}
                                       onChange={(e) => setDnsFormDomain(e.target.value)}
                                       placeholder={t.dnsDomainPlaceholder}
+                                      onKeyDown={(e) => e.key === 'Enter' && handleAddDnsRecord()}
                                     />
                                     <Input
                                       value={dnsFormAddress}
                                       onChange={(e) => setDnsFormAddress(e.target.value)}
                                       placeholder={t.dnsAddressPlaceholder}
+                                      onKeyDown={(e) => e.key === 'Enter' && handleAddDnsRecord()}
                                     />
                                     <Button
-                                      onClick={() => {
-                                        isDnsEditingRef.current = true;
-                                        const domain = dnsFormDomain.trim().toLowerCase();
-                                        const address = dnsFormAddress.trim();
-                                        if (!domain || !address) return;
-                                        const newRecords = serviceDnsRecords.filter((r) => r.domain.toLowerCase() !== domain);
-                                        newRecords.push({ domain, address });
-                                        setServiceDnsRecords(newRecords);
-                                        dispatchDeviceConfig({
-                                          services: {
-                                            dns: { enabled: serviceDnsEnabled, records: newRecords },
-                                            http: { enabled: serviceHttpEnabled, content: serviceHttpContent },
-                                            ftp: { enabled: serviceFtpEnabled },
-                                            mail: { enabled: serviceMailEnabled, domain: serviceMailDomain, username: serviceMailUsername, password: serviceMailPassword, inbox: serviceMailInbox, sent: serviceMailSent },
-                                            dhcp: { enabled: serviceDhcpEnabled, pools: serviceDhcpPools }
-                                          }
-                                        });
-                                        setDnsFormDomain('');
-                                        setDnsFormAddress('');
-                                        setTimeout(() => { isDnsEditingRef.current = false; }, 1000);
-                                      }}
+                                      onClick={handleAddDnsRecord}
                                     >
                                       {t.addDnsRecord}
                                     </Button>
@@ -6064,26 +6069,31 @@ export function PCPanel({
                                       value={dhcpForm.poolName}
                                       onChange={(e) => setDhcpForm((prev) => ({ ...prev, poolName: e.target.value }))}
                                       placeholder={t.dhcpPoolNamePlaceholder}
+                                      onKeyDown={(e) => e.key === 'Enter' && saveDhcpPool()}
                                     />
                                     <Input
                                       value={dhcpForm.defaultGateway}
                                       onChange={(e) => setDhcpForm((prev) => ({ ...prev, defaultGateway: e.target.value }))}
                                       placeholder={t.dhcpPoolGatewayPlaceholder}
+                                      onKeyDown={(e) => e.key === 'Enter' && saveDhcpPool()}
                                     />
                                     <Input
                                       value={dhcpForm.dnsServer}
                                       onChange={(e) => setDhcpForm((prev) => ({ ...prev, dnsServer: e.target.value }))}
                                       placeholder={t.dhcpPoolDnsPlaceholder}
+                                      onKeyDown={(e) => e.key === 'Enter' && saveDhcpPool()}
                                     />
                                     <Input
                                       value={dhcpForm.startIp}
                                       onChange={(e) => setDhcpForm((prev) => ({ ...prev, startIp: e.target.value }))}
                                       placeholder={t.dhcpPoolStartIpPlaceholder}
+                                      onKeyDown={(e) => e.key === 'Enter' && saveDhcpPool()}
                                     />
                                     <Input
                                       value={dhcpForm.subnetMask}
                                       onChange={(e) => setDhcpForm((prev) => ({ ...prev, subnetMask: e.target.value }))}
                                       placeholder={t.dhcpPoolSubnetPlaceholder}
+                                      onKeyDown={(e) => e.key === 'Enter' && saveDhcpPool()}
                                     />
                                     <Input
                                       type="number"
@@ -6091,6 +6101,7 @@ export function PCPanel({
                                       value={dhcpForm.maxUsers}
                                       onChange={(e) => setDhcpForm((prev) => ({ ...prev, maxUsers: Number(e.target.value || 1) }))}
                                       placeholder={t.dhcpPoolMaxUsersPlaceholder}
+                                      onKeyDown={(e) => e.key === 'Enter' && saveDhcpPool()}
                                     />
                                   </div>
 

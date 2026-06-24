@@ -28,7 +28,7 @@ import { useEnvironment } from '@/lib/store/appStore';
 import { Plus, Power, Trash2, Monitor, Network, Laptop, X, Cable, LineSquiggle, Plug, TrendingUpDown } from "lucide-react";
 import { normalizeMAC } from '@/lib/utils';
 import { getDeviceWidth, getDeviceHeight } from './networkTopology.helpers';
-import { CABLE_COLORS, DRAG_THRESHOLD, LONG_PRESS_DURATION, VIRTUAL_CANVAS_WIDTH_MOBILE, VIRTUAL_CANVAS_HEIGHT_MOBILE, VIRTUAL_CANVAS_WIDTH_DESKTOP, VIRTUAL_CANVAS_HEIGHT_DESKTOP, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, NOTE_COLORS, NOTE_FONTS_DESKTOP as NOTE_FONTS, NOTE_FONT_SIZES, NOTE_OPACITY as NOTE_OPACITY_OPTIONS, PC_PORT_SPACING, PORT_SPACING, PORT_START_X, PORT_START_Y, PORT_COLORS, STATUS_COLORS, MOMENTUM_THRESHOLD, MOMENTUM_DECAY, MOMENTUM_MIN_SPEED, SELECTION_HIGHLIGHT_COLOR } from './networkTopology.constants';
+import { CABLE_COLORS, DRAG_THRESHOLD, LONG_PRESS_DURATION, TOOLTIP_DELAY, TOOLTIP_OFFSET_Y, VIRTUAL_CANVAS_WIDTH_MOBILE, VIRTUAL_CANVAS_HEIGHT_MOBILE, VIRTUAL_CANVAS_WIDTH_DESKTOP, VIRTUAL_CANVAS_HEIGHT_DESKTOP, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, NOTE_COLORS, NOTE_FONTS_DESKTOP as NOTE_FONTS, NOTE_FONT_SIZES, NOTE_OPACITY as NOTE_OPACITY_OPTIONS, PC_PORT_SPACING, PORT_SPACING, PORT_START_X, PORT_START_Y, PORT_COLORS, STATUS_COLORS, MOMENTUM_THRESHOLD, MOMENTUM_DECAY, MOMENTUM_MIN_SPEED, SELECTION_HIGHLIGHT_COLOR } from './networkTopology.constants';
 import { errorHandler, CLIPBOARD_ERRORS } from '@/lib/errors/errorHandler';
 import { buildHopPacketInfos } from './PingPacketInfoPanel';
 import { logger } from '@/lib/logger';
@@ -2127,8 +2127,17 @@ export function NetworkTopology({
     } else {
       setLastTapTime(now);
       setLastTappedDevice(deviceId);
+
+      // Start long-press timer to open device context menu on mobile
+      const timer = setTimeout(() => {
+        openContextMenu(touch.clientX, touch.clientY, deviceId, 'device');
+        setLongPressTimer(null);
+        setTouchDraggedDevice(null);
+        touchDraggedDeviceRef.current = null;
+      }, LONG_PRESS_DURATION);
+      setLongPressTimer(timer);
     }
-  }, [devices, pan, zoom, longPressTimer, lastTapTime, lastTappedDevice, handleDeviceDoubleClick, selectedDeviceIds]);
+  }, [devices, pan, zoom, longPressTimer, lastTapTime, lastTappedDevice, handleDeviceDoubleClick, selectedDeviceIds, openContextMenu]);
 
   // Handle device touch move - for mobile dragging
   const handleDeviceTouchMove = useCallback((e: ReactTouchEvent) => {
@@ -3417,7 +3426,7 @@ export function NetworkTopology({
       portTooltipTimerRef.current = setTimeout(() => {
         setPortTooltip(prev => prev ? { ...prev, visible: false } : null);
       }, 2000);
-    }, 0);
+    }, TOOLTIP_DELAY);
   }, [devices, getLivePort, setPortTooltip]);
 
   const handlePortHover = useCallback((e: ReactMouseEvent, deviceId: string, portId: string) => {
@@ -3455,11 +3464,11 @@ export function NetworkTopology({
     }
     if (connectionTooltipTimerRef.current) clearTimeout(connectionTooltipTimerRef.current);
     connectionTooltipTimerRef.current = setTimeout(() => {
-      setConnectionTooltip({ x: tx, y: ty, sourceDeviceName, sourcePort, targetDeviceName, targetPort, cableType, statusMessage, visible: true });
+      setConnectionTooltip({ x: tx, y: ty + TOOLTIP_OFFSET_Y, sourceDeviceName, sourcePort, targetDeviceName, targetPort, cableType, statusMessage, visible: true });
       connectionTooltipTimerRef.current = setTimeout(() => {
         setConnectionTooltip(prev => prev ? { ...prev, visible: false } : null);
       }, 3000);
-    }, 0);
+    }, TOOLTIP_DELAY);
   }, [devices, setHoveredConnectionId, setConnectionTooltip]);
 
   const handleConnectionMouseLeave = useCallback(() => {
