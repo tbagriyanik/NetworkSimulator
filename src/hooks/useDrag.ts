@@ -278,10 +278,11 @@ export function useDrag(options: UseDragOptions = {}): UseDragReturn {
             const newX = ds2.startPosX + dx;
             const newY = ds2.startPosY + dy;
             liveDragPosRef.current = { x: newX, y: newY };
-            el.style.left = `${newX}px`;
-            el.style.top = `${newY}px`;
-          }
-          el.style.transition = 'none';
+          el.style.left = `${newX}px`;
+          el.style.top = `${newY}px`;
+        }
+        el.style.willChange = 'transform';
+        el.style.transition = 'none';
         } else if (ds2.type === 'resize' && ds2.direction) {
           const dx2 = clientX - ds2.startX;
           const dy2 = clientY - ds2.startY;
@@ -301,7 +302,7 @@ export function useDrag(options: UseDragOptions = {}): UseDragReturn {
           }
 
           liveDragPosRef.current = { x: newX, y: newY };
-          el.style.willChange = 'width, height, left, top';
+          el.style.willChange = 'transform, width, height, left, top';
           el.style.contain = 'layout style paint';
           el.style.width = `${newW}px`;
           el.style.height = `${newH}px`;

@@ -641,9 +641,6 @@ export function NetworkTopology({
 
   // Drag state with position tracking
   const [draggedDevice, setDraggedDevice] = useState<string | null>(null);
-  const [_dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [dragStartPos, setDragStartPos] = useState<{ x: number, y: number } | null>(null);
-  const [dragStartDevicePositions, setDragStartDevicePositions] = useState<{ [key: string]: { x: number, y: number } }>({});
   const [isActuallyDragging, setIsActuallyDragging] = useState(false);
 
   // Drag performance - use ref for animation frame throttling
@@ -651,9 +648,14 @@ export function NetworkTopology({
   const lastDragPositionRef = useRef<{ x: number; y: number } | null>(null);
   // Ref to track if we were dragging (for click handler to check without stale closure)
   const wasDraggingRef = useRef(false);
+  // Direct DOM drag positions - bypasses React state during drag, synced on mouseup
+  const liveDeviceDragPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
 
   // Ref to track if shift key was pressed during mousedown
   const shiftKeyPressedRef = useRef(false);
+
+  // Refs for direct DOM connection path updates during drag
+  const getPortPositionRef = useRef<(device: CanvasDevice, portId: string) => { x: number; y: number }>((_d, _p) => ({ x: 0, y: 0 }));
 
   // ─── Performance refs: always hold latest values to avoid stale closures ───
   // These allow event handlers registered once (on mount) to always use fresh state
@@ -701,7 +703,6 @@ export function NetworkTopology({
     portId: string;
     point: { x: number; y: number };
   } | null>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const mousePosRef = useRef({ x: 0, y: 0 });
   const cancelConnectionDrawing = useCallback(() => {
     isDrawingConnectionRef.current = false;
@@ -1367,15 +1368,13 @@ export function NetworkTopology({
     zoomRef.current = zoom;
     panRef.current = pan;
     draggedDeviceRef.current = draggedDevice;
-    dragStartPosRef.current = dragStartPos;
-    dragStartDevicePositionsRef.current = dragStartDevicePositions;
     isActuallyDraggingRef.current = isActuallyDragging;
     snapToGridRef.current = snapToGrid;
     isDrawingConnectionRef.current = isDrawingConnection;
     connectionStartRef.current = connectionStart;
     // eslint-disable-next-line react-hooks/immutability
     selectedDeviceIdsRef.current = selectedDeviceIds;
-  }, [isPanning, panStart, zoom, pan, draggedDevice, dragStartPos, dragStartDevicePositions, isActuallyDragging, snapToGrid, isDrawingConnection, connectionStart, selectedDeviceIds]);
+  }, [isPanning, panStart, zoom, pan, draggedDevice, isActuallyDragging, snapToGrid, isDrawingConnection, connectionStart, selectedDeviceIds]);
 
   // Handle mouse move for panning and dragging
   // Registered ONCE (empty deps) - reads all mutable values through refs to avoid stale closures
@@ -1485,6 +1484,20 @@ export function NetworkTopology({
               setPortTooltip(null);
               // Set grabbing cursor when drag starts
               document.body.style.cursor = 'grabbing';
+              // GPU layer promotion for dragged devices
+              const currentDragged = draggedDeviceRef.current;
+              if (!currentDragged) return;
+              const dragIds = selectedDeviceIdsRef.current.includes(currentDragged)
+                ? selectedDeviceIdsRef.current
+                : [currentDragged];
+              for (let wi = 0; wi < dragIds.length; wi++) {
+                const we = document.querySelector('[data-device-id="' + dragIds[wi] + '"]') as SVGGElement | null;
+                if (we) {
+                  we.style.willChange = 'transform';
+                  const ichild = we.querySelector('g');
+                  if (ichild) ichild.style.willChange = 'transform';
+                }
+              }
             }
             wasDraggingRef.current = true;
           }
@@ -1524,41 +1537,87 @@ export function NetworkTopology({
             const canvasW = CANVAS_W_D;
             const canvasH = CANVAS_H_D;
 
-            setDevices(prev => {
-              const newDevices = [...prev];
-              let changed = false;
+            // PERFORMANCE: Direct DOM updates during drag - bypass React/Zustand entirely.
+            // Positions are synced back to Zustand state on mouseup (handleMouseUp).
+            const devicesToMove = currentSelectedIds.includes(currentDraggedDevice)
+              ? currentSelectedIds
+              : [currentDraggedDevice];
 
-              const devicesToMove = currentSelectedIds.includes(currentDraggedDevice)
-                ? currentSelectedIds
-                : [currentDraggedDevice];
+            const newPositions = new Map<string, { x: number; y: number }>();
+            const doSnap = currentSnapToGrid && ctrlKey;
 
-              devicesToMove.forEach(id => {
-                const deviceIndex = newDevices.findIndex(d => d.id === id);
-                if (deviceIndex === -1) return;
+            devicesToMove.forEach(id => {
+              const initialPos = currentStartPositions[id];
+              if (!initialPos) return;
+              let newX = initialPos.x + dx;
+              let newY = initialPos.y + dy;
+              if (doSnap) {
+                newX = Math.round(newX / 16) * 16;
+                newY = Math.round(newY / 16) * 16;
+              }
+              const clampedX = Math.max(20, Math.min(newX, canvasW - 100));
+              const clampedY = Math.max(20, Math.min(newY, canvasH - 100));
+              newPositions.set(id, { x: clampedX, y: clampedY });
 
-                const initialPos = currentStartPositions[id];
-                if (!initialPos) return;
-
-                let newX = initialPos.x + dx;
-                let newY = initialPos.y + dy;
-
-                if (currentSnapToGrid && ctrlKey) {
-                  newX = Math.round(newX / 16) * 16;
-                  newY = Math.round(newY / 16) * 16;
-                }
-
-                const clampedX = Math.max(20, Math.min(newX, canvasW - 100));
-                const clampedY = Math.max(20, Math.min(newY, canvasH - 100));
-
-                if (Math.abs(newDevices[deviceIndex].x - clampedX) > 0.1 || Math.abs(newDevices[deviceIndex].y - clampedY) > 0.1) {
-                  newDevices[deviceIndex] = { ...newDevices[deviceIndex], x: clampedX, y: clampedY };
-                  changed = true;
-                }
-              });
-
-              return changed ? newDevices : prev;
+              // Direct DOM: update device <g> transform
+              const outerG = document.querySelector('[data-device-id="' + id + '"]');
+              if (outerG) {
+                const innerG = outerG.querySelector('g');
+                if (innerG) innerG.setAttribute('transform', 'translate(' + clampedX + ', ' + clampedY + ')');
+              }
             });
 
+            // Also update connection paths attached to moved devices directly in DOM
+            if (newPositions.size > 0) {
+              const movedSet = new Set(devicesToMove);
+              const liveConns = latestConnectionsRef.current;
+              for (let ci = 0; ci < liveConns.length; ci++) {
+                const conn = liveConns[ci];
+                if (!movedSet.has(conn.sourceDeviceId) && !movedSet.has(conn.targetDeviceId)) continue;
+
+                const srcDev = latestDevicesRef.current.find(function (d) { return d.id === conn.sourceDeviceId; });
+                const tgtDev = latestDevicesRef.current.find(function (d) { return d.id === conn.targetDeviceId; });
+                if (!srcDev || !tgtDev) continue;
+
+                const sp = newPositions.get(conn.sourceDeviceId) || { x: srcDev.x, y: srcDev.y };
+                const tp = newPositions.get(conn.targetDeviceId) || { x: tgtDev.x, y: tgtDev.y };
+
+                // Calculate port positions using the same logic as getPortPosition
+                const calcPortPos = (device: CanvasDevice, portId: string, dx: number, dy: number) => {
+                  const pi = device.ports.findIndex((p) => p.id === portId);
+                  if (pi < 0) return { x: dx, y: dy };
+                  const isPL = device.type === 'pc' || device.type === 'iot';
+                  const ppr = isPL ? 2 : 8;
+                  const startXOffset = 12;
+                  const startYOffset = 14;
+                  const spacing = 13;
+                  const row = Math.floor(pi / ppr);
+                  const col = pi % ppr;
+                  return { x: dx + startXOffset + col * spacing, y: dy + startYOffset + row * spacing };
+                };
+
+                const srcPort = calcPortPos(srcDev, conn.sourcePort, sp.x, sp.y);
+                const tgtPort = calcPortPos(tgtDev, conn.targetPort, tp.x, tp.y);
+
+                // Simple bezier curve calculation
+                const midX = (srcPort.x + tgtPort.x) / 2;
+                const cp1y = srcPort.y;
+                const cp2y = tgtPort.y;
+
+                const pathD = 'M ' + srcPort.x + ' ' + srcPort.y +
+                  ' C ' + midX + ' ' + cp1y + ', ' + midX + ' ' + cp2y + ', ' + tgtPort.x + ' ' + tgtPort.y;
+
+                const connEl = document.querySelector('[data-connection-id="' + conn.id + '"]');
+                if (connEl) {
+                  const pathNodes = connEl.querySelectorAll('path');
+                  for (let pi2 = 0; pi2 < pathNodes.length; pi2++) {
+                    pathNodes[pi2].setAttribute('d', pathD);
+                  }
+                }
+              }
+            }
+
+            liveDeviceDragPositionsRef.current = newPositions;
             dragAnimationFrameRef.current = null;
           });
         }
@@ -1580,7 +1639,6 @@ export function NetworkTopology({
             y: (e.clientY - rect.top - currentPan.y) / currentZoom,
           };
           mousePosRef.current = newPos;
-          setMousePos(newPos);
           mousePosAnimationFrameRef.current = null;
         });
       }
@@ -1724,9 +1782,40 @@ export function NetworkTopology({
       if (!momentumAnimationFrameRef.current && svgContentGroupRef.current) {
         svgContentGroupRef.current.style.willChange = '';
       }
+
+      // PERFORMANCE: Sync device drag positions from direct DOM writes back to Zustand state
+      const finalDragPositions = liveDeviceDragPositionsRef.current;
+      if (finalDragPositions.size > 0) {
+        setDevices(prev => {
+          const newDevices = [...prev];
+          let changed = false;
+          finalDragPositions.forEach((pos, id) => {
+            const idx = newDevices.findIndex(d => d.id === id);
+            if (idx !== -1) {
+              if (Math.abs(newDevices[idx].x - pos.x) > 0.1 || Math.abs(newDevices[idx].y - pos.y) > 0.1) {
+                newDevices[idx] = { ...newDevices[idx], x: pos.x, y: pos.y };
+                changed = true;
+              }
+            }
+          });
+          return changed ? newDevices : prev;
+        });
+        finalDragPositions.clear();
+      }
+
+      // Remove GPU will-change hints from dragged devices
+      const prevDragIds = [...liveDeviceDragPositionsRef.current.keys()];
+      for (let wi = 0; wi < prevDragIds.length; wi++) {
+        const we = document.querySelector('[data-device-id="' + prevDragIds[wi] + '"]') as SVGGElement | null;
+        if (we) {
+          we.style.willChange = '';
+          const ichild = we.querySelector('g');
+          if (ichild) ichild.style.willChange = '';
+        }
+      }
+
       setDraggedDevice(null);
       draggedDeviceRef.current = null;
-      setDragStartPos(null);
       dragStartPosRef.current = null;
 
       // Eğer cihaz gerçekten sürüklendiyse ve kablo çizimi başlamışsa iptal et
@@ -1737,7 +1826,6 @@ export function NetworkTopology({
 
       setIsActuallyDragging(false);
       isActuallyDraggingRef.current = false;
-      setDragStartDevicePositions({});
       lastDragPositionRef.current = null;
 
       // Reset cursor when drag ends
@@ -1802,17 +1890,22 @@ export function NetworkTopology({
 
         if (!dragAnimationFrameRef.current) {
           dragAnimationFrameRef.current = requestAnimationFrame(() => {
-            setDevices((prev) =>
-              prev.map((d) => {
-                const init = initialPositions[d.id];
-                if (!init) return d;
-                return {
-                  ...d,
-                  x: Math.max(50, Math.min(init.x + dx, canvasDims.width - 120)),
-                  y: Math.max(50, Math.min(init.y + dy, canvasDims.height - 150)),
-                };
-              })
-            );
+            const touchNewPositions = new Map<string, { x: number; y: number }>();
+            const initialKeys = Object.keys(initialPositions);
+            for (let ti = 0; ti < initialKeys.length; ti++) {
+              const id = initialKeys[ti];
+              const init = initialPositions[id];
+              if (!init) continue;
+              const clampedX = Math.max(50, Math.min(init.x + dx, canvasDims.width - 120));
+              const clampedY = Math.max(50, Math.min(init.y + dy, canvasDims.height - 150));
+              touchNewPositions.set(id, { x: clampedX, y: clampedY });
+              const touchOuterG = document.querySelector('[data-device-id="' + id + '"]');
+              if (touchOuterG) {
+                const touchInnerG = touchOuterG.querySelector('g');
+                if (touchInnerG) touchInnerG.setAttribute('transform', 'translate(' + clampedX + ', ' + clampedY + ')');
+              }
+            }
+            liveDeviceDragPositionsRef.current = touchNewPositions;
             dragAnimationFrameRef.current = null;
           });
         }
@@ -1847,6 +1940,41 @@ export function NetworkTopology({
       // Save to history if we were dragging (already saved at touch start)
       if (currentIsTouchDragging && currentTouchDraggedDevice) {
         // no-op: saved at touch start
+      }
+
+      // PERFORMANCE: Sync touch drag positions back to Zustand state
+      const touchFinalPositions = liveDeviceDragPositionsRef.current;
+      if (touchFinalPositions.size > 0) {
+        setDevices(prev => {
+          const newDevices = [...prev];
+          let changed = false;
+          touchFinalPositions.forEach((pos, id) => {
+            const idx = newDevices.findIndex(d => d.id === id);
+            if (idx !== -1) {
+              if (Math.abs(newDevices[idx].x - pos.x) > 0.1 || Math.abs(newDevices[idx].y - pos.y) > 0.1) {
+                newDevices[idx] = { ...newDevices[idx], x: pos.x, y: pos.y };
+                changed = true;
+              }
+            }
+          });
+          return changed ? newDevices : prev;
+        });
+        touchFinalPositions.clear();
+      }
+
+      // Remove GPU will-change hints from touch-dragged devices
+      if (currentIsTouchDragging && liveDeviceDragPositionsRef.current.size === 0) {
+        // will-change already removed above if sync ran
+      } else {
+        const prevTouchIds = [...liveDeviceDragPositionsRef.current.keys()];
+        for (let wi = 0; wi < prevTouchIds.length; wi++) {
+          const we = document.querySelector('[data-device-id="' + prevTouchIds[wi] + '"]') as SVGGElement | null;
+          if (we) {
+            we.style.willChange = '';
+            const ichild = we.querySelector('g');
+            if (ichild) ichild.style.willChange = '';
+          }
+        }
       }
 
       setTouchDraggedDevice(null);
@@ -1891,7 +2019,6 @@ export function NetworkTopology({
     e.stopPropagation();
     if (!canvasRef.current) return;
 
-    const rect = canvasRef.current.getBoundingClientRect();
     const device = deviceMap.get(deviceId);
     if (!device) return;
 
@@ -1962,21 +2089,13 @@ export function NetworkTopology({
         initialPositions[d.id] = { x: d.x, y: d.y };
       }
     });
-    // Update ref immediately so drag logic has correct positions without waiting for state
+    // Store positions in refs immediately (bypass React state for performance)
     dragStartDevicePositionsRef.current = initialPositions;
-    setDragStartDevicePositions(initialPositions);
-
-    // Store the starting position for distance calculation
     dragStartPosRef.current = { x: e.clientX, y: e.clientY };
-    setDragStartPos({ x: e.clientX, y: e.clientY });
     setIsActuallyDragging(false);
     isActuallyDraggingRef.current = false;
     draggedDeviceRef.current = deviceId;
     setDraggedDevice(deviceId);
-    setDragOffset({
-      x: (e.clientX - rect.left - pan.x) - device.x * zoom,
-      y: (e.clientY - rect.top - pan.y) - device.y * zoom,
-    });
   }, [devices, pan, zoom, selectedDeviceIds, onDeviceSelect, pingMode, pingSource]);
 
   const handleDevicePointerDown = useCallback((e: React.PointerEvent<SVGGElement>, deviceId: string) => {
@@ -2753,8 +2872,6 @@ export function NetworkTopology({
     zoomRef.current = zoom;
     panRef.current = pan;
     draggedDeviceRef.current = draggedDevice;
-    dragStartPosRef.current = dragStartPos;
-    dragStartDevicePositionsRef.current = dragStartDevicePositions;
     isActuallyDraggingRef.current = isActuallyDragging;
     snapToGridRef.current = snapToGrid;
     isDrawingConnectionRef.current = isDrawingConnection;
@@ -2775,8 +2892,6 @@ export function NetworkTopology({
     zoom,
     pan,
     draggedDevice,
-    dragStartPos,
-    dragStartDevicePositions,
     isActuallyDragging,
     snapToGrid,
     isDrawingConnection,
@@ -4940,6 +5055,11 @@ export function NetworkTopology({
     };
   }, [getDeviceCenter]);
 
+  // Sync getPortPosition ref for direct DOM connection updates during drag
+  useEffect(() => {
+    getPortPositionRef.current = getPortPosition;
+  }, [getPortPosition]);
+
   const isSwitchDevice = (t: CanvasDevice['type']) => t === 'switchL2' || t === 'switchL3';
 
   // Render device
@@ -6143,6 +6263,7 @@ export function NetworkTopology({
 
     // Use the port position stored in connectionStart.point
     const source = connectionStart.point;
+    const mp = mousePosRef.current;
 
     return (
       <>
@@ -6160,8 +6281,8 @@ export function NetworkTopology({
         <line
           x1={source.x}
           y1={source.y}
-          x2={mousePos.x}
-          y2={mousePos.y}
+          x2={mp.x}
+          y2={mp.y}
           stroke={CABLE_COLORS[cableInfo.cableType].primary}
           strokeWidth={4}
           strokeDasharray="8,4"
@@ -6175,8 +6296,8 @@ export function NetworkTopology({
         <line
           x1={source.x}
           y1={source.y}
-          x2={mousePos.x}
-          y2={mousePos.y}
+          x2={mp.x}
+          y2={mp.y}
           stroke={CABLE_COLORS[cableInfo.cableType].primary}
           strokeWidth={2}
           opacity="1"
@@ -6196,17 +6317,17 @@ export function NetworkTopology({
 
         {/* End point circle */}
         <circle
-          cx={mousePos.x}
-          cy={mousePos.y}
+          cx={mp.x}
+          cy={mp.y}
           r={8}
           fill={CABLE_COLORS[cableInfo.cableType].primary}
           opacity="0.4"
           className="pointer-events-none animate-cable-end"
-          style={{ transformOrigin: `${mousePos.x}px ${mousePos.y}px` }}
+          style={{ transformOrigin: `${mp.x}px ${mp.y}px` }}
         />
 
         {/* Kablo tipi göstergesi */}
-        <g transform={`translate(${(source.x + mousePos.x) / 2}, ${(source.y + mousePos.y) / 2 - 20})`}>
+        <g transform={`translate(${(source.x + mp.x) / 2}, ${(source.y + mp.y) / 2 - 20})`}>
           <rect
             x={-35}
             y={-12}
@@ -7081,7 +7202,7 @@ export function NetworkTopology({
                       <DeviceNode
                         key={device.id}
                         device={device}
-                        isSelected={selectedDeviceIds.includes(device.id) || activeDeviceId === device.id || (pingMode && pingSource?.id === device.id)}
+                        isSelected={selectedDeviceSet.has(device.id) || activeDeviceId === device.id || (pingMode && pingSource?.id === device.id)}
                         isDragging={isCurrentlyDragging}
                         isActive={activeDeviceId === device.id}
                         isDark={isDark}

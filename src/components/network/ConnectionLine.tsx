@@ -141,7 +141,7 @@ export const ConnectionLine = memo(function ConnectionLine({
     : `M ${target.x} ${target.y} C ${controlPoint2.x} ${controlPoint2.y}, ${controlPoint1.x} ${controlPoint1.y}, ${source.x} ${source.y}`;
 
   return (
-    <g>
+    <g data-connection-id={connection.id}>
       {/* Invisible wider path for hover detection */}
       <path
         d={pathD}

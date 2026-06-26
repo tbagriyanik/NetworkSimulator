@@ -18,7 +18,7 @@ import { useDeviceSelection } from '@/hooks/useDeviceSelection';
 import useAppStore, { useTopologyDevices, useTopologyConnections, useTopologyNotes, useZoom, usePan, useActiveTab, useEnvironment } from '@/lib/store/appStore';
 import { cn, normalizeMAC } from '@/lib/utils';
 import { logger } from '@/lib/logger';
-import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType, CanvasPortStatus, FirewallRule } from '@/components/network/networkTopology.types';
+import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType, FirewallRule } from '@/components/network/networkTopology.types';
 import { getPrompt } from '@/lib/network/executor';
 import { formatErrorForUser, errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
 import { generateRandomLinkLocalIpv4 } from '@/lib/network/linkLocal';
@@ -3508,7 +3508,6 @@ ${state.bannerMOTD}
               ...port,
               spanningTree: statePort.spanningTree,
               shutdown: statePort.shutdown,
-              status: statePort.status as CanvasPortStatus,
               portSecurity: statePort.portSecurity
             };
           }
