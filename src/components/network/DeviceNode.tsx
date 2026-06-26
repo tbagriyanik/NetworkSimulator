@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import { CanvasDevice } from './networkTopology.types';
+import { areWifiConfigsEqual } from '@/lib/network/equality';
 
 interface DeviceNodeProps {
   device: CanvasDevice;
@@ -97,7 +98,8 @@ export const DeviceNode = memo(function DeviceNode({
   }
 
   // WiFi config değişmişse re-render et
-  if (JSON.stringify(prevProps.device.wifi) !== JSON.stringify(nextProps.device.wifi)) {
+  // BOLT: Use fast specialized comparison instead of JSON.stringify
+  if (!areWifiConfigsEqual(prevProps.device.wifi, nextProps.device.wifi)) {
     return false;
   }
 

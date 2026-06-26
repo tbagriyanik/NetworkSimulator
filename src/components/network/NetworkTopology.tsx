@@ -27,6 +27,7 @@ import { LazyNetworkTopologyPortSelectorModal } from './LazyNetworkTopologyPortS
 import { useEnvironment } from '@/lib/store/appStore';
 import { Plus, Power, Trash2, Monitor, Network, Laptop, X, Cable, LineSquiggle, Plug, TrendingUpDown } from "lucide-react";
 import { normalizeMAC } from '@/lib/utils';
+import { areArraysEqual } from '@/lib/network/equality';
 import { getDeviceWidth, getDeviceHeight } from './networkTopology.helpers';
 import { CABLE_COLORS, DRAG_THRESHOLD, LONG_PRESS_DURATION, TOOLTIP_DELAY, TOOLTIP_OFFSET_Y, VIRTUAL_CANVAS_WIDTH_MOBILE, VIRTUAL_CANVAS_HEIGHT_MOBILE, VIRTUAL_CANVAS_WIDTH_DESKTOP, VIRTUAL_CANVAS_HEIGHT_DESKTOP, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, NOTE_COLORS, NOTE_FONTS_DESKTOP as NOTE_FONTS, NOTE_FONT_SIZES, NOTE_OPACITY as NOTE_OPACITY_OPTIONS, PC_PORT_SPACING, PORT_SPACING, PORT_START_X, PORT_START_Y, PORT_COLORS, STATUS_COLORS, MOMENTUM_THRESHOLD, MOMENTUM_DECAY, MOMENTUM_MIN_SPEED, SELECTION_HIGHLIGHT_COLOR } from './networkTopology.constants';
 import { errorHandler, CLIPBOARD_ERRORS } from '@/lib/errors/errorHandler';
@@ -1463,7 +1464,8 @@ export function NetworkTopology({
           }).map(d => d.id);
 
           // Update selection instantly for visual feedback
-          if (JSON.stringify(selectedIds) !== JSON.stringify(selectedDeviceIdsRef.current)) {
+          // BOLT: Use fast array equality check instead of JSON.stringify in O(mousemove) path
+          if (!areArraysEqual(selectedIds, selectedDeviceIdsRef.current)) {
             setSelectedDeviceIds(selectedIds);
             selectedDeviceIdsRef.current = selectedIds;
           }
