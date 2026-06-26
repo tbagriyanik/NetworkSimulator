@@ -321,6 +321,17 @@
             "type": "gigabitethernet",
             "allowedVlans": "all"
           },
+          "console": {
+            "id": "console",
+            "name": "",
+            "status": "notconnect",
+            "vlan": 1,
+            "mode": "access",
+            "duplex": "auto",
+            "speed": "auto",
+            "shutdown": false,
+            "type": "console"
+          },
           "vlan1": {
             "id": "vlan1",
             "name": "",
@@ -1165,6 +1176,17 @@
             "shutdown": false,
             "type": "gigabitethernet",
             "allowedVlans": "all"
+          },
+          "console": {
+            "id": "console",
+            "name": "",
+            "status": "notconnect",
+            "vlan": 1,
+            "mode": "access",
+            "duplex": "auto",
+            "speed": "auto",
+            "shutdown": false,
+            "type": "console"
           },
           "vlan1": {
             "id": "vlan1",

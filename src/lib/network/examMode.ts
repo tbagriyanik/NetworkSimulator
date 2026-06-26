@@ -851,7 +851,11 @@ export const getExamProjects = (language: 'tr' | 'en'): ExamProject[] => {
                 { id: 'gi0/0', label: 'Gi0/0', status: 'disconnected' as const },
                 { id: 'gi0/1', label: 'Gi0/1', status: 'disconnected' as const },
                 { id: 'gi0/2', label: 'Gi0/2', status: 'disconnected' as const },
-                { id: 'gi0/3', label: 'Gi0/3', status: 'disconnected' as const }
+                { id: 'gi0/3', label: 'Gi0/3', status: 'disconnected' as const },
+                { id: 's0/0/0', label: 'S0/0/0', status: 'disconnected' as const },
+                { id: 's0/1/0', label: 'S0/1/0', status: 'disconnected' as const },
+                { id: 's0/2/0', label: 'S0/2/0', status: 'disconnected' as const },
+                { id: 'wlan0', label: 'WLAN0', status: 'disconnected' as const }
               ]
             },
             {
@@ -962,14 +966,15 @@ export const getExamProjects = (language: 'tr' | 'en'): ExamProject[] => {
                 { id: 'gi1/1/1', label: 'Gi1/1/1', status: 'disconnected' as const },
                 { id: 'gi1/1/2', label: 'Gi1/1/2', status: 'disconnected' as const },
                 { id: 'gi1/1/3', label: 'Gi1/1/3', status: 'disconnected' as const },
-                { id: 'gi1/1/4', label: 'Gi1/1/4', status: 'disconnected' as const }
-              ]
-            }
-          ],
-          connections: [],
-          notes: []
-        },
-        activeDeviceId: 'l3-1',
+              { id: 'gi1/1/4', label: 'Gi1/1/4', status: 'disconnected' as const },
+              { id: 'wlan0', label: 'WLAN0', status: 'disconnected' as const }
+                ]
+              }
+            ],
+            connections: [],
+            notes: []
+          },
+          activeDeviceId: 'l3-1',
         activeDeviceType: 'switchL3',
         activeTab: 'topology',
         zoom: 1,
@@ -1011,7 +1016,14 @@ export const getExamProjects = (language: 'tr' | 'en'): ExamProject[] => {
               y: 200,
               status: 'online',
               ports: [
-                { id: 'gi0/1', label: 'Gi0/1', status: 'disconnected' as const }
+                ...Array.from({ length: 24 }, (_, i) => ({
+                  id: `fa0/${i + 1}`,
+                  label: `Fa0/${i + 1}`,
+                  status: 'disconnected' as const
+                })),
+                { id: 'console', label: 'Console', status: 'disconnected' as const },
+                { id: 'gi0/1', label: 'Gi0/1', status: 'disconnected' as const },
+                { id: 'gi0/2', label: 'Gi0/2', status: 'disconnected' as const }
               ]
             },
             {
@@ -1024,7 +1036,14 @@ export const getExamProjects = (language: 'tr' | 'en'): ExamProject[] => {
               y: 200,
               status: 'online',
               ports: [
-                { id: 'gi0/1', label: 'Gi0/1', status: 'disconnected' as const }
+                ...Array.from({ length: 24 }, (_, i) => ({
+                  id: `fa0/${i + 1}`,
+                  label: `Fa0/${i + 1}`,
+                  status: 'disconnected' as const
+                })),
+                { id: 'console', label: 'Console', status: 'disconnected' as const },
+                { id: 'gi0/1', label: 'Gi0/1', status: 'disconnected' as const },
+                { id: 'gi0/2', label: 'Gi0/2', status: 'disconnected' as const }
               ]
             }
           ],
@@ -1073,7 +1092,15 @@ export const getExamProjects = (language: 'tr' | 'en'): ExamProject[] => {
               y: 200,
               status: 'online',
               ports: [
-                { id: 'gi0/0', label: 'Gi0/0', status: 'disconnected' as const }
+                { id: 'console', label: 'Console', status: 'disconnected' as const },
+                { id: 'gi0/0', label: 'Gi0/0', status: 'disconnected' as const },
+                { id: 'gi0/1', label: 'Gi0/1', status: 'disconnected' as const },
+                { id: 'gi0/2', label: 'Gi0/2', status: 'disconnected' as const },
+                { id: 'gi0/3', label: 'Gi0/3', status: 'disconnected' as const },
+                { id: 's0/0/0', label: 'S0/0/0', status: 'disconnected' as const },
+                { id: 's0/1/0', label: 'S0/1/0', status: 'disconnected' as const },
+                { id: 's0/2/0', label: 'S0/2/0', status: 'disconnected' as const },
+                { id: 'wlan0', label: 'WLAN0', status: 'disconnected' as const }
               ]
             }
           ],

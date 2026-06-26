@@ -697,6 +697,12 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       label: 'S0/1/0',
       status: 'disconnected',
       macAddress: greenhouseDevices[1].ports.find(p => p.id === 's0/1/0')?.macAddress
+    },
+    {
+      id: 's0/2/0',
+      label: 'S0/2/0',
+      status: 'disconnected',
+      macAddress: greenhouseDevices[1].ports.find(p => p.id === 's0/2/0')?.macAddress
     }
   ];
 
