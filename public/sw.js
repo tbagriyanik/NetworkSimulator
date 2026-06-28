@@ -10,6 +10,7 @@ const PRECACHE_ASSETS = [
   '/icon192.svg',
   '/icon512.svg',
   '/favicon.svg',
+  '/app.png',
 ];
 
 // Install event - pre-cache static assets and activate immediately
@@ -71,6 +72,17 @@ function getCacheStrategy(request) {
   return 'network-first';
 }
 
+// Special handling for topology data & projects
+function isAppContent(url) {
+  const path = url.pathname;
+  return (
+    path.includes('/exampleProjects') ||
+    path.includes('/guidedMode') ||
+    path.includes('/examMode') ||
+    path.endsWith('.json')
+  );
+}
+
 // Cache-first: respond from cache, fall back to network
 async function cacheFirst(request) {
   const cached = await caches.match(request);
@@ -130,7 +142,20 @@ async function staleWhileRevalidate(request) {
 // Fetch event - route requests to appropriate strategy
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
-  if (event.request.url.includes('/api/')) return;
+
+  const url = new URL(event.request.url);
+
+  // API requests: network-first, no dynamic cache put for sensitive data
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(fetch(event.request).catch(() => new Response('Offline', { status: 408 })));
+    return;
+  }
+
+  // Topology data and projects: stale-while-revalidate for fast loading and offline access
+  if (isAppContent(url)) {
+    event.respondWith(staleWhileRevalidate(event.request));
+    return;
+  }
 
   const strategy = getCacheStrategy(event.request);
   switch (strategy) {

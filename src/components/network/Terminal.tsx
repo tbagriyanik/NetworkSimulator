@@ -32,6 +32,22 @@ export interface TerminalOutput {
 
 export const BOOT_PROGRESS_MARKER = '\x00BOOT_PROGRESS\x00';
 
+const QUICK_COMMANDS: Record<string, string[]> = {
+  user: ['enable', 'show ip int brief', 'show version', 'ping '],
+  privileged: ['conf t', 'show run', 'show ip route', 'show mac address-table', 'show vlan brief', 'wr', 'disable', 'exit'],
+  config: ['int fa0/1', 'int gi0/1', 'vlan ', 'ip dhcp pool ', 'router ospf 1', 'hostname ', 'exit', 'end'],
+  interface: ['ip add ', 'no shut', 'switchport mode access', 'switchport mode trunk', 'switchport access vlan ', 'exit', 'end'],
+  'config-if-range': ['switchport mode access', 'switchport access vlan ', 'no shut', 'exit', 'end'],
+  line: ['password ', 'login', 'exit', 'end'],
+  vlan: ['name ', 'exit', 'end'],
+  'router-config': ['network ', 'passive-interface ', 'exit', 'end'],
+  'dhcp-config': ['network ', 'default-router ', 'dns-server ', 'exit', 'end'],
+  'config-std-nacl': ['permit ', 'deny ', 'exit', 'end'],
+  'config-ext-nacl': ['permit ', 'deny ', 'exit', 'end'],
+  pc: ['ipconfig', 'ping ', 'tracert ', 'nslookup ', 'telnet ', 'ssh ', 'help', 'cls'],
+  iot: ['help', 'cls']
+};
+
 // Global set — animasyon tamamlanan boot id'lerini tutar, tab değişiminde sıfırlanmaz
 const completedBootIds = new Set<string>();
 
@@ -134,6 +150,22 @@ export function Terminal({
   const [fontSize, setFontSize] = useState<number>(() => {
     try { return parseInt(localStorage.getItem('terminal-font-size') || '13', 10); } catch { return 13; }
   });
+
+  // Mobile virtual keyboard height handling
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return;
+
+    const handleResize = () => {
+      if (!window.visualViewport) return;
+      const height = window.innerHeight - window.visualViewport.height;
+      setKeyboardHeight(Math.max(0, height));
+    };
+
+    window.visualViewport.addEventListener('resize', handleResize);
+    return () => window.visualViewport?.removeEventListener('resize', handleResize);
+  }, []);
 
   // State for displaying output
   const [displayedLines, setDisplayedLines] = useState<Array<{ id: string, type: string, content: string, prompt?: string, realismLevel?: 'real' | 'stub' | 'sim-only', hint?: string | { tr: string; en: string } }>>(() => {
@@ -662,6 +694,16 @@ export function Terminal({
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     void handleSubmit();
+  };
+
+  const handleQuickCommand = (cmd: string) => {
+    if (cmd.endsWith(' ')) {
+      setInput(cmd);
+      inputRef.current?.focus();
+    } else {
+      setInput('');
+      void handleSubmit(cmd);
+    }
   };
 
   const handlePaste = useCallback((e: ClipboardEvent<HTMLInputElement>) => {
@@ -1284,7 +1326,10 @@ export function Terminal({
               isMobile ? "mobile-scroll p-3 pb-36" : "p-6 pb-32",
               isPoweredOff ? "bg-black" : (isDark ? "bg-black" : "bg-slate-50")
             )}
-            style={{ fontSize: `${fontSize}px` }}
+            style={{
+              fontSize: `${fontSize}px`,
+              paddingBottom: isMobile && keyboardHeight > 0 ? `${keyboardHeight + 20}px` : undefined
+            }}
           >
             {isPoweredOff ? (
               <div className="h-full flex flex-col items-center justify-center gap-3">
@@ -1365,8 +1410,33 @@ export function Terminal({
           {!isPoweredOff && (
             <div onClick={() => inputRef.current?.focus()} className={cn(
               "absolute inset-x-0 bottom-0 z-20 border-t bg-muted/95 backdrop-blur-sm",
-              isMobile ? "p-2" : "p-3"
+              isMobile ? "p-2 pb-safe" : "p-3"
             )}>
+              {isMobile && !state.awaitingPassword && !confirmDialog?.show && (
+                <div className="flex gap-1.5 overflow-x-auto pb-2 mb-1 px-1 no-scrollbar">
+                  {(device?.type === 'pc' ? QUICK_COMMANDS.pc : device?.type === 'iot' ? QUICK_COMMANDS.iot : QUICK_COMMANDS[state.currentMode] || []).map((cmd) => (
+                    <Button
+                      key={cmd}
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      className={cn(
+                        "h-8 px-3 text-[11px] font-bold tracking-tight whitespace-nowrap rounded-lg flex-shrink-0 border shadow-sm",
+                        isDark
+                          ? "bg-slate-800/80 border-slate-700 text-slate-300 active:bg-slate-700"
+                          : "bg-white border-slate-200 text-slate-600 active:bg-slate-100"
+                      )}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleQuickCommand(cmd);
+                      }}
+                    >
+                      {cmd.trim()}
+                    </Button>
+                  ))}
+                </div>
+              )}
               <form onSubmit={handleFormSubmit} className="flex items-center gap-3 relative">
                 {/* Contextual hint above input for confirm/reload states */}
                 {(confirmDialog?.show || isReloadConfirmationPending) && helpLevel !== 'exam' && (

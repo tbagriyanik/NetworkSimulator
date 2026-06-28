@@ -63,8 +63,12 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="NetSim" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icon192.svg" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/icon192.svg" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icon192.svg" />
+        <link rel="apple-touch-icon" sizes="167x167" href="/icon192.svg" />
       </head>
       <body
         className={`${inriaSans.variable} ${geistMono.variable} antialiased`}

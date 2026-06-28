@@ -12,6 +12,8 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNetworkRefreshWithPositions } from '@/hooks/useNetworkRefreshWithPositions';
 import { useSpatialPartitioning } from '@/lib/performance/spatial';
+import { toast } from "@/hooks/use-toast";
+import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TooltipWrapper } from "@/components/ui/TooltipWrapper";
@@ -775,6 +777,7 @@ export function NetworkTopology({
 
   // UI state
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
 
 
   // Touch/Mobile state
@@ -792,6 +795,9 @@ export function NetworkTopology({
 
   // Advanced Canvas Pan/Zoom Touch state
   const [lastTouchCenter, setLastTouchCenter] = useState<{ x: number; y: number } | null>(null);
+
+  // Tap-tap connection state
+  const [mobileConnectionSource, setMobileConnectionSource] = useState<string | null>(null);
 
   // Ping and port selector state
   const [showPortSelector, setShowPortSelector] = useState(false);
@@ -2310,6 +2316,29 @@ export function NetworkTopology({
   const handleDeviceTouchEnd = useCallback(() => {
     // If we weren't dragging, treat it as a tap (select)
     if (touchDraggedDevice && !isTouchDragging) {
+      const deviceId = touchDraggedDevice.id;
+
+      // Tap-tap connection logic
+      if (isMobile && !isDrawingConnection) {
+        if (!mobileConnectionSource) {
+          setMobileConnectionSource(deviceId);
+          toast({
+            title: isTR ? "Bağlantı Başlatıldı" : "Connection Started",
+            description: isTR ? "Hedef cihazı seçin." : "Select the target device.",
+            duration: 3000,
+          });
+        } else if (mobileConnectionSource !== deviceId) {
+          // Second tap on different device: trigger port selector
+          setSelectedSourcePort({ deviceId: mobileConnectionSource, portId: '' });
+          setPortSelectorStep('source'); // Start with source port for the first device
+          setShowPortSelector(true);
+          setMobileConnectionSource(null);
+        } else {
+          // Tap same device again: cancel
+          setMobileConnectionSource(null);
+        }
+      }
+
       // touchDraggedDevice is already CanvasDevice, no need to find again
       setSelectedDeviceIds([touchDraggedDevice.id]);
       onDeviceSelect(touchDraggedDevice.type, touchDraggedDevice.id, isSwitchDeviceType(touchDraggedDevice.type) ? touchDraggedDevice.switchModel : undefined, touchDraggedDevice.name);
@@ -7337,7 +7366,7 @@ export function NetworkTopology({
                       <DeviceNode
                         key={device.id}
                         device={device}
-                        isSelected={selectedDeviceSet.has(device.id) || activeDeviceId === device.id || (pingMode && pingSource?.id === device.id)}
+                        isSelected={selectedDeviceSet.has(device.id) || activeDeviceId === device.id || (pingMode && pingSource?.id === device.id) || (mobileConnectionSource === device.id)}
                         isDragging={isCurrentlyDragging}
                         isActive={activeDeviceId === device.id}
                         isDark={isDark}
@@ -7785,6 +7814,20 @@ export function NetworkTopology({
             </svg>
           </div>
 
+
+          {/* Mobile FAB for Device Addition */}
+          {isMobile && !isExamActive && (
+            <div className="fixed bottom-[110px] right-[10px] z-40 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <Button
+                onClick={() => setMobilePaletteOpen(true)}
+                size="icon"
+                className="w-12 h-12 rounded-full shadow-2xl bg-primary text-white hover:scale-105 active:scale-95 transition-all flex items-center justify-center border-2 border-white/20"
+                aria-label={t.addDevice}
+              >
+                <Plus className="w-6 h-6" />
+              </Button>
+            </div>
+          )}
 
           {/* Zoom Controls - Mobile Float - Above Footer */}
           <div
@@ -8505,6 +8548,46 @@ export function NetworkTopology({
           </div>
         </div>
       )}
+
+      {/* Mobile Device Palette Sheet */}
+      <Sheet open={mobilePaletteOpen} onOpenChange={setMobilePaletteOpen}>
+        <SheetContent side="bottom" className="rounded-t-[2rem] px-6 pb-10 border-t-2 border-primary/20 bg-background/95 backdrop-blur-xl">
+          <SheetHeader className="mb-6 pt-2">
+            <SheetTitle className="text-center font-black tracking-tighter text-2xl uppercase">
+              {t.addDevice}
+            </SheetTitle>
+          </SheetHeader>
+          <div className="grid grid-cols-3 gap-4 max-w-sm mx-auto">
+            {[
+              { type: 'pc', label: 'PC', icon: DEVICE_ICONS.pc },
+              { type: 'switch', label: 'L2 SW', layer: 'L2', icon: DEVICE_ICONS.switchL2 },
+              { type: 'switch', label: 'L3 SW', layer: 'L3', icon: DEVICE_ICONS.switchL3 },
+              { type: 'router', label: 'Router', icon: DEVICE_ICONS.router },
+              { type: 'firewall', label: 'Firewall', icon: DEVICE_ICONS.firewall },
+              { type: 'iot', label: 'IoT', icon: DEVICE_ICONS.iot },
+              { type: 'wlc', label: 'WLC', icon: DEVICE_ICONS.wlc },
+            ].map((item) => (
+              <button
+                key={`${item.type}-${item.layer || ''}`}
+                onClick={() => {
+                  addDevice(item.type as any, item.layer as any);
+                  setMobilePaletteOpen(false);
+                }}
+                className={`flex flex-col items-center gap-2 p-4 rounded-2xl transition-all active:scale-95 ${
+                  isDark ? 'bg-slate-800/50 hover:bg-slate-800' : 'bg-slate-100 hover:bg-slate-200'
+                }`}
+              >
+                <div className="w-10 h-10 flex items-center justify-center">
+                  {item.icon}
+                </div>
+                <span className="text-[10px] font-black tracking-widest uppercase opacity-70">
+                  {item.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        </SheetContent>
+      </Sheet>
 
       <LazyNetworkTopologyPortSelectorModal
         isOpen={showPortSelector}
