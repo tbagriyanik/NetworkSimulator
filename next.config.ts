@@ -21,9 +21,10 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   async headers() {
     const isProd = process.env.NODE_ENV === "production";
-    const scriptSrc = isProd
-      ? "script-src 'self' blob:"
-      : "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:";
+    // script-src will be injected by middleware with a per‑request nonce
+  const scriptSrc = isProd
+    ? "script-src 'self' blob:"
+    : "script-src 'self' 'unsafe-eval' blob:";
 
     const csp = [
       "default-src 'self'",
@@ -67,9 +68,7 @@ const nextConfig: NextConfig = {
           { key: "X-Frame-Options", value: "DENY" },
           { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
           { key: "X-Content-Type-Options", value: "nosniff" },
-          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          { key: "Content-Security-Policy", value: csp },
-          { key: "Content-Security-Policy-Report-Only", value: cspReportOnlyProd },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" }
         ],
       },
     ];

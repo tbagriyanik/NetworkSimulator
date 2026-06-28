@@ -72,9 +72,28 @@ function ErrorFallback({
   fallbackDescription,
   onReset,
 }: ErrorFallbackProps) {
-  const { theme } = useTheme();
-  const { language } = useLanguage();
-  const isDark = theme === 'dark';
+  let theme = 'dark';
+  let language = 'en';
+
+  try {
+    const themeContext = useTheme();
+    if (themeContext) {
+      theme = themeContext.theme;
+    }
+  } catch (e) {
+    // Ignore error if context is not available
+  }
+
+  try {
+    const languageContext = useLanguage();
+    if (languageContext) {
+      language = languageContext.language;
+    }
+  } catch (e) {
+    // Ignore error if context is not available
+  }
+
+  const isDark = theme === 'dark' || theme === 'high-contrast';
 
   return (
     <div
