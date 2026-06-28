@@ -684,6 +684,139 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     return () => window.removeEventListener('packet-captured', handlePacketCaptured);
   }, [addCapturedPacket]);
 
+  // Project summary note generator
+  useEffect(() => {
+    const handleGenerateSummaryNote = () => {
+      let text = `--- ${language === 'tr' ? 'PROJE ÖZETİ' : 'PROJECT SUMMARY'} ---\n`;
+      text += `${language === 'tr' ? 'Proje Adı' : 'Project Name'}: ${projectName}\n`;
+      
+      if (isGuidedModeActive && activeGuidedProject) {
+        text += `\n${language === 'tr' ? 'Rehberli Proje Adımları' : 'Guided Project Steps'}:\n`;
+        activeGuidedProject.steps.forEach((step, idx) => {
+          const isCompleted = idx < guidedStepIndex;
+          const statusChar = isCompleted ? '[x]' : '[ ]';
+          text += `${statusChar} ${step.title} (${step.points || 0} ${language === 'tr' ? 'Puan' : 'Pts'})\n`;
+        });
+        text += `\n${language === 'tr' ? 'İlerleme' : 'Progress'}: ${guidedStepIndex}/${activeGuidedProject.steps.length} ${language === 'tr' ? 'Adım' : 'Steps'} (${currentPoints}/${totalPoints} ${language === 'tr' ? 'Puan' : 'Pts'})\n`;
+      } else if (isExamActive && activeExam) {
+        text += `\n${language === 'tr' ? 'Sınav Görevleri' : 'Exam Tasks'}:\n`;
+        const completedCount = activeExam.tasks.filter(t => t.completed).length;
+        activeExam.tasks.forEach((task) => {
+          const statusChar = task.completed ? '[x]' : '[ ]';
+          const taskDesc = task.description[language] || task.description.en || '';
+          text += `${statusChar} ${taskDesc} (${task.weight || 0} ${language === 'tr' ? 'Puan' : 'Pts'})\n`;
+        });
+        const currentExamPoints = activeExam.tasks.filter(t => t.completed).reduce((acc, t) => acc + (t.weight || 0), 0);
+        const totalExamPoints = activeExam.tasks.reduce((acc, t) => acc + (t.weight || 0), 0);
+        text += `\n${language === 'tr' ? 'İlerleme' : 'Progress'}: ${completedCount}/${activeExam.tasks.length} ${language === 'tr' ? 'Görev' : 'Tasks'} (${currentExamPoints}/${totalExamPoints} ${language === 'tr' ? 'Puan' : 'Pts'})\n`;
+      } else {
+        text += `\n${language === 'tr' ? 'Mod' : 'Mode'}: ${language === 'tr' ? 'Serbest Çalışma (Sandbox)' : 'Free Sandbox'}\n`;
+      }
+
+      text += `\n--- ${language === 'tr' ? 'AĞ BİLGİLERİ' : 'NETWORK DETAILS'} ---\n`;
+      text += `${language === 'tr' ? 'Cihaz Sayısı' : 'Devices'}: ${topologyDevices.length}\n`;
+      text += `${language === 'tr' ? 'Bağlantı Sayısı' : 'Connections'}: ${topologyConnections.length}\n`;
+
+      if (topologyDevices.length > 0) {
+        text += `\n${language === 'tr' ? 'Cihaz Listesi' : 'Device List'}:\n`;
+        topologyDevices.forEach(d => {
+          text += `- ${d.name} (${d.type.toUpperCase()}) ${d.ip ? `IP: ${d.ip}` : ''} [${d.status === 'offline' ? (language === 'tr' ? 'Çevrimdışı' : 'Offline') : (language === 'tr' ? 'Çevrimiçi' : 'Online')}]\n`;
+        });
+
+        text += `\n--- ${language === 'tr' ? 'CİHAZ KONFİGÜRASYONLARI' : 'DEVICE CONFIGURATIONS'} ---\n`;
+        topologyDevices.forEach(d => {
+          text += `\n* ${d.name} (${d.type.toUpperCase()}):\n`;
+          if (d.type === 'pc' || d.type === 'iot') {
+            text += `  - ${language === 'tr' ? 'IP Modu' : 'IP Mode'}: ${d.ipConfigMode === 'dhcp' ? 'DHCP' : 'Static'}\n`;
+            if (d.ip) text += `  - IPv4: ${d.ip} / ${d.subnet || '255.255.255.0'}\n`;
+            if (d.ipv6) text += `  - IPv6: ${d.ipv6}/${d.ipv6Prefix || '64'}\n`;
+            if (d.gateway) text += `  - ${language === 'tr' ? 'Varsayılan Ağ Geçidi' : 'Default Gateway'}: ${d.gateway}\n`;
+            if (d.dns) text += `  - DNS: ${d.dns}\n`;
+            if (d.wifi?.enabled) {
+              text += `  - WiFi: ${d.wifi.ssid} (${d.wifi.mode === 'ap' ? 'AP' : 'Client'}, ${d.wifi.security})\n`;
+            }
+            const sList: string[] = [];
+            if (d.services?.dhcp?.enabled) sList.push('DHCP');
+            if (d.services?.dns?.enabled) sList.push('DNS');
+            if (d.services?.http?.enabled) sList.push('HTTP');
+            if (sList.length > 0) {
+              text += `  - ${language === 'tr' ? 'Servisler' : 'Services'}: ${sList.join(', ')}\n`;
+            }
+          } else {
+            const state = deviceStates?.get(d.id);
+            if (state) {
+              text += `  - Hostname: ${state.hostname || d.name}\n`;
+              if (state.defaultGateway) text += `  - ${language === 'tr' ? 'Varsayılan Ağ Geçidi' : 'Default Gateway'}: ${state.defaultGateway}\n`;
+              if (state.dnsServer) text += `  - DNS Server: ${state.dnsServer}\n`;
+              if (state.domainName) text += `  - Domain: ${state.domainName}\n`;
+              
+              const activePorts = Object.entries(state.ports).filter(([_, port]) => {
+                return port.ipAddress || port.shutdown || port.mode === 'trunk' || (port.accessVlan !== undefined && port.accessVlan !== 1) || port.portSecurity?.enabled;
+              });
+              
+              if (activePorts.length > 0) {
+                text += `  - ${language === 'tr' ? 'Port Konfigürasyonları' : 'Port Configurations'}:\n`;
+                activePorts.forEach(([portId, port]) => {
+                  const portDetails = [];
+                  if (port.shutdown) portDetails.push(language === 'tr' ? 'Kapalı' : 'Shutdown');
+                  if (port.ipAddress) portDetails.push(`IP: ${port.ipAddress}/${port.subnetMask || '24'}`);
+                  if (port.mode === 'trunk') portDetails.push('Trunk');
+                  else if (port.accessVlan && port.accessVlan !== 1) portDetails.push(`VLAN: ${port.accessVlan}`);
+                  if (port.portSecurity?.enabled) portDetails.push('Port-Security');
+                  text += `    * ${portId}: ${portDetails.join(', ') || 'Default'}\n`;
+                });
+              }
+              const vlanIds = Object.keys(state.vlans || {}).filter(v => v !== '1');
+              if (vlanIds.length > 0) {
+                text += `  - VLANs: ${vlanIds.join(', ')}\n`;
+              }
+            } else {
+              text += `  - ${language === 'tr' ? 'Konfigürasyon' : 'Configuration'}: ${language === 'tr' ? 'Henüz yüklenmedi' : 'Not loaded'}\n`;
+            }
+          }
+        });
+      }
+
+      const id = `note-${Date.now()}`;
+      const newNote: CanvasNote = {
+        id,
+        text,
+        x: 150,
+        y: 150,
+        width: 380,
+        height: 320,
+        color: '#E0F2FE', // light blue note color for summary
+        opacity: 1,
+        font: 'sans-serif',
+        fontSize: 12,
+      };
+      setNotes((prev) => [...prev, newNote]);
+      
+      toast({
+        title: language === 'tr' ? 'Özet Notu Oluşturuldu' : 'Summary Note Created',
+        description: language === 'tr' ? 'Proje adımları, ağ ve konfigürasyon özeti not olarak topolojiye eklendi.' : 'Project steps, network and config summary added to the topology as a note.',
+        variant: 'default',
+      });
+    };
+
+    window.addEventListener('trigger-topology-generate-summary-note', handleGenerateSummaryNote);
+    return () => window.removeEventListener('trigger-topology-generate-summary-note', handleGenerateSummaryNote);
+  }, [
+    language,
+    projectName,
+    isGuidedModeActive,
+    activeGuidedProject,
+    guidedStepIndex,
+    currentPoints,
+    totalPoints,
+    isExamActive,
+    activeExam,
+    topologyDevices,
+    topologyConnections,
+    deviceStates,
+    setNotes
+  ]);
+
   // Navigation hook (provides history management, device selection, focus)
   const nav = useAppNavigation({
     setActiveTab: (tab: TabType) => setActiveTab(tab),
