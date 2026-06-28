@@ -2960,7 +2960,7 @@ export function NetworkTopology({
       width: 200,
       height: 150,
       text: t.newNote,
-      color: '#fef3c7',
+      color: 'var(--color-warning-200)',
       font: 'Arial',
       fontSize: 12,
       opacity: 1,
@@ -3003,16 +3003,16 @@ export function NetworkTopology({
     // Build type-specific simplified SVG body for culled devices
     const addSimplifiedDevice = (device: CanvasDevice) => {
       const c = (() => {
-        const map: Record<string, { fill: string; stroke: string; text: string }> = {
-          pc: { fill: isDark ? '#1e3a8a' : '#bfdbfe', stroke: isDark ? '#3b82f6' : '#93c5fd', text: isDark ? '#fff' : '#000' },
-          iot: { fill: isDark ? '#9a3412' : '#fed7aa', stroke: isDark ? '#f97316' : '#fdba74', text: isDark ? '#fff' : '#000' },
-          switch: { fill: isDark ? '#155e75' : '#a5f3fc', stroke: isDark ? '#06b6d4' : '#67e8f9', text: isDark ? '#fff' : '#000' },
-          switchL2: { fill: isDark ? '#155e75' : '#a5f3fc', stroke: isDark ? '#06b6d4' : '#67e8f9', text: isDark ? '#fff' : '#000' },
-          switchL3: { fill: isDark ? '#155e75' : '#a5f3fc', stroke: isDark ? '#06b6d4' : '#67e8f9', text: isDark ? '#fff' : '#000' },
-          router: { fill: isDark ? '#5b21b6' : '#ddd6fe', stroke: isDark ? '#a855f7' : '#c4b5fd', text: isDark ? '#fff' : '#000' },
-          firewall: { fill: isDark ? '#991b1b' : '#fecaca', stroke: isDark ? '#ef4444' : '#fca5a5', text: isDark ? '#fff' : '#000' },
-          wlc: { fill: isDark ? '#854d0e' : '#fef9c3', stroke: isDark ? '#eab308' : '#fde047', text: isDark ? '#fff' : '#000' },
-        };
+const map: Record<string, { fill: string; stroke: string; text: string }> = {
+           pc: { fill: isDark ? 'var(--color-primary-800)' : 'var(--color-primary-200)', stroke: isDark ? 'var(--color-primary-500)' : 'var(--color-primary-300)', text: isDark ? 'var(--color-secondary-100)' : 'var(--color-secondary-800)' },
+           iot: { fill: isDark ? 'var(--color-secondary-800)' : 'var(--color-secondary-200)', stroke: isDark ? 'var(--color-secondary-500)' : 'var(--color-secondary-300)', text: isDark ? 'var(--color-secondary-100)' : 'var(--color-secondary-800)' },
+           switch: { fill: isDark ? 'var(--color-accent-800)' : 'var(--color-accent-200)', stroke: isDark ? 'var(--color-accent-500)' : 'var(--color-accent-300)', text: isDark ? 'var(--color-secondary-100)' : 'var(--color-secondary-800)' },
+           switchL2: { fill: isDark ? 'var(--color-accent-800)' : 'var(--color-accent-200)', stroke: isDark ? 'var(--color-accent-500)' : 'var(--color-accent-300)', text: isDark ? 'var(--color-secondary-100)' : 'var(--color-secondary-800)' },
+           switchL3: { fill: isDark ? 'var(--color-accent-800)' : 'var(--color-accent-200)', stroke: isDark ? 'var(--color-accent-500)' : 'var(--color-accent-300)', text: isDark ? 'var(--color-secondary-100)' : 'var(--color-secondary-800)' },
+           router: { fill: isDark ? 'var(--color-warning-700)' : 'var(--color-warning-200)', stroke: isDark ? 'var(--color-warning-500)' : 'var(--color-warning-400)', text: isDark ? 'var(--color-secondary-100)' : 'var(--color-secondary-800)' },
+           firewall: { fill: isDark ? 'var(--color-error-800)' : 'var(--color-error-200)', stroke: isDark ? 'var(--color-error-500)' : 'var(--color-error-300)', text: isDark ? 'var(--color-secondary-100)' : 'var(--color-secondary-800)' },
+           wlc: { fill: isDark ? 'var(--color-warning-800)' : 'var(--color-warning-200)', stroke: isDark ? 'var(--color-warning-400)' : 'var(--color-warning-300)', text: isDark ? 'var(--color-secondary-100)' : 'var(--color-secondary-800)' },
+         };
         return map[device.type] || map.pc;
       })();
       const dw = 100;
@@ -3118,8 +3118,8 @@ export function NetworkTopology({
         const halo = document.createElementNS(ns, 'text');
         halo.setAttribute('x', pos.x.toString());
         halo.setAttribute('y', (pos.y + labelOffsetY).toString());
-        halo.setAttribute('fill', isDark ? '#0f172a' : '#ffffff');
-        halo.setAttribute('stroke', isDark ? '#0f172a' : '#ffffff');
+        halo.setAttribute('fill', isDark ? 'var(--color-secondary-900)' : 'var(--color-secondary-100)');
+        halo.setAttribute('stroke', isDark ? 'var(--color-secondary-900)' : 'var(--color-secondary-100)');
         halo.setAttribute('stroke-width', '3');
         halo.setAttribute('stroke-linejoin', 'round');
         halo.setAttribute('font-size', '9');
@@ -3190,8 +3190,8 @@ export function NetworkTopology({
       clone.appendChild(g);
     });
 
-    // Set background
-    const bg = isDark ? '#0d1728' : '#dde8f4';
+// Set background
+     const bg = isDark ? 'var(--color-secondary-800)' : 'var(--color-secondary-200)';
     clone.style.backgroundColor = bg;
 
     // Reset transform on the main content group
@@ -3322,19 +3322,19 @@ export function NetworkTopology({
 
   const getNoteGradientFill = useCallback((color: string) => {
     const colorToGradientMap: Record<string, string> = {
-      '#3b82f6': isDark ? 'url(#noteBlueDark)' : 'url(#noteBlueLight)',
-      '#10b981': isDark ? 'url(#noteEmeraldDark)' : 'url(#noteEmeraldLight)',
-      '#8b5cf6': isDark ? 'url(#noteVioletDark)' : 'url(#noteVioletLight)',
-      '#f59e0b': isDark ? 'url(#noteAmberDark)' : 'url(#noteAmberLight)',
-      '#ef4444': isDark ? 'url(#noteRedDark)' : 'url(#noteRedLight)',
-      '#06b6d4': isDark ? 'url(#noteCyanDark)' : 'url(#noteCyanLight)',
-      '#ec4899': isDark ? 'url(#notePinkDark)' : 'url(#notePinkLight)',
-      '#f97316': isDark ? 'url(#noteOrangeDark)' : 'url(#noteOrangeLight)',
-      '#84cc16': isDark ? 'url(#noteLimeDark)' : 'url(#noteLimeLight)',
-      '#64748b': isDark ? 'url(#noteSlateDark)' : 'url(#noteSlateLight)',
-      '#a78bfa': isDark ? 'url(#notePurpleDark)' : 'url(#notePurpleLight)',
-      '#60a5fa': isDark ? 'url(#noteLightBlueDark)' : 'url(#noteLightBlueLight)',
-      '#4ade80': isDark ? 'url(#noteLightGreenDark)' : 'url(#noteLightGreenLight)',
+      'var(--color-primary-500)': isDark ? 'url(#noteBlueDark)' : 'url(#noteBlueLight)',
+      'var(--color-success-500)': isDark ? 'url(#noteEmeraldDark)' : 'url(#noteEmeraldLight)',
+      'var(--color-warning-600)': isDark ? 'url(#noteVioletDark)' : 'url(#noteVioletLight)',
+      'var(--color-warning-400)': isDark ? 'url(#noteAmberDark)' : 'url(#noteAmberLight)',
+      'var(--color-error-500)': isDark ? 'url(#noteRedDark)' : 'url(#noteRedLight)',
+      'var(--color-accent-500)': isDark ? 'url(#noteCyanDark)' : 'url(#noteCyanLight)',
+      'var(--color-accent-600)': isDark ? 'url(#notePinkDark)' : 'url(#notePinkLight)',
+      'var(--color-secondary-500)': isDark ? 'url(#noteOrangeDark)' : 'url(#noteOrangeLight)',
+      'var(--color-success-600)': isDark ? 'url(#noteLimeDark)' : 'url(#noteLimeLight)',
+      'var(--color-secondary-400)': isDark ? 'url(#noteSlateDark)' : 'url(#noteSlateLight)',
+      'var(--color-warning-700)': isDark ? 'url(#notePurpleDark)' : 'url(#notePurpleLight)',
+      'var(--color-primary-400)': isDark ? 'url(#noteLightBlueDark)' : 'url(#noteLightBlueLight)',
+      'var(--color-success-400)': isDark ? 'url(#noteLightGreenDark)' : 'url(#noteLightGreenLight)',
     };
     return colorToGradientMap[color] || color;
   }, [isDark]);
@@ -5475,25 +5475,25 @@ export function NetworkTopology({
     const iconColor = isPoweredOff
       ? STATUS_COLORS.offline
       : (hasConnection
-        ? (isSwitchDevice(device.type) && device.switchModel === 'WS-C3650-24PS' ? '#a855f7' : STATUS_COLORS.online)
+        ? (isSwitchDevice(device.type) && device.switchModel === 'WS-C3650-24PS' ? 'var(--color-warning-500)' : STATUS_COLORS.online)
         : (device.type === 'pc'
-          ? '#3b82f6'
+          ? 'var(--color-primary-500)'
           : device.type === 'iot'
-            ? '#f97316'
+            ? 'var(--color-secondary-500)'
             : isSwitchDevice(device.type)
-              ? (device.switchModel === 'WS-C3650-24PS' ? '#a855f7' : STATUS_COLORS.online)
-              : '#a855f7'));
+              ? (device.switchModel === 'WS-C3650-24PS' ? 'var(--color-warning-500)' : STATUS_COLORS.online)
+              : 'var(--color-warning-500)'));
     const isIotEffectivelyOn = device.type === 'iot' &&
       device.status !== 'offline' &&
       device.iot?.collaborationEnabled !== false &&
       device.iot?.value === true;
     const iotGlowColor = isIotEffectivelyOn
       ? (device.iot?.kind === 'lamp'
-        ? '#facc15'
+        ? 'var(--color-warning-400)'
         : device.iot?.kind === 'cooler'
-          ? '#38bdf8'
+          ? 'var(--color-accent-400)'
           : device.iot?.kind === 'heater'
-            ? '#ef4444'
+            ? 'var(--color-error-500)'
             : null)
       : null;
 
@@ -5645,55 +5645,55 @@ export function NetworkTopology({
             <path
               d={`M 10 0 L ${deviceWidth - 10} 0 Q ${deviceWidth} 0 ${deviceWidth} 10 L ${deviceWidth} ${deviceHeight - 15} L ${deviceWidth / 2} ${deviceHeight} L 0 ${deviceHeight - 15} L 0 10 Q 0 0 10 0 Z`}
               fill={deviceFill}
-              stroke={isDark ? '#ef4444' : '#cbd5e1'}
+              style={{ stroke: isDark ? 'var(--color-error-500)' : 'var(--color-secondary-300)' }}
               strokeWidth={1.5}
               className={isDragging ? '' : 'transition-all duration-150'}
               filter="url(#deviceShadow)"
             />
             {/* Shield Icon inside Firewall device */}
             <g transform={`translate(${deviceWidth / 2 - 17}, ${deviceHeight / 2 - 40})`} filter="url(#deviceShadow)">
-              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke={isDark ? '#ea7171' : '#e75c5c'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" style={{ stroke: isDark ? 'var(--color-error-600)' : 'var(--color-error-500)' }} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 <path d="m9 12 2 2 4-4" />
               </svg>
             </g>
           </>
         ) : device.type === 'router' ? (
-          <path
+<path
             d={`M ${20} 0 L ${deviceWidth - 20} 0 Q ${deviceWidth} 0 ${deviceWidth} 20 L ${deviceWidth} ${deviceHeight} L 0 ${deviceHeight} L 0 20 Q 0 0 20 0`}
             fill={deviceFill}
-            stroke={isDark ? '#a855f7' : '#cbd5e1'}
+            style={{ stroke: isDark ? 'var(--color-warning-500)' : 'var(--color-secondary-300)' }}
             strokeWidth={1.5}
             className={isDragging ? '' : 'transition-all duration-150'}
             filter="url(#deviceShadow)"
           />
-        ) : device.type === 'iot' ? (
+          ) : device.type === 'iot' ? (
           <path
             d={`M 0 0 L ${deviceWidth - 8} 0 Q ${deviceWidth} 0 ${deviceWidth} 8 L ${deviceWidth} ${deviceHeight} L 8 ${deviceHeight} Q 0 ${deviceHeight} 0 ${deviceHeight - 8} L 0 0 Z`}
             fill={deviceFill}
-            stroke={isDark ? '#f97316' : '#cbd5e1'}
+            style={{ stroke: isDark ? 'var(--color-secondary-500)' : 'var(--color-secondary-300)' }}
             strokeWidth={1.5}
             className={isDragging ? '' : 'transition-all duration-150'}
             filter="url(#deviceShadow)"
           />
-        ) : isSwitchDeviceType(device.type) ? (
+          ) : isSwitchDeviceType(device.type) ? (
           <path
             d={`M 0 0 L ${deviceWidth} 0 L ${deviceWidth} ${deviceHeight - 8} Q ${deviceWidth} ${deviceHeight} ${deviceWidth - 8} ${deviceHeight} L 8 ${deviceHeight} Q 0 ${deviceHeight} 0 ${deviceHeight - 8} L 0 0 Z`}
             fill={deviceFill}
-            stroke={isDark ? '#06b6d4' : '#cbd5e1'}
+            style={{ stroke: isDark ? 'var(--color-accent-500)' : 'var(--color-secondary-300)' }}
             strokeWidth={1.5}
             className={isDragging ? '' : 'transition-all duration-150'}
             filter="url(#deviceShadow)"
           />
-        ) : (
+          ) : (
           <rect
             width={deviceWidth}
             height={deviceHeight}
             rx={8}
             fill={deviceFill}
-            stroke={isDark
-              ? ((device.type as string) === 'pc' ? '#3b82f6' : (device.type as string) === 'iot' ? '#f97316' : (device.type as string) === 'firewall' ? '#ef4444' : isSwitchDeviceType(device.type) ? '#06b6d4' : (device.type as string) === 'wlc' ? '#eab308' : '#a855f7')
-              : '#cbd5e1'}
+            style={{ stroke: isDark
+              ? ((device.type as string) === 'pc' ? 'var(--color-primary-500)' : (device.type as string) === 'iot' ? 'var(--color-secondary-500)' : (device.type as string) === 'firewall' ? 'var(--color-error-500)' : isSwitchDeviceType(device.type) ? 'var(--color-accent-500)' : (device.type as string) === 'wlc' ? 'var(--color-warning-400)' : 'var(--color-warning-500)')
+              : 'var(--color-secondary-300)' }}
             strokeWidth={1.5}
             className={isDragging ? '' : 'transition-all duration-150'}
             filter="url(#deviceShadow)"
@@ -5893,7 +5893,7 @@ if (!isEnabled || device.status === 'offline') {
                         ? getWirelessSignalStrength(device, devices, deviceStates)
                         : (isEnabled ? 3 : 0); // AP devices show full signal when enabled
 
-                      const dimColor = isDark ? '#334155' : '#cbd5e1';
+                      const dimColor = isDark ? 'var(--color-secondary-700)' : 'var(--color-secondary-300)';
                       const arc1Color = signalStrength >= 1 ? wifiColor : dimColor;
                       const arc2Color = signalStrength >= 2 ? wifiColor : dimColor;
                       const arc3Color = signalStrength >= 3 ? wifiColor : dimColor;
@@ -5998,27 +5998,27 @@ if (!isEnabled || device.status === 'offline') {
           return null;
         })()}
 
-        {/* PC monitor stand */}
-        {device.type === 'pc' && (
-          <>
-            <rect
-              x={deviceWidth / 2 - 3}
-              y={deviceHeight + 1}
-              width={6}
-              height={5}
-              rx={2}
-              fill={isDark ? '#334155' : '#94a3b8'}
-            />
-            <rect
-              x={deviceWidth / 2 - 15}
-              y={deviceHeight + 6}
-              width={30}
-              height={4}
-              rx={2}
-              fill={isDark ? '#475569' : '#cbd5e1'}
-            />
-          </>
-        )}
+{/* PC monitor stand */}
+         {device.type === 'pc' && (
+           <>
+             <rect
+               x={deviceWidth / 2 - 3}
+               y={deviceHeight + 1}
+               width={6}
+               height={5}
+               rx={2}
+               style={{ fill: isDark ? 'var(--color-secondary-700)' : 'var(--color-secondary-400)' }}
+             />
+             <rect
+               x={deviceWidth / 2 - 15}
+               y={deviceHeight + 6}
+               width={30}
+               height={4}
+               rx={2}
+               style={{ fill: isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-300)' }}
+             />
+           </>
+         )}
 
         {/* Device icon */}
         {/* Removed powered-off icon background — keep original icon only */}
@@ -6203,7 +6203,7 @@ if (!isEnabled || device.status === 'offline') {
         <text
           x={deviceWidth / 2}
           y={58}
-          fill={isSelected ? SELECTION_HIGHLIGHT_COLOR : isDark ? '#f1f5f9' : '#1e293b'}
+          style={{ fill: isSelected ? SELECTION_HIGHLIGHT_COLOR : isDark ? 'var(--color-secondary-100)' : 'var(--color-secondary-800)' }}
           fontSize="10"
           textAnchor="middle"
           fontWeight={isSelected ? '800' : 'bold'}
@@ -6214,14 +6214,14 @@ if (!isEnabled || device.status === 'offline') {
 
         {/* Device IP */}
         {device.type === 'pc' && (
-          <text x={deviceWidth / 2} y={70} fill={isDark ? '#94a3b8' : '#64748b'} fontSize="10" textAnchor="middle" fontFamily="monospace" className="select-none pointer-events-none">
+          <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} fontSize="10" textAnchor="middle" fontFamily="monospace" className="select-none pointer-events-none">
             {device.ip}
           </text>
         )}
 
         {/* Device VLAN / IoT Measured Value */}
         {device.type === 'pc' && (
-          <text x={deviceWidth / 2} y={81} fill={isDark ? '#38bdf8' : '#0f766e'} fontSize="9" textAnchor="middle" fontFamily="monospace" className="select-none pointer-events-none">
+          <text x={deviceWidth / 2} y={81} style={{ fill: isDark ? 'var(--color-accent-400)' : 'var(--color-accent-700)' }} fontSize="9" textAnchor="middle" fontFamily="monospace" className="select-none pointer-events-none">
             VLAN {String(getLiveDeviceVlan(device))}
           </text>
         )}
@@ -6236,7 +6236,7 @@ if (!isEnabled || device.status === 'offline') {
               <text
                 x={deviceWidth / 2}
                 y={46}
-                fill={isDark ? '#cbd5e1' : '#475569'}
+                style={{ fill: isDark ? 'var(--color-secondary-300)' : 'var(--color-secondary-500)' }}
                 fontSize="8"
                 textAnchor="middle"
                 className="select-none pointer-events-none italic opacity-80"
@@ -6252,14 +6252,14 @@ if (!isEnabled || device.status === 'offline') {
             const isPassive = device.iot?.collaborationEnabled === false;
             if (isPoweredOff) {
               return (
-                <text x={deviceWidth / 2} y={70} fill={isDark ? '#94a3b8' : '#64748b'} fontSize="10" textAnchor="middle" fontFamily="monospace" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
+                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} fontSize="10" textAnchor="middle" fontFamily="monospace" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
                   <tspan x={deviceWidth / 2} dy="6">{language === 'tr' ? 'Kapalı' : 'Off'}</tspan>
                 </text>
               );
             }
             if (isPassive) {
               return (
-                <text x={deviceWidth / 2} y={70} fill={isDark ? '#94a3b8' : '#64748b'} fontSize="10" textAnchor="middle" fontFamily="monospace" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
+                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} fontSize="10" textAnchor="middle" fontFamily="monospace" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
                   <tspan x={deviceWidth / 2} dy="6">{t.passive}</tspan>
                 </text>
               );
@@ -6273,9 +6273,9 @@ if (!isEnabled || device.status === 'offline') {
             // Controllable IoT devices should show status instead of measurements
             if (isControllable) {
               const isActive = device.iot?.value ?? false;
-              const statusColor = isActive ? (isDark ? '#fbbf24' : '#f59e0b') : (isDark ? '#94a3b8' : '#64748b');
+              const statusColor = isActive ? (isDark ? 'var(--color-warning-400)' : 'var(--color-warning-500)') : (isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)');
               return (
-                <text x={deviceWidth / 2} y={70} fill={statusColor} fontSize="10" textAnchor="middle" fontFamily="monospace" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
+                <text x={deviceWidth / 2} y={70} style={{ fill: statusColor }} fontSize="10" textAnchor="middle" fontFamily="monospace" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
                   <tspan x={deviceWidth / 2} dy="6">{value}</tspan>
                 </text>
               );
@@ -6285,42 +6285,42 @@ if (!isEnabled || device.status === 'offline') {
             switch (sensorType) {
               case 'temperature':
                 return (
-                  <text x={deviceWidth / 2} y={70} fill={isDark ? '#3cf916' : '#0c9849'} fontSize="10" textAnchor="middle" fontFamily="monospace" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
+                  <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-success-400)' : 'var(--color-success-600)' }} fontSize="10" textAnchor="middle" fontFamily="monospace" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
                     <tspan x={deviceWidth / 2} dy="0">{t.temperature}:</tspan>
                     <tspan x={deviceWidth / 2} dy="12">{value}</tspan>
                   </text>
                 );
               case 'humidity':
                 return (
-                  <text x={deviceWidth / 2} y={70} fill={isDark ? '#3b82f6' : '#2563eb'} fontSize="10" textAnchor="middle" fontFamily="monospace" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
+                  <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-primary-500)' : 'var(--color-primary-600)' }} fontSize="10" textAnchor="middle" fontFamily="monospace" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
                     <tspan x={deviceWidth / 2} dy="0">{t.humidity}:</tspan>
                     <tspan x={deviceWidth / 2} dy="12">{value}</tspan>
                   </text>
                 );
               case 'light':
                 return (
-                  <text x={deviceWidth / 2} y={70} fill={isDark ? '#eab308' : '#ca8a04'} fontSize="10" textAnchor="middle" fontFamily="monospace" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
+                  <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-warning-400)' : 'var(--color-warning-500)' }} fontSize="10" textAnchor="middle" fontFamily="monospace" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
                     <tspan x={deviceWidth / 2} dy="0">{t.lightLevel}:</tspan>
                     <tspan x={deviceWidth / 2} dy="12">{value}</tspan>
                   </text>
                 );
               case 'sound':
                 return (
-                  <text x={deviceWidth / 2} y={70} fill={isDark ? '#d8b4fe' : '#9333ea'} fontSize="10" textAnchor="middle" fontFamily="monospace" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
+                  <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-warning-600)' : 'var(--color-warning-600)' }} fontSize="10" textAnchor="middle" fontFamily="monospace" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
                     <tspan x={deviceWidth / 2} dy="0">{t.sensorSound}:</tspan>
                     <tspan x={deviceWidth / 2} dy="12">{value}</tspan>
                   </text>
                 );
               case 'motion':
                 return (
-                  <text x={deviceWidth / 2} y={70} fill={isDark ? '#fb923c' : '#ea580c'} fontSize="10" textAnchor="middle" fontFamily="monospace" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
+                  <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-600)' }} fontSize="10" textAnchor="middle" fontFamily="monospace" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
                     <tspan x={deviceWidth / 2} dy="0">{t.sensorMotion}:</tspan>
                     <tspan x={deviceWidth / 2} dy="12">{value}</tspan>
                   </text>
                 );
               default:
                 return (
-                  <text x={deviceWidth / 2} y={70} fill={isDark ? '#fb923c' : '#ea580c'} fontSize="9" textAnchor="middle" fontFamily="monospace" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
+                  <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-600)' }} fontSize="9" textAnchor="middle" fontFamily="monospace" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
                     {value}
                   </text>
                 );
@@ -6373,14 +6373,14 @@ if (!isEnabled || device.status === 'offline') {
                     handlePortClick(e as unknown as ReactMouseEvent, device.id, port.id);
                   }}
                 />
-                {/* Visible port circle */}
-                <circle
-                  r={7}
-                  fill={portColor}
-                  stroke={isShutdown || isDeviceOffline ? '#991b1b' : isConnected ? '#22c55e' : '#4b5563'}
-                  strokeWidth={isShutdown || isDeviceOffline || isConnected ? 2 : 1}
-                  style={{ pointerEvents: 'none' }}
-                />
+{/* Visible port circle */}
+                 <circle
+                   r={7}
+                   fill={portColor}
+                   stroke={isShutdown || isDeviceOffline ? 'var(--color-error-700)' : isConnected ? 'var(--color-success-500)' : (isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)')}
+                   strokeWidth={isShutdown || isDeviceOffline || isConnected ? 2 : 1}
+                   style={{ pointerEvents: 'none' }}
+                 />
                 <text y={1} fill="#fff" fontSize="7" textAnchor="middle" dominantBaseline="middle" style={{ userSelect: 'none', pointerEvents: 'none' }}>
                   {portLabel}
                 </text>
@@ -6460,8 +6460,8 @@ if (isShutdown || isDeviceOffline) {
                       onMouseDown={(e) => { e.stopPropagation(); }}
                       onClick={(e) => { e.stopPropagation(); handlePortClick(e as unknown as ReactMouseEvent, device.id, port.id); }}
                     />
-                    <circle r={6} fill={portFill} stroke={isShutdown || isDeviceOffline || isConnected ? portStroke : '#4b5563'} strokeWidth={isShutdown || isDeviceOffline || isConnected ? 2 : 1} style={{ pointerEvents: 'none' }} />
-                    <text y={1} fill="#fff" fontSize="6" textAnchor="middle" dominantBaseline="middle" style={{ userSelect: 'none', pointerEvents: 'none' }}>
+<circle r={6} fill={portFill} stroke={isShutdown || isDeviceOffline || isConnected ? portStroke : (isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)')} strokeWidth={isShutdown || isDeviceOffline || isConnected ? 2 : 1} style={{ pointerEvents: 'none' }} />
+                     <text y={1} style={{ fill: '#fff', userSelect: 'none', pointerEvents: 'none' }} fontSize="6" textAnchor="middle" dominantBaseline="middle">
                       {displayNum}
                     </text>
                   </g>
@@ -6582,15 +6582,15 @@ if (isShutdown || isDeviceOffline) {
                       handlePortClick(e as unknown as ReactMouseEvent, device.id, port.id);
                     }}
                   />
-                  {/* Visible port circle */}
-                  <circle
-                    r={6}
-                    fill={portFill}
-                    stroke={isShutdown || isDeviceOffline || isConnected ? portStroke : '#4b5563'}
-                    strokeWidth={isShutdown || isDeviceOffline || isConnected ? 2 : 1}
-                    style={{ pointerEvents: 'none' }}
-                  />
-                  <text y={1} fill="#fff" fontSize="6" textAnchor="middle" dominantBaseline="middle" style={{ userSelect: 'none', pointerEvents: 'none' }}>
+{/* Visible port circle */}
+                   <circle
+                     r={6}
+                     fill={portFill}
+                     stroke={isShutdown || isDeviceOffline || isConnected ? portStroke : (isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)')}
+                     strokeWidth={isShutdown || isDeviceOffline || isConnected ? 2 : 1}
+                     style={{ pointerEvents: 'none' }}
+                   />
+                  <text y={1} style={{ fill: '#fff', userSelect: 'none', pointerEvents: 'none' }} fontSize="6" textAnchor="middle" dominantBaseline="middle">
                     {displayNum}
                   </text>
                 </g>
@@ -6767,9 +6767,9 @@ if (isShutdown || isDeviceOffline) {
                         }`}
                     >
                       <div className='text-purple-500'>
-                        <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="#a855f7" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 12h14M5 12a2 2 0 0 1 -2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2M5 12a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 -2-2m-2-4h.01M17 16h.01" />
-                        </svg>
+<svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-warning-500)' }} viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 12h14M5 12a2 2 0 0 1 -2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2M5 12a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 -2-2m-2-4h.01M17 16h.01" />
+                         </svg>
                       </div>
                       <span className="text-xs font-bold text-center">
                         L3 Switch
@@ -7106,14 +7106,14 @@ if (isShutdown || isDeviceOffline) {
                       </>
                     )}
                   </radialGradient>
-                  {/* Grid pattern with improved visibility */}
-                  <pattern id="gridPattern" width="16" height="16" patternUnits="userSpaceOnUse">
-                    <circle cx="8" cy="8" r="1" fill={isDark ? '#475569' : '#64748b'} opacity="0.6" />
-                  </pattern>
-                  {/* Major grid lines pattern */}
-                  <pattern id="majorGridPattern" width="80" height="80" patternUnits="userSpaceOnUse">
-                    <rect width="80" height="80" fill="none" stroke={isDark ? '#334155' : '#cbd5e1'} strokeWidth="0.5" opacity="0.3" />
-                  </pattern>
+{/* Grid pattern with improved visibility */}
+                   <pattern id="gridPattern" width="16" height="16" patternUnits="userSpaceOnUse">
+                     <circle cx="8" cy="8" r="1" style={{ fill: isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-500)' }} opacity="0.6" />
+                   </pattern>
+                   {/* Major grid lines pattern */}
+                   <pattern id="majorGridPattern" width="80" height="80" patternUnits="userSpaceOnUse">
+                     <rect width="80" height="80" fill="none" style={{ stroke: isDark ? 'var(--color-secondary-700)' : 'var(--color-secondary-300)' }} strokeWidth="0.5" opacity="0.3" />
+                   </pattern>
                   {/* Device 3D Gradients for Dark Mode */}
                   <linearGradient id="pcGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">
                     <stop offset="0%" stopColor="#2563eb" />
@@ -7311,7 +7311,7 @@ if (isShutdown || isDeviceOffline) {
                       {environment?.background === 'house' && (
                         <svg x="0" y="0" width="1200" height="900" viewBox="0 0 1200 900">
                           {/* 3+1 Apartment - Top-down floor plan */}
-                          <g fill="none" stroke={isDark ? '#94a3b8' : '#64748b'} strokeWidth="6">
+                          <g fill="none" style={{ stroke: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} strokeWidth="6">
                             {/* Outer walls */}
                             <rect x="150" y="150" width="900" height="600" rx="6" />
                             {/* Living room (large room at bottom) */}
@@ -7319,7 +7319,7 @@ if (isShutdown || isDeviceOffline) {
                             {/* Kitchen (right of living room) */}
                             <rect x="600" y="450" width="450" height="300" rx="4" />
                             {/* Kitchen counter */}
-                            <rect x="870" y="470" width="150" height="60" rx="4" fill={isDark ? '#94a3b820' : '#64748b20'} />
+                            <rect x="870" y="470" width="150" height="60" rx="4" style={{ fill: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} />
                             {/* Bedroom 1 (top left) */}
                             <rect x="150" y="150" width="300" height="300" rx="4" />
                             {/* Bedroom 2 (top middle) */}
@@ -7331,7 +7331,7 @@ if (isShutdown || isDeviceOffline) {
                             {/* Hallway */}
                             <rect x="450" y="360" width="150" height="90" rx="4" />
                             {/* Entrance door */}
-                            <rect x="330" y="690" width="90" height="60" rx="4" fill={isDark ? '#94a3b820' : '#64748b20'} />
+                            <rect x="330" y="690" width="90" height="60" rx="4" style={{ fill: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} />
                             <line x1="375" y1="690" x2="375" y2="750" strokeDasharray="10,10" />
                             {/* Bedroom doors */}
                             <line x1="300" y1="450" x2="360" y2="450" strokeDasharray="10,10" />
@@ -7342,19 +7342,19 @@ if (isShutdown || isDeviceOffline) {
                             {/* Bathroom door */}
                             <line x1="660" y1="405" x2="690" y2="405" strokeDasharray="10,10" />
                             {/* Room labels */}
-                            <text x="300" y="330" fontSize="40" fill={isDark ? '#94a3b8' : '#64748b'} textAnchor="middle">{t.room1}</text>
-                            <text x="600" y="330" fontSize="40" fill={isDark ? '#94a3b8' : '#64748b'} textAnchor="middle">{t.room2}</text>
-                            <text x="900" y="330" fontSize="40" fill={isDark ? '#94a3b8' : '#64748b'} textAnchor="middle">{t.bedroom}</text>
-                            <text x="375" y="630" fontSize="40" fill={isDark ? '#94a3b8' : '#64748b'} textAnchor="middle">{t.livingRoom}</text>
-                            <text x="825" y="630" fontSize="40" fill={isDark ? '#94a3b8' : '#64748b'} textAnchor="middle">{t.kitchen}</text>
-                            <text x="675" y="420" fontSize="28" fill={isDark ? '#94a3b8' : '#64748b'} textAnchor="middle">{t.bathroom}</text>
+                            <text x="300" y="330" fontSize="40" style={{ fill: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} textAnchor="middle">{t.room1}</text>
+                            <text x="600" y="330" fontSize="40" style={{ fill: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} textAnchor="middle">{t.room2}</text>
+                            <text x="900" y="330" fontSize="40" style={{ fill: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} textAnchor="middle">{t.bedroom}</text>
+                            <text x="375" y="630" fontSize="40" style={{ fill: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} textAnchor="middle">{t.livingRoom}</text>
+                            <text x="825" y="630" fontSize="40" style={{ fill: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} textAnchor="middle">{t.kitchen}</text>
+                            <text x="675" y="420" fontSize="28" style={{ fill: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} textAnchor="middle">{t.bathroom}</text>
                           </g>
                         </svg>
                       )}
                       {environment?.background === 'twoStoryGarage' && (
                         <svg x="0" y="0" width="1500" height="1200" viewBox="0 0 1500 1200">
                           {/* Two story building with garage */}
-                          <g fill="none" stroke={isDark ? '#94a3b8' : '#64748b'} strokeWidth="6">
+                          <g fill="none" style={{ stroke: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} strokeWidth="6">
                             {/* Main building - 2 stories */}
                             <rect x="150" y="240" width="600" height="720" rx="6" />
                             {/* First floor line */}
@@ -7363,7 +7363,7 @@ if (isShutdown || isDeviceOffline) {
                             <path d="M120 240 L450 60 L780 240" />
                             {/* Main entrance door */}
                             <rect x="390" y="660" width="120" height="300" rx="6" />
-                            <circle cx="450" cy="810" r="9" fill={isDark ? '#94a3b8' : '#64748b'} />
+                            <circle cx="450" cy="810" r="9" style={{ fill: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} />
                             {/* First floor windows - 3 windows */}
                             <rect x="210" y="390" width="135" height="150" rx="6" />
                             <line x1="276" y1="390" x2="276" y2="540" />

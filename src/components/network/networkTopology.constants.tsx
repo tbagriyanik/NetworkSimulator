@@ -16,12 +16,12 @@ export const DEVICE_ICON_PATHS = {
 };
 
 export const DEVICE_ICON_COLORS = {
-  pc: '#3b82f6',
-  iot: '#f97316',
-  switch: '#06b6d4',
-  router: '#a855f7',
-  firewall: '#ef4444',
-  wlc: '#eab308',
+  pc: 'var(--color-primary-500)',
+  iot: 'var(--color-secondary-500)',
+  switch: 'var(--color-accent-500)',
+  router: 'var(--color-warning-500)',
+  firewall: 'var(--color-error-500)',
+  wlc: 'var(--color-warning-400)',
 } as const;
 
 export const DEVICE_ICONS = {
@@ -76,12 +76,12 @@ export const DEVICE_ICONS = {
 };
 
 export const CABLE_COLORS: Record<CableType | 'error', { primary: string; bg: string; text: string; border: string }> = {
-  straight: { primary: '#3b82f6', bg: 'bg-blue-500', text: 'text-blue-400', border: 'border-blue-500/30' },
-  crossover: { primary: '#f97316', bg: 'bg-orange-500', text: 'text-orange-400', border: 'border-orange-500/30' },
-  console: { primary: '#06b6d4', bg: 'bg-cyan-500', text: 'text-cyan-400', border: 'border-cyan-500/30' },
-  wireless: { primary: '#a855f7', bg: 'bg-purple-500', text: 'text-purple-400', border: 'border-purple-500/30' },
-  serial: { primary: '#84cc16', bg: 'bg-lime-500', text: 'text-lime-400', border: 'border-lime-500/30' },
-  error: { primary: '#ec4899', bg: 'bg-pink-500', text: 'text-pink-400', border: 'border-pink-500/30' },
+  straight: { primary: 'var(--color-secondary-500)', bg: 'bg-blue-500', text: 'text-blue-400', border: 'border-blue-500/30' },
+  crossover: { primary: 'var(--color-secondary-400)', bg: 'bg-orange-500', text: 'text-orange-400', border: 'border-orange-500/30' },
+  console: { primary: 'var(--color-error-500)', bg: 'bg-cyan-500', text: 'text-cyan-400', border: 'border-cyan-500/30' },
+  wireless: { primary: 'var(--color-warning-400)', bg: 'bg-purple-500', text: 'text-purple-400', border: 'border-purple-500/30' },
+  serial: { primary: 'var(--color-success-500)', bg: 'bg-lime-500', text: 'text-lime-400', border: 'border-lime-500/30' },
+  error: { primary: 'var(--color-accent-600)', bg: 'bg-pink-500', text: 'text-pink-400', border: 'border-pink-500/30' },
 };
 
 export const DRAG_THRESHOLD = 5;
@@ -104,19 +104,19 @@ export const NOTE_DEFAULT_WIDTH = 180;
 export const NOTE_DEFAULT_HEIGHT = 120;
 export const NOTE_HEADER_HEIGHT = 22;
 export const NOTE_COLORS = [
-  '#3b82f6', // Blue
-  '#10b981', // Emerald
-  '#8b5cf6', // Violet
-  '#f59e0b', // Amber
-  '#ef4444', // Red
-  '#06b6d4', // Cyan
-  '#ec4899', // Pink
-  '#f97316', // Orange
-  '#84cc16', // Lime
-  '#64748b', // Slate
-  '#a78bfa', // Purple
-  '#60a5fa', // Light Blue
-  '#4ade80'  // Light Green
+  'var(--color-primary-500)', // Blue
+  'var(--color-success-500)', // Emerald
+  'var(--color-warning-600)', // Violet
+  'var(--color-warning-400)', // Amber
+  'var(--color-error-500)', // Red
+  'var(--color-accent-500)', // Cyan
+  'var(--color-accent-600)', // Pink
+  'var(--color-secondary-500)', // Orange
+  'var(--color-success-600)', // Lime
+  'var(--color-secondary-400)', // Slate
+  'var(--color-warning-700)', // Purple
+  'var(--color-primary-400)', // Light Blue
+  'var(--color-success-400)'  // Light Green
 ];
 export const NOTE_FONTS_DESKTOP = [
   'Roboto',
@@ -145,36 +145,36 @@ export const PORT_START_Y = 80;
 // Port colors
 export const PORT_COLORS = {
   ethernet: {
-    connected: '#3b82f6',
-    disconnected: '#1d4ed8',
-    shutdown: '#ef4444',
-    blocked: '#ec4899',  // Pink for STP blocked
+    connected: 'var(--color-primary-500)',
+    disconnected: 'var(--color-primary-600)',
+    shutdown: 'var(--color-error-500)',
+    blocked: 'var(--color-accent-600)',  // Pink for STP blocked
   },
   console: {
-    connected: '#06b6d4',
-    disconnected: '#0891b2',
-    shutdown: '#ef4444',
-    blocked: '#ec4899',
+    connected: 'var(--color-accent-500)',
+    disconnected: 'var(--color-accent-600)',
+    shutdown: 'var(--color-error-500)',
+    blocked: 'var(--color-accent-600)',
   },
   gigabit: {
-    connected: '#f97316',
-    disconnected: '#ea580c',
-    shutdown: '#ef4444',
-    blocked: '#ec4899',  // Pink for STP blocked
+    connected: 'var(--color-secondary-500)',
+    disconnected: 'var(--color-secondary-600)',
+    shutdown: 'var(--color-error-500)',
+    blocked: 'var(--color-accent-600)',  // Pink for STP blocked
   },
   serial: {
-    connected: '#84cc16',
-    disconnected: '#65a30d',
-    shutdown: '#ef4444',
-    blocked: '#ec4899',
+    connected: 'var(--color-success-500)',
+    disconnected: 'var(--color-success-600)',
+    shutdown: 'var(--color-error-500)',
+    blocked: 'var(--color-accent-600)',
   },
 } as const;
 
 // Device status colors
 export const STATUS_COLORS = {
-  online: '#22c55e',
-  offline: '#ef4444',
-  error: '#ef4444',
+  online: 'var(--color-success-500)',
+  offline: 'var(--color-error-500)',
+  error: 'var(--color-error-500)',
 } as const;
 
 // Stroke colors for device selection
