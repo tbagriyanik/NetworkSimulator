@@ -40,7 +40,7 @@ export function middleware(_request: NextRequest) {
     "manifest-src 'self'",
   ].join('; ');
   const cspReportOnly = isProd
-    ? `${cspReportOnlyBase}; require-trusted-types-for 'script'; trusted-types default`
+    ? `${cspReportOnlyBase}; require-trusted-types-for 'script'; trusted-types default; report-uri /csp-report`
     : cspReportOnlyBase;
 
   const response = NextResponse.next();

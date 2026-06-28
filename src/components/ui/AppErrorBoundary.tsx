@@ -80,7 +80,7 @@ function ErrorFallback({
     if (themeContext) {
       theme = themeContext.theme;
     }
-  } catch (e) {
+  } catch (_e) {
     // Ignore error if context is not available
   }
 
@@ -89,7 +89,7 @@ function ErrorFallback({
     if (languageContext) {
       language = languageContext.language;
     }
-  } catch (e) {
+  } catch (_e) {
     // Ignore error if context is not available
   }
 
