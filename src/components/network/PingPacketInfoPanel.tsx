@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { CanvasDevice, CanvasConnection } from './networkTopology.types';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { X } from 'lucide-react';
+import { cableColors } from '@/lib/design-tokens/colors';
 
 export interface HopPacketInfo {
     hopIndex: number;
@@ -159,11 +160,11 @@ function getCableLabel(cableType: string, t: typeof tr) {
 }
 
 function getCableColor(cableType: string) {
-    if (cableType === 'crossover') return '#f97316'; // turuncu
-    if (cableType === 'fiber') return '#f59e0b';
-    if (cableType === 'console') return '#6b7280';
-    if (cableType === 'serial') return '#84cc16'; // lime
-    return '#3b82f6'; // mavi — wireless ve straight (Ethernet)
+    if (cableType === 'crossover') return cableColors.crossover.primary;
+    if (cableType === 'fiber') return cableColors.fiber.primary;
+    if (cableType === 'console') return cableColors.console.primary;
+    if (cableType === 'serial') return '#84cc12';
+    return cableColors.straight.primary;
 }
 
 // Kablo tipine göre SVG simgesi döndürür

@@ -9,6 +9,7 @@ import {
   validateSviStatus
 } from './L3Validation';
 import { getPvstUpdate } from './commandHelpers';
+import { createStubHandler } from './stubCommandHints';
 
 // Helper function to check if in interface mode (single or range)
 function isInInterfaceMode(state: SwitchState): boolean {
@@ -118,18 +119,18 @@ export const interfaceHandlers: Record<string, CommandHandler> = {
   'no ipv6 rip enable': cmdNoIpv6Rip,
   'no ipv6 ospf area': cmdNoIpv6Ospf,
   'switchport voice': cmdSwitchportVoiceVlan,
-  'channel-protocol': cmdStubSuccess,
-  'priority-queue out': cmdStubSuccess,
-  'queue-set': cmdStubSuccess,
-  'tx-queue': cmdStubSuccess,
-  'power inline': cmdStubSuccess,
-  'power inline consumption': cmdStubSuccess,
-  'ip directed-broadcast': cmdStubSuccess,
-  'no ip directed-broadcast': cmdStubSuccess,
-  'ip arp inspection limit': cmdStubSuccess,
-  'carrier-delay': cmdStubSuccess,
+  'channel-protocol': createStubHandler('channel-protocol'),
+  'priority-queue out': createStubHandler('priority-queue out'),
+  'queue-set': createStubHandler('queue-set'),
+  'tx-queue': createStubHandler('tx-queue'),
+  'power inline': createStubHandler('power inline'),
+  'power inline consumption': createStubHandler('power inline consumption'),
+  'ip directed-broadcast': createStubHandler('ip directed-broadcast'),
+  'no ip directed-broadcast': createStubHandler('no ip directed-broadcast'),
+  'ip arp inspection limit': createStubHandler('ip arp inspection limit'),
+  'carrier-delay': createStubHandler('carrier-delay'),
   'delay': cmdDelay,
-  'load-interval': cmdStubSuccess,
+  'load-interval': createStubHandler('load-interval'),
   'mtu': cmdMtu,
   'switchport trunk encapsulation': cmdSwitchportTrunkEncapsulation,
   'encapsulation dot1q': cmdEncapsulationDot1q,
@@ -2053,21 +2054,6 @@ function cmdSpanningTreeCost(state: SwitchState, input: string, ctx: CommandCont
     output: `STP cost set to ${cost}`,
     newState: myUpdatedState || { ports: newPorts },
     deviceStates: allUpdatedStates
-  };
-}
-
-/**
- * Stub Success
- */
-function cmdStubSuccess(_state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  return {
-    success: true,
-    output: `% ${input.trim()} configured`,
-    realismLevel: 'stub',
-    hint: {
-      tr: '⚠️ Bu komut kabul edildi ancak simülasyonu henüz mevcut değil.',
-      en: '⚠️ Command accepted but its simulation is not yet available.'
-    }
   };
 }
 

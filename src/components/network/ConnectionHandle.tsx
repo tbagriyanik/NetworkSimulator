@@ -3,6 +3,9 @@ import { CanvasConnection, CanvasDevice } from './networkTopology.types';
 import { isCableCompatible, CableInfo } from '@/lib/network/types';
 import { Trash2, Unplug, PlugZap } from 'lucide-react';
 
+const STUB_BG = 'var(--color-secondary-50)';
+const STUB_BG_DARK = 'var(--color-secondary-950)';
+
 interface ConnectionHandleProps {
   connection: CanvasConnection;
   sourceDevice: CanvasDevice;
@@ -93,7 +96,7 @@ const ConnectionHandle = memo(function ConnectionHandle({
               width="15"
               height="15"
               rx="5"
-              fill={isDark ? '#0f172a' : '#ffffff'}
+              fill={isDark ? STUB_BG_DARK : STUB_BG}
               opacity="0.92"
               className="drop-shadow-sm group-hover:fill-red-500/10 transition-colors"
             />
@@ -119,7 +122,7 @@ const ConnectionHandle = memo(function ConnectionHandle({
               width="15"
               height="15"
               rx="5"
-              fill={isDark ? '#0f172a' : '#ffffff'}
+              fill={isDark ? STUB_BG_DARK : STUB_BG}
               opacity="0.92"
               className="drop-shadow-sm group-hover:fill-amber-500/10 transition-colors"
             />
@@ -150,8 +153,8 @@ const ConnectionHandle = memo(function ConnectionHandle({
             onDelete(connection.id);
           }}
         >
-          <path d="M 0 -9 L -10 7 L 10 7 Z" fill="#ef4444" stroke="#fff" strokeWidth="1" />
-          <text y="4" fontSize="10" fontStyle="normal" fontWeight="bold" fill="white" textAnchor="middle">
+          <path d="M 0 -9 L -10 7 L 10 7 Z" fill="var(--color-error-500)" stroke="var(--color-secondary-50)" strokeWidth="1" />
+          <text y="4" fontSize="10" fontStyle="normal" fontWeight="bold" fill="var(--color-secondary-50)" textAnchor="middle">
             !
           </text>
         </g>

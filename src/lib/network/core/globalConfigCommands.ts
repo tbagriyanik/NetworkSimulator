@@ -10,6 +10,7 @@ import { encryptMd5Password, encryptType7Password } from '../crypto';
 import { getPvstUpdate } from './commandHelpers';
 import { getDeviceCapabilities } from '../capabilities';
 import { validateIpRoutingSupport } from './L3Validation';
+import { createStubHandler } from './stubCommandHints';
 
 // Global config (hostname, vlan, vtp, spanning-tree, security, ip domain-name, etc.)
 
@@ -103,21 +104,21 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'ipv6 dhcp pool': cmdIpv6DhcpPool,
   'ip dhcp excluded-address': cmdIpDhcpExcludedAddress,
   'no ip dhcp excluded-address': cmdNoIpDhcpExcludedAddress,
-  'cdp timer': cmdStubSuccess,
-  'cdp holdtime': cmdStubSuccess,
-  'snmp-server community': cmdStubSuccess,
-  'snmp-server contact': cmdStubSuccess,
-  'snmp-server location': cmdStubSuccess,
-  'archive': cmdStubSuccess,
+  'cdp timer': createStubHandler('cdp timer'),
+  'cdp holdtime': createStubHandler('cdp holdtime'),
+  'snmp-server community': createStubHandler('snmp-server community'),
+  'snmp-server contact': createStubHandler('snmp-server contact'),
+  'snmp-server location': createStubHandler('snmp-server location'),
+  'archive': createStubHandler('archive'),
   'alias': cmdAliasExec,
   'no alias': cmdNoAliasExec,
-  'macro': cmdStubSuccess,
-  'default interface': cmdStubSuccess,
-  'configure replace': cmdStubSuccess,
-  'mac access-list': cmdStubSuccess,
-  'class-map': cmdStubSuccess,
-  'policy-map': cmdStubSuccess,
-  'template': cmdStubSuccess,
+  'macro': createStubHandler('macro'),
+  'default interface': createStubHandler('default interface'),
+  'configure replace': createStubHandler('configure replace'),
+  'mac access-list': createStubHandler('mac access-list'),
+  'class-map': createStubHandler('class-map'),
+  'policy-map': createStubHandler('policy-map'),
+  'template': createStubHandler('template'),
   'ip access-list': cmdIpAccessList,
   'permit (named-acl)': cmdNamedAclPermit,
   'deny (named-acl)': cmdNamedAclDeny,
@@ -2473,20 +2474,6 @@ function cmdIpNatInsideSourceList(state: SwitchState, input: string, _ctx: Comma
   }
 
   return { success: false, error: '% Invalid dynamic NAT command' };
-}
-
-// Register new global config handlers
-
-function cmdStubSuccess(_state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  return {
-    success: true,
-    output: `% ${input.trim()} configured`,
-    realismLevel: 'stub',
-    hint: {
-      tr: '⚠️ Bu komut kabul edildi ancak simülasyonu henüz mevcut değil.',
-      en: '⚠️ Command accepted but its simulation is not yet available.'
-    }
-  };
 }
 
 // ── End of Handlers ──────────────────────────────────────────────────────────

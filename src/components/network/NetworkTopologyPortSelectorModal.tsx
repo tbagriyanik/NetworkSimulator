@@ -5,6 +5,7 @@ import { X, Cable, LineSquiggle, Plug, TrendingUpDown } from 'lucide-react';
 import { DEVICE_ICONS } from './networkTopology.constants';
 import { CanvasDevice, SelectedPortRef } from './networkTopology.types';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useEffect } from 'react';
 
 type PortSelectorStep = 'source' | 'target';
 
@@ -32,6 +33,13 @@ export function NetworkTopologyPortSelectorModal({
   onSelectPort,
 }: NetworkTopologyPortSelectorModalProps) {
   const { t } = useLanguage();
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleMobileBack = () => onClose();
+    window.addEventListener('mobile-back-pressed', handleMobileBack);
+    return () => window.removeEventListener('mobile-back-pressed', handleMobileBack);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 

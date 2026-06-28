@@ -1,6 +1,7 @@
 import { iosModeError } from './iosErrors';
 import type { CommandHandler, CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult } from '../types';
+import { createStubHandler } from './stubCommandHints';
 
 // Line (console/vty) komutları (line console, password, login, transport input, vs.)
 
@@ -26,12 +27,12 @@ export const lineHandlers: Record<string, CommandHandler> = {
   'privilege level': cmdPrivilegeLevel,
   'line aux': cmdLineAux,
   'line': cmdLine,
-  'transport output': cmdStubSuccess,
-  'transport preferred': cmdStubSuccess,
+  'transport output': createStubHandler('transport output'),
+  'transport preferred': createStubHandler('transport preferred'),
   'history size': cmdHistory,
-  'access-class': cmdStubSuccess,
-  'session-limit': cmdStubSuccess,
-  'lockable': cmdStubSuccess,
+  'access-class': createStubHandler('access-class'),
+  'session-limit': createStubHandler('session-limit'),
+  'lockable': createStubHandler('lockable'),
 };
 
 /**
@@ -537,20 +538,6 @@ function cmdNoAutocommand(state: SwitchState, _input: string, _ctx: CommandConte
   return {
     success: true,
     newState: { security: newSecurity }
-  };
-}
-
-/**
- * Stub Success
- */
-function cmdStubSuccess(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  return {
-    success: true,
-    realismLevel: 'stub',
-    hint: {
-      tr: '⚠️ Bu komut kabul edildi ancak hat/satır yapılandırma simülasyonu henüz mevcut değil.',
-      en: '⚠️ Command accepted but line configuration simulation is not yet available.'
-    }
   };
 }
 

@@ -455,6 +455,14 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   const isTablet = useIsTablet();
   useMobileBack();
 
+  useEffect(() => {
+    const handleMobileBack = () => {
+      setRefreshNetworkReport(prev => prev ? { ...prev, show: false } : null);
+    };
+    window.addEventListener('mobile-back-pressed', handleMobileBack);
+    return () => window.removeEventListener('mobile-back-pressed', handleMobileBack);
+  }, []);
+
   // Guided Mode hook
   const {
     activeProject: activeGuidedProject,

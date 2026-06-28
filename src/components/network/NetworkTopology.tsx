@@ -56,12 +56,12 @@ const generateMacAddress = (seed?: number): string => {
 
 const DEVICE_ICONS: Record<DeviceType | 'switch', React.ReactNode> = {
   pc: (
-    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="#3b82f6" viewBox="0 0 24 24">
+    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-primary-500)' }} viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 0 0 2-2V5a2 2 0 0 0 -2-2H5a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2z" />
     </svg>
   ),
   iot: (
-    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="#f97316" viewBox="0 -2 27 27">
+    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-secondary-500)' }} viewBox="0 -2 27 27">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16.247 7.761a6 6 0 0 1 0 8.478" />
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.075 4.933a10 10 0 0 1 0 14.134" />
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.925 19.067a10 10 0 0 1 0-14.134" />
@@ -70,34 +70,34 @@ const DEVICE_ICONS: Record<DeviceType | 'switch', React.ReactNode> = {
     </svg>
   ),
   switch: (
-    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="#06b6d4" viewBox="0 0 24 24">
+    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-accent-500)' }} viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 12h14M5 12a2 2 0 0 1 -2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2M5 12a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 -2-2m-2-4h.01M17 16h.01" />
     </svg>
   ),
   switchL2: (
-    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="#06b6d4" viewBox="0 0 24 24">
+    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-accent-500)' }} viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 12h14M5 12a2 2 0 0 1 -2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2M5 12a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 -2-2m-2-4h.01M17 16h.01" />
     </svg>
   ),
   switchL3: (
-    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="#22c55e" viewBox="0 0 24 24">
+    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-success-500)' }} viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 12h14M5 12a2 2 0 0 1 -2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2M5 12a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 -2-2m-2-4h.01M17 16h.01" />
     </svg>
   ),
   router: (
-    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="#a855f7" viewBox="0 0 24 24">
+    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-warning-600)' }} viewBox="0 0 24 24">
       <circle strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} cx="12" cy="12" r="9" />
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 5v14M5 12h14M12 5l-2 2m2-2l2 2m-2 12l-2-2m2 2l2-2M5 12l2-2m-2 2l2 2M19 12l-2-2m2 2l-2 2" />
     </svg>
   ),
   firewall: (
-    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="#ef4444" viewBox="0 0 24 24" strokeWidth={1.5}>
+    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-error-500)' }} viewBox="0 0 24 24" strokeWidth={1.5}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
       <path strokeLinecap="round" strokeLinejoin="round" d="m9 12 2 2 4-4" />
     </svg>
   ),
   wlc: (
-    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="#eab308" viewBox="0 0 24 24" strokeWidth={1.5}>
+    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-warning-400)' }} viewBox="0 0 24 24" strokeWidth={1.5}>
       <circle cx="12" cy="12" r="9" />
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14M12 5l-2 2m2-2l2 2m-2 12l-2-2m2 2l2-2M5 12l2-2m-2 2l2 2M19 12l-2-2m2 2l-2 2" />
       <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.3" />
@@ -5748,7 +5748,7 @@ export function NetworkTopology({
           const devState = deviceStates?.get(device.id);
           const wlanState = devState?.ports['wlan0'];
 
-          let wifiColor = '#94a3b8'; // Grey (Off)
+          let wifiColor = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)'; // Grey (Off)
           const showWifi = isPC || isSwitchL3 || isRouter;
 
           // Check if WiFi is enabled
@@ -5767,51 +5767,51 @@ export function NetworkTopology({
             let isConnected = false;
             let connectedDevices = 0;
 
-            if (!isEnabled || device.status === 'offline') {
-              wifiColor = isDark ? '#475569' : '#94a3b8'; // Grey
-            } else {
-              if (isPC && deviceStates) {
-                // PC/IoT: check if SSID matches an active AP wlan0 on another device
-                const pcSsid = pcWifi?.ssid || wlanState?.wifi?.ssid || '';
-                const pcPass = pcWifi?.password || wlanState?.wifi?.password || '';
-                const pcSecurity = pcWifi?.security || wlanState?.wifi?.security || 'open';
-                const pcBssid = pcWifi?.bssid;
-                if (pcSsid) {
-                  deviceStates.forEach((state, stateId) => {
-                    if (stateId === device.id) return;
-                    const apWlan = state.ports['wlan0'];
-                    if (!apWlan || apWlan.shutdown || apWlan.wifi?.mode !== 'ap') return;
-                    if (pcBssid && pcBssid !== stateId) return; // Must match specific bssid if set
-                    if (apWlan.wifi?.ssid !== pcSsid) return;
-                    const apSecurity = apWlan.wifi?.security || 'open';
-                    if (apSecurity !== pcSecurity) return;
-                    if (apSecurity !== 'open' && apWlan.wifi?.password !== pcPass) return;
-                    isConnected = true;
-                  });
-                }
-              } else if ((isSwitchL3 || isRouter) && deviceStates) {
-                // Switch acting as AP: check if any PC is associated to this device
-                const apSsid = wlanState?.wifi?.ssid || '';
-                const apPass = wlanState?.wifi?.password || '';
-                const apSecurity = wlanState?.wifi?.security || 'open';
-                if (apSsid && normalizeWifiMode(wlanState?.wifi?.mode) === 'ap') {
-                  devices.forEach(otherDev => {
-                    if (otherDev.id === device.id || (otherDev.type !== 'pc' && otherDev.type !== 'iot')) return;
-                    const pcwifi = otherDev.wifi;
-                    const otherState = deviceStates.get(otherDev.id);
-                    const otherWlan = otherState?.ports['wlan0'];
-                    const clientSsid = pcwifi?.ssid || otherWlan?.wifi?.ssid || '';
-                    const clientPass = pcwifi?.password || otherWlan?.wifi?.password || '';
-                    const clientSecurity = pcwifi?.security || otherWlan?.wifi?.security || 'open';
-                    const clientBssid = pcwifi?.bssid;
-                    if ((!clientBssid || clientBssid === device.id) && clientSsid === apSsid && clientSecurity === apSecurity && (apSecurity === 'open' || apPass === clientPass)) {
-                      isConnected = true;
-                    }
-                  });
-                }
-              }
-              wifiColor = isConnected || connectedDevices > 0 ? '#22c55e' : '#f59e0b'; // Green or Orange
-            }
+if (!isEnabled || device.status === 'offline') {
+               wifiColor = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)'; // Grey
+             } else {
+               if (isPC && deviceStates) {
+                 // PC/IoT: check if SSID matches an active AP wlan0 on another device
+                 const pcSsid = pcWifi?.ssid || wlanState?.wifi?.ssid || '';
+                 const pcPass = pcWifi?.password || wlanState?.wifi?.password || '';
+                 const pcSecurity = pcWifi?.security || wlanState?.wifi?.security || 'open';
+                 const pcBssid = pcWifi?.bssid;
+                 if (pcSsid) {
+                   deviceStates.forEach((state, stateId) => {
+                     if (stateId === device.id) return;
+                     const apWlan = state.ports['wlan0'];
+                     if (!apWlan || apWlan.shutdown || apWlan.wifi?.mode !== 'ap') return;
+                     if (pcBssid && pcBssid !== stateId) return; // Must match specific bssid if set
+                     if (apWlan.wifi?.ssid !== pcSsid) return;
+                     const apSecurity = apWlan.wifi?.security || 'open';
+                     if (apSecurity !== pcSecurity) return;
+                     if (apSecurity !== 'open' && apWlan.wifi?.password !== pcPass) return;
+                     isConnected = true;
+                   });
+                 }
+               } else if ((isSwitchL3 || isRouter) && deviceStates) {
+                 // Switch acting as AP: check if any PC is associated to this device
+                 const apSsid = wlanState?.wifi?.ssid || '';
+                 const apPass = wlanState?.wifi?.password || '';
+                 const apSecurity = wlanState?.wifi?.security || 'open';
+                 if (apSsid && normalizeWifiMode(wlanState?.wifi?.mode) === 'ap') {
+                   devices.forEach(otherDev => {
+                     if (otherDev.id === device.id || (otherDev.type !== 'pc' && otherDev.type !== 'iot')) return;
+                     const pcwifi = otherDev.wifi;
+                     const otherState = deviceStates.get(otherDev.id);
+                     const otherWlan = otherState?.ports['wlan0'];
+                     const clientSsid = pcwifi?.ssid || otherWlan?.wifi?.ssid || '';
+                     const clientPass = pcwifi?.password || otherWlan?.wifi?.password || '';
+                     const clientSecurity = pcwifi?.security || otherWlan?.wifi?.security || 'open';
+                     const clientBssid = pcwifi?.bssid;
+                     if ((!clientBssid || clientBssid === device.id) && clientSsid === apSsid && clientSecurity === apSecurity && (apSecurity === 'open' || apPass === clientPass)) {
+                       isConnected = true;
+                     }
+                   });
+                 }
+               }
+               wifiColor = isConnected || connectedDevices > 0 ? 'var(--color-success-500)' : 'var(--color-warning-500)'; // Green or Orange
+             }
 
             // Prepare WiFi info for tooltip
             let wifiSsid = '';
@@ -6028,17 +6028,17 @@ export function NetworkTopology({
           filter="url(#deviceShadow)"
         >
           <g style={{ color: iconColor }}>
-            {device.type === 'pc' && (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                stroke={isDark ? '#60a5fa' : '#3b82f6'}
-                fill="none"
-                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 0 0 2-2V5a2 2 0 0 0 -2-2H5a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2z"
-                transform="scale(1.2)"
-              />
-            )}
+{device.type === 'pc' && (
+               <path
+                 strokeLinecap="round"
+                 strokeLinejoin="round"
+                 strokeWidth={2}
+                 style={{ stroke: isDark ? 'var(--color-primary-400)' : 'var(--color-primary-500)' }}
+                 fill="none"
+                 d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 0 0 2-2V5a2 2 0 0 0 -2-2H5a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2z"
+                 transform="scale(1.2)"
+               />
+             )}
             {device.type === 'iot' && (
               (() => {
                 const iotKind = device.iot?.kind;
@@ -6066,34 +6066,34 @@ export function NetworkTopology({
                 } else {
                   // Default IoT icon for sensors
                   return (
-                    <g transform="translate(1, 1)" stroke="#14b8a6" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" filter="url(#wifiIconShadow)">
+                    <g transform="translate(1, 1)" style={{ stroke: 'var(--color-accent-500)' }} strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" filter="url(#wifiIconShadow)">
                       <path d="M16.247 7.761a6 6 0 0 1 0 8.478" />
                       <path d="M19.075 4.933a10 10 0 0 1 0 14.134" />
                       <path d="M4.925 19.067a10 10 0 0 1 0-14.134" />
                       <path d="M7.753 16.239a6 6 0 0 1 0-8.478" />
-                      <circle cx="12" cy="12" r="2" fill="#14b8a6" />
+                      <circle cx="12" cy="12" r="2" style={{ fill: 'var(--color-accent-500)' }} />
                     </g>
                   );
                 }
               })()
             )}
-            {isSwitchDeviceType(device.type) && (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                stroke={isDark ? (device.switchModel === 'WS-C3650-24PS' ? '#c084fc' : '#14b8a6') : (device.switchModel === 'WS-C3650-24PS' ? '#a855f7' : '#0d9488')}
-                fill="none"
-                d="M5 12h14M5 12a2 2 0 0 1 -2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2M5 12a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 -2-2m-2-4h.01M17 16h.01"
-                transform="scale(1.2)"
-              />
-            )}
-            {device.type === 'router' && (
-              <g transform="scale(1.2)">
-                <circle cx="12" cy="12" r="9" strokeWidth={2} stroke={isDark ? '#c084fc' : '#a855f7'} fill="none" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} stroke={isDark ? '#c084fc' : '#a855f7'} fill="none" d="M12 5v14M5 12h14M12 5l-2 2m2-2l2 2m-2 12l-2-2m2 2l2-2M5 12l2-2m-2 2l2 2M19 12l-2-2m2 2l-2 2" />
-              </g>
-            )}
+{isSwitchDeviceType(device.type) && (
+               <path
+                 strokeLinecap="round"
+                 strokeLinejoin="round"
+                 strokeWidth={2}
+                 style={{ stroke: device.switchModel === 'WS-C3650-24PS' ? (isDark ? 'var(--color-warning-500)' : 'var(--color-warning-500)') : (isDark ? 'var(--color-secondary-900)' : 'var(--color-secondary-700)') }}
+                 fill="none"
+                 d="M5 12h14M5 12a2 2 0 0 1 -2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2M5 12a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 -2-2m-2-4h.01M17 16h.01"
+                 transform="scale(1.2)"
+               />
+             )}
+             {device.type === 'router' && (
+               <g transform="scale(1.2)">
+                 <circle cx="12" cy="12" r="9" strokeWidth={2} style={{ stroke: isDark ? 'var(--color-warning-500)' : 'var(--color-warning-500)' }} fill="none" />
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} style={{ stroke: isDark ? 'var(--color-warning-500)' : 'var(--color-warning-500)' }} fill="none" d="M12 5v14M5 12h14M12 5l-2 2m2-2l2 2m-2 12l-2-2m2 2l2-2M5 12l2-2m-2 2l2 2M19 12l-2-2m2 2l-2 2" />
+               </g>
+             )}
           </g>
         </g>
 
@@ -6428,25 +6428,25 @@ export function NetworkTopology({
                 let portFill: string;
                 let portStroke: string;
 
-                if (isShutdown || isDeviceOffline) {
-                  portFill = '#ef4444';
-                  portStroke = '#4b5563';
-                } else if (isSTPBlocked && isVlan1) {
-                  portFill = '#ec4899';
-                  portStroke = '#f472b6';
-                } else if (isConnected) {
-                  if (isConsole) { portFill = '#06b6d4'; portStroke = '#67e8f9'; }
-                  else if (isGigabit) { portFill = '#f97316'; portStroke = '#fdba74'; }
-                  else if (isFastEthernet) { portFill = '#3b82f6'; portStroke = '#60a5fa'; }
-                  else if (isSerial) { portFill = '#84cc16'; portStroke = '#bef264'; }
-                  else { portFill = '#3b82f6'; portStroke = '#60a5fa'; }
-                } else {
-                  if (isConsole) { portFill = '#06b6d4'; portStroke = '#4b5563'; }
-                  else if (isGigabit) { portFill = '#f97316'; portStroke = '#4b5563'; }
-                  else if (isFastEthernet) { portFill = '#3b82f6'; portStroke = '#4b5563'; }
-                  else if (isSerial) { portFill = '#84cc16'; portStroke = '#4b5563'; }
-                  else { portFill = '#3b82f6'; portStroke = '#4b5563'; }
-                }
+if (isShutdown || isDeviceOffline) {
+                   portFill = 'var(--color-error-500)';
+                   portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
+                 } else if (isSTPBlocked && isVlan1) {
+                   portFill = 'var(--color-accent-600)';
+                   portStroke = isDark ? 'var(--color-accent-400)' : 'var(--color-accent-400)';
+                 } else if (isConnected) {
+                   if (isConsole) { portFill = 'var(--color-accent-500)'; portStroke = isDark ? 'var(--color-accent-400)' : 'var(--color-accent-400)'; }
+                   else if (isGigabit) { portFill = 'var(--color-secondary-500)'; portStroke = isDark ? 'var(--color-secondary-300)' : 'var(--color-secondary-300)'; }
+                   else if (isFastEthernet) { portFill = 'var(--color-primary-500)'; portStroke = isDark ? 'var(--color-primary-400)' : 'var(--color-primary-400)'; }
+                   else if (isSerial) { portFill = 'var(--color-success-500)'; portStroke = isDark ? 'var(--color-success-300)' : 'var(--color-success-300)'; }
+                   else { portFill = 'var(--color-primary-500)'; portStroke = isDark ? 'var(--color-primary-400)' : 'var(--color-primary-400)'; }
+                 } else {
+                   if (isConsole) { portFill = 'var(--color-accent-500)'; portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)'; }
+                   else if (isGigabit) { portFill = 'var(--color-secondary-500)'; portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)'; }
+                   else if (isFastEthernet) { portFill = 'var(--color-primary-500)'; portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)'; }
+                   else if (isSerial) { portFill = 'var(--color-success-500)'; portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)'; }
+                   else { portFill = 'var(--color-primary-500)'; portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)'; }
+                 }
 
                 return (
                   <g
@@ -6523,41 +6523,41 @@ export function NetworkTopology({
 
               if (isShutdown || isDeviceOffline) {
                 // Güç kapalı - içi kırmızı, çerçeve gri
-                portFill = '#ef4444';
-                portStroke = '#4b5563';
+                portFill = 'var(--color-error-500)';
+                portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
               } else if (isSTPBlocked) {
                 // STP Bloke - Pembe renk
-                portFill = '#ec4899';  // Pink-500
-                portStroke = '#f472b6';  // Pink-400
+                portFill = 'var(--color-accent-600)';  // Pink-500
+                portStroke = isDark ? 'var(--color-accent-400)' : 'var(--color-accent-400)';  // Pink-400
               } else if (isConnected) {
                 // Güç açık ve bağlı - içi mavi, çerçeve açık mavi
                 if (isConsole) {
-                  portFill = '#06b6d4';
-                  portStroke = '#67e8f9';
+                  portFill = 'var(--color-accent-500)';
+                  portStroke = isDark ? 'var(--color-accent-400)' : 'var(--color-accent-400)';
                 } else if (isGigabit) {
-                  portFill = '#f97316';
-                  portStroke = '#fdba74';
+                  portFill = 'var(--color-secondary-500)';
+                  portStroke = isDark ? 'var(--color-secondary-300)' : 'var(--color-secondary-300)';
                 } else if (isFastEthernet) {
-                  portFill = '#3b82f6';
-                  portStroke = '#60a5fa';
+                  portFill = 'var(--color-primary-500)';
+                  portStroke = isDark ? 'var(--color-primary-400)' : 'var(--color-primary-400)';
                 } else {
-                  portFill = '#3b82f6';
-                  portStroke = '#60a5fa';
+                  portFill = 'var(--color-primary-500)';
+                  portStroke = isDark ? 'var(--color-primary-400)' : 'var(--color-primary-400)';
                 }
               } else {
                 // Güç açık ama bağlı değil - içi mavi, çerçeve gri
                 if (isConsole) {
-                  portFill = '#06b6d4';
-                  portStroke = '#4b5563';
+                  portFill = 'var(--color-accent-500)';
+                  portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
                 } else if (isGigabit) {
-                  portFill = '#f97316';
-                  portStroke = '#4b5563';
+                  portFill = 'var(--color-secondary-500)';
+                  portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
                 } else if (isFastEthernet) {
-                  portFill = '#3b82f6';
-                  portStroke = '#4b5563';
+                  portFill = 'var(--color-primary-500)';
+                  portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
                 } else {
-                  portFill = '#3b82f6';
-                  portStroke = '#4b5563';
+                  portFill = 'var(--color-primary-500)';
+                  portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
                 }
               }
 
