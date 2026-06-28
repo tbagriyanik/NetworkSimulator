@@ -7403,7 +7403,7 @@ if (isShutdown || isDeviceOffline) {
                       {environment?.background === 'greenhouse' && (
                         <svg x="0" y="0" width="1600" height="1200" viewBox="0 0 1600 1200">
                           {/* Greenhouse / Sera Layout */}
-                          <g fill="none" stroke={isDark ? '#10b981' : '#059669'} strokeWidth="6">
+                          <g fill="none" style={{ stroke: isDark ? 'var(--color-success-600)' : 'var(--color-success-700)' }} strokeWidth="6">
                             {/* Main greenhouse structure - rectangular with curved roof */}
                             <rect x="200" y="300" width="1200" height="600" rx="12" />
                             {/* Arched roof frame */}
@@ -7428,7 +7428,7 @@ if (isShutdown || isDeviceOffline) {
                             {/* Main entrance */}
                             <rect x="700" y="750" width="200" height="150" rx="6" />
                             <line x1="800" y1="750" x2="800" y2="900" />
-                            <circle cx="780" cy="825" r="8" fill={isDark ? '#10b981' : '#059669'} />
+                            <circle cx="780" cy="825" r="8" style={{ fill: isDark ? 'var(--color-success-600)' : 'var(--color-success-700)' }} />
 
                             {/* Ventilation windows on roof */}
                             <rect x="400" y="240" width="120" height="60" rx="6" />
@@ -7438,7 +7438,7 @@ if (isShutdown || isDeviceOffline) {
                             <rect x="1200" y="240" width="120" height="60" rx="6" />
 
                             {/* Plant rows inside */}
-                            <g stroke={isDark ? '#22c55e' : '#16a34a'} strokeWidth="4">
+                            <g style={{ stroke: isDark ? 'var(--color-success-500)' : 'var(--color-success-600)' }} strokeWidth="4">
                               <line x1="275" y1="400" x2="275" y2="700" />
                               <line x1="425" y1="400" x2="425" y2="700" />
                               <line x1="575" y1="400" x2="575" y2="700" />
@@ -7447,8 +7447,8 @@ if (isShutdown || isDeviceOffline) {
                               <line x1="1325" y1="400" x2="1325" y2="700" />
                             </g>
 
-                            {/* Irrigation pipes */}
-                            <g stroke={isDark ? '#3b82f6' : '#2563eb'} strokeWidth="3" strokeDasharray="10,5">
+{/* Irrigation pipes */}
+                             <g style={{ stroke: isDark ? 'var(--color-primary-600)' : 'var(--color-primary-700)' }} strokeWidth="3" strokeDasharray="10,5">
                               <line x1="200" y1="500" x2="1400" y2="500" />
                               <line x1="200" y1="650" x2="1400" y2="650" />
                             </g>
@@ -7456,9 +7456,9 @@ if (isShutdown || isDeviceOffline) {
                             {/* Control room / IoT hub */}
                             <rect x="1300" y="200" width="200" height="150" rx="8" />
                             <rect x="1350" y="250" width="100" height="60" rx="4" />
-                            <circle cx="1400" cy="280" r="20" stroke={isDark ? '#f59e0b' : '#d97706'} strokeWidth="3" />
-                            <line x1="1385" y1="280" x2="1415" y2="280" stroke={isDark ? '#f59e0b' : '#d97706'} strokeWidth="3" />
-                            <line x1="1400" y1="265" x2="1400" y2="295" stroke={isDark ? '#f59e0b' : '#d97706'} strokeWidth="3" />
+                            <circle cx="1400" cy="280" r="20" style={{ stroke: isDark ? 'var(--color-warning-500)' : 'var(--color-warning-600)' }} strokeWidth="3" />
+                            <line x1="1385" y1="280" x2="1415" y2="280" style={{ stroke: isDark ? 'var(--color-warning-500)' : 'var(--color-warning-600)' }} strokeWidth="3" />
+                            <line x1="1400" y1="265" x2="1400" y2="295" style={{ stroke: isDark ? 'var(--color-warning-500)' : 'var(--color-warning-600)' }} strokeWidth="3" />
                           </g>
                         </svg>
                       )}
@@ -7761,7 +7761,7 @@ if (isShutdown || isDeviceOffline) {
                               }
                             }}
                             className="w-full h-full min-h-full px-2 py-1 bg-transparent outline-none resize-none overflow-y-auto overflow-x-hidden whitespace-pre-wrap break-words touch-manipulation custom-scrollbar"
-                            style={{ fontSize: note.fontSize, lineHeight: 1.35, color: '#000000' }}
+                            style={{ fontSize: note.fontSize, lineHeight: 1.35, color: isDark ? 'var(--color-secondary-100)' : 'var(--color-secondary-800)' }}
                           />
                         </div>
 
@@ -7909,7 +7909,7 @@ if (isShutdown || isDeviceOffline) {
                                 cx={tx}
                                 cy={ty}
                                 r={radius}
-                                fill="#06b6d4"
+fill="var(--color-accent-500)"
                                 opacity={opacity}
                                 filter={i === 0 ? 'url(#packetGlow)' : undefined}
                                 className={i === 0 ? 'animate-ping-trail' : undefined}
@@ -7925,12 +7925,12 @@ if (isShutdown || isDeviceOffline) {
                           onClick={handleEnvelopeClick}
                         >
                           {/* Glow highlight */}
-                          {graphicsQuality === 'high' ? (
-                            <circle cx="0" cy="0" r="16" fill="#06b6d4" opacity="0.2" filter="url(#packetGlow)" className="animate-ping-glow" />
-                          ) : (
-                            <circle cx="0" cy="0" r="14" fill="#06b6d4" opacity="0.1" className="animate-ping-glow-low" />
-                          )}
-                          <rect x="-10" y="-7" width="20" height="14" rx="2" fill="#06b6d4" stroke="#0891b2" strokeWidth="1.5" />
+{graphicsQuality === 'high' ? (
+                             <circle cx="0" cy="0" r="16" style={{ fill: 'var(--color-accent-500)' }} opacity="0.2" filter="url(#packetGlow)" className="animate-ping-glow" />
+                           ) : (
+                             <circle cx="0" cy="0" r="14" style={{ fill: 'var(--color-accent-500)' }} opacity="0.1" className="animate-ping-glow-low" />
+                           )}
+                          <rect x="-10" y="-7" width="20" height="14" rx="2" fill="var(--color-accent-500)" style={{ stroke: 'var(--color-accent-600)', strokeWidth: '1.5' }} />
                           <path d="M-8 -3 L0 4 L8 -3" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </g>
                       </g>
@@ -7961,7 +7961,7 @@ if (isShutdown || isDeviceOffline) {
                   width={getCanvasDimensions().width}
                   height={getCanvasDimensions().height}
                   fill="none"
-                  stroke={isDark ? '#3b82f6' : '#2563eb'}
+                  stroke={isDark ? 'var(--color-primary-600)' : 'var(--color-primary-700)'}
                   strokeWidth={2 / zoom}
                   strokeDasharray={`${6 / zoom},${4 / zoom}`}
                   opacity={0.7}
@@ -7971,7 +7971,7 @@ if (isShutdown || isDeviceOffline) {
                 <text
                   x={getCanvasDimensions().width - 80}
                   y={getCanvasDimensions().height - 10}
-                  fill={isDark ? '#64748b' : '#64748b'}
+                  style={{ fill: 'var(--color-secondary-500)' }}
                   fontSize={12 / zoom}
                   fontFamily="monospace"
                 >
