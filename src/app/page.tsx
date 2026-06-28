@@ -10,7 +10,7 @@ import { useNetworkLogic } from '@/hooks/useNetworkLogic';
 import { useAppNavigation } from '@/hooks/useAppNavigation';
 import { useDrag } from '@/hooks/useDrag';
 import { useMultiTabWarning } from '@/hooks/useMultiTabWarning';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile, useIsTablet } from '@/hooks/use-breakpoint';
 import { useMobileBack } from '@/hooks/useMobileBack';
 import { usePanels } from '@/hooks/usePanels';
 import { useRefreshReport } from '@/hooks/useRefreshReport';
@@ -402,6 +402,37 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   const [projectSearchQuery, setProjectSearchQuery] = useState('');
   const [showBasarilarim, setShowBasarilarim] = useState(false);
 
+  // PWA Installation state
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+
+      // Notify components that app can be installed
+      window.dispatchEvent(new CustomEvent('pwa-installable'));
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
+
+  const handleInstallPWA = useCallback(async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+    }
+  }, [deferredPrompt]);
+
+  // Listen for manual install triggers
+  useEffect(() => {
+    window.addEventListener('trigger-pwa-install', handleInstallPWA as EventListener);
+    return () => window.removeEventListener('trigger-pwa-install', handleInstallPWA as EventListener);
+  }, [handleInstallPWA]);
+
   // Track session start time for achievement records
   const sessionStartRef = useRef(1715600000000);
   useEffect(() => {
@@ -411,8 +442,9 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   // Which overlay panel is on top — last clicked wins
   const [focusedOverlay, setFocusedOverlay] = useState<'refresh' | 'packet' | 'pc-info' | 'router-info' | 'switch-info'>('packet');
 
-  // Mobile detection and back button handler
+  // Mobile/Tablet detection and back button handler
   const isMobile = useIsMobile();
+  const isTablet = useIsTablet();
   useMobileBack();
 
   // Guided Mode hook
@@ -4690,7 +4722,7 @@ ${state.bannerMOTD}
 
           {/* Unified Device Panel (CLI + Tasks) */}
           <UnifiedDevicePanel
-            isOpen={showUnifiedDeviceModal}
+            isOpen={showUnifiedDeviceModal && !isTablet}
             onOpenChange={setShowUnifiedDeviceModal}
             activeTab={unifiedDeviceActiveTab}
             onTabChange={setUnifiedDeviceActiveTab}
@@ -4866,7 +4898,7 @@ ${state.bannerMOTD}
           </Dialog>
 
           {/* PC Terminal Modal */}
-          <Dialog open={showPCPanel} onOpenChange={setShowPCPanel} modal={false}>
+          <Dialog open={showPCPanel && !isTablet} onOpenChange={setShowPCPanel} modal={false}>
             <DialogContent
               showCloseButton={false}
               onEscapeKeyDown={(e) => e.preventDefault()}
@@ -4977,7 +5009,7 @@ ${state.bannerMOTD}
           {/* Router Info Panel Modal */}
           <RouterPanel
             deviceId={showRouterDeviceId}
-            isVisible={showRouterPanel}
+            isVisible={showRouterPanel && !isTablet}
             onClose={() => setShowRouterPanel(false)}
             topologyDevices={topologyDevices || undefined}
             deviceStates={deviceStates}
@@ -4988,8 +5020,15 @@ ${state.bannerMOTD}
           />
 
           {/* Main Content - Fits between header and footer with scroll */}
-          <main className={`overflow-hidden flex flex-col min-h-0 h-[calc(100vh-44px)] pt-[72px] ${activeTab === 'topology' ? 'md:pt-[130px]' : 'md:pt-[72px]'}`}>
-            <div className="w-full flex-1 flex flex-col min-h-0 overflow-hidden">
+          <main className={cn(
+            "overflow-hidden flex flex-col min-h-0 h-[calc(100vh-44px)] pt-[72px]",
+            activeTab === 'topology' ? 'md:pt-[130px]' : 'md:pt-[72px]',
+            isTablet && (showPCPanel || showUnifiedDeviceModal || showRouterPanel) && "flex-row md:pt-[72px]"
+          )}>
+            <div className={cn(
+              "w-full flex-1 flex flex-col min-h-0 overflow-hidden transition-all duration-500",
+              isTablet && (showPCPanel || showUnifiedDeviceModal || showRouterPanel) && "w-1/2 flex-none border-r border-slate-200/50 dark:border-slate-800/50"
+            )}>
               {/* Tab Content - Always render but hide non-active */}
               <div className={`flex-1 flex flex-col min-h-0 ${activeTab === 'topology' ? 'flex' : 'hidden'} print:flex`}>
                 {/* Topology Toolbar */}
@@ -5156,6 +5195,102 @@ ${state.bannerMOTD}
               {/* Tasks Sekmesi - Removed from inline, now shown as modal */}
 
             </div>
+
+            {/* Tablet Split View Panels (Docked Right) */}
+            {isTablet && (showPCPanel || showUnifiedDeviceModal || showRouterPanel) && (
+              <div className="w-1/2 h-full bg-background/50 backdrop-blur-md overflow-hidden animate-in slide-in-from-right duration-500 border-l border-primary/10">
+                {showUnifiedDeviceModal && (
+                  <UnifiedDevicePanel
+                    isOpen={true}
+                    onOpenChange={setShowUnifiedDeviceModal}
+                    activeTab={unifiedDeviceActiveTab}
+                    onTabChange={setUnifiedDeviceActiveTab}
+                    deviceId={activeDeviceId}
+                    deviceType={activeDeviceType}
+                    deviceStates={deviceStates}
+                    topologyDevices={topologyDevices}
+                    topologyConnections={topologyConnections}
+                    handleCommand={handleCommand}
+                    handleClearTerminal={handleClearTerminal}
+                    toggleDevicePower={toggleDevicePower}
+                    handleUpdateHistory={handleUpdateHistory}
+                    confirmDialog={confirmDialog}
+                    setConfirmDialog={setConfirmDialog}
+                    t={t}
+                    theme={theme}
+                    language={language}
+                    helpLevel={helpLevel}
+                    isDark={isDark}
+                    isExecutingCommand={isExecutingCommand}
+                    output={output}
+                    prompt={prompt}
+                    state={state}
+                    activeDeviceTasks={activeDeviceTasks}
+                    taskContext={taskContext}
+                    modalPosition={{ x: 0, y: 0 }}
+                    modalSize={{ width: 0, height: 0 }}
+                    handlePointerDown={() => { }}
+                    handleResizeStart={() => { }}
+                    className="!static !w-full !h-full !translate-x-0 !translate-y-0 !shadow-none !border-none !rounded-none"
+                  />
+                )}
+                {showPCPanel && (
+                  <div className="h-full flex flex-col">
+                    <div className={cn("p-4 border-b flex items-center justify-between", isDark ? "bg-slate-900" : "bg-slate-50")}>
+                      <h2 className="font-bold text-sm truncate">
+                        {t.pcTerminal} - {topologyDevices?.find((d: CanvasDevice) => d.id === showPCDeviceId)?.name || showPCDeviceId}
+                      </h2>
+                      <Button variant="ghost" size="icon" onClick={() => setShowPCPanel(false)}>
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <PCPanel
+                      deviceId={showPCDeviceId}
+                      cableInfo={cableInfo}
+                      initialTab={pcPanelInitialTab}
+                      isVisible={true}
+                      onClose={() => setShowPCPanel(false)}
+                      onTogglePower={toggleDevicePower}
+                      topologyDevices={topologyDevices || undefined}
+                      topologyConnections={topologyConnections || undefined}
+                      deviceStates={deviceStates}
+                      deviceOutputs={deviceOutputs}
+                      pcOutputs={pcOutputs}
+                      pcHistories={pcHistories}
+                      onUpdatePCHistory={handleUpdatePCHistory}
+                      onExecuteDeviceCommand={handleExecuteCommand}
+                      onNavigate={handlePCPanelNavigateWrapper}
+                      onDeleteDevice={handleDeviceDelete}
+                      className="!flex-1"
+                    />
+                  </div>
+                )}
+                {showRouterPanel && (
+                  <div className="h-full flex flex-col">
+                    <div className={cn("p-4 border-b flex items-center justify-between", isDark ? "bg-slate-900" : "bg-slate-50")}>
+                      <h2 className="font-bold text-sm truncate">
+                        {t.configure} - {topologyDevices?.find((d: CanvasDevice) => d.id === showRouterDeviceId)?.name || showRouterDeviceId}
+                      </h2>
+                      <Button variant="ghost" size="icon" onClick={() => setShowRouterPanel(false)}>
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <RouterPanel
+                      deviceId={showRouterDeviceId}
+                      isVisible={true}
+                      onClose={() => setShowRouterPanel(false)}
+                      topologyDevices={topologyDevices || undefined}
+                      deviceStates={deviceStates}
+                      modalPosition={{ x: 0, y: 0 }}
+                      modalSize={{ width: 0, height: 0 }}
+                      handlePointerDown={() => { }}
+                      handleResizeStart={() => { }}
+                      className="!static !w-full !h-full !translate-x-0 !translate-y-0 !shadow-none !border-none !rounded-none"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Network Refresh Report - Top Right Toast */}
             {

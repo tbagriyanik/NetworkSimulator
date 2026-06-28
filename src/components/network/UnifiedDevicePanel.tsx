@@ -61,6 +61,7 @@ interface UnifiedDevicePanelProps {
     modalSize: ModalSize;
     handlePointerDown: (e: React.PointerEvent, modalType: string) => void;
     handleResizeStart: (e: React.PointerEvent, direction: string, modalType: string) => void;
+    className?: string;
 }
 
 export function UnifiedDevicePanel({
@@ -93,7 +94,8 @@ export function UnifiedDevicePanel({
     modalPosition,
     modalSize,
     handlePointerDown,
-    handleResizeStart
+    handleResizeStart,
+    className
 }: UnifiedDevicePanelProps) {
 
     const isNarrow = modalSize.width < 1100;
@@ -135,7 +137,8 @@ export function UnifiedDevicePanel({
                 onEscapeKeyDown={(e) => e.preventDefault()}
                 className={cn(
                     "p-0 overflow-visible flex flex-col top-auto left-auto translate-x-0 translate-y-0 liquid-glass-light",
-                    isDark ? "bg-secondary-950/80 border-green-500/30" : "bg-white border-green-500"
+                    isDark ? "bg-secondary-950/80 border-green-500/30" : "bg-white border-green-500",
+                    className
                 )}
                 data-modal-content
                 style={{
