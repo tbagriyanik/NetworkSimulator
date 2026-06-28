@@ -20,7 +20,7 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { DeviceIcon } from '@/components/network/DeviceIcon';
-import {   ChevronDown, Plus, Undo2, Redo2, Search, X, Cable, LineSquiggle, Leaf, Plug, TrendingUpDown, Users, UserKey, Download, Image as ImageIcon, Activity } from 'lucide-react';
+import {   ChevronDown, Plus, Undo2, Redo2, Search, X, Cable, LineSquiggle, Leaf, Plug, TrendingUpDown, Users, UserKey, Activity } from 'lucide-react';
 import type { Translations } from '@/contexts/LanguageContext';
 import type { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
 import type { SwitchState, CableType, CableInfo } from '@/lib/network/types';
@@ -49,8 +49,6 @@ interface TopologyToolbarProps {
   handleRedo: () => void;
   handleRefreshNetwork: () => void;
   setIsEnvironmentPanelOpen: (v: boolean) => void;
-  onExportSVG?: () => void;
-  onExportPNG?: () => void;
   onOpenStudentJoin?: () => void;
   onOpenTeacherPanel?: () => void;
 }
@@ -72,7 +70,6 @@ export function TopologyToolbar({
   handleDeviceSelectFromMenu,
   handleUndo, handleRedo,
   handleRefreshNetwork, setIsEnvironmentPanelOpen,
-  onExportSVG, onExportPNG,
   onOpenStudentJoin, onOpenTeacherPanel,
 }: TopologyToolbarProps) {
   const graphicsQuality = useAppStore((state) => state.graphicsQuality);
@@ -80,30 +77,20 @@ export function TopologyToolbar({
   const setSimulationMode = useAppStore((state) => state.setSimulationMode);
   const isHighQuality = graphicsQuality === 'high';
   // Register Home key shortcut for reset view
-  const toolbarGlowClass = isHighQuality
-    ? 'drop-shadow-[0_0_2px_rgba(34,211,238,0.15)] dark:drop-shadow-[0_0_2px_rgba(34,211,238,0.12)]'
-    : '';
+   const toolbarGlowClass = isHighQuality
+     ? 'drop-shadow-[0_0_2px_rgba(34,211,238,0.15)] dark:drop-shadow-[0_0_2px_rgba(34,211,238,0.12)]'
+     : '';
 
-  useKeyboardShortcuts([
-    {
-      key: 'Home',
-      handler: () => {
-        setZoom(1.0);
-        setPan({ x: 0, y: 0 });
-      },
-      description: 'Reset topology view',
-    },
-    {
-      key: 's',
-      handler: () => setSimulationMode(!isSimulationMode),
-      description: 'Toggle simulation mode',
-    },
-    {
-      key: 'S',
-      handler: () => setSimulationMode(!isSimulationMode),
-      description: 'Toggle simulation mode',
-    },
-  ]);
+   useKeyboardShortcuts([
+     {
+       key: 'Home',
+       handler: () => {
+         setZoom(1.0);
+         setPan({ x: 0, y: 0 });
+       },
+       description: 'Reset topology view',
+     },
+   ]);
 
   return (
     <div className="fixed top-[72px] left-0 right-0 z-30 px-4 py-[5px] pt-3 border-b backdrop-blur-md bg-background/95 hidden md:flex items-center gap-3">
@@ -648,42 +635,7 @@ className="h-8 w-8 p-0 text-orange-500 hover:bg-orange-500/10"
         </TooltipContent>
       </Tooltip>
 
-      <div className={`w-px h-4 ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`} />
 
-      {/* Export Buttons */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            aria-label={t.exportAsSVG}
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-orange-500 hover:bg-orange-500/10"
-            onClick={onExportSVG}
-          >
-            <Download className={`w-4 h-4 ${toolbarGlowClass}`} />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          {t.exportAsSVG}
-        </TooltipContent>
-      </Tooltip>
-
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            aria-label={t.exportAsPNG}
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-orange-500 hover:bg-orange-500/10"
-            onClick={onExportPNG}
-          >
-            <ImageIcon className={`w-4 h-4 ${toolbarGlowClass}`} />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          {t.exportAsPNG}
-        </TooltipContent>
-      </Tooltip>
 
       <div className="ml-auto flex items-center gap-1">
         {onOpenStudentJoin && (

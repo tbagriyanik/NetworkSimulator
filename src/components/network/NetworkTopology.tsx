@@ -13,7 +13,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useNetworkRefreshWithPositions } from '@/hooks/useNetworkRefreshWithPositions';
 import { useSpatialPartitioning } from '@/lib/performance/spatial';
 import { toast } from "@/hooks/use-toast";
-import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TooltipWrapper } from "@/components/ui/TooltipWrapper";
@@ -27,7 +26,7 @@ import { DeviceNode } from './DeviceNode';
 import LazyNetworkTopologyContextMenu from './LazyNetworkTopologyContextMenu';
 import { LazyNetworkTopologyPortSelectorModal } from './LazyNetworkTopologyPortSelectorModal';
 import { useEnvironment } from '@/lib/store/appStore';
-import { Plus, Power, Trash2, Monitor, Network, Laptop, X, Cable, LineSquiggle, Plug, TrendingUpDown } from "lucide-react";
+import { Plus, Trash2, Monitor, Network, Laptop, X, Cable, LineSquiggle, Plug, TrendingUpDown } from "lucide-react";
 import { normalizeMAC } from '@/lib/utils';
 import { areArraysEqual } from '@/lib/network/equality';
 import { getDeviceWidth, getDeviceHeight } from './networkTopology.helpers';
@@ -309,8 +308,6 @@ export function NetworkTopology({
   packetPanelZIndex,
   isExamActive = false,
   isExamEditorOpen = false,
-  onExportSVG: _onExportSVG,
-  onExportPNG: _onExportPNG,
 }: NetworkTopologyProps) {
   const { language, t } = useLanguage();
   const { theme } = useTheme();
@@ -1601,21 +1598,14 @@ export function NetworkTopology({
                 const tp = newPositions.get(conn.targetDeviceId) || { x: tgtDev.x, y: tgtDev.y };
 
                 // Calculate port positions using the same logic as getPortPosition
-                const calcPortPos = (device: CanvasDevice, portId: string, dx: number, dy: number) => {
-                  const pi = device.ports.findIndex((p) => p.id === portId);
-                  if (pi < 0) return { x: dx, y: dy };
-                  const isPL = device.type === 'pc' || device.type === 'iot';
-                  const ppr = isPL ? 2 : 8;
-                  const startXOffset = 12;
-                  const startYOffset = 14;
-                  const spacing = 13;
-                  const row = Math.floor(pi / ppr);
-                  const col = pi % ppr;
-                  return { x: dx + startXOffset + col * spacing, y: dy + startYOffset + row * spacing };
-                };
-
-                const srcPort = calcPortPos(srcDev, conn.sourcePort, sp.x, sp.y);
-                const tgtPort = calcPortPos(tgtDev, conn.targetPort, tp.x, tp.y);
+                const srcPort = getPortPositionRef.current(
+                  Object.assign({}, srcDev, { x: sp.x, y: sp.y }),
+                  conn.sourcePort
+                );
+                const tgtPort = getPortPositionRef.current(
+                  Object.assign({}, tgtDev, { x: tp.x, y: tp.y }),
+                  conn.targetPort
+                );
 
                 // Simple bezier curve calculation
                 const midX = (srcPort.x + tgtPort.x) / 2;
@@ -2805,105 +2795,6 @@ export function NetworkTopology({
     return candidate;
   }, [devices, deviceStates]);
 
-  const handleExportSVG = useCallback(() => {
-    if (!canvasRef.current) return;
-    const svg = canvasRef.current.querySelector('svg');
-    if (!svg) return;
-
-    // Clone the SVG to avoid modifying the live one
-    const clone = svg.cloneNode(true) as SVGSVGElement;
-
-    // Set a explicit background color for the export
-    const bg = isDark ? '#0d1728' : '#dde8f4';
-    clone.style.backgroundColor = bg;
-
-    // Find the content group and reset its transform so the full topology is visible
-    const g = clone.querySelector('g');
-    if (g) {
-      g.style.transform = 'none';
-    }
-
-    // Determine bounds of all elements to set appropriate viewBox
-    const padding = 50;
-    const minX = Math.min(...devices.map(d => d.x), ...notes.map(n => n.x), 0);
-    const minY = Math.min(...devices.map(d => d.y), ...notes.map(n => n.y), 0);
-    const maxX = Math.max(...devices.map(d => d.x + 100), ...notes.map(n => n.x + n.width), 800);
-    const maxY = Math.max(...devices.map(d => d.y + 100), ...notes.map(n => n.y + n.height), 600);
-
-    const width = maxX - minX + padding * 2;
-    const height = maxY - minY + padding * 2;
-
-    clone.setAttribute('viewBox', `${minX - padding} ${minY - padding} ${width} ${height}`);
-    clone.setAttribute('width', width.toString());
-    clone.setAttribute('height', height.toString());
-
-    // Serialize and download
-    const svgData = new XMLSerializer().serializeToString(clone);
-    const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `topology-${new Date().getTime()}.svg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }, [devices, notes, isDark]);
-
-  const handleExportPNG = useCallback(() => {
-    if (!canvasRef.current) return;
-    const svg = canvasRef.current.querySelector('svg');
-    if (!svg) return;
-
-    // Use similar logic to SVG export but render to canvas
-    const clone = svg.cloneNode(true) as SVGSVGElement;
-    const bg = isDark ? '#0d1728' : '#dde8f4';
-    clone.style.backgroundColor = bg;
-
-    const g = clone.querySelector('g');
-    if (g) g.style.transform = 'none';
-
-    const padding = 50;
-    const minX = Math.min(...devices.map(d => d.x), ...notes.map(n => n.x), 0);
-    const minY = Math.min(...devices.map(d => d.y), ...notes.map(n => n.y), 0);
-    const maxX = Math.max(...devices.map(d => d.x + 100), ...notes.map(n => n.x + n.width), 800);
-    const maxY = Math.max(...devices.map(d => d.y + 100), ...notes.map(n => n.y + n.height), 600);
-
-    const width = maxX - minX + padding * 2;
-    const height = maxY - minY + padding * 2;
-
-    clone.setAttribute('viewBox', `${minX - padding} ${minY - padding} ${width} ${height}`);
-    clone.setAttribute('width', width.toString());
-    clone.setAttribute('height', height.toString());
-
-    const svgData = new XMLSerializer().serializeToString(clone);
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const img = new Image();
-    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(svgBlob);
-
-    img.onload = () => {
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, width, height);
-      ctx.drawImage(img, 0, 0);
-
-      const pngUrl = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.href = pngUrl;
-      link.download = `topology-${new Date().getTime()}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    };
-    img.src = url;
-  }, [devices, notes, isDark]);
-
   // Add device from palette button
   const addDevice = useCallback((type: 'pc' | 'iot' | 'switch' | 'router' | 'firewall' | 'wlc', layer?: 'L2' | 'L3') => {
     if (isExamActive && !isExamEditorOpen) return;
@@ -3068,6 +2959,273 @@ export function NetworkTopology({
     setSelectedNoteIds([newNote.id]);
   }, [saveToHistory, language, getNextNoteId]);
 
+  const handleExportPNG = useCallback(() => {
+    if (!canvasRef.current) return;
+    const svg = canvasRef.current.querySelector('svg');
+    if (!svg) return;
+
+    // Clone and clean for export
+    const clone = svg.cloneNode(true) as SVGSVGElement;
+    const ns = 'http://www.w3.org/2000/svg';
+
+    // Determine which devices are visibile in the DOM (have full rendering)
+    const domDeviceIds = new Set<string>();
+    devices.forEach(d => {
+      if (svg.querySelector(`[data-device-id="${d.id}"]`)) domDeviceIds.add(d.id);
+    });
+
+    // Remove interactive/UI elements
+    clone.querySelectorAll('[data-export-hide="true"]').forEach(el => el.remove());
+    // Remove foreignObjects (note editors/device port popups)
+    clone.querySelectorAll('foreignObject').forEach(el => el.remove());
+    // Remove connections (will rebuild all with proper port positions)
+    clone.querySelectorAll('[data-connection-id]').forEach(el => el.remove());
+    // Remove device elements not in DOM (culled ones left a stale placeholder) — keep full-rendered ones
+    clone.querySelectorAll('[data-device-id]').forEach(el => {
+      const id = el.getAttribute('data-device-id');
+      if (id && !domDeviceIds.has(id)) el.remove();
+    });
+
+    // Build type-specific simplified SVG body for culled devices
+    const addSimplifiedDevice = (device: CanvasDevice) => {
+      const c = (() => {
+        const map: Record<string, { fill: string; stroke: string; text: string }> = {
+          pc:       { fill: isDark ? '#1e3a8a' : '#bfdbfe', stroke: isDark ? '#3b82f6' : '#93c5fd', text: isDark ? '#fff' : '#000' },
+          iot:      { fill: isDark ? '#9a3412' : '#fed7aa', stroke: isDark ? '#f97316' : '#fdba74', text: isDark ? '#fff' : '#000' },
+          switch:   { fill: isDark ? '#155e75' : '#a5f3fc', stroke: isDark ? '#06b6d4' : '#67e8f9', text: isDark ? '#fff' : '#000' },
+          switchL2: { fill: isDark ? '#155e75' : '#a5f3fc', stroke: isDark ? '#06b6d4' : '#67e8f9', text: isDark ? '#fff' : '#000' },
+          switchL3: { fill: isDark ? '#155e75' : '#a5f3fc', stroke: isDark ? '#06b6d4' : '#67e8f9', text: isDark ? '#fff' : '#000' },
+          router:   { fill: isDark ? '#5b21b6' : '#ddd6fe', stroke: isDark ? '#a855f7' : '#c4b5fd', text: isDark ? '#fff' : '#000' },
+          firewall: { fill: isDark ? '#991b1b' : '#fecaca', stroke: isDark ? '#ef4444' : '#fca5a5', text: isDark ? '#fff' : '#000' },
+          wlc:      { fill: isDark ? '#854d0e' : '#fef9c3', stroke: isDark ? '#eab308' : '#fde047', text: isDark ? '#fff' : '#000' },
+        };
+        return map[device.type] || map.pc;
+      })();
+      const dw = 100;
+      const dh = device.type === 'pc' || device.type === 'iot' ? 85 : 100;
+      const g = document.createElementNS(ns, 'g');
+      g.setAttribute('data-device-id', device.id);
+
+      const rect = document.createElementNS(ns, 'rect');
+      rect.setAttribute('x', device.x.toString());
+      rect.setAttribute('y', device.y.toString());
+      rect.setAttribute('width', dw.toString());
+      rect.setAttribute('height', dh.toString());
+      rect.setAttribute('rx', '8');
+      rect.setAttribute('fill', c.fill);
+      rect.setAttribute('stroke', c.stroke);
+      rect.setAttribute('stroke-width', '1.5');
+      g.appendChild(rect);
+
+      const label = document.createElementNS(ns, 'text');
+      label.setAttribute('x', (device.x + dw / 2).toString());
+      label.setAttribute('y', (device.y + dh / 2 - 4).toString());
+      label.setAttribute('text-anchor', 'middle');
+      label.setAttribute('dominant-baseline', 'auto');
+      label.setAttribute('fill', c.text);
+      label.setAttribute('font-size', '9');
+      label.setAttribute('font-weight', 'bold');
+      label.setAttribute('font-family', 'monospace');
+      label.textContent = device.name;
+      g.appendChild(label);
+
+      if (device.ip) {
+        const ipLabel = document.createElementNS(ns, 'text');
+        ipLabel.setAttribute('x', (device.x + dw / 2).toString());
+        ipLabel.setAttribute('y', (device.y + dh / 2 + 10).toString());
+        ipLabel.setAttribute('text-anchor', 'middle');
+        ipLabel.setAttribute('fill', c.text);
+        ipLabel.setAttribute('font-size', '7');
+        ipLabel.setAttribute('opacity', '0.7');
+        ipLabel.setAttribute('font-family', 'monospace');
+        ipLabel.textContent = device.ip;
+        g.appendChild(ipLabel);
+      }
+
+      clone.appendChild(g);
+    };
+
+    // Keep full-rendered devices in clone, add simplified for culled ones
+    devices.forEach(device => {
+      if (!domDeviceIds.has(device.id)) addSimplifiedDevice(device);
+    });
+
+    // Rebuild all connections with proper port positions, colors, and labels
+    connections.forEach(conn => {
+      const src = devices.find(d => d.id === conn.sourceDeviceId);
+      const dst = devices.find(d => d.id === conn.targetDeviceId);
+      if (!src || !dst) return;
+
+      const srcPort = getPortPositionRef.current(src, conn.sourcePort);
+      const tgtPort = getPortPositionRef.current(dst, conn.targetPort);
+      const midX = (srcPort.x + tgtPort.x) / 2;
+
+      const pathD = 'M ' + srcPort.x + ' ' + srcPort.y +
+        ' C ' + midX + ' ' + srcPort.y + ', ' + midX + ' ' + tgtPort.y + ', ' + tgtPort.x + ' ' + tgtPort.y;
+
+      const cableColor = conn.active === false
+        ? CABLE_COLORS.error.primary
+        : (CABLE_COLORS[conn.cableType]?.primary || CABLE_COLORS.straight.primary);
+      const opacity = conn.active === false ? 0.8 : 0.5;
+
+      const path = document.createElementNS(ns, 'path');
+      path.setAttribute('d', pathD);
+      path.setAttribute('stroke', cableColor);
+      path.setAttribute('stroke-width', '2');
+      path.setAttribute('fill', 'none');
+      path.setAttribute('opacity', opacity.toString());
+      path.setAttribute('data-connection-id', conn.id);
+      clone.appendChild(path);
+
+      // Port labels at t=0.42 (source) and t=0.58 (target) on the bezier curve
+      const bezierPoint = (t: number) => {
+        const mt = 1 - t;
+        return {
+          x: mt * mt * mt * srcPort.x + 3 * mt * mt * t * midX + 3 * mt * t * t * midX + t * t * t * tgtPort.x,
+          y: mt * mt * mt * srcPort.y + 3 * mt * mt * t * srcPort.y + 3 * mt * t * t * tgtPort.y + t * t * t * tgtPort.y,
+        };
+      };
+      const srcLabelPos = bezierPoint(0.42);
+      const tgtLabelPos = bezierPoint(0.58);
+      const labelOffsetY = -10;
+
+      const addLabel = (pos: { x: number; y: number }, text: string) => {
+        const halo = document.createElementNS(ns, 'text');
+        halo.setAttribute('x', pos.x.toString());
+        halo.setAttribute('y', (pos.y + labelOffsetY).toString());
+        halo.setAttribute('fill', isDark ? '#0f172a' : '#ffffff');
+        halo.setAttribute('stroke', isDark ? '#0f172a' : '#ffffff');
+        halo.setAttribute('stroke-width', '3');
+        halo.setAttribute('stroke-linejoin', 'round');
+        halo.setAttribute('font-size', '9');
+        halo.setAttribute('font-weight', 'bold');
+        halo.setAttribute('text-anchor', 'middle');
+        halo.setAttribute('opacity', '0.85');
+        halo.textContent = text;
+        clone.appendChild(halo);
+
+        const label = document.createElementNS(ns, 'text');
+        label.setAttribute('x', pos.x.toString());
+        label.setAttribute('y', (pos.y + labelOffsetY).toString());
+        label.setAttribute('fill', cableColor);
+        label.setAttribute('font-size', '9');
+        label.setAttribute('font-weight', 'bold');
+        label.setAttribute('text-anchor', 'middle');
+        label.setAttribute('opacity', '0.85');
+        label.textContent = text;
+        clone.appendChild(label);
+      };
+
+      addLabel(srcLabelPos, conn.sourcePort);
+      addLabel(tgtLabelPos, conn.targetPort);
+    });
+
+    // Re-create notes as export-friendly SVG elements (rounded rect + text, auto-sized)
+    const measureNoteHeight = (text: string, width: number, fontSize: number, font: string): number => {
+      const tmp = document.createElement('div');
+      tmp.style.cssText = `position:absolute;visibility:hidden;left:-9999px;width:${width - 16}px;font-size:${fontSize}px;font-family:${font};line-height:1.35;white-space:pre-wrap;word-wrap:break-word;`;
+      tmp.textContent = text || ' ';
+      document.body.appendChild(tmp);
+      const h = tmp.scrollHeight + 24 + 16;
+      document.body.removeChild(tmp);
+      return Math.max(100, h);
+    };
+    const noteHeights = new Map<string, number>();
+    notes.forEach(note => {
+      noteHeights.set(note.id, measureNoteHeight(note.text, note.width, note.fontSize, note.font));
+
+      const g = document.createElementNS(ns, 'g');
+      const nh = noteHeights.get(note.id) ?? 100;
+
+      const rect = document.createElementNS(ns, 'rect');
+      rect.setAttribute('x', note.x.toString());
+      rect.setAttribute('y', note.y.toString());
+      rect.setAttribute('width', note.width.toString());
+      rect.setAttribute('height', nh.toString());
+      rect.setAttribute('rx', '8');
+      rect.setAttribute('ry', '8');
+      rect.setAttribute('fill', note.color);
+      rect.setAttribute('opacity', note.opacity.toString());
+      g.appendChild(rect);
+
+      const fo = document.createElementNS(ns, 'foreignObject');
+      const pad = 8;
+      fo.setAttribute('x', (note.x + pad).toString());
+      fo.setAttribute('y', (note.y + pad + 24).toString());
+      fo.setAttribute('width', (note.width - pad * 2).toString());
+      fo.setAttribute('height', (nh - pad * 2 - 24).toString());
+      const div = document.createElement('div');
+      div.textContent = note.text;
+      div.style.cssText = `font-family:${note.font};font-size:${note.fontSize}px;line-height:1.35;color:#000;word-wrap:break-word;white-space:pre-wrap;width:100%;height:100%;overflow:hidden;`;
+      fo.appendChild(div);
+      g.appendChild(fo);
+
+      clone.appendChild(g);
+    });
+
+    // Set background
+    const bg = isDark ? '#0d1728' : '#dde8f4';
+    clone.style.backgroundColor = bg;
+
+    // Reset transform on the main content group
+    const mainGroup = clone.querySelector('g');
+    if (mainGroup) {
+      mainGroup.style.transform = 'none';
+    }
+
+    // Bounds (use auto-sized note heights where computed)
+    const padding = 50;
+    const getNoteMaxY = (n: typeof notes[0]) => n.y + (noteHeights.get(n.id) ?? n.height);
+    const minX = Math.min(...devices.map(d => d.x), ...notes.map(n => n.x), 0);
+    const minY = Math.min(...devices.map(d => d.y), ...notes.map(n => n.y), 0);
+    const maxX = Math.max(...devices.map(d => d.x + 100), ...notes.map(n => n.x + n.width), 800);
+    const maxY = Math.max(...devices.map(d => d.y + 100), ...notes.map(n => getNoteMaxY(n)), 600);
+
+    const width = maxX - minX + padding * 2;
+    const height = maxY - minY + padding * 2;
+
+    clone.setAttribute('viewBox', `${minX - padding} ${minY - padding} ${width} ${height}`);
+    clone.setAttribute('width', width.toString());
+    clone.setAttribute('height', height.toString());
+
+    // Serialize
+    const svgData = new XMLSerializer().serializeToString(clone);
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+
+    // Render to canvas at 300 DPI
+    const dpi = 300;
+    const scale = dpi / 72;
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(width * scale);
+      canvas.height = Math.round(height * scale);
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { URL.revokeObjectURL(url); return; }
+      ctx.scale(scale, scale);
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, width, height);
+      ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+
+      // Download
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const pngUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = pngUrl;
+        link.download = `topology-${new Date().getTime()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(pngUrl);
+      }, 'image/png');
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); };
+    img.src = url;
+  }, [devices, connections, notes, isDark]);
+
   // Handle toolbar events from page.tsx
   useEffect(() => {
     const handleAddDevice = (event: CustomEvent) => {
@@ -3091,16 +3249,17 @@ export function NetworkTopology({
     window.addEventListener('add-device', handleAddDevice as EventListener);
     window.addEventListener('toggle-ping-mode', handleTogglePingMode as EventListener);
     window.addEventListener('add-note', handleAddNote as EventListener);
-    window.addEventListener('trigger-topology-export-svg', handleExportSVG);
-    window.addEventListener('trigger-topology-export-png', handleExportPNG);
+    window.addEventListener('add-device', handleAddDevice as EventListener);
+    window.addEventListener('toggle-ping-mode', handleTogglePingMode as EventListener);
+    window.addEventListener('add-note', handleAddNote as EventListener);
+    window.addEventListener('trigger-topology-export-png', handleExportPNG as EventListener);
     return () => {
       window.removeEventListener('add-device', handleAddDevice as EventListener);
       window.removeEventListener('toggle-ping-mode', handleTogglePingMode as EventListener);
       window.removeEventListener('add-note', handleAddNote as EventListener);
-      window.removeEventListener('trigger-topology-export-svg', handleExportSVG);
-      window.removeEventListener('trigger-topology-export-png', handleExportPNG);
+      window.removeEventListener('trigger-topology-export-png', handleExportPNG as EventListener);
     };
-  }, [addDevice, addNote, handleExportSVG, handleExportPNG]);
+    }, [addDevice, addNote, handleExportPNG]);
 
   const deleteNote = useCallback((noteId: string) => {
     saveToHistory();
@@ -3931,7 +4090,6 @@ export function NetworkTopology({
       return hasChanges ? updatedDevices : prev;
     });
   }, [deviceStates, connections]); // ← added connections to check for active connections
-
 
   const toggleConnectionActive = useCallback((connId: string) => {
     saveToHistory();
@@ -5920,6 +6078,7 @@ export function NetworkTopology({
           <TooltipTrigger asChild>
             <g
               className="cursor-pointer"
+              data-export-hide="true"
               filter="url(#deviceShadow)"
               onClick={(e) => {
                 e.stopPropagation();
@@ -6779,23 +6938,6 @@ export function NetworkTopology({
               <span className="text-xs font-semibold whitespace-nowrap bg-slate-700/30 px-2 py-0.5 rounded">
                 {selectedDeviceIds.length}
               </span>
-              <TooltipWrapper title={t.togglePower}>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    logger.debug('[Toolbar] Power toggle clicked');
-                    saveToHistory();
-                    togglePowerDevices(selectedDeviceIds);
-                  }}
-                  className={`p-1.5 rounded-lg transition-colors ${isDark
-                    ? 'hover:bg-amber-500/20 text-amber-300'
-                    : 'hover:bg-amber-100 text-amber-700'
-                    }`}
-                >
-                  <Power className="w-4 h-4" />
-                </button>
-              </TooltipWrapper>
               <TooltipWrapper title={t.cancel}>
                 <button
                   onClick={(e) => {
@@ -7416,6 +7558,7 @@ export function NetworkTopology({
                       >
                         {/* Note Header - Draggable */}
                         <div
+                          data-export-hide="true"
                           onMouseDown={(e) => {
                             e.preventDefault();
                             handleNoteHeaderMouseDown(e as unknown as ReactMouseEvent, note.id);
@@ -7816,18 +7959,7 @@ export function NetworkTopology({
 
 
           {/* Mobile FAB for Device Addition */}
-          {isMobile && !isExamActive && (
-            <div className="fixed bottom-[110px] right-[10px] z-40 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <Button
-                onClick={() => setMobilePaletteOpen(true)}
-                size="icon"
-                className="w-12 h-12 rounded-full shadow-2xl bg-primary text-white hover:scale-105 active:scale-95 transition-all flex items-center justify-center border-2 border-white/20"
-                aria-label={t.addDevice}
-              >
-                <Plus className="w-6 h-6" />
-              </Button>
-            </div>
-          )}
+
 
           {/* Zoom Controls - Mobile Float - Above Footer */}
           <div
@@ -9042,7 +9174,7 @@ export function NetworkTopology({
 
 
 
-      {/* Packet Capture Panel (Wireshark Lite) */}
+      {/* Packet Capture Panel */}
       {activeCaptureConnectionId && (
         <div className={`fixed bottom-20 right-4 w-96 max-h-[300px] flex flex-col rounded-xl border shadow-2xl z-50 backdrop-blur-md overflow-hidden ${isDark ? 'bg-slate-900/90 border-slate-800' : 'bg-white/90 border-slate-200'}`}>
           <div className={`flex items-center justify-between px-3 py-2 border-b ${isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>

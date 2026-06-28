@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { CanvasConnection, CanvasDevice } from './networkTopology.types';
 import { isCableCompatible, CableInfo } from '@/lib/network/types';
-import { Trash2, Scissors, Zap } from 'lucide-react';
+import { Trash2, Unplug, PlugZap } from 'lucide-react';
 
 interface ConnectionHandleProps {
   connection: CanvasConnection;
@@ -76,7 +76,7 @@ const ConnectionHandle = memo(function ConnectionHandle({
       : true;
 
   return (
-    <g key={`handle-${connection.id}`}>
+    <g key={`handle-${connection.id}`} data-export-hide="true">
       {isCompatible && (
         <g transform={`translate(${trashX}, ${trashY})`}>
           {/* Delete Button */}
@@ -124,14 +124,14 @@ const ConnectionHandle = memo(function ConnectionHandle({
               className="drop-shadow-sm group-hover:fill-amber-500/10 transition-colors"
             />
             {connection.active ? (
-              <Scissors
+              <Unplug
                 className="w-3 h-3 text-amber-500"
                 width={15}
                 height={15}
                 style={{ transform: 'translate(2px, -8px)' }}
               />
             ) : (
-              <Zap
+              <PlugZap
                 className="w-3 h-3 text-emerald-500"
                 width={15}
                 height={15}

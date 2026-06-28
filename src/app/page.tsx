@@ -56,7 +56,7 @@ const NetworkTopology = dynamic(
   { ssr: false }
 );
 
-import { Network, Monitor, X, Power, Filter, RefreshCw, Users } from "lucide-react";
+import { Network, Monitor, X, Power, Filter, RefreshCw, Users, Activity, ShieldCheck, Share2, Layers } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { TooltipWrapper } from "@/components/ui/TooltipWrapper";
 import { useLanguage, Translations } from '@/contexts/LanguageContext';
@@ -107,7 +107,6 @@ const FirewallPanel = dynamic(() => import('@/components/network/FirewallPanel')
 const EnvironmentSettingsPanel = dynamic(() => import('@/components/network/EnvironmentSettingsPanel').then((m) => m.EnvironmentSettingsPanel));
 const OnboardingDialog = dynamic(() => import('@/components/network/OnboardingDialog').then((m) => m.OnboardingDialog));
 const ExamEditorPanel = dynamic(() => import('@/components/network/ExamEditorPanel').then((m) => m.ExamEditorPanel));
-const ProtocolStatusPanel = dynamic(() => import('@/components/network/ProtocolStatusPanel').then((m) => m.ProtocolStatusPanel));
 const RoomJoinDialog = dynamic(() => import('@/components/RoomJoinDialog').then((m) => m.RoomJoinDialog));
 const TeacherRoomPanel = dynamic(() => import('@/components/TeacherRoomPanel').then((m) => m.TeacherRoomPanel));
 
@@ -868,7 +867,11 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     if (!devices || !states) return null;
     const allVlans = new Set<number>();
     let totalRoutes = 0, connectedRoutes = 0, staticRoutes = 0, dynamicRoutes = 0;
-    states.forEach((state) => {
+    let ospfCount = 0, ospfNeighbors = 0;
+    let stpRootCount = 0, stpBlockedPorts = 0;
+    let hsrpActive = 0, hsrpStandby = 0;
+    let eigrpCount = 0, eigrpNeighbors = 0;
+    states.forEach((state, deviceId) => {
       if (state.vlans) Object.keys(state.vlans).forEach((vId) => allVlans.add(Number(vId)));
       [state.staticRoutes, state.dynamicRoutes].forEach((routes) => {
         if (!routes) return;
@@ -885,6 +888,41 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
           connectedRoutes++;
         }
       });
+
+      // OSPF
+      if (state.ospfAreas && state.ospfAreas.length > 0) {
+        ospfCount++;
+        const neighbors = state.ospfNeighbors || [];
+        ospfNeighbors += neighbors.length;
+      }
+
+      // STP
+      Object.values(state.ports).forEach(port => {
+        if (port.spanningTree?.state === 'blocking' || port.spanningTree?.role === 'alternate') {
+          stpBlockedPorts++;
+        }
+      });
+      const hasRootPort = Object.values(state.ports).some(p => p.spanningTree?.role === 'root');
+      const isSwitch = devices.find(d => d.id === deviceId)?.type.startsWith('switch');
+      if (isSwitch && !hasRootPort && Object.values(state.ports).some(p => p.spanningTree)) {
+        stpRootCount++;
+      }
+
+      // HSRP
+      Object.values(state.ports).forEach(port => {
+        if (port.hsrp?.groups) {
+          Object.values(port.hsrp.groups).forEach(group => {
+            if (group.state === 'Active') hsrpActive++;
+            if (group.state === 'Standby') hsrpStandby++;
+          });
+        }
+      });
+
+      // EIGRP
+      if (state.eigrpAs) {
+        eigrpCount++;
+        eigrpNeighbors += (state.eigrpNeighbors || []).length;
+      }
     });
     return {
       deviceCount: {
@@ -899,6 +937,12 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
       activeLinks: topologyConnections.filter((c) => c.active).length,
       vlanCount: allVlans.size,
       routingTableSummary: { totalRoutes, connected: connectedRoutes, static: staticRoutes, dynamic: dynamicRoutes },
+      protocolStats: {
+        ospf: { count: ospfCount, neighbors: ospfNeighbors },
+        stp: { roots: stpRootCount, blocked: stpBlockedPorts },
+        hsrp: { active: hsrpActive, standby: hsrpStandby },
+        eigrp: { count: eigrpCount, neighbors: eigrpNeighbors }
+      },
     };
   }, [topologyDevices, topologyConnections, deviceStates]);
 
@@ -1563,6 +1607,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   // Restore saved position for refresh network report
   useEffect(() => {
     if (!refreshNetworkReport?.show || !refreshReportRef.current) return;
+    if (isMobile) return; // Mobile'da floating davranışı gereksiz
     try {
       const saved = localStorage.getItem('draggable_position_refresh-network-report');
       if (saved) {
@@ -1570,19 +1615,21 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
         if (typeof parsed.x === 'number' && typeof parsed.y === 'number') {
           const vw = window.innerWidth;
           const vh = window.innerHeight;
-          const margin = 16;
           const el = refreshReportRef.current;
           const rect = el.getBoundingClientRect();
+          // Güvenli bölgeye konumla (header altı, ekran dışına taşma koruması)
+          const safeX = Math.max(4, Math.min(parsed.x, vw - rect.width - 4));
+          const safeY = Math.max(128, Math.min(parsed.y, vh - rect.height - 4));
           el.style.position = 'fixed';
-          el.style.left = `${Math.max(margin - rect.width, Math.min(parsed.x, vw - margin))}px`;
-          el.style.top = `${Math.max(margin - rect.height, Math.min(parsed.y, vh - margin))}px`;
+          el.style.left = `${safeX}px`;
+          el.style.top = `${safeY}px`;
           el.style.right = 'auto';
           el.style.bottom = 'auto';
           el.style.transform = 'none';
         }
       }
     } catch { /* ignore */ }
-  }, [refreshNetworkReport?.show]);
+  }, [refreshNetworkReport?.show, isMobile]);
 
   // Load project from JSON data
   const loadProjectData = useCallback((projectData: unknown, options?: { keepActiveDevice?: boolean }) => {
@@ -5040,37 +5087,35 @@ ${state.bannerMOTD}
             )}>
               {/* Tab Content - Always render but hide non-active */}
               <div className={`flex-1 flex flex-col min-h-0 ${activeTab === 'topology' ? 'flex' : 'hidden'} print:flex`}>
-                {/* Topology Toolbar */}
-                {activeTab === 'topology' && (
-                  <TopologyToolbar
-                    t={t}
-                    isDark={isDark}
-                    language={language}
-                    topologyDevices={topologyDevices}
-                    deviceStates={deviceStates}
-                    activeDeviceId={activeDeviceId}
-                    activeDeviceType={activeDeviceType}
-                    cableInfo={cableInfo}
-                    deviceSearchQuery={deviceSearchQuery}
-                    canUndo={canUndo}
-                    canRedo={canRedo}
-                    hasHydrated={hasHydrated}
-                    isExamActive={isExamActive}
-                    setDeviceSearchQuery={setDeviceSearchQuery}
-                    setCableInfo={setCableInfo}
-                    setZoom={setZoom}
-                    setPan={setPan}
-                    handleDeviceSelectFromMenu={handleDeviceSelectFromMenu}
-                    handleUndo={handleUndo}
-                    handleRedo={handleRedo}
-                    handleRefreshNetwork={handleRefreshNetwork}
-                    setIsEnvironmentPanelOpen={setIsEnvironmentPanelOpen}
-                    onOpenStudentJoin={isRoomEnabled ? () => setShowRoomJoinDialog(true) : undefined}
-                    onOpenTeacherPanel={isRoomEnabled && !studentRoomCode ? () => setShowTeacherPanel(true) : undefined}
-                    onExportSVG={() => window.dispatchEvent(new CustomEvent('trigger-topology-export-svg'))}
-                    onExportPNG={() => window.dispatchEvent(new CustomEvent('trigger-topology-export-png'))}
-                  />
-                )}
+                 {/* Topology Toolbar */}
+                 {activeTab === 'topology' && (
+                   <TopologyToolbar
+                     t={t}
+                     isDark={isDark}
+                     language={language}
+                     topologyDevices={topologyDevices}
+                     deviceStates={deviceStates}
+                     activeDeviceId={activeDeviceId}
+                     activeDeviceType={activeDeviceType}
+                     cableInfo={cableInfo}
+                     deviceSearchQuery={deviceSearchQuery}
+                     canUndo={canUndo}
+                     canRedo={canRedo}
+                     hasHydrated={hasHydrated}
+                     isExamActive={isExamActive}
+                     setDeviceSearchQuery={setDeviceSearchQuery}
+                     setCableInfo={setCableInfo}
+                     setZoom={setZoom}
+                     setPan={setPan}
+                     handleDeviceSelectFromMenu={handleDeviceSelectFromMenu}
+                     handleUndo={handleUndo}
+                     handleRedo={handleRedo}
+                     handleRefreshNetwork={handleRefreshNetwork}
+                     setIsEnvironmentPanelOpen={setIsEnvironmentPanelOpen}
+                     onOpenStudentJoin={isRoomEnabled ? () => setShowRoomJoinDialog(true) : undefined}
+                     onOpenTeacherPanel={isRoomEnabled && !studentRoomCode ? () => setShowTeacherPanel(true) : undefined}
+                   />
+                 )}
 
                 {/* Room Controls — floating buttons above footer (mobile only) */}
                 {isRoomEnabled && (
@@ -5163,16 +5208,6 @@ ${state.bannerMOTD}
                       deviceStates={deviceStates}
                     />
                   )}
-
-                  {/* Router Info Popover - Bottom Right Mini Panel */}
-                  {/* Protocol Status Panel - Floating bottom right */}
-                  <div className="fixed bottom-16 right-4 z-20 pointer-events-auto">
-                    <ProtocolStatusPanel
-                      devices={topologyDevices}
-                      deviceStates={deviceStates}
-                      isDark={isDark}
-                    />
-                  </div>
 
                   {activeDeviceId && (activeDeviceId.startsWith('router-') || topologyDevices?.find(d => d.id === activeDeviceId)?.type === 'router') && topologyDevices && (
                     <RouterInfoPopover
@@ -5304,23 +5339,24 @@ ${state.bannerMOTD}
             {/* Network Refresh Report - Top Right Toast */}
             {
               refreshNetworkReport?.show && (
-                <div
-                  ref={refreshReportRef}
-                  data-draggable-id="refresh-network-report"
-                  className={`fixed top-20 right-4 w-full max-w-sm rounded-xl border shadow-2xl animate-in slide-in-from-right-full duration-300 backdrop-blur-md select-none ${isDark
-                    ? 'bg-zinc-950/40 border-emerald-500/30 text-zinc-100 shadow-black/40'
-                    : 'bg-white/40 border-emerald-500/50 text-zinc-900 shadow-zinc-200/50'
-                    }`}
+                  <div
+                    ref={refreshReportRef}
+                    data-draggable-id={isMobile ? undefined : "refresh-network-report"}
+                    className={`fixed top-20 right-4 w-full max-w-sm rounded-xl border shadow-2xl animate-in slide-in-from-right-full duration-300 backdrop-blur-md select-none ${isDark
+                      ? 'bg-zinc-950/40 border-emerald-500/30 text-zinc-100 shadow-black/40'
+                      : 'bg-white/40 border-emerald-500/50 text-zinc-900 shadow-zinc-200/50'
+                      }`}
                   style={{
-                    zIndex: focusedOverlay === 'refresh' ? 35 : 30,
+                    zIndex: 100,
+                    maxHeight: 'calc(100vh - 100px)',
                     // On mobile, ensure it's below header (60px) + some margin
-                    ...(isMobile ? { top: '80px' } : {})
+                    ...(isMobile ? { top: '80px', maxHeight: 'calc(100vh - 100px)' } : {})
                   }}
                   onMouseDown={() => setFocusedOverlay('refresh')}
                 >
                   <div
-                    className={`flex items-center justify-between px-3 py-2 border-b rounded-t-xl cursor-grab active:cursor-grabbing select-none ${isDark ? 'bg-white/5 border-emerald-500/20' : 'bg-black/5 border-emerald-500/30'}`}
-                    data-drag-handle
+                    className={`flex items-center justify-between px-3 py-2 border-b rounded-t-xl ${!isMobile ? 'cursor-grab active:cursor-grabbing' : ''} select-none ${isDark ? 'bg-white/5 border-emerald-500/20' : 'bg-black/5 border-emerald-500/30'}`}
+                    data-drag-handle={isMobile ? undefined : true}
                   >
                     <h3 className="text-sm font-bold flex items-center gap-2">
                       {refreshNetworkReport.title}
@@ -5345,7 +5381,7 @@ ${state.bannerMOTD}
                     </div>
                   </div>
 
-                  <div className="p-2">
+                  <div className="p-2 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 160px)' }}>
                     <Tabs defaultValue="summary" className="w-full">
                       <TabsList className={`w-full grid grid-cols-2 ${isDark ? 'bg-zinc-800/80' : 'bg-zinc-200/80'}`}>
                         <TabsTrigger value="summary" className="text-xs">
@@ -5467,9 +5503,65 @@ ${state.bannerMOTD}
                                     <span>{language === 'tr' ? 'Dinamik' : 'Dynamic'}</span>
                                     <span>{liveSummary.routingTableSummary.dynamic}</span>
                                   </div>
+                                  </div>
+                              </div>
+                            )}
+
+                            {/* Protocol Status */}
+                            {liveSummary.protocolStats && (
+                              <div className={`rounded-lg p-2.5 ${isDark ? 'bg-zinc-800/60' : 'bg-zinc-100/80'} text-xs`}>
+                                <div className={`font-semibold mb-1.5 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                                  {language === 'tr' ? 'Protokol Durumu' : 'Protocol Status'}
+                                </div>
+                                <div className="space-y-1">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className={`p-0.5 rounded ${liveSummary.protocolStats.ospf.count > 0 ? (liveSummary.protocolStats.ospf.neighbors > 0 ? 'bg-emerald-500/20 text-emerald-500' : 'bg-amber-500/20 text-amber-500') : 'bg-slate-500/20 text-slate-500'}`}>
+                                        <Activity className="w-3 h-3" />
+                                      </span>
+                                      <span className="font-bold">OSPF</span>
+                                    </div>
+                                    <span className={`${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                                      {language === 'tr' ? `${liveSummary.protocolStats.ospf.neighbors} komşu` : `${liveSummary.protocolStats.ospf.neighbors} neighbors`}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className={`p-0.5 rounded ${liveSummary.protocolStats.stp.roots > 0 ? 'bg-emerald-500/20 text-emerald-500' : 'bg-slate-500/20 text-slate-500'}`}>
+                                        <ShieldCheck className="w-3 h-3" />
+                                      </span>
+                                      <span className="font-bold">STP</span>
+                                    </div>
+                                    <span className={`${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                                      {language === 'tr' ? `${liveSummary.protocolStats.stp.roots} Root, ${liveSummary.protocolStats.stp.blocked} bloklu` : `${liveSummary.protocolStats.stp.roots} Root, ${liveSummary.protocolStats.stp.blocked} blocked`}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className={`p-0.5 rounded ${liveSummary.protocolStats.hsrp.active > 0 ? 'bg-emerald-500/20 text-emerald-500' : 'bg-slate-500/20 text-slate-500'}`}>
+                                        <Layers className="w-3 h-3" />
+                                      </span>
+                                      <span className="font-bold">HSRP</span>
+                                    </div>
+                                    <span className={`${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                                      A: {liveSummary.protocolStats.hsrp.active}, S: {liveSummary.protocolStats.hsrp.standby}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className={`p-0.5 rounded ${liveSummary.protocolStats.eigrp.count > 0 ? (liveSummary.protocolStats.eigrp.neighbors > 0 ? 'bg-emerald-500/20 text-emerald-500' : 'bg-rose-500/20 text-rose-500') : 'bg-slate-500/20 text-slate-500'}`}>
+                                        <Share2 className="w-3 h-3" />
+                                      </span>
+                                      <span className="font-bold">EIGRP</span>
+                                    </div>
+                                    <span className={`${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                                      {language === 'tr' ? `${liveSummary.protocolStats.eigrp.neighbors} komşu` : `${liveSummary.protocolStats.eigrp.neighbors} neighbors`}
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
                             )}
+
                           </>
                         )}
 

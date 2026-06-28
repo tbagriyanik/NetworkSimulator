@@ -1,6 +1,16 @@
 
 ## Latest Updates
 
+### v1.9.2 (2026-06-28)
+| English | Türkçe |
+| --- | --- |
+| **PNG Export**: 300 DPI high-resolution export with topology-faithful rendering — full device visuals, cable colors by type, port name labels, auto-sized notes with rounded colored backgrounds. | **PNG Çıktısı**: Topolojiye sadık 300 DPI yüksek çözünürlüklü dışa aktarma — tam cihaz görselleri, kablo türüne göre renkler, port adı etiketleri, otomatik boyutlu yuvarlak renkli notlar. |
+| **Cable Break/Fix**: Unplug/PlugZap icons replace scissors/zap for cable state toggle; power status icons on devices. | **Kablo Kes/Onar**: Kablo durumu değiştirme için makas/şimşek yerine Unplug/PlugZap simgeleri; cihazlarda güç durumu simgeleri. |
+| **Protocol Status Panel**: OSPF/STP/HSRP/EIGRP status integrated into the "Özet" tab of the refresh network report; standalone floating panel removed. | **Protokol Durum Paneli**: OSPF/STP/HSRP/EIGRP durumu ağ yenileme raporunun "Özet" sekmesine entegre edildi; bağımsız浮动 panel kaldırıldı. |
+| **Network Status Panel**: Fixed z-index above header, scroll on overflow, non-floating on mobile, safe off-screen repositioning. | **Ağ Durum Paneli**: Header üzerinde sabit z-index, taşma durumunda kaydırma, mobilde浮动 olmayan, güvenli ekran dışı konumlandırma. |
+| **Drag Fix**: Cable connection points no longer misalign when dragging devices (port positions now use the same calculation as normal render). | **Sürükleme Düzeltmesi**: Cihaz taşırken kablo bağlantı noktaları artık kaymıyor (port pozisyonları normal render ile aynı hesaplamayı kullanır). |
+| **UI Cleanup**: Removed floating mobile add-device button; mobile network status panel is non-draggable. | **UI Temizliği**: Mobil浮动 cihaz ekle butonu kaldırıldı; mobil ağ durum paneli sürüklenemez. |
+
 | English | Türkçe |
 | --- | --- |
 | **FTP Services**: FTP client/server configuration, file upload, and file transfer simulation across devices. | **FTP Servisleri**: FTP istemci/sunucu yapılandırması, dosya yükleme ve cihazlar arası dosya aktarım simülasyonu. |

@@ -21,7 +21,7 @@ import {
 import { cn } from '@/lib/utils';
 import {
   Menu, Plus, Save, FolderOpen, Languages, Sun, Moon, File, Undo2, Redo2, BookOpen, Leaf, Compass, Info, Sparkles, Cloud, Trophy,
-  Mail, GraduationCap
+  Mail, GraduationCap, ImageDown
 } from 'lucide-react';
 import type { Translations } from '@/contexts/LanguageContext';
 import type { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
@@ -225,6 +225,19 @@ export function AppHeader({
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
+                      <button aria-label={language === 'tr' ? 'PNG Kaydet' : 'Save as PNG'}
+                        className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-slate-200/50", isDark ? 'text-slate-300 hover:text-emerald-400 hover:bg-slate-700/50' : 'text-slate-600 hover:text-emerald-600')}
+                        onClick={() => window.dispatchEvent(new CustomEvent('trigger-topology-export-png'))}
+                      >
+                        <ImageDown className="w-4 h-4" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="flex items-center gap-2">
+                      <span>{language === 'tr' ? 'PNG Kaydet' : 'Save as PNG'}</span>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
                       <button aria-label={t.contactTitle} className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-slate-200/50", isDark ? 'text-slate-300 hover:text-blue-400 hover:bg-slate-700/50' : 'text-slate-500 hover:text-blue-600')} onClick={() => setShowAboutModal(true)}>
                         <Info className="w-4 h-4" />
                       </button>
@@ -273,6 +286,7 @@ export function AppHeader({
                 </TooltipTrigger>
                 <TooltipContent>{isDark ? t.lightMode : t.darkMode}</TooltipContent>
               </Tooltip>
+
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
@@ -359,6 +373,13 @@ export function AppHeader({
                         onClick={() => { handleSaveProject(); setShowMobileMenu(false); }}
                       >
                         <Save className="w-3.5 h-3.5 flex-shrink-0" /> <span>{t.saveLabel}</span>
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-emerald-400' : 'hover:text-emerald-600'}`}
+                        onClick={() => { window.dispatchEvent(new CustomEvent('trigger-topology-export-png')); setShowMobileMenu(false); }}
+                      >
+                        <ImageDown className="w-3.5 h-3.5 flex-shrink-0" /> <span>{language === 'tr' ? 'PNG Kaydet' : 'Save PNG'}</span>
                       </Button>
                       <Button
                         variant="secondary"
