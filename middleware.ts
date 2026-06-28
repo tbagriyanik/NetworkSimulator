@@ -46,9 +46,9 @@ export function middleware(_request: NextRequest) {
   const response = NextResponse.next();
   response.headers.set('Content-Security-Policy', csp);
   response.headers.set('Content-Security-Policy-Report-Only', cspReportOnly);
+  response.headers.set('x-nonce', nonce);
+
   return response;
 }
 
-export const config = {
-  matcher: '/:path*',
-};
+export const config = {   matcher: '/((?!api|_next/static|_next/image|favicon.ico).*)', };
