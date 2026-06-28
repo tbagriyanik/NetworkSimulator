@@ -274,6 +274,20 @@ export function AppHeader({
                   <span>{t.basarilarim}</span>
                 </TooltipContent>
               </Tooltip>
+              <div className="h-6 w-px bg-slate-300 dark:bg-slate-700 mx-1" />
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button aria-label={t.projectSummary || 'Project Summary'}
+                    className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-slate-200/50", isDark ? 'text-slate-300 hover:text-cyan-400 hover:bg-slate-700/50' : 'text-slate-600 hover:text-cyan-600')}
+                    onClick={() => window.dispatchEvent(new CustomEvent('trigger-project-summary'))}
+                  >
+                    <FileText className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent className="flex items-center gap-2">
+                  {t.projectSummary || 'Project Summary'}
+                </TooltipContent>
+              </Tooltip>
 
               {/* Settings & Theme */}
               <div className={`w-px h-4 mx-1 ${isDark ? 'bg-slate-700' : 'bg-slate-300'} hidden md:block`} />
@@ -393,6 +407,13 @@ export function AppHeader({
                         onClick={() => { window.dispatchEvent(new CustomEvent('trigger-topology-export-png')); setShowMobileMenu(false); }}
                       >
                         <ImageDown className="w-3.5 h-3.5 flex-shrink-0" /> <span>{language === 'tr' ? 'PNG Kaydet' : 'Save PNG'}</span>
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        onClick={() => { window.dispatchEvent(new CustomEvent('trigger-project-summary')); setShowMobileMenu(false); }}
+                      >
+                        <FileText className="w-3.5 h-3.5 flex-shrink-0" /> <span>{t.projectSummary || 'Project Summary'}</span>
                       </Button>
                       <Button
                         variant="secondary"

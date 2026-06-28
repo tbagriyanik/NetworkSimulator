@@ -63,6 +63,9 @@ import { useLanguage, Translations } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { toast } from "@/hooks/use-toast";
 
+import { ProjectSummaryModal } from '@/components/network/ProjectSummaryModal';
+import { generateProjectSummary, ProjectSummary } from '@/utils/generateSummary';
+
 import {
   topologyTasks,
   portTasks,
@@ -75,7 +78,7 @@ import {
   TaskContext,
   getTaskStatus
 } from '@/lib/network/taskDefinitions';
-import { exampleProjects, type ExampleProject, type ExampleProjectLevel } from '@/lib/network/exampleProjects';
+import type { ExampleProject, ExampleProjectLevel } from '@/lib/network/exampleProjects';
 import { getGuidedProjects, type GuidedProject } from '@/lib/network/guidedMode';
 import { getExamProjects, type ExamProject, type ProjectData, generateExamFromProject } from '@/lib/network/examMode';
 import { buildRunningConfig } from '@/lib/network/core/configBuilder';
@@ -400,6 +403,8 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   }, []);
   const [projectSearchQuery, setProjectSearchQuery] = useState('');
   const [showBasarilarim, setShowBasarilarim] = useState(false);
+  const [showProjectSummaryModal, setShowProjectSummaryModal] = useState(false);
+  const [projectSummaryData, setProjectSummaryData] = useState<ProjectSummary | null>(null);
 
   // PWA Installation state
   interface BeforeInstallPromptEvent extends Event {
@@ -616,20 +621,20 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     () => ({
       basic: t.basicHint,
       intermediate: t.intermediateHint,
-      advanced: t.advancedHint
+      advanced: t.intermediateHint
     }),
     [t]
   );
 
-  const groupedExampleProjects = useMemo(() => {
-    const grouping: Record<ExampleProjectLevel, ExampleProject[]> = {
-      basic: [],
-      intermediate: [],
-      advanced: []
-    };
-
-    exampleProjects(language).forEach((project) => grouping[project.level].push(project));
-    return grouping;
+  const [groupedExampleProjects, setGroupedExampleProjects] = useState<Record<ExampleProjectLevel, ExampleProject[]>>(
+    () => ({ basic: [], intermediate: [], advanced: [] })
+  );
+  useEffect(() => {
+    import('@/lib/network/exampleProjects').then(({ exampleProjects }) => {
+      const grouping: Record<ExampleProjectLevel, ExampleProject[]> = { basic: [], intermediate: [], advanced: [] };
+      exampleProjects(language).forEach((project) => grouping[project.level].push(project));
+      setGroupedExampleProjects(grouping);
+    });
   }, [language]);
 
   const {
@@ -658,6 +663,17 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   const pan = usePan();
   const activeTab = useActiveTab();
   const environment = useEnvironment();
+
+  // Listen for trigger-project-summary
+  useEffect(() => {
+    const handleProjectSummary = () => {
+      const summary = generateProjectSummary(topologyDevices || [], topologyConnections || [], deviceStates);
+      setProjectSummaryData(summary);
+      setShowProjectSummaryModal(true);
+    };
+    window.addEventListener('trigger-project-summary', handleProjectSummary);
+    return () => window.removeEventListener('trigger-project-summary', handleProjectSummary);
+  }, [topologyDevices, topologyConnections, deviceStates]);
   const helpLevel = useAppStore(state => state.helpLevel);
 
   // Network logic functions (must come after Zustand selectors to avoid TDZ)
@@ -2181,13 +2197,15 @@ ${state.bannerMOTD}
   // Persistence: Load from URL ID or localStorage on mount
   useEffect(() => {
     if (initialProjectId) {
-      // 1. Try example projects
-      const examples = exampleProjects(language);
-      const example = examples.find(p => p.id === initialProjectId);
-      if (example) {
-        applyExampleProject(example.data, example.id);
-        return;
-      }
+      // 1. Try example projects (dynamic import — not in initial bundle)
+      import('@/lib/network/exampleProjects').then(({ exampleProjects }) => {
+        const examples = exampleProjects(language);
+        const example = examples.find(p => p.id === initialProjectId);
+        if (example) {
+          applyExampleProject(example.data, example.id);
+          return;
+        }
+      });
 
       // 2. Try guided projects (Lessons)
       const lessons = getGuidedProjects(language);
@@ -5758,6 +5776,12 @@ ${state.bannerMOTD}
             showOnboarding={showOnboarding}
             handleRefreshNetwork={handleRefreshNetwork}
             setIsEnvironmentPanelOpen={setIsEnvironmentPanelOpen}
+          />
+
+          <ProjectSummaryModal
+            isOpen={showProjectSummaryModal}
+            onClose={() => setShowProjectSummaryModal(false)}
+            summary={projectSummaryData}
           />
 
           {showAboutModal && <LazyAboutModal

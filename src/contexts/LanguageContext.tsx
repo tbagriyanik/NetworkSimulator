@@ -254,6 +254,10 @@ export interface Translations {
   exitPingMode: string;
   expand: string;
   exportLabel: string;
+  projectSummary: string;
+  projectSummaryTitle: string;
+  summaryConfig: string;
+  summaryScores: string;
   extractingFiles: string;
   failedLoadProject: string;
   fastEthernetPorts: string;
@@ -971,6 +975,10 @@ const translations: Record<Language, Translations> = {
     exitPingMode: 'Ping modundan çık (ESC)',
     expand: 'Genişlet',
     exportLabel: 'Dışa Aktar',
+    projectSummary: 'Proje Özeti',
+    projectSummaryTitle: 'Proje Özeti ve Değerlendirme',
+    summaryConfig: 'Cihaz Konfigürasyonları',
+    summaryScores: 'Proje Skorları',
     extractingFiles: 'Dosyalar flash üzerinden çıkarılıyor...',
     failedLoadProject: 'Proje dosyası yüklenemedi!',
     fastEthernetPorts: 'FastEthernet Portları (Fa0/1 - Fa0/24)',
@@ -1686,6 +1694,10 @@ const translations: Record<Language, Translations> = {
     exitPingMode: 'Exit ping mode (ESC)',
     expand: 'Expand',
     exportLabel: 'Export',
+    projectSummary: 'Project Summary',
+    projectSummaryTitle: 'Project Summary & Evaluation',
+    summaryConfig: 'Device Configurations',
+    summaryScores: 'Project Scores',
     extractingFiles: 'Extracting files from flash...',
     failedLoadProject: 'Failed to load project file!',
     fastEthernetPorts: 'FastEthernet Ports (Fa0/1 - Fa0/24)',

@@ -6,7 +6,6 @@ import dynamic from 'next/dynamic';
 import useAppStore, { useTopologyDevices, useTopologyConnections, useTopologyNotes, useGraphicsQuality, useIsSimulationMode } from '@/lib/store/appStore';
 import { CableType, isCableCompatible, CABLE_COMPATIBILITY } from '@/lib/network/types';
 import { checkDeviceConnectivity, getPingDiagnostics, getWirelessSignalStrength, getWirelessDistance } from '@/lib/network/connectivity';
-import { generateRandomLinkLocalIpv4, generateRandomLinkLocalIpv6 } from '@/lib/network/linkLocal';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -18,7 +17,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { TooltipWrapper } from "@/components/ui/TooltipWrapper";
 import { ShortcutBadge } from "@/components/ui/ShortcutBadge";
 import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType, NetworkTopologyProps } from './networkTopology.types';
-import { generateSwitchPorts, generateL3SwitchPorts, generateRouterPorts, generateWLCPorts } from './networkTopology.portGenerators';
 import { useCanvasHistory } from '@/hooks/useCanvasHistory';
 import { ConnectionLine } from './ConnectionLine';
 import { ConnectionHandle } from './ConnectionHandle';
@@ -26,7 +24,7 @@ import { DeviceNode } from './DeviceNode';
 import LazyNetworkTopologyContextMenu from './LazyNetworkTopologyContextMenu';
 import { LazyNetworkTopologyPortSelectorModal } from './LazyNetworkTopologyPortSelectorModal';
 import { useEnvironment } from '@/lib/store/appStore';
-import { Plus, Trash2, Monitor, Network, Laptop, X, Cable, LineSquiggle, Plug, TrendingUpDown } from "lucide-react";
+import { Plus, Trash2, X, Cable, LineSquiggle, Plug, TrendingUpDown } from "lucide-react";
 import { normalizeMAC } from '@/lib/utils';
 import { areArraysEqual } from '@/lib/network/equality';
 import { getDeviceWidth, getDeviceHeight } from './networkTopology.helpers';
@@ -34,25 +32,16 @@ import { CABLE_COLORS, DRAG_THRESHOLD, LONG_PRESS_DURATION, TOOLTIP_DELAY, TOOLT
 import { errorHandler, CLIPBOARD_ERRORS } from '@/lib/errors/errorHandler';
 import { buildHopPacketInfos } from './PingPacketInfoPanel';
 import { logger } from '@/lib/logger';
+import { PacketPopup } from './topology/PacketPopup';
+import { DeviceTooltip } from './topology/DeviceTooltip';
+import { NoteNode } from './topology/NoteNode';
+import { useCanvasActions } from '../../hooks/useCanvasActions';
+import { exportTopologyToPNG } from '../../utils/exportPNG';
 
 const PingPacketInfoPanel = dynamic(
   () => import('./PingPacketInfoPanel').then((m) => m.PingPacketInfoPanel),
   { ssr: false }
 );
-
-const generateMacAddress = (seed?: number): string => {
-  const chars = '0123456789ABCDEF';
-  let hex = '';
-  // Simple deterministic generation if seed is provided, else random
-  // For hydration safety, we prefer a passed seed when possible
-  for (let i = 0; i < 12; i++) {
-    const idx = seed !== undefined
-      ? (seed + i) % 16
-      : Math.floor(Math.random() * 16);
-    hex += chars[idx];
-  }
-  return `${hex.slice(0, 4)}.${hex.slice(4, 8)}.${hex.slice(8, 12)}`;
-};
 
 const DEVICE_ICONS: Record<DeviceType | 'switch', React.ReactNode> = {
   pc: (
@@ -133,156 +122,6 @@ function getConnectionStatusMessage(conn: CanvasConnection, devices: CanvasDevic
   return language === 'tr' ? 'Bağlantı sorunsuz' : 'Connection OK';
 }
 
-function PacketPopup({ hopIndex, info, language, onClose, isDark }: {
-  hopIndex: number;
-  info: import('./PingPacketInfoPanel').HopPacketInfo;
-  language: 'tr' | 'en';
-  onClose: () => void;
-  isDark: boolean;
-}) {
-  const HEADER_SAFE_TOP = 72;
-  const [pos, setPos] = useState<{ x: number; y: number }>(() => {
-    try {
-      const saved = localStorage.getItem('draggable_position_packet-popup');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (typeof parsed.x === 'number' && typeof parsed.y === 'number') {
-          const vw = window.innerWidth;
-          const vh = window.innerHeight;
-          return {
-            x: Math.max(0, Math.min(parsed.x, vw - 320)),
-            y: Math.max(HEADER_SAFE_TOP, Math.min(parsed.y, vh - 200)),
-          };
-        }
-      }
-    } catch { }
-    return typeof window !== 'undefined'
-      ? { x: Math.max(16, (window.innerWidth - 320) / 2), y: Math.max(HEADER_SAFE_TOP, (window.innerHeight - 340) / 2) }
-      : { x: 100, y: 100 };
-  });
-  const [dragging, setDragging] = useState(false);
-  const dragRef = useRef<{ startX: number; startY: number; startPosX: number; startPosY: number } | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-
-  const clamp = (x: number, y: number) => {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    return {
-      x: Math.max(0, Math.min(x, vw - 320)),
-      y: Math.max(HEADER_SAFE_TOP, Math.min(y, vh - 200)),
-    };
-  };
-
-  const handleDragStart = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.button !== 0) return;
-    const target = e.target as HTMLElement;
-    if (target.closest('button')) return;
-    e.preventDefault();
-    e.stopPropagation();
-
-    containerRef.current?.setPointerCapture(e.pointerId);
-    dragRef.current = { startX: e.clientX, startY: e.clientY, startPosX: pos.x, startPosY: pos.y };
-    if (containerRef.current) {
-      containerRef.current.style.cursor = 'grabbing';
-      containerRef.current.style.transition = 'none';
-      containerRef.current.style.willChange = 'transform';
-    }
-    document.body.style.userSelect = 'none';
-    setDragging(true);
-  }, [pos]);
-
-  useEffect(() => {
-    if (!dragging) return;
-    const handleMove = (ev: PointerEvent) => {
-      if (!dragRef.current) return;
-      const dx = ev.clientX - dragRef.current.startX;
-      const dy = ev.clientY - dragRef.current.startY;
-      if (containerRef.current) {
-        containerRef.current.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
-      }
-    };
-
-    const handleUp = () => {
-      if (dragRef.current && containerRef.current) {
-        const matchX = containerRef.current.style.transform.match(/translate3d\(([-\d.]+)px/);
-        const matchY = containerRef.current.style.transform.match(/, ([-\d.]+)px/);
-        const dx = parseFloat(matchX ? matchX[1] : '0');
-        const dy = parseFloat(matchY ? matchY[1] : '0');
-        const finalX = dragRef.current.startPosX + (isFinite(dx) ? dx : 0);
-        const finalY = dragRef.current.startPosY + (isFinite(dy) ? dy : 0);
-        const clamped = clamp(finalX, finalY);
-        setPos(clamped);
-
-        containerRef.current.style.transition = 'transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-        containerRef.current.style.transform = `translate3d(0, 0, 0)`;
-
-        setTimeout(() => {
-          if (containerRef.current) {
-            containerRef.current.style.transform = '';
-            containerRef.current.style.transition = '';
-            containerRef.current.style.willChange = '';
-            containerRef.current.style.cursor = '';
-          }
-        }, 150);
-      }
-      dragRef.current = null;
-      document.body.style.userSelect = '';
-      setDragging(false);
-    };
-
-    window.addEventListener('pointermove', handleMove, { passive: true });
-    window.addEventListener('pointerup', handleUp);
-    window.addEventListener('pointercancel', handleUp);
-
-    return () => {
-      window.removeEventListener('pointermove', handleMove);
-      window.removeEventListener('pointerup', handleUp);
-      window.removeEventListener('pointercancel', handleUp);
-    };
-  }, [dragging]);
-
-  useEffect(() => {
-    try { localStorage.setItem('draggable_position_packet-popup', JSON.stringify(pos)); } catch { }
-  }, [pos]);
-
-  const p = info;
-  return (
-    <div
-      ref={containerRef}
-      style={{ position: 'fixed', left: pos.x, top: pos.y, zIndex: 9999 }}
-      onClick={e => e.stopPropagation()}
-    >
-      <div className={`rounded-xl border w-80 backdrop-blur-md ${isDark ? 'bg-zinc-950/40 border-zinc-800/50 shadow-black/40' : 'bg-white/40 border-zinc-200/50 shadow-zinc-200/50'}`}>
-        <div
-          className={`flex items-center justify-between px-3 py-2 border-b cursor-grab active:cursor-grabbing select-none ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}
-          onPointerDown={handleDragStart}
-        >
-          <h3 className={`font-semibold text-sm ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>
-            {language === 'tr' ? `Paket İçeriği — Hop ${hopIndex + 1}` : `Packet Contents — Hop ${hopIndex + 1}`}
-          </h3>
-          <button
-            onClick={onClose}
-            className="w-5 h-5 rounded-md bg-red-500 hover:bg-red-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0"
-          >
-            <X className="w-3 h-3 text-white pointer-events-none" />
-          </button>
-        </div>
-        <div className={`px-4 py-3 space-y-2 text-xs font-mono pointer-events-none ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
-          <div><span className={isDark ? 'text-slate-400' : 'text-slate-500'}>L2:</span> {p.layer2}</div>
-          <div><span className={isDark ? 'text-slate-400' : 'text-slate-500'}>L3:</span> {p.layer3}</div>
-          <div><span className={isDark ? 'text-slate-400' : 'text-slate-500'}>L4:</span> {p.layer4}</div>
-          <div className={`border-t pt-2 mt-2 ${isDark ? 'border-white/10' : 'border-black/10'}`} />
-          <div><span className={isDark ? 'text-slate-400' : 'text-slate-500'}>{language === 'tr' ? 'Kaynak IP' : 'Src IP'}:</span> {p.srcIp}</div>
-          <div><span className={isDark ? 'text-slate-400' : 'text-slate-500'}>{language === 'tr' ? 'Hedef IP' : 'Dst IP'}:</span> {p.dstIp}</div>
-          <div><span className={isDark ? 'text-slate-400' : 'text-slate-500'}>TTL:</span> {p.ttl}</div>
-          <div><span className={isDark ? 'text-slate-400' : 'text-slate-500'}>MAC (Src):</span> {p.srcMac}</div>
-          <div><span className={isDark ? 'text-slate-400' : 'text-slate-500'}>MAC (Dst):</span> {p.dstMac}</div>
-          <div><span className={isDark ? 'text-slate-400' : 'text-slate-500'}>ICMP:</span> {p.icmpType} (Seq: {p.icmpSeq})</div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 
 export function NetworkTopology({
@@ -922,6 +761,43 @@ export function NetworkTopology({
     [configuringDevice, deviceMap]
   );
 
+  const {
+    generateUniqueLinkLocalIp,
+    generateUniqueLinkLocalIpv6,
+    generateUniqueHostname,
+    addDevice,
+    deleteDevice,
+    getNextNoteId,
+    addNote,
+    deleteNote,
+    duplicateNote
+  } = useCanvasActions({
+    devices,
+    setDevices: setDevicesState,
+    connections,
+    setConnections: setConnectionsState,
+    notes,
+    setNotes: setNotesState,
+    deviceStates,
+    saveToHistory,
+    isExamActive,
+    isExamEditorOpen,
+    pan,
+    zoom,
+    canvasDimensions,
+    deviceCounterRef,
+    noteCounterRef,
+    latestNotesRef,
+    setSelectedDeviceIds,
+    setSelectedNoteIds,
+    onDeviceSelect,
+    onDeviceDelete,
+    setConnectionStart,
+    setIsDrawingConnection,
+    language,
+    t
+  });
+
   const isValidIpv4 = useCallback((value: string) => {
     const trimmed = value.trim();
     if (!trimmed) return true;
@@ -1034,26 +910,6 @@ export function NetworkTopology({
   }, [configuringDevice, dnsValue, gatewayValue, ipValue, ipv6Value, isValidIpv4, isValidIpv6, language, saveToHistory, subnetValue, tempNameValue]);
 
   // Delete device and its connections
-  const deleteDevice = useCallback((deviceId: string) => {
-    if (isExamActive) return;
-    saveToHistory();
-    setDevices((prev) => prev.filter((d) => d.id !== deviceId));
-    setConnections((prev) =>
-      prev.filter((c) => c.sourceDeviceId !== deviceId && c.targetDeviceId !== deviceId)
-    );
-    // Eğer kablo çizimi bu cihazdan başlamışsa iptal et
-    setConnectionStart((prev) => {
-      if (prev?.deviceId === deviceId) {
-        setIsDrawingConnection(false);
-        return null;
-      }
-      return prev;
-    });
-    if (onDeviceDelete) {
-      onDeviceDelete(deviceId);
-    }
-  }, [saveToHistory, onDeviceDelete, isExamActive]);
-
   // Toggle power for devices (bulk operation)
   const togglePowerDevices = useCallback((deviceIds: string[]) => {
     setDevices((prev) =>
@@ -2767,126 +2623,6 @@ export function NetworkTopology({
     }
   }, [devices, isDrawingConnection, connectionStart, cableInfo, onCableChange, saveToHistory, language, t]);
 
-  const generateUniqueLinkLocalIp = useCallback((reservedIps: string[] = []) => {
-    const usedIps = new Set([
-      ...devices.map((d) => d.ip).filter(Boolean),
-      ...reservedIps.filter(Boolean),
-    ]);
-    return generateRandomLinkLocalIpv4(usedIps);
-  }, [devices]);
-
-  const generateUniqueLinkLocalIpv6 = useCallback((reservedIps: string[] = []) => {
-    const usedIps = new Set([
-      ...devices.map((d) => d.ipv6).filter(Boolean) as string[],
-      ...reservedIps.filter(Boolean),
-    ]);
-    return generateRandomLinkLocalIpv6(usedIps);
-  }, [devices]);
-
-  const generateUniqueHostname = useCallback((baseName: string, reservedNames: string[] = []) => {
-    const normalize = (value: string) => value.trim().toLowerCase();
-    const usedNames = new Set<string>();
-
-    devices.forEach((d) => usedNames.add(normalize(d.name)));
-    deviceStates?.forEach((state) => {
-      if (state?.hostname) {
-        usedNames.add(normalize(state.hostname));
-      }
-    });
-    reservedNames.forEach((name) => usedNames.add(normalize(name)));
-
-    if (!usedNames.has(normalize(baseName))) return baseName;
-
-    let suffix = 2;
-    let candidate = `${baseName}-${suffix}`;
-    while (usedNames.has(normalize(candidate))) {
-      suffix++;
-      candidate = `${baseName}-${suffix}`;
-    }
-    return candidate;
-  }, [devices, deviceStates]);
-
-  // Add device from palette button
-  const addDevice = useCallback((type: 'pc' | 'iot' | 'switch' | 'router' | 'firewall' | 'wlc', layer?: 'L2' | 'L3') => {
-    if (isExamActive && !isExamEditorOpen) return;
-    saveToHistory();
-    deviceCounterRef.current[type]++;
-
-    // Calculate position at the center of the current viewport
-    let spawnX = 100 + Math.random() * 30;
-    let spawnY = 80 + Math.random() * 30;
-
-    if (canvasDimensions.width > 0 && canvasDimensions.height > 0) {
-      // Adjust for device size roughly (estimate center)
-      const estimatedDeviceWidth = getDeviceWidth(type);
-      const estimatedDeviceHeight = getDeviceHeight(type, type === 'pc' || type === 'iot' ? 2 : 24);
-
-      spawnX = (canvasDimensions.width / 2 - pan.x) / zoom - estimatedDeviceWidth / 2;
-      spawnY = (canvasDimensions.height / 2 - pan.y) / zoom - estimatedDeviceHeight / 2;
-    }
-
-    // Determine switch layer (default L2)
-    const switchLayer = layer || 'L2';
-    const switchModel = switchLayer === 'L3' ? 'WS-C3650-24PS' : 'WS-C2960-24TT-L';
-    const resolvedType = type === 'switch'
-      ? (switchLayer === 'L3' ? 'switchL3' : 'switchL2')
-      : type;
-
-    const baseName =
-      type === 'switch' && switchLayer === 'L3'
-        ? `Switch-${deviceCounterRef.current[type]}`
-        : `${type.toUpperCase()}-${deviceCounterRef.current[type]}`;
-
-    const initialLinkLocalIp = (type === 'pc' || type === 'iot') ? generateUniqueLinkLocalIp() : '';
-    const initialLinkLocalIpv6 = (type === 'pc' || type === 'iot') ? generateUniqueLinkLocalIpv6() : '';
-    const newDevice: CanvasDevice = {
-      id: `${type}-${deviceCounterRef.current[type]}`,
-      type: resolvedType,
-      name: generateUniqueHostname(baseName),
-      macAddress: generateMacAddress(),
-      ip: initialLinkLocalIp,
-      ipv6: initialLinkLocalIpv6,
-      subnet: (type === 'pc' || type === 'iot') ? '255.255.0.0' : undefined,
-      gateway: (type === 'pc' || type === 'iot') ? '0.0.0.0' : undefined,
-      dns: (type === 'pc' || type === 'iot') ? '0.0.0.0' : undefined,
-      ipConfigMode: type === 'iot' ? 'dhcp' : undefined,
-      // Positioned at center of viewport
-      x: spawnX,
-      y: spawnY,
-      status: 'online',
-      switchModel: type === 'switch' ? switchModel : type === 'wlc' ? 'AIR-CT2504-K9' as const : undefined,
-      ports:
-        type === 'pc' || type === 'iot'
-          ? [
-            { id: 'eth0', label: 'Eth0', status: 'disconnected' as const },
-            ...(type === 'pc' ? [{ id: 'com1', label: 'COM1', status: 'disconnected' as const }] : []),
-          ]
-          : type === 'switch'
-            ? switchLayer === 'L3' ? generateL3SwitchPorts() : generateSwitchPorts()
-            : type === 'firewall'
-              ? [
-                { id: 'gi0/0', label: 'Gi0/0', status: 'disconnected' as const },
-                { id: 'gi0/1', label: 'Gi0/1', status: 'disconnected' as const },
-              ]
-              : type === 'wlc'
-                ? generateWLCPorts()
-                : generateRouterPorts(),
-      iot: type === 'iot'
-        ? { sensorType: 'temperature', collaborationEnabled: false, dataStore: '' }
-        : undefined,
-      wifi: type === 'iot'
-        ? { enabled: true, ssid: '', security: 'open', password: '', channel: '2.4GHz', mode: 'client' }
-        : (type === 'router' || type === 'wlc' || (type === 'switch' && switchLayer === 'L3'))
-          ? { enabled: false, ssid: 'Network-AP', security: 'open', password: '', channel: '2.4GHz', mode: 'ap' }
-          : undefined,
-    };
-    setDevices((prev) => [...prev, newDevice]);
-    setSelectedDeviceIds([newDevice.id]);
-    // Pass the switchModel directly to avoid race condition
-    onDeviceSelect(resolvedType, newDevice.id, newDevice.switchModel, newDevice.name, true, newDevice);
-
-  }, [devices.length, saveToHistory, generateUniqueHostname, generateUniqueLinkLocalIp, generateUniqueLinkLocalIpv6, onDeviceSelect, canvasDimensions, pan, zoom, isExamActive, isExamEditorOpen]);
-
   // Note management functions
   const [noteClipboard, setNoteClipboard] = useState('');
   const [noteTextSelection, setNoteTextSelection] = useState<{ noteId: string; start: number; end: number } | null>(null);
@@ -2942,396 +2678,20 @@ export function NetworkTopology({
     touchDragStartPos,
     touchDragOffset,
   ]);
-  const getNextNoteId = useCallback(() => {
-    const existingIds = new Set(latestNotesRef.current.map((n) => n.id));
-    let next = noteCounterRef.current + 1;
-    while (existingIds.has(`note-${next}`)) {
-      next++;
-    }
-    noteCounterRef.current = next;
-    return `note-${next}`;
-  }, []);
-
-  const addNote = useCallback(() => {
-    saveToHistory();
-    const newNote: CanvasNote = {
-      id: getNextNoteId(),
-      x: 200 + Math.random() * 100,
-      y: 200 + Math.random() * 100,
-      width: 200,
-      height: 150,
-      text: t.newNote,
-      color: 'var(--color-warning-200)',
-      font: 'Arial',
-      fontSize: 12,
-      opacity: 1,
-    };
-    setNotes((prev) => [...prev, newNote]);
-    setSelectedNoteIds([newNote.id]);
-  }, [saveToHistory, language, getNextNoteId]);
-
   const handleExportPNG = useCallback(() => {
     if (!canvasRef.current) return;
     const svg = canvasRef.current.querySelector('svg');
     if (!svg) return;
 
-    // Clone and clean for export
-    const clone = svg.cloneNode(true) as SVGSVGElement;
-    const ns = 'http://www.w3.org/2000/svg';
-
-    const wasDark = document.documentElement.classList.contains('dark') || document.body.classList.contains('dark');
-    if (wasDark) {
-      document.documentElement.classList.remove('dark');
-      document.body.classList.remove('dark');
-    }
-
-    let url = '';
-    let width = 800;
-    let height = 600;
-    const bg = '#ffffff';
-
-    try {
-      // Resolve actual app fonts from CSS custom properties
-      const monoFont = getComputedStyle(document.body).getPropertyValue('--font-geist-mono').trim() || 'Geist Mono, monospace';
-      const sansFont = getComputedStyle(document.body).getPropertyValue('--font-inria-sans').trim() || 'Inria Sans, sans-serif';
-
-      // Determine which devices are visibile in the DOM (have full rendering)
-      const domDeviceIds = new Set<string>();
-      devices.forEach(d => {
-        if (svg.querySelector(`[data-device-id="${d.id}"]`)) domDeviceIds.add(d.id);
-      });
-
-      // Remove interactive/UI elements
-      clone.querySelectorAll('[data-export-hide="true"]').forEach(el => el.remove());
-      // Remove foreignObjects (note editors/device port popups)
-      clone.querySelectorAll('foreignObject').forEach(el => el.remove());
-      // Remove connections (will rebuild all with proper port positions)
-      clone.querySelectorAll('[data-connection-id]').forEach(el => el.remove());
-      // Remove device elements not in DOM (culled ones left a stale placeholder) — keep full-rendered ones
-      clone.querySelectorAll('[data-device-id]').forEach(el => {
-        const id = el.getAttribute('data-device-id');
-        if (id && !domDeviceIds.has(id)) el.remove();
-      });
-
-      // Build type-specific simplified SVG body for culled devices
-      const addSimplifiedDevice = (device: CanvasDevice) => {
-        const c = (() => {
-          const map: Record<string, { fill: string; stroke: string; text: string }> = {
-            pc: { fill: 'var(--color-primary-200)', stroke: 'var(--color-primary-300)', text: 'var(--color-secondary-800)' },
-            iot: { fill: 'var(--color-secondary-200)', stroke: 'var(--color-secondary-300)', text: 'var(--color-secondary-800)' },
-            switch: { fill: 'var(--color-accent-200)', stroke: 'var(--color-accent-300)', text: 'var(--color-secondary-800)' },
-            switchL2: { fill: 'var(--color-accent-200)', stroke: 'var(--color-accent-300)', text: 'var(--color-secondary-800)' },
-            switchL3: { fill: 'var(--color-accent-200)', stroke: 'var(--color-accent-300)', text: 'var(--color-secondary-800)' },
-            router: { fill: 'var(--color-warning-200)', stroke: 'var(--color-warning-400)', text: 'var(--color-secondary-800)' },
-            firewall: { fill: 'var(--color-error-200)', stroke: 'var(--color-error-300)', text: 'var(--color-secondary-800)' },
-            wlc: { fill: 'var(--color-warning-200)', stroke: 'var(--color-warning-300)', text: 'var(--color-secondary-800)' },
-          };
-          return map[device.type] || map.pc;
-        })();
-        const dw = 100;
-        const dh = device.type === 'pc' || device.type === 'iot' ? 85 : 100;
-        const g = document.createElementNS(ns, 'g');
-        g.setAttribute('data-device-id', device.id);
-
-        const rect = document.createElementNS(ns, 'rect');
-        rect.setAttribute('x', device.x.toString());
-        rect.setAttribute('y', device.y.toString());
-        rect.setAttribute('width', dw.toString());
-        rect.setAttribute('height', dh.toString());
-        rect.setAttribute('rx', '8');
-        rect.setAttribute('fill', c.fill);
-        rect.setAttribute('stroke', c.stroke);
-        rect.setAttribute('stroke-width', '1.5');
-        g.appendChild(rect);
-
-        const label = document.createElementNS(ns, 'text');
-        label.setAttribute('x', (device.x + dw / 2).toString());
-        label.setAttribute('y', (device.y + dh / 2 - 4).toString());
-        label.setAttribute('text-anchor', 'middle');
-        label.setAttribute('dominant-baseline', 'auto');
-        label.setAttribute('fill', c.text);
-        label.setAttribute('font-size', '9');
-        label.setAttribute('font-weight', 'bold');
-        label.setAttribute('font-family', sansFont);
-        label.textContent = device.name;
-        g.appendChild(label);
-
-        if (device.ip) {
-          const ipLabel = document.createElementNS(ns, 'text');
-          ipLabel.setAttribute('x', (device.x + dw / 2).toString());
-          ipLabel.setAttribute('y', (device.y + dh / 2 + 10).toString());
-          ipLabel.setAttribute('text-anchor', 'middle');
-          ipLabel.setAttribute('fill', c.text);
-          ipLabel.setAttribute('font-size', '7');
-          ipLabel.setAttribute('opacity', '0.7');
-          ipLabel.setAttribute('font-family', monoFont);
-          ipLabel.textContent = device.ip;
-          g.appendChild(ipLabel);
-        }
-
-        clone.appendChild(g);
-      };
-
-      // Set default font on SVG root so inherited text uses app sans-serif
-      clone.setAttribute('font-family', sansFont);
-      // Replace any generic monospace in cloned elements with the app's monospace font
-      clone.querySelectorAll('[font-family="monospace"]').forEach(el => {
-        el.setAttribute('font-family', monoFont);
-      });
-      // Also replace fontFamily="monospace" in SVG elements (for svg:text tags) to match app mono font
-      clone.querySelectorAll('text[fontFamily="monospace"]').forEach(el => {
-        el.setAttribute('font-family', monoFont);
-      });
-
-      // Keep full-rendered devices in clone, add simplified for culled ones
-      devices.forEach(device => {
-        if (!domDeviceIds.has(device.id)) addSimplifiedDevice(device);
-      });
-
-      // Rebuild all connections with proper port positions, colors, and labels
-      connections.forEach(conn => {
-        const src = devices.find(d => d.id === conn.sourceDeviceId);
-        const dst = devices.find(d => d.id === conn.targetDeviceId);
-        if (!src || !dst) return;
-
-        const srcPort = getPortPositionRef.current(src, conn.sourcePort);
-        const tgtPort = getPortPositionRef.current(dst, conn.targetPort);
-        const midX = (srcPort.x + tgtPort.x) / 2;
-
-        const pathD = 'M ' + srcPort.x + ' ' + srcPort.y +
-          ' C ' + midX + ' ' + srcPort.y + ', ' + midX + ' ' + tgtPort.y + ', ' + tgtPort.x + ' ' + tgtPort.y;
-
-        // Check compatibility, shutdown status, offline status, and STP blocking
-        const srcPortObj = src.ports.find(p => p.id === conn.sourcePort);
-        const tgtPortObj = dst.ports.find(p => p.id === conn.targetPort);
-        
-        const isShutdown = srcPortObj?.shutdown || tgtPortObj?.shutdown;
-        const isPoweredOff = src.status === 'offline' || dst.status === 'offline';
-
-        const srcState = deviceStates?.get(src.id);
-        const tgtState = deviceStates?.get(dst.id);
-        const srcSimPort = srcState?.ports?.[conn.sourcePort];
-        const tgtSimPort = tgtState?.ports?.[conn.targetPort];
-        const isSTPBlocking = srcSimPort?.spanningTree?.state === 'blocking' || srcSimPort?.spanningTree?.role === 'alternate' ||
-                              tgtSimPort?.spanningTree?.state === 'blocking' || tgtSimPort?.spanningTree?.role === 'alternate';
-        const srcVlan = src.vlan || srcSimPort?.accessVlan || srcSimPort?.vlan || 1;
-        const tgtVlan = dst.vlan || tgtSimPort?.accessVlan || tgtSimPort?.vlan || 1;
-        const isVlan1 = srcVlan === 1 && tgtVlan === 1;
-
-        const isCompatible = isCableCompatible({
-          connected: true,
-          cableType: conn.cableType,
-          sourceDevice: src.type,
-          targetDevice: dst.type,
-          sourcePort: conn.sourcePort,
-          targetPort: conn.targetPort,
-        });
-
-        const cableColor = !isCompatible || conn.active === false
-          ? 'var(--color-error-500)'
-          : isShutdown || (isSTPBlocking && isVlan1)
-            ? '#94a3b8' // Light-theme shutdown/STP block gray
-            : isPoweredOff
-              ? '#9ca3af' // Light-theme offline gray
-              : CABLE_COLORS[conn.cableType]?.primary || 'var(--color-primary-500)';
-
-        const path = document.createElementNS(ns, 'path');
-        path.setAttribute('d', pathD);
-        path.setAttribute('stroke', cableColor);
-        path.setAttribute('stroke-width', '2.5');
-        path.setAttribute('fill', 'none');
-        path.setAttribute('opacity', '1.0');
-        path.setAttribute('data-connection-id', conn.id);
-        if (!isCompatible || conn.active === false) {
-          path.setAttribute('stroke-dasharray', '6,3');
-        }
-        clone.appendChild(path);
-
-        // Port labels at t=0.42 (source) and t=0.58 (target) on the bezier curve
-        const bezierPoint = (t: number) => {
-          const mt = 1 - t;
-          return {
-            x: mt * mt * mt * srcPort.x + 3 * mt * mt * t * midX + 3 * mt * t * t * midX + t * t * t * tgtPort.x,
-            y: mt * mt * mt * srcPort.y + 3 * mt * mt * t * srcPort.y + 3 * mt * t * t * tgtPort.y + t * t * t * tgtPort.y,
-          };
-        };
-        const srcLabelPos = bezierPoint(0.42);
-        const tgtLabelPos = bezierPoint(0.58);
-        const labelOffsetY = -10;
-
-        const addLabel = (pos: { x: number; y: number }, text: string) => {
-          const halo = document.createElementNS(ns, 'text');
-          halo.setAttribute('x', pos.x.toString());
-          halo.setAttribute('y', (pos.y + labelOffsetY).toString());
-          halo.setAttribute('fill', '#ffffff');
-          halo.setAttribute('stroke', '#ffffff');
-          halo.setAttribute('stroke-width', '3');
-          halo.setAttribute('stroke-linejoin', 'round');
-          halo.setAttribute('font-size', '9');
-          halo.setAttribute('font-weight', 'bold');
-          halo.setAttribute('font-family', monoFont);
-          halo.setAttribute('text-anchor', 'middle');
-          halo.setAttribute('opacity', '0.85');
-          halo.textContent = text;
-          clone.appendChild(halo);
-
-          const label = document.createElementNS(ns, 'text');
-          label.setAttribute('x', pos.x.toString());
-          label.setAttribute('y', (pos.y + labelOffsetY).toString());
-          label.setAttribute('fill', cableColor);
-          label.setAttribute('font-size', '9');
-          label.setAttribute('font-weight', 'bold');
-          label.setAttribute('font-family', monoFont);
-          label.setAttribute('text-anchor', 'middle');
-          label.setAttribute('opacity', '0.85');
-          label.textContent = text;
-          clone.appendChild(label);
-        };
-
-        addLabel(srcLabelPos, conn.sourcePort);
-        addLabel(tgtLabelPos, conn.targetPort);
-      });
-
-      // Re-create notes as export-friendly SVG elements (rounded rect + text, auto-sized)
-      const measureNoteHeight = (text: string, width: number, fontSize: number, font: string): number => {
-        const tmp = document.createElement('div');
-        tmp.style.cssText = `position:absolute;visibility:hidden;left:-9999px;width:${width - 16}px;font-size:${fontSize}px;font-family:${font};line-height:1.35;white-space:pre-wrap;word-wrap:break-word;`;
-        tmp.textContent = text || ' ';
-        document.body.appendChild(tmp);
-        const h = tmp.scrollHeight + 24 + 16;
-        document.body.removeChild(tmp);
-        return Math.max(100, h);
-      };
-      const noteHeights = new Map<string, number>();
-      notes.forEach(note => {
-        noteHeights.set(note.id, measureNoteHeight(note.text, note.width, note.fontSize, note.font));
-
-        const g = document.createElementNS(ns, 'g');
-        const nh = noteHeights.get(note.id) ?? 100;
-
-        const rect = document.createElementNS(ns, 'rect');
-        rect.setAttribute('x', note.x.toString());
-        rect.setAttribute('y', note.y.toString());
-        rect.setAttribute('width', note.width.toString());
-        rect.setAttribute('height', nh.toString());
-        rect.setAttribute('rx', '8');
-        rect.setAttribute('ry', '8');
-        rect.setAttribute('fill', note.color);
-        rect.setAttribute('opacity', note.opacity.toString());
-        g.appendChild(rect);
-
-        const fo = document.createElementNS(ns, 'foreignObject');
-        const pad = 8;
-        fo.setAttribute('x', (note.x + pad).toString());
-        fo.setAttribute('y', (note.y + pad + 24).toString());
-        fo.setAttribute('width', (note.width - pad * 2).toString());
-        fo.setAttribute('height', (nh - pad * 2 - 24).toString());
-        const div = document.createElement('div');
-        div.textContent = note.text;
-        div.style.cssText = `font-family:${note.font};font-size:${note.fontSize}px;line-height:1.35;color:#000;word-wrap:break-word;white-space:pre-wrap;width:100%;height:100%;overflow:hidden;`;
-        fo.appendChild(div);
-        g.appendChild(fo);
-
-        clone.appendChild(g);
-      });
-
-      // Set background
-      clone.style.backgroundColor = bg;
-      clone.querySelectorAll('rect[fill="url(#canvasBgGradient)"]').forEach(el => {
-        el.setAttribute('fill', bg);
-      });
-
-      // Resolve all CSS custom properties in the cloned SVG using computed styles of light mode
-      const cssVarRegex = /var\((--[^)]+)\)/g;
-      const computedStyle = getComputedStyle(document.documentElement);
-
-      const resolveCSSVars = (node: Element) => {
-        const attributes = ['fill', 'stroke', 'stop-color'];
-        attributes.forEach(attr => {
-          const val = node.getAttribute(attr);
-          if (val && val.includes('var(')) {
-            const resolvedVal = val.replace(cssVarRegex, (match, varName) => {
-              return computedStyle.getPropertyValue(varName.trim()).trim() || match;
-            });
-            node.setAttribute(attr, resolvedVal);
-          }
-        });
-
-        const style = node.getAttribute('style');
-        if (style && style.includes('var(')) {
-          const resolvedStyle = style.replace(cssVarRegex, (match, varName) => {
-            return computedStyle.getPropertyValue(varName.trim()).trim() || match;
-          });
-          node.setAttribute('style', resolvedStyle);
-        }
-      };
-
-      clone.querySelectorAll('*').forEach(resolveCSSVars);
-
-      // Reset transform on the main content group
-      const mainGroup = clone.querySelector('g');
-      if (mainGroup) {
-        mainGroup.style.transform = 'none';
-      }
-
-      // Bounds (use auto-sized note heights where computed)
-      const padding = 50;
-      const getNoteMaxY = (n: typeof notes[0]) => n.y + (noteHeights.get(n.id) ?? n.height);
-      const minX = Math.min(...devices.map(d => d.x), ...notes.map(n => n.x), 0);
-      const minY = Math.min(...devices.map(d => d.y), ...notes.map(n => n.y), 0);
-      const maxX = Math.max(...devices.map(d => d.x + 100), ...notes.map(n => n.x + n.width), 800);
-      const maxY = Math.max(...devices.map(d => d.y + 100), ...notes.map(n => getNoteMaxY(n)), 600);
-
-      width = maxX - minX + padding * 2;
-      height = maxY - minY + padding * 2;
-
-      clone.setAttribute('viewBox', `${minX - padding} ${minY - padding} ${width} ${height}`);
-      clone.setAttribute('width', width.toString());
-      clone.setAttribute('height', height.toString());
-
-      // Serialize
-      const svgData = new XMLSerializer().serializeToString(clone);
-      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-      url = URL.createObjectURL(svgBlob);
-    } finally {
-      if (wasDark) {
-        document.documentElement.classList.add('dark');
-        document.body.classList.add('dark');
-      }
-    }
-
-    // Render to canvas at 300 DPI
-    const dpi = 300;
-    const scale = dpi / 72;
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.round(width * scale);
-      canvas.height = Math.round(height * scale);
-      const ctx = canvas.getContext('2d');
-      if (!ctx) { URL.revokeObjectURL(url); return; }
-      ctx.scale(scale, scale);
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, width, height);
-      ctx.drawImage(img, 0, 0);
-      URL.revokeObjectURL(url);
-
-      // Download
-      canvas.toBlob((blob) => {
-        if (!blob) return;
-        const pngUrl = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = pngUrl;
-        link.download = `topology-${new Date().getTime()}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(pngUrl);
-      }, 'image/png');
-    };
-    img.onerror = () => { URL.revokeObjectURL(url); };
-    img.src = url;
-  }, [devices, connections, notes, isDark, deviceStates]);
+    exportTopologyToPNG({
+      svgElement: svg,
+      devices,
+      notes,
+      connections,
+      deviceStates: deviceStates || undefined,
+      getPortPosition: getPortPositionRef.current
+    });
+  }, [devices, connections, notes, deviceStates]);
 
   // Handle toolbar events from page.tsx
   useEffect(() => {
@@ -3364,12 +2724,6 @@ export function NetworkTopology({
       window.removeEventListener('trigger-topology-export-png', handleExportPNG as EventListener);
     };
   }, [addDevice, addNote, handleExportPNG]);
-
-  const deleteNote = useCallback((noteId: string) => {
-    saveToHistory();
-    setNotes((prev) => prev.filter((n) => n.id !== noteId));
-    setSelectedNoteIds((prev) => prev.filter((id) => id !== noteId));
-  }, [saveToHistory]);
 
   const updateNoteText = useCallback((noteId: string, text: string) => {
     setNotes((prev) =>
@@ -3434,21 +2788,6 @@ export function NetworkTopology({
     const next = NOTE_OPACITY_OPTIONS[(idx >= 0 ? idx + 1 : 0) % NOTE_OPACITY_OPTIONS.length];
     updateNoteStyle(noteId, { opacity: next });
   }, [updateNoteStyle]);
-
-  const duplicateNote = useCallback((noteId: string) => {
-    const note = latestNotesRef.current.find((n) => n.id === noteId);
-    if (!note) return;
-    saveToHistory();
-    const duplicatedNote: CanvasNote = {
-      ...note,
-      id: getNextNoteId(),
-      x: note.x + 20,
-      y: note.y + 20,
-    };
-    setNotes((prev) => [...prev, duplicatedNote]);
-    setSelectedNoteIds([duplicatedNote.id]);
-    setSelectedDeviceIds([]);
-  }, [saveToHistory, getNextNoteId]);
 
   const getNoteSelection = useCallback((noteId: string) => {
     const note = latestNotesRef.current.find((n) => n.id === noteId);
@@ -7635,235 +6974,36 @@ if (isShutdown || isDeviceOffline) {
 
                   {/* Notes */}
                   {visibleNotes.map((note) => (
-                    <foreignObject
+                    <NoteNode
                       key={note.id}
-                      x={note.x}
-                      y={note.y}
-                      width={note.width}
-                      height={note.height}
-                      data-note-id={note.id}
-                      className="pointer-events-none"
-                    >
-                      <div
-                        className={`pointer-events-auto relative flex flex-col w-full h-full overflow-hidden rounded-lg shadow-lg border ${isDark
-                          ? 'border-amber-300/60'
-                          : 'border-yellow-200'
-                          } ${selectedNoteIds.includes(note.id) ? 'ring-2 ring-pink-400/70' : ''}`}
-                        data-note-id={note.id}
-                        style={{ backgroundColor: note.color, fontFamily: note.font, opacity: note.opacity }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setContextMenu(null);
-                          if (e.shiftKey) {
-                            setSelectedNoteIds((prev) => prev.includes(note.id) ? prev.filter(id => id !== note.id) : [...prev, note.id]);
-                          } else {
-                            setSelectedNoteIds([note.id]);
-                            setSelectedDeviceIds([]);
-                          }
-                        }}
-                      >
-                        {/* Note Header - Draggable */}
-                        <div
-                          data-export-hide="true"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            handleNoteHeaderMouseDown(e as unknown as ReactMouseEvent, note.id);
-                          }}
-                          onTouchStart={(e) => {
-                            e.preventDefault();
-                            handleNoteHeaderTouchStart(e, note.id);
-                          }}
-                          className={`flex items-center gap-2 px-2 text-[10px] font-semibold tracking-widest select-none ${isDark ? 'bg-black/10' : 'bg-black/5'
-                            } ${draggedNoteId === note.id ? 'cursor-grabbing' : 'cursor-grab'}`}
-                          style={{ height: '24px' }}
-                        >
-                          <div
-                            className="flex items-center gap-1"
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                            }}
-                          >
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    cycleNoteColor(note.id);
-                                  }}
-                                  className="w-4 h-4 rounded border border-black/20"
-                                  style={{ backgroundColor: note.color }}
-                                  aria-label={t.colorLabel}
-                                />
-                              </TooltipTrigger>
-                              <TooltipContent>{t.colorLabel}</TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    cycleNoteFont(note.id);
-                                  }}
-                                  className="px-1 rounded text-[9px] leading-4 bg-black/10 hover:bg-black/20"
-                                >
-                                  F
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent>{t.fontLabel}</TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    cycleNoteFontSize(note.id);
-                                  }}
-                                  className="px-1 rounded text-[9px] leading-4 bg-black/10 hover:bg-black/20"
-                                >
-                                  {note.fontSize}
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent>{t.sizeLabel}</TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    cycleNoteOpacity(note.id);
-                                  }}
-                                  className="px-1 rounded text-[9px] leading-4 bg-black/10 hover:bg-black/20"
-                                >
-                                  {Math.round(note.opacity * 100)}
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent>{t.opacityLabel}</TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    duplicateNote(note.id);
-                                  }}
-                                  className="px-1 rounded text-[9px] leading-4 bg-black/10 hover:bg-black/20"
-                                >
-                                  D
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent>{t.duplicateLabel}</TooltipContent>
-                            </Tooltip>
-                          </div>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  deleteNote(note.id);
-                                }}
-                                className="ml-auto px-1.5 py-0.5 rounded hover:bg-black/10"
-                                aria-label={t.delete}
-                              >
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1 -1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0 -1-1h-4a1 1 0 0 0 -1 1v3M4 7h16" />
-                                </svg>
-                              </button>
-                            </TooltipTrigger>
-                            <TooltipContent>{t.delete}</TooltipContent>
-                          </Tooltip>
-                        </div>
-
-                        {/* Note Content - Scrollable */}
-                        <div
-                          data-note-scroll
-                          className="flex-1 min-h-0"
-                          style={{
-                            height: `calc(100% - 24px)`,
-                            scrollBehavior: 'smooth',
-                          }}
-                          onWheel={(e) => {
-                            // Allow scroll within note without affecting canvas zoom
-                            e.stopPropagation();
-                          }}
-                          onTouchMove={(e) => {
-                            // Allow touch scroll within note
-                            e.stopPropagation();
-                          }}
-                        >
-                          <textarea
-                            aria-label={language === 'tr' ? 'Not içeriği' : 'Note content'}
-                            ref={(el) => { noteTextareaRefs.current[note.id] = el; }}
-                            value={note.text}
-                            onChange={(e) => updateNoteText(note.id, e.target.value)}
-                            onMouseDown={(e) => {
-                              // Sadece textarea içine tıklandığında olay durdurulsun, 
-                              // böylece canvas sürüklenmez ama scrollbar çalışır
-                              e.stopPropagation();
-                            }}
-                            onTouchStart={(e) => {
-                              // Mobilde textarea'ya dokunuş - drag'i durdur
-                              e.stopPropagation();
-                            }}
-                            onTouchEnd={(e) => {
-                              // Mobilde textarea'dan çıkış
-                              e.stopPropagation();
-                            }}
-                            onSelect={(e) => {
-                              setNoteTextSelection({
-                                noteId: note.id,
-                                start: e.currentTarget.selectionStart ?? 0,
-                                end: e.currentTarget.selectionEnd ?? 0,
-                              });
-                            }}
-                            onMouseUp={(e) => {
-                              setNoteTextSelection({
-                                noteId: note.id,
-                                start: e.currentTarget.selectionStart ?? 0,
-                                end: e.currentTarget.selectionEnd ?? 0,
-                              });
-                            }}
-                            onKeyDown={(e) => {
-                              e.stopPropagation();
-                              // ESC tuşu ile context menu'yü kapat
-                              if (e.key === 'Escape' && contextMenu?.noteId === note.id) {
-                                setContextMenu(null);
-                              }
-                            }}
-                            onContextMenu={(e) => {
-                              e.stopPropagation();
-                            }}
-                            onBlur={() => {
-                              // Textarea'nın dışında tıklanınca context menu'yü kapat
-                              if (contextMenu?.noteId === note.id) {
-                                setContextMenu(null);
-                              }
-                              if (onTopologyChange) {
-                                onTopologyChange(devices, connections, notes);
-                              }
-                            }}
-                            className="w-full h-full min-h-full px-2 py-1 bg-transparent outline-none resize-none overflow-y-auto overflow-x-hidden whitespace-pre-wrap break-words touch-manipulation custom-scrollbar"
-                            style={{ fontSize: note.fontSize, lineHeight: 1.35, color: isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-800)' }}
-                          />
-                        </div>
-
-                        {/* Resize Handles */}
-                        <div className="absolute left-0 top-0 bottom-0 w-1 cursor-ew-resize opacity-0 hover:opacity-40 transition-opacity z-10" onMouseDown={(e) => { e.preventDefault(); handleNoteResizeStart(e as unknown as ReactMouseEvent, note.id, 'w'); }} onTouchStart={(e) => { e.preventDefault(); handleNoteResizeTouchStart(e, note.id, 'w'); }} />
-                        <div className="absolute right-0 top-0 bottom-0 w-1 cursor-ew-resize opacity-0 hover:opacity-40 transition-opacity z-10" onMouseDown={(e) => { e.preventDefault(); handleNoteResizeStart(e as unknown as ReactMouseEvent, note.id, 'e'); }} onTouchStart={(e) => { e.preventDefault(); handleNoteResizeTouchStart(e, note.id, 'e'); }} />
-                        <div className="absolute left-0 top-0 right-0 h-1 cursor-ns-resize opacity-0 hover:opacity-40 transition-opacity z-10" onMouseDown={(e) => { e.preventDefault(); handleNoteResizeStart(e as unknown as ReactMouseEvent, note.id, 'n'); }} onTouchStart={(e) => { e.preventDefault(); handleNoteResizeTouchStart(e, note.id, 'n'); }} />
-                        <div className="absolute left-0 bottom-0 right-0 h-1 cursor-ns-resize opacity-0 hover:opacity-40 transition-opacity z-10" onMouseDown={(e) => { e.preventDefault(); handleNoteResizeStart(e as unknown as ReactMouseEvent, note.id, 's'); }} onTouchStart={(e) => { e.preventDefault(); handleNoteResizeTouchStart(e, note.id, 's'); }} />
-                        <div className="absolute left-0 top-0 w-4 h-4 cursor-nw-resize opacity-0 hover:opacity-40 transition-opacity z-10" onMouseDown={(e) => { e.preventDefault(); handleNoteResizeStart(e as unknown as ReactMouseEvent, note.id, 'nw'); }} onTouchStart={(e) => { e.preventDefault(); handleNoteResizeTouchStart(e, note.id, 'nw'); }} />
-                        <div className="absolute right-0 top-0 w-4 h-4 cursor-ne-resize opacity-0 hover:opacity-40 transition-opacity z-10" onMouseDown={(e) => { e.preventDefault(); handleNoteResizeStart(e as unknown as ReactMouseEvent, note.id, 'ne'); }} onTouchStart={(e) => { e.preventDefault(); handleNoteResizeTouchStart(e, note.id, 'ne'); }} />
-                        <div className="absolute left-0 bottom-0 w-4 h-4 cursor-sw-resize opacity-0 hover:opacity-40 transition-opacity z-10" onMouseDown={(e) => { e.preventDefault(); handleNoteResizeStart(e as unknown as ReactMouseEvent, note.id, 'sw'); }} onTouchStart={(e) => { e.preventDefault(); handleNoteResizeTouchStart(e, note.id, 'sw'); }} />
-                        <div className="absolute right-1 bottom-1 z-10 w-4 h-4 cursor-se-resize opacity-50 hover:opacity-100 transition-opacity touch-manipulation" onMouseDown={(e) => { e.preventDefault(); handleNoteResizeStart(e as unknown as ReactMouseEvent, note.id, 'se'); }} onTouchStart={(e) => { e.preventDefault(); handleNoteResizeTouchStart(e, note.id, 'se'); }}>
-                          <svg viewBox="0 0 12 12" className="w-full h-full text-black">
-                            <path d="M4 12 L12 4" stroke="currentColor" strokeWidth="1" />
-                            <path d="M7 12 L12 7" stroke="currentColor" strokeWidth="1" />
-                            <path d="M10 12 L12 10" stroke="currentColor" strokeWidth="1" />
-                          </svg>
-                        </div>
-                      </div>
-                    </foreignObject>
+                      note={note}
+                      isDark={isDark}
+                      selectedNoteIds={selectedNoteIds}
+                      draggedNoteId={draggedNoteId}
+                      contextMenu={contextMenu}
+                      language={language}
+                      t={t}
+                      noteTextareaRefs={noteTextareaRefs}
+                      devices={devices}
+                      connections={connections}
+                      notes={notes}
+                      setSelectedNoteIds={setSelectedNoteIds}
+                      setSelectedDeviceIds={setSelectedDeviceIds}
+                      setContextMenu={setContextMenu}
+                      handleNoteHeaderMouseDown={handleNoteHeaderMouseDown as any}
+                      handleNoteHeaderTouchStart={handleNoteHeaderTouchStart}
+                      cycleNoteColor={cycleNoteColor}
+                      cycleNoteFont={cycleNoteFont}
+                      cycleNoteFontSize={cycleNoteFontSize}
+                      cycleNoteOpacity={cycleNoteOpacity}
+                      duplicateNote={duplicateNote}
+                      deleteNote={deleteNote}
+                      updateNoteText={updateNoteText}
+                      setNoteTextSelection={setNoteTextSelection}
+                      onTopologyChange={onTopologyChange}
+                      handleNoteResizeStart={handleNoteResizeStart as any}
+                      handleNoteResizeTouchStart={handleNoteResizeTouchStart}
+                    />
                   ))}
 
                   {/* Ping Animation - rendered LAST for top z-order */}
@@ -9097,190 +8237,27 @@ fill="var(--color-accent-500)"
           </div>
         )}
 
+
       {/* Device Tooltip */}
-      {
-        !isDraggingInteractionDisabled && deviceTooltip && deviceTooltip.visible && (
-          <div
-            className={`fixed z-[100] pointer-events-none transition-opacity duration-300 ${deviceTooltip.visible ? 'opacity-100' : 'opacity-0'
-              }`}
-            style={{
-              left: deviceTooltip.x,
-              top: deviceTooltip.y + 20, // Display below the device icon
-              transform: 'translateX(-50%)',
-            }}
-          >
-            <div
-              className={`px-4 py-3 rounded-2xl border liquid-glass-strong min-w-[200px] animate-scale-in shadow-2xl ${isDark
-                ? 'border-slate-700/50 text-white shadow-cyan-500/10'
-                : 'border-slate-200/50 text-slate-900 shadow-slate-200/40'
-                }`}
-            >
-              <div className="flex items-center gap-2 mb-2 pb-2 border-b border-white/10">
-                <div className={`p-1.5 rounded-lg ${isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-cyan-50 text-cyan-600'}`}>
-                  {(() => {
-                    const dev = deviceMap.get(deviceTooltip.deviceId);
-                    if (dev?.type === 'pc' || dev?.type === 'iot') return <Monitor className="w-3.5 h-3.5" />;
-                    if (dev?.type === 'router') return <Network className="w-3.5 h-3.5" />;
-                    return <Laptop className="w-3.5 h-3.5" />;
-                  })()}
-                </div>
-                <div>
-                  <div className="text-[10px] font-black tracking-widest opacity-30 leading-none">
-                    {deviceMap.get(deviceTooltip.deviceId)?.type.toUpperCase()}
-                  </div>
-                  <div className="text-sm font-black tracking-tight leading-none mt-1">
-                    {deviceMap.get(deviceTooltip.deviceId)?.name}
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                {(() => {
-                  const dev = deviceMap.get(deviceTooltip.deviceId);
-                  if (!dev) return null;
-
-                  return (
-                    <>
-                      <div className="flex justify-between items-center gap-4">
-                        <span className="text-[10px] font-bold opacity-50 uppercase tracking-wider">{t.ipAddress}</span>
-                        <span className="text-xs font-mono font-bold text-cyan-500">{dev.ip || '0.0.0.0'}</span>
-                      </div>
-                      <div className="flex justify-between items-center gap-4">
-                        <span className="text-[10px] font-bold opacity-50 uppercase tracking-wider">{t.subnetMask}</span>
-                        <span className="text-xs font-mono font-bold opacity-80">{dev.subnet || '255.255.255.0'}</span>
-                      </div>
-                      <div className="flex justify-between items-center gap-4">
-                        <span className="text-[10px] font-bold opacity-50 uppercase tracking-wider">{t.gateway}</span>
-                        <span className="text-xs font-mono font-bold opacity-80">{dev.gateway || '0.0.0.0'}</span>
-                      </div>
-                      <div className="flex justify-between items-center gap-4">
-                        <span className="text-[10px] font-bold opacity-50 uppercase tracking-wider">IPv6</span>
-                        <span className="text-xs font-mono font-bold opacity-80">{dev.ipv6 || '::'}</span>
-                      </div>
-                      <div className="flex justify-between items-center gap-4">
-                        <span className="text-[10px] font-bold opacity-50 uppercase tracking-wider">{t.dnsServer}</span>
-                        <span className="text-xs font-mono font-bold opacity-80">{dev.dns || '0.0.0.0'}</span>
-                      </div>
-                      <div className="flex justify-between items-center gap-4">
-                        <span className="text-[10px] font-bold opacity-50 uppercase tracking-wider">{t.macAddress}</span>
-                        <span className="text-[10px] font-mono opacity-30">{dev.macAddress ? normalizeMAC(dev.macAddress) : 'N/A'}</span>
-                      </div>
-
-                      {(dev.type === 'pc' || dev.type === 'iot') && (
-                        <div className="flex justify-between items-center gap-4 mt-1 pt-1 border-t border-white/5">
-                          <span className="text-[10px] font-bold opacity-50 uppercase tracking-wider">{t.dhcpEnabled}</span>
-                          <span className={`text-[10px] font-black tracking-widest ${dev.ipConfigMode === 'dhcp' ? 'text-green-500' : 'opacity-40'}`}>
-                            {dev.ipConfigMode === 'dhcp' ? (isTR ? 'EVET' : 'YES') : (isTR ? 'HAYIR' : 'NO')}
-                          </span>
-                        </div>
-                      )}
-
-                      {dev.services && (
-                        <div className="mt-2 pt-2 border-t border-white/10">
-                          <div className="text-[10px] font-bold opacity-50 uppercase tracking-wider mb-1">{t.openServices}</div>
-                          <div className="flex flex-wrap gap-1 mb-2">
-                            {dev.services.http?.enabled && (
-                              <span className="px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-500 text-[9px] font-black tracking-widest border border-amber-500/20">HTTP</span>
-                            )}
-                            {dev.services.dns?.enabled && (
-                              <span className="px-1.5 py-0.5 rounded-md bg-blue-500/20 text-blue-500 text-[9px] font-black tracking-widest border border-blue-500/20">DNS</span>
-                            )}
-                            {dev.services.dhcp?.enabled && (
-                              <span className="px-1.5 py-0.5 rounded-md bg-purple-500/20 text-purple-500 text-[9px] font-black tracking-widest border border-purple-500/20">DHCP</span>
-                            )}
-                            {dev.services.ftp?.enabled && (
-                              <span className="px-1.5 py-0.5 rounded-md bg-cyan-500/20 text-cyan-500 text-[9px] font-black tracking-widest border border-cyan-500/20">FTP</span>
-                            )}
-                            {dev.services.mail?.enabled && (
-                              <span className="px-1.5 py-0.5 rounded-md bg-rose-500/20 text-rose-500 text-[9px] font-black tracking-widest border border-rose-500/20">MAIL</span>
-                            )}
-                            {(!dev.services.http?.enabled && !dev.services.dns?.enabled && !dev.services.dhcp?.enabled && !dev.services.ftp?.enabled && !dev.services.mail?.enabled) && (
-                              <span className="text-[9px] opacity-40 italic">{isTR ? 'Servis yok' : 'No services'}</span>
-                            )}
-                          </div>
-
-                          {dev.services?.dhcp?.pools && dev.services.dhcp.pools.length > 0 && (
-                            <div className="space-y-1 mt-2 pt-2 border-t border-white/5">
-                              <div className="text-[9px] font-bold opacity-30 uppercase tracking-wider">DHCP Pool</div>
-                              {dev.services.dhcp.pools.map((pool, idx) => (
-                                <div key={idx} className="text-[9px] space-y-0.5 bg-purple-500/10 rounded p-1.5">
-                                  <div className="flex justify-between"><span className="opacity-50">Pool:</span><span className="font-mono">{pool.poolName}</span></div>
-                                  <div className="flex justify-between"><span className="opacity-50">IP:</span><span className="font-mono">{pool.startIp}</span></div>
-                                  <div className="flex justify-between"><span className="opacity-50">Mask:</span><span className="font-mono">{pool.subnetMask}</span></div>
-                                  <div className="flex justify-between"><span className="opacity-50">GW:</span><span className="font-mono">{pool.defaultGateway}</span></div>
-                                  <div className="flex justify-between"><span className="opacity-50">Max:</span><span className="font-mono">{pool.maxUsers}</span></div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
-                          {dev.services?.dns?.records && dev.services.dns.records.length > 0 && (
-                            <div className="space-y-1 mt-2 pt-2 border-t border-white/5">
-                              <div className="text-[9px] font-bold opacity-30 uppercase tracking-wider">{isTR ? 'DNS Kayıtları' : 'DNS Records'}</div>
-                              {dev.services.dns.records.map((record, idx) => (
-                                <div key={idx} className="text-[9px] flex justify-between items-center gap-2 bg-blue-500/10 rounded px-1.5 py-0.5">
-                                  <span className="font-mono text-blue-400 truncate max-w-[80px]">{record.domain}</span>
-                                  <span className="opacity-50">→</span>
-                                  <span className="font-mono">{record.address}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
-                          {dev.services.http?.enabled && (
-                            <div className="mt-2 pt-2 border-t border-white/5">
-                              <div className="text-[9px] flex justify-between items-center">
-                                <span className="opacity-60 uppercase tracking-wider">{isTR ? 'HTTP Sunucu' : 'HTTP Server'}</span>
-                                <span className="text-green-500 text-[9px] font-bold">✓ {t.active}</span>
-                              </div>
-                              {dev.services.http.content && (
-                                <div className="text-[8px] opacity-50 mt-1 truncate">{dev.services.http.content.substring(0, 50)}...</div>
-                              )}
-                            </div>
-                          )}
-
-                          {dev.services.ftp?.enabled && (
-                            <div className="mt-2 pt-2 border-t border-white/5">
-                              <div className="text-[9px] flex justify-between items-center">
-                                <span className="opacity-60 uppercase tracking-wider">FTP Server</span>
-                                <span className="text-cyan-500 text-[9px] font-bold">✓ {t.active}</span>
-                              </div>
-                              <div className="text-[8px] opacity-50 mt-1">
-                                {dev.services.ftp.anonymousAccess
-                                  ? (isTR ? 'Anonim erişim açık' : 'Anonymous access enabled')
-                                  : (isTR ? 'Kullanıcı girişi gerekli' : 'User login required')}
-                              </div>
-                            </div>
-                          )}
-
-                          {dev.services.mail?.enabled && (
-                            <div className="mt-2 pt-2 border-t border-white/5">
-                              <div className="text-[9px] flex justify-between items-center">
-                                <span className="opacity-60 uppercase tracking-wider">MAIL Server</span>
-                                <span className="text-rose-500 text-[9px] font-bold">✓ {t.active}</span>
-                              </div>
-                              <div className="text-[8px] opacity-50 mt-1 truncate">
-                                {dev.services.mail.domain || 'local.lan'}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </>
-                  );
-                })()}
-              </div>
-
-              {/* Arrow */}
-              <div className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] ${isDark ? 'border-b-slate-900' : 'border-b-white'
-                }`} />
-            </div>
-          </div>
-        )}
-
-
-
-
+      {deviceTooltip && (
+        <DeviceTooltip
+          tooltip={deviceTooltip}
+          deviceMap={deviceMap}
+          isDark={isDark}
+          isTR={isTR}
+          isDraggingInteractionDisabled={isDraggingInteractionDisabled}
+          t={{
+            ipAddress: t.ipAddress,
+            subnetMask: t.subnetMask,
+            gateway: t.gateway,
+            dnsServer: t.dnsServer,
+            macAddress: t.macAddress,
+            dhcpEnabled: t.dhcpEnabled,
+            openServices: t.openServices,
+            active: t.active,
+          }}
+        />
+      )}
       {/* Packet Capture Panel */}
       {activeCaptureConnectionId && (
         <div className={`fixed bottom-20 right-4 w-96 max-h-[300px] flex flex-col rounded-xl border shadow-2xl z-50 backdrop-blur-md overflow-hidden ${isDark ? 'bg-slate-900/90 border-slate-800' : 'bg-white/90 border-slate-200'}`}>
