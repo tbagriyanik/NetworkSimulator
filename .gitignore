@@ -51,13 +51,9 @@ dev_server.log
 # Skills directory
 /skills/
 .dyad/
-.idea/vcs.xml
-.idea/modules.xml
-.idea/misc.xml
-.gitignore
-.idea/ciscosim.iml
-
+.idea/
 .kilo/
 .jules/
+.kiro/
 .sisyphus/
 .cowork/
