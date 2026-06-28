@@ -163,8 +163,9 @@ function getCableColor(cableType: string) {
     if (cableType === 'crossover') return cableColors.crossover.primary;
     if (cableType === 'fiber') return cableColors.fiber.primary;
     if (cableType === 'console') return cableColors.console.primary;
-    if (cableType === 'serial') return '#84cc12';
-    return cableColors.straight.primary;
+    if (cableType === 'serial') return cableColors.serial.primary;
+    if (cableType === 'straight') return cableColors.straight.primary;
+    return '#94a3b8';
 }
 
 // Kablo tipine göre SVG simgesi döndürür

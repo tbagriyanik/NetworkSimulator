@@ -70,9 +70,7 @@ describe('Packet Capture Backend', () => {
       { protocol: 'icmp' }
     );
 
-    if (!result.success) {
-      console.log('Connectivity Error:', result.error);
-    }
+    // Connectivity error handled via the success check below
 
     expect(result.success).toBe(true);
     expect(result.capturedPackets).toBeDefined();

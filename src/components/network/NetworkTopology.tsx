@@ -284,6 +284,15 @@ function PacketPopup({ hopIndex, info, language, onClose, isDark }: {
   );
 }
 
+const EXPORT_CABLE_COLORS: Record<string, string> = {
+  straight: '#3b82f6',
+  crossover: '#f59e0b',
+  console: '#06b6d4',
+  serial: '#16a34a',
+  wireless: '#8b5cf6',
+  error: '#ef4444',
+};
+
 export function NetworkTopology({
   cableInfo,
   onCableChange,
@@ -3088,15 +3097,16 @@ const map: Record<string, { fill: string; stroke: string; text: string }> = {
       const pathD = 'M ' + srcPort.x + ' ' + srcPort.y +
         ' C ' + midX + ' ' + srcPort.y + ', ' + midX + ' ' + tgtPort.y + ', ' + tgtPort.x + ' ' + tgtPort.y;
 
+      // Use actual hex colors for export (not CSS variables)
       const cableColor = conn.active === false
-        ? CABLE_COLORS.error.primary
-        : (CABLE_COLORS[conn.cableType]?.primary || CABLE_COLORS.straight.primary);
-      const opacity = conn.active === false ? 0.8 : 0.5;
+        ? EXPORT_CABLE_COLORS.error
+        : (EXPORT_CABLE_COLORS[conn.cableType] || EXPORT_CABLE_COLORS.straight);
+      const opacity = conn.active === false ? 1.0 : 1.0; // Full opacity for export visibility
 
       const path = document.createElementNS(ns, 'path');
       path.setAttribute('d', pathD);
       path.setAttribute('stroke', cableColor);
-      path.setAttribute('stroke-width', '2');
+      path.setAttribute('stroke-width', '2.5');
       path.setAttribute('fill', 'none');
       path.setAttribute('opacity', opacity.toString());
       path.setAttribute('data-connection-id', conn.id);
@@ -7761,7 +7771,7 @@ if (isShutdown || isDeviceOffline) {
                               }
                             }}
                             className="w-full h-full min-h-full px-2 py-1 bg-transparent outline-none resize-none overflow-y-auto overflow-x-hidden whitespace-pre-wrap break-words touch-manipulation custom-scrollbar"
-                            style={{ fontSize: note.fontSize, lineHeight: 1.35, color: isDark ? 'var(--color-secondary-100)' : 'var(--color-secondary-800)' }}
+                            style={{ fontSize: note.fontSize, lineHeight: 1.35, color: isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-800)' }}
                           />
                         </div>
 
@@ -8359,7 +8369,7 @@ fill="var(--color-accent-500)"
                     x={note.x + 8}
                     y={note.y + 20}
                     fontSize={note.fontSize}
-                    fill="#000000"
+                    fill="var(--color-secondary-800)"
                     fontFamily={note.font}
                     fontWeight={note.bold ? 'bold' : 'normal'}
                     fontStyle={note.italic ? 'italic' : 'normal'}

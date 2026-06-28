@@ -24,6 +24,7 @@ export interface SemanticColors {
     warning: ColorScale;
     error: ColorScale;
     info: ColorScale;
+    accent: ColorScale;
 }
 
 export interface SurfaceColors {

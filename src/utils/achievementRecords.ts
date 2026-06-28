@@ -47,7 +47,9 @@ function saveSummary(summary: AchievementSummary): void {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('basarilarim-updated'));
     }
-  } catch {}
+  } catch {
+    // event dispatch error - non-critical
+  }
 }
 
 export function addSessionDuration(seconds: number): void {

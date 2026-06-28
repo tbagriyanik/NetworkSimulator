@@ -180,8 +180,8 @@ export function decryptExamData(encrypted: string): unknown {
     const xored = xorBytes(bytes, EXAM_KEY_BYTES);
     const json = new TextDecoder().decode(xored);
     return JSON.parse(json);
-  } catch (e) {
-    console.error('Failed to decrypt exam data', e);
+  } catch (_e) {
+    // console.error('Failed to decrypt exam data', _e);
     return null;
   }
 }
@@ -1248,12 +1248,12 @@ export const getExamProjects = (language: 'tr' | 'en'): ExamProject[] => {
       if (/^[A-ZÖÇŞİĞÜ]/u.test(trimmed) && trimmed.length > 3) continue;
 
       // Remove bullet markers and numbering prefixes
-      const cleaned = trimmed.replace(/^[-–*•]\s*/, '').replace(/^\d+[\.\)]\s*/, '').trim();
+      const cleaned = trimmed.replace(/^[-–*•]\s*/, '').replace(/^\d+[.)]\s*/, '').trim();
       if (!cleaned) continue;
 
       // Skip remaining non-command patterns
       if (/^[A-ZÖÇŞİĞÜ]/u.test(cleaned) && !cleaned.startsWith('IP') && !cleaned.startsWith('PC-')) continue;
-      if (/^["'`\(\)\[\]]/.test(cleaned)) continue;
+      if (/^["'`()[\]]/.test(cleaned)) continue;
       if (cleaned.length < 2) continue;
       if (/^[\d]+$/.test(cleaned)) continue;
 
@@ -1309,7 +1309,7 @@ function extractPcConfigsFromNotes(notes: NoteItem[]): NotePcConfig[] {
       if (!trimmed) continue;
 
       // Remove numbering prefixes like "1) ", "1. ", "- ", "* "
-      const cleaned = trimmed.replace(/^[-–*•\d]+[\.\)]\s*/, '').trim();
+      const cleaned = trimmed.replace(/^[-–*•\d]+[.)]\s*/, '').trim();
       if (!cleaned) continue;
 
       // Pattern: "PC-X: IP a.b.c.d, Subnet w.x.y.z"
@@ -1378,7 +1378,7 @@ function extractConnectionsFromNotes(notes: NoteItem[]): NoteConnectionInfo[] {
       if (!trimmed) continue;
 
       // Remove numbering prefixes like "3) ", "1. ", "- ", "* "
-      const cleaned = trimmed.replace(/^[-–*•\d]+[\.\)]\s*/, '').trim();
+      const cleaned = trimmed.replace(/^[-–*•\d]+[.)]\s*/, '').trim();
       if (!cleaned) continue;
 
       // Pattern: "PC-1 (eth0) ile Switch-1 (fa0/1) arasını bağlayın"

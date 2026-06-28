@@ -1598,7 +1598,7 @@ export const commandPatterns: Record<string, CommandPattern> = {
     maxArgs: 0
   },
   'show mac address-table': {
-    pattern: /^show\s+mac(?:\s*(?:address\-table|address|addr))?(\s+(.+)?)?$/i,
+    pattern: /^show\s+mac(?:\s*(?:address-table|address|addr))?(\s+(.+)?)?$/i,
     modes: ['user', 'privileged'],
     minArgs: 0,
     maxArgs: 2

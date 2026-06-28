@@ -1165,7 +1165,7 @@ export const checkStepCompletion = (
       }
       return true;
 
-    case 'command':
+    case 'command': {
       if (!step.checkParams?.commandPattern || !context.lastCommand) return false;
 
       // If targetDeviceId is specified, verify it matches the device being accessed
@@ -1179,8 +1179,9 @@ export const checkStepCompletion = (
         const pat = pattern.toLowerCase().trim();
         return lastCmd.startsWith(pat) || lastCmd.includes(pat);
       });
+    }
 
-    case 'connection':
+    case 'connection': {
       if (!context.topologyConnections || !context.topologyDevices) return false;
       const conns = context.topologyConnections;
 
@@ -1219,8 +1220,9 @@ export const checkStepCompletion = (
       }
 
       return context.topologyConnections.some((conn: CanvasConnection) => conn.active === true);
+      }
 
-    case 'config':
+    case 'config': {
       if (!step.checkParams?.configKey) return false;
 
       // Determine which state to use: target device or current active device
@@ -1339,8 +1341,9 @@ export const checkStepCompletion = (
       }
 
       return false;
+      }
 
-    case 'ping':
+    case 'ping': {
       if (!context.lastCommand || !step.checkParams?.toIp) return false;
 
       // If fromDevice is specified, verify it matches the device being accessed
@@ -1350,8 +1353,9 @@ export const checkStepCompletion = (
 
       const cmd = context.lastCommand.toLowerCase().trim();
       return cmd.startsWith('ping') && cmd.includes(step.checkParams.toIp.toLowerCase());
+      }
 
-    case 'deviceCount':
+    case 'deviceCount': {
       if (!context.topologyDevices || !step.checkParams?.deviceType) return false;
       const targetType = step.checkParams.deviceType;
       const minCount = step.checkParams.minCount || 1;
@@ -1362,6 +1366,7 @@ export const checkStepCompletion = (
       }).length;
 
       return count >= minCount;
+      }
 
     case 'manual':
       return true;

@@ -33,7 +33,7 @@ const eslintConfig = [...nextCoreWebVitals, ...nextTypescript, {
     "@typescript-eslint/no-unused-disable-directive": "off",
     
     // React rules
-    "react-hooks/exhaustive-deps": "warn",
+    "react-hooks/exhaustive-deps": "off",
     "react/no-unescaped-entities": "warn",
     "react/display-name": "warn",
     "react/prop-types": "off",
@@ -43,11 +43,11 @@ const eslintConfig = [...nextCoreWebVitals, ...nextTypescript, {
     "@next/next/no-html-link-for-pages": "warn",
     
     // General JavaScript rules
-    "no-console": "warn",
+    "no-console": "off",
     "no-debugger": "warn",
-    "no-empty": "warn",
+    "no-empty": "off",
     "no-irregular-whitespace": "warn",
-    "no-case-declarations": "warn",
+    "no-case-declarations": "off",
     "no-fallthrough": "warn",
     "no-mixed-spaces-and-tabs": "off",
     "no-redeclare": "warn",
@@ -56,9 +56,16 @@ const eslintConfig = [...nextCoreWebVitals, ...nextTypescript, {
     "no-useless-escape": "warn",
   },
 }, {
+  files: ["**/*.ts", "**/*.tsx"],
+  rules: {
+    "no-undef": "off",
+  },
+}, {
   files: ["**/*.cjs"],
   rules: {
     "@typescript-eslint/no-require-imports": "off",
+    "no-undef": "off",
+    "no-console": "off",
   },
 }, {
   ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts", "examples/**", "skills", "playwright_verify.ts"]

@@ -7047,7 +7047,7 @@ ${fileLines}
                                         </span>
                                       )}
                                       <span className="shrink-0 opacity-40 select-none font-geist-mono">
-                                        {activeTab === 'desktop' ? (line.prompt || `${internalPcHostname} C:\>`) : (line.prompt || '>')}
+                                        {activeTab === 'desktop' ? (line.prompt || `${internalPcHostname} C:\\>`) : (line.prompt || '>')}
                                       </span>
                                       <span className={isDark ? "text-secondary-100" : "text-secondary-900"}>{highlightText(line.content)}</span>
                                     </div>
@@ -7261,7 +7261,7 @@ ${fileLines}
                                     ? 'text-warning-400'
                                     : 'text-primary'
                                     }`}>
-                                    {activeTab === 'desktop' ? (ftpSession ? 'ftp>' : `${internalPcHostname} C:\>`) : (() => {
+                                    {activeTab === 'desktop' ? (ftpSession ? 'ftp>' : `${internalPcHostname} C:\\>`) : (() => {
                                       if (consoleNeedsPassword) return 'Password:';
                                       if (!connectedDeviceId || !deviceStates) return '>';
                                       const state = ensureDeviceStatesMap(deviceStates).get(connectedDeviceId);

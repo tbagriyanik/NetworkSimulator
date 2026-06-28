@@ -54,11 +54,12 @@ export const accentColors: ColorScale = {
 
 // Cable Colors (network-related)
 export const cableColors: Record<string, { primary: string; secondary: string }> = {
-    straight: { primary: 'var(--color-secondary-500)', secondary: 'var(--color-secondary-400)' },
-    crossover: { primary: 'var(--color-secondary-400)', secondary: 'var(--color-secondary-300)' },
+    straight: { primary: 'var(--color-info-500)', secondary: 'var(--color-info-400)' },
+    crossover: { primary: 'var(--color-warning-500)', secondary: 'var(--color-warning-400)' },
     ethernet: { primary: 'var(--color-success-500)', secondary: 'var(--color-success-400)' },
     fiber: { primary: 'var(--color-primary-500)', secondary: 'var(--color-primary-600)' },
-    console: { primary: 'var(--color-error-500)', secondary: 'var(--color-error-600)' },
+    console: { primary: 'var(--color-accent-500)', secondary: 'var(--color-accent-400)' },
+    serial: { primary: 'var(--color-success-500)', secondary: 'var(--color-success-600)' },
     wireless: { primary: 'var(--color-warning-400)', secondary: 'var(--color-warning-500)' },
     error: { primary: 'var(--color-error-500)', secondary: 'var(--color-error-600)' },
 };
@@ -71,11 +72,11 @@ export const semanticColors: SemanticColors = {
         200: '#bbf7d0',
         300: '#86efac',
         400: '#4ade80',
-        500: '#22c55e', // Base success
-        600: '#16a34a',
-        700: '#15803d',
-        800: '#166534',
-        900: '#14532d',
+        500: '#16a34a', // Base success (green)
+        600: '#15803d',
+        700: '#166534',
+        800: '#14532d',
+        900: '#052e16',
         950: '#052e16',
     },
     warning: {
@@ -84,11 +85,11 @@ export const semanticColors: SemanticColors = {
         200: '#fde68a',
         300: '#fcd34d',
         400: '#fbbf24',
-        500: '#f59e0b', // Base warning
-        600: '#d97706',
-        700: '#b45309',
-        800: '#92400e',
-        900: '#78350f',
+        500: '#f59e0b', // Base warning (orange)
+        600: '#b45309',
+        700: '#92400e',
+        800: '#78350f',
+        900: '#451a03',
         950: '#451a03',
     },
     error: {
@@ -98,9 +99,9 @@ export const semanticColors: SemanticColors = {
         300: '#fca5a5',
         400: '#f87171',
         500: '#ef4444', // Base error
-        600: '#dc2626',
-        700: '#b91c1c',
-        800: '#991b1b',
+        600: '#b91c1c',
+        700: '#991b1b',
+        800: '#7f1d1d',
         900: '#7f1d1d',
         950: '#450a0a',
     },
@@ -110,12 +111,25 @@ export const semanticColors: SemanticColors = {
         200: '#bfdbfe',
         300: '#93c5fd',
         400: '#60a5fa',
-        500: '#3b82f6', // Base info (same as primary)
-        600: '#2563eb',
-        700: '#1d4ed8',
-        800: '#1e40af',
+        500: '#3b82f6', // Base info (blue)
+        600: '#1d4ed8',
+        700: '#1e40af',
+        800: '#1e3a8a',
         900: '#1e3a8a',
         950: '#172554',
+    },
+    accent: {
+        50: '#ecfeff',
+        100: '#cffafe',
+        200: '#a5f3fc',
+        300: '#67e8f9',
+        400: '#22d3ee',
+        500: '#06b6d4', // Base accent (turquoise)
+        600: '#0e7490',
+        700: '#155e75',
+        800: '#164e63',
+        900: '#083344',
+        950: '#083344',
     },
 };
 
@@ -155,19 +169,19 @@ export const darkSurfaceColors: SurfaceColors = {
 
 // High Contrast Theme Surface Colors
 export const highContrastSurfaceColors: SurfaceColors = {
-    background: '#000000',
-    foreground: '#ffffff',
-    card: '#000000',
-    cardForeground: '#ffffff',
-    popover: '#000000',
-    popoverForeground: '#ffffff',
-    muted: '#1a1a1a',
-    mutedForeground: '#cccccc',
-    accent: '#1a1a1a',
-    accentForeground: '#ffffff',
-    border: '#666666',
-    input: '#333333',
-    ring: '#00ffff',
+    background: '#020617',
+    foreground: '#f8fafc',
+    card: '#020617',
+    cardForeground: '#f8fafc',
+    popover: '#020617',
+    popoverForeground: '#f8fafc',
+    muted: '#1e293b',
+    mutedForeground: '#94a3b8',
+    accent: '#1e293b',
+    accentForeground: '#f8fafc',
+    border: '#1e293b',
+    input: '#1e293b',
+    ring: '#06b6d4',
 };
 
 // Utility function to generate CSS custom properties from color scales

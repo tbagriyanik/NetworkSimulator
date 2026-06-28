@@ -3,6 +3,8 @@
  * Defines types for virtualization, spatial partitioning, and performance monitoring
  */
 
+import React from 'react';
+
 // ============================================================================
 // Virtual List Types
 // ============================================================================
