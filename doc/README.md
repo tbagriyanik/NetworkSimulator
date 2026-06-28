@@ -291,6 +291,7 @@ const response = await apiClient.post('/api/contact', data);
 ✅ STP PVST Load Balancing  
 ✅ RIP Dinamik Yönlendirme  
 ✅ All Services Lab (DNS, HTTP, DHCP, FTP, MAIL, NTP)  
+✅ PNG 300 DPI Export (topology-faithful, cable colors, port labels, auto-sized notes)  
 
 ---
 

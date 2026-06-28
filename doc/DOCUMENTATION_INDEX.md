@@ -557,6 +557,7 @@ doc/
 - [x] Oda Takip Sistemi dokümantasyonu eklendi
 - [x] Tüm Servisler Laboratuvarı dokümantasyonu eklendi
 - [x] NAT/ACL/OSPF/EIGRP/HSRP/IPv6 dokümantasyonu eklendi
+- [x] PNG 300 DPI Export dokümantasyonu eklendi
 
 ---
 
