@@ -63,8 +63,7 @@ import { useLanguage, Translations } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { toast } from "@/hooks/use-toast";
 
-import { ProjectSummaryModal } from '@/components/network/ProjectSummaryModal';
-import { generateProjectSummary, ProjectSummary } from '@/utils/generateSummary';
+import { generateProjectSummary } from '@/utils/generateSummary';
 
 import {
   topologyTasks,
@@ -403,8 +402,6 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   }, []);
   const [projectSearchQuery, setProjectSearchQuery] = useState('');
   const [showBasarilarim, setShowBasarilarim] = useState(false);
-  const [showProjectSummaryModal, setShowProjectSummaryModal] = useState(false);
-  const [projectSummaryData, setProjectSummaryData] = useState<ProjectSummary | null>(null);
 
   // PWA Installation state
   interface BeforeInstallPromptEvent extends Event {
@@ -664,16 +661,6 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   const activeTab = useActiveTab();
   const environment = useEnvironment();
 
-  // Listen for trigger-project-summary
-  useEffect(() => {
-    const handleProjectSummary = () => {
-      const summary = generateProjectSummary(topologyDevices || [], topologyConnections || [], deviceStates);
-      setProjectSummaryData(summary);
-      setShowProjectSummaryModal(true);
-    };
-    window.addEventListener('trigger-project-summary', handleProjectSummary);
-    return () => window.removeEventListener('trigger-project-summary', handleProjectSummary);
-  }, [topologyDevices, topologyConnections, deviceStates]);
   const helpLevel = useAppStore(state => state.helpLevel);
 
   // Network logic functions (must come after Zustand selectors to avoid TDZ)
@@ -790,6 +777,17 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
               text += `  - ${language === 'tr' ? 'Konfigürasyon' : 'Configuration'}: ${language === 'tr' ? 'Henüz yüklenmedi' : 'Not loaded'}\n`;
             }
           }
+        });
+      }
+
+      const summary = generateProjectSummary(topologyDevices || [], topologyConnections || [], deviceStates);
+      
+
+      if (summary.configs.length > 0) {
+        text += `--- ${language === 'tr' ? 'CİHAZ KONFİGÜRASYONLARI' : 'DEVICE CONFIGURATIONS'} ---\n`;
+        summary.configs.forEach(config => {
+          text += `\n[ ${config.name} (${config.type}) ]\n`;
+          text += config.commands + `\n`;
         });
       }
 
@@ -5778,11 +5776,7 @@ ${state.bannerMOTD}
             setIsEnvironmentPanelOpen={setIsEnvironmentPanelOpen}
           />
 
-          <ProjectSummaryModal
-            isOpen={showProjectSummaryModal}
-            onClose={() => setShowProjectSummaryModal(false)}
-            summary={projectSummaryData}
-          />
+
 
           {showAboutModal && <LazyAboutModal
             isOpen={showAboutModal}

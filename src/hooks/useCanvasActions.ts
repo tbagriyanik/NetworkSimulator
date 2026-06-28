@@ -23,6 +23,7 @@ export interface UseCanvasActionsProps {
   setConnections: React.Dispatch<React.SetStateAction<CanvasConnection[]>>;
   notes: CanvasNote[];
   setNotes: React.Dispatch<React.SetStateAction<CanvasNote[]>>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   deviceStates: Map<string, any> | undefined | null;
   saveToHistory: () => void;
   isExamActive: boolean;
@@ -37,9 +38,11 @@ export interface UseCanvasActionsProps {
   setSelectedNoteIds: React.Dispatch<React.SetStateAction<string[]>>;
   onDeviceSelect: (type: DeviceType, id: string, switchModel?: string, name?: string, isNew?: boolean, device?: CanvasDevice) => void;
   onDeviceDelete?: (deviceId: string) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setConnectionStart: React.Dispatch<React.SetStateAction<any>>;
   setIsDrawingConnection: React.Dispatch<React.SetStateAction<boolean>>;
   language: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   t: any;
 }
 
@@ -193,6 +196,7 @@ export function useCanvasActions({
     setConnections((prev) =>
       prev.filter((c) => c.sourceDeviceId !== deviceId && c.targetDeviceId !== deviceId)
     );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setConnectionStart((prev: any) => {
       if (prev?.deviceId === deviceId) {
         setIsDrawingConnection(false);

@@ -7,6 +7,7 @@ export interface ExportPNGOptions {
   devices: CanvasDevice[];
   notes: CanvasNote[];
   connections: CanvasConnection[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   deviceStates?: Map<string, any>;
   getPortPosition: (device: CanvasDevice, portId: string) => { x: number; y: number };
 }

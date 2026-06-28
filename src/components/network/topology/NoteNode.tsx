@@ -7,8 +7,10 @@ export interface NoteNodeProps {
   isDark: boolean;
   selectedNoteIds: string[];
   draggedNoteId: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   contextMenu: any;
   language: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   t: any;
   noteTextareaRefs: React.MutableRefObject<Record<string, HTMLTextAreaElement | null>>;
   devices: CanvasDevice[];
@@ -16,6 +18,7 @@ export interface NoteNodeProps {
   notes: CanvasNote[];
   setSelectedNoteIds: React.Dispatch<React.SetStateAction<string[]>>;
   setSelectedDeviceIds: React.Dispatch<React.SetStateAction<string[]>>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setContextMenu: React.Dispatch<React.SetStateAction<any>>;
   handleNoteHeaderMouseDown: (e: React.MouseEvent, id: string) => void;
   handleNoteHeaderTouchStart: (e: React.TouchEvent, id: string) => void;

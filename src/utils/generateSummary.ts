@@ -86,12 +86,12 @@ const generateDeviceConfig = (device: CanvasDevice, deviceStates?: Map<string, a
       }
     });
   } else if (device.type === 'pc' || device.type === 'iot') {
-    config = `!\n! IP Configuration for ${device.name}\n!\n`;
     if (device.ip) {
-      config += `ip address ${device.ip} ${device.subnet || '255.255.255.0'} ${device.gateway || ''}\n`;
+      config = `IP: ${device.ip}\nSubnet: ${device.subnet || '255.255.255.0'}\nGateway: ${device.gateway || 'N/A'}\nDNS: ${device.dns || 'N/A'}\n`;
     } else {
-      config += `ip dhcp\n`;
+      config = `IP Mode: DHCP\n`;
     }
+    return config;
   }
 
   config += `end\nwrite memory\n`;
