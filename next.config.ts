@@ -20,46 +20,9 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   devIndicators: false,
   async headers() {
-    const isProd = process.env.NODE_ENV === "production";
-    // script-src will be injected by middleware with a per‑request nonce
-  const scriptSrc = isProd
-    ? "script-src 'self' blob:"
-    : "script-src 'self' 'unsafe-eval' blob:";
 
-    const csp = [
-      "default-src 'self'",
-      "base-uri 'self'",
-      "form-action 'self'",
-      "frame-ancestors 'none'",
-      "object-src 'none'",
-      scriptSrc,
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob:",
-      "font-src 'self' data:",
-      "connect-src 'self' ws: wss: https:",
-      "worker-src 'self' blob:",
-      "manifest-src 'self'",
-      "upgrade-insecure-requests",
-    ].join("; ");
+    // CSP is now handled by middleware; no inline CSP here.
 
-    const cspReportOnly = [
-      "default-src 'self'",
-      "base-uri 'self'",
-      "form-action 'self'",
-      "frame-ancestors 'none'",
-      "object-src 'none'",
-      scriptSrc,
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob:",
-      "font-src 'self' data:",
-      "connect-src 'self' ws: wss: https:",
-      "worker-src 'self' blob:",
-      "manifest-src 'self'",
-    ].join("; ");
-
-    const cspReportOnlyProd = isProd
-      ? `${cspReportOnly}; require-trusted-types-for 'script'; trusted-types default`
-      : cspReportOnly;
 
     return [
       {

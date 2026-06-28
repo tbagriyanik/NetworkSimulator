@@ -1,13 +1,12 @@
-import { NextResponse } from 'next/server';
-import crypto from 'crypto';
+import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * Middleware that generates a per‑request CSP nonce and injects a strict
- * Content‑Security‑Policy header. The nonce is automatically applied to
+ * Middleware that generates a per‑request CSP header. The nonce is automatically applied to
  * Next.js' inline scripts, allowing them to execute without `unsafe-inline`.
  */
-export function middleware(request: Request) {
-  const nonce = crypto.randomBytes(16).toString('base64');
+export function middleware(_request: NextRequest) {
+  // Use the Web Crypto API (available in Edge runtime) to generate a random nonce
+  const nonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))));
 
   const csp = [
     "default-src 'self'",
