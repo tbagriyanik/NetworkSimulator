@@ -8558,19 +8558,19 @@ export function NetworkTopology({
             </SheetTitle>
           </SheetHeader>
           <div className="grid grid-cols-3 gap-4 max-w-sm mx-auto">
-            {[
-              { type: 'pc', label: 'PC', icon: DEVICE_ICONS.pc },
+            {([
+              { type: 'pc', label: 'PC', layer: undefined, icon: DEVICE_ICONS.pc },
               { type: 'switch', label: 'L2 SW', layer: 'L2', icon: DEVICE_ICONS.switchL2 },
               { type: 'switch', label: 'L3 SW', layer: 'L3', icon: DEVICE_ICONS.switchL3 },
-              { type: 'router', label: 'Router', icon: DEVICE_ICONS.router },
-              { type: 'firewall', label: 'Firewall', icon: DEVICE_ICONS.firewall },
-              { type: 'iot', label: 'IoT', icon: DEVICE_ICONS.iot },
-              { type: 'wlc', label: 'WLC', icon: DEVICE_ICONS.wlc },
-            ].map((item) => (
+              { type: 'router', label: 'Router', layer: undefined, icon: DEVICE_ICONS.router },
+              { type: 'firewall', label: 'Firewall', layer: undefined, icon: DEVICE_ICONS.firewall },
+              { type: 'iot', label: 'IoT', layer: undefined, icon: DEVICE_ICONS.iot },
+              { type: 'wlc', label: 'WLC', layer: undefined, icon: DEVICE_ICONS.wlc },
+            ] as const).map((item) => (
               <button
                 key={`${item.type}-${item.layer || ''}`}
                 onClick={() => {
-                  addDevice(item.type as any, item.layer as any);
+                  addDevice(item.type, item.layer as 'L2' | 'L3');
                   setMobilePaletteOpen(false);
                 }}
                 className={`flex flex-col items-center gap-2 p-4 rounded-2xl transition-all active:scale-95 ${

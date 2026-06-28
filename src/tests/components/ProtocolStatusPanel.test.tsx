@@ -13,10 +13,10 @@ vi.mock('@/contexts/LanguageContext', () => ({
 }));
 
 describe('ProtocolStatusPanel', () => {
-  const mockDevices: CanvasDevice[] = [
-    { id: 'r1', type: 'router', name: 'R1' } as any,
-    { id: 'sw1', type: 'switchL2', name: 'SW1' } as any
-  ];
+  const mockDevices = [
+    { id: 'r1', type: 'router', name: 'R1' },
+    { id: 'sw1', type: 'switchL2', name: 'SW1' }
+  ] as unknown as CanvasDevice[];
 
   const mockDeviceStates = new Map<string, SwitchState>();
 
@@ -25,7 +25,7 @@ describe('ProtocolStatusPanel', () => {
     ospfAreas: { '0': {} },
     ospfNeighbors: [{ neighborId: 'r2' }],
     ports: {}
-  } as any);
+  } as unknown as SwitchState);
 
   // Set up STP on SW1 (Root)
   mockDeviceStates.set('sw1', {
@@ -33,7 +33,7 @@ describe('ProtocolStatusPanel', () => {
       'fa0/1': { spanningTree: { role: 'designated', state: 'forwarding' } },
       'fa0/2': { spanningTree: { role: 'alternate', state: 'blocking' } }
     }
-  } as any);
+  } as unknown as SwitchState);
 
   it('displays correct protocol and stats', () => {
     render(<ProtocolStatusPanel devices={mockDevices} deviceStates={mockDeviceStates} isDark={true} />);
