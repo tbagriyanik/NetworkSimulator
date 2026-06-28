@@ -52,6 +52,17 @@ export const accentColors: ColorScale = {
     950: '#083344',
 };
 
+// Cable Colors (network-related)
+export const cableColors: Record<string, { primary: string; secondary: string }> = {
+    straight: { primary: '#64748b', secondary: '#94a3b8' },
+    crossover: { primary: '#94a3b8', secondary: '#cbd5e1' },
+    ethernet: { primary: '#10b981', secondary: '#22c55e' },
+    fiber: { primary: '#3b82f6', secondary: '#2563eb' },
+    console: { primary: '#ef4444', secondary: '#dc2626' },
+    wireless: { primary: '#eab308', secondary: '#f59e0b' },
+    error: { primary: '#ef4444', secondary: '#dc2626' },
+};
+
 // Semantic Colors
 export const semanticColors: SemanticColors = {
     success: {

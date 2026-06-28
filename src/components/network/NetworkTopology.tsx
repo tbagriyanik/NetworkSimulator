@@ -876,6 +876,16 @@ export function NetworkTopology({
     return () => window.removeEventListener('mobile-back-pressed', handleMobileBack);
   }, []);
 
+  // Listen for mobile-back-pressed custom event
+  useEffect(() => {
+    const handleMobileBack = () => {
+      setContextMenu(null);
+      setPacketPopupHop(null);
+    };
+    window.addEventListener('mobile-back-pressed', handleMobileBack);
+    return () => window.removeEventListener('mobile-back-pressed', handleMobileBack);
+  }, []);
+
   // Refs
   const deviceCounterRef = useRef<{ pc: number; iot: number; switch: number; router: number; firewall: number; wlc: number }>({ pc: 0, iot: 0, switch: 0, router: 0, firewall: 0, wlc: 0 });
   const getCounterKey = useCallback((type: DeviceType | string): 'pc' | 'iot' | 'switch' | 'router' | 'firewall' | 'wlc' => {
@@ -2968,6 +2978,10 @@ export function NetworkTopology({
     const clone = svg.cloneNode(true) as SVGSVGElement;
     const ns = 'http://www.w3.org/2000/svg';
 
+    // Resolve actual app fonts from CSS custom properties
+    const monoFont = getComputedStyle(document.body).getPropertyValue('--font-geist-mono').trim() || 'Geist Mono, monospace';
+    const sansFont = getComputedStyle(document.body).getPropertyValue('--font-inria-sans').trim() || 'Inria Sans, sans-serif';
+
     // Determine which devices are visibile in the DOM (have full rendering)
     const domDeviceIds = new Set<string>();
     devices.forEach(d => {
@@ -2990,14 +3004,14 @@ export function NetworkTopology({
     const addSimplifiedDevice = (device: CanvasDevice) => {
       const c = (() => {
         const map: Record<string, { fill: string; stroke: string; text: string }> = {
-          pc:       { fill: isDark ? '#1e3a8a' : '#bfdbfe', stroke: isDark ? '#3b82f6' : '#93c5fd', text: isDark ? '#fff' : '#000' },
-          iot:      { fill: isDark ? '#9a3412' : '#fed7aa', stroke: isDark ? '#f97316' : '#fdba74', text: isDark ? '#fff' : '#000' },
-          switch:   { fill: isDark ? '#155e75' : '#a5f3fc', stroke: isDark ? '#06b6d4' : '#67e8f9', text: isDark ? '#fff' : '#000' },
+          pc: { fill: isDark ? '#1e3a8a' : '#bfdbfe', stroke: isDark ? '#3b82f6' : '#93c5fd', text: isDark ? '#fff' : '#000' },
+          iot: { fill: isDark ? '#9a3412' : '#fed7aa', stroke: isDark ? '#f97316' : '#fdba74', text: isDark ? '#fff' : '#000' },
+          switch: { fill: isDark ? '#155e75' : '#a5f3fc', stroke: isDark ? '#06b6d4' : '#67e8f9', text: isDark ? '#fff' : '#000' },
           switchL2: { fill: isDark ? '#155e75' : '#a5f3fc', stroke: isDark ? '#06b6d4' : '#67e8f9', text: isDark ? '#fff' : '#000' },
           switchL3: { fill: isDark ? '#155e75' : '#a5f3fc', stroke: isDark ? '#06b6d4' : '#67e8f9', text: isDark ? '#fff' : '#000' },
-          router:   { fill: isDark ? '#5b21b6' : '#ddd6fe', stroke: isDark ? '#a855f7' : '#c4b5fd', text: isDark ? '#fff' : '#000' },
+          router: { fill: isDark ? '#5b21b6' : '#ddd6fe', stroke: isDark ? '#a855f7' : '#c4b5fd', text: isDark ? '#fff' : '#000' },
           firewall: { fill: isDark ? '#991b1b' : '#fecaca', stroke: isDark ? '#ef4444' : '#fca5a5', text: isDark ? '#fff' : '#000' },
-          wlc:      { fill: isDark ? '#854d0e' : '#fef9c3', stroke: isDark ? '#eab308' : '#fde047', text: isDark ? '#fff' : '#000' },
+          wlc: { fill: isDark ? '#854d0e' : '#fef9c3', stroke: isDark ? '#eab308' : '#fde047', text: isDark ? '#fff' : '#000' },
         };
         return map[device.type] || map.pc;
       })();
@@ -3025,7 +3039,7 @@ export function NetworkTopology({
       label.setAttribute('fill', c.text);
       label.setAttribute('font-size', '9');
       label.setAttribute('font-weight', 'bold');
-      label.setAttribute('font-family', 'monospace');
+      label.setAttribute('font-family', sansFont);
       label.textContent = device.name;
       g.appendChild(label);
 
@@ -3037,13 +3051,24 @@ export function NetworkTopology({
         ipLabel.setAttribute('fill', c.text);
         ipLabel.setAttribute('font-size', '7');
         ipLabel.setAttribute('opacity', '0.7');
-        ipLabel.setAttribute('font-family', 'monospace');
+        ipLabel.setAttribute('font-family', monoFont);
         ipLabel.textContent = device.ip;
         g.appendChild(ipLabel);
       }
 
       clone.appendChild(g);
     };
+
+    // Set default font on SVG root so inherited text uses app sans-serif
+    clone.setAttribute('font-family', sansFont);
+    // Replace any generic monospace in cloned elements with the app's monospace font
+    clone.querySelectorAll('[font-family="monospace"]').forEach(el => {
+      el.setAttribute('font-family', monoFont);
+    });
+    // Also replace fontFamily="monospace" in SVG elements (for svg:text tags) to match app mono font
+    clone.querySelectorAll('text[fontFamily="monospace"]').forEach(el => {
+      el.setAttribute('font-family', monoFont);
+    });
 
     // Keep full-rendered devices in clone, add simplified for culled ones
     devices.forEach(device => {
@@ -3099,6 +3124,7 @@ export function NetworkTopology({
         halo.setAttribute('stroke-linejoin', 'round');
         halo.setAttribute('font-size', '9');
         halo.setAttribute('font-weight', 'bold');
+        halo.setAttribute('font-family', monoFont);
         halo.setAttribute('text-anchor', 'middle');
         halo.setAttribute('opacity', '0.85');
         halo.textContent = text;
@@ -3110,6 +3136,7 @@ export function NetworkTopology({
         label.setAttribute('fill', cableColor);
         label.setAttribute('font-size', '9');
         label.setAttribute('font-weight', 'bold');
+        label.setAttribute('font-family', monoFont);
         label.setAttribute('text-anchor', 'middle');
         label.setAttribute('opacity', '0.85');
         label.textContent = text;
@@ -3249,9 +3276,6 @@ export function NetworkTopology({
     window.addEventListener('add-device', handleAddDevice as EventListener);
     window.addEventListener('toggle-ping-mode', handleTogglePingMode as EventListener);
     window.addEventListener('add-note', handleAddNote as EventListener);
-    window.addEventListener('add-device', handleAddDevice as EventListener);
-    window.addEventListener('toggle-ping-mode', handleTogglePingMode as EventListener);
-    window.addEventListener('add-note', handleAddNote as EventListener);
     window.addEventListener('trigger-topology-export-png', handleExportPNG as EventListener);
     return () => {
       window.removeEventListener('add-device', handleAddDevice as EventListener);
@@ -3259,7 +3283,7 @@ export function NetworkTopology({
       window.removeEventListener('add-note', handleAddNote as EventListener);
       window.removeEventListener('trigger-topology-export-png', handleExportPNG as EventListener);
     };
-    }, [addDevice, addNote, handleExportPNG]);
+  }, [addDevice, addNote, handleExportPNG]);
 
   const deleteNote = useCallback((noteId: string) => {
     saveToHistory();
@@ -6726,11 +6750,11 @@ export function NetworkTopology({
                       </span>
                     </button>
                     <button
-                       onClick={() => { addDevice('switch'); setIsPaletteOpen(false); }}
-                       className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-cyan-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-cyan-500/50'
-                         }`}
-                     >
-                       <div className='text-cyan-500'>
+                      onClick={() => { addDevice('switch'); setIsPaletteOpen(false); }}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-cyan-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-cyan-500/50'
+                        }`}
+                    >
+                      <div className='text-cyan-500'>
                         {DEVICE_ICONS['switch']}
                       </div>
                       <span className="text-xs font-bold text-center">
@@ -6764,11 +6788,11 @@ export function NetworkTopology({
                       </span>
                     </button>
                     <button
-                       onClick={() => { addDevice('iot'); setIsPaletteOpen(false); }}
-                       className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-orange-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-orange-500/50'
-                         }`}
-                     >
-                       <div className='text-orange-500'>
+                      onClick={() => { addDevice('iot'); setIsPaletteOpen(false); }}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-orange-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-orange-500/50'
+                        }`}
+                    >
+                      <div className='text-orange-500'>
                         {DEVICE_ICONS['iot']}
                       </div>
                       <span className="text-xs font-bold text-center">
@@ -6788,11 +6812,11 @@ export function NetworkTopology({
                       </span>
                     </button>
                     <button
-                       onClick={() => { addDevice('wlc'); setIsPaletteOpen(false); }}
-                       className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-yellow-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-yellow-500/50'
-                         }`}
-                     >
-                       <div className='text-yellow-500'>
+                      onClick={() => { addDevice('wlc'); setIsPaletteOpen(false); }}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-yellow-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-yellow-500/50'
+                        }`}
+                    >
+                      <div className='text-yellow-500'>
                         {DEVICE_ICONS['wlc']}
                       </div>
                       <span className="text-xs font-bold text-center">
@@ -8705,9 +8729,8 @@ export function NetworkTopology({
                   addDevice(item.type, item.layer as 'L2' | 'L3');
                   setMobilePaletteOpen(false);
                 }}
-                className={`flex flex-col items-center gap-2 p-4 rounded-2xl transition-all active:scale-95 ${
-                  isDark ? 'bg-slate-800/50 hover:bg-slate-800' : 'bg-slate-100 hover:bg-slate-200'
-                }`}
+                className={`flex flex-col items-center gap-2 p-4 rounded-2xl transition-all active:scale-95 ${isDark ? 'bg-slate-800/50 hover:bg-slate-800' : 'bg-slate-100 hover:bg-slate-200'
+                  }`}
               >
                 <div className="w-10 h-10 flex items-center justify-center">
                   {item.icon}
@@ -9180,14 +9203,14 @@ export function NetworkTopology({
           <div className={`flex items-center justify-between px-3 py-2 border-b ${isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                  <span className="text-xs font-bold">{t.packetAnalysis}</span>
+              <span className="text-xs font-bold">{t.packetAnalysis}</span>
               <span className="text-[10px] opacity-50 font-mono">({activeCaptureConnectionId})</span>
             </div>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => clearCapturedPackets(activeCaptureConnectionId)}
                 className={`p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors`}
-                    title={t.clearCapture}
+                title={t.clearCapture}
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
