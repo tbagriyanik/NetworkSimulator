@@ -38,6 +38,7 @@ interface RouterPanelProps {
   modalSize?: { width: number; height: number };
   handlePointerDown?: (e: React.PointerEvent, id: string) => void;
   handleResizeStart?: (e: React.PointerEvent, direction: string, id: string) => void;
+  className?: string;
 }
 
 interface DhcpPoolInfo {
@@ -60,6 +61,7 @@ export function RouterPanel({
   modalSize = { width: 896, height: 600 },
   handlePointerDown,
   handleResizeStart,
+  className,
 }: RouterPanelProps) {
   const { t, language } = useLanguage();
   const { theme } = useTheme();
@@ -171,7 +173,8 @@ export function RouterPanel({
       <DialogContent
         className={cn(
           "p-0 flex flex-col top-auto left-auto translate-x-0 translate-y-0 liquid-glass-light",
-          isDark ? "bg-secondary-950/80 border-green-500/40" : "bg-white/70 border-green-500"
+          isDark ? "bg-secondary-950/80 border-green-500/40" : "bg-white/70 border-green-500",
+          className
         )}
         showCloseButton={false}
         onPointerDownOutside={(e) => e.preventDefault()}

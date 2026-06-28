@@ -5203,6 +5203,8 @@ ${state.bannerMOTD}
                   <UnifiedDevicePanel
                     isOpen={true}
                     onOpenChange={setShowUnifiedDeviceModal}
+                    activeTab={unifiedDeviceActiveTab}
+                    onTabChange={setUnifiedDeviceActiveTab}
                     deviceId={activeDeviceId}
                     deviceType={activeDeviceType}
                     deviceStates={deviceStates}
