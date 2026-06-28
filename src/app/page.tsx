@@ -423,8 +423,8 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
       window.dispatchEvent(new CustomEvent('pwa-installable'));
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
   }, []);
 
   const handleInstallPWA = useCallback(async () => {
