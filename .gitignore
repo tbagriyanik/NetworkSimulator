@@ -46,7 +46,8 @@ dev.log
 test
 prompt
 
-server.log
+*.log
+dev_server.log
 # Skills directory
 /skills/
 .dyad/
