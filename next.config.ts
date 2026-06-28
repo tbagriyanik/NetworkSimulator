@@ -20,13 +20,18 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   devIndicators: false,
   async headers() {
+    const isProd = process.env.NODE_ENV === "production";
+    const scriptSrc = isProd
+      ? "script-src 'self' blob:"
+      : "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:";
+
     const csp = [
       "default-src 'self'",
       "base-uri 'self'",
       "form-action 'self'",
       "frame-ancestors 'none'",
       "object-src 'none'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:",
+      scriptSrc,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:",
       "font-src 'self' data:",
@@ -42,7 +47,7 @@ const nextConfig: NextConfig = {
       "form-action 'self'",
       "frame-ancestors 'none'",
       "object-src 'none'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:",
+      scriptSrc,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:",
       "font-src 'self' data:",
@@ -51,7 +56,7 @@ const nextConfig: NextConfig = {
       "manifest-src 'self'",
     ].join("; ");
 
-    const cspReportOnlyProd = process.env.NODE_ENV === "production"
+    const cspReportOnlyProd = isProd
       ? `${cspReportOnly}; require-trusted-types-for 'script'; trusted-types default`
       : cspReportOnly;
 
