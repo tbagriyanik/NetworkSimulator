@@ -1789,6 +1789,16 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   // Load project from JSON data
   const loadProjectData = useCallback((projectData: unknown, options?: { keepActiveDevice?: boolean }) => {
     try {
+      // Clear packet capture and simulation states
+      useAppStore.setState(state => ({
+        topology: {
+          ...state.topology,
+          capturedPackets: {},
+          activeCaptureConnectionId: null,
+          isSimulationMode: false
+        }
+      }));
+
       const shouldKeepActiveDevice = options?.keepActiveDevice === true;
       const data = (projectData && typeof projectData === 'object') ? projectData as Record<string, unknown> : {};
       const topology = (data.topology && typeof data.topology === 'object') ? data.topology as Record<string, unknown> : {};
@@ -2749,11 +2759,10 @@ ${state.bannerMOTD}
         connections: topologyConnections,
         notes: topologyNotes
       },
-      // Reset cableInfo if no valid devices exist or no connections
       cableInfo: topologyDevices.length > 0 && topologyConnections.length > 0 ? cableInfo : { connected: false, cableType: 'straight', sourceDevice: 'pc', targetDevice: 'switchL2' },
       activeDeviceId: topologyDevices.find(d => d.id === activeDeviceId)?.id || '',
       activeDeviceType,
-      // Include exam metadata if currently in exam mode (for teacher editing)
+      // Exam metadata included if active (allows continuation of editing)
       ...(activeExam ? {
         examData: {
           id: activeExam.id,
@@ -2881,6 +2890,15 @@ ${state.bannerMOTD}
 
   // New project - reset everything
   const resetToEmptyProject = useCallback(() => {
+    // Clear packet capture and simulation states (trigger recompile)
+    useAppStore.setState(state => ({
+      topology: {
+        ...state.topology,
+        capturedPackets: {},
+        activeCaptureConnectionId: null,
+        isSimulationMode: false
+      }
+    }));
     const usedIps = new Set<string>();
     const pc1LinkLocal = generateRandomLinkLocalIpv4(usedIps);
     usedIps.add(pc1LinkLocal);

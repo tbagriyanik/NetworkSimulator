@@ -698,6 +698,8 @@ export function NetworkTopology({
     const handler = () => {
       setPacketPopupHop(null);
       setPingAnimation(null);
+      setHopPacketInfos([]);
+      useAppStore.getState().setSimulationMode(false);
     };
     window.addEventListener('network-refresh', handler);
     return () => window.removeEventListener('network-refresh', handler);
@@ -4001,6 +4003,13 @@ export function NetworkTopology({
     const diagnostics = getPingDiagnostics(sourceId, targetIp, devices, connections, deviceStates, language, { protocol: 'icmp' });
 
     const connectivity = checkDeviceConnectivity(sourceId, targetId, devices, connections, deviceStates, { protocol: 'icmp' });
+    
+    // Dispatch packet capture events so they appear in the packet analysis window
+    if (connectivity.capturedPackets && connectivity.capturedPackets.length > 0) {
+      connectivity.capturedPackets.forEach(pkt => {
+        window.dispatchEvent(new CustomEvent('packet-captured', { detail: pkt }));
+      });
+    }
     if (!connectivity.success) {
       const errorMessage = diagnostics.reasons.length > 0
         ? diagnostics.reasons[0]

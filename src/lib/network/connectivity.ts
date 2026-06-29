@@ -1569,7 +1569,7 @@ export function checkDeviceConnectivity(
   connections: CanvasConnection[],
   deviceStates?: Map<string, SwitchState>,
   options?: { protocol?: 'tcp' | 'udp' | 'icmp' | 'any'; port?: string }
-): { success: boolean; hops: string[]; hopIds: string[]; targetId?: string; error?: string } {
+): { success: boolean; hops: string[]; hopIds: string[]; targetId?: string; error?: string; capturedPackets?: Array<{ connectionId: string; sourceIp: string; targetIp: string; protocol: string; length: number; info: string }> } {
   // BOLT: Use pre-resolved safeDeviceStates
   const safeDeviceStates = ensureDeviceStatesMap(deviceStates);
   const deviceMap = new Map<string, CanvasDevice>();
