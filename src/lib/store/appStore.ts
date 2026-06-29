@@ -300,12 +300,25 @@ const createActions = (set: (partial: Partial<AppState> | ((state: AppState) => 
     },
     addCapturedPacket: (packet: Omit<CapturedPacket, 'id' | 'timestamp'>) => {
         const { connectionId } = packet;
+        const currentPackets = get().topology.capturedPackets[connectionId] || [];
+        
+        // Deduplicate logic: if the exact same packet (source, target, protocol, info) was added in the last 100ms, ignore it (Strict Mode mitigation)
+        const lastPacket = currentPackets[currentPackets.length - 1];
+        if (lastPacket && 
+            lastPacket.sourceIp === packet.sourceIp && 
+            lastPacket.targetIp === packet.targetIp && 
+            lastPacket.protocol === packet.protocol && 
+            lastPacket.info === packet.info && 
+            (Date.now() - lastPacket.timestamp < 100)) {
+            return;
+        }
+
         const newPacket: CapturedPacket = {
             ...packet,
             id: `pkt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             timestamp: Date.now(),
         };
-        const currentPackets = get().topology.capturedPackets[connectionId] || [];
+        
         set({
             topology: {
                 ...get().topology,

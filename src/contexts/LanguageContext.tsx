@@ -5,6 +5,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 export type Language = 'tr' | 'en';
 
 export interface Translations {
+  [key: string]: string;
   about: string;
   aboutIntro: string;
   aboutTitle: string;
@@ -715,9 +716,15 @@ export interface Translations {
   roomTeacherNameLabel: string;
   roomTeacherNameSave: string;
   packetAnalysis: string;
+  time: string;
+  source: string;
+  dest: string;
+  proto: string;
+  info: string;
   capture: string;
   capturedPackets: string;
   noPacketsCaptured: string;
+
   clearCapture: string;
   simulationMode: string;
   exportAsSVG: string;
@@ -766,6 +773,7 @@ const translations: Record<Language, Translations> = {
     alignBottom: 'Alta Hizala',
     allCommands: 'Tüm komutlar',
     allProjects: 'Tüm Projeler',
+
     allStepsCompleted: 'Tüm adımlar tamamlandı!',
     annotations: 'Notlar',
     apActive: 'X AP aktif',
@@ -1436,6 +1444,11 @@ const translations: Record<Language, Translations> = {
     roomTeacherNameLabel: 'Adınız',
     roomTeacherNameSave: 'Kaydet',
     packetAnalysis: 'Paket Yakalama',
+    time: 'Zaman',
+    source: 'Kaynak',
+    dest: 'Hedef',
+    proto: 'Proto',
+    info: 'Bilgi',
     capture: 'Yakala',
     capturedPackets: 'Yakalanan Paketler',
     noPacketsCaptured: 'Henüz paket yakalanmadı...',
@@ -1443,6 +1456,7 @@ const translations: Record<Language, Translations> = {
     simulationMode: 'Simülasyon Modu',
     exportAsSVG: 'SVG Olarak Dışa Aktar',
     exportAsPNG: 'PNG Olarak Dışa Aktar',
+
   },
   en: {
     about: 'Help',
@@ -2155,6 +2169,11 @@ const translations: Record<Language, Translations> = {
     roomTeacherNameLabel: 'Your Name',
     roomTeacherNameSave: 'Save',
     packetAnalysis: 'Packet Capture',
+    time: 'Time',
+    source: 'Source',
+    dest: 'Dest',
+    proto: 'Proto',
+    info: 'Info',
     capture: 'Capture',
     capturedPackets: 'Captured Packets',
     noPacketsCaptured: 'No packets captured yet...',

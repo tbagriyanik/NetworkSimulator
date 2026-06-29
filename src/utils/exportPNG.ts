@@ -39,7 +39,6 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
 
   try {
     // Resolve actual app fonts from CSS custom properties
-    const monoFont = getComputedStyle(document.body).getPropertyValue('--font-geist-mono').trim() || 'Geist Mono, monospace';
     const sansFont = getComputedStyle(document.body).getPropertyValue('--font-inria-sans').trim() || 'Inria Sans, sans-serif';
 
     // Determine which devices are visibile in the DOM (have full rendering)
@@ -111,7 +110,7 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
         ipLabel.setAttribute('fill', c.text);
         ipLabel.setAttribute('font-size', '7');
         ipLabel.setAttribute('opacity', '0.7');
-        ipLabel.setAttribute('font-family', monoFont);
+        ipLabel.setAttribute('font-family', sansFont);
         ipLabel.textContent = device.ip;
         g.appendChild(ipLabel);
       }
@@ -121,13 +120,13 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
 
     // Set default font on SVG root so inherited text uses app sans-serif
     clone.setAttribute('font-family', sansFont);
-    // Replace any generic monospace in cloned elements with the app's monospace font
+    // Replace any generic monospace in cloned elements with the app's sans-serif font
     clone.querySelectorAll('[font-family="monospace"]').forEach(el => {
-      el.setAttribute('font-family', monoFont);
+      el.setAttribute('font-family', sansFont);
     });
-    // Also replace fontFamily="monospace" in SVG elements (for svg:text tags) to match app mono font
+    // Also replace fontFamily="monospace" in SVG elements (for svg:text tags) to match app sans font
     clone.querySelectorAll('text[fontFamily="monospace"]').forEach(el => {
-      el.setAttribute('font-family', monoFont);
+      el.setAttribute('font-family', sansFont);
     });
 
     // Keep full-rendered devices in clone, add simplified for culled ones
@@ -216,7 +215,7 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
         halo.setAttribute('stroke-linejoin', 'round');
         halo.setAttribute('font-size', '9');
         halo.setAttribute('font-weight', 'bold');
-        halo.setAttribute('font-family', monoFont);
+        halo.setAttribute('font-family', sansFont);
         halo.setAttribute('text-anchor', 'middle');
         halo.setAttribute('opacity', '0.85');
         halo.textContent = text;
@@ -228,7 +227,7 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
         label.setAttribute('fill', cableColor);
         label.setAttribute('font-size', '9');
         label.setAttribute('font-weight', 'bold');
-        label.setAttribute('font-family', monoFont);
+        label.setAttribute('font-family', sansFont);
         label.setAttribute('text-anchor', 'middle');
         label.setAttribute('opacity', '0.85');
         label.textContent = text;

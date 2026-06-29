@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo, MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from 'react';
+import React from 'react';
 import { flushSync } from 'react-dom';
 import dynamic from 'next/dynamic';
 import useAppStore, { useTopologyDevices, useTopologyConnections, useTopologyNotes, useGraphicsQuality, useIsSimulationMode } from '@/lib/store/appStore';
@@ -154,6 +155,8 @@ export function NetworkTopology({
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const isTR = language === 'tr';
+
+  const [isExporting, setIsExporting] = useState(false);
 
   // Zustand store state - using granular selectors to prevent cascading re-renders
   const topologyDevices = useTopologyDevices();
@@ -383,7 +386,8 @@ export function NetworkTopology({
   const { visibleDevices, visibleConnections, visibleNotes } = useMemo(() => {
     // If not active, or no dimensions, return all items to prevent them from disappearing
     // when calculating visibility while the container has 0 width/height.
-    if (!isActive || canvasDimensions.width === 0) return { visibleDevices: devices, visibleConnections: connections, visibleNotes: notes };
+    // Also return all items if we are currently exporting to PNG to bypass object culling.
+    if (!isActive || canvasDimensions.width === 0 || isExporting) return { visibleDevices: devices, visibleConnections: connections, visibleNotes: notes };
 
     const { width, height } = canvasDimensions;
 
@@ -2582,18 +2586,31 @@ export function NetworkTopology({
     touchDragOffset,
   ]);
   const handleExportPNG = useCallback(() => {
-    if (!canvasRef.current) return;
-    const svg = canvasRef.current.querySelector('svg');
-    if (!svg) return;
+    setIsExporting(true);
+    setTimeout(() => {
+      if (!canvasRef.current) {
+        setIsExporting(false);
+        return;
+      }
+      const svg = canvasRef.current.querySelector('svg');
+      if (!svg) {
+        setIsExporting(false);
+        return;
+      }
 
-    exportTopologyToPNG({
-      svgElement: svg,
-      devices,
-      notes,
-      connections,
-      deviceStates: deviceStates || undefined,
-      getPortPosition: getPortPositionRef.current
-    });
+      try {
+        exportTopologyToPNG({
+          svgElement: svg,
+          devices,
+          notes,
+          connections,
+          deviceStates: deviceStates || undefined,
+          getPortPosition: getPortPositionRef.current
+        });
+      } finally {
+        setIsExporting(false);
+      }
+    }, 150);
   }, [devices, connections, notes, deviceStates]);
 
   // Handle toolbar events from page.tsx
@@ -7980,62 +7997,14 @@ fill="var(--color-accent-500)"
       )}
       {/* Packet Capture Panel */}
       {activeCaptureConnectionId && (
-        <div className={`fixed bottom-20 right-4 w-96 max-h-[300px] flex flex-col rounded-xl border shadow-2xl z-50 backdrop-blur-md overflow-hidden ${isDark ? 'bg-slate-900/90 border-slate-800' : 'bg-white/90 border-slate-200'}`}>
-          <div className={`flex items-center justify-between px-3 py-2 border-b ${isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-              <span className="text-xs font-bold">{t.packetAnalysis}</span>
-              <span className="text-[10px] opacity-50 font-mono">({activeCaptureConnectionId})</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => clearCapturedPackets(activeCaptureConnectionId)}
-                className={`p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors`}
-                title={t.clearCapture}
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => setActiveCaptureConnection(null)}
-                className={`p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors`}
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-0">
-            <table className="w-full text-[10px] text-left border-collapse">
-              <thead className={`sticky top-0 z-10 ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                <tr>
-                  <th className="px-2 py-1 border-b dark:border-slate-700">Time</th>
-                  <th className="px-2 py-1 border-b dark:border-slate-700">Source</th>
-                  <th className="px-2 py-1 border-b dark:border-slate-700">Dest</th>
-                  <th className="px-2 py-1 border-b dark:border-slate-700">Proto</th>
-                  <th className="px-2 py-1 border-b dark:border-slate-700">Info</th>
-                </tr>
-              </thead>
-              <tbody>
-                {capturedPacketsMap[activeCaptureConnectionId]?.length ? (
-                  [...capturedPacketsMap[activeCaptureConnectionId]].reverse().map((pkt) => (
-                    <tr key={pkt.id} className={`border-b last:border-0 ${isDark ? 'border-slate-800 hover:bg-slate-800/50' : 'border-slate-50 hover:bg-slate-50'}`}>
-                      <td className="px-2 py-1 font-mono opacity-60">{(pkt.timestamp % 100000 / 1000).toFixed(3)}</td>
-                      <td className="px-2 py-1 font-mono">{pkt.sourceIp}</td>
-                      <td className="px-2 py-1 font-mono">{pkt.targetIp}</td>
-                      <td className={`px-2 py-1 font-bold ${pkt.protocol === 'ICMP' ? 'text-blue-500' : 'text-purple-500'}`}>{pkt.protocol}</td>
-                      <td className="px-2 py-1 italic opacity-80">{pkt.info}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center opacity-40 italic">
-                      {t.noPacketsCaptured}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <PacketCapturePanel
+          activeCaptureConnectionId={activeCaptureConnectionId}
+          clearCapturedPackets={clearCapturedPackets}
+          setActiveCaptureConnection={setActiveCaptureConnection}
+          capturedPacketsMap={capturedPacketsMap}
+          t={t}
+          isDark={isDark}
+        />
       )}
 
       {/* Toast Notification */}
@@ -8062,6 +8031,189 @@ const normalizeWifiMode = (mode: string | undefined) => {
   if (normalized === 'sta') return 'client';
   if (normalized === 'ap' || normalized === 'client' || normalized === 'disabled') return normalized;
   return 'disabled';
+};
+
+
+const PacketCapturePanel = ({
+  activeCaptureConnectionId,
+  clearCapturedPackets,
+  setActiveCaptureConnection,
+  capturedPacketsMap,
+  t,
+  isDark
+}: {
+  activeCaptureConnectionId: string;
+  clearCapturedPackets: (id: string) => void;
+  setActiveCaptureConnection: (id: string | null) => void;
+  capturedPacketsMap: Record<string, { id: string; timestamp: number; sourceIp: string; targetIp: string; protocol: string; info: string; }[]>;
+  t: Record<string, string>;
+  isDark: boolean;
+}) => {
+  const [columnOrder, setColumnOrder] = React.useState(['time','source','dest','proto','info']);
+  
+  const [position, setPosition] = React.useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('packetCapturePosition');
+        if (saved) return JSON.parse(saved);
+      } catch {}
+      return { x: window.innerWidth - 420, y: window.innerHeight - 340 };
+    }
+    return { x: 0, y: 0 };
+  });
+
+  const [size, setSize] = React.useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('packetCaptureSize');
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return { width: 384, height: 260 };
+  });
+  
+  const [isDragging, setIsDragging] = React.useState(false);
+  const dragStartPos = React.useRef({ x: 0, y: 0 });
+
+  const onDragStart = (e: React.DragEvent, idx: number) => { e.dataTransfer.setData('text/plain', idx.toString()); };
+  const onDrop = (e: React.DragEvent, targetIdx: number) => {
+    const sourceIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
+    if (sourceIdx === targetIdx || isNaN(sourceIdx)) return;
+    const newOrder = [...columnOrder];
+    const [moved] = newOrder.splice(sourceIdx, 1);
+    newOrder.splice(targetIdx, 0, moved);
+    setColumnOrder(newOrder);
+  };
+  
+  const handlePointerDown = (e: React.PointerEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('button')) return; // Ignore buttons
+    
+    setIsDragging(true);
+    dragStartPos.current = { x: e.clientX - position.x, y: e.clientY - position.y };
+    target.setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (isDragging) {
+      setPosition({
+        x: e.clientX - dragStartPos.current.x,
+        y: e.clientY - dragStartPos.current.y
+      });
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (isDragging) {
+      setIsDragging(false);
+      localStorage.setItem('packetCapturePosition', JSON.stringify(position));
+      const target = e.target as HTMLElement;
+      if (target.hasPointerCapture(e.pointerId)) {
+        target.releasePointerCapture(e.pointerId);
+      }
+    }
+  };
+
+  const renderHeader = (col: string, idx: number) => {
+    const labelMap: Record<string, string> = { time: t.time, source: t.source, dest: t.dest, proto: t.proto, info: t.info };
+    return (
+      <th
+        key={col}
+        draggable
+        onDragStart={e => onDragStart(e, idx)}
+        onDrop={e => onDrop(e, idx)}
+        onDragOver={e => e.preventDefault()}
+        className="px-2 py-1 border-b dark:border-slate-700 cursor-grab active:cursor-grabbing hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors select-none"
+      >
+        {labelMap[col] || col}
+      </th>
+    );
+  };
+
+  return (
+    <div 
+      style={{ left: position.x, top: position.y }}
+      className={`fixed flex flex-col rounded-xl border border-green-500 shadow-2xl z-50 backdrop-blur-md overflow-hidden ${isDark ? 'bg-slate-900/95' : 'bg-white/95'}`}
+    >
+      <div 
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        className={`flex items-center justify-between px-3 py-2 border-b cursor-grab active:cursor-grabbing touch-none select-none ${isDark ? 'bg-slate-800/80 border-slate-700' : 'bg-slate-100/80 border-slate-200'}`}
+      >
+        <div className="flex items-center gap-2 pointer-events-none">
+          <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+          <span className="text-xs font-bold">{t.packetAnalysis}</span>
+          <span className="text-[10px] opacity-50 font-mono">({activeCaptureConnectionId})</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={(e) => { e.stopPropagation(); clearCapturedPackets(activeCaptureConnectionId); }}
+            className={`p-1 rounded hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors pointer-events-auto`}
+            title={t.clearCapture}
+          >
+            <Trash2 className="w-3.5 h-3.5 pointer-events-none" />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); setActiveCaptureConnection(null); }}
+            className={`p-1 rounded hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors pointer-events-auto`}
+          >
+            <X className="w-3.5 h-3.5 pointer-events-none" />
+          </button>
+        </div>
+      </div>
+      
+      <div 
+        className="custom-scrollbar p-0 bg-transparent flex-1"
+        style={{ resize: 'both', overflow: 'auto', width: size.width, height: size.height, minWidth: 200, minHeight: 100 }}
+        onMouseUp={(e) => {
+          const target = e.currentTarget;
+          if (target.offsetWidth !== size.width || target.offsetHeight !== size.height) {
+            const newSize = { width: target.offsetWidth, height: target.offsetHeight };
+            setSize(newSize);
+            localStorage.setItem('packetCaptureSize', JSON.stringify(newSize));
+          }
+        }}
+      >
+        <table className="w-full text-[10px] text-left border-collapse">
+          <thead className={`sticky top-0 z-10 ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}>
+            <tr>
+              {columnOrder.map((col, idx) => renderHeader(col, idx))}
+            </tr>
+          </thead>
+          <tbody>
+            {capturedPacketsMap[activeCaptureConnectionId]?.length ? (
+              [...capturedPacketsMap[activeCaptureConnectionId]].reverse().map((pkt: { id: string; timestamp: number; sourceIp: string; targetIp: string; protocol: string; info: string; }) => (
+                <tr key={pkt.id} className={`border-b last:border-0 ${isDark ? 'border-slate-800 hover:bg-slate-800/50' : 'border-slate-50 hover:bg-slate-50'}`}>
+                  {columnOrder.map(col => {
+                    switch (col) {
+                      case 'time':
+                        return <td className="px-2 py-1 font-mono opacity-60" key="time">{(pkt.timestamp % 100000 / 1000).toFixed(3)}</td>;
+                      case 'source':
+                        return <td className="px-2 py-1 font-mono" key="source">{pkt.sourceIp}</td>;
+                      case 'dest':
+                        return <td className="px-2 py-1 font-mono" key="dest">{pkt.targetIp}</td>;
+                      case 'proto':
+                        return <td className={`px-2 py-1 font-bold ${pkt.protocol === 'ICMP' ? 'text-blue-500' : 'text-purple-500'}`} key="proto">{pkt.protocol}</td>;
+                      case 'info':
+                        return <td className="px-2 py-1 italic opacity-80" key="info">{pkt.info}</td>;
+                      default:
+                        return null;
+                    }
+                  })}
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={columnOrder.length} className="px-4 py-8 text-center opacity-40 italic">{t.noPacketsCaptured}</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 };
 
 

@@ -2139,6 +2139,9 @@ ${state.bannerMOTD}
       setShowUnifiedDeviceModal(false);
       setRefreshNetworkReport(null);
 
+      // Close packet analysis popup explicitly
+      window.dispatchEvent(new CustomEvent('network-refresh'));
+
       // Increment topology key to force remount
       setTopologyKey(prev => prev + 1);
       setHasUnsavedChanges(false);
@@ -2977,6 +2980,9 @@ ${state.bannerMOTD}
 
     // Close network refresh report if open
     setRefreshNetworkReport(null);
+
+    // Close packet analysis popup explicitly
+    window.dispatchEvent(new CustomEvent('network-refresh'));
 
     // Force return to topology
     setActiveTab('topology');
