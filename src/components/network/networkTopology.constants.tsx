@@ -17,11 +17,13 @@ export const DEVICE_ICON_PATHS = {
 
 export const DEVICE_ICON_COLORS = {
   pc: 'var(--color-primary-500)',
-  iot: 'var(--color-secondary-500)',
+  iot: '#d35400',
   switch: 'var(--color-accent-500)',
-  router: 'var(--color-warning-500)',
-  firewall: 'var(--color-error-500)',
-  wlc: 'var(--color-warning-400)',
+  switchL2: '#28a745',
+  switchL3: '#6f42c1',
+  router: '#6f42c1',
+  firewall: '#b02a37',
+  wlc: '#ffc107',
 } as const;
 
 export const DEVICE_ICONS = {
@@ -45,12 +47,12 @@ export const DEVICE_ICONS = {
     </svg>
   ),
   switchL2: (
-    <svg className="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke={DEVICE_ICON_COLORS.switch} viewBox="0 0 24 24">
+    <svg className="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke={DEVICE_ICON_COLORS.switchL2} viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={DEVICE_ICON_PATHS.switch} />
     </svg>
   ),
   switchL3: (
-    <svg className="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke={DEVICE_ICON_COLORS.switch} viewBox="0 0 24 24">
+    <svg className="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke={DEVICE_ICON_COLORS.switchL3} viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={DEVICE_ICON_PATHS.switch} />
     </svg>
   ),

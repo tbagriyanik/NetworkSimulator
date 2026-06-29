@@ -87,7 +87,7 @@ export function AppHeader({
   helpLevel, setHelpLevel
 }: AppHeaderProps) {
   return (
-    <header className={`liquid-glass fixed top-0 left-0 right-0 z-[50] border-b px-5 py-2 pb-0`}>
+    <header className={cn("fixed top-0 left-0 right-0 z-[50] border-b px-5 py-2 pb-0", isDark ? "liquid-glass border-slate-800" : "bg-white/90 backdrop-blur-md border-slate-200")}>
       <div className="w-full">
         <div className="flex items-center justify-between">
           {/* Logo & Title */}

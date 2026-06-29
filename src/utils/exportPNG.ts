@@ -65,13 +65,13 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
       const c = (() => {
         const map: Record<string, { fill: string; stroke: string; text: string }> = {
           pc: { fill: 'var(--color-primary-200)', stroke: 'var(--color-primary-300)', text: 'var(--color-secondary-800)' },
-          iot: { fill: 'var(--color-secondary-200)', stroke: 'var(--color-secondary-300)', text: 'var(--color-secondary-800)' },
+          iot: { fill: '#d35400', stroke: '#d35400', text: 'var(--color-secondary-800)' },
           switch: { fill: 'var(--color-accent-200)', stroke: 'var(--color-accent-300)', text: 'var(--color-secondary-800)' },
-          switchL2: { fill: 'var(--color-accent-200)', stroke: 'var(--color-accent-300)', text: 'var(--color-secondary-800)' },
-          switchL3: { fill: 'var(--color-accent-200)', stroke: 'var(--color-accent-300)', text: 'var(--color-secondary-800)' },
-          router: { fill: 'var(--color-warning-200)', stroke: 'var(--color-warning-400)', text: 'var(--color-secondary-800)' },
-          firewall: { fill: 'var(--color-error-200)', stroke: 'var(--color-error-300)', text: 'var(--color-secondary-800)' },
-          wlc: { fill: 'var(--color-warning-200)', stroke: 'var(--color-warning-300)', text: 'var(--color-secondary-800)' },
+          switchL2: { fill: '#28a745', stroke: '#28a745', text: 'var(--color-secondary-800)' },
+          switchL3: { fill: '#6f42c1', stroke: '#6f42c1', text: 'var(--color-secondary-800)' },
+          router: { fill: '#6f42c1', stroke: '#6f42c1', text: 'var(--color-secondary-800)' },
+          firewall: { fill: '#b02a37', stroke: '#b02a37', text: 'var(--color-secondary-800)' },
+          wlc: { fill: '#ffc107', stroke: '#ffc107', text: 'var(--color-secondary-800)' },
         };
         return map[device.type] || map.pc;
       })();

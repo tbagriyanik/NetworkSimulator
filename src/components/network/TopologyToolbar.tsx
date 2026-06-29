@@ -25,6 +25,7 @@ import type { Translations } from '@/contexts/LanguageContext';
 import type { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
 import type { SwitchState, CableType, CableInfo } from '@/lib/network/types';
 import useAppStore from '@/lib/store/appStore';
+import { cn } from '@/lib/utils';
 
 interface TopologyToolbarProps {
   t: Translations;
@@ -93,7 +94,7 @@ export function TopologyToolbar({
    ]);
 
   return (
-    <div className="fixed top-[72px] left-0 right-0 z-30 px-4 py-[5px] pt-3 border-b backdrop-blur-md bg-background/95 hidden md:flex items-center gap-3">
+    <div className={cn("fixed top-[72px] left-0 right-0 z-30 px-4 py-[5px] pt-3 border-b backdrop-blur-md hidden md:flex items-center gap-3", isDark ? "bg-slate-900/95 border-slate-800" : "bg-white/95 border-slate-200 shadow-sm")}>
       {/* Reset View Button */}
       <Tooltip>
         <TooltipTrigger asChild>

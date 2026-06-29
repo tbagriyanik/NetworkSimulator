@@ -21,18 +21,16 @@ export function DeviceIcon({
   switchModel,
   active = false
 }: DeviceIconProps) {
-  const isSwitch = type === 'switchL2' || type === 'switchL3';
-  const defaultColor = color || (
-    type === 'pc'
-      ? DEVICE_ICON_COLORS.pc
-      : type === 'iot'
-        ? DEVICE_ICON_COLORS.iot  // IoT için varsayılan renk
-        : type === 'firewall'
-          ? '#ef4444' // Red color for firewall
-          : type === 'router'
-            ? DEVICE_ICON_COLORS.router
-            : (isSwitch && switchModel === 'WS-C3650-24PS' ? '#a855f7' : DEVICE_ICON_COLORS.switch)
-  );
+  const defaultColor = color || (() => {
+    if (type === 'pc') return DEVICE_ICON_COLORS.pc;
+    if (type === 'iot') return DEVICE_ICON_COLORS.iot;
+    if (type === 'firewall') return DEVICE_ICON_COLORS.firewall;
+    if (type === 'router') return DEVICE_ICON_COLORS.router;
+    if (type === 'wlc') return DEVICE_ICON_COLORS.wlc;
+    if (type === 'switchL2') return DEVICE_ICON_COLORS.switchL2;
+    if (type === 'switchL3') return (switchModel === 'WS-C3650-24PS' ? '#a855f7' : DEVICE_ICON_COLORS.switchL3);
+    return DEVICE_ICON_COLORS[type as keyof typeof DEVICE_ICON_COLORS] ?? DEVICE_ICON_COLORS.pc;
+  })();
 
   const strokeWidth = active ? 2 : 1.25;
   const svgProps = {
