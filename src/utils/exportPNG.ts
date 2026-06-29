@@ -78,6 +78,7 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
       const dh = device.type === 'pc' || device.type === 'iot' ? 85 : 100;
       const g = document.createElementNS(ns, 'g');
       g.setAttribute('data-device-id', device.id);
+      g.setAttribute('data-simplified', 'true');
 
       const rect = document.createElementNS(ns, 'rect');
       rect.setAttribute('x', device.x.toString());
@@ -314,10 +315,25 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
 
     clone.querySelectorAll('*').forEach(resolveCSSVars);
 
-    // Reset transform on the main content group
-    const mainGroup = clone.querySelector('g');
-    if (mainGroup) {
-      mainGroup.style.transform = 'none';
+    // Find the pan/zoom content group precisely by its data attribute
+    const contentGroup = clone.querySelector('[data-content-group="true"]') as SVGGElement | null;
+    if (contentGroup) {
+      // Strip out the CSS pan/zoom transform - devices use their own SVG transform attributes
+      contentGroup.style.transform = 'none';
+      contentGroup.style.transition = 'none';
+      contentGroup.style.willChange = '';
+
+      // Re-append simplified devices inside the content group (same coordinate space as full-rendered ones)
+      // (We already called addSimplifiedDevice above which appended to clone root — move them into contentGroup)
+      clone.querySelectorAll('[data-device-id][data-simplified="true"]').forEach(el => {
+        contentGroup.appendChild(el);
+      });
+    } else {
+      // Fallback: reset the first group's transform (old behaviour)
+      const mainGroup = clone.querySelector('g');
+      if (mainGroup) {
+        mainGroup.style.transform = 'none';
+      }
     }
 
     // Bounds (use auto-sized note heights where computed)

@@ -154,7 +154,7 @@ export function AppHeader({
 
           {/* Right Controls - Integrated Toolbar */}
           <div className="flex items-center gap-2 sticky top-0 z-10">
-            <div className="flex items-center gap-1 px-2 py-1.5 rounded-xl border bg-slate-100 border-slate-200 dark:bg-slate-800/40 dark:border-slate-800">
+            <div className="flex items-center gap-1 px-2 py-1.5 rounded-xl border bg-white border-slate-200/60 shadow-sm dark:bg-slate-800/40 dark:border-slate-800">
               {/* Undo/Redo Group */}
               {activeTab === 'topology' && (
                 <div className="hidden items-center gap-1 sm:hidden">

@@ -6415,6 +6415,7 @@ if (isShutdown || isDeviceOffline) {
             >
               <g
                 ref={svgContentGroupRef}
+                data-content-group="true"
                 style={{
                   transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
                   transformOrigin: '0 0',
@@ -7140,8 +7141,8 @@ fill="var(--color-accent-500)"
 
           {/* Zoom Controls - Mobile Float - Above Footer */}
           <div
-            className={`fixed bottom-[60px] right-[10px] items-center gap-1 px-2 py-1 rounded-lg liquid-glass-strong ${isDark ? 'bg-slate-800/90' : 'bg-white/90'
-              } shadow-lg flex z-40 panel-ambient-glow`}
+            className={`fixed bottom-[60px] right-[10px] items-center gap-1 px-2 py-1 rounded-xl border ${isDark ? 'bg-slate-800/90 border-slate-700/50 shadow-lg' : 'bg-white/95 border-slate-200/60 shadow-md'
+              } flex z-40`}
           >
             <TooltipWrapper title={<div className="flex items-center gap-2"><span>{t.zoomOut}</span><ShortcutBadge shortcut="-" variant="primary" /></div>}>
               <button
