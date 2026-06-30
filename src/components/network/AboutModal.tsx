@@ -155,15 +155,10 @@ export function AboutModal({ isOpen, onClose, onStartTour }: AboutModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className={cn(
-              'absolute right-4 top-4 z-20 rounded-md p-1.5 transition-colors',
-              isDark
-                ? 'text-slate-400 hover:bg-slate-800 hover:text-slate-100'
-                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
-            )}
+            className="absolute right-4 top-4 z-20 w-5 h-5 rounded-md bg-red-500 hover:bg-red-600 text-white transition-colors inline-flex items-center justify-center focus:outline-none disabled:pointer-events-none"
             aria-label={t.close}
           >
-            <X className="w-4 h-4" />
+            <X className="w-3 h-3" />
           </button>
         </TooltipWrapper>
         <DialogHeader className="p-6 pb-2 shrink-0">

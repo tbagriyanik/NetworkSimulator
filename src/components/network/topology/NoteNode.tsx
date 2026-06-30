@@ -160,12 +160,12 @@ export function NoteNode({
             e.preventDefault();
             handleNoteHeaderTouchStart(e, note.id);
           }}
-          className={`flex items-center gap-2 px-2 text-[10px] font-semibold tracking-widest select-none ${isDark ? 'bg-black/10' : 'bg-black/5'
+          className={`relative flex items-center justify-center px-2 text-[10px] font-semibold tracking-widest select-none ${isDark ? 'bg-black/10' : 'bg-black/5'
             } ${draggedNoteId === note.id ? 'cursor-grabbing' : 'cursor-grab'}`}
           style={{ height: '24px' }}
         >
           <div
-            className="flex items-center gap-1"
+            className="flex items-center justify-center gap-1"
             onMouseDown={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -264,23 +264,25 @@ export function NoteNode({
               <TooltipContent>{language === 'tr' ? 'Ara' : 'Search'}</TooltipContent>
             </Tooltip>
           </div>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  deleteNote(note.id);
-                }}
-                className="ml-auto px-1.5 py-0.5 rounded hover:bg-black/10"
-                aria-label={t.delete}
-              >
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1 -1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0 -1-1h-4a1 1 0 0 0 -1 1v3M4 7h16" />
-                </svg>
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>{t.delete}</TooltipContent>
-          </Tooltip>
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteNote(note.id);
+                  }}
+                  className="px-1.5 py-0.5 rounded hover:bg-black/10"
+                  aria-label={t.delete}
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1 -1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0 -1-1h-4a1 1 0 0 0 -1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>{t.delete}</TooltipContent>
+            </Tooltip>
+          </div>
         </div>
 
         {/* Search Bar */}

@@ -227,14 +227,12 @@ export function RouterPanel({
                 </p>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 hover:bg-error-500 hover:text-white dark:hover:bg-error-600"
+            <button
+              className="w-5 h-5 rounded-md bg-red-500 hover:bg-red-600 text-white transition-colors inline-flex items-center justify-center focus:outline-none disabled:pointer-events-none"
               onClick={onClose}
             >
-              <X className="h-4 w-4" />
-            </Button>
+              <X className="h-3 w-3" />
+            </button>
           </div>
         </DialogHeader>
 

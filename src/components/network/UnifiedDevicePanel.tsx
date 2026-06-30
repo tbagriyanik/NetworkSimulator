@@ -192,15 +192,13 @@ export function UnifiedDevicePanel({
 
                             <div className="flex items-center gap-1 shrink-0">
 
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-7 w-7 hover:bg-error-500 hover:text-white dark:hover:bg-error-600 transition-colors"
+                                <button
+                                    className="w-5 h-5 rounded-md bg-red-500 hover:bg-red-600 text-white transition-colors inline-flex items-center justify-center focus:outline-none disabled:pointer-events-none"
                                     title={t.language === 'tr' ? 'Kapat' : 'Close'}
                                     onClick={() => onOpenChange(false)}
                                 >
                                     <X className="h-3 w-3" />
-                                </Button>
+                                </button>
                             </div>
                         </div>
                         <DialogTitle className="sr-only">
