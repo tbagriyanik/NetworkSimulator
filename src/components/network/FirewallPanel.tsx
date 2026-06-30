@@ -482,7 +482,7 @@ function DraggableRuleItem({
           className="p-2 rounded-md hover:bg-error-500/20 text-secondary-500 hover:text-error-500 transition-colors"
           disabled={isDevicePoweredOff}
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className="w-4 h-4 text-red-500" />
         </button>
       </div>
     </div>

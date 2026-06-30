@@ -476,7 +476,7 @@ export function ExamEditorPanel({
                               deleteTask(task.id);
                             }}
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-3.5 h-3.5 text-red-500" />
                           </Button>
                         </TooltipWrapper>
                       </div>

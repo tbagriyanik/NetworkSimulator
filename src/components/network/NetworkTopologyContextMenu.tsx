@@ -82,7 +82,7 @@ export default function NetworkTopologyContextMenu({
       case 'undo': return <Undo2 className="w-4 h-4" />;
       case 'redo': return <Redo2 className="w-4 h-4" />;
       case 'trash':
-      case 'delete': return <Trash2 className="w-4 h-4" />;
+      case 'delete': return <Trash2 className="w-4 h-4 text-red-500" />;
       case 'cut': return <Scissors className="w-4 h-4" />;
       case 'copy': return <Copy className="w-4 h-4" />;
       case 'paste': return <ClipboardPaste className="w-4 h-4" />;

@@ -8380,7 +8380,7 @@ const PacketCapturePanel = ({
             className={`p-1 rounded hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors pointer-events-auto`}
             title={t.clearCapture}
           >
-            <Trash2 className="w-3.5 h-3.5 pointer-events-none" />
+            <Trash2 className="w-3.5 h-3.5 text-red-500 pointer-events-none" />
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); setActiveCaptureConnection(null); }}

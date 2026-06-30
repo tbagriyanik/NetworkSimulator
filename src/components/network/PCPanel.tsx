@@ -6021,7 +6021,7 @@ ${fileLines}
                                                       onClick={() => handleDeleteInbox(idx)}
                                                       className="p-1 rounded hover:bg-error-500/20 text-secondary-400 hover:text-error-500 transition-colors flex-shrink-0"
                                                     >
-                                                      <Trash2 className="w-3 h-3" />
+                                                      <Trash2 className="w-3 h-3 text-red-500" />
                                                     </button>
                                                   </div>
                                                 </div>
@@ -6054,7 +6054,7 @@ ${fileLines}
                                                     onClick={(e) => { e.stopPropagation(); handleDeleteSent(idx); }}
                                                     className="p-1 rounded hover:bg-error-500/20 text-secondary-400 hover:text-error-500 transition-colors flex-shrink-0"
                                                   >
-                                                    <Trash2 className="w-3 h-3" />
+                                                    <Trash2 className="w-3 h-3 text-red-500" />
                                                   </button>
                                                 </div>
                                               ))
