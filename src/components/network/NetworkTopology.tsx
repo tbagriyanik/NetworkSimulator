@@ -309,18 +309,18 @@ export function NetworkTopology({
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
-  // Sync zoom and pan state from props (parent controls)
+  // Sync zoom and pan state from props (parent controls) — no setTimeout to avoid 1-frame lag
   useEffect(() => {
     if (zoomProp !== undefined && zoomProp !== zoom) {
       syncingZoomFromPropRef.current = true;
-      setTimeout(() => setZoom(zoomProp), 0);
+      requestAnimationFrame(() => setZoom(zoomProp));
     }
   }, [zoomProp]);
 
   useEffect(() => {
     if (panProp !== undefined && (panProp.x !== pan.x || panProp.y !== pan.y)) {
       syncingPanFromPropRef.current = true;
-      setTimeout(() => setPan(panProp), 0);
+      requestAnimationFrame(() => setPan(panProp));
     }
   }, [panProp]);
 
@@ -527,10 +527,14 @@ export function NetworkTopology({
   const lastMouseMoveTimeRef = useRef<number>(0);
   const lastMouseMovePosRef = useRef({ x: 0, y: 0 });
 
-  // ─── Direct DOM pan transform ref (bypass React re-renders during pan) ───
+  // ─── Direct DOM pan/zoom transform refs (bypass React re-renders during interaction) ───
   const svgContentGroupRef = useRef<SVGGElement | null>(null);
   // Tracks the latest pan values written directly to DOM during pan; synced to React state on mouseUp
   const pendingPanRef = useRef<{ x: number; y: number } | null>(null);
+  // Tracks zoom written directly to DOM during wheel scroll; synced after inactivity
+  const pendingZoomRef = useRef<number | null>(null);
+  // Timer to debounce wheel state sync
+  const wheelSyncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ─── Touch performance refs ───
   const isTouchDraggingRef = useRef(false);
@@ -1004,13 +1008,29 @@ export function NetworkTopology({
       y: cursorY - canvasCursorY * newZoom
     };
 
-    // Write transform directly to DOM for instant feedback, then sync React state
+    // PERFORMANCE: Write transform directly to DOM for immediate visual feedback.
+    // Defer React state sync until wheel activity stops (debounce) to avoid
+    // React re-renders overwriting the DOM transform on every wheel tick.
     const g = svgContentGroupRef.current;
     if (g) {
       g.style.transform = `translate(${newPan.x}px, ${newPan.y}px) scale(${newZoom})`;
     }
-    setPan(newPan);
-    setZoom(newZoom);
+    pendingPanRef.current = newPan;
+    pendingZoomRef.current = newZoom;
+    panRef.current = newPan;
+    zoomRef.current = newZoom;
+
+    // Debounced state sync: commit to React state 80ms after last wheel tick
+    if (wheelSyncTimerRef.current) clearTimeout(wheelSyncTimerRef.current);
+    wheelSyncTimerRef.current = setTimeout(() => {
+      const finalPan = pendingPanRef.current;
+      const finalZoom = pendingZoomRef.current;
+      if (finalPan) setPan(finalPan);
+      if (finalZoom !== null) setZoom(finalZoom);
+      pendingPanRef.current = null;
+      pendingZoomRef.current = null;
+      wheelSyncTimerRef.current = null;
+    }, 80);
   }, []);  // Empty deps - uses only refs, stable for the lifetime of the component
 
 
@@ -1034,6 +1054,7 @@ export function NetworkTopology({
     return () => {
       if (portTooltipTimerRef.current) clearTimeout(portTooltipTimerRef.current);
       if (connectionTooltipTimerRef.current) clearTimeout(connectionTooltipTimerRef.current);
+      if (wheelSyncTimerRef.current) clearTimeout(wheelSyncTimerRef.current);
     };
   }, []);
 
@@ -1167,6 +1188,18 @@ export function NetworkTopology({
     selectedDeviceIdsRef.current = selectedDeviceIds;
   }, [isPanning, panStart, zoom, pan, draggedDevice, isActuallyDragging, snapToGrid, isDrawingConnection, connectionStart, selectedDeviceIds]);
 
+  // DOM-first transform sync: whenever pan or zoom state changes from a NON-interactive
+  // source (reset view, zoom buttons, prop sync, etc.), write the transform to the DOM.
+  // During active pan/drag the RAF handlers write to DOM directly, so we skip those frames
+  // to avoid overwriting in-flight DOM transforms with stale React state.
+  useLayoutEffect(() => {
+    if (isPanning || isActuallyDragging) return; // RAF handlers own the DOM transform
+    if (wheelSyncTimerRef.current) return;       // wheel handler owns the DOM transform
+    const g = svgContentGroupRef.current;
+    if (!g) return;
+    g.style.transform = `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`;
+  }, [pan, zoom, isPanning, isActuallyDragging]);
+
   // Handle mouse move for panning and dragging
   // Registered ONCE (empty deps) - reads all mutable values through refs to avoid stale closures
   useEffect(() => {
@@ -1201,14 +1234,18 @@ export function NetworkTopology({
         lastMouseMoveTimeRef.current = now;
         lastMouseMovePosRef.current = { x: e.clientX, y: e.clientY };
 
-        // Throttle pan with RAF for smooth rendering
         // PERFORMANCE: Write transform directly to DOM to bypass React re-render on every frame.
         // The full React state (setPan) is only synced on mouseUp.
-        if (panAnimationFrameRef.current !== null) return;
-        const ps = panStartRef.current;
+        // Capture mouse position immediately — cancel any pending RAF so we always
+        // use the LATEST cursor position rather than skipping frames.
+        const capturedX = e.clientX;
+        const capturedY = e.clientY;
+        if (panAnimationFrameRef.current !== null) {
+          cancelAnimationFrame(panAnimationFrameRef.current);
+        }
         panAnimationFrameRef.current = requestAnimationFrame(() => {
-          const newPanX = e.clientX - ps.x;
-          const newPanY = e.clientY - ps.y;
+          const newPanX = capturedX - panStartRef.current.x;
+          const newPanY = capturedY - panStartRef.current.y;
           // Write directly to the SVG <g> element's transform (no React re-render)
           const g = svgContentGroupRef.current;
           if (g) {
@@ -6432,9 +6469,12 @@ if (isShutdown || isDeviceOffline) {
                 ref={svgContentGroupRef}
                 data-content-group="true"
                 style={{
-                  transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                  // transform is written directly to DOM via svgContentGroupRef during pan/zoom.
+                  // A useLayoutEffect below syncs non-interactive state changes (e.g. reset view).
+                  // We intentionally do NOT read from pan/zoom state here to prevent React
+                  // re-renders from overwriting the DOM transform mid-interaction.
                   transformOrigin: '0 0',
-                  transition: (isPanning || isActuallyDragging) ? 'none' : 'transform 0.05s linear',
+                  transition: 'none',
                 }}
               >
                 {/* Clip path for canvas boundaries */}

@@ -121,13 +121,31 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
 
     // Set default font on SVG root so inherited text uses app sans-serif
     clone.setAttribute('font-family', sansFont);
-    // Replace any generic monospace in cloned elements with the app's sans-serif font
-    clone.querySelectorAll('[font-family="monospace"]').forEach(el => {
+
+    // Apply app font to ALL text elements in the clone, except those inside note groups.
+    // Notes use their own font (note.font) which is intentionally preserved.
+    // We collect note group elements first so we can skip them.
+    const noteGroupEls = new Set<Element>();
+    clone.querySelectorAll('[data-note-id]').forEach(el => noteGroupEls.add(el));
+
+    clone.querySelectorAll('text').forEach(el => {
+      // Skip text elements that are descendants of a note group
+      let ancestor: Element | null = el.parentElement;
+      let insideNote = false;
+      while (ancestor && ancestor !== clone) {
+        if (noteGroupEls.has(ancestor)) { insideNote = true; break; }
+        ancestor = ancestor.parentElement;
+      }
+      if (insideNote) return;
+
+      // Override font-family attribute (SVG attribute form)
       el.setAttribute('font-family', sansFont);
-    });
-    // Also replace fontFamily="monospace" in SVG elements (for svg:text tags) to match app sans font
-    clone.querySelectorAll('text[fontFamily="monospace"]').forEach(el => {
-      el.setAttribute('font-family', sansFont);
+
+      // Override font-family inside inline style (e.g. style="font-family:monospace")
+      const styleVal = el.getAttribute('style');
+      if (styleVal && styleVal.includes('font-family')) {
+        el.setAttribute('style', styleVal.replace(/font-family\s*:[^;]+/g, `font-family:${sansFont}`));
+      }
     });
 
     // Keep full-rendered devices in clone, add simplified for culled ones
