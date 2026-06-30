@@ -56,7 +56,7 @@ const NetworkTopology = dynamic(
   { ssr: false }
 );
 
-import { Network, Monitor, X, Power, Filter, RefreshCw, Users, Activity, ShieldCheck, Share2, Layers } from "lucide-react";
+import { Network, Monitor, UserKey, X, Power, Filter, RefreshCw, Users, Activity, ShieldCheck, Share2, Layers } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { TooltipWrapper } from "@/components/ui/TooltipWrapper";
 import { useLanguage, Translations } from '@/contexts/LanguageContext';
@@ -5308,29 +5308,6 @@ ${state.bannerMOTD}
                    />
                  )}
 
-                {/* Room Controls — floating buttons above footer (mobile only) */}
-                {isRoomEnabled && (
-                  <div className="fixed bottom-16 left-3 z-30 flex gap-1.5 md:hidden">
-                    <button
-                      onClick={() => setShowRoomJoinDialog(true)}
-                      className="flex items-center gap-1.5 rounded-lg border border-slate-200/50 dark:border-slate-700/50 bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg px-2.5 py-1.5 text-xs font-medium shadow-lg hover:bg-white/90 dark:hover:bg-slate-800/90 transition-all"
-                      title={t.roomStudentJoin}
-                    >
-                      <Users className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">{t.roomStudentJoin}</span>
-                    </button>
-                    {!studentRoomCode && (
-                      <button
-                        onClick={() => setShowTeacherPanel(true)}
-                        className="flex items-center gap-1.5 rounded-lg border border-slate-200/50 dark:border-slate-700/50 bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg px-2.5 py-1.5 text-xs font-medium shadow-lg hover:bg-white/90 dark:hover:bg-slate-800/90 transition-all"
-                        title={t.roomTeacherOpen}
-                      >
-                        <Monitor className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">{t.roomTeacherOpen}</span>
-                      </button>
-                    )}
-                  </div>
-                )}
 
                 {/* Network Topology fills remaining space */}
                 <div ref={topologyContainerRef} className="flex-1 w-full h-full min-h-0 overflow-hidden relative">
@@ -5808,7 +5785,36 @@ ${state.bannerMOTD}
             showOnboarding={showOnboarding}
             handleRefreshNetwork={handleRefreshNetwork}
             setIsEnvironmentPanelOpen={setIsEnvironmentPanelOpen}
-          />
+          >
+            {isRoomEnabled && (
+              <>
+              <div className={cn("w-px h-4 mx-0.5", isDark ? "bg-slate-700" : "bg-slate-300")} />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 text-blue-500 hover:bg-blue-500/10"
+                  onClick={() => setShowRoomJoinDialog(true)}
+                  aria-label={t.roomStudentJoin}
+                >
+                  <Users className="w-3.5 h-3.5" />
+                </Button>
+                {!studentRoomCode && (
+                  <>
+                    
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-purple-500 hover:bg-purple-500/10"
+                      onClick={() => setShowTeacherPanel(true)}
+                      aria-label={t.roomTeacherOpen}
+                    >
+                      <UserKey className="w-3.5 h-3.5" />
+                    </Button>
+                  </>
+                )}
+              </>
+            )}
+          </AppFooter>
 
 
 

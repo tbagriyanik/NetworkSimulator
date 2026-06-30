@@ -6412,6 +6412,10 @@ if (isShutdown || isDeviceOffline) {
               if (pingMode) setPingCursorPos({ x: e.clientX, y: e.clientY });
             }}
             onMouseLeave={() => setPingCursorPos(null)}
+            onDoubleClick={() => {
+              setZoom(1.0);
+              setPan({ x: 0, y: 0 });
+            }}
             onClick={() => {
               canvasRef.current?.focus();
               setSelectedDeviceIds([]);

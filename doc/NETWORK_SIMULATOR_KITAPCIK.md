@@ -294,7 +294,8 @@ Free and open source. See [LICENSE](LICENSE).
 | `End` | Focus last element | Son öğeye odaklan |
 | `Page Up` | Scroll canvas up | Canvas'ı yukarı kaydır |
 | `Page Down` | Scroll canvas down | Canvas'ı aşağı kaydır |
-| `Double-click` | Open device panel | Cihaz panelini aç |
+| `Double-click (Empty Space)` | Reset topology view | Topoloji görünümünü sıfırla |
+| `Double-click (Device)` | Open device panel | Cihaz panelini aç |
 
 ### Ping Packet Analysis / Ping Paket Analizi
 | Shortcut / Kısayol | EN | TR |
@@ -378,6 +379,7 @@ The simulator supports **280+ commands** across multiple configuration modes.
 | `Middle-click + Drag` | Rectangle selection |
 | `Right-click` | Open context menu |
 | `Home` | Reset topology view (zoom 1.0, center) |
+| `Double-click (Empty Space)` | Reset topology view (zoom 1.0, center) |
 | `End` | Focus last element |
 | `Page Up` / `Page Down` | Scroll canvas vertically |
 | `Mouse Wheel` | Zoom in/out |

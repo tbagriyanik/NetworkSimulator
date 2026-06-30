@@ -646,7 +646,7 @@ className="h-8 w-8 p-0 text-orange-500 hover:bg-orange-500/10"
                 aria-label={t.roomStudentJoin}
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8"
+                className="h-8 w-8 text-blue-500 hover:bg-blue-500/10 hover:text-blue-600"
                 onClick={onOpenStudentJoin}
               >
                 <Users className="w-4 h-4" />
@@ -662,7 +662,7 @@ className="h-8 w-8 p-0 text-orange-500 hover:bg-orange-500/10"
                 aria-label={t.roomTeacherOpen}
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8"
+                className="h-8 w-8 text-purple-500 hover:bg-purple-500/10 hover:text-purple-600"
                 onClick={onOpenTeacherPanel}
               >
                 <UserKey className="w-4 h-4" />

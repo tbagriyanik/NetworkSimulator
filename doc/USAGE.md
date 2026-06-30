@@ -78,7 +78,8 @@
 | `End` | Focus last element | Son öğeye odaklan |
 | `Page Up` | Scroll canvas up | Canvas'ı yukarı kaydır |
 | `Page Down` | Scroll canvas down | Canvas'ı aşağı kaydır |
-| `Double-click` | Open device panel | Cihaz panelini aç |
+| `Double-click (Empty Space)` | Reset topology view | Topoloji görünümünü sıfırla |
+| `Double-click (Device)` | Open device panel | Cihaz panelini aç |
 
 ### Ping Packet Analysis / Ping Paket Analizi
 | Shortcut / Kısayol | EN | TR |

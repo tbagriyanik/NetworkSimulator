@@ -223,6 +223,7 @@ export function AppHeader({
                       <ShortcutBadge shortcut="Ctrl+S" variant="success" />
                     </TooltipContent>
                   </Tooltip>
+                  <div className={cn("w-px h-5 mx-1", isDark ? "bg-slate-700" : "bg-slate-300")} />
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button aria-label={language === 'tr' ? 'PNG Kaydet' : 'Save as PNG'}

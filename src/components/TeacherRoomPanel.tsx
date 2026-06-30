@@ -278,7 +278,7 @@ export function TeacherRoomPanel() {
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-muted/50 rounded-t-xl">
-          <h2 className="text-base font-semibold flex items-center gap-2"><UserKey className="w-4 h-4" />{t.roomTeacherPanel}</h2>
+          <h2 className="text-base font-semibold flex items-center gap-2"><UserKey className="w-4 h-4 text-purple-500" />{t.roomTeacherPanel}</h2>
           <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:bg-red-500 hover:text-white dark:hover:bg-red-600" title={t.roomClose} onClick={() => setShowTeacherPanel(false)}>
             <X className="w-4 h-4" />
           </Button>

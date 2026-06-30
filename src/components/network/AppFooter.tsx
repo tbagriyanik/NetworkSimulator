@@ -25,13 +25,14 @@ interface AppFooterProps {
   showOnboarding: boolean;
   handleRefreshNetwork: () => void;
   setIsEnvironmentPanelOpen: (v: boolean) => void;
+  children?: React.ReactNode;
 }
 
 export function AppFooter({
   t, isDark, language, activeTab, activeDeviceType, activeDeviceId,
   hasUnsavedChanges, lastSaveTime, projectName, totalScore, maxScore,
   topologyDevices, lastTaskEvent, showProjectPicker, showOnboarding,
-  handleRefreshNetwork, setIsEnvironmentPanelOpen,
+  handleRefreshNetwork, setIsEnvironmentPanelOpen, children
 }: AppFooterProps) {
   const getDeviceCountLabel = (count: number) => (
     language === 'tr' ? t.devicesCount : (count === 1 ? 'device' : 'devices')
@@ -226,6 +227,7 @@ export function AppFooter({
                   </Button>
                 </>
               )}
+              {children}
             </div>
 
             <div className="flex items-center gap-1.5">

@@ -75,7 +75,7 @@ export function RoomJoinDialog() {
     <Dialog open={showRoomJoinDialog} onOpenChange={setShowRoomJoinDialog}>
       <DialogContent className="sm:max-w-sm" onEscapeKeyDown={() => {}} onPointerDownOutside={() => {}}>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><Users className="w-4 h-4" />{studentRoomCode ? `${t.roomJoinTitle} — ${studentRoomCode}` : t.roomJoinTitle}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2"><Users className="w-4 h-4 text-blue-500" />{studentRoomCode ? `${t.roomJoinTitle} — ${studentRoomCode}` : t.roomJoinTitle}</DialogTitle>
           <DialogDescription>
             {studentRoomCode ? `${studentDisplayName || name} — ${studentRoomCode}` : t.roomJoinDesc}
           </DialogDescription>
