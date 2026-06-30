@@ -2846,6 +2846,19 @@ export function NetworkTopology({
     });
   }, []);
 
+  const bringNoteToFront = useCallback((noteId: string) => {
+    setNotesState((prevNotes) => {
+      const idx = prevNotes.findIndex((n) => n.id === noteId);
+      if (idx !== -1 && idx !== prevNotes.length - 1) {
+        const newNotes = [...prevNotes];
+        const [movedNote] = newNotes.splice(idx, 1);
+        newNotes.push(movedNote);
+        return newNotes;
+      }
+      return prevNotes;
+    });
+  }, [setNotesState]);
+
   // Handle note header drag start
   const handleNoteHeaderMouseDown = useCallback((e: ReactMouseEvent, noteId: string) => {
     e.stopPropagation();
@@ -2855,10 +2868,11 @@ export function NetworkTopology({
     if (!note) return;
 
     saveToHistory();
+    bringNoteToFront(noteId);
     setDraggedNoteId(noteId);
     setNoteDragStart({ x: e.clientX, y: e.clientY });
     setSelectedNoteIds([noteId]);
-  }, [notes, saveToHistory, setSelectedNoteIds]);
+  }, [notes, saveToHistory, bringNoteToFront, setSelectedNoteIds]);
 
   // Handle note header touch start (mobile)
   const handleNoteHeaderTouchStart = useCallback((e: React.TouchEvent, noteId: string) => {
@@ -2870,10 +2884,11 @@ export function NetworkTopology({
     if (!note) return;
 
     saveToHistory();
+    bringNoteToFront(noteId);
     setDraggedNoteId(noteId);
     setNoteDragStart({ x: touch.clientX, y: touch.clientY });
     setSelectedNoteIds([noteId]);
-  }, [notes, saveToHistory, setSelectedNoteIds]);
+  }, [notes, saveToHistory, bringNoteToFront, setSelectedNoteIds]);
 
   // Handle note resize start
   const handleNoteResizeStart = useCallback((e: ReactMouseEvent, noteId: string, direction: string = 'se') => {
@@ -6933,6 +6948,7 @@ if (isShutdown || isDeviceOffline) {
                       onTopologyChange={onTopologyChange}
                       handleNoteResizeStart={handleNoteResizeStart}
                       handleNoteResizeTouchStart={handleNoteResizeTouchStart}
+                      bringNoteToFront={bringNoteToFront}
                     />
                   ))}
 

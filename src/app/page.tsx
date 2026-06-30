@@ -721,13 +721,22 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
       text += `${language === 'tr' ? 'Bağlantı Sayısı' : 'Connections'}: ${topologyConnections.length}\n`;
 
       if (topologyDevices.length > 0) {
+        const typeOrder = ['pc', 'switchL2', 'switchL3', 'router', 'firewall', 'iot', 'wlc'];
+        const sortedTopologyDevices = [...topologyDevices].sort((a, b) => {
+          const idxA = typeOrder.indexOf(a.type);
+          const idxB = typeOrder.indexOf(b.type);
+          const valA = idxA === -1 ? 99 : idxA;
+          const valB = idxB === -1 ? 99 : idxB;
+          return valA - valB;
+        });
+
         text += `\n${language === 'tr' ? 'Cihaz Listesi' : 'Device List'}:\n`;
-        topologyDevices.forEach(d => {
+        sortedTopologyDevices.forEach(d => {
           text += `- ${d.name} (${d.type.toUpperCase()}) ${d.ip ? `IP: ${d.ip}` : ''} [${d.status === 'offline' ? (language === 'tr' ? 'Çevrimdışı' : 'Offline') : (language === 'tr' ? 'Çevrimiçi' : 'Online')}]\n`;
         });
 
-        text += `\n--- ${language === 'tr' ? 'CİHAZ KONFİGÜRASYONLARI' : 'DEVICE CONFIGURATIONS'} ---\n`;
-        topologyDevices.forEach(d => {
+        text += `\n--- ${language === 'tr' ? 'CİHAZ DETAYLARI' : 'DEVICE DETAILS'} ---\n`;
+        sortedTopologyDevices.forEach(d => {
           text += `\n* ${d.name} (${d.type.toUpperCase()}):\n`;
           if (d.type === 'pc' || d.type === 'iot') {
             text += `  - ${language === 'tr' ? 'IP Modu' : 'IP Mode'}: ${d.ipConfigMode === 'dhcp' ? 'DHCP' : 'Static'}\n`;
@@ -790,7 +799,6 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
           text += config.commands + `\n`;
         });
       }
-
       const id = `note-${Date.now()}`;
       const newNote: CanvasNote = {
         id,
@@ -828,7 +836,9 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     topologyDevices,
     topologyConnections,
     deviceStates,
-    setNotes
+    setNotes,
+    deviceOutputs,
+    pcOutputs
   ]);
 
   // Navigation hook (provides history management, device selection, focus)

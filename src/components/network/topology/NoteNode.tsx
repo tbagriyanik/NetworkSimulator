@@ -33,6 +33,7 @@ export interface NoteNodeProps {
   onTopologyChange?: (devices: CanvasDevice[], connections: CanvasConnection[], notes: CanvasNote[]) => void;
   handleNoteResizeStart: (e: React.MouseEvent, id: string, dir: string) => void;
   handleNoteResizeTouchStart: (e: React.TouchEvent, id: string, dir: string) => void;
+  bringNoteToFront: (id: string) => void;
 }
 
 export function NoteNode({
@@ -62,8 +63,63 @@ export function NoteNode({
   setNoteTextSelection,
   onTopologyChange,
   handleNoteResizeStart,
-  handleNoteResizeTouchStart
+  handleNoteResizeTouchStart,
+  bringNoteToFront
 }: NoteNodeProps) {
+  const [showSearch, setShowSearch] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [matchIndex, setMatchIndex] = React.useState(-1);
+  const [lastQuery, setLastQuery] = React.useState('');
+
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
+  const handleSearchNext = React.useCallback(() => {
+    const textarea = noteTextareaRefs.current[note.id];
+    if (!textarea || !searchQuery) return;
+
+    const turkishLowerCase = (str: string) => {
+      return str.replace(/İ/g, 'i').replace(/I/g, 'ı').toLowerCase();
+    };
+
+    const textNormalized = turkishLowerCase(textarea.value);
+    const queryNormalized = turkishLowerCase(searchQuery);
+    
+    // Find all start indices of matches
+    const indices: number[] = [];
+    let pos = textNormalized.indexOf(queryNormalized);
+    while (pos !== -1) {
+      indices.push(pos);
+      pos = textNormalized.indexOf(queryNormalized, pos + 1);
+    }
+
+    if (indices.length === 0) {
+      setMatchIndex(-1);
+      return;
+    }
+
+    // Determine the next index
+    let nextIdx = 0;
+    if (searchQuery === lastQuery) {
+      nextIdx = (matchIndex + 1) % indices.length;
+    }
+    
+    setMatchIndex(nextIdx);
+    setLastQuery(searchQuery);
+
+    const start = indices[nextIdx];
+    const end = start + queryNormalized.length;
+
+    // Focus and select the match
+    textarea.focus();
+    textarea.setSelectionRange(start, end);
+
+    // Scroll to the selection
+    const prefix = textarea.value.substring(0, start);
+    const numLines = prefix.split('\n').length;
+    const lineHeight = 16; // approximate line height in px
+    // eslint-disable-next-line react-hooks/immutability
+    textarea.scrollTop = Math.max(0, (numLines - 3) * lineHeight);
+  }, [note.id, searchQuery, lastQuery, matchIndex, noteTextareaRefs]);
+
   return (
     <foreignObject
       key={note.id}
@@ -81,6 +137,7 @@ export function NoteNode({
           } ${selectedNoteIds.includes(note.id) ? 'ring-2 ring-pink-400/70' : ''}`}
         data-note-id={note.id}
         style={{ backgroundColor: note.color, fontFamily: note.font, opacity: note.opacity }}
+        onPointerDown={() => bringNoteToFront(note.id)}
         onClick={(e) => {
           e.stopPropagation();
           setContextMenu(null);
@@ -184,6 +241,28 @@ export function NoteNode({
               </TooltipTrigger>
               <TooltipContent>{t.duplicateLabel}</TooltipContent>
             </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowSearch(!showSearch);
+                    if (!showSearch) {
+                      setSearchQuery('');
+                      setMatchIndex(-1);
+                      setLastQuery('');
+                    }
+                  }}
+                  className="px-1 py-0.5 rounded text-[9px] leading-4 bg-black/10 hover:bg-black/20 flex items-center justify-center"
+                  aria-label={language === 'tr' ? 'Ara' : 'Search'}
+                >
+                  <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>{language === 'tr' ? 'Ara' : 'Search'}</TooltipContent>
+            </Tooltip>
           </div>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -204,12 +283,44 @@ export function NoteNode({
           </Tooltip>
         </div>
 
+        {/* Search Bar */}
+        {showSearch && (
+          <div 
+            className="flex items-center gap-1.5 px-2 py-1 bg-black/10 border-b border-black/10" 
+            onMouseDown={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+          >
+            <input
+              type="text"
+              placeholder={language === 'tr' ? 'Ara...' : 'Search...'}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                e.stopPropagation();
+                if (e.key === 'Enter') {
+                  handleSearchNext();
+                } else if (e.key === 'Escape') {
+                  setShowSearch(false);
+                }
+              }}
+              className="flex-1 text-[10px] px-1.5 py-0.5 rounded border border-black/20 bg-white/90 dark:bg-zinc-800/90 text-black dark:text-white focus:outline-none"
+              autoFocus
+            />
+            <button 
+              onClick={(e) => { e.stopPropagation(); handleSearchNext(); }} 
+              className="px-1.5 py-0.5 text-[9px] bg-black/15 hover:bg-black/25 text-black dark:text-white rounded"
+            >
+              {language === 'tr' ? 'Sonraki' : 'Next'}
+            </button>
+          </div>
+        )}
+
         {/* Note Content - Scrollable */}
         <div
           data-note-scroll
           className="flex-1 min-h-0"
           style={{
-            height: `calc(100% - 24px)`,
+            height: showSearch ? `calc(100% - 48px)` : `calc(100% - 24px)`,
             scrollBehavior: 'smooth',
           }}
           onWheel={(e) => {
