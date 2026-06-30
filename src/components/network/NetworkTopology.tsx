@@ -514,6 +514,7 @@ export function NetworkTopology({
 
   // ─── Performance refs: always hold latest values to avoid stale closures ───
   // These allow event handlers registered once (on mount) to always use fresh state
+  const connectionMetaRef = useRef<Map<string, { index: number; total: number }>>(new Map());
   const isPanningRef = useRef(false);
   const panStartRef = useRef({ x: 0, y: 0 });
   const zoomRef = useRef(DEFAULT_ZOOM);
@@ -1188,9 +1189,10 @@ export function NetworkTopology({
     snapToGridRef.current = snapToGrid;
     isDrawingConnectionRef.current = isDrawingConnection;
     connectionStartRef.current = connectionStart;
+    connectionMetaRef.current = connectionMeta;
     // eslint-disable-next-line react-hooks/immutability
     selectedDeviceIdsRef.current = selectedDeviceIds;
-  }, [isPanning, panStart, zoom, pan, draggedDevice, isActuallyDragging, snapToGrid, isDrawingConnection, connectionStart, selectedDeviceIds]);
+  }, [isPanning, panStart, zoom, pan, draggedDevice, isActuallyDragging, snapToGrid, isDrawingConnection, connectionStart, selectedDeviceIds, connectionMeta]);
 
   // DOM-first transform sync: whenever pan or zoom state changes from a NON-interactive
   // source (reset view, zoom buttons, prop sync, etc.), write the transform to the DOM.
@@ -1424,19 +1426,115 @@ export function NetworkTopology({
                   conn.targetPort
                 );
 
-                // Simple bezier curve calculation
+                const isWireless = conn.cableType === 'wireless';
                 const midX = (srcPort.x + tgtPort.x) / 2;
-                const cp1y = srcPort.y;
-                const cp2y = tgtPort.y;
+                const meta = connectionMetaRef.current.get(conn.id) || { index: 0, total: 1 };
+                const sameConnIndex = meta.index;
+                const totalSameConns = meta.total;
+                const maxOffset = 20;
+                const offset = totalSameConns > 1
+                  ? (sameConnIndex - (totalSameConns - 1) / 2) * (maxOffset / Math.max(totalSameConns - 1, 1))
+                  : 0;
 
-                const pathD = 'M ' + srcPort.x + ' ' + srcPort.y +
-                  ' C ' + midX + ' ' + cp1y + ', ' + midX + ' ' + cp2y + ', ' + tgtPort.x + ' ' + tgtPort.y;
+                const dxVal = tgtPort.x - srcPort.x;
+                const dyVal = tgtPort.y - srcPort.y;
+                const len = Math.sqrt(dxVal * dxVal + dyVal * dyVal) || 1;
+                const perpX = -dyVal / len * offset;
+                const perpY = dxVal / len * offset;
+
+                const controlPoint1 = {
+                  x: midX + perpX,
+                  y: srcPort.y + perpY + Math.abs(offset) * 0.5
+                };
+                const controlPoint2 = {
+                  x: midX + perpX,
+                  y: tgtPort.y + perpY - Math.abs(offset) * 0.5
+                };
+
+                const buildWavePath = (sx: number, sy: number, tx: number, ty: number) => {
+                  const dx = tx - sx;
+                  const dy = ty - sy;
+                  const length = Math.sqrt(dx * dx + dy * dy) || 1;
+                  const ux = dx / length;
+                  const uy = dy / length;
+                  const px = -uy;
+                  const py = ux;
+                  const waveCount = Math.max(3, Math.round(length / 28));
+                  const amplitude = 8;
+                  const points = [`M ${sx} ${sy}`];
+                  for (let i = 0; i < waveCount; i++) {
+                    const t1 = (i + 0.5) / waveCount;
+                    const t2 = (i + 1) / waveCount;
+                    const mx = sx + ux * length * t1 + px * amplitude * (i % 2 === 0 ? 1 : -1);
+                    const my = sy + uy * length * t1 + py * amplitude * (i % 2 === 0 ? 1 : -1);
+                    const ex = sx + ux * length * t2;
+                    const ey = sy + uy * length * t2;
+                    points.push(`Q ${mx} ${my} ${ex} ${ey}`);
+                  }
+                  return points.join(' ');
+                };
+
+                const pathD = isWireless
+                  ? buildWavePath(srcPort.x, srcPort.y, tgtPort.x, tgtPort.y)
+                  : `M ${srcPort.x} ${srcPort.y} C ${controlPoint1.x} ${controlPoint1.y}, ${controlPoint2.x} ${controlPoint2.y}, ${tgtPort.x} ${tgtPort.y}`;
 
                 const connEl = document.querySelector('[data-connection-id="' + conn.id + '"]');
                 if (connEl) {
                   const pathNodes = connEl.querySelectorAll('path');
                   for (let pi2 = 0; pi2 < pathNodes.length; pi2++) {
                     pathNodes[pi2].setAttribute('d', pathD);
+                  }
+
+                  // Update text labels in real-time
+                  const bezierPoint = (tVal: number) => {
+                    if (isWireless) {
+                      return { x: srcPort.x + (tgtPort.x - srcPort.x) * tVal, y: srcPort.y + (tgtPort.y - srcPort.y) * tVal };
+                    }
+                    const mt = 1 - tVal;
+                    return {
+                      x: mt*mt*mt*srcPort.x + 3*mt*mt*tVal*controlPoint1.x + 3*mt*tVal*tVal*controlPoint2.x + tVal*tVal*tVal*tgtPort.x,
+                      y: mt*mt*mt*srcPort.y + 3*mt*mt*tVal*controlPoint1.y + 3*mt*tVal*tVal*controlPoint2.y + tVal*tVal*tVal*tgtPort.y
+                    };
+                  };
+
+                  const srcPos = bezierPoint(0.42);
+                  const tgtPos = bezierPoint(0.58);
+                  const srcLabel = { x: srcPos.x + perpX, y: srcPos.y + perpY };
+                  const tgtLabel = { x: tgtPos.x + perpX, y: tgtPos.y + perpY };
+                  const labelOffsetY = -10;
+
+                  const textNodes = connEl.querySelectorAll('text');
+                  if (textNodes.length >= 4) {
+                    textNodes[0].setAttribute('x', String(srcLabel.x));
+                    textNodes[0].setAttribute('y', String(srcLabel.y + labelOffsetY));
+                    textNodes[1].setAttribute('x', String(srcLabel.x));
+                    textNodes[1].setAttribute('y', String(srcLabel.y + labelOffsetY));
+                    textNodes[2].setAttribute('x', String(tgtLabel.x));
+                    textNodes[2].setAttribute('y', String(tgtLabel.y + labelOffsetY));
+                    textNodes[3].setAttribute('x', String(tgtLabel.x));
+                    textNodes[3].setAttribute('y', String(tgtLabel.y + labelOffsetY));
+                  }
+                }
+
+                // Update connection handle position in real-time
+                const tTrash = 0.5;
+                const invT = 1 - tTrash;
+                const trashX =
+                  invT * invT * invT * srcPort.x +
+                  3 * invT * invT * tTrash * controlPoint1.x +
+                  3 * invT * tTrash * tTrash * controlPoint2.x +
+                  tTrash * tTrash * tTrash * tgtPort.x;
+                const trashY =
+                  invT * invT * invT * srcPort.y +
+                  3 * invT * invT * tTrash * controlPoint1.y +
+                  3 * invT * tTrash * tTrash * controlPoint2.y +
+                  tTrash * tTrash * tTrash * tgtPort.y;
+
+                const handleEl = document.querySelector('[data-connection-handle-id="' + conn.id + '"]');
+                if (handleEl) {
+                  const innerG = handleEl.querySelector('[data-handle-inner="true"]');
+                  if (innerG) {
+                    innerG.setAttribute('transform', 'translate(' + trashX + ', ' + trashY + ')');
                   }
                 }
               }
@@ -8120,13 +8218,35 @@ const PacketCapturePanel = ({
   t: Record<string, string>;
   isDark: boolean;
 }) => {
+  const devices = useAppStore(state => state.topology.devices);
+  const connections = useAppStore(state => state.topology.connections);
+  const { language } = useLanguage();
+
+  const conn = connections.find(c => c.id === activeCaptureConnectionId);
+  let connectionLabel = activeCaptureConnectionId;
+  if (conn) {
+    const srcDev = devices.find(d => d.id === conn.sourceDeviceId);
+    const tgtDev = devices.find(d => d.id === conn.targetDeviceId);
+    if (srcDev && tgtDev) {
+      connectionLabel = `${srcDev.name} ${conn.sourcePort} - ${conn.targetPort} ${tgtDev.name}`;
+    }
+  }
+
+  const statusMessage = conn ? getConnectionStatusMessage(conn, devices, language) : '';
+  const hasError = conn && statusMessage !== 'Bağlantı sorunsuz' && statusMessage !== 'Connection OK';
+
   const [columnOrder, setColumnOrder] = React.useState(['time','source','dest','proto','info']);
   
   const [position, setPosition] = React.useState(() => {
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem('packetCapturePosition');
-        if (saved) return JSON.parse(saved);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (typeof parsed.x === 'number' && typeof parsed.y === 'number' && !isNaN(parsed.x) && !isNaN(parsed.y)) {
+            return parsed;
+          }
+        }
       } catch {}
       return { x: window.innerWidth - 420, y: window.innerHeight - 340 };
     }
@@ -8137,11 +8257,21 @@ const PacketCapturePanel = ({
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem('packetCaptureSize');
-        if (saved) return JSON.parse(saved);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (typeof parsed.width === 'number' && typeof parsed.height === 'number' && !isNaN(parsed.width) && !isNaN(parsed.height)) {
+            return parsed;
+          }
+        }
       } catch {}
     }
     return { width: 384, height: 260 };
   });
+
+  const sizeRef = React.useRef(size);
+  const positionRef = React.useRef(position);
+  React.useEffect(() => { sizeRef.current = size; }, [size]);
+  React.useEffect(() => { positionRef.current = position; }, [position]);
   
   const [isDragging, setIsDragging] = React.useState(false);
   const dragStartPos = React.useRef({ x: 0, y: 0 });
@@ -8177,7 +8307,7 @@ const PacketCapturePanel = ({
   const handlePointerUp = (e: React.PointerEvent) => {
     if (isDragging) {
       setIsDragging(false);
-      localStorage.setItem('packetCapturePosition', JSON.stringify(position));
+      localStorage.setItem('packetCapturePosition', JSON.stringify(positionRef.current));
       const target = e.target as HTMLElement;
       if (target.hasPointerCapture(e.pointerId)) {
         target.releasePointerCapture(e.pointerId);
@@ -8203,20 +8333,46 @@ const PacketCapturePanel = ({
 
   return (
     <div 
-      style={{ left: position.x, top: position.y }}
-      className={`fixed flex flex-col rounded-xl border border-green-500 shadow-2xl z-50 backdrop-blur-md overflow-hidden ${isDark ? 'bg-slate-900/95' : 'bg-white/95'}`}
+      style={{ 
+        left: `${position.x}px`, 
+        top: `${position.y}px`, 
+        width: `${size.width}px`, 
+        height: `${size.height}px`,
+        resize: 'both',
+        minWidth: 200,
+        minHeight: 120
+      }}
+      className={`fixed flex flex-col rounded-xl border border-green-500/35 dark:border-green-500/25 shadow-2xl z-50 backdrop-blur-xl overflow-hidden ${isDark ? 'bg-slate-950/70' : 'bg-white/70'}`}
+      onMouseUp={(e) => {
+        const target = e.currentTarget;
+        if (target.offsetWidth !== size.width || target.offsetHeight !== size.height) {
+          const newSize = { width: target.offsetWidth, height: target.offsetHeight };
+          setSize(newSize);
+          localStorage.setItem('packetCaptureSize', JSON.stringify(newSize));
+        }
+      }}
     >
       <div 
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
-        className={`flex items-center justify-between px-3 py-2 border-b cursor-grab active:cursor-grabbing touch-none select-none ${isDark ? 'bg-slate-800/80 border-slate-700' : 'bg-slate-100/80 border-slate-200'}`}
+        className={`flex items-center justify-between px-3 py-2 border-b cursor-grab active:cursor-grabbing touch-none select-none ${isDark ? 'bg-slate-900/40 border-slate-800/40' : 'bg-slate-50/45 border-slate-100/50'}`}
       >
-        <div className="flex items-center gap-2 pointer-events-none">
-          <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-          <span className="text-xs font-bold">{t.packetAnalysis}</span>
-          <span className="text-[10px] opacity-50 font-mono">({activeCaptureConnectionId})</span>
+        <div className="flex flex-col gap-0.5 pointer-events-none">
+          <div className="flex items-center gap-2">
+            <div 
+              className="w-2.5 h-2.5 rounded-full animate-pulse" 
+              style={{ backgroundColor: CABLE_COLORS[conn?.cableType || 'straight']?.primary || 'var(--color-primary-500)' }}
+            />
+            <span className="text-xs font-bold">{t.packetAnalysis}</span>
+            <span className="text-[10px] opacity-50 font-mono">({connectionLabel})</span>
+          </div>
+          {hasError && (
+            <span className="text-[9px] text-red-500 dark:text-red-400 font-medium pl-[18px]">
+              ⚠️ {statusMessage}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-1">
           <button
@@ -8235,20 +8391,9 @@ const PacketCapturePanel = ({
         </div>
       </div>
       
-      <div 
-        className="custom-scrollbar p-0 bg-transparent flex-1"
-        style={{ resize: 'both', overflow: 'auto', width: size.width, height: size.height, minWidth: 200, minHeight: 100 }}
-        onMouseUp={(e) => {
-          const target = e.currentTarget;
-          if (target.offsetWidth !== size.width || target.offsetHeight !== size.height) {
-            const newSize = { width: target.offsetWidth, height: target.offsetHeight };
-            setSize(newSize);
-            localStorage.setItem('packetCaptureSize', JSON.stringify(newSize));
-          }
-        }}
-      >
+      <div className="custom-scrollbar p-0 bg-transparent flex-1 overflow-auto w-full">
         <table className="w-full text-[10px] text-left border-collapse">
-          <thead className={`sticky top-0 z-10 ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}>
+          <thead className={`sticky top-0 z-10 ${isDark ? 'bg-slate-950/80' : 'bg-slate-100/80'} backdrop-blur-sm`}>
             <tr>
               {columnOrder.map((col, idx) => renderHeader(col, idx))}
             </tr>
@@ -8256,7 +8401,7 @@ const PacketCapturePanel = ({
           <tbody>
             {capturedPacketsMap[activeCaptureConnectionId]?.length ? (
               [...capturedPacketsMap[activeCaptureConnectionId]].reverse().map((pkt: { id: string; timestamp: number; sourceIp: string; targetIp: string; protocol: string; info: string; }) => (
-                <tr key={pkt.id} className={`border-b last:border-0 ${isDark ? 'border-slate-800 hover:bg-slate-800/50' : 'border-slate-50 hover:bg-slate-50'}`}>
+                <tr key={pkt.id} className={`border-b last:border-0 ${isDark ? 'border-slate-800/40 hover:bg-slate-800/35' : 'border-slate-100/30 hover:bg-slate-50/40'}`}>
                   {columnOrder.map(col => {
                     switch (col) {
                       case 'time': {

@@ -79,9 +79,9 @@ const ConnectionHandle = memo(function ConnectionHandle({
       : true;
 
   return (
-    <g key={`handle-${connection.id}`} data-export-hide="true">
+    <g key={`handle-${connection.id}`} data-connection-handle-id={connection.id} data-export-hide="true">
       {isCompatible && (
-        <g transform={`translate(${trashX}, ${trashY})`}>
+        <g transform={`translate(${trashX}, ${trashY})`} data-handle-inner="true">
           {/* Delete Button */}
           <g
             className="cursor-pointer group"

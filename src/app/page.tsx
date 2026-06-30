@@ -5504,26 +5504,28 @@ ${state.bannerMOTD}
               </div>
             )}
 
-            {/* Network Refresh Report - Top Right Toast */}
+
+                    {/* Network Refresh Report - Top Right Toast / Full Screen on Mobile */}
             {
               refreshNetworkReport?.show && (
                   <div
                     ref={refreshReportRef}
                     data-draggable-id={isMobile ? undefined : "refresh-network-report"}
-                    className={`fixed top-20 right-4 w-full max-w-sm rounded-xl border shadow-2xl animate-in slide-in-from-right-full duration-300 backdrop-blur-md select-none ${isDark
-                      ? 'bg-zinc-950/40 border-emerald-500/30 text-zinc-100 shadow-black/40'
-                      : 'bg-white/40 border-emerald-500/50 text-zinc-900 shadow-zinc-200/50'
+                    className={`fixed z-[100] backdrop-blur-md select-none ${isMobile 
+                      ? 'inset-0 w-full h-full rounded-none border-0' 
+                      : 'top-20 right-4 w-full max-w-sm rounded-xl border shadow-2xl'
+                      } animate-in slide-in-from-right-full duration-300 ${isDark
+                        ? 'bg-zinc-950/70 border-emerald-500/30 text-zinc-100 shadow-black/40'
+                        : 'bg-white/70 border-emerald-500/50 text-zinc-900 shadow-zinc-200/50'
                       }`}
                   style={{
                     zIndex: 100,
-                    maxHeight: 'calc(100vh - 100px)',
-                    // On mobile, ensure it's below header (60px) + some margin
-                    ...(isMobile ? { top: '80px', maxHeight: 'calc(100vh - 100px)' } : {})
+                    ...(!isMobile ? { maxHeight: 'calc(100vh - 100px)' } : { height: '100vh', maxHeight: '100vh' })
                   }}
                   onMouseDown={() => setFocusedOverlay('refresh')}
                 >
                   <div
-                    className={`flex items-center justify-between px-3 py-2 border-b rounded-t-xl ${!isMobile ? 'cursor-grab active:cursor-grabbing' : ''} select-none ${isDark ? 'bg-white/5 border-emerald-500/20' : 'bg-black/5 border-emerald-500/30'}`}
+                    className={`flex items-center justify-between px-3 py-2 border-b ${isMobile ? 'rounded-none' : 'rounded-t-xl'} ${!isMobile ? 'cursor-grab active:cursor-grabbing' : ''} select-none ${isDark ? 'bg-white/5 border-emerald-500/20' : 'bg-black/5 border-emerald-500/30'}`}
                     data-drag-handle={isMobile ? undefined : true}
                   >
                     <h3 className="text-sm font-bold flex items-center gap-2">
@@ -5549,7 +5551,7 @@ ${state.bannerMOTD}
                     </div>
                   </div>
 
-                  <div className="p-2 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 160px)' }}>
+                  <div className="p-2 overflow-y-auto" style={{ maxHeight: isMobile ? 'calc(100vh - 70px)' : 'calc(100vh - 160px)' }}>
                     <Tabs defaultValue="summary" className="w-full">
                       <TabsList className={`w-full grid grid-cols-2 ${isDark ? 'bg-zinc-800/80' : 'bg-zinc-200/80'}`}>
                         <TabsTrigger value="summary" className="text-xs">

@@ -170,7 +170,7 @@ export const ConnectionLine = memo(function ConnectionLine({
           filter: isHovered || (graphicsQuality === 'high' && isEffectivelyActive) ?
             'drop-shadow(0 0 0.5px ' + color + ') drop-shadow(0 0 1px ' + color + ')' :
             'none',
-          transition: 'all 0.2s ease'
+          transition: isDragging ? 'none' : 'stroke 0.2s ease, stroke-width 0.2s ease, opacity 0.2s ease, filter 0.2s ease'
         }}
       />
 

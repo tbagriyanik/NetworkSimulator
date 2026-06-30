@@ -14,7 +14,7 @@
 
 # Network Simulator 2026
 
-![Version](https://img.shields.io/badge/version-1.9.2-blue)
+![Version](https://img.shields.io/badge/version-1.9.3-blue)
 ![Stack](https://img.shields.io/badge/stack-Next.js%2016.2%20|%20React%2019%20|%20TypeScript%206.0%20|%20Tailwind%204-green)
 ![FOSS](https://img.shields.io/badge/FOSS-Free%20Open%20Source-brightgreen)
 ![Total Lines](https://img.shields.io/badge/total--lines-81,523-lightgrey)
@@ -3629,7 +3629,7 @@ Network Simulator, farklı zorluk seviyelerinde **40 hazır örnek proje** ile b
 ---
 
 **Son Güncelleme:** Haziran 2026
-**Versiyon:** 1.9.2
+**Versiyon:** 1.9.3
 
 \n\n<div style="page-break-after: always;"></div>\n\n
 # 🎓 Rehberli Ders Adımları (Guided Steps)

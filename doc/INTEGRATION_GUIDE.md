@@ -565,4 +565,4 @@ Detaylı bilgi için `ERROR_HANDLING_GUIDE.md` dosyasını okuyun.
 ---
 
 **Güncelleme Tarihi**: 2026-06-20  
-**Versiyon**: 1.9.2
+**Versiyon**: 1.9.3

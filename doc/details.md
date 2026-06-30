@@ -1,7 +1,7 @@
 
 ## Latest Updates
 
-### v1.9.2 (2026-06-28)
+### v1.9.3 (2026-06-30)
 | English | Türkçe |
 | --- | --- |
 | **PNG Export**: 300 DPI high-resolution export with topology-faithful rendering — full device visuals, cable colors by type, port name labels, auto-sized notes with rounded colored backgrounds. | **PNG Çıktısı**: Topolojiye sadık 300 DPI yüksek çözünürlüklü dışa aktarma — tam cihaz görselleri, kablo türüne göre renkler, port adı etiketleri, otomatik boyutlu yuvarlak renkli notlar. |
