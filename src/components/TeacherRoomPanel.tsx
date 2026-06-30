@@ -195,10 +195,31 @@ export function TeacherRoomPanel() {
   const [activeCode, setActiveCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeRoomCount, setActiveRoomCount] = useState<number | null>(null);
 
   useEffect(() => {
     if (activeCode) localStorage.setItem('teacher-room-code', activeCode);
   }, [activeCode]);
+
+  useEffect(() => {
+    if (!showTeacherPanel || activeCode) return;
+
+    const fetchRoomCount = async () => {
+      try {
+        const res = await fetch('/api/room');
+        const json = await res.json();
+        if (json.success && typeof json.count === 'number') {
+          setActiveRoomCount(json.count);
+        }
+      } catch (err) {
+        console.error('Failed to fetch active room count', err);
+      }
+    };
+
+    fetchRoomCount();
+    const interval = setInterval(fetchRoomCount, 30000);
+    return () => clearInterval(interval);
+  }, [showTeacherPanel, activeCode]);
 
   const getTeacherId = (): string => {
     const stored = localStorage.getItem('teacher-browser-id');
@@ -278,7 +299,17 @@ export function TeacherRoomPanel() {
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-muted/50 rounded-t-xl">
-          <h2 className="text-base font-semibold flex items-center gap-2"><UserKey className="w-4 h-4 text-purple-500" />{t.roomTeacherPanel}</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-base font-semibold flex items-center gap-2">
+              <UserKey className="w-4 h-4 text-purple-500" />
+              {t.roomTeacherPanel}
+            </h2>
+            {activeRoomCount !== null && (
+              <Badge variant="secondary" className="text-[10px] h-4 px-1.5 font-normal">
+                {t.activeRoomsCount}: {activeRoomCount}
+              </Badge>
+            )}
+          </div>
           <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:bg-red-500 hover:text-white dark:hover:bg-red-600" title={t.roomClose} onClick={() => setShowTeacherPanel(false)}>
             <X className="w-4 h-4" />
           </Button>

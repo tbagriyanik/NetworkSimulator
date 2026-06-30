@@ -1,7 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createRoom } from '@/lib/roomStore';
+import { createRoom, getActiveRoomCount } from '@/lib/roomStore';
 import type { RoomApiResponse, RoomData } from '@/lib/roomTypes';
 import { isRateLimited } from '@/lib/security/rateLimiter';
+
+export async function GET(_req: NextRequest): Promise<NextResponse> {
+  try {
+    if (process.env.NEXT_PUBLIC_IS_ROOM_ENABLED !== 'true') {
+      return NextResponse.json(
+        { success: false, error: 'Room system is disabled', code: 'DISABLED' },
+        { status: 503 },
+      );
+    }
+    const count = await getActiveRoomCount();
+    return NextResponse.json({ success: true, count }, { status: 200 });
+  } catch {
+    return NextResponse.json(
+      { success: false, error: 'Internal server error', code: 'INTERNAL_ERROR' },
+      { status: 500 },
+    );
+  }
+}
 
 export async function POST(req: NextRequest): Promise<NextResponse<RoomApiResponse<RoomData>>> {
   try {

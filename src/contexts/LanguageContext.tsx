@@ -700,6 +700,7 @@ export interface Translations {
   roomClose: string;
   roomExit: string;
   roomCode: string;
+  activeRoomsCount: string;
   roomStudents: string;
   roomConnError: string;
   roomWaiting: string;
@@ -1428,6 +1429,7 @@ const translations: Record<Language, Translations> = {
     roomClose: 'Odayı Kapat',
     roomExit: 'Çıkış',
     roomCode: 'Oda Kodu',
+    activeRoomsCount: 'Aktif Oda Sayısı',
     roomStudents: 'öğrenci',
     roomConnError: 'Bağlantı hatası',
     roomWaiting: 'Bekliyor...',
@@ -2153,6 +2155,7 @@ const translations: Record<Language, Translations> = {
     roomClose: 'Close ',
     roomExit: 'Exit',
     roomCode: 'Room Code',
+    activeRoomsCount: 'Active Rooms',
     roomStudents: 'students',
     roomConnError: 'Connection error',
     roomWaiting: 'Waiting...',

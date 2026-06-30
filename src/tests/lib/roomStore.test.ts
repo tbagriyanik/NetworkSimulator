@@ -11,6 +11,7 @@ const mockRedis = vi.hoisted(() => {
     hgetall: vi.fn(),
     expire: vi.fn(),
     exists: vi.fn(),
+    keys: vi.fn(),
   };
 });
 
@@ -244,6 +245,27 @@ describe('roomStore', () => {
       const result = await checkRoomExists('NONEXISTENT');
 
       expect(result).toBe(false);
+    });
+  });
+
+  describe('getActiveRoomCount', () => {
+    it('should return count of rooms matching pattern', async () => {
+      mockRedis.keys.mockResolvedValue(['room:ABC12:meta', 'room:DEF34:meta']);
+
+      const { getActiveRoomCount } = await import('@/lib/roomStore');
+      const result = await getActiveRoomCount();
+
+      expect(mockRedis.keys).toHaveBeenCalledWith('room:*:meta');
+      expect(result).toBe(2);
+    });
+
+    it('should return 0 when error occurs', async () => {
+      mockRedis.keys.mockRejectedValue(new Error('Redis error'));
+
+      const { getActiveRoomCount } = await import('@/lib/roomStore');
+      const result = await getActiveRoomCount();
+
+      expect(result).toBe(0);
     });
   });
 });

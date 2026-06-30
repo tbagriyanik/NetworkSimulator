@@ -90,3 +90,15 @@ export async function checkRoomExists(code: string): Promise<boolean> {
   const exists = await redis.exists(metaKey);
   return exists === 1;
 }
+
+export async function getActiveRoomCount(): Promise<number> {
+  if (!redis) return 0;
+  try {
+    const keys = await redis.keys('room:*:meta');
+    return keys?.length ?? 0;
+  } catch (e) {
+    console.error('Error getting active room count:', e);
+    return 0;
+  }
+}
+
