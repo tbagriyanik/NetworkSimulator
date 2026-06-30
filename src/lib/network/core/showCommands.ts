@@ -610,7 +610,7 @@ function cmdShowInterfaces(
     output += `  input flow-control is off, output flow-control is unsupported\n`;
     output += `  ARP type: ARPA, ARP Timeout ${port.arpTimeout || '04:00:00'}\n`;
 
-    // Last input/output times - IOS uses elapsed HH:MM:SS format, not locale time
+    // Last input/output times - nOS uses elapsed HH:MM:SS format, not locale time
     const fmtElapsed = (ts: number | undefined): string => {
       if (!ts) return 'never';
       const elapsed = Math.floor((Date.now() - ts) / 1000);
@@ -1112,10 +1112,10 @@ function cmdShowVlan(
   });
 
 
-  // IOS only shows VLANs defined in state.vlans - ports assigned to undefined VLANs
+  // nOS only shows VLANs defined in state.vlans - ports assigned to undefined VLANs
   // are NOT shown as separate entries (no phantom VLANs)
 
-  // Only show SAID/MTU table in full mode (not brief), matching real IOS behavior
+  // Only show SAID/MTU table in full mode (not brief), matching real nOS behavior
   if (!isBrief) {
     output += '\nVLAN Type  SAID       MTU   Parent RingNo BridgeNo Stp  BrdgMode Trans1 Trans2\n';
     output += '---- ----- ---------- ----- ------ ------ -------- ---- -------- ------ ------\n';
@@ -1149,7 +1149,7 @@ function cmdShowMacAddressTable(
   const connections = ctx.connections || [];
   const sourceDeviceId = ctx.sourceDeviceId as string;
 
-  // CPU static MAC addresses (multicast MACs - always present in IOS)
+  // CPU static MAC addresses (multicast MACs)
   const cpuMacs: { vlan: number | string; mac: string; port: string; type: string }[] = [
     { vlan: 'All', mac: '0100.0ccc.cccc', port: 'CPU', type: 'STATIC' },
     { vlan: 'All', mac: '0100.0ccc.cccd', port: 'CPU', type: 'STATIC' },
@@ -1230,7 +1230,7 @@ function cmdShowMacAddressTable(
     });
   }
 
-  // If no MAC addresses found, show nothing (matching real IOS behavior)
+  // If no MAC addresses found, show nothing (matching real behavior)
 
   output += '\nTotal Mac Addresses for this criterion: ' + uniqueMacTable.length + '\n';
   output += '!\n';
@@ -2394,7 +2394,7 @@ function cmdShowSpanningTree(
         const portVlan = port.vlan || port.accessVlan || 1;
         return isTrunk || String(portVlan) === String(vlanId);
       })
-      // IOS shows shutdown ports in STP output as DIS (disabled). Include them.
+      // shows shutdown ports in STP output as DIS (disabled). Include them.
       .filter(([_, port]: [string, Port]) => (port.status === 'connected' || port.status === 'blocked' || port.shutdown))
       .sort(([a], [b]) => getPortNumber(a) - getPortNumber(b));
 
@@ -2496,7 +2496,7 @@ function cmdShowSpanningTree(
 
     portEntries.forEach(([portName, port]) => {
       const portNum = getPortNumber(portName);
-      // Shutdown (admin down) ports appear in STP as Desg/DIS per IOS behavior
+      // Shutdown (admin down) ports appear in STP as Desg/DIS per behavior
       const isAdminDown = port.shutdown === true;
       const stpInfo = isAdminDown
         ? { role: 'Desg', state: 'DIS' }

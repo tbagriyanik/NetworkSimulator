@@ -205,7 +205,7 @@ function cmdPing(state: SwitchState, input: string, ctx: CommandContext): Comman
             }
 
             const fmtMs = (ms: number) => ms <= 1 ? '<1' : String(ms);
-            // Build per-packet symbols: real IOS shows '!' per success, '.' per timeout, 'U' per unreachable
+            // Build per-packet symbols: real nOS shows '!' per success, '.' per timeout, 'U' per unreachable
             const n = parseInt(count, 10) || 5;
             let packetLine = '';
             let successes = 0;
@@ -579,7 +579,7 @@ function cmdDebug(state: SwitchState, input: string, _ctx: CommandContext): Comm
 
     let output = `${debugType} debugging is on\n`;
 
-    // Realistic IOS debug output for common debug types
+    // Realistic debug output for common debug types
     const lower = debugType.toLowerCase();
     if (lower === 'ip routing' || lower === 'ip routing table') {
         output += `\nRT: adding route 0.0.0.0/0 via ${state.ip || '192.168.1.1'}, ${Object.keys(state.ports || {}).find(p => state.ports?.[p]?.ipAddress) || 'gi0/0'}\n`;
@@ -774,7 +774,7 @@ function cmdTraceroute(state: SwitchState, input: string, ctx: CommandContext): 
             }
 
             let output = `\nType escape sequence to abort.\nTracing the route to ${host} (${resolvedIp})\n`;
-            // Show unresponsive hops like real IOS
+            // Show unresponsive hops like real nOS
             for (let i = 1; i <= 3; i++) {
                 output += `  ${i}  * * *\n`;
             }

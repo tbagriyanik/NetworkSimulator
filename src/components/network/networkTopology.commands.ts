@@ -61,7 +61,7 @@ export function getCommandCategories(isTR: boolean): CommandDefinition[] {
         ['copy running-config tftp:', isTR ? 'TFTP\'ye yapılandırma gönder' : 'Copy config to TFTP', '#'],
         ['copy tftp: running-config', isTR ? 'TFTP\'den yapılandırma al' : 'Restore config from TFTP', '#'],
         ['copy startup-config running-config', isTR ? 'Startup config\'u çalıştır' : 'Merge startup to running', '#'],
-        ['copy tftp: flash:', isTR ? 'TFTP\'den IOS yükle' : 'Copy IOS from TFTP', '#'],
+        ['copy tftp: flash:', isTR ? 'TFTP\'den nOS yükle' : 'Copy nOS from TFTP', '#'],
         ['clear line <n>', isTR ? 'Hattı sıfırla' : 'Clear line', '#'],
         ['clear interface <type/n>', isTR ? 'Arayüz sayaçlarını sıfırla' : 'Clear interface counters', '#'],
         ['terminal monitor', isTR ? 'Log mesajlarını görüntüle' : 'Monitor log messages', '#'],

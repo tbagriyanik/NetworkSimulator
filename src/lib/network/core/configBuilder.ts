@@ -66,7 +66,7 @@ export function buildRunningConfig(state: SwitchState): string[] {
     }
 
     state.security.users.forEach(user => {
-        // IOS ALWAYSS uses 'secret 5' for passwords created with 'secret' keyword.
+        // ALWAYS uses 'secret 5' for passwords created with 'secret' keyword.
         lines.push(`username ${user.username} privilege ${user.privilege} secret 5 ${encryptMd5Password(user.password)}`);
     });
     if (state.security.users.length > 0) {

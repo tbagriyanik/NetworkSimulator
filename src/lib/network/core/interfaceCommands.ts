@@ -2342,7 +2342,7 @@ function cmdClockRate(state: SwitchState, input: string, _ctx: CommandContext): 
   const port = state.ports[state.currentInterface];
   if (port?.type !== 'serial') return { success: false, error: '% Clock rate is only supported on serial interfaces' };
   const rate = parseInt(match[1]);
-  // IOS 15.x valid clock rates (2000000 is valid per IOS reference)
+  // 15.x valid clock rates (2000000 is valid per reference)
   const validRates = [1200, 2400, 4800, 9600, 19200, 38400, 56000, 64000, 72000, 125000, 148000, 256000, 500000, 512000, 2000000, 4000000, 8000000];
   if (!validRates.includes(rate)) {
     return { success: false, error: `% Invalid input detected at '^' marker.` };

@@ -152,7 +152,7 @@ function cmdHostname(state: SwitchState, input: string, _ctx: CommandContext): C
   }
 
   const hostname = match[1].trim();
-  // IOS hostname: max 63 chars, must start with a letter, alphanumeric + hyphens only
+  // hostname: max 63 chars, must start with a letter, alphanumeric + hyphens only
   if (hostname.length > 63 || !/^[a-zA-Z][a-zA-Z0-9-]*$/.test(hostname)) {
     return { success: false, error: "% Invalid input detected at '^' marker." };
   }
@@ -744,7 +744,7 @@ function cmdVtpMode(state: SwitchState, input: string, _ctx: CommandContext): Co
     return { success: false, error: iosModeError() };
   }
 
-  // IOS valid VTP modes: server, client, transparent (NOT 'off')
+  // valid VTP modes: server, client, transparent (NOT 'off')
   const match = input.match(/^vtp\s+mode\s+(server|client|transparent)$/i);
   if (!match) {
     return { success: false, error: "% Invalid input detected at '^' marker." };
@@ -1363,7 +1363,7 @@ function cmdNoSpanningTree(state: SwitchState, input: string, ctx: CommandContex
     };
   }
 
-  // Global spanning-tree disable - not supported on IOS (only per-VLAN)
+  // Global spanning-tree disable - not supported (only per-VLAN)
   return {
     success: false,
     error: '% Command not available in Global Configuration mode.'
@@ -1949,7 +1949,7 @@ function cmdCryptoKeyGenerateRsa(state: SwitchState, input: string, _ctx: Comman
   const match = input.match(/^crypto\s+key\s+generate\s+rsa(?:\s+modulus\s+(\d+))?$/i);
   const modulus = match?.[1] ? parseInt(match[1], 10) : 1024;
 
-  // Validate modulus range (IOS allows 360-4096, default 512)
+  // Validate modulus range (allows 360-4096, default 512)
   const validModulus = modulus >= 360 && modulus <= 4096 ? modulus : 1024;
 
   const hostPart = state.hostname || 'Switch';
