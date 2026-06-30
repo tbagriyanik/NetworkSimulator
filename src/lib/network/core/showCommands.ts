@@ -185,7 +185,7 @@ function getSwitchDisplayProfile(state: SwitchState) {
       isL3: true,
       isRouter: true,
       bootImage: 'router-software.bin',
-      softwareImage: 'Network Simulator nOS Software, Version 1.0',
+      softwareImage: 'Network Simulator nOS Software, Version 1.9.3',
       rom: 'Router boot loader',
       bootldr: 'Router Boot Loader',
       systemImage: 'flash:router-software.bin',
@@ -1650,12 +1650,12 @@ function cmdShowClock(
           if (toff !== undefined) {
             const now = new Date();
             const adj = new Date(now.getTime() + toff);
-            return { success: true, output: `\n*${adj.toTimeString().slice(0, 8)}.000 UTC ${days[adj.getDay()]} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][adj.getMonth()]} ${adj.getDate()} ${adj.getFullYear()}\n` };
+            return { success: true, output: `\n*${adj.toTimeString().slice(0, 8)}.000 UTC ${days[adj.getDay()]} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][adj.getMonth()]} ${adj.getDate()} ${adj.getFullYear()}\n` };
           }
         }
         // reachable but no time data — return real time as synced
         const now = new Date();
-        return { success: true, output: `\n*${now.toTimeString().slice(0, 8)}.000 UTC ${days[now.getDay()]} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][now.getMonth()]} ${now.getDate()} ${now.getFullYear()}\n` };
+        return { success: true, output: `\n*${now.toTimeString().slice(0, 8)}.000 UTC ${days[now.getDay()]} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.getMonth()]} ${now.getDate()} ${now.getFullYear()}\n` };
       }
     }
 
@@ -1674,7 +1674,7 @@ function cmdShowClock(
             if (toff !== undefined) {
               const now = new Date();
               const adj = new Date(now.getTime() + toff);
-              return { success: true, output: `\n*${adj.toTimeString().slice(0, 8)}.000 UTC ${days[adj.getDay()]} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][adj.getMonth()]} ${adj.getDate()} ${adj.getFullYear()}\n` };
+              return { success: true, output: `\n*${adj.toTimeString().slice(0, 8)}.000 UTC ${days[adj.getDay()]} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][adj.getMonth()]} ${adj.getDate()} ${adj.getFullYear()}\n` };
             }
           }
         }
@@ -1689,7 +1689,7 @@ function cmdShowClock(
     if (localNtp.timeOffset !== undefined) {
       const now = new Date();
       const adj = new Date(now.getTime() + localNtp.timeOffset);
-      return { success: true, output: `\n*${adj.toTimeString().slice(0, 8)}.000 UTC ${days[adj.getDay()]} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][adj.getMonth()]} ${adj.getDate()} ${adj.getFullYear()}\n` };
+      return { success: true, output: `\n*${adj.toTimeString().slice(0, 8)}.000 UTC ${days[adj.getDay()]} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][adj.getMonth()]} ${adj.getDate()} ${adj.getFullYear()}\n` };
     }
   }
 
@@ -1697,13 +1697,13 @@ function cmdShowClock(
   if (state.systemClock) {
     const { time, day, month, year } = state.systemClock as { time: string; day: string; month: string; year: string };
     const monthIndex = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].indexOf(month) + 1;
-    const dayName = days[new Date(`${year}-${String(monthIndex).padStart(2,'0')}-${String(day).padStart(2,'0')}`).getDay()];
+    const dayName = days[new Date(`${year}-${String(monthIndex).padStart(2, '0')}-${String(day).padStart(2, '0')}`).getDay()];
     return { success: true, output: `\n*${time}.000 UTC ${dayName} ${month} ${parseInt(day)} ${year}\n` };
   }
 
   // Final fallback: real time
   const now = new Date();
-  return { success: true, output: `\n*${now.toTimeString().split(' ')[0]}.000 UTC ${days[now.getDay()]} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][now.getMonth()]} ${now.getDate()} ${now.getFullYear()}\n` };
+  return { success: true, output: `\n*${now.toTimeString().split(' ')[0]}.000 UTC ${days[now.getDay()]} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.getMonth()]} ${now.getDate()} ${now.getFullYear()}\n` };
 }
 
 
@@ -2221,9 +2221,9 @@ export function calculatePVST(
             'Backup': 'backup',
             'Dis': 'disabled'
           };
-          
+
           const portStpRole = roleMap[stpInfo.role] || 'designated';
-          
+
           port.spanningTree.instances[vlanId] = {
             role: portStpRole,
             state: portStpState
@@ -3457,28 +3457,28 @@ function cmdShowAccessLists(state: SwitchState, input: string, _ctx: CommandCont
   let output = '\n';
 
   if (hasClassicAcls) {
-      Object.entries(state.accessLists || {}).forEach(([aclId, rules]: [string, string[]]) => {
-        if (filterAcl && aclId !== filterAcl) return;
+    Object.entries(state.accessLists || {}).forEach(([aclId, rules]: [string, string[]]) => {
+      if (filterAcl && aclId !== filterAcl) return;
 
-        const isNamed = isNaN(Number(aclId));
-        const aclType = isNamed ? (state.namedAclTypes?.[aclId] || 'standard') : (parseInt(aclId) >= 100 ? 'extended' : 'standard');
-        output += `${aclType === 'extended' ? 'Extended' : 'Standard'} IP access list ${aclId}\n`;
-        rules.forEach((rule: string, ruleIndex: number) => {
-          // Parse rule format: "seq permit|deny <conditions>"
-          const seqMatch = rule.match(/^(\d+)\s+(.+)$/);
-          let seq: string;
-          let ruleText: string;
-          if (seqMatch) {
-            seq = seqMatch[1];
-            ruleText = seqMatch[2];
-          } else {
-            seq = String((ruleIndex + 1) * 10);
-            ruleText = rule;
-          }
-          const matches = state.aclMatchCounters?.[aclId]?.[ruleIndex] || 0;
-          output += `    ${seq.padEnd(5)} ${ruleText} (${matches} ${matches === 1 ? 'match' : 'matches'})\n`;
-        });
+      const isNamed = isNaN(Number(aclId));
+      const aclType = isNamed ? (state.namedAclTypes?.[aclId] || 'standard') : (parseInt(aclId) >= 100 ? 'extended' : 'standard');
+      output += `${aclType === 'extended' ? 'Extended' : 'Standard'} IP access list ${aclId}\n`;
+      rules.forEach((rule: string, ruleIndex: number) => {
+        // Parse rule format: "seq permit|deny <conditions>"
+        const seqMatch = rule.match(/^(\d+)\s+(.+)$/);
+        let seq: string;
+        let ruleText: string;
+        if (seqMatch) {
+          seq = seqMatch[1];
+          ruleText = seqMatch[2];
+        } else {
+          seq = String((ruleIndex + 1) * 10);
+          ruleText = rule;
+        }
+        const matches = state.aclMatchCounters?.[aclId]?.[ruleIndex] || 0;
+        output += `    ${seq.padEnd(5)} ${ruleText} (${matches} ${matches === 1 ? 'match' : 'matches'})\n`;
       });
+    });
   }
 
   if (hasFirewallAcls) {
@@ -4099,10 +4099,10 @@ function cmdShowControllers(state: SwitchState, input: string, ctx: CommandConte
   const sourceDeviceId = ctx.sourceDeviceId;
   const conn = sourceDeviceId
     ? connections.find(c =>
-        c.active !== false &&
-        ((c.sourceDeviceId === sourceDeviceId && c.sourcePort === normalized) ||
-         (c.targetDeviceId === sourceDeviceId && c.targetPort === normalized))
-      )
+      c.active !== false &&
+      ((c.sourceDeviceId === sourceDeviceId && c.sourcePort === normalized) ||
+        (c.targetDeviceId === sourceDeviceId && c.targetPort === normalized))
+    )
     : undefined;
 
   if (!conn) {
@@ -4348,7 +4348,7 @@ function cmdShowQueuingInterface(state: SwitchState, input: string, _ctx: Comman
  */
 function cmdShowNameif(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   let output = '\nInterface                Name                    Security Level\n';
-  output +=    '----------------        --------------------    ---------------\n';
+  output += '----------------        --------------------    ---------------\n';
   Object.keys(state.ports || {}).forEach(portName => {
     const port = (state.ports || {})[portName];
     const name = port.nameif || 'not set';
@@ -4364,7 +4364,7 @@ function cmdShowNameif(state: SwitchState, _input: string, _ctx: CommandContext)
  */
 function cmdShowIpAccessGroup(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   let output = '\nInterface                Applied ACL           Direction\n';
-  output +=    '----------------        --------------------    ---------\n';
+  output += '----------------        --------------------    ---------\n';
   Object.keys(state.ports || {}).forEach(portName => {
     const port = (state.ports || {})[portName];
     if (port.accessGroupIn) {
@@ -4388,7 +4388,7 @@ function cmdShowDot11Associations(state: SwitchState, _input: string, _ctx: Comm
     return { success: true, output: '\n% No wireless clients associated\n' };
   }
   let output = '\nInterface    SSID                         MAC Address        Status\n';
-  output +=    '--------     ----                         ------------       ------\n';
+  output += '--------     ----                         ------------       ------\n';
   clients.forEach((c: { iface?: string; ssid?: string; mac?: string; status?: string }) => {
     const iface = c.iface || 'Dot11Radio0';
     const ssid = c.ssid || '-';

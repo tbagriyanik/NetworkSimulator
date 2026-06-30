@@ -17,7 +17,7 @@
 ![Version](https://img.shields.io/badge/version-1.9.3-blue)
 ![Stack](https://img.shields.io/badge/stack-Next.js%2016.2%20|%20React%2019%20|%20TypeScript%206.0%20|%20Tailwind%204-green)
 ![FOSS](https://img.shields.io/badge/FOSS-Free%20Open%20Source-brightgreen)
-![Total Lines](https://img.shields.io/badge/total--lines-81,523-lightgrey)
+![Total Lines](https://img.shields.io/badge/total--lines-100,327-lightgrey)
 
 A browser-based network simulator for learning switching, routing, wireless, IoT, CLI, and exam workflows.
 
@@ -153,28 +153,33 @@ npm install && npm run dev
 
 | Metric / Metrik | Value / Değer |
 | --- | ---: |
-| Total Lines / Toplam Satır | 81,523 |
-| Source Files / Kaynak Dosya | 172 |
-| Documentation Files / Dokümantasyon Dosya | 13 |
+| Total Lines / Toplam Satır | 100,327 |
+| Source Files / Kaynak Dosya | 220 |
+| Documentation Files / Dokümantasyon Dosya | 16 |
 | Example Projects / Örnek Proje | 40 |
 | Guided Lessons / Rehberli Ders | 12 |
-| Exams / Sınav | 6 |
-| CLI Commands / CLI Komutları | 280+ |
+| Exams / Sınav | 7 |
+| CLI Commands / CLI Komutları | 450+ |
 
 ## Documentation / Dokümantasyon
 
 | Document / Doküman | Description / Açıklama |
 | --- | --- |
-| [examples.md](examples.md) | Example projects with step-by-step guides / Adım adım örnek projeler |
+| [details.md](doc/details.md) | Projects details / Proje detayları |
+| [examples.md](doc/examples.md) | Example projects with step-by-step guides / Adım adım örnek projeler |
 | [INSTALL.md](INSTALL.md) | Installation & build instructions / Kurulum & derleme talimatları |
 | [doc/USAGE.md](doc/USAGE.md) | Usage guide & keyboard shortcuts (TR/EN) / Kullanım kılavuzu & klavye kısayolları |
-| [doc/CLI_GUIDED_TUTORIAL.md](doc/CLI_GUIDED_TUTORIAL.md) | 30-lesson CLI guided tutorial (incl. ACL) / 30 dersten oluşan pratik CLI rehberli eğitim (ACL dahil) |
-| [doc/CLI_COMMANDS.md](doc/CLI_COMMANDS.md) | CLI commands reference / CLI komut referansı |
+| [doc/CLI_GUIDED_TUTORIAL.md](doc/CLI_GUIDED_TUTORIAL.md) | 30-lesson CLI guided tutorial (incl. ACL, NAT, OSPF, EIGRP) / 30 derslik CLI rehberli eğitim |
+| [doc/CLI_COMMANDS.md](doc/CLI_COMMANDS.md) | 450+ CLI commands reference / 450+ CLI komut referansı |
 | [doc/QUICK_REFERENCE.md](doc/QUICK_REFERENCE.md) | Quick reference & code snippets / Hızlı referans & kod parçacıkları |
 | [doc/WIRELESS_CONFIGURATION_GUIDE.md](doc/WIRELESS_CONFIGURATION_GUIDE.md) | Wireless network configuration / Kablosuz ağ yapılandırma |
 | [doc/L3_SWITCH_CONFIGURATION.md](doc/L3_SWITCH_CONFIGURATION.md) | Layer 3 switching guide / L3 anahtarlama rehberi |
 | [doc/GOOGLE_SHEETS_SETUP.md](doc/GOOGLE_SHEETS_SETUP.md) | Google Sheets integration / Google Sheets entegrasyonu |
+| [doc/ROOM_TRACKING_SETUP.md](doc/ROOM_TRACKING_SETUP.md) | Room tracking system setup / Oda takip sistemi kurulumu |
 | [doc/DOCUMENTATION_INDEX.md](doc/DOCUMENTATION_INDEX.md) | Documentation index & reading map / Dokümantasyon indeksi & okuma haritası |
+| [doc/SERVICE_FEATURES.md](doc/SERVICE_FEATURES.md) | PC service features (FTP, Mail, NTP, DNS, HTTP, DHCP) / PC servis özellikleri |
+| [doc/ERROR_HANDLING_GUIDE.md](doc/ERROR_HANDLING_GUIDE.md) | Error handling guide / Hata kontrol rehberi |
+| [doc/INTEGRATION_GUIDE.md](doc/INTEGRATION_GUIDE.md) | Integration guide / Entegrasyon rehberi |
 
 ## Architecture / Mimari
 

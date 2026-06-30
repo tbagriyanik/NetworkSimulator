@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   title: "Network Simulator",
   description: "Interactive Network NOS switch simulator for learning network configuration. Practice CLI commands, VLAN management, and security settings.",
   keywords: ["Network", "Switch", "Simulator", "NOS", "Network", "CLI", "VLAN", "Learning"],
-  authors: [{ name: "Network Simulator Team" }],
+  authors: [{ name: "Network Simulator" }],
   metadataBase: new URL(siteUrl),
   icons: {
     icon: "/favicon.svg",
