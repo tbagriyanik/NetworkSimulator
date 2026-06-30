@@ -4,7 +4,7 @@ import React, { useMemo, useEffect } from 'react';
 import { DragPosition as ModalPosition, DragSize as ModalSize } from '@/hooks/useDrag';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
+
 import {
     Terminal as TerminalIcon,
     Settings,

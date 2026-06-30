@@ -98,6 +98,10 @@ const DEVICE_ICONS: Record<DeviceType | 'switch', React.ReactNode> = {
 
 const isSwitchDeviceType = (type: DeviceType) => type === 'switchL2' || type === 'switchL3';
 
+const easeInOutCubic = (t: number): number => {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+};
+
 function getConnectionStatusMessage(conn: CanvasConnection, devices: CanvasDevice[], language: 'tr' | 'en'): string {
   const sourceDevice = devices.find(d => d.id === conn.sourceDeviceId);
   const targetDevice = devices.find(d => d.id === conn.targetDeviceId);
@@ -4313,10 +4317,7 @@ export function NetworkTopology({
       return Math.min(hopDuration * scaleFactor * speedFactor, 3000);
     };
 
-    // Smooth easing function for fluent animation
-    const easeInOutCubic = (t: number): number => {
-      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-    };
+
 
     const advanceToNextHop = (hopCountIncrement: number) => {
       if (currentHop < path.length - 1) {
@@ -8193,7 +8194,7 @@ const PacketCapturePanel = ({
         onDragStart={e => onDragStart(e, idx)}
         onDrop={e => onDrop(e, idx)}
         onDragOver={e => e.preventDefault()}
-        className="px-2 py-1 border-b dark:border-slate-700 cursor-grab active:cursor-grabbing hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors select-none"
+        className="px-2 py-1 border-b dark:border-slate-700 cursor-grab active:cursor-grabbing hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors select-none text-center"
       >
         {labelMap[col] || col}
       </th>
@@ -8227,9 +8228,9 @@ const PacketCapturePanel = ({
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); setActiveCaptureConnection(null); }}
-            className={`p-1 rounded hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors pointer-events-auto`}
+            className="w-5 h-5 rounded-md bg-red-500 hover:bg-red-600 text-white transition-colors inline-flex items-center justify-center pointer-events-auto"
           >
-            <X className="w-3.5 h-3.5 pointer-events-none" />
+            <X className="w-3 h-3 pointer-events-none" />
           </button>
         </div>
       </div>
@@ -8258,8 +8259,11 @@ const PacketCapturePanel = ({
                 <tr key={pkt.id} className={`border-b last:border-0 ${isDark ? 'border-slate-800 hover:bg-slate-800/50' : 'border-slate-50 hover:bg-slate-50'}`}>
                   {columnOrder.map(col => {
                     switch (col) {
-                      case 'time':
-                        return <td className="px-2 py-1 font-mono opacity-60" key="time">{(pkt.timestamp % 100000 / 1000).toFixed(3)}</td>;
+                      case 'time': {
+                        const date = new Date(pkt.timestamp);
+                        const timeStr = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
+                        return <td className="px-2 py-1 font-mono opacity-60 text-right" key="time">{timeStr}</td>;
+                      }
                       case 'source':
                         return <td className="px-2 py-1 font-mono" key="source">{pkt.sourceIp}</td>;
                       case 'dest':

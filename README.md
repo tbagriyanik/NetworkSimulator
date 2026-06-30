@@ -34,7 +34,7 @@ npm install && npm run dev
 | Document / Doküman | Description / Açıklama |
 | --- | --- |
 | [details.md](doc/details.md) | Projects details / Proje detayları |
-| [examples.md](examples.md) | Example projects with step-by-step guides / Adım adım örnek projeler |
+| [examples.md](doc/examples.md) | Example projects with step-by-step guides / Adım adım örnek projeler |
 | [INSTALL.md](INSTALL.md) | Installation & build instructions / Kurulum & derleme talimatları |
 | [doc/USAGE.md](doc/USAGE.md) | Usage guide & keyboard shortcuts (TR/EN) / Kullanım kılavuzu & klavye kısayolları |
 | [doc/CLI_GUIDED_TUTORIAL.md](doc/CLI_GUIDED_TUTORIAL.md) | 30-lesson CLI guided tutorial (incl. ACL, NAT, OSPF, EIGRP) / 30 derslik CLI rehberli eğitim |
