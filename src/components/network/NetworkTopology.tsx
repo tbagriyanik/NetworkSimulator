@@ -1797,6 +1797,10 @@ export function NetworkTopology({
           isTouchDraggingRef.current = true;
           setDeviceTooltip(null);
           setPortTooltip(null);
+          if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            setLongPressTimer(null);
+          }
         }
       }
 
@@ -2195,6 +2199,10 @@ export function NetworkTopology({
       const distance = getDistance(touchDragStartPos.x, touchDragStartPos.y, touch.clientX, touch.clientY);
       if (distance > DRAG_THRESHOLD) {
         setIsTouchDragging(true);
+        if (longPressTimer) {
+          clearTimeout(longPressTimer);
+          setLongPressTimer(null);
+        }
       }
     }
 
