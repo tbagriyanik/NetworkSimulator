@@ -5,6 +5,7 @@ import type { CanvasDevice } from '@/components/network/networkTopology.types';
 import type { SwitchState, CommandResult, Port } from '../types';
 import { clearArpCache } from '../arp';
 import { clearMacTable, clearDynamicMacEntries, clearStaticMacEntries } from '../macLearning';
+import { getL3Hops } from '../routing';
 
 // Privileged EXEC komutları (ping, telnet, write, copy, erase, reload, debug, vs.)
 
@@ -738,12 +739,21 @@ function cmdTraceroute(state: SwitchState, input: string, ctx: CommandContext): 
             let output = `\nType escape sequence to abort.\n`;
             output += `Tracing the route to ${host} (${resolvedIp})\n`;
 
-            // Use the hops from connectivity result
-            if (connectivity.hops && connectivity.hops.length > 0) {
-                for (let i = 0; i < connectivity.hops.length; i++) {
-                    const hop = connectivity.hops[i];
+            // Use the L3 routing hops
+            const l3Hops = getL3Hops(
+                ctx.sourceDeviceId,
+                resolvedIp,
+                ctx.devices,
+                ctx.connections || [],
+                ctx.deviceStates
+            );
+
+            if (l3Hops && l3Hops.length > 0) {
+                for (let i = 0; i < l3Hops.length; i++) {
+                    const hop = l3Hops[i];
                     const hopTime = Math.floor(Math.random() * 20) + 1; // 1-20ms
-                    output += `  ${i + 1} ${hop} ${hopTime} msec ${hopTime} msec ${hopTime} msec\n`;
+                    const namePart = hop.name === hop.ip ? hop.ip : `${hop.name} (${hop.ip})`;
+                    output += `  ${i + 1} ${namePart} ${hopTime} msec ${hopTime} msec ${hopTime} msec\n`;
                 }
             } else {
                 // Fallback hops

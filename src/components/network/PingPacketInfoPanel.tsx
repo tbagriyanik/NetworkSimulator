@@ -165,7 +165,7 @@ function getCableColor(cableType: string) {
     if (cableType === 'console') return cableColors.console.primary;
     if (cableType === 'serial') return cableColors.serial.primary;
     if (cableType === 'straight') return cableColors.straight.primary;
-    return '#94a3b8';
+    return 'var(--color-secondary-400)';
 }
 
 // Kablo tipine göre SVG simgesi döndürür
@@ -251,7 +251,7 @@ function FieldRow({ label, value, highlight = 'none', isDark, badge, badgeColor,
                     {badge && (
                         <span
                             className="px-1.5 py-0.5 rounded text-[10px] font-sans font-semibold"
-                            style={{ background: badgeColor || '#6b7280', color: 'white' }}
+                            style={{ background: badgeColor || 'var(--color-secondary-500)', color: 'white' }}
                         >
                             {badge}
                         </span>
@@ -314,7 +314,7 @@ function MobilePacketTables({ currentInfo, prevInfo, macChanged, ttlChanged, isD
                 <div className={`rounded-xl overflow-hidden border ${containerCls.emerald}`}
                     style={isGlass ? { backdropFilter: 'blur(12px) saturate(180%)' } : undefined}>
                     <table className="w-full"><tbody>
-                        <FieldRow label={t.srcMac} value={currentInfo.srcMac} prevValue={prevInfo?.srcMac} highlight={macChanged ? 'changed' : 'none'} isDark={isDark} badge={macChanged ? t.changed : undefined} badgeColor="#d97706" />
+                        <FieldRow label={t.srcMac} value={currentInfo.srcMac} prevValue={prevInfo?.srcMac} highlight={macChanged ? 'changed' : 'none'} isDark={isDark} badge={macChanged ? t.changed : undefined} badgeColor="var(--color-warning-600)" />
                         <FieldRow label={t.dstMac} value={currentInfo.dstMac} prevValue={prevInfo?.dstMac} highlight={macChanged ? 'changed' : 'none'} isDark={isDark} />
                         <FieldRow label={t.etherType} value={currentInfo.etherType} isDark={isDark} />
                     </tbody></table>
@@ -326,7 +326,7 @@ function MobilePacketTables({ currentInfo, prevInfo, macChanged, ttlChanged, isD
                     <table className="w-full"><tbody>
                         <FieldRow label={currentInfo.layer3 === 'IPv6' ? (t.srcIp.replace('IP', 'IPv6')) : t.srcIp} value={currentInfo.srcIp} highlight="same" isDark={isDark} />
                         <FieldRow label={currentInfo.layer3 === 'IPv6' ? (t.dstIp.replace('IP', 'IPv6')) : t.dstIp} value={currentInfo.dstIp} highlight="same" isDark={isDark} />
-                        <FieldRow label={currentInfo.layer3 === 'IPv6' ? 'Hop Limit' : t.ttl} value={String(currentInfo.ttl)} prevValue={prevInfo ? String(prevInfo.ttl) : undefined} highlight={ttlChanged ? 'changed' : 'none'} isDark={isDark} badge={ttlChanged ? t.ttlDec : undefined} badgeColor="#d97706" />
+                        <FieldRow label={currentInfo.layer3 === 'IPv6' ? 'Hop Limit' : t.ttl} value={String(currentInfo.ttl)} prevValue={prevInfo ? String(prevInfo.ttl) : undefined} highlight={ttlChanged ? 'changed' : 'none'} isDark={isDark} badge={ttlChanged ? t.ttlDec : undefined} badgeColor="var(--color-warning-600)" />
                         <FieldRow label={t.protocol} value={currentInfo.protocol} isDark={isDark} />
                     </tbody></table>
                 </div>
@@ -763,7 +763,7 @@ export function PingPacketInfoPanel({
                                         ? isDark ? 'bg-emerald-500/15 border-emerald-400/20 text-emerald-400' : 'bg-emerald-500/10 border-emerald-400/20 text-emerald-700'
                                         : isDark ? 'bg-emerald-950/60 border-emerald-900/60 text-emerald-400' : 'bg-emerald-100 border-emerald-200 text-emerald-700'}`}>{t.layer2}</div>
                                     <table className="w-full"><tbody>
-                                        <FieldRow label={t.srcMac} value={currentInfo.srcMac} prevValue={prevInfo?.srcMac} highlight={macChanged ? 'changed' : 'none'} isDark={isDark} badge={macChanged ? t.changed : undefined} badgeColor="#d97706" />
+                                        <FieldRow label={t.srcMac} value={currentInfo.srcMac} prevValue={prevInfo?.srcMac} highlight={macChanged ? 'changed' : 'none'} isDark={isDark} badge={macChanged ? t.changed : undefined} badgeColor="var(--color-warning-600)" />
                                         <FieldRow label={t.dstMac} value={currentInfo.dstMac} prevValue={prevInfo?.dstMac} highlight={macChanged ? 'changed' : 'none'} isDark={isDark} />
                                         <FieldRow label={t.etherType} value={currentInfo.etherType} isDark={isDark} />
                                     </tbody></table>
@@ -778,7 +778,7 @@ export function PingPacketInfoPanel({
                                     <table className="w-full"><tbody>
                                         <FieldRow label={currentInfo.layer3 === 'IPv6' ? (t.srcIp.replace('IP', 'IPv6')) : t.srcIp} value={currentInfo.srcIp} highlight="same" isDark={isDark} />
                                         <FieldRow label={currentInfo.layer3 === 'IPv6' ? (t.dstIp.replace('IP', 'IPv6')) : t.dstIp} value={currentInfo.dstIp} highlight="same" isDark={isDark} />
-                                        <FieldRow label={currentInfo.layer3 === 'IPv6' ? 'Hop Limit' : t.ttl} value={String(currentInfo.ttl)} prevValue={prevInfo ? String(prevInfo.ttl) : undefined} highlight={ttlChanged ? 'changed' : 'none'} isDark={isDark} badge={ttlChanged ? t.ttlDec : undefined} badgeColor="#d97706" />
+                                        <FieldRow label={currentInfo.layer3 === 'IPv6' ? 'Hop Limit' : t.ttl} value={String(currentInfo.ttl)} prevValue={prevInfo ? String(prevInfo.ttl) : undefined} highlight={ttlChanged ? 'changed' : 'none'} isDark={isDark} badge={ttlChanged ? t.ttlDec : undefined} badgeColor="var(--color-warning-600)" />
                                         <FieldRow label={t.protocol} value={currentInfo.protocol} isDark={isDark} />
                                     </tbody></table>
                                 </div>

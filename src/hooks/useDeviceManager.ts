@@ -11,6 +11,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 import { logger } from '@/lib/logger';
 
+import { runFhrpElection } from '@/lib/network/fhrp';
+
 const isSwitchDeviceType = (type?: DeviceType | string) => type === 'switchL2' || type === 'switchL3';
 const resolveSwitchBootType = (switchModel?: string): 'switchL2' | 'switchL3' =>
   switchModel === 'WS-C3650-24PS' ? 'switchL3' : 'switchL2';
@@ -28,7 +30,13 @@ export function useDeviceManager() {
   const { toast } = useToast();
   const { language } = useLanguage();
 
-  const [deviceStates, setDeviceStates] = useState<Map<string, SwitchState>>(new Map());
+  const [deviceStates, rawSetDeviceStates] = useState<Map<string, SwitchState>>(new Map());
+  const setDeviceStates = useCallback((updater: Map<string, SwitchState> | ((prev: Map<string, SwitchState>) => Map<string, SwitchState>)) => {
+    rawSetDeviceStates(prev => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      return runFhrpElection(next);
+    });
+  }, []);
   const deviceStatesRef = useRef<Map<string, SwitchState>>(deviceStates);
   useEffect(() => { deviceStatesRef.current = deviceStates; }, [deviceStates]);
 

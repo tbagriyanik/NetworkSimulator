@@ -27,8 +27,8 @@ export const SwitchIcon = ({ className = 'w-5 h-5' }: { className?: string; isL3
 
 /** WiFi signal strength meter (1-5 bars) */
 export const WifiSignalMeter = ({ strength }: { strength: number }) => {
-    const activeColor = '#22c55e';
-    const dimColor = '#94a3b8';
+    const activeColor = 'var(--color-success-500)';
+    const dimColor = 'var(--color-secondary-400)';
     const bar1Color = strength >= 1 ? activeColor : dimColor;
     const bar2Color = strength >= 2 ? activeColor : dimColor;
     const bar3Color = strength >= 3 ? activeColor : dimColor;
@@ -272,11 +272,11 @@ export const IoTSensorDisplay = ({
                 </div>
                 <div className="w-full overflow-hidden rounded relative" style={{ height: '100px' }}>
                     <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="w-full h-full overflow-visible">
-                        <line x1={margin.left} y1={margin.top} x2={width - margin.right} y2={margin.top} stroke={isDark ? '#334155' : '#cbd5e1'} strokeWidth="1" strokeDasharray="4 4" />
-                        <line x1={margin.left} y1={margin.top + gHeight / 2} x2={width - margin.right} y2={margin.top + gHeight / 2} stroke={isDark ? '#334155' : '#cbd5e1'} strokeWidth="1" strokeDasharray="4 4" />
-                        <line x1={margin.left} y1={margin.top + gHeight} x2={width - margin.right} y2={margin.top + gHeight} stroke={isDark ? '#334155' : '#cbd5e1'} strokeWidth="1" strokeDasharray="4 4" />
-                        <text x={0} y={margin.top + 3} fill={isDark ? '#64748b' : '#94a3b8'} fontSize="8" fontFamily="monospace">{max.toFixed(1)}</text>
-                        <text x={0} y={margin.top + gHeight + 3} fill={isDark ? '#64748b' : '#94a3b8'} fontSize="8" fontFamily="monospace">{min.toFixed(1)}</text>
+                        <line x1={margin.left} y1={margin.top} x2={width - margin.right} y2={margin.top} stroke={isDark ? 'var(--color-secondary-700)' : 'var(--color-secondary-300)'} strokeWidth="1" strokeDasharray="4 4" />
+                        <line x1={margin.left} y1={margin.top + gHeight / 2} x2={width - margin.right} y2={margin.top + gHeight / 2} stroke={isDark ? 'var(--color-secondary-700)' : 'var(--color-secondary-300)'} strokeWidth="1" strokeDasharray="4 4" />
+                        <line x1={margin.left} y1={margin.top + gHeight} x2={width - margin.right} y2={margin.top + gHeight} stroke={isDark ? 'var(--color-secondary-700)' : 'var(--color-secondary-300)'} strokeWidth="1" strokeDasharray="4 4" />
+                        <text x={0} y={margin.top + 3} fill={isDark ? 'var(--color-secondary-500)' : 'var(--color-secondary-400)'} fontSize="8" fontFamily="monospace">{max.toFixed(1)}</text>
+                        <text x={0} y={margin.top + gHeight + 3} fill={isDark ? 'var(--color-secondary-500)' : 'var(--color-secondary-400)'} fontSize="8" fontFamily="monospace">{min.toFixed(1)}</text>
                         <polyline
                             fill="none"
                             stroke="url(#lineGradHistory)"
@@ -286,8 +286,8 @@ export const IoTSensorDisplay = ({
                         />
                         <defs>
                             <linearGradient id="lineGradHistory" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.1" />
-                                <stop offset="100%" stopColor="#06b6d4" stopOpacity="1" />
+                                <stop offset="0%" stopColor="var(--color-accent-500)" stopOpacity="0.1" />
+                                <stop offset="100%" stopColor="var(--color-accent-500)" stopOpacity="1" />
                             </linearGradient>
                         </defs>
                     </svg>

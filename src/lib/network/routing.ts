@@ -677,3 +677,146 @@ function buildBasicRoutingTable(state: SwitchState): Route[] {
 
   return routes;
 }
+
+export interface L3Hop {
+  name: string;
+  ip: string;
+}
+
+export function getL3Hops(
+  sourceId: string,
+  targetIp: string,
+  devices: CanvasDevice[],
+  connections: CanvasConnection[],
+  deviceStates: Map<string, SwitchState>
+): L3Hop[] {
+  const hops: L3Hop[] = [];
+  const visited = new Set<string>();
+  
+  let currentId = sourceId;
+  const targetDevice = devices.find(d => d.ip === targetIp || d.ipv6 === targetIp);
+  if (!targetDevice) return [];
+
+  // Helper to find a device by IP address
+  const findDeviceByIp = (ip: string): CanvasDevice | undefined => {
+    // 1. Check direct device properties
+    const directMatch = devices.find(d => d.ip === ip || d.ipv6 === ip);
+    if (directMatch) return directMatch;
+    // 2. Check port configurations in deviceStates
+    for (const [devId, state] of deviceStates.entries()) {
+      for (const port of Object.values(state.ports || {})) {
+        if (port.ipAddress === ip || port.ipv6Address === ip) {
+          return devices.find(d => d.id === devId);
+        }
+      }
+    }
+    return undefined;
+  };
+
+  const isIpInSubnetLocal = (ip1: string, ip2: string, mask: string): boolean => {
+    try {
+      return getNetworkAddress(ip1, mask) === getNetworkAddress(ip2, mask);
+    } catch {
+      return false;
+    }
+  };
+
+  for (let step = 0; step < 30; step++) {
+    if (visited.has(currentId)) {
+      break;
+    }
+    visited.add(currentId);
+
+    if (currentId === targetDevice.id) {
+      break;
+    }
+
+    const currentDevice = devices.find(d => d.id === currentId);
+    if (!currentDevice) break;
+
+    const currentState = deviceStates.get(currentId);
+    
+    // Check if targetIp is directly connected
+    let targetIsDirectlyConnected = false;
+    if (currentState) {
+      for (const port of Object.values(currentState.ports || {})) {
+        if (port.ipAddress && port.subnetMask) {
+          if (isIpInSubnetLocal(port.ipAddress, targetIp, port.subnetMask)) {
+            targetIsDirectlyConnected = true;
+            break;
+          }
+        }
+        if (port.ipv6Address && port.ipv6Prefix) {
+          if (isIpv6InNetwork(targetIp, port.ipv6Address, port.ipv6Prefix)) {
+            targetIsDirectlyConnected = true;
+            break;
+          }
+        }
+      }
+    } else {
+      if (currentDevice.ip && currentDevice.subnet) {
+        if (isIpInSubnetLocal(currentDevice.ip, targetIp, currentDevice.subnet)) {
+          targetIsDirectlyConnected = true;
+        }
+      }
+    }
+
+    if (targetIsDirectlyConnected) {
+      hops.push({
+        name: targetDevice.name,
+        ip: targetIp
+      });
+      break;
+    }
+
+    // Not directly connected - Route it
+    let nextHopIp: string | undefined;
+
+    if (currentDevice.type === 'pc' || currentDevice.type === 'iot') {
+      nextHopIp = currentDevice.gateway;
+    } else {
+      if (currentState && currentState.ipRouting) {
+        const routingTable = getRoutingTable(currentId, deviceStates, devices, connections);
+        const route = findRoute(targetIp, routingTable);
+        if (route) {
+          if (route.type === 'connected') {
+            const portId = route.nextHop;
+            const conn = connections.find(c => 
+              (c.sourceDeviceId === currentId && c.sourcePort === portId) ||
+              (c.targetDeviceId === currentId && c.targetPort === portId)
+            );
+            if (conn) {
+              const peerId = conn.sourceDeviceId === currentId ? conn.targetDeviceId : conn.sourceDeviceId;
+              const peerDevice = devices.find(d => d.id === peerId);
+              if (peerDevice) {
+                nextHopIp = peerDevice.ip || peerDevice.ipv6;
+              }
+            }
+          } else {
+            nextHopIp = route.nextHop;
+          }
+        }
+      }
+    }
+
+    if (!nextHopIp) {
+      break;
+    }
+
+    const nextDevice = findDeviceByIp(nextHopIp);
+    if (!nextDevice) {
+      break;
+    }
+
+    if (nextDevice.id !== sourceId) {
+      hops.push({
+        name: nextDevice.name,
+        ip: nextHopIp
+      });
+    }
+
+    currentId = nextDevice.id;
+  }
+
+  return hops;
+}

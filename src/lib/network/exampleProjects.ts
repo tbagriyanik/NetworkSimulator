@@ -1613,7 +1613,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 40,
       width: 500,
       height: 360,
-      color: '#f97316',
+      color: 'var(--color-warning-400)',
       font: 'verdana',
       fontSize: 12,
       opacity: 0.75
@@ -1741,7 +1741,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 40,
       width: 500,
       height: 260,
-      color: '#f97316',
+      color: 'var(--color-warning-400)',
       font: 'verdana',
       fontSize: 12,
       opacity: 0.75

@@ -131,7 +131,7 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
                   x1="65" y1="50%"
                   x2={frame % 60 < 40 ? 65 + (frame % 60 - 20) * (windowWidth < 400 ? 5 : 8) : "255"}
                   y2="50%"
-                  stroke="#64748b"
+                  stroke="var(--color-secondary-500)"
                   strokeWidth="2"
                   strokeDasharray={frame % 60 < 40 ? "5,5" : "none"}
                 />

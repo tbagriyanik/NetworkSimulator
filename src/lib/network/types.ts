@@ -213,6 +213,7 @@ export interface Port {
   hsrp?: {
     groups?: Record<number, {
       virtualIp?: string;
+      ipv6VirtualIp?: string;
       priority?: number;
       preempt?: boolean;
       state?: 'Initial' | 'Listen' | 'Speak' | 'Standby' | 'Active';

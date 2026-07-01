@@ -44,3 +44,32 @@ export const getPortType = (portId: string): PortType => {
   if (lower.startsWith('s') && !lower.startsWith('service')) return 'serial';
   return 'unknown';
 };
+
+import { CanvasDevice, CanvasConnection } from './networkTopology.types';
+import { isCableCompatible, CABLE_COMPATIBILITY } from '@/lib/network/types';
+
+export function getConnectionStatusMessage(conn: CanvasConnection, devices: CanvasDevice[], language: 'tr' | 'en'): string {
+  const sourceDevice = devices.find(d => d.id === conn.sourceDeviceId);
+  const targetDevice = devices.find(d => d.id === conn.targetDeviceId);
+  if (!sourceDevice || !targetDevice) return language === 'tr' ? 'Cihaz bulunamadı' : 'Device not found';
+
+  const sourcePort = sourceDevice.ports.find(p => p.id === conn.sourcePort);
+  const targetPort = targetDevice.ports.find(p => p.id === conn.targetPort);
+
+  const cableInfo = { connected: true, cableType: conn.cableType, sourceDevice: sourceDevice.type, targetDevice: targetDevice.type, sourcePort: conn.sourcePort, targetPort: conn.targetPort } as import('@/lib/network/types').CableInfo;
+  const isCableOk = isCableCompatible(cableInfo);
+
+  if (!isCableOk) {
+    if (conn.cableType === 'wireless') return language === 'tr' ? 'Bağlantı sorunsuz' : 'Connection OK';
+    const normalize = (t: string) => t === 'switchL2' || t === 'switchL3' ? 'switch' : t === 'iot' ? 'pc' : t;
+    const key = `${normalize(sourceDevice.type)}-${normalize(targetDevice.type)}`;
+    if (!CABLE_COMPATIBILITY[key]) return language === 'tr' ? 'Bu cihaz çifti desteklenmiyor' : 'Device pair not supported';
+    return language === 'tr' ? 'Kablo türü bu cihazlar için uygun değil' : 'Cable type not suitable for these devices';
+  }
+
+  if (sourceDevice.status === 'offline' || targetDevice.status === 'offline') return language === 'tr' ? 'Cihaz kapalı' : 'Device is offline';
+  if (sourcePort?.shutdown || targetPort?.shutdown) return language === 'tr' ? 'Port kapalı (shutdown)' : 'Port is shutdown';
+  if (sourcePort?.spanningTree?.state === 'blocking' || targetPort?.spanningTree?.state === 'blocking') return language === 'tr' ? 'STP engelliyor (blocking)' : 'STP blocking';
+
+  return language === 'tr' ? 'Bağlantı sorunsuz' : 'Connection OK';
+}

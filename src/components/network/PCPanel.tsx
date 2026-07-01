@@ -28,6 +28,7 @@ import { WifiSignalMeter, IoTSensorDisplay } from './PCPanelWidgets';
 import { expandCommandContext, DESKTOP_COMMANDS } from './pcPanel.utils';
 import { errorHandler, STORAGE_ERRORS, DHCP_ERRORS, CLIPBOARD_ERRORS, DEVICE_ERRORS } from '@/lib/errors/errorHandler';
 import { logger } from '@/lib/logger';
+import { getL3Hops } from '@/lib/network/routing';
 import { FormInput } from '@/components/ui/FormInput';
 
 
@@ -2439,9 +2440,9 @@ export function PCPanel({
       setHttpAppContent(`
         <main style="padding:32px;font-family:system-ui,-apple-system,Segoe UI,sans-serif;text-align:center;">
           <div style="font-size:64px;margin-bottom:16px;">🛡️</div>
-          <h1 style="margin:0 0 8px;font-size:24px;color:#dc3545;">${language === 'tr' ? 'Erişim Engellendi' : 'Access Denied'}</h1>
-          <p style="margin:0 0 12px;font-size:16px;color:#666;">${connectivityResult.error}</p>
-          <code style="display:inline-block;padding:6px 10px;border-radius:8px;background:#f8d7da;color:#721c24;font-size:13px;">${displayUrl}</code>
+          <h1 style="margin:0 0 8px;font-size:24px;color:var(--color-error-500);">${language === 'tr' ? 'Erişim Engellendi' : 'Access Denied'}</h1>
+          <p style="margin:0 0 12px;font-size:16px;color:var(--color-muted-foreground);">${connectivityResult.error}</p>
+          <code style="display:inline-block;padding:6px 10px;border-radius:8px;background:var(--color-error-100);color:var(--color-error-800);font-size:13px;">${displayUrl}</code>
         </main>
       `);
       addLocalOutput('error', connectivityResult.error);
@@ -2458,7 +2459,7 @@ export function PCPanel({
         <main style="padding:32px;font-family:system-ui,-apple-system,Segoe UI,sans-serif;">
           <h1 style="margin:0 0 8px;font-size:28px;">404</h1>
           <p style="margin:0 0 12px;font-size:16px;">${language === 'tr' ? 'Sayfa bulunamadı' : 'Page not found'}</p>
-          <code style="display:inline-block;padding:6px 10px;border-radius:8px;background:#f1f5f9;color:#0f172a;">${displayUrl}</code>
+          <code style="display:inline-block;padding:6px 10px;border-radius:8px;background:var(--color-secondary-100);color:var(--color-secondary-900);">${displayUrl}</code>
         </main>
       `);
       addLocalOutput('error', `404 Not Found: ${target}`);
@@ -4133,16 +4134,17 @@ export function PCPanel({
           addLocalOutput('output', `Tracing route to ${target} over a maximum of 30 hops:\n`);
           const result = checkConnectivity(deviceId, resolvedTarget, topologyDevices, topologyConnections as unknown as CanvasConnection[], deviceStates || new Map(), language as 'tr' | 'en', { protocol: 'icmp' });
 
-          if (result.hops && result.hops.length > 0) {
-            let hopOutput = '';
-            result.hops.forEach((hop, index) => {
-              // Simulate some variation in hop display
-              const hopName = hop;
-              const hopDevice = topologyDevices.find(d => d.name === hop || d.id === hop);
-              const hopIp = hopDevice?.ipv6 || hopDevice?.ip || '?.?.?.?';
-              hopOutput += `  ${index + 1}    <1 ms    <1 ms    <1 ms  ${hopName} [${hopIp}]\n`;
-            });
-            await addMultilineOutput('output', hopOutput + '\nTrace complete.', 80);
+          if (result.success) {
+            const l3Hops = getL3Hops(deviceId, resolvedTarget, topologyDevices, topologyConnections as unknown as CanvasConnection[], deviceStates || new Map());
+            if (l3Hops && l3Hops.length > 0) {
+              let hopOutput = '';
+              l3Hops.forEach((hop, index) => {
+                hopOutput += `  ${index + 1}    <1 ms    <1 ms    <1 ms  ${hop.name} [${hop.ip}]\n`;
+              });
+              await addMultilineOutput('output', hopOutput + '\nTrace complete.', 80);
+            } else {
+              await addMultilineOutput('output', `  1    *        *        *     Request timed out.\n\nTrace complete.`, 80);
+            }
           } else {
             await addMultilineOutput('output', `  1    *        *        *     Request timed out.\n\nTrace complete.`, 80);
           }

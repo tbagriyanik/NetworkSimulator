@@ -87,7 +87,7 @@ export const TaskCard = React.memo(({ tasks, state, context, isDark }: TaskCardP
               key={i}
               className="absolute w-2 h-2 rounded-full particle-explosion"
               style={{
-                backgroundColor: ['#22d3ee', '#fbbf24', '#f87171', '#4ade80'][i % 4],
+                backgroundColor: ['var(--color-accent-400)', 'var(--color-warning-400)', 'var(--color-error-400)', 'var(--color-success-400)'][i % 4],
                 left: '50%',
                 top: '50%',
                 transform: 'translate(-50%, -50%)',
@@ -183,7 +183,7 @@ export const TaskCard = React.memo(({ tasks, state, context, isDark }: TaskCardP
                   const devState = context.deviceStates?.get('router');
                   const wlanState = devState?.ports['wlan0'];
 
-                  let wifiColor = '#94a3b8'; // Grey (Off)
+                  let wifiColor = 'var(--color-secondary-400)'; // Grey (Off)
 
                   // Check if WiFi is enabled
                   const isEnabled = wlanState ? (wlanState.wifi?.mode === 'ap' || wlanState.wifi?.mode === 'client') && !wlanState.shutdown : false;
@@ -196,7 +196,7 @@ export const TaskCard = React.memo(({ tasks, state, context, isDark }: TaskCardP
                       // Simple check: if SSID is set and not empty, consider it as having potential connections
                       isConnected = true;
                     }
-                    wifiColor = isConnected ? '#22c55e' : '#f59e0b'; // Green or Orange
+                    wifiColor = isConnected ? 'var(--color-success-500)' : 'var(--color-warning-500)'; // Green or Orange
                   }
 
                   return (

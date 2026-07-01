@@ -159,7 +159,7 @@ export const ConnectionLine = memo(function ConnectionLine({
       {/* Visual Connection line */}
       <path
         d={pathD}
-        stroke={isCompatible && connection.active !== false ? color : '#ef4444'}
+        stroke={isCompatible && connection.active !== false ? color : 'var(--color-error-500)'}
         strokeWidth={isHovered ? 6 : 3}
         fill="none"
         strokeDasharray={isCompatible && connection.active !== false ? 'none' : '6,3'}
@@ -233,7 +233,7 @@ export const ConnectionLine = memo(function ConnectionLine({
               x={srcLabel.x}
               y={srcLabel.y + labelOffsetY}
               fill="none"
-              stroke={isDark ? 'var(--color-secondary-900)' : '#ffffff'}
+              stroke={isDark ? 'var(--color-secondary-900)' : 'var(--color-background)'}
               strokeWidth="1"
               vectorEffect="non-scaling-stroke"
               strokeLinejoin="round"
@@ -261,7 +261,7 @@ export const ConnectionLine = memo(function ConnectionLine({
               x={tgtLabel.x}
               y={tgtLabel.y + labelOffsetY}
               fill="none"
-              stroke={isDark ? 'var(--color-secondary-900)' : '#ffffff'}
+              stroke={isDark ? 'var(--color-secondary-900)' : 'var(--color-background)'}
               strokeWidth="1"
               vectorEffect="non-scaling-stroke"
               strokeLinejoin="round"

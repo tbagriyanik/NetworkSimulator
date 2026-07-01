@@ -794,7 +794,7 @@ export const getExamProjects = (language: 'tr' | 'en'): ExamProject[] => {
               y: 80,
               width: 350,
               height: 150,
-              color: '#ef4444',
+              color: 'var(--color-error-500)',
               font: 'verdana',
               fontSize: 12,
               opacity: 0.75
@@ -902,7 +902,7 @@ export const getExamProjects = (language: 'tr' | 'en'): ExamProject[] => {
               y: 50,
               width: 400,
               height: 140,
-              color: '#ef4444',
+              color: 'var(--color-error-500)',
               font: 'verdana',
               fontSize: 12,
               opacity: 0.75
@@ -1180,7 +1180,7 @@ export const getExamProjects = (language: 'tr' | 'en'): ExamProject[] => {
               text: isTr
                 ? '🎓 KAPSAMLI FİNAL SINAVI\n\nBu sınavda tüm ağ becerilerinizi sergilemeniz beklenmektedir.\nKablolamadan ACL yapılandırmasına kadar tüm adımları tamamlayın.'
                 : '🎓 COMPREHENSIVE FINAL EXAM\n\nYou are expected to demonstrate all your networking skills in this exam.\nComplete all steps from cabling to ACL configuration.',
-              x: 50, y: 50, width: 400, height: 120, color: '#f59e0b', font: 'verdana', fontSize: 12, opacity: 0.75
+              x: 50, y: 50, width: 400, height: 120, color: 'var(--color-warning-500)', font: 'verdana', fontSize: 12, opacity: 0.75
             }
           ]
         },

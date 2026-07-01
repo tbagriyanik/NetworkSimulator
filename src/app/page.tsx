@@ -807,7 +807,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
         y: 150,
         width: 380,
         height: 320,
-        color: '#E0F2FE', // light blue note color for summary
+        color: 'var(--color-primary-100)', // light blue note color for summary
         opacity: 1,
         font: 'sans-serif',
         fontSize: 12,
@@ -4608,7 +4608,7 @@ ${state.bannerMOTD}
           ? 'Cihazları yapılandırmak için terminali kullanın.'
           : 'Use the terminal to configure devices.'),
         x: 100, y: 100, width: 350, height: 120,
-        color: '#fbbf24', font: 'monospace', fontSize: 16, opacity: 0.75
+        color: 'var(--color-warning-400)', font: 'monospace', fontSize: 16, opacity: 0.75
       } as unknown as CanvasNote];
 
     const templateData: Record<string, unknown> = {

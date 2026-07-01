@@ -387,7 +387,7 @@ export function NoteNode({
               }
             }}
             className="w-full h-full min-h-full px-2 py-1 bg-transparent outline-none resize-none overflow-y-auto overflow-x-hidden whitespace-pre-wrap break-words touch-manipulation custom-scrollbar font-medium"
-            style={{ fontSize: note.fontSize, lineHeight: 1.35, color: '#111827' }}
+            style={{ fontSize: note.fontSize, lineHeight: 1.35, color: 'var(--color-secondary-900)' }}
           />
         </div>
 

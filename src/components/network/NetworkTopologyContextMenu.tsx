@@ -166,19 +166,19 @@ export default function NetworkTopologyContextMenu({
           <div className="grid grid-cols-5 gap-1">
             {NOTE_COLORS.map((c) => {
               const gradientMap: Record<string, string> = {
-                '#3b82f6': 'linear-gradient(to bottom, #3b82f6, #1d4ed8)',
-                '#10b981': 'linear-gradient(to bottom, #10b981, #047857)',
-                '#8b5cf6': 'linear-gradient(to bottom, #8b5cf6, #6d28d9)',
-                '#f59e0b': 'linear-gradient(to bottom, #f59e0b, #b45309)',
-                '#ef4444': 'linear-gradient(to bottom, #ef4444, #b91c1c)',
-                '#06b6d4': 'linear-gradient(to bottom, #06b6d4, #0e7490)',
-                '#ec4899': 'linear-gradient(to bottom, #ec4899, #be185d)',
-                '#f97316': 'linear-gradient(to bottom, #f97316, #c2410c)',
-                '#84cc16': 'linear-gradient(to bottom, #84cc16, #4d7c0f)',
-                '#64748b': 'linear-gradient(to bottom, #64748b, #334155)',
-                '#a78bfa': 'linear-gradient(to bottom, #a78bfa, #7c3aed)',
-                '#60a5fa': 'linear-gradient(to bottom, #60a5fa, #2563eb)',
-                '#4ade80': 'linear-gradient(to bottom, #4ade80, #16a34a)',
+                'var(--color-primary-500)': 'linear-gradient(to bottom, var(--color-primary-500), var(--color-primary-700))',
+                'var(--color-success-500)': 'linear-gradient(to bottom, var(--color-success-500), var(--color-success-700))',
+                'var(--color-warning-600)': 'linear-gradient(to bottom, var(--color-warning-600), var(--color-warning-800))',
+                'var(--color-warning-400)': 'linear-gradient(to bottom, var(--color-warning-400), var(--color-warning-600))',
+                'var(--color-error-500)': 'linear-gradient(to bottom, var(--color-error-500), var(--color-error-700))',
+                'var(--color-accent-500)': 'linear-gradient(to bottom, var(--color-accent-500), var(--color-accent-700))',
+                'var(--color-accent-600)': 'linear-gradient(to bottom, var(--color-accent-600), var(--color-accent-800))',
+                'var(--color-secondary-500)': 'linear-gradient(to bottom, var(--color-secondary-500), var(--color-secondary-700))',
+                'var(--color-success-600)': 'linear-gradient(to bottom, var(--color-success-600), var(--color-success-800))',
+                'var(--color-secondary-400)': 'linear-gradient(to bottom, var(--color-secondary-400), var(--color-secondary-600))',
+                'var(--color-warning-700)': 'linear-gradient(to bottom, var(--color-warning-700), var(--color-warning-900))',
+                'var(--color-primary-400)': 'linear-gradient(to bottom, var(--color-primary-400), var(--color-primary-600))',
+                'var(--color-success-400)': 'linear-gradient(to bottom, var(--color-success-400), var(--color-success-600))',
               };
               return (
                 <button

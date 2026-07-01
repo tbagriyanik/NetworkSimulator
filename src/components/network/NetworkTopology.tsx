@@ -5,7 +5,7 @@ import React from 'react';
 import { flushSync } from 'react-dom';
 import dynamic from 'next/dynamic';
 import useAppStore, { useTopologyDevices, useTopologyConnections, useTopologyNotes, useGraphicsQuality, useIsSimulationMode } from '@/lib/store/appStore';
-import { CableType, isCableCompatible, CABLE_COMPATIBILITY } from '@/lib/network/types';
+import { CableType, isCableCompatible } from '@/lib/network/types';
 import { checkDeviceConnectivity, getPingDiagnostics, getWirelessSignalStrength, getWirelessDistance } from '@/lib/network/connectivity';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -24,11 +24,12 @@ import { ConnectionHandle } from './ConnectionHandle';
 import { DeviceNode } from './DeviceNode';
 import LazyNetworkTopologyContextMenu from './LazyNetworkTopologyContextMenu';
 import { LazyNetworkTopologyPortSelectorModal } from './LazyNetworkTopologyPortSelectorModal';
+import { PacketCapturePanel } from './PacketCapturePanel';
 import { useEnvironment } from '@/lib/store/appStore';
 import { Plus, Trash2, X, Cable, LineSquiggle, Plug, TrendingUpDown } from "lucide-react";
 
 import { areArraysEqual } from '@/lib/network/equality';
-import { getDeviceWidth, getDeviceHeight } from './networkTopology.helpers';
+import { getDeviceWidth, getDeviceHeight, getConnectionStatusMessage } from './networkTopology.helpers';
 import { CABLE_COLORS, DRAG_THRESHOLD, LONG_PRESS_DURATION, TOOLTIP_DELAY, TOOLTIP_OFFSET_Y, VIRTUAL_CANVAS_WIDTH_MOBILE, VIRTUAL_CANVAS_HEIGHT_MOBILE, VIRTUAL_CANVAS_WIDTH_DESKTOP, VIRTUAL_CANVAS_HEIGHT_DESKTOP, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, NOTE_COLORS, NOTE_FONTS_DESKTOP as NOTE_FONTS, NOTE_FONT_SIZES, NOTE_OPACITY as NOTE_OPACITY_OPTIONS, PC_PORT_SPACING, PORT_SPACING, PORT_START_X, PORT_START_Y, PORT_COLORS, STATUS_COLORS, MOMENTUM_THRESHOLD, MOMENTUM_DECAY, MOMENTUM_MIN_SPEED, SELECTION_HIGHLIGHT_COLOR } from './networkTopology.constants';
 import { errorHandler, CLIPBOARD_ERRORS } from '@/lib/errors/errorHandler';
 import { buildHopPacketInfos } from './PingPacketInfoPanel';
@@ -52,7 +53,7 @@ const DEVICE_ICONS: Record<DeviceType | 'switch', React.ReactNode> = {
     </svg>
   ),
   iot: (
-    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: '#d35400' }} viewBox="0 -2 27 27">
+    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-secondary-500)' }} viewBox="0 -2 27 27">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16.247 7.761a6 6 0 0 1 0 8.478" />
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.075 4.933a10 10 0 0 1 0 14.134" />
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.925 19.067a10 10 0 0 1 0-14.134" />
@@ -66,29 +67,29 @@ const DEVICE_ICONS: Record<DeviceType | 'switch', React.ReactNode> = {
     </svg>
   ),
   switchL2: (
-    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: '#28a745' }} viewBox="0 0 24 24">
+    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-success-500)' }} viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 12h14M5 12a2 2 0 0 1 -2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2M5 12a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 -2-2m-2-4h.01M17 16h.01" />
     </svg>
   ),
   switchL3: (
-    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: '#6f42c1' }} viewBox="0 0 24 24">
+    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-purple-500)' }} viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 12h14M5 12a2 2 0 0 1 -2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2M5 12a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 -2-2m-2-4h.01M17 16h.01" />
     </svg>
   ),
   router: (
-    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: '#6f42c1' }} viewBox="0 0 24 24">
+    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-purple-500)' }} viewBox="0 0 24 24">
       <circle strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} cx="12" cy="12" r="9" />
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 5v14M5 12h14M12 5l-2 2m2-2l2 2m-2 12l-2-2m2 2l2-2M5 12l2-2m-2 2l2 2M19 12l-2-2m2 2l-2 2" />
     </svg>
   ),
   firewall: (
-    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: '#b02a37' }} viewBox="0 0 24 24" strokeWidth={1.5}>
+    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-error-500)' }} viewBox="0 0 24 24" strokeWidth={1.5}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
       <path strokeLinecap="round" strokeLinejoin="round" d="m9 12 2 2 4-4" />
     </svg>
   ),
   wlc: (
-    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: '#ffc107' }} viewBox="0 0 24 24" strokeWidth={1.5}>
+    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-warning-400)' }} viewBox="0 0 24 24" strokeWidth={1.5}>
       <circle cx="12" cy="12" r="9" />
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14M12 5l-2 2m2-2l2 2m-2 12l-2-2m2 2l2-2M5 12l2-2m-2 2l2 2M19 12l-2-2m2 2l-2 2" />
       <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.3" />
@@ -102,31 +103,6 @@ const easeInOutCubic = (t: number): number => {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 };
 
-function getConnectionStatusMessage(conn: CanvasConnection, devices: CanvasDevice[], language: 'tr' | 'en'): string {
-  const sourceDevice = devices.find(d => d.id === conn.sourceDeviceId);
-  const targetDevice = devices.find(d => d.id === conn.targetDeviceId);
-  if (!sourceDevice || !targetDevice) return language === 'tr' ? 'Cihaz bulunamadı' : 'Device not found';
-
-  const sourcePort = sourceDevice.ports.find(p => p.id === conn.sourcePort);
-  const targetPort = targetDevice.ports.find(p => p.id === conn.targetPort);
-
-  const cableInfo = { connected: true, cableType: conn.cableType, sourceDevice: sourceDevice.type, targetDevice: targetDevice.type, sourcePort: conn.sourcePort, targetPort: conn.targetPort } as import('@/lib/network/types').CableInfo;
-  const isCableOk = isCableCompatible(cableInfo);
-
-  if (!isCableOk) {
-    if (conn.cableType === 'wireless') return language === 'tr' ? 'Bağlantı sorunsuz' : 'Connection OK';
-    const normalize = (t: string) => t === 'switchL2' || t === 'switchL3' ? 'switch' : t === 'iot' ? 'pc' : t;
-    const key = `${normalize(sourceDevice.type)}-${normalize(targetDevice.type)}`;
-    if (!CABLE_COMPATIBILITY[key]) return language === 'tr' ? 'Bu cihaz çifti desteklenmiyor' : 'Device pair not supported';
-    return language === 'tr' ? 'Kablo türü bu cihazlar için uygun değil' : 'Cable type not suitable for these devices';
-  }
-
-  if (sourceDevice.status === 'offline' || targetDevice.status === 'offline') return language === 'tr' ? 'Cihaz kapalı' : 'Device is offline';
-  if (sourcePort?.shutdown || targetPort?.shutdown) return language === 'tr' ? 'Port kapalı (shutdown)' : 'Port is shutdown';
-  if (sourcePort?.spanningTree?.state === 'blocking' || targetPort?.spanningTree?.state === 'blocking') return language === 'tr' ? 'STP engelliyor (blocking)' : 'STP blocking';
-
-  return language === 'tr' ? 'Bağlantı sorunsuz' : 'Connection OK';
-}
 
 
 
@@ -5573,12 +5549,12 @@ if (!isEnabled || device.status === 'offline') {
                 } else {
                   // Default IoT icon for sensors
                   return (
-                    <g transform="translate(1, 1)" style={{ stroke: '#d35400' }} strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" filter="url(#wifiIconShadow)">
+                    <g transform="translate(1, 1)" style={{ stroke: 'var(--color-secondary-500)' }} strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" filter="url(#wifiIconShadow)">
                       <path d="M16.247 7.761a6 6 0 0 1 0 8.478" />
                       <path d="M19.075 4.933a10 10 0 0 1 0 14.134" />
                       <path d="M4.925 19.067a10 10 0 0 1 0-14.134" />
                       <path d="M7.753 16.239a6 6 0 0 1 0-8.478" />
-                      <circle cx="12" cy="12" r="2" style={{ fill: '#d35400' }} />
+                      <circle cx="12" cy="12" r="2" style={{ fill: 'var(--color-secondary-500)' }} />
                     </g>
                   );
                 }
@@ -5589,7 +5565,7 @@ if (!isEnabled || device.status === 'offline') {
                  strokeLinecap="round"
                  strokeLinejoin="round"
                  strokeWidth={2}
-                 style={{ stroke: device.type === 'switchL3' ? '#6f42c1' : '#28a745' }}
+                 style={{ stroke: device.type === 'switchL3' ? 'var(--color-purple-500)' : 'var(--color-success-500)' }}
                  fill="none"
                  d="M5 12h14M5 12a2 2 0 0 1 -2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2M5 12a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 -2-2m-2-4h.01M17 16h.01"
                  transform="scale(1.2)"
@@ -5597,8 +5573,8 @@ if (!isEnabled || device.status === 'offline') {
              )}
              {device.type === 'router' && (
                <g transform="scale(1.2)">
-                 <circle cx="12" cy="12" r="9" strokeWidth={2} style={{ stroke: '#6f42c1' }} fill="none" />
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} style={{ stroke: '#6f42c1' }} fill="none" d="M12 5v14M5 12h14M12 5l-2 2m2-2l2 2m-2 12l-2-2m2 2l2-2M5 12l2-2m-2 2l2 2M19 12l-2-2m2 2l-2 2" />
+                  <circle cx="12" cy="12" r="9" strokeWidth={2} style={{ stroke: 'var(--color-purple-500)' }} fill="none" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} style={{ stroke: 'var(--color-purple-500)' }} fill="none" d="M12 5v14M5 12h14M12 5l-2 2m2-2l2 2m-2 12l-2-2m2 2l2-2M5 12l2-2m-2 2l2 2M19 12l-2-2m2 2l-2 2" />
                </g>
              )}
           </g>
@@ -5888,9 +5864,9 @@ if (!isEnabled || device.status === 'offline') {
                    strokeWidth={isShutdown || isDeviceOffline || isConnected ? 2 : 1}
                    style={{ pointerEvents: 'none' }}
                  />
-                <text y={1} fill="#fff" fontSize="7" textAnchor="middle" dominantBaseline="middle" style={{ userSelect: 'none', pointerEvents: 'none' }}>
-                  {portLabel}
-                </text>
+<text y={1} fill="var(--color-background)" fontSize="7" textAnchor="middle" dominantBaseline="middle" style={{ userSelect: 'none', pointerEvents: 'none' }}>
+                   {portLabel}
+                 </text>
               </g>
             );
           })
@@ -5968,7 +5944,7 @@ if (isShutdown || isDeviceOffline) {
                       onClick={(e) => { e.stopPropagation(); handlePortClick(e as unknown as ReactMouseEvent, device.id, port.id); }}
                     />
 <circle r={6} fill={portFill} stroke={isShutdown || isDeviceOffline || isConnected ? portStroke : (isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)')} strokeWidth={isShutdown || isDeviceOffline || isConnected ? 2 : 1} style={{ pointerEvents: 'none' }} />
-                     <text y={1} style={{ fill: '#fff', userSelect: 'none', pointerEvents: 'none' }} fontSize="6" textAnchor="middle" dominantBaseline="middle">
+                     <text y={1} style={{ fill: 'var(--color-background)', userSelect: 'none', pointerEvents: 'none' }} fontSize="6" textAnchor="middle" dominantBaseline="middle">
                       {displayNum}
                     </text>
                   </g>
@@ -6097,7 +6073,7 @@ if (isShutdown || isDeviceOffline) {
                      strokeWidth={isShutdown || isDeviceOffline || isConnected ? 2 : 1}
                      style={{ pointerEvents: 'none' }}
                    />
-                  <text y={1} style={{ fill: '#fff', userSelect: 'none', pointerEvents: 'none' }} fontSize="6" textAnchor="middle" dominantBaseline="middle">
+                  <text y={1} style={{ fill: 'var(--color-background)', userSelect: 'none', pointerEvents: 'none' }} fontSize="6" textAnchor="middle" dominantBaseline="middle">
                     {displayNum}
                   </text>
                 </g>
@@ -6629,168 +6605,168 @@ if (isShutdown || isDeviceOffline) {
                    <pattern id="majorGridPattern" width="80" height="80" patternUnits="userSpaceOnUse">
                      <rect width="80" height="80" fill="none" style={{ stroke: isDark ? 'var(--color-secondary-700)' : 'var(--color-secondary-300)' }} strokeWidth="0.5" opacity="0.3" />
                    </pattern>
-                  {/* Device 3D Gradients for Dark Mode */}
-                  <linearGradient id="pcGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#2563eb" />
-                    <stop offset="30%" stopColor="#1e40af" />
-                    <stop offset="100%" stopColor="#1e3a8a" />
-                  </linearGradient>
-                  <linearGradient id="switchGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#22d3ee" />
-                    <stop offset="30%" stopColor="#0891b2" />
-                    <stop offset="100%" stopColor="#155e75" />
-                  </linearGradient>
-                  <linearGradient id="routerGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#a855f7" />
-                    <stop offset="30%" stopColor="#7c3aed" />
-                    <stop offset="100%" stopColor="#5b21b6" />
-                  </linearGradient>
-                  <linearGradient id="firewallGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#ef4444" />
-                    <stop offset="30%" stopColor="#dc2626" />
-                    <stop offset="100%" stopColor="#991b1b" />
-                  </linearGradient>
-                  <linearGradient id="iotGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#fb923c" />
-                    <stop offset="30%" stopColor="#ea580c" />
-                    <stop offset="100%" stopColor="#c2410c" />
-                  </linearGradient>
-                  {/* Device 3D Gradients for Light Mode */}
-                  <linearGradient id="pcGradientLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#eff6ff" />
-                    <stop offset="100%" stopColor="#dbeafe" />
-                  </linearGradient>
-                  <linearGradient id="switchGradientLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#ecfeff" />
-                    <stop offset="100%" stopColor="#a5f3fc" />
-                  </linearGradient>
-                  <linearGradient id="routerGradientLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#f5f3ff" />
-                    <stop offset="100%" stopColor="#ede9fe" />
-                  </linearGradient>
-                  <linearGradient id="firewallGradientLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#fee2e2" />
-                    <stop offset="100%" stopColor="#fecaca" />
-                  </linearGradient>
-                  <linearGradient id="iotGradientLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#fff7ed" />
-                    <stop offset="100%" stopColor="#fed7aa" />
-                  </linearGradient>
-                  <linearGradient id="wlcGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#facc15" />
-                    <stop offset="30%" stopColor="#ca8a04" />
-                    <stop offset="100%" stopColor="#a16207" />
-                  </linearGradient>
-                  <linearGradient id="wlcGradientLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#fefce8" />
-                    <stop offset="100%" stopColor="#fef9c3" />
-                  </linearGradient>
-                  {/* Note Gradients for Dark Mode */}
-                  <linearGradient id="noteBlueDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#3b82f6" />
-                    <stop offset="100%" stopColor="#1d4ed8" />
-                  </linearGradient>
-                  <linearGradient id="noteEmeraldDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#10b981" />
-                    <stop offset="100%" stopColor="#047857" />
-                  </linearGradient>
-                  <linearGradient id="noteVioletDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#8b5cf6" />
-                    <stop offset="100%" stopColor="#6d28d9" />
-                  </linearGradient>
-                  <linearGradient id="noteAmberDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#f59e0b" />
-                    <stop offset="100%" stopColor="#b45309" />
-                  </linearGradient>
-                  <linearGradient id="noteRedDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#ef4444" />
-                    <stop offset="100%" stopColor="#b91c1c" />
-                  </linearGradient>
-                  <linearGradient id="noteCyanDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#06b6d4" />
-                    <stop offset="100%" stopColor="#0e7490" />
-                  </linearGradient>
-                  <linearGradient id="notePinkDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#ec4899" />
-                    <stop offset="100%" stopColor="#be185d" />
-                  </linearGradient>
-                  <linearGradient id="noteOrangeDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#f97316" />
-                    <stop offset="100%" stopColor="#c2410c" />
-                  </linearGradient>
-                  <linearGradient id="noteLimeDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#84cc16" />
-                    <stop offset="100%" stopColor="#4d7c0f" />
-                  </linearGradient>
-                  <linearGradient id="noteSlateDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#64748b" />
-                    <stop offset="100%" stopColor="#334155" />
-                  </linearGradient>
-                  <linearGradient id="notePurpleDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#a78bfa" />
-                    <stop offset="100%" stopColor="#7c3aed" />
-                  </linearGradient>
-                  <linearGradient id="noteLightBlueDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#60a5fa" />
-                    <stop offset="100%" stopColor="#2563eb" />
-                  </linearGradient>
-                  <linearGradient id="noteLightGreenDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#4ade80" />
-                    <stop offset="100%" stopColor="#16a34a" />
-                  </linearGradient>
-                  {/* Note Gradients for Light Mode */}
-                  <linearGradient id="noteBlueLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#dbeafe" />
-                    <stop offset="100%" stopColor="#bfdbfe" />
-                  </linearGradient>
-                  <linearGradient id="noteEmeraldLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#d1fae5" />
-                    <stop offset="100%" stopColor="#a7f3d0" />
-                  </linearGradient>
-                  <linearGradient id="noteVioletLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#ede9fe" />
-                    <stop offset="100%" stopColor="#ddd6fe" />
-                  </linearGradient>
-                  <linearGradient id="noteAmberLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#fef3c7" />
-                    <stop offset="100%" stopColor="#fde68a" />
-                  </linearGradient>
-                  <linearGradient id="noteRedLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#fee2e2" />
-                    <stop offset="100%" stopColor="#fecaca" />
-                  </linearGradient>
-                  <linearGradient id="noteCyanLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#cffafe" />
-                    <stop offset="100%" stopColor="#a5f3fc" />
-                  </linearGradient>
-                  <linearGradient id="notePinkLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#fce7f3" />
-                    <stop offset="100%" stopColor="#fbcfe8" />
-                  </linearGradient>
-                  <linearGradient id="noteOrangeLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#ffedd5" />
-                    <stop offset="100%" stopColor="#fed7aa" />
-                  </linearGradient>
-                  <linearGradient id="noteLimeLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#ecfccb" />
-                    <stop offset="100%" stopColor="#d9f99d" />
-                  </linearGradient>
-                  <linearGradient id="noteSlateLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#f1f5f9" />
-                    <stop offset="100%" stopColor="#e2e8f0" />
-                  </linearGradient>
-                  <linearGradient id="notePurpleLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#f3e8ff" />
-                    <stop offset="100%" stopColor="#e9d5ff" />
-                  </linearGradient>
-                  <linearGradient id="noteLightBlueLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#dbeafe" />
-                    <stop offset="100%" stopColor="#bfdbfe" />
-                  </linearGradient>
-                  <linearGradient id="noteLightGreenLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#dcfce7" />
-                    <stop offset="100%" stopColor="#bbf7d0" />
-                  </linearGradient>
+                   {/* Device 3D Gradients for Dark Mode */}
+                   <linearGradient id="pcGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-primary-600)" />
+                     <stop offset="30%" stopColor="var(--color-primary-800)" />
+                     <stop offset="100%" stopColor="var(--color-primary-900)" />
+                   </linearGradient>
+                   <linearGradient id="switchGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-accent-400)" />
+                     <stop offset="30%" stopColor="var(--color-accent-600)" />
+                     <stop offset="100%" stopColor="var(--color-accent-800)" />
+                   </linearGradient>
+                   <linearGradient id="routerGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-purple-500)" />
+                     <stop offset="30%" stopColor="var(--color-purple-700)" />
+                     <stop offset="100%" stopColor="var(--color-purple-900)" />
+                   </linearGradient>
+                   <linearGradient id="firewallGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-error-500)" />
+                     <stop offset="30%" stopColor="var(--color-error-600)" />
+                     <stop offset="100%" stopColor="var(--color-error-800)" />
+                   </linearGradient>
+                   <linearGradient id="iotGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-warning-400)" />
+                     <stop offset="30%" stopColor="var(--color-warning-600)" />
+                     <stop offset="100%" stopColor="var(--color-warning-700)" />
+                   </linearGradient>
+                   {/* Device 3D Gradients for Light Mode */}
+                   <linearGradient id="pcGradientLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-primary-50)" />
+                     <stop offset="100%" stopColor="var(--color-primary-100)" />
+                   </linearGradient>
+                   <linearGradient id="switchGradientLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-accent-50)" />
+                     <stop offset="100%" stopColor="var(--color-accent-200)" />
+                   </linearGradient>
+                   <linearGradient id="routerGradientLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-purple-50)" />
+                     <stop offset="100%" stopColor="var(--color-purple-100)" />
+                   </linearGradient>
+                   <linearGradient id="firewallGradientLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-error-100)" />
+                     <stop offset="100%" stopColor="var(--color-error-200)" />
+                   </linearGradient>
+                   <linearGradient id="iotGradientLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-warning-50)" />
+                     <stop offset="100%" stopColor="var(--color-warning-200)" />
+                   </linearGradient>
+                   <linearGradient id="wlcGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-warning-400)" />
+                     <stop offset="30%" stopColor="var(--color-warning-600)" />
+                     <stop offset="100%" stopColor="var(--color-warning-700)" />
+                   </linearGradient>
+                   <linearGradient id="wlcGradientLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-warning-50)" />
+                     <stop offset="100%" stopColor="var(--color-warning-100)" />
+                   </linearGradient>
+                   {/* Note Gradients for Dark Mode */}
+                   <linearGradient id="noteBlueDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-primary-500)" />
+                     <stop offset="100%" stopColor="var(--color-primary-700)" />
+                   </linearGradient>
+                   <linearGradient id="noteEmeraldDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-success-500)" />
+                     <stop offset="100%" stopColor="var(--color-success-700)" />
+                   </linearGradient>
+                   <linearGradient id="noteVioletDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-purple-500)" />
+                     <stop offset="100%" stopColor="var(--color-purple-700)" />
+                   </linearGradient>
+                   <linearGradient id="noteAmberDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-warning-500)" />
+                     <stop offset="100%" stopColor="var(--color-warning-700)" />
+                   </linearGradient>
+                   <linearGradient id="noteRedDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-error-500)" />
+                     <stop offset="100%" stopColor="var(--color-error-700)" />
+                   </linearGradient>
+                   <linearGradient id="noteCyanDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-accent-500)" />
+                     <stop offset="100%" stopColor="var(--color-accent-700)" />
+                   </linearGradient>
+                   <linearGradient id="notePinkDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-pink-500)" />
+                     <stop offset="100%" stopColor="var(--color-pink-700)" />
+                   </linearGradient>
+                   <linearGradient id="noteOrangeDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-warning-400)" />
+                     <stop offset="100%" stopColor="var(--color-warning-700)" />
+                   </linearGradient>
+                   <linearGradient id="noteLimeDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-success-500)" />
+                     <stop offset="100%" stopColor="var(--color-success-700)" />
+                   </linearGradient>
+                   <linearGradient id="noteSlateDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-secondary-500)" />
+                     <stop offset="100%" stopColor="var(--color-secondary-700)" />
+                   </linearGradient>
+                   <linearGradient id="notePurpleDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-purple-400)" />
+                     <stop offset="100%" stopColor="var(--color-purple-600)" />
+                   </linearGradient>
+                   <linearGradient id="noteLightBlueDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-primary-400)" />
+                     <stop offset="100%" stopColor="var(--color-primary-600)" />
+                   </linearGradient>
+                   <linearGradient id="noteLightGreenDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-success-400)" />
+                     <stop offset="100%" stopColor="var(--color-success-600)" />
+                   </linearGradient>
+                   {/* Note Gradients for Light Mode */}
+                   <linearGradient id="noteBlueLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-primary-100)" />
+                     <stop offset="100%" stopColor="var(--color-primary-200)" />
+                   </linearGradient>
+                   <linearGradient id="noteEmeraldLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-success-100)" />
+                     <stop offset="100%" stopColor="var(--color-success-200)" />
+                   </linearGradient>
+                   <linearGradient id="noteVioletLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-purple-100)" />
+                     <stop offset="100%" stopColor="var(--color-purple-200)" />
+                   </linearGradient>
+                   <linearGradient id="noteAmberLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-warning-100)" />
+                     <stop offset="100%" stopColor="var(--color-warning-200)" />
+                   </linearGradient>
+                   <linearGradient id="noteRedLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-error-100)" />
+                     <stop offset="100%" stopColor="var(--color-error-200)" />
+                   </linearGradient>
+                   <linearGradient id="noteCyanLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-accent-100)" />
+                     <stop offset="100%" stopColor="var(--color-accent-200)" />
+                   </linearGradient>
+                   <linearGradient id="notePinkLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-pink-100)" />
+                     <stop offset="100%" stopColor="var(--color-pink-200)" />
+                   </linearGradient>
+                   <linearGradient id="noteOrangeLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-warning-50)" />
+                     <stop offset="100%" stopColor="var(--color-warning-200)" />
+                   </linearGradient>
+                   <linearGradient id="noteLimeLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-success-50)" />
+                     <stop offset="100%" stopColor="var(--color-success-200)" />
+                   </linearGradient>
+                   <linearGradient id="noteSlateLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-secondary-100)" />
+                     <stop offset="100%" stopColor="var(--color-secondary-200)" />
+                   </linearGradient>
+                   <linearGradient id="notePurpleLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-purple-100)" />
+                     <stop offset="100%" stopColor="var(--color-purple-200)" />
+                   </linearGradient>
+                   <linearGradient id="noteLightBlueLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-primary-100)" />
+                     <stop offset="100%" stopColor="var(--color-primary-200)" />
+                   </linearGradient>
+                   <linearGradient id="noteLightGreenLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                     <stop offset="0%" stopColor="var(--color-success-100)" />
+                     <stop offset="100%" stopColor="var(--color-success-200)" />
+                   </linearGradient>
                 </defs>
 
                 {/* Canvas Background with Grid - clipped to boundaries */}
@@ -8197,10 +8173,10 @@ fill="var(--color-accent-500)"
           {errorToast.message}
         </div>
       )}
+
     </div>
   );
-}
-
+};
 
 
 const normalizeWifiMode = (mode: string | undefined) => {
@@ -8208,239 +8184,6 @@ const normalizeWifiMode = (mode: string | undefined) => {
   if (normalized === 'sta') return 'client';
   if (normalized === 'ap' || normalized === 'client' || normalized === 'disabled') return normalized;
   return 'disabled';
-};
-
-
-const PacketCapturePanel = ({
-  activeCaptureConnectionId,
-  clearCapturedPackets,
-  setActiveCaptureConnection,
-  capturedPacketsMap,
-  t,
-  isDark
-}: {
-  activeCaptureConnectionId: string;
-  clearCapturedPackets: (id: string) => void;
-  setActiveCaptureConnection: (id: string | null) => void;
-  capturedPacketsMap: Record<string, { id: string; timestamp: number; sourceIp: string; targetIp: string; protocol: string; info: string; }[]>;
-  t: Record<string, string>;
-  isDark: boolean;
-}) => {
-  const devices = useAppStore(state => state.topology.devices);
-  const connections = useAppStore(state => state.topology.connections);
-  const { language } = useLanguage();
-
-  const conn = connections.find(c => c.id === activeCaptureConnectionId);
-  let connectionLabel = activeCaptureConnectionId;
-  if (conn) {
-    const srcDev = devices.find(d => d.id === conn.sourceDeviceId);
-    const tgtDev = devices.find(d => d.id === conn.targetDeviceId);
-    if (srcDev && tgtDev) {
-      connectionLabel = `${srcDev.name} ${conn.sourcePort} - ${conn.targetPort} ${tgtDev.name}`;
-    }
-  }
-
-  const statusMessage = conn ? getConnectionStatusMessage(conn, devices, language) : '';
-  const hasError = conn && statusMessage !== 'Bağlantı sorunsuz' && statusMessage !== 'Connection OK';
-
-  const [columnOrder, setColumnOrder] = React.useState(['time','source','dest','proto','info']);
-  
-  const [position, setPosition] = React.useState(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('packetCapturePosition');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (typeof parsed.x === 'number' && typeof parsed.y === 'number' && !isNaN(parsed.x) && !isNaN(parsed.y)) {
-            return parsed;
-          }
-        }
-      } catch {}
-      return { x: window.innerWidth - 420, y: window.innerHeight - 340 };
-    }
-    return { x: 0, y: 0 };
-  });
-
-  const [size, setSize] = React.useState(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('packetCaptureSize');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (typeof parsed.width === 'number' && typeof parsed.height === 'number' && !isNaN(parsed.width) && !isNaN(parsed.height)) {
-            return parsed;
-          }
-        }
-      } catch {}
-    }
-    return { width: 384, height: 260 };
-  });
-
-  const sizeRef = React.useRef(size);
-  const positionRef = React.useRef(position);
-  React.useEffect(() => { sizeRef.current = size; }, [size]);
-  React.useEffect(() => { positionRef.current = position; }, [position]);
-  
-  const [isDragging, setIsDragging] = React.useState(false);
-  const dragStartPos = React.useRef({ x: 0, y: 0 });
-
-  const onDragStart = (e: React.DragEvent, idx: number) => { e.dataTransfer.setData('text/plain', idx.toString()); };
-  const onDrop = (e: React.DragEvent, targetIdx: number) => {
-    const sourceIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
-    if (sourceIdx === targetIdx || isNaN(sourceIdx)) return;
-    const newOrder = [...columnOrder];
-    const [moved] = newOrder.splice(sourceIdx, 1);
-    newOrder.splice(targetIdx, 0, moved);
-    setColumnOrder(newOrder);
-  };
-  
-  const handlePointerDown = (e: React.PointerEvent) => {
-    const target = e.target as HTMLElement;
-    if (target.closest('button')) return; // Ignore buttons
-    
-    setIsDragging(true);
-    dragStartPos.current = { x: e.clientX - position.x, y: e.clientY - position.y };
-    target.setPointerCapture(e.pointerId);
-  };
-
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (isDragging) {
-      setPosition({
-        x: e.clientX - dragStartPos.current.x,
-        y: e.clientY - dragStartPos.current.y
-      });
-    }
-  };
-
-  const handlePointerUp = (e: React.PointerEvent) => {
-    if (isDragging) {
-      setIsDragging(false);
-      localStorage.setItem('packetCapturePosition', JSON.stringify(positionRef.current));
-      const target = e.target as HTMLElement;
-      if (target.hasPointerCapture(e.pointerId)) {
-        target.releasePointerCapture(e.pointerId);
-      }
-    }
-  };
-
-  const renderHeader = (col: string, idx: number) => {
-    const labelMap: Record<string, string> = { time: t.time, source: t.source, dest: t.dest, proto: t.proto, info: t.info };
-    return (
-      <th
-        key={col}
-        draggable
-        onDragStart={e => onDragStart(e, idx)}
-        onDrop={e => onDrop(e, idx)}
-        onDragOver={e => e.preventDefault()}
-        className="px-2 py-1 border-b dark:border-slate-700 cursor-grab active:cursor-grabbing hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors select-none text-center"
-      >
-        {labelMap[col] || col}
-      </th>
-    );
-  };
-
-  return (
-    <div 
-      style={{ 
-        left: `${position.x}px`, 
-        top: `${position.y}px`, 
-        width: `${size.width}px`, 
-        height: `${size.height}px`,
-        resize: 'both',
-        minWidth: 200,
-        minHeight: 120
-      }}
-      className={`fixed flex flex-col rounded-xl border border-green-500/35 dark:border-green-500/25 shadow-2xl z-50 backdrop-blur-xl overflow-hidden ${isDark ? 'bg-slate-950/70' : 'bg-white/70'}`}
-      onMouseUp={(e) => {
-        const target = e.currentTarget;
-        if (target.offsetWidth !== size.width || target.offsetHeight !== size.height) {
-          const newSize = { width: target.offsetWidth, height: target.offsetHeight };
-          setSize(newSize);
-          localStorage.setItem('packetCaptureSize', JSON.stringify(newSize));
-        }
-      }}
-    >
-      <div 
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-        className={`flex items-center justify-between px-3 py-2 border-b cursor-grab active:cursor-grabbing touch-none select-none ${isDark ? 'bg-slate-900/40 border-slate-800/40' : 'bg-slate-50/45 border-slate-100/50'}`}
-      >
-        <div className="flex flex-col gap-0.5 pointer-events-none">
-          <div className="flex items-center gap-2">
-            <div 
-              className="w-2.5 h-2.5 rounded-full animate-pulse" 
-              style={{ backgroundColor: CABLE_COLORS[conn?.cableType || 'straight']?.primary || 'var(--color-primary-500)' }}
-            />
-            <span className="text-xs font-bold">{t.packetAnalysis}</span>
-            <span className="text-[10px] opacity-50 font-mono">({connectionLabel})</span>
-          </div>
-          {hasError && (
-            <span className="text-[9px] text-red-500 dark:text-red-400 font-medium pl-[18px]">
-              ⚠️ {statusMessage}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={(e) => { e.stopPropagation(); clearCapturedPackets(activeCaptureConnectionId); }}
-            className={`p-1 rounded hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors pointer-events-auto`}
-            title={t.clearCapture}
-          >
-            <Trash2 className="w-3.5 h-3.5 text-red-500 pointer-events-none" />
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); setActiveCaptureConnection(null); }}
-            className="w-5 h-5 rounded-md bg-red-500 hover:bg-red-600 text-white transition-colors inline-flex items-center justify-center pointer-events-auto"
-          >
-            <X className="w-3 h-3 pointer-events-none" />
-          </button>
-        </div>
-      </div>
-      
-      <div className="custom-scrollbar p-0 bg-transparent flex-1 overflow-auto w-full">
-        <table className="w-full text-[10px] text-left border-collapse">
-          <thead className={`sticky top-0 z-10 ${isDark ? 'bg-slate-950/80' : 'bg-slate-100/80'} backdrop-blur-sm`}>
-            <tr>
-              {columnOrder.map((col, idx) => renderHeader(col, idx))}
-            </tr>
-          </thead>
-          <tbody>
-            {capturedPacketsMap[activeCaptureConnectionId]?.length ? (
-              [...capturedPacketsMap[activeCaptureConnectionId]].reverse().map((pkt: { id: string; timestamp: number; sourceIp: string; targetIp: string; protocol: string; info: string; }) => (
-                <tr key={pkt.id} className={`border-b last:border-0 ${isDark ? 'border-slate-800/40 hover:bg-slate-800/35' : 'border-slate-100/30 hover:bg-slate-50/40'}`}>
-                  {columnOrder.map(col => {
-                    switch (col) {
-                      case 'time': {
-                        const date = new Date(pkt.timestamp);
-                        const timeStr = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
-                        return <td className="px-2 py-1 font-mono opacity-60 text-right" key="time">{timeStr}</td>;
-                      }
-                      case 'source':
-                        return <td className="px-2 py-1 font-mono" key="source">{pkt.sourceIp}</td>;
-                      case 'dest':
-                        return <td className="px-2 py-1 font-mono" key="dest">{pkt.targetIp}</td>;
-                      case 'proto':
-                        return <td className={`px-2 py-1 font-bold ${pkt.protocol === 'ICMP' ? 'text-blue-500' : 'text-purple-500'}`} key="proto">{pkt.protocol}</td>;
-                      case 'info':
-                        return <td className="px-2 py-1 italic opacity-80" key="info">{pkt.info}</td>;
-                      default:
-                        return null;
-                    }
-                  })}
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={columnOrder.length} className="px-4 py-8 text-center opacity-40 italic">{t.noPacketsCaptured}</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
 };
 
 

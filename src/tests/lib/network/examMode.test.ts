@@ -165,7 +165,7 @@ describe('generateExamFromProject', () => {
             id: 'note-1',
             text: '📝 SINAV KOMUTLARI\n\nenable\nconfigure terminal\nhostname Switch1\nvlan 10\nname MUHASEBE\ninterface fa0/1\nswitchport mode access\nswitchport access vlan 10\nend',
             x: 100, y: 100, width: 300, height: 200,
-            color: '#ef4444', font: 'verdana', fontSize: 12, opacity: 0.75
+            color: 'var(--color-error-500)', font: 'verdana', fontSize: 12, opacity: 0.75
           }
         ]
       }
@@ -252,7 +252,7 @@ describe('generateExamFromProject', () => {
             id: 'note-1',
             text: '📝 GENEL TALİMATLAR\n\nBu projede switch yapılandırması yapacaksınız.\nTüm adımları sırayla uygulayın.\n\nBaşarılar!',
             x: 100, y: 100, width: 300, height: 200,
-            color: '#ef4444', font: 'verdana', fontSize: 12, opacity: 0.75
+            color: 'var(--color-error-500)', font: 'verdana', fontSize: 12, opacity: 0.75
           }
         ]
       }
@@ -316,7 +316,7 @@ describe('generateExamFromProject', () => {
             id: 'note-1',
             text: 'Proje Yapımı:\n1) PC-1: IP 192.168.1.10, Subnet 255.255.255.0\n2) PC-2: IP 192.168.1.20, Subnet 255.255.255.0\n3) PC-1 (eth0) ile Switch-1 (fa0/1) arasını bağlayın',
             x: 100, y: 100, width: 300, height: 200,
-            color: '#fee2e2', font: 'Arial', fontSize: 16, opacity: 1
+            color: 'var(--color-error-100)', font: 'Arial', fontSize: 16, opacity: 1
           }
         ]
       }

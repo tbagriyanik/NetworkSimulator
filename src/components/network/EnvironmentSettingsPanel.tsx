@@ -142,10 +142,10 @@ export function EnvironmentSettingsPanel({ isOpen, onOpenChange }: EnvironmentSe
                 )}
                 style={{
                   background: `linear-gradient(to right,
-                    ${isDark ? '#3b82f6' : '#60a5fa'} 0%,
-                    ${isDark ? '#3b82f6' : '#60a5fa'} ${(((environment?.temperature ?? 22) + 20) / 70) * 100}%,
-                    ${isDark ? '#334155' : '#e2e8f0'} ${(((environment?.temperature ?? 22) + 20) / 70) * 100}%,
-                    ${isDark ? '#334155' : '#e2e8f0'} 100%)`
+                    ${isDark ? 'var(--color-primary-500)' : 'var(--color-primary-400)'} 0%,
+                    ${isDark ? 'var(--color-primary-500)' : 'var(--color-primary-400)'} ${(((environment?.temperature ?? 22) + 20) / 70) * 100}%,
+                    ${isDark ? 'var(--color-secondary-700)' : 'var(--color-secondary-200)'} ${(((environment?.temperature ?? 22) + 20) / 70) * 100}%,
+                    ${isDark ? 'var(--color-secondary-700)' : 'var(--color-secondary-200)'} 100%)`
                 }}
               />
               <div className={cn(
@@ -186,10 +186,10 @@ export function EnvironmentSettingsPanel({ isOpen, onOpenChange }: EnvironmentSe
                 )}
                 style={{
                   background: `linear-gradient(to right, 
-                    ${isDark ? '#3b82f6' : '#60a5fa'} 0%, 
-                    ${isDark ? '#3b82f6' : '#60a5fa'} ${environment?.humidity ?? 50}%, 
-                    ${isDark ? '#334155' : '#e2e8f0'} ${environment?.humidity ?? 50}%, 
-                    ${isDark ? '#334155' : '#e2e8f0'} 100%)`
+                    ${isDark ? 'var(--color-primary-500)' : 'var(--color-primary-400)'} 0%, 
+                    ${isDark ? 'var(--color-primary-500)' : 'var(--color-primary-400)'} ${environment?.humidity ?? 50}%, 
+                    ${isDark ? 'var(--color-secondary-700)' : 'var(--color-secondary-200)'} ${environment?.humidity ?? 50}%, 
+                    ${isDark ? 'var(--color-secondary-700)' : 'var(--color-secondary-200)'} 100%)`
                 }}
               />
               <div className={cn(
@@ -230,10 +230,10 @@ export function EnvironmentSettingsPanel({ isOpen, onOpenChange }: EnvironmentSe
                 )}
                 style={{
                   background: `linear-gradient(to right, 
-                    ${isDark ? '#eab308' : '#facc15'} 0%, 
-                    ${isDark ? '#eab308' : '#facc15'} ${environment?.light ?? 70}%, 
-                    ${isDark ? '#334155' : '#e2e8f0'} ${environment?.light ?? 70}%, 
-                    ${isDark ? '#334155' : '#e2e8f0'} 100%)`
+                    ${isDark ? 'var(--color-warning-500)' : 'var(--color-warning-400)'} 0%, 
+                    ${isDark ? 'var(--color-warning-500)' : 'var(--color-warning-400)'} ${environment?.light ?? 70}%, 
+                    ${isDark ? 'var(--color-secondary-700)' : 'var(--color-secondary-200)'} ${environment?.light ?? 70}%, 
+                    ${isDark ? 'var(--color-secondary-700)' : 'var(--color-secondary-200)'} 100%)`
                 }}
               />
               <div className={cn(

@@ -64,13 +64,13 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
       const c = (() => {
         const map: Record<string, { fill: string; stroke: string; text: string }> = {
           pc: { fill: 'var(--color-primary-200)', stroke: 'var(--color-primary-300)', text: 'var(--color-secondary-800)' },
-          iot: { fill: '#d35400', stroke: '#d35400', text: 'var(--color-secondary-800)' },
+          iot: { fill: 'var(--color-secondary-500)', stroke: 'var(--color-secondary-500)', text: 'var(--color-secondary-800)' },
           switch: { fill: 'var(--color-accent-200)', stroke: 'var(--color-accent-300)', text: 'var(--color-secondary-800)' },
-          switchL2: { fill: '#28a745', stroke: '#28a745', text: 'var(--color-secondary-800)' },
-          switchL3: { fill: '#6f42c1', stroke: '#6f42c1', text: 'var(--color-secondary-800)' },
-          router: { fill: '#6f42c1', stroke: '#6f42c1', text: 'var(--color-secondary-800)' },
-          firewall: { fill: '#b02a37', stroke: '#b02a37', text: 'var(--color-secondary-800)' },
-          wlc: { fill: '#ffc107', stroke: '#ffc107', text: 'var(--color-secondary-800)' },
+          switchL2: { fill: 'var(--color-success-500)', stroke: 'var(--color-success-500)', text: 'var(--color-secondary-800)' },
+          switchL3: { fill: 'var(--color-purple-500)', stroke: 'var(--color-purple-500)', text: 'var(--color-secondary-800)' },
+          router: { fill: 'var(--color-purple-500)', stroke: 'var(--color-purple-500)', text: 'var(--color-secondary-800)' },
+          firewall: { fill: 'var(--color-error-500)', stroke: 'var(--color-error-500)', text: 'var(--color-secondary-800)' },
+          wlc: { fill: 'var(--color-warning-400)', stroke: 'var(--color-warning-400)', text: 'var(--color-secondary-800)' },
         };
         return map[device.type] || map.pc;
       })();
@@ -195,9 +195,9 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
       const cableColor = !isCompatible || conn.active === false
         ? 'var(--color-error-500)'
         : isShutdown || (isSTPBlocking && isVlan1)
-          ? '#94a3b8' // Light-theme shutdown/STP block gray
+          ? 'var(--color-secondary-400)' // Light-theme shutdown/STP block gray
           : isPoweredOff
-            ? '#9ca3af' // Light-theme offline gray
+            ? 'var(--color-secondary-400)' // Light-theme offline gray
             : CABLE_COLORS[conn.cableType]?.primary || 'var(--color-primary-500)';
 
       const path = document.createElementNS(ns, 'path');
@@ -228,8 +228,8 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
         const halo = document.createElementNS(ns, 'text');
         halo.setAttribute('x', pos.x.toString());
         halo.setAttribute('y', (pos.y + labelOffsetY).toString());
-        halo.setAttribute('fill', '#ffffff');
-        halo.setAttribute('stroke', '#ffffff');
+        halo.setAttribute('fill', 'var(--color-background)');
+        halo.setAttribute('stroke', 'var(--color-background)');
         halo.setAttribute('stroke-width', '3');
         halo.setAttribute('stroke-linejoin', 'round');
         halo.setAttribute('font-size', '9');
@@ -293,7 +293,7 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
       fo.setAttribute('height', (nh - pad * 2 - 24).toString());
       const div = document.createElement('div');
       div.textContent = note.text;
-      div.style.cssText = `font-family:${note.font};font-size:${note.fontSize}px;line-height:1.35;color:#000;word-wrap:break-word;white-space:pre-wrap;width:100%;height:100%;overflow:hidden;`;
+      div.style.cssText = `font-family:${note.font};font-size:${note.fontSize}px;line-height:1.35;color:var(--color-foreground);word-wrap:break-word;white-space:pre-wrap;width:100%;height:100%;overflow:hidden;`;
       fo.appendChild(div);
       g.appendChild(fo);
 
