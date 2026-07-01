@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://yunus.sf.net';
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://network2026.vercel.app';
 
 export const metadata: Metadata = {
   title: "Network Simulator",

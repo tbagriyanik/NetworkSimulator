@@ -5341,21 +5341,30 @@ ${fileLines}
                         >
                           <div className={`p-4 rounded-xl border space-y-4 ${isDark ? 'bg-secondary-900/50 border-secondary-800' : 'bg-white border-secondary-200 shadow-sm'}`}>
                             <div className="flex items-center justify-between gap-4">
-                              <div className="space-y-1.5 flex-1">
-                                <label className="text-xs font-bold text-secondary-500 ml-1">{t.hostname}</label>
-                                <Input type="text" value={internalPcHostname} onChange={(e) => {
-                                  const newHostname = e.target.value.trim().slice(0, 20);
-                                  setPcHostname(e.target.value);
-                                  dispatchDeviceConfig({ name: newHostname });
-                                }} className="h-9" />
+                              <div className="flex-1">
+                                <FormInput
+                                  label={t.hostname}
+                                  value={internalPcHostname}
+                                  onChange={(e) => {
+                                    const newHostname = e.target.value.trim().slice(0, 20);
+                                    setPcHostname(e.target.value);
+                                    dispatchDeviceConfig({ name: newHostname });
+                                  }}
+                                  className="h-9"
+                                />
                               </div>
-                              <div className="space-y-1.5 flex-1">
-                                <label className="text-xs font-bold text-secondary-500 ml-1">MAC Address</label>
-                                <Input type="text" value={pcMAC} onChange={(e) => {
-                                  const newMac = e.target.value;
-                                  setPcMAC(newMac);
-                                  dispatchDeviceConfig({ macAddress: isValidMAC(newMac) ? normalizeMAC(newMac) : newMac });
-                                }} placeholder="00-1a-2b-3c-4d-5e" className={`h-9 ${errors.mac ? 'border-rose-500' : ''}`} />
+                              <div className="flex-1">
+                                <FormInput
+                                  label="MAC Address"
+                                  value={pcMAC}
+                                  onChange={(e) => {
+                                    const newMac = e.target.value;
+                                    setPcMAC(newMac);
+                                    dispatchDeviceConfig({ macAddress: isValidMAC(newMac) ? normalizeMAC(newMac) : newMac });
+                                  }}
+                                  placeholder="00-1a-2b-3c-4d-5e"
+                                  className={`h-9 ${errors.mac ? 'border-rose-500' : ''}`}
+                                />
                               </div>
                             </div>
 
