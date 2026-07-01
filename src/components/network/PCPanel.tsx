@@ -10,9 +10,8 @@ import type { CanvasDevice, CanvasConnection } from './networkTopology.types';
 import { checkConnectivity, getWirelessSignalStrength, getWirelessDistance, getDeviceWifiConfig } from '@/lib/network/connectivity';
 import { ensureDeviceStatesMap } from '@/lib/network/networkUtils';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Laptop, Monitor, Terminal as TerminalIcon, X, CornerDownLeft, Globe, Network, History, Search, Copy, Save, Trash2, Download, Settings, Wifi, Eye, EyeOff, Radio, ArrowLeft, SlidersHorizontal, Plus, Reply, Send } from 'lucide-react';
+
+import { Laptop, Terminal as TerminalIcon, X, Globe, Search, Copy, Settings, Wifi, Radio, ArrowLeft, SlidersHorizontal } from 'lucide-react';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { ShortcutBadge } from '@/components/ui/ShortcutBadge';
 import { toast } from "@/hooks/use-toast";
@@ -23,13 +22,11 @@ import { sanitizeHTTPContent } from '@/lib/security/sanitizer';
 import { generateRouterAdminPage, isRouterDevice } from '@/components/network/WifiControlPanel';
 import { generateIotWebPanelContent, generateIotDevicePageContent } from '@/lib/network/iotWebPanel';
 import { generateRandomLinkLocalIpv4 } from '@/lib/network/linkLocal';
-import { WifiSignalMeter, IoTSensorDisplay } from './PCPanelWidgets';
+import { WifiSignalMeter } from './PCPanelWidgets';
 import { expandCommandContext, DESKTOP_COMMANDS } from './pcPanel.utils';
 import { errorHandler, STORAGE_ERRORS, DHCP_ERRORS, CLIPBOARD_ERRORS, DEVICE_ERRORS } from '@/lib/errors/errorHandler';
 import { logger } from '@/lib/logger';
 import { getL3Hops } from '@/lib/network/routing';
-import { FormInput } from '@/components/ui/FormInput';
-import { NetworkInputField } from './pc-panel/NetworkInputField';
 import { SearchOutputDialog } from './pc-panel/SearchOutputDialog';
 import { HiddenNavigationTabs } from './pc-panel/HiddenNavigationTabs';
 import { FtpFileTransferDialog } from './pc-panel/FtpFileTransferDialog';
@@ -38,6 +35,12 @@ import { HomeLauncher } from './pc-panel/HomeLauncher';
 import { PowerOffOverlay } from './pc-panel/PowerOffOverlay';
 import { getDefaultPcFiles, getPCConfigDefaults } from './pc-panel/pcPanelFiles';
 import type { DhcpPoolConfig, FtpSession, OutputLine, PCActiveTab, PCPanelProps, PcFile } from './pc-panel/PCPanel.types';
+import { CommandLineTab } from './pc-panel/CommandLineTab';
+import { ConsoleTerminalTab } from './pc-panel/ConsoleTerminalTab';
+import { IpSettingsTab } from './pc-panel/IpSettingsTab';
+import { ServicesTab } from './pc-panel/ServicesTab';
+import { WirelessConfigTab } from './pc-panel/WirelessConfigTab';
+import { IotDashboardTab } from './pc-panel/IotDashboardTab';
 
 
 export function PCPanel({
@@ -66,29 +69,6 @@ export function PCPanel({
 
   // Responsive hooks
   const isMobile = useIsMobile();
-
-  // Helper to render network input fields to avoid repetition
-  const renderNetworkInput = useCallback((
-    label: string,
-    value: string,
-    onChange: (val: string) => void,
-    placeholder: string,
-    error?: string,
-    disabled?: boolean,
-    onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void,
-    onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void
-  ) => (
-    <NetworkInputField
-      label={label}
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      disabled={disabled}
-      error={error}
-      onBlur={onBlur}
-      onKeyDown={onKeyDown}
-    />
-  ), []);
 
   // Ref for click-outside detection
   const panelRef = useRef<HTMLDivElement>(null);
@@ -357,13 +337,6 @@ export function PCPanel({
       localStorage.setItem(`mail_sent_${deviceId}`, JSON.stringify(serviceMailSent));
     }
   }, [serviceMailSent, deviceId]);
-  const [composeMode, setComposeMode] = useState(false);
-  const [composeTo, setComposeTo] = useState('');
-  const [composeSubject, setComposeSubject] = useState('');
-  const [composeBody, setComposeBody] = useState('');
-  const [viewingMsg, setViewingMsg] = useState<{ type: 'inbox' | 'sent'; msg: { from?: string; to?: string; subject: string; body: string; timestamp?: string }; idx: number } | null>(null);
-  const [viewReplyBody, setViewReplyBody] = useState('');
-  const [mailError, setMailError] = useState('');
   const mailPop3Blocked = useMemo(() => {
     if (activeServiceTab !== 'mail' || !pcIP) return false;
     const result = checkConnectivity(deviceId, pcIP, topologyDevices, topologyConnections as unknown as CanvasConnection[], deviceStates || new Map(), language as 'tr' | 'en', { protocol: 'tcp', port: '110' });
@@ -414,10 +387,8 @@ export function PCPanel({
   const [editingDhcpIndex, setEditingDhcpIndex] = useState<number | null>(null);
   const [wifiEnabled, setWifiEnabled] = useState(deviceFromTopology?.wifi?.enabled ?? false);
   const [wifiSSID, setWifiSSID] = useState(deviceFromTopology?.wifi?.ssid ?? '');
-  const [ssidDropdownOpen, setSsidDropdownOpen] = useState(false);
   const [wifiSecurity, setWifiSecurity] = useState(deviceFromTopology?.wifi?.security ?? 'open');
   const [wifiPassword, setWifiPassword] = useState(deviceFromTopology?.wifi?.password ?? '');
-  const [showWifiPassword, setShowWifiPassword] = useState(false);
   const [wifiChannel, setWifiChannel] = useState(deviceFromTopology?.wifi?.channel ?? '2.4GHz');
   const [wifiBSSID, setWifiBSSID] = useState(deviceFromTopology?.wifi?.bssid ?? '');
   const iotDevices = useMemo(
@@ -1482,8 +1453,6 @@ export function PCPanel({
   const outputRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<HTMLDivElement>(null);
-  const httpContentRef = useRef<HTMLTextAreaElement>(null);
-
   const prevIpConfigModeRef = useRef(ipConfigMode);
 
   const highlightText = useCallback((text: string) => {
@@ -2187,34 +2156,6 @@ export function PCPanel({
 
     return `${recordType}: ${chain.join(' -> ')}`;
   }, [isValidIpv4, isValidIpv6, language, serviceDnsRecords]);
-
-  const serviceTabClass = (tab: 'dns' | 'http' | 'dhcp' | 'ftp' | 'mail' | 'ntp') => cn(
-    'relative inline-flex items-center gap-2 rounded-t-lg border border-b-0 px-4 py-2.5 text-xs font-semibold transition-all duration-200 ease-out focus-ring-animate',
-    activeServiceTab === tab
-      ? isDark
-        ? 'bg-secondary-900 text-white border-secondary-600 shadow-[0_-2px_8px_rgba(0,0,0,0.3)]'
-        : 'bg-white text-secondary-900 border-secondary-300 shadow-[0_-2px_8px_rgba(0,0,0,0.08)]'
-      : isDark
-        ? 'bg-secondary-950/40 text-secondary-400 border-transparent hover:text-secondary-200 hover:bg-secondary-900/60'
-        : 'bg-secondary-100/80 text-secondary-500 border-transparent hover:text-secondary-700 hover:bg-secondary-50'
-  );
-
-  const getServiceTabIcon = (tab: 'dns' | 'http' | 'dhcp' | 'ftp' | 'mail' | 'ntp') => {
-    switch (tab) {
-      case 'dns':
-        return <Globe className="w-3.5 h-3.5" />;
-      case 'http':
-        return <Globe className="w-3.5 h-3.5" />;
-      case 'dhcp':
-        return <Network className="w-3.5 h-3.5" />;
-      case 'ftp':
-        return <Download className="w-3.5 h-3.5" />;
-      case 'mail':
-        return <Settings className="w-3.5 h-3.5" />;
-      case 'ntp':
-        return <History className="w-3.5 h-3.5" />;
-    }
-  };
 
   const findHttpServerByTarget = useCallback((target: string) => {
     const normalizedTarget = target.trim().toLowerCase();
@@ -2981,25 +2922,6 @@ export function PCPanel({
     }
   }, []);
 
-  const applyHttpFormatting = useCallback((tag: 'b' | 'u' | 'i') => {
-    const textarea = httpContentRef.current;
-    if (!textarea) return;
-    const { selectionStart, selectionEnd, value } = textarea;
-    if (selectionStart === null || selectionEnd === null || selectionStart === selectionEnd) return;
-
-    const selected = value.slice(selectionStart, selectionEnd);
-    const wrapped = `<${tag}>${selected}</${tag}>`;
-    const nextValue = value.slice(0, selectionStart) + wrapped + value.slice(selectionEnd);
-    setServiceHttpContent(nextValue);
-
-    requestAnimationFrame(() => {
-      textarea.focus();
-      const caret = selectionStart + wrapped.length;
-      textarea.setSelectionRange(caret, caret);
-    });
-  }, []);
-
-
   const hasPhysicalPathToDevice = useCallback((targetDeviceId: string) => {
     if (!targetDeviceId || targetDeviceId === deviceId) return false;
     const sourceDevice = topologyDevices.find((d) => d.id === deviceId);
@@ -3095,53 +3017,6 @@ export function PCPanel({
 
     return `Interface: ${pcIP} --- 0x3\n  Internet Address      Physical Address      Type\n${rows}`;
   }, [canReachTargetIp, deviceId, formatMacForArp, pcIP, topologyDevices]);
-
-  const resetDhcpForm = useCallback(() => {
-    setDhcpForm({
-      poolName: '',
-      defaultGateway: '',
-      dnsServer: '',
-      startIp: '',
-      subnetMask: '255.255.255.0',
-      maxUsers: 50,
-    });
-    setEditingDhcpIndex(null);
-    isDhcpEditingRef.current = false;
-  }, []);
-
-  const saveDhcpPool = useCallback(() => {
-    const cleaned: DhcpPoolConfig = {
-      poolName: dhcpForm.poolName.trim(),
-      defaultGateway: dhcpForm.defaultGateway.trim(),
-      dnsServer: dhcpForm.dnsServer.trim(),
-      startIp: dhcpForm.startIp.trim(),
-      subnetMask: dhcpForm.subnetMask.trim(),
-      maxUsers: Number.isFinite(dhcpForm.maxUsers) ? Math.max(1, Number(dhcpForm.maxUsers)) : 1,
-    };
-
-    if (!cleaned.poolName || !cleaned.defaultGateway || !cleaned.dnsServer || !cleaned.startIp || !cleaned.subnetMask) {
-      return;
-    }
-
-    isDhcpEditingRef.current = true;
-    const newPools = editingDhcpIndex === null
-      ? [...serviceDhcpPools, cleaned]
-      : serviceDhcpPools.map((pool, idx) => (idx === editingDhcpIndex ? cleaned : pool));
-    setServiceDhcpPools(newPools);
-    dispatchDeviceConfig({
-      services: {
-        dns: { enabled: serviceDnsEnabled, records: serviceDnsRecords },
-        http: { enabled: serviceHttpEnabled, content: serviceHttpContent },
-        dhcp: { enabled: serviceDhcpEnabled, pools: newPools }
-      }
-    });
-
-    // Reset editing flag after a delay
-    setTimeout(() => {
-      isDhcpEditingRef.current = false;
-    }, 1000);
-    resetDhcpForm();
-  }, [dhcpForm, editingDhcpIndex, resetDhcpForm]);
 
   const ipToNumber = useCallback((ip: string) => {
     const parts = ip.split('.').map(Number);
@@ -4732,11 +4607,11 @@ ${fileLines}
   ], [language, isDark]);
 
 
-  const handleComposeSend = useCallback(() => {
-    const recipient = composeTo.trim();
-    const subject = composeSubject.trim() || '(no subject)';
-    const body = composeBody.trim();
-    if (!recipient || !body) return;
+  const handleComposeSend = useCallback((to: string, subject: string, body: string, onError: (err: string) => void, onSuccess: () => void) => {
+    const recipient = to.trim();
+    const subj = subject.trim() || '(no subject)';
+    const bdy = body.trim();
+    if (!recipient || !bdy) return;
     const [reqUser, reqDomain] = recipient.includes('@') ? recipient.split('@') : [recipient, serviceMailDomain];
     const targetDevice = topologyDevices.find((d: CanvasDevice) => {
       const mail = d.services?.mail;
@@ -4746,29 +4621,29 @@ ${fileLines}
       return isNameMatch && (isDomainMatch || !reqDomain);
     });
     if (!targetDevice) {
-      setMailError(language === 'tr' ? 'Alıcı bulunamadı.' : 'Recipient not found.');
+      onError(language === 'tr' ? 'Alıcı bulunamadı.' : 'Recipient not found.');
       return;
     }
     if (targetDevice.ip) {
       const connectivity = checkConnectivity(deviceId, targetDevice.ip, topologyDevices, topologyConnections as unknown as CanvasConnection[], deviceStates || new Map(), language as 'tr' | 'en', { protocol: 'tcp', port: '25' });
       if (!connectivity.success) {
-        setMailError(language === 'tr' ? 'SMTP (port 25) engellendi. Posta gönderilemiyor.' : 'SMTP (port 25) blocked. Cannot send mail.');
+        onError(language === 'tr' ? 'SMTP (port 25) engellendi. Posta gönderilemiyor.' : 'SMTP (port 25) blocked. Cannot send mail.');
         return;
       }
     }
-    setMailError('');
+    onError('');
     const timestamp = new Date().toISOString();
     const senderName = deviceFromTopology?.name || pcIP || serviceMailUsername;
     const senderEmail = `${serviceMailUsername}@${serviceMailDomain}`;
     const from = `${senderName} <${senderEmail}>`;
-    const newInboxEntry = { from, to: recipient, subject, body, timestamp };
+    const newInboxEntry = { from, to: recipient, subject: subj, body: bdy, timestamp };
     let existingInbox = targetDevice.services?.mail?.inbox || [];
     if (typeof window !== 'undefined') {
       try { const stored = localStorage.getItem(`mail_inbox_${targetDevice.id}`); if (stored) existingInbox = JSON.parse(stored); } catch (_e) {}
     }
     const updatedInbox = [newInboxEntry, ...existingInbox];
     if (typeof window !== 'undefined') localStorage.setItem(`mail_inbox_${targetDevice.id}`, JSON.stringify(updatedInbox));
-    const newSentEntry = { from, to: recipient, subject, body, timestamp };
+    const newSentEntry = { from, to: recipient, subject: subj, body: bdy, timestamp };
     setServiceMailSent((prev) => [newSentEntry, ...prev]);
     window.dispatchEvent(new CustomEvent('update-topology-device-config', {
       detail: { deviceId: targetDevice.id, config: { services: { mail: { enabled: targetDevice.services?.mail?.enabled ?? false, domain: targetDevice.services?.mail?.domain || serviceMailDomain, username: targetDevice.services?.mail?.username || serviceMailUsername, inbox: updatedInbox } } } }
@@ -4777,15 +4652,11 @@ ${fileLines}
       detail: { deviceId, config: { services: { mail: { enabled: serviceMailEnabled, domain: serviceMailDomain, username: serviceMailUsername, password: serviceMailPassword, inbox: serviceMailInbox, sent: [newSentEntry, ...serviceMailSent] } } } }
     }));
     addLocalOutput('success', language === 'tr' ? 'Mesaj gönderildi.' : 'Message sent.');
-    setComposeMode(false);
-    setComposeTo('');
-    setComposeSubject('');
-    setComposeBody('');
-  }, [composeTo, composeSubject, composeBody, serviceMailDomain, serviceMailUsername, serviceMailEnabled, serviceMailPassword, serviceMailInbox, serviceMailSent, topologyDevices, topologyConnections, deviceStates, deviceId, addLocalOutput, language, deviceFromTopology, pcIP]);
+    onSuccess();
+  }, [serviceMailDomain, serviceMailUsername, serviceMailEnabled, serviceMailPassword, serviceMailInbox, serviceMailSent, topologyDevices, topologyConnections, deviceStates, deviceId, addLocalOutput, language, deviceFromTopology, pcIP]);
 
-  const handleViewReplySend = useCallback(() => {
-    if (!viewingMsg || !viewReplyBody.trim()) return;
-    const { msg } = viewingMsg;
+  const handleViewReplySend = useCallback((replyBody: string, msg: { from?: string; to?: string; subject: string; body: string; timestamp?: string }, onError: (err: string) => void, onSuccess: () => void) => {
+    if (!replyBody.trim() || !msg) return;
     if (!msg.from) return;
     const emailMatch = msg.from.match(/<([^>]+)>/);
     const senderEmail = emailMatch ? emailMatch[1] : msg.from;
@@ -4795,30 +4666,30 @@ ${fileLines}
       return mail?.username === reqUser && mail?.domain === reqDomain;
     });
     if (!targetDevice) {
-      setMailError(language === 'tr' ? 'Alıcı cihaz bulunamadı.' : 'Target device not found.');
+      onError(language === 'tr' ? 'Alıcı cihaz bulunamadı.' : 'Target device not found.');
       return;
     }
     if (targetDevice.ip) {
       const connectivity = checkConnectivity(deviceId, targetDevice.ip, topologyDevices, topologyConnections as unknown as CanvasConnection[], deviceStates || new Map(), language as 'tr' | 'en', { protocol: 'tcp', port: '25' });
       if (!connectivity.success) {
-        setMailError(language === 'tr' ? 'SMTP (port 25) engellendi. Yanıt gönderilemiyor.' : 'SMTP (port 25) blocked. Cannot send reply.');
+        onError(language === 'tr' ? 'SMTP (port 25) engellendi. Yanıt gönderilemiyor.' : 'SMTP (port 25) blocked. Cannot send reply.');
         return;
       }
     }
-    setMailError('');
+    onError('');
     const subject = `Re: ${msg.subject}`;
     const timestamp = new Date().toISOString();
     const senderName = deviceFromTopology?.name || pcIP || serviceMailUsername;
     const senderAddr = `${serviceMailUsername}@${serviceMailDomain}`;
     const from = `${senderName} <${senderAddr}>`;
-    const newInboxEntry = { from, to: msg.from, subject, body: viewReplyBody, timestamp };
+    const newInboxEntry = { from, to: msg.from, subject, body: replyBody, timestamp };
     let existingInbox = targetDevice.services?.mail?.inbox || [];
     if (typeof window !== 'undefined') {
       try { const stored = localStorage.getItem(`mail_inbox_${targetDevice.id}`); if (stored) existingInbox = JSON.parse(stored); } catch (_e) {}
     }
     const updatedInbox = [newInboxEntry, ...existingInbox];
     if (typeof window !== 'undefined') localStorage.setItem(`mail_inbox_${targetDevice.id}`, JSON.stringify(updatedInbox));
-    const newSentEntry = { from, to: msg.from, subject, body: viewReplyBody, timestamp };
+    const newSentEntry = { from, to: msg.from, subject, body: replyBody, timestamp };
     setServiceMailSent((prev) => [newSentEntry, ...prev]);
     window.dispatchEvent(new CustomEvent('update-topology-device-config', {
       detail: { deviceId: targetDevice.id, config: { services: { mail: { enabled: targetDevice.services?.mail?.enabled ?? false, domain: targetDevice.services?.mail?.domain || serviceMailDomain, username: targetDevice.services?.mail?.username || serviceMailUsername, inbox: updatedInbox } } } }
@@ -4827,9 +4698,8 @@ ${fileLines}
       detail: { deviceId, config: { services: { mail: { enabled: serviceMailEnabled, domain: serviceMailDomain, username: serviceMailUsername, password: serviceMailPassword, inbox: serviceMailInbox, sent: [newSentEntry, ...serviceMailSent] } } } }
     }));
     addLocalOutput('success', language === 'tr' ? 'Yanıt gönderildi.' : 'Reply sent.');
-    setViewReplyBody('');
-    setViewingMsg(null);
-  }, [viewingMsg, viewReplyBody, serviceMailDomain, serviceMailUsername, serviceMailEnabled, serviceMailPassword, serviceMailInbox, serviceMailSent, topologyDevices, topologyConnections, deviceStates, deviceId, addLocalOutput, language, mailError, deviceFromTopology, pcIP]);
+    onSuccess();
+  }, [serviceMailDomain, serviceMailUsername, serviceMailEnabled, serviceMailPassword, serviceMailInbox, serviceMailSent, topologyDevices, topologyConnections, deviceStates, deviceId, addLocalOutput, language, deviceFromTopology, pcIP]);
 
   const handleDeleteInbox = useCallback((idx: number) => {
     const updated = serviceMailInbox.filter((_, i) => i !== idx);
@@ -5154,2084 +5024,245 @@ ${fileLines}
                         />
                       )}
 
+                      {activeTab === 'desktop' && (
+                        <CommandLineTab
+                          isDark={isDark}
+                          language={language}
+                          t={t}
+                          fontSize={fontSize}
+                          terminalBg={terminalBg}
+                          textColor={textColor}
+                          isMobile={isMobile}
+                          isPcPoweredOff={isPcPoweredOff}
+                          pcOutput={pcOutput}
+                          setPcOutput={setPcOutput}
+                          input={input}
+                          setInput={setInput}
+                          isCmdInputDisabled={isCmdInputDisabled}
+                          ftpSession={ftpSession}
+                          internalPcHostname={internalPcHostname}
+                          showCmdSettings={showCmdSettings}
+                          handleFontSizeChange={handleFontSizeChange}
+                          executeCommand={executeCommand}
+                          inputRef={inputRef}
+                          outputRef={outputRef}
+                          handleInputChange={handleInputChange}
+                          handleKeyDown={handleKeyDown}
+                          shouldShowAutocomplete={shouldShowAutocomplete}
+                          renderAutocompleteSuggestions={renderAutocompleteSuggestions}
+                          autocompleteIndex={autocompleteIndex}
+                          autocompleteRef={autocompleteRef}
+                          completeAutocompleteSelection={completeAutocompleteSelection}
+                          handleResizeStart={handleResizeStart}
+                          highlightText={highlightText}
+                          mobileVerticalScrollStyle={mobileVerticalScrollStyle}
+                        />
+                      )}
+
+                      {activeTab === 'terminal' && (
+                        <ConsoleTerminalTab
+                          isDark={isDark}
+                          language={language}
+                          t={t}
+                          fontSize={fontSize}
+                          terminalBg={terminalBg}
+                          textColor={textColor}
+                          isMobile={isMobile}
+                          isPcPoweredOff={isPcPoweredOff}
+                          isConsoleConnected={isConsoleConnected}
+                          connectedDeviceId={connectedDeviceId}
+                          topologyDevices={topologyDevices}
+                          isConsoleInputDisabled={isConsoleInputDisabled}
+                          consoleNeedsPassword={consoleNeedsPassword}
+                          consoleConfirmDialog={consoleConfirmDialog}
+                          consoleReloadPending={consoleReloadPending}
+                          activeConsoleOutput={activeConsoleOutput}
+                          setConsoleConnectionTime={setConsoleConnectionTime}
+                          setIsConsoleConnected={setIsConsoleConnected}
+                          setConnectedDeviceId={setConnectedDeviceId}
+                          handleConnect={handleConnect}
+                          showCmdSettings={showCmdSettings}
+                          executeCommand={executeCommand}
+                          input={input}
+                          handleInputChange={handleInputChange}
+                          handleKeyDown={handleKeyDown}
+                          onExecuteDeviceCommand={onExecuteDeviceCommand}
+                          setConsolePasswordAttempted={setConsolePasswordAttempted}
+                          setInput={setInput}
+                          highlightText={highlightText}
+                          consoleDevice={consoleDevice}
+                          mobileVerticalScrollStyle={mobileVerticalScrollStyle}
+                        />
+                      )}
+
                       {activeTab === 'settings' && (
-                        <div
-                          className="flex-1 min-h-0 p-3 overflow-y-auto overflow-x-hidden custom-scrollbar"
-                          style={mobileVerticalScrollStyle}
-                        >
-                          <div className={`p-4 rounded-xl border space-y-4 ${isDark ? 'bg-secondary-900/50 border-secondary-800' : 'bg-white border-secondary-200 shadow-sm'}`}>
-                            <div className="flex items-center justify-between gap-4">
-                              <div className="flex-1">
-                                <FormInput
-                                  label={t.hostname}
-                                  value={internalPcHostname}
-                                  onChange={(e) => {
-                                    const newHostname = e.target.value.trim().slice(0, 20);
-                                    setPcHostname(e.target.value);
-                                    dispatchDeviceConfig({ name: newHostname });
-                                  }}
-                                  className="h-9"
-                                />
-                              </div>
-                              <div className="flex-1">
-                                <FormInput
-                                  label="MAC Address"
-                                  value={pcMAC}
-                                  onChange={(e) => {
-                                    const newMac = e.target.value;
-                                    setPcMAC(newMac);
-                                    dispatchDeviceConfig({ macAddress: isValidMAC(newMac) ? normalizeMAC(newMac) : newMac });
-                                  }}
-                                  placeholder="00-1a-2b-3c-4d-5e"
-                                  className={`h-9 ${errors.mac ? 'border-rose-500' : ''}`}
-                                />
-                              </div>
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row items-center gap-4 py-2 border-y border-secondary-800/10 dark:border-secondary-800/50">
-                              <label className="text-xs font-bold text-secondary-500 ml-1 whitespace-nowrap">
-                                {t.ipConfigurationLabel}
-                              </label>
-                              <div className={`inline-flex p-1 rounded-xl border ${isDark ? 'bg-secondary-950 border-secondary-800' : 'bg-secondary-100 border-secondary-200'}`}>
-                                <button
-                                  type="button"
-                                  role="radio"
-                                  aria-checked={ipConfigMode === 'dhcp'}
-                                  onClick={() => {
-                                    if (manualDhcpClickRef.current) return;
-                                    manualDhcpClickRef.current = true;
-                                    setIpConfigMode('dhcp');
-                                    dispatchDeviceConfig({ ipConfigMode: 'dhcp' });
-                                    try {
-                                      const lease = applyDhcpLeaseRef.current?.(true);
-                                      if (lease && lease.serverName === 'link-local') {
-                                        toast({
-                                          title: language === 'tr' ? 'DHCP bulunamadı' : 'DHCP not found',
-                                          description: language === 'tr'
-                                            ? `Link-local IP atandı: ${lease.ip}`
-                                            : `Assigned link-local IP: ${lease.ip}`,
-                                        });
-                                      }
-                                    } catch (err) {
-                                      errorHandler.logError(DHCP_ERRORS.LEASE_FAILED({ deviceId, source: 'manualDhcp', error: String(err) }));
-                                      toast({
-                                        title: language === 'tr' ? 'DHCP hatası' : 'DHCP error',
-                                        description: language === 'tr'
-                                          ? 'DHCP hizmeti bulunamadı. Link-local IP atandı.'
-                                          : 'DHCP service not found. Link-local IP assigned.',
-                                        variant: 'destructive',
-                                      });
-                                    }
-                                    // Reset the ref after a short delay
-                                    setTimeout(() => {
-                                      manualDhcpClickRef.current = false;
-                                    }, 100);
-                                  }}
-                                  className={`px-4 py-1.5 text-[10px] font-bold rounded-lg transition-all ${ipConfigMode === 'dhcp'
-                                    ? 'bg-accent-500 text-white shadow-lg shadow-accent-500/30'
-                                    : (isDark ? 'text-secondary-200 hover:text-white' : 'text-secondary-500 hover:text-secondary-800')
-                                    }`}
-                                >
-                                  DHCP
-                                </button>
-                                <button
-                                  type="button"
-                                  role="radio"
-                                  aria-checked={ipConfigMode === 'static'}
-                                  onClick={() => {
-                                    setIpConfigMode('static');
-                                    dispatchDeviceConfig({ ipConfigMode: 'static' });
-                                  }}
-                                  className={`px-4 py-1.5 text-[10px] font-bold rounded-lg transition-all ${ipConfigMode === 'static'
-                                    ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/30'
-                                    : (isDark ? 'text-secondary-200 hover:text-white' : 'text-secondary-500 hover:text-secondary-800')
-                                    }`}
-                                >
-                                  {t.staticLabel}
-                                </button>
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
-                              {renderNetworkInput(language === 'tr' ? 'IP Adresi' : 'IP Address', pcIP, (newIp) => {
-                                setPcIP(newIp);
-                                setErrors(prev => { const { ip: _ip, ...rest } = prev; return rest; });
-                              }, "192.168.1.100", errors.ip, ipConfigMode === 'dhcp',
-                                (e) => validateIpField(e.currentTarget.value),
-                                (e) => { if (e.key === 'Enter') validateIpField(e.currentTarget.value); }
-                              )}
-
-                              {renderNetworkInput(language === 'tr' ? 'Alt Ağ Maskesi' : 'Subnet Mask', pcSubnet, (newSubnet) => {
-                                setPcSubnet(newSubnet);
-                                setErrors(prev => { const { subnet: _, ...rest } = prev; return rest; });
-                              }, "255.255.255.0", errors.subnet, ipConfigMode === 'dhcp',
-                                (e) => validateSubnetField(e.currentTarget.value),
-                                (e) => { if (e.key === 'Enter') validateSubnetField(e.currentTarget.value); }
-                              )}
-
-                              {renderNetworkInput(language === 'tr' ? 'Ağ Geçidi' : 'Gateway', pcGateway, (newGateway) => {
-                                setPcGateway(newGateway);
-                                dispatchDeviceConfig({ gateway: newGateway });
-                              }, "192.168.1.1", errors.gateway)}
-
-                              {renderNetworkInput(language === 'tr' ? 'DNS Sunucusu' : 'DNS Server', pcDNS, (newDNS) => {
-                                setPcDNS(newDNS);
-                                dispatchDeviceConfig({ dns: newDNS });
-                              }, "8.8.8.8", errors.dns)}
-                            </div>
-
-                            <div className={`mt-4 rounded-xl border p-4 space-y-3 ${isDark ? 'border-secondary-800 bg-secondary-950/40' : 'border-secondary-200 bg-white'}`}>
-                              <div>
-                                <h3 className="text-sm font-bold">NTP Server</h3>
-                                <p className={`text-xs ${isDark ? 'text-secondary-200' : 'text-secondary-500'}`}>
-                                  {language === 'tr' ? 'NTP sunucusunu girin. IP doğruysa saat sunucudan alınır.' : 'Enter the NTP server. If the IP is valid, time is pulled from the server.'}
-                                </p>
-                              </div>
-                              <FormInput
-                                label={language === 'tr' ? 'NTP sunucu IP' : 'NTP server IP'}
-                                value={serviceNtpServer}
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  setServiceNtpServer(value);
-                                  const trimmedValue = value.trim();
-                                  const isValid = !trimmedValue || isValidIpAddress(trimmedValue);
-                                  setServiceNtpServerError(
-                                    !trimmedValue
-                                      ? ''
-                                      : isValid
-                                        ? ''
-                                        : (language === 'tr' ? 'Geçersiz IP adresi' : 'Invalid IP address')
-                                  );
-                                  setServiceNtpServerPreset(
-                                    value === 'pool.ntp.org'
-                                      ? 'pool.ntp.org'
-                                      : value === 'time.google.com'
-                                        ? 'time.google.com'
-                                        : value === 'time.cloudflare.com'
-                                          ? 'time.cloudflare.com'
-                                          : value === 'local-clock'
-                                            ? 'local-clock'
-                                            : 'custom'
-                                  );
-                                  const syncedTime = applyNtpServerTime(value);
-                                  dispatchDeviceConfig({
-                                    services: {
-                                      ntp: {
-                                        enabled: serviceNtpEnabled || (trimmedValue !== '' && isValidIpAddress(trimmedValue)),
-                                        server: value,
-                                        date: syncedTime?.date || serviceNtpDate,
-                                        time: syncedTime?.time || serviceNtpTime
-                                      }
-                                    }
-                                  });
-                                }}
-                                placeholder="192.168.1.20"
-                                aria-label={language === 'tr' ? 'NTP sunucu IP' : 'NTP server IP'}
-                                error={serviceNtpServerError}
-                                showValidation
-                                isValid={!!serviceNtpServer.trim() && !serviceNtpServerError}
-                              />
-                              <div className={`rounded-lg border p-3 text-xs ${isDark ? 'border-secondary-800 bg-secondary-950 text-secondary-300' : 'border-secondary-200 bg-secondary-50 text-secondary-600'}`}>
-                                {language === 'tr'
-                                  ? 'Sunucu geçerli bir IP ise client tarih ve saati o NTP sunucusundan okunur.'
-                                  : 'If the server is a valid IP, the client date and time are read from that NTP server.'}
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 pt-2 border-t border-secondary-800/10 dark:border-secondary-800/50">
-                              {renderNetworkInput(language === 'tr' ? 'IPv6 Adresi' : 'IPv6 Address', pcIPv6, (newIPv6) => {
-                                setPcIPv6(newIPv6);
-                                dispatchDeviceConfig({ ipv6: newIPv6 });
-                              }, "2001:db8:acad:1::10", errors.ipv6)}
-
-                              {renderNetworkInput(language === 'tr' ? 'IPv6 Öneki' : 'IPv6 Prefix', pcIPv6Prefix, (newPrefix) => {
-                                setPcIPv6Prefix(newPrefix);
-                                dispatchDeviceConfig({ ipv6Prefix: newPrefix });
-                              }, "64")}
-                            </div>
-                          </div>
-
-                        </div>
+                        <IpSettingsTab
+                          isDark={isDark}
+                          fontSize={fontSize}
+                          mobileVerticalScrollStyle={mobileVerticalScrollStyle}
+                          pcIP={pcIP}
+                          setPcIP={setPcIP}
+                          pcMAC={pcMAC}
+                          setPcMAC={setPcMAC}
+                          ipConfigMode={ipConfigMode}
+                          setIpConfigMode={setIpConfigMode}
+                          pcSubnet={pcSubnet}
+                          setPcSubnet={setPcSubnet}
+                          pcGateway={pcGateway}
+                          setPcGateway={setPcGateway}
+                          pcDNS={pcDNS}
+                          setPcDNS={setPcDNS}
+                          pcIPv6={pcIPv6}
+                          setPcIPv6={setPcIPv6}
+                          pcIPv6Prefix={pcIPv6Prefix}
+                          setPcIPv6Prefix={setPcIPv6Prefix}
+                          internalPcHostname={internalPcHostname}
+                          setPcHostname={setPcHostname}
+                          serviceNtpServer={serviceNtpServer}
+                          setServiceNtpServer={setServiceNtpServer}
+                          serviceNtpServerError={serviceNtpServerError}
+                          setServiceNtpServerError={setServiceNtpServerError}
+                          setServiceNtpServerPreset={setServiceNtpServerPreset}
+                          serviceNtpEnabled={serviceNtpEnabled}
+                          serviceNtpDate={serviceNtpDate}
+                          serviceNtpTime={serviceNtpTime}
+                          errors={errors}
+                          setErrors={setErrors}
+                          t={t}
+                          language={language}
+                          dispatchDeviceConfig={dispatchDeviceConfig}
+                          validateIpField={validateIpField}
+                          validateSubnetField={validateSubnetField}
+                          isValidIpAddress={isValidIpAddress}
+                          applyNtpServerTime={applyNtpServerTime}
+                          deviceId={deviceId}
+                          manualDhcpClickRef={manualDhcpClickRef}
+                          applyDhcpLeaseRef={applyDhcpLeaseRef}
+                        />
                       )}
 
                       {activeTab === 'services' && (
-                        <div
-                          className="flex-1 min-h-0 flex flex-col"
-                          style={mobileVerticalScrollStyle}
-                        >
-                          {/* Inner Tabs for Services - Modern Style */}
-                          <div className={`flex items-end gap-1 px-4 pt-3 border-b ${isDark ? 'border-secondary-700/50 bg-gradient-to-b from-secondary-900/20 to-transparent' : 'border-secondary-200 bg-gradient-to-b from-secondary-50/50 to-transparent'}`}>
-                            {(['dns', 'http', 'dhcp', 'ftp', 'mail', 'ntp'] as const).map((tab) => (
-                              <button
-                                key={tab}
-                                onClick={() => setActiveServiceTab(tab)}
-                                className={serviceTabClass(tab)}
-                                role="tab"
-                                aria-selected={activeServiceTab === tab}
-                                aria-controls={`service-panel-${tab}`}
-                              >
-                                {getServiceTabIcon(tab)}
-                                <span className="uppercase tracking-wide">{tab}</span>
-                                {((tab === 'dns' && serviceDnsEnabled) ||
-                                  (tab === 'http' && serviceHttpEnabled) ||
-                                  (tab === 'dhcp' && serviceDhcpEnabled) ||
-                                  (tab === 'ftp' && serviceFtpEnabled) ||
-                                  (tab === 'mail' && serviceMailEnabled) ||
-                                  (tab === 'ntp' && serviceNtpEnabled)) && (
-                                    <span className={cn(
-                                      'w-2 h-2 rounded-full animate-pulse',
-                                      isDark ? 'bg-emerald-400' : 'bg-emerald-500'
-                                    )} />
-                                  )}
-                              </button>
-                            ))}
-                          </div>
-
-                          {/* Service Content */}
-                          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar">
-                            {activeServiceTab === 'dns' && (
-                              <div className="p-3">
-                                <div className={`rounded-xl border p-4 space-y-4 ${isDark ? 'border-secondary-800 bg-secondary-900/40' : 'border-secondary-200 bg-white'}`}>
-                                  <div className="flex items-center justify-between gap-3">
-                                    <div>
-                                      <h3 className="text-sm font-bold">
-                                        {language === 'tr'
-                                          ? 'DNS (Domain Name System - isim çözümleme)'
-                                          : 'DNS (Domain Name System - name resolution)'}
-                                      </h3>
-                                      <p className={`text-xs ${isDark ? 'text-secondary-200' : 'text-secondary-500'}`}>
-                                        {t.dnsRecordManagerTip}
-                                      </p>
-                                    </div>
-                                    <div className="flex items-center gap-2 shrink-0">
-                                      <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full ${serviceDnsEnabled ? 'bg-purple-500/15 text-purple-600 border border-purple-500/30' : 'bg-secondary-200 text-secondary-500 border border-secondary-300'}`}>
-                                        {serviceDnsEnabled ? 'ON' : 'OFF'}
-                                      </span>
-                                      <button
-                                        type="button"
-                                        role="switch"
-                                        aria-checked={serviceDnsEnabled}
-                                        onClick={() => {
-                                          const enabled = !serviceDnsEnabled;
-                                          setServiceDnsEnabled(enabled);
-                                          dispatchDeviceConfig({
-                                            services: {
-                                              dns: { enabled, records: serviceDnsRecords },
-                                              http: { enabled: serviceHttpEnabled, content: serviceHttpContent },
-                                              ftp: { enabled: serviceFtpEnabled },
-                                              mail: { enabled: serviceMailEnabled, domain: serviceMailDomain, username: serviceMailUsername, password: serviceMailPassword, inbox: serviceMailInbox, sent: serviceMailSent },
-                                              dhcp: { enabled: serviceDhcpEnabled, pools: serviceDhcpPools }
-                                            }
-                                          });
-                                        }}
-                                        className={`relative inline-flex h-7 w-14 shrink-0 items-center rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60 ${serviceDnsEnabled
-                                          ? 'bg-purple-500/90 border-purple-400'
-                                          : (isDark ? 'bg-secondary-800 border-secondary-700' : 'bg-secondary-200 border-secondary-300')
-                                          }`}
-                                      >
-                                        <span
-                                          className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 ${serviceDnsEnabled ? 'translate-x-8' : 'translate-x-1'
-                                            }`}
-                                        />
-                                      </button>
-                                    </div>
-                                  </div>
-
-                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                    <Input
-                                      value={dnsFormDomain}
-                                      onChange={(e) => setDnsFormDomain(e.target.value)}
-                                      placeholder={t.dnsDomainPlaceholder}
-                                      onKeyDown={(e) => e.key === 'Enter' && handleAddDnsRecord()}
-                                    />
-                                    <Input
-                                      value={dnsFormAddress}
-                                      onChange={(e) => setDnsFormAddress(e.target.value)}
-                                      placeholder={t.dnsAddressPlaceholder}
-                                      onKeyDown={(e) => e.key === 'Enter' && handleAddDnsRecord()}
-                                    />
-                                    <Button
-                                      onClick={handleAddDnsRecord}
-                                    >
-                                      {t.addDnsRecord}
-                                    </Button>
-                                  </div>
-
-                                  <div className="space-y-2">
-                                    {serviceDnsRecords.length === 0 && (
-                                      <div className={`text-xs ${isDark ? 'text-secondary-500' : 'text-secondary-500'}`}>
-                                        {t.dnsNoRecords}
-                                      </div>
-                                    )}
-                                    {serviceDnsRecords.map((record) => (
-                                      <div key={`${record.domain}-${record.address}`} className={`flex items-center justify-between gap-3 rounded-lg px-3 py-2 ${isDark ? 'bg-secondary-950 border border-secondary-800' : 'bg-secondary-50 border border-secondary-200'}`}>
-                                        <div className="text-xs font-mono">
-                                          <span>{getDnsRecordDisplay(record)}</span>
-                                        </div>
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          onClick={() => {
-                                            isDnsEditingRef.current = true;
-                                            const newRecords = serviceDnsRecords.filter((r) => !(r.domain === record.domain && r.address === record.address));
-                                            setServiceDnsRecords(newRecords);
-                                            dispatchDeviceConfig({
-                                              services: {
-                                                dns: { enabled: serviceDnsEnabled, records: newRecords },
-                                                http: { enabled: serviceHttpEnabled, content: serviceHttpContent },
-                                                ftp: { enabled: serviceFtpEnabled },
-                                                mail: { enabled: serviceMailEnabled, domain: serviceMailDomain, username: serviceMailUsername, password: serviceMailPassword, inbox: serviceMailInbox, sent: serviceMailSent },
-                                                dhcp: { enabled: serviceDhcpEnabled, pools: serviceDhcpPools }
-                                              }
-                                            });
-                                            setTimeout(() => { isDnsEditingRef.current = false; }, 1000);
-                                          }}
-                                        >
-                                          {t.delete}
-                                        </Button>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-
-                            {activeServiceTab === 'http' && (
-                              <div className="p-3">
-                                <div className={`rounded-xl border p-4 space-y-4 ${isDark ? 'border-secondary-800 bg-secondary-900/40' : 'border-secondary-200 bg-white'}`}>
-                                  <div className="flex items-center justify-between gap-3">
-                                    <div>
-                                      <h3 className="text-sm font-bold">
-                                        {language === 'tr'
-                                          ? 'HTTP (Hypertext Transfer Protocol - web içeriği)'
-                                          : 'HTTP (Hypertext Transfer Protocol - web content)'}
-                                      </h3>
-                                      <p className={`text-xs ${isDark ? 'text-secondary-200' : 'text-secondary-500'}`}>
-                                        {t.httpServiceDescription}
-                                      </p>
-                                    </div>
-                                    <div className="flex items-center gap-2 shrink-0">
-                                      <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full ${serviceHttpEnabled ? 'bg-emerald-500/15 text-emerald-600 border border-emerald-500/30' : 'bg-secondary-200 text-secondary-500 border border-secondary-300'}`}>
-                                        {serviceHttpEnabled ? 'ON' : 'OFF'}
-                                      </span>
-                                      <button
-                                        type="button"
-                                        role="switch"
-                                        aria-checked={serviceHttpEnabled}
-                                        onClick={() => {
-                                          const enabled = !serviceHttpEnabled;
-                                          setServiceHttpEnabled(enabled);
-                                          dispatchDeviceConfig({
-                                            services: {
-                                              dns: { enabled: serviceDnsEnabled, records: serviceDnsRecords },
-                                              http: { enabled, content: serviceHttpContent },
-                                              ftp: { enabled: serviceFtpEnabled },
-                                              mail: { enabled: serviceMailEnabled, domain: serviceMailDomain, username: serviceMailUsername, password: serviceMailPassword, inbox: serviceMailInbox, sent: serviceMailSent },
-                                              dhcp: { enabled: serviceDhcpEnabled, pools: serviceDhcpPools }
-                                            }
-                                          });
-                                        }}
-                                        className={`relative inline-flex h-7 w-14 shrink-0 items-center rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60 ${serviceHttpEnabled
-                                          ? 'bg-emerald-500/90 border-emerald-400'
-                                          : (isDark ? 'bg-secondary-800 border-secondary-700' : 'bg-secondary-200 border-secondary-300')
-                                          }`}
-                                      >
-                                        <span
-                                          className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 ${serviceHttpEnabled ? 'translate-x-8' : 'translate-x-1'
-                                            }`}
-                                        />
-                                      </button>
-                                    </div>
-                                  </div>
-
-                                  <div className="space-y-2">
-                                    <label className="text-xs font-bold  tracking-wide text-secondary-500">HTTP Content</label>
-                                    <div className="flex items-center gap-2">
-                                      <div className="flex gap-1">
-                                        <Button type="button" size="icon" variant="outline" className="h-8 w-8 text-xs font-black" onClick={() => applyHttpFormatting('b')}>B</Button>
-                                        <Button type="button" size="icon" variant="outline" className="h-8 w-8 text-xs font-black italic" onClick={() => applyHttpFormatting('i')}>I</Button>
-                                        <Button type="button" size="icon" variant="outline" className="h-8 w-8 text-xs font-black underline" onClick={() => applyHttpFormatting('u')}>U</Button>
-                                      </div>
-                                      <span className="text-[10px] text-secondary-500">{language === 'tr' ? 'Seçili metni biçimlendir' : 'Format selected text'}</span>
-                                    </div>
-                                    <textarea
-                                      ref={httpContentRef}
-                                      value={serviceHttpContent}
-                                      onChange={(e) => setServiceHttpContent(e.target.value)}
-                                      placeholder={t.helloWorld}
-                                      rows={6}
-                                      className={`w-full rounded-lg border px-3 py-2 text-sm font-mono resize-y ${isDark ? 'bg-secondary-900 border-secondary-700 text-secondary-200' : 'bg-white border-secondary-300 text-secondary-700'}`}
-                                    />
-                                    {serviceHttpEnabled && (
-                                      <div
-                                        className={`text-xs rounded-lg px-3 py-2 overflow-hidden ${isDark ? 'bg-secondary-950 border border-secondary-800 text-secondary-200' : 'bg-secondary-50 border border-secondary-200 text-secondary-700'}`}
-                                        style={{ contain: 'layout style paint', willChange: 'auto' }}
-                                      >
-                                        <span dangerouslySetInnerHTML={{ __html: sanitizeHTTPContent(serviceHttpContent || t.helloWorld) }} />
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-
-                            {activeServiceTab === 'ftp' && (
-                              <div className="p-3">
-                                <div className={`rounded-xl border p-4 space-y-4 ${isDark ? 'border-secondary-800 bg-secondary-900/40' : 'border-secondary-200 bg-white'}`}>
-                                  <div className="flex items-center justify-between gap-3">
-                                    <div>
-                                      <h3 className="text-sm font-bold">FTP (File Transfer Protocol - dosya aktarımı)</h3>
-                                      <p className={`text-xs ${isDark ? 'text-secondary-200' : 'text-secondary-500'}`}>
-                                        {language === 'tr' ? 'Basit FTP sunucu ayarları.' : 'Basic FTP server settings.'}
-                                      </p>
-                                    </div>
-                                    <div className="flex items-center gap-2 shrink-0">
-                                      <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full ${serviceFtpEnabled ? 'bg-accent-500/15 text-accent-600 border border-accent-500/30' : 'bg-secondary-200 text-secondary-500 border border-secondary-300'}`}>
-                                        {serviceFtpEnabled ? 'ON' : 'OFF'}
-                                      </span>
-                                      <button
-                                        type="button"
-                                        role="switch"
-                                        aria-checked={serviceFtpEnabled}
-                                        onClick={() => {
-                                          const enabled = !serviceFtpEnabled;
-                                          setServiceFtpEnabled(enabled);
-                                          dispatchDeviceConfig({
-                                            services: {
-                                              dns: { enabled: serviceDnsEnabled, records: serviceDnsRecords },
-                                              http: { enabled: serviceHttpEnabled, content: serviceHttpContent },
-                                              ftp: { enabled },
-                                              mail: { enabled: serviceMailEnabled, domain: serviceMailDomain, username: serviceMailUsername, password: serviceMailPassword, inbox: serviceMailInbox, sent: serviceMailSent },
-                                              dhcp: { enabled: serviceDhcpEnabled, pools: serviceDhcpPools }
-                                            }
-                                          });
-                                        }}
-                                        className={`relative inline-flex h-7 w-14 shrink-0 items-center rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500/60 ${serviceFtpEnabled ? 'bg-accent-500/90 border-accent-400' : (isDark ? 'bg-secondary-800 border-secondary-700' : 'bg-secondary-200 border-secondary-300')}`}
-                                      >
-                                        <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 ${serviceFtpEnabled ? 'translate-x-8' : 'translate-x-1'}`} />
-                                      </button>
-                                    </div>
-                                  </div>
-
-                                  <div className="space-y-2">
-                                    <div className="text-xs font-bold uppercase tracking-wider opacity-60">
-                                      {language === 'tr' ? 'Dosya Listesi' : 'File List'}
-                                    </div>
-                                    <div className={`rounded-lg border divide-y ${isDark ? 'border-secondary-800 divide-secondary-800' : 'border-secondary-200 divide-secondary-200'}`}>
-                                      {(serviceFtpFiles.length > 0 ? serviceFtpFiles : []).map((file, idx) => (
-                                        <div key={`${file.name}-${idx}`} className="flex items-center justify-between gap-3 px-3 py-2 text-xs">
-                                          <div className="min-w-0">
-                                            <div className="font-mono truncate">{file.name}</div>
-                                            <div className="opacity-50">
-                                              {file.size} B{file.modifiedAt ? ` · ${new Date(file.modifiedAt).toLocaleString()}` : ''}
-                                            </div>
-                                          </div>
-                                          <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() => {
-                                              const nextFiles = serviceFtpFiles.filter((f) => f.name !== file.name);
-                                              setServiceFtpFiles(nextFiles);
-                                              dispatchDeviceConfig({
-                                                services: {
-                                                  dns: { enabled: serviceDnsEnabled, records: serviceDnsRecords },
-                                                  http: { enabled: serviceHttpEnabled, content: serviceHttpContent },
-                                                  ftp: { enabled: serviceFtpEnabled, files: nextFiles },
-                                                  mail: { enabled: serviceMailEnabled, domain: serviceMailDomain, username: serviceMailUsername, password: serviceMailPassword, inbox: serviceMailInbox, sent: serviceMailSent },
-                                                  ntp: { enabled: serviceNtpEnabled, server: serviceNtpServer, date: serviceNtpDate, time: serviceNtpTime },
-                                                  dhcp: { enabled: serviceDhcpEnabled, pools: serviceDhcpPools }
-                                                }
-                                              });
-                                            }}
-                                          >
-                                            {language === 'tr' ? 'Sil' : 'Delete'}
-                                          </Button>
-                                        </div>
-                                      ))}
-                                      {serviceFtpFiles.length === 0 && (
-                                        <div className="px-3 py-3 text-xs opacity-50">
-                                          {language === 'tr' ? 'Dosya yok' : 'No files'}
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-
-                            {activeServiceTab === 'mail' && (
-                              <div className="p-3">
-                                <div className={`rounded-xl border p-4 space-y-4 ${isDark ? 'border-secondary-800 bg-secondary-900/40' : 'border-secondary-200 bg-white'}`}>
-                                  <div className="flex items-center justify-between gap-3">
-                                    {composeMode || viewingMsg ? (
-                                      <>
-                                        <button onClick={() => { setComposeMode(false); setViewingMsg(null); setViewReplyBody(''); }} className={`p-1.5 rounded transition-colors ${isDark ? 'hover:bg-secondary-800 text-secondary-300' : 'hover:bg-secondary-100 text-secondary-600'}`}>
-                                          <ArrowLeft className="w-4 h-4" />
-                                        </button>
-                                        <h3 className="text-sm font-bold flex-1">
-                                          {composeMode ? (language === 'tr' ? 'Yeni Posta' : 'New Message') : (language === 'tr' ? 'Posta' : 'Message')}
-                                        </h3>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <div>
-                                          <h3 className="text-sm font-bold">Mail Server</h3>
-                                          <p className={`text-xs ${isDark ? 'text-secondary-200' : 'text-secondary-500'}`}>
-                                            {language === 'tr' ? 'Basit posta sunucusu.' : 'Simple mail service.'}
-                                          </p>
-                                        </div>
-                                        <div className="flex items-center gap-2 shrink-0">
-                                          <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full ${serviceMailEnabled ? 'bg-rose-500/15 text-rose-600 border border-rose-500/30' : 'bg-secondary-200 text-secondary-500 border border-secondary-300'}`}>
-                                            {serviceMailEnabled ? 'ON' : 'OFF'}
-                                          </span>
-                                          <button
-                                            type="button"
-                                            role="switch"
-                                            aria-checked={serviceMailEnabled}
-                                            onClick={() => {
-                                              const enabled = !serviceMailEnabled;
-                                              setServiceMailEnabled(enabled);
-                                              dispatchDeviceConfig({
-                                                services: {
-                                                  dns: { enabled: serviceDnsEnabled, records: serviceDnsRecords },
-                                                  http: { enabled: serviceHttpEnabled, content: serviceHttpContent },
-                                                  ftp: { enabled: serviceFtpEnabled },
-                                                  mail: { enabled, domain: serviceMailDomain, username: serviceMailUsername, password: serviceMailPassword, inbox: serviceMailInbox, sent: serviceMailSent },
-                                                  dhcp: { enabled: serviceDhcpEnabled, pools: serviceDhcpPools }
-                                                }
-                                              });
-                                            }}
-                                            className={`relative inline-flex h-7 w-14 shrink-0 items-center rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/60 ${serviceMailEnabled ? 'bg-rose-500/90 border-rose-400' : (isDark ? 'bg-secondary-800 border-secondary-700' : 'bg-secondary-200 border-secondary-300')}`}
-                                          >
-                                            <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 ${serviceMailEnabled ? 'translate-x-8' : 'translate-x-1'}`} />
-                                          </button>
-                                        </div>
-                                      </>
-                                    )}
-                                  </div>
-
-                                  {composeMode && (
-                                    <div className="space-y-3">
-                                      <Input value={composeTo} onChange={(e) => { setComposeTo(e.target.value); setMailError(''); }} placeholder={language === 'tr' ? 'Alıcı (kullanici@domain)' : 'To (user@domain)'} />
-                                      <Input value={composeSubject} onChange={(e) => setComposeSubject(e.target.value)} placeholder={language === 'tr' ? 'Konu' : 'Subject'} />
-                                      <textarea
-                                        value={composeBody}
-                                        onChange={(e) => setComposeBody(e.target.value)}
-                                        placeholder={language === 'tr' ? 'Mesajınızı yazın...' : 'Write your message...'}
-                                        rows={4}
-                                        className={`w-full text-xs p-2 rounded border resize-none focus:outline-none focus:ring-1 ${isDark ? 'bg-secondary-800 border-secondary-700 text-secondary-200 focus:ring-accent-500/50' : 'bg-white border-secondary-300 text-secondary-800 focus:ring-accent-500/50'}`}
-                                      />
-                                      {mailError && (
-                                        <div className="text-[11px] text-rose-500 font-bold bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2">
-                                          {mailError}
-                                        </div>
-                                      )}
-                                      <div className="flex gap-2">
-                                        <button
-                                          onClick={handleComposeSend}
-                                          disabled={!composeTo.trim() || !composeBody.trim()}
-                                          className={`flex items-center gap-1.5 px-4 py-2 rounded text-xs font-bold transition-colors ${composeTo.trim() && composeBody.trim() ? 'bg-accent-500/90 text-white hover:bg-accent-600' : 'bg-secondary-200 text-secondary-400 cursor-not-allowed'}`}
-                                        >
-                                          <Send className="w-3.5 h-3.5" />
-                                          {language === 'tr' ? 'Gönder' : 'Send'}
-                                        </button>
-                                        <button
-                                          onClick={() => { setComposeMode(false); setComposeTo(''); setComposeSubject(''); setComposeBody(''); setMailError(''); }}
-                                          className={`px-3 py-1.5 rounded text-[10px] font-bold transition-colors ${isDark ? 'bg-secondary-700 text-secondary-300 hover:bg-secondary-600' : 'bg-secondary-200 text-secondary-600 hover:bg-secondary-300'}`}
-                                        >
-                                          {language === 'tr' ? 'İptal' : 'Cancel'}
-                                        </button>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {viewingMsg && !composeMode && (
-                                    <div className="space-y-3">
-                                      <div className={`rounded-lg border p-3 space-y-2 ${isDark ? 'border-secondary-800 bg-secondary-950' : 'border-secondary-200 bg-secondary-50'}`}>
-                                        <div className="text-xs">
-                                          <span className="opacity-60">{language === 'tr' ? 'Kimden' : 'From'}:</span> {viewingMsg.msg.from}
-                                        </div>
-                                        <div className="text-xs">
-                                          <span className="opacity-60">{language === 'tr' ? 'Kime' : 'To'}:</span> {viewingMsg.msg.to}
-                                        </div>
-                                        <div className="text-xs font-bold">{viewingMsg.msg.subject}</div>
-                                        {viewingMsg.msg.timestamp && <div className="text-[10px] opacity-50">{new Date(viewingMsg.msg.timestamp).toLocaleString()}</div>}
-                                        <div className={`border-t pt-2 mt-2 text-xs whitespace-pre-wrap leading-relaxed ${isDark ? 'border-secondary-800' : 'border-secondary-200'}`}>
-                                          {viewingMsg.msg.body}
-                                        </div>
-                                      </div>
-                                      {viewingMsg.type === 'inbox' && (
-                                        <>
-                                          <textarea
-                                            value={viewReplyBody}
-                                            onChange={(e) => { setViewReplyBody(e.target.value); setMailError(''); }}
-                                            placeholder={language === 'tr' ? 'Yanıtınızı yazın...' : 'Write your reply...'}
-                                            rows={3}
-                                            className={`w-full text-xs p-2 rounded border resize-none focus:outline-none focus:ring-1 ${isDark ? 'bg-secondary-800 border-secondary-700 text-secondary-200 focus:ring-accent-500/50' : 'bg-white border-secondary-300 text-secondary-800 focus:ring-accent-500/50'}`}
-                                          />
-                                          {mailError && (
-                                            <div className="text-[11px] text-rose-500 font-bold bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2">
-                                              {mailError}
-                                            </div>
-                                          )}
-                                          <div className="flex gap-2">
-                                            <button
-                                              onClick={handleViewReplySend}
-                                              disabled={!viewReplyBody.trim()}
-                                              className={`flex items-center gap-1.5 px-4 py-2 rounded text-xs font-bold transition-colors ${viewReplyBody.trim() ? 'bg-accent-500/90 text-white hover:bg-accent-600' : 'bg-secondary-200 text-secondary-400 cursor-not-allowed'}`}
-                                            >
-                                              <Reply className="w-3.5 h-3.5" />
-                                              {language === 'tr' ? 'Yanıtla' : 'Reply'}
-                                            </button>
-                                            <button
-                                              onClick={() => { setViewingMsg(null); setViewReplyBody(''); setMailError(''); }}
-                                              className={`px-3 py-1.5 rounded text-[10px] font-bold transition-colors ${isDark ? 'bg-secondary-700 text-secondary-300 hover:bg-secondary-600' : 'bg-secondary-200 text-secondary-600 hover:bg-secondary-300'}`}
-                                            >
-                                              {language === 'tr' ? 'Geri' : 'Back'}
-                                            </button>
-                                          </div>
-                                        </>
-                                      )}
-                                    </div>
-                                  )}
-
-                                  {!composeMode && !viewingMsg && (
-                                    <>
-                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        <Input value={serviceMailUsername} onChange={(e) => setServiceMailUsername(e.target.value)} placeholder="user" />
-                                        <Input value={serviceMailDomain} onChange={(e) => setServiceMailDomain(e.target.value)} placeholder="local.lan" />
-                                      </div>
-
-                                      {mailPop3Blocked && (
-                                        <div className="text-[11px] text-rose-500 font-bold bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2">
-                                          {language === 'tr' ? 'POP3 (port 110) engellendi. Posta alınamıyor.' : 'POP3 (port 110) blocked. Cannot receive mail.'}
-                                        </div>
-                                      )}
-
-                                      <button
-                                        onClick={() => setComposeMode(true)}
-                                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-colors w-full justify-center bg-accent-500/90 text-white hover:bg-accent-600"
-                                      >
-                                        <Plus className="w-3.5 h-3.5" />
-                                        {language === 'tr' ? 'Yeni Posta' : 'New Mail'}
-                                      </button>
-
-                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        <div className={`rounded-lg border flex flex-col ${isDark ? 'border-secondary-800 bg-secondary-950' : 'border-secondary-200 bg-secondary-50'}`}>
-                                          <div className="p-3 border-b flex items-center justify-between">
-                                            <div className="text-xs font-bold">{language === 'tr' ? 'Gelen Kutusu' : 'Inbox'}</div>
-                                            <div className="text-[10px] opacity-60">{serviceMailInbox.length} {language === 'tr' ? 'mesaj' : serviceMailInbox.length <= 1 ? 'message' : 'messages'}</div>
-                                          </div>
-                                          <div className="flex-1 p-2 max-h-48 overflow-y-auto custom-scrollbar space-y-2">
-                                            {serviceMailInbox.length === 0 ? (
-                                              <div className="text-[10px] text-center opacity-50 italic py-4">{language === 'tr' ? 'Kutu boş' : 'Inbox empty'}</div>
-                                            ) : (
-                                              serviceMailInbox.map((msg, idx) => (
-                                                <div
-                                                  key={idx}
-                                                  onClick={() => setViewingMsg({ type: 'inbox', msg, idx })}
-                                                  className={`p-2 rounded border text-[10px] flex items-start justify-between gap-2 cursor-pointer transition-colors ${isDark ? 'border-secondary-800 bg-secondary-900/50 hover:bg-secondary-800' : 'border-secondary-200 bg-white hover:bg-secondary-100'}`}
-                                                >
-                                                  <div className="min-w-0 flex-1">
-                                                    <div className="font-bold truncate" title={msg.from}>{msg.from}</div>
-                                                    <div className="truncate opacity-80" title={msg.subject}>{msg.subject}</div>
-                                                    {msg.timestamp && <div className="text-[8px] opacity-50 mt-1">{new Date(msg.timestamp).toLocaleString()}</div>}
-                                                  </div>
-                                                  <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                                                    <button
-                                                      title={language === 'tr' ? 'Yanıtla' : 'Reply'}
-                                                      onClick={() => setViewingMsg({ type: 'inbox', msg, idx })}
-                                                      className="p-1 rounded transition-colors text-secondary-400 hover:text-accent-500 hover:bg-accent-500/20"
-                                                    >
-                                                      <Reply className="w-3 h-3" />
-                                                    </button>
-                                                    <button
-                                                      title={language === 'tr' ? 'Sil' : 'Delete'}
-                                                      onClick={() => handleDeleteInbox(idx)}
-                                                      className="p-1 rounded hover:bg-error-500/20 text-secondary-400 hover:text-error-500 transition-colors flex-shrink-0"
-                                                    >
-                                                      <Trash2 className="w-3 h-3 text-red-500" />
-                                                    </button>
-                                                  </div>
-                                                </div>
-                                              ))
-                                            )}
-                                          </div>
-                                        </div>
-                                        <div className={`rounded-lg border flex flex-col ${isDark ? 'border-secondary-800 bg-secondary-950' : 'border-secondary-200 bg-secondary-50'}`}>
-                                          <div className="p-3 border-b flex items-center justify-between">
-                                            <div className="text-xs font-bold">{language === 'tr' ? 'Gönderilenler' : 'Sent'}</div>
-                                            <div className="text-[10px] opacity-60">{serviceMailSent.length} {language === 'tr' ? 'mesaj' : serviceMailSent.length <= 1 ? 'message' : 'messages'}</div>
-                                          </div>
-                                          <div className="flex-1 p-2 max-h-48 overflow-y-auto custom-scrollbar space-y-2">
-                                            {serviceMailSent.length === 0 ? (
-                                              <div className="text-[10px] text-center opacity-50 italic py-4">{language === 'tr' ? 'Kutu boş' : 'Sent empty'}</div>
-                                            ) : (
-                                              serviceMailSent.map((msg, idx) => (
-                                                <div
-                                                  key={idx}
-                                                  onClick={() => setViewingMsg({ type: 'sent', msg, idx })}
-                                                  className={`p-2 rounded border text-[10px] flex items-start justify-between gap-2 cursor-pointer transition-colors ${isDark ? 'border-secondary-800 bg-secondary-900/50 hover:bg-secondary-800' : 'border-secondary-200 bg-white hover:bg-secondary-100'}`}
-                                                >
-                                                  <div className="min-w-0 flex-1">
-                                                    <div className="font-bold truncate" title={msg.to}>{msg.to}</div>
-                                                    <div className="truncate opacity-80" title={msg.subject}>{msg.subject}</div>
-                                                    {msg.timestamp && <div className="text-[8px] opacity-50 mt-1">{new Date(msg.timestamp).toLocaleString()}</div>}
-                                                  </div>
-                                                  <button
-                                                    title={language === 'tr' ? 'Sil' : 'Delete'}
-                                                    onClick={(e) => { e.stopPropagation(); handleDeleteSent(idx); }}
-                                                    className="p-1 rounded hover:bg-error-500/20 text-secondary-400 hover:text-error-500 transition-colors flex-shrink-0"
-                                                  >
-                                                    <Trash2 className="w-3 h-3 text-red-500" />
-                                                  </button>
-                                                </div>
-                                              ))
-                                            )}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-
-                            {activeServiceTab === 'dhcp' && (
-                              <div className="p-3">
-                                <div className={`rounded-xl border p-4 space-y-4 ${isDark ? 'border-secondary-800 bg-secondary-900/40' : 'border-secondary-200 bg-white'}`}>
-                                  <div className="flex items-center justify-between gap-3">
-                                    <div>
-                                      <h3 className="text-sm font-bold">
-                                        {language === 'tr'
-                                          ? 'DHCP (Dynamic Host Configuration Protocol - otomatik IP)'
-                                          : 'DHCP (Dynamic Host Configuration Protocol - auto IP)'}
-                                      </h3>
-                                      <p className={`text-xs ${isDark ? 'text-secondary-200' : 'text-secondary-500'}`}>
-                                        {t.dhcpPoolsDescription}
-                                      </p>
-                                    </div>
-                                    <div className="flex items-center gap-2 shrink-0">
-                                      <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full ${serviceDhcpEnabled ? 'bg-sky-500/15 text-sky-600 border border-sky-500/30' : 'bg-secondary-200 text-secondary-500 border border-secondary-300'}`}>
-                                        {serviceDhcpEnabled ? 'ON' : 'OFF'}
-                                      </span>
-                                      <button
-                                        type="button"
-                                        role="switch"
-                                        aria-checked={serviceDhcpEnabled}
-                                        onClick={() => {
-                                          const enabled = !serviceDhcpEnabled;
-                                          setServiceDhcpEnabled(enabled);
-                                          dispatchDeviceConfig({
-                                            services: {
-                                              dns: { enabled: serviceDnsEnabled, records: serviceDnsRecords },
-                                              http: { enabled: serviceHttpEnabled, content: serviceHttpContent },
-                                              dhcp: { enabled, pools: serviceDhcpPools }
-                                            }
-                                          });
-                                        }}
-                                        className={`relative inline-flex h-7 w-14 shrink-0 items-center rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60 ${serviceDhcpEnabled
-                                          ? 'bg-sky-500/90 border-sky-400'
-                                          : (isDark ? 'bg-secondary-800 border-secondary-700' : 'bg-secondary-200 border-secondary-300')
-                                          }`}
-                                      >
-                                        <span
-                                          className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 ${serviceDhcpEnabled ? 'translate-x-8' : 'translate-x-1'
-                                            }`}
-                                        />
-                                      </button>
-                                    </div>
-                                  </div>
-
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <Input
-                                      value={dhcpForm.poolName}
-                                      onChange={(e) => setDhcpForm((prev) => ({ ...prev, poolName: e.target.value }))}
-                                      placeholder={t.dhcpPoolNamePlaceholder}
-                                      onKeyDown={(e) => e.key === 'Enter' && saveDhcpPool()}
-                                    />
-                                    <Input
-                                      value={dhcpForm.defaultGateway}
-                                      onChange={(e) => setDhcpForm((prev) => ({ ...prev, defaultGateway: e.target.value }))}
-                                      placeholder={t.dhcpPoolGatewayPlaceholder}
-                                      onKeyDown={(e) => e.key === 'Enter' && saveDhcpPool()}
-                                    />
-                                    <Input
-                                      value={dhcpForm.dnsServer}
-                                      onChange={(e) => setDhcpForm((prev) => ({ ...prev, dnsServer: e.target.value }))}
-                                      placeholder={t.dhcpPoolDnsPlaceholder}
-                                      onKeyDown={(e) => e.key === 'Enter' && saveDhcpPool()}
-                                    />
-                                    <Input
-                                      value={dhcpForm.startIp}
-                                      onChange={(e) => setDhcpForm((prev) => ({ ...prev, startIp: e.target.value }))}
-                                      placeholder={t.dhcpPoolStartIpPlaceholder}
-                                      onKeyDown={(e) => e.key === 'Enter' && saveDhcpPool()}
-                                    />
-                                    <Input
-                                      value={dhcpForm.subnetMask}
-                                      onChange={(e) => setDhcpForm((prev) => ({ ...prev, subnetMask: e.target.value }))}
-                                      placeholder={t.dhcpPoolSubnetPlaceholder}
-                                      onKeyDown={(e) => e.key === 'Enter' && saveDhcpPool()}
-                                    />
-                                    <Input
-                                      type="number"
-                                      min={1}
-                                      value={dhcpForm.maxUsers}
-                                      onChange={(e) => setDhcpForm((prev) => ({ ...prev, maxUsers: Number(e.target.value || 1) }))}
-                                      placeholder={t.dhcpPoolMaxUsersPlaceholder}
-                                      onKeyDown={(e) => e.key === 'Enter' && saveDhcpPool()}
-                                    />
-                                  </div>
-
-                                  <div className="flex items-center gap-2">
-                                    <Button onClick={saveDhcpPool}>
-                                      {editingDhcpIndex === null ? t.addPool : t.updatePool}
-                                    </Button>
-                                    {editingDhcpIndex !== null && (
-                                      <Button variant="outline" onClick={resetDhcpForm}>
-                                        {t.cancel}
-                                      </Button>
-                                    )}
-                                  </div>
-
-                                  <div className="space-y-2">
-                                    {serviceDhcpPools.length === 0 && (
-                                      <div className={`text-xs ${isDark ? 'text-secondary-500' : 'text-secondary-500'}`}>
-                                        {t.noDhcpPools}
-                                      </div>
-                                    )}
-                                    {serviceDhcpPools.map((pool, index) => (
-                                      <div key={`${pool.poolName}-${index}`} className={`rounded-lg px-3 py-2 space-y-2 ${isDark ? 'bg-secondary-950 border border-secondary-800' : 'bg-secondary-50 border border-secondary-200'}`}>
-                                        <div className="text-xs font-mono">
-                                          <div>{pool.poolName}</div>
-                                          <div>GW: {pool.defaultGateway} | DNS: {pool.dnsServer}</div>
-                                          <div>Start: {pool.startIp} | Mask: {pool.subnetMask} | Max: {pool.maxUsers}</div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                          <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() => {
-                                              isDhcpEditingRef.current = true;
-                                              setDhcpForm(pool);
-                                              setEditingDhcpIndex(index);
-                                            }}
-                                          >
-                                            {t.edit}
-                                          </Button>
-                                          <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() => {
-                                              isDhcpEditingRef.current = true;
-                                              const newPools = serviceDhcpPools.filter((_, i) => i !== index);
-                                              setServiceDhcpPools(newPools);
-                                              dispatchDeviceConfig({
-                                                services: {
-                                                  dns: { enabled: serviceDnsEnabled, records: serviceDnsRecords },
-                                                  http: { enabled: serviceHttpEnabled, content: serviceHttpContent },
-                                                  dhcp: { enabled: serviceDhcpEnabled, pools: newPools }
-                                                }
-                                              });
-                                              if (editingDhcpIndex === index) {
-                                                resetDhcpForm();
-                                              }
-                                            }}
-                                          >
-                                            {t.delete}
-                                          </Button>
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-
-                            {activeServiceTab === 'ntp' && (
-                              <div className="p-3">
-                                <div className={`rounded-xl border p-4 space-y-4 ${isDark ? 'border-secondary-800 bg-secondary-900/40' : 'border-secondary-200 bg-white'}`}>
-                                  <div className="flex items-center justify-between gap-3">
-                                    <div>
-                                      <h3 className="text-sm font-bold">NTP Server</h3>
-                                      <p className={`text-xs ${isDark ? 'text-secondary-200' : 'text-secondary-500'}`}>
-                                        {language === 'tr' ? 'Hizmeti aç/kapa ve tarih/saat ayarlayın.' : 'Toggle the service and set the date/time.'}
-                                      </p>
-                                    </div>
-                                    <div className="flex items-center gap-2 shrink-0">
-                                      <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full ${serviceNtpEnabled ? 'bg-indigo-500/15 text-indigo-600 border border-indigo-500/30' : 'bg-secondary-200 text-secondary-500 border border-secondary-300'}`}>
-                                        {serviceNtpEnabled ? 'ON' : 'OFF'}
-                                      </span>
-                                      <button
-                                        type="button"
-                                        role="switch"
-                                        aria-checked={serviceNtpEnabled}
-                                        onClick={() => {
-                                          const enabled = !serviceNtpEnabled;
-                                          setServiceNtpEnabled(enabled);
-                                          dispatchDeviceConfig({
-                                            services: {
-                                              dns: { enabled: serviceDnsEnabled, records: serviceDnsRecords },
-                                              http: { enabled: serviceHttpEnabled, content: serviceHttpContent },
-                                              ftp: { enabled: serviceFtpEnabled },
-                                              mail: { enabled: serviceMailEnabled, domain: serviceMailDomain, username: serviceMailUsername, password: serviceMailPassword, inbox: serviceMailInbox, sent: serviceMailSent },
-                                              ntp: { enabled, server: serviceNtpServer, date: serviceNtpDate, time: serviceNtpTime },
-                                              dhcp: { enabled: serviceDhcpEnabled, pools: serviceDhcpPools }
-                                            }
-                                          });
-                                        }}
-                                        className={`relative inline-flex h-7 w-14 shrink-0 items-center rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60 ${serviceNtpEnabled ? 'bg-indigo-500/90 border-indigo-400' : (isDark ? 'bg-secondary-800 border-secondary-700' : 'bg-secondary-200 border-secondary-300')}`}
-                                      >
-                                        <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 ${serviceNtpEnabled ? 'translate-x-8' : 'translate-x-1'}`} />
-                                      </button>
-                                    </div>
-                                  </div>
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <Input
-                                      type="date"
-                                      value={serviceNtpDate}
-                                      onChange={(e) => {
-                                        const newDate = e.target.value;
-                                        setServiceNtpDate(newDate);
-                                        dispatchDeviceConfig({
-                                          services: {
-                                            ntp: { enabled: serviceNtpEnabled, server: serviceNtpServer, date: newDate, time: serviceNtpTime }
-                                          }
-                                        });
-                                      }}
-                                      aria-label={language === 'tr' ? 'NTP tarih' : 'NTP date'}
-                                    />
-                                    <Input
-                                      type="time"
-                                      value={serviceNtpTime}
-                                      onChange={(e) => {
-                                        const newTime = e.target.value;
-                                        setServiceNtpTime(newTime);
-                                        dispatchDeviceConfig({
-                                          services: {
-                                            ntp: { enabled: serviceNtpEnabled, server: serviceNtpServer, date: serviceNtpDate, time: newTime }
-                                          }
-                                        });
-                                      }}
-                                      aria-label={language === 'tr' ? 'NTP saat' : 'NTP time'}
-                                    />
-                                  </div>
-                                  <div className={`rounded-lg border p-3 text-xs ${isDark ? 'border-secondary-800 bg-secondary-950 text-secondary-300' : 'border-secondary-200 bg-secondary-50 text-secondary-600'}`}>
-                                    {language === 'tr'
-                                      ? 'Takvim ve saat bu sekmede düzenlenir. NTP sunucusu IP ayarları altında seçilir.'
-                                      : 'Date and time are configured here. The NTP server is selected under IP settings.'}
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
+                        <ServicesTab
+                          isDark={isDark}
+                          language={language}
+                          t={t}
+                          activeServiceTab={activeServiceTab}
+                          setActiveServiceTab={setActiveServiceTab}
+                          mobileVerticalScrollStyle={mobileVerticalScrollStyle}
+                          dispatchDeviceConfig={dispatchDeviceConfig}
+                          serviceDnsEnabled={serviceDnsEnabled}
+                          setServiceDnsEnabled={setServiceDnsEnabled}
+                          serviceDnsRecords={serviceDnsRecords}
+                          setServiceDnsRecords={setServiceDnsRecords}
+                          dnsFormDomain={dnsFormDomain}
+                          setDnsFormDomain={setDnsFormDomain}
+                          dnsFormAddress={dnsFormAddress}
+                          setDnsFormAddress={setDnsFormAddress}
+                          handleAddDnsRecord={handleAddDnsRecord}
+                          getDnsRecordDisplay={getDnsRecordDisplay}
+                          isDnsEditingRef={isDnsEditingRef}
+                          serviceHttpEnabled={serviceHttpEnabled}
+                          setServiceHttpEnabled={setServiceHttpEnabled}
+                          serviceHttpContent={serviceHttpContent}
+                          setServiceHttpContent={setServiceHttpContent}
+                          serviceFtpEnabled={serviceFtpEnabled}
+                          setServiceFtpEnabled={setServiceFtpEnabled}
+                          serviceFtpFiles={serviceFtpFiles}
+                          setServiceFtpFiles={setServiceFtpFiles}
+                          serviceDhcpEnabled={serviceDhcpEnabled}
+                          setServiceDhcpEnabled={setServiceDhcpEnabled}
+                          serviceDhcpPools={serviceDhcpPools}
+                          setServiceDhcpPools={setServiceDhcpPools}
+                          dhcpForm={dhcpForm}
+                          setDhcpForm={setDhcpForm}
+                          editingDhcpIndex={editingDhcpIndex}
+                          setEditingDhcpIndex={setEditingDhcpIndex}
+                          isDhcpEditingRef={isDhcpEditingRef}
+                          serviceNtpEnabled={serviceNtpEnabled}
+                          setServiceNtpEnabled={setServiceNtpEnabled}
+                          serviceNtpServer={serviceNtpServer}
+                          serviceNtpDate={serviceNtpDate}
+                          setServiceNtpDate={setServiceNtpDate}
+                          serviceNtpTime={serviceNtpTime}
+                          setServiceNtpTime={setServiceNtpTime}
+                          serviceMailEnabled={serviceMailEnabled}
+                          setServiceMailEnabled={setServiceMailEnabled}
+                          serviceMailDomain={serviceMailDomain}
+                          setServiceMailDomain={setServiceMailDomain}
+                          serviceMailUsername={serviceMailUsername}
+                          setServiceMailUsername={setServiceMailUsername}
+                          serviceMailPassword={serviceMailPassword}
+                          setServiceMailPassword={setServiceMailPassword}
+                          serviceMailInbox={serviceMailInbox}
+                          setServiceMailInbox={setServiceMailInbox}
+                          serviceMailSent={serviceMailSent}
+                          setServiceMailSent={setServiceMailSent}
+                          mailPop3Blocked={mailPop3Blocked}
+                          handleComposeSend={handleComposeSend}
+                          handleViewReplySend={handleViewReplySend}
+                          handleDeleteInbox={handleDeleteInbox}
+                          handleDeleteSent={handleDeleteSent}
+                        />
                       )}
 
                       {activeTab === 'iot' && (
-                        <div className="flex-1 min-h-0 p-3 overflow-y-auto overflow-x-hidden custom-scrollbar" style={mobileVerticalScrollStyle}>
-                          <div className={`rounded-2xl border p-4 space-y-4 ${isDark ? 'border-secondary-800 bg-secondary-900/40' : 'border-secondary-200 bg-white'}`}>
-                            <div className="flex items-center justify-between gap-2 text-accent-500">
-                              <div className="flex items-center gap-2">
-                                <Radio className="w-5 h-5" />
-                                <div>
-                                  <h3 className="text-sm font-black tracking-widest">
-                                    {language === 'tr' ? 'IoT Yönetimi' : 'IoT Management'}
-                                  </h3>
-                                  <p className="text-[10px] font-medium tracking-normal text-accent-500/70">
-                                    {language === 'tr'
-                                      ? 'Nesneleri yönetmek için yönetim paneli'
-                                      : 'Panel for managing connected devices'}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  size="sm"
-                                  className="h-7 px-3 text-xs font-semibold bg-accent-600 hover:bg-accent-700 text-white"
-                                  onClick={() => {
-                                    navigateToProgram('desktop');
-                                    setTimeout(() => {
-                                      const apDevice = topologyDevices.find(d =>
-                                        (d.type === 'router' || d.type === 'switchL2' || d.type === 'switchL3') &&
-                                        d.services?.http?.enabled &&
-                                        (d.wifi?.ssid === wifiSSID || d.ports?.some(p => p.wifi?.ssid === wifiSSID))
-                                      );
-                                      const targetIp = apDevice?.ip || '192.168.1.1';
-                                      setInput(`curl ${targetIp}`);
-                                      void executeCommand(`curl ${targetIp}`);
-                                    }, 300);
-                                  }}
-                                >
-                                  {language === 'tr' ? 'Kablosuz Ayarları Aç' : 'Open Wireless Settings'}
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  className="h-7 px-3 text-xs font-semibold bg-accent-600 hover:bg-accent-700 text-white"
-                                  onClick={() => {
-                                    navigateToProgram('desktop');
-                                    setTimeout(() => {
-                                      setInput('curl http://iot-panel');
-                                      void executeCommand('curl http://iot-panel');
-                                    }, 300);
-                                  }}
-                                >
-                                  {language === 'tr' ? 'Web Paneli Aç' : 'Open Web Panel'}
-                                </Button>
-
-                              </div>
-                            </div>
-
-                            {iotDevices.length === 0 ? (
-                              <div className={`text-xs ${isDark ? 'text-secondary-200' : 'text-secondary-600'}`}>
-                                {language === 'tr' ? 'Topolojide IoT nesnesi yoktur. Önce topolojiye IoT nesnesi ekleyiniz.' : 'No IoT object in topology. Add one first.'}
-                              </div>
-                            ) : (
-                              <>
-                                <div className="space-y-2">
-                                  <label className="text-xs font-bold text-secondary-500">{language === 'tr' ? 'Nesne Seçimi' : 'Object Selection'}</label>
-                                  <Select value={selectedIotDeviceId} onValueChange={setSelectedIotDeviceId}>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="IoT" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {iotDevices.map((d) => (
-                                        <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-
-                                <div className="space-y-2">
-                                  <label className="text-xs font-bold text-secondary-500">{language === 'tr' ? 'Cihaz Adı' : 'Device Name'}</label>
-                                  <Input
-                                    value={selectedIotDevice?.name || ''}
-                                    onChange={(e) => {
-                                      const newName = e.target.value;
-                                      window.dispatchEvent(new CustomEvent('update-topology-device-config', {
-                                        detail: {
-                                          deviceId: selectedIotDeviceId,
-                                          config: { name: newName }
-                                        }
-                                      }));
-                                    }}
-                                    placeholder={language === 'tr' ? 'Cihaz adı...' : 'Device name...'}
-                                  />
-                                </div>
-
-                                <div className="space-y-2">
-                                  <label className="text-xs font-bold text-secondary-500">{language === 'tr' ? 'Cihaz Türü' : 'Device Type'}</label>
-                                  <Select
-                                    value={`${iotKind}:${iotSensorType}`}
-                                    onValueChange={(v) => {
-                                      const [kind, sensor] = v.split(':');
-                                      setIotKind(kind as 'cooler' | 'lamp' | 'heater' | 'sensor');
-                                      setIotSensorType(sensor as 'temperature' | 'sound' | 'motion' | 'humidity' | 'light');
-                                    }}
-                                  >
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="heater:temperature">{language === 'tr' ? 'Isıtıcı' : 'Heater'}</SelectItem>
-                                      <SelectItem value="lamp:light">{language === 'tr' ? 'Lamba' : 'Lamp'}</SelectItem>
-                                      <SelectItem value="cooler:temperature">{language === 'tr' ? 'Soğutucu' : 'Cooler'}</SelectItem>
-                                      <SelectItem value="sensor:temperature">{language === 'tr' ? 'Isı Sensörü' : 'Temperature Sensor'}</SelectItem>
-                                      <SelectItem value="sensor:light">{language === 'tr' ? 'Işık Sensörü' : 'Light Sensor'}</SelectItem>
-                                      <SelectItem value="sensor:humidity">{language === 'tr' ? 'Nem Sensörü' : 'Humidity Sensor'}</SelectItem>
-                                      <SelectItem value="sensor:motion">{language === 'tr' ? 'Hareket Sensörü' : 'Motion Sensor'}</SelectItem>
-                                      <SelectItem value="sensor:sound">{language === 'tr' ? 'Ses Sensörü' : 'Sound Sensor'}</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-
-
-                                <div className="flex items-center gap-4">
-                                  <label className="text-xs font-bold text-secondary-500 shrink-0">
-                                    {language === 'tr' ? 'Cihaz Durumu (Aktif/Pasif)' : 'Device Status (Active/Passive)'}
-                                  </label>
-                                  <span className={`text-[9px] font-bold ${!iotCollaborationEnabled ? 'text-rose-500' : 'text-secondary-200'}`}>
-                                    {language === 'tr' ? 'PASİF' : 'PASSIVE'}
-                                  </span>
-                                  <button
-                                    type="button"
-                                    role="switch"
-                                    aria-checked={iotCollaborationEnabled}
-                                    onClick={() => setIotCollaborationEnabled((prev) => !prev)}
-                                    className={`relative inline-flex h-7 w-14 items-center rounded-full border transition-all duration-300 shrink-0 ${iotCollaborationEnabled ? 'bg-accent-500 border-accent-400 shadow-[0_0_3px_rgba(6,182,212,0.15)]' : (isDark ? 'bg-secondary-800 border-secondary-700' : 'bg-secondary-200 border-secondary-300')}`}
-                                  >
-                                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-300 ${iotCollaborationEnabled ? 'translate-x-8' : 'translate-x-1'}`} />
-                                  </button>
-                                  <span className={`text-[9px] font-bold ${iotCollaborationEnabled ? 'text-accent-500' : 'text-secondary-200'}`}>
-                                    {language === 'tr' ? 'AKTİF' : 'ACTIVE'}
-                                  </span>
-                                </div>
-
-                                <div className="flex items-center gap-4">
-                                  <label className="text-xs font-bold text-secondary-500 shrink-0">
-                                    {language === 'tr' ? 'Güç Durumu (Açık/Kapalı)' : 'Power Status (On/Off)'}
-                                  </label>
-                                  <span className={`text-[9px] font-bold ${selectedIotDevice?.status === 'offline' ? 'text-rose-500' : 'text-secondary-200'}`}>
-                                    {language === 'tr' ? 'KAPALI' : 'OFF'}
-                                  </span>
-                                  <button
-                                    type="button"
-                                    role="switch"
-                                    aria-checked={selectedIotDevice?.status !== 'offline'}
-                                    onClick={() => {
-                                      if (selectedIotDevice) {
-                                        const newStatus = selectedIotDevice.status === 'offline' ? 'online' : 'offline';
-                                        window.dispatchEvent(new CustomEvent('update-topology-device-config', {
-                                          detail: {
-                                            deviceId: selectedIotDeviceId,
-                                            config: { status: newStatus }
-                                          }
-                                        }));
-                                      }
-                                    }}
-                                    className={`relative inline-flex h-7 w-14 items-center rounded-full border transition-all duration-300 shrink-0 ${selectedIotDevice?.status !== 'offline' ? 'bg-emerald-500 border-emerald-400 shadow-[0_0_3px_rgba(16,185,129,0.15)]' : (isDark ? 'bg-secondary-800 border-secondary-700' : 'bg-secondary-200 border-secondary-300')}`}
-                                  >
-                                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-300 ${selectedIotDevice?.status !== 'offline' ? 'translate-x-8' : 'translate-x-1'}`} />
-                                  </button>
-                                  <span className={`text-[9px] font-bold ${selectedIotDevice?.status !== 'offline' ? 'text-emerald-500' : 'text-secondary-200'}`}>
-                                    {language === 'tr' ? 'AÇIK' : 'ON'}
-                                  </span>
-                                </div>
-
-                                <div className="space-y-2">
-                                  <label className="text-xs font-bold text-secondary-500">{language === 'tr' ? 'Veri Saklama (not/json/metin)' : 'Data Storage (note/json/text)'}</label>
-                                  <textarea
-                                    value={iotDataStore}
-                                    onChange={(e) => setIotDataStore(e.target.value)}
-                                    rows={5}
-                                    className={`w-full rounded-md border px-3 py-2 text-sm ${isDark ? 'bg-secondary-950 border-secondary-800 text-secondary-100' : 'bg-white border-secondary-300 text-secondary-900'}`}
-                                    placeholder={language === 'tr' ? 'Sensör verisi veya notlar...' : 'Sensor data or notes...'}
-                                  />
-                                </div>
-
-                                {(() => {
-                                  const wifiStrength = selectedIotDevice ? getWirelessSignalStrength(selectedIotDevice, topologyDevices, deviceStates) : 0;
-                                  const isWired = topologyConnections.some(c =>
-                                    (c.sourceDeviceId === selectedIotDeviceId || c.targetDeviceId === selectedIotDeviceId) && c.active !== false
-                                  );
-                                  const isIotConnected = wifiStrength > 0 || isWired;
-
-                                  return (
-                                    <div className={`p-4 rounded-xl ${isDark ? 'bg-secondary-800/50' : 'bg-secondary-50'} border ${isDark ? 'border-secondary-700' : 'border-secondary-200'}`}>
-                                      <div className="space-y-3">
-                                        <div className="flex items-center justify-between">
-                                          <div className="flex-1">
-                                            <div className="text-[11px] font-semibold text-secondary-500 mb-1">{language === 'tr' ? 'IP Adresi' : 'IP Address'}</div>
-                                            <div className={`text-sm font-mono ${selectedIotDevice?.ip ? 'text-accent-600 dark:text-accent-300' : 'text-secondary-200'}`}>
-                                              {selectedIotDevice?.ip || (language === 'tr' ? 'Atanmamış' : 'Not assigned')}
-                                            </div>
-                                          </div>
-                                        </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                          <div>
-                                            <div className="text-[11px] font-semibold text-secondary-500 mb-1">{language === 'tr' ? 'MAC Adresi' : 'MAC Address'}</div>
-                                            <div className="text-sm font-mono text-secondary-600 dark:text-secondary-200">{selectedIotDevice?.macAddress ? normalizeMAC(selectedIotDevice.macAddress) : (language === 'tr' ? 'Yok' : 'N/A')}</div>
-                                          </div>
-                                          <div>
-                                            <div className="text-[11px] font-semibold text-secondary-500 mb-1">{language === 'tr' ? 'Ağ Geçidi' : 'Gateway'}</div>
-                                            <div className="text-sm font-mono text-secondary-600 dark:text-secondary-200">{selectedIotDevice?.gateway || '-'}</div>
-                                          </div>
-                                          <div>
-                                            <div className="text-[11px] font-semibold text-secondary-500 mb-1">{language === 'tr' ? 'Alt Ağ Maskesi' : 'Subnet Mask'}</div>
-                                            <div className="text-sm font-mono text-secondary-600 dark:text-secondary-200">{selectedIotDevice?.subnet || '-'}</div>
-                                          </div>
-                                          <div>
-                                            <div className="text-[11px] font-semibold text-secondary-500 mb-1">{language === 'tr' ? 'Durum' : 'Status'}</div>
-                                            <div className={`text-sm font-semibold ${isIotConnected ? 'text-success-600 dark:text-success-400' : 'text-error-600 dark:text-error-400'}`}>
-                                              {isIotConnected ? (
-                                                <span className="flex items-center gap-1.5">
-                                                  <span className="w-2 h-2 rounded-full bg-success-500 animate-pulse"></span>
-                                                  {language === 'tr' ? 'Çevrimiçi' : 'Online'}
-                                                </span>
-                                              ) : (
-                                                <span className="flex items-center gap-1.5">
-                                                  <span className="w-2 h-2 rounded-full bg-error-500"></span>
-                                                  {language === 'tr' ? 'Çevrimdışı' : 'Offline'}
-                                                </span>
-                                              )}
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="flex gap-2 mt-2">
-                                        {selectedIotDevice?.ip && (
-                                          <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="hover:text-primary-500"
-                                            onClick={() => {
-                                              const targetIp = selectedIotDevice?.ip;
-                                              if (targetIp) {
-                                                navigateToProgram('desktop');
-                                                setTimeout(() => {
-                                                  executeCommand(`ping ${targetIp}`);
-                                                }, 300);
-                                              }
-                                            }}
-                                          >
-                                            <Globe className="w-4 h-4 mr-2" />
-                                            {language === 'tr' ? 'Ping Gönder' : 'Ping'}
-                                          </Button>
-                                        )}
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          className="hover:text-primary-500"
-                                          onClick={() => {
-                                            if (selectedIotDeviceId) {
-                                              window.parent.postMessage({
-                                                type: 'router-admin-renew-iot',
-                                                deviceId: selectedIotDeviceId,
-                                                payload: {
-                                                  iotDeviceId: selectedIotDeviceId
-                                                }
-                                              }, window.parent.location.origin);
-                                            }
-                                          }}
-                                        >
-                                          <Radio className="w-4 h-4 mr-2" />
-                                          {language === 'tr' ? 'IP Yenile' : 'IP Renew'}
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  );
-                                })()}
-
-                                {/* Sensor Value & Graph Display */}
-                                {selectedIotDevice && (
-                                  <IoTSensorDisplay
-                                    device={selectedIotDevice}
-                                    environment={environment}
-                                    language={language}
-                                    isDark={isDark}
-                                  />
-                                )}
-
-                                <div className={`text-xs ${isDark ? 'text-secondary-200' : 'text-secondary-500'} flex items-center gap-1`}>
-                                  <Save className="w-3 h-3" />
-                                  {language === 'tr' ? 'Değişiklikler otomatik kaydediliyor' : 'Changes are auto-saved'}
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        </div>
+                        <IotDashboardTab
+                          isDark={isDark}
+                          language={language}
+                          isMobile={isMobile}
+                          mobileVerticalScrollStyle={mobileVerticalScrollStyle}
+                          iotDevices={iotDevices}
+                          selectedIotDeviceId={selectedIotDeviceId}
+                          setSelectedIotDeviceId={setSelectedIotDeviceId}
+                          selectedIotDevice={selectedIotDevice}
+                          iotSensorType={iotSensorType}
+                          setIotSensorType={setIotSensorType}
+                          iotKind={iotKind}
+                          setIotKind={setIotKind}
+                          iotCollaborationEnabled={iotCollaborationEnabled}
+                          setIotCollaborationEnabled={setIotCollaborationEnabled}
+                          iotDataStore={iotDataStore}
+                          setIotDataStore={setIotDataStore}
+                          topologyDevices={topologyDevices}
+                          deviceStates={deviceStates}
+                          topologyConnections={topologyConnections}
+                          deviceId={deviceId}
+                          wifiSSID={wifiSSID}
+                          navigateToProgram={(program) => navigateToProgram(program as PCActiveTab)}
+                          setInput={setInput}
+                          executeCommand={executeCommand}
+                          environment={environment}
+                        />
                       )}
 
                       {activeTab === 'wireless' && (
-                        <div
-                          className="flex-1 min-h-0 p-3 overflow-y-auto overflow-x-hidden custom-scrollbar"
-                          style={mobileVerticalScrollStyle}
-                        >
-                          <div className={`rounded-2xl border p-5 space-y-5 ${isDark ? 'border-secondary-800 bg-secondary-900/40' : 'border-secondary-200 bg-white'}`}>
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-3 text-purple-500">
-                                <Network className="w-5 h-5" />
-                                <h3 className="text-sm font-black tracking-widest ">
-                                  {language === 'tr' ? 'Wi-Fi (Wireless Fidelity) Bağlantısı' : 'Wi-Fi (Wireless Fidelity) Connection'}
-                                </h3>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  size="sm"
-                                  className="h-7 px-3 text-xs font-semibold bg-accent-600 hover:bg-accent-700 text-white"
-                                  onClick={() => {
-                                    navigateToProgram('desktop');
-                                    setTimeout(() => {
-                                      const apDevice = topologyDevices.find(d =>
-                                        (d.type === 'router' || d.type === 'switchL2' || d.type === 'switchL3') &&
-                                        d.services?.http?.enabled &&
-                                        (d.wifi?.ssid === wifiSSID || d.ports?.some(p => p.wifi?.ssid === wifiSSID))
-                                      );
-                                      const targetIp = apDevice?.ip || '192.168.1.1';
-                                      setInput(`curl ${targetIp}`);
-                                      void executeCommand(`curl ${targetIp}`);
-                                    }, 300);
-                                  }}
-                                >
-                                  {language === 'tr' ? 'Kablosuz Ayarları Aç' : 'Open Wireless Settings'}
-                                </Button>
-                                <button
-                                  type="button"
-                                  role="switch"
-                                  aria-checked={wifiEnabled}
-                                  onClick={() => {
-                                    const enabled = !wifiEnabled;
-                                    setWifiEnabled(enabled);
-                                    dispatchDeviceConfig({
-                                      wifi: {
-                                        enabled: enabled,
-                                        ssid: wifiSSID,
-                                        bssid: wifiBSSID,
-                                        security: wifiSecurity,
-                                        password: wifiPassword,
-                                        channel: wifiChannel,
-                                        mode: 'client'
-                                      }
-                                    });
-                                  }}
-                                  className={`relative inline-flex h-7 w-14 shrink-0 items-center rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60 ${wifiEnabled
-                                    ? 'bg-purple-500 border-purple-400'
-                                    : (isDark ? 'bg-secondary-800 border-secondary-700' : 'bg-secondary-200 border-secondary-300')
-                                    }`}
-                                >
-                                  <span
-                                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 ${wifiEnabled ? 'translate-x-8' : 'translate-x-1'
-                                      }`}
-                                  />
-                                </button>
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                              <div className="space-y-2">
-                                <label className="text-[10px] font-black tracking-widest text-secondary-500 ml-1">SSID (Service Set Identifier)</label>
-                                {(() => {
-                                  const filtered = availableSSIDs.filter(e =>
-                                    e.ssid.toLowerCase().includes(wifiSSID.toLowerCase())
-                                  );
-                                  return (
-                                    <div className="relative">
-                                      <div className={`flex items-center border rounded-md px-3 h-9 gap-2 ${!wifiEnabled ? 'opacity-50 pointer-events-none' : ''} ${isDark ? 'bg-background border-secondary-800' : 'bg-white border-secondary-200'}`}>
-                                        <input
-                                          type="text"
-                                          value={wifiSSID}
-                                          onChange={e => {
-                                            const val = e.target.value;
-                                            setWifiSSID(val);
-                                            setWifiBSSID('');
-                                            setSsidDropdownOpen(true);
-                                            // Sync WiFi change to global
-                                            dispatchDeviceConfig({
-                                              wifi: {
-                                                enabled: wifiEnabled,
-                                                ssid: val,
-                                                bssid: '',
-                                                security: wifiSecurity,
-                                                password: wifiPassword,
-                                                channel: wifiChannel,
-                                                mode: 'client'
-                                              }
-                                            });
-                                          }}
-                                          onFocus={() => setSsidDropdownOpen(true)}
-                                          onBlur={() => setTimeout(() => setSsidDropdownOpen(false), 150)}
-                                          placeholder={language === 'tr' ? 'Ağ seçin veya yazın...' : 'Select or type SSID...'}
-                                          className={`flex-1 bg-transparent outline-none text-sm ${isDark ? 'text-white placeholder:text-secondary-500' : 'text-secondary-900 placeholder:text-secondary-400'}`}
-                                        />
-                                        {wifiSSID && (
-                                          <button type="button" onClick={() => { setWifiSSID(''); setWifiBSSID(''); setSsidDropdownOpen(false); }} className="text-secondary-200 hover:text-white text-xs">✕</button>
-                                        )}
-                                        <button type="button" onClick={() => setSsidDropdownOpen(o => !o)} className="text-secondary-200 hover:text-white text-xs">▾</button>
-                                      </div>
-                                      {ssidDropdownOpen && (
-                                        <div className={`absolute z-50 w-full mt-1 rounded-md border shadow-lg max-h-48 overflow-y-auto overflow-x-hidden custom-scrollbar ${isDark ? 'bg-secondary-900 border-secondary-700' : 'bg-white border-secondary-200'}`}>
-                                          {filtered.length === 0 && (
-                                            <div className={`px-3 py-2 text-xs ${isDark ? 'text-secondary-200' : 'text-secondary-400'}`}>
-                                              {language === 'tr' ? 'Ağ bulunamadı' : 'No networks found'}
-                                            </div>
-                                          )}
-                                          {filtered.map(entry => {
-                                            const hasDupe = availableSSIDs.filter(e => e.ssid === entry.ssid).length > 1;
-                                            const label = hasDupe ? `${entry.ssid} (${entry.deviceName})` : entry.ssid;
-                                            return (
-                                              <button
-                                                key={`${entry.deviceId}-${entry.ssid}`}
-                                                type="button"
-                                                onPointerDown={(event) => {
-                                                  event.preventDefault();
-                                                  setSsidDropdownOpen(false);
-                                                  setWifiSSID(entry.ssid);
-                                                  setWifiBSSID(entry.deviceId);
-                                                  // Sync WiFi change to global
-                                                  dispatchDeviceConfig({
-                                                    wifi: {
-                                                      enabled: wifiEnabled,
-                                                      ssid: entry.ssid,
-                                                      bssid: entry.deviceId,
-                                                      security: wifiSecurity,
-                                                      password: wifiPassword,
-                                                      channel: wifiChannel,
-                                                      mode: 'client'
-                                                    }
-                                                  });
-                                                  (document.activeElement as HTMLElement | null)?.blur?.();
-                                                }}
-                                                className={`w-full text-left px-3 py-2 text-sm hover:bg-purple-500/20 ${isDark ? 'text-white' : 'text-secondary-900'}`}
-                                              >
-                                                📶 {label}
-                                              </button>
-                                            );
-                                          })}
-                                        </div>
-                                      )}
-                                    </div>
-                                  );
-                                })()}
-                              </div>
-
-                              <div className="space-y-2">
-                                <label className="text-[10px] font-black tracking-widest  text-secondary-500 ml-1">
-                                  {language === 'tr' ? 'Güvenlik' : 'Security'}
-                                </label>
-                                <Select
-                                  value={wifiSecurity}
-                                  onValueChange={(val: string) => {
-                                    const security = val as 'open' | 'wpa' | 'wpa2' | 'wpa3';
-                                    setWifiSecurity(security);
-                                    dispatchDeviceConfig({
-                                      wifi: {
-                                        enabled: wifiEnabled,
-                                        ssid: wifiSSID,
-                                        bssid: wifiBSSID,
-                                        security: security,
-                                        password: wifiPassword,
-                                        channel: wifiChannel,
-                                        mode: 'client'
-                                      }
-                                    });
-                                  }}
-                                  disabled={!wifiEnabled}
-                                >
-                                  <SelectTrigger className={`w-full ${isDark ? 'bg-background border-secondary-800 text-white' : 'bg-white border-secondary-200 text-secondary-900'}`}>
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="open">{language === 'tr' ? 'Açık' : 'Open'}</SelectItem>
-                                    <SelectItem value="wpa">WPA</SelectItem>
-                                    <SelectItem value="wpa2">WPA2 Personal</SelectItem>
-                                    <SelectItem value="wpa3">WPA3</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-
-                              {wifiSecurity !== 'open' && (
-                                <div className="space-y-2">
-                                  <label className="text-[10px] font-black tracking-widest  text-secondary-500 ml-1">
-                                    {language === 'tr' ? 'Parola' : 'Password'}
-                                  </label>
-                                  <div className="relative">
-                                    <Input
-                                      type={showWifiPassword ? 'text' : 'password'}
-                                      value={wifiPassword}
-                                      onChange={(e) => {
-                                        const val = e.target.value;
-                                        setWifiPassword(val);
-                                        dispatchDeviceConfig({
-                                          wifi: {
-                                            enabled: wifiEnabled,
-                                            ssid: wifiSSID,
-                                            bssid: wifiBSSID,
-                                            security: wifiSecurity,
-                                            password: val,
-                                            channel: wifiChannel,
-                                            mode: 'client'
-                                          }
-                                        });
-                                      }}
-                                      placeholder={t.securityKey}
-                                      disabled={!wifiEnabled}
-                                      className="bg-background pr-9"
-                                    />
-                                    <button
-                                      type="button"
-                                      onClick={() => setShowWifiPassword(v => !v)}
-                                      className="absolute right-2 top-1/2 -translate-y-1/2 text-secondary-200 hover:text-white focus:outline-none"
-                                      tabIndex={-1}
-                                    >
-                                      {showWifiPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                    </button>
-                                  </div>
-                                </div>
-                              )}
-
-                              <div className="space-y-2">
-                                <label className="text-[10px] font-black tracking-widest  text-secondary-500 ml-1">
-                                  {language === 'tr' ? 'Kanal' : 'Channel'}
-                                </label>
-                                <Select
-                                  value={wifiChannel}
-                                  onValueChange={(val: string) => {
-                                    const channel = val as '2.4GHz' | '5GHz';
-                                    setWifiChannel(channel);
-                                    dispatchDeviceConfig({
-                                      wifi: {
-                                        enabled: wifiEnabled,
-                                        ssid: wifiSSID,
-                                        bssid: wifiBSSID,
-                                        security: wifiSecurity,
-                                        password: wifiPassword,
-                                        channel: channel,
-                                        mode: 'client'
-                                      }
-                                    });
-                                  }}
-                                  disabled={!wifiEnabled}
-                                >
-                                  <SelectTrigger className={`w-full ${isDark ? 'bg-background border-secondary-800 text-white' : 'bg-white border-secondary-200 text-secondary-900'}`}>
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="2.4GHz">2.4 GHz</SelectItem>
-                                    <SelectItem value="5GHz">5 GHz</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            </div>
-
-                            <div className={`p-4 rounded-xl text-xs flex items-center gap-3 ${(() => {
-                              if (!wifiEnabled) return 'text-secondary-500 bg-secondary-500/5';
-                              if (!wifiSSID) return 'text-warning-500 bg-warning-500/10';
-                              // Check if connected: SSID matches an active AP
-                              const isConnected = !!deviceStates && Array.from(ensureDeviceStatesMap(deviceStates).entries()).some(([id, state]) => {
-                                const wlan = state.ports['wlan0'];
-                                if (!wlan || wlan.shutdown || wlan.wifi?.mode !== 'ap') return false;
-                                if (wifiBSSID && wifiBSSID !== id) return false;
-                                if (wlan.wifi?.ssid !== wifiSSID) return false;
-                                const apSecurity = wlan.wifi?.security || 'open';
-                                if (apSecurity !== wifiSecurity) return false;
-                                if (apSecurity !== 'open' && wlan.wifi?.password !== wifiPassword) return false;
-                                return true;
-                              });
-                              return isConnected ? 'text-emerald-500 bg-emerald-500/10' : 'text-warning-500 bg-warning-500/10';
-                            })()
-                              }`}>
-                              <div className={`p-2 rounded-lg ${(() => {
-                                if (!wifiEnabled) return 'bg-secondary-500/10';
-                                if (!wifiSSID) return 'bg-warning-500/20';
-                                const isConnected = !!deviceStates && Array.from(ensureDeviceStatesMap(deviceStates).entries()).some(([id, state]) => {
-                                  const wlan = state.ports['wlan0'];
-                                  if (!wlan || wlan.shutdown || wlan.wifi?.mode !== 'ap') return false;
-                                  if (wifiBSSID && wifiBSSID !== id) return false;
-                                  if (wlan.wifi?.ssid !== wifiSSID) return false;
-                                  const apSecurity = wlan.wifi?.security || 'open';
-                                  if (apSecurity !== wifiSecurity) return false;
-                                  if (apSecurity !== 'open' && wlan.wifi?.password !== wifiPassword) return false;
-                                  return true;
-                                });
-                                return isConnected ? 'bg-emerald-500/20' : 'bg-warning-500/20';
-                              })()
-                                }`}>
-                                <Monitor className="w-4 h-4" />
-                              </div>
-                              <div>
-                                <div className="font-bold  tracking-wider mb-0.5">
-                                  {language === 'tr' ? 'Durum' : 'Status'}
-                                </div>
-                                <div className="opacity-80">
-                                  {!wifiEnabled
-                                    ? (language === 'tr' ? 'Kablosuz alıcı kapalı' : 'Wireless receiver disabled')
-                                    : (() => {
-                                      // No SSID configured - cannot be connected
-                                      if (!wifiSSID) return language === 'tr' ? 'WLAN0 aktif, ağ seçilmedi' : 'WLAN0 active, no network selected';
-
-                                      // First check deviceStates (router/switch runtime state)
-                                      const foundInStates = !!deviceStates && Array.from(ensureDeviceStatesMap(deviceStates).entries()).find(([id, state]) => {
-                                        const wlan = state.ports['wlan0'];
-                                        if (!wlan || wlan.shutdown || wlan.wifi?.mode !== 'ap') return false;
-                                        if (wifiBSSID && wifiBSSID !== id) return false;
-                                        if (wlan.wifi?.ssid !== wifiSSID) return false;
-                                        const apSecurity = wlan.wifi?.security || 'open';
-                                        if (apSecurity !== wifiSecurity) return false;
-                                        if (apSecurity !== 'open' && wlan.wifi?.password !== wifiPassword) return false;
-                                        return true;
-                                      });
-
-                                      // If not found in deviceStates, also check topologyDevices
-                                      const foundInTopology = !foundInStates && topologyDevices.find((apDevice) => {
-                                        if (apDevice.id === deviceId) return false;
-                                        if (apDevice.type !== 'router' && apDevice.type !== 'switchL2' && apDevice.type !== 'switchL3') return false;
-                                        const apWifi = apDevice.wifi;
-                                        if (!apWifi || apWifi.mode !== 'ap' || !apWifi.ssid) return false;
-                                        if (apWifi.ssid !== wifiSSID) return false;
-                                        const apSecurity = apWifi.security || 'open';
-                                        if (apSecurity !== wifiSecurity) return false;
-                                        if (apSecurity !== 'open' && apWifi.password !== wifiPassword) return false;
-                                        return true;
-                                      });
-
-                                      const isConnected = !!foundInStates || !!foundInTopology;
-                                      if (isConnected && wifiSSID) return language === 'tr' ? `Bağlı • SSID: ${wifiSSID}` : `Connected • SSID: ${wifiSSID}`;
-                                      return wifiSSID
-                                        ? (language === 'tr' ? `Ağ bulunamadı: ${wifiSSID}` : `Network not found: ${wifiSSID}`)
-                                        : (language === 'tr' ? 'WLAN0 aktif, ağ seçilmedi' : 'WLAN0 active, no network selected');
-                                    })()
-                                  }
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Signal Strength Display */}
-                            {wifiEnabled && wifiSSID && (
-                              <div className={`p-4 rounded-xl text-xs flex items-center gap-3 ${isDark ? 'bg-primary-500/10 text-primary-300 border border-primary-500/30' : 'bg-primary-50 text-primary-700 border border-primary-200'}`}>
-                                <div className={`p-2 rounded-lg ${isDark ? 'bg-primary-500/20' : 'bg-primary-100'}`}>
-                                  <Wifi className="w-4 h-4" />
-                                </div>
-                                <div>
-                                  <div className="font-bold tracking-wider mb-0.5">
-                                    {language === 'tr' ? 'Sinyal Gücü' : 'Signal Strength'}
-                                  </div>
-                                  <div className="opacity-90">
-                                    {(() => {
-                                      const strength = wifiSignalStrength;
-                                      const percentMap: Record<number, number> = { 0: 0, 1: 1, 2: 25, 3: 50, 4: 75, 5: 100 };
-                                      const percentage = percentMap[strength] || 0;
-                                      const levelMap = {
-                                        tr: { 0: 'Sinyal yok', 1: 'Çok Zayıf', 2: 'Zayıf', 3: 'Orta', 4: 'İyi', 5: 'Mükemmel' },
-                                        en: { 0: 'No signal', 1: 'Very Weak', 2: 'Weak', 3: 'Fair', 4: 'Good', 5: 'Excellent' }
-                                      };
-                                      const level = levelMap[language === 'tr' ? 'tr' : 'en'][strength as keyof typeof levelMap['en']] || 'Unknown';
-                                      return `${level} (${percentage}%)`;
-                                    })()}
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {(activeTab === 'desktop' || activeTab === 'terminal') && (
-                        <div className="flex flex-col flex-1 min-h-0 h-full overflow-hidden">
-                          {activeTab === 'terminal' && (
-                            <div className={`px-3 md:px-4 py-2 border-b shrink-0 ${isDark ? 'border-secondary-800 bg-secondary-900/40' : 'border-secondary-200 bg-secondary-50'} flex items-center justify-between gap-3`}>
-                              <div className="flex flex-col gap-1">
-                                <div className="text-xs">
-                                  {isConsoleConnected && connectedDeviceId ? (
-                                    <span className="text-emerald-500 font-medium">
-                                      {t.physicalConnectionDetected} {topologyDevices.find((d: CanvasDevice) => d.id === connectedDeviceId)?.name || connectedDeviceId}
-                                    </span>
-                                  ) : (
-                                    <span className={isDark ? 'text-secondary-200' : 'text-secondary-600'}>{t.noConsoleCableDetected}</span>
-                                  )}
-                                </div>
-                                <div className={`text-[10px] opacity-70 ${isDark ? 'text-secondary-200' : 'text-secondary-400'}`}>
-                                  {t.consoleConfiguration}
-                                </div>
-                              </div>
-                              <Button
-                                size="sm"
-                                onClick={isConsoleConnected ? () => { setIsConsoleConnected(false); setConnectedDeviceId(null); } : handleConnect}
-                                disabled={isPcPoweredOff || (!consoleDevice && !isConsoleConnected)}
-                                className={isConsoleConnected ? 'bg-rose-600 hover:bg-rose-700 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}
-                              >
-                                {isConsoleConnected ? t.disconnect : t.connect}
-                              </Button>
-                            </div>
-                          )}
-                          {showCmdSettings && (
-                            <div className="px-4 py-2 border-b bg-muted/30 flex items-center gap-4 animate-in slide-in-from-top-2 shrink-0">
-                              <label className="text-[10px] font-black tracking-widest text-muted-foreground whitespace-nowrap">
-                                {t.fontSizeLabel}: {fontSize}px
-                              </label>
-                              <input
-                                type="range" min="10" max="20" value={fontSize}
-                                aria-label={t.fontSizeLabel}
-                                onChange={(e) => handleFontSizeChange(parseInt(e.target.value))}
-                                className="flex-1 h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-                              />
-                              <TooltipWrapper title={t.clearTerminalBtn}>
-                                <Button
-                                  variant="ghost" size="sm"
-                                  onClick={() => {
-                                    if (activeTab === 'desktop') setPcOutput([]);
-                                    else setConsoleConnectionTime(Date.now());
-                                  }}
-                                  className="h-7 text-[10px] font-black tracking-widest text-rose-500 shrink-0 gap-1.5"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                  <span>{t.clearTerminalBtn}</span>
-                                  {!isMobile && <ShortcutBadge shortcut="Ctrl+L" variant="danger" className="scale-75 origin-right" />}
-                                </Button>
-                              </TooltipWrapper>
-                            </div>
-                          )}
-                          {/* Output Area - Scrollable */}
-                          <div
-                            ref={outputRef}
-                            className={`flex-1 overflow-y-auto overflow-x-hidden scroll-smooth p-3 md:p-6 space-y-1.5 font-geist-mono leading-relaxed custom-scrollbar min-h-0 ${isMobile ? 'mobile-scroll' : ''} ${isPcPoweredOff ? 'bg-black' : terminalBg}`}
-                            style={{ ...mobileVerticalScrollStyle, fontSize: `${fontSize}px`, contain: 'layout style paint' }}
-                          >
-                            {isPcPoweredOff ? (
-                              <div className="h-full flex flex-col items-center justify-center gap-3">
-                                <svg className="w-16 h-16 text-error-600 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v10" />
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636a9 9 0 1 1-12.728 0" />
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M18.36 5.64a9 9 0 1 1-12.73 0" />
-                                </svg>
-                              </div>
-                            ) : (
-                              (activeTab === 'desktop' ? pcOutput : activeConsoleOutput).map((line) => (
-                                <div key={line.id} className="break-all animate-in fade-in slide-in-from-left-1 duration-200">
-                                  {line.type === 'command' && (
-                                    <div className="flex items-start gap-2 text-accent-500 font-bold">
-                                      {activeTab === 'desktop' ? (
-                                        <Laptop className="w-4 h-4 shrink-0 text-primary-400" />
-                                      ) : (
-                                        <span className="shrink-0 text-emerald-400">
-                                          <Laptop className="w-4 h-4" />
-                                        </span>
-                                      )}
-                                      <span className="shrink-0 opacity-40 select-none font-geist-mono">
-                                        {activeTab === 'desktop' ? (line.prompt || `${internalPcHostname} C:\\>`) : (line.prompt || '>')}
-                                      </span>
-                                      <span className={isDark ? "text-secondary-100" : "text-secondary-900"}>{highlightText(line.content)}</span>
-                                    </div>
-                                  )}
-                                  {line.type === 'output' && (
-                                    <div className={`${textColor} whitespace-pre-wrap`}>
-                                      {(() => {
-                                        // Check if line contains copyable network values (Windows format with dots)
-                                        const ipConfigMatch = line.content.match(/^(\s*(?:IPv4 Address|Default Gateway|IPv6 Address|DNS Servers|Subnet Mask|Physical Address|Host Name).*?:\s*)(.+)$/);
-                                        if (ipConfigMatch) {
-                                          const [, label, value] = ipConfigMatch;
-                                          return (
-                                            <div className="flex items-center gap-2 group">
-                                              <span>{highlightText(label)}</span>
-                                              <span
-                                                className="font-mono cursor-pointer hover:text-emerald-400 transition-colors"
-                                                onClick={() => {
-                                                  navigator.clipboard.writeText(value.trim());
-                                                  toast({
-                                                    title: language === 'tr' ? 'Kopyalandı' : 'Copied',
-                                                    description: `${value.trim()} ${language === 'tr' ? 'panoya kopyalandı' : 'copied to clipboard'}`,
-                                                  });
-                                                }}
-                                                title={language === 'tr' ? 'Tıkla ve kopyala' : 'Click to copy'}
-                                              >
-                                                {highlightText(value)}
-                                              </span>
-                                              <button
-                                                onClick={() => {
-                                                  navigator.clipboard.writeText(value.trim());
-                                                  toast({
-                                                    title: language === 'tr' ? 'Kopyalandı' : 'Copied',
-                                                    description: `${value.trim()} ${language === 'tr' ? 'panoya kopyalandı' : 'copied to clipboard'}`,
-                                                  });
-                                                }}
-                                                className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-secondary-700/30 ${isDark ? 'text-secondary-400 hover:text-emerald-400' : 'text-secondary-500 hover:text-emerald-600'}`}
-                                                title={language === 'tr' ? 'Kopyala' : 'Copy'}
-                                              >
-                                                <Copy className="w-3 h-3" />
-                                              </button>
-                                            </div>
-                                          );
-                                        }
-                                        // OS IP Configuration format (without dots, like "   IPv4 Address . . . . : value")
-                                        const osIpConfigMatch = line.content.match(/^(\s*(?:IPv4 Address|Default Gateway|IPv6 Address|DNS Servers|Subnet Mask|Physical Address)\s+)(.+)$/);
-                                        if (osIpConfigMatch) {
-                                          const [, label, value] = osIpConfigMatch;
-                                          return (
-                                            <div className="flex items-center gap-2 group">
-                                              <span>{highlightText(label)}</span>
-                                              <span
-                                                className="font-mono cursor-pointer hover:text-emerald-400 transition-colors"
-                                                onClick={() => {
-                                                  navigator.clipboard.writeText(value.trim());
-                                                  toast({
-                                                    title: language === 'tr' ? 'Kopyalandı' : 'Copied',
-                                                    description: `${value.trim()} ${language === 'tr' ? 'panoya kopyalandı' : 'copied to clipboard'}`,
-                                                  });
-                                                }}
-                                                title={language === 'tr' ? 'Tıkla ve kopyala' : 'Click to copy'}
-                                              >
-                                                {highlightText(value)}
-                                              </span>
-                                              <button
-                                                onClick={() => {
-                                                  navigator.clipboard.writeText(value.trim());
-                                                  toast({
-                                                    title: language === 'tr' ? 'Kopyalandı' : 'Copied',
-                                                    description: `${value.trim()} ${language === 'tr' ? 'panoya kopyalandı' : 'copied to clipboard'}`,
-                                                  });
-                                                }}
-                                                className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-secondary-700/30 ${isDark ? 'text-secondary-400 hover:text-emerald-400' : 'text-secondary-500 hover:text-emerald-600'}`}
-                                                title={language === 'tr' ? 'Kopyala' : 'Copy'}
-                                              >
-                                                <Copy className="w-3 h-3" />
-                                              </button>
-                                            </div>
-                                          );
-                                        }
-                                        // DHCP renew success message with IP
-                                        const dhcpMatch = line.content.match(/(DHCP lease renewed\. New IP:|IP yenilendi:|Assigned link-local IP:|No DHCP server\/pool found\. Assigned link-local IP:)(.+)/);
-                                        if (dhcpMatch) {
-                                          const [, label, value] = dhcpMatch;
-                                          const ipValue = value.trim();
-                                          return (
-                                            <div className="flex items-center gap-2 group">
-                                              <span>{highlightText(label)}</span>
-                                              <span
-                                                className="font-mono text-accent-400 cursor-pointer hover:text-emerald-400 transition-colors"
-                                                onClick={() => {
-                                                  navigator.clipboard.writeText(ipValue);
-                                                  toast({
-                                                    title: language === 'tr' ? 'Kopyalandı' : 'Copied',
-                                                    description: `${ipValue} ${language === 'tr' ? 'panoya kopyalandı' : 'copied to clipboard'}`,
-                                                  });
-                                                }}
-                                                title={language === 'tr' ? 'Tıkla ve kopyala' : 'Click to copy'}
-                                              >
-                                                {highlightText(ipValue)}
-                                              </span>
-                                              <button
-                                                onClick={() => {
-                                                  navigator.clipboard.writeText(ipValue);
-                                                  toast({
-                                                    title: language === 'tr' ? 'Kopyalandı' : 'Copied',
-                                                    description: `${ipValue} ${language === 'tr' ? 'panoya kopyalandı' : 'copied to clipboard'}`,
-                                                  });
-                                                }}
-                                                className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-secondary-700/30 ${isDark ? 'text-secondary-400 hover:text-emerald-400' : 'text-secondary-500 hover:text-emerald-600'}`}
-                                                title={language === 'tr' ? 'Kopyala' : 'Copy'}
-                                              >
-                                                <Copy className="w-3 h-3" />
-                                              </button>
-                                            </div>
-                                          );
-                                        }
-                                        // General IP address detection for ping, nslookup, tracert, netstat, etc.
-                                        // IPv4 pattern with optional port: \d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(?::\d+)?
-                                        // IPv6 pattern (simplified): ([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}
-                                        // Also match standalone IP addresses
-                                        const ipAddressMatch = line.content.match(/(Reply from |Address: |\[|TCP\s+|UDP\s+|^|\s)(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(?::\d+)?|([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4})(\]|:| |$)/);
-                                        if (ipAddressMatch) {
-                                          const [, , ipAddress] = ipAddressMatch;
-                                          const fullMatch = ipAddressMatch[0];
-                                          const beforeIp = line.content.substring(0, line.content.indexOf(fullMatch));
-                                          const afterIp = line.content.substring(line.content.indexOf(fullMatch) + fullMatch.length);
-
-                                          // Extract just the IP address without port if present
-                                          let cleanIpAddress = ipAddress;
-                                          if (ipAddress.includes(':')) {
-                                            // Check if it's IPv6 or IPv4 with port
-                                            if (ipAddress.includes('.') && ipAddress.includes(':')) {
-                                              // IPv4 with port, e.g., 192.168.1.1:80
-                                              const parts = ipAddress.split(':');
-                                              if (parts.length === 2) {
-                                                cleanIpAddress = parts[0];
-                                              }
-                                            }
-                                            // IPv6 addresses also contain colons, but we keep them as is
-                                          }
-
-                                          return (
-                                            <div className="flex items-center gap-2 group">
-                                              <span>{highlightText(beforeIp)}</span>
-                                              <span
-                                                className="font-mono cursor-pointer hover:text-emerald-400 transition-colors"
-                                                onClick={() => {
-                                                  navigator.clipboard.writeText(cleanIpAddress);
-                                                  toast({
-                                                    title: language === 'tr' ? 'Kopyalandı' : 'Copied',
-                                                    description: `${cleanIpAddress} ${language === 'tr' ? 'panoya kopyalandı' : 'copied to clipboard'}`,
-                                                  });
-                                                }}
-                                                title={language === 'tr' ? 'Tıkla ve kopyala' : 'Click to copy'}
-                                              >
-                                                {highlightText(fullMatch)}
-                                              </span>
-                                              <span>{highlightText(afterIp)}</span>
-                                              <button
-                                                onClick={() => {
-                                                  navigator.clipboard.writeText(cleanIpAddress);
-                                                  toast({
-                                                    title: language === 'tr' ? 'Kopyalandı' : 'Copied',
-                                                    description: `${cleanIpAddress} ${language === 'tr' ? 'panoya kopyalandı' : 'copied to clipboard'}`,
-                                                  });
-                                                }}
-                                                className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-secondary-700/30 ${isDark ? 'text-secondary-400 hover:text-emerald-400' : 'text-secondary-500 hover:text-emerald-600'}`}
-                                                title={language === 'tr' ? 'Kopyala' : 'Copy'}
-                                              >
-                                                <Copy className="w-3 h-3" />
-                                              </button>
-                                            </div>
-                                          );
-                                        }
-                                        return <span>{highlightText(line.content)}</span>;
-                                      })()}
-                                    </div>
-                                  )}
-                                  {line.type === 'error' && <span className="text-rose-500 font-bold italic">{highlightText(line.content)}</span>}
-                                  {line.type === 'success' && <span className="text-accent-500 font-bold  text-xs tracking-widest opacity-80">{highlightText(line.content)}</span>}
-                                  {/* HTML çıktıları pop-up içinde gösteriliyor */}
-                                </div>
-                              ))
-                            )}
-                            {activeTab === 'terminal' && !isPcPoweredOff && !isConsoleConnected && (
-                              <div className={`mt-auto text-xs ${isDark ? 'text-secondary-200' : 'text-secondary-500'}`}>
-                                {t.waitingForConnection}
-                              </div>
-                            )}
-                          </div>
-                          {/* Input Area - Fixed at bottom */}
-                          {!isPcPoweredOff && (
-                            <div onClick={() => inputRef.current?.focus()} className={`shrink-0 border-t bg-muted/95 backdrop-blur-sm ${isMobile ? 'p-2' : 'p-3'}`}>
-                              <form onSubmit={(e) => { e.preventDefault(); executeCommand(); }} className="flex items-center gap-3 relative">
-
-                                {/* Context hint for password/confirm in console mode */}
-                                {activeTab === 'terminal' && isConsoleConnected && (consoleNeedsPassword || consoleConfirmDialog?.show || consoleReloadPending) && (
-                                  <div className="absolute -top-7 left-4 right-4 text-[10px] font-black tracking-widest text-warning-400 animate-pulse">
-                                    {consoleNeedsPassword
-                                      ? (language === 'tr' ? 'Parola girin ve Enter\'a basın' : 'Enter password and press Enter')
-                                      : (language === 'tr' ? 'Onaylamak için Enter\'a basın' : 'Press Enter to confirm')}
-                                  </div>
-                                )}
-                                <div
-                                  onClick={() => inputRef.current?.focus()}
-                                   className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 bg-background rounded-lg border flex-1 group focus-within:ring-1 transition-all shadow-inner overflow-hidden ${isMobile ? 'px-3 py-2' : ''} ${activeTab === 'terminal' && isConsoleConnected && (consoleNeedsPassword || consoleConfirmDialog?.show || consoleReloadPending)
-                                    ? 'border-warning-500/50 focus-within:ring-warning-500/50'
-                                    : 'border-input focus-within:ring-primary/50'
-                                    }`}>
-                                  <span className={`font-geist-mono font-bold text-[10px] sm:text-xs select-none opacity-40 group-focus-within:opacity-100 transition-opacity shrink-0 truncate max-w-[80px] sm:max-w-none md:max-w-[150px] ${activeTab === 'terminal' && isConsoleConnected && (consoleNeedsPassword || consoleConfirmDialog?.show || consoleReloadPending)
-                                    ? 'text-warning-400'
-                                    : 'text-primary'
-                                    }`}>
-                                    {activeTab === 'desktop' ? (ftpSession ? 'ftp>' : `${internalPcHostname} C:\\>`) : (() => {
-                                      if (consoleNeedsPassword) return 'Password:';
-                                      if (!connectedDeviceId || !deviceStates) return '>';
-                                      const state = ensureDeviceStatesMap(deviceStates).get(connectedDeviceId);
-                                      const hostname = state?.hostname || 'Device';
-                                      const mode = state?.currentMode || 'user';
-                                      // Map CommandMode to prompt suffix
-                                      const modeSuffix: Record<string, string> = {
-                                        'user': '>',
-                                        'privileged': '#',
-                                        'config': '(config)#',
-                                        'interface': '(config-if)#',
-                                        'line': '(config-line)#',
-                                        'vlan': '(config-vlan)#',
-                                        'router-config': '(config)#'
-                                      };
-                                      const suffix = modeSuffix[mode] || '>';
-                                      return `${hostname}${suffix}`;
-                                    })()}
-                                  </span>
-                                  <input
-                                    ref={inputRef}
-                                    type={activeTab === 'terminal' && isConsoleConnected && consoleNeedsPassword ? 'password' : 'text'}
-                                    value={input}
-                                    onChange={(e) => handleInputChange(e.target.value)}
-                                    onKeyDown={handleKeyDown}
-                                    onFocus={() => {
-                                      // Scroll input into view on mobile when keyboard opens
-                                      if (typeof window !== 'undefined' && window.innerWidth < 768) {
-                                        setTimeout(() => {
-                                          inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                                        }, 300);
-                                      }
-                                    }}
-                                    className="flex-1 bg-transparent border-none outline-none font-geist-mono text-[16px] sm:text-[13px] placeholder:text-muted-foreground/50 min-w-0"
-                                    placeholder={
-                                      activeTab === 'terminal' && isConsoleConnected && (consoleNeedsPassword || consoleConfirmDialog?.show || consoleReloadPending)
-                                        ? (consoleNeedsPassword
-                                          ? (language === 'tr' ? 'Parolayı girin...' : 'Enter password...')
-                                          : (language === 'tr' ? 'Enter\'a basın veya yazın...' : 'Press Enter or type...'))
-                                        : t.typeCommand
-                                    }
-                                    autoComplete="off"
-                                    spellCheck={false}
-                                    disabled={activeTab === 'desktop' ? isCmdInputDisabled : isConsoleInputDisabled}
-                                  />
-                                </div>
-                                {shouldShowAutocomplete && (
-                                  <div
-                                    ref={autocompleteRef}
-                                    className="absolute bottom-20 left-4 z-20 w-[min(420px,calc(100%-2rem))]"
-                                  >
-                                    <div className={cn(
-                                      "rounded-lg border shadow-xl overflow-hidden",
-                                      isDark ? "bg-secondary-800 border-secondary-700" : "bg-white border-secondary-200"
-                                    )}>
-                                      <div className={`flex items-center justify-between px-3 py-2 text-[11px] font-geist-mono font-semibold ${isDark ? 'text-secondary-200 bg-secondary-900/60' : 'text-secondary-700 bg-secondary-50'}`}>
-                                        <span>{t.cmdSuggestions}</span>
-                                        <span className={`text-[10px] font-bold ${isDark ? 'text-accent-300' : 'text-accent-700'}`}>
-                                          Tab ↹ {t.completeWithTab}
-                                        </span>
-                                      </div>
-                                      <div className="max-h-40 overflow-y-auto overflow-x-hidden mobile-scroll custom-scrollbar font-geist-mono">
-                                        {renderAutocompleteSuggestions.map((cmd, idx) => (
-                                          <button
-                                            key={`${cmd}-${idx}`}
-                                            type="button"
-                                            onClick={() => {
-                                              completeAutocompleteSelection(cmd);
-                                              inputRef.current?.focus();
-                                            }}
-                                            className={cn(
-                                              "w-full text-left px-2.5 py-1 text-[11px] font-geist-mono transition-colors",
-                                              autocompleteIndex >= 0 && idx === autocompleteIndex
-                                                ? (isDark ? "bg-accent-500/20 text-accent-200" : "bg-accent-50 text-accent-900")
-                                                : (isDark ? "text-secondary-300 hover:bg-primary/10" : "text-secondary-700 hover:bg-primary/10")
-                                            )}
-                                          >
-                                            {cmd}
-                                          </button>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  </div>
-                                )}
-                                {activeTab === 'terminal' && isConsoleConnected && (consoleNeedsPassword || consoleConfirmDialog?.show || consoleReloadPending) && (
-                                  <Button
-                                    type="button"
-                                    disabled={isConsoleInputDisabled}
-                                    variant="ghost"
-                                    className="shrink-0 rounded-xl hover:bg-rose-500/20 text-rose-500 px-2 h-9 text-xs"
-                                    onClick={() => {
-                                      if (onExecuteDeviceCommand && connectedDeviceId) {
-                                        if (consoleNeedsPassword) {
-                                          onExecuteDeviceCommand(connectedDeviceId, '__PASSWORD_CANCELLED__');
-                                        } else if (consoleReloadPending) {
-                                          // For reload, send 'n' to cancel
-                                          onExecuteDeviceCommand(connectedDeviceId, 'n');
-                                        }
-                                      }
-                                      setConsolePasswordAttempted(false);
-                                      setIsConsoleConnected(false);
-                                      setConnectedDeviceId(null);
-                                      setInput('');
-                                    }}
-                                    title={language === 'tr' ? 'İptal' : 'Cancel'}
-                                  >
-                                    <X className={cn("w-4 h-4 mr-1", isMobile && "w-3 h-3")} />
-                                    <span className="text-rose-600 dark:text-rose-400 font-medium">{language === 'tr' ? 'İptal' : 'Cancel'}</span>
-                                  </Button>
-                                )}
-                                <Button
-                                  type="submit"
-                                  disabled={activeTab === 'desktop' ? (!input.trim() || isCmdInputDisabled) : isConsoleInputDisabled}
-                                  className={cn(
-                                    "shrink-0 rounded-xl shadow-lg px-3 bg-zinc-800 text-white hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200",
-                                    isMobile ? "h-9 text-xs" : "h-11 text-sm",
-                                    activeTab === 'terminal' && isConsoleConnected && (consoleNeedsPassword || consoleConfirmDialog?.show || consoleReloadPending)
-                                      && "bg-amber-500 hover:bg-amber-600 text-white"
-                                  )}
-                                >
-                                  <span className="rounded-md p-1"><CornerDownLeft className={cn("w-4 h-4 text-white dark:text-zinc-900", isMobile && "w-3 h-3")} /></span>
-                                </Button>
-                                {!isMobile && handleResizeStart && (
-                                  <div
-                                    className="absolute -bottom-2 -right-2 z-20 h-5 w-5 cursor-se-resize select-none touch-none flex items-center justify-center opacity-30 hover:opacity-100 transition-opacity"
-                                    onPointerDown={(e) => {
-                                      e.stopPropagation();
-                                      handleResizeStart(e, 'se', 'pc');
-                                    }}
-                                  >
-                                    <svg className={cn("h-3 w-3", isDark ? "text-zinc-400" : "text-zinc-500")} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                                      <path d="M2 14 L14 2" />
-                                      <path d="M8 14 L14 8" />
-                                      <path d="M12 14 L14 12" />
-                                    </svg>
-                                  </div>
-                                )}
-                              </form>
-                            </div>
-                          )}
-                        </div>
+                        <WirelessConfigTab
+                          isDark={isDark}
+                          language={language}
+                          t={t}
+                          wifiEnabled={wifiEnabled}
+                          setWifiEnabled={setWifiEnabled}
+                          wifiSSID={wifiSSID}
+                          setWifiSSID={setWifiSSID}
+                          wifiBSSID={wifiBSSID}
+                          setWifiBSSID={setWifiBSSID}
+                          wifiSecurity={wifiSecurity}
+                          setWifiSecurity={setWifiSecurity}
+                          wifiPassword={wifiPassword}
+                          setWifiPassword={setWifiPassword}
+                          wifiChannel={wifiChannel}
+                          setWifiChannel={setWifiChannel}
+                          availableSSIDs={availableSSIDs}
+                          deviceStates={deviceStates}
+                          topologyDevices={topologyDevices}
+                          deviceId={deviceId}
+                          wifiSignalStrength={wifiSignalStrength}
+                          dispatchDeviceConfig={dispatchDeviceConfig}
+                          navigateToProgram={(program) => navigateToProgram(program as PCActiveTab)}
+                          setInput={setInput}
+                          executeCommand={executeCommand}
+                          mobileVerticalScrollStyle={mobileVerticalScrollStyle}
+                        />
                       )}
                     </div>
                   </div>
