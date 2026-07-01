@@ -523,6 +523,7 @@ export function NetworkTopology({
   const touchDragStartPosRef = useRef<{ x: number; y: number } | null>(null);
   const touchDragOffsetRef = useRef({ x: 0, y: 0 });
   const activePointerDragRef = useRef(false);
+  const activeDragPointerIdRef = useRef<number | null>(null);
 
   // Mouse position animation frame ref for smooth tracking
   const mousePosAnimationFrameRef = useRef<number | null>(null);
@@ -1545,6 +1546,7 @@ export function NetworkTopology({
 
     const handleMouseUp = (e: globalThis.MouseEvent) => {
       activePointerDragRef.current = false;
+      activeDragPointerIdRef.current = null;
 
       // Cancel any pending animation frames
       if (dragAnimationFrameRef.current) {
@@ -1684,6 +1686,7 @@ export function NetworkTopology({
 
       // PERFORMANCE: Sync device drag positions from direct DOM writes back to Zustand state
       const finalDragPositions = liveDeviceDragPositionsRef.current;
+      const finalDragDeviceIds = [...finalDragPositions.keys()];
       if (finalDragPositions.size > 0) {
         setDevices(prev => {
           const newDevices = [...prev];
@@ -1703,9 +1706,8 @@ export function NetworkTopology({
       }
 
       // Remove GPU will-change hints from dragged devices
-      const prevDragIds = [...liveDeviceDragPositionsRef.current.keys()];
-      for (let wi = 0; wi < prevDragIds.length; wi++) {
-        const we = document.querySelector('[data-device-id="' + prevDragIds[wi] + '"]') as SVGGElement | null;
+      for (let wi = 0; wi < finalDragDeviceIds.length; wi++) {
+        const we = document.querySelector('[data-device-id="' + finalDragDeviceIds[wi] + '"]') as SVGGElement | null;
         if (we) {
           we.style.willChange = '';
           const ichild = we.querySelector('g');
@@ -1732,10 +1734,14 @@ export function NetworkTopology({
     };
 
     const handlePointerMove = (e: PointerEvent) => {
-      if (e.pointerType !== 'mouse') handleMouseMove(e as unknown as globalThis.MouseEvent);
+      if (e.pointerType !== 'mouse' && activeDragPointerIdRef.current === e.pointerId) {
+        handleMouseMove(e as unknown as globalThis.MouseEvent);
+      }
     };
     const handlePointerUp = (e: PointerEvent) => {
-      if (e.pointerType !== 'mouse') handleMouseUp(e as unknown as globalThis.MouseEvent);
+      if (e.pointerType !== 'mouse' && activeDragPointerIdRef.current === e.pointerId) {
+        handleMouseUp(e as unknown as globalThis.MouseEvent);
+      }
     };
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
@@ -1847,6 +1853,7 @@ export function NetworkTopology({
 
       // PERFORMANCE: Sync touch drag positions back to Zustand state
       const touchFinalPositions = liveDeviceDragPositionsRef.current;
+      const touchFinalDeviceIds = [...touchFinalPositions.keys()];
       if (touchFinalPositions.size > 0) {
         setDevices(prev => {
           const newDevices = [...prev];
@@ -1866,17 +1873,12 @@ export function NetworkTopology({
       }
 
       // Remove GPU will-change hints from touch-dragged devices
-      if (currentIsTouchDragging && liveDeviceDragPositionsRef.current.size === 0) {
-        // will-change already removed above if sync ran
-      } else {
-        const prevTouchIds = [...liveDeviceDragPositionsRef.current.keys()];
-        for (let wi = 0; wi < prevTouchIds.length; wi++) {
-          const we = document.querySelector('[data-device-id="' + prevTouchIds[wi] + '"]') as SVGGElement | null;
-          if (we) {
-            we.style.willChange = '';
-            const ichild = we.querySelector('g');
-            if (ichild) ichild.style.willChange = '';
-          }
+      for (let wi = 0; wi < touchFinalDeviceIds.length; wi++) {
+        const we = document.querySelector('[data-device-id="' + touchFinalDeviceIds[wi] + '"]') as SVGGElement | null;
+        if (we) {
+          we.style.willChange = '';
+          const ichild = we.querySelector('g');
+          if (ichild) ichild.style.willChange = '';
         }
       }
 
@@ -2003,10 +2005,12 @@ export function NetworkTopology({
 
   const handleDevicePointerDown = useCallback((e: React.PointerEvent<SVGGElement>, deviceId: string) => {
     if (e.pointerType === 'mouse') return;
+    if (activeDragPointerIdRef.current !== null) return;
 
     e.preventDefault();
     e.stopPropagation();
     activePointerDragRef.current = true;
+    activeDragPointerIdRef.current = e.pointerId;
 
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
@@ -2035,6 +2039,24 @@ export function NetworkTopology({
     // Ping mode is now handled in handleDeviceMouseDown for better browser compatibility
     // This click handler only handles normal device selection
 
+    if (isMobile && !isDrawingConnection) {
+      if (!mobileConnectionSource) {
+        setMobileConnectionSource(device.id);
+        toast({
+          title: isTR ? "Bağlantı Başlatıldı" : "Connection Started",
+          description: isTR ? "Hedef cihazı seçin." : "Select the target device.",
+          duration: 3000,
+        });
+      } else if (mobileConnectionSource !== device.id) {
+        setSelectedSourcePort({ deviceId: mobileConnectionSource, portId: '' });
+        setPortSelectorStep('source');
+        setShowPortSelector(true);
+        setMobileConnectionSource(null);
+      } else {
+        setMobileConnectionSource(null);
+      }
+    }
+
     // Only handle selection if Shift was NOT pressed during mousedown
     setSelectedDeviceIds([device.id]);
     setSelectedNoteIds([]);
@@ -2042,7 +2064,7 @@ export function NetworkTopology({
     onDeviceSelect(device.type, device.id, isSwitchDeviceType(device.type) ? device.switchModel : undefined, device.name);
     // Focus canvas for keyboard navigation
     canvasRef.current?.focus();
-  }, [onDeviceSelect, pingMode, pingSource, devices, connections, deviceStates, setContextMenu]);
+  }, [onDeviceSelect, pingMode, pingSource, devices, connections, deviceStates, setContextMenu, isMobile, isDrawingConnection, mobileConnectionSource, isTR]);
 
   // Handle device double click - open terminal
   const handleDeviceDoubleClick = useCallback((device: CanvasDevice) => {

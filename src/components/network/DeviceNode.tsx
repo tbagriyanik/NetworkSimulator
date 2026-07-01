@@ -64,9 +64,30 @@ export const DeviceNode = memo(function DeviceNode({
       onContextMenu={(e) => onContextMenu(e, device.id)}
       onMouseEnter={(e) => onMouseEnter?.(e, device.id)}
       onMouseLeave={(e) => onMouseLeave?.(e, device.id)}
-      onTouchStart={(e) => onTouchStart(e, device.id)}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
+      onTouchStart={(e) => {
+        if (typeof window !== 'undefined' && 'PointerEvent' in window) {
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+        onTouchStart(e, device.id);
+      }}
+      onTouchMove={(e) => {
+        if (typeof window !== 'undefined' && 'PointerEvent' in window) {
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+        onTouchMove(e);
+      }}
+      onTouchEnd={(e) => {
+        if (typeof window !== 'undefined' && 'PointerEvent' in window) {
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+        onTouchEnd(e);
+      }}
       style={{ cursor: isDragging ? 'grabbing' : 'grab', touchAction: 'none', outline: 'none' }}
     >
       {/* Invisible touch target area for better mobile interaction */}

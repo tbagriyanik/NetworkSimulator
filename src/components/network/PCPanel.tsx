@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, KeyboardEvent, useCallback, useMemo, type CSSProperties } from 'react';
 import { useEnvironment } from '@/lib/store/appStore';
-import { CableInfo, Port, SwitchState } from '@/lib/network/types';
+import { Port, SwitchState } from '@/lib/network/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { TerminalOutput } from './Terminal';
@@ -10,10 +10,9 @@ import type { CanvasDevice, CanvasConnection } from './networkTopology.types';
 import { checkConnectivity, getWirelessSignalStrength, getWirelessDistance, getDeviceWifiConfig } from '@/lib/network/connectivity';
 import { ensureDeviceStatesMap } from '@/lib/network/networkUtils';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Laptop, Monitor, Terminal as TerminalIcon, X, CornerDownLeft, Command, Globe, Network, ShieldCheck, History, Search, Copy, Save, Trash2, Download, Settings, Wifi, Eye, EyeOff, Radio, LayoutGrid, ArrowLeft, SlidersHorizontal, Plus, Reply, Send } from 'lucide-react';
+import { Laptop, Monitor, Terminal as TerminalIcon, X, CornerDownLeft, Globe, Network, History, Search, Copy, Save, Trash2, Download, Settings, Wifi, Eye, EyeOff, Radio, ArrowLeft, SlidersHorizontal, Plus, Reply, Send } from 'lucide-react';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { ShortcutBadge } from '@/components/ui/ShortcutBadge';
 import { toast } from "@/hooks/use-toast";
@@ -30,51 +29,15 @@ import { errorHandler, STORAGE_ERRORS, DHCP_ERRORS, CLIPBOARD_ERRORS, DEVICE_ERR
 import { logger } from '@/lib/logger';
 import { getL3Hops } from '@/lib/network/routing';
 import { FormInput } from '@/components/ui/FormInput';
-
-
-interface OutputLine {
-  id: string;
-  type: 'command' | 'output' | 'error' | 'success' | 'prompt' | 'html';
-  content: string;
-  prompt?: string;
-}
-
-interface DhcpPoolConfig {
-  poolName: string;
-  defaultGateway: string;
-  dnsServer: string;
-  startIp: string;
-  subnetMask: string;
-  maxUsers: number;
-}
-
-interface PCPanelProps {
-  deviceId: string;
-  cableInfo: CableInfo;
-  isVisible: boolean;
-  initialTab?: 'home' | 'desktop' | 'terminal' | 'settings' | 'services' | 'wireless' | 'iot';
-  className?: string;
-  onClose: () => void;
-  onTogglePower?: (deviceId: string) => void;
-  topologyDevices?: CanvasDevice[];
-  topologyConnections?: {
-    sourceDeviceId: string;
-    sourcePort: string;
-    targetDeviceId: string;
-    targetPort: string;
-    cableType?: string;
-    active?: boolean
-  }[];
-  deviceStates?: Map<string, SwitchState>;
-  deviceOutputs?: Map<string, TerminalOutput[]>;
-  pcOutputs?: Map<string, OutputLine[]>;
-  pcHistories?: Map<string, string[]>;
-  onUpdatePCHistory?: (deviceId: string, history: string[]) => void;
-  onExecuteDeviceCommand?: (deviceId: string, command: string) => Promise<unknown>;
-  onNavigate?: (program: string) => void;
-  onDeleteDevice?: (deviceId: string) => void;
-  handleResizeStart?: (e: React.PointerEvent, direction: string, id: string) => void;
-}
+import { NetworkInputField } from './pc-panel/NetworkInputField';
+import { SearchOutputDialog } from './pc-panel/SearchOutputDialog';
+import { HiddenNavigationTabs } from './pc-panel/HiddenNavigationTabs';
+import { FtpFileTransferDialog } from './pc-panel/FtpFileTransferDialog';
+import { HttpBrowserWindow } from './pc-panel/HttpBrowserWindow';
+import { HomeLauncher } from './pc-panel/HomeLauncher';
+import { PowerOffOverlay } from './pc-panel/PowerOffOverlay';
+import { getDefaultPcFiles, getPCConfigDefaults } from './pc-panel/pcPanelFiles';
+import type { DhcpPoolConfig, FtpSession, OutputLine, PCActiveTab, PCPanelProps, PcFile } from './pc-panel/PCPanel.types';
 
 
 export function PCPanel({
@@ -115,21 +78,16 @@ export function PCPanel({
     onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void,
     onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void
   ) => (
-    <div className="flex-1">
-      <FormInput
-        label={label}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        disabled={disabled}
-        error={error}
-        showValidation
-        isValid={!error && value.length > 0}
-        className="h-9"
-        onBlur={onBlur}
-        onKeyDown={onKeyDown}
-      />
-    </div>
+    <NetworkInputField
+      label={label}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      disabled={disabled}
+      error={error}
+      onBlur={onBlur}
+      onKeyDown={onKeyDown}
+    />
   ), []);
 
   // Ref for click-outside detection
@@ -235,15 +193,11 @@ export function PCPanel({
   const [consoleConnectionTime, setConsoleConnectionTime] = useState<number>(0);
 
   // FTP session state (interactive ftp> mode on PC desktop)
-  const [ftpSession, setFtpSession] = useState<{
-    host: string;
-    targetDeviceId: string;
-    files: Array<{ name: string; size: number; modifiedAt?: string }>;
-  } | null>(null);
+  const [ftpSession, setFtpSession] = useState<FtpSession | null>(null);
   const [isFtpFilePickerOpen, setIsFtpFilePickerOpen] = useState(false);
 
   // Local files downloaded via FTP get
-  const [pcLocalFiles, setPcLocalFiles] = useState<Array<{ name: string; size: number; modifiedAt?: string }>>(() => {
+  const [pcLocalFiles, setPcLocalFiles] = useState<PcFile[]>(() => {
     if (typeof window !== 'undefined') {
       try {
         const stored = localStorage.getItem(`pc_files_${deviceId}`);
@@ -5150,135 +5104,39 @@ ${fileLines}
                   className="w-full min-w-0 h-full flex flex-col relative bg-transparent border-none shadow-none"
                 >
                   {/* Power Off Overlay - Mobile/Desktop ekranını tamamen karartır */}
-                  {isPcPoweredOff && (
-                    <div className="absolute inset-0 z-40 bg-black flex flex-col items-center justify-center">
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-error-500/20 blur-3xl rounded-full animate-pulse" />
-                        <svg className="w-16 h-16 text-error-600 drop-shadow-xl relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v10" />
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636a9 9 0 1 1-12.728 0" />
-                        </svg>
-                      </div>
-                    </div>
-                  )}
+                  {isPcPoweredOff && <PowerOffOverlay />}
                   <div className="bg-transparent flex-1 min-h-0 flex flex-col">
 
-                    <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
-                      <DialogContent className={`${isDark ? 'bg-secondary-900 border-secondary-800 text-white' : 'bg-white'} sm:max-w-md`}>
-                        <DialogHeader>
-                          <DialogTitle>{t.searchOutputTitle}</DialogTitle>
-                          <DialogDescription className={isDark ? 'text-secondary-200' : 'text-secondary-600'}>
-                            {t.searchOutputDescription}
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="relative">
-                          <Input
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder={t.searchPlaceholder}
-                            className="pr-9"
-                            autoFocus
-                          />
-                          {searchQuery && (
-                            <button
-                              onClick={() => setSearchQuery('')}
-                              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-secondary-200 dark:hover:bg-secondary-700 text-secondary-200 hover:text-secondary-50 dark:hover:text-secondary-100 transition-colors"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                        <div className="flex justify-end gap-2 pt-1">
-                          <Button onClick={() => setSearchOpen(false)} className="text-xs font-semibold bg-primary-600 hover:bg-primary-700 text-white">
-                            {t.close}
-                          </Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+                    <SearchOutputDialog
+                      open={searchOpen}
+                      onOpenChange={setSearchOpen}
+                      isDark={isDark}
+                      labels={{
+                        searchOutputTitle: t.searchOutputTitle,
+                        searchOutputDescription: t.searchOutputDescription,
+                        searchPlaceholder: t.searchPlaceholder,
+                        close: t.close,
+                      }}
+                      searchQuery={searchQuery}
+                      onSearchQueryChange={setSearchQuery}
+                    />
 
                     {/* Navigation Tabs - Hide on mobile, use main app tabs */}
-                    <div className="hidden">
-                      <Button
-                        variant={activeTab === 'home' ? 'secondary' : 'ghost'}
-                        size="sm"
-                        onClick={() => setActiveTab('home')}
-                        className={`h-9 px-4 text-xs font-black tracking-wider transition-all gap-2 ${activeTab === 'home' ? 'bg-secondary-500/10 text-secondary-300' : 'text-secondary-500 hover:text-secondary-300'} ${isMobile ? 'flex-1 min-w-0' : ''}`}
-                      >
-                        <Monitor className="w-4 h-4" />
-                        <span className={isMobile ? 'sr-only' : 'hidden md:inline'}>{language === 'tr' ? 'Ana Ekran' : 'Home'}</span>
-                      </Button>
-                      <Button
-                        variant={activeTab === 'desktop' ? 'secondary' : 'ghost'}
-                        size="sm"
-                        onClick={() => setActiveTab('desktop')}
-                        className={`h-9 px-4 text-xs font-black tracking-wider transition-all gap-2 ${activeTab === 'desktop' ? 'bg-primary-500/10 text-primary-400' : 'text-secondary-500'} ${isMobile ? 'flex-1 min-w-0' : ''}`}
-                      >
-                        <Command className="w-4 h-4" />
-                        <span className={isMobile ? 'sr-only' : 'hidden md:inline'}>{t.commandPromptTab}</span>
-                      </Button>
-                      {/* New IoT Web Panel Button */}
-                      <Button
-                        variant={httpAppDeviceId ? 'secondary' : 'ghost'}
-                        size="sm"
-                        onClick={() => {
-                          if (!httpAppDeviceId) {
-                            openWebPage('http://iot-panel');
-                          }
-                          setActiveTab('desktop'); // Ensure desktop tab is active when IoT panel is opened
-                        }}
-                        className={`h-9 px-4 text-xs font-black tracking-wider transition-all gap-2 ${activeTab === 'desktop' && httpAppContent && !httpAppDeviceId ? 'bg-indigo-500/10 text-indigo-400' : 'text-secondary-500'} ${isMobile ? 'flex-1 min-w-0' : ''}`}
-                      >
-                        <LayoutGrid className="w-4 h-4" />
-                        <span className={isMobile ? 'sr-only' : 'hidden md:inline'}>{language === 'tr' ? 'IoT Paneli' : 'IoT Panel'}</span>
-                      </Button>
-                      <Button
-                        variant={activeTab === 'terminal' ? 'secondary' : 'ghost'}
-                        size="sm"
-                        onClick={() => setActiveTab('terminal')}
-                        className={`h-9 px-4 text-xs font-black tracking-wider  transition-all gap-2 ${activeTab === 'terminal' ? 'bg-emerald-500/10 text-emerald-500' : 'text-secondary-500 hover:text-emerald-500'} ${isMobile ? 'flex-1 min-w-0' : ''}`}
-                      >
-                        <TerminalIcon className="w-4 h-4" />
-                        <span className={isMobile ? 'sr-only' : 'hidden md:inline'}>{t.consoleTab}</span>
-                      </Button>
-                      <Button
-                        variant={activeTab === 'settings' ? 'secondary' : 'ghost'}
-                        size="sm"
-                        onClick={() => setActiveTab('settings')}
-                        className={`h-9 px-4 text-xs font-black tracking-wider  transition-all gap-2 ${activeTab === 'settings' ? 'bg-purple-500/10 text-purple-500' : 'text-secondary-500 hover:text-purple-500'} ${isMobile ? 'flex-1 min-w-0' : ''}`}
-                      >
-                        <ShieldCheck className="w-4 h-4" />
-                        <span className={isMobile ? 'sr-only' : 'hidden md:inline'}>{t.settingsTab}</span>
-                      </Button>
-                      <Button
-                        variant={activeTab === 'services' ? 'secondary' : 'ghost'}
-                        size="sm"
-                        onClick={() => setActiveTab('services')}
-                        className={`h-9 px-4 text-xs font-black tracking-wider transition-all gap-2 ${activeTab === 'services' ? 'bg-warning-500/10 text-warning-500' : 'text-secondary-500 hover:text-warning-500'} ${isMobile ? 'flex-1 min-w-0' : ''}`}
-                      >
-                        <Globe className="w-4 h-4" />
-                        <span className={isMobile ? 'sr-only' : 'hidden md:inline'}>
-                          {t.servicesTab}
-                        </span>
-                      </Button>
-                      <Button
-                        variant={activeTab === 'wireless' ? 'secondary' : 'ghost'}
-                        size="sm"
-                        onClick={() => setActiveTab('wireless')}
-                        className={`h-9 px-4 text-xs font-black tracking-wider transition-all gap-2 ${activeTab === 'wireless' ? 'bg-purple-500/10 text-purple-500' : 'text-secondary-500 hover:text-purple-500'} ${isMobile ? 'flex-1 min-w-0' : ''}`}
-                      >
-                        <Network className="w-4 h-4" />
-                        <span className={isMobile ? 'sr-only' : 'hidden md:inline'}>{language === 'tr' ? 'Kablosuz' : 'Wireless'}</span>
-                      </Button>
-                      <Button
-                        variant={activeTab === 'iot' ? 'secondary' : 'ghost'}
-                        size="sm"
-                        onClick={() => setActiveTab('iot')}
-                        className={`h-9 px-4 text-xs font-black tracking-wider transition-all gap-2 ${activeTab === 'iot' ? 'bg-accent-500/10 text-accent-500' : 'text-secondary-500 hover:text-accent-500'} ${isMobile ? 'flex-1 min-w-0' : ''}`}
-                      >
-                        <Radio className="w-4 h-4" />
-                        <span className={isMobile ? 'sr-only' : 'hidden md:inline'}>IoT</span>
-                      </Button>
-                    </div>
+                    <HiddenNavigationTabs
+                      activeTab={activeTab}
+                      setActiveTab={setActiveTab}
+                      isMobile={isMobile}
+                      language={language}
+                      httpAppContent={httpAppContent}
+                      httpAppDeviceId={httpAppDeviceId}
+                      openWebPage={openWebPage}
+                      labels={{
+                        commandPromptTab: t.commandPromptTab,
+                        consoleTab: t.consoleTab,
+                        settingsTab: t.settingsTab,
+                        servicesTab: t.servicesTab,
+                      }}
+                    />
 
                     {/* Content Area */}
                     <div className={cn(
@@ -5287,53 +5145,13 @@ ${fileLines}
                       isMobile ? "mx-[10px]" : "" // Add horizontal margin for mobile
                     )}>
                       {activeTab === 'home' && !isPcPoweredOff && (
-                        <div
-                          className="flex-1 min-h-0"
-                          style={mobileVerticalScrollStyle}
-                        >
-                          <div className={cn(
-                            "relative flex h-full min-h-0 flex-col overflow-hidden rounded-[2rem] border shadow-[0_12px_40px_rgba(15,23,42,0.08)]",
-                            isDark ? "border-white/10 bg-secondary-950/45" : "border-white/80 bg-white/55"
-                          )}>
-                            <div className="pointer-events-none absolute inset-0">
-                              <div className={cn(
-                                "absolute inset-0",
-                                isDark
-                                  ? "bg-[linear-gradient(135deg,rgba(15,23,42,0.92),rgba(15,23,42,0.56))]"
-                                  : "bg-[linear-gradient(135deg,rgba(255,255,255,0.94),rgba(239,246,255,0.84))]"
-                              )} />
-                            </div>
-                            <div className="relative flex flex-1 flex-col overflow-y-auto p-3 md:p-8 custom-scrollbar">
-                              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 md:gap-5 py-2">
-                                {launcherApps.map((app) => (
-                                  <button
-                                    key={app.tab}
-                                    onClick={() => navigateToProgram(app.tab)}
-                                    disabled={isPcPoweredOff}
-                                    className={cn(
-                                      "group flex min-h-[85px] flex-col items-center justify-center gap-2 rounded-[1.25rem] border p-2 text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl disabled:opacity-40 md:min-h-[150px] md:p-5 md:gap-3 md:rounded-[1.5rem]",
-                                      app.buttonClass,
-                                      isDark ? "hover:bg-white/10" : "hover:bg-white"
-                                    )}
-                                  >
-                                    <div className={cn(
-                                      "flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-lg transition-transform duration-300 group-hover:scale-105 md:h-16 md:w-16 md:rounded-[1.25rem]",
-                                      app.accent
-                                    )}>
-                                      <app.icon className="h-6 w-6 md:h-8 md:w-8" />
-                                    </div>
-                                    <div className="space-y-1">
-                                      <div className="text-sm font-semibold md:text-base">{app.label}</div>
-                                      <div className={cn("text-[11px] leading-4 md:text-xs", isDark ? "text-secondary-400" : "text-secondary-500")}>
-                                        {app.subtitle}
-                                      </div>
-                                    </div>
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                        <HomeLauncher
+                          apps={launcherApps}
+                          isDark={isDark}
+                          isPoweredOff={isPcPoweredOff}
+                          mobileVerticalScrollStyle={mobileVerticalScrollStyle}
+                          onNavigate={navigateToProgram}
+                        />
                       )}
 
                       {activeTab === 'settings' && (
@@ -7424,307 +7242,43 @@ ${fileLines}
         </div>
       </div>
 
-      {/* HTTP content in-tablet viewer */}
-      {isFtpFilePickerOpen && ftpSession && (
-        <Dialog open={isFtpFilePickerOpen} onOpenChange={setIsFtpFilePickerOpen}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>
-                {language === 'tr' ? 'FTP Dosya Transferi' : 'FTP File Transfer'}
-              </DialogTitle>
-              <DialogDescription>
-                {language === 'tr'
-                  ? `${ftpSession.host} sunucusuna bağlanıldı. Dosyaları indirin veya yükleyin.`
-                  : `Connected to ${ftpSession.host}. Download or upload files.`}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              {/* Server files for download */}
-              <div>
-                <h4 className="text-sm font-semibold mb-2">
-                  {language === 'tr' ? 'Sunucu Dosyaları (İndir)' : 'Server Files (Download)'}
-                </h4>
-                <div className={`rounded-lg border divide-y ${isDark ? 'border-secondary-800 divide-secondary-800' : 'border-secondary-200 divide-secondary-200'}`}>
-                  {ftpSession.files.length === 0 ? (
-                    <div className="p-3 text-sm opacity-50">
-                      {language === 'tr' ? '(sunucuda dosya yok)' : '(no files on server)'}
-                    </div>
-                  ) : ftpSession.files.map((file, idx) => (
-                    <div key={`srv-${file.name}-${idx}`} className="flex items-center justify-between p-3">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium">{file.name}</span>
-                        <span className="text-xs opacity-50">{Math.round((file.size || 0) / 1024)} KB</span>
-                      </div>
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          handleFtpSessionCommand(`get ${file.name}`);
-                          setIsFtpFilePickerOpen(false);
-                        }}
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        {language === 'tr' ? 'İndir' : 'Download'}
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              {/* Upload local files */}
-              <div>
-                <h4 className="text-sm font-semibold mb-2">
-                  {language === 'tr' ? 'Yerel Dosyaları Yükle' : 'Upload Local Files'}
-                </h4>
-                <div className={`rounded-lg border divide-y ${isDark ? 'border-secondary-800 divide-secondary-800' : 'border-secondary-200 divide-secondary-200'}`}>
-                  {pcLocalFiles.length === 0 ? (
-                    <div className="p-3 text-sm opacity-50">{language === 'tr' ? '(yerel dosya yok)' : '(no local files)'}</div>
-                  ) : pcLocalFiles.map((file) => (
-                    <div key={`upl-${file.name}-${file.size}`} className="flex items-center justify-between p-3">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium">{file.name}</span>
-                        <span className="text-xs opacity-50">{Math.round(file.size / 1024)} KB</span>
-                      </div>
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          executeFtpPut(file.name);
-                          setIsFtpFilePickerOpen(false);
-                        }}
-                      >
-                        <Download className="w-4 h-4 mr-2 rotate-180" />
-                        {language === 'tr' ? 'Yükle' : 'Upload'}
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+      <FtpFileTransferDialog
+        open={isFtpFilePickerOpen}
+        onOpenChange={setIsFtpFilePickerOpen}
+        session={ftpSession}
+        localFiles={pcLocalFiles}
+        language={language}
+        isDark={isDark}
+        onGetFile={(fileName) => handleFtpSessionCommand(`get ${fileName}`)}
+        onPutFile={executeFtpPut}
+      />
 
-      {httpAppContent && (
-        <div
-          className="fixed inset-0 z-[999] pointer-events-auto bg-black/20"
-          onClick={(e) => {
-            e.stopPropagation();
-            setHttpAppUrl('');
-            setHttpAppContent(null);
-            setHttpAppDeviceId(null);
-            inputRef.current?.focus();
-          }}
-        >
-          <div
-            className="absolute"
-            style={isMobile
-              ? {
-                left: 8,
-                right: 8,
-                top: browserWindow.y,
-                width: 'auto',
-                height: browserWindow.height,
-                willChange: 'transform',
-                contain: 'layout style paint',
-              }
-              : {
-                left: browserWindow.x,
-                top: browserWindow.y,
-                width: browserWindow.width,
-                height: browserWindow.height,
-                willChange: 'transform',
-                contain: 'layout style paint',
-              }}
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') {
-                e.preventDefault();
-                e.stopPropagation();
-                setHttpAppUrl('');
-                setHttpAppContent(null);
-                setHttpAppDeviceId(null);
-                inputRef.current?.focus();
-              }
-            }}
-            tabIndex={-1}
-          >
-            <div
-              className={`h-full w-full rounded-2xl shadow-2xl border ${isDark ? 'border-emerald-500/30 bg-secondary-900' : 'border-emerald-500 bg-white'} flex flex-col overflow-hidden`}
-              style={{ borderWidth: 3, willChange: 'auto', contain: 'layout style paint' }}
-            >
-              <div
-                className={`flex items-center justify-between px-4 py-2 border-b cursor-grab active:cursor-grabbing select-none touch-none ${isDark ? 'border-emerald-500/30 bg-secondary-950' : 'border-emerald-500/50'}`}
-                onPointerDown={(e) => {
-                  const target = e.target as HTMLElement;
-                  if (target.closest('input, textarea, select, button')) return;
-                  e.preventDefault();
-                  e.currentTarget.setPointerCapture(e.pointerId);
-                  dragStateRef.current = {
-                    startX: e.clientX,
-                    startY: e.clientY,
-                    originX: browserWindow.x,
-                    originY: browserWindow.y,
-                  };
-                }}
-              >
-                <div className="flex items-center gap-3 flex-1">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      openWebPage(httpAppUrl);
-                    }}
-                    onKeyDown={(e) => {
-                      // Prevent browser keys from bubbling into underlying CMD handlers.
-                      e.stopPropagation();
-                    }}
-                    className="flex items-center gap-2 flex-1 min-w-0"
-                  >
-                    <div className="flex flex-col flex-1 min-w-0 relative">
-                      <span className="text-[10px] sm:text-sm font-semibold truncate">{httpAppTitle}</span>
-                      <input
-                        ref={urlInputRef}
-                        value={httpAppUrl || ''}
-                        onChange={(e) => {
-                          setHttpAppUrl(e.target.value);
-                          setSelectedSuggestionIndex(-1);
-                        }}
-                        onFocus={() => {
-                          setShowUrlSuggestions(true);
-                          setSelectedSuggestionIndex(-1);
-                        }}
-                        onKeyDown={(e) => {
-                          e.stopPropagation();
-                          const suggestions = filteredSuggestions.slice(0, 10);
-
-                          if (e.key === 'ArrowDown') {
-                            e.preventDefault();
-                            setSelectedSuggestionIndex(prev =>
-                              prev < suggestions.length - 1 ? prev + 1 : prev
-                            );
-                          } else if (e.key === 'ArrowUp') {
-                            e.preventDefault();
-                            setSelectedSuggestionIndex(prev =>
-                              prev > 0 ? prev - 1 : -1
-                            );
-                          } else if (e.key === 'Enter') {
-                            e.preventDefault();
-                            if (selectedSuggestionIndex >= 0 && suggestions[selectedSuggestionIndex]) {
-                              setHttpAppUrl(suggestions[selectedSuggestionIndex]);
-                              setShowUrlSuggestions(false);
-                              openWebPage(suggestions[selectedSuggestionIndex]);
-                            } else {
-                              setShowUrlSuggestions(false);
-                              openWebPage(httpAppUrl);
-                            }
-                          }
-                        }}
-                        placeholder="http://"
-                        className={`mt-1 w-full text-[16px] sm:text-xs rounded-md px-2 py-1 border ${isDark ? 'bg-secondary-900 border-secondary-700 text-secondary-200' : 'bg-white border-secondary-300 text-secondary-700'}`}
-                      />
-                      {showUrlSuggestions && filteredSuggestions.length > 0 && (
-                        <div className={`absolute top-full left-0 right-0 mt-1 rounded-md border shadow-lg max-h-48 overflow-y-auto overflow-x-hidden custom-scrollbar z-50 ${isDark ? 'bg-secondary-900 border-secondary-700' : 'bg-white border-secondary-300'}`}>
-                          {filteredSuggestions.slice(0, 10).map((suggestion, index) => (
-                            <button
-                              key={index}
-                              type="button"
-                              onClick={() => {
-                                setHttpAppUrl(suggestion);
-                                setShowUrlSuggestions(false);
-                                openWebPage(suggestion);
-                              }}
-                              onMouseEnter={() => setSelectedSuggestionIndex(index)}
-                              className={`w-full text-left px-2 py-1.5 text-xs cursor-pointer ${index === selectedSuggestionIndex ? (isDark ? 'bg-secondary-700' : 'bg-secondary-200') : 'hover:bg-secondary-100 dark:hover:bg-secondary-800'} ${isDark ? 'text-secondary-200' : 'text-secondary-700'}`}
-                            >
-                              {suggestion}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <Button
-                      size="sm"
-                      type="submit"
-                      variant="default"
-                      className="shrink-0 bg-primary-600 hover:bg-primary-700 text-white"
-                    >
-                      {language === 'tr' ? 'Git' : 'Go'}
-                    </Button>
-                  </form>
-                </div>
-                <Button
-                  size="icon"
-                  variant="outline"
-                  onClick={() => {
-                    setHttpAppUrl('');
-                    setHttpAppContent(null);
-                    setHttpAppDeviceId(null);
-                    inputRef.current?.focus();
-                  }}
-                  className="ml-3 shrink-0"
-                  aria-label={language === 'tr' ? 'Kapat' : 'Close'}
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-              <div className="flex-1 overflow-hidden bg-gradient-to-b from-transparent to-secondary-50 dark:to-secondary-900" style={{ contain: 'layout style paint' }}>
-                <iframe
-                  title={httpAppTitle}
-                  srcDoc={httpAppSrcDoc}
-                  sandbox="allow-forms allow-scripts allow-same-origin allow-modals"
-                  className="h-full w-full border-0 bg-white"
-                  style={{ display: 'block' }}
-                />
-              </div>
-              <div className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize select-none touch-none" onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.setPointerCapture(e.pointerId); resizeStateRef.current = { side: 'left', startX: e.clientX, startY: e.clientY, originX: browserWindow.x, originY: browserWindow.y, originW: browserWindow.width, originH: browserWindow.height }; }} />
-              <div className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize select-none touch-none" onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.setPointerCapture(e.pointerId); resizeStateRef.current = { side: 'right', startX: e.clientX, startY: e.clientY, originX: browserWindow.x, originY: browserWindow.y, originW: browserWindow.width, originH: browserWindow.height }; }} />
-              <div className="absolute left-0 right-0 top-0 h-2 cursor-ns-resize select-none touch-none" onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.setPointerCapture(e.pointerId); resizeStateRef.current = { side: 'top', startX: e.clientX, startY: e.clientY, originX: browserWindow.x, originY: browserWindow.y, originW: browserWindow.width, originH: browserWindow.height }; }} />
-              <div className="absolute left-0 right-0 bottom-0 h-2 cursor-ns-resize select-none touch-none" onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.setPointerCapture(e.pointerId); resizeStateRef.current = { side: 'bottom', startX: e.clientX, startY: e.clientY, originX: browserWindow.x, originY: browserWindow.y, originW: browserWindow.width, originH: browserWindow.height }; }} />
-              <div className="absolute left-0 top-0 w-4 h-4 cursor-nw-resize select-none touch-none" onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.setPointerCapture(e.pointerId); resizeStateRef.current = { side: 'nw', startX: e.clientX, startY: e.clientY, originX: browserWindow.x, originY: browserWindow.y, originW: browserWindow.width, originH: browserWindow.height }; }} />
-              <div className="absolute right-0 top-0 w-4 h-4 cursor-ne-resize select-none touch-none" onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.setPointerCapture(e.pointerId); resizeStateRef.current = { side: 'ne', startX: e.clientX, startY: e.clientY, originX: browserWindow.x, originY: browserWindow.y, originW: browserWindow.width, originH: browserWindow.height }; }} />
-              <div className="absolute left-0 bottom-0 w-4 h-4 cursor-sw-resize select-none touch-none" onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.setPointerCapture(e.pointerId); resizeStateRef.current = { side: 'sw', startX: e.clientX, startY: e.clientY, originX: browserWindow.x, originY: browserWindow.y, originW: browserWindow.width, originH: browserWindow.height }; }} />
-              <div className="absolute right-0 bottom-0 w-4 h-4 cursor-se-resize select-none touch-none" onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.setPointerCapture(e.pointerId); resizeStateRef.current = { side: 'se', startX: e.clientX, startY: e.clientY, originX: browserWindow.x, originY: browserWindow.y, originW: browserWindow.width, originH: browserWindow.height }; }} />
-            </div>
-          </div>
-        </div>
-      )}
+      <HttpBrowserWindow
+        isOpen={!!httpAppContent}
+        isMobile={isMobile}
+        isDark={isDark}
+        language={language}
+        browserWindow={browserWindow}
+        title={httpAppTitle}
+        url={httpAppUrl || ''}
+        srcDoc={httpAppSrcDoc}
+        suggestions={filteredSuggestions}
+        showSuggestions={showUrlSuggestions}
+        selectedSuggestionIndex={selectedSuggestionIndex}
+        urlInputRef={urlInputRef}
+        dragStateRef={dragStateRef}
+        resizeStateRef={resizeStateRef}
+        onClose={() => {
+          setHttpAppUrl('');
+          setHttpAppContent(null);
+          setHttpAppDeviceId(null);
+          inputRef.current?.focus();
+        }}
+        onUrlChange={setHttpAppUrl}
+        onSetShowSuggestions={setShowUrlSuggestions}
+        onSetSelectedSuggestionIndex={setSelectedSuggestionIndex}
+        onOpenWebPage={openWebPage}
+      />
     </>
   );
-}
-
-type PCActiveTab = 'home' | 'desktop' | 'terminal' | 'settings' | 'services' | 'wireless' | 'iot';
-
-function getPCConfigDefaults(id: string) {
-  const num = id.split('-')[1] || '1';
-  return {
-    ip: `192.168.1.${10 + parseInt(num)}`,
-    mac: `00-40-96-99-88-7${num}`
-  };
-}
-
-const USER_FILES_POOL = [
-  'proje_raporu.docx', 'butce_2026.xlsx', 'sunum.pptx',
-  'notlar.txt', 'yapilacaklar.txt', 'iletisim_rehberi.txt',
-  'toplanti_notlari.docx', 'kira_kontrati.pdf', 'fatura_ocak.pdf',
-  'musteri_listesi.xlsx', 'urun_katalogu.pdf', 'teknik_dokuman.pdf',
-  'sifreler.txt', 'is_plani.docx', 'haftalik_rapor.xlsx',
-];
-
-function getDefaultPcFiles(deviceId: string): Array<{ name: string; size: number; modifiedAt: string }> {
-  const num = Math.abs(parseInt(deviceId.split('-')[1] || '1', 10)) || 1;
-  const systemFiles = [
-    { name: 'autoexec.bat', size: 128, modifiedAt: '2026-01-15T08:00:00Z' },
-    { name: 'config.sys', size: 256, modifiedAt: '2026-01-15T08:00:00Z' },
-    { name: 'boot.ini', size: 512, modifiedAt: '2026-03-10T09:00:00Z' },
-    { name: 'msdos.sys', size: 1024, modifiedAt: '2026-03-10T09:00:00Z' },
-    { name: 'command.com', size: 2048, modifiedAt: '2026-03-10T09:00:00Z' },
-  ];
-  const userFiles: Array<{ name: string; size: number; modifiedAt: string }> = [];
-  const seed = num % USER_FILES_POOL.length;
-  for (let i = 0; i < 4; i++) {
-    const idx = (seed + i * 3) % USER_FILES_POOL.length;
-    const size = 1024 + ((num * 137 + i * 251) % 65536);
-    const d = new Date(2026, 2, 10 + i, 9 + (num % 8), (num * 7 + i * 13) % 60);
-    userFiles.push({ name: USER_FILES_POOL[idx], size, modifiedAt: d.toISOString() });
-  }
-  return [...systemFiles, ...userFiles];
 }
