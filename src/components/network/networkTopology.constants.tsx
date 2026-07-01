@@ -17,13 +17,13 @@ export const DEVICE_ICON_PATHS = {
 
 export const DEVICE_ICON_COLORS = {
   pc: 'var(--color-primary-500)',
-  iot: '#d35400',
+  iot: 'var(--color-secondary-500)',
   switch: 'var(--color-accent-500)',
-  switchL2: '#28a745',
-  switchL3: '#6f42c1',
-  router: '#6f42c1',
-  firewall: '#b02a37',
-  wlc: '#ffc107',
+  switchL2: 'var(--color-success-500)',
+  switchL3: 'var(--color-warning-600)',
+  router: 'var(--color-warning-600)',
+  firewall: 'var(--color-error-500)',
+  wlc: 'var(--color-warning-400)',
 } as const;
 
 export const DEVICE_ICONS = {
@@ -181,14 +181,14 @@ export const STATUS_COLORS = {
 
 // Stroke colors for device selection
 export const STROKE_COLORS = {
-  cyan: '#06b6d4',
-  green: '#22c55e',
-  purple: '#a855f7',
-  orange: '#f97316',
-  blue: '#3b82f6',
-  slateLight: '#cbd5e1',
-  slateDark: '#0f172a',
+  cyan: 'var(--color-accent-500)',
+  green: 'var(--color-success-500)',
+  purple: 'var(--color-warning-600)',
+  orange: 'var(--color-secondary-500)',
+  blue: 'var(--color-primary-500)',
+  slateLight: 'var(--color-secondary-300)',
+  slateDark: 'var(--color-secondary-900)',
 } as const;
 
 // Selection highlight color for devices and notes
-export const SELECTION_HIGHLIGHT_COLOR = '#5ad57d';
+export const SELECTION_HIGHLIGHT_COLOR = 'var(--color-success-400)';

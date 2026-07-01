@@ -75,8 +75,8 @@ export const ConnectionLine = memo(function ConnectionLine({
   const isPoweredOff = sourceDevice.status === 'offline' || targetDevice.status === 'offline';
   const isEffectivelyActive = connection.active && isCompatible && !isShutdown && !isPoweredOff && !isSTPBlocking;
   const color = !isCompatible || connection.active === false ? CABLE_COLORS.error.primary :
-    isShutdown || (isSTPBlocking && isVlan1) ? (isDark ? '#475569' : '#94a3b8') : // Gray if shutdown or STP blocking (VLAN 1 only)
-      isPoweredOff ? (isDark ? '#374151' : '#9ca3af') : // Gray if device offline
+    isShutdown || (isSTPBlocking && isVlan1) ? (isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)') : // Gray if shutdown or STP blocking (VLAN 1 only)
+      isPoweredOff ? (isDark ? 'var(--color-secondary-800)' : 'var(--color-secondary-400)') : // Gray if device offline
         CABLE_COLORS[connection.cableType].primary;
 
   // Calculate offset for parallel lines (spread out from center)
@@ -233,7 +233,7 @@ export const ConnectionLine = memo(function ConnectionLine({
               x={srcLabel.x}
               y={srcLabel.y + labelOffsetY}
               fill="none"
-              stroke={isDark ? '#0f172a' : '#ffffff'}
+              stroke={isDark ? 'var(--color-secondary-900)' : '#ffffff'}
               strokeWidth="1"
               vectorEffect="non-scaling-stroke"
               strokeLinejoin="round"
@@ -261,7 +261,7 @@ export const ConnectionLine = memo(function ConnectionLine({
               x={tgtLabel.x}
               y={tgtLabel.y + labelOffsetY}
               fill="none"
-              stroke={isDark ? '#0f172a' : '#ffffff'}
+              stroke={isDark ? 'var(--color-secondary-900)' : '#ffffff'}
               strokeWidth="1"
               vectorEffect="non-scaling-stroke"
               strokeLinejoin="round"
