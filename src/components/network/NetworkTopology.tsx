@@ -3653,6 +3653,7 @@ export function NetworkTopology({
     window.addEventListener('close-menus-broadcast', handleCloseBroadcast);
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (!e.key) return;
       const key = e.key.toLowerCase();
 
       // Check if an input element is focused

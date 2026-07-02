@@ -1,5 +1,4 @@
 import { logger } from '@/lib/logger';
-import DOMPurify from 'isomorphic-dompurify';
 
 /**
  * Security utilities for input sanitization and data protection
@@ -17,25 +16,20 @@ export function sanitizeHTML(input: string): string {
 
 /**
  * Sanitize HTML content allowing only <b>, <i>, and <u> tags for HTTP service content.
- * Uses DOMPurify whitelist-based sanitization to prevent XSS.
+ * Replaced DOMPurify with strict unescaping to avoid Vercel 500 errors.
  */
 export function sanitizeHTTPContent(input: string): string {
     if (!input) return '';
 
-    try {
-        return DOMPurify.sanitize(input, {
-            ALLOWED_TAGS: ['b', 'i', 'u'],
-            ALLOWED_ATTR: [],
-        });
-    } catch {
-        // Fallback: escape everything if DOMPurify fails
-        return input
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
-    }
+    let safe = input.replace(/&/g, '&amp;');
+    safe = safe.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    
+    safe = safe
+        .replace(/&lt;b&gt;/gi, '<b>').replace(/&lt;\/b&gt;/gi, '</b>')
+        .replace(/&lt;i&gt;/gi, '<i>').replace(/&lt;\/i&gt;/gi, '</i>')
+        .replace(/&lt;u&gt;/gi, '<u>').replace(/&lt;\/u&gt;/gi, '</u>');
+        
+    return safe.replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 }
 
 export function sanitizeInput(input: string): string {

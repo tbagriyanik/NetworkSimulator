@@ -79,6 +79,7 @@ export function useCanvasKeyboard({
         activeEl.getAttribute('contenteditable') === 'true'
       );
 
+      if (!e.key) return;
       const key = e.key.toLowerCase();
 
       // Escape key handler
