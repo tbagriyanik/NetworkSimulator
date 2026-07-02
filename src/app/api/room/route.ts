@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createRoom, getActiveRoomCount } from '@/lib/roomStore';
 import type { RoomApiResponse, RoomData } from '@/lib/roomTypes';
 import { isRateLimited } from '@/lib/security/rateLimiter';
+import { sanitizeObject } from '@/lib/security/sanitizer';
 
 export async function GET(_req: NextRequest): Promise<NextResponse> {
   try {
@@ -39,7 +40,8 @@ export async function POST(req: NextRequest): Promise<NextResponse<RoomApiRespon
         { status: 503 },
       );
     }
-    const body = await req.json();
+    const rawBody = await req.json();
+    const body = sanitizeObject(rawBody) as Record<string, unknown>;
     const { code, teacherId } = body;
 
     if (!code || typeof code !== 'string') {
