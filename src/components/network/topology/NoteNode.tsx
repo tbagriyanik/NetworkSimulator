@@ -153,11 +153,9 @@ export function NoteNode({
         <div
           data-export-hide="true"
           onMouseDown={(e) => {
-            e.preventDefault();
             handleNoteHeaderMouseDown(e, note.id);
           }}
           onTouchStart={(e) => {
-            e.preventDefault();
             handleNoteHeaderTouchStart(e, note.id);
           }}
           className={`relative flex items-center justify-center px-2 text-[10px] font-semibold tracking-widest select-none ${isDark ? 'bg-black/10' : 'bg-black/5'
@@ -167,7 +165,9 @@ export function NoteNode({
           <div
             className="flex items-center justify-center gap-1"
             onMouseDown={(e) => {
-              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onTouchStart={(e) => {
               e.stopPropagation();
             }}
           >
