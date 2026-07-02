@@ -391,25 +391,30 @@ export function AppHeader({
                       </Button>
                       <Button
                         variant="secondary"
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        onClick={() => { fileInputRef.current?.click(); setShowMobileMenu(false); }}
+                      >
+                        <FolderOpen className="w-3.5 h-3.5 flex-shrink-0" /> <span>{t.load}</span>
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Group: Exports */}
+                  <div className={`p-3 rounded-xl border ${isDark ? 'bg-slate-800/30 border-slate-800/50' : 'bg-slate-50 border-slate-200'}`}>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        variant="secondary"
                         className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-emerald-400' : 'hover:text-emerald-600'}`}
                         onClick={() => { window.dispatchEvent(new CustomEvent('trigger-topology-export-png')); setShowMobileMenu(false); }}
                       >
                         <ImageDown className="w-3.5 h-3.5 flex-shrink-0" /> <span>{language === 'tr' ? 'PNG Kaydet' : 'Save PNG'}</span>
                       </Button>
-
                       <Button
                         variant="secondary"
                         className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-indigo-400' : 'hover:text-indigo-600'}`}
                         onClick={() => { window.dispatchEvent(new CustomEvent('trigger-topology-generate-summary-note')); setShowMobileMenu(false); }}
                       >
                         <FileText className="w-3.5 h-3.5 flex-shrink-0" /> <span>{language === 'tr' ? 'Özet Notu Oluştur' : 'Generate Summary'}</span>
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
-                        onClick={() => { fileInputRef.current?.click(); setShowMobileMenu(false); }}
-                      >
-                        <FolderOpen className="w-3.5 h-3.5 flex-shrink-0" /> <span>{t.load}</span>
                       </Button>
                     </div>
                   </div>
