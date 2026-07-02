@@ -4650,6 +4650,7 @@ export function NetworkTopology({
     return (
       <DeviceRenderer
         device={device}
+        topologyDevices={devices}
         isDragging={isDragging}
         isSelected={selectedDeviceSet.has(device.id)}
         isDark={isDark}
@@ -5148,29 +5149,18 @@ if (!isEnabled || device.status === 'offline') {
                   >
                     {/* Invisible rect for easier hover */}
                     <rect x="0" y="5" width="24" height="20" fill="transparent" />
-                    {(() => {
-                      const signalStrength = isPC
-                        ? getWirelessSignalStrength(device, devices, deviceStates)
-                        : (isEnabled ? 3 : 0); // AP devices show full signal when enabled
-
-                      const dimColor = isDark ? 'var(--color-secondary-700)' : 'var(--color-secondary-300)';
-                      const arc1Color = signalStrength >= 1 ? wifiColor : dimColor;
-                      const arc2Color = signalStrength >= 2 ? wifiColor : dimColor;
-                      const arc3Color = signalStrength >= 3 ? wifiColor : dimColor;
-
-                      return (
-                        <>
-                          <path d="M5 10.55a11 11 0 0 1 14.08 0"
-                            stroke={arc3Color} fill="none" strokeWidth="1" strokeLinecap="round"
-                            className="transition-colors duration-300" />
-                          <path d="M8.53 13.11a6 6 0 0 1 6.95 0"
-                            stroke={arc2Color} fill="none" strokeWidth="1" strokeLinecap="round"
-                            className="transition-colors duration-300" />
-                          <circle cx="12" cy="16" r="1"
-                            fill={arc1Color} className="transition-colors duration-300" />
-                        </>
-                      );
-                    })()}
+                    <path d="M2 7.15a15 15 0 0 1 20 0" 
+                      stroke={wifiColor} fill="none" strokeWidth="1" strokeLinecap="round"
+                      style={{ opacity: (isPC ? getWirelessSignalStrength(device, devices, deviceStates) : (isEnabled ? 5 : 0)) >= 5 ? 1 : 0.2, transition: 'opacity 0.3s' }} />
+                    <path d="M5 10.55a11 11 0 0 1 14.08 0"
+                      stroke={wifiColor} fill="none" strokeWidth="1" strokeLinecap="round"
+                      style={{ opacity: (isPC ? getWirelessSignalStrength(device, devices, deviceStates) : (isEnabled ? 5 : 0)) >= 4 ? 1 : 0.2, transition: 'opacity 0.3s' }} />
+                    <path d="M8.53 13.11a6 6 0 0 1 6.95 0"
+                      stroke={wifiColor} fill="none" strokeWidth="1" strokeLinecap="round"
+                      style={{ opacity: (isPC ? getWirelessSignalStrength(device, devices, deviceStates) : (isEnabled ? 5 : 0)) >= 2 ? 1 : 0.2, transition: 'opacity 0.3s' }} />
+                    <circle cx="12" cy="16" r="1"
+                      fill={wifiColor} 
+                      style={{ opacity: (isPC ? getWirelessSignalStrength(device, devices, deviceStates) : (isEnabled ? 5 : 0)) >= 1 ? 1 : 0.2, transition: 'opacity 0.3s' }} />
                   </g>
                 </TooltipTrigger>
                 {!isDraggingInteractionDisabled && !(isPanning || isSelecting || isDrawingConnection) && (

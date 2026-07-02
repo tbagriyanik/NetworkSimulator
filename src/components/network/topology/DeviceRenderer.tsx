@@ -5,6 +5,7 @@ import React from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { CanvasDevice, CanvasConnection } from '../networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
+import { getWirelessSignalStrength } from '@/lib/network/connectivity';
 import { getDeviceWidth } from '../networkTopology.helpers';
 import {
   STATUS_COLORS,
@@ -14,6 +15,7 @@ import {
 
 interface DeviceRendererProps {
   device: CanvasDevice;
+  topologyDevices: CanvasDevice[];
   isDragging?: boolean;
   isSelected: boolean;
   isDark: boolean;
@@ -33,8 +35,27 @@ interface DeviceRendererProps {
 
 const isSwitchDeviceType = (type: string) => type === 'switchL2' || type === 'switchL3';
 
+const PORT_FRAME_OK = 'var(--color-secondary-50)';
+const PORT_FRAME_OK_LIGHT = 'var(--color-secondary-100)';
+const PORT_STP_BLOCKED = 'var(--color-pink-500)';
+const PORT_STP_BLOCKED_STROKE = 'var(--color-pink-300)';
+const PORT_GIGABIT_UP = 'var(--color-warning-500)';
+const PORT_GIGABIT_UP_STROKE = 'var(--color-warning-300)';
+
+const isGigabitPort = (portId: string) => portId.toLowerCase().startsWith('gi');
+
+const wifiBarRects = [
+  { x: 1, y: 10.5, width: 2.5, height: 3 },
+  { x: 5, y: 8.5, width: 2.5, height: 5 },
+  { x: 9, y: 6.5, width: 2.5, height: 7 },
+  { x: 13, y: 4.5, width: 2.5, height: 9 },
+  { x: 17, y: 2.5, width: 2.5, height: 11 },
+];
+
+
 export function DeviceRenderer({
   device,
+  topologyDevices,
   isDragging = false,
   isSelected,
   isDark,
@@ -59,6 +80,23 @@ export function DeviceRenderer({
 
   const isPoweredOff = device.status === 'offline';
   const isPcLike = device.type === 'pc' || device.type === 'iot';
+
+  const getConnectionForPort = (portId: string) =>
+    deviceConnections.find((connection) =>
+      (connection.sourceDeviceId === device.id && connection.sourcePort === portId) ||
+      (connection.targetDeviceId === device.id && connection.targetPort === portId)
+    );
+
+  const isPortConnectionHealthy = (portId: string) => {
+    const connection = getConnectionForPort(portId);
+    return Boolean(connection && connection.active !== false);
+  };
+
+  const getPortFrameColor = (portId: string, hasProblem: boolean, isConnected: boolean) => {
+    if (hasProblem) return isDark ? 'var(--color-secondary-700)' : 'var(--color-secondary-300)';
+    if (isConnected && isPortConnectionHealthy(portId)) return isDark ? PORT_FRAME_OK : PORT_FRAME_OK_LIGHT;
+    return isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
+  };
 
   const deviceFill = isDark
     ? (device.type === 'iot'
@@ -350,14 +388,14 @@ export function DeviceRenderer({
       {(() => {
         const wlanPort = device.ports.find(p => p.id === 'wlan0');
         const pcWifi = device.wifi;
-        const isPC = isPcLike;
+        const usesWifiBars = device.type === 'pc' || device.type === 'iot';
         const isSwitchL3 = device.type === 'switchL3';
         const isRouter = device.type === 'router';
         const devState = deviceStates?.get(device.id);
         const wlanState = devState?.ports['wlan0'];
 
         let wifiColor = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
-        const showWifi = isPC || isSwitchL3 || isRouter;
+        const showWifi = usesWifiBars || isSwitchL3 || isRouter;
 
         let isEnabled = false;
         if (showWifi) {
@@ -373,6 +411,30 @@ export function DeviceRenderer({
         }
 
         if (!showWifi) return null;
+
+        if (usesWifiBars) {
+          const activeColor = 'var(--color-success-500)';
+          const dimColor = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
+          const strength = isPoweredOff || !isEnabled ? 0 : getWirelessSignalStrength(device, topologyDevices, deviceStates);
+
+          return (
+            <g transform={`translate(${deviceWidth - 23}, 7)`}>
+              <svg x="-2" y="1" width="22" height="14" viewBox="0 0 22 14" className="pointer-events-none">
+                {wifiBarRects.map((bar, index) => (
+                  <rect
+                    key={index}
+                    x={bar.x}
+                    y={bar.y}
+                    width={bar.width}
+                    height={bar.height}
+                    fill={strength >= index + 1 ? activeColor : dimColor}
+                    rx="0.3"
+                  />
+                ))}
+              </svg>
+            </g>
+          );
+        }
 
         return (
           <g transform={`translate(${deviceWidth - 22}, 6)`}>
@@ -584,6 +646,7 @@ export function DeviceRenderer({
           const isConnected = port.status === 'connected';
           const isShutdown = port.shutdown;
           const isDeviceOffline = device.status === 'offline';
+          const hasProblem = isShutdown || isDeviceOffline || (isConnected && !isPortConnectionHealthy(port.id));
           const portLabel = port.id.toLowerCase().startsWith('com') ? 'C' : 'E';
 
           const portColor = (isShutdown || isDeviceOffline) ? STATUS_COLORS.offline :
@@ -612,8 +675,9 @@ export function DeviceRenderer({
               <circle
                 r={7}
                 fill={portColor}
-                stroke={isShutdown || isDeviceOffline ? 'var(--color-error-700)' : isConnected ? 'var(--color-success-500)' : (isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)')}
+                stroke={getPortFrameColor(port.id, hasProblem, isConnected)}
                 strokeWidth={isShutdown || isDeviceOffline || isConnected ? 2 : 1}
+                opacity={hasProblem ? 0.45 : 1}
                 style={{ pointerEvents: 'none' }}
               />
               <text y={1} fill="var(--color-background)" fontSize="7" textAnchor="middle" dominantBaseline="middle" style={{ userSelect: 'none', pointerEvents: 'none' }}>
@@ -642,7 +706,7 @@ export function DeviceRenderer({
 
               const portId = port.id.toLowerCase();
               const isConsole = portId === 'console';
-              const isGigabit = portId.startsWith('gi');
+              const isGigabit = isGigabitPort(port.id);
               const isFastEthernet = portId.startsWith('fa');
               const isSerial = portId.startsWith('s') && !portId.startsWith('service');
 
@@ -658,6 +722,8 @@ export function DeviceRenderer({
               const isSTPBlocked = simulatorPort?.spanningTree?.state === 'blocking' || simulatorPort?.spanningTree?.role === 'alternate';
               const deviceVlan = device.vlan || simulatorPort?.accessVlan || simulatorPort?.vlan || 1;
               const isVlan1 = deviceVlan === 1;
+              const isBlocked = isSTPBlocked && isVlan1;
+              const hasProblem = isShutdown || isDeviceOffline || isBlocked || (isConnected && !isPortConnectionHealthy(port.id));
 
               let portFill: string;
               let portStroke: string;
@@ -665,12 +731,12 @@ export function DeviceRenderer({
               if (isShutdown || isDeviceOffline) {
                 portFill = 'var(--color-error-500)';
                 portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
-              } else if (isSTPBlocked && isVlan1) {
-                portFill = 'var(--color-accent-600)';
-                portStroke = isDark ? 'var(--color-accent-400)' : 'var(--color-accent-400)';
+              } else if (isBlocked) {
+                portFill = PORT_STP_BLOCKED;
+                portStroke = PORT_STP_BLOCKED_STROKE;
               } else if (isConnected) {
                 if (isConsole) { portFill = 'var(--color-accent-500)'; portStroke = isDark ? 'var(--color-accent-400)' : 'var(--color-accent-400)'; }
-                else if (isGigabit) { portFill = 'var(--color-secondary-500)'; portStroke = isDark ? 'var(--color-secondary-300)' : 'var(--color-secondary-300)'; }
+                else if (isGigabit) { portFill = PORT_GIGABIT_UP; portStroke = PORT_GIGABIT_UP_STROKE; }
                 else if (isFastEthernet) { portFill = 'var(--color-primary-500)'; portStroke = isDark ? 'var(--color-primary-400)' : 'var(--color-primary-400)'; }
                 else if (isSerial) { portFill = 'var(--color-success-500)'; portStroke = isDark ? 'var(--color-success-300)' : 'var(--color-success-300)'; }
                 else { portFill = 'var(--color-primary-500)'; portStroke = isDark ? 'var(--color-primary-400)' : 'var(--color-primary-400)'; }
@@ -700,7 +766,14 @@ export function DeviceRenderer({
                       handlePortClick(e, device.id, port.id);
                     }}
                   />
-                  <circle r={6} fill={portFill} stroke={isShutdown || isDeviceOffline || isConnected ? portStroke : (isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)')} strokeWidth={isShutdown || isDeviceOffline || isConnected ? 2 : 1} style={{ pointerEvents: 'none' }} />
+                  <circle
+                    r={6}
+                    fill={portFill}
+                    stroke={isBlocked ? portStroke : getPortFrameColor(port.id, hasProblem, isConnected)}
+                    strokeWidth={isShutdown || isDeviceOffline || isConnected ? 2 : 1}
+                    opacity={hasProblem && !isBlocked ? 0.45 : 1}
+                    style={{ pointerEvents: 'none' }}
+                  />
                   <text y={1} style={{ fill: 'var(--color-background)', userSelect: 'none', pointerEvents: 'none' }} fontSize="6" textAnchor="middle" dominantBaseline="middle">
                     {displayNum}
                   </text>
@@ -736,7 +809,7 @@ export function DeviceRenderer({
 
             const portId = port.id.toLowerCase();
             const isConsole = portId === 'console';
-            const isGigabit = portId.startsWith('gi');
+            const isGigabit = isGigabitPort(port.id);
             const isFastEthernet = portId.startsWith('fa');
 
             const portNum = port.label.replace(/\D/g, '');
@@ -745,6 +818,7 @@ export function DeviceRenderer({
             const deviceState = deviceStates?.get(device.id);
             const simulatorPort = deviceState?.ports?.[port.id];
             const isSTPBlocked = simulatorPort?.spanningTree?.state === 'blocking' || simulatorPort?.spanningTree?.role === 'alternate';
+            const hasProblem = isShutdown || isDeviceOffline || isSTPBlocked || (isConnected && !isPortConnectionHealthy(port.id));
 
             let portFill: string;
             let portStroke: string;
@@ -753,15 +827,15 @@ export function DeviceRenderer({
               portFill = 'var(--color-error-500)';
               portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
             } else if (isSTPBlocked) {
-              portFill = 'var(--color-accent-600)';
-              portStroke = isDark ? 'var(--color-accent-400)' : 'var(--color-accent-400)';
+              portFill = PORT_STP_BLOCKED;
+              portStroke = PORT_STP_BLOCKED_STROKE;
             } else if (isConnected) {
               if (isConsole) {
                 portFill = 'var(--color-accent-500)';
                 portStroke = isDark ? 'var(--color-accent-400)' : 'var(--color-accent-400)';
               } else if (isGigabit) {
-                portFill = 'var(--color-secondary-500)';
-                portStroke = isDark ? 'var(--color-secondary-300)' : 'var(--color-secondary-300)';
+                portFill = PORT_GIGABIT_UP;
+                portStroke = PORT_GIGABIT_UP_STROKE;
               } else if (isFastEthernet) {
                 portFill = 'var(--color-primary-500)';
                 portStroke = isDark ? 'var(--color-primary-400)' : 'var(--color-primary-400)';
@@ -806,8 +880,9 @@ export function DeviceRenderer({
                 <circle
                   r={6}
                   fill={portFill}
-                  stroke={isShutdown || isDeviceOffline || isConnected ? portStroke : (isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)')}
+                  stroke={isSTPBlocked ? portStroke : getPortFrameColor(port.id, hasProblem, isConnected)}
                   strokeWidth={isShutdown || isDeviceOffline || isConnected ? 2 : 1}
+                  opacity={hasProblem && !isSTPBlocked ? 0.45 : 1}
                   style={{ pointerEvents: 'none' }}
                 />
                 <text y={1} style={{ fill: 'var(--color-background)', userSelect: 'none', pointerEvents: 'none' }} fontSize="6" textAnchor="middle" dominantBaseline="middle">
