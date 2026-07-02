@@ -166,7 +166,7 @@ export const ConnectionLine = memo(function ConnectionLine({
         className="pointer-events-none"
         vectorEffect="non-scaling-stroke"
         style={{
-          opacity: isHovered ? 0.6 : 0.25,
+          opacity: isHovered ? 0.72 : 0.4,
           filter: isHovered || (graphicsQuality === 'high' && isEffectivelyActive) ?
             'drop-shadow(0 0 0.5px ' + color + ') drop-shadow(0 0 1px ' + color + ')' :
             'none',

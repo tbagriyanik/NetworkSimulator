@@ -36,7 +36,6 @@ interface DeviceRendererProps {
 const isSwitchDeviceType = (type: string) => type === 'switchL2' || type === 'switchL3';
 
 const PORT_FRAME_OK = 'var(--color-secondary-50)';
-const PORT_FRAME_OK_LIGHT = 'var(--color-secondary-100)';
 const PORT_STP_BLOCKED = 'var(--color-pink-500)';
 const PORT_STP_BLOCKED_STROKE = 'var(--color-pink-300)';
 const PORT_GIGABIT_UP = 'var(--color-warning-500)';
@@ -94,7 +93,7 @@ export function DeviceRenderer({
 
   const getPortFrameColor = (portId: string, hasProblem: boolean, isConnected: boolean) => {
     if (hasProblem) return isDark ? 'var(--color-secondary-700)' : 'var(--color-secondary-300)';
-    if (isConnected && isPortConnectionHealthy(portId)) return isDark ? PORT_FRAME_OK : PORT_FRAME_OK_LIGHT;
+    if (isConnected && isPortConnectionHealthy(portId)) return isDark ? PORT_FRAME_OK : 'var(--color-secondary-900)';
     return isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
   };
 
