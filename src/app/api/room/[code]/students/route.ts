@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getRoomStudents, getRoomMeta, claimRoom } from '@/lib/roomStore';
 import type { RoomApiResponse, StudentProgress } from '@/lib/roomTypes';
 import { isRateLimited } from '@/lib/security/rateLimiter';
+import { sanitizeInput } from '@/lib/security/sanitizer';
 
 interface RouteParams {
   code: string;
@@ -45,7 +46,8 @@ export async function GET(
     }
 
     const url = new URL(req.url);
-    const teacherId = url.searchParams.get('teacherId');
+    const rawTeacherId = url.searchParams.get('teacherId');
+    const teacherId = rawTeacherId ? sanitizeInput(rawTeacherId) : null;
     if (teacherId && teacherId.length > 100) {
       return NextResponse.json(
         { success: false, error: 'Invalid teacher ID', code: 'INVALID_TEACHER_ID' },

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { updateStudent } from '@/lib/roomStore';
 import type { RoomApiResponse, StudentProgress } from '@/lib/roomTypes';
 import { isRateLimited } from '@/lib/security/rateLimiter';
+import { sanitizeInput, sanitizeObject } from '@/lib/security/sanitizer';
 
 interface RouteParams {
   code: string;
@@ -29,7 +30,8 @@ export async function PATCH(
         { status: 503 },
       );
     }
-    const { code, studentId } = await params;
+    const { code, studentId: rawStudentId } = await params;
+    const studentId = sanitizeInput(rawStudentId);
 
     if (!code || !studentId) {
       return NextResponse.json(
@@ -52,7 +54,8 @@ export async function PATCH(
       );
     }
 
-    const body = await req.json();
+    const rawBody = await req.json();
+    const body = sanitizeObject(rawBody) as Record<string, unknown>;
     const { displayName, currentTask, completedTasks, totalTasks, projectFile, durationMinutes } = body;
 
     if (displayName !== undefined && (typeof displayName !== 'string' || displayName.length > 100)) {
