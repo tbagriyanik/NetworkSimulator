@@ -4,6 +4,8 @@ import type { RoomApiResponse, RoomData } from '@/lib/roomTypes';
 import { isRateLimited } from '@/lib/security/rateLimiter';
 import { sanitizeObject } from '@/lib/security/sanitizer';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(_req: NextRequest): Promise<NextResponse> {
   try {
     if (process.env.NEXT_PUBLIC_IS_ROOM_ENABLED !== 'true') {

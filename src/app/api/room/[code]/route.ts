@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { checkRoomExists } from '@/lib/roomStore';
 import type { RoomApiResponse } from '@/lib/roomTypes';
 
+export const dynamic = 'force-dynamic';
+
 interface RouteParams {
   code: string;
 }
