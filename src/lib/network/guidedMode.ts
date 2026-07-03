@@ -1384,7 +1384,7 @@ export const checkStepCompletion = (
       const correctValue = step.checkParams.configValue;
       if (!configKey) return false;
 
-      const dummyStep: any = {
+      const dummyStep: GuidedStep = {
         ...step,
         checkType: 'config',
         checkParams: {

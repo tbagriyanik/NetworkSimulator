@@ -2967,6 +2967,58 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
   // Inject fault: PC-2 has wrong mask 255.255.255.240
   troubleMaskDevices[1].subnet = '255.255.255.240';
 
+  const troubleShutDevices = [
+    createPcDevice('pc-1', 'PC-1', 100, 100, '192.168.1.10', 1),
+    createSwitchDevice('switch-1', 'SW1', 300, 100)
+  ];
+  const troubleShutConnections: CanvasConnection[] = [];
+  connectPorts(troubleShutDevices, troubleShutConnections, 'pc-1', 'eth0', 'switch-1', 'fa0/1');
+  const troubleShutSwState = createInitialState();
+  troubleShutSwState.hostname = 'SW1';
+  // Inject fault: Fa0/1 is shutdown
+  troubleShutSwState.ports['fa0/1'] = { ...troubleShutSwState.ports['fa0/1'], shutdown: true, status: 'notconnect' };
+
+  const troubleGwDevices = [
+    createPcDevice('pc-1', 'PC-1', 100, 100, '192.168.1.10', 1, '192.168.1.254'),
+    createRouterDevice('router-1', 'R1', 300, 100)
+  ];
+  const troubleGwConnections: CanvasConnection[] = [];
+  connectPorts(troubleGwDevices, troubleGwConnections, 'pc-1', 'eth0', 'router-1', 'gi0/0', 'crossover');
+  const troubleGwR1State = createInitialRouterState();
+  troubleGwR1State.hostname = 'R1';
+  troubleGwR1State.ports['gi0/0'] = { ...troubleGwR1State.ports['gi0/0'], ipAddress: '192.168.1.1', subnetMask: '255.255.255.0', shutdown: false, status: 'connected' };
+  // Inject fault: PC-1 has wrong gateway 192.168.1.254 (should be 192.168.1.1)
+  troubleGwDevices[0].gateway = '192.168.1.254';
+
+  const troubleDuplicateDevices = [
+    createPcDevice('pc-1', 'PC-1', 100, 100, '192.168.1.10', 1),
+    createPcDevice('pc-2', 'PC-2', 300, 100, '192.168.1.10', 1)
+  ];
+  const troubleDuplicateConnections: CanvasConnection[] = [];
+  connectPorts(troubleDuplicateDevices, troubleDuplicateConnections, 'pc-1', 'eth0', 'pc-2', 'eth0', 'crossover');
+  // Inject fault: PC-2 has same IP as PC-1
+  troubleDuplicateDevices[1].ip = '192.168.1.10';
+
+  const troubleAclDevices = [
+    createPcDevice('pc-1', 'PC-1', 100, 100, '192.168.1.10', 1, '192.168.1.1'),
+    createRouterDevice('router-1', 'R1', 300, 100),
+    createPcDevice('pc-2', 'PC-2', 500, 100, '192.168.2.10', 1, '192.168.2.1')
+  ];
+  const troubleAclConnections: CanvasConnection[] = [];
+  connectPorts(troubleAclDevices, troubleAclConnections, 'pc-1', 'eth0', 'router-1', 'gi0/0', 'crossover');
+  connectPorts(troubleAclDevices, troubleAclConnections, 'router-1', 'gi0/1', 'pc-2', 'eth0', 'crossover');
+  const troubleAclR1State = createInitialRouterState();
+  troubleAclR1State.hostname = 'R1';
+  troubleAclR1State.ports['gi0/0'] = { ...troubleAclR1State.ports['gi0/0'], ipAddress: '192.168.1.1', subnetMask: '255.255.255.0', shutdown: false, status: 'connected' };
+  troubleAclR1State.ports['gi0/1'] = { ...troubleAclR1State.ports['gi0/1'], ipAddress: '192.168.2.1', subnetMask: '255.255.255.0', shutdown: false, status: 'connected' };
+  // Inject fault: ACL blocking all traffic on Gi0/0
+  troubleAclR1State.accessLists = {
+    '101': [
+      'access-list 101 deny ip any any'
+    ]
+  };
+  troubleAclR1State.ports['gi0/0'].accessGroupIn = '101';
+
   return [
     {
       id: 'trouble-vlan',
@@ -3005,6 +3057,82 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
         }
       ],
       data: baseProjectData(troubleMaskDevices, troubleMaskConnections, [], [])
+    },
+    {
+      id: 'trouble-shutdown',
+      tag: isTr ? 'ARIZA' : 'TROUBLE',
+      title: isTr ? 'Kapalı Arayüz' : 'Shutdown Interface',
+      description: isTr ? 'Fiziksel bağlantı var ama LED\'ler sönük. Sorunu bulun.' : 'Physical connection exists but LEDs are off. Find the issue.',
+      level: 'basic',
+      injectedFaults: [
+        {
+          id: 'fault-shut-fa01',
+          deviceId: 'switch-1',
+          faultType: 'shutdownInterface',
+          description: { tr: 'Switch Fa0/1 portu shutdown durumunda.', en: 'Switch port Fa0/1 is shutdown.' },
+          configKey: 'ports.fa0/1.shutdown',
+          faultValue: true,
+          correctValue: false
+        }
+      ],
+      data: baseProjectData(troubleShutDevices, troubleShutConnections, [], [{ id: 'switch-1', state: troubleShutSwState }])
+    },
+    {
+      id: 'trouble-gateway',
+      tag: isTr ? 'ARIZA' : 'TROUBLE',
+      title: isTr ? 'Yanlış Ağ Geçidi' : 'Wrong Default Gateway',
+      description: isTr ? 'PC1 router\'a ulaşamıyor. Gateway ayarlarını kontrol edin.' : 'PC1 cannot reach the router. Check gateway settings.',
+      level: 'basic',
+      injectedFaults: [
+        {
+          id: 'fault-gw-pc1',
+          deviceId: 'pc-1',
+          faultType: 'wrongDefaultGateway',
+          description: { tr: 'PC1\'in gateway adresi yanlış (192.168.1.254).', en: 'PC1 gateway address is wrong (192.168.1.254).' },
+          configKey: 'pc.pc-1.gateway',
+          faultValue: '192.168.1.254',
+          correctValue: '192.168.1.1'
+        }
+      ],
+      data: baseProjectData(troubleGwDevices, troubleGwConnections, [], [{ id: 'router-1', state: troubleGwR1State }])
+    },
+    {
+      id: 'trouble-duplicate',
+      tag: isTr ? 'ARIZA' : 'TROUBLE',
+      title: isTr ? 'Çakışan IP Adresi' : 'Duplicate IP Address',
+      description: isTr ? 'Ağda iki cihaz aynı IP adresini kullanıyor. Çakışmayı giderin.' : 'Two devices in the network use the same IP. Resolve the conflict.',
+      level: 'basic',
+      injectedFaults: [
+        {
+          id: 'fault-dup-pc2',
+          deviceId: 'pc-2',
+          faultType: 'duplicateIp',
+          description: { tr: 'PC-2, PC-1 ile aynı IP\'ye (192.168.1.10) sahip.', en: 'PC-2 has the same IP (192.168.1.10) as PC-1.' },
+          configKey: 'pc.pc-2.ip',
+          faultValue: '192.168.1.10',
+          correctValue: '192.168.1.11'
+        }
+      ],
+      data: baseProjectData(troubleDuplicateDevices, troubleDuplicateConnections, [], [])
+    },
+    {
+      id: 'trouble-acl',
+      tag: isTr ? 'ARIZA' : 'TROUBLE',
+      title: isTr ? 'Hatalı ACL Kısıtlaması' : 'Incorrect ACL Restriction',
+      description: isTr ? 'Router üzerindeki bir ACL trafiği engelliyor. Kuralı düzeltin.' : 'An ACL on the router is blocking traffic. Fix the rule.',
+      level: 'intermediate',
+      injectedFaults: [
+        {
+          id: 'fault-acl-r1',
+          deviceId: 'router-1',
+          faultType: 'aclBlocking',
+          description: { tr: 'R1 Gi0/0 arayüzünde tüm trafiği engelleyen ACL 101 uygulanmış.', en: 'ACL 101 blocking all traffic is applied on R1 Gi0/0.' },
+          configKey: 'ports.gi0/0.accessGroupIn',
+          faultValue: '101',
+          correctValue: undefined
+        }
+      ],
+      data: baseProjectData(troubleAclDevices, troubleAclConnections, [], [{ id: 'router-1', state: troubleAclR1State }])
     },
     {
       id: 'basic-secure',
