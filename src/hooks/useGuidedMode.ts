@@ -31,6 +31,7 @@ interface UseGuidedModeReturn {
   // Context check for auto-completion
   checkStepCompletionWithContext: (context: {
     lastCommand?: string;
+    lastOutput?: string;
     deviceAccessed?: 'switch' | 'router' | 'pc' | null;
     deviceAccessedId?: string | null;
     deviceState?: unknown;
@@ -288,6 +289,7 @@ export function useGuidedMode(): UseGuidedModeReturn {
 
   const checkStepCompletionWithContext = useCallback((context: {
     lastCommand?: string;
+    lastOutput?: string;
     deviceAccessed?: 'switch' | 'router' | 'pc' | null;
     deviceAccessedId?: string | null;
     deviceState?: unknown;

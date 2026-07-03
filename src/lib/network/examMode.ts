@@ -100,7 +100,7 @@ export interface ExamTask {
   title: { tr: string; en: string };
   description: { tr: string; en: string };
   weight: number;
-  checkType: 'deviceAccess' | 'command' | 'config' | 'connection' | 'manual';
+  checkType: 'deviceAccess' | 'command' | 'config' | 'connection' | 'manual' | 'faultResolved' | 'routingConverged' | 'showOutputMatch';
   checkParams?: {
     deviceType?: 'switch' | 'router' | 'pc' | 'iot' | 'firewall';
     commandPattern?: string;
@@ -116,6 +116,11 @@ export interface ExamTask {
     subnetMask?: string;
     pc1Ip?: string;
     pc2Ip?: string;
+    // For faultResolved
+    faultId?: string;
+    // For showOutputMatch
+    showCommand?: string;
+    matchPattern?: string;
   };
   completed: boolean;
   completedAt?: Date;

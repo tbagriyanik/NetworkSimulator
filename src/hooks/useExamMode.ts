@@ -23,6 +23,7 @@ interface UseExamModeReturn {
   exportExamFile: (projectData: unknown) => void;
   checkTasks: (context: {
     lastCommand?: string;
+    lastOutput?: string;
     deviceAccessed?: 'switch' | 'router' | 'pc' | null;
     deviceAccessedId?: string | null;
     deviceState?: unknown;
@@ -230,6 +231,7 @@ export function useExamMode(): UseExamModeReturn {
 
   const checkTasks = useCallback((context: {
     lastCommand?: string;
+    lastOutput?: string;
     deviceAccessed?: 'switch' | 'router' | 'pc' | null;
     deviceAccessedId?: string | null;
     deviceState?: unknown;
