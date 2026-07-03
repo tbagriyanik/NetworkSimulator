@@ -12,7 +12,7 @@ export interface GuidedStep {
   hint: { tr: string; en: string };
   detailedInstructions?: { tr: string[]; en: string[] };
   animationId?: string;
-  checkType: 'deviceAccess' | 'command' | 'config' | 'connection' | 'ping' | 'manual' | 'deviceCount';
+  checkType: 'deviceAccess' | 'command' | 'config' | 'connection' | 'ping' | 'manual' | 'deviceCount' | 'faultResolved' | 'routingConverged' | 'showOutputMatch';
   checkParams?: {
     deviceType?: 'switch' | 'router' | 'pc' | 'iot' | 'firewall';
     minCount?: number;
@@ -36,6 +36,11 @@ export interface GuidedStep {
     interfaceId?: string;
     vlanId?: number;
     poolName?: string;
+    // For faultResolved
+    faultId?: string;
+    // For showOutputMatch
+    showCommand?: string;
+    matchPattern?: string;
   };
   completed: boolean;
   completedAt?: Date;

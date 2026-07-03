@@ -14,8 +14,8 @@ export interface FaultDefinition {
   id: string;
   deviceId: string;
   faultType: FaultType;
-  targetKey: string; // e.g., 'ports.fa0/1.ipAddress'
-  wrongValue: unknown;
+  configKey: string; // e.g., 'ports.fa0/1.ipAddress'
+  faultValue: unknown;
   correctValue: unknown;
   description: { tr: string; en: string }; // Visible to teacher, hidden from student
   hint?: { tr: string; en: string }; // Progressive hint for the student
@@ -27,7 +27,7 @@ export interface FaultDefinition {
  */
 export function applyFault(state: SwitchState, fault: FaultDefinition): SwitchState {
   const newState = JSON.parse(JSON.stringify(state));
-  const parts = fault.targetKey.split('.');
+  const parts = fault.configKey.split('.');
 
   let current = newState;
   for (let i = 0; i < parts.length - 1; i++) {
@@ -41,7 +41,7 @@ export function applyFault(state: SwitchState, fault: FaultDefinition): SwitchSt
 
   const lastPart = parts[parts.length - 1];
   if (current && typeof current === 'object') {
-    (current as any)[lastPart] = fault.wrongValue;
+    (current as any)[lastPart] = fault.faultValue;
   }
 
   return newState;
@@ -51,7 +51,7 @@ export function applyFault(state: SwitchState, fault: FaultDefinition): SwitchSt
  * Checks if a fault has been resolved by comparing current state with the correct value.
  */
 export function checkFaultResolved(state: SwitchState, fault: FaultDefinition): boolean {
-  const parts = fault.targetKey.split('.');
+  const parts = fault.configKey.split('.');
 
   let current: any = state;
   for (let i = 0; i < parts.length - 1; i++) {

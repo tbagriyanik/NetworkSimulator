@@ -383,8 +383,9 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
 
   const [loadedExampleId, setLoadedExampleId] = useState<string | null>(null);
   const [topologyKey, setTopologyKey] = useState(0);
-  // Track last executed command for guided mode
+  // Track last executed command and its output for guided mode
   const [lastCommand, setLastCommand] = useState<string>('');
+  const [lastOutput, setLastOutput] = useState<string>('');
   const [isAppLoading, setIsLoading] = useState(true);
   const [showSkeleton, setShowSkeleton] = useState(true);
   const [hasHydrated, setHasHydrated] = useState(false);
@@ -2455,6 +2456,9 @@ ${state.bannerMOTD}
     ) as { exitSession?: boolean };
 
     setLastCommand(command);
+    if (result && typeof result === 'object' && 'output' in result) {
+      setLastOutput(String(result.output));
+    }
 
     if (result?.exitSession) {
       setActiveTab('topology');
@@ -2475,8 +2479,11 @@ ${state.bannerMOTD}
     );
 
     setLastCommand(command);
+    if (result && typeof result === 'object' && 'output' in result) {
+      setLastOutput(String(result.output));
+    }
     return result;
-  }, [handleCommandForDevice, topologyDevices, topologyConnections, setActiveDeviceId, setActiveDeviceType, setLastCommand]);
+  }, [handleCommandForDevice, topologyDevices, topologyConnections, setActiveDeviceId, setActiveDeviceType, setLastCommand, setLastOutput]);
 
 
   const handleClearTerminal = () => {
