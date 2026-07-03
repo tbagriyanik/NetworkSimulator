@@ -265,6 +265,19 @@ export interface SecurityConfig {
 export type SwitchModel = 'WS-C2960-24TT-L' | 'WS-C3650-24PS' | 'ASA-5506-X' | 'AIR-CT2504-K9';
 export type SwitchLayer = 'L2' | 'L3' | 'FW' | 'WLC';
 
+export interface StpVlanState {
+  vlanId: number;
+  bridgeId: string;        // priority + MAC, e.g. "32768.AABB.CC00.0100"
+  rootBridgeId: string;
+  isRoot: boolean;
+  rootCost: number;
+  ports: Record<string, {
+    role: 'root' | 'designated' | 'alternate' | 'backup' | 'disabled';
+    state: 'forwarding' | 'blocking' | 'listening' | 'learning' | 'disabled';
+    cost: number;
+  }>;
+}
+
 export interface SwitchState {
   hostname: string;
   macAddress: string; // Unique base MAC address for the device
@@ -538,6 +551,8 @@ export interface SwitchState {
   arpInspectionEnabled?: boolean;
   // Spanning-tree portfast default (global)
   spanningTreePortfastDefault?: boolean;
+  // STP calculation results
+  stpState?: Record<number, StpVlanState>;
 }
 
 export interface StartupConfig {

@@ -23,7 +23,7 @@ import { getPrompt } from '@/lib/network/executor';
 import { formatErrorForUser, errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
 import { generateRandomLinkLocalIpv4 } from '@/lib/network/linkLocal';
 import { safeParse, safeStringify } from '@/lib/network/serialization';
-import { calculatePVST } from '@/lib/network/core/showCommands';
+import { recalculateStp } from '@/lib/network/stp';
 import { createInitialState, createInitialRouterState, createInitialFirewallState, createInitialWLCState } from '@/lib/network/initialState';
 import type { TerminalOutput } from '@/components/network/Terminal';
 import { BOOT_PROGRESS_MARKER } from '@/components/network/Terminal';
@@ -1435,15 +1435,22 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
       const nextDevices = prev.map((d) => (d.id === deviceId ? { ...d, status: nextStatus } : d));
       const byId = new Map(nextDevices.map(d => [d.id, d] as const));
 
-      setTopologyConnections((prevConnections) =>
-        prevConnections.map((c) => {
+      setTopologyConnections((prevConnections) => {
+        const nextConnections = prevConnections.map((c) => {
           if (c.sourceDeviceId !== deviceId && c.targetDeviceId !== deviceId) return c;
           if (nextStatus === 'offline') return { ...c, active: false };
           const peerId = c.sourceDeviceId === deviceId ? c.targetDeviceId : c.sourceDeviceId;
           const peer = byId.get(peerId);
           return { ...c, active: peer?.status !== 'offline' };
-        })
-      );
+        });
+
+        // Trigger STP recalculation when power status changes
+        window.dispatchEvent(new CustomEvent('stp-recalculation-needed', {
+          detail: { topologyDevices: nextDevices, topologyConnections: nextConnections }
+        }));
+
+        return nextConnections;
+      });
 
       return nextDevices;
     });
@@ -2612,7 +2619,7 @@ ${state.bannerMOTD}
 
       // 4. Update topology: Update ports on remaining devices based on remaining connections
       setTopologyDevices(prev => {
-        return prev.filter(d => d.id !== deviceId).map(device => {
+        const nextDevices = prev.filter(d => d.id !== deviceId).map(device => {
           const updatedPorts = device.ports.map(port => {
             const isActuallyConnected = remainingConnections.some(conn =>
               (conn.sourceDeviceId === device.id && conn.sourcePort === port.id) ||
@@ -2625,6 +2632,13 @@ ${state.bannerMOTD}
           });
           return { ...device, ports: updatedPorts };
         });
+
+        // Trigger STP recalculation when device is deleted
+        window.dispatchEvent(new CustomEvent('stp-recalculation-needed', {
+          detail: { topologyDevices: nextDevices, topologyConnections: remainingConnections }
+        }));
+
+        return nextDevices;
       });
 
       return remainingConnections;
@@ -3646,22 +3660,13 @@ ${state.bannerMOTD}
 
       // 3. VTP propagation (server -> client over trunk)
       const vtpUpdatedStates = propagateVtpVlans(refreshedDevices, releasedDeviceStates, sanitizedConnections);
-      let stpUpdatedStates = new Map(vtpUpdatedStates);
-      let stpUpdatedCount = 0;
 
-      refreshedDevices.forEach((device) => {
-        if (device.type !== 'switchL2' && device.type !== 'switchL3') return;
-        const state = stpUpdatedStates.get(device.id);
-        if (!state) return;
-
-        stpUpdatedStates = calculatePVST(state, {
-          language,
-          connections: sanitizedConnections,
-          devices: refreshedDevices,
-          deviceStates: stpUpdatedStates,
-        }, device.id) as Map<string, SwitchState>;
-        stpUpdatedCount++;
-      });
+      // 4. STP calculation
+      const stpUpdatedStates = recalculateStp(vtpUpdatedStates, sanitizedConnections);
+      const stpUpdatedCount = Array.from(vtpUpdatedStates.keys()).filter(id => {
+        const d = refreshedDevices.find(dev => dev.id === id);
+        return d && (d.type === 'switchL2' || d.type === 'switchL3');
+      }).length;
 
       // 8.5. DHCP Assignment - Do this before showing the refresh panel
       const dhcpClients = refreshedDevices.filter(d => (d.type === 'pc' || d.type === 'iot') && d.ipConfigMode === 'dhcp');
@@ -4433,25 +4438,10 @@ ${state.bannerMOTD}
 
     // Handle STP recalculation when connection is deleted
     const handleSTPRecalculation = (event: Event) => {
-      const { topologyDevices: updatedDevices, topologyConnections: updatedConnections } = (event as CustomEvent).detail;
-      if (updatedDevices && updatedConnections) {
-        // Create context for STP calculation
-        const ctx = {
-          connections: updatedConnections,
-          devices: updatedDevices,
-          deviceStates: deviceStates
-        };
-
-        // Perform PVST calculation for all devices
-        // We pick an arbitrary device as source for the calculation context, 
-        // calculatePVST handles the global update.
-        const firstSwitch = updatedDevices.find((d: CanvasDevice) => d.type === 'switchL2' || d.type === 'switchL3');
-        if (!firstSwitch) return;
-
-        const firstSwitchState = deviceStates.get(firstSwitch.id);
-        if (!firstSwitchState) return;
-
-        const allUpdatedStates = calculatePVST(firstSwitchState, { ...ctx, language }, firstSwitch.id);
+      const { topologyConnections: updatedConnections } = (event as CustomEvent).detail;
+      if (updatedConnections) {
+        // Perform STP calculation for all devices
+        const allUpdatedStates = recalculateStp(deviceStates, updatedConnections);
         setDeviceStates(allUpdatedStates);
       }
     };
