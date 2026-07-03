@@ -29,11 +29,11 @@ export function applyFault(state: SwitchState, fault: FaultDefinition): SwitchSt
   const newState = JSON.parse(JSON.stringify(state));
   const parts = fault.configKey.split('.');
 
-  let current = newState;
+  let current: Record<string, unknown> = newState;
   for (let i = 0; i < parts.length - 1; i++) {
     const part = parts[i];
     if (current && typeof current === 'object' && part in current) {
-      current = current[part as keyof typeof current];
+      current = current[part] as Record<string, unknown>;
     } else {
       return state;
     }
@@ -41,7 +41,7 @@ export function applyFault(state: SwitchState, fault: FaultDefinition): SwitchSt
 
   const lastPart = parts[parts.length - 1];
   if (current && typeof current === 'object') {
-    (current as any)[lastPart] = fault.faultValue;
+    current[lastPart] = fault.faultValue;
   }
 
   return newState;
@@ -53,11 +53,11 @@ export function applyFault(state: SwitchState, fault: FaultDefinition): SwitchSt
 export function checkFaultResolved(state: SwitchState, fault: FaultDefinition): boolean {
   const parts = fault.configKey.split('.');
 
-  let current: any = state;
+  let current: Record<string, unknown> = state as unknown as Record<string, unknown>;
   for (let i = 0; i < parts.length - 1; i++) {
     const part = parts[i];
     if (current && typeof current === 'object' && part in current) {
-      current = current[part];
+      current = current[part] as Record<string, unknown>;
     } else {
       return false;
     }
