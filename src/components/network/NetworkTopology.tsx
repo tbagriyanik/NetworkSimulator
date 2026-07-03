@@ -158,6 +158,12 @@ export function NetworkTopology({
   }, [topologyDevices]);
 
   const topologyConnections = useTopologyConnections();
+  // BOLT: Memoize connection map for O(1) lookups during culling
+  const connectionMap = useMemo(() => {
+    const map = new Map<string, CanvasConnection>();
+    topologyConnections.forEach(c => map.set(c.id, c));
+    return map;
+  }, [topologyConnections]);
 
   // BOLT: Memoize map of device ID to its connections for O(1) lookups in renderDevice
   const deviceToConnectionsMap = useMemo(() => {
@@ -335,10 +341,6 @@ export function NetworkTopology({
     { cellSize: 256, margin: 100, enabled: true }
   );
 
-  // BOLT: Memoize visibility sets for O(1) lookups during filtering
-  const visibleDeviceSet = useMemo(() => new Set(visibleDeviceIds), [visibleDeviceIds]);
-  const visibleConnectionSet = useMemo(() => new Set(visibleConnectionIds), [visibleConnectionIds]);
-
   const { visibleDevices, visibleConnections, visibleNotes } = useMemo(() => {
     // If not active, or no dimensions, return all items to prevent them from disappearing
     // when calculating visibility while the container has 0 width/height.
@@ -363,10 +365,9 @@ export function NetworkTopology({
 
     const margin = 100; // Extra margin to prevent pop-in
 
-    // Filter devices and connections using spatial partitioning results
-    // BOLT: Use visibleDeviceSet and visibleConnectionSet for O(1) culling checks
-    const vDevices = devices.filter(d => visibleDeviceSet.has(d.id));
-    const vConnections = connections.filter(c => visibleConnectionSet.has(c.id));
+    // BOLT: Optimize to O(V) by mapping over visible IDs using pre-calculated maps
+    const vDevices = visibleDeviceIds.map(id => deviceMap.get(id)).filter((d): d is CanvasDevice => !!d);
+    const vConnections = visibleConnectionIds.map(id => connectionMap.get(id)).filter((c): c is CanvasConnection => !!c);
 
     // Simple viewport culling for notes (not in spatial partitioner)
     const vNotes = notes.filter(note => {

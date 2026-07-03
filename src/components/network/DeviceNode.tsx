@@ -150,7 +150,8 @@ export const DeviceNode = memo(function DeviceNode({
   }
 
   // IoT update trigger değişmişse re-render et (for continuous measurement updates)
-  if (prevProps.iotUpdateTrigger !== nextProps.iotUpdateTrigger) {
+  // BOLT: Only re-render on trigger if device is actually an IoT device
+  if (nextProps.device.type === 'iot' && prevProps.iotUpdateTrigger !== nextProps.iotUpdateTrigger) {
     return false; // Re-render et
   }
 
