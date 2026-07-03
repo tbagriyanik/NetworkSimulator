@@ -1,9 +1,8 @@
 import { IOS_ERRORS } from './iosErrors';
 import type { CommandHandler, CommandContext } from './commandTypes';
-import { ensureDeviceStatesMap } from '../networkUtils';
 import { isRouterModel } from '../switchModels';
 import { buildRunningConfig } from './configBuilder';
-import { SwitchState, Port, CommandResult, Route, StpVlanState } from '../types';
+import { SwitchState, Port, CommandResult, Route } from '../types';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
 import { checkConnectivity } from '../connectivity';
 import { normalizePortId } from '../initialState';

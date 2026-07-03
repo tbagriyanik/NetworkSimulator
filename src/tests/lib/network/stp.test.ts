@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { recalculateStp, calculateBridgeId } from '@/lib/network/stp';
+import { recalculateStp } from '@/lib/network/stp';
 import { SwitchState } from '@/lib/network/types';
 import { CanvasConnection } from '@/components/network/networkTopology.types';
 
