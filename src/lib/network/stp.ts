@@ -301,8 +301,6 @@ function findRootPort(
   let bestPeerBridgeId = "";
   let bestPeerPortId = "";
 
-  const myVlanPriority = state.spanningTreeVlans?.[vlanId]?.priority ? parseInt(state.spanningTreeVlans[vlanId].priority) : (state.spanningTreePriority || 32768);
-
   Object.keys(state.ports).forEach(portId => {
     const port = state.ports[portId];
     if (port.shutdown || !isPortVlanMember(port, vlanId)) return;
