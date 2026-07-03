@@ -1,6 +1,6 @@
 import type { SwitchState, CommandResult } from '../types';
 import type { CommandContext } from './commandTypes';
-import { calculatePVST } from './showCommands';
+import { recalculateStp } from '../stp';
 
 export type PvstUpdateResult =
   | { error: CommandResult }
@@ -15,6 +15,9 @@ export function getPvstUpdate(
     return { error: { success: false, error: '% Internal error: source device not available' } };
   }
 
-  const allUpdatedStates = calculatePVST(updatedCurrentState, ctx, sourceDeviceId);
+  const workingDeviceStates = new Map(ctx.deviceStates);
+  workingDeviceStates.set(sourceDeviceId, updatedCurrentState);
+
+  const allUpdatedStates = recalculateStp(workingDeviceStates, ctx.connections || []);
   return { allUpdatedStates, myUpdatedState: allUpdatedStates.get(sourceDeviceId) };
 }
