@@ -29,6 +29,7 @@ interface ExamModePanelProps {
   onFinish?: () => void;
   // Auto-completion context
   lastCommand?: string;
+  lastOutput?: string;
   deviceAccessed?: 'switch' | 'router' | 'pc' | null;
   deviceAccessedId?: string | null;
   deviceState?: unknown;
@@ -37,6 +38,7 @@ interface ExamModePanelProps {
   topologyDevices?: unknown[];
   onCheckTasks?: (context: {
     lastCommand?: string;
+    lastOutput?: string;
     deviceAccessed?: 'switch' | 'router' | 'pc' | null;
     deviceAccessedId?: string | null;
     deviceState?: unknown;
@@ -55,6 +57,7 @@ export function ExamModePanel({
   isFinished = false,
   onFinish,
   lastCommand,
+  lastOutput,
   deviceAccessed,
   deviceAccessedId,
   deviceState,
@@ -150,6 +153,7 @@ export function ExamModePanel({
     if (onCheckTasks && project && !isFinishedState) {
       onCheckTasks({
           lastCommand,
+          lastOutput,
           deviceAccessed,
           deviceAccessedId,
           deviceState,
@@ -158,7 +162,7 @@ export function ExamModePanel({
         topologyDevices
       });
     }
-  }, [lastCommand, deviceAccessed, deviceAccessedId, deviceState, topologyConnections, topologyDevices, onCheckTasks, project, isFinishedState]);
+  }, [lastCommand, lastOutput, deviceAccessed, deviceAccessedId, deviceState, topologyConnections, topologyDevices, onCheckTasks, project, isFinishedState]);
 
   // Drag handlers
   const handleMouseDown = useCallback((e: React.MouseEvent) => {

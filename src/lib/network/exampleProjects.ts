@@ -1,5 +1,6 @@
 import { createInitialState, createInitialRouterState } from './initialState';
 import type { SwitchState, CableInfo } from './types';
+import { FaultDefinition } from './faults';
 import type { CanvasDevice, CanvasConnection, CanvasNote, DeviceType } from '@/components/network/networkTopology.types';
 import { generateRandomLinkLocalIpv4 } from './linkLocal';
 import macExampleA from './examples/40-sayfa2-mac-tablosu.json';
@@ -158,6 +159,7 @@ const ensureProjectData = (source: unknown): ProjectData => {
 
 export type ExampleProjectLevel = 'basic' | 'intermediate' | 'advanced';
 
+
 export type ExampleProject = {
   id: string;
   tag: string;
@@ -166,6 +168,7 @@ export type ExampleProject = {
   detail?: string;
   data: ProjectData;
   level: ExampleProjectLevel;
+  injectedFaults?: FaultDefinition[];
 };
 
 const macExampleAData: ProjectData = ensureProjectData(macExampleA);
@@ -2939,7 +2942,70 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
     }
   ];
 
+  const troubleVlanDevices = [
+    createPcDevice('pc-1', 'PC-1', 100, 100, '192.168.1.10', 10),
+    createPcDevice('pc-2', 'PC-2', 100, 250, '192.168.1.20', 10),
+    createSwitchDevice('switch-1', 'SW1', 300, 175)
+  ];
+  const troubleVlanConnections: CanvasConnection[] = [];
+  connectPorts(troubleVlanDevices, troubleVlanConnections, 'pc-1', 'eth0', 'switch-1', 'fa0/1');
+  connectPorts(troubleVlanDevices, troubleVlanConnections, 'pc-2', 'eth0', 'switch-1', 'fa0/2');
+  const troubleVlanSwState = createInitialState();
+  troubleVlanSwState.hostname = 'SW1';
+  troubleVlanSwState.vlans[10] = { id: 10, name: 'SALES', status: 'active', ports: ['FA0/1', 'FA0/2'] };
+  // Inject fault: Fa0/2 is in VLAN 20 instead of 10
+  troubleVlanSwState.ports['fa0/1'] = { ...troubleVlanSwState.ports['fa0/1'], vlan: 10, mode: 'access', status: 'connected' };
+  troubleVlanSwState.ports['fa0/2'] = { ...troubleVlanSwState.ports['fa0/2'], vlan: 20, mode: 'access', status: 'connected' };
+  troubleVlanSwState.vlans[20] = { id: 20, name: 'FAULT', status: 'active', ports: ['FA0/2'] };
+
+  const troubleMaskDevices = [
+    createPcDevice('pc-1', 'PC-1', 100, 100, '192.168.1.10', 1),
+    createPcDevice('pc-2', 'PC-2', 300, 100, '192.168.1.20', 1)
+  ];
+  const troubleMaskConnections: CanvasConnection[] = [];
+  connectPorts(troubleMaskDevices, troubleMaskConnections, 'pc-1', 'eth0', 'pc-2', 'eth0', 'crossover');
+  // Inject fault: PC-2 has wrong mask 255.255.255.240
+  troubleMaskDevices[1].subnet = '255.255.255.240';
+
   return [
+    {
+      id: 'trouble-vlan',
+      tag: isTr ? 'ARIZA' : 'TROUBLE',
+      title: isTr ? 'Yanlış VLAN Ataması' : 'Wrong VLAN Assignment',
+      description: isTr ? 'PC2 neden PC1\'e ping atamıyor? Switch portlarını kontrol edin.' : 'Why can\'t PC2 ping PC1? Check the switch ports.',
+      level: 'intermediate',
+      injectedFaults: [
+        {
+          id: 'fault-vlan-2',
+          deviceId: 'switch-1',
+          faultType: 'wrongVlan',
+          description: { tr: 'Fa0/2 portu yanlışlıkla VLAN 20\'ye atanmış.', en: 'Port Fa0/2 is mistakenly assigned to VLAN 20.' },
+          configKey: 'ports.fa0/2.vlan',
+          faultValue: 20,
+          correctValue: 10
+        }
+      ],
+      data: baseProjectData(troubleVlanDevices, troubleVlanConnections, [], [{ id: 'switch-1', state: troubleVlanSwState }])
+    },
+    {
+      id: 'trouble-mask',
+      tag: isTr ? 'ARIZA' : 'TROUBLE',
+      title: isTr ? 'Yanlış Alt Ağ Maskesi' : 'Incorrect Subnet Mask',
+      description: isTr ? 'PC1 ve PC2 aynı ağda olmasına rağmen iletişim kuramıyor.' : 'PC1 and PC2 are on the same network but cannot communicate.',
+      level: 'basic',
+      injectedFaults: [
+        {
+          id: 'fault-mask-pc2',
+          deviceId: 'pc-2',
+          faultType: 'wrongSubnetMask',
+          description: { tr: 'PC2\'nin maskesi 255.255.255.240 olarak ayarlanmış.', en: 'PC2 mask is set to 255.255.255.240.' },
+          configKey: 'pc.pc-2.subnet',
+          faultValue: '255.255.255.240',
+          correctValue: '255.255.255.0'
+        }
+      ],
+      data: baseProjectData(troubleMaskDevices, troubleMaskConnections, [], [])
+    },
     {
       id: 'basic-secure',
       tag: isTr ? 'TEMEL' : 'BASIC',

@@ -39,6 +39,7 @@ interface GuidedModePanelProps {
   isCurrentStepReady?: boolean;
   // Auto-completion context
   lastCommand?: string;
+  lastOutput?: string;
   deviceAccessed?: 'switch' | 'router' | 'pc' | null;
   deviceAccessedId?: string | null;
   deviceState?: unknown;
@@ -47,6 +48,7 @@ interface GuidedModePanelProps {
   topologyDevices?: unknown[];
   onCheckAutoComplete?: (context: {
     lastCommand?: string;
+    lastOutput?: string;
     deviceAccessed?: 'switch' | 'router' | 'pc' | null;
     deviceAccessedId?: string | null;
     deviceState?: unknown;
@@ -64,6 +66,7 @@ export function GuidedModePanel({
   onMinimize,
   isMinimized,
   lastCommand,
+  lastOutput,
   deviceAccessed,
   deviceAccessedId,
   deviceState,
@@ -159,6 +162,7 @@ export function GuidedModePanel({
       if (currentStep && !currentStep.completed) {
         onCheckAutoComplete({
           lastCommand,
+          lastOutput,
           deviceAccessed,
           deviceAccessedId,
           deviceState,
@@ -168,7 +172,7 @@ export function GuidedModePanel({
         });
       }
     }
-  }, [lastCommand, deviceAccessed, deviceState, topologyConnections, topologyDevices, onCheckAutoComplete, project, currentStepIndex]);
+  }, [lastCommand, lastOutput, deviceAccessed, deviceState, topologyConnections, topologyDevices, onCheckAutoComplete, project, currentStepIndex]);
 
   // Celebration effects
   const triggerStepCelebration = useCallback(() => {

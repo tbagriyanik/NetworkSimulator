@@ -5855,6 +5855,7 @@ ${state.bannerMOTD}
             lastCompletedStep={lastCompletedStep}
             isCurrentStepReady={isCurrentStepReady}
             lastCommand={lastCommand}
+            lastOutput={lastOutput}
             deviceAccessed={showUnifiedDeviceModal ? (activeDeviceType === 'switchL2' || activeDeviceType === 'switchL3' ? 'switch' : activeDeviceType === 'router' ? 'router' : 'pc') : null}
             deviceAccessedId={showUnifiedDeviceModal ? activeDeviceId : null}
             deviceState={state}
@@ -5874,6 +5875,7 @@ ${state.bannerMOTD}
             onFinish={finishExam}
             score={examScore}
             lastCommand={lastCommand}
+            lastOutput={lastOutput}
             deviceAccessed={showUnifiedDeviceModal ? (activeDeviceType === 'switchL2' || activeDeviceType === 'switchL3' ? 'switch' : activeDeviceType === 'router' ? 'router' : 'pc') : null}
             deviceAccessedId={showUnifiedDeviceModal ? activeDeviceId : null}
             deviceState={state}

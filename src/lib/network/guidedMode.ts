@@ -1149,6 +1149,7 @@ export const checkStepCompletion = (
   step: GuidedStep,
   context: {
     lastCommand?: string;
+    lastOutput?: string;
     deviceAccessed?: 'switch' | 'router' | 'pc' | null;
     deviceAccessedId?: string | null;
     deviceState?: SwitchState;
@@ -1367,6 +1368,49 @@ export const checkStepCompletion = (
 
       return count >= minCount;
       }
+
+    case 'faultResolved': {
+      if (!step.checkParams?.faultId || !step.checkParams?.targetDeviceId || !context.deviceStates) return false;
+      const targetDeviceId = step.checkParams.targetDeviceId;
+      const deviceState = context.deviceStates.get(targetDeviceId);
+      if (!deviceState) return false;
+
+      const configKey = step.checkParams.configKey;
+      const correctValue = step.checkParams.configValue;
+      if (!configKey) return false;
+
+      const dummyStep: any = {
+        ...step,
+        checkType: 'config',
+        checkParams: {
+          ...step.checkParams,
+          configKey,
+          configValue: correctValue
+        }
+      };
+      return checkStepCompletion(dummyStep, context);
+    }
+
+    case 'routingConverged': {
+      if (!context.deviceStates) return false;
+      const routers = Array.from(context.deviceStates.values()).filter(s =>
+        s.deviceType === 'router' || s.switchLayer === 'L3'
+      );
+      if (routers.length < 2) return true;
+      return routers.every(r => (r.dynamicRoutes?.length || 0) > 0);
+    }
+
+    case 'showOutputMatch': {
+      if (!context.lastCommand || !step.checkParams?.showCommand || !step.checkParams?.matchPattern) return false;
+      const lastCmd = context.lastCommand.toLowerCase().trim();
+      const targetShow = step.checkParams.showCommand.toLowerCase().trim();
+      const lastOut = context.lastOutput || '';
+      if (lastCmd.startsWith(targetShow)) {
+        const pattern = step.checkParams.matchPattern;
+        return lastOut.includes(pattern);
+      }
+      return false;
+    }
 
     case 'manual':
       return true;
