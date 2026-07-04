@@ -1,93 +1,142 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { SwitchState } from '../../../lib/network/types';
-import { calculatePVST } from '../../../lib/network/stp';
+import { describe, it, expect } from 'vitest';
+import { recalculateStp } from '@/lib/network/stp';
+import { SwitchState } from '@/lib/network/types';
 import { CanvasConnection } from '@/components/network/networkTopology.types';
 
-describe('STP Realistic BPDU Convergence', () => {
-  let deviceStates: Map<string, SwitchState>;
-  let connections: CanvasConnection[];
-
-  beforeEach(() => {
-    deviceStates = new Map();
-    connections = [];
+describe('STP Algorithm', () => {
+  const createMockSwitch = (id: string, mac: string, priority: number = 32768): SwitchState => ({
+    hostname: id,
+    macAddress: mac,
+    switchModel: 'WS-C2960-24TT-L',
+    switchLayer: 'L2',
+    deviceType: 'switch',
+    currentMode: 'user',
+    ports: {
+      'fa0/1': { id: 'fa0/1', name: 'Fa0/1', status: 'notconnect', vlan: 1, mode: 'access', duplex: 'auto', speed: '100', shutdown: false, type: 'fastethernet' },
+      'fa0/2': { id: 'fa0/2', name: 'Fa0/2', status: 'notconnect', vlan: 1, mode: 'access', duplex: 'auto', speed: '100', shutdown: false, type: 'fastethernet' },
+    },
+    vlans: { 1: { id: 1, name: 'default', status: 'active', ports: ['fa0/1', 'fa0/2'] } },
+    security: { enableSecretEncrypted: false, servicePasswordEncryption: false, users: [], consoleLine: { login: false, transportInput: [] }, vtyLines: { login: false, transportInput: [] } },
+    runningConfig: [],
+    commandHistory: [],
+    historyIndex: -1,
+    version: { nosVersion: '1.0', modelName: 'Mock', serialNumber: 'SN', uptime: '1d' },
+    macAddressTable: [],
+    arpCache: [],
+    bootTime: Date.now(),
+    ipRouting: false,
+    spanningTreePriority: priority,
   });
 
-  it('should elect root bridge based on priority and MAC', () => {
-    // S1 (32768, 00:11:22:33:44:55) --- S2 (4096, AA:BB:CC:DD:EE:FF)
-    const s1: any = {
-      id: 's1',
-      macAddress: '0011.2233.4455',
-      spanningTreePriority: 32768,
-      ports: {
-        'fa0/1': { id: 'fa0/1', status: 'connected', speed: '100', type: 'fastethernet' }
-      },
-      vlans: { '1': { id: 1, name: 'default', status: 'active', ports: ['fa0/1'] } }
-    };
-    const s2: any = {
-      id: 's2',
-      macAddress: 'aabb.ccdd.eeff',
-      spanningTreePriority: 4096,
-      ports: {
-        'fa0/1': { id: 'fa0/1', status: 'connected', speed: '100', type: 'fastethernet' }
-      },
-      vlans: { '1': { id: 1, name: 'default', status: 'active', ports: ['fa0/1'] } }
-    };
+  it('should elect the switch with the lowest priority as root', () => {
+    const sw1 = createMockSwitch('SW1', '0000.0000.0001', 32768);
+    const sw2 = createMockSwitch('SW2', '0000.0000.0002', 4096); // Lowest priority
+    const sw3 = createMockSwitch('SW3', '0000.0000.0003', 32768);
 
-    deviceStates.set('s1', s1);
-    deviceStates.set('s2', s2);
-    connections.push({ id: 'c1', sourceDeviceId: 's1', sourcePort: 'fa0/1', targetDeviceId: 's2', targetPort: 'fa0/1', cableType: 'straight', active: true });
+    const deviceStates = new Map<string, SwitchState>([
+      ['sw1', sw1],
+      ['sw2', sw2],
+      ['sw3', sw3],
+    ]);
 
-    const results = calculatePVST(deviceStates, connections);
+    const connections: CanvasConnection[] = [
+      { id: 'c1', sourceDeviceId: 'sw1', sourcePort: 'fa0/1', targetDeviceId: 'sw2', targetPort: 'fa0/1', cableType: 'straight', active: true },
+      { id: 'c2', sourceDeviceId: 'sw2', sourcePort: 'fa0/2', targetDeviceId: 'sw3', targetPort: 'fa0/1', cableType: 'straight', active: true },
+      { id: 'c3', sourceDeviceId: 'sw3', sourcePort: 'fa0/2', targetDeviceId: 'sw1', targetPort: 'fa0/2', cableType: 'straight', active: true },
+    ];
 
-    const s1State = results.get('s1');
-    const s2State = results.get('s2');
+    const updatedStates = recalculateStp(deviceStates, connections);
 
-    // S2 should be root (lower priority)
-    expect(s2State?.ports['fa0/1'].spanningTree?.role).toBe('designated');
-    expect(s1State?.ports['fa0/1'].spanningTree?.role).toBe('root');
-    expect(s1State?.ports['fa0/1'].spanningTree?.state).toBe('forwarding');
+    expect(updatedStates.get('sw2')?.stpState?.[1].isRoot).toBe(true);
+    expect(updatedStates.get('sw1')?.stpState?.[1].isRoot).toBe(false);
+    expect(updatedStates.get('sw3')?.stpState?.[1].isRoot).toBe(false);
   });
 
-  it('should block a port in a loop', () => {
-    // S1 --- S2
-    //  |     |
-    // S3 --- S4
-    // Assume S1 is root. One of the links should be blocked.
+  it('should elect the switch with the lowest MAC as root when priorities are equal', () => {
+    const sw1 = createMockSwitch('SW1', '0000.0000.0003');
+    const sw2 = createMockSwitch('SW2', '0000.0000.0001'); // Lowest MAC
+    const sw3 = createMockSwitch('SW3', '0000.0000.0002');
 
-    const createSwitch = (id: string, mac: string, prio: number) => ({
-      id,
-      macAddress: mac,
-      spanningTreePriority: prio,
-      ports: {
-        'fa0/1': { id: 'fa0/1', status: 'connected', speed: '100', type: 'fastethernet' },
-        'fa0/2': { id: 'fa0/2', status: 'connected', speed: '100', type: 'fastethernet' }
-      },
-      vlans: { '1': { id: 1, name: 'default', status: 'active', ports: ['fa0/1', 'fa0/2'] } }
-    });
+    const deviceStates = new Map<string, SwitchState>([
+      ['sw1', sw1],
+      ['sw2', sw2],
+      ['sw3', sw3],
+    ]);
 
-    deviceStates.set('s1', createSwitch('s1', '0000.0000.0001', 4096) as any);
-    deviceStates.set('s2', createSwitch('s2', '0000.0000.0002', 32768) as any);
-    deviceStates.set('s3', createSwitch('s3', '0000.0000.0003', 32768) as any);
-    deviceStates.set('s4', createSwitch('s4', '0000.0000.0004', 32768) as any);
+    const connections: CanvasConnection[] = [
+      { id: 'c1', sourceDeviceId: 'sw1', sourcePort: 'fa0/1', targetDeviceId: 'sw2', targetPort: 'fa0/1', cableType: 'straight', active: true },
+    ];
 
-    connections.push(
-      { id: 'c1', sourceDeviceId: 's1', sourcePort: 'fa0/1', targetDeviceId: 's2', targetPort: 'fa0/1', active: true, cableType: 'straight' },
-      { id: 'c2', sourceDeviceId: 's2', sourcePort: 'fa0/2', targetDeviceId: 's4', targetPort: 'fa0/2', active: true, cableType: 'straight' },
-      { id: 'c3', sourceDeviceId: 's4', sourcePort: 'fa0/1', targetDeviceId: 's3', targetPort: 'fa0/1', active: true, cableType: 'straight' },
-      { id: 'c4', sourceDeviceId: 's3', sourcePort: 'fa0/2', targetDeviceId: 's1', targetPort: 'fa0/2', active: true, cableType: 'straight' }
-    );
+    const updatedStates = recalculateStp(deviceStates, connections);
 
-    const results = calculatePVST(deviceStates, connections);
+    expect(updatedStates.get('sw2')?.stpState?.[1].isRoot).toBe(true);
+  });
 
-    let blockedCount = 0;
-    results.forEach(state => {
-      Object.values(state.ports).forEach(p => {
-        if (p.spanningTree?.state === 'blocking') blockedCount++;
-      });
-    });
+  it('should block one port in a triangle topology to prevent loops', () => {
+    const sw1 = createMockSwitch('SW1', '0000.0000.0001', 4096); // Root
+    const sw2 = createMockSwitch('SW2', '0000.0000.0002', 32768);
+    const sw3 = createMockSwitch('SW3', '0000.0000.0003', 32768);
 
-    // In a 4-switch loop, at least one link (2 ports) should be blocked (actually one port per segment if we consider roles)
-    // In STP, for each segment one port is designated, and for the whole loop one port becomes alternate (blocking)
-    expect(blockedCount).toBeGreaterThan(0);
+    const deviceStates = new Map<string, SwitchState>([
+      ['sw1', sw1],
+      ['sw2', sw2],
+      ['sw3', sw3],
+    ]);
+
+    const connections: CanvasConnection[] = [
+      { id: 'c1-2', sourceDeviceId: 'sw1', sourcePort: 'fa0/1', targetDeviceId: 'sw2', targetPort: 'fa0/1', cableType: 'straight', active: true },
+      { id: 'c1-3', sourceDeviceId: 'sw1', sourcePort: 'fa0/2', targetDeviceId: 'sw3', targetPort: 'fa0/1', cableType: 'straight', active: true },
+      { id: 'c2-3', sourceDeviceId: 'sw2', sourcePort: 'fa0/2', targetDeviceId: 'sw3', targetPort: 'fa0/2', cableType: 'straight', active: true },
+    ];
+
+    const updatedStates = recalculateStp(deviceStates, connections);
+
+    // SW1 is root, all ports should be designated/forwarding
+    const stp1 = updatedStates.get('sw1')?.stpState?.[1];
+    expect(stp1?.ports['fa0/1'].role).toBe('designated');
+    expect(stp1?.ports['fa0/2'].role).toBe('designated');
+
+    // SW2 and SW3 should have one root port each
+    const stp2 = updatedStates.get('sw2')?.stpState?.[1];
+    const stp3 = updatedStates.get('sw3')?.stpState?.[1];
+
+    expect(stp2?.ports['fa0/1'].role).toBe('root');
+    expect(stp3?.ports['fa0/1'].role).toBe('root');
+
+    // The link between SW2 and SW3 should have one Designated and one Alternate (Blocking) port
+    // SW2 has lower MAC than SW3, so SW2 fa0/2 should be Designated, SW3 fa0/2 should be Alternate
+    expect(stp2?.ports['fa0/2'].role).toBe('designated');
+    expect(stp2?.ports['fa0/2'].state).toBe('forwarding');
+
+    expect(stp3?.ports['fa0/2'].role).toBe('alternate');
+    expect(stp3?.ports['fa0/2'].state).toBe('blocking');
+  });
+
+  it('should handle port speed and path costs correctly', () => {
+    const sw1 = createMockSwitch('SW1', '0000.0000.0001', 4096); // Root
+    const sw2 = createMockSwitch('SW2', '0000.0000.0002', 32768);
+
+    // Add a Gig port to sw1 and sw2
+    sw1.ports['gi0/1'] = { id: 'gi0/1', name: 'Gi0/1', status: 'notconnect', vlan: 1, mode: 'access', duplex: 'auto', speed: '1000', shutdown: false, type: 'gigabitethernet' };
+    sw2.ports['gi0/1'] = { id: 'gi0/1', name: 'Gi0/1', status: 'notconnect', vlan: 1, mode: 'access', duplex: 'auto', speed: '1000', shutdown: false, type: 'gigabitethernet' };
+
+    const deviceStates = new Map<string, SwitchState>([
+      ['sw1', sw1],
+      ['sw2', sw2],
+    ]);
+
+    // Connect via FastEthernet (Cost 19) AND GigabitEthernet (Cost 4)
+    const connections: CanvasConnection[] = [
+      { id: 'c-fa', sourceDeviceId: 'sw1', sourcePort: 'fa0/1', targetDeviceId: 'sw2', targetPort: 'fa0/1', cableType: 'straight', active: true },
+      { id: 'c-gi', sourceDeviceId: 'sw1', sourcePort: 'gi0/1', targetDeviceId: 'sw2', targetPort: 'gi0/1', cableType: 'straight', active: true },
+    ];
+
+    const updatedStates = recalculateStp(deviceStates, connections);
+    const stp2 = updatedStates.get('sw2')?.stpState?.[1];
+
+    // SW2 should pick Gigabit port as root port because cost is 4 vs 19
+    expect(stp2?.ports['gi0/1'].role).toBe('root');
+    expect(stp2?.ports['fa0/1'].role).toBe('alternate');
+    expect(stp2?.rootCost).toBe(4);
   });
 });

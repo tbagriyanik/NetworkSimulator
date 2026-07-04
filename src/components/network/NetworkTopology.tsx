@@ -2638,6 +2638,11 @@ export function NetworkTopology({
         })
       );
 
+      // Trigger STP recalculation when connection is added
+      window.dispatchEvent(new CustomEvent('stp-recalculation-needed', {
+        detail: { topologyDevices: devices, topologyConnections: [...connections, newConnection] }
+      }));
+
       // Update cable info
       const sourceDevice = deviceMap.get(connectionStart.deviceId);
       const targetDevice = deviceMap.get(deviceId);
@@ -3476,10 +3481,14 @@ export function NetworkTopology({
 
   const toggleConnectionActive = useCallback((connId: string) => {
     saveToHistory();
-    setConnections((prev) =>
-      prev.map((c) => (c.id === connId ? { ...c, active: !c.active } : c))
-    );
-  }, [saveToHistory, setConnections]);
+    const updatedConnections = connections.map((c) => (c.id === connId ? { ...c, active: !c.active } : c));
+    setConnections(updatedConnections);
+
+    // Trigger STP recalculation for all switches
+    window.dispatchEvent(new CustomEvent('stp-recalculation-needed', {
+      detail: { topologyDevices: devices, topologyConnections: updatedConnections }
+    }));
+  }, [saveToHistory, setConnections, connections, devices]);
 
   // Delete connection
   const deleteConnection = useCallback((connectionId: string) => {
@@ -7653,6 +7662,11 @@ fill="var(--color-accent-500)"
                 return d;
               })
             );
+
+      // Trigger STP recalculation for all switches
+      window.dispatchEvent(new CustomEvent('stp-recalculation-needed', {
+        detail: { topologyDevices: devices, topologyConnections: [...connections, newConnection] }
+      }));
 
             // Update cable info
             const sourceDevice = deviceMap.get(srcPort.deviceId);
