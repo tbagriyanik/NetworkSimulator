@@ -380,8 +380,9 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
     }
   }
 
-  // Render to canvas at 300 DPI
-  const dpi = 300;
+  // Render to canvas at lower DPI on mobile to prevent memory limits
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+  const dpi = isMobile ? 144 : 300;
   const scale = dpi / 72;
   const img = new Image();
   img.onload = () => {
@@ -397,16 +398,36 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
     URL.revokeObjectURL(url);
 
     // Download
-    canvas.toBlob((blob) => {
+    canvas.toBlob(async (blob) => {
       if (!blob) return;
+      
+      const filename = `topology-${new Date().getTime()}.png`;
+      
+      if (typeof navigator !== 'undefined' && navigator.canShare) {
+        try {
+          const file = new File([blob], filename, { type: 'image/png' });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: 'Network Topology',
+              text: 'Ağ topolojimi paylaşıyorum'
+            });
+            return; // Shared successfully
+          }
+        } catch (err) {
+          // If the user cancelled or it failed, just fall back to normal download
+          console.warn('Share API failed or was cancelled:', err);
+        }
+      }
+
       const pngUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = pngUrl;
-      link.download = `topology-${new Date().getTime()}.png`;
+      link.download = filename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      URL.revokeObjectURL(pngUrl);
+      setTimeout(() => URL.revokeObjectURL(pngUrl), 100);
     }, 'image/png');
   };
   img.onerror = () => { URL.revokeObjectURL(url); };

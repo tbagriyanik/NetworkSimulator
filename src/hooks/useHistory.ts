@@ -179,7 +179,7 @@ export function useHistory(initialState: ProjectState) {
               const last = out[out.length - 1];
               if (last.type === 'command') {
                 changedDevice = stateToPush.topologyDevices.find(d => d.id === id)?.name || id;
-                description = `${changedDevice}: ${last.content}`;
+                description = `'${last.content}' komutu uygulandı`;
               }
             }
           }
@@ -188,7 +188,7 @@ export function useHistory(initialState: ProjectState) {
                 const pState = prevState.deviceStates.get(id);
                 if (pState && JSON.stringify(pState) !== JSON.stringify(st)) {
                   changedDevice = stateToPush.topologyDevices.find(d => d.id === id)?.name || id;
-                  description = `Yapılandırma: ${changedDevice}`;
+                  description = `${changedDevice} ayarı değiştirildi`;
                   break;
                 }
              }
