@@ -5,6 +5,8 @@ import { buildRunningConfig } from './configBuilder';
 import { SwitchState, Port, CommandResult, Route } from '../types';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
 import { checkConnectivity } from '../connectivity';
+import { calculatePVST as calculatePVSTNew, calculateSTPVlan } from '../stp';
+import { buildOSPFLinkStateDatabase } from '../ospf';
 import { normalizePortId } from '../initialState';
 
 // Show komutları (show running-config, show vlan, show ip route, vs.)
@@ -95,6 +97,7 @@ export const showHandlers: Record<string, CommandHandler> = {
   'show archive': cmdShowArchive,
   'show ip protocols': cmdShowIpProtocols,
   'show ip ospf neighbor': cmdShowIpOspfNeighbor,
+  'show ip ospf database': cmdShowIpOspfDatabase,
   'show ip ospf': cmdShowIpOspf,
   'show ip ospf interface': cmdShowIpOspfInterface,
   'show standby': cmdShowStandby,
@@ -1534,6 +1537,46 @@ function cmdShowIpOspfNeighbor(state: SwitchState, _input: string, _ctx: Command
   if (output === '\nNeighbor ID     Pri   State           Dead Time   Address         Interface\n') {
     output += '(no neighbors found)\n';
   }
+
+  return { success: true, output };
+}
+
+/**
+ * Show IP OSPF Database
+ */
+function cmdShowIpOspfDatabase(state: SwitchState, _input: string, ctx: CommandContext): CommandResult {
+  if (state.routingProtocol !== 'ospf') {
+    return { success: true, output: '\n% OSPF is not enabled\n' };
+  }
+
+  const routerId = state.ospfRouterId || state.ip || '192.168.1.1';
+  const areas = state.ospfAreas || [0];
+  const deviceStates = ensureDeviceStatesMap(ctx.deviceStates);
+
+  // Real LSDB build for OSPF
+  const lsdb = buildOSPFLinkStateDatabase(deviceStates);
+
+  let output = '\n            OSPF Router with ID (' + routerId + ') (Process ID 1)\n\n';
+
+  areas.forEach(area => {
+    const areaData = lsdb[area];
+    if (!areaData) return;
+
+    output += `                Router Link States (Area ${area})\n\n`;
+    output += 'Link ID         ADV Router      Age         Seq#       Checksum Link count\n';
+
+    areaData.routerLSAs.forEach((lsa: any) => {
+      output += `${lsa.id.padEnd(15)} ${lsa.advRouter.padEnd(15)} ${lsa.ageNumber.toString().padEnd(11)} 0x80000001 0x0000   ${lsa.links.length}\n`;
+    });
+
+    if (areaData.summaryLSAs.size > 0) {
+      output += `\n                Summary Net Link States (Area ${area})\n\n`;
+      output += 'Link ID         ADV Router      Age         Seq#       Checksum\n';
+      areaData.summaryLSAs.forEach((lsa: any) => {
+        output += `${lsa.id.padEnd(15)} ${lsa.advRouter.padEnd(15)} ${lsa.ageNumber.toString().padEnd(11)} 0x80000001 0x0000\n`;
+      });
+    }
+  });
 
   return { success: true, output };
 }
