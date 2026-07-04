@@ -162,7 +162,7 @@ export function ExamModePanel({
         topologyDevices
       });
     }
-  }, [lastCommand, lastOutput, deviceAccessed, deviceAccessedId, deviceState, topologyConnections, topologyDevices, onCheckTasks, project, isFinishedState]);
+  }, [lastCommand, lastOutput, deviceAccessed, deviceAccessedId, deviceState, deviceStates, topologyConnections, topologyDevices, onCheckTasks, project, isFinishedState]);
 
   // Drag handlers
   const handleMouseDown = useCallback((e: React.MouseEvent) => {

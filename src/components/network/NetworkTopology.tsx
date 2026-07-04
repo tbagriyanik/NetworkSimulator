@@ -3512,6 +3512,9 @@ export function NetworkTopology({
 
   // Delete connection
   const deleteConnection = useCallback((connectionId: string) => {
+    if (activeCaptureConnectionId === connectionId) {
+      setActiveCaptureConnection(null);
+    }
     saveToHistory();
     const conn = connections.find((c) => c.id === connectionId);
     if (conn) {
@@ -3542,7 +3545,7 @@ export function NetworkTopology({
         detail: { topologyDevices: devices, topologyConnections: connections.filter(c => c.id !== connectionId) }
       }));
     }
-  }, [connections, saveToHistory, devices]);
+  }, [connections, saveToHistory, devices, activeCaptureConnectionId, setActiveCaptureConnection]);
 
   // Reset view
   // resetView is now provided by useCanvasZoomPan hook

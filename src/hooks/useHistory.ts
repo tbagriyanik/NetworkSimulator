@@ -74,17 +74,6 @@ function serializeProjectState(state: ProjectState): any {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function deserializeProjectState(data: any): ProjectState {
-  return {
-    ...data,
-    deviceStates: new Map(data.deviceStates || []),
-    deviceOutputs: new Map(data.deviceOutputs || []),
-    pcOutputs: new Map(data.pcOutputs || []),
-    pcHistories: new Map(data.pcHistories || []),
-  };
-}
-
 function cloneProjectState(newState: ProjectState): ProjectState {
   return {
     ...newState,
@@ -170,29 +159,6 @@ export function useHistory(initialState: ProjectState) {
     items: [initialEntry],
     index: 0
   });
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('netsim_history');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed && Array.isArray(parsed.items)) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const loadedItems = parsed.items.map((item: any) => ({
-            ...item,
-            state: deserializeProjectState(item.state)
-          }));
-          // eslint-disable-next-line
-          setState({
-            items: loadedItems,
-            index: parsed.index ?? loadedItems.length - 1
-          });
-        }
-      }
-    } catch (e) {
-      console.warn("Could not load history from localStorage", e);
-    }
-  }, []);
-
   // Save to localStorage when state changes
   useEffect(() => {
     try {
@@ -302,18 +268,42 @@ export function useHistory(initialState: ProjectState) {
                 const pState = prevState.deviceStates.get(id);
                 if (pState && JSON.stringify(pState) !== JSON.stringify(st)) {
                   changedDevice = stateToPush.topologyDevices.find(d => d.id === id)?.name || id;
-                  let diffDetail = 'Arayüz/Ayar';
-                  if (pState.hostname !== st.hostname) {
-                    diffDetail = `hostname ${st.hostname}`;
-                  } else if (JSON.stringify(pState.ports) !== JSON.stringify(st.ports)) {
-                    diffDetail = 'interface ayarı';
-                  } else if (JSON.stringify(pState.vlans) !== JSON.stringify(st.vlans)) {
-                    diffDetail = 'vlan ayarı';
-                  } else if (JSON.stringify(pState.dhcpPools) !== JSON.stringify(st.dhcpPools)) {
-                    diffDetail = 'dhcp ayarı';
-                  } else if (JSON.stringify(pState.ipRouting) !== JSON.stringify(st.ipRouting)) {
-                    diffDetail = 'ip routing ayarı';
+                  const changes: string[] = [];
+                  if (pState.hostname !== st.hostname) changes.push(`hostname ${st.hostname}`);
+                  if (JSON.stringify(pState.ports) !== JSON.stringify(st.ports)) changes.push('interface');
+                  if (JSON.stringify(pState.vlans) !== JSON.stringify(st.vlans)) changes.push('vlan');
+                  if (JSON.stringify(pState.dhcpPools) !== JSON.stringify(st.dhcpPools)) changes.push('dhcp');
+                  if (pState.ipRouting !== st.ipRouting) changes.push('ip routing');
+                  if (JSON.stringify(pState.staticRoutes) !== JSON.stringify(st.staticRoutes)) changes.push('static route');
+                  if (JSON.stringify(pState.dynamicRoutes) !== JSON.stringify(st.dynamicRoutes)) changes.push('dynamic route');
+                  if (JSON.stringify(pState.routingProtocol) !== JSON.stringify(st.routingProtocol)) changes.push('routing protocol');
+                  if (JSON.stringify(pState.security) !== JSON.stringify(st.security)) changes.push('security');
+                  if (JSON.stringify(pState.bannerMOTD) !== JSON.stringify(st.bannerMOTD)) changes.push('banner');
+                  if (JSON.stringify(pState.bannerLogin) !== JSON.stringify(st.bannerLogin)) changes.push('login banner');
+                  if (JSON.stringify(pState.bannerExec) !== JSON.stringify(st.bannerExec)) changes.push('exec banner');
+                  if (pState.domainName !== st.domainName) changes.push('domain name');
+                  if (pState.defaultGateway !== st.defaultGateway) changes.push('default gateway');
+                  if (pState.dnsServer !== st.dnsServer) changes.push('dns server');
+                  if (pState.domainLookup !== st.domainLookup) changes.push('domain lookup');
+                  if (JSON.stringify(pState.services) !== JSON.stringify(st.services)) changes.push('services');
+                  if (JSON.stringify(pState.spanningTreeMode) !== JSON.stringify(st.spanningTreeMode)) changes.push('spanning-tree');
+                  if (JSON.stringify(pState.vtpMode) !== JSON.stringify(st.vtpMode)) changes.push('vtp');
+                  if (JSON.stringify(pState.firewallRules) !== JSON.stringify(st.firewallRules)) changes.push('firewall');
+                  if (JSON.stringify(pState.wirelessConfig) !== JSON.stringify(st.wirelessConfig)) changes.push('wireless');
+                  if (JSON.stringify(pState.ntpServers) !== JSON.stringify(st.ntpServers)) changes.push('ntp');
+                  if (JSON.stringify(pState.ipv6Enabled) !== JSON.stringify(st.ipv6Enabled)) changes.push('ipv6');
+                  if (JSON.stringify(pState.cdpEnabled) !== JSON.stringify(st.cdpEnabled)) changes.push('cdp');
+                  if (JSON.stringify(pState.sshVersion) !== JSON.stringify(st.sshVersion)) changes.push('ssh');
+                  if (changes.length === 0) {
+                    const allKeys = new Set([...Object.keys(pState), ...Object.keys(st)]);
+                    for (const key of allKeys) {
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      if (JSON.stringify((pState as any)[key]) !== JSON.stringify((st as any)[key])) {
+                        changes.push(key);
+                      }
+                    }
                   }
+                  const diffDetail = changes.length > 0 ? changes.join(', ') : 'Arayüz/Ayar';
 
                   let cmdDetail = '';
                   const out = stateToPush.deviceOutputs.get(id) || [];
@@ -401,6 +391,7 @@ export function useHistory(initialState: ProjectState) {
       estimatedBytes: estimateStateBytes(newState),
       description: 'Başlangıç Durumu'
     };
+    localStorage.removeItem('netsim_history');
     setState({
       items: [resetEntry],
       index: 0

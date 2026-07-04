@@ -524,6 +524,8 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   });
   const [lastTaskEvent, setLastTaskEvent] = useState<{ type: 'completed' | 'failed'; taskName: string; timestamp: number } | null>(null);
   const [isExamLoadedFromFile, setIsExamLoadedFromFile] = useState(false);
+  const [isTimelineMinimized, setIsTimelineMinimized] = useState(true);
+  const toggleTimelineMinimize = useCallback(() => setIsTimelineMinimized(prev => !prev), []);
 
   // Track project name from guided/exam mode
   useEffect(() => {
@@ -5989,8 +5991,8 @@ ${state.bannerMOTD}
             historyItems={historyItems}
             historyIndex={historyIndex}
             onJumpTo={handleJumpTo}
-            isMinimized={isPanelMinimized}
-            onMinimize={togglePanelMinimize}
+            isMinimized={isTimelineMinimized}
+            onMinimize={toggleTimelineMinimize}
           />
 
           {/* Exam Editor Panel */}
