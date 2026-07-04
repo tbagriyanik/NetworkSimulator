@@ -665,8 +665,7 @@ export function DeviceRenderer({
                 r={12}
                 fill="transparent"
                 style={{ pointerEvents: isDraggingInteractionDisabled ? 'none' : 'all', cursor: isDraggingInteractionDisabled ? 'default' : 'pointer' }}
-                onMouseDown={(e) => e.stopPropagation()}
-                onClick={(e) => {
+                onPointerDown={(e) => {
                   e.stopPropagation();
                   handlePortClick(e, device.id, port.id);
                 }}
@@ -759,8 +758,7 @@ export function DeviceRenderer({
                     r={10}
                     fill="transparent"
                     style={{ pointerEvents: isDraggingInteractionDisabled ? 'none' : 'all', cursor: isDraggingInteractionDisabled ? 'default' : 'pointer' }}
-                    onMouseDown={(e) => e.stopPropagation()}
-                    onClick={(e) => {
+                    onPointerDown={(e) => {
                       e.stopPropagation();
                       handlePortClick(e, device.id, port.id);
                     }}
@@ -870,8 +868,7 @@ export function DeviceRenderer({
                   r={10}
                   fill="transparent"
                   style={{ pointerEvents: isDraggingInteractionDisabled ? 'none' : 'all', cursor: isDraggingInteractionDisabled ? 'default' : 'pointer' }}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onClick={(e) => {
+                  onPointerDown={(e) => {
                     e.stopPropagation();
                     handlePortClick(e, device.id, port.id);
                   }}

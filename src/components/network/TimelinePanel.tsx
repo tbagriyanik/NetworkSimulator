@@ -5,7 +5,6 @@ import { Clock, SkipBack, SkipForward, ChevronDown, ChevronUp, History, Play, Pa
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { HistoryEntry } from '@/hooks/useHistory';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 
@@ -169,7 +168,7 @@ export function TimelinePanel({
 
       {/* Content */}
       {!isMinimized && (
-        <ScrollArea className="flex-1 p-2">
+        <div className="flex-1 p-2 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
           <div className="relative pl-4 space-y-4 py-4 before:absolute before:inset-0 before:ml-[1.4rem] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-zinc-800 before:to-transparent">
             {historyItems.map((item, idx) => {
               const isActive = idx === historyIndex;
@@ -212,7 +211,7 @@ export function TimelinePanel({
               );
             })}
           </div>
-        </ScrollArea>
+        </div>
       )}
     </div>
   );

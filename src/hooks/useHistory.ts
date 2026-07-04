@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { SwitchState, CableInfo } from '@/lib/network/types';
 import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType } from '@/components/network/networkTopology.types';
 import { TerminalOutput } from '@/components/network/Terminal';
@@ -61,6 +61,26 @@ function estimateStateBytes(state: ProjectState): number {
   } catch {
     return 0;
   }
+}
+
+function serializeProjectState(state: ProjectState): Record<string, unknown> {
+  return {
+    ...state,
+    deviceStates: Array.from(state.deviceStates.entries()),
+    deviceOutputs: Array.from(state.deviceOutputs.entries()),
+    pcOutputs: Array.from(state.pcOutputs.entries()),
+    pcHistories: Array.from(state.pcHistories.entries()),
+  };
+}
+
+function deserializeProjectState(data: Record<string, unknown>): ProjectState {
+  return {
+    ...(data as unknown as ProjectState),
+    deviceStates: new Map((data.deviceStates as Array<[string, SwitchState]>) || []),
+    deviceOutputs: new Map((data.deviceOutputs as Array<[string, TerminalOutput[]]>) || []),
+    pcOutputs: new Map((data.pcOutputs as Array<[string, PCOutputLine[]]>) || []),
+    pcHistories: new Map((data.pcHistories as Array<[string, string[]]>) || []),
+  };
 }
 
 function cloneProjectState(newState: ProjectState): ProjectState {
@@ -144,10 +164,69 @@ export function useHistory(initialState: ProjectState) {
     estimatedBytes: estimateStateBytes(initialState),
     description: 'Başlangıç Durumu'
   };
-  const [state, setState] = useState<HistoryState>({
-    items: [initialEntry],
-    index: 0
+  const [state, setState] = useState<HistoryState>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('netsim_history');
+        if (saved) {
+          const parsed = JSON.parse(saved) as { items?: unknown[]; index?: number } | null;
+          if (parsed && Array.isArray(parsed.items)) {
+            const loadedItems = parsed.items.map(item => {
+              const data = item as { state: Record<string, unknown> };
+              return {
+                ...data,
+                state: deserializeProjectState(data.state)
+              } as HistoryEntry;
+            });
+            return {
+              items: loadedItems,
+              index: parsed.index ?? loadedItems.length - 1
+            };
+          }
+        }
+      } catch (e) {
+        console.warn("Could not load history from localStorage", e);
+      }
+    }
+    return {
+      items: [initialEntry],
+      index: 0
+    };
   });
+
+  // Save to localStorage when state changes
+  useEffect(() => {
+    try {
+      if (state.items.length <= 1) {
+        localStorage.removeItem('netsim_history');
+        return;
+      }
+      
+      const trySave = (itemsToSave: HistoryEntry[], idx: number) => {
+        const serialized = {
+          items: itemsToSave.map(item => ({
+            ...item,
+            state: serializeProjectState(item.state)
+          })),
+          index: idx
+        };
+        try {
+          localStorage.setItem('netsim_history', JSON.stringify(serialized));
+        } catch (e) {
+          if (e instanceof DOMException && e.name === 'QuotaExceededError' && itemsToSave.length > 2) {
+            const cutSize = Math.floor(itemsToSave.length / 2);
+            trySave(itemsToSave.slice(cutSize), Math.max(0, idx - cutSize));
+          } else {
+            console.warn("Could not save history to localStorage", e);
+          }
+        }
+      };
+      
+      trySave(state.items, state.index);
+    } catch (e) {
+      console.warn("Could not process history save", e);
+    }
+  }, [state]);
 
   const pushState = useCallback((newState: ProjectState, operationType: HistoryOperationType = 'topology') => {
     setState(prev => {
@@ -162,11 +241,26 @@ export function useHistory(initialState: ProjectState) {
           const newDev = stateToPush.topologyDevices.find(d => !prevState.topologyDevices.some(pd => pd.id === d.id));
           description = `Cihaz Eklendi: ${newDev?.name || 'Bilinmiyor'}`;
         } else if (stateToPush.topologyDevices.length < prevState.topologyDevices.length) {
-          description = 'Cihaz Silindi';
+          const removedDev = prevState.topologyDevices.find(d => !stateToPush.topologyDevices.some(pd => pd.id === d.id));
+          description = `Cihaz Silindi: ${removedDev?.name || 'Bilinmiyor'}`;
         } else if (stateToPush.topologyConnections.length > prevState.topologyConnections.length) {
-          description = 'Bağlantı Eklendi';
+          const newConn = stateToPush.topologyConnections.find(c => !prevState.topologyConnections.some(pc => pc.id === c.id));
+          if (newConn) {
+             const sDev = stateToPush.topologyDevices.find(d => d.id === newConn.sourceDeviceId)?.name || newConn.sourceDeviceId;
+             const tDev = stateToPush.topologyDevices.find(d => d.id === newConn.targetDeviceId)?.name || newConn.targetDeviceId;
+             description = `${sDev} ve ${tDev} arasına bağlantı eklendi`;
+          } else {
+             description = 'Bağlantı Eklendi';
+          }
         } else if (stateToPush.topologyConnections.length < prevState.topologyConnections.length) {
-          description = 'Bağlantı Silindi';
+          const removedConn = prevState.topologyConnections.find(c => !stateToPush.topologyConnections.some(pc => pc.id === c.id));
+          if (removedConn) {
+             const sDev = prevState.topologyDevices.find(d => d.id === removedConn.sourceDeviceId)?.name || removedConn.sourceDeviceId;
+             const tDev = prevState.topologyDevices.find(d => d.id === removedConn.targetDeviceId)?.name || removedConn.targetDeviceId;
+             description = `${sDev} ve ${tDev} arasındaki bağlantı silindi`;
+          } else {
+             description = 'Bağlantı Silindi';
+          }
         } else if (stateToPush.topologyNotes.length > prevState.topologyNotes.length) {
           description = 'Not Eklendi';
         } else if (stateToPush.topologyNotes.length < prevState.topologyNotes.length) {

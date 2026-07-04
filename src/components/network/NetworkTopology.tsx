@@ -5857,10 +5857,7 @@ if (isShutdown || isDeviceOffline) {
                     r={10}
                     fill="transparent"
                     style={{ pointerEvents: isDraggingInteractionDisabled ? 'none' : 'all', cursor: isDraggingInteractionDisabled ? 'default' : 'pointer' }}
-                    onMouseDown={(e) => {
-                      e.stopPropagation();
-                    }}
-                    onClick={(e) => {
+                    onPointerDown={(e) => {
                       e.stopPropagation();
                       handlePortClick(e as unknown as ReactMouseEvent, device.id, port.id);
                     }}
