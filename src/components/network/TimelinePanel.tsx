@@ -126,13 +126,19 @@ export function TimelinePanel({
         const pd = prevState.topologyDevices.find(old => old.id === d.id);
         return pd && (pd.x !== d.x || pd.y !== d.y);
       });
-      if (movedDev) return `${movedDev.name} taşındı`;
+      if (movedDev) return `${movedDev.name} taşındı (Yeni Konum: ${Math.round(movedDev.x)}, ${Math.round(movedDev.y)})`;
 
       const changedDev = curState.topologyDevices.find(d => {
         const pd = prevState.topologyDevices.find(old => old.id === d.id);
         return pd && JSON.stringify(pd) !== JSON.stringify(d);
       });
-      if (changedDev) return `${changedDev.name} yapılandırması değiştirildi`;
+      if (changedDev) {
+        const pd = prevState.topologyDevices.find(old => old.id === changedDev.id);
+        if (pd && pd.name !== changedDev.name) {
+          return `${changedDev.name} yapılandırması değiştirildi (hostname ${changedDev.name})`;
+        }
+        return `${changedDev.name} yapılandırması değiştirildi (Arayüz/Ayar)`;
+      }
     }
 
     switch (item.operationType) {

@@ -273,14 +273,14 @@ export function useHistory(initialState: ProjectState) {
               return pd && (pd.x !== d.x || pd.y !== d.y);
             });
             if (movedDev) {
-              description = `${movedDev.name} taşındı`;
+              description = `${movedDev.name} taşındı (Yeni Konum: ${Math.round(movedDev.x)}, ${Math.round(movedDev.y)})`;
             } else {
               const changedDev = stateToPush.topologyDevices.find(d => {
                 const pd = prevState.topologyDevices.find(old => old.id === d.id);
                 return pd && JSON.stringify(pd) !== JSON.stringify(d);
               });
               if (changedDev) {
-                description = `${changedDev.name} yapılandırması değiştirildi`;
+                description = `${changedDev.name} yapılandırması değiştirildi (Arayüz/Ayar)`;
               } else {
                 description = 'Topoloji güncellendi';
               }
@@ -293,7 +293,7 @@ export function useHistory(initialState: ProjectState) {
               const last = out[out.length - 1];
               if (last.type === 'command') {
                 changedDevice = stateToPush.topologyDevices.find(d => d.id === id)?.name || id;
-                description = `'${last.content}' komutu uygulandı`;
+                description = `${changedDevice} yapılandırması değiştirildi ('${last.content}' CLI komutu)`;
               }
             }
           }
@@ -302,7 +302,31 @@ export function useHistory(initialState: ProjectState) {
                 const pState = prevState.deviceStates.get(id);
                 if (pState && JSON.stringify(pState) !== JSON.stringify(st)) {
                   changedDevice = stateToPush.topologyDevices.find(d => d.id === id)?.name || id;
-                  description = `${changedDevice} ayarı değiştirildi`;
+                  let diffDetail = 'Arayüz/Ayar';
+                  if (pState.hostname !== st.hostname) {
+                    diffDetail = `hostname ${st.hostname}`;
+                  } else if (JSON.stringify(pState.ports) !== JSON.stringify(st.ports)) {
+                    diffDetail = 'interface ayarı';
+                  } else if (JSON.stringify(pState.vlans) !== JSON.stringify(st.vlans)) {
+                    diffDetail = 'vlan ayarı';
+                  } else if (JSON.stringify(pState.dhcpPools) !== JSON.stringify(st.dhcpPools)) {
+                    diffDetail = 'dhcp ayarı';
+                  } else if (JSON.stringify(pState.ipRouting) !== JSON.stringify(st.ipRouting)) {
+                    diffDetail = 'ip routing ayarı';
+                  }
+
+                  let cmdDetail = '';
+                  const out = stateToPush.deviceOutputs.get(id) || [];
+                  const prevOut = prevState.deviceOutputs.get(id) || [];
+                  if (out.length > prevOut.length) {
+                    const newOuts = out.slice(prevOut.length);
+                    const lastCmd = [...newOuts].reverse().find(o => o.type === 'command');
+                    if (lastCmd) {
+                      cmdDetail = ` : '${lastCmd.content}'`;
+                    }
+                  }
+                  
+                  description = `${changedDevice} yapılandırması değiştirildi (${diffDetail}${cmdDetail})`;
                   break;
                 }
              }
