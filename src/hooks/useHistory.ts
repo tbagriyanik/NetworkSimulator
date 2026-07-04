@@ -32,7 +32,7 @@ interface HistoryState {
 
 export type HistoryOperationType = 'all' | 'topology' | 'device' | 'ui';
 
-interface HistoryEntry {
+export interface HistoryEntry {
   state: ProjectState;
   operationType: HistoryOperationType;
   signature: string;
@@ -230,13 +230,25 @@ export function useHistory(initialState: ProjectState) {
   const canUndo = useMemo(() => state.index > 0, [state.index]);
   const canRedo = useMemo(() => state.index < state.items.length - 1, [state.index, state.items.length]);
 
+  const jumpTo = useCallback((index: number) => {
+    setState(prev => {
+      if (index >= 0 && index < prev.items.length) {
+        return { ...prev, index };
+      }
+      return prev;
+    });
+  }, []);
+
   return {
     pushState,
     undo,
     redo,
+    jumpTo,
     canUndo,
     canRedo,
     resetHistory,
-    currentState
+    currentState,
+    historyItems: state.items,
+    historyIndex: state.index
   };
 }

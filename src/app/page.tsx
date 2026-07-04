@@ -18,6 +18,7 @@ import { useDeviceSelection } from '@/hooks/useDeviceSelection';
 import useAppStore, { useTopologyDevices, useTopologyConnections, useTopologyNotes, useZoom, usePan, useActiveTab, useEnvironment } from '@/lib/store/appStore';
 import { cn, normalizeMAC } from '@/lib/utils';
 import { logger } from '@/lib/logger';
+import { ExamTask } from '@/lib/network/examMode';
 import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType, FirewallRule } from '@/components/network/networkTopology.types';
 import { getPrompt } from '@/lib/network/executor';
 import { formatErrorForUser, errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
@@ -112,6 +113,8 @@ const OnboardingDialog = dynamic(() => import('@/components/network/OnboardingDi
 const ExamEditorPanel = dynamic(() => import('@/components/network/ExamEditorPanel').then((m) => m.ExamEditorPanel));
 const RoomJoinDialog = dynamic(() => import('@/components/RoomJoinDialog').then((m) => m.RoomJoinDialog));
 const TeacherRoomPanel = dynamic(() => import('@/components/TeacherRoomPanel').then((m) => m.TeacherRoomPanel));
+const TimelinePanel = dynamic(() => import('@/components/network/TimelinePanel').then((m) => m.TimelinePanel));
+const TroubleshootingPanel = dynamic(() => import('@/components/network/TroubleshootingPanel').then((m) => m.TroubleshootingPanel));
 
 type TabType = 'topology' | 'cmd' | 'terminal' | 'tasks';
 
@@ -342,7 +345,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
 
   // Refs moved to top to avoid TDZ errors
   const isApplyingHistoryRef = useRef(false);
-  const pendingHistoryActionRef = useRef<'undo' | 'redo' | null>(null);
+  const pendingHistoryActionRef = useRef<'undo' | 'redo' | 'jumpTo' | null>(null);
   const lastAppliedHistoryStateRef = useRef<ProjectState | null>(null);
   const lastPushedStateRef = useRef<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -697,23 +700,36 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
 
   // Check if troubleshooting project faults are resolved
   const resolvedFaultsProjectRef = useRef<string | null>(null);
-  
-  useEffect(() => {
-    if (!loadedExampleId || !deviceStates || deviceStates.size === 0) return;
-    if (resolvedFaultsProjectRef.current === loadedExampleId) return;
 
-    let currentProject: ExampleProject | null = null;
+  const activeTroubleshootingProject = useMemo(() => {
+    if (activeExam && activeExam.injectedFaults && activeExam.injectedFaults.length > 0) {
+      return activeExam;
+    }
+
+    if (!loadedExampleId) return null;
     for (const level of exampleLevelOrder) {
       const projects = groupedExampleProjects[level];
       if (projects) {
-        currentProject = projects.find(p => p.id === loadedExampleId) || null;
-        if (currentProject) break;
+        const found = projects.find(p => p.id === loadedExampleId);
+        if (found && found.injectedFaults && found.injectedFaults.length > 0) {
+          return found;
+        }
       }
     }
+    return null;
+  }, [activeExam, loadedExampleId, groupedExampleProjects, exampleLevelOrder]);
 
-    if (currentProject && currentProject.injectedFaults && currentProject.injectedFaults.length > 0) {
+  const [isTroubleshootingMinimized, setIsTroubleshootingMinimized] = useState(false);
+  const [showTroubleshootingPanel, setShowTroubleshootingPanel] = useState(true);
+
+  useEffect(() => {
+    if (!deviceStates || deviceStates.size === 0) return;
+    if (resolvedFaultsProjectRef.current === loadedExampleId) return;
+
+    if (activeTroubleshootingProject) {
+      setTimeout(() => setShowTroubleshootingPanel(true), 0);
       let allResolved = true;
-      for (const fault of currentProject.injectedFaults) {
+      for (const fault of (activeTroubleshootingProject.injectedFaults || [])) {
         const state = deviceStates.get(fault.deviceId);
         if (!state) {
           allResolved = false;
@@ -732,19 +748,19 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
         setTimeout(() => {
           toast({
             title: language === 'tr' ? 'Tebrikler!' : 'Congratulations!',
-            description: language === 'tr' ? 'Arızayı başarıyla giderdiniz!' : 'You successfully resolved the fault!',
+            description: language === 'tr' ? 'Tüm arızaları başarıyla giderdiniz!' : 'You successfully resolved all faults!',
             variant: 'default',
           });
           
-          const projectNameStr = typeof currentProject.title === 'string' 
-            ? currentProject.title 
-            : (currentProject.title as { tr?: string; en?: string })?.tr || (currentProject.title as { tr?: string; en?: string })?.en || 'Troubleshooting Project';
+          const projectNameStr = typeof activeTroubleshootingProject.title === 'string' 
+            ? activeTroubleshootingProject.title 
+            : (activeTroubleshootingProject.title as { tr?: string; en?: string })?.tr || (activeTroubleshootingProject.title as { tr?: string; en?: string })?.en || 'Troubleshooting Project';
             
           addGuidedLessonRecord(projectNameStr, 100, 100);
         }, 100);
       }
     }
-  }, [deviceStates, loadedExampleId, groupedExampleProjects, exampleLevelOrder, language, toast]);
+  }, [deviceStates, loadedExampleId, activeTroubleshootingProject, language, toast]);
 
 
 
@@ -1539,7 +1555,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     activeTab
   }), [topologyDevices, topologyConnections, topologyNotes, deviceStates, deviceOutputs, pcOutputs, pcHistories, cableInfo, activeDeviceId, activeDeviceType, zoom, pan, activeTab]);
 
-  const { pushState, undo, redo, canUndo, canRedo, resetHistory, currentState } = useHistory(getCurrentState());
+  const { pushState, undo, redo, canUndo, canRedo, resetHistory, currentState, historyItems, historyIndex, jumpTo } = useHistory(getCurrentState());
 
   // Handle undo/redo execution
   const applyProjectState = useCallback((state: ProjectState) => {
@@ -1577,6 +1593,12 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     redo();
   }, [redo]);
 
+  const handleJumpTo = useCallback((index: number) => {
+    isApplyingHistoryRef.current = true;
+    pendingHistoryActionRef.current = 'jumpTo';
+    jumpTo(index);
+  }, [jumpTo]);
+
   useEffect(() => {
     if (!isApplyingHistoryRef.current) return;
     if (!currentState) return;
@@ -1598,7 +1620,9 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
       t: initialState.topologyDevices,
       c: initialState.topologyConnections,
       n: initialState.topologyNotes,
-      s: Array.from(initialState.deviceStates.keys()),
+      s: Array.from(initialState.deviceStates.entries()),
+      o: Array.from(initialState.deviceOutputs.entries()),
+      p: Array.from(initialState.pcOutputs.entries()),
       id: initialState.activeDeviceId,
       tab: initialState.activeTab
     });
@@ -1612,7 +1636,9 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
       t: currentState.topologyDevices,
       c: currentState.topologyConnections,
       n: currentState.topologyNotes,
-      s: Array.from(currentState.deviceStates.keys()),
+      s: Array.from(currentState.deviceStates.entries()),
+      o: Array.from(currentState.deviceOutputs.entries()),
+      p: Array.from(currentState.pcOutputs.entries()),
       id: currentState.activeDeviceId,
       tab: currentState.activeTab
     });
@@ -5945,6 +5971,27 @@ ${state.bannerMOTD}
             onCheckTasks={checkExamTasks}
             onOpenEditor={!isExamLoadedFromFile ? () => toggleEditor(true) : undefined}
           />}
+
+          {/* Troubleshooting Mode Panel */}
+          {activeTroubleshootingProject && showTroubleshootingPanel && (
+            <TroubleshootingPanel
+              project={activeTroubleshootingProject}
+              deviceStates={deviceStates}
+              tasks={'tasks' in activeTroubleshootingProject ? (activeTroubleshootingProject as { tasks: ExamTask[] }).tasks : []}
+              onClose={() => setShowTroubleshootingPanel(false)}
+              onMinimize={() => setIsTroubleshootingMinimized(!isTroubleshootingMinimized)}
+              isMinimized={isTroubleshootingMinimized}
+            />
+          )}
+
+          {/* Global Timeline History Panel */}
+          <TimelinePanel
+            historyItems={historyItems}
+            historyIndex={historyIndex}
+            onJumpTo={handleJumpTo}
+            isMinimized={isPanelMinimized}
+            onMinimize={togglePanelMinimize}
+          />
 
           {/* Exam Editor Panel */}
           {isEditorOpen && activeExam && (
