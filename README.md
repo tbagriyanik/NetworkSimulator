@@ -20,7 +20,7 @@ npm install && npm run dev
 
 - **Mobile PNG Export / Mobil PNG Kaydetme:** Mobil cihazlarda sorunsuz çalışması için native 'Web Share API' (Paylaşım Ekranı) entegrasyonu ve bellek optimizasyonu sağlandı.
 - **Improved Connection UX / Geliştirilmiş Kablo Bağlantı Deneyimi:** Porttan porta tıklayarak kablo bağlama işlemi (`onPointerDown` kullanılarak) anında tepki verecek şekilde kararlı hale getirildi.
-- **Advanced Timeline / Gelişmiş İşlem Geçmişi:** İşlem adımlarına kaydırma (scroll) desteği ve daha detaylı bildirimler ("Switch1 ve PC1 arasına bağlantı eklendi") eklendi. Geçmiş kayıtları sayfa yenilendiğinde (F5) kaybolmamak üzere yerel depolama (localStorage) ile kalıcı hale getirildi.
+- **Advanced Timeline / Gelişmiş İşlem Geçmişi:** İşlem adımlarına kaydırma (scroll) desteği ve daha detaylı bildirimler ("Switch1 ve PC1 arasına bağlantı eklendi") eklendi. Tüm geçmiş adımlarını `.txt` dosyası olarak indirebilme (dışa aktarma) özelliği getirildi. Geçmiş kayıtları sayfa yenilendiğinde (F5) kaybolmamak üzere yerel depolama (localStorage) ile kalıcı hale getirildi.
 - **Glassmorphism Panels / Cam Efektli Paneller:** Arıza Giderme (Troubleshooting) ve İşlem Geçmişi (Timeline) panellerine şeffaf cam efekti (backdrop-blur) ve sürükle-bırak desteği eklendi.
 
 ## Stats / İstatistikler

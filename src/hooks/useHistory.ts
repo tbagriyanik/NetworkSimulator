@@ -63,7 +63,8 @@ function estimateStateBytes(state: ProjectState): number {
   }
 }
 
-function serializeProjectState(state: ProjectState): Record<string, unknown> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function serializeProjectState(state: ProjectState): any {
   return {
     ...state,
     deviceStates: Array.from(state.deviceStates.entries()),
@@ -73,13 +74,14 @@ function serializeProjectState(state: ProjectState): Record<string, unknown> {
   };
 }
 
-function deserializeProjectState(data: Record<string, unknown>): ProjectState {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function deserializeProjectState(data: any): ProjectState {
   return {
-    ...(data as unknown as ProjectState),
-    deviceStates: new Map((data.deviceStates as Array<[string, SwitchState]>) || []),
-    deviceOutputs: new Map((data.deviceOutputs as Array<[string, TerminalOutput[]]>) || []),
-    pcOutputs: new Map((data.pcOutputs as Array<[string, PCOutputLine[]]>) || []),
-    pcHistories: new Map((data.pcHistories as Array<[string, string[]]>) || []),
+    ...data,
+    deviceStates: new Map(data.deviceStates || []),
+    deviceOutputs: new Map(data.deviceOutputs || []),
+    pcOutputs: new Map(data.pcOutputs || []),
+    pcHistories: new Map(data.pcHistories || []),
   };
 }
 
@@ -164,35 +166,32 @@ export function useHistory(initialState: ProjectState) {
     estimatedBytes: estimateStateBytes(initialState),
     description: 'Başlangıç Durumu'
   };
-  const [state, setState] = useState<HistoryState>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('netsim_history');
-        if (saved) {
-          const parsed = JSON.parse(saved) as { items?: unknown[]; index?: number } | null;
-          if (parsed && Array.isArray(parsed.items)) {
-            const loadedItems = parsed.items.map(item => {
-              const data = item as { state: Record<string, unknown> };
-              return {
-                ...data,
-                state: deserializeProjectState(data.state)
-              } as HistoryEntry;
-            });
-            return {
-              items: loadedItems,
-              index: parsed.index ?? loadedItems.length - 1
-            };
-          }
-        }
-      } catch (e) {
-        console.warn("Could not load history from localStorage", e);
-      }
-    }
-    return {
-      items: [initialEntry],
-      index: 0
-    };
+  const [state, setState] = useState<HistoryState>({
+    items: [initialEntry],
+    index: 0
   });
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('netsim_history');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && Array.isArray(parsed.items)) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const loadedItems = parsed.items.map((item: any) => ({
+            ...item,
+            state: deserializeProjectState(item.state)
+          }));
+          // eslint-disable-next-line
+          setState({
+            items: loadedItems,
+            index: parsed.index ?? loadedItems.length - 1
+          });
+        }
+      }
+    } catch (e) {
+      console.warn("Could not load history from localStorage", e);
+    }
+  }, []);
 
   // Save to localStorage when state changes
   useEffect(() => {
@@ -265,7 +264,28 @@ export function useHistory(initialState: ProjectState) {
           description = 'Not Eklendi';
         } else if (stateToPush.topologyNotes.length < prevState.topologyNotes.length) {
           description = 'Not Silindi';
-        } else if (operationType === 'device') {
+        }
+        
+        if (description === 'Değişiklik') {
+          if (operationType === 'topology') {
+            const movedDev = stateToPush.topologyDevices.find(d => {
+              const pd = prevState.topologyDevices.find(old => old.id === d.id);
+              return pd && (pd.x !== d.x || pd.y !== d.y);
+            });
+            if (movedDev) {
+              description = `${movedDev.name} taşındı`;
+            } else {
+              const changedDev = stateToPush.topologyDevices.find(d => {
+                const pd = prevState.topologyDevices.find(old => old.id === d.id);
+                return pd && JSON.stringify(pd) !== JSON.stringify(d);
+              });
+              if (changedDev) {
+                description = `${changedDev.name} yapılandırması değiştirildi`;
+              } else {
+                description = 'Topoloji güncellendi';
+              }
+            }
+          } else if (operationType === 'device') {
           let changedDevice = '';
           for (const [id, out] of stateToPush.pcOutputs.entries()) {
             const prevOut = prevState.pcOutputs.get(id) || [];
@@ -291,6 +311,7 @@ export function useHistory(initialState: ProjectState) {
         } else if (operationType === 'ui') {
           description = 'Arayüz Değişikliği';
         }
+      }
       }
 
       const entry: HistoryEntry = {
