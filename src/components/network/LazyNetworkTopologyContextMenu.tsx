@@ -46,6 +46,7 @@ interface LazyNetworkTopologyContextMenuProps {
     onClearDeviceSelection: () => void;
     onOpenTasks?: (deviceId: string) => void;
     onRefreshNetwork?: () => void;
+    isPingPanelOpen?: boolean;
 }
 
 function ContextMenuFallback() {

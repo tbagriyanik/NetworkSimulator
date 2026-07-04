@@ -39,6 +39,7 @@ interface NetworkTopologyContextMenuProps {
   onClearDeviceSelection: () => void;
   onOpenTasks?: (deviceId: string) => void;
   onRefreshNetwork?: () => void;
+  isPingPanelOpen?: boolean;
 }
 
 export default function NetworkTopologyContextMenu({
@@ -73,6 +74,7 @@ export default function NetworkTopologyContextMenu({
   onClearDeviceSelection,
   onOpenTasks,
   onRefreshNetwork,
+  isPingPanelOpen,
 }: NetworkTopologyContextMenuProps) {
   const { t } = useLanguage();
   const [position, setPosition] = useState({ x: contextMenu?.x || 0, y: contextMenu?.y || 0 });
@@ -384,7 +386,7 @@ export default function NetworkTopologyContextMenu({
                   icon: 'ping',
                   shortcut: 'P',
                   onClick: () => { if (contextMenu.deviceId) onStartPing(contextMenu.deviceId); onClose(); },
-                  disabled: !device
+                  disabled: !device || isPingPanelOpen
                 })}
                 {renderMenuItem({
                   label: t.power,

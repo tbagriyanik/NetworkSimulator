@@ -140,6 +140,7 @@ export function NetworkTopology({
   packetPanelZIndex,
   isExamActive = false,
   isExamEditorOpen = false,
+  onPingPanelOpenChange,
 }: NetworkTopologyProps) {
   const { language, t } = useLanguage();
   const { theme } = useTheme();
@@ -579,8 +580,8 @@ export function NetworkTopology({
   const [lastTouchDistance, setLastTouchDistance] = useState<number | null>(null);
   const [_touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
   const [longPressTimer, setLongPressTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
-  const [lastTapTime, setLastTapTime] = useState(0);
-  const [lastTappedDevice, setLastTappedDevice] = useState<string | null>(null);
+  const lastTapTimeRef = useRef(0);
+  const lastTappedDeviceRef = useRef<string | null>(null);
 
   // Advanced Canvas Pan/Zoom Touch state
   const [lastTouchCenter, setLastTouchCenter] = useState<{ x: number; y: number } | null>(null);
@@ -640,6 +641,12 @@ export function NetworkTopology({
   // Hop packet infos for the packet analysis panel
   const [hopPacketInfos, setHopPacketInfos] = useState<import('./PingPacketInfoPanel').HopPacketInfo[]>([]);
   const [packetPopupHop, setPacketPopupHop] = useState<number | null>(null);
+
+  // Synchronize ping panel visibility state with parent
+  const isPingPanelVisible = !!(pingAnimation && pingAnimation.showPacketPanel);
+  useEffect(() => {
+    onPingPanelOpenChange?.(isPingPanelVisible);
+  }, [isPingPanelVisible, onPingPanelOpenChange]);
 
   // Wrapped refresh handler: closes floating panels then delegates
   const handleRefresh = useCallback(() => {
@@ -2008,24 +2015,6 @@ export function NetworkTopology({
     startDeviceDrag(e, deviceId, newSelectedIds, initialPositions);
   }, [devices, pan, zoom, selectedDeviceIds, onDeviceSelect, pingMode, pingSource, startDeviceDrag]);
 
-  const handleDevicePointerDown = useCallback((e: React.PointerEvent<SVGGElement>, deviceId: string) => {
-    if (e.pointerType === 'mouse') return;
-    if (activeDragPointerIdRef.current !== null) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-    activePointerDragRef.current = true;
-    activeDragPointerIdRef.current = e.pointerId;
-
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId);
-    } catch {
-      // SVG pointer capture can fail in older mobile browsers; global pointermove still handles drag.
-    }
-
-    handleDeviceMouseDown(e as unknown as ReactMouseEvent, deviceId);
-  }, [handleDeviceMouseDown]);
-
   // Handle device click (single click - select only)
   const handleDeviceClick = useCallback((e: ReactMouseEvent, device: CanvasDevice) => {
     e.stopPropagation();
@@ -2085,6 +2074,37 @@ export function NetworkTopology({
       }
     }
   }, [onDeviceDoubleClick, onDeviceSelect]);
+
+  const handleDevicePointerDown = useCallback((e: React.PointerEvent<SVGGElement>, deviceId: string) => {
+    if (e.pointerType === 'mouse') return;
+    if (activeDragPointerIdRef.current !== null) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    activePointerDragRef.current = true;
+    activeDragPointerIdRef.current = e.pointerId;
+
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // SVG pointer capture can fail in older mobile browsers; global pointermove still handles drag.
+    }
+
+    const device = deviceMap.get(deviceId);
+    if (device) {
+      const now = Date.now();
+      if (now - lastTapTimeRef.current < 300 && lastTappedDeviceRef.current === deviceId) {
+        handleDeviceDoubleClick(device);
+        lastTapTimeRef.current = 0;
+        lastTappedDeviceRef.current = null;
+      } else {
+        lastTapTimeRef.current = now;
+        lastTappedDeviceRef.current = deviceId;
+      }
+    }
+
+    handleDeviceMouseDown(e as unknown as ReactMouseEvent, deviceId);
+  }, [handleDeviceMouseDown, deviceMap, handleDeviceDoubleClick]);
 
   // Handle right-click context menu with viewport clamping
   const handleContextMenu = useCallback((e: ReactMouseEvent, deviceId?: string) => {
@@ -2171,13 +2191,13 @@ export function NetworkTopology({
     dragStartDevicePositionsRef.current = initialPositions;
 
     const now = Date.now();
-    if (now - lastTapTime < 300 && lastTappedDevice === deviceId) {
+    if (now - lastTapTimeRef.current < 300 && lastTappedDeviceRef.current === deviceId) {
       handleDeviceDoubleClick(device);
-      setLastTapTime(0);
-      setLastTappedDevice(null);
+      lastTapTimeRef.current = 0;
+      lastTappedDeviceRef.current = null;
     } else {
-      setLastTapTime(now);
-      setLastTappedDevice(deviceId);
+      lastTapTimeRef.current = now;
+      lastTappedDeviceRef.current = deviceId;
 
       // Start long-press timer to open device context menu on mobile
       const timer = setTimeout(() => {
@@ -2188,7 +2208,7 @@ export function NetworkTopology({
       }, LONG_PRESS_DURATION);
       setLongPressTimer(timer);
     }
-  }, [devices, pan, zoom, longPressTimer, lastTapTime, lastTappedDevice, handleDeviceDoubleClick, selectedDeviceIds, openContextMenu]);
+  }, [devices, pan, zoom, longPressTimer, handleDeviceDoubleClick, selectedDeviceIds, openContextMenu]);
 
   // Handle device touch move - for mobile dragging
   const handleDeviceTouchMove = useCallback((e: ReactTouchEvent) => {
@@ -3799,7 +3819,7 @@ export function NetworkTopology({
       }
 
       // P to enter ping mode
-      if (!isEditable && key === 'p' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+      if (!isEditable && key === 'p' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey && !isPingPanelVisible) {
         e.preventDefault();
         if (!pingMode) {
           if (selectedDeviceIds.length === 1) {
@@ -7441,6 +7461,7 @@ fill="var(--color-accent-500)"
         canUndo={historyIndex > 0}
         canRedo={historyIndex < historyLength - 1}
         isExamActive={isExamActive}
+        isPingPanelOpen={isPingPanelVisible}
         onClose={() => setContextMenu(null)}
         onUpdateNoteStyle={(id, style) => updateNoteStyle(id, style)}
         onNoteCut={(id) => handleNoteTextCut(id)}

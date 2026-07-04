@@ -677,6 +677,8 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   const setGraphicsQuality = useAppStore((state) => state.setGraphicsQuality);
   const addCapturedPacket = useAppStore((state) => state.addCapturedPacket);
 
+  const [isPingPanelOpen, setIsPingPanelOpen] = useState(false);
+
   // Global packet capture event listener
   useEffect(() => {
     const handlePacketCaptured = ((e: CustomEvent) => {
@@ -4813,6 +4815,7 @@ ${state.bannerMOTD}
             isDark={isDark}
             theme={theme}
             language={language}
+            isPingPanelOpen={isPingPanelOpen}
             setLanguage={setLanguage}
             setTheme={setTheme}
             graphicsQuality={graphicsQuality}
@@ -5278,6 +5281,7 @@ ${state.bannerMOTD}
                  {/* Topology Toolbar */}
                  {activeTab === 'topology' && (
                    <TopologyToolbar
+                     isPingPanelOpen={isPingPanelOpen}
                      t={t}
                      isDark={isDark}
                      language={language}
@@ -5309,6 +5313,7 @@ ${state.bannerMOTD}
                 {/* Network Topology fills remaining space */}
                 <div ref={topologyContainerRef} className="flex-1 w-full h-full min-h-0 overflow-hidden relative">
                   <NetworkTopology
+                    onPingPanelOpenChange={setIsPingPanelOpen}
                     key={topologyKey}
                     cableInfo={cableInfo}
                     onCableChange={setCableInfo}

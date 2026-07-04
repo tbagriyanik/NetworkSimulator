@@ -70,6 +70,7 @@ interface AppHeaderProps {
   setShowAboutModal: (v: boolean) => void;
   showBasarilarim: boolean;
   setShowBasarilarim: (v: boolean) => void;
+  isPingPanelOpen?: boolean;
 }
 
 export function AppHeader({
@@ -84,7 +85,8 @@ export function AppHeader({
   handleRefreshNetwork, setIsEnvironmentPanelOpen,
   isGuidedModeActive, isPanelMinimized, expandPanel, setShowAboutModal,
   showBasarilarim, setShowBasarilarim,
-  helpLevel, setHelpLevel
+  helpLevel, setHelpLevel,
+  isPingPanelOpen
 }: AppHeaderProps) {
   return (
     <header className={cn("fixed top-0 left-0 right-0 z-[50] border-b px-5 py-2 pb-0", isDark ? "liquid-glass border-slate-800" : "bg-white/90 backdrop-blur-md border-slate-200")}>
@@ -517,6 +519,7 @@ export function AppHeader({
                       <Button
                         variant="outline"
                         className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        disabled={isPingPanelOpen}
                         onClick={() => {
                           if (typeof window !== 'undefined') {
                             const event = new CustomEvent('toggle-ping-mode');

@@ -52,6 +52,7 @@ interface TopologyToolbarProps {
   setIsEnvironmentPanelOpen: (v: boolean) => void;
   onOpenStudentJoin?: () => void;
   onOpenTeacherPanel?: () => void;
+  isPingPanelOpen?: boolean;
 }
 
 function truncateWithEllipsis(text: string, maxLength: number) {
@@ -72,6 +73,7 @@ export function TopologyToolbar({
   handleUndo, handleRedo,
   handleRefreshNetwork, setIsEnvironmentPanelOpen,
   onOpenStudentJoin, onOpenTeacherPanel,
+  isPingPanelOpen,
 }: TopologyToolbarProps) {
   const graphicsQuality = useAppStore((state) => state.graphicsQuality);
   const isSimulationMode = useAppStore((state) => state.topology.isSimulationMode);
@@ -497,6 +499,7 @@ className="h-8 w-8 p-0 text-orange-500 hover:bg-orange-500/10"
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-amber-500 hover:bg-amber-500/10"
+            disabled={isPingPanelOpen}
             onClick={() => {
               const event = new CustomEvent('toggle-ping-mode');
               window.dispatchEvent(event);
