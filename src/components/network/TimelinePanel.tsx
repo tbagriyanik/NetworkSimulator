@@ -29,6 +29,36 @@ export function TimelinePanel({
   const [isPlaying, setIsPlaying] = useState(false);
   const [playSpeed, setPlaySpeed] = useState<1 | 2 | 4>(1);
 
+  // Drag state
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartPos = useRef({ x: 0, y: 0 });
+  const panelStartPos = useRef({ x: 0, y: 0 });
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if ((e.target as HTMLElement).closest('button')) return;
+    setIsDragging(true);
+    dragStartPos.current = { x: e.clientX, y: e.clientY };
+    panelStartPos.current = { ...position };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging) return;
+    const dx = e.clientX - dragStartPos.current.x;
+    const dy = e.clientY - dragStartPos.current.y;
+    setPosition({
+      x: panelStartPos.current.x + dx,
+      y: panelStartPos.current.y + dy
+    });
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+  };
+
   // Auto-scroll to active item
   useEffect(() => {
     if (!isMinimized && activeItemRef.current) {
@@ -59,6 +89,7 @@ export function TimelinePanel({
 
   const getActionLabel = (item: HistoryEntry, index: number) => {
     if (index === 0) return language === 'tr' ? 'Başlangıç Durumu' : 'Initial State';
+    if (item.description) return item.description;
     switch (item.operationType) {
       case 'device': return language === 'tr' ? 'Cihaz Yapılandırması' : 'Device Configuration';
       case 'topology': return language === 'tr' ? 'Topoloji Değişikliği' : 'Topology Change';
@@ -76,12 +107,22 @@ export function TimelinePanel({
   return (
     <div
       className={cn(
-        "absolute bottom-20 left-4 z-40 bg-zinc-950/95 border border-zinc-800 shadow-2xl backdrop-blur-xl transition-all duration-300 flex flex-col overflow-hidden rounded-xl",
+        "absolute bottom-20 left-4 z-40 bg-zinc-950/30 border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] backdrop-blur-2xl transition-all duration-300 flex flex-col overflow-hidden rounded-xl",
         isMinimized ? "w-64 h-12" : "w-80 h-[28rem]"
       )}
+      style={{ transform: `translate(${position.x}px, ${position.y}px)` }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-3 shrink-0 border-b bg-indigo-950/20 border-indigo-900/30">
+      <div 
+        className={cn(
+          "flex items-center justify-between p-3 shrink-0 border-b bg-indigo-950/20 border-indigo-900/30",
+          isDragging ? "cursor-grabbing" : "cursor-grab",
+          "select-none"
+        )}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+      >
         <div className="flex items-center gap-2">
           <History className="w-4 h-4 text-indigo-400" />
           <span className="font-semibold text-sm tracking-wide text-zinc-100">
@@ -161,10 +202,10 @@ export function TimelinePanel({
                       "text-xs font-medium",
                       isActive ? "text-indigo-300" : isFuture ? "text-zinc-500" : "text-zinc-300"
                     )}>
+                      <span className="font-mono text-[10px] opacity-70 mr-1">
+                        {language === 'tr' ? 'Adım' : 'Step'}{idx + 1}:
+                      </span>
                       {getActionLabel(item, idx)}
-                    </div>
-                    <div className="text-[10px] text-zinc-500 mt-1 font-mono">
-                      {language === 'tr' ? 'Adım' : 'Step'} {idx + 1}
                     </div>
                   </button>
                 </div>

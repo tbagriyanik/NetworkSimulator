@@ -1,10 +1,9 @@
 'use client';
 
-
+import { useState, useRef } from 'react';
 import {
   CheckCircle2,
   Circle,
-  GripHorizontal,
   Wrench,
   ChevronDown,
   ChevronUp,
@@ -38,6 +37,36 @@ export function TroubleshootingPanel({
 }: TroubleshootingPanelProps) {
   const { t, language } = useLanguage();
 
+  // Drag state
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartPos = useRef({ x: 0, y: 0 });
+  const panelStartPos = useRef({ x: 0, y: 0 });
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if ((e.target as HTMLElement).closest('button')) return;
+    setIsDragging(true);
+    dragStartPos.current = { x: e.clientX, y: e.clientY };
+    panelStartPos.current = { ...position };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging) return;
+    const dx = e.clientX - dragStartPos.current.x;
+    const dy = e.clientY - dragStartPos.current.y;
+    setPosition({
+      x: panelStartPos.current.x + dx,
+      y: panelStartPos.current.y + dy
+    });
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+  };
+
   if (!project || ((!project.injectedFaults || project.injectedFaults.length === 0) && tasks.length === 0)) {
     return null;
   }
@@ -62,19 +91,23 @@ export function TroubleshootingPanel({
   return (
     <div
       className={cn(
-        "absolute right-4 top-20 z-40 bg-zinc-950/95 border border-zinc-800 shadow-2xl backdrop-blur-xl transition-all duration-300 flex flex-col overflow-hidden rounded-xl",
+        "absolute right-4 top-20 z-40 bg-zinc-950/30 border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] backdrop-blur-2xl transition-all duration-300 flex flex-col overflow-hidden rounded-xl",
         isMinimized ? "w-72 h-14" : "w-80 max-h-[80vh]"
       )}
+      style={{ transform: `translate(${position.x}px, ${position.y}px)` }}
     >
       {/* Header */}
       <div 
         className={cn(
-          "flex items-center justify-between p-3 select-none cursor-move shrink-0 border-b",
+          "flex items-center justify-between p-3 select-none shrink-0 border-b",
+          isDragging ? "cursor-grabbing" : "cursor-grab",
           allResolved ? "bg-emerald-950/40 border-emerald-900/50" : "bg-orange-950/40 border-orange-900/50"
         )}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
       >
         <div className="flex items-center gap-2">
-          <GripHorizontal className="w-4 h-4 text-zinc-500" />
           <Wrench className={cn("w-4 h-4", allResolved ? "text-emerald-400" : "text-orange-400")} />
           <span className="font-semibold text-sm tracking-wide text-zinc-100">
             {language === 'tr' ? 'Arıza Giderme' : 'Troubleshooting'}

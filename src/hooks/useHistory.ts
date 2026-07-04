@@ -37,6 +37,7 @@ export interface HistoryEntry {
   operationType: HistoryOperationType;
   signature: string;
   estimatedBytes: number;
+  description?: string;
 }
 
 const MAX_HISTORY_ITEMS = 80;
@@ -44,7 +45,6 @@ const MAX_HISTORY_BYTES = 8 * 1024 * 1024;
 
 function estimateStateBytes(state: ProjectState): number {
   try {
-    // Estimate with the heavy mutable parts; enough for bounded pruning.
     return JSON.stringify({
       topologyDevices: state.topologyDevices,
       topologyConnections: state.topologyConnections,
@@ -142,6 +142,7 @@ export function useHistory(initialState: ProjectState) {
     operationType: 'all',
     signature: getStateSignature(initialState, 'all'),
     estimatedBytes: estimateStateBytes(initialState),
+    description: 'Başlangıç Durumu'
   };
   const [state, setState] = useState<HistoryState>({
     items: [initialEntry],
@@ -153,14 +154,59 @@ export function useHistory(initialState: ProjectState) {
       const newItems = prev.items.slice(0, prev.index + 1);
       const stateToPush = cloneProjectState(newState);
       const signature = getStateSignature(stateToPush, operationType);
+
+      const prevState = prev.items[prev.index]?.state;
+      let description = 'Değişiklik';
+      if (prevState) {
+        if (stateToPush.topologyDevices.length > prevState.topologyDevices.length) {
+          const newDev = stateToPush.topologyDevices.find(d => !prevState.topologyDevices.some(pd => pd.id === d.id));
+          description = `Cihaz Eklendi: ${newDev?.name || 'Bilinmiyor'}`;
+        } else if (stateToPush.topologyDevices.length < prevState.topologyDevices.length) {
+          description = 'Cihaz Silindi';
+        } else if (stateToPush.topologyConnections.length > prevState.topologyConnections.length) {
+          description = 'Bağlantı Eklendi';
+        } else if (stateToPush.topologyConnections.length < prevState.topologyConnections.length) {
+          description = 'Bağlantı Silindi';
+        } else if (stateToPush.topologyNotes.length > prevState.topologyNotes.length) {
+          description = 'Not Eklendi';
+        } else if (stateToPush.topologyNotes.length < prevState.topologyNotes.length) {
+          description = 'Not Silindi';
+        } else if (operationType === 'device') {
+          let changedDevice = '';
+          for (const [id, out] of stateToPush.pcOutputs.entries()) {
+            const prevOut = prevState.pcOutputs.get(id) || [];
+            if (out.length > prevOut.length) {
+              const last = out[out.length - 1];
+              if (last.type === 'command') {
+                changedDevice = stateToPush.topologyDevices.find(d => d.id === id)?.name || id;
+                description = `${changedDevice}: ${last.content}`;
+              }
+            }
+          }
+          if (!changedDevice) {
+             for (const [id, st] of stateToPush.deviceStates.entries()) {
+                const pState = prevState.deviceStates.get(id);
+                if (pState && JSON.stringify(pState) !== JSON.stringify(st)) {
+                  changedDevice = stateToPush.topologyDevices.find(d => d.id === id)?.name || id;
+                  description = `Yapılandırma: ${changedDevice}`;
+                  break;
+                }
+             }
+          }
+          if (!changedDevice) description = 'Cihaz Değişikliği';
+        } else if (operationType === 'ui') {
+          description = 'Arayüz Değişikliği';
+        }
+      }
+
       const entry: HistoryEntry = {
         state: stateToPush,
         operationType,
         signature,
         estimatedBytes: estimateStateBytes(stateToPush),
+        description,
       };
 
-      // Optimization: don't push if it's the same as current present
       const currentPresent = prev.items[prev.index]?.signature;
       if (currentPresent && currentPresent === signature) {
         return prev;
@@ -170,7 +216,6 @@ export function useHistory(initialState: ProjectState) {
 
       let nextIndex = newItems.length - 1;
 
-      // Limit history size and memory usage
       while (newItems.length > MAX_HISTORY_ITEMS) {
         newItems.shift();
         nextIndex = Math.max(0, nextIndex - 1);
@@ -215,6 +260,7 @@ export function useHistory(initialState: ProjectState) {
       operationType: 'all',
       signature: getStateSignature(newState, 'all'),
       estimatedBytes: estimateStateBytes(newState),
+      description: 'Başlangıç Durumu'
     };
     setState({
       items: [resetEntry],
@@ -222,7 +268,6 @@ export function useHistory(initialState: ProjectState) {
     });
   }, []);
 
-  // Current state based on index - useful for applying undo/redo
   const currentState = useMemo(() => {
     return state.items[state.index]?.state || null;
   }, [state.items, state.index]);

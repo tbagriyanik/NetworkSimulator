@@ -16,9 +16,9 @@ import { usePanels } from '@/hooks/usePanels';
 import { useRefreshReport } from '@/hooks/useRefreshReport';
 import { useDeviceSelection } from '@/hooks/useDeviceSelection';
 import useAppStore, { useTopologyDevices, useTopologyConnections, useTopologyNotes, useZoom, usePan, useActiveTab, useEnvironment } from '@/lib/store/appStore';
+import { ExamTask } from '@/lib/network/examMode';
 import { cn, normalizeMAC } from '@/lib/utils';
 import { logger } from '@/lib/logger';
-import { ExamTask } from '@/lib/network/examMode';
 import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType, FirewallRule } from '@/components/network/networkTopology.types';
 import { getPrompt } from '@/lib/network/executor';
 import { formatErrorForUser, errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
@@ -5977,7 +5977,7 @@ ${state.bannerMOTD}
             <TroubleshootingPanel
               project={activeTroubleshootingProject}
               deviceStates={deviceStates}
-              tasks={'tasks' in activeTroubleshootingProject ? (activeTroubleshootingProject as { tasks: ExamTask[] }).tasks : []}
+              tasks={'tasks' in activeTroubleshootingProject ? (activeTroubleshootingProject as unknown as { tasks: ExamTask[] }).tasks : []}
               onClose={() => setShowTroubleshootingPanel(false)}
               onMinimize={() => setIsTroubleshootingMinimized(!isTroubleshootingMinimized)}
               isMinimized={isTroubleshootingMinimized}
