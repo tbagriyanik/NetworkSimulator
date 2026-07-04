@@ -164,6 +164,7 @@ export function NoteNode({
         >
           <div
             className="flex items-center justify-center gap-1"
+            style={{ display: note.width < 190 ? 'none' : 'flex' }}
             onMouseDown={(e) => {
               e.stopPropagation();
             }}

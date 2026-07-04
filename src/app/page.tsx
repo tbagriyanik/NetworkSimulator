@@ -61,7 +61,6 @@ import { Button } from '@/components/ui/button';
 import { TooltipWrapper } from "@/components/ui/TooltipWrapper";
 import { useLanguage, Translations } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { toast } from "@/hooks/use-toast";
 
 import { generateProjectSummary } from '@/utils/generateSummary';
 
@@ -96,6 +95,8 @@ import { AppSkeleton } from '@/components/ui/AppSkeleton';
 import { AppErrorBoundary } from '@/components/ui/AppErrorBoundary';
 import { useRoom } from '@/contexts/RoomContext';
 import { useRoomSync } from '@/hooks/useRoomSync';
+import { useToast } from '@/hooks/use-toast';
+import { checkFaultResolved } from '@/lib/network/faults';
 
 
 const PCPanel = dynamic(() => import('@/components/network/PCPanel').then((m) => m.PCPanel));
@@ -337,6 +338,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
 
   // Multi-tab warning system
   const { showWarning, tabCount, acknowledgeWarning, clearCurrentTabData } = useMultiTabWarning();
+  const { toast } = useToast();
 
   // Refs moved to top to avoid TDZ errors
   const isApplyingHistoryRef = useRef(false);
@@ -600,6 +602,9 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     }
   }, [isExamFinished, activeExam, examScore]);
 
+
+
+
   const [saveDialog, setSaveDialog] = useState<{
     show: boolean;
     message: string;
@@ -689,6 +694,59 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     window.addEventListener('packet-captured', handlePacketCaptured);
     return () => window.removeEventListener('packet-captured', handlePacketCaptured);
   }, [addCapturedPacket]);
+
+  // Check if troubleshooting project faults are resolved
+  const resolvedFaultsProjectRef = useRef<string | null>(null);
+  
+  useEffect(() => {
+    if (!loadedExampleId || !deviceStates || deviceStates.size === 0) return;
+    if (resolvedFaultsProjectRef.current === loadedExampleId) return;
+
+    let currentProject: ExampleProject | null = null;
+    for (const level of exampleLevelOrder) {
+      const projects = groupedExampleProjects[level];
+      if (projects) {
+        currentProject = projects.find(p => p.id === loadedExampleId) || null;
+        if (currentProject) break;
+      }
+    }
+
+    if (currentProject && currentProject.injectedFaults && currentProject.injectedFaults.length > 0) {
+      let allResolved = true;
+      for (const fault of currentProject.injectedFaults) {
+        const state = deviceStates.get(fault.deviceId);
+        if (!state) {
+          allResolved = false;
+          break;
+        }
+        if (!checkFaultResolved(state, fault)) {
+          allResolved = false;
+          break;
+        }
+      }
+
+      if (allResolved) {
+        resolvedFaultsProjectRef.current = loadedExampleId;
+        
+        // Use setTimeout to avoid calling toast directly in effect, preventing cascading issues
+        setTimeout(() => {
+          toast({
+            title: language === 'tr' ? 'Tebrikler!' : 'Congratulations!',
+            description: language === 'tr' ? 'Arızayı başarıyla giderdiniz!' : 'You successfully resolved the fault!',
+            variant: 'default',
+          });
+          
+          const projectNameStr = typeof currentProject.title === 'string' 
+            ? currentProject.title 
+            : (currentProject.title as { tr?: string; en?: string })?.tr || (currentProject.title as { tr?: string; en?: string })?.en || 'Troubleshooting Project';
+            
+          addGuidedLessonRecord(projectNameStr, 100, 100);
+        }, 100);
+      }
+    }
+  }, [deviceStates, loadedExampleId, groupedExampleProjects, exampleLevelOrder, language, toast]);
+
+
 
   // Project summary note generator
   useEffect(() => {

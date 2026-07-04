@@ -147,7 +147,7 @@ export function BasarilarimPanel({ t, language, isDark, onClose, zIndex }: Basar
         ? { left: 8, right: 8, top: 80, bottom: 12, zIndex }
         : { bottom: `${position.y}px`, left: `${position.x}px`, zIndex }}
     >
-      <div className={`rounded-2xl overflow-hidden border shadow-2xl ${isMobile ? 'w-full h-full' : 'w-[340px]'} flex flex-col backdrop-blur-md ${isDark ? 'bg-zinc-950/40 border-emerald-500/30 shadow-black/40' : 'bg-white/40 border-emerald-500/50 shadow-zinc-200/50'}`}>
+      <div className={`rounded-2xl overflow-hidden border shadow-2xl ${isMobile ? 'w-full h-full' : 'w-[340px]'} flex flex-col backdrop-blur-lg ${isDark ? 'bg-zinc-950/75 border-emerald-500/30 shadow-black/40' : 'bg-white/75 border-emerald-500/50 shadow-zinc-200/50'}`}>
         <div
           className={`flex items-center justify-between px-3 py-2 border-b ${isMobile ? '' : 'cursor-grab active:cursor-grabbing'} select-none shrink-0 ${isDark ? 'bg-white/5 border-emerald-500/20' : 'bg-black/5 border-emerald-500/30'}`}
           onPointerDown={isMobile ? undefined : handleDragStart}

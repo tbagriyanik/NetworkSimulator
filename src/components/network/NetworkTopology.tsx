@@ -2989,8 +2989,8 @@ export function NetworkTopology({
           const origH = resizeStart.height;
           let newW = origW, newH = origH, newX: number | undefined, newY: number | undefined;
 
-          if (dir.includes('e')) newW = Math.max(150, origW + dx);
-          if (dir.includes('w')) { newW = Math.max(150, origW - dx); newX = resizeStart.noteX + (origW - newW); }
+          if (dir.includes('e')) newW = Math.max(180, origW + dx);
+          if (dir.includes('w')) { newW = Math.max(180, origW - dx); newX = resizeStart.noteX + (origW - newW); }
           if (dir.includes('s')) newH = Math.max(100, origH + dy);
           if (dir.includes('n')) { newH = Math.max(100, origH - dy); newY = resizeStart.noteY + (origH - newH); }
 
@@ -3046,8 +3046,8 @@ export function NetworkTopology({
           const origH = resizeStart.height;
           let newW = origW, newH = origH, newX: number | undefined, newY: number | undefined;
 
-          if (dir.includes('e')) newW = Math.max(150, origW + dx);
-          if (dir.includes('w')) { newW = Math.max(150, origW - dx); newX = resizeStart.noteX + (origW - newW); }
+          if (dir.includes('e')) newW = Math.max(180, origW + dx);
+          if (dir.includes('w')) { newW = Math.max(180, origW - dx); newX = resizeStart.noteX + (origW - newW); }
           if (dir.includes('s')) newH = Math.max(100, origH + dy);
           if (dir.includes('n')) { newH = Math.max(100, origH - dy); newY = resizeStart.noteY + (origH - newH); }
 
@@ -3655,7 +3655,9 @@ export function NetworkTopology({
     setPingAnimation(null);
     setHopPacketInfos([]);
     setPingMode(false);
-  }, []);
+    setPingSource(null);
+    setPingResult(null);
+  }, [setPingSource, setPingResult]);
 
   // Handle key events: ESC to close context menu, DELETE to remove devices, Ctrl+A to select all
   useEffect(() => {
