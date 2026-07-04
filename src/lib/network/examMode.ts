@@ -122,6 +122,7 @@ export interface ExamTask {
     showCommand?: string;
     matchPattern?: string;
   };
+  hint?: { tr: string; en: string };
   completed: boolean;
   completedAt?: Date;
 }

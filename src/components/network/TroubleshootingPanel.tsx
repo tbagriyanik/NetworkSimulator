@@ -240,6 +240,11 @@ export function TroubleshootingPanel({
                             <div className={cn("text-[11px] mt-1", isResolved ? "text-indigo-400/60" : "text-zinc-400")}>
                               {task.description[language as 'tr' | 'en'] || task.description.en}
                             </div>
+                            {task.hint && !isResolved && (
+                              <div className="text-xs text-orange-300/80 mt-1.5 italic">
+                                İpucu: {task.hint[language as 'tr' | 'en'] || task.hint.en}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
