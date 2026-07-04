@@ -3,6 +3,7 @@ import { CableInfo, SwitchState, isCableCompatible, Port } from './types';
 import { findRoute, ipToNumber, getRoutingTable, isIpv6InNetwork } from './routing';
 import { performArpResolution } from './arp';
 import { ensureDeviceStatesMap } from './networkUtils';
+import { calculatePVST } from './stp';
 
 export type WifiMode = 'ap' | 'client' | 'disabled' | 'sta';
 
@@ -692,6 +693,12 @@ export function checkConnectivity(
   }
 
   // 1. Find target device by IP (supports both IPv4 and IPv6)
+  // Recalculate STP states for accurate blocking
+  let stpDeviceStates = safeDeviceStates;
+  if (safeDeviceStates.size > 0) {
+    stpDeviceStates = calculatePVST(safeDeviceStates, connections);
+  }
+
   // BOLT: Pre-calculate an ipMap for O(1) device resolution
   const ipMap = new Map<string, string>(); // IP -> deviceId
   for (const d of devices) {
@@ -858,8 +865,8 @@ export function checkConnectivity(
           // Check STP blocking state using VLAN-specific STP calculation
           // In PVST, each VLAN has its own STP instance with potentially different root bridges
           // BOLT: Use pre-resolved safeDeviceStates
-          const isSrcSTPBlocking = getVlanSpecificSTPBlocking(currentId, srcPortId, sourceVlan, connections, safeDeviceStates, conn);
-          const isDstSTPBlocking = getVlanSpecificSTPBlocking(neighborId, dstPortId, sourceVlan, connections, safeDeviceStates, conn);
+          const isSrcSTPBlocking = getVlanSpecificSTPBlocking(currentId, srcPortId, sourceVlan, connections, stpDeviceStates, conn);
+          const isDstSTPBlocking = getVlanSpecificSTPBlocking(neighborId, dstPortId, sourceVlan, connections, stpDeviceStates, conn);
 
            // Validate cable type for this physical link (e.g. console vs ethernet, straight vs crossover).
           const isCableOk = isConnectionCableCompatible(conn, srcDevice, dstDevice);

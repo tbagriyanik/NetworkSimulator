@@ -6,6 +6,8 @@ import { buildRunningConfig } from './configBuilder';
 import { SwitchState, Port, CommandResult, Route } from '../types';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
 import { checkConnectivity } from '../connectivity';
+import { calculatePVST as calculatePVSTNew, calculateSTPVlan } from '../stp';
+import { buildOSPFLinkStateDatabase } from '../ospf';
 import { normalizePortId } from '../initialState';
 
 // Show komutları (show running-config, show vlan, show ip route, vs.)
@@ -96,6 +98,7 @@ export const showHandlers: Record<string, CommandHandler> = {
   'show archive': cmdShowArchive,
   'show ip protocols': cmdShowIpProtocols,
   'show ip ospf neighbor': cmdShowIpOspfNeighbor,
+  'show ip ospf database': cmdShowIpOspfDatabase,
   'show ip ospf': cmdShowIpOspf,
   'show ip ospf interface': cmdShowIpOspfInterface,
   'show standby': cmdShowStandby,
@@ -1540,6 +1543,46 @@ function cmdShowIpOspfNeighbor(state: SwitchState, _input: string, _ctx: Command
 }
 
 /**
+ * Show IP OSPF Database
+ */
+function cmdShowIpOspfDatabase(state: SwitchState, _input: string, ctx: CommandContext): CommandResult {
+  if (state.routingProtocol !== 'ospf') {
+    return { success: true, output: '\n% OSPF is not enabled\n' };
+  }
+
+  const routerId = state.ospfRouterId || state.ip || '192.168.1.1';
+  const areas = state.ospfAreas || [0];
+  const deviceStates = ensureDeviceStatesMap(ctx.deviceStates);
+
+  // Real LSDB build for OSPF
+  const lsdb = buildOSPFLinkStateDatabase(deviceStates);
+
+  let output = '\n            OSPF Router with ID (' + routerId + ') (Process ID 1)\n\n';
+
+  areas.forEach(area => {
+    const areaData = lsdb[area];
+    if (!areaData) return;
+
+    output += `                Router Link States (Area ${area})\n\n`;
+    output += 'Link ID         ADV Router      Age         Seq#       Checksum Link count\n';
+
+    areaData.routerLSAs.forEach((lsa: any) => {
+      output += `${lsa.id.padEnd(15)} ${lsa.advRouter.padEnd(15)} ${lsa.ageNumber.toString().padEnd(11)} 0x80000001 0x0000   ${lsa.links.length}\n`;
+    });
+
+    if (areaData.summaryLSAs.size > 0) {
+      output += `\n                Summary Net Link States (Area ${area})\n\n`;
+      output += 'Link ID         ADV Router      Age         Seq#       Checksum\n';
+      areaData.summaryLSAs.forEach((lsa: any) => {
+        output += `${lsa.id.padEnd(15)} ${lsa.advRouter.padEnd(15)} ${lsa.ageNumber.toString().padEnd(11)} 0x80000001 0x0000\n`;
+      });
+    }
+  });
+
+  return { success: true, output };
+}
+
+/**
  * Show IP OSPF
  */
 function cmdShowIpOspf(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
@@ -1785,356 +1828,7 @@ function getPortNumber(portId: string): number {
 }
 
 /**
- * Calculate Spanning Tree Protocol state for a device
- * Returns a map of port IDs to their STP role and state
- */
-export function calculateSTPState(
-  state: SwitchState,
-  ctx: CommandContext,
-  vlanId: number = 1
-): Map<string, { role: string; state: string }> {
-  const stpState = new Map<string, { role: string; state: string }>();
-
-  // Get topology connections from context
-  const connections = ctx.connections || [];
-  const sourceDeviceId = ctx.sourceDeviceId as string;
-  const devices = ctx.devices || [];
-  const deviceStates = ctx.deviceStates || new Map();
-
-  // Find all switch devices connected to this device
-  const deviceConnections = connections.filter(
-    (conn: CanvasConnection) => conn.sourceDeviceId === sourceDeviceId || conn.targetDeviceId === sourceDeviceId
-  );
-
-  const isPortVlanMember = (p: Port, vId: number) => {
-    if (!p) return false;
-    if (p.mode === 'trunk' || p.mode === 'dynamic-auto' || p.mode === 'dynamic-desirable' || p.mode === 'dot1q-tunnel') {
-      if (!p.allowedVlans || p.allowedVlans === 'all') return true;
-      return Array.isArray(p.allowedVlans) && p.allowedVlans.includes(vId);
-    }
-    return Number(p.accessVlan || p.vlan || 1) === Number(vId);
-  };
-
-  // Find connected switches and their MAC addresses for root bridge election
-  // Filter out connections to powered-off devices and shutdown ports
-  const connectedSwitches: { deviceId: string; macAddress: string; portId: string; isSource: boolean }[] = [];
-  deviceConnections.forEach((conn: CanvasConnection) => {
-    const isSource = conn.sourceDeviceId === sourceDeviceId;
-    const connectedDeviceId = isSource ? conn.targetDeviceId : conn.sourceDeviceId;
-    const localPortId = isSource ? conn.sourcePort : conn.targetPort;
-    const remotePortId = isSource ? conn.targetPort : conn.sourcePort;
-    const connectedDevice = devices.find((d: CanvasDevice) => d.id === connectedDeviceId);
-    const connectedState = deviceStates.get?.(connectedDeviceId);
-
-    // Skip connections to powered-off devices
-    if (connectedDevice && connectedDevice.status === 'offline') {
-      return;
-    }
-
-    // Skip connections where local port or remote port is shutdown
-    const localPort = state.ports[localPortId];
-    const remotePort = connectedState?.ports?.[remotePortId];
-    if (localPort?.shutdown || remotePort?.shutdown) {
-      return;
-    }
-
-    // Only consider this switched link for the VLAN if both ports are members
-    if (!localPort || !remotePort || !isPortVlanMember(localPort, vlanId) || !isPortVlanMember(remotePort, vlanId)) {
-      return;
-    }
-
-    if (connectedDevice && (connectedDevice.type === 'switchL2' || connectedDevice.type === 'switchL3')) {
-      connectedSwitches.push({
-        deviceId: connectedDeviceId,
-        macAddress: connectedState?.macAddress || connectedDevice.macAddress || 'FFFF.FFFF.FFFF',
-        portId: localPortId,
-        isSource
-      });
-    }
-  });
-
-  // First, build adjacency list for this VLAN
-  const adjacency = new Map<string, { deviceId: string; portId: string; cost: number }[]>();
-  connections.forEach((conn: CanvasConnection) => {
-    if (conn.active === false) return;
-
-    const srcId = conn.sourceDeviceId;
-    const tgtId = conn.targetDeviceId;
-    const srcPort = conn.sourcePort;
-    const tgtPort = conn.targetPort;
-
-    const srcState = deviceStates.get(srcId);
-    const srcPortObj = srcState?.ports?.[srcPort];
-    const tgtState = deviceStates.get(tgtId);
-    const tgtPortObj = tgtState?.ports?.[tgtPort];
-
-    // PVST: Connection is only viable for this VLAN if both ports are members
-    const isPortVlanMember = (p: Port, vId: number) => {
-      if (!p) return false;
-      if (p.mode === 'trunk' || p.mode === 'dynamic-auto' || p.mode === 'dynamic-desirable' || p.mode === 'dot1q-tunnel') {
-        if (!p.allowedVlans || p.allowedVlans === 'all') return true;
-        return Array.isArray(p.allowedVlans) && p.allowedVlans.includes(vId);
-      }
-      return Number(p.accessVlan || p.vlan || 1) === Number(vId);
-    };
-
-    if (!srcPortObj || !tgtPortObj || !isPortVlanMember(srcPortObj, vlanId) || !isPortVlanMember(tgtPortObj, vlanId)) {
-      return;
-    }
-
-    // Skip connection if either port is shutdown
-    if (srcPortObj?.shutdown || tgtPortObj?.shutdown) {
-      return;
-    }
-
-    const portCost = getSTPCost(srcPortObj);
-    if (!adjacency.has(srcId)) adjacency.set(srcId, []);
-    if (!adjacency.has(tgtId)) adjacency.set(tgtId, []);
-
-    adjacency.get(srcId)?.push({ deviceId: tgtId, portId: srcPort, cost: portCost });
-    adjacency.get(tgtId)?.push({ deviceId: srcId, portId: tgtPort, cost: portCost });
-  });
-
-  // Find all switches reachable from this device in this VLAN
-  const reachableSwitches = new Set<string>();
-  const queue = [sourceDeviceId];
-  reachableSwitches.add(sourceDeviceId);
-
-  let head = 0;
-  while (head < queue.length) {
-    const currentId = queue[head++];
-    const neighbors = adjacency.get(currentId) || [];
-    for (const n of neighbors) {
-      if (!reachableSwitches.has(n.deviceId)) {
-        const d = devices.find((dev: CanvasDevice) => dev.id === n.deviceId);
-        if (d && (d.type === 'switchL2' || d.type === 'switchL3')) {
-          reachableSwitches.add(n.deviceId);
-          queue.push(n.deviceId);
-        }
-      }
-    }
-  }
-
-  // Determine root bridge among REACHABLE switches
-  const myMac = state.macAddress || 'FFFF.FFFF.FFFF';
-  const vlanStr = String(vlanId);
-  const spanningTreeVlans = state.spanningTreeVlans || {};
-  const myPriority = spanningTreeVlans[vlanStr]?.priority ? parseInt(spanningTreeVlans[vlanStr].priority) : (state.spanningTreePriority || 32768);
-
-  let lowestPriority = myPriority;
-  let lowestMac = myMac;
-  let rootBridgeId = sourceDeviceId;
-
-  reachableSwitches.forEach((deviceId) => {
-    const d = devices.find((dev: CanvasDevice) => dev.id === deviceId);
-    if (!d) return;
-    const swState = deviceStates.get(deviceId);
-    if (!swState) return;
-
-    const swSpanningTreeVlans = swState.spanningTreeVlans || {};
-    const swPriority = swSpanningTreeVlans[vlanStr]?.priority ? parseInt(swSpanningTreeVlans[vlanStr].priority) : (swState.spanningTreePriority || 32768);
-    const swMac = swState.macAddress || d.macAddress || 'FFFF.FFFF.FFFF';
-
-    if (swPriority < lowestPriority ||
-      (swPriority === lowestPriority && swMac.localeCompare(lowestMac) < 0)) {
-      lowestPriority = swPriority;
-      lowestMac = swMac;
-      rootBridgeId = deviceId;
-    }
-  });
-
-  const isRootBridge = rootBridgeId === sourceDeviceId;
-
-  // Dijkstra's algorithm to find shortest path to root bridge
-  const shortestPathToRoot = (fromDeviceId: string): { pathCost: number; nextHopPort: string | null } => {
-    if (fromDeviceId === rootBridgeId) return { pathCost: 0, nextHopPort: null };
-
-    const distances = new Map<string, number>();
-    const previous = new Map<string, { deviceId: string; portId: string }>();
-    const visited = new Set<string>();
-
-    devices.forEach((d: CanvasDevice) => distances.set(d.id, Infinity));
-    distances.set(fromDeviceId, 0);
-
-    while (visited.size < distances.size) {
-      // Find unvisited node with minimum distance
-      let current: string | null = null;
-      let minDist = Infinity;
-      distances.forEach((dist, deviceId) => {
-        if (!visited.has(deviceId) && dist < minDist) {
-          minDist = dist;
-          current = deviceId;
-        }
-      });
-
-      if (current === null || minDist === Infinity) break;
-      const cur: string = current;
-      visited.add(cur);
-
-      if (cur === rootBridgeId) break;
-
-      const neighbors = adjacency.get(cur) || [];
-      neighbors.forEach(neighbor => {
-        if (!visited.has(neighbor.deviceId)) {
-          const dist = distances.get(cur);
-          if (dist === undefined) return;
-          const newDist = dist + neighbor.cost;
-          if (newDist < (distances.get(neighbor.deviceId) ?? Infinity)) {
-            distances.set(neighbor.deviceId, newDist);
-            previous.set(neighbor.deviceId, { deviceId: cur, portId: neighbor.portId });
-          }
-        }
-      });
-    }
-
-    // Reconstruct path to find next hop port
-    const pathCost = distances.get(rootBridgeId) ?? Infinity;
-    if (pathCost === Infinity) return { pathCost: Infinity, nextHopPort: null };
-
-    // Find the first hop from source device
-    let current: string | null = rootBridgeId;
-    let nextHopPort: string | null = null;
-
-    while (current !== null && current !== fromDeviceId && previous.has(current)) {
-      const p_item = previous.get(current);
-      if (p_item?.deviceId === fromDeviceId) {
-        nextHopPort = p_item.portId;
-        break;
-      }
-      current = p_item?.deviceId ?? null;
-    }
-
-    return { pathCost, nextHopPort };
-  };
-
-  // Pre-calculate root path cost for all switches in topology
-  // This simulates BPDU propagation where each switch learns the best path to root
-  const switchRootPathCosts = new Map<string, { pathCost: number; rootPort: string | null }>();
-
-  // Root bridge has path cost 0 and no root port
-  switchRootPathCosts.set(rootBridgeId, { pathCost: 0, rootPort: null });
-
-  // For other switches, calculate shortest path to root
-  devices.forEach((d: CanvasDevice) => {
-    if (d.id === rootBridgeId) return;
-    if (d.type !== 'switchL2' && d.type !== 'switchL3') return;
-
-    const { pathCost, nextHopPort } = shortestPathToRoot(d.id);
-    switchRootPathCosts.set(d.id, { pathCost, rootPort: nextHopPort });
-  });
-
-  // Calculate STP state for each port using real STP logic
-  // Designated port selection: Compare root path costs on each link segment
-  Object.keys(state.ports || {}).forEach((portId: string) => {
-    const port = state.ports[portId];
-    if (portId.toLowerCase().startsWith('vlan') || portId.toLowerCase().startsWith('console')) {
-      return;
-    }
-
-    // PVST: Only process ports that are members of this VLAN
-    const isVlanMember = isPortVlanMember(port, vlanId);
-    if (!isVlanMember) {
-      return;
-    }
-
-    let role: string;
-    let portState: string;
-    if (port.shutdown) {
-      role = 'Desg';
-      portState = 'BLK';
-    } else if (isRootBridge) {
-      // Root bridge: All active ports are designated (forwarding)
-      role = 'Desg';
-      portState = 'FWD';
-    } else {
-      // Get this switch's root path info
-      const myRootInfo = switchRootPathCosts.get(sourceDeviceId);
-      const myPathCost = myRootInfo?.pathCost ?? Infinity;
-      const myRootPort = myRootInfo?.rootPort ?? null;
-
-      // Check if this port is the root port
-      if (portId === myRootPort) {
-        role = 'Root';
-        portState = 'FWD';
-      } else {
-        // Non-root port: Determine designated vs alternate
-        const neighbor = connectedSwitches.find(sw => sw.portId === portId);
-
-        if (neighbor) {
-          // This port connects to another switch - use STP designated port election
-          // The switch with lower root path cost wins designated role
-          // If equal, lower bridge ID wins
-          const neighborRootInfo = switchRootPathCosts.get(neighbor.deviceId);
-          const neighborPathCost = neighborRootInfo?.pathCost ?? Infinity;
-
-          // Get port costs
-          const neighborDevice = devices.find((d: CanvasDevice) => d.id === neighbor.deviceId);
-          const neighborState = deviceStates.get?.(neighbor.deviceId);
-
-          // Calculate root path cost if we use this port
-          // My advertised cost = my path cost to root
-          const myAdvertisedCost = myPathCost;
-
-          // Neighbor's advertised cost = neighbor's path cost to root
-          const neighborAdvertisedCost = neighborPathCost;
-
-          // STP Designated Port Election Rules:
-          // 1. Lower root path cost wins
-          // 2. If equal, lower sender bridge ID (MAC) wins
-          // 3. If equal, lower sender port ID wins
-          let iAmDesignated: boolean;
-
-          if (myAdvertisedCost < neighborAdvertisedCost) {
-            // I have better (lower) path to root -> I win designated
-            iAmDesignated = true;
-          } else if (myAdvertisedCost > neighborAdvertisedCost) {
-            // Neighbor has better path -> I lose, become alternate
-            iAmDesignated = false;
-          } else {
-            // Equal path costs - compare bridge IDs (lower MAC wins)
-            const myMac = state.macAddress || 'FFFF.FFFF.FFFF';
-            const neighborMac = neighborState?.macAddress || neighborDevice?.macAddress || 'FFFF.FFFF.FFFF';
-            const macComparison = myMac.localeCompare(neighborMac);
-
-            if (macComparison < 0) {
-              // My MAC is lower -> I win designated
-              iAmDesignated = true;
-            } else if (macComparison > 0) {
-              // Neighbor MAC is lower -> I lose
-              iAmDesignated = false;
-            } else {
-              // Equal MACs (same device?) - compare port IDs
-              const myPortNum = getPortNumber(portId);
-              const neighborPortNum = getPortNumber(neighbor.portId);
-              iAmDesignated = myPortNum < neighborPortNum;
-            }
-          }
-
-          if (iAmDesignated) {
-            role = 'Desg';
-            portState = 'FWD';
-          } else {
-            // I lost the election - this port is alternate (blocking)
-            role = 'Altn';
-            portState = 'BLK';
-          }
-        } else {
-          // Port not connected to another switch (edge port) - designated
-          role = 'Desg';
-          portState = 'FWD';
-        }
-      }
-    }
-
-    stpState.set(portId, { role, state: portState });
-  });
-
-  return stpState;
-}
-
-/**
- * Perform PVST (Per-VLAN Spanning Tree) calculation for all devices in topology.
- * Returns a map of updated device states.
+ * Perform PVST calculation for all devices.
  */
 export function calculatePVST(
   updatedCurrentState: SwitchState,
@@ -2142,108 +1836,10 @@ export function calculatePVST(
   sourceDeviceId: string
 ): Map<string, SwitchState> {
   const deviceStates = ensureDeviceStatesMap(ctx.deviceStates);
-  const allUpdatedStates = new Map<string, SwitchState>();
-  const devices = ctx.devices || [];
-
-  // Update current device state in our working set
   const workingDeviceStates = new Map(deviceStates);
   workingDeviceStates.set(sourceDeviceId, updatedCurrentState);
 
-  // We need to calculate STP for all switch devices
-  workingDeviceStates.forEach((deviceState, deviceId) => {
-    const deviceIdStr = deviceId;
-    const device = devices.find((d: CanvasDevice) => d.id === deviceIdStr);
-    if (!device || (device.type !== 'switchL2' && device.type !== 'switchL3')) {
-      allUpdatedStates.set(deviceIdStr, deviceState);
-      return;
-    }
-
-    const updatedPorts = { ...deviceState.ports };
-
-    // Clear/Initialize STP instances for each port
-    Object.keys(updatedPorts).forEach(portId => {
-      const port = updatedPorts[portId];
-      // Skip VLAN and Console interfaces
-      if (portId.toLowerCase().startsWith('vlan') || portId.toLowerCase().startsWith('console')) {
-        return;
-      }
-
-      if (port.spanningTree) {
-        updatedPorts[portId] = {
-          ...port,
-          spanningTree: {
-            ...port.spanningTree,
-            instances: {} // Reset instances
-          }
-        };
-      } else {
-        updatedPorts[portId] = {
-          ...port,
-          spanningTree: {
-            instances: {}
-          }
-        };
-      }
-    });
-
-    // Each switch calculates STP for all VLANs it has in its database
-    const vlanIds = Object.keys(deviceState.vlans || {}).map(Number);
-    if (vlanIds.length === 0) vlanIds.push(1); // Always at least VLAN 1
-
-    vlanIds.forEach(vlanId => {
-      // Calculate STP for this device for this specific VLAN
-      const stpResult = calculateSTPState(deviceState, { ...ctx, deviceStates: workingDeviceStates, sourceDeviceId: deviceIdStr }, vlanId);
-
-      stpResult.forEach((stpInfo, portId) => {
-        const port = updatedPorts[portId];
-        if (port) {
-          const stateMap: Record<string, 'forwarding' | 'blocking' | 'listening' | 'learning' | 'disabled'> = {
-            'FWD': 'forwarding',
-            'BLK': 'blocking',
-            'LIS': 'listening',
-            'LRN': 'learning',
-            'DIS': 'disabled'
-          };
-
-          const portStpState = stateMap[stpInfo.state] || 'forwarding';
-
-          if (!port.spanningTree) {
-            port.spanningTree = { instances: {} };
-          }
-          if (!port.spanningTree.instances) {
-            port.spanningTree.instances = {};
-          }
-
-          const roleMap: Record<string, 'root' | 'designated' | 'alternate' | 'backup' | 'disabled'> = {
-            'Root': 'root',
-            'Desg': 'designated',
-            'Altn': 'alternate',
-            'Backup': 'backup',
-            'Dis': 'disabled'
-          };
-
-          const portStpRole = roleMap[stpInfo.role] || 'designated';
-
-          port.spanningTree.instances[vlanId] = {
-            role: portStpRole,
-            state: portStpState
-          };
-
-          // For backward compatibility (especially for UI port indicators), use VLAN 1
-          // Skip blocking for EtherChannel member ports - they should stay connected
-          if (vlanId === 1 && !port.channelGroup) {
-            port.spanningTree.role = portStpRole;
-            port.spanningTree.state = portStpState;
-            port.status = port.shutdown ? 'disabled' : (stpInfo.state === 'BLK' ? 'blocked' : 'connected');
-          }
-        }
-      });
-    });
-
-    allUpdatedStates.set(deviceIdStr, { ...deviceState, ports: updatedPorts });
-  });
-
-  return allUpdatedStates;
+  return calculatePVSTNew(workingDeviceStates, ctx.connections || []);
 }
 
 /** Show Spanning Tree
@@ -2320,8 +1916,9 @@ function cmdShowSpanningTree(
     // Get VLAN-based priority for this switch
     const myVlanPriority = (spanningTreeVlans[vlanId]?.priority ? parseInt(spanningTreeVlans[vlanId].priority) : state.spanningTreePriority) || 32768;
 
-    // Use the newly implemented calculateSTPState to get accurate roles/states for this VLAN
-    const vlanStpState = calculateSTPState(state, ctx, parseInt(vlanId));
+    // Use the newly implemented calculateSTPVlan to get accurate roles/states for this VLAN
+    const stpResults = calculateSTPVlan(deviceStates, ctx.connections || [], parseInt(vlanId));
+    const vlanStpState = new Map(Object.entries(stpResults.get(sourceDeviceId) || {}));
 
     // We also need root bridge info for this specific VLAN from the perspective of the reachable network
     let lowestPriority = myVlanPriority;

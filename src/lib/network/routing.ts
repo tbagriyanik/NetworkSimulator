@@ -1,6 +1,8 @@
 import { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/networkTopology.types';
-import { Port, SwitchState } from './types';
+import { SwitchState } from './types';
 import { checkBasicL2Connectivity } from './basicConnectivity';
+import { calculateOSPFRoutes } from './ospf';
+import { calculateEigrpRoutes } from './eigrp-dual';
 
 export interface Route {
   destination: string;      // e.g., "192.168.2.0" or "2001:db8:1::"
@@ -14,19 +16,6 @@ export interface Route {
 
 export interface RoutingTable {
   [deviceId: string]: Route[];
-}
-
-const EIGRP_BANDWIDTH_REFERENCE = 10_000_000;
-const EIGRP_METRIC_SCALE = 256;
-
-interface EigrpNetworkStatement {
-  destination: string;
-  wildcardMask: string;
-}
-
-interface LinkPorts {
-  sourcePortId: string;
-  targetPortId: string;
 }
 
 /**
@@ -177,87 +166,23 @@ function buildRoutingTable(
     routes.push(...state.ipv6DynamicRoutes);
   }
 
-  // 4. Multi-area OSPF simplified learning logic
+  // 4. OSPF Dijkstra SPF based learning
   if (state.routingProtocol === 'ospf') {
-    // Get my areas
-    const myAreas = new Set<number>();
-    if (state.dynamicRoutes) {
-      state.dynamicRoutes.forEach(r => { if (r.area !== undefined) myAreas.add(r.area); });
-    }
-    if (state.ospfAreas) state.ospfAreas.forEach(a => myAreas.add(a));
-
-    // Learn from other OSPF routers
-    deviceStates.forEach((otherState, otherId) => {
-      if (otherId === deviceId) return;
-      if (otherState.routingProtocol !== 'ospf') return;
-
-      const otherAreas = new Set<number>();
-      if (otherState.dynamicRoutes) {
-        otherState.dynamicRoutes.forEach(r => { if (r.area !== undefined) otherAreas.add(r.area); });
-      }
-      if (otherState.ospfAreas) otherState.ospfAreas.forEach(a => otherAreas.add(a));
-
-      // Check for common area
-      let commonArea: number | undefined;
-      for (const area of myAreas) {
-        if (otherAreas.has(area)) {
-          commonArea = area;
-          break;
-        }
-      }
-
-      // If common area found OR one is ABR (simplified)
-      if (commonArea !== undefined || state.isAbr || otherState.isAbr) {
-        // Learn their connected networks
-        for (const [_, otherPort] of Object.entries(otherState.ports)) {
-          if (otherPort.ipAddress && otherPort.subnetMask && !otherPort.shutdown) {
-            const dest = getNetworkAddress(otherPort.ipAddress, otherPort.subnetMask);
-
-            // Don't learn if already have it as connected or static
-            if (routes.some(r => r.destination === dest && (r.type === 'connected' || r.type === 'static'))) continue;
-
-            const isInterArea = commonArea === undefined;
-
-            routes.push({
-              destination: dest,
-              subnetMask: otherPort.subnetMask,
-              nextHop: otherPort.ipAddress, // Simplified
-              type: 'dynamic',
-              metric: isInterArea ? 110 : 10,
-              area: commonArea
-            });
-          }
-        }
+    const ospfRoutes = calculateOSPFRoutes(deviceId, deviceStates);
+    ospfRoutes.forEach(r => {
+      // Don't learn if already have it as connected or static
+      if (!routes.some(existing => existing.destination === r.destination && (existing.type === 'connected' || existing.type === 'static'))) {
+        routes.push(r);
       }
     });
   }
 
-  // 5. EIGRP simplified metric-based learning logic
+  // 5. EIGRP DUAL based learning
   if (state.routingProtocol === 'eigrp' && state.eigrpAs) {
-    deviceStates.forEach((otherState, otherId) => {
-      if (otherId === deviceId) return;
-      if (otherState.routingProtocol !== 'eigrp' || otherState.eigrpAs !== state.eigrpAs) return;
-
-      const otherNetworks = getEigrpNetworkStatements(otherState);
-      const linkPorts = findLinkPorts(deviceId, otherId, _connections);
-
-      for (const [_, otherPort] of Object.entries(otherState.ports)) {
-        if (!otherPort.ipAddress || !otherPort.subnetMask || otherPort.shutdown) continue;
-
-        const destination = getNetworkAddress(otherPort.ipAddress, otherPort.subnetMask);
-        if (!matchesEigrpNetwork(destination, otherNetworks)) continue;
-        if (routes.some(r => r.destination === destination && (r.type === 'connected' || r.type === 'static'))) continue;
-
-        const nextHop = linkPorts ? otherState.ports[linkPorts.targetPortId]?.ipAddress : otherPort.ipAddress;
-        const metric = calculateEigrpRouteMetric(state.ports[linkPorts?.sourcePortId || ''], otherPort, otherState.ports[linkPorts?.targetPortId || '']);
-
-        routes.push({
-          destination,
-          subnetMask: otherPort.subnetMask,
-          nextHop: nextHop || otherPort.ipAddress,
-          type: 'dynamic',
-          metric
-        });
+    const eigrpRoutes = calculateEigrpRoutes(deviceId, deviceStates);
+    eigrpRoutes.forEach(r => {
+      if (!routes.some(existing => existing.destination === r.destination && (existing.type === 'connected' || existing.type === 'static'))) {
+        routes.push(r);
       }
     });
   }
@@ -265,82 +190,6 @@ function buildRoutingTable(
   return routes;
 }
 
-function getEigrpNetworkStatements(state: SwitchState): EigrpNetworkStatement[] {
-  return (state.dynamicRoutes || [])
-    .filter((route): route is Route & { subnetMask: string } => !!route.destination && !!route.subnetMask)
-    .map(route => ({
-      destination: route.destination,
-      wildcardMask: route.subnetMask
-    }));
-}
-
-function matchesEigrpNetwork(ip: string, networks: EigrpNetworkStatement[]): boolean {
-  if (networks.length === 0) return true;
-  return networks.some(network => isIpInWildcard(ip, network.destination, network.wildcardMask));
-}
-
-function isIpInWildcard(ip: string, network: string, wildcardMask: string): boolean {
-  try {
-    const ipNum = ipToNumber(ip);
-    const networkNum = ipToNumber(network);
-    const wildcardNum = ipToNumber(wildcardMask);
-    const subnetNum = (~wildcardNum) >>> 0;
-
-    return (ipNum & subnetNum) === (networkNum & subnetNum);
-  } catch {
-    return false;
-  }
-}
-
-function findLinkPorts(sourceId: string, targetId: string, connections: CanvasConnection[]): LinkPorts | null {
-  const connection = connections.find(conn =>
-    conn.active !== false &&
-    ((conn.sourceDeviceId === sourceId && conn.targetDeviceId === targetId) ||
-      (conn.sourceDeviceId === targetId && conn.targetDeviceId === sourceId))
-  );
-
-  if (!connection) return null;
-
-  return {
-    sourcePortId: connection.sourceDeviceId === sourceId ? connection.sourcePort : connection.targetPort,
-    targetPortId: connection.sourceDeviceId === sourceId ? connection.targetPort : connection.sourcePort
-  };
-}
-
-function calculateEigrpRouteMetric(
-  sourcePort: Port | undefined,
-  destinationPort: Port | undefined,
-  neighborPort: Port | undefined
-): number {
-  const bandwidth = Math.min(
-    getPortBandwidthKbps(sourcePort),
-    getPortBandwidthKbps(destinationPort),
-    getPortBandwidthKbps(neighborPort)
-  );
-  const delay = getPortDelayMicroseconds(sourcePort) + getPortDelayMicroseconds(destinationPort) + getPortDelayMicroseconds(neighborPort);
-
-  return calculateEigrpMetric(bandwidth, delay);
-}
-
-function calculateEigrpMetric(bandwidthKbps: number, delayMicroseconds: number): number {
-  const safeBandwidth = Math.max(1, bandwidthKbps);
-  const bandwidthComponent = Math.floor(EIGRP_BANDWIDTH_REFERENCE / safeBandwidth);
-  const delayComponent = Math.floor(delayMicroseconds / 10);
-
-  return EIGRP_METRIC_SCALE * (bandwidthComponent + delayComponent);
-}
-
-function getPortBandwidthKbps(port: Port | undefined): number {
-  if (port?.bandwidth) return port.bandwidth;
-  if (port?.type === 'gigabitethernet') return 1_000_000;
-  return 100_000;
-}
-
-function getPortDelayMicroseconds(port: Port | undefined): number {
-  if (port?.delay !== undefined) return port.delay;
-  if (port?.type === 'gigabitethernet') return 10;
-  return 100;
-}
 
 /**
  * Find best route to destination IP
