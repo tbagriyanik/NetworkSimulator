@@ -11,15 +11,15 @@ describe('OSPF Realistic Algorithm', () => {
 
   it('should calculate intra-area OSPF routes using Dijkstra', () => {
     // Topology: R1 --- R2 --- R3 (All Area 0)
-    const r1: any = {
+    const r1 = {
       id: 'r1',
       routingProtocol: 'ospf',
       ospfAreas: [0],
       ports: {
         'gi0/0': { id: 'gi0/0', ipAddress: '10.0.0.1', subnetMask: '255.255.255.252', type: 'gigabitethernet' }
       }
-    };
-    const r2: any = {
+    } as unknown as SwitchState;
+    const r2 = {
       id: 'r2',
       routingProtocol: 'ospf',
       ospfAreas: [0],
@@ -27,8 +27,8 @@ describe('OSPF Realistic Algorithm', () => {
         'gi0/0': { id: 'gi0/0', ipAddress: '10.0.0.2', subnetMask: '255.255.255.252', type: 'gigabitethernet' },
         'gi0/1': { id: 'gi0/1', ipAddress: '10.0.0.5', subnetMask: '255.255.255.252', type: 'gigabitethernet' }
       }
-    };
-    const r3: any = {
+    } as unknown as SwitchState;
+    const r3 = {
       id: 'r3',
       routingProtocol: 'ospf',
       ospfAreas: [0],
@@ -36,7 +36,7 @@ describe('OSPF Realistic Algorithm', () => {
         'gi0/1': { id: 'gi0/1', ipAddress: '10.0.0.6', subnetMask: '255.255.255.252', type: 'gigabitethernet' },
         'gi0/2': { id: 'gi0/2', ipAddress: '192.168.1.1', subnetMask: '255.255.255.0', type: 'gigabitethernet' }
       }
-    };
+    } as unknown as SwitchState;
 
     deviceStates.set('r1', r1);
     deviceStates.set('r2', r2);
@@ -53,15 +53,15 @@ describe('OSPF Realistic Algorithm', () => {
 
   it('should handle multi-area OSPF with Type 3 LSAs', () => {
     // R1 (Area 0) --- R2 (ABR Area 0 & 1) --- R3 (Area 1)
-    const r1: any = {
+    const r1 = {
       id: 'r1',
       routingProtocol: 'ospf',
       ospfAreas: [0],
       ports: {
         'gi0/0': { id: 'gi0/0', ipAddress: '10.0.0.1', subnetMask: '255.255.255.252', type: 'gigabitethernet' }
       }
-    };
-    const r2: any = {
+    } as unknown as SwitchState;
+    const r2 = {
       id: 'r2',
       routingProtocol: 'ospf',
       ospfAreas: [0, 1],
@@ -70,8 +70,8 @@ describe('OSPF Realistic Algorithm', () => {
         'gi0/0': { id: 'gi0/0', ipAddress: '10.0.0.2', subnetMask: '255.255.255.252', type: 'gigabitethernet' },
         'gi0/1': { id: 'gi0/1', ipAddress: '10.0.1.1', subnetMask: '255.255.255.252', type: 'gigabitethernet' }
       }
-    };
-    const r3: any = {
+    } as unknown as SwitchState;
+    const r3 = {
       id: 'r3',
       routingProtocol: 'ospf',
       ospfAreas: [1],
@@ -79,7 +79,7 @@ describe('OSPF Realistic Algorithm', () => {
         'gi0/1': { id: 'gi0/1', ipAddress: '10.0.1.2', subnetMask: '255.255.255.252', type: 'gigabitethernet' },
         'gi0/2': { id: 'gi0/2', ipAddress: '192.168.2.1', subnetMask: '255.255.255.0', type: 'gigabitethernet' }
       }
-    };
+    } as unknown as SwitchState;
 
     deviceStates.set('r1', r1);
     deviceStates.set('r2', r2);

@@ -3,7 +3,7 @@ import { CableInfo, SwitchState, isCableCompatible, Port } from './types';
 import { findRoute, ipToNumber, getRoutingTable, isIpv6InNetwork } from './routing';
 import { performArpResolution } from './arp';
 import { ensureDeviceStatesMap } from './networkUtils';
-import { calculatePVST } from './stp';
+import { recalculateStp } from './stp';
 
 export type WifiMode = 'ap' | 'client' | 'disabled' | 'sta';
 
@@ -696,7 +696,7 @@ export function checkConnectivity(
   // Recalculate STP states for accurate blocking
   let stpDeviceStates = safeDeviceStates;
   if (safeDeviceStates.size > 0) {
-    stpDeviceStates = calculatePVST(safeDeviceStates, connections);
+    stpDeviceStates = recalculateStp(safeDeviceStates, connections);
   }
 
   // BOLT: Pre-calculate an ipMap for O(1) device resolution

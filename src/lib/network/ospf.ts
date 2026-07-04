@@ -223,7 +223,8 @@ export function runOSPFDijkstra(
   while (queue.length > 0) {
     // Sort by cost (Priority Queue simulation)
     queue.sort((a, b) => a.cost - b.cost);
-    const current = queue.shift()!;
+    const current = queue.shift();
+    if (!current) continue;
 
     if (spt.has(current.routerId)) continue;
     spt.set(current.routerId, current);
@@ -317,9 +318,9 @@ export function calculateOSPFRoutes(
       const abrNode = spt.get(lsa.advRouter);
       if (!abrNode && lsa.advRouter !== routerId) return;
 
-      const costToAbr = lsa.advRouter === routerId ? 0 : abrNode!.cost;
+      const costToAbr = abrNode ? abrNode.cost : 0;
       const totalCost = costToAbr + lsa.metric;
-      const nextHop = lsa.advRouter === routerId ? 'self' : abrNode!.nextHop;
+      const nextHop = abrNode ? abrNode.nextHop : 'self';
 
       const existing = routes.find(r => r.destination === lsa.network);
       if (!existing || (existing.metric || 0) > totalCost) {

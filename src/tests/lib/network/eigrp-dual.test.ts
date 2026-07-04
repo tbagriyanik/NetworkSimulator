@@ -14,7 +14,7 @@ describe('EIGRP DUAL Algorithm', () => {
     // R1 --- R2 (Successor, FD=20, RD=10)
     // R1 --- R3 (Feasible Successor? depends on RD < FD)
 
-    const r1: any = {
+    const r1 = {
       id: 'r1',
       routingProtocol: 'eigrp',
       eigrpAs: '100',
@@ -22,9 +22,9 @@ describe('EIGRP DUAL Algorithm', () => {
         'gi0/0': { id: 'gi0/0', ipAddress: '10.0.0.1', subnetMask: '255.255.255.252', type: 'gigabitethernet' },
         'gi0/1': { id: 'gi0/1', ipAddress: '10.0.0.5', subnetMask: '255.255.255.252', type: 'gigabitethernet' }
       }
-    };
+    } as unknown as SwitchState;
 
-    const r2: any = {
+    const r2 = {
       id: 'r2',
       routingProtocol: 'eigrp',
       eigrpAs: '100',
@@ -32,9 +32,9 @@ describe('EIGRP DUAL Algorithm', () => {
         'gi0/0': { id: 'gi0/0', ipAddress: '10.0.0.2', subnetMask: '255.255.255.252', type: 'gigabitethernet' },
         'gi0/2': { id: 'gi0/2', ipAddress: '192.168.1.1', subnetMask: '255.255.255.0', type: 'gigabitethernet' }
       }
-    };
+    } as unknown as SwitchState;
 
-    const r3: any = {
+    const r3 = {
       id: 'r3',
       routingProtocol: 'eigrp',
       eigrpAs: '100',
@@ -45,7 +45,7 @@ describe('EIGRP DUAL Algorithm', () => {
       dynamicRoutes: [
         { destination: '192.168.1.0', subnetMask: '255.255.255.0', type: 'dynamic', metric: 5000 } // Advertise with specific RD
       ]
-    };
+    } as unknown as SwitchState;
 
     deviceStates.set('r1', r1);
     deviceStates.set('r2', r2);
@@ -61,7 +61,7 @@ describe('EIGRP DUAL Algorithm', () => {
     expect(successor).toBeDefined();
 
     // Check Feasibility Condition (RD < FD)
-    const fd = successor!.computedDistance;
+    const fd = successor ? successor.computedDistance : 0;
     entries.forEach(e => {
       if (!e.isSuccessor) {
         if (e.reportedDistance < fd) {

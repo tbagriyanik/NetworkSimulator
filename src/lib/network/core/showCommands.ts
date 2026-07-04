@@ -4,10 +4,10 @@ import { isRouterModel } from '../switchModels';
 import { buildRunningConfig } from './configBuilder';
 import { SwitchState, Port, CommandResult, Route } from '../types';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
-import { checkConnectivity } from '../connectivity';
-import { calculatePVST as calculatePVSTNew, calculateSTPVlan } from '../stp';
 import { buildOSPFLinkStateDatabase } from '../ospf';
 import { normalizePortId } from '../initialState';
+import { checkConnectivity } from '../connectivity';
+import { ensureDeviceStatesMap } from '../networkUtils';
 
 // Show komutları (show running-config, show vlan, show ip route, vs.)
 
@@ -1565,14 +1565,14 @@ function cmdShowIpOspfDatabase(state: SwitchState, _input: string, ctx: CommandC
     output += `                Router Link States (Area ${area})\n\n`;
     output += 'Link ID         ADV Router      Age         Seq#       Checksum Link count\n';
 
-    areaData.routerLSAs.forEach((lsa: any) => {
+    areaData.routerLSAs.forEach((lsa) => {
       output += `${lsa.id.padEnd(15)} ${lsa.advRouter.padEnd(15)} ${lsa.ageNumber.toString().padEnd(11)} 0x80000001 0x0000   ${lsa.links.length}\n`;
     });
 
     if (areaData.summaryLSAs.size > 0) {
       output += `\n                Summary Net Link States (Area ${area})\n\n`;
       output += 'Link ID         ADV Router      Age         Seq#       Checksum\n';
-      areaData.summaryLSAs.forEach((lsa: any) => {
+      areaData.summaryLSAs.forEach((lsa) => {
         output += `${lsa.id.padEnd(15)} ${lsa.advRouter.padEnd(15)} ${lsa.ageNumber.toString().padEnd(11)} 0x80000001 0x0000\n`;
       });
     }
@@ -1857,7 +1857,8 @@ function cmdShowSpanningTree(
   }
 
   vlanIds.forEach((vlanId) => {
-    const vStp = state.stpState![vlanId];
+    const vStp = state.stpState?.[vlanId];
+    if (!vStp) return;
     output += `\nVLAN${String(vlanId).padStart(4, '0')}\n`;
     const stpProtocol = stpMode === 'mst' ? 'mstp' : stpMode === 'rapid-pvst' ? 'rstp' : 'ieee';
     output += `  Spanning tree enabled protocol ${stpProtocol}\n`;
