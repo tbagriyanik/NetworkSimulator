@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
@@ -97,28 +97,28 @@ function ErrorFallback({
 
   return (
     <div
-      className={`min-h-screen flex items-center justify-center p-4 ${isDark ? 'bg-slate-950' : 'bg-slate-50'
+      className={`min-h-screen flex items-center justify-center p-4 ${isDark ? 'bg-secondary-950' : 'bg-secondary-50'
         }`}
     >
       <div
-        className={`max-w-md w-full rounded-lg border-2 border-red-500/30 p-8 ${isDark ? 'bg-slate-900' : 'bg-white'
+        className={`max-w-md w-full rounded-lg border-2 border-error-500/30 p-8 ${isDark ? 'bg-secondary-900' : 'bg-white'
           }`}
       >
         <div className="flex items-center justify-center mb-4">
-          <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
-            <AlertCircle className="w-6 h-6 text-red-500" />
+          <div className="w-12 h-12 rounded-full bg-error-500/10 flex items-center justify-center">
+            <AlertCircle className="w-6 h-6 text-error-500" />
           </div>
         </div>
 
         <h1
-          className={`text-xl font-bold text-center mb-2 ${isDark ? 'text-white' : 'text-slate-900'
+          className={`text-xl font-bold text-center mb-2 ${isDark ? 'text-white' : 'text-secondary-900'
             }`}
         >
           {fallbackTitle || (language === 'tr' ? 'Bir şeyler ters gitti!' : 'Oops! Something went wrong')}
         </h1>
 
         <p
-          className={`text-center text-sm mb-6 ${isDark ? 'text-slate-400' : 'text-slate-600'
+          className={`text-center text-sm mb-6 ${isDark ? 'text-secondary-400' : 'text-secondary-600'
             }`}
         >
           {fallbackDescription ||
@@ -128,8 +128,8 @@ function ErrorFallback({
         {error && process.env.NODE_ENV === 'development' && (
           <div
             className={`mb-6 p-3 rounded text-xs font-mono overflow-auto max-h-32 ${isDark
-              ? 'bg-slate-800 text-slate-300'
-              : 'bg-slate-100 text-slate-700'
+              ? 'bg-secondary-800 text-secondary-300'
+              : 'bg-secondary-100 text-secondary-700'
               }`}
           >
             <p className="font-bold mb-1">{language === 'tr' ? 'Hata Detayları:' : 'Error Details:'}</p>

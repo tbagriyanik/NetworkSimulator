@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
@@ -69,7 +69,7 @@ function DialogContent({
         onEscapeKeyDown={(event) => event.preventDefault()}
         onPointerDownOutside={(event) => event.preventDefault()}
         className={cn(
-          "bg-background dark:bg-slate-950 text-slate-900 dark:text-slate-100 border border-green-500/50 dark:border-green-500/30 border-dashed data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-[10001] grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg p-6 shadow-lg duration-200 sm:max-w-lg liquid-glass-light max-h-[calc(100dvh-2rem)] overflow-y-auto",
+          "bg-background dark:bg-secondary-950 text-secondary-900 dark:text-secondary-100 border border-success-500/50 dark:border-success-500/30 border-dashed data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-[10001] grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg p-6 shadow-lg duration-200 sm:max-w-lg liquid-glass-light max-h-[calc(100dvh-2rem)] overflow-y-auto",
           className
         )}
         {...props}
@@ -79,7 +79,7 @@ function DialogContent({
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            className="absolute right-4 top-4 w-5 h-5 rounded-md bg-red-500 hover:bg-red-600 text-white transition-colors inline-flex items-center justify-center focus:outline-none disabled:pointer-events-none"
+            className="absolute right-4 top-4 w-5 h-5 rounded-md bg-error-500 hover:bg-error-600 text-white transition-colors inline-flex items-center justify-center focus:outline-none disabled:pointer-events-none"
           >
             <X className="h-3 w-3" />
             <span className="sr-only">Close</span>
@@ -120,7 +120,7 @@ function DialogTitle({
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn("text-lg leading-none font-semibold text-slate-900 dark:text-white", className)}
+      className={cn("text-lg leading-none font-semibold text-secondary-900 dark:text-white", className)}
       {...props}
     />
   )
@@ -133,7 +133,7 @@ function DialogDescription({
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn("text-muted-foreground text-sm dark:text-slate-400", className)}
+      className={cn("text-muted-foreground text-sm dark:text-secondary-400", className)}
       {...props}
     />
   )

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
@@ -233,7 +233,7 @@ export function ExamModePanel({
           data-drag-handle
           className={cn(
             "flex items-center gap-2 px-4 py-3 rounded-xl shadow-2xl border-2 cursor-grab active:cursor-grabbing transition-all",
-            "bg-gradient-to-r from-rose-500 to-rose-600 border-rose-400 text-white",
+            "bg-gradient-to-r from-error-500 to-error-600 border-error-400 text-white",
             isOverTime && "animate-pulse from-error-600 to-error-700"
           )}
           onClick={() => !hasDragged && onMinimize()}
@@ -271,7 +271,7 @@ export function ExamModePanel({
       <div
         className={cn(
           "flex flex-col rounded-xl shadow-2xl border overflow-hidden liquid-glass-light",
-          "border-emerald-500/50 dark:border-emerald-500/30",
+          "border-success-500/50 dark:border-success-500/30",
           "max-h-full"
         )}
       >
@@ -282,10 +282,10 @@ export function ExamModePanel({
             "flex items-center justify-between p-4 bg-gradient-to-r text-white",
             "cursor-grab active:cursor-grabbing select-none",
             isFinishedState
-              ? "from-emerald-500 to-emerald-600"
+              ? "from-success-500 to-success-600"
               : isOverTime
                 ? "from-error-600 to-error-700"
-                : "from-rose-500 to-rose-600"
+                : "from-error-500 to-error-600"
           )}
           onMouseDown={handleMouseDown}
         >
@@ -298,7 +298,7 @@ export function ExamModePanel({
                   ? (language === 'tr' ? 'Sınav Tamamlandı' : 'Exam Completed')
                   : t.examMode}
               </h3>
-              <p className="text-xs text-rose-100 truncate max-w-[160px]">{project.title}</p>
+              <p className="text-xs text-error-100 truncate max-w-[160px]">{project.title}</p>
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -325,7 +325,7 @@ export function ExamModePanel({
               <div className="flex flex-col items-center py-3">
                 <span className="text-[10px] text-secondary-500 dark:text-secondary-400 uppercase font-bold tracking-wider">{t.score}</span>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-black text-rose-500">{score}</span>
+                  <span className="text-2xl font-black text-error-500">{score}</span>
                   <span className="text-xs text-secondary-400">/ 100</span>
                 </div>
               </div>
@@ -405,7 +405,7 @@ export function ExamModePanel({
         {!isFinishedState && !isOverTime && (
           <div className="p-3 bg-secondary-50 dark:bg-secondary-900/50 border-t border-secondary-200 dark:border-secondary-700">
             <Button
-              className="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold h-9 rounded-lg"
+              className="w-full bg-error-500 hover:bg-error-600 text-white font-bold h-9 rounded-lg"
               onClick={() => {
                 if (window.confirm(language === 'tr' ? 'Sınavı bitirmek istediğinize emin misiniz?' : 'Are you sure you want to finish the exam?')) {
                   setHasAutoFinished(true);

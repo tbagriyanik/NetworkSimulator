@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { SecurityConfig } from '@/lib/network/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -79,7 +79,7 @@ export function SecurityPanel({ security, t, theme, isDevicePoweredOff = false }
     <Card className={`${cardBg} transition-all duration-300 hover:shadow-lg`}>
       <CardHeader className={`py-3 px-5 border-b ${isDark ? 'border-secondary-800/50 bg-secondary-800/20' : 'border-secondary-200 bg-secondary-50'}`}>
         <div className="flex items-center justify-between gap-3">
-          <CardTitle className="text-orange-400 text-base sm:text-lg flex items-center gap-2">
+          <CardTitle className="text-warning-400 text-base sm:text-lg flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
             {t.securityControls}
           </CardTitle>
@@ -87,7 +87,7 @@ export function SecurityPanel({ security, t, theme, isDevicePoweredOff = false }
       </CardHeader>
       <CardContent>
         {isDevicePoweredOff && (
-          <div className="mb-4 px-3 py-2 rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-500 text-xs font-bold tracking-wider text-center">
+          <div className="mb-4 px-3 py-2 rounded-lg border border-error-500/30 bg-error-500/10 text-error-500 text-xs font-bold tracking-wider text-center">
             {t.connectionError}
           </div>
         )}
@@ -128,7 +128,7 @@ export function SecurityPanel({ security, t, theme, isDevicePoweredOff = false }
                 <Badge
                   key={user.username}
                   variant="outline"
-                  className="text-xs transition-all duration-200 hover:scale-105 hover:bg-orange-500/10 hover:text-orange-400"
+                  className="text-xs transition-all duration-200 hover:scale-105 hover:bg-warning-500/10 hover:text-warning-400"
                 >
                   {user.username} (priv: {user.privilege})
                 </Badge>

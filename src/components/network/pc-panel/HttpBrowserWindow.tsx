@@ -1,4 +1,4 @@
-import type { MutableRefObject } from 'react';
+﻿import type { MutableRefObject } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -127,11 +127,11 @@ export function HttpBrowserWindow({
         tabIndex={-1}
       >
         <div
-          className={`h-full w-full rounded-2xl shadow-2xl border ${isDark ? 'border-emerald-500/30 bg-secondary-900' : 'border-emerald-500 bg-white'} flex flex-col overflow-hidden`}
+          className={`h-full w-full rounded-2xl shadow-2xl border ${isDark ? 'border-success-500/30 bg-secondary-900' : 'border-success-500 bg-white'} flex flex-col overflow-hidden`}
           style={{ borderWidth: 3, willChange: 'auto', contain: 'layout style paint' }}
         >
           <div
-            className={`flex items-center justify-between px-4 py-2 border-b cursor-grab active:cursor-grabbing select-none touch-none ${isDark ? 'border-emerald-500/30 bg-secondary-950' : 'border-emerald-500/50'}`}
+            className={`flex items-center justify-between px-4 py-2 border-b cursor-grab active:cursor-grabbing select-none touch-none ${isDark ? 'border-success-500/30 bg-secondary-950' : 'border-success-500/50'}`}
             onPointerDown={(e) => {
               const target = e.target as HTMLElement;
               if (target.closest('input, textarea, select, button')) return;
@@ -146,7 +146,7 @@ export function HttpBrowserWindow({
             }}
           >
             <div className="flex items-center gap-3 flex-1">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <span className="w-2.5 h-2.5 rounded-full bg-success-500 animate-pulse shrink-0" />
               <form
                 onSubmit={(e) => {
                   e.preventDefault();

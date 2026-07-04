@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useEffect, KeyboardEvent, useCallback, useMemo, type CSSProperties } from 'react';
 import { useEnvironment } from '@/lib/store/appStore';
@@ -4567,15 +4567,15 @@ ${fileLines}
       label: language === 'tr' ? 'Konsol' : 'Console',
       subtitle: language === 'tr' ? 'Cihaza seri bağlan' : 'Serial device access',
       icon: Laptop,
-      accent: isDark ? 'from-emerald-500 to-teal-400' : 'from-emerald-600 to-teal-500',
-      buttonClass: isDark ? 'text-emerald-300 border-emerald-400/20 bg-emerald-500/10' : 'text-emerald-700 border-emerald-200 bg-emerald-50/90',
+      accent: isDark ? 'from-success-500 to-accent-400' : 'from-success-600 to-accent-500',
+      buttonClass: isDark ? 'text-success-300 border-success-400/20 bg-success-500/10' : 'text-success-700 border-success-200 bg-success-50/90',
     },
     {
       tab: 'wireless' as const,
       label: language === 'tr' ? 'Kablosuz' : 'Wireless',
       subtitle: language === 'tr' ? 'Wi-Fi bilgisi' : 'Wi-Fi overview',
       icon: Wifi,
-      accent: isDark ? 'from-accent-500 to-sky-400' : 'from-accent-600 to-sky-500',
+      accent: isDark ? 'from-accent-500 to-accent-400' : 'from-accent-600 to-accent-500',
       buttonClass: isDark ? 'text-accent-300 border-accent-400/20 bg-accent-500/10' : 'text-accent-700 border-accent-200 bg-accent-50/90',
     },
     {
@@ -4583,15 +4583,15 @@ ${fileLines}
       label: language === 'tr' ? 'Ayarlar' : 'Settings',
       subtitle: language === 'tr' ? 'PC yapılandırması' : 'PC configuration',
       icon: Settings,
-      accent: isDark ? 'from-violet-500 to-fuchsia-400' : 'from-violet-600 to-fuchsia-500',
-      buttonClass: isDark ? 'text-violet-300 border-violet-400/20 bg-violet-500/10' : 'text-violet-700 border-violet-200 bg-violet-50/90',
+      accent: isDark ? 'from-purple-500 to-pink-400' : 'from-purple-600 to-pink-500',
+      buttonClass: isDark ? 'text-purple-300 border-purple-400/20 bg-purple-500/10' : 'text-purple-700 border-purple-200 bg-purple-50/90',
     },
     {
       tab: 'services' as const,
       label: language === 'tr' ? 'Servisler' : 'Services',
       subtitle: language === 'tr' ? 'HTTP, DNS, DHCP' : 'HTTP, DNS, DHCP',
       icon: Globe,
-      accent: isDark ? 'from-warning-500 to-orange-400' : 'from-warning-600 to-orange-500',
+      accent: isDark ? 'from-warning-500 to-warning-400' : 'from-warning-600 to-warning-500',
       buttonClass: isDark ? 'text-warning-300 border-warning-400/20 bg-warning-500/10' : 'text-warning-700 border-warning-200 bg-warning-50/90',
     },
     {
@@ -4599,8 +4599,8 @@ ${fileLines}
       label: 'IoT',
       subtitle: language === 'tr' ? 'Sensör ağı' : 'Sensor network',
       icon: Radio,
-      accent: isDark ? 'from-sky-500 to-indigo-400' : 'from-sky-600 to-indigo-500',
-      buttonClass: isDark ? 'text-sky-300 border-sky-400/20 bg-sky-500/10' : 'text-sky-700 border-sky-200 bg-sky-50/90',
+      accent: isDark ? 'from-accent-500 to-primary-400' : 'from-accent-600 to-primary-500',
+      buttonClass: isDark ? 'text-accent-300 border-accent-400/20 bg-accent-500/10' : 'text-accent-700 border-accent-200 bg-accent-50/90',
     },
   ], [language, isDark]);
 

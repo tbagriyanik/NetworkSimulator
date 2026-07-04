@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { Network, Wifi, Monitor, Eye, EyeOff } from 'lucide-react';
@@ -351,7 +351,7 @@ export function WirelessConfigTab({
               if (apSecurity !== 'open' && wlan.wifi?.password !== wifiPassword) return false;
               return true;
             });
-            return isConnected ? 'text-emerald-500 bg-emerald-500/10' : 'text-warning-500 bg-warning-500/10';
+            return isConnected ? 'text-success-500 bg-success-500/10' : 'text-warning-500 bg-warning-500/10';
           })()
         )}>
           <div className={cn(
@@ -369,7 +369,7 @@ export function WirelessConfigTab({
                 if (apSecurity !== 'open' && wlan.wifi?.password !== wifiPassword) return false;
                 return true;
               });
-              return isConnected ? 'bg-emerald-500/20' : 'bg-warning-500/20';
+              return isConnected ? 'bg-success-500/20' : 'bg-warning-500/20';
             })()
           )}>
             <Monitor className="w-4 h-4" />

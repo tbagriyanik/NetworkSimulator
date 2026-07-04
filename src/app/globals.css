@@ -1026,17 +1026,17 @@ body.graphics-low [class*="backdrop-blur"] {
 }
 
 body.graphics-low [class*="bg-white/"],
-body.graphics-low [class*="bg-zinc-950/"] {
+body.graphics-low [class*="bg-secondary-950/"] {
   background-color: var(--background) !important;
 }
 
-body.graphics-low [class*="border-zinc-200/"],
-body.graphics-low [class*="border-zinc-800/"] {
+body.graphics-low [class*="border-secondary-200/"],
+body.graphics-low [class*="border-secondary-800/"] {
   border-color: var(--border) !important;
 }
 
 body.graphics-low [class*="shadow-black/"],
-body.graphics-low [class*="shadow-zinc-200/"] {
+body.graphics-low [class*="shadow-secondary-200/"] {
   box-shadow: none !important;
 }
 

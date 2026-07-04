@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { X } from 'lucide-react';
@@ -125,32 +125,32 @@ export function PacketPopup({ hopIndex, info, language, onClose, isDark }: Packe
       style={{ position: 'fixed', left: pos.x, top: pos.y, zIndex: 9999 }}
       onClick={e => e.stopPropagation()}
     >
-      <div className={`rounded-xl border w-80 backdrop-blur-md ${isDark ? 'bg-zinc-950/40 border-zinc-800/50 shadow-black/40' : 'bg-white/40 border-zinc-200/50 shadow-zinc-200/50'}`}>
+      <div className={`rounded-xl border w-80 backdrop-blur-md ${isDark ? 'bg-secondary-950/40 border-secondary-800/50 shadow-black/40' : 'bg-white/40 border-secondary-200/50 shadow-secondary-200/50'}`}>
         <div
           className={`flex items-center justify-between px-3 py-2 border-b cursor-grab active:cursor-grabbing select-none ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}
           onPointerDown={handleDragStart}
         >
-          <h3 className={`font-semibold text-sm ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>
+          <h3 className={`font-semibold text-sm ${isDark ? 'text-secondary-100' : 'text-secondary-800'}`}>
             {language === 'tr' ? `Paket İçeriği — Hop ${hopIndex + 1}` : `Packet Contents — Hop ${hopIndex + 1}`}
           </h3>
           <button
             onClick={onClose}
-            className="w-5 h-5 rounded-md bg-red-500 hover:bg-red-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0"
+            className="w-5 h-5 rounded-md bg-error-500 hover:bg-error-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0"
           >
             <X className="w-3 h-3 text-white pointer-events-none" />
           </button>
         </div>
-        <div className={`px-4 py-3 space-y-2 text-xs font-mono pointer-events-none ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>
-          <div><span className={isDark ? 'text-slate-400' : 'text-slate-500'}>L2:</span> {p.layer2}</div>
-          <div><span className={isDark ? 'text-slate-400' : 'text-slate-500'}>L3:</span> {p.layer3}</div>
-          <div><span className={isDark ? 'text-slate-400' : 'text-slate-500'}>L4:</span> {p.layer4}</div>
+        <div className={`px-4 py-3 space-y-2 text-xs font-mono pointer-events-none ${isDark ? 'text-secondary-200' : 'text-secondary-700'}`}>
+          <div><span className={isDark ? 'text-secondary-400' : 'text-secondary-500'}>L2:</span> {p.layer2}</div>
+          <div><span className={isDark ? 'text-secondary-400' : 'text-secondary-500'}>L3:</span> {p.layer3}</div>
+          <div><span className={isDark ? 'text-secondary-400' : 'text-secondary-500'}>L4:</span> {p.layer4}</div>
           <div className={`border-t pt-2 mt-2 ${isDark ? 'border-white/10' : 'border-black/10'}`} />
-          <div><span className={isDark ? 'text-slate-400' : 'text-slate-500'}>{language === 'tr' ? 'Kaynak IP' : 'Src IP'}:</span> {p.srcIp}</div>
-          <div><span className={isDark ? 'text-slate-400' : 'text-slate-500'}>{language === 'tr' ? 'Hedef IP' : 'Dst IP'}:</span> {p.dstIp}</div>
-          <div><span className={isDark ? 'text-slate-400' : 'text-slate-500'}>TTL:</span> {p.ttl}</div>
-          <div><span className={isDark ? 'text-slate-400' : 'text-slate-500'}>MAC (Src):</span> {p.srcMac}</div>
-          <div><span className={isDark ? 'text-slate-400' : 'text-slate-500'}>MAC (Dst):</span> {p.dstMac}</div>
-          <div><span className={isDark ? 'text-slate-400' : 'text-slate-500'}>ICMP:</span> {p.icmpType} (Seq: {p.icmpSeq})</div>
+          <div><span className={isDark ? 'text-secondary-400' : 'text-secondary-500'}>{language === 'tr' ? 'Kaynak IP' : 'Src IP'}:</span> {p.srcIp}</div>
+          <div><span className={isDark ? 'text-secondary-400' : 'text-secondary-500'}>{language === 'tr' ? 'Hedef IP' : 'Dst IP'}:</span> {p.dstIp}</div>
+          <div><span className={isDark ? 'text-secondary-400' : 'text-secondary-500'}>TTL:</span> {p.ttl}</div>
+          <div><span className={isDark ? 'text-secondary-400' : 'text-secondary-500'}>MAC (Src):</span> {p.srcMac}</div>
+          <div><span className={isDark ? 'text-secondary-400' : 'text-secondary-500'}>MAC (Dst):</span> {p.dstMac}</div>
+          <div><span className={isDark ? 'text-secondary-400' : 'text-secondary-500'}>ICMP:</span> {p.icmpType} (Seq: {p.icmpSeq})</div>
         </div>
       </div>
     </div>

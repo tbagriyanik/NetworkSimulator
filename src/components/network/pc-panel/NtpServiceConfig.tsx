@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 
 import { Input } from '@/components/ui/input';
@@ -65,7 +65,7 @@ export function NtpServiceConfig({
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full ${serviceNtpEnabled ? 'bg-indigo-500/15 text-indigo-600 border border-indigo-500/30' : 'bg-secondary-200 text-secondary-500 border border-secondary-300'}`}>
+            <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full ${serviceNtpEnabled ? 'bg-primary-500/15 text-primary-600 border border-primary-500/30' : 'bg-secondary-200 text-secondary-500 border border-secondary-300'}`}>
               {serviceNtpEnabled ? 'ON' : 'OFF'}
             </span>
             <button
@@ -86,7 +86,7 @@ export function NtpServiceConfig({
                   }
                 });
               }}
-              className={`relative inline-flex h-7 w-14 shrink-0 items-center rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/60 ${serviceNtpEnabled ? 'bg-indigo-500/90 border-indigo-400' : (isDark ? 'bg-secondary-800 border-secondary-700' : 'bg-secondary-200 border-secondary-300')}`}
+              className={`relative inline-flex h-7 w-14 shrink-0 items-center rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60 ${serviceNtpEnabled ? 'bg-primary-500/90 border-primary-400' : (isDark ? 'bg-secondary-800 border-secondary-700' : 'bg-secondary-200 border-secondary-300')}`}
             >
               <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 ${serviceNtpEnabled ? 'translate-x-8' : 'translate-x-1'}`} />
             </button>

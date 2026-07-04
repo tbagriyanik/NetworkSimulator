@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useMemo } from 'react';
 import { SwitchState } from '@/lib/network/types';
@@ -121,7 +121,7 @@ export function ProtocolStatusPanel({ devices, deviceStates, isDark }: ProtocolS
   return (
     <div className={cn(
       "flex flex-col gap-1 p-2 rounded-lg border shadow-lg backdrop-blur-md",
-      isDark ? "bg-slate-900/80 border-slate-800" : "bg-white/80 border-slate-200"
+      isDark ? "bg-secondary-900/80 border-secondary-800" : "bg-white/80 border-secondary-200"
     )}>
       <div className="text-[10px] font-black tracking-widest opacity-50 uppercase mb-1">
         {language === 'tr' ? 'PROTOKOL DURUMU' : 'PROTOCOL STATUS'}
@@ -132,10 +132,10 @@ export function ProtocolStatusPanel({ devices, deviceStates, isDark }: ProtocolS
             <div className="flex items-center gap-1.5">
               <div className={cn(
                 "p-1 rounded-sm",
-                item.status === 'success' ? "bg-emerald-500/20 text-emerald-500" :
-                item.status === 'warning' ? "bg-amber-500/20 text-amber-500" :
-                item.status === 'error' ? "bg-rose-500/20 text-rose-500" :
-                "bg-slate-500/20 text-slate-500"
+                item.status === 'success' ? "bg-success-500/20 text-success-500" :
+                item.status === 'warning' ? "bg-warning-500/20 text-warning-500" :
+                item.status === 'error' ? "bg-error-500/20 text-error-500" :
+                "bg-secondary-500/20 text-secondary-500"
               )}>
                 {item.icon}
               </div>
@@ -143,7 +143,7 @@ export function ProtocolStatusPanel({ devices, deviceStates, isDark }: ProtocolS
             </div>
             <span className={cn(
               "text-[10px] font-medium",
-              isDark ? "text-slate-400" : "text-slate-500"
+              isDark ? "text-secondary-400" : "text-secondary-500"
             )}>
               {item.value}
             </span>

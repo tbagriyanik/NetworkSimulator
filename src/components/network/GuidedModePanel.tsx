@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { toast } from "@/hooks/use-toast";
@@ -502,7 +502,7 @@ export function GuidedModePanel({
       <div
         className={cn(
           "flex flex-col rounded-xl shadow-2xl border overflow-hidden liquid-glass-light",
-          "border-emerald-500/50 dark:border-emerald-500/30",
+          "border-success-500/50 dark:border-success-500/30",
           "max-h-full"
         )}
       >
@@ -510,7 +510,7 @@ export function GuidedModePanel({
         <div
           data-drag-handle
           className={cn(
-            "flex items-center justify-between p-4 bg-gradient-to-r from-primary-600 via-primary-500 to-indigo-600 text-white",
+            "flex items-center justify-between p-4 bg-gradient-to-r from-primary-600 via-primary-500 to-primary-600 text-white",
             "cursor-grab active:cursor-grabbing select-none shadow-inner"
           )}
           onMouseDown={handleMouseDown}

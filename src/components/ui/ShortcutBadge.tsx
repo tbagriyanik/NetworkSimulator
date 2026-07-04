@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { cn } from '@/lib/utils';
@@ -28,20 +28,20 @@ export function ShortcutBadge({
     // Color variants
     const variantStyles = {
         default: isDark
-            ? 'bg-slate-700 text-slate-200 border-slate-600'
-            : 'bg-slate-200 text-slate-700 border-slate-300',
+            ? 'bg-secondary-700 text-secondary-200 border-secondary-600'
+            : 'bg-secondary-200 text-secondary-700 border-secondary-300',
         primary: isDark
-            ? 'bg-blue-900/60 text-blue-200 border-blue-700/60'
-            : 'bg-blue-100 text-blue-700 border-blue-300',
+            ? 'bg-primary-900/60 text-primary-200 border-primary-700/60'
+            : 'bg-primary-100 text-primary-700 border-primary-300',
         success: isDark
-            ? 'bg-green-900/60 text-green-200 border-green-700/60'
-            : 'bg-green-100 text-green-700 border-green-300',
+            ? 'bg-success-900/60 text-success-200 border-success-700/60'
+            : 'bg-success-100 text-success-700 border-success-300',
         warning: isDark
-            ? 'bg-amber-900/60 text-amber-200 border-amber-700/60'
-            : 'bg-amber-100 text-amber-700 border-amber-300',
+            ? 'bg-warning-900/60 text-warning-200 border-warning-700/60'
+            : 'bg-warning-100 text-warning-700 border-warning-300',
         danger: isDark
-            ? 'bg-red-900/60 text-red-200 border-red-700/60'
-            : 'bg-red-100 text-red-700 border-red-300',
+            ? 'bg-error-900/60 text-error-200 border-error-700/60'
+            : 'bg-error-100 text-error-700 border-error-300',
     };
 
     return (

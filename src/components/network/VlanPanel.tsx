@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Vlan, Port } from '@/lib/network/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -139,7 +139,7 @@ export function VlanPanel({ vlans, ports, deviceName, deviceModel, onExecuteComm
       </CardHeader>
       <CardContent>
         {isDevicePoweredOff && (
-          <div className="mb-4 px-3 py-2 rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-500 text-xs font-bold tracking-wider text-center">
+          <div className="mb-4 px-3 py-2 rounded-lg border border-error-500/30 bg-error-500/10 text-error-500 text-xs font-bold tracking-wider text-center">
             {t.connectionError}
           </div>
         )}

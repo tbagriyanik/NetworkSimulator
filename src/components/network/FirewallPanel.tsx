@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useCallback, useMemo } from 'react';
 import { FirewallRule, CanvasDevice } from './networkTopology.types';
@@ -148,7 +148,7 @@ export function FirewallPanel({
     onUpdateRules(updatedRules);
   }, [rules, onUpdateRules]);
 
-  const cardBg = isDark ? 'bg-secondary-800 border-green-500/30' : 'bg-white border-green-500/50';
+  const cardBg = isDark ? 'bg-secondary-800 border-success-500/30' : 'bg-white border-success-500/50';
   const itemBg = isDark ? 'bg-secondary-900' : 'bg-secondary-50';
 
   // Use controlled tabs if activeTab/onTabChange provided, otherwise uncontrolled
@@ -222,7 +222,7 @@ export function FirewallPanel({
                 </div>
               )}
 
-              <div className={`p-4 rounded-xl border ${isDark ? 'bg-secondary-950/50 border-green-500/30' : 'bg-white border-green-500/50'} space-y-3`}>
+              <div className={`p-4 rounded-xl border ${isDark ? 'bg-secondary-950/50 border-success-500/30' : 'bg-white border-success-500/50'} space-y-3`}>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-secondary-500 uppercase">{t.language === 'tr' ? 'Kaynak IP' : 'Source IP'}</label>
@@ -434,8 +434,8 @@ function DraggableRuleItem({
 
   const getBorderStyle = () => {
     if (!dragOverPosition) return '';
-    if (dragOverPosition === 'above') return 'border-t-2 border-t-cyan-500';
-    return 'border-b-2 border-b-cyan-500';
+    if (dragOverPosition === 'above') return 'border-t-2 border-t-accent-500';
+    return 'border-b-2 border-b-accent-500';
   };
 
   return (
@@ -482,7 +482,7 @@ function DraggableRuleItem({
           className="p-2 rounded-md hover:bg-error-500/20 text-secondary-500 hover:text-error-500 transition-colors"
           disabled={isDevicePoweredOff}
         >
-          <Trash2 className="w-4 h-4 text-red-500" />
+          <Trash2 className="w-4 h-4 text-error-500" />
         </button>
       </div>
     </div>

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useRef, useEffect } from 'react';
 import { Laptop, CornerDownLeft } from 'lucide-react';
@@ -116,7 +116,7 @@ export function CommandLineTab({
                   <span>{highlightText(line.content)}</span>
                 </div>
               )}
-              {line.type === 'error' && <span className="text-rose-500 font-bold italic">{highlightText(line.content)}</span>}
+              {line.type === 'error' && <span className="text-error-500 font-bold italic">{highlightText(line.content)}</span>}
               {line.type === 'success' && <span className="text-accent-500 font-bold text-xs tracking-widest opacity-80">{highlightText(line.content)}</span>}
             </div>
           ))
@@ -197,12 +197,12 @@ export function CommandLineTab({
               type="submit"
               disabled={!input.trim() || isCmdInputDisabled}
               className={cn(
-                "shrink-0 rounded-xl shadow-lg px-3 bg-zinc-800 text-white hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200",
+                "shrink-0 rounded-xl shadow-lg px-3 bg-secondary-800 text-white hover:bg-secondary-700 dark:bg-white dark:text-secondary-900 dark:hover:bg-secondary-200",
                 isMobile ? "h-9 text-xs" : "h-11 text-sm"
               )}
             >
               <span className="rounded-md p-1">
-                <CornerDownLeft className={cn("w-4 h-4 text-white dark:text-zinc-900", isMobile && "w-3 h-3")} />
+                <CornerDownLeft className={cn("w-4 h-4 text-white dark:text-secondary-900", isMobile && "w-3 h-3")} />
               </span>
             </Button>
           </form>

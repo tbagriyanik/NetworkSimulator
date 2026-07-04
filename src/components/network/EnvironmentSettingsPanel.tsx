@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -54,8 +54,8 @@ export function EnvironmentSettingsPanel({ isOpen, onOpenChange }: EnvironmentSe
             className={cn(
               'h-8 px-3 flex items-center gap-1.5 transition-all',
               isDark
-                ? 'text-emerald-400 hover:text-emerald-300 hover:bg-secondary-700/50'
-                : 'text-emerald-600 hover:text-emerald-700 hover:bg-secondary-200/50'
+                ? 'text-success-400 hover:text-success-300 hover:bg-secondary-700/50'
+                : 'text-success-600 hover:text-success-700 hover:bg-secondary-200/50'
             )}
           >
             <Leaf className="w-4 h-4" />
@@ -80,7 +80,7 @@ export function EnvironmentSettingsPanel({ isOpen, onOpenChange }: EnvironmentSe
             'text-lg font-bold flex items-center gap-2',
             isDark ? 'text-secondary-100' : 'text-secondary-900'
           )}>
-            <Leaf className="w-5 h-5 text-emerald-400" />
+            <Leaf className="w-5 h-5 text-success-400" />
             {t.environmentSettings}
           </SheetTitle>
         </SheetHeader>
@@ -104,8 +104,8 @@ export function EnvironmentSettingsPanel({ isOpen, onOpenChange }: EnvironmentSe
                     'flex flex-col items-center gap-2 p-3 rounded-xl border transition-all',
                     environment?.background === option.value
                       ? isDark
-                        ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300'
-                        : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                        ? 'bg-success-500/20 border-success-500/50 text-success-300'
+                        : 'bg-success-50 border-success-200 text-success-700'
                       : isDark
                         ? 'bg-secondary-800 border-secondary-600 text-secondary-300 hover:bg-secondary-700'
                         : 'bg-secondary-50 border-secondary-200 text-secondary-600 hover:bg-secondary-100'
@@ -126,7 +126,7 @@ export function EnvironmentSettingsPanel({ isOpen, onOpenChange }: EnvironmentSe
               'text-sm font-semibold flex items-center gap-2',
               isDark ? 'text-secondary-200' : 'text-secondary-700'
             )}>
-              <Thermometer className="w-4 h-4 text-orange-400" />
+              <Thermometer className="w-4 h-4 text-warning-400" />
               {t.temperature}
             </label>
             <div className="space-y-2">
@@ -155,7 +155,7 @@ export function EnvironmentSettingsPanel({ isOpen, onOpenChange }: EnvironmentSe
                 <span>-20{t.celsius}</span>
                 <span className={cn(
                   'font-bold text-base',
-                  isDark ? 'text-orange-400' : 'text-orange-600'
+                  isDark ? 'text-warning-400' : 'text-warning-600'
                 )}>
                   {environment?.temperature ?? 22}{t.celsius}
                 </span>
@@ -272,7 +272,7 @@ export function EnvironmentSettingsPanel({ isOpen, onOpenChange }: EnvironmentSe
               )}>
                 <Thermometer className={cn(
                   'w-4 h-4 mx-auto mb-1',
-                  isDark ? 'text-orange-300' : 'text-orange-500'
+                  isDark ? 'text-warning-300' : 'text-warning-500'
                 )} />
                 <span className={cn(
                   'text-xs font-bold',

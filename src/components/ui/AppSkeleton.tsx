@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Skeleton } from "./skeleton";
 
@@ -54,7 +54,7 @@ export function AppSkeleton() {
             {/* Main Content */}
             <main className="flex-1 flex overflow-hidden gap-4 p-4">
                 {/* Center - Topology Canvas */}
-                <div className="flex-1 flex flex-col rounded-lg border border-border overflow-hidden bg-zinc-900">
+                <div className="flex-1 flex flex-col rounded-lg border border-border overflow-hidden bg-secondary-900">
                     {/* Toolbar */}
                     <div className="flex items-center gap-2 px-4 py-2 border-b border-border/50 bg-muted/30">
                         <Skeleton className="w-8 h-8 rounded-md" />
@@ -65,8 +65,8 @@ export function AppSkeleton() {
                     </div>
 
                     {/* Canvas Area */}
-                    <div className="flex-1 relative bg-gradient-to-br from-zinc-900 to-zinc-950">
-                        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/20 to-transparent pointer-events-none" />
+                    <div className="flex-1 relative bg-gradient-to-br from-secondary-900 to-secondary-950">
+                        <div className="absolute inset-0 bg-gradient-to-t from-secondary-950/20 to-transparent pointer-events-none" />
                     </div>
                 </div>
 

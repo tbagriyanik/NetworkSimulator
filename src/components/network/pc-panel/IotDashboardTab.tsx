@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { Radio, Save, Globe } from 'lucide-react';
@@ -184,7 +184,7 @@ export function IotDashboardTab({
               <label className="text-xs font-bold text-secondary-500 shrink-0">
                 {language === 'tr' ? 'Cihaz Durumu (Aktif/Pasif)' : 'Device Status (Active/Passive)'}
               </label>
-              <span className={`text-[9px] font-bold ${!iotCollaborationEnabled ? 'text-rose-500' : 'text-secondary-200'}`}>
+              <span className={`text-[9px] font-bold ${!iotCollaborationEnabled ? 'text-error-500' : 'text-secondary-200'}`}>
                 {language === 'tr' ? 'PASİF' : 'PASSIVE'}
               </span>
               <button
@@ -208,7 +208,7 @@ export function IotDashboardTab({
               <label className="text-xs font-bold text-secondary-500 shrink-0">
                 {language === 'tr' ? 'Güç Durumu (Açık/Kapalı)' : 'Power Status (On/Off)'}
               </label>
-              <span className={`text-[9px] font-bold ${selectedIotDevice?.status === 'offline' ? 'text-rose-500' : 'text-secondary-200'}`}>
+              <span className={`text-[9px] font-bold ${selectedIotDevice?.status === 'offline' ? 'text-error-500' : 'text-secondary-200'}`}>
                 {language === 'tr' ? 'KAPALI' : 'OFF'}
               </span>
               <button
@@ -228,12 +228,12 @@ export function IotDashboardTab({
                 }}
                 className={cn(
                   "relative inline-flex h-7 w-14 items-center rounded-full border transition-all duration-300 shrink-0",
-                  selectedIotDevice?.status !== 'offline' ? 'bg-emerald-500 border-emerald-400 shadow-[0_0_3px_rgba(16,185,129,0.15)]' : (isDark ? 'bg-secondary-800 border-secondary-700' : 'bg-secondary-200 border-secondary-300')
+                  selectedIotDevice?.status !== 'offline' ? 'bg-success-500 border-success-400 shadow-[0_0_3px_rgba(16,185,129,0.15)]' : (isDark ? 'bg-secondary-800 border-secondary-700' : 'bg-secondary-200 border-secondary-300')
                 )}
               >
                 <span className={cn("inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-300", selectedIotDevice?.status !== 'offline' ? 'translate-x-8' : 'translate-x-1')} />
               </button>
-              <span className={`text-[9px] font-bold ${selectedIotDevice?.status !== 'offline' ? 'text-emerald-500' : 'text-secondary-200'}`}>
+              <span className={`text-[9px] font-bold ${selectedIotDevice?.status !== 'offline' ? 'text-success-500' : 'text-secondary-200'}`}>
                 {language === 'tr' ? 'AÇIK' : 'ON'}
               </span>
             </div>

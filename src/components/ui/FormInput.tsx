@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useId } from 'react';
 import { cn } from '@/lib/utils';
@@ -52,8 +52,8 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
                         htmlFor={id}
                         className={cn(
                             'text-sm font-medium',
-                            isDark ? 'text-slate-300' : 'text-slate-700',
-                            required && "after:content-['*'] after:ml-1 after:text-red-500"
+                            isDark ? 'text-secondary-300' : 'text-secondary-700',
+                            required && "after:content-['*'] after:ml-1 after:text-error-500"
                         )}
                     >
                         {label}
@@ -65,7 +65,7 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
                         <div
                             className={cn(
                                 'absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none',
-                                isDark ? 'text-slate-500' : 'text-slate-400'
+                                isDark ? 'text-secondary-500' : 'text-secondary-400'
                             )}
                         >
                             {icon}
@@ -84,8 +84,8 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
                         className={cn(
                             'transition-all',
                             icon && 'pl-10',
-                            hasError && 'border-red-500 focus-visible:ring-red-500',
-                            showSuccess && 'border-green-500 focus-visible:ring-green-500',
+                            hasError && 'border-error-500 focus-visible:ring-error-500',
+                            showSuccess && 'border-success-500 focus-visible:ring-success-500',
                             isLoading && 'opacity-50 cursor-not-allowed',
                             className
                         )}
@@ -101,27 +101,27 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
                     )}
 
                     {!isLoading && showSuccess && (
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500">
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-success-500">
                             <CheckCircle2 className="w-5 h-5" />
                         </div>
                     )}
 
                     {!isLoading && hasError && (
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500">
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-error-500">
                             <AlertCircle className="w-5 h-5" />
                         </div>
                     )}
                 </div>
 
                 {error && (
-                    <p id={errorId} className="text-sm text-red-500 flex items-center gap-1">
+                    <p id={errorId} className="text-sm text-error-500 flex items-center gap-1">
                         <AlertCircle className="w-4 h-4" />
                         {error}
                     </p>
                 )}
 
                 {hint && !error && (
-                    <p id={hintId} className={cn('text-xs', isDark ? 'text-slate-500' : 'text-slate-500')}>
+                    <p id={hintId} className={cn('text-xs', isDark ? 'text-secondary-500' : 'text-secondary-500')}>
                         {hint}
                     </p>
                 )}

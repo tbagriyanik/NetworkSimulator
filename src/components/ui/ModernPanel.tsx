@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { ReactNode, useEffect, useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
@@ -289,7 +289,7 @@ export function ModernPanel({
             ref={panelRef}
             className={cn(
                 'flex flex-col border rounded-lg shadow-sm overflow-hidden transition-shadow duration-200',
-                isDark ? 'bg-zinc-950/95 border-green-500/30' : 'bg-white/95 border-green-500 border-dashed',
+                isDark ? 'bg-secondary-950/95 border-success-500/30' : 'bg-white/95 border-success-500 border-dashed',
                 isOverlay && 'fixed z-40',
                 isStacked && 'relative',
                 isDragging && 'shadow-xl ring-1 ring-primary/10',
@@ -311,7 +311,7 @@ export function ModernPanel({
                     data-drag-header
                     className={cn(
                         "flex items-center justify-between gap-1.5 p-2 border-b select-none",
-                        isDark ? "bg-zinc-900 border-green-500/30" : "bg-zinc-50 border-green-500/50",
+                        isDark ? "bg-secondary-900 border-success-500/30" : "bg-secondary-50 border-success-500/50",
                         isMobile && "p-1.5 min-h-[40px] touch-manipulation",
                     )}
                     style={{ touchAction: 'none' }}
@@ -321,7 +321,7 @@ export function ModernPanel({
                         {!hideTitle && (
                             <h3 className={cn(
                                 "text-sm font-semibold truncate",
-                                isDark ? "text-zinc-200" : "text-zinc-800"
+                                isDark ? "text-secondary-200" : "text-secondary-800"
                             )}>
                                 {title}
                             </h3>
@@ -335,8 +335,8 @@ export function ModernPanel({
                                 className={cn(
                                     "p-1.5 rounded-md transition-colors",
                                     isDark
-                                        ? "hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100"
-                                        : "hover:bg-zinc-200 text-zinc-500 hover:text-zinc-900"
+                                        ? "hover:bg-secondary-800 text-secondary-400 hover:text-secondary-100"
+                                        : "hover:bg-secondary-200 text-secondary-500 hover:text-secondary-900"
                                 )}
                                 aria-label="Close"
                             >
@@ -360,7 +360,7 @@ export function ModernPanel({
             {footer && (
                 <div className={cn(
                     "p-3 border-t",
-                    isDark ? "bg-zinc-900/50 border-green-500/30" : "bg-zinc-50/50 border-green-500/50"
+                    isDark ? "bg-secondary-900/50 border-success-500/30" : "bg-secondary-50/50 border-success-500/50"
                 )}>
                     {footer}
                 </div>
@@ -374,7 +374,7 @@ export function ModernPanel({
                 >
                     <div className={cn(
                         "w-1.5 h-1.5 rounded-full",
-                        isDark ? "bg-zinc-600" : "bg-zinc-400"
+                        isDark ? "bg-secondary-600" : "bg-secondary-400"
                     )} />
                 </div>
             )}

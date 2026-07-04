@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
@@ -142,7 +142,7 @@ const ALL_TABS: TabDefinition[] = [
     labelKey: 'networkTopology',
     icon: <Network className="w-4 h-4" />,
     tasks: topologyTasks,
-    color: 'from-cyan-500 to-blue-500',
+    color: 'from-accent-500 to-primary-500',
     showFor: ['pc', 'iot', ...SWITCH_DEVICE_TYPES, 'router']
   },
 ];
@@ -211,10 +211,10 @@ function RefreshDeviceListToast({
             type="button"
             onClick={() => setSelectedId(device.id)}
             className={`w-24 px-2 py-0.5 text-[10px] font-bold rounded transition-all border ${selectedId === device.id
-              ? 'bg-blue-600 border-blue-700 text-white shadow-sm scale-105 z-10'
+              ? 'bg-primary-600 border-primary-700 text-white shadow-sm scale-105 z-10'
               : isDark
-                ? 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-300'
-                : 'bg-zinc-100 border-zinc-200 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-800'
+                ? 'bg-secondary-800 border-secondary-700 text-secondary-400 hover:bg-secondary-700 hover:text-secondary-300'
+                : 'bg-secondary-100 border-secondary-200 text-secondary-600 hover:bg-secondary-200 hover:text-secondary-800'
               }`}
           >
             {device.name}
@@ -223,7 +223,7 @@ function RefreshDeviceListToast({
       </div>
 
       {selected && (
-        <div className="overflow-hidden rounded-md border border-slate-200 dark:border-slate-700">
+        <div className="overflow-hidden rounded-md border border-secondary-200 dark:border-secondary-700">
           <table className="w-full text-[11px]">
             <tbody>
               {([
@@ -234,11 +234,11 @@ function RefreshDeviceListToast({
                 ['IPv6', selected.ipv6, true],
                 [isTR ? 'Açık hizmetler' : 'Open services', selected.services, false],
               ] as Array<[string, string, boolean]>).map(([label, value, copyable]) => (
-                <tr key={label} className="border-t first:border-t-0 border-slate-200 dark:border-slate-700">
-                  <td className="w-24 bg-slate-100 px-2 py-1 font-semibold dark:bg-slate-800">{label}</td>
+                <tr key={label} className="border-t first:border-t-0 border-secondary-200 dark:border-secondary-700">
+                  <td className="w-24 bg-secondary-100 px-2 py-1 font-semibold dark:bg-secondary-800">{label}</td>
                   <TooltipWrapper title={copyable ? t.copy : undefined}>
                     <td
-                      className={`px-2 py-1 font-mono ${copyable ? 'cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 rounded' : ''}`}
+                      className={`px-2 py-1 font-mono ${copyable ? 'cursor-pointer hover:bg-secondary-200 dark:hover:bg-secondary-700 rounded' : ''}`}
                       onClick={copyable && value !== '-' ? () => navigator.clipboard.writeText(value) : undefined}
                     >
                       {value}
@@ -2489,7 +2489,7 @@ ${state.bannerMOTD}
                   {assignments.map((asgn, i) => (
                     <div key={i} className="flex justify-between gap-4">
                       <span className="font-medium">{asgn.name}:</span>
-                      <span className="text-blue-400">{asgn.ip}</span>
+                      <span className="text-primary-400">{asgn.ip}</span>
                     </div>
                   ))}
                 </div>
@@ -3805,7 +3805,7 @@ ${state.bannerMOTD}
                 {dhcpAssignments.map((asgn, i) => (
                   <div key={i} className="flex justify-between gap-4">
                     <span className="font-medium">{asgn.name}:</span>
-                    <span className="text-blue-400">{asgn.ip}</span>
+                    <span className="text-primary-400">{asgn.ip}</span>
                   </div>
                 ))}
               </div>
@@ -4813,24 +4813,24 @@ ${state.bannerMOTD}
 
   return (
     <AppErrorBoundary fallbackTitle={t.applicationError}>
-      <div className={cn("h-dvh w-full flex flex-col relative transition-colors duration-700 overflow-x-hidden", isAppLoading ? 'bg-slate-950' : (isDark ? 'bg-slate-950' : 'bg-slate-50'))}>
+      <div className={cn("h-dvh w-full flex flex-col relative transition-colors duration-700 overflow-x-hidden", isAppLoading ? 'bg-secondary-950' : (isDark ? 'bg-secondary-950' : 'bg-secondary-50'))}>
         {!isAppLoading && (
           <div className="fixed inset-0 pointer-events-none z-0 opacity-40 dark:opacity-20 transition-opacity duration-1000">
             <div className="absolute inset-0 mesh-gradient animate-liquid blur-[100px] scale-150 rotate-12" />
-            <div className="absolute inset-0 bg-white/40 dark:bg-slate-950/40" />
+            <div className="absolute inset-0 bg-white/40 dark:bg-secondary-950/40" />
           </div>
         )}
         {/* App Loading Screen */}
         {isAppLoading && (
-          <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950">
+          <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-secondary-950">
             <div className="flex flex-col items-center animate-scale-in">
               <div className="relative mb-8">
                 <div className="p-2 animate-glitch">
                   <Image src="/app.png" alt="Logo" width={64} height={64} className="w-16 h-16 object-contain" priority />
                 </div>
                 {/* Glitch overlays */}
-                <div className="absolute inset-0 p-4 rounded-2xl bg-red-500/30 animate-glitch-skew mix-blend-screen" />
-                <div className="absolute inset-0 p-4 rounded-2xl bg-blue-500/30 animate-glitch mix-blend-screen" style={{ animationDelay: '0.1s' }} />
+                <div className="absolute inset-0 p-4 rounded-2xl bg-error-500/30 animate-glitch-skew mix-blend-screen" />
+                <div className="absolute inset-0 p-4 rounded-2xl bg-primary-500/30 animate-glitch mix-blend-screen" style={{ animationDelay: '0.1s' }} />
               </div>
 
               <h1
@@ -4841,8 +4841,8 @@ ${state.bannerMOTD}
               </h1>
 
               <div className="flex items-center gap-2 mt-4">
-                <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
-                <span className="text-xs font-bold tracking-widest text-cyan-500 ">
+                <div className="w-1.5 h-1.5 rounded-full bg-accent-500 animate-pulse" />
+                <span className="text-xs font-bold tracking-widest text-accent-500 ">
                   {t.initializingSystem}
                 </span>
               </div>
@@ -4865,17 +4865,17 @@ ${state.bannerMOTD}
           <AlertDialog open={showWarning}>
             <AlertDialogContent className="max-w-md">
               <AlertDialogHeader>
-                <AlertDialogTitle className="flex items-center gap-2 text-blue-600">
+                <AlertDialogTitle className="flex items-center gap-2 text-primary-600">
                   <Monitor className="h-5 w-5" />
                   Multiple Tabs Active
                 </AlertDialogTitle>
                 <AlertDialogDescription>
                   You have {tabCount} tab{tabCount > 1 ? 's' : ''} of Network Simulator open. Each tab now saves its own data independently, so you can work in multiple tabs without conflicts.
-                  <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
-                    <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                  <div className="mt-3 p-3 bg-primary-50 dark:bg-primary-950/30 rounded-lg">
+                    <p className="text-sm font-medium text-primary-800 dark:text-primary-200">
                       ✅ Each tab has isolated storage
                     </p>
-                    <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                    <p className="text-sm text-primary-700 dark:text-primary-300 mt-1">
                       Your work in each tab is saved separately
                     </p>
                   </div>
@@ -4988,17 +4988,17 @@ ${state.bannerMOTD}
               focusActiveTerminalInput();
             }
           }}>
-            <AlertDialogContent className={`${isDark ? 'bg-slate-900 border-emerald-500/30' : 'bg-white border-emerald-500/50'}`}>
+            <AlertDialogContent className={`${isDark ? 'bg-secondary-900 border-success-500/30' : 'bg-white border-success-500/50'}`}>
               <AlertDialogHeader>
-                <AlertDialogTitle className={isDark ? 'text-white' : 'text-slate-900'}>
+                <AlertDialogTitle className={isDark ? 'text-white' : 'text-secondary-900'}>
                   {t.confirmationRequired}
                 </AlertDialogTitle>
-                <AlertDialogDescription className={isDark ? 'text-slate-400' : 'text-slate-500'}>
+                <AlertDialogDescription className={isDark ? 'text-secondary-400' : 'text-secondary-500'}>
                   {confirmDialog?.message}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel className={isDark ? 'bg-slate-800 text-white border-slate-700 hover:bg-slate-700' : ''}>
+                <AlertDialogCancel className={isDark ? 'bg-secondary-800 text-white border-secondary-700 hover:bg-secondary-700' : ''}>
                   {t.cancel}
                 </AlertDialogCancel>
                 <AlertDialogAction
@@ -5006,7 +5006,7 @@ ${state.bannerMOTD}
                     confirmDialog?.onConfirm();
                     focusActiveTerminalInput();
                   }}
-                  className="bg-cyan-600 hover:bg-cyan-700 text-white"
+                  className="bg-accent-600 hover:bg-accent-700 text-white"
                 >
                   {t.continue}
                 </AlertDialogAction>
@@ -5020,12 +5020,12 @@ ${state.bannerMOTD}
               focusActiveTerminalInput();
             }
           }}>
-            <AlertDialogContent className={`${isDark ? 'bg-slate-900 border-emerald-500/30' : 'bg-white border-emerald-500/50'}`}>
+            <AlertDialogContent className={`${isDark ? 'bg-secondary-900 border-success-500/30' : 'bg-white border-success-500/50'}`}>
               <AlertDialogHeader>
-                <AlertDialogTitle className={isDark ? 'text-white' : 'text-slate-900'}>
+                <AlertDialogTitle className={isDark ? 'text-white' : 'text-secondary-900'}>
                   {t.saveProject}
                 </AlertDialogTitle>
-                <AlertDialogDescription className={isDark ? 'text-slate-400' : 'text-slate-500'}>
+                <AlertDialogDescription className={isDark ? 'text-secondary-400' : 'text-secondary-500'}>
                   {saveDialog?.message}
                 </AlertDialogDescription>
               </AlertDialogHeader>
@@ -5036,7 +5036,7 @@ ${state.bannerMOTD}
                     saveDialog?.onConfirm(false);
                     focusActiveTerminalInput();
                   }}
-                  className={isDark ? 'bg-slate-800 text-white border-slate-700 hover:bg-slate-700' : ''}
+                  className={isDark ? 'bg-secondary-800 text-white border-secondary-700 hover:bg-secondary-700' : ''}
                 >
                   {t.dontSave}
                 </Button>
@@ -5045,7 +5045,7 @@ ${state.bannerMOTD}
                     saveDialog?.onConfirm(true);
                     focusActiveTerminalInput();
                   }}
-                  className="bg-cyan-600 hover:bg-cyan-700 text-white"
+                  className="bg-accent-600 hover:bg-accent-700 text-white"
                 >
                   {t.saveLabel}
                 </AlertDialogAction>
@@ -5101,8 +5101,8 @@ ${state.bannerMOTD}
               className={cn(
                 "p-0 overflow-visible flex flex-col top-auto left-auto translate-x-0 translate-y-0 shadow-[0_15px_50px_rgba(15,23,42,0.12)] liquid-glass-light",
                 isDark
-                  ? "bg-slate-950/80 border-green-500/40 backdrop-blur-xl"
-                  : "bg-white/70 border-green-500 backdrop-blur-xl"
+                  ? "bg-secondary-950/80 border-success-500/40 backdrop-blur-xl"
+                  : "bg-white/70 border-success-500 backdrop-blur-xl"
               )}
               data-modal-content
               data-disable-snap="true"
@@ -5126,14 +5126,14 @@ ${state.bannerMOTD}
                 <DialogHeader
                   className={cn(
                     "p-3 sm:p-4 border-b cursor-grab active:cursor-grabbing select-none touch-none sticky top-0 z-10 backdrop-blur-xl",
-                    isDark ? "border-green-500/30 bg-slate-900/75" : "border-green-500/60 bg-white/80"
+                    isDark ? "border-success-500/30 bg-secondary-900/75" : "border-success-500/60 bg-white/80"
                   )}
                   data-modal-header
                   onPointerDown={(e) => firewallDrag.handlePointerDown(e, 'firewall')}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <DialogTitle className={cn("font-semibold truncate", isDark ? 'text-white' : 'text-slate-900')}>
+                      <DialogTitle className={cn("font-semibold truncate", isDark ? 'text-white' : 'text-secondary-900')}>
                         {isTR ? 'Firewall' : 'Firewall'} - {topologyDevices?.find((d: CanvasDevice) => d.id === activeFirewallId)?.name || activeFirewallId}
                       </DialogTitle>
                     </div>
@@ -5142,7 +5142,7 @@ ${state.bannerMOTD}
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 hover:bg-amber-500/20 hover:text-amber-500"
+                        className="h-7 w-7 hover:bg-warning-500/20 hover:text-warning-500"
                         onClick={() => {
                           if (activeFirewallId) {
                             logger.debug('Firewall power toggle:', activeFirewallId, 'Current status:', topologyDevices.find(d => d.id === activeFirewallId)?.status);
@@ -5153,7 +5153,7 @@ ${state.bannerMOTD}
                         }}
                         title={t.power}
                       >
-                        <Power className={cn("h-3.5 w-3.5", topologyDevices.find(d => d.id === activeFirewallId)?.status === 'offline' ? 'text-red-500' : 'text-green-500')} />
+                        <Power className={cn("h-3.5 w-3.5", topologyDevices.find(d => d.id === activeFirewallId)?.status === 'offline' ? 'text-error-500' : 'text-success-500')} />
                       </Button>
                       {/* Quick Settings Button */}
                       <Button
@@ -5168,7 +5168,7 @@ ${state.bannerMOTD}
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6 hover:bg-red-500 hover:text-white dark:hover:bg-red-600"
+                        className="h-6 w-6 hover:bg-error-500 hover:text-white dark:hover:bg-error-600"
                         onClick={() => {
                           setShowFirewallPanel(false);
                           setFirewallActiveTab('console');
@@ -5205,16 +5205,16 @@ ${state.bannerMOTD}
                 {/* Resize handles - hidden on mobile */}
                 {!isMobile && (
                   <>
-                    <div className="absolute left-0 top-0 bottom-0 w-[10px] cursor-ew-resize select-none touch-none bg-transparent hover:bg-red-500/10" onPointerDown={(e) => firewallDrag.handleResizeStart(e, 'w', 'firewall')} />
-                    <div className="absolute -right-[5px] top-0 bottom-0 w-[10px] cursor-ew-resize select-none touch-none rounded-r-lg bg-transparent hover:bg-red-500/20" onPointerDown={(e) => firewallDrag.handleResizeStart(e, 'e', 'firewall')} />
-                    <div className="absolute -top-[5px] left-[10px] right-8 z-20 h-[10px] cursor-ns-resize select-none touch-none rounded-t-lg bg-transparent hover:bg-red-500/20" onPointerDown={(e) => firewallDrag.handleResizeStart(e, 'n', 'firewall')} />
-                    <div className="absolute -bottom-[5px] left-[10px] right-8 z-20 h-[10px] cursor-ns-resize select-none touch-none rounded-b-lg bg-transparent hover:bg-red-500/20" onPointerDown={(e) => firewallDrag.handleResizeStart(e, 's', 'firewall')} />
-                    <div className="absolute -left-[5px] -top-[5px] z-20 h-[10px] w-[10px] cursor-nw-resize select-none touch-none bg-transparent hover:bg-red-500/20" onPointerDown={(e) => firewallDrag.handleResizeStart(e, 'nw', 'firewall')} />
-                    <div className="absolute -right-[5px] -top-[5px] z-20 h-[10px] w-[10px] cursor-ne-resize select-none touch-none bg-transparent hover:bg-red-500/20" onPointerDown={(e) => firewallDrag.handleResizeStart(e, 'ne', 'firewall')} />
-                    <div className="absolute -left-[5px] -bottom-[5px] z-20 h-[10px] w-[10px] cursor-sw-resize select-none touch-none bg-transparent hover:bg-red-500/20" onPointerDown={(e) => firewallDrag.handleResizeStart(e, 'sw', 'firewall')} />
+                    <div className="absolute left-0 top-0 bottom-0 w-[10px] cursor-ew-resize select-none touch-none bg-transparent hover:bg-error-500/10" onPointerDown={(e) => firewallDrag.handleResizeStart(e, 'w', 'firewall')} />
+                    <div className="absolute -right-[5px] top-0 bottom-0 w-[10px] cursor-ew-resize select-none touch-none rounded-r-lg bg-transparent hover:bg-error-500/20" onPointerDown={(e) => firewallDrag.handleResizeStart(e, 'e', 'firewall')} />
+                    <div className="absolute -top-[5px] left-[10px] right-8 z-20 h-[10px] cursor-ns-resize select-none touch-none rounded-t-lg bg-transparent hover:bg-error-500/20" onPointerDown={(e) => firewallDrag.handleResizeStart(e, 'n', 'firewall')} />
+                    <div className="absolute -bottom-[5px] left-[10px] right-8 z-20 h-[10px] cursor-ns-resize select-none touch-none rounded-b-lg bg-transparent hover:bg-error-500/20" onPointerDown={(e) => firewallDrag.handleResizeStart(e, 's', 'firewall')} />
+                    <div className="absolute -left-[5px] -top-[5px] z-20 h-[10px] w-[10px] cursor-nw-resize select-none touch-none bg-transparent hover:bg-error-500/20" onPointerDown={(e) => firewallDrag.handleResizeStart(e, 'nw', 'firewall')} />
+                    <div className="absolute -right-[5px] -top-[5px] z-20 h-[10px] w-[10px] cursor-ne-resize select-none touch-none bg-transparent hover:bg-error-500/20" onPointerDown={(e) => firewallDrag.handleResizeStart(e, 'ne', 'firewall')} />
+                    <div className="absolute -left-[5px] -bottom-[5px] z-20 h-[10px] w-[10px] cursor-sw-resize select-none touch-none bg-transparent hover:bg-error-500/20" onPointerDown={(e) => firewallDrag.handleResizeStart(e, 'sw', 'firewall')} />
                     <TooltipWrapper title={t.resizeAction}>
                       <div
-                        className="absolute -bottom-2 -right-2 z-20 h-7 w-7 cursor-se-resize select-none touch-none rounded-tl-lg rounded-br-lg border border-emerald-500/30 bg-slate-500/30 text-slate-100/80 hover:bg-red-500/30 hover:text-white flex items-center justify-center"
+                        className="absolute -bottom-2 -right-2 z-20 h-7 w-7 cursor-se-resize select-none touch-none rounded-tl-lg rounded-br-lg border border-success-500/30 bg-secondary-500/30 text-secondary-100/80 hover:bg-error-500/30 hover:text-white flex items-center justify-center"
                         onPointerDown={(e) => firewallDrag.handleResizeStart(e, 'se', 'firewall')}
                       >
                         <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
@@ -5238,8 +5238,8 @@ ${state.bannerMOTD}
               className={cn(
                 "p-0 overflow-visible flex flex-col top-auto left-auto translate-x-0 translate-y-0 shadow-[0_15px_50px_rgba(15,23,42,0.12)] liquid-glass-light",
                 isDark
-                  ? "bg-slate-950/80 border-green-500/40 backdrop-blur-xl"
-                  : "bg-white/70 border-green-500 backdrop-blur-xl"
+                  ? "bg-secondary-950/80 border-success-500/40 backdrop-blur-xl"
+                  : "bg-white/70 border-success-500 backdrop-blur-xl"
               )}
               data-modal-content
               style={{
@@ -5262,14 +5262,14 @@ ${state.bannerMOTD}
                 <DialogHeader
                   className={cn(
                     "p-3 sm:p-4 border-b cursor-grab active:cursor-grabbing select-none touch-none sticky top-0 z-10 backdrop-blur-xl min-h-[48px]",
-                    isDark ? "border-green-500/30 bg-slate-900/75" : "border-green-500/60 bg-white/80"
+                    isDark ? "border-success-500/30 bg-secondary-900/75" : "border-success-500/60 bg-white/80"
                   )}
                   data-modal-header
                   onPointerDown={(e) => pcDrag.handlePointerDown(e, 'pc')}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3 flex-1">
-                      <DialogTitle className={isDark ? 'text-white font-semibold' : 'text-slate-900 font-semibold'}>
+                      <DialogTitle className={isDark ? 'text-white font-semibold' : 'text-secondary-900 font-semibold'}>
                         {t.pcTerminal} - {topologyDevices?.find((d: CanvasDevice) => d.id === showPCDeviceId)?.name || showPCDeviceId}
                       </DialogTitle>
                     </div>
@@ -5277,7 +5277,7 @@ ${state.bannerMOTD}
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6 hover:bg-red-500 hover:text-white dark:hover:bg-red-600"
+                        className="h-6 w-6 hover:bg-error-500 hover:text-white dark:hover:bg-error-600"
                         onClick={() => setShowPCPanel(false)}
                       >
                         <X className="h-3 w-3" />
@@ -5314,16 +5314,16 @@ ${state.bannerMOTD}
                 {/* Resize handles - hidden on mobile */}
                 {!isMobile && (
                   <>
-                    <div className="absolute left-0 top-0 bottom-0 w-[10px] cursor-ew-resize select-none touch-none bg-transparent hover:bg-cyan-500/10" onPointerDown={(e) => pcDrag.handleResizeStart(e, 'w', 'pc')} />
-                    <div className="absolute -right-[5px] top-0 bottom-0 w-[10px] cursor-ew-resize select-none touch-none rounded-r-lg bg-transparent hover:bg-cyan-500/20" onPointerDown={(e) => pcDrag.handleResizeStart(e, 'e', 'pc')} />
-                    <div className="absolute -top-[5px] left-[10px] right-8 z-20 h-[10px] cursor-ns-resize select-none touch-none rounded-t-lg bg-transparent hover:bg-cyan-500/20" onPointerDown={(e) => pcDrag.handleResizeStart(e, 'n', 'pc')} />
-                    <div className="absolute -bottom-[5px] left-[10px] right-8 z-20 h-[10px] cursor-ns-resize select-none touch-none rounded-b-lg bg-transparent hover:bg-cyan-500/20" onPointerDown={(e) => pcDrag.handleResizeStart(e, 's', 'pc')} />
-                    <div className="absolute -left-[5px] -top-[5px] z-20 h-[10px] w-[10px] cursor-nw-resize select-none touch-none bg-transparent hover:bg-cyan-500/20" onPointerDown={(e) => pcDrag.handleResizeStart(e, 'nw', 'pc')} />
-                    <div className="absolute -right-[5px] -top-[5px] z-20 h-[10px] w-[10px] cursor-ne-resize select-none touch-none bg-transparent hover:bg-cyan-500/20" onPointerDown={(e) => pcDrag.handleResizeStart(e, 'ne', 'pc')} />
-                    <div className="absolute -left-[5px] -bottom-[5px] z-20 h-[10px] w-[10px] cursor-sw-resize select-none touch-none bg-transparent hover:bg-cyan-500/20" onPointerDown={(e) => pcDrag.handleResizeStart(e, 'sw', 'pc')} />
+                    <div className="absolute left-0 top-0 bottom-0 w-[10px] cursor-ew-resize select-none touch-none bg-transparent hover:bg-accent-500/10" onPointerDown={(e) => pcDrag.handleResizeStart(e, 'w', 'pc')} />
+                    <div className="absolute -right-[5px] top-0 bottom-0 w-[10px] cursor-ew-resize select-none touch-none rounded-r-lg bg-transparent hover:bg-accent-500/20" onPointerDown={(e) => pcDrag.handleResizeStart(e, 'e', 'pc')} />
+                    <div className="absolute -top-[5px] left-[10px] right-8 z-20 h-[10px] cursor-ns-resize select-none touch-none rounded-t-lg bg-transparent hover:bg-accent-500/20" onPointerDown={(e) => pcDrag.handleResizeStart(e, 'n', 'pc')} />
+                    <div className="absolute -bottom-[5px] left-[10px] right-8 z-20 h-[10px] cursor-ns-resize select-none touch-none rounded-b-lg bg-transparent hover:bg-accent-500/20" onPointerDown={(e) => pcDrag.handleResizeStart(e, 's', 'pc')} />
+                    <div className="absolute -left-[5px] -top-[5px] z-20 h-[10px] w-[10px] cursor-nw-resize select-none touch-none bg-transparent hover:bg-accent-500/20" onPointerDown={(e) => pcDrag.handleResizeStart(e, 'nw', 'pc')} />
+                    <div className="absolute -right-[5px] -top-[5px] z-20 h-[10px] w-[10px] cursor-ne-resize select-none touch-none bg-transparent hover:bg-accent-500/20" onPointerDown={(e) => pcDrag.handleResizeStart(e, 'ne', 'pc')} />
+                    <div className="absolute -left-[5px] -bottom-[5px] z-20 h-[10px] w-[10px] cursor-sw-resize select-none touch-none bg-transparent hover:bg-accent-500/20" onPointerDown={(e) => pcDrag.handleResizeStart(e, 'sw', 'pc')} />
                     <TooltipWrapper title={t.resizeAction}>
                       <div
-                        className="absolute -bottom-2 -right-2 z-20 h-7 w-7 cursor-se-resize select-none touch-none rounded-tl-lg rounded-br-lg border border-emerald-500/30 bg-slate-500/30 text-slate-100/80 hover:bg-cyan-500/30 hover:text-white flex items-center justify-center"
+                        className="absolute -bottom-2 -right-2 z-20 h-7 w-7 cursor-se-resize select-none touch-none rounded-tl-lg rounded-br-lg border border-success-500/30 bg-secondary-500/30 text-secondary-100/80 hover:bg-accent-500/30 hover:text-white flex items-center justify-center"
                         onPointerDown={(e) => pcDrag.handleResizeStart(e, 'se', 'pc')}
                       >
                         <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
@@ -5360,7 +5360,7 @@ ${state.bannerMOTD}
           )}>
             <div className={cn(
               "w-full flex-1 flex flex-col min-h-0 overflow-hidden transition-all duration-500",
-              isTablet && (showPCPanel || showUnifiedDeviceModal || showRouterPanel) && "w-1/2 flex-none border-r border-slate-200/50 dark:border-slate-800/50"
+              isTablet && (showPCPanel || showUnifiedDeviceModal || showRouterPanel) && "w-1/2 flex-none border-r border-secondary-200/50 dark:border-secondary-800/50"
             )}>
               {/* Tab Content - Always render but hide non-active */}
               <div className={`flex-1 flex flex-col min-h-0 ${activeTab === 'topology' ? 'flex' : 'hidden'} print:flex`}>
@@ -5536,7 +5536,7 @@ ${state.bannerMOTD}
                 )}
                 {showPCPanel && (
                   <div className="h-full flex flex-col">
-                    <div className={cn("p-4 border-b flex items-center justify-between", isDark ? "bg-slate-900" : "bg-slate-50")}>
+                    <div className={cn("p-4 border-b flex items-center justify-between", isDark ? "bg-secondary-900" : "bg-secondary-50")}>
                       <h2 className="font-bold text-sm truncate">
                         {t.pcTerminal} - {topologyDevices?.find((d: CanvasDevice) => d.id === showPCDeviceId)?.name || showPCDeviceId}
                       </h2>
@@ -5567,7 +5567,7 @@ ${state.bannerMOTD}
                 )}
                 {showRouterPanel && (
                   <div className="h-full flex flex-col">
-                    <div className={cn("p-4 border-b flex items-center justify-between", isDark ? "bg-slate-900" : "bg-slate-50")}>
+                    <div className={cn("p-4 border-b flex items-center justify-between", isDark ? "bg-secondary-900" : "bg-secondary-50")}>
                       <h2 className="font-bold text-sm truncate">
                         {t.configure} - {topologyDevices?.find((d: CanvasDevice) => d.id === showRouterDeviceId)?.name || showRouterDeviceId}
                       </h2>
@@ -5603,8 +5603,8 @@ ${state.bannerMOTD}
                       ? 'inset-0 w-full h-full rounded-none border-0' 
                       : 'top-20 right-4 w-full max-w-sm rounded-xl border shadow-2xl'
                       } animate-in slide-in-from-right-full duration-300 ${isDark
-                        ? 'bg-zinc-950/70 border-emerald-500/30 text-zinc-100 shadow-black/40'
-                        : 'bg-white/70 border-emerald-500/50 text-zinc-900 shadow-zinc-200/50'
+                        ? 'bg-secondary-950/70 border-success-500/30 text-secondary-100 shadow-black/40'
+                        : 'bg-white/70 border-success-500/50 text-secondary-900 shadow-secondary-200/50'
                       }`}
                   style={{
                     zIndex: 100,
@@ -5613,7 +5613,7 @@ ${state.bannerMOTD}
                   onMouseDown={() => setFocusedOverlay('refresh')}
                 >
                   <div
-                    className={`flex items-center justify-between px-3 py-2 border-b ${isMobile ? 'rounded-none' : 'rounded-t-xl'} ${!isMobile ? 'cursor-grab active:cursor-grabbing' : ''} select-none ${isDark ? 'bg-white/5 border-emerald-500/20' : 'bg-black/5 border-emerald-500/30'}`}
+                    className={`flex items-center justify-between px-3 py-2 border-b ${isMobile ? 'rounded-none' : 'rounded-t-xl'} ${!isMobile ? 'cursor-grab active:cursor-grabbing' : ''} select-none ${isDark ? 'bg-white/5 border-success-500/20' : 'bg-black/5 border-success-500/30'}`}
                     data-drag-handle={isMobile ? undefined : true}
                   >
                     <h3 className="text-sm font-bold flex items-center gap-2">
@@ -5623,7 +5623,7 @@ ${state.bannerMOTD}
                       <TooltipWrapper title={t.refreshNetwork}>
                         <button
                           onClick={() => { handleRefreshNetwork(); }}
-                          className="w-5 h-5 rounded-md bg-blue-500 hover:bg-blue-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0"
+                          className="w-5 h-5 rounded-md bg-primary-500 hover:bg-primary-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0"
                         >
                           <RefreshCw className="w-3 h-3 text-white pointer-events-none" />
                         </button>
@@ -5631,7 +5631,7 @@ ${state.bannerMOTD}
                       <TooltipWrapper title={t.close}>
                         <button
                           onClick={() => setRefreshNetworkReport(prev => prev ? { ...prev, show: false } : null)}
-                          className="w-5 h-5 rounded-md bg-red-500 hover:bg-red-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0"
+                          className="w-5 h-5 rounded-md bg-error-500 hover:bg-error-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0"
                         >
                           <X className="w-3 h-3 text-white pointer-events-none" />
                         </button>
@@ -5641,7 +5641,7 @@ ${state.bannerMOTD}
 
                   <div className="p-2 overflow-y-auto" style={{ maxHeight: isMobile ? 'calc(100vh - 70px)' : 'calc(100vh - 160px)' }}>
                     <Tabs defaultValue="summary" className="w-full">
-                      <TabsList className={`w-full grid grid-cols-2 ${isDark ? 'bg-zinc-800/80' : 'bg-zinc-200/80'}`}>
+                      <TabsList className={`w-full grid grid-cols-2 ${isDark ? 'bg-secondary-800/80' : 'bg-secondary-200/80'}`}>
                         <TabsTrigger value="summary" className="text-xs">
                           {language === 'tr' ? 'Özet' : 'Summary'}
                         </TabsTrigger>
@@ -5667,12 +5667,12 @@ ${state.bannerMOTD}
                           </div>
                         )}
                         {refreshNetworkReport.portSecurityMessage && (
-                          <div className="text-red-500 font-medium py-0.5 px-2 bg-red-500/10 rounded-lg w-fit text-xs">
+                          <div className="text-error-500 font-medium py-0.5 px-2 bg-error-500/10 rounded-lg w-fit text-xs">
                             {refreshNetworkReport.portSecurityMessage}
                           </div>
                         )}
                         {refreshNetworkReport.topologyMessage && (
-                          <div className="text-amber-500 font-medium py-0.5 px-2 bg-amber-500/10 rounded-lg w-fit text-xs">
+                          <div className="text-warning-500 font-medium py-0.5 px-2 bg-warning-500/10 rounded-lg w-fit text-xs">
                             {refreshNetworkReport.topologyMessage}
                           </div>
                         )}
@@ -5681,8 +5681,8 @@ ${state.bannerMOTD}
                         {liveSummary && (
                           <>
                             <div className={`grid grid-cols-2 gap-2 text-xs`}>
-                              <div className={`rounded-lg p-2.5 ${isDark ? 'bg-zinc-800/60' : 'bg-zinc-100/80'}`}>
-                                <div className={`font-semibold mb-1 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                              <div className={`rounded-lg p-2.5 ${isDark ? 'bg-secondary-800/60' : 'bg-secondary-100/80'}`}>
+                                <div className={`font-semibold mb-1 ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
                                   {language === 'tr' ? 'Cihaz Sayısı' : 'Device Count'}
                                 </div>
                                 <div className="space-y-0.5">
@@ -5718,8 +5718,8 @@ ${state.bannerMOTD}
                               </div>
 
                               <div className="space-y-2">
-                                <div className={`rounded-lg p-2.5 ${isDark ? 'bg-zinc-800/60' : 'bg-zinc-100/80'}`}>
-                                  <div className={`font-semibold mb-1 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                                <div className={`rounded-lg p-2.5 ${isDark ? 'bg-secondary-800/60' : 'bg-secondary-100/80'}`}>
+                                  <div className={`font-semibold mb-1 ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
                                     {language === 'tr' ? 'Aktif Bağlantılar' : 'Active Links'}
                                   </div>
                                   <div className="text-lg font-bold">
@@ -5727,8 +5727,8 @@ ${state.bannerMOTD}
                                   </div>
                                 </div>
 
-                                <div className={`rounded-lg p-2.5 ${isDark ? 'bg-zinc-800/60' : 'bg-zinc-100/80'}`}>
-                                  <div className={`font-semibold mb-1 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                                <div className={`rounded-lg p-2.5 ${isDark ? 'bg-secondary-800/60' : 'bg-secondary-100/80'}`}>
+                                  <div className={`font-semibold mb-1 ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
                                     VLAN {language === 'tr' ? 'Sayısı' : 'Count'}
                                   </div>
                                   <div className="text-lg font-bold">
@@ -5740,8 +5740,8 @@ ${state.bannerMOTD}
 
                             {/* Routing table summary */}
                             {liveSummary.routingTableSummary.totalRoutes > 0 && (
-                              <div className={`rounded-lg p-2.5 ${isDark ? 'bg-zinc-800/60' : 'bg-zinc-100/80'} text-xs`}>
-                                <div className={`font-semibold mb-1 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                              <div className={`rounded-lg p-2.5 ${isDark ? 'bg-secondary-800/60' : 'bg-secondary-100/80'} text-xs`}>
+                                <div className={`font-semibold mb-1 ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
                                   {language === 'tr' ? 'Yönlendirme Tablosu Özeti' : 'Routing Table Summary'}
                                 </div>
                                 <div className="space-y-0.5">
@@ -5767,52 +5767,52 @@ ${state.bannerMOTD}
 
                             {/* Protocol Status */}
                             {liveSummary.protocolStats && (
-                              <div className={`rounded-lg p-2.5 ${isDark ? 'bg-zinc-800/60' : 'bg-zinc-100/80'} text-xs`}>
-                                <div className={`font-semibold mb-1.5 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                              <div className={`rounded-lg p-2.5 ${isDark ? 'bg-secondary-800/60' : 'bg-secondary-100/80'} text-xs`}>
+                                <div className={`font-semibold mb-1.5 ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
                                   {language === 'tr' ? 'Protokol Durumu' : 'Protocol Status'}
                                 </div>
                                 <div className="space-y-1">
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-1.5">
-                                      <span className={`p-0.5 rounded ${liveSummary.protocolStats.ospf.count > 0 ? (liveSummary.protocolStats.ospf.neighbors > 0 ? 'bg-emerald-500/20 text-emerald-500' : 'bg-amber-500/20 text-amber-500') : 'bg-slate-500/20 text-slate-500'}`}>
+                                      <span className={`p-0.5 rounded ${liveSummary.protocolStats.ospf.count > 0 ? (liveSummary.protocolStats.ospf.neighbors > 0 ? 'bg-success-500/20 text-success-500' : 'bg-warning-500/20 text-warning-500') : 'bg-secondary-500/20 text-secondary-500'}`}>
                                         <Activity className="w-3 h-3" />
                                       </span>
                                       <span className="font-bold">OSPF</span>
                                     </div>
-                                    <span className={`${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                                    <span className={`${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
                                       {language === 'tr' ? `${liveSummary.protocolStats.ospf.neighbors} komşu` : `${liveSummary.protocolStats.ospf.neighbors} neighbors`}
                                     </span>
                                   </div>
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-1.5">
-                                      <span className={`p-0.5 rounded ${liveSummary.protocolStats.stp.roots > 0 ? 'bg-emerald-500/20 text-emerald-500' : 'bg-slate-500/20 text-slate-500'}`}>
+                                      <span className={`p-0.5 rounded ${liveSummary.protocolStats.stp.roots > 0 ? 'bg-success-500/20 text-success-500' : 'bg-secondary-500/20 text-secondary-500'}`}>
                                         <ShieldCheck className="w-3 h-3" />
                                       </span>
                                       <span className="font-bold">STP</span>
                                     </div>
-                                    <span className={`${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                                    <span className={`${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
                                       {language === 'tr' ? `${liveSummary.protocolStats.stp.roots} Root, ${liveSummary.protocolStats.stp.blocked} bloklu` : `${liveSummary.protocolStats.stp.roots} Root, ${liveSummary.protocolStats.stp.blocked} blocked`}
                                     </span>
                                   </div>
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-1.5">
-                                      <span className={`p-0.5 rounded ${liveSummary.protocolStats.hsrp.active > 0 ? 'bg-emerald-500/20 text-emerald-500' : 'bg-slate-500/20 text-slate-500'}`}>
+                                      <span className={`p-0.5 rounded ${liveSummary.protocolStats.hsrp.active > 0 ? 'bg-success-500/20 text-success-500' : 'bg-secondary-500/20 text-secondary-500'}`}>
                                         <Layers className="w-3 h-3" />
                                       </span>
                                       <span className="font-bold">HSRP</span>
                                     </div>
-                                    <span className={`${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                                    <span className={`${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
                                       A: {liveSummary.protocolStats.hsrp.active}, S: {liveSummary.protocolStats.hsrp.standby}
                                     </span>
                                   </div>
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-1.5">
-                                      <span className={`p-0.5 rounded ${liveSummary.protocolStats.eigrp.count > 0 ? (liveSummary.protocolStats.eigrp.neighbors > 0 ? 'bg-emerald-500/20 text-emerald-500' : 'bg-rose-500/20 text-rose-500') : 'bg-slate-500/20 text-slate-500'}`}>
+                                      <span className={`p-0.5 rounded ${liveSummary.protocolStats.eigrp.count > 0 ? (liveSummary.protocolStats.eigrp.neighbors > 0 ? 'bg-success-500/20 text-success-500' : 'bg-error-500/20 text-error-500') : 'bg-secondary-500/20 text-secondary-500'}`}>
                                         <Share2 className="w-3 h-3" />
                                       </span>
                                       <span className="font-bold">EIGRP</span>
                                     </div>
-                                    <span className={`${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                                    <span className={`${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
                                       {language === 'tr' ? `${liveSummary.protocolStats.eigrp.neighbors} komşu` : `${liveSummary.protocolStats.eigrp.neighbors} neighbors`}
                                     </span>
                                   </div>
@@ -5825,13 +5825,13 @@ ${state.bannerMOTD}
 
                         {/* Network warnings - from refresh report */}
                         {refreshNetworkReport.summary.networkWarnings.length > 0 && (
-                          <div className={`rounded-lg p-2.5 ${isDark ? 'bg-zinc-800/60' : 'bg-zinc-100/80'} text-xs`}>
-                            <div className={`font-semibold mb-1 text-amber-500`}>
+                          <div className={`rounded-lg p-2.5 ${isDark ? 'bg-secondary-800/60' : 'bg-secondary-100/80'} text-xs`}>
+                            <div className={`font-semibold mb-1 text-warning-500`}>
                               {language === 'tr' ? 'Ağ Uyarıları' : 'Network Warnings'} ({refreshNetworkReport.summary.networkWarnings.length})
                             </div>
                             <div className="space-y-0.5">
                               {refreshNetworkReport.summary.networkWarnings.map((w, i) => (
-                                <div key={i} className="flex items-center gap-1 text-amber-500">
+                                <div key={i} className="flex items-center gap-1 text-warning-500">
                                   <span>⚠</span>
                                   <span>{w}</span>
                                 </div>
@@ -5841,7 +5841,7 @@ ${state.bannerMOTD}
                         )}
 
                         {refreshNetworkReport.summary.networkWarnings.length === 0 && (
-                          <div className={`rounded-lg p-2.5 ${isDark ? 'bg-zinc-800/60' : 'bg-zinc-100/80'} text-xs text-center ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                          <div className={`rounded-lg p-2.5 ${isDark ? 'bg-secondary-800/60' : 'bg-secondary-100/80'} text-xs text-center ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
                             {language === 'tr' ? 'Uyarı yok' : 'No warnings'}
                           </div>
                         )}
@@ -5878,11 +5878,11 @@ ${state.bannerMOTD}
           >
             {isRoomEnabled && (
               <>
-              <div className={cn("w-px h-4 mx-0.5", isDark ? "bg-slate-700" : "bg-slate-300")} />
+              <div className={cn("w-px h-4 mx-0.5", isDark ? "bg-secondary-700" : "bg-secondary-300")} />
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 text-blue-500 hover:bg-blue-500/10"
+                  className="h-6 w-6 text-primary-500 hover:bg-primary-500/10"
                   onClick={() => setShowRoomJoinDialog(true)}
                   aria-label={t.roomStudentJoin}
                 >

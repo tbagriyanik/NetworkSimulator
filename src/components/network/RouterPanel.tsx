@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -139,13 +139,13 @@ export function RouterPanel({
       case 'connected':
         return <CheckCircle2 className="w-4 h-4 text-success-500" />;
       case 'notconnect':
-        return <XCircle className="w-4 h-4 text-gray-500" />;
+        return <XCircle className="w-4 h-4 text-secondary-500" />;
       case 'disabled':
         return <XCircle className="w-4 h-4 text-error-500" />;
       case 'blocked':
-        return <AlertCircle className="w-4 h-4 text-orange-500" />;
+        return <AlertCircle className="w-4 h-4 text-warning-500" />;
       default:
-        return <AlertCircle className="w-4 h-4 text-gray-400" />;
+        return <AlertCircle className="w-4 h-4 text-secondary-400" />;
     }
   };
 
@@ -155,11 +155,11 @@ export function RouterPanel({
     const status = port.status ?? 'notconnect';
     const isSTPBlocked = port.spanningTree?.state === 'blocking' || port.spanningTree?.role === 'alternate';
 
-    if (isShutdown) return 'bg-gray-500';
-    if (status === 'blocked' || isSTPBlocked) return 'bg-orange-500';
+    if (isShutdown) return 'bg-secondary-500';
+    if (status === 'blocked' || isSTPBlocked) return 'bg-warning-500';
     if (status === 'connected') return 'bg-success-500';
     if (status === 'notconnect') return 'bg-white';
-    return 'bg-gray-400';
+    return 'bg-secondary-400';
   };
 
   if (!isVisible || !routerDevice) {
@@ -173,7 +173,7 @@ export function RouterPanel({
       <DialogContent
         className={cn(
           "p-0 flex flex-col top-auto left-auto translate-x-0 translate-y-0 liquid-glass-light",
-          isDark ? "bg-secondary-950/80 border-green-500/40" : "bg-white/70 border-green-500",
+          isDark ? "bg-secondary-950/80 border-success-500/40" : "bg-white/70 border-success-500",
           className
         )}
         showCloseButton={false}
@@ -197,7 +197,7 @@ export function RouterPanel({
         <DialogHeader
           className={cn(
             "p-4 border-b cursor-grab active:cursor-grabbing select-none touch-none min-h-[52px]",
-            isDark ? "border-green-500/30 bg-secondary-900/75" : "border-green-500/60 bg-white/80"
+            isDark ? "border-success-500/30 bg-secondary-900/75" : "border-success-500/60 bg-white/80"
           )}
           data-modal-header
           onPointerDown={(e) => handlePointerDown?.(e, 'router')}
@@ -228,7 +228,7 @@ export function RouterPanel({
               </div>
             </div>
             <button
-              className="w-5 h-5 rounded-md bg-red-500 hover:bg-red-600 text-white transition-colors inline-flex items-center justify-center focus:outline-none disabled:pointer-events-none"
+              className="w-5 h-5 rounded-md bg-error-500 hover:bg-error-600 text-white transition-colors inline-flex items-center justify-center focus:outline-none disabled:pointer-events-none"
               onClick={onClose}
             >
               <X className="h-3 w-3" />
@@ -406,8 +406,8 @@ export function RouterPanel({
                       </p>
                       <p className="text-muted-foreground">{t.connectedStatus}</p>
                     </div>
-                    <div className="text-center p-3 rounded bg-gray-100 dark:bg-gray-900/30">
-                      <p className="text-2xl font-bold text-gray-600 dark:text-gray-400">
+                    <div className="text-center p-3 rounded bg-secondary-100 dark:bg-secondary-900/30">
+                      <p className="text-2xl font-bold text-secondary-600 dark:text-secondary-400">
                         {ports.filter(p => p.id !== 'wlan0' && !p.shutdown && p.status === 'notconnect').length}
                       </p>
                       <p className="text-muted-foreground">{t.disconnectedStatus}</p>
@@ -480,7 +480,7 @@ export function RouterPanel({
                           {(wifiConfig as { enabled?: boolean }).enabled || wifiConfig.mode === 'ap' ? (
                             <Wifi className="w-4 h-4 text-success-500" />
                           ) : (
-                            <WifiOff className="w-4 h-4 text-gray-500" />
+                            <WifiOff className="w-4 h-4 text-secondary-500" />
                           )}
                           {t.wifiStatus}
                         </h3>
@@ -488,7 +488,7 @@ export function RouterPanel({
                           "px-2 py-1 rounded text-xs font-medium",
                           (wifiConfig as { enabled?: boolean }).enabled || wifiConfig.mode === 'ap'
                             ? "bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400"
-                            : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400"
+                            : "bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-400"
                         )}>
                           {(wifiConfig as { enabled?: boolean }).enabled || wifiConfig.mode === 'ap'
                             ? t.active

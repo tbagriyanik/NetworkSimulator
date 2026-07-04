@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { CanvasDevice, CanvasConnection } from './networkTopology.types';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { X } from 'lucide-react';
@@ -232,7 +232,7 @@ function FieldRow({ label, value, highlight = 'none', isDark, badge, badgeColor,
         highlight === 'changed'
             ? isDark ? 'text-warning-300' : 'text-warning-600'
             : highlight === 'same'
-                ? isDark ? 'text-emerald-300' : 'text-emerald-600'
+                ? isDark ? 'text-success-300' : 'text-success-600'
                 : isDark ? 'text-secondary-100' : 'text-secondary-800';
 
     return (
@@ -284,13 +284,13 @@ function MobilePacketTables({ currentInfo, prevInfo, macChanged, ttlChanged, isD
 
     const tabColors = {
         blue: { active: isDark ? 'bg-primary-500/20 text-primary-300 border-primary-400/30' : 'bg-primary-100 text-primary-700 border-primary-300', inactive: isDark ? 'text-secondary-400' : 'text-secondary-500' },
-        emerald: { active: isDark ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30' : 'bg-emerald-100 text-emerald-700 border-emerald-300', inactive: isDark ? 'text-secondary-400' : 'text-secondary-500' },
+        emerald: { active: isDark ? 'bg-success-500/20 text-success-300 border-success-400/30' : 'bg-success-100 text-success-700 border-success-300', inactive: isDark ? 'text-secondary-400' : 'text-secondary-500' },
         purple: { active: isDark ? 'bg-purple-500/20 text-purple-300 border-purple-400/30' : 'bg-purple-100 text-purple-700 border-purple-300', inactive: isDark ? 'text-secondary-400' : 'text-secondary-500' },
     };
 
     const containerCls = {
         blue: isGlass ? (isDark ? 'border-primary-400/20 bg-primary-500/10' : 'border-primary-400/30 bg-primary-500/8') : (isDark ? 'border-primary-900/60 bg-primary-950/50' : 'border-primary-200 bg-primary-50'),
-        emerald: isGlass ? (isDark ? 'border-emerald-400/20 bg-emerald-500/10' : 'border-emerald-400/30 bg-emerald-500/8') : (isDark ? 'border-emerald-900/60 bg-emerald-950/50' : 'border-emerald-200 bg-emerald-50'),
+        emerald: isGlass ? (isDark ? 'border-success-400/20 bg-success-500/10' : 'border-success-400/30 bg-success-500/8') : (isDark ? 'border-success-900/60 bg-success-950/50' : 'border-success-200 bg-success-50'),
         purple: isGlass ? (isDark ? 'border-purple-400/20 bg-purple-500/10' : 'border-purple-400/30 bg-purple-500/8') : (isDark ? 'border-purple-900/60 bg-purple-950/50' : 'border-purple-200 bg-purple-50'),
     };
 
@@ -519,8 +519,8 @@ export function PingPacketInfoPanel({
         <div
             ref={panelRef}
             className={`flex flex-col rounded-2xl overflow-hidden select-none backdrop-blur-md ${isDark
-                ? 'bg-zinc-950/40 border-zinc-800/50 text-zinc-100 shadow-black/40'
-                : 'bg-white/40 border-zinc-200/50 text-zinc-900 shadow-zinc-200/50'
+                ? 'bg-secondary-950/40 border-secondary-800/50 text-secondary-100 shadow-black/40'
+                : 'bg-white/40 border-secondary-200/50 text-secondary-900 shadow-secondary-200/50'
                 }`}
             style={{
                 ...posStyle,
@@ -539,7 +539,7 @@ export function PingPacketInfoPanel({
                 {/* Left: icon + title + badges */}
                 <div className="flex items-center gap-2.5">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                        className={`flex-shrink-0 ${isSuccess ? 'text-emerald-500' : isFailure ? 'text-error-500' : isReturn ? 'text-warning-400' : 'text-accent-500'}`}>
+                        className={`flex-shrink-0 ${isSuccess ? 'text-success-500' : isFailure ? 'text-error-500' : isReturn ? 'text-warning-400' : 'text-accent-500'}`}>
                         <rect x="2" y="4" width="20" height="16" rx="2" stroke="currentColor" strokeWidth="2" fill="none" />
                         <path d="M2 7l10 7 10-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                     </svg>
@@ -592,7 +592,7 @@ export function PingPacketInfoPanel({
                                 <Tooltip delayDuration={300}>
                                     <TooltipTrigger asChild>
                                         <button onClick={() => { onPlay(); }}
-                                            className={`flex items-center justify-center rounded-lg text-xs font-semibold transition-all ${isMobile ? 'w-7 h-7' : 'gap-1.5 px-3 py-1.5'} ${isDark ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-500 hover:bg-emerald-600 text-white'}`}>
+                                            className={`flex items-center justify-center rounded-lg text-xs font-semibold transition-all ${isMobile ? 'w-7 h-7' : 'gap-1.5 px-3 py-1.5'} ${isDark ? 'bg-success-600 hover:bg-success-500 text-white' : 'bg-success-500 hover:bg-success-600 text-white'}`}>
                                             <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21" /></svg>
                                             {!isMobile && t.play}
                                         </button>
@@ -651,7 +651,7 @@ export function PingPacketInfoPanel({
                                 <button
                                     aria-label={t.close}
                                     onClick={onClose}
-                                    className="flex items-center justify-center w-5 h-5 rounded-md bg-red-500 hover:bg-red-600 transition-all flex-shrink-0"
+                                    className="flex items-center justify-center w-5 h-5 rounded-md bg-error-500 hover:bg-error-600 transition-all flex-shrink-0"
                                 >
                                     <X className="w-3 h-3 text-white pointer-events-none" />
                                 </button>
@@ -673,14 +673,14 @@ export function PingPacketInfoPanel({
                 {isDone && (
                     <div className={`px-5 py-3 flex items-start gap-3 border-b ${isSuccess
                         ? isGlass
-                            ? (isDark ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-500/10 border-emerald-500/20')
-                            : (isDark ? 'bg-emerald-900/40 border-emerald-800/50' : 'bg-emerald-50 border-emerald-100')
+                            ? (isDark ? 'bg-success-500/10 border-success-500/20' : 'bg-success-500/10 border-success-500/20')
+                            : (isDark ? 'bg-success-900/40 border-success-800/50' : 'bg-success-50 border-success-100')
                         : isGlass
                             ? (isDark ? 'bg-error-500/10 border-error-500/20' : 'bg-error-500/10 border-error-500/20')
                             : (isDark ? 'bg-error-900/40 border-error-800/50' : 'bg-error-50 border-error-100')
                         }`}>
                         {isSuccess ? (
-                            <svg className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 text-success-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                             </svg>
                         ) : (
@@ -691,11 +691,11 @@ export function PingPacketInfoPanel({
                         <div className="flex-1 min-w-0">
                             {isSuccess ? (
                                 <>
-                                    <div className={`text-sm font-bold ${isDark ? 'text-emerald-300' : 'text-emerald-700'}`}>{t.successTitle}</div>
-                                    <div className={`text-xs mt-0.5 font-mono ${isDark ? 'text-emerald-400/80' : 'text-emerald-600'}`}>
+                                    <div className={`text-sm font-bold ${isDark ? 'text-success-300' : 'text-success-700'}`}>{t.successTitle}</div>
+                                    <div className={`text-xs mt-0.5 font-mono ${isDark ? 'text-success-400/80' : 'text-success-600'}`}>
                                         {language === 'tr' ? `${targetIp || targetName}: bayt=32 TTL=${currentInfo?.ttl ?? 64}` : `Reply from ${targetIp || targetName}: bytes=32 TTL=${currentInfo?.ttl ?? 64}`}
                                     </div>
-                                    <div className={`text-xs mt-0.5 ${isDark ? 'text-emerald-500/70' : 'text-emerald-600/70'}`}>{sourceName} → {targetName} → {sourceName}</div>
+                                    <div className={`text-xs mt-0.5 ${isDark ? 'text-success-500/70' : 'text-success-600/70'}`}>{sourceName} → {targetName} → {sourceName}</div>
                                 </>
                             ) : (
                                 <>
@@ -721,7 +721,7 @@ export function PingPacketInfoPanel({
                             : isDark ? 'bg-secondary-800/80 border border-secondary-700' : 'bg-secondary-100 border border-secondary-200'
                             }`}>
                             <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${currentInfo.fromDevice.type === 'router' ? 'bg-purple-500' : currentInfo.fromDevice.type.startsWith('switch') ? 'bg-teal-500' : 'bg-primary-500'}`} />
+                                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${currentInfo.fromDevice.type === 'router' ? 'bg-purple-500' : currentInfo.fromDevice.type.startsWith('switch') ? 'bg-accent-500' : 'bg-primary-500'}`} />
                                 <span className={`${isMobile ? 'text-xs' : 'text-sm'} font-semibold truncate ${isDark ? 'text-secondary-200' : 'text-secondary-700'}`}>{currentInfo.fromDevice.name}</span>
                                 {!isMobile && <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium flex-shrink-0 ${isDark ? 'bg-white/10 text-secondary-400' : 'bg-black/10 text-secondary-500'}`}>{currentInfo.fromDevice.type}</span>}
                             </div>
@@ -732,13 +732,13 @@ export function PingPacketInfoPanel({
                             <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
                                 {!isMobile && <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium flex-shrink-0 ${isDark ? 'bg-white/10 text-secondary-400' : 'bg-black/10 text-secondary-500'}`}>{currentInfo.toDevice.type}</span>}
                                 <span className={`${isMobile ? 'text-xs' : 'text-sm'} font-semibold truncate ${isDark ? 'text-secondary-200' : 'text-secondary-700'}`}>{currentInfo.toDevice.name}</span>
-                                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${currentInfo.toDevice.type === 'router' ? 'bg-purple-500' : currentInfo.toDevice.type.startsWith('switch') ? 'bg-teal-500' : 'bg-primary-500'}`} />
+                                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${currentInfo.toDevice.type === 'router' ? 'bg-purple-500' : currentInfo.toDevice.type.startsWith('switch') ? 'bg-accent-500' : 'bg-primary-500'}`} />
                             </div>
                             {macChanged && (
                                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${isDark ? 'bg-warning-500/20 text-warning-300 border border-warning-500/30' : 'bg-warning-500/15 text-warning-700 border border-warning-500/30'}`}>⚡ {isMobile ? '' : t.macChanged}</span>
                             )}
                             {ipSame && prevInfo && !isMobile && (
-                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${isDark ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-emerald-500/15 text-emerald-700 border border-emerald-500/30'}`}>✓ {t.ipSame}</span>
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${isDark ? 'bg-success-500/20 text-success-300 border border-success-500/30' : 'bg-success-500/15 text-success-700 border border-success-500/30'}`}>✓ {t.ipSame}</span>
                             )}
                         </div>
 
@@ -756,12 +756,12 @@ export function PingPacketInfoPanel({
                         ) : (
                             <div className="grid grid-cols-3 gap-3">
                                 <div className={`rounded-xl overflow-hidden border ${isGlass
-                                    ? isDark ? 'border-emerald-400/20 bg-emerald-500/10' : 'border-emerald-400/30 bg-emerald-500/8'
-                                    : isDark ? 'border-emerald-900/60 bg-emerald-950/50' : 'border-emerald-200 bg-emerald-50'}`}
+                                    ? isDark ? 'border-success-400/20 bg-success-500/10' : 'border-success-400/30 bg-success-500/8'
+                                    : isDark ? 'border-success-900/60 bg-success-950/50' : 'border-success-200 bg-success-50'}`}
                                     style={isGlass ? { backdropFilter: 'blur(12px) saturate(180%)' } : undefined}>
                                     <div className={`px-3 py-1.5 text-[11px] font-bold tracking-wide border-b ${isGlass
-                                        ? isDark ? 'bg-emerald-500/15 border-emerald-400/20 text-emerald-400' : 'bg-emerald-500/10 border-emerald-400/20 text-emerald-700'
-                                        : isDark ? 'bg-emerald-950/60 border-emerald-900/60 text-emerald-400' : 'bg-emerald-100 border-emerald-200 text-emerald-700'}`}>{t.layer2}</div>
+                                        ? isDark ? 'bg-success-500/15 border-success-400/20 text-success-400' : 'bg-success-500/10 border-success-400/20 text-success-700'
+                                        : isDark ? 'bg-success-950/60 border-success-900/60 text-success-400' : 'bg-success-100 border-success-200 text-success-700'}`}>{t.layer2}</div>
                                     <table className="w-full"><tbody>
                                         <FieldRow label={t.srcMac} value={currentInfo.srcMac} prevValue={prevInfo?.srcMac} highlight={macChanged ? 'changed' : 'none'} isDark={isDark} badge={macChanged ? t.changed : undefined} badgeColor="var(--color-warning-600)" />
                                         <FieldRow label={t.dstMac} value={currentInfo.dstMac} prevValue={prevInfo?.dstMac} highlight={macChanged ? 'changed' : 'none'} isDark={isDark} />

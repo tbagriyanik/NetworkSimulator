@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { ArrowLeft, Send, Reply, Trash2, Plus } from 'lucide-react';
@@ -110,7 +110,7 @@ export function MailServiceConfig({
                 </p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full ${serviceMailEnabled ? 'bg-rose-500/15 text-rose-600 border border-rose-500/30' : 'bg-secondary-200 text-secondary-500 border border-secondary-300'}`}>
+                <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full ${serviceMailEnabled ? 'bg-error-500/15 text-error-600 border border-error-500/30' : 'bg-secondary-200 text-secondary-500 border border-secondary-300'}`}>
                   {serviceMailEnabled ? 'ON' : 'OFF'}
                 </span>
                 <button
@@ -130,7 +130,7 @@ export function MailServiceConfig({
                       }
                     });
                   }}
-                  className={`relative inline-flex h-7 w-14 shrink-0 items-center rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/60 ${serviceMailEnabled ? 'bg-rose-500/90 border-rose-400' : (isDark ? 'bg-secondary-800 border-secondary-700' : 'bg-secondary-200 border-secondary-300')}`}
+                  className={`relative inline-flex h-7 w-14 shrink-0 items-center rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-500/60 ${serviceMailEnabled ? 'bg-error-500/90 border-error-400' : (isDark ? 'bg-secondary-800 border-secondary-700' : 'bg-secondary-200 border-secondary-300')}`}
                 >
                   <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 ${serviceMailEnabled ? 'translate-x-8' : 'translate-x-1'}`} />
                 </button>
@@ -151,7 +151,7 @@ export function MailServiceConfig({
               className={`w-full text-xs p-2 rounded border resize-none focus:outline-none focus:ring-1 ${isDark ? 'bg-secondary-800 border-secondary-700 text-secondary-200 focus:ring-accent-500/50' : 'bg-white border-secondary-300 text-secondary-800 focus:ring-accent-500/50'}`}
             />
             {mailError && (
-              <div className="text-[11px] text-rose-500 font-bold bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2">
+              <div className="text-[11px] text-error-500 font-bold bg-error-500/10 border border-error-500/30 rounded-lg px-3 py-2">
                 {mailError}
               </div>
             )}
@@ -199,7 +199,7 @@ export function MailServiceConfig({
                   className={`w-full text-xs p-2 rounded border resize-none focus:outline-none focus:ring-1 ${isDark ? 'bg-secondary-800 border-secondary-700 text-secondary-200 focus:ring-accent-500/50' : 'bg-white border-secondary-300 text-secondary-800 focus:ring-accent-500/50'}`}
                 />
                 {mailError && (
-                  <div className="text-[11px] text-rose-500 font-bold bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2">
+                  <div className="text-[11px] text-error-500 font-bold bg-error-500/10 border border-error-500/30 rounded-lg px-3 py-2">
                     {mailError}
                   </div>
                 )}
@@ -232,7 +232,7 @@ export function MailServiceConfig({
             </div>
 
             {mailPop3Blocked && (
-              <div className="text-[11px] text-rose-500 font-bold bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2">
+              <div className="text-[11px] text-error-500 font-bold bg-error-500/10 border border-error-500/30 rounded-lg px-3 py-2">
                 {language === 'tr' ? 'POP3 (port 110) engellendi. Posta alınamıyor.' : 'POP3 (port 110) blocked. Cannot receive mail.'}
               </div>
             )}
@@ -279,7 +279,7 @@ export function MailServiceConfig({
                             onClick={() => handleDeleteInbox(idx)}
                             className="p-1 rounded hover:bg-error-500/20 text-secondary-400 hover:text-error-500 transition-colors flex-shrink-0"
                           >
-                            <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                            <Trash2 className="w-3.5 h-3.5 text-error-500" />
                           </button>
                         </div>
                       </div>
@@ -312,7 +312,7 @@ export function MailServiceConfig({
                           onClick={(e) => { e.stopPropagation(); handleDeleteSent(idx); }}
                           className="p-1 rounded hover:bg-error-500/20 text-secondary-400 hover:text-error-500 transition-colors flex-shrink-0"
                         >
-                          <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                          <Trash2 className="w-3.5 h-3.5 text-error-500" />
                         </button>
                       </div>
                     ))

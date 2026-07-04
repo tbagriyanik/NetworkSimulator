@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useRef, useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -67,16 +67,16 @@ export const TaskCard = React.memo(({ tasks, state, context, isDark }: TaskCardP
   return (
     <div className={cn(
       "relative rounded-3xl p-5 transition-all duration-500 overflow-hidden hardware-accelerated",
-      isDark ? "bg-zinc-950/40 border-white/10 shadow-black/40" : "bg-white/40 border-black/5 shadow-zinc-200/50",
+      isDark ? "bg-secondary-950/40 border-white/10 shadow-black/40" : "bg-white/40 border-black/5 shadow-secondary-200/50",
       "border backdrop-blur-2xl shadow-2xl",
-      isCategoryComplete && "ring-2 ring-emerald-500/30"
+      isCategoryComplete && "ring-2 ring-success-500/30"
     )}>
       {/* Celebration Overlay */}
       {showCelebration && (
-        <div className="absolute inset-0 z-10 pointer-events-none flex items-center justify-center bg-green-500/10 backdrop-blur-[1px]">
-          <div className="celebration-pop bg-white dark:bg-slate-900 px-4 py-2 rounded-full shadow-2xl border border-green-500/50 flex items-center gap-2">
+        <div className="absolute inset-0 z-10 pointer-events-none flex items-center justify-center bg-success-500/10 backdrop-blur-[1px]">
+          <div className="celebration-pop bg-white dark:bg-secondary-900 px-4 py-2 rounded-full shadow-2xl border border-success-500/50 flex items-center gap-2">
             <span className="text-xl">🎉</span>
-            <span className="text-sm font-bold text-green-500 tracking-wider">
+            <span className="text-sm font-bold text-success-500 tracking-wider">
               {t.congrats}
             </span>
           </div>
@@ -104,16 +104,16 @@ export const TaskCard = React.memo(({ tasks, state, context, isDark }: TaskCardP
       <div className="flex items-center justify-between mb-4">
         <div className="flex flex-col gap-0.5">
           <span className="text-[10px] font-black tracking-[0.2em] opacity-40 uppercase">System Checks</span>
-          <h3 className={cn("text-lg font-black tracking-tight flex items-center gap-2", isDark ? "text-white" : "text-zinc-950")}>
+          <h3 className={cn("text-lg font-black tracking-tight flex items-center gap-2", isDark ? "text-white" : "text-secondary-950")}>
             {t.tasks}
-            {isCategoryComplete && <span className="text-emerald-500 animate-pulse">✓</span>}
+            {isCategoryComplete && <span className="text-success-500 animate-pulse">✓</span>}
           </h3>
         </div>
         <div className={cn(
           "px-3 py-1.5 rounded-2xl font-black text-xs tabular-nums shadow-lg transition-all duration-500",
           isCategoryComplete
-            ? "bg-emerald-500 text-zinc-950 shadow-emerald-500/15 scale-110"
-            : "bg-zinc-800 text-white dark:bg-white dark:text-zinc-900 shadow-black/10"
+            ? "bg-success-500 text-secondary-950 shadow-success-500/15 scale-110"
+            : "bg-secondary-800 text-white dark:bg-white dark:text-secondary-900 shadow-black/10"
         )}>
           {score} / {maxScore}
         </div>
@@ -124,7 +124,7 @@ export const TaskCard = React.memo(({ tasks, state, context, isDark }: TaskCardP
         <div
           className={cn(
             "h-full transition-all duration-1000 ease-out rounded-full",
-            isCategoryComplete ? "bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.2)]" : "bg-cyan-500 shadow-[0_0_3px_rgba(6,182,212,0.15)]"
+            isCategoryComplete ? "bg-success-500 shadow-[0_0_4px_rgba(16,185,129,0.2)]" : "bg-accent-500 shadow-[0_0_3px_rgba(6,182,212,0.15)]"
           )}
           style={{ width: `${progressWidth}%` }}
         />
@@ -144,9 +144,9 @@ export const TaskCard = React.memo(({ tasks, state, context, isDark }: TaskCardP
               key={task.id}
               className={cn(
                 "p-3 rounded-2xl border-2 transition-all duration-300 hardware-accelerated",
-                isAnimating && "ring-4 ring-emerald-500/20 scale-[1.03] z-10 shadow-xl",
+                isAnimating && "ring-4 ring-success-500/20 scale-[1.03] z-10 shadow-xl",
                 completed
-                  ? "bg-emerald-500/5 border-emerald-500/20"
+                  ? "bg-success-500/5 border-success-500/20"
                   : isDark ? "bg-white/5 border-transparent" : "bg-black/5 border-transparent",
                 "hover:border-primary/10"
               )}
@@ -156,8 +156,8 @@ export const TaskCard = React.memo(({ tasks, state, context, isDark }: TaskCardP
                 <div className={cn(
                   "w-6 h-6 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-500 shadow-sm",
                   completed
-                    ? "bg-emerald-500 text-zinc-950 shadow-emerald-500/10"
-                    : isDark ? "bg-zinc-800 text-zinc-500" : "bg-white text-zinc-400"
+                    ? "bg-success-500 text-secondary-950 shadow-success-500/10"
+                    : isDark ? "bg-secondary-800 text-secondary-500" : "bg-white text-secondary-400"
                 )}>
                   {completed ? (
                     <svg
@@ -174,7 +174,7 @@ export const TaskCard = React.memo(({ tasks, state, context, isDark }: TaskCardP
                 </div>
                 <span className={cn(
                   "text-xs font-black tracking-tight transition-all duration-500 uppercase",
-                  completed ? "text-emerald-500 line-through opacity-50" : isDark ? "text-zinc-100" : "text-zinc-900"
+                  completed ? "text-success-500 line-through opacity-50" : isDark ? "text-secondary-100" : "text-secondary-900"
                 )}>
                   {name}
                 </span>
@@ -215,17 +215,17 @@ export const TaskCard = React.memo(({ tasks, state, context, isDark }: TaskCardP
 
               {/* Description */}
               <p className={`text-xs ml-7 transition-all duration-500 ${completed ? 'opacity-40' : ''
-                } ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                } ${isDark ? 'text-secondary-400' : 'text-secondary-600'}`}>
                 {description}
               </p>
 
               {/* Tip */}
               {!completed && (
                 <div className="flex items-start gap-1.5 mt-1.5 ml-7 group cursor-help">
-                  <svg className="w-3 h-3 text-cyan-400 flex-shrink-0 mt-0.5 transition-transform group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3 h-3 text-accent-400 flex-shrink-0 mt-0.5 transition-transform group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span className={`text-xs ${isDark ? 'text-cyan-400/80' : 'text-cyan-600'} transition-colors group-hover:text-cyan-400`}>
+                  <span className={`text-xs ${isDark ? 'text-accent-400/80' : 'text-accent-600'} transition-colors group-hover:text-accent-400`}>
                     {tip}
                   </span>
                 </div>

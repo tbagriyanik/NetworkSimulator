@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Suspense, lazy } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
@@ -22,9 +22,9 @@ function AboutModalFallback() {
                     <DialogTitle>Loading About Modal</DialogTitle>
                 </VisuallyHidden>
                 <div className="space-y-4">
-                    <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
-                    <div className="h-72 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
-                    <div className="h-10 bg-slate-200 dark:bg-slate-700 rounded animate-pulse w-20 ml-auto" />
+                    <div className="h-8 bg-secondary-200 dark:bg-secondary-700 rounded animate-pulse" />
+                    <div className="h-72 bg-secondary-200 dark:bg-secondary-700 rounded animate-pulse" />
+                    <div className="h-10 bg-secondary-200 dark:bg-secondary-700 rounded animate-pulse w-20 ml-auto" />
                 </div>
             </DialogContent>
         </Dialog>

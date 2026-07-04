@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import * as React from "react"
 import * as SheetPrimitive from "@radix-ui/react-dialog"
@@ -74,7 +74,7 @@ function SheetContent({
         {...props}
       >
         {children}
-        <SheetPrimitive.Close className="absolute top-4 right-4 w-5 h-5 rounded-md bg-red-500 hover:bg-red-600 cursor-pointer transition-colors inline-flex items-center justify-center focus:outline-none disabled:pointer-events-none">
+        <SheetPrimitive.Close className="absolute top-4 right-4 w-5 h-5 rounded-md bg-error-500 hover:bg-error-600 cursor-pointer transition-colors inline-flex items-center justify-center focus:outline-none disabled:pointer-events-none">
           <X className="w-3 h-3 text-white pointer-events-none" />
           <span className="sr-only">Close</span>
         </SheetPrimitive.Close>

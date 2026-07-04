@@ -1,4 +1,4 @@
-import { Command, Globe, LayoutGrid, Monitor, Network, Radio, ShieldCheck, Terminal as TerminalIcon } from 'lucide-react';
+﻿import { Command, Globe, LayoutGrid, Monitor, Network, Radio, ShieldCheck, Terminal as TerminalIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { PCActiveTab } from './PCPanel.types';
 
@@ -57,7 +57,7 @@ export function HiddenNavigationTabs({
           }
           setActiveTab('desktop');
         }}
-        className={`h-9 px-4 text-xs font-black tracking-wider transition-all gap-2 ${activeTab === 'desktop' && httpAppContent && !httpAppDeviceId ? 'bg-indigo-500/10 text-indigo-400' : 'text-secondary-500'} ${isMobile ? 'flex-1 min-w-0' : ''}`}
+        className={`h-9 px-4 text-xs font-black tracking-wider transition-all gap-2 ${activeTab === 'desktop' && httpAppContent && !httpAppDeviceId ? 'bg-primary-500/10 text-primary-400' : 'text-secondary-500'} ${isMobile ? 'flex-1 min-w-0' : ''}`}
       >
         <LayoutGrid className="w-4 h-4" />
         <span className={isMobile ? 'sr-only' : 'hidden md:inline'}>{language === 'tr' ? 'IoT Paneli' : 'IoT Panel'}</span>
@@ -66,7 +66,7 @@ export function HiddenNavigationTabs({
         variant={activeTab === 'terminal' ? 'secondary' : 'ghost'}
         size="sm"
         onClick={() => setActiveTab('terminal')}
-        className={`h-9 px-4 text-xs font-black tracking-wider  transition-all gap-2 ${activeTab === 'terminal' ? 'bg-emerald-500/10 text-emerald-500' : 'text-secondary-500 hover:text-emerald-500'} ${isMobile ? 'flex-1 min-w-0' : ''}`}
+        className={`h-9 px-4 text-xs font-black tracking-wider  transition-all gap-2 ${activeTab === 'terminal' ? 'bg-success-500/10 text-success-500' : 'text-secondary-500 hover:text-success-500'} ${isMobile ? 'flex-1 min-w-0' : ''}`}
       >
         <TerminalIcon className="w-4 h-4" />
         <span className={isMobile ? 'sr-only' : 'hidden md:inline'}>{labels.consoleTab}</span>

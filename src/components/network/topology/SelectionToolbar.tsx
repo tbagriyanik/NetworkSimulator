@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { X, Trash2 } from 'lucide-react';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
@@ -41,7 +41,7 @@ export function SelectionToolbar({
         pointerEvents: 'auto'
       }}
       className={`px-3 py-1.5 rounded-xl shadow-2xl flex items-center gap-2 selection-toolbar panel-ambient-glow ${
-        isDark ? 'bg-slate-800/95 text-white border border-slate-700' : 'bg-white text-slate-900 border border-slate-200'
+        isDark ? 'bg-secondary-800/95 text-white border border-secondary-700' : 'bg-white text-secondary-900 border border-secondary-200'
       } backdrop-blur-md`}
       onClick={(e) => {
         e.stopPropagation();
@@ -63,7 +63,7 @@ export function SelectionToolbar({
             handleAlign('left');
           }}
           className={`p-1.5 rounded-lg transition-colors ${
-            isDark ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-600'
+            isDark ? 'hover:bg-secondary-700 text-secondary-300' : 'hover:bg-secondary-100 text-secondary-600'
           }`}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -80,7 +80,7 @@ export function SelectionToolbar({
             handleAlign('top');
           }}
           className={`p-1.5 rounded-lg transition-colors ${
-            isDark ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-600'
+            isDark ? 'hover:bg-secondary-700 text-secondary-300' : 'hover:bg-secondary-100 text-secondary-600'
           }`}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,8 +88,8 @@ export function SelectionToolbar({
           </svg>
         </button>
       </TooltipWrapper>
-      <div className="w-px h-4 bg-slate-700/30 mx-1" />
-      <span className="text-xs font-semibold whitespace-nowrap bg-slate-700/30 px-2 py-0.5 rounded">
+      <div className="w-px h-4 bg-secondary-700/30 mx-1" />
+      <span className="text-xs font-semibold whitespace-nowrap bg-secondary-700/30 px-2 py-0.5 rounded">
         {selectedDeviceIds.length}
       </span>
       <TooltipWrapper title={t.cancel}>
@@ -111,7 +111,7 @@ export function SelectionToolbar({
             }
           }}
           className={`p-1.5 rounded-lg transition-colors ${
-            isDark ? 'hover:bg-slate-700 text-slate-200' : 'hover:bg-slate-100 text-slate-600'
+            isDark ? 'hover:bg-secondary-700 text-secondary-200' : 'hover:bg-secondary-100 text-secondary-600'
           }`}
         >
           <X className="w-4 h-4" />
@@ -127,7 +127,7 @@ export function SelectionToolbar({
             selectedDeviceIds.forEach(id => deleteDevice(id));
             setSelectedDeviceIds([]);
           }}
-          className="p-1.5 rounded-lg hover:bg-red-500/20 text-red-500 transition-colors"
+          className="p-1.5 rounded-lg hover:bg-error-500/20 text-error-500 transition-colors"
         >
           <Trash2 className="w-4 h-4" />
         </button>

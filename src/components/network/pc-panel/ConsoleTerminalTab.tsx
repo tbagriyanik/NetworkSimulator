@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useRef, useEffect } from 'react';
 import { Laptop, CornerDownLeft, X } from 'lucide-react';
@@ -111,7 +111,7 @@ export function ConsoleTerminalTab({
         <div className="flex flex-col gap-1">
           <div className="text-xs">
             {isConsoleConnected && connectedDeviceId ? (
-              <span className="text-emerald-500 font-medium">
+              <span className="text-success-500 font-medium">
                 {t.physicalConnectionDetected} {topologyDevices.find((d: CanvasDevice) => d.id === connectedDeviceId)?.name || connectedDeviceId}
               </span>
             ) : (
@@ -126,7 +126,7 @@ export function ConsoleTerminalTab({
           size="sm"
           onClick={isConsoleConnected ? () => { setIsConsoleConnected(false); setConnectedDeviceId(null); } : handleConnect}
           disabled={isPcPoweredOff || (!consoleDevice && !isConsoleConnected)}
-          className={isConsoleConnected ? 'bg-rose-600 hover:bg-rose-700 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}
+          className={isConsoleConnected ? 'bg-error-600 hover:bg-error-700 text-white' : 'bg-success-600 hover:bg-success-700 text-white'}
         >
           {isConsoleConnected ? t.disconnect : t.connect}
         </Button>
@@ -156,7 +156,7 @@ export function ConsoleTerminalTab({
             <div key={line.id} className="break-all animate-in fade-in slide-in-from-left-1 duration-200">
               {line.type === 'command' && (
                 <div className="flex items-start gap-2 text-accent-500 font-bold">
-                  <span className="shrink-0 text-emerald-400">
+                  <span className="shrink-0 text-success-400">
                     <Laptop className="w-4 h-4" />
                   </span>
                   <span className="shrink-0 opacity-40 select-none font-geist-mono">
@@ -170,7 +170,7 @@ export function ConsoleTerminalTab({
                   <span>{highlightText(line.content)}</span>
                 </div>
               )}
-              {line.type === 'error' && <span className="text-rose-500 font-bold italic">{highlightText(line.content)}</span>}
+              {line.type === 'error' && <span className="text-error-500 font-bold italic">{highlightText(line.content)}</span>}
               {line.type === 'success' && <span className="text-accent-500 font-bold text-xs tracking-widest opacity-80">{highlightText(line.content)}</span>}
             </div>
           ))
@@ -294,7 +294,7 @@ export function ConsoleTerminalTab({
                 type="button"
                 disabled={isConsoleInputDisabled}
                 variant="ghost"
-                className="shrink-0 rounded-xl hover:bg-rose-500/20 text-rose-500 px-2 h-9 text-xs"
+                className="shrink-0 rounded-xl hover:bg-error-500/20 text-error-500 px-2 h-9 text-xs"
                 onClick={() => {
                   if (onExecuteDeviceCommand && connectedDeviceId) {
                     if (consoleNeedsPassword) {
@@ -311,7 +311,7 @@ export function ConsoleTerminalTab({
                 title={t.language === 'tr' ? 'İptal' : 'Cancel'}
               >
                 <X className={cn("w-4 h-4 mr-1", isMobile && "w-3 h-3")} />
-                <span className="text-rose-600 dark:text-rose-400 font-medium">{t.language === 'tr' ? 'İptal' : 'Cancel'}</span>
+                <span className="text-error-600 dark:text-error-400 font-medium">{t.language === 'tr' ? 'İptal' : 'Cancel'}</span>
               </Button>
             )}
 
@@ -319,14 +319,14 @@ export function ConsoleTerminalTab({
               type="submit"
               disabled={isConsoleInputDisabled}
               className={cn(
-                "shrink-0 rounded-xl shadow-lg px-3 bg-zinc-800 text-white hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200",
+                "shrink-0 rounded-xl shadow-lg px-3 bg-secondary-800 text-white hover:bg-secondary-700 dark:bg-white dark:text-secondary-900 dark:hover:bg-secondary-200",
                 isMobile ? "h-9 text-xs" : "h-11 text-sm",
                 isConsoleConnected && (consoleNeedsPassword || consoleConfirmDialog?.show || consoleReloadPending)
-                  && "bg-amber-500 hover:bg-amber-600 text-white"
+                  && "bg-warning-500 hover:bg-warning-600 text-white"
               )}
             >
               <span className="rounded-md p-1">
-                <CornerDownLeft className={cn("w-4 h-4 text-white dark:text-zinc-900", isMobile && "w-3 h-3")} />
+                <CornerDownLeft className={cn("w-4 h-4 text-white dark:text-secondary-900", isMobile && "w-3 h-3")} />
               </span>
             </Button>
           </form>

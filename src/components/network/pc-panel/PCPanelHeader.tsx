@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { ArrowLeft, Settings, SlidersHorizontal, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -115,8 +115,8 @@ export function PCPanelHeader({
                 className={cn(
                   "h-7 w-7 md:h-9 md:w-9 rounded-full",
                   activeTab === 'settings'
-                    ? (isDark ? "bg-violet-500/20 text-violet-300" : "bg-violet-100 text-violet-700")
-                    : (isDark ? "text-violet-300 hover:bg-white/5" : "text-violet-700 hover:bg-secondary-100")
+                    ? (isDark ? "bg-purple-500/20 text-purple-300" : "bg-purple-100 text-purple-700")
+                    : (isDark ? "text-purple-300 hover:bg-white/5" : "text-purple-700 hover:bg-secondary-100")
                 )}
                 aria-label={language === 'tr' ? 'Ayarlar' : 'Settings'}
               >
@@ -161,8 +161,8 @@ export function PCPanelHeader({
                 className={cn(
                   "h-7 w-7 md:h-9 md:w-9 rounded-full transition-all",
                   isPcPoweredOff
-                    ? 'text-rose-500 hover:text-rose-400 hover:bg-rose-500/10'
-                    : 'text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10'
+                    ? 'text-error-500 hover:text-error-400 hover:bg-error-500/10'
+                    : 'text-success-500 hover:text-success-400 hover:bg-success-500/10'
                 )}
                 aria-label={t.power}
                 disabled={!onTogglePower}
@@ -181,7 +181,7 @@ export function PCPanelHeader({
                   onClick={onClose}
                   className={cn(
                     "h-7 w-7 rounded-full",
-                    isDark ? "text-rose-400 hover:bg-rose-500/10" : "text-rose-600 hover:bg-rose-500/10"
+                    isDark ? "text-error-400 hover:bg-error-500/10" : "text-error-600 hover:bg-error-500/10"
                   )}
                   aria-label={language === 'tr' ? 'Kapat' : 'Close'}
                 >

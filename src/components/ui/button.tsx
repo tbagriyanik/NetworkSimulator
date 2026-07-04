@@ -1,4 +1,4 @@
-import * as React from "react"
+﻿import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 
@@ -10,7 +10,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-zinc-800 text-white shadow-xs hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200",
+          "bg-secondary-800 text-white shadow-xs hover:bg-secondary-700 dark:bg-white dark:text-secondary-900 dark:hover:bg-secondary-200",
         destructive:
           "bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
@@ -18,20 +18,20 @@ const buttonVariants = cva(
         secondary:
           "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80 dark:hover:bg-secondary/60",
         ghost:
-          "hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100 shadow-none before:hidden",
+          "hover:bg-secondary-100 hover:text-secondary-900 dark:hover:bg-secondary-800 dark:hover:text-secondary-100 shadow-none before:hidden",
         link: "text-primary underline-offset-4 hover:underline shadow-none before:hidden",
         'glass-primary':
-          "border-cyan-500/20 text-white shadow-cyan-500/5 bg-cyan-600/80 hover:bg-cyan-500 hover:border-cyan-400 hover:shadow-cyan-500/15 backdrop-blur-md rounded-lg text-xs font-semibold",
+          "border-accent-500/20 text-white shadow-accent-500/5 bg-accent-600/80 hover:bg-accent-500 hover:border-accent-400 hover:shadow-accent-500/15 backdrop-blur-md rounded-lg text-xs font-semibold",
         'glass-secondary':
-          "border-slate-700/40 text-slate-300 shadow-slate-900/30 bg-slate-800/80 hover:bg-slate-700 hover:border-slate-600 hover:text-white backdrop-blur-md rounded-lg text-xs font-semibold dark:bg-slate-900/60 dark:border-slate-800 dark:hover:bg-slate-800 dark:hover:border-slate-700",
+          "border-secondary-700/40 text-secondary-300 shadow-secondary-900/30 bg-secondary-800/80 hover:bg-secondary-700 hover:border-secondary-600 hover:text-white backdrop-blur-md rounded-lg text-xs font-semibold dark:bg-secondary-900/60 dark:border-secondary-800 dark:hover:bg-secondary-800 dark:hover:border-secondary-700",
         'glass-success':
-          "border-emerald-500/20 text-white shadow-emerald-500/5 bg-emerald-600/80 hover:bg-emerald-500 hover:border-emerald-400 hover:shadow-emerald-500/15 backdrop-blur-md rounded-lg text-xs font-semibold",
+          "border-success-500/20 text-white shadow-success-500/5 bg-success-600/80 hover:bg-success-500 hover:border-success-400 hover:shadow-success-500/15 backdrop-blur-md rounded-lg text-xs font-semibold",
         'glass-danger':
-          "border-rose-500/20 text-white shadow-rose-500/5 bg-rose-600/80 hover:bg-rose-500 hover:border-rose-400 hover:shadow-rose-500/15 backdrop-blur-md rounded-lg text-xs font-semibold",
+          "border-error-500/20 text-white shadow-error-500/5 bg-error-600/80 hover:bg-error-500 hover:border-error-400 hover:shadow-error-500/15 backdrop-blur-md rounded-lg text-xs font-semibold",
         'glass-warning':
-          "border-amber-500/20 text-white shadow-amber-500/5 bg-amber-600/80 hover:bg-amber-500 hover:border-amber-400 hover:shadow-amber-500/15 backdrop-blur-md rounded-lg text-xs font-semibold",
+          "border-warning-500/20 text-white shadow-warning-500/5 bg-warning-600/80 hover:bg-warning-500 hover:border-warning-400 hover:shadow-warning-500/15 backdrop-blur-md rounded-lg text-xs font-semibold",
         'glass-indigo':
-          "border-indigo-500/20 text-white shadow-indigo-500/5 bg-indigo-600/80 hover:bg-indigo-500 hover:border-indigo-400 hover:shadow-indigo-500/15 backdrop-blur-md rounded-lg text-xs font-semibold",
+          "border-primary-500/20 text-white shadow-primary-500/5 bg-primary-600/80 hover:bg-primary-500 hover:border-primary-400 hover:shadow-primary-500/15 backdrop-blur-md rounded-lg text-xs font-semibold",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

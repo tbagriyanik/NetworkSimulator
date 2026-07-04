@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { FormInput } from '@/components/ui/FormInput';
@@ -120,7 +120,7 @@ export function IpSettingsTab({
                 dispatchDeviceConfig({ macAddress: isValidMAC(newMac) ? normalizeMAC(newMac) : newMac });
               }}
               placeholder="00-1a-2b-3c-4d-5e"
-              className={`h-9 ${errors.mac ? 'border-rose-500' : ''}`}
+              className={`h-9 ${errors.mac ? 'border-error-500' : ''}`}
             />
           </div>
         </div>

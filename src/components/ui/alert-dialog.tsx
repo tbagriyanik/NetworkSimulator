@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import * as React from "react"
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
@@ -35,7 +35,7 @@ function AlertDialogOverlay({
         <AlertDialogPrimitive.Overlay
             data-slot="alert-dialog-overlay"
             className={cn(
-                "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-[10001] bg-slate-900/40",
+                "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-[10001] bg-secondary-900/40",
                 className
             )}
             {...props}
@@ -119,7 +119,7 @@ function AlertDialogAction({
         <AlertDialogPrimitive.Action
             data-slot="alert-dialog-action"
             className={cn(
-                "inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold ring-offset-background transition-colors focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-zinc-800 text-white hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 h-9 shrink-0 px-4 py-2",
+                "inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold ring-offset-background transition-colors focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-secondary-800 text-white hover:bg-secondary-700 dark:bg-white dark:text-secondary-900 dark:hover:bg-secondary-200 h-9 shrink-0 px-4 py-2",
                 className
             )}
             {...props}

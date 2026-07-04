@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import type { CanvasDevice } from '../networkTopology.types';
 
@@ -21,7 +21,7 @@ export function PingCursor({
 
   const bgClass = pingSource
     ? (isDark ? 'bg-yellow-500 text-white' : 'bg-yellow-400 text-white')
-    : (isDark ? 'bg-indigo-600 text-white' : 'bg-indigo-500 text-white');
+    : (isDark ? 'bg-primary-600 text-white' : 'bg-primary-500 text-white');
 
   return (
     <div

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -31,33 +31,33 @@ export function SidebarPalette({
   const isTR = language === 'tr';
 
   const colorMap: Record<string, { active: string; inactive: string; hover: string }> = {
-    straight: { active: 'text-blue-400', inactive: 'text-blue-500', hover: 'hover:text-blue-400' },
-    crossover: { active: 'text-orange-400', inactive: 'text-orange-500', hover: 'hover:text-orange-400' },
-    serial: { active: 'text-lime-400', inactive: 'text-lime-500', hover: 'hover:text-lime-400' },
-    console: { active: 'text-cyan-400', inactive: 'text-cyan-500', hover: 'hover:text-cyan-400' },
+    straight: { active: 'text-primary-400', inactive: 'text-primary-500', hover: 'hover:text-primary-400' },
+    crossover: { active: 'text-warning-400', inactive: 'text-warning-500', hover: 'hover:text-warning-400' },
+    serial: { active: 'text-success-400', inactive: 'text-success-500', hover: 'hover:text-success-400' },
+    console: { active: 'text-accent-400', inactive: 'text-accent-500', hover: 'hover:text-accent-400' },
   };
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent side="left" className={`${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white'} p-0 palette w-[300px] sm:w-[350px] border-r border-slate-800/20 shadow-2xl transition-all duration-300 custom-scrollbar`}>
-        <SheetHeader className="p-6 border-b border-slate-800/50">
+      <SheetContent side="left" className={`${isDark ? 'bg-secondary-900 border-secondary-800' : 'bg-white'} p-0 palette w-[300px] sm:w-[350px] border-r border-secondary-800/20 shadow-2xl transition-all duration-300 custom-scrollbar`}>
+        <SheetHeader className="p-6 border-b border-secondary-800/50">
           <SheetTitle className="text-lg font-bold flex items-center gap-2">
-            <Plus className="w-5 h-5 text-red-500" />
+            <Plus className="w-5 h-5 text-error-500" />
             {t.addDeviceOrCable}
           </SheetTitle>
         </SheetHeader>
         <div className="p-6 space-y-8 overflow-y-auto max-h-[calc(100vh-100px)] custom-scrollbar">
           {/* Devices Section */}
           <div className="space-y-4">
-            <p className="text-[10px] font-bold tracking-widest text-slate-500 ml-1 uppercase">{t.devices}</p>
+            <p className="text-[10px] font-bold tracking-widest text-secondary-500 ml-1 uppercase">{t.devices}</p>
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => { addDevice('pc'); onOpenChange(false); }}
                 className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${
-                  isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-blue-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-blue-500/50'
+                  isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-primary-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-primary-500/50'
                 }`}
               >
-                <div className='text-blue-500'>
+                <div className='text-primary-500'>
                   {deviceIcons.pc}
                 </div>
                 <span className="text-xs font-bold text-center">
@@ -67,10 +67,10 @@ export function SidebarPalette({
               <button
                 onClick={() => { addDevice('switch'); onOpenChange(false); }}
                 className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${
-                  isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-cyan-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-cyan-500/50'
+                  isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-accent-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-accent-500/50'
                 }`}
               >
-                <div className='text-cyan-500'>
+                <div className='text-accent-500'>
                   {deviceIcons.switchL2 || deviceIcons.switch}
                 </div>
                 <span className="text-xs font-bold text-center">
@@ -80,7 +80,7 @@ export function SidebarPalette({
               <button
                 onClick={() => { addDevice('switch', 'L3'); onOpenChange(false); }}
                 className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${
-                  isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-purple-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-purple-500/50'
+                  isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-purple-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-purple-500/50'
                 }`}
               >
                 <div className='text-purple-500'>
@@ -95,7 +95,7 @@ export function SidebarPalette({
               <button
                 onClick={() => { addDevice('router'); onOpenChange(false); }}
                 className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${
-                  isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-purple-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-purple-500/50'
+                  isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-purple-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-purple-500/50'
                 }`}
               >
                 <div className='text-purple-500'>
@@ -108,10 +108,10 @@ export function SidebarPalette({
               <button
                 onClick={() => { addDevice('iot'); onOpenChange(false); }}
                 className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${
-                  isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-orange-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-orange-500/50'
+                  isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-warning-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-warning-500/50'
                 }`}
               >
-                <div className='text-orange-500'>
+                <div className='text-warning-500'>
                   {deviceIcons.iot}
                 </div>
                 <span className="text-xs font-bold text-center">
@@ -121,10 +121,10 @@ export function SidebarPalette({
               <button
                 onClick={() => { addDevice('firewall'); onOpenChange(false); }}
                 className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${
-                  isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-red-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-red-500/50'
+                  isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-error-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-error-500/50'
                 }`}
               >
-                <div className='text-red-500'>
+                <div className='text-error-500'>
                   {deviceIcons.firewall}
                 </div>
                 <span className="text-xs font-bold text-center">
@@ -134,7 +134,7 @@ export function SidebarPalette({
               <button
                 onClick={() => { addDevice('wlc'); onOpenChange(false); }}
                 className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${
-                  isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-yellow-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-yellow-500/50'
+                  isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-yellow-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-yellow-500/50'
                 }`}
               >
                 <div className='text-yellow-500'>
@@ -149,8 +149,8 @@ export function SidebarPalette({
 
           {/* Cables Section */}
           <div className="space-y-3">
-            <p className="text-[10px] font-bold tracking-widest text-slate-500 ml-1 uppercase">{t.cableTypes}</p>
-            <div className={`flex flex-col gap-2 rounded-xl border p-2 ${isDark ? 'border-slate-700/50 bg-slate-800/30' : 'border-slate-200 bg-slate-50/50'}`}>
+            <p className="text-[10px] font-bold tracking-widest text-secondary-500 ml-1 uppercase">{t.cableTypes}</p>
+            <div className={`flex flex-col gap-2 rounded-xl border p-2 ${isDark ? 'border-secondary-700/50 bg-secondary-800/30' : 'border-secondary-200 bg-secondary-50/50'}`}>
               {(['straight', 'crossover', 'serial', 'console'] as CableType[]).map((type) => {
                 const c = colorMap[type] || colorMap.console;
                 return (
@@ -158,14 +158,14 @@ export function SidebarPalette({
                     key={type}
                     onClick={() => { onCableChange({ ...cableInfo, cableType: type }); onOpenChange(false); }}
                     className={`flex items-center gap-3 p-3 rounded-lg transition-all border ${
-                      isDark ? 'hover:bg-slate-700/50' : 'hover:bg-slate-200/50'
+                      isDark ? 'hover:bg-secondary-700/50' : 'hover:bg-secondary-200/50'
                     } ${
                       cableInfo.cableType === type
-                        ? isDark ? 'bg-slate-700/80 border-slate-600' : 'bg-white border-slate-200 shadow-sm'
+                        ? isDark ? 'bg-secondary-700/80 border-secondary-600' : 'bg-white border-secondary-200 shadow-sm'
                         : 'border-transparent'
                     } ${cableInfo.cableType === type ? c.active : `${c.inactive} ${c.hover}`}`}
                   >
-                    <div className={`p-2 rounded-md ${cableInfo.cableType === type ? (isDark ? 'bg-slate-800' : 'bg-slate-50') : ''}`}>
+                    <div className={`p-2 rounded-md ${cableInfo.cableType === type ? (isDark ? 'bg-secondary-800' : 'bg-secondary-50') : ''}`}>
                       {type === 'straight' ? (
                         <Cable className="w-5 h-5" />
                       ) : type === 'crossover' ? (

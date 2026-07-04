@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -96,7 +96,7 @@ export function TopologyToolbar({
    ]);
 
   return (
-    <div className={cn("fixed top-[72px] left-0 right-0 z-30 px-4 py-[5px] pt-3 border-b backdrop-blur-md hidden md:flex items-center gap-3", isDark ? "bg-slate-900/95 border-slate-800" : "bg-white/95 border-slate-200 shadow-sm")}>
+    <div className={cn("fixed top-[72px] left-0 right-0 z-30 px-4 py-[5px] pt-3 border-b backdrop-blur-md hidden md:flex items-center gap-3", isDark ? "bg-secondary-900/95 border-secondary-800" : "bg-white/95 border-secondary-200 shadow-sm")}>
       {/* Reset View Button */}
       <Tooltip>
         <TooltipTrigger asChild>
@@ -105,8 +105,8 @@ export function TopologyToolbar({
             variant="ghost"
             size="icon"
             className={`h-8 w-8 ${isDark
-              ? 'text-teal-400 hover:text-slate-300 hover:bg-teal-400/10'
-              : 'text-teal-600 hover:text-slate-600 hover:bg-teal-600/10'
+              ? 'text-accent-400 hover:text-secondary-300 hover:bg-accent-400/10'
+              : 'text-accent-600 hover:text-secondary-600 hover:bg-accent-600/10'
               }`}
             onClick={() => {
               setZoom(1.0);
@@ -130,8 +130,8 @@ export function TopologyToolbar({
           <Button
             variant="ghost"
             className={`w-48 flex items-center gap-2 px-2.5 py-1.5 rounded-lg border transition-all ${isDark
-              ? 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:border-slate-600'
-              : 'bg-white border-slate-200 text-slate-700 hover:text-slate-900 hover:border-slate-400'
+              ? 'bg-secondary-900 border-secondary-800 text-secondary-300 hover:text-white hover:border-secondary-600'
+              : 'bg-white border-secondary-200 text-secondary-700 hover:text-secondary-900 hover:border-secondary-400'
               }`}
           >
             <div className="flex items-center gap-2">
@@ -142,10 +142,10 @@ export function TopologyToolbar({
                     const status = activeTopologyDevice?.status || 'online';
                     const statusColor =
                       status === 'offline'
-                        ? 'bg-rose-500'
+                        ? 'bg-error-500'
                         : status === 'online'
-                          ? 'bg-emerald-400'
-                          : 'bg-amber-400';
+                          ? 'bg-success-400'
+                          : 'bg-warning-400';
                     const statusLabel =
                       language === 'tr'
                         ? status === 'offline'
@@ -179,8 +179,8 @@ export function TopologyToolbar({
                 </>
               ) : (
                 <>
-                <Plus className={`w-4 h-4 text-slate-500 ${toolbarGlowClass}`} />
-                  <span className="text-sm font-bold text-slate-500">
+                <Plus className={`w-4 h-4 text-secondary-500 ${toolbarGlowClass}`} />
+                  <span className="text-sm font-bold text-secondary-500">
                     {t.selectDeviceDropdown}
                   </span>
                 </>
@@ -189,15 +189,15 @@ export function TopologyToolbar({
             <ChevronDown className="w-3 h-3 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className={`${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white'} w-48`}>
-          <DropdownMenuLabel className="text-[11px] font-bold tracking-widest text-slate-500 py-2">
+        <DropdownMenuContent align="start" className={`${isDark ? 'bg-secondary-900 border-secondary-800' : 'bg-white'} w-48`}>
+          <DropdownMenuLabel className="text-[11px] font-bold tracking-widest text-secondary-500 py-2">
             {topologyDevices.length > 0 ? t.selectDevice : t.addDevicesFirst}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           {topologyDevices.length > 0 && (
             <div className="px-2 pb-1.5">
               <div className="relative">
-                <Search className={`absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none ${toolbarGlowClass}`} />
+                <Search className={`absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-secondary-400 pointer-events-none ${toolbarGlowClass}`} />
                 <Input
                   value={deviceSearchQuery}
                   onChange={e => setDeviceSearchQuery(e.target.value)}
@@ -209,7 +209,7 @@ export function TopologyToolbar({
                 {deviceSearchQuery && (
                   <button
                     onClick={() => setDeviceSearchQuery('')}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-secondary-200 dark:hover:bg-secondary-700 text-secondary-400 hover:text-secondary-600 dark:hover:text-secondary-300 transition-colors"
                   >
                     <X className={`w-3 h-3 ${toolbarGlowClass}`} />
                   </button>
@@ -232,15 +232,15 @@ export function TopologyToolbar({
                   const status = device.status || 'online';
                   const statusColor =
                     status === 'offline'
-                      ? 'bg-rose-500'
+                      ? 'bg-error-500'
                       : status === 'online'
-                        ? 'bg-emerald-400'
-                        : 'bg-amber-400';
+                        ? 'bg-success-400'
+                        : 'bg-warning-400';
 
                   return (
                     <DropdownMenuItem
                       key={device.id}
-                      className={`flex items-center gap-2 py-1.5 cursor-pointer ${activeDeviceId === device.id ? 'bg-violet-500/10 text-violet-400' : ''}`}
+                      className={`flex items-center gap-2 py-1.5 cursor-pointer ${activeDeviceId === device.id ? 'bg-purple-500/10 text-purple-400' : ''}`}
                       onClick={() => { handleDeviceSelectFromMenu(device.type, device.id, device.switchModel, device.name); setDeviceSearchQuery(''); }}
                     >
                       <div className="flex items-center gap-2 cursor-pointer">
@@ -259,7 +259,7 @@ export function TopologyToolbar({
                   );
                 })
             ) : (
-              <div className="p-3 text-center text-[11px] text-slate-500 italic">
+              <div className="p-3 text-center text-[11px] text-secondary-500 italic">
                 {t.noDevicesInTopology}
               </div>
             )}
@@ -269,14 +269,14 @@ export function TopologyToolbar({
 
       {/* Device Buttons - hidden during exam */}
       {!isExamActive && (
-        <div className={`flex items-center gap-0 p-1 rounded-xl border ${isDark ? 'bg-slate-900/40 border-slate-700/30' : 'bg-blue-50/50 border-blue-100/50'}`}>
+        <div className={`flex items-center gap-0 p-1 rounded-xl border ${isDark ? 'bg-secondary-900/40 border-secondary-700/30' : 'bg-primary-50/50 border-primary-100/50'}`}>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 aria-label={t.addPC}
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 p-0 text-blue-500 hover:bg-blue-500/10"
+                className="h-8 w-8 p-0 text-primary-500 hover:bg-primary-500/10"
                 onClick={() => { window.dispatchEvent(new CustomEvent('add-device', { detail: 'pc' })); }}
               >
                   <svg className={`w-8 h-8 ${toolbarGlowClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -292,7 +292,7 @@ export function TopologyToolbar({
                 aria-label={t.addL2Switch}
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 p-0 text-cyan-500 hover:bg-cyan-500/10"
+                className="h-8 w-8 p-0 text-accent-500 hover:bg-accent-500/10"
                 onClick={() => {
                   if (typeof window !== 'undefined') {
                     const event = new CustomEvent('add-device', { detail: 'switchL2' });
@@ -356,7 +356,7 @@ export function TopologyToolbar({
                 aria-label={t.addIoT}
                 variant="ghost"
                 size="icon"
-className="h-8 w-8 p-0 text-orange-500 hover:bg-orange-500/10"
+className="h-8 w-8 p-0 text-warning-500 hover:bg-warning-500/10"
                  onClick={() => {
                    if (typeof window !== 'undefined') {
                      const event = new CustomEvent('add-device', { detail: 'iot' });
@@ -381,7 +381,7 @@ className="h-8 w-8 p-0 text-orange-500 hover:bg-orange-500/10"
                 aria-label={t.addFirewall}
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 p-0 text-red-500 hover:bg-red-500/10"
+                className="h-8 w-8 p-0 text-error-500 hover:bg-error-500/10"
                 onClick={() => {
                   if (typeof window !== 'undefined') {
                     const event = new CustomEvent('add-device', { detail: 'firewall' });
@@ -424,13 +424,13 @@ className="h-8 w-8 p-0 text-orange-500 hover:bg-orange-500/10"
       )}
 
       {/* Cable Type Buttons */}
-      <div className={`flex items-center rounded-lg border overflow-hidden ${isDark ? 'bg-slate-800/50 border-slate-800' : 'bg-slate-100 border-slate-200'}`}>
+      <div className={`flex items-center rounded-lg border overflow-hidden ${isDark ? 'bg-secondary-800/50 border-secondary-800' : 'bg-secondary-100 border-secondary-200'}`}>
         {(['straight', 'crossover', 'serial', 'console'] as CableType[]).map((type) => {
           const colorMap: Record<string, string> = {
-            straight: cableInfo.cableType === type ? 'text-blue-400' : 'text-blue-500 hover:text-blue-400',
-            crossover: cableInfo.cableType === type ? 'text-orange-400' : 'text-orange-500 hover:text-orange-400',
-            serial: cableInfo.cableType === type ? 'text-lime-400' : 'text-lime-500 hover:text-lime-400',
-            console: cableInfo.cableType === type ? 'text-cyan-400' : 'text-cyan-500 hover:text-cyan-400',
+            straight: cableInfo.cableType === type ? 'text-primary-400' : 'text-primary-500 hover:text-primary-400',
+            crossover: cableInfo.cableType === type ? 'text-warning-400' : 'text-warning-500 hover:text-warning-400',
+            serial: cableInfo.cableType === type ? 'text-success-400' : 'text-success-500 hover:text-success-400',
+            console: cableInfo.cableType === type ? 'text-accent-400' : 'text-accent-500 hover:text-accent-400',
           };
           return (
           <Tooltip key={type}>
@@ -441,7 +441,7 @@ className="h-8 w-8 p-0 text-orange-500 hover:bg-orange-500/10"
                 size="sm"
                 className={`h-8 px-2 flex items-center gap-1 text-xs font-bold
                   ${cableInfo.cableType === type
-                    ? isDark ? 'bg-slate-700/80' : 'bg-slate-200/80'
+                    ? isDark ? 'bg-secondary-700/80' : 'bg-secondary-200/80'
                     : ''
                   }
                   ${colorMap[type] || colorMap.console}`}
@@ -466,7 +466,7 @@ className="h-8 w-8 p-0 text-orange-500 hover:bg-orange-500/10"
         })}
       </div>
 
-      <div className={`w-px h-4 ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`} />
+      <div className={`w-px h-4 ${isDark ? 'bg-secondary-700' : 'bg-secondary-200'}`} />
 
       {/* Connect Button */}
       <Tooltip>
@@ -475,7 +475,7 @@ className="h-8 w-8 p-0 text-orange-500 hover:bg-orange-500/10"
             aria-label={t.connectDevices}
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-cyan-500 hover:bg-cyan-500/10"
+            className="h-8 w-8 text-accent-500 hover:bg-accent-500/10"
             onClick={() => {
               if (typeof window !== 'undefined') {
                 const event = new CustomEvent('trigger-topology-connect');
@@ -498,7 +498,7 @@ className="h-8 w-8 p-0 text-orange-500 hover:bg-orange-500/10"
             aria-label={t.ping}
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-amber-500 hover:bg-amber-500/10"
+            className="h-8 w-8 text-warning-500 hover:bg-warning-500/10"
             disabled={isPingPanelOpen}
             onClick={() => {
               const event = new CustomEvent('toggle-ping-mode');
@@ -523,7 +523,7 @@ className="h-8 w-8 p-0 text-orange-500 hover:bg-orange-500/10"
             aria-label={t.addNote}
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-slate-500 hover:bg-slate-500/10"
+            className="h-8 w-8 text-secondary-500 hover:bg-secondary-500/10"
             onClick={() => {
               const event = new CustomEvent('add-note');
               window.dispatchEvent(event);
@@ -544,7 +544,7 @@ className="h-8 w-8 p-0 text-orange-500 hover:bg-orange-500/10"
             aria-label={t.environmentSettings}
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-emerald-500 hover:bg-emerald-500/10"
+            className="h-8 w-8 text-success-500 hover:bg-success-500/10"
             onClick={() => setIsEnvironmentPanelOpen(true)}
           >
             <Leaf className={`w-4 h-4 ${toolbarGlowClass}`} />
@@ -561,8 +561,8 @@ className="h-8 w-8 p-0 text-orange-500 hover:bg-orange-500/10"
             variant="ghost"
             size="icon"
             className={`h-8 w-8 transition-all ${isSimulationMode
-              ? 'text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 shadow-[0_0_8px_rgba(244,63,94,0.3)]'
-              : 'text-slate-500 hover:bg-slate-500/10'}`}
+              ? 'text-error-500 bg-error-500/10 hover:bg-error-500/20 shadow-[0_0_8px_rgba(244,63,94,0.3)]'
+              : 'text-secondary-500 hover:bg-secondary-500/10'}`}
             onClick={() => setSimulationMode(!isSimulationMode)}
           >
             <Activity className={`w-4 h-4 ${isSimulationMode ? 'animate-pulse' : ''} ${toolbarGlowClass}`} />
@@ -574,7 +574,7 @@ className="h-8 w-8 p-0 text-orange-500 hover:bg-orange-500/10"
         </TooltipContent>
       </Tooltip>
 
-      <div className={`w-px h-4 ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`} />
+      <div className={`w-px h-4 ${isDark ? 'bg-secondary-700' : 'bg-secondary-200'}`} />
 
       {/* Undo Button */}
       <Tooltip>
@@ -583,7 +583,7 @@ className="h-8 w-8 p-0 text-orange-500 hover:bg-orange-500/10"
             aria-label={t.undo}
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-slate-500 hover:bg-slate-500/10"
+            className="h-8 w-8 text-secondary-500 hover:bg-secondary-500/10"
             onClick={handleUndo}
             disabled={hasHydrated && !canUndo}
           >
@@ -603,7 +603,7 @@ className="h-8 w-8 p-0 text-orange-500 hover:bg-orange-500/10"
             aria-label={t.redo}
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-slate-500 hover:bg-slate-500/10"
+            className="h-8 w-8 text-secondary-500 hover:bg-secondary-500/10"
             onClick={handleRedo}
             disabled={hasHydrated && !canRedo}
           >
@@ -616,7 +616,7 @@ className="h-8 w-8 p-0 text-orange-500 hover:bg-orange-500/10"
         </TooltipContent>
       </Tooltip>
 
-      <div className={`w-px h-4 ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`} />
+      <div className={`w-px h-4 ${isDark ? 'bg-secondary-700' : 'bg-secondary-200'}`} />
 
       {/* Refresh Network Button */}
       <Tooltip>
@@ -649,7 +649,7 @@ className="h-8 w-8 p-0 text-orange-500 hover:bg-orange-500/10"
                 aria-label={t.roomStudentJoin}
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-blue-500 hover:bg-blue-500/10 hover:text-blue-600"
+                className="h-8 w-8 text-primary-500 hover:bg-primary-500/10 hover:text-primary-600"
                 onClick={onOpenStudentJoin}
               >
                 <Users className="w-4 h-4" />

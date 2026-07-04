@@ -1,4 +1,4 @@
-import { memo } from 'react';
+﻿import { memo } from 'react';
 import { CanvasConnection, CanvasDevice } from './networkTopology.types';
 import { isCableCompatible, CableInfo } from '@/lib/network/types';
 import { Trash2, Unplug, PlugZap } from 'lucide-react';
@@ -98,10 +98,10 @@ const ConnectionHandle = memo(function ConnectionHandle({
               rx="5"
               fill={isDark ? STUB_BG_DARK : STUB_BG}
               opacity="0.92"
-              className="drop-shadow-sm group-hover:fill-red-500/10 transition-colors"
+              className="drop-shadow-sm group-hover:fill-error-500/10 transition-colors"
             />
             <Trash2
-              className="w-3 h-3 text-red-500"
+              className="w-3 h-3 text-error-500"
               width={15}
               height={15}
               style={{ transform: 'translate(-18px, -8px)' }}
@@ -124,18 +124,18 @@ const ConnectionHandle = memo(function ConnectionHandle({
               rx="5"
               fill={isDark ? STUB_BG_DARK : STUB_BG}
               opacity="0.92"
-              className="drop-shadow-sm group-hover:fill-amber-500/10 transition-colors"
+              className="drop-shadow-sm group-hover:fill-warning-500/10 transition-colors"
             />
             {connection.active ? (
               <Unplug
-                className="w-3 h-3 text-amber-500"
+                className="w-3 h-3 text-warning-500"
                 width={15}
                 height={15}
                 style={{ transform: 'translate(2px, -8px)' }}
               />
             ) : (
               <PlugZap
-                className="w-3 h-3 text-emerald-500"
+                className="w-3 h-3 text-success-500"
                 width={15}
                 height={15}
                 style={{ transform: 'translate(2px, -8px)' }}

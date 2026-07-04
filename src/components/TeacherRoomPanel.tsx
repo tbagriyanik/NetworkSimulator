@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { Copy, Check, X, LogOut, FileDown, Loader2, UserKey } from 'lucide-react';
@@ -124,7 +124,7 @@ function RoomMonitor({ roomCode, onClose }: { roomCode: string; onClose: () => v
                 <FileDown className="w-3 h-3" />
               </Button>
               <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleCopy}>
-                {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+                {copied ? <Check className="w-3 h-3 text-success-500" /> : <Copy className="w-3 h-3" />}
               </Button>
             </>
           )}
@@ -132,13 +132,13 @@ function RoomMonitor({ roomCode, onClose }: { roomCode: string; onClose: () => v
         </div>
       </div>
 
-      {error === 'unauthorized' && <p className="text-xs text-red-400">{t.language === 'tr' ? 'Oda sahibi siz değilsiniz.' : 'You are not the room owner.'}</p>}
+      {error === 'unauthorized' && <p className="text-xs text-error-400">{t.language === 'tr' ? 'Oda sahibi siz değilsiniz.' : 'You are not the room owner.'}</p>}
       {error && error !== 'unauthorized' && <p className="text-xs text-destructive">{t.roomConnError}</p>}
 
       {error !== 'unauthorized' && (
         <div className="max-h-[calc(85vh-14rem)] overflow-y-auto">
           <table className="w-full border-collapse text-sm">
-            <thead className="sticky top-0 bg-background dark:bg-slate-950 z-10">
+            <thead className="sticky top-0 bg-background dark:bg-secondary-950 z-10">
               <tr className="border-b border-border">
                 <th className={thClass('name')} onClick={() => handleSort('name')}>{t.roomSortName}{sortIcon('name')}</th>
                 <th className={thClass('duration')} onClick={() => handleSort('duration')}>{t.roomDurationLabel}{sortIcon('duration')}</th>
@@ -160,7 +160,7 @@ function RoomMonitor({ roomCode, onClose }: { roomCode: string; onClose: () => v
                     <td className="px-2 py-2 tabular-nums text-muted-foreground">
                       {duration} {t.roomDuration}
                       {s.durationMinutes && duration > s.durationMinutes && (
-                        <span className="ml-1 text-[10px] text-red-400 font-semibold">{t.roomTimeUp}</span>
+                        <span className="ml-1 text-[10px] text-error-400 font-semibold">{t.roomTimeUp}</span>
                       )}
                     </td>
                     <td className="px-2 py-2 text-right">
@@ -295,7 +295,7 @@ export function TeacherRoomPanel() {
   return (
     <div className="fixed inset-0 z-[100] flex items-start justify-center pt-12" onClick={() => setShowTeacherPanel(false)}>
       <div
-        className="flex flex-col rounded-xl shadow-2xl border overflow-hidden liquid-glass-light border-slate-200/50 dark:border-slate-700/50 w-full max-w-xl mx-4 max-h-[85vh]"
+        className="flex flex-col rounded-xl shadow-2xl border overflow-hidden liquid-glass-light border-secondary-200/50 dark:border-secondary-700/50 w-full max-w-xl mx-4 max-h-[85vh]"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-muted/50 rounded-t-xl">
@@ -310,7 +310,7 @@ export function TeacherRoomPanel() {
               </Badge>
             )}
           </div>
-          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:bg-red-500 hover:text-white dark:hover:bg-red-600" title={t.roomClose} onClick={() => setShowTeacherPanel(false)}>
+          <Button variant="ghost" size="icon" className="h-7 w-7 text-error-500 hover:bg-error-500 hover:text-white dark:hover:bg-error-600" title={t.roomClose} onClick={() => setShowTeacherPanel(false)}>
             <X className="w-4 h-4" />
           </Button>
         </div>
@@ -318,7 +318,7 @@ export function TeacherRoomPanel() {
         <div className="p-4 space-y-4">
           {!activeCode ? (
             <>
-              {error && <p className="text-xs text-red-500 text-center font-bold mb-2">{error}</p>}
+              {error && <p className="text-xs text-error-500 text-center font-bold mb-2">{error}</p>}
               <Button onClick={handleCreate} className="w-full" disabled={isLoading}>
                 {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : t.roomCreateBtn}
               </Button>

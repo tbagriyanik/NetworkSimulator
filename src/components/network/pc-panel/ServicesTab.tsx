@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { Globe, Network, Download, History, Settings } from 'lucide-react';
@@ -213,7 +213,7 @@ export function ServicesTab({
               (tab === 'ntp' && serviceNtpEnabled)) && (
                 <span className={cn(
                   'w-2 h-2 rounded-full animate-pulse',
-                  isDark ? 'bg-emerald-400' : 'bg-emerald-500'
+                  isDark ? 'bg-success-400' : 'bg-success-500'
                 )} />
               )}
           </button>

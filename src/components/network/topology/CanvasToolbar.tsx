@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
@@ -37,7 +37,7 @@ export function CanvasToolbar({
   return (
     <div
       className={`fixed bottom-[60px] right-[10px] items-center gap-1 px-2 py-1 rounded-xl border ${
-        isDark ? 'bg-slate-800/90 border-slate-700/50 shadow-lg' : 'bg-white/95 border-slate-200/60 shadow-md'
+        isDark ? 'bg-secondary-800/90 border-secondary-700/50 shadow-lg' : 'bg-white/95 border-secondary-200/60 shadow-md'
       } flex z-40`}
     >
       <TooltipWrapper
@@ -65,7 +65,7 @@ export function CanvasToolbar({
             })
           }
           className={`w-7 h-7 flex items-center justify-center rounded ${
-            isDark ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-600'
+            isDark ? 'hover:bg-secondary-700 text-secondary-300' : 'hover:bg-secondary-100 text-secondary-600'
           }`}
         >
           −
@@ -79,10 +79,10 @@ export function CanvasToolbar({
         onWheel={handleZoomWheel}
         className={`text-xs font-mono w-12 text-center cursor-pointer select-none rounded transition-colors ${
           isDraggingZoom
-            ? 'text-blue-400'
+            ? 'text-primary-400'
             : isDark
-            ? 'text-slate-300 hover:bg-slate-700'
-            : 'text-slate-600 hover:bg-slate-100'
+            ? 'text-secondary-300 hover:bg-secondary-700'
+            : 'text-secondary-600 hover:bg-secondary-100'
         }`}
         title={t.dragToZoomOrScroll}
       >
@@ -114,21 +114,21 @@ export function CanvasToolbar({
             })
           }
           className={`w-7 h-7 flex items-center justify-center rounded ${
-            isDark ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-600'
+            isDark ? 'hover:bg-secondary-700 text-secondary-300' : 'hover:bg-secondary-100 text-secondary-600'
           }`}
         >
           +
         </button>
       </TooltipWrapper>
       
-      <div className={`w-px h-5 ${isDark ? 'bg-slate-600' : 'bg-slate-300'} mx-1`} />
+      <div className={`w-px h-5 ${isDark ? 'bg-secondary-600' : 'bg-secondary-300'} mx-1`} />
       
       <Tooltip>
         <TooltipTrigger asChild>
           <button
             onClick={resetView}
             className={`px-2 py-1 text-xs rounded ui-hover-surface ${
-              isDark ? 'text-slate-300 hover:text-slate-100' : 'text-slate-600 hover:text-slate-900'
+              isDark ? 'text-secondary-300 hover:text-secondary-100' : 'text-secondary-600 hover:text-secondary-900'
             }`}
           >
             {t.reset}

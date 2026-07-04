@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Port, PortLEDColor } from '@/lib/network/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,10 +37,10 @@ interface PortPanelProps {
 
 const ledColorClasses: Record<PortLEDColor, string> = {
   green: 'bg-success-500 shadow-[0_0_2px_rgba(34,197,94,0.2)]',
-  gray: 'bg-zinc-500 transition-colors',
-  orange: 'bg-orange-500 shadow-[0_0_2px_rgba(249,115,22,0.2)]',
-  white: 'bg-white shadow-[0_0_1px_rgba(255,255,255,0.2)] border border-zinc-300',
-  off: 'bg-zinc-700 transition-colors',
+  gray: 'bg-secondary-500 transition-colors',
+  orange: 'bg-warning-500 shadow-[0_0_2px_rgba(249,115,22,0.2)]',
+  white: 'bg-white shadow-[0_0_1px_rgba(255,255,255,0.2)] border border-secondary-300',
+  off: 'bg-secondary-700 transition-colors',
   red: 'bg-error-500 shadow-[0_0_2px_rgba(239,68,68,0.2)]'
 };
 
@@ -126,10 +126,10 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
           <div className="relative">
             <div className={`w-2.5 h-2.5 rounded-full ${ledColorClasses[color]} transition-all duration-300`} />
           </div>
-          <span className={`text-xs font-mono ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{label}</span>
+          <span className={`text-xs font-mono ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>{label}</span>
         </div>
       </TooltipTrigger>
-      <TooltipContent hideArrow side="bottom" className={`${isDark ? 'bg-zinc-900 border-zinc-800 text-white' : 'bg-white border-zinc-200 text-zinc-900'} p-2 text-xs rounded-lg shadow-xl`}>
+      <TooltipContent hideArrow side="bottom" className={`${isDark ? 'bg-secondary-900 border-secondary-800 text-white' : 'bg-white border-secondary-200 text-secondary-900'} p-2 text-xs rounded-lg shadow-xl`}>
         {tooltipText}
       </TooltipContent>
     </Tooltip>
@@ -231,7 +231,7 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
                 className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${ledColorClasses[ledColor]} transition-all duration-300`}
               />
             </div>
-            <span className={`text-sm font-mono ${isDark ? 'text-zinc-300' : 'text-zinc-700'} transition-colors`}>
+            <span className={`text-sm font-mono ${isDark ? 'text-secondary-300' : 'text-secondary-700'} transition-colors`}>
               {port.id}
             </span>
             <Badge
@@ -253,7 +253,7 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
               <span className={isDark ? 'text-secondary-500' : 'text-secondary-400'}>{t.status}:</span> {statusLabel}
             </div>
             {port.spanningTree && (
-              <div className={isDark ? 'text-orange-400' : 'text-orange-500'}>
+              <div className={isDark ? 'text-warning-400' : 'text-warning-500'}>
                 <span className={isDark ? 'text-secondary-500' : 'text-secondary-400'}>STP:</span>{' '}
                 {port.spanningTree.role === 'root' && 'Root'}{' '}
                 {port.spanningTree.role === 'designated' && 'Desg'}{' '}
@@ -355,7 +355,7 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
                     variant="ghost"
                     size="icon"
                     onClick={() => activeDeviceId && onTogglePower?.(activeDeviceId)}
-                    className={`h-8 w-8 rounded-lg transition-all ${isDevicePoweredOff ? 'text-rose-500 hover:bg-rose-500/10' : 'text-emerald-500 hover:bg-emerald-500/10'}`}
+                    className={`h-8 w-8 rounded-lg transition-all ${isDevicePoweredOff ? 'text-error-500 hover:bg-error-500/10' : 'text-success-500 hover:bg-success-500/10'}`}
                     aria-label={t.on}
                     disabled={!activeDeviceId || !onTogglePower}
                   >
@@ -381,7 +381,7 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div
-                      className={`w-3 h-3 rounded-full cursor-pointer transition-all duration-200 hover:scale-125 group flex items-center justify-center ${isDevicePoweredOff ? 'bg-gray-500 hover:bg-gray-600' : 'bg-success-500 animate-pulse hover:bg-success-600'}`}
+                      className={`w-3 h-3 rounded-full cursor-pointer transition-all duration-200 hover:scale-125 group flex items-center justify-center ${isDevicePoweredOff ? 'bg-secondary-500 hover:bg-secondary-600' : 'bg-success-500 animate-pulse hover:bg-success-600'}`}
                       onClick={onClose}
                     >
                       <X className="w-3 h-3 opacity-0 group-hover:opacity-100 text-white" />
@@ -456,11 +456,11 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
               <span className={isDark ? 'text-secondary-400' : 'text-secondary-600'}>{t.connected}</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-gray-500" />
+              <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-secondary-500" />
               <span className={isDark ? 'text-secondary-400' : 'text-secondary-600'}>{t.closed}</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-orange-500" />
+              <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-warning-500" />
               <span className={isDark ? 'text-secondary-400' : 'text-secondary-600'}>{t.blocked}</span>
             </div>
             <div className="flex items-center gap-1">

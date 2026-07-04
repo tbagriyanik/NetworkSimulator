@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo, MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from 'react';
 import React from 'react';
@@ -4730,10 +4730,10 @@ export function NetworkTopology({
     const isPoweredOff = device.status === 'offline';
     const isPcLike = device.type === 'pc' || device.type === 'iot';
     const statusColor = isPoweredOff
-      ? (isDark ? 'fill-red-500' : 'fill-red-600')
+      ? (isDark ? 'fill-error-500' : 'fill-error-600')
       : hasError
-        ? (isDark ? 'fill-red-500' : 'fill-red-600')
-        : (hasConnection ? (isDark ? 'fill-green-500' : 'fill-green-600') : (isDark ? 'fill-slate-800' : 'fill-slate-300'));
+        ? (isDark ? 'fill-error-500' : 'fill-error-600')
+        : (hasConnection ? (isDark ? 'fill-success-500' : 'fill-success-600') : (isDark ? 'fill-secondary-800' : 'fill-secondary-300'));
 
     const deviceFill = isDark
       ? (device.type === 'iot'
@@ -5169,9 +5169,9 @@ if (!isEnabled || device.status === 'offline') {
             };
 
             const getStatusColor = () => {
-              if (device.status === 'offline' || !isEnabled) return 'text-red-500';
-              if (isConnected) return 'text-green-500';
-              return 'text-orange-500';
+              if (device.status === 'offline' || !isEnabled) return 'text-error-500';
+              if (isConnected) return 'text-success-500';
+              return 'text-warning-500';
             };
 
             return (
@@ -5207,16 +5207,16 @@ if (!isEnabled || device.status === 'offline') {
                   >
                     <div
                       className={`relative px-3 py-2 rounded-xl shadow-2xl border backdrop-blur-md ${isDark
-                        ? 'bg-slate-900/90 border-slate-700 text-white shadow-cyan-500/10'
-                        : 'bg-white/90 border-slate-200 text-slate-900 shadow-slate-200/50'
+                        ? 'bg-secondary-900/90 border-secondary-700 text-white shadow-accent-500/10'
+                        : 'bg-white/90 border-secondary-200 text-secondary-900 shadow-secondary-200/50'
                         }`}
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <div className={`w-2 h-2 rounded-full ${device.status === 'offline' || !isEnabled
-                          ? 'bg-red-500'
+                          ? 'bg-error-500'
                           : isConnected
-                            ? 'bg-green-500'
-                            : 'bg-orange-500'
+                            ? 'bg-success-500'
+                            : 'bg-warning-500'
                           }`} />
                         <span className="text-[10px] font-black tracking-widest opacity-30">
                           WIFI
@@ -5232,13 +5232,13 @@ if (!isEnabled || device.status === 'offline') {
                         {wifiSsid && (
                           <div className="text-xs font-bold">
                             SSID:{' '}
-                            <span className="text-cyan-500">{wifiSsid}</span>
+                            <span className="text-accent-500">{wifiSsid}</span>
                           </div>
                         )}
                         {isPC && currentWifiIp && (
                           <div className="text-xs font-bold">
                             IP:{' '}
-                            <span className="text-cyan-500">{currentWifiIp}</span>
+                            <span className="text-accent-500">{currentWifiIp}</span>
                           </div>
                         )}
                         <div className="text-xs font-bold">
@@ -5260,7 +5260,7 @@ if (!isEnabled || device.status === 'offline') {
                             {wifiMode === 'ap' && (
                               <div className="text-xs font-bold">
                                 {t.connectedLabel}{' '}
-                                <span className="text-cyan-500">{connectedDevices}</span>
+                                <span className="text-accent-500">{connectedDevices}</span>
                               </div>
                             )}
                           </>
@@ -5268,7 +5268,7 @@ if (!isEnabled || device.status === 'offline') {
                       </div>
 
                       {/* Arrow */}
-                      <div className={`absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] ${isDark ? 'border-t-slate-800' : 'border-t-white'
+                      <div className={`absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] ${isDark ? 'border-t-secondary-800' : 'border-t-white'
                         }`} />
                     </div>
                   </TooltipContent>
@@ -5402,7 +5402,7 @@ if (!isEnabled || device.status === 'offline') {
                 cx={deviceWidth - 12}
                 cy={device.type === 'router' ? 14 : 10}
                 r={8}
-                className={isPoweredOff ? 'fill-red-500' : (isDark ? 'fill-slate-700' : 'fill-slate-100')}
+                className={isPoweredOff ? 'fill-error-500' : (isDark ? 'fill-secondary-700' : 'fill-secondary-100')}
               />
               {/* Lightning bolt - centered in circle */}
               <path
@@ -5440,7 +5440,7 @@ if (!isEnabled || device.status === 'offline') {
                           {language === 'tr' ? 'Açık/Kapalı:' : 'Open/Closed:'} {getIotOpenCloseStatus(device)}
                         </div>
                         {rules.length > 0 && (
-                          <div className="mt-2 pt-2 border-t border-slate-300 dark:border-slate-600">
+                          <div className="mt-2 pt-2 border-t border-secondary-300 dark:border-secondary-600">
                             <div className="text-xs font-semibold mb-1">
                               {language === 'tr' ? '📋 Otomatik Kurallar:' : '📋 Auto Rules:'}
                             </div>
@@ -5449,14 +5449,14 @@ if (!isEnabled || device.status === 'offline') {
                                 <span className="font-mono">
                                   {language === 'tr' ? 'EĞER' : 'IF'} {rule.condition} → {rule.action}
                                 </span>
-                                <span className={`ml-2 ${rule.enabled ? 'text-green-500' : 'text-slate-400'}`}>
+                                <span className={`ml-2 ${rule.enabled ? 'text-success-500' : 'text-secondary-400'}`}>
                                   {rule.enabled ? (language === 'tr' ? '✅ Aktif' : '✅ Active') : (language === 'tr' ? '❌ Pasif' : '❌ Inactive')}
                                 </span>
                               </div>
                             ))}
                           </div>
                         )}
-                        <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                        <div className="mt-2 text-xs text-secondary-500 dark:text-secondary-400">
                           {language === 'tr' ? '💡 İpucu: Sensör değerlerine göre otomatik açılır/kapanır' : '💡 Tip: Automatically turns on/off based on sensor values'}
                         </div>
                       </div>
@@ -5470,7 +5470,7 @@ if (!isEnabled || device.status === 'offline') {
                         <div className="text-xs">
                           {language === 'tr' ? 'Tür:' : 'Type:'} {device.iot.sensorType}
                         </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                        <div className="text-xs text-secondary-500 dark:text-secondary-400">
                           {language === 'tr' ? '💡 Sadece sensör verisi sağlar' : '💡 Provides sensor data only'}
                         </div>
                       </div>
@@ -6024,8 +6024,8 @@ if (isShutdown || isDeviceOffline) {
     <div
       onContextMenu={(e) => e.preventDefault()}
       className={`${isFullscreen ? 'fixed inset-0 z-[9999] overflow-hidden' : 'relative w-full h-full'} flex flex-col ${isDark
-        ? 'bg-gradient-to-br from-slate-800/90 via-slate-700/80 to-slate-800/90'
-        : 'bg-gradient-to-br from-blue-50/50 via-white to-slate-50/80'
+        ? 'bg-gradient-to-br from-secondary-800/90 via-secondary-700/80 to-secondary-800/90'
+        : 'bg-gradient-to-br from-primary-50/50 via-white to-secondary-50/80'
         }`}
     >
       {isFullscreen && (
@@ -6033,8 +6033,8 @@ if (isShutdown || isDeviceOffline) {
           <button
             onClick={toggleFullscreen}
             className={`fixed top-4 right-4 z-[10000] flex items-center justify-center w-8 h-8 rounded-full shadow-lg transition-colors ${isDark
-              ? 'bg-slate-800/90 hover:bg-red-500/30 text-slate-300 hover:text-red-400 border border-slate-600'
-              : 'bg-white/90 hover:bg-red-500/30 text-slate-600 hover:text-red-600 border border-slate-300'
+              ? 'bg-secondary-800/90 hover:bg-error-500/30 text-secondary-300 hover:text-error-400 border border-secondary-600'
+              : 'bg-white/90 hover:bg-error-500/30 text-secondary-600 hover:text-error-600 border border-secondary-300'
               }`}
           >
             <X className="w-4 h-4" />
@@ -6046,24 +6046,24 @@ if (isShutdown || isDeviceOffline) {
         <div className="flex-1 relative flex flex-col">
           {/* Palette Sheet (Triggered from Top Toolbar) */}
           <Sheet open={isPaletteOpen} onOpenChange={setIsPaletteOpen}>
-            <SheetContent side="left" className={`${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white'} p-0 palette w-[300px] sm:w-[350px] border-r border-slate-800/20 shadow-2xl transition-all duration-300 custom-scrollbar`}>
-              <SheetHeader className="p-6 border-b border-slate-800/50">
+            <SheetContent side="left" className={`${isDark ? 'bg-secondary-900 border-secondary-800' : 'bg-white'} p-0 palette w-[300px] sm:w-[350px] border-r border-secondary-800/20 shadow-2xl transition-all duration-300 custom-scrollbar`}>
+              <SheetHeader className="p-6 border-b border-secondary-800/50">
                 <SheetTitle className="text-lg font-bold flex items-center gap-2">
-                  <Plus className="w-5 h-5 text-red-500" />
+                  <Plus className="w-5 h-5 text-error-500" />
                   {t.addDeviceOrCable}
                 </SheetTitle>
               </SheetHeader>
               <div className="p-6 space-y-8 overflow-y-auto max-h-[calc(100vh-100px)] custom-scrollbar">
                 {/* Devices Section */}
                 <div className="space-y-4">
-                  <p className="text-[10px] font-bold  tracking-widest text-slate-500 ml-1 uppercase">{t.devices}</p>
+                  <p className="text-[10px] font-bold  tracking-widest text-secondary-500 ml-1 uppercase">{t.devices}</p>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       onClick={() => { addDevice('pc'); setIsPaletteOpen(false); }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-blue-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-blue-500/50'
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-primary-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-primary-500/50'
                         }`}
                     >
-                      <div className='text-blue-500'>
+                      <div className='text-primary-500'>
                         {DEVICE_ICONS['pc']}
                       </div>
                       <span className="text-xs font-bold text-center">
@@ -6072,10 +6072,10 @@ if (isShutdown || isDeviceOffline) {
                     </button>
                     <button
                       onClick={() => { addDevice('switch'); setIsPaletteOpen(false); }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-cyan-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-cyan-500/50'
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-accent-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-accent-500/50'
                         }`}
                     >
-                      <div className='text-cyan-500'>
+                      <div className='text-accent-500'>
                         {DEVICE_ICONS['switch']}
                       </div>
                       <span className="text-xs font-bold text-center">
@@ -6084,7 +6084,7 @@ if (isShutdown || isDeviceOffline) {
                     </button>
                     <button
                       onClick={() => { addDevice('switch', 'L3'); setIsPaletteOpen(false); }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-purple-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-purple-500/50'
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-purple-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-purple-500/50'
                         }`}
                     >
                       <div className='text-purple-500'>
@@ -6098,7 +6098,7 @@ if (isShutdown || isDeviceOffline) {
                     </button>
                     <button
                       onClick={() => { addDevice('router'); setIsPaletteOpen(false); }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-purple-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-purple-500/50'
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-purple-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-purple-500/50'
                         }`}
                     >
                       <div className='text-purple-500'>
@@ -6110,10 +6110,10 @@ if (isShutdown || isDeviceOffline) {
                     </button>
                     <button
                       onClick={() => { addDevice('iot'); setIsPaletteOpen(false); }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-orange-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-orange-500/50'
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-warning-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-warning-500/50'
                         }`}
                     >
-                      <div className='text-orange-500'>
+                      <div className='text-warning-500'>
                         {DEVICE_ICONS['iot']}
                       </div>
                       <span className="text-xs font-bold text-center">
@@ -6122,10 +6122,10 @@ if (isShutdown || isDeviceOffline) {
                     </button>
                     <button
                       onClick={() => { addDevice('firewall'); setIsPaletteOpen(false); }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-red-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-red-500/50'
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-error-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-error-500/50'
                         }`}
                     >
-                      <div className='text-red-500'>
+                      <div className='text-error-500'>
                         {DEVICE_ICONS['firewall']}
                       </div>
                       <span className="text-xs font-bold text-center">
@@ -6134,7 +6134,7 @@ if (isShutdown || isDeviceOffline) {
                     </button>
                     <button
                       onClick={() => { addDevice('wlc'); setIsPaletteOpen(false); }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-slate-800 border-slate-700 active:bg-slate-700 hover:border-yellow-500/50' : 'bg-slate-50 border-slate-200 active:bg-slate-100 hover:border-yellow-500/50'
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-yellow-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-yellow-500/50'
                         }`}
                     >
                       <div className='text-yellow-500'>
@@ -6149,14 +6149,14 @@ if (isShutdown || isDeviceOffline) {
 
                 {/* Cables Section - Button Group with Color Coding */}
                 <div className="space-y-3">
-                  <p className="text-[10px] font-bold tracking-widest text-slate-500 ml-1 uppercase">{t.cableTypes}</p>
-                  <div className={`flex sm:flex-row flex-col gap-2 rounded-xl border p-2 ${isDark ? 'border-slate-700/50 bg-slate-800/30' : 'border-slate-200 bg-slate-50/50'}`}>
+                  <p className="text-[10px] font-bold tracking-widest text-secondary-500 ml-1 uppercase">{t.cableTypes}</p>
+                  <div className={`flex sm:flex-row flex-col gap-2 rounded-xl border p-2 ${isDark ? 'border-secondary-700/50 bg-secondary-800/30' : 'border-secondary-200 bg-secondary-50/50'}`}>
                     {(['straight', 'crossover', 'serial', 'console'] as CableType[]).map((type) => {
                       const colorMap: Record<string, { active: string; inactive: string; hover: string }> = {
-                        straight: { active: 'text-blue-400', inactive: 'text-blue-500', hover: 'hover:text-blue-400' },
-                        crossover: { active: 'text-orange-400', inactive: 'text-orange-500', hover: 'hover:text-orange-400' },
-                        serial: { active: 'text-lime-400', inactive: 'text-lime-500', hover: 'hover:text-lime-400' },
-                        console: { active: 'text-cyan-400', inactive: 'text-cyan-500', hover: 'hover:text-cyan-400' },
+                        straight: { active: 'text-primary-400', inactive: 'text-primary-500', hover: 'hover:text-primary-400' },
+                        crossover: { active: 'text-warning-400', inactive: 'text-warning-500', hover: 'hover:text-warning-400' },
+                        serial: { active: 'text-success-400', inactive: 'text-success-500', hover: 'hover:text-success-400' },
+                        console: { active: 'text-accent-400', inactive: 'text-accent-500', hover: 'hover:text-accent-400' },
                       };
                       const c = colorMap[type] || colorMap.console;
                       return (
@@ -6164,14 +6164,14 @@ if (isShutdown || isDeviceOffline) {
                           key={type}
                           onClick={() => { onCableChange({ ...cableInfo, cableType: type }); setIsPaletteOpen(false); }}
                           className={`flex items-center gap-3 p-3 rounded-lg transition-all
-                            ${isDark ? 'hover:bg-slate-700/50' : 'hover:bg-slate-200/50'}
+                            ${isDark ? 'hover:bg-secondary-700/50' : 'hover:bg-secondary-200/50'}
                             ${cableInfo.cableType === type
-                              ? isDark ? 'bg-slate-700/80 border border-slate-600' : 'bg-white border border-slate-200 shadow-sm'
+                              ? isDark ? 'bg-secondary-700/80 border border-secondary-600' : 'bg-white border border-secondary-200 shadow-sm'
                               : 'border border-transparent'
                             }
                             ${cableInfo.cableType === type ? c.active : `${c.inactive} ${c.hover}`}`}
                         >
-                          <div className={`p-2 rounded-md ${cableInfo.cableType === type ? (isDark ? 'bg-slate-800' : 'bg-slate-50') : ''}`}>
+                          <div className={`p-2 rounded-md ${cableInfo.cableType === type ? (isDark ? 'bg-secondary-800' : 'bg-secondary-50') : ''}`}>
                             {type === 'straight' ? (
                               <Cable className="w-5 h-5" />
                             ) : type === 'crossover' ? (
@@ -6211,7 +6211,7 @@ if (isShutdown || isDeviceOffline) {
             >
               <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold shadow-lg ${pingSource
                 ? (isDark ? 'bg-yellow-500 text-white' : 'bg-yellow-400 text-white')
-                : (isDark ? 'bg-indigo-600 text-white' : 'bg-indigo-500 text-white')
+                : (isDark ? 'bg-primary-600 text-white' : 'bg-primary-500 text-white')
                 }`}>
                 <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -6235,7 +6235,7 @@ if (isShutdown || isDeviceOffline) {
                 zIndex: 1000,
                 pointerEvents: 'auto'
               }}
-              className={`px-3 py-1.5 rounded-xl shadow-2xl flex items-center gap-2 selection-toolbar panel-ambient-glow ${isDark ? 'bg-slate-800/95 text-white border border-slate-700' : 'bg-white text-slate-900 border border-slate-200'
+              className={`px-3 py-1.5 rounded-xl shadow-2xl flex items-center gap-2 selection-toolbar panel-ambient-glow ${isDark ? 'bg-secondary-800/95 text-white border border-secondary-700' : 'bg-white text-secondary-900 border border-secondary-200'
                 } backdrop-blur-md`}
               onClick={(e) => {
                 e.stopPropagation();
@@ -6257,7 +6257,7 @@ if (isShutdown || isDeviceOffline) {
                     logger.debug('[Toolbar] Align left clicked');
                     handleAlign('left');
                   }}
-                  className={`p-1.5 rounded-lg transition-colors ${isDark ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-600'}`}
+                  className={`p-1.5 rounded-lg transition-colors ${isDark ? 'hover:bg-secondary-700 text-secondary-300' : 'hover:bg-secondary-100 text-secondary-600'}`}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 2v20M8 5h10M8 11h7M8 17h12" />
@@ -6272,15 +6272,15 @@ if (isShutdown || isDeviceOffline) {
                     logger.debug('[Toolbar] Align top clicked');
                     handleAlign('top');
                   }}
-                  className={`p-1.5 rounded-lg transition-colors ${isDark ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-600'}`}
+                  className={`p-1.5 rounded-lg transition-colors ${isDark ? 'hover:bg-secondary-700 text-secondary-300' : 'hover:bg-secondary-100 text-secondary-600'}`}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2 4h20M5 8v10M11 8v7M17 8v12" />
                   </svg>
                 </button>
               </TooltipWrapper>
-              <div className="w-px h-4 bg-slate-700/30 mx-1" />
-              <span className="text-xs font-semibold whitespace-nowrap bg-slate-700/30 px-2 py-0.5 rounded">
+              <div className="w-px h-4 bg-secondary-700/30 mx-1" />
+              <span className="text-xs font-semibold whitespace-nowrap bg-secondary-700/30 px-2 py-0.5 rounded">
                 {selectedDeviceIds.length}
               </span>
               <TooltipWrapper title={t.cancel}>
@@ -6294,7 +6294,7 @@ if (isShutdown || isDeviceOffline) {
                     setSelectedDeviceIds(firstId ? [firstId] : []);
                     if (firstDevice) onDeviceSelect(firstDevice.type === 'router' ? 'router' : firstDevice.type, firstId, undefined, firstDevice.name);
                   }}
-                  className={`p-1.5 rounded-lg transition-colors ${isDark ? 'hover:bg-slate-700 text-slate-200' : 'hover:bg-slate-100 text-slate-600'}`}
+                  className={`p-1.5 rounded-lg transition-colors ${isDark ? 'hover:bg-secondary-700 text-secondary-200' : 'hover:bg-secondary-100 text-secondary-600'}`}
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -6309,7 +6309,7 @@ if (isShutdown || isDeviceOffline) {
                     selectedDeviceIds.forEach(id => deleteDevice(id));
                     setSelectedDeviceIds([]);
                   }}
-                  className="p-1.5 rounded-lg hover:bg-red-500/20 text-red-500 transition-colors"
+                  className="p-1.5 rounded-lg hover:bg-error-500/20 text-error-500 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -6926,11 +6926,11 @@ if (isShutdown || isDeviceOffline) {
                       return (
                         <g key="ping-error" opacity={0.95}>
                           <foreignObject x="20" y="20" width="300" height="auto">
-                            <div className={`p-3 rounded-lg shadow-lg border ${isDark ? 'bg-red-500/20 border-red-500/50' : 'bg-red-50 border-red-200'}`}>
-                              <div className={`text-sm font-bold ${isDark ? 'text-red-300' : 'text-red-700'}`}>
+                            <div className={`p-3 rounded-lg shadow-lg border ${isDark ? 'bg-error-500/20 border-error-500/50' : 'bg-error-50 border-error-200'}`}>
+                              <div className={`text-sm font-bold ${isDark ? 'text-error-300' : 'text-error-700'}`}>
                                 {t.pingFailed}
                               </div>
-                              <div className={`text-xs mt-1 ${isDark ? 'text-red-200' : 'text-red-600'}`}>
+                              <div className={`text-xs mt-1 ${isDark ? 'text-error-200' : 'text-error-600'}`}>
                                 {error}
                               </div>
                             </div>
@@ -6944,8 +6944,8 @@ if (isShutdown || isDeviceOffline) {
                       return (
                         <g key="ping-success" opacity={0.95}>
                           <foreignObject x="20" y="20" width="300" height="auto">
-                            <div className={`p-3 rounded-lg shadow-lg border ${isDark ? 'bg-emerald-500/20 border-emerald-500/50' : 'bg-emerald-50 border-emerald-200'}`}>
-                              <div className={`text-sm font-bold ${isDark ? 'text-emerald-300' : 'text-emerald-700'}`}>
+                            <div className={`p-3 rounded-lg shadow-lg border ${isDark ? 'bg-success-500/20 border-success-500/50' : 'bg-success-50 border-success-200'}`}>
+                              <div className={`text-sm font-bold ${isDark ? 'text-success-300' : 'text-success-700'}`}>
                                 {t.pingSuccess}
                               </div>
                             </div>
@@ -7153,7 +7153,7 @@ fill="var(--color-accent-500)"
                 }));
                 return newZoom;
               })}
-              className={`w-7 h-7 flex items-center justify-center rounded ui-hover-surface ${isDark ? 'text-slate-300 hover:text-slate-100' : 'text-slate-600 hover:text-slate-900'
+              className={`w-7 h-7 flex items-center justify-center rounded ui-hover-surface ${isDark ? 'text-secondary-300 hover:text-secondary-100' : 'text-secondary-600 hover:text-secondary-900'
                 }`}
             >
               −
@@ -7162,10 +7162,10 @@ fill="var(--color-accent-500)"
               onMouseDown={handleZoomMouseDown}
               onWheel={handleZoomWheel}
               className={`text-xs font-mono w-12 text-center cursor-pointer select-none rounded transition-colors ${isDraggingZoom
-                ? 'text-blue-400'
+                ? 'text-primary-400'
                 : isDark
-                  ? 'text-slate-300 hover:bg-slate-700'
-                  : 'text-slate-600 hover:bg-slate-100'
+                  ? 'text-secondary-300 hover:bg-secondary-700'
+                  : 'text-secondary-600 hover:bg-secondary-100'
                 }`}
               title={t.dragToZoomOrScroll}
             >
@@ -7184,19 +7184,19 @@ fill="var(--color-accent-500)"
                 }));
                 return newZoom;
               })}
-              className={`w-7 h-7 flex items-center justify-center rounded ui-hover-surface ${isDark ? 'text-slate-300 hover:text-slate-100' : 'text-slate-600 hover:text-slate-900'
+              className={`w-7 h-7 flex items-center justify-center rounded ui-hover-surface ${isDark ? 'text-secondary-300 hover:text-secondary-100' : 'text-secondary-600 hover:text-secondary-900'
                 }`}
             >
               +
             </button>
-            <div className={`w-px h-5 ${isDark ? 'bg-slate-600' : 'bg-slate-300'} mx-1`} />
+            <div className={`w-px h-5 ${isDark ? 'bg-secondary-600' : 'bg-secondary-300'} mx-1`} />
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
                   onClick={resetView}
                   className={`px-2 py-1 text-xs rounded ui-hover-surface ${isDark
-                    ? 'text-slate-300 hover:text-slate-100'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'text-secondary-300 hover:text-secondary-100'
+                    : 'text-secondary-600 hover:text-secondary-900'
                     }`}
                 >
                   {t.reset}
@@ -7212,8 +7212,8 @@ fill="var(--color-accent-500)"
                 <button
                   onClick={toggleFullscreen}
                   className={`px-2 py-1 text-xs rounded flex items-center gap-1 ui-hover-surface ${isDark
-                    ? 'text-slate-300 hover:text-slate-100'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'text-secondary-300 hover:text-secondary-100'
+                    : 'text-secondary-600 hover:text-secondary-900'
                     }`}
                 >
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -7556,7 +7556,7 @@ fill="var(--color-accent-500)"
       {/* Persistent Error Toast - ping başarısız olduğunda göster, kullanıcı kapatana kadar açık kalır */}
       {errorToast && (
         <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="px-4 py-3 rounded-lg shadow-2xl shadow-black/25 flex items-start gap-2 bg-red-600 text-white max-w-md">
+          <div className="px-4 py-3 rounded-lg shadow-2xl shadow-black/25 flex items-start gap-2 bg-error-600 text-white max-w-md">
             <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -7569,7 +7569,7 @@ fill="var(--color-accent-500)"
             <TooltipWrapper title={t.close}>
               <button
                 onClick={() => setErrorToast(null)}
-                className="flex-shrink-0 ml-2 hover:bg-red-700 rounded p-1 transition-colors"
+                className="flex-shrink-0 ml-2 hover:bg-error-700 rounded p-1 transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -7583,7 +7583,7 @@ fill="var(--color-accent-500)"
       {/* Connection Error Toast */}
       {connectionError && (
         <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="px-4 py-3 rounded-lg shadow-2xl shadow-black/25 flex items-center gap-2 bg-red-600 text-white">
+          <div className="px-4 py-3 rounded-lg shadow-2xl shadow-black/25 flex items-center gap-2 bg-error-600 text-white">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
@@ -7616,7 +7616,7 @@ fill="var(--color-accent-500)"
                   addDevice(item.type, item.layer as 'L2' | 'L3');
                   setMobilePaletteOpen(false);
                 }}
-                className={`flex flex-col items-center gap-2 p-4 rounded-2xl transition-all active:scale-95 ${isDark ? 'bg-slate-800/50 hover:bg-slate-800' : 'bg-slate-100 hover:bg-slate-200'
+                className={`flex flex-col items-center gap-2 p-4 rounded-2xl transition-all active:scale-95 ${isDark ? 'bg-secondary-800/50 hover:bg-secondary-800' : 'bg-secondary-100 hover:bg-secondary-200'
                   }`}
               >
                 <div className="w-10 h-10 flex items-center justify-center">
@@ -7723,8 +7723,8 @@ fill="var(--color-accent-500)"
           >
             <div
               className={`px-3 py-2 rounded-xl border liquid-glass-strong animate-scale-in shadow-2xl ${isDark
-                ? 'border-slate-700/50 text-white shadow-cyan-500/10'
-                : 'border-slate-200/50 text-slate-900 shadow-slate-200/50'
+                ? 'border-secondary-700/50 text-white shadow-accent-500/10'
+                : 'border-secondary-200/50 text-secondary-900 shadow-secondary-200/50'
                 }`}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -7737,7 +7737,7 @@ fill="var(--color-accent-500)"
                   const deviceVlan = dev?.vlan || simPort?.accessVlan || simPort?.vlan || 1;
                   const isVlan1 = deviceVlan === 1;
                   if (isSTPBlocked && isVlan1) return 'bg-pink-500';
-                  return dev?.status === 'offline' || prt?.shutdown ? 'bg-red-500' : prt?.status === 'connected' ? 'bg-green-500' : 'bg-slate-400';
+                  return dev?.status === 'offline' || prt?.shutdown ? 'bg-error-500' : prt?.status === 'connected' ? 'bg-success-500' : 'bg-secondary-400';
                 })()
                   }`} />
                 <span className="text-[10px] font-black tracking-widest opacity-30">
@@ -7756,16 +7756,16 @@ fill="var(--color-accent-500)"
                         <div className="space-y-0.5">
                           <div>
                             {language === 'tr' ? 'Cihaz Durumu:' : 'Device Status:'}{' '}
-                            <span className="text-cyan-500">{getIotDeviceStatus(dev)}</span>
+                            <span className="text-accent-500">{getIotDeviceStatus(dev)}</span>
                           </div>
                           <div>
                             {language === 'tr' ? 'Güç Durumu:' : 'Power Status:'}{' '}
-                            <span className="text-cyan-500">{getIotPowerStatus(dev)}</span>
+                            <span className="text-accent-500">{getIotPowerStatus(dev)}</span>
                           </div>
                           {isControllable && (
                             <div>
                               {language === 'tr' ? 'Açık/Kapalı:' : 'Open/Closed:'}{' '}
-                              <span className="text-cyan-500">{getIotOpenCloseStatus(dev)}</span>
+                              <span className="text-accent-500">{getIotOpenCloseStatus(dev)}</span>
                             </div>
                           )}
                         </div>
@@ -7774,7 +7774,7 @@ fill="var(--color-accent-500)"
                     return (
                       <>
                         VLAN:{' '}
-                        <span className="text-cyan-500">
+                        <span className="text-accent-500">
                           {getLivePortVlanText(portTooltip.deviceId, portTooltip.portId)}
                         </span>
                       </>
@@ -7793,7 +7793,7 @@ fill="var(--color-accent-500)"
                       const deviceVlan = dev?.vlan || simPort?.accessVlan || simPort?.vlan || 1;
                       const isVlan1 = deviceVlan === 1;
                       if (isSTPBlocked && isVlan1) return 'text-pink-500';
-                      return dev?.status === 'offline' || prt?.shutdown ? 'text-red-500' : prt?.status === 'connected' ? 'text-green-500' : 'text-slate-400';
+                      return dev?.status === 'offline' || prt?.shutdown ? 'text-error-500' : prt?.status === 'connected' ? 'text-success-500' : 'text-secondary-400';
                     })()
                   }>
                     {(() => {
@@ -7834,7 +7834,7 @@ fill="var(--color-accent-500)"
                     return (
                       <div className="text-xs font-bold">
                         IP:{' '}
-                        <span className="text-amber-400">
+                        <span className="text-warning-400">
                           {prt.ipAddress}{prt.subnetMask ? `/${prt.subnetMask}` : ''}
                         </span>
                       </div>
@@ -7851,7 +7851,7 @@ fill="var(--color-accent-500)"
               </div>
 
               {/* Arrow */}
-              <div className={`absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] ${isDark ? 'border-t-slate-800' : 'border-t-white'
+              <div className={`absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] ${isDark ? 'border-t-secondary-800' : 'border-t-white'
                 }`} />
             </div>
           </div>
@@ -7871,8 +7871,8 @@ fill="var(--color-accent-500)"
           >
             <div
               className={`px-3 py-2 rounded-xl border liquid-glass-strong animate-scale-in shadow-2xl ${isDark
-                ? 'border-slate-700/50 text-white shadow-cyan-500/10'
-                : 'border-slate-200/50 text-slate-900 shadow-slate-200/50'
+                ? 'border-secondary-700/50 text-white shadow-accent-500/10'
+                : 'border-secondary-200/50 text-secondary-900 shadow-secondary-200/50'
                 }`}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -7895,11 +7895,11 @@ fill="var(--color-accent-500)"
                 <span className="mx-1 opacity-70">{connectionTooltip.targetPort}</span>
                 <span className="opacity-90">{connectionTooltip.targetDeviceName}</span>
               </div>
-              <div className={`text-[10px] mt-1 font-semibold ${connectionTooltip.statusMessage === (language === 'tr' ? 'Bağlantı sorunsuz' : 'Connection OK') ? 'text-emerald-500' : 'text-red-500'}`}>
+              <div className={`text-[10px] mt-1 font-semibold ${connectionTooltip.statusMessage === (language === 'tr' ? 'Bağlantı sorunsuz' : 'Connection OK') ? 'text-success-500' : 'text-error-500'}`}>
                 {connectionTooltip.statusMessage}
               </div>
               {/* Arrow */}
-              <div className={`absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] ${isDark ? 'border-t-slate-800' : 'border-t-white'
+              <div className={`absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] ${isDark ? 'border-t-secondary-800' : 'border-t-white'
                 }`} />
             </div>
           </div>
@@ -7944,8 +7944,8 @@ fill="var(--color-accent-500)"
           role="alert"
           aria-live="polite"
           className={`fixed bottom-4 left-4 px-4 py-3 rounded-lg shadow-lg text-sm font-medium transition-all duration-300 z-40 ${errorToast.type === 'success'
-            ? isDark ? 'bg-emerald-500/20 border border-emerald-500/50 text-emerald-300' : 'bg-emerald-50 border border-emerald-200 text-emerald-700'
-            : isDark ? 'bg-red-500/20 border border-red-500/50 text-red-300' : 'bg-red-50 border border-red-200 text-red-700'
+            ? isDark ? 'bg-success-500/20 border border-success-500/50 text-success-300' : 'bg-success-50 border border-success-200 text-success-700'
+            : isDark ? 'bg-error-500/20 border border-error-500/50 text-error-300' : 'bg-error-50 border border-error-200 text-error-700'
             }`}
         >
           {errorToast.message}

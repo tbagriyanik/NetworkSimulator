@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useEffect, KeyboardEvent, useCallback, useMemo, ClipboardEvent } from 'react';
 import { SwitchState, CommandMode } from '@/lib/network/types';
@@ -72,7 +72,7 @@ function BootProgressBar({ id, isDark, onDone, readyText = "Ready!" }: { id: str
   }, [filled, id]);
 
   return (
-    <span className={`font-mono ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+    <span className={`font-mono ${isDark ? 'text-success-400' : 'text-success-600'}`}>
       {done ? (
         <span className="font-bold">{'#'.repeat(total)} {readyText}</span>
       ) : (
@@ -240,9 +240,9 @@ export function Terminal({
     } else if (deviceType === 'switchL3' || switchModel === 'WS-C3650-24PS') {
       return { icon: SwitchIcon, color: 'text-purple-400', isL3: true };
     } else if (deviceType === 'switchL2' || switchModel === 'WS-C2960-24TT-L') {
-      return { icon: SwitchIcon, color: 'text-green-400', isL3: false };
+      return { icon: SwitchIcon, color: 'text-success-400', isL3: false };
     } else if (deviceType === 'pc') {
-      return { icon: Laptop, color: 'text-blue-400' };
+      return { icon: Laptop, color: 'text-primary-400' };
     }
     return null;
   }, [device?.type, state.switchModel]);
@@ -573,9 +573,9 @@ export function Terminal({
 
     return (
       <>
-        <span className="text-cyan-400 font-bold">{parts[0]}</span>
+        <span className="text-accent-400 font-bold">{parts[0]}</span>
         {parts.length > 1 && (
-          <span className="text-slate-300"> {parts.slice(1).join(' ')}</span>
+          <span className="text-secondary-300"> {parts.slice(1).join(' ')}</span>
         )}
       </>
     );
@@ -595,7 +595,7 @@ export function Terminal({
       if (parts[i]) out.push(<span key={`p-${i}`}>{parts[i]}</span>);
       if (matches[i]) {
         out.push(
-          <mark key={`m-${i}`} className={cn('px-0.5 rounded', isDark ? 'bg-cyan-500/30 text-cyan-200' : 'bg-cyan-200 text-slate-900')}>
+          <mark key={`m-${i}`} className={cn('px-0.5 rounded', isDark ? 'bg-accent-500/30 text-accent-200' : 'bg-accent-200 text-secondary-900')}>
             {matches[i]}
           </mark>
         );
@@ -1182,17 +1182,17 @@ export function Terminal({
       <div className="flex items-center gap-1">
         <Wifi className={cn(
           "w-4 h-4",
-          strength >= 4 ? "text-emerald-500" :
+          strength >= 4 ? "text-success-500" :
             strength >= 3 ? "text-yellow-500" :
-              strength >= 2 ? "text-orange-500" :
-                "text-rose-500"
+              strength >= 2 ? "text-warning-500" :
+                "text-error-500"
         )} />
         <span className={cn(
           "text-[10px] font-black tracking-wider",
-          strength >= 4 ? "text-emerald-500" :
+          strength >= 4 ? "text-success-500" :
             strength >= 3 ? "text-yellow-500" :
-              strength >= 2 ? "text-orange-500" :
-                "text-rose-500"
+              strength >= 2 ? "text-warning-500" :
+                "text-error-500"
         )}>
           {strength === 5 ? "100%" :
             strength === 4 ? "75%" :
@@ -1219,7 +1219,7 @@ export function Terminal({
         </Tooltip>
       )}
       {wifiSignalStrength !== null && wifiSignalStrength > 0 && (
-        <div className={cn("w-px h-4 mx-1", isDark ? "bg-slate-600" : "bg-border")} />
+        <div className={cn("w-px h-4 mx-1", isDark ? "bg-secondary-600" : "bg-border")} />
       )}
       <TooltipWrapper title={
         <div className="flex items-center gap-2">
@@ -1227,28 +1227,28 @@ export function Terminal({
           {!isMobile && <ShortcutBadge shortcut="Ctrl+F" variant="primary" />}
         </div>
       }>
-        <Button variant="ghost" size="icon" onClick={() => setSearchOpen(true)} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-slate-600 hover:text-slate-900", isDark && "text-slate-300 hover:text-slate-100")} aria-controls="search-dialog">
+        <Button variant="ghost" size="icon" onClick={() => setSearchOpen(true)} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-secondary-600 hover:text-secondary-900", isDark && "text-secondary-300 hover:text-secondary-100")} aria-controls="search-dialog">
           <Search className="w-4 h-4" aria-hidden="true" />
         </Button>
       </TooltipWrapper>
       <TooltipWrapper title={t.copy}>
-        <Button variant="ghost" size="icon" onClick={handleCopyAll} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-slate-600 hover:text-slate-900", isDark && "text-slate-300 hover:text-slate-100")}>
+        <Button variant="ghost" size="icon" onClick={handleCopyAll} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-secondary-600 hover:text-secondary-900", isDark && "text-secondary-300 hover:text-secondary-100")}>
           <Copy className="w-4 h-4" aria-hidden="true" />
         </Button>
       </TooltipWrapper>
       <TooltipWrapper title={t.exportLabel}>
-        <Button variant="ghost" size="icon" onClick={exportTerminal} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-slate-600 hover:text-slate-900", isDark && "text-slate-300 hover:text-slate-100")}>
+        <Button variant="ghost" size="icon" onClick={exportTerminal} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-secondary-600 hover:text-secondary-900", isDark && "text-secondary-300 hover:text-secondary-100")}>
           <Download className="w-4 h-4" aria-hidden="true" />
         </Button>
       </TooltipWrapper>
       <TooltipWrapper title={t.fontLabel}>
-        <Button variant="ghost" size="icon" onClick={() => setShowSettings(!showSettings)} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-slate-600 hover:text-slate-900", showSettings && "bg-accent", isDark && "text-slate-300 hover:text-slate-100")}>
+        <Button variant="ghost" size="icon" onClick={() => setShowSettings(!showSettings)} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-secondary-600 hover:text-secondary-900", showSettings && "bg-accent", isDark && "text-secondary-300 hover:text-secondary-100")}>
           <Type className="w-4 h-4" aria-hidden="true" />
         </Button>
       </TooltipWrapper>
-      <div className={cn("w-px h-4 mx-1", isDark ? "bg-slate-600" : "bg-border")} />
+      <div className={cn("w-px h-4 mx-1", isDark ? "bg-secondary-600" : "bg-border")} />
       <TooltipWrapper title={t.power}>
-        <Button variant="ghost" size="icon" onClick={() => onTogglePower?.(deviceId)} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg", isPoweredOff ? "text-rose-500" : "text-emerald-500")}>
+        <Button variant="ghost" size="icon" onClick={() => onTogglePower?.(deviceId)} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg", isPoweredOff ? "text-error-500" : "text-success-500")}>
           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v10" />
             <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636a9 9 0 1 1-12.728 0" />
@@ -1257,14 +1257,14 @@ export function Terminal({
       </TooltipWrapper>
       {isMobile && onQuickSettings && (
         <TooltipWrapper title={t.quickSettingsAndTasks}>
-          <Button variant="ghost" size="icon" onClick={onQuickSettings} className={cn("h-9 w-9 rounded-lg text-slate-600 hover:text-slate-900", isDark && "text-slate-300 hover:text-slate-100")}>
+          <Button variant="ghost" size="icon" onClick={onQuickSettings} className={cn("h-9 w-9 rounded-lg text-secondary-600 hover:text-secondary-900", isDark && "text-secondary-300 hover:text-secondary-100")}>
             <Settings className="w-4 h-4" aria-hidden="true" />
           </Button>
         </TooltipWrapper>
       )}
       {isMobile && (device?.type === 'firewall' || device?.type === 'pc' || device?.type === 'iot') && onClose && (
         <TooltipWrapper title={t.close || 'Close'}>
-          <Button variant="ghost" size="icon" onClick={onClose} className="h-9 w-9 rounded-lg hover:bg-red-500 hover:text-white dark:hover:bg-red-600">
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-9 w-9 rounded-lg hover:bg-error-500 hover:text-white dark:hover:bg-error-600">
             <X className="w-4 h-4" aria-hidden="true" />
           </Button>
         </TooltipWrapper>
@@ -1297,7 +1297,7 @@ export function Terminal({
       className={cn("flex flex-col h-full", className)}
       style={{ height: '100%' }}
     >
-      <div className={cn("flex flex-col h-full overflow-hidden terminal-container", isDark ? "bg-black" : "bg-slate-50")}>
+      <div className={cn("flex flex-col h-full overflow-hidden terminal-container", isDark ? "bg-black" : "bg-secondary-50")}>
         {/* Settings Bar */}
         {showSettings && (
           <div className="px-4 py-2 border-b bg-muted/30 flex items-center gap-4 animate-in slide-in-from-top-2">
@@ -1310,7 +1310,7 @@ export function Terminal({
               onChange={(e) => { const v = parseInt(e.target.value); setFontSize(v); try { localStorage.setItem('terminal-font-size', String(v)); } catch { } }}
               className="flex-1 h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
             />
-            <Button variant="ghost" size="sm" onClick={clearTerminalView} className="h-7 text-[10px] font-black  tracking-widest text-rose-500 gap-1.5">
+            <Button variant="ghost" size="sm" onClick={clearTerminalView} className="h-7 text-[10px] font-black  tracking-widest text-error-500 gap-1.5">
               <Trash2 className="w-3 h-3" />
               {t.clearTerminalBtn}
               <ShortcutBadge shortcut="Ctrl+L" variant="danger" className="scale-75 origin-right" />
@@ -1324,7 +1324,7 @@ export function Terminal({
             className={cn(
               "flex-1 overflow-y-auto overflow-x-hidden font-geist-mono leading-relaxed custom-scrollbar min-h-0",
               isMobile ? "mobile-scroll p-3 pb-36" : "p-6 pb-32",
-              isPoweredOff ? "bg-black" : (isDark ? "bg-black" : "bg-slate-50")
+              isPoweredOff ? "bg-black" : (isDark ? "bg-black" : "bg-secondary-50")
             )}
             style={{
               fontSize: `${fontSize}px`,
@@ -1333,7 +1333,7 @@ export function Terminal({
           >
             {isPoweredOff ? (
               <div className="h-full flex flex-col items-center justify-center gap-3">
-                <svg className="w-16 h-16 text-red-600 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <svg className="w-16 h-16 text-error-600 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v10" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636a9 9 0 1 1-12.728 0" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M18.36 5.64a9 9 0 1 1-12.73 0" />
@@ -1345,7 +1345,7 @@ export function Terminal({
                 {displayedLines.filter(line => line != null).map((line) => (
                   <div key={line.id} className="animate-in fade-in slide-in-from-left-1 duration-200 break-words overflow-hidden">
                     {line.type === 'command' ? (
-                      <div className="flex gap-2 text-cyan-500 font-bold group flex-wrap">
+                      <div className="flex gap-2 text-accent-500 font-bold group flex-wrap">
                         {deviceIconInfo && (
                           <span className={`shrink-0 ${deviceIconInfo.color}`}>
                             {deviceIconInfo.icon === RouterIcon ? (
@@ -1358,24 +1358,24 @@ export function Terminal({
                           </span>
                         )}
                         <span className="shrink-0 opacity-40 select-none">{line.prompt || prompt}</span>
-                        <span className={isDark ? "text-slate-100" : "text-slate-900"}>{highlightCommand(line.content)}</span>
+                        <span className={isDark ? "text-secondary-100" : "text-secondary-900"}>{highlightCommand(line.content)}</span>
                       </div>
                     ) : (
                       <>
                         <div className={cn(
                           "whitespace-pre-wrap break-words overflow-hidden flex items-start gap-2",
-                          line.type === 'error' ? "text-rose-500" :
+                          line.type === 'error' ? "text-error-500" :
                           (line.type === 'success' ?
-                            (line.realismLevel === 'stub' ? "text-amber-500" :
-                             line.realismLevel === 'sim-only' ? "text-blue-500" : "text-emerald-500")
-                            : (isDark ? "text-slate-300" : "text-slate-700"))
+                            (line.realismLevel === 'stub' ? "text-warning-500" :
+                             line.realismLevel === 'sim-only' ? "text-primary-500" : "text-success-500")
+                            : (isDark ? "text-secondary-300" : "text-secondary-700"))
                         )}>
                           {line.realismLevel === 'stub' && <span className="shrink-0 mt-1">⚠️</span>}
                           {line.realismLevel === 'sim-only' && <span className="shrink-0 mt-1">ℹ️</span>}
                           <div className="flex-1">
                             {line.content === BOOT_PROGRESS_MARKER
                               ? (completedBootIds.has(line.id)
-                                ? <span className={`font-mono font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>{'#'.repeat(10)} {t.bootReady}</span>
+                                ? <span className={`font-mono font-bold ${isDark ? 'text-success-400' : 'text-success-600'}`}>{'#'.repeat(10)} {t.bootReady}</span>
                                 : <BootProgressBar key={line.id} id={line.id} isDark={isDark} readyText={t.bootReady} onDone={(id) => { completedBootIds.add(id); setBootVersion(v => v + 1); }} />)
                               : highlightText(line.content)}
                           </div>
@@ -1383,7 +1383,7 @@ export function Terminal({
                         {line.hint && (helpLevel === 'beginner' || (helpLevel === 'intermediate' && line.type === 'error')) && (
                           <div className={cn(
                             "mt-1 mb-2 p-2 rounded-lg border flex gap-2 animate-in zoom-in-95 duration-300",
-                            isDark ? "bg-cyan-500/5 border-cyan-500/20 text-cyan-200" : "bg-cyan-50 border-cyan-200 text-cyan-800"
+                            isDark ? "bg-accent-500/5 border-accent-500/20 text-accent-200" : "bg-accent-50 border-accent-200 text-accent-800"
                           )}>
                             <span className="shrink-0">💡</span>
                             <div className="text-[11px] leading-relaxed">
@@ -1423,8 +1423,8 @@ export function Terminal({
                       className={cn(
                         "h-8 px-3 text-[11px] font-bold tracking-tight whitespace-nowrap rounded-lg flex-shrink-0 border shadow-sm",
                         isDark
-                          ? "bg-slate-800/80 border-slate-700 text-slate-300 active:bg-slate-700"
-                          : "bg-white border-slate-200 text-slate-600 active:bg-slate-100"
+                          ? "bg-secondary-800/80 border-secondary-700 text-secondary-300 active:bg-secondary-700"
+                          : "bg-white border-secondary-200 text-secondary-600 active:bg-secondary-100"
                       )}
                       onClick={(e) => {
                         e.preventDefault();
@@ -1440,7 +1440,7 @@ export function Terminal({
               <form onSubmit={handleFormSubmit} className="flex items-center gap-3 relative">
                 {/* Contextual hint above input for confirm/reload states */}
                 {(confirmDialog?.show || isReloadConfirmationPending) && helpLevel !== 'exam' && (
-                  <div className="absolute -top-7 left-4 right-4 text-[10px] font-black tracking-widest text-amber-400 animate-pulse">
+                  <div className="absolute -top-7 left-4 right-4 text-[10px] font-black tracking-widest text-warning-400 animate-pulse">
                     {confirmDialog?.show
                       ? (confirmDialog.message || t.pressEnterToConfirm)
                       : `${t.pressEnterToConfirm} [confirm]`}
@@ -1451,9 +1451,9 @@ export function Terminal({
                   className={cn(
                   "flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 bg-background rounded-lg border flex-1 group focus-within:ring-1 transition-all shadow-inner overflow-hidden",
                   state.awaitingPassword || localPasswordPrompt
-                    ? "border-amber-500/50 focus-within:ring-amber-500/50"
+                    ? "border-warning-500/50 focus-within:ring-warning-500/50"
                     : confirmDialog?.show || isReloadConfirmationPending
-                      ? "border-amber-500/50 focus-within:ring-amber-500/50"
+                      ? "border-warning-500/50 focus-within:ring-warning-500/50"
                       : "border-input focus-within:ring-primary/50",
                   isMobile && "px-3 py-2"
                 )}>
@@ -1471,7 +1471,7 @@ export function Terminal({
                   <span className={cn(
                     "font-geist-mono font-bold text-[10px] sm:text-xs select-none opacity-40 group-focus-within:opacity-100 transition-opacity shrink-0 truncate max-w-[80px] sm:max-w-none md:max-w-[150px]",
                     state.awaitingPassword || localPasswordPrompt || confirmDialog?.show || isReloadConfirmationPending
-                      ? "text-amber-400"
+                      ? "text-warning-400"
                       : "text-primary"
                   )}>
                     {state.awaitingPassword || localPasswordPrompt
@@ -1514,7 +1514,7 @@ export function Terminal({
                     type="button"
                     disabled={isInputDisabled}
                     variant="ghost"
-                    className="shrink-0 rounded-xl hover:bg-rose-500/20 text-rose-500 px-2 h-9 text-xs"
+                    className="shrink-0 rounded-xl hover:bg-error-500/20 text-error-500 px-2 h-9 text-xs"
                     onClick={() => {
                       if (onCommand) {
                         if (state.awaitingPassword || localPasswordPrompt) {
@@ -1532,19 +1532,19 @@ export function Terminal({
                     title={t.cancel}
                   >
                     <X className={cn("w-4 h-4 mr-1", isMobile && "w-3 h-3")} />
-                    <span className="text-rose-600 dark:text-rose-400 font-medium">{t.cancel}</span>
+                    <span className="text-error-600 dark:text-error-400 font-medium">{t.cancel}</span>
                   </Button>
                 )}
                 <Button
                   type="submit"
                   disabled={isInputDisabled}
                   className={cn(
-                    "shrink-0 rounded-xl shadow-lg px-3 bg-zinc-800 text-white hover:bg-zinc-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200",
+                    "shrink-0 rounded-xl shadow-lg px-3 bg-secondary-800 text-white hover:bg-secondary-700 dark:bg-white dark:text-secondary-900 dark:hover:bg-secondary-200",
                     isMobile ? "h-9 text-xs" : "h-11 text-sm",
-                    (state.awaitingPassword || localPasswordPrompt || confirmDialog?.show || isReloadConfirmationPending) && "bg-amber-500 hover:bg-amber-600 text-white"
+                    (state.awaitingPassword || localPasswordPrompt || confirmDialog?.show || isReloadConfirmationPending) && "bg-warning-500 hover:bg-warning-600 text-white"
                   )}
                 >
-                  <span className="rounded-md p-1"><CornerDownLeft className={cn("w-4 h-4 text-white dark:text-zinc-900", isMobile && "w-3 h-3")} /></span>
+                  <span className="rounded-md p-1"><CornerDownLeft className={cn("w-4 h-4 text-white dark:text-secondary-900", isMobile && "w-3 h-3")} /></span>
                 </Button>
               </form>
 
@@ -1556,7 +1556,7 @@ export function Terminal({
                 >
                   <div className={cn(
                     "rounded-lg border shadow-xl overflow-hidden",
-                    isDark ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200"
+                    isDark ? "bg-secondary-800 border-secondary-700" : "bg-white border-secondary-200"
                   )}>
                     <div className="max-h-40 overflow-y-auto overflow-x-hidden font-geist-mono">
                       {renderAutocompleteSuggestions.map((cmd, idx) => (
@@ -1570,8 +1570,8 @@ export function Terminal({
                           className={cn(
                             "w-full text-left px-2.5 py-1 text-[11px] font-geist-mono transition-colors",
                             autocompleteIndex >= 0 && idx === autocompleteIndex
-                              ? (isDark ? "bg-cyan-500/20 text-cyan-200" : "bg-cyan-50 text-cyan-900")
-                              : (isDark ? "text-slate-300 hover:bg-primary/10" : "text-slate-700 hover:bg-primary/10")
+                              ? (isDark ? "bg-accent-500/20 text-accent-200" : "bg-accent-50 text-accent-900")
+                              : (isDark ? "text-secondary-300 hover:bg-primary/10" : "text-secondary-700 hover:bg-primary/10")
                           )}
                         >
                           {cmd}
@@ -1606,7 +1606,7 @@ export function Terminal({
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-secondary-200 dark:hover:bg-secondary-700 text-secondary-400 hover:text-secondary-600 dark:hover:text-secondary-300 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import type { CableType } from '@/lib/network/types';
 
@@ -46,8 +46,8 @@ export function CanvasOverlays({
           <div
             className={`px-3 py-2 rounded-xl border liquid-glass-strong animate-scale-in shadow-2xl ${
               isDark
-                ? 'border-slate-700/50 text-white shadow-cyan-500/10'
-                : 'border-slate-200/50 text-slate-900 shadow-slate-200/50'
+                ? 'border-secondary-700/50 text-white shadow-accent-500/10'
+                : 'border-secondary-200/50 text-secondary-900 shadow-secondary-200/50'
             }`}
           >
             <div className="flex items-center gap-2 mb-1">
@@ -86,8 +86,8 @@ export function CanvasOverlays({
             <div
               className={`text-[10px] mt-1 font-semibold ${
                 connectionTooltip.statusMessage === (language === 'tr' ? 'Bağlantı sorunsuz' : 'Connection OK')
-                  ? 'text-emerald-500'
-                  : 'text-red-500'
+                  ? 'text-success-500'
+                  : 'text-error-500'
               }`}
             >
               {connectionTooltip.statusMessage}
@@ -95,7 +95,7 @@ export function CanvasOverlays({
             {/* Arrow */}
             <div
               className={`absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] ${
-                isDark ? 'border-t-slate-800' : 'border-t-white'
+                isDark ? 'border-t-secondary-800' : 'border-t-white'
               }`}
             />
           </div>
@@ -110,11 +110,11 @@ export function CanvasOverlays({
           className={`fixed bottom-4 left-4 px-4 py-3 rounded-lg shadow-lg text-sm font-medium transition-all duration-300 z-40 ${
             errorToast.type === 'success'
               ? isDark
-                ? 'bg-emerald-500/20 border border-emerald-500/50 text-emerald-300'
-                : 'bg-emerald-50 border border-emerald-200 text-emerald-700'
+                ? 'bg-success-500/20 border border-success-500/50 text-success-300'
+                : 'bg-success-50 border border-success-200 text-success-700'
               : isDark
-              ? 'bg-red-500/20 border border-red-500/50 text-red-300'
-              : 'bg-red-50 border border-red-200 text-red-700'
+              ? 'bg-error-500/20 border border-error-500/50 text-error-300'
+              : 'bg-error-50 border border-error-200 text-error-700'
           }`}
         >
           {errorToast.message}

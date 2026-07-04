@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -89,7 +89,7 @@ export function AppHeader({
   isPingPanelOpen
 }: AppHeaderProps) {
   return (
-    <header className={cn("fixed top-0 left-0 right-0 z-[50] border-b px-5 py-2 pb-0", isDark ? "liquid-glass border-slate-800" : "bg-white/90 backdrop-blur-md border-slate-200")}>
+    <header className={cn("fixed top-0 left-0 right-0 z-[50] border-b px-5 py-2 pb-0", isDark ? "liquid-glass border-secondary-800" : "bg-white/90 backdrop-blur-md border-secondary-200")}>
       <div className="w-full">
         <div className="flex items-center justify-between">
           {/* Logo & Title */}
@@ -108,10 +108,10 @@ export function AppHeader({
                 <Image src="/icon192.svg" alt="Logo" width={28} height={28} loading="eager" className="w-7 h-7 object-contain" />
               </div>
               <div className="hidden md:flex flex-col">
-                <h2 className="text-lg font-bold tracking-tight bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent leading-none">
+                <h2 className="text-lg font-bold tracking-tight bg-gradient-to-r from-accent-400 to-primary-500 bg-clip-text text-transparent leading-none">
                   {t.title}
                 </h2>
-                <p className="text-xs font-medium mt-1 text-slate-600 dark:text-slate-200">{t.subtitle}</p>
+                <p className="text-xs font-medium mt-1 text-secondary-600 dark:text-secondary-200">{t.subtitle}</p>
               </div>
             </Button>
           </TooltipWrapper>
@@ -121,31 +121,31 @@ export function AppHeader({
             <div className="hidden md:flex items-center gap-4">
               <div className="flex flex-col items-end gap-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black tracking-wider text-slate-400 dark:text-slate-200">
+                  <span className="text-[10px] font-black tracking-wider text-secondary-400 dark:text-secondary-200">
                     {t.labProgress}
                   </span>
                   <span
                     key={totalScore}
-                    className={`text-[10px] font-black tabular-nums px-1.5 py-0.5 rounded-full animate-scale-in ${totalScore >= maxScore * 0.7 ? 'bg-emerald-500/10 text-emerald-400' :
-                      totalScore >= maxScore * 0.4 ? 'bg-amber-500/10 text-amber-400' :
-                        'bg-rose-500/10 text-rose-400'
+                    className={`text-[10px] font-black tabular-nums px-1.5 py-0.5 rounded-full animate-scale-in ${totalScore >= maxScore * 0.7 ? 'bg-success-500/10 text-success-400' :
+                      totalScore >= maxScore * 0.4 ? 'bg-warning-500/10 text-warning-400' :
+                        'bg-error-500/10 text-error-400'
                       }`}
                   >
                     {Math.round((totalScore / maxScore) * 100)}%
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="h-1.5 w-24 rounded-full overflow-hidden p-[px] bg-slate-200 dark:bg-slate-800">
+                  <div className="h-1.5 w-24 rounded-full overflow-hidden p-[px] bg-secondary-200 dark:bg-secondary-800">
                     <div
-                      className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full progress-fill"
+                      className="h-full bg-gradient-to-r from-accent-400 to-primary-500 rounded-full progress-fill"
                       style={{ '--progress-width': `${(totalScore / maxScore) * 100}%` } as React.CSSProperties}
                     />
                   </div>
                   <div className="flex items-baseline gap-0.5">
-                    <span className="text-xs font-black tabular-nums text-slate-900 dark:text-white">
+                    <span className="text-xs font-black tabular-nums text-secondary-900 dark:text-white">
                       {totalScore}
                     </span>
-                    <span className="text-[10px] font-bold opacity-30 text-slate-500 dark:text-slate-400">
+                    <span className="text-[10px] font-bold opacity-30 text-secondary-500 dark:text-secondary-400">
                       /{maxScore}
                     </span>
                   </div>
@@ -156,13 +156,13 @@ export function AppHeader({
 
           {/* Right Controls - Integrated Toolbar */}
           <div className="flex items-center gap-2 sticky top-0 z-10">
-            <div className="flex items-center gap-1 px-2 py-1.5 rounded-xl border bg-white border-slate-200/60 shadow-sm dark:bg-slate-800/40 dark:border-slate-800">
+            <div className="flex items-center gap-1 px-2 py-1.5 rounded-xl border bg-white border-secondary-200/60 shadow-sm dark:bg-secondary-800/40 dark:border-secondary-800">
               {/* Undo/Redo Group */}
               {activeTab === 'topology' && (
                 <div className="hidden items-center gap-1 sm:hidden">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 ui-hover-surface text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400" onClick={handleUndo} disabled={hasHydrated && !canUndo}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 ui-hover-surface text-secondary-600 hover:text-primary-600 dark:text-secondary-300 dark:hover:text-primary-400" onClick={handleUndo} disabled={hasHydrated && !canUndo}>
                         <Undo2 className={`w-4 h-4 ${!canUndo ? 'opacity-30' : ''}`} />
                       </Button>
                     </TooltipTrigger>
@@ -170,23 +170,23 @@ export function AppHeader({
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className={`h-8 w-8 ui-hover-surface ${isDark ? 'text-slate-300 hover:text-blue-400' : 'text-slate-600 hover:text-blue-600'}`} onClick={handleRedo} disabled={hasHydrated && !canRedo}>
+                      <Button variant="ghost" size="icon" className={`h-8 w-8 ui-hover-surface ${isDark ? 'text-secondary-300 hover:text-primary-400' : 'text-secondary-600 hover:text-primary-600'}`} onClick={handleRedo} disabled={hasHydrated && !canRedo}>
                         <Redo2 className={`w-4 h-4 ${!canRedo ? 'opacity-30' : ''}`} />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>{t.redo}</TooltipContent>
                   </Tooltip>
-                  <div className="w-px h-4 mx-1 bg-slate-300 hidden md:block dark:bg-slate-700" />
+                  <div className="w-px h-4 mx-1 bg-secondary-300 hidden md:block dark:bg-secondary-700" />
                 </div>
               )}
 
               {/* Project Controls - Desktop only */}
               <div className="hidden md:flex items-center">
-                <div className="flex items-center rounded-lg border overflow-hidden bg-white border-slate-200 dark:bg-slate-800/50 dark:border-slate-700">
+                <div className="flex items-center rounded-lg border overflow-hidden bg-white border-secondary-200 dark:bg-secondary-800/50 dark:border-secondary-700">
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button aria-label={t.newProject}
-                        className="h-8 w-8 flex items-center justify-center transition-all hover:bg-slate-200/50 text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400 dark:hover:bg-slate-700/50"
+                        className="h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50 text-secondary-600 hover:text-primary-600 dark:text-secondary-300 dark:hover:text-primary-400 dark:hover:bg-secondary-700/50"
                         onClick={handleNewProject}
                       >
                         <File className="w-4 h-4" />
@@ -200,7 +200,7 @@ export function AppHeader({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button aria-label={t.loadProject}
-                        className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-slate-200/50", isDark ? 'text-slate-300 hover:text-blue-400 hover:bg-slate-700/50' : 'text-slate-600 hover:text-blue-600')}
+                        className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50", isDark ? 'text-secondary-300 hover:text-primary-400 hover:bg-secondary-700/50' : 'text-secondary-600 hover:text-primary-600')}
                         onClick={() => fileInputRef.current?.click()}
                       >
                         <FolderOpen className="w-4 h-4" />
@@ -214,7 +214,7 @@ export function AppHeader({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button aria-label={t.saveProject}
-                        className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-slate-200/50", isDark ? 'text-slate-300 hover:text-blue-400 hover:bg-slate-700/50' : 'text-slate-600 hover:text-blue-600')}
+                        className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50", isDark ? 'text-secondary-300 hover:text-primary-400 hover:bg-secondary-700/50' : 'text-secondary-600 hover:text-primary-600')}
                         onClick={handleSaveProject}
                       >
                         <Save className="w-4 h-4" />
@@ -225,11 +225,11 @@ export function AppHeader({
                       <ShortcutBadge shortcut="Ctrl+S" variant="success" />
                     </TooltipContent>
                   </Tooltip>
-                  <div className={cn("w-px h-5 mx-1", isDark ? "bg-slate-700" : "bg-slate-300")} />
+                  <div className={cn("w-px h-5 mx-1", isDark ? "bg-secondary-700" : "bg-secondary-300")} />
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button aria-label={language === 'tr' ? 'PNG Kaydet' : 'Save as PNG'}
-                        className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-slate-200/50", isDark ? 'text-slate-300 hover:text-emerald-400 hover:bg-slate-700/50' : 'text-slate-600 hover:text-emerald-600')}
+                        className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50", isDark ? 'text-secondary-300 hover:text-success-400 hover:bg-secondary-700/50' : 'text-secondary-600 hover:text-success-600')}
                         onClick={() => window.dispatchEvent(new CustomEvent('trigger-topology-export-png'))}
                       >
                         <ImageDown className="w-4 h-4" />
@@ -242,7 +242,7 @@ export function AppHeader({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button aria-label={language === 'tr' ? 'Özet Notu Oluştur' : 'Generate Summary Note'}
-                        className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-slate-200/50", isDark ? 'text-slate-300 hover:text-indigo-400 hover:bg-slate-700/50' : 'text-slate-600 hover:text-indigo-600')}
+                        className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50", isDark ? 'text-secondary-300 hover:text-primary-400 hover:bg-secondary-700/50' : 'text-secondary-600 hover:text-primary-600')}
                         onClick={() => window.dispatchEvent(new CustomEvent('trigger-topology-generate-summary-note'))}
                       >
                         <FileText className="w-4 h-4" />
@@ -254,7 +254,7 @@ export function AppHeader({
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button aria-label={t.contactTitle} className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-slate-200/50", isDark ? 'text-slate-300 hover:text-blue-400 hover:bg-slate-700/50' : 'text-slate-500 hover:text-blue-600')} onClick={() => setShowAboutModal(true)}>
+                      <button aria-label={t.contactTitle} className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50", isDark ? 'text-secondary-300 hover:text-primary-400 hover:bg-secondary-700/50' : 'text-secondary-500 hover:text-primary-600')} onClick={() => setShowAboutModal(true)}>
                         <Info className="w-4 h-4" />
                       </button>
                     </TooltipTrigger>
@@ -269,8 +269,8 @@ export function AppHeader({
               {/* Achievements - always visible */}
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button aria-label={t.basarilarim} className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-slate-200/50", isDark ? 'text-slate-300 hover:text-amber-400 hover:bg-slate-700/50' : 'text-slate-500 hover:text-amber-600')} onClick={() => setShowBasarilarim(!showBasarilarim)}>
-                    <Trophy className={`w-4 h-4 ${showBasarilarim ? 'text-amber-500' : ''}`} />
+                  <button aria-label={t.basarilarim} className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50", isDark ? 'text-secondary-300 hover:text-warning-400 hover:bg-secondary-700/50' : 'text-secondary-500 hover:text-warning-600')} onClick={() => setShowBasarilarim(!showBasarilarim)}>
+                    <Trophy className={`w-4 h-4 ${showBasarilarim ? 'text-warning-500' : ''}`} />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent className="flex items-center gap-2">
@@ -280,12 +280,12 @@ export function AppHeader({
 
 
               {/* Settings & Theme */}
-              <div className={`w-px h-4 mx-1 ${isDark ? 'bg-slate-700' : 'bg-slate-300'} hidden md:block`} />
+              <div className={`w-px h-4 mx-1 ${isDark ? 'bg-secondary-700' : 'bg-secondary-300'} hidden md:block`} />
               <TooltipWrapper title={language === 'tr' ? 'Switch to English' : 'Türkçe\'ye Geç'}>
                 <button
                   aria-label={language === 'tr' ? 'Switch to English' : 'Türkçe\'ye Geç'}
                   onClick={() => setLanguage(language === 'tr' ? 'en' : 'tr')}
-                  className={cn("text-[10px] font-bold h-7 px-1.5 flex items-center gap-1 rounded transition-all ui-hover-surface", isDark ? 'text-slate-300 hover:text-purple-300' : 'text-slate-700 hover:text-purple-700')}
+                  className={cn("text-[10px] font-bold h-7 px-1.5 flex items-center gap-1 rounded transition-all ui-hover-surface", isDark ? 'text-secondary-300 hover:text-purple-300' : 'text-secondary-700 hover:text-purple-700')}
                 >
                   <Languages className="w-3.5 h-3.5" />
                   {language.toUpperCase()}
@@ -295,7 +295,7 @@ export function AppHeader({
                 <TooltipTrigger asChild>
                   <button
                     aria-label={isDark ? t.lightMode : t.darkMode}
-                    className={cn("h-7 w-7 rounded flex items-center justify-center transition-all ui-hover-surface", isDark ? 'text-slate-300 hover:text-yellow-300' : 'text-slate-500 hover:text-yellow-600')}
+                    className={cn("h-7 w-7 rounded flex items-center justify-center transition-all ui-hover-surface", isDark ? 'text-secondary-300 hover:text-yellow-300' : 'text-secondary-500 hover:text-yellow-600')}
                     onClick={() => setTheme(isDark ? 'light' : 'dark')}
                   >
                     {isDark ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
@@ -308,7 +308,7 @@ export function AppHeader({
                 <TooltipTrigger asChild>
                   <button
                     aria-label={graphicsQuality !== 'high' ? t.highRes : t.lowRes}
-                    className={cn("h-7 w-7 rounded flex items-center justify-center transition-all ui-hover-surface", graphicsQuality === 'high' ? (isDark ? 'text-slate-300 hover:text-green-300' : 'text-slate-500 hover:text-green-600') : (isDark ? 'text-slate-300 hover:text-orange-300' : 'text-slate-500 hover:text-orange-600'))}
+                    className={cn("h-7 w-7 rounded flex items-center justify-center transition-all ui-hover-surface", graphicsQuality === 'high' ? (isDark ? 'text-secondary-300 hover:text-success-300' : 'text-secondary-500 hover:text-success-600') : (isDark ? 'text-secondary-300 hover:text-warning-300' : 'text-secondary-500 hover:text-warning-600'))}
                     onClick={() => setGraphicsQuality(graphicsQuality === 'high' ? 'low' : 'high')}
                   >
                     {graphicsQuality === 'high' ? <Sparkles className="w-4 h-4" /> : <Cloud className="w-4 h-4" />}
@@ -316,14 +316,14 @@ export function AppHeader({
                 </TooltipTrigger>
                 <TooltipContent>{graphicsQuality !== 'high' ? t.highRes : t.lowRes}</TooltipContent>
               </Tooltip>
-              <div className={`w-px h-4 mx-1 ${isDark ? 'bg-slate-700' : 'bg-slate-300'} hidden md:block`} />
+              <div className={`w-px h-4 mx-1 ${isDark ? 'bg-secondary-700' : 'bg-secondary-300'} hidden md:block`} />
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
                     aria-label={'Difficulty Level'}
                     className={cn(
                       "h-7 w-7 rounded flex items-center justify-center transition-all ui-hover-surface",
-                      helpLevel === 'beginner' ? 'text-emerald-500' : helpLevel === 'intermediate' ? 'text-amber-500' : 'text-rose-500'
+                      helpLevel === 'beginner' ? 'text-success-500' : helpLevel === 'intermediate' ? 'text-warning-500' : 'text-error-500'
                     )}
                     onClick={() => {
                       const next: Record<string, 'beginner' | 'intermediate' | 'exam'> = {
@@ -360,8 +360,8 @@ export function AppHeader({
                 <Menu className="w-5 h-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className={`${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white'} p-0 w-72 h-dvh overflow-hidden`}>
-              <SheetHeader className="p-4 text-left border-b border-slate-800/50">
+            <SheetContent side="right" className={`${isDark ? 'bg-secondary-900 border-secondary-800' : 'bg-white'} p-0 w-72 h-dvh overflow-hidden`}>
+              <SheetHeader className="p-4 text-left border-b border-secondary-800/50">
                 <SheetTitle className="text-lg font-black flex items-center gap-2">
                   <div className="p-1 flex items-center justify-center">
                     <Image src="/icon192.svg" alt="Logo" width={20} height={20} loading="eager" className="w-5 h-5 object-contain" />
@@ -375,25 +375,25 @@ export function AppHeader({
               <ScrollArea className="h-[calc(100dvh-80px)] overflow-y-auto">
                 <div className="p-3 space-y-4">
                   {/* Group 1: New / Save / Load */}
-                  <div className={`p-3 rounded-xl border ${isDark ? 'bg-slate-800/30 border-slate-800/50' : 'bg-slate-50 border-slate-200'}`}>
+                  <div className={`p-3 rounded-xl border ${isDark ? 'bg-secondary-800/30 border-secondary-800/50' : 'bg-secondary-50 border-secondary-200'}`}>
                     <div className="grid grid-cols-2 gap-2">
                       <Button
                         variant="secondary"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-accent-400' : 'hover:text-accent-600'}`}
                         onClick={() => { setShowProjectPicker(true); setShowMobileMenu(false); }}
                       >
                         <File className="w-3.5 h-3.5 flex-shrink-0" /> <span>{t.new}</span>
                       </Button>
                       <Button
                         variant="secondary"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-accent-400' : 'hover:text-accent-600'}`}
                         onClick={() => { handleSaveProject(); setShowMobileMenu(false); }}
                       >
                         <Save className="w-3.5 h-3.5 flex-shrink-0" /> <span>{t.saveLabel}</span>
                       </Button>
                       <Button
                         variant="secondary"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-accent-400' : 'hover:text-accent-600'}`}
                         onClick={() => { fileInputRef.current?.click(); setShowMobileMenu(false); }}
                       >
                         <FolderOpen className="w-3.5 h-3.5 flex-shrink-0" /> <span>{t.load}</span>
@@ -402,18 +402,18 @@ export function AppHeader({
                   </div>
 
                   {/* Group: Exports */}
-                  <div className={`p-3 rounded-xl border ${isDark ? 'bg-slate-800/30 border-slate-800/50' : 'bg-slate-50 border-slate-200'}`}>
+                  <div className={`p-3 rounded-xl border ${isDark ? 'bg-secondary-800/30 border-secondary-800/50' : 'bg-secondary-50 border-secondary-200'}`}>
                     <div className="grid grid-cols-2 gap-2">
                       <Button
                         variant="secondary"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-emerald-400' : 'hover:text-emerald-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-success-400' : 'hover:text-success-600'}`}
                         onClick={() => { window.dispatchEvent(new CustomEvent('trigger-topology-export-png')); setShowMobileMenu(false); }}
                       >
                         <ImageDown className="w-3.5 h-3.5 flex-shrink-0" /> <span>{language === 'tr' ? 'PNG Kaydet' : 'Save PNG'}</span>
                       </Button>
                       <Button
                         variant="secondary"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-indigo-400' : 'hover:text-indigo-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-primary-400' : 'hover:text-primary-600'}`}
                         onClick={() => { window.dispatchEvent(new CustomEvent('trigger-topology-generate-summary-note')); setShowMobileMenu(false); }}
                       >
                         <FileText className="w-3.5 h-3.5 flex-shrink-0" /> <span>{language === 'tr' ? 'Özet Notu Oluştur' : 'Generate Summary'}</span>
@@ -422,11 +422,11 @@ export function AppHeader({
                   </div>
 
                   {/* Group 2: Language / Theme / Graphics */}
-                  <div className={`p-3 rounded-xl border ${isDark ? 'bg-slate-800/30 border-slate-800/50' : 'bg-slate-50 border-slate-200'}`}>
+                  <div className={`p-3 rounded-xl border ${isDark ? 'bg-secondary-800/30 border-secondary-800/50' : 'bg-secondary-50 border-secondary-200'}`}>
                     <div className="grid grid-cols-2 gap-2">
                       <Button
                         variant="outline"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-accent-400' : 'hover:text-accent-600'}`}
                         onClick={() => setLanguage(language === 'tr' ? 'en' : 'tr')}
                       >
                         <Languages className="w-3.5 h-3.5 flex-shrink-0" />
@@ -434,7 +434,7 @@ export function AppHeader({
                       </Button>
                       <Button
                         variant="outline"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-accent-400' : 'hover:text-accent-600'}`}
                         onClick={() => setTheme(isDark ? 'light' : 'dark')}
                       >
                         <div className="flex-shrink-0">
@@ -444,7 +444,7 @@ export function AppHeader({
                       </Button>
                       <Button
                         variant="outline"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-accent-400' : 'hover:text-accent-600'}`}
                         onClick={() => setGraphicsQuality(graphicsQuality === 'high' ? 'low' : 'high')}
                       >
                         <div className="flex-shrink-0">
@@ -456,11 +456,11 @@ export function AppHeader({
                   </div>
 
                   {/* Group 3: Add Device / Connect / Refresh / Settings / Ping */}
-                  <div className={`p-3 rounded-xl border ${isDark ? 'bg-slate-800/30 border-slate-800/50' : 'bg-slate-50 border-slate-200'}`}>
+                  <div className={`p-3 rounded-xl border ${isDark ? 'bg-secondary-800/30 border-secondary-800/50' : 'bg-secondary-50 border-secondary-200'}`}>
                     <div className="grid grid-cols-2 gap-2">
                       <Button
                         variant="outline"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-accent-400' : 'hover:text-accent-600'}`}
                         onClick={() => {
                           if (typeof window !== 'undefined') {
                             const event = new CustomEvent('trigger-topology-palette');
@@ -474,7 +474,7 @@ export function AppHeader({
                       </Button>
                       <Button
                         variant="outline"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-accent-400' : 'hover:text-accent-600'}`}
                         onClick={() => {
                           if (typeof window !== 'undefined') {
                             const event = new CustomEvent('trigger-topology-connect');
@@ -492,7 +492,7 @@ export function AppHeader({
                       </Button>
                       <Button
                         variant="outline"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-accent-400' : 'hover:text-accent-600'}`}
                         onClick={() => {
                           handleRefreshNetwork();
                           setShowMobileMenu(false);
@@ -507,7 +507,7 @@ export function AppHeader({
                       </Button>
                       <Button
                         variant="outline"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-accent-400' : 'hover:text-accent-600'}`}
                         onClick={() => {
                           setIsEnvironmentPanelOpen(true);
                           setShowMobileMenu(false);
@@ -518,7 +518,7 @@ export function AppHeader({
                       </Button>
                       <Button
                         variant="outline"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-accent-400' : 'hover:text-accent-600'}`}
                         disabled={isPingPanelOpen}
                         onClick={() => {
                           if (typeof window !== 'undefined') {
@@ -535,25 +535,25 @@ export function AppHeader({
                   </div>
 
                   {/* Group 4: Achievements / Tour / Help */}
-                  <div className={`p-3 rounded-xl border ${isDark ? 'bg-slate-800/30 border-slate-800/50' : 'bg-slate-50 border-slate-200'}`}>
+                  <div className={`p-3 rounded-xl border ${isDark ? 'bg-secondary-800/30 border-secondary-800/50' : 'bg-secondary-50 border-secondary-200'}`}>
                     <div className="grid grid-cols-2 gap-2">
                       <Button
                         variant="secondary"
-                        className={cn("justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover", isDark ? "hover:text-amber-400" : "hover:text-amber-600")}
+                        className={cn("justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover", isDark ? "hover:text-warning-400" : "hover:text-warning-600")}
                         onClick={() => { setShowBasarilarim(!showBasarilarim); setShowMobileMenu(false); }}
                       >
                         <Trophy className="w-3.5 h-3.5 flex-shrink-0" /> <span>{t.basarilarim}</span>
                       </Button>
                       <Button
                         variant="secondary"
-                        className={cn("justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover", isDark ? "hover:text-cyan-400" : "hover:text-cyan-600")}
+                        className={cn("justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover", isDark ? "hover:text-accent-400" : "hover:text-accent-600")}
                         onClick={() => { setShowOnboarding(true); setOnboardingStep(0); setShowMobileMenu(false); }}
                       >
                         <Compass className="w-3.5 h-3.5 flex-shrink-0" /> <span>{t.tour}</span>
                       </Button>
                       <Button
                         variant="outline"
-                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-cyan-400' : 'hover:text-cyan-600'}`}
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-accent-400' : 'hover:text-accent-600'}`}
                         onClick={() => { setShowAboutModal(true); setShowMobileMenu(false); }}
                       >
                         <Info className="w-3.5 h-3.5 flex-shrink-0" />
@@ -564,18 +564,18 @@ export function AppHeader({
 
                   {/* Lab Progress Mobile */}
                   {activeDeviceType !== 'pc' && activeDeviceType !== 'iot' && activeDeviceType !== 'firewall' && topologyDevices && topologyDevices.length > 0 && activeDeviceId && maxScore > 0 && (
-                    <div className={`p-3 rounded-xl ${isDark ? 'bg-slate-800/30' : 'bg-slate-50'} border ${isDark ? 'border-slate-800/50' : 'border-slate-200'}`}>
+                    <div className={`p-3 rounded-xl ${isDark ? 'bg-secondary-800/30' : 'bg-secondary-50'} border ${isDark ? 'border-secondary-800/50' : 'border-secondary-200'}`}>
                       <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-xs font-bold tracking-[0.15em] text-slate-500">{t.labProgress}</span>
-                        <span className="text-xs font-bold text-cyan-400">{Math.round((totalScore / maxScore) * 100)}%</span>
+                        <span className="text-xs font-bold tracking-[0.15em] text-secondary-500">{t.labProgress}</span>
+                        <span className="text-xs font-bold text-accent-400">{Math.round((totalScore / maxScore) * 100)}%</span>
                       </div>
-                      <div className={`h-1.5 w-full rounded-full ${isDark ? 'bg-slate-800' : 'bg-slate-200'} overflow-hidden mb-1.5`}>
+                      <div className={`h-1.5 w-full rounded-full ${isDark ? 'bg-secondary-800' : 'bg-secondary-200'} overflow-hidden mb-1.5`}>
                         <div
-                          className="h-full bg-cyan-500 shadow-[0_0_3px_rgba(6,182,212,0.2)] transition-all duration-500"
+                          className="h-full bg-accent-500 shadow-[0_0_3px_rgba(6,182,212,0.2)] transition-all duration-500"
                           style={{ width: `${(totalScore / maxScore) * 100}%` }}
                         />
                       </div>
-                      <p className={`text-center text-xs font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>{totalScore} / {maxScore} {t.pts}</p>
+                      <p className={`text-center text-xs font-bold ${isDark ? 'text-white' : 'text-secondary-900'}`}>{totalScore} / {maxScore} {t.pts}</p>
                     </div>
                   )}
                 </div>
@@ -596,7 +596,7 @@ export function AppHeader({
                     aria-label={t.openGuidedLesson}
                     variant="ghost"
                     size="icon"
-                    className="h-9 w-9 text-blue-500 hover:bg-blue-500/10 animate-pulse"
+                    className="h-9 w-9 text-primary-500 hover:bg-primary-500/10 animate-pulse"
                     onClick={expandPanel}
                   >
                     <BookOpen className="w-5 h-5" />

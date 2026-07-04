@@ -1,4 +1,4 @@
-import { useState, useEffect, type RefObject } from 'react';
+﻿import { useState, useEffect, type RefObject } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Trash2, Undo2, Redo2, Scissors, Copy, ClipboardPaste,
@@ -84,7 +84,7 @@ export default function NetworkTopologyContextMenu({
       case 'undo': return <Undo2 className="w-4 h-4" />;
       case 'redo': return <Redo2 className="w-4 h-4" />;
       case 'trash':
-      case 'delete': return <Trash2 className="w-4 h-4 text-red-500" />;
+      case 'delete': return <Trash2 className="w-4 h-4 text-error-500" />;
       case 'cut': return <Scissors className="w-4 h-4" />;
       case 'copy': return <Copy className="w-4 h-4" />;
       case 'paste': return <ClipboardPaste className="w-4 h-4" />;
@@ -117,7 +117,7 @@ export default function NetworkTopologyContextMenu({
       disabled={disabled}
       className={`w-full flex items-center justify-between px-3 py-2 text-xs font-semibold transition-colors group ${disabled
         ? 'opacity-50 cursor-not-allowed'
-        : isDark ? 'text-slate-200 hover:bg-slate-700/80 hover:text-cyan-400 cursor-pointer' : 'text-slate-700 hover:bg-slate-50 hover:text-cyan-600 cursor-pointer'
+        : isDark ? 'text-secondary-200 hover:bg-secondary-700/80 hover:text-accent-400 cursor-pointer' : 'text-secondary-700 hover:bg-secondary-50 hover:text-accent-600 cursor-pointer'
         }`}
     >
       <div className="flex items-center gap-3">
@@ -146,7 +146,7 @@ export default function NetworkTopologyContextMenu({
   return (
     <div
       ref={contextMenuRef}
-      className={`context-menu fixed z-[10002] py-1 rounded-lg shadow-xl min-w-[140px] max-w-[240px] ${isDark ? 'bg-slate-800 border border-slate-700' : 'bg-white border border-slate-200'}`}
+      className={`context-menu fixed z-[10002] py-1 rounded-lg shadow-xl min-w-[140px] max-w-[240px] ${isDark ? 'bg-secondary-800 border border-secondary-700' : 'bg-white border border-secondary-200'}`}
       style={{
         left: position.x,
         top: position.y,
@@ -161,7 +161,7 @@ export default function NetworkTopologyContextMenu({
     >
       {contextMenu.noteId && contextMenu.mode === 'note-style' && (
         <div className="px-2 py-2 space-y-2">
-          <div className="text-[10px]  tracking-widest text-slate-500">
+          <div className="text-[10px]  tracking-widest text-secondary-500">
             {t.noteStyle}
           </div>
 
@@ -186,7 +186,7 @@ export default function NetworkTopologyContextMenu({
                 <button
                   key={c}
                   onClick={() => { if (contextMenu.noteId) onUpdateNoteStyle(contextMenu.noteId, { color: c }); onClose(); }}
-                  className={`w-4 h-4 rounded border ${note?.color === c ? 'ring-2 ring-cyan-500' : 'border-black/10'}`}
+                  className={`w-4 h-4 rounded border ${note?.color === c ? 'ring-2 ring-accent-500' : 'border-black/10'}`}
                   style={{ background: gradientMap[c] || c, outline: note?.color === c ? '2px solid cyan' : 'none' }}
                   title={c}
                 />
@@ -195,7 +195,7 @@ export default function NetworkTopologyContextMenu({
           </div>
 
           <div className="space-y-1">
-            <div className="text-[10px]  tracking-widest text-slate-500">
+            <div className="text-[10px]  tracking-widest text-secondary-500">
               {t.fontLabel}
             </div>
             <div className="grid grid-cols-1 gap-1">
@@ -204,8 +204,8 @@ export default function NetworkTopologyContextMenu({
                   key={f}
                   onClick={() => { if (contextMenu.noteId) onUpdateNoteStyle(contextMenu.noteId, { font: f }); onClose(); }}
                   className={`px-2 py-1 rounded text-left text-[11px] ${note?.font === f
-                    ? (isDark ? 'bg-slate-600 text-white border-cyan-500 border' : 'bg-slate-200 text-black border-cyan-500 border')
-                    : (isDark ? 'hover:bg-slate-700 text-slate-200 hover:text-cyan-400' : 'hover:bg-slate-100 text-slate-700 hover:text-cyan-600')
+                    ? (isDark ? 'bg-secondary-600 text-white border-accent-500 border' : 'bg-secondary-200 text-black border-accent-500 border')
+                    : (isDark ? 'hover:bg-secondary-700 text-secondary-200 hover:text-accent-400' : 'hover:bg-secondary-100 text-secondary-700 hover:text-accent-600')
                     }`}
                   style={{ fontFamily: f }}
                 >
@@ -216,7 +216,7 @@ export default function NetworkTopologyContextMenu({
           </div>
 
           <div className="space-y-1">
-            <div className="text-[10px] tracking-widest text-slate-500">
+            <div className="text-[10px] tracking-widest text-secondary-500">
               {t.sizeLabel}
             </div>
             <div className="flex gap-1">
@@ -225,8 +225,8 @@ export default function NetworkTopologyContextMenu({
                   key={s}
                   onClick={() => { if (contextMenu.noteId) onUpdateNoteStyle(contextMenu.noteId, { fontSize: s }); onClose(); }}
                   className={`px-2 py-1 rounded text-[11px] ${note?.fontSize === s
-                    ? (isDark ? 'bg-slate-600 text-white border-cyan-500 border' : 'bg-slate-200 text-black border-cyan-500 border')
-                    : (isDark ? 'hover:bg-slate-700 text-slate-200 hover:text-cyan-400' : 'hover:bg-slate-100 text-slate-700 hover:text-cyan-600')
+                    ? (isDark ? 'bg-secondary-600 text-white border-accent-500 border' : 'bg-secondary-200 text-black border-accent-500 border')
+                    : (isDark ? 'hover:bg-secondary-700 text-secondary-200 hover:text-accent-400' : 'hover:bg-secondary-100 text-secondary-700 hover:text-accent-600')
                     }`}
                 >
                   {s}px
@@ -236,7 +236,7 @@ export default function NetworkTopologyContextMenu({
           </div>
 
           <div className="space-y-1">
-            <div className="text-[10px] tracking-widest text-slate-500">
+            <div className="text-[10px] tracking-widest text-secondary-500">
               {t.opacityLabel}
             </div>
             <div className="flex gap-1">
@@ -245,8 +245,8 @@ export default function NetworkTopologyContextMenu({
                   key={o}
                   onClick={() => { if (contextMenu.noteId) onUpdateNoteStyle(contextMenu.noteId, { opacity: o }); onClose(); }}
                   className={`px-2 py-1 rounded text-[11px] ${note?.opacity === o
-                    ? (isDark ? 'bg-slate-600 text-white border-cyan-500 border' : 'bg-slate-200 text-black border-cyan-500 border')
-                    : (isDark ? 'hover:bg-slate-700 text-slate-200 hover:text-cyan-400' : 'hover:bg-slate-100 text-slate-700 hover:text-cyan-600')
+                    ? (isDark ? 'bg-secondary-600 text-white border-accent-500 border' : 'bg-secondary-200 text-black border-accent-500 border')
+                    : (isDark ? 'hover:bg-secondary-700 text-secondary-200 hover:text-accent-400' : 'hover:bg-secondary-100 text-secondary-700 hover:text-accent-600')
                     }`}
                 >
                   {Math.round(o * 100)}%
@@ -254,7 +254,7 @@ export default function NetworkTopologyContextMenu({
               ))}
             </div>
           </div>
-          <div className="pt-1 border-t border-slate-700/30">
+          <div className="pt-1 border-t border-secondary-700/30">
             {renderMenuItem({
               label: t.duplicateLabel,
               icon: 'copy',
@@ -301,7 +301,7 @@ export default function NetworkTopologyContextMenu({
             disabled: devices.length === 0 && notes.length === 0,
             onClick: () => { onSelectAll(); onClose(); }
           })}
-          <div className="my-1 border-t border-slate-200/20" />
+          <div className="my-1 border-t border-secondary-200/20" />
           {renderMenuItem({
             label: t.refreshNetwork,
             icon: 'refresh',
@@ -339,7 +339,7 @@ export default function NetworkTopologyContextMenu({
                   onClick: () => { if (contextMenu.deviceId) onOpenTasks(contextMenu.deviceId); onClose(); },
                   disabled: !device
                 })}
-                <div className="my-1 border-t border-slate-200/20" />
+                <div className="my-1 border-t border-secondary-200/20" />
                 {!isExamActive && renderMenuItem({
                   label: t.cut,
                   icon: 'cut',
@@ -380,7 +380,7 @@ export default function NetworkTopologyContextMenu({
                   disabled: devices.length === 0,
                   onClick: () => { onSelectAll(); onClose(); }
                 })}
-                <div className="my-1 border-t border-slate-200/20" />
+                <div className="my-1 border-t border-secondary-200/20" />
                 {renderMenuItem({
                   label: t.ping,
                   icon: 'ping',

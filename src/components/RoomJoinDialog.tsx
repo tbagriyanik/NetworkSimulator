@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import {
@@ -75,7 +75,7 @@ export function RoomJoinDialog() {
     <Dialog open={showRoomJoinDialog} onOpenChange={setShowRoomJoinDialog}>
       <DialogContent className="sm:max-w-sm" onEscapeKeyDown={() => {}} onPointerDownOutside={() => {}}>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><Users className="w-4 h-4 text-blue-500" />{studentRoomCode ? `${t.roomJoinTitle} — ${studentRoomCode}` : t.roomJoinTitle}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2"><Users className="w-4 h-4 text-primary-500" />{studentRoomCode ? `${t.roomJoinTitle} — ${studentRoomCode}` : t.roomJoinTitle}</DialogTitle>
           <DialogDescription>
             {studentRoomCode ? `${studentDisplayName || name} — ${studentRoomCode}` : t.roomJoinDesc}
           </DialogDescription>
@@ -104,7 +104,7 @@ export function RoomJoinDialog() {
               maxLength={50}
               onKeyDown={e => { if (e.key === 'Enter') handleJoin(); }}
             />
-            {error && <p className="text-[10px] font-bold text-red-500 px-1">{error}</p>}
+            {error && <p className="text-[10px] font-bold text-error-500 px-1">{error}</p>}
             <Button
               className="w-full"
               onClick={handleJoin}

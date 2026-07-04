@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { CableType } from '@/lib/network/types';
 import { X, Cable, LineSquiggle, Plug, TrendingUpDown } from 'lucide-react';
@@ -45,47 +45,47 @@ export function NetworkTopologyPortSelectorModal({
 
   return (
     <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-950/40" />
-      <div className={`liquid-glass-light relative w-full max-w-2xl rounded-[2.5rem] ${isDark ? 'bg-slate-900/75 border-white/10 backdrop-blur-xl' : 'bg-white/70 border-white/70 backdrop-blur-xl'} border shadow-2xl overflow-hidden flex flex-col transition-all duration-500`}>
-        <div className={`px-8 py-6 border-b ${isDark ? 'border-slate-800/50 bg-slate-800/30' : 'border-slate-100 bg-slate-50/50'}`}>
+      <div className="absolute inset-0 bg-secondary-950/40" />
+      <div className={`liquid-glass-light relative w-full max-w-2xl rounded-[2.5rem] ${isDark ? 'bg-secondary-900/75 border-white/10 backdrop-blur-xl' : 'bg-white/70 border-white/70 backdrop-blur-xl'} border shadow-2xl overflow-hidden flex flex-col transition-all duration-500`}>
+        <div className={`px-8 py-6 border-b ${isDark ? 'border-secondary-800/50 bg-secondary-800/30' : 'border-secondary-100 bg-secondary-50/50'}`}>
           <div className="flex items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className={`p-3 rounded-2xl shadow-inner ${isDark ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 'bg-amber-50 text-amber-600 border border-amber-100'}`}>
+              <div className={`p-3 rounded-2xl shadow-inner ${isDark ? 'bg-warning-500/10 text-warning-500 border border-warning-500/20' : 'bg-warning-50 text-warning-600 border border-warning-100'}`}>
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 0 0 -5.656 0l-4 4a4 4 0 1 0 5.656 5.656l1.102-1.101m-.758-4.899a4 4 0 0 0 5.656 0l4-4a4 4 0 0 0 -5.656-5.656l-1.1 1.1" />
                 </svg>
               </div>
               <div>
-                <h3 className={`text-xl font-black tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                <h3 className={`text-xl font-black tracking-tight ${isDark ? 'text-white' : 'text-secondary-900'}`}>
                   {portSelectorStep === 'source' ? t.selectSourcePort : t.selectTargetPort}
                 </h3>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="w-5 h-5 rounded-md bg-red-500 hover:bg-red-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0"
+              className="w-5 h-5 rounded-md bg-error-500 hover:bg-error-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0"
             >
               <X className="w-3 h-3 text-white pointer-events-none" />
             </button>
           </div>
 
           <div className="mt-8 flex items-center gap-4">
-            <div className={`flex-1 h-1.5 rounded-full transition-all duration-500 ${portSelectorStep === 'source' ? 'bg-cyan-500 shadow-[0_0_3px_rgba(6,182,212,0.2)]' : 'bg-emerald-500/40'}`} />
-            <div className={`flex-1 h-1.5 rounded-full transition-all duration-500 ${portSelectorStep === 'target' ? 'bg-cyan-500 shadow-[0_0_3px_rgba(6,182,212,0.2)]' : (isDark ? 'bg-slate-800' : 'bg-slate-200')}`} />
+            <div className={`flex-1 h-1.5 rounded-full transition-all duration-500 ${portSelectorStep === 'source' ? 'bg-accent-500 shadow-[0_0_3px_rgba(6,182,212,0.2)]' : 'bg-success-500/40'}`} />
+            <div className={`flex-1 h-1.5 rounded-full transition-all duration-500 ${portSelectorStep === 'target' ? 'bg-accent-500 shadow-[0_0_3px_rgba(6,182,212,0.2)]' : (isDark ? 'bg-secondary-800' : 'bg-secondary-200')}`} />
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-6">
             <div className="flex items-center gap-3">
-              <span className={`text-xs font-bold tracking-widest ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+              <span className={`text-xs font-bold tracking-widest ${isDark ? 'text-secondary-500' : 'text-secondary-400'}`}>
                 {t.cableType.toUpperCase()}:
               </span>
-              <div className={`flex items-center rounded-lg border overflow-hidden ${isDark ? 'bg-slate-800/50 border-slate-800' : 'bg-slate-100 border-slate-200'}`}>
+              <div className={`flex items-center rounded-lg border overflow-hidden ${isDark ? 'bg-secondary-800/50 border-secondary-800' : 'bg-secondary-100 border-secondary-200'}`}>
                 {(['straight', 'crossover', 'serial', 'console'] as CableType[]).map((type) => {
                   const colorMap: Record<string, { active: string; inactive: string }> = {
-                    straight: { active: 'text-blue-400', inactive: 'text-blue-500 hover:text-blue-400' },
-                    crossover: { active: 'text-orange-400', inactive: 'text-orange-500 hover:text-orange-400' },
-                    serial: { active: 'text-lime-400', inactive: 'text-lime-500 hover:text-lime-400' },
-                    console: { active: 'text-cyan-400', inactive: 'text-cyan-500 hover:text-cyan-400' },
+                    straight: { active: 'text-primary-400', inactive: 'text-primary-500 hover:text-primary-400' },
+                    crossover: { active: 'text-warning-400', inactive: 'text-warning-500 hover:text-warning-400' },
+                    serial: { active: 'text-success-400', inactive: 'text-success-500 hover:text-success-400' },
+                    console: { active: 'text-accent-400', inactive: 'text-accent-500 hover:text-accent-400' },
                   };
                   const c = colorMap[type] || colorMap.console;
                   return (
@@ -93,9 +93,9 @@ export function NetworkTopologyPortSelectorModal({
                       key={type}
                       onClick={() => onCableTypeChange(type)}
                       className={`h-8 px-3 flex items-center gap-1.5 transition-all text-xs font-bold
-                      ${isDark ? 'hover:bg-slate-700/50' : 'hover:bg-slate-200/50'}
+                      ${isDark ? 'hover:bg-secondary-700/50' : 'hover:bg-secondary-200/50'}
                       ${cableType === type
-                          ? isDark ? 'bg-slate-700/80' : 'bg-slate-200/80'
+                          ? isDark ? 'bg-secondary-700/80' : 'bg-secondary-200/80'
                           : ''
                         }
                       ${cableType === type ? c.active : c.inactive}`}
@@ -117,8 +117,8 @@ export function NetworkTopologyPortSelectorModal({
             </div>
 
             {portSelectorStep === 'target' && selectedSourcePort && (
-              <div className="flex items-center gap-3 ml-auto px-4 py-2 rounded-xl bg-cyan-500/5 border border-cyan-500/20 text-cyan-500">
-                <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+              <div className="flex items-center gap-3 ml-auto px-4 py-2 rounded-xl bg-accent-500/5 border border-accent-500/20 text-accent-500">
+                <div className="w-1.5 h-1.5 rounded-full bg-accent-500 animate-pulse" />
                 <span className="text-[10px] font-black tracking-widest">
                   {t.linkFrom}: {devices.find(d => d.id === selectedSourcePort.deviceId)?.name} ({selectedSourcePort.portId})
                 </span>
@@ -143,38 +143,38 @@ export function NetworkTopologyPortSelectorModal({
               <div key={device.id} className="space-y-4">
                 <div className="flex items-center justify-between group">
                   <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-xl border transition-colors ${(device.type === 'pc' || device.type === 'iot') ? 'bg-blue-500/10 border-blue-500/20 text-blue-500' :
-                      isSwitch ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' :
+                    <div className={`p-2 rounded-xl border transition-colors ${(device.type === 'pc' || device.type === 'iot') ? 'bg-primary-500/10 border-primary-500/20 text-primary-500' :
+                      isSwitch ? 'bg-success-500/10 border-success-500/20 text-success-500' :
                         'bg-purple-500/10 border-purple-500/20 text-purple-500'
                       }`}>
                       {DEVICE_ICONS[isSwitch ? 'switch' : device.type]}
                     </div>
-                    <span className={`text-base font-black tracking-tight ${isDark ? 'text-white' : 'text-slate-900'} group-hover:text-cyan-500 transition-colors`}>
+                    <span className={`text-base font-black tracking-tight ${isDark ? 'text-white' : 'text-secondary-900'} group-hover:text-accent-500 transition-colors`}>
                       {device.name}
                     </span>
                   </div>
-                  <div className={`text-xs font-bold tracking-widest ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                  <div className={`text-xs font-bold tracking-widest ${isDark ? 'text-secondary-500' : 'text-secondary-400'}`}>
                     {device.ports.filter(p => p.status === 'disconnected').length} {device.ports.filter(p => p.status === 'disconnected').length <= 1 ? t.freePortSingular : t.freePortPlural}
                   </div>
                 </div>
 
-                <div className={`grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3 p-4 rounded-3xl border ${isDark ? 'bg-slate-950/40 border-slate-800/50' : 'bg-slate-50 border-slate-200'}`}>
-                  <div className="col-span-full flex flex-wrap gap-3 mb-2 pb-2 border-b border-dashed border-slate-700/30 text-xs">
+                <div className={`grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3 p-4 rounded-3xl border ${isDark ? 'bg-secondary-950/40 border-secondary-800/50' : 'bg-secondary-50 border-secondary-200'}`}>
+                  <div className="col-span-full flex flex-wrap gap-3 mb-2 pb-2 border-b border-dashed border-secondary-700/30 text-xs">
                     {(device.type === 'pc' || device.type === 'iot') ? (
                       <>
-                        <span className="flex items-center gap-1 text-slate-400"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" /> ETH</span>
+                        <span className="flex items-center gap-1 text-secondary-400"><span className="w-2 h-2 rounded-full bg-primary-500 inline-block" /> ETH</span>
                         {device.type === 'pc' && (
-                          <span className="flex items-center gap-1 text-slate-400"><span className="w-2 h-2 rounded-full bg-cyan-500 inline-block" /> COM</span>
+                          <span className="flex items-center gap-1 text-secondary-400"><span className="w-2 h-2 rounded-full bg-accent-500 inline-block" /> COM</span>
                         )}
                       </>
                     ) : (
                       <>
-                        <span className="flex items-center gap-1 text-slate-400"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" /> Fa</span>
-                        <span className="flex items-center gap-1 text-slate-400"><span className="w-2 h-2 rounded-full bg-orange-500 inline-block" /> Gi</span>
-                        <span className="flex items-center gap-1 text-slate-400"><span className="w-2 h-2 rounded-full bg-cyan-500 inline-block" /> Con</span>
+                        <span className="flex items-center gap-1 text-secondary-400"><span className="w-2 h-2 rounded-full bg-primary-500 inline-block" /> Fa</span>
+                        <span className="flex items-center gap-1 text-secondary-400"><span className="w-2 h-2 rounded-full bg-warning-500 inline-block" /> Gi</span>
+                        <span className="flex items-center gap-1 text-secondary-400"><span className="w-2 h-2 rounded-full bg-accent-500 inline-block" /> Con</span>
                       </>
                     )}
-                    <span className="flex items-center gap-1 text-slate-500 ml-auto"><span className="w-2 h-2 rounded-full bg-slate-600 inline-block" /> {t.connected}</span>
+                    <span className="flex items-center gap-1 text-secondary-500 ml-auto"><span className="w-2 h-2 rounded-full bg-secondary-600 inline-block" /> {t.connected}</span>
                   </div>
                   {filteredPorts.map((port) => {
                     const isConnected = port.status === 'connected';
@@ -182,34 +182,34 @@ export function NetworkTopologyPortSelectorModal({
                     const isConsolePrt = pid === 'console' || pid.startsWith('com');
                     const isGigabit = pid.startsWith('gi');
                     const isFastEth = pid.startsWith('fa') || pid.startsWith('eth');
-                    let dotCls = 'bg-slate-600';
+                    let dotCls = 'bg-secondary-600';
                     let dotGlow = '';
                     let cardCls = isDark
-                      ? 'bg-slate-800 border-slate-700 hover:border-cyan-500/50 hover:bg-slate-700'
-                      : 'bg-white border-slate-200 hover:border-cyan-500 shadow-sm';
-                    let textCls = isDark ? 'text-slate-500 group-hover:text-white' : 'text-slate-500 group-hover:text-cyan-600';
+                      ? 'bg-secondary-800 border-secondary-700 hover:border-accent-500/50 hover:bg-secondary-700'
+                      : 'bg-white border-secondary-200 hover:border-accent-500 shadow-sm';
+                    let textCls = isDark ? 'text-secondary-500 group-hover:text-white' : 'text-secondary-500 group-hover:text-accent-600';
                     if (!isConnected) {
                       if (isConsolePrt) {
-                        dotCls = 'bg-cyan-500';
+                        dotCls = 'bg-accent-500';
                         dotGlow = 'shadow-[0_0_3px_rgba(6,182,212,0.3)]';
                         cardCls = isDark
-                          ? 'bg-cyan-950/20 border-cyan-800/50 hover:border-cyan-400 hover:bg-cyan-900/30'
-                          : 'bg-cyan-50 border-cyan-200 hover:border-cyan-400 shadow-sm';
-                        textCls = 'text-cyan-400 group-hover:text-cyan-300';
+                          ? 'bg-accent-950/20 border-accent-800/50 hover:border-accent-400 hover:bg-accent-900/30'
+                          : 'bg-accent-50 border-accent-200 hover:border-accent-400 shadow-sm';
+                        textCls = 'text-accent-400 group-hover:text-accent-300';
                       } else if (isGigabit) {
-                        dotCls = 'bg-orange-500';
+                        dotCls = 'bg-warning-500';
                         dotGlow = 'shadow-[0_0_3px_rgba(249,115,22,0.3)]';
                         cardCls = isDark
-                          ? 'bg-orange-950/20 border-orange-800/50 hover:border-orange-400 hover:bg-orange-900/30'
-                          : 'bg-orange-50 border-orange-200 hover:border-orange-400 shadow-sm';
-                        textCls = 'text-orange-400 group-hover:text-orange-300';
+                          ? 'bg-warning-950/20 border-warning-800/50 hover:border-warning-400 hover:bg-warning-900/30'
+                          : 'bg-warning-50 border-warning-200 hover:border-warning-400 shadow-sm';
+                        textCls = 'text-warning-400 group-hover:text-warning-300';
                       } else if (isFastEth) {
-                        dotCls = 'bg-blue-500';
+                        dotCls = 'bg-primary-500';
                         dotGlow = 'shadow-[0_0_3px_rgba(59,130,246,0.3)]';
                         cardCls = isDark
-                          ? 'bg-blue-950/20 border-blue-800/50 hover:border-blue-400 hover:bg-blue-900/30'
-                          : 'bg-blue-50 border-blue-200 hover:border-blue-400 shadow-sm';
-                        textCls = 'text-blue-400 group-hover:text-blue-300';
+                          ? 'bg-primary-950/20 border-primary-800/50 hover:border-primary-400 hover:bg-primary-900/30'
+                          : 'bg-primary-50 border-primary-200 hover:border-primary-400 shadow-sm';
+                        textCls = 'text-primary-400 group-hover:text-primary-300';
                       }
                     }
                     return (
@@ -218,11 +218,11 @@ export function NetworkTopologyPortSelectorModal({
                         disabled={isConnected}
                         onClick={() => onSelectPort(device.id, port.id)}
                         className={`group relative flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all duration-300 border ${isConnected
-                          ? (isDark ? 'bg-slate-900/40 border-slate-800 cursor-not-allowed opacity-40' : 'bg-slate-200 border-slate-300 cursor-not-allowed opacity-40')
+                          ? (isDark ? 'bg-secondary-900/40 border-secondary-800 cursor-not-allowed opacity-40' : 'bg-secondary-200 border-secondary-300 cursor-not-allowed opacity-40')
                           : `${cardCls} hover:scale-110`}`}
                       >
-                        <div className={`w-3.5 h-3.5 rounded-full transition-all duration-300 ${isConnected ? 'bg-slate-600' : `${dotCls} ${dotGlow}`}`} />
-                        <span className={`text-xs font-bold font-mono transition-colors ${isConnected ? 'text-slate-600' : textCls}`}>
+                        <div className={`w-3.5 h-3.5 rounded-full transition-all duration-300 ${isConnected ? 'bg-secondary-600' : `${dotCls} ${dotGlow}`}`} />
+                        <span className={`text-xs font-bold font-mono transition-colors ${isConnected ? 'text-secondary-600' : textCls}`}>
                           {port.label.replace('FastEthernet', 'Fa').replace('GigabitEthernet', 'Gi')}
                         </span>
                       </button>
@@ -235,26 +235,26 @@ export function NetworkTopologyPortSelectorModal({
 
           {devices.every(d => d.ports.filter(p => p.status === 'disconnected').length === 0) && (
             <div className="flex flex-col items-center py-12 space-y-4">
-              <div className={`p-6 rounded-full ${isDark ? 'bg-slate-800/50' : 'bg-slate-100'}`}>
-                <svg className={`w-12 h-12 ${isDark ? 'text-slate-700' : 'text-slate-300'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className={`p-6 rounded-full ${isDark ? 'bg-secondary-800/50' : 'bg-secondary-100'}`}>
+                <svg className={`w-12 h-12 ${isDark ? 'text-secondary-700' : 'text-secondary-300'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
-              <div className={`text-center max-w-xs ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                <h4 className="font-bold text-slate-400">{t.noFreePorts}</h4>
+              <div className={`text-center max-w-xs ${isDark ? 'text-secondary-500' : 'text-secondary-400'}`}>
+                <h4 className="font-bold text-secondary-400">{t.noFreePorts}</h4>
                 <p className="text-xs mt-1">{t.noFreePortsMessage}</p>
               </div>
             </div>
           )}
         </div>
 
-        <div className={`px-8 py-6 border-t ${isDark ? 'border-slate-800/50 bg-slate-800/30' : 'border-slate-100 bg-slate-50/50'} flex justify-between items-center`}>
-          <div className={`text-xs font-bold tracking-widest ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
+        <div className={`px-8 py-6 border-t ${isDark ? 'border-secondary-800/50 bg-secondary-800/30' : 'border-secondary-100 bg-secondary-50/50'} flex justify-between items-center`}>
+          <div className={`text-xs font-bold tracking-widest ${isDark ? 'text-secondary-600' : 'text-secondary-400'}`}>
             {portSelectorStep === 'source' ? t.step1 : t.step2}
           </div>
           <button
             onClick={onClose}
-            className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-xs font-black tracking-widest transition-all ${isDark ? 'bg-slate-800 text-slate-400 hover:text-slate-200' : 'bg-slate-100 text-slate-500 hover:text-slate-700'}`}
+            className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-xs font-black tracking-widest transition-all ${isDark ? 'bg-secondary-800 text-secondary-400 hover:text-secondary-200' : 'bg-secondary-100 text-secondary-500 hover:text-secondary-700'}`}
           >
             {t.cancel}
           </button>

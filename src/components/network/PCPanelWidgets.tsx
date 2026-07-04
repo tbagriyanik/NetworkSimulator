@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import type { CanvasDevice } from './networkTopology.types';
@@ -164,7 +164,7 @@ export const IoTSensorDisplay = ({
         const statusText = isActive
             ? (language === 'tr' ? 'AÇIK' : 'ON')
             : (language === 'tr' ? 'KAPALI' : 'OFF');
-        const statusColor = isActive ? 'text-emerald-500' : 'text-secondary-400';
+        const statusColor = isActive ? 'text-success-500' : 'text-secondary-400';
         
         // Special handling for lamp devices: use distinct on/off visuals
         const displayIcon = device.iot?.kind === 'lamp' 
@@ -173,7 +173,7 @@ export const IoTSensorDisplay = ({
 
         return (
             <div className="space-y-4">
-                <div className={`p-4 rounded-lg border-l-4 ${isDark ? 'bg-secondary-800 border-emerald-500' : 'bg-emerald-50 border-emerald-500'}`}>
+                <div className={`p-4 rounded-lg border-l-4 ${isDark ? 'bg-secondary-800 border-success-500' : 'bg-success-50 border-success-500'}`}>
                     <div className="flex items-center justify-between">
                         <div>
                             <div className="text-xs text-secondary-500 mb-1">

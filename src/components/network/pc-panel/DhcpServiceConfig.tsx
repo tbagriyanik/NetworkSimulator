@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
@@ -104,7 +104,7 @@ export function DhcpServiceConfig({
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full ${serviceDhcpEnabled ? 'bg-sky-500/15 text-sky-600 border border-sky-500/30' : 'bg-secondary-200 text-secondary-500 border border-secondary-300'}`}>
+            <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full ${serviceDhcpEnabled ? 'bg-accent-500/15 text-accent-600 border border-accent-500/30' : 'bg-secondary-200 text-secondary-500 border border-secondary-300'}`}>
               {serviceDhcpEnabled ? 'ON' : 'OFF'}
             </span>
             <button
@@ -122,8 +122,8 @@ export function DhcpServiceConfig({
                   }
                 });
               }}
-              className={`relative inline-flex h-7 w-14 shrink-0 items-center rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60 ${serviceDhcpEnabled
-                ? 'bg-sky-500/90 border-sky-400'
+              className={`relative inline-flex h-7 w-14 shrink-0 items-center rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500/60 ${serviceDhcpEnabled
+                ? 'bg-accent-500/90 border-accent-400'
                 : (isDark ? 'bg-secondary-800 border-secondary-700' : 'bg-secondary-200 border-secondary-300')
                 }`}
             >

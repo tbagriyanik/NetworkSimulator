@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -47,7 +47,7 @@ export function DevicePalette({
                 onOpenChange(false);
               }}
               className={`flex flex-col items-center gap-2 p-4 rounded-2xl transition-all active:scale-95 ${
-                isDark ? 'bg-slate-800/50 hover:bg-slate-800' : 'bg-slate-100 hover:bg-slate-200'
+                isDark ? 'bg-secondary-800/50 hover:bg-secondary-800' : 'bg-secondary-100 hover:bg-secondary-200'
               }`}
             >
               <div className="w-10 h-10 flex items-center justify-center">

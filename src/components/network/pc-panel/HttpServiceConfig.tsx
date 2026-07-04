@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useRef } from 'react';
 import { Button } from '@/components/ui/button';
@@ -90,7 +90,7 @@ export function HttpServiceConfig({
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full ${serviceHttpEnabled ? 'bg-emerald-500/15 text-emerald-600 border border-emerald-500/30' : 'bg-secondary-200 text-secondary-500 border border-secondary-300'}`}>
+            <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full ${serviceHttpEnabled ? 'bg-success-500/15 text-success-600 border border-success-500/30' : 'bg-secondary-200 text-secondary-500 border border-secondary-300'}`}>
               {serviceHttpEnabled ? 'ON' : 'OFF'}
             </span>
             <button
@@ -110,8 +110,8 @@ export function HttpServiceConfig({
                   }
                 });
               }}
-              className={`relative inline-flex h-7 w-14 shrink-0 items-center rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60 ${serviceHttpEnabled
-                ? 'bg-emerald-500/90 border-emerald-400'
+              className={`relative inline-flex h-7 w-14 shrink-0 items-center rounded-full border transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success-500/60 ${serviceHttpEnabled
+                ? 'bg-success-500/90 border-success-400'
                 : (isDark ? 'bg-secondary-800 border-secondary-700' : 'bg-secondary-200 border-secondary-300')
                 }`}
             >

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import {
@@ -111,13 +111,13 @@ export function ExamEditorPanel({
       className={cn(
         "fixed inset-y-0 right-0 w-full sm:w-[500px] md:w-[550px] lg:w-[600px] max-w-[100vw] z-[100] shadow-2xl flex flex-col transition-all duration-300 transform liquid-glass-light",
         isOpen ? "translate-x-0" : "translate-x-full",
-        isDark ? "border-l border-emerald-500/30" : "border-l border-emerald-500"
+        isDark ? "border-l border-success-500/30" : "border-l border-success-500"
       )}
     >
       {/* Header */}
       <div className={cn(
         "p-4 border-b flex items-center justify-between",
-        isDark ? "bg-secondary-950/50 border-emerald-500/30" : "bg-secondary-50 border-emerald-500/50"
+        isDark ? "bg-secondary-950/50 border-success-500/30" : "bg-secondary-50 border-success-500/50"
       )}>
         <div className="flex items-center gap-2">
           <div className="p-2 bg-purple-500/10 rounded-lg">
@@ -208,7 +208,7 @@ export function ExamEditorPanel({
           <section className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold flex items-center gap-2">
-                <Monitor className="w-4 h-4 text-emerald-500" />
+                <Monitor className="w-4 h-4 text-success-500" />
                 {isTr ? 'Cihaz Ekle' : 'Add Device'}
               </h3>
               <span className="text-[9px] opacity-40 font-medium">
@@ -217,7 +217,7 @@ export function ExamEditorPanel({
             </div>
             <div className={cn(
               "flex items-center gap-1 p-1.5 rounded-xl border",
-              isDark ? "bg-secondary-900/40 border-secondary-700/30" : "bg-emerald-50/50 border-emerald-100/50"
+              isDark ? "bg-secondary-900/40 border-secondary-700/30" : "bg-success-50/50 border-success-100/50"
             )}>
               <TooltipWrapper title={isTr ? 'PC Ekle' : 'Add PC'}>
                 <Button
@@ -235,7 +235,7 @@ export function ExamEditorPanel({
                  <Button
                    variant="ghost"
                    size="icon"
-                   className="w-8 h-8 rounded-lg text-cyan-500 hover:bg-cyan-500/10 transition-colors"
+                   className="w-8 h-8 rounded-lg text-accent-500 hover:bg-accent-500/10 transition-colors"
                   onClick={() => window.dispatchEvent(new CustomEvent('add-device', { detail: 'switchL2' }))}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -247,7 +247,7 @@ export function ExamEditorPanel({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="w-8 h-8 rounded-lg text-violet-500 hover:bg-violet-500/10 transition-colors"
+                  className="w-8 h-8 rounded-lg text-purple-500 hover:bg-purple-500/10 transition-colors"
                   onClick={() => window.dispatchEvent(new CustomEvent('add-device', { detail: 'switchL3' }))}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -272,7 +272,7 @@ export function ExamEditorPanel({
                  <Button
                    variant="ghost"
                    size="icon"
-                   className="w-8 h-8 rounded-lg text-orange-500 hover:bg-orange-500/10 transition-colors"
+                   className="w-8 h-8 rounded-lg text-warning-500 hover:bg-warning-500/10 transition-colors"
                   onClick={() => window.dispatchEvent(new CustomEvent('add-device', { detail: 'iot' }))}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -471,13 +471,13 @@ export function ExamEditorPanel({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 text-rose-500 hover:text-rose-600 hover:bg-rose-500/10"
+                            className="h-7 w-7 text-error-500 hover:text-error-600 hover:bg-error-500/10"
                             onClick={(e) => {
                               e.stopPropagation();
                               deleteTask(task.id);
                             }}
                           >
-                            <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                            <Trash2 className="w-3.5 h-3.5 text-error-500" />
                           </Button>
                         </TooltipWrapper>
                       </div>
@@ -892,13 +892,13 @@ export function ExamEditorPanel({
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold flex items-center gap-2">
-                <Target className="w-4 h-4 text-orange-500" />
+                <Target className="w-4 h-4 text-warning-500" />
                 {isTr ? 'Hata Enjeksiyonu' : 'Fault Injection'}
               </h3>
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="h-7 text-[11px] gap-1 border-orange-500/50 text-orange-600 hover:bg-orange-500/10" 
+                className="h-7 text-[11px] gap-1 border-warning-500/50 text-warning-600 hover:bg-warning-500/10" 
                 onClick={() => {
                   const newFault: FaultDefinition = {
                     id: `fault-${Date.now()}`,
@@ -922,9 +922,9 @@ export function ExamEditorPanel({
             {(!activeExam.injectedFaults || activeExam.injectedFaults.length === 0) ? (
               <div className={cn(
                 "p-8 border-2 border-dashed rounded-xl flex flex-col items-center justify-center text-center",
-                isDark ? "border-orange-900/30 bg-orange-950/10" : "border-orange-200 bg-orange-50/30"
+                isDark ? "border-warning-900/30 bg-warning-950/10" : "border-warning-200 bg-warning-50/30"
               )}>
-                <AlertCircle className="w-8 h-8 opacity-20 mb-2 text-orange-500" />
+                <AlertCircle className="w-8 h-8 opacity-20 mb-2 text-warning-500" />
                 <p className="text-xs font-medium opacity-40">
                   {isTr ? 'Sisteme arıza enjekte edilmedi.' : 'No faults injected.'}
                 </p>
@@ -939,13 +939,13 @@ export function ExamEditorPanel({
                     key={fault.id}
                     className={cn(
                       "overflow-hidden transition-all duration-200",
-                      isDark ? "bg-secondary-800/40 border-orange-900/50" : "bg-orange-50/50 border-orange-200"
+                      isDark ? "bg-secondary-800/40 border-warning-900/50" : "bg-warning-50/50 border-warning-200"
                     )}
                   >
                     <div className="p-3">
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-orange-500/20 flex items-center justify-center text-[10px] font-bold text-orange-600">
+                          <div className="w-6 h-6 rounded-full bg-warning-500/20 flex items-center justify-center text-[10px] font-bold text-warning-600">
                             F{index + 1}
                           </div>
                           <div className="font-bold text-xs">
@@ -955,14 +955,14 @@ export function ExamEditorPanel({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6 text-rose-500 hover:bg-rose-500/10"
+                          className="h-6 w-6 text-error-500 hover:bg-error-500/10"
                           onClick={() => {
                             updateExamMeta({
                               injectedFaults: (activeExam.injectedFaults || []).filter(f => f.id !== fault.id)
                             });
                           }}
                         >
-                          <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                          <Trash2 className="w-3.5 h-3.5 text-error-500" />
                         </Button>
                       </div>
 
@@ -979,7 +979,7 @@ export function ExamEditorPanel({
                               updateExamMeta({ injectedFaults: newFaults });
                             }}
                           >
-                            <SelectTrigger className="h-7 text-[11px] border-orange-500/30">
+                            <SelectTrigger className="h-7 text-[11px] border-warning-500/30">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -1012,7 +1012,7 @@ export function ExamEditorPanel({
                               updateExamMeta({ injectedFaults: newFaults });
                             }}
                           >
-                            <SelectTrigger className="h-7 text-[11px] border-orange-500/30">
+                            <SelectTrigger className="h-7 text-[11px] border-warning-500/30">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -1042,7 +1042,7 @@ export function ExamEditorPanel({
                                 : { ...newFaults[index].description, en: val };
                               updateExamMeta({ injectedFaults: newFaults });
                             }}
-                            className="h-7 text-[11px] border-orange-500/30"
+                            className="h-7 text-[11px] border-warning-500/30"
                           />
                         </div>
                         
@@ -1057,7 +1057,7 @@ export function ExamEditorPanel({
                               newFaults[index].configKey = e.target.value;
                               updateExamMeta({ injectedFaults: newFaults });
                             }}
-                            className="h-7 text-[11px] border-orange-500/30 font-mono"
+                            className="h-7 text-[11px] border-warning-500/30 font-mono"
                           />
                         </div>
                       </div>

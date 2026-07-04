@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useMemo, useEffect } from 'react';
 import { DragPosition as ModalPosition, DragSize as ModalSize } from '@/hooks/useDrag';
@@ -137,7 +137,7 @@ export function UnifiedDevicePanel({
                 onEscapeKeyDown={(e) => e.preventDefault()}
                 className={cn(
                     "p-0 overflow-visible flex flex-col top-auto left-auto translate-x-0 translate-y-0 liquid-glass-light",
-                    isDark ? "bg-secondary-950/80 border-green-500/30" : "bg-white border-green-500",
+                    isDark ? "bg-secondary-950/80 border-success-500/30" : "bg-white border-success-500",
                     className
                 )}
                 data-modal-content
@@ -160,7 +160,7 @@ export function UnifiedDevicePanel({
                     <DialogHeader
                         className={cn(
                             "p-0 border-b cursor-grab active:cursor-grabbing select-none touch-none sticky top-0 z-10",
-                            isDark ? "border-green-500/30 bg-secondary-900/90" : "border-green-500/50 bg-white"
+                            isDark ? "border-success-500/30 bg-secondary-900/90" : "border-success-500/50 bg-white"
                         )}
                         data-modal-header
                         onPointerDown={(e) => handlePointerDown(e, 'deviceUnified')}
@@ -193,7 +193,7 @@ export function UnifiedDevicePanel({
                             <div className="flex items-center gap-1 shrink-0">
 
                                 <button
-                                    className="w-5 h-5 rounded-md bg-red-500 hover:bg-red-600 text-white transition-colors inline-flex items-center justify-center focus:outline-none disabled:pointer-events-none"
+                                    className="w-5 h-5 rounded-md bg-error-500 hover:bg-error-600 text-white transition-colors inline-flex items-center justify-center focus:outline-none disabled:pointer-events-none"
                                     title={t.language === 'tr' ? 'Kapat' : 'Close'}
                                     onClick={() => onOpenChange(false)}
                                 >

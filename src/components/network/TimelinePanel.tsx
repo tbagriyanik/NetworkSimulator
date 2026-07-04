@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useRef, useEffect, useState } from 'react';
 import { Clock, SkipBack, SkipForward, ChevronDown, ChevronUp, History, Play, Pause, FastForward, Download } from 'lucide-react';
@@ -158,7 +158,7 @@ export function TimelinePanel({
   return (
     <div
       className={cn(
-        "absolute bottom-20 left-4 z-40 bg-zinc-950/30 border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] backdrop-blur-2xl transition-all duration-300 flex flex-col overflow-hidden rounded-xl",
+        "absolute bottom-20 left-4 z-40 bg-secondary-950/30 border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] backdrop-blur-2xl transition-all duration-300 flex flex-col overflow-hidden rounded-xl",
         isMinimized ? "w-64 h-12" : "w-80 h-[28rem]"
       )}
       style={{ transform: `translate(${position.x}px, ${position.y}px)` }}
@@ -166,7 +166,7 @@ export function TimelinePanel({
       {/* Header */}
       <div 
         className={cn(
-          "flex items-center justify-between p-3 shrink-0 border-b bg-indigo-950/20 border-indigo-900/30",
+          "flex items-center justify-between p-3 shrink-0 border-b bg-primary-950/20 border-primary-900/30",
           isDragging ? "cursor-grabbing" : "cursor-grab",
           "select-none"
         )}
@@ -175,8 +175,8 @@ export function TimelinePanel({
         onPointerUp={handlePointerUp}
       >
         <div className="flex items-center gap-2">
-          <History className="w-4 h-4 text-indigo-400" />
-          <span className="font-semibold text-sm tracking-wide text-zinc-100">
+          <History className="w-4 h-4 text-primary-400" />
+          <span className="font-semibold text-sm tracking-wide text-secondary-100">
             {language === 'tr' ? 'İşlem Geçmişi' : 'Timeline History'}
           </span>
         </div>
@@ -193,33 +193,33 @@ export function TimelinePanel({
 
       {/* Playback Controls */}
       {!isMinimized && (
-        <div className="flex items-center justify-between gap-2 p-2 shrink-0 border-b border-zinc-800/50 bg-zinc-900/20">
+        <div className="flex items-center justify-between gap-2 p-2 shrink-0 border-b border-secondary-800/50 bg-secondary-900/20">
           <div className="flex items-center gap-2">
             <TooltipWrapper title={language === 'tr' ? 'Başa Dön' : 'Go to Start'}>
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-zinc-400 hover:text-zinc-100" onClick={() => onJumpTo(0)} disabled={historyIndex === 0}>
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-secondary-400 hover:text-secondary-100" onClick={() => onJumpTo(0)} disabled={historyIndex === 0}>
                 <SkipBack className="w-3.5 h-3.5" />
               </Button>
             </TooltipWrapper>
             <TooltipWrapper title={isPlaying ? (language === 'tr' ? 'Duraklat' : 'Pause') : (language === 'tr' ? 'Oynat' : 'Play')}>
-              <Button variant="default" size="icon" className="h-8 w-8 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full shadow-lg shadow-indigo-900/20" onClick={togglePlayback} disabled={historyIndex >= historyItems.length - 1 && !isPlaying}>
+              <Button variant="default" size="icon" className="h-8 w-8 bg-primary-600 hover:bg-primary-500 text-white rounded-full shadow-lg shadow-primary-900/20" onClick={togglePlayback} disabled={historyIndex >= historyItems.length - 1 && !isPlaying}>
                 {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
               </Button>
             </TooltipWrapper>
             <TooltipWrapper title={language === 'tr' ? 'Sona Git' : 'Go to End'}>
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-zinc-400 hover:text-zinc-100" onClick={() => onJumpTo(historyItems.length - 1)} disabled={historyIndex >= historyItems.length - 1}>
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-secondary-400 hover:text-secondary-100" onClick={() => onJumpTo(historyItems.length - 1)} disabled={historyIndex >= historyItems.length - 1}>
                 <SkipForward className="w-3.5 h-3.5" />
               </Button>
             </TooltipWrapper>
-            <div className="w-px h-4 bg-zinc-800 mx-1"></div>
+            <div className="w-px h-4 bg-secondary-800 mx-1"></div>
             <TooltipWrapper title={language === 'tr' ? 'Hız' : 'Speed'}>
-              <Button variant="ghost" size="sm" className="h-7 px-2 text-[10px] font-mono text-zinc-400 hover:text-indigo-400" onClick={changeSpeed}>
+              <Button variant="ghost" size="sm" className="h-7 px-2 text-[10px] font-mono text-secondary-400 hover:text-primary-400" onClick={changeSpeed}>
                 {playSpeed}x <FastForward className="w-3 h-3 ml-1" />
               </Button>
             </TooltipWrapper>
           </div>
           
           <TooltipWrapper title={language === 'tr' ? 'Geçmişi İndir (TXT)' : 'Download History (TXT)'}>
-            <Button variant="ghost" size="icon" className="h-7 w-7 text-zinc-400 hover:text-indigo-400" onClick={() => {
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-secondary-400 hover:text-primary-400" onClick={() => {
               const lines = historyItems.map((item, idx) => `Adım ${idx + 1}: ${getActionLabel(item, idx)}`);
               const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
               const url = URL.createObjectURL(blob);
@@ -239,8 +239,8 @@ export function TimelinePanel({
 
       {/* Content */}
       {!isMinimized && (
-        <div className="flex-1 p-2 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
-          <div className="relative pl-4 space-y-4 py-4 before:absolute before:inset-0 before:ml-[1.4rem] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-zinc-800 before:to-transparent">
+        <div className="flex-1 p-2 overflow-y-auto scrollbar-thin scrollbar-thumb-secondary-700 scrollbar-track-transparent">
+          <div className="relative pl-4 space-y-4 py-4 before:absolute before:inset-0 before:ml-[1.4rem] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-secondary-800 before:to-transparent">
             {historyItems.map((item, idx) => {
               const isActive = idx === historyIndex;
               const isFuture = idx > historyIndex;
@@ -249,11 +249,11 @@ export function TimelinePanel({
                 <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
                   <div 
                     className={cn(
-                      "flex items-center justify-center w-6 h-6 rounded-full border-2 bg-zinc-950 shrink-0 z-10 shadow transition-colors duration-200",
-                      isActive ? "border-indigo-500 text-indigo-500 bg-indigo-950" : isFuture ? "border-zinc-800 text-zinc-600" : "border-emerald-500 text-emerald-500"
+                      "flex items-center justify-center w-6 h-6 rounded-full border-2 bg-secondary-950 shrink-0 z-10 shadow transition-colors duration-200",
+                      isActive ? "border-primary-500 text-primary-500 bg-primary-950" : isFuture ? "border-secondary-800 text-secondary-600" : "border-success-500 text-success-500"
                     )}
                   >
-                    {isActive ? <Clock className="w-3 h-3 animate-pulse" /> : <div className={cn("w-1.5 h-1.5 rounded-full", isFuture ? "bg-zinc-700" : "bg-emerald-500")} />}
+                    {isActive ? <Clock className="w-3 h-3 animate-pulse" /> : <div className={cn("w-1.5 h-1.5 rounded-full", isFuture ? "bg-secondary-700" : "bg-success-500")} />}
                   </div>
 
                   <button
@@ -262,15 +262,15 @@ export function TimelinePanel({
                     className={cn(
                       "w-[calc(100%-2.5rem)] p-2 rounded-lg border text-left transition-all duration-200 hover:scale-[1.02]",
                       isActive 
-                        ? "bg-indigo-500/20 border-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.2)]" 
+                        ? "bg-primary-500/20 border-primary-500/50 shadow-[0_0_15px_rgba(99,102,241,0.2)]" 
                         : isFuture
-                          ? "bg-zinc-900/30 border-zinc-800/50 opacity-60 hover:opacity-100"
-                          : "bg-zinc-900/80 border-zinc-800 hover:border-zinc-700"
+                          ? "bg-secondary-900/30 border-secondary-800/50 opacity-60 hover:opacity-100"
+                          : "bg-secondary-900/80 border-secondary-800 hover:border-secondary-700"
                     )}
                   >
                     <div className={cn(
                       "text-xs font-medium",
-                      isActive ? "text-indigo-300" : isFuture ? "text-zinc-500" : "text-zinc-300"
+                      isActive ? "text-primary-300" : isFuture ? "text-secondary-500" : "text-secondary-300"
                     )}>
                       <span className="font-mono text-[10px] opacity-70 mr-1">
                         {language === 'tr' ? 'Adım' : 'Step'}{idx + 1}:

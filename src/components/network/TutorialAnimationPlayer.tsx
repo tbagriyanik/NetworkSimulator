@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { Monitor, MousePointer2, Terminal, Server } from 'lucide-react';
@@ -33,13 +33,13 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
     switch (animationId) {
       case 'add-pc':
         return (
-          <div className="relative w-full h-40 bg-slate-100 dark:bg-slate-900 rounded-lg overflow-hidden flex items-center justify-center border border-slate-200 dark:border-slate-800">
+          <div className="relative w-full h-40 bg-secondary-100 dark:bg-secondary-900 rounded-lg overflow-hidden flex items-center justify-center border border-secondary-200 dark:border-secondary-800">
             {/* Toolbar Simulation */}
-            <div className="absolute top-2 left-2 flex gap-2 p-1 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 shadow-sm">
-              <div className={cn("p-1 rounded transition-colors", frame % 40 < 20 ? "bg-blue-500/20 text-blue-500" : "text-slate-400")}>
+            <div className="absolute top-2 left-2 flex gap-2 p-1 bg-white dark:bg-secondary-800 rounded border border-secondary-200 dark:border-secondary-700 shadow-sm">
+              <div className={cn("p-1 rounded transition-colors", frame % 40 < 20 ? "bg-primary-500/20 text-primary-500" : "text-secondary-400")}>
                 <Monitor className="w-5 h-5" />
               </div>
-              <div className="p-1 text-slate-300 dark:text-slate-600">
+              <div className="p-1 text-secondary-300 dark:text-secondary-600">
                 <Server className="w-5 h-5" />
               </div>
             </div>
@@ -53,16 +53,16 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
                 transform: 'translate(-50%, -50%)'
               }}
             >
-              <MousePointer2 className="w-5 h-5 text-slate-900 dark:text-white drop-shadow-md" />
+              <MousePointer2 className="w-5 h-5 text-secondary-900 dark:text-white drop-shadow-md" />
             </div>
 
             {/* Ghost PC appearing */}
             {frame % 40 >= 20 && (
               <div className="animate-in fade-in zoom-in duration-300 flex flex-col items-center gap-1">
-                <div className="p-3 bg-blue-500 rounded-xl shadow-lg shadow-blue-500/20">
+                <div className="p-3 bg-primary-500 rounded-xl shadow-lg shadow-primary-500/20">
                   <Monitor className="w-8 h-8 text-white" />
                 </div>
-                <span className="text-[10px] font-bold text-slate-500">PC-1</span>
+                <span className="text-[10px] font-bold text-secondary-500">PC-1</span>
               </div>
             )}
           </div>
@@ -70,13 +70,13 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
 
       case 'add-switch':
         return (
-          <div className="relative w-full h-40 bg-slate-100 dark:bg-slate-900 rounded-lg overflow-hidden flex items-center justify-center border border-slate-200 dark:border-slate-800">
+          <div className="relative w-full h-40 bg-secondary-100 dark:bg-secondary-900 rounded-lg overflow-hidden flex items-center justify-center border border-secondary-200 dark:border-secondary-800">
             {/* Toolbar Simulation */}
-            <div className="absolute top-2 left-2 flex gap-2 p-1 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 shadow-sm">
-              <div className="p-1 text-slate-300 dark:text-slate-600">
+            <div className="absolute top-2 left-2 flex gap-2 p-1 bg-white dark:bg-secondary-800 rounded border border-secondary-200 dark:border-secondary-700 shadow-sm">
+              <div className="p-1 text-secondary-300 dark:text-secondary-600">
                 <Monitor className="w-5 h-5" />
               </div>
-              <div className={cn("p-1 rounded transition-colors", frame % 40 < 20 ? "bg-green-500/20 text-green-500" : "text-slate-400")}>
+              <div className={cn("p-1 rounded transition-colors", frame % 40 < 20 ? "bg-success-500/20 text-success-500" : "text-secondary-400")}>
                 <Server className="w-5 h-5" />
               </div>
             </div>
@@ -90,16 +90,16 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
                 transform: 'translate(-50%, -50%)'
               }}
             >
-              <MousePointer2 className="w-5 h-5 text-slate-900 dark:text-white drop-shadow-md" />
+              <MousePointer2 className="w-5 h-5 text-secondary-900 dark:text-white drop-shadow-md" />
             </div>
 
             {/* Ghost Switch appearing */}
             {frame % 40 >= 20 && (
               <div className="animate-in fade-in zoom-in duration-300 flex flex-col items-center gap-1">
-                <div className="p-3 bg-green-500 rounded-xl shadow-lg shadow-green-500/20">
+                <div className="p-3 bg-success-500 rounded-xl shadow-lg shadow-success-500/20">
                   <Server className="w-8 h-8 text-white" />
                 </div>
-                <span className="text-[10px] font-bold text-slate-500">SWITCH-1</span>
+                <span className="text-[10px] font-bold text-secondary-500">SWITCH-1</span>
               </div>
             )}
           </div>
@@ -107,21 +107,21 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
 
       case 'connect-cable':
         return (
-          <div className="relative w-full h-40 bg-slate-100 dark:bg-slate-900 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800">
+          <div className="relative w-full h-40 bg-secondary-100 dark:bg-secondary-900 rounded-lg overflow-hidden border border-secondary-200 dark:border-secondary-800">
             {/* PC */}
             <div className="absolute left-10 top-1/2 -translate-y-1/2 flex flex-col items-center gap-1">
-              <div className={cn("p-2 rounded-lg bg-blue-500 text-white shadow-md transition-all", frame % 60 > 20 && frame % 60 < 40 ? "ring-4 ring-blue-400/50" : "")}>
+              <div className={cn("p-2 rounded-lg bg-primary-500 text-white shadow-md transition-all", frame % 60 > 20 && frame % 60 < 40 ? "ring-4 ring-primary-400/50" : "")}>
                 <Monitor className="w-6 h-6" />
               </div>
-              <span className="text-[8px] font-bold text-slate-500">PC-1</span>
+              <span className="text-[8px] font-bold text-secondary-500">PC-1</span>
             </div>
 
             {/* Switch */}
             <div className="absolute right-10 top-1/2 -translate-y-1/2 flex flex-col items-center gap-1">
-              <div className={cn("p-2 rounded-lg bg-green-500 text-white shadow-md transition-all", frame % 60 >= 40 ? "ring-4 ring-green-400/50" : "")}>
+              <div className={cn("p-2 rounded-lg bg-success-500 text-white shadow-md transition-all", frame % 60 >= 40 ? "ring-4 ring-success-400/50" : "")}>
                 <Server className="w-6 h-6" />
               </div>
-              <span className="text-[8px] font-bold text-slate-500">SW-1</span>
+              <span className="text-[8px] font-bold text-secondary-500">SW-1</span>
             </div>
 
             {/* Cable Line */}
@@ -147,36 +147,36 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
                 transform: 'translate(-50%, -50%)'
               }}
             >
-              <MousePointer2 className="w-4 h-4 text-slate-900 dark:text-white drop-shadow-md" />
+              <MousePointer2 className="w-4 h-4 text-secondary-900 dark:text-white drop-shadow-md" />
             </div>
           </div>
         );
 
       case 'open-pc-cmd':
         return (
-          <div className="relative w-full h-40 bg-slate-100 dark:bg-slate-900 rounded-lg overflow-hidden flex flex-col items-center justify-center border border-slate-200 dark:border-slate-800">
+          <div className="relative w-full h-40 bg-secondary-100 dark:bg-secondary-900 rounded-lg overflow-hidden flex flex-col items-center justify-center border border-secondary-200 dark:border-secondary-800">
             {frame % 40 < 20 ? (
               <div className="flex flex-col items-center gap-2">
-                <div className="p-4 bg-blue-500 rounded-2xl shadow-xl text-white animate-pulse">
+                <div className="p-4 bg-primary-500 rounded-2xl shadow-xl text-white animate-pulse">
                   <Monitor className="w-10 h-10" />
                 </div>
-                <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500">
+                <div className="flex items-center gap-1 text-[10px] font-bold text-secondary-500">
                   <MousePointer2 className="w-3 h-3" /> Double Click
                 </div>
               </div>
             ) : (
-              <div className="w-4/5 h-4/5 bg-slate-950 rounded-md border border-slate-700 shadow-2xl p-2 flex flex-col gap-2 overflow-hidden animate-in zoom-in-95 duration-300">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-1">
+              <div className="w-4/5 h-4/5 bg-secondary-950 rounded-md border border-secondary-700 shadow-2xl p-2 flex flex-col gap-2 overflow-hidden animate-in zoom-in-95 duration-300">
+                <div className="flex items-center justify-between border-b border-secondary-800 pb-1">
                   <div className="flex items-center gap-1">
-                    <Terminal className="w-3 h-3 text-slate-400" />
-                    <span className="text-[8px] text-slate-400 font-mono">Command Prompt</span>
+                    <Terminal className="w-3 h-3 text-secondary-400" />
+                    <span className="text-[8px] text-secondary-400 font-mono">Command Prompt</span>
                   </div>
                   <div className="flex gap-1">
-                    <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
-                    <div className="w-1.5 h-1.5 rounded-full bg-red-500/50" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-secondary-700" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-error-500/50" />
                   </div>
                 </div>
-                <div className="text-[10px] text-emerald-500 font-mono">
+                <div className="text-[10px] text-success-500 font-mono">
                   C:\Users\Admin&gt; _
                 </div>
               </div>
@@ -186,15 +186,15 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
 
       case 'pc-ipconfig':
         return (
-          <div className="relative w-full h-40 bg-slate-950 rounded-lg overflow-hidden border border-slate-800 p-3 font-mono">
-             <div className="text-[10px] text-slate-400 mb-1">C:\Users\Admin&gt;
+          <div className="relative w-full h-40 bg-secondary-950 rounded-lg overflow-hidden border border-secondary-800 p-3 font-mono">
+             <div className="text-[10px] text-secondary-400 mb-1">C:\Users\Admin&gt;
                <span className="text-white ml-1">
                  {"ipconfig".substring(0, Math.floor((frame % 30) / 3))}
                  {frame % 10 < 5 ? "_" : ""}
                </span>
              </div>
              {frame % 60 > 30 && (
-               <div className="text-[9px] text-emerald-500 space-y-0.5 animate-in fade-in slide-in-from-top-1 duration-500">
+               <div className="text-[9px] text-success-500 space-y-0.5 animate-in fade-in slide-in-from-top-1 duration-500">
                  <div>IPv4 Address. . . : 192.168.1.10</div>
                  <div>Subnet Mask . . . : 255.255.255.0</div>
                  <div>Default Gateway . : 192.168.1.1</div>
@@ -205,15 +205,15 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
 
       case 'pc-help':
         return (
-          <div className="relative w-full h-40 bg-slate-950 rounded-lg overflow-hidden border border-slate-800 p-3 font-mono">
-             <div className="text-[10px] text-slate-400 mb-1">C:\Users\Admin&gt;
+          <div className="relative w-full h-40 bg-secondary-950 rounded-lg overflow-hidden border border-secondary-800 p-3 font-mono">
+             <div className="text-[10px] text-secondary-400 mb-1">C:\Users\Admin&gt;
                <span className="text-white ml-1">
                  {"help".substring(0, Math.floor((frame % 30) / 4))}
                  {frame % 10 < 5 ? "_" : ""}
                </span>
              </div>
              {frame % 60 > 30 && (
-               <div className="text-[8px] text-slate-300 space-y-0.5 animate-in fade-in duration-500 overflow-hidden">
+               <div className="text-[8px] text-secondary-300 space-y-0.5 animate-in fade-in duration-500 overflow-hidden">
                  <div>IPCONFIG - Shows IP config</div>
                  <div>PING - Test connectivity</div>
                  <div>TRACERT - Trace route</div>
@@ -225,22 +225,22 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
 
       case 'open-cli':
         return (
-          <div className="relative w-full h-40 bg-slate-100 dark:bg-slate-900 rounded-lg overflow-hidden flex flex-col items-center justify-center border border-slate-200 dark:border-slate-800">
+          <div className="relative w-full h-40 bg-secondary-100 dark:bg-secondary-900 rounded-lg overflow-hidden flex flex-col items-center justify-center border border-secondary-200 dark:border-secondary-800">
             {frame % 40 < 20 ? (
               <div className="flex flex-col items-center gap-2">
-                <div className="p-4 bg-green-500 rounded-2xl shadow-xl text-white animate-pulse">
+                <div className="p-4 bg-success-500 rounded-2xl shadow-xl text-white animate-pulse">
                   <Server className="w-10 h-10" />
                 </div>
-                <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500">
+                <div className="flex items-center gap-1 text-[10px] font-bold text-secondary-500">
                   <MousePointer2 className="w-3 h-3" /> Double Click
                 </div>
               </div>
             ) : (
-              <div className="w-4/5 h-4/5 bg-slate-950 rounded-md border border-slate-700 shadow-2xl p-2 flex flex-col gap-2 overflow-hidden animate-in zoom-in-95 duration-300">
-                <div className="flex items-center gap-2 text-white bg-slate-900 px-2 py-1 rounded text-[8px] mb-1">
+              <div className="w-4/5 h-4/5 bg-secondary-950 rounded-md border border-secondary-700 shadow-2xl p-2 flex flex-col gap-2 overflow-hidden animate-in zoom-in-95 duration-300">
+                <div className="flex items-center gap-2 text-white bg-secondary-900 px-2 py-1 rounded text-[8px] mb-1">
                   <Terminal className="w-2.5 h-2.5" /> Console
                 </div>
-                <div className="text-[10px] text-slate-300 font-mono">
+                <div className="text-[10px] text-secondary-300 font-mono">
                   Switch&gt; _
                 </div>
               </div>
@@ -250,15 +250,15 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
 
       case 'cli-enable':
         return (
-          <div className="relative w-full h-40 bg-slate-950 rounded-lg overflow-hidden border border-slate-800 p-3 font-mono">
-             <div className="text-[10px] text-slate-300 mb-1">Switch&gt;
+          <div className="relative w-full h-40 bg-secondary-950 rounded-lg overflow-hidden border border-secondary-800 p-3 font-mono">
+             <div className="text-[10px] text-secondary-300 mb-1">Switch&gt;
                <span className="text-white ml-1">
                  {"enable".substring(0, Math.floor((frame % 30) / 4))}
                  {frame % 10 < 5 ? "_" : ""}
                </span>
              </div>
              {frame % 60 > 30 && (
-               <div className="text-[10px] text-slate-300 animate-in fade-in duration-300">
+               <div className="text-[10px] text-secondary-300 animate-in fade-in duration-300">
                  Switch# _
                </div>
              )}
@@ -267,15 +267,15 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
 
       case 'cli-config':
         return (
-          <div className="relative w-full h-40 bg-slate-950 rounded-lg overflow-hidden border border-slate-800 p-3 font-mono">
-             <div className="text-[10px] text-slate-300 mb-1">Switch#
+          <div className="relative w-full h-40 bg-secondary-950 rounded-lg overflow-hidden border border-secondary-800 p-3 font-mono">
+             <div className="text-[10px] text-secondary-300 mb-1">Switch#
                <span className="text-white ml-1">
                  {"conf t".substring(0, Math.floor((frame % 30) / 4))}
                  {frame % 10 < 5 ? "_" : ""}
                </span>
              </div>
              {frame % 60 > 30 && (
-               <div className="text-[10px] text-slate-300 animate-in fade-in duration-300">
+               <div className="text-[10px] text-secondary-300 animate-in fade-in duration-300">
                  Enter configuration commands, one per line.<br/>
                  Switch(config)# _
                </div>
@@ -285,7 +285,7 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
 
       default:
         return (
-          <div className="w-full h-40 bg-slate-100 dark:bg-slate-900 rounded-lg flex items-center justify-center text-slate-400 italic text-xs">
+          <div className="w-full h-40 bg-secondary-100 dark:bg-secondary-900 rounded-lg flex items-center justify-center text-secondary-400 italic text-xs">
             Animation not available
           </div>
         );
