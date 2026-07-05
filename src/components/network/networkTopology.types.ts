@@ -74,6 +74,7 @@ export interface NetworkTopologyProps {
   isExamActive?: boolean;
   isExamEditorOpen?: boolean;
   onPingPanelOpenChange?: (open: boolean) => void;
+  onAction?: (desc: string) => void;
 }
 
 export interface FirewallRule {

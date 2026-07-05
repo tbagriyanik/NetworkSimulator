@@ -15,6 +15,7 @@ interface UseCanvasHistoryOptions {
     latestConnectionsRef: React.MutableRefObject<CanvasConnection[]>;
     latestNotesRef: React.MutableRefObject<CanvasNote[]>;
     maxHistory?: number;
+    onAction?: (desc: string) => void;
 }
 
 /**
@@ -29,13 +30,18 @@ export function useCanvasHistory({
     latestConnectionsRef,
     latestNotesRef,
     maxHistory = 100,
+    onAction
 }: UseCanvasHistoryOptions) {
     const historyRef = useRef<HistorySnapshot[]>([]);
     const historyIndexRef = useRef<number>(-1);
     const [historyIndex, setHistoryIndex] = useState(-1);
     const [historyLength, setHistoryLength] = useState(0);
 
-    const saveToHistory = useCallback(() => {
+    const saveToHistory = useCallback((desc?: string) => {
+        if (desc && onAction) {
+            onAction(desc);
+        }
+
         const snapshot: HistorySnapshot = {
             devices: JSON.parse(JSON.stringify(latestDevicesRef.current)),
             connections: JSON.parse(JSON.stringify(latestConnectionsRef.current)),

@@ -1,7 +1,7 @@
-﻿'use client';
+'use client';
 
 import { useRef, useEffect, useState } from 'react';
-import { Clock, SkipBack, SkipForward, ChevronDown, ChevronUp, History, Play, Pause, FastForward, Download } from 'lucide-react';
+import { Clock, SkipBack, SkipForward, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, History, Play, Pause, FastForward, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { HistoryEntry } from '@/hooks/useHistory';
@@ -159,7 +159,7 @@ export function TimelinePanel({
     <div
       className={cn(
         "absolute bottom-20 left-4 z-40 bg-secondary-950/30 border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] backdrop-blur-2xl transition-all duration-300 flex flex-col overflow-hidden rounded-xl",
-        isMinimized ? "w-64 h-12" : "w-80 h-[28rem]"
+        isMinimized ? "w-64 h-12" : "w-[36rem] h-[9.5rem]"
       )}
       style={{ transform: `translate(${position.x}px, ${position.y}px)` }}
     >
@@ -239,48 +239,43 @@ export function TimelinePanel({
 
       {/* Content */}
       {!isMinimized && (
-        <div className="flex-1 p-2 overflow-y-auto scrollbar-thin scrollbar-thumb-secondary-700 scrollbar-track-transparent">
-          <div className="relative pl-4 space-y-4 py-4 before:absolute before:inset-0 before:ml-[1.4rem] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-secondary-800 before:to-transparent">
-            {historyItems.map((item, idx) => {
-              const isActive = idx === historyIndex;
-              const isFuture = idx > historyIndex;
-
-              return (
-                <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                  <div 
-                    className={cn(
-                      "flex items-center justify-center w-6 h-6 rounded-full border-2 bg-secondary-950 shrink-0 z-10 shadow transition-colors duration-200",
-                      isActive ? "border-primary-500 text-primary-500 bg-primary-950" : isFuture ? "border-secondary-800 text-secondary-600" : "border-success-500 text-success-500"
-                    )}
-                  >
-                    {isActive ? <Clock className="w-3 h-3 animate-pulse" /> : <div className={cn("w-1.5 h-1.5 rounded-full", isFuture ? "bg-secondary-700" : "bg-success-500")} />}
-                  </div>
-
-                  <button
-                    ref={isActive ? activeItemRef : null}
-                    onClick={() => onJumpTo(idx)}
-                    className={cn(
-                      "w-[calc(100%-2.5rem)] p-2 rounded-lg border text-left transition-all duration-200 hover:scale-[1.02]",
-                      isActive 
-                        ? "bg-primary-500/20 border-primary-500/50 shadow-[0_0_15px_rgba(99,102,241,0.2)]" 
-                        : isFuture
-                          ? "bg-secondary-900/30 border-secondary-800/50 opacity-60 hover:opacity-100"
-                          : "bg-secondary-900/80 border-secondary-800 hover:border-secondary-700"
-                    )}
-                  >
-                    <div className={cn(
-                      "text-xs font-medium",
-                      isActive ? "text-primary-300" : isFuture ? "text-secondary-500" : "text-secondary-300"
-                    )}>
-                      <span className="font-mono text-[10px] opacity-70 mr-1">
-                        {language === 'tr' ? 'Adım' : 'Step'}{idx + 1}:
-                      </span>
-                      {getActionLabel(item, idx)}
-                    </div>
-                  </button>
-                </div>
-              );
-            })}
+        <div className="flex-1 flex items-center px-4 overflow-hidden bg-secondary-950/20">
+          <div className="flex-1 overflow-hidden pr-4 relative flex items-center">
+            <div className="flex items-center gap-3">
+               <div className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-primary-500 text-primary-500 bg-primary-950 shrink-0 shadow">
+                 <Clock className="w-4 h-4 animate-pulse" />
+               </div>
+               <div className="flex flex-col truncate">
+                 <div className="font-mono text-[10px] text-secondary-400 mb-0.5">
+                   {language === 'tr' ? 'Adım' : 'Step'} {historyIndex + 1} / {historyItems.length}
+                 </div>
+                 <div className="text-sm font-medium text-primary-300 truncate">
+                   {historyItems[historyIndex] ? getActionLabel(historyItems[historyIndex], historyIndex) : ''}
+                 </div>
+               </div>
+            </div>
+          </div>
+          
+          {/* Prev/Next Slide Buttons */}
+          <div className="flex items-center gap-1 shrink-0 border-l border-secondary-800/50 pl-4 h-full py-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-9 w-9 text-secondary-400 hover:text-white hover:bg-secondary-800" 
+              onClick={() => onJumpTo(historyIndex - 1)} 
+              disabled={historyIndex === 0}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-9 w-9 text-secondary-400 hover:text-white hover:bg-secondary-800" 
+              onClick={() => onJumpTo(historyIndex + 1)} 
+              disabled={historyIndex >= historyItems.length - 1}
+            >
+              <ChevronRight className="w-5 h-5" />
+            </Button>
           </div>
         </div>
       )}

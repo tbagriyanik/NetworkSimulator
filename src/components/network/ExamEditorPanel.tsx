@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import {
@@ -16,6 +16,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectGroup,
+  SelectLabel,
 } from "@/components/ui/select";
 import {
   Card,
@@ -88,11 +90,6 @@ export function ExamEditorPanel({
   const getDevicePorts = (deviceId: string) => {
     const device = topologyDevices.find(d => d.id === deviceId);
     return device?.ports || [];
-  };
-
-  const getDeviceLabel = (deviceId: string) => {
-    const d = topologyDevices.find((x) => x.id === deviceId);
-    return d ? `${d.name} (${d.id})` : deviceId;
   };
 
   const handleAddNewTask = () => {
@@ -711,17 +708,20 @@ export function ExamEditorPanel({
                                             </Select>
                                           </div>
                                         </div>
-                                        <div className="grid grid-cols-2 gap-2">
+                                        <div className="grid grid-cols-1 gap-2">
                                           <div className="space-y-1">
-                                            <label className="text-[9px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Kaynak Cihaz' : 'Source Device'}</label>
+                                            <label className="text-[9px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Kaynak Cihaz ve Port' : 'Source Device & Port'}</label>
                                             <Select
-                                              value={isValidSourceDevice ? sourceDeviceId : undefined}
-                                              onValueChange={(val) => updateTask(task.id, {
-                                                checkParams: { ...task.checkParams, sourceDevice: val, sourcePort: undefined }
-                                              })}
+                                              value={(isValidSourceDevice && isValidSourcePort) ? `${sourceDeviceId}::${selectedSourcePort}` : undefined}
+                                              onValueChange={(val) => {
+                                                const [devId, portId] = val.split('::');
+                                                updateTask(task.id, {
+                                                  checkParams: { ...task.checkParams, sourceDevice: devId, sourcePort: portId }
+                                                });
+                                              }}
                                             >
                                               <SelectTrigger className="h-7 text-[11px]">
-                                                <SelectValue placeholder={isTr ? 'Seçin...' : 'Select...'} />
+                                                <SelectValue placeholder={isTr ? 'Cihaz ve Port Seçin...' : 'Select Device and Port...'} />
                                               </SelectTrigger>
                                               <SelectContent>
                                                 {!hasDevices && (
@@ -730,49 +730,39 @@ export function ExamEditorPanel({
                                                   </SelectItem>
                                                 )}
                                                 {sourceDeviceOptions.map(d => (
-                                                  <SelectItem key={d.id} value={d.id}>{d.name} ({d.id})</SelectItem>
-                                                ))}
-                                              </SelectContent>
-                                            </Select>
-                                          </div>
-                                          <div className="space-y-1">
-                                            <label className="text-[9px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Kaynak Port' : 'Source Port'}</label>
-                                            <Select
-                                              value={isValidSourcePort ? selectedSourcePort : undefined}
-                                              onValueChange={(val) => updateTask(task.id, {
-                                                checkParams: { ...task.checkParams, sourcePort: val }
-                                              })}
-                                              disabled={!sourceDeviceId || sourcePorts.length === 0}
-                                            >
-                                              <SelectTrigger className="h-7 text-[11px]">
-                                                <SelectValue placeholder={sourceDeviceId ? (isTr ? 'Port seçin...' : 'Select port...') : (isTr ? 'Önce cihaz seçin' : 'Select device first')} />
-                                              </SelectTrigger>
-                                              <SelectContent>
-                                                {sourcePorts.length === 0 && (
-                                                  <SelectItem value="__no_ports__" disabled>
-                                                    {sourceDeviceId
-                                                      ? (isTr ? `${getDeviceLabel(sourceDeviceId)} için port yok` : `No ports for ${getDeviceLabel(sourceDeviceId)}`)
-                                                      : (isTr ? 'Önce kaynak cihaz seçin' : 'Select source device first')}
-                                                  </SelectItem>
-                                                )}
-                                                {sourcePorts.map((p) => (
-                                                  <SelectItem key={p.id} value={p.id}>{p.label || p.id}</SelectItem>
+                                                  <SelectGroup key={d.id}>
+                                                    <SelectLabel className="text-[10px] bg-secondary-900/50 py-1">{d.name} ({d.id})</SelectLabel>
+                                                    {d.ports.length === 0 ? (
+                                                      <SelectItem value={`__no_ports_${d.id}__`} disabled className="text-[10px]">
+                                                        {isTr ? 'Port yok' : 'No ports'}
+                                                      </SelectItem>
+                                                    ) : (
+                                                      d.ports.map(p => (
+                                                        <SelectItem key={`${d.id}::${p.id}`} value={`${d.id}::${p.id}`} className="pl-6 text-[11px]">
+                                                          {p.label || p.id}
+                                                        </SelectItem>
+                                                      ))
+                                                    )}
+                                                  </SelectGroup>
                                                 ))}
                                               </SelectContent>
                                             </Select>
                                           </div>
                                         </div>
-                                        <div className="grid grid-cols-2 gap-2">
+                                        <div className="grid grid-cols-1 gap-2">
                                           <div className="space-y-1">
-                                            <label className="text-[9px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Hedef Cihaz' : 'Target Device'}</label>
+                                            <label className="text-[9px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Hedef Cihaz ve Port' : 'Target Device & Port'}</label>
                                             <Select
-                                              value={isValidTargetDevice ? targetDeviceId : undefined}
-                                              onValueChange={(val) => updateTask(task.id, {
-                                                checkParams: { ...task.checkParams, targetDevice: val, targetPort: undefined }
-                                              })}
+                                              value={(isValidTargetDevice && isValidTargetPort) ? `${targetDeviceId}::${selectedTargetPort}` : undefined}
+                                              onValueChange={(val) => {
+                                                const [devId, portId] = val.split('::');
+                                                updateTask(task.id, {
+                                                  checkParams: { ...task.checkParams, targetDevice: devId, targetPort: portId }
+                                                });
+                                              }}
                                             >
                                               <SelectTrigger className="h-7 text-[11px]">
-                                                <SelectValue placeholder={isTr ? 'Seçin...' : 'Select...'} />
+                                                <SelectValue placeholder={isTr ? 'Cihaz ve Port Seçin...' : 'Select Device and Port...'} />
                                               </SelectTrigger>
                                               <SelectContent>
                                                 {!hasDevices && (
@@ -781,33 +771,20 @@ export function ExamEditorPanel({
                                                   </SelectItem>
                                                 )}
                                                 {targetDeviceOptions.map(d => (
-                                                  <SelectItem key={d.id} value={d.id}>{d.name} ({d.id})</SelectItem>
-                                                ))}
-                                              </SelectContent>
-                                            </Select>
-                                          </div>
-                                          <div className="space-y-1">
-                                            <label className="text-[9px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Hedef Port' : 'Target Port'}</label>
-                                            <Select
-                                              value={isValidTargetPort ? selectedTargetPort : undefined}
-                                              onValueChange={(val) => updateTask(task.id, {
-                                                checkParams: { ...task.checkParams, targetPort: val }
-                                              })}
-                                              disabled={!targetDeviceId || targetPorts.length === 0}
-                                            >
-                                              <SelectTrigger className="h-7 text-[11px]">
-                                                <SelectValue placeholder={targetDeviceId ? (isTr ? 'Port seçin...' : 'Select port...') : (isTr ? 'Önce cihaz seçin' : 'Select device first')} />
-                                              </SelectTrigger>
-                                              <SelectContent>
-                                                {targetPorts.length === 0 && (
-                                                  <SelectItem value="__no_target_ports__" disabled>
-                                                    {targetDeviceId
-                                                      ? (isTr ? `${getDeviceLabel(targetDeviceId)} için port yok` : `No ports for ${getDeviceLabel(targetDeviceId)}`)
-                                                      : (isTr ? 'Önce hedef cihaz seçin' : 'Select target device first')}
-                                                  </SelectItem>
-                                                )}
-                                                {targetPorts.map((p) => (
-                                                  <SelectItem key={p.id} value={p.id}>{p.label || p.id}</SelectItem>
+                                                  <SelectGroup key={d.id}>
+                                                    <SelectLabel className="text-[10px] bg-secondary-900/50 py-1">{d.name} ({d.id})</SelectLabel>
+                                                    {d.ports.length === 0 ? (
+                                                      <SelectItem value={`__no_target_ports_${d.id}__`} disabled className="text-[10px]">
+                                                        {isTr ? 'Port yok' : 'No ports'}
+                                                      </SelectItem>
+                                                    ) : (
+                                                      d.ports.map(p => (
+                                                        <SelectItem key={`${d.id}::${p.id}`} value={`${d.id}::${p.id}`} className="pl-6 text-[11px]">
+                                                          {p.label || p.id}
+                                                        </SelectItem>
+                                                      ))
+                                                    )}
+                                                  </SelectGroup>
                                                 ))}
                                               </SelectContent>
                                             </Select>

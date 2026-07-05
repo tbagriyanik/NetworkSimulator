@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
@@ -1559,6 +1559,11 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
 
   const { pushState, undo, redo, canUndo, canRedo, resetHistory, currentState, historyItems, historyIndex, jumpTo } = useHistory(getCurrentState());
 
+  const pendingActionDesc = useRef<string | null>(null);
+  const commitAction = useCallback((desc: string) => {
+    pendingActionDesc.current = desc;
+  }, []);
+
   // Handle undo/redo execution
   const applyProjectState = useCallback((state: ProjectState) => {
     // We use functional updates to ensure we're using latest state and prevent loops if possible
@@ -1633,6 +1638,8 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   useEffect(() => {
     if (isAppLoading) return;
 
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
     const currentState = getCurrentState();
     const stateString = JSON.stringify({
       t: currentState.topologyDevices,
@@ -1649,23 +1656,31 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
       if (isApplyingHistoryRef.current) {
         lastPushedStateRef.current = stateString;
         isApplyingHistoryRef.current = false;
-        return;
-      }
-
-      // Debounce history pushes
-      const timer = setTimeout(() => {
-        pushState(currentState, activeTab === 'topology' ? 'topology' : 'ui');
+      } else if (pendingActionDesc.current) {
+        // Only push history if there is an explicit pending action
+        const desc = pendingActionDesc.current;
+        pendingActionDesc.current = null;
+        
+        // Small timeout ensures all React batch updates are captured in getCurrentState()
+        timer = setTimeout(() => {
+          pushState(currentState, activeTab === 'topology' ? 'topology' : 'ui', desc);
+          lastPushedStateRef.current = stateString;
+        }, 50);
+      } else {
+        // Just update the ref without pushing to history (removes noise)
         lastPushedStateRef.current = stateString;
-      }, 500);
-      return () => clearTimeout(timer);
+      }
     } else {
       // If state didn't change but we were applying history, 
       // we still need to clear the flag
       if (isApplyingHistoryRef.current) {
         isApplyingHistoryRef.current = false;
       }
-      return;
     }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [topologyDevices, topologyConnections, topologyNotes, deviceStates, deviceOutputs, pcOutputs, pcHistories, cableInfo, activeDeviceId, activeDeviceType, zoom, pan, activeTab, isAppLoading, pushState]);
 
   // Show hourglass cursor during app startup
@@ -2555,11 +2570,16 @@ ${state.bannerMOTD}
       setLastOutput(String(result.output));
     }
 
+    if (command && command.trim() !== '') {
+      const deviceName = topologyDevices?.find(d => d.id === activeDeviceId)?.name || activeDeviceId;
+      commitAction(`${deviceName} CLI: ${command}`);
+    }
+
     if (result?.exitSession) {
       setActiveTab('topology');
     }
     return result;
-  }, [activeDeviceId, handleCommandForDevice, topologyDevices, topologyConnections, setActiveDeviceId, setActiveDeviceType, setActiveTab, setLastCommand]);
+  }, [activeDeviceId, handleCommandForDevice, topologyDevices, topologyConnections, setActiveDeviceId, setActiveDeviceType, setActiveTab, setLastCommand, commitAction]);
 
   const prompt = getPrompt(state);
 
@@ -2577,8 +2597,14 @@ ${state.bannerMOTD}
     if (result && typeof result === 'object' && 'output' in result) {
       setLastOutput(String(result.output));
     }
+    
+    if (command && command.trim() !== '') {
+      const deviceName = topologyDevices?.find(d => d.id === deviceId)?.name || deviceId;
+      commitAction(`${deviceName} CLI: ${command}`);
+    }
+
     return result;
-  }, [handleCommandForDevice, topologyDevices, topologyConnections, setActiveDeviceId, setActiveDeviceType, setLastCommand, setLastOutput]);
+  }, [handleCommandForDevice, topologyDevices, topologyConnections, setActiveDeviceId, setActiveDeviceType, setLastCommand, setLastOutput, commitAction]);
 
 
   const handleClearTerminal = () => {
@@ -5439,6 +5465,7 @@ ${state.bannerMOTD}
                     clearSelectionTrigger={clearSelectionTrigger}
                     onPacketPanelFocus={() => setFocusedOverlay('packet')}
                     packetPanelZIndex={focusedOverlay === 'packet' ? 35 : 30}
+                    onAction={commitAction}
                   />
 
                   {/* PC Info Popover - Bottom Right Mini Panel */}

@@ -193,15 +193,15 @@ export function useHistory(initialState: ProjectState) {
     }
   }, [state]);
 
-  const pushState = useCallback((newState: ProjectState, operationType: HistoryOperationType = 'topology') => {
+  const pushState = useCallback((newState: ProjectState, operationType: HistoryOperationType = 'topology', explicitDescription?: string) => {
     setState(prev => {
       const newItems = prev.items.slice(0, prev.index + 1);
       const stateToPush = cloneProjectState(newState);
       const signature = getStateSignature(stateToPush, operationType);
 
       const prevState = prev.items[prev.index]?.state;
-      let description = 'Değişiklik';
-      if (prevState) {
+      let description = explicitDescription || 'Değişiklik';
+      if (!explicitDescription && prevState) {
         if (stateToPush.topologyDevices.length > prevState.topologyDevices.length) {
           const newDev = stateToPush.topologyDevices.find(d => !prevState.topologyDevices.some(pd => pd.id === d.id));
           description = `Cihaz Eklendi: ${newDev?.name || 'Bilinmiyor'}`;
