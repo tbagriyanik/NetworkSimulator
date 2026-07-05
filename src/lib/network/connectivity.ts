@@ -5,7 +5,7 @@ import { performArpResolution } from './arp';
 import { ensureDeviceStatesMap } from './networkUtils';
 import { recalculateStp } from './stp';
 
-export type WifiMode = 'ap' | 'client' | 'disabled' | 'sta';
+type WifiMode = 'ap' | 'client' | 'disabled' | 'sta';
 
 export interface DeviceWifiConfig {
   enabled: boolean;

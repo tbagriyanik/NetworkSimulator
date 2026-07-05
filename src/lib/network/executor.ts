@@ -900,7 +900,7 @@ function getSmartHint(state: SwitchState, lang: 'tr' | 'en'): string {
 /**
  * Akıllı hata tahmin ve komut öneri sistemi
  */
-export function getEstimatedSuggestions(
+function getEstimatedSuggestions(
   input: string,
   mode: CommandMode,
   state?: SwitchState

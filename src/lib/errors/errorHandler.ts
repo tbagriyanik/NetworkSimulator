@@ -146,20 +146,6 @@ export class ErrorHandler {
 
 export const errorHandler = new ErrorHandler();
 
-export function useErrorHandler() {
-    return {
-        logError: (error: Error | ApplicationError, context?: Record<string, unknown>) =>
-            errorHandler.logError(error, context),
-        getErrors: () => errorHandler.getErrors(),
-        getErrorsByCode: (code: string) => errorHandler.getErrorsByCode(code),
-        getErrorsBySeverity: (severity: ErrorInfo['severity']) =>
-            errorHandler.getErrorsBySeverity(severity),
-        clearErrors: () => errorHandler.clearErrors(),
-        subscribe: (listener: (error: ErrorInfo) => void) =>
-            errorHandler.subscribe(listener),
-    };
-}
-
 export function formatErrorForUser(error: Error | ApplicationError, fallbackMessage?: string) {
     if (error instanceof ApplicationError) {
         return error.toErrorInfo();

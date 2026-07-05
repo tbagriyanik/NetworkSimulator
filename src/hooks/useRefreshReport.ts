@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import type { DeviceType } from '@/components/network/networkTopology.types';
 
-export interface RefreshDeviceSummary {
+interface RefreshDeviceSummary {
   id: string;
   name: string;
   type: DeviceType;
@@ -14,7 +14,7 @@ export interface RefreshDeviceSummary {
   services: string;
 }
 
-export interface NetworkSummary {
+interface NetworkSummary {
   deviceCount: {
     total: number;
     routers: number;
@@ -44,16 +44,6 @@ export interface RefreshNetworkReport {
   topologyMessage: string;
   devices: RefreshDeviceSummary[];
   summary: NetworkSummary;
-}
-
-export function emptyNetworkSummary(): NetworkSummary {
-  return {
-    deviceCount: { total: 0, routers: 0, switches: 0, pcs: 0, iot: 0, firewalls: 0, wlcs: 0 },
-    activeLinks: 0,
-    vlanCount: 0,
-    routingTableSummary: { totalRoutes: 0, connected: 0, static: 0, dynamic: 0 },
-    networkWarnings: [],
-  };
 }
 
 export function useRefreshReport() {

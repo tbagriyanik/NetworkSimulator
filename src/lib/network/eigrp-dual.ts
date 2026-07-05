@@ -29,7 +29,7 @@ const EIGRP_METRIC_SCALE = 256;
  * Calculate EIGRP Metric (K1=1, K3=1, others=0)
  * Formula: 256 * ((10^7 / Bandwidth_min_kbps) + Total_Delay_tens_of_usec)
  */
-export function calculateEigrpMetric(bandwidthKbps: number, delayMicroseconds: number): number {
+function calculateEigrpMetric(bandwidthKbps: number, delayMicroseconds: number): number {
   const bwComponent = Math.floor(EIGRP_BANDWIDTH_REF / Math.max(1, bandwidthKbps));
   const delayComponent = Math.floor(delayMicroseconds / 10);
   return EIGRP_METRIC_SCALE * (bwComponent + delayComponent);

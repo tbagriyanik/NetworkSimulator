@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import { breakpoints as designTokenBreakpoints, getBreakpointFromWidth as getDesignTokenBreakpoint } from '@/lib/design-tokens';
 import type { Breakpoint as DesignBreakpoint } from '@/lib/design-tokens';
 
-export type DeviceCategory = 'mobile' | 'tablet' | 'desktop';
+type DeviceCategory = 'mobile' | 'tablet' | 'desktop';
 
-export interface BreakpointState {
+interface BreakpointState {
   width: number;
   height: number;
   isMobile: boolean;
@@ -37,7 +37,7 @@ function getBreakpointInfo(width: number) {
   };
 }
 
-export function useBreakpoint(): BreakpointState {
+function useBreakpoint(): BreakpointState {
   const [state, setState] = useState<BreakpointState>(() => {
     if (typeof window === 'undefined') {
       return { width: 1024, height: 768, isMobile: false, isTablet: false, isDesktop: true, breakpoint: 'desktop', deviceCategory: 'desktop' };
@@ -77,17 +77,3 @@ export function useIsTablet(): boolean {
   return isTablet;
 }
 
-export function useIsDesktop(): boolean {
-  const { isDesktop } = useBreakpoint();
-  return isDesktop;
-}
-
-export function useDeviceCategory(): DeviceCategory {
-  const { deviceCategory } = useBreakpoint();
-  return deviceCategory;
-}
-
-export function useResponsiveValue<T>(values: { mobile?: T; tablet?: T; desktop?: T }): T | undefined {
-  const { deviceCategory } = useBreakpoint();
-  return values[deviceCategory];
-}

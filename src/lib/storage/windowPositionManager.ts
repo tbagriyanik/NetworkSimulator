@@ -3,17 +3,17 @@ import { logger } from '@/lib/logger';
 // Window Position Manager
 // Preserves and restores modal/dialog window positions during network refresh
 
-export interface WindowPosition {
+interface WindowPosition {
     x: number;
     y: number;
 }
 
-export interface WindowSize {
+interface WindowSize {
     width: number;
     height: number;
 }
 
-export interface WindowLayout {
+interface WindowLayout {
     position: WindowPosition;
     size: WindowSize;
 }

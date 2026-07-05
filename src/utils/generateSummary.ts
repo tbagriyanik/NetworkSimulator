@@ -1,6 +1,6 @@
 import { CanvasDevice, CanvasConnection } from '../components/network/networkTopology.types';
 
-export interface ProjectScores {
+interface ProjectScores {
   code: number;
   ux: number;
   ui: number;
@@ -9,7 +9,7 @@ export interface ProjectScores {
   performance: number;
 }
 
-export interface DeviceConfig {
+interface DeviceConfig {
   id: string;
   name: string;
   type: string;

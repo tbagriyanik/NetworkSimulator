@@ -25,27 +25,7 @@ export interface FaultDefinition {
  * Applies a fault to a device state.
  * Returns a new state with the fault injected.
  */
-export function applyFault(state: SwitchState, fault: FaultDefinition): SwitchState {
-  const newState = JSON.parse(JSON.stringify(state));
-  const parts = fault.configKey.split('.');
 
-  let current: Record<string, unknown> = newState;
-  for (let i = 0; i < parts.length - 1; i++) {
-    const part = parts[i];
-    if (current && typeof current === 'object' && part in current) {
-      current = current[part] as Record<string, unknown>;
-    } else {
-      return state;
-    }
-  }
-
-  const lastPart = parts[parts.length - 1];
-  if (current && typeof current === 'object') {
-    current[lastPart] = fault.faultValue;
-  }
-
-  return newState;
-}
 
 /**
  * Checks if a fault has been resolved by comparing current state with the correct value.

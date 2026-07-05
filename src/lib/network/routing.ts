@@ -1,6 +1,5 @@
-import { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/networkTopology.types';
+import { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
 import { SwitchState } from './types';
-import { checkBasicL2Connectivity } from './basicConnectivity';
 import { calculateOSPFRoutes } from './ospf';
 import { calculateEigrpRoutes } from './eigrp-dual';
 
@@ -12,92 +11,6 @@ export interface Route {
   metric?: number;          // Administrative distance/metric
   type: 'connected' | 'static' | 'dynamic'; // Route type
   area?: number;            // For OSPF
-}
-
-export interface RoutingTable {
-  [deviceId: string]: Route[];
-}
-
-/**
- * Enhanced connectivity checker with routing support
- */
-export function checkConnectivityWithRouting(
-  sourceId: string,
-  targetIp: string,
-  devices: CanvasDevice[],
-  connections: CanvasConnection[],
-  deviceStates?: Map<string, SwitchState>
-): { success: boolean; hops: string[]; error?: string; route?: Route[] } {
-  // First, try basic L2 connectivity
-  const basicCheck = checkBasicL2Connectivity(sourceId, targetIp, devices, connections, deviceStates);
-  if (basicCheck.success) {
-    return basicCheck;
-  }
-
-  // If L2 fails, try L3 routing
-  if (deviceStates) {
-    const routingResult = checkL3Routing(sourceId, targetIp, devices, connections, deviceStates);
-    if (routingResult.success) {
-      return routingResult;
-    }
-  }
-
-  return basicCheck; // Return the original L2 failure
-}
-
-/**
- * L3 Routing connectivity check
- */
-function checkL3Routing(
-  sourceId: string,
-  targetIp: string,
-  devices: CanvasDevice[],
-  connections: CanvasConnection[],
-  deviceStates: Map<string, SwitchState>
-): { success: boolean; hops: string[]; error?: string; route?: Route[] } {
-  const sourceDevice = devices.find(d => d.id === sourceId);
-  const targetDevice = devices.find(d => d.ip === targetIp);
-
-  if (!sourceDevice || !targetDevice) {
-    return { success: false, hops: [], error: 'Device not found' };
-  }
-
-  // Check if source has routing capabilities (Router or L3 Switch)
-  const sourceState = deviceStates.get(sourceId);
-  if (!sourceState || !hasRoutingCapability(sourceDevice, sourceState)) {
-    return { success: false, hops: [], error: 'Source device has no routing capability' };
-  }
-
-  // Build routing table for source device
-  const routingTable = buildRoutingTable(sourceId, devices, connections, deviceStates);
-
-  // Find route to target
-  const route = findRoute(targetIp, routingTable);
-  if (!route) {
-    return { success: false, hops: [], error: 'No route to destination' };
-  }
-
-  // Verify path to next hop
-  const pathToNextHop = findPathToNextHop(sourceId, route.nextHop, devices, connections, deviceStates);
-  if (!pathToNextHop.success) {
-    return { success: false, hops: [], error: `Cannot reach next hop: ${route.nextHop}` };
-  }
-
-  return {
-    success: true,
-    hops: [sourceDevice.name, ...pathToNextHop.hops, targetDevice.name],
-    route: [route]
-  };
-}
-
-/**
- * Check if device has routing capability
- */
-function hasRoutingCapability(device: CanvasDevice, state: SwitchState): boolean {
-  const isSwitchDeviceType = (type: DeviceType) => type === 'switchL2' || type === 'switchL3';
-  if (device.type === 'router') return true;
-  if (isSwitchDeviceType(device.type) && state.switchLayer === 'L3') return true;
-  return false;
 }
 
 /**
@@ -361,96 +274,6 @@ function getPrefixLength(subnetMask: string): number {
   }
 
   return count;
-}
-
-/**
- * Find path to next hop
- */
-function findPathToNextHop(
-  sourceId: string,
-  nextHop: string,
-  devices: CanvasDevice[],
-  connections: CanvasConnection[],
-  deviceStates: Map<string, SwitchState>
-): { success: boolean; hops: string[] } {
-  // Simplified path finding - in reality, this would be more complex
-  // For now, assume we can reach the next hop if it's directly connected
-
-  const sourceConnections = connections.filter(c =>
-    (c.sourceDeviceId === sourceId || c.targetDeviceId === sourceId) && c.active !== false
-  );
-
-  for (const conn of sourceConnections) {
-    const neighborId = conn.sourceDeviceId === sourceId ? conn.targetDeviceId : conn.sourceDeviceId;
-    const neighborDevice = devices.find(d => d.id === neighborId);
-
-    if (neighborDevice && (neighborDevice.ip === nextHop || neighborDevice.ipv6 === nextHop || neighborDevice.name === nextHop || deviceHasIp(neighborId, nextHop, deviceStates))) {
-      return { success: true, hops: [neighborDevice.name] };
-    }
-  }
-
-  return { success: false, hops: [] };
-}
-
-function deviceHasIp(deviceId: string, ip: string, deviceStates: Map<string, SwitchState>): boolean {
-  const state = deviceStates.get(deviceId);
-  if (!state) return false;
-
-  return Object.values(state.ports).some(port => port.ipAddress === ip || port.ipv6Address === ip);
-}
-
-/**
- * Add static route to device
- */
-export function addStaticRoute(
-  deviceId: string,
-  destination: string,
-  subnetMask: string,
-  nextHop: string,
-  deviceStates: Map<string, SwitchState>
-): boolean {
-  const state = deviceStates.get(deviceId);
-  if (!state) return false;
-
-  if (!state.staticRoutes) {
-    state.staticRoutes = [];
-  }
-
-  // Remove existing route to same destination if exists
-  state.staticRoutes = state.staticRoutes.filter(
-    route => !(route.destination === destination && route.subnetMask === subnetMask)
-  );
-
-  // Add new route
-  state.staticRoutes.push({
-    destination,
-    subnetMask,
-    nextHop,
-    metric: 1,
-    type: 'static'
-  });
-
-  return true;
-}
-
-/**
- * Remove static route from device
- */
-export function removeStaticRoute(
-  deviceId: string,
-  destination: string,
-  subnetMask: string,
-  deviceStates: Map<string, SwitchState>
-): boolean {
-  const state = deviceStates.get(deviceId);
-  if (!state || !state.staticRoutes) return false;
-
-  const initialLength = state.staticRoutes.length;
-  state.staticRoutes = state.staticRoutes.filter(
-    route => !(route.destination === destination && route.subnetMask === subnetMask)
-  );
-
-  return state.staticRoutes.length < initialLength;
 }
 
 /**

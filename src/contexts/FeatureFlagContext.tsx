@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useEffect, useMemo, useState } from 'react';
 
 export interface FeatureFlags {
   modernShell: boolean;
@@ -55,10 +55,4 @@ export function FeatureFlagProvider({ children }: { children: React.ReactNode })
   return <FeatureFlagContext.Provider value={value}>{children}</FeatureFlagContext.Provider>;
 }
 
-export function useFeatureFlags() {
-  const context = useContext(FeatureFlagContext);
-  if (!context) {
-    throw new Error('useFeatureFlags must be used within FeatureFlagProvider');
-  }
-  return context;
-}
+

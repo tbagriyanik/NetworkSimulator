@@ -3,9 +3,9 @@
 import { useEffect, useCallback } from 'react';
 import type { CanvasDevice, CanvasNote } from '../networkTopology.types';
 
-export const MIN_ZOOM = 0.2;
-export const MAX_ZOOM = 3.0;
-export const DEFAULT_ZOOM = 1.0;
+const MIN_ZOOM = 0.2;
+const MAX_ZOOM = 3.0;
+const DEFAULT_ZOOM = 1.0;
 
 interface CanvasZoomPanProps {
   zoom: number;

@@ -1,7 +1,7 @@
 ﻿import { CableType } from '@/lib/network/types';
 import { CanvasNote } from './networkTopology.types';
 
-export const DEVICE_ICON_PATHS = {
+const DEVICE_ICON_PATHS = {
   pc: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 0 0 2-2V5a2 2 0 0 0 -2-2H5a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2z',
   iot: {
     center: { cx: 12, cy: 12, r: 2 },
@@ -102,9 +102,6 @@ export const VIRTUAL_CANVAS_HEIGHT_DESKTOP = 2000;
 export const MIN_ZOOM = 0.15;
 export const MAX_ZOOM = 4.0;
 export const DEFAULT_ZOOM = 1.0;
-export const NOTE_DEFAULT_WIDTH = 180;
-export const NOTE_DEFAULT_HEIGHT = 120;
-export const NOTE_HEADER_HEIGHT = 22;
 export const NOTE_COLORS = [
   'var(--color-primary-500)', // Blue
   'var(--color-success-500)', // Emerald
@@ -127,20 +124,12 @@ export const NOTE_FONTS_DESKTOP = [
   'Trebuchet MS',
   'Courier New'
 ];
-export const NOTE_FONTS_MOBILE = [
-  'Roboto',
-  'Verdana',
-  'Trebuchet MS',
-  'Courier New',
-  'Arial'
-];
 export const NOTE_FONT_SIZES: Array<CanvasNote['fontSize']> = [10, 12, 16, 20];
 export const NOTE_OPACITY: Array<CanvasNote['opacity']> = [0.25, 0.5, 0.75, 1];
 
 // Port spacing constants
 export const PC_PORT_SPACING = 18;
 export const PORT_SPACING = 14;
-export const PORT_ROW_SPACING = 14;
 export const PORT_START_X = 14;
 export const PORT_START_Y = 80;
 
@@ -177,17 +166,6 @@ export const STATUS_COLORS = {
   online: 'var(--color-success-500)',
   offline: 'var(--color-error-500)',
   error: 'var(--color-error-500)',
-} as const;
-
-// Stroke colors for device selection
-export const STROKE_COLORS = {
-  cyan: 'var(--color-accent-500)',
-  green: 'var(--color-success-500)',
-  purple: 'var(--color-warning-600)',
-  orange: 'var(--color-secondary-500)',
-  blue: 'var(--color-primary-500)',
-  slateLight: 'var(--color-secondary-300)',
-  slateDark: 'var(--color-secondary-900)',
 } as const;
 
 // Selection highlight color for devices and notes

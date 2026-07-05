@@ -4,7 +4,7 @@ import type { CanvasConnection } from '@/components/network/networkTopology.type
 /**
  * Spanning Tree Protocol Bridge Protocol Data Unit (BPDU)
  */
-export interface Bpdu {
+interface Bpdu {
   rootBridgeId: string;
   rootPathCost: number;
   senderBridgeId: string;
@@ -21,7 +21,7 @@ export interface Bpdu {
  * 3. Lowest Sender Bridge ID
  * 4. Lowest Sender Port ID
  */
-export function isBpduSuperior(newBp: Bpdu, currentBp: Bpdu): boolean {
+function isBpduSuperior(newBp: Bpdu, currentBp: Bpdu): boolean {
   if (newBp.rootBridgeId < currentBp.rootBridgeId) return true;
   if (newBp.rootBridgeId > currentBp.rootBridgeId) return false;
 
@@ -38,7 +38,7 @@ export function isBpduSuperior(newBp: Bpdu, currentBp: Bpdu): boolean {
  * Format a Bridge ID from priority and MAC address.
  * Format: priority.mac (e.g., "32768.0000.0000.0001")
  */
-export function calculateBridgeId(priority: number, mac: string): string {
+function calculateBridgeId(priority: number, mac: string): string {
   const cleanMac = mac.replace(/[:.-]/g, '').toLowerCase();
   // Ensure MAC is formatted as XXXX.XXXX.XXXX
   const formattedMac = cleanMac.match(/.{1,4}/g)?.join('.') || cleanMac;

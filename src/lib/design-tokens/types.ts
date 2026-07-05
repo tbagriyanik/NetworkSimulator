@@ -198,7 +198,6 @@ export interface DesignTokens {
     spacing: SpacingScale;
     borderRadius: RadiusScale;
     shadows: ShadowScale;
-    animations: AnimationTokens;
 }
 
 export type ThemeVariant = 'light' | 'dark' | 'high-contrast';

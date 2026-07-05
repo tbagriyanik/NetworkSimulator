@@ -117,7 +117,7 @@ function getStateSignature(state: ProjectState, operationType: HistoryOperationT
   }
 }
 
-export function findUndoIndex(
+function findUndoIndex(
   items: HistoryEntry[],
   currentIndex: number,
   operationType: HistoryOperationType = 'all'
@@ -132,7 +132,7 @@ export function findUndoIndex(
   return currentIndex;
 }
 
-export function findRedoIndex(
+function findRedoIndex(
   items: HistoryEntry[],
   currentIndex: number,
   operationType: HistoryOperationType = 'all'

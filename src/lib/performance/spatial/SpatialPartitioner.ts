@@ -69,8 +69,8 @@ export class SpatialPartitioner {
         if (!this.cells.has(key)) {
             const [cellX, cellY] = key.split(',').map(Number);
             this.cells.set(key, {
-                x: cellX * this.cellSize,
-                y: cellY * this.cellSize,
+                id: key,
+                bounds: { x: cellX * this.cellSize, y: cellY * this.cellSize, width: this.cellSize, height: this.cellSize },
                 nodeIds: [],
                 connectionIds: [],
             });

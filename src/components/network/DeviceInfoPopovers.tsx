@@ -41,49 +41,6 @@ interface PCInfoPopoverProps {
   deviceStates: Map<string, SwitchState>;
 }
 
-export function SwitchInfoPopover({ router, routerState, t, isDark, onClose, topologyConnections, onFocus, zIndex, isFocused = false }: RouterInfoPopoverProps) {
-  const { containerRef, handleDragStart, position } = useDrag({
-    storageKey: `switch-info-pos-${router.id}`,
-    defaultPosition: { x: 16, y: 96 },
-    origin: 'bottom-right',
-    disableSnap: true,
-  });
-
-  const ports = routerState?.ports ? Object.values(routerState.ports) : (router.ports || []);
-  const totalPorts = Math.max(6, ports.length);
-  const connectedPorts = topologyConnections?.filter(conn => conn.sourceDeviceId === router.id || conn.targetDeviceId === router.id).length || 0;
-
-  return (
-    <div ref={containerRef} className={cn("hidden md:block fixed animate-scale-in")}
-      style={{ bottom: `${position.y}px`, right: `${position.x}px`, zIndex }}>
-      <div className={`rounded-2xl overflow-hidden border shadow-2xl min-w-[200px] max-w-[280px] backdrop-blur-md ${isDark ? (isFocused ? 'bg-secondary-950/40 border-emerald-400 shadow-[0_0_0_1px_rgba(52,211,153,0.35),0_20px_40px_rgba(0,0,0,0.4)]' : 'bg-secondary-950/40 border-emerald-950/80 shadow-black/40') : (isFocused ? 'bg-white/40 border-emerald-500 shadow-[0_0_0_1px_rgba(34,197,94,0.24),0_20px_40px_rgba(15,23,42,0.12)]' : 'bg-white/40 border-emerald-950/80 shadow-secondary-200/50')}`}>
-        <div
-          className={`flex items-center justify-between px-3 py-2 border-b select-none cursor-grab active:cursor-grabbing ${isDark ? 'bg-white/5 border-success-500/20' : 'bg-black/5 border-success-500/30'}`}
-          onPointerDown={(e) => { onFocus(); handleDragStart(e); }}
-        >
-          <div className="flex items-center gap-1.5">
-            <SwitchIcon className="w-3.5 h-3.5 text-purple-500" />
-            <span className={`font-semibold text-sm ${isDark ? 'text-secondary-100' : 'text-secondary-800'}`}>{router.name || router.id}</span>
-          </div>
-          <TooltipWrapper title={t.close}>
-            <button onClick={(e) => { e.stopPropagation(); onClose(); }} className={`w-5 h-5 rounded-md bg-error-500 hover:bg-error-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0`}>
-              <X className="w-3 h-3 text-white pointer-events-none" />
-            </button>
-          </TooltipWrapper>
-        </div>
-        <div className="overflow-hidden cursor-default">
-          <div className="p-2 space-y-1 text-xs">
-            <div className="flex justify-between items-center">
-              <span className="opacity-50">{t.portsShort}</span>
-              <span className="font-mono"><span className="text-success-500">{connectedPorts}</span><span className="opacity-50">/{totalPorts}</span><span className="ml-1 opacity-50">{t.connectedShort}</span></span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zIndex, isFocused = false, handleDeviceDoubleClick, onOpenPanel, topologyDevices, deviceStates }: PCInfoPopoverProps) {
   const { containerRef, handleDragStart, position } = useDrag({
     storageKey: `pc-info-pos-${pc.id}`,

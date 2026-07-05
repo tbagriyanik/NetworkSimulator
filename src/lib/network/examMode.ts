@@ -1,6 +1,6 @@
 import { ExampleProject } from './exampleProjects';
 
-export interface NoteItem {
+interface NoteItem {
   id: string;
   text: string;
   x: number;
@@ -13,7 +13,7 @@ export interface NoteItem {
   opacity: number;
 }
 
-export interface DevicePort {
+interface DevicePort {
   id: string;
   label: string;
   status: string;
@@ -26,7 +26,7 @@ export interface DevicePort {
   isSubinterface?: boolean;
 }
 
-export interface DeviceState {
+interface DeviceState {
   hostname?: string;
   ports?: Record<string, DevicePort>;
   dhcpPools?: Record<string, { network: string }>;
@@ -46,7 +46,7 @@ export interface DeviceState {
   vtp?: { mode: string };
 }
 
-export interface ProjectDevice {
+interface ProjectDevice {
   id: string;
   type: string;
   name?: string;
@@ -59,7 +59,7 @@ export interface ProjectDevice {
   state?: DeviceState;
 }
 
-export interface TopologyData {
+interface TopologyData {
   devices: ProjectDevice[];
   connections: Array<{
     sourceDeviceId: string;
@@ -236,7 +236,7 @@ export function verifyExamIntegrity(project: ExamProject): boolean {
 }
 
 // Exam tasks - Basic Connectivity Exam
-export const basicConnectivityExamTasks: ExamTask[] = [
+const basicConnectivityExamTasks: ExamTask[] = [
   {
     id: 'exam-connect-pc-switch',
     title: { tr: 'PC ve Switch Bağlantısı', en: 'PC and Switch Connection' },
@@ -282,7 +282,7 @@ export const basicConnectivityExamTasks: ExamTask[] = [
 ];
 
 // Exam tasks - Routing Basics
-export const routingBasicsExamTasks: ExamTask[] = [
+const routingBasicsExamTasks: ExamTask[] = [
   {
     id: 'exam-route-connect-pc1',
     title: { tr: 'PC-1 Bağlantısı', en: 'PC-1 Connection' },
@@ -361,7 +361,7 @@ export const routingBasicsExamTasks: ExamTask[] = [
 ];
 
 // Exam tasks - L3 Switch & DHCP
-export const l3SwitchDhcpExamTasks: ExamTask[] = [
+const l3SwitchDhcpExamTasks: ExamTask[] = [
   {
     id: 'exam-l3-enable-routing',
     title: { tr: 'IP Routing Etkinleştirme', en: 'Enable IP Routing' },
@@ -446,7 +446,7 @@ export const l3SwitchDhcpExamTasks: ExamTask[] = [
 ];
 
 // Exam tasks - VLAN Trunking & VTP
-export const vlanTrunkingExamTasks: ExamTask[] = [
+const vlanTrunkingExamTasks: ExamTask[] = [
   {
     id: 'exam-vtp-mode-server',
     title: { tr: 'VTP Mode Server', en: 'VTP Mode Server' },
@@ -486,7 +486,7 @@ export const vlanTrunkingExamTasks: ExamTask[] = [
 ];
 
 // Exam tasks - Standard ACL
-export const basicAclExamTasks: ExamTask[] = [
+const basicAclExamTasks: ExamTask[] = [
   {
     id: 'exam-acl-create',
     title: { tr: 'Standard ACL Oluşturma', en: 'Create Standard ACL' },
@@ -517,7 +517,7 @@ export const basicAclExamTasks: ExamTask[] = [
 ];
 
 // Comprehensive Final Exam Tasks
-export const comprehensiveFinalExamTasks: ExamTask[] = [
+const comprehensiveFinalExamTasks: ExamTask[] = [
   {
     id: 'master-conn-pc-as',
     title: { tr: 'PC-AS1 Bağlantısı', en: 'PC-AS1 Connection' },

@@ -40,23 +40,12 @@ export const logger = {
   },
 };
 
-export function safeLocalStorage(): Storage | null {
+function safeLocalStorage(): Storage | null {
   try {
     const test = '__storage_test__';
     localStorage.setItem(test, test);
     localStorage.removeItem(test);
     return localStorage;
-  } catch {
-    return null;
-  }
-}
-
-export function safeSessionStorage(): Storage | null {
-  try {
-    const test = '__storage_test__';
-    sessionStorage.setItem(test, test);
-    sessionStorage.removeItem(test);
-    return sessionStorage;
   } catch {
     return null;
   }

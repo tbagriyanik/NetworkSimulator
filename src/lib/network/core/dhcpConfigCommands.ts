@@ -7,7 +7,7 @@ import { buildRunningConfig } from './configBuilder';
 
 // ── DHCP Pool sub-command handlers ──────────────────────────────────────────
 
-export function cmdDhcpNetwork(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+function cmdDhcpNetwork(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
     if (state.currentMode !== 'dhcp-config') {
         return { success: false, error: iosModeError() };
     }

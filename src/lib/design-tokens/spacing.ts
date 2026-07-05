@@ -96,7 +96,7 @@ export const highContrastShadows: ShadowScale = {
 };
 
 // Layout Presets for Common Spacing Patterns
-export const layoutPresets = {
+const layoutPresets = {
     // Component spacing
     'component-xs': spacing[1],    // 4px
     'component-sm': spacing[2],    // 8px
@@ -124,25 +124,6 @@ export const layoutPresets = {
     'container-md': spacing[8],    // 32px
     'container-lg': spacing[12],   // 48px
     'container-xl': spacing[16],   // 64px
-};
-
-// Breakpoint-specific spacing adjustments
-export const responsiveSpacing = {
-    mobile: {
-        'container-padding': spacing[4],  // 16px
-        'section-gap': spacing[8],        // 32px
-        'component-gap': spacing[3],      // 12px
-    },
-    tablet: {
-        'container-padding': spacing[6],  // 24px
-        'section-gap': spacing[12],       // 48px
-        'component-gap': spacing[4],      // 16px
-    },
-    desktop: {
-        'container-padding': spacing[8],  // 32px
-        'section-gap': spacing[16],       // 64px
-        'component-gap': spacing[6],      // 24px
-    },
 };
 
 // Utility function to generate spacing CSS variables

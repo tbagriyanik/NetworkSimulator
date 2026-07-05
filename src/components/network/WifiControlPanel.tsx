@@ -4,7 +4,7 @@ import { CanvasDevice } from './networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { sanitizeHTML, safeJSONForHTML } from '@/lib/security/sanitizer';
 
-export interface WifiAdminConfig {
+interface WifiAdminConfig {
   enabled: boolean;
   ssid: string;
   security: 'open' | 'wpa' | 'wpa2' | 'wpa3';
@@ -31,7 +31,7 @@ export interface AvailableIoTDevice {
   currentSsid?: string;
 }
 
-export interface RouterWebConfig {
+interface RouterWebConfig {
   wifi: WifiAdminConfig;
   deviceName: string;
 
@@ -49,7 +49,7 @@ export interface RouterWebConfig {
  * Generates a WiFi Control Panel HTML for router/switch admin interface
  * Styled like a typical router web admin page (e.g., 192.168.1.1)
  */
-export function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string = 'wireless'): string {
+function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string = 'wireless'): string {
   const { wifi, deviceName, deviceIp, deviceId, connectedIotDevices = [], availableIotDevices = [], username, password, language = 'en' } = config;
   const isTurkish = language === 'tr';
   const pluralize = (count: number, singular: string, plural: string) => (count === 1 ? singular : plural);
@@ -1095,7 +1095,7 @@ export function isRouterDevice(device: CanvasDevice): boolean {
 /**
  * Get default WiFi configuration for a router
  */
-export function getDefaultWifiConfig(device: CanvasDevice): WifiAdminConfig {
+function getDefaultWifiConfig(device: CanvasDevice): WifiAdminConfig {
   return {
     enabled: device.wifi?.enabled ?? false,
     ssid: device.wifi?.ssid || `${device.name}_WiFi`,
@@ -1108,7 +1108,7 @@ export function getDefaultWifiConfig(device: CanvasDevice): WifiAdminConfig {
   };
 }
 
-export function getRouterWifiConfig(device: CanvasDevice, state?: SwitchState): WifiAdminConfig {
+function getRouterWifiConfig(device: CanvasDevice, state?: SwitchState): WifiAdminConfig {
   const wlan = state?.ports?.['wlan0'];
   const wlanWifi = wlan?.wifi;
   const base = getDefaultWifiConfig(device);

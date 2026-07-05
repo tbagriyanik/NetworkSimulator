@@ -1,10 +1,10 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useEffect, useMemo, useState } from 'react';
 
 export type LearningMode = 'beginner' | 'intermediate' | 'advanced';
 
-export interface ModeContextType {
+interface ModeContextType {
     mode: LearningMode;
     setMode: (mode: LearningMode) => void;
 }
@@ -53,14 +53,6 @@ export function ModeProvider({ children }: { children: React.ReactNode }) {
     }), [mode]);
 
     return <ModeContext.Provider value={value}>{children}</ModeContext.Provider>;
-}
-
-export function useMode() {
-    const context = useContext(ModeContext);
-    if (!context) {
-        throw new Error('useMode must be used within ModeProvider');
-    }
-    return context;
 }
 
 function isValidMode(value: unknown): value is LearningMode {

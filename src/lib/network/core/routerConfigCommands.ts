@@ -34,7 +34,7 @@ export const routerConfigHandlers: Record<string, CommandHandler> = {
  * network - Add network to routing process
  * Note: This command is only available in router-config mode via routerConfigHandlers
  */
-export function cmdRouterNetwork(state: SwitchState, input: string): CommandResult {
+function cmdRouterNetwork(state: SwitchState, input: string): CommandResult {
     // IPv6 routing protocols (RIPng/OSPFv3) do not use network statements
     if (state.routingProtocol === 'ripng' || state.routingProtocol === 'ospfv3') {
         return {

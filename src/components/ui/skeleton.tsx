@@ -17,14 +17,4 @@ function Skeleton({
   )
 }
 
-function SkeletonCard({ className }: { className?: string }) {
-  return (
-    <div className={cn("space-y-3", className)}>
-      <Skeleton className="h-4 w-3/4" />
-      <Skeleton className="h-4 w-1/2" />
-      <Skeleton className="h-20 w-full" />
-    </div>
-  )
-}
-
-export { Skeleton, SkeletonCard }
+export { Skeleton }

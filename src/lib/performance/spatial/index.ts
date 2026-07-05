@@ -1,4 +1,4 @@
 // Spatial partitioning utilities
-export { SpatialPartitioner, type Node, type Connection } from './SpatialPartitioner';
+export { SpatialPartitioner } from './SpatialPartitioner';
 export { ViewportCuller, type ViewportState, type CullingResult } from './ViewportCuller';
-export { useSpatialPartitioning, type UseSpatialPartitioningOptions, type UseSpatialPartitioningResult } from './useSpatialPartitioning';
+export { useSpatialPartitioning } from './useSpatialPartitioning';

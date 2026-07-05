@@ -7,10 +7,8 @@ import type { CommandHandler } from './commandTypes';
  * Modes: config, ssid-config, interface (dot11Radio)
  */
 
-export type WirelessMode = 'config' | 'ssid-config' | 'dot11-config';
-
 // Wireless SSID Configuration Handler
-export const cmdDot11Ssid: CommandHandler = (state, input, _ctx) => {
+const cmdDot11Ssid: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'config') {
         return { success: false, error: iosModeError() };
     }
@@ -59,7 +57,7 @@ export const cmdDot11Ssid: CommandHandler = (state, input, _ctx) => {
 };
 
 // Authentication command
-export const cmdAuthentication: CommandHandler = (state, input, _ctx) => {
+const cmdAuthentication: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'ssid-config') {
         return { success: false, error: iosModeError() };
     }
@@ -89,7 +87,7 @@ export const cmdAuthentication: CommandHandler = (state, input, _ctx) => {
 };
 
 // Key Management (WPA/WPA2/WPA3)
-export const cmdAuthenticationKeyManagement: CommandHandler = (state, input, _ctx) => {
+const cmdAuthenticationKeyManagement: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'ssid-config') {
         return { success: false, error: iosModeError() };
     }
@@ -118,7 +116,7 @@ export const cmdAuthenticationKeyManagement: CommandHandler = (state, input, _ct
 };
 
 // WPA Pre-Shared Key (Password)
-export const cmdWpaPsk: CommandHandler = (state, input, _ctx) => {
+const cmdWpaPsk: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'ssid-config') {
         return { success: false, error: iosModeError() };
     }
@@ -148,7 +146,7 @@ export const cmdWpaPsk: CommandHandler = (state, input, _ctx) => {
 };
 
 // Guest Mode (SSID broadcast)
-export const cmdGuestMode: CommandHandler = (state, _input, _ctx) => {
+const cmdGuestMode: CommandHandler = (state, _input, _ctx) => {
     if (state.currentMode !== 'ssid-config') {
         return { success: false, error: iosModeError() };
     }
@@ -162,25 +160,8 @@ export const cmdGuestMode: CommandHandler = (state, _input, _ctx) => {
     return { success: true, output: '' };
 };
 
-// Exit SSID config mode
-export const cmdExitSsidConfig: CommandHandler = (state, _input, _ctx) => {
-    if (state.currentMode !== 'ssid-config') {
-        return { success: false, error: iosModeError() };
-    }
-
-    return {
-        success: true,
-        output: '',
-        newState: {
-            ...state,
-            currentMode: 'config',
-            currentSsid: undefined,
-        },
-    };
-};
-
 // Interface dot11Radio configuration
-export const cmdInterfaceDot11Radio: CommandHandler = (state, input, _ctx) => {
+const cmdInterfaceDot11Radio: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'config') {
         return { success: false, error: iosModeError() };
     }
@@ -228,7 +209,7 @@ export const cmdInterfaceDot11Radio: CommandHandler = (state, input, _ctx) => {
 };
 
 // Encryption mode and cipher
-export const cmdEncryptionMode: CommandHandler = (state, input, _ctx) => {
+const cmdEncryptionMode: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'dot11-config') {
         return { success: false, error: iosModeError() };
     }
@@ -258,7 +239,7 @@ export const cmdEncryptionMode: CommandHandler = (state, input, _ctx) => {
 };
 
 // SSID binding to radio
-export const cmdSsidBinding: CommandHandler = (state, input, _ctx) => {
+const cmdSsidBinding: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'dot11-config') {
         return { success: false, error: iosModeError() };
     }
@@ -288,7 +269,7 @@ export const cmdSsidBinding: CommandHandler = (state, input, _ctx) => {
 };
 
 // Channel selection
-export const cmdChannel: CommandHandler = (state, input, _ctx) => {
+const cmdChannel: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'dot11-config') {
         return { success: false, error: iosModeError() };
     }
@@ -328,7 +309,7 @@ export const cmdChannel: CommandHandler = (state, input, _ctx) => {
 };
 
 // Transmit power
-export const cmdPower: CommandHandler = (state, input, _ctx) => {
+const cmdPower: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'dot11-config') {
         return { success: false, error: iosModeError() };
     }
@@ -358,7 +339,7 @@ export const cmdPower: CommandHandler = (state, input, _ctx) => {
 };
 
 // Station role (AP or Client)
-export const cmdStationRole: CommandHandler = (state, input, _ctx) => {
+const cmdStationRole: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'dot11-config') {
         return { success: false, error: iosModeError() };
     }
@@ -388,7 +369,7 @@ export const cmdStationRole: CommandHandler = (state, input, _ctx) => {
 };
 
 // MAC address filtering
-export const cmdMacFilter: CommandHandler = (state, input, _ctx) => {
+const cmdMacFilter: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'dot11-config') {
         return { success: false, error: iosModeError() };
     }
@@ -438,25 +419,8 @@ export const cmdMacFilter: CommandHandler = (state, input, _ctx) => {
     return { success: true, output: '' };
 };
 
-// Exit dot11 config mode
-export const cmdExitDot11Config: CommandHandler = (state, _input, _ctx) => {
-    if (state.currentMode !== 'dot11-config') {
-        return { success: false, error: iosModeError() };
-    }
-
-    return {
-        success: true,
-        output: '',
-        newState: {
-            ...state,
-            currentMode: 'config',
-            currentRadio: undefined,
-        },
-    };
-};
-
 // Show wireless configuration
-export const cmdShowWireless: CommandHandler = (state, _input, ctx) => {
+const cmdShowWireless: CommandHandler = (state, _input, ctx) => {
     if (!['privileged', 'user'].includes(state.currentMode)) {
         return { success: false, error: iosModeError() };
     }
@@ -523,7 +487,7 @@ export const cmdShowWireless: CommandHandler = (state, _input, ctx) => {
     return { success: true, output };
 };
 
-export const cmdApName: CommandHandler = (state, input, _ctx) => {
+const cmdApName: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'config') {
         return { success: false, error: iosModeError() };
     }
@@ -552,7 +516,7 @@ export const cmdApName: CommandHandler = (state, input, _ctx) => {
     return { success: true, output: '' };
 };
 
-export const cmdApAuthMac: CommandHandler = (state, input, _ctx) => {
+const cmdApAuthMac: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'config') {
         return { success: false, error: iosModeError() };
     }
@@ -571,7 +535,7 @@ export const cmdApAuthMac: CommandHandler = (state, input, _ctx) => {
     return { success: true, output: '' };
 };
 
-export const cmdApRfChannel: CommandHandler = (state, input, _ctx) => {
+const cmdApRfChannel: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'config') {
         return { success: false, error: iosModeError() };
     }
@@ -595,7 +559,7 @@ export const cmdApRfChannel: CommandHandler = (state, input, _ctx) => {
     return { success: true, output: '' };
 };
 
-export const cmdApDot115Ghz: CommandHandler = (state, input, _ctx) => {
+const cmdApDot115Ghz: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'config') {
         return { success: false, error: iosModeError() };
     }
@@ -620,7 +584,7 @@ export const cmdApDot115Ghz: CommandHandler = (state, input, _ctx) => {
     return { success: true, output: '' };
 };
 
-export const cmdMbssid: CommandHandler = (state, _input, _ctx) => {
+const cmdMbssid: CommandHandler = (state, _input, _ctx) => {
     if (state.currentMode !== 'ssid-config') {
         return { success: false, error: iosModeError() };
     }
@@ -634,7 +598,7 @@ export const cmdMbssid: CommandHandler = (state, _input, _ctx) => {
     return { success: true, output: '' };
 };
 
-export const cmdNoMbssid: CommandHandler = (state, _input, _ctx) => {
+const cmdNoMbssid: CommandHandler = (state, _input, _ctx) => {
     if (state.currentMode !== 'ssid-config') {
         return { success: false, error: iosModeError() };
     }
@@ -648,7 +612,7 @@ export const cmdNoMbssid: CommandHandler = (state, _input, _ctx) => {
     return { success: true, output: '' };
 };
 
-export const cmdNoSecurityWpaPsk: CommandHandler = (state, _input, _ctx) => {
+const cmdNoSecurityWpaPsk: CommandHandler = (state, _input, _ctx) => {
     if (state.currentMode !== 'config') {
         return { success: false, error: iosModeError() };
     }
@@ -665,7 +629,7 @@ export const cmdNoSecurityWpaPsk: CommandHandler = (state, _input, _ctx) => {
     return { success: true, output: '' };
 };
 
-export const cmdWlanShutdown: CommandHandler = (state, _input, _ctx) => {
+const cmdWlanShutdown: CommandHandler = (state, _input, _ctx) => {
     if (state.currentMode !== 'config') {
         return { success: false, error: iosModeError() };
     }
@@ -681,7 +645,7 @@ export const cmdWlanShutdown: CommandHandler = (state, _input, _ctx) => {
     return { success: true, output: '' };
 };
 
-export const cmdNoWlanShutdown: CommandHandler = (state, _input, _ctx) => {
+const cmdNoWlanShutdown: CommandHandler = (state, _input, _ctx) => {
     if (state.currentMode !== 'config') {
         return { success: false, error: iosModeError() };
     }
@@ -697,7 +661,7 @@ export const cmdNoWlanShutdown: CommandHandler = (state, _input, _ctx) => {
     return { success: true, output: '' };
 };
 
-export const cmdWorldModeDot11d: CommandHandler = (state, input, _ctx) => {
+const cmdWorldModeDot11d: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'config') {
         return { success: false, error: iosModeError() };
     }

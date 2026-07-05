@@ -362,16 +362,7 @@ export const routingTasks: TaskDefinition[] = [
   },
 ];
 
-// Tüm görevleri birleştir
-export const allTaskGroups = {
-  topology: topologyTasks,
-  ports: portTasks,
-  vlan: vlanTasks,
-  security: securityTasks,
-  wireless: wirelessTasks,
-  routing: routingTasks,
-  dhcp: dhcpTasks,
-};
+
 
 // Görev hesaplama yardımcı fonksiyonu
 export function calculateTaskScore(tasks: TaskDefinition[], state: SwitchState, context: TaskContext): number {

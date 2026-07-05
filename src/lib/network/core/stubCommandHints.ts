@@ -1,7 +1,7 @@
 import type { CommandHandler, CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult } from '../types';
 
-export const STUB_COMMAND_HINTS: Record<string, { tr: string; en: string }> = {
+const STUB_COMMAND_HINTS: Record<string, { tr: string; en: string }> = {
   'channel-protocol': { tr: 'Kanal protokolü (PAgP/LACP) yapılandırması henüz simüle edilmiyor.', en: 'Channel protocol configuration (PAgP/LACP) not yet simulated.' },
   'priority-queue out': { tr: 'Çıkış öncelik kuyruğu yapılandırması henüz simüle edilmiyor.', en: 'Output priority queue configuration not yet simulated.' },
   'queue-set': { tr: 'Kuyruk seti yapılandırması henüz simüle edilmiyor.', en: 'Queue set configuration not yet simulated.' },

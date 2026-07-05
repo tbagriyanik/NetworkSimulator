@@ -15,12 +15,12 @@ export type CommandMode =
   | 'config-std-nacl'  // Router(config-std-nacl)# - Named standard ACL
   | 'config-ext-nacl'; // Router(config-ext-nacl)# - Named extended ACL
 
-export type PortStatus = 'connected' | 'notconnect' | 'disabled' | 'blocked' | 'err-disabled';
-export type PortMode = 'access' | 'trunk' | 'routed' | 'dynamic-auto' | 'dynamic-desirable' | 'dot1q-tunnel';
+type PortStatus = 'connected' | 'notconnect' | 'disabled' | 'blocked' | 'err-disabled';
+type PortMode = 'access' | 'trunk' | 'routed' | 'dynamic-auto' | 'dynamic-desirable' | 'dot1q-tunnel';
+type VoiceVlanMode = number | 'dot1p' | 'none' | 'untagged';
+type EtherChannelProtocol = 'lacp' | 'pagp';
 export type DuplexMode = 'half' | 'full' | 'auto';
 export type SpeedMode = '10' | '100' | '1000' | '10000' | 'auto';
-export type VoiceVlanMode = number | 'dot1p' | 'none' | 'untagged';
-export type EtherChannelProtocol = 'lacp' | 'pagp';
 export type EtherChannelMode = 'on' | 'active' | 'passive' | 'desirable' | 'auto';
 
 export interface Port {
@@ -240,7 +240,7 @@ export interface Vlan {
   subnetMask?: string;
 }
 
-export interface LineConfig {
+interface LineConfig {
   password?: string;
   login: boolean;
   loginLocal?: boolean;
@@ -264,7 +264,7 @@ export interface SecurityConfig {
 }
 
 export type SwitchModel = 'WS-C2960-24TT-L' | 'WS-C3650-24PS' | 'ASA-5506-X' | 'AIR-CT2504-K9';
-export type SwitchLayer = 'L2' | 'L3' | 'FW' | 'WLC';
+type SwitchLayer = 'L2' | 'L3' | 'FW' | 'WLC';
 
 export interface StpVlanState {
   vlanId: number;
@@ -631,7 +631,7 @@ export interface ParsedCommand {
   };
 }
 
-export type ValidationReason = 'ok' | 'ambiguous' | 'incomplete' | 'invalid-mode' | 'unknown-command';
+type ValidationReason = 'ok' | 'ambiguous' | 'incomplete' | 'invalid-mode' | 'unknown-command';
 
 export interface CommandValidationResult {
   valid: boolean;
@@ -728,52 +728,8 @@ export function isCableCompatible(cable: CableInfo): boolean {
   return allowedTypes ? allowedTypes.includes(cable.cableType) : false;
 }
 
-export function getCableTypeName(type: CableType, lang: 'tr' | 'en'): string {
-  const names: Record<CableType, Record<'tr' | 'en', string>> = {
-    straight: { tr: 'Düz Kablo', en: 'Straight-through' },
-    crossover: { tr: 'Çapraz Kablo', en: 'Crossover' },
-    console: { tr: 'Konsol Kablosu', en: 'Console Cable' },
-    wireless: { tr: 'Kablosuz Bağlantı', en: 'Wireless Connection' },
-    serial: { tr: 'Seri Kablo', en: 'Serial Cable' },
-  };
-  return names[type][lang];
-}
-
-export function getCableTypeLabel(type: CableType, primaryLang: 'tr' | 'en'): string {
-  const trLabel = getCableTypeName(type, 'tr');
-  const enLabel = getCableTypeName(type, 'en');
-  return primaryLang === 'tr'
-    ? `${trLabel}`
-    : `${enLabel}`;
-}
-
 // Port LED renkleri
 export type PortLEDColor = 'green' | 'gray' | 'orange' | 'off' | 'white' | 'red';
-
-export function getPortLEDColor(port: Port): PortLEDColor {
-  if (port.shutdown) return 'gray';
-  if (port.status === 'err-disabled') return 'red';
-  if (port.status === 'blocked') return 'orange';
-  if (port.status === 'connected') return 'green';
-  if (port.status === 'notconnect') return 'white';
-  return 'white';
-}
-
-// Port tipi yardımcı fonksiyonları
-export function parsePortId(portId: string): { type: 'fa' | 'gi'; module: number; port: number } | null {
-  const match = portId.toLowerCase().match(/^(fa|gi)(\d+)\/(\d+)$/);
-  if (!match) return null;
-  return {
-    type: match[1] as 'fa' | 'gi',
-    module: parseInt(match[2]),
-    port: parseInt(match[3])
-  };
-}
-
-export function formatPortId(type: 'fastethernet' | 'gigabitethernet', module: number, port: number): string {
-  const prefix = type === 'fastethernet' ? 'Fa' : 'Gi';
-  return `${prefix}${module}/${port}`;
-}
 
 // Route interface for routing functionality
 export interface Route {

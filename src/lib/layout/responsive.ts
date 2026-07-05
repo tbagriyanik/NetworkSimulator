@@ -9,7 +9,7 @@ export interface ResponsiveValue<T> {
     desktop?: T;
 }
 
-export interface LayoutRegion {
+interface LayoutRegion {
     height?: ResponsiveValue<number>;
     width?: ResponsiveValue<number>;
     padding?: ResponsiveValue<number>;

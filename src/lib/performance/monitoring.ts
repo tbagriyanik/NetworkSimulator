@@ -1,6 +1,6 @@
 import { logger } from '@/lib/logger';
 
-export interface PerformanceMetrics {
+interface PerformanceMetrics {
     fcp: number | null; // First Contentful Paint
     lcp: number | null; // Largest Contentful Paint
     cls: number | null; // Cumulative Layout Shift
@@ -14,7 +14,7 @@ export interface PerformanceMetrics {
     memoryUsage: number | null;
 }
 
-export interface PerformanceThresholds {
+interface PerformanceThresholds {
     fcp: number; // milliseconds
     lcp: number; // milliseconds
     cls: number; // unitless
@@ -26,7 +26,7 @@ export interface PerformanceThresholds {
     longTaskTime: number; // milliseconds
 }
 
-export const DEFAULT_THRESHOLDS: PerformanceThresholds = {
+const DEFAULT_THRESHOLDS: PerformanceThresholds = {
     fcp: 1800, // 1.8 seconds
     lcp: 2500, // 2.5 seconds
     cls: 0.1, // 0.1 unitless
@@ -286,14 +286,4 @@ class PerformanceMonitor {
 
 export const performanceMonitor = new PerformanceMonitor();
 
-export function usePerformanceMonitoring() {
-    return {
-        getMetrics: () => performanceMonitor.getMetrics(),
-        checkThresholds: () => performanceMonitor.checkThresholds(),
-        startInteraction: () => performanceMonitor.startInteractionTiming(),
-        endInteraction: () => performanceMonitor.endInteractionTiming(),
-        trackInteraction: <T>(work: () => T) => performanceMonitor.trackInteraction(work),
-        startRender: () => performanceMonitor.startRenderTiming(),
-        endRender: () => performanceMonitor.endRenderTiming(),
-    };
-}
+

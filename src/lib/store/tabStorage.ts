@@ -47,28 +47,6 @@ export function createTabSpecificStorage() {
   });
 }
 
-export function getAllTabData(): Record<string, unknown> {
-  if (typeof window === 'undefined') return {};
-  
-  const tabData: Record<string, unknown> = {};
-  const prefix = TAB_STORAGE_PREFIX;
-  
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key && key.startsWith(prefix)) {
-      try {
-        const value = localStorage.getItem(key);
-        if (value) {
-          tabData[key] = JSON.parse(value);
-        }
-      } catch {
-        // Ignore invalid JSON
-      }
-    }
-  }
-  
-  return tabData;
-}
 
 export function clearTabData(tabId?: string): void {
   if (typeof window === 'undefined') return;

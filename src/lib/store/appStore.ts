@@ -551,33 +551,14 @@ export const useAppStore = create<AppState>()(
 export const useTopologyDevices = () => useAppStore(state => state.topology.devices);
 export const useTopologyConnections = () => useAppStore(state => state.topology.connections);
 export const useTopologyNotes = () => useAppStore(state => state.topology.notes);
-export const useSelectedDeviceId = () => useAppStore(state => state.topology.selectedDeviceId);
-export const useZoom = () => useAppStore(state => state.topology.zoom);
-export const usePan = () => useAppStore(state => state.topology.pan);
-export const useIsSimulationMode = () => useAppStore(state => state.topology.isSimulationMode);
 
-// Device state selectors
-export const useSwitchState = (deviceId: string) => useAppStore(state => state.deviceStates.switchStates[deviceId]);
-export const usePCOutput = (deviceId: string) => useAppStore(state => state.deviceStates.pcOutputs[deviceId]);
-
-// UI state selectors
-export const useActiveTab = () => useAppStore(state => state.activeTab);
-export const useActivePanel = () => useAppStore(state => state.activePanel);
-export const useSidebarOpen = () => useAppStore(state => state.sidebarOpen);
-export const useHelpLevel = () => useAppStore(state => state.helpLevel);
-export const useGraphicsQuality = () => useAppStore(state => state.graphicsQuality);
-
-// Combined selectors for common use cases
-export const useTopologyState = () => useAppStore(state => state.topology);
-export const useDeviceStates = () => useAppStore(state => state.deviceStates);
-export const useUIState = () => useAppStore(state => ({
-    activeTab: state.activeTab,
-    activePanel: state.activePanel,
-    sidebarOpen: state.sidebarOpen,
-    helpLevel: state.helpLevel,
-}));
 
 // Environment selector
 export const useEnvironment = () => useAppStore(state => state.topology.environment);
+export const useZoom = () => useAppStore(state => state.topology.zoom);
+export const usePan = () => useAppStore(state => state.topology.pan);
+export const useActiveTab = () => useAppStore(state => state.activeTab);
+export const useGraphicsQuality = () => useAppStore(state => state.graphicsQuality);
+export const useIsSimulationMode = () => useAppStore(state => state.topology.isSimulationMode);
 
 
