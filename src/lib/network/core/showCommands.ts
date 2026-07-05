@@ -187,7 +187,7 @@ function getSwitchDisplayProfile(state: SwitchState) {
       isL3: true,
       isRouter: true,
       bootImage: 'router-software.bin',
-      softwareImage: 'Network Simulator nOS Software, Version 1.9.3',
+      softwareImage: 'Network Simulator nOS Software, Version 1.9.4',
       rom: 'Router boot loader',
       bootldr: 'Router Boot Loader',
       systemImage: 'flash:router-software.bin',

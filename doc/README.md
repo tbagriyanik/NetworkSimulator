@@ -345,7 +345,7 @@ const response = await apiClient.post('/api/contact', data);
 
 ## 📅 Bilgi
 
-**Versiyon**: 1.9.3  
+**Versiyon**: 1.9.4  
 **Durum**: ✅ Güncel  
 **Tarih**: 2026-06-21  
 

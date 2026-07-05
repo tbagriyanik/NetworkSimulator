@@ -1,6 +1,11 @@
 
 ## Latest Updates
 
+### v1.9.4 (2026-07-05)
+| English | Türkçe |
+| --- | --- |
+| **Minor Updates**: General bug fixes and performance improvements. | **Küçük Güncellemeler**: Genel hata düzeltmeleri ve performans iyileştirmeleri. |
+
 ### v1.9.3 (2026-06-30)
 | English | Türkçe |
 | --- | --- |

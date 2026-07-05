@@ -1657,15 +1657,27 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
         lastPushedStateRef.current = stateString;
         isApplyingHistoryRef.current = false;
       } else if (pendingActionDesc.current) {
-        // Only push history if there is an explicit pending action
-        const desc = pendingActionDesc.current;
-        pendingActionDesc.current = null;
-        
-        // Small timeout ensures all React batch updates are captured in getCurrentState()
+        // Small timeout ensures all React batch updates are captured
+        // We do NOT clear pendingActionDesc.current synchronously to prevent losing actions on rapid re-renders
         timer = setTimeout(() => {
-          pushState(currentState, activeTab === 'topology' ? 'topology' : 'ui', desc);
-          lastPushedStateRef.current = stateString;
-        }, 50);
+          const freshState = getCurrentState();
+          const freshStateString = JSON.stringify({
+            t: freshState.topologyDevices,
+            c: freshState.topologyConnections,
+            n: freshState.topologyNotes,
+            s: Array.from(freshState.deviceStates.entries()),
+            o: Array.from(freshState.deviceOutputs.entries()),
+            p: Array.from(freshState.pcOutputs.entries()),
+            id: freshState.activeDeviceId,
+            tab: freshState.activeTab
+          });
+          
+          if (pendingActionDesc.current) {
+            pushState(freshState, activeTab === 'topology' ? 'topology' : 'ui', pendingActionDesc.current);
+            pendingActionDesc.current = null;
+          }
+          lastPushedStateRef.current = freshStateString;
+        }, 150); // Slightly larger debounce to capture all cascading state updates
       } else {
         // Just update the ref without pushing to history (removes noise)
         lastPushedStateRef.current = stateString;
