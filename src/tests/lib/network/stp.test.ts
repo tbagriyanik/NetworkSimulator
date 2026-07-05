@@ -139,4 +139,29 @@ describe('STP Algorithm', () => {
     expect(stp2?.ports['fa0/1'].role).toBe('alternate');
     expect(stp2?.rootCost).toBe(4);
   });
+
+  it('should use sender port ID as a tie-breaker for root port selection', () => {
+    const sw1 = createMockSwitch('SW1', '0000.0000.0001', 4096); // Root
+    const sw2 = createMockSwitch('SW2', '0000.0000.0002', 32768);
+
+    const deviceStates = new Map<string, SwitchState>([
+      ['sw1', sw1],
+      ['sw2', sw2],
+    ]);
+
+    // Two identical cost links between SW1 and SW2
+    // Link 1: SW1 fa0/1 <-> SW2 fa0/1
+    // Link 2: SW1 fa0/2 <-> SW2 fa0/2
+    const connections: CanvasConnection[] = [
+      { id: 'c1', sourceDeviceId: 'sw1', sourcePort: 'fa0/1', targetDeviceId: 'sw2', targetPort: 'fa0/1', cableType: 'straight', active: true },
+      { id: 'c2', sourceDeviceId: 'sw1', sourcePort: 'fa0/2', targetDeviceId: 'sw2', targetPort: 'fa0/2', cableType: 'straight', active: true },
+    ];
+
+    const updatedStates = recalculateStp(deviceStates, connections);
+    const stp2 = updatedStates.get('sw2')?.stpState?.[1];
+
+    // SW2 should pick fa0/1 as root port because SW1's fa0/1 is lower than fa0/2
+    expect(stp2?.ports['fa0/1'].role).toBe('root');
+    expect(stp2?.ports['fa0/2'].role).toBe('alternate');
+  });
 });
