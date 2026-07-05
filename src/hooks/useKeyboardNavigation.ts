@@ -379,4 +379,4 @@ export const COMMON_SHORTCUTS = {
     }),
 };
 
-export default useKeyboardNavigation;
+

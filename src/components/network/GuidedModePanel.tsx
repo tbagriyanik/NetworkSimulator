@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { toast } from "@/hooks/use-toast";
@@ -774,4 +774,4 @@ export function GuidedModePanel({
   );
 }
 
-export default GuidedModePanel;
+

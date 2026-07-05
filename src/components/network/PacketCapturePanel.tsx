@@ -1,6 +1,6 @@
 ﻿import React from 'react';
 import { Trash2, X } from 'lucide-react';
-import useAppStore from '@/lib/store/appStore';
+import { useAppStore } from '@/lib/store/appStore';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { CABLE_COLORS } from './networkTopology.constants';
 import { getConnectionStatusMessage } from './networkTopology.helpers';

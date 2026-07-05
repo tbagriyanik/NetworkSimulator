@@ -15,7 +15,7 @@ import { useMobileBack } from '@/hooks/useMobileBack';
 import { usePanels } from '@/hooks/usePanels';
 import { useRefreshReport } from '@/hooks/useRefreshReport';
 import { useDeviceSelection } from '@/hooks/useDeviceSelection';
-import useAppStore, { useTopologyDevices, useTopologyConnections, useTopologyNotes, useZoom, usePan, useActiveTab, useEnvironment } from '@/lib/store/appStore';
+import { useAppStore, useTopologyDevices, useTopologyConnections, useTopologyNotes, useZoom, usePan, useActiveTab, useEnvironment } from '@/lib/store/appStore';
 import { ExamTask } from '@/lib/network/examMode';
 import { cn, normalizeMAC } from '@/lib/utils';
 import { logger } from '@/lib/logger';

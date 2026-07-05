@@ -1,7 +1,7 @@
 // Network Command Parser
 import { CommandMode, ParsedCommand, CommandValidationResult, SwitchState } from './types';
 import { commandAliases } from './initialState';
-import useAppStore from '../store/appStore';
+import { useAppStore } from '../store/appStore';
 import { IOS_ERRORS, iosModeError } from "./core/iosErrors";
 import { getDeviceCapabilities, type DeviceCapabilities } from './capabilities';
 import type { DeviceType } from '@/components/network/networkTopology.types';

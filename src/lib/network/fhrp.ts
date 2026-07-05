@@ -1,6 +1,6 @@
 import { SwitchState } from './types';
 import { CanvasDevice } from '@/components/network/networkTopology.types';
-import useAppStore from '@/lib/store/appStore';
+import { useAppStore } from '@/lib/store/appStore';
 
 // Helper to compare IP addresses numerically
 function compareIps(ip1?: string, ip2?: string): number {

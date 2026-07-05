@@ -1,6 +1,6 @@
 // Network Command Executor (refactored with handler map)
 import { SwitchState, CommandMode, CommandResult, Port } from './types';
-import useAppStore from '../store/appStore';
+import { useAppStore } from '../store/appStore';
 import { parseCommand, validateCommand, commandPatterns, getLevenshteinDistance, expandKeywordPrefixes, resolveAliases } from './parser';
 import { getDeviceCapabilities } from './capabilities';
 import { isRouterModel } from './switchModels';

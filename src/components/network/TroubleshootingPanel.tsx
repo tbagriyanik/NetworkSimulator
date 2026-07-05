@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useRef } from 'react';
 import {
@@ -271,4 +271,4 @@ export function TroubleshootingPanel({
   );
 }
 
-export default TroubleshootingPanel;
+

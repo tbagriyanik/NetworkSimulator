@@ -100,10 +100,6 @@ export function TimelinePanel({
     return () => clearInterval(interval);
   }, [isPlaying, historyIndex, historyItems.length, playSpeed, onJumpTo]);
 
-  if (historyItems.length <= 1) {
-    return null; // Don't show timeline if there's no history to traverse
-  }
-
   const getActionLabel = (item: HistoryEntry, index: number) => {
     if (index === 0) return language === 'tr' ? 'Başlangıç Durumu' : 'Initial State';
     if (item.description && item.description !== 'Değişiklik' && item.description !== 'Genel Değişiklik') return item.description;
@@ -192,6 +188,10 @@ export function TimelinePanel({
       onJumpTo(Math.min(historyItems.length - 1, historyIndex + 1));
     }
   };
+
+  if (historyItems.length <= 1) {
+    return null;
+  }
 
   return (
     <div
@@ -336,4 +336,4 @@ export function TimelinePanel({
   );
 }
 
-export default TimelinePanel;
+

@@ -346,4 +346,4 @@ export function useGuidedMode(): UseGuidedModeReturn {
   };
 }
 
-export default useGuidedMode;
+

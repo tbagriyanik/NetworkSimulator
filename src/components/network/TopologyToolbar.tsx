@@ -24,7 +24,7 @@ import {   ChevronDown, Plus, Undo2, Redo2, Search, X, Cable, LineSquiggle, Leaf
 import type { Translations } from '@/contexts/LanguageContext';
 import type { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
 import type { SwitchState, CableType, CableInfo } from '@/lib/network/types';
-import useAppStore from '@/lib/store/appStore';
+import { useAppStore } from '@/lib/store/appStore';
 import { cn } from '@/lib/utils';
 
 interface TopologyToolbarProps {
