@@ -2615,58 +2615,81 @@ export function NetworkTopology({
         setConnectionStart(null);
         return;
       }
-      // Complete connection
-      saveToHistory();
-      const newConnection: CanvasConnection = {
-        id: `conn-${Date.now()}`,
-        sourceDeviceId: connectionStart.deviceId,
-        sourcePort: connectionStart.portId,
-        targetDeviceId: deviceId,
-        targetPort: portId,
-        cableType: cableInfo.cableType,
-        active: true,
-      };
 
-      setConnections((prev) => [...prev, newConnection]);
-
-      // Update port status - her iki cihazda da
-      setDevices((prev) =>
-        prev.map((d) => {
-          // Source device port'unu güncelle
-          if (d.id === connectionStart.deviceId) {
-            return {
-              ...d,
-              ports: d.ports.map((p) =>
-                p.id === connectionStart.portId
-                  ? { ...p, status: 'connected' as const }
-                  : p
-              ),
-            };
-          }
-          // Target device port'unu güncelle
-          if (d.id === deviceId) {
-            return {
-              ...d,
-              ports: d.ports.map((p) =>
-                p.id === portId
-                  ? { ...p, status: 'connected' as const }
-                  : p
-              ),
-            };
-          }
-          return d;
-        })
-      );
-
-      // Trigger STP recalculation when connection is added
-      window.dispatchEvent(new CustomEvent('stp-recalculation-needed', {
-        detail: { topologyDevices: devices, topologyConnections: [...connections, newConnection] }
-      }));
-
-      // Update cable info
+      // Check cable compatibility
       const sourceDevice = deviceMap.get(connectionStart.deviceId);
       const targetDevice = deviceMap.get(deviceId);
+
       if (sourceDevice && targetDevice) {
+        const cableCheck: import('@/lib/network/types').CableInfo = {
+          connected: true,
+          cableType: cableInfo.cableType,
+          sourceDevice: sourceDevice.type,
+          targetDevice: targetDevice.type,
+          sourcePort: connectionStart.portId,
+          targetPort: portId,
+        };
+
+        if (!isCableCompatible(cableCheck)) {
+          const errorMsg = language === 'tr'
+            ? 'Seçilen kablo bu portlar için uygun değil!'
+            : 'Selected cable is not suitable for these ports!';
+          setConnectionError(errorMsg);
+          setTimeout(() => setConnectionError(null), 3000);
+          setIsDrawingConnection(false);
+          setConnectionStart(null);
+          return;
+        }
+
+        // Complete connection
+        saveToHistory();
+        const newConnection: CanvasConnection = {
+          id: `conn-${Date.now()}`,
+          sourceDeviceId: connectionStart.deviceId,
+          sourcePort: connectionStart.portId,
+          targetDeviceId: deviceId,
+          targetPort: portId,
+          cableType: cableInfo.cableType,
+          active: true,
+        };
+
+        setConnections((prev) => [...prev, newConnection]);
+
+        // Update port status - her iki cihazda da
+        setDevices((prev) =>
+          prev.map((d) => {
+            // Source device port'unu güncelle
+            if (d.id === connectionStart.deviceId) {
+              return {
+                ...d,
+                ports: d.ports.map((p) =>
+                  p.id === connectionStart.portId
+                    ? { ...p, status: 'connected' as const }
+                    : p
+                ),
+              };
+            }
+            // Target device port'unu güncelle
+            if (d.id === deviceId) {
+              return {
+                ...d,
+                ports: d.ports.map((p) =>
+                  p.id === portId
+                    ? { ...p, status: 'connected' as const }
+                    : p
+                ),
+              };
+            }
+            return d;
+          })
+        );
+
+        // Trigger STP recalculation when connection is added
+        window.dispatchEvent(new CustomEvent('stp-recalculation-needed', {
+          detail: { topologyDevices: devices, topologyConnections: [...connections, newConnection] }
+        }));
+
+        // Update cable info
         onCableChange({
           ...cableInfo,
           connected: true,
@@ -4702,6 +4725,8 @@ export function NetworkTopology({
         handlePortMouseLeave={handlePortMouseLeave}
         handlePortClick={handlePortClick}
         _mousePosRef={mousePosRef}
+        isDrawingConnection={isDrawingConnection}
+        connectionStart={connectionStart}
       />
     );
   };
@@ -5957,9 +5982,9 @@ if (isShutdown || isDeviceOffline) {
         {/* Kablo tipi göstergesi */}
         <g transform={`translate(${(source.x + mp.x) / 2}, ${(source.y + mp.y) / 2 - 20})`}>
           <rect
-            x={-35}
+            x={-90}
             y={-12}
-            width={70}
+            width={180}
             height={24}
             rx={8}
             fill={CABLE_COLORS[cableInfo.cableType].primary}
@@ -5975,7 +6000,11 @@ if (isShutdown || isDeviceOffline) {
             textAnchor="middle"
             className="select-none pointer-events-none"
           >
-            {cableInfo.cableType === 'straight' ? 'Düz' : cableInfo.cableType === 'crossover' ? 'Çapraz' : 'Konsol'}
+            {isTR ? 'Kaynak: ' : 'Source: '}
+            {connectionStart.deviceId.includes('switch') || connectionStart.deviceId.includes('router') || connectionStart.deviceId.includes('fw')
+              ? `${deviceMap.get(connectionStart.deviceId)?.name} (${connectionStart.portId})`
+              : connectionStart.portId}
+            {isTR ? ' → Hedef?' : ' → Target?'}
           </text>
         </g>
       </>

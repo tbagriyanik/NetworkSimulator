@@ -427,7 +427,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 50,
       width: 550,
       height: 180,
-      color: '#ef4444',
+      color: 'var(--color-error-500)',
       font: 'verdana',
       fontSize: 12,
       opacity: 0.75
@@ -548,7 +548,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 80,
       width: 450,
       height: 220,
-      color: '#10b981',
+      color: 'var(--color-success-500)',
       font: 'verdana',
       fontSize: 16,
       opacity: 0.75
@@ -890,7 +890,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 60,
       width: 480,
       height: 220,
-      color: '#10b981',
+      color: 'var(--color-success-500)',
       font: 'verdana',
       fontSize: 12,
       opacity: 0.75
@@ -1017,7 +1017,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 400,
       width: 450,
       height: 180,
-      color: '#f59e0b',
+      color: 'var(--color-warning-500)',
       font: 'verdana',
       fontSize: 16,
       opacity: 0.75
@@ -1092,7 +1092,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 40,
       width: 500,
       height: 340,
-      color: '#0ea5e9',
+      color: 'var(--color-primary-500)',
       font: 'verdana',
       fontSize: 12,
       opacity: 0.75
@@ -1214,7 +1214,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 40,
       width: 500,
       height: 320,
-      color: '#22d3ee',
+      color: 'var(--color-accent-500)',
       font: 'verdana',
       fontSize: 12,
       opacity: 0.75
@@ -1265,7 +1265,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 40,
       width: 480,
       height: 280,
-      color: '#a855f7',
+      color: 'var(--color-warning-600)',
       font: 'verdana',
       fontSize: 12,
       opacity: 0.75
@@ -1297,7 +1297,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 40,
       width: 420,
       height: 190,
-      color: '#f59e0b',
+      color: 'var(--color-warning-500)',
       font: 'verdana',
       fontSize: 16,
       opacity: 0.75
@@ -1350,7 +1350,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 80,
       width: 480,
       height: 320,
-      color: '#a78bfa',
+      color: 'var(--color-warning-600)',
       font: 'verdana',
       fontSize: 12,
       opacity: 0.75
@@ -1407,7 +1407,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 40,
       width: 500,
       height: 340,
-      color: '#38bdf8',
+      color: 'var(--color-primary-400)',
       font: 'verdana',
       fontSize: 12,
       opacity: 0.75
@@ -1449,7 +1449,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 40,
       width: 500,
       height: 340,
-      color: '#a855f7',
+      color: 'var(--color-warning-600)',
       font: 'verdana',
       fontSize: 12,
       opacity: 0.75
@@ -1475,7 +1475,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 80,
       width: 480,
       height: 280,
-      color: '#ef4444',
+      color: 'var(--color-error-500)',
       font: 'verdana',
       fontSize: 12,
       opacity: 0.75
@@ -1513,7 +1513,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 40,
       width: 500,
       height: 400,
-      color: '#22c55e',
+      color: 'var(--color-success-500)',
       font: 'verdana',
       fontSize: 12,
       opacity: 0.75
@@ -1561,7 +1561,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 40,
       width: 500,
       height: 360,
-      color: '#3b82f6',
+      color: 'var(--color-primary-500)',
       font: 'verdana',
       fontSize: 12,
       opacity: 0.75
@@ -1660,7 +1660,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 40,
       width: 500,
       height: 360,
-      color: '#f59e0b',
+      color: 'var(--color-warning-500)',
       font: 'verdana',
       fontSize: 12,
       opacity: 0.75
@@ -1862,7 +1862,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 50,
       width: 300,
       height: 160,
-      color: '#e3f2fd',
+      color: 'var(--color-primary-400)',
       font: 'Arial',
       fontSize: 12,
       opacity: 1
@@ -1876,7 +1876,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 30,
       width: 300,
       height: 160,
-      color: '#fff3e0',
+      color: 'var(--color-warning-400)',
       font: 'Arial',
       fontSize: 12,
       opacity: 1
@@ -1890,7 +1890,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 380,
       width: 300,
       height: 160,
-      color: '#f3e5f5',
+      color: 'var(--color-accent-600)',
       font: 'Arial',
       fontSize: 12,
       opacity: 1
@@ -1904,7 +1904,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 320,
       width: 280,
       height: 200,
-      color: '#e8f5e9',
+      color: 'var(--color-success-400)',
       font: 'Arial',
       fontSize: 12,
       opacity: 1
@@ -2182,7 +2182,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 40,
       width: 500,
       height: 380,
-      color: '#8b5cf6',
+      color: 'var(--color-warning-600)',
       font: 'verdana',
       fontSize: 12,
       opacity: 0.75
@@ -2227,7 +2227,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 80,
       width: 480,
       height: 300,
-      color: '#22c55e',
+      color: 'var(--color-success-500)',
       font: 'verdana',
       fontSize: 12,
       opacity: 0.75
@@ -2336,7 +2336,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 400,
       width: 520,
       height: 380,
-      color: '#8b5cf6',
+      color: 'var(--color-warning-600)',
       font: 'verdana',
       fontSize: 12,
       opacity: 0.75
@@ -2536,7 +2536,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 80,
       width: 520,
       height: 380,
-      color: '#3b82f6',
+      color: 'var(--color-primary-500)',
       font: 'verdana',
       fontSize: 12,
       opacity: 0.75
@@ -2694,7 +2694,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 80,
       width: 520,
       height: 380,
-      color: '#22c55e',
+      color: 'var(--color-success-500)',
       font: 'verdana',
       fontSize: 12,
       opacity: 0.75
@@ -2810,7 +2810,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 300,
       width: 500,
       height: 220,
-      color: '#3b82f6',
+      color: 'var(--color-primary-500)',
       font: 'verdana',
       fontSize: 12,
       opacity: 0.75
@@ -2935,7 +2935,7 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       y: 450,
       width: 600,
       height: 350,
-      color: '#3b82f6',
+      color: 'var(--color-primary-500)',
       font: 'verdana',
       fontSize: 12,
       opacity: 0.75
