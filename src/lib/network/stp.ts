@@ -338,6 +338,7 @@ function runStpForVlan(
       }
     });
 
+    if (!state.stpState) state.stpState = {};
     state.stpState[vlanId] = vlanStpState;
 
     if (vlanId === 1) {
