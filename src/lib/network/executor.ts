@@ -1155,34 +1155,6 @@ export function executeCommand(
     };
   }
 
-  const lowerBase = cmdBase.toLowerCase();
-
-  if (state.currentMode === 'privileged') {
-    if (lowerBase === 'conf t') { cmdBase = 'configure terminal'; }
-    else if (lowerBase.startsWith('sh ip int br')) { cmdBase = 'show ip interface brief'; }
-    else if (lowerBase.startsWith('show ip interfaces br')) { cmdBase = 'show ip interface brief'; }
-    else if (lowerBase.startsWith('show ip interfaces brief')) { cmdBase = 'show ip interface brief'; }
-    else if (lowerBase.startsWith('sh run')) { cmdBase = 'show running-config'; }
-    else if (lowerBase.startsWith('sh ip ro')) { cmdBase = 'show ip route'; }
-    else if (lowerBase === 'sh ssh' || lowerBase === 'show ssh') { cmdBase = 'show ssh'; }
-    else if (lowerBase === 'wr') { cmdBase = 'write memory'; }
-    else if (lowerBase.startsWith('sh eth')) { cmdBase = 'show etherchannel'; }
-    else if (lowerBase.startsWith('sh etherch')) { cmdBase = 'show etherchannel'; }
-    else if (lowerBase.startsWith('show etherc')) { cmdBase = 'show etherchannel'; }
-  } else if (state.currentMode === 'user') {
-    if (lowerBase === 'en') { cmdBase = 'enable'; }
-  } else if (state.currentMode === 'config') {
-    if (lowerBase.startsWith('int fa')) { cmdBase = cmdBase.replace(/int fa/i, 'interface fastethernet'); }
-    else if (lowerBase.startsWith('int gig')) { cmdBase = cmdBase.replace(/int gig/i, 'interface gigabitethernet'); }
-    else if (lowerBase.startsWith('int gi')) { cmdBase = cmdBase.replace(/int gi/i, 'interface gigabitethernet'); }
-    else if (lowerBase.startsWith('int vlan')) { cmdBase = cmdBase.replace(/int vlan/i, 'interface vlan'); }
-    else if (lowerBase.startsWith('show ip interfaces br')) { cmdBase = 'show ip interface brief'; }
-    else if (lowerBase.startsWith('show ip interfaces brief')) { cmdBase = 'show ip interface brief'; }
-    else if (lowerBase === 'show interface trunk') { cmdBase = 'show interfaces trunk'; }
-    else if (lowerBase.startsWith('show cdp neighbor')) { cmdBase = 'show cdp neighbors'; }
-    else if (lowerBase === 'show mac address') { cmdBase = 'show mac address-table'; }
-  }
-
   cmdToProcess = cmdBase;
 
   // Special handling for enable command when no password is set

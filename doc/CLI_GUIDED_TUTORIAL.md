@@ -2491,19 +2491,18 @@ Network Simulator, farklı zorluk seviyelerinde **40 hazır örnek proje** ile b
 
 ### Proje 30: ACL Standard
 
-**Hedef:** Standard ACL ile 192.168.1.0/24 ağından gelen trafiği engellemek.
+**Hedef:** Standard ACL ile temel erişim kontrolü (Kaynak IP tabanlı) yapmak.
 
-**Cihazlar:** 2 L3 Switch (ML1, ML2), 1 Router (R3), 2 L2 Switch, 2 PC (Proje 28 topolojisi)
-
-**Bağlantılar:** Proje 28 topolojisinin aynısı
+**Topoloji:** Statik Yönlendirme topolojisi (ML1, R3, ML2, 4 PC) kullanılır.
 
 **Adımlar:**
-1. Proje 28'deki statik yönlendirme konfigürasyonunu uygulayın
-2. R3 üzerinde: `access-list 10 deny 192.168.1.0 0.0.0.255`, `access-list 10 permit any`
-3. ACL'i uygulayın: `interface gi0/1`, `ip access-group 10 out`
-4. PC0: IP 192.168.1.10/24; PC4: IP 192.168.2.10/24
+1. R3 (Ortadaki Router): `enable`, `conf t`
+2. `access-list 10 deny 192.168.1.0 0.0.0.255` (PC0'ın bulunduğu ağ)
+3. `access-list 10 permit any`
+4. `interface gi0/1` (PC2 segmentine giden çıkış portu)
+5. `ip access-group 10 out`
 
-**Test:** PC0 > `ping 192.168.2.10` (BAŞARISIZ), `show access-lists`
+**Test:** PC0 (192.168.1.10) > `ping 192.168.2.10` (Başarısız olmalı). `show access-lists` ile eşleşmeleri görün.
 
 **Beklenen Sonuç:** 192.168.1.0/24 ağından gelen trafik engellenir, diğer ağlara izin verilir.
 
@@ -2511,19 +2510,19 @@ Network Simulator, farklı zorluk seviyelerinde **40 hazır örnek proje** ile b
 
 ### Proje 31: ACL Extended
 
-**Hedef:** Extended ACL ile sadece HTTP (port 80) trafiğine izin verip diğer tüm trafiği engellemek.
+**Hedef:** Extended ACL ile protokol ve port bazlı erişim kontrolü sağlamak.
 
-**Cihazlar:** 1 Firewall, 2 PC (PC-1, PC-2) (Proje 18 topolojisi)
-
-**Bağlantılar:** PC-1→FW-1→PC-2 (Proje 18 ile aynı)
+**Topoloji:** Statik Yönlendirme topolojisi (ML1, R3, ML2, 4 PC) kullanılır.
 
 **Adımlar:**
-1. FW-1 üzerinde named extended ACL oluşturun: `ip access-list extended WEB-FILTER`
-2. `permit tcp any any eq 80`, `deny ip any any`
-3. ACL'i arayüze uygulayın
-4. PC-1: IP 192.168.1.10/24; PC-2: IP 192.168.1.20/24
+1. R3 terminalinde: `enable`, `conf t`
+2. `ip access-list extended WEB-FILTER`
+3. `permit tcp any host 192.168.2.10 eq 80`
+4. `deny ip any any`
+5. `interface gi0/1`
+6. `ip access-group WEB-FILTER out`
 
-**Test:** PC-1 > `wget 192.168.1.20` (BAŞARILI), PC-1 > `ping 192.168.1.20` (BAŞARISIZ)
+**Test:** PC0 terminalinde `wget 192.168.2.10` (Başarılı), `ping 192.168.2.10` (Başarısız).
 
 **Beklenen Sonuç:** Sadece HTTP (80) trafiğine izin verilir, ping ve diğer protokoller engellenir.
 
@@ -2614,19 +2613,16 @@ Network Simulator, farklı zorluk seviyelerinde **40 hazır örnek proje** ile b
 
 ### Proje 36: OSPF Multi-Area 1
 
-**Hedef:** Area 0 ve Area 10 ile çok alanlı OSPF yapılandırmak.
+**Hedef:** Area 0 ve Area 10 ile çok alanlı OSPF kurmak.
 
-**Cihazlar:** 2 L3 Switch (ML1, ML2), 1 Router (R3), 2 L2 Switch, 2 PC (Proje 28 topolojisi)
-
-**Bağlantılar:** Proje 28 topolojisi
+**Topoloji:** Statik Yönlendirme topolojisi (ML1, R3, ML2) kullanılır.
 
 **Adımlar:**
-1. ML1: `router ospf 1`, `network 10.0.0.0 0.0.0.255 area 0`, `network 192.168.1.0 0.0.0.255 area 10`
-2. R3: `router ospf 1`, `network 10.0.0.0 0.0.0.255 area 0`, `network 20.0.0.0 0.0.0.255 area 0`
-3. ML2: `router ospf 1`, `network 20.0.0.0 0.0.0.255 area 0`, `network 192.168.2.0 0.0.0.255 area 20`
-4. Statik rotaları kaldırın (OSPF dinamik öğrenecek)
+1. ML1 (Area 0): `router ospf 1`, `network 192.168.1.0 0.0.0.255 area 0`, `network 10.0.0.0 0.0.0.255 area 0`
+2. R3 (ABR - Area 0 & 10): `router ospf 1`, `network 10.0.0.0 0.0.0.255 area 0`, `network 20.0.0.0 0.0.0.255 area 10`
+3. ML2 (Area 10): `router ospf 1`, `network 20.0.0.0 0.0.0.255 area 10`, `network 192.168.2.0 0.0.0.255 area 10`
 
-**Test:** `show ip route`, `show ip ospf neighbor`, PC0 > `ping 192.168.2.10`
+**Test:** `show ip ospf neighbor`, `show ip route ospf`, PC0 > `ping 192.168.2.10`
 
 **Beklenen Sonuç:** OSPF ile rotalar dinamik öğrenilir, farklı alanlardaki PC'ler haberleşir.
 
@@ -2656,14 +2652,12 @@ Network Simulator, farklı zorluk seviyelerinde **40 hazır örnek proje** ile b
 
 **Hedef:** Temel EIGRP komutları ile dinamik yönlendirme kurulumu yapmak.
 
-**Cihazlar:** 2 L3 Switch (ML0, ML1), 2 L2 Switch, 4 PC (Proje 29 topolojisi)
-
-**Bağlantılar:** Proje 29 topolojisi
+**Topoloji:** RIP Dinamik Yönlendirme topolojisi (ML0, ML1, PC0-3) kullanılır.
 
 **Adımlar:**
 1. ML0: `router eigrp 100`, `network 192.168.1.0 0.0.0.255`, `network 192.168.2.0 0.0.0.255`, `no auto-summary`
 2. ML1: `router eigrp 100`, `network 192.168.2.0 0.0.0.255`, `network 192.168.3.0 0.0.0.255`, `no auto-summary`
-3. L3 switch'lerde routed portları konfigüre edin
+3. Tüm portların `no shutdown` olduğundan ve L3 Switch'lerde `ip routing` açık olduğundan emin olun.
 
 **Test:** `show ip route`, `show ip eigrp neighbors`, PC0 > `ping 192.168.3.10`
 
