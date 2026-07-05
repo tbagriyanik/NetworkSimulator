@@ -31,6 +31,8 @@ interface DeviceRendererProps {
   handlePortMouseLeave: () => void;
   handlePortClick: (e: React.MouseEvent, deviceId: string, portId: string) => void;
   _mousePosRef: React.MutableRefObject<{ x: number; y: number }>;
+  isDrawingConnection?: boolean;
+  connectionStart?: { deviceId: string; portId: string } | null;
 }
 
 const isSwitchDeviceType = (type: string) => type === 'switchL2' || type === 'switchL3';
@@ -69,7 +71,9 @@ export function DeviceRenderer({
   handlePortHover,
   handlePortMouseLeave,
   handlePortClick,
-  _mousePosRef: _mousePosRef
+  _mousePosRef: _mousePosRef,
+  isDrawingConnection = false,
+  connectionStart = null
 }: DeviceRendererProps) {
   const isTR = language === 'tr';
   const isSwitchDevice = (type: string) => type === 'switchL2' || type === 'switchL3';
@@ -645,10 +649,12 @@ export function DeviceRenderer({
           const isConnected = port.status === 'connected';
           const isShutdown = port.shutdown;
           const isDeviceOffline = device.status === 'offline';
+          const isStartPort = isDrawingConnection && connectionStart?.deviceId === device.id && connectionStart?.portId === port.id;
           const hasProblem = isShutdown || isDeviceOffline || (isConnected && !isPortConnectionHealthy(port.id));
           const portLabel = port.id.toLowerCase().startsWith('com') ? 'C' : 'E';
 
-          const portColor = (isShutdown || isDeviceOffline) ? STATUS_COLORS.offline :
+          const portColor = isStartPort ? 'var(--color-success-400)' :
+            (isShutdown || isDeviceOffline) ? STATUS_COLORS.offline :
             port.id.toLowerCase().startsWith('com')
               ? (isConnected ? PORT_COLORS.console.connected : PORT_COLORS.console.disconnected)
               : (isConnected ? PORT_COLORS.ethernet.connected : PORT_COLORS.ethernet.disconnected);
@@ -718,6 +724,7 @@ export function DeviceRenderer({
               const deviceState = deviceStates?.get(device.id);
               const simulatorPort = deviceState?.ports?.[port.id];
               const isSTPBlocked = simulatorPort?.spanningTree?.state === 'blocking' || simulatorPort?.spanningTree?.role === 'alternate';
+              const isStartPort = isDrawingConnection && connectionStart?.deviceId === device.id && connectionStart?.portId === port.id;
               const deviceVlan = device.vlan || simulatorPort?.accessVlan || simulatorPort?.vlan || 1;
               const isVlan1 = deviceVlan === 1;
               const isBlocked = isSTPBlocked && isVlan1;
@@ -726,7 +733,10 @@ export function DeviceRenderer({
               let portFill: string;
               let portStroke: string;
 
-              if (isShutdown || isDeviceOffline) {
+              if (isStartPort) {
+                portFill = 'var(--color-success-400)';
+                portStroke = 'var(--color-success-300)';
+              } else if (isShutdown || isDeviceOffline) {
                 portFill = 'var(--color-error-500)';
                 portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
               } else if (isBlocked) {
@@ -813,6 +823,7 @@ export function DeviceRenderer({
             const displayNum = isConsole ? 'C' : (portNum ? parseInt(portNum, 10).toString() : 'C');
 
             const deviceState = deviceStates?.get(device.id);
+            const isStartPort = isDrawingConnection && connectionStart?.deviceId === device.id && connectionStart?.portId === port.id;
             const simulatorPort = deviceState?.ports?.[port.id];
             const isSTPBlocked = simulatorPort?.spanningTree?.state === 'blocking' || simulatorPort?.spanningTree?.role === 'alternate';
             const hasProblem = isShutdown || isDeviceOffline || isSTPBlocked || (isConnected && !isPortConnectionHealthy(port.id));
@@ -820,7 +831,10 @@ export function DeviceRenderer({
             let portFill: string;
             let portStroke: string;
 
-            if (isShutdown || isDeviceOffline) {
+            if (isStartPort) {
+              portFill = 'var(--color-success-400)';
+              portStroke = 'var(--color-success-300)';
+            } else if (isShutdown || isDeviceOffline) {
               portFill = 'var(--color-error-500)';
               portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
             } else if (isSTPBlocked) {
