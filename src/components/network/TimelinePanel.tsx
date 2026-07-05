@@ -27,6 +27,7 @@ export function TimelinePanel({
   const { t, language } = useLanguage();
   const { theme } = useTheme();
   const isDark = theme === 'dark' || theme === 'high-contrast';
+  const panelRef = useRef<HTMLDivElement>(null);
   const activeItemRef = useRef<HTMLButtonElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playSpeed, setPlaySpeed] = useState<1 | 2 | 4>(1);
@@ -37,8 +38,22 @@ export function TimelinePanel({
   const dragStartPos = useRef({ x: 0, y: 0 });
   const panelStartPos = useRef({ x: 0, y: 0 });
 
+  const clampPosition = (nextPosition: { x: number; y: number }) => {
+    if (typeof window === 'undefined') return nextPosition;
+    const isMobile = window.innerWidth < 640;
+    const panelWidth = isMobile ? Math.min(window.innerWidth - 16, 448) : 576;
+    const panelHeight = isMinimized ? 48 : 152;
+    const maxX = Math.max(0, window.innerWidth - panelWidth - 8);
+    const maxY = Math.max(0, window.innerHeight - panelHeight - 8);
+    return {
+      x: Math.min(Math.max(nextPosition.x, 0), maxX),
+      y: Math.min(Math.max(nextPosition.y, 0), maxY)
+    };
+  };
+
   const handlePointerDown = (e: React.PointerEvent) => {
     if ((e.target as HTMLElement).closest('button')) return;
+    panelRef.current?.focus();
     setIsDragging(true);
     dragStartPos.current = { x: e.clientX, y: e.clientY };
     panelStartPos.current = { ...position };
@@ -49,10 +64,10 @@ export function TimelinePanel({
     if (!isDragging) return;
     const dx = e.clientX - dragStartPos.current.x;
     const dy = e.clientY - dragStartPos.current.y;
-    setPosition({
+    setPosition(clampPosition({
       x: panelStartPos.current.x + dx,
       y: panelStartPos.current.y + dy
-    });
+    }));
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
@@ -158,16 +173,41 @@ export function TimelinePanel({
     setPlaySpeed(prev => prev === 1 ? 2 : prev === 2 ? 4 : 1);
   };
 
+  useEffect(() => {
+    const handleResize = () => {
+      setPosition(prev => clampPosition(prev));
+    };
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isMinimized]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      onJumpTo(Math.max(0, historyIndex - 1));
+    }
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      onJumpTo(Math.min(historyItems.length - 1, historyIndex + 1));
+    }
+  };
+
   return (
     <div
+      ref={panelRef}
+      tabIndex={0}
       className={cn(
-        "absolute bottom-20 left-4 z-40 backdrop-blur-2xl transition-all duration-300 flex flex-col overflow-hidden rounded-xl",
+        "absolute z-40 backdrop-blur-2xl transition-all duration-300 flex flex-col overflow-hidden rounded-xl",
+        "left-2 right-2 bottom-[72px] w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] sm:left-4 sm:right-auto sm:bottom-20 sm:max-w-none",
+        isMinimized ? "sm:w-64 w-44" : "sm:w-[36rem] w-[calc(100vw-1rem)]",
         isDark
           ? "bg-secondary-950/30 border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]"
           : "bg-white/92 border border-secondary-200 shadow-[0_8px_28px_rgba(15,23,42,0.12)]",
-        isMinimized ? "w-64 h-12" : "w-[36rem] h-[9.5rem]"
+        isMinimized ? "h-12" : "h-[9.5rem]"
       )}
       style={{ transform: `translate(${position.x}px, ${position.y}px)` }}
+      onKeyDown={handleKeyDown}
     >
       {/* Header */}
       <div 

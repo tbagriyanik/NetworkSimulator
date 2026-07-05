@@ -1304,7 +1304,7 @@ export const checkStepCompletion = (
           if (property === 'description') return port.description === configValue;
           if (property === 'speed') return port.speed === configValue;
           if (property === 'duplex') return port.duplex === configValue;
-          if (property === 'nonegotiate') return (port as any).nonegotiate === configValue;
+          if (property === 'nonegotiate') return port.nonegotiate === configValue;
           if (property === 'voiceVlan') return Number(port.voiceVlan) === Number(configValue);
 
           // WiFi checks

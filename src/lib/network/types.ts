@@ -131,6 +131,7 @@ export interface Port {
   delay?: number;                   // Delay in microseconds (for routing protocols)
   stpPriority?: number;
   dhcpSnoopingTrust?: boolean;
+  nonegotiate?: boolean;
   ipVerifySource?: boolean;
   ipVerifySourcePortSecurity?: boolean;
   // Statistics & Counters

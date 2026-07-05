@@ -524,8 +524,65 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   });
   const [lastTaskEvent, setLastTaskEvent] = useState<{ type: 'completed' | 'failed'; taskName: string; timestamp: number } | null>(null);
   const [isExamLoadedFromFile, setIsExamLoadedFromFile] = useState(false);
-  const [isTimelineMinimized, setIsTimelineMinimized] = useState(true);
+  const [isTimelineMinimized, setIsTimelineMinimized] = useState(false);
   const toggleTimelineMinimize = useCallback(() => setIsTimelineMinimized(prev => !prev), []);
+
+  const setActiveTab = useAppStore((state) => state.setActiveTab);
+
+  const resetWorkspaceUiState = useCallback(() => {
+    setActiveDeviceId('');
+    setActiveDeviceType('switchL2');
+    setSelectedDevice(null);
+    setClearSelectionTrigger(prev => prev + 1);
+    setShowPCPanel(false);
+    setShowFirewallPanel(false);
+    setActiveFirewallId(null);
+    setFirewallActiveTab('console');
+    setPcPanelInitialTab('home');
+    setShowPCDeviceId('pc-1');
+    setShowRouterPanel(false);
+    setShowRouterDeviceId('router-1');
+    setShowUnifiedDeviceModal(false);
+    setUnifiedDeviceActiveTab('console');
+    setShowAboutModal(false);
+    setShowMobileMenu(false);
+    setShowProjectPicker(false);
+    setProjectPickerTab('all');
+    setShowOnboarding(false);
+    setOnboardingStep(0);
+    setIsEnvironmentPanelOpen(false);
+    setActiveTab('topology');
+    setIsTimelineMinimized(false);
+    setRefreshNetworkReport(null);
+    setProjectSearchQuery('');
+    setLoadedExampleId('');
+  }, [
+    setActiveDeviceId,
+    setActiveDeviceType,
+    setSelectedDevice,
+    setClearSelectionTrigger,
+    setShowPCPanel,
+    setShowFirewallPanel,
+    setActiveFirewallId,
+    setFirewallActiveTab,
+    setPcPanelInitialTab,
+    setShowPCDeviceId,
+    setShowRouterPanel,
+    setShowRouterDeviceId,
+    setShowUnifiedDeviceModal,
+    setUnifiedDeviceActiveTab,
+    setShowAboutModal,
+    setShowMobileMenu,
+    setShowProjectPicker,
+    setProjectPickerTab,
+    setShowOnboarding,
+    setOnboardingStep,
+    setIsEnvironmentPanelOpen,
+    setActiveTab,
+    setRefreshNetworkReport,
+    setProjectSearchQuery,
+    setLoadedExampleId,
+  ]);
 
   // Track project name from guided/exam mode
   useEffect(() => {
@@ -682,7 +739,6 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   const setNotes = useAppStore((state) => state.setNotes);
   const setZoom = useAppStore((state) => state.setZoom);
   const setPan = useAppStore((state) => state.setPan);
-  const setActiveTab = useAppStore((state) => state.setActiveTab);
   const graphicsQuality = useAppStore((state) => state.graphicsQuality);
   const setGraphicsQuality = useAppStore((state) => state.setGraphicsQuality);
   const addCapturedPacket = useAppStore((state) => state.addCapturedPacket);
@@ -2289,11 +2345,22 @@ ${state.bannerMOTD}
         }) as unknown as ExamProject);
       }
 
-      // Close all overlay panels when loading a project
+      // Close any transient UI state from the previous project before applying the loaded project
+      setSelectedDevice(null);
+      setClearSelectionTrigger(prev => prev + 1);
       setShowPCPanel(false);
+      setShowFirewallPanel(false);
       setShowRouterPanel(false);
       setShowUnifiedDeviceModal(false);
+      setShowAboutModal(false);
+      setShowMobileMenu(false);
+      setShowProjectPicker(false);
+      setShowOnboarding(false);
+      setIsEnvironmentPanelOpen(false);
+      setIsTimelineMinimized(false);
       setRefreshNetworkReport(null);
+      setProjectSearchQuery('');
+      setLoadedExampleId('');
 
       // Close packet analysis popup explicitly
       window.dispatchEvent(new CustomEvent('network-refresh'));
@@ -2349,7 +2416,7 @@ ${state.bannerMOTD}
       });
       return false;
     }
-  }, [setDeviceStates, setDeviceOutputs, setPcOutputs, setPcHistories, setTopologyDevices, setTopologyConnections, setTopologyNotes, setCableInfo, setActiveDeviceId, setActiveDeviceType, setSelectedDevice, setActiveTab, setTopologyKey, setHasUnsavedChanges, resetHistory, toast, setZoom, setPan, language, normalizeDeviceType, applyLinkLocalToUnconfiguredHosts, setShowPCPanel, setShowRouterPanel, setShowUnifiedDeviceModal, setRefreshNetworkReport]);
+  }, [setDeviceStates, setDeviceOutputs, setPcOutputs, setPcHistories, setTopologyDevices, setTopologyConnections, setTopologyNotes, setCableInfo, setActiveDeviceId, setActiveDeviceType, setSelectedDevice, setActiveTab, setTopologyKey, setHasUnsavedChanges, resetHistory, toast, setZoom, setPan, language, normalizeDeviceType, applyLinkLocalToUnconfiguredHosts]);
 
   // Persistence: Load from URL ID or localStorage on mount
   useEffect(() => {
@@ -3253,6 +3320,7 @@ ${state.bannerMOTD}
   function handleNewProject() {
     setProjectSearchQuery(''); // Reset search when opening new project dialog
     closeExam();
+    resetWorkspaceUiState();
     runWithSaveGuard(() => setShowProjectPicker(true));
   }
 
@@ -4456,6 +4524,35 @@ ${state.bannerMOTD}
           handleNewProject();
         }
       }
+
+      if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+        const tag = (document.activeElement as HTMLElement)?.tagName?.toLowerCase();
+        const isEditable = tag === 'input' || tag === 'textarea' || (document.activeElement as HTMLElement)?.isContentEditable;
+        const isWindowFocused = document.hasFocus();
+        const isTopologyOnly = activeTabRef.current === 'topology'
+          && !showPCPanel
+          && !showRouterPanel
+          && !showFirewallPanel
+          && !showUnifiedDeviceModal
+          && !showProjectPicker
+          && !showAboutModal
+          && !showOnboarding
+          && !showMobileMenu;
+
+        if (!isEditable && isTopologyOnly) {
+          const isQuoteToggle = e.key === '"' || e.code === 'Quote';
+          if (isQuoteToggle) {
+            e.preventDefault();
+            if (isWindowFocused && isTimelineMinimized) {
+              setIsTimelineMinimized(false);
+            } else {
+              setIsTimelineMinimized(prev => !prev);
+            }
+            return;
+          }
+        }
+      }
+
       if (e.key === 'Tab') {
         if (showProjectPicker) {
           return;
@@ -4843,6 +4940,7 @@ ${state.bannerMOTD}
     document.body.style.cursor = 'wait';
     closeExam();
     closeGuidedMode();
+    resetWorkspaceUiState();
     const exam = generateExamFromProject(projectData as ProjectData, language);
     startExamProject(exam);
     loadProjectData(projectData);
@@ -4852,12 +4950,13 @@ ${state.bannerMOTD}
       title: language === 'tr' ? 'Proje Dönüştürüldü' : 'Project Converted',
       description: language === 'tr' ? 'Görevler otomatik olarak çıkarıldı ve Sınav Düzenleyici açıldı.' : 'Tasks were automatically extracted and the Exam Editor was opened.',
     });
-  }, [closeExam, closeGuidedMode, language, startExamProject, loadProjectData, toggleEditor, toast]);
+  }, [closeExam, closeGuidedMode, language, startExamProject, loadProjectData, toggleEditor, toast, resetWorkspaceUiState]);
 
   const handleStartGuidedProject = useCallback((project: GuidedProject) => {
     closeExam();
+    resetWorkspaceUiState();
     startGuidedProject(project);
-  }, [startGuidedProject, closeExam]);
+  }, [startGuidedProject, closeExam, resetWorkspaceUiState]);
 
   const isDark = (effectiveTheme ?? theme) === 'dark';
   const isRoomEnabled = process.env.NEXT_PUBLIC_IS_ROOM_ENABLED === 'true';
