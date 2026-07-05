@@ -13,8 +13,6 @@ interface CanvasKeyboardProps {
   saveToHistory: () => void;
   onDeviceDelete?: (id: string) => void;
   isDrawingConnection: boolean;
-  handleUndo: () => void;
-  handleRedo: () => void;
   copyDevice: (ids: string[]) => void;
   cutDevice: (ids: string[]) => void;
   pasteDevice: () => void;
@@ -45,8 +43,6 @@ export function useCanvasKeyboard({
   saveToHistory,
   onDeviceDelete,
   isDrawingConnection,
-  handleUndo,
-  handleRedo,
   copyDevice,
   cutDevice,
   pasteDevice,
@@ -127,14 +123,6 @@ export function useCanvasKeyboard({
           e.preventDefault();
           selectAllDevices();
         }
-        if (key === 'z') {
-          e.preventDefault();
-          handleUndo();
-        }
-        if (key === 'y') {
-          e.preventDefault();
-          handleRedo();
-        }
         if (key === 'c' && !isExamActive) {
           if (selectedDeviceIds.length > 0) {
             copyDevice(selectedDeviceIds);
@@ -197,8 +185,6 @@ export function useCanvasKeyboard({
     saveToHistory,
     onDeviceDelete,
     isDrawingConnection,
-    handleUndo,
-    handleRedo,
     copyDevice,
     cutDevice,
     pasteDevice,

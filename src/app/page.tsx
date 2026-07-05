@@ -1679,8 +1679,21 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
           lastPushedStateRef.current = freshStateString;
         }, 150); // Slightly larger debounce to capture all cascading state updates
       } else {
-        // Just update the ref without pushing to history (removes noise)
-        lastPushedStateRef.current = stateString;
+        // Auto-push state changes to history with debounce (coalesces rapid changes like drag)
+        timer = setTimeout(() => {
+          const freshState = getCurrentState();
+          pushState(freshState, activeTab === 'topology' ? 'topology' : 'ui', undefined);
+          lastPushedStateRef.current = JSON.stringify({
+            t: freshState.topologyDevices,
+            c: freshState.topologyConnections,
+            n: freshState.topologyNotes,
+            s: Array.from(freshState.deviceStates.entries()),
+            o: Array.from(freshState.deviceOutputs.entries()),
+            p: Array.from(freshState.pcOutputs.entries()),
+            id: freshState.activeDeviceId,
+            tab: freshState.activeTab
+          });
+        }, 300);
       }
     } else {
       // If state didn't change but we were applying history, 

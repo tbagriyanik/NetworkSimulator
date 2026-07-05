@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo, Mou
 import React from 'react';
 import { flushSync } from 'react-dom';
 import dynamic from 'next/dynamic';
-import useAppStore, { useTopologyDevices, useTopologyConnections, useTopologyNotes, useGraphicsQuality, useIsSimulationMode } from '@/lib/store/appStore';
+import useAppStore, { useTopologyDevices, useTopologyConnections, useTopologyNotes, useGraphicsQuality, useIsSimulationMode, useEnvironment } from '@/lib/store/appStore';
 import { CableType, isCableCompatible } from '@/lib/network/types';
 import { checkDeviceConnectivity, getPingDiagnostics, getWirelessSignalStrength, getWirelessDistance } from '@/lib/network/connectivity';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -25,7 +25,6 @@ import { DeviceNode } from './DeviceNode';
 import LazyNetworkTopologyContextMenu from './LazyNetworkTopologyContextMenu';
 import { LazyNetworkTopologyPortSelectorModal } from './LazyNetworkTopologyPortSelectorModal';
 import { PacketCapturePanel } from './PacketCapturePanel';
-import { useEnvironment } from '@/lib/store/appStore';
 import { Plus, Trash2, X, Cable, LineSquiggle, Plug, TrendingUpDown } from "lucide-react";
 
 import { areArraysEqual } from '@/lib/network/equality';
@@ -3805,17 +3804,6 @@ export function NetworkTopology({
           selectAllDevices();
         }
 
-        // Ctrl+Z to undo
-        if (key === 'z') {
-          e.preventDefault();
-          handleUndo();
-        }
-
-        // Ctrl+Y to redo
-        if (key === 'y') {
-          e.preventDefault();
-          handleRedo();
-        }
         // Ctrl+C to copy
         if (key === 'c' && !isExamActive) {
           if (selectedDeviceIds.length > 0) {
@@ -6027,8 +6015,6 @@ if (isShutdown || isDeviceOffline) {
     saveToHistory,
     onDeviceDelete,
     isDrawingConnection,
-    handleUndo,
-    handleRedo,
     copyDevice,
     cutDevice,
     pasteDevice,
