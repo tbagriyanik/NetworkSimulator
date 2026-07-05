@@ -1,17 +1,19 @@
 import React from 'react';
 
-export interface ConnectionTooltipProps {
-  connectionTooltip: {
-    visible: boolean;
-    x: number;
-    y: number;
-    cableType: string;
-    sourceDeviceName: string;
-    sourcePort: string;
-    targetPort: string;
-    targetDeviceName: string;
-    statusMessage: string;
-  };
+interface ConnectionTooltipState {
+  x: number;
+  y: number;
+  sourceDeviceName: string;
+  sourcePort: string;
+  targetDeviceName: string;
+  targetPort: string;
+  cableType: string;
+  statusMessage: string;
+  visible: boolean;
+}
+
+interface ConnectionTooltipProps {
+  connectionTooltip: ConnectionTooltipState | null;
   isDark: boolean;
   language: string;
   CABLE_COLORS: Record<string, { primary: string; bg: string; text: string; border: string }>;

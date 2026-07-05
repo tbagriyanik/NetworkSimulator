@@ -5,7 +5,7 @@ import React from 'react';
 import { flushSync } from 'react-dom';
 import dynamic from 'next/dynamic';
 import useAppStore, { useTopologyDevices, useTopologyConnections, useTopologyNotes, useGraphicsQuality, useIsSimulationMode, useEnvironment } from '@/lib/store/appStore';
-import { CableType, isCableCompatible } from '@/lib/network/types';
+import { isCableCompatible } from '@/lib/network/types';
 import { checkDeviceConnectivity, getPingDiagnostics, getWirelessSignalStrength, getWirelessDistance } from '@/lib/network/connectivity';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -25,7 +25,7 @@ import { DeviceNode } from './DeviceNode';
 import LazyNetworkTopologyContextMenu from './LazyNetworkTopologyContextMenu';
 import { LazyNetworkTopologyPortSelectorModal } from './LazyNetworkTopologyPortSelectorModal';
 import { PacketCapturePanel } from './PacketCapturePanel';
-import { Plus, Trash2, X, Cable, LineSquiggle, Plug, TrendingUpDown } from "lucide-react";
+import { Trash2, X } from "lucide-react";
 
 import { areArraysEqual } from '@/lib/network/equality';
 import { getDeviceWidth, getDeviceHeight, getConnectionStatusMessage } from './networkTopology.helpers';
@@ -49,6 +49,12 @@ import { useConnectionDrawing } from './hooks/useConnectionDrawing';
 import { usePingAnimation } from './hooks/usePingAnimation';
 import { CanvasToolbar } from './topology/CanvasToolbar';
 import { DeviceRenderer } from './topology/DeviceRenderer';
+
+import { CanvasDefs } from './topology/CanvasDefs';
+import { TopologyPrintPreview } from './topology/TopologyPrintPreview';
+import { TopologyPaletteSheet } from './topology/TopologyPaletteSheet';
+import { PortTooltip } from './topology/PortTooltip';
+import { ConnectionTooltip } from './topology/ConnectionTooltip';
 import { EnvironmentBackgrounds } from './topology/EnvironmentBackgrounds';
 
 const PingPacketInfoPanel = dynamic(
@@ -2873,25 +2879,6 @@ export function NetworkTopology({
     updateNoteStyle(noteId, { font: next });
   }, [updateNoteStyle]);
 
-  const getNoteGradientFill = useCallback((color: string) => {
-    const colorToGradientMap: Record<string, string> = {
-      'var(--color-primary-500)': isDark ? 'url(#noteBlueDark)' : 'url(#noteBlueLight)',
-      'var(--color-success-500)': isDark ? 'url(#noteEmeraldDark)' : 'url(#noteEmeraldLight)',
-      'var(--color-warning-600)': isDark ? 'url(#noteVioletDark)' : 'url(#noteVioletLight)',
-      'var(--color-warning-400)': isDark ? 'url(#noteAmberDark)' : 'url(#noteAmberLight)',
-      'var(--color-error-500)': isDark ? 'url(#noteRedDark)' : 'url(#noteRedLight)',
-      'var(--color-accent-500)': isDark ? 'url(#noteCyanDark)' : 'url(#noteCyanLight)',
-      'var(--color-accent-600)': isDark ? 'url(#notePinkDark)' : 'url(#notePinkLight)',
-      'var(--color-secondary-500)': isDark ? 'url(#noteOrangeDark)' : 'url(#noteOrangeLight)',
-      'var(--color-success-600)': isDark ? 'url(#noteLimeDark)' : 'url(#noteLimeLight)',
-      'var(--color-secondary-400)': isDark ? 'url(#noteSlateDark)' : 'url(#noteSlateLight)',
-      'var(--color-warning-700)': isDark ? 'url(#notePurpleDark)' : 'url(#notePurpleLight)',
-      'var(--color-primary-400)': isDark ? 'url(#noteLightBlueDark)' : 'url(#noteLightBlueLight)',
-      'var(--color-success-400)': isDark ? 'url(#noteLightGreenDark)' : 'url(#noteLightGreenLight)',
-    };
-    return colorToGradientMap[color] || color;
-  }, [isDark]);
-
   const cycleNoteFontSize = useCallback((noteId: string) => {
     const note = latestNotesRef.current.find((n) => n.id === noteId);
     if (!note) return;
@@ -3337,32 +3324,6 @@ export function NetworkTopology({
     if (connectionTooltipTimerRef.current) clearTimeout(connectionTooltipTimerRef.current);
     setConnectionTooltip(null);
   }, [setHoveredConnectionId, setConnectionTooltip]);
-
-  const showDeviceTooltip = useCallback((deviceId: string) => {
-    const device = deviceMap.get(deviceId);
-    if (!device) return;
-
-    const canvasRect = canvasRef.current?.getBoundingClientRect?.();
-    if (!canvasRect) return;
-
-    const currentZoom = zoomRef.current;
-    const currentPan = panRef.current;
-    const deviceWidth = getDeviceWidth(device.type);
-    const x = canvasRect.left + device.x * currentZoom + currentPan.x + deviceWidth * currentZoom / 2;
-    const y = canvasRect.top + device.y * currentZoom + currentPan.y;
-
-    setDeviceTooltip({
-      deviceId,
-      x,
-      y,
-      visible: true,
-    });
-  }, [devices, setDeviceTooltip]);
-
-  const handleDeviceHover = useCallback((deviceId: string) => {
-    if (isDrawingConnection || draggedDevice || isPanning || isSelecting || isActuallyDragging || isTouchDragging || selectedDeviceIds.length > 1) return;
-    showDeviceTooltip(deviceId);
-  }, [showDeviceTooltip, isDrawingConnection, draggedDevice, isPanning, isSelecting, isActuallyDragging, isTouchDragging, selectedDeviceIds]);
 
   const handleDeviceMouseLeave = useCallback(() => {
     if (deviceTooltipTimerRef.current) {
@@ -4817,11 +4778,7 @@ export function NetworkTopology({
         {/* Selection glow effect */}
         {isSelected && (
           <>
-            <defs>
-              <filter id="selectionGlowFilter" x="-50%" y="-50%" width="200%" height="200%">
-                <feDropShadow dx="0" dy="0" stdDeviation="2" floodColor={SELECTION_HIGHLIGHT_COLOR} floodOpacity="0.25" />
-              </filter>
-            </defs>
+            <CanvasDefs isDark={isDark} canvasWidth={getCanvasDimensions().width} canvasHeight={getCanvasDimensions().height} />
             {device.type === 'firewall' ? (
               <>
                 <path d={`M 6 -4 L ${deviceWidth - 6} -4 Q ${deviceWidth + 4} -4 ${deviceWidth + 4} 6 L ${deviceWidth + 4} ${deviceHeight - 11} L ${deviceWidth / 2} ${deviceHeight + 4} L -4 ${deviceHeight - 11} L -4 6 Q -4 -4 6 -4 Z`} fill="none" stroke={SELECTION_HIGHLIGHT_COLOR} strokeWidth="4" opacity="0.5" filter="url(#selectionGlowFilter)" className="selection-glow" />
@@ -4946,11 +4903,7 @@ export function NetworkTopology({
         {/* Device body */}
         {device.type === 'firewall' ? (
           <>
-            <defs>
-              <filter id="deviceShadow" x="-50%" y="-50%" width="200%" height="200%">
-                <feDropShadow dx="1" dy="2" stdDeviation="1.5" floodOpacity={isDark ? "0.15" : "0.1"} />
-              </filter>
-            </defs>
+            <CanvasDefs isDark={isDark} canvasWidth={getCanvasDimensions().width} canvasHeight={getCanvasDimensions().height} />
             <path
               d={`M 10 0 L ${deviceWidth - 10} 0 Q ${deviceWidth} 0 ${deviceWidth} 10 L ${deviceWidth} ${deviceHeight - 15} L ${deviceWidth / 2} ${deviceHeight} L 0 ${deviceHeight - 15} L 0 10 Q 0 0 10 0 Z`}
               fill={deviceFill}
@@ -6059,163 +6012,7 @@ if (isShutdown || isDeviceOffline) {
         {/* Canvas Area */}
         <div className="flex-1 relative flex flex-col">
           {/* Palette Sheet (Triggered from Top Toolbar) */}
-          <Sheet open={isPaletteOpen} onOpenChange={setIsPaletteOpen}>
-            <SheetContent side="left" className={`${isDark ? 'bg-secondary-900 border-secondary-800' : 'bg-white'} p-0 palette w-[300px] sm:w-[350px] border-r border-secondary-800/20 shadow-2xl transition-all duration-300 custom-scrollbar`}>
-              <SheetHeader className="p-6 border-b border-secondary-800/50">
-                <SheetTitle className="text-lg font-bold flex items-center gap-2">
-                  <Plus className="w-5 h-5 text-error-500" />
-                  {t.addDeviceOrCable}
-                </SheetTitle>
-              </SheetHeader>
-              <div className="p-6 space-y-8 overflow-y-auto max-h-[calc(100vh-100px)] custom-scrollbar">
-                {/* Devices Section */}
-                <div className="space-y-4">
-                  <p className="text-[10px] font-bold  tracking-widest text-secondary-500 ml-1 uppercase">{t.devices}</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      onClick={() => { addDevice('pc'); setIsPaletteOpen(false); }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-primary-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-primary-500/50'
-                        }`}
-                    >
-                      <div className='text-primary-500'>
-                        {DEVICE_ICONS['pc']}
-                      </div>
-                      <span className="text-xs font-bold text-center">
-                        {t.addPc}
-                      </span>
-                    </button>
-                    <button
-                      onClick={() => { addDevice('switch'); setIsPaletteOpen(false); }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-accent-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-accent-500/50'
-                        }`}
-                    >
-                      <div className='text-accent-500'>
-                        {DEVICE_ICONS['switch']}
-                      </div>
-                      <span className="text-xs font-bold text-center">
-                        L2 Switch
-                      </span>
-                    </button>
-                    <button
-                      onClick={() => { addDevice('switch', 'L3'); setIsPaletteOpen(false); }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-purple-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-purple-500/50'
-                        }`}
-                    >
-                      <div className='text-purple-500'>
-<svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-warning-500)' }} viewBox="0 0 24 24">
-                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 12h14M5 12a2 2 0 0 1 -2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2M5 12a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 -2-2m-2-4h.01M17 16h.01" />
-                         </svg>
-                      </div>
-                      <span className="text-xs font-bold text-center">
-                        L3 Switch
-                      </span>
-                    </button>
-                    <button
-                      onClick={() => { addDevice('router'); setIsPaletteOpen(false); }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-purple-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-purple-500/50'
-                        }`}
-                    >
-                      <div className='text-purple-500'>
-                        {DEVICE_ICONS['router']}
-                      </div>
-                      <span className="text-xs font-bold text-center">
-                        {t.addRouter}
-                      </span>
-                    </button>
-                    <button
-                      onClick={() => { addDevice('iot'); setIsPaletteOpen(false); }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-warning-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-warning-500/50'
-                        }`}
-                    >
-                      <div className='text-warning-500'>
-                        {DEVICE_ICONS['iot']}
-                      </div>
-                      <span className="text-xs font-bold text-center">
-                        IoT
-                      </span>
-                    </button>
-                    <button
-                      onClick={() => { addDevice('firewall'); setIsPaletteOpen(false); }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-error-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-error-500/50'
-                        }`}
-                    >
-                      <div className='text-error-500'>
-                        {DEVICE_ICONS['firewall']}
-                      </div>
-                      <span className="text-xs font-bold text-center">
-                        Firewall
-                      </span>
-                    </button>
-                    <button
-                      onClick={() => { addDevice('wlc'); setIsPaletteOpen(false); }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-yellow-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-yellow-500/50'
-                        }`}
-                    >
-                      <div className='text-yellow-500'>
-                        {DEVICE_ICONS['wlc']}
-                      </div>
-                      <span className="text-xs font-bold text-center">
-                        WLC
-                      </span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Cables Section - Button Group with Color Coding */}
-                <div className="space-y-3">
-                  <p className="text-[10px] font-bold tracking-widest text-secondary-500 ml-1 uppercase">{t.cableTypes}</p>
-                  <div className={`flex sm:flex-row flex-col gap-2 rounded-xl border p-2 ${isDark ? 'border-secondary-700/50 bg-secondary-800/30' : 'border-secondary-200 bg-secondary-50/50'}`}>
-                    {(['straight', 'crossover', 'serial', 'console'] as CableType[]).map((type) => {
-                      const colorMap: Record<string, { active: string; inactive: string; hover: string }> = {
-                        straight: { active: 'text-primary-400', inactive: 'text-primary-500', hover: 'hover:text-primary-400' },
-                        crossover: { active: 'text-warning-400', inactive: 'text-warning-500', hover: 'hover:text-warning-400' },
-                        serial: { active: 'text-success-400', inactive: 'text-success-500', hover: 'hover:text-success-400' },
-                        console: { active: 'text-accent-400', inactive: 'text-accent-500', hover: 'hover:text-accent-400' },
-                      };
-                      const c = colorMap[type] || colorMap.console;
-                      return (
-                        <button
-                          key={type}
-                          onClick={() => { onCableChange({ ...cableInfo, cableType: type }); setIsPaletteOpen(false); }}
-                          className={`flex items-center gap-3 p-3 rounded-lg transition-all
-                            ${isDark ? 'hover:bg-secondary-700/50' : 'hover:bg-secondary-200/50'}
-                            ${cableInfo.cableType === type
-                              ? isDark ? 'bg-secondary-700/80 border border-secondary-600' : 'bg-white border border-secondary-200 shadow-sm'
-                              : 'border border-transparent'
-                            }
-                            ${cableInfo.cableType === type ? c.active : `${c.inactive} ${c.hover}`}`}
-                        >
-                          <div className={`p-2 rounded-md ${cableInfo.cableType === type ? (isDark ? 'bg-secondary-800' : 'bg-secondary-50') : ''}`}>
-                            {type === 'straight' ? (
-                              <Cable className="w-5 h-5" />
-                            ) : type === 'crossover' ? (
-                              <LineSquiggle className="w-5 h-5" />
-                            ) : type === 'serial' ? (
-                              <Plug className="w-5 h-5" />
-                            ) : (
-                              <TrendingUpDown className="w-5 h-5" />
-                            )}
-                          </div>
-                          <div className="flex flex-col items-start">
-                            <span className="text-xs font-bold capitalize">
-                              {type === 'straight' ? t.straight : type === 'crossover' ? t.crossover : type === 'serial' ? (isTR ? 'Seri' : 'Serial') : t.console}
-                            </span>
-                            <span className="text-[9px] opacity-60">
-                              {type === 'straight' ? (isTR ? 'Standart ethernet bağlantısı' : 'Standard ethernet connection') :
-                                type === 'crossover' ? (isTR ? 'Benzer cihazlar arası' : 'Between similar devices') :
-                                  type === 'serial' ? (isTR ? 'Seri WAN bağlantısı' : 'Serial WAN connection') :
-                                    (isTR ? 'Yönetim konsol bağlantısı' : 'Management console connection')}
-                            </span>
-                          </div>
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-                <div className="h-4" />
-              </div>
-            </SheetContent>
-          </Sheet>
+          <TopologyPaletteSheet isPaletteOpen={isPaletteOpen} setIsPaletteOpen={setIsPaletteOpen} isDark={isDark} isTR={isTR} t={t} addDevice={addDevice} cableInfo={cableInfo} onCableChange={onCableChange} DEVICE_ICONS={DEVICE_ICONS} />
           {/* Multiple Selection Indicator & Tools */}
           {/* Ping mode cursor label */}
           {pingMode && pingCursorPos && (
@@ -6417,209 +6214,7 @@ if (isShutdown || isDeviceOffline) {
                 }}
               >
                 {/* Clip path for canvas boundaries */}
-                <defs>
-                  <clipPath id="canvasClip">
-                    <rect x="0" y="0" width={getCanvasDimensions().width} height={getCanvasDimensions().height} />
-                  </clipPath>
-                  {/* Device Shadow Filter */}
-                  <filter id="deviceShadow" x="-50%" y="-50%" width="200%" height="200%">
-                    <feDropShadow dx="1" dy="2" stdDeviation="1.5" floodOpacity={isDark ? "0.15" : "0.1"} />
-                  </filter>
-                  {/* WiFi Icon Shadow Filter */}
-                  <filter id="wifiIconShadow" x="-50%" y="-50%" width="200%" height="200%">
-                    <feDropShadow dx="0.5" dy="1" stdDeviation="1" floodOpacity={isDark ? "0.4" : "0.25"} />
-                  </filter>
-                  {/* Canvas background gradient */}
-                  <radialGradient id="canvasBgGradient" cx="46%" cy="30%" r="88%">
-                    {isDark ? (
-                      <>
-                        <stop offset="0%" stopColor="#24344d" />
-                        <stop offset="28%" stopColor="#1e2c43" />
-                        <stop offset="55%" stopColor="#18253a" />
-                        <stop offset="78%" stopColor="#142033" />
-                        <stop offset="100%" stopColor="#0d1728" />
-                      </>
-                    ) : (
-                      <>
-                        <stop offset="0%" stopColor="#fcfdff" />
-                        <stop offset="28%" stopColor="#f6faff" />
-                        <stop offset="55%" stopColor="#eef4fc" />
-                        <stop offset="78%" stopColor="#e7eff9" />
-                        <stop offset="100%" stopColor="#dde8f4" />
-                      </>
-                    )}
-                  </radialGradient>
-{/* Grid pattern with improved visibility */}
-                   <pattern id="gridPattern" width="16" height="16" patternUnits="userSpaceOnUse">
-                     <circle cx="8" cy="8" r="1" style={{ fill: isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-500)' }} opacity="0.6" />
-                   </pattern>
-                   {/* Major grid lines pattern */}
-                   <pattern id="majorGridPattern" width="80" height="80" patternUnits="userSpaceOnUse">
-                     <rect width="80" height="80" fill="none" style={{ stroke: isDark ? 'var(--color-secondary-700)' : 'var(--color-secondary-300)' }} strokeWidth="0.5" opacity="0.3" />
-                   </pattern>
-                   {/* Device 3D Gradients for Dark Mode */}
-                   <linearGradient id="pcGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-primary-600)" />
-                     <stop offset="30%" stopColor="var(--color-primary-800)" />
-                     <stop offset="100%" stopColor="var(--color-primary-900)" />
-                   </linearGradient>
-                   <linearGradient id="switchGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-accent-400)" />
-                     <stop offset="30%" stopColor="var(--color-accent-600)" />
-                     <stop offset="100%" stopColor="var(--color-accent-800)" />
-                   </linearGradient>
-                   <linearGradient id="routerGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-purple-500)" />
-                     <stop offset="30%" stopColor="var(--color-purple-700)" />
-                     <stop offset="100%" stopColor="var(--color-purple-900)" />
-                   </linearGradient>
-                   <linearGradient id="firewallGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-error-500)" />
-                     <stop offset="30%" stopColor="var(--color-error-600)" />
-                     <stop offset="100%" stopColor="var(--color-error-800)" />
-                   </linearGradient>
-                   <linearGradient id="iotGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-warning-400)" />
-                     <stop offset="30%" stopColor="var(--color-warning-600)" />
-                     <stop offset="100%" stopColor="var(--color-warning-700)" />
-                   </linearGradient>
-                   {/* Device 3D Gradients for Light Mode */}
-                   <linearGradient id="pcGradientLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-primary-50)" />
-                     <stop offset="100%" stopColor="var(--color-primary-100)" />
-                   </linearGradient>
-                   <linearGradient id="switchGradientLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-accent-50)" />
-                     <stop offset="100%" stopColor="var(--color-accent-200)" />
-                   </linearGradient>
-                   <linearGradient id="routerGradientLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-purple-50)" />
-                     <stop offset="100%" stopColor="var(--color-purple-100)" />
-                   </linearGradient>
-                   <linearGradient id="firewallGradientLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-error-100)" />
-                     <stop offset="100%" stopColor="var(--color-error-200)" />
-                   </linearGradient>
-                   <linearGradient id="iotGradientLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-warning-50)" />
-                     <stop offset="100%" stopColor="var(--color-warning-200)" />
-                   </linearGradient>
-                   <linearGradient id="wlcGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-warning-400)" />
-                     <stop offset="30%" stopColor="var(--color-warning-600)" />
-                     <stop offset="100%" stopColor="var(--color-warning-700)" />
-                   </linearGradient>
-                   <linearGradient id="wlcGradientLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-warning-50)" />
-                     <stop offset="100%" stopColor="var(--color-warning-100)" />
-                   </linearGradient>
-                   {/* Note Gradients for Dark Mode */}
-                   <linearGradient id="noteBlueDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-primary-500)" />
-                     <stop offset="100%" stopColor="var(--color-primary-700)" />
-                   </linearGradient>
-                   <linearGradient id="noteEmeraldDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-success-500)" />
-                     <stop offset="100%" stopColor="var(--color-success-700)" />
-                   </linearGradient>
-                   <linearGradient id="noteVioletDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-purple-500)" />
-                     <stop offset="100%" stopColor="var(--color-purple-700)" />
-                   </linearGradient>
-                   <linearGradient id="noteAmberDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-warning-500)" />
-                     <stop offset="100%" stopColor="var(--color-warning-700)" />
-                   </linearGradient>
-                   <linearGradient id="noteRedDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-error-500)" />
-                     <stop offset="100%" stopColor="var(--color-error-700)" />
-                   </linearGradient>
-                   <linearGradient id="noteCyanDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-accent-500)" />
-                     <stop offset="100%" stopColor="var(--color-accent-700)" />
-                   </linearGradient>
-                   <linearGradient id="notePinkDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-pink-500)" />
-                     <stop offset="100%" stopColor="var(--color-pink-700)" />
-                   </linearGradient>
-                   <linearGradient id="noteOrangeDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-warning-400)" />
-                     <stop offset="100%" stopColor="var(--color-warning-700)" />
-                   </linearGradient>
-                   <linearGradient id="noteLimeDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-success-500)" />
-                     <stop offset="100%" stopColor="var(--color-success-700)" />
-                   </linearGradient>
-                   <linearGradient id="noteSlateDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-secondary-500)" />
-                     <stop offset="100%" stopColor="var(--color-secondary-700)" />
-                   </linearGradient>
-                   <linearGradient id="notePurpleDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-purple-400)" />
-                     <stop offset="100%" stopColor="var(--color-purple-600)" />
-                   </linearGradient>
-                   <linearGradient id="noteLightBlueDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-primary-400)" />
-                     <stop offset="100%" stopColor="var(--color-primary-600)" />
-                   </linearGradient>
-                   <linearGradient id="noteLightGreenDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-success-400)" />
-                     <stop offset="100%" stopColor="var(--color-success-600)" />
-                   </linearGradient>
-                   {/* Note Gradients for Light Mode */}
-                   <linearGradient id="noteBlueLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-primary-100)" />
-                     <stop offset="100%" stopColor="var(--color-primary-200)" />
-                   </linearGradient>
-                   <linearGradient id="noteEmeraldLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-success-100)" />
-                     <stop offset="100%" stopColor="var(--color-success-200)" />
-                   </linearGradient>
-                   <linearGradient id="noteVioletLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-purple-100)" />
-                     <stop offset="100%" stopColor="var(--color-purple-200)" />
-                   </linearGradient>
-                   <linearGradient id="noteAmberLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-warning-100)" />
-                     <stop offset="100%" stopColor="var(--color-warning-200)" />
-                   </linearGradient>
-                   <linearGradient id="noteRedLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-error-100)" />
-                     <stop offset="100%" stopColor="var(--color-error-200)" />
-                   </linearGradient>
-                   <linearGradient id="noteCyanLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-accent-100)" />
-                     <stop offset="100%" stopColor="var(--color-accent-200)" />
-                   </linearGradient>
-                   <linearGradient id="notePinkLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-pink-100)" />
-                     <stop offset="100%" stopColor="var(--color-pink-200)" />
-                   </linearGradient>
-                   <linearGradient id="noteOrangeLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-warning-50)" />
-                     <stop offset="100%" stopColor="var(--color-warning-200)" />
-                   </linearGradient>
-                   <linearGradient id="noteLimeLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-success-50)" />
-                     <stop offset="100%" stopColor="var(--color-success-200)" />
-                   </linearGradient>
-                   <linearGradient id="noteSlateLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-secondary-100)" />
-                     <stop offset="100%" stopColor="var(--color-secondary-200)" />
-                   </linearGradient>
-                   <linearGradient id="notePurpleLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-purple-100)" />
-                     <stop offset="100%" stopColor="var(--color-purple-200)" />
-                   </linearGradient>
-                   <linearGradient id="noteLightBlueLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-primary-100)" />
-                     <stop offset="100%" stopColor="var(--color-primary-200)" />
-                   </linearGradient>
-                   <linearGradient id="noteLightGreenLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                     <stop offset="0%" stopColor="var(--color-success-100)" />
-                     <stop offset="100%" stopColor="var(--color-success-200)" />
-                   </linearGradient>
-                </defs>
+                <CanvasDefs isDark={isDark} canvasWidth={getCanvasDimensions().width} canvasHeight={getCanvasDimensions().height} />
 
                 {/* Canvas Background with Grid - clipped to boundaries */}
                 <g clipPath="url(#canvasClip)">
@@ -7086,221 +6681,7 @@ fill="var(--color-accent-500)"
           </div>
 
           {/* Minimap (Preview) - Hidden */}
-          <div
-            className={`hidden print:block print:w-full print:h-auto`}
-          >
-            <svg
-              width="100%"
-              height="100%"
-              viewBox={`0 0 ${getCanvasDimensions().width} ${getCanvasDimensions().height}`}
-              className="print:w-full print:h-auto"
-              onClick={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                const canvasDims = getCanvasDimensions();
-                const x = ((e.clientX - rect.left) / rect.width) * canvasDims.width;
-                const y = ((e.clientY - rect.top) / rect.height) * canvasDims.height;
-                // Pan to clicked location (center)
-                const newPanX = -(x - 400 / zoom) * zoom;
-                const newPanY = -(y - 200 / zoom) * zoom;
-                setPan({ x: newPanX, y: newPanY });
-              }}
-            >
-              {/* Canvas background */}
-              <defs>
-                <radialGradient id="canvasBgGradient" cx="46%" cy="30%" r="88%">
-                  {isDark ? (
-                    <>
-                      <stop offset="0%" stopColor="#15243a" />
-                      <stop offset="25%" stopColor="#132035" />
-                      <stop offset="50%" stopColor="#101b2e" />
-                      <stop offset="75%" stopColor="#0e1829" />
-                      <stop offset="100%" stopColor="#0b1424" />
-                    </>
-                  ) : (
-                    <>
-                      <stop offset="0%" stopColor="#fbfdff" />
-                      <stop offset="25%" stopColor="#f6faff" />
-                      <stop offset="50%" stopColor="#f1f7ff" />
-                      <stop offset="75%" stopColor="#ecf3fb" />
-                      <stop offset="100%" stopColor="#e6eef8" />
-                    </>
-                  )}
-                </radialGradient>
-                <radialGradient id="canvasSoftGlow" cx="20%" cy="15%" r="75%">
-                  {isDark ? (
-                    <>
-                      <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.08" />
-                      <stop offset="45%" stopColor="#38bdf8" stopOpacity="0.04" />
-                      <stop offset="100%" stopColor="#0b1220" stopOpacity="0" />
-                    </>
-                  ) : (
-                    <>
-                      <stop offset="0%" stopColor="#7dd3fc" stopOpacity="0.18" />
-                      <stop offset="45%" stopColor="#a5b4fc" stopOpacity="0.08" />
-                      <stop offset="100%" stopColor="#f8fbff" stopOpacity="0" />
-                    </>
-                  )}
-                </radialGradient>
-                <filter id="packetGlow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="2" result="blur" />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-                <filter id="connectionGlowFilter" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="0.2" result="blur" />
-                </filter>
-              </defs>
-
-              {/* Background */}
-              <rect
-                x="0"
-                y="0"
-                width={getCanvasDimensions().width}
-                height={getCanvasDimensions().height}
-                fill="url(#canvasBgGradient)"
-              />
-              <rect
-                x="0"
-                y="0"
-                width={getCanvasDimensions().width}
-                height={getCanvasDimensions().height}
-                fill="url(#canvasSoftGlow)"
-              />
-
-              {/* Connections */}
-              {connections.map((conn) => {
-                const sourceDevice = deviceMap.get(conn.sourceDeviceId);
-                const targetDevice = deviceMap.get(conn.targetDeviceId);
-                if (!sourceDevice || !targetDevice) return null;
-
-                const sourceX = sourceDevice.x + ((sourceDevice.type === 'pc' || sourceDevice.type === 'iot') ? 45 : 50);
-                const sourceY = sourceDevice.y + ((sourceDevice.type === 'pc' || sourceDevice.type === 'iot') ? 45 : 60);
-                const targetX = targetDevice.x + ((targetDevice.type === 'pc' || targetDevice.type === 'iot') ? 45 : 50);
-                const targetY = targetDevice.y + ((targetDevice.type === 'pc' || targetDevice.type === 'iot') ? 45 : 60);
-
-                return (
-                  <line
-                    key={conn.id}
-                    x1={sourceX}
-                    y1={sourceY}
-                    x2={targetX}
-                    y2={targetY}
-                    stroke={conn.cableType === 'straight' ? '#3b82f6' : conn.cableType === 'crossover' ? '#f97316' : '#06b6d4'}
-                    strokeWidth="2"
-                    opacity="0.7"
-                  />
-                );
-              })}
-
-              {/* Devices */}
-              {devicesSortedForRender.map((device) => {
-                const deviceWidth = getDeviceWidth(device.type);
-                const deviceHeight = getDeviceHeight(device.type, device.ports.length);
-                const color = device.type === 'pc'
-                  ? '#3b82f6'
-                  : device.type === 'iot'
-                    ? '#f97316'
-                    : isSwitchDeviceType(device.type)
-                      ? (device.switchModel === 'WS-C3650-24PS' ? '#a855f7' : '#06b6d4')
-                      : '#a855f7';
-
-                return (
-                  <g
-                    key={device.id}
-                    onMouseEnter={() => handleDeviceHover(device.id)}
-                    onMouseLeave={handleDeviceMouseLeave}
-                  >
-                    {/* Device box */}
-                    <rect
-                      x={device.x}
-                      y={device.y}
-                      width={deviceWidth}
-                      height={deviceHeight}
-                      fill={color}
-                      opacity="0.1"
-                      stroke={color}
-                      strokeWidth="2"
-                      rx="4"
-                    />
-
-                    {/* Device label */}
-                    <text
-                      x={device.x + deviceWidth / 2}
-                      y={device.y + deviceHeight / 2}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      fontSize="12"
-                      fontWeight="bold"
-                      fill={color}
-                    >
-                      {device.name}
-                    </text>
-
-                    {/* IP address if exists */}
-                    {(() => {
-                      // Validate IP format
-                      const isValidIP = device.ip ? /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(device.ip) : false;
-                      const isValidSubnet = device.subnet ? /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(device.subnet) : false;
-                      const hasError = !isValidIP || !isValidSubnet;
-                      const displayText = device.ip || t.noIp;
-
-                      return (
-                        <text
-                          x={device.x + deviceWidth / 2}
-                          y={device.y + deviceHeight / 2 + 16}
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                          fontSize="10"
-                          fill={hasError ? '#ef4444' : '#666'}
-                          fontWeight={hasError ? '700' : '400'}
-                        >
-                          {hasError ? '⚠ ' : ''}{displayText}
-                        </text>
-                      );
-                    })()}
-                  </g>
-                );
-              })}
-
-              {/* Notes */}
-              {visibleNotes.map((note) => (
-                <g key={note.id}>
-                  {/* Note background */}
-                  <rect
-                    x={note.x}
-                    y={note.y}
-                    width={note.width}
-                    height={note.height}
-                    fill={getNoteGradientFill(note.color)}
-                    opacity={note.opacity}
-                    stroke="#999"
-                    strokeWidth="1"
-                    rx="4"
-                  />
-
-                  {/* Note text */}
-                  <text
-                    x={note.x + 8}
-                    y={note.y + 20}
-                    fontSize={note.fontSize}
-                    fill="var(--color-secondary-800)"
-                    fontFamily={note.font}
-                    fontWeight={note.bold ? 'bold' : 'normal'}
-                    fontStyle={note.italic ? 'italic' : 'normal'}
-                    textDecoration={note.underline ? 'underline' : 'none'}
-                  >
-                    {note.text.split('\n').map((line, i) => (
-                      <tspan key={i} x={note.x + 8} dy={i === 0 ? 0 : note.fontSize + 2}>
-                        {line}
-                      </tspan>
-                    ))}
-                  </text>
-                </g>
-              ))}
-            </svg>
-          </div>
+          <TopologyPrintPreview canvasWidth={getCanvasDimensions().width} canvasHeight={getCanvasDimensions().height} zoom={zoom} isDark={isDark} connections={connections} devicesSortedForRender={devicesSortedForRender} deviceMap={deviceMap} getDeviceWidth={getDeviceWidth} getDeviceHeight={getDeviceHeight} isSwitchDeviceType={isSwitchDeviceType} />
 
         </div>
       </div>
@@ -7567,201 +6948,10 @@ fill="var(--color-accent-500)"
         }}
       />
       {/* Port Tooltip */}
-      {
-        !isDraggingInteractionDisabled && portTooltip && portTooltip.visible && (
-          <div
-            className={`fixed z-[100] pointer-events-none transition-opacity duration-300 ${portTooltip.visible ? 'opacity-100' : 'opacity-0'
-              }`}
-            style={{
-              left: portTooltip.x,
-              top: portTooltip.y - 35, // Increased distance from port (was -10)
-              transform: 'translate(-50%, -100%)',
-            }}
-          >
-            <div
-              className={`px-3 py-2 rounded-xl border liquid-glass-strong animate-scale-in shadow-2xl ${isDark
-                ? 'border-secondary-700/50 text-white shadow-accent-500/10'
-                : 'border-secondary-200/50 text-secondary-900 shadow-secondary-200/50'
-                }`}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <div className={`w-2 h-2 rounded-full ${(() => {
-                  const dev = deviceMap.get(portTooltip.deviceId);
-                  const prt = dev?.ports.find(p => p.id === portTooltip.portId);
-                  const devState = deviceStates?.get(portTooltip.deviceId);
-                  const simPort = devState?.ports?.[portTooltip.portId];
-                  const isSTPBlocked = simPort?.spanningTree?.state === 'blocking' || simPort?.spanningTree?.role === 'alternate';
-                  const deviceVlan = dev?.vlan || simPort?.accessVlan || simPort?.vlan || 1;
-                  const isVlan1 = deviceVlan === 1;
-                  if (isSTPBlocked && isVlan1) return 'bg-pink-500';
-                  return dev?.status === 'offline' || prt?.shutdown ? 'bg-error-500' : prt?.status === 'connected' ? 'bg-success-500' : 'bg-secondary-400';
-                })()
-                  }`} />
-                <span className="text-[10px] font-black tracking-widest opacity-30">
-                  {portTooltip.portId}
-                </span>
-              </div>
-
-              <div className="space-y-0.5">
-                <div className="text-xs font-bold">
-                  {(() => {
-                    const dev = deviceMap.get(portTooltip.deviceId);
-                    if (dev?.type === 'iot') {
-                      const kind = dev.iot?.kind;
-                      const isControllable = kind === 'lamp' || kind === 'heater' || kind === 'cooler';
-                      return (
-                        <div className="space-y-0.5">
-                          <div>
-                            {language === 'tr' ? 'Cihaz Durumu:' : 'Device Status:'}{' '}
-                            <span className="text-accent-500">{getIotDeviceStatus(dev)}</span>
-                          </div>
-                          <div>
-                            {language === 'tr' ? 'Güç Durumu:' : 'Power Status:'}{' '}
-                            <span className="text-accent-500">{getIotPowerStatus(dev)}</span>
-                          </div>
-                          {isControllable && (
-                            <div>
-                              {language === 'tr' ? 'Açık/Kapalı:' : 'Open/Closed:'}{' '}
-                              <span className="text-accent-500">{getIotOpenCloseStatus(dev)}</span>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    }
-                    return (
-                      <>
-                        VLAN:{' '}
-                        <span className="text-accent-500">
-                          {getLivePortVlanText(portTooltip.deviceId, portTooltip.portId)}
-                        </span>
-                      </>
-                    );
-                  })()}
-                </div>
-                <div className="text-xs font-bold">
-                  {language === 'tr' ? 'Durum:' : 'Status:'}{' '}
-                  <span className={
-                    (() => {
-                      const dev = deviceMap.get(portTooltip.deviceId);
-                      const prt = dev?.ports.find(p => p.id === portTooltip.portId);
-                      const devState = deviceStates?.get(portTooltip.deviceId);
-                      const simPort = devState?.ports?.[portTooltip.portId];
-                      const isSTPBlocked = simPort?.spanningTree?.state === 'blocking' || simPort?.spanningTree?.role === 'alternate';
-                      const deviceVlan = dev?.vlan || simPort?.accessVlan || simPort?.vlan || 1;
-                      const isVlan1 = deviceVlan === 1;
-                      if (isSTPBlocked && isVlan1) return 'text-pink-500';
-                      return dev?.status === 'offline' || prt?.shutdown ? 'text-error-500' : prt?.status === 'connected' ? 'text-success-500' : 'text-secondary-400';
-                    })()
-                  }>
-                    {(() => {
-                      const dev = deviceMap.get(portTooltip.deviceId);
-                      const prt = dev?.ports.find(p => p.id === portTooltip.portId);
-                      const devState = deviceStates?.get(portTooltip.deviceId);
-                      const simPort = devState?.ports?.[portTooltip.portId];
-                      const isSTPBlocked = simPort?.spanningTree?.state === 'blocking' || simPort?.spanningTree?.role === 'alternate';
-
-                      if (dev?.status === 'offline') {
-                        return language === 'tr' ? 'Cihaz Kapalı' : 'Device Off';
-                      }
-                      if (isSTPBlocked) {
-                        const role = simPort?.spanningTree?.role || '';
-                        const state = simPort?.spanningTree?.state || '';
-                        const roleMap: Record<string, string> = { 'root': 'Root', 'designated': 'Desg', 'alternate': 'Altn', 'backup': 'Back' };
-                        const stateMap: Record<string, string> = { 'forwarding': 'FWD', 'blocking': 'BLK', 'listening': 'LIS', 'learning': 'LRN' };
-                        const roleText = roleMap[role] || role;
-                        const stateText = stateMap[state] || state;
-                        return language === 'tr' ? `STP Bloke (${roleText} ${stateText})` : `STP Blocked (${roleText} ${stateText})`;
-                      }
-                      if (prt?.shutdown) {
-                        return language === 'tr' ? 'Kapalı (Shutdown)' : 'Shutdown';
-                      }
-                      if (prt?.status === 'connected') {
-                        return language === 'tr' ? 'Bağlı (Up)' : 'Connected (Up)';
-                      }
-                      return language === 'tr' ? 'Bağlı Değil (Down)' : 'Not Connected (Down)';
-                    })()
-                    }
-                  </span>
-                </div>
-
-                {(() => {
-                  const dev = deviceMap.get(portTooltip.deviceId);
-                  const prt = dev?.ports.find(p => p.id === portTooltip.portId);
-                  if (prt?.ipAddress) {
-                    return (
-                      <div className="text-xs font-bold">
-                        IP:{' '}
-                        <span className="text-warning-400">
-                          {prt.ipAddress}{prt.subnetMask ? `/${prt.subnetMask}` : ''}
-                        </span>
-                      </div>
-                    );
-                  }
-                  return null;
-                })()}
-
-                {deviceMap.get(portTooltip.deviceId)?.ports.find(p => p.id === portTooltip.portId)?.status === 'connected' && (
-                  <div className="text-[10px] opacity-70">
-                    {language === 'tr' ? 'Fiziksel bağlantı aktif' : 'Physical link active'}
-                  </div>
-                )}
-              </div>
-
-              {/* Arrow */}
-              <div className={`absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] ${isDark ? 'border-t-secondary-800' : 'border-t-white'
-                }`} />
-            </div>
-          </div>
-        )}
+      <PortTooltip portTooltip={portTooltip} deviceMap={deviceMap} deviceStates={deviceStates} isDark={isDark} language={language} getIotDeviceStatus={getIotDeviceStatus} getIotPowerStatus={getIotPowerStatus} getIotOpenCloseStatus={getIotOpenCloseStatus} getLivePortVlanText={getLivePortVlanText} />
 
       {/* Connection Tooltip */}
-      {
-        !isDraggingInteractionDisabled && connectionTooltip && connectionTooltip.visible && (
-          <div
-            className={`fixed z-[100] pointer-events-none transition-opacity duration-300 ${connectionTooltip.visible ? 'opacity-100' : 'opacity-0'
-              }`}
-            style={{
-              left: connectionTooltip.x,
-              top: connectionTooltip.y - 10,
-              transform: 'translate(-50%, -100%)',
-            }}
-          >
-            <div
-              className={`px-3 py-2 rounded-xl border liquid-glass-strong animate-scale-in shadow-2xl ${isDark
-                ? 'border-secondary-700/50 text-white shadow-accent-500/10'
-                : 'border-secondary-200/50 text-secondary-900 shadow-secondary-200/50'
-                }`}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <span className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: (CABLE_COLORS as Record<string, { primary: string; bg: string; text: string; border: string }>)[connectionTooltip.cableType]?.primary || '#3b82f6' }}
-                />
-                <span className="text-[10px] font-black tracking-widest opacity-60">
-                  {connectionTooltip.cableType === 'straight' ? (language === 'tr' ? 'Düz Kablo' : 'Straight') :
-                    connectionTooltip.cableType === 'crossover' ? (language === 'tr' ? 'Çapraz Kablo' : 'Crossover') :
-                      connectionTooltip.cableType === 'console' ? (language === 'tr' ? 'Konsol Kablosu' : 'Console') :
-                        connectionTooltip.cableType === 'serial' ? (language === 'tr' ? 'Seri Kablo' : 'Serial') :
-                          connectionTooltip.cableType === 'wireless' ? (language === 'tr' ? 'Kablosuz' : 'Wireless') :
-                            connectionTooltip.cableType}
-                </span>
-              </div>
-              <div className="text-xs font-bold" style={{ color: (CABLE_COLORS as Record<string, { primary: string; bg: string; text: string; border: string }>)[connectionTooltip.cableType]?.primary || '#3b82f6' }}>
-                <span className="opacity-90">{connectionTooltip.sourceDeviceName}</span>
-                <span className="mx-1 opacity-70">{connectionTooltip.sourcePort}</span>
-                <span className="mx-1 opacity-50">↔</span>
-                <span className="mx-1 opacity-70">{connectionTooltip.targetPort}</span>
-                <span className="opacity-90">{connectionTooltip.targetDeviceName}</span>
-              </div>
-              <div className={`text-[10px] mt-1 font-semibold ${connectionTooltip.statusMessage === (language === 'tr' ? 'Bağlantı sorunsuz' : 'Connection OK') ? 'text-success-500' : 'text-error-500'}`}>
-                {connectionTooltip.statusMessage}
-              </div>
-              {/* Arrow */}
-              <div className={`absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] ${isDark ? 'border-t-secondary-800' : 'border-t-white'
-                }`} />
-            </div>
-          </div>
-        )}
-
+      <ConnectionTooltip connectionTooltip={connectionTooltip} isDark={isDark} language={language} CABLE_COLORS={CABLE_COLORS} />
 
       {/* Device Tooltip */}
       {deviceTooltip && (

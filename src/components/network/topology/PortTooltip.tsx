@@ -1,22 +1,24 @@
 import React from 'react';
-import { CanvasDevice } from '../networkTopology.types';
-import type { SwitchState } from '@/lib/network/types';
+import { CanvasDevice, CanvasPort } from '../networkTopology.types';
+import { SwitchState } from '@/lib/network/types';
 
-export interface PortTooltipProps {
-  portTooltip: {
-    visible: boolean;
-    x: number;
-    y: number;
-    deviceId: string;
-    portId: string;
-  };
+interface PortTooltipState {
+  deviceId: string;
+  portId: string;
+  x: number;
+  y: number;
+  visible: boolean;
+}
+
+interface PortTooltipProps {
+  portTooltip: PortTooltipState | null;
   deviceMap: Map<string, CanvasDevice>;
-  deviceStates?: Map<string, SwitchState>;
+  deviceStates: Map<string, SwitchState> | undefined;
   isDark: boolean;
   language: string;
-  getIotDeviceStatus: (device: CanvasDevice) => string;
-  getIotPowerStatus: (device: CanvasDevice) => string;
-  getIotOpenCloseStatus: (device: CanvasDevice) => string;
+  getIotDeviceStatus: (dev: CanvasDevice) => string;
+  getIotPowerStatus: (dev: CanvasDevice) => string;
+  getIotOpenCloseStatus: (dev: CanvasDevice) => string;
   getLivePortVlanText: (deviceId: string, portId: string) => string;
 }
 
@@ -39,29 +41,18 @@ export const PortTooltip: React.FC<PortTooltipProps> = ({
         }`}
       style={{
         left: portTooltip.x,
-        top: portTooltip.y - 35, // Increased distance from port (was -10)
+        top: portTooltip.y - 10,
         transform: 'translate(-50%, -100%)',
       }}
     >
       <div
         className={`px-3 py-2 rounded-xl border liquid-glass-strong animate-scale-in shadow-2xl ${isDark
-          ? 'border-secondary-700/50 text-white shadow-accent-500/10'
+          ? 'border-secondary-700/50 text-white shadow-primary-500/10'
           : 'border-secondary-200/50 text-secondary-900 shadow-secondary-200/50'
           }`}
       >
         <div className="flex items-center gap-2 mb-1">
-          <div className={`w-2 h-2 rounded-full ${(() => {
-            const dev = deviceMap.get(portTooltip.deviceId);
-            const prt = dev?.ports.find(p => p.id === portTooltip.portId);
-            const devState = deviceStates?.get(portTooltip.deviceId);
-            const simPort = devState?.ports?.[portTooltip.portId];
-            const isSTPBlocked = simPort?.spanningTree?.state === 'blocking' || simPort?.spanningTree?.role === 'alternate';
-            const deviceVlan = dev?.vlan || simPort?.accessVlan || simPort?.vlan || 1;
-            const isVlan1 = deviceVlan === 1;
-            if (isSTPBlocked && isVlan1) return 'bg-pink-500';
-            return dev?.status === 'offline' || prt?.shutdown ? 'bg-error-500' : prt?.status === 'connected' ? 'bg-success-500' : 'bg-secondary-400';
-          })()
-            }`} />
+          <span className="w-2 h-2 rounded-full bg-primary-500" />
           <span className="text-[10px] font-black tracking-widest opacity-30">
             {portTooltip.portId}
           </span>
@@ -108,7 +99,7 @@ export const PortTooltip: React.FC<PortTooltipProps> = ({
             <span className={
               (() => {
                 const dev = deviceMap.get(portTooltip.deviceId);
-                const prt = dev?.ports.find(p => p.id === portTooltip.portId);
+                const prt = dev?.ports.find((p: CanvasPort) => p.id === portTooltip.portId);
                 const devState = deviceStates?.get(portTooltip.deviceId);
                 const simPort = devState?.ports?.[portTooltip.portId];
                 const isSTPBlocked = simPort?.spanningTree?.state === 'blocking' || simPort?.spanningTree?.role === 'alternate';
@@ -120,7 +111,7 @@ export const PortTooltip: React.FC<PortTooltipProps> = ({
             }>
               {(() => {
                 const dev = deviceMap.get(portTooltip.deviceId);
-                const prt = dev?.ports.find(p => p.id === portTooltip.portId);
+                const prt = dev?.ports.find((p: CanvasPort) => p.id === portTooltip.portId);
                 const devState = deviceStates?.get(portTooltip.deviceId);
                 const simPort = devState?.ports?.[portTooltip.portId];
                 const isSTPBlocked = simPort?.spanningTree?.state === 'blocking' || simPort?.spanningTree?.role === 'alternate';
@@ -151,7 +142,7 @@ export const PortTooltip: React.FC<PortTooltipProps> = ({
 
           {(() => {
             const dev = deviceMap.get(portTooltip.deviceId);
-            const prt = dev?.ports.find(p => p.id === portTooltip.portId);
+                const prt = dev?.ports.find((p: CanvasPort) => p.id === portTooltip.portId);
             if (prt?.ipAddress) {
               return (
                 <div className="text-xs font-bold">
@@ -165,7 +156,7 @@ export const PortTooltip: React.FC<PortTooltipProps> = ({
             return null;
           })()}
 
-          {deviceMap.get(portTooltip.deviceId)?.ports.find(p => p.id === portTooltip.portId)?.status === 'connected' && (
+          {deviceMap.get(portTooltip.deviceId)?.ports.find((p: CanvasPort) => p.id === portTooltip.portId)?.status === 'connected' && (
             <div className="text-[10px] opacity-70">
               {language === 'tr' ? 'Fiziksel bağlantı aktif' : 'Physical link active'}
             </div>

@@ -1,19 +1,19 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Plus, Cable, LineSquiggle, Plug, TrendingUpDown } from "lucide-react";
-import { CableType, CableInfo } from '@/lib/network/types';
-import { DeviceType } from '../networkTopology.types';
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Plus } from "lucide-react";
+import { CableInfo } from '@/lib/network/types';
 
-export interface TopologyPaletteSheetProps {
+interface TopologyPaletteSheetProps {
   isPaletteOpen: boolean;
   setIsPaletteOpen: (open: boolean) => void;
   isDark: boolean;
   isTR: boolean;
   t: Record<string, string>;
-  addDevice: (type: DeviceType | 'switch', layer?: 'L2' | 'L3') => void;
+  addDevice: (type: 'pc' | 'iot' | 'switch' | 'router' | 'firewall' | 'wlc', layer?: 'L2' | 'L3') => void;
   cableInfo: CableInfo;
-  onCableChange: (info: CableInfo) => void;
-  DEVICE_ICONS: Record<DeviceType | 'switch', ReactNode>;
+  onCableChange: (cableInfo: CableInfo) => void;
+  DEVICE_ICONS: Record<string, React.ReactNode>;
 }
 
 export const TopologyPaletteSheet: React.FC<TopologyPaletteSheetProps> = ({
@@ -29,159 +29,100 @@ export const TopologyPaletteSheet: React.FC<TopologyPaletteSheetProps> = ({
 }) => {
   return (
     <Sheet open={isPaletteOpen} onOpenChange={setIsPaletteOpen}>
-      <SheetContent side="left" className={`${isDark ? 'bg-secondary-900 border-secondary-800' : 'bg-white'} p-0 palette w-[300px] sm:w-[350px] border-r border-secondary-800/20 shadow-2xl transition-all duration-300 custom-scrollbar`}>
-        <SheetHeader className="p-6 border-b border-secondary-800/50">
-          <SheetTitle className="text-lg font-bold flex items-center gap-2">
-            <Plus className="w-5 h-5 text-error-500" />
-            {t.addDeviceOrCable}
+      <SheetContent
+        side="left"
+        className={`w-80 border-r ${isDark ? 'border-secondary-800 bg-secondary-900/95' : 'border-secondary-200 bg-white/95'} backdrop-blur-xl p-0`}
+      >
+        <SheetHeader className={`p-4 border-b ${isDark ? 'border-secondary-800' : 'border-secondary-200'}`}>
+          <SheetTitle className={isDark ? 'text-white' : 'text-secondary-900'}>
+            {isTR ? 'Palet' : 'Palette'}
           </SheetTitle>
         </SheetHeader>
-        <div className="p-6 space-y-8 overflow-y-auto max-h-[calc(100vh-100px)] custom-scrollbar">
+        <div className="p-4 space-y-6 overflow-y-auto max-h-[calc(100vh-5rem)]">
           {/* Devices Section */}
-          <div className="space-y-4">
-            <p className="text-[10px] font-bold tracking-widest text-secondary-500 ml-1 uppercase">{t.devices}</p>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => { addDevice('pc'); setIsPaletteOpen(false); }}
-                className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-primary-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-primary-500/50'
-                  }`}
-              >
-                <div className='text-primary-500'>
-                  {DEVICE_ICONS['pc']}
-                </div>
-                <span className="text-xs font-bold text-center">
-                  {t.addPc}
-                </span>
-              </button>
-              <button
-                onClick={() => { addDevice('switch'); setIsPaletteOpen(false); }}
-                className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-accent-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-accent-500/50'
-                  }`}
-              >
-                <div className='text-accent-500'>
-                  {DEVICE_ICONS['switch']}
-                </div>
-                <span className="text-xs font-bold text-center">
-                  L2 Switch
-                </span>
-              </button>
-              <button
-                onClick={() => { addDevice('switch', 'L3'); setIsPaletteOpen(false); }}
-                className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-purple-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-purple-500/50'
-                  }`}
-              >
-                <div className='text-purple-500'>
-                  <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-warning-500)' }} viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 12h14M5 12a2 2 0 0 1 -2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2M5 12a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 -2-2m-2-4h.01M17 16h.01" />
-                   </svg>
-                </div>
-                <span className="text-xs font-bold text-center">
-                  L3 Switch
-                </span>
-              </button>
-              <button
-                onClick={() => { addDevice('router'); setIsPaletteOpen(false); }}
-                className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-purple-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-purple-500/50'
-                  }`}
-              >
-                <div className='text-purple-500'>
-                  {DEVICE_ICONS['router']}
-                </div>
-                <span className="text-xs font-bold text-center">
-                  {t.addRouter}
-                </span>
-              </button>
-              <button
-                onClick={() => { addDevice('iot'); setIsPaletteOpen(false); }}
-                className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-warning-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-warning-500/50'
-                  }`}
-              >
-                <div className='text-warning-500'>
-                  {DEVICE_ICONS['iot']}
-                </div>
-                <span className="text-xs font-bold text-center">
-                  IoT
-                </span>
-              </button>
-              <button
-                onClick={() => { addDevice('firewall'); setIsPaletteOpen(false); }}
-                className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-error-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-error-500/50'
-                  }`}
-              >
-                <div className='text-error-500'>
-                  {DEVICE_ICONS['firewall']}
-                </div>
-                <span className="text-xs font-bold text-center">
-                  Firewall
-                </span>
-              </button>
-              <button
-                onClick={() => { addDevice('wlc'); setIsPaletteOpen(false); }}
-                className={`flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${isDark ? 'bg-secondary-800 border-secondary-700 active:bg-secondary-700 hover:border-yellow-500/50' : 'bg-secondary-50 border-secondary-200 active:bg-secondary-100 hover:border-yellow-500/50'
-                  }`}
-              >
-                <div className='text-yellow-500'>
-                  {DEVICE_ICONS['wlc']}
-                </div>
-                <span className="text-xs font-bold text-center">
-                  WLC
-                </span>
-              </button>
+          <div className="space-y-3">
+            <h3 className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
+              {isTR ? 'Cihazlar' : 'Devices'}
+            </h3>
+            <div className="grid grid-cols-2 gap-2">
+              {(['pc', 'switch', 'router', 'firewall', 'wlc', 'iot'] as const).map((type) => (
+                <Tooltip key={type}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => type === 'switch' ? addDevice('switch', 'L2') : addDevice(type)}
+                      className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200 group ${isDark
+                        ? 'border-secondary-800 bg-secondary-800/30 hover:bg-secondary-800/60 hover:border-secondary-700'
+                        : 'border-secondary-200 bg-secondary-50 hover:bg-secondary-100 hover:border-secondary-300'
+                        }`}
+                    >
+                      <div className="relative mb-2 transition-transform duration-200 group-hover:scale-110">
+                        <div className="absolute inset-0 blur-md opacity-20 group-hover:opacity-40 transition-opacity duration-200" />
+                        {DEVICE_ICONS[type]}
+                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-primary-500 rounded-full flex items-center justify-center shadow-lg transform scale-0 group-hover:scale-100 transition-transform duration-200">
+                          <Plus className="w-3 h-3 text-white" />
+                        </div>
+                      </div>
+                      <span className={`text-xs font-medium ${isDark ? 'text-secondary-300 group-hover:text-white' : 'text-secondary-600 group-hover:text-secondary-900'}`}>
+                        {t[type]}
+                      </span>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className={isDark ? 'bg-secondary-800 border-secondary-700 text-secondary-100' : 'bg-white border-secondary-200 text-secondary-900'}>
+                    <p className="text-xs font-medium">{t[`${type}Desc`] || `${t.add} ${t[type]}`}</p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
             </div>
           </div>
 
-          {/* Cables Section - Button Group with Color Coding */}
+          {/* Cables Section */}
           <div className="space-y-3">
-            <p className="text-[10px] font-bold tracking-widest text-secondary-500 ml-1 uppercase">{t.cableTypes}</p>
-            <div className={`flex sm:flex-row flex-col gap-2 rounded-xl border p-2 ${isDark ? 'border-secondary-700/50 bg-secondary-800/30' : 'border-secondary-200 bg-secondary-50/50'}`}>
-              {(['straight', 'crossover', 'serial', 'console'] as CableType[]).map((type) => {
-                const colorMap: Record<string, { active: string; inactive: string; hover: string }> = {
-                  straight: { active: 'text-primary-400', inactive: 'text-primary-500', hover: 'hover:text-primary-400' },
-                  crossover: { active: 'text-warning-400', inactive: 'text-warning-500', hover: 'hover:text-warning-400' },
-                  serial: { active: 'text-success-400', inactive: 'text-success-500', hover: 'hover:text-success-400' },
-                  console: { active: 'text-accent-400', inactive: 'text-accent-500', hover: 'hover:text-accent-400' },
-                };
-                const c = colorMap[type] || colorMap.console;
-                return (
-                  <button
-                    key={type}
-                    onClick={() => { onCableChange({ ...cableInfo, cableType: type }); setIsPaletteOpen(false); }}
-                    className={`flex items-center gap-3 p-3 rounded-lg transition-all
-                      ${isDark ? 'hover:bg-secondary-700/50' : 'hover:bg-secondary-200/50'}
-                      ${cableInfo.cableType === type
-                        ? isDark ? 'bg-secondary-700/80 border border-secondary-600' : 'bg-white border border-secondary-200 shadow-sm'
-                        : 'border border-transparent'
-                      }
-                      ${cableInfo.cableType === type ? c.active : `${c.inactive} ${c.hover}`}`}
-                  >
-                    <div className={`p-2 rounded-md ${cableInfo.cableType === type ? (isDark ? 'bg-secondary-800' : 'bg-secondary-50') : ''}`}>
-                      {type === 'straight' ? (
-                        <Cable className="w-5 h-5" />
-                      ) : type === 'crossover' ? (
-                        <LineSquiggle className="w-5 h-5" />
-                      ) : type === 'serial' ? (
-                        <Plug className="w-5 h-5" />
-                      ) : (
-                        <TrendingUpDown className="w-5 h-5" />
-                      )}
-                    </div>
-                    <div className="flex flex-col items-start">
-                      <span className="text-xs font-bold capitalize">
-                        {type === 'straight' ? t.straight : type === 'crossover' ? t.crossover : type === 'serial' ? (isTR ? 'Seri' : 'Serial') : t.console}
+            <h3 className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
+              {isTR ? 'Kablolar' : 'Cables'}
+            </h3>
+            <div className="grid grid-cols-2 gap-2">
+              {(['straight', 'crossover', 'console', 'serial', 'wireless'] as const).map((type) => (
+                <Tooltip key={type}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => onCableChange({ ...cableInfo, cableType: type })}
+                      className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200 group ${isDark
+                        ? 'border-secondary-800 bg-secondary-800/30 hover:bg-secondary-800/60 hover:border-secondary-700'
+                        : 'border-secondary-200 bg-secondary-50 hover:bg-secondary-100 hover:border-secondary-300'
+                        }`}
+                    >
+                      <div className="relative mb-2 transition-transform duration-200 group-hover:scale-110">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDark ? 'bg-secondary-800' : 'bg-white shadow-sm'}`}>
+                          <div className={`w-4 h-4 rounded-sm border-2 ${type === 'console' ? 'border-info-500' :
+                            type === 'straight' ? 'border-secondary-900' :
+                              type === 'crossover' ? 'border-secondary-500 border-dashed' :
+                                type === 'serial' ? 'border-error-500' :
+                                  'border-warning-500'
+                            }`} />
+                        </div>
+                      </div>
+                      <span className={`text-[10px] font-medium text-center ${isDark ? 'text-secondary-300 group-hover:text-white' : 'text-secondary-600 group-hover:text-secondary-900'}`}>
+                        {type === 'console' ? (isTR ? 'Konsol' : 'Console') :
+                          type === 'straight' ? (isTR ? 'Düz' : 'Straight') :
+                            type === 'crossover' ? (isTR ? 'Çapraz' : 'Crossover') :
+                              type === 'serial' ? (isTR ? 'Seri' : 'Serial') :
+                                (isTR ? 'Kablosuz' : 'Wireless')}
                       </span>
-                      <span className="text-[9px] opacity-60">
-                        {type === 'straight' ? (isTR ? 'Standart ethernet bağlantısı' : 'Standard ethernet connection') :
-                          type === 'crossover' ? (isTR ? 'Benzer cihazlar arası' : 'Between similar devices') :
-                            type === 'serial' ? (isTR ? 'Seri WAN bağlantısı' : 'Serial WAN connection') :
-                              (isTR ? 'Yönetim konsol bağlantısı' : 'Management console connection')}
-                      </span>
-                    </div>
-                  </button>
-                )
-              })}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className={isDark ? 'bg-secondary-800 border-secondary-700 text-secondary-100' : 'bg-white border-secondary-200 text-secondary-900'}>
+                    <p className="text-xs font-medium">
+                      {type === 'console' ? (isTR ? 'Yönetim bağlantısı için kullanılır' : 'Used for management connection') :
+                        type === 'straight' ? (isTR ? 'Farklı cihaz türleri arasında kullanılır' : 'Used between different device types') :
+                          type === 'crossover' ? (isTR ? 'Aynı tür cihazlar arasında kullanılır' : 'Used between same device types') :
+                            type === 'serial' ? (isTR ? 'Seri bağlantı için kullanılır' : 'Used for serial connection') :
+                              (isTR ? 'Kablosuz bağlantı için kullanılır' : 'Used for wireless connection')}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
             </div>
           </div>
-          <div className="h-4" />
         </div>
       </SheetContent>
     </Sheet>
