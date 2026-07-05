@@ -343,6 +343,24 @@ describe('guidedMode', () => {
     });
 
     describe('config', () => {
+      it('should check device-level properties', () => {
+        const deviceState = {
+          hostname: 'SW-Lab',
+          domainName: 'lab.local',
+          sshVersion: 2,
+          vtpMode: 'client',
+          mlsQosEnabled: true,
+          ipRouting: true
+        };
+
+        expect(checkStepCompletion({ ...baseStep, checkType: 'config', checkParams: { configKey: 'hostname', configValue: 'SW-Lab' } }, { deviceState: deviceState as any })).toBe(true);
+        expect(checkStepCompletion({ ...baseStep, checkType: 'config', checkParams: { configKey: 'domainName', configValue: 'lab.local' } }, { deviceState: deviceState as any })).toBe(true);
+        expect(checkStepCompletion({ ...baseStep, checkType: 'config', checkParams: { configKey: 'sshVersion', configValue: 2 } }, { deviceState: deviceState as any })).toBe(true);
+        expect(checkStepCompletion({ ...baseStep, checkType: 'config', checkParams: { configKey: 'vtpMode', configValue: 'client' } }, { deviceState: deviceState as any })).toBe(true);
+        expect(checkStepCompletion({ ...baseStep, checkType: 'config', checkParams: { configKey: 'mlsQosEnabled', configValue: true } }, { deviceState: deviceState as any })).toBe(true);
+        expect(checkStepCompletion({ ...baseStep, checkType: 'config', checkParams: { configKey: 'ipRouting', configValue: true } }, { deviceState: deviceState as any })).toBe(true);
+      });
+
       it('should check interface IP configuration', () => {
         const step = {
           ...baseStep,
@@ -413,34 +431,30 @@ describe('guidedMode', () => {
         expect(checkStepCompletion(step, { deviceState: deviceState as any })).toBe(true);
       });
 
-      it('should check PC IP configuration', () => {
-        const step = {
-          ...baseStep,
-          checkType: 'config',
-          checkParams: { configKey: 'pc.pc-1', configValue: '192.168.1.10' },
-        };
-        const topologyDevices = [{ id: 'pc-1', ip: '192.168.1.10' }];
-        expect(checkStepCompletion(step, { topologyDevices: topologyDevices as any })).toBe(true);
+      it('should check PC configuration properties', () => {
+        const topologyDevices = [{
+          id: 'pc-1',
+          ip: '192.168.1.10',
+          subnet: '255.255.255.0',
+          gateway: '192.168.1.1',
+          dns: '8.8.8.8'
+        }];
+
+        expect(checkStepCompletion({ ...baseStep, checkType: 'config', checkParams: { configKey: 'pc.pc-1.ip', configValue: '192.168.1.10' } }, { topologyDevices: topologyDevices as any })).toBe(true);
+        expect(checkStepCompletion({ ...baseStep, checkType: 'config', checkParams: { configKey: 'pc.pc-1.gateway', configValue: '192.168.1.1' } }, { topologyDevices: topologyDevices as any })).toBe(true);
+        expect(checkStepCompletion({ ...baseStep, checkType: 'config', checkParams: { configKey: 'pc.pc-1.dns', configValue: '8.8.8.8' } }, { topologyDevices: topologyDevices as any })).toBe(true);
       });
 
-      it('should check PC IP with subnet mask', () => {
-        const step = {
-          ...baseStep,
-          checkType: 'config',
-          checkParams: { configKey: 'pc.pc-1', configValue: '192.168.1.10', subnetMask: '255.255.255.0' },
-        };
-        const topologyDevices = [{ id: 'pc-1', ip: '192.168.1.10', subnet: '255.255.255.0' }];
-        expect(checkStepCompletion(step, { topologyDevices: topologyDevices as any })).toBe(true);
-      });
+      it('should check IoT properties', () => {
+        const topologyDevices = [{
+          id: 'iot-1',
+          wifi: { ssid: 'IoT-Network' },
+          iot: { sensorType: 'temperature', value: 25 }
+        }];
 
-      it('should check IoT WiFi SSID', () => {
-        const step = {
-          ...baseStep,
-          checkType: 'config',
-          checkParams: { configKey: 'iot.iot-1.ssid', configValue: 'IoT-Network' },
-        };
-        const topologyDevices = [{ id: 'iot-1', wifi: { ssid: 'IoT-Network' } }];
-        expect(checkStepCompletion(step, { topologyDevices: topologyDevices as any })).toBe(true);
+        expect(checkStepCompletion({ ...baseStep, checkType: 'config', checkParams: { configKey: 'iot.iot-1.ssid', configValue: 'IoT-Network' } }, { topologyDevices: topologyDevices as any })).toBe(true);
+        expect(checkStepCompletion({ ...baseStep, checkType: 'config', checkParams: { configKey: 'iot.iot-1.sensorType', configValue: 'temperature' } }, { topologyDevices: topologyDevices as any })).toBe(true);
+        expect(checkStepCompletion({ ...baseStep, checkType: 'config', checkParams: { configKey: 'iot.iot-1.value', configValue: 25 } }, { topologyDevices: topologyDevices as any })).toBe(true);
       });
 
       it('should check firewall IP', () => {

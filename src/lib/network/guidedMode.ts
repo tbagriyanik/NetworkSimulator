@@ -1247,6 +1247,35 @@ export const checkStepCompletion = (
       const configKey = step.checkParams.configKey;
       const configValue = step.checkParams.configValue;
 
+      // Device-level properties
+      if (configKey === 'hostname') return targetState?.hostname === configValue;
+      if (configKey === 'domainName') return targetState?.domainName === configValue;
+      if (configKey === 'dnsServer') return targetState?.dnsServer === configValue;
+      if (configKey === 'defaultGateway') return targetState?.defaultGateway === configValue;
+      if (configKey === 'domainLookup') return targetState?.domainLookup === configValue;
+      if (configKey === 'sshVersion') return Number(targetState?.sshVersion) === Number(configValue);
+      if (configKey === 'sshTimeout') return Number(targetState?.sshTimeout) === Number(configValue);
+      if (configKey === 'vtpMode') return targetState?.vtpMode === configValue;
+      if (configKey === 'vtpDomain') return targetState?.vtpDomain === configValue;
+      if (configKey === 'mlsQosEnabled') return targetState?.mlsQosEnabled === configValue;
+      if (configKey === 'dhcpSnoopingEnabled') return targetState?.dhcpSnoopingEnabled === configValue;
+      if (configKey === 'cdpEnabled') return targetState?.cdpEnabled === configValue;
+      if (configKey === 'spanningTreeMode') return targetState?.spanningTreeMode === configValue;
+      if (configKey === 'spanningTreeEnabled') return targetState?.spanningTreeEnabled === configValue;
+      if (configKey === 'spanningTreePortfastDefault') return targetState?.spanningTreePortfastDefault === configValue;
+      if (configKey === 'arpInspectionEnabled') return targetState?.arpInspectionEnabled === configValue;
+      if (configKey === 'ipRouting') return targetState?.ipRouting === configValue;
+      if (configKey === 'autoSummary') return targetState?.autoSummary === configValue;
+      if (configKey === 'routerId') return targetState?.routerId === configValue;
+      if (configKey === 'ospfRouterId') return targetState?.ospfRouterId === configValue;
+      if (configKey === 'eigrpAs') return targetState?.eigrpAs === configValue;
+      if (configKey === 'ntpServers') {
+        if (Array.isArray(targetState?.ntpServers) && Array.isArray(configValue)) {
+          return configValue.every(s => (targetState?.ntpServers as string[]).includes(s));
+        }
+        return false;
+      }
+
       if (configKey.startsWith('interfaces.') || configKey.startsWith('ports.')) {
         const parts = configKey.split('.');
         const portId = parts[1];
@@ -1261,6 +1290,22 @@ export const checkStepCompletion = (
           if (property === 'vlan') return Number(port.vlan) === Number(configValue) || Number(port.accessVlan) === Number(configValue);
           if (property === 'mode') return port.mode === configValue;
           if (property === 'enabled' && configKey.includes('portSecurity')) return port.portSecurity?.enabled === configValue;
+
+          // Additional port checks
+          if (property === 'accessGroupIn') return port.accessGroupIn === configValue;
+          if (property === 'accessGroupOut') return port.accessGroupOut === configValue;
+          if (property === 'nativeVlan') return Number(port.nativeVlan) === Number(configValue);
+          if (property === 'allowedVlans') {
+            if (Array.isArray(port.allowedVlans) && Array.isArray(configValue)) {
+              return configValue.every(v => (port.allowedVlans as number[]).includes(Number(v)));
+            }
+            return String(port.allowedVlans) === String(configValue);
+          }
+          if (property === 'description') return port.description === configValue;
+          if (property === 'speed') return port.speed === configValue;
+          if (property === 'duplex') return port.duplex === configValue;
+          if (property === 'nonegotiate') return (port as any).nonegotiate === configValue;
+          if (property === 'voiceVlan') return Number(port.voiceVlan) === Number(configValue);
 
           // WiFi checks
           if (property === 'ssid' && port.wifi) return port.wifi.ssid === configValue;
@@ -1312,21 +1357,38 @@ export const checkStepCompletion = (
        }
 
       if (configKey.startsWith('pc.')) {
-        const pcId = configKey.split('.')[1];
+        const parts = configKey.split('.');
+        const pcId = parts[1];
+        const property = parts[parts.length - 1];
         const pcDevice = context.topologyDevices?.find((d: CanvasDevice) => d.id === pcId);
         if (!pcDevice) return false;
-        const ipMatch = pcDevice.ip === configValue;
-        if (step.checkParams.subnetMask) return ipMatch && pcDevice.subnet === step.checkParams.subnetMask;
-        return ipMatch;
+
+        if (property === 'ip') {
+          const ipMatch = pcDevice.ip === configValue;
+          if (step.checkParams.subnetMask) return ipMatch && pcDevice.subnet === step.checkParams.subnetMask;
+          return ipMatch;
+        }
+        if (property === 'gateway') return pcDevice.gateway === configValue;
+        if (property === 'dns') return pcDevice.dns === configValue;
+        if (property === 'subnet') return pcDevice.subnet === configValue;
+        if (property === 'ipv6') return pcDevice.ipv6 === configValue;
+        if (property === 'ipConfigMode') return pcDevice.ipConfigMode === configValue;
+
+        // Fallback for cases where configKey might just be 'pc.pc-1'
+        return pcDevice.ip === configValue;
       }
 
       if (configKey.startsWith('iot.')) {
-        const iotId = configKey.split('.')[1];
+        const parts = configKey.split('.');
+        const iotId = parts[1];
+        const property = parts[parts.length - 1];
         const iotDevice = context.topologyDevices?.find((d: CanvasDevice) => d.id === iotId);
         if (!iotDevice) return false;
-        const property = configKey.split('.').pop();
         if (property === 'ssid') return iotDevice.wifi?.ssid === configValue;
         if (property === 'ip') return iotDevice.ip === configValue;
+        if (property === 'sensorType') return iotDevice.iot?.sensorType === configValue;
+        if (property === 'kind') return iotDevice.iot?.kind === configValue;
+        if (property === 'value') return iotDevice.iot?.value === configValue;
         return false;
       }
 

@@ -3830,10 +3830,10 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       description: isTr ? 'Temel EIGRP komutları ile dinamik yönlendirme kurulumu.' : 'Dynamic routing setup using basic EIGRP commands.',
       detail: 'router eigrp 100, network 192.168.1.0 0.0.0.255, no auto-summary',
       level: 'advanced',
-      data: baseProjectData(ripRoutingDevices, ripRoutingConnections, ripRoutingNotes, [
+      data: baseProjectData(ripRoutingDevices, ripRoutingConnections, eigrpRoutingNotes, [
         { id: 'switch0-l2', state: switch0L2State },
-        { id: 'mlswitch0', state: ripMlswitch0State },
-        { id: 'mlswitch1', state: ripMlswitch1State },
+        { id: 'mlswitch0', state: eigrpMlswitch0State },
+        { id: 'mlswitch1', state: eigrpMlswitch1State },
         { id: 'switch3-l2', state: switch3L2State }
       ])
     },
