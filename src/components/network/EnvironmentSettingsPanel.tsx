@@ -1,5 +1,6 @@
 ﻿'use client';
 
+import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useEnvironment } from '@/lib/store/appStore';
@@ -28,6 +29,17 @@ export function EnvironmentSettingsPanel({ isOpen, onOpenChange }: EnvironmentSe
   const environment = useEnvironment();
 
   const isDark = theme === 'dark';
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleMobileBack = () => onOpenChange?.(false);
+    window.addEventListener('mobile-back-pressed', handleMobileBack);
+    window.addEventListener('popstate', handleMobileBack);
+    return () => {
+      window.removeEventListener('mobile-back-pressed', handleMobileBack);
+      window.removeEventListener('popstate', handleMobileBack);
+    };
+  }, [isOpen, onOpenChange]);
 
   const handleBackgroundChange = (background: EnvironmentBackground) => {
     setEnvironment((prev) => ({ ...prev, background }));

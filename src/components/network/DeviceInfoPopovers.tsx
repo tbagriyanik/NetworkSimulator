@@ -20,6 +20,7 @@ interface RouterInfoPopoverProps {
   onClose: () => void;
   onFocus: () => void;
   zIndex: number;
+  isFocused?: boolean;
   handleDeviceDoubleClick: (type: DeviceType, id: string) => void;
   onOpenPanel: (id: string) => void;
   topologyConnections: CanvasConnection[];
@@ -33,13 +34,14 @@ interface PCInfoPopoverProps {
   onClose: () => void;
   onFocus: () => void;
   zIndex: number;
+  isFocused?: boolean;
   handleDeviceDoubleClick: (type: DeviceType, id: string) => void;
   onOpenPanel: (id: string) => void;
   topologyDevices: CanvasDevice[];
   deviceStates: Map<string, SwitchState>;
 }
 
-export function SwitchInfoPopover({ router, routerState, t, isDark, onClose, topologyConnections, onFocus, zIndex }: RouterInfoPopoverProps & { onFocus: () => void; zIndex: number }) {
+export function SwitchInfoPopover({ router, routerState, t, isDark, onClose, topologyConnections, onFocus, zIndex, isFocused = false }: RouterInfoPopoverProps) {
   const { containerRef, handleDragStart, position } = useDrag({
     storageKey: `switch-info-pos-${router.id}`,
     defaultPosition: { x: 16, y: 96 },
@@ -54,7 +56,7 @@ export function SwitchInfoPopover({ router, routerState, t, isDark, onClose, top
   return (
     <div ref={containerRef} className={cn("hidden md:block fixed animate-scale-in")}
       style={{ bottom: `${position.y}px`, right: `${position.x}px`, zIndex }}>
-      <div className={`rounded-2xl overflow-hidden border shadow-2xl min-w-[200px] max-w-[280px] backdrop-blur-md ${isDark ? 'bg-secondary-950/40 border-success-500/30 shadow-black/40' : 'bg-white/40 border-success-500/50 shadow-secondary-200/50'}`}>
+      <div className={`rounded-2xl overflow-hidden border shadow-2xl min-w-[200px] max-w-[280px] backdrop-blur-md ${isDark ? (isFocused ? 'bg-secondary-950/40 border-emerald-400 shadow-[0_0_0_1px_rgba(52,211,153,0.35),0_20px_40px_rgba(0,0,0,0.4)]' : 'bg-secondary-950/40 border-emerald-950/80 shadow-black/40') : (isFocused ? 'bg-white/40 border-emerald-500 shadow-[0_0_0_1px_rgba(34,197,94,0.24),0_20px_40px_rgba(15,23,42,0.12)]' : 'bg-white/40 border-emerald-950/80 shadow-secondary-200/50')}`}>
         <div
           className={`flex items-center justify-between px-3 py-2 border-b select-none cursor-grab active:cursor-grabbing ${isDark ? 'bg-white/5 border-success-500/20' : 'bg-black/5 border-success-500/30'}`}
           onPointerDown={(e) => { onFocus(); handleDragStart(e); }}
@@ -82,7 +84,7 @@ export function SwitchInfoPopover({ router, routerState, t, isDark, onClose, top
   );
 }
 
-export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zIndex, handleDeviceDoubleClick, onOpenPanel, topologyDevices, deviceStates }: PCInfoPopoverProps) {
+export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zIndex, isFocused = false, handleDeviceDoubleClick, onOpenPanel, topologyDevices, deviceStates }: PCInfoPopoverProps) {
   const { containerRef, handleDragStart, position } = useDrag({
     storageKey: `pc-info-pos-${pc.id}`,
     defaultPosition: { x: 16, y: 96 },
@@ -100,7 +102,7 @@ export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zInde
         zIndex
       }}
     >
-      <div className={`rounded-2xl overflow-hidden border shadow-2xl min-w-[200px] max-w-[260px] backdrop-blur-md ${isDark ? 'bg-secondary-950/40 border-success-500/30 shadow-black/40' : 'bg-white/40 border-success-500/50 shadow-secondary-200/50'}`}>
+      <div className={`rounded-2xl overflow-hidden border shadow-2xl min-w-[200px] max-w-[260px] backdrop-blur-md ${isDark ? (isFocused ? 'bg-secondary-950/40 border-emerald-400 shadow-[0_0_0_1px_rgba(52,211,153,0.35),0_20px_40px_rgba(0,0,0,0.4)]' : 'bg-secondary-950/40 border-emerald-950/80 shadow-black/40') : (isFocused ? 'bg-white/40 border-emerald-500 shadow-[0_0_0_1px_rgba(34,197,94,0.24),0_20px_40px_rgba(15,23,42,0.12)]' : 'bg-white/40 border-emerald-950/80 shadow-secondary-200/50')}`}>
         <div
           className={`flex items-center justify-between px-3 py-2 border-b select-none cursor-grab active:cursor-grabbing ${isDark ? 'bg-white/5 border-success-500/20' : 'bg-black/5 border-success-500/30'}`}
           onPointerDown={(e) => { onFocus(); handleDragStart(e); }}

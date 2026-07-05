@@ -41,6 +41,7 @@ interface PingPacketInfoPanelProps {
     zIndex?: number;
     isMobile?: boolean;
     onFocus?: () => void;
+    isFocused?: boolean;
     // Result props
     success?: boolean | null;
     isReturn?: boolean;
@@ -360,6 +361,7 @@ export function PingPacketInfoPanel({
     zIndex,
     isMobile = false,
     onFocus,
+    isFocused = false,
     success,
     isReturn,
     errorMessage,
@@ -519,8 +521,8 @@ export function PingPacketInfoPanel({
         <div
             ref={panelRef}
             className={`flex flex-col rounded-2xl overflow-hidden select-none backdrop-blur-md ${isDark
-                ? 'bg-secondary-950/40 border-secondary-800/50 text-secondary-100 shadow-black/40'
-                : 'bg-white/40 border-secondary-200/50 text-secondary-900 shadow-secondary-200/50'
+                ? (isFocused ? 'bg-secondary-950/40 border-emerald-400 text-secondary-100 shadow-[0_0_0_1px_rgba(52,211,153,0.35),0_20px_40px_rgba(0,0,0,0.4)]' : 'bg-secondary-950/40 border-emerald-950/80 text-secondary-100 shadow-black/40')
+                : (isFocused ? 'bg-white/40 border-emerald-500 text-secondary-900 shadow-[0_0_0_1px_rgba(34,197,94,0.24),0_20px_40px_rgba(15,23,42,0.12)]' : 'bg-white/40 border-emerald-950/80 text-secondary-900 shadow-secondary-200/50')
                 }`}
             style={{
                 ...posStyle,

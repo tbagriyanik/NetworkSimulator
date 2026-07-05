@@ -5441,7 +5441,12 @@ ${state.bannerMOTD}
                 <div className="flex-1 overflow-hidden rounded-b-2xl">
                   <PCPanel
                     key="pc-panel"
-                    className="h-full min-h-0"
+                      className={cn(
+                        "h-full min-h-0",
+                        focusedOverlay === 'pc-info'
+                        ? "border-emerald-400 shadow-[inset_0_0_0_1px_rgba(52,211,153,0.35)]"
+                        : "border-emerald-950/80"
+                    )}
                     deviceId={showPCDeviceId}
                     cableInfo={cableInfo}
                     initialTab={pcPanelInitialTab}
@@ -5490,17 +5495,18 @@ ${state.bannerMOTD}
           </Dialog>
 
           {/* Router Info Panel Modal */}
-          <RouterPanel
-            deviceId={showRouterDeviceId}
-            isVisible={showRouterPanel && !isTablet}
-            onClose={() => setShowRouterPanel(false)}
-            topologyDevices={topologyDevices || undefined}
-            deviceStates={deviceStates}
-            modalPosition={routerDrag.position}
-            modalSize={routerDrag.size}
-            handlePointerDown={routerDrag.handlePointerDown}
-            handleResizeStart={routerDrag.handleResizeStart}
-          />
+                  <RouterPanel
+                    deviceId={showRouterDeviceId}
+                    isVisible={showRouterPanel && !isTablet}
+                    onClose={() => setShowRouterPanel(false)}
+                    topologyDevices={topologyDevices || undefined}
+                    deviceStates={deviceStates}
+                    modalPosition={routerDrag.position}
+                    modalSize={routerDrag.size}
+                    handlePointerDown={routerDrag.handlePointerDown}
+                    handleResizeStart={routerDrag.handleResizeStart}
+                    className={focusedOverlay === 'router-info' ? "border-emerald-400 shadow-[0_0_0_1px_rgba(52,211,153,0.35)]" : "border-emerald-950/80"}
+                  />
 
           {/* Main Content - Fits between header and footer with scroll */}
           <main className={cn(
@@ -5599,6 +5605,7 @@ ${state.bannerMOTD}
                       t={t}
                       language={language}
                       isDark={isDark}
+                      isFocused={focusedOverlay === 'pc-info'}
                       onClose={() => {
                         setSelectedDevice(null);
                         setActiveDeviceId('');
@@ -5623,6 +5630,7 @@ ${state.bannerMOTD}
                       t={t}
                       language={language}
                       isDark={isDark}
+                      isFocused={focusedOverlay === 'router-info'}
                       onClose={() => {
                         setSelectedDevice(null);
                         setActiveDeviceId('');
@@ -5687,7 +5695,7 @@ ${state.bannerMOTD}
                 )}
                 {showPCPanel && (
                   <div className="h-full flex flex-col">
-                    <div className={cn("p-4 border-b flex items-center justify-between", isDark ? "bg-secondary-900" : "bg-secondary-50")}>
+                    <div className={cn("p-4 border-b flex items-center justify-between", isDark ? "bg-secondary-900" : "bg-secondary-50", focusedOverlay === 'pc-info' ? "border-emerald-400 shadow-[inset_0_0_0_1px_rgba(52,211,153,0.35)]" : "border-emerald-950/80")}>
                       <h2 className="font-bold text-sm truncate">
                         {t.pcTerminal} - {topologyDevices?.find((d: CanvasDevice) => d.id === showPCDeviceId)?.name || showPCDeviceId}
                       </h2>
@@ -5718,7 +5726,7 @@ ${state.bannerMOTD}
                 )}
                 {showRouterPanel && (
                   <div className="h-full flex flex-col">
-                    <div className={cn("p-4 border-b flex items-center justify-between", isDark ? "bg-secondary-900" : "bg-secondary-50")}>
+                    <div className={cn("p-4 border-b flex items-center justify-between", isDark ? "bg-secondary-900" : "bg-secondary-50", focusedOverlay === 'router-info' ? "border-emerald-400 shadow-[inset_0_0_0_1px_rgba(52,211,153,0.35)]" : "border-emerald-950/80")}>
                       <h2 className="font-bold text-sm truncate">
                         {t.configure} - {topologyDevices?.find((d: CanvasDevice) => d.id === showRouterDeviceId)?.name || showRouterDeviceId}
                       </h2>
@@ -5754,8 +5762,8 @@ ${state.bannerMOTD}
                       ? 'inset-0 w-full h-full rounded-none border-0' 
                       : 'top-20 right-4 w-full max-w-sm rounded-xl border shadow-2xl'
                       } animate-in slide-in-from-right-full duration-300 ${isDark
-                        ? 'bg-secondary-950/70 border-success-500/30 text-secondary-100 shadow-black/40'
-                        : 'bg-white/70 border-success-500/50 text-secondary-900 shadow-secondary-200/50'
+                        ? (focusedOverlay === 'refresh' ? 'bg-secondary-950/70 border-emerald-400 text-secondary-100 shadow-[0_0_0_1px_rgba(52,211,153,0.35),0_20px_40px_rgba(0,0,0,0.4)]' : 'bg-secondary-950/70 border-emerald-950/80 text-secondary-100 shadow-black/40')
+                        : (focusedOverlay === 'refresh' ? 'bg-white/70 border-emerald-500 text-secondary-900 shadow-[0_0_0_1px_rgba(34,197,94,0.24),0_20px_40px_rgba(15,23,42,0.12)]' : 'bg-white/70 border-emerald-950/80 text-secondary-900 shadow-secondary-200/50')
                       }`}
                   style={{
                     zIndex: 100,

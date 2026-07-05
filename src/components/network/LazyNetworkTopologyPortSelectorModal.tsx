@@ -15,6 +15,7 @@ const PortSelectorComponent = lazy(() =>
 interface LazyNetworkTopologyPortSelectorModalProps {
     isOpen: boolean;
     isDark: boolean;
+    graphicsQuality?: 'high' | 'low';
     devices: CanvasDevice[];
     cableType: CableType;
     portSelectorStep: PortSelectorStep;
@@ -27,7 +28,7 @@ interface LazyNetworkTopologyPortSelectorModalProps {
 function PortSelectorFallback() {
     return (
         <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-secondary-950/40" />
+            <div className="absolute inset-0 bg-transparent" />
             <div className="liquid-glass-light relative w-full max-w-2xl rounded-[2.5rem] bg-secondary-900/75 border-white/10 backdrop-blur-xl border shadow-2xl overflow-hidden flex flex-col transition-all duration-500">
                 <div className="px-8 py-6 border-b border-secondary-800/50 bg-secondary-800/30">
                     <div className="h-8 bg-secondary-700 rounded animate-pulse mb-4" />

@@ -130,6 +130,17 @@ export function UnifiedDevicePanel({
         }
     }, [isOpen, activeTab]);
 
+    useEffect(() => {
+        if (!isOpen) return;
+        const handleMobileBack = () => onOpenChange(false);
+        window.addEventListener('mobile-back-pressed', handleMobileBack);
+        window.addEventListener('popstate', handleMobileBack);
+        return () => {
+            window.removeEventListener('mobile-back-pressed', handleMobileBack);
+            window.removeEventListener('popstate', handleMobileBack);
+        };
+    }, [isOpen, onOpenChange]);
+
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange} modal={false}>
             <DialogContent

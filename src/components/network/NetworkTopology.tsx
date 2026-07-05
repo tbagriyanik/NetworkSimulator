@@ -4947,6 +4947,7 @@ fill="var(--color-accent-500)"
           targetName={deviceMap.get(pingAnimation.targetId)?.name ?? pingAnimation.targetId}
           sourceIp={deviceMap.get(pingAnimation.sourceId)?.ip ?? ''}
           targetIp={deviceMap.get(pingAnimation.targetId)?.ip ?? ''}
+          isFocused={true}
         />
       )}
 
@@ -4958,6 +4959,7 @@ fill="var(--color-accent-500)"
           language={language}
           isDark={isDark}
           onClose={() => setPacketPopupHop(null)}
+          isFocused={true}
         />
       )}
 
@@ -5042,6 +5044,7 @@ fill="var(--color-accent-500)"
       <LazyNetworkTopologyPortSelectorModal
         isOpen={showPortSelector}
         isDark={isDark}
+        graphicsQuality={graphicsQuality}
         devices={devices}
         cableType={cableInfo.cableType}
         portSelectorStep={portSelectorStep}

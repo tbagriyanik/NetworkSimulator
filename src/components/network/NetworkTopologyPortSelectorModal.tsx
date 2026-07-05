@@ -12,6 +12,7 @@ type PortSelectorStep = 'source' | 'target';
 interface NetworkTopologyPortSelectorModalProps {
   isOpen: boolean;
   isDark: boolean;
+  graphicsQuality?: 'high' | 'low';
   devices: CanvasDevice[];
   cableType: CableType;
   portSelectorStep: PortSelectorStep;
@@ -24,6 +25,7 @@ interface NetworkTopologyPortSelectorModalProps {
 export function NetworkTopologyPortSelectorModal({
   isOpen,
   isDark,
+  graphicsQuality = 'high',
   devices,
   cableType,
   portSelectorStep,
@@ -41,12 +43,24 @@ export function NetworkTopologyPortSelectorModal({
     return () => window.removeEventListener('mobile-back-pressed', handleMobileBack);
   }, [isOpen, onClose]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-secondary-950/40" />
-      <div className={`liquid-glass-light relative w-full max-w-2xl rounded-[2.5rem] ${isDark ? 'bg-secondary-900/75 border-white/10 backdrop-blur-xl' : 'bg-white/70 border-white/70 backdrop-blur-xl'} border shadow-2xl overflow-hidden flex flex-col transition-all duration-500`}>
+    <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4" onClick={onClose}>
+      <div className={graphicsQuality === 'low' ? 'absolute inset-0 bg-transparent' : 'absolute inset-0 bg-secondary-950/10'} />
+      <div
+        className={`liquid-glass-light relative w-full max-w-2xl rounded-[2.5rem] ${isDark ? 'bg-secondary-900/75 border-white/10 backdrop-blur-xl' : 'bg-white/70 border-white/70 backdrop-blur-xl'} border shadow-2xl overflow-hidden flex flex-col transition-all duration-500`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className={`px-8 py-6 border-b ${isDark ? 'border-secondary-800/50 bg-secondary-800/30' : 'border-secondary-100 bg-secondary-50/50'}`}>
           <div className="flex items-center justify-between gap-6">
             <div className="flex items-center gap-4">

@@ -60,6 +60,12 @@ export function DeviceConfigModal({
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    const handleMobileBack = () => onClose();
+    window.addEventListener('mobile-back-pressed', handleMobileBack);
+    return () => window.removeEventListener('mobile-back-pressed', handleMobileBack);
+  }, [onClose]);
+
   const handleSave = () => {
     const nextIp = ipValue.trim();
     const nextSubnet = subnetValue.trim();
@@ -106,6 +112,7 @@ export function DeviceConfigModal({
         className={`relative w-full max-w-md overflow-hidden rounded-[2rem] border transition-all duration-500 hover:shadow-accent-500/10 ${isDark ? 'bg-secondary-900/80 border-secondary-800/50 shadow-2xl' : 'bg-white/90 border-secondary-200/50 shadow-2xl'
           }`}
         onClick={e => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
         onKeyDown={(e) => {
           if (e.key === 'Escape') {
             e.preventDefault();

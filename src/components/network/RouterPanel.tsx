@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useIsMobile } from '@/hooks/use-breakpoint';
@@ -89,6 +89,17 @@ export function RouterPanel({
     }
     return routerDevice?.ports || [];
   }, [routerState, routerDevice]);
+
+  useEffect(() => {
+    if (!isVisible) return;
+    const handleMobileBack = () => onClose();
+    window.addEventListener('mobile-back-pressed', handleMobileBack);
+    window.addEventListener('popstate', handleMobileBack);
+    return () => {
+      window.removeEventListener('mobile-back-pressed', handleMobileBack);
+      window.removeEventListener('popstate', handleMobileBack);
+    };
+  }, [isVisible, onClose]);
 
   // Get DHCP pools from router state
   const dhcpPools = useMemo(() => {

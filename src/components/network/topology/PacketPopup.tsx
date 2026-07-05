@@ -10,9 +10,10 @@ interface PacketPopupProps {
   language: 'tr' | 'en';
   onClose: () => void;
   isDark: boolean;
+  isFocused?: boolean;
 }
 
-export function PacketPopup({ hopIndex, info, language, onClose, isDark }: PacketPopupProps) {
+export function PacketPopup({ hopIndex, info, language, onClose, isDark, isFocused = false }: PacketPopupProps) {
   const HEADER_SAFE_TOP = 72;
   const [pos, setPos] = useState<{ x: number; y: number }>(() => {
     try {
@@ -118,6 +119,12 @@ export function PacketPopup({ hopIndex, info, language, onClose, isDark }: Packe
     try { localStorage.setItem('draggable_position_packet-popup', JSON.stringify(pos)); } catch { }
   }, [pos]);
 
+  useEffect(() => {
+    const handleMobileBack = () => onClose();
+    window.addEventListener('mobile-back-pressed', handleMobileBack);
+    return () => window.removeEventListener('mobile-back-pressed', handleMobileBack);
+  }, [onClose]);
+
   const p = info;
   return (
     <div
@@ -125,7 +132,7 @@ export function PacketPopup({ hopIndex, info, language, onClose, isDark }: Packe
       style={{ position: 'fixed', left: pos.x, top: pos.y, zIndex: 9999 }}
       onClick={e => e.stopPropagation()}
     >
-      <div className={`rounded-xl border w-80 backdrop-blur-md ${isDark ? 'bg-secondary-950/40 border-secondary-800/50 shadow-black/40' : 'bg-white/40 border-secondary-200/50 shadow-secondary-200/50'}`}>
+      <div className={`rounded-xl border w-80 backdrop-blur-md ${isDark ? (isFocused ? 'bg-secondary-950/40 border-emerald-400 shadow-[0_0_0_1px_rgba(52,211,153,0.35),0_20px_40px_rgba(0,0,0,0.4)]' : 'bg-secondary-950/40 border-emerald-950/80 shadow-black/40') : (isFocused ? 'bg-white/40 border-emerald-500 shadow-[0_0_0_1px_rgba(34,197,94,0.24),0_20px_40px_rgba(15,23,42,0.12)]' : 'bg-white/40 border-emerald-950/80 shadow-secondary-200/50')}`}>
         <div
           className={`flex items-center justify-between px-3 py-2 border-b cursor-grab active:cursor-grabbing select-none ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}
           onPointerDown={handleDragStart}

@@ -31,6 +31,7 @@ export function TimelinePanel({
   const activeItemRef = useRef<HTMLButtonElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playSpeed, setPlaySpeed] = useState<1 | 2 | 4>(1);
+  const [isFocused, setIsFocused] = useState(false);
 
   // Drag state
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -91,7 +92,7 @@ export function TimelinePanel({
         setTimeout(() => setIsPlaying(false), 0);
         return;
       }
-      
+
       const delay = 1500 / playSpeed;
       interval = setInterval(() => {
         onJumpTo(historyIndex + 1);
@@ -117,21 +118,21 @@ export function TimelinePanel({
         const removedDev = prevState.topologyDevices.find(d => !curState.topologyDevices.some(pd => pd.id === d.id));
         return `Cihaz Silindi: ${removedDev?.name || 'Bilinmiyor'}`;
       }
-      
+
       // Bağlantı ekleme / silme kontrolü
       if (curState.topologyConnections.length > prevState.topologyConnections.length) {
         const newConn = curState.topologyConnections.find(c => !prevState.topologyConnections.some(pc => pc.id === c.id));
         if (newConn) {
-           const sDev = curState.topologyDevices.find(d => d.id === newConn.sourceDeviceId)?.name || newConn.sourceDeviceId;
-           const tDev = curState.topologyDevices.find(d => d.id === newConn.targetDeviceId)?.name || newConn.targetDeviceId;
-           return `${sDev} ve ${tDev} arasına bağlantı eklendi`;
+          const sDev = curState.topologyDevices.find(d => d.id === newConn.sourceDeviceId)?.name || newConn.sourceDeviceId;
+          const tDev = curState.topologyDevices.find(d => d.id === newConn.targetDeviceId)?.name || newConn.targetDeviceId;
+          return `${sDev} ve ${tDev} arasına bağlantı eklendi`;
         }
       } else if (curState.topologyConnections.length < prevState.topologyConnections.length) {
         const removedConn = prevState.topologyConnections.find(c => !curState.topologyConnections.some(pc => pc.id === c.id));
         if (removedConn) {
-           const sDev = prevState.topologyDevices.find(d => d.id === removedConn.sourceDeviceId)?.name || removedConn.sourceDeviceId;
-           const tDev = prevState.topologyDevices.find(d => d.id === removedConn.targetDeviceId)?.name || removedConn.targetDeviceId;
-           return `${sDev} ve ${tDev} arasındaki bağlantı silindi`;
+          const sDev = prevState.topologyDevices.find(d => d.id === removedConn.sourceDeviceId)?.name || removedConn.sourceDeviceId;
+          const tDev = prevState.topologyDevices.find(d => d.id === removedConn.targetDeviceId)?.name || removedConn.targetDeviceId;
+          return `${sDev} ve ${tDev} arasındaki bağlantı silindi`;
         }
       }
 
@@ -164,7 +165,7 @@ export function TimelinePanel({
   };
 
   const togglePlayback = () => setIsPlaying(!isPlaying);
-  
+
   const changeSpeed = () => {
     setPlaySpeed(prev => prev === 1 ? 2 : prev === 2 ? 4 : 1);
   };
@@ -197,20 +198,30 @@ export function TimelinePanel({
     <div
       ref={panelRef}
       tabIndex={0}
+      onFocus={() => setIsFocused(true)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+          setIsFocused(false);
+        }
+      }}
       className={cn(
-        "absolute z-40 backdrop-blur-2xl transition-all duration-300 flex flex-col overflow-hidden rounded-xl",
+        "absolute z-40 backdrop-blur-2xl transition-all duration-300 flex flex-col overflow-hidden rounded-xl outline-none",
         "left-2 right-2 bottom-[72px] w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] sm:left-4 sm:right-auto sm:bottom-20 sm:max-w-none",
-        isMinimized ? "sm:w-64 w-44" : "sm:w-[36rem] w-[calc(100vw-1rem)]",
+        isMinimized ? "w-48" : "sm:w-[36rem] w-[calc(100vw-1rem)]",
         isDark
-          ? "bg-secondary-950/30 border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]"
-          : "bg-white/92 border border-secondary-200 shadow-[0_8px_28px_rgba(15,23,42,0.12)]",
+          ? isFocused
+            ? "bg-secondary-950/30 border border-emerald-400 shadow-[0_0_0_1px_rgba(52,211,153,0.35),0_8px_32px_0_rgba(0,0,0,0.5)]"
+            : "bg-secondary-950/30 border border-emerald-950/80 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]"
+          : isFocused
+            ? "bg-white/92 border border-emerald-500 shadow-[0_0_0_1px_rgba(34,197,94,0.24),0_8px_28px_rgba(15,23,42,0.12)]"
+            : "bg-white/92 border border-emerald-950/80 shadow-[0_8px_28px_rgba(15,23,42,0.12)]",
         isMinimized ? "h-12" : "h-[9.5rem]"
       )}
       style={{ transform: `translate(${position.x}px, ${position.y}px)` }}
       onKeyDown={handleKeyDown}
     >
       {/* Header */}
-      <div 
+      <div
         className={cn(
           "flex items-center justify-between p-3 shrink-0 border-b",
           isDark ? "bg-primary-950/20 border-primary-900/30" : "bg-primary-50/80 border-primary-100",
@@ -267,7 +278,7 @@ export function TimelinePanel({
               </Button>
             </TooltipWrapper>
           </div>
-          
+
           <TooltipWrapper title={language === 'tr' ? 'Geçmişi İndir (TXT)' : 'Download History (TXT)'}>
             <Button variant="ghost" size="icon" className={cn("h-7 w-7", isDark ? "text-secondary-400 hover:text-primary-400" : "text-secondary-500 hover:text-primary-600")} onClick={() => {
               const lines = historyItems.map((item, idx) => `Adım ${idx + 1}: ${getActionLabel(item, idx)}`);
@@ -292,39 +303,39 @@ export function TimelinePanel({
         <div className={cn("flex-1 flex items-center px-4 overflow-hidden", isDark ? "bg-secondary-950/20" : "bg-white")}>
           <div className="flex-1 overflow-hidden pr-4 relative flex items-center">
             <div className="flex items-center gap-3">
-               <div className={cn(
-                 "flex items-center justify-center w-8 h-8 rounded-full border-2 shrink-0 shadow",
-                 isDark ? "border-primary-500 text-primary-500 bg-primary-950" : "border-primary-500 text-primary-600 bg-primary-50"
-               )}>
-                  <Clock className="w-4 h-4 animate-pulse" />
+              <div className={cn(
+                "flex items-center justify-center w-8 h-8 rounded-full border-2 shrink-0 shadow",
+                isDark ? "border-primary-500 text-primary-500 bg-primary-950" : "border-primary-500 text-primary-600 bg-primary-50"
+              )}>
+                <Clock className="w-4 h-4 animate-pulse" />
+              </div>
+              <div className="flex flex-col truncate">
+                <div className={cn("font-mono text-[10px] mb-0.5", isDark ? "text-secondary-400" : "text-secondary-500")}>
+                  {language === 'tr' ? 'Adım' : 'Step'} {historyIndex + 1} / {historyItems.length}
                 </div>
-               <div className="flex flex-col truncate">
-                  <div className={cn("font-mono text-[10px] mb-0.5", isDark ? "text-secondary-400" : "text-secondary-500")}>
-                    {language === 'tr' ? 'Adım' : 'Step'} {historyIndex + 1} / {historyItems.length}
-                  </div>
-                  <div className={cn("text-sm font-medium truncate", isDark ? "text-primary-300" : "text-primary-700")}>
-                    {historyItems[historyIndex] ? getActionLabel(historyItems[historyIndex], historyIndex) : ''}
-                  </div>
+                <div className={cn("text-sm font-medium truncate", isDark ? "text-primary-300" : "text-primary-700")}>
+                  {historyItems[historyIndex] ? getActionLabel(historyItems[historyIndex], historyIndex) : ''}
                 </div>
+              </div>
             </div>
           </div>
-          
+
           {/* Prev/Next Slide Buttons */}
           <div className="flex items-center gap-1 shrink-0 border-l border-secondary-800/50 pl-4 h-full py-2">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className={cn("h-9 w-9", isDark ? "text-secondary-400 hover:text-white hover:bg-secondary-800" : "text-secondary-500 hover:text-secondary-900 hover:bg-secondary-100")} 
-              onClick={() => onJumpTo(historyIndex - 1)} 
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn("h-9 w-9", isDark ? "text-secondary-400 hover:text-white hover:bg-secondary-800" : "text-secondary-500 hover:text-secondary-900 hover:bg-secondary-100")}
+              onClick={() => onJumpTo(historyIndex - 1)}
               disabled={historyIndex === 0}
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className={cn("h-9 w-9", isDark ? "text-secondary-400 hover:text-white hover:bg-secondary-800" : "text-secondary-500 hover:text-secondary-900 hover:bg-secondary-100")} 
-              onClick={() => onJumpTo(historyIndex + 1)} 
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn("h-9 w-9", isDark ? "text-secondary-400 hover:text-white hover:bg-secondary-800" : "text-secondary-500 hover:text-secondary-900 hover:bg-secondary-100")}
+              onClick={() => onJumpTo(historyIndex + 1)}
               disabled={historyIndex >= historyItems.length - 1}
             >
               <ChevronRight className="w-5 h-5" />
@@ -335,5 +346,3 @@ export function TimelinePanel({
     </div>
   );
 }
-
-
