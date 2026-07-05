@@ -12,9 +12,12 @@ interface PingAnimationProps {
   deviceMap: Map<string, CanvasDevice>;
   isTR: boolean;
   // State setters
-  setPingAnimation: React.Dispatch<React.SetStateAction<unknown>>;
-  setHopPacketInfos: (infos: unknown[]) => void;
-  setErrorToast: (toast: unknown) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setPingAnimation: React.Dispatch<React.SetStateAction<any>>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setHopPacketInfos: (infos: any[]) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setErrorToast: (toast: any) => void;
   setPingMode: (val: boolean) => void;
   // Refs from parent
   pingAnimationRef: React.MutableRefObject<number | null>;

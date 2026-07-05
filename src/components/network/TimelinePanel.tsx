@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from 'react';
 import { Clock, SkipBack, SkipForward, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, History, Play, Pause, FastForward, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { HistoryEntry } from '@/hooks/useHistory';
 import { Button } from '@/components/ui/button';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
@@ -24,6 +25,8 @@ export function TimelinePanel({
   onMinimize
 }: TimelinePanelProps) {
   const { t, language } = useLanguage();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark' || theme === 'high-contrast';
   const activeItemRef = useRef<HTMLButtonElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playSpeed, setPlaySpeed] = useState<1 | 2 | 4>(1);
@@ -158,7 +161,10 @@ export function TimelinePanel({
   return (
     <div
       className={cn(
-        "absolute bottom-20 left-4 z-40 bg-secondary-950/30 border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] backdrop-blur-2xl transition-all duration-300 flex flex-col overflow-hidden rounded-xl",
+        "absolute bottom-20 left-4 z-40 backdrop-blur-2xl transition-all duration-300 flex flex-col overflow-hidden rounded-xl",
+        isDark
+          ? "bg-secondary-950/30 border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]"
+          : "bg-white/92 border border-secondary-200 shadow-[0_8px_28px_rgba(15,23,42,0.12)]",
         isMinimized ? "w-64 h-12" : "w-[36rem] h-[9.5rem]"
       )}
       style={{ transform: `translate(${position.x}px, ${position.y}px)` }}
@@ -166,7 +172,8 @@ export function TimelinePanel({
       {/* Header */}
       <div 
         className={cn(
-          "flex items-center justify-between p-3 shrink-0 border-b bg-primary-950/20 border-primary-900/30",
+          "flex items-center justify-between p-3 shrink-0 border-b",
+          isDark ? "bg-primary-950/20 border-primary-900/30" : "bg-primary-50/80 border-primary-100",
           isDragging ? "cursor-grabbing" : "cursor-grab",
           "select-none"
         )}
@@ -175,15 +182,15 @@ export function TimelinePanel({
         onPointerUp={handlePointerUp}
       >
         <div className="flex items-center gap-2">
-          <History className="w-4 h-4 text-primary-400" />
-          <span className="font-semibold text-sm tracking-wide text-secondary-100">
+          <History className={cn("w-4 h-4", isDark ? "text-primary-400" : "text-primary-600")} />
+          <span className={cn("font-semibold text-sm tracking-wide", isDark ? "text-secondary-100" : "text-secondary-900")}>
             {language === 'tr' ? 'İşlem Geçmişi' : 'Timeline History'}
           </span>
         </div>
         <div className="flex items-center gap-1">
           <button
             onClick={onMinimize}
-            className="p-1 hover:bg-white/10 rounded-md transition-colors"
+            className={cn("p-1 rounded-md transition-colors", isDark ? "hover:bg-white/10" : "hover:bg-secondary-200/70")}
             title={isMinimized ? t.expand : t.minimize}
           >
             {isMinimized ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -193,10 +200,13 @@ export function TimelinePanel({
 
       {/* Playback Controls */}
       {!isMinimized && (
-        <div className="flex items-center justify-between gap-2 p-2 shrink-0 border-b border-secondary-800/50 bg-secondary-900/20">
+        <div className={cn(
+          "flex items-center justify-between gap-2 p-2 shrink-0 border-b",
+          isDark ? "border-secondary-800/50 bg-secondary-900/20" : "border-secondary-200 bg-secondary-50/80"
+        )}>
           <div className="flex items-center gap-2">
             <TooltipWrapper title={language === 'tr' ? 'Başa Dön' : 'Go to Start'}>
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-secondary-400 hover:text-secondary-100" onClick={() => onJumpTo(0)} disabled={historyIndex === 0}>
+              <Button variant="ghost" size="icon" className={cn("h-7 w-7", isDark ? "text-secondary-400 hover:text-secondary-100" : "text-secondary-500 hover:text-secondary-900")} onClick={() => onJumpTo(0)} disabled={historyIndex === 0}>
                 <SkipBack className="w-3.5 h-3.5" />
               </Button>
             </TooltipWrapper>
@@ -206,20 +216,20 @@ export function TimelinePanel({
               </Button>
             </TooltipWrapper>
             <TooltipWrapper title={language === 'tr' ? 'Sona Git' : 'Go to End'}>
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-secondary-400 hover:text-secondary-100" onClick={() => onJumpTo(historyItems.length - 1)} disabled={historyIndex >= historyItems.length - 1}>
+              <Button variant="ghost" size="icon" className={cn("h-7 w-7", isDark ? "text-secondary-400 hover:text-secondary-100" : "text-secondary-500 hover:text-secondary-900")} onClick={() => onJumpTo(historyItems.length - 1)} disabled={historyIndex >= historyItems.length - 1}>
                 <SkipForward className="w-3.5 h-3.5" />
               </Button>
             </TooltipWrapper>
-            <div className="w-px h-4 bg-secondary-800 mx-1"></div>
+            <div className={cn("w-px h-4 mx-1", isDark ? "bg-secondary-800" : "bg-secondary-200")} />
             <TooltipWrapper title={language === 'tr' ? 'Hız' : 'Speed'}>
-              <Button variant="ghost" size="sm" className="h-7 px-2 text-[10px] font-mono text-secondary-400 hover:text-primary-400" onClick={changeSpeed}>
+              <Button variant="ghost" size="sm" className={cn("h-7 px-2 text-[10px] font-mono", isDark ? "text-secondary-400 hover:text-primary-400" : "text-secondary-600 hover:text-primary-600")} onClick={changeSpeed}>
                 {playSpeed}x <FastForward className="w-3 h-3 ml-1" />
               </Button>
             </TooltipWrapper>
           </div>
           
           <TooltipWrapper title={language === 'tr' ? 'Geçmişi İndir (TXT)' : 'Download History (TXT)'}>
-            <Button variant="ghost" size="icon" className="h-7 w-7 text-secondary-400 hover:text-primary-400" onClick={() => {
+            <Button variant="ghost" size="icon" className={cn("h-7 w-7", isDark ? "text-secondary-400 hover:text-primary-400" : "text-secondary-500 hover:text-primary-600")} onClick={() => {
               const lines = historyItems.map((item, idx) => `Adım ${idx + 1}: ${getActionLabel(item, idx)}`);
               const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
               const url = URL.createObjectURL(blob);
@@ -239,20 +249,23 @@ export function TimelinePanel({
 
       {/* Content */}
       {!isMinimized && (
-        <div className="flex-1 flex items-center px-4 overflow-hidden bg-secondary-950/20">
+        <div className={cn("flex-1 flex items-center px-4 overflow-hidden", isDark ? "bg-secondary-950/20" : "bg-white")}>
           <div className="flex-1 overflow-hidden pr-4 relative flex items-center">
             <div className="flex items-center gap-3">
-               <div className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-primary-500 text-primary-500 bg-primary-950 shrink-0 shadow">
-                 <Clock className="w-4 h-4 animate-pulse" />
-               </div>
+               <div className={cn(
+                 "flex items-center justify-center w-8 h-8 rounded-full border-2 shrink-0 shadow",
+                 isDark ? "border-primary-500 text-primary-500 bg-primary-950" : "border-primary-500 text-primary-600 bg-primary-50"
+               )}>
+                  <Clock className="w-4 h-4 animate-pulse" />
+                </div>
                <div className="flex flex-col truncate">
-                 <div className="font-mono text-[10px] text-secondary-400 mb-0.5">
-                   {language === 'tr' ? 'Adım' : 'Step'} {historyIndex + 1} / {historyItems.length}
-                 </div>
-                 <div className="text-sm font-medium text-primary-300 truncate">
-                   {historyItems[historyIndex] ? getActionLabel(historyItems[historyIndex], historyIndex) : ''}
-                 </div>
-               </div>
+                  <div className={cn("font-mono text-[10px] mb-0.5", isDark ? "text-secondary-400" : "text-secondary-500")}>
+                    {language === 'tr' ? 'Adım' : 'Step'} {historyIndex + 1} / {historyItems.length}
+                  </div>
+                  <div className={cn("text-sm font-medium truncate", isDark ? "text-primary-300" : "text-primary-700")}>
+                    {historyItems[historyIndex] ? getActionLabel(historyItems[historyIndex], historyIndex) : ''}
+                  </div>
+                </div>
             </div>
           </div>
           
@@ -261,7 +274,7 @@ export function TimelinePanel({
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-9 w-9 text-secondary-400 hover:text-white hover:bg-secondary-800" 
+              className={cn("h-9 w-9", isDark ? "text-secondary-400 hover:text-white hover:bg-secondary-800" : "text-secondary-500 hover:text-secondary-900 hover:bg-secondary-100")} 
               onClick={() => onJumpTo(historyIndex - 1)} 
               disabled={historyIndex === 0}
             >
@@ -270,7 +283,7 @@ export function TimelinePanel({
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-9 w-9 text-secondary-400 hover:text-white hover:bg-secondary-800" 
+              className={cn("h-9 w-9", isDark ? "text-secondary-400 hover:text-white hover:bg-secondary-800" : "text-secondary-500 hover:text-secondary-900 hover:bg-secondary-100")} 
               onClick={() => onJumpTo(historyIndex + 1)} 
               disabled={historyIndex >= historyItems.length - 1}
             >

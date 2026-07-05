@@ -30,8 +30,6 @@ import { Trash2, X } from "lucide-react";
 import { areArraysEqual } from '@/lib/network/equality';
 import { getDeviceWidth, getDeviceHeight, getConnectionStatusMessage } from './networkTopology.helpers';
 import { CABLE_COLORS, DRAG_THRESHOLD, LONG_PRESS_DURATION, TOOLTIP_DELAY, TOOLTIP_OFFSET_Y, VIRTUAL_CANVAS_WIDTH_MOBILE, VIRTUAL_CANVAS_HEIGHT_MOBILE, VIRTUAL_CANVAS_WIDTH_DESKTOP, VIRTUAL_CANVAS_HEIGHT_DESKTOP, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, NOTE_COLORS, NOTE_FONTS_DESKTOP as NOTE_FONTS, NOTE_FONT_SIZES, NOTE_OPACITY as NOTE_OPACITY_OPTIONS, PC_PORT_SPACING, PORT_SPACING, PORT_START_X, PORT_START_Y, MOMENTUM_THRESHOLD, MOMENTUM_DECAY, MOMENTUM_MIN_SPEED } from './networkTopology.constants';
-import { buildHopPacketInfos } from './PingPacketInfoPanel';
-import type { HopPacketInfo } from './PingPacketInfoPanel';
 import { logger } from '@/lib/logger';
 import { PacketPopup } from './topology/PacketPopup';
 import { DeviceTooltip } from './topology/DeviceTooltip';
@@ -47,6 +45,7 @@ import { useCanvasSelection } from './hooks/useCanvasSelection';
 import { useNoteEditing } from './hooks/useNoteEditing';
 import { useConnectionDrawing } from './hooks/useConnectionDrawing';
 import { usePingAnimation } from './hooks/usePingAnimation';
+import { usePingSequence, type PingAnimationState } from './hooks/usePingSequence';
 import { CanvasToolbar } from './topology/CanvasToolbar';
 import { DeviceRenderer } from './topology/DeviceRenderer';
 
@@ -845,19 +844,48 @@ export function NetworkTopology({
   });
 
   // Ping Animation Hook
-  const { findPath, cancelPingDueToInterruption } = usePingAnimation({
+  const { findPath: _findPath, cancelPingDueToInterruption } = usePingAnimation({
     connections,
     deviceStates,
     deviceMap,
     isTR,
-    setPingAnimation: setPingAnimation as React.Dispatch<React.SetStateAction<unknown>>,
-    setHopPacketInfos: (infos: unknown[]) => setHopPacketInfos(infos as HopPacketInfo[]),
-    setErrorToast: (toast: unknown) => setErrorToast(toast as { message: string; details?: string; type?: 'success' | 'error' } | null),
+    setPingAnimation,
+    setHopPacketInfos,
+    setErrorToast,
     setPingMode,
     pingAnimationRef,
     pingCleanupTimeoutRef,
     pingIsPausedRef,
     _pingStepModeRef: pingStepModeRef
+  });
+
+  const { startPingAnimation } = usePingSequence({
+    isTR,
+    isSimulationMode,
+    devices,
+    connections,
+    deviceStates,
+    deviceMap,
+    latestDevicesRef,
+    latestConnectionsRef,
+    pingAnimationRef,
+    pingCleanupTimeoutRef,
+    pingIsPausedRef,
+    pingStepModeRef,
+    pingResumeCallbackRef,
+    pingPathRef,
+    cancelPingDueToInterruptionRef,
+    setPingAnimation: setPingAnimation as React.Dispatch<React.SetStateAction<PingAnimationState | null>>,
+    setHopPacketInfos: (infos) => setHopPacketInfos(infos),
+    setErrorToast: (toast) => setErrorToast(toast),
+    setPingMode,
+    getPingDiagnostics,
+    checkDeviceConnectivity,
+    getWirelessDistance,
+    easeInOutCubic,
+    flushSync,
+    cancelAnimationFrame,
+    requestAnimationFrame,
   });
 
   const isDraggingInteractionDisabled = isActuallyDragging || isTouchDragging;
@@ -3833,597 +3861,6 @@ export function NetworkTopology({
     cancelPingDueToInterruptionRef.current = cancelPingDueToInterruption;
   }, [cancelPingDueToInterruption]);
 
-  // Ping animation between devices with multi-hop support
-  const startPingAnimation = useCallback((sourceId: string, targetId: string) => {
-    // Cancel any existing animation
-    if (pingAnimationRef.current) {
-      cancelAnimationFrame(pingAnimationRef.current);
-    }
-
-    // Cancel any existing cleanup timeout to prevent it from cancelling the new ping
-    if (pingCleanupTimeoutRef.current) {
-      clearTimeout(pingCleanupTimeoutRef.current);
-      pingCleanupTimeoutRef.current = null;
-    }
-
-    // Clear previous ping state to avoid conflicts
-    setPingAnimation(null);
-    setErrorToast(null);
-
-    const getDevicePrimaryIp = (deviceId: string): string => {
-      const device = deviceMap.get(deviceId);
-      if (device?.ip) return device.ip;
-      if (device?.ipv6) return device.ipv6;
-
-      const state = deviceStates?.get(deviceId);
-      if (!state) return '';
-
-      for (const port of Object.values(state.ports)) {
-        if (port.ipAddress) return port.ipAddress;
-        if (port.ipv6Address) return port.ipv6Address;
-      }
-
-      return '';
-    };
-
-    // Validate source device IP
-    const sourceIp = getDevicePrimaryIp(sourceId);
-    const ipv4Regex = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/;
-    const ipv6Regex = /^([0-9a-fA-F]{1,4}:){1,7}[0-9a-fA-F:]{1,4}$/i; // Basic IPv6 check
-    const isIpValid = (ip: string) => ipv4Regex.test(ip) || ipv6Regex.test(ip) || ip.includes(':');
-
-    const isSourceIpValid = isIpValid(sourceIp);
-
-    // Validate target device IP
-    const targetIp = getDevicePrimaryIp(targetId);
-    const isTargetIpValid = isIpValid(targetIp);
-
-    // Check if both IPs are valid
-    if (!isSourceIpValid || !isTargetIpValid) {
-      const errorMessage = !isSourceIpValid
-        ? (isTR ? 'Kaynak cihazın IP adresi geçersiz' : 'Source device IP is invalid')
-        : (isTR ? 'Hedef cihazın IP adresi geçersiz' : 'Target device IP is invalid');
-
-      setPingAnimation({
-        sourceId,
-        targetId,
-        path: [sourceId, targetId],
-        currentHopIndex: 0,
-        progress: 1,
-        success: false,
-        frame: 0,
-        error: errorMessage,
-        hopCount: 0
-      });
-
-      setErrorToast({
-        message: isTR ? 'Ping başarısız!' : 'Ping failed!',
-        details: errorMessage
-      });
-
-      pingCleanupTimeoutRef.current = setTimeout(() => { setPingAnimation(null); setPingMode(false); }, 3000);
-      return;
-    }
-
-    // Get detailed diagnostics - Using ICMP for standard ping animation
-    const diagnostics = getPingDiagnostics(sourceId, targetIp, devices, connections, deviceStates, language, { protocol: 'icmp' });
-
-    const connectivity = checkDeviceConnectivity(sourceId, targetId, devices, connections, deviceStates, { protocol: 'icmp' });
-    
-    // Dispatch packet capture events so they appear in the packet analysis window
-    if (connectivity.capturedPackets && connectivity.capturedPackets.length > 0) {
-      connectivity.capturedPackets.forEach(pkt => {
-        window.dispatchEvent(new CustomEvent('packet-captured', { detail: pkt }));
-      });
-    }
-    if (!connectivity.success) {
-      const errorMessage = diagnostics.reasons.length > 0
-        ? diagnostics.reasons[0]
-        : (isTR ? 'Ping başarısız' : 'Ping failed');
-
-      // Use partial path if available (animate to where it fails), else just source
-      const partialPath = (connectivity.hopIds && connectivity.hopIds.length >= 1)
-        ? connectivity.hopIds
-        : [sourceId];
-      pingPathRef.current = partialPath;
-
-      const packetInfos = buildHopPacketInfos(partialPath, devices, connections, 64, targetIp);
-      setHopPacketInfos(packetInfos);
-
-      pingIsPausedRef.current = true;
-      pingStepModeRef.current = isSimulationMode;
-      setPingAnimation({
-        sourceId,
-        targetId,
-        path: partialPath,
-        currentHopIndex: 0,
-        progress: 0,
-        success: false,
-        frame: 0,
-        error: errorMessage,
-        hopCount: 0,
-        isPaused: true,
-        showPacketPanel: true,
-        failedAtHop: Math.max(0, partialPath.length - 2),
-      });
-
-      // Store resume callback — animation will run to the last reachable hop then stop with error
-      const runFailedAnimation = () => {
-        let startTime = Date.now();
-        let currentHop = 0;
-        let frameCount = 0;
-
-        const hopDuration = 1500;
-
-        // Animate failed - last know[n] good position
-        const animateFailed = () => {
-          // Update resume callback at the start of each frame
-          pingResumeCallbackRef.current = () => {
-            startTime = Date.now();
-            pingAnimationRef.current = requestAnimationFrame(animateFailed);
-          };
-
-          if (pingIsPausedRef.current) return;
-
-          // Check if any device in the path has been turned off during animation
-          if (partialPath.some(id => {
-            const d = latestDevicesRef.current.find(dd => dd.id === id);
-            return !d || d.status === 'offline';
-          })) {
-            cancelPingDueToInterruptionRef.current(isTR ? 'Cihaz kapatıldığı için ping iptal edildi.' : 'Ping cancelled because a device was powered off.');
-            return;
-          }
-
-          const fromId = partialPath[currentHop];
-          const toId = partialPath[currentHop + 1];
-          if (!toId) {
-            // Reached end of partial path — show error
-            flushSync(() => {
-              setPingAnimation(prev => prev ? { ...prev, success: false, isPaused: false } : null);
-            });
-            setErrorToast({ message: isTR ? 'Ping başarısız!' : 'Ping failed!', details: errorMessage });
-            // Panel stays open — user closes it manually
-            setPingMode(false);
-            return;
-          }
-          const failedSegConn = latestConnectionsRef.current.find(c =>
-            (c.sourceDeviceId === fromId && c.targetDeviceId === toId) ||
-            (c.sourceDeviceId === toId && c.targetDeviceId === fromId)
-          );
-          if (!failedSegConn || failedSegConn.active === false) {
-            if (!isWirelessHop(fromId, toId)) {
-              cancelPingDueToInterruptionRef.current(isTR ? 'Bağlantı koptuğu için ping iptal edildi.' : 'Ping cancelled because a connection was lost.');
-              return;
-            }
-          }
-          const fromDev = deviceMap.get(fromId);
-          const toDev = deviceMap.get(toId);
-          const dx = (toDev?.x ?? 0) - (fromDev?.x ?? 0);
-          const dy = (toDev?.y ?? 0) - (fromDev?.y ?? 0);
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          const dur = Math.min(hopDuration * Math.max(1, dist / 200), 3000);
-
-          const elapsed = Date.now() - startTime;
-          const rawProgress = Math.min(elapsed / dur, 1);
-          const progress = easeInOutCubic(rawProgress);
-          frameCount++;
-
-          if (progress < 1) {
-            flushSync(() => {
-              setPingAnimation(prev => prev ? { ...prev, currentHopIndex: currentHop, progress, frame: frameCount } : null);
-            });
-            pingAnimationRef.current = requestAnimationFrame(animateFailed);
-          } else {
-            if (currentHop < partialPath.length - 2) {
-              currentHop++;
-              startTime = Date.now();
-              const shouldPause = pingIsPausedRef.current || pingStepModeRef.current;
-              flushSync(() => {
-                setPingAnimation(prev => prev ? { ...prev, currentHopIndex: currentHop, progress: 0, frame: frameCount, isPaused: shouldPause } : null);
-              });
-              if (!shouldPause) {
-                pingAnimationRef.current = requestAnimationFrame(animateFailed);
-              } else {
-                // Only set paused if we're not in step mode (step mode will be handled by handlePingNext)
-                if (!pingStepModeRef.current) {
-                  pingIsPausedRef.current = true;
-                }
-                pingResumeCallbackRef.current = () => { startTime = Date.now(); pingAnimationRef.current = requestAnimationFrame(animateFailed); };
-              }
-            } else {
-              // Last reachable hop — show failure
-              flushSync(() => {
-                setPingAnimation(prev => prev ? { ...prev, currentHopIndex: currentHop, progress: 1, frame: frameCount, success: false, isPaused: false } : null);
-              });
-              setErrorToast({ message: isTR ? 'Ping başarısız!' : 'Ping failed!', details: errorMessage });
-              // Panel stays open — user closes it manually
-              setPingMode(false);
-            }
-          }
-        };
-        pingAnimationRef.current = requestAnimationFrame(animateFailed);
-      };
-
-      pingResumeCallbackRef.current = runFailedAnimation;
-      return;
-    }
-
-    // Find path between source and target
-    const path = connectivity.hopIds;
-    pingPathRef.current = path;
-
-    if (!path || path.length < 2) {
-      const errorMessage = isTR ? 'Fiziksel bağlantı yok' : 'No physical connection';
-      setHopPacketInfos([]);
-      setPingAnimation({
-        sourceId,
-        targetId,
-        path: [sourceId],
-        currentHopIndex: 0,
-        progress: 0,
-        success: false,
-        frame: 0,
-        error: errorMessage,
-        hopCount: 0,
-        isPaused: false,
-        showPacketPanel: true,
-      });
-      setErrorToast({ message: isTR ? 'Ping başarısız!' : 'Ping failed!', details: errorMessage });
-      pingCleanupTimeoutRef.current = setTimeout(() => { setPingAnimation(null); setPingMode(false); setErrorToast(null); }, 3000);
-      return;
-    }
-
-    // Build packet infos for all hops upfront
-    const packetInfos = buildHopPacketInfos(path, devices, connections, 64, targetIp);
-    setHopPacketInfos(packetInfos);
-
-    // Start ping animation — begin PAUSED so the packet panel is visible immediately
-    pingIsPausedRef.current = true;
-    pingStepModeRef.current = isSimulationMode;
-    setPingAnimation({
-      sourceId,
-      targetId,
-      path,
-      currentHopIndex: 0,
-      progress: 0,
-      success: null,
-      frame: 0,
-      hopCount: 0,
-      isPaused: true,
-      showPacketPanel: true,
-    });
-
-    // Clear any previous error toast
-    setErrorToast(null);
-
-    // Animate ping - dynamic duration based on cable distance
-    const hopDuration = 1500; // Base duration
-    let startTime = Date.now();
-    let currentHop = 0;
-    let frameCount = 0;
-
-    // Helper: detect wireless hop (persisted or implicit WiFi)
-    const isWirelessHop = (fromId: string, toId: string): boolean => {
-      const conn = connections.find(c =>
-        (c.sourceDeviceId === fromId && c.targetDeviceId === toId) ||
-        (c.sourceDeviceId === toId && c.targetDeviceId === fromId)
-      );
-      if (conn?.cableType === 'wireless') return true;
-      // Implicit wireless: IoT/PC ↔ Router/Switch via WiFi (not in persisted connections)
-      const fromDev = deviceMap.get(fromId);
-      const toDev = deviceMap.get(toId);
-      if (!fromDev || !toDev) return false;
-      const isClient = (t: string | undefined) => t === 'pc' || t === 'iot';
-      const isInfra = (t: string | undefined) => t === 'router' || t === 'switchL2' || t === 'switchL3';
-      return (isClient(fromDev.type) && isInfra(toDev.type)) ||
-        (isClient(toDev.type) && isInfra(fromDev.type));
-    };
-
-    // Calculate distance-based duration for stable animation on long cables
-    const calculateHopDuration = (fromId: string, toId: string): number => {
-      const fromDevice = deviceMap.get(fromId);
-      const toDevice = deviceMap.get(toId);
-
-      if (!fromDevice || !toDevice) return hopDuration;
-
-      const isWifi = isWirelessHop(fromId, toId);
-
-      if (isWifi) {
-        // For WiFi hops: use the weaker signal of the two endpoints
-        // Exponential slowdown matching ping ms logic: 0px→fast, 549px→slow
-        const srcDist = getWirelessDistance(fromDevice, devices, deviceStates);
-        const dstDist = getWirelessDistance(toDevice, devices, devices ? deviceStates : undefined);
-        // Use the larger distance (weaker signal dominates)
-        const effectiveDist = Math.max(
-          srcDist === Infinity ? 0 : srcDist,
-          dstDist === Infinity ? 0 : dstDist
-        );
-        // Map 0px→800ms, 549px→3000ms using exponential curve
-        const wifiBase = 800 * Math.exp(effectiveDist / 200);
-        return Math.min(wifiBase, 3000);
-      }
-
-      // Wired: scale by pixel distance and port speed
-      const conn = connections.find(c =>
-        (c.sourceDeviceId === fromId && c.targetDeviceId === toId) ||
-        (c.sourceDeviceId === toId && c.targetDeviceId === fromId)
-      );
-      const getPortSpeed = (deviceId: string, portId: string | undefined): number => {
-        if (!portId) return 100;
-        const st = deviceStates?.get(deviceId);
-        const port = st?.ports?.[portId];
-        if (!port?.speed || port.speed === 'auto') return 100;
-        return parseInt(port.speed, 10) || 100;
-      };
-      const srcSpeed = getPortSpeed(fromId, conn?.sourceDeviceId === fromId ? conn?.sourcePort : conn?.targetPort);
-      const dstSpeed = getPortSpeed(toId, conn?.sourceDeviceId === toId ? conn?.sourcePort : conn?.targetPort);
-      const linkSpeed = Math.min(srcSpeed, dstSpeed);
-      const speedFactor = linkSpeed >= 1000 ? 0.75 : linkSpeed >= 100 ? 1 : linkSpeed >= 10 ? 1.5 : 1;
-      const dx = toDevice.x - fromDevice.x;
-      const dy = toDevice.y - fromDevice.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      const baseDistance = 200;
-      const scaleFactor = Math.max(1, distance / baseDistance);
-      return Math.min(hopDuration * scaleFactor * speedFactor, 3000);
-    };
-
-
-
-    const advanceToNextHop = (hopCountIncrement: number) => {
-      if (currentHop < path.length - 1) {
-        const nextFromId = path[currentHop + 1];
-        const nextToId = path[currentHop + 2];
-        if (nextFromId && nextToId) {
-          const nextSegConn = latestConnectionsRef.current.find(c =>
-            (c.sourceDeviceId === nextFromId && c.targetDeviceId === nextToId) ||
-            (c.sourceDeviceId === nextToId && c.targetDeviceId === nextFromId)
-          );
-          if ((!nextSegConn || nextSegConn.active === false) && !isWirelessHop(nextFromId, nextToId)) {
-            cancelPingDueToInterruptionRef.current(isTR ? 'Bağlantı koptuğu için ping iptal edildi.' : 'Ping cancelled because a connection was lost.');
-            return;
-          }
-        }
-        currentHop++;
-        startTime = Date.now();
-        // Pause at hop boundary if: explicitly paused OR in step mode
-        const shouldPause = pingIsPausedRef.current || pingStepModeRef.current;
-        flushSync(() => {
-          setPingAnimation(prev => {
-            if (!prev) return null;
-            return {
-              ...prev,
-              currentHopIndex: currentHop,
-              progress: 0,
-              frame: frameCount,
-              hopCount: prev.hopCount + hopCountIncrement,
-              isPaused: shouldPause,
-            };
-          });
-        });
-        if (!shouldPause) {
-          pingAnimationRef.current = requestAnimationFrame(animate);
-        } else {
-          // Always mark as paused so handlePingNext / handlePingPlay can detect it
-          pingIsPausedRef.current = true;
-          // Store resume callback so play/next button can continue
-          pingResumeCallbackRef.current = () => {
-            startTime = Date.now();
-            pingAnimationRef.current = requestAnimationFrame(animate);
-          };
-        }
-      } else {
-        // Last forward segment done — start return animation (Echo Reply)
-        const returnPath = [...path].reverse();
-        const returnPacketInfos = buildHopPacketInfos(returnPath, devices, connections, 64, sourceIp);
-
-        // Keep step mode if it was active during forward path
-        // pingStepModeRef.current = false;
-        // pingIsPausedRef.current = false;
-
-        // Brief pause at destination before returning
-        setTimeout(() => {
-          let returnHop = 0;
-          let returnStartTime = Date.now();
-          let returnFrameCount = frameCount;
-
-          setPingAnimation(prev => {
-            if (!prev) return null;
-            return {
-              ...prev,
-              path: returnPath,
-              currentHopIndex: 0,
-              progress: 0,
-              hopCount: prev.hopCount + hopCountIncrement,
-              isPaused: pingStepModeRef.current, // Pause if in step mode
-              isReturn: true,
-            };
-          });
-          setHopPacketInfos(returnPacketInfos);
-
-          const finishSuccess = () => {
-            setPingAnimation(prev => prev ? { ...prev, success: true, isPaused: false } : null);
-            // Panel stays open — user closes it manually via the X button
-            setPingMode(false);
-          };
-
-          const animateReturn = () => {
-            // Update resume callback at the start of each frame
-            pingResumeCallbackRef.current = () => {
-              returnStartTime = Date.now();
-              pingAnimationRef.current = requestAnimationFrame(animateReturn);
-            };
-
-            if (pingIsPausedRef.current) return;
-
-            // Check if any device in return path has been powered off during animation
-            if (returnPath.some(id => {
-              const d = latestDevicesRef.current.find(dd => dd.id === id);
-              return !d || d.status === 'offline';
-            })) {
-              cancelPingDueToInterruptionRef.current(isTR ? 'Cihaz kapatıldığı için ping iptal edildi.' : 'Ping cancelled because a device was powered off.');
-              return;
-            }
-
-            const fromId = returnPath[returnHop];
-            const toId = returnPath[returnHop + 1];
-
-            // No more hops — done
-            if (!toId) {
-              finishSuccess();
-              return;
-            }
-            const returnSegConn = latestConnectionsRef.current.find(c =>
-              (c.sourceDeviceId === fromId && c.targetDeviceId === toId) ||
-              (c.sourceDeviceId === toId && c.targetDeviceId === fromId)
-            );
-            if (!returnSegConn || returnSegConn.active === false) {
-              if (!isWirelessHop(fromId, toId)) {
-                cancelPingDueToInterruptionRef.current(isTR ? 'Bağlantı koptuğu için ping iptal edildi.' : 'Ping cancelled because a connection was lost.');
-                return;
-              }
-            }
-
-            const dur = calculateHopDuration(fromId, toId);
-            const elapsed = Date.now() - returnStartTime;
-            const rawP = Math.min(elapsed / dur, 1);
-            const prog = easeInOutCubic(rawP);
-            returnFrameCount++;
-
-            if (prog < 1) {
-              flushSync(() => {
-                setPingAnimation(prev => prev ? { ...prev, currentHopIndex: returnHop, progress: prog, frame: returnFrameCount } : null);
-              });
-              pingAnimationRef.current = requestAnimationFrame(animateReturn);
-            } else {
-              // Snap to end
-              flushSync(() => {
-                setPingAnimation(prev => prev ? { ...prev, currentHopIndex: returnHop, progress: 1, frame: returnFrameCount } : null);
-              });
-
-              if (returnHop < returnPath.length - 2) {
-                // More return hops
-                returnHop++;
-                returnStartTime = Date.now();
-                const shouldPause = pingIsPausedRef.current || pingStepModeRef.current;
-                flushSync(() => {
-                  setPingAnimation(prev => prev ? { ...prev, currentHopIndex: returnHop, progress: 0, frame: returnFrameCount, isPaused: shouldPause } : null);
-                });
-                if (!shouldPause) {
-                  pingAnimationRef.current = requestAnimationFrame(animateReturn);
-                } else {
-                  // Always mark as paused so handlePingNext / handlePingPlay can detect it
-                  pingIsPausedRef.current = true;
-                  // Store resume callback for next step
-                  pingResumeCallbackRef.current = () => {
-                    returnStartTime = Date.now();
-                    pingAnimationRef.current = requestAnimationFrame(animateReturn);
-                  };
-                }
-              } else {
-                // Last return hop done
-                finishSuccess();
-              }
-            }
-          };
-
-          // Start return animation paused if in step mode
-          if (pingStepModeRef.current) {
-            pingIsPausedRef.current = true;
-            pingResumeCallbackRef.current = () => {
-              returnStartTime = Date.now();
-              pingAnimationRef.current = requestAnimationFrame(animateReturn);
-            };
-          } else {
-            pingAnimationRef.current = requestAnimationFrame(animateReturn);
-          }
-        }, 300);
-      }
-    };
-
-    const animate = () => {
-      // Update resume callback at the start of each frame
-      pingResumeCallbackRef.current = () => {
-        startTime = Date.now();
-        pingAnimationRef.current = requestAnimationFrame(animate);
-      };
-
-      // If paused, don't advance
-      if (pingIsPausedRef.current) return;
-
-      // Check if any device in path has been powered off during animation
-      if (path.some(id => {
-        const d = latestDevicesRef.current.find(dd => dd.id === id);
-        return !d || d.status === 'offline';
-      })) {
-        cancelPingDueToInterruptionRef.current(isTR ? 'Cihaz kapatıldığı için ping iptal edildi.' : 'Ping cancelled because a device was powered off.');
-        return;
-      }
-
-      // Check if the current connection segment is still active
-      const currentFromId = path[currentHop];
-      const currentToId = path[currentHop + 1];
-      if (currentToId) {
-        const segmentConn = latestConnectionsRef.current.find(c =>
-          (c.sourceDeviceId === currentFromId && c.targetDeviceId === currentToId) ||
-          (c.sourceDeviceId === currentToId && c.targetDeviceId === currentFromId)
-        );
-        if (!segmentConn || segmentConn.active === false) {
-          // Connection not found in persisted connections — check if this is an
-          // implicit wireless hop (IoT/PC ↔ Router/Switch via WiFi), which is
-          // dynamically generated in checkConnectivity but not stored in state
-          if (!isWirelessHop(currentFromId, currentToId)) {
-            cancelPingDueToInterruptionRef.current(isTR ? 'Bağlantı koptuğu için ping iptal edildi.' : 'Ping cancelled because a connection was lost.');
-            return;
-          }
-        }
-      }
-
-      const fromId = path[currentHop];
-      const toId = path[currentHop + 1];
-      const currentHopDuration = calculateHopDuration(fromId, toId);
-
-      const elapsed = Date.now() - startTime;
-      const rawProgress = Math.min(elapsed / currentHopDuration, 1);
-      const progress = easeInOutCubic(rawProgress);
-      frameCount++;
-
-      if (progress < 1) {
-        flushSync(() => {
-          setPingAnimation(prev => {
-            if (!prev) return null;
-            return { ...prev, currentHopIndex: currentHop, progress, frame: frameCount };
-          });
-        });
-        pingAnimationRef.current = requestAnimationFrame(animate);
-      } else {
-        const fromId = path[currentHop];
-        const toId = path[currentHop + 1];
-
-        const isWifi = isWirelessHop(fromId, toId);
-        const toDev = deviceMap.get(toId);
-        const isRouter = toDev?.type === 'router';
-        const currentSegmentHopCountIncrement = (isWifi || isRouter) ? 1 : 0;
-
-        // Snap to end of this segment
-        flushSync(() => {
-          setPingAnimation(prev => {
-            if (!prev) return null;
-            return { ...prev, currentHopIndex: currentHop, progress: 1, frame: frameCount };
-          });
-        });
-
-        advanceToNextHop(currentSegmentHopCountIncrement);
-      }
-    };
-
-    // Store the first hop's start callback so Play/Next can kick it off
-    // (animation starts paused, so we don't call requestAnimationFrame directly)
-    pingResumeCallbackRef.current = () => {
-      startTime = Date.now();
-      pingAnimationRef.current = requestAnimationFrame(animate);
-    };
-  }, [connections, deviceStates, devices, findPath]);
-
   // Sync ref after declaration to avoid TDZ
   useLayoutEffect(() => {
     startPingAnimationRef.current = startPingAnimation;
@@ -5735,8 +5172,3 @@ fill="var(--color-accent-500)"
     </div>
   );
 };
-
-
-
-
-
