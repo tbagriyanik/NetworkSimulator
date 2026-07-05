@@ -253,7 +253,8 @@ function runStpForVlan(
     const state = deviceStates.get(deviceId);
     if (!state) return;
 
-    const bestBp = deviceBestBpdu.get(deviceId)!;
+    const bestBp = deviceBestBpdu.get(deviceId);
+    if (!bestBp) return;
     const rootPortId = rootPortIdMap.get(deviceId);
     const isRoot = bestBp.rootBridgeId === calculateBridgeId(
       (state.spanningTreeVlans?.[vlanId]?.priority ? parseInt(state.spanningTreeVlans[vlanId].priority) : (state.spanningTreePriority || 32768)) + vlanId,
@@ -310,7 +311,8 @@ function runStpForVlan(
           vlanStpState.ports[portId] = { role: 'designated', state: 'forwarding', cost: getPortCost(port) };
         } else {
           const myBestBp = bestBp;
-          const peerBestBp = deviceBestBpdu.get(peerId)!;
+          const peerBestBp = deviceBestBpdu.get(peerId);
+          if (!peerBestBp) return;
 
           let isDesignated = false;
           if (myBestBp.rootPathCost < peerBestBp.rootPathCost) {
