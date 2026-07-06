@@ -2636,6 +2636,10 @@ export function NetworkTopology({
     e.stopPropagation();
     if (isActuallyDraggingRef.current || isTouchDraggingRef.current) return;
 
+    // Use refs to avoid stale closures
+    const isDrawingConnection = isDrawingConnectionRef.current;
+    const connectionStart = connectionStartRef.current;
+
     const device = deviceMap.get(deviceId);
     if (!device) return;
 
@@ -4052,7 +4056,7 @@ export function NetworkTopology({
 
     if (device.type === 'pc' || device.type === 'iot') {
       const pcPortSpacing = PC_PORT_SPACING;
-      const pcStartY = 99 / 2 - ((device.ports.length - 1) * pcPortSpacing) / 2;
+      const pcStartY = 85 / 2 - ((device.ports.length - 1) * pcPortSpacing) / 2;
       return {
         x: device.x + deviceWidth - 8,
         y: device.y + pcStartY + portIndex * pcPortSpacing
@@ -4514,6 +4518,7 @@ export function NetworkTopology({
                         onTouchStart={(e, id) => handleDeviceTouchStart(e as unknown as ReactTouchEvent, id)}
                         onTouchMove={handleDeviceTouchMove}
                         onTouchEnd={handleDeviceTouchEnd}
+                        isDrawingConnection={isDrawingConnection}
                         renderDeviceContent={renderDevice}
                       />
                     );
@@ -5121,8 +5126,10 @@ fill="var(--color-accent-500)"
               setPortSelectorStep('target');
             });
           } else {
-            // Complete connection
+            // Complete connection only if not clicking same source port
             const srcPort = selectedSourcePort as { deviceId: string; portId: string };
+            if (srcPort.deviceId === deviceId && srcPort.portId === portId) return;
+
             const newConnection: CanvasConnection = {
               id: `conn-${Date.now()}`,
               sourceDeviceId: srcPort.deviceId,

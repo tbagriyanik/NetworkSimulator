@@ -1,7 +1,7 @@
 // Device dimension constants
 const DEVICE_DIMENSIONS = {
-  pc: { width: 90, height: 99 },
-  iot: { width: 90, height: 99 },
+  pc: { width: 90, height: 85 },
+  iot: { width: 90, height: 85 },
   router: { width: 90, height: 80 },
   switch: { width: 130, height: 80 },
   firewall: { width: 90, height: 80 },

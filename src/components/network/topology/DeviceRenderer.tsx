@@ -678,7 +678,7 @@ export function DeviceRenderer({
                 />
               )}
               <circle
-                r={16} // Increased hit radius for mobile/UX
+                r={9} // Adjusted to prevent overlap with adjacent port (PC spacing is 18)
                 fill="transparent"
                 style={{ pointerEvents: isDraggingInteractionDisabled ? 'none' : 'all', cursor: isDraggingInteractionDisabled ? 'default' : 'pointer' }}
                 onPointerDown={(e) => {
@@ -789,7 +789,7 @@ export function DeviceRenderer({
                     />
                   )}
                   <circle
-                    r={14} // Increased hit radius
+                    r={7} // Adjusted to prevent overlap (spacing is 14)
                     fill="transparent"
                     style={{ pointerEvents: isDraggingInteractionDisabled ? 'none' : 'all', cursor: isDraggingInteractionDisabled ? 'default' : 'pointer' }}
                     onPointerDown={(e) => {
@@ -917,7 +917,7 @@ export function DeviceRenderer({
                   />
                 )}
                 <circle
-                  r={14} // Increased hit radius
+                  r={7} // Adjusted to prevent overlap (spacing is 14)
                   fill="transparent"
                   style={{ pointerEvents: isDraggingInteractionDisabled ? 'none' : 'all', cursor: isDraggingInteractionDisabled ? 'default' : 'pointer' }}
                   onPointerDown={(e) => {

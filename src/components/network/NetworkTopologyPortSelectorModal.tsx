@@ -180,7 +180,7 @@ export function NetworkTopologyPortSelectorModal({
                     ) : (
                       <>
                         <span className="flex items-center gap-1 text-secondary-400"><span className="w-2 h-2 rounded-full bg-primary-500 inline-block" /> Fa</span>
-                        <span className="flex items-center gap-1 text-secondary-400"><span className="w-2 h-2 rounded-full bg-warning-500 inline-block" /> Gi</span>
+                        <span className="flex items-center gap-1 text-secondary-400"><span className="w-2 h-2 rounded-full bg-primary-500 inline-block" /> Gi</span>
                         <span className="flex items-center gap-1 text-secondary-400"><span className="w-2 h-2 rounded-full bg-accent-500 inline-block" /> Con</span>
                       </>
                     )}
@@ -203,7 +203,6 @@ export function NetworkTopologyPortSelectorModal({
                     const isGigabit = pid.startsWith('gi');
                     const isFastEth = pid.startsWith('fa') || pid.startsWith('eth');
                     let dotCls = 'bg-secondary-600';
-                    let dotGlow = '';
                     let cardCls = isDark
                       ? 'bg-secondary-800 border-secondary-700 hover:border-accent-500/50 hover:bg-secondary-700'
                       : 'bg-white border-secondary-200 hover:border-accent-500 shadow-sm';
@@ -211,29 +210,25 @@ export function NetworkTopologyPortSelectorModal({
                     
                     if (isSelectedSource) {
                       dotCls = 'bg-success-500';
-                      dotGlow = 'shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse';
                       cardCls = isDark
-                        ? 'bg-success-950/40 border-success-500 shadow-[0_0_15px_rgba(34,197,94,0.2)]'
-                        : 'bg-success-50 border-success-500 shadow-[0_0_15px_rgba(34,197,94,0.3)]';
+                        ? 'bg-success-950/40 border-success-500'
+                        : 'bg-success-50 border-success-500';
                       textCls = 'text-success-500 font-black';
                     } else if (!isConnected) {
                       if (isConsolePrt) {
                         dotCls = 'bg-accent-500';
-                        dotGlow = 'shadow-[0_0_3px_rgba(6,182,212,0.3)]';
                         cardCls = isDark
                           ? 'bg-accent-950/20 border-accent-800/50 hover:border-accent-400 hover:bg-accent-900/30'
                           : 'bg-accent-50 border-accent-200 hover:border-accent-400 shadow-sm';
                         textCls = 'text-accent-400 group-hover:text-accent-300';
                       } else if (isGigabit) {
-                        dotCls = 'bg-warning-500';
-                        dotGlow = 'shadow-[0_0_3px_rgba(249,115,22,0.3)]';
+                        dotCls = 'bg-primary-500'; // Use primary instead of warning (golden)
                         cardCls = isDark
-                          ? 'bg-warning-950/20 border-warning-800/50 hover:border-warning-400 hover:bg-warning-900/30'
-                          : 'bg-warning-50 border-warning-200 hover:border-warning-400 shadow-sm';
-                        textCls = 'text-warning-400 group-hover:text-warning-300';
+                          ? 'bg-primary-950/20 border-primary-800/50 hover:border-primary-400 hover:bg-primary-900/30'
+                          : 'bg-primary-50 border-primary-200 hover:border-primary-400 shadow-sm';
+                        textCls = 'text-primary-400 group-hover:text-primary-300';
                       } else if (isFastEth) {
                         dotCls = 'bg-primary-500';
-                        dotGlow = 'shadow-[0_0_3px_rgba(59,130,246,0.3)]';
                         cardCls = isDark
                           ? 'bg-primary-950/20 border-primary-800/50 hover:border-primary-400 hover:bg-primary-900/30'
                           : 'bg-primary-50 border-primary-200 hover:border-primary-400 shadow-sm';
@@ -250,14 +245,18 @@ export function NetworkTopologyPortSelectorModal({
                       <button
                         key={`${device.id}-${port.id}`}
                         disabled={isDisabled}
-                        onClick={() => onSelectPort(device.id, port.id)}
+                        onClick={() => {
+                          // Don't call onSelectPort if clicking already selected source port in target step
+                          if (portSelectorStep === 'target' && isSelectedSource) return;
+                          onSelectPort(device.id, port.id);
+                        }}
                         className={`group relative flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all duration-300 border ${
                           isDisabled && !isSelectedSource
                           ? disabledStyles
-                          : `${cardCls} ${!isSelectedSource ? 'hover:scale-110' : 'scale-105 ring-2 ring-success-500/50'}`
+                          : cardCls
                         }`}
                       >
-                        <div className={`w-3.5 h-3.5 rounded-full transition-all duration-300 ${isDisabled && !isSelectedSource ? 'bg-secondary-600' : `${dotCls} ${dotGlow}`}`} />
+                        <div className={`w-3.5 h-3.5 rounded-full transition-all duration-300 ${isDisabled && !isSelectedSource ? 'bg-secondary-600' : dotCls}`} />
                         <span className={`text-xs font-bold font-mono transition-colors ${isDisabled && !isSelectedSource ? 'text-secondary-600' : textCls}`}>
                           {port.label.replace('FastEthernet', 'Fa').replace('GigabitEthernet', 'Gi')}
                         </span>

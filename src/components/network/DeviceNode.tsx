@@ -20,6 +20,7 @@ interface DeviceNodeProps {
   onTouchMove: (e: React.TouchEvent<SVGGElement>) => void;
   onTouchEnd: (e: React.TouchEvent<SVGGElement>) => void;
   renderDeviceContent: (device: CanvasDevice, isDragging: boolean) => React.ReactNode;
+  isDrawingConnection?: boolean;
 }
 
 export const DeviceNode = memo(function DeviceNode({
@@ -144,7 +145,8 @@ export const DeviceNode = memo(function DeviceNode({
     prevProps.isSelected !== nextProps.isSelected ||
     prevProps.isActive !== nextProps.isActive ||
     prevProps.isDragging !== nextProps.isDragging ||
-    prevProps.isDark !== nextProps.isDark
+    prevProps.isDark !== nextProps.isDark ||
+    prevProps.isDrawingConnection !== nextProps.isDrawingConnection
   ) {
     return false; // Re-render et
   }
