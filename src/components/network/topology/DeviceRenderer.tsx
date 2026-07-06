@@ -75,6 +75,7 @@ export function DeviceRenderer({
   isDrawingConnection = false,
   connectionStart = null
 }: DeviceRendererProps) {
+  const isTargetingThisDevice = isDrawingConnection && connectionStart && connectionStart.deviceId !== device.id;
   const isTR = language === 'tr';
   const isSwitchDevice = (type: string) => type === 'switchL2' || type === 'switchL3';
 
@@ -650,10 +651,12 @@ export function DeviceRenderer({
           const isShutdown = port.shutdown;
           const isDeviceOffline = device.status === 'offline';
           const isStartPort = isDrawingConnection && connectionStart?.deviceId === device.id && connectionStart?.portId === port.id;
+          const isTargetPort = isTargetingThisDevice && !isConnected;
           const hasProblem = isShutdown || isDeviceOffline || (isConnected && !isPortConnectionHealthy(port.id));
           const portLabel = port.id.toLowerCase().startsWith('com') ? 'C' : 'E';
 
           const portColor = isStartPort ? 'var(--color-success-500)' :
+            isTargetPort ? 'var(--color-warning-500)' :
             (isShutdown || isDeviceOffline) ? STATUS_COLORS.offline :
             port.id.toLowerCase().startsWith('com')
               ? (isConnected ? PORT_COLORS.console.connected : PORT_COLORS.console.disconnected)
@@ -667,8 +670,15 @@ export function DeviceRenderer({
               onMouseEnter={(e) => handlePortHover(e, device.id, port.id)}
               onMouseLeave={handlePortMouseLeave}
             >
+              {isTargetPort && (
+                <circle
+                  r={12}
+                  className="animate-pulse"
+                  style={{ fill: 'var(--color-warning-500)', opacity: 0.3 }}
+                />
+              )}
               <circle
-                r={12}
+                r={16} // Increased hit radius for mobile/UX
                 fill="transparent"
                 style={{ pointerEvents: isDraggingInteractionDisabled ? 'none' : 'all', cursor: isDraggingInteractionDisabled ? 'default' : 'pointer' }}
                 onPointerDown={(e) => {
@@ -682,9 +692,9 @@ export function DeviceRenderer({
               <circle
                 r={7}
                 fill={portColor}
-                stroke={getPortFrameColor(port.id, hasProblem, isConnected)}
-                strokeWidth={isShutdown || isDeviceOffline || isConnected ? 2 : 1}
-                opacity={hasProblem ? 0.45 : 1}
+                stroke={isTargetPort ? 'var(--color-warning-400)' : getPortFrameColor(port.id, hasProblem, isConnected)}
+                strokeWidth={isShutdown || isDeviceOffline || isConnected || isTargetPort ? 2 : 1}
+                opacity={hasProblem && !isTargetPort ? 0.45 : 1}
                 style={{ pointerEvents: 'none' }}
               />
               <text y={1} fill="var(--color-background)" fontSize="7" textAnchor="middle" dominantBaseline="middle" style={{ userSelect: 'none', pointerEvents: 'none' }}>
@@ -731,6 +741,7 @@ export function DeviceRenderer({
               const deviceVlan = device.vlan || simulatorPort?.accessVlan || simulatorPort?.vlan || 1;
               const isVlan1 = deviceVlan === 1;
               const isBlocked = isSTPBlocked && isVlan1;
+              const isTargetPort = isTargetingThisDevice && !isConnected;
               const hasProblem = isShutdown || isDeviceOffline || isBlocked || (isConnected && !isPortConnectionHealthy(port.id));
 
               let portFill: string;
@@ -739,6 +750,9 @@ export function DeviceRenderer({
               if (isStartPort) {
                 portFill = 'var(--color-success-500)';
                 portStroke = 'var(--color-success-400)';
+              } else if (isTargetPort) {
+                portFill = 'var(--color-warning-500)';
+                portStroke = 'var(--color-warning-400)';
               } else if (isShutdown || isDeviceOffline) {
                 portFill = 'var(--color-error-500)';
                 portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
@@ -767,8 +781,15 @@ export function DeviceRenderer({
                   onMouseEnter={(e) => handlePortHover(e, device.id, port.id)}
                   onMouseLeave={handlePortMouseLeave}
                 >
+                  {isTargetPort && (
+                    <circle
+                      r={10}
+                      className="animate-pulse"
+                      style={{ fill: 'var(--color-warning-500)', opacity: 0.3 }}
+                    />
+                  )}
                   <circle
-                    r={10}
+                    r={14} // Increased hit radius
                     fill="transparent"
                     style={{ pointerEvents: isDraggingInteractionDisabled ? 'none' : 'all', cursor: isDraggingInteractionDisabled ? 'default' : 'pointer' }}
                     onPointerDown={(e) => {
@@ -782,9 +803,9 @@ export function DeviceRenderer({
                   <circle
                     r={6}
                     fill={portFill}
-                    stroke={isBlocked ? portStroke : getPortFrameColor(port.id, hasProblem, isConnected)}
-                    strokeWidth={isShutdown || isDeviceOffline || isConnected ? 2 : 1}
-                    opacity={hasProblem && !isBlocked ? 0.45 : 1}
+                    stroke={isBlocked || isTargetPort ? portStroke : getPortFrameColor(port.id, hasProblem, isConnected)}
+                    strokeWidth={isShutdown || isDeviceOffline || isConnected || isTargetPort ? 2 : 1}
+                    opacity={hasProblem && !isBlocked && !isTargetPort ? 0.45 : 1}
                     style={{ pointerEvents: 'none' }}
                   />
                   <text y={1} style={{ fill: 'var(--color-background)', userSelect: 'none', pointerEvents: 'none' }} fontSize="6" textAnchor="middle" dominantBaseline="middle">
@@ -832,6 +853,7 @@ export function DeviceRenderer({
             const isStartPort = isDrawingConnection && connectionStart?.deviceId === device.id && connectionStart?.portId === port.id;
             const simulatorPort = deviceState?.ports?.[port.id];
             const isSTPBlocked = simulatorPort?.spanningTree?.state === 'blocking' || simulatorPort?.spanningTree?.role === 'alternate';
+            const isTargetPort = isTargetingThisDevice && !isConnected;
             const hasProblem = isShutdown || isDeviceOffline || isSTPBlocked || (isConnected && !isPortConnectionHealthy(port.id));
 
             let portFill: string;
@@ -840,6 +862,9 @@ export function DeviceRenderer({
             if (isStartPort) {
               portFill = 'var(--color-success-500)';
               portStroke = 'var(--color-success-400)';
+            } else if (isTargetPort) {
+              portFill = 'var(--color-warning-500)';
+              portStroke = 'var(--color-warning-400)';
             } else if (isShutdown || isDeviceOffline) {
               portFill = 'var(--color-error-500)';
               portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
@@ -884,8 +909,15 @@ export function DeviceRenderer({
                 onMouseEnter={(e) => handlePortHover(e, device.id, port.id)}
                 onMouseLeave={handlePortMouseLeave}
               >
+                {isTargetPort && (
+                  <circle
+                    r={10}
+                    className="animate-pulse"
+                    style={{ fill: 'var(--color-warning-500)', opacity: 0.3 }}
+                  />
+                )}
                 <circle
-                  r={10}
+                  r={14} // Increased hit radius
                   fill="transparent"
                   style={{ pointerEvents: isDraggingInteractionDisabled ? 'none' : 'all', cursor: isDraggingInteractionDisabled ? 'default' : 'pointer' }}
                   onPointerDown={(e) => {
@@ -899,9 +931,9 @@ export function DeviceRenderer({
                 <circle
                   r={6}
                   fill={portFill}
-                  stroke={isSTPBlocked ? portStroke : getPortFrameColor(port.id, hasProblem, isConnected)}
-                  strokeWidth={isShutdown || isDeviceOffline || isConnected ? 2 : 1}
-                  opacity={hasProblem && !isSTPBlocked ? 0.45 : 1}
+                  stroke={isSTPBlocked || isTargetPort ? portStroke : getPortFrameColor(port.id, hasProblem, isConnected)}
+                  strokeWidth={isShutdown || isDeviceOffline || isConnected || isTargetPort ? 2 : 1}
+                  opacity={hasProblem && !isSTPBlocked && !isTargetPort ? 0.45 : 1}
                   style={{ pointerEvents: 'none' }}
                 />
                 <text y={1} style={{ fill: 'var(--color-background)', userSelect: 'none', pointerEvents: 'none' }} fontSize="6" textAnchor="middle" dominantBaseline="middle">

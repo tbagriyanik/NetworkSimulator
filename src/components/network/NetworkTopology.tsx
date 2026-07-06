@@ -2070,6 +2070,14 @@ export function NetworkTopology({
     // Ping mode is now handled in handleDeviceMouseDown for better browser compatibility
     // This click handler only handles normal device selection
 
+    // Tap-to-connect logic: If we are drawing a connection and click a device body, open port selector
+    if (isDrawingConnection && connectionStart && connectionStart.deviceId !== device.id) {
+      setSelectedSourcePort(connectionStart);
+      setPortSelectorStep('target');
+      setShowPortSelector(true);
+      return;
+    }
+
     if (isMobile && !isDrawingConnection) {
       if (!mobileConnectionSource) {
         setMobileConnectionSource(device.id);
@@ -2145,6 +2153,13 @@ export function NetworkTopology({
 
   // Handle right-click context menu with viewport clamping
   const handleContextMenu = useCallback((e: ReactMouseEvent, deviceId?: string) => {
+    // If in ping mode, don't show context menu to avoid interfering with target selection
+    if (pingMode) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+
     e.preventDefault();
     e.stopPropagation();
 
@@ -2170,7 +2185,7 @@ export function NetworkTopology({
 
     window.dispatchEvent(new CustomEvent('close-menus-broadcast', { detail: { source: 'topology' } }));
     openContextMenu(x, y, deviceId || null, deviceId ? 'device' : 'canvas');
-  }, [openContextMenu]);
+  }, [openContextMenu, pingMode]);
 
   // Handle device touch start - for mobile dragging
   const handleDeviceTouchStart = useCallback((e: ReactTouchEvent, deviceId: string) => {
