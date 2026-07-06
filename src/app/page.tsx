@@ -3200,17 +3200,7 @@ ${state.bannerMOTD}
         ]
       }
     ]);
-    setTopologyConnections([
-      {
-        id: 'conn-init-1',
-        sourceDeviceId: 'pc-1',
-        sourcePort: 'eth0',
-        targetDeviceId: 'switch-1',
-        targetPort: 'fa0/1',
-        cableType: 'straight',
-        active: true
-      }
-    ]);
+    setTopologyConnections([]);
     setTopologyNotes([]);
 
     // Reset zoom and pan to top-left

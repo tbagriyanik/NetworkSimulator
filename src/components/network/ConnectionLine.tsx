@@ -74,9 +74,10 @@ export const ConnectionLine = memo(function ConnectionLine({
 
   const isPoweredOff = sourceDevice.status === 'offline' || targetDevice.status === 'offline';
   const isEffectivelyActive = connection.active && isCompatible && !isShutdown && !isPoweredOff && !isSTPBlocking;
+  // Use secondary-500 for both dark and light when inactive — visible on both themes
   const color = !isCompatible || connection.active === false ? CABLE_COLORS.error.primary :
-    isShutdown || (isSTPBlocking && isVlan1) ? (isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)') : // Gray if shutdown or STP blocking (VLAN 1 only)
-      isPoweredOff ? (isDark ? 'var(--color-secondary-800)' : 'var(--color-secondary-400)') : // Gray if device offline
+    isShutdown || (isSTPBlocking && isVlan1) ? (isDark ? 'var(--color-secondary-500)' : 'var(--color-secondary-400)') : // Gray if shutdown or STP blocking (VLAN 1 only)
+      isPoweredOff ? (isDark ? 'var(--color-secondary-500)' : 'var(--color-secondary-400)') : // Gray if device offline
         CABLE_COLORS[connection.cableType].primary;
 
   // Calculate offset for parallel lines (spread out from center)
@@ -166,7 +167,8 @@ export const ConnectionLine = memo(function ConnectionLine({
         className="pointer-events-none"
         vectorEffect="non-scaling-stroke"
         style={{
-          opacity: isHovered ? 0.72 : 0.4,
+          // Inactive cables (powered off / shutdown) get higher opacity so they're visible in dark mode
+          opacity: isHovered ? 0.72 : (isEffectivelyActive ? 0.4 : 0.65),
           filter: isHovered || (graphicsQuality === 'high' && isEffectivelyActive) ?
             'drop-shadow(0 0 0.5px ' + color + ') drop-shadow(0 0 1px ' + color + ')' :
             'none',

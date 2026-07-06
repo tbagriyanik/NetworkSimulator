@@ -332,7 +332,11 @@ export function NetworkTopology({
 
   // Ping mode state
   const [pingMode, setPingMode] = useState(false);
+  const pingModeRef = useRef(false);
   const [pingSource, setPingSource] = useState<CanvasDevice | null>(null);
+  const pingSourceRef = useRef<CanvasDevice | null>(null);
+  useEffect(() => { pingModeRef.current = pingMode; }, [pingMode]);
+  useEffect(() => { pingSourceRef.current = pingSource; }, [pingSource]);
   const [_pingResult, setPingResult] = useState<{ success: boolean; message: string } | null>(null);
   const [pingCursorPos, setPingCursorPos] = useState<{ x: number; y: number } | null>(null);
   const startPingAnimationRef = useRef<((sourceId: string, targetId: string) => void) | null>(null);
@@ -1982,20 +1986,41 @@ export function NetworkTopology({
     if (!device) return;
 
     // Ping mode: handle immediately on mousedown for better Chrome compatibility
-    if (pingMode) {
-      if (!pingSource) {
+    const currentPingMode = pingModeRef.current;
+    const currentPingSource = pingSourceRef.current;
+    if (currentPingMode) {
+      if (!currentPingSource) {
         // First click: select source
         setPingSource(device);
+        pingSourceRef.current = device;
         setPingResult(null);
+        
+        pingIsPausedRef.current = false;
+        pingStepModeRef.current = false;
+        if (pingAnimationRef.current) {
+          cancelAnimationFrame(pingAnimationRef.current);
+          pingAnimationRef.current = null;
+        }
+        if (pingCleanupTimeoutRef.current) {
+          clearTimeout(pingCleanupTimeoutRef.current);
+          pingCleanupTimeoutRef.current = null;
+        }
+        setPingAnimation(null);
+        setHopPacketInfos([]);
+        setPacketPopupHop(null);
+
         return; // Don't proceed with drag/selection logic
       } else {
         // Second click: run ping immediately
-        if (device.id === pingSource.id) return; // same device, ignore
+        if (device.id === currentPingSource.id) return; // same device, ignore
         // Exit ping mode immediately, then run animation
         setPingMode(false);
+        pingModeRef.current = false;
         setPingSource(null);
+        pingSourceRef.current = null;
+        setPacketPopupHop(null);
         // Trigger full ping animation (includes connectivity check + toast)
-        startPingAnimationRef.current?.(pingSource.id, device.id);
+        startPingAnimationRef.current?.(currentPingSource.id, device.id);
         return; // Don't proceed with drag/selection logic
       }
     }
@@ -2069,6 +2094,9 @@ export function NetworkTopology({
 
     // Ping mode is now handled in handleDeviceMouseDown for better browser compatibility
     // This click handler only handles normal device selection
+    if (pingModeRef.current || pingSourceRef.current) {
+      return;
+    }
 
     // Tap-to-connect logic: If we are drawing a connection and click a device body, open port selector
     if (isDrawingConnection && connectionStart && connectionStart.deviceId !== device.id) {
@@ -2882,8 +2910,27 @@ export function NetworkTopology({
       else if (deviceType === 'wlc') addDevice('wlc');
     };
     const handleTogglePingMode = () => {
-      setPingMode(m => !m);
+      setPingMode(m => {
+        pingModeRef.current = !m;
+        if (!m) {
+          pingIsPausedRef.current = false;
+          pingStepModeRef.current = false;
+          if (pingAnimationRef.current) {
+            cancelAnimationFrame(pingAnimationRef.current);
+            pingAnimationRef.current = null;
+          }
+          if (pingCleanupTimeoutRef.current) {
+            clearTimeout(pingCleanupTimeoutRef.current);
+            pingCleanupTimeoutRef.current = null;
+          }
+          setPingAnimation(null);
+          setHopPacketInfos([]);
+          setPacketPopupHop(null);
+        }
+        return !m;
+      });
       setPingSource(null);
+      pingSourceRef.current = null;
       setPingResult(null);
     };
     const handleAddNote = () => addNote();
@@ -4719,8 +4766,8 @@ fill="var(--color-accent-500)"
                       y={Math.min(selectionBox.start.y, selectionBox.current.y)}
                       width={Math.abs(selectionBox.current.x - selectionBox.start.x)}
                       height={Math.abs(selectionBox.current.y - selectionBox.start.y)}
-                      fill={isDark ? "rgba(6, 182, 212, 0.1)" : "rgba(6, 182, 212, 0.1)"}
-                      stroke={isDark ? "rgba(6, 182, 212, 0.6)" : "rgba(6, 182, 212, 0.5)"}
+                      fill={isDark ? "rgba(34, 197, 94, 0.12)" : "rgba(34, 197, 94, 0.1)"}
+                      stroke={isDark ? "rgba(34, 197, 94, 0.7)" : "rgba(34, 197, 94, 0.6)"}
                       strokeWidth={1.5 / zoom}
                       strokeDasharray={`${4 / zoom}, ${4 / zoom}`}
                       pointerEvents="none"
