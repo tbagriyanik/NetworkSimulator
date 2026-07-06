@@ -653,7 +653,7 @@ export function DeviceRenderer({
           const hasProblem = isShutdown || isDeviceOffline || (isConnected && !isPortConnectionHealthy(port.id));
           const portLabel = port.id.toLowerCase().startsWith('com') ? 'C' : 'E';
 
-          const portColor = isStartPort ? 'var(--color-success-400)' :
+          const portColor = isStartPort ? 'var(--color-success-500)' :
             (isShutdown || isDeviceOffline) ? STATUS_COLORS.offline :
             port.id.toLowerCase().startsWith('com')
               ? (isConnected ? PORT_COLORS.console.connected : PORT_COLORS.console.disconnected)
@@ -674,6 +674,9 @@ export function DeviceRenderer({
                 onPointerDown={(e) => {
                   e.stopPropagation();
                   handlePortClick(e, device.id, port.id);
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
                 }}
               />
               <circle
@@ -734,8 +737,8 @@ export function DeviceRenderer({
               let portStroke: string;
 
               if (isStartPort) {
-                portFill = 'var(--color-success-400)';
-                portStroke = 'var(--color-success-300)';
+                portFill = 'var(--color-success-500)';
+                portStroke = 'var(--color-success-400)';
               } else if (isShutdown || isDeviceOffline) {
                 portFill = 'var(--color-error-500)';
                 portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
@@ -771,6 +774,9 @@ export function DeviceRenderer({
                     onPointerDown={(e) => {
                       e.stopPropagation();
                       handlePortClick(e, device.id, port.id);
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
                     }}
                   />
                   <circle
@@ -832,8 +838,8 @@ export function DeviceRenderer({
             let portStroke: string;
 
             if (isStartPort) {
-              portFill = 'var(--color-success-400)';
-              portStroke = 'var(--color-success-300)';
+              portFill = 'var(--color-success-500)';
+              portStroke = 'var(--color-success-400)';
             } else if (isShutdown || isDeviceOffline) {
               portFill = 'var(--color-error-500)';
               portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
@@ -885,6 +891,9 @@ export function DeviceRenderer({
                   onPointerDown={(e) => {
                     e.stopPropagation();
                     handlePortClick(e, device.id, port.id);
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
                   }}
                 />
                 <circle

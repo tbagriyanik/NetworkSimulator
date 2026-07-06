@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { CableType } from '@/lib/network/types';
 import { X, Cable, LineSquiggle, Plug, TrendingUpDown } from 'lucide-react';
@@ -146,11 +146,7 @@ export function NetworkTopologyPortSelectorModal({
             const isSwitch = device.type === 'switchL2' || device.type === 'switchL3';
             // In the "connect cable" panel, we want to show all ports regardless of cable type
             // But we still separate them by availability for better UX
-            const filteredPorts = device.ports.filter((_p) => {
-              // Only filter out the source device when selecting the target
-              if (portSelectorStep === 'target' && selectedSourcePort?.deviceId === device.id) return false;
-              return true;
-            });
+            const filteredPorts = device.ports;
             if (filteredPorts.length === 0) return null;
 
             return (
@@ -192,6 +188,16 @@ export function NetworkTopologyPortSelectorModal({
                   </div>
                   {filteredPorts.map((port) => {
                     const isConnected = port.status === 'connected';
+                    const isSelectedSource = selectedSourcePort?.deviceId === device.id && selectedSourcePort?.portId === port.id && selectedSourcePort?.portId !== '';
+                    
+                    // In the first step (source selection):
+                    // If we already predefined the source device (e.g. from mobile tap-tap), 
+                    // then only that source device's ports should be enabled. All other devices' ports are disabled.
+                    // If selectedSourcePort is null (e.g. opened from toolbar), any device's ports are enabled.
+                    const isSelectable = portSelectorStep === 'source'
+                      ? (selectedSourcePort ? selectedSourcePort.deviceId === device.id : true)
+                      : (selectedSourcePort ? selectedSourcePort.deviceId !== device.id : true);
+
                     const pid = port.id.toLowerCase();
                     const isConsolePrt = pid === 'console' || pid.startsWith('com');
                     const isGigabit = pid.startsWith('gi');
@@ -202,7 +208,15 @@ export function NetworkTopologyPortSelectorModal({
                       ? 'bg-secondary-800 border-secondary-700 hover:border-accent-500/50 hover:bg-secondary-700'
                       : 'bg-white border-secondary-200 hover:border-accent-500 shadow-sm';
                     let textCls = isDark ? 'text-secondary-500 group-hover:text-white' : 'text-secondary-500 group-hover:text-accent-600';
-                    if (!isConnected) {
+                    
+                    if (isSelectedSource) {
+                      dotCls = 'bg-success-500';
+                      dotGlow = 'shadow-[0_0_8px_rgba(34,197,94,0.6)] animate-pulse';
+                      cardCls = isDark
+                        ? 'bg-success-950/40 border-success-500 shadow-[0_0_15px_rgba(34,197,94,0.2)]'
+                        : 'bg-success-50 border-success-500 shadow-[0_0_15px_rgba(34,197,94,0.3)]';
+                      textCls = 'text-success-500 font-black';
+                    } else if (!isConnected) {
                       if (isConsolePrt) {
                         dotCls = 'bg-accent-500';
                         dotGlow = 'shadow-[0_0_3px_rgba(6,182,212,0.3)]';
@@ -226,17 +240,25 @@ export function NetworkTopologyPortSelectorModal({
                         textCls = 'text-primary-400 group-hover:text-primary-300';
                       }
                     }
+
+                    const isDisabled = isConnected || !isSelectable;
+                    const disabledStyles = isDark 
+                      ? 'bg-secondary-900/40 border-secondary-800 cursor-not-allowed opacity-40' 
+                      : 'bg-secondary-200 border-secondary-300 cursor-not-allowed opacity-40';
+
                     return (
                       <button
                         key={`${device.id}-${port.id}`}
-                        disabled={isConnected}
+                        disabled={isDisabled}
                         onClick={() => onSelectPort(device.id, port.id)}
-                        className={`group relative flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all duration-300 border ${isConnected
-                          ? (isDark ? 'bg-secondary-900/40 border-secondary-800 cursor-not-allowed opacity-40' : 'bg-secondary-200 border-secondary-300 cursor-not-allowed opacity-40')
-                          : `${cardCls} hover:scale-110`}`}
+                        className={`group relative flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all duration-300 border ${
+                          isDisabled && !isSelectedSource
+                          ? disabledStyles
+                          : `${cardCls} ${!isSelectedSource ? 'hover:scale-110' : 'scale-105 ring-2 ring-success-500/50'}`
+                        }`}
                       >
-                        <div className={`w-3.5 h-3.5 rounded-full transition-all duration-300 ${isConnected ? 'bg-secondary-600' : `${dotCls} ${dotGlow}`}`} />
-                        <span className={`text-xs font-bold font-mono transition-colors ${isConnected ? 'text-secondary-600' : textCls}`}>
+                        <div className={`w-3.5 h-3.5 rounded-full transition-all duration-300 ${isDisabled && !isSelectedSource ? 'bg-secondary-600' : `${dotCls} ${dotGlow}`}`} />
+                        <span className={`text-xs font-bold font-mono transition-colors ${isDisabled && !isSelectedSource ? 'text-secondary-600' : textCls}`}>
                           {port.label.replace('FastEthernet', 'Fa').replace('GigabitEthernet', 'Gi')}
                         </span>
                       </button>

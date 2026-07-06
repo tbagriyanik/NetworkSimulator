@@ -2765,7 +2765,7 @@ export function NetworkTopology({
         point: { x: portX, y: portY },
       });
     }
-  }, [devices, isDrawingConnection, connectionStart, cableInfo, onCableChange, saveToHistory, language, t]);
+  }, [devices, connections, isDrawingConnection, connectionStart, cableInfo, onCableChange, saveToHistory, language, t]);
 
   // Note management functions
   // noteClipboard and noteTextSelection are now managed by useNoteEditing hook
@@ -5101,8 +5101,10 @@ fill="var(--color-accent-500)"
         onCableTypeChange={(nextType) => onCableChange({ ...cableInfo, cableType: nextType })}
         onSelectPort={(deviceId, portId) => {
           if (portSelectorStep === 'source') {
-            setSelectedSourcePort({ deviceId, portId });
-            setPortSelectorStep('target');
+            flushSync(() => {
+              setSelectedSourcePort({ deviceId, portId });
+              setPortSelectorStep('target');
+            });
           } else {
             // Complete connection
             const srcPort = selectedSourcePort as { deviceId: string; portId: string };
@@ -5116,51 +5118,55 @@ fill="var(--color-accent-500)"
               active: true,
             };
 
-            setConnections((prev) => [...prev, newConnection]);
+            flushSync(() => {
+              setConnections((prev) => [...prev, newConnection]);
 
-            // Update port status
-            setDevices((prev) =>
-              prev.map((d) => {
-                if (d.id === srcPort.deviceId) {
-                  return {
-                    ...d,
-                    ports: d.ports.map((p) =>
-                      p.id === srcPort.portId ? { ...p, status: 'connected' as const } : p
-                    ),
-                  };
-                }
-                if (d.id === deviceId) {
-                  return {
-                    ...d,
-                    ports: d.ports.map((p) =>
-                      p.id === portId ? { ...p, status: 'connected' as const } : p
-                    ),
-                  };
-                }
-                return d;
-              })
-            );
+              // Update port status
+              setDevices((prev) =>
+                prev.map((d) => {
+                  if (d.id === srcPort.deviceId) {
+                    return {
+                      ...d,
+                      ports: d.ports.map((p) =>
+                        p.id === srcPort.portId ? { ...p, status: 'connected' as const } : p
+                      ),
+                    };
+                  }
+                  if (d.id === deviceId) {
+                    return {
+                      ...d,
+                      ports: d.ports.map((p) =>
+                        p.id === portId ? { ...p, status: 'connected' as const } : p
+                      ),
+                    };
+                  }
+                  return d;
+                })
+              );
 
-      // Trigger STP recalculation for all switches
-      window.dispatchEvent(new CustomEvent('stp-recalculation-needed', {
-        detail: { topologyDevices: devices, topologyConnections: [...connections, newConnection] }
-      }));
+              // Update cable info
+              const sourceDevice = deviceMap.get(srcPort.deviceId);
+              const targetDevice = deviceMap.get(deviceId);
+              if (sourceDevice && targetDevice) {
+                onCableChange({
+                  ...cableInfo,
+                  connected: true,
+                  sourceDevice: sourceDevice.type,
+                  targetDevice: targetDevice.type,
+                });
+              }
 
-            // Update cable info
-            const sourceDevice = deviceMap.get(srcPort.deviceId);
-            const targetDevice = deviceMap.get(deviceId);
-            if (sourceDevice && targetDevice) {
-              onCableChange({
-                ...cableInfo,
-                connected: true,
-                sourceDevice: sourceDevice.type,
-                targetDevice: targetDevice.type,
-              });
-            }
+              setShowPortSelector(false);
+              setPortSelectorStep('source');
+              setSelectedSourcePort(null);
+            });
 
-            setShowPortSelector(false);
-            setPortSelectorStep('source');
-            setSelectedSourcePort(null);
+            // Trigger STP recalculation for all switches AFTER UI update to prevent stuttering
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('stp-recalculation-needed', {
+                detail: { topologyDevices: devices, topologyConnections: [...connections, newConnection] }
+              }));
+            }, 0);
           }
         }}
       />
