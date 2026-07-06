@@ -2107,11 +2107,6 @@ export function NetworkTopology({
           description: isTR ? "Hedef cihazı seçin." : "Select the target device.",
           duration: 3000,
         });
-      } else if (mobileConnectionSource !== device.id) {
-        setSelectedSourcePort({ deviceId: mobileConnectionSource, portId: '' });
-        setPortSelectorStep('source');
-        setShowPortSelector(true);
-        setMobileConnectionSource(null);
       } else {
         setMobileConnectionSource(null);
       }
@@ -2336,12 +2331,6 @@ export function NetworkTopology({
             description: isTR ? "Hedef cihazı seçin." : "Select the target device.",
             duration: 3000,
           });
-        } else if (mobileConnectionSource !== deviceId) {
-          // Second tap on different device: trigger port selector
-          setSelectedSourcePort({ deviceId: mobileConnectionSource, portId: '' });
-          setPortSelectorStep('source'); // Start with source port for the first device
-          setShowPortSelector(true);
-          setMobileConnectionSource(null);
         } else {
           // Tap same device again: cancel
           setMobileConnectionSource(null);
@@ -4759,10 +4748,10 @@ fill="var(--color-accent-500)"
                       y={Math.min(selectionBox.start.y, selectionBox.current.y)}
                       width={Math.abs(selectionBox.current.x - selectionBox.start.x)}
                       height={Math.abs(selectionBox.current.y - selectionBox.start.y)}
-                      fill={isDark ? "rgba(34, 197, 94, 0.12)" : "rgba(34, 197, 94, 0.1)"}
-                      stroke={isDark ? "rgba(34, 197, 94, 0.7)" : "rgba(34, 197, 94, 0.6)"}
-                      strokeWidth={1.5 / zoom}
-                      strokeDasharray={`${4 / zoom}, ${4 / zoom}`}
+                      fill={isDark ? "rgba(34, 197, 94, 0.2)" : "rgba(34, 197, 94, 0.15)"}
+                      stroke={isDark ? "rgba(34, 197, 94, 1)" : "rgba(34, 197, 94, 0.9)"}
+                      strokeWidth={2 / zoom}
+                      strokeDasharray={`${6 / zoom}, ${6 / zoom}`}
                       pointerEvents="none"
                     />
                   )}

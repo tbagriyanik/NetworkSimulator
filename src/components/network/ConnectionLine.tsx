@@ -76,8 +76,8 @@ export const ConnectionLine = memo(function ConnectionLine({
   const isEffectivelyActive = connection.active && isCompatible && !isShutdown && !isPoweredOff && !isSTPBlocking;
   // Use secondary-500 for both dark and light when inactive — visible on both themes
   const color = !isCompatible || connection.active === false ? CABLE_COLORS.error.primary :
-    isShutdown || (isSTPBlocking && isVlan1) ? (isDark ? 'var(--color-secondary-500)' : 'var(--color-secondary-400)') : // Gray if shutdown or STP blocking (VLAN 1 only)
-      isPoweredOff ? (isDark ? 'var(--color-secondary-500)' : 'var(--color-secondary-400)') : // Gray if device offline
+    isShutdown || (isSTPBlocking && isVlan1) ? (isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-400)') : // Gray if shutdown or STP blocking (VLAN 1 only)
+      isPoweredOff ? (isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-400)') : // Gray if device offline
         CABLE_COLORS[connection.cableType].primary;
 
   // Calculate offset for parallel lines (spread out from center)

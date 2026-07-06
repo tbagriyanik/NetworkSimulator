@@ -4309,12 +4309,8 @@ ${state.bannerMOTD}
               .filter(([, owners]) => owners.length > 1)
               .map(([ip, owners]) => `${ip}: ${owners.join(', ')}`)
               .join('\n');
-            showConflictToast(
-              language === 'tr' ? `IP Çakışması (${duplicateIpCount})` : `IP Conflict (${duplicateIpCount})`,
-              dupIpDesc
-            );
+            showConflictToast(t.ipConflict, dupIpDesc);
           }
-
           if (duplicateMacCount > 0) {
             const dupMacDesc = Array.from(macOwners.entries())
               .filter(([, owners]) => owners.length > 1)
@@ -4451,6 +4447,7 @@ ${state.bannerMOTD}
       // F5 - Refresh network connections and WiFi status
       if (e.key === 'F5') {
         e.preventDefault();
+        setTopologyKey(prev => prev + 1);
         handleRefreshNetwork();
         return;
       }
