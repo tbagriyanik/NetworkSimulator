@@ -552,7 +552,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     setOnboardingStep(0);
     setIsEnvironmentPanelOpen(false);
     setActiveTab('topology');
-    setIsTimelineMinimized(false);
+    setIsTimelineMinimized(true);
     setRefreshNetworkReport(null);
     setProjectSearchQuery('');
     setLoadedExampleId('');
@@ -2357,7 +2357,7 @@ ${state.bannerMOTD}
       setShowProjectPicker(false);
       setShowOnboarding(false);
       setIsEnvironmentPanelOpen(false);
-      setIsTimelineMinimized(false);
+      setIsTimelineMinimized(true);
       setRefreshNetworkReport(null);
       setProjectSearchQuery('');
       setLoadedExampleId('');

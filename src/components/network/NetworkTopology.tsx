@@ -25,7 +25,7 @@ import { DeviceNode } from './DeviceNode';
 import LazyNetworkTopologyContextMenu from './LazyNetworkTopologyContextMenu';
 import { LazyNetworkTopologyPortSelectorModal } from './LazyNetworkTopologyPortSelectorModal';
 import { PacketCapturePanel } from './PacketCapturePanel';
-import { Trash2, X } from "lucide-react";
+import { Trash2, X, Cable, LineSquiggle, Plug, TrendingUpDown, Wifi } from "lucide-react";
 
 import { areArraysEqual } from '@/lib/network/equality';
 import { getDeviceWidth, getDeviceHeight, getConnectionStatusMessage } from './networkTopology.helpers';
@@ -5004,39 +5004,83 @@ fill="var(--color-accent-500)"
 
       {/* Mobile Device Palette Sheet */}
       <Sheet open={mobilePaletteOpen} onOpenChange={setMobilePaletteOpen}>
-        <SheetContent side="bottom" className="rounded-t-[2rem] px-6 pb-10 border-t-2 border-primary/20 bg-background/95 backdrop-blur-xl">
-          <SheetHeader className="mb-6 pt-2">
-            <SheetTitle className="text-center font-black tracking-tighter text-2xl uppercase">
-              {t.addDevice}
+        <SheetContent side="bottom" className={`rounded-t-[2rem] px-6 pb-10 border-t-2 border-primary/20 backdrop-blur-xl ${isDark ? 'bg-secondary-900/95' : 'bg-white/95'}`}>
+          <SheetHeader className="mb-4 pt-2">
+            <SheetTitle className={`text-center font-black tracking-tighter text-xl uppercase ${isDark ? 'text-white' : 'text-secondary-900'}`}>
+              {isTR ? 'Cihaz & Kablo Ekle' : 'Add Device & Cable'}
             </SheetTitle>
           </SheetHeader>
-          <div className="grid grid-cols-3 gap-4 max-w-sm mx-auto">
+
+          {/* Devices */}
+          <p className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
+            {isTR ? 'Cihazlar' : 'Devices'}
+          </p>
+          <div className="grid grid-cols-4 gap-2 mb-5">
             {([
-              { type: 'pc', label: 'PC', layer: undefined, icon: DEVICE_ICONS.pc },
-              { type: 'switch', label: 'L2 SW', layer: 'L2', icon: DEVICE_ICONS.switchL2 },
-              { type: 'switch', label: 'L3 SW', layer: 'L3', icon: DEVICE_ICONS.switchL3 },
-              { type: 'router', label: 'Router', layer: undefined, icon: DEVICE_ICONS.router },
-              { type: 'firewall', label: 'Firewall', layer: undefined, icon: DEVICE_ICONS.firewall },
-              { type: 'iot', label: 'IoT', layer: undefined, icon: DEVICE_ICONS.iot },
-              { type: 'wlc', label: 'WLC', layer: undefined, icon: DEVICE_ICONS.wlc },
-            ] as const).map((item) => (
+              { type: 'pc'      as const, label: 'PC',       layer: undefined as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.pc },
+              { type: 'switch'  as const, label: 'L2 SW',    layer: 'L2'      as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.switchL2 },
+              { type: 'switch'  as const, label: 'L3 SW',    layer: 'L3'      as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.switchL3 },
+              { type: 'router'  as const, label: 'Router',   layer: undefined as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.router },
+              { type: 'firewall'as const, label: 'Firewall', layer: undefined as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.firewall },
+              { type: 'iot'     as const, label: 'IoT',      layer: undefined as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.iot },
+              { type: 'wlc'     as const, label: 'WLC',      layer: undefined as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.wlc },
+            ]).map((item) => (
               <button
                 key={`${item.type}-${item.layer || ''}`}
                 onClick={() => {
-                  addDevice(item.type, item.layer as 'L2' | 'L3');
+                  addDevice(item.type, item.layer);
                   setMobilePaletteOpen(false);
                 }}
-                className={`flex flex-col items-center gap-2 p-4 rounded-2xl transition-all active:scale-95 ${isDark ? 'bg-secondary-800/50 hover:bg-secondary-800' : 'bg-secondary-100 hover:bg-secondary-200'
-                  }`}
+                className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all active:scale-95 ${isDark
+                  ? 'border-secondary-700 bg-secondary-800/50 hover:bg-secondary-800'
+                  : 'border-secondary-200 bg-secondary-50 hover:bg-secondary-100'}`}
               >
-                <div className="w-10 h-10 flex items-center justify-center">
+                <div className="w-8 h-8 flex items-center justify-center">
                   {item.icon}
                 </div>
-                <span className="text-[10px] font-black tracking-widest uppercase opacity-70">
+                <span className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-secondary-300' : 'text-secondary-600'}`}>
                   {item.label}
                 </span>
               </button>
             ))}
+          </div>
+
+          {/* Cables */}
+          <p className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
+            {isTR ? 'Kablolar' : 'Cables'}
+          </p>
+          <div className="grid grid-cols-5 gap-2">
+            {([
+              { type: 'straight'  as const, label: isTR ? 'Düz'    : 'Straight',  icon: <Cable         className="w-5 h-5" />, activeColor: 'text-primary-400',  color: 'text-primary-500'  },
+              { type: 'crossover' as const, label: isTR ? 'Çapraz' : 'Crossover', icon: <LineSquiggle  className="w-5 h-5" />, activeColor: 'text-warning-400',  color: 'text-warning-500'  },
+              { type: 'serial'    as const, label: isTR ? 'Seri'   : 'Serial',    icon: <Plug          className="w-5 h-5" />, activeColor: 'text-success-400',  color: 'text-success-500'  },
+              { type: 'console'   as const, label: isTR ? 'Konsol' : 'Console',   icon: <TrendingUpDown className="w-5 h-5" />, activeColor: 'text-accent-400',   color: 'text-accent-500'   },
+              { type: 'wireless'  as const, label: isTR ? 'Kablo-' : 'Wireless',  icon: <Wifi          className="w-5 h-5" />, activeColor: 'text-purple-400',   color: 'text-purple-500'   },
+            ]).map((item) => {
+              const isActive = cableInfo.cableType === item.type;
+              return (
+                <button
+                  key={item.type}
+                  onClick={() => { onCableChange({ ...cableInfo, cableType: item.type }); setMobilePaletteOpen(false); }}
+                  className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all active:scale-95 ${
+                    isActive
+                      ? isDark
+                        ? 'border-secondary-500 bg-secondary-700/80'
+                        : 'border-secondary-400 bg-secondary-200/80'
+                      : isDark
+                        ? 'border-secondary-700 bg-secondary-800/50 hover:bg-secondary-800'
+                        : 'border-secondary-200 bg-secondary-50 hover:bg-secondary-100'}`}
+                >
+                  <div className={`relative flex items-center justify-center ${isActive ? item.activeColor : item.color}`}>
+                    {item.icon}
+                    {isActive && <span className="absolute -bottom-1 -right-1 w-2 h-2 bg-primary-500 rounded-full" />}
+                  </div>
+                  <span className={`text-[9px] font-bold text-center leading-tight ${isActive ? item.activeColor : item.color}`}>
+                    {item.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </SheetContent>
       </Sheet>
