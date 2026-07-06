@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
@@ -226,7 +226,7 @@ export function ExamModePanel({
   if (isMinimized) {
     return (
       <div
-        className="fixed z-50 flex flex-col gap-2"
+        className="fixed z-[70] flex flex-col gap-2"
         style={{ left: position.x, top: position.y }}
       >
         <div
@@ -259,7 +259,7 @@ export function ExamModePanel({
   return (
     <div
       className={cn(
-        "fixed z-50 w-[320px] max-w-[calc(100vw-16px)] flex flex-col rounded-xl overflow-hidden",
+        "fixed z-[70] w-[320px] max-w-[calc(100vw-16px)] flex flex-col rounded-xl overflow-hidden",
         isDragging && "cursor-default"
       )}
       style={{

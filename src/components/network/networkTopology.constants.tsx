@@ -83,6 +83,7 @@ export const CABLE_COLORS: Record<CableType | 'error', { primary: string; bg: st
   console: { primary: 'var(--color-accent-500)', bg: 'bg-accent-500', text: 'text-accent-400', border: 'border-accent-500/30' },
   wireless: { primary: 'var(--color-warning-400)', bg: 'bg-purple-500', text: 'text-purple-400', border: 'border-purple-500/30' },
   serial: { primary: 'var(--color-success-500)', bg: 'bg-success-500', text: 'text-success-400', border: 'border-success-500/30' },
+  fiber: { primary: 'var(--color-primary-500)', bg: 'bg-primary-500', text: 'text-primary-400', border: 'border-primary-500/30' },
   error: { primary: 'var(--color-error-500)', bg: 'bg-error-500', text: 'text-error-400', border: 'border-error-500/30' },
 };
 

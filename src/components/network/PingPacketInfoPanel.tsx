@@ -2,7 +2,7 @@
 import { CanvasDevice, CanvasConnection } from './networkTopology.types';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { X } from 'lucide-react';
-import { cableColors } from '@/lib/design-tokens/colors';
+import { CABLE_COLORS } from './networkTopology.constants';
 
 export interface HopPacketInfo {
     hopIndex: number;
@@ -161,11 +161,11 @@ function getCableLabel(cableType: string, t: typeof tr) {
 }
 
 function getCableColor(cableType: string) {
-    if (cableType === 'crossover') return cableColors.crossover.primary;
-    if (cableType === 'fiber') return cableColors.fiber.primary;
-    if (cableType === 'console') return cableColors.console.primary;
-    if (cableType === 'serial') return cableColors.serial.primary;
-    if (cableType === 'straight') return cableColors.straight.primary;
+    if (cableType === 'crossover') return CABLE_COLORS.crossover.primary;
+    if (cableType === 'fiber') return CABLE_COLORS.fiber.primary;
+    if (cableType === 'console') return CABLE_COLORS.console.primary;
+    if (cableType === 'serial') return CABLE_COLORS.serial.primary;
+    if (cableType === 'straight') return CABLE_COLORS.straight.primary;
     return 'var(--color-secondary-400)';
 }
 

@@ -438,7 +438,7 @@ export function GuidedModePanel({
   if (isMinimized) {
     return (
       <div
-        className="fixed z-50 flex flex-col gap-2"
+        className="fixed z-[70] flex flex-col gap-2"
         style={{
           left: position.x,
           top: position.y,
@@ -488,7 +488,7 @@ export function GuidedModePanel({
     <div
       ref={panelRef}
       className={cn(
-        "fixed z-50 w-80 flex flex-col rounded-xl overflow-hidden",
+        "fixed z-[70] w-80 flex flex-col rounded-xl overflow-hidden",
         isDragging && "cursor-default"
       )}
       style={{

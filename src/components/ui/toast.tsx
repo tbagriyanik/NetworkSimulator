@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import * as React from "react"
 import * as ToastPrimitives from "@radix-ui/react-toast"
@@ -16,9 +16,10 @@ const ToastViewport = React.forwardRef<
   <ToastPrimitives.Viewport
     ref={ref}
     className={cn(
-      "fixed right-0 bottom-0 z-[99999] flex max-h-screen w-full flex-col p-4 md:max-w-[420px] overflow-x-hidden",
+      "fixed right-0 bottom-0 z-[999999] flex max-h-screen w-full flex-col p-4 md:max-w-[420px] overflow-x-hidden",
       className
     )}
+    style={{ zIndex: 999999, ...(props.style || {}) }}
     {...props}
   />
 ))

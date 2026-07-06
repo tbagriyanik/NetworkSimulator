@@ -205,7 +205,7 @@ export function TimelinePanel({
         }
       }}
       className={cn(
-        "absolute z-40 backdrop-blur-2xl transition-all duration-300 flex flex-col overflow-hidden rounded-xl outline-none",
+        "absolute z-30 backdrop-blur-2xl transition-all duration-300 flex flex-col overflow-hidden rounded-xl outline-none",
         "left-2 right-2 bottom-[72px] w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] sm:left-4 sm:right-auto sm:bottom-20 sm:max-w-none",
         isMinimized ? "w-48" : "sm:w-[36rem] w-[calc(100vw-1rem)]",
         isDark

@@ -1,5 +1,7 @@
 // Network Simulator Types
 
+import type { SwitchModel } from './switchModels';
+
 export type CommandMode =
   | 'user'           // Switch>
   | 'privileged'     // Switch#
@@ -263,7 +265,7 @@ export interface SecurityConfig {
   vtyLines: LineConfig;
 }
 
-export type SwitchModel = 'WS-C2960-24TT-L' | 'WS-C3650-24PS' | 'ASA-5506-X' | 'AIR-CT2504-K9';
+export type { SwitchModel } from './switchModels';
 type SwitchLayer = 'L2' | 'L3' | 'FW' | 'WLC';
 
 export interface StpVlanState {
@@ -641,7 +643,7 @@ export interface CommandValidationResult {
 }
 
 // Kablo Tipleri
-export type CableType = 'straight' | 'crossover' | 'console' | 'wireless' | 'serial';
+export type CableType = 'straight' | 'crossover' | 'console' | 'wireless' | 'serial' | 'fiber';
 
 export interface CableInfo {
   connected: boolean;

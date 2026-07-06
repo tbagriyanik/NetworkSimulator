@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import type { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
 import type { Translations } from '@/contexts/LanguageContext';
@@ -127,9 +127,13 @@ export function AppFooter({
                 </span>
               </div>
 
+            </div>
+
+            {/* Right Side: Task Event Notification & Lab Progress */}
+            <div className="flex items-center gap-4">
               {/* Task Event Notification */}
               {isTaskEventRecent && lastTaskEvent && (
-                <div className={`absolute -top-12 left-4 md:flex items-center gap-2 px-3 py-1.5 rounded-lg border shadow-lg animate-slide-up z-[10000] ${lastTaskEvent.type === 'completed'
+                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border animate-slide-up z-[100] ${lastTaskEvent.type === 'completed'
                   ? isDark ? 'bg-success-500/10 border-success-500/30' : 'bg-success-50 border-success-200'
                   : isDark ? 'bg-warning-500/10 border-warning-500/30' : 'bg-warning-50 border-warning-200'
                   }`}>
@@ -150,7 +154,6 @@ export function AppFooter({
                   </span>
                 </div>
               )}
-            </div>
 
             {/* Lab Progress */}
             {activeDeviceType !== 'pc' && activeDeviceType !== 'iot' && activeDeviceType !== 'firewall' && topologyDevices && topologyDevices.length > 0 && activeDeviceId && maxScore > 0 && (
@@ -169,6 +172,7 @@ export function AppFooter({
                 </span>
               </div>
             )}
+            </div>
           </div>
         </div>
       </footer>

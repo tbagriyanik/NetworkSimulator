@@ -91,7 +91,7 @@ export function TroubleshootingPanel({
   return (
     <div
       className={cn(
-        "absolute right-4 top-20 z-40 bg-secondary-950/30 border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] backdrop-blur-2xl transition-all duration-300 flex flex-col overflow-hidden rounded-xl",
+        "absolute right-4 top-20 z-[70] bg-secondary-950/30 border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] backdrop-blur-2xl transition-all duration-300 flex flex-col overflow-hidden rounded-xl",
         isMinimized ? "w-72 h-14" : "w-80 max-h-[80vh]"
       )}
       style={{ transform: `translate(${position.x}px, ${position.y}px)` }}

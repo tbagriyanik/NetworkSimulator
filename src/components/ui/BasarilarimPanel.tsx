@@ -1,9 +1,9 @@
-﻿'use client';
+'use client';
 
 import { useMemo, useState, useEffect } from 'react';
 import { Trophy, X, Clock, BookOpen, FileText, GraduationCap } from 'lucide-react';
 import { useDrag } from '@/hooks/useDrag';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-breakpoint';
 import { getSummary } from '@/utils/achievementRecords';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { cn } from '@/lib/utils';

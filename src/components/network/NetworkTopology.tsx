@@ -9,7 +9,7 @@ import { isCableCompatible } from '@/lib/network/types';
 import { checkDeviceConnectivity, getPingDiagnostics, getWirelessDistance } from '@/lib/network/connectivity';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-breakpoint';
 import { useNetworkRefreshWithPositions } from '@/hooks/useNetworkRefreshWithPositions';
 import { useSpatialPartitioning } from '@/lib/performance/spatial';
 import { toast } from "@/hooks/use-toast";
