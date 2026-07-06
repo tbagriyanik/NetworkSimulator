@@ -52,7 +52,6 @@ npm install && npm run dev
 | [doc/ROOM_TRACKING_SETUP.md](doc/ROOM_TRACKING_SETUP.md) | Room tracking system setup / Oda takip sistemi kurulumu |
 | [doc/DOCUMENTATION_INDEX.md](doc/DOCUMENTATION_INDEX.md) | Documentation index & reading map / Dokümantasyon indeksi & okuma haritası |
 | [doc/NETWORK_SIMULATOR_KITAPCIK.md](doc/NETWORK_SIMULATOR_KITAPCIK.md) | Comprehensive Turkish training booklet / Kapsamlı Türkçe eğitim kitapçığı |
-| [doc/SERVICE_FEATURES.md](doc/SERVICE_FEATURES.md) | PC service features (FTP, Mail, NTP, DNS, HTTP, DHCP) / PC servis özellikleri |
 | [doc/ERROR_HANDLING_GUIDE.md](doc/ERROR_HANDLING_GUIDE.md) | Error handling guide / Hata kontrol rehberi |
 | [doc/INTEGRATION_GUIDE.md](doc/INTEGRATION_GUIDE.md) | Integration guide / Entegrasyon rehberi |
 

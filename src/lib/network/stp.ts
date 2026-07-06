@@ -121,9 +121,14 @@ export function recalculateStp(
 
   if (switchIds.length === 0) return updatedStates;
 
+  // Check if there are any active connections between switches
+  const hasInterSwitchLinks = connections.some(c =>
+    c.active && switchIds.includes(c.sourceDeviceId) && switchIds.includes(c.targetDeviceId)
+  );
+
   // For each VLAN, run STP calculation
   allVlanIds.forEach(vlanId => {
-    runStpForVlan(vlanId, switchIds, connections, updatedStates);
+    runStpForVlan(vlanId, switchIds, connections, updatedStates, hasInterSwitchLinks);
   });
 
   return updatedStates;
@@ -133,8 +138,50 @@ function runStpForVlan(
   vlanId: number,
   switchIds: string[],
   connections: CanvasConnection[],
-  deviceStates: Map<string, SwitchState>
+  deviceStates: Map<string, SwitchState>,
+  hasInterSwitchLinks: boolean
 ) {
+  // If no switch-to-switch links exist, all ports are designated (forwarding)
+  // A single switch or multiple isolated switches cannot form a loop
+  if (!hasInterSwitchLinks) {
+    switchIds.forEach(id => {
+      const state = deviceStates.get(id);
+      if (!state) return;
+      const vlanConfig = state.spanningTreeVlans?.[vlanId];
+      if (vlanConfig?.enabled === false) return;
+
+      const vlanPriority = vlanConfig?.priority ? parseInt(vlanConfig.priority) : (state.spanningTreePriority || 32768);
+      const bridgeId = calculateBridgeId(vlanPriority + vlanId, state.macAddress);
+
+      const vlanStpState: StpVlanState = {
+        vlanId,
+        bridgeId,
+        rootBridgeId: bridgeId,
+        isRoot: true,
+        rootCost: 0,
+        ports: {}
+      };
+
+      Object.keys(state.ports).forEach(portId => {
+        const port = state.ports[portId];
+        if (portId.startsWith('vlan') || portId.startsWith('console')) return;
+        if (!isPortVlanMember(port, vlanId)) return;
+
+        if (port.shutdown) {
+          vlanStpState.ports[portId] = { role: 'disabled', state: 'disabled', cost: getPortCost(port) };
+        } else {
+          vlanStpState.ports[portId] = { role: 'designated', state: 'forwarding', cost: getPortCost(port) };
+        }
+      });
+
+      if (!state.stpState) state.stpState = {};
+      state.stpState[vlanId] = vlanStpState;
+
+      syncPortStatusVlan1(state, vlanStpState);
+    });
+    return;
+  }
+
   // Map to store the best BPDU known by each switch (best it can send)
   const deviceBestBpdu = new Map<string, Bpdu>();
   // Map to store the best BPDU received on each port: deviceId -> portId -> Bpdu
@@ -345,22 +392,46 @@ function runStpForVlan(
     state.stpState[vlanId] = vlanStpState;
 
     if (vlanId === 1) {
-      Object.keys(vlanStpState.ports).forEach(pId => {
-        const pInfo = vlanStpState.ports[pId];
-        const port = state.ports[pId];
-        if (port) {
-          if (!port.spanningTree) port.spanningTree = {};
-          port.spanningTree.role = pInfo.role;
-          port.spanningTree.state = pInfo.state;
-          if (!port.shutdown) {
-            port.status = pInfo.state === 'blocking' ? 'blocked' : 'connected';
-          }
-        }
-      });
+      syncPortStatusVlan1(state, vlanStpState);
     }
   });
 }
 
+
+function syncPortStatusVlan1(state: SwitchState, vlanStpState: StpVlanState) {
+  const processedPorts = new Set<string>();
+
+  Object.keys(vlanStpState.ports).forEach(pId => {
+    const pInfo = vlanStpState.ports[pId];
+    const port = state.ports[pId];
+    if (port) {
+      if (!port.spanningTree) port.spanningTree = {};
+      port.spanningTree.role = pInfo.role;
+      port.spanningTree.state = pInfo.state;
+      if (!port.shutdown) {
+        port.status = pInfo.state === 'blocking' ? 'blocked' : 'connected';
+      }
+      processedPorts.add(pId);
+    }
+  });
+
+  // Clear stale blocking status from ports not in the current STP state
+  // (e.g., VLAN membership changed, device type changed, etc.)
+  Object.keys(state.ports).forEach(pId => {
+    if (!processedPorts.has(pId)) {
+      const port = state.ports[pId];
+      if (port) {
+        if (port.status === 'blocked') {
+          port.status = 'notconnect';
+        }
+        if (port.spanningTree) {
+          port.spanningTree.role = undefined;
+          port.spanningTree.state = undefined;
+        }
+      }
+    }
+  });
+}
 
 function isPortVlanMember(port: Port, vlanId: number): boolean {
   if (port.mode === 'trunk' || port.mode === 'dynamic-auto' || port.mode === 'dynamic-desirable' || port.mode === 'dot1q-tunnel') {

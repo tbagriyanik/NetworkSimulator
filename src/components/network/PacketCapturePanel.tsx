@@ -1,9 +1,10 @@
-﻿import React from 'react';
+import React from 'react';
 import { Trash2, X } from 'lucide-react';
 import { useAppStore } from '@/lib/store/appStore';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { CABLE_COLORS } from './networkTopology.constants';
 import { getConnectionStatusMessage } from './networkTopology.helpers';
+import { bringElementToFront } from '@/lib/utils/zIndex';
 
 interface PacketCapturePanelProps {
   activeCaptureConnectionId: string;
@@ -77,8 +78,9 @@ export const PacketCapturePanel = ({
   React.useEffect(() => { sizeRef.current = size; }, [size]);
   React.useEffect(() => { positionRef.current = position; }, [position]);
   
-  const [isDragging, setIsDragging] = React.useState(false);
+  const panelRef = React.useRef<HTMLDivElement>(null);
   const dragStartPos = React.useRef({ x: 0, y: 0 });
+  const isDraggingRef = React.useRef(false);
 
   const onDragStart = (e: React.DragEvent, idx: number) => { e.dataTransfer.setData('text/plain', idx.toString()); };
   const onDrop = (e: React.DragEvent, targetIdx: number) => {
@@ -94,28 +96,31 @@ export const PacketCapturePanel = ({
     const target = e.target as HTMLElement;
     if (target.closest('button')) return; // Ignore buttons
     
-    setIsDragging(true);
-    dragStartPos.current = { x: e.clientX - position.x, y: e.clientY - position.y };
-    target.setPointerCapture(e.pointerId);
+    isDraggingRef.current = true;
+    dragStartPos.current = { x: e.clientX - positionRef.current.x, y: e.clientY - positionRef.current.y };
+    e.currentTarget.setPointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (isDragging) {
-      setPosition({
-        x: e.clientX - dragStartPos.current.x,
-        y: e.clientY - dragStartPos.current.y
-      });
+    if (isDraggingRef.current) {
+      const newX = e.clientX - dragStartPos.current.x;
+      const newY = e.clientY - dragStartPos.current.y;
+      positionRef.current = { x: newX, y: newY };
+      if (panelRef.current) {
+        panelRef.current.style.left = `${newX}px`;
+        panelRef.current.style.top = `${newY}px`;
+      }
     }
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
-    if (isDragging) {
-      setIsDragging(false);
+    if (isDraggingRef.current) {
+      isDraggingRef.current = false;
+      setPosition(positionRef.current); // Sync react state
       localStorage.setItem('packetCapturePosition', JSON.stringify(positionRef.current));
-      const target = e.target as HTMLElement;
-      if (target.hasPointerCapture(e.pointerId)) {
-        target.releasePointerCapture(e.pointerId);
-      }
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch (_err) {}
     }
   };
 
@@ -139,6 +144,8 @@ export const PacketCapturePanel = ({
 
   return (
     <div 
+      ref={panelRef}
+      onPointerDownCapture={() => bringElementToFront(panelRef.current)}
       style={{ 
         left: `${position.x}px`, 
         top: `${position.y}px`, 

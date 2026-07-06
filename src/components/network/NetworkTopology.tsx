@@ -2098,13 +2098,6 @@ export function NetworkTopology({
       return;
     }
 
-    // Tap-to-connect logic: If we are drawing a connection and click a device body, open port selector
-    if (isDrawingConnection && connectionStart && connectionStart.deviceId !== device.id) {
-      setSelectedSourcePort(connectionStart);
-      setPortSelectorStep('target');
-      setShowPortSelector(true);
-      return;
-    }
 
     if (isMobile && !isDrawingConnection) {
       if (!mobileConnectionSource) {

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useMemo, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -8,6 +8,7 @@ import { SwitchState, Port } from '@/lib/network/types';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { bringElementToFront } from '@/lib/utils/zIndex';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   X,
@@ -203,6 +204,7 @@ export function RouterPanel({
           borderWidth: 3,
           borderStyle: 'dashed',
         }}
+        onPointerDownCapture={(e) => bringElementToFront(e.currentTarget as HTMLElement)}
       >
         <div className="relative flex flex-col h-full overflow-hidden rounded-2xl shadow-2xl">
         <DialogHeader

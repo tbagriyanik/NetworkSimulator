@@ -92,6 +92,7 @@ import { addSessionDuration, addGuidedLessonRecord, addExamRecord, addProjectRec
 import { AppHeader } from '@/components/network/AppHeader';
 import { AppFooter } from '@/components/network/AppFooter';
 import { TopologyToolbar } from '@/components/network/TopologyToolbar';
+import { bringElementToFront } from '@/lib/utils/zIndex';
 import { AppSkeleton } from '@/components/ui/AppSkeleton';
 import { AppErrorBoundary } from '@/components/ui/AppErrorBoundary';
 import { useRoom } from '@/contexts/RoomContext';
@@ -5258,6 +5259,7 @@ ${state.bannerMOTD}
                 borderWidth: 3,
                 borderStyle: 'dashed',
               }}
+              onPointerDownCapture={(e) => bringElementToFront(e.currentTarget as HTMLElement)}
             >
               <div className={cn(
                 "relative flex flex-col h-full overflow-visible",
@@ -5760,6 +5762,7 @@ ${state.bannerMOTD}
                     ...(!isMobile ? { maxHeight: 'calc(100vh - 100px)' } : { height: '100vh', maxHeight: '100vh' })
                   }}
                   onMouseDown={() => setFocusedOverlay('refresh')}
+                  onPointerDownCapture={(e) => bringElementToFront(e.currentTarget as HTMLElement)}
                 >
                   <div
                     className={`flex items-center justify-between px-3 py-2 border-b ${isMobile ? 'rounded-none' : 'rounded-t-xl'} ${!isMobile ? 'cursor-grab active:cursor-grabbing' : ''} select-none ${isDark ? 'bg-white/5 border-success-500/20' : 'bg-black/5 border-success-500/30'}`}

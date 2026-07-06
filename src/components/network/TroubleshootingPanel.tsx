@@ -17,6 +17,7 @@ import { ExampleProject } from '@/lib/network/exampleProjects';
 import { SwitchState } from '@/lib/network/types';
 import { checkFaultResolved, FaultDefinition } from '@/lib/network/faults';
 import { ExamTask } from '@/lib/network/examMode';
+import { bringElementToFront } from '@/lib/utils/zIndex';
 
 interface TroubleshootingPanelProps {
   project: ExampleProject | null;
@@ -40,31 +41,40 @@ export function TroubleshootingPanel({
   // Drag state
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
+  const positionRef = useRef(position);
   const dragStartPos = useRef({ x: 0, y: 0 });
   const panelStartPos = useRef({ x: 0, y: 0 });
+  const panelRef = useRef<HTMLDivElement>(null);
 
   const handlePointerDown = (e: React.PointerEvent) => {
     if ((e.target as HTMLElement).closest('button')) return;
     setIsDragging(true);
     dragStartPos.current = { x: e.clientX, y: e.clientY };
-    panelStartPos.current = { ...position };
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    panelStartPos.current = { ...positionRef.current };
+    e.currentTarget.setPointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
     if (!isDragging) return;
     const dx = e.clientX - dragStartPos.current.x;
     const dy = e.clientY - dragStartPos.current.y;
-    setPosition({
+    const nextPos = {
       x: panelStartPos.current.x + dx,
       y: panelStartPos.current.y + dy
-    });
+    };
+    positionRef.current = nextPos;
+    if (panelRef.current) {
+      panelRef.current.style.transform = `translate3d(${nextPos.x}px, ${nextPos.y}px, 0)`;
+    }
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
     if (!isDragging) return;
     setIsDragging(false);
-    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+    setPosition(positionRef.current);
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch (_err) {}
   };
 
   if (!project || ((!project.injectedFaults || project.injectedFaults.length === 0) && tasks.length === 0)) {
@@ -90,17 +100,23 @@ export function TroubleshootingPanel({
 
   return (
     <div
+      ref={panelRef}
+      onPointerDownCapture={() => bringElementToFront(panelRef.current)}
       className={cn(
         "absolute right-4 top-20 z-[70] bg-secondary-950/30 border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] backdrop-blur-2xl transition-all duration-300 flex flex-col overflow-hidden rounded-xl",
-        isMinimized ? "w-72 h-14" : "w-80 max-h-[80vh]"
+        isMinimized ? "w-72 h-14" : "w-80 max-h-[80vh]",
+        isDragging ? "transition-none" : "transition-transform"
       )}
-      style={{ transform: `translate(${position.x}px, ${position.y}px)` }}
+      style={{ 
+        transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
+        touchAction: 'none'
+      }}
     >
       {/* Header */}
       <div 
         className={cn(
           "flex items-center justify-between p-3 select-none shrink-0 border-b",
-          isDragging ? "cursor-grabbing" : "cursor-grab",
+          "cursor-grab active:cursor-grabbing",
           allResolved ? "bg-success-950/40 border-success-900/50" : "bg-warning-950/40 border-warning-900/50"
         )}
         onPointerDown={handlePointerDown}

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { Monitor, X, SettingsIcon } from 'lucide-react';
 import { SwitchIcon, RouterIcon } from '@/components/network/PCPanelWidgets';
@@ -53,6 +53,7 @@ export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zInde
     <div
       ref={containerRef}
       className={cn("hidden md:block fixed animate-scale-in")}
+      onPointerDownCapture={onFocus}
       style={{
         bottom: `${position.y}px`,
         right: `${position.x}px`,
@@ -232,6 +233,7 @@ export function RouterInfoPopover({ router, routerState, t, isDark, onClose, onF
     <div
       ref={containerRef}
       className={cn("hidden md:block fixed animate-scale-in")}
+      onPointerDownCapture={onFocus}
       style={{
         bottom: `${position.y}px`,
         right: `${position.x}px`,

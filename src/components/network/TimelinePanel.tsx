@@ -8,6 +8,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { HistoryEntry } from '@/hooks/useHistory';
 import { Button } from '@/components/ui/button';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
+import { bringElementToFront } from '@/lib/utils/zIndex';
 
 interface TimelinePanelProps {
   historyItems: HistoryEntry[];
@@ -36,8 +37,13 @@ export function TimelinePanel({
   // Drag state
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
+  const positionRef = useRef(position);
   const dragStartPos = useRef({ x: 0, y: 0 });
   const panelStartPos = useRef({ x: 0, y: 0 });
+
+  useEffect(() => {
+    positionRef.current = position;
+  }, [position]);
 
   const clampPosition = (nextPosition: { x: number; y: number }) => {
     if (typeof window === 'undefined') return nextPosition;
@@ -57,24 +63,31 @@ export function TimelinePanel({
     panelRef.current?.focus();
     setIsDragging(true);
     dragStartPos.current = { x: e.clientX, y: e.clientY };
-    panelStartPos.current = { ...position };
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    panelStartPos.current = { ...positionRef.current };
+    e.currentTarget.setPointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
     if (!isDragging) return;
     const dx = e.clientX - dragStartPos.current.x;
     const dy = e.clientY - dragStartPos.current.y;
-    setPosition(clampPosition({
+    const nextPos = clampPosition({
       x: panelStartPos.current.x + dx,
       y: panelStartPos.current.y + dy
-    }));
+    });
+    positionRef.current = nextPos;
+    if (panelRef.current) {
+      panelRef.current.style.transform = `translate3d(${nextPos.x}px, ${nextPos.y}px, 0)`;
+    }
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
     if (!isDragging) return;
     setIsDragging(false);
-    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+    setPosition(positionRef.current);
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch (_err) {}
   };
 
   // Auto-scroll to active item
@@ -198,16 +211,11 @@ export function TimelinePanel({
     <div
       ref={panelRef}
       tabIndex={0}
-      onFocus={() => setIsFocused(true)}
-      onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
-          setIsFocused(false);
-        }
-      }}
+      onPointerDownCapture={() => bringElementToFront(panelRef.current)}
       className={cn(
-        "absolute z-30 backdrop-blur-2xl transition-all duration-300 flex flex-col overflow-hidden rounded-xl outline-none",
+        "absolute z-30 backdrop-blur-2xl transition-all duration-300 flex flex-col overflow-hidden rounded-xl outline-none select-none",
         "left-2 right-2 bottom-[72px] w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] sm:left-4 sm:right-auto sm:bottom-20 sm:max-w-none",
-        isMinimized ? "w-48" : "sm:w-[36rem] w-[calc(100vw-1rem)]",
+        isMinimized ? "w-48 h-12 rounded-full" : "sm:w-[36rem] w-[calc(100vw-1rem)] h-[152px]",
         isDark
           ? isFocused
             ? "bg-secondary-950/30 border border-emerald-400 shadow-[0_0_0_1px_rgba(52,211,153,0.35),0_8px_32px_0_rgba(0,0,0,0.5)]"
@@ -215,9 +223,18 @@ export function TimelinePanel({
           : isFocused
             ? "bg-white/92 border border-emerald-500 shadow-[0_0_0_1px_rgba(34,197,94,0.24),0_8px_28px_rgba(15,23,42,0.12)]"
             : "bg-white/92 border border-emerald-950/80 shadow-[0_8px_28px_rgba(15,23,42,0.12)]",
-        isMinimized ? "h-12" : "h-[9.5rem]"
+        isDragging ? "transition-none" : "transition-transform"
       )}
-      style={{ transform: `translate(${position.x}px, ${position.y}px)` }}
+      style={{
+        transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
+        touchAction: 'none'
+      }}
+      onFocus={() => setIsFocused(true)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+          setIsFocused(false);
+        }
+      }}
       onKeyDown={handleKeyDown}
     >
       {/* Header */}
@@ -225,7 +242,7 @@ export function TimelinePanel({
         className={cn(
           "flex items-center justify-between p-3 shrink-0 border-b",
           isDark ? "bg-primary-950/20 border-primary-900/30" : "bg-primary-50/80 border-primary-100",
-          isDragging ? "cursor-grabbing" : "cursor-grab",
+          "cursor-grab active:cursor-grabbing",
           "select-none"
         )}
         onPointerDown={handlePointerDown}

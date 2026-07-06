@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useMemo, useEffect } from 'react';
 import { DragPosition as ModalPosition, DragSize as ModalSize } from '@/hooks/useDrag';
@@ -21,6 +21,7 @@ import type { SwitchState } from '@/lib/network/types';
 import type { TerminalOutput } from './Terminal';
 import type { Translations } from '@/contexts/LanguageContext';
 import type { TaskDefinition, TaskContext } from '@/lib/network/taskDefinitions';
+import { bringElementToFront } from '@/lib/utils/zIndex';
 
 
 const Terminal = dynamic(() => import('./Terminal').then(m => m.Terminal), { ssr: false });
@@ -140,7 +141,6 @@ export function UnifiedDevicePanel({
             window.removeEventListener('popstate', handleMobileBack);
         };
     }, [isOpen, onOpenChange]);
-
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange} modal={false}>
             <DialogContent
@@ -165,6 +165,7 @@ export function UnifiedDevicePanel({
                     borderStyle: 'dashed',
                     zIndex: 50
                 }}
+                onPointerDownCapture={(e) => bringElementToFront(e.currentTarget as HTMLElement)}
             >
                 <div className="relative flex flex-col h-full rounded-2xl shadow-2xl overflow-hidden">
                     {/* Header with Tabs */}
