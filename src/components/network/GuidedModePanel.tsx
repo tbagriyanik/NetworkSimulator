@@ -13,7 +13,10 @@ import {
   ChevronUp,
   X,
   Sparkles,
-  Wand2
+  Wand2,
+  Volume2,
+  VolumeX,
+  Award
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -25,6 +28,7 @@ import {
 import { GuidedProject, getProgressPercentage } from '@/lib/network/guidedMode';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { TutorialAnimationPlayer } from './TutorialAnimationPlayer';
+import { generateCertificate } from '@/lib/utils/certificateGenerator';
 
 interface GuidedModePanelProps {
   project: GuidedProject | null;
@@ -85,6 +89,18 @@ export function GuidedModePanel({
   });
 
   const [showAnimation, setShowAnimation] = React.useState(true);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const synthRef = useRef<SpeechSynthesis | null>(null);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      synthRef.current = window.speechSynthesis;
+    }
+    return () => {
+      if (synthRef.current) synthRef.current.cancel();
+    };
+  }, []);
 
   const [expandedSteps, setExpandedSteps] = React.useState<string[]>(() => {
     if (typeof window === 'undefined') return [];
@@ -390,6 +406,25 @@ export function GuidedModePanel({
 
   const totalPoints = project?.totalPoints || project?.steps.reduce((acc, s) => acc + (s.points || 0), 0) || 0;
 
+  const handleDownloadCertificate = useCallback(() => {
+    if (!project) return;
+    const studentName = prompt(language === 'tr' ? 'Sertifika için adınızı girin:' : 'Enter your name for the certificate:') || 'Student';
+
+    generateCertificate({
+      studentName,
+      projectTitle: project.title,
+      score: currentPoints,
+      totalScore: totalPoints,
+      date: new Date().toLocaleDateString(language === 'tr' ? 'tr-TR' : 'en-US'),
+      language
+    });
+
+    toast({
+      title: language === 'tr' ? 'Sertifika Oluşturuldu!' : 'Certificate Generated!',
+      description: language === 'tr' ? 'PDF dosyanız indiriliyor.' : 'Your PDF file is being downloaded.',
+    });
+  }, [project, language, currentPoints, totalPoints]);
+
   useEffect(() => {
     if (project && isAllCompleted) {
       triggerLessonCompleteCelebration();
@@ -434,6 +469,32 @@ export function GuidedModePanel({
       default: return difficulty;
     }
   };
+
+  const handleToggleSpeech = useCallback(() => {
+    if (!synthRef.current || !currentStep) return;
+
+    if (isSpeaking) {
+      synthRef.current.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+
+    const textToRead = `${currentStep.title[language]}. ${currentStep.description[language]}`;
+    const utterance = new SpeechSynthesisUtterance(textToRead);
+    utterance.lang = language === 'tr' ? 'tr-TR' : 'en-US';
+
+    // Try to find a better voice if available
+    const voices = synthRef.current.getVoices();
+    const preferredVoice = voices.find(v => v.lang.startsWith(language) && (v.name.includes('Google') || v.name.includes('Premium')));
+    if (preferredVoice) utterance.voice = preferredVoice;
+
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+
+    utteranceRef.current = utterance;
+    setIsSpeaking(true);
+    synthRef.current.speak(utterance);
+  }, [currentStep, language, isSpeaking]);
 
   if (isMinimized) {
     return (
@@ -571,8 +632,9 @@ export function GuidedModePanel({
             />
           </div>
           {isAllCompleted && (
-            <div className="mt-2 text-xs text-success-600 dark:text-success-400 font-medium text-center animate-pulse">
-              {t.allStepsCompleted}
+            <div className="mt-2 flex flex-col gap-2">
+              <div className="text-xs text-success-600 dark:text-success-400 font-medium text-center animate-pulse">
+                {t.allStepsCompleted}
               {project.startedAt && (() => {
                 const lastCompletedStep = project.steps.filter(s => s.completed).sort((a, b) =>
                   (b.completedAt?.getTime() || 0) - (a.completedAt?.getTime() || 0)
@@ -589,6 +651,14 @@ export function GuidedModePanel({
                 }
                 return null;
               })()}
+              </div>
+              <button
+                onClick={handleDownloadCertificate}
+                className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-success-500 hover:bg-success-600 text-white rounded-lg font-bold text-xs transition-all shadow-lg shadow-success-500/20"
+              >
+                <Award className="w-4 h-4" />
+                {language === 'tr' ? 'Sertifikayı İndir' : 'Download Certificate'}
+              </button>
             </div>
           )}
         </div>
@@ -602,9 +672,23 @@ export function GuidedModePanel({
                 {t.currentStep}: {currentStep.order}
               </span>
             </div>
-            <h4 className="font-medium text-sm text-secondary-800 dark:text-secondary-200 mb-1">
-              {currentStep.title[language]}
-            </h4>
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <h4 className="font-medium text-sm text-secondary-800 dark:text-secondary-200">
+                {currentStep.title[language]}
+              </h4>
+              <button
+                onClick={handleToggleSpeech}
+                className={cn(
+                  "p-1 rounded-md transition-all shrink-0",
+                  isSpeaking
+                    ? "bg-primary-500 text-white animate-pulse"
+                    : "hover:bg-primary-100 dark:hover:bg-primary-900/40 text-primary-600 dark:text-primary-400"
+                )}
+                title={isSpeaking ? (language === 'tr' ? 'Durdur' : 'Stop') : (language === 'tr' ? 'Sesli Dinle' : 'Read Aloud')}
+              >
+                {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+              </button>
+            </div>
             <p className="text-xs text-secondary-600 dark:text-secondary-400 mb-2">
               {currentStep.description[language]}
             </p>

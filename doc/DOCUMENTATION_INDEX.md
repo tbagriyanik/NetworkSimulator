@@ -564,7 +564,7 @@ doc/
 ## 📅 Güncelleme Tarihi
 
 **Son Güncelleme**: 2026-06-21
-**Versiyon**: 1.9.4
+**Versiyon**: 1.9.5
 **Durum**: ✅ Güncel
 
 ---

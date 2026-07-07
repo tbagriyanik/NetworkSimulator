@@ -2977,6 +2977,43 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
     { destination: '2001:DB8:1::', prefixLength: 64, nextHop: '2001:DB8:AC::1', metric: 1, type: 'dynamic', area: 0 }
   ];
 
+  // IPv6 Master Lab (Dual-Stack, OSPFv3, ACL)
+  const ipv6MasterDevices = [
+    createPcDevice('pc-1', 'PC-Internal', 50, 150, '192.168.1.10', 1),
+    createRouterDevice('router-1', 'R1-Internal', 300, 150),
+    createRouterDevice('router-2', 'R2-Edge', 600, 150),
+    createPcDevice('pc-2', 'PC-External', 850, 150, '203.0.113.10', 1)
+  ];
+  ipv6MasterDevices[0].ipv6 = '2001:DB8:A::10';
+  ipv6MasterDevices[3].ipv6 = '2001:DB8:B::20';
+
+  const ipv6MasterConnections: CanvasConnection[] = [];
+  connectPorts(ipv6MasterDevices, ipv6MasterConnections, 'pc-1', 'eth0', 'router-1', 'gi0/0');
+  connectPorts(ipv6MasterDevices, ipv6MasterConnections, 'router-1', 'gi0/1', 'router-2', 'gi0/1', 'crossover');
+  connectPorts(ipv6MasterDevices, ipv6MasterConnections, 'router-2', 'gi0/0', 'pc-2', 'eth0');
+
+  const ipv6MasterR1 = createInitialRouterState();
+  ipv6MasterR1.hostname = 'R1-Internal';
+  ipv6MasterR1.ipv6Enabled = true;
+  ipv6MasterR1.ports['gi0/0'] = { ...ipv6MasterR1.ports['gi0/0'], ipAddress: '192.168.1.1', ipv6Address: '2001:DB8:A::1', ipv6Prefix: 64, status: 'connected', shutdown: false };
+  ipv6MasterR1.ports['gi0/1'] = { ...ipv6MasterR1.ports['gi0/1'], ipAddress: '10.0.0.1', ipv6Address: '2001:DB8:AC::1', ipv6Prefix: 64, status: 'connected', shutdown: false };
+  ipv6MasterR1.ipv6DynamicRoutes = [{ destination: '2001:DB8:B::', prefixLength: 64, nextHop: '2001:DB8:AC::2', metric: 1, type: 'dynamic', area: 0 }];
+
+  const ipv6MasterR2 = createInitialRouterState();
+  ipv6MasterR2.hostname = 'R2-Edge';
+  ipv6MasterR2.ipv6Enabled = true;
+  // IPv6 ACL to block certain traffic (conceptual)
+  ipv6MasterR2.accessLists = {
+    'V6-FILTER': [
+      'ipv6 access-list V6-FILTER',
+      ' deny ipv6 host 2001:DB8:B::20 any',
+      ' permit ipv6 any any'
+    ]
+  };
+  ipv6MasterR2.ports['gi0/0'] = { ...ipv6MasterR2.ports['gi0/0'], ipAddress: '203.0.113.1', ipv6Address: '2001:DB8:B::1', ipv6Prefix: 64, status: 'connected', shutdown: false, accessGroupIn: 'V6-FILTER' };
+  ipv6MasterR2.ports['gi0/1'] = { ...ipv6MasterR2.ports['gi0/1'], ipAddress: '10.0.0.2', ipv6Address: '2001:DB8:AC::2', ipv6Prefix: 64, status: 'connected', shutdown: false };
+  ipv6MasterR2.ipv6DynamicRoutes = [{ destination: '2001:DB8:A::', prefixLength: 64, nextHop: '2001:DB8:AC::1', metric: 1, type: 'dynamic', area: 0 }];
+
   // Example 16: Services Lab - 6 PCs (DNS, HTTP, DHCP, FTP, MAIL, NTP), 1 Switch
   const servicesLabDevices = [
     createPcDevice('pc-dns', 'PC-DNS', 50, 100, '192.168.1.10', 1),
@@ -3161,7 +3198,100 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
   };
   troubleAclR1State.ports['gi0/0'].accessGroupIn = '101';
 
+  // Broken Inter-VLAN Routing Challenge
+  const ivrDevices = [
+    createPcDevice('pc-1', 'PC-1', 50, 100, '192.168.10.10', 10, '192.168.10.1'),
+    createPcDevice('pc-2', 'PC-2', 50, 250, '192.168.20.10', 20, '192.168.20.1'),
+    createSwitchDevice('switch-1', 'SW1', 250, 175),
+    createRouterDevice('router-1', 'R1', 500, 175)
+  ];
+  const ivrConnections: CanvasConnection[] = [];
+  connectPorts(ivrDevices, ivrConnections, 'pc-1', 'eth0', 'switch-1', 'fa0/1');
+  connectPorts(ivrDevices, ivrConnections, 'pc-2', 'eth0', 'switch-1', 'fa0/2');
+  connectPorts(ivrDevices, ivrConnections, 'switch-1', 'gi0/1', 'router-1', 'gi0/0', 'crossover');
+
+  const ivrSwState = createInitialState();
+  ivrSwState.hostname = 'SW1';
+  ivrSwState.vlans[10] = { id: 10, name: 'VLAN10', status: 'active', ports: ['FA0/1'] };
+  ivrSwState.vlans[20] = { id: 20, name: 'VLAN20', status: 'active', ports: ['FA0/2'] };
+  ivrSwState.ports['fa0/1'] = { ...ivrSwState.ports['fa0/1'], vlan: 10, mode: 'access', status: 'connected' };
+  ivrSwState.ports['fa0/2'] = { ...ivrSwState.ports['fa0/2'], vlan: 20, mode: 'access', status: 'connected' };
+  // Fault: Port is not in trunk mode
+  ivrSwState.ports['gi0/1'] = { ...ivrSwState.ports['gi0/1'], mode: 'access', vlan: 1, status: 'connected' };
+
+  const ivrR1State = createInitialRouterState();
+  ivrR1State.hostname = 'R1';
+  ivrR1State.ports['gi0/0.10'] = { ...ivrR1State.ports['gi0/0'], id: 'gi0/0.10', vlan: 10, ipAddress: '192.168.10.1', subnetMask: '255.255.255.0', isSubinterface: true, parentInterface: 'gi0/0', status: 'connected' };
+  ivrR1State.ports['gi0/0.20'] = { ...ivrR1State.ports['gi0/0'], id: 'gi0/0.20', vlan: 20, ipAddress: '192.168.20.1', subnetMask: '255.255.255.0', isSubinterface: true, parentInterface: 'gi0/0', status: 'connected' };
+
+  // OSPF Area Misconfiguration Challenge
+  const ospfTroubleDevices = [
+    createRouterDevice('router-1', 'R1', 200, 150),
+    createRouterDevice('router-2', 'R2', 500, 150)
+  ];
+  const ospfTroubleConnections: CanvasConnection[] = [];
+  connectPorts(ospfTroubleDevices, ospfTroubleConnections, 'router-1', 'gi0/0', 'router-2', 'gi0/0', 'crossover');
+
+  const ospfR1State = createInitialRouterState();
+  ospfR1State.hostname = 'R1';
+  ospfR1State.routingProtocol = 'ospf';
+  ospfR1State.ports['gi0/0'] = { ...ospfR1State.ports['gi0/0'], ipAddress: '10.0.0.1', subnetMask: '255.255.255.252', status: 'connected', shutdown: false };
+  // Fault: Area mismatch
+  ospfR1State.dynamicRoutes = [{ destination: '192.168.1.0', subnetMask: '255.255.255.0', nextHop: '10.0.0.2', metric: 1, type: 'dynamic', area: 0 }];
+
+  const ospfR2State = createInitialRouterState();
+  ospfR2State.hostname = 'R2';
+  ospfR2State.routingProtocol = 'ospf';
+  ospfR2State.ports['gi0/0'] = { ...ospfR2State.ports['gi0/0'], ipAddress: '10.0.0.2', subnetMask: '255.255.255.252', status: 'connected', shutdown: false };
+  ospfR2State.dynamicRoutes = [{ destination: '172.16.1.0', subnetMask: '255.255.255.0', nextHop: '10.0.0.1', metric: 1, type: 'dynamic', area: 1 }];
+
   return [
+    {
+      id: 'trouble-ivr',
+      tag: isTr ? 'ARIZA' : 'TROUBLE',
+      title: isTr ? 'Bozuk Inter-VLAN' : 'Broken Inter-VLAN',
+      description: isTr ? 'VLANlar arası iletişim sağlanamıyor. Trunk hattını kontrol edin.' : 'Inter-VLAN communication is failing. Check the trunk line.',
+      level: 'intermediate',
+      injectedFaults: [
+        {
+          id: 'fault-ivr-trunk',
+          deviceId: 'switch-1',
+          faultType: 'wrongVlan',
+          description: { tr: 'Gi0/1 portu trunk modunda değil.', en: 'Port Gi0/1 is not in trunk mode.' },
+          configKey: 'ports.gi0/1.mode',
+          faultValue: 'access',
+          correctValue: 'trunk',
+          hint: { tr: 'Switch-Router arası bağlantı trunk olmalıdır.', en: 'Connection between Switch and Router must be trunk.' }
+        }
+      ],
+      data: baseProjectData(ivrDevices, ivrConnections, [], [
+        { id: 'switch-1', state: ivrSwState },
+        { id: 'router-1', state: ivrR1State }
+      ])
+    },
+    {
+      id: 'trouble-ospf-area',
+      tag: isTr ? 'ARIZA' : 'TROUBLE',
+      title: isTr ? 'OSPF Alan Hatası' : 'OSPF Area Mismatch',
+      description: isTr ? 'Routerlar komşuluk kuramıyor. OSPF alanlarını (area) kontrol edin.' : 'Routers cannot establish adjacency. Check OSPF areas.',
+      level: 'intermediate',
+      injectedFaults: [
+        {
+          id: 'fault-ospf-area',
+          deviceId: 'router-2',
+          faultType: 'wrongVlan',
+          description: { tr: 'R2 OSPF alanı 1 olarak ayarlanmış (0 olmalı).', en: 'R2 OSPF area is set to 1 (should be 0).' },
+          configKey: 'dynamicRoutes.0.area',
+          faultValue: 1,
+          correctValue: 0,
+          hint: { tr: 'İki router da aynı OSPF alanında (Area 0) olmalıdır.', en: 'Both routers must be in the same OSPF area (Area 0).' }
+        }
+      ],
+      data: baseProjectData(ospfTroubleDevices, ospfTroubleConnections, [], [
+        { id: 'router-1', state: ospfR1State },
+        { id: 'router-2', state: ospfR2State }
+      ])
+    },
     {
       id: 'trouble-vlan',
       tag: isTr ? 'ARIZA' : 'TROUBLE',
@@ -3847,6 +3977,18 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
       data: baseProjectData(ipv6LabDevices, ipv6LabConnections, ipv6LabNotes, [
         { id: 'router-1', state: ipv6R1 },
         { id: 'router-2', state: ipv6R2 }
+      ])
+    },
+    {
+      id: 'ipv6-master-lab',
+      tag: 'IPv6',
+      title: isTr ? 'IPv6 Master Lab (Dual-Stack & ACL)' : 'IPv6 Master Lab (Dual-Stack & ACL)',
+      description: isTr ? 'Hem IPv4 hem IPv6 kullanılan (dual-stack) karmaşık bir ağda OSPFv3 ve IPv6 ACL yapılandırın.' : 'Configure OSPFv3 and IPv6 ACLs in a complex dual-stack network using both IPv4 and IPv6.',
+      detail: 'Dual-stack, OSPFv3, IPv6 Access Lists (Traffic filtering).',
+      level: 'advanced',
+      data: baseProjectData(ipv6MasterDevices, ipv6MasterConnections, [], [
+        { id: 'router-1', state: ipv6MasterR1 },
+        { id: 'router-2', state: ipv6MasterR2 }
       ])
     },
     {

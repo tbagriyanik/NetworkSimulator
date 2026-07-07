@@ -153,6 +153,6 @@ Sorularınız veya sorunlarınız için:
 
 ---
 
-**Versiyon:** 1.9.4
+**Versiyon:** 1.9.5
 **Tarih:** 2026-06-20
 **Durum:** ✅ Hazır
