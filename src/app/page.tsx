@@ -1220,7 +1220,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
             id: freshState.activeDeviceId,
             tab: freshState.activeTab
           });
-          
+
           if (pendingActionDesc.current) {
             pushState(freshState, activeTab === 'topology' ? 'topology' : 'ui', pendingActionDesc.current);
             pendingActionDesc.current = null;
@@ -2925,7 +2925,7 @@ ${state.bannerMOTD}
     if (result && typeof result === 'object' && 'output' in result) {
       setLastOutput(String(result.output));
     }
-    
+
     if (command && command.trim() !== '') {
       const deviceName = topologyDevices?.find(d => d.id === deviceId)?.name || deviceId;
       commitAction(`${deviceName} CLI: ${command}`);
@@ -4278,7 +4278,7 @@ ${state.bannerMOTD}
                       theme={theme}
                       isDevicePoweredOff={topologyDevices.find(d => d.id === activeFirewallId)?.status === 'offline'}
                       onUpdateRules={(rules) => {
-                        updateDeviceConfig(activeFirewallId, { firewallRules: rules });
+                        updateDeviceConfig(activeFirewallId as string, { firewallRules: rules });
                       }}
                       deviceStates={deviceStates}
                       deviceOutputs={deviceOutputs}
@@ -4382,9 +4382,9 @@ ${state.bannerMOTD}
                 <div className="flex-1 overflow-hidden rounded-b-2xl">
                   <PCPanel
                     key="pc-panel"
-                      className={cn(
-                        "h-full min-h-0",
-                        focusedOverlay === 'pc-info'
+                    className={cn(
+                      "h-full min-h-0",
+                      focusedOverlay === 'pc-info'
                         ? "border-emerald-400 shadow-[inset_0_0_0_1px_rgba(52,211,153,0.35)]"
                         : "border-emerald-950/80"
                     )}
@@ -4436,18 +4436,18 @@ ${state.bannerMOTD}
           </Dialog>
 
           {/* Router Info Panel Modal */}
-                  <RouterPanel
-                    deviceId={showRouterDeviceId}
-                    isVisible={showRouterPanel && !isTablet}
-                    onClose={() => setShowRouterPanel(false)}
-                    topologyDevices={topologyDevices || undefined}
-                    deviceStates={deviceStates}
-                    modalPosition={routerDrag.position}
-                    modalSize={routerDrag.size}
-                    handlePointerDown={routerDrag.handlePointerDown}
-                    handleResizeStart={routerDrag.handleResizeStart}
-                    className={focusedOverlay === 'router-info' ? "border-emerald-400 shadow-[0_0_0_1px_rgba(52,211,153,0.35)]" : "border-emerald-950/80"}
-                  />
+          <RouterPanel
+            deviceId={showRouterDeviceId}
+            isVisible={showRouterPanel && !isTablet}
+            onClose={() => setShowRouterPanel(false)}
+            topologyDevices={topologyDevices || undefined}
+            deviceStates={deviceStates}
+            modalPosition={routerDrag.position}
+            modalSize={routerDrag.size}
+            handlePointerDown={routerDrag.handlePointerDown}
+            handleResizeStart={routerDrag.handleResizeStart}
+            className={focusedOverlay === 'router-info' ? "border-emerald-400 shadow-[0_0_0_1px_rgba(52,211,153,0.35)]" : "border-emerald-950/80"}
+          />
 
           {/* Main Content - Fits between header and footer with scroll */}
           <main className={cn(
@@ -4461,36 +4461,36 @@ ${state.bannerMOTD}
             )}>
               {/* Tab Content - Always render but hide non-active */}
               <div className={`flex-1 flex flex-col min-h-0 ${activeTab === 'topology' ? 'flex' : 'hidden'} print:flex`}>
-                 {/* Topology Toolbar */}
-                 {activeTab === 'topology' && (
-                   <TopologyToolbar
-                     isPingPanelOpen={isPingPanelOpen}
-                     t={t}
-                     isDark={isDark}
-                     language={language}
-                     topologyDevices={topologyDevices}
-                     deviceStates={deviceStates}
-                     activeDeviceId={activeDeviceId}
-                     activeDeviceType={activeDeviceType}
-                     cableInfo={cableInfo}
-                     deviceSearchQuery={deviceSearchQuery}
-                     canUndo={canUndo}
-                     canRedo={canRedo}
-                     hasHydrated={hasHydrated}
-                     isExamActive={isExamActive}
-                     setDeviceSearchQuery={setDeviceSearchQuery}
-                     setCableInfo={setCableInfo}
-                     setZoom={setZoom}
-                     setPan={setPan}
-                     handleDeviceSelectFromMenu={handleDeviceSelectFromMenu}
-                     handleUndo={handleUndo}
-                     handleRedo={handleRedo}
-                     handleRefreshNetwork={handleRefreshNetwork}
-                     setIsEnvironmentPanelOpen={setIsEnvironmentPanelOpen}
-                     onOpenStudentJoin={isRoomEnabled ? () => setShowRoomJoinDialog(true) : undefined}
-                     onOpenTeacherPanel={isRoomEnabled && !studentRoomCode ? () => setShowTeacherPanel(true) : undefined}
-                   />
-                 )}
+                {/* Topology Toolbar */}
+                {activeTab === 'topology' && (
+                  <TopologyToolbar
+                    isPingPanelOpen={isPingPanelOpen}
+                    t={t}
+                    isDark={isDark}
+                    language={language}
+                    topologyDevices={topologyDevices}
+                    deviceStates={deviceStates}
+                    activeDeviceId={activeDeviceId}
+                    activeDeviceType={activeDeviceType}
+                    cableInfo={cableInfo}
+                    deviceSearchQuery={deviceSearchQuery}
+                    canUndo={canUndo}
+                    canRedo={canRedo}
+                    hasHydrated={hasHydrated}
+                    isExamActive={isExamActive}
+                    setDeviceSearchQuery={setDeviceSearchQuery}
+                    setCableInfo={setCableInfo}
+                    setZoom={setZoom}
+                    setPan={setPan}
+                    handleDeviceSelectFromMenu={handleDeviceSelectFromMenu}
+                    handleUndo={handleUndo}
+                    handleRedo={handleRedo}
+                    handleRefreshNetwork={handleRefreshNetwork}
+                    setIsEnvironmentPanelOpen={setIsEnvironmentPanelOpen}
+                    onOpenStudentJoin={isRoomEnabled ? () => setShowRoomJoinDialog(true) : undefined}
+                    onOpenTeacherPanel={isRoomEnabled && !studentRoomCode ? () => setShowTeacherPanel(true) : undefined}
+                  />
+                )}
 
 
                 {/* Network Topology fills remaining space */}
@@ -4693,19 +4693,19 @@ ${state.bannerMOTD}
             )}
 
 
-                    {/* Network Refresh Report - Top Right Toast / Full Screen on Mobile */}
+            {/* Network Refresh Report - Top Right Toast / Full Screen on Mobile */}
             {
               refreshNetworkReport?.show && (
-                  <div
-                    ref={refreshReportRef}
-                    data-draggable-id={isMobile ? undefined : "refresh-network-report"}
-                    className={`fixed z-[100] backdrop-blur-md select-none ${isMobile 
-                      ? 'inset-0 w-full h-full rounded-none border-0' 
-                      : 'top-20 right-4 w-full max-w-sm rounded-xl border shadow-2xl'
-                      } animate-in slide-in-from-right-full duration-300 ${isDark
-                        ? (focusedOverlay === 'refresh' ? 'bg-secondary-950/70 border-emerald-400 text-secondary-100 shadow-[0_0_0_1px_rgba(52,211,153,0.35),0_20px_40px_rgba(0,0,0,0.4)]' : 'bg-secondary-950/70 border-emerald-950/80 text-secondary-100 shadow-black/40')
-                        : (focusedOverlay === 'refresh' ? 'bg-white/70 border-emerald-500 text-secondary-900 shadow-[0_0_0_1px_rgba(34,197,94,0.24),0_20px_40px_rgba(15,23,42,0.12)]' : 'bg-white/70 border-emerald-950/80 text-secondary-900 shadow-secondary-200/50')
-                      }`}
+                <div
+                  ref={refreshReportRef}
+                  data-draggable-id={isMobile ? undefined : "refresh-network-report"}
+                  className={`fixed z-[100] backdrop-blur-md select-none ${isMobile
+                    ? 'inset-0 w-full h-full rounded-none border-0'
+                    : 'top-20 right-4 w-full max-w-sm rounded-xl border shadow-2xl'
+                    } animate-in slide-in-from-right-full duration-300 ${isDark
+                      ? (focusedOverlay === 'refresh' ? 'bg-secondary-950/70 border-emerald-400 text-secondary-100 shadow-[0_0_0_1px_rgba(52,211,153,0.35),0_20px_40px_rgba(0,0,0,0.4)]' : 'bg-secondary-950/70 border-emerald-950/80 text-secondary-100 shadow-black/40')
+                      : (focusedOverlay === 'refresh' ? 'bg-white/70 border-emerald-500 text-secondary-900 shadow-[0_0_0_1px_rgba(34,197,94,0.24),0_20px_40px_rgba(15,23,42,0.12)]' : 'bg-white/70 border-emerald-950/80 text-secondary-900 shadow-secondary-200/50')
+                    }`}
                   style={{
                     zIndex: 100,
                     ...(!isMobile ? { maxHeight: 'calc(100vh - 100px)' } : { height: '100vh', maxHeight: '100vh' })
@@ -4862,7 +4862,7 @@ ${state.bannerMOTD}
                                     <span>{language === 'tr' ? 'Dinamik' : 'Dynamic'}</span>
                                     <span>{liveSummary.routingTableSummary.dynamic}</span>
                                   </div>
-                                  </div>
+                                </div>
                               </div>
                             )}
 
@@ -4979,7 +4979,7 @@ ${state.bannerMOTD}
           >
             {isRoomEnabled && (
               <>
-              <div className={cn("w-px h-4 mx-0.5", isDark ? "bg-secondary-700" : "bg-secondary-300")} />
+                <div className={cn("w-px h-4 mx-0.5", isDark ? "bg-secondary-700" : "bg-secondary-300")} />
                 <Button
                   variant="ghost"
                   size="icon"
@@ -4991,7 +4991,7 @@ ${state.bannerMOTD}
                 </Button>
                 {!studentRoomCode && (
                   <>
-                    
+
                     <Button
                       variant="ghost"
                       size="icon"
