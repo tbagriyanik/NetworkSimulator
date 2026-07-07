@@ -324,32 +324,36 @@ export function useDeviceManager() {
       // Use the provided switchModel, default to L2 for switches, L3 for routers, ASA for firewall, or AIR-CT2504-K9 for WLC
       const model = switchModel || (deviceType === 'router' ? 'WS-C3650-24PS' : deviceType === 'switchL3' ? 'WS-C3650-24PS' : deviceType === 'firewall' ? 'ASA-5506-X' : deviceType === 'wlc' ? 'AIR-CT2504-K9' : 'WS-C2960-24TT-L');
 
+      let newState: SwitchState;
       if (deviceType === 'firewall') {
-        deviceState = createInitialFirewallState(initialMac);
+        newState = createInitialFirewallState(initialMac);
       } else if (deviceType === 'router') {
-        deviceState = createInitialRouterState(initialMac);
+        newState = createInitialRouterState(initialMac);
       } else if (deviceType === 'wlc') {
-        deviceState = createInitialWLCState(initialMac);
+        newState = createInitialWLCState(initialMac);
       } else {
-        deviceState = createInitialState(initialMac, model as 'WS-C2960-24TT-L' | 'WS-C3650-24PS');
+        newState = createInitialState(initialMac, model as 'WS-C2960-24TT-L' | 'WS-C3650-24PS');
       }
 
       const hostname = initialHostname || defaultName;
-      deviceState = { ...deviceState, hostname, deviceType };
+      // Map switchL2/switchL3 back to 'switch' if needed or just use as is if types match
+      const stateDeviceType = ((deviceType === 'switchL2' || deviceType === 'switchL3') ? 'switch' : deviceType) as SwitchState['deviceType'];
+      newState = { ...newState, hostname, deviceType: stateDeviceType };
 
       // IoT devices should be WiFi clients, not AP
-      if (deviceType === 'iot' && deviceState.ports['wlan0']) {
-        deviceState = {
-          ...deviceState,
+      if (deviceType === 'iot' && newState.ports['wlan0']) {
+        newState = {
+          ...newState,
           ports: {
-            ...deviceState.ports,
+            ...newState.ports,
             wlan0: {
-              ...deviceState.ports['wlan0'],
+              ...newState.ports['wlan0'],
               wifi: {
-                ssid: deviceState.ports['wlan0'].wifi?.ssid || '',
-                security: deviceState.ports['wlan0'].wifi?.security || 'open',
-                password: deviceState.ports['wlan0'].wifi?.password || '',
-                channel: deviceState.ports['wlan0'].wifi?.channel || '2.4GHz',
+                ...newState.ports['wlan0'].wifi,
+                ssid: newState.ports['wlan0'].wifi?.ssid || '',
+                security: newState.ports['wlan0'].wifi?.security || 'open',
+                password: newState.ports['wlan0'].wifi?.password || '',
+                channel: newState.ports['wlan0'].wifi?.channel || '2.4GHz',
                 mode: 'client',
                 hidden: false
               }
@@ -359,19 +363,21 @@ export function useDeviceManager() {
       }
 
       // Rebuild runningConfig from actual state so wlan0 and all ports are reflected correctly
-      deviceState = { ...deviceState, runningConfig: buildRunningConfig({ ...deviceState }) } as SwitchState;
+      newState = { ...newState, runningConfig: buildRunningConfig(newState) };
 
       // Defer state update to avoid setState during render
-      const finalState = deviceState;
+      const finalState = newState;
       setTimeout(() => {
         if (isMounted.current) {
           setDeviceStates(prev => new Map(prev).set(deviceId, finalState));
         }
       }, 0);
+      deviceState = newState;
     } else {
       // Ensure deviceType is preserved or updated if missing
-      if (!deviceState.deviceType || deviceState.deviceType !== deviceType) {
-        const updatedState = { ...deviceState, deviceType };
+      const stateDeviceType = ((deviceType === 'switchL2' || deviceType === 'switchL3') ? 'switch' : deviceType) as SwitchState['deviceType'];
+      if (!deviceState.deviceType || deviceState.deviceType !== stateDeviceType) {
+        const updatedState = { ...deviceState, deviceType: stateDeviceType };
         setTimeout(() => {
           if (isMounted.current) {
             setDeviceStates(prev => new Map(prev).set(deviceId, updatedState));
@@ -412,7 +418,7 @@ export function useDeviceManager() {
         deviceState = healedState;
       }
 
-      if (initialHostname && (deviceState.hostname === 'Switch' || deviceState.hostname === 'Router') && initialHostname !== deviceState.hostname) {
+      if (deviceState && initialHostname && (deviceState.hostname === 'Switch' || deviceState.hostname === 'Router') && initialHostname !== deviceState.hostname) {
         const updatedState = { ...deviceState, hostname: initialHostname };
         if (updatedState.runningConfig) {
           updatedState.runningConfig = updatedState.runningConfig.map(line =>
@@ -427,7 +433,7 @@ export function useDeviceManager() {
         deviceState = updatedState;
       }
     }
-    return deviceState as SwitchState;
+    return deviceState;
   }, [deviceStates, ensureSwitchModelConsistency]);
 
   const getOrCreateDeviceOutputs = useCallback((deviceId: string, deviceStateArg?: SwitchState): TerminalOutput[] => {
