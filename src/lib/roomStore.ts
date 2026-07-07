@@ -1,5 +1,5 @@
 import { Redis } from '@upstash/redis';
-import type { RoomData, StudentProgress, RoomMeta } from './roomTypes';
+import type { RoomData, StudentProgress, RoomMeta, CertificateRecord } from './roomTypes';
 
 const redisUrl = process.env.KV_REST_API_URL;
 const redisToken = process.env.KV_REST_API_TOKEN;
@@ -102,3 +102,18 @@ export async function getActiveRoomCount(): Promise<number> {
   }
 }
 
+// ─── Certificate store ────────────────────────────────────────────────────────
+
+const CERT_TTL = 60 * 60 * 24 * 365; // 1 year
+
+export async function saveCertificate(record: CertificateRecord): Promise<void> {
+  if (!redis) return;
+  const key = `cert:${record.verifyCode}`;
+  await redis.set(key, record, { ex: CERT_TTL });
+}
+
+export async function getCertificate(verifyCode: string): Promise<CertificateRecord | null> {
+  if (!redis) return null;
+  const key = `cert:${verifyCode.toUpperCase()}`;
+  return redis.get<CertificateRecord>(key);
+}

@@ -63,7 +63,6 @@ import { TooltipWrapper } from "@/components/ui/TooltipWrapper";
 import { useLanguage, Translations } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
-import { generateProjectSummary } from '@/utils/generateSummary';
 
 import {
   topologyTasks,
@@ -925,16 +924,6 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
         });
       }
 
-      const summary = generateProjectSummary(topologyDevices || [], topologyConnections || [], deviceStates);
-      
-
-      if (summary.configs.length > 0) {
-        text += `--- ${language === 'tr' ? 'CİHAZ KONFİGÜRASYONLARI' : 'DEVICE CONFIGURATIONS'} ---\n`;
-        summary.configs.forEach(config => {
-          text += `\n[ ${config.name} (${config.type}) ]\n`;
-          text += config.commands + `\n`;
-        });
-      }
       const id = `note-${Date.now()}`;
       const newNote: CanvasNote = {
         id,

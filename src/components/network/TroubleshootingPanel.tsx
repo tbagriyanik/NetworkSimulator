@@ -100,11 +100,11 @@ export function TroubleshootingPanel({
   const progressPercentage = totalItems > 0 ? Math.round((totalResolved / totalItems) * 100) : 100;
   const allResolved = totalItems > 0 && totalResolved === totalItems;
 
-  const handleDownloadCertificate = () => {
+  const handleDownloadCertificate = async () => {
     if (!project) return;
     const studentName = prompt(language === 'tr' ? 'Sertifika için adınızı girin:' : 'Enter your name for the certificate:') || 'Student';
 
-    generateCertificate({
+    await generateCertificate({
       studentName,
       projectTitle: typeof project.title === 'string' ? project.title : (project.title as Record<string, string>)[language] || (project.title as Record<string, string>).en,
       score: totalResolved,

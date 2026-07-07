@@ -406,11 +406,16 @@ export function GuidedModePanel({
 
   const totalPoints = project?.totalPoints || project?.steps.reduce((acc, s) => acc + (s.points || 0), 0) || 0;
 
-  const handleDownloadCertificate = useCallback(() => {
+  const handleDownloadCertificate = useCallback(async () => {
     if (!project) return;
     const studentName = prompt(language === 'tr' ? 'Sertifika için adınızı girin:' : 'Enter your name for the certificate:') || 'Student';
 
-    generateCertificate({
+    toast({
+      title: language === 'tr' ? 'Sertifika hazırlanıyor...' : 'Preparing certificate...',
+      description: language === 'tr' ? 'QR kod oluşturuluyor, lütfen bekleyin.' : 'Generating QR code, please wait.',
+    });
+
+    await generateCertificate({
       studentName,
       projectTitle: project.title,
       score: currentPoints,

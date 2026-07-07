@@ -29,3 +29,14 @@ export interface RoomApiResponse<T = unknown> {
   error?: string;
   code?: string;
 }
+
+export interface CertificateRecord {
+  verifyCode: string;
+  studentName: string;
+  projectTitle: string;
+  score: number;
+  totalScore: number;
+  date: string;
+  language: 'tr' | 'en';
+  issuedAt: number;
+}

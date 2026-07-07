@@ -65,7 +65,7 @@ export interface Port {
     };
   };
   staticMacs?: string[]; // Static MAC addresses for port security
-  ipv6Address?: string;         // For CCNA 1 v7 support
+  ipv6Address?: string;         
   ipv6Prefix?: number;
   ipv6Rip?: {
     enabled: boolean;
