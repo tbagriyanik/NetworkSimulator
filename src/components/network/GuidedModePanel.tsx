@@ -448,10 +448,8 @@ export function GuidedModePanel({
     return () => window.removeEventListener('guided-step-completed', handleStepCompleted);
   }, [triggerStepCelebration, language, t.pointsEarned]);
 
-  if (!project) return null;
-
-  const progress = getProgressPercentage(project.steps);
-  const currentStep = project.steps[currentStepIndex];
+  const progress = project ? getProgressPercentage(project.steps) : 0;
+  const currentStep = project ? project.steps[currentStepIndex] : null;
 
   const toggleStepExpand = (stepId: string) => {
     setExpandedSteps(prev =>
@@ -495,6 +493,8 @@ export function GuidedModePanel({
     setIsSpeaking(true);
     synthRef.current.speak(utterance);
   }, [currentStep, language, isSpeaking]);
+
+  if (!project) return null;
 
   if (isMinimized) {
     return (
