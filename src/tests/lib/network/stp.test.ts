@@ -164,4 +164,66 @@ describe('STP Algorithm', () => {
     expect(stp2?.ports['fa0/1'].role).toBe('root');
     expect(stp2?.ports['fa0/2'].role).toBe('alternate');
   });
+
+  it('should never include PCs in STP calculation even if they have superior Bridge IDs', () => {
+    const sw1 = createMockSwitch('sw-1', '0000.0000.0010', 32768);
+    const sw2 = createMockSwitch('sw-2', '0000.0000.0020', 32768);
+
+    // PC with very low priority (would be root if it were a switch)
+    const pc1 = createMockSwitch('pc-1', '0000.0000.0001', 4096);
+    pc1.deviceType = 'pc';
+
+    const deviceStates = new Map<string, SwitchState>([
+      ['sw-1', sw1],
+      ['sw-2', sw2],
+      ['pc-1', pc1],
+    ]);
+
+    const connections: CanvasConnection[] = [
+      { id: 'c1', sourceDeviceId: 'sw-1', sourcePort: 'fa0/1', targetDeviceId: 'sw-2', targetPort: 'fa0/1', cableType: 'straight', active: true },
+      { id: 'c2', sourceDeviceId: 'sw-1', sourcePort: 'fa0/2', targetDeviceId: 'pc-1', targetPort: 'eth0', cableType: 'straight', active: true },
+      { id: 'c3', sourceDeviceId: 'sw-2', sourcePort: 'fa0/2', targetDeviceId: 'pc-1', targetPort: 'eth0', cableType: 'straight', active: true },
+    ];
+
+    const updatedStates = recalculateStp(deviceStates, connections);
+
+    // SW1 should be root (between the two switches), not the PC
+    expect(updatedStates.get('sw-1')?.stpState?.[1].isRoot).toBe(true);
+    expect(updatedStates.get('sw-2')?.stpState?.[1].isRoot).toBe(false);
+    expect(updatedStates.get('pc-1')?.stpState).toBeUndefined();
+
+    // The port to the PC should NEVER be blocked by STP
+    const stp1 = updatedStates.get('sw-1')?.stpState?.[1];
+    expect(stp1?.ports['fa0/2'].role).toBe('designated');
+    expect(stp1?.ports['fa0/2'].state).toBe('forwarding');
+
+    const stp2 = updatedStates.get('sw-2')?.stpState?.[1];
+    expect(stp2?.ports['fa0/2'].role).toBe('designated');
+    expect(stp2?.ports['fa0/2'].state).toBe('forwarding');
+  });
+
+  it('should ignore devices with pc- prefix even if deviceType is missing', () => {
+    const sw1 = createMockSwitch('sw-1', '0000.0000.0010', 32768);
+    const pc1 = createMockSwitch('pc-1', '0000.0000.0001', 4096);
+    // @ts-ignore - simulating missing metadata
+    delete pc1.deviceType;
+
+    const deviceStates = new Map<string, SwitchState>([
+      ['sw-1', sw1],
+      ['pc-1', pc1],
+    ]);
+
+    const connections: CanvasConnection[] = [
+      { id: 'c1', sourceDeviceId: 'sw-1', sourcePort: 'fa0/1', targetDeviceId: 'pc-1', targetPort: 'eth0', cableType: 'straight', active: true },
+    ];
+
+    const updatedStates = recalculateStp(deviceStates, connections);
+
+    // Should NOT treat pc-1 as a switch, so hasInterSwitchLinks should be false
+    // and sw-1 should have all ports as designated
+    const stp1 = updatedStates.get('sw-1')?.stpState?.[1];
+    expect(stp1?.isRoot).toBe(true);
+    expect(stp1?.ports['fa0/1'].role).toBe('designated');
+    expect(stp1?.ports['fa0/1'].state).toBe('forwarding');
+  });
 });

@@ -335,7 +335,7 @@ export function useDeviceManager() {
       }
 
       const hostname = initialHostname || defaultName;
-      deviceState = { ...deviceState, hostname };
+      deviceState = { ...deviceState, hostname, deviceType };
 
       // IoT devices should be WiFi clients, not AP
       if (deviceType === 'iot' && deviceState.ports['wlan0']) {
@@ -369,6 +369,17 @@ export function useDeviceManager() {
         }
       }, 0);
     } else {
+      // Ensure deviceType is preserved or updated if missing
+      if (!deviceState.deviceType || deviceState.deviceType !== deviceType) {
+        const updatedState = { ...deviceState, deviceType };
+        setTimeout(() => {
+          if (isMounted.current) {
+            setDeviceStates(prev => new Map(prev).set(deviceId, updatedState));
+          }
+        }, 0);
+        deviceState = updatedState;
+      }
+
       // Update existing device state if switchModel is provided and differs
       if (switchModel && deviceState.switchModel !== switchModel) {
         const updatedState = ensureSwitchModelConsistency(deviceState, switchModel, initialMac, deviceType === 'router' || deviceType === 'wlc');
