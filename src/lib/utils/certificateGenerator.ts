@@ -189,13 +189,6 @@ export const generateCertificate = async (data: CertificateData): Promise<void> 
     doc.text('QR', qrX + qrSize / 2, qrY + qrSize / 2, { align: 'center' });
   }
 
-  doc.setFontSize(7);
-  doc.setTextColor(127, 140, 141);
-  doc.text(
-    isTr ? 'Doğrulama için tarayınız' : 'Scan to verify',
-    qrX + qrSize / 2, qrY + qrSize + 4, { align: 'center' }
-  );
-
   // Verification code below QR
   doc.setFontSize(8);
   setNormal();
