@@ -22,7 +22,6 @@ import { logger } from '@/lib/logger';
 import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType, FirewallRule } from '@/components/network/networkTopology.types';
 import { getPrompt } from '@/lib/network/executor';
 import { formatErrorForUser, errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
-import { generateRandomLinkLocalIpv4 } from '@/lib/network/linkLocal';
 import { safeParse, safeStringify } from '@/lib/network/serialization';
 import { recalculateStp } from '@/lib/network/stp';
 import { createInitialState, createInitialRouterState, createInitialFirewallState, createInitialWLCState } from '@/lib/network/initialState';
@@ -101,6 +100,9 @@ import { useToast } from '@/hooks/use-toast';
 import { LiveDeviceList, RefreshDeviceSummary, REFRESH_DEVICE_TYPE_ORDER } from '@/components/network/LiveDeviceList';
 import { useNetworkSimulation } from '@/hooks/useNetworkSimulation';
 import { useTroubleshootingMode } from '@/hooks/useTroubleshootingMode';
+import { useOnboarding } from '@/hooks/useOnboarding';
+import { useProjectExport } from '@/hooks/useProjectExport';
+import { useProjectReset } from '@/hooks/useProjectReset';
 import { useAutoDhcpRenewal } from '@/hooks/useAutoDhcpRenewal';
 import { usePWA } from '@/hooks/usePWA';
 
@@ -2856,18 +2858,17 @@ ${state.bannerMOTD}
     setLoadedExampleId
   });
 
-  // Onboarding: show once per browser
-  useEffect(() => {
-    try {
-      const seen = localStorage.getItem('netsim_onboarding_seen');
-      if (!seen) {
-        setShowOnboarding(true);
-        setOnboardingStep(0);
-      }
-    } catch (err) {
-      errorHandler.logError(STORAGE_ERRORS.LOCAL_STORAGE_UNAVAILABLE({ operation: 'getOnboardingStatus', error: String(err) }));
-    }
-  }, []);
+  const {
+    onboardingSteps,
+    closeOnboardingForever,
+    nextOnboarding,
+    prevOnboarding
+  } = useOnboarding({
+    t,
+    setShowOnboarding,
+    setOnboardingStep,
+    onboardingStep
+  });
 
   // Sync active tab when device type changes
   useEffect(() => {
@@ -3130,399 +3131,56 @@ ${state.bannerMOTD}
     setPcHistories(prev => new Map(prev).set(deviceId, history));
   }, [setPcHistories]);
 
+  const { handleSaveProject, getFullProjectData } = useProjectExport({
+    deviceStates,
+    deviceOutputs,
+    pcOutputs,
+    pcHistories,
+    topologyDevices,
+    topologyConnections,
+    topologyNotes,
+    cableInfo,
+    activeDeviceId,
+    activeDeviceType,
+    activeExam,
+    language,
+    projectName,
+    setProjectName,
+    setHasUnsavedChanges,
+    setLastSaveTime,
+    toast,
+    addProjectRecord,
+    t
+  });
+
   // Save project to JSON file
-  const handleSaveProjectInternal = useCallback(() => {
-    // Get PC and IoT device IDs to filter them out from deviceStates
-    // These device types don't need full SwitchState with ports
-    const excludedDeviceIds = new Set(
-      topologyDevices.filter(d => d.type === 'pc' || d.type === 'iot').map(d => d.id)
-    );
 
-    // Move IoT device outputs from deviceOutputs to pcOutputs
-    const iotDeviceIds = new Set(topologyDevices.filter(d => d.type === 'iot').map(d => d.id));
-    const adjustedDeviceOutputs = new Map(deviceOutputs);
-    const adjustedPcOutputs = new Map(pcOutputs);
-    iotDeviceIds.forEach(iotId => {
-      const iotOutput = deviceOutputs.get(iotId);
-      if (iotOutput) {
-        // Filter out password-prompt type which is not compatible with PCOutputLine
-        const filteredOutput = iotOutput.filter(o => o.type !== 'password-prompt');
-        adjustedPcOutputs.set(iotId, filteredOutput as unknown as PCOutputLine[]);
-        adjustedDeviceOutputs.delete(iotId);
-      }
-    });
-
-    // Optimization: Limit terminal outputs to last 100 lines to reduce file size
-    const MAX_SAVED_OUTPUT_LINES = 100;
-    const trimOutputs = <T,>(outputs: T[]): T[] => {
-      if (outputs.length <= MAX_SAVED_OUTPUT_LINES) return outputs;
-      return outputs.slice(-MAX_SAVED_OUTPUT_LINES);
-    };
-
-    // Synchronize MAC addresses and port statuses from topology devices to device states
-    const syncedDeviceStates = new Map(deviceStates);
-    const topologyDeviceIds = new Set(topologyDevices.map(d => d.id));
-    topologyDevices.forEach(device => {
-      const state = syncedDeviceStates.get(device.id);
-      if (state) {
-        // Synchronize MAC address
-        if (device.macAddress && state.macAddress !== device.macAddress) {
-          syncedDeviceStates.set(device.id, { ...state, macAddress: device.macAddress });
-        }
-        // Synchronize port MAC addresses and statuses
-        const updatedPorts = { ...state.ports };
-        let portsChanged = false;
-        device.ports.forEach(topoPort => {
-          const statePort = updatedPorts[topoPort.id];
-          if (statePort) {
-            // Synchronize port MAC address
-            if (topoPort.macAddress && statePort.macAddress !== topoPort.macAddress) {
-              updatedPorts[topoPort.id] = { ...statePort, macAddress: topoPort.macAddress };
-              portsChanged = true;
-            }
-            // Synchronize WLAN0 port status specifically
-            if (topoPort.id === 'wlan0') {
-              const targetStatus = topoPort.shutdown ? 'notconnect' : (topoPort.status === 'connected' ? 'connected' : 'notconnect');
-              if (statePort.status !== targetStatus) {
-                updatedPorts[topoPort.id] = { ...updatedPorts[topoPort.id], status: targetStatus };
-                portsChanged = true;
-              }
-            }
-          }
-        });
-        if (portsChanged) {
-          syncedDeviceStates.set(device.id, { ...state, ports: updatedPorts });
-        }
-      }
-    });
-
-    const projectData = {
-      version: '1.1', // Incremented version
-      timestamp: new Date().toISOString(),
-      // Filter out PC/IoT device states - they don't need SwitchState with ports
-      // Also filter out devices that don't exist in topology
-      devices: Array.from(syncedDeviceStates.entries())
-        .filter(([id]) => !excludedDeviceIds.has(id) && topologyDeviceIds.has(id))
-        .map(([id, state]) => ({
-          id,
-          state: {
-            ...state,
-            // Optimization: Limit command history
-            commandHistory: state.commandHistory.slice(-50),
-            // Optimization: Remove temporary UI states if present
-            awaitingPassword: undefined,
-            passwordContext: undefined,
-            awaitingReloadConfirm: undefined
-          }
-        })),
-      // Filter out device outputs for devices that don't exist in topology
-      deviceOutputs: Array.from(adjustedDeviceOutputs.entries())
-        .filter(([id]) => id && id.trim() !== '' && topologyDeviceIds.has(id))
-        .map(([id, outputs]) => ({ id, outputs: trimOutputs(outputs) })),
-      pcOutputs: Array.from(adjustedPcOutputs.entries())
-        .filter(([id]) => id && id.trim() !== '' && topologyDeviceIds.has(id))
-        .map(([id, outputs]) => ({ id, outputs: trimOutputs(outputs) })),
-      pcHistories: Array.from(pcHistories.entries())
-        .filter(([id]) => id && id.trim() !== '')
-        .map(([id, history]) => ({ id, history: history.slice(-50) })),
-      topology: {
-        // Filter out devices with empty/invalid IDs
-        devices: topologyDevices.filter(d => d.id && d.id.trim() !== ''),
-        connections: topologyConnections,
-        notes: topologyNotes
-      },
-      cableInfo: topologyDevices.length > 0 && topologyConnections.length > 0 ? cableInfo : { connected: false, cableType: 'straight', sourceDevice: 'pc', targetDevice: 'switchL2' },
-      activeDeviceId: topologyDevices.find(d => d.id === activeDeviceId)?.id || '',
-      activeDeviceType,
-      // Exam metadata included if active (allows continuation of editing)
-      ...(activeExam ? {
-        examData: {
-          id: activeExam.id,
-          title: activeExam.title,
-          tasks: activeExam.tasks,
-          durationMinutes: activeExam.durationMinutes,
-          difficulty: activeExam.difficulty,
-          isCustom: activeExam.isCustom
-        }
-      } : {})
-    };
-
-    // Optimization: Use no indentation to reduce file size
-    const blob = new Blob([safeStringify(projectData)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    const baseProjectName = projectName
-      .replace(/\.json$/i, '')
-      .replace(/-\d{4}-\d{2}-\d{2}$/i, '');
-    const sanitizedName = baseProjectName.replace(/[^a-zA-Z0-9\s_-]/g, '').trim().replace(/\s+/g, '-').substring(0, 60) || 'network-project';
-    const savedFileName = `${sanitizedName}-${new Date().toISOString().slice(0, 10)}.json`;
-    a.download = savedFileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    setProjectName(savedFileName);
-    setHasUnsavedChanges(false);
-    setLastSaveTime(new Date().toLocaleTimeString());
-    toast({
-      title: t.projectSaved,
-      description: t.jsonDownloaded,
-    });
-  }, [activeExam, deviceStates, deviceOutputs, pcOutputs, pcHistories, topologyDevices, topologyConnections, topologyNotes, cableInfo, activeDeviceId, activeDeviceType, setHasUnsavedChanges, setLastSaveTime, language, projectName, setProjectName]);
-
-  // Handle Project Saving (Wrapper)
-  function handleSaveProject() {
-    handleSaveProjectInternal();
-    addProjectRecord(projectName);
-  }
-
-  // Get full project data for exam export
-  const getFullProjectData = useCallback(() => {
-    // This is essentially the logic from handleSaveProjectInternal but returns data instead of downloading
-    const excludedDeviceIds = new Set(
-      topologyDevices.filter(d => d.type === 'pc' || d.type === 'iot').map(d => d.id)
-    );
-    const iotDeviceIds = new Set(topologyDevices.filter(d => d.type === 'iot').map(d => d.id));
-    const adjustedDeviceOutputs = new Map(deviceOutputs);
-    const adjustedPcOutputs = new Map(pcOutputs);
-    iotDeviceIds.forEach(iotId => {
-      const iotOutput = deviceOutputs.get(iotId);
-      if (iotOutput) {
-        const filteredOutput = iotOutput.filter(o => o.type !== 'password-prompt');
-        adjustedPcOutputs.set(iotId, filteredOutput as unknown as PCOutputLine[]);
-        adjustedDeviceOutputs.delete(iotId);
-      }
-    });
-
-    const syncedDeviceStates = new Map(deviceStates);
-    const topologyDeviceIds = new Set(topologyDevices.map(d => d.id));
-    topologyDevices.forEach(device => {
-      const state = syncedDeviceStates.get(device.id);
-      if (state) {
-        if (device.macAddress && state.macAddress !== device.macAddress) {
-          syncedDeviceStates.set(device.id, { ...state, macAddress: device.macAddress });
-        }
-        const updatedPorts = { ...state.ports };
-        let portsChanged = false;
-        device.ports.forEach(topoPort => {
-          const statePort = updatedPorts[topoPort.id];
-          if (statePort) {
-            if (topoPort.macAddress && statePort.macAddress !== topoPort.macAddress) {
-              updatedPorts[topoPort.id] = { ...statePort, macAddress: topoPort.macAddress };
-              portsChanged = true;
-            }
-          }
-        });
-        if (portsChanged) {
-          syncedDeviceStates.set(device.id, { ...state, ports: updatedPorts });
-        }
-      }
-    });
-
-    return {
-      version: '1.1',
-      timestamp: new Date().toISOString(),
-      devices: Array.from(syncedDeviceStates.entries())
-        .filter(([id]) => !excludedDeviceIds.has(id) && topologyDeviceIds.has(id))
-        .map(([id, state]) => ({
-          id,
-          state: { ...state, commandHistory: state.commandHistory.slice(-50) }
-        })),
-      deviceOutputs: Array.from(adjustedDeviceOutputs.entries())
-        .filter(([id]) => id && id.trim() !== '' && topologyDeviceIds.has(id))
-        .map(([id, outputs]) => ({ id, outputs: outputs.slice(-100) })),
-      pcOutputs: Array.from(adjustedPcOutputs.entries())
-        .filter(([id]) => id && id.trim() !== '' && topologyDeviceIds.has(id))
-        .map(([id, outputs]) => ({ id, outputs: outputs.slice(-100) })),
-      pcHistories: Array.from(pcHistories.entries())
-        .filter(([id]) => id && id.trim() !== '')
-        .map(([id, history]) => ({ id, history: history.slice(-50) })),
-      topology: {
-        devices: topologyDevices.filter(d => d.id && d.id.trim() !== ''),
-        connections: topologyConnections,
-        notes: topologyNotes
-      },
-      cableInfo: topologyDevices.length > 0 && topologyConnections.length > 0 ? cableInfo : { connected: false, cableType: 'straight', sourceDevice: 'pc', targetDevice: 'switchL2' },
-      activeDeviceId: topologyDevices.find(d => d.id === activeDeviceId)?.id || '',
-      activeDeviceType,
-      // Exam metadata included if active (allows continuation of editing)
-      ...(activeExam ? {
-        examData: {
-          id: activeExam.id,
-          title: activeExam.title,
-          tasks: activeExam.tasks,
-          durationMinutes: activeExam.durationMinutes,
-          difficulty: activeExam.difficulty,
-          isCustom: activeExam.isCustom
-        }
-      } : {})
-    };
-  }, [activeExam, deviceStates, deviceOutputs, pcOutputs, pcHistories, topologyDevices, topologyConnections, topologyNotes, cableInfo, activeDeviceId, activeDeviceType]);
 
   // New project - reset everything
-  const resetToEmptyProject = useCallback(() => {
-    // Clear packet capture and simulation states (trigger recompile)
-    useAppStore.setState(state => ({
-      topology: {
-        ...state.topology,
-        capturedPackets: {},
-        activeCaptureConnectionId: null,
-        isSimulationMode: false
-      }
-    }));
-    const usedIps = new Set<string>();
-    const pc1LinkLocal = generateRandomLinkLocalIpv4(usedIps);
-    usedIps.add(pc1LinkLocal);
-    const pc2LinkLocal = generateRandomLinkLocalIpv4(usedIps);
-    usedIps.add(pc2LinkLocal);
-
-    // Clear all states and set defaults
-    setDeviceStates(new Map());
-    setDeviceOutputs(new Map());
-    setPcOutputs(new Map());
-    setPcHistories(new Map());
-    setTopologyDevices([
-      {
-        id: 'pc-1',
-        type: 'pc',
-        name: 'PC-1',
-        x: 50,
-        y: 50,
-        ip: pc1LinkLocal,
-        subnet: '255.255.0.0',
-        gateway: '0.0.0.0',
-        dns: '0.0.0.0',
-        macAddress: '00-e0-f7-01-a1-b1',
-        status: 'online',
-        ports: [
-          { id: 'eth0', label: 'Eth0', status: 'disconnected' as const },
-          { id: 'com1', label: 'COM1', status: 'disconnected' as const }
-        ]
-      },
-      {
-        id: 'pc-2',
-        type: 'pc',
-        name: 'PC-2',
-        x: 50,
-        y: 150,
-        ip: pc2LinkLocal,
-        subnet: '255.255.0.0',
-        gateway: '0.0.0.0',
-        dns: '0.0.0.0',
-        macAddress: '00-e0-f7-01-a1-b2',
-        status: 'online',
-        ports: [
-          { id: 'eth0', label: 'Eth0', status: 'disconnected' as const },
-          { id: 'com1', label: 'COM1', status: 'disconnected' as const }
-        ]
-      },
-      {
-        id: 'switch-1',
-        type: 'switchL2',
-        name: 'SWITCH-1',
-        x: 200,
-        y: 50,
-        macAddress: '0011.2233.4401',
-        ip: '',
-        status: 'online',
-        switchModel: 'WS-C2960-24TT-L',
-        ports: [
-          ...Array.from({ length: 24 }, (_, i) => ({ id: `fa0/${i + 1}`, label: `Fa0/${i + 1}`, status: 'disconnected' as const })),
-          { id: 'gi0/1', label: 'Gi0/1', status: 'disconnected' as const },
-          { id: 'gi0/2', label: 'Gi0/2', status: 'disconnected' as const },
-          { id: 'console', label: 'Console', status: 'disconnected' as const }
-        ]
-      }
-    ]);
-    setTopologyConnections([]);
-    setTopologyNotes([]);
-
-    // Reset zoom and pan to top-left
-    setZoom(1.0);
-    setPan({ x: 0, y: 0 });
-
-    if (typeof window !== 'undefined') {
-      window.scrollTo(0, 0);
-    }
-
-    // Reset active selections
-    setActiveDeviceId('');
-    setActiveDeviceType('switchL2');
-    setSelectedDevice(null);
-    setShowPCPanel(false);
-    setShowRouterPanel(false);
-
-    // Close guided/exam mode panel if open
-    closeGuidedMode();
-    closeExam();
-    setProjectName('Untitled');
-
-    // Close network refresh report if open
-    setRefreshNetworkReport(null);
-
-    // Close packet analysis popup explicitly
-    window.dispatchEvent(new CustomEvent('network-refresh'));
-
-    // Force return to topology
-    setActiveTab('topology');
-    setHasUnsavedChanges(false);
-
-    // Increment key to force NetworkTopology remount
-    setTopologyKey(prev => prev + 1);
-
-    // Reset history with the new initial state
-    resetHistory({
-      topologyDevices: [
-        {
-          id: 'pc-1',
-          type: 'pc',
-          name: 'PC-1',
-          x: 50,
-          y: 50,
-          ip: pc1LinkLocal,
-          subnet: '255.255.0.0',
-          gateway: '0.0.0.0',
-          dns: '0.0.0.0',
-          macAddress: '00-e0-f7-01-a1-b1',
-          status: 'online',
-          ports: [
-            { id: 'eth0', label: 'Eth0', status: 'disconnected' as const },
-            { id: 'com1', label: 'COM1', status: 'disconnected' as const }
-          ]
-        },
-        {
-          id: 'switch-1',
-          type: 'switchL2',
-          name: 'SWITCH-1',
-          x: 200,
-          y: 50,
-          macAddress: '0011.2233.4401',
-          ip: '',
-          status: 'online',
-          switchModel: 'WS-C2960-24TT-L',
-          ports: [
-            { id: 'console', label: 'Console', status: 'disconnected' as const },
-            ...Array.from({ length: 24 }, (_, i) => ({ id: `fa0/${i + 1}`, label: `Fa0/${i + 1}`, status: 'disconnected' as const })),
-            { id: 'gi0/1', label: 'Gi0/1', status: 'disconnected' as const },
-            { id: 'gi0/2', label: 'Gi0/2', status: 'disconnected' as const }
-          ]
-        }
-      ],
-      topologyConnections: [],
-      topologyNotes: [],
-      deviceStates: new Map(),
-      deviceOutputs: new Map(),
-      pcOutputs: new Map(),
-      pcHistories: new Map(),
-      cableInfo: { connected: false, cableType: 'straight', sourceDevice: 'pc', targetDevice: 'switchL2' },
-      activeDeviceId: '',
-      activeDeviceType: 'switchL2',
-      zoom: 1.0,
-      pan: { x: 0, y: 0 },
-      activeTab: 'topology'
-    });
-  }, [resetHistory, setDeviceStates, setDeviceOutputs, setPcOutputs, setPcHistories, setTopologyDevices, setTopologyConnections, setTopologyNotes, setActiveDeviceId, setActiveDeviceType, setSelectedDevice, setShowPCPanel, setShowRouterPanel, setActiveTab, setHasUnsavedChanges, setTopologyKey, setZoom, setPan, closeGuidedMode, setProjectName]);
+  const { resetToEmptyProject } = useProjectReset({
+    setDeviceStates,
+    setDeviceOutputs,
+    setPcOutputs,
+    setPcHistories,
+    setTopologyDevices,
+    setTopologyConnections,
+    setTopologyNotes,
+    setActiveDeviceId,
+    setActiveDeviceType,
+    setSelectedDevice,
+    setShowPCPanel,
+    setShowRouterPanel,
+    setActiveTab,
+    setHasUnsavedChanges,
+    setTopologyKey,
+    setZoom,
+    setPan,
+    closeGuidedMode,
+    closeExam,
+    setProjectName,
+    setRefreshNetworkReport,
+    resetHistory
+  });
 
   const runWithSaveGuard = useCallback((action: () => void) => {
     if (hasUnsavedChanges) {
@@ -3682,66 +3340,7 @@ ${state.bannerMOTD}
   }, [showMobileMenu, confirmDialog, saveDialog, showPCPanel, showRouterPanel, showUnifiedDeviceModal, showAboutModal, showProjectPicker, showOnboarding]);
 
 
-  // Onboarding content + controls
-  const onboardingSteps = [
-    {
-      title: t.tutorialWelcomeTitle,
-      description: t.tutorialWelcomeDesc,
-    },
-    {
-      title: t.tutorialTopologyTitle,
-      description: t.tutorialTopologyDesc,
-    },
-    {
-      title: t.tutorialCablesTitle,
-      description: t.tutorialCablesDesc,
-    },
-    {
-      title: t.tutorialDevicesTitle,
-      description: t.tutorialDevicesDesc,
-    },
-    {
-      title: t.tutorialPingTitle,
-      description: t.tutorialPingDesc,
-    },
-    {
-      title: t.tutorialWifiTitle,
-      description: t.tutorialWifiDesc,
-    },
-    {
-      title: t.tutorialProjectTitle,
-      description: t.tutorialProjectDesc,
-    },
-    {
-      title: t.tutorialThemeTitle,
-      description: t.tutorialThemeDesc,
-    },
-    {
-      title: t.tutorialReadyTitle,
-      description: t.tutorialReadyDesc,
-    },
-  ];
 
-  const closeOnboardingForever = useCallback(() => {
-    try {
-      localStorage.setItem('netsim_onboarding_seen', '1');
-    } catch (err) {
-      errorHandler.logError(STORAGE_ERRORS.LOCAL_STORAGE_UNAVAILABLE({ operation: 'setOnboardingSeen', error: String(err) }));
-    }
-    setShowOnboarding(false);
-  }, [setShowOnboarding]);
-
-  const nextOnboarding = useCallback(() => {
-    if (onboardingStep >= onboardingSteps.length - 1) {
-      closeOnboardingForever();
-      return;
-    }
-    setOnboardingStep((s) => Math.min(s + 1, onboardingSteps.length - 1));
-  }, [onboardingStep, onboardingSteps.length, closeOnboardingForever, setOnboardingStep]);
-
-  const prevOnboarding = useCallback(() => {
-    setOnboardingStep((s) => Math.max(0, s - 1));
-  }, [setOnboardingStep]);
 
   // Derive visible tabs based on current state
   const tabs = ALL_TABS.filter(tab => {
@@ -5525,5 +5124,3 @@ ${state.bannerMOTD}
     </AppErrorBoundary>
   );
 }
-
-
