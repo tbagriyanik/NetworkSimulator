@@ -2891,7 +2891,7 @@ ${state.bannerMOTD}
       setActiveDeviceId,
       setActiveDeviceType,
       topologyConnections
-    ) as { exitSession?: boolean; output?: string; newState?: any };
+    ) as any;
 
     const currentOutput = (result && typeof result === 'object' && 'output' in result) ? String(result.output) : '';
 
@@ -2905,13 +2905,20 @@ ${state.bannerMOTD}
 
     // Immediate check for guided mode progress
     if (isGuidedModeActive) {
+      const currentDeviceState = result && result.newState ? { ...state, ...result.newState } : state;
+      let finalDeviceStates = result?.deviceStates || deviceStates;
+      if (result?.newState && !result?.deviceStates && !result?.updatedDeviceStates) {
+        finalDeviceStates = new Map(deviceStates);
+        finalDeviceStates.set(activeDeviceId, currentDeviceState);
+      }
+
       checkStepCompletionWithContext({
         lastCommand: command,
         lastOutput: currentOutput,
         deviceAccessed: showUnifiedDeviceModal ? (activeDeviceType === 'switchL2' || activeDeviceType === 'switchL3' ? 'switch' : activeDeviceType === 'router' ? 'router' : 'pc') : null,
         deviceAccessedId: showUnifiedDeviceModal ? activeDeviceId : null,
-        deviceState: result && result.newState ? { ...state, ...result.newState } : state,
-        deviceStates: deviceStates,
+        deviceState: currentDeviceState,
+        deviceStates: finalDeviceStates,
         topologyConnections: topologyConnections,
         topologyDevices: topologyDevices
       });
@@ -2933,7 +2940,7 @@ ${state.bannerMOTD}
       setActiveDeviceId,
       setActiveDeviceType,
       topologyConnections
-    ) as { output?: string; newState?: any };
+    ) as any;
 
     const currentOutput = (result && typeof result === 'object' && 'output' in result) ? String(result.output) : '';
 
@@ -2950,13 +2957,20 @@ ${state.bannerMOTD}
       const deviceObj = topologyDevices?.find(d => d.id === deviceId);
       const devType = deviceObj?.type;
       const currentState = deviceStates.get(deviceId);
+      const currentDeviceState = result && result.newState ? { ...currentState, ...result.newState } : currentState;
+      let finalDeviceStates = result?.deviceStates || result?.updatedDeviceStates || deviceStates;
+      if (result?.newState && !result?.deviceStates && !result?.updatedDeviceStates) {
+        finalDeviceStates = new Map(deviceStates);
+        finalDeviceStates.set(deviceId, currentDeviceState);
+      }
+
       checkStepCompletionWithContext({
         lastCommand: command,
         lastOutput: currentOutput,
         deviceAccessed: devType === 'pc' ? 'pc' : (devType === 'router' ? 'router' : (devType === 'switchL2' || devType === 'switchL3' ? 'switch' : null)),
         deviceAccessedId: deviceId,
-        deviceState: result && result.newState ? { ...currentState, ...result.newState } : currentState,
-        deviceStates: deviceStates,
+        deviceState: currentDeviceState,
+        deviceStates: finalDeviceStates,
         topologyConnections: topologyConnections,
         topologyDevices: topologyDevices
       });

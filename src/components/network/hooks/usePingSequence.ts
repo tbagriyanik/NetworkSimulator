@@ -233,8 +233,12 @@ export function usePingSequence(deps: PingSequenceDeps) {
             startTime = Date.now();
             const shouldPause = pingIsPausedRef.current || pingStepModeRef.current;
             flushSync(() => { setPingAnimation((prev: any) => prev ? { ...prev, currentHopIndex: currentHop, progress: 0, frame: frameCount, isPaused: shouldPause } : null); });
-            if (!shouldPause) pingAnimationRef.current = requestAnimationFrame(animateFailed);
-            else pingResumeCallbackRef.current = () => { startTime = Date.now(); pingAnimationRef.current = requestAnimationFrame(animateFailed); };
+        if (!shouldPause) {
+          pingAnimationRef.current = requestAnimationFrame(animateFailed);
+        } else {
+          pingIsPausedRef.current = true;
+          pingResumeCallbackRef.current = () => { startTime = Date.now(); pingAnimationRef.current = requestAnimationFrame(animateFailed); };
+        }
             return;
           }
           flushSync(() => { setPingAnimation((prev: any) => prev ? { ...prev, currentHopIndex: currentHop, progress: 1, frame: frameCount, success: false, isPaused: false } : null); });
@@ -329,15 +333,19 @@ export function usePingSequence(deps: PingSequenceDeps) {
     };
 
     const advanceToNextHop = (hopCountIncrement: number) => {
-      if (currentHop < path.length - 1) {
+      if (currentHop < path.length - 2) {
         currentHop++;
         startTime = Date.now();
         const shouldPause = pingIsPausedRef.current || pingStepModeRef.current;
         const broadcastAnim = getBroadcastAnim(path[currentHop], path[currentHop - 1]);
         const broadcastTargets = broadcastAnim.map(b => b.targetId);
         flushSync(() => { setPingAnimation((prev) => prev ? { ...prev, currentHopIndex: currentHop, progress: 0, frame: frameCount, hopCount: prev.hopCount + hopCountIncrement, isPaused: shouldPause, broadcastTargets, broadcastAnim, broadcastProgress: 0 } : null); });
-        if (!shouldPause) pingAnimationRef.current = requestAnimationFrame(animate);
-        else pingResumeCallbackRef.current = () => { startTime = Date.now(); pingAnimationRef.current = requestAnimationFrame(animate); };
+        if (!shouldPause) {
+          pingAnimationRef.current = requestAnimationFrame(animate);
+        } else {
+          pingIsPausedRef.current = true;
+          pingResumeCallbackRef.current = () => { startTime = Date.now(); pingAnimationRef.current = requestAnimationFrame(animate); };
+        }
       } else {
         const returnPath = [...path].reverse();
         const returnPacketInfos = buildHopPacketInfosFn(returnPath, devices, connections, 64, sourceIp);
@@ -367,8 +375,12 @@ export function usePingSequence(deps: PingSequenceDeps) {
               const retAnim = getBroadcastAnim(returnPath[returnHop], returnPath[returnHop - 1]);
               const retTargets = retAnim.map(b => b.targetId);
               flushSync(() => { setPingAnimation((prev) => prev ? { ...prev, currentHopIndex: returnHop, progress: 0, frame: returnFrameCount, isPaused: shouldPause, broadcastTargets: retTargets, broadcastAnim: retAnim, broadcastProgress: 0 } : null); });
-              if (!shouldPause) pingAnimationRef.current = requestAnimationFrame(animateReturn);
-              else pingResumeCallbackRef.current = () => { returnStartTime = Date.now(); pingAnimationRef.current = requestAnimationFrame(animateReturn); };
+              if (!shouldPause) {
+                pingAnimationRef.current = requestAnimationFrame(animateReturn);
+              } else {
+                pingIsPausedRef.current = true;
+                pingResumeCallbackRef.current = () => { returnStartTime = Date.now(); pingAnimationRef.current = requestAnimationFrame(animateReturn); };
+              }
             } else {
               finishSuccess();
             }

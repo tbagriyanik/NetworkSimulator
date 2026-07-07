@@ -1294,10 +1294,10 @@ export function Terminal({
       collapsible={false}
       noPadding
       mobileOnlyClose
-      className={cn("flex flex-col h-full", className)}
+      className={cn("flex flex-col h-full max-h-[85vh] sm:max-h-none", className)}
       style={{ height: '100%' }}
     >
-      <div className={cn("flex flex-col h-full overflow-hidden terminal-container", isDark ? "bg-black" : "bg-secondary-50")}>
+      <div className={cn("flex flex-col h-full overflow-hidden terminal-container max-h-[75vh] sm:max-h-none", isDark ? "bg-black" : "bg-secondary-50")}>
         {/* Settings Bar */}
         {showSettings && (
           <div className="px-4 py-2 border-b bg-muted/30 flex items-center gap-4 animate-in slide-in-from-top-2">
@@ -1492,8 +1492,8 @@ export function Terminal({
                       // Scroll input into view on mobile when keyboard opens
                       if (isMobile) {
                         setTimeout(() => {
-                          inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                        }, 300);
+                          inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 400);
                       }
                     }}
                     disabled={isInputDisabled}
