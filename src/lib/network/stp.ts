@@ -121,11 +121,14 @@ export function recalculateStp(
 
   if (switchIds.length === 0) return updatedStates;
 
-  // Check if there are any active connections between switches
-  // A switch only calculates STP blocking if there's at least one other switch in the topology
-  // to avoid confusing beginners who might accidentally create a self-loop on a single switch.
-  const hasInterSwitchLinks = switchIds.length > 1 && connections.some(c =>
-    c.active && switchIds.includes(c.sourceDeviceId) && switchIds.includes(c.targetDeviceId)
+  // Check if there are any active connections between DIFFERENT switches.
+  // STP blocking is only enabled if the topology contains at least two switches connected to each other.
+  // This prevents self-loops from blocking ports on isolated switches, making it easier for beginners.
+  const hasInterSwitchLinks = connections.some(c =>
+    c.active &&
+    c.sourceDeviceId !== c.targetDeviceId &&
+    switchIds.includes(c.sourceDeviceId) &&
+    switchIds.includes(c.targetDeviceId)
   );
 
   // For each VLAN, run STP calculation
