@@ -39,7 +39,6 @@ export function TroubleshootingPanel({
   isMinimized
 }: TroubleshootingPanelProps) {
   const { t, language } = useLanguage();
-  const { theme } = useLanguage() as any; // ThemeContext is not directly here, but let's check useLanguage or just use the same logic
 
   // Drag state
   const [position, setPosition] = useState({ x: 0, y: 0 });

@@ -2891,7 +2891,7 @@ ${state.bannerMOTD}
       setActiveDeviceId,
       setActiveDeviceType,
       topologyConnections
-    ) as { exitSession?: boolean; output?: string; newState?: any };
+    ) as any;
 
     const currentOutput = (result && typeof result === 'object' && 'output' in result) ? String(result.output) : '';
 
@@ -2940,7 +2940,7 @@ ${state.bannerMOTD}
       setActiveDeviceId,
       setActiveDeviceType,
       topologyConnections
-    ) as { output?: string; newState?: any };
+    ) as any;
 
     const currentOutput = (result && typeof result === 'object' && 'output' in result) ? String(result.output) : '';
 
