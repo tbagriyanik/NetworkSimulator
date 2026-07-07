@@ -237,10 +237,10 @@ export function NetworkTopology({
   const setConnectionsState = setConnections;
   const setNotesState = setNotes;
 
-  // Force re-render when deviceStates changes (for WiFi icon updates)
+  // Force re-render when deviceStates changes (for WiFi icon and port status updates)
   const [, setDeviceStatesVersion] = useState(0);
   useEffect(() => {
-    setTimeout(() => setDeviceStatesVersion(prev => prev + 1), 0);
+    setDeviceStatesVersion(prev => prev + 1);
   }, [deviceStates]);
 
   // Use hook to preserve window positions during network refresh
@@ -846,6 +846,7 @@ export function NetworkTopology({
   const { cancelConnectionDrawing } = useConnectionDrawing({
     setIsDrawingConnection,
     setConnectionStart,
+    setMobileConnectionSource,
     isDrawingConnectionRef,
     connectionStartRef
   });
@@ -1166,9 +1167,7 @@ export function NetworkTopology({
         setPingSource(null);
         setPingResult(null);
       }
-      if (isDrawingConnectionRef.current) {
-        cancelConnectionDrawing();
-      }
+      cancelConnectionDrawing();
 
       const currentPan = panRef.current;
       const ps = { x: e.clientX - currentPan.x, y: e.clientY - currentPan.y };
@@ -4373,9 +4372,7 @@ export function NetworkTopology({
                 setPingSource(null);
                 setPingResult(null);
               }
-              if (isDrawingConnection) {
-                cancelConnectionDrawing();
-              }
+              cancelConnectionDrawing();
               setContextMenu(null);
             }}
             onContextMenu={(e) => {
@@ -4398,9 +4395,7 @@ export function NetworkTopology({
             }}
             onKeyDown={(e) => {
               if (e.key === 'Escape') {
-                if (isDrawingConnection) {
-                  cancelConnectionDrawing();
-                }
+                cancelConnectionDrawing();
               }
               if (e.key === 'Enter' && selectedDeviceIds.length > 0) {
                 const lastId = selectedDeviceIds[selectedDeviceIds.length - 1];

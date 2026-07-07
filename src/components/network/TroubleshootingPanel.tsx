@@ -39,6 +39,7 @@ export function TroubleshootingPanel({
   isMinimized
 }: TroubleshootingPanelProps) {
   const { t, language } = useLanguage();
+  const { theme } = useLanguage() as any; // ThemeContext is not directly here, but let's check useLanguage or just use the same logic
 
   // Drag state
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -119,7 +120,9 @@ export function TroubleshootingPanel({
       ref={panelRef}
       onPointerDownCapture={() => bringElementToFront(panelRef.current)}
       className={cn(
-        "absolute right-4 top-20 z-[70] bg-secondary-950/30 border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] backdrop-blur-2xl transition-all duration-300 flex flex-col overflow-hidden rounded-xl",
+        "absolute right-4 top-20 z-[70] backdrop-blur-2xl transition-all duration-300 flex flex-col overflow-hidden rounded-xl",
+        "bg-white/90 border-secondary-200 shadow-xl text-secondary-900",
+        "dark:bg-secondary-950/30 dark:border-white/10 dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] dark:text-white",
         isMinimized ? "w-72 h-14" : "w-80 max-h-[80vh]",
         isDragging ? "transition-none" : "transition-transform"
       )}
@@ -133,15 +136,20 @@ export function TroubleshootingPanel({
         className={cn(
           "flex items-center justify-between p-3 select-none shrink-0 border-b",
           "cursor-grab active:cursor-grabbing",
-          allResolved ? "bg-success-950/40 border-success-900/50" : "bg-warning-950/40 border-warning-900/50"
+          allResolved
+            ? "bg-success-50/80 border-success-200 dark:bg-success-950/40 dark:border-success-900/50"
+            : "bg-warning-50/80 border-warning-200 dark:bg-warning-950/40 dark:border-warning-900/50"
         )}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
       >
         <div className="flex items-center gap-2">
-          <Wrench className={cn("w-4 h-4", allResolved ? "text-success-400" : "text-warning-400")} />
-          <span className="font-semibold text-sm tracking-wide text-secondary-100">
+          <Wrench className={cn("w-4 h-4", allResolved ? "text-success-500 dark:text-success-400" : "text-warning-500 dark:text-warning-400")} />
+          <span className={cn(
+            "font-semibold text-sm tracking-wide",
+            "text-secondary-900 dark:text-secondary-100"
+          )}>
             {language === 'tr' ? 'Arıza Giderme' : 'Troubleshooting'}
           </span>
         </div>
@@ -166,7 +174,7 @@ export function TroubleshootingPanel({
       </div>
 
       {/* Progress Bar */}
-      <div className="h-1 w-full bg-secondary-900 shrink-0 relative overflow-hidden">
+      <div className="h-1 w-full bg-secondary-200 dark:bg-secondary-900 shrink-0 relative overflow-hidden">
         <div 
           className={cn(
             "h-full transition-all duration-500 ease-out",
@@ -180,7 +188,9 @@ export function TroubleshootingPanel({
       {!isMinimized && (
         <ScrollArea className="flex-1 overflow-y-auto">
           <div className="p-4 space-y-4">
-            <div className="text-sm text-secondary-400 leading-relaxed mb-4">
+            <div className={cn(
+              "text-sm leading-relaxed mb-4 text-secondary-600 dark:text-secondary-400"
+            )}>
               {typeof project.title === 'string' 
                 ? project.title 
                 : (project.title as Record<string, string>)[language] || (project.title as Record<string, string>).en}
@@ -203,8 +213,8 @@ export function TroubleshootingPanel({
                         className={cn(
                           "p-3 rounded-lg border transition-all duration-300",
                           isResolved 
-                            ? "bg-success-950/20 border-success-900/50 text-success-400" 
-                            : "bg-secondary-900/50 border-secondary-800 text-secondary-300"
+                            ? "bg-success-50/50 border-success-200 text-success-700 dark:bg-success-950/20 dark:border-success-900/50 dark:text-success-400"
+                            : "bg-white border-secondary-100 text-secondary-700 dark:bg-secondary-900/50 dark:border-secondary-800 dark:text-secondary-300"
                         )}
                       >
                         <div className="flex items-start gap-3">
@@ -218,12 +228,14 @@ export function TroubleshootingPanel({
                           <div className="flex-1">
                             <div className={cn(
                               "text-sm font-medium",
-                              isResolved ? "text-success-300 line-through opacity-70" : "text-secondary-200"
+                              isResolved
+                                ? "line-through opacity-70 text-success-700 dark:text-success-300"
+                                : "text-secondary-900 dark:text-secondary-200"
                             )}>
                               {faultDescription}
                             </div>
                             {fault.hint && !isResolved && (
-                              <div className="text-xs text-warning-300/80 mt-1 italic">
+                              <div className="text-xs mt-1 italic text-warning-700 dark:text-warning-300/80">
                                 İpucu: {fault.hint[language] || fault.hint.en}
                               </div>
                             )}
@@ -250,8 +262,8 @@ export function TroubleshootingPanel({
                         className={cn(
                           "p-3 rounded-lg border transition-all duration-300",
                           isResolved 
-                            ? "bg-primary-950/20 border-primary-900/50 text-primary-400" 
-                            : "bg-secondary-900/50 border-secondary-800 text-secondary-300"
+                            ? "bg-primary-50/50 border-primary-200 text-primary-700 dark:bg-primary-950/20 dark:border-primary-900/50 dark:text-primary-400"
+                            : "bg-white border-secondary-100 text-secondary-700 dark:bg-secondary-900/50 dark:border-secondary-800 dark:text-secondary-300"
                         )}
                       >
                         <div className="flex items-start gap-3">

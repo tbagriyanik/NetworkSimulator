@@ -3161,6 +3161,22 @@ export function validateCommand(
     return { valid: false, reason: 'incomplete', error: IOS_ERRORS.incomplete };
   }
 
+  // Check for potentially incomplete commands by token count
+  const tokens = resolvedInput.trim().split(/\s+/);
+  const matchedBase = Object.keys(commandPatterns).find(key => {
+    const pattern = commandPatterns[key];
+    if (!pattern.modes.includes(currentMode)) return false;
+    // If input starts with a known command base but has too few tokens
+    if (resolvedInput.toLowerCase().startsWith(key.toLowerCase()) && tokens.length < pattern.minArgs + key.split(/\s+/).length) {
+      return true;
+    }
+    return false;
+  });
+
+  if (matchedBase && !commandPatterns[matchedBase].pattern.test(resolvedInput)) {
+    return { valid: false, reason: 'incomplete', error: IOS_ERRORS.incomplete };
+  }
+
   // Eşleşme bulunamadı
   const failedTokenIndex = treeResolution.failedTokenIndex;
   return {
