@@ -4,7 +4,7 @@ import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 
-import { SwitchState, CableInfo, Port } from '@/lib/network/types';
+import { SwitchState, CableInfo, Port, CommandResult } from '@/lib/network/types';
 import { useDeviceManager } from '@/hooks/useDeviceManager';
 import { useNetworkLogic } from '@/hooks/useNetworkLogic';
 import { useAppNavigation } from '@/hooks/useAppNavigation';
@@ -2891,7 +2891,7 @@ ${state.bannerMOTD}
       setActiveDeviceId,
       setActiveDeviceType,
       topologyConnections
-    ) as any;
+    ) as CommandResult;
 
     const currentOutput = (result && typeof result === 'object' && 'output' in result) ? String(result.output) : '';
 
@@ -2909,7 +2909,7 @@ ${state.bannerMOTD}
       let finalDeviceStates = result?.deviceStates || deviceStates;
       if (result?.newState && !result?.deviceStates && !result?.updatedDeviceStates) {
         finalDeviceStates = new Map(deviceStates);
-        finalDeviceStates.set(activeDeviceId, currentDeviceState);
+        finalDeviceStates.set(activeDeviceId, currentDeviceState as SwitchState);
       }
 
       checkStepCompletionWithContext({
@@ -2940,7 +2940,7 @@ ${state.bannerMOTD}
       setActiveDeviceId,
       setActiveDeviceType,
       topologyConnections
-    ) as any;
+    ) as CommandResult;
 
     const currentOutput = (result && typeof result === 'object' && 'output' in result) ? String(result.output) : '';
 
@@ -2958,10 +2958,13 @@ ${state.bannerMOTD}
       const devType = deviceObj?.type;
       const currentState = deviceStates.get(deviceId);
       const currentDeviceState = result && result.newState ? { ...currentState, ...result.newState } : currentState;
+
+      if (!currentDeviceState) return result;
+
       let finalDeviceStates = result?.deviceStates || result?.updatedDeviceStates || deviceStates;
       if (result?.newState && !result?.deviceStates && !result?.updatedDeviceStates) {
         finalDeviceStates = new Map(deviceStates);
-        finalDeviceStates.set(deviceId, currentDeviceState);
+        finalDeviceStates.set(deviceId, currentDeviceState as SwitchState);
       }
 
       checkStepCompletionWithContext({

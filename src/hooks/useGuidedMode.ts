@@ -35,7 +35,7 @@ interface UseGuidedModeReturn {
     deviceAccessed?: 'switch' | 'router' | 'pc' | null;
     deviceAccessedId?: string | null;
     deviceState?: unknown;
-    deviceStates?: Map<string, any>;
+    deviceStates?: Map<string, unknown>;
     topologyConnections?: unknown[];
     topologyDevices?: unknown[];
   }) => void;

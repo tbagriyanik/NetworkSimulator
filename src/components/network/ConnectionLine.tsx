@@ -226,64 +226,59 @@ export const ConnectionLine = memo(function ConnectionLine({
         };
         const srcPos = bezierPoint(0.42);
         const tgtPos = bezierPoint(0.58);
-        const srcLabel = { x: srcPos.x + perpX, y: srcPos.y + perpY };
-        const tgtLabel = { x: tgtPos.x + perpX, y: tgtPos.y + perpY };
-        const labelOffsetY = -10;
+        // Calculate label orientation offset
+        const angle = Math.atan2(dy, dx);
+        const isVertical = Math.abs(Math.sin(angle)) > 0.7;
+        const orientX = isVertical ? 15 : 0;
+        const orientY = isVertical ? 0 : -12;
+
+        const srcLabel = { x: srcPos.x + perpX + orientX, y: srcPos.y + perpY + orientY };
+        const tgtLabel = { x: tgtPos.x + perpX + orientX, y: tgtPos.y + perpY + orientY };
+
         return (
           <>
+            {/* Background for labels to improve readability */}
+            <rect
+              x={srcLabel.x - 20}
+              y={srcLabel.y - 8}
+              width="40"
+              height="14"
+              rx="4"
+              fill={isDark ? 'var(--color-secondary-900)' : 'var(--color-background)'}
+              opacity={isHovered ? 0.8 : 0.4}
+              className="pointer-events-none"
+            />
             <text
               x={srcLabel.x}
-              y={srcLabel.y + labelOffsetY}
-              fill="none"
-              stroke={isDark ? 'var(--color-secondary-900)' : 'var(--color-background)'}
-              strokeWidth="1"
-              vectorEffect="non-scaling-stroke"
-              strokeLinejoin="round"
-              fontSize="11"
+              y={srcLabel.y + 3}
+              fill={color}
+              fontSize="10"
               textAnchor="middle"
               className="pointer-events-none select-none"
               fontWeight="bold"
-              opacity={isHovered ? 0.9 : 0.75}
+              opacity={isHovered ? 1 : 0.8}
             >
               {connection.sourcePort}
             </text>
-            <text
-              x={srcLabel.x}
-              y={srcLabel.y + labelOffsetY}
-              fill={color}
-              fontSize="11"
-              textAnchor="middle"
-              className="pointer-events-none select-none"
-              fontWeight="bold"
-              opacity={isHovered ? 0.9 : 0.75}
-            >
-              {connection.sourcePort}
-            </text>
+            <rect
+              x={tgtLabel.x - 20}
+              y={tgtLabel.y - 8}
+              width="40"
+              height="14"
+              rx="4"
+              fill={isDark ? 'var(--color-secondary-900)' : 'var(--color-background)'}
+              opacity={isHovered ? 0.8 : 0.4}
+              className="pointer-events-none"
+            />
             <text
               x={tgtLabel.x}
-              y={tgtLabel.y + labelOffsetY}
-              fill="none"
-              stroke={isDark ? 'var(--color-secondary-900)' : 'var(--color-background)'}
-              strokeWidth="1"
-              vectorEffect="non-scaling-stroke"
-              strokeLinejoin="round"
-              fontSize="11"
-              textAnchor="middle"
-              className="pointer-events-none select-none"
-              fontWeight="bold"
-              opacity={isHovered ? 0.9 : 0.75}
-            >
-              {connection.targetPort}
-            </text>
-            <text
-              x={tgtLabel.x}
-              y={tgtLabel.y + labelOffsetY}
+              y={tgtLabel.y + 3}
               fill={color}
-              fontSize="11"
+              fontSize="10"
               textAnchor="middle"
               className="pointer-events-none select-none"
               fontWeight="bold"
-              opacity={isHovered ? 0.9 : 0.75}
+              opacity={isHovered ? 1 : 0.8}
             >
               {connection.targetPort}
             </text>
