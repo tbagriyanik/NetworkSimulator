@@ -4374,8 +4374,7 @@ export function NetworkTopology({
                 setPingResult(null);
               }
               if (isDrawingConnection) {
-                setIsDrawingConnection(false);
-                setConnectionStart(null);
+                cancelConnectionDrawing();
               }
               setContextMenu(null);
             }}
@@ -4398,6 +4397,11 @@ export function NetworkTopology({
               }
             }}
             onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                if (isDrawingConnection) {
+                  cancelConnectionDrawing();
+                }
+              }
               if (e.key === 'Enter' && selectedDeviceIds.length > 0) {
                 const lastId = selectedDeviceIds[selectedDeviceIds.length - 1];
                 const selectedDevice = deviceMap.get(lastId);
