@@ -129,6 +129,7 @@
 | **Context Panels**: PC Panel, Firewall Panel, IoT Panel, Device Configuration Panel | **Bağlam Panelleri**: PC Paneli, Güvenlik Duvarı Paneli, IoT Paneli, Cihaz Yapılandırma Paneli |
 | **Quick Commands**: One-click common command suggestions | **Hızlı Komutlar**: Tek tıklamayla sık kullanılan komut önerileri |
 | **Mode Selector**: Easy switching between Free, Guided, and Exam modes | **Mod Seçici**: Serbest, Rehberli ve Sınav modları arasında kolay geçiş |
+| **Voice Narration (TTS)**: Built-in text-to-speech for guided instructions | **Sesli Anlatım (TTS)**: Rehberli talimatlar için yerleşik metin okuma desteği |
 | **Achievement Panel**: Visual badge gallery with progress tracking | **Başarım Paneli**: İlerleme takibi ile görsel rozet galerisi |
 | **Help Panel**: Context-sensitive help system | **Yardım Paneli**: Bağlama duyarlı yardım sistemi |
 | **Keyboard Navigation**: Full keyboard shortcuts for all operations | **Klavye Gezintisi**: Tüm işlemler için tam klavye kısayolları |
@@ -151,7 +152,7 @@
 | **Error Handling**: Comprehensive error handling and user feedback | **Hata Yönetimi**: Kapsamlı hata yönetimi ve kullanıcı geri bildirimi |
 | **Performance Monitoring**: Canvas optimization and bundle optimization | **Performans İzleme**: Tuval optimizasyonu ve paket optimizasyonu |
 | **Animation System**: Smooth transitions and micro-interactions | **Animasyon Sistemi**: Pürüzsüz geçişler ve mikro etkileşimler |
-| **PDF Export**: Generate exam/result PDFs using jspdf | **PDF Çıktısı**: jspdf ile sınav/sonuç PDF'i oluşturma |
+| **PDF Export**: Generate exam/result PDFs and success certificates using jspdf | **PDF Çıktısı**: jspdf ile sınav sonuçları ve başarı sertifikaları oluşturma |
 | **Redis / KV**: Upstash Redis for room tracking session persistence | **Redis / KV**: Oda takibi oturum kalıcılığı için Upstash Redis |
 | **Google Sheets API**: Contact form data export to Google Sheets | **Google Sheets API**: İletişim formu verilerinin Google Sheets'e aktarımı |
 

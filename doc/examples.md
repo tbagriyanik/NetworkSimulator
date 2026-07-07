@@ -1532,6 +1532,24 @@ IPv6 adresleme, DHCPv6 havuzları ve OSPFv3 dinamik yönlendirme.
 4. **DHCPv6:** İstemciler için DHCPv6 havuzu oluşturun.
 5. **OSPFv3:** `ipv6 router ospf 1` ile router'lar arası dinamik rota paylaşımı sağlayın.
 
+### 41. Troubleshooting: Inter-VLAN Routing
+**ID:** `troubleshooting-ivr`
+**Tag:** ARIZA
+**Description:** Yapılandırılmış ama hatalı bir Inter-VLAN senaryosunu onarın.
+**Details:** VLAN mismatch ve yanlış subinterface IP'lerini bulun ve düzeltin.
+
+### 42. Troubleshooting: OSPF Area Mismatch
+**ID:** `troubleshooting-ospf-area`
+**Tag:** ARIZA
+**Description:** Komşuluk kuramayan OSPF router'larındaki area mismatch hatasını giderin.
+**Details:** Area ID'lerini senkronize ederek yönlendirme tablosunu düzeltin.
+
+### 43. Advanced: IPv6 Master Lab (OSPFv3 & ACL)
+**ID:** `ipv6-master-lab`
+**Tag:** IPv6
+**Description:** Dual-stack, OSPFv3 ve IPv6 ACL içeren kapsamlı ileri seviye laboratuvar.
+**Details:** IPv6 güvenliği ve dinamik yönlendirmeyi aynı anda yapılandırın.
+
 ---
 
 ## Summary
@@ -1540,9 +1558,9 @@ IPv6 adresleme, DHCPv6 havuzları ve OSPFv3 dinamik yönlendirme.
 |-------|-------|
 | Basic / Temel | 9 |
 | Intermediate / Orta | 13 |
-| Advanced / İleri | 18 |
-| **Total Examples** | **40** |
-| **Total Project Lines (src/)** | **95,941** |
+| Advanced / İleri | 21 |
+| **Total Examples** | **43** |
+| **Total Project Lines (src/)** | **105,450** |
 
 ## Getting Started
 
