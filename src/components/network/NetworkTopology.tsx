@@ -237,10 +237,10 @@ export function NetworkTopology({
   const setConnectionsState = setConnections;
   const setNotesState = setNotes;
 
-  // Force re-render when deviceStates changes (for WiFi icon and port status updates)
-  const [, setDeviceStatesVersion] = useState(0);
+  // No-op effect to ensure deviceStates dependency is tracked.
+  // The Map reference itself must change to trigger standard React updates in child components.
   useEffect(() => {
-    setDeviceStatesVersion(prev => prev + 1);
+    // Empty effect: deviceStates is already a dependency of the main component.
   }, [deviceStates]);
 
   // Use hook to preserve window positions during network refresh

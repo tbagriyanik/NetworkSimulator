@@ -1061,7 +1061,7 @@ function applyPipeFilterOutput(
   }
 
   if (filter.type === 'begin') {
-    const idx = lines.findIndex(matchLine);
+    const idx = lines.findIndex(line => line.toLowerCase().includes(q));
     return idx >= 0 ? lines.slice(idx).join('\n') : '';
   }
 
@@ -1144,18 +1144,24 @@ export function executeCommand(
   let cmdToProcess = input.trim();
   let pipeFilter: { type: 'include' | 'exclude' | 'begin' | 'section'; query: string } | null = null;
 
-  // Extract pipe filter early so shortcuts operate on the base command only
-  const pipeMatch = cmdToProcess.match(/^(.*?)\s*\|\s*(include|exclude|begin|section)\s+(.+)$/i);
-  let cmdBase = cmdToProcess;
+  // Unified pipe filter extraction
+  // Support shortcuts: i (include), ex (exclude), b (begin), s (section)
+  const pipeMatch = cmdToProcess.match(/^(.*?)\s*\|\s*(include|i|exclude|ex|begin|b|section|s)\s+(.+)$/i);
   if (pipeMatch) {
-    cmdBase = pipeMatch[1].trim();
+    cmdToProcess = pipeMatch[1].trim();
+    const typeStr = pipeMatch[2].toLowerCase();
+    let filterType: 'include' | 'exclude' | 'begin' | 'section' = 'include';
+
+    if (typeStr.startsWith('i')) filterType = 'include';
+    else if (typeStr.startsWith('ex')) filterType = 'exclude';
+    else if (typeStr.startsWith('b')) filterType = 'begin';
+    else if (typeStr.startsWith('s')) filterType = 'section';
+
     pipeFilter = {
-      type: pipeMatch[2].toLowerCase() as 'include' | 'exclude' | 'begin' | 'section',
+      type: filterType,
       query: pipeMatch[3].trim(),
     };
   }
-
-  cmdToProcess = cmdBase;
 
   // Special handling for enable command when no password is set
   // Direct console access (no remote session) can bypass this check
