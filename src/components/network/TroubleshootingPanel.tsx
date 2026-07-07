@@ -8,7 +8,8 @@ import {
   ChevronDown,
   ChevronUp,
   X,
-  Target
+  Target,
+  Award
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -18,6 +19,7 @@ import { SwitchState } from '@/lib/network/types';
 import { checkFaultResolved, FaultDefinition } from '@/lib/network/faults';
 import { ExamTask } from '@/lib/network/examMode';
 import { bringElementToFront } from '@/lib/utils/zIndex';
+import { generateCertificate } from '@/lib/utils/certificateGenerator';
 
 interface TroubleshootingPanelProps {
   project: ExampleProject | null;
@@ -97,6 +99,20 @@ export function TroubleshootingPanel({
   const totalResolved = resolvedFaultsCount + completedTasksCount;
   const progressPercentage = totalItems > 0 ? Math.round((totalResolved / totalItems) * 100) : 100;
   const allResolved = totalItems > 0 && totalResolved === totalItems;
+
+  const handleDownloadCertificate = () => {
+    if (!project) return;
+    const studentName = prompt(language === 'tr' ? 'Sertifika için adınızı girin:' : 'Enter your name for the certificate:') || 'Student';
+
+    generateCertificate({
+      studentName,
+      projectTitle: typeof project.title === 'string' ? project.title : (project.title as Record<string, string>)[language] || (project.title as Record<string, string>).en,
+      score: totalResolved,
+      totalScore: totalItems,
+      date: new Date().toLocaleDateString(language === 'tr' ? 'tr-TR' : 'en-US'),
+      language
+    });
+  };
 
   return (
     <div
@@ -275,9 +291,16 @@ export function TroubleshootingPanel({
                 <div className="text-success-400 font-bold mb-1">
                   {language === 'tr' ? 'Tebrikler!' : 'Congratulations!'}
                 </div>
-                <div className="text-success-300/80 text-sm">
+                <div className="text-success-300/80 text-sm mb-4">
                   {language === 'tr' ? 'Tüm görevleri ve arızaları başarıyla tamamladınız.' : 'You successfully completed all tasks and faults.'}
                 </div>
+                <button
+                  onClick={handleDownloadCertificate}
+                  className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-success-600 hover:bg-success-700 text-white rounded-lg font-bold text-sm transition-all shadow-lg shadow-success-900/40"
+                >
+                  <Award className="w-5 h-5" />
+                  {language === 'tr' ? 'Sertifikayı İndir' : 'Download Certificate'}
+                </button>
               </div>
             )}
           </div>

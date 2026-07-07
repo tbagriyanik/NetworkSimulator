@@ -813,6 +813,308 @@ export const servicesGuidedSteps: GuidedStep[] = [
   }
 ];
 
+// 9. SOHO (Small Office Home Office) Senaryosu
+export const sohoGuidedSteps: GuidedStep[] = [
+  {
+    id: 'soho-connect-pc',
+    order: 1,
+    title: { tr: 'PC Bağlantısı', en: 'Connect PC' },
+    description: { tr: 'Ofis bilgisayarını switch\'e bağlayın.', en: 'Connect the office PC to the switch.' },
+    hint: { tr: 'Düz kablo: PC-1 Eth0 -> Switch-1 Fa0/1', en: 'Straight cable: PC-1 Eth0 -> Switch-1 Fa0/1' },
+    checkType: 'connection',
+    checkParams: { cableType: 'straight', sourceDevice: 'pc-1', sourcePort: 'eth0', targetDevice: 'switch-1', targetPort: 'fa0/1' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'soho-connect-router',
+    order: 2,
+    title: { tr: 'Router Bağlantısı', en: 'Connect Router' },
+    description: { tr: 'Switch\'i router\'a bağlayarak internet çıkışını hazırlayın.', en: 'Connect the switch to the router to prepare internet access.' },
+    hint: { tr: 'Düz kablo: Switch-1 Gi0/1 -> Router-1 Gi0/0', en: 'Straight cable: Switch-1 Gi0/1 -> Router-1 Gi0/0' },
+    checkType: 'connection',
+    checkParams: { cableType: 'straight', sourceDevice: 'switch-1', sourcePort: 'gi0/1', targetDevice: 'router-1', targetPort: 'gi0/0' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'soho-router-ip',
+    order: 3,
+    title: { tr: 'Ağ Geçidi IP', en: 'Gateway IP' },
+    description: { tr: 'Router arayüzüne yerel ağ geçidi IP adresini (192.168.1.1) atayın.', en: 'Assign the local gateway IP address (192.168.1.1) to the router interface.' },
+    hint: { tr: 'int gi0/0 -> ip address 192.168.1.1 255.255.255.0 -> no shut', en: 'int gi0/0 -> ip address 192.168.1.1 255.255.255.0 -> no shut' },
+    checkType: 'config',
+    checkParams: { targetDeviceId: 'router-1', configKey: 'interfaces.gi0/0.ip', configValue: '192.168.1.1' },
+    completed: false,
+    points: 15
+  },
+  {
+    id: 'soho-dhcp',
+    order: 4,
+    title: { tr: 'Otomatik IP (DHCP)', en: 'Automatic IP (DHCP)' },
+    description: { tr: 'Ofis cihazları için DHCP havuzu oluşturun.', en: 'Create a DHCP pool for office devices.' },
+    hint: { tr: 'ip dhcp pool OFIS -> network 192.168.1.0 255.255.255.0 -> default-router 192.168.1.1', en: 'ip dhcp pool OFIS -> network 192.168.1.0 255.255.255.0 -> default-router 192.168.1.1' },
+    checkType: 'config',
+    checkParams: { targetDeviceId: 'router-1', configKey: 'dhcpPools.OFIS.network', configValue: '192.168.1.0' },
+    completed: false,
+    points: 15
+  },
+  {
+    id: 'soho-wifi-ssid',
+    order: 5,
+    title: { tr: 'Misafir WiFi', en: 'Guest WiFi' },
+    description: { tr: 'Router üzerinde "Ofis-Wifi" isminde bir kablosuz ağ yayınlayın.', en: 'Broadcast a wireless network named "Office-Wifi" on the router.' },
+    hint: { tr: 'Wifi sekmesinden SSID: Office-Wifi, Auth: Open yapın.', en: 'From Wifi tab set SSID: Office-Wifi, Auth: Open.' },
+    checkType: 'config',
+    checkParams: { targetDeviceId: 'router-1', configKey: 'ports.wlan0.wifi.ssid', configValue: 'Office-Wifi' },
+    completed: false,
+    points: 20
+  },
+  {
+    id: 'soho-pc2-wifi',
+    order: 6,
+    title: { tr: 'Laptop Bağlantısı', en: 'Laptop Connection' },
+    description: { tr: 'Laptop (PC-2) cihazını kablosuz ağa bağlayın.', en: 'Connect the Laptop (PC-2) device to the wireless network.' },
+    hint: { tr: 'PC-2 > Desktop > Wifi > SSID: Office-Wifi seçin.', en: 'PC-2 > Desktop > Wifi > select SSID: Office-Wifi.' },
+    checkType: 'config',
+    checkParams: { configKey: 'pc.pc-2.wifi.ssid', configValue: 'Office-Wifi' },
+    completed: false,
+    points: 15
+  },
+  {
+    id: 'soho-ping-test',
+    order: 7,
+    title: { tr: 'Erişim Testi', en: 'Connectivity Test' },
+    description: { tr: 'Laptop\'tan sabit bilgisayara ping atarak bağlantıyı doğrulayın.', en: 'Verify connectivity by pinging from the Laptop to the desktop PC.' },
+    hint: { tr: 'PC-2 CMD > ping 192.168.1.10 (PC-1\'in IP\'si)', en: 'PC-2 CMD > ping 192.168.1.10 (PC-1 IP)' },
+    checkType: 'ping',
+    checkParams: { fromDevice: 'pc-2', toIp: '192.168.1.10' },
+    completed: false,
+    points: 15
+  }
+];
+
+// 10. Okul Kampüsü (School Campus) Senaryosu
+export const campusGuidedSteps: GuidedStep[] = [
+  {
+    id: 'campus-vlan-10',
+    order: 1,
+    title: { tr: 'İdari VLAN (10)', en: 'Admin VLAN (10)' },
+    description: { tr: 'Yönetim birimi için VLAN 10 oluşturun.', en: 'Create VLAN 10 for the administration unit.' },
+    hint: { tr: 'vlan 10 -> name ADMIN', en: 'vlan 10 -> name ADMIN' },
+    checkType: 'config',
+    checkParams: { targetDeviceId: 'switch-1', configKey: 'vlans.10.name', configValue: 'ADMIN' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'campus-vlan-20',
+    order: 2,
+    title: { tr: 'Öğrenci VLAN (20)', en: 'Student VLAN (20)' },
+    description: { tr: 'Öğrenci laboratuvarları için VLAN 20 oluşturun.', en: 'Create VLAN 20 for student laboratories.' },
+    hint: { tr: 'vlan 20 -> name STUDENT', en: 'vlan 20 -> name STUDENT' },
+    checkType: 'config',
+    checkParams: { targetDeviceId: 'switch-1', configKey: 'vlans.20.name', configValue: 'STUDENT' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'campus-vlan-30',
+    order: 3,
+    title: { tr: 'Misafir VLAN (30)', en: 'Guest VLAN (30)' },
+    description: { tr: 'Misafir WiFi ağı için VLAN 30 oluşturun.', en: 'Create VLAN 30 for the guest WiFi network.' },
+    hint: { tr: 'vlan 30 -> name GUEST', en: 'vlan 30 -> name GUEST' },
+    checkType: 'config',
+    checkParams: { targetDeviceId: 'switch-1', configKey: 'vlans.30.name', configValue: 'GUEST' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'campus-assign-pc1',
+    order: 4,
+    title: { tr: 'PC1 Atama', en: 'Assign PC1' },
+    description: { tr: 'PC-1\'i (İdari) VLAN 10\'a atayın.', en: 'Assign PC-1 (Admin) to VLAN 10.' },
+    hint: { tr: 'int fa0/1 -> switchport access vlan 10', en: 'int fa0/1 -> switchport access vlan 10' },
+    checkType: 'config',
+    checkParams: { targetDeviceId: 'switch-1', configKey: 'ports.fa0/1.vlan', configValue: 10 },
+    completed: false,
+    points: 15
+  },
+  {
+    id: 'campus-assign-pc2',
+    order: 5,
+    title: { tr: 'PC2 Atama', en: 'Assign PC2' },
+    description: { tr: 'PC-2\'yi (Öğrenci) VLAN 20\'ye atayın.', en: 'Assign PC-2 (Student) to VLAN 20.' },
+    hint: { tr: 'int fa0/2 -> switchport access vlan 20', en: 'int fa0/2 -> switchport access vlan 20' },
+    checkType: 'config',
+    checkParams: { targetDeviceId: 'switch-1', configKey: 'ports.fa0/2.vlan', configValue: 20 },
+    completed: false,
+    points: 15
+  },
+  {
+    id: 'campus-router-vlan10',
+    order: 6,
+    title: { tr: 'R1 VLAN 10 IP', en: 'R1 VLAN 10 IP' },
+    description: { tr: 'Router\'ın Gi0/0.10 subinterface\'ine 192.168.10.1 IP adresi verin.', en: 'Assign 192.168.10.1 IP to R1 Gi0/0.10 subinterface.' },
+    hint: { tr: 'int gi0/0.10 -> encapsulation dot1q 10 -> ip add 192.168.10.1 255.255.255.0', en: 'int gi0/0.10 -> encapsulation dot1q 10 -> ip add 192.168.10.1 255.255.255.0' },
+    checkType: 'config',
+    checkParams: { targetDeviceId: 'router-1', configKey: 'interfaces.gi0/0.10.ip', configValue: '192.168.10.1' },
+    completed: false,
+    points: 20
+  },
+  {
+    id: 'campus-ping-intervlan',
+    order: 7,
+    title: { tr: 'VLAN Arası Erişim', en: 'Inter-VLAN Test' },
+    description: { tr: 'İdari PC\'den (PC1), Öğrenci PC\'ye (PC2) ping atın.', en: 'Ping from Admin PC (PC1) to Student PC (PC2).' },
+    hint: { tr: 'PC-1 CMD > ping 192.168.20.10', en: 'PC-1 CMD > ping 192.168.20.10' },
+    checkType: 'ping',
+    checkParams: { fromDevice: 'pc-1', toIp: '192.168.20.10' },
+    completed: false,
+    points: 20
+  }
+];
+
+// 11. Hastane Ağı (Hospital Network) Senaryosu
+export const hospitalGuidedSteps: GuidedStep[] = [
+  {
+    id: 'hosp-vlan-data',
+    order: 1,
+    title: { tr: 'Hasta Veri VLAN', en: 'Patient Data VLAN' },
+    description: { tr: 'Kritik hasta verileri için VLAN 100 oluşturun.', en: 'Create VLAN 100 for critical patient data.' },
+    hint: { tr: 'vlan 100 -> name PATIENT-DATA', en: 'vlan 100 -> name PATIENT-DATA' },
+    checkType: 'config',
+    checkParams: { targetDeviceId: 'switch-1', configKey: 'vlans.100.name', configValue: 'PATIENT-DATA' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'hosp-vlan-medical',
+    order: 2,
+    title: { tr: 'Tıbbi Cihaz VLAN', en: 'Medical Device VLAN' },
+    description: { tr: 'Tıbbi cihazlar için VLAN 200 oluşturun.', en: 'Create VLAN 200 for medical devices.' },
+    hint: { tr: 'vlan 200 -> name MEDICAL-DEVICES', en: 'vlan 200 -> name MEDICAL-DEVICES' },
+    checkType: 'config',
+    checkParams: { targetDeviceId: 'switch-1', configKey: 'vlans.200.name', configValue: 'MEDICAL-DEVICES' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'hosp-port-sec',
+    order: 3,
+    title: { tr: 'Port Güvenliği', en: 'Port Security' },
+    description: { tr: 'Veri sızıntısını önlemek için Fa0/1 portunda güvenliği açın.', en: 'Enable port security on Fa0/1 to prevent data leakage.' },
+    hint: { tr: 'int fa0/1 -> switchport port-security', en: 'int fa0/1 -> switchport port-security' },
+    checkType: 'config',
+    checkParams: { targetDeviceId: 'switch-1', configKey: 'ports.fa0/1.portSecurity.enabled', configValue: true },
+    completed: false,
+    points: 15
+  },
+  {
+    id: 'hosp-acl-restrict',
+    order: 4,
+    title: { tr: 'Erişim Kısıtlama (ACL)', en: 'Access Restriction (ACL)' },
+    description: { tr: 'Tıbbi cihazların internete çıkışını kısıtlayın.', en: 'Restrict medical devices from accessing the internet.' },
+    hint: { tr: 'access-list 10 deny any -> ip access-group 10 in', en: 'access-list 10 deny any -> ip access-group 10 in' },
+    checkType: 'config',
+    checkParams: { targetDeviceId: 'router-1', configKey: 'ports.gi0/0.accessGroupIn', configValue: '10' },
+    completed: false,
+    points: 20
+  },
+  {
+    id: 'hosp-server-dns',
+    order: 5,
+    title: { tr: 'Hastane Sunucusu', en: 'Hospital Server' },
+    description: { tr: 'Merkezi kayıt sunucusunu (192.168.100.10) ağa tanıtın.', en: 'Introduce the central registry server (192.168.100.10) to the network.' },
+    hint: { tr: 'DNS kaydı: records: [{ domain: "hbys.local", address: "192.168.100.10" }]', en: 'DNS record: records: [{ domain: "hbys.local", address: "192.168.100.10" }]' },
+    checkType: 'config',
+    checkParams: { targetDeviceId: 'server-1', configKey: 'services.dns.records', configValue: [{ domain: 'hbys.local', address: '192.168.100.10' }] },
+    completed: false,
+    points: 20
+  },
+  {
+    id: 'hosp-ping-server',
+    order: 6,
+    title: { tr: 'Sunucu Erişimi', en: 'Server Connectivity' },
+    description: { tr: 'Hemşire bilgisayarından (PC1) kayıt sunucusuna ping atın.', en: 'Ping the registry server from the nurse station PC (PC1).' },
+    hint: { tr: 'PC-1 CMD > ping 192.168.100.10', en: 'PC-1 CMD > ping 192.168.100.10' },
+    checkType: 'ping',
+    checkParams: { fromDevice: 'pc-1', toIp: '192.168.100.10' },
+    completed: false,
+    points: 25
+  }
+];
+
+// 12. E-Ticaret Şirketi (E-Commerce Company) Senaryosu
+export const ecommerceGuidedSteps: GuidedStep[] = [
+  {
+    id: 'ecom-dmz-vlan',
+    order: 1,
+    title: { tr: 'DMZ VLAN Oluştur', en: 'Create DMZ VLAN' },
+    description: { tr: 'Web sunucuları için izole DMZ (VLAN 50) oluşturun.', en: 'Create an isolated DMZ (VLAN 50) for web servers.' },
+    hint: { tr: 'vlan 50 -> name DMZ', en: 'vlan 50 -> name DMZ' },
+    checkType: 'config',
+    checkParams: { targetDeviceId: 'switch-1', configKey: 'vlans.50.name', configValue: 'DMZ' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'ecom-assign-web',
+    order: 2,
+    title: { tr: 'Web Sunucu Atama', en: 'Assign Web Server' },
+    description: { tr: 'Web sunucusunu DMZ VLAN\'ına atayın.', en: 'Assign the web server to the DMZ VLAN.' },
+    hint: { tr: 'int fa0/10 -> switchport access vlan 50', en: 'int fa0/10 -> switchport access vlan 50' },
+    checkType: 'config',
+    checkParams: { targetDeviceId: 'switch-1', configKey: 'ports.fa0/10.vlan', configValue: 50 },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'ecom-acl-web',
+    order: 3,
+    title: { tr: 'Web Erişimi (ACL)', en: 'Web Access (ACL)' },
+    description: { tr: 'İnternetten sadece HTTP (port 80) trafiğine izin verin.', en: 'Allow only HTTP (port 80) traffic from the internet.' },
+    hint: { tr: 'ip access-list extended DMZ-IN -> permit tcp any host 172.16.50.10 eq 80', en: 'ip access-list extended DMZ-IN -> permit tcp any host 172.16.50.10 eq 80' },
+    checkType: 'config',
+    checkParams: { targetDeviceId: 'router-1', configKey: 'ports.gi0/0.accessGroupIn', configValue: 'DMZ-IN' },
+    completed: false,
+    points: 20
+  },
+  {
+    id: 'ecom-nat-static',
+    order: 4,
+    title: { tr: 'Static NAT', en: 'Static NAT' },
+    description: { tr: 'Web sunucusunu dış dünyaya açmak için Static NAT kurun.', en: 'Set up Static NAT to expose the web server to the outside world.' },
+    hint: { tr: 'ip nat inside source static 172.16.50.10 203.0.113.10', en: 'ip nat inside source static 172.16.50.10 203.0.113.10' },
+    checkType: 'command',
+    checkParams: { targetDeviceId: 'router-1', commandPattern: 'ip nat inside source static' },
+    completed: false,
+    points: 20
+  },
+  {
+    id: 'ecom-internal-vlan',
+    order: 5,
+    title: { tr: 'İç Ağ VLAN', en: 'Internal VLAN' },
+    description: { tr: 'Ofis çalışanları için VLAN 10 oluşturun.', en: 'Create VLAN 10 for office employees.' },
+    hint: { tr: 'vlan 10 -> name INTERNAL', en: 'vlan 10 -> name INTERNAL' },
+    checkType: 'config',
+    checkParams: { targetDeviceId: 'switch-1', configKey: 'vlans.10.name', configValue: 'INTERNAL' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'ecom-ping-dmz',
+    order: 6,
+    title: { tr: 'DMZ Test', en: 'DMZ Test' },
+    description: { tr: 'İç ağdaki PC\'den (PC1), Web sunucusuna ping atın.', en: 'Ping the web server from the internal PC (PC1).' },
+    hint: { tr: 'PC-1 CMD > ping 172.16.50.10', en: 'PC-1 CMD > ping 172.16.50.10' },
+    checkType: 'ping',
+    checkParams: { fromDevice: 'pc-1', toIp: '172.16.50.10' },
+    completed: false,
+    points: 30
+  }
+];
+
 // Rehberli projeleri oluştur
 export const getGuidedProjects = (language: 'tr' | 'en'): GuidedProject[] => {
   const isTr = language === 'tr';
@@ -1047,6 +1349,118 @@ export const getGuidedProjects = (language: 'tr' | 'en'): GuidedProject[] => {
       },
       level: 'intermediate', isGuided: true, steps: servicesGuidedSteps, estimatedTimeMinutes: 15, difficulty: 'intermediate',
       totalPoints: servicesGuidedSteps.reduce((acc, s) => acc + (s.points || 0), 0)
+    },
+    {
+      id: 'guided-soho-scenario',
+      tag: isTr ? 'SEKTÖREL' : 'INDUSTRY',
+      title: isTr ? 'SOHO Ofis Ağ Kurulumu' : 'SOHO Office Network Setup',
+      description: isTr ? 'Küçük bir ofis için kablolu ve kablosuz ağ altyapısını sıfırdan kurun' : 'Set up wired and wireless network infrastructure from scratch for a small office',
+      detail: isTr ? 'Yönlendirme, DHCP ve WiFi konfigürasyonlarını içeren gerçek dünya senaryosu.' : 'Real-world scenario including routing, DHCP, and WiFi configurations.',
+      data: {
+        version: '1.0', timestamp: new Date().toISOString(), devices: [], deviceOutputs: [], pcOutputs: [], pcHistories: [],
+        topology: {
+          devices: [
+            { id: 'router-1', type: 'router', name: 'Router-1', x: 400, y: 100, ip: '', status: 'online', ports: generateRouterPorts() },
+            { id: 'switch-1', type: 'switchL2', name: 'Switch-1', x: 400, y: 250, ip: '', status: 'online', ports: generateSwitchPorts() },
+            { id: 'pc-1', type: 'pc', name: 'Ofis-PC', x: 200, y: 350, ip: '192.168.1.10', subnet: '255.255.255.0', gateway: '192.168.1.1', status: 'online', ports: [{ id: 'eth0', label: 'Eth0', status: 'disconnected' as const }, { id: 'com1', label: 'COM1', status: 'disconnected' as const }] },
+            { id: 'pc-2', type: 'pc', name: 'Laptop', x: 600, y: 350, ip: '', ipConfigMode: 'dhcp', status: 'online', ports: [{ id: 'eth0', label: 'Eth0', status: 'disconnected' as const }, { id: 'wlan0', label: 'WLAN0', status: 'disconnected' as const }] }
+          ],
+          connections: [], notes: []
+        },
+        cableInfo: { connected: false, cableType: 'straight', sourceDevice: 'pc', targetDevice: 'switchL2' },
+        activeDeviceId: 'router-1', activeDeviceType: 'router', activeTab: 'topology', zoom: 1, pan: { x: 0, y: 0 }
+      },
+      level: 'intermediate', isGuided: true, steps: sohoGuidedSteps, estimatedTimeMinutes: 15, difficulty: 'intermediate',
+      totalPoints: sohoGuidedSteps.reduce((acc, s) => acc + (s.points || 0), 0)
+    },
+    {
+      id: 'guided-campus-scenario',
+      tag: isTr ? 'SEKTÖREL' : 'INDUSTRY',
+      title: isTr ? 'Okul Kampüs Ağı' : 'School Campus Network',
+      description: isTr ? 'VLAN segmentasyonu ile okul ağını güvenli hale getirin' : 'Secure the school network with VLAN segmentation',
+      detail: isTr ? 'İdari, öğrenci ve misafir birimlerini VLAN\'larla ayırma ve Router-on-a-Stick yapılandırması.' : 'Separating admin, student, and guest units with VLANs and configuring Router-on-a-Stick.',
+      data: {
+        version: '1.0', timestamp: new Date().toISOString(), devices: [], deviceOutputs: [], pcOutputs: [], pcHistories: [],
+        topology: {
+          devices: [
+            { id: 'router-1', type: 'router', name: 'R1-Core', x: 400, y: 100, ip: '', status: 'online', ports: generateRouterPorts() },
+            { id: 'switch-1', type: 'switchL2', name: 'SW-Main', x: 400, y: 250, ip: '', status: 'online', ports: generateSwitchPorts() },
+            { id: 'pc-1', type: 'pc', name: 'Admin-PC', x: 150, y: 350, ip: '192.168.10.10', subnet: '255.255.255.0', gateway: '192.168.10.1', status: 'online', ports: [{ id: 'eth0', label: 'Eth0', status: 'connected' as const }] },
+            { id: 'pc-2', type: 'pc', name: 'Student-PC', x: 400, y: 400, ip: '192.168.20.10', subnet: '255.255.255.0', gateway: '192.168.20.1', status: 'online', ports: [{ id: 'eth0', label: 'Eth0', status: 'connected' as const }] },
+            { id: 'pc-3', type: 'pc', name: 'Guest-WiFi', x: 650, y: 350, ip: '192.168.30.10', subnet: '255.255.255.0', gateway: '192.168.30.1', status: 'online', ports: [{ id: 'wlan0', label: 'WLAN0', status: 'connected' as const }] }
+          ],
+          connections: [
+            { id: 'c1', sourceDeviceId: 'pc-1', sourcePort: 'eth0', targetDeviceId: 'switch-1', targetPort: 'fa0/1', cableType: 'straight', active: true },
+            { id: 'c2', sourceDeviceId: 'pc-2', sourcePort: 'eth0', targetDeviceId: 'switch-1', targetPort: 'fa0/2', cableType: 'straight', active: true },
+            { id: 'c3', sourceDeviceId: 'switch-1', sourcePort: 'gi0/1', targetDeviceId: 'router-1', targetPort: 'gi0/0', cableType: 'crossover', active: true }
+          ],
+          notes: []
+        },
+        cableInfo: { connected: true, cableType: 'straight', sourceDevice: 'pc', targetDevice: 'switchL2' },
+        activeDeviceId: 'switch-1', activeDeviceType: 'switchL2', activeTab: 'topology', zoom: 1, pan: { x: 0, y: 0 }
+      },
+      level: 'advanced', isGuided: true, steps: campusGuidedSteps, estimatedTimeMinutes: 20, difficulty: 'advanced',
+      totalPoints: campusGuidedSteps.reduce((acc, s) => acc + (s.points || 0), 0)
+    },
+    {
+      id: 'guided-hospital-scenario',
+      tag: isTr ? 'SEKTÖREL' : 'INDUSTRY',
+      title: isTr ? 'Hastane Ağ Altyapısı' : 'Hospital Network Infrastructure',
+      description: isTr ? 'Yüksek güvenlikli segmentasyon ile hastane ağı oluşturun' : 'Create a hospital network with high-security segmentation',
+      detail: isTr ? 'Hasta verilerinin güvenliği, tıbbi cihaz izolasyonu ve ACL kısıtlamaları.' : 'Security of patient data, medical device isolation, and ACL restrictions.',
+      data: {
+        version: '1.0', timestamp: new Date().toISOString(), devices: [], deviceOutputs: [], pcOutputs: [], pcHistories: [],
+        topology: {
+          devices: [
+            { id: 'router-1', type: 'router', name: 'R1-Edge', x: 400, y: 100, ip: '', status: 'online', ports: generateRouterPorts() },
+            { id: 'switch-1', type: 'switchL2', name: 'SW-Hosp', x: 400, y: 250, ip: '', status: 'online', ports: generateSwitchPorts() },
+            { id: 'pc-1', type: 'pc', name: 'Nurse-PC', x: 150, y: 350, ip: '192.168.100.20', subnet: '255.255.255.0', gateway: '192.168.100.1', status: 'online', ports: [{ id: 'eth0', label: 'Eth0', status: 'connected' as const }] },
+            { id: 'server-1', type: 'pc', name: 'Records-Server', x: 400, y: 400, ip: '192.168.100.10', subnet: '255.255.255.0', gateway: '192.168.100.1', status: 'online', ports: [{ id: 'eth0', label: 'Eth0', status: 'connected' as const }] },
+            { id: 'iot-1', type: 'iot', name: 'Ekg-Device', x: 650, y: 350, ip: '192.168.200.10', status: 'online', ports: [{ id: 'eth0', label: 'Eth0', status: 'connected' as const }] }
+          ],
+          connections: [
+            { id: 'c1', sourceDeviceId: 'pc-1', sourcePort: 'eth0', targetDeviceId: 'switch-1', targetPort: 'fa0/1', cableType: 'straight', active: true },
+            { id: 'c2', sourceDeviceId: 'server-1', sourcePort: 'eth0', targetDeviceId: 'switch-1', targetPort: 'fa0/10', cableType: 'straight', active: true },
+            { id: 'c3', sourceDeviceId: 'iot-1', sourcePort: 'eth0', targetDeviceId: 'switch-1', targetPort: 'fa0/20', cableType: 'straight', active: true },
+            { id: 'c4', sourceDeviceId: 'switch-1', sourcePort: 'gi0/1', targetDeviceId: 'router-1', targetPort: 'gi0/0', cableType: 'crossover', active: true }
+          ],
+          notes: []
+        },
+        cableInfo: { connected: true, cableType: 'straight', sourceDevice: 'pc', targetDevice: 'switchL2' },
+        activeDeviceId: 'switch-1', activeDeviceType: 'switchL2', activeTab: 'topology', zoom: 1, pan: { x: 0, y: 0 }
+      },
+      level: 'advanced', isGuided: true, steps: hospitalGuidedSteps, estimatedTimeMinutes: 20, difficulty: 'advanced',
+      totalPoints: hospitalGuidedSteps.reduce((acc, s) => acc + (s.points || 0), 0)
+    },
+    {
+      id: 'guided-ecommerce-scenario',
+      tag: isTr ? 'SEKTÖREL' : 'INDUSTRY',
+      title: isTr ? 'E-Ticaret Şirket Ağı' : 'E-Commerce Company Network',
+      description: isTr ? 'DMZ ve güvenlik odaklı bir kurumsal ağ tasarlayın' : 'Design a corporate network focused on DMZ and security',
+      detail: isTr ? 'Dış dünyaya açık sunucuların (DMZ) izolasyonu, Static NAT ve gelişmiş ACL kuralları.' : 'Isolation of publicly accessible servers (DMZ), Static NAT, and advanced ACL rules.',
+      data: {
+        version: '1.0', timestamp: new Date().toISOString(), devices: [], deviceOutputs: [], pcOutputs: [], pcHistories: [],
+        topology: {
+          devices: [
+            { id: 'router-1', type: 'router', name: 'R1-Gateway', x: 400, y: 100, ip: '', status: 'online', ports: generateRouterPorts() },
+            { id: 'switch-1', type: 'switchL2', name: 'SW-Core', x: 400, y: 250, ip: '', status: 'online', ports: generateSwitchPorts() },
+            { id: 'pc-1', type: 'pc', name: 'Office-PC', x: 150, y: 350, ip: '172.16.10.10', subnet: '255.255.255.0', gateway: '172.16.10.1', status: 'online', ports: [{ id: 'eth0', label: 'Eth0', status: 'connected' as const }] },
+            { id: 'server-1', type: 'pc', name: 'Web-Server', x: 400, y: 400, ip: '172.16.50.10', subnet: '255.255.255.0', gateway: '172.16.50.1', status: 'online', ports: [{ id: 'eth0', label: 'Eth0', status: 'connected' as const }] },
+            { id: 'pc-2', type: 'pc', name: 'Internet-Client', x: 700, y: 100, ip: '203.0.113.100', status: 'online', ports: [{ id: 'eth0', label: 'Eth0', status: 'connected' as const }] }
+          ],
+          connections: [
+            { id: 'c1', sourceDeviceId: 'pc-1', sourcePort: 'eth0', targetDeviceId: 'switch-1', targetPort: 'fa0/1', cableType: 'straight', active: true },
+            { id: 'c2', sourceDeviceId: 'server-1', sourcePort: 'eth0', targetDeviceId: 'switch-1', targetPort: 'fa0/10', cableType: 'straight', active: true },
+            { id: 'c3', sourceDeviceId: 'switch-1', sourcePort: 'gi0/1', targetDeviceId: 'router-1', targetPort: 'gi0/1', cableType: 'crossover', active: true },
+            { id: 'c4', sourceDeviceId: 'router-1', sourcePort: 'gi0/0', targetDeviceId: 'pc-2', targetPort: 'eth0', cableType: 'crossover', active: true }
+          ],
+          notes: []
+        },
+        cableInfo: { connected: true, cableType: 'straight', sourceDevice: 'pc', targetDevice: 'switchL2' },
+        activeDeviceId: 'router-1', activeDeviceType: 'router', activeTab: 'topology', zoom: 1, pan: { x: 0, y: 0 }
+      },
+      level: 'advanced', isGuided: true, steps: ecommerceGuidedSteps, estimatedTimeMinutes: 25, difficulty: 'advanced',
+      totalPoints: ecommerceGuidedSteps.reduce((acc, s) => acc + (s.points || 0), 0)
     },
     {
       id: 'guided-cli-lessons',

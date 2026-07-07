@@ -1,10 +1,14 @@
 
 ## Latest Updates
 
-### v1.9.4 (2026-07-05)
+### v1.9.5 (2026-07-07)
 | English | Türkçe |
 | --- | --- |
-| **Minor Updates**: General bug fixes and performance improvements. | **Küçük Güncellemeler**: Genel hata düzeltmeleri ve performans iyileştirmeleri. |
+| **Industry Scenarios**: 4 new real-world setups: SOHO, School Campus, Hospital, and E-Commerce with multi-step verification. | **Sektörel Senaryolar**: Çok adımlı doğrulamaya sahip 4 yeni gerçek dünya kurulumu: SOHO, Okul Kampüsü, Hastane ve E-Ticaret. |
+| **Voice Narration (TTS)**: New "Read Aloud" button in Guided Mode to assist learning through speech synthesis. | **Sesli Anlatım (TTS)**: Rehberli Modda konuşma sentezi yoluyla öğrenmeyi destekleyen yeni "Sesli Dinle" butonu. |
+| **PDF Certificates**: Automated certificate generation upon completing labs, including student name and score. | **PDF Sertifikaları**: Öğrenci adı ve puanını içeren, laboratuvar tamamlandığında otomatik sertifika üretimi. |
+| **Extended Troubleshooting**: New "Find and Fix" challenges for Trunk misconfigurations and OSPF area mismatches. | **Gelişmiş Arıza Giderme**: Trunk yapılandırma hataları ve OSPF alan uyumsuzlukları için yeni "Bul ve Düzelt" görevleri. |
+| **IPv6 Master Lab**: Comprehensive dual-stack scenario featuring OSPFv3 and IPv6 traffic filtering (ACLs). | **IPv6 Master Lab**: OSPFv3 ve IPv6 trafik filtreleme (ACL) özelliklerini içeren kapsamlı dual-stack senaryosu. |
 
 ### v1.9.3 (2026-06-30)
 | English | Türkçe |
