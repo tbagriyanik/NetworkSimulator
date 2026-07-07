@@ -3221,8 +3221,8 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
 
   const ivrR1State = createInitialRouterState();
   ivrR1State.hostname = 'R1';
-  ivrR1State.ports['gi0/0.10'] = { id: 'gi0/0.10', vlan: 10, ipAddress: '192.168.10.1', subnetMask: '255.255.255.0', isSubinterface: true, parentInterface: 'gi0/0', status: 'connected' };
-  ivrR1State.ports['gi0/0.20'] = { id: 'gi0/0.20', vlan: 20, ipAddress: '192.168.20.1', subnetMask: '255.255.255.0', isSubinterface: true, parentInterface: 'gi0/0', status: 'connected' };
+  ivrR1State.ports['gi0/0.10'] = { ...ivrR1State.ports['gi0/0'], id: 'gi0/0.10', vlan: 10, ipAddress: '192.168.10.1', subnetMask: '255.255.255.0', isSubinterface: true, parentInterface: 'gi0/0', status: 'connected' };
+  ivrR1State.ports['gi0/0.20'] = { ...ivrR1State.ports['gi0/0'], id: 'gi0/0.20', vlan: 20, ipAddress: '192.168.20.1', subnetMask: '255.255.255.0', isSubinterface: true, parentInterface: 'gi0/0', status: 'connected' };
 
   // OSPF Area Misconfiguration Challenge
   const ospfTroubleDevices = [
