@@ -45,7 +45,7 @@ import { useCanvasSelection } from './hooks/useCanvasSelection';
 import { useNoteEditing } from './hooks/useNoteEditing';
 import { useConnectionDrawing } from './hooks/useConnectionDrawing';
 import { usePingAnimation } from './hooks/usePingAnimation';
-import { usePingSequence, type PingAnimationState } from './hooks/usePingSequence';
+import { usePingSequence, type PingAnimationState, type BroadcastAnimTarget } from './hooks/usePingSequence';
 import { CanvasToolbar } from './topology/CanvasToolbar';
 import { DeviceRenderer } from './topology/DeviceRenderer';
 
@@ -647,6 +647,9 @@ export function NetworkTopology({
     showPacketPanel?: boolean;
     isReturn?: boolean;       // true = paket geri dönüyor (Echo Reply)
     failedAtHop?: number;     // başarısız olduğu hop index
+    broadcastTargets: string[];
+    broadcastAnim: BroadcastAnimTarget[];
+    broadcastProgress: number;
   } | null>(null);
   const [errorToast, setErrorToast] = useState<{ message: string; details?: string; type?: 'success' | 'error' } | null>(null);
   // Hop packet infos for the packet analysis panel
@@ -4588,6 +4591,20 @@ export function NetworkTopology({
                     />
                   ))}
 
+                  {/* Broadcast flood icons – animated envelopes flying from switch to each connected device */}
+                  {pingAnimation && pingAnimation.broadcastAnim.map((bcast) => {
+                    const prog = pingAnimation.broadcastProgress;
+                    const ex = bcast.fromX + (bcast.toX - bcast.fromX) * prog;
+                    const ey = bcast.fromY + (bcast.toY - bcast.fromY) * prog - 35;
+                    const opacity = prog < 0.1 ? prog * 10 : prog > 0.9 ? (1 - prog) * 10 : 1;
+                    return (
+                      <g key={`bcast-${bcast.targetId}`}>
+                        <circle cx={ex} cy={ey} r="14" fill="#ef4444" opacity={0.2 * opacity} className="animate-ping-glow" />
+                        <rect x={ex - 10} y={ey - 7} width="20" height="14" rx="2" fill="#ef4444" stroke="#dc2626" strokeWidth="1.5" opacity={opacity} />
+                        <path d={`M${ex - 8} ${ey - 3} L${ex} ${ey + 4} L${ex + 8} ${ey - 3}`} fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity={opacity} />
+                      </g>
+                    );
+                  })}
                   {/* Ping Animation - rendered LAST for top z-order */}
                   {pingAnimation && (() => {
                     const { path, currentHopIndex, progress, success, error } = pingAnimation;

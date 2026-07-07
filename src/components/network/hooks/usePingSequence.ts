@@ -7,6 +7,14 @@ import type { CanvasConnection, CanvasDevice } from '../networkTopology.types';
 import { buildHopPacketInfos as buildHopPacketInfosFn } from '../PingPacketInfoPanel';
 import { checkDeviceConnectivity as checkDeviceConnectivityFn, getPingDiagnostics as getPingDiagnosticsFn, getWirelessDistance as getWirelessDistanceFn } from '@/lib/network/connectivity';
 
+export interface BroadcastAnimTarget {
+  targetId: string;
+  fromX: number;
+  fromY: number;
+  toX: number;
+  toY: number;
+}
+
 export type PingAnimationState = {
   sourceId: string;
   targetId: string;
@@ -21,6 +29,9 @@ export type PingAnimationState = {
   showPacketPanel?: boolean;
   failedAtHop?: number;
   isReturn?: boolean;
+  broadcastTargets: string[];
+  broadcastAnim: BroadcastAnimTarget[];
+  broadcastProgress: number;
 };
 
 type PingSequenceDeps = {
@@ -126,7 +137,10 @@ export function usePingSequence(deps: PingSequenceDeps) {
         success: false,
         frame: 0,
         error: errorMessage,
-        hopCount: 0
+        hopCount: 0,
+        broadcastTargets: [],
+        broadcastAnim: [],
+        broadcastProgress: 0
       });
       setErrorToast({ message: isTR ? 'Ping başarısız!' : 'Ping failed!', details: errorMessage });
       pingCleanupTimeoutRef.current = setTimeout(() => { setPingAnimation(null); setPingMode(false); }, 3000);
@@ -160,6 +174,9 @@ export function usePingSequence(deps: PingSequenceDeps) {
         isPaused: true,
         showPacketPanel: true,
         failedAtHop: Math.max(0, partialPath.length - 2),
+        broadcastTargets: [],
+        broadcastAnim: [],
+        broadcastProgress: 0,
       });
 
       const runFailedAnimation = () => {
@@ -237,7 +254,7 @@ export function usePingSequence(deps: PingSequenceDeps) {
     if (!path || path.length < 2) {
       const errorMessage = isTR ? 'Fiziksel bağlantı yok' : 'No physical connection';
       setHopPacketInfos([]);
-      setPingAnimation({ sourceId, targetId, path: [sourceId], currentHopIndex: 0, progress: 0, success: false, frame: 0, error: errorMessage, hopCount: 0, isPaused: false, showPacketPanel: true });
+      setPingAnimation({ sourceId, targetId, path: [sourceId], currentHopIndex: 0, progress: 0, success: false, frame: 0, error: errorMessage, hopCount: 0, isPaused: false, showPacketPanel: true, broadcastTargets: [], broadcastAnim: [], broadcastProgress: 0 });
       setErrorToast({ message: isTR ? 'Ping başarısız!' : 'Ping failed!', details: errorMessage });
       pingCleanupTimeoutRef.current = setTimeout(() => { setPingAnimation(null); setPingMode(false); setErrorToast(null); }, 3000);
       return;
@@ -246,7 +263,7 @@ export function usePingSequence(deps: PingSequenceDeps) {
       setHopPacketInfos(buildHopPacketInfosFn(path, devices, connections, 64, targetIp));
     pingIsPausedRef.current = true;
     pingStepModeRef.current = isSimulationMode;
-    setPingAnimation({ sourceId, targetId, path, currentHopIndex: 0, progress: 0, success: null, frame: 0, hopCount: 0, isPaused: true, showPacketPanel: true });
+    setPingAnimation({ sourceId, targetId, path, currentHopIndex: 0, progress: 0, success: null, frame: 0, hopCount: 0, isPaused: true, showPacketPanel: true, broadcastTargets: [], broadcastAnim: [], broadcastProgress: 0 });
     setErrorToast(null);
 
     const hopDuration = 1500;
@@ -279,12 +296,46 @@ export function usePingSequence(deps: PingSequenceDeps) {
       return Math.min(hopDuration * Math.max(1, Math.sqrt(dx * dx + dy * dy) / 200), 3000);
     };
 
+    const getBroadcastAnim = (switchId: string, exceptId?: string): BroadcastAnimTarget[] => {
+      const sw = deviceMap.get(switchId);
+      if (!sw || (sw.type !== 'switchL2' && sw.type !== 'switchL3')) return [];
+      const result: BroadcastAnimTarget[] = [];
+      for (const conn of connections) {
+        let neighborId: string | null = null;
+        let portId: string | null = null;
+        if (conn.sourceDeviceId === switchId && conn.targetDeviceId !== exceptId) {
+          neighborId = conn.targetDeviceId;
+          portId = conn.sourcePort;
+        } else if (conn.targetDeviceId === switchId && conn.sourceDeviceId !== exceptId) {
+          neighborId = conn.sourceDeviceId;
+          portId = conn.targetPort;
+        }
+        if (!neighborId || !portId) continue;
+        const neighbor = deviceMap.get(neighborId);
+        if (!neighbor || neighbor.status === 'offline') continue;
+        const state = deviceStates?.get(switchId);
+        const simPort = state?.ports?.[portId];
+        const isSTPBlocked = simPort?.spanningTree?.state === 'blocking' || simPort?.spanningTree?.role === 'alternate';
+        if (isSTPBlocked) continue;
+        result.push({
+          targetId: neighborId,
+          fromX: sw.x,
+          fromY: sw.y,
+          toX: neighbor.x,
+          toY: neighbor.y,
+        });
+      }
+      return result;
+    };
+
     const advanceToNextHop = (hopCountIncrement: number) => {
       if (currentHop < path.length - 1) {
         currentHop++;
         startTime = Date.now();
         const shouldPause = pingIsPausedRef.current || pingStepModeRef.current;
-        flushSync(() => { setPingAnimation((prev) => prev ? { ...prev, currentHopIndex: currentHop, progress: 0, frame: frameCount, hopCount: prev.hopCount + hopCountIncrement, isPaused: shouldPause } : null); });
+        const broadcastAnim = getBroadcastAnim(path[currentHop], path[currentHop - 1]);
+        const broadcastTargets = broadcastAnim.map(b => b.targetId);
+        flushSync(() => { setPingAnimation((prev) => prev ? { ...prev, currentHopIndex: currentHop, progress: 0, frame: frameCount, hopCount: prev.hopCount + hopCountIncrement, isPaused: shouldPause, broadcastTargets, broadcastAnim, broadcastProgress: 0 } : null); });
         if (!shouldPause) pingAnimationRef.current = requestAnimationFrame(animate);
         else pingResumeCallbackRef.current = () => { startTime = Date.now(); pingAnimationRef.current = requestAnimationFrame(animate); };
       } else {
@@ -294,9 +345,9 @@ export function usePingSequence(deps: PingSequenceDeps) {
           let returnHop = 0;
           let returnStartTime = Date.now();
           let returnFrameCount = frameCount;
-          setPingAnimation((prev) => prev ? { ...prev, path: returnPath, currentHopIndex: 0, progress: 0, hopCount: prev.hopCount + hopCountIncrement, isPaused: pingStepModeRef.current, isReturn: true } : null);
+          setPingAnimation((prev) => prev ? { ...prev, path: returnPath, currentHopIndex: 0, progress: 0, hopCount: prev.hopCount + hopCountIncrement, isPaused: pingStepModeRef.current, isReturn: true, broadcastTargets: [], broadcastAnim: [], broadcastProgress: 0 } : null);
           setHopPacketInfos(returnPacketInfos);
-          const finishSuccess = () => { setPingAnimation((prev) => prev ? { ...prev, success: true, isPaused: false } : null); setPingMode(false); };
+          const finishSuccess = () => { setPingAnimation((prev) => prev ? { ...prev, success: true, isPaused: false, broadcastTargets: [], broadcastAnim: [], broadcastProgress: 0 } : null); setPingMode(false); };
           const animateReturn = () => {
             pingResumeCallbackRef.current = () => { returnStartTime = Date.now(); pingAnimationRef.current = requestAnimationFrame(animateReturn); };
             if (pingIsPausedRef.current) return;
@@ -307,13 +358,15 @@ export function usePingSequence(deps: PingSequenceDeps) {
             const prog = easeInOutCubic(Math.min((Date.now() - returnStartTime) / dur, 1));
             returnFrameCount++;
             if (prog < 1) {
-              flushSync(() => { setPingAnimation((prev) => prev ? { ...prev, currentHopIndex: returnHop, progress: prog, frame: returnFrameCount } : null); });
+              flushSync(() => { setPingAnimation((prev) => prev ? { ...prev, currentHopIndex: returnHop, progress: prog, frame: returnFrameCount, broadcastProgress: prog } : null); });
               pingAnimationRef.current = requestAnimationFrame(animateReturn);
             } else if (returnHop < returnPath.length - 2) {
               returnHop++;
               returnStartTime = Date.now();
               const shouldPause = pingIsPausedRef.current || pingStepModeRef.current;
-              flushSync(() => { setPingAnimation((prev) => prev ? { ...prev, currentHopIndex: returnHop, progress: 0, frame: returnFrameCount, isPaused: shouldPause } : null); });
+              const retAnim = getBroadcastAnim(returnPath[returnHop], returnPath[returnHop - 1]);
+              const retTargets = retAnim.map(b => b.targetId);
+              flushSync(() => { setPingAnimation((prev) => prev ? { ...prev, currentHopIndex: returnHop, progress: 0, frame: returnFrameCount, isPaused: shouldPause, broadcastTargets: retTargets, broadcastAnim: retAnim, broadcastProgress: 0 } : null); });
               if (!shouldPause) pingAnimationRef.current = requestAnimationFrame(animateReturn);
               else pingResumeCallbackRef.current = () => { returnStartTime = Date.now(); pingAnimationRef.current = requestAnimationFrame(animateReturn); };
             } else {
@@ -351,10 +404,10 @@ export function usePingSequence(deps: PingSequenceDeps) {
       const progress = easeInOutCubic(Math.min((Date.now() - startTime) / calculateHopDuration(fromId, toId), 1));
       frameCount++;
       if (progress < 1) {
-        flushSync(() => { setPingAnimation((prev) => prev ? { ...prev, currentHopIndex: currentHop, progress, frame: frameCount } : null); });
+        flushSync(() => { setPingAnimation((prev) => prev ? { ...prev, currentHopIndex: currentHop, progress, frame: frameCount, broadcastProgress: progress } : null); });
         pingAnimationRef.current = requestAnimationFrame(animate);
       } else {
-        flushSync(() => { setPingAnimation((prev) => prev ? { ...prev, currentHopIndex: currentHop, progress: 1, frame: frameCount } : null); });
+        flushSync(() => { setPingAnimation((prev) => prev ? { ...prev, currentHopIndex: currentHop, progress: 1, frame: frameCount, broadcastProgress: 1 } : null); });
         const isWifi = isWirelessHop(fromId, toId);
         const toDev = deviceMap.get(toId);
         const currentSegmentHopCountIncrement = (isWifi || toDev?.type === 'router') ? 1 : 0;
