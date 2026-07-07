@@ -122,7 +122,9 @@ export function recalculateStp(
   if (switchIds.length === 0) return updatedStates;
 
   // Check if there are any active connections between switches
-  const hasInterSwitchLinks = connections.some(c =>
+  // A switch only calculates STP blocking if there's at least one other switch in the topology
+  // to avoid confusing beginners who might accidentally create a self-loop on a single switch.
+  const hasInterSwitchLinks = switchIds.length > 1 && connections.some(c =>
     c.active && switchIds.includes(c.sourceDeviceId) && switchIds.includes(c.targetDeviceId)
   );
 
