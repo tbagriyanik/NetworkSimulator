@@ -10,7 +10,14 @@ interface CertificateData {
 }
 
 export const generateCertificate = (data: CertificateData) => {
-  const { studentName, projectTitle, score, totalScore, date, language } = data;
+  // Helper to sanitize Turkish characters for standard PDF fonts (helvetica)
+  // as they don't support specialized Turkish glyphs without font embedding.
+  const sanitize = (s: string) => s ? s.replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c').replace(/İ/g, 'I').replace(/Ğ/g, 'G').replace(/Ü/g, 'U').replace(/Ş/g, 'S').replace(/Ö/g, 'O').replace(/Ç/g, 'C') : '';
+
+  const studentName = sanitize(data.studentName).toUpperCase();
+  const projectTitle = sanitize(data.projectTitle);
+  const date = sanitize(data.date);
+  const { score, totalScore, language } = data;
   const isTr = language === 'tr';
 
   const doc = new jsPDF({
@@ -29,7 +36,7 @@ export const generateCertificate = (data: CertificateData) => {
   doc.setLineWidth(0.5);
   doc.rect(12, 12, pageWidth - 24, pageHeight - 24);
 
-  // Background decoration (conceptual)
+  // Background decoration
   doc.setFillColor(245, 247, 250);
   doc.rect(13, 13, pageWidth - 26, pageHeight - 26, 'F');
 
@@ -37,24 +44,26 @@ export const generateCertificate = (data: CertificateData) => {
   doc.setTextColor(44, 62, 80);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(40);
-  doc.text(isTr ? 'BAŞARI SERTİFİKASI' : 'CERTIFICATE OF ACHIEVEMENT', pageWidth / 2, 50, { align: 'center' });
+  const titleText = isTr ? 'BASARI SERTIFIKASI' : 'CERTIFICATE OF ACHIEVEMENT';
+  doc.text(titleText, pageWidth / 2, 50, { align: 'center' });
 
   // Subtitle
   doc.setFontSize(18);
   doc.setFont('helvetica', 'normal');
-  doc.text(isTr ? 'Bu belge aşağıdaki kişinin başarıyla tamamladığını onaylar:' : 'This is to certify that', pageWidth / 2, 70, { align: 'center' });
+  const subtitleText = isTr ? 'Bu belge asagidaki kisinin basariyla tamamladigini onaylar:' : 'This is to certify that';
+  doc.text(subtitleText, pageWidth / 2, 70, { align: 'center' });
 
   // Student Name
   doc.setTextColor(41, 128, 185);
   doc.setFontSize(32);
   doc.setFont('helvetica', 'bold');
-  doc.text(studentName.toUpperCase(), pageWidth / 2, 90, { align: 'center' });
+  doc.text(studentName, pageWidth / 2, 90, { align: 'center' });
 
   // Project Info
   doc.setTextColor(44, 62, 80);
   doc.setFontSize(18);
   doc.setFont('helvetica', 'normal');
-  doc.text(isTr ? 'Eğitim Modülü:' : 'Has successfully completed the lab:', pageWidth / 2, 110, { align: 'center' });
+  doc.text(isTr ? 'Egitim Modulu:' : 'Has successfully completed the lab:', pageWidth / 2, 110, { align: 'center' });
 
   doc.setFont('helvetica', 'bold');
   doc.text(projectTitle, pageWidth / 2, 125, { align: 'center' });
@@ -62,7 +71,7 @@ export const generateCertificate = (data: CertificateData) => {
   // Score
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(16);
-  doc.text(`${isTr ? 'Başarı Puanı' : 'Achievement Score'}: ${score} / ${totalScore}`, pageWidth / 2, 145, { align: 'center' });
+  doc.text(`${isTr ? 'Basari Puani' : 'Achievement Score'}: ${score} / ${totalScore}`, pageWidth / 2, 145, { align: 'center' });
 
   // Date
   doc.setFontSize(14);
@@ -72,7 +81,7 @@ export const generateCertificate = (data: CertificateData) => {
   const verifyCode = Math.random().toString(36).substring(2, 10).toUpperCase();
   doc.setFontSize(10);
   doc.setTextColor(127, 140, 141);
-  doc.text(`${isTr ? 'Doğrulama Kodu' : 'Verification Code'}: ${verifyCode}`, pageWidth - 40, 170, { align: 'right' });
+  doc.text(`${isTr ? 'Dogrulama Kodu' : 'Verification Code'}: ${verifyCode}`, pageWidth - 40, 170, { align: 'right' });
 
   // Signature lines
   doc.setDrawColor(189, 195, 199);
@@ -81,8 +90,8 @@ export const generateCertificate = (data: CertificateData) => {
 
   doc.setTextColor(44, 62, 80);
   doc.setFontSize(12);
-  doc.text(isTr ? 'Eğitmen' : 'Instructor', 70, 192, { align: 'center' });
-  doc.text(isTr ? 'Program Direktörü' : 'Program Director', pageWidth - 70, 192, { align: 'center' });
+  doc.text(isTr ? 'Egitmen' : 'Instructor', 70, 192, { align: 'center' });
+  doc.text(isTr ? 'Program Direktoru' : 'Program Director', pageWidth - 70, 192, { align: 'center' });
 
   // Footer
   doc.setFontSize(10);

@@ -6423,3 +6423,46 @@ R1# show ipv6 route
 R1# show ipv6 interface brief
 PC-1# ping 2001:db8:2::10 (PC-2'nin IPv6 adresi)
 ```
+
+---
+
+## 🏢 Sektörel Ağ Senaryoları (Release v1.9.5)
+
+Bu bölümde, CCNA müfredatındaki teorik bilgilerin gerçek dünya projelerine nasıl dönüştürüleceği adım adım anlatılmaktadır.
+
+### 1. SOHO (Small Office Home Office) Kurulumu
+**Senaryo:** Küçük bir ofis için hem kablolu hem de kablosuz ağ altyapısının kurulması.
+- **Odak Noktası:** DHCP Sunucusu, Router Edge Gateway, Wireless AP.
+- **Görevler:** Gateway IP atama, OFIS DHCP havuzu oluşturma, "Office-Wifi" SSID yayını ve Laptop bağlantısı.
+
+### 2. Okul Kampüs Ağı ve VLAN Segmentasyonu
+**Senaryo:** İdari birimler, öğrenci laboratuvarları ve misafir WiFi ağlarının birbirinden izole edilmesi.
+- **Odak Noktası:** Router-on-a-Stick, Inter-VLAN Routing, VLAN Trunking.
+- **Görevler:** ADMIN (10), STUDENT (20) ve GUEST (30) VLAN'larının oluşturulması ve subinterface üzerinden yönlendirilmesi.
+
+### 3. Hastane Ağ Altyapısı (Yüksek Güvenlik)
+**Senaryo:** Hasta verilerinin korunması ve tıbbi cihazların (IoT) güvenli bir şekilde internete erişiminin kısıtlanması.
+- **Odak Noktası:** Port Security, Standard/Extended ACL, IoT İzleme.
+- **Görevler:** Port-security aktif etme, tıbbi cihazlar için kısıtlayıcı ACL tanımlama, merkezi kayıt sunucusu bağlantısı.
+
+### 4. E-Ticaret Şirket Ağı (DMZ ve NAT)
+**Senaryo:** Dış dünyaya açık web sunucularının (DMZ) iç ağdan izole edilmesi ve NAT yapılandırması.
+- **Odak Noktası:** DMZ (Demilitarized Zone), Static NAT, Firewall Rules.
+- **Görevler:** DMZ VLAN (50) izolasyonu, Web sunucusu için Static NAT tanımlama, 80 portu dışındaki trafiği ACL ile engelleme.
+
+---
+
+## 🛠️ Gelişmiş Arıza Giderme (Troubleshooting)
+
+Yeni eklenen meydan okuma modları ile ağ hatalarını teşhis etme ve düzeltme becerilerinizi geliştirin:
+
+1. **Bozuk Inter-VLAN:** Switch-Router arasındaki trunk yapılandırma hatasını bulun.
+2. **OSPF Alan Hatası:** Farklı alanlardaki (area mismatch) router'ların neden komşuluk kuramadığını çözün.
+3. **Alt Ağ Uyuşmazlığı:** Yanlış maske kullanımından kaynaklanan bağlantı sorunlarını giderin.
+
+---
+
+## 🎓 Başarı Sertifikası ve Sesli Anlatım
+
+- **PDF Sertifika:** Herhangi bir rehberli dersi veya sınavı %100 başarıyla tamamladığınızda, adınıza düzenlenmiş dijital başarı sertifikasını indirebilirsiniz.
+- **Sesli Rehber (TTS):** Rehberli moddaki talimatları sağ üstteki hoparlör simgesine tıklayarak sesli olarak dinleyebilirsiniz.

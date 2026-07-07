@@ -21,7 +21,10 @@ npm install && npm run dev
 - **Mobile PNG Export / Mobil PNG Kaydetme:** Mobil cihazlarda sorunsuz çalışması için native 'Web Share API' (Paylaşım Ekranı) entegrasyonu ve bellek optimizasyonu sağlandı.
 - **Improved Connection UX / Geliştirilmiş Kablo Bağlantı Deneyimi:** Porttan porta tıklayarak kablo bağlama işlemi (`onPointerDown` kullanılarak) anında tepki verecek şekilde kararlı hale getirildi.
 - **Advanced Timeline / Gelişmiş İşlem Geçmişi:** İşlem adımlarına kaydırma (scroll) desteği ve daha detaylı bildirimler ("Switch1 ve PC1 arasına bağlantı eklendi") eklendi. Tüm geçmiş adımlarını `.txt` dosyası olarak indirebilme (dışa aktarma) özelliği getirildi. Geçmiş kayıtları sayfa yenilendiğinde (F5) kaybolmamak üzere yerel depolama (localStorage) ile kalıcı hale getirildi.
-- **Glassmorphism Panels / Cam Efektli Paneller:** Arıza Giderme (Troubleshooting) ve İşlem Geçmişi (Timeline) panellerine şeffaf cam efekti (backdrop-blur) ve sürükle-bırak desteği eklendi.
+- **Industry-Specific Scenarios / Sektörel Senaryolar:** Hastane, E-Ticaret, Okul Kampüsü ve SOHO gibi gerçek dünya kullanım senaryoları eklendi.
+- **Voice Narration (TTS) / Sesli Anlatım:** Rehberli derslerdeki talimatlar için yerleşik metin okuma desteği (TTS) entegre edildi.
+- **PDF Success Certificates / PDF Başarı Sertifikaları:** Laboratuvarları tamamlayan öğrenciler için otomatik sertifika üretme ve indirme özelliği getirildi.
+- **Advanced IPv6 Master Lab / Gelişmiş IPv6 Laboratuvarı:** Dual-stack, OSPFv3 ve IPv6 ACL konularını içeren kapsamlı yeni eğitim modülü eklendi.
 
 ## Stats / İstatistikler
 
@@ -30,8 +33,8 @@ npm install && npm run dev
 | Total Lines / Toplam Satır (src/) | 102,204 |
 | Source Files / Kaynak Dosya | 270 |
 | Documentation Files / Dokümantasyon Dosya | 16 |
-| Example Projects / Örnek Proje | 46 |
-| Guided Lessons / Rehberli Ders | 12 |
+| Example Projects / Örnek Proje | 50 |
+| Guided Lessons / Rehberli Ders | 16 |
 | Exams / Sınavlar | 6 |
 | CLI Commands / CLI Komutları | 450+ |
 
