@@ -84,8 +84,19 @@ export function recalculateStp(
 
   // First pass: identify switches and deep clone their states to avoid side effects
   deviceStates.forEach((state, id) => {
-    const isSwitch = (state?.deviceType === 'switch' || state?.deviceType === 'router' || state?.switchLayer === 'L2' || state?.switchLayer === 'L3') &&
-      state?.deviceType !== 'pc' && state?.deviceType !== 'iot';
+    // Robust switch identification:
+    // 1. Explicitly check deviceType
+    // 2. Fallback to ID-based prefix check if deviceType is missing
+    // 3. Check switchLayer
+    const isExplicitPcOrIot = state?.deviceType === 'pc' || state?.deviceType === 'iot' ||
+                              id.startsWith('pc-') || id.startsWith('iot-');
+
+    const isSwitch = !isExplicitPcOrIot && (
+      state?.deviceType === 'switch' ||
+      state?.deviceType === 'router' ||
+      state?.switchLayer === 'L2' ||
+      state?.switchLayer === 'L3'
+    );
 
     if (isSwitch) {
       switchIds.push(id);
