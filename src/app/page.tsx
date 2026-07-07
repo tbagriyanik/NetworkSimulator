@@ -2891,23 +2891,37 @@ ${state.bannerMOTD}
       setActiveDeviceId,
       setActiveDeviceType,
       topologyConnections
-    ) as { exitSession?: boolean };
+    ) as { exitSession?: boolean; output?: string; newState?: any };
+
+    const currentOutput = (result && typeof result === 'object' && 'output' in result) ? String(result.output) : '';
 
     setLastCommand(command);
-    if (result && typeof result === 'object' && 'output' in result) {
-      setLastOutput(String(result.output));
-    }
+    setLastOutput(currentOutput);
 
     if (command && command.trim() !== '') {
       const deviceName = topologyDevices?.find(d => d.id === activeDeviceId)?.name || activeDeviceId;
       commitAction(`${deviceName} CLI: ${command}`);
     }
 
+    // Immediate check for guided mode progress
+    if (isGuidedModeActive) {
+      checkStepCompletionWithContext({
+        lastCommand: command,
+        lastOutput: currentOutput,
+        deviceAccessed: showUnifiedDeviceModal ? (activeDeviceType === 'switchL2' || activeDeviceType === 'switchL3' ? 'switch' : activeDeviceType === 'router' ? 'router' : 'pc') : null,
+        deviceAccessedId: showUnifiedDeviceModal ? activeDeviceId : null,
+        deviceState: result && result.newState ? { ...state, ...result.newState } : state,
+        deviceStates: deviceStates,
+        topologyConnections: topologyConnections,
+        topologyDevices: topologyDevices
+      });
+    }
+
     if (result?.exitSession) {
       setActiveTab('topology');
     }
     return result;
-  }, [activeDeviceId, handleCommandForDevice, topologyDevices, topologyConnections, setActiveDeviceId, setActiveDeviceType, setActiveTab, setLastCommand, commitAction]);
+  }, [activeDeviceId, handleCommandForDevice, topologyDevices, topologyConnections, setActiveDeviceId, setActiveDeviceType, setActiveTab, setLastCommand, setLastOutput, commitAction, isGuidedModeActive, checkStepCompletionWithContext, showUnifiedDeviceModal, activeDeviceType, state, deviceStates]);
 
   const prompt = getPrompt(state);
 
@@ -2919,20 +2933,37 @@ ${state.bannerMOTD}
       setActiveDeviceId,
       setActiveDeviceType,
       topologyConnections
-    );
+    ) as { output?: string; newState?: any };
+
+    const currentOutput = (result && typeof result === 'object' && 'output' in result) ? String(result.output) : '';
 
     setLastCommand(command);
-    if (result && typeof result === 'object' && 'output' in result) {
-      setLastOutput(String(result.output));
-    }
+    setLastOutput(currentOutput);
 
     if (command && command.trim() !== '') {
       const deviceName = topologyDevices?.find(d => d.id === deviceId)?.name || deviceId;
       commitAction(`${deviceName} CLI: ${command}`);
     }
 
+    // Immediate check for guided mode progress
+    if (isGuidedModeActive) {
+      const deviceObj = topologyDevices?.find(d => d.id === deviceId);
+      const devType = deviceObj?.type;
+      const currentState = deviceStates.get(deviceId);
+      checkStepCompletionWithContext({
+        lastCommand: command,
+        lastOutput: currentOutput,
+        deviceAccessed: devType === 'pc' ? 'pc' : (devType === 'router' ? 'router' : (devType === 'switchL2' || devType === 'switchL3' ? 'switch' : null)),
+        deviceAccessedId: deviceId,
+        deviceState: result && result.newState ? { ...currentState, ...result.newState } : currentState,
+        deviceStates: deviceStates,
+        topologyConnections: topologyConnections,
+        topologyDevices: topologyDevices
+      });
+    }
+
     return result;
-  }, [handleCommandForDevice, topologyDevices, topologyConnections, setActiveDeviceId, setActiveDeviceType, setLastCommand, setLastOutput, commitAction]);
+  }, [handleCommandForDevice, topologyDevices, topologyConnections, setActiveDeviceId, setActiveDeviceType, setLastCommand, setLastOutput, commitAction, isGuidedModeActive, checkStepCompletionWithContext, deviceStates]);
 
 
   const handleClearTerminal = () => {
