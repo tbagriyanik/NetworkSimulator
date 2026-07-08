@@ -18,7 +18,7 @@ import { ModernPanel } from '@/components/ui/ModernPanel';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-breakpoint';
 import type { CanvasDevice } from './networkTopology.types';
-import { RouterIcon, SwitchIcon } from './PCPanelWidgets';
+import { RouterIcon, SwitchIcon, WlcIcon } from './PCPanelWidgets';
 
 export interface TerminalOutput {
   id: string;
@@ -243,6 +243,8 @@ export function Terminal({
       return { icon: SwitchIcon, color: 'text-success-400', isL3: false };
     } else if (deviceType === 'pc') {
       return { icon: Laptop, color: 'text-primary-400' };
+    } else if (deviceType === 'wlc') {
+      return { icon: WlcIcon, color: 'text-warning-400' };
     }
     return null;
   }, [device?.type, state.switchModel]);

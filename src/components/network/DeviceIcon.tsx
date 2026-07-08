@@ -105,6 +105,18 @@ export function DeviceIcon({
           />
         </svg>
       );
+    case 'wlc':
+      return (
+        <svg {...svgProps}>
+          <circle cx="12" cy="12" r="9" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 5v14M5 12h14M12 5l-2 2m2-2l2 2m-2 12l-2-2m2 2l2-2M5 12l2-2m-2 2l2 2M19 12l-2-2m2 2l-2 2"
+          />
+          <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.3" />
+        </svg>
+      );
     default:
       return (
         <svg {...svgProps}>

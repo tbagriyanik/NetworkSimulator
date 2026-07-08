@@ -571,7 +571,7 @@ doc/
 ## 📅 Güncelleme Tarihi
 
 **Son Güncelleme**: 2026-07-07
-**Versiyon**: 1.9.5
+**Versiyon**: 1.9.6
 **Durum**: ✅ Güncel
 
 ---

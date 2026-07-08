@@ -1137,50 +1137,43 @@ export const commandPatterns: Record<string, CommandPattern> = {
     pattern: /^wlan\s+(\S+)\s+(\d+)\s+(\S+)$/i,
     modes: ['config'],
     minArgs: 3,
-    maxArgs: 3,
-    capability: 'routing'
+    maxArgs: 3
   },
   'wlan shutdown': {
     pattern: /^wlan\s+shutdown$/i,
     modes: ['config'],
     minArgs: 0,
-    maxArgs: 0,
-    capability: 'routing'
+    maxArgs: 0
   },
   'no wlan shutdown': {
     pattern: /^no\s+wlan\s+shutdown$/i,
     modes: ['config'],
     minArgs: 0,
-    maxArgs: 0,
-    capability: 'routing'
+    maxArgs: 0
   },
   'ap': {
     pattern: /^ap\s+(\S+)$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'routing'
+    maxArgs: 1
   },
   'auth-mac': {
     pattern: /^auth-mac\s+([0-9a-fA-F]{4}\.[0-9a-fA-F]{4}\.[0-9a-fA-F]{4})$/i,
     modes: ['ap-config'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'routing'
+    maxArgs: 1
   },
   'rf-channel': {
     pattern: /^rf-channel\s+(\d+)$/i,
     modes: ['ap-config'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'routing'
+    maxArgs: 1
   },
   'dot11 5ghz': {
     pattern: /^dot11\s+5ghz\s+(power-constraint|channelswitch\s+mode)\s+(.+)$/i,
     modes: ['ap-config'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'routing'
+    maxArgs: 1
   },
   'security wpa psk set-key': {
     pattern: /^security\s+wpa\s+psk\s+set-key\s+ascii\s+(?:0|7)\s+(.+)$/i,

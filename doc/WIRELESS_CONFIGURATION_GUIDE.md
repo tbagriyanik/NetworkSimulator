@@ -332,5 +332,5 @@ Radio Configurations:
 
 ---
 
-**Son Güncelleme:** 2026-06-20
-**Versiyon:** 1.9.5
+**Son Güncelleme:** 2026-07-08
+**Versiyon:** 1.9.6

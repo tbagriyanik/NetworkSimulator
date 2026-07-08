@@ -29,6 +29,7 @@ const PortPanel = dynamic(() => import('./PortPanel').then(m => m.PortPanel), { 
 const VlanPanel = dynamic(() => import('./VlanPanel').then(m => m.VlanPanel), { ssr: false });
 const SecurityPanel = dynamic(() => import('./SecurityPanel').then(m => m.SecurityPanel), { ssr: false });
 const TaskCard = dynamic(() => import('./TaskCard').then(m => m.TaskCard), { ssr: false });
+const WlcWirelessPanel = dynamic(() => import('./WlcWirelessPanel').then(m => m.WlcWirelessPanel), { ssr: false });
 
 interface UnifiedDevicePanelProps {
     isOpen: boolean;
@@ -262,6 +263,15 @@ export function UnifiedDevicePanel({
                                         isNarrow ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-3"
                                     )}>
                                         <div className={cn(isNarrow ? "" : "lg:col-span-2", "space-y-6")}>
+                                            {deviceType === 'wlc' && (
+                                                <WlcWirelessPanel
+                                                    state={state}
+                                                    isDark={isDark}
+                                                    language={language}
+                                                    isDevicePoweredOff={isOffline}
+                                                    onExecuteCommand={handleCommand as (command: string) => Promise<void>}
+                                                />
+                                            )}
                                             <div className="space-y-4">
                                                 <div className="flex items-center gap-2 text-sm font-semibold text-primary">
                                                     <Network className="w-4 h-4" />

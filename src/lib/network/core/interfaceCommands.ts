@@ -1314,7 +1314,20 @@ function cmdWlan(state: SwitchState, input: string, _ctx: CommandContext): Comma
   const wlanId = match[2];
   const ssid = match[3];
 
-  // Store WLAN configuration in state
+  // WLC stores WLANs in wlcWlans (centralized controller state)
+  if (state.deviceType === 'wlc') {
+    const newWlcWlans = { ...(state.wlcWlans || {}) };
+    newWlcWlans[wlanId] = {
+      id: Number(wlanId),
+      name: wlanName,
+      ssid,
+      status: 'enabled',
+      security: 'open',
+    };
+    return { success: true, newState: { wlcWlans: newWlcWlans } };
+  }
+
+  // Store WLAN configuration in state (autonomous AP)
   const newWlans = state.wlans || {};
   newWlans[wlanId] = { name: wlanName, ssid };
 
@@ -1339,6 +1352,17 @@ function cmdNoWlan(state: SwitchState, input: string, _ctx: CommandContext): Com
     return { success: false, error: '% Invalid command. Usage: no wlan <wlan-id>' };
   }
   const wlanId = match[1];
+
+  // WLC stores WLANs in wlcWlans
+  if (state.deviceType === 'wlc') {
+    const newWlcWlans = { ...(state.wlcWlans || {}) };
+    if (!newWlcWlans[wlanId]) {
+      return { success: false, error: `% WLAN ${wlanId} does not exist` };
+    }
+    delete newWlcWlans[wlanId];
+    return { success: true, newState: { wlcWlans: newWlcWlans } };
+  }
+
   const wlans = { ...(state.wlans || {}) };
   if (!wlans[wlanId]) {
     return { success: false, error: `% WLAN ${wlanId} does not exist` };
