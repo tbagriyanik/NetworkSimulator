@@ -106,13 +106,14 @@ export function NetworkTopologyPortSelectorModal({
                     <button
                       key={type}
                       onClick={() => onCableTypeChange(type)}
-                      className={`h-8 px-3 flex items-center gap-1.5 transition-all text-xs font-bold
+                      className={`h-8 md:px-3 px-2.5 flex items-center gap-1.5 transition-all text-xs font-bold
                       ${isDark ? 'hover:bg-secondary-700/50' : 'hover:bg-secondary-200/50'}
                       ${cableType === type
                           ? isDark ? 'bg-secondary-700/80' : 'bg-secondary-200/80'
                           : ''
                         }
                       ${cableType === type ? c.active : c.inactive}`}
+                      title={type === 'straight' ? t.straight : type === 'crossover' ? t.crossover : type === 'serial' ? t.serial : t.console}
                     >
                       {type === 'straight' ? (
                         <Cable className="w-4 h-4" />
@@ -123,7 +124,9 @@ export function NetworkTopologyPortSelectorModal({
                       ) : (
                         <TrendingUpDown className="w-4 h-4" />
                       )}
-                      {type === 'straight' ? t.straight : type === 'crossover' ? t.crossover : type === 'serial' ? t.serial : t.console}
+                      <span className="hidden md:inline">
+                        {type === 'straight' ? t.straight : type === 'crossover' ? t.crossover : type === 'serial' ? t.serial : t.console}
+                      </span>
                     </button>
                   )
                 })}

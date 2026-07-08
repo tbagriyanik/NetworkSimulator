@@ -1484,13 +1484,17 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   // Load project from JSON data
   const loadProjectData = useCallback((projectData: unknown, options?: { keepActiveDevice?: boolean }) => {
     try {
-      // Clear packet capture and simulation states
+      // Clear packet capture, simulation states, and device state caches
       useAppStore.setState(state => ({
         topology: {
           ...state.topology,
           capturedPackets: {},
           activeCaptureConnectionId: null,
           isSimulationMode: false
+        },
+        deviceStates: {
+          switchStates: {},
+          pcOutputs: {}
         }
       }));
 
@@ -1528,6 +1532,8 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
           }
         });
         setDeviceStates(newDeviceStates);
+      } else {
+        setDeviceStates(new Map());
       }
 
       // Load device outputs
@@ -1679,6 +1685,8 @@ ${state.bannerMOTD}
           newDeviceOutputs.set(deviceId, bootMessages);
         });
         setDeviceOutputs(newDeviceOutputs);
+      } else {
+        setDeviceOutputs(new Map());
       }
 
       // Load PC outputs
@@ -1688,6 +1696,8 @@ ${state.bannerMOTD}
           newPcOutputs.set(item.id, item.outputs || []);
         });
         setPcOutputs(newPcOutputs);
+      } else {
+        setPcOutputs(new Map());
       }
 
       // Load PC histories
@@ -1839,21 +1849,7 @@ ${state.bannerMOTD}
       }
 
       // Close any transient UI state from the previous project before applying the loaded project
-      setSelectedDevice(null);
-      setClearSelectionTrigger(prev => prev + 1);
-      setShowPCPanel(false);
-      setShowFirewallPanel(false);
-      setShowRouterPanel(false);
-      setShowUnifiedDeviceModal(false);
-      setShowAboutModal(false);
-      setShowMobileMenu(false);
-      setShowProjectPicker(false);
-      setShowOnboarding(false);
-      setIsEnvironmentPanelOpen(false);
-      setIsTimelineMinimized(true);
-      setRefreshNetworkReport(null);
-      setProjectSearchQuery('');
-      setLoadedExampleId('');
+      resetWorkspaceUiState();
 
       // Close packet analysis popup explicitly
       window.dispatchEvent(new CustomEvent('network-refresh'));
@@ -1909,7 +1905,7 @@ ${state.bannerMOTD}
       });
       return false;
     }
-  }, [setDeviceStates, setDeviceOutputs, setPcOutputs, setPcHistories, setTopologyDevices, setTopologyConnections, setTopologyNotes, setCableInfo, setActiveDeviceId, setActiveDeviceType, setSelectedDevice, setActiveTab, setTopologyKey, setHasUnsavedChanges, resetHistory, toast, setZoom, setPan, language, normalizeDeviceType, applyLinkLocalToUnconfiguredHosts]);
+  }, [setDeviceStates, setDeviceOutputs, setPcOutputs, setPcHistories, setTopologyDevices, setTopologyConnections, setTopologyNotes, setCableInfo, setActiveDeviceId, setActiveDeviceType, setSelectedDevice, setActiveTab, setTopologyKey, setHasUnsavedChanges, resetHistory, toast, setZoom, setPan, language, normalizeDeviceType, applyLinkLocalToUnconfiguredHosts, resetWorkspaceUiState]);
 
   // Persistence: Load from URL ID or localStorage on mount
   useEffect(() => {
@@ -2985,6 +2981,75 @@ ${state.bannerMOTD}
     return result;
   }, [handleCommandForDevice, topologyDevices, topologyConnections, setActiveDeviceId, setActiveDeviceType, setLastCommand, setLastOutput, commitAction, isGuidedModeActive, checkStepCompletionWithContext, deviceStates]);
 
+  useEffect(() => {
+    const handlePcCommandExecuted = (e: Event) => {
+      const customEvent = e as CustomEvent<{ deviceId: string; command: string; output?: string }>;
+      const { deviceId, command, output } = customEvent.detail;
+
+      setLastCommand(command);
+      setLastOutput(output || '');
+
+      if (command && command.trim() !== '') {
+        const deviceName = topologyDevices?.find(d => d.id === deviceId)?.name || deviceId;
+        commitAction(`${deviceName} CMD: ${command}`);
+      }
+
+      if (isGuidedModeActive) {
+        checkStepCompletionWithContext({
+          lastCommand: command,
+          lastOutput: output || '',
+          deviceAccessed: 'pc',
+          deviceAccessedId: deviceId,
+          deviceState: state,
+          deviceStates: deviceStates,
+          topologyConnections: topologyConnections,
+          topologyDevices: topologyDevices
+        });
+      }
+    };
+
+    window.addEventListener('pc-command-executed', handlePcCommandExecuted);
+    return () => window.removeEventListener('pc-command-executed', handlePcCommandExecuted);
+  }, [topologyDevices, setLastCommand, setLastOutput, commitAction, isGuidedModeActive, checkStepCompletionWithContext, state, deviceStates, topologyConnections]);
+
+  useEffect(() => {
+    const handleShowMe = (e: Event) => {
+      const { targetDeviceId, hintCommand } = (e as CustomEvent).detail;
+      let deviceId = targetDeviceId;
+
+      if (!deviceId) {
+        if (hintCommand.includes('ipconfig') || hintCommand.includes('ping') || hintCommand.includes('ftp') || hintCommand.includes('tracert')) {
+          deviceId = topologyDevices.find(d => d.type === 'pc')?.id;
+        } else {
+          deviceId = topologyDevices.find(d => d.type === 'switchL2' || d.type === 'switchL3' || d.type === 'router')?.id;
+        }
+      }
+
+      if (deviceId) {
+        const device = topologyDevices.find(d => d.id === deviceId);
+        if (device) {
+          if (device.type === 'pc') {
+            setShowPCDeviceId(deviceId);
+            setPcPanelInitialTab('desktop');
+            setShowPCPanel(true);
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('pc-auto-type', { detail: { deviceId, command: hintCommand } }));
+            }, 600);
+          } else {
+            setActiveDeviceId(deviceId);
+            setActiveDeviceType(device.type);
+            setUnifiedDeviceActiveTab('console');
+            setShowUnifiedDeviceModal(true);
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('terminal-auto-type', { detail: { deviceId, command: hintCommand } }));
+            }, 600);
+          }
+        }
+      }
+    };
+    window.addEventListener('request-show-me', handleShowMe);
+    return () => window.removeEventListener('request-show-me', handleShowMe);
+  }, [topologyDevices, setActiveDeviceId, setActiveDeviceType, setShowUnifiedDeviceModal, setActiveTab]);
 
   const handleClearTerminal = () => {
     setDeviceOutputs(prev => {

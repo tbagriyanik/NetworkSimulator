@@ -501,7 +501,7 @@ describe('guidedMode', () => {
           checkType: 'ping',
           checkParams: { toIp: '192.168.1.1' },
         };
-        expect(checkStepCompletion(step, { lastCommand: 'ping 192.168.1.1' })).toBe(true);
+        expect(checkStepCompletion(step, { lastCommand: 'ping 192.168.1.1', lastOutput: 'Reply from 192.168.1.1: bytes=32 time<1ms TTL=64' })).toBe(true);
       });
 
       it('should return false when ping command is for wrong IP', () => {
@@ -519,8 +519,8 @@ describe('guidedMode', () => {
           checkType: 'ping',
           checkParams: { toIp: '192.168.1.1', fromDevice: 'pc-1' },
         };
-        expect(checkStepCompletion(step, { lastCommand: 'ping 192.168.1.1', deviceAccessedId: 'pc-1' })).toBe(true);
-        expect(checkStepCompletion(step, { lastCommand: 'ping 192.168.1.1', deviceAccessedId: 'pc-2' })).toBe(false);
+        expect(checkStepCompletion(step, { lastCommand: 'ping 192.168.1.1', deviceAccessedId: 'pc-1', lastOutput: 'Reply from 192.168.1.1: bytes=32 time<1ms TTL=64' })).toBe(true);
+        expect(checkStepCompletion(step, { lastCommand: 'ping 192.168.1.1', deviceAccessedId: 'pc-2', lastOutput: 'Reply from 192.168.1.1: bytes=32 time<1ms TTL=64' })).toBe(false);
       });
     });
 

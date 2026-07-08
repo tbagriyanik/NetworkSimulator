@@ -1115,11 +1115,271 @@ export const ecommerceGuidedSteps: GuidedStep[] = [
   }
 ];
 
+export const teachMeBeginnerSteps: GuidedStep[] = [
+  {
+    id: 'tm-beg-1',
+    order: 1,
+    title: { tr: 'Cihaza Bağlan', en: 'Connect to Device' },
+    description: { tr: 'PC komut satırını açın ve ipconfig komutunu çalıştırın.', en: 'Open PC terminal and run ipconfig command.' },
+    hint: { tr: 'ipconfig', en: 'ipconfig' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'ipconfig' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'tm-beg-2',
+    order: 2,
+    title: { tr: 'Switch\'e Giriş', en: 'Enter Switch' },
+    description: { tr: 'Switch CLI\'ına girin ve enable komutuyla yetkili moda geçin.', en: 'Enter Switch CLI and switch to privileged mode with enable command.' },
+    hint: { tr: 'enable', en: 'enable' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'enable' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'tm-beg-3',
+    order: 3,
+    title: { tr: 'Konfigürasyon Modu', en: 'Configuration Mode' },
+    description: { tr: 'configure terminal komutuyla global konfigürasyon moduna geçin.', en: 'Switch to global configuration mode using configure terminal command.' },
+    hint: { tr: 'configure terminal', en: 'configure terminal' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'configure terminal' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'tm-beg-4',
+    order: 4,
+    title: { tr: 'Cihaz Adını Değiştir', en: 'Change Device Name' },
+    description: { tr: 'hostname SW1 komutunu kullanarak Switch\'in adını SW1 yapın.', en: 'Change the Switch name to SW1 using the hostname SW1 command.' },
+    hint: { tr: 'hostname SW1', en: 'hostname SW1' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'hostname SW1' },
+    completed: false,
+    points: 20
+  }
+];
+
+export const teachMeIntermediateSteps: GuidedStep[] = [
+  {
+    id: 'tm-int-1',
+    order: 1,
+    title: { tr: 'Router Yetkili Mod', en: 'Router Privileged Mode' },
+    description: { tr: 'Router CLI\'ına girin ve yetkili moda geçin.', en: 'Enter Router CLI and switch to privileged mode.' },
+    hint: { tr: 'enable', en: 'enable' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'enable' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'tm-int-2',
+    order: 2,
+    title: { tr: 'Router Konfigürasyon', en: 'Router Configuration' },
+    description: { tr: 'Global konfigürasyon moduna geçin.', en: 'Switch to global configuration mode.' },
+    hint: { tr: 'configure terminal', en: 'configure terminal' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'configure terminal' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'tm-int-3',
+    order: 3,
+    title: { tr: 'Arayüze Gir', en: 'Enter Interface' },
+    description: { tr: 'GigabitEthernet 0/0 arayüzünün konfigürasyonuna girin.', en: 'Enter configuration of GigabitEthernet 0/0 interface.' },
+    hint: { tr: 'interface gi0/0', en: 'interface gi0/0' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'interface gi0/0' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'tm-int-4',
+    order: 4,
+    title: { tr: 'IP Adresi Ata', en: 'Assign IP Address' },
+    description: { tr: 'Arayüze 192.168.1.1 IP adresini atayın.', en: 'Assign 192.168.1.1 IP address to the interface.' },
+    hint: { tr: 'ip address 192.168.1.1 255.255.255.0', en: 'ip address 192.168.1.1 255.255.255.0' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'ip address 192.168.1.1' },
+    completed: false,
+    points: 20
+  },
+  {
+    id: 'tm-int-5',
+    order: 5,
+    title: { tr: 'Arayüzü Aç', en: 'Bring Interface Up' },
+    description: { tr: 'no shutdown komutu ile arayüzü aktif hale getirin.', en: 'Activate the interface using no shutdown command.' },
+    hint: { tr: 'no shutdown', en: 'no shutdown' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'no shutdown' },
+    completed: false,
+    points: 10
+  }
+];
+
+export const teachMeAdvancedSteps: GuidedStep[] = [
+  {
+    id: 'tm-adv-enable',
+    order: 1,
+    title: { tr: 'Router Yetkili Mod', en: 'Router Privileged Mode' },
+    description: { tr: 'Router CLI\'ına girin ve yetkili moda geçin.', en: 'Enter Router CLI and switch to privileged mode.' },
+    hint: { tr: 'enable', en: 'enable' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'enable' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'tm-adv-config',
+    order: 2,
+    title: { tr: 'Router Konfigürasyon', en: 'Router Configuration' },
+    description: { tr: 'Global konfigürasyon moduna geçin.', en: 'Switch to global configuration mode.' },
+    hint: { tr: 'configure terminal', en: 'configure terminal' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'configure terminal' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'tm-adv-1',
+    order: 3,
+    title: { tr: 'OSPF Başlat', en: 'Start OSPF' },
+    description: { tr: 'Router konfigürasyonunda OSPF 1 işlemini başlatın.', en: 'Start OSPF process 1 in router configuration.' },
+    hint: { tr: 'router ospf 1', en: 'router ospf 1' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'router ospf' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'tm-adv-2',
+    order: 4,
+    title: { tr: 'OSPF Ağı Ekle', en: 'Add OSPF Network' },
+    description: { tr: '192.168.1.0 ağını Alan 0 olarak OSPF\'e dahil edin.', en: 'Include 192.168.1.0 network in OSPF as Area 0.' },
+    hint: { tr: 'network 192.168.1.0 0.0.0.255 area 0', en: 'network 192.168.1.0 0.0.0.255 area 0' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'network 192.168.1.0' },
+    completed: false,
+    points: 20
+  },
+  {
+    id: 'tm-adv-3',
+    order: 5,
+    title: { tr: 'Moddan Çık', en: 'Exit Mode' },
+    description: { tr: 'exit komutu ile OSPF modundan çıkın.', en: 'Exit OSPF mode with exit command.' },
+    hint: { tr: 'exit', en: 'exit' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'exit' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'tm-adv-4',
+    order: 6,
+    title: { tr: 'ACL Oluştur', en: 'Create ACL' },
+    description: { tr: 'Sadece 192.168.1.10 IP\'sine izin veren 10 numaralı standart bir ACL oluşturun.', en: 'Create standard ACL 10 permitting only 192.168.1.10 IP.' },
+    hint: { tr: 'access-list 10 permit host 192.168.1.10', en: 'access-list 10 permit host 192.168.1.10' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'access-list 10 permit' },
+    completed: false,
+    points: 20
+  },
+  {
+    id: 'tm-adv-exit-config',
+    order: 7,
+    title: { tr: 'Yapılandırmadan Çık', en: 'Exit Configuration' },
+    description: { tr: 'Global konfigürasyon modundan çıkmak için end komutunu çalıştırın.', en: 'Run end command to exit global configuration mode.' },
+    hint: { tr: 'end', en: 'end' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'end' },
+    completed: false,
+    points: 10
+  },
+  {
+    id: 'tm-adv-5',
+    order: 8,
+    title: { tr: 'Ayarları Kaydet', en: 'Save Config' },
+    description: { tr: 'Yetkili moda dönüp ayarlarınızı kaydedin.', en: 'Return to privileged mode and save your configuration.' },
+    hint: { tr: 'copy running-config startup-config', en: 'copy running-config startup-config' },
+    checkType: 'command',
+    checkParams: { commandPattern: 'copy running-config startup-config' },
+    completed: false,
+    points: 10
+  }
+];
+
 // Rehberli projeleri oluştur
 export const getGuidedProjects = (language: 'tr' | 'en'): GuidedProject[] => {
   const isTr = language === 'tr';
 
   const projects: GuidedProject[] = [
+    {
+      id: 'teach-me-beginner',
+      tag: isTr ? 'BANA ÖĞRET' : 'TEACH ME',
+      title: isTr ? 'Bana Öğret: Temel Seviye' : 'Teach Me: Beginner',
+      description: isTr ? 'Temel ağ cihazı etkileşimleri ve komut satırı girişi' : 'Basic network device interactions and command line entry',
+      detail: isTr ? 'Sıfırdan ipconfig, enable, configure terminal komutlarını uygulamalı olarak öğrenin.' : 'Learn ipconfig, enable, configure terminal commands practically from scratch.',
+      data: {
+        version: '1.0', timestamp: new Date().toISOString(), devices: [], deviceOutputs: [], pcOutputs: [], pcHistories: [],
+        topology: {
+          devices: [
+            { id: 'pc-1', type: 'pc', name: 'PC1', x: 100, y: 200, ip: '192.168.1.10', status: 'online', ports: [{ id: 'eth0', label: 'Eth0', status: 'connected' as const }, { id: 'com1', label: 'COM1', status: 'disconnected' as const }] },
+            { id: 'switch-1', type: 'switchL2', name: 'SW1', x: 300, y: 200, ip: '', status: 'online', ports: generateSwitchPorts() }
+          ],
+          connections: [{ id: 'c1', sourceDeviceId: 'pc-1', sourcePort: 'eth0', targetDeviceId: 'switch-1', targetPort: 'fa0/1', cableType: 'straight', active: true }],
+          notes: []
+        },
+        cableInfo: { connected: true, cableType: 'straight', sourceDevice: 'pc', targetDevice: 'switchL2' },
+        activeDeviceId: 'pc-1', activeDeviceType: 'pc', activeTab: 'topology', zoom: 1, pan: { x: 0, y: 0 }
+      },
+      level: 'basic', isGuided: true, steps: teachMeBeginnerSteps, estimatedTimeMinutes: 10, difficulty: 'beginner',
+      totalPoints: teachMeBeginnerSteps.reduce((acc, s) => acc + (s.points || 0), 0)
+    },
+    {
+      id: 'teach-me-intermediate',
+      tag: isTr ? 'BANA ÖĞRET' : 'TEACH ME',
+      title: isTr ? 'Bana Öğret: Orta Seviye' : 'Teach Me: Intermediate',
+      description: isTr ? 'Router temel ayarları ve arayüz yapılandırması' : 'Router basic settings and interface configuration',
+      detail: isTr ? 'Router arayüzlerine IP atama ve arayüzü aktif hale getirme (no shutdown).' : 'Assigning IPs to Router interfaces and activating the interface (no shutdown).',
+      data: {
+        version: '1.0', timestamp: new Date().toISOString(), devices: [], deviceOutputs: [], pcOutputs: [], pcHistories: [],
+        topology: {
+          devices: [
+            { id: 'router-1', type: 'router', name: 'R1', x: 300, y: 200, ip: '', status: 'online', ports: generateRouterPorts() }
+          ],
+          connections: [],
+          notes: []
+        },
+        cableInfo: { connected: false, cableType: 'straight', sourceDevice: 'pc', targetDevice: 'router' },
+        activeDeviceId: 'router-1', activeDeviceType: 'router', activeTab: 'topology', zoom: 1, pan: { x: 0, y: 0 }
+      },
+      level: 'intermediate', isGuided: true, steps: teachMeIntermediateSteps, estimatedTimeMinutes: 15, difficulty: 'intermediate',
+      totalPoints: teachMeIntermediateSteps.reduce((acc, s) => acc + (s.points || 0), 0)
+    },
+    {
+      id: 'teach-me-advanced',
+      tag: isTr ? 'BANA ÖĞRET' : 'TEACH ME',
+      title: isTr ? 'Bana Öğret: İleri Seviye' : 'Teach Me: Advanced',
+      description: isTr ? 'OSPF yapılandırması ve Güvenlik Listeleri (ACL)' : 'OSPF configuration and Access Control Lists (ACL)',
+      detail: isTr ? 'OSPF dinamik yönlendirme protokolünü yapılandırın ve standart ACL yazın.' : 'Configure OSPF dynamic routing protocol and write standard ACL.',
+      data: {
+        version: '1.0', timestamp: new Date().toISOString(), devices: [], deviceOutputs: [], pcOutputs: [], pcHistories: [],
+        topology: {
+          devices: [
+            { id: 'router-1', type: 'router', name: 'R1', x: 300, y: 200, ip: '', status: 'online', ports: generateRouterPorts() }
+          ],
+          connections: [],
+          notes: []
+        },
+        cableInfo: { connected: false, cableType: 'straight', sourceDevice: 'pc', targetDevice: 'router' },
+        activeDeviceId: 'router-1', activeDeviceType: 'router', activeTab: 'topology', zoom: 1, pan: { x: 0, y: 0 }
+      },
+      level: 'advanced', isGuided: true, steps: teachMeAdvancedSteps, estimatedTimeMinutes: 20, difficulty: 'advanced',
+      totalPoints: teachMeAdvancedSteps.reduce((acc, s) => acc + (s.points || 0), 0)
+    },
     {
       id: 'guided-add-devices',
       tag: isTr ? 'BAŞLANGIÇ' : 'BEGINNER',
@@ -1824,7 +2084,6 @@ export const checkStepCompletion = (
 
       return false;
       }
-
     case 'ping': {
       if (!context.lastCommand || !step.checkParams?.toIp) return false;
 
@@ -1834,8 +2093,20 @@ export const checkStepCompletion = (
       }
 
       const cmd = context.lastCommand.toLowerCase().trim();
-      return cmd.startsWith('ping') && cmd.includes(step.checkParams.toIp.toLowerCase());
+      const isPing = cmd.startsWith('ping') && cmd.includes(step.checkParams.toIp.toLowerCase());
+      if (!isPing) return false;
+
+      // Check if output is successful. We require lastOutput to confirm success.
+      if (!context.lastOutput) {
+        return false;
       }
+
+      const out = context.lastOutput.toLowerCase();
+      if (out.includes('timed out') || out.includes('100% loss') || out.includes('unreachable') || out.includes('100% kayıp') || out.includes('success rate is 0 percent')) {
+        return false;
+      }
+      return true;
+    }
 
     case 'deviceCount': {
       if (!context.topologyDevices || !step.checkParams?.deviceType) return false;

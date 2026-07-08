@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useRef, useEffect, KeyboardEvent, useCallback, useMemo, type CSSProperties } from 'react';
 import { useEnvironment } from '@/lib/store/appStore';
@@ -79,6 +79,15 @@ export function PCPanel({
   useEffect(() => {
     activeTabRef.current = activeTab;
   }, [activeTab]);
+
+  useEffect(() => {
+    if (isVisible && typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('pc-tab-changed', {
+        detail: { deviceId, activeTab }
+      }));
+    }
+  }, [activeTab, deviceId, isVisible]);
+
   const [activeServiceTab, setActiveServiceTab] = useState<'dns' | 'http' | 'dhcp' | 'ftp' | 'mail' | 'ntp'>('dns');
   const tabletHistoryRef = useRef<PCActiveTab[]>(['home']);
   const tabletHistoryIndexRef = useRef(0);
@@ -121,7 +130,6 @@ export function PCPanel({
     }
   }, [onNavigate]);
 
-  // Handle browser back button for tablet navigation
   useEffect(() => {
     const handleTabletPopState = (e: CustomEvent) => {
       const { program } = e.detail || {};
@@ -3645,6 +3653,12 @@ export function PCPanel({
       return;
     }
 
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('pc-command-executed', {
+        detail: { deviceId, command }
+      }));
+    }
+
     if (activeTabRef.current === 'desktop') {
       if (desktopHistory[0] !== command) {
         const newHistory = [command, ...desktopHistory].slice(0, 50);
@@ -3728,10 +3742,21 @@ export function PCPanel({
           if (isLoopbackTarget(targetIp)) {
             const pingTargetDisplay = dnsResolved ? `${target} [127.0.0.1]` : '127.0.0.1';
             await addMultilineOutput('output', `Pinging ${pingTargetDisplay} with 32 bytes of data:\nReply from 127.0.0.1: bytes=32 time<1ms TTL=128\nReply from 127.0.0.1: bytes=32 time<1ms TTL=128\nReply from 127.0.0.1: bytes=32 time<1ms TTL=128\nReply from 127.0.0.1: bytes=32 time<1ms TTL=128\n\nPing statistics for ${pingTargetDisplay}:\n    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)`, 100);
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('pc-command-executed', {
+                detail: { deviceId, command, output: 'Reply from 127.0.0.1' }
+              }));
+            }
             return;
           }
 
           const result = checkConnectivity(deviceId, targetIp, topologyDevices, topologyConnections as unknown as CanvasConnection[], deviceStates || new Map(), language as 'tr' | 'en', { protocol: 'icmp' });
+
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('pc-command-executed', {
+              detail: { deviceId, command, output: result.success ? 'Reply from' : 'timed out' }
+            }));
+          }
 
           if (result.capturedPackets && result.capturedPackets.length > 0 && typeof window !== 'undefined') {
             result.capturedPackets.forEach(pkt => {

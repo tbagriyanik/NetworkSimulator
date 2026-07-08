@@ -65,6 +65,10 @@ export function useProjectReset({
         capturedPackets: {},
         activeCaptureConnectionId: null,
         isSimulationMode: false
+      },
+      deviceStates: {
+        switchStates: {},
+        pcOutputs: {}
       }
     }));
     const usedIps = new Set<string>();

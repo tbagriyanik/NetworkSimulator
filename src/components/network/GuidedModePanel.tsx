@@ -726,9 +726,29 @@ export function GuidedModePanel({
                 </button>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="mt-2 p-2 bg-warning-50 dark:bg-warning-900/30 border border-warning-200 dark:border-warning-800 rounded text-xs text-warning-800 dark:text-warning-200">
-                  <Lightbulb className="w-3 h-3 inline mr-1" />
-                  {currentStep.hint[language]}
+                <div className="mt-2 p-2 bg-warning-50 dark:bg-warning-900/30 border border-warning-200 dark:border-warning-800 rounded text-xs text-warning-800 dark:text-warning-200 flex flex-col gap-2">
+                  <div>
+                    <Lightbulb className="w-3 h-3 inline mr-1" />
+                    {currentStep.hint[language]}
+                  </div>
+                  {currentStep.checkType === 'command' && (
+                    <button
+                      onClick={() => {
+                        window.dispatchEvent(new CustomEvent('request-show-me', {
+                          detail: {
+                            stepId: currentStep.id,
+                            commandPattern: currentStep.checkParams?.commandPattern,
+                            targetDeviceId: currentStep.checkParams?.targetDeviceId,
+                            hintCommand: currentStep.hint.en || currentStep.hint.tr
+                          }
+                        }));
+                      }}
+                      className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-warning-500 hover:bg-warning-600 text-white rounded-md font-bold transition-all shadow-sm w-full mt-1"
+                    >
+                      <Wand2 className="w-3.5 h-3.5" />
+                      {language === 'tr' ? 'Bana Göster' : 'Show Me'}
+                    </button>
+                  )}
                 </div>
               </CollapsibleContent>
             </Collapsible>

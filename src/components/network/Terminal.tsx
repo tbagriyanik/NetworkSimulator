@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useRef, useEffect, KeyboardEvent, useCallback, useMemo, ClipboardEvent } from 'react';
 import { SwitchState, CommandMode } from '@/lib/network/types';
@@ -651,6 +651,34 @@ export function Terminal({
     setTimeout(() => setLocalPasswordPrompt(!!state.awaitingPassword), 0);
   }, [state.awaitingPassword]);
 
+  const handleSubmitRef = useRef<((cmd?: string) => Promise<void>) | null>(null);
+
+  useEffect(() => {
+    const handleAutoType = (e: Event) => {
+      const { deviceId: eventDeviceId, command } = (e as CustomEvent).detail;
+      if (eventDeviceId !== deviceId) return;
+
+      let i = 0;
+      setInput('');
+      const typeInterval = setInterval(() => {
+        if (i < command.length) {
+          const char = command.charAt(i);
+          setInput(prev => prev + char);
+          i++;
+        } else {
+          clearInterval(typeInterval);
+          setTimeout(() => {
+            if (handleSubmitRef.current) {
+              handleSubmitRef.current(command);
+            }
+          }, 300);
+        }
+      }, 70);
+    };
+    window.addEventListener('terminal-auto-type', handleAutoType);
+    return () => window.removeEventListener('terminal-auto-type', handleAutoType);
+  }, [deviceId]);
+
   const handleSubmit = async (cmdToExecute?: string) => {
     // Password mode: send whatever is typed (including empty) as password
     if (state.awaitingPassword || localPasswordPrompt) {
@@ -697,6 +725,10 @@ export function Terminal({
       inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 100);
   };
+
+  useEffect(() => {
+    handleSubmitRef.current = handleSubmit;
+  }, [handleSubmit]);
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

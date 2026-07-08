@@ -34,7 +34,7 @@ npm install && npm run dev
 | Source Files / Kaynak Dosya | 286 |
 | Documentation Files / Dokümantasyon Dosya | 16 |
 | Example Projects / Örnek Proje | 49 |
-| Guided Lessons / Rehberli Ders | 16 |
+| Guided Lessons / Rehberli Ders | 19 |
 | Exams / Sınavlar | 6 |
 | CLI Commands / CLI Komutları | 450+ |
 
