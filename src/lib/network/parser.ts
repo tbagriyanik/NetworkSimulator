@@ -2,7 +2,7 @@
 import { CommandMode, ParsedCommand, CommandValidationResult, SwitchState } from './types';
 import { commandAliases } from './initialState';
 import { useAppStore } from '../store/appStore';
-import { IOS_ERRORS, iosModeError } from "./core/iosErrors";
+import { IOS_ERRORS } from "./core/iosErrors";
 import { getDeviceCapabilities, type DeviceCapabilities } from './capabilities';
 import type { DeviceType } from '@/components/network/networkTopology.types';
 
@@ -3131,10 +3131,11 @@ export function validateCommand(
     }
 
     if (!pattern.modes.includes(currentMode)) {
+      // Standart Cisco davranışı: Yanlış moddaki komut için de 'invalid input' hatası verilir.
       return {
         valid: false,
         reason: 'invalid-mode',
-        error: getModeError(parsed.rawInput, currentMode)
+        error: getInvalidCommandError(parsed.rawInput, 0, currentMode)
       };
     }
 
@@ -3186,13 +3187,6 @@ export function validateCommand(
   };
 }
 
-// Mode hatası mesajı
-function getModeError(input: string, currentMode: CommandMode): string {
-  const indicatorPos = calculateCaretPosition(input, 0);
-  const cleanedInput = input.replace(/\s+$/g, '');
-  const indicator = ' '.repeat(indicatorPos) + '^';
-  return `${cleanedInput}\n${indicator}\n${iosModeError(input, currentMode)}`;
-}
 
 // Geçersiz komut hatası
 export function getInvalidCommandError(

@@ -2,6 +2,7 @@ import { CanvasDevice, CanvasConnection, CanvasPort } from '@/components/network
 import { CableInfo, SwitchState, isCableCompatible, Port } from './types';
 import { findRoute, ipToNumber, getRoutingTable, isIpv6InNetwork } from './routing';
 import { performArpResolution } from './arp';
+import { learnMacAddress, findMacPort } from './macLearning';
 import { ensureDeviceStatesMap } from './networkUtils';
 import { recalculateStp } from './stp';
 
@@ -754,21 +755,23 @@ export function checkConnectivity(
         );
 
         if (!cachedMac && sourceConn) {
+          // Record ARP Broadcast Request
           capturedPackets.push({
             connectionId: sourceConn.id,
-            sourceIp: '0.0.0.0', // ARP uses 0.0.0.0 for request usually or its own IP
-            targetIp: '255.255.255.255', // Broadcast
+            sourceIp: sourceIp,
+            targetIp: '255.255.255.255',
             protocol: 'ARP',
             length: 42,
-            info: `Who has ${resolvedTargetIp}? Tell ${sourceIp}`
+            info: `ARP Request: Who has ${resolvedTargetIp}? Tell ${sourceIp}`
           });
+          // Record ARP Unicast Reply
           capturedPackets.push({
             connectionId: sourceConn.id,
             sourceIp: resolvedTargetIp,
             targetIp: sourceIp,
             protocol: 'ARP',
             length: 42,
-            info: `${resolvedTargetIp} is at ${targetDevice.macAddress}`
+            info: `ARP Reply: ${resolvedTargetIp} is at ${targetDevice.macAddress}`
           });
         }
       }
@@ -898,6 +901,7 @@ export function checkConnectivity(
 
   // BOLT: Pre-calculate path-related connections for O(1) lookup in later stages
   const pathConnections = new Map<string, CanvasConnection>();
+  let ttl = 64; // Default TTL
 
   for (let i = 0; i < path.length - 1; i++) {
     const aId = path[i];
@@ -913,6 +917,41 @@ export function checkConnectivity(
       if (srcPortId) traversedPorts.push({ deviceId: aId, portId: srcPortId, type: 'egress' });
       if (dstPortId) traversedPorts.push({ deviceId: bId, portId: dstPortId, type: 'ingress' });
 
+      const aDevice = deviceMap.get(aId);
+      const bDevice = deviceMap.get(bId);
+      const bState = safeDeviceStates.get(bId);
+      const sourceMac = deviceMap.get(sourceId)?.macAddress;
+      const targetMac = targetDevice.macAddress;
+
+      // TTL Control: Decrement TTL at each hop through a router
+      if (aDevice && (aDevice.type === 'router' || aDevice.type === 'switchL3')) {
+        ttl--;
+        if (ttl <= 0) {
+          return {
+            success: false,
+            hops: path.slice(0, i + 1).map(id => deviceMap.get(id)?.name || id),
+            hopIds: path.slice(0, i + 1),
+            targetId: targetDevice.id,
+            error: language === 'tr' ? 'ICMP Zaman Aşımı (TTL exceeded)' : 'ICMP Time Exceeded (TTL expired)'
+          };
+        }
+      }
+
+      // MAC Learning on switch (ingress)
+      if (bDevice && isSwitchDeviceType(bDevice.type) && bState && sourceMac) {
+        learnMacAddress(bId, sourceMac, dstPortId, sourceVlan, safeDeviceStates);
+      }
+
+      let packetInfo = options?.protocol === 'icmp' ? 'Echo Request' : 'Data Packet';
+
+      // If current device is a switch, check if it knows where targetMac is (Flooding logic)
+      if (aDevice && isSwitchDeviceType(aDevice.type) && targetMac) {
+        const knownPort = findMacPort(aId, targetMac, sourceVlan, safeDeviceStates);
+        if (!knownPort) {
+          packetInfo += ' (Flooded)';
+        }
+      }
+
       // Track packets for capture
       capturedPackets.push({
         connectionId: conn.id,
@@ -920,7 +959,7 @@ export function checkConnectivity(
         targetIp: currentTargetIp,
         protocol: options?.protocol?.toUpperCase() || 'ICMP',
         length: 74,
-        info: options?.protocol === 'icmp' ? 'Echo Request' : 'Data Packet'
+        info: packetInfo
       });
     }
   }
