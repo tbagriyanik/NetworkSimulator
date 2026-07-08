@@ -4590,8 +4590,8 @@ export function NetworkTopology({
                   ))}
 
                   {/* Broadcast flood icons – animated envelopes flying from switch to each connected device (Hidden) */}
-                  {false && pingAnimation && pingAnimation.broadcastAnim.map((bcast) => {
-                    const prog = pingAnimation.broadcastProgress;
+                  {false && pingAnimation && (pingAnimation as any).broadcastAnim.map((bcast: any) => {
+                    const prog = (pingAnimation as any).broadcastProgress ?? 0;
                     const ex = bcast.fromX + (bcast.toX - bcast.fromX) * prog;
                     const ey = bcast.fromY + (bcast.toY - bcast.fromY) * prog - 35;
                     const opacity = prog < 0.1 ? prog * 10 : prog > 0.9 ? (1 - prog) * 10 : 1;

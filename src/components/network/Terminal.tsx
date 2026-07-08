@@ -248,11 +248,11 @@ export function Terminal({
   }, [device?.type, state.switchModel]);
 
   // Sync with global history
-  const lastDeviceIdRef = useRef<string | null>(null);
+  const lastHistoryDeviceIdRef = useRef<string | null>(null);
   useEffect(() => {
     const globalHistory = state.commandHistory || [];
-    const deviceChanged = lastDeviceIdRef.current !== deviceId;
-    lastDeviceIdRef.current = deviceId;
+    const deviceChanged = lastHistoryDeviceIdRef.current !== deviceId;
+    lastHistoryDeviceIdRef.current = deviceId;
 
     if (JSON.stringify(globalHistory) !== JSON.stringify(history)) {
       setTimeout(() => setHistory(globalHistory), 0);
