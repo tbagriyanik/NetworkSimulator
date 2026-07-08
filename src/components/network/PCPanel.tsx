@@ -766,13 +766,32 @@ export function PCPanel({
     const results: { ssid: string; deviceId: string; deviceName: string }[] = [];
     const addedSSIDs = new Set<string>();
 
-    // First check deviceStates (router/switch runtime state) - only AP mode
+    // First check deviceStates (router/switch/wlc runtime state) - only AP mode
     if (deviceStates) {
       ensureDeviceStatesMap(deviceStates).forEach((state, stateId) => {
         if (stateId === deviceId) return; // skip self
         const stateDevice = topologyDevices.find(d => d.id === stateId);
-        // Only router/switch can be AP, not PC
-        if (!stateDevice || (stateDevice.type !== 'router' && stateDevice.type !== 'switchL2' && stateDevice.type !== 'switchL3')) return;
+        // Only router/switch/wlc can be AP, not PC
+        if (!stateDevice || (stateDevice.type !== 'router' && stateDevice.type !== 'switchL2' && stateDevice.type !== 'switchL3' && stateDevice.type !== 'wlc')) return;
+
+        // WLC broadcasts SSIDs through wlcWlans state
+        if (stateDevice.type === 'wlc' && state.wlcWlans) {
+          Object.values(state.wlcWlans).forEach((wlan) => {
+            if (wlan.status === 'enabled' && wlan.ssid) {
+              const ssidKey = wlan.ssid;
+              if (!addedSSIDs.has(ssidKey)) {
+                addedSSIDs.add(ssidKey);
+                results.push({
+                  ssid: wlan.ssid,
+                  deviceId: stateId,
+                  deviceName: stateDevice?.name || stateId,
+                });
+              }
+            }
+          });
+          return;
+        }
+
         const wlanPort = state.ports['wlan0'];
         const wifiMode = (wlanPort?.wifi?.mode || '').toLowerCase();
         // Only show devices in AP mode
@@ -794,7 +813,28 @@ export function PCPanel({
       topologyDevices.forEach((device) => {
         if (device.id === deviceId) return;
         // Only router/switch can be AP, not PC
-        if (device.type !== 'router' && device.type !== 'switchL2' && device.type !== 'switchL3') return;
+        if (device.type !== 'router' && device.type !== 'switchL2' && device.type !== 'switchL3' && device.type !== 'wlc') return;
+
+        // WLC broadcasts SSIDs through wlcWlans state
+        if (device.type === 'wlc') {
+          const wlcState = deviceStates ? ensureDeviceStatesMap(deviceStates).get(device.id) : undefined;
+          const wlans = wlcState?.wlcWlans || {};
+          Object.values(wlans).forEach((wlan) => {
+            if (wlan.status === 'enabled' && wlan.ssid) {
+              const ssidKey = wlan.ssid;
+              if (!addedSSIDs.has(ssidKey)) {
+                addedSSIDs.add(ssidKey);
+                results.push({
+                  ssid: wlan.ssid,
+                  deviceId: device.id,
+                  deviceName: device.name,
+                });
+              }
+            }
+          });
+          return;
+        }
+
         const wifi = device.wifi;
         // Check if WiFi is enabled and in AP mode
         if (wifi?.enabled && wifi.mode === 'ap' && wifi.ssid) {

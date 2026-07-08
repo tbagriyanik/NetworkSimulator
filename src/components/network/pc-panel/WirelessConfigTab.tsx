@@ -342,6 +342,16 @@ export function WirelessConfigTab({
             if (!wifiEnabled) return 'text-secondary-500 bg-secondary-500/5';
             if (!wifiSSID) return 'text-warning-500 bg-warning-500/10';
             const isConnected = !!deviceStates && Array.from(ensureDeviceStatesMap(deviceStates).entries()).some(([id, state]) => {
+              // WLC broadcasts SSIDs through wlcWlans state
+              if (state.wlcWlans) {
+                const wlan = Object.values(state.wlcWlans).find(w => w.status === 'enabled' && w.ssid === wifiSSID);
+                if (wlan) {
+                  const apSecurity = wlan.security || 'open';
+                  if (apSecurity !== wifiSecurity) return false;
+                  if (apSecurity !== 'open' && wlan.password !== wifiPassword) return false;
+                  return true;
+                }
+              }
               const wlan = state.ports['wlan0'];
               if (!wlan || wlan.shutdown || wlan.wifi?.mode !== 'ap') return false;
               if (wifiBSSID && wifiBSSID !== id) return false;
@@ -360,6 +370,16 @@ export function WirelessConfigTab({
               if (!wifiEnabled) return 'bg-secondary-500/10';
               if (!wifiSSID) return 'bg-warning-500/20';
               const isConnected = !!deviceStates && Array.from(ensureDeviceStatesMap(deviceStates).entries()).some(([id, state]) => {
+                // WLC broadcasts SSIDs through wlcWlans state
+                if (state.wlcWlans) {
+                  const wlan = Object.values(state.wlcWlans).find(w => w.status === 'enabled' && w.ssid === wifiSSID);
+                  if (wlan) {
+                    const apSecurity = wlan.security || 'open';
+                    if (apSecurity !== wifiSecurity) return false;
+                    if (apSecurity !== 'open' && wlan.password !== wifiPassword) return false;
+                    return true;
+                  }
+                }
                 const wlan = state.ports['wlan0'];
                 if (!wlan || wlan.shutdown || wlan.wifi?.mode !== 'ap') return false;
                 if (wifiBSSID && wifiBSSID !== id) return false;
@@ -385,6 +405,16 @@ export function WirelessConfigTab({
                   if (!wifiSSID) return language === 'tr' ? 'WLAN0 aktif, ağ seçilmedi' : 'WLAN0 active, no network selected';
 
                   const foundInStates = !!deviceStates && Array.from(ensureDeviceStatesMap(deviceStates).entries()).find(([id, state]) => {
+                    // WLC broadcasts SSIDs through wlcWlans state
+                    if (state.wlcWlans) {
+                      const wlan = Object.values(state.wlcWlans).find(w => w.status === 'enabled' && w.ssid === wifiSSID);
+                      if (wlan) {
+                        const apSecurity = wlan.security || 'open';
+                        if (apSecurity !== wifiSecurity) return false;
+                        if (apSecurity !== 'open' && wlan.password !== wifiPassword) return false;
+                        return true;
+                      }
+                    }
                     const wlan = state.ports['wlan0'];
                     if (!wlan || wlan.shutdown || wlan.wifi?.mode !== 'ap') return false;
                     if (wifiBSSID && wifiBSSID !== id) return false;

@@ -201,8 +201,18 @@ export function getWirelessSignalStrength(
     if (dev.id === device.id) return;
     // BOLT: Use pre-resolved safeDeviceStates
     const apWifi = getDeviceWifiConfig(dev, safeDeviceStates);
-    if (!apWifi || apWifi.mode !== 'ap' || !apWifi.enabled) return;
-    if (!apWifi.ssid || apWifi.ssid.toLowerCase() !== targetSsid) return;
+    if (!apWifi || apWifi.mode !== 'ap' || !apWifi.enabled) {
+      // WLC broadcasts SSIDs through wlcWlans state
+      const devState = safeDeviceStates.get(dev.id);
+      if (devState?.wlcWlans) {
+        const wlan = Object.values(devState.wlcWlans).find(w => w.status === 'enabled' && w.ssid?.toLowerCase() === targetSsid);
+        if (!wlan) return;
+      } else {
+        return;
+      }
+    } else if (apWifi.ssid?.toLowerCase() !== targetSsid) {
+      return;
+    }
     const dx = (device.x || 0) - (dev.x || 0);
     const dy = (device.y || 0) - (dev.y || 0);
     const dist = Math.sqrt(dx * dx + dy * dy);
@@ -241,8 +251,18 @@ export function getWirelessDistance(
     if (dev.id === device.id) return;
     // BOLT: Use pre-resolved safeDeviceStates
     const apWifi = getDeviceWifiConfig(dev, safeDeviceStates);
-    if (!apWifi || apWifi.mode !== 'ap' || !apWifi.enabled) return;
-    if (!apWifi.ssid || apWifi.ssid.toLowerCase() !== targetSsid) return;
+    if (!apWifi || apWifi.mode !== 'ap' || !apWifi.enabled) {
+      // WLC broadcasts SSIDs through wlcWlans state
+      const devState = safeDeviceStates.get(dev.id);
+      if (devState?.wlcWlans) {
+        const wlan = Object.values(devState.wlcWlans).find(w => w.status === 'enabled' && w.ssid?.toLowerCase() === targetSsid);
+        if (!wlan) return;
+      } else {
+        return;
+      }
+    } else if (apWifi.ssid?.toLowerCase() !== targetSsid) {
+      return;
+    }
     const dx = (device.x || 0) - (dev.x || 0);
     const dy = (device.y || 0) - (dev.y || 0);
     const dist = Math.sqrt(dx * dx + dy * dy);
@@ -566,59 +586,82 @@ export function checkConnectivity(
     deviceMap.set(d.id, d);
   }
 
-  // 1.5. Implicit Wireless Connections
-  const connections = [..._connections];
-  if (deviceStates) {
-    // Get AP devices - routers/switches from topology
-    const apDevices = devices.filter(d => isSwitchDeviceType(d.type) || d.type === 'router');
-    // Get PC/IoT devices that have WiFi configured - check both device.wifi and deviceStates
-    const pcDevices = devices.filter(d => {
-      // BOLT: Use pre-resolved safeDeviceStates
-      const wifi = getDeviceWifiConfig(d, safeDeviceStates);
-      // PC/IoT must have wifi with a non-empty ssid and must be in client mode (not ap)
-      return (d.type === 'pc' || d.type === 'iot') && !!wifi && wifi.enabled && !!wifi.ssid && (wifi.mode === 'client' || wifi.mode === 'sta');
-    });
-
-    for (const pc of pcDevices) {
-      // BOLT: Use pre-resolved safeDeviceStates
-      const pcWifi = getDeviceWifiConfig(pc, safeDeviceStates);
-      if (!pcWifi || !pcWifi.enabled || !pcWifi.ssid || (pcWifi.mode !== 'client' && pcWifi.mode !== 'sta')) continue;
-
-      const targetSsid = pcWifi.ssid.toLowerCase();
-      const connectedAps: Array<{ ap: CanvasDevice, dist: number }> = [];
-
-      for (const ap of apDevices) {
-        // Check AP in deviceStates first
+    // 1.5. Implicit Wireless Connections
+    const connections = [..._connections];
+    if (deviceStates) {
+      // Get AP devices - routers/switches/wlc from topology
+      const apDevices = devices.filter(d => isSwitchDeviceType(d.type) || d.type === 'router' || d.type === 'wlc');
+      // Get PC/IoT devices that have WiFi configured - check both device.wifi and deviceStates
+      const pcDevices = devices.filter(d => {
         // BOLT: Use pre-resolved safeDeviceStates
-        const apState = safeDeviceStates.get(ap.id);
-        const wlan = apState?.ports['wlan0'];
-        let apWifi = wlan?.wifi;
+        const wifi = getDeviceWifiConfig(d, safeDeviceStates);
+        // PC/IoT must have wifi with a non-empty ssid and must be in client mode (not ap)
+        return (d.type === 'pc' || d.type === 'iot') && !!wifi && wifi.enabled && !!wifi.ssid && (wifi.mode === 'client' || wifi.mode === 'sta');
+      });
 
-        // If no wlan in deviceStates, check if AP has WiFi config in topology
-        if (!apWifi && ap.wifi && ap.wifi.ssid) {
-          apWifi = ap.wifi;
-        }
+      for (const pc of pcDevices) {
+        // BOLT: Use pre-resolved safeDeviceStates
+        const pcWifi = getDeviceWifiConfig(pc, safeDeviceStates);
+        if (!pcWifi || !pcWifi.enabled || !pcWifi.ssid || (pcWifi.mode !== 'client' && pcWifi.mode !== 'sta')) continue;
 
-        if (apWifi && (wlan?.shutdown === false || !wlan?.shutdown) && (apWifi.mode || 'ap').toLowerCase() === 'ap' && (apWifi.ssid || '').toLowerCase() === targetSsid) {
-          if (!pcWifi.bssid || pcWifi.bssid === ap.id) {
-            const apSecurity = (apWifi.security || 'open').toLowerCase();
-            const pcSecurity = (pcWifi.security || 'open').toLowerCase();
-            if (apSecurity === pcSecurity) {
-              if (apSecurity === 'open' || apWifi.password === pcWifi.password) {
-                // BOLT: Calculate distance directly to avoid redundant O(N) scans
-                const dx = (pc.x || 0) - (ap.x || 0);
-                const dy = (pc.y || 0) - (ap.y || 0);
-                const dist = Math.sqrt(dx * dx + dy * dy);
+        const targetSsid = pcWifi.ssid.toLowerCase();
+        const connectedAps: Array<{ ap: CanvasDevice, dist: number }> = [];
 
-                // No signal if too far
-                if (dist < 550) {
-                  connectedAps.push({ ap, dist });
+        for (const ap of apDevices) {
+          // Check AP in deviceStates first
+          // BOLT: Use pre-resolved safeDeviceStates
+          const apState = safeDeviceStates.get(ap.id);
+          const wlan = apState?.ports['wlan0'];
+          let apWifi = wlan?.wifi;
+
+          // If no wlan in deviceStates, check if AP has WiFi config in topology
+          if (!apWifi && ap.wifi && ap.wifi.ssid) {
+            apWifi = ap.wifi;
+          }
+
+          let apSecurity = (apWifi?.security || 'open').toLowerCase();
+          let apPassword = apWifi?.password;
+          let apSsid = (apWifi?.ssid || '').toLowerCase();
+          let apIsApMode = (apWifi?.mode || 'ap').toLowerCase() === 'ap';
+          let apNotShutdown = (wlan?.shutdown === false || !wlan?.shutdown);
+
+          // WLC broadcasts SSIDs through wlcWlans state
+          if (ap.type === 'wlc' && apState?.wlcWlans) {
+            const wlcWlan = Object.values(apState.wlcWlans).find(w => w.status === 'enabled' && w.ssid?.toLowerCase() === targetSsid);
+            if (wlcWlan) {
+              apSecurity = (wlcWlan.security || 'open').toLowerCase();
+              apPassword = wlcWlan.password;
+              apSsid = (wlcWlan.ssid || '').toLowerCase();
+              apIsApMode = true;
+              apNotShutdown = true;
+            } else {
+              continue;
+            }
+          }
+
+          const apMatches = (ap.type === 'wlc')
+            ? apNotShutdown && apIsApMode && apSsid === targetSsid
+            : !!apWifi && apNotShutdown && apIsApMode && apSsid === targetSsid;
+
+          if (apMatches) {
+            if (!pcWifi.bssid || pcWifi.bssid === ap.id) {
+              const pcSecurity = (pcWifi.security || 'open').toLowerCase();
+              if (apSecurity === pcSecurity) {
+                if (apSecurity === 'open' || apPassword === pcWifi.password) {
+                  // BOLT: Calculate distance directly to avoid redundant O(N) scans
+                  const dx = (pc.x || 0) - (ap.x || 0);
+                  const dy = (pc.y || 0) - (ap.y || 0);
+                  const dist = Math.sqrt(dx * dx + dy * dy);
+
+                  // No signal if too far
+                  if (dist < 550) {
+                    connectedAps.push({ ap, dist });
+                  }
                 }
               }
             }
           }
         }
-      }
 
       // Add all reachable APs as potential paths
       for (const { ap } of connectedAps) {

@@ -3103,8 +3103,8 @@ ${state.bannerMOTD}
     } else if (device === 'firewall') {
       setActiveFirewallId(deviceId);
       setShowFirewallPanel(true);
-    } else if (device === 'router' || device === 'switchL2' || device === 'switchL3') {
-      // Switch or Router - set as CLI device and open CLI modal
+    } else if (device === 'router' || device === 'switchL2' || device === 'switchL3' || device === 'wlc') {
+      // Switch, Router, or WLC - set as CLI device and open CLI modal
       const deviceObj = topologyDevices?.find(d => d.id === deviceId);
       const deviceState = getOrCreateDeviceState(deviceId, device, deviceObj?.name, deviceObj?.macAddress, deviceObj?.switchModel);
       getOrCreateDeviceOutputs(deviceId, deviceState);

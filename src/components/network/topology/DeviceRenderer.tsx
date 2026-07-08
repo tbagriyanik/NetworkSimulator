@@ -395,11 +395,12 @@ export function DeviceRenderer({
         const usesWifiBars = device.type === 'pc' || device.type === 'iot';
         const isSwitchL3 = device.type === 'switchL3';
         const isRouter = device.type === 'router';
+        const isWlc = device.type === 'wlc';
         const devState = deviceStates?.get(device.id);
         const wlanState = devState?.ports['wlan0'];
 
         let wifiColor = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
-        const showWifi = usesWifiBars || isSwitchL3 || isRouter;
+        const showWifi = usesWifiBars || isSwitchL3 || isRouter || isWlc;
 
         let isEnabled = false;
         if (showWifi) {
