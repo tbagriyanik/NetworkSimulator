@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { executeCommand } from '@/lib/network/executor';
 import { createInitialState } from '@/lib/network/initialState';
+import type { SwitchState } from '@/lib/network/types';
 
 describe('CLI Piping Support', () => {
   const baseState = createInitialState();
@@ -12,7 +13,7 @@ describe('CLI Piping Support', () => {
       ...baseState.vlans,
       '10': { id: 10, name: 'Marketing', status: 'active', ports: [] }
     }
-  } as any;
+  } as SwitchState;
 
   it('should support "| include" filter', () => {
     const result = executeCommand(state, 'show running-config | include interface');
@@ -45,14 +46,14 @@ describe('CLI Piping Support', () => {
   it('should support "| begin" filter', () => {
     const result = executeCommand(state, 'show running-config | begin vlan 10');
     expect(result.success).toBe(true);
-    const lines = result.output!.split('\n');
+    const lines = (result.output ?? '').split('\n');
     expect(lines[0]).toContain('vlan 10');
   });
 
   it('should support "| b" shortcut', () => {
     const result = executeCommand(state, 'show running-config | b vlan 10');
     expect(result.success).toBe(true);
-    const lines = result.output!.split('\n');
+    const lines = (result.output ?? '').split('\n');
     expect(lines[0]).toContain('vlan 10');
   });
 });

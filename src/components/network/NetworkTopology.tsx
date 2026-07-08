@@ -4590,19 +4590,22 @@ export function NetworkTopology({
                   ))}
 
                   {/* Broadcast flood icons – animated envelopes flying from switch to each connected device (Hidden) */}
-                  {false && pingAnimation && (pingAnimation as any).broadcastAnim.map((bcast: any) => {
-                    const prog = (pingAnimation as any).broadcastProgress ?? 0;
-                    const ex = bcast.fromX + (bcast.toX - bcast.fromX) * prog;
-                    const ey = bcast.fromY + (bcast.toY - bcast.fromY) * prog - 35;
-                    const opacity = prog < 0.1 ? prog * 10 : prog > 0.9 ? (1 - prog) * 10 : 1;
-                    return (
-                      <g key={`bcast-${bcast.targetId}`}>
-                        <circle cx={ex} cy={ey} r="14" fill="#ef4444" opacity={0.2 * opacity} className="animate-ping-glow" />
-                        <rect x={ex - 10} y={ey - 7} width="20" height="14" rx="2" fill="#ef4444" stroke="#dc2626" strokeWidth="1.5" opacity={opacity} />
-                        <path d={`M${ex - 8} ${ey - 3} L${ex} ${ey + 4} L${ex + 8} ${ey - 3}`} fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity={opacity} />
-                      </g>
-                    );
-                  })}
+                  {false && (() => {
+                    const anim = pingAnimation as NonNullable<typeof pingAnimation>;
+                    return anim.broadcastAnim.map((bcast: BroadcastAnimTarget) => {
+                      const prog = anim.broadcastProgress ?? 0;
+                      const ex = bcast.fromX + (bcast.toX - bcast.fromX) * prog;
+                      const ey = bcast.fromY + (bcast.toY - bcast.fromY) * prog - 35;
+                      const opacity = prog < 0.1 ? prog * 10 : prog > 0.9 ? (1 - prog) * 10 : 1;
+                      return (
+                        <g key={`bcast-${bcast.targetId}`}>
+                          <circle cx={ex} cy={ey} r="14" fill="#ef4444" opacity={0.2 * opacity} className="animate-ping-glow" />
+                          <rect x={ex - 10} y={ey - 7} width="20" height="14" rx="2" fill="#ef4444" stroke="#dc2626" strokeWidth="1.5" opacity={opacity} />
+                          <path d={`M${ex - 8} ${ey - 3} L${ex} ${ey + 4} L${ex + 8} ${ey - 3}`} fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity={opacity} />
+                        </g>
+                      );
+                    });
+                  })()}
                   {/* Ping Animation - rendered LAST for top z-order */}
                   {pingAnimation && (() => {
                     const { path, currentHopIndex, progress, success, error } = pingAnimation;

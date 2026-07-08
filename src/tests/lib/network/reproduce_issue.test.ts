@@ -9,9 +9,10 @@ describe('CLI Case Insensitivity', () => {
     const input = 'Configure Terminal';
     const parsed = parseCommand(input, 'privileged', state);
     expect(parsed).not.toBeNull();
-    expect(parsed!.command).toBe('configure');
+    expect(parsed?.command).toBe('configure');
 
-    const validation = validateCommand(parsed!, 'privileged', state);
+    if (!parsed) return;
+    const validation = validateCommand(parsed, 'privileged', state);
     expect(validation.valid).toBe(true);
     expect(validation.matchedPattern).toBe('configure terminal');
   });
@@ -22,7 +23,8 @@ describe('CLI Case Insensitivity', () => {
     const parsed = parseCommand(input, 'interface', interfaceState);
     expect(parsed).not.toBeNull();
 
-    const validation = validateCommand(parsed!, 'interface', interfaceState);
+    if (!parsed) return;
+    const validation = validateCommand(parsed, 'interface', interfaceState);
     expect(validation.valid).toBe(true);
     expect(validation.matchedPattern).toBe('no shutdown');
   });
