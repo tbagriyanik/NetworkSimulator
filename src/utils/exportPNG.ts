@@ -35,7 +35,7 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
   let url = '';
   let width = 800;
   let height = 600;
-  const bg = '#ffffff';
+  const bg = getComputedStyle(document.documentElement).getPropertyValue('--color-white').trim() || '#ffffff';
 
   try {
     // Resolve actual app fonts from CSS custom properties

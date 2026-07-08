@@ -3131,7 +3131,7 @@ export function validateCommand(
     }
 
     if (!pattern.modes.includes(currentMode)) {
-      // Standart Cisco davranışı: Yanlış moddaki komut için de 'invalid input' hatası verilir.
+      // Standart davranış: Yanlış moddaki komut için de 'invalid input' hatası verilir.
       return {
         valid: false,
         reason: 'invalid-mode',

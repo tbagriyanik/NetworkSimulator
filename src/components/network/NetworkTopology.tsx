@@ -4599,9 +4599,9 @@ export function NetworkTopology({
                       const opacity = prog < 0.1 ? prog * 10 : prog > 0.9 ? (1 - prog) * 10 : 1;
                       return (
                         <g key={`bcast-${bcast.targetId}`}>
-                          <circle cx={ex} cy={ey} r="14" fill="#ef4444" opacity={0.2 * opacity} className="animate-ping-glow" />
-                          <rect x={ex - 10} y={ey - 7} width="20" height="14" rx="2" fill="#ef4444" stroke="#dc2626" strokeWidth="1.5" opacity={opacity} />
-                          <path d={`M${ex - 8} ${ey - 3} L${ex} ${ey + 4} L${ex + 8} ${ey - 3}`} fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity={opacity} />
+                          <circle cx={ex} cy={ey} r="14" fill="var(--color-error-500)" opacity={0.2 * opacity} className="animate-ping-glow" />
+                          <rect x={ex - 10} y={ey - 7} width="20" height="14" rx="2" fill="var(--color-error-500)" stroke="var(--color-error-600)" strokeWidth="1.5" opacity={opacity} />
+                          <path d={`M${ex - 8} ${ey - 3} L${ex} ${ey + 4} L${ex + 8} ${ey - 3}`} fill="none" stroke="var(--color-white)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity={opacity} />
                         </g>
                       );
                     });
@@ -4753,7 +4753,7 @@ fill="var(--color-accent-500)"
                              <circle cx="0" cy="0" r="14" style={{ fill: 'var(--color-accent-500)' }} opacity="0.1" className="animate-ping-glow-low" />
                            )}
                           <rect x="-10" y="-7" width="20" height="14" rx="2" fill="var(--color-accent-500)" style={{ stroke: 'var(--color-accent-600)', strokeWidth: '1.5' }} />
-                          <path d="M-8 -3 L0 4 L8 -3" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M-8 -3 L0 4 L8 -3" fill="none" stroke="var(--color-white)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </g>
                       </g>
                     );

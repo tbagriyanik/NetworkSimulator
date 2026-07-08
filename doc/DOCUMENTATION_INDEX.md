@@ -241,17 +241,18 @@ Bu indeks, Network Simulator 2026 projesinin tüm dokümantasyon dosyalarını v
 
 ```
 doc/
+├── history.md                      (Proje değişiklik geçmişi)
 ├── CLI_GUIDED_TUTORIAL.md          (30 pratik ders)
 ├── CLI_COMMANDS.md                 (Komut referansı)
 ├── QUICK_REFERENCE.md              (Hızlı referans)
 ├── ERROR_HANDLING_GUIDE.md         (Detaylı rehber)
 ├── INTEGRATION_GUIDE.md            (Entegrasyon rehberi)
 ├── USAGE.md                        (Kullanım kılavuzu)
-├── SERVICE_FEATURES.md             (PC Servis özellikleri)
 ├── WIRELESS_CONFIGURATION_GUIDE.md (Kablosuz rehberi)
 ├── WIRELESS_README.md              (Kablosuz hızlı başlangıç)
 ├── L3_SWITCH_CONFIGURATION.md      (L3 anahtarlama)
 ├── GOOGLE_SHEETS_SETUP.md          (Google Sheets)
+├── ROOM_TRACKING_SETUP.md          (Oda takip sistemi)
 ├── NETWORK_SIMULATOR_KITAPCIK.md   (Eğitim kitapçığı)
 ├── README.md                       (Doküman ana sayfası)
 └── DOCUMENTATION_INDEX.md          (Bu dosya)
@@ -321,20 +322,21 @@ doc/
 
 | Dosya | Boyut | Okuma Süresi |
 |-------|-------|--------------|
-| CLI_GUIDED_TUTORIAL.md | 42 KB | 120-180 min |
-| CLI_COMMANDS.md | — | 15 min |
+| history.md | — | 5 min |
+| CLI_GUIDED_TUTORIAL.md | 81 KB | 120-180 min |
+| CLI_COMMANDS.md | 40 KB | 15 min |
 | QUICK_REFERENCE.md | 8 KB | 5 min |
 | ERROR_HANDLING_GUIDE.md | 10.7 KB | 30 min |
 | INTEGRATION_GUIDE.md | 15 KB | 20 min |
-| USAGE.md | — | 10 min |
-| WIRELESS_CONFIGURATION_GUIDE.md | — | 20 min |
-| WIRELESS_README.md | — | 5 min |
-| L3_SWITCH_CONFIGURATION.md | — | 15 min |
-| GOOGLE_SHEETS_SETUP.md | — | 15 min |
-| DOCUMENTATION_INDEX.md | — | 10 min |
-| SERVICE_FEATURES.md | — | 10 min |
-| NETWORK_SIMULATOR_KITAPCIK.md | — | 60 min |
-| **Toplam (14 dosya)** | — | **~340-415 min** |
+| USAGE.md | 7 KB | 10 min |
+| WIRELESS_CONFIGURATION_GUIDE.md | 7.6 KB | 20 min |
+| WIRELESS_README.md | 4.4 KB | 5 min |
+| L3_SWITCH_CONFIGURATION.md | 13 KB | 15 min |
+| GOOGLE_SHEETS_SETUP.md | 4 KB | 15 min |
+| ROOM_TRACKING_SETUP.md | 4.9 KB | 10 min |
+| DOCUMENTATION_INDEX.md | 15 KB | 10 min |
+| NETWORK_SIMULATOR_KITAPCIK.md | 216 KB | 60 min |
+| **Toplam (15 dosya)** | — | **~340-420 min** |
 
 ---
 
@@ -558,12 +560,14 @@ doc/
 - [x] Tüm Servisler Laboratuvarı dokümantasyonu eklendi
 - [x] NAT/ACL/OSPF/EIGRP/HSRP/IPv6 dokümantasyonu eklendi
 - [x] PNG 300 DPI Export dokümantasyonu eklendi
+- [x] Sektörel Senaryolar, TTS, PDF Sertifikalar, IPv6 Master Lab eklendi
+- [x] history.md değişiklik geçmişi oluşturuldu
 
 ---
 
 ## 📅 Güncelleme Tarihi
 
-**Son Güncelleme**: 2026-06-21
+**Son Güncelleme**: 2026-07-07
 **Versiyon**: 1.9.5
 **Durum**: ✅ Güncel
 

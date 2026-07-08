@@ -63,7 +63,7 @@ export interface LSDB {
   };
 }
 
-const OSPF_REFERENCE_BANDWIDTH = 100000; // 100 Mbps in Kbps (Standard Cisco default)
+const OSPF_REFERENCE_BANDWIDTH = 100000; // 100 Mbps in Kbps (Standard default)
 
 /**
  * Calculate OSPF Cost based on interface bandwidth

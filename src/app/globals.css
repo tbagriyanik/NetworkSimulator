@@ -233,6 +233,10 @@
   --color-pink-800: #9d174d;
   --color-pink-900: #831843;
   --color-pink-950: #500724;
+
+  /* Canvas pure colors */
+  --color-white: #ffffff;
+  --color-black: #000000;
 }
 
 :root {
@@ -265,6 +269,12 @@
   --note-blue: 220 80% 50%;
   --note-green: 120 70% 40%;
   --radius: 0.5rem;
+  /* Canvas background gradient stops (light mode) */
+  --canvas-bg-0: #fcfdff;
+  --canvas-bg-1: #f6faff;
+  --canvas-bg-2: #eef4fc;
+  --canvas-bg-3: #e7eff9;
+  --canvas-bg-4: #dde8f4;
 }
 
 .dark {
@@ -296,6 +306,12 @@
   --note-red: 0 70% 70%;
   --note-blue: 220 70% 70%;
   --note-green: 120 60% 60%;
+  /* Canvas background gradient stops (dark mode) */
+  --canvas-bg-0: #24344d;
+  --canvas-bg-1: #1e2c43;
+  --canvas-bg-2: #18253a;
+  --canvas-bg-3: #142033;
+  --canvas-bg-4: #0d1728;
 }
 
 @layer base {

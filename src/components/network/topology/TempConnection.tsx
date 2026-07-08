@@ -25,7 +25,7 @@ export function TempConnection({
 
   const source = connectionStart.point;
   const mp = mousePos;
-  const cableColor = CABLE_COLORS[cableInfo.cableType]?.primary || '#3b82f6';
+  const cableColor = CABLE_COLORS[cableInfo.cableType]?.primary || 'var(--color-primary-500)';
 
   return (
     <>

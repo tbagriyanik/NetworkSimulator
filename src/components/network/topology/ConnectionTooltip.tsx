@@ -45,7 +45,7 @@ export const ConnectionTooltip: React.FC<ConnectionTooltipProps> = ({
       >
         <div className="flex items-center gap-2 mb-1">
           <span className="w-2 h-2 rounded-full"
-            style={{ backgroundColor: CABLE_COLORS[connectionTooltip.cableType]?.primary || '#3b82f6' }}
+            style={{ backgroundColor: CABLE_COLORS[connectionTooltip.cableType]?.primary || 'var(--color-primary-500)' }}
           />
           <span className="text-[10px] font-black tracking-widest opacity-60">
             {connectionTooltip.cableType === 'straight' ? (language === 'tr' ? 'Düz Kablo' : 'Straight') :
@@ -56,7 +56,7 @@ export const ConnectionTooltip: React.FC<ConnectionTooltipProps> = ({
                       connectionTooltip.cableType}
           </span>
         </div>
-        <div className="text-xs font-bold" style={{ color: CABLE_COLORS[connectionTooltip.cableType]?.primary || '#3b82f6' }}>
+        <div className="text-xs font-bold" style={{ color: CABLE_COLORS[connectionTooltip.cableType]?.primary || 'var(--color-primary-500)' }}>
           <span className="opacity-90">{connectionTooltip.sourceDeviceName}</span>
           <span className="mx-1 opacity-70">{connectionTooltip.sourcePort}</span>
           <span className="mx-1 opacity-50">↔</span>

@@ -4,6 +4,16 @@ Bu klasör, Network Simulator 2026 projesi için tüm dokümantasyon dosyaların
 
 ## 📖 Dosyalar
 
+### 📅 [history.md](history.md)
+**Proje Değişiklik Geçmişi (Changelog)**
+- Tüm sürümler yeniden eskiye
+- Tarih: özellik formatında sıralı
+- v1.9.5, v1.9.3, v1.9.x ve ilk sürüm
+
+**Okuma Süresi**: 5 dakika
+
+---
+
 ### 🎓 [CLI_GUIDED_TUTORIAL.md](CLI_GUIDED_TUTORIAL.md)
 **Tüm CLI Komutlarının Pratik Rehberli Dersleri**
 - 30 pratik ders (Başlangıç → İleri)
@@ -245,53 +255,57 @@ const response = await apiClient.post('/api/contact', data);
 
 | Metrik | Değer |
 |--------|-------|
-| **Dokümantasyon Sayfaları** | 14 |
-| **Toplam Okuma Süresi** | ~300 dakika |
+| **Dokümantasyon Sayfaları** | 17 |
+| **Toplam Okuma Süresi** | ~350 dakika |
+| **Toplam Kaynak Satırı** | 103.245 |
+| **Test Sayısı** | 517 (45 dosya) |
 
 ---
 
-## ✨ Tamamlanan Özellikler
+## ✨ Tamamlanan Özellikler (v1.9.5)
 
+**Sektörel & Eğitim**
+✅ Sektörel Senaryolar (SOHO, Hastane, Okul, E-Ticaret)  
+✅ Sesli Anlatım / TTS (Rehberli Mod)  
+✅ PDF Başarı Sertifikaları  
+✅ IPv6 Master Lab (OSPFv3 + ACL dual-stack)  
+✅ Gelişmiş Arıza Giderme (Trunk / OSPF)  
+✅ Rehberli Mod & Eğitim Sihirbazı  
 ✅ CLI Rehberli Ders (30 ders)  
-✅ CLI Komut Referansı (450+ komut)  
-✅ Kullanım Kılavuzu  
-✅ Global Error Boundary  
-✅ Form Validasyonu (11 fonksiyon)  
-✅ Bildirim Sistemi (5 tür)  
-✅ API İstemcisi (Retry mantığı)  
-✅ FormInput Bileşeni  
-✅ ConfirmationDialog Bileşeni  
-✅ Yükleme Durumları  
-✅ Kablosuz Ağ Yapılandırması  
-✅ L3 Anahtarlama  
-✅ Google Sheets Entegrasyonu  
-✅ Kapsamlı Dokümantasyon  
-✅ PC Servis Özellikleri (FTP, Mail, NTP, DNS, HTTP, DHCP)  
-✅ Güvenlik Duvarı Servis Entegrasyonu  
-✅ Kablosuz Gösterge Paneli  
-✅ IoT Panel Sekmeleri  
-✅ Sensör Geliştirmeleri (Hareket, Ses, Işık)  
-✅ Pencere Notları  
-✅ API Hız Sınırlama  
-✅ Başarım Sistemi (Rozetler)  
-✅ Sınav Modu  
-✅ Rehberli Mod ve Eğitim Sihirbazı  
 ✅ Akıllı CLI Asistanı  
 ✅ Kapsamlı Türkçe Eğitim Kitapçığı  
-✅ Seri Kapsülleme (HDLC/PPP) Kontrolü  
-✅ Oda Takip Sistemi (Room Tracking)  
-✅ Google Sheets Entegrasyonu  
+✅ Sınav Modu & Sınav İçe Aktarma  
+✅ Başarım Sistemi (Rozetler)  
+
+**Ağ & Protokol**
 ✅ ACL Standard & Extended  
 ✅ NAT Static/Dynamic/PAT  
 ✅ OSPF Multi-Area (Area 0/10/20)  
 ✅ EIGRP Dinamik Yönlendirme  
 ✅ HSRP Yedeklilik  
 ✅ IPv6 Adresleme, DHCPv6 & OSPFv3  
-✅ 2 L3 Switch VLAN Routing  
-✅ STP PVST Load Balancing  
-✅ RIP Dinamik Yönlendirme  
-✅ All Services Lab (DNS, HTTP, DHCP, FTP, MAIL, NTP)  
-✅ PNG 300 DPI Export (topology-faithful, cable colors, port labels, auto-sized notes)  
+✅ BGP Temel, RIPng  
+✅ Seri / WAN (HDLC, PPP, PAP/CHAP, DCE/DTE)  
+✅ WLC & AP Yönetimi (dot11, WLAN, auth-mac)  
+✅ L3 Anahtarlama & STP PVST  
+
+**Servisler**
+✅ PC Servisler (FTP, Mail, NTP, DNS, HTTP, DHCP)  
+✅ Güvenlik Duvarı Servis Entegrasyonu  
+✅ Oda Takip Sistemi (Room Tracking + Redis)  
+✅ Google Sheets Entegrasyonu  
+
+**UI & UX**
+✅ PNG 300 DPI Export (kablo renkleri, port etiketleri, notlar)  
+✅ Mobil PNG Paylaşımı (Web Share API)  
+✅ Gelişmiş İşlem Geçmişi (Timeline + localStorage)  
+✅ Kablo Kes/Onar (Unplug/PlugZap)  
+✅ Protokol Durum Paneli (Özet sekmesine entegre)  
+✅ Kablosuz Gösterge Paneli  
+✅ IoT Panel Sekmeleri & Sensör Gelifltirmeleri  
+✅ Pencere Notları & Drag-Resize  
+✅ API Hız Sınırlama  
+✅ CLI Komut Referansı (450+ komut)  
 
 ---
 
@@ -347,7 +361,7 @@ const response = await apiClient.post('/api/contact', data);
 
 **Versiyon**: 1.9.5
 **Durum**: ✅ Güncel  
-**Tarih**: 2026-06-21  
+**Son Güncelleme**: 2026-07-07  
 
 ---
 

@@ -28,19 +28,19 @@ export const CanvasDefs: React.FC<CanvasDefsProps> = ({
       <radialGradient id="canvasBgGradient" cx="46%" cy="30%" r="88%">
         {isDark ? (
           <>
-            <stop offset="0%" stopColor="#24344d" />
-            <stop offset="28%" stopColor="#1e2c43" />
-            <stop offset="55%" stopColor="#18253a" />
-            <stop offset="78%" stopColor="#142033" />
-            <stop offset="100%" stopColor="#0d1728" />
+            <stop offset="0%" stopColor="var(--canvas-bg-0)" />
+            <stop offset="28%" stopColor="var(--canvas-bg-1)" />
+            <stop offset="55%" stopColor="var(--canvas-bg-2)" />
+            <stop offset="78%" stopColor="var(--canvas-bg-3)" />
+            <stop offset="100%" stopColor="var(--canvas-bg-4)" />
           </>
         ) : (
           <>
-            <stop offset="0%" stopColor="#fcfdff" />
-            <stop offset="28%" stopColor="#f6faff" />
-            <stop offset="55%" stopColor="#eef4fc" />
-            <stop offset="78%" stopColor="#e7eff9" />
-            <stop offset="100%" stopColor="#dde8f4" />
+            <stop offset="0%" stopColor="var(--canvas-bg-0)" />
+            <stop offset="28%" stopColor="var(--canvas-bg-1)" />
+            <stop offset="55%" stopColor="var(--canvas-bg-2)" />
+            <stop offset="78%" stopColor="var(--canvas-bg-3)" />
+            <stop offset="100%" stopColor="var(--canvas-bg-4)" />
           </>
         )}
       </radialGradient>

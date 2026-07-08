@@ -42,7 +42,8 @@ npm install && npm run dev
 
 | Document / Doküman | Description / Açıklama |
 | --- | --- |
-| [details.md](doc/details.md) | Projects details / Proje detayları |
+| [doc/history.md](doc/history.md) | Full changelog newest-to-oldest / Yeniden eskiye tam değişiklik geçmişi |
+| [details.md](doc/details.md) | Project details / Proje detayları |
 | [examples.md](doc/examples.md) | Example projects with step-by-step guides / Adım adım örnek projeler |
 | [INSTALL.md](INSTALL.md) | Installation & build instructions / Kurulum & derleme talimatları |
 | [doc/USAGE.md](doc/USAGE.md) | Usage guide & keyboard shortcuts (TR/EN) / Kullanım kılavuzu & klavye kısayolları |
