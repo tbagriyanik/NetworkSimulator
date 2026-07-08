@@ -2700,12 +2700,11 @@ export function NetworkTopology({
 
         if (!isCableCompatible(cableCheck)) {
           const errorMsg = language === 'tr'
-            ? 'Seçilen kablo bu portlar için uygun değil!'
-            : 'Selected cable is not suitable for these ports!';
+            ? 'Bu cihaz türü seçilen bağlantı tipini desteklememektedir!'
+            : 'This device type does not support the selected connection type!';
           setConnectionError(errorMsg);
           setTimeout(() => setConnectionError(null), 3000);
-          setIsDrawingConnection(false);
-          setConnectionStart(null);
+          cancelConnectionDrawing();
           return;
         }
 
@@ -4590,8 +4589,8 @@ export function NetworkTopology({
                     />
                   ))}
 
-                  {/* Broadcast flood icons – animated envelopes flying from switch to each connected device */}
-                  {pingAnimation && pingAnimation.broadcastAnim.map((bcast) => {
+                  {/* Broadcast flood icons – animated envelopes flying from switch to each connected device (Hidden) */}
+                  {false && pingAnimation && pingAnimation.broadcastAnim.map((bcast) => {
                     const prog = pingAnimation.broadcastProgress;
                     const ex = bcast.fromX + (bcast.toX - bcast.fromX) * prog;
                     const ey = bcast.fromY + (bcast.toY - bcast.fromY) * prog - 35;
