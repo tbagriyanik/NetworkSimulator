@@ -248,13 +248,20 @@ export function Terminal({
   }, [device?.type, state.switchModel]);
 
   // Sync with global history
+  const lastHistoryDeviceIdRef = useRef<string | null>(null);
   useEffect(() => {
     const globalHistory = state.commandHistory || [];
+    const deviceChanged = lastHistoryDeviceIdRef.current !== deviceId;
+    lastHistoryDeviceIdRef.current = deviceId;
+
     if (JSON.stringify(globalHistory) !== JSON.stringify(history)) {
       setTimeout(() => setHistory(globalHistory), 0);
-      setTimeout(() => setHistoryIndex(-1), 0);
+      // Reset index only when device actually changes
+      if (deviceChanged) {
+        setTimeout(() => setHistoryIndex(-1), 0);
+      }
     }
-  }, [state.commandHistory, deviceId]);
+  }, [state.commandHistory, deviceId, history]);
 
   const [tabCycleIndex, setTabCycleIndex] = useState(-1);
   const [lastTabInput, setLastTabInput] = useState('');
@@ -802,7 +809,17 @@ export function Terminal({
         setTabCycleIndex(0);
         const completion = matches[0];
         const prefix = contextTokens.join(' ');
-        setInput(prefix ? `${prefix} ${completion} ` : `${completion} `);
+        const nextValue = prefix ? `${prefix} ${completion} ` : `${completion} `;
+        setInput(nextValue);
+
+        // Provide feedback if multiple matches exist
+        if (matches.length > 1) {
+          toast({
+            title: language === 'tr' ? 'Birden fazla eşleşme' : 'Multiple matches',
+            description: language === 'tr' ? `Daha fazlası için Tab'a basın (${matches.length} seçenek)` : `Press Tab to cycle (${matches.length} options)`,
+            duration: 1500
+          });
+        }
       } else {
         const nextIndex = (tabCycleIndex + 1) % matches.length;
         setTabCycleIndex(nextIndex);
@@ -811,6 +828,14 @@ export function Terminal({
         const completion = matches[nextIndex];
         setInput(originalContext ? `${originalContext} ${completion} ` : `${completion} `);
       }
+
+      // Ensure cursor moves to end after state update
+      setTimeout(() => {
+        if (inputRef.current) {
+          const len = inputRef.current.value.length;
+          inputRef.current.setSelectionRange(len, len);
+        }
+      }, 0);
     } else if (value.trim()) {
       // No matches - show help with all available options
       // This shows available commands/parameters for the current context

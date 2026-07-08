@@ -2906,10 +2906,13 @@ ${state.bannerMOTD}
     // Immediate check for guided mode progress
     if (isGuidedModeActive) {
       const currentDeviceState = result && result.newState ? { ...state, ...result.newState } : state;
-      let finalDeviceStates = result?.deviceStates || deviceStates;
-      if (result?.newState && !result?.deviceStates && !result?.updatedDeviceStates) {
+      let finalDeviceStates = (result as any)?.deviceStates || (result as any)?.updatedDeviceStates || deviceStates;
+
+      // If we have a local state change but not a full deviceStates map from the result,
+      // merge the local change into a fresh map for validation.
+      if (result?.newState && !(result as any)?.deviceStates && !(result as any)?.updatedDeviceStates) {
         finalDeviceStates = new Map(deviceStates);
-        finalDeviceStates.set(activeDeviceId, currentDeviceState as SwitchState);
+        finalDeviceStates.set(activeDeviceId, { ...state, ...result.newState } as SwitchState);
       }
 
       checkStepCompletionWithContext({
@@ -2961,10 +2964,10 @@ ${state.bannerMOTD}
 
       if (!currentDeviceState) return result;
 
-      let finalDeviceStates = result?.deviceStates || result?.updatedDeviceStates || deviceStates;
-      if (result?.newState && !result?.deviceStates && !result?.updatedDeviceStates) {
+      let finalDeviceStates = (result as any)?.deviceStates || (result as any)?.updatedDeviceStates || deviceStates;
+      if (result?.newState && !(result as any)?.deviceStates && !(result as any)?.updatedDeviceStates) {
         finalDeviceStates = new Map(deviceStates);
-        finalDeviceStates.set(deviceId, currentDeviceState as SwitchState);
+        finalDeviceStates.set(deviceId, { ...currentState, ...result.newState } as SwitchState);
       }
 
       checkStepCompletionWithContext({
