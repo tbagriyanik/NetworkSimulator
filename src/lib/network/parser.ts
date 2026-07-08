@@ -74,13 +74,13 @@ export const commandPatterns: Record<string, CommandPattern> = {
   },
   'exit': {
     pattern: /^exit$/i,
-    modes: ['privileged', 'config', 'interface', 'config-if-range', 'line', 'vlan', 'dhcp-config', 'router-config', 'config-std-nacl', 'config-ext-nacl'],
+    modes: ['privileged', 'config', 'interface', 'config-if-range', 'line', 'vlan', 'dhcp-config', 'router-config', 'config-std-nacl', 'config-ext-nacl', 'ap-config'],
     minArgs: 0,
     maxArgs: 0
   },
   'end': {
     pattern: /^end$/i,
-    modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'dhcp-config', 'router-config', 'config-std-nacl', 'config-ext-nacl'],
+    modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'dhcp-config', 'router-config', 'config-std-nacl', 'config-ext-nacl', 'ap-config'],
     minArgs: 0,
     maxArgs: 0
   },
@@ -1037,7 +1037,7 @@ export const commandPatterns: Record<string, CommandPattern> = {
   },
   'ssid': {
     pattern: /^ssid\s+(.+)$/i,
-    modes: ['interface', 'config-if-range'],
+    modes: ['interface', 'config-if-range', 'dot11-config'],
     minArgs: 1,
     maxArgs: 1,
     capability: 'routing' // Routers/APs
@@ -1154,30 +1154,30 @@ export const commandPatterns: Record<string, CommandPattern> = {
     maxArgs: 0,
     capability: 'routing'
   },
-  'ap name': {
-    pattern: /^ap\s+name\s+(\S+)$/i,
+  'ap': {
+    pattern: /^ap\s+(\S+)$/i,
     modes: ['config'],
     minArgs: 1,
     maxArgs: 1,
     capability: 'routing'
   },
-  'ap auth-mac': {
-    pattern: /^ap\s+auth-mac\s+([0-9a-fA-F]{4}\.[0-9a-fA-F]{4}\.[0-9a-fA-F]{4})$/i,
-    modes: ['config'],
+  'auth-mac': {
+    pattern: /^auth-mac\s+([0-9a-fA-F]{4}\.[0-9a-fA-F]{4}\.[0-9a-fA-F]{4})$/i,
+    modes: ['ap-config'],
     minArgs: 1,
     maxArgs: 1,
     capability: 'routing'
   },
-  'ap rf-channel': {
-    pattern: /^ap\s+rf-channel\s+(\d+)$/i,
-    modes: ['config'],
+  'rf-channel': {
+    pattern: /^rf-channel\s+(\d+)$/i,
+    modes: ['ap-config'],
     minArgs: 1,
     maxArgs: 1,
     capability: 'routing'
   },
-  'ap dot11 5-ghz': {
-    pattern: /^ap\s+dot11\s+5-ghz\s+(.+)$/i,
-    modes: ['config'],
+  'dot11 5ghz': {
+    pattern: /^dot11\s+5ghz\s+(power-constraint|channelswitch\s+mode)\s+(.+)$/i,
+    modes: ['ap-config'],
     minArgs: 1,
     maxArgs: 1,
     capability: 'routing'

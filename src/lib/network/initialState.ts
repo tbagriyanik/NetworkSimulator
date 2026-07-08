@@ -777,6 +777,8 @@ export function getModePrompt(mode: CommandMode, hostname: string, _context?: st
       return `${hostname}(config-ext-nacl)#`;
     case 'router-config':
       return `${hostname}(config-router)#`;
+    case 'ap-config':
+      return `${hostname}(config-ap)#`;
     default:
       return `${hostname}>`;
   }

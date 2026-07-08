@@ -11,13 +11,15 @@ import {
   ChevronUp,
   GraduationCap,
   Settings,
-  AlertTriangle
+  AlertTriangle,
+  Download
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ExamProject } from '@/lib/network/examMode';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/use-breakpoint';
+import { generateCertificate } from '@/lib/utils/certificateGenerator';
 
 interface ExamModePanelProps {
   project: ExamProject | null;
@@ -79,6 +81,23 @@ export function ExamModePanel({
   const [hasAutoFinished, setHasAutoFinished] = useState(false);
 
   const isFinishedState = isFinished || !!project?.finishedAt || hasAutoFinished;
+
+  const handleDownloadCertificate = async () => {
+    if (!project) return;
+    const studentName = prompt(language === 'tr' ? 'Sertifika için adınızı girin:' : 'Enter your name for the certificate:') || 'Student';
+
+    // Toplam puanı (score) ağırlıklara göre yüzdelik hesaplama
+    // score prop is the percentage out of 100
+
+    await generateCertificate({
+      studentName,
+      projectTitle: typeof project.title === 'string' ? project.title : (project.title as Record<string, string>)[language] || (project.title as Record<string, string>).en || 'Exam',
+      score: Math.round(score),
+      totalScore: 100,
+      date: new Date().toLocaleDateString(language === 'tr' ? 'tr-TR' : 'en-US'),
+      language
+    });
+  };
 
   useEffect(() => {
     if (!project?.startedAt) return;
@@ -414,6 +433,18 @@ export function ExamModePanel({
               }}
             >
               {t.finishExam}
+            </Button>
+          </div>
+        )}
+
+        {isFinishedState && (
+          <div className="p-3 bg-secondary-50 dark:bg-secondary-900/50 border-t border-secondary-200 dark:border-secondary-700">
+            <Button
+              className="w-full bg-success-600 hover:bg-success-700 text-white font-bold h-9 rounded-lg gap-2"
+              onClick={handleDownloadCertificate}
+            >
+              <Download className="w-4 h-4" />
+              {language === 'tr' ? 'Sertifikayı İndir' : 'Download Certificate'}
             </Button>
           </div>
         )}

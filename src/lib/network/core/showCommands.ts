@@ -2327,8 +2327,9 @@ function cmdShowApConfig(
     output += `Status           : ${ap.status}\n`;
     output += `Model            : ${ap.model || 'AIR-AP1852I'}\n`;
     output += `AP Group         : ${ap.apGroup || 'default'}\n`;
-    output += `RF Channel       : ${ap.rfChannel || 'Auto'}\n`;
-    output += `Power Level      : ${ap.power || 'Auto'}\n`;
+    const ap5ghz = ap.dot11?.['5ghz'];
+    output += `RF Channel       : ${ap5ghz?.rfChannel ?? ap.rfChannel ?? 'Auto'}\n`;
+    output += `Power Level      : ${ap5ghz?.powerConstraint ?? ap.power ?? 'Auto'}\n`;
     output += `Uptime           : ${ap.uptime || 'Unknown'}\n`;
     output += `Associated WLANs : ${ap.wlans?.length ? ap.wlans.join(', ') : 'None'}\n`;
   } else {

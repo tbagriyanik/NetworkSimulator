@@ -14,6 +14,7 @@ export type CommandMode =
   | 'dhcp-config'    // Router(dhcp-config)#
   | 'ssid-config'    // Router(config-ssid)#
   | 'dot11-config'   // Router(config-if)# [dot11Radio]
+  | 'ap-config'      // AP configuration mode
   | 'config-std-nacl'  // Router(config-std-nacl)# - Named standard ACL
   | 'config-ext-nacl'; // Router(config-ext-nacl)# - Named extended ACL
 
@@ -531,6 +532,13 @@ export interface SwitchState {
     wlans?: number[];
     rfChannel?: number;
     power?: string;
+    dot11?: {
+      '5ghz'?: {
+        rfChannel?: number;
+        powerConstraint?: number;
+        channelSwitchMode?: 0 | 1;
+      };
+    };
     uptime?: string;
   }>;
   wlcWlans?: Record<string, {

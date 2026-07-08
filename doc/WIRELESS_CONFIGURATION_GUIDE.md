@@ -193,6 +193,35 @@ Router(config)# end
 Router#
 ```
 
+## WLC (Wireless LAN Controller) Access Point Konfigürasyonu
+
+Yeni eklenen WLC Access Point yönetimi komutları ile AP'leri doğrudan Controller üzerinden yapılandırabilirsiniz.
+
+### 1. AP Konfigürasyon Moduna Giriş
+```
+WLC(config)# ap AP1
+WLC(ap-config)# 
+```
+
+### 2. MAC Adresi ile AP Yetkilendirme
+```
+WLC(ap-config)# auth-mac 0011.2233.4455
+```
+
+### 3. Radyo Kanalı Ayarı
+```
+WLC(ap-config)# rf-channel 6
+```
+
+### 4. 5GHz İleri Düzey Ayarlar
+```
+WLC(ap-config)# dot11 5ghz power-constraint 15
+WLC(ap-config)# dot11 5ghz channelswitch mode 1
+```
+
+Bu ayarlar yapıldığında `show ap summary` veya `show wireless` ile WLC üzerindeki erişim noktalarını görebilirsiniz.
+
+
 ## Wireless Konfigürasyonunu Görüntüleme
 
 Tüm wireless ayarlarını görmek için:
@@ -288,6 +317,10 @@ Radio Configurations:
 | `power <level>` | Transmit gücü | dot11-config |
 | `station-role <role>` | İstasyon rolü | dot11-config |
 | `mac-filter <allow\|deny> <mac>` | MAC filtreleme | dot11-config |
+| `ap <name>` | WLC üzerinde AP yapılandırma | config |
+| `auth-mac <mac>` | AP yetkilendirme MAC adresi | ap-config |
+| `rf-channel <number>` | AP Radyo kanalı | ap-config |
+| `dot11 5ghz power-constraint <value>` | AP 5GHz güç sınırı | ap-config |
 | `show wireless` | Wireless ayarlarını göster | privileged |
 
 ## Ek Kaynaklar

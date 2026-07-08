@@ -21,6 +21,7 @@ export const iosModeError = (_input?: string, currentMode?: string, _language?: 
     'dhcp-config': 'DHCP Pool Configuration',
     'ssid-config': 'SSID Configuration',
     'dot11-config': 'Dot11 Radio Configuration',
+    'ap-config': 'AP Configuration',
   };
 
   const modeName = currentMode ? (modeNames[currentMode] || currentMode) : 'unknown';

@@ -44,6 +44,8 @@ export function getPrompt(state: SwitchState): string {
       return `${hostname}(config-ext-nacl)#`;
     case 'dot11-config':
       return `${hostname}(config-if)#`;
+    case 'ap-config':
+      return `${hostname}(config-ap)#`;
     default:
       return `${hostname}>`;
   }
@@ -179,9 +181,9 @@ export const commandHelp: Record<string, Record<string, string[]>> = {
     'crypto key': ['generate'],
     'crypto key generate': ['rsa'],
     ...pfx('default', ['interface']),
-    ...pfx('ap', ['auth-mac', 'name', 'rf-channel']),
-    'ap': ['auth-mac', 'dot11', 'name', 'rf-channel'],
-    'ap dot11': ['5-ghz'],
+    'ap': [],
+    'ap dot11': ['5ghz'],
+    'ap dot11 5ghz': ['power-constraint', 'channelswitch'],
     ...pfx('do', ['show']),
     ...pfx('dot11', ['channel', 'mac-filter', 'power', 'ssid', 'station-role']),
     ...pfx('enable', ['password', 'secret']),
@@ -1286,7 +1288,7 @@ export function executeCommand(
   const isFirewallOnlyCmd = firewallOnlyCommands.some(prefix => commandName === prefix || commandName.startsWith(`${prefix} `));
   const wlcOnlyCommands = [
     'show wlan summary', 'show ap summary', 'show ap config', 'show ap join statistics',
-    'show ap join stats', 'ap name', 'ap auth-mac', 'ap rf-channel'
+    'show ap join stats', 'ap', 'auth-mac', 'rf-channel', 'dot11 5ghz'
   ];
   const isWlcOnlyCmd = wlcOnlyCommands.some(prefix => commandName === prefix || commandName.startsWith(`${prefix} `));
 

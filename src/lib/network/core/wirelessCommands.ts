@@ -4,7 +4,7 @@ import type { CommandHandler } from './commandTypes';
 /**
  * Wireless Configuration Commands
  * Supports: dot11 ssid, authentication, encryption, channel, power settings, MAC filtering
- * Modes: config, ssid-config, interface (dot11Radio)
+ * Modes: config, ssid-config, interface (dot11Radio), ap-config
  */
 
 // Wireless SSID Configuration Handler
@@ -238,7 +238,7 @@ const cmdEncryptionMode: CommandHandler = (state, input, _ctx) => {
     return { success: true, output: '' };
 };
 
-// SSID binding to radio
+// SSID binding to radio interface configuration
 const cmdSsidBinding: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'dot11-config') {
         return { success: false, error: iosModeError() };
@@ -492,7 +492,7 @@ const cmdApName: CommandHandler = (state, input, _ctx) => {
         return { success: false, error: iosModeError() };
     }
 
-    const match = input.match(/^ap\s+name\s+(\S+)$/i);
+    const match = input.match(/^ap\s+(\S+)$/i);
     if (!match) {
         return { success: false, error: IOS_ERRORS.invalidInput };
     }
@@ -508,20 +508,21 @@ const cmdApName: CommandHandler = (state, input, _ctx) => {
             name: apName,
             macAddress: '0000.0000.0000',
             status: 'disconnected',
+            dot11: {},
         };
     }
 
     state.currentApName = apName;
 
-    return { success: true, output: '' };
+    return { success: true, output: '', modeChange: 'ap-config' };
 };
 
 const cmdApAuthMac: CommandHandler = (state, input, _ctx) => {
-    if (state.currentMode !== 'config') {
+    if (state.currentMode !== 'ap-config') {
         return { success: false, error: iosModeError() };
     }
 
-    const match = input.match(/^ap\s+auth-mac\s+([0-9a-fA-F]{4}\.[0-9a-fA-F]{4}\.[0-9a-fA-F]{4})$/i);
+    const match = input.match(/^auth-mac\s+([0-9a-fA-F]{4}\.[0-9a-fA-F]{4}\.[0-9a-fA-F]{4})$/i);
     if (!match) {
         return { success: false, error: IOS_ERRORS.invalidInput };
     }
@@ -536,11 +537,11 @@ const cmdApAuthMac: CommandHandler = (state, input, _ctx) => {
 };
 
 const cmdApRfChannel: CommandHandler = (state, input, _ctx) => {
-    if (state.currentMode !== 'config') {
+    if (state.currentMode !== 'ap-config') {
         return { success: false, error: iosModeError() };
     }
 
-    const match = input.match(/^ap\s+rf-channel\s+(\d+)$/i);
+    const match = input.match(/^rf-channel\s+(\d+)$/i);
     if (!match) {
         return { success: false, error: IOS_ERRORS.invalidInput };
     }
@@ -549,22 +550,26 @@ const cmdApRfChannel: CommandHandler = (state, input, _ctx) => {
         return { success: false, error: 'Error: No AP selected' };
     }
 
+    const ap = state.wlcAps[state.currentApName];
     const channel = parseInt(match[1]);
     if (channel < 1 || channel > 165) {
         return { success: false, error: 'Error: Invalid RF channel (1-165)' };
     }
 
-    state.wlcAps[state.currentApName].rfChannel = channel;
+    ap.rfChannel = channel;
+    ap.dot11 ??= {};
+    ap.dot11['5ghz'] ??= {};
+    ap.dot11['5ghz'].rfChannel = channel;
 
     return { success: true, output: '' };
 };
 
 const cmdApDot115Ghz: CommandHandler = (state, input, _ctx) => {
-    if (state.currentMode !== 'config') {
+    if (state.currentMode !== 'ap-config') {
         return { success: false, error: iosModeError() };
     }
 
-    const match = input.match(/^ap\s+dot11\s+5-ghz\s+(.+)$/i);
+    const match = input.match(/^dot11\s+5ghz\s+(power-constraint|channelswitch\s+mode)\s+(.+)$/i);
     if (!match) {
         return { success: false, error: IOS_ERRORS.invalidInput };
     }
@@ -573,12 +578,25 @@ const cmdApDot115Ghz: CommandHandler = (state, input, _ctx) => {
         return { success: false, error: 'Error: No AP selected' };
     }
 
-    const value = match[1].trim();
-    const channelNum = parseInt(value);
-    if (!isNaN(channelNum) && channelNum >= 1 && channelNum <= 200) {
-        state.wlcAps[state.currentApName].rfChannel = channelNum;
+    const ap = state.wlcAps[state.currentApName];
+    const command = match[1].toLowerCase();
+    const value = match[2].trim();
+    ap.dot11 ??= {};
+    ap.dot11['5ghz'] ??= {};
+
+    if (command === 'power-constraint') {
+        const powerConstraint = parseInt(value);
+        if (Number.isNaN(powerConstraint) || powerConstraint < 0 || powerConstraint > 255) {
+            return { success: false, error: 'Error: Invalid power-constraint value (0-255)' };
+        }
+        ap.dot11['5ghz'].powerConstraint = powerConstraint;
+        ap.power = String(powerConstraint);
     } else {
-        state.wlcAps[state.currentApName].power = value;
+        const switchMode = parseInt(value);
+        if (![0, 1].includes(switchMode)) {
+            return { success: false, error: 'Error: Invalid channel switch mode (0 or 1)' };
+        }
+        ap.dot11['5ghz'].channelSwitchMode = switchMode as 0 | 1;
     }
 
     return { success: true, output: '' };
@@ -666,12 +684,12 @@ const cmdWorldModeDot11d: CommandHandler = (state, input, _ctx) => {
         return { success: false, error: iosModeError() };
     }
 
-    const match = input.match(/^world-mode\s+dot11d\s+([1-9]|-1)$/i);
+    const match = input.match(/^world-mode\s+dot11d\s+country-code\s+([A-Za-z]{2})\s+(indoor|outdoor|both)$/i);
     if (!match) {
         return { success: false, error: IOS_ERRORS.invalidInput };
     }
 
-    state.worldModeDot11d = match[1];
+    state.worldModeDot11d = `country-code ${match[1].toUpperCase()} ${match[2].toLowerCase()}`;
 
     return { success: true, output: '' };
 };
@@ -685,16 +703,17 @@ export const wirelessHandlers: Record<string, CommandHandler> = {
     'guest-mode': cmdGuestMode,
     'interface dot11radio': cmdInterfaceDot11Radio,
     'encryption mode': cmdEncryptionMode,
+    'ssid': cmdSsidBinding,
     'dot11 ssid binding': cmdSsidBinding,
     'dot11 channel': cmdChannel,
     'dot11 power': cmdPower,
     'dot11 station-role': cmdStationRole,
     'dot11 mac-filter': cmdMacFilter,
     'show wireless': cmdShowWireless,
-    'ap name': cmdApName,
-    'ap auth-mac': cmdApAuthMac,
-    'ap rf-channel': cmdApRfChannel,
-    'ap dot11 5-ghz': cmdApDot115Ghz,
+    'ap': cmdApName,
+    'auth-mac': cmdApAuthMac,
+    'rf-channel': cmdApRfChannel,
+    'dot11 5ghz': cmdApDot115Ghz,
     'mbssid': cmdMbssid,
     'no mbssid': cmdNoMbssid,
     'no security wpa psk': cmdNoSecurityWpaPsk,

@@ -989,9 +989,9 @@ ICMP echo reply received from 192.168.1.2
 
 ---
 
-### 📌 Ders 18: Access Point (AP) Konfigürasyonu
+### 📌 Ders 18: Access Point (AP) Konfigürasyonu (WLC Üzerinde)
 
-**Cihaz Türü:** Access Point (AP)  
+**Cihaz Türü:** WLC (Wireless LAN Controller)  
 **Zorluk Seviyesi:** ⭐⭐⭐ İleri
 
 #### Adım 1: Ayrıcalıklı Moda Girin
@@ -1004,43 +1004,36 @@ ICMP echo reply received from 192.168.1.2
 # configure terminal
 ```
 
-#### Adım 3: AP Modunu Ayarla
+#### Adım 3: AP Yapılandırma Moduna Girin
 ```
-(config)# station-role root
+(config)# ap AP1
 ```
-**Beklenen Sonuç:** AP root moda ayarlanır
+**Beklenen Sonuç:** Promp `(ap-config)#` olarak değişir.
 
-#### Adım 4: Kablosuz Arayüzü Yapılandır
+#### Adım 4: MAC Adresi ve Kanalı Ayarlayın
 ```
-(config)# interface Wireless0
-(config-if)# ip address 192.168.1.100 255.255.255.0
-(config-if)# no shutdown
-```
-
-#### Adım 5: SSID Ayarla
-```
-(config-if)# exit
-(config)# ssid MyNetwork
+(ap-config)# auth-mac 0011.2233.4455
+(ap-config)# rf-channel 6
 ```
 
-#### Adım 6: Güvenlik Ayarla
+#### Adım 5: 5GHz Gelişmiş Ayarlarını Yapılandırın
 ```
-(config)# security wpa2 psk MyPassword123
+(ap-config)# dot11 5ghz power-constraint 15
+(ap-config)# dot11 5ghz channelswitch mode 1
 ```
 
-#### Adım 7: AP Durumunu Kontrol Et
+#### Adım 6: Yapılandırmayı Kaydet ve Çık
 ```
+(ap-config)# exit
 (config)# exit
-# show wireless
+# copy running-config startup-config
 ```
-**Beklenen Sonuç:** Kablosuz durumu gösterilir
 
 #### 📝 Notlar
-- `station-role root` AP'yi root moda ayarlar
-- `ssid` kablosuz ağ adını belirler
-- `security wpa2 psk` WPA2 güvenliğini ayarlar
-- AP'ler WLC tarafından yönetilir
-- Kablosuz arayüzüne IP adresi atanmalı
+- `ap <isim>` komutu WLC üzerinde belirli bir erişim noktasını (AP) yapılandırmak için kullanılır.
+- `auth-mac` komutu AP'nin WLC'ye katılmasına izin verilen MAC adresini tanımlar.
+- `rf-channel` komutu AP'nin yayın yapacağı frekans kanalını (1-165) belirler.
+- `dot11 5ghz` komutları, radyo gücü (`power-constraint`) ve dinamik kanal değişimi (`channelswitch`) gibi gelişmiş radyo ayarlarını kontrol eder.
 
 ---
 
