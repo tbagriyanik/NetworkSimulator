@@ -40,6 +40,34 @@ Bu ders serisi, Network Simulator'da CLI komutlarını öğrenmek için tasarlan
 - **Adım Adım Talimatlar:** Her ders için detaylı açıklamalar
 - **Beklenen Sonuçlar:** Her adımdan sonra ne olması gerektiği
 
+---
+
+## 🧑‍🏫 "Bana Öğret" Rehberli Dersleri
+
+Sıfırdan öğrenmek isteyenler için 3 yeni rehberli proje eklenmiştir (toplam rehberli ders sayısı **19**'a yükseldi). Bu projeler, cihazı açıp ilk komutu çalıştırmadan başlayarak adım adım öğretir.
+
+### 🟢 Temel Seviye (10 puan)
+1. **Cihaza Bağlan** — PC komut satırını açın ve `ipconfig` komutunu çalıştırın.
+2. **Switch'e Giriş** — Switch CLI'ına girin ve `enable` komutuyla yetkili moda geçin.
+3. **Konfigürasyon Modu** — `configure terminal` komutuyla global konfigürasyon moduna geçin.
+4. **Cihaz Adını Değiştir** — `hostname SW1` komutuyla Switch adını SW1 yapın.
+
+### 🟡 Orta Seviye (60 puan)
+1. **Router Yetkili Mod** — Router CLI'ına girin ve `enable` ile yetkili moda geçin.
+2. **Router Konfigürasyon** — `configure terminal` ile global konfigürasyon moduna geçin.
+3. **Arayüze Gir** — `interface gi0/0` ile arayüze girin.
+4. **IP Adresi Ata** — `ip address 192.168.1.1 255.255.255.0` ile IP atayın.
+5. **Arayüzü Aç** — `no shutdown` ile arayüzü aktif hale getirin.
+
+### 🔴 İleri Seviye (70 puan)
+1. **OSPF Başlat** — `router ospf 1` ile OSPF işlemini başlatın.
+2. **OSPF Ağı Ekle** — `network 192.168.1.0 0.0.0.255 area 0` ile ağı OSPF'e dahil edin.
+3. **Moddan Çık** — `exit` ile OSPF modundan çıkın.
+4. **ACL Oluştur** — `access-list 10 permit host 192.168.1.10` ile standart ACL oluşturun.
+5. **Ayarları Kaydet** — `copy running-config startup-config` ile yapılandırmayı kaydedin.
+
+---
+
 ### Ders Formatı
 
 Her ders aşağıdaki yapıya sahiptir:

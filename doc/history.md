@@ -4,6 +4,17 @@ Yeniden eskiye, tarih ve özellik listesi.
 
 ---
 
+## v1.9.6 — 2026-07-08
+
+| Tarih | Özellik |
+|-------|---------|
+| 2026-07-08 | **"Bana Öğret" Rehberli Dersleri** — Sıfırdan öğretim için 3 yeni rehberli proje: Temel (PC ipconfig, switch enable/configure terminal/hostname), Orta (router IP yapılandırma) ve İleri (OSPF + ACL) seviyeleri |
+| 2026-07-08 | **PC Tabanlı Arıza Giderme** — Arıza tanımı artık `pc.` ön eki ile PC özelliklerini (IP, gateway, DNS, hostname vb.) doğrulayabiliyor; TroubleshootingPanel `topologyDevices` üzerinden PC arızalarını çözüyor |
+| 2026-07-08 | **Otomatik Komut Yazdırma** — `pc-auto-type` olayı ile dışarıdan komutların karakter karakter PC CMD'ye yazdırılması ve otomatik çalıştırılması desteği |
+| 2026-07-08 | **Yeni Pencere Olayları** — `pc-tab-changed` ve `pc-command-executed` olayları ile PC paneli durumu dış bileşenlere bildiriliyor |
+
+---
+
 ## v1.9.5 — 2026-07-07
 
 | Tarih | Özellik |
@@ -113,7 +124,7 @@ Yeniden eskiye, tarih ve özellik listesi.
 | Kaynak Dosya | 286 |
 | Dokümantasyon Dosyası | 16 |
 | Örnek Proje | 49 |
-| Rehberli Ders | 16 |
+| Rehberli Ders | 19 |
 | Sınav | 6 |
 | CLI Komutu | 450+ |
 | Test Dosyası | 45 |

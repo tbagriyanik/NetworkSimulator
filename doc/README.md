@@ -272,6 +272,8 @@ const response = await apiClient.post('/api/contact', data);
 ✅ Gelişmiş Arıza Giderme (Trunk / OSPF)  
 ✅ Rehberli Mod & Eğitim Sihirbazı  
 ✅ CLI Rehberli Ders (30 ders)  
+✅ "Bana Öğret" Rehberli Dersleri (Temel / Orta / İleri — 19 rehberli ders)  
+✅ PC Tabanlı Arıza Giderme & Otomatik Komut Yazdırma  
 ✅ Akıllı CLI Asistanı  
 ✅ Kapsamlı Türkçe Eğitim Kitapçığı  
 ✅ Sınav Modu & Sınav İçe Aktarma  

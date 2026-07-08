@@ -42,7 +42,7 @@ A browser-based network simulator for learning switching, routing, wireless, IoT
 | **PC History Cleanup**: New projects and opened projects no longer inherit previous PC cmd/CLI history. | **PC Geçmiş Temizliği**: Yeni projeler ve açılan projeler artık önceki PC cmd/CLI geçmişini almaz. |
 | **Achievement System**: Activity tracking for projects, guided lessons, and exams with session duration logging. | **Başarım Sistemi**: Projeler, rehberli dersler ve sınavlar için aktivite takibi ile oturum süresi günlüğü. |
 | **Exam Mode**: Teacher exam editor, project-to-exam conversion, mobile-responsive layout, and secure student distribution. | **Sınav Modu**: Öğretmen sınav düzenleyicisi, projeden sınava dönüşüm, mobil uyumlu düzen ve güvenli öğrenci dağıtımı. |
-| **Guided Mode & Tutorial Wizard**: Step-by-step guided lessons with gamification points, progress tracking, and hint system. | **Rehberli Mod ve Eğitim Sihirbazı**: Oyunlaştırma puanları, ilerleme takibi ve ipucu sistemi ile adım adım rehberli dersler. |
+| **Guided Mode & Tutorial Wizard**: Step-by-step guided lessons with gamification points, progress tracking, and hint system, plus new "Teach Me" beginner-to-advanced tracks. | **Rehberli Mod ve Eğitim Sihirbazı**: Oyunlaştırma puanları, ilerleme takibi ve ipucu sistemi ile adım adım rehberli dersler; yeni "Bana Öğret" temel-ileri seviye eğitim yolları dahil. |
 | **Intelligent CLI Assistant**: Fuzzy-matched command suggestions and device-aware subcommand hints below CLI error messages. | **Akıllı CLI Asistanı**: CLI hata mesajlarının altında bulanık eşleştirmeli komut önerileri ve cihaz bilinçli alt komut ipuçları. |
 | **Exam Import Enhancements**: Improved `.json` / `.exam` import with smarter PC IP extraction, connection parsing, and weighted scoring. | **Sınav İçe Aktarma İyileştirmeleri**: Gelişmiş `.json` / `.exam` içe aktarma ile akıllı PC IP çıkarma, bağlantı ayrıştırma ve ağırlıklı puanlama. |
 | **PC Services Persistence**: PC service configurations (DHCP, DNS, HTTP) persist across network refreshes. | **PC Servis Kalıcılığı**: PC servis yapılandırmaları (DHCP, DNS, HTTP) ağ yenilemelerinde korunur. |
@@ -157,7 +157,7 @@ npm install && npm run dev
 | Source Files / Kaynak Dosya | 220 |
 | Documentation Files / Dokümantasyon Dosya | 16 |
 | Example Projects / Örnek Proje | 40 |
-| Guided Lessons / Rehberli Ders | 12 |
+| Guided Lessons / Rehberli Ders | 19 |
 | Exams / Sınav | 7 |
 | CLI Commands / CLI Komutları | 450+ |
 

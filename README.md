@@ -25,6 +25,8 @@ npm install && npm run dev
 - **Voice Narration (TTS) / Sesli Anlatım:** Rehberli derslerdeki talimatlar için yerleşik metin okuma desteği (TTS) entegre edildi.
 - **PDF Success Certificates / PDF Başarı Sertifikaları:** Laboratuvarları tamamlayan öğrenciler için otomatik sertifika üretme ve indirme özelliği getirildi.
 - **Advanced IPv6 Master Lab / Gelişmiş IPv6 Laboratuvarı:** Dual-stack, OSPFv3 ve IPv6 ACL konularını içeren kapsamlı yeni eğitim modülü eklendi.
+- **"Bana Öğret" Rehberli Dersleri / Teach Me Guided Lessons:** Sıfırdan öğretim için 3 yeni seviye (Temel, Orta, İleri) eklendi; ipconfig, enable, configure terminal, hostname, router IP yapılandırma, OSPF ve ACL adım adım öğretiliyor.
+- **PC Tabanlı Arıza Giderme / PC-based Troubleshooting:** Arıza tanımları artık PC özelliklerini (IP, gateway, DNS) doğrulayabiliyor; otomatik komut yazdırma (`pc-auto-type`) desteği eklendi.
 
 ## Stats / İstatistikler
 

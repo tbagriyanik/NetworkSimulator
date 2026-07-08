@@ -16,6 +16,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ExampleProject } from '@/lib/network/exampleProjects';
 import { SwitchState } from '@/lib/network/types';
+import type { CanvasDevice } from './networkTopology.types';
 import { checkFaultResolved, FaultDefinition } from '@/lib/network/faults';
 import { ExamTask } from '@/lib/network/examMode';
 import { bringElementToFront } from '@/lib/utils/zIndex';
@@ -24,6 +25,7 @@ import { generateCertificate } from '@/lib/utils/certificateGenerator';
 interface TroubleshootingPanelProps {
   project: ExampleProject | null;
   deviceStates: Map<string, SwitchState> | undefined;
+  topologyDevices?: CanvasDevice[];
   tasks?: ExamTask[];
   onClose: () => void;
   onMinimize: () => void;
@@ -33,6 +35,7 @@ interface TroubleshootingPanelProps {
 export function TroubleshootingPanel({
   project,
   deviceStates,
+  topologyDevices,
   tasks = [],
   onClose,
   onMinimize,
@@ -86,6 +89,18 @@ export function TroubleshootingPanel({
   const faults = project.injectedFaults || [];
 
   const getResolvedStatus = (fault: FaultDefinition) => {
+    if (fault.configKey.startsWith('pc.')) {
+      if (!topologyDevices) return false;
+      const pcDevice = topologyDevices.find(d => d.id === fault.deviceId);
+      if (!pcDevice) return false;
+      
+      const parts = fault.configKey.split('.');
+      const property = parts[parts.length - 1];
+      const currentValue = pcDevice[property as keyof typeof pcDevice];
+      
+      return currentValue === fault.correctValue;
+    }
+
     if (!deviceStates) return false;
     const state = deviceStates.get(fault.deviceId);
     if (!state) return false;

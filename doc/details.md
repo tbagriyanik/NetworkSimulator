@@ -1,6 +1,14 @@
 
 ## Latest Updates
 
+### v1.9.6 (2026-07-08)
+| English | Türkçe |
+| --- | --- |
+| **"Teach Me" Guided Lessons**: 3 new guided projects for absolute beginners — Beginner (PC ipconfig, switch enable/configure terminal/hostname), Intermediate (router interface IP assignment & no shutdown), and Advanced (OSPF process + network statement + standard ACL). | **"Bana Öğret" Rehberli Dersleri**: Sıfırdan öğrenim için 3 yeni rehberli proje — Temel (PC ipconfig, switch enable/configure terminal/hostname), Orta (router arayüz IP atama ve no shutdown) ve İleri (OSPF işlemi + network ifadesi + standart ACL). |
+| **PC-based Troubleshooting**: Fault definitions now validate PC properties (IP, gateway, DNS, hostname) via `pc.` prefix; TroubleshootingPanel resolves PC faults against topology devices. | **PC Tabanlı Arıza Giderme**: Arıza tanımları artık `pc.` ön eki ile PC özelliklerini (IP, gateway, DNS, hostname) doğrulayabiliyor; TroubleshootingPanel PC arızalarını topoloji cihazlarına karşı çözüyor. |
+| **Auto-Type Command Injection**: External `pc-auto-type` event types commands character-by-character into the PC CMD and executes them automatically. | **Otomatik Komut Yazdırma**: Harici `pc-auto-type` olayı, komutları karakter karakter PC CMD'ye yazar ve otomatik çalıştırır. |
+| **New Window Events**: `pc-tab-changed` and `pc-command-executed` events broadcast PC panel state to external components. | **Yeni Pencere Olayları**: `pc-tab-changed` ve `pc-command-executed` olayları PC panel durumu dış bileşenlere bildiriyor. |
+
 ### v1.9.5 (2026-07-07)
 | English | Türkçe |
 | --- | --- |
@@ -107,7 +115,7 @@
 | English | Türkçe |
 | --- | --- |
 | **Free Mode**: Sandbox environment — build any topology, configure freely | **Serbest Mod**: Sanal alan ortamı — dilediğiniz topolojiyi kurun, özgürce yapılandırın |
-| **Guided Mode**: Step-by-step tutorials with hints, scoring, and progress tracking | **Rehberli Mod**: İpuçları, puanlama ve ilerleme takibi ile adım adım eğitim |
+| **Guided Mode**: Step-by-step tutorials with hints, scoring, and progress tracking, including new "Teach Me" beginner-to-advanced tracks | **Rehberli Mod**: İpuçları, puanlama ve ilerleme takibi ile adım adım eğitim; yeni "Bana Öğret" temel-ileri seviye eğitim yolları dahil |
 | **Exam Mode**: Teacher exam editor, project-to-exam conversion, automatic scoring, student distribution | **Sınav Modu**: Öğretmen sınav düzenleyicisi, projeden sınava dönüşüm, otomatik puanlama, öğrenci dağıtımı |
 | **Exam Import**: Smart `.json` / `.exam` file import with PC IP extraction and connection parsing | **Sınav İçe Aktarma**: PC IP çıkarma ve bağlantı ayrıştırma ile akıllı `.json` / `.exam` dosya içe aktarma |
 

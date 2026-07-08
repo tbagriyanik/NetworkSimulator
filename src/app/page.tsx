@@ -5218,6 +5218,7 @@ ${state.bannerMOTD}
             <TroubleshootingPanel
               project={activeTroubleshootingProject}
               deviceStates={deviceStates}
+              topologyDevices={topologyDevices}
               tasks={'tasks' in activeTroubleshootingProject ? (activeTroubleshootingProject as unknown as { tasks: ExamTask[] }).tasks : []}
               onClose={() => setShowTroubleshootingPanel(false)}
               onMinimize={() => setIsTroubleshootingMinimized(!isTroubleshootingMinimized)}

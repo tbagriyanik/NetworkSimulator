@@ -557,6 +557,9 @@ doc/
 - [x] PC servisleri ve CLI servis komutları güncellendi
 - [x] İndeks oluşturuldu
 - [x] Oda Takip Sistemi dokümantasyonu eklendi
+- [x] "Bana Öğret" rehberli dersleri eklendi (Temel/Orta/İleri — toplam 19 rehberli ders)
+- [x] PC tabanlı arıza giderme (pc. ön eki) desteği dokümante edildi
+- [x] Otomatik komut yazdırma (pc-auto-type) ve yeni pencere olayları (pc-tab-changed, pc-command-executed) belgelendi
 - [x] Tüm Servisler Laboratuvarı dokümantasyonu eklendi
 - [x] NAT/ACL/OSPF/EIGRP/HSRP/IPv6 dokümantasyonu eklendi
 - [x] PNG 300 DPI Export dokümantasyonu eklendi
