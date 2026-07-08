@@ -1874,11 +1874,17 @@ export const checkStepCompletion = (
               const cableTypeMatch = conn.cableType === step.checkParams.cableType;
               if (!cableTypeMatch) return false;
             }
-            const sourceMatch = conn.sourceDeviceId === required.sourceDevice &&
-              (!required.sourcePort || conn.sourcePort === required.sourcePort);
-            const targetMatch = conn.targetDeviceId === required.targetDevice &&
+            const normalMatch = conn.sourceDeviceId === required.sourceDevice &&
+              (!required.sourcePort || conn.sourcePort === required.sourcePort) &&
+              conn.targetDeviceId === required.targetDevice &&
               (!required.targetPort || conn.targetPort === required.targetPort);
-            return sourceMatch && targetMatch;
+
+            const reversedMatch = conn.sourceDeviceId === required.targetDevice &&
+              (!required.targetPort || conn.sourcePort === required.targetPort) &&
+              conn.targetDeviceId === required.sourceDevice &&
+              (!required.sourcePort || conn.targetPort === required.sourcePort);
+
+            return normalMatch || reversedMatch;
           });
         });
       }
@@ -1891,11 +1897,17 @@ export const checkStepCompletion = (
             const cableTypeMatch = conn.cableType === params.cableType;
             if (!cableTypeMatch) return false;
           }
-          const sourceMatch = conn.sourceDeviceId === params.sourceDevice &&
-            (!params.sourcePort || conn.sourcePort === params.sourcePort);
-          const targetMatch = conn.targetDeviceId === params.targetDevice &&
+          const normalMatch = conn.sourceDeviceId === params.sourceDevice &&
+            (!params.sourcePort || conn.sourcePort === params.sourcePort) &&
+            conn.targetDeviceId === params.targetDevice &&
             (!params.targetPort || conn.targetPort === params.targetPort);
-          return sourceMatch && targetMatch;
+
+          const reversedMatch = conn.sourceDeviceId === params.targetDevice &&
+            (!params.targetPort || conn.sourcePort === params.targetPort) &&
+            conn.targetDeviceId === params.sourceDevice &&
+            (!params.sourcePort || conn.targetPort === params.sourcePort);
+
+          return normalMatch || reversedMatch;
         });
       }
 
@@ -2122,22 +2134,15 @@ export const checkStepCompletion = (
       }
 
     case 'faultResolved': {
-      if (!step.checkParams?.faultId || !step.checkParams?.targetDeviceId || !context.deviceStates) return false;
-      const targetDeviceId = step.checkParams.targetDeviceId;
-      const deviceState = context.deviceStates.get(targetDeviceId);
-      if (!deviceState) return false;
+      if (!step.checkParams?.configKey) return false;
 
-      const configKey = step.checkParams.configKey;
-      const correctValue = step.checkParams.configValue;
-      if (!configKey) return false;
-
+      // Fault resolution is a config comparison with a friendlier semantic name.
+      // It should work with either the current device state or a target device id.
       const dummyStep: GuidedStep = {
         ...step,
         checkType: 'config',
         checkParams: {
           ...step.checkParams,
-          configKey,
-          configValue: correctValue
         }
       };
       return checkStepCompletion(dummyStep, context);

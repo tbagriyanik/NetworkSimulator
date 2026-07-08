@@ -233,6 +233,38 @@ export function PCPanel({
     if (activeTab === 'terminal') setTimeout(() => setConsoleHistoryIndex(-1), 0);
   }, [activeTab]);
 
+  const executeCommandRef = useRef<((cmd?: string) => Promise<void>) | null>(null);
+
+  useEffect(() => {
+    const handleAutoType = (e: Event) => {
+      const { deviceId: eventDeviceId, command } = (e as CustomEvent).detail;
+      if (eventDeviceId !== deviceId) return;
+
+      // Switch to CMD/desktop tab
+      setActiveTab('desktop');
+
+      let i = 0;
+      setInput('');
+      const typeInterval = setInterval(() => {
+        if (i < command.length) {
+          const char = command.charAt(i);
+          setInput(prev => prev + char);
+          i++;
+        } else {
+          clearInterval(typeInterval);
+          setTimeout(() => {
+            if (executeCommandRef.current) {
+              executeCommandRef.current(command);
+            }
+          }, 300);
+        }
+      }, 70);
+    };
+
+    window.addEventListener('pc-auto-type', handleAutoType);
+    return () => window.removeEventListener('pc-auto-type', handleAutoType);
+  }, [deviceId, isVisible]);
+
   // Get device from topology
   const deviceFromTopology = topologyDevices.find(d => d.id === deviceId);
   const defaultConfig = getPCConfigDefaults(deviceId);
@@ -3644,6 +3676,8 @@ export function PCPanel({
     addLocalOutput('output', '200 Command okay.');
   }, [ftpSession, addLocalOutput, topologyDevices, setIsFtpFilePickerOpen, pcLocalFiles, executeFtpPut]);
 
+
+
   const executeCommand = async (cmdToExecute?: string) => {
     const command = (cmdToExecute || input).trim();
     if (!command) return;
@@ -4751,6 +4785,10 @@ ${fileLines}
       }
     });
   }, [serviceMailSent, serviceMailEnabled, serviceMailDomain, serviceMailUsername, serviceMailPassword, serviceMailInbox, serviceDnsEnabled, serviceDnsRecords, serviceHttpEnabled, serviceHttpContent, serviceFtpEnabled, serviceDhcpEnabled, serviceDhcpPools, dispatchDeviceConfig]);
+
+  useEffect(() => {
+    executeCommandRef.current = executeCommand;
+  }, [executeCommand]);
 
   if (!isVisible) return null;
 

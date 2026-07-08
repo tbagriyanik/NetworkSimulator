@@ -731,14 +731,16 @@ export function GuidedModePanel({
                     <Lightbulb className="w-3 h-3 inline mr-1" />
                     {currentStep.hint[language]}
                   </div>
-                  {currentStep.checkType === 'command' && (
+                  {(currentStep.checkType === 'command' || currentStep.checkType === 'ping') && (
                     <button
                       onClick={() => {
                         window.dispatchEvent(new CustomEvent('request-show-me', {
                           detail: {
                             stepId: currentStep.id,
+                            checkType: currentStep.checkType,
                             commandPattern: currentStep.checkParams?.commandPattern,
-                            targetDeviceId: currentStep.checkParams?.targetDeviceId,
+                            toIp: currentStep.checkParams?.toIp,
+                            targetDeviceId: currentStep.checkParams?.targetDeviceId || currentStep.checkParams?.fromDevice,
                             hintCommand: currentStep.hint.en || currentStep.hint.tr
                           }
                         }));

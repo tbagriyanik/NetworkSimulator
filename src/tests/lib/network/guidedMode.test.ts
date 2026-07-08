@@ -571,6 +571,38 @@ describe('guidedMode', () => {
       });
     });
 
+    describe('faultResolved', () => {
+      it('should resolve when the underlying config matches', () => {
+        const step = {
+          ...baseStep,
+          checkType: 'faultResolved',
+          checkParams: {
+            targetDeviceId: 'switch-1',
+            configKey: 'hostname',
+            configValue: 'SW-Lab',
+          },
+        };
+
+        const deviceState = { hostname: 'SW-Lab' };
+        expect(checkStepCompletion(step, { deviceState: deviceState as any })).toBe(true);
+      });
+
+      it('should not require faultId to be present', () => {
+        const step = {
+          ...baseStep,
+          checkType: 'faultResolved',
+          checkParams: {
+            targetDeviceId: 'switch-1',
+            configKey: 'ipRouting',
+            configValue: true,
+          },
+        };
+
+        const deviceState = { ipRouting: true };
+        expect(checkStepCompletion(step, { deviceState: deviceState as any })).toBe(true);
+      });
+    });
+
     describe('unknown checkType', () => {
       it('should return false', () => {
         const step = { ...baseStep, checkType: 'invalidType' as any };

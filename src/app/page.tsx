@@ -3014,11 +3014,33 @@ ${state.bannerMOTD}
 
   useEffect(() => {
     const handleShowMe = (e: Event) => {
-      const { targetDeviceId, hintCommand } = (e as CustomEvent).detail;
+      const { targetDeviceId, hintCommand, commandPattern, checkType, toIp } = (e as CustomEvent).detail;
       let deviceId = targetDeviceId;
 
+      let cleanCommand = '';
+      if (checkType === 'ping' && toIp) {
+        cleanCommand = `ping ${toIp}`;
+      } else if (commandPattern) {
+        cleanCommand = String(commandPattern).split('|')[0];
+      } else {
+        cleanCommand = hintCommand || '';
+      }
+
+      // Clean command prefixes from prompts or instructional hints.
+      if (cleanCommand.includes('>')) {
+        cleanCommand = cleanCommand.split('>').pop() || '';
+      } else if (cleanCommand.includes('#')) {
+        cleanCommand = cleanCommand.split('#').pop() || '';
+      }
+      cleanCommand = cleanCommand
+        .replace(/^[^:]{1,40}:\s*/i, '')
+        .replace(/^type\s+/i, '')
+        .replace(/\s+(yazın|yazin)\.?$/i, '')
+        .replace(/\s+(and press enter|press enter)\.?$/i, '');
+      cleanCommand = cleanCommand.trim();
+
       if (!deviceId) {
-        if (hintCommand.includes('ipconfig') || hintCommand.includes('ping') || hintCommand.includes('ftp') || hintCommand.includes('tracert')) {
+        if (cleanCommand.includes('ipconfig') || cleanCommand.includes('ping') || cleanCommand.includes('ftp') || cleanCommand.includes('tracert')) {
           deviceId = topologyDevices.find(d => d.type === 'pc')?.id;
         } else {
           deviceId = topologyDevices.find(d => d.type === 'switchL2' || d.type === 'switchL3' || d.type === 'router')?.id;
@@ -3033,7 +3055,7 @@ ${state.bannerMOTD}
             setPcPanelInitialTab('desktop');
             setShowPCPanel(true);
             setTimeout(() => {
-              window.dispatchEvent(new CustomEvent('pc-auto-type', { detail: { deviceId, command: hintCommand } }));
+              window.dispatchEvent(new CustomEvent('pc-auto-type', { detail: { deviceId, command: cleanCommand } }));
             }, 600);
           } else {
             setActiveDeviceId(deviceId);
@@ -3041,7 +3063,7 @@ ${state.bannerMOTD}
             setUnifiedDeviceActiveTab('console');
             setShowUnifiedDeviceModal(true);
             setTimeout(() => {
-              window.dispatchEvent(new CustomEvent('terminal-auto-type', { detail: { deviceId, command: hintCommand } }));
+              window.dispatchEvent(new CustomEvent('terminal-auto-type', { detail: { deviceId, command: cleanCommand } }));
             }, 600);
           }
         }
