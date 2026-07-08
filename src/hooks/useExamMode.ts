@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { ExamProject, type ExamTask, getExamProjects, encryptExamData, generateExamIntegrityHash, verifyExamIntegrity } from '@/lib/network/examMode';
 import { checkStepCompletion, type GuidedStep } from '@/lib/network/guidedMode';
 
@@ -38,6 +38,7 @@ interface UseExamModeReturn {
 const STORAGE_KEY = 'examModeState';
 
 export function useExamMode(): UseExamModeReturn {
+  const isInitializedRef = useRef(false);
   const [activeExam, setActiveExam] = useState<ExamProject | null>(null);
   const [isPanelMinimized, setIsPanelMinimized] = useState(false);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
@@ -63,18 +64,22 @@ export function useExamMode(): UseExamModeReturn {
             console.error('Exam integrity compromised! Resetting exam...');
             // Tampering detected, don't load the saved state
             localStorage.removeItem(STORAGE_KEY);
+            isInitializedRef.current = true;
             return;
           }
         }
-        setTimeout(() => setActiveExam(parsed), 0);
+        setActiveExam(parsed);
       } catch (e) {
         console.error('Failed to load exam state', e);
       }
     }
+    isInitializedRef.current = true;
   }, []);
 
   // Save to localStorage
   useEffect(() => {
+    if (!isInitializedRef.current) return;
+
     if (activeExam) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(activeExam));
     } else {

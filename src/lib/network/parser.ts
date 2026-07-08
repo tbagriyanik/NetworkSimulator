@@ -2957,7 +2957,11 @@ export function parseCommand(input: string, currentMode: CommandMode, state?: Pa
       : state.deviceType || (state.switchLayer === 'FW' ? 'firewall' : state.switchLayer === 'L3' ? 'switchL3' : 'switchL2'))
     : 'switchL2';
   const capabilities = state ? getDeviceCapabilities({ type: inferredDeviceType as DeviceType }, state.switchModel) : undefined;
-  const resolvedInput = expandKeywordPrefixes(resolveAliases(input, state), currentMode, capabilities);
+
+  // Normalize whitespace: trim and replace multiple spaces with a single space
+  const normalizedInput = input.trim().replace(/\s+/g, ' ');
+
+  const resolvedInput = expandKeywordPrefixes(resolveAliases(normalizedInput, state), currentMode, capabilities);
 
   if (!resolvedInput) return null;
 

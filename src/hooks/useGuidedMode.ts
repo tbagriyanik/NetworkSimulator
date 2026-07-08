@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { 
   GuidedProject, 
   checkStepCompletion,
@@ -80,6 +80,8 @@ const deserializeProject = (json: string): GuidedProject | null => {
 const STORAGE_KEY = 'guidedModeState';
 
 export function useGuidedMode(): UseGuidedModeReturn {
+  const isInitializedRef = useRef(false);
+
   // Initialize with default values to avoid hydration mismatch
   const [activeProject, setActiveProject] = useState<GuidedProject | null>(null);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -103,21 +105,26 @@ export function useGuidedMode(): UseGuidedModeReturn {
           localStorage.removeItem(STORAGE_KEY);
           localStorage.removeItem(`${STORAGE_KEY}_stepIndex`);
           localStorage.removeItem(`${STORAGE_KEY}_minimized`);
+          isInitializedRef.current = true;
           return;
         }
-        setTimeout(() => setActiveProject(deserialized), 0);
+        setActiveProject(deserialized);
       }
     }
     if (savedStepIndex) {
-      setTimeout(() => setCurrentStepIndex(parseInt(savedStepIndex, 10)), 0);
+      setCurrentStepIndex(parseInt(savedStepIndex, 10));
     }
     if (savedMinimized) {
-      setTimeout(() => setIsPanelMinimized(savedMinimized === 'true'), 0);
+      setIsPanelMinimized(savedMinimized === 'true');
     }
+
+    isInitializedRef.current = true;
   }, []);
 
-  // Save to localStorage whenever state changes (only after mount)
+  // Save to localStorage whenever state changes (only after mount and initialization)
   useEffect(() => {
+    if (!isInitializedRef.current) return;
+
     if (activeProject) {
       localStorage.setItem(STORAGE_KEY, serializeProject(activeProject));
     } else {
@@ -126,10 +133,12 @@ export function useGuidedMode(): UseGuidedModeReturn {
   }, [activeProject]);
 
   useEffect(() => {
+    if (!isInitializedRef.current) return;
     localStorage.setItem(`${STORAGE_KEY}_stepIndex`, currentStepIndex.toString());
   }, [currentStepIndex]);
 
   useEffect(() => {
+    if (!isInitializedRef.current) return;
     localStorage.setItem(`${STORAGE_KEY}_minimized`, isPanelMinimized.toString());
   }, [isPanelMinimized]);
 

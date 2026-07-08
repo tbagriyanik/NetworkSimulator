@@ -26,4 +26,14 @@ describe('CLI Case Insensitivity', () => {
     expect(validation.valid).toBe(true);
     expect(validation.matchedPattern).toBe('no shutdown');
   });
+
+  it('should parse "ping  192.168.1.1" correctly (multiple spaces)', () => {
+    const input = 'ping  192.168.1.1';
+    const parsed = parseCommand(input, 'privileged', state);
+    expect(parsed).not.toBeNull();
+
+    const validation = validateCommand(parsed!, 'privileged', state);
+    expect(validation.valid).toBe(true);
+    expect(validation.matchedPattern).toBe('ping');
+  });
 });
