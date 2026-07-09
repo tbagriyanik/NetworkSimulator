@@ -5,6 +5,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from './tooltip';
 
 interface TooltipWrapperProps {
     title?: React.ReactNode;
+    ariaLabel?: string;
     children: React.ReactNode;
     side?: 'top' | 'right' | 'bottom' | 'left';
     delayDuration?: number;
@@ -18,6 +19,7 @@ interface TooltipWrapperProps {
  */
 export function TooltipWrapper({
     title,
+    ariaLabel,
     children,
     side = 'bottom',
     delayDuration = 200
@@ -26,8 +28,10 @@ export function TooltipWrapper({
         return <>{children}</>;
     }
 
+    const effectiveAriaLabel = ariaLabel || (typeof title === 'string' ? title : undefined);
+
     const child = React.isValidElement(children)
-        ? React.cloneElement(children as React.ReactElement<{ 'aria-label'?: string }>, { 'aria-label': typeof title === 'string' ? title : undefined })
+        ? React.cloneElement(children as React.ReactElement<{ 'aria-label'?: string }>, { 'aria-label': effectiveAriaLabel })
         : children;
 
     return (

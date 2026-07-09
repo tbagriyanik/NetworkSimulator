@@ -77,6 +77,7 @@ export const FormInput = React.forwardRef<HTMLInputElement, FormInputProps>(
                         id={id}
                         disabled={disabled || isLoading}
                         aria-invalid={hasError ? 'true' : undefined}
+                        aria-required={required ? 'true' : undefined}
                         aria-describedby={cn(
                             hasError ? errorId : undefined,
                             hint && !hasError ? hintId : undefined

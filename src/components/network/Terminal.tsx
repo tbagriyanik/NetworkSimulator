@@ -1246,12 +1246,14 @@ export function Terminal({
       {wifiSignalStrength !== null && wifiSignalStrength > 0 && (
         <div className={cn("w-px h-4 mx-1", isDark ? "bg-secondary-600" : "bg-border")} />
       )}
-      <TooltipWrapper title={
-        <div className="flex items-center gap-2">
-          {t.search}
-          {!isMobile && <ShortcutBadge shortcut="Ctrl+F" variant="primary" />}
-        </div>
-      }>
+      <TooltipWrapper
+        ariaLabel={t.search}
+        title={
+          <div className="flex items-center gap-2">
+            {t.search}
+            {!isMobile && <ShortcutBadge shortcut="Ctrl+F" variant="primary" />}
+          </div>
+        }>
         <Button variant="ghost" size="icon" onClick={() => setSearchOpen(true)} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-secondary-600 hover:text-secondary-900", isDark && "text-secondary-300 hover:text-secondary-100")} aria-controls="search-dialog">
           <Search className="w-4 h-4" aria-hidden="true" />
         </Button>
@@ -1563,6 +1565,7 @@ export function Terminal({
                 <Button
                   type="submit"
                   disabled={isInputDisabled}
+                  aria-label={t.typeCommand}
                   className={cn(
                     "shrink-0 rounded-xl shadow-lg px-3 bg-secondary-800 text-white hover:bg-secondary-700 dark:bg-white dark:text-secondary-900 dark:hover:bg-secondary-200",
                     isMobile ? "h-9 text-xs" : "h-11 text-sm",
