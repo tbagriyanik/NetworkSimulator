@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { CanvasNote, CanvasDevice, CanvasConnection } from '../networkTopology.types';
 
@@ -273,10 +273,10 @@ export function NoteNode({
                     e.stopPropagation();
                     deleteNote(note.id);
                   }}
-                  className="px-1.5 py-0.5 rounded hover:bg-black/10"
+                  className="px-1.5 py-0.5 rounded hover:bg-black/10 group"
                   aria-label={t.delete}
                 >
-                  <svg className="w-3 h-3 text-error-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3 h-3 text-black/50 group-hover:text-error-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1 -1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0 -1-1h-4a1 1 0 0 0 -1 1v3M4 7h16" />
                   </svg>
                 </button>
@@ -387,7 +387,7 @@ export function NoteNode({
                 onTopologyChange(devices, connections, notes);
               }
             }}
-            className="w-full h-full min-h-full px-2 py-1 bg-transparent outline-none resize-none overflow-y-auto overflow-x-hidden whitespace-pre-wrap break-words touch-manipulation custom-scrollbar font-medium"
+            className="w-full h-full min-h-full px-2 py-1 bg-transparent outline-none resize-none overflow-y-auto overflow-x-hidden whitespace-pre-wrap break-words touch-manipulation note-scrollbar font-medium"
             style={{ fontSize: note.fontSize, lineHeight: 1.35, color: 'var(--color-secondary-900)' }}
           />
         </div>

@@ -1,7 +1,6 @@
-﻿import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { CanvasDevice, CanvasConnection } from './networkTopology.types';
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { X } from 'lucide-react';
+
 import { CABLE_COLORS } from './networkTopology.constants';
 
 export interface HopPacketInfo {
@@ -346,6 +345,9 @@ function MobilePacketTables({ currentInfo, prevInfo, macChanged, ttlChanged, isD
     );
 }
 
+import { DraggableWindowWrapper } from './DraggableWindowWrapper';
+import { useDrag } from '@/hooks/useDrag';
+
 export function PingPacketInfoPanel({
     isVisible,
     isPaused,
@@ -358,10 +360,10 @@ export function PingPacketInfoPanel({
     language,
     isDark,
     graphicsQuality = 'high',
-    zIndex,
+    zIndex: _zIndex,
     isMobile = false,
     onFocus,
-    isFocused = false,
+    isFocused: _isFocused,
     success,
     isReturn,
     errorMessage,
@@ -371,92 +373,15 @@ export function PingPacketInfoPanel({
 }: PingPacketInfoPanelProps) {
     const t = language === 'tr' ? tr : en;
 
-    const panelRef = useRef<HTMLDivElement>(null);
-    const [pos, setPos] = useState<{ x: number; y: number } | null>(() => {
-        if (typeof window === 'undefined' || isMobile) return null;
-        try {
-            const saved = localStorage.getItem('draggable_position_ping-packet-info-panel');
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                if (typeof parsed.x === 'number' && typeof parsed.y === 'number') {
-                    return { x: parsed.x, y: parsed.y };
-                }
-            }
-        } catch { }
-        return { x: Math.max(16, (window.innerWidth - 780) / 2), y: window.innerHeight - 400 };
+    const dragProps = useDrag({
+        storageKey: 'pingPacketInfoPanel',
+        defaultPosition: typeof window !== 'undefined' ? { x: Math.max(16, (window.innerWidth - 780) / 2), y: window.innerHeight - 400 } : { x: 16, y: 72 },
+        defaultSize: { width: 780, height: 350 },
+        minSize: { width: 400, height: 250 },
+        mode: 'drag-resize'
     });
 
-    const dragState = useRef<{
-        startX: number; startY: number;
-        startPosX: number; startPosY: number;
-    } | null>(null);
-
-    const [isDragging, setIsDragging] = useState(false);
-
-    const onHeaderPointerDown = useCallback((e: React.PointerEvent) => {
-        if (isMobile) return;
-        if (e.button !== 0) return;
-        const target = e.target as HTMLElement;
-        if (target.closest('button')) return;
-
-        e.preventDefault();
-        const el = panelRef.current;
-        if (!el) return;
-        el.setPointerCapture(e.pointerId);
-
-        const currentPos = pos ?? { x: 16, y: 72 };
-        dragState.current = {
-            startX: e.clientX, startY: e.clientY,
-            startPosX: currentPos.x, startPosY: currentPos.y,
-        };
-        document.body.style.userSelect = 'none';
-        setIsDragging(true);
-        onFocus?.();
-    }, [isMobile, pos, onFocus]);
-
-    const onPointerMove = useCallback((e: PointerEvent) => {
-        const ds = dragState.current;
-        if (!ds) return;
-        const el = panelRef.current;
-        if (!el) return;
-        const dx = e.clientX - ds.startX;
-        const dy = e.clientY - ds.startY;
-        el.style.left = `${ds.startPosX + dx}px`;
-        el.style.top = `${ds.startPosY + dy}px`;
-        el.style.transition = 'none';
-    }, []);
-
-    const onPointerUp = useCallback(() => {
-        const ds = dragState.current;
-        if (!ds) return;
-        const el = panelRef.current;
-        if (!el) return;
-        const finalX = parseFloat(el.style.left) || ds.startPosX;
-        const finalY = parseFloat(el.style.top) || ds.startPosY;
-        const rect = el.getBoundingClientRect();
-        const clampedX = Math.max(0, Math.min(finalX, window.innerWidth - rect.width));
-        const clampedY = Math.max(0, Math.min(finalY, window.innerHeight - rect.height));
-        el.style.left = `${clampedX}px`;
-        el.style.top = `${clampedY}px`;
-        el.style.transition = '';
-        document.body.style.userSelect = '';
-        dragState.current = null;
-        setIsDragging(false);
-        setPos({ x: clampedX, y: clampedY });
-        try { localStorage.setItem('draggable_position_ping-packet-info-panel', JSON.stringify({ x: clampedX, y: clampedY })); } catch { }
-    }, []);
-
-    useEffect(() => {
-        if (!isDragging) return;
-        window.addEventListener('pointermove', onPointerMove);
-        window.addEventListener('pointerup', onPointerUp);
-        window.addEventListener('pointercancel', onPointerUp);
-        return () => {
-            window.removeEventListener('pointermove', onPointerMove);
-            window.removeEventListener('pointerup', onPointerUp);
-            window.removeEventListener('pointercancel', onPointerUp);
-        };
-    }, [isDragging, onPointerMove, onPointerUp]);
+    const isGlass = graphicsQuality === 'high';
 
     // Show packet tables when paused or done — derived directly from props, no local state
     const showPacketTables = isPaused || success !== null;
@@ -465,7 +390,6 @@ export function PingPacketInfoPanel({
     React.useEffect(() => {
         if (!isVisible) return;
         const handleKeyDown = (e: KeyboardEvent) => {
-            // Ignore if focus is inside an input/textarea
             const tag = (e.target as HTMLElement)?.tagName;
             if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
             if (e.key === 'Escape') {
@@ -510,304 +434,245 @@ export function PingPacketInfoPanel({
     const isSuccess = success === true;
     const isFailure = success === false;
 
-    const posStyle: React.CSSProperties = isMobile
-        ? { position: 'fixed', bottom: 72, left: 12, right: 12, top: 'auto', transform: 'none' }
-        : { position: 'fixed', left: pos?.x ?? 16, top: pos?.y ?? 72, bottom: 'auto', transform: 'none' };
+    const titleContent = (
+        <div className="flex items-center gap-2.5">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                className={`flex-shrink-0 ${isSuccess ? 'text-success-500' : isFailure ? 'text-error-500' : isReturn ? 'text-warning-400' : 'text-accent-500'}`}>
+                <rect x="2" y="4" width="20" height="16" rx="2" stroke="currentColor" strokeWidth="2" fill="none" />
+                <path d="M2 7l10 7 10-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            <span className="font-semibold text-sm">{t.title}</span>
 
-    const isGlass = graphicsQuality === 'high';
-    const resolvedZIndex = zIndex ?? 9999;
+            {isReturn ? (
+                <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${isDark ? 'bg-warning-900/50 text-warning-300 border border-warning-800/40' : 'bg-warning-50 text-warning-700 border border-warning-200'}`}>
+                    ↩ {t.returnLabel}
+                </span>
+            ) : (
+                <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${isDark ? 'bg-accent-900/50 text-accent-300 border border-accent-800/40' : 'bg-accent-50 text-accent-700 border border-accent-200'}`}>
+                    → {t.forwardLabel}
+                </span>
+            )}
+
+            {!isDone && totalHopCount > 0 && (
+                <div className="flex items-center gap-1">
+                    {Array.from({ length: totalHopCount }).map((_, i) => (
+                        <div key={i} className={`rounded-full transition-all duration-300 ${i === safeIdx ? 'w-4 h-2 bg-accent-500' : i < safeIdx ? (isDark ? 'w-2 h-2 bg-secondary-500' : 'w-2 h-2 bg-secondary-400') : (isDark ? 'w-2 h-2 bg-secondary-700' : 'w-2 h-2 bg-secondary-200')}`} title={`${t.hop} ${i + 1}`} />
+                    ))}
+                </div>
+            )}
+
+            {!isDone && totalHopCount > 0 && (
+                <span className={`text-xs px-2 py-0.5 rounded-full font-mono font-semibold ${isDark ? 'bg-secondary-700/60 text-secondary-300' : 'bg-secondary-100 text-secondary-600'}`}>
+                    {t.hop} {safeIdx + 1}/{totalHopCount}
+                </span>
+            )}
+
+            {isPaused && !isDone && (
+                <span className={`${isMobile ? 'w-2 h-2 bg-warning-500 rounded-full animate-pulse' : 'text-[10px] px-2 py-0.5 rounded-full font-semibold ' + (isDark ? 'bg-warning-900/50 text-warning-300 border border-warning-800/40' : 'bg-warning-50 text-warning-700 border border-warning-200')}`}>
+                    {!isMobile && <>{'⏸ '}{t.paused}</>}
+                </span>
+            )}
+        </div>
+    );
 
     return (
-        <div
-            ref={panelRef}
-            className={`flex flex-col rounded-2xl overflow-hidden select-none backdrop-blur-md ${isDark
-                ? (isFocused ? 'bg-secondary-950/40 border-emerald-400 text-secondary-100 shadow-[0_0_0_1px_rgba(52,211,153,0.35),0_20px_40px_rgba(0,0,0,0.4)]' : 'bg-secondary-950/40 border-emerald-950/80 text-secondary-100 shadow-black/40')
-                : (isFocused ? 'bg-white/40 border-emerald-500 text-secondary-900 shadow-[0_0_0_1px_rgba(34,197,94,0.24),0_20px_40px_rgba(15,23,42,0.12)]' : 'bg-white/40 border-emerald-950/80 text-secondary-900 shadow-secondary-200/50')
-                }`}
-            style={{
-                ...posStyle,
-                width: isMobile ? 'calc(100% - 24px)' : 780,
-                maxHeight: isMobile ? 'calc(100dvh - 140px)' : 'none',
-                zIndex: resolvedZIndex,
-            }}
-            onMouseDown={onFocus}
+        <DraggableWindowWrapper
+            id="pingPacketInfo"
+            title={titleContent}
+            isOpen={isVisible}
+            onClose={onClose}
+            isDark={isDark}
+            modalPosition={dragProps.position}
+            modalSize={dragProps.size}
+            handlePointerDown={dragProps.handlePointerDown}
+            handleResizeStart={dragProps.handleResizeStart}
+            className="flex flex-col"
         >
-            {/* Header — drag handle */}
-            <div
-                className={`flex items-center justify-between px-3 py-2 border-b rounded-t-2xl ${isMobile ? 'cursor-default' : (isDragging ? 'cursor-grabbing' : 'cursor-grab') + ' select-none'} ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}
-                style={{ touchAction: 'none' }}
-                onPointerDown={onHeaderPointerDown}
-            >
-                {/* Left: icon + title + badges */}
-                <div className="flex items-center gap-2.5">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                        className={`flex-shrink-0 ${isSuccess ? 'text-success-500' : isFailure ? 'text-error-500' : isReturn ? 'text-warning-400' : 'text-accent-500'}`}>
-                        <rect x="2" y="4" width="20" height="16" rx="2" stroke="currentColor" strokeWidth="2" fill="none" />
-                        <path d="M2 7l10 7 10-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                    </svg>
-                    {!isMobile && <span className={`font-semibold text-sm ${isDark ? 'text-secondary-100' : 'text-secondary-800'}`}>{t.title}</span>}
+            <div className="flex-1 overflow-y-auto min-h-0 flex flex-col" onMouseDown={onFocus}>
+                {/* Play/Pause control bar inside content (since it's no longer in header) */}
+                <div className="flex items-center justify-between p-2 border-b dark:border-secondary-800 bg-secondary-50/50 dark:bg-secondary-950/50">
+                    <div className="flex items-center gap-2">
+                        {!isDone && (
+                            <div className="flex items-center gap-1">
+                                {isPaused ? (
+                                    <button
+                                        onClick={onPlay}
+                                        className="p-1 rounded bg-success-500 hover:bg-success-600 text-white transition-colors flex items-center gap-1 px-2.5 py-1 text-xs"
+                                    >
+                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21" /></svg>
+                                        <span>{t.play}</span>
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={onPause}
+                                        className="p-1 rounded bg-warning-500 hover:bg-warning-600 text-white transition-colors flex items-center gap-1 px-2.5 py-1 text-xs"
+                                    >
+                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                            <rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" />
+                                        </svg>
+                                        <span>{t.pause}</span>
+                                    </button>
+                                )}
+                                <button
+                                    onClick={onNext}
+                                    disabled={!isPaused}
+                                    className={`p-1 rounded transition-colors flex items-center gap-1 px-2.5 py-1 text-xs ${isPaused ? 'bg-primary-500 hover:bg-primary-600 text-white' : 'bg-secondary-200 dark:bg-secondary-800 text-secondary-400 dark:text-secondary-600 cursor-not-allowed'}`}
+                                >
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                        <polygon points="5,3 14,12 5,21" /><rect x="16" y="3" width="3" height="18" />
+                                    </svg>
+                                    <span>{t.next}</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                    
+                    {isPaused && currentInfo?.actionDescription && !isDone && (
+                        <div className="flex-1 mx-4 px-3 py-1 rounded-lg bg-warning-500/10 border border-warning-500/20 text-warning-400 text-[11px] font-bold">
+                            <span className="opacity-60 mr-1">{t.actionLabel}</span>
+                            {currentInfo.actionDescription}
+                        </div>
+                    )}
+                </div>
 
-                    {isReturn ? (
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${isDark ? 'bg-warning-900/50 text-warning-300 border border-warning-800/40' : 'bg-warning-50 text-warning-700 border border-warning-200'}`}>
-                            ↩ {t.returnLabel}
-                        </span>
-                    ) : (
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${isDark ? 'bg-accent-900/50 text-accent-300 border border-accent-800/40' : 'bg-accent-50 text-accent-700 border border-accent-200'}`}>
-                            → {t.forwardLabel}
-                        </span>
+                <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0">
+                    {/* Result banner */}
+                    {isDone && (
+                        <div className={`px-5 py-3 flex items-start gap-3 border-b ${isSuccess
+                            ? isGlass
+                                ? (isDark ? 'bg-success-500/10 border-success-500/20' : 'bg-success-500/10 border-success-500/20')
+                                : (isDark ? 'bg-success-900/40 border-success-800/50' : 'bg-success-50 border-success-100')
+                            : isGlass
+                                ? (isDark ? 'bg-error-500/10 border-error-500/20' : 'bg-error-500/10 border-error-500/20')
+                                : (isDark ? 'bg-error-900/40 border-error-800/50' : 'bg-error-50 border-error-100')
+                            }`}>
+                            {isSuccess ? (
+                                <svg className="w-5 h-5 text-success-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                </svg>
+                            ) : (
+                                <svg className="w-5 h-5 text-error-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            )}
+                            <div className="flex-1 min-w-0">
+                                {isSuccess ? (
+                                    <>
+                                        <div className={`text-sm font-bold ${isDark ? 'text-success-300' : 'text-success-700'}`}>{t.successTitle}</div>
+                                        <div className={`text-xs mt-0.5 font-mono ${isDark ? 'text-success-400/80' : 'text-success-600'}`}>
+                                            {language === 'tr' ? `${targetIp || targetName}: bayt=32 TTL=${currentInfo?.ttl ?? 64}` : `Reply from ${targetIp || targetName}: bytes=32 TTL=${currentInfo?.ttl ?? 64}`}
+                                        </div>
+                                        <div className={`text-xs mt-0.5 ${isDark ? 'text-success-500/70' : 'text-success-600/70'}`}>{sourceName} → {targetName} → {sourceName}</div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className={`text-sm font-bold ${isDark ? 'text-error-300' : 'text-error-700'}`}>{t.failTitle}</div>
+                                        {errorMessage && <div className={`text-xs mt-0.5 ${isDark ? 'text-error-400/80' : 'text-error-600'}`}>{t.failReason}: {errorMessage}</div>}
+                                        {currentInfo && (
+                                            <div className={`text-xs mt-0.5 font-mono ${isDark ? 'text-error-500/70' : 'text-error-500/70'}`}>
+                                                {language === 'tr' ? `${currentInfo.fromDevice.name} → ${currentInfo.toDevice.name} adımında başarısız` : `Failed at ${currentInfo.fromDevice.name} → ${currentInfo.toDevice.name}`}
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                        </div>
                     )}
 
-                    {!isDone && totalHopCount > 0 && (
-                        <div className="flex items-center gap-1">
-                            {Array.from({ length: totalHopCount }).map((_, i) => (
-                                <div key={i} className={`rounded-full transition-all duration-300 ${i === safeIdx ? 'w-4 h-2 bg-accent-500' : i < safeIdx ? (isDark ? 'w-2 h-2 bg-secondary-500' : 'w-2 h-2 bg-secondary-400') : (isDark ? 'w-2 h-2 bg-secondary-700' : 'w-2 h-2 bg-secondary-200')}`} title={`${t.hop} ${i + 1}`} />
+                    {/* Body */}
+                    {currentInfo ? (
+                        <div className={isMobile ? 'px-3 py-2 space-y-2' : 'px-5 py-4 space-y-3'}>
+                            {/* Route bar */}
+                            <div className={`flex items-center gap-2 rounded-xl ${isMobile ? 'px-3 py-2' : 'px-4 py-2.5'} ${isGlass
+                                ? isDark ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/8'
+                                : isDark ? 'bg-secondary-800/80 border border-secondary-700' : 'bg-secondary-100 border border-secondary-200'
+                                }`}>
+                                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${currentInfo.fromDevice.type === 'router' ? 'bg-purple-500' : currentInfo.fromDevice.type.startsWith('switch') ? 'bg-accent-500' : 'bg-primary-500'}`} />
+                                    <span className={`${isMobile ? 'text-xs' : 'text-sm'} font-semibold truncate ${isDark ? 'text-secondary-200' : 'text-secondary-700'}`}>{currentInfo.fromDevice.name}</span>
+                                    {!isMobile && <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium flex-shrink-0 ${isDark ? 'bg-white/10 text-secondary-400' : 'bg-black/10 text-secondary-500'}`}>{currentInfo.fromDevice.type}</span>}
+                                </div>
+                                <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
+                                    <CableIcon cableType={currentInfo.cableType} color={getCableColor(currentInfo.cableType)} isMobile={isMobile} />
+                                    {!isMobile && <span className="text-[10px] font-medium" style={{ color: getCableColor(currentInfo.cableType) }}>{getCableLabel(currentInfo.cableType, t)}</span>}
+                                </div>
+                                <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
+                                    {!isMobile && <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium flex-shrink-0 ${isDark ? 'bg-white/10 text-secondary-400' : 'bg-black/10 text-secondary-500'}`}>{currentInfo.toDevice.type}</span>}
+                                    <span className={`${isMobile ? 'text-xs' : 'text-sm'} font-semibold truncate ${isDark ? 'text-secondary-200' : 'text-secondary-700'}`}>{currentInfo.toDevice.name}</span>
+                                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${currentInfo.toDevice.type === 'router' ? 'bg-purple-500' : currentInfo.toDevice.type.startsWith('switch') ? 'bg-accent-500' : 'bg-primary-500'}`} />
+                                </div>
+                                {macChanged && (
+                                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${isDark ? 'bg-warning-500/20 text-warning-300 border border-warning-500/30' : 'bg-warning-500/15 text-warning-700 border border-warning-500/30'}`}>⚡ {isMobile ? '' : t.macChanged}</span>
+                                )}
+                                {ipSame && prevInfo && !isMobile && (
+                                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${isDark ? 'bg-success-500/20 text-success-300 border border-success-500/30' : 'bg-success-500/15 text-success-700 border border-success-500/30'}`}>✓ {t.ipSame}</span>
+                                )}
+                            </div>
+
+                            {/* Packet tables — 3 col desktop, 1 col mobile (tabs) */}
+                            {showPacketTables && (isMobile ? (
+                                <MobilePacketTables
+                                    currentInfo={currentInfo}
+                                    prevInfo={prevInfo}
+                                    macChanged={macChanged}
+                                    ttlChanged={ttlChanged}
+                                    isDark={isDark}
+                                    isGlass={isGlass}
+                                    t={t}
+                                />
+                            ) : (
+                                <div className="grid grid-cols-3 gap-3">
+                                    <div className={`rounded-xl overflow-hidden border ${isGlass
+                                        ? isDark ? 'border-success-400/20 bg-success-500/10' : 'border-success-400/30 bg-success-500/8'
+                                        : isDark ? 'border-success-900/60 bg-success-950/50' : 'border-success-200 bg-success-50'}`}
+                                        style={isGlass ? { backdropFilter: 'blur(12px) saturate(180%)' } : undefined}>
+                                        <div className={`px-3 py-1.5 text-[11px] font-bold tracking-wide border-b ${isGlass
+                                            ? isDark ? 'bg-success-500/15 border-success-400/20 text-success-400' : 'bg-success-500/10 border-success-400/20 text-success-700'
+                                            : isDark ? 'bg-success-950/60 border-success-900/60 text-success-400' : 'bg-success-100 border-success-200 text-success-700'}`}>{t.layer2}</div>
+                                        <table className="w-full"><tbody>
+                                            <FieldRow label={t.srcMac} value={currentInfo.srcMac} prevValue={prevInfo?.srcMac} highlight={macChanged ? 'changed' : 'none'} isDark={isDark} badge={macChanged ? t.changed : undefined} badgeColor="var(--color-warning-600)" />
+                                            <FieldRow label={t.dstMac} value={currentInfo.dstMac} prevValue={prevInfo?.dstMac} highlight={macChanged ? 'changed' : 'none'} isDark={isDark} />
+                                            <FieldRow label={t.etherType} value={currentInfo.etherType} isDark={isDark} />
+                                        </tbody></table>
+                                    </div>
+                                    <div className={`rounded-xl overflow-hidden border ${isGlass
+                                        ? isDark ? 'border-purple-400/20 bg-purple-500/10' : 'border-purple-400/30 bg-purple-500/8'
+                                        : isDark ? 'border-purple-900/60 bg-purple-950/50' : 'border-purple-200 bg-purple-50'}`}
+                                        style={isGlass ? { backdropFilter: 'blur(12px) saturate(180%)' } : undefined}>
+                                        <div className={`px-3 py-1.5 text-[11px] font-bold tracking-wide border-b ${isGlass
+                                            ? isDark ? 'bg-purple-500/15 border-purple-400/20 text-purple-400' : 'bg-purple-500/10 border-purple-400/20 text-purple-700'
+                                            : isDark ? 'bg-purple-950/60 border-purple-900/60 text-purple-400' : 'bg-purple-100 border-purple-200 text-purple-700'}`}>{currentInfo.layer3 === 'IPv6' ? (language === 'tr' ? 'Katman 3 — IPv6 Başlığı' : 'Layer 3 — IPv6 Header') : t.layer3}</div>
+                                        <table className="w-full"><tbody>
+                                            <FieldRow label={currentInfo.layer3 === 'IPv6' ? (t.srcIp.replace('IP', 'IPv6')) : t.srcIp} value={currentInfo.srcIp} highlight="same" isDark={isDark} />
+                                            <FieldRow label={currentInfo.layer3 === 'IPv6' ? (t.dstIp.replace('IP', 'IPv6')) : t.dstIp} value={currentInfo.dstIp} highlight="same" isDark={isDark} />
+                                            <FieldRow label={currentInfo.layer3 === 'IPv6' ? 'Hop Limit' : t.ttl} value={String(currentInfo.ttl)} prevValue={prevInfo ? String(prevInfo.ttl) : undefined} highlight={ttlChanged ? 'changed' : 'none'} isDark={isDark} badge={ttlChanged ? t.ttlDec : undefined} badgeColor="var(--color-warning-600)" />
+                                            <FieldRow label={t.protocol} value={currentInfo.protocol} isDark={isDark} />
+                                        </tbody></table>
+                                    </div>
+                                    <div className={`rounded-xl overflow-hidden border ${isGlass
+                                        ? isDark ? 'border-primary-400/20 bg-primary-500/10' : 'border-primary-400/30 bg-primary-500/8'
+                                        : isDark ? 'border-primary-900/60 bg-primary-950/50' : 'border-primary-200 bg-primary-50'}`}
+                                        style={isGlass ? { backdropFilter: 'blur(12px) saturate(180%)' } : undefined}>
+                                        <div className={`px-3 py-1.5 text-[11px] font-bold tracking-wide border-b ${isGlass
+                                            ? isDark ? 'bg-primary-500/15 border-primary-400/20 text-primary-400' : 'bg-primary-500/10 border-primary-400/20 text-primary-700'
+                                            : isDark ? 'bg-primary-950/60 border-primary-900/60 text-primary-400' : 'bg-primary-100 border-primary-200 text-primary-700'}`}>{currentInfo.layer4 === 'ICMPv6' ? (language === 'tr' ? 'Katman 4 — ICMPv6' : 'Layer 4 — ICMPv6') : t.layer4}</div>
+                                        <table className="w-full"><tbody>
+                                            <FieldRow label={currentInfo.layer4 === 'ICMPv6' ? 'ICMPv6 Type' : t.icmpType} value={currentInfo.icmpType} isDark={isDark} />
+                                            <FieldRow label={currentInfo.layer4 === 'ICMPv6' ? 'ICMPv6 Code' : t.icmpCode} value={String(currentInfo.icmpCode)} isDark={isDark} />
+                                            <FieldRow label={t.icmpSeq} value={String(currentInfo.icmpSeq)} isDark={isDark} />
+                                        </tbody></table>
+                                    </div>
+                                </div>
                             ))}
                         </div>
-                    )}
-
-                    {!isDone && totalHopCount > 0 && (
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-mono font-semibold ${isDark ? 'bg-secondary-700/60 text-secondary-300' : 'bg-secondary-100 text-secondary-600'}`}>
-                            {t.hop} {safeIdx + 1}/{totalHopCount}
-                        </span>
-                    )}
-
-                    {isPaused && !isDone && (
-                        <span className={`${isMobile ? 'w-2 h-2 bg-warning-500 rounded-full animate-pulse' : 'text-[10px] px-2 py-0.5 rounded-full font-semibold ' + (isDark ? 'bg-warning-900/50 text-warning-300 border border-warning-800/40' : 'bg-warning-50 text-warning-700 border border-warning-200')}`}>
-                            {!isMobile && <>{'⏸ '}{t.paused}</>}
-                        </span>
+                    ) : (
+                        <div className={`px-5 py-8 text-center text-sm ${isDark ? 'text-secondary-500' : 'text-secondary-400'}`}>{t.noHops}</div>
                     )}
                 </div>
-
-                {/* Action Info for Step-by-Step Mode */}
-                {isPaused && currentInfo?.actionDescription && !isDone && !isMobile && (
-                    <div className="flex-1 mx-4 px-3 py-1 rounded-lg bg-warning-500/10 border border-warning-500/20 text-warning-400 text-[11px] font-bold animate-in fade-in slide-in-from-top-1">
-                        <span className="opacity-60 mr-1">{t.actionLabel}</span>
-                        {currentInfo.actionDescription}
-                    </div>
-                )}
-
-                {/* Right: play/pause/next + always-visible close button */}
-                <div className="flex items-center gap-2" onMouseDown={e => e.stopPropagation()}>
-                    {!isDone && (<>
-                        <TooltipProvider>
-                            {isPaused ? (
-                                <Tooltip delayDuration={300}>
-                                    <TooltipTrigger asChild>
-                                        <button onClick={() => { onPlay(); }}
-                                            className={`flex items-center justify-center rounded-lg text-xs font-semibold transition-all ${isMobile ? 'w-7 h-7' : 'gap-1.5 px-3 py-1.5'} ${isDark ? 'bg-success-600 hover:bg-success-500 text-white' : 'bg-success-500 hover:bg-success-600 text-white'}`}>
-                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21" /></svg>
-                                            {!isMobile && t.play}
-                                        </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="bottom" sideOffset={6}>
-                                        <span className="flex items-center gap-1.5">
-                                            {t.play}
-                                            <kbd className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold border ${isDark ? 'bg-secondary-700 border-secondary-600 text-secondary-300' : 'bg-secondary-100 border-secondary-300 text-secondary-600'}`}>P</kbd>
-                                        </span>
-                                    </TooltipContent>
-                                </Tooltip>
-                            ) : (
-                                <Tooltip delayDuration={300}>
-                                    <TooltipTrigger asChild>
-                                        <button onClick={() => { onPause(); }}
-                                            className={`flex items-center justify-center rounded-lg text-xs font-semibold transition-all ${isMobile ? 'w-7 h-7' : 'gap-1.5 px-3 py-1.5'} ${isDark ? 'bg-warning-600 hover:bg-warning-500 text-white' : 'bg-warning-500 hover:bg-warning-600 text-white'}`}>
-                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                                                <rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" />
-                                            </svg>
-                                            {!isMobile && t.pause}
-                                        </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="bottom" sideOffset={6}>
-                                        <span className="flex items-center gap-1.5">
-                                            {t.pause}
-                                            <kbd className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold border ${isDark ? 'bg-secondary-700 border-secondary-600 text-secondary-300' : 'bg-secondary-100 border-secondary-300 text-secondary-600'}`}>P</kbd>
-                                        </span>
-                                    </TooltipContent>
-                                </Tooltip>
-                            )}
-                            <Tooltip delayDuration={300}>
-                                <TooltipTrigger asChild>
-                                    <button onClick={onNext} disabled={!isPaused}
-                                        className={`flex items-center justify-center rounded-lg text-xs font-semibold transition-all ${isMobile ? 'w-7 h-7' : 'gap-1.5 px-3 py-1.5'} ${isPaused ? (isDark ? 'bg-primary-600 hover:bg-primary-500 text-white' : 'bg-primary-500 hover:bg-primary-600 text-white') : (isDark ? 'bg-secondary-700/40 text-secondary-600 cursor-not-allowed' : 'bg-secondary-100 text-secondary-400 cursor-not-allowed')}`}>
-                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                                            <polygon points="5,3 14,12 5,21" /><rect x="16" y="3" width="3" height="18" />
-                                        </svg>
-                                        {!isMobile && t.next}
-                                    </button>
-                                </TooltipTrigger>
-                                <TooltipContent side="bottom" sideOffset={6}>
-                                    <span className="flex items-center gap-1.5">
-                                        {t.next}
-                                        <kbd className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold border ${isDark ? 'bg-secondary-700 border-secondary-600 text-secondary-300' : 'bg-secondary-100 border-secondary-300 text-secondary-600'}`}>N</kbd>
-                                    </span>
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
-                        {!isMobile && <div className={`w-px h-5 mx-0.5 ${isDark ? 'bg-white/15' : 'bg-black/15'}`} />}
-                    </>)}
-
-                    {/* Close — always visible, rounded square, X always shown */}
-                    <TooltipProvider>
-                        <Tooltip delayDuration={300}>
-                            <TooltipTrigger asChild>
-                                <button
-                                    aria-label={t.close}
-                                    onClick={onClose}
-                                    className="flex items-center justify-center w-5 h-5 rounded-md bg-error-500 hover:bg-error-600 transition-all flex-shrink-0"
-                                >
-                                    <X className="w-3 h-3 text-white pointer-events-none" />
-                                </button>
-                            </TooltipTrigger>
-                            <TooltipContent side="bottom" sideOffset={6}>
-                                <span className="flex items-center gap-1.5">
-                                    {t.close}
-                                    <kbd className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold border ${isDark ? 'bg-secondary-700 border-secondary-600 text-secondary-300' : 'bg-secondary-100 border-secondary-300 text-secondary-600'}`}>ESC</kbd>
-                                </span>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                </div>
             </div>
-
-            <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0">
-
-                {/* Result banner */}
-                {isDone && (
-                    <div className={`px-5 py-3 flex items-start gap-3 border-b ${isSuccess
-                        ? isGlass
-                            ? (isDark ? 'bg-success-500/10 border-success-500/20' : 'bg-success-500/10 border-success-500/20')
-                            : (isDark ? 'bg-success-900/40 border-success-800/50' : 'bg-success-50 border-success-100')
-                        : isGlass
-                            ? (isDark ? 'bg-error-500/10 border-error-500/20' : 'bg-error-500/10 border-error-500/20')
-                            : (isDark ? 'bg-error-900/40 border-error-800/50' : 'bg-error-50 border-error-100')
-                        }`}>
-                        {isSuccess ? (
-                            <svg className="w-5 h-5 text-success-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                            </svg>
-                        ) : (
-                            <svg className="w-5 h-5 text-error-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        )}
-                        <div className="flex-1 min-w-0">
-                            {isSuccess ? (
-                                <>
-                                    <div className={`text-sm font-bold ${isDark ? 'text-success-300' : 'text-success-700'}`}>{t.successTitle}</div>
-                                    <div className={`text-xs mt-0.5 font-mono ${isDark ? 'text-success-400/80' : 'text-success-600'}`}>
-                                        {language === 'tr' ? `${targetIp || targetName}: bayt=32 TTL=${currentInfo?.ttl ?? 64}` : `Reply from ${targetIp || targetName}: bytes=32 TTL=${currentInfo?.ttl ?? 64}`}
-                                    </div>
-                                    <div className={`text-xs mt-0.5 ${isDark ? 'text-success-500/70' : 'text-success-600/70'}`}>{sourceName} → {targetName} → {sourceName}</div>
-                                </>
-                            ) : (
-                                <>
-                                    <div className={`text-sm font-bold ${isDark ? 'text-error-300' : 'text-error-700'}`}>{t.failTitle}</div>
-                                    {errorMessage && <div className={`text-xs mt-0.5 ${isDark ? 'text-error-400/80' : 'text-error-600'}`}>{t.failReason}: {errorMessage}</div>}
-                                    {currentInfo && (
-                                        <div className={`text-xs mt-0.5 font-mono ${isDark ? 'text-error-500/70' : 'text-error-500/70'}`}>
-                                            {language === 'tr' ? `${currentInfo.fromDevice.name} → ${currentInfo.toDevice.name} adımında başarısız` : `Failed at ${currentInfo.fromDevice.name} → ${currentInfo.toDevice.name}`}
-                                        </div>
-                                    )}
-                                </>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* Body */}
-                {currentInfo ? (
-                    <div className={isMobile ? 'px-3 py-2 space-y-2' : 'px-5 py-4 space-y-3'}>
-                        {/* Route bar */}
-                        <div className={`flex items-center gap-2 rounded-xl ${isMobile ? 'px-3 py-2' : 'px-4 py-2.5'} ${isGlass
-                            ? isDark ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/8'
-                            : isDark ? 'bg-secondary-800/80 border border-secondary-700' : 'bg-secondary-100 border border-secondary-200'
-                            }`}>
-                            <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${currentInfo.fromDevice.type === 'router' ? 'bg-purple-500' : currentInfo.fromDevice.type.startsWith('switch') ? 'bg-accent-500' : 'bg-primary-500'}`} />
-                                <span className={`${isMobile ? 'text-xs' : 'text-sm'} font-semibold truncate ${isDark ? 'text-secondary-200' : 'text-secondary-700'}`}>{currentInfo.fromDevice.name}</span>
-                                {!isMobile && <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium flex-shrink-0 ${isDark ? 'bg-white/10 text-secondary-400' : 'bg-black/10 text-secondary-500'}`}>{currentInfo.fromDevice.type}</span>}
-                            </div>
-                            <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
-                                <CableIcon cableType={currentInfo.cableType} color={getCableColor(currentInfo.cableType)} isMobile={isMobile} />
-                                {!isMobile && <span className="text-[10px] font-medium" style={{ color: getCableColor(currentInfo.cableType) }}>{getCableLabel(currentInfo.cableType, t)}</span>}
-                            </div>
-                            <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
-                                {!isMobile && <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium flex-shrink-0 ${isDark ? 'bg-white/10 text-secondary-400' : 'bg-black/10 text-secondary-500'}`}>{currentInfo.toDevice.type}</span>}
-                                <span className={`${isMobile ? 'text-xs' : 'text-sm'} font-semibold truncate ${isDark ? 'text-secondary-200' : 'text-secondary-700'}`}>{currentInfo.toDevice.name}</span>
-                                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${currentInfo.toDevice.type === 'router' ? 'bg-purple-500' : currentInfo.toDevice.type.startsWith('switch') ? 'bg-accent-500' : 'bg-primary-500'}`} />
-                            </div>
-                            {macChanged && (
-                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${isDark ? 'bg-warning-500/20 text-warning-300 border border-warning-500/30' : 'bg-warning-500/15 text-warning-700 border border-warning-500/30'}`}>⚡ {isMobile ? '' : t.macChanged}</span>
-                            )}
-                            {ipSame && prevInfo && !isMobile && (
-                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${isDark ? 'bg-success-500/20 text-success-300 border border-success-500/30' : 'bg-success-500/15 text-success-700 border border-success-500/30'}`}>✓ {t.ipSame}</span>
-                            )}
-                        </div>
-
-                        {/* Packet tables — 3 col desktop, 1 col mobile (tabs) */}
-                        {showPacketTables && (isMobile ? (
-                            <MobilePacketTables
-                                currentInfo={currentInfo}
-                                prevInfo={prevInfo}
-                                macChanged={macChanged}
-                                ttlChanged={ttlChanged}
-                                isDark={isDark}
-                                isGlass={isGlass}
-                                t={t}
-                            />
-                        ) : (
-                            <div className="grid grid-cols-3 gap-3">
-                                <div className={`rounded-xl overflow-hidden border ${isGlass
-                                    ? isDark ? 'border-success-400/20 bg-success-500/10' : 'border-success-400/30 bg-success-500/8'
-                                    : isDark ? 'border-success-900/60 bg-success-950/50' : 'border-success-200 bg-success-50'}`}
-                                    style={isGlass ? { backdropFilter: 'blur(12px) saturate(180%)' } : undefined}>
-                                    <div className={`px-3 py-1.5 text-[11px] font-bold tracking-wide border-b ${isGlass
-                                        ? isDark ? 'bg-success-500/15 border-success-400/20 text-success-400' : 'bg-success-500/10 border-success-400/20 text-success-700'
-                                        : isDark ? 'bg-success-950/60 border-success-900/60 text-success-400' : 'bg-success-100 border-success-200 text-success-700'}`}>{t.layer2}</div>
-                                    <table className="w-full"><tbody>
-                                        <FieldRow label={t.srcMac} value={currentInfo.srcMac} prevValue={prevInfo?.srcMac} highlight={macChanged ? 'changed' : 'none'} isDark={isDark} badge={macChanged ? t.changed : undefined} badgeColor="var(--color-warning-600)" />
-                                        <FieldRow label={t.dstMac} value={currentInfo.dstMac} prevValue={prevInfo?.dstMac} highlight={macChanged ? 'changed' : 'none'} isDark={isDark} />
-                                        <FieldRow label={t.etherType} value={currentInfo.etherType} isDark={isDark} />
-                                    </tbody></table>
-                                </div>
-                                <div className={`rounded-xl overflow-hidden border ${isGlass
-                                    ? isDark ? 'border-purple-400/20 bg-purple-500/10' : 'border-purple-400/30 bg-purple-500/8'
-                                    : isDark ? 'border-purple-900/60 bg-purple-950/50' : 'border-purple-200 bg-purple-50'}`}
-                                    style={isGlass ? { backdropFilter: 'blur(12px) saturate(180%)' } : undefined}>
-                                    <div className={`px-3 py-1.5 text-[11px] font-bold tracking-wide border-b ${isGlass
-                                        ? isDark ? 'bg-purple-500/15 border-purple-400/20 text-purple-400' : 'bg-purple-500/10 border-purple-400/20 text-purple-700'
-                                        : isDark ? 'bg-purple-950/60 border-purple-900/60 text-purple-400' : 'bg-purple-100 border-purple-200 text-purple-700'}`}>{currentInfo.layer3 === 'IPv6' ? (language === 'tr' ? 'Katman 3 — IPv6 Başlığı' : 'Layer 3 — IPv6 Header') : t.layer3}</div>
-                                    <table className="w-full"><tbody>
-                                        <FieldRow label={currentInfo.layer3 === 'IPv6' ? (t.srcIp.replace('IP', 'IPv6')) : t.srcIp} value={currentInfo.srcIp} highlight="same" isDark={isDark} />
-                                        <FieldRow label={currentInfo.layer3 === 'IPv6' ? (t.dstIp.replace('IP', 'IPv6')) : t.dstIp} value={currentInfo.dstIp} highlight="same" isDark={isDark} />
-                                        <FieldRow label={currentInfo.layer3 === 'IPv6' ? 'Hop Limit' : t.ttl} value={String(currentInfo.ttl)} prevValue={prevInfo ? String(prevInfo.ttl) : undefined} highlight={ttlChanged ? 'changed' : 'none'} isDark={isDark} badge={ttlChanged ? t.ttlDec : undefined} badgeColor="var(--color-warning-600)" />
-                                        <FieldRow label={t.protocol} value={currentInfo.protocol} isDark={isDark} />
-                                    </tbody></table>
-                                </div>
-                                <div className={`rounded-xl overflow-hidden border ${isGlass
-                                    ? isDark ? 'border-primary-400/20 bg-primary-500/10' : 'border-primary-400/30 bg-primary-500/8'
-                                    : isDark ? 'border-primary-900/60 bg-primary-950/50' : 'border-primary-200 bg-primary-50'}`}
-                                    style={isGlass ? { backdropFilter: 'blur(12px) saturate(180%)' } : undefined}>
-                                    <div className={`px-3 py-1.5 text-[11px] font-bold tracking-wide border-b ${isGlass
-                                        ? isDark ? 'bg-primary-500/15 border-primary-400/20 text-primary-400' : 'bg-primary-500/10 border-primary-400/20 text-primary-700'
-                                        : isDark ? 'bg-primary-950/60 border-primary-900/60 text-primary-400' : 'bg-primary-100 border-primary-200 text-primary-700'}`}>{currentInfo.layer4 === 'ICMPv6' ? (language === 'tr' ? 'Katman 4 — ICMPv6' : 'Layer 4 — ICMPv6') : t.layer4}</div>
-                                    <table className="w-full"><tbody>
-                                        <FieldRow label={currentInfo.layer4 === 'ICMPv6' ? 'ICMPv6 Type' : t.icmpType} value={currentInfo.icmpType} isDark={isDark} />
-                                        <FieldRow label={currentInfo.layer4 === 'ICMPv6' ? 'ICMPv6 Code' : t.icmpCode} value={String(currentInfo.icmpCode)} isDark={isDark} />
-                                        <FieldRow label={t.icmpSeq} value={String(currentInfo.icmpSeq)} isDark={isDark} />
-                                    </tbody></table>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className={`px-5 py-8 text-center text-sm ${isDark ? 'text-secondary-500' : 'text-secondary-400'}`}>{t.noHops}</div>
-                )}
-            </div>
-        </div >
+        </DraggableWindowWrapper>
     );
 }
-
 export function buildHopPacketInfos(
     path: string[],
     devices: CanvasDevice[],

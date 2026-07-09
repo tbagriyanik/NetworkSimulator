@@ -18,7 +18,6 @@ import { useDeviceSelection } from '@/hooks/useDeviceSelection';
 import { useAppStore, useTopologyDevices, useTopologyConnections, useTopologyNotes, useZoom, usePan, useActiveTab, useEnvironment } from '@/lib/store/appStore';
 import { ExamTask } from '@/lib/network/examMode';
 import { cn, normalizeMAC } from '@/lib/utils';
-import { logger } from '@/lib/logger';
 import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType, FirewallRule } from '@/components/network/networkTopology.types';
 import { getPrompt } from '@/lib/network/executor';
 import { formatErrorForUser, errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
@@ -37,13 +36,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+
 import {
   Tabs,
   TabsContent,
@@ -56,7 +49,7 @@ const NetworkTopology = dynamic(
   { ssr: false }
 );
 
-import { Network, Monitor, UserKey, X, Power, Filter, RefreshCw, Users, Activity, ShieldCheck, Share2, Layers } from "lucide-react";
+import { Network, Monitor, UserKey, X, RefreshCw, Users, Activity, ShieldCheck, Share2, Layers } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { TooltipWrapper } from "@/components/ui/TooltipWrapper";
 import { useLanguage, Translations } from '@/contexts/LanguageContext';
@@ -98,6 +91,7 @@ import { useRoomSync } from '@/hooks/useRoomSync';
 import { useToast } from '@/hooks/use-toast';
 
 import { LiveDeviceList, RefreshDeviceSummary, REFRESH_DEVICE_TYPE_ORDER } from '@/components/network/LiveDeviceList';
+import { DraggableWindowWrapper } from '@/components/network/DraggableWindowWrapper';
 import { useNetworkSimulation } from '@/hooks/useNetworkSimulation';
 import { useTroubleshootingMode } from '@/hooks/useTroubleshootingMode';
 import { useOnboarding } from '@/hooks/useOnboarding';
@@ -4316,262 +4310,86 @@ ${state.bannerMOTD}
           />
 
           {/* Firewall Configuration Modal */}
-          <Dialog open={showFirewallPanel} onOpenChange={(open) => {
-            setShowFirewallPanel(open);
-            if (!open) setFirewallActiveTab('console');
-          }} modal={false}>
-            <DialogContent
-              showCloseButton={false}
-              onEscapeKeyDown={() => {
-                setShowFirewallPanel(false);
-                setFirewallActiveTab('console');
-              }}
-              className={cn(
-                "p-0 overflow-visible flex flex-col top-auto left-auto translate-x-0 translate-y-0 shadow-[0_15px_50px_rgba(15,23,42,0.12)] liquid-glass-light",
-                isDark
-                  ? "bg-secondary-950/80 border-success-500/40 backdrop-blur-xl"
-                  : "bg-white/70 border-success-500 backdrop-blur-xl"
+          <DraggableWindowWrapper
+            id="firewall"
+            title={`${isTR ? 'Firewall' : 'Firewall'} - ${topologyDevices?.find((d: CanvasDevice) => d.id === activeFirewallId)?.name || activeFirewallId}`}
+            isOpen={showFirewallPanel}
+            onClose={() => {
+              setShowFirewallPanel(false);
+              setFirewallActiveTab('console');
+            }}
+            isDark={isDark}
+            modalPosition={firewallDrag.position}
+            modalSize={firewallDrag.size}
+            handlePointerDown={firewallDrag.handlePointerDown}
+            handleResizeStart={firewallDrag.handleResizeStart}
+            onEscapeKeyDown={() => {
+              setShowFirewallPanel(false);
+              setFirewallActiveTab('console');
+            }}
+          >
+            <div className="flex-1 overflow-y-auto rounded-b-2xl p-4 custom-scrollbar">
+              {activeFirewallId && (
+                <FirewallPanel
+                  device={topologyDevices.find(d => d.id === activeFirewallId) as CanvasDevice}
+                  t={t}
+                  theme={theme}
+                  isDevicePoweredOff={topologyDevices.find(d => d.id === activeFirewallId)?.status === 'offline'}
+                  onUpdateRules={(rules) => {
+                    updateDeviceConfig(activeFirewallId as string, { firewallRules: rules });
+                  }}
+                  deviceStates={deviceStates}
+                  deviceOutputs={deviceOutputs}
+                  onExecuteCommand={(cmd) => handleExecuteCommand(activeFirewallId as string, cmd)}
+                  onUpdateHistory={handleUpdateHistory}
+                  setConfirmDialog={setConfirmDialog}
+                  confirmDialog={confirmDialog}
+                  topologyDevices={topologyDevices}
+                  activeTab={firewallActiveTab}
+                  onTabChange={setFirewallActiveTab}
+                  onTogglePower={toggleDevicePower}
+                />
               )}
-              data-modal-content
-              data-disable-snap="true"
-              style={{
-                position: 'fixed',
-                left: !isMobile ? firewallDrag.position.x : 0,
-                top: !isMobile ? firewallDrag.position.y : 0,
-                width: !isMobile ? `${firewallDrag.size.width}px` : '100vw',
-                height: !isMobile ? `${firewallDrag.size.height}px` : '100vh',
-                maxWidth: 'none',
-                maxHeight: 'none',
-                borderRadius: !isMobile ? '1rem' : 0,
-                borderWidth: 3,
-                borderStyle: 'dashed',
-              }}
-              onPointerDownCapture={(e) => bringElementToFront(e.currentTarget as HTMLElement)}
-            >
-              <div className={cn(
-                "relative flex flex-col h-full overflow-visible",
-                !isMobile ? 'rounded-2xl' : 'rounded-none'
-              )}>
-                <DialogHeader
-                  className={cn(
-                    "p-3 sm:p-4 border-b cursor-grab active:cursor-grabbing select-none touch-none sticky top-0 z-10 backdrop-blur-xl",
-                    isDark ? "border-success-500/30 bg-secondary-900/75" : "border-success-500/60 bg-white/80"
-                  )}
-                  data-modal-header
-                  onPointerDown={(e) => firewallDrag.handlePointerDown(e, 'firewall')}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <DialogTitle className={cn("font-semibold truncate", isDark ? 'text-white' : 'text-secondary-900')}>
-                        {isTR ? 'Firewall' : 'Firewall'} - {topologyDevices?.find((d: CanvasDevice) => d.id === activeFirewallId)?.name || activeFirewallId}
-                      </DialogTitle>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {/* Power Button */}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 hover:bg-warning-500/20 hover:text-warning-500"
-                        onClick={() => {
-                          if (activeFirewallId) {
-                            logger.debug('Firewall power toggle:', activeFirewallId, 'Current status:', topologyDevices.find(d => d.id === activeFirewallId)?.status);
-                            toggleDevicePower(activeFirewallId);
-                          } else {
-                            logger.debug('No active firewall ID');
-                          }
-                        }}
-                        title={t.power}
-                      >
-                        <Power className={cn("h-3.5 w-3.5", topologyDevices.find(d => d.id === activeFirewallId)?.status === 'offline' ? 'text-error-500' : 'text-success-500')} />
-                      </Button>
-                      {/* Quick Settings Button */}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className={cn("h-7 w-7", firewallActiveTab === 'settings' ? 'bg-primary/20 text-primary' : 'hover:bg-primary/20')}
-                        onClick={() => setFirewallActiveTab(firewallActiveTab === 'settings' ? 'console' : 'settings')}
-                        title={t.quickSettings}
-                      >
-                        <Filter className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 hover:bg-error-500 hover:text-white dark:hover:bg-error-600"
-                        onClick={() => {
-                          setShowFirewallPanel(false);
-                          setFirewallActiveTab('console');
-                        }}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                </DialogHeader>
-                <div className="flex-1 overflow-y-auto rounded-b-2xl p-4 custom-scrollbar">
-                  {activeFirewallId && (
-                    <FirewallPanel
-                      device={topologyDevices.find(d => d.id === activeFirewallId) as CanvasDevice}
-                      t={t}
-                      theme={theme}
-                      isDevicePoweredOff={topologyDevices.find(d => d.id === activeFirewallId)?.status === 'offline'}
-                      onUpdateRules={(rules) => {
-                        updateDeviceConfig(activeFirewallId as string, { firewallRules: rules });
-                      }}
-                      deviceStates={deviceStates}
-                      deviceOutputs={deviceOutputs}
-                      onExecuteCommand={(cmd) => handleExecuteCommand(activeFirewallId as string, cmd)}
-                      onUpdateHistory={handleUpdateHistory}
-                      setConfirmDialog={setConfirmDialog}
-                      confirmDialog={confirmDialog}
-                      topologyDevices={topologyDevices}
-                      activeTab={firewallActiveTab}
-                      onTabChange={setFirewallActiveTab}
-                      onTogglePower={toggleDevicePower}
-                    />
-                  )}
-                </div>
-                {/* Resize handles - hidden on mobile */}
-                {!isMobile && (
-                  <>
-                    <div className="absolute left-0 top-0 bottom-0 w-[10px] cursor-ew-resize select-none touch-none bg-transparent hover:bg-error-500/10" onPointerDown={(e) => firewallDrag.handleResizeStart(e, 'w', 'firewall')} />
-                    <div className="absolute -right-[5px] top-0 bottom-0 w-[10px] cursor-ew-resize select-none touch-none rounded-r-lg bg-transparent hover:bg-error-500/20" onPointerDown={(e) => firewallDrag.handleResizeStart(e, 'e', 'firewall')} />
-                    <div className="absolute -top-[5px] left-[10px] right-8 z-20 h-[10px] cursor-ns-resize select-none touch-none rounded-t-lg bg-transparent hover:bg-error-500/20" onPointerDown={(e) => firewallDrag.handleResizeStart(e, 'n', 'firewall')} />
-                    <div className="absolute -bottom-[5px] left-[10px] right-8 z-20 h-[10px] cursor-ns-resize select-none touch-none rounded-b-lg bg-transparent hover:bg-error-500/20" onPointerDown={(e) => firewallDrag.handleResizeStart(e, 's', 'firewall')} />
-                    <div className="absolute -left-[5px] -top-[5px] z-20 h-[10px] w-[10px] cursor-nw-resize select-none touch-none bg-transparent hover:bg-error-500/20" onPointerDown={(e) => firewallDrag.handleResizeStart(e, 'nw', 'firewall')} />
-                    <div className="absolute -right-[5px] -top-[5px] z-20 h-[10px] w-[10px] cursor-ne-resize select-none touch-none bg-transparent hover:bg-error-500/20" onPointerDown={(e) => firewallDrag.handleResizeStart(e, 'ne', 'firewall')} />
-                    <div className="absolute -left-[5px] -bottom-[5px] z-20 h-[10px] w-[10px] cursor-sw-resize select-none touch-none bg-transparent hover:bg-error-500/20" onPointerDown={(e) => firewallDrag.handleResizeStart(e, 'sw', 'firewall')} />
-                    <TooltipWrapper title={t.resizeAction}>
-                      <div
-                        className="absolute -bottom-2 -right-2 z-20 h-7 w-7 cursor-se-resize select-none touch-none rounded-tl-lg rounded-br-lg border border-success-500/30 bg-secondary-500/30 text-secondary-100/80 hover:bg-error-500/30 hover:text-white flex items-center justify-center"
-                        onPointerDown={(e) => firewallDrag.handleResizeStart(e, 'se', 'firewall')}
-                      >
-                        <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                          <path d="M6 13L13 6" />
-                          <path d="M9.5 13L13 9.5" />
-                          <path d="M12.5 13L13 12.5" />
-                        </svg>
-                      </div>
-                    </TooltipWrapper>
-                  </>
-                )}
-              </div>
-            </DialogContent>
-          </Dialog>
+            </div>
+          </DraggableWindowWrapper>
 
           {/* PC Terminal Modal */}
-          <Dialog open={showPCPanel && !isTablet} onOpenChange={setShowPCPanel} modal={false}>
-            <DialogContent
-              showCloseButton={false}
-              onEscapeKeyDown={(e) => e.preventDefault()}
-              className={cn(
-                "p-0 overflow-visible flex flex-col top-auto left-auto translate-x-0 translate-y-0 shadow-[0_15px_50px_rgba(15,23,42,0.12)] liquid-glass-light",
-                isDark
-                  ? "bg-secondary-950/80 border-success-500/40 backdrop-blur-xl"
-                  : "bg-white/70 border-success-500 backdrop-blur-xl"
-              )}
-              data-modal-content
-              style={{
-                position: 'absolute',
-                left: !isMobile ? pcDrag.position.x : 0,
-                top: !isMobile ? pcDrag.position.y : 0,
-                width: !isMobile ? `${pcDrag.size.width}px` : '100vw',
-                height: !isMobile ? `${pcDrag.size.height}px` : '100vh',
-                maxWidth: 'none',
-                maxHeight: 'none',
-                borderRadius: !isMobile ? '1rem' : 0,
-                borderWidth: 3,
-                borderStyle: 'dashed',
-              }}
-            >
-              <div className={cn(
-                "relative flex flex-col h-full overflow-visible",
-                !isMobile ? 'rounded-2xl' : 'rounded-none'
-              )}>
-                <DialogHeader
-                  className={cn(
-                    "p-3 sm:p-4 border-b cursor-grab active:cursor-grabbing select-none touch-none sticky top-0 z-10 backdrop-blur-xl min-h-[48px]",
-                    isDark ? "border-success-500/30 bg-secondary-900/75" : "border-success-500/60 bg-white/80"
-                  )}
-                  data-modal-header
-                  onPointerDown={(e) => pcDrag.handlePointerDown(e, 'pc')}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 flex-1">
-                      <DialogTitle className={isDark ? 'text-white font-semibold' : 'text-secondary-900 font-semibold'}>
-                        {t.pcTerminal} - {topologyDevices?.find((d: CanvasDevice) => d.id === showPCDeviceId)?.name || showPCDeviceId}
-                      </DialogTitle>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 hover:bg-error-500 hover:text-white dark:hover:bg-error-600"
-                        onClick={() => setShowPCPanel(false)}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                  <DialogDescription className="sr-only">
-                    {t.pcTerminal}
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="flex-1 overflow-hidden rounded-b-2xl">
-                  <PCPanel
-                    key="pc-panel"
-                    className={cn(
-                      "h-full min-h-0",
-                      focusedOverlay === 'pc-info'
-                        ? "border-emerald-400 shadow-[inset_0_0_0_1px_rgba(52,211,153,0.35)]"
-                        : "border-emerald-950/80"
-                    )}
-                    deviceId={showPCDeviceId}
-                    cableInfo={cableInfo}
-                    initialTab={pcPanelInitialTab}
-                    isVisible={true}
-                    onClose={() => setShowPCPanel(false)}
-                    onTogglePower={toggleDevicePower}
-                    topologyDevices={topologyDevices || undefined}
-                    topologyConnections={topologyConnections || undefined}
-                    deviceStates={deviceStates}
-                    deviceOutputs={deviceOutputs}
-                    pcOutputs={pcOutputs}
-                    pcHistories={pcHistories}
-                    onUpdatePCHistory={handleUpdatePCHistory}
-                    onExecuteDeviceCommand={handleExecuteCommand}
-                    onNavigate={handlePCPanelNavigateWrapper}
-                    onDeleteDevice={handleDeviceDelete}
-                    handleResizeStart={pcDrag.handleResizeStart}
-                  />
-                </div>
-                {/* Resize handles - hidden on mobile */}
-                {!isMobile && (
-                  <>
-                    <div className="absolute left-0 top-0 bottom-0 w-[10px] cursor-ew-resize select-none touch-none bg-transparent hover:bg-accent-500/10" onPointerDown={(e) => pcDrag.handleResizeStart(e, 'w', 'pc')} />
-                    <div className="absolute -right-[5px] top-0 bottom-0 w-[10px] cursor-ew-resize select-none touch-none rounded-r-lg bg-transparent hover:bg-accent-500/20" onPointerDown={(e) => pcDrag.handleResizeStart(e, 'e', 'pc')} />
-                    <div className="absolute -top-[5px] left-[10px] right-8 z-20 h-[10px] cursor-ns-resize select-none touch-none rounded-t-lg bg-transparent hover:bg-accent-500/20" onPointerDown={(e) => pcDrag.handleResizeStart(e, 'n', 'pc')} />
-                    <div className="absolute -bottom-[5px] left-[10px] right-8 z-20 h-[10px] cursor-ns-resize select-none touch-none rounded-b-lg bg-transparent hover:bg-accent-500/20" onPointerDown={(e) => pcDrag.handleResizeStart(e, 's', 'pc')} />
-                    <div className="absolute -left-[5px] -top-[5px] z-20 h-[10px] w-[10px] cursor-nw-resize select-none touch-none bg-transparent hover:bg-accent-500/20" onPointerDown={(e) => pcDrag.handleResizeStart(e, 'nw', 'pc')} />
-                    <div className="absolute -right-[5px] -top-[5px] z-20 h-[10px] w-[10px] cursor-ne-resize select-none touch-none bg-transparent hover:bg-accent-500/20" onPointerDown={(e) => pcDrag.handleResizeStart(e, 'ne', 'pc')} />
-                    <div className="absolute -left-[5px] -bottom-[5px] z-20 h-[10px] w-[10px] cursor-sw-resize select-none touch-none bg-transparent hover:bg-accent-500/20" onPointerDown={(e) => pcDrag.handleResizeStart(e, 'sw', 'pc')} />
-                    <TooltipWrapper title={t.resizeAction}>
-                      <div
-                        className="absolute -bottom-2 -right-2 z-20 h-7 w-7 cursor-se-resize select-none touch-none rounded-tl-lg rounded-br-lg border border-success-500/30 bg-secondary-500/30 text-secondary-100/80 hover:bg-accent-500/30 hover:text-white flex items-center justify-center"
-                        onPointerDown={(e) => pcDrag.handleResizeStart(e, 'se', 'pc')}
-                      >
-                        <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                          <path d="M6 13L13 6" />
-                          <path d="M9.5 13L13 9.5" />
-                          <path d="M12.5 13L13 12.5" />
-                        </svg>
-                      </div>
-                    </TooltipWrapper>
-                  </>
-                )}
-              </div>
-            </DialogContent>
-          </Dialog>
+          <DraggableWindowWrapper
+            id="pc"
+            title={`${t.pcTerminal} - ${topologyDevices?.find((d: CanvasDevice) => d.id === showPCDeviceId)?.name || showPCDeviceId}`}
+            isOpen={showPCPanel && !isTablet}
+            onClose={() => setShowPCPanel(false)}
+            isDark={isDark}
+            modalPosition={pcDrag.position}
+            modalSize={pcDrag.size}
+            handlePointerDown={pcDrag.handlePointerDown}
+            handleResizeStart={pcDrag.handleResizeStart}
+            className={cn(focusedOverlay === 'pc-info' ? "border-emerald-400 shadow-[0_0_0_1px_rgba(52,211,153,0.35)]" : "border-emerald-950/80")}
+          >
+            <div className="flex-1 overflow-hidden relative rounded-b-2xl">
+              <PCPanel
+                key="pc-panel"
+                className="h-full min-h-0 !border-none"
+                deviceId={showPCDeviceId}
+                cableInfo={cableInfo}
+                initialTab={pcPanelInitialTab}
+                isVisible={true}
+                onClose={() => setShowPCPanel(false)}
+                onTogglePower={toggleDevicePower}
+                topologyDevices={topologyDevices || undefined}
+                topologyConnections={topologyConnections || undefined}
+                deviceStates={deviceStates}
+                deviceOutputs={deviceOutputs}
+                pcOutputs={pcOutputs}
+                pcHistories={pcHistories}
+                onUpdatePCHistory={handleUpdatePCHistory}
+                onExecuteDeviceCommand={handleExecuteCommand}
+                onNavigate={handlePCPanelNavigateWrapper}
+                onDeleteDevice={handleDeviceDelete}
+                handleResizeStart={pcDrag.handleResizeStart}
+              />
+            </div>
+          </DraggableWindowWrapper>
 
           {/* Router Info Panel Modal */}
           <RouterPanel

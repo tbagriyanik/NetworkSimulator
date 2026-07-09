@@ -1,10 +1,11 @@
 import React from 'react';
-import { Trash2, X } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { useAppStore } from '@/lib/store/appStore';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { CABLE_COLORS } from './networkTopology.constants';
 import { getConnectionStatusMessage } from './networkTopology.helpers';
-import { bringElementToFront } from '@/lib/utils/zIndex';
+import { DraggableWindowWrapper } from './DraggableWindowWrapper';
+import { useDrag } from '@/hooks/useDrag';
 
 interface PacketCapturePanelProps {
   activeCaptureConnectionId: string;
@@ -42,45 +43,13 @@ export const PacketCapturePanel = ({
 
   const [columnOrder, setColumnOrder] = React.useState(['time', 'source', 'dest', 'proto', 'info']);
   
-  const [position, setPosition] = React.useState(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('packetCapturePosition');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (typeof parsed.x === 'number' && typeof parsed.y === 'number' && !isNaN(parsed.x) && !isNaN(parsed.y)) {
-            return parsed;
-          }
-        }
-      } catch {}
-      return { x: window.innerWidth - 420, y: window.innerHeight - 340 };
-    }
-    return { x: 0, y: 0 };
+  const dragProps = useDrag({
+    storageKey: 'packetCapture',
+    defaultPosition: typeof window !== 'undefined' ? { x: window.innerWidth - 420, y: window.innerHeight - 340 } : { x: 0, y: 0 },
+    defaultSize: { width: 384, height: 260 },
+    minSize: { width: 200, height: 120 },
+    mode: 'drag-resize'
   });
-
-  const [size, setSize] = React.useState(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('packetCaptureSize');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (typeof parsed.width === 'number' && typeof parsed.height === 'number' && !isNaN(parsed.width) && !isNaN(parsed.height)) {
-            return parsed;
-          }
-        }
-      } catch {}
-    }
-    return { width: 384, height: 260 };
-  });
-
-  const sizeRef = React.useRef(size);
-  const positionRef = React.useRef(position);
-  React.useEffect(() => { sizeRef.current = size; }, [size]);
-  React.useEffect(() => { positionRef.current = position; }, [position]);
-  
-  const panelRef = React.useRef<HTMLDivElement>(null);
-  const dragStartPos = React.useRef({ x: 0, y: 0 });
-  const isDraggingRef = React.useRef(false);
 
   const onDragStart = (e: React.DragEvent, idx: number) => { e.dataTransfer.setData('text/plain', idx.toString()); };
   const onDrop = (e: React.DragEvent, targetIdx: number) => {
@@ -90,38 +59,6 @@ export const PacketCapturePanel = ({
     const [moved] = newOrder.splice(sourceIdx, 1);
     newOrder.splice(targetIdx, 0, moved);
     setColumnOrder(newOrder);
-  };
-  
-  const handlePointerDown = (e: React.PointerEvent) => {
-    const target = e.target as HTMLElement;
-    if (target.closest('button')) return; // Ignore buttons
-    
-    isDraggingRef.current = true;
-    dragStartPos.current = { x: e.clientX - positionRef.current.x, y: e.clientY - positionRef.current.y };
-    e.currentTarget.setPointerCapture(e.pointerId);
-  };
-
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (isDraggingRef.current) {
-      const newX = e.clientX - dragStartPos.current.x;
-      const newY = e.clientY - dragStartPos.current.y;
-      positionRef.current = { x: newX, y: newY };
-      if (panelRef.current) {
-        panelRef.current.style.left = `${newX}px`;
-        panelRef.current.style.top = `${newY}px`;
-      }
-    }
-  };
-
-  const handlePointerUp = (e: React.PointerEvent) => {
-    if (isDraggingRef.current) {
-      isDraggingRef.current = false;
-      setPosition(positionRef.current); // Sync react state
-      localStorage.setItem('packetCapturePosition', JSON.stringify(positionRef.current));
-      try {
-        e.currentTarget.releasePointerCapture(e.pointerId);
-      } catch (_err) {}
-    }
   };
 
   const renderHeader = (col: string, idx: number) => {
@@ -143,35 +80,9 @@ export const PacketCapturePanel = ({
   const cableColors = CABLE_COLORS as Record<string, { primary: string; bg: string; text: string; border: string }>;
 
   return (
-    <div 
-      ref={panelRef}
-      onPointerDownCapture={() => bringElementToFront(panelRef.current)}
-      style={{ 
-        left: `${position.x}px`, 
-        top: `${position.y}px`, 
-        width: `${size.width}px`, 
-        height: `${size.height}px`,
-        resize: 'both',
-        minWidth: 200,
-        minHeight: 120
-      }}
-      className={`fixed flex flex-col rounded-xl border border-success-500/35 dark:border-success-500/25 shadow-2xl z-50 backdrop-blur-xl overflow-hidden ${isDark ? 'bg-secondary-950/70' : 'bg-white/70'}`}
-      onMouseUp={(e) => {
-        const target = e.currentTarget;
-        if (target.offsetWidth !== size.width || target.offsetHeight !== size.height) {
-          const newSize = { width: target.offsetWidth, height: target.offsetHeight };
-          setSize(newSize);
-          localStorage.setItem('packetCaptureSize', JSON.stringify(newSize));
-        }
-      }}
-    >
-      <div 
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-        className={`flex items-center justify-between px-3 py-2 border-b cursor-grab active:cursor-grabbing touch-none select-none ${isDark ? 'bg-secondary-900/40 border-secondary-800/40' : 'bg-secondary-50/45 border-secondary-100/50'}`}
-      >
+    <DraggableWindowWrapper
+      id="packetCapture"
+      title={
         <div className="flex flex-col gap-0.5 pointer-events-none">
           <div className="flex items-center gap-2">
             <div 
@@ -187,63 +98,67 @@ export const PacketCapturePanel = ({
             </span>
           )}
         </div>
-        <div className="flex items-center gap-1">
+      }
+      isOpen={!!activeCaptureConnectionId}
+      onClose={() => setActiveCaptureConnection(null)}
+      isDark={isDark}
+      modalPosition={dragProps.position}
+      modalSize={dragProps.size}
+      handlePointerDown={dragProps.handlePointerDown}
+      handleResizeStart={dragProps.handleResizeStart}
+    >
+      <div className="flex-1 flex flex-col min-h-0 relative">
+        <div className="flex justify-end p-2 border-b dark:border-secondary-800">
           <button
             onClick={(e) => { e.stopPropagation(); clearCapturedPackets(activeCaptureConnectionId); }}
-            className={`p-1 rounded hover:bg-secondary-300 dark:hover:bg-secondary-600 transition-colors pointer-events-auto`}
+            className="p-1 rounded hover:bg-secondary-300 dark:hover:bg-secondary-600 transition-colors"
             title={t.clearCapture}
           >
-            <Trash2 className="w-3.5 h-3.5 text-error-500 pointer-events-none" />
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); setActiveCaptureConnection(null); }}
-            className="w-5 h-5 rounded-md bg-error-500 hover:bg-error-600 text-white transition-colors inline-flex items-center justify-center pointer-events-auto"
-          >
-            <X className="w-3 h-3 pointer-events-none" />
+            <Trash2 className="w-3.5 h-3.5 text-error-500" />
           </button>
         </div>
-      </div>
-      
-      <div className="custom-scrollbar p-0 bg-transparent flex-1 overflow-auto w-full">
-        <table className="w-full text-[10px] text-left border-collapse">
-          <thead className={`sticky top-0 z-10 ${isDark ? 'bg-secondary-950/80' : 'bg-secondary-100/80'} backdrop-blur-sm`}>
-            <tr>
-              {columnOrder.map((col, idx) => renderHeader(col, idx))}
-            </tr>
-          </thead>
-          <tbody>
-            {capturedPacketsMap[activeCaptureConnectionId]?.length ? (
-              [...capturedPacketsMap[activeCaptureConnectionId]].reverse().map((pkt: { id: string; timestamp: number; sourceIp: string; targetIp: string; protocol: string; info: string; }) => (
-                <tr key={pkt.id} className={`border-b last:border-0 ${isDark ? 'border-secondary-800/40 hover:bg-secondary-800/35' : 'border-secondary-100/30 hover:bg-secondary-50/40'}`}>
-                  {columnOrder.map(col => {
-                    switch (col) {
-                      case 'time': {
-                        const date = new Date(pkt.timestamp);
-                        const timeStr = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
-                        return <td className="px-2 py-1 font-mono opacity-60 text-right" key="time">{timeStr}</td>;
-                      }
-                      case 'source':
-                        return <td className="px-2 py-1 font-mono" key="source">{pkt.sourceIp}</td>;
-                      case 'dest':
-                        return <td className="px-2 py-1 font-mono" key="dest">{pkt.targetIp}</td>;
-                      case 'proto':
-                        return <td className={`px-2 py-1 font-bold ${pkt.protocol === 'ICMP' ? 'text-primary-500' : 'text-purple-500'}`} key="proto">{pkt.protocol}</td>;
-                      case 'info':
-                        return <td className="px-2 py-1 italic opacity-80" key="info">{pkt.info}</td>;
-                      default:
-                        return null;
-                    }
-                  })}
-                </tr>
-              ))
-            ) : (
+        
+        <div className="custom-scrollbar p-0 bg-transparent flex-1 overflow-auto w-full">
+          <table className="w-full text-[10px] text-left border-collapse">
+            <thead className={`sticky top-0 z-10 ${isDark ? 'bg-secondary-950/80' : 'bg-secondary-100/80'} backdrop-blur-sm`}>
               <tr>
-                <td colSpan={columnOrder.length} className="px-4 py-8 text-center opacity-40 italic">{t.noPacketsCaptured}</td>
+                {columnOrder.map((col, idx) => renderHeader(col, idx))}
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {capturedPacketsMap[activeCaptureConnectionId]?.length ? (
+                [...capturedPacketsMap[activeCaptureConnectionId]].reverse().map((pkt: { id: string; timestamp: number; sourceIp: string; targetIp: string; protocol: string; info: string; }) => (
+                  <tr key={pkt.id} className={`border-b last:border-0 ${isDark ? 'border-secondary-800/40 hover:bg-secondary-800/35' : 'border-secondary-100/30 hover:bg-secondary-50/40'}`}>
+                    {columnOrder.map(col => {
+                      switch (col) {
+                        case 'time': {
+                          const date = new Date(pkt.timestamp);
+                          const timeStr = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
+                          return <td className="px-2 py-1 font-mono opacity-60 text-right" key="time">{timeStr}</td>;
+                        }
+                        case 'source':
+                          return <td className="px-2 py-1 font-mono" key="source">{pkt.sourceIp}</td>;
+                        case 'dest':
+                          return <td className="px-2 py-1 font-mono" key="dest">{pkt.targetIp}</td>;
+                        case 'proto':
+                          return <td className={`px-2 py-1 font-bold ${pkt.protocol === 'ICMP' ? 'text-primary-500' : 'text-purple-500'}`} key="proto">{pkt.protocol}</td>;
+                        case 'info':
+                          return <td className="px-2 py-1 italic opacity-80" key="info">{pkt.info}</td>;
+                        default:
+                          return null;
+                      }
+                    })}
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={columnOrder.length} className="px-4 py-8 text-center opacity-40 italic">{t.noPacketsCaptured}</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </DraggableWindowWrapper>
   );
 };

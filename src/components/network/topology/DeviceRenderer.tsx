@@ -4,7 +4,7 @@ import React from 'react';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { CanvasDevice, CanvasConnection } from '../networkTopology.types';
-import { SwitchState } from '@/lib/network/types';
+import { SwitchState, Port } from '@/lib/network/types';
 import { getWirelessSignalStrength } from '@/lib/network/connectivity';
 import { getDeviceWidth } from '../networkTopology.helpers';
 import {
@@ -404,7 +404,8 @@ export function DeviceRenderer({
 
         let isEnabled = false;
         if (showWifi) {
-          if (wlanPort) isEnabled = !wlanPort.shutdown;
+          if (isWlc) isEnabled = true; // WLC her zaman kablosuz yeteneğe sahiptir, açıksa aktiftir
+          else if (wlanPort) isEnabled = !wlanPort.shutdown;
           else if (pcWifi) isEnabled = pcWifi.enabled;
         }
 
@@ -413,7 +414,7 @@ export function DeviceRenderer({
 
         if (showWifi && isEnabled && !isPoweredOff) {
           if (isWlc) {
-            const hasError = wlanState?.status === 'err-disabled';
+            const hasError = Object.values(devState?.ports || {}).some((p: Port) => p.status === 'err-disabled');
             wifiColor = hasError ? 'var(--color-warning-500)' : 'var(--color-success-500)';
           } else {
             wifiColor = isConnected ? 'var(--color-success-500)' : 'var(--color-warning-500)';

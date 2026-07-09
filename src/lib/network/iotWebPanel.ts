@@ -110,6 +110,17 @@ export const generateIotWebPanelContent = (
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>${isTurkish ? 'IoT Web Paneli' : 'IoT Web Panel'}</title>
         <style>
+          :root {
+            --color-primary-500: #3b82f6;
+            --color-primary-700: #1d4ed8;
+            --color-secondary-500: #64748b;
+            --color-secondary-600: #475569;
+            --color-secondary-200: #e2e8f0;
+            --color-secondary-300: #cbd5e1;
+            --color-success-500: #22c55e;
+            --color-success-600: #16a34a;
+            --color-error-500: #ef4444;
+          }
           body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f0f2f5;
@@ -287,10 +298,8 @@ export const generateIotWebPanelContent = (
             font-weight: 500;
           }
           .iot-device-card:hover {
-            background-color: #e2e6ea;
-            border-color: #cdd2d6;
             transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
           }
           @media (min-width: 768px) {
             .device-list {

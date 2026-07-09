@@ -167,6 +167,22 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${safeDeviceName} - ${isTurkish ? 'Kablosuz Ayarları' : 'Wireless Settings'}</title>
   <style>
+    :root {
+      --color-primary-500: #6366f1;
+      --color-purple-500: #a855f7;
+      --color-primary-800: #3730a3;
+      --color-primary-900: #312e81;
+      --color-secondary-200: #e2e8f0;
+      --color-secondary-300: #cbd5e1;
+      --color-secondary-500: #64748b;
+      --color-secondary-600: #475569;
+      --color-secondary-900: #0f172a;
+      --color-muted-foreground: #64748b;
+      --color-error-500: #ef4444;
+      --color-success-700: #15803d;
+      --color-warning-500: #f59e0b;
+      --color-warning-100: #fef3c7;
+    }
     * {
       margin: 0;
       padding: 0;

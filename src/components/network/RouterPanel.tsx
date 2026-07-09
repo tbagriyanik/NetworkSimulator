@@ -3,15 +3,12 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useIsMobile } from '@/hooks/use-breakpoint';
 import { SwitchState, Port } from '@/lib/network/types';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { bringElementToFront } from '@/lib/utils/zIndex';
+import { DraggableWindowWrapper } from './DraggableWindowWrapper';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
-  X,
   Wifi,
   WifiOff,
   Network,
@@ -66,7 +63,7 @@ export function RouterPanel({
 }: RouterPanelProps) {
   const { t, language } = useLanguage();
   const { theme } = useTheme();
-  const isMobile = useIsMobile();
+
   const isDark = theme === 'dark';
 
   const [activeTab, setActiveTab] = useState<'overview' | 'ports' | 'wifi' | 'dhcp'>('overview');
@@ -179,76 +176,43 @@ export function RouterPanel({
   }
 
   return (
-    <Dialog open={isVisible} onOpenChange={(open) => {
-      if (!open) onClose();
-    }} modal={false}>
-      <DialogContent
-        className={cn(
-          "p-0 flex flex-col top-auto left-auto translate-x-0 translate-y-0 liquid-glass-light",
-          isDark ? "bg-secondary-950/80 border-success-500/40" : "bg-white/70 border-success-500",
-          className
-        )}
-        showCloseButton={false}
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
-        data-modal-content
-        style={{
-          position: 'absolute',
-          left: isMobile ? 0 : modalPosition.x,
-          top: isMobile ? 0 : modalPosition.y,
-          width: isMobile ? '100vw' : `${modalSize.width}px`,
-          height: isMobile ? '100vh' : `${modalSize.height}px`,
-          maxWidth: 'none',
-          maxHeight: isMobile ? '100vh' : '80vh',
-          borderRadius: isMobile ? 0 : '1rem',
-          borderWidth: 3,
-          borderStyle: 'dashed',
-        }}
-        onPointerDownCapture={(e) => bringElementToFront(e.currentTarget as HTMLElement)}
-      >
-        <div className="relative flex flex-col h-full overflow-hidden rounded-2xl shadow-2xl">
-        <DialogHeader
-          className={cn(
-            "p-4 border-b cursor-grab active:cursor-grabbing select-none touch-none min-h-[52px]",
-            isDark ? "border-success-500/30 bg-secondary-900/75" : "border-success-500/60 bg-white/80"
-          )}
-          data-modal-header
-          onPointerDown={(e) => handlePointerDown?.(e, 'router')}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div
-                    className={`w-4 h-4 rounded-full transition-all duration-200 ${routerDevice.status === 'online' ? 'bg-success-500 animate-pulse' : 'bg-error-500'}`}
-                  >
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {routerDevice.status === 'online' ? (language === 'tr' ? 'Çevrimiçi' : 'Online') : (language === 'tr' ? 'Çevrimdışı' : 'Offline')}
-                </TooltipContent>
-              </Tooltip>
-              <div className={`p-2 rounded-lg ${isDark ? 'bg-purple-900/30' : 'bg-purple-100'}`}>
-                <RouterIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+    <DraggableWindowWrapper
+      id="router"
+      title={
+        <div className="flex items-center gap-3">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div
+                className={`w-4 h-4 rounded-full transition-all duration-200 ${routerDevice.status === 'online' ? 'bg-success-500 animate-pulse' : 'bg-error-500'}`}
+              >
               </div>
-              <div>
-                <DialogTitle className="text-lg font-semibold">
-                  {routerDevice.name || deviceId}
-                </DialogTitle>
-                <p className="text-sm text-muted-foreground">
-                  {t.routerInfoPanel}
-                </p>
-              </div>
-            </div>
-            <button
-              className="w-5 h-5 rounded-md bg-error-500 hover:bg-error-600 text-white transition-colors inline-flex items-center justify-center focus:outline-none disabled:pointer-events-none"
-              onClick={onClose}
-            >
-              <X className="h-3 w-3" />
-            </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {routerDevice.status === 'online' ? (language === 'tr' ? 'Çevrimiçi' : 'Online') : (language === 'tr' ? 'Çevrimdışı' : 'Offline')}
+            </TooltipContent>
+          </Tooltip>
+          <div className={`p-1.5 rounded-lg ${isDark ? 'bg-purple-900/30' : 'bg-purple-100'}`}>
+            <RouterIcon className="w-4 h-4 text-purple-600 dark:text-purple-400" />
           </div>
-        </DialogHeader>
-
+          <div>
+            <span className="text-sm font-semibold">
+              {routerDevice.name || deviceId}
+            </span>
+            <p className="text-[10px] text-muted-foreground leading-none mt-0.5">
+              {t.routerInfoPanel}
+            </p>
+          </div>
+        </div>
+      }
+      isOpen={isVisible}
+      onClose={onClose}
+      isDark={isDark}
+      modalPosition={modalPosition}
+      modalSize={modalSize}
+      handlePointerDown={handlePointerDown}
+      handleResizeStart={handleResizeStart}
+      className={className}
+    >
         {/* Tabs */}
         <div className="flex border-b" role="tablist" aria-label={language === 'tr' ? 'Router panel sekmeleri' : 'Router panel tabs'}>
           <Button
@@ -637,25 +601,6 @@ export function RouterPanel({
             )}
           </div>
         </ScrollArea>
-          {/* Resize handles */}
-          {!isMobile && handleResizeStart && (
-            <>
-              <div className="absolute left-0 top-0 bottom-0 w-[10px] cursor-ew-resize select-none touch-none bg-transparent hover:bg-purple-500/10" onPointerDown={(e) => handleResizeStart(e, 'w', 'router')} />
-              <div className="absolute -right-[5px] top-0 bottom-0 w-[10px] cursor-ew-resize select-none touch-none rounded-r-lg bg-transparent hover:bg-purple-500/20" onPointerDown={(e) => handleResizeStart(e, 'e', 'router')} />
-              <div className="absolute -top-[5px] left-[10px] right-8 z-20 h-[10px] cursor-ns-resize select-none touch-none rounded-t-lg bg-transparent hover:bg-purple-500/20" onPointerDown={(e) => handleResizeStart(e, 'n', 'router')} />
-              <div className="absolute -bottom-[5px] left-[10px] right-8 z-20 h-[10px] cursor-ns-resize select-none touch-none rounded-b-lg bg-transparent hover:bg-purple-500/20" onPointerDown={(e) => handleResizeStart(e, 's', 'router')} />
-              <div className="absolute -left-[5px] -top-[5px] z-20 h-[10px] w-[10px] cursor-nw-resize select-none touch-none bg-transparent hover:bg-purple-500/20" onPointerDown={(e) => handleResizeStart(e, 'nw', 'router')} />
-              <div className="absolute -right-[5px] -top-[5px] z-20 h-[10px] w-[10px] cursor-ne-resize select-none touch-none bg-transparent hover:bg-purple-500/20" onPointerDown={(e) => handleResizeStart(e, 'ne', 'router')} />
-              <div className="absolute -left-[5px] -bottom-[5px] z-20 h-[10px] w-[10px] cursor-sw-resize select-none touch-none bg-transparent hover:bg-purple-500/20" onPointerDown={(e) => handleResizeStart(e, 'sw', 'router')} />
-              <div className="absolute -bottom-2 -right-2 z-20 h-7 w-7 cursor-se-resize select-none touch-none rounded-tl-lg rounded-br-lg border border-purple-400/30 bg-purple-500/30 text-purple-100/80 hover:bg-purple-500/30 hover:text-white flex items-center justify-center" onPointerDown={(e) => handleResizeStart(e, 'se', 'router')}>
-                <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                  <path d="M6 13L13 6" /><path d="M9.5 13L13 9.5" /><path d="M12.5 13L13 12.5" />
-                </svg>
-              </div>
-            </>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
+      </DraggableWindowWrapper>
   );
 }

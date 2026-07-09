@@ -484,6 +484,28 @@
   background: rgb(100 116 139 / 0.9);
 }
 
+/* Note Scrollbar (always uses black for contrast on colored notes) */
+.note-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.note-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.note-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 999px;
+  border: 1.5px solid transparent;
+  background-clip: content-box;
+  transition: all 0.2s;
+}
+
+.note-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
+
 .custom-scrollbar {
   scrollbar-width: thin;
   -ms-overflow-style: auto;
