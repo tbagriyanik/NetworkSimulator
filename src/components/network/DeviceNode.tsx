@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import { CanvasDevice } from './networkTopology.types';
+import { SwitchState } from '@/lib/network/types';
 import { areWifiConfigsEqual } from '@/lib/network/equality';
 
 interface DeviceNodeProps {
@@ -21,6 +22,7 @@ interface DeviceNodeProps {
   onTouchEnd: (e: React.TouchEvent<SVGGElement>) => void;
   renderDeviceContent: (device: CanvasDevice, isDragging: boolean) => React.ReactNode;
   isDrawingConnection?: boolean;
+  deviceState?: SwitchState;
 }
 
 export const DeviceNode = memo(function DeviceNode({
@@ -152,9 +154,14 @@ export const DeviceNode = memo(function DeviceNode({
   }
 
   // IoT update trigger değişmişse re-render et (for continuous measurement updates)
-  // BOLT: Only re-render on trigger if device is actually an IoT device
-  if (nextProps.device.type === 'iot' && prevProps.iotUpdateTrigger !== nextProps.iotUpdateTrigger) {
+  // Ayrıca WiFi özelliği olan PC'lerin AP sürüklendiğinde sinyal seviyesinin anında güncellenmesi için
+  if ((nextProps.device.type === 'iot' || (nextProps.device.type === 'pc' && nextProps.device.wifi?.enabled)) && prevProps.iotUpdateTrigger !== nextProps.iotUpdateTrigger) {
     return false; // Re-render et
+  }
+
+  // Cihazın state'i (simülasyon durumu) değişmişse re-render et
+  if (prevProps.deviceState !== nextProps.deviceState) {
+    return false;
   }
 
   // Hiçbir şey değişmemişse re-render etme

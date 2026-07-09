@@ -412,7 +412,12 @@ export function DeviceRenderer({
           (isEnabled && deviceConnections.some(c => c.cableType === 'wireless' && c.active !== false));
 
         if (showWifi && isEnabled && !isPoweredOff) {
-          wifiColor = isConnected ? 'var(--color-success-500)' : 'var(--color-warning-500)';
+          if (isWlc) {
+            const hasError = wlanState?.status === 'err-disabled';
+            wifiColor = hasError ? 'var(--color-warning-500)' : 'var(--color-success-500)';
+          } else {
+            wifiColor = isConnected ? 'var(--color-success-500)' : 'var(--color-warning-500)';
+          }
         }
 
         if (!showWifi) return null;

@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { CanvasConnection, CanvasDevice } from './networkTopology.types';
+import { SwitchState } from '@/lib/network/types';
 import { isCableCompatible, CableInfo } from '@/lib/network/types';
 
 
@@ -21,6 +22,7 @@ interface ConnectionLineProps {
   showLabel?: boolean;
   zoom?: number;
   graphicsQuality?: 'high' | 'low';
+  deviceStates?: Map<string, SwitchState>;
 }
 
 export const ConnectionLine = memo(function ConnectionLine({
@@ -40,7 +42,8 @@ export const ConnectionLine = memo(function ConnectionLine({
   showAnimation = true,
   showLabel = true,
   zoom = 1, // Default zoom level
-  graphicsQuality = 'high'
+  graphicsQuality = 'high',
+  deviceStates
 }: ConnectionLineProps) {
   // Get port positions for more accurate connection lines
   const source = getPortPosition(sourceDevice, connection.sourcePort);
@@ -65,7 +68,25 @@ export const ConnectionLine = memo(function ConnectionLine({
   const isShutdown = sourcePort?.shutdown || targetPort?.shutdown;
 
   // Check if either port is in STP blocking state
-  const isSTPBlocking = sourcePort?.spanningTree?.state === 'blocking' || targetPort?.spanningTree?.state === 'blocking';
+  let sourceSTPBlocking = sourcePort?.spanningTree?.state === 'blocking';
+  let targetSTPBlocking = targetPort?.spanningTree?.state === 'blocking';
+
+  if (deviceStates) {
+    const sourceState = deviceStates.get(sourceDevice.id);
+    const targetState = deviceStates.get(targetDevice.id);
+    
+    if (sourceState && sourceState.ports && sourceState.ports[connection.sourcePort]) {
+      const sp = sourceState.ports[connection.sourcePort];
+      sourceSTPBlocking = sp.spanningTree?.state === 'blocking' || sp.spanningTree?.role === 'alternate';
+    }
+    
+    if (targetState && targetState.ports && targetState.ports[connection.targetPort]) {
+      const tp = targetState.ports[connection.targetPort];
+      targetSTPBlocking = tp.spanningTree?.state === 'blocking' || tp.spanningTree?.role === 'alternate';
+    }
+  }
+
+  const isSTPBlocking = sourceSTPBlocking || targetSTPBlocking;
 
   // Determine device VLAN - only apply STP blocking color for VLAN 1
   const sourceVlan = sourceDevice.vlan || 1;
@@ -312,6 +333,7 @@ export const ConnectionLine = memo(function ConnectionLine({
     prevProps.isHovered === nextProps.isHovered &&
     prevProps.showAnimation === nextProps.showAnimation &&
     prevProps.showLabel === nextProps.showLabel &&
-    prevProps.zoom === nextProps.zoom
+    prevProps.zoom === nextProps.zoom &&
+    prevProps.deviceStates === nextProps.deviceStates
   );
 });

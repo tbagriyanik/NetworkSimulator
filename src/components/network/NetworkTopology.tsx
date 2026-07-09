@@ -4490,6 +4490,7 @@ export function NetworkTopology({
                         onMouseEnter={(e: React.MouseEvent<SVGPathElement>) => handleConnectionMouseEnter(e, conn.id, sourceDevice.name, conn.sourcePort, targetDevice.name, conn.targetPort, conn.cableType, getConnectionStatusMessage(conn, devices, language))}
                         onMouseLeave={handleConnectionMouseLeave}
                         onClick={(e: React.MouseEvent) => handleConnectionClick(e, conn.id)}
+                        deviceStates={deviceStates}
                       />
                     );
                   })}
@@ -4534,6 +4535,7 @@ export function NetworkTopology({
                       <DeviceNode
                         key={device.id}
                         device={device}
+                        deviceState={deviceStates?.get(device.id)}
                         isSelected={selectedDeviceSet.has(device.id) || activeDeviceId === device.id || (pingMode && pingSource?.id === device.id) || (mobileConnectionSource === device.id)}
                         isDragging={isCurrentlyDragging}
                         isActive={activeDeviceId === device.id}
