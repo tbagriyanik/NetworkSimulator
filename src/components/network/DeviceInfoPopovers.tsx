@@ -65,9 +65,9 @@ export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zInde
           className={`flex items-center justify-between px-3 py-2 border-b select-none cursor-grab active:cursor-grabbing ${isDark ? 'bg-white/5 border-success-500/20' : 'bg-black/5 border-success-500/30'}`}
           onPointerDown={(e) => { onFocus(); handleDragStart(e); }}
         >
-          <div className="flex items-center gap-1.5">
-            <Monitor className="w-3.5 h-3.5 text-primary-500" />
-            <span className={`font-semibold text-sm ${isDark ? 'text-secondary-100' : 'text-secondary-800'}`}>{pc?.name || pc?.id || (language === 'tr' ? 'Bilinmiyor' : 'Unknown')}</span>
+          <div className="flex items-center gap-1.5 cursor-grab active:cursor-grabbing">
+            <Monitor className="w-3.5 h-3.5 text-primary-500 pointer-events-none" />
+            <span className={`font-semibold text-sm pointer-events-none ${isDark ? 'text-secondary-100' : 'text-secondary-800'}`}>{pc?.name || pc?.id || (language === 'tr' ? 'Bilinmiyor' : 'Unknown')}</span>
           </div>
           <TooltipWrapper title={t.close}>
             <button onClick={(e) => { e.stopPropagation(); onClose(); }} className={`w-5 h-5 rounded-md bg-error-500 hover:bg-error-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0`}>
@@ -245,9 +245,9 @@ export function RouterInfoPopover({ router, routerState, t, isDark, onClose, onF
           className={`flex items-center justify-between px-3 py-2 border-b select-none cursor-grab active:cursor-grabbing ${isDark ? 'bg-white/5 border-success-500/20' : 'bg-black/5 border-success-500/30'}`}
           onPointerDown={(e) => { onFocus(); handleDragStart(e); }}
         >
-          <div className="flex items-center gap-1.5">
-            {router.type.startsWith('switch') ? <SwitchIcon isL3={router.type === 'switchL3'} className="w-3.5 h-3.5 text-purple-500" /> : <RouterIcon className="w-3.5 h-3.5 text-purple-500" />}
-            <span className={`font-semibold text-sm ${isDark ? 'text-secondary-100' : 'text-secondary-800'}`}>{router.name || router.id}</span>
+          <div className="flex items-center gap-1.5 cursor-grab active:cursor-grabbing">
+            {router.type.startsWith('switch') ? <SwitchIcon isL3={router.type === 'switchL3'} className="w-3.5 h-3.5 text-purple-500 pointer-events-none" /> : <RouterIcon className="w-3.5 h-3.5 text-purple-500 pointer-events-none" />}
+            <span className={`font-semibold text-sm pointer-events-none ${isDark ? 'text-secondary-100' : 'text-secondary-800'}`}>{router.name || router.id}</span>
           </div>
           <TooltipWrapper title={t.close}>
             <button

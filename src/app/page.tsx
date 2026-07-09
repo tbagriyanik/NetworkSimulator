@@ -4568,7 +4568,7 @@ ${state.bannerMOTD}
               refreshNetworkReport?.show && (
                 <div
                   ref={refreshReportRef}
-                  data-draggable-id={isMobile ? undefined : "refresh-network-report"}
+                  data-draggable-id="refresh-network-report"
                   className={`fixed z-[100] backdrop-blur-md select-none ${isMobile
                     ? 'top-[84px] left-1/2 -translate-x-1/2 w-[calc(100%-24px)] max-w-[360px] rounded-xl border shadow-2xl'
                     : 'top-20 right-4 w-full max-w-sm rounded-xl border shadow-2xl'
@@ -4584,8 +4584,8 @@ ${state.bannerMOTD}
                   onPointerDownCapture={(e) => bringElementToFront(e.currentTarget as HTMLElement)}
                 >
                   <div
-                    className={`flex items-center justify-between px-3 py-2 border-b rounded-t-xl ${!isMobile ? 'cursor-grab active:cursor-grabbing' : ''} select-none ${isDark ? 'bg-white/5 border-success-500/20' : 'bg-black/5 border-success-500/30'}`}
-                    data-drag-handle={isMobile ? undefined : true}
+                    className={`flex items-center justify-between px-3 py-2 border-b rounded-t-xl cursor-grab active:cursor-grabbing select-none ${isDark ? 'bg-white/5 border-success-500/20' : 'bg-black/5 border-success-500/30'}`}
+                    data-drag-handle={true}
                   >
                     <h3 className="text-sm font-bold flex items-center gap-2">
                       {refreshNetworkReport.title}

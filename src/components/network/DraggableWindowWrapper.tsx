@@ -86,31 +86,21 @@ export function DraggableWindowWrapper({
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const isMobileFullScreen = isMobile && mobileFullScreen;
 
-  // Mobile uses fixed fullscreen, desktop uses absolute positioning
-  const wrapperStyle: React.CSSProperties = isMobile
-    ? isMobileFullScreen
-      ? {
-          position: 'fixed',
-          inset: 0,
-          zIndex: 9999, // Always top on mobile
-        }
-      : {
-          position: 'fixed',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: 'calc(100% - 24px)',
-          maxWidth: '360px',
-          top: '84px',
-          maxHeight: 'calc(100vh - 140px)',
-          zIndex: 9999, // Always top on mobile
-        }
+  const wrapperStyle: React.CSSProperties = isMobileFullScreen
+    ? {
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9999, // Always top on mobile when fullscreen
+      }
     : {
         position: 'fixed',
         left: modalPosition.x,
         top: modalPosition.y,
         width: modalSize.width,
         height: modalSize.height,
-        zIndex,
+        maxWidth: isMobile ? '100vw' : undefined,
+        maxHeight: isMobile ? 'calc(100vh - 40px)' : undefined,
+        zIndex: isMobile ? 9999 : zIndex,
       };
 
   return (
@@ -138,21 +128,21 @@ export function DraggableWindowWrapper({
         onPointerDown={(e) => handlePointerDown?.(e, id)}
         className={cn(
           'flex items-center justify-between px-3 py-2 select-none shrink-0 group',
-          !isMobile && 'cursor-grab active:cursor-grabbing',
+          (!isMobile || !isMobileFullScreen) && 'cursor-grab active:cursor-grabbing',
           isDark
             ? 'bg-secondary-800/80 border-b border-secondary-700'
             : 'bg-secondary-50/80 border-b border-secondary-200',
           isActive && !isMobile && (isDark ? 'bg-success-900/10' : 'bg-success-50/30')
         )}
       >
-        <div className="flex items-center gap-2 overflow-hidden">
+        <div className="flex items-center gap-2 overflow-hidden cursor-grab active:cursor-grabbing">
           {icon && (
-            <div className={cn("flex-shrink-0", isDark ? "text-secondary-400" : "text-secondary-500", isActive && "text-success-500")}>
+            <div className={cn("flex-shrink-0 pointer-events-none", isDark ? "text-secondary-400" : "text-secondary-500", isActive && "text-success-500")}>
               {icon}
             </div>
           )}
           <h2 className={cn(
-            "text-sm font-semibold truncate",
+            "text-sm font-semibold truncate pointer-events-none",
             isDark ? "text-secondary-100" : "text-secondary-900"
           )}>
             {title}
@@ -186,8 +176,8 @@ export function DraggableWindowWrapper({
         {children}
       </div>
 
-      {/* Resize Handles (Desktop only) */}
-      {!isMobile && (
+      {/* Resize Handles (Desktop and Mobile non-fullscreen) */}
+      {(!isMobile || !isMobileFullScreen) && (
         <>
           <div className="absolute right-1 bottom-1 w-4 h-4 cursor-se-resize z-50 flex items-end justify-end select-none" onPointerDown={(e) => handleResizeStart?.(e, 'se', id)}>
             <svg className={cn("h-3 w-3", isDark ? "text-secondary-500" : "text-secondary-400", isActive && "text-success-500")} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">

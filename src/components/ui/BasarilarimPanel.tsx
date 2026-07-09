@@ -143,18 +143,22 @@ export function BasarilarimPanel({ t, language, isDark, onClose, zIndex }: Basar
       role="dialog"
       data-state="open"
       className={cn("fixed animate-scale-in")}
-      style={isMobile
-        ? { left: '50%', transform: 'translateX(-50%)', width: 'calc(100% - 24px)', maxWidth: '360px', top: '84px', maxHeight: 'calc(100vh - 140px)', zIndex }
-        : { bottom: `${position.y}px`, left: `${position.x}px`, zIndex }}
+      style={{
+        bottom: `${position.y}px`,
+        left: `${position.x}px`,
+        zIndex: isMobile ? 9999 : zIndex,
+        width: isMobile ? 'calc(100vw - 32px)' : undefined,
+        maxWidth: isMobile ? '360px' : undefined,
+      }}
     >
-      <div className={`rounded-2xl overflow-hidden border shadow-2xl ${isMobile ? 'w-full max-h-full' : 'w-[340px]'} flex flex-col backdrop-blur-lg ${isDark ? 'bg-secondary-950/75 border-success-500/30 shadow-black/40' : 'bg-white/75 border-success-500/50 shadow-secondary-200/50'}`}>
+      <div className={`rounded-2xl overflow-hidden border shadow-2xl ${isMobile ? 'w-full max-h-[70vh]' : 'w-[340px]'} flex flex-col backdrop-blur-lg ${isDark ? 'bg-secondary-950/75 border-success-500/30 shadow-black/40' : 'bg-white/75 border-success-500/50 shadow-secondary-200/50'}`}>
         <div
-          className={`flex items-center justify-between px-3 py-2 border-b ${isMobile ? '' : 'cursor-grab active:cursor-grabbing'} select-none shrink-0 ${isDark ? 'bg-white/5 border-success-500/20' : 'bg-black/5 border-success-500/30'}`}
-          onPointerDown={isMobile ? undefined : handleDragStart}
+          className={`flex items-center justify-between px-3 py-2 border-b cursor-grab active:cursor-grabbing select-none shrink-0 ${isDark ? 'bg-white/5 border-success-500/20' : 'bg-black/5 border-success-500/30'}`}
+          onPointerDown={handleDragStart}
         >
-          <div className="flex items-center gap-1.5">
-            <Trophy className="w-4 h-4 text-warning-500" />
-            <span className={`font-semibold text-sm ${isDark ? 'text-secondary-100' : 'text-secondary-800'}`}>{t.basarilarim}</span>
+          <div className="flex items-center gap-1.5 cursor-grab active:cursor-grabbing">
+            <Trophy className="w-4 h-4 text-warning-500 pointer-events-none" />
+            <span className={`font-semibold text-sm pointer-events-none ${isDark ? 'text-secondary-100' : 'text-secondary-800'}`}>{t.basarilarim}</span>
           </div>
           <TooltipWrapper title={t.close}>
             <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="w-5 h-5 rounded-md bg-error-500 hover:bg-error-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0">

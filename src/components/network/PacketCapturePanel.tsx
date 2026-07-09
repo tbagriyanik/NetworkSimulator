@@ -45,7 +45,7 @@ export const PacketCapturePanel = ({
   
   const dragProps = useDrag({
     storageKey: 'packetCapture',
-    defaultPosition: typeof window !== 'undefined' ? { x: window.innerWidth - 420, y: window.innerHeight - 340 } : { x: 0, y: 0 },
+    defaultPosition: typeof window !== 'undefined' ? { x: Math.max(16, window.innerWidth - 420), y: window.innerHeight - 340 } : { x: 0, y: 0 },
     defaultSize: { width: 384, height: 260 },
     minSize: { width: 200, height: 120 },
     mode: 'drag-resize'
