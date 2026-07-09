@@ -49,10 +49,10 @@ const NetworkTopology = dynamic(
   { ssr: false }
 );
 
-import { Network, Monitor, UserKey, X, RefreshCw, Users, Activity, ShieldCheck, Share2, Layers } from "lucide-react";
+import { Monitor, UserKey, X, RefreshCw, Users, Activity, ShieldCheck, Share2, Layers } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { TooltipWrapper } from "@/components/ui/TooltipWrapper";
-import { useLanguage, Translations } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
 
@@ -126,31 +126,122 @@ interface PCOutputLine {
   content: string;
 }
 
-interface TabDefinition {
-  id: TabType;
-  labelKey: keyof Translations;
-  icon: React.ReactNode;
-  tasks: readonly unknown[];
-  color: string;
-  showFor: DeviceType[];
-}
-
 const SWITCH_DEVICE_TYPES: DeviceType[] = ['switchL2', 'switchL3'];
 
-const ALL_TABS: TabDefinition[] = [
+const ALL_TABS = [
   {
-    id: 'topology',
-    labelKey: 'networkTopology',
-    icon: <Network className="w-4 h-4" />,
-    tasks: topologyTasks,
-    color: 'from-accent-500 to-primary-500',
-    showFor: ['pc', 'iot', ...SWITCH_DEVICE_TYPES, 'router']
+    id: 'topology' as TabType,
+    labelKey: 'networkTopology' as const,
+    showFor: ['pc', 'iot', ...SWITCH_DEVICE_TYPES, 'router'] as DeviceType[],
   },
 ];
 
 const exampleLevelOrder: ExampleProjectLevel[] = ['basic', 'intermediate', 'advanced'];
 
 import { useHistory, ProjectState } from '@/hooks/useHistory';
+
+function computeLiveSummary(
+  devices: CanvasDevice[],
+  connections: CanvasConnection[],
+  states: Map<string, SwitchState>
+) {
+  if (!devices || !states) return null;
+  const allVlans = new Set<number>();
+  let totalRoutes = 0, connectedRoutes = 0, staticRoutes = 0, dynamicRoutes = 0;
+  let ospfCount = 0, ospfNeighbors = 0;
+  let stpRootCount = 0, stpBlockedPorts = 0;
+  let hsrpActive = 0, hsrpStandby = 0;
+  let eigrpCount = 0, eigrpNeighbors = 0;
+  states.forEach((state, deviceId) => {
+    if (state.vlans) Object.keys(state.vlans).forEach((vId) => allVlans.add(Number(vId)));
+    [state.staticRoutes, state.dynamicRoutes].forEach((routes) => {
+      if (!routes) return;
+      routes.forEach((r) => {
+        totalRoutes++;
+        if (r.type === 'connected') connectedRoutes++;
+        else if (r.type === 'static') staticRoutes++;
+        else if (r.type === 'dynamic') dynamicRoutes++;
+      });
+    });
+    Object.values(state.ports).forEach((port) => {
+      if (port.ipAddress && port.subnetMask) {
+        totalRoutes++;
+        connectedRoutes++;
+      }
+    });
+    if (state.ospfAreas && state.ospfAreas.length > 0) {
+      ospfCount++;
+      ospfNeighbors += (state.ospfNeighbors || []).length;
+    }
+    Object.values(state.ports).forEach(port => {
+      if (port.spanningTree?.state === 'blocking' || port.spanningTree?.role === 'alternate') {
+        stpBlockedPorts++;
+      }
+    });
+    const hasRootPort = Object.values(state.ports).some(p => p.spanningTree?.role === 'root');
+    const isSwitch = devices.find(d => d.id === deviceId)?.type.startsWith('switch');
+    if (isSwitch && !hasRootPort && Object.values(state.ports).some(p => p.spanningTree)) {
+      stpRootCount++;
+    }
+    Object.values(state.ports).forEach(port => {
+      if (port.hsrp?.groups) {
+        Object.values(port.hsrp.groups).forEach(group => {
+          if (group.state === 'Active') hsrpActive++;
+          if (group.state === 'Standby') hsrpStandby++;
+        });
+      }
+    });
+    if (state.eigrpAs) {
+      eigrpCount++;
+      eigrpNeighbors += (state.eigrpNeighbors || []).length;
+    }
+  });
+  return {
+    deviceCount: {
+      total: devices.length,
+      routers: devices.filter((d) => d.type === 'router').length,
+      switches: devices.filter((d) => d.type === 'switchL2' || d.type === 'switchL3').length,
+      pcs: devices.filter((d) => d.type === 'pc').length,
+      iot: devices.filter((d) => d.type === 'iot').length,
+      firewalls: devices.filter((d) => d.type === 'firewall').length,
+      wlcs: devices.filter((d) => d.type === 'wlc').length,
+    },
+    activeLinks: connections.filter((c) => c.active).length,
+    vlanCount: allVlans.size,
+    routingTableSummary: { totalRoutes, connected: connectedRoutes, static: staticRoutes, dynamic: dynamicRoutes },
+    protocolStats: {
+      ospf: { count: ospfCount, neighbors: ospfNeighbors },
+      stp: { roots: stpRootCount, blocked: stpBlockedPorts },
+      hsrp: { active: hsrpActive, standby: hsrpStandby },
+      eigrp: { count: eigrpCount, neighbors: eigrpNeighbors }
+    },
+  };
+}
+
+function updateDeviceState(
+  prev: Map<string, SwitchState>,
+  deviceId: string,
+  updater: (state: SwitchState) => SwitchState
+): Map<string, SwitchState> {
+  const state = prev.get(deviceId);
+  if (!state) return prev;
+  const next = new Map(prev);
+  next.set(deviceId, updater(state));
+  return next;
+}
+
+function serializeState(s: ProjectState) {
+  return JSON.stringify({
+    t: s.topologyDevices,
+    c: s.topologyConnections,
+    n: s.topologyNotes,
+    s: Array.from(s.deviceStates.entries()),
+    o: Array.from(s.deviceOutputs.entries()),
+    p: Array.from(s.pcOutputs.entries()),
+    id: s.activeDeviceId,
+    tab: s.activeTab,
+  });
+}
 
 export default function Home({ initialProjectId }: { initialProjectId?: string }) {
   const { t, language, setLanguage } = useLanguage();
@@ -647,91 +738,10 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
 
   useNetworkSimulation(deviceStates, setTopologyDevices, networkLogic);
 
-  // Live summary metrics computed reactively from store (real-time)
-  const liveSummary = useMemo(() => {
-    const devices = topologyDevices;
-    const states = deviceStates;
-    if (!devices || !states) return null;
-    const allVlans = new Set<number>();
-    let totalRoutes = 0, connectedRoutes = 0, staticRoutes = 0, dynamicRoutes = 0;
-    let ospfCount = 0, ospfNeighbors = 0;
-    let stpRootCount = 0, stpBlockedPorts = 0;
-    let hsrpActive = 0, hsrpStandby = 0;
-    let eigrpCount = 0, eigrpNeighbors = 0;
-    states.forEach((state, deviceId) => {
-      if (state.vlans) Object.keys(state.vlans).forEach((vId) => allVlans.add(Number(vId)));
-      [state.staticRoutes, state.dynamicRoutes].forEach((routes) => {
-        if (!routes) return;
-        routes.forEach((r) => {
-          totalRoutes++;
-          if (r.type === 'connected') connectedRoutes++;
-          else if (r.type === 'static') staticRoutes++;
-          else if (r.type === 'dynamic') dynamicRoutes++;
-        });
-      });
-      Object.values(state.ports).forEach((port) => {
-        if (port.ipAddress && port.subnetMask) {
-          totalRoutes++;
-          connectedRoutes++;
-        }
-      });
-
-      // OSPF
-      if (state.ospfAreas && state.ospfAreas.length > 0) {
-        ospfCount++;
-        const neighbors = state.ospfNeighbors || [];
-        ospfNeighbors += neighbors.length;
-      }
-
-      // STP
-      Object.values(state.ports).forEach(port => {
-        if (port.spanningTree?.state === 'blocking' || port.spanningTree?.role === 'alternate') {
-          stpBlockedPorts++;
-        }
-      });
-      const hasRootPort = Object.values(state.ports).some(p => p.spanningTree?.role === 'root');
-      const isSwitch = devices.find(d => d.id === deviceId)?.type.startsWith('switch');
-      if (isSwitch && !hasRootPort && Object.values(state.ports).some(p => p.spanningTree)) {
-        stpRootCount++;
-      }
-
-      // HSRP
-      Object.values(state.ports).forEach(port => {
-        if (port.hsrp?.groups) {
-          Object.values(port.hsrp.groups).forEach(group => {
-            if (group.state === 'Active') hsrpActive++;
-            if (group.state === 'Standby') hsrpStandby++;
-          });
-        }
-      });
-
-      // EIGRP
-      if (state.eigrpAs) {
-        eigrpCount++;
-        eigrpNeighbors += (state.eigrpNeighbors || []).length;
-      }
-    });
-    return {
-      deviceCount: {
-        total: devices.length,
-        routers: devices.filter((d) => d.type === 'router').length,
-        switches: devices.filter((d) => d.type === 'switchL2' || d.type === 'switchL3').length,
-        pcs: devices.filter((d) => d.type === 'pc').length,
-        iot: devices.filter((d) => d.type === 'iot').length,
-        firewalls: devices.filter((d) => d.type === 'firewall').length,
-        wlcs: devices.filter((d) => d.type === 'wlc').length,
-      },
-      activeLinks: topologyConnections.filter((c) => c.active).length,
-      vlanCount: allVlans.size,
-      routingTableSummary: { totalRoutes, connected: connectedRoutes, static: staticRoutes, dynamic: dynamicRoutes },
-      protocolStats: {
-        ospf: { count: ospfCount, neighbors: ospfNeighbors },
-        stp: { roots: stpRootCount, blocked: stpBlockedPorts },
-        hsrp: { active: hsrpActive, standby: hsrpStandby },
-        eigrp: { count: eigrpCount, neighbors: eigrpNeighbors }
-      },
-    };
-  }, [topologyDevices, topologyConnections, deviceStates]);
+  const liveSummary = useMemo(
+    () => computeLiveSummary(topologyDevices, topologyConnections, deviceStates),
+    [topologyDevices, topologyConnections, deviceStates]
+  );
 
   // Function to update device configuration
   const updateDeviceConfig = useCallback((deviceId: string, config: Record<string, unknown>) => {
@@ -749,27 +759,15 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
       )
     );
 
-    // Update deviceStates (CLI hostname)
     if (c.name) {
-      setDeviceStates((prev) => {
-        const state = prev.get(deviceId);
-        if (state) {
-          const next = new Map(prev);
-          next.set(deviceId, { ...state, hostname: c.name as string });
-          return next;
-        }
-        return prev;
-      });
+      setDeviceStates((prev) => updateDeviceState(prev, deviceId, (s) => ({ ...s, hostname: c.name as string })));
     }
 
-    // Keep router/switch wlan0 runtime state in sync with web-admin WiFi saves
     if (c.wifi) {
-      setDeviceStates((prev) => {
-        const state = prev.get(deviceId);
-        if (!state || !state.ports?.['wlan0']) return prev;
-        const wifi = c.wifi as NonNullable<CanvasDevice['wifi']>;
-        const next = new Map(prev);
-        next.set(deviceId, {
+      const wifi = c.wifi as NonNullable<CanvasDevice['wifi']>;
+      setDeviceStates((prev) => updateDeviceState(prev, deviceId, (state) => {
+        if (!state.ports?.['wlan0']) return state;
+        return {
           ...state,
           ports: {
             ...state.ports,
@@ -781,72 +779,40 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
                 security: wifi.security || 'open',
                 password: wifi.password || '',
                 channel: wifi.channel || '2.4GHz',
-                // Keep selected mode even when disabled; shutdown controls operational state.
                 mode: wifi.mode || 'ap',
               },
             },
           },
-        });
-        return next;
-      });
+        };
+      }));
     }
 
-    // Handle IoT device disconnect - clear IP and WiFi state
     if (c.ip === '' && c.wifi?.enabled === false) {
-      setDeviceStates((prev) => {
-        const state = prev.get(deviceId);
-        if (!state) return prev;
-        const next = new Map(prev);
-        next.set(deviceId, {
-          ...state,
-          ports: {
-            ...state.ports,
-            wlan0: {
-              ...state.ports?.['wlan0'],
-              shutdown: true,
-              wifi: {
-                ssid: '',
-                security: 'open',
-                password: '',
-                channel: '2.4GHz',
-                mode: 'client',
-              },
-            },
+      setDeviceStates((prev) => updateDeviceState(prev, deviceId, (state) => ({
+        ...state,
+        ports: {
+          ...state.ports,
+          wlan0: {
+            ...state.ports?.['wlan0'],
+            shutdown: true,
+            wifi: { ssid: '', security: 'open', password: '', channel: '2.4GHz', mode: 'client' },
           },
-        });
-        return next;
-      });
+        },
+      })));
     }
 
     if (c.firewallRules) {
-      setDeviceStates((prev) => {
-        const state = prev.get(deviceId);
-        if (!state) return prev;
-        const updatedState = {
-          ...state,
-          firewallRules: c.firewallRules as FirewallRule[],
-        };
-        updatedState.runningConfig = buildRunningConfig(updatedState);
-        const next = new Map(prev);
-        next.set(deviceId, updatedState);
-        return next;
-      });
+      setDeviceStates((prev) => updateDeviceState(prev, deviceId, (s) => {
+        const updated = { ...s, firewallRules: c.firewallRules as FirewallRule[] };
+        updated.runningConfig = buildRunningConfig(updated);
+        return updated;
+      }));
     }
 
-    // Sync NTP services from topology to deviceStates (Switch/Router)
     if (c.services?.ntp) {
-      setDeviceStates((prev) => {
-        const state = prev.get(deviceId);
-        if (!state) return prev;
+      setDeviceStates((prev) => updateDeviceState(prev, deviceId, (state) => {
         const ntpServer = (c.services as CanvasDevice['services'])?.ntp?.server;
-        // Update ntpServers array so buildStartupConfig / applyStartupConfig
-        // can restore the NTP server after a page refresh
-        let ntpServers = state.ntpServers ? [...state.ntpServers] : [];
-        if (ntpServer && !ntpServers.includes(ntpServer)) {
-          ntpServers = [ntpServer];
-        } else if (ntpServer) {
-          ntpServers = [ntpServer]; // keep only the latest server
-        }
+        const ntpServers = ntpServer ? [ntpServer] : (state.ntpServers ? [...state.ntpServers] : []);
         const updatedState = {
           ...state,
           ntpServers,
@@ -860,10 +826,8 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
           },
         };
         updatedState.runningConfig = buildRunningConfig(updatedState);
-        const next = new Map(prev);
-        next.set(deviceId, updatedState);
-        return next;
-      });
+        return updatedState;
+      }));
     }
   }, [setTopologyDevices, setDeviceStates]);
 
@@ -1165,17 +1129,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
 
   // Initialize lastPushedStateRef with initial state to avoid redundant first push
   useEffect(() => {
-    const initialState = getCurrentState();
-    lastPushedStateRef.current = JSON.stringify({
-      t: initialState.topologyDevices,
-      c: initialState.topologyConnections,
-      n: initialState.topologyNotes,
-      s: Array.from(initialState.deviceStates.entries()),
-      o: Array.from(initialState.deviceOutputs.entries()),
-      p: Array.from(initialState.pcOutputs.entries()),
-      id: initialState.activeDeviceId,
-      tab: initialState.activeTab
-    });
+    lastPushedStateRef.current = serializeState(getCurrentState());
   }, []); // Run once on mount
 
   useEffect(() => {
@@ -1183,17 +1137,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
 
     let timer: ReturnType<typeof setTimeout> | undefined;
 
-    const currentState = getCurrentState();
-    const stateString = JSON.stringify({
-      t: currentState.topologyDevices,
-      c: currentState.topologyConnections,
-      n: currentState.topologyNotes,
-      s: Array.from(currentState.deviceStates.entries()),
-      o: Array.from(currentState.deviceOutputs.entries()),
-      p: Array.from(currentState.pcOutputs.entries()),
-      id: currentState.activeDeviceId,
-      tab: currentState.activeTab
-    });
+    const stateString = serializeState(getCurrentState());
 
     if (stateString !== lastPushedStateRef.current) {
       if (isApplyingHistoryRef.current) {
@@ -1203,20 +1147,11 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
         // Small timeout ensures all React batch updates are captured
         // We do NOT clear pendingActionDesc.current synchronously to prevent losing actions on rapid re-renders
         timer = setTimeout(() => {
-          const freshState = getCurrentState();
-          const freshStateString = JSON.stringify({
-            t: freshState.topologyDevices,
-            c: freshState.topologyConnections,
-            n: freshState.topologyNotes,
-            s: Array.from(freshState.deviceStates.entries()),
-            o: Array.from(freshState.deviceOutputs.entries()),
-            p: Array.from(freshState.pcOutputs.entries()),
-            id: freshState.activeDeviceId,
-            tab: freshState.activeTab
-          });
+          const s = getCurrentState();
+          const freshStateString = serializeState(s);
 
           if (pendingActionDesc.current) {
-            pushState(freshState, activeTab === 'topology' ? 'topology' : 'ui', pendingActionDesc.current);
+            pushState(s, activeTab === 'topology' ? 'topology' : 'ui', pendingActionDesc.current);
             pendingActionDesc.current = null;
           }
           lastPushedStateRef.current = freshStateString;
@@ -1226,16 +1161,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
         timer = setTimeout(() => {
           const freshState = getCurrentState();
           pushState(freshState, activeTab === 'topology' ? 'topology' : 'ui', undefined);
-          lastPushedStateRef.current = JSON.stringify({
-            t: freshState.topologyDevices,
-            c: freshState.topologyConnections,
-            n: freshState.topologyNotes,
-            s: Array.from(freshState.deviceStates.entries()),
-            o: Array.from(freshState.deviceOutputs.entries()),
-            p: Array.from(freshState.pcOutputs.entries()),
-            id: freshState.activeDeviceId,
-            tab: freshState.activeTab
-          });
+          lastPushedStateRef.current = serializeState(freshState);
         }, 300);
       }
     } else {
@@ -3475,19 +3401,7 @@ ${state.bannerMOTD}
 
 
   // Derive visible tabs based on current state
-  const tabs = ALL_TABS.filter(tab => {
-    // Topology tab always visible
-    if (tab.id === 'topology') return true;
-
-    // cmd tab is now a modal, not a tab
-    if (tab.id === 'cmd') return false;
-
-    // Show other tabs only if a device is active and compatible
-    return activeDeviceId && (topologyDevices.some(d => d.id === activeDeviceId)) && tab.showFor.includes(activeDeviceType);
-  }).map(tab => ({
-    ...tab,
-    label: t[tab.labelKey as keyof typeof t] as string
-  }));
+  const tabs = [{ ...ALL_TABS[0], label: t.networkTopology }];
 
   // Automatically trigger DHCP refresh when wireless clients connect
   useEffect(() => {
