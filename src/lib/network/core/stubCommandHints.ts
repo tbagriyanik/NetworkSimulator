@@ -3,9 +3,18 @@ import type { SwitchState, CommandResult } from '../types';
 
 const STUB_COMMAND_HINTS: Record<string, { tr: string; en: string }> = {
   'channel-protocol': { tr: 'Kanal protokolü (PAgP/LACP) yapılandırması henüz simüle edilmiyor.', en: 'Channel protocol configuration (PAgP/LACP) not yet simulated.' },
-  'priority-queue out': { tr: 'Çıkış öncelik kuyruğu yapılandırması henüz simüle edilmiyor.', en: 'Output priority queue configuration not yet simulated.' },
-  'queue-set': { tr: 'Kuyruk seti yapılandırması henüz simüle edilmiyor.', en: 'Queue set configuration not yet simulated.' },
-  'tx-queue': { tr: 'İletim kuyruğu yapılandırması henüz simüle edilmiyor.', en: 'Transmit queue configuration not yet simulated.' },
+  'priority-queue out': {
+    tr: 'priority-queue out, arayüz çıkışında yüksek öncelikli bir kuyruk (expedite queue) oluşturur. VoIP gibi gecikmeye duyarlı trafiğin her zaman gönderilmesini sağlar. Kullanım: interface altında "priority-queue out". Not: Bu QoS özelliği henüz simüle edilmiyor.',
+    en: 'priority-queue out creates an expedite queue on the egress interface. Ensures delay-sensitive traffic (e.g., VoIP) is always transmitted first. Usage: under interface "priority-queue out". Note: This QoS feature is not yet simulated.'
+  },
+  'queue-set': {
+    tr: 'queue-set, bir arayüz için kuyruk kuyruk kümesi (threshold ve shape değerleri) tanımlar. Örn: queue-set 1 threshold 1 80. Not: Bu QoS özelliği henüz simüle edilmiyor.',
+    en: 'queue-set defines a queue set with threshold and shape values for an interface. E.g.: queue-set 1 threshold 1 80. Note: This QoS feature is not yet simulated.'
+  },
+  'tx-queue': {
+    tr: 'tx-queue, arayüz çıkış kuyruğu parametrelerini (limit, priority level) yapılandırır. Genellikle priority-queue out ile birlikte kullanılır. Not: Bu QoS özelliği henüz simüle edilmiyor.',
+    en: 'tx-queue configures egress queue parameters (limit, priority level). Typically used with priority-queue out. Note: This QoS feature is not yet simulated.'
+  },
   'power inline': { tr: 'PoE (Power over Ethernet) yapılandırması henüz simüle edilmiyor.', en: 'PoE (Power over Ethernet) configuration not yet simulated.' },
   'power inline consumption': { tr: 'PoE tüketim değeri yapılandırması henüz simüle edilmiyor.', en: 'PoE consumption value configuration not yet simulated.' },
   'ip directed-broadcast': { tr: 'Yönlü yayın IP yapılandırması henüz simüle edilmiyor.', en: 'Directed broadcast IP configuration not yet simulated.' },
@@ -23,8 +32,14 @@ const STUB_COMMAND_HINTS: Record<string, { tr: string; en: string }> = {
   'default interface': { tr: 'Varsayılan arayüz yapılandırması henüz simüle edilmiyor.', en: 'Default interface configuration not yet simulated.' },
   'configure replace': { tr: 'Yapılandırma değiştirme (replace) henüz simüle edilmiyor.', en: 'Configuration replace not yet simulated.' },
   'mac access-list': { tr: 'MAC erişim listesi yapılandırması henüz simüle edilmiyor.', en: 'MAC access-list configuration not yet simulated.' },
-  'class-map': { tr: 'Sınıf haritası (class-map) yapılandırması henüz simüle edilmiyor.', en: 'Class-map configuration not yet simulated.' },
-  'policy-map': { tr: 'Politika haritası (policy-map) yapılandırması henüz simüle edilmiyor.', en: 'Policy-map configuration not yet simulated.' },
+  'class-map': {
+    tr: 'Sınıf haritası (class-map) ile trafik sınıflandırması yapılır. match-all (tüm koşullar) veya match-any (herhangi bir koşul) kullanılır. Alt komutlar: match access-group, match ip, match protocol, match any. class-map içinde tanımlanan trafik, policy-map ile işlenir. Örn: class-map match-any VOICE → match ip dscp ef',
+    en: 'Class-map is used for traffic classification. Use match-all (all conditions) or match-any (any condition). Sub-commands: match access-group, match ip, match protocol, match any. Traffic matched in class-map is processed by policy-map. E.g.: class-map match-any VOICE → match ip dscp ef'
+  },
+  'policy-map': {
+    tr: 'Politika haritası (policy-map) ile sınıflandırılmış trafiğe QoS eylemleri atanır. class (class-map adı) ile sınıf belirtilir. Alt komutlar: set (dscp/cos), police (hız sınırlama), bandwidth (bant genişliği), priority (öncelik), shape (şekillendirme). interface\'e service-policy ile uygulanır. Örn: policy-map QOS → class VOICE → priority 1000',
+    en: 'Policy-map assigns QoS actions to classified traffic. Use class (class-map name) to specify the class. Sub-commands: set (dscp/cos), police (rate limiting), bandwidth (bandwidth allocation), priority (priority queuing), shape (traffic shaping). Applied to interface with service-policy. E.g.: policy-map QOS → class VOICE → priority 1000'
+  },
   'template': { tr: 'Şablon (template) yapılandırması henüz simüle edilmiyor.', en: 'Template configuration not yet simulated.' },
   'transport output': { tr: 'Çıkış protokolü yapılandırması henüz simüle edilmiyor.', en: 'Output transport configuration not yet simulated.' },
   'transport preferred': { tr: 'Tercih edilen protokol yapılandırması henüz simüle edilmiyor.', en: 'Preferred transport configuration not yet simulated.' },

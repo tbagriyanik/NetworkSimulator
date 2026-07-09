@@ -102,7 +102,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
       <label for="wifi-password">${isTurkish ? 'WiFi Parolası / Güvenlik Anahtarı' : 'WiFi Password / Security Key'}</label>
       <div style="position:relative;display:flex;align-items:center;">
         <input type="password" id="wifi-password" name="password" value="${safeWifiPassword}" placeholder="${isTurkish ? 'Parola girin (en az 8 karakter)' : 'Enter password (min 8 characters)'}" minlength="8" aria-describedby="wifi-password-hint" style="padding-right:2.2rem;width:100%;border:1px solid var(--color-secondary-300);border-radius:8px;box-sizing:border-box;">
-        <button type="button" onclick="(function(btn){var inp=document.getElementById('wifi-password');if(inp.type==='password'){inp.type='text';btn.innerHTML='&var(--color-success-700);&#65039;';}else{inp.type='password';btn.innerHTML='&var(--color-success-700);';}})(this)" tabindex="-1" style="position:absolute;right:0.5rem;background:none;border:none;cursor:pointer;font-size:1rem;color:#888;padding:0;line-height:1;" title="${isTurkish ? 'Parolayı Göster/Gizle' : 'Show/Hide password'}">&var(--color-success-700);</button>
+        <button type="button" onclick="(function(btn){var inp=document.getElementById('wifi-password');if(inp.type==='password'){inp.type='text';btn.innerHTML='&var(--color-success-700);&#65039;';}else{inp.type='password';btn.innerHTML='&var(--color-success-700);';}})(this)" tabindex="-1" style="position:absolute;right:0.5rem;background:none;border:none;cursor:pointer;font-size:1rem;color:var(--color-secondary-500);padding:0;line-height:1;" title="${isTurkish ? 'Parolayı Göster/Gizle' : 'Show/Hide password'}">&var(--color-success-700);</button>
       </div>
       <span class="hint" id="wifi-password-hint">${isTurkish ? 'En az 8 karakter gereklidir' : 'Minimum 8 characters required'}</span>
     </div>
@@ -130,16 +130,16 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
     <div id="login-form" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-purple-500) 100%); padding: 20px;">
       <div style="background: white; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.12); padding: 40px; width: 100%; max-width: 400px;">
         <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="font-size: 24px; font-weight: 600; color: #333; margin-bottom: 10px;">${safeDeviceName}</h1>
+          <h1 style="font-size: 24px; font-weight: 600; color: var(--color-secondary-900); margin-bottom: 10px;">${safeDeviceName}</h1>
           <p style="color: var(--color-muted-foreground); font-size: 14px;">${isTurkish ? 'IoT Cihaz Yönetimi' : 'IoT Device Management'}</p>
         </div>
         <form id="auth-form" onsubmit="handleLogin(event)">
           <div style="margin-bottom: 20px;">
-            <label style="display: block; font-size: 13px; font-weight: 500; color: #333; margin-bottom: 8px;">${isTurkish ? 'Kullanıcı Adı' : 'Username'}</label>
+            <label style="display: block; font-size: 13px; font-weight: 500; color: var(--color-secondary-900); margin-bottom: 8px;">${isTurkish ? 'Kullanıcı Adı' : 'Username'}</label>
           <input type="text" id="login-username" maxlength="255" required style="width: 100%; padding: 12px; border: 1px solid var(--color-secondary-300); border-radius: 8px; font-size: 14px; box-sizing: border-box;">
           </div>
           <div style="margin-bottom: 25px;">
-            <label style="display: block; font-size: 13px; font-weight: 500; color: #333; margin-bottom: 8px;">${isTurkish ? 'Parola' : 'Password'}</label>
+            <label style="display: block; font-size: 13px; font-weight: 500; color: var(--color-secondary-900); margin-bottom: 8px;">${isTurkish ? 'Parola' : 'Password'}</label>
             <input type="password" id="login-password" maxlength="255" required style="width: 100%; padding: 12px; border: 1px solid var(--color-secondary-300); border-radius: 8px; font-size: 14px; box-sizing: border-box;">
           </div>
           <button type="submit" style="width: 100%; padding: 14px; background: linear-gradient(135deg, var(--color-primary-900) 0%, var(--color-primary-800) 100%); color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;">
@@ -180,8 +180,19 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
       --color-muted-foreground: #64748b;
       --color-error-500: #ef4444;
       --color-success-700: #15803d;
+      --color-warning-400: #fbbf24;
       --color-warning-500: #f59e0b;
+      --color-warning-600: #d97706;
+      --color-warning-700: #b45309;
       --color-warning-100: #fef3c7;
+      --color-success-500: #22c55e;
+      --color-success-600: #16a34a;
+      --color-error-600: #dc2626;
+      --color-accent-500: #06b6d4;
+      --color-accent-600: #0891b2;
+      --color-secondary-400: #94a3b8;
+      --color-primary-700: #4338ca;
+      --color-primary-100: #eef2ff;
     }
     * {
       margin: 0;
@@ -253,7 +264,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
     
     .nav-tab:hover {
       color: var(--color-primary-800);
-      background: rgba(42,82,152,0.05);
+      background: rgba(99, 102, 241, 0.05);
     }
     
     .nav-tab.active {
@@ -269,7 +280,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
     .panel-title {
       font-size: 18px;
       font-weight: 600;
-      color: #333;
+      color: var(--color-secondary-900);
       margin-bottom: 20px;
       display: flex;
       align-items: center;
@@ -282,8 +293,8 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
     }
     
     .status-card {
-      background: #f0f4ff;
-      border: 1px solid #d0daf0;
+      background: var(--color-secondary-200);
+      border: 1px solid var(--color-secondary-300);
       color: var(--color-secondary-900);
       padding: 20px;
       border-radius: 10px;
@@ -291,12 +302,12 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 2px 8px rgba(42, 82, 152, 0.1);
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
     }
     
     .status-card.disabled {
-      background: #f5f5f5;
-      border: 1px solid #e0e0e0;
+      background: var(--color-secondary-200);
+      border: 1px solid var(--color-secondary-300);
       color: var(--color-secondary-600);
       box-shadow: none;
     }
@@ -310,12 +321,12 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
     
     .status-info p {
       font-size: 13px;
-      color: #444;
+      color: var(--color-secondary-600);
     }
     
     .status-badge {
       background: var(--color-primary-800);
-      color: #fff;
+      color: white;
       padding: 8px 16px;
       border-radius: 20px;
       font-size: 12px;
@@ -352,7 +363,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
     .form-group select:focus {
       outline: none;
       border-color: var(--color-primary-800);
-      box-shadow: 0 0 0 3px rgba(42,82,152,0.1);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
     }
     
     .form-group .hint {
@@ -382,7 +393,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
     .checkmark {
       width: 22px;
       height: 22px;
-      border: 2px solid #ced4da;
+      border: 2px solid var(--color-secondary-300);
       border-radius: 5px;
       display: flex;
       align-items: center;
@@ -441,7 +452,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
     
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(42,82,152,0.15);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
     }
     
     .btn-secondary {
@@ -467,7 +478,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
     
     .toggle-switch h3 {
       font-size: 16px;
-      color: #333;
+      color: var(--color-secondary-900);
     }
     
     .toggle-switch p {
@@ -495,7 +506,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
       left: 0;
       right: 0;
       bottom: 0;
-      background-color: #ccc;
+      background-color: var(--color-secondary-300);
       transition: .4s;
       border-radius: 34px;
     }
@@ -548,14 +559,14 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
     .custom-confirm-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
     .custom-confirm-overlay.active { display: flex; }
     .custom-confirm-box { background: white; border-radius: 12px; padding: 24px; max-width: 400px; width: 90%; box-shadow: 0 8px 30px rgba(0,0,0,0.12); text-align: center; }
-    .custom-confirm-box h3 { margin: 0 0 12px 0; font-size: 16px; color: #333; }
+    .custom-confirm-box h3 { margin: 0 0 12px 0; font-size: 16px; color: var(--color-secondary-900); }
     .custom-confirm-box p { margin: 0 0 20px 0; font-size: 14px; color: var(--color-muted-foreground); }
     .custom-confirm-actions { display: flex; gap: 10px; justify-content: center; }
     .custom-confirm-actions button { padding: 8px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .confirm-cancel-btn { background: var(--color-secondary-200); color: var(--color-secondary-600); }
     .confirm-cancel-btn:hover { background: var(--color-secondary-200); }
     .confirm-ok-btn { background: linear-gradient(135deg, var(--color-error-500) 0%, var(--color-error-600) 100%); color: white; }
-    .confirm-ok-btn:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(220,53,69,0.2); }
+    .confirm-ok-btn:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2); }
   </style>
 </head>
 <body>
@@ -671,25 +682,25 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
             return `
             <div class="iot-device-card connected" data-device-id="${safeIotId}" style="display:flex;align-items:center;justify-content:space-between;padding:15px;background:#f8f9fa;border-radius:10px;margin-bottom:10px;border:1px solid var(--color-secondary-200);cursor:pointer;">
               <div style="display:flex;align-items:center;gap:12px;">               
-                <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg, ${device.isWired ? '#22c55e 0%, #16a34a 100%' : 'var(--color-warning-400) 0%, #ea580c 100%'});display:flex;align-items:center;justify-content:center;color:white;font-size:18px;">
+                <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg, ${device.isWired ? 'var(--color-success-500) 0%, var(--color-success-600) 100%' : 'var(--color-warning-400) 0%, var(--color-warning-600) 100%'});display:flex;align-items:center;justify-content:center;color:white;font-size:18px;">
                   ${device.isWired ? '🔌' : '🛜'}
                 </div>
                 <div>
-                  <div style="font-weight:600;color:#333;">${safeIotName}</div>
+                  <div style="font-weight:600;color:var(--color-secondary-900);">${safeIotName}</div>
                   <div style="font-size:12px;color:var(--color-secondary-500);">
                     ${isTurkish ? 'Sensör' : 'Sensor'}: ${sanitizeHTML(device.sensorType)}
-                    ${device.ip ? `<span style="margin-left:8px;padding:2px 6px;background:var(--color-primary-100);border-radius:4px;color:#0369a1;font-family:monospace;">${safeIotIp}</span>` : ''}
+                    ${device.ip ? `<span style="margin-left:8px;padding:2px 6px;background:var(--color-primary-100);border-radius:4px;color:var(--color-primary-700);font-family:monospace;">${safeIotIp}</span>` : ''}
                   </div>
                 </div>
               </div>
               <div style="display:flex;align-items:center;gap:10px;">
-                <span style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;background:${device.connected ? '#dcfce7' : '#fef3c7'};color:${device.connected ? '#166534' : '#92400e'};">
+                <span style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;background:${device.connected ? '#dcfce7' : 'var(--color-warning-100)'};color:${device.connected ? 'var(--color-success-700)' : 'var(--color-warning-700)'};">
                   ${device.connected ? (isTurkish ? '● Bağlı' : '● Connected') : (isTurkish ? '○ Bağlı Değil' : '○ Disconnected')}
                 </span>
-                <button type="button" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:none;border-radius:6px;background:#2563eb;color:white;cursor:pointer;transition:all 0.2s;" onclick="event.stopPropagation();renewIotDevice(${jsIotId})" title="${isTurkish ? 'IP Yenile' : 'IP Renew'}" aria-label="${isTurkish ? 'IP Yenile' : 'IP Renew'}">
+                <button type="button" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:none;border-radius:6px;background:var(--color-primary-500);color:white;cursor:pointer;transition:all 0.2s;" onclick="event.stopPropagation();renewIotDevice(${jsIotId})" title="${isTurkish ? 'IP Yenile' : 'IP Renew'}" aria-label="${isTurkish ? 'IP Yenile' : 'IP Renew'}">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.5 6.36L3 21"></path><path d="M3 12a9 9 0 0 1 15.5-6.36L21 3"></path><path d="M3 21v-6h6"></path><path d="M21 3v6h-6"></path></svg>
                 </button>
-                <button type="button" style="display:flex; align-items:center; justify-content:center; width:32px; height:32px; padding:0; border:none; border-radius:6px; background:#ef4444; color:white; cursor:pointer; transition:all 0.2s;" onclick="event.stopPropagation();disconnectIotDevice(${jsIotId})" title="${isTurkish ? 'Bağlantıyı Kes' : 'Disconnect'}" aria-label="${isTurkish ? 'Bağlantıyı Kes' : 'Disconnect'}">
+                <button type="button" style="display:flex; align-items:center; justify-content:center; width:32px; height:32px; padding:0; border:none; border-radius:6px; background:var(--color-error-500); color:white; cursor:pointer; transition:all 0.2s;" onclick="event.stopPropagation();disconnectIotDevice(${jsIotId})" title="${isTurkish ? 'Bağlantıyı Kes' : 'Disconnect'}" aria-label="${isTurkish ? 'Bağlantıyı Kes' : 'Disconnect'}">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                 </button>               
               </div>
@@ -721,7 +732,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
                   🛜
                 </div>
                 <div>
-                  <div style="font-weight:600;color:#333;">${safeIotName}</div>
+                  <div style="font-weight:600;color:var(--color-secondary-900);">${safeIotName}</div>
                   <div style="font-size:12px;color:var(--color-secondary-500);">${isTurkish ? 'Sensör' : 'Sensor'}: ${sanitizeHTML(device.sensorType)} • <strong>${isTurkish ? 'Bağlı Değil' : 'Unconnected'}</strong></div>
                 </div>
               </div>
@@ -741,11 +752,11 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
             <div class="iot-device-card available" data-device-id="${safeIotId}" style="display:flex;align-items:center;justify-content:space-between;padding:15px;background:#f8f9fa;border-radius:10px;margin-bottom:10px;border:2px solid var(--color-secondary-200);cursor:pointer;transition:all 0.3s;" onclick="event.stopPropagation(); toggleIotDeviceSelection(${jsIotId})">
               <div style="display:flex;align-items:center;gap:12px;">
                 <input type="checkbox" class="iot-checkbox" data-device-id="${safeIotId}" style="width:20px;height:20px;cursor:pointer;" onclick="event.stopPropagation(); toggleIotDeviceSelection(${jsIotId})">
-                <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg, var(--color-warning-400) 0%, #ea580c 100%);display:flex;align-items:center;justify-content:center;color:white;font-size:18px;">
+                <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg, var(--color-warning-400) 0%, var(--color-warning-600) 100%);display:flex;align-items:center;justify-content:center;color:white;font-size:18px;">
                   🛜
                 </div>
                 <div>
-                  <div style="font-weight:600;color:#333;">${safeIotName}</div>
+                  <div style="font-weight:600;color:var(--color-secondary-900);">${safeIotName}</div>
                   <div style="font-size:12px;color:var(--color-secondary-500);">${isTurkish ? 'Sensör' : 'Sensor'}: ${sanitizeHTML(device.sensorType)} • ${isTurkish ? 'Ağ' : 'On'}: ${sanitizeHTML(device.currentSsid || '')}</div>
                 </div>
               </div>
@@ -792,7 +803,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
           </div>
         </div>
         <div style="background:#f8f9fa;padding:20px;border-radius:10px;">
-          <h3 style="margin-bottom:15px;font-size:16px;color:#333;">${isTurkish ? 'Ağ Bilgisi' : 'Network Information'}</h3>
+          <h3 style="margin-bottom:15px;font-size:16px;color:var(--color-secondary-900);">${isTurkish ? 'Ağ Bilgisi' : 'Network Information'}</h3>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
             <div><strong>SSID:</strong> ${safeSsid || (isTurkish ? 'Yapılandırılmadı' : 'Not configured')}</div>
             <div><strong>${isTurkish ? 'Güvenlik' : 'Security'}:</strong> ${wifi.security.toUpperCase()}</div>
@@ -806,7 +817,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
       <div id="advanced-tab" class="content" style="display:${activeTab === 'advanced' ? 'block' : 'none'};">
         <h2 class="panel-title">${isTurkish ? 'Gelişmiş Ayarlar' : 'Advanced Settings'}</h2>
         <p style="color:var(--color-secondary-500);margin-bottom:20px;">${isTurkish ? 'İleri düzey kullanıcılar için gelişmiş yapılandırma seçenekleri.' : 'Advanced configuration options for power users.'}</p>
-        <div style="background:var(--color-warning-100);padding:15px;border-radius:10px;border:1px solid #ffc107;">
+        <div style="background:var(--color-warning-100);padding:15px;border-radius:10px;border:1px solid var(--color-warning-500);">
           <strong>⚠️ ${isTurkish ? 'Uyarı' : 'Warning'}</strong>
           <p style="margin:10px 0 0 0;font-size:13px;">${isTurkish ? 'Gelişmiş ayarları değiştirmek ağ kararlılığını etkileyebilir. Dikkatli olun.' : 'Changing advanced settings may affect network stability. Proceed with caution.'}</p>
         </div>
@@ -955,7 +966,7 @@ window.parent.postMessage({ type: 'router-admin-toast', payload: { type: 'error'
         selectedIotDevices.add(deviceId);
         if (card) {
           card.style.borderColor = 'var(--color-primary-800)';
-          card.style.background = '#e8f0fe';
+          card.style.background = 'var(--color-primary-100)';
         }
       } else {
         selectedIotDevices.delete(deviceId);

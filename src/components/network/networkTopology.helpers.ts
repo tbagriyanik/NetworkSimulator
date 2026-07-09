@@ -1,3 +1,5 @@
+import { DeviceType } from './networkTopology.types';
+
 // Device dimension constants
 const DEVICE_DIMENSIONS = {
   pc: { width: 90, height: 85 },
@@ -55,3 +57,11 @@ export function getConnectionStatusMessage(conn: CanvasConnection, devices: Canv
 
   return language === 'tr' ? 'Bağlantı sorunsuz' : 'Connection OK';
 }
+
+export const isSwitchDeviceType = (type: DeviceType | string): boolean => {
+  return type === 'switchL2' || type === 'switchL3';
+};
+
+export const easeInOutCubic = (t: number): number => {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+};

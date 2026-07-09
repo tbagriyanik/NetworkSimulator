@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import type { CanvasDevice, ContextMenuState } from '../networkTopology.types';
 
 interface CanvasKeyboardProps {
   selectedDeviceIds: string[];
@@ -30,6 +31,15 @@ interface CanvasKeyboardProps {
   setPacketPopupHop: (hop: number | null) => void;
   pingAnimation: unknown;
   deviceMap: Map<string, unknown>;
+  setDevices: (fn: (prev: CanvasDevice[]) => CanvasDevice[]) => void;
+  setSelectedDeviceIds: (ids: string[] | ((prev: string[]) => string[])) => void;
+  setSelectedNoteIds: (ids: string[] | ((prev: string[]) => string[])) => void;
+  setContextMenu: (menu: ContextMenuState | null) => void;
+  isPaletteOpen: boolean;
+  setIsPaletteOpen: (val: boolean) => void;
+  isFullscreen: boolean;
+  onFullscreenChange?: (val: boolean) => void;
+  isPingPanelVisible: boolean;
 }
 
 export function useCanvasKeyboard({
@@ -59,7 +69,16 @@ export function useCanvasKeyboard({
   packetPopupHop,
   setPacketPopupHop,
   pingAnimation,
-  deviceMap
+  deviceMap,
+  setDevices,
+  setSelectedDeviceIds,
+  setSelectedNoteIds,
+  setContextMenu,
+  isPaletteOpen,
+  setIsPaletteOpen,
+  isFullscreen,
+  onFullscreenChange,
+  isPingPanelVisible,
 }: CanvasKeyboardProps) {
   useEffect(() => {
     const handleCloseBroadcast = () => {
@@ -80,27 +99,43 @@ export function useCanvasKeyboard({
 
       // Escape key handler
       if (e.key === 'Escape') {
-        if (configuringDevice) {
+        if (packetPopupHop !== null) {
           e.preventDefault();
-          cancelDeviceConfig();
+          setPacketPopupHop(null);
+          return;
+        }
+        if (pingAnimation) {
+          e.preventDefault();
+          handlePingClose();
+          return;
+        }
+        setContextMenu(null);
+        if (pingMode) {
+          e.preventDefault();
+          setPingMode(false);
+          setPingSource(null);
+          setPingResult(null);
         }
         if (isDrawingConnection) {
           e.preventDefault();
           cancelConnectionDrawing();
         }
-        if (pingMode) {
-          e.preventDefault();
-          handlePingClose();
+        if (isPaletteOpen) {
+          setIsPaletteOpen(false);
         }
-        if (packetPopupHop !== null) {
-          e.preventDefault();
-          setPacketPopupHop(null);
+        if (isFullscreen && onFullscreenChange) {
+          onFullscreenChange(false);
         }
         return;
       }
 
-      // Delete key handler
-      if ((e.key === 'Delete' || e.key === 'Backspace') && !isEditable) {
+      // Don't handle other keys if a modal is open
+      if (configuringDevice) {
+        return;
+      }
+
+      // Delete key handler (Plain Delete key only)
+      if (e.key === 'Delete' && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && !isEditable) {
         if (selectedDeviceIds.length > 0) {
           e.preventDefault();
           saveToHistory();
@@ -108,13 +143,40 @@ export function useCanvasKeyboard({
             deleteDevice(id);
             if (onDeviceDelete) onDeviceDelete(id);
           });
-        }
-        if (selectedNoteIds.length > 0) {
+          setSelectedDeviceIds([]);
+        } else if (selectedNoteIds.length > 0) {
           e.preventDefault();
           saveToHistory();
           selectedNoteIds.forEach(id => deleteNote(id));
+          setSelectedNoteIds([]);
         }
         return;
+      }
+
+      // Arrow keys move selected devices on topology (disabled during exam)
+      if (!isEditable && !isExamActive && selectedDeviceIds.length > 0 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const step = e.shiftKey ? 32 : 16;
+        let deltaX = 0;
+        let deltaY = 0;
+
+        if (e.key === 'ArrowUp') deltaY = -step;
+        if (e.key === 'ArrowDown') deltaY = step;
+        if (e.key === 'ArrowLeft') deltaX = -step;
+        if (e.key === 'ArrowRight') deltaX = step;
+
+        if (deltaX !== 0 || deltaY !== 0) {
+          e.preventDefault();
+          e.stopPropagation();
+          saveToHistory();
+          setDevices((prev) =>
+            prev.map((device) =>
+              selectedDeviceIds.includes(device.id)
+                ? { ...device, x: device.x + deltaX, y: device.y + deltaY }
+                : device
+            )
+          );
+          return;
+        }
       }
 
       // Ctrl Shortcuts
@@ -150,7 +212,7 @@ export function useCanvasKeyboard({
       }
 
       // P to enter ping mode
-      if (!isEditable && key === 'p' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+      if (!isEditable && key === 'p' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey && !isPingPanelVisible) {
         e.preventDefault();
         if (!pingMode) {
           if (selectedDeviceIds.length === 1) {
@@ -198,6 +260,18 @@ export function useCanvasKeyboard({
     packetPopupHop,
     setPacketPopupHop,
     pingAnimation,
-    deviceMap
+    deviceMap,
+    setDevices,
+    setSelectedDeviceIds,
+    setSelectedNoteIds,
+    setContextMenu,
+    isPaletteOpen,
+    setIsPaletteOpen,
+    isFullscreen,
+    onFullscreenChange,
+    isPingPanelVisible,
+    setPingMode,
+    setPingSource,
+    setPingResult,
   ]);
 }

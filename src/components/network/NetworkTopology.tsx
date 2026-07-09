@@ -17,7 +17,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TooltipWrapper } from "@/components/ui/TooltipWrapper";
 import { ShortcutBadge } from "@/components/ui/ShortcutBadge";
-import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType, NetworkTopologyProps } from './networkTopology.types';
+import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType, ContextMenuState, ContextMenuMode, NetworkTopologyProps } from './networkTopology.types';
 import { useCanvasHistory } from '@/hooks/useCanvasHistory';
 import { ConnectionLine } from './ConnectionLine';
 import { ConnectionHandle } from './ConnectionHandle';
@@ -28,7 +28,7 @@ import { PacketCapturePanel } from './PacketCapturePanel';
 import { Trash2, X, Cable, LineSquiggle, Plug, TrendingUpDown, Wifi } from "lucide-react";
 
 import { areArraysEqual } from '@/lib/network/equality';
-import { getDeviceWidth, getDeviceHeight, getConnectionStatusMessage } from './networkTopology.helpers';
+import { getDeviceWidth, getDeviceHeight, getConnectionStatusMessage, isSwitchDeviceType, easeInOutCubic } from './networkTopology.helpers';
 import { CABLE_COLORS, DRAG_THRESHOLD, LONG_PRESS_DURATION, TOOLTIP_DELAY, TOOLTIP_OFFSET_Y, VIRTUAL_CANVAS_WIDTH_MOBILE, VIRTUAL_CANVAS_HEIGHT_MOBILE, VIRTUAL_CANVAS_WIDTH_DESKTOP, VIRTUAL_CANVAS_HEIGHT_DESKTOP, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, NOTE_COLORS, NOTE_FONTS_DESKTOP as NOTE_FONTS, NOTE_FONT_SIZES, NOTE_OPACITY as NOTE_OPACITY_OPTIONS, PC_PORT_SPACING, PORT_SPACING, PORT_START_X, PORT_START_Y, MOMENTUM_THRESHOLD, MOMENTUM_DECAY, MOMENTUM_MIN_SPEED } from './networkTopology.constants';
 import { logger } from '@/lib/logger';
 import { PacketPopup } from './topology/PacketPopup';
@@ -40,6 +40,7 @@ import { exportTopologyToPNG } from '../../utils/exportPNG';
 
 import { useCanvasZoomPan } from './hooks/useCanvasZoomPan';
 import { useCanvasKeyboard } from './hooks/useCanvasKeyboard';
+import { useCanvasClipboard } from './hooks/useCanvasClipboard';
 import { useDeviceDrag } from './hooks/useDeviceDrag';
 import { useCanvasSelection } from './hooks/useCanvasSelection';
 import { useNoteEditing } from './hooks/useNoteEditing';
@@ -56,71 +57,12 @@ import { PortTooltip } from './topology/PortTooltip';
 import { ConnectionTooltip } from './topology/ConnectionTooltip';
 import { TempConnection } from './topology/TempConnection';
 import { EnvironmentBackgrounds } from './topology/EnvironmentBackgrounds';
+import { DEVICE_ICONS } from './topology/DeviceIcons';
 
 const PingPacketInfoPanel = dynamic(
   () => import('./PingPacketInfoPanel').then((m) => m.PingPacketInfoPanel),
   { ssr: false }
 );
-
-const DEVICE_ICONS: Record<DeviceType | 'switch', React.ReactNode> = {
-  pc: (
-    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-primary-500)' }} viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 0 0 2-2V5a2 2 0 0 0 -2-2H5a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2z" />
-    </svg>
-  ),
-  iot: (
-    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-secondary-500)' }} viewBox="0 -2 27 27">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16.247 7.761a6 6 0 0 1 0 8.478" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.075 4.933a10 10 0 0 1 0 14.134" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.925 19.067a10 10 0 0 1 0-14.134" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7.753 16.239a6 6 0 0 1 0-8.478" />
-      <circle strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} cx="12" cy="12" r="2" />
-    </svg>
-  ),
-  switch: (
-    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-accent-500)' }} viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 12h14M5 12a2 2 0 0 1 -2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2M5 12a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 -2-2m-2-4h.01M17 16h.01" />
-    </svg>
-  ),
-  switchL2: (
-    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-success-500)' }} viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 12h14M5 12a2 2 0 0 1 -2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2M5 12a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 -2-2m-2-4h.01M17 16h.01" />
-    </svg>
-  ),
-  switchL3: (
-    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-purple-500)' }} viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 12h14M5 12a2 2 0 0 1 -2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2M5 12a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 -2-2m-2-4h.01M17 16h.01" />
-    </svg>
-  ),
-  router: (
-    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-purple-500)' }} viewBox="0 0 24 24">
-      <circle strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} cx="12" cy="12" r="9" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 5v14M5 12h14M12 5l-2 2m2-2l2 2m-2 12l-2-2m2 2l2-2M5 12l2-2m-2 2l2 2M19 12l-2-2m2 2l-2 2" />
-    </svg>
-  ),
-  firewall: (
-    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-error-500)' }} viewBox="0 0 24 24" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="m9 12 2 2 4-4" />
-    </svg>
-  ),
-  wlc: (
-    <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" style={{ stroke: 'var(--color-warning-400)' }} viewBox="0 0 24 24" strokeWidth={1.5}>
-      <circle cx="12" cy="12" r="9" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14M12 5l-2 2m2-2l2 2m-2 12l-2-2m2 2l2-2M5 12l2-2m-2 2l2 2M19 12l-2-2m2 2l-2 2" />
-      <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.3" />
-    </svg>
-  ),
-};
-
-const isSwitchDeviceType = (type: DeviceType) => type === 'switchL2' || type === 'switchL3';
-
-const easeInOutCubic = (t: number): number => {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-};
-
-
-
 
 export function NetworkTopology({
   cableInfo,
@@ -528,22 +470,11 @@ export function NetworkTopology({
   } | null>(null);
   const mousePosRef = useRef({ x: 0, y: 0 });
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  // cancelConnectionDrawing is now managed by useConnectionDrawing hook
 
-  type ContextMenuMode = 'device' | 'note-edit' | 'canvas';
-  type ContextMenuState = {
-    x: number;
-    y: number;
-    deviceId: string | null;
-    noteId: string | null;
-    mode: ContextMenuMode;
-  };
   // Context menu state - device, note, or empty canvas
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const contextMenuRef = useRef<HTMLDivElement | null>(null);
 
-  // Clipboard state for copy/cut/paste
-  const [clipboard, setClipboard] = useState<CanvasDevice[]>([]);
   const [notesClipboard] = useState<CanvasNote[]>([]);
 
   // Always-fresh refs: updated on every render so event handlers never get stale values
@@ -680,17 +611,6 @@ export function NetworkTopology({
     window.addEventListener('network-refresh', handler);
     return () => window.removeEventListener('network-refresh', handler);
   }, []);
-
-  // Listen for mobile-back-pressed custom event
-  useEffect(() => {
-    const handleMobileBack = () => {
-      setContextMenu(null);
-      setPacketPopupHop(null);
-    };
-    window.addEventListener('mobile-back-pressed', handleMobileBack);
-    return () => window.removeEventListener('mobile-back-pressed', handleMobileBack);
-  }, []);
-
   // Listen for mobile-back-pressed custom event
   useEffect(() => {
     const handleMobileBack = () => {
@@ -938,8 +858,6 @@ export function NetworkTopology({
       })
     );
   }, []);
-
-  // selectAllDevices is now managed by useCanvasSelection hook
 
   // Handle alignment for multiple selected devices
   const handleAlign = useCallback((type: 'top' | 'bottom' | 'left' | 'right' | 'h-center' | 'v-center') => {
@@ -3622,91 +3540,29 @@ export function NetworkTopology({
   }, [isFullscreen, onFullscreenChange]);
 
 
-  // Copy devices
-  const copyDevice = useCallback((ids: string[]) => {
-    const selectedDevices = devices.filter(d => ids.includes(d.id));
-    if (selectedDevices.length > 0) {
-      setClipboard(selectedDevices.map(d => ({ ...d })));
-    }
-    setContextMenu(null);
-  }, [devices]);
-
-  // Cut devices
-  const cutDevice = useCallback((ids: string[]) => {
-    const selectedDevices = devices.filter(d => ids.includes(d.id));
-    if (selectedDevices.length > 0) {
-      setClipboard(selectedDevices.map(d => ({ ...d })));
-      ids.forEach(id => deleteDevice(id));
-      setSelectedDeviceIds([]);
-    }
-    setContextMenu(null);
-  }, [devices, deleteDevice]);
-
-  // Paste devices
-  const pasteDevice = useCallback(() => {
-    if (clipboard.length === 0) return;
-
-    saveToHistory();
-
-    const newDevices: CanvasDevice[] = [];
-    const reservedIps: string[] = [];
-    const reservedIpv6s: string[] = [];
-    const reservedHostnames: string[] = [];
-
-    clipboard.forEach(device => {
-      const type = device.type;
-      const counterKey = getCounterKey(type);
-      deviceCounterRef.current[counterKey]++;
-      const newId = `${type}-${deviceCounterRef.current[counterKey]}`;
-
-      const baseName = `${type.toUpperCase()}-${deviceCounterRef.current[counterKey]}`;
-      const hostname = generateUniqueHostname(baseName, reservedHostnames);
-      const generatedIp = type === 'pc' || type === 'iot' ? generateUniqueLinkLocalIp(reservedIps) : '';
-      const generatedIpv6 = type === 'pc' || type === 'iot' ? generateUniqueLinkLocalIpv6(reservedIpv6s) : '';
-
-      if (generatedIp) {
-        reservedIps.push(generatedIp);
-      }
-      if (generatedIpv6) {
-        reservedIpv6s.push(generatedIpv6);
-      }
-      reservedHostnames.push(hostname);
-
-      newDevices.push({
-        ...device,
-        id: newId,
-        name: hostname,
-        ip: generatedIp,
-        subnet: (type === 'pc' || type === 'iot') ? '255.255.0.0' : device.subnet,
-        gateway: (type === 'pc' || type === 'iot') ? '0.0.0.0' : device.gateway,
-        dns: (type === 'pc' || type === 'iot') ? '0.0.0.0' : device.dns,
-        x: device.x + 30,
-        y: device.y + 30,
-        ports: device.ports.map(p => ({ ...p, status: 'disconnected' as const })),
-      });
-    });
-
-    setDevices(prev => [...prev, ...newDevices]);
-    setContextMenu(null);
-  }, [clipboard, saveToHistory, generateUniqueHostname, generateUniqueLinkLocalIp, generateUniqueLinkLocalIpv6, getCounterKey]);
-
-  // Paste notes
-  const pasteNotes = useCallback((x: number, y: number) => {
-    if (notesClipboard.length === 0) return;
-
-    saveToHistory();
-
-    const newNotes: CanvasNote[] = notesClipboard.map((note) => ({
-      ...note,
-      id: getNextNoteId(),
-      x: x + 20,
-      y: y + 20,
-    }));
-
-    setNotes((prev) => [...prev, ...newNotes]);
-    setSelectedNoteIds(newNotes.map(n => n.id));
-    setContextMenu(null);
-  }, [notesClipboard, saveToHistory, getNextNoteId, setNotes, setSelectedNoteIds]);
+  const {
+    clipboard,
+    copyDevice,
+    cutDevice,
+    pasteDevice,
+    pasteNotes,
+  } = useCanvasClipboard({
+    devices,
+    setDevices,
+    deleteDevice,
+    setSelectedDeviceIds,
+    saveToHistory,
+    deviceCounterRef,
+    generateUniqueHostname,
+    generateUniqueLinkLocalIp,
+    generateUniqueLinkLocalIpv6,
+    getCounterKey,
+    setContextMenu,
+    notesClipboard,
+    getNextNoteId,
+    setNotes,
+    setSelectedNoteIds,
+  });
 
   const handlePingClose = useCallback(() => {
     pingIsPausedRef.current = false;
@@ -3725,183 +3581,6 @@ export function NetworkTopology({
     setPingSource(null);
     setPingResult(null);
   }, [setPingSource, setPingResult]);
-
-  // Handle key events: ESC to close context menu, DELETE to remove devices, Ctrl+A to select all
-  useEffect(() => {
-    const handleCloseBroadcast = (e: Event) => {
-      const source = (e as CustomEvent)?.detail?.source;
-      if (source && source !== 'topology') {
-        setContextMenu(null);
-        if (source === 'escape') {
-          if (configuringDevice) cancelDeviceConfig();
-          if (pingSource) setPingSource(null);
-          if (showPortSelector) {
-            setShowPortSelector(false);
-            setPortSelectorStep('source');
-            setSelectedSourcePort(null);
-          }
-          if (selectedDeviceIds.length > 0) {
-            const firstId = selectedDeviceIds[0];
-            const firstDevice = deviceMap.get(firstId);
-            setSelectedDeviceIds([firstId]);
-            if (firstDevice) onDeviceSelect(firstDevice.type === 'router' ? 'router' : firstDevice.type, firstId, undefined, firstDevice.name);
-          }
-        }
-      }
-    };
-    window.addEventListener('close-menus-broadcast', handleCloseBroadcast);
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!e.key) return;
-      const key = e.key.toLowerCase();
-
-      // Check if an input element is focused
-      const tag = (document.activeElement as HTMLElement)?.tagName?.toLowerCase();
-      const isEditable = tag === 'input' || tag === 'textarea' || (document.activeElement as HTMLElement)?.isContentEditable;
-
-      // ESC to close context menu
-      if (key === 'escape') {
-        if (packetPopupHop !== null) {
-          setPacketPopupHop(null);
-          return;
-        }
-        if (pingAnimation) {
-          handlePingClose();
-          return;
-        }
-        setContextMenu(null);
-        // Cancel ping mode
-        if (pingMode) {
-          setPingMode(false);
-          setPingSource(null);
-          setPingResult(null);
-        }
-        // Also cancel drawing connection
-        if (isDrawingConnection) {
-          cancelConnectionDrawing();
-        }
-        // Close palette
-        if (isPaletteOpen) {
-          setIsPaletteOpen(false);
-        }
-        // Exit fullscreen
-        if (isFullscreen && onFullscreenChange) {
-          onFullscreenChange(false);
-        }
-      }
-
-      // Don't handle other keys if a modal is open
-      if (configuringDevice) {
-        return;
-      }
-
-      // Delete selected device(s) or note(s) ONLY with plain Del key.
-      // Backspace and modified delete combos are intentionally ignored.
-      if (e.key === 'Delete' && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
-        if (!isEditable) {
-          if (selectedDeviceIds.length > 0) {
-            saveToHistory();
-            selectedDeviceIds.forEach(id => deleteDevice(id));
-            setSelectedDeviceIds([]);
-          } else if (selectedNoteIds.length > 0) {
-            saveToHistory();
-            selectedNoteIds.forEach(id => deleteNote(id));
-            setSelectedNoteIds([]);
-          }
-        }
-      }
-
-      // Arrow keys move selected devices on topology (disabled during exam)
-      if (!isEditable && !isExamActive && selectedDeviceIds.length > 0 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        const step = e.shiftKey ? 32 : 16;
-        let deltaX = 0;
-        let deltaY = 0;
-
-        if (e.key === 'ArrowUp') deltaY = -step;
-        if (e.key === 'ArrowDown') deltaY = step;
-        if (e.key === 'ArrowLeft') deltaX = -step;
-        if (e.key === 'ArrowRight') deltaX = step;
-
-        if (deltaX !== 0 || deltaY !== 0) {
-          e.preventDefault();
-          e.stopPropagation();
-          saveToHistory();
-          setDevices((prev) =>
-            prev.map((device) =>
-              selectedDeviceIds.includes(device.id)
-                ? { ...device, x: device.x + deltaX, y: device.y + deltaY }
-                : device
-            )
-          );
-          return;
-        }
-      }
-
-      // Ctrl Shortcuts - skip if input is focused
-      if ((e.ctrlKey || e.metaKey) && !isEditable) {
-        // Ctrl+A to select all
-        if (key === 'a') {
-          e.preventDefault();
-          selectAllDevices();
-        }
-
-        // Ctrl+C to copy
-        if (key === 'c' && !isExamActive) {
-          if (selectedDeviceIds.length > 0) {
-            copyDevice(selectedDeviceIds);
-          }
-        }
-        // Ctrl+X to cut (disabled during exam)
-        if (key === 'x' && !isExamActive) {
-          if (selectedDeviceIds.length > 0) {
-            cutDevice(selectedDeviceIds);
-          }
-        }
-        // Ctrl+V to paste (disabled during exam)
-        if (key === 'v' && pasteDevice && !isExamActive) {
-          e.preventDefault();
-          pasteDevice();
-        }
-
-        // Ctrl+F to toggle fullscreen
-        if (key === 'f') {
-          e.preventDefault();
-          toggleFullscreen();
-        }
-      }
-
-      // Alt+R to reset zoom/pan view
-      if (e.altKey && !e.ctrlKey && !e.metaKey && key === 'r') {
-        e.preventDefault();
-        resetView();
-      }
-
-      // P to enter ping mode
-      if (!isEditable && key === 'p' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey && !isPingPanelVisible) {
-        e.preventDefault();
-        if (!pingMode) {
-          if (selectedDeviceIds.length === 1) {
-            const selectedDevice = deviceMap.get(selectedDeviceIds[0]);
-            setPingSource(selectedDevice || null);
-          } else {
-            setPingSource(null);
-          }
-          setPingMode(true);
-          setPingResult(null);
-        } else {
-          setPingMode(false);
-          setPingSource(null);
-          setPingResult(null);
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('close-menus-broadcast', handleCloseBroadcast);
-    };
-  }, [selectedDeviceIds, selectedNoteIds, deleteDevice, deleteNote, configuringDevice, cancelDeviceConfig, selectAllDevices, saveToHistory, devices, onDeviceDelete, isDrawingConnection, isPaletteOpen, handleUndo, handleRedo, copyDevice, cutDevice, pasteDevice, pingSource, pingMode, showPortSelector, toggleFullscreen, isFullscreen, resetView, onFullscreenChange, isExamActive, cancelConnectionDrawing, handlePingClose, packetPopupHop, setPacketPopupHop, pingAnimation, setPingResult, deviceMap, onDeviceSelect]);
 
   // findPath and cancelPingDueToInterruption are now managed by usePingAnimation hook
 
@@ -4197,7 +3876,16 @@ export function NetworkTopology({
     packetPopupHop,
     setPacketPopupHop,
     pingAnimation,
-    deviceMap
+    deviceMap,
+    setDevices,
+    setSelectedDeviceIds,
+    setSelectedNoteIds,
+    setContextMenu,
+    isPaletteOpen,
+    setIsPaletteOpen,
+    isFullscreen,
+    onFullscreenChange,
+    isPingPanelVisible
   });
 
   return (
@@ -4768,8 +4456,10 @@ fill="var(--color-accent-500)"
                       y={Math.min(selectionBox.start.y, selectionBox.current.y)}
                       width={Math.abs(selectionBox.current.x - selectionBox.start.x)}
                       height={Math.abs(selectionBox.current.y - selectionBox.start.y)}
-                      fill={isDark ? "rgba(34, 197, 94, 0.2)" : "rgba(34, 197, 94, 0.15)"}
-                      stroke={isDark ? "rgba(34, 197, 94, 1)" : "rgba(34, 197, 94, 0.9)"}
+                      fill="var(--color-success-500)"
+                      fillOpacity={isDark ? 0.2 : 0.15}
+                      stroke="var(--color-success-500)"
+                      strokeOpacity={isDark ? 1 : 0.9}
                       strokeWidth={2 / zoom}
                       strokeDasharray={`${6 / zoom}, ${6 / zoom}`}
                       pointerEvents="none"
