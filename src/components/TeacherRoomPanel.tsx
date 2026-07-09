@@ -120,10 +120,10 @@ function RoomMonitor({ roomCode, onClose }: { roomCode: string; onClose: () => v
         <div className="flex items-center gap-1">
           {error !== 'unauthorized' && (
             <>
-              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleExportPDF} title={t.roomExportPDF}>
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleExportPDF} title={t.roomExportPDF} aria-label={t.roomExportPDF}>
                 <FileDown className="w-3 h-3" />
               </Button>
-              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleCopy}>
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleCopy} aria-label={copied ? (t.language === 'tr' ? 'Kopyalandı' : 'Copied') : t.copy}>
                 {copied ? <Check className="w-3 h-3 text-success-500" /> : <Copy className="w-3 h-3" />}
               </Button>
             </>
