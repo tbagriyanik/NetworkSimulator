@@ -4931,6 +4931,7 @@ ${fileLines}
         isDark={isDark}
         language={language}
         browserWindow={browserWindow}
+        onBrowserWindowChange={setBrowserWindow}
         title={httpAppTitle}
         url={httpAppUrl || ''}
         srcDoc={httpAppSrcDoc}

@@ -3016,15 +3016,24 @@ ${state.bannerMOTD}
   const handleDeviceDoubleClick = useCallback((device: DeviceType, deviceId: string) => {
     if (device === 'pc') {
       // PC - open Home modal
+      setShowUnifiedDeviceModal(false);
+      setShowRouterPanel(false);
+      setShowFirewallPanel(false);
       setShowPCDeviceId(deviceId);
       getOrCreatePCOutputs(deviceId, topologyDevices);
       setPcPanelInitialTab('home');
       setShowPCPanel(true);
     } else if (device === 'firewall') {
+      setShowPCPanel(false);
+      setShowUnifiedDeviceModal(false);
+      setShowRouterPanel(false);
       setActiveFirewallId(deviceId);
       setShowFirewallPanel(true);
     } else if (device === 'router' || device === 'switchL2' || device === 'switchL3' || device === 'wlc') {
       // Switch, Router, or WLC - set as CLI device and open CLI modal
+      setShowPCPanel(false);
+      setShowFirewallPanel(false);
+      setShowRouterPanel(false);
       const deviceObj = topologyDevices?.find(d => d.id === deviceId);
       const deviceState = getOrCreateDeviceState(deviceId, device, deviceObj?.name, deviceObj?.macAddress, deviceObj?.switchModel);
       getOrCreateDeviceOutputs(deviceId, deviceState);
@@ -4425,6 +4434,9 @@ ${state.bannerMOTD}
                       zIndex={focusedOverlay === 'pc-info' ? 36 : 25}
                       handleDeviceDoubleClick={handleDeviceDoubleClick}
                       onOpenPanel={(id) => {
+                        setShowUnifiedDeviceModal(false);
+                        setShowRouterPanel(false);
+                        setShowFirewallPanel(false);
                         setShowPCDeviceId(id);
                         setPcPanelInitialTab('settings');
                         setShowPCPanel(true);
@@ -4450,6 +4462,9 @@ ${state.bannerMOTD}
                       zIndex={focusedOverlay === 'router-info' ? 36 : 25}
                       handleDeviceDoubleClick={handleDeviceDoubleClick}
                       onOpenPanel={(id) => {
+                        setShowPCPanel(false);
+                        setShowUnifiedDeviceModal(false);
+                        setShowFirewallPanel(false);
                         setShowRouterDeviceId(id);
                         setShowRouterPanel(true);
                       }}
@@ -4468,7 +4483,7 @@ ${state.bannerMOTD}
 
             {/* Tablet Split View Panels (Docked Right) */}
             {isTablet && (showPCPanel || showUnifiedDeviceModal || showRouterPanel) && (
-              <div className="w-1/2 h-full bg-background/50 backdrop-blur-md overflow-hidden animate-in slide-in-from-right duration-500 border-l border-primary/10">
+              <div className="w-1/2 h-full bg-background/50 backdrop-blur-md overflow-hidden animate-in slide-in-from-right duration-500 border-l border-primary/10 relative z-50">
                 {showUnifiedDeviceModal && (
                   <UnifiedDevicePanel
                     isOpen={true}

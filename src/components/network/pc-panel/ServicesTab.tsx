@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import { Globe, Network, Download, History, Settings } from 'lucide-react';
@@ -160,7 +160,7 @@ export function ServicesTab({
 }: ServicesTabProps) {
 
   const serviceTabClass = (tab: 'dns' | 'http' | 'dhcp' | 'ftp' | 'mail' | 'ntp') => cn(
-    'relative inline-flex items-center gap-2 rounded-t-lg border border-b-0 px-4 py-2.5 text-xs font-semibold transition-all duration-200 ease-out focus-ring-animate',
+    'relative inline-flex items-center gap-2 rounded-t-lg border border-b-0 px-4 py-2.5 text-xs font-semibold transition-all duration-200 ease-out focus-ring-animate shrink-0 whitespace-nowrap',
     activeServiceTab === tab
       ? isDark
         ? 'bg-secondary-900 text-white border-secondary-600 shadow-[0_-2px_8px_rgba(0,0,0,0.3)]'
@@ -193,7 +193,7 @@ export function ServicesTab({
       style={mobileVerticalScrollStyle}
     >
       {/* Inner Tabs for Services - Modern Style */}
-      <div className={`flex items-end gap-1 px-4 pt-3 border-b ${isDark ? 'border-secondary-700/50 bg-gradient-to-b from-secondary-900/20 to-transparent' : 'border-secondary-200 bg-gradient-to-b from-secondary-50/50 to-transparent'}`}>
+      <div className={`flex items-end gap-1 px-4 pt-3 border-b overflow-x-auto custom-scrollbar flex-nowrap ${isDark ? 'border-secondary-700/50 bg-gradient-to-b from-secondary-900/20 to-transparent' : 'border-secondary-200 bg-gradient-to-b from-secondary-50/50 to-transparent'}`}>
         {(['dns', 'http', 'dhcp', 'ftp', 'mail', 'ntp'] as const).map((tab) => (
           <button
             key={tab}

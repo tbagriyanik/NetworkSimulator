@@ -1,4 +1,5 @@
-﻿import type { MutableRefObject } from 'react';
+import React, { useEffect, useState, type MutableRefObject } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -48,6 +49,7 @@ interface HttpBrowserWindowProps {
   onSetShowSuggestions: (show: boolean) => void;
   onSetSelectedSuggestionIndex: React.Dispatch<React.SetStateAction<number>>;
   onOpenWebPage: (target?: string, url?: string) => void;
+  onBrowserWindowChange?: (newState: BrowserWindowState) => void;
 }
 
 export function HttpBrowserWindow({
@@ -63,59 +65,152 @@ export function HttpBrowserWindow({
   showSuggestions,
   selectedSuggestionIndex,
   urlInputRef,
-  dragStateRef,
-  resizeStateRef,
+  dragStateRef: _dragStateRef,
+  resizeStateRef: _resizeStateRef,
   onClose,
   onUrlChange,
   onSetShowSuggestions,
   onSetSelectedSuggestionIndex,
   onOpenWebPage,
+  onBrowserWindowChange,
 }: HttpBrowserWindowProps) {
-  if (!isOpen) return null;
+  const [mounted, setMounted] = useState(false);
+  const [localWindow, setLocalWindow] = useState(browserWindow);
+
+  const localDragRef = React.useRef<DragState | null>(null);
+  const localResizeRef = React.useRef<ResizeState | null>(null);
+  const localWindowRef = React.useRef<BrowserWindowState>(browserWindow);
+  const windowRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Required: Next.js hydration guard for createPortal
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Required: sync local state with parent prop during drag/resize
+    setLocalWindow(browserWindow);
+    localWindowRef.current = browserWindow;
+  }, [browserWindow.x, browserWindow.y, browserWindow.width, browserWindow.height]);
+
+  useEffect(() => {
+    const handleMove = (e: PointerEvent) => {
+      if (localDragRef.current) {
+        const state = localDragRef.current;
+        const dx = e.clientX - state.startX;
+        const dy = e.clientY - state.startY;
+        localWindowRef.current = {
+          ...localWindowRef.current,
+          x: state.originX + dx,
+          y: state.originY + dy,
+        };
+        if (windowRef.current) {
+          windowRef.current.style.transform = `translate(${dx}px, ${dy}px)`;
+        }
+      } else if (localResizeRef.current) {
+        const state = localResizeRef.current;
+        const dx = e.clientX - state.startX;
+        const dy = e.clientY - state.startY;
+        setLocalWindow(prev => {
+            const minW = 420, minH = 260;
+            let next = { ...prev };
+            if (state.side === 'bottom') next = { ...prev, height: Math.max(minH, state.originH + dy) };
+            else if (state.side === 'right') next = { ...prev, width: Math.max(minW, state.originW + dx) };
+            else if (state.side === 'top') {
+              const nh = Math.max(minH, state.originH - dy);
+              next = { ...prev, height: nh, y: Math.max(0, state.originY - (nh - state.originH)) };
+            }
+            else if (state.side === 'left') {
+              const nw = Math.max(minW, state.originW - dx);
+              next = { ...prev, width: nw, x: Math.max(0, state.originX - (nw - state.originW)) };
+            }
+            else if (state.side === 'se') next = { ...prev, width: Math.max(minW, state.originW + dx), height: Math.max(minH, state.originH + dy) };
+            else if (state.side === 'sw') {
+              const nw = Math.max(minW, state.originW - dx);
+              next = { ...prev, width: nw, x: Math.max(0, state.originX - (nw - state.originW)), height: Math.max(minH, state.originH + dy) };
+            }
+            else if (state.side === 'ne') {
+              const nh = Math.max(minH, state.originH - dy);
+              next = { ...prev, width: Math.max(minW, state.originW + dx), height: nh, y: Math.max(0, state.originY - (nh - state.originH)) };
+            }
+            else if (state.side === 'nw') {
+              const nwW = Math.max(minW, state.originW - dx);
+              const nwH = Math.max(minH, state.originH - dy);
+              next = { ...prev, width: nwW, x: Math.max(0, state.originX - (nwW - state.originW)), height: nwH, y: Math.max(0, state.originY - (nwH - state.originH)) };
+            }
+            localWindowRef.current = next;
+            return next;
+        });
+      }
+    };
+    
+    const handleUp = () => {
+      if (localDragRef.current) {
+        localDragRef.current = null;
+        if (windowRef.current) {
+          windowRef.current.style.left = `${localWindowRef.current.x}px`;
+          windowRef.current.style.top = `${localWindowRef.current.y}px`;
+          windowRef.current.style.transform = '';
+        }
+        setLocalWindow(prev => ({
+          ...prev,
+          x: localWindowRef.current.x,
+          y: localWindowRef.current.y,
+        }));
+      }
+      if (localResizeRef.current) {
+        localResizeRef.current = null;
+      }
+      onBrowserWindowChange?.(localWindowRef.current);
+    };
+
+    window.addEventListener('pointermove', handleMove);
+    window.addEventListener('pointerup', handleUp);
+    window.addEventListener('pointercancel', handleUp);
+    return () => {
+      window.removeEventListener('pointermove', handleMove);
+      window.removeEventListener('pointerup', handleUp);
+      window.removeEventListener('pointercancel', handleUp);
+    };
+  }, [onBrowserWindowChange]);
+
+  if (!isOpen || !mounted) return null;
 
   const startResize = (side: ResizeSide, e: React.PointerEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     e.currentTarget.setPointerCapture(e.pointerId);
-    resizeStateRef.current = {
+    localResizeRef.current = {
       side,
       startX: e.clientX,
       startY: e.clientY,
-      originX: browserWindow.x,
-      originY: browserWindow.y,
-      originW: browserWindow.width,
-      originH: browserWindow.height,
+      originX: localWindow.x,
+      originY: localWindow.y,
+      originW: localWindow.width,
+      originH: localWindow.height,
     };
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[999] pointer-events-auto bg-black/20"
+      className="fixed inset-0 z-[9999] pointer-events-auto bg-black/20"
       onClick={(e) => {
         e.stopPropagation();
         onClose();
       }}
     >
       <div
+        ref={windowRef}
         className="absolute"
-        style={isMobile
-          ? {
-            left: 8,
-            right: 8,
-            top: browserWindow.y,
-            width: 'auto',
-            height: browserWindow.height,
-            willChange: 'transform',
-            contain: 'layout style paint',
-          }
-          : {
-            left: browserWindow.x,
-            top: browserWindow.y,
-            width: browserWindow.width,
-            height: browserWindow.height,
-            willChange: 'transform',
-            contain: 'layout style paint',
-          }}
+        style={{
+          left: localWindow.x,
+          top: localWindow.y,
+          width: localWindow.width,
+          maxWidth: isMobile ? 'calc(100vw - 16px)' : 'none',
+          height: localWindow.height,
+          willChange: 'transform',
+          contain: 'layout style paint',
+        }}
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => {
           if (e.key === 'Escape') {
@@ -137,11 +232,11 @@ export function HttpBrowserWindow({
               if (target.closest('input, textarea, select, button')) return;
               e.preventDefault();
               e.currentTarget.setPointerCapture(e.pointerId);
-              dragStateRef.current = {
+              localDragRef.current = {
                 startX: e.clientX,
                 startY: e.clientY,
-                originX: browserWindow.x,
-                originY: browserWindow.y,
+                originX: localWindow.x,
+                originY: localWindow.y,
               };
             }}
           >
@@ -259,6 +354,7 @@ export function HttpBrowserWindow({
           <div className="absolute right-0 bottom-0 w-4 h-4 cursor-se-resize select-none touch-none" onPointerDown={(e) => startResize('se', e)} />
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

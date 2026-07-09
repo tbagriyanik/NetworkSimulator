@@ -125,7 +125,11 @@ export function DraggableWindowWrapper({
       {/* Header */}
       <div
         data-modal-header="true"
-        onPointerDown={(e) => handlePointerDown?.(e, id)}
+        onPointerDown={(e) => {
+          const target = e.target as HTMLElement;
+          if (target.closest('button, [role="tab"], input, select, textarea, .no-drag')) return;
+          handlePointerDown?.(e, id);
+        }}
         className={cn(
           'flex items-center justify-between px-3 py-2 select-none shrink-0 group',
           (!isMobile || !isMobileFullScreen) && 'cursor-grab active:cursor-grabbing',
@@ -135,18 +139,24 @@ export function DraggableWindowWrapper({
           isActive && !isMobile && (isDark ? 'bg-success-900/10' : 'bg-success-50/30')
         )}
       >
-        <div className="flex items-center gap-2 overflow-hidden cursor-grab active:cursor-grabbing">
+        <div className="flex items-center gap-2 overflow-hidden w-full">
           {icon && (
             <div className={cn("flex-shrink-0 pointer-events-none", isDark ? "text-secondary-400" : "text-secondary-500", isActive && "text-success-500")}>
               {icon}
             </div>
           )}
-          <h2 className={cn(
-            "text-sm font-semibold truncate pointer-events-none",
-            isDark ? "text-secondary-100" : "text-secondary-900"
-          )}>
-            {title}
-          </h2>
+          {typeof title === 'string' ? (
+            <h2 className={cn(
+              "text-sm font-semibold truncate pointer-events-none",
+              isDark ? "text-secondary-100" : "text-secondary-900"
+            )}>
+              {title}
+            </h2>
+          ) : (
+            <div className={cn("text-sm font-semibold flex-1 min-w-0 flex items-center", isDark ? "text-secondary-100" : "text-secondary-900")}>
+              {title}
+            </div>
+          )}
         </div>
         
         {!hideCloseButton && (
