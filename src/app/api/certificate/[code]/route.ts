@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCertificate } from '@/lib/roomStore';
 import type { RoomApiResponse, CertificateRecord } from '@/lib/roomTypes';
+import { isRateLimited } from '@/lib/security/rateLimiter';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,10 +10,20 @@ interface RouteParams {
 }
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<RouteParams> },
 ): Promise<NextResponse<RoomApiResponse<CertificateRecord>>> {
   try {
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'unknown';
+    const { allowed } = isRateLimited(`cert_verify_${ip}`, 60, 60 * 60 * 1000); // 60 verifications per hour
+
+    if (!allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Too many verification attempts', code: 'RATE_LIMIT_EXCEEDED' },
+        { status: 429 },
+      );
+    }
+
     const { code } = await params;
 
     if (!code || code.length > 20) {
