@@ -1405,7 +1405,6 @@ export function PCPanel({
     originW: number;
     originH: number;
   } | null>(null);
-  const animationFrameRef = useRef<number | null>(null);
   const urlInputRef = useRef<HTMLInputElement>(null);
 
   // Browser window ESC key handler
@@ -2602,80 +2601,7 @@ export function PCPanel({
     setHttpAppContent(refreshed);
   }, [httpAppDeviceId, topologyDevices, deviceStates, getConnectedIotDevices, getAvailableIotDevices]);
 
-  useEffect(() => {
-    const handlePointerMove = (event: PointerEvent) => {
-      // Cancel previous animation frame
-      if (animationFrameRef.current !== null) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-
-      animationFrameRef.current = requestAnimationFrame(() => {
-        if (dragStateRef.current) {
-          const dragState = dragStateRef.current;
-          const dx = event.clientX - dragState.startX;
-          const dy = event.clientY - dragState.startY;
-          setBrowserWindow((prev) => ({
-            ...prev,
-            x: dragState.originX + dx,
-            y: dragState.originY + dy,
-          }));
-        } else if (resizeStateRef.current) {
-          const state = resizeStateRef.current;
-          const dx = event.clientX - state.startX;
-          const dy = event.clientY - state.startY;
-          setBrowserWindow((prev) => {
-            const minW = 420, minH = 260;
-            if (state.side === 'bottom') return { ...prev, height: Math.max(minH, state.originH + dy) };
-            if (state.side === 'right') return { ...prev, width: Math.max(minW, state.originW + dx) };
-            if (state.side === 'top') {
-              const nh = Math.max(minH, state.originH - dy);
-              return { ...prev, height: nh, y: Math.max(0, state.originY - (nh - state.originH)) };
-            }
-            if (state.side === 'left') {
-              const nw = Math.max(minW, state.originW - dx);
-              return { ...prev, width: nw, x: Math.max(0, state.originX - (nw - state.originW)) };
-            }
-            if (state.side === 'se') return { ...prev, width: Math.max(minW, state.originW + dx), height: Math.max(minH, state.originH + dy) };
-            if (state.side === 'sw') {
-              const nw = Math.max(minW, state.originW - dx);
-              return { ...prev, width: nw, x: Math.max(0, state.originX - (nw - state.originW)), height: Math.max(minH, state.originH + dy) };
-            }
-            if (state.side === 'ne') {
-              const nh = Math.max(minH, state.originH - dy);
-              return { ...prev, width: Math.max(minW, state.originW + dx), height: nh, y: Math.max(0, state.originY - (nh - state.originH)) };
-            }
-            if (state.side === 'nw') {
-              const nwW = Math.max(minW, state.originW - dx);
-              const nwH = Math.max(minH, state.originH - dy);
-              return { ...prev, width: nwW, x: Math.max(0, state.originX - (nwW - state.originW)), height: nwH, y: Math.max(0, state.originY - (nwH - state.originH)) };
-            }
-            return prev;
-          });
-        }
-      });
-    };
-
-    const handlePointerEnd = () => {
-      if (animationFrameRef.current !== null) {
-        cancelAnimationFrame(animationFrameRef.current);
-        animationFrameRef.current = null;
-      }
-      dragStateRef.current = null;
-      resizeStateRef.current = null;
-    };
-
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerEnd);
-    window.addEventListener('pointercancel', handlePointerEnd);
-    return () => {
-      if (animationFrameRef.current !== null) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerEnd);
-      window.removeEventListener('pointercancel', handlePointerEnd);
-    };
-  }, []);
+  // Dragging and resizing is handled entirely by HttpBrowserWindow.tsx via direct DOM updates
 
   // Add multi-line output with delay between each line for realistic typing effect
   const addMultilineOutput = useCallback(async (type: OutputLine['type'], content: string, delayMs: number = 50) => {

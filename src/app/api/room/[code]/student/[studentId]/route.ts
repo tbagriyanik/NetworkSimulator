@@ -15,7 +15,7 @@ export async function PATCH(
 ): Promise<NextResponse<RoomApiResponse<StudentProgress>>> {
   try {
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'unknown';
-    const { allowed } = isRateLimited(`room_update_${ip}`, 30, 60 * 1000); // 30 updates per minute
+    const { allowed } = await isRateLimited(`room_update_${ip}`, 30, 60 * 1000); // 30 updates per minute
 
     if (!allowed) {
       return NextResponse.json(

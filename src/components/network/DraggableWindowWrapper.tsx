@@ -21,6 +21,7 @@ interface DraggableWindowWrapperProps {
   contentClassName?: string;
   onEscapeKeyDown?: () => void;
   mobileFullScreen?: boolean;
+  headerActions?: React.ReactNode;
 }
 
 export function DraggableWindowWrapper({
@@ -40,6 +41,7 @@ export function DraggableWindowWrapper({
   contentClassName,
   onEscapeKeyDown,
   mobileFullScreen = true,
+  headerActions,
 }: DraggableWindowWrapperProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -159,6 +161,12 @@ export function DraggableWindowWrapper({
           )}
         </div>
         
+        {headerActions && (
+          <div className="flex items-center gap-1 shrink-0 ml-2">
+            {headerActions}
+          </div>
+        )}
+
         {!hideCloseButton && (
           <button
             onClick={(e) => {

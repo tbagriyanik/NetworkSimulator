@@ -94,8 +94,14 @@ export async function checkRoomExists(code: string): Promise<boolean> {
 export async function getActiveRoomCount(): Promise<number> {
   if (!redis) return 0;
   try {
-    const keys = await redis.keys('room:*:meta');
-    return keys?.length ?? 0;
+    let cursor = 0;
+    const keys: string[] = [];
+    do {
+      const [nextCursor, newKeys] = await redis.scan(cursor, { match: 'room:*:meta', count: 100 });
+      cursor = Number(nextCursor);
+      keys.push(...newKeys);
+    } while (cursor !== 0);
+    return keys.length;
   } catch (e) {
     console.error('Error getting active room count:', e);
     return 0;

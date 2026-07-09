@@ -14,7 +14,7 @@ export async function GET(
 ): Promise<NextResponse<RoomApiResponse<StudentProgress[]>>> {
   try {
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'unknown';
-    const { allowed } = isRateLimited(`room_view_${ip}`, 100, 60 * 1000); // 100 requests per minute
+    const { allowed } = await isRateLimited(`room_view_${ip}`, 100, 60 * 1000); // 100 requests per minute
 
     if (!allowed) {
       return NextResponse.json(

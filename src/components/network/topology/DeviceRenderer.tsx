@@ -301,7 +301,7 @@ export function DeviceRenderer({
           />
           {/* Shield Icon inside Firewall device */}
           <g transform={`translate(${deviceWidth / 2 - 17}, ${deviceHeight / 2 - 40})`} filter="url(#deviceShadow)">
-            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" style={{ stroke: isDark ? 'var(--color-error-600)' : 'var(--color-error-500)' }} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" style={{ stroke: isDark ? 'var(--color-error-200)' : 'var(--color-error-600)' }} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               <path d="m9 12 2 2 4-4" />
             </svg>
@@ -464,11 +464,11 @@ export function DeviceRenderer({
       {/* Device Icon Visual */}
       <g transform={`translate(${deviceWidth / 2 - 16}, 12)`}>
         {device.type === 'pc' ? (
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ stroke: isPoweredOff ? STATUS_COLORS.offline : 'var(--color-primary-500)' }} strokeWidth="1.5">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ stroke: isPoweredOff ? STATUS_COLORS.offline : isDark ? 'var(--color-primary-200)' : 'var(--color-primary-700)' }} strokeWidth="1.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 0 0 2-2V5a2 2 0 0 0 -2-2H5a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2z" />
           </svg>
         ) : device.type === 'iot' ? (
-          <svg width="32" height="32" viewBox="0 -2 27 27" fill="none" style={{ stroke: isPoweredOff ? STATUS_COLORS.offline : 'var(--color-secondary-500)' }} strokeWidth="1.5">
+          <svg width="32" height="32" viewBox="0 -2 27 27" fill="none" style={{ stroke: isPoweredOff ? STATUS_COLORS.offline : isDark ? 'var(--color-warning-100)' : 'var(--color-warning-800)' }} strokeWidth="1.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M16.247 7.761a6 6 0 0 1 0 8.478" />
             <path strokeLinecap="round" strokeLinejoin="round" d="M19.075 4.933a10 10 0 0 1 0 14.134" />
             <path strokeLinecap="round" strokeLinejoin="round" d="M4.925 19.067a10 10 0 0 1 0-14.134" />
@@ -476,16 +476,16 @@ export function DeviceRenderer({
             <circle strokeLinecap="round" strokeLinejoin="round" cx="12" cy="12" r="2" />
           </svg>
         ) : isSwitchDeviceType(device.type) ? (
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ stroke: isPoweredOff ? STATUS_COLORS.offline : (device.switchModel === 'WS-C3650-24PS' ? 'var(--color-warning-500)' : 'var(--color-accent-500)') }} strokeWidth="1.5">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ stroke: isPoweredOff ? STATUS_COLORS.offline : (device.switchModel === 'WS-C3650-24PS' ? (isDark ? 'var(--color-warning-200)' : 'var(--color-warning-700)') : (isDark ? 'var(--color-accent-200)' : 'var(--color-accent-700)')) }} strokeWidth="1.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M5 12a2 2 0 0 1 -2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2M5 12a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 -2-2m-2-4h.01M17 16h.01" />
           </svg>
         ) : device.type === 'router' ? (
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ stroke: isPoweredOff ? STATUS_COLORS.offline : 'var(--color-purple-500)' }} strokeWidth="1.5">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ stroke: isPoweredOff ? STATUS_COLORS.offline : isDark ? 'var(--color-purple-200)' : 'var(--color-purple-700)' }} strokeWidth="1.5">
             <circle strokeLinecap="round" strokeLinejoin="round" cx="12" cy="12" r="9" />
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14M12 5l-2 2m2-2l2 2m-2 12l-2-2m2 2l2-2M5 12l2-2m-2 2l2 2M19 12l-2-2m2 2l-2 2" />
           </svg>
         ) : device.type === 'wlc' ? (
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ stroke: isPoweredOff ? STATUS_COLORS.offline : 'var(--color-warning-400)' }} strokeWidth="1.5">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ stroke: isPoweredOff ? STATUS_COLORS.offline : isDark ? 'var(--color-warning-200)' : 'var(--color-warning-800)' }} strokeWidth="1.5">
             <circle cx="12" cy="12" r="9" />
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14M12 5l-2 2m2-2l2 2m-2 12l-2-2m2 2l2-2M5 12l2-2m-2 2l2 2M19 12l-2-2m2 2l-2 2" />
             <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.3" />

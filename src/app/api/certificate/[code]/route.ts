@@ -15,7 +15,7 @@ export async function GET(
 ): Promise<NextResponse<RoomApiResponse<CertificateRecord>>> {
   try {
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'unknown';
-    const { allowed } = isRateLimited(`cert_verify_${ip}`, 600, 60 * 60 * 1000); // 600 verifications per hour
+    const { allowed } = await isRateLimited(`cert_verify_${ip}`, 600, 60 * 60 * 1000); // 600 verifications per hour
 
     if (!allowed) {
       return NextResponse.json(

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { saveCertificate, getRoomStudents } from '@/lib/roomStore';
 import type { RoomApiResponse } from '@/lib/roomTypes';
 import { isRateLimited } from '@/lib/security/rateLimiter';
+import { sanitizeInput } from '@/lib/security/sanitizer';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,7 +23,7 @@ export async function POST(
       req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
       req.headers.get('x-real-ip') ||
       'unknown';
-    const { allowed } = isRateLimited(`cert_${ip}`, 20, 60 * 60 * 1000); // 20 certs per hour
+    const { allowed } = await isRateLimited(`cert_${ip}`, 20, 60 * 60 * 1000); // 20 certs per hour
     if (!allowed) {
       return NextResponse.json(
         { success: false, error: 'Too many certificate requests', code: 'RATE_LIMIT_EXCEEDED' },
@@ -53,6 +54,10 @@ export async function POST(
           // Allow up to 2% tolerance for float rounding in exam scoring
           if (claimedRatio - serverProgressRatio > 0.02) {
             console.warn(`Certificate validation failed for ${studentName} in room ${roomCode}. Claimed: ${claimedRatio}, Server: ${serverProgressRatio}`);
+            return NextResponse.json(
+              { success: false, error: 'Score validation failed', code: 'INVALID_SCORE' },
+              { status: 400 },
+            );
           }
         }
       } catch (err) {
@@ -64,8 +69,8 @@ export async function POST(
 
     await saveCertificate({
       verifyCode,
-      studentName: String(studentName).slice(0, 100),
-      projectTitle: String(projectTitle).slice(0, 200),
+      studentName: sanitizeInput(String(studentName)).slice(0, 100),
+      projectTitle: sanitizeInput(String(projectTitle)).slice(0, 200),
       score: Number(score),
       totalScore: Number(totalScore),
       date: String(date).slice(0, 30),

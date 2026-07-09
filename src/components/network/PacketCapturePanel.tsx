@@ -107,18 +107,19 @@ export const PacketCapturePanel = ({
       handlePointerDown={dragProps.handlePointerDown}
       handleResizeStart={dragProps.handleResizeStart}
       mobileFullScreen={false}
+      headerActions={
+        <button
+          onClick={(e) => { e.stopPropagation(); clearCapturedPackets(activeCaptureConnectionId); }}
+          className="p-1.5 rounded transition-colors flex items-center justify-center hover:bg-secondary-200 dark:hover:bg-secondary-700"
+          title={t.clearCapture}
+          onPointerDown={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          <Trash2 className="w-4 h-4 text-error-500" />
+        </button>
+      }
     >
       <div className="flex-1 flex flex-col min-h-0 relative">
-        <div className="flex justify-end p-2 border-b dark:border-secondary-800">
-          <button
-            onClick={(e) => { e.stopPropagation(); clearCapturedPackets(activeCaptureConnectionId); }}
-            className="p-1 rounded hover:bg-secondary-300 dark:hover:bg-secondary-600 transition-colors"
-            title={t.clearCapture}
-          >
-            <Trash2 className="w-3.5 h-3.5 text-error-500" />
-          </button>
-        </div>
-        
         <div className="custom-scrollbar p-0 bg-transparent flex-1 overflow-auto w-full">
           <table className="w-full text-[10px] text-left border-collapse">
             <thead className={`sticky top-0 z-10 ${isDark ? 'bg-secondary-950/80' : 'bg-secondary-100/80'} backdrop-blur-sm`}>

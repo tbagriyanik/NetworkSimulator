@@ -659,11 +659,32 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   });
   const {
     setActiveTabWithHistory, setDeviceTabWithHistory, handlePCPanelNavigate,
-    handleDeviceSelectFromCanvas,
-    handleDeviceSelectFromMenu, focusDeviceInTopology,
+    focusDeviceInTopology,
     activeTabRef,
     pendingFocusDeviceRef, topologyContainerRef,
   } = nav;
+
+  const handleDeviceSelectFromCanvas = useCallback((device: DeviceType, deviceId?: string, switchModel?: string, deviceName?: string, isNew?: boolean, deviceData?: CanvasDevice) => {
+    if (device === 'pc') {
+      setShowUnifiedDeviceModal(false);
+      setShowRouterPanel(false);
+      setShowFirewallPanel(false);
+    } else if (device === 'switchL2' || device === 'switchL3' || device === 'router' || device === 'firewall' || device === 'wlc') {
+      setShowPCPanel(false);
+    }
+    nav.handleDeviceSelectFromCanvas(device, deviceId, switchModel, deviceName, isNew, deviceData);
+  }, [nav, setShowUnifiedDeviceModal, setShowRouterPanel, setShowFirewallPanel, setShowPCPanel]);
+
+  const handleDeviceSelectFromMenu = useCallback((device: DeviceType, deviceId?: string, switchModel?: string, deviceName?: string) => {
+    if (device === 'pc') {
+      setShowUnifiedDeviceModal(false);
+      setShowRouterPanel(false);
+      setShowFirewallPanel(false);
+    } else if (device === 'switchL2' || device === 'switchL3' || device === 'router' || device === 'firewall' || device === 'wlc') {
+      setShowPCPanel(false);
+    }
+    nav.handleDeviceSelectFromMenu(device, deviceId, switchModel, deviceName);
+  }, [nav, setShowUnifiedDeviceModal, setShowRouterPanel, setShowFirewallPanel, setShowPCPanel]);
   // Wrapper to match PCPanel's single-arg onNavigate signature
   const handlePCPanelNavigateWrapper = useCallback((program: string) => {
     handlePCPanelNavigate(program, activeDeviceId);

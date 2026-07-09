@@ -27,7 +27,7 @@ export async function GET(_req: NextRequest): Promise<NextResponse> {
 export async function POST(req: NextRequest): Promise<NextResponse<RoomApiResponse<RoomData>>> {
   try {
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'unknown';
-    const { allowed } = isRateLimited(`room_create_${ip}`, 5, 60 * 60 * 1000); // 5 rooms per hour
+    const { allowed } = await isRateLimited(`room_create_${ip}`, 5, 60 * 60 * 1000); // 5 rooms per hour
 
     if (!allowed) {
       return NextResponse.json(

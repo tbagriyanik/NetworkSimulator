@@ -111,36 +111,53 @@ export function HttpBrowserWindow({
         const state = localResizeRef.current;
         const dx = e.clientX - state.startX;
         const dy = e.clientY - state.startY;
-        setLocalWindow(prev => {
-            const minW = 420, minH = 260;
-            let next = { ...prev };
-            if (state.side === 'bottom') next = { ...prev, height: Math.max(minH, state.originH + dy) };
-            else if (state.side === 'right') next = { ...prev, width: Math.max(minW, state.originW + dx) };
-            else if (state.side === 'top') {
-              const nh = Math.max(minH, state.originH - dy);
-              next = { ...prev, height: nh, y: Math.max(0, state.originY - (nh - state.originH)) };
-            }
-            else if (state.side === 'left') {
-              const nw = Math.max(minW, state.originW - dx);
-              next = { ...prev, width: nw, x: Math.max(0, state.originX - (nw - state.originW)) };
-            }
-            else if (state.side === 'se') next = { ...prev, width: Math.max(minW, state.originW + dx), height: Math.max(minH, state.originH + dy) };
-            else if (state.side === 'sw') {
-              const nw = Math.max(minW, state.originW - dx);
-              next = { ...prev, width: nw, x: Math.max(0, state.originX - (nw - state.originW)), height: Math.max(minH, state.originH + dy) };
-            }
-            else if (state.side === 'ne') {
-              const nh = Math.max(minH, state.originH - dy);
-              next = { ...prev, width: Math.max(minW, state.originW + dx), height: nh, y: Math.max(0, state.originY - (nh - state.originH)) };
-            }
-            else if (state.side === 'nw') {
-              const nwW = Math.max(minW, state.originW - dx);
-              const nwH = Math.max(minH, state.originH - dy);
-              next = { ...prev, width: nwW, x: Math.max(0, state.originX - (nwW - state.originW)), height: nwH, y: Math.max(0, state.originY - (nwH - state.originH)) };
-            }
-            localWindowRef.current = next;
-            return next;
-        });
+        
+        const minW = 420, minH = 260;
+        const next = { ...localWindowRef.current };
+        if (state.side === 'bottom') next.height = Math.max(minH, state.originH + dy);
+        else if (state.side === 'right') next.width = Math.max(minW, state.originW + dx);
+        else if (state.side === 'top') {
+          const nh = Math.max(minH, state.originH - dy);
+          next.height = nh;
+          next.y = Math.max(0, state.originY - (nh - state.originH));
+        }
+        else if (state.side === 'left') {
+          const nw = Math.max(minW, state.originW - dx);
+          next.width = nw;
+          next.x = Math.max(0, state.originX - (nw - state.originW));
+        }
+        else if (state.side === 'se') {
+          next.width = Math.max(minW, state.originW + dx);
+          next.height = Math.max(minH, state.originH + dy);
+        }
+        else if (state.side === 'sw') {
+          const nw = Math.max(minW, state.originW - dx);
+          next.width = nw;
+          next.x = Math.max(0, state.originX - (nw - state.originW));
+          next.height = Math.max(minH, state.originH + dy);
+        }
+        else if (state.side === 'ne') {
+          const nh = Math.max(minH, state.originH - dy);
+          next.width = Math.max(minW, state.originW + dx);
+          next.height = nh;
+          next.y = Math.max(0, state.originY - (nh - state.originH));
+        }
+        else if (state.side === 'nw') {
+          const nwW = Math.max(minW, state.originW - dx);
+          const nwH = Math.max(minH, state.originH - dy);
+          next.width = nwW;
+          next.x = Math.max(0, state.originX - (nwW - state.originW));
+          next.height = nwH;
+          next.y = Math.max(0, state.originY - (nwH - state.originH));
+        }
+        
+        localWindowRef.current = next;
+        if (windowRef.current) {
+          windowRef.current.style.width = `${next.width}px`;
+          windowRef.current.style.height = `${next.height}px`;
+          windowRef.current.style.left = `${next.x}px`;
+          windowRef.current.style.top = `${next.y}px`;
+        }
       }
     };
     
