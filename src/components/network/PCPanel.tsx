@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, KeyboardEvent, useCallback, useMemo, type CSSProperties } from 'react';
 import { useEnvironment } from '@/lib/store/appStore';
-import { Port, SwitchState } from '@/lib/network/types';
+import { SwitchState } from '@/lib/network/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { TerminalOutput } from './Terminal';
@@ -39,6 +39,18 @@ import { WirelessConfigTab } from './pc-panel/WirelessConfigTab';
 import { IotDashboardTab } from './pc-panel/IotDashboardTab';
 import { PCPanelHeader } from './pc-panel/PCPanelHeader';
 import { PCPanelTerminalToolbar } from './pc-panel/PCPanelTerminalToolbar';
+import {
+  hasGatewayForTarget,
+  normalizeLookupTarget,
+  resolveDeviceNameTarget,
+  resolveDomainWithDnsServices,
+  findHttpServerByTarget,
+  isDhcpPoolCompatibleForClient
+} from './pc-panel/pcBrowser.utils';
+import {
+  getConsoleDevice,
+  getAutocompleteSuggestions
+} from './pc-panel/pcTerminal.utils';
 
 
 export function PCPanel({
@@ -1263,23 +1275,6 @@ export function PCPanel({
     serviceDhcpPools,
   ]);
 
-  // Trigger sync on change (debounced) - uses ref to avoid circular dependency
-  // DISABLED: This effect was causing infinite loop with topology updates
-  // Manual sync is now triggered by specific user actions instead
-  /*
-  const syncTriggerRef = useRef(false);
-  useEffect(() => {
-    if (!syncTriggerRef.current) {
-      syncTriggerRef.current = true;
-      return;
-    }
-    const handler = setTimeout(() => {
-      syncToGlobalRef.current();
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [pcIP, pcMAC, pcSubnet, pcGateway, pcDNS, pcIPv6, pcIPv6Prefix, internalPcHostname, ipConfigMode, serviceDnsEnabled, serviceDnsRecords, serviceHttpEnabled, serviceHttpContent, serviceFtpEnabled, serviceFtpFiles, serviceMailEnabled, serviceMailDomain, serviceMailSmtpServer, serviceMailPop3Server, serviceMailUsername, serviceMailPassword, serviceMailInbox, serviceMailSent, serviceNtpEnabled, serviceNtpServer, serviceNtpDate, serviceNtpTime, serviceDhcpEnabled, serviceDhcpPools, wifiEnabled, wifiSSID, wifiBSSID, wifiSecurity, wifiPassword, wifiChannel]);
-  */
-
   // Local output for Desktop (Local) - initialize from prop if available
   const getInitialPcOutput = (): OutputLine[] => {
     if (pcOutputs?.has(deviceId)) {
@@ -1558,29 +1553,15 @@ export function PCPanel({
     return <>{out}</>;
   }, [searchQuery, isDark]);
 
-  // Find connected console device
-  const getConsoleDevice = useCallback(() => {
-    if (!topologyConnections || !deviceId) return null;
-    const connection = topologyConnections.find(conn => {
-      if (conn.cableType !== 'console' || conn.active === false) return false;
-      const isSource = conn.sourceDeviceId === deviceId;
-      const isTarget = conn.targetDeviceId === deviceId;
-      if (isSource) {
-        const port = conn.sourcePort.toLowerCase();
-        return port.startsWith('com') || port === 'console' || port === 'rs232';
-      }
-      if (isTarget) {
-        const port = conn.targetPort.toLowerCase();
-        return port.startsWith('com') || port === 'console' || port === 'rs232';
-      }
-      return false;
+  const getConsoleDeviceCallback = useCallback(() => {
+    return getConsoleDevice({
+      deviceId,
+      topologyDevices,
+      topologyConnections: topologyConnections as unknown as CanvasConnection[]
     });
-    if (!connection) return null;
-    const otherId = connection.sourceDeviceId === deviceId ? connection.targetDeviceId : connection.sourceDeviceId;
-    return topologyDevices.find(d => d.id === otherId && ((d.type === 'switchL2' || d.type === 'switchL3') || d.type === 'router')) || null;
   }, [deviceId, topologyConnections, topologyDevices]);
 
-  const consoleDevice = getConsoleDevice();
+  const consoleDevice = getConsoleDeviceCallback();
 
 
   // Synchronized Console Output from Global State
@@ -1684,46 +1665,19 @@ export function PCPanel({
     return 'user';
   }, [activeTab, isConsoleConnected, connectedDeviceId, deviceStates]);
 
-  const getAutocompleteSuggestions = useCallback((value: string) => {
-    const isIpv4 = (raw: string) => /^(25[0-5]|2[0-4]\d|1?\d?\d)(\.(25[0-5]|2[0-4]\d|1?\d?\d)){3}$/.test(raw);
-    const collectKnownIps = () => {
-      const fromDevices = (topologyDevices || [])
-        .map((d) => d.ip)
-        .filter((ip): ip is string => !!ip && isIpv4(ip) && ip !== '0.0.0.0' && ip !== '169.254.0.0');
-      const fromStates = Array.from(deviceStates?.values() || [])
-        .flatMap((s) => Object.values(s.ports || {}).map((p: Port) => (p as { ipAddress?: string }).ipAddress))
-        .filter((ip): ip is string => !!ip && isIpv4(ip) && ip !== '0.0.0.0' && ip !== '169.254.0.0');
-      return Array.from(new Set([...fromDevices, ...fromStates]));
-    };
-
-    const trimmed = value.trim();
-    const tokens = trimmed.split(/\s+/).filter(Boolean);
-    const currentWord = value.endsWith(' ') ? '' : (tokens[tokens.length - 1] || '').toLowerCase();
-    const expectsIpArg = /^(?:telnet|ssh|ping|curl|wget|ip\s+default-gateway|default-router|dns-server)\s+\S*$/i.test(trimmed)
-      || /^(?:telnet|ssh|ping|curl|wget|ip\s+default-gateway|default-router|dns-server)\s*$/i.test(trimmed);
-
-    if (activeTab === 'desktop') {
-      const base = DESKTOP_COMMANDS
-        .filter((cmd) => cmd !== '?' && cmd.startsWith(currentWord))
-        .slice(0, 8);
-      if (!expectsIpArg) return base;
-      const ipSuggestions = collectKnownIps().filter((ip) => ip.toLowerCase().startsWith(currentWord));
-      return Array.from(new Set([...ipSuggestions, ...base])).slice(0, 8);
-    }
-
-    const mode = getCommandMode();
-    const { candidates, currentWord: ctxCurrentWord } = expandCommandContext(mode, value);
-    const suggestions = candidates.filter(
-      (opt: string) => opt !== '?' && opt.toLowerCase().startsWith(ctxCurrentWord)
-    );
-    if (!expectsIpArg) return suggestions.slice(0, 8);
-    const ipSuggestions = collectKnownIps().filter((ip) => ip.toLowerCase().startsWith(ctxCurrentWord || currentWord));
-    return Array.from(new Set([...ipSuggestions, ...suggestions])).slice(0, 8);
+  const getAutocompleteSuggestionsCallback = useCallback((value: string) => {
+    return getAutocompleteSuggestions({
+      value,
+      activeTab,
+      topologyDevices,
+      deviceStates,
+      getCommandMode
+    });
   }, [activeTab, getCommandMode, topologyDevices, deviceStates]);
 
   const renderAutocompleteSuggestions = useMemo(
-    () => getAutocompleteSuggestions(input),
-    [getAutocompleteSuggestions, input]
+    () => getAutocompleteSuggestionsCallback(input),
+    [getAutocompleteSuggestionsCallback, input]
   );
 
   const shouldShowAutocomplete = useMemo(
@@ -1968,236 +1922,64 @@ export function PCPanel({
   const isValidIpv4 = useCallback((value: string) => validateIP(value), []);
   const isValidIpv6 = useCallback((value: string) => validateIPv6(value), []);
 
-  const isSameSubnet = useCallback((sourceIp: string, targetIp: string, subnetMask: string) => {
-    try {
-      const a = sourceIp.split('.').map(Number);
-      const b = targetIp.split('.').map(Number);
-      const m = subnetMask.split('.').map(Number);
-      if (a.length !== 4 || b.length !== 4 || m.length !== 4) return false;
-      for (let i = 0; i < 4; i += 1) {
-        if ((a[i] & m[i]) !== (b[i] & m[i])) return false;
-      }
-      return true;
-    } catch (err) {
-      // IP subnet comparison failed - expected for malformed IPs
-      if (process.env.NODE_ENV === 'development') {
-        errorHandler.logError(new Error('Subnet comparison failed'), { sourceIp, targetIp, subnetMask, error: String(err) });
-      }
-      return false;
-    }
-  }, []);
-
-  const hasGatewayForTarget = useCallback((targetIp: string) => {
-    if (!isValidIpv4(pcIP) || !isValidIpv4(targetIp) || !isValidIpv4(pcSubnet)) return false;
-    if (isSameSubnet(pcIP, targetIp, pcSubnet)) return true;
-    return isValidIpv4(pcGateway);
-  }, [pcGateway, pcIP, pcSubnet]);
-
-  const getPortAccessVlan = useCallback((port: { accessVlan?: unknown; vlan?: unknown } | null | undefined) => Number(port?.accessVlan || port?.vlan || 1), []);
-
-  const getPeerPortVlan = useCallback((ownerDeviceId: string, ownerPortId: string) => {
-    const connection = topologyConnections.find((conn) =>
-      conn.active !== false &&
-      (
-        (conn.sourceDeviceId === ownerDeviceId && conn.sourcePort === ownerPortId) ||
-        (conn.targetDeviceId === ownerDeviceId && conn.targetPort === ownerPortId)
-      )
-    );
-    if (!connection) return null;
-
-    const peerDeviceId = connection.sourceDeviceId === ownerDeviceId ? connection.targetDeviceId : connection.sourceDeviceId;
-    const peerPortId = connection.sourceDeviceId === ownerDeviceId ? connection.targetPort : connection.sourcePort;
-    const peerPort = deviceStates?.get(peerDeviceId)?.ports?.[peerPortId];
-    if (!peerPort) return null;
-    if (peerPort.mode === 'trunk') return 1;
-    return getPortAccessVlan(peerPort);
-  }, [deviceStates, getPortAccessVlan, topologyConnections]);
-
-  const inferEndpointVlan = useCallback((endpoint: CanvasDevice | undefined) => {
-    if (!endpoint) return 1;
-
-    const connection = topologyConnections.find((conn) =>
-      conn.active !== false &&
-      (conn.sourceDeviceId === endpoint.id || conn.targetDeviceId === endpoint.id)
-    );
-    if (!connection) {
-      return Number(endpoint.vlan || 1);
-    }
-
-    const peerDeviceId = connection.sourceDeviceId === endpoint.id ? connection.targetDeviceId : connection.sourceDeviceId;
-    const peerPortId = connection.sourceDeviceId === endpoint.id ? connection.targetPort : connection.sourcePort;
-    const peerPort = deviceStates?.get(peerDeviceId)?.ports?.[peerPortId];
-    if (!peerPort) {
-      return Number(endpoint.vlan || 1);
-    }
-    if (peerPort.mode === 'trunk') return 1;
-    return getPortAccessVlan(peerPort);
-  }, [deviceStates, getPortAccessVlan, topologyConnections]);
-
-  const getServerPoolVlan = useCallback((
-    serverDevice: CanvasDevice | undefined,
-    serverState: SwitchState | undefined,
-    poolGateway: string,
-    poolStartIp: string,
-    poolSubnetMask: string
-  ) => {
-    if (!serverDevice || !isValidIpv4(poolSubnetMask)) return null;
-
-    const anchorIp = isValidIpv4(poolGateway) ? poolGateway : poolStartIp;
-    if (!isValidIpv4(anchorIp)) return null;
-
-    if (serverDevice.type === 'pc') {
-      if (isValidIpv4(serverDevice.ip || '') && isSameSubnet(serverDevice.ip || '', anchorIp, poolSubnetMask)) {
-        return inferEndpointVlan(serverDevice);
-      }
-      return null;
-    }
-
-    const ports = serverState?.ports || {};
-    for (const [portId, port] of Object.entries(ports)) {
-      if (!port?.ipAddress || port.shutdown) continue;
-      const effectiveMask = port.subnetMask || poolSubnetMask;
-      if (!isValidIpv4(effectiveMask) || !isSameSubnet(port.ipAddress, anchorIp, effectiveMask)) continue;
-
-      const sviMatch = portId.match(/^vlan(\d+)$/i);
-      if (sviMatch) return parseInt(sviMatch[1], 10) || 1;
-      if (port.mode === 'trunk') return 1;
-      if (port.accessVlan || port.vlan) return getPortAccessVlan(port);
-
-      const peerVlan = getPeerPortVlan(serverDevice.id, portId);
-      return peerVlan ?? 1;
-    }
-
-    if (isValidIpv4(serverDevice.ip || '') && isSameSubnet(serverDevice.ip || '', anchorIp, poolSubnetMask)) {
-      return inferEndpointVlan(serverDevice);
-    }
-
-    return null;
-  }, [getPeerPortVlan, getPortAccessVlan, inferEndpointVlan, isSameSubnet, isValidIpv4]);
-
-  const isDhcpPoolCompatibleForClient = useCallback((
+  const isDhcpPoolCompatibleForClientCallback = useCallback((
     poolGateway: string,
     poolStartIp: string,
     poolSubnetMask: string,
     serverDevice: CanvasDevice | undefined,
     serverState?: SwitchState
   ) => {
-    const clientDevice = deviceFromTopology;
-    if (!clientDevice) return false;
-
-    const clientWifi = getDeviceWifiConfig(clientDevice, deviceStates);
-    if (clientWifi?.enabled && clientWifi.mode === 'client' && clientWifi.ssid) {
-      const serverWifi = getDeviceWifiConfig(serverDevice, deviceStates);
-      if (!serverWifi?.enabled || serverWifi.mode !== 'ap' || serverWifi.ssid !== clientWifi.ssid) {
-        return false;
-      }
-      return getServerPoolVlan(serverDevice, serverState, poolGateway, poolStartIp, poolSubnetMask) !== null;
-    }
-
-    const clientVlan = inferEndpointVlan(clientDevice);
-    const serverVlan = getServerPoolVlan(serverDevice, serverState, poolGateway, poolStartIp, poolSubnetMask);
-    return serverVlan !== null && clientVlan === serverVlan;
-  }, [deviceFromTopology, deviceStates, getServerPoolVlan, inferEndpointVlan]);
+    return isDhcpPoolCompatibleForClient({
+      poolGateway,
+      poolStartIp,
+      poolSubnetMask,
+      serverDevice,
+      serverState,
+      clientDevice: deviceFromTopology,
+      deviceStates,
+      topologyConnections: topologyConnections as unknown as CanvasConnection[],
+      isValidIpv4,
+      getDeviceWifiConfig,
+    });
+  }, [deviceFromTopology, deviceStates, topologyConnections, isValidIpv4]);
 
   const isLoopbackTarget = useCallback((target: string) => target.trim() === '127.0.0.1', []);
 
-  const normalizeLookupTarget = useCallback((raw: string) => {
-    const value = (raw || '').trim();
-    if (!value) return '';
-    try {
-      const withScheme = value.startsWith('http://') || value.startsWith('https://')
-        ? value
-        : `http://${value}`;
-      const parsed = new URL(withScheme);
-      return parsed.hostname || value;
-    } catch (_err) {
-      // URL parsing failed - using fallback extraction
-      return value.split('/')[0].split('?')[0].trim();
-    }
+  const hasGatewayForTargetCallback = useCallback((targetIp: string) => {
+    return hasGatewayForTarget({
+      pcIP,
+      targetIp,
+      pcSubnet,
+      pcGateway,
+      isValidIpv4
+    });
+  }, [pcGateway, pcIP, pcSubnet, isValidIpv4]);
+
+  const normalizeLookupTargetCallback = useCallback((raw: string) => {
+    return normalizeLookupTarget(raw);
   }, []);
 
-  const resolveDeviceNameTarget = useCallback((raw: string) => {
-    const normalized = (raw || '').trim().toLowerCase();
-    if (!normalized) return null;
-
-    if (normalized === 'localhost' || normalized === internalPcHostname.toLowerCase() || normalized === deviceId.toLowerCase()) {
-      return { ip: '127.0.0.1', label: internalPcHostname };
-    }
-
-    const matched = topologyDevices.find((d) =>
-      d.name?.toLowerCase() === normalized || d.id?.toLowerCase() === normalized
-    );
-    if (!matched) return null;
-
-    if (matched.ip && isValidIpv4(matched.ip)) {
-      return { ip: matched.ip, label: matched.name || matched.id };
-    }
-
-    const state = deviceStates?.get(matched.id);
-    if (state?.ports) {
-      for (const port of Object.values(state.ports)) {
-        if (port?.ipAddress && isValidIpv4(port.ipAddress)) {
-          return { ip: port.ipAddress, label: matched.name || matched.id };
-        }
-      }
-    }
-
-    return null;
+  const resolveDeviceNameTargetCallback = useCallback((raw: string) => {
+    return resolveDeviceNameTarget({
+      raw,
+      internalPcHostname,
+      deviceId,
+      topologyDevices,
+      deviceStates,
+      isValidIpv4
+    });
   }, [deviceId, deviceStates, internalPcHostname, isValidIpv4, topologyDevices]);
 
-  const resolveDomainWithDnsServices = useCallback((domain: string) => {
-    const normalized = domain.trim().toLowerCase();
-    if (!normalized) return null;
-
-    if (!isValidIpv4(pcDNS) && !isValidIpv6(pcDNS)) return null;
-
-    let dnsServerDevice = topologyDevices.find(
-      (d) => (d.ip === pcDNS || d.ipv6 === pcDNS) && d.services?.dns?.enabled && (d.services?.dns?.records?.length || 0) > 0
-    );
-
-    let records = dnsServerDevice?.services?.dns?.records || [];
-
-    // Also check deviceStates for DNS records (e.g. from a Router)
-    if (deviceStates) {
-      for (const [id, state] of deviceStates.entries()) {
-        if (state.services?.dns?.enabled && (state.services.dns.records?.length || 0) > 0) {
-          const topoDev = topologyDevices.find(d => d.id === id);
-          // Check if this device has the IP we're looking for on ANY of its interfaces
-          const hasIp = topoDev?.ip === pcDNS || topoDev?.ipv6 === pcDNS || Object.values(state.ports).some(p => p.ipAddress === pcDNS || p.ipv6Address === pcDNS);
-
-          if (hasIp) {
-            dnsServerDevice = topoDev || { id, name: state.hostname, ip: pcDNS } as unknown as CanvasDevice;
-            records = state.services?.dns?.records || [];
-            break;
-          }
-        }
-      }
-    }
-
-    if ((!dnsServerDevice?.ip && !dnsServerDevice?.ipv6) || !canReachTargetIp(pcDNS, { protocol: 'udp', port: '53' })) return null;
-
-    // Support CNAME-like records in DNS service:
-    // domain -> another domain -> ... -> final IP address
-    const visited = new Set<string>();
-    let currentDomain = normalized;
-
-    for (let depth = 0; depth < 10; depth += 1) {
-      if (visited.has(currentDomain)) return null;
-      visited.add(currentDomain);
-
-      const record = (records || []).find((r: { domain: string }) => r.domain.toLowerCase() === currentDomain);
-      if (!record) return null;
-
-      const value = record.address.trim().toLowerCase();
-      if (!value) return null;
-      if (isValidIpv4(value) || isValidIpv6(value)) {
-        return { address: value, server: dnsServerDevice };
-      }
-
-      currentDomain = value;
-    }
-
-    return null;
+  const resolveDomainWithDnsServicesCallback = useCallback((domain: string) => {
+    return resolveDomainWithDnsServices({
+      domain,
+      pcDNS,
+      topologyDevices,
+      deviceStates,
+      canReachTargetIp,
+      isValidIpv4,
+      isValidIpv6
+    });
   }, [canReachTargetIp, isValidIpv4, isValidIpv6, pcDNS, topologyDevices, deviceStates]);
 
   const getDnsRecordDisplay = useCallback((record: { domain: string; address: string }) => {
@@ -2235,104 +2017,28 @@ export function PCPanel({
     return `${recordType}: ${chain.join(' -> ')}`;
   }, [isValidIpv4, isValidIpv6, language, serviceDnsRecords]);
 
-  const findHttpServerByTarget = useCallback((target: string) => {
-    const normalizedTarget = target.trim().toLowerCase();
-    if (!normalizedTarget) return null;
-
-    // Localhost should always resolve to the current PC first.
-    if (normalizedTarget === '127.0.0.1' || normalizedTarget === '::1') {
-      const selfDevice = topologyDevices.find((d) => d.id === deviceId);
-      if (selfDevice && selfDevice.services?.http?.enabled) return selfDevice;
-    }
-
-    // Check for PC HTTP servers
-    const pcByIp = topologyDevices.find(
-      (d) => (d.ip === target || d.ipv6?.toLowerCase() === normalizedTarget) && d.services?.http?.enabled
-    );
-    if (pcByIp) {
-      const targetAddress = pcByIp.ipv6 && normalizedTarget === pcByIp.ipv6.toLowerCase() ? pcByIp.ipv6 : pcByIp.ip;
-      if (targetAddress && canReachTargetIp(targetAddress, { protocol: 'tcp', port: '80' })) return pcByIp;
-    }
-
-    // Check for router/switch devices with HTTP service enabled
-    const routerByIp = topologyDevices.find(
-      (d) => (d.type === 'router' || d.type === 'switchL2' || d.type === 'switchL3') && (d.ip === target || d.ipv6?.toLowerCase() === normalizedTarget) && d.services?.http?.enabled
-    );
-    if (routerByIp) {
-      const targetAddress = routerByIp.ipv6 && normalizedTarget === routerByIp.ipv6.toLowerCase() ? routerByIp.ipv6 : routerByIp.ip;
-      if (targetAddress && canReachTargetIp(targetAddress, { protocol: 'tcp', port: '80' })) return routerByIp;
-    }
-
-    // Fallback: look into deviceStates interface IPs for devices that have HTTP enabled
-    if (deviceStates) {
-      for (const [stateId, state] of deviceStates.entries()) {
-        if (!state?.services?.http?.enabled) continue;
-        const topoDevice = topologyDevices.find(d => d.id === stateId);
-        if (!topoDevice || (topoDevice.type !== 'router' && topoDevice.type !== 'switchL2' && topoDevice.type !== 'switchL3')) continue;
-        const ports = state.ports || {};
-        const match = Object.values(ports).find((port: { ipAddress?: string; ipv6Address?: string }) => port?.ipAddress === target || port?.ipv6Address?.toLowerCase() === normalizedTarget);
-        if (match) {
-          const matchIp = match.ipv6Address && normalizedTarget === match.ipv6Address.toLowerCase() ? match.ipv6Address : (match.ipAddress || target);
-          if (canReachTargetIp(matchIp, { protocol: 'tcp', port: '80' })) {
-            return {
-              ...topoDevice,
-              ip: matchIp
-            };
-          }
-        }
-      }
-    }
-
-    // Try DNS resolution
-    const dnsResult = resolveDomainWithDnsServices(normalizedTarget);
-    if (!dnsResult) return null;
-
-    // Check resolved address for PC HTTP server
-    const resolvedPc = topologyDevices.find(
-      (d) => (d.ip === dnsResult.address || d.ipv6?.toLowerCase() === dnsResult.address.toLowerCase()) && d.services?.http?.enabled
-    ) || null;
-    if (resolvedPc && canReachTargetIp(dnsResult.address, { protocol: 'tcp', port: '80' })) return resolvedPc;
-
-    // Check resolved address for router/switch with HTTP service enabled
-    const resolvedRouter = topologyDevices.find(
-      (d) => (d.type === 'router' || d.type === 'switchL2' || d.type === 'switchL3') && (d.ip === dnsResult.address || d.ipv6?.toLowerCase() === dnsResult.address.toLowerCase()) && d.services?.http?.enabled
-    ) || null;
-    if (resolvedRouter && canReachTargetIp(dnsResult.address, { protocol: 'tcp', port: '80' })) return resolvedRouter;
-
-    // DNS fallback via deviceStates interfaces
-    if (deviceStates) {
-      for (const [stateId, state] of deviceStates.entries()) {
-        if (!state?.services?.http?.enabled) continue;
-        const topoDevice = topologyDevices.find(d => d.id === stateId);
-        if (!topoDevice || (topoDevice.type !== 'router' && topoDevice.type !== 'switchL2' && topoDevice.type !== 'switchL3')) continue;
-        const ports = state.ports || {};
-        const match = Object.values(ports).find((port: { ipAddress?: string; ipv6Address?: string }) => port?.ipAddress === dnsResult.address || port?.ipv6Address?.toLowerCase() === dnsResult.address.toLowerCase());
-        if (match) {
-          const matchIp = match.ipv6Address && dnsResult.address.toLowerCase() === match.ipv6Address.toLowerCase() ? match.ipv6Address : (match.ipAddress || dnsResult.address);
-          if (canReachTargetIp(matchIp, { protocol: 'tcp', port: '80' })) {
-            return {
-              ...topoDevice,
-              ip: matchIp
-            };
-          }
-        }
-      }
-    }
-
-    return null;
-  }, [canReachTargetIp, resolveDomainWithDnsServices, topologyDevices, deviceStates, deviceId]);
+  const findHttpServerByTargetCallback = useCallback((target: string) => {
+    return findHttpServerByTarget({
+      target,
+      deviceId,
+      topologyDevices,
+      deviceStates,
+      canReachTargetIp,
+      resolveDomainWithDnsServices: resolveDomainWithDnsServicesCallback,
+    });
+  }, [canReachTargetIp, resolveDomainWithDnsServicesCallback, topologyDevices, deviceStates, deviceId]);
 
   const openWebPage = useCallback((rawTarget?: string, rawUrl?: string) => {
     const rawInput = (rawTarget || '').trim();
     const normalizedInput = rawInput || '192.168.1.10';
-    let lookupTarget = normalizeLookupTarget(normalizedInput);
+    let lookupTarget = normalizeLookupTargetCallback(normalizedInput);
     let displayUrl = normalizedInput.startsWith('http://') || normalizedInput.startsWith('https://')
       ? normalizedInput
       : `http://${normalizedInput}`;
     if (rawUrl && rawUrl.trim().length > 0) {
       const candidate = rawUrl.trim();
       displayUrl = candidate.startsWith('http://') || candidate.startsWith('https://') ? candidate : `http://${candidate}`;
-      lookupTarget = normalizeLookupTarget(candidate);
+      lookupTarget = normalizeLookupTargetCallback(candidate);
     }
 
     // Handle special IoT Web Panel URL
@@ -2379,7 +2085,7 @@ export function PCPanel({
     }
 
     const target = lookupTarget.trim() || '192.168.1.10';
-    const namedTarget = resolveDeviceNameTarget(target);
+    const namedTarget = resolveDeviceNameTargetCallback(target);
     const resolvedTargetIp = namedTarget?.ip || target;
 
     const isIpV6 = isValidIpv6(resolvedTargetIp);
@@ -2389,12 +2095,12 @@ export function PCPanel({
         addLocalOutput('error', t.dnsAddressRequired);
         return;
       }
-      if (isValidIpv4(pcDNS) && !hasGatewayForTarget(pcDNS)) {
+      if (isValidIpv4(pcDNS) && !hasGatewayForTargetCallback(pcDNS)) {
         addLocalOutput('error', t.dnsGatewayRequired);
         return;
       }
     } else if (isValidIpv4(resolvedTargetIp)) {
-      if (!isLoopbackTarget(resolvedTargetIp) && !hasGatewayForTarget(resolvedTargetIp)) {
+      if (!isLoopbackTarget(resolvedTargetIp) && !hasGatewayForTargetCallback(resolvedTargetIp)) {
         addLocalOutput('error', t.targetGatewayRequired);
         return;
       }
@@ -2422,7 +2128,7 @@ export function PCPanel({
       return;
     }
 
-    const httpServer = findHttpServerByTarget(resolvedTargetIp);
+    const httpServer = findHttpServerByTargetCallback(resolvedTargetIp);
     setHttpAppUrl(displayUrl);
 
     if (!httpServer) {
@@ -2451,7 +2157,7 @@ export function PCPanel({
       setHttpAppDeviceId(null);
       addLocalOutput('html', httpServer.services?.http?.content || t.helloWorld);
     }
-  }, [addLocalOutput, deviceStates, findHttpServerByTarget, getAvailableIotDevices, getConnectedIotDevices, hasGatewayForTarget, isLoopbackTarget, isValidIpv4, isValidIpv6, language, normalizeLookupTarget, pcDNS, resolveDeviceNameTarget, t, iotDevices, topologyDevices, generateIotWebPanelContent, generateIotDevicePageContent, httpAppDeviceId, topologyConnections, pcIPv6]);
+  }, [addLocalOutput, deviceStates, findHttpServerByTargetCallback, getAvailableIotDevices, getConnectedIotDevices, hasGatewayForTargetCallback, isLoopbackTarget, isValidIpv4, isValidIpv6, language, normalizeLookupTargetCallback, pcDNS, resolveDeviceNameTargetCallback, t, iotDevices, topologyDevices, generateIotWebPanelContent, generateIotDevicePageContent, httpAppDeviceId, topologyConnections, pcIPv6]);
 
   useEffect(() => {
     const handleRouterAdminMessage = (event: MessageEvent) => {
@@ -3134,7 +2840,7 @@ export function PCPanel({
           if (!validateIP(pool.startIp) || !validateIP(pool.subnetMask) || !validateIP(pool.defaultGateway) || !validateIP(pool.dnsServer)) {
             continue;
           }
-          if (!isDhcpPoolCompatibleForClient(pool.defaultGateway, pool.startIp, pool.subnetMask, server)) {
+          if (!isDhcpPoolCompatibleForClientCallback(pool.defaultGateway, pool.startIp, pool.subnetMask, server)) {
             continue;
           }
           const start = ipToNumber(pool.startIp);
@@ -3229,7 +2935,7 @@ export function PCPanel({
             if (!validateIP(pool.startIp) || !validateIP(pool.subnetMask) || !validateIP(pool.defaultGateway) || !validateIP(pool.dnsServer)) {
               continue;
             }
-            if (!isDhcpPoolCompatibleForClient(pool.defaultGateway, pool.startIp, pool.subnetMask, device, state)) {
+            if (!isDhcpPoolCompatibleForClientCallback(pool.defaultGateway, pool.startIp, pool.subnetMask, device, state)) {
               continue;
             }
             const start = ipToNumber(pool.startIp);
@@ -3272,7 +2978,7 @@ export function PCPanel({
       errorHandler.logError(DHCP_ERRORS.LEASE_FAILED({ deviceId, source: 'getDhcpLease', error: String(err) }));
       return null;
     }
-  }, [canReachTargetIp, deviceId, deviceStates, hasPhysicalPathToDevice, ipToNumber, isDhcpPoolCompatibleForClient, numberToIp, topologyDevices, validateIP]);
+  }, [canReachTargetIp, deviceId, deviceStates, hasPhysicalPathToDevice, ipToNumber, isDhcpPoolCompatibleForClientCallback, numberToIp, topologyDevices, validateIP]);
 
   // Check if DHCP pools are available and get failure reason
   const checkDhcpAvailability = useCallback((): { available: boolean; reason: string } => {
@@ -3324,7 +3030,7 @@ export function PCPanel({
         if (!validateIP(pool.startIp) || !validateIP(pool.subnetMask) || !validateIP(pool.defaultGateway) || !validateIP(pool.dnsServer)) {
           continue;
         }
-        if (!isDhcpPoolCompatibleForClient(pool.defaultGateway, pool.startIp, pool.subnetMask, server)) {
+        if (!isDhcpPoolCompatibleForClientCallback(pool.defaultGateway, pool.startIp, pool.subnetMask, server)) {
           continue;
         }
         const start = ipToNumber(pool.startIp);
@@ -3393,7 +3099,7 @@ export function PCPanel({
           if (!validateIP(pool.startIp) || !validateIP(pool.subnetMask) || !validateIP(pool.defaultGateway) || !validateIP(pool.dnsServer)) {
             continue;
           }
-          if (!isDhcpPoolCompatibleForClient(pool.defaultGateway, pool.startIp, pool.subnetMask, device, state)) {
+          if (!isDhcpPoolCompatibleForClientCallback(pool.defaultGateway, pool.startIp, pool.subnetMask, device, state)) {
             continue;
           }
           const start = ipToNumber(pool.startIp);
@@ -3416,7 +3122,7 @@ export function PCPanel({
     }
 
     return { available: false, reason: 'all_pools_full' };
-  }, [canReachTargetIp, deviceId, deviceStates, hasPhysicalPathToDevice, ipToNumber, isDhcpPoolCompatibleForClient, numberToIp, topologyDevices, validateIP]);
+  }, [canReachTargetIp, deviceId, deviceStates, hasPhysicalPathToDevice, ipToNumber, isDhcpPoolCompatibleForClientCallback, numberToIp, topologyDevices, validateIP]);
 
   // Keep ref in sync with callback
   useEffect(() => {
@@ -3795,7 +3501,7 @@ export function PCPanel({
           let targetIp = target;
           let dnsResolved = false;
 
-          const namedResult = resolveDeviceNameTarget(target);
+          const namedResult = resolveDeviceNameTargetCallback(target);
           if (namedResult) {
             targetIp = namedResult.ip;
             dnsResolved = true;
@@ -3803,7 +3509,7 @@ export function PCPanel({
 
           // If target is not an IP, try to resolve it via DNS
           if (!isValidIpv4(targetIp) && !isValidIpv6(targetIp)) {
-            const dnsResult = resolveDomainWithDnsServices(target);
+            const dnsResult = resolveDomainWithDnsServicesCallback(target);
             if (dnsResult) {
               targetIp = dnsResult.address;
               dnsResolved = true;
@@ -3875,11 +3581,11 @@ export function PCPanel({
         }
       } else if (cmd === 'nslookup') {
         const rawTargetDomain = args[0];
-        const targetDomain = rawTargetDomain ? normalizeLookupTarget(rawTargetDomain) : '';
+        const targetDomain = rawTargetDomain ? normalizeLookupTargetCallback(rawTargetDomain) : '';
         if (!targetDomain) {
           addLocalOutput('output', 'Usage: nslookup <domain>');
-        } else if (resolveDeviceNameTarget(targetDomain)) {
-          const resolved = resolveDeviceNameTarget(targetDomain) as { ip: string; label: string };
+        } else if (resolveDeviceNameTargetCallback(targetDomain)) {
+          const resolved = resolveDeviceNameTargetCallback(targetDomain) as { ip: string; label: string };
           await addMultilineOutput(
             'output',
             `Server: local-device\nAddress: 127.0.0.1\n\nName: ${targetDomain}\nAddress: ${resolved.ip}`,
@@ -3887,10 +3593,10 @@ export function PCPanel({
           );
         } else if (!isValidIpv4(pcDNS)) {
           addLocalOutput('error', t.dnsInvalidAddress);
-        } else if (!hasGatewayForTarget(pcDNS)) {
+        } else if (!hasGatewayForTargetCallback(pcDNS)) {
           addLocalOutput('error', t.dnsGatewayRequired);
         } else {
-          const dnsResult = resolveDomainWithDnsServices(targetDomain);
+          const dnsResult = resolveDomainWithDnsServicesCallback(targetDomain);
           if (!dnsResult) {
             await addMultilineOutput('output', `*** DNS request timed out\n*** Can't find ${targetDomain}: Non-existent domain`, 80);
           } else {
@@ -3952,12 +3658,12 @@ export function PCPanel({
         // Resolve target IP (telnet supports hostnames; ssh path already validated an IPv4).
         let targetIp = target;
         if (!isSsh) {
-          const namedResult = resolveDeviceNameTarget(target);
+          const namedResult = resolveDeviceNameTargetCallback(target);
           if (namedResult) {
             targetIp = namedResult.ip;
           }
           if (!isValidIpv4(targetIp) && !isValidIpv6(targetIp)) {
-            const dnsResult = resolveDomainWithDnsServices(target);
+            const dnsResult = resolveDomainWithDnsServicesCallback(target);
             if (dnsResult) {
               targetIp = dnsResult.address;
             } else {
@@ -4043,11 +3749,11 @@ export function PCPanel({
         } else {
           let resolvedTarget = target;
           if (!isValidIpv4(target) && !isValidIpv6(target)) {
-            const namedResult = resolveDeviceNameTarget(target);
+            const namedResult = resolveDeviceNameTargetCallback(target);
             if (namedResult) {
               resolvedTarget = namedResult.ip;
             } else {
-              const dnsResult = resolveDomainWithDnsServices(target);
+              const dnsResult = resolveDomainWithDnsServicesCallback(target);
               if (dnsResult) {
                 resolvedTarget = dnsResult.address;
               }
@@ -4111,12 +3817,12 @@ export function PCPanel({
         let dnsResolved = false;
         // Resolve hostname if not an IP
         if (!isValidIpv4(targetArg) && !isValidIpv6(targetArg)) {
-          const namedResult = resolveDeviceNameTarget(targetArg);
+          const namedResult = resolveDeviceNameTargetCallback(targetArg);
           if (namedResult) {
             targetIp = namedResult.ip;
             dnsResolved = true;
           } else {
-            const dnsResult = resolveDomainWithDnsServices(targetArg);
+            const dnsResult = resolveDomainWithDnsServicesCallback(targetArg);
             if (dnsResult) {
               targetIp = dnsResult.address;
               dnsResolved = true;
@@ -4420,7 +4126,7 @@ ${fileLines}
     setAutocompleteNavigated(false);
 
     if (newValue.trim().length > 0) {
-      const suggestions = getAutocompleteSuggestions(newValue);
+      const suggestions = getAutocompleteSuggestionsCallback(newValue);
       if (suggestions.length > 0) {
         setShowAutocomplete(true);
         setAutocompleteIndex(-1);
@@ -4430,7 +4136,7 @@ ${fileLines}
     } else {
       setShowAutocomplete(false);
     }
-  }, [input, undoStack, getAutocompleteSuggestions]);
+  }, [input, undoStack, getAutocompleteSuggestionsCallback]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     // Global terminal shortcuts
