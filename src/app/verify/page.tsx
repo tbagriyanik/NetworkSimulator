@@ -16,7 +16,10 @@ interface CertificateRecord {
 
 function VerifyContent() {
   const searchParams = useSearchParams();
-  const [inputCode, setInputCode] = useState(searchParams.get('code') || '');
+  const rawCode = searchParams.get('code') || '';
+  const initialCode = rawCode.toUpperCase().startsWith('CERT:') ? rawCode.toUpperCase().replace('CERT:', '') : rawCode;
+  
+  const [inputCode, setInputCode] = useState(initialCode);
   const [status, setStatus] = useState<'idle' | 'loading' | 'found' | 'notfound' | 'error'>('idle');
   const [record, setRecord] = useState<CertificateRecord | null>(null);
   const [lang, setLang] = useState<'tr' | 'en'>('tr');
@@ -62,7 +65,10 @@ function VerifyContent() {
   const tx = t[lang];
 
   const verify = async (verifyCode: string) => {
-    const trimmed = verifyCode.trim().toUpperCase();
+    let trimmed = verifyCode.trim().toUpperCase();
+    if (trimmed.startsWith('CERT:')) {
+      trimmed = trimmed.replace('CERT:', '');
+    }
     if (!trimmed) return;
     setStatus('loading');
     setRecord(null);

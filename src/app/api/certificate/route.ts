@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { saveCertificate } from '@/lib/roomStore';
+import { saveCertificate, getRoomStudents } from '@/lib/roomStore';
 import type { RoomApiResponse } from '@/lib/roomTypes';
 import { isRateLimited } from '@/lib/security/rateLimiter';
 
@@ -31,13 +31,36 @@ export async function POST(
     }
 
     const body = await req.json();
-    const { studentName, projectTitle, score, totalScore, date, language } = body;
+    const { studentName, projectTitle, score, totalScore, date, language, roomCode, studentId } = body;
 
     if (!studentName || !projectTitle || score == null || totalScore == null || !date) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields', code: 'MISSING_FIELDS' },
         { status: 400 },
       );
+    }
+
+    // --- Server-side Score Validation ---
+    let isRoomVerified = false;
+    if (roomCode && studentId) {
+      try {
+        const students = await getRoomStudents(roomCode);
+        const student = students.find(s => s.studentId === studentId);
+        
+        if (student) {
+          const serverProgressRatio = student.totalTasks > 0 ? student.completedTasks / student.totalTasks : 0;
+          const claimedRatio = Number(totalScore) > 0 ? Number(score) / Number(totalScore) : 0;
+
+          // Allow up to 2% tolerance for float rounding in exam scoring
+          if (claimedRatio - serverProgressRatio <= 0.02) {
+            isRoomVerified = true;
+          } else {
+            console.warn(`Certificate validation failed for ${studentName} in room ${roomCode}. Claimed: ${claimedRatio}, Server: ${serverProgressRatio}`);
+          }
+        }
+      } catch (err) {
+        console.error('Room validation error:', err);
+      }
     }
 
     const verifyCode = generateVerifyCode();
@@ -51,6 +74,7 @@ export async function POST(
       date: String(date).slice(0, 30),
       language: language === 'tr' ? 'tr' : 'en',
       issuedAt: Date.now(),
+      // Optionally store isRoomVerified if we update the interface in the future
     });
 
     return NextResponse.json({ success: true, data: { verifyCode } }, { status: 200 });

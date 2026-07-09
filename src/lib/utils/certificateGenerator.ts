@@ -7,6 +7,8 @@ interface CertificateData {
   totalScore: number;
   date: string;
   language: 'tr' | 'en';
+  roomCode?: string;
+  studentId?: string;
 }
 
 // ─── Font cache (avoid re-fetching on each certificate) ──────────────────────
@@ -102,6 +104,9 @@ export const generateCertificate = async (data: CertificateData): Promise<void> 
   let verifyUrl = '';
 
   try {
+    const roomCode = data.roomCode || (typeof localStorage !== 'undefined' ? localStorage.getItem('room-joined-code') : undefined);
+    const studentId = data.studentId || (typeof localStorage !== 'undefined' ? localStorage.getItem('room-student-id') : undefined);
+
     const res = await fetch('/api/certificate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -112,6 +117,8 @@ export const generateCertificate = async (data: CertificateData): Promise<void> 
         totalScore,
         date: data.date,
         language,
+        roomCode,
+        studentId
       }),
     });
     if (res.ok) {
