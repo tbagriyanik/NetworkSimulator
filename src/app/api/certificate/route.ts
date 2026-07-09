@@ -41,20 +41,17 @@ export async function POST(
     }
 
     // --- Server-side Score Validation ---
-    let isRoomVerified = false;
     if (roomCode && studentId) {
       try {
         const students = await getRoomStudents(roomCode);
         const student = students.find(s => s.studentId === studentId);
-        
+
         if (student) {
           const serverProgressRatio = student.totalTasks > 0 ? student.completedTasks / student.totalTasks : 0;
           const claimedRatio = Number(totalScore) > 0 ? Number(score) / Number(totalScore) : 0;
 
           // Allow up to 2% tolerance for float rounding in exam scoring
-          if (claimedRatio - serverProgressRatio <= 0.02) {
-            isRoomVerified = true;
-          } else {
+          if (claimedRatio - serverProgressRatio > 0.02) {
             console.warn(`Certificate validation failed for ${studentName} in room ${roomCode}. Claimed: ${claimedRatio}, Server: ${serverProgressRatio}`);
           }
         }
@@ -74,7 +71,6 @@ export async function POST(
       date: String(date).slice(0, 30),
       language: language === 'tr' ? 'tr' : 'en',
       issuedAt: Date.now(),
-      // Optionally store isRoomVerified if we update the interface in the future
     });
 
     return NextResponse.json({ success: true, data: { verifyCode } }, { status: 200 });
