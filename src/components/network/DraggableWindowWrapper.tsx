@@ -20,6 +20,7 @@ interface DraggableWindowWrapperProps {
   hideCloseButton?: boolean;
   contentClassName?: string;
   onEscapeKeyDown?: () => void;
+  mobileFullScreen?: boolean;
 }
 
 export function DraggableWindowWrapper({
@@ -38,6 +39,7 @@ export function DraggableWindowWrapper({
   hideCloseButton = false,
   contentClassName,
   onEscapeKeyDown,
+  mobileFullScreen = true,
 }: DraggableWindowWrapperProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -82,14 +84,26 @@ export function DraggableWindowWrapper({
   if (!isOpen) return null;
 
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const isMobileFullScreen = isMobile && mobileFullScreen;
 
   // Mobile uses fixed fullscreen, desktop uses absolute positioning
   const wrapperStyle: React.CSSProperties = isMobile
-    ? {
-        position: 'fixed',
-        inset: 0,
-        zIndex: 9999, // Always top on mobile
-      }
+    ? isMobileFullScreen
+      ? {
+          position: 'fixed',
+          inset: 0,
+          zIndex: 9999, // Always top on mobile
+        }
+      : {
+          position: 'fixed',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 'calc(100% - 24px)',
+          maxWidth: '360px',
+          top: '84px',
+          maxHeight: 'calc(100vh - 140px)',
+          zIndex: 9999, // Always top on mobile
+        }
     : {
         position: 'fixed',
         left: modalPosition.x,
@@ -108,10 +122,10 @@ export function DraggableWindowWrapper({
       style={wrapperStyle}
       className={cn(
         'flex flex-col overflow-hidden shadow-2xl transition-shadow',
-        isMobile ? 'rounded-none' : 'rounded-lg border',
+        isMobileFullScreen ? 'rounded-none' : 'rounded-lg border',
         isDark ? 'bg-secondary-900' : 'bg-white',
-        // Green border when active (on desktop)
-        isActive && !isMobile 
+        // Green border when active (on desktop or floating on mobile)
+        isActive && (!isMobile || !isMobileFullScreen)
             ? (isDark ? 'border-success-500/70 shadow-success-500/20' : 'border-success-500/80 shadow-success-500/30')
             : (isDark ? 'border-secondary-700' : 'border-secondary-200'),
         className

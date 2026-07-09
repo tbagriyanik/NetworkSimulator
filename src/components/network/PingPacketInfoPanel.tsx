@@ -487,6 +487,7 @@ export function PingPacketInfoPanel({
             handlePointerDown={dragProps.handlePointerDown}
             handleResizeStart={dragProps.handleResizeStart}
             className="flex flex-col"
+            mobileFullScreen={false}
         >
             <div className="flex-1 overflow-y-auto min-h-0 flex flex-col" onMouseDown={onFocus}>
                 {/* Play/Pause control bar inside content (since it's no longer in header) */}

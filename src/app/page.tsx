@@ -4563,28 +4563,28 @@ ${state.bannerMOTD}
             )}
 
 
-            {/* Network Refresh Report - Top Right Toast / Full Screen on Mobile */}
+            {/* Network Refresh Report - Floating panel style on both Desktop and Mobile */}
             {
               refreshNetworkReport?.show && (
                 <div
                   ref={refreshReportRef}
                   data-draggable-id={isMobile ? undefined : "refresh-network-report"}
                   className={`fixed z-[100] backdrop-blur-md select-none ${isMobile
-                    ? 'inset-0 w-full h-full rounded-none border-0'
+                    ? 'top-[84px] left-1/2 -translate-x-1/2 w-[calc(100%-24px)] max-w-[360px] rounded-xl border shadow-2xl'
                     : 'top-20 right-4 w-full max-w-sm rounded-xl border shadow-2xl'
                     } animate-in slide-in-from-right-full duration-300 ${isDark
-                      ? (focusedOverlay === 'refresh' ? 'bg-secondary-950/70 border-emerald-400 text-secondary-100 shadow-[0_0_0_1px_rgba(52,211,153,0.35),0_20px_40px_rgba(0,0,0,0.4)]' : 'bg-secondary-950/70 border-emerald-950/80 text-secondary-100 shadow-black/40')
-                      : (focusedOverlay === 'refresh' ? 'bg-white/70 border-emerald-500 text-secondary-900 shadow-[0_0_0_1px_rgba(34,197,94,0.24),0_20px_40px_rgba(15,23,42,0.12)]' : 'bg-white/70 border-emerald-950/80 text-secondary-900 shadow-secondary-200/50')
+                      ? (focusedOverlay === 'refresh' ? 'bg-secondary-950/70 border-emerald-400 text-secondary-100 shadow-[0_0_0_1px_rgba(52,211,153,0.35),0_20px_40px_rgba(0,0,0,0.4)]' : 'bg-secondary-950/70 border-secondary-850/80 text-secondary-100 shadow-black/40')
+                      : (focusedOverlay === 'refresh' ? 'bg-white/70 border-emerald-500 text-secondary-900 shadow-[0_0_0_1px_rgba(34,197,94,0.24),0_20px_40px_rgba(15,23,42,0.12)]' : 'bg-white/70 border-secondary-200/80 text-secondary-900 shadow-secondary-200/50')
                     }`}
                   style={{
                     zIndex: 100,
-                    ...(!isMobile ? { maxHeight: 'calc(100vh - 100px)' } : { height: '100vh', maxHeight: '100vh' })
+                    ...(!isMobile ? { maxHeight: 'calc(100vh - 100px)' } : { maxHeight: 'calc(100vh - 140px)' })
                   }}
                   onMouseDown={() => setFocusedOverlay('refresh')}
                   onPointerDownCapture={(e) => bringElementToFront(e.currentTarget as HTMLElement)}
                 >
                   <div
-                    className={`flex items-center justify-between px-3 py-2 border-b ${isMobile ? 'rounded-none' : 'rounded-t-xl'} ${!isMobile ? 'cursor-grab active:cursor-grabbing' : ''} select-none ${isDark ? 'bg-white/5 border-success-500/20' : 'bg-black/5 border-success-500/30'}`}
+                    className={`flex items-center justify-between px-3 py-2 border-b rounded-t-xl ${!isMobile ? 'cursor-grab active:cursor-grabbing' : ''} select-none ${isDark ? 'bg-white/5 border-success-500/20' : 'bg-black/5 border-success-500/30'}`}
                     data-drag-handle={isMobile ? undefined : true}
                   >
                     <h3 className="text-sm font-bold flex items-center gap-2">
@@ -4593,8 +4593,8 @@ ${state.bannerMOTD}
                     <div className="flex items-center gap-1">
                       <TooltipWrapper title={t.refreshNetwork}>
                         <button
-                          onClick={() => { handleRefreshNetwork(); }}
-                          className="w-5 h-5 rounded-md bg-primary-500 hover:bg-primary-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0"
+                           onClick={() => { handleRefreshNetwork(); }}
+                           className="w-5 h-5 rounded-md bg-primary-500 hover:bg-primary-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0"
                         >
                           <RefreshCw className="w-3 h-3 text-white pointer-events-none" />
                         </button>
@@ -4609,10 +4609,10 @@ ${state.bannerMOTD}
                       </TooltipWrapper>
                     </div>
                   </div>
-
-                  <div className="p-2 overflow-y-auto" style={{ maxHeight: isMobile ? 'calc(100vh - 70px)' : 'calc(100vh - 160px)' }}>
+ 
+                  <div className="p-2 overflow-y-auto" style={{ maxHeight: isMobile ? 'calc(100vh - 210px)' : 'calc(100vh - 160px)' }}>
                     <Tabs defaultValue="summary" className="w-full">
-                      <TabsList className={`w-full grid grid-cols-2 ${isDark ? 'bg-secondary-800/80' : 'bg-secondary-200/80'}`}>
+                      <TabsList className={`w-full grid grid-cols-2 rounded-lg ${isDark ? 'bg-secondary-800/80' : 'bg-secondary-200/80'}`}>
                         <TabsTrigger value="summary" className="text-xs">
                           {language === 'tr' ? 'Özet' : 'Summary'}
                         </TabsTrigger>

@@ -106,6 +106,7 @@ export const PacketCapturePanel = ({
       modalSize={dragProps.size}
       handlePointerDown={dragProps.handlePointerDown}
       handleResizeStart={dragProps.handleResizeStart}
+      mobileFullScreen={false}
     >
       <div className="flex-1 flex flex-col min-h-0 relative">
         <div className="flex justify-end p-2 border-b dark:border-secondary-800">
