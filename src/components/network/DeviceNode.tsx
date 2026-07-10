@@ -15,6 +15,7 @@ interface DeviceNodeProps {
   onClick: (e: React.MouseEvent<SVGGElement>, device: CanvasDevice) => void;
   onDoubleClick: (device: CanvasDevice) => void;
   onContextMenu: (e: React.MouseEvent<SVGGElement>, deviceId: string) => void;
+  onKeyboardNavigation?: (e: React.KeyboardEvent<SVGGElement>) => void;
   onMouseEnter?: (e: React.MouseEvent<SVGGElement>, deviceId: string) => void;
   onMouseLeave?: (e: React.MouseEvent<SVGGElement>, deviceId: string) => void;
   onTouchStart: (e: React.TouchEvent<SVGGElement>, deviceId: string) => void;
@@ -33,6 +34,7 @@ export const DeviceNode = memo(function DeviceNode({
   onClick,
   onDoubleClick,
   onContextMenu,
+  onKeyboardNavigation,
   onMouseEnter,
   onMouseLeave,
   onTouchStart,
@@ -48,6 +50,15 @@ export const DeviceNode = memo(function DeviceNode({
       aria-label={device.name}
       aria-describedby={`device-desc-${device.id}`}
       onKeyDown={(e) => {
+        if (e.key === 'Tab') {
+          if (onKeyboardNavigation) {
+            e.preventDefault();
+            e.stopPropagation();
+            onKeyboardNavigation(e);
+          }
+          return;
+        }
+
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           // Simulate a click via the element itself for keyboard activation

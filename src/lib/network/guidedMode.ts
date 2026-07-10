@@ -1839,7 +1839,7 @@ export const checkStepCompletion = (
 ): boolean => {
   switch (step.checkType) {
     case 'deviceAccess':
-      if (context.deviceAccessed !== step.checkParams?.deviceType) return false;
+      if (step.checkParams?.deviceType && context.deviceAccessed !== step.checkParams.deviceType) return false;
       if (step.checkParams?.targetDeviceId) {
         return context.deviceAccessedId === step.checkParams.targetDeviceId;
       }

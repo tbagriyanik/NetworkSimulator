@@ -355,21 +355,20 @@ export function NetworkTopology({
     return [...visibleDevices].sort((a, b) => {
       if (a.id === activeDeviceId) return 1;
       if (b.id === activeDeviceId) return -1;
-      // BOLT: Use selectedDeviceSet for O(1) membership checks during sorting
-      if (selectedDeviceSet.has(a.id) && !selectedDeviceSet.has(b.id)) return 1;
-      if (!selectedDeviceSet.has(a.id) && selectedDeviceSet.has(b.id)) return -1;
       return 0;
     });
-  }, [visibleDevices, activeDeviceId, selectedDeviceSet]);
+  }, [visibleDevices, activeDeviceId]);
 
   // Sync internal selection with prop from parent
   useEffect(() => {
     if (activeDeviceId) {
       // Only sync if the prop device is not already part of our selection
-      setTimeout(() => setSelectedDeviceIds(prev => {
-        if (prev.includes(activeDeviceId)) return prev;
-        return [activeDeviceId];
-      }), 0);
+      queueMicrotask(() => {
+        setSelectedDeviceIds(prev => {
+          if (prev.includes(activeDeviceId)) return prev;
+          return [activeDeviceId];
+        });
+      });
     }
     // If activeDeviceId becomes null (panel closed), we specifically DON'T clear 
     // the selection here to satisfy the user request.
@@ -378,7 +377,9 @@ export function NetworkTopology({
   // Handle external focus device request (e.g., from WiFi admin panel) - selection only
   useEffect(() => {
     if (focusDeviceId && deviceMap.get(focusDeviceId)) {
-      setTimeout(() => setSelectedDeviceIds([focusDeviceId]), 0);
+      queueMicrotask(() => {
+        setSelectedDeviceIds([focusDeviceId]);
+      });
     }
   }, [focusDeviceId, deviceMap]);
 
@@ -388,15 +389,19 @@ export function NetworkTopology({
   // Handle external clear selection trigger (e.g., from Tab key)
   useEffect(() => {
     if (clearSelectionTrigger !== undefined) {
-      setTimeout(() => setSelectedDeviceIds([]), 0);
-      selectedDeviceIdsRef.current = [];
-      setTimeout(() => setSelectAllMode(false), 0);
+      queueMicrotask(() => {
+        setSelectedDeviceIds([]);
+        selectedDeviceIdsRef.current = [];
+        setSelectAllMode(false);
+      });
     }
   }, [clearSelectionTrigger]);
 
   // Selection box state
   const [selectionBox, setSelectionBox] = useState<{ start: { x: number; y: number }; current: { x: number; y: number } } | null>(null);
   const selectionBoxRef = useRef<{ start: { x: number; y: number }; current: { x: number; y: number } } | null>(null);
+  const selectionAdditiveRef = useRef(false);
+  const selectionBaseIdsRef = useRef<string[]>([]);
   const [isSelecting, setIsSelecting] = useState(false);
   const isSelectingRef = useRef(false);
 
@@ -404,14 +409,13 @@ export function NetworkTopology({
 
   // Drag performance - use ref for animation frame throttling
   const dragAnimationFrameRef = useRef<number | null>(null);
+  const selectionAnimationFrameRef = useRef<number | null>(null);
   const lastDragPositionRef = useRef<{ x: number; y: number } | null>(null);
   // Ref to track if we were dragging (for click handler to check without stale closure)
   const wasDraggingRef = useRef(false);
   // Direct DOM drag positions - bypasses React state during drag, synced on mouseup
   const liveDeviceDragPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
-
-  // Ref to track if shift key was pressed during mousedown
-  const shiftKeyPressedRef = useRef(false);
+  const lastDragEventRef = useRef<{ clientX: number; clientY: number; ctrlKey: boolean } | null>(null);
 
   // Refs for direct DOM connection path updates during drag
   const getPortPositionRef = useRef<(device: CanvasDevice, portId: string) => { x: number; y: number }>((_d, _p) => ({ x: 0, y: 0 }));
@@ -1064,6 +1068,28 @@ export function NetworkTopology({
     setContextMenu({ x, y, deviceId, noteId, mode });
   }, []);
 
+  const getDeviceIdsInSelectionBox = useCallback((box: { start: { x: number; y: number }; current: { x: number; y: number } }) => {
+    const x1 = Math.min(box.start.x, box.current.x);
+    const y1 = Math.min(box.start.y, box.current.y);
+    const x2 = Math.max(box.start.x, box.current.x);
+    const y2 = Math.max(box.start.y, box.current.y);
+
+    return latestDevicesRef.current.filter(d => {
+      const deviceWidth = getDeviceWidth(d.type);
+      const deviceHeight = getDeviceHeight(d.type, d.ports?.length || 0);
+      const dX1 = d.x;
+      const dY1 = d.y;
+      const dX2 = d.x + deviceWidth;
+      const dY2 = d.y + deviceHeight;
+      return dX1 < x2 && dX2 > x1 && dY1 < y2 && dY2 > y1;
+    }).map(d => d.id);
+  }, []);
+
+  const mergeSelectionIds = useCallback((boxSelectedIds: string[]) => {
+    if (!selectionAdditiveRef.current) return boxSelectedIds;
+    return Array.from(new Set([...selectionBaseIdsRef.current, ...boxSelectedIds]));
+  }, []);
+
   // Handle canvas pan start
   // Reads pan via ref to avoid re-creating callback on every pan state change
   const handleCanvasMouseDown = useCallback((e: ReactMouseEvent) => {
@@ -1120,10 +1146,13 @@ export function NetworkTopology({
         const startY = (e.clientY - rect.top - panRef.current.y) / zoomRef.current;
 
         const box = { start: { x: startX, y: startY }, current: { x: startX, y: startY } };
+        selectionAdditiveRef.current = e.shiftKey;
+        selectionBaseIdsRef.current = e.shiftKey ? selectedDeviceIdsRef.current : [];
         setSelectionBox(box);
         selectionBoxRef.current = box;
         setIsSelecting(true);
         isSelectingRef.current = true;
+        canvasRef.current?.focus();
       }
 
       setContextMenu(null);
@@ -1229,34 +1258,23 @@ export function NetworkTopology({
         if (currentBox) {
           const newBox = { ...currentBox, current: { x: currentX, y: currentY } };
           selectionBoxRef.current = newBox;
-          setSelectionBox(newBox);
 
-          // Real-time selection update
-          const x1 = Math.min(newBox.start.x, newBox.current.x);
-          const y1 = Math.min(newBox.start.y, newBox.current.y);
-          const x2 = Math.max(newBox.start.x, newBox.current.x);
-          const y2 = Math.max(newBox.start.y, newBox.current.y);
+          // Compute intersecting devices immediately (reads from refs, no React state)
+          const selectedIds = mergeSelectionIds(getDeviceIdsInSelectionBox(newBox));
 
-          // Detect devices intersecting selection box (any overlap counts)
-          const selectedIds = latestDevicesRef.current.filter(d => {
-            const deviceWidth = getDeviceWidth(d.type);
-            const deviceHeight = 100;
-
-            // Device bounds
-            const dX1 = d.x;
-            const dY1 = d.y;
-            const dX2 = d.x + deviceWidth;
-            const dY2 = d.y + deviceHeight;
-
-            // Intersection check: device overlaps with selection box
-            return dX1 < x2 && dX2 > x1 && dY1 < y2 && dY2 > y1;
-          }).map(d => d.id);
-
-          // Update selection instantly for visual feedback
-          // BOLT: Use fast array equality check instead of JSON.stringify in O(mousemove) path
           if (!areArraysEqual(selectedIds, selectedDeviceIdsRef.current)) {
-            setSelectedDeviceIds(selectedIds);
             selectedDeviceIdsRef.current = selectedIds;
+          }
+
+          // RAF-throttle React state updates (one per frame max) to avoid cascading renders
+          if (selectionAnimationFrameRef.current === null) {
+            selectionAnimationFrameRef.current = requestAnimationFrame(() => {
+              if (selectionBoxRef.current) {
+                setSelectionBox({ ...selectionBoxRef.current });
+              }
+              setSelectedDeviceIds(selectedDeviceIdsRef.current);
+              selectionAnimationFrameRef.current = null;
+            });
           }
         }
       } else if (draggedDeviceRef.current && canvasRef.current) {
@@ -1300,6 +1318,7 @@ export function NetworkTopology({
           const clientX = e.clientX;
           const clientY = e.clientY;
           const ctrlKey = e.ctrlKey;
+          lastDragEventRef.current = { clientX, clientY, ctrlKey };
 
           dragAnimationFrameRef.current = requestAnimationFrame(() => {
             if (!canvasRef.current) { dragAnimationFrameRef.current = null; return; }
@@ -1448,8 +1467,8 @@ export function NetworkTopology({
                     }
                     const mt = 1 - tVal;
                     return {
-                      x: mt*mt*mt*srcPort.x + 3*mt*mt*tVal*controlPoint1.x + 3*mt*tVal*tVal*controlPoint2.x + tVal*tVal*tVal*tgtPort.x,
-                      y: mt*mt*mt*srcPort.y + 3*mt*mt*tVal*controlPoint1.y + 3*mt*tVal*tVal*controlPoint2.y + tVal*tVal*tVal*tgtPort.y
+                      x: mt * mt * mt * srcPort.x + 3 * mt * mt * tVal * controlPoint1.x + 3 * mt * tVal * tVal * controlPoint2.x + tVal * tVal * tVal * tgtPort.x,
+                      y: mt * mt * mt * srcPort.y + 3 * mt * mt * tVal * controlPoint1.y + 3 * mt * tVal * tVal * controlPoint2.y + tVal * tVal * tVal * tgtPort.y
                     };
                   };
 
@@ -1529,6 +1548,47 @@ export function NetworkTopology({
       activePointerDragRef.current = false;
       activeDragPointerIdRef.current = null;
 
+      if (draggedDeviceRef.current && canvasRef.current && dragStartPosRef.current) {
+        const rect = canvasRef.current.getBoundingClientRect();
+        const currentPan = panRef.current;
+        const currentZoom = zoomRef.current;
+        const currentDragStartPos = dragStartPosRef.current;
+        const currentDraggedDevice = draggedDeviceRef.current;
+        const currentSelectedIds = selectedDeviceIdsRef.current;
+        const currentStartPositions = dragStartDevicePositionsRef.current;
+        const lastDragEvent = lastDragEventRef.current ?? { clientX: e.clientX, clientY: e.clientY, ctrlKey: e.ctrlKey };
+        const mouseX = (lastDragEvent.clientX - rect.left - currentPan.x) / currentZoom;
+        const mouseY = (lastDragEvent.clientY - rect.top - currentPan.y) / currentZoom;
+        const startMouseX = (currentDragStartPos.x - rect.left - currentPan.x) / currentZoom;
+        const startMouseY = (currentDragStartPos.y - rect.top - currentPan.y) / currentZoom;
+        const dx = mouseX - startMouseX;
+        const dy = mouseY - startMouseY;
+        const devicesToMove = currentSelectedIds.includes(currentDraggedDevice)
+          ? currentSelectedIds
+          : [currentDraggedDevice];
+        const finalPositions = new Map<string, { x: number; y: number }>();
+        const doSnap = snapToGridRef.current && lastDragEvent.ctrlKey;
+
+        devicesToMove.forEach(id => {
+          const initialPos = currentStartPositions[id];
+          if (!initialPos) return;
+          let newX = initialPos.x + dx;
+          let newY = initialPos.y + dy;
+          if (doSnap) {
+            newX = Math.round(newX / 16) * 16;
+            newY = Math.round(newY / 16) * 16;
+          }
+          finalPositions.set(id, {
+            x: Math.max(20, Math.min(newX, VIRTUAL_CANVAS_WIDTH_DESKTOP - 100)),
+            y: Math.max(20, Math.min(newY, VIRTUAL_CANVAS_HEIGHT_DESKTOP - 100)),
+          });
+        });
+
+        if (finalPositions.size > 0) {
+          liveDeviceDragPositionsRef.current = finalPositions;
+        }
+      }
+
       // Cancel any pending animation frames
       if (dragAnimationFrameRef.current) {
         cancelAnimationFrame(dragAnimationFrameRef.current);
@@ -1546,32 +1606,20 @@ export function NetworkTopology({
         cancelAnimationFrame(momentumAnimationFrameRef.current);
         momentumAnimationFrameRef.current = null;
       }
+      if (selectionAnimationFrameRef.current) {
+        cancelAnimationFrame(selectionAnimationFrameRef.current);
+        selectionAnimationFrameRef.current = null;
+      }
 
       // Right-click context menu handled by onContextMenu event only
 
       if (isSelectingRef.current && selectionBoxRef.current) {
         const box = selectionBoxRef.current;
-        const x1 = Math.min(box.start.x, box.current.x);
-        const y1 = Math.min(box.start.y, box.current.y);
-        const x2 = Math.max(box.start.x, box.current.x);
-        const y2 = Math.max(box.start.y, box.current.y);
-
         // Detect devices intersecting selection box (any overlap counts)
-        const selectedIds = latestDevicesRef.current.filter(d => {
-          const deviceWidth = getDeviceWidth(d.type);
-          const deviceHeight = 100;
+        const boxSelectedIds = getDeviceIdsInSelectionBox(box);
+        const selectedIds = mergeSelectionIds(boxSelectedIds);
 
-          // Device bounds
-          const dX1 = d.x;
-          const dY1 = d.y;
-          const dX2 = d.x + deviceWidth;
-          const dY2 = d.y + deviceHeight;
-
-          // Intersection check: device overlaps with selection box
-          return dX1 < x2 && dX2 > x1 && dY1 < y2 && dY2 > y1;
-        }).map(d => d.id);
-
-        if (selectedIds.length > 0) {
+        if (boxSelectedIds.length > 0 || selectionAdditiveRef.current) {
           setSelectedDeviceIds(selectedIds);
           selectedDeviceIdsRef.current = selectedIds;
 
@@ -1597,6 +1645,8 @@ export function NetworkTopology({
         isSelectingRef.current = false;
         setSelectionBox(null);
         selectionBoxRef.current = null;
+        selectionAdditiveRef.current = false;
+        selectionBaseIdsRef.current = [];
       } else if (!isPanningRef.current && !isActuallyDraggingRef.current && !wasDraggingRef.current) {
         // Simple click on background (not device, not note, not drag)
         const targetEl = e.target as HTMLElement;
@@ -1699,6 +1749,7 @@ export function NetworkTopology({
       setDraggedDevice(null);
       draggedDeviceRef.current = null;
       dragStartPosRef.current = null;
+      lastDragEventRef.current = null;
 
       // Eğer cihaz gerçekten sürüklendiyse ve kablo çizimi başlamışsa iptal et
       if (isActuallyDraggingRef.current && isDrawingConnectionRef.current) {
@@ -1740,6 +1791,7 @@ export function NetworkTopology({
       if (panAnimationFrameRef.current) cancelAnimationFrame(panAnimationFrameRef.current);
       if (mousePosAnimationFrameRef.current) cancelAnimationFrame(mousePosAnimationFrameRef.current);
       if (momentumAnimationFrameRef.current) cancelAnimationFrame(momentumAnimationFrameRef.current);
+      if (selectionAnimationFrameRef.current) cancelAnimationFrame(selectionAnimationFrameRef.current);
     };
   }, []);
   // Global touch event handlers for device dragging on mobile
@@ -1917,7 +1969,7 @@ export function NetworkTopology({
         setPingSource(device);
         pingSourceRef.current = device;
         setPingResult(null);
-        
+
         pingIsPausedRef.current = false;
         pingStepModeRef.current = false;
         if (pingAnimationRef.current) {
@@ -1954,6 +2006,9 @@ export function NetworkTopology({
     // Reset drag tracking
     wasDraggingRef.current = false;
 
+    // Ensure keyboard navigation stays active for topology interactions
+    canvasRef.current?.focus();
+
     // Shift key for multi-selection
     let newSelectedIds: string[];
 
@@ -1963,20 +2018,18 @@ export function NetworkTopology({
         ? selectedDeviceIds.filter(id => id !== deviceId)
         : [...selectedDeviceIds, deviceId];
 
-      // Update parent component with the first selected device
-      const firstSelectedDevice = deviceMap.get(newSelectedIds[0]);
-      if (firstSelectedDevice && newSelectedIds.length > 0) {
-        onDeviceSelect(firstSelectedDevice.type, newSelectedIds[0], undefined, firstSelectedDevice.name);
+      // Update parent component with the first selected device, or clear if nothing remains
+      if (newSelectedIds.length > 0) {
+        const firstSelectedDevice = deviceMap.get(newSelectedIds[0]);
+        if (firstSelectedDevice) {
+          onDeviceSelect(firstSelectedDevice.type, newSelectedIds[0], undefined, firstSelectedDevice.name);
+        }
+      } else if (onDeviceSelect) {
+        onDeviceSelect(null as unknown as DeviceType, null as unknown as string | undefined, undefined, null as unknown as string | undefined);
       }
 
       setSelectedDeviceIds(newSelectedIds);
-
-      // Mark that shift was used so handleClick knows to skip
-      shiftKeyPressedRef.current = true;
     } else {
-      // Reset shift key flag for normal clicks
-      shiftKeyPressedRef.current = false;
-
       // If clicking a device that's not selected, make it the only selection
       // If it IS already selected, keep selection for group dragging
       if (!selectedDeviceIds.includes(deviceId)) {
@@ -2009,18 +2062,9 @@ export function NetworkTopology({
     // Don't handle click if we were dragging (check ref to avoid stale closure)
     if (wasDraggingRef.current) return;
 
-    // Don't handle click if Shift was used (already handled in mousedown)
-    if (shiftKeyPressedRef.current) {
-      shiftKeyPressedRef.current = false; // Reset for next click
-      return;
-    }
-
-    // Ping mode is now handled in handleDeviceMouseDown for better browser compatibility
-    // This click handler only handles normal device selection
     if (pingModeRef.current || pingSourceRef.current) {
       return;
     }
-
 
     if (isMobile && !isDrawingConnection) {
       if (!mobileConnectionSource) {
@@ -2035,14 +2079,47 @@ export function NetworkTopology({
       }
     }
 
-    // Only handle selection if Shift was NOT pressed during mousedown
-    setSelectedDeviceIds([device.id]);
     setSelectedNoteIds([]);
     // Notify parent component - select device, don't open terminal
     onDeviceSelect(device.type, device.id, isSwitchDeviceType(device.type) ? device.switchModel : undefined, device.name);
     // Focus canvas for keyboard navigation
     canvasRef.current?.focus();
   }, [onDeviceSelect, pingMode, pingSource, devices, connections, deviceStates, setContextMenu, isMobile, isDrawingConnection, mobileConnectionSource, isTR]);
+
+  const navigateToNextDevice = useCallback((currentDeviceId: string | null, shift = false) => {
+    if (devices.length === 0) return;
+
+    const orderedDevices = [...devices].sort((a, b) => {
+      if (a.y !== b.y) return a.y - b.y;
+      if (a.x !== b.x) return a.x - b.x;
+      return a.id.localeCompare(b.id);
+    });
+
+    const currentIndex = currentDeviceId
+      ? orderedDevices.findIndex(d => d.id === currentDeviceId)
+      : -1;
+
+    const nextIndex = currentIndex >= 0
+      ? (currentIndex + (shift ? -1 : 1) + orderedDevices.length) % orderedDevices.length
+      : 0;
+
+    const nextDevice = orderedDevices[nextIndex];
+    if (!nextDevice) return;
+
+    setSelectedDeviceIds([nextDevice.id]);
+    setSelectedNoteIds([]);
+    onDeviceSelect(nextDevice.type, nextDevice.id, isSwitchDeviceType(nextDevice.type) ? nextDevice.switchModel : undefined, nextDevice.name);
+    canvasRef.current?.focus();
+    const nextEl = document.querySelector<SVGGElement>(`[data-device-id="${nextDevice.id}"]`);
+    nextEl?.focus();
+  }, [devices, onDeviceSelect]);
+
+  const handleDeviceKeyDown = useCallback((e: React.KeyboardEvent<SVGGElement>, device: CanvasDevice) => {
+    if (e.key !== 'Tab') return;
+    e.preventDefault();
+    e.stopPropagation();
+    navigateToNextDevice(device.id, e.shiftKey);
+  }, [navigateToNextDevice]);
 
   // Handle device double click - open terminal
   const handleDeviceDoubleClick = useCallback((device: CanvasDevice) => {
@@ -2510,6 +2587,11 @@ export function NetworkTopology({
       const moveAmount = 20 * zoom;
 
       switch (e.key) {
+        case 'Tab': {
+          e.preventDefault();
+          navigateToNextDevice(selectedDeviceIds[selectedDeviceIds.length - 1] ?? null, e.shiftKey);
+          break;
+        }
         case 'ArrowUp':
           e.preventDefault();
           setPan(prev => ({ ...prev, y: prev.y + moveAmount }));
@@ -2562,7 +2644,7 @@ export function NetworkTopology({
 
     canvas.addEventListener('keydown', handleKeyDown);
     return () => canvas.removeEventListener('keydown', handleKeyDown);
-  }, [zoom, selectedDeviceIds, onDeviceDelete]);
+  }, [zoom, selectedDeviceIds, devices, onDeviceSelect, onDeviceDelete]);
 
   // Handle port click for connection
   const handlePortClick = useCallback((e: ReactMouseEvent, deviceId: string, portId: string) => {
@@ -2728,8 +2810,8 @@ export function NetworkTopology({
   const [noteResizeStart, setNoteResizeStart] = useState<{ x: number; y: number; width: number; height: number; noteX: number; noteY: number } | null>(null);
   const [noteResizeDirection, setNoteResizeDirection] = useState<string>('se');
 
-  // All refs are now updated in useEffect to avoid accessing refs during render
-  // This keeps refs fresh for event handlers without violating React rules
+  // Keep refs fresh for event handlers - only non-overlapping refs (pan/zoom/drag refs
+  // are synced via the per-render useLayoutEffect above)
   useEffect(() => {
     latestDevicesRef.current = devices;
     latestConnectionsRef.current = connections;
@@ -2739,14 +2821,6 @@ export function NetworkTopology({
     noteDragStartRef.current = noteDragStart;
     noteResizeStartRef.current = noteResizeStart;
     noteResizeDirectionRef.current = noteResizeDirection;
-    isPanningRef.current = isPanning;
-    panStartRef.current = panStart;
-    zoomRef.current = zoom;
-    panRef.current = pan;
-    draggedDeviceRef.current = draggedDevice;
-    isActuallyDraggingRef.current = isActuallyDragging;
-    snapToGridRef.current = snapToGrid;
-    isDrawingConnectionRef.current = isDrawingConnection;
     isTouchDraggingRef.current = isTouchDragging;
     touchDraggedDeviceRef.current = touchDraggedDevice;
     touchDragStartPosRef.current = touchDragStartPos;
@@ -2759,14 +2833,6 @@ export function NetworkTopology({
     resizingNoteId,
     noteDragStart,
     noteResizeStart,
-    isPanning,
-    panStart,
-    zoom,
-    pan,
-    draggedDevice,
-    isActuallyDragging,
-    snapToGrid,
-    isDrawingConnection,
     isTouchDragging,
     touchDraggedDevice,
     touchDragStartPos,
@@ -4040,6 +4106,7 @@ export function NetworkTopology({
             aria-label={t.topologyAriaLabel}
             tabIndex={0}
             onMouseDown={handleCanvasMouseDown}
+
             onAuxClick={(e) => { if (e.button === 1) e.preventDefault(); }}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
@@ -4237,6 +4304,7 @@ export function NetworkTopology({
                         onClick={(e, device) => handleDeviceClick(e as unknown as ReactMouseEvent, device)}
                         onDoubleClick={() => handleDeviceDoubleClick(device)}
                         onContextMenu={(e, id) => handleContextMenu(e as unknown as ReactMouseEvent, id)}
+                        onKeyboardNavigation={(e) => handleDeviceKeyDown(e, device)}
                         onMouseLeave={() => handleDeviceMouseLeave()}
                         onTouchStart={(e, id) => handleDeviceTouchStart(e as unknown as ReactTouchEvent, id)}
                         onTouchMove={handleDeviceTouchMove}
@@ -4424,7 +4492,7 @@ export function NetworkTopology({
                                 cx={tx}
                                 cy={ty}
                                 r={radius}
-fill="var(--color-accent-500)"
+                                fill="var(--color-accent-500)"
                                 opacity={opacity}
                                 filter={i === 0 ? 'url(#packetGlow)' : undefined}
                                 className={i === 0 ? 'animate-ping-trail' : undefined}
@@ -4440,11 +4508,11 @@ fill="var(--color-accent-500)"
                           onClick={handleEnvelopeClick}
                         >
                           {/* Glow highlight */}
-{graphicsQuality === 'high' ? (
-                             <circle cx="0" cy="0" r="16" style={{ fill: 'var(--color-accent-500)' }} opacity="0.2" filter="url(#packetGlow)" className="animate-ping-glow" />
-                           ) : (
-                             <circle cx="0" cy="0" r="14" style={{ fill: 'var(--color-accent-500)' }} opacity="0.1" className="animate-ping-glow-low" />
-                           )}
+                          {graphicsQuality === 'high' ? (
+                            <circle cx="0" cy="0" r="16" style={{ fill: 'var(--color-accent-500)' }} opacity="0.2" filter="url(#packetGlow)" className="animate-ping-glow" />
+                          ) : (
+                            <circle cx="0" cy="0" r="14" style={{ fill: 'var(--color-accent-500)' }} opacity="0.1" className="animate-ping-glow-low" />
+                          )}
                           <rect x="-10" y="-7" width="20" height="14" rx="2" fill="var(--color-accent-500)" style={{ stroke: 'var(--color-accent-600)', strokeWidth: '1.5' }} />
                           <path d="M-8 -3 L0 4 L8 -3" fill="none" stroke="var(--color-white)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </g>
@@ -4779,13 +4847,13 @@ fill="var(--color-accent-500)"
           </p>
           <div className="grid grid-cols-4 gap-2 mb-5">
             {([
-              { type: 'pc'      as const, label: 'PC',       layer: undefined as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.pc },
-              { type: 'switch'  as const, label: 'L2 SW',    layer: 'L2'      as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.switchL2 },
-              { type: 'switch'  as const, label: 'L3 SW',    layer: 'L3'      as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.switchL3 },
-              { type: 'router'  as const, label: 'Router',   layer: undefined as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.router },
-              { type: 'firewall'as const, label: 'Firewall', layer: undefined as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.firewall },
-              { type: 'iot'     as const, label: 'IoT',      layer: undefined as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.iot },
-              { type: 'wlc'     as const, label: 'WLC',      layer: undefined as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.wlc },
+              { type: 'pc' as const, label: 'PC', layer: undefined as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.pc },
+              { type: 'switch' as const, label: 'L2 SW', layer: 'L2' as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.switchL2 },
+              { type: 'switch' as const, label: 'L3 SW', layer: 'L3' as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.switchL3 },
+              { type: 'router' as const, label: 'Router', layer: undefined as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.router },
+              { type: 'firewall' as const, label: 'Firewall', layer: undefined as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.firewall },
+              { type: 'iot' as const, label: 'IoT', layer: undefined as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.iot },
+              { type: 'wlc' as const, label: 'WLC', layer: undefined as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.wlc },
             ]).map((item) => (
               <button
                 key={`${item.type}-${item.layer || ''}`}
@@ -4813,25 +4881,24 @@ fill="var(--color-accent-500)"
           </p>
           <div className="grid grid-cols-5 gap-2">
             {([
-              { type: 'straight'  as const, label: isTR ? 'Düz'    : 'Straight',  icon: <Cable         className="w-5 h-5" />, activeColor: 'text-primary-400',  color: 'text-primary-500'  },
-              { type: 'crossover' as const, label: isTR ? 'Çapraz' : 'Crossover', icon: <LineSquiggle  className="w-5 h-5" />, activeColor: 'text-warning-400',  color: 'text-warning-500'  },
-              { type: 'serial'    as const, label: isTR ? 'Seri'   : 'Serial',    icon: <Plug          className="w-5 h-5" />, activeColor: 'text-success-400',  color: 'text-success-500'  },
-              { type: 'console'   as const, label: isTR ? 'Konsol' : 'Console',   icon: <TrendingUpDown className="w-5 h-5" />, activeColor: 'text-accent-400',   color: 'text-accent-500'   },
-              { type: 'wireless'  as const, label: isTR ? 'Kablo-' : 'Wireless',  icon: <Wifi          className="w-5 h-5" />, activeColor: 'text-purple-400',   color: 'text-purple-500'   },
+              { type: 'straight' as const, label: isTR ? 'Düz' : 'Straight', icon: <Cable className="w-5 h-5" />, activeColor: 'text-primary-400', color: 'text-primary-500' },
+              { type: 'crossover' as const, label: isTR ? 'Çapraz' : 'Crossover', icon: <LineSquiggle className="w-5 h-5" />, activeColor: 'text-warning-400', color: 'text-warning-500' },
+              { type: 'serial' as const, label: isTR ? 'Seri' : 'Serial', icon: <Plug className="w-5 h-5" />, activeColor: 'text-success-400', color: 'text-success-500' },
+              { type: 'console' as const, label: isTR ? 'Konsol' : 'Console', icon: <TrendingUpDown className="w-5 h-5" />, activeColor: 'text-accent-400', color: 'text-accent-500' },
+              { type: 'wireless' as const, label: isTR ? 'Kablo-' : 'Wireless', icon: <Wifi className="w-5 h-5" />, activeColor: 'text-purple-400', color: 'text-purple-500' },
             ]).map((item) => {
               const isActive = cableInfo.cableType === item.type;
               return (
                 <button
                   key={item.type}
                   onClick={() => { onCableChange({ ...cableInfo, cableType: item.type }); setMobilePaletteOpen(false); }}
-                  className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all active:scale-95 ${
-                    isActive
-                      ? isDark
-                        ? 'border-secondary-500 bg-secondary-700/80'
-                        : 'border-secondary-400 bg-secondary-200/80'
-                      : isDark
-                        ? 'border-secondary-700 bg-secondary-800/50 hover:bg-secondary-800'
-                        : 'border-secondary-200 bg-secondary-50 hover:bg-secondary-100'}`}
+                  className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all active:scale-95 ${isActive
+                    ? isDark
+                      ? 'border-secondary-500 bg-secondary-700/80'
+                      : 'border-secondary-400 bg-secondary-200/80'
+                    : isDark
+                      ? 'border-secondary-700 bg-secondary-800/50 hover:bg-secondary-800'
+                      : 'border-secondary-200 bg-secondary-50 hover:bg-secondary-100'}`}
                 >
                   <div className={`relative flex items-center justify-center ${isActive ? item.activeColor : item.color}`}>
                     {item.icon}
