@@ -3384,17 +3384,44 @@ export function PCPanel({
     setAutocompleteIndex(-1);
     setAutocompleteNavigated(false);
     if (activeTabRef.current === 'desktop') {
-      const parts = command.split(' ');
-      const cmd = parts[0].toLowerCase();
+      const baseCmd = command.split(' ')[0].toLowerCase();
       // FTP session mode: route all input (except 'ftp') to FTP handler
-      if (ftpSession && cmd !== 'ftp') {
+      if (ftpSession && baseCmd !== 'ftp') {
         addLocalOutput('command', command, 'ftp>');
         handleFtpSessionCommand(command);
         return;
       }
       addLocalOutput('command', command);
-      const args = parts.slice(1);
-      if (cmd === 'ipconfig') {
+
+      const tokens = command.split(/(&&|&)/).map(t => t.trim()).filter(Boolean);
+      let skipNext = false;
+      let skipUntilNextAmpersand = false;
+
+      for (let i = 0; i < tokens.length; i++) {
+        const token = tokens[i];
+        if (token === '&&') continue;
+        if (token === '&') {
+          skipNext = false;
+          skipUntilNextAmpersand = false;
+          continue;
+        }
+
+        if (skipNext || skipUntilNextAmpersand) {
+          const nextOp = i + 1 < tokens.length ? tokens[i + 1] : null;
+          if (nextOp === '&&') skipNext = true;
+          else if (nextOp === '&') { skipNext = false; skipUntilNextAmpersand = false; }
+          else skipUntilNextAmpersand = true;
+          continue;
+        }
+
+        const parts = token.split(' ');
+        const cmd = parts[0].toLowerCase();
+        const args = parts.slice(1);
+        let cmdSuccess = true;
+
+        if (cmd === 'echo') {
+          addLocalOutput('output', args.join(' '));
+        } else if (cmd === 'ipconfig') {
         if (args.includes('/release')) {
           setPcIP('0.0.0.0');
           addLocalOutput('success', 'IP address released successfully.');
@@ -3499,6 +3526,7 @@ export function PCPanel({
 
             await addMultilineOutput('output', `Pinging ${pingTargetDisplay} with 32 bytes of data:\nReply from ${targetIp.toLowerCase()}: bytes=32 time=${formatTime(time1)} TTL=128\nReply from ${targetIp.toLowerCase()}: bytes=32 time=${formatTime(time2)} TTL=128\nReply from ${targetIp.toLowerCase()}: bytes=32 time=${formatTime(time3)} TTL=128\nReply from ${targetIp.toLowerCase()}: bytes=32 time=${formatTime(time4)} TTL=128\n\nPing statistics for ${pingTargetDisplay}:\n    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)`, 100);
           } else {
+            cmdSuccess = false;
             const pingTargetDisplay = dnsResolved ? `${target} [${targetIp.toLowerCase()}]` : targetIp.toLowerCase();
             // Windows-style timeout for all pings in PC terminal, matching user request for IPv6
             const errorMsg = '\nRequest timed out.';
@@ -3822,8 +3850,17 @@ export function PCPanel({
         onClose();
       } else if (cmd === 'hostname') {
         if (args[0]) {
-          setPcHostname(args[0]);
-          addLocalOutput('success', `Hostname set to ${args[0]}`);
+          const newHostname = args[0].trim().slice(0, 20);
+          setPcHostname(newHostname);
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('update-topology-device-config', {
+              detail: {
+                deviceId,
+                config: { name: newHostname }
+              }
+            }));
+          }
+          addLocalOutput('success', `Hostname set to ${newHostname}`);
         } else {
           addLocalOutput('output', internalPcHostname);
         }
@@ -3856,8 +3893,15 @@ ${fileLines}
                ${localFiles.length} File(s)          ${totalSize} bytes
                2 Dir(s)  100,000,000,000 bytes free`);
       } else {
-        addLocalOutput('error', `'${command}' is not recognized as an internal or external command.`);
+        cmdSuccess = false;
+        addLocalOutput('error', `'${cmd}' is not recognized as an internal or external command.`);
       }
+
+      const nextOp = i + 1 < tokens.length ? tokens[i + 1] : null;
+      if (nextOp === '&&' && !cmdSuccess) {
+        skipNext = true;
+      }
+    }
     } else {
       // Console (terminal) tab
       if (!isConsoleConnected) {

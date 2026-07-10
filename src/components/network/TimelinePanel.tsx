@@ -163,9 +163,9 @@ export function TimelinePanel({
       if (changedDev) {
         const pd = prevState.topologyDevices.find(old => old.id === changedDev.id);
         if (pd && pd.name !== changedDev.name) {
-          return `${changedDev.name} yapılandırması değiştirildi (hostname ${changedDev.name})`;
+          return `${changedDev.name}: hostname '${changedDev.name}' olarak değiştirildi`;
         }
-        return `${changedDev.name} yapılandırması değiştirildi (Arayüz/Ayar)`;
+        return `${changedDev.name} yapılandırması güncellendi`;
       }
     }
 

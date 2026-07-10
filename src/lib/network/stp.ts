@@ -88,12 +88,14 @@ export function recalculateStp(
     // 1. Explicitly check deviceType
     // 2. Fallback to ID-based prefix check if deviceType is missing
     // 3. Check switchLayer
-    const isExplicitPcOrIot = state?.deviceType === 'pc' || state?.deviceType === 'iot' ||
-                              id.startsWith('pc-') || id.startsWith('iot-');
+    const isExplicitExcluded = state?.deviceType === 'pc' || state?.deviceType === 'iot' ||
+                               state?.deviceType === 'router' || state?.deviceType === 'firewall' || state?.deviceType === 'wlc' ||
+                               id.startsWith('pc-') || id.startsWith('iot-') || id.startsWith('router-') || id.startsWith('firewall-') || id.startsWith('wlc-');
 
-    const isSwitch = !isExplicitPcOrIot && (
+    const isSwitch = !isExplicitExcluded && (
       state?.deviceType === 'switch' ||
-      state?.deviceType === 'router' ||
+      state?.deviceType === 'switchL2' ||
+      state?.deviceType === 'switchL3' ||
       state?.switchLayer === 'L2' ||
       state?.switchLayer === 'L3'
     );

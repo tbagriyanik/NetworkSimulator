@@ -246,81 +246,114 @@ export function useHistory(initialState: ProjectState) {
                 return pd && JSON.stringify(pd) !== JSON.stringify(d);
               });
               if (changedDev) {
-                description = `${changedDev.name} yapılandırması değiştirildi (Arayüz/Ayar)`;
+                const pd = prevState.topologyDevices.find(old => old.id === changedDev.id);
+                const changes: string[] = [];
+                if (pd) {
+                  if (pd.name !== changedDev.name) changes.push(`hostname '${changedDev.name}' olarak`);
+                  if (pd.ip !== changedDev.ip) changes.push('IP adresi');
+                  if (pd.subnet !== changedDev.subnet) changes.push('Alt Ağ Maskesi');
+                  if (pd.gateway !== changedDev.gateway) changes.push('Ağ Geçidi');
+                  if (pd.dns !== changedDev.dns) changes.push('DNS');
+                  if (pd.ipConfigMode !== changedDev.ipConfigMode) changes.push('IP yapılandırma modu');
+                  if (pd.status !== changedDev.status) changes.push('Cihaz durumu');
+                  if (JSON.stringify(pd.ports) !== JSON.stringify(changedDev.ports)) changes.push('Port ayarları');
+                  if (JSON.stringify(pd.wifi) !== JSON.stringify(changedDev.wifi)) changes.push('Wi-Fi ayarları');
+                  if (JSON.stringify(pd.services) !== JSON.stringify(changedDev.services)) changes.push('Servisler');
+                  if (JSON.stringify(pd.iot) !== JSON.stringify(changedDev.iot)) changes.push('IoT ayarları');
+                  if (JSON.stringify(pd.firewallRules) !== JSON.stringify(changedDev.firewallRules)) changes.push('Firewall kuralları');
+                  if (pd.vlan !== changedDev.vlan) changes.push('VLAN');
+                  if (pd.macAddress !== changedDev.macAddress) changes.push('MAC adresi');
+                }
+                if (changes.length > 0) {
+                  description = `${changedDev.name}: ${changes.join(', ')} değiştirildi`;
+                } else {
+                  description = `${changedDev.name} yapılandırması güncellendi`;
+                }
               } else {
                 description = 'Topoloji güncellendi';
               }
             }
           } else if (operationType === 'device') {
           let changedDevice = '';
-          for (const [id, out] of stateToPush.pcOutputs.entries()) {
-            const prevOut = prevState.pcOutputs.get(id) || [];
-            if (out.length > prevOut.length) {
-              const last = out[out.length - 1];
-              if (last.type === 'command') {
-                changedDevice = stateToPush.topologyDevices.find(d => d.id === id)?.name || id;
-                description = `${changedDevice} yapılandırması değiştirildi ('${last.content}' CLI komutu)`;
+          for (const [id, st] of stateToPush.deviceStates.entries()) {
+            const pState = prevState.deviceStates.get(id);
+            if (pState && JSON.stringify(pState) !== JSON.stringify(st)) {
+              changedDevice = stateToPush.topologyDevices.find(d => d.id === id)?.name || id;
+              const changes: string[] = [];
+              if (pState.hostname !== st.hostname) changes.push(`hostname`);
+              if (JSON.stringify(pState.ports) !== JSON.stringify(st.ports)) changes.push('interface');
+              if (JSON.stringify(pState.vlans) !== JSON.stringify(st.vlans)) changes.push('vlan');
+              if (JSON.stringify(pState.dhcpPools) !== JSON.stringify(st.dhcpPools)) changes.push('dhcp');
+              if (pState.ipRouting !== st.ipRouting) changes.push('ip routing');
+              if (JSON.stringify(pState.staticRoutes) !== JSON.stringify(st.staticRoutes)) changes.push('static route');
+              if (JSON.stringify(pState.dynamicRoutes) !== JSON.stringify(st.dynamicRoutes)) changes.push('dynamic route');
+              if (JSON.stringify(pState.routingProtocol) !== JSON.stringify(st.routingProtocol)) changes.push('routing protocol');
+              if (JSON.stringify(pState.security) !== JSON.stringify(st.security)) changes.push('security');
+              if (JSON.stringify(pState.bannerMOTD) !== JSON.stringify(st.bannerMOTD)) changes.push('banner');
+              if (JSON.stringify(pState.bannerLogin) !== JSON.stringify(st.bannerLogin)) changes.push('login banner');
+              if (JSON.stringify(pState.bannerExec) !== JSON.stringify(st.bannerExec)) changes.push('exec banner');
+              if (pState.domainName !== st.domainName) changes.push('domain name');
+              if (pState.defaultGateway !== st.defaultGateway) changes.push('default gateway');
+              if (pState.dnsServer !== st.dnsServer) changes.push('dns server');
+              if (pState.domainLookup !== st.domainLookup) changes.push('domain lookup');
+              if (JSON.stringify(pState.services) !== JSON.stringify(st.services)) changes.push('services');
+              if (JSON.stringify(pState.spanningTreeMode) !== JSON.stringify(st.spanningTreeMode)) changes.push('spanning-tree');
+              if (JSON.stringify(pState.vtpMode) !== JSON.stringify(st.vtpMode)) changes.push('vtp');
+              if (JSON.stringify(pState.firewallRules) !== JSON.stringify(st.firewallRules)) changes.push('firewall');
+              if (JSON.stringify(pState.wirelessConfig) !== JSON.stringify(st.wirelessConfig)) changes.push('wireless');
+              if (JSON.stringify(pState.ntpServers) !== JSON.stringify(st.ntpServers)) changes.push('ntp');
+              if (JSON.stringify(pState.ipv6Enabled) !== JSON.stringify(st.ipv6Enabled)) changes.push('ipv6');
+              if (JSON.stringify(pState.cdpEnabled) !== JSON.stringify(st.cdpEnabled)) changes.push('cdp');
+              if (JSON.stringify(pState.sshVersion) !== JSON.stringify(st.sshVersion)) changes.push('ssh');
+              if (changes.length === 0) {
+                const allKeys = new Set([...Object.keys(pState), ...Object.keys(st)]);
+                for (const key of allKeys) {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  if (JSON.stringify((pState as any)[key]) !== JSON.stringify((st as any)[key])) {
+                    changes.push(key);
+                  }
+                }
+              }
+              const diffDetail = changes.length > 0 ? changes.join(', ') : '';
+
+              let cmdDetail = '';
+              const out = stateToPush.deviceOutputs.get(id) || [];
+              const prevOut = prevState.deviceOutputs.get(id) || [];
+              if (out.length > prevOut.length) {
+                const newOuts = out.slice(prevOut.length);
+                const lastCmd = [...newOuts].reverse().find(o => o.type === 'command');
+                if (lastCmd) {
+                  cmdDetail = lastCmd.content;
+                }
+              }
+              
+              if (cmdDetail && diffDetail) {
+                description = `${changedDevice}: ${diffDetail} değiştirildi ('${cmdDetail}')`;
+              } else if (cmdDetail) {
+                description = `${changedDevice}: '${cmdDetail}' komutu girildi`;
+              } else if (diffDetail) {
+                description = `${changedDevice}: ${diffDetail} değiştirildi`;
+              } else {
+                description = `${changedDevice} yapılandırması güncellendi`;
+              }
+              break;
+            }
+          }
+
+          if (!changedDevice) {
+            for (const [id, out] of stateToPush.pcOutputs.entries()) {
+              const prevOut = prevState.pcOutputs.get(id) || [];
+              if (out.length > prevOut.length) {
+                const last = out[out.length - 1];
+                if (last.type === 'command') {
+                  changedDevice = stateToPush.topologyDevices.find(d => d.id === id)?.name || id;
+                  description = `${changedDevice}: '${last.content}' komutu girildi`;
+                  break;
+                }
               }
             }
           }
-          if (!changedDevice) {
-             for (const [id, st] of stateToPush.deviceStates.entries()) {
-                const pState = prevState.deviceStates.get(id);
-                if (pState && JSON.stringify(pState) !== JSON.stringify(st)) {
-                  changedDevice = stateToPush.topologyDevices.find(d => d.id === id)?.name || id;
-                  const changes: string[] = [];
-                  if (pState.hostname !== st.hostname) changes.push(`hostname ${st.hostname}`);
-                  if (JSON.stringify(pState.ports) !== JSON.stringify(st.ports)) changes.push('interface');
-                  if (JSON.stringify(pState.vlans) !== JSON.stringify(st.vlans)) changes.push('vlan');
-                  if (JSON.stringify(pState.dhcpPools) !== JSON.stringify(st.dhcpPools)) changes.push('dhcp');
-                  if (pState.ipRouting !== st.ipRouting) changes.push('ip routing');
-                  if (JSON.stringify(pState.staticRoutes) !== JSON.stringify(st.staticRoutes)) changes.push('static route');
-                  if (JSON.stringify(pState.dynamicRoutes) !== JSON.stringify(st.dynamicRoutes)) changes.push('dynamic route');
-                  if (JSON.stringify(pState.routingProtocol) !== JSON.stringify(st.routingProtocol)) changes.push('routing protocol');
-                  if (JSON.stringify(pState.security) !== JSON.stringify(st.security)) changes.push('security');
-                  if (JSON.stringify(pState.bannerMOTD) !== JSON.stringify(st.bannerMOTD)) changes.push('banner');
-                  if (JSON.stringify(pState.bannerLogin) !== JSON.stringify(st.bannerLogin)) changes.push('login banner');
-                  if (JSON.stringify(pState.bannerExec) !== JSON.stringify(st.bannerExec)) changes.push('exec banner');
-                  if (pState.domainName !== st.domainName) changes.push('domain name');
-                  if (pState.defaultGateway !== st.defaultGateway) changes.push('default gateway');
-                  if (pState.dnsServer !== st.dnsServer) changes.push('dns server');
-                  if (pState.domainLookup !== st.domainLookup) changes.push('domain lookup');
-                  if (JSON.stringify(pState.services) !== JSON.stringify(st.services)) changes.push('services');
-                  if (JSON.stringify(pState.spanningTreeMode) !== JSON.stringify(st.spanningTreeMode)) changes.push('spanning-tree');
-                  if (JSON.stringify(pState.vtpMode) !== JSON.stringify(st.vtpMode)) changes.push('vtp');
-                  if (JSON.stringify(pState.firewallRules) !== JSON.stringify(st.firewallRules)) changes.push('firewall');
-                  if (JSON.stringify(pState.wirelessConfig) !== JSON.stringify(st.wirelessConfig)) changes.push('wireless');
-                  if (JSON.stringify(pState.ntpServers) !== JSON.stringify(st.ntpServers)) changes.push('ntp');
-                  if (JSON.stringify(pState.ipv6Enabled) !== JSON.stringify(st.ipv6Enabled)) changes.push('ipv6');
-                  if (JSON.stringify(pState.cdpEnabled) !== JSON.stringify(st.cdpEnabled)) changes.push('cdp');
-                  if (JSON.stringify(pState.sshVersion) !== JSON.stringify(st.sshVersion)) changes.push('ssh');
-                  if (changes.length === 0) {
-                    const allKeys = new Set([...Object.keys(pState), ...Object.keys(st)]);
-                    for (const key of allKeys) {
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      if (JSON.stringify((pState as any)[key]) !== JSON.stringify((st as any)[key])) {
-                        changes.push(key);
-                      }
-                    }
-                  }
-                  const diffDetail = changes.length > 0 ? changes.join(', ') : 'Arayüz/Ayar';
 
-                  let cmdDetail = '';
-                  const out = stateToPush.deviceOutputs.get(id) || [];
-                  const prevOut = prevState.deviceOutputs.get(id) || [];
-                  if (out.length > prevOut.length) {
-                    const newOuts = out.slice(prevOut.length);
-                    const lastCmd = [...newOuts].reverse().find(o => o.type === 'command');
-                    if (lastCmd) {
-                      cmdDetail = ` : '${lastCmd.content}'`;
-                    }
-                  }
-                  
-                  description = `${changedDevice} yapılandırması değiştirildi (${diffDetail}${cmdDetail})`;
-                  break;
-                }
-             }
-          }
           if (!changedDevice) description = 'Cihaz Değişikliği';
         } else if (operationType === 'ui') {
           description = 'Arayüz Değişikliği';
