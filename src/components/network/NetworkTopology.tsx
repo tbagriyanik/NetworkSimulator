@@ -1176,7 +1176,8 @@ export function NetworkTopology({
           x: (e.clientX - rect.left - currentPan.x) / currentZoom,
           y: (e.clientY - rect.top - currentPan.y) / currentZoom,
         };
-        setMousePos(mousePosRef.current);
+        // BOLT: Removed setMousePos from here to avoid 60fps re-renders during panning/hovering.
+        // It's only needed for TempConnection when drawing.
       }
 
       if (isPanningRef.current) {
@@ -1517,6 +1518,8 @@ export function NetworkTopology({
             y: (e.clientY - rect.top - currentPan.y) / currentZoom,
           };
           mousePosRef.current = newPos;
+          // BOLT: Update state only when drawing connection to minimize re-renders
+          setMousePos(newPos);
           mousePosAnimationFrameRef.current = null;
         });
       }
