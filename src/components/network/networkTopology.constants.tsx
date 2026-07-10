@@ -87,7 +87,7 @@ export const CABLE_COLORS: Record<CableType | 'error', { primary: string; bg: st
   error: { primary: 'var(--color-error-500)', bg: 'bg-error-500', text: 'text-error-400', border: 'border-error-500/30' },
 };
 
-export const DRAG_THRESHOLD = 5;
+export const DRAG_THRESHOLD = 3;
 export const LONG_PRESS_DURATION = 500; // ms
 export const TOOLTIP_DELAY = 150; // ms
 export const TOOLTIP_OFFSET_Y = -15; // px

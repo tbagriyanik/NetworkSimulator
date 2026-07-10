@@ -1139,7 +1139,7 @@ export function NetworkTopology({
         return;
       }
 
-      // Start rectangle selection
+      // Start rectangle selection with visual feedback
       const rect = canvasRef.current?.getBoundingClientRect();
       if (rect) {
         const startX = (e.clientX - rect.left - panRef.current.x) / zoomRef.current;
@@ -1152,6 +1152,9 @@ export function NetworkTopology({
         selectionBoxRef.current = box;
         setIsSelecting(true);
         isSelectingRef.current = true;
+        
+        // Change cursor to indicate selection mode
+        document.body.style.cursor = 'crosshair';
         canvasRef.current?.focus();
       }
 
@@ -1266,12 +1269,30 @@ export function NetworkTopology({
             selectedDeviceIdsRef.current = selectedIds;
           }
 
+          // Direct DOM: update selection rectangle instantly
+          const rectEl = document.getElementById('selection-rectangle');
+          if (rectEl) {
+            const rx = Math.min(newBox.start.x, newBox.current.x);
+            const ry = Math.min(newBox.start.y, newBox.current.y);
+            const rw = Math.abs(newBox.current.x - newBox.start.x);
+            const rh = Math.abs(newBox.current.y - newBox.start.y);
+            rectEl.setAttribute('x', rx.toString());
+            rectEl.setAttribute('y', ry.toString());
+            rectEl.setAttribute('width', rw.toString());
+            rectEl.setAttribute('height', rh.toString());
+          }
+          
+          // Update selection counter tooltip
+          const counterEl = document.getElementById('selection-counter');
+          if (counterEl) {
+            counterEl.textContent = `${selectedIds.length} ${selectedIds.length === 1 ? 'device' : 'devices'}`;
+            counterEl.setAttribute('x', (Math.min(newBox.start.x, newBox.current.x) + 10).toString());
+            counterEl.setAttribute('y', (Math.min(newBox.start.y, newBox.current.y) - 10).toString());
+          }
+
           // RAF-throttle React state updates (one per frame max) to avoid cascading renders
           if (selectionAnimationFrameRef.current === null) {
             selectionAnimationFrameRef.current = requestAnimationFrame(() => {
-              if (selectionBoxRef.current) {
-                setSelectionBox({ ...selectionBoxRef.current });
-              }
               setSelectedDeviceIds(selectedDeviceIdsRef.current);
               selectionAnimationFrameRef.current = null;
             });
@@ -1647,7 +1668,17 @@ export function NetworkTopology({
         selectionBoxRef.current = null;
         selectionAdditiveRef.current = false;
         selectionBaseIdsRef.current = [];
-      } else if (!isPanningRef.current && !isActuallyDraggingRef.current && !wasDraggingRef.current) {
+        
+        // Restore cursor after selection ends
+        document.body.style.cursor = '';
+      }
+      
+      // Restore cursor after Shift key multi-selection
+      if (document.body.style.cursor === 'copy') {
+        document.body.style.cursor = '';
+      }
+      
+      if (!isPanningRef.current && !isActuallyDraggingRef.current && !wasDraggingRef.current) {
         // Simple click on background (not device, not note, not drag)
         const targetEl = e.target as HTMLElement;
         const isOnDevice = !!targetEl.closest?.('[data-device-id]');
@@ -2029,6 +2060,9 @@ export function NetworkTopology({
       }
 
       setSelectedDeviceIds(newSelectedIds);
+      
+      // Visual feedback: change cursor to indicate multi-selection mode
+      document.body.style.cursor = 'copy';
     } else {
       // If clicking a device that's not selected, make it the only selection
       // If it IS already selected, keep selection for group dragging
@@ -2084,6 +2118,13 @@ export function NetworkTopology({
     onDeviceSelect(device.type, device.id, isSwitchDeviceType(device.type) ? device.switchModel : undefined, device.name);
     // Focus canvas for keyboard navigation
     canvasRef.current?.focus();
+
+    // Keyboard-activated clicks (Enter/Space) dispatch synthetic events.
+    // For trusted (real mouse) clicks, selection is already handled in handleDeviceMouseDown.
+    // For untrusted (synthetic) clicks, set the selection here.
+    if (!e.isTrusted) {
+      setSelectedDeviceIds([device.id]);
+    }
   }, [onDeviceSelect, pingMode, pingSource, devices, connections, deviceStates, setContextMenu, isMobile, isDrawingConnection, mobileConnectionSource, isTR]);
 
   const navigateToNextDevice = useCallback((currentDeviceId: string | null, shift = false) => {
@@ -2109,9 +2150,52 @@ export function NetworkTopology({
     setSelectedDeviceIds([nextDevice.id]);
     setSelectedNoteIds([]);
     onDeviceSelect(nextDevice.type, nextDevice.id, isSwitchDeviceType(nextDevice.type) ? nextDevice.switchModel : undefined, nextDevice.name);
-    canvasRef.current?.focus();
+    
+    // Smooth scroll to the next device and focus it
     const nextEl = document.querySelector<SVGGElement>(`[data-device-id="${nextDevice.id}"]`);
-    nextEl?.focus();
+    if (nextEl && canvasRef.current) {
+      nextEl.focus();
+      
+      // Calculate pan to center the device in viewport
+      const canvasRect = canvasRef.current.getBoundingClientRect();
+      const deviceX = nextDevice.x;
+      const deviceY = nextDevice.y;
+      const currentZoom = zoomRef.current;
+      
+      // Center the device in viewport
+      const targetPanX = canvasRect.width / 2 - deviceX * currentZoom;
+      const targetPanY = canvasRect.height / 2 - deviceY * currentZoom;
+      
+      // Smooth pan animation
+      const startPan = { ...panRef.current };
+      const startTime = performance.now();
+      const duration = 300; // ms
+      
+      const animatePan = (currentTime: number) => {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = easeInOutCubic(progress);
+        
+        panRef.current = {
+          x: startPan.x + (targetPanX - startPan.x) * eased,
+          y: startPan.y + (targetPanY - startPan.y) * eased
+        };
+        
+        const g = svgContentGroupRef.current;
+        if (g) {
+          g.style.transform = `translate(${panRef.current.x}px, ${panRef.current.y}px) scale(${currentZoom})`;
+        }
+        
+        if (progress < 1) {
+          requestAnimationFrame(animatePan);
+        } else {
+          // Sync with React state after animation
+          setPan(panRef.current);
+        }
+      };
+      
+      requestAnimationFrame(animatePan);
+    }
   }, [devices, onDeviceSelect]);
 
   const handleDeviceKeyDown = useCallback((e: React.KeyboardEvent<SVGGElement>, device: CanvasDevice) => {
@@ -2515,7 +2599,7 @@ export function NetworkTopology({
     }
   }, [longPressTimer]);  // Removed pan dep - uses panRef.current
 
-  // Handle Wheel Event for Zooming
+  // Handle Wheel and Middle Click Auto-scroll Prevention
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -2571,8 +2655,19 @@ export function NetworkTopology({
       });
     };
 
+    const handleMouseDown = (e: MouseEvent) => {
+      if (e.button === 1) {
+        // Prevent default browser auto-scroll on middle click
+        e.preventDefault();
+      }
+    };
+
     canvas.addEventListener('wheel', handleWheel, { passive: false });
-    return () => canvas.removeEventListener('wheel', handleWheel);
+    canvas.addEventListener('mousedown', handleMouseDown, { passive: false });
+    return () => {
+      canvas.removeEventListener('wheel', handleWheel);
+      canvas.removeEventListener('mousedown', handleMouseDown);
+    };
   }, []);
 
   // Handle Keyboard Navigation
@@ -2581,8 +2676,8 @@ export function NetworkTopology({
     if (!canvas) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Only handle if canvas is focused
-      if (document.activeElement !== canvas) return;
+      // Only handle if canvas or its children have focus
+      if (document.activeElement !== canvas && !canvas.contains(document.activeElement)) return;
 
       const moveAmount = 20 * zoom;
 
@@ -4522,7 +4617,9 @@ export function NetworkTopology({
 
                   {/* Rectangle Selection Box */}
                   {selectionBox && (
+                    <>
                     <rect
+                      id="selection-rectangle"
                       x={Math.min(selectionBox.start.x, selectionBox.current.x)}
                       y={Math.min(selectionBox.start.y, selectionBox.current.y)}
                       width={Math.abs(selectionBox.current.x - selectionBox.start.x)}
@@ -4535,6 +4632,19 @@ export function NetworkTopology({
                       strokeDasharray={`${6 / zoom}, ${6 / zoom}`}
                       pointerEvents="none"
                     />
+                    <text
+                      id="selection-counter"
+                      x={Math.min(selectionBox.start.x, selectionBox.current.x) + 10}
+                      y={Math.min(selectionBox.start.y, selectionBox.current.y) - 10}
+                      fill={isDark ? 'var(--color-success-400)' : 'var(--color-success-600)'}
+                      fontSize={14 / zoom}
+                      fontWeight="bold"
+                      pointerEvents="none"
+                      style={{ textShadow: isDark ? '0 0 4px rgba(0,0,0,0.8)' : '0 0 4px rgba(255,255,255,0.8)' }}
+                    >
+                      {selectedDeviceIds.length} {selectedDeviceIds.length === 1 ? 'device' : 'devices'}
+                    </text>
+                    </>
                   )}
 
                 </g>
