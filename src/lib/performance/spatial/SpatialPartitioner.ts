@@ -30,6 +30,7 @@ export class SpatialPartitioner {
     private cells: Map<string, SpatialCell>;
     private nodePositions: Map<string, { x: number; y: number }>;
     private nodeCells: Map<string, string>;
+    private connectionCells: Map<string, string[]>;
     private bounds: SpatialBounds;
 
     /**
@@ -45,6 +46,7 @@ export class SpatialPartitioner {
         this.cells = new Map();
         this.nodePositions = new Map();
         this.nodeCells = new Map();
+        this.connectionCells = new Map();
         this.bounds = bounds;
     }
 
@@ -84,11 +86,18 @@ export class SpatialPartitioner {
      */
     assignNode(node: Node): void {
         const cellKey = this.getCellKey(node.x, node.y);
+        const oldKey = this.nodeCells.get(node.id);
+
+        // BOLT: Skip if node is already in the correct cell (common during drags)
+        if (oldKey === cellKey) {
+            this.nodePositions.set(node.id, { x: node.x, y: node.y });
+            return;
+        }
+
         const cell = this.getOrCreateCell(cellKey);
 
         // O(1) lookup for old cell using nodeCells map
-        const oldKey = this.nodeCells.get(node.id);
-        if (oldKey && oldKey !== cellKey) {
+        if (oldKey) {
             const oldCell = this.cells.get(oldKey);
             if (oldCell) {
                 const idx = oldCell.nodeIds.indexOf(node.id);
@@ -152,6 +161,8 @@ export class SpatialPartitioner {
         const sourceCellKey = this.getCellKey(sourceNode.x, sourceNode.y);
         const targetCellKey = this.getCellKey(targetNode.x, targetNode.y);
 
+        const assignedCells: string[] = [sourceCellKey];
+
         // Add to source cell
         const sourceCell = this.getOrCreateCell(sourceCellKey);
         if (!sourceCell.connectionIds.includes(connection.id)) {
@@ -164,7 +175,11 @@ export class SpatialPartitioner {
             if (!targetCell.connectionIds.includes(connection.id)) {
                 targetCell.connectionIds.push(connection.id);
             }
+            assignedCells.push(targetCellKey);
         }
+
+        // BOLT: Track assigned cells for O(1) removal
+        this.connectionCells.set(connection.id, assignedCells);
     }
 
     /**
@@ -172,10 +187,26 @@ export class SpatialPartitioner {
      * @param connectionId - ID of the connection to remove
      */
     removeConnection(connectionId: string): void {
-        for (const cell of this.cells.values()) {
-            const index = cell.connectionIds.indexOf(connectionId);
-            if (index !== -1) {
-                cell.connectionIds.splice(index, 1);
+        // BOLT: Optimized O(1) removal using connectionCells map instead of O(Cells)
+        const cellKeys = this.connectionCells.get(connectionId);
+        if (cellKeys) {
+            for (const key of cellKeys) {
+                const cell = this.cells.get(key);
+                if (cell) {
+                    const index = cell.connectionIds.indexOf(connectionId);
+                    if (index !== -1) {
+                        cell.connectionIds.splice(index, 1);
+                    }
+                }
+            }
+            this.connectionCells.delete(connectionId);
+        } else {
+            // Fallback for connections added before optimization or external removals
+            for (const cell of this.cells.values()) {
+                const index = cell.connectionIds.indexOf(connectionId);
+                if (index !== -1) {
+                    cell.connectionIds.splice(index, 1);
+                }
             }
         }
     }
@@ -282,6 +313,7 @@ export class SpatialPartitioner {
         this.cells.clear();
         this.nodePositions.clear();
         this.nodeCells.clear();
+        this.connectionCells.clear();
     }
 
     /**
