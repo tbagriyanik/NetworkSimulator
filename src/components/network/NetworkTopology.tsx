@@ -386,6 +386,11 @@ export function NetworkTopology({
   // Select all state
   const [_selectAllMode, setSelectAllMode] = useState(false);
 
+  // Always keep selectedDeviceIdsRef.current in sync with selectedDeviceIds state
+  useEffect(() => {
+    selectedDeviceIdsRef.current = [...selectedDeviceIds];
+  }, [selectedDeviceIds]);
+
   // Handle external clear selection trigger (e.g., from Tab key)
   useEffect(() => {
     if (clearSelectionTrigger !== undefined) {
@@ -2042,12 +2047,13 @@ export function NetworkTopology({
 
     // Shift key for multi-selection
     let newSelectedIds: string[];
+    const currentSelectedIds = [...selectedDeviceIdsRef.current]; // use ref to avoid stale state
 
     if (e.shiftKey) {
       // Toggle selection when Shift is pressed
-      newSelectedIds = selectedDeviceIds.includes(deviceId)
-        ? selectedDeviceIds.filter(id => id !== deviceId)
-        : [...selectedDeviceIds, deviceId];
+      newSelectedIds = currentSelectedIds.includes(deviceId)
+        ? currentSelectedIds.filter(id => id !== deviceId)
+        : [...currentSelectedIds, deviceId];
 
       // Update parent component with the first selected device, or clear if nothing remains
       if (newSelectedIds.length > 0) {
@@ -2066,12 +2072,12 @@ export function NetworkTopology({
     } else {
       // If clicking a device that's not selected, make it the only selection
       // If it IS already selected, keep selection for group dragging
-      if (!selectedDeviceIds.includes(deviceId)) {
+      if (!currentSelectedIds.includes(deviceId)) {
         newSelectedIds = [deviceId];
         setSelectedDeviceIds(newSelectedIds);
         onDeviceSelect(device.type, deviceId, isSwitchDeviceType(device.type) ? device.switchModel : undefined, device.name);
       } else {
-        newSelectedIds = selectedDeviceIds;
+        newSelectedIds = currentSelectedIds;
       }
     }
 
@@ -2114,17 +2120,24 @@ export function NetworkTopology({
     }
 
     setSelectedNoteIds([]);
-    // Notify parent component - select device, don't open terminal
-    onDeviceSelect(device.type, device.id, isSwitchDeviceType(device.type) ? device.switchModel : undefined, device.name);
+    
+    // Only update onDeviceSelect and selection if it's not a shift-click,
+    // or if it's a keyboard-activated (untrusted) click
+    if (e.shiftKey) {
+      // For shift-click (trusted), selection was already handled in handleDeviceMouseDown,
+      // so don't override onDeviceSelect or setSelectedDeviceIds here
+    } else {
+      // Notify parent component - select device, don't open terminal
+      onDeviceSelect(device.type, device.id, isSwitchDeviceType(device.type) ? device.switchModel : undefined, device.name);
+      // Keyboard-activated clicks (Enter/Space) dispatch synthetic events.
+      // For trusted (real mouse) clicks, selection is already handled in handleDeviceMouseDown.
+      // For untrusted (synthetic) clicks, set the selection here.
+      if (!e.isTrusted) {
+        setSelectedDeviceIds([device.id]);
+      }
+    }
     // Focus canvas for keyboard navigation
     canvasRef.current?.focus();
-
-    // Keyboard-activated clicks (Enter/Space) dispatch synthetic events.
-    // For trusted (real mouse) clicks, selection is already handled in handleDeviceMouseDown.
-    // For untrusted (synthetic) clicks, set the selection here.
-    if (!e.isTrusted) {
-      setSelectedDeviceIds([device.id]);
-    }
   }, [onDeviceSelect, pingMode, pingSource, devices, connections, deviceStates, setContextMenu, isMobile, isDrawingConnection, mobileConnectionSource, isTR]);
 
   const navigateToNextDevice = useCallback((currentDeviceId: string | null, shift = false) => {
