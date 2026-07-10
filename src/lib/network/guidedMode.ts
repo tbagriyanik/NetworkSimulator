@@ -2016,13 +2016,23 @@ export const checkStepCompletion = (
       }
 
        if (configKey.startsWith('dhcpPools.')) {
-         const poolName = configKey.split('.')[1];
+         const parts = configKey.split('.');
+         const poolName = parts[1];
          const pool = targetState?.dhcpPools?.[poolName];
          if (!pool) return false;
-         if (typeof configValue === 'object' && configValue !== null) {
-           return Object.entries(configValue).every(([k, v]) => pool[k as keyof typeof pool] === v);
+
+         if (parts.length === 2) {
+           // Check entire pool object
+           if (typeof configValue === 'object' && configValue !== null) {
+             return Object.entries(configValue).every(([k, v]) => pool[k as keyof typeof pool] === v);
+           }
+           return true;
+         } else if (parts.length === 3) {
+           // Check specific property of pool
+           const property = parts[2];
+           return pool[property as keyof typeof pool] === configValue;
          }
-         return true;
+         return false;
        }
 
       if (configKey === 'routingProtocol') return targetState?.routingProtocol === configValue;
@@ -2040,25 +2050,35 @@ export const checkStepCompletion = (
              service.records?.some((r: { domain: string; address: string }) => r.domain === req.domain && r.address === req.address)
            );
          }
+          if ((service as Record<string, unknown>)[property] !== undefined) {
+            return (service as Record<string, unknown>)[property] === configValue;
+          }
        }
 
       if (configKey.startsWith('pc.')) {
         const parts = configKey.split('.');
         const pcId = parts[1];
-        const property = parts[parts.length - 1];
         const pcDevice = context.topologyDevices?.find((d: CanvasDevice) => d.id === pcId);
         if (!pcDevice) return false;
 
-        if (property === 'ip') {
-          const ipMatch = pcDevice.ip === configValue;
-          if (step.checkParams.subnetMask) return ipMatch && pcDevice.subnet === step.checkParams.subnetMask;
-          return ipMatch;
+        if (parts.length === 3) {
+          const property = parts[2];
+          if (property === 'ip') {
+            const ipMatch = pcDevice.ip === configValue;
+            if (step.checkParams.subnetMask) return ipMatch && pcDevice.subnet === step.checkParams.subnetMask;
+            return ipMatch;
+          }
+          if (property === 'gateway') return pcDevice.gateway === configValue;
+          if (property === 'dns') return pcDevice.dns === configValue;
+          if (property === 'subnet') return pcDevice.subnet === configValue;
+          if (property === 'ipv6') return pcDevice.ipv6 === configValue;
+          if (property === 'ipConfigMode') return pcDevice.ipConfigMode === configValue;
+        } else if (parts.length === 4 && parts[2] === 'wifi') {
+          const property = parts[3];
+          if (property === 'ssid') return pcDevice.wifi?.ssid === configValue;
+          if (property === 'password') return pcDevice.wifi?.password === configValue;
+          if (property === 'security') return pcDevice.wifi?.security === configValue;
         }
-        if (property === 'gateway') return pcDevice.gateway === configValue;
-        if (property === 'dns') return pcDevice.dns === configValue;
-        if (property === 'subnet') return pcDevice.subnet === configValue;
-        if (property === 'ipv6') return pcDevice.ipv6 === configValue;
-        if (property === 'ipConfigMode') return pcDevice.ipConfigMode === configValue;
 
         // Fallback for cases where configKey might just be 'pc.pc-1'
         return pcDevice.ip === configValue;

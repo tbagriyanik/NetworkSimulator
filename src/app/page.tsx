@@ -673,7 +673,23 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
       setShowPCPanel(false);
     }
     nav.handleDeviceSelectFromCanvas(device, deviceId, switchModel, deviceName, isNew, deviceData);
-  }, [nav, setShowUnifiedDeviceModal, setShowRouterPanel, setShowFirewallPanel, setShowPCPanel]);
+    
+    // Call checkStepCompletionWithContext for device access check
+    if (deviceId) {
+      const accessedType = 
+        device === 'switchL2' || device === 'switchL3' ? 'switch' :
+        device === 'router' ? 'router' :
+        device === 'pc' ? 'pc' : null;
+      
+      checkStepCompletionWithContext({
+        deviceAccessed: accessedType,
+        deviceAccessedId: deviceId,
+        deviceStates,
+        topologyConnections,
+        topologyDevices
+      });
+    }
+  }, [nav, setShowUnifiedDeviceModal, setShowRouterPanel, setShowFirewallPanel, setShowPCPanel, checkStepCompletionWithContext, deviceStates, topologyConnections, topologyDevices]);
 
   const handleDeviceSelectFromMenu = useCallback((device: DeviceType, deviceId?: string, switchModel?: string, deviceName?: string) => {
     if (device === 'pc') {
@@ -684,7 +700,23 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
       setShowPCPanel(false);
     }
     nav.handleDeviceSelectFromMenu(device, deviceId, switchModel, deviceName);
-  }, [nav, setShowUnifiedDeviceModal, setShowRouterPanel, setShowFirewallPanel, setShowPCPanel]);
+    
+    // Call checkStepCompletionWithContext for device access check
+    if (deviceId) {
+      const accessedType = 
+        device === 'switchL2' || device === 'switchL3' ? 'switch' :
+        device === 'router' ? 'router' :
+        device === 'pc' ? 'pc' : null;
+      
+      checkStepCompletionWithContext({
+        deviceAccessed: accessedType,
+        deviceAccessedId: deviceId,
+        deviceStates,
+        topologyConnections,
+        topologyDevices
+      });
+    }
+  }, [nav, setShowUnifiedDeviceModal, setShowRouterPanel, setShowFirewallPanel, setShowPCPanel, checkStepCompletionWithContext, deviceStates, topologyConnections, topologyDevices]);
   // Wrapper to match PCPanel's single-arg onNavigate signature
   const handlePCPanelNavigateWrapper = useCallback((program: string) => {
     handlePCPanelNavigate(program, activeDeviceId);
