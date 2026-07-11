@@ -49,6 +49,7 @@ npm install && npm run dev
 | [NETWORK_SIMULATOR_KITAPCIK.md](doc/NETWORK_SIMULATOR_KITAPCIK.md) | Comprehensive Turkish training booklet / Kapsamlı Türkçe eğitim kitapçığı |
 | [history.md](doc/history.md) | Full changelog newest-to-oldest / Yeniden eskiye tam değişiklik geçmişi |
 | [DOCUMENTATION_INDEX.md](doc/DOCUMENTATION_INDEX.md) | Documentation index & reading map / Diğer tüm belgeler için indeks |
+| [ProjeOzellikleri.md](doc/ProjeOzellikleri.md) | Full features inventory (TR/EN) / Tüm özellikler envanteri (TR/EN) |
 
 ## Architecture / Mimari
 
