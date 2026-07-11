@@ -11,7 +11,6 @@ import {
   Target,
   ChevronDown,
   ChevronUp,
-  X,
   Sparkles,
   Wand2,
   Volume2,
@@ -66,7 +65,7 @@ export function GuidedModePanel({
   project,
   currentStepIndex,
   onStepUncomplete,
-  onClose,
+  onClose: _onClose,
   onMinimize,
   isMinimized,
   lastCommand,
@@ -602,13 +601,6 @@ export function GuidedModePanel({
               title={t.minimize}
             >
               <ChevronDown className="w-4 h-4" />
-            </button>
-            <button
-              onClick={onClose}
-              className="p-1.5 rounded-md transition-colors hover:bg-black/10 dark:hover:bg-white/20 text-black dark:text-white"
-              title={t.close}
-            >
-              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
