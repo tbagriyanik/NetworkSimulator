@@ -38,9 +38,9 @@ export const ConnectionTooltip: React.FC<ConnectionTooltipProps> = ({
       }}
     >
       <div
-        className={`px-3 py-2 rounded-xl border liquid-glass-strong animate-scale-in shadow-2xl ${isDark
-          ? 'border-secondary-700/50 text-white shadow-accent-500/10'
-          : 'border-secondary-200/50 text-secondary-900 shadow-secondary-200/50'
+        className={`px-3 py-2 rounded-xl border liquid-glass-light animate-scale-in shadow-2xl ${isDark
+          ? 'bg-secondary-950/40 border-secondary-700/50 text-white shadow-accent-500/10'
+          : 'bg-white/60 border-secondary-200/50 text-secondary-900 shadow-secondary-200/50'
           }`}
       >
         <div className="flex items-center gap-2 mb-1">

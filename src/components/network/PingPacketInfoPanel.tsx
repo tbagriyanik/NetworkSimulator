@@ -486,7 +486,7 @@ export function PingPacketInfoPanel({
             modalSize={dragProps.size}
             handlePointerDown={dragProps.handlePointerDown}
             handleResizeStart={dragProps.handleResizeStart}
-            className="flex flex-col"
+            className={`flex flex-col liquid-glass-light ${isDark ? '!bg-secondary-950/40 border-emerald-950/80 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]' : '!bg-white/60 border-emerald-950/80 shadow-[0_8px_28px_rgba(15,23,42,0.12)]'}`}
             mobileFullScreen={false}
         >
             <div className="flex-1 overflow-y-auto min-h-0 flex flex-col" onMouseDown={onFocus}>
