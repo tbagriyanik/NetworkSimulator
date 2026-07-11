@@ -261,22 +261,194 @@ export function useCanvasActions({
   const addSummaryNote = useCallback(() => {
     saveToHistory();
     const isTr = language === 'tr';
-    let summaryText = isTr ? '📋 TOPOLOJİ ÖZETİ\n' : '📋 TOPOLOGY SUMMARY\n';
+    const projectName = typeof window !== 'undefined' ? localStorage.getItem('lastProjectName') || 'Untitled' : 'Untitled';
+    let summaryText = isTr ? `📋 TOPOLOJİ ÖZETİ: ${projectName}\n` : `📋 TOPOLOGY SUMMARY: ${projectName}\n`;
     summaryText += '========================\n';
 
     if (devices.length === 0) {
       summaryText += isTr ? 'Cihaz bulunamadı.' : 'No devices found.';
     } else {
-      devices.forEach(d => {
-        const typeLabel = d.type === 'switchL2' ? 'Switch L2' : d.type === 'switchL3' ? 'Switch L3' : d.type.toUpperCase();
-        summaryText += `• ${d.name} [${typeLabel}]\n`;
-        if (d.ip) {
-          summaryText += `  IP: ${d.ip}\n`;
-        }
-        if (d.gateway && d.gateway !== '0.0.0.0') {
-          summaryText += `  GW: ${d.gateway}\n`;
-        }
-        summaryText += `  MAC: ${d.macAddress}\n`;
+      const groupedDevices = devices.reduce((acc, d) => {
+        const t = d.type === 'switchL2' ? 'Switch L2' : d.type === 'switchL3' ? 'Switch L3' : d.type.toUpperCase();
+        if (!acc[t]) acc[t] = [];
+        acc[t].push(d);
+        return acc;
+      }, {} as Record<string, CanvasDevice[]>);
+
+      Object.entries(groupedDevices).forEach(([type, devs]) => {
+        summaryText += `[ ${type} ]\n`;
+        devs.forEach(d => {
+          summaryText += `• ${d.name}:\n`;
+          if (d.ip && d.ip !== '0.0.0.0') {
+            summaryText += `  IP: ${d.ip}${d.subnet ? '/' + d.subnet : ''}\n`;
+          }
+          if (d.gateway && d.gateway !== '0.0.0.0') {
+            summaryText += `  GW: ${d.gateway}\n`;
+          }
+          if (d.macAddress) {
+            summaryText += `  MAC: ${d.macAddress}\n`;
+          }
+          
+          const connectedPorts = d.ports?.filter(p => p.status === 'connected');
+          if (connectedPorts && connectedPorts.length > 0) {
+            summaryText += isTr ? `  Bağlı Portlar:\n` : `  Connected Ports:\n`;
+            connectedPorts.forEach(p => {
+              const parts = [];
+              if (p.ipAddress) parts.push(`IP: ${p.ipAddress}`);
+              if (p.vlan && p.vlan !== 1) parts.push(`VLAN: ${p.vlan}`);
+              if (p.mode && p.mode !== 'access' && p.mode !== 'dynamic-auto') parts.push(`Mod: ${p.mode}`);
+              if (p.shutdown) parts.push(`Kapalı`);
+              const details = parts.length > 0 ? ` (${parts.join(', ')})` : '';
+              summaryText += `    - ${p.label}${details}\n`;
+            });
+          }
+          
+          if (d.wifi?.enabled) {
+            summaryText += `  WiFi: ${d.wifi.ssid} (${d.wifi.mode})\n`;
+          }
+          if (d.services?.dhcp?.enabled) {
+            summaryText += `  DHCP: ${isTr ? 'Açık' : 'Enabled'}\n`;
+          }
+          if (d.type === 'pc') {
+            if (d.ipConfigMode === 'dhcp') {
+              summaryText += isTr ? `  IP Modu: DHCP\n` : `  IP Mode: DHCP\n`;
+            }
+            if (d.dns) {
+              summaryText += `  DNS: ${d.dns}\n`;
+            }
+            if (d.ipv6) {
+              summaryText += `  IPv6: ${d.ipv6}${d.ipv6Prefix ? '/' + d.ipv6Prefix : ''}\n`;
+            }
+            if (d.services) {
+              const activeServices = [];
+              if (d.services.http?.enabled) activeServices.push(`HTTP (${isTr ? 'Mod' : 'Mode'}: ${d.services.http.mode || 'simple'})`);
+              if (d.services.ftp?.enabled) activeServices.push(`FTP (${isTr ? 'Anonim' : 'Anonymous'}: ${d.services.ftp.anonymousAccess ? (isTr ? 'Evet' : 'Yes') : (isTr ? 'Hayır' : 'No')})`);
+              if (d.services.dns?.enabled) activeServices.push(`DNS Server (${d.services.dns.records?.length || 0} ${isTr ? 'Kayıt' : 'Records'})`);
+              if (d.services.mail?.enabled) activeServices.push(`Mail (${isTr ? 'Alan Adı' : 'Domain'}: ${d.services.mail.domain || '-'})`);
+              if (d.services.ntp?.enabled) activeServices.push(`NTP (${d.services.ntp.timezone || 'UTC'})`);
+              
+              if (activeServices.length > 0) {
+                summaryText += isTr ? `  Etkin Servisler:\n` : `  Active Services:\n`;
+                activeServices.forEach(s => {
+                  summaryText += `    - ${s}\n`;
+                });
+              }
+            }
+          }
+
+          if (d.type === 'iot' && d.iot) {
+            summaryText += isTr ? `  IoT Tipi: ${d.iot.kind || 'Sensör'}\n` : `  IoT Kind: ${d.iot.kind || 'Sensor'}\n`;
+            summaryText += isTr ? `  Sensör: ${d.iot.sensorType}\n` : `  Sensor: ${d.iot.sensorType}\n`;
+            if (d.iot.rules && d.iot.rules.length > 0) {
+              const activeRules = d.iot.rules.filter(r => r.enabled);
+              if (activeRules.length > 0) {
+                summaryText += isTr ? `  IoT Kuralları:\n` : `  IoT Rules:\n`;
+                activeRules.forEach(r => {
+                  summaryText += `    - IF ${r.condition} THEN ${r.action}\n`;
+                });
+              }
+            }
+          }
+
+          if (d.firewallRules && d.firewallRules.some(r => r.enabled)) {
+            const activeRules = d.firewallRules.filter(r => r.enabled);
+            summaryText += `  Firewall: ${activeRules.length} ${isTr ? 'Kural Etkin' : 'Rules Active'}\n`;
+            activeRules.forEach(r => {
+              summaryText += `    - ${r.action.toUpperCase()} ${r.protocol.toUpperCase()} ${r.sourceIp} -> ${r.targetIp}:${r.port}\n`;
+            });
+          }
+
+          if (['switchL2', 'switchL3', 'router'].includes(d.type)) {
+            let cli = '';
+            if (d.ip && d.ip !== '0.0.0.0') {
+              cli += `    interface vlan 1\n    ip address ${d.ip} ${d.subnet || '255.255.255.0'}\n    no shutdown\n    exit\n`;
+            }
+            if (d.gateway && d.gateway !== '0.0.0.0') {
+              cli += `    ip default-gateway ${d.gateway}\n`;
+            }
+            if (connectedPorts && connectedPorts.length > 0) {
+              connectedPorts.forEach(p => {
+                const needsCli = p.ipAddress || (p.vlan && p.vlan !== 1) || (p.mode && p.mode !== 'access' && p.mode !== 'dynamic-auto') || p.shutdown;
+                if (needsCli) {
+                  cli += `    interface ${p.label.replace('Fa', 'FastEthernet').replace('Gi', 'GigabitEthernet')}\n`;
+                  if (p.shutdown) {
+                    cli += `    shutdown\n`;
+                  } else {
+                    if (p.ipAddress) {
+                      cli += `    ip address ${p.ipAddress} ${p.subnetMask || '255.255.255.0'}\n`;
+                    }
+                    if (p.mode === 'trunk') cli += `    switchport mode trunk\n`;
+                    else if (p.mode === 'access' && p.vlan && p.vlan !== 1) {
+                      cli += `    switchport mode access\n    switchport access vlan ${p.vlan}\n`;
+                    }
+                    cli += `    no shutdown\n`;
+                  }
+                  cli += `    exit\n`;
+                }
+              });
+            }
+            if (d.services?.dhcp?.enabled && d.services.dhcp.pools && d.services.dhcp.pools.length > 0) {
+              const pool = d.services.dhcp.pools[0];
+              cli += `    service dhcp\n    ip dhcp pool ${pool.poolName}\n    network ${pool.startIp} ${pool.subnetMask}\n    default-router ${pool.defaultGateway}\n    dns-server ${pool.dnsServer}\n`;
+            }
+
+            const dState = deviceStates?.get(d.id);
+            if (dState && dState.security) {
+              const sec = dState.security;
+              if (sec.enableSecret) cli += `    enable secret ${sec.enableSecret}\n`;
+              else if (sec.enablePassword) cli += `    enable password ${sec.enablePassword}\n`;
+              
+              if (sec.servicePasswordEncryption) cli += `    service password-encryption\n`;
+              
+              if (sec.consoleLine && (sec.consoleLine.password || sec.consoleLine.login || sec.consoleLine.loginLocal)) {
+                cli += `    line con 0\n`;
+                if (sec.consoleLine.password) cli += `    password ${sec.consoleLine.password}\n`;
+                if (sec.consoleLine.loginLocal) cli += `    login local\n`;
+                else if (sec.consoleLine.login) cli += `    login\n`;
+                cli += `    exit\n`;
+              }
+              
+              if (sec.vtyLines && (sec.vtyLines.password || sec.vtyLines.login || sec.vtyLines.loginLocal)) {
+                cli += `    line vty 0 4\n`;
+                if (sec.vtyLines.password) cli += `    password ${sec.vtyLines.password}\n`;
+                if (sec.vtyLines.loginLocal) cli += `    login local\n`;
+                else if (sec.vtyLines.login) cli += `    login\n`;
+                cli += `    exit\n`;
+              }
+            }
+
+            if (dState) {
+              if (dState.bannerMOTD) cli += `    banner motd #${dState.bannerMOTD}#\n`;
+              if (dState.domainName) cli += `    ip domain-name ${dState.domainName}\n`;
+              if (dState.cdpEnabled === false) cli += `    no cdp run\n`;
+              if (dState.spanningTreeMode && dState.spanningTreeMode !== 'pvst') cli += `    spanning-tree mode ${dState.spanningTreeMode}\n`;
+              if (dState.vtpMode && dState.vtpMode !== 'server') cli += `    vtp mode ${dState.vtpMode}\n`;
+              if (dState.vtpDomain) cli += `    vtp domain ${dState.vtpDomain}\n`;
+              if (dState.vtpPassword) cli += `    vtp password ${dState.vtpPassword}\n`;
+              if (dState.ipRouting) cli += `    ip routing\n`;
+              if (dState.ipv6Enabled) cli += `    ipv6 unicast-routing\n`;
+              if (dState.staticRoutes && dState.staticRoutes.length > 0) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                dState.staticRoutes.forEach((r: any) => {
+                  cli += `    ip route ${r.destination || r.network || ''} ${r.subnetMask || r.mask || ''} ${r.nextHop || r.interface || ''}\n`;
+                });
+              }
+              if (dState.routingProtocol && dState.routingProtocol !== 'none') {
+                const routerConfig = dState.routingProtocol === 'ospf' ? (dState.ospfProcessId || '1') : '';
+                cli += `    router ${dState.routingProtocol}${routerConfig ? ' ' + routerConfig : ''}\n`;
+                if (dState.routerId) cli += `    router-id ${dState.routerId}\n`;
+                cli += `    exit\n`;
+              }
+            }
+
+            if (cli) {
+              summaryText += isTr ? `\n  [CLI Komutları]:\n` : `\n  [CLI Commands]:\n`;
+              summaryText += `    enable\n    configure terminal\n    hostname ${d.name}\n${cli}`;
+            }
+          }
+
+          summaryText += '\n';
+        });
         summaryText += '------------------------\n';
       });
     }
@@ -285,12 +457,12 @@ export function useCanvasActions({
       id: getNextNoteId(),
       x: 150 + Math.random() * 50,
       y: 150 + Math.random() * 50,
-      width: 250,
-      height: Math.max(120, 50 + devices.length * 75),
+      width: 450,
+      height: Math.min(400, Math.max(200, 50 + devices.length * 100)),
       text: summaryText.trim(),
       color: 'var(--color-success-200)',
       font: 'Courier New',
-      fontSize: 10,
+      fontSize: 12,
       opacity: 1,
     };
     setNotes((prev) => [...prev, newNote]);

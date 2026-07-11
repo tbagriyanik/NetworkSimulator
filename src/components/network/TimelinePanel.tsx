@@ -213,16 +213,16 @@ export function TimelinePanel({
       tabIndex={0}
       onPointerDownCapture={() => bringElementToFront(panelRef.current)}
       className={cn(
-        "absolute z-30 backdrop-blur-2xl transition-all duration-300 flex flex-col overflow-hidden rounded-xl outline-none select-none",
+        "absolute z-30 liquid-glass-light transition-all duration-300 flex flex-col overflow-hidden rounded-xl outline-none select-none",
         "left-2 right-2 bottom-[72px] w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] sm:left-4 sm:right-auto sm:bottom-20 sm:max-w-none",
         isMinimized ? "w-48 h-12 rounded-full" : "sm:w-[36rem] w-[calc(100vw-1rem)] h-[152px]",
         isDark
           ? isFocused
-            ? "bg-secondary-950/30 border border-emerald-400 shadow-[0_0_0_1px_rgba(52,211,153,0.35),0_8px_32px_0_rgba(0,0,0,0.5)]"
-            : "bg-secondary-950/30 border border-emerald-950/80 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]"
+            ? "bg-secondary-950/40 border border-emerald-400 shadow-[0_0_0_1px_rgba(52,211,153,0.35),0_8px_32px_0_rgba(0,0,0,0.5)]"
+            : "bg-secondary-950/40 border border-emerald-950/80 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]"
           : isFocused
-            ? "bg-white/92 border border-emerald-500 shadow-[0_0_0_1px_rgba(34,197,94,0.24),0_8px_28px_rgba(15,23,42,0.12)]"
-            : "bg-white/92 border border-emerald-950/80 shadow-[0_8px_28px_rgba(15,23,42,0.12)]",
+            ? "bg-white/60 border border-emerald-500 shadow-[0_0_0_1px_rgba(34,197,94,0.24),0_8px_28px_rgba(15,23,42,0.12)]"
+            : "bg-white/60 border border-emerald-950/80 shadow-[0_8px_28px_rgba(15,23,42,0.12)]",
         isDragging ? "transition-none" : "transition-transform"
       )}
       style={{

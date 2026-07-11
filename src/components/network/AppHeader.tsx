@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -243,7 +243,7 @@ export function AppHeader({
                     <TooltipTrigger asChild>
                       <button aria-label={language === 'tr' ? 'Özet Notu Oluştur' : 'Generate Summary Note'}
                         className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50", isDark ? 'text-secondary-300 hover:text-primary-400 hover:bg-secondary-700/50' : 'text-secondary-600 hover:text-primary-600')}
-                        onClick={() => window.dispatchEvent(new CustomEvent('trigger-topology-generate-summary-note'))}
+                        onClick={() => window.dispatchEvent(new CustomEvent('add-summary-note'))}
                       >
                         <FileText className="w-4 h-4" />
                       </button>
@@ -414,7 +414,7 @@ export function AppHeader({
                       <Button
                         variant="secondary"
                         className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-primary-400' : 'hover:text-primary-600'}`}
-                        onClick={() => { window.dispatchEvent(new CustomEvent('trigger-topology-generate-summary-note')); setShowMobileMenu(false); }}
+                        onClick={() => { window.dispatchEvent(new CustomEvent('add-summary-note')); setShowMobileMenu(false); }}
                       >
                         <FileText className="w-3.5 h-3.5 flex-shrink-0" /> <span>{language === 'tr' ? 'Özet Notu Oluştur' : 'Generate Summary'}</span>
                       </Button>

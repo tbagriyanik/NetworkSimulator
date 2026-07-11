@@ -21,7 +21,7 @@ function getLinesOfCode(dir: string): number {
   }
   try {
     traverse(dir);
-  } catch (e) {
+  } catch {
     // Ignore error
   }
   return lines;
@@ -32,7 +32,7 @@ function getAppVersion(): string {
   try {
     const pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), "package.json"), "utf-8"));
     return pkg.version || "1.9.6";
-  } catch (e) {
+  } catch {
     return "1.9.6";
   }
 }
@@ -70,7 +70,7 @@ async function getCommitCount(): Promise<number> {
         }
       }
     }
-  } catch (e) {
+  } catch {
     // Ignore fetch error
   }
 

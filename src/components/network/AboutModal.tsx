@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useMemo, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -240,9 +240,6 @@ export function AboutModal({ isOpen, onClose, onStartTour }: AboutModalProps) {
                     <p className={cn('font-semibold', isDark ? 'text-secondary-200' : 'text-secondary-700')}>
                       {t.commandModes}
                     </p>
-                    <span className={cn('text-[11px] font-medium px-2 py-0.5 rounded-full', isDark ? 'bg-secondary-800 text-secondary-300' : 'bg-secondary-100 text-secondary-600')}>
-                      {isTR ? 'GitHub Commit Sayısı' : 'GitHub Commits'}: <strong className="font-bold">{process.env.NEXT_PUBLIC_GIT_COMMIT_COUNT || '1656'}</strong>
-                    </span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
                     <div className="flex items-center gap-2">

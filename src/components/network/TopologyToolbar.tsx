@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -20,7 +20,7 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { DeviceIcon } from '@/components/network/DeviceIcon';
-import {   ChevronDown, Plus, Undo2, Redo2, Search, X, Cable, LineSquiggle, Leaf, Plug, TrendingUpDown, Users, UserKey, Activity, FileText } from 'lucide-react';
+import {   ChevronDown, Plus, Undo2, Redo2, Search, X, Cable, LineSquiggle, Leaf, Plug, TrendingUpDown, Users, UserKey, Activity } from 'lucide-react';
 import type { Translations } from '@/contexts/LanguageContext';
 import type { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
 import type { SwitchState, CableType, CableInfo } from '@/lib/network/types';
@@ -537,24 +537,6 @@ className="h-8 w-8 p-0 text-warning-500 hover:bg-warning-500/10"
         <TooltipContent>{t.addNote}</TooltipContent>
       </Tooltip>
 
-      {/* Add Summary Note Button */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            aria-label={language === 'tr' ? 'Özet Not Oluştur' : 'Create Summary Note'}
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-success-500 hover:bg-success-500/10"
-            onClick={() => {
-              const event = new CustomEvent('add-summary-note');
-              window.dispatchEvent(event);
-            }}
-          >
-            <FileText className={`w-4 h-4 ${toolbarGlowClass}`} stroke="var(--color-success-500)" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{language === 'tr' ? 'Özet Not Oluştur' : 'Create Summary Note'}</TooltipContent>
-      </Tooltip>
 
       {/* Environment Settings Button */}
       <Tooltip>
