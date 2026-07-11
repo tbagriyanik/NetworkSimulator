@@ -100,7 +100,14 @@ export const generateCertificate = async (data: CertificateData): Promise<void> 
 
   // ─── Step 1: Register certificate on server and get verify code ───────────
   const PRODUCTION_URL = (process.env.NEXT_PUBLIC_APP_URL || '').replace(/\/$/, '');
-  let verifyCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+  let verifyCode = '';
+  if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+    const array = new Uint32Array(2);
+    window.crypto.getRandomValues(array);
+    verifyCode = (array[0].toString(36) + array[1].toString(36)).toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 8);
+  } else {
+    verifyCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+  }
   let verifyUrl = '';
 
   try {

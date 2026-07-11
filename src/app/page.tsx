@@ -309,13 +309,32 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   const [lastSaveTime, setLastSaveTime] = useState<string | null>(null);
   const [projectName, setProjectName] = useState<string>('Untitled');
 
-  // Load project name from localStorage on mount
+  // Load project name and loadedExampleId from localStorage on mount
   useEffect(() => {
     try {
       const savedName = localStorage.getItem('lastProjectName');
       if (savedName) setTimeout(() => setProjectName(savedName), 0);
     } catch { /* ignore */ }
   }, []);
+
+  useEffect(() => {
+    try {
+      const savedExampleId = localStorage.getItem('lastLoadedExampleId');
+      if (savedExampleId) {
+        setTimeout(() => setLoadedExampleId(savedExampleId), 0);
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => {
+    try {
+      if (loadedExampleId) {
+        localStorage.setItem('lastLoadedExampleId', loadedExampleId);
+      } else {
+        localStorage.removeItem('lastLoadedExampleId');
+      }
+    } catch { /* ignore */ }
+  }, [loadedExampleId]);
   const [projectSearchQuery, setProjectSearchQuery] = useState('');
   const [showBasarilarim, setShowBasarilarim] = useState(false);
 

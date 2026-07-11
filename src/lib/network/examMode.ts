@@ -166,7 +166,10 @@ function uint8ArrayToHex(buffer: Uint8Array): string {
 function xorBytes(data: Uint8Array, key: Uint8Array): Uint8Array {
   const result = new Uint8Array(data.length);
   for (let i = 0; i < data.length; i++) {
-    result[i] = data[i] ^ key[i % key.length];
+    // Dynamic rolling position shift to prevent repeating key patterns and frequency analysis
+    const keyByte = key[i % key.length];
+    const shift = (i * 17) % 256;
+    result[i] = data[i] ^ keyByte ^ shift;
   }
   return result;
 }

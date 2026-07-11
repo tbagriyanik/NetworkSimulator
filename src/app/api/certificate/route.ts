@@ -3,14 +3,16 @@ import { saveCertificate, getRoomStudents } from '@/lib/roomStore';
 import type { RoomApiResponse } from '@/lib/roomTypes';
 import { isRateLimited } from '@/lib/security/rateLimiter';
 import { sanitizeInput } from '@/lib/security/sanitizer';
+import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
 function generateVerifyCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let code = '';
+  const bytes = crypto.randomBytes(10);
   for (let i = 0; i < 10; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
+    code += chars[bytes[i] % chars.length];
   }
   return code;
 }
@@ -37,6 +39,13 @@ export async function POST(
     if (!studentName || !projectTitle || score == null || totalScore == null || !date) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields', code: 'MISSING_FIELDS' },
+        { status: 400 },
+      );
+    }
+
+    if (Number(score) < 0 || Number(totalScore) <= 0 || Number(score) > Number(totalScore)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid score boundaries', code: 'INVALID_SCORE_RANGE' },
         { status: 400 },
       );
     }
