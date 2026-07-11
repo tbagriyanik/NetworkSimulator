@@ -437,6 +437,24 @@ export function useCanvasActions({
                 const routerConfig = dState.routingProtocol === 'ospf' ? (dState.ospfProcessId || '1') : '';
                 cli += `    router ${dState.routingProtocol}${routerConfig ? ' ' + routerConfig : ''}\n`;
                 if (dState.routerId) cli += `    router-id ${dState.routerId}\n`;
+                
+                if (dState.dynamicRoutes && dState.dynamicRoutes.length > 0) {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  dState.dynamicRoutes.forEach((r: any) => {
+                    const net = r.destination || r.network || '';
+                    const mask = r.subnetMask || r.mask || '';
+                    if (dState.routingProtocol === 'ospf') {
+                      cli += `    network ${net} ${mask} area ${r.area || 0}\n`;
+                    } else if (dState.routingProtocol === 'bgp') {
+                      cli += `    network ${net} mask ${mask}\n`;
+                    } else if (dState.routingProtocol === 'eigrp') {
+                      cli += `    network ${net} ${mask}\n`;
+                    } else {
+                      cli += `    network ${net}\n`;
+                    }
+                  });
+                }
+                
                 cli += `    exit\n`;
               }
             }
