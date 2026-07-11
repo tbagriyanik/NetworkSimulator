@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import {
-  X, Plus, Trash2, Save, Wand2, Shield,
+  X, Plus, Trash2, Save, Scale, Shield,
   ChevronDown, ChevronUp, AlertCircle, Info,
   Settings, Target,
   Monitor, FileText, GripVertical
@@ -311,7 +311,7 @@ export function ExamEditorPanel({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button variant="outline" size="icon" className="h-7 w-7" onClick={smartBalanceWeights}>
-                        <Wand2 className="w-3.5 h-3.5" />
+                        <Scale className="w-3.5 h-3.5" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>

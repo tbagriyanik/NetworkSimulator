@@ -123,7 +123,7 @@ export function useCanvasZoomPan({
     // React re-renders overwriting the DOM transform on every wheel tick.
     const g = svgContentGroupRef.current;
     if (g) {
-      g.style.transform = `translate(${newPan.x}px, ${newPan.y}px) scale(${newZoom})`;
+      g.style.transform = `translate3d(${newPan.x}px, ${newPan.y}px, 0px) scale(${newZoom})`;
     }
     pendingPanRef.current = newPan;
     pendingZoomRef.current = newZoom;

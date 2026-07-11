@@ -197,6 +197,7 @@ export function DraggableWindowWrapper({
       {/* Resize Handles (Desktop and Mobile non-fullscreen) */}
       {(!isMobile || !isMobileFullScreen) && (
         <>
+          {/* Corners */}
           <div className="absolute right-1 bottom-1 w-4 h-4 cursor-se-resize z-50 flex items-end justify-end select-none" onPointerDown={(e) => handleResizeStart?.(e, 'se', id)}>
             <svg className={cn("h-3 w-3", isDark ? "text-secondary-500" : "text-secondary-400", isActive && "text-success-500")} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M6 13L13 6" />
@@ -204,10 +205,15 @@ export function DraggableWindowWrapper({
               <path d="M12.5 13L13 12.5" />
             </svg>
           </div>
-          <div className="absolute right-0 top-0 bottom-4 w-2 cursor-e-resize z-40 hover:bg-success-500/20" onPointerDown={(e) => handleResizeStart?.(e, 'e', id)} />
-          <div className="absolute left-0 bottom-0 right-4 h-2 cursor-s-resize z-40 hover:bg-success-500/20" onPointerDown={(e) => handleResizeStart?.(e, 's', id)} />
-          <div className="absolute left-0 top-0 bottom-4 w-2 cursor-w-resize z-40 hover:bg-success-500/20" onPointerDown={(e) => handleResizeStart?.(e, 'w', id)} />
-          <div className="absolute left-0 top-0 right-4 h-2 cursor-n-resize z-40 hover:bg-success-500/20" onPointerDown={(e) => handleResizeStart?.(e, 'n', id)} />
+          <div className="absolute left-0 bottom-0 w-3 h-3 cursor-sw-resize z-50 hover:bg-success-500/20" onPointerDown={(e) => handleResizeStart?.(e, 'sw', id)} />
+          <div className="absolute right-0 top-0 w-3 h-3 cursor-ne-resize z-50 hover:bg-success-500/20" onPointerDown={(e) => handleResizeStart?.(e, 'ne', id)} />
+          <div className="absolute left-0 top-0 w-3 h-3 cursor-nw-resize z-50 hover:bg-success-500/20" onPointerDown={(e) => handleResizeStart?.(e, 'nw', id)} />
+
+          {/* Edges */}
+          <div className="absolute right-0 top-3 bottom-3 w-2 cursor-e-resize z-40 hover:bg-success-500/20" onPointerDown={(e) => handleResizeStart?.(e, 'e', id)} />
+          <div className="absolute left-3 bottom-0 right-3 h-2 cursor-s-resize z-40 hover:bg-success-500/20" onPointerDown={(e) => handleResizeStart?.(e, 's', id)} />
+          <div className="absolute left-0 top-3 bottom-3 w-2 cursor-w-resize z-40 hover:bg-success-500/20" onPointerDown={(e) => handleResizeStart?.(e, 'w', id)} />
+          <div className="absolute left-3 top-0 right-3 h-2 cursor-n-resize z-40 hover:bg-success-500/20" onPointerDown={(e) => handleResizeStart?.(e, 'n', id)} />
         </>
       )}
     </div>

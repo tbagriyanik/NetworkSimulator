@@ -1195,7 +1195,7 @@ export function NetworkTopology({
     if (wheelSyncTimerRef.current) return;       // wheel handler owns the DOM transform
     const g = svgContentGroupRef.current;
     if (!g) return;
-    g.style.transform = `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`;
+    g.style.transform = `translate3d(${pan.x}px, ${pan.y}px, 0px) scale(${zoom})`;
   }, [pan, zoom, isPanning, isActuallyDragging]);
 
   // Handle mouse move for panning and dragging
@@ -1249,7 +1249,7 @@ export function NetworkTopology({
           // Write directly to the SVG <g> element's transform (no React re-render)
           const g = svgContentGroupRef.current;
           if (g) {
-            g.style.transform = `translate(${newPanX}px, ${newPanY}px) scale(${zoomRef.current})`;
+            g.style.transform = `translate3d(${newPanX}px, ${newPanY}px, 0px) scale(${zoomRef.current})`;
           }
           // Store pending pan for sync to React state on mouseUp
           pendingPanRef.current = { x: newPanX, y: newPanY };
@@ -1731,7 +1731,7 @@ export function NetworkTopology({
             mVelY *= MOMENTUM_DECAY;
             mPanX += mVelX;
             mPanY += mVelY;
-            g.style.transform = `translate(${mPanX}px, ${mPanY}px) scale(${zoomRef.current})`;
+            g.style.transform = `translate3d(${mPanX}px, ${mPanY}px, 0px) scale(${zoomRef.current})`;
             panRef.current = { x: mPanX, y: mPanY };
             const remainingSpeed = Math.sqrt(mVelX * mVelX + mVelY * mVelY);
             if (remainingSpeed > MOMENTUM_MIN_SPEED) {
@@ -2197,7 +2197,7 @@ export function NetworkTopology({
         
         const g = svgContentGroupRef.current;
         if (g) {
-          g.style.transform = `translate(${panRef.current.x}px, ${panRef.current.y}px) scale(${currentZoom})`;
+          g.style.transform = `translate3d(${panRef.current.x}px, ${panRef.current.y}px, 0px) scale(${currentZoom})`;
         }
         
         if (progress < 1) {
@@ -2516,7 +2516,7 @@ export function NetworkTopology({
       const newPanY = touch.clientY - ps.y;
       const g = svgContentGroupRef.current;
       if (g) {
-        g.style.transform = `translate(${newPanX}px, ${newPanY}px) scale(${zoomRef.current})`;
+        g.style.transform = `translate3d(${newPanX}px, ${newPanY}px, 0px) scale(${zoomRef.current})`;
       }
       pendingPanRef.current = { x: newPanX, y: newPanY };
       panRef.current = { x: newPanX, y: newPanY };
@@ -2556,7 +2556,7 @@ export function NetworkTopology({
         // Also write to DOM directly for immediate feedback
         const g = svgContentGroupRef.current;
         if (g) {
-          g.style.transform = `translate(${newPan.x}px, ${newPan.y}px) scale(${newZoom})`;
+          g.style.transform = `translate3d(${newPan.x}px, ${newPan.y}px, 0px) scale(${newZoom})`;
         }
       } else {
         // If zoom didn't change (hit limits), at least we can pan
@@ -2566,7 +2566,7 @@ export function NetworkTopology({
         setPan(newPan);
         const g = svgContentGroupRef.current;
         if (g) {
-          g.style.transform = `translate(${newPan.x}px, ${newPan.y}px) scale(${zoomRef.current})`;
+          g.style.transform = `translate3d(${newPan.x}px, ${newPan.y}px, 0px) scale(${zoomRef.current})`;
         }
       }
 
@@ -4292,8 +4292,9 @@ export function NetworkTopology({
                   // A useLayoutEffect below syncs non-interactive state changes (e.g. reset view).
                   // We intentionally do NOT read from pan/zoom state here to prevent React
                   // re-renders from overwriting the DOM transform mid-interaction.
-                  transformOrigin: '0 0',
+                   transformOrigin: '0 0',
                   transition: 'none',
+                  willChange: 'transform',
                 }}
               >
                 {/* Clip path for canvas boundaries */}

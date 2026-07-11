@@ -11,11 +11,12 @@ import {
   Target,
   ChevronDown,
   ChevronUp,
-  Sparkles,
-  Wand2,
+  Compass,
+  Eye,
   Volume2,
   VolumeX,
-  Award
+  Award,
+  Play
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -530,7 +531,7 @@ export function GuidedModePanel({
           onTouchStart={handleTouchStart}
         >
           <GripHorizontal className="w-4 h-4 opacity-60" />
-          <Wand2 className="w-5 h-5" />
+          <Compass className="w-5 h-5 text-white" />
           <span className="text-sm font-semibold">
             {t.openWizard}
           </span>
@@ -583,10 +584,7 @@ export function GuidedModePanel({
         >
           <div className="flex items-center gap-2">
             <GripHorizontal className="w-4 h-4 opacity-50" />
-            <div className="relative">
-              <Wand2 className="w-5 h-5" />
-              <Sparkles className="w-3 h-3 absolute -top-1 -right-1 text-warning-300 animate-pulse" />
-            </div>
+            <Compass className="w-5 h-5 text-white animate-spin-slow" />
             <div>
               <h3 className="font-bold text-xs tracking-tighter">
                 {t.tutorialWizard}
@@ -616,7 +614,7 @@ export function GuidedModePanel({
           <div className="flex items-center justify-between mb-2">
             <span className="text-[10px] uppercase tracking-wider text-secondary-400 font-bold">{t.totalScore}</span>
             <div className="flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-warning-500 fill-warning-500" />
+              <Award className="w-3.5 h-3.5 text-warning-500 fill-warning-500" />
               <span className="text-sm font-black text-warning-600 dark:text-warning-400 tabular-nums">
                 {currentPoints} <span className="text-[10px] text-secondary-400 font-normal">/ {totalPoints}</span>
               </span>
@@ -697,7 +695,7 @@ export function GuidedModePanel({
                   onClick={() => setShowAnimation(!showAnimation)}
                   className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-primary-600 dark:text-primary-400 hover:text-primary-700 transition-colors"
                 >
-                  <Sparkles className="w-3 h-3" />
+                  <Play className="w-3 h-3 fill-current" />
                   {showAnimation ? t.hideAnimation : t.showAnimation}
                 </button>
                 {showAnimation && (
@@ -739,7 +737,7 @@ export function GuidedModePanel({
                       }}
                       className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-warning-500 hover:bg-warning-600 text-white rounded-md font-bold transition-all shadow-sm w-full mt-1"
                     >
-                      <Wand2 className="w-3.5 h-3.5" />
+                      <Eye className="w-3.5 h-3.5" />
                       {language === 'tr' ? 'Bana Göster' : 'Show Me'}
                     </button>
                   )}
