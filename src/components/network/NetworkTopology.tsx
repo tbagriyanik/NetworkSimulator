@@ -4922,7 +4922,7 @@ export function NetworkTopology({
       )}
 
       {/* Persistent Error Toast - ping başarısız olduğunda göster, kullanıcı kapatana kadar açık kalır */}
-      {errorToast && (
+      {errorToast && !errorToast.type && (
         <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50">
           <div className="px-4 py-3 rounded-lg shadow-2xl shadow-black/25 flex items-start gap-2 bg-error-600 text-white max-w-md">
             <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -5168,7 +5168,7 @@ export function NetworkTopology({
       )}
 
       {/* Toast Notification */}
-      {errorToast && (
+      {errorToast && errorToast.type && (
         <div
           role="alert"
           aria-live="polite"

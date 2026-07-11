@@ -26,32 +26,14 @@ import { recalculateStp } from '@/lib/network/stp';
 import { createInitialState, createInitialRouterState, createInitialFirewallState, createInitialWLCState } from '@/lib/network/initialState';
 import type { TerminalOutput } from '@/components/network/Terminal';
 import { BOOT_PROGRESS_MARKER } from '@/components/network/Terminal';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
 
 const NetworkTopology = dynamic(
   () => import('@/components/network/NetworkTopology').then((m) => m.NetworkTopology),
   { ssr: false }
 );
 
-import { Monitor, UserKey, X, RefreshCw, Users, Activity, ShieldCheck, Share2, Layers } from "lucide-react";
+import { UserKey, Users } from "lucide-react";
 import { Button } from '@/components/ui/button';
-import { TooltipWrapper } from "@/components/ui/TooltipWrapper";
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
@@ -90,8 +72,7 @@ import { useRoom } from '@/contexts/RoomContext';
 import { useRoomSync } from '@/hooks/useRoomSync';
 import { useToast } from '@/hooks/use-toast';
 
-import { LiveDeviceList, RefreshDeviceSummary, REFRESH_DEVICE_TYPE_ORDER } from '@/components/network/LiveDeviceList';
-import { DraggableWindowWrapper } from '@/components/network/DraggableWindowWrapper';
+import { RefreshDeviceSummary, REFRESH_DEVICE_TYPE_ORDER } from '@/components/network/LiveDeviceList';
 import { useNetworkSimulation } from '@/hooks/useNetworkSimulation';
 import { useTroubleshootingMode } from '@/hooks/useTroubleshootingMode';
 import { useOnboarding } from '@/hooks/useOnboarding';
@@ -101,18 +82,25 @@ import { useAutoDhcpRenewal } from '@/hooks/useAutoDhcpRenewal';
 import { usePWA } from '@/hooks/usePWA';
 
 
-const PCPanel = dynamic(() => import('@/components/network/PCPanel').then((m) => m.PCPanel));
+
 const RouterPanel = dynamic(() => import('@/components/network/RouterPanel').then((m) => m.RouterPanel));
 const UnifiedDevicePanel = dynamic(() => import('@/components/network/UnifiedDevicePanel').then((m) => m.UnifiedDevicePanel));
 const LazyAboutModal = dynamic(() => import('@/components/network/LazyAboutModal').then((m) => m.LazyAboutModal));
 const ProjectPickerDialog = dynamic(() => import('@/components/network/ProjectPickerDialog').then((m) => m.ProjectPickerDialog));
 const GuidedModePanel = dynamic(() => import('@/components/network/GuidedModePanel').then((m) => m.GuidedModePanel));
 const ExamModePanel = dynamic(() => import('@/components/network/ExamModePanel').then((m) => m.ExamModePanel));
-const FirewallPanel = dynamic(() => import('@/components/network/FirewallPanel').then((m) => m.FirewallPanel));
+
 const EnvironmentSettingsPanel = dynamic(() => import('@/components/network/EnvironmentSettingsPanel').then((m) => m.EnvironmentSettingsPanel));
 const OnboardingDialog = dynamic(() => import('@/components/network/OnboardingDialog').then((m) => m.OnboardingDialog));
 const ExamEditorPanel = dynamic(() => import('@/components/network/ExamEditorPanel').then((m) => m.ExamEditorPanel));
 const RoomJoinDialog = dynamic(() => import('@/components/RoomJoinDialog').then((m) => m.RoomJoinDialog));
+
+const MultiTabWarningDialog = dynamic(() => import('@/components/network/MultiTabWarningDialog').then((m) => m.MultiTabWarningDialog), { ssr: false });
+const ConfirmationDialogs = dynamic(() => import('@/components/network/ConfirmationDialogs').then((m) => m.ConfirmationDialogs), { ssr: false });
+const FirewallWindow = dynamic(() => import('@/components/network/FirewallWindow').then((m) => m.FirewallWindow), { ssr: false });
+const PCWindow = dynamic(() => import('@/components/network/PCWindow').then((m) => m.PCWindow), { ssr: false });
+const TabletSplitView = dynamic(() => import('@/components/network/TabletSplitView').then((m) => m.TabletSplitView), { ssr: false });
+const RefreshReportPanel = dynamic(() => import('@/components/network/RefreshReportPanel').then((m) => m.RefreshReportPanel), { ssr: false });
 const TeacherRoomPanel = dynamic(() => import('@/components/TeacherRoomPanel').then((m) => m.TeacherRoomPanel));
 const TimelinePanel = dynamic(() => import('@/components/network/TimelinePanel').then((m) => m.TimelinePanel));
 const TroubleshootingPanel = dynamic(() => import('@/components/network/TroubleshootingPanel').then((m) => m.TroubleshootingPanel));
@@ -4103,37 +4091,12 @@ ${state.bannerMOTD}
         )}
 
         {/* Multi-Tab Warning Dialog */}
-        {showWarning && (
-          <AlertDialog open={showWarning}>
-            <AlertDialogContent className="max-w-md">
-              <AlertDialogHeader>
-                <AlertDialogTitle className="flex items-center gap-2 text-primary-600">
-                  <Monitor className="h-5 w-5" />
-                  Multiple Tabs Active
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  You have {tabCount} tab{tabCount > 1 ? 's' : ''} of Network Simulator open. Each tab now saves its own data independently, so you can work in multiple tabs without conflicts.
-                  <div className="mt-3 p-3 bg-primary-50 dark:bg-primary-950/30 rounded-lg">
-                    <p className="text-sm font-medium text-primary-800 dark:text-primary-200">
-                      ✅ Each tab has isolated storage
-                    </p>
-                    <p className="text-sm text-primary-700 dark:text-primary-300 mt-1">
-                      Your work in each tab is saved separately
-                    </p>
-                  </div>
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel onClick={clearCurrentTabData}>
-                  Clear This Tab
-                </AlertDialogCancel>
-                <AlertDialogAction onClick={acknowledgeWarning}>
-                  Got It
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        )}
+        <MultiTabWarningDialog
+          showWarning={showWarning}
+          tabCount={tabCount}
+          clearCurrentTabData={clearCurrentTabData}
+          acknowledgeWarning={acknowledgeWarning}
+        />
 
         {/* Main Content with transition */}
         <div className="flex flex-col flex-1 animate-fade-in w-full max-w-[1920px] mx-auto">
@@ -4224,76 +4187,15 @@ ${state.bannerMOTD}
 
 
           {/* Global Dialogs (AlertDialog for better z-index and standard behavior) */}
-          <AlertDialog open={!!confirmDialog} onOpenChange={(open) => {
-            if (!open) {
-              setConfirmDialog(null);
-              focusActiveTerminalInput();
-            }
-          }}>
-            <AlertDialogContent className={`${isDark ? 'bg-secondary-900 border-success-500/30' : 'bg-white border-success-500/50'}`}>
-              <AlertDialogHeader>
-                <AlertDialogTitle className={isDark ? 'text-white' : 'text-secondary-900'}>
-                  {t.confirmationRequired}
-                </AlertDialogTitle>
-                <AlertDialogDescription className={isDark ? 'text-secondary-400' : 'text-secondary-500'}>
-                  {confirmDialog?.message}
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel className={isDark ? 'bg-secondary-800 text-white border-secondary-700 hover:bg-secondary-700' : ''}>
-                  {t.cancel}
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => {
-                    confirmDialog?.onConfirm();
-                    focusActiveTerminalInput();
-                  }}
-                  className="bg-accent-600 hover:bg-accent-700 text-white"
-                >
-                  {t.continue}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-
-          <AlertDialog open={!!saveDialog} onOpenChange={(open) => {
-            if (!open) {
-              setSaveDialog(null);
-              focusActiveTerminalInput();
-            }
-          }}>
-            <AlertDialogContent className={`${isDark ? 'bg-secondary-900 border-success-500/30' : 'bg-white border-success-500/50'}`}>
-              <AlertDialogHeader>
-                <AlertDialogTitle className={isDark ? 'text-white' : 'text-secondary-900'}>
-                  {t.saveProject}
-                </AlertDialogTitle>
-                <AlertDialogDescription className={isDark ? 'text-secondary-400' : 'text-secondary-500'}>
-                  {saveDialog?.message}
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    saveDialog?.onConfirm(false);
-                    focusActiveTerminalInput();
-                  }}
-                  className={isDark ? 'bg-secondary-800 text-white border-secondary-700 hover:bg-secondary-700' : ''}
-                >
-                  {t.dontSave}
-                </Button>
-                <AlertDialogAction
-                  onClick={() => {
-                    saveDialog?.onConfirm(true);
-                    focusActiveTerminalInput();
-                  }}
-                  className="bg-accent-600 hover:bg-accent-700 text-white"
-                >
-                  {t.saveLabel}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <ConfirmationDialogs
+            t={t}
+            isDark={isDark}
+            confirmDialog={confirmDialog}
+            setConfirmDialog={setConfirmDialog}
+            saveDialog={saveDialog}
+            setSaveDialog={setSaveDialog}
+            focusActiveTerminalInput={focusActiveTerminalInput}
+          />
 
           {/* Unified Device Panel (CLI + Tasks) */}
           <UnifiedDevicePanel
@@ -4330,86 +4232,52 @@ ${state.bannerMOTD}
           />
 
           {/* Firewall Configuration Modal */}
-          <DraggableWindowWrapper
-            id="firewall"
-            title={`${isTR ? 'Firewall' : 'Firewall'} - ${topologyDevices?.find((d: CanvasDevice) => d.id === activeFirewallId)?.name || activeFirewallId}`}
-            isOpen={showFirewallPanel}
-            onClose={() => {
-              setShowFirewallPanel(false);
-              setFirewallActiveTab('console');
-            }}
+          <FirewallWindow
+            showFirewallPanel={showFirewallPanel}
+            setShowFirewallPanel={setShowFirewallPanel}
+            activeFirewallId={activeFirewallId}
+            topologyDevices={topologyDevices}
+            t={t}
+            theme={theme}
             isDark={isDark}
-            modalPosition={firewallDrag.position}
-            modalSize={firewallDrag.size}
-            handlePointerDown={firewallDrag.handlePointerDown}
-            handleResizeStart={firewallDrag.handleResizeStart}
-            onEscapeKeyDown={() => {
-              setShowFirewallPanel(false);
-              setFirewallActiveTab('console');
-            }}
-          >
-            <div className="flex-1 overflow-y-auto rounded-b-2xl p-4 custom-scrollbar">
-              {activeFirewallId && (
-                <FirewallPanel
-                  device={topologyDevices.find(d => d.id === activeFirewallId) as CanvasDevice}
-                  t={t}
-                  theme={theme}
-                  isDevicePoweredOff={topologyDevices.find(d => d.id === activeFirewallId)?.status === 'offline'}
-                  onUpdateRules={(rules) => {
-                    updateDeviceConfig(activeFirewallId as string, { firewallRules: rules });
-                  }}
-                  deviceStates={deviceStates}
-                  deviceOutputs={deviceOutputs}
-                  onExecuteCommand={(cmd) => handleExecuteCommand(activeFirewallId as string, cmd)}
-                  onUpdateHistory={handleUpdateHistory}
-                  setConfirmDialog={setConfirmDialog}
-                  confirmDialog={confirmDialog}
-                  topologyDevices={topologyDevices}
-                  activeTab={firewallActiveTab}
-                  onTabChange={setFirewallActiveTab}
-                  onTogglePower={toggleDevicePower}
-                />
-              )}
-            </div>
-          </DraggableWindowWrapper>
+            isTR={isTR}
+            firewallActiveTab={firewallActiveTab}
+            setFirewallActiveTab={setFirewallActiveTab}
+            deviceStates={deviceStates}
+            deviceOutputs={deviceOutputs}
+            handleExecuteCommand={handleExecuteCommand}
+            handleUpdateHistory={handleUpdateHistory}
+            setConfirmDialog={setConfirmDialog}
+            confirmDialog={confirmDialog}
+            toggleDevicePower={toggleDevicePower}
+            updateDeviceConfig={updateDeviceConfig}
+            firewallDrag={firewallDrag}
+          />
 
           {/* PC Terminal Modal */}
-          <DraggableWindowWrapper
-            id="pc"
-            title={`${t.pcTerminal} - ${topologyDevices?.find((d: CanvasDevice) => d.id === showPCDeviceId)?.name || showPCDeviceId}`}
-            isOpen={showPCPanel && !isTablet}
-            onClose={() => setShowPCPanel(false)}
+          <PCWindow
+            showPCPanel={showPCPanel}
+            setShowPCPanel={setShowPCPanel}
+            isTablet={isTablet}
+            showPCDeviceId={showPCDeviceId}
+            topologyDevices={topologyDevices}
+            topologyConnections={topologyConnections}
+            cableInfo={cableInfo}
+            pcPanelInitialTab={pcPanelInitialTab}
+            deviceStates={deviceStates}
+            deviceOutputs={deviceOutputs}
+            pcOutputs={pcOutputs}
+            pcHistories={pcHistories}
+            handleUpdatePCHistory={handleUpdatePCHistory}
+            handleExecuteCommand={handleExecuteCommand}
+            handlePCPanelNavigateWrapper={handlePCPanelNavigateWrapper}
+            handleDeviceDelete={handleDeviceDelete}
+            focusedOverlay={focusedOverlay}
             isDark={isDark}
-            modalPosition={pcDrag.position}
-            modalSize={pcDrag.size}
-            handlePointerDown={pcDrag.handlePointerDown}
-            handleResizeStart={pcDrag.handleResizeStart}
-            className={cn(focusedOverlay === 'pc-info' ? "border-emerald-400 shadow-[0_0_0_1px_rgba(52,211,153,0.35)]" : "border-emerald-950/80")}
-          >
-            <div className="flex-1 overflow-hidden relative rounded-b-2xl">
-              <PCPanel
-                key="pc-panel"
-                className="h-full min-h-0 !border-none"
-                deviceId={showPCDeviceId}
-                cableInfo={cableInfo}
-                initialTab={pcPanelInitialTab}
-                isVisible={true}
-                onClose={() => setShowPCPanel(false)}
-                onTogglePower={toggleDevicePower}
-                topologyDevices={topologyDevices || undefined}
-                topologyConnections={topologyConnections || undefined}
-                deviceStates={deviceStates}
-                deviceOutputs={deviceOutputs}
-                pcOutputs={pcOutputs}
-                pcHistories={pcHistories}
-                onUpdatePCHistory={handleUpdatePCHistory}
-                onExecuteDeviceCommand={handleExecuteCommand}
-                onNavigate={handlePCPanelNavigateWrapper}
-                onDeleteDevice={handleDeviceDelete}
-                handleResizeStart={pcDrag.handleResizeStart}
-              />
-            </div>
-          </DraggableWindowWrapper>
+            t={t}
+            toggleDevicePower={toggleDevicePower}
+            pcDrag={pcDrag}
+          />
 
           {/* Router Info Panel Modal */}
           <RouterPanel
@@ -4579,365 +4447,69 @@ ${state.bannerMOTD}
             </div>
 
             {/* Tablet Split View Panels (Docked Right) */}
-            {isTablet && (showPCPanel || showUnifiedDeviceModal || showRouterPanel) && (
-              <div className="w-1/2 h-full bg-background/50 backdrop-blur-md overflow-hidden animate-in slide-in-from-right duration-500 border-l border-primary/10 relative z-50">
-                {showUnifiedDeviceModal && (
-                  <UnifiedDevicePanel
-                    isOpen={true}
-                    onOpenChange={setShowUnifiedDeviceModal}
-                    activeTab={unifiedDeviceActiveTab}
-                    onTabChange={setUnifiedDeviceActiveTab}
-                    deviceId={activeDeviceId}
-                    deviceType={activeDeviceType}
-                    deviceStates={deviceStates}
-                    topologyDevices={topologyDevices}
-                    topologyConnections={topologyConnections}
-                    handleCommand={handleCommand}
-                    handleClearTerminal={handleClearTerminal}
-                    toggleDevicePower={toggleDevicePower}
-                    handleUpdateHistory={handleUpdateHistory}
-                    confirmDialog={confirmDialog}
-                    setConfirmDialog={setConfirmDialog}
-                    t={t}
-                    theme={theme}
-                    language={language}
-                    helpLevel={helpLevel}
-                    isDark={isDark}
-                    isExecutingCommand={isExecutingCommand}
-                    output={output}
-                    prompt={prompt}
-                    state={state}
-                    activeDeviceTasks={activeDeviceTasks}
-                    taskContext={taskContext}
-                    modalPosition={{ x: 0, y: 0 }}
-                    modalSize={{ width: 0, height: 0 }}
-                    handlePointerDown={() => { }}
-                    handleResizeStart={() => { }}
-                    className="!static !w-full !h-full !translate-x-0 !translate-y-0 !shadow-none !border-none !rounded-none"
-                  />
-                )}
-                {showPCPanel && (
-                  <div className="h-full flex flex-col">
-                    <div className={cn("p-4 border-b flex items-center justify-between", isDark ? "bg-secondary-900" : "bg-secondary-50", focusedOverlay === 'pc-info' ? "border-emerald-400 shadow-[inset_0_0_0_1px_rgba(52,211,153,0.35)]" : "border-emerald-950/80")}>
-                      <h2 className="font-bold text-sm truncate">
-                        {t.pcTerminal} - {topologyDevices?.find((d: CanvasDevice) => d.id === showPCDeviceId)?.name || showPCDeviceId}
-                      </h2>
-                      <Button variant="ghost" size="icon" onClick={() => setShowPCPanel(false)}>
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <PCPanel
-                      deviceId={showPCDeviceId}
-                      cableInfo={cableInfo}
-                      initialTab={pcPanelInitialTab}
-                      isVisible={true}
-                      onClose={() => setShowPCPanel(false)}
-                      onTogglePower={toggleDevicePower}
-                      topologyDevices={topologyDevices || undefined}
-                      topologyConnections={topologyConnections || undefined}
-                      deviceStates={deviceStates}
-                      deviceOutputs={deviceOutputs}
-                      pcOutputs={pcOutputs}
-                      pcHistories={pcHistories}
-                      onUpdatePCHistory={handleUpdatePCHistory}
-                      onExecuteDeviceCommand={handleExecuteCommand}
-                      onNavigate={handlePCPanelNavigateWrapper}
-                      onDeleteDevice={handleDeviceDelete}
-                      className="!flex-1"
-                    />
-                  </div>
-                )}
-                {showRouterPanel && (
-                  <div className="h-full flex flex-col">
-                    <div className={cn("p-4 border-b flex items-center justify-between", isDark ? "bg-secondary-900" : "bg-secondary-50", focusedOverlay === 'router-info' ? "border-emerald-400 shadow-[inset_0_0_0_1px_rgba(52,211,153,0.35)]" : "border-emerald-950/80")}>
-                      <h2 className="font-bold text-sm truncate">
-                        {t.configure} - {topologyDevices?.find((d: CanvasDevice) => d.id === showRouterDeviceId)?.name || showRouterDeviceId}
-                      </h2>
-                      <Button variant="ghost" size="icon" onClick={() => setShowRouterPanel(false)}>
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <RouterPanel
-                      deviceId={showRouterDeviceId}
-                      isVisible={true}
-                      onClose={() => setShowRouterPanel(false)}
-                      topologyDevices={topologyDevices || undefined}
-                      deviceStates={deviceStates}
-                      modalPosition={{ x: 0, y: 0 }}
-                      modalSize={{ width: 0, height: 0 }}
-                      handlePointerDown={() => { }}
-                      handleResizeStart={() => { }}
-                      className="!static !w-full !h-full !translate-x-0 !translate-y-0 !shadow-none !border-none !rounded-none"
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-
+            <TabletSplitView
+              isDark={isDark}
+              isTablet={isTablet}
+              showPCPanel={showPCPanel}
+              setShowPCPanel={setShowPCPanel}
+              showUnifiedDeviceModal={showUnifiedDeviceModal}
+              setShowUnifiedDeviceModal={setShowUnifiedDeviceModal}
+              showRouterPanel={showRouterPanel}
+              setShowRouterPanel={setShowRouterPanel}
+              unifiedDeviceActiveTab={unifiedDeviceActiveTab}
+              setUnifiedDeviceActiveTab={setUnifiedDeviceActiveTab}
+              activeDeviceId={activeDeviceId}
+              activeDeviceType={activeDeviceType}
+              deviceStates={deviceStates}
+              topologyDevices={topologyDevices}
+              topologyConnections={topologyConnections}
+              handleCommand={handleCommand}
+              handleClearTerminal={handleClearTerminal}
+              toggleDevicePower={toggleDevicePower}
+              handleUpdateHistory={handleUpdateHistory}
+              confirmDialog={confirmDialog}
+              setConfirmDialog={setConfirmDialog}
+              t={t}
+              theme={theme}
+              language={language}
+              helpLevel={helpLevel}
+              isExecutingCommand={isExecutingCommand}
+              output={output}
+              prompt={prompt}
+              state={state}
+              activeDeviceTasks={activeDeviceTasks}
+              taskContext={taskContext}
+              showPCDeviceId={showPCDeviceId}
+              cableInfo={cableInfo}
+              pcPanelInitialTab={pcPanelInitialTab}
+              deviceOutputs={deviceOutputs}
+              pcOutputs={pcOutputs}
+              pcHistories={pcHistories}
+              handleUpdatePCHistory={handleUpdatePCHistory}
+              handleExecuteCommand={handleExecuteCommand}
+              handlePCPanelNavigateWrapper={handlePCPanelNavigateWrapper}
+              handleDeviceDelete={handleDeviceDelete}
+              showRouterDeviceId={showRouterDeviceId}
+              focusedOverlay={focusedOverlay}
+            />
 
             {/* Network Refresh Report - Floating panel style on both Desktop and Mobile */}
-            {
-              refreshNetworkReport?.show && (
-                <div
-                  ref={refreshReportRef}
-                  data-draggable-id="refresh-network-report"
-                  className={`fixed z-[100] backdrop-blur-md select-none ${isMobile
-                    ? 'top-[84px] left-1/2 -translate-x-1/2 w-[calc(100%-24px)] max-w-[360px] rounded-xl border shadow-2xl'
-                    : 'top-20 right-4 w-full max-w-sm rounded-xl border shadow-2xl'
-                    } animate-in slide-in-from-right-full duration-300 ${isDark
-                      ? (focusedOverlay === 'refresh' ? 'bg-secondary-950/70 border-emerald-400 text-secondary-100 shadow-[0_0_0_1px_rgba(52,211,153,0.35),0_20px_40px_rgba(0,0,0,0.4)]' : 'bg-secondary-950/70 border-secondary-850/80 text-secondary-100 shadow-black/40')
-                      : (focusedOverlay === 'refresh' ? 'bg-white/70 border-emerald-500 text-secondary-900 shadow-[0_0_0_1px_rgba(34,197,94,0.24),0_20px_40px_rgba(15,23,42,0.12)]' : 'bg-white/70 border-secondary-200/80 text-secondary-900 shadow-secondary-200/50')
-                    }`}
-                  style={{
-                    zIndex: 100,
-                    ...(!isMobile ? { maxHeight: 'calc(100vh - 100px)' } : { maxHeight: 'calc(100vh - 140px)' })
-                  }}
-                  onMouseDown={() => setFocusedOverlay('refresh')}
-                  onPointerDownCapture={(e) => bringElementToFront(e.currentTarget as HTMLElement)}
-                >
-                  <div
-                    className={`flex items-center justify-between px-3 py-2 border-b rounded-t-xl cursor-grab active:cursor-grabbing select-none ${isDark ? 'bg-white/5 border-success-500/20' : 'bg-black/5 border-success-500/30'}`}
-                    data-drag-handle={true}
-                  >
-                    <h3 className="text-sm font-bold flex items-center gap-2">
-                      {refreshNetworkReport.title}
-                    </h3>
-                    <div className="flex items-center gap-1">
-                      <TooltipWrapper title={t.refreshNetwork}>
-                        <button
-                           onClick={() => { handleRefreshNetwork(); }}
-                           className="w-5 h-5 rounded-md bg-primary-500 hover:bg-primary-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0"
-                        >
-                          <RefreshCw className="w-3 h-3 text-white pointer-events-none" />
-                        </button>
-                      </TooltipWrapper>
-                      <TooltipWrapper title={t.close}>
-                        <button
-                          onClick={() => setRefreshNetworkReport(prev => prev ? { ...prev, show: false } : null)}
-                          className="w-5 h-5 rounded-md bg-error-500 hover:bg-error-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0"
-                        >
-                          <X className="w-3 h-3 text-white pointer-events-none" />
-                        </button>
-                      </TooltipWrapper>
-                    </div>
-                  </div>
- 
-                  <div className="p-2 overflow-y-auto" style={{ maxHeight: isMobile ? 'calc(100vh - 210px)' : 'calc(100vh - 160px)' }}>
-                    <Tabs defaultValue="summary" className="w-full">
-                      <TabsList className={`w-full grid grid-cols-2 rounded-lg ${isDark ? 'bg-secondary-800/80' : 'bg-secondary-200/80'}`}>
-                        <TabsTrigger value="summary" className="text-xs">
-                          {language === 'tr' ? 'Özet' : 'Summary'}
-                        </TabsTrigger>
-                        <TabsTrigger value="devices" className="text-xs">
-                          {language === 'tr' ? 'Cihazlar' : 'Devices'} ({refreshNetworkReport.devices.length})
-                        </TabsTrigger>
-                      </TabsList>
-
-                      <TabsContent value="summary" className="mt-2 space-y-2">
-                        {/* Quick status messages */}
-                        {refreshNetworkReport.dhcpMessages.length > 0 && (
-                          <div className="flex flex-wrap gap-x-3 gap-y-1 opacity-80 text-xs">
-                            {refreshNetworkReport.dhcpMessages.map((msg, i) => (
-                              <div key={i} className="flex items-center gap-1.5">
-                                <span>{msg}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        {refreshNetworkReport.stpMessage && (
-                          <div className="text-pink-500 font-medium py-0.5 px-2 bg-pink-500/10 rounded-lg w-fit text-xs">
-                            {refreshNetworkReport.stpMessage}
-                          </div>
-                        )}
-                        {refreshNetworkReport.portSecurityMessage && (
-                          <div className="text-error-500 font-medium py-0.5 px-2 bg-error-500/10 rounded-lg w-fit text-xs">
-                            {refreshNetworkReport.portSecurityMessage}
-                          </div>
-                        )}
-                        {refreshNetworkReport.topologyMessage && (
-                          <div className="text-warning-500 font-medium py-0.5 px-2 bg-warning-500/10 rounded-lg w-fit text-xs">
-                            {refreshNetworkReport.topologyMessage}
-                          </div>
-                        )}
-
-                        {/* Summary grid - live from store, real-time reactive */}
-                        {liveSummary && (
-                          <>
-                            <div className={`grid grid-cols-2 gap-2 text-xs`}>
-                              <div className={`rounded-lg p-2.5 ${isDark ? 'bg-secondary-800/60' : 'bg-secondary-100/80'}`}>
-                                <div className={`font-semibold mb-1 ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
-                                  {language === 'tr' ? 'Cihaz Sayısı' : 'Device Count'}
-                                </div>
-                                <div className="space-y-0.5">
-                                  <div className="flex justify-between">
-                                    <span>{language === 'tr' ? 'Toplam' : 'Total'}</span>
-                                    <span className="font-bold">{liveSummary.deviceCount.total}</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span>{language === 'tr' ? 'Yönlendirici' : 'Router'}</span>
-                                    <span>{liveSummary.deviceCount.routers}</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span>{language === 'tr' ? 'Anahtar' : 'Switch'}</span>
-                                    <span>{liveSummary.deviceCount.switches}</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span>PC</span>
-                                    <span>{liveSummary.deviceCount.pcs}</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span>IoT</span>
-                                    <span>{liveSummary.deviceCount.iot}</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span>{language === 'tr' ? 'Güvenlik Duvarı' : 'Firewall'}</span>
-                                    <span>{liveSummary.deviceCount.firewalls}</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span>WLC</span>
-                                    <span>{liveSummary.deviceCount.wlcs}</span>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className="space-y-2">
-                                <div className={`rounded-lg p-2.5 ${isDark ? 'bg-secondary-800/60' : 'bg-secondary-100/80'}`}>
-                                  <div className={`font-semibold mb-1 ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
-                                    {language === 'tr' ? 'Aktif Bağlantılar' : 'Active Links'}
-                                  </div>
-                                  <div className="text-lg font-bold">
-                                    {liveSummary.activeLinks}
-                                  </div>
-                                </div>
-
-                                <div className={`rounded-lg p-2.5 ${isDark ? 'bg-secondary-800/60' : 'bg-secondary-100/80'}`}>
-                                  <div className={`font-semibold mb-1 ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
-                                    VLAN {language === 'tr' ? 'Sayısı' : 'Count'}
-                                  </div>
-                                  <div className="text-lg font-bold">
-                                    {liveSummary.vlanCount}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Routing table summary */}
-                            {liveSummary.routingTableSummary.totalRoutes > 0 && (
-                              <div className={`rounded-lg p-2.5 ${isDark ? 'bg-secondary-800/60' : 'bg-secondary-100/80'} text-xs`}>
-                                <div className={`font-semibold mb-1 ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
-                                  {language === 'tr' ? 'Yönlendirme Tablosu Özeti' : 'Routing Table Summary'}
-                                </div>
-                                <div className="space-y-0.5">
-                                  <div className="flex justify-between">
-                                    <span>{language === 'tr' ? 'Toplam rota' : 'Total routes'}</span>
-                                    <span className="font-bold">{liveSummary.routingTableSummary.totalRoutes}</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span>{language === 'tr' ? 'Bağlı' : 'Connected'}</span>
-                                    <span>{liveSummary.routingTableSummary.connected}</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span>{language === 'tr' ? 'Statik' : 'Static'}</span>
-                                    <span>{liveSummary.routingTableSummary.static}</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span>{language === 'tr' ? 'Dinamik' : 'Dynamic'}</span>
-                                    <span>{liveSummary.routingTableSummary.dynamic}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Protocol Status */}
-                            {liveSummary.protocolStats && (
-                              <div className={`rounded-lg p-2.5 ${isDark ? 'bg-secondary-800/60' : 'bg-secondary-100/80'} text-xs`}>
-                                <div className={`font-semibold mb-1.5 ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
-                                  {language === 'tr' ? 'Protokol Durumu' : 'Protocol Status'}
-                                </div>
-                                <div className="space-y-1">
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-1.5">
-                                      <span className={`p-0.5 rounded ${liveSummary.protocolStats.ospf.count > 0 ? (liveSummary.protocolStats.ospf.neighbors > 0 ? 'bg-success-500/20 text-success-500' : 'bg-warning-500/20 text-warning-500') : 'bg-secondary-500/20 text-secondary-500'}`}>
-                                        <Activity className="w-3 h-3" />
-                                      </span>
-                                      <span className="font-bold">OSPF</span>
-                                    </div>
-                                    <span className={`${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
-                                      {language === 'tr' ? `${liveSummary.protocolStats.ospf.neighbors} komşu` : `${liveSummary.protocolStats.ospf.neighbors} neighbors`}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-1.5">
-                                      <span className={`p-0.5 rounded ${liveSummary.protocolStats.stp.roots > 0 ? 'bg-success-500/20 text-success-500' : 'bg-secondary-500/20 text-secondary-500'}`}>
-                                        <ShieldCheck className="w-3 h-3" />
-                                      </span>
-                                      <span className="font-bold">STP</span>
-                                    </div>
-                                    <span className={`${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
-                                      {language === 'tr' ? `${liveSummary.protocolStats.stp.roots} Root, ${liveSummary.protocolStats.stp.blocked} bloklu` : `${liveSummary.protocolStats.stp.roots} Root, ${liveSummary.protocolStats.stp.blocked} blocked`}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-1.5">
-                                      <span className={`p-0.5 rounded ${liveSummary.protocolStats.hsrp.active > 0 ? 'bg-success-500/20 text-success-500' : 'bg-secondary-500/20 text-secondary-500'}`}>
-                                        <Layers className="w-3 h-3" />
-                                      </span>
-                                      <span className="font-bold">HSRP</span>
-                                    </div>
-                                    <span className={`${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
-                                      A: {liveSummary.protocolStats.hsrp.active}, S: {liveSummary.protocolStats.hsrp.standby}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-1.5">
-                                      <span className={`p-0.5 rounded ${liveSummary.protocolStats.eigrp.count > 0 ? (liveSummary.protocolStats.eigrp.neighbors > 0 ? 'bg-success-500/20 text-success-500' : 'bg-error-500/20 text-error-500') : 'bg-secondary-500/20 text-secondary-500'}`}>
-                                        <Share2 className="w-3 h-3" />
-                                      </span>
-                                      <span className="font-bold">EIGRP</span>
-                                    </div>
-                                    <span className={`${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
-                                      {language === 'tr' ? `${liveSummary.protocolStats.eigrp.neighbors} komşu` : `${liveSummary.protocolStats.eigrp.neighbors} neighbors`}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-
-                          </>
-                        )}
-
-                        {/* Network warnings - from refresh report */}
-                        {refreshNetworkReport.summary.networkWarnings.length > 0 && (
-                          <div className={`rounded-lg p-2.5 ${isDark ? 'bg-secondary-800/60' : 'bg-secondary-100/80'} text-xs`}>
-                            <div className={`font-semibold mb-1 text-warning-500`}>
-                              {language === 'tr' ? 'Ağ Uyarıları' : 'Network Warnings'} ({refreshNetworkReport.summary.networkWarnings.length})
-                            </div>
-                            <div className="space-y-0.5">
-                              {refreshNetworkReport.summary.networkWarnings.map((w, i) => (
-                                <div key={i} className="flex items-center gap-1 text-warning-500">
-                                  <span>⚠</span>
-                                  <span>{w}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {refreshNetworkReport.summary.networkWarnings.length === 0 && (
-                          <div className={`rounded-lg p-2.5 ${isDark ? 'bg-secondary-800/60' : 'bg-secondary-100/80'} text-xs text-center ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
-                            {language === 'tr' ? 'Uyarı yok' : 'No warnings'}
-                          </div>
-                        )}
-                      </TabsContent>
-
-                      <TabsContent value="devices" className="mt-2">
-                        <LiveDeviceList devices={topologyDevices} deviceStates={deviceStates} language={language} />
-                      </TabsContent>
-                    </Tabs>
-                  </div>
-                </div>
-              )
-            }
+            <RefreshReportPanel
+              refreshNetworkReport={refreshNetworkReport}
+              setRefreshNetworkReport={setRefreshNetworkReport}
+              refreshReportRef={refreshReportRef}
+              isMobile={isMobile}
+              isDark={isDark}
+              focusedOverlay={focusedOverlay}
+              setFocusedOverlay={setFocusedOverlay}
+              language={language}
+              t={t}
+              handleRefreshNetwork={handleRefreshNetwork}
+              liveSummary={liveSummary}
+              topologyDevices={topologyDevices}
+              deviceStates={deviceStates}
+              bringElementToFront={bringElementToFront}
+            />
           </main>
 
           <AppFooter

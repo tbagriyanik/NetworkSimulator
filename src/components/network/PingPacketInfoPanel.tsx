@@ -1,4 +1,5 @@
 import React from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { CanvasDevice, CanvasConnection } from './networkTopology.types';
 
 import { CABLE_COLORS } from './networkTopology.constants';
@@ -383,6 +384,26 @@ export function PingPacketInfoPanel({
 
     const isGlass = graphicsQuality === 'high';
 
+    const [isMinimized, setIsMinimized] = React.useState(false);
+
+    // If it is paused or finished (success is true/false), auto-maximize/expand
+    React.useEffect(() => {
+        if (isPaused || success === true || success === false) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setIsMinimized(false);
+        }
+    }, [isPaused, success]);
+
+    const handlePlay = () => {
+        setIsMinimized(true);
+        onPlay();
+    };
+
+    const handleNext = () => {
+        setIsMinimized(true);
+        onNext();
+    };
+
     // Show packet tables when paused or done — derived directly from props, no local state
     const showPacketTables = isPaused || success !== null;
 
@@ -397,16 +418,16 @@ export function PingPacketInfoPanel({
                 onClose();
             } else if (e.key === 'p' || e.key === 'P') {
                 e.preventDefault();
-                if (isPaused) onPlay();
+                if (isPaused) handlePlay();
                 else onPause();
             } else if (e.key === 'n' || e.key === 'N') {
                 e.preventDefault();
-                if (isPaused) onNext();
+                if (isPaused) handleNext();
             }
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isVisible, isPaused, onPlay, onPause, onNext, onClose]);
+    }, [isVisible, isPaused, handlePlay, onPause, handleNext, onClose]);
 
     // Mobile back button support
     React.useEffect(() => {
@@ -475,6 +496,21 @@ export function PingPacketInfoPanel({
         </div>
     );
 
+    const headerActions = (
+        <button
+            onClick={(e) => {
+                e.stopPropagation();
+                setIsMinimized(prev => !prev);
+            }}
+            className={`p-1 rounded transition-colors ${isDark ? 'text-secondary-400 hover:text-white hover:bg-white/10' : 'text-secondary-500 hover:bg-black/5'}`}
+            title={isMinimized ? (language === 'tr' ? 'Büyüt' : 'Expand') : (language === 'tr' ? 'Minimize Et' : 'Minimize')}
+            onPointerDown={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+        >
+            {isMinimized ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+        </button>
+    );
+
     return (
         <DraggableWindowWrapper
             id="pingPacketInfo"
@@ -483,13 +519,15 @@ export function PingPacketInfoPanel({
             onClose={onClose}
             isDark={isDark}
             modalPosition={dragProps.position}
-            modalSize={dragProps.size}
+            modalSize={isMinimized ? { ...dragProps.size, height: 38 } : dragProps.size}
             handlePointerDown={dragProps.handlePointerDown}
-            handleResizeStart={dragProps.handleResizeStart}
+            handleResizeStart={isMinimized ? undefined : dragProps.handleResizeStart}
             className={`flex flex-col liquid-glass-light ${isDark ? '!bg-secondary-950/40 border-emerald-950/80 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]' : '!bg-white/60 border-emerald-950/80 shadow-[0_8px_28px_rgba(15,23,42,0.12)]'}`}
             mobileFullScreen={false}
+            headerActions={headerActions}
         >
-            <div className="flex-1 overflow-y-auto min-h-0 flex flex-col" onMouseDown={onFocus}>
+            {!isMinimized && (
+                <div className="flex-1 overflow-y-auto min-h-0 flex flex-col" onMouseDown={onFocus}>
                 {/* Play/Pause control bar inside content (since it's no longer in header) */}
                 <div className="flex items-center justify-between p-2 border-b dark:border-secondary-800 bg-secondary-50/50 dark:bg-secondary-950/50">
                     <div className="flex items-center gap-2">
@@ -497,7 +535,7 @@ export function PingPacketInfoPanel({
                             <div className="flex items-center gap-1">
                                 {isPaused ? (
                                     <button
-                                        onClick={onPlay}
+                                        onClick={handlePlay}
                                         className="p-1 rounded bg-success-500 hover:bg-success-600 text-white transition-colors flex items-center gap-1 px-2.5 py-1 text-xs"
                                     >
                                         <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21" /></svg>
@@ -515,7 +553,7 @@ export function PingPacketInfoPanel({
                                     </button>
                                 )}
                                 <button
-                                    onClick={onNext}
+                                    onClick={handleNext}
                                     disabled={!isPaused}
                                     className={`p-1 rounded transition-colors flex items-center gap-1 px-2.5 py-1 text-xs ${isPaused ? 'bg-primary-500 hover:bg-primary-600 text-white' : 'bg-secondary-200 dark:bg-secondary-800 text-secondary-400 dark:text-secondary-600 cursor-not-allowed'}`}
                                 >
@@ -670,7 +708,8 @@ export function PingPacketInfoPanel({
                         <div className={`px-5 py-8 text-center text-sm ${isDark ? 'text-secondary-500' : 'text-secondary-400'}`}>{t.noHops}</div>
                     )}
                 </div>
-            </div>
+                </div>
+            )}
         </DraggableWindowWrapper>
     );
 }
