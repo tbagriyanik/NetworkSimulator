@@ -303,6 +303,28 @@ export function useGuidedMode(): UseGuidedModeReturn {
       return;
     }
 
+    // Check if any previously completed stateful step has been broken
+    let firstBrokenIndex = -1;
+    for (let i = 0; i < activeProject.steps.length; i++) {
+      const step = activeProject.steps[i];
+      if (step.completed) {
+        const isStateful = ['config', 'connection', 'deviceCount', 'faultResolved', 'routingConverged'].includes(step.checkType);
+        if (isStateful) {
+          const isStillValid = checkStepCompletion(step, context as Parameters<typeof checkStepCompletion>[1]);
+          if (!isStillValid) {
+            firstBrokenIndex = i;
+            break;
+          }
+        }
+      }
+    }
+
+    if (firstBrokenIndex !== -1) {
+      const brokenStep = activeProject.steps[firstBrokenIndex];
+      uncompleteStep(brokenStep.id);
+      return;
+    }
+
     const currentStep = activeProject.steps[currentStepIndex];
     if (!currentStep || currentStep.completed) {
       setIsCurrentStepReady(false);
@@ -315,7 +337,7 @@ export function useGuidedMode(): UseGuidedModeReturn {
     if (shouldComplete) {
       completeStep(currentStep.id);
     }
-  }, [activeProject, currentStepIndex, completeStep, setIsCurrentStepReady]);
+  }, [activeProject, currentStepIndex, completeStep, uncompleteStep, setIsCurrentStepReady]);
 
   const getAvailableProjects = useCallback((language: 'tr' | 'en') => {
     return getGuidedProjects(language);

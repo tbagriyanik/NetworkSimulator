@@ -243,7 +243,18 @@ export function useExamMode(): UseExamModeReturn {
 
     let changed = false;
     const updatedTasks = activeExam.tasks.map(task => {
-      if (task.completed) return task;
+      const isStateful = ['config', 'connection', 'deviceCount', 'faultResolved', 'routingConverged'].includes(task.checkType);
+
+      if (task.completed) {
+        if (isStateful) {
+          const isStillValid = checkStepCompletion(task as unknown as GuidedStep, context as unknown as Parameters<typeof checkStepCompletion>[1]);
+          if (!isStillValid) {
+            changed = true;
+            return { ...task, completed: false, completedAt: undefined };
+          }
+        }
+        return task;
+      }
 
       // reuse checkStepCompletion logic from guided mode
       const isCompleted = checkStepCompletion(task as unknown as GuidedStep, context as unknown as Parameters<typeof checkStepCompletion>[1]);
