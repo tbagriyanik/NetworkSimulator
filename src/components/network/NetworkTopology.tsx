@@ -670,6 +670,7 @@ export function NetworkTopology({
     deleteDevice,
     getNextNoteId,
     addNote,
+    addSummaryNote,
     deleteNote,
     duplicateNote
   } = useCanvasActions({
@@ -3012,18 +3013,21 @@ export function NetworkTopology({
       setPingResult(null);
     };
     const handleAddNote = () => addNote();
+    const handleAddSummaryNote = () => addSummaryNote();
 
     window.addEventListener('add-device', handleAddDevice as EventListener);
     window.addEventListener('toggle-ping-mode', handleTogglePingMode as EventListener);
     window.addEventListener('add-note', handleAddNote as EventListener);
+    window.addEventListener('add-summary-note', handleAddSummaryNote as EventListener);
     window.addEventListener('trigger-topology-export-png', handleExportPNG as EventListener);
     return () => {
       window.removeEventListener('add-device', handleAddDevice as EventListener);
       window.removeEventListener('toggle-ping-mode', handleTogglePingMode as EventListener);
       window.removeEventListener('add-note', handleAddNote as EventListener);
+      window.removeEventListener('add-summary-note', handleAddSummaryNote as EventListener);
       window.removeEventListener('trigger-topology-export-png', handleExportPNG as EventListener);
     };
-  }, [addDevice, addNote, handleExportPNG]);
+  }, [addDevice, addNote, addSummaryNote, handleExportPNG]);
 
   const updateNoteText = useCallback((noteId: string, text: string) => {
     setNotes((prev) =>
