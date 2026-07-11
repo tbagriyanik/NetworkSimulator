@@ -203,9 +203,7 @@ export function TimelinePanel({
     }
   };
 
-  if (historyItems.length <= 1) {
-    return null;
-  }
+  // Pencerenin her zaman görünür olması istendiği için historyItems.length <= 1 kontrolü kaldırıldı.
 
   return (
     <div

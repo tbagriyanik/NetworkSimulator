@@ -5,6 +5,7 @@ import { SwitchState, CableInfo } from '@/lib/network/types';
 import { TerminalOutput } from '@/components/network/Terminal';
 import { PCOutputLine } from '@/types/pageTypes';
 import type { ExamProject } from '@/lib/network/examMode';
+import type { HistoryEntry } from '@/hooks/useHistory';
 
 interface UseProjectExportProps {
   deviceStates: Map<string, SwitchState>;
@@ -17,6 +18,8 @@ interface UseProjectExportProps {
   cableInfo: CableInfo;
   activeDeviceId: string;
   activeDeviceType: DeviceType;
+  historyItems: HistoryEntry[];
+  historyIndex: number;
   activeExam: ExamProject | null;
   language: string;
   projectName: string;
@@ -39,6 +42,8 @@ export function useProjectExport({
   cableInfo,
   activeDeviceId,
   activeDeviceType,
+  historyItems,
+  historyIndex,
   activeExam,
   language: _language,
   projectName,
@@ -67,6 +72,23 @@ export function useProjectExport({
     });
 
     const syncedDeviceStates = new Map(deviceStates);
+    
+    // Serialize history items to include in export
+    const serializedHistoryItems = historyItems.map(item => {
+      // Create a plain object representation of the state for serialization
+      const serializedState = {
+        ...item.state,
+        deviceStates: Array.from(item.state.deviceStates.entries()),
+        deviceOutputs: Array.from(item.state.deviceOutputs.entries()),
+        pcOutputs: Array.from(item.state.pcOutputs.entries()),
+        pcHistories: Array.from(item.state.pcHistories.entries()),
+      };
+      return {
+        ...item,
+        state: serializedState
+      };
+    });
+
     const topologyDeviceIds = new Set(topologyDevices.map(d => d.id));
     topologyDevices.forEach(device => {
       const state = syncedDeviceStates.get(device.id);
@@ -117,6 +139,10 @@ export function useProjectExport({
       cableInfo: topologyDevices.length > 0 && topologyConnections.length > 0 ? cableInfo : { connected: false, cableType: 'straight', sourceDevice: 'pc', targetDevice: 'switchL2' },
       activeDeviceId: topologyDevices.find(d => d.id === activeDeviceId)?.id || '',
       activeDeviceType,
+      history: {
+        items: serializedHistoryItems,
+        index: historyIndex
+      },
       ...(activeExam ? {
         examData: {
           id: activeExam.id,
@@ -128,7 +154,7 @@ export function useProjectExport({
         }
       } : {})
     };
-  }, [activeExam, deviceStates, deviceOutputs, pcOutputs, pcHistories, topologyDevices, topologyConnections, topologyNotes, cableInfo, activeDeviceId, activeDeviceType]);
+  }, [activeExam, deviceStates, deviceOutputs, pcOutputs, pcHistories, topologyDevices, topologyConnections, topologyNotes, cableInfo, activeDeviceId, activeDeviceType, historyItems, historyIndex]);
 
   const handleSaveProjectInternal = useCallback(() => {
     const projectData = getFullProjectData();

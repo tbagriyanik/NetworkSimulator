@@ -138,7 +138,7 @@ const ALL_TABS = [
 
 const exampleLevelOrder: ExampleProjectLevel[] = ['basic', 'intermediate', 'advanced'];
 
-import { useHistory, ProjectState } from '@/hooks/useHistory';
+import { useHistory, ProjectState, SerializedHistoryEntry } from '@/hooks/useHistory';
 
 function computeLiveSummary(
   devices: CanvasDevice[],
@@ -1136,7 +1136,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     activeTab
   }), [topologyDevices, topologyConnections, topologyNotes, deviceStates, deviceOutputs, pcOutputs, pcHistories, cableInfo, activeDeviceId, activeDeviceType, zoom, pan, activeTab]);
 
-  const { pushState, undo, redo, canUndo, canRedo, resetHistory, currentState, historyItems, historyIndex, jumpTo } = useHistory(getCurrentState());
+  const { pushState, undo, redo, canUndo, canRedo, resetHistory, currentState, historyItems, historyIndex, jumpTo, loadHistory } = useHistory(getCurrentState());
 
   const pendingActionDesc = useRef<string | null>(null);
   const commitAction = useCallback((desc: string) => {
@@ -1192,8 +1192,6 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
 
     applyProjectState(currentState);
     lastAppliedHistoryStateRef.current = currentState;
-    isApplyingHistoryRef.current = false;
-    pendingHistoryActionRef.current = null;
   }, [currentState, applyProjectState]);
 
   // Track changes and push to history
@@ -1850,8 +1848,7 @@ ${state.bannerMOTD}
       setTopologyKey(prev => prev + 1);
       setHasUnsavedChanges(false);
 
-      // Reset history with the loaded state
-      resetHistory({
+      const newState = {
         topologyDevices: applyLinkLocalToUnconfiguredHosts(
           (safeTopologyDevices || [])
             .filter((device: CanvasDevice) => device.id && device.id.trim() !== '')
@@ -1877,13 +1874,39 @@ ${state.bannerMOTD}
             sourceDevice: normalizeDeviceType(typeof safeCableInfo.sourceDevice === 'string' ? safeCableInfo.sourceDevice : 'pc'),
             targetDevice: normalizeDeviceType(typeof safeCableInfo.targetDevice === 'string' ? safeCableInfo.targetDevice : 'switchL2'),
           }
-          : { connected: false, cableType: 'straight', sourceDevice: 'pc', targetDevice: 'switchL2' },
+          : { connected: false, cableType: 'straight' as const, sourceDevice: 'pc' as const, targetDevice: 'switchL2' as const },
         activeDeviceId: shouldKeepActiveDevice ? (typeof data.activeDeviceId === 'string' ? data.activeDeviceId : 'switch-1') : '',
         activeDeviceType: normalizeDeviceType(typeof data.activeDeviceType === 'string' ? data.activeDeviceType : 'switchL2'),
         zoom: typeof data.zoom === 'number' ? data.zoom : 1.0,
         pan: safePan && typeof safePan.x === 'number' && typeof safePan.y === 'number' ? { x: safePan.x, y: safePan.y } : { x: 0, y: 0 },
         activeTab: resolvedActiveTab
-      });
+      };
+
+      if (data.history && typeof data.history === 'object') {
+        const hData = data.history as { items: SerializedHistoryEntry[]; index?: number };
+        if (Array.isArray(hData.items) && hData.items.length > 0) {
+          try {
+            const deserializedItems = hData.items.map((item: SerializedHistoryEntry) => ({
+              ...item,
+              state: {
+                ...item.state,
+                deviceStates: new Map(item.state.deviceStates || []),
+                deviceOutputs: new Map(item.state.deviceOutputs || []),
+                pcOutputs: new Map(item.state.pcOutputs || []),
+                pcHistories: new Map(item.state.pcHistories || []),
+              }
+            }));
+            setTimeout(() => loadHistory(deserializedItems, typeof hData.index === 'number' ? hData.index : 0), 100);
+          } catch (e) {
+            console.warn("Could not deserialize history from project file", e);
+            setTimeout(() => resetHistory(newState), 100);
+          }
+        } else {
+          setTimeout(() => resetHistory(newState), 100);
+        }
+      } else {
+        setTimeout(() => resetHistory(newState), 100);
+      }
 
       return true;
     } catch (error) {
@@ -1897,7 +1920,7 @@ ${state.bannerMOTD}
       });
       return false;
     }
-  }, [setDeviceStates, setDeviceOutputs, setPcOutputs, setPcHistories, setTopologyDevices, setTopologyConnections, setTopologyNotes, setCableInfo, setActiveDeviceId, setActiveDeviceType, setSelectedDevice, setActiveTab, setTopologyKey, setHasUnsavedChanges, resetHistory, toast, setZoom, setPan, language, normalizeDeviceType, applyLinkLocalToUnconfiguredHosts, resetWorkspaceUiState]);
+  }, [setDeviceStates, setDeviceOutputs, setPcOutputs, setPcHistories, setTopologyDevices, setTopologyConnections, setTopologyNotes, setCableInfo, setActiveDeviceId, setActiveDeviceType, setSelectedDevice, setActiveTab, setTopologyKey, setHasUnsavedChanges, resetHistory, loadHistory, toast, setZoom, setPan, language, normalizeDeviceType, applyLinkLocalToUnconfiguredHosts, resetWorkspaceUiState]);
 
   // Persistence: Load from URL ID or localStorage on mount
   useEffect(() => {
@@ -3281,6 +3304,8 @@ ${state.bannerMOTD}
     cableInfo,
     activeDeviceId,
     activeDeviceType,
+    historyItems,
+    historyIndex,
     activeExam,
     language,
     projectName,

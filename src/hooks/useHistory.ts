@@ -30,6 +30,21 @@ interface HistoryState {
   index: number;
 }
 
+export interface SerializedProjectStateMaps {
+  deviceStates: [string, SwitchState][];
+  deviceOutputs: [string, TerminalOutput[]][];
+  pcOutputs: [string, PCOutputLine[]][];
+  pcHistories: [string, string[]][];
+}
+
+export interface SerializedHistoryEntry {
+  state: Omit<ProjectState, 'deviceStates' | 'deviceOutputs' | 'pcOutputs' | 'pcHistories'> & SerializedProjectStateMaps;
+  operationType: HistoryOperationType;
+  signature: string;
+  estimatedBytes: number;
+  description?: string;
+}
+
 export type HistoryOperationType = 'all' | 'topology' | 'device' | 'ui';
 
 export interface HistoryEntry {
@@ -155,9 +170,37 @@ export function useHistory(initialState: ProjectState) {
     estimatedBytes: estimateStateBytes(initialState),
     description: 'Başlangıç Durumu'
   };
-  const [state, setState] = useState<HistoryState>({
-    items: [initialEntry],
-    index: 0
+  const [state, setState] = useState<HistoryState>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('netsim_history');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && Array.isArray(parsed.items) && parsed.items.length > 0) {
+            const deserializedItems = parsed.items.map((item: SerializedHistoryEntry) => ({
+              ...item,
+              state: {
+                ...item.state,
+                deviceStates: new Map(item.state.deviceStates || []),
+                deviceOutputs: new Map(item.state.deviceOutputs || []),
+                pcOutputs: new Map(item.state.pcOutputs || []),
+                pcHistories: new Map(item.state.pcHistories || []),
+              }
+            }));
+            return {
+              items: deserializedItems,
+              index: typeof parsed.index === 'number' ? parsed.index : 0
+            };
+          }
+        }
+      } catch (e) {
+        console.warn('Could not load history from localStorage', e);
+      }
+    }
+    return {
+      items: [initialEntry],
+      index: 0
+    };
   });
   // Save to localStorage when state changes
   useEffect(() => {
@@ -431,6 +474,13 @@ export function useHistory(initialState: ProjectState) {
     });
   }, []);
 
+  const loadHistory = useCallback((items: HistoryEntry[], index: number) => {
+    setState({
+      items,
+      index
+    });
+  }, []);
+
   const currentState = useMemo(() => {
     return state.items[state.index]?.state || null;
   }, [state.items, state.index]);
@@ -457,6 +507,7 @@ export function useHistory(initialState: ProjectState) {
     resetHistory,
     currentState,
     historyItems: state.items,
-    historyIndex: state.index
+    historyIndex: state.index,
+    loadHistory
   };
 }

@@ -475,7 +475,7 @@ export const generateIotWebPanelContent = (
         <div class="container">
           <h1>${isTurkish ? 'IoT Web Paneli' : 'IoT Web Panel'}</h1>
           
-          <div id="loginSection" class="login-form">
+          <form id="loginSection" class="login-form" onsubmit="window.checkPassword(); return false;">
             <div class="form-group">
               <label for="username">${isTurkish ? 'Kullanıcı Adı' : 'Username'}:</label>
               <input type="text" id="username" value="admin" placeholder="${isTurkish ? 'Kullanıcı adı girin' : 'Enter username'}" />
@@ -484,13 +484,13 @@ export const generateIotWebPanelContent = (
               <label for="password">${isTurkish ? 'Parola' : 'Password'}:</label>
               <input type="password" id="password" placeholder="${isTurkish ? 'Parola girin' : 'Enter password'}" />
             </div>
-            <button type="button" class="login-button" onclick="checkPassword()">
+            <button type="submit" class="login-button">
               ${isTurkish ? 'Giriş Yap' : 'Login'}
             </button>
             <div id="errorMessage" class="error-message">
               ${isTurkish ? 'Hatalı kullanıcı adı veya parola!' : 'Incorrect username or password!'}
             </div>
-          </div>
+          </form>
 
           <div id="deviceSection" class="hidden">
             <button type="button" class="settings-icon" onclick="toggleSettingsPopup()">
@@ -545,7 +545,7 @@ export const generateIotWebPanelContent = (
             }
           };
 
-          function checkPassword() {
+          window.checkPassword = function() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const correctUsername = 'admin';
@@ -562,9 +562,9 @@ export const generateIotWebPanelContent = (
               document.getElementById('password').value = '';
               document.getElementById('username').focus();
             }
-          }
+          };
 
-          function checkAuthentication() {
+          window.checkAuthentication = function() {
             const isAuthenticated = safeStorage.getItem('iotPanelAuthenticated');
             if (isAuthenticated === 'true') {
               document.getElementById('loginSection').classList.add('hidden');
@@ -573,9 +573,9 @@ export const generateIotWebPanelContent = (
               document.getElementById('loginSection').classList.remove('hidden');
               document.getElementById('deviceSection').classList.add('hidden');
             }
-          }
+          };
 
-          function logout() {
+          window.logout = function() {
             safeStorage.removeItem('iotPanelAuthenticated');
             document.getElementById('loginSection').classList.remove('hidden');
             document.getElementById('deviceSection').classList.add('hidden');
@@ -583,14 +583,14 @@ export const generateIotWebPanelContent = (
             document.getElementById('password').value = '';
             document.getElementById('errorMessage').style.display = 'none';
             document.getElementById('settingsPopup').classList.remove('show');
-          }
+          };
 
-          function toggleSettingsPopup() {
+          window.toggleSettingsPopup = function() {
             const popup = document.getElementById('settingsPopup');
             popup.classList.toggle('show');
-          }
+          };
 
-          function changePassword() {
+          window.changePassword = function() {
             const newPassword = document.getElementById('newPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             const successMessage = document.getElementById('passwordSuccess');
@@ -616,7 +616,7 @@ export const generateIotWebPanelContent = (
               errorMessage.style.display = 'block';
               successMessage.style.display = 'none';
             }
-          }
+          };
 
           // Close popup when clicking outside
           document.addEventListener('click', function(e) {
@@ -642,8 +642,8 @@ export const generateIotWebPanelContent = (
           });
 
           // Check authentication on page load and run immediately
-          window.addEventListener('load', checkAuthentication);
-          checkAuthentication();
+          window.addEventListener('load', window.checkAuthentication);
+          window.checkAuthentication();
         </script>
       </body>
     </html>
@@ -703,6 +703,19 @@ export const generateIotDevicePageContent = (
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>${isTurkish ? 'IoT Cihaz Yönetimi' : 'IoT Device Management'}: ${safeName}</title>
         <style>
+          :root {
+            --color-primary-500: #3b82f6;
+            --color-primary-700: #1d4ed8;
+            --color-secondary-500: #64748b;
+            --color-secondary-600: #475569;
+            --color-secondary-200: #e2e8f0;
+            --color-secondary-300: #cbd5e1;
+            --color-success-500: #22c55e;
+            --color-success-600: #16a34a;
+            --color-error-500: #ef4444;
+            --color-warning-100: #fef3c7;
+            --color-warning-700: #b45309;
+          }
           body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f0f2f5;

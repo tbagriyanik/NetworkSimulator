@@ -133,7 +133,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
           <h1 style="font-size: 24px; font-weight: 600; color: var(--color-secondary-900); margin-bottom: 10px;">${safeDeviceName}</h1>
           <p style="color: var(--color-muted-foreground); font-size: 14px;">${isTurkish ? 'IoT Cihaz Yönetimi' : 'IoT Device Management'}</p>
         </div>
-        <form id="auth-form" onsubmit="handleLogin(event)">
+        <form id="auth-form" onsubmit="window.handleLogin(event); return false;">
           <div style="margin-bottom: 20px;">
             <label style="display: block; font-size: 13px; font-weight: 500; color: var(--color-secondary-900); margin-bottom: 8px;">${isTurkish ? 'Kullanıcı Adı' : 'Username'}</label>
           <input type="text" id="login-username" maxlength="255" required style="width: 100%; padding: 12px; border: 1px solid var(--color-secondary-300); border-radius: 8px; font-size: 14px; box-sizing: border-box;">
@@ -552,6 +552,16 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
       .device-info {
         flex-direction: column;
         gap: 10px !important;
+      }
+      
+      .nav-tabs {
+        flex-wrap: wrap;
+      }
+      
+      .nav-tab {
+        flex: 1 1 50%;
+        padding: 12px 10px;
+        font-size: 13px;
       }
     }
 
