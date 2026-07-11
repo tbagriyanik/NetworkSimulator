@@ -38,6 +38,14 @@ export interface CanvasPort {
     portfast?: boolean;
     bpduguard?: boolean;
   };
+  portSecurity?: {
+    enabled: boolean;
+    maxAddresses?: number;
+    violationAction?: 'shutdown' | 'protect' | 'restrict';
+    sticky?: boolean;
+    violations?: number;
+  };
+  staticMacs?: string[];
 }
 
 export interface NetworkTopologyProps {

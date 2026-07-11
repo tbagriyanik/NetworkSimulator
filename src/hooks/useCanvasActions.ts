@@ -368,7 +368,8 @@ export function useCanvasActions({
             }
             if (connectedPorts && connectedPorts.length > 0) {
               connectedPorts.forEach(p => {
-                const needsCli = p.ipAddress || (p.vlan && p.vlan !== 1) || (p.mode && p.mode !== 'access' && p.mode !== 'dynamic-auto') || p.shutdown;
+                const hasPortSecurity = p.portSecurity?.enabled || (p.staticMacs && p.staticMacs.length > 0) || p.portSecurity?.sticky || p.portSecurity?.maxAddresses || p.portSecurity?.violationAction;
+                const needsCli = p.ipAddress || (p.vlan && p.vlan !== 1) || (p.mode && p.mode !== 'dynamic-auto') || p.shutdown || hasPortSecurity;
                 if (needsCli) {
                   cli += `    interface ${p.label.replace('Fa', 'FastEthernet').replace('Gi', 'GigabitEthernet')}\n`;
                   if (p.shutdown) {
@@ -377,9 +378,22 @@ export function useCanvasActions({
                     if (p.ipAddress) {
                       cli += `    ip address ${p.ipAddress} ${p.subnetMask || '255.255.255.0'}\n`;
                     }
-                    if (p.mode === 'trunk') cli += `    switchport mode trunk\n`;
-                    else if (p.mode === 'access' && p.vlan && p.vlan !== 1) {
-                      cli += `    switchport mode access\n    switchport access vlan ${p.vlan}\n`;
+                    if (p.mode && p.mode !== 'dynamic-auto') {
+                      cli += `    switchport mode ${p.mode.replace('-', ' ')}\n`;
+                    }
+                    if (p.vlan && p.vlan !== 1 && p.mode !== 'trunk') {
+                      cli += `    switchport access vlan ${p.vlan}\n`;
+                    }
+                    if (hasPortSecurity) {
+                      if (p.portSecurity?.enabled) cli += `    switchport port-security\n`;
+                      if (p.portSecurity?.maxAddresses) cli += `    switchport port-security maximum ${p.portSecurity.maxAddresses}\n`;
+                      if (p.portSecurity?.violationAction) cli += `    switchport port-security violation ${p.portSecurity.violationAction}\n`;
+                      if (p.portSecurity?.sticky) cli += `    switchport port-security mac-address sticky\n`;
+                      if (p.staticMacs && p.staticMacs.length > 0) {
+                        p.staticMacs.forEach(mac => {
+                          cli += `    switchport port-security mac-address ${mac}\n`;
+                        });
+                      }
                     }
                     cli += `    no shutdown\n`;
                   }
