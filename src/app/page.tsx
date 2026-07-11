@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { SwitchState, CableInfo, Port, CommandResult } from '@/lib/network/types';
 import { useDeviceManager } from '@/hooks/useDeviceManager';
 import { useNetworkLogic } from '@/hooks/useNetworkLogic';
+import { usePageNetworkLogic } from '@/hooks/usePageNetworkLogic';
 import { useAppNavigation } from '@/hooks/useAppNavigation';
 import { useDrag } from '@/hooks/useDrag';
 import { useMultiTabWarning } from '@/hooks/useMultiTabWarning';
@@ -18,7 +19,7 @@ import { useDeviceSelection } from '@/hooks/useDeviceSelection';
 import { useAppStore, useTopologyDevices, useTopologyConnections, useTopologyNotes, useZoom, usePan, useActiveTab, useEnvironment } from '@/lib/store/appStore';
 import { ExamTask } from '@/lib/network/examMode';
 import { cn, normalizeMAC } from '@/lib/utils';
-import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType, FirewallRule } from '@/components/network/networkTopology.types';
+import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType } from '@/components/network/networkTopology.types';
 import { getPrompt } from '@/lib/network/executor';
 import { formatErrorForUser, errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
 import { safeParse, safeStringify } from '@/lib/network/serialization';
@@ -80,30 +81,29 @@ import { useProjectExport } from '@/hooks/useProjectExport';
 import { useProjectReset } from '@/hooks/useProjectReset';
 import { useAutoDhcpRenewal } from '@/hooks/useAutoDhcpRenewal';
 import { usePWA } from '@/hooks/usePWA';
+import { computeLiveSummary } from '@/lib/network/liveSummary';
 
 
 
-const RouterPanel = dynamic(() => import('@/components/network/RouterPanel').then((m) => m.RouterPanel));
-const UnifiedDevicePanel = dynamic(() => import('@/components/network/UnifiedDevicePanel').then((m) => m.UnifiedDevicePanel));
+const { RouterPanel, UnifiedDevicePanel, PCWindow, FirewallWindow, GuidedModePanel, ExamModePanel, EnvironmentSettingsPanel, ExamEditorPanel, TroubleshootingPanel, TimelinePanel, TabletSplitView, RefreshReportPanel } = {
+  RouterPanel: dynamic(() => import('@/components/network/panels').then((m) => m.RouterPanel)),
+  UnifiedDevicePanel: dynamic(() => import('@/components/network/panels').then((m) => m.UnifiedDevicePanel)),
+  PCWindow: dynamic(() => import('@/components/network/panels').then((m) => m.PCWindow), { ssr: false }),
+  FirewallWindow: dynamic(() => import('@/components/network/panels').then((m) => m.FirewallWindow), { ssr: false }),
+  GuidedModePanel: dynamic(() => import('@/components/network/panels').then((m) => m.GuidedModePanel)),
+  ExamModePanel: dynamic(() => import('@/components/network/panels').then((m) => m.ExamModePanel)),
+  EnvironmentSettingsPanel: dynamic(() => import('@/components/network/panels').then((m) => m.EnvironmentSettingsPanel)),
+  ExamEditorPanel: dynamic(() => import('@/components/network/panels').then((m) => m.ExamEditorPanel)),
+  TroubleshootingPanel: dynamic(() => import('@/components/network/panels').then((m) => m.TroubleshootingPanel)),
+  TimelinePanel: dynamic(() => import('@/components/network/panels').then((m) => m.TimelinePanel)),
+  TabletSplitView: dynamic(() => import('@/components/network/panels').then((m) => m.TabletSplitView), { ssr: false }),
+  RefreshReportPanel: dynamic(() => import('@/components/network/panels').then((m) => m.RefreshReportPanel), { ssr: false }),
+};
+
 const LazyAboutModal = dynamic(() => import('@/components/network/LazyAboutModal').then((m) => m.LazyAboutModal));
 const ProjectPickerDialog = dynamic(() => import('@/components/network/ProjectPickerDialog').then((m) => m.ProjectPickerDialog));
-const GuidedModePanel = dynamic(() => import('@/components/network/GuidedModePanel').then((m) => m.GuidedModePanel));
-const ExamModePanel = dynamic(() => import('@/components/network/ExamModePanel').then((m) => m.ExamModePanel));
-
-const EnvironmentSettingsPanel = dynamic(() => import('@/components/network/EnvironmentSettingsPanel').then((m) => m.EnvironmentSettingsPanel));
 const OnboardingDialog = dynamic(() => import('@/components/network/OnboardingDialog').then((m) => m.OnboardingDialog));
-const ExamEditorPanel = dynamic(() => import('@/components/network/ExamEditorPanel').then((m) => m.ExamEditorPanel));
-const RoomJoinDialog = dynamic(() => import('@/components/RoomJoinDialog').then((m) => m.RoomJoinDialog));
-
-const MultiTabWarningDialog = dynamic(() => import('@/components/network/MultiTabWarningDialog').then((m) => m.MultiTabWarningDialog), { ssr: false });
-const ConfirmationDialogs = dynamic(() => import('@/components/network/ConfirmationDialogs').then((m) => m.ConfirmationDialogs), { ssr: false });
-const FirewallWindow = dynamic(() => import('@/components/network/FirewallWindow').then((m) => m.FirewallWindow), { ssr: false });
-const PCWindow = dynamic(() => import('@/components/network/PCWindow').then((m) => m.PCWindow), { ssr: false });
-const TabletSplitView = dynamic(() => import('@/components/network/TabletSplitView').then((m) => m.TabletSplitView), { ssr: false });
-const RefreshReportPanel = dynamic(() => import('@/components/network/RefreshReportPanel').then((m) => m.RefreshReportPanel), { ssr: false });
-const TeacherRoomPanel = dynamic(() => import('@/components/TeacherRoomPanel').then((m) => m.TeacherRoomPanel));
-const TimelinePanel = dynamic(() => import('@/components/network/TimelinePanel').then((m) => m.TimelinePanel));
-const TroubleshootingPanel = dynamic(() => import('@/components/network/TroubleshootingPanel').then((m) => m.TroubleshootingPanel));
+const PageModals = dynamic(() => import('@/components/network/panels/PageModals').then((m) => m.PageModals), { ssr: false });
 
 type TabType = 'topology' | 'cmd' | 'terminal' | 'tasks';
 
@@ -128,95 +128,6 @@ const exampleLevelOrder: ExampleProjectLevel[] = ['basic', 'intermediate', 'adva
 
 import { useHistory, ProjectState, SerializedHistoryEntry } from '@/hooks/useHistory';
 
-function computeLiveSummary(
-  devices: CanvasDevice[],
-  connections: CanvasConnection[],
-  states: Map<string, SwitchState>
-) {
-  if (!devices || !states) return null;
-  const allVlans = new Set<number>();
-  let totalRoutes = 0, connectedRoutes = 0, staticRoutes = 0, dynamicRoutes = 0;
-  let ospfCount = 0, ospfNeighbors = 0;
-  let stpRootCount = 0, stpBlockedPorts = 0;
-  let hsrpActive = 0, hsrpStandby = 0;
-  let eigrpCount = 0, eigrpNeighbors = 0;
-  states.forEach((state, deviceId) => {
-    if (state.vlans) Object.keys(state.vlans).forEach((vId) => allVlans.add(Number(vId)));
-    [state.staticRoutes, state.dynamicRoutes].forEach((routes) => {
-      if (!routes) return;
-      routes.forEach((r) => {
-        totalRoutes++;
-        if (r.type === 'connected') connectedRoutes++;
-        else if (r.type === 'static') staticRoutes++;
-        else if (r.type === 'dynamic') dynamicRoutes++;
-      });
-    });
-    Object.values(state.ports).forEach((port) => {
-      if (port.ipAddress && port.subnetMask) {
-        totalRoutes++;
-        connectedRoutes++;
-      }
-    });
-    if (state.ospfAreas && state.ospfAreas.length > 0) {
-      ospfCount++;
-      ospfNeighbors += (state.ospfNeighbors || []).length;
-    }
-    Object.values(state.ports).forEach(port => {
-      if (port.spanningTree?.state === 'blocking' || port.spanningTree?.role === 'alternate') {
-        stpBlockedPorts++;
-      }
-    });
-    const hasRootPort = Object.values(state.ports).some(p => p.spanningTree?.role === 'root');
-    const isSwitch = devices.find(d => d.id === deviceId)?.type.startsWith('switch');
-    if (isSwitch && !hasRootPort && Object.values(state.ports).some(p => p.spanningTree)) {
-      stpRootCount++;
-    }
-    Object.values(state.ports).forEach(port => {
-      if (port.hsrp?.groups) {
-        Object.values(port.hsrp.groups).forEach(group => {
-          if (group.state === 'Active') hsrpActive++;
-          if (group.state === 'Standby') hsrpStandby++;
-        });
-      }
-    });
-    if (state.eigrpAs) {
-      eigrpCount++;
-      eigrpNeighbors += (state.eigrpNeighbors || []).length;
-    }
-  });
-  return {
-    deviceCount: {
-      total: devices.length,
-      routers: devices.filter((d) => d.type === 'router').length,
-      switches: devices.filter((d) => d.type === 'switchL2' || d.type === 'switchL3').length,
-      pcs: devices.filter((d) => d.type === 'pc').length,
-      iot: devices.filter((d) => d.type === 'iot').length,
-      firewalls: devices.filter((d) => d.type === 'firewall').length,
-      wlcs: devices.filter((d) => d.type === 'wlc').length,
-    },
-    activeLinks: connections.filter((c) => c.active).length,
-    vlanCount: allVlans.size,
-    routingTableSummary: { totalRoutes, connected: connectedRoutes, static: staticRoutes, dynamic: dynamicRoutes },
-    protocolStats: {
-      ospf: { count: ospfCount, neighbors: ospfNeighbors },
-      stp: { roots: stpRootCount, blocked: stpBlockedPorts },
-      hsrp: { active: hsrpActive, standby: hsrpStandby },
-      eigrp: { count: eigrpCount, neighbors: eigrpNeighbors }
-    },
-  };
-}
-
-function updateDeviceState(
-  prev: Map<string, SwitchState>,
-  deviceId: string,
-  updater: (state: SwitchState) => SwitchState
-): Map<string, SwitchState> {
-  const state = prev.get(deviceId);
-  if (!state) return prev;
-  const next = new Map(prev);
-  next.set(deviceId, updater(state));
-  return next;
-}
 
 function serializeState(s: ProjectState) {
   return JSON.stringify({
@@ -610,9 +521,6 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
 
   const helpLevel = useAppStore(state => state.helpLevel);
 
-  // Network logic functions (must come after Zustand selectors to avoid TDZ)
-  const networkLogic = useNetworkLogic(deviceStates, topologyConnections, environment);
-
   const setDevices = useAppStore((state) => state.setDevices);
   const setConnections = useAppStore((state) => state.setConnections);
   const setNotes = useAppStore((state) => state.setNotes);
@@ -620,36 +528,6 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   const setPan = useAppStore((state) => state.setPan);
   const graphicsQuality = useAppStore((state) => state.graphicsQuality);
   const setGraphicsQuality = useAppStore((state) => state.setGraphicsQuality);
-  const addCapturedPacket = useAppStore((state) => state.addCapturedPacket);
-
-  const [isPingPanelOpen, setIsPingPanelOpen] = useState(false);
-
-  // Global packet capture event listener
-  useEffect(() => {
-    const handlePacketCaptured = ((e: CustomEvent) => {
-      if (e.detail) {
-        addCapturedPacket(e.detail);
-      }
-    }) as EventListener;
-    window.addEventListener('packet-captured', handlePacketCaptured);
-    return () => window.removeEventListener('packet-captured', handlePacketCaptured);
-  }, [addCapturedPacket]);
-
-  const {
-    isTroubleshootingMinimized,
-    setIsTroubleshootingMinimized,
-    showTroubleshootingPanel,
-    setShowTroubleshootingPanel,
-    activeTroubleshootingProject
-  } = useTroubleshootingMode({
-    activeExam,
-    loadedExampleId,
-    exampleLevelOrder,
-    groupedExampleProjects,
-    deviceStates,
-    language,
-    toast
-  });
 
   // Navigation hook (provides history management, device selection, focus)
   const nav = useAppNavigation({
@@ -670,6 +548,47 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     activeTabRef,
     pendingFocusDeviceRef, topologyContainerRef,
   } = nav;
+
+  // Network logic functions
+  const networkLogic = useNetworkLogic(deviceStates, topologyConnections, environment);
+  const { toggleDevicePower, updateDeviceConfig } = usePageNetworkLogic({
+    setDeviceStates,
+    topologyDevices,
+    setTopologyDevices: setDevices,
+    setTopologyConnections: setConnections,
+    setDeviceOutputs,
+    setPcOutputs,
+    setPcHistories,
+    setFocusDeviceId,
+    setActiveFirewallId,
+    setShowFirewallPanel,
+    toast,
+    t,
+    activeTab,
+    topologyContainerRef,
+    setZoom: setZoom,
+    focusDeviceInTopology,
+    pendingFocusDeviceRef,
+    graphicsQuality,
+  });
+
+  const [isPingPanelOpen, setIsPingPanelOpen] = useState(false);
+
+  const {
+    isTroubleshootingMinimized,
+    setIsTroubleshootingMinimized,
+    showTroubleshootingPanel,
+    setShowTroubleshootingPanel,
+    activeTroubleshootingProject
+  } = useTroubleshootingMode({
+    activeExam,
+    loadedExampleId,
+    exampleLevelOrder,
+    groupedExampleProjects,
+    deviceStates,
+    language,
+    toast
+  });
 
   const handleDeviceSelectFromCanvas = useCallback((device: DeviceType, deviceId?: string, switchModel?: string, deviceName?: string, isNew?: boolean, deviceData?: CanvasDevice) => {
     if (device === 'pc') {
@@ -776,19 +695,6 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     return () => window.clearInterval(intervalId);
   }, []);
 
-  // Apply graphics quality class to body
-  useEffect(() => {
-    const body = document.body;
-
-    if (graphicsQuality === 'low') {
-      body.classList.add('graphics-low');
-      body.classList.remove('graphics-high');
-    } else {
-      body.classList.add('graphics-high');
-      body.classList.remove('graphics-low');
-    }
-  }, [graphicsQuality]);
-
   // Helper functions for state setters to maintain compatibility
   const setTopologyDevices = setDevices;
   const setTopologyConnections = setConnections;
@@ -803,220 +709,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     [topologyDevices, topologyConnections, deviceStates]
   );
 
-  // Function to update device configuration
-  const updateDeviceConfig = useCallback((deviceId: string, config: Record<string, unknown>) => {
-    const c = config as Partial<CanvasDevice>;
-    // Update topology devices using functional update to avoid stale closure
-    setTopologyDevices(prev =>
-      prev.map((d) =>
-        d.id === deviceId
-          ? {
-            ...d,
-            ...c,
-            iot: c.iot ? { ...d.iot, ...c.iot } : d.iot,
-          }
-          : d
-      )
-    );
 
-    if (c.name) {
-      setDeviceStates((prev) => updateDeviceState(prev, deviceId, (s) => ({ ...s, hostname: c.name as string })));
-    }
-
-    if (c.wifi) {
-      const wifi = c.wifi as NonNullable<CanvasDevice['wifi']>;
-      setDeviceStates((prev) => updateDeviceState(prev, deviceId, (state) => {
-        if (!state.ports?.['wlan0']) return state;
-        return {
-          ...state,
-          ports: {
-            ...state.ports,
-            wlan0: {
-              ...state.ports['wlan0'],
-              shutdown: !wifi.enabled,
-              wifi: {
-                ssid: wifi.ssid || '',
-                security: wifi.security || 'open',
-                password: wifi.password || '',
-                channel: wifi.channel || '2.4GHz',
-                mode: wifi.mode || 'ap',
-              },
-            },
-          },
-        };
-      }));
-    }
-
-    if (c.ip === '' && c.wifi?.enabled === false) {
-      setDeviceStates((prev) => updateDeviceState(prev, deviceId, (state) => ({
-        ...state,
-        ports: {
-          ...state.ports,
-          wlan0: {
-            ...state.ports?.['wlan0'],
-            shutdown: true,
-            wifi: { ssid: '', security: 'open', password: '', channel: '2.4GHz', mode: 'client' },
-          },
-        },
-      })));
-    }
-
-    if (c.firewallRules) {
-      setDeviceStates((prev) => updateDeviceState(prev, deviceId, (s) => {
-        const updated = { ...s, firewallRules: c.firewallRules as FirewallRule[] };
-        updated.runningConfig = buildRunningConfig(updated);
-        return updated;
-      }));
-    }
-
-    if (c.services?.ntp) {
-      setDeviceStates((prev) => updateDeviceState(prev, deviceId, (state) => {
-        const ntpServer = (c.services as CanvasDevice['services'])?.ntp?.server;
-        const ntpServers = ntpServer ? [ntpServer] : (state.ntpServers ? [...state.ntpServers] : []);
-        const updatedState = {
-          ...state,
-          ntpServers,
-          services: {
-            ...state.services,
-            ntp: {
-              ...state.services?.ntp,
-              ...(c.services as CanvasDevice['services'])?.ntp,
-              enabled: (c.services as CanvasDevice['services'])?.ntp?.enabled ?? state.services?.ntp?.enabled ?? false,
-            },
-          },
-        };
-        updatedState.runningConfig = buildRunningConfig(updatedState);
-        return updatedState;
-      }));
-    }
-  }, [setTopologyDevices, setDeviceStates]);
-
-  // Listen for device config updates from PCPanel
-  useEffect(() => {
-    const handleDeviceUpdate = (event: CustomEvent<{ deviceId: string; config: Record<string, unknown> }>) => {
-      const { deviceId, config } = event.detail;
-      updateDeviceConfig(deviceId, config);
-    };
-
-    window.addEventListener('update-topology-device-config', handleDeviceUpdate as EventListener);
-    return () => window.removeEventListener('update-topology-device-config', handleDeviceUpdate as EventListener);
-  }, [updateDeviceConfig]);
-
-  useEffect(() => {
-    const handleTriggerOpenFirewall = () => {
-      // Find the first firewall in the topology
-      const firewall = topologyDevices.find(d => d.type === 'firewall');
-      if (firewall) {
-        setActiveFirewallId(firewall.id);
-        setShowFirewallPanel(true);
-      } else {
-        toast({
-          title: t.language === 'tr' ? 'Firewall bulunamadı' : 'Firewall not found',
-          description: t.language === 'tr' ? 'Topolojide yapılandırılmış bir firewall bulunmuyor.' : 'No firewall configured in the topology.',
-          variant: 'destructive'
-        });
-      }
-    };
-
-    window.addEventListener('trigger-open-firewall', handleTriggerOpenFirewall);
-    return () => window.removeEventListener('trigger-open-firewall', handleTriggerOpenFirewall);
-  }, [topologyDevices, t.language]);
-  useEffect(() => {
-    const handleAddDevice = (event: CustomEvent<{ device: CanvasDevice }>) => {
-      const { device } = event.detail;
-      if (!device) return;
-
-      setTopologyDevices(prev => [...prev, device]);
-
-      setFocusDeviceId(device.id);
-
-      // Focus the newly added device
-      if (activeTab === 'topology' && topologyContainerRef.current) {
-        setZoom(1.0); // Reset zoom to 100%
-        focusDeviceInTopology(device.id, 1.0, device);
-        pendingFocusDeviceRef.current = null; // Clear pending focus as it's handled
-      } else {
-        // If not in topology tab or container not ready, queue the focus
-        pendingFocusDeviceRef.current = device.id;
-      }
-
-      // Also add device state for IoT devices
-      if (device.type === 'iot') {
-        setDeviceStates(prev => {
-          const next = new Map(prev);
-          // Create initial IoT device state with minimal required fields
-          const iotState: Record<string, unknown> = {
-            hostname: device.name,
-            macAddress: device.macAddress || '00-00-00-00-00-00',
-            switchModel: 'WS-C2960-24TT-L',
-            switchLayer: 'L2' as const,
-            currentMode: 'user' as const,
-            ports: {
-              eth0: {
-                id: 'eth0',
-                label: 'Eth0',
-                status: 'disconnected' as const,
-                shutdown: false,
-              },
-              wlan0: {
-                id: 'wlan0',
-                label: 'Wlan0',
-                status: 'connected' as const,
-                shutdown: false,
-                wifi: {
-                  ssid: device.wifi?.ssid || '',
-                  security: device.wifi?.security || 'open',
-                  password: device.wifi?.password || '',
-                  channel: device.wifi?.channel || '2.4GHz',
-                  mode: 'client' as const,
-                },
-              },
-            },
-            vlans: {},
-            security: {},
-            runningConfig: [],
-            commandHistory: [],
-            historyIndex: -1,
-            version: {
-              nosVersion: '1.0',
-              modelName: 'IoT Device',
-              serialNumber: 'N/A',
-              uptime: '0d 0h 0m',
-            },
-            macAddressTable: [],
-          };
-          next.set(device.id, iotState as unknown as SwitchState);
-          return next;
-        });
-      }
-    };
-
-    window.addEventListener('add-topology-device', handleAddDevice as EventListener);
-    return () => window.removeEventListener('add-topology-device', handleAddDevice as EventListener);
-  }, []); // Actions from useAppStore are stable, and functional updates avoid stale data issues.
-
-  // Listen for postMessage from WiFi admin panel to focus device in topology
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      // Security: Validate origin to prevent cross-site scripting or data injection from malicious frames.
-      // We allow window.location.origin for same-origin messages and 'null' for local srcdoc iframes.
-      if (event.origin !== window.location.origin && event.origin !== 'null') {
-        return;
-      }
-
-      if (event.data && event.data.type === 'router-admin-focus-device') {
-        const deviceId = event.data.deviceId;
-        if (deviceId) {
-          setFocusDeviceId(deviceId);
-          // Clear the focus after a short delay to allow re-focusing
-          setTimeout(() => setFocusDeviceId(null), 500);
-        }
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, []);
 
   useEffect(() => {
     try {
@@ -1047,59 +740,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     }
   }, []);
 
-  const toggleDevicePower = useCallback((deviceId: string) => {
-    setTopologyDevices((prev) => {
-      const current = prev.find(d => d.id === deviceId);
-      const nextStatus: 'online' | 'offline' = current?.status === 'offline' ? 'online' : 'offline';
-      window.dispatchEvent(new CustomEvent('trigger-topology-toggle-power', {
-        detail: {
-          deviceId,
-          nextStatus,
-          deviceType: current?.type,
-          switchModel: current?.switchModel
-        }
-      }));
 
-      // Clear previous outputs/history so fresh boot output is visible
-      setDeviceOutputs(prevOutputs => {
-        const next = new Map(prevOutputs);
-        next.set(deviceId, []);
-        return next;
-      });
-      setPcOutputs(prevOutputs => {
-        const next = new Map(prevOutputs);
-        next.set(deviceId, []);
-        return next;
-      });
-      setPcHistories(prevHistories => {
-        const next = new Map(prevHistories);
-        next.set(deviceId, []);
-        return next;
-      });
-
-      const nextDevices = prev.map((d) => (d.id === deviceId ? { ...d, status: nextStatus } : d));
-      const byId = new Map(nextDevices.map(d => [d.id, d] as const));
-
-      setTopologyConnections((prevConnections) => {
-        const nextConnections = prevConnections.map((c) => {
-          if (c.sourceDeviceId !== deviceId && c.targetDeviceId !== deviceId) return c;
-          if (nextStatus === 'offline') return { ...c, active: false };
-          const peerId = c.sourceDeviceId === deviceId ? c.targetDeviceId : c.sourceDeviceId;
-          const peer = byId.get(peerId);
-          return { ...c, active: peer?.status !== 'offline' };
-        });
-
-        // Trigger STP recalculation when power status changes
-        window.dispatchEvent(new CustomEvent('stp-recalculation-needed', {
-          detail: { topologyDevices: nextDevices, topologyConnections: nextConnections }
-        }));
-
-        return nextConnections;
-      });
-
-      return nextDevices;
-    });
-  }, [setTopologyDevices, setTopologyConnections]);
 
   // Modal drag/resize — unified hook
   const pcDrag = useDrag({ mode: 'drag-resize', storageKey: 'pc-modal-position', defaultSize: { width: 800, height: 600 }, disableSnap: true });
@@ -4090,14 +3731,6 @@ ${state.bannerMOTD}
           </div>
         )}
 
-        {/* Multi-Tab Warning Dialog */}
-        <MultiTabWarningDialog
-          showWarning={showWarning}
-          tabCount={tabCount}
-          clearCurrentTabData={clearCurrentTabData}
-          acknowledgeWarning={acknowledgeWarning}
-        />
-
         {/* Main Content with transition */}
         <div className="flex flex-col flex-1 animate-fade-in w-full max-w-[1920px] mx-auto">
           {/* Header */}
@@ -4185,17 +3818,6 @@ ${state.bannerMOTD}
             nextOnboarding={nextOnboarding}
           />}
 
-
-          {/* Global Dialogs (AlertDialog for better z-index and standard behavior) */}
-          <ConfirmationDialogs
-            t={t}
-            isDark={isDark}
-            confirmDialog={confirmDialog}
-            setConfirmDialog={setConfirmDialog}
-            saveDialog={saveDialog}
-            setSaveDialog={setSaveDialog}
-            focusActiveTerminalInput={focusActiveTerminalInput}
-          />
 
           {/* Unified Device Panel (CLI + Tasks) */}
           <UnifiedDevicePanel
@@ -4672,8 +4294,19 @@ ${state.bannerMOTD}
             />
           )}
 
-          <RoomJoinDialog />
-          <TeacherRoomPanel />
+          <PageModals
+            t={t}
+            isDark={isDark}
+            showWarning={showWarning}
+            tabCount={tabCount}
+            clearCurrentTabData={clearCurrentTabData}
+            acknowledgeWarning={acknowledgeWarning}
+            confirmDialog={confirmDialog}
+            setConfirmDialog={setConfirmDialog}
+            saveDialog={saveDialog}
+            setSaveDialog={setSaveDialog}
+            focusActiveTerminalInput={focusActiveTerminalInput}
+          />
         </div>
       </div>
     </AppErrorBoundary>

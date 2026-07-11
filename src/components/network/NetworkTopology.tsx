@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo, MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from 'react';
 import React from 'react';
 import { flushSync } from 'react-dom';
-import dynamic from 'next/dynamic';
 import { useAppStore, useTopologyDevices, useTopologyConnections, useTopologyNotes, useGraphicsQuality, useIsSimulationMode, useEnvironment } from '@/lib/store/appStore';
 import { isCableCompatible } from '@/lib/network/types';
 import { checkDeviceConnectivity, getPingDiagnostics, getWirelessDistance } from '@/lib/network/connectivity';
@@ -13,7 +12,6 @@ import { useIsMobile } from '@/hooks/use-breakpoint';
 import { useNetworkRefreshWithPositions } from '@/hooks/useNetworkRefreshWithPositions';
 import { useSpatialPartitioning } from '@/lib/performance/spatial';
 import { toast } from "@/hooks/use-toast";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { TooltipWrapper } from "@/components/ui/TooltipWrapper";
 import { ShortcutBadge } from "@/components/ui/ShortcutBadge";
@@ -23,18 +21,22 @@ import { ConnectionLine } from './ConnectionLine';
 import { ConnectionHandle } from './ConnectionHandle';
 import { DeviceNode } from './DeviceNode';
 import LazyNetworkTopologyContextMenu from './LazyNetworkTopologyContextMenu';
-import { LazyNetworkTopologyPortSelectorModal } from './LazyNetworkTopologyPortSelectorModal';
-import { PacketCapturePanel } from './PacketCapturePanel';
-import { Trash2, X, Cable, LineSquiggle, Plug, TrendingUpDown, Wifi } from "lucide-react";
+import { Trash2, X } from "lucide-react";
 
 import { areArraysEqual } from '@/lib/network/equality';
-import { getDeviceWidth, getDeviceHeight, getConnectionStatusMessage, isSwitchDeviceType, easeInOutCubic } from './networkTopology.helpers';
-import { CABLE_COLORS, DRAG_THRESHOLD, LONG_PRESS_DURATION, TOOLTIP_DELAY, TOOLTIP_OFFSET_Y, VIRTUAL_CANVAS_WIDTH_MOBILE, VIRTUAL_CANVAS_HEIGHT_MOBILE, VIRTUAL_CANVAS_WIDTH_DESKTOP, VIRTUAL_CANVAS_HEIGHT_DESKTOP, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, NOTE_COLORS, NOTE_FONTS_DESKTOP as NOTE_FONTS, NOTE_FONT_SIZES, NOTE_OPACITY as NOTE_OPACITY_OPTIONS, PC_PORT_SPACING, PORT_SPACING, PORT_START_X, PORT_START_Y, MOMENTUM_THRESHOLD, MOMENTUM_DECAY, MOMENTUM_MIN_SPEED } from './networkTopology.constants';
+import {
+  getDeviceWidth,
+  getDeviceHeight,
+  getConnectionStatusMessage,
+  isSwitchDeviceType,
+  easeInOutCubic,
+  getDeviceCenter,
+  getPortPosition,
+} from './networkTopology.helpers';
+import { CABLE_COLORS, DRAG_THRESHOLD, LONG_PRESS_DURATION, TOOLTIP_DELAY, TOOLTIP_OFFSET_Y, VIRTUAL_CANVAS_WIDTH_MOBILE, VIRTUAL_CANVAS_HEIGHT_MOBILE, VIRTUAL_CANVAS_WIDTH_DESKTOP, VIRTUAL_CANVAS_HEIGHT_DESKTOP, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, NOTE_COLORS, NOTE_FONTS_DESKTOP as NOTE_FONTS, NOTE_FONT_SIZES, NOTE_OPACITY as NOTE_OPACITY_OPTIONS, PC_PORT_SPACING, PORT_SPACING, PORT_START_X, MOMENTUM_THRESHOLD, MOMENTUM_DECAY, MOMENTUM_MIN_SPEED } from './networkTopology.constants';
 import { logger } from '@/lib/logger';
-import { PacketPopup } from './topology/PacketPopup';
-import { DeviceTooltip } from './topology/DeviceTooltip';
 import { NoteNode } from './topology/NoteNode';
-import { DeviceConfigModal } from './DeviceConfigModal';
+
 import { useCanvasActions } from '../../hooks/useCanvasActions';
 import { exportTopologyToPNG } from '../../utils/exportPNG';
 
@@ -45,7 +47,9 @@ import { useDeviceDrag } from './hooks/useDeviceDrag';
 import { useCanvasSelection } from './hooks/useCanvasSelection';
 import { useNoteEditing } from './hooks/useNoteEditing';
 import { useConnectionDrawing } from './hooks/useConnectionDrawing';
+import { useTopologyDeviceActions } from './hooks/useTopologyDeviceActions';
 import { usePingAnimation } from './hooks/usePingAnimation';
+import { useTopologyPingUI } from './hooks/useTopologyPingUI';
 import { usePingSequence, type PingAnimationState, type BroadcastAnimTarget } from './hooks/usePingSequence';
 import { CanvasToolbar } from './topology/CanvasToolbar';
 import { DeviceRenderer } from './topology/DeviceRenderer';
@@ -53,16 +57,13 @@ import { DeviceRenderer } from './topology/DeviceRenderer';
 import { CanvasDefs } from './topology/CanvasDefs';
 import { TopologyPrintPreview } from './topology/TopologyPrintPreview';
 import { TopologyPaletteSheet } from './topology/TopologyPaletteSheet';
-import { PortTooltip } from './topology/PortTooltip';
-import { ConnectionTooltip } from './topology/ConnectionTooltip';
+import { TopologyTooltips } from './topology/TopologyTooltips';
+import { TopologyModals } from './topology/TopologyModals';
 import { TempConnection } from './topology/TempConnection';
 import { EnvironmentBackgrounds } from './topology/EnvironmentBackgrounds';
 import { DEVICE_ICONS } from './topology/DeviceIcons';
 
-const PingPacketInfoPanel = dynamic(
-  () => import('./PingPacketInfoPanel').then((m) => m.PingPacketInfoPanel),
-  { ssr: false }
-);
+
 
 export function NetworkTopology({
   cableInfo,
@@ -826,111 +827,52 @@ export function NetworkTopology({
     requestAnimationFrame,
   });
 
+  const {
+    handlePingPause,
+    handlePingPlay,
+    handlePingNext,
+    handleEnvelopeClick
+  } = useTopologyPingUI({
+    pingIsPausedRef,
+    pingStepModeRef,
+    pingResumeCallbackRef,
+    pingAnimationRef,
+    pingCleanupTimeoutRef,
+    pingPathRef,
+    cancelPingDueToInterruptionRef,
+    setPingAnimation: setPingAnimation as React.Dispatch<React.SetStateAction<PingAnimationState | null>>,
+    setPacketPopupHop,
+    onPacketPanelFocus,
+    pingAnimation,
+    startPingAnimation,
+    isTR
+  });
+
+  const {
+    startDeviceConfig,
+    cancelDeviceConfig,
+    saveDeviceConfig,
+    togglePowerDevices,
+    handleAlign,
+    toggleConnectionActive,
+    deleteConnection
+  } = useTopologyDeviceActions({
+    devices,
+    setDevices: setDevicesState,
+    connections,
+    setConnections: setConnectionsState,
+    selectedDeviceIds,
+    saveToHistory,
+    activeCaptureConnectionId,
+    setActiveCaptureConnection,
+    setConfiguringDevice,
+    setContextMenu: setContextMenu as React.Dispatch<React.SetStateAction<ContextMenuState | null>>,
+  });
+
   const isDraggingInteractionDisabled = isActuallyDragging || isTouchDragging;
 
 
-  // Start device config
-  const startDeviceConfig = useCallback((deviceId: string) => {
-    setConfiguringDevice(deviceId);
-    setContextMenu(null);
-  }, []);
 
-  // Cancel device config
-  const cancelDeviceConfig = useCallback(() => {
-    setConfiguringDevice(null);
-  }, []);
-
-  // Save device config
-  const saveDeviceConfig = useCallback((deviceId: string, updates: Partial<CanvasDevice>) => {
-    saveToHistory();
-    setDevices((prev) =>
-      prev.map((d) =>
-        d.id === deviceId
-          ? { ...d, ...updates }
-          : d
-      )
-    );
-    setConfiguringDevice(null);
-  }, [saveToHistory, setDevices]);
-
-  // Delete device and its connections
-  // Toggle power for devices (bulk operation)
-  const togglePowerDevices = useCallback((deviceIds: string[]) => {
-    setDevices((prev) =>
-      prev.map((d) => {
-        if (deviceIds.includes(d.id)) {
-          return {
-            ...d,
-            status: d.status === 'online' ? 'offline' : 'online'
-          };
-        }
-        return d;
-      })
-    );
-  }, []);
-
-  // Handle alignment for multiple selected devices
-  const handleAlign = useCallback((type: 'top' | 'bottom' | 'left' | 'right' | 'h-center' | 'v-center') => {
-    logger.debug('[handleAlign] called with type:', type, 'selectedDeviceIds:', selectedDeviceIds);
-    if (selectedDeviceIds.length < 2) {
-      logger.debug('[handleAlign] early return - less than 2 devices selected');
-      return;
-    }
-    saveToHistory();
-
-    setDevices(prev => {
-      const selectedDevices = prev.filter(d => selectedDeviceIds.includes(d.id));
-      logger.debug('[handleAlign] selectedDevices:', selectedDevices.map(d => ({ id: d.id, x: d.x, y: d.y })));
-      if (selectedDevices.length < 2) {
-        logger.debug('[handleAlign] early return from setDevices - less than 2 devices found');
-        return prev;
-      }
-
-      let targetX = 0;
-      let targetY = 0;
-
-      switch (type) {
-        case 'top':
-          targetY = Math.min(...selectedDevices.map(sd => sd.y));
-          logger.debug('[handleAlign] top alignment - targetY:', targetY);
-          break;
-        case 'bottom':
-          targetY = Math.max(...selectedDevices.map(sd => sd.y));
-          break;
-        case 'left':
-          targetX = Math.min(...selectedDevices.map(sd => sd.x));
-          logger.debug('[handleAlign] left alignment - targetX:', targetX);
-          break;
-        case 'right':
-          targetX = Math.max(...selectedDevices.map(sd => sd.x));
-          break;
-        case 'h-center':
-          targetX = selectedDevices.reduce((sum, sd) => sum + sd.x, 0) / selectedDevices.length;
-          break;
-        case 'v-center':
-          targetY = selectedDevices.reduce((sum, sd) => sum + sd.y, 0) / selectedDevices.length;
-          break;
-      }
-
-      const result = prev.map(d => {
-        if (!selectedDeviceIds.includes(d.id)) return d;
-
-        const updatedDevice = { ...d };
-
-        if (type === 'top' || type === 'bottom' || type === 'v-center') {
-          updatedDevice.y = targetY;
-        }
-        if (type === 'left' || type === 'right' || type === 'h-center') {
-          updatedDevice.x = targetX;
-        }
-
-        return updatedDevice;
-      });
-
-      logger.debug('[handleAlign] result:', result.filter(d => selectedDeviceIds.includes(d.id)).map(d => ({ id: d.id, x: d.x, y: d.y })));
-      return result;
-    });
-  }, [selectedDeviceIds, saveToHistory]);
 
   // Get dynamic canvas dimensions based on screen size
   const getCanvasDimensions = useCallback(() => {
@@ -3662,53 +3604,7 @@ export function NetworkTopology({
     });
   }, [deviceStates, connections]); // ← added connections to check for active connections
 
-  const toggleConnectionActive = useCallback((connId: string) => {
-    saveToHistory();
-    const updatedConnections = connections.map((c) => (c.id === connId ? { ...c, active: !c.active } : c));
-    setConnections(updatedConnections);
 
-    // Trigger STP recalculation for all switches
-    window.dispatchEvent(new CustomEvent('stp-recalculation-needed', {
-      detail: { topologyDevices: devices, topologyConnections: updatedConnections }
-    }));
-  }, [saveToHistory, setConnections, connections, devices]);
-
-  // Delete connection
-  const deleteConnection = useCallback((connectionId: string) => {
-    if (activeCaptureConnectionId === connectionId) {
-      setActiveCaptureConnection(null);
-    }
-    saveToHistory();
-    const conn = connections.find((c) => c.id === connectionId);
-    if (conn) {
-      // Port durumlarını güncelle - her iki cihazda da
-      setDevices((prev) =>
-        prev.map((d) => {
-          // Source veya target device ise port'ları güncelle
-          if (d.id === conn.sourceDeviceId || d.id === conn.targetDeviceId) {
-            return {
-              ...d,
-              ports: d.ports.map((p) => {
-                // Bu bağlantıya ait portları disconnected yap
-                if (p.id === conn.sourcePort || p.id === conn.targetPort) {
-                  return { ...p, status: 'disconnected' as const };
-                }
-                return p;
-              }),
-            };
-          }
-          return d;
-        })
-      );
-      // Bağlantıyı sil
-      setConnections((prev) => prev.filter((c) => c.id !== connectionId));
-
-      // Trigger STP recalculation for all switches
-      window.dispatchEvent(new CustomEvent('stp-recalculation-needed', {
-        detail: { topologyDevices: devices, topologyConnections: connections.filter(c => c.id !== connectionId) }
-      }));
-    }
-  }, [connections, saveToHistory, devices, activeCaptureConnectionId, setActiveCaptureConnection]);
 
   // Reset view
   // resetView is now provided by useCanvasZoomPan hook
@@ -3775,105 +3671,6 @@ export function NetworkTopology({
     startPingAnimationRef.current = startPingAnimation;
   }, [startPingAnimation]);
 
-  // Ping pause/play/next handlers
-  const handlePingPause = useCallback(() => {
-    pingIsPausedRef.current = true;
-    // Don't reset pingStepModeRef here - preserve step mode state
-    // pingStepModeRef.current = false;
-
-    // Cancel the current animation frame
-    if (pingAnimationRef.current) {
-      cancelAnimationFrame(pingAnimationRef.current);
-      pingAnimationRef.current = null;
-    }
-
-    // Note: We don't need to set pingResumeCallbackRef here because:
-    // 1. If we're in the middle of a hop, the animate() function will be called again by play
-    // 2. If we're at a hop boundary, the callback is already set by advanceToNextHop
-    // The key is that animate() checks pingIsPausedRef at the start and returns early
-
-    setPingAnimation(prev => prev ? { ...prev, isPaused: true } : null);
-  }, []);
-
-  const handlePingPlay = useCallback(() => {
-    if (!pingIsPausedRef.current) return;
-
-    pingIsPausedRef.current = false;
-    pingStepModeRef.current = false;
-    setPingAnimation(prev => prev ? { ...prev, isPaused: false } : null);
-    setPacketPopupHop(null);
-
-    if (pingResumeCallbackRef.current) {
-      const resume = pingResumeCallbackRef.current;
-      pingResumeCallbackRef.current = null;
-      resume();
-    }
-  }, []);
-
-  const handlePingNext = useCallback(() => {
-    if (!pingIsPausedRef.current) return;
-
-    const resume = pingResumeCallbackRef.current;
-    if (!resume) return;
-
-    pingStepModeRef.current = true;
-    pingIsPausedRef.current = false;
-    setPingAnimation(prev => prev ? { ...prev, isPaused: false } : null);
-    setPacketPopupHop(null);
-
-    resume();
-  }, []);
-
-  const handleEnvelopeClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    handlePingPause();
-    setPingAnimation(prev => prev ? { ...prev, showPacketPanel: true } : null);
-    if (onPacketPanelFocus) onPacketPanelFocus();
-    if (pingAnimation) setPacketPopupHop(pingAnimation.currentHopIndex);
-  }, [handlePingPause, onPacketPanelFocus, pingAnimation]);
-
-  useEffect(() => {
-    return () => {
-      pingIsPausedRef.current = false;
-      pingStepModeRef.current = false;
-      pingResumeCallbackRef.current = null;
-      if (pingAnimationRef.current) {
-        cancelAnimationFrame(pingAnimationRef.current);
-        pingAnimationRef.current = null;
-      }
-      if (pingCleanupTimeoutRef.current) {
-        clearTimeout(pingCleanupTimeoutRef.current);
-        pingCleanupTimeoutRef.current = null;
-      }
-    };
-  }, []);
-
-  // Listen for global ping animation trigger
-  useEffect(() => {
-    const handlePingTrigger = (event: Event) => {
-      const { sourceId, targetId } = (event as CustomEvent).detail as { sourceId: string; targetId: string };
-      if (sourceId && targetId) {
-        startPingAnimation(sourceId, targetId);
-      }
-    };
-    window.addEventListener('trigger-ping-animation', handlePingTrigger as EventListener);
-    return () => window.removeEventListener('trigger-ping-animation', handlePingTrigger as EventListener);
-  }, [startPingAnimation]);
-
-  // Listen for device power toggle events — cancel active ping if a device in the path is turned off
-  useEffect(() => {
-    const handlePowerToggle = (event: Event) => {
-      const { deviceId, nextStatus } = (event as CustomEvent).detail as { deviceId: string; nextStatus: string };
-      if (nextStatus === 'offline' && pingPathRef.current.includes(deviceId)) {
-        cancelPingDueToInterruptionRef.current(
-          isTR ? 'Cihaz kapatıldığı için ping iptal edildi.' : 'Ping cancelled because a device was powered off.'
-        );
-      }
-    };
-    window.addEventListener('trigger-topology-toggle-power', handlePowerToggle as EventListener);
-    return () => window.removeEventListener('trigger-topology-toggle-power', handlePowerToggle as EventListener);
-  }, [isTR]);
-
   // Handle device config updates from WiFi control panel (e.g., IoT disconnect)
   useEffect(() => {
     const handleUpdateDeviceConfig = (event: CustomEvent<{ deviceId: string; config: Partial<CanvasDevice> }>) => {
@@ -3905,13 +3702,6 @@ export function NetworkTopology({
     };
   }, [setDevices, saveToHistory, deleteConnection]);
 
-  // Get device position (center based on device type)
-  const getDeviceCenter = useCallback((device: CanvasDevice) => {
-    const deviceWidth = getDeviceWidth(device.type);
-    const deviceHeight = getDeviceHeight(device.type, device.ports.length);
-    return { x: device.x + deviceWidth / 2, y: device.y + deviceHeight / 2 };
-  }, []);
-
   // Handle external focus device request - pan to center
   useEffect(() => {
     if (focusDeviceId && deviceMap.get(focusDeviceId)) {
@@ -3932,74 +3722,12 @@ export function NetworkTopology({
         }
       }
     }
-  }, [focusDeviceId, devices, zoom, getDeviceCenter]);
-
-  // Get port position on device
-  const getPortPosition = useCallback((device: CanvasDevice, portId: string) => {
-    const portIndex = device.ports.findIndex(p => p.id === portId);
-    if (portIndex === -1) return getDeviceCenter(device);
-
-    const deviceWidth = getDeviceWidth(device.type);
-    const portsPerRow = (device.type === 'pc' || device.type === 'iot') ? 2 : 8;
-    const col = portIndex % portsPerRow;
-    const row = Math.floor(portIndex / portsPerRow);
-
-    if (device.type === 'pc' || device.type === 'iot') {
-      const pcPortSpacing = PC_PORT_SPACING;
-      const pcStartY = 85 / 2 - ((device.ports.length - 1) * pcPortSpacing) / 2;
-      return {
-        x: device.x + deviceWidth - 8,
-        y: device.y + pcStartY + portIndex * pcPortSpacing
-      };
-    }
-
-    // Router/WLC: Gi ports row 0, Console+Serial ports row 1
-    let actualCol: number;
-    let actualRow: number;
-    if (device.type === 'router' || device.type === 'wlc') {
-      const filteredPorts = device.ports.filter(p => p.id !== 'wlan0' && !p.id.startsWith('service'));
-      const portIdLower = portId.toLowerCase();
-      const giPorts = filteredPorts.filter(p => p.id.toLowerCase().startsWith('gi'));
-      const otherPorts = filteredPorts.filter(p => !p.id.toLowerCase().startsWith('gi'));
-      const isGi = portIdLower.startsWith('gi');
-      if (device.type === 'wlc') {
-        // WLC: all ports in single row, console after gi ports
-        if (isGi) {
-          actualCol = giPorts.findIndex(p => p.id === portId);
-        } else {
-          actualCol = giPorts.length + otherPorts.findIndex(p => p.id === portId);
-        }
-        actualRow = 0;
-      } else {
-        // Router: gi ports row 0, other ports row 1
-        if (isGi) {
-          actualCol = giPorts.findIndex(p => p.id === portId);
-          actualRow = 0;
-        } else {
-          actualCol = otherPorts.findIndex(p => p.id === portId);
-          actualRow = 1;
-        }
-      }
-    } else {
-      actualCol = col;
-      actualRow = row;
-    }
-
-    const portSpacing = PORT_SPACING;
-    const rowSpacing = PORT_SPACING;
-    const startX = PORT_START_X;
-    const startY = PORT_START_Y;
-
-    return {
-      x: device.x + startX + actualCol * portSpacing,
-      y: device.y + startY + actualRow * rowSpacing
-    };
-  }, [getDeviceCenter]);
+  }, [focusDeviceId, devices, zoom, onPanChange, deviceMap]);
 
   // Sync getPortPosition ref for direct DOM connection updates during drag
   useEffect(() => {
     getPortPositionRef.current = getPortPosition;
-  }, [getPortPosition]);
+  }, []);
 
   // Render device
   const renderDevice = (device: CanvasDevice, isDragging: boolean = false) => {
@@ -4863,323 +4591,76 @@ export function NetworkTopology({
         onRefreshNetwork={handleRefresh}
         note={notes.find(n => n.id === contextMenu?.noteId)}
       />
-      {/* Device Configuration Modal (Name & IP) */}
-      {(() => {
-        if (!configuringDevice) return null;
-        const d = deviceMap.get(configuringDevice);
-        return d ? (
-          <DeviceConfigModal
-            device={d}
-            onClose={cancelDeviceConfig}
-            onSave={saveDeviceConfig}
-            isMobile={isMobile}
-            isDark={isDark}
-          />
-        ) : null;
-      })()}
-
-      {/* Success/failure result is shown inside PingPacketInfoPanel */}
-
-      {/* Ping Packet Info Panel - shows during animation AND on success/failure result */}
-      {pingAnimation && (
-        <PingPacketInfoPanel
-          isVisible={!!(pingAnimation.showPacketPanel)}
-          isPaused={!!pingAnimation.isPaused}
-          hopPacketInfos={hopPacketInfos}
-          currentHopIndex={pingAnimation.currentHopIndex}
-          totalHops={pingAnimation.path.length - 1}
-          onPlay={handlePingPlay}
-          onPause={handlePingPause}
-          onNext={handlePingNext}
-          onClose={handlePingClose}
-          language={language}
-          isDark={isDark}
-          graphicsQuality={graphicsQuality}
-          isMobile={isMobile}
-          onFocus={onPacketPanelFocus}
-          zIndex={packetPanelZIndex}
-          success={pingAnimation.success}
-          isReturn={!!pingAnimation.isReturn}
-          errorMessage={pingAnimation.error}
-          sourceName={deviceMap.get(pingAnimation.sourceId)?.name ?? pingAnimation.sourceId}
-          targetName={deviceMap.get(pingAnimation.targetId)?.name ?? pingAnimation.targetId}
-          sourceIp={deviceMap.get(pingAnimation.sourceId)?.ip ?? ''}
-          targetIp={deviceMap.get(pingAnimation.targetId)?.ip ?? ''}
-          isFocused={true}
-        />
-      )}
-
-      {/* Packet Content Popup - mektup tıklandığında açılır */}
-      {packetPopupHop !== null && hopPacketInfos[packetPopupHop] && (
-        <PacketPopup
-          hopIndex={packetPopupHop}
-          info={hopPacketInfos[packetPopupHop]}
-          language={language}
-          isDark={isDark}
-          onClose={() => setPacketPopupHop(null)}
-          isFocused={true}
-        />
-      )}
-
-      {/* Persistent Error Toast - ping başarısız olduğunda göster, kullanıcı kapatana kadar açık kalır */}
-      {errorToast && !errorToast.type && (
-        <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="px-4 py-3 rounded-lg shadow-2xl shadow-black/25 flex items-start gap-2 bg-error-600 text-white max-w-md">
-            <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <div className="flex flex-col flex-grow">
-              <span className="text-sm font-medium">{errorToast.message}</span>
-              {errorToast.details && (
-                <span className="text-xs opacity-90 mt-0.5">{errorToast.details}</span>
-              )}
-            </div>
-            <TooltipWrapper title={t.close}>
-              <button
-                onClick={() => setErrorToast(null)}
-                className="flex-shrink-0 ml-2 hover:bg-error-700 rounded p-1 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </TooltipWrapper>
-          </div>
-        </div>
-      )}
-
-      {/* Connection Error Toast */}
-      {connectionError && (
-        <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="px-4 py-3 rounded-lg shadow-2xl shadow-black/25 flex items-center gap-2 bg-error-600 text-white">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            <span className="text-sm font-medium">{connectionError}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Mobile Device Palette Sheet */}
-      <Sheet open={mobilePaletteOpen} onOpenChange={setMobilePaletteOpen}>
-        <SheetContent side="bottom" className={`rounded-t-[2rem] px-6 pb-10 border-t-2 border-primary/20 backdrop-blur-xl ${isDark ? 'bg-secondary-900/95' : 'bg-white/95'}`}>
-          <SheetHeader className="mb-4 pt-2">
-            <SheetTitle className={`text-center font-black tracking-tighter text-xl uppercase ${isDark ? 'text-white' : 'text-secondary-900'}`}>
-              {isTR ? 'Cihaz & Kablo Ekle' : 'Add Device & Cable'}
-            </SheetTitle>
-          </SheetHeader>
-
-          {/* Devices */}
-          <p className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
-            {isTR ? 'Cihazlar' : 'Devices'}
-          </p>
-          <div className="grid grid-cols-4 gap-2 mb-5">
-            {([
-              { type: 'pc' as const, label: 'PC', layer: undefined as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.pc },
-              { type: 'switch' as const, label: 'L2 SW', layer: 'L2' as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.switchL2 },
-              { type: 'switch' as const, label: 'L3 SW', layer: 'L3' as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.switchL3 },
-              { type: 'router' as const, label: 'Router', layer: undefined as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.router },
-              { type: 'firewall' as const, label: 'Firewall', layer: undefined as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.firewall },
-              { type: 'iot' as const, label: 'IoT', layer: undefined as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.iot },
-              { type: 'wlc' as const, label: 'WLC', layer: undefined as 'L2' | 'L3' | undefined, icon: DEVICE_ICONS.wlc },
-            ]).map((item) => (
-              <button
-                key={`${item.type}-${item.layer || ''}`}
-                onClick={() => {
-                  addDevice(item.type, item.layer);
-                  setMobilePaletteOpen(false);
-                }}
-                className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all active:scale-95 ${isDark
-                  ? 'border-secondary-700 bg-secondary-800/50 hover:bg-secondary-800'
-                  : 'border-secondary-200 bg-secondary-50 hover:bg-secondary-100'}`}
-              >
-                <div className="w-8 h-8 flex items-center justify-center">
-                  {item.icon}
-                </div>
-                <span className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-secondary-300' : 'text-secondary-600'}`}>
-                  {item.label}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {/* Cables */}
-          <p className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
-            {isTR ? 'Kablolar' : 'Cables'}
-          </p>
-          <div className="grid grid-cols-5 gap-2">
-            {([
-              { type: 'straight' as const, label: isTR ? 'Düz' : 'Straight', icon: <Cable className="w-5 h-5" />, activeColor: 'text-primary-400', color: 'text-primary-500' },
-              { type: 'crossover' as const, label: isTR ? 'Çapraz' : 'Crossover', icon: <LineSquiggle className="w-5 h-5" />, activeColor: 'text-warning-400', color: 'text-warning-500' },
-              { type: 'serial' as const, label: isTR ? 'Seri' : 'Serial', icon: <Plug className="w-5 h-5" />, activeColor: 'text-success-400', color: 'text-success-500' },
-              { type: 'console' as const, label: isTR ? 'Konsol' : 'Console', icon: <TrendingUpDown className="w-5 h-5" />, activeColor: 'text-accent-400', color: 'text-accent-500' },
-              { type: 'wireless' as const, label: isTR ? 'Kablo-' : 'Wireless', icon: <Wifi className="w-5 h-5" />, activeColor: 'text-purple-400', color: 'text-purple-500' },
-            ]).map((item) => {
-              const isActive = cableInfo.cableType === item.type;
-              return (
-                <button
-                  key={item.type}
-                  onClick={() => { onCableChange({ ...cableInfo, cableType: item.type }); setMobilePaletteOpen(false); }}
-                  className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all active:scale-95 ${isActive
-                    ? isDark
-                      ? 'border-secondary-500 bg-secondary-700/80'
-                      : 'border-secondary-400 bg-secondary-200/80'
-                    : isDark
-                      ? 'border-secondary-700 bg-secondary-800/50 hover:bg-secondary-800'
-                      : 'border-secondary-200 bg-secondary-50 hover:bg-secondary-100'}`}
-                >
-                  <div className={`relative flex items-center justify-center ${isActive ? item.activeColor : item.color}`}>
-                    {item.icon}
-                    {isActive && <span className="absolute -bottom-1 -right-1 w-2 h-2 bg-primary-500 rounded-full" />}
-                  </div>
-                  <span className={`text-[9px] font-bold text-center leading-tight ${isActive ? item.activeColor : item.color}`}>
-                    {item.label}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </SheetContent>
-      </Sheet>
-
-      <LazyNetworkTopologyPortSelectorModal
-        isOpen={showPortSelector}
+      <TopologyTooltips
+        portTooltip={portTooltip}
+        deviceMap={deviceMap}
+        deviceStates={deviceStates}
         isDark={isDark}
-        graphicsQuality={graphicsQuality}
-        devices={devices}
-        cableType={cableInfo.cableType}
-        portSelectorStep={portSelectorStep}
-        selectedSourcePort={selectedSourcePort}
-        onClose={() => {
-          setShowPortSelector(false);
-          setPortSelectorStep('source');
-          setSelectedSourcePort(null);
-        }}
-        onCableTypeChange={(nextType) => onCableChange({ ...cableInfo, cableType: nextType })}
-        onSelectPort={(deviceId, portId) => {
-          if (portSelectorStep === 'source') {
-            flushSync(() => {
-              setSelectedSourcePort({ deviceId, portId });
-              setPortSelectorStep('target');
-            });
-          } else {
-            // Complete connection only if not clicking same source port
-            const srcPort = selectedSourcePort as { deviceId: string; portId: string };
-            if (srcPort.deviceId === deviceId && srcPort.portId === portId) return;
-
-            const newConnection: CanvasConnection = {
-              id: `conn-${Date.now()}`,
-              sourceDeviceId: srcPort.deviceId,
-              sourcePort: srcPort.portId,
-              targetDeviceId: deviceId,
-              targetPort: portId,
-              cableType: cableInfo.cableType,
-              active: true,
-            };
-
-            flushSync(() => {
-              setConnections((prev) => [...prev, newConnection]);
-
-              // Update port status
-              setDevices((prev) =>
-                prev.map((d) => {
-                  if (d.id === srcPort.deviceId) {
-                    return {
-                      ...d,
-                      ports: d.ports.map((p) =>
-                        p.id === srcPort.portId ? { ...p, status: 'connected' as const } : p
-                      ),
-                    };
-                  }
-                  if (d.id === deviceId) {
-                    return {
-                      ...d,
-                      ports: d.ports.map((p) =>
-                        p.id === portId ? { ...p, status: 'connected' as const } : p
-                      ),
-                    };
-                  }
-                  return d;
-                })
-              );
-
-              // Update cable info
-              const sourceDevice = deviceMap.get(srcPort.deviceId);
-              const targetDevice = deviceMap.get(deviceId);
-              if (sourceDevice && targetDevice) {
-                onCableChange({
-                  ...cableInfo,
-                  connected: true,
-                  sourceDevice: sourceDevice.type,
-                  targetDevice: targetDevice.type,
-                });
-              }
-
-              setShowPortSelector(false);
-              setPortSelectorStep('source');
-              setSelectedSourcePort(null);
-            });
-
-            // Trigger STP recalculation for all switches AFTER UI update to prevent stuttering
-            setTimeout(() => {
-              window.dispatchEvent(new CustomEvent('stp-recalculation-needed', {
-                detail: { topologyDevices: devices, topologyConnections: [...connections, newConnection] }
-              }));
-            }, 0);
-          }
+        language={language}
+        getIotDeviceStatus={getIotDeviceStatus}
+        getIotPowerStatus={getIotPowerStatus}
+        getIotOpenCloseStatus={getIotOpenCloseStatus}
+        getLivePortVlanText={getLivePortVlanText}
+        connectionTooltip={connectionTooltip}
+        CABLE_COLORS={CABLE_COLORS}
+        deviceTooltip={deviceTooltip}
+        isTR={isTR}
+        isDraggingInteractionDisabled={isDraggingInteractionDisabled}
+        t={{
+          ipAddress: t.ipAddress,
+          subnetMask: t.subnetMask,
+          gateway: t.gateway,
+          dnsServer: t.dnsServer,
+          macAddress: t.macAddress,
+          dhcpEnabled: t.dhcpEnabled,
+          openServices: t.openServices,
+          active: t.active,
         }}
       />
-      {/* Port Tooltip */}
-      <PortTooltip portTooltip={portTooltip} deviceMap={deviceMap} deviceStates={deviceStates} isDark={isDark} language={language} getIotDeviceStatus={getIotDeviceStatus} getIotPowerStatus={getIotPowerStatus} getIotOpenCloseStatus={getIotOpenCloseStatus} getLivePortVlanText={getLivePortVlanText} />
-
-      {/* Connection Tooltip */}
-      <ConnectionTooltip connectionTooltip={connectionTooltip} isDark={isDark} language={language} CABLE_COLORS={CABLE_COLORS} />
-
-      {/* Device Tooltip */}
-      {deviceTooltip && (
-        <DeviceTooltip
-          tooltip={deviceTooltip}
-          deviceMap={deviceMap}
-          isDark={isDark}
-          isTR={isTR}
-          isDraggingInteractionDisabled={isDraggingInteractionDisabled}
-          t={{
-            ipAddress: t.ipAddress,
-            subnetMask: t.subnetMask,
-            gateway: t.gateway,
-            dnsServer: t.dnsServer,
-            macAddress: t.macAddress,
-            dhcpEnabled: t.dhcpEnabled,
-            openServices: t.openServices,
-            active: t.active,
-          }}
-        />
-      )}
-      {/* Packet Capture Panel */}
-      {activeCaptureConnectionId && (
-        <PacketCapturePanel
-          activeCaptureConnectionId={activeCaptureConnectionId}
-          clearCapturedPackets={clearCapturedPackets}
-          setActiveCaptureConnection={setActiveCaptureConnection}
-          capturedPacketsMap={capturedPacketsMap}
-          t={t}
-          isDark={isDark}
-        />
-      )}
-
-      {/* Toast Notification */}
-      {errorToast && errorToast.type && (
-        <div
-          role="alert"
-          aria-live="polite"
-          className={`fixed bottom-4 left-4 px-4 py-3 rounded-lg shadow-lg text-sm font-medium transition-all duration-300 z-40 ${errorToast.type === 'success'
-            ? isDark ? 'bg-success-500/20 border border-success-500/50 text-success-300' : 'bg-success-50 border border-success-200 text-success-700'
-            : isDark ? 'bg-error-500/20 border border-error-500/50 text-error-300' : 'bg-error-50 border border-error-200 text-error-700'
-            }`}
-        >
-          {errorToast.message}
-        </div>
-      )}
+      <TopologyModals
+        configuringDevice={configuringDevice}
+        deviceMap={deviceMap}
+        cancelDeviceConfig={cancelDeviceConfig}
+        saveDeviceConfig={saveDeviceConfig}
+        isMobile={isMobile}
+        isDark={isDark}
+        pingAnimation={pingAnimation}
+        hopPacketInfos={hopPacketInfos}
+        handlePingPlay={handlePingPlay}
+        handlePingPause={handlePingPause}
+        handlePingNext={handlePingNext}
+        handlePingClose={handlePingClose}
+        language={language}
+        graphicsQuality={graphicsQuality}
+        onPacketPanelFocus={onPacketPanelFocus}
+        packetPanelZIndex={packetPanelZIndex}
+        packetPopupHop={packetPopupHop}
+        setPacketPopupHop={setPacketPopupHop}
+        errorToast={errorToast}
+        setErrorToast={setErrorToast}
+        connectionError={connectionError}
+        mobilePaletteOpen={mobilePaletteOpen}
+        setMobilePaletteOpen={setMobilePaletteOpen}
+        isTR={isTR}
+        addDevice={addDevice}
+        cableInfo={cableInfo}
+        onCableChange={onCableChange}
+        showPortSelector={showPortSelector}
+        devices={devices}
+        portSelectorStep={portSelectorStep}
+        selectedSourcePort={selectedSourcePort}
+        setShowPortSelector={setShowPortSelector}
+        setPortSelectorStep={setPortSelectorStep}
+        setSelectedSourcePort={setSelectedSourcePort}
+        setConnections={setConnections}
+        setDevices={setDevices}
+        connections={connections}
+        activeCaptureConnectionId={activeCaptureConnectionId}
+        clearCapturedPackets={clearCapturedPackets}
+        setActiveCaptureConnection={setActiveCaptureConnection}
+        capturedPacketsMap={capturedPacketsMap}
+        t={t}
+      />
 
     </div>
   );

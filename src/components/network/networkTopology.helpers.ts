@@ -1,4 +1,7 @@
 import { DeviceType } from './networkTopology.types';
+import { PORT_SPACING, PORT_START_X, PORT_START_Y, PC_PORT_SPACING } from './networkTopology.constants';
+import { CanvasDevice, CanvasConnection } from './networkTopology.types';
+import { isCableCompatible, CABLE_COMPATIBILITY } from '@/lib/network/types';
 
 // Device dimension constants
 const DEVICE_DIMENSIONS = {
@@ -28,9 +31,6 @@ export const getDeviceHeight = (deviceType: string, portCount: number): number =
   const numRows = Math.ceil(portCount / 8);
   return 80 + numRows * 14 + 5;
 };
-
-import { CanvasDevice, CanvasConnection } from './networkTopology.types';
-import { isCableCompatible, CABLE_COMPATIBILITY } from '@/lib/network/types';
 
 export function getConnectionStatusMessage(conn: CanvasConnection, devices: CanvasDevice[], language: 'tr' | 'en'): string {
   const sourceDevice = devices.find(d => d.id === conn.sourceDeviceId);
@@ -64,4 +64,66 @@ export const isSwitchDeviceType = (type: DeviceType | string): boolean => {
 
 export const easeInOutCubic = (t: number): number => {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+};
+
+export const getDeviceCenter = (device: CanvasDevice) => {
+  const deviceWidth = getDeviceWidth(device.type);
+  const deviceHeight = getDeviceHeight(device.type, device.ports.length);
+  return { x: device.x + deviceWidth / 2, y: device.y + deviceHeight / 2 };
+};
+
+export const getPortPosition = (device: CanvasDevice, portId: string) => {
+  const portIndex = device.ports.findIndex(p => p.id === portId);
+  if (portIndex === -1) return getDeviceCenter(device);
+
+  const deviceWidth = getDeviceWidth(device.type);
+  const portsPerRow = (device.type === 'pc' || device.type === 'iot') ? 2 : 8;
+  const col = portIndex % portsPerRow;
+  const row = Math.floor(portIndex / portsPerRow);
+
+  if (device.type === 'pc' || device.type === 'iot') {
+    const pcPortSpacing = PC_PORT_SPACING;
+    const pcStartY = 85 / 2 - ((device.ports.length - 1) * pcPortSpacing) / 2;
+    return {
+      x: device.x + deviceWidth - 8,
+      y: device.y + pcStartY + portIndex * pcPortSpacing
+    };
+  }
+
+  // Router/WLC: Gi ports row 0, Console+Serial ports row 1
+  let actualCol: number;
+  let actualRow: number;
+  if (device.type === 'router' || device.type === 'wlc') {
+    const filteredPorts = device.ports.filter(p => p.id !== 'wlan0' && !p.id.startsWith('service'));
+    const portIdLower = portId.toLowerCase();
+    const giPorts = filteredPorts.filter(p => p.id.toLowerCase().startsWith('gi'));
+    const otherPorts = filteredPorts.filter(p => !p.id.toLowerCase().startsWith('gi'));
+    const isGi = portIdLower.startsWith('gi');
+    if (device.type === 'wlc') {
+      // WLC: all ports in single row, console after gi ports
+      if (isGi) {
+        actualCol = giPorts.findIndex(p => p.id === portId);
+      } else {
+        actualCol = giPorts.length + otherPorts.findIndex(p => p.id === portId);
+      }
+      actualRow = 0;
+    } else {
+      // Router: gi ports row 0, other ports row 1
+      if (isGi) {
+        actualCol = giPorts.findIndex(p => p.id === portId);
+        actualRow = 0;
+      } else {
+        actualCol = otherPorts.findIndex(p => p.id === portId);
+        actualRow = 1;
+      }
+    }
+  } else {
+    actualCol = col;
+    actualRow = row;
+  }
+
+  return {
+    x: device.x + PORT_START_X + actualCol * PORT_SPACING,
+    y: device.y + PORT_START_Y + actualRow * PORT_SPACING
+  };
 };

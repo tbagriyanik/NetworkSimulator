@@ -11,7 +11,7 @@ interface DeviceTooltipData {
   visible: boolean;
 }
 
-interface Translations {
+export interface Translations {
   ipAddress: string;
   subnetMask: string;
   gateway: string;
