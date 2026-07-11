@@ -262,9 +262,9 @@ export const generateCertificate = async (data: CertificateData): Promise<void> 
   doc.setFontSize(13);
   doc.text(`${isTr ? 'Tarih' : 'Date'}: ${date}`, 40, 165);
 
-  // Expiration Date (3 Years validity)
+  // Expiration Date (1 Year validity)
   const expireDateObj = new Date();
-  expireDateObj.setFullYear(expireDateObj.getFullYear() + 3);
+  expireDateObj.setFullYear(expireDateObj.getFullYear() + 1);
   const expireDateRaw = expireDateObj.toLocaleDateString(isTr ? 'tr-TR' : 'en-US');
   const expireDate = hasTurkishFont ? expireDateRaw : sanitize(expireDateRaw);
 
