@@ -258,6 +258,45 @@ export function useCanvasActions({
     setSelectedDeviceIds([]);
   }, [saveToHistory, getNextNoteId, latestNotesRef, setNotes, setSelectedNoteIds, setSelectedDeviceIds]);
 
+  const addSummaryNote = useCallback(() => {
+    saveToHistory();
+    const isTr = language === 'tr';
+    let summaryText = isTr ? '📋 TOPOLOJİ ÖZETİ\n' : '📋 TOPOLOGY SUMMARY\n';
+    summaryText += '========================\n';
+
+    if (devices.length === 0) {
+      summaryText += isTr ? 'Cihaz bulunamadı.' : 'No devices found.';
+    } else {
+      devices.forEach(d => {
+        const typeLabel = d.type === 'switchL2' ? 'Switch L2' : d.type === 'switchL3' ? 'Switch L3' : d.type.toUpperCase();
+        summaryText += `• ${d.name} [${typeLabel}]\n`;
+        if (d.ip) {
+          summaryText += `  IP: ${d.ip}\n`;
+        }
+        if (d.gateway && d.gateway !== '0.0.0.0') {
+          summaryText += `  GW: ${d.gateway}\n`;
+        }
+        summaryText += `  MAC: ${d.macAddress}\n`;
+        summaryText += '------------------------\n';
+      });
+    }
+
+    const newNote: CanvasNote = {
+      id: getNextNoteId(),
+      x: 150 + Math.random() * 50,
+      y: 150 + Math.random() * 50,
+      width: 250,
+      height: Math.max(120, 50 + devices.length * 75),
+      text: summaryText.trim(),
+      color: 'var(--color-success-200)',
+      font: 'Courier New',
+      fontSize: 10,
+      opacity: 1,
+    };
+    setNotes((prev) => [...prev, newNote]);
+    setSelectedNoteIds([newNote.id]);
+  }, [saveToHistory, language, getNextNoteId, devices, setNotes, setSelectedNoteIds]);
+
   return {
     generateUniqueLinkLocalIp,
     generateUniqueLinkLocalIpv6,
@@ -266,6 +305,7 @@ export function useCanvasActions({
     deleteDevice,
     getNextNoteId,
     addNote,
+    addSummaryNote,
     deleteNote,
     duplicateNote
   };
