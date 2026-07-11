@@ -258,21 +258,42 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
     });
 
     // Re-create notes as export-friendly SVG elements (rounded rect + text, auto-sized)
-    const measureNoteHeight = (text: string, width: number, fontSize: number, font: string): number => {
-      const tmp = document.createElement('div');
-      tmp.style.cssText = `position:absolute;visibility:hidden;left:-9999px;width:${width - 16}px;font-size:${fontSize}px;font-family:${font};line-height:1.35;white-space:pre-wrap;word-wrap:break-word;`;
-      tmp.textContent = text || ' ';
-      document.body.appendChild(tmp);
-      const h = tmp.scrollHeight + 24 + 16;
-      document.body.removeChild(tmp);
-      return Math.max(100, h);
-    };
     const noteHeights = new Map<string, number>();
     notes.forEach(note => {
-      noteHeights.set(note.id, measureNoteHeight(note.text, note.width, note.fontSize, note.font));
+      const pad = 12;
+      const lines = note.text.split('\n');
+      const maxLineWidth = note.width - pad * 2;
+      const lineHeight = note.fontSize * 1.35;
+
+      const wrappedLines: string[] = [];
+      for (const line of lines) {
+        if (!line.trim()) {
+          wrappedLines.push('');
+          continue;
+        }
+        const words = line.split(/\s+/);
+        let currentLine = '';
+        for (const word of words) {
+          const testLine = currentLine ? `${currentLine} ${word}` : word;
+          const approxWidth = testLine.length * (note.fontSize * 0.52);
+          if (approxWidth > maxLineWidth && currentLine) {
+            wrappedLines.push(currentLine);
+            currentLine = word;
+          } else {
+            currentLine = testLine;
+          }
+        }
+        if (currentLine) {
+          wrappedLines.push(currentLine);
+        }
+      }
+
+      const lineCount = wrappedLines.length;
+      const nh = Math.max(60, lineCount * lineHeight + pad * 2 + 10);
+      noteHeights.set(note.id, nh);
 
       const g = document.createElementNS(ns, 'g');
-      const nh = noteHeights.get(note.id) ?? 100;
+      g.setAttribute('data-note-id', note.id);
 
       const rect = document.createElementNS(ns, 'rect');
       rect.setAttribute('x', note.x.toString());
@@ -285,18 +306,23 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
       rect.setAttribute('opacity', note.opacity.toString());
       g.appendChild(rect);
 
-      const fo = document.createElementNS(ns, 'foreignObject');
-      const pad = 8;
-      fo.setAttribute('x', (note.x + pad).toString());
-      fo.setAttribute('y', (note.y + pad + 24).toString());
-      fo.setAttribute('width', (note.width - pad * 2).toString());
-      fo.setAttribute('height', (nh - pad * 2 - 24).toString());
-      const div = document.createElement('div');
-      div.textContent = note.text;
-      div.style.cssText = `font-family:${note.font};font-size:${note.fontSize}px;line-height:1.35;color:var(--color-foreground);word-wrap:break-word;white-space:pre-wrap;width:100%;height:100%;overflow:hidden;`;
-      fo.appendChild(div);
-      g.appendChild(fo);
+      // Render text using tspan
+      const textEl = document.createElementNS(ns, 'text');
+      textEl.setAttribute('x', (note.x + pad).toString());
+      textEl.setAttribute('y', (note.y + pad + 16).toString());
+      textEl.setAttribute('font-family', note.font);
+      textEl.setAttribute('font-size', note.fontSize.toString());
+      textEl.setAttribute('fill', 'var(--color-foreground)'); // will be resolved to actual color later
 
+      wrappedLines.forEach((lineText, idx) => {
+        const tspan = document.createElementNS(ns, 'tspan');
+        tspan.setAttribute('x', (note.x + pad).toString());
+        tspan.setAttribute('dy', idx === 0 ? '0' : `${lineHeight}px`);
+        tspan.textContent = lineText;
+        textEl.appendChild(tspan);
+      });
+
+      g.appendChild(textEl);
       clone.appendChild(g);
     });
 
@@ -421,6 +447,12 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
       }
 
       const pngUrl = URL.createObjectURL(blob);
+
+      // On mobile devices, also open in a new tab so users can long-press to save
+      if (isMobile) {
+        window.open(pngUrl, '_blank');
+      }
+
       const link = document.createElement('a');
       link.href = pngUrl;
       link.download = filename;
