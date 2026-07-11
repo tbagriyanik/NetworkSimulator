@@ -120,6 +120,7 @@ export const generateIotWebPanelContent = (
             --color-success-500: #22c55e;
             --color-success-600: #16a34a;
             --color-error-500: #ef4444;
+            --color-error-600: #dc2626;
           }
           body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -475,7 +476,7 @@ export const generateIotWebPanelContent = (
         <div class="container">
           <h1>${isTurkish ? 'IoT Web Paneli' : 'IoT Web Panel'}</h1>
           
-          <form id="loginSection" class="login-form" onsubmit="window.checkPassword(); return false;">
+          <form id="loginSection" class="login-form" onsubmit="window.checkPassword(event); return false;">
             <div class="form-group">
               <label for="username">${isTurkish ? 'Kullanıcı Adı' : 'Username'}:</label>
               <input type="text" id="username" value="admin" placeholder="${isTurkish ? 'Kullanıcı adı girin' : 'Enter username'}" />
@@ -545,7 +546,11 @@ export const generateIotWebPanelContent = (
             }
           };
 
-          window.checkPassword = function() {
+          window.checkPassword = function(e) {
+            if (e) {
+              e.preventDefault();
+              e.stopPropagation();
+            }
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const correctUsername = 'admin';
@@ -713,6 +718,7 @@ export const generateIotDevicePageContent = (
             --color-success-500: #22c55e;
             --color-success-600: #16a34a;
             --color-error-500: #ef4444;
+            --color-error-600: #dc2626;
             --color-warning-100: #fef3c7;
             --color-warning-700: #b45309;
           }

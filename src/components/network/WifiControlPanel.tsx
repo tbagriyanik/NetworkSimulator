@@ -258,6 +258,9 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
+      border: none;
+      background: transparent;
+      font-family: inherit;
       border-bottom: 3px solid transparent;
       transition: all 0.3s;
     }
@@ -494,14 +497,19 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
     }
     
     .switch input {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       opacity: 0;
-      width: 0;
-      height: 0;
+      margin: 0;
+      cursor: pointer;
+      z-index: 2;
     }
     
     .slider {
       position: absolute;
-      cursor: pointer;
       top: 0;
       left: 0;
       right: 0;
@@ -509,6 +517,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
       background-color: var(--color-secondary-300);
       transition: .4s;
       border-radius: 34px;
+      z-index: 1;
     }
     
     .slider:before {
@@ -593,10 +602,10 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
     </div>
     
     <div class="nav-tabs">
-      <div class="nav-tab${activeTab === 'wireless' ? ' active' : ''}" onclick="showTab('wireless')">📶 ${isTurkish ? 'Kablosuz' : 'Wireless'}</div>
-      <div class="nav-tab${activeTab === 'iot' ? ' active' : ''}" onclick="showTab('iot')">🛜 ${isTurkish ? 'IoT Cihazları' : 'IoT Devices'}</div>
-      <div class="nav-tab${activeTab === 'status' ? ' active' : ''}" onclick="showTab('status')">📊 ${isTurkish ? 'Durum' : 'Status'}</div>
-      <div class="nav-tab${activeTab === 'advanced' ? ' active' : ''}" onclick="showTab('advanced')">⚙️ ${isTurkish ? 'Gelişmiş' : 'Advanced'}</div>
+      <button type="button" class="nav-tab${activeTab === 'wireless' ? ' active' : ''}" onclick="showTab('wireless')">📶 ${isTurkish ? 'Kablosuz' : 'Wireless'}</button>
+      <button type="button" class="nav-tab${activeTab === 'iot' ? ' active' : ''}" onclick="showTab('iot')">🛜 ${isTurkish ? 'IoT Cihazları' : 'IoT Devices'}</button>
+      <button type="button" class="nav-tab${activeTab === 'status' ? ' active' : ''}" onclick="showTab('status')">📊 ${isTurkish ? 'Durum' : 'Status'}</button>
+      <button type="button" class="nav-tab${activeTab === 'advanced' ? ' active' : ''}" onclick="showTab('advanced')">⚙️ ${isTurkish ? 'Gelişmiş' : 'Advanced'}</button>
     </div>
     
     <!-- Wireless Tab -->
