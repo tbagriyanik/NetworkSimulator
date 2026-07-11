@@ -255,6 +255,14 @@ export const generateCertificate = async (data: CertificateData): Promise<void> 
   doc.setFontSize(13);
   doc.text(`${isTr ? 'Tarih' : 'Date'}: ${date}`, 40, 165);
 
+  // Expiration Date (3 Years validity)
+  const expireDateObj = new Date();
+  expireDateObj.setFullYear(expireDateObj.getFullYear() + 3);
+  const expireDateRaw = expireDateObj.toLocaleDateString(isTr ? 'tr-TR' : 'en-US');
+  const expireDate = hasTurkishFont ? expireDateRaw : sanitize(expireDateRaw);
+
+  doc.text(`${isTr ? 'Geçerlilik Tarihi' : 'Expiration Date'}: ${expireDate}`, 40, 172);
+
   // Signature lines
   doc.setDrawColor(189, 195, 199);
   doc.line(40, 182, 100, 182);

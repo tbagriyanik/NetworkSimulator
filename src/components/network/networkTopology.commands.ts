@@ -218,6 +218,23 @@ export function getCommandCategories(isTR: boolean): CommandDefinition[] {
       ]
     },
     {
+      id: 'acl',
+      icon: Shield,
+      title: isTR ? 'Erişim Kontrol Listeleri (ACL)' : 'Access Control Lists (ACL)',
+      type: 'commands',
+      cmds: [
+        ['access-list <1-99> {permit|deny} <source> [wildcard]', isTR ? 'Standart numaralı ACL kuralı oluştur' : 'Create standard numbered ACL rule', '(config)#'],
+        ['access-list <100-199> {permit|deny} <protocol> <source> <dest> [operator port]', isTR ? 'Genişletilmiş numaralı ACL kuralı oluştur' : 'Create extended numbered ACL rule', '(config)#'],
+        ['no access-list <id>', isTR ? 'Numaralı ACL\'yi sil' : 'Remove numbered ACL', '(config)#'],
+        ['ip access-list {standard|extended} <name>', isTR ? 'Adlandırılmış ACL oluştur' : 'Create named ACL', '(config)#'],
+        ['no ip access-list {standard|extended} <name>', isTR ? 'Adlandırılmış ACL\'yi sil' : 'Remove named ACL', '(config)#'],
+        ['permit <rule>', isTR ? 'İzin verme kuralı (ACL modunda)' : 'Permit rule (in ACL mode)', '(config-std-nacl)#'],
+        ['deny <rule>', isTR ? 'Engelleme kuralı (ACL modunda)' : 'Deny rule (in ACL mode)', '(config-std-nacl)#'],
+        ['ip access-group <id|name> {in|out}', isTR ? 'ACL\'yi IP arayüzüne uygula' : 'Apply ACL to IP interface', '(config-if)#'],
+        ['show access-lists [<id|name>]', isTR ? 'Tanımlı ACL\'leri ve kuralları göster' : 'Display defined ACLs and rules', '#'],
+      ]
+    },
+    {
       id: 'wlc',
       icon: Radio,
       title: isTR ? 'WLC / AP Yönetimi' : 'WLC / AP Management',

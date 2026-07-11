@@ -33,7 +33,6 @@ export function AboutModal({ isOpen, onClose, onStartTour }: AboutModalProps) {
   const CONTACT_EMAIL_MAX_LENGTH = 254;
   const CONTACT_MESSAGE_MAX_LENGTH = 1000;
   const [activeTab, setActiveTab] = useState<TabType>('help');
-  const version = process.env.NEXT_PUBLIC_GIT_COMMIT_COUNT;
   const isContactEnabled = process.env.NEXT_PUBLIC_IS_CONTACT_ENABLED === 'true';
   const isDark = theme === 'dark';
   const lang = (t as unknown as Record<string, string>).language || 'en';
@@ -237,9 +236,14 @@ export function AboutModal({ isOpen, onClose, onStartTour }: AboutModalProps) {
               {/* Command Modes Legend */}
               {!searchQuery.trim() && (
                 <div className={cn('p-3 rounded-lg text-xs space-y-1', isDark ? 'bg-secondary-950/50 border border-secondary-800' : 'bg-white border border-secondary-200')}>
-                  <p className={cn('font-semibold mb-2', isDark ? 'text-secondary-200' : 'text-secondary-700')}>
-                    {t.commandModes}
-                  </p>
+                  <div className="flex items-center justify-between border-b pb-1.5 mb-1.5 border-secondary-200 dark:border-secondary-800">
+                    <p className={cn('font-semibold', isDark ? 'text-secondary-200' : 'text-secondary-700')}>
+                      {t.commandModes}
+                    </p>
+                    <span className={cn('text-[11px] font-medium px-2 py-0.5 rounded-full', isDark ? 'bg-secondary-800 text-secondary-300' : 'bg-secondary-100 text-secondary-600')}>
+                      {isTR ? 'GitHub Commit Sayısı' : 'GitHub Commits'}: <strong className="font-bold">{process.env.NEXT_PUBLIC_GIT_COMMIT_COUNT || '1656'}</strong>
+                    </span>
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
                     <div className="flex items-center gap-2">
                       <span className={cn("font-mono px-1 rounded", isDark ? 'bg-success-500/10 text-success-400' : 'bg-success-50 text-success-600')}>Router&gt;</span>
@@ -290,7 +294,32 @@ export function AboutModal({ isOpen, onClose, onStartTour }: AboutModalProps) {
                 <div className="flex justify-center">
                   <Image src="/app.png" alt="Logo" width={64} height={64} className="w-16 h-16 object-contain" />
                 </div>
-                <div className="text-xs text-secondary-500 text-center">Version: {version}</div>
+                <div className="grid grid-cols-3 gap-2 p-3 bg-secondary-100/50 dark:bg-secondary-900/50 rounded-lg text-center border border-secondary-200 dark:border-secondary-800 text-xs animate-in fade-in duration-300">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-secondary-500 dark:text-secondary-400 uppercase font-bold">
+                      {isTR ? 'Sürüm' : 'Version'}
+                    </span>
+                    <span className="text-sm font-semibold text-secondary-800 dark:text-secondary-200">
+                      {process.env.NEXT_PUBLIC_APP_VERSION || '1.9.6'}
+                    </span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-secondary-500 dark:text-secondary-400 uppercase font-bold">
+                      {isTR ? 'GitHub Commit' : 'GitHub Commits'}
+                    </span>
+                    <span className="text-sm font-semibold text-secondary-800 dark:text-secondary-200">
+                      {process.env.NEXT_PUBLIC_GIT_COMMIT_COUNT || '1656'}
+                    </span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-secondary-500 dark:text-secondary-400 uppercase font-bold">
+                      {isTR ? 'Kod Satırı' : 'Lines of Code'}
+                    </span>
+                    <span className="text-sm font-semibold text-secondary-800 dark:text-secondary-200">
+                      {Number(process.env.NEXT_PUBLIC_LOC || '104709').toLocaleString(isTR ? 'tr-TR' : 'en-US')}
+                    </span>
+                  </div>
+                </div>
               </div>
             ) : activeTab === 'contact' ? (
               <div className="space-y-6">

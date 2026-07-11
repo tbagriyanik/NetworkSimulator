@@ -7,7 +7,6 @@ import {
   Wrench,
   ChevronDown,
   ChevronUp,
-  X,
   Target,
   Award
 } from 'lucide-react';
@@ -37,7 +36,7 @@ export function TroubleshootingPanel({
   deviceStates,
   topologyDevices,
   tasks = [],
-  onClose,
+  onClose: _onClose,
   onMinimize,
   isMinimized
 }: TroubleshootingPanelProps) {
@@ -177,12 +176,6 @@ export function TroubleshootingPanel({
             title={isMinimized ? t.expand : t.minimize}
           >
             {isMinimized ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-          </button>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-error-500/20 hover:text-error-400 rounded-md transition-colors ml-1"
-          >
-            <X className="w-4 h-4" />
           </button>
         </div>
       </div>
