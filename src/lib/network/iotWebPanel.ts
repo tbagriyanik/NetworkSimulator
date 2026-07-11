@@ -521,14 +521,38 @@ export const generateIotWebPanelContent = (
         </div>
 
         <script>
+          const safeStorage = {
+            getItem: function(key) {
+              try {
+                return sessionStorage.getItem(key);
+              } catch (e) {
+                return window[key] || null;
+              }
+            },
+            setItem: function(key, value) {
+              try {
+                sessionStorage.setItem(key, value);
+              } catch (e) {
+                window[key] = value;
+              }
+            },
+            removeItem: function(key) {
+              try {
+                sessionStorage.removeItem(key);
+              } catch (e) {
+                delete window[key];
+              }
+            }
+          };
+
           function checkPassword() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const correctUsername = 'admin';
-            const correctPassword = sessionStorage.getItem('iotPanelPassword') || 'admin';
+            const correctPassword = safeStorage.getItem('iotPanelPassword') || 'admin';
             
             if (username === correctUsername && password === correctPassword) {
-              sessionStorage.setItem('iotPanelAuthenticated', 'true');
+              safeStorage.setItem('iotPanelAuthenticated', 'true');
               document.getElementById('loginSection').classList.add('hidden');
               document.getElementById('deviceSection').classList.remove('hidden');
             } else {
@@ -541,7 +565,7 @@ export const generateIotWebPanelContent = (
           }
 
           function checkAuthentication() {
-            const isAuthenticated = sessionStorage.getItem('iotPanelAuthenticated');
+            const isAuthenticated = safeStorage.getItem('iotPanelAuthenticated');
             if (isAuthenticated === 'true') {
               document.getElementById('loginSection').classList.add('hidden');
               document.getElementById('deviceSection').classList.remove('hidden');
@@ -552,7 +576,7 @@ export const generateIotWebPanelContent = (
           }
 
           function logout() {
-            sessionStorage.removeItem('iotPanelAuthenticated');
+            safeStorage.removeItem('iotPanelAuthenticated');
             document.getElementById('loginSection').classList.remove('hidden');
             document.getElementById('deviceSection').classList.add('hidden');
             document.getElementById('username').value = 'admin';
@@ -573,7 +597,7 @@ export const generateIotWebPanelContent = (
             const errorMessage = document.getElementById('passwordError');
 
             if (newPassword && newPassword === confirmPassword) {
-              sessionStorage.setItem('iotPanelPassword', newPassword);
+              safeStorage.setItem('iotPanelPassword', newPassword);
               successMessage.style.display = 'block';
               errorMessage.style.display = 'none';
               document.getElementById('newPassword').value = '';
@@ -617,8 +641,9 @@ export const generateIotWebPanelContent = (
             }
           });
 
-          // Check authentication on page load
+          // Check authentication on page load and run immediately
           window.addEventListener('load', checkAuthentication);
+          checkAuthentication();
         </script>
       </body>
     </html>
