@@ -564,13 +564,17 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
       }
       
       .nav-tabs {
-        flex-wrap: wrap;
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
       }
       
       .nav-tab {
-        flex: 1 1 50%;
-        padding: 12px 10px;
+        flex: 1 0 auto;
+        padding: 12px 14px;
         font-size: 13px;
+        white-space: nowrap;
       }
     }
 
