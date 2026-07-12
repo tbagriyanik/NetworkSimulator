@@ -602,10 +602,10 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
     </div>
     
     <div class="nav-tabs">
-      <button type="button" class="nav-tab${activeTab === 'wireless' ? ' active' : ''}" onclick="showTab('wireless')">📶 ${isTurkish ? 'Kablosuz' : 'Wireless'}</button>
-      <button type="button" class="nav-tab${activeTab === 'iot' ? ' active' : ''}" onclick="showTab('iot')">🛜 ${isTurkish ? 'IoT Cihazları' : 'IoT Devices'}</button>
-      <button type="button" class="nav-tab${activeTab === 'status' ? ' active' : ''}" onclick="showTab('status')">📊 ${isTurkish ? 'Durum' : 'Status'}</button>
-      <button type="button" class="nav-tab${activeTab === 'advanced' ? ' active' : ''}" onclick="showTab('advanced')">⚙️ ${isTurkish ? 'Gelişmiş' : 'Advanced'}</button>
+      <button type="button" class="nav-tab${activeTab === 'wireless' ? ' active' : ''}" data-tab="wireless">📶 ${isTurkish ? 'Kablosuz' : 'Wireless'}</button>
+      <button type="button" class="nav-tab${activeTab === 'iot' ? ' active' : ''}" data-tab="iot">🛜 ${isTurkish ? 'IoT Cihazları' : 'IoT Devices'}</button>
+      <button type="button" class="nav-tab${activeTab === 'status' ? ' active' : ''}" data-tab="status">📊 ${isTurkish ? 'Durum' : 'Status'}</button>
+      <button type="button" class="nav-tab${activeTab === 'advanced' ? ' active' : ''}" data-tab="advanced">⚙️ ${isTurkish ? 'Gelişmiş' : 'Advanced'}</button>
     </div>
     
     <!-- Wireless Tab -->
@@ -875,6 +875,14 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
       try { window.parent.postMessage({ type: 'router-admin-tab-change', tab: tabName }, '*'); } catch(_e) {}
     }
     window.showTab = showTab;
+
+    // Bind events explicitly instead of relying on inline onclick handlers. This is
+    // more reliable in the sandboxed browser iframe, particularly on touch devices.
+    document.querySelectorAll('.nav-tab[data-tab]').forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        showTab(tab.getAttribute('data-tab') || 'wireless');
+      });
+    });
 
     window.toggleIotDeviceSelection = function(deviceId) {
       const checkbox = document.querySelector('.iot-checkbox[data-device-id="' + deviceId + '"]');

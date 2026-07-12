@@ -76,9 +76,7 @@ export const generateIotWebPanelContent = (
       const safeName = sanitizeHTML(device.name || device.id);
       const ruleCount = device.iot?.rules?.length ?? 0;
       const hasSimpleProgramming = ruleCount > 0;
-      // Using safeJSONForHTML for JS context to prevent syntax errors and maintain data integrity.
-      // We also escape double quotes for the HTML attribute context.
-      const jsDeviceId = safeJSONForHTML(device.id).replace(/"/g, '&quot;');
+      const safeDeviceId = sanitizeHTML(device.id);
 
       return `
       <div class="iot-device-card ${cardClass}">
@@ -94,7 +92,7 @@ export const generateIotWebPanelContent = (
           </div>
           <div class="device-status ${statusClass}">${statusText}</div>
         </div>
-        <button onclick="window.parent.postMessage({ type: 'open-iot-device', deviceId: ${jsDeviceId} }, '*')" class="connect-button">
+        <button type="button" data-iot-device-id="${safeDeviceId}" class="connect-button">
           ${isTurkish ? 'Bağlan' : 'Connect'}
         </button>
       </div>
@@ -132,6 +130,7 @@ export const generateIotWebPanelContent = (
             flex-direction: column;
             align-items: center;
             position: relative;
+            touch-action: manipulation;
           }
           .container {
             background-color: #ffffff;
@@ -476,7 +475,7 @@ export const generateIotWebPanelContent = (
         <div class="container">
           <h1>${isTurkish ? 'IoT Web Paneli' : 'IoT Web Panel'}</h1>
           
-          <form id="loginSection" class="login-form" onsubmit="window.checkPassword(event); return false;">
+          <form id="loginSection" class="login-form">
             <div class="form-group">
               <label for="username">${isTurkish ? 'Kullanıcı Adı' : 'Username'}:</label>
               <input type="text" id="username" value="admin" placeholder="${isTurkish ? 'Kullanıcı adı girin' : 'Enter username'}" />
@@ -494,7 +493,7 @@ export const generateIotWebPanelContent = (
           </form>
 
           <div id="deviceSection" class="hidden">
-            <button type="button" class="settings-icon" onclick="toggleSettingsPopup()">
+            <button type="button" class="settings-icon" id="settingsToggle">
               ⚙️
             </button>
             <div id="settingsPopup" class="settings-popup">
@@ -503,14 +502,14 @@ export const generateIotWebPanelContent = (
                 <label>${isTurkish ? 'Parola Değiştir' : 'Change Password'}</label>
                 <input type="password" id="newPassword" class="settings-input" placeholder="${isTurkish ? 'Yeni parola' : 'New password'}" />
                 <input type="password" id="confirmPassword" class="settings-input" style="margin-top: 5px;" placeholder="${isTurkish ? 'Parolayı onayla' : 'Confirm password'}" />
-                <button type="button" class="settings-button" onclick="changePassword()">
+                <button type="button" class="settings-button" id="changePasswordButton">
                   ${isTurkish ? 'Değiştir' : 'Change'}
                 </button>
                 <div id="passwordSuccess" class="password-success">${isTurkish ? 'Parola başarıyla değiştirildi!' : 'Password changed successfully!'}</div>
                 <div id="passwordError" class="password-error">${isTurkish ? 'Parolalar eşleşmiyor!' : 'Passwords do not match!'}</div>
               </div>
               <div class="settings-option">
-                <button type="button" class="settings-button logout" onclick="logout()">
+                <button type="button" class="settings-button logout" id="logoutButton">
                   ${isTurkish ? 'Çıkış Yap' : 'Logout'}
                 </button>
               </div>
@@ -669,6 +668,21 @@ export const generateIotWebPanelContent = (
               console.warn('IoT panel: changePassword failed', err);
             }
           };
+
+          // Avoid inline event attributes: srcDoc iframes on mobile can ignore or
+          // inconsistently resolve window-scoped inline handlers.
+          document.getElementById('loginSection')?.addEventListener('submit', function(event) {
+            window.checkPassword(event);
+          });
+          document.getElementById('settingsToggle')?.addEventListener('click', window.toggleSettingsPopup);
+          document.getElementById('changePasswordButton')?.addEventListener('click', window.changePassword);
+          document.getElementById('logoutButton')?.addEventListener('click', window.logout);
+          document.querySelectorAll('[data-iot-device-id]').forEach(function(button) {
+            button.addEventListener('click', function() {
+              const deviceId = button.getAttribute('data-iot-device-id');
+              if (deviceId) window.parent.postMessage({ type: 'open-iot-device', deviceId: deviceId }, '*');
+            });
+          });
 
           // Close popup when clicking outside
           try {

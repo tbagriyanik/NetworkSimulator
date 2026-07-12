@@ -358,7 +358,7 @@ export function HttpBrowserWindow({
               srcDoc={srcDoc}
               sandbox="allow-forms allow-scripts allow-same-origin allow-modals"
               className="h-full w-full border-0 bg-white"
-              style={{ display: 'block' }}
+              style={{ display: 'block', touchAction: 'manipulation' }}
             />
           </div>
           {!isMobile && (
