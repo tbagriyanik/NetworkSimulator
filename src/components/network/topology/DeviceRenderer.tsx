@@ -283,6 +283,38 @@ export function DeviceRenderer({
         />
       )}
 
+      {/* Wireless Coverage Area */}
+      {(() => {
+        const isWirelessHost = device.type === 'router' || device.type === 'wlc';
+        if (!isWirelessHost) return null;
+        
+        const wlanPort = device.ports.find(p => p.id === 'wlan0');
+        const activeWifiConfig = deviceStates?.get(device.id)?.ports['wlan0']?.wifi || device.wifi;
+        
+        let isEnabled = false;
+        if (device.type === 'wlc') isEnabled = true;
+        else if (wlanPort) isEnabled = !wlanPort.shutdown;
+        else if (activeWifiConfig) isEnabled = (activeWifiConfig as { enabled?: boolean }).enabled ?? true;
+
+        if (!isEnabled || isPoweredOff) return null;
+
+        const is5Ghz = activeWifiConfig?.channel === '5GHz';
+        const coverageRadius = is5Ghz ? 250 : 150;
+        
+        return (
+          <circle
+            cx={deviceWidth / 2}
+            cy={deviceHeight / 2}
+            r={coverageRadius}
+            fill={isDark ? 'rgba(99, 102, 241, 0.03)' : 'rgba(99, 102, 241, 0.04)'}
+            stroke={isDark ? 'rgba(99, 102, 241, 0.15)' : 'rgba(99, 102, 241, 0.2)'}
+            strokeWidth="1"
+            strokeDasharray="8 4"
+            style={{ pointerEvents: 'none' }}
+          />
+        );
+      })()}
+
       {/* Device body */}
       {device.type === 'firewall' ? (
         <>
@@ -412,16 +444,27 @@ export function DeviceRenderer({
         const isConnected = wlanState?.status === 'connected' ||
           (isEnabled && deviceConnections.some(c => c.cableType === 'wireless' && c.active !== false));
 
+        const activeWifiConfig = wlanState?.wifi || pcWifi;
+
         if (showWifi && isEnabled && !isPoweredOff) {
-          if (isWlc) {
-            const hasError = Object.values(devState?.ports || {}).some((p: Port) => p.status === 'err-disabled');
-            wifiColor = hasError ? 'var(--color-warning-500)' : 'var(--color-success-500)';
+          const isNetworkHost = isRouter || isWlc || isSwitchL3;
+          if (isNetworkHost) {
+            const needsConfig = !activeWifiConfig || activeWifiConfig.security === 'open' || activeWifiConfig.password === 'password123' || !activeWifiConfig.ssid;
+            const hasError = isWlc && Object.values(devState?.ports || {}).some((p: Port) => p.status === 'err-disabled');
+            if (hasError || needsConfig) {
+              wifiColor = 'var(--color-warning-500)';
+            } else {
+              wifiColor = 'var(--color-success-500)';
+            }
           } else {
             wifiColor = isConnected ? 'var(--color-success-500)' : 'var(--color-warning-500)';
           }
         }
 
         if (!showWifi) return null;
+
+        const is5Ghz = activeWifiConfig?.channel === '5GHz';
+        const hasPassword = activeWifiConfig?.security && activeWifiConfig.security !== 'open';
 
         if (usesWifiBars) {
           const activeColor = 'var(--color-success-500)';
@@ -443,6 +486,17 @@ export function DeviceRenderer({
                   />
                 ))}
               </svg>
+              {is5Ghz && (
+                <text x="0" y="14" fontSize="4.5" fontWeight="900" fill={strength > 0 ? activeColor : dimColor} textAnchor="middle" style={{ pointerEvents: 'none' }}>
+                  5
+                </text>
+              )}
+              {hasPassword && (
+                <g transform="translate(14, 10)">
+                  <rect x="0" y="2" width="3.5" height="2.5" rx="0.5" fill={isDark ? 'var(--color-warning-400)' : 'var(--color-warning-500)'} />
+                  <path d="M0.5 2V1.2C0.5 0.5 1 0 1.75 0C2.5 0 3 0.5 3 1.2V2" fill="none" stroke={isDark ? 'var(--color-warning-400)' : 'var(--color-warning-500)'} strokeWidth="0.8" />
+                </g>
+              )}
             </g>
           );
         }
@@ -457,6 +511,17 @@ export function DeviceRenderer({
               strokeWidth="1.25"
               strokeLinecap="round"
             />
+            {is5Ghz && (
+              <text x="4" y="14" fontSize="4.5" fontWeight="900" fill={wifiColor} textAnchor="middle" style={{ pointerEvents: 'none' }}>
+                5
+              </text>
+            )}
+            {hasPassword && (
+              <g transform="translate(10, 10)">
+                <rect x="0" y="2" width="3.5" height="2.5" rx="0.5" fill={isDark ? 'var(--color-warning-400)' : 'var(--color-warning-500)'} />
+                <path d="M0.5 2V1.2C0.5 0.5 1 0 1.75 0C2.5 0 3 0.5 3 1.2V2" fill="none" stroke={isDark ? 'var(--color-warning-400)' : 'var(--color-warning-500)'} strokeWidth="0.8" />
+              </g>
+            )}
           </g>
         );
       })()}
