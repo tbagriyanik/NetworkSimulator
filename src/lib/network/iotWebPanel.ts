@@ -94,7 +94,7 @@ export const generateIotWebPanelContent = (
           </div>
           <div class="device-status ${statusClass}">${statusText}</div>
         </div>
-        <button onclick="window.parent.postMessage({ type: 'open-iot-device', deviceId: ${jsDeviceId} }, window.parent.location.origin)" class="connect-button">
+        <button onclick="window.parent.postMessage({ type: 'open-iot-device', deviceId: ${jsDeviceId} }, '*')" class="connect-button">
           ${isTurkish ? 'Bağlan' : 'Connect'}
         </button>
       </div>
@@ -525,23 +525,31 @@ export const generateIotWebPanelContent = (
           const safeStorage = {
             getItem: function(key) {
               try {
-                return sessionStorage.getItem(key);
+                return (typeof window !== 'undefined' && window.sessionStorage) ? window.sessionStorage.getItem(key) : (window['__iot_' + key] || null);
               } catch (e) {
-                return window[key] || null;
+                return window['__iot_' + key] || null;
               }
             },
             setItem: function(key, value) {
               try {
-                sessionStorage.setItem(key, value);
+                if (typeof window !== 'undefined' && window.sessionStorage) {
+                  window.sessionStorage.setItem(key, value);
+                } else {
+                  window['__iot_' + key] = value;
+                }
               } catch (e) {
-                window[key] = value;
+                window['__iot_' + key] = value;
               }
             },
             removeItem: function(key) {
               try {
-                sessionStorage.removeItem(key);
+                if (typeof window !== 'undefined' && window.sessionStorage) {
+                  window.sessionStorage.removeItem(key);
+                } else {
+                  delete window['__iot_' + key];
+                }
               } catch (e) {
-                delete window[key];
+                delete window['__iot_' + key];
               }
             }
           };
@@ -1092,23 +1100,23 @@ export const generateIotDevicePageContent = (
               statusText.className = 'status-text status-active';
               statusMessage.textContent = '${isTurkish ? 'Cihaz aktif' : 'Device is active'}';
               statusMessage.className = 'status-text status-active';
-              window.parent.postMessage({ type: 'toggle-iot-device', deviceId: ${jsId}, active: true }, window.parent.location.origin);
+              window.parent.postMessage({ type: 'toggle-iot-device', deviceId: ${jsId}, active: true }, '*');
             } else {
               statusText.textContent = '${isTurkish ? 'Pasif' : 'Inactive'}';
               statusText.className = 'status-text status-inactive';
               statusMessage.textContent = '${isTurkish ? 'Cihaz pasif' : 'Device is inactive'}';
               statusMessage.className = 'status-text status-inactive';
-              window.parent.postMessage({ type: 'toggle-iot-device', deviceId: ${jsId}, active: false }, window.parent.location.origin);
+              window.parent.postMessage({ type: 'toggle-iot-device', deviceId: ${jsId}, active: false }, '*');
             }
             updateRuleList();
           }
 
           function saveRules() {
-            window.parent.postMessage({ type: 'update-iot-rules', deviceId, rules }, window.parent.location.origin);
+            window.parent.postMessage({ type: 'update-iot-rules', deviceId, rules }, '*');
           }
 
           function goBack() {
-            window.parent.postMessage({ type: 'back-to-iot-list' }, window.parent.location.origin);
+            window.parent.postMessage({ type: 'back-to-iot-list' }, '*');
           }
         </script>
       </body>

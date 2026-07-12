@@ -361,14 +361,18 @@ export function HttpBrowserWindow({
               style={{ display: 'block' }}
             />
           </div>
-          <div className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize select-none touch-none" onPointerDown={(e) => startResize('left', e)} />
-          <div className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize select-none touch-none" onPointerDown={(e) => startResize('right', e)} />
-          <div className="absolute left-0 right-0 top-0 h-2 cursor-ns-resize select-none touch-none" onPointerDown={(e) => startResize('top', e)} />
-          <div className="absolute left-0 right-0 bottom-0 h-2 cursor-ns-resize select-none touch-none" onPointerDown={(e) => startResize('bottom', e)} />
-          <div className="absolute left-0 top-0 w-4 h-4 cursor-nw-resize select-none touch-none" onPointerDown={(e) => startResize('nw', e)} />
-          <div className="absolute right-0 top-0 w-4 h-4 cursor-ne-resize select-none touch-none" onPointerDown={(e) => startResize('ne', e)} />
-          <div className="absolute left-0 bottom-0 w-4 h-4 cursor-sw-resize select-none touch-none" onPointerDown={(e) => startResize('sw', e)} />
-          <div className="absolute right-0 bottom-0 w-4 h-4 cursor-se-resize select-none touch-none" onPointerDown={(e) => startResize('se', e)} />
+          {!isMobile && (
+            <>
+              <div className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize select-none touch-none" onPointerDown={(e) => startResize('left', e)} />
+              <div className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize select-none touch-none" onPointerDown={(e) => startResize('right', e)} />
+              <div className="absolute left-0 right-0 top-0 h-2 cursor-ns-resize select-none touch-none" onPointerDown={(e) => startResize('top', e)} />
+              <div className="absolute left-0 right-0 bottom-0 h-2 cursor-ns-resize select-none touch-none" onPointerDown={(e) => startResize('bottom', e)} />
+              <div className="absolute left-0 top-0 w-4 h-4 cursor-nw-resize select-none touch-none" onPointerDown={(e) => startResize('nw', e)} />
+              <div className="absolute right-0 top-0 w-4 h-4 cursor-ne-resize select-none touch-none" onPointerDown={(e) => startResize('ne', e)} />
+              <div className="absolute left-0 bottom-0 w-4 h-4 cursor-sw-resize select-none touch-none" onPointerDown={(e) => startResize('sw', e)} />
+              <div className="absolute right-0 bottom-0 w-4 h-4 cursor-se-resize select-none touch-none" onPointerDown={(e) => startResize('se', e)} />
+            </>
+          )}
         </div>
       </div>
     </div>,

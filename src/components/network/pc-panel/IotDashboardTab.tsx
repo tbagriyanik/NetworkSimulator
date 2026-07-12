@@ -330,7 +330,7 @@ export function IotDashboardTab({
                             payload: {
                               iotDeviceId: selectedIotDeviceId
                             }
-                          }, window.parent.location.origin);
+                          }, '*');
                         }
                       }}
                     >
