@@ -694,11 +694,11 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
         <div class="iot-device-list" style="margin-bottom:25px;">
           <p style="color:var(--color-secondary-500);margin-bottom:15px;font-size:13px;">${isTurkish ? 'Bağlı IoT cihazlarını yönetin:' : 'Manage connected IoT devices:'}</p>
           ${connectedIotDevices.map(device => {
-            const safeIotName = sanitizeHTML(device.name);
-            const safeIotId = sanitizeHTML(device.id);
-            const safeIotIp = sanitizeHTML(device.ip || '');
-            const jsIotId = safeJSONForHTML(device.id).replace(/"/g, '&quot;');
-            return `
+    const safeIotName = sanitizeHTML(device.name);
+    const safeIotId = sanitizeHTML(device.id);
+    const safeIotIp = sanitizeHTML(device.ip || '');
+    const jsIotId = safeJSONForHTML(device.id).replace(/"/g, '&quot;');
+    return `
             <div class="iot-device-card connected" data-device-id="${safeIotId}" style="display:flex;align-items:center;justify-content:space-between;padding:15px;background:#f8f9fa;border-radius:10px;margin-bottom:10px;border:1px solid var(--color-secondary-200);cursor:pointer;">
               <div style="display:flex;align-items:center;gap:12px;">               
                 <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg, ${device.isWired ? 'var(--color-success-500) 0%, var(--color-success-600) 100%' : 'var(--color-warning-400) 0%, var(--color-warning-600) 100%'});display:flex;align-items:center;justify-content:center;color:white;font-size:18px;">
@@ -724,7 +724,8 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
                 </button>               
               </div>
             </div>
-          `;}).join('')}
+          `;
+  }).join('')}
         </div>
         ` : `
         <div style="text-align:center;padding:30px;color:var(--color-secondary-500);">
@@ -740,10 +741,10 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
         <div class="available-iot-list" style="margin-bottom:25px;">
           <p style="color:var(--color-secondary-500);margin-bottom:15px;font-size:13px;"><strong>${isTurkish ? 'Bağlı Olmayan Cihazlar:' : 'Unconnected Devices:'}</strong> ${isTurkish ? 'Bu ağa bağlanmak için seçin:' : 'Select to connect to this network:'}</p>
           ${availableIotDevices.filter(d => !d.currentSsid).map(device => {
-            const safeIotName = sanitizeHTML(device.name);
-            const safeIotId = sanitizeHTML(device.id);
-            const jsIotId = safeJSONForHTML(device.id).replace(/"/g, '&quot;');
-            return `
+    const safeIotName = sanitizeHTML(device.name);
+    const safeIotId = sanitizeHTML(device.id);
+    const jsIotId = safeJSONForHTML(device.id).replace(/"/g, '&quot;');
+    return `
             <div class="iot-device-card available" data-device-id="${safeIotId}" style="display:flex;align-items:center;justify-content:space-between;padding:15px;background:#f8f9fa;border-radius:10px;margin-bottom:10px;border:2px solid var(--color-secondary-200);cursor:pointer;transition:all 0.3s;" onclick="event.stopPropagation(); toggleIotDeviceSelection(${jsIotId})">
               <div style="display:flex;align-items:center;gap:12px;">
                 <input type="checkbox" class="iot-checkbox" data-device-id="${safeIotId}" style="width:20px;height:20px;cursor:pointer;" onclick="event.stopPropagation(); toggleIotDeviceSelection(${jsIotId})">
@@ -756,7 +757,8 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
                 </div>
               </div>
             </div>
-          `;}).join('')}
+          `;
+  }).join('')}
         </div>
         ` : ''}
         
@@ -764,10 +766,10 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
         <div class="available-iot-list" style="margin-bottom:25px;">
           <p style="color:var(--color-secondary-500);margin-bottom:15px;font-size:13px;"><strong>${isTurkish ? 'Diğer Ağlarda:' : 'On Other Networks:'}</strong> ${isTurkish ? 'Bu ağa geçmek için seçin:' : 'Select to switch to this network:'}</p>
           ${availableIotDevices.filter(d => d.currentSsid && d.currentSsid !== wifi.ssid).map(device => {
-            const safeIotName = sanitizeHTML(device.name);
-            const safeIotId = sanitizeHTML(device.id);
-            const jsIotId = safeJSONForHTML(device.id).replace(/"/g, '&quot;');
-            return `
+    const safeIotName = sanitizeHTML(device.name);
+    const safeIotId = sanitizeHTML(device.id);
+    const jsIotId = safeJSONForHTML(device.id).replace(/"/g, '&quot;');
+    return `
             <div class="iot-device-card available" data-device-id="${safeIotId}" style="display:flex;align-items:center;justify-content:space-between;padding:15px;background:#f8f9fa;border-radius:10px;margin-bottom:10px;border:2px solid var(--color-secondary-200);cursor:pointer;transition:all 0.3s;" onclick="event.stopPropagation(); toggleIotDeviceSelection(${jsIotId})">
               <div style="display:flex;align-items:center;gap:12px;">
                 <input type="checkbox" class="iot-checkbox" data-device-id="${safeIotId}" style="width:20px;height:20px;cursor:pointer;" onclick="event.stopPropagation(); toggleIotDeviceSelection(${jsIotId})">
@@ -780,7 +782,8 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
                 </div>
               </div>
             </div>
-          `;}).join('')}
+          `;
+  }).join('')}
         </div>
         ` : ''}
         
@@ -1007,17 +1010,27 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
     };
 
     window.handleLogin = function(event) {
-      event.preventDefault();
-      const usernameInput = document.getElementById('login-username').value;
-      const passwordInput = document.getElementById('login-password').value;
-      const expectedUsername = ${jsUsername};
-      const expectedPassword = ${jsPassword};
+      try {
+        event.preventDefault();
+        const get = (id) => document.getElementById(id);
+        const usernameEl = get('login-username');
+        const passwordEl = get('login-password');
+        const loginForm = get('login-form');
+        const mainContent = get('main-content');
+        const loginError = get('login-error');
+        const usernameInput = usernameEl ? (usernameEl.value || '') : '';
+        const passwordInput = passwordEl ? (passwordEl.value || '') : '';
+        const expectedUsername = ${jsUsername};
+        const expectedPassword = ${jsPassword};
 
-      if (usernameInput === expectedUsername && passwordInput === expectedPassword) {
-        document.getElementById('login-form').style.display = 'none';
-        document.getElementById('main-content').style.display = 'block';
-      } else {
-        document.getElementById('login-error').style.display = 'block';
+        if (usernameInput === expectedUsername && passwordInput === expectedPassword) {
+          if (loginForm) loginForm.style.display = 'none';
+          if (mainContent) mainContent.style.display = 'block';
+        } else {
+          if (loginError) loginError.style.display = 'block';
+        }
+      } catch (err) {
+        console.warn('Wifi panel: handleLogin failed', err);
       }
     };
 
@@ -1031,96 +1044,110 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
       }
     }
     hideTooltipsOnMobile();
-    window.addEventListener('resize', hideTooltipsOnMobile);
+    try { window.addEventListener('resize', hideTooltipsOnMobile); } catch (_) {}
 
-    // Form handling simulation
-    document.getElementById('wifi-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-
-      const enabled = document.getElementById('wifi-enabled').checked;
-      const ssid = document.getElementById('wifi-ssid').value;
-      const security = document.getElementById('wifi-security').value;
-      const channel = document.getElementById('wifi-channel').value;
-      const mode = document.getElementById('wifi-mode').value;
-      const hidden = document.getElementById('wifi-hidden')?.checked || false;
-      const maxClients = document.getElementById('max-clients')?.value || 32;
-      const password = document.getElementById('wifi-password')?.value || '';
-
-      if (!ssid) {
-        const errorMessage = isTurkish ? 'Lütfen bir ağ adı (SSID) girin' : 'Please enter a network name (SSID)';
-window.parent.postMessage({ type: 'router-admin-toast', payload: { type: 'error', message: errorMessage } }, '*');
-        return;
-      }
-
-      if (security !== 'open' && password.length < 8) {
-        const errorMessage = isTurkish ? 'Parola en az 8 karakter olmalıdır' : 'Password must be at least 8 characters';
-window.parent.postMessage({ type: 'router-admin-toast', payload: { type: 'error', message: errorMessage } }, '*');
-        return;
-      }
-
-      // Show success message (simulated)
-      const btn = document.querySelector('.btn-primary');
-      const originalText = btn.innerHTML;
-      btn.innerHTML = (isTurkish ? '✓ Kaydedildi!' : '✓ Saved!');
-      btn.style.background = 'linear-gradient(135deg, var(--color-accent-600) 0%, var(--color-success-500) 100%)';
-
-      setTimeout(() => {
-        btn.innerHTML = originalText;
-        btn.style.background = '';
-        window.parent.postMessage({
-          type: 'router-admin-toast',
-          payload: {
-            type: 'success',
-            message: isTurkish ? 'Wi-Fi ayarları başarıyla kaydedildi!' : 'Wi-Fi settings saved successfully!'
-          }
-        }, '*');
-      }, 1000);
-
+    // Form handling simulation (guarded)
+    (function(){
       try {
-        window.parent.postMessage({
-          type: 'router-admin-save-wifi',
-          deviceId: ${jsDeviceId},
-          payload: {
-            enabled,
-            ssid,
-            security,
-            channel,
-            mode,
-            hidden,
-            maxClients: Number(maxClients),
-            password
+        const get = (id) => document.getElementById(id);
+        const form = get('wifi-form');
+        if (!form) return;
+
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+
+          const enabled = !!get('wifi-enabled')?.checked;
+          const ssid = get('wifi-ssid') ? (get('wifi-ssid').value || '') : '';
+          const security = get('wifi-security') ? (get('wifi-security').value || '') : '';
+          const channel = get('wifi-channel') ? (get('wifi-channel').value || '') : '';
+          const mode = get('wifi-mode') ? (get('wifi-mode').value || '') : '';
+          const hidden = get('wifi-hidden') ? !!get('wifi-hidden').checked : false;
+          const maxClients = get('max-clients') ? (get('max-clients').value || 32) : 32;
+          const password = get('wifi-password') ? (get('wifi-password').value || '') : '';
+
+          if (!ssid) {
+            const errorMessage = isTurkish ? 'Lütfen bir ağ adı (SSID) girin' : 'Please enter a network name (SSID)';
+            try { window.parent.postMessage({ type: 'router-admin-toast', payload: { type: 'error', message: errorMessage } }, '*'); } catch(_){}
+            return;
           }
-        }, '*');
+
+          if (security !== 'open' && password.length < 8) {
+            const errorMessage = isTurkish ? 'Parola en az 8 karakter olmalıdır' : 'Password must be at least 8 characters';
+            try { window.parent.postMessage({ type: 'router-admin-toast', payload: { type: 'error', message: errorMessage } }, '*'); } catch(_){}
+            return;
+          }
+
+          // Show success message (simulated)
+          const btn = document.querySelector('.btn-primary');
+          if (btn) {
+            const originalText = btn.innerHTML;
+            btn.innerHTML = (isTurkish ? '✓ Kaydedildi!' : '✓ Saved!');
+            btn.style.background = 'linear-gradient(135deg, var(--color-accent-600) 0%, var(--color-success-500) 100%)';
+
+            setTimeout(() => {
+              btn.innerHTML = originalText;
+              btn.style.background = '';
+              try { window.parent.postMessage({ type: 'router-admin-toast', payload: { type: 'success', message: isTurkish ? 'Wi-Fi ayarları başarıyla kaydedildi!' : 'Wi-Fi settings saved successfully!' } }, '*'); } catch(_){}
+            }, 1000);
+          }
+
+          try {
+            window.parent.postMessage({
+              type: 'router-admin-save-wifi',
+              deviceId: ${jsDeviceId},
+              payload: {
+                enabled,
+                ssid,
+                security,
+                channel,
+                mode,
+                hidden,
+                maxClients: Number(maxClients),
+                password
+              }
+            }, '*');
+          } catch (err) {
+            console.warn('Could not sync router settings to parent:', err);
+          }
+        });
+
+        // Toggle switch handler
+        const wifiEnabledEl = get('wifi-enabled');
+        if (wifiEnabledEl) {
+          wifiEnabledEl.addEventListener('change', function() {
+            try {
+              const statusCard = document.querySelector('.status-card');
+              const statusBadge = document.querySelector('.status-badge');
+              const statusInfoP = document.querySelector('.status-info p');
+
+              if (this.checked) {
+                statusCard?.classList.remove('disabled');
+                if (statusBadge) statusBadge.textContent = '${isTurkish ? '● Çevrimiçi' : '● Online'}';
+                if (statusInfoP) statusInfoP.textContent = '${isTurkish ? 'WiFi aktif ve yayın yapıyor' : 'WiFi is active and broadcasting'}';
+              } else {
+                statusCard?.classList.add('disabled');
+                if (statusBadge) statusBadge.textContent = '${isTurkish ? '○ Çevrimdışı' : '○ Offline'}';
+                if (statusInfoP) statusInfoP.textContent = '${isTurkish ? 'WiFi şu anda devre dışı' : 'WiFi is currently disabled'}';
+              }
+            } catch (_) {}
+          });
+        }
+
+        // Security type change handler
+        const wifiSecurityEl = get('wifi-security');
+        if (wifiSecurityEl) {
+          wifiSecurityEl.addEventListener('change', function() {
+            const passwordWrap = document.getElementById('wifi-password-wrap');
+            const isOpen = this.value === 'open';
+            if (passwordWrap) {
+              passwordWrap.style.display = isOpen ? 'none' : 'block';
+            }
+          });
+        }
       } catch (err) {
-        console.warn('Could not sync router settings to parent:', err);
+        console.warn('Wifi panel: failed to initialize form handlers', err);
       }
-    });
-
-    // Toggle switch handler
-    document.getElementById('wifi-enabled').addEventListener('change', function() {
-      const statusCard = document.querySelector('.status-card');
-      const statusBadge = document.querySelector('.status-badge');
-      const statusInfoP = document.querySelector('.status-info p');
-
-      if (this.checked) {
-        statusCard.classList.remove('disabled');
-        statusBadge.textContent = '${isTurkish ? '● Çevrimiçi' : '● Online'}';
-        statusInfoP.textContent = '${isTurkish ? 'WiFi aktif ve yayın yapıyor' : 'WiFi is active and broadcasting'}';
-      } else {
-        statusCard.classList.add('disabled');
-        statusBadge.textContent = '${isTurkish ? '○ Çevrimdışı' : '○ Offline'}';
-        statusInfoP.textContent = '${isTurkish ? 'WiFi şu anda devre dışı' : 'WiFi is currently disabled'}';
-      }
-    });
-
-    // Security type change handler
-    document.getElementById('wifi-security').addEventListener('change', function() {
-      const passwordWrap = document.getElementById('wifi-password-wrap');
-      const isOpen = this.value === 'open';
-      if (passwordWrap) {
-        passwordWrap.style.display = isOpen ? 'none' : 'block';
-      }
-    });
+    })();
   </script>
 ${contentEnd}
 </body>

@@ -21,66 +21,66 @@ export const generateIotWebPanelContent = (
   // Filter IoT devices based on router if routerId is provided
   const filteredIotDevices = routerId
     ? iotDevices.filter(device => {
-        // Check if device is connected via wired connection to this router
-        if (topologyConnections) {
-          const isWiredConnected = topologyConnections.some(c =>
-            (c.sourceDeviceId === routerId && c.targetDeviceId === device.id) ||
-            (c.targetDeviceId === routerId && c.sourceDeviceId === device.id)
-          );
-          if (isWiredConnected) {
-            return true;
-          }
-        }
-        // Check if device is connected via WiFi to this router's SSID
-        if (routerSsid && device.wifi?.ssid === routerSsid && device.wifi?.enabled) {
+      // Check if device is connected via wired connection to this router
+      if (topologyConnections) {
+        const isWiredConnected = topologyConnections.some(c =>
+          (c.sourceDeviceId === routerId && c.targetDeviceId === device.id) ||
+          (c.targetDeviceId === routerId && c.sourceDeviceId === device.id)
+        );
+        if (isWiredConnected) {
           return true;
         }
-        // If no router-specific connection found, don't include this device
-        return false;
-      })
+      }
+      // Check if device is connected via WiFi to this router's SSID
+      if (routerSsid && device.wifi?.ssid === routerSsid && device.wifi?.enabled) {
+        return true;
+      }
+      // If no router-specific connection found, don't include this device
+      return false;
+    })
     : iotDevices;
 
   const iotDeviceListHtml = filteredIotDevices.length > 0
     ? filteredIotDevices.map(device => {
-        const isPoweredOff = device.status === 'offline';
-        const isActive = device.iot?.collaborationEnabled ?? true;
-        
-        // Check if device is actually connected to the network
-        // If viewing from a specific router (routerSsid provided), check connection to that router
-        // If viewing global IoT panel (no routerSsid), check if device has any connection
-        const isConnectedToNetwork = topologyConnections?.some(conn => {
-          const isWiredConnected = conn.sourceDeviceId === device.id || conn.targetDeviceId === device.id;
-          if (isWiredConnected) return true;
-          
-          // WiFi connection check
-          if (device.wifi?.enabled) {
-            // If routerSsid is provided, check connection to that specific router
-            if (routerSsid) {
-              return device.wifi.ssid === routerSsid;
-            }
-            // If no routerSsid (global panel), check if device has any WiFi connection
-            return !!device.wifi.ssid;
+      const isPoweredOff = device.status === 'offline';
+      const isActive = device.iot?.collaborationEnabled ?? true;
+
+      // Check if device is actually connected to the network
+      // If viewing from a specific router (routerSsid provided), check connection to that router
+      // If viewing global IoT panel (no routerSsid), check if device has any connection
+      const isConnectedToNetwork = topologyConnections?.some(conn => {
+        const isWiredConnected = conn.sourceDeviceId === device.id || conn.targetDeviceId === device.id;
+        if (isWiredConnected) return true;
+
+        // WiFi connection check
+        if (device.wifi?.enabled) {
+          // If routerSsid is provided, check connection to that specific router
+          if (routerSsid) {
+            return device.wifi.ssid === routerSsid;
           }
-          
-          return false;
-        });
+          // If no routerSsid (global panel), check if device has any WiFi connection
+          return !!device.wifi.ssid;
+        }
 
-        const cardClass = isPoweredOff ? 'powered-off' : isConnectedToNetwork ? (isActive ? 'connected' : 'connected-inactive') : (isActive ? 'active' : 'inactive');
-        const statusText = isPoweredOff
-          ? (isTurkish ? 'Kapalı' : 'Offline')
-          : isConnectedToNetwork
-            ? (isActive ? (isTurkish ? 'Çevrimiçi' : 'Online') : (isTurkish ? 'Çevrimiçi (Pasif)' : 'Online (Inactive)'))
-            : (isActive ? (isTurkish ? 'Aktif' : 'Active') : (isTurkish ? 'Pasif' : 'Inactive'));
-        const statusClass = isPoweredOff ? 'offline' : isConnectedToNetwork ? (isActive ? 'online' : 'online-inactive') : (isActive ? 'active' : 'inactive');
+        return false;
+      });
 
-        const safeName = sanitizeHTML(device.name || device.id);
-        const ruleCount = device.iot?.rules?.length ?? 0;
-        const hasSimpleProgramming = ruleCount > 0;
-        // Using safeJSONForHTML for JS context to prevent syntax errors and maintain data integrity.
-        // We also escape double quotes for the HTML attribute context.
-        const jsDeviceId = safeJSONForHTML(device.id).replace(/"/g, '&quot;');
+      const cardClass = isPoweredOff ? 'powered-off' : isConnectedToNetwork ? (isActive ? 'connected' : 'connected-inactive') : (isActive ? 'active' : 'inactive');
+      const statusText = isPoweredOff
+        ? (isTurkish ? 'Kapalı' : 'Offline')
+        : isConnectedToNetwork
+          ? (isActive ? (isTurkish ? 'Çevrimiçi' : 'Online') : (isTurkish ? 'Çevrimiçi (Pasif)' : 'Online (Inactive)'))
+          : (isActive ? (isTurkish ? 'Aktif' : 'Active') : (isTurkish ? 'Pasif' : 'Inactive'));
+      const statusClass = isPoweredOff ? 'offline' : isConnectedToNetwork ? (isActive ? 'online' : 'online-inactive') : (isActive ? 'active' : 'inactive');
 
-        return `
+      const safeName = sanitizeHTML(device.name || device.id);
+      const ruleCount = device.iot?.rules?.length ?? 0;
+      const hasSimpleProgramming = ruleCount > 0;
+      // Using safeJSONForHTML for JS context to prevent syntax errors and maintain data integrity.
+      // We also escape double quotes for the HTML attribute context.
+      const jsDeviceId = safeJSONForHTML(device.id).replace(/"/g, '&quot;');
+
+      return `
       <div class="iot-device-card ${cardClass}">
         <div class="device-info">
           <span class="device-name">${safeName}</span>
@@ -99,7 +99,7 @@ export const generateIotWebPanelContent = (
         </button>
       </div>
     `;
-      }).join('')
+    }).join('')
     : `<p class="no-devices">${isTurkish ? 'Hiç IoT cihazı bulunamadı.' : 'No IoT devices found.'}</p>`;
 
   return `
@@ -555,108 +555,174 @@ export const generateIotWebPanelContent = (
           };
 
           window.checkPassword = function(e) {
-            if (e) {
-              e.preventDefault();
-              e.stopPropagation();
-            }
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const correctUsername = 'admin';
-            const correctPassword = safeStorage.getItem('iotPanelPassword') || 'admin';
-            
-            if (username === correctUsername && password === correctPassword) {
-              safeStorage.setItem('iotPanelAuthenticated', 'true');
-              document.getElementById('loginSection').classList.add('hidden');
-              document.getElementById('deviceSection').classList.remove('hidden');
-            } else {
-              const errorMessage = document.getElementById('errorMessage');
-              errorMessage.style.display = 'block';
-              document.getElementById('username').value = '';
-              document.getElementById('password').value = '';
-              document.getElementById('username').focus();
+            try {
+              if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+              }
+              const get = (id) => document.getElementById(id);
+              const userEl = get('username');
+              const pwdEl = get('password');
+              const loginSection = get('loginSection');
+              const deviceSection = get('deviceSection');
+              const errorMessage = get('errorMessage');
+
+              const username = userEl ? (userEl.value || '') : '';
+              const password = pwdEl ? (pwdEl.value || '') : '';
+              const correctUsername = 'admin';
+              const correctPassword = safeStorage.getItem('iotPanelPassword') || 'admin';
+
+              if (username === correctUsername && password === correctPassword) {
+                safeStorage.setItem('iotPanelAuthenticated', 'true');
+                loginSection?.classList.add('hidden');
+                deviceSection?.classList.remove('hidden');
+              } else {
+                if (errorMessage) errorMessage.style.display = 'block';
+                if (userEl) userEl.value = '';
+                if (pwdEl) pwdEl.value = '';
+                try { userEl?.focus(); } catch (_) { /* ignore */ }
+              }
+            } catch (err) {
+              console.warn('IoT panel: checkPassword failed', err);
             }
           };
 
           window.checkAuthentication = function() {
-            const isAuthenticated = safeStorage.getItem('iotPanelAuthenticated');
-            if (isAuthenticated === 'true') {
-              document.getElementById('loginSection').classList.add('hidden');
-              document.getElementById('deviceSection').classList.remove('hidden');
-            } else {
-              document.getElementById('loginSection').classList.remove('hidden');
-              document.getElementById('deviceSection').classList.add('hidden');
+            try {
+              const isAuthenticated = safeStorage.getItem('iotPanelAuthenticated');
+              const loginSection = document.getElementById('loginSection');
+              const deviceSection = document.getElementById('deviceSection');
+              if (isAuthenticated === 'true') {
+                loginSection?.classList.add('hidden');
+                deviceSection?.classList.remove('hidden');
+              } else {
+                loginSection?.classList.remove('hidden');
+                deviceSection?.classList.add('hidden');
+              }
+            } catch (err) {
+              console.warn('IoT panel: checkAuthentication failed', err);
             }
           };
 
           window.logout = function() {
-            safeStorage.removeItem('iotPanelAuthenticated');
-            document.getElementById('loginSection').classList.remove('hidden');
-            document.getElementById('deviceSection').classList.add('hidden');
-            document.getElementById('username').value = 'admin';
-            document.getElementById('password').value = '';
-            document.getElementById('errorMessage').style.display = 'none';
-            document.getElementById('settingsPopup').classList.remove('show');
+            try {
+              safeStorage.removeItem('iotPanelAuthenticated');
+              const loginSection = document.getElementById('loginSection');
+              const deviceSection = document.getElementById('deviceSection');
+              const userEl = document.getElementById('username');
+              const pwdEl = document.getElementById('password');
+              const errorMessage = document.getElementById('errorMessage');
+              const settingsPopup = document.getElementById('settingsPopup');
+
+              loginSection?.classList.remove('hidden');
+              deviceSection?.classList.add('hidden');
+              if (userEl) userEl.value = 'admin';
+              if (pwdEl) pwdEl.value = '';
+              if (errorMessage) errorMessage.style.display = 'none';
+              settingsPopup?.classList.remove('show');
+            } catch (err) {
+              console.warn('IoT panel: logout failed', err);
+            }
           };
 
           window.toggleSettingsPopup = function() {
-            const popup = document.getElementById('settingsPopup');
-            popup.classList.toggle('show');
+            try {
+              const popup = document.getElementById('settingsPopup');
+              popup?.classList.toggle('show');
+            } catch (err) {
+              console.warn('IoT panel: toggleSettingsPopup failed', err);
+            }
           };
 
           window.changePassword = function() {
-            const newPassword = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const successMessage = document.getElementById('passwordSuccess');
-            const errorMessage = document.getElementById('passwordError');
+            try {
+              const newPasswordEl = document.getElementById('newPassword');
+              const confirmPasswordEl = document.getElementById('confirmPassword');
+              const successMessage = document.getElementById('passwordSuccess');
+              const errorMessage = document.getElementById('passwordError');
+              const settingsPopup = document.getElementById('settingsPopup');
 
-            if (newPassword && newPassword === confirmPassword) {
-              safeStorage.setItem('iotPanelPassword', newPassword);
-              successMessage.style.display = 'block';
-              errorMessage.style.display = 'none';
-              document.getElementById('newPassword').value = '';
-              document.getElementById('confirmPassword').value = '';
-              
-              // Hide success message after 3 seconds
-              setTimeout(() => {
-                successMessage.style.display = 'none';
-              }, 3000);
+              const newPassword = newPasswordEl ? (newPasswordEl.value || '') : '';
+              const confirmPassword = confirmPasswordEl ? (confirmPasswordEl.value || '') : '';
 
-              // Close popup after successful password change
-              setTimeout(() => {
-                document.getElementById('settingsPopup').classList.remove('show');
-              }, 1500);
-            } else {
-              errorMessage.style.display = 'block';
-              successMessage.style.display = 'none';
+              if (newPassword && newPassword === confirmPassword) {
+                safeStorage.setItem('iotPanelPassword', newPassword);
+                if (successMessage) successMessage.style.display = 'block';
+                if (errorMessage) errorMessage.style.display = 'none';
+                if (newPasswordEl) newPasswordEl.value = '';
+                if (confirmPasswordEl) confirmPasswordEl.value = '';
+                
+                // Hide success message after 3 seconds
+                setTimeout(() => {
+                  if (successMessage) successMessage.style.display = 'none';
+                }, 3000);
+
+                // Close popup after successful password change
+                setTimeout(() => {
+                  settingsPopup?.classList.remove('show');
+                }, 1500);
+              } else {
+                if (errorMessage) errorMessage.style.display = 'block';
+                if (successMessage) successMessage.style.display = 'none';
+              }
+            } catch (err) {
+              console.warn('IoT panel: changePassword failed', err);
             }
           };
 
           // Close popup when clicking outside
-          document.addEventListener('click', function(e) {
-            const popup = document.getElementById('settingsPopup');
-            const settingsIcon = document.querySelector('.settings-icon');
-            if (popup && settingsIcon) {
-              if (!popup.contains(e.target) && !settingsIcon.contains(e.target)) {
-                popup.classList.remove('show');
+          try {
+            document.addEventListener('click', function(e) {
+              const popup = document.getElementById('settingsPopup');
+              const settingsIcon = document.querySelector('.settings-icon');
+              try {
+                if (popup && settingsIcon) {
+                  const target = e.target;
+                  if (target instanceof Node) {
+                    if (!popup.contains(target) && !settingsIcon.contains(target)) {
+                      popup.classList.remove('show');
+                    }
+                  }
+                }
+              } catch (_) {
+                // ignore
               }
-            }
-          });
+            });
+          } catch (err) {
+            // Fail gracefully in restricted iframe environments
+            console.warn('IoT panel: failed to attach outside-click handler', err);
+          }
 
-          document.getElementById('password').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-              checkPassword();
+          // Attach keyboard handlers only when elements exist to avoid runtime exceptions
+          try {
+            const pwdEl = document.getElementById('password');
+            if (pwdEl && typeof pwdEl.addEventListener === 'function') {
+              pwdEl.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                  try { checkPassword(); } catch (_) { /* ignore */ }
+                }
+              });
             }
-          });
 
-          document.getElementById('username').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-              document.getElementById('password').focus();
+            const userEl = document.getElementById('username');
+            if (userEl && typeof userEl.addEventListener === 'function') {
+              userEl.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                  try { document.getElementById('password')?.focus(); } catch (_) { /* ignore */ }
+                }
+              });
             }
-          });
+          } catch (err) {
+            console.warn('IoT panel: failed to attach input key handlers', err);
+          }
 
           // Check authentication on page load and run immediately
-          window.addEventListener('load', window.checkAuthentication);
-          window.checkAuthentication();
+          try {
+            window.addEventListener('load', window.checkAuthentication);
+            window.checkAuthentication();
+          } catch (err) {
+            console.warn('IoT panel: failed to run authentication check', err);
+          }
         </script>
       </body>
     </html>
@@ -700,13 +766,13 @@ export const generateIotDevicePageContent = (
   );
   const sensorOptionsHtml = topologySensorDevices.length > 0
     ? topologySensorDevices.map(d => {
-        const sensor = d.iot?.sensorType || 'temperature';
-        const label = sensorTypeLabels[sensor] || sensor;
-        return `<option value="iot:${sanitizeHTML(d.id)}:${sanitizeHTML(sensor)}">${sanitizeHTML(d.name || d.id)} (${sanitizeHTML(label)})</option>`;
-      }).join('')
+      const sensor = d.iot?.sensorType || 'temperature';
+      const label = sensorTypeLabels[sensor] || sensor;
+      return `<option value="iot:${sanitizeHTML(d.id)}:${sanitizeHTML(sensor)}">${sanitizeHTML(d.name || d.id)} (${sanitizeHTML(label)})</option>`;
+    }).join('')
     : Object.entries(sensorTypeLabels).map(([value, label]) => (
-        `<option value="${sanitizeHTML(value)}">${sanitizeHTML(label)}</option>`
-      )).join('');
+      `<option value="${sanitizeHTML(value)}">${sanitizeHTML(label)}</option>`
+    )).join('');
 
   return `
     <!DOCTYPE html>
@@ -999,15 +1065,16 @@ export const generateIotDevicePageContent = (
 
             <div class="rule-list" id="ruleList">
               ${(rules || []).map(rule => {
-                const safeCondition = sanitizeHTML(rule.condition);
-                const safeAction = sanitizeHTML(rule.action);
-                const jsRuleId = safeJSONForHTML(rule.id).replace(/"/g, '&quot;');
-                return `
+    const safeCondition = sanitizeHTML(rule.condition);
+    const safeAction = sanitizeHTML(rule.action);
+    const jsRuleId = safeJSONForHTML(rule.id).replace(/"/g, '&quot;');
+    return `
                 <div class="rule-item">
                   <span>${safeCondition} &rarr; ${safeAction}</span>
                   <button onclick="deleteRule(${jsRuleId})" class="delete-rule-btn">&times;</button>
                 </div>
-              `;}).join('')}
+              `;
+  }).join('')}
             </div>
           </div>
           `}
