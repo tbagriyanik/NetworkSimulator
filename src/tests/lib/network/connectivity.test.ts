@@ -328,5 +328,22 @@ describe('Connectivity Functions', () => {
       const result = evaluateAcl('1', sw1StateStandardAcl, '10.0.0.10', '10.0.0.20');
       expect(result).toBe('deny');
     });
+
+    it('should correctly evaluate standard named ACL with non-numeric name', () => {
+      const stateWithNamedAcl = {
+        ...sw1StateStandardAcl,
+        accessLists: {
+          'MYACL': ['permit 192.168.1.10 0.0.0.0', 'deny 192.168.1.20 0.0.0.0']
+        },
+        namedAclTypes: {
+          'MYACL': 'standard'
+        }
+      } as unknown as SwitchState;
+      const result1 = evaluateAcl('MYACL', stateWithNamedAcl, '192.168.1.10', '192.168.1.20');
+      expect(result1).toBe('permit');
+
+      const result2 = evaluateAcl('MYACL', stateWithNamedAcl, '192.168.1.20', '192.168.1.10');
+      expect(result2).toBe('deny');
+    });
   });
 });

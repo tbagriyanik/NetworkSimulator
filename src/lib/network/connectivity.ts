@@ -5,6 +5,7 @@ import { performArpResolution } from './arp';
 import { learnMacAddress, findMacPort } from './macLearning';
 import { ensureDeviceStatesMap } from './networkUtils';
 import { recalculateStp } from './stp';
+import { normalizePortId } from './initialState';
 
 type WifiMode = 'ap' | 'client' | 'disabled' | 'sta';
 
@@ -1468,8 +1469,11 @@ export function checkConnectivity(
       const ingressConn = prevDeviceId ? pathConnections.get(`${prevDeviceId}-${stepDeviceId}`) : null;
       const egressConn = nextDeviceId ? pathConnections.get(`${stepDeviceId}-${nextDeviceId}`) : null;
 
-      const ingressPortId = ingressConn ? (ingressConn.sourceDeviceId === stepDeviceId ? ingressConn.sourcePort : ingressConn.targetPort) : null;
-      const egressPortId = egressConn ? (egressConn.sourceDeviceId === stepDeviceId ? egressConn.sourcePort : egressConn.targetPort) : null;
+      const rawIngressPortId = ingressConn ? (ingressConn.sourceDeviceId === stepDeviceId ? ingressConn.sourcePort : ingressConn.targetPort) : null;
+      const rawEgressPortId = egressConn ? (egressConn.sourceDeviceId === stepDeviceId ? egressConn.sourcePort : egressConn.targetPort) : null;
+
+      const ingressPortId = rawIngressPortId ? (normalizePortId(rawIngressPortId) || rawIngressPortId) : null;
+      const egressPortId = rawEgressPortId ? (normalizePortId(rawEgressPortId) || rawEgressPortId) : null;
 
       const ingressPort = ingressPortId ? state.ports[ingressPortId] : null;
       const egressPort = egressPortId ? state.ports[egressPortId] : null;
@@ -1986,12 +1990,13 @@ function getSubnetForDeviceIp(
 }
 
 function isPortShutdown(deviceId: string, portId: string, devices: CanvasDevice[], deviceStates?: Map<string, SwitchState>, device?: CanvasDevice): boolean {
+  const normalizedPortId = normalizePortId(portId) || portId;
   // Check deviceStates (Switch/Router)
   const safeDeviceStates = ensureDeviceStatesMap(deviceStates);
   if (safeDeviceStates) {
     const state = safeDeviceStates.get(deviceId);
-    if (state && state.ports[portId]) {
-      return state.ports[portId].shutdown;
+    if (state && state.ports[normalizedPortId]) {
+      return state.ports[normalizedPortId].shutdown;
     }
   }
 
@@ -2000,8 +2005,8 @@ function isPortShutdown(deviceId: string, portId: string, devices: CanvasDevice[
     device = devices.find(d => d.id === deviceId);
   }
   if (device) {
-    const port = device.ports.find(p => p.id === portId);
-    if (portId === 'wlan0' && device.type === 'pc') {
+    const port = device.ports.find(p => p.id === portId || (normalizePortId(p.id) || p.id) === normalizedPortId);
+    if (normalizedPortId === 'wlan0' && device.type === 'pc') {
       return !device.wifi?.enabled;
     }
     return port?.status === 'disabled';
@@ -2038,8 +2043,9 @@ export function evaluateAcl(
   if (!rules || rules.length === 0) return 'none';
 
   const aclNum = parseInt(aclId);
+  const aclType = state.namedAclTypes?.[aclId];
   // Named ACLs and extended numbered ACLs (100-199, 2000-2699 modern)
-  const isExtended = (aclNum >= 100 && aclNum <= 199) || (aclNum >= 2000 && aclNum <= 2699) || isNaN(aclNum);
+  const isExtended = aclType ? (aclType === 'extended') : ((aclNum >= 100 && aclNum <= 199) || (aclNum >= 2000 && aclNum <= 2699) || isNaN(aclNum));
 
   for (let ruleIdx = 0; ruleIdx < rules.length; ruleIdx++) {
     const rule = rules[ruleIdx];

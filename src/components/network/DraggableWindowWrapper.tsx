@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X } from 'lucide-react';
+import { X, ChevronUp, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useWindowStore } from '@/hooks/useWindowStore';
 import { DragPosition as ModalPosition, DragSize as ModalSize } from '@/hooks/useDrag';
@@ -22,6 +22,7 @@ interface DraggableWindowWrapperProps {
   onEscapeKeyDown?: () => void;
   mobileFullScreen?: boolean;
   headerActions?: React.ReactNode;
+  collapsible?: boolean;
 }
 
 export function DraggableWindowWrapper({
@@ -42,11 +43,13 @@ export function DraggableWindowWrapper({
   onEscapeKeyDown,
   mobileFullScreen = true,
   headerActions,
+  collapsible = true,
 }: DraggableWindowWrapperProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Local z-index state initialized from store
   const [zIndex, setZIndex] = useState(100);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   
   const activeWindowId = useWindowStore(state => state.activeWindowId);
   const setActiveWindow = useWindowStore(state => state.setActiveWindow);
@@ -99,7 +102,7 @@ export function DraggableWindowWrapper({
         left: modalPosition.x,
         top: modalPosition.y,
         width: modalSize.width,
-        height: modalSize.height,
+        height: isCollapsed ? 'auto' : modalSize.height,
         maxWidth: isMobile ? '100vw' : undefined,
         maxHeight: isMobile ? 'calc(100vh - 40px)' : undefined,
         zIndex: isMobile ? 9999 : zIndex,
@@ -167,6 +170,27 @@ export function DraggableWindowWrapper({
           </div>
         )}
 
+        {collapsible && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsCollapsed(!isCollapsed);
+            }}
+            className={cn(
+              "flex items-center justify-center p-1.5 ml-2 rounded transition-colors shrink-0",
+              isDark 
+                ? "text-secondary-400 hover:text-white hover:bg-secondary-700" 
+                : "text-secondary-500 hover:text-secondary-900 hover:bg-secondary-200"
+            )}
+            aria-label={isCollapsed ? "Genişlet" : "Küçült"}
+            title={isCollapsed ? "Genişlet" : "Küçült"}
+            onPointerDown={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+          </button>
+        )}
+
         {!hideCloseButton && (
           <button
             onClick={(e) => {
@@ -190,12 +214,14 @@ export function DraggableWindowWrapper({
       </div>
 
       {/* Content */}
-      <div className={cn("flex-1 min-h-0 flex flex-col relative", contentClassName)}>
-        {children}
-      </div>
+      {!isCollapsed && (
+        <div className={cn("flex-1 min-h-0 flex flex-col relative", contentClassName)}>
+          {children}
+        </div>
+      )}
 
       {/* Resize Handles (Desktop and Mobile non-fullscreen) */}
-      {(!isMobile || !isMobileFullScreen) && (
+      {(!isMobile || !isMobileFullScreen) && !isCollapsed && (
         <>
           {/* Corners */}
           <div className="absolute right-1 bottom-1 w-4 h-4 cursor-se-resize z-50 flex items-end justify-end select-none" onPointerDown={(e) => handleResizeStart?.(e, 'se', id)}>

@@ -21,8 +21,11 @@ import {
   CheckCircle2,
   XCircle,
   AlertCircle,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react';
 import { cn, normalizeMAC } from '@/lib/utils';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import type { CanvasDevice } from './networkTopology.types';
 import { RouterIcon } from './PCPanelWidgets';
 
@@ -67,6 +70,21 @@ export function RouterPanel({
   const isDark = theme === 'dark';
 
   const [activeTab, setActiveTab] = useState<'overview' | 'ports' | 'wifi' | 'dhcp'>('overview');
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() => {
+    if (typeof window === 'undefined') return {};
+    try {
+      const saved = localStorage.getItem(`router-panel-collapsed-${deviceId}`);
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`router-panel-collapsed-${deviceId}`, JSON.stringify(collapsedSections));
+    }
+  }, [collapsedSections, deviceId]);
 
   // Get router device from topology
   const routerDevice = useMemo(() =>
@@ -288,22 +306,55 @@ export function RouterPanel({
         {/* Content */}
         <ScrollArea className="flex-1 h-[calc(80vh-140px)]">
           <div className="p-4">
-            {activeTab === 'overview' && (
-              <div id="overview-panel" role="tabpanel" className="space-y-4">
-                {/* Device Info */}
-                <div className={cn(
-                  "p-4 rounded-lg border",
-                  isDark ? "bg-secondary-800 border-secondary-700" : "bg-secondary-50 border-secondary-200"
-                )}>
-                  <h3 className="font-semibold mb-3 flex items-center gap-2">
-                    <Globe className="w-4 h-4" />
-                    {t.deviceInformation}
-                  </h3>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">{t.deviceNameLabel}:</span>
-                      <p className="font-medium">{routerDevice.name || deviceId}</p>
-                    </div>
+{activeTab === 'overview' && (
+               <div id="overview-panel" role="tabpanel" className="space-y-4">
+                 {/* Device Info */}
+                 <div className={cn("rounded-lg border overflow-hidden", isDark ? "bg-secondary-800 border-secondary-700" : "bg-secondary-50 border-secondary-200")}>
+                   <Collapsible open={!collapsedSections.deviceInfo} onOpenChange={(open) => setCollapsedSections(prev => ({ ...prev, deviceInfo: !open }))}>
+                     <CollapsibleTrigger asChild>
+                       <div className="p-4 flex items-center justify-between cursor-pointer select-none">
+                         <h3 className="font-semibold mb-0 flex items-center gap-2">
+                           <Globe className="w-4 h-4" />
+                           {t.deviceInformation}
+                         </h3>
+                         {collapsedSections.deviceInfo ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+                       </div>
+                     </CollapsibleTrigger>
+                     <CollapsibleContent>
+                       <div className="px-4 pb-4">
+                         <div className="grid grid-cols-2 gap-3 text-sm">
+                           <div>
+                             <span className="text-muted-foreground">{t.deviceNameLabel}:</span>
+                             <p className="font-medium">{routerDevice.name || deviceId}</p>
+                           </div>
+                           <div>
+                             <span className="text-muted-foreground">{t.macAddress}:</span>
+                             <p className="font-medium">{normalizeMAC(routerDevice.macAddress || routerState?.macAddress || '-')}</p>
+                           </div>
+                           <div>
+                             <span className="text-muted-foreground">{t.status}:</span>
+                             <p className="font-medium flex items-center gap-1">
+                               {routerDevice.status === 'online' ? (
+                                 <CheckCircle2 className="w-4 h-4 text-success-500" />
+                               ) : (
+                                 <XCircle className="w-4 h-4 text-error-500" />
+                               )}
+                             </p>
+                             {routerDevice.status}
+                           </div>
+                           <div>
+                             <span className="text-muted-foreground">{t.ipRouting}:</span>
+                             <p className="font-medium">{routerState?.ipRouting ? (
+                               <span className="text-success-500">{t.active}</span>
+                             ) : (
+                               <span className="text-error-500">{t.suspended}</span>
+                             )}</p>
+                           </div>
+                         </div>
+                       </div>
+                     </CollapsibleContent>
+                   </Collapsible>
+                 </div>
                     <div>
                       <span className="text-muted-foreground">{t.macAddress}:</span>
                       <p className="font-medium">{normalizeMAC(routerDevice.macAddress || routerState?.macAddress || '-')}</p>
@@ -327,76 +378,90 @@ export function RouterPanel({
                         <span className="text-error-500">{t.suspended}</span>
                       )}</p>
                     </div>
-                  </div>
-                </div>
 
-                {/* IP Interfaces */}
-                <div className={cn(
-                  "p-4 rounded-lg border",
-                  isDark ? "bg-secondary-800 border-secondary-700" : "bg-secondary-50 border-secondary-200"
-                )}>
-                  <h3 className="font-semibold mb-3 flex items-center gap-2">
-                    <Network className="w-4 h-4" />
-                    {t.ipInterfaces}
-                  </h3>
-                  {interfacesWithIP.length > 0 ? (
-                    <div className="space-y-2">
-                      {interfacesWithIP.map((iface) => (
-                        <div key={iface.id} className="flex items-center justify-between p-2 rounded bg-secondary-100 dark:bg-secondary-900">
-                          <div className="flex items-center gap-2">
-                            {getStatusIcon(iface.status)}
-                            <span className="font-medium">{iface.id}</span>
-                          </div>
-                          <div className="text-sm">
-                            <span className="text-muted-foreground">IP: </span>
-                            <span className="font-mono">{iface.ip}</span>
-                            {iface.subnet && (
-                              <>
-                                <span className="text-muted-foreground ml-2">/</span>
-                                <span className="font-mono">{iface.subnet}</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      {t.noIpInterfaces}
-                    </p>
-                  )}
-                </div>
+{/* IP Interfaces */}
+                 <div className={cn("rounded-lg border overflow-hidden", isDark ? "bg-secondary-800 border-secondary-700" : "bg-secondary-50 border-secondary-200")}>
+                   <Collapsible open={!collapsedSections.ipInterfaces} onOpenChange={(open) => setCollapsedSections(prev => ({ ...prev, ipInterfaces: !open }))}>
+                     <CollapsibleTrigger asChild>
+                       <div className="p-4 flex items-center justify-between cursor-pointer select-none">
+                         <h3 className="font-semibold mb-0 flex items-center gap-2">
+                           <Network className="w-4 h-4" />
+                           {t.ipInterfaces}
+                         </h3>
+                         {collapsedSections.ipInterfaces ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+                       </div>
+                     </CollapsibleTrigger>
+                     <CollapsibleContent>
+                       <div className="px-4 pb-4">
+                         {interfacesWithIP.length > 0 ? (
+                           <div className="space-y-2">
+                             {interfacesWithIP.map((iface) => (
+                               <div key={iface.id} className="flex items-center justify-between p-2 rounded bg-secondary-100 dark:bg-secondary-900">
+                                 <div className="flex items-center gap-2">
+                                   {getStatusIcon(iface.status)}
+                                   <span className="font-medium">{iface.id}</span>
+                                 </div>
+                                 <div className="text-sm">
+                                   <span className="text-muted-foreground">IP: </span>
+                                   <span className="font-mono">{iface.ip}</span>
+                                   {iface.subnet && (
+                                     <>
+                                       <span className="text-muted-foreground ml-2">/</span>
+                                       <span className="font-mono">{iface.subnet}</span>
+                                     </>
+                                   )}
+                                 </div>
+                               </div>
+                             ))}
+                           </div>
+                         ) : (
+                           <p className="text-sm text-muted-foreground">
+                             {t.noIpInterfaces}
+                           </p>
+                         )}
+                       </div>
+                     </CollapsibleContent>
+                   </Collapsible>
+                 </div>
 
-                {/* Port Summary */}
-                <div className={cn(
-                  "p-4 rounded-lg border",
-                  isDark ? "bg-secondary-800 border-secondary-700" : "bg-secondary-50 border-secondary-200"
-                )}>
-                  <h3 className="font-semibold mb-3 flex items-center gap-2">
-                    <Activity className="w-4 h-4" />
-                    {t.portSummary}
-                  </h3>
-                  <div className="grid grid-cols-3 gap-3 text-sm">
-                    <div className="text-center p-3 rounded bg-success-100 dark:bg-success-900/30">
-                      <p className="text-2xl font-bold text-success-600 dark:text-success-400">
-                        {ports.filter(p => p.id !== 'wlan0' && !p.shutdown && p.status === 'connected').length}
-                      </p>
-                      <p className="text-muted-foreground">{t.connectedStatus}</p>
-                    </div>
-                    <div className="text-center p-3 rounded bg-secondary-100 dark:bg-secondary-900/30">
-                      <p className="text-2xl font-bold text-secondary-600 dark:text-secondary-400">
-                        {ports.filter(p => p.id !== 'wlan0' && !p.shutdown && p.status === 'notconnect').length}
-                      </p>
-                      <p className="text-muted-foreground">{t.disconnectedStatus}</p>
-                    </div>
-                    <div className="text-center p-3 rounded bg-error-100 dark:bg-error-900/30">
-                      <p className="text-2xl font-bold text-error-600 dark:text-error-400">
-                        {ports.filter(p => p.shutdown).length}
-                      </p>
-                      <p className="text-muted-foreground">{t.shutdownStatus}</p>
-                    </div>
-                  </div>
-                </div>
+{/* Port Summary */}
+                 <div className={cn("rounded-lg border overflow-hidden", isDark ? "bg-secondary-800 border-secondary-700" : "bg-secondary-50 border-secondary-200")}>
+                   <Collapsible open={!collapsedSections.portSummary} onOpenChange={(open) => setCollapsedSections(prev => ({ ...prev, portSummary: !open }))}>
+                     <CollapsibleTrigger asChild>
+                       <div className="p-4 flex items-center justify-between cursor-pointer select-none">
+                         <h3 className="font-semibold mb-0 flex items-center gap-2">
+                           <Activity className="w-4 h-4" />
+                           {t.portSummary}
+                         </h3>
+                         {collapsedSections.portSummary ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+                       </div>
+                     </CollapsibleTrigger>
+                     <CollapsibleContent>
+                       <div className="px-4 pb-4">
+                         <div className="grid grid-cols-3 gap-3 text-sm">
+                           <div className="text-center p-3 rounded bg-success-100 dark:bg-success-900/30">
+                             <p className="text-2xl font-bold text-success-600 dark:text-success-400">
+                               {ports.filter(p => p.id !== 'wlan0' && !p.shutdown && p.status === 'connected').length}
+                             </p>
+                             <p className="text-muted-foreground">{t.connectedStatus}</p>
+                           </div>
+                           <div className="text-center p-3 rounded bg-secondary-100 dark:bg-secondary-900/30">
+                             <p className="text-2xl font-bold text-secondary-600 dark:text-secondary-400">
+                               {ports.filter(p => p.id !== 'wlan0' && !p.shutdown && p.status === 'notconnect').length}
+                             </p>
+                             <p className="text-muted-foreground">{t.disconnectedStatus}</p>
+                           </div>
+                           <div className="text-center p-3 rounded bg-error-100 dark:bg-error-900/30">
+                             <p className="text-2xl font-bold text-error-600 dark:text-error-400">
+                               {ports.filter(p => p.shutdown).length}
+                             </p>
+                             <p className="text-muted-foreground">{t.shutdownStatus}</p>
+                           </div>
+                         </div>
+                       </div>
+                     </CollapsibleContent>
+                   </Collapsible>
+                 </div>
               </div>
             )}
 
