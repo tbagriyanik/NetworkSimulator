@@ -135,6 +135,7 @@ export interface Port {
   delay?: number;                   // Delay in microseconds (for routing protocols)
   stpPriority?: number;
   dhcpSnoopingTrust?: boolean;
+  dhcpSnoopingLimitRate?: number; // DHCP rate limit (packets per second) on untrusted ports
   nonegotiate?: boolean;
   ipVerifySource?: boolean;
   ipVerifySourcePortSecurity?: boolean;
@@ -281,6 +282,15 @@ export interface StpVlanState {
     state: 'forwarding' | 'blocking' | 'listening' | 'learning' | 'disabled';
     cost: number;
   }>;
+}
+
+export interface DhcpSnoopingBinding {
+  macAddress: string;
+  ipAddress: string;
+  vlan: number;
+  portId: string;
+  leaseTime?: number;
+  type: 'dynamic' | 'static';
 }
 
 export interface SwitchState {
@@ -488,6 +498,7 @@ export interface SwitchState {
   sshAuthenticationRetries?: number;
   dhcpOption82?: boolean;
   dhcpSnoopingVlans?: string[];
+  dhcpSnoopingBindings?: DhcpSnoopingBinding[];
   accessLists?: Record<string, string[]>;
   namedAclTypes?: Record<string, 'standard' | 'extended'>;  // Track named ACL types for display
   currentNamedAcl?: string;  // Current named standard ACL being configured
@@ -595,6 +606,7 @@ export interface StartupConfig {
   vtpRevision?: number;
   mlsQosEnabled?: boolean;
   dhcpSnoopingEnabled?: boolean;
+  dhcpSnoopingBindings?: DhcpSnoopingBinding[];
   ntpServers?: string[];
   ntpTimeOffset?: number;
   ipv6Enabled?: boolean;

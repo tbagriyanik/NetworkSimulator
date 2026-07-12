@@ -3,7 +3,7 @@ import { CanvasDevice, CanvasNote, CanvasConnection, DeviceType } from '../compo
 import { generateRandomLinkLocalIpv4, generateRandomLinkLocalIpv6 } from '@/lib/network/linkLocal';
 import { getDeviceWidth, getDeviceHeight } from '../components/network/networkTopology.helpers';
 import { generateSwitchPorts, generateL3SwitchPorts, generateRouterPorts, generateWLCPorts } from '../components/network/networkTopology.portGenerators';
-import { buildRunningConfig } from '@/lib/network/core/configBuilder';
+
 
 const generateMacAddress = (seed?: number): string => {
   const chars = '0123456789ABCDEF';
@@ -502,24 +502,10 @@ export function useCanvasActions({
             if (cli) {
               summaryText += isTr ? `\n  [CLI Komutları]:\n` : `\n  [CLI Commands]:\n`;
               summaryText += `    enable\n    configure terminal\n    hostname ${d.name}\n${cli}`;
-            }
           }
+        }
 
-          // Append the complete generated running configuration rather than
-          // maintaining a second, incomplete list of supported CLI options.
-          // This covers every configured interface, VLAN, routing/security and
-          // wireless setting for routers, switches, WLCs and firewalls.
-          if (dState) {
-            const runningConfig = buildRunningConfig(dState);
-            if (runningConfig.length > 0) {
-              summaryText += isTr ? `\n  [Tam Çalışan Yapılandırma]:\n` : `\n  [Complete Running Configuration]:\n`;
-              runningConfig.forEach(line => {
-                summaryText += `    ${line}\n`;
-              });
-            }
-          }
-
-          summaryText += '\n';
+        summaryText += '\n';
         });
         summaryText += '------------------------\n';
       });

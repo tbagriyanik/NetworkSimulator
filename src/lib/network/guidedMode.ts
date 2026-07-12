@@ -11,6 +11,7 @@ export interface GuidedStep {
   description: { tr: string; en: string };
   hint: { tr: string; en: string };
   detailedInstructions?: { tr: string[]; en: string[] };
+  sectionTitle?: { tr: string; en: string };
   animationId?: string;
   checkType: 'deviceAccess' | 'command' | 'config' | 'connection' | 'ping' | 'manual' | 'deviceCount' | 'faultResolved' | 'routingConverged' | 'showOutputMatch';
   checkParams?: {
@@ -2221,6 +2222,7 @@ export const cliGuidedLessons: GuidedStep[] = [
   {
     id: 'cli-lesson-1-1a',
     order: 1,
+    sectionTitle: { tr: 'Bölüm 1: Temel Mod Komutları (Switch)', en: 'Section 1: Basic Mode Commands (Switch)' },
     title: { tr: 'Enable Komutu', en: 'Enable Command' },
     description: { tr: 'Ayrıcalıklı moda geçmek için enable komutunu kullanın', en: 'Use enable command to enter privileged mode' },
     hint: { tr: 'switch-1: enable yazın', en: 'switch-1: Type enable' },
@@ -2277,6 +2279,7 @@ export const cliGuidedLessons: GuidedStep[] = [
   {
     id: 'cli-lesson-2-1a',
     order: 6,
+    sectionTitle: { tr: 'Bölüm 2: Global Konfigürasyon (Switch)', en: 'Section 2: Global Configuration (Switch)' },
     title: { tr: 'Hostname Ayarla', en: 'Set Hostname' },
     description: { tr: 'Switch\'e SW-Lab ismini verin', en: 'Give the switch the name SW-Lab' },
     hint: { tr: 'switch-1: hostname SW-Lab yazın', en: 'switch-1: Type hostname SW-Lab' },
@@ -2344,6 +2347,7 @@ export const cliGuidedLessons: GuidedStep[] = [
   {
     id: 'cli-lesson-3-1a',
     order: 12,
+    sectionTitle: { tr: 'Bölüm 3: Arayüz Konfigürasyonu (Switch)', en: 'Section 3: Interface Configuration (Switch)' },
     title: { tr: 'Arayüz Seçimi', en: 'Interface Selection' },
     description: { tr: 'FastEthernet 0/1 arayüzüne girin', en: 'Enter FastEthernet 0/1 interface' },
     hint: { tr: 'switch-1: interface fa0/1 yazın', en: 'switch-1: Type interface fa0/1' },
@@ -2422,6 +2426,7 @@ export const cliGuidedLessons: GuidedStep[] = [
   {
     id: 'cli-lesson-4-1a',
     order: 19,
+    sectionTitle: { tr: 'Bölüm 4: VLAN Yönetimi (Switch)', en: 'Section 4: VLAN Management (Switch)' },
     title: { tr: 'VLAN Oluştur', en: 'Create VLAN' },
     description: { tr: 'VLAN 10 oluşturun', en: 'Create VLAN 10' },
     hint: { tr: 'switch-1: vlan 10 yazın', en: 'switch-1: Type vlan 10' },
@@ -2488,6 +2493,7 @@ export const cliGuidedLessons: GuidedStep[] = [
   {
     id: 'cli-lesson-6-1a',
     order: 25,
+    sectionTitle: { tr: 'Bölüm 5: Güvenlik (Switch)', en: 'Section 5: Security (Switch)' },
     title: { tr: 'Port Güvenliği', en: 'Port Security' },
     description: { tr: 'fa0/1 için Port güvenliğini etkinleştirin', en: 'Enable port security for fa0/1' },
     hint: { tr: 'switch-1: switchport port-security yazın', en: 'switch-1: Type switchport port-security' },
@@ -2544,6 +2550,7 @@ export const cliGuidedLessons: GuidedStep[] = [
   {
     id: 'cli-lesson-9-2a',
     order: 30,
+    sectionTitle: { tr: 'Bölüm 6: İleri Switch Konuları', en: 'Section 6: Advanced Switch Topics' },
     title: { tr: 'GigabitEthernet Arayüz', en: 'GigabitEthernet Interface' },
     description: { tr: 'GigabitEthernet 0/1 arayüzüne girin', en: 'Enter GigabitEthernet 0/1 interface' },
     hint: { tr: 'switch-1: interface gi0/1 yazın', en: 'switch-1: Type interface gi0/1' },
@@ -2600,6 +2607,7 @@ export const cliGuidedLessons: GuidedStep[] = [
   {
     id: 'cli-lesson-8-2a',
     order: 35,
+    sectionTitle: { tr: 'Bölüm 7: Görüntüleme ve Hata Ayıklama (Switch)', en: 'Section 7: Display and Debug Commands (Switch)' },
     title: { tr: 'Arayüzleri Göster', en: 'Show Interfaces' },
     description: { tr: 'show interfaces komutunu kullanın', en: 'Use show interfaces command' },
     hint: { tr: 'switch-1: show interfaces yazın', en: 'switch-1: Type show interfaces' },
@@ -2798,6 +2806,7 @@ export const cliGuidedLessons: GuidedStep[] = [
   {
     id: 'cli-lesson-1-2',
     order: 53,
+    sectionTitle: { tr: 'PC İşlemi', en: 'PC Operation' },
     title: { tr: 'Ping Komutu', en: 'Ping Command' },
     description: { tr: 'Ping komutu ile ağ bağlantısını test edin', en: 'Test network connectivity with ping command' },
     hint: { tr: 'pc-1: ping 192.168.1.2 yazın', en: 'pc-1: Type ping 192.168.1.2' },
@@ -2811,6 +2820,7 @@ export const cliGuidedLessons: GuidedStep[] = [
   {
     id: 'cli-lesson-5-1',
     order: 54,
+    sectionTitle: { tr: 'Bölüm 8: Yönlendirme (Router)', en: 'Section 8: Routing (Router)' },
     title: { tr: 'Statik Yönlendirme', en: 'Static Routing' },
     description: { tr: 'Statik rota ekleyin', en: 'Add static route' },
     hint: { tr: 'router-1: ip route 192.168.2.0 255.255.255.0 192.168.1.2 yazın', en: 'router-1: Type ip route 192.168.2.0 255.255.255.0 192.168.1.2' },
@@ -2900,6 +2910,7 @@ export const cliGuidedLessons: GuidedStep[] = [
   {
     id: 'cli-lesson-6-2a',
     order: 62,
+    sectionTitle: { tr: 'Bölüm 9: Güvenlik (Router)', en: 'Section 9: Security (Router)' },
     title: { tr: 'RSA Anahtarı', en: 'RSA Key' },
     description: { tr: 'RSA anahtarı oluşturun', en: 'Generate RSA key' },
     hint: { tr: 'router-1: crypto key generate rsa yazın', en: 'router-1: Type crypto key generate rsa' },
@@ -2933,6 +2944,7 @@ export const cliGuidedLessons: GuidedStep[] = [
   {
     id: 'cli-lesson-7-1',
     order: 65,
+    sectionTitle: { tr: 'Bölüm 10: Kablosuz (Router)', en: 'Section 10: Wireless (Router)' },
     title: { tr: 'WLAN Oluştur', en: 'Create WLAN' },
     description: { tr: 'Kablosuz ağ oluşturun', en: 'Create a wireless network' },
     hint: { tr: 'router-1: wlan MyNetwork 1 MySSID yazın', en: 'router-1: Type wlan MyNetwork 1 MySSID' },
@@ -2967,6 +2979,7 @@ export const cliGuidedLessons: GuidedStep[] = [
   {
     id: 'cli-lesson-8-1a',
     order: 68,
+    sectionTitle: { tr: 'Bölüm 11: Hata Ayıklama (Router)', en: 'Section 11: Debugging (Router)' },
     title: { tr: 'Debug Başlat', en: 'Start Debug' },
     description: { tr: 'Debug komutunu kullanın', en: 'Use debug command' },
     hint: { tr: 'router-1: debug ip packet yazın', en: 'router-1: Type debug ip packet' },
@@ -3023,6 +3036,7 @@ export const cliGuidedLessons: GuidedStep[] = [
   {
     id: 'cli-lesson-9-1a',
     order: 73,
+    sectionTitle: { tr: 'Bölüm 12: İleri Router Konuları', en: 'Section 12: Advanced Router Topics' },
     title: { tr: 'DHCP Havuzu Oluştur', en: 'Create DHCP Pool' },
     description: { tr: 'DHCP havuzu oluşturun', en: 'Create a DHCP pool' },
     hint: { tr: 'router-1: ip dhcp pool LAN yazın', en: 'router-1: Type ip dhcp pool LAN' },

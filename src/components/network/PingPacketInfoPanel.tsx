@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { CanvasDevice, CanvasConnection } from './networkTopology.types';
+import { cn } from '@/lib/utils';
 
 import { CABLE_COLORS } from './networkTopology.constants';
 
@@ -512,19 +513,31 @@ export function PingPacketInfoPanel({
     );
 
     return (
-        <DraggableWindowWrapper
-            id="pingPacketInfo"
+<DraggableWindowWrapper
+            id="pingPacketInfoPanel"
             title={titleContent}
+            icon={<div className="w-5 h-5 flex items-center justify-center" />}
             isOpen={isVisible}
             onClose={onClose}
             isDark={isDark}
-            modalPosition={dragProps.position}
-            modalSize={isMinimized ? { ...dragProps.size, height: 38 } : dragProps.size}
+            modalPosition={{ x: dragProps.position.x, y: dragProps.position.y }}
+            modalSize={{ width: dragProps.size.width, height: isMinimized ? 38 : dragProps.size.height }}
             handlePointerDown={dragProps.handlePointerDown}
-            handleResizeStart={isMinimized ? undefined : dragProps.handleResizeStart}
-            className={`flex flex-col liquid-glass-light ${isDark ? '!bg-secondary-950/40 border-emerald-950/80 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]' : '!bg-white/60 border-emerald-950/80 shadow-[0_8px_28px_rgba(15,23,42,0.12)]'}`}
+            handleResizeStart={dragProps.handleResizeStart}
+            className={cn(
+                'overflow-hidden',
+                isGlass
+                    ? (isDark
+                        ? 'liquid-glass-light !bg-secondary-950/40 border-emerald-950/80 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]'
+                        : 'liquid-glass-light !bg-white/60 border-emerald-950/80 shadow-[0_8px_28px_rgba(15,23,42,0.12)]')
+                    : (isDark
+                        ? '!bg-secondary-950/40 border-emerald-950/80 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]'
+                        : '!bg-white/95 border-emerald-950/80 shadow-[0_8px_28px_rgba(15,23,42,0.10)]'))
+            }
+            contentClassName="min-h-0"
             mobileFullScreen={false}
             headerActions={headerActions}
+            collapsible={false}
         >
             {!isMinimized && (
                 <div className="flex-1 overflow-y-auto min-h-0 flex flex-col" onMouseDown={onFocus}>

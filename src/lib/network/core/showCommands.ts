@@ -8,6 +8,7 @@ import { buildOSPFLinkStateDatabase } from '../ospf';
 import { normalizePortId } from '../initialState';
 import { checkConnectivity } from '../connectivity';
 import { ensureDeviceStatesMap } from '../networkUtils';
+import { detectEtherChannelBundles, getLoadBalanceAlgorithm, formatLoadBalance } from '../etherchannel';
 
 // Show komutları (show running-config, show vlan, show ip route, vs.)
 
@@ -2456,24 +2457,49 @@ function cmdShowSsh(
 /**
  * Show IP DHCP Snooping
  */
-function cmdShowIpDhcpSnooping(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+function cmdShowIpDhcpSnooping(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   const enabled = state.dhcpSnoopingEnabled ?? false;
   const vlans: string[] = state.dhcpSnoopingVlans ?? [];
+  const bindings = state.dhcpSnoopingBindings || [];
+
+  // Subcommand: show ip dhcp snooping binding
+  if (/\bbinding\b/i.test(input)) {
+    let output = '\nDHCP Snooping Binding Table\n';
+    output += '---------------------------\n\n';
+    output += 'MacAddress          IpAddress        Lease(sec)  Type    VLAN  Interface\n';
+    output += '------------------- ---------------- ----------- ------- ----- ---------------\n';
+    if (bindings.length === 0) {
+      output += 'No bindings found\n';
+    } else {
+      bindings.forEach(b => {
+        const mac = (b.macAddress || '').padEnd(19);
+        const ip = (b.ipAddress || '').padEnd(16);
+        const lease = (b.leaseTime !== undefined ? String(b.leaseTime) : '-').padEnd(11);
+        const type = (b.type || 'dynamic').padEnd(7);
+        const vlan = String(b.vlan ?? '-').padEnd(5);
+        const port = b.portId || '-';
+        output += `${mac}${ip}${lease}${type}${vlan}${port}\n`;
+      });
+    }
+    output += '!\n';
+    return { success: true, output };
+  }
 
   let output = '\nDHCP snooping is ' + (enabled ? 'enabled' : 'disabled') + '\n';
   output += 'DHCP snooping is configured on following VLANs:\n';
   output += vlans.length > 0 ? vlans.join(',') + '\n' : 'none\n';
   output += '\nInsertion of option 82 is ' + (state.dhcpOption82 ? 'enabled' : 'disabled') + '\n';
   output += '\nInterface           Trusted   Rate limit (pps)\n';
-  output += '-----------         -------   ----------------\n';
+  output += '------------------ -------- -----------------\n';
 
   Object.keys(state.ports || {}).forEach(portName => {
     const port = state.ports[portName];
-    if (port?.dhcpSnoopingTrust) {
-      output += `${portName.padEnd(20)}yes       unlimited\n`;
-    }
+    const trusted = port?.dhcpSnoopingTrust ? 'yes' : 'no';
+    const rateLimit = port?.dhcpSnoopingLimitRate !== undefined ? String(port.dhcpSnoopingLimitRate) : 'unlimited';
+    output += `${portName.padEnd(18)}${trusted.padEnd(9)}${rateLimit}\n`;
   });
 
+  output += `\nNumber of DHCP snooping bindings: ${bindings.length}\n`;
   output += '!\n';
   return { success: true, output };
 }
@@ -2537,25 +2563,55 @@ function cmdShowVtpStatus(state: SwitchState, _input: string, _ctx: CommandConte
  * Show EtherChannel Summary
  */
 function cmdShowEtherchannel(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  // Parse options: summary, detail, port, load-balance
   let option = '';
   const optMatch = input.match(/^show\s+etherchannel\s+(\w+)\s*(.*)$/i);
   if (optMatch) {
     option = optMatch[1].toLowerCase();
   }
 
+  const groups: Record<number, string[]> = {};
+  Object.keys(state.ports || {}).forEach(portName => {
+    const port = state.ports[portName];
+    if (port.channelGroup) {
+      if (!groups[port.channelGroup]) groups[port.channelGroup] = [];
+      groups[port.channelGroup].push(portName);
+    }
+  });
+
+  // Detect real bundles from peer states if available
+  const bundles = (_ctx.connections && _ctx.deviceStates)
+    ? detectEtherChannelBundles(_ctx.connections, _ctx.deviceStates)
+    : [];
+
+  // Build a set of (devicePair, groupId) for bundles that are actually bundled
+  const bundledKeys = new Set<string>();
+  const bundleByGroup = new Map<string, { protocol: string; bundled: boolean; reason?: string }>();
+  for (const b of bundles) {
+    const key = `${b.sourceDeviceId}::${b.targetDeviceId}::${b.groupId}`;
+    bundledKeys.add(key);
+    if (b.bundled) {
+      bundleByGroup.set(`${b.groupId}`, { protocol: b.protocol, bundled: true });
+    } else {
+      bundleByGroup.set(`${b.groupId}`, { protocol: b.protocol, bundled: false, reason: b.reason });
+    }
+  }
+
+  const getBundleInfoForGroup = (groupId: number) => {
+    const info = bundleByGroup.get(`${groupId}`);
+    if (info) {
+      return info;
+    }
+    // Fallback: local only, no peer info
+    const ports = groups[groupId] || [];
+    const mode = ports.length > 0 ? (state.ports[ports[0]]?.channelMode || 'on') : 'on';
+    const protocol = mode === 'on' ? '-' : 'LACP';
+    return { protocol, bundled: true };
+  };
+
   // show etherchannel load-balance
   if (option === 'load-balance') {
-    const groups: Record<number, string[]> = {};
-    Object.keys(state.ports || {}).forEach(portName => {
-      const port = state.ports[portName];
-      if (port.channelGroup) {
-        if (!groups[port.channelGroup]) groups[port.channelGroup] = [];
-        groups[port.channelGroup].push(portName);
-      }
-    });
-
-    let output = '\nLoad-balanceing: Src-dst-ip-and-4\n';
+    const algo = getLoadBalanceAlgorithm('');
+    let output = `\nLoad-balanceing: ${formatLoadBalance(algo)}\n`;
     output += 'Hash aritmatic: Rotational\n';
     output += `Minimum load:  0    %<->100\n`;
     if (Object.keys(groups).length === 0) {
@@ -2568,24 +2624,16 @@ function cmdShowEtherchannel(state: SwitchState, input: string, _ctx: CommandCon
 
   // show etherchannel port-channel
   if (option === 'port-channel') {
-    const groups: Record<number, string[]> = {};
-    Object.keys(state.ports || {}).forEach(portName => {
-      const port = state.ports[portName];
-      if (port.channelGroup) {
-        if (!groups[port.channelGroup]) groups[port.channelGroup] = [];
-        groups[port.channelGroup].push(portName);
-      }
-    });
-
     let output = '\nPort-channels in the switch:\n\n';
     if (Object.keys(groups).length === 0) {
       output += 'No port-channels configured\n';
     } else {
       Object.entries(groups).forEach(([group, ports]) => {
-        const mode = state.ports[ports[0]]?.channelMode || 'on';
-        const protocol = state.ports[ports[0]]?.channelProtocol || (mode === 'on' ? '-' : 'LACP');
+        const info = getBundleInfoForGroup(parseInt(group));
+        const protocol = info.protocol === 'static' ? '-' : info.protocol.toUpperCase();
         output += `Port-channel ${group}\n`;
-        output += `  Protocol: ${protocol.toUpperCase()}\n`;
+        output += `  Protocol: ${protocol}\n`;
+        const mode = state.ports[ports[0]]?.channelMode || 'on';
         output += `  Mode: ${mode.toUpperCase()}\n`;
         output += `  Member ports: ${ports.join(', ')}\n\n`;
       });
@@ -2595,15 +2643,6 @@ function cmdShowEtherchannel(state: SwitchState, input: string, _ctx: CommandCon
 
   // show etherchannel summary
   if (option === 'summary') {
-    const groups: Record<number, string[]> = {};
-    Object.keys(state.ports || {}).forEach(portName => {
-      const port = state.ports[portName];
-      if (port.channelGroup) {
-        if (!groups[port.channelGroup]) groups[port.channelGroup] = [];
-        groups[port.channelGroup].push(portName);
-      }
-    });
-
     let output = '\nFlags:  D - down        P - bundled in port-channel\n';
     output += '        I - stand-alone s - suspended\n';
     output += '        H - Hot-standby (LACP only)\n';
@@ -2615,9 +2654,10 @@ function cmdShowEtherchannel(state: SwitchState, input: string, _ctx: CommandCon
     output += '------+-------------+-----------+-----------------------------------------------\n';
 
     Object.entries(groups).forEach(([group, ports]) => {
-      const mode = state.ports[ports[0]]?.channelMode || 'on';
-      const protocol = state.ports[ports[0]]?.channelProtocol || (mode === 'on' ? '-' : 'LACP');
-      output += `${group.padEnd(7)}Po${group.padEnd(13)}${protocol.toUpperCase().padEnd(12)}${ports.join(', ')}\n`;
+      const info = getBundleInfoForGroup(parseInt(group));
+      const flags = info.bundled ? 'P' : 'D';
+      const protocol = info.protocol === 'static' ? '-' : info.protocol.toUpperCase();
+      output += `${group.padEnd(7)}Po${group.padEnd(13)}${protocol.padEnd(12)}${ports.map(p => `${flags}(${p})`).join(' ')}\n`;
     });
 
     return { success: true, output };
@@ -2625,15 +2665,6 @@ function cmdShowEtherchannel(state: SwitchState, input: string, _ctx: CommandCon
 
   // show etherchannel port
   if (option === 'port') {
-    const groups: Record<number, string[]> = {};
-    Object.keys(state.ports || {}).forEach(portName => {
-      const port = state.ports[portName];
-      if (port.channelGroup) {
-        if (!groups[port.channelGroup]) groups[port.channelGroup] = [];
-        groups[port.channelGroup].push(portName);
-      }
-    });
-
     let output = '\nChannel group listing:\n';
     output += '--------------------------------------------\n';
     if (Object.keys(groups).length === 0) {
@@ -2648,15 +2679,6 @@ function cmdShowEtherchannel(state: SwitchState, input: string, _ctx: CommandCon
 
   // show etherchannel detail
   if (option === 'detail') {
-    const groups: Record<number, string[]> = {};
-    Object.keys(state.ports || {}).forEach(portName => {
-      const port = state.ports[portName];
-      if (port.channelGroup) {
-        if (!groups[port.channelGroup]) groups[port.channelGroup] = [];
-        groups[port.channelGroup].push(portName);
-      }
-    });
-
     let output = '\nFlags:  D - down        P - bundled in port-channel\n';
     output += '        I - stand-alone s - suspended\n';
     output += '        H - Hot-standby (LACP only)\n';
@@ -2667,22 +2689,15 @@ function cmdShowEtherchannel(state: SwitchState, input: string, _ctx: CommandCon
     output += 'Group Port-channel     Protocol Ports\n';
     output += '------+---------------+---------+------------------------\n';
     Object.entries(groups).forEach(([group, ports]) => {
+      const info = getBundleInfoForGroup(parseInt(group));
       const mode = state.ports[ports[0]]?.channelMode || 'on';
-      output += `${group.padEnd(7)}Po${group.padEnd(14)}${mode.toUpperCase().padEnd(10)}${ports.join(', ')}\n`;
+      output += `${group.padEnd(7)}Po${group.padEnd(14)}${mode.toUpperCase().padEnd(10)}`;
+      output += ports.map(p => `${info.bundled ? 'P' : 'D'}(${p})`).join(', ') + '\n';
     });
     return { success: true, output };
   }
 
-  // Default: show etherchannel (or summary)
-  const groups: Record<number, string[]> = {};
-  Object.keys(state.ports || {}).forEach(portName => {
-    const port = state.ports[portName];
-    if (port.channelGroup) {
-      if (!groups[port.channelGroup]) groups[port.channelGroup] = [];
-      groups[port.channelGroup].push(portName);
-    }
-  });
-
+  // Default: show etherchannel
   let output = '\nFlags:  D - down        P - bundled in port-channel\n';
   output += '        I - stand-alone s - suspended\n';
   output += '        H - Hot-standby (LACP only)\n';
@@ -2694,9 +2709,10 @@ function cmdShowEtherchannel(state: SwitchState, input: string, _ctx: CommandCon
   output += '------+-------------+-----------+-----------------------------------------------\n';
 
   Object.entries(groups).forEach(([group, ports]) => {
-    const mode = state.ports[ports[0]]?.channelMode || 'on';
-    const protocol = state.ports[ports[0]]?.channelProtocol || (mode === 'on' ? '-' : 'LACP');
-    output += `${group.padEnd(7)}Po${group.padEnd(13)}${protocol.toUpperCase().padEnd(12)}${ports.join(', ')}\n`;
+    const info = getBundleInfoForGroup(parseInt(group));
+    const flags = info.bundled ? 'P' : 'D';
+    const protocol = info.protocol === 'static' ? '-' : info.protocol.toUpperCase();
+    output += `${group.padEnd(7)}Po${group.padEnd(13)}${protocol.padEnd(12)}${ports.map(p => `${flags}(${p})`).join(', ')}\n`;
   });
 
   return { success: true, output };

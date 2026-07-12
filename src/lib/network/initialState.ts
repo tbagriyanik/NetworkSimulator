@@ -676,6 +676,7 @@ export function buildStartupConfig(state: SwitchState): StartupConfig {
     vtpDomain: state.vtpDomain,
     mlsQosEnabled: state.mlsQosEnabled,
     dhcpSnoopingEnabled: state.dhcpSnoopingEnabled,
+    dhcpSnoopingBindings: state.dhcpSnoopingBindings ? state.dhcpSnoopingBindings.map(b => ({ ...b })) : undefined,
     ntpServers: state.ntpServers ? [...state.ntpServers] : undefined,
     ntpTimeOffset: state.services?.ntp?.timeOffset,
     ipv6Enabled: state.ipv6Enabled,
@@ -735,6 +736,7 @@ export function applyStartupConfig(baseState: SwitchState, startup: StartupConfi
     vtpRevision: startup.vtpRevision ?? baseState.vtpRevision ?? 0,
     mlsQosEnabled: startup.mlsQosEnabled,
     dhcpSnoopingEnabled: startup.dhcpSnoopingEnabled,
+    dhcpSnoopingBindings: startup.dhcpSnoopingBindings ? startup.dhcpSnoopingBindings.map(b => ({ ...b })) : undefined,
     ntpServers: startup.ntpServers ? [...startup.ntpServers] : undefined,
     services: {
       ...baseState.services,

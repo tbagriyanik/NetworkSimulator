@@ -188,6 +188,17 @@ interface SPFNode {
 /**
  * Build LSDB from current network state
  */
+function isOspfProtocol(protocol: string | undefined): boolean {
+  return protocol === 'ospf' || protocol === 'ospfv3';
+}
+
+/**
+ * Check if the given routing protocol is OSPFv3 (IPv6)
+ */
+function isOspfV3(protocol: string | undefined): boolean {
+  return protocol === 'ospfv3';
+}
+
 export function buildOSPFLinkStateDatabase(
   deviceStates: Map<string, SwitchState>
 ): LSDB {
@@ -196,7 +207,7 @@ export function buildOSPFLinkStateDatabase(
   // First pass: detect all area types by checking each router's configuration
   const areaTypes = new Map<number, OSPFAreaType>();
   deviceStates.forEach((state) => {
-    if (state.routingProtocol !== 'ospf') return;
+    if (!isOspfProtocol(state.routingProtocol)) return;
     const areas = state.ospfAreas || [0];
     areas.forEach(area => {
       const existingType = areaTypes.get(area);
@@ -224,9 +235,10 @@ export function buildOSPFLinkStateDatabase(
 
   // Second pass: build Router LSAs (Type 1)
   deviceStates.forEach((state, deviceId) => {
-    if (state.routingProtocol !== 'ospf') return;
+    if (!isOspfProtocol(state.routingProtocol)) return;
 
-    const routerId = state.ospfRouterId || state.routerId || state.ip || deviceId;
+    const isV6 = isOspfV3(state.routingProtocol);
+    const routerId = state.ospfRouterId || state.routerId || state.ip || state.hostname || deviceId;
     const areas = state.ospfAreas || [0];
 
     areas.forEach(area => {
@@ -240,18 +252,35 @@ export function buildOSPFLinkStateDatabase(
       // Create Type 1 Router LSA
       const links: OSPFLink[] = [];
       Object.values(state.ports).forEach(port => {
-        if (!port.ipAddress || !port.subnetMask || port.shutdown) return;
-        if (port.ospfEnabled === false) return;
+        if (port.shutdown) return;
 
-        const portArea = port.ospfArea !== undefined ? parseInt(port.ospfArea) : area;
-        if (portArea !== area) return;
+        if (isV6) {
+          if (!port.ipv6Address || port.ipv6Prefix === undefined) return;
+          if (!port.ipv6Ospf?.enabled) return;
 
-        links.push({
-          id: getNetworkAddress(port.ipAddress, port.subnetMask),
-          data: port.subnetMask,
-          type: 'stub',
-          metric: calculateOSPFInterfaceCost(port)
-        });
+          const portArea = port.ipv6Ospf.area !== undefined ? parseInt(port.ipv6Ospf.area) : area;
+          if (portArea !== area) return;
+
+          links.push({
+            id: port.ipv6Address,
+            data: String(port.ipv6Prefix),
+            type: 'stub',
+            metric: calculateOSPFInterfaceCost(port)
+          });
+        } else {
+          if (!port.ipAddress || !port.subnetMask) return;
+          if (port.ospfEnabled === false) return;
+
+          const portArea = port.ospfArea !== undefined ? parseInt(port.ospfArea) : area;
+          if (portArea !== area) return;
+
+          links.push({
+            id: getNetworkAddress(port.ipAddress, port.subnetMask),
+            data: port.subnetMask,
+            type: 'stub',
+            metric: calculateOSPFInterfaceCost(port)
+          });
+        }
       });
 
       const routerLSA: RouterLSA = {
@@ -272,8 +301,9 @@ export function buildOSPFLinkStateDatabase(
 
   // Third pass: generate Type 5 (AS-External) and Type 7 (NSSA) LSAs
   deviceStates.forEach((state, deviceId) => {
-    if (state.routingProtocol !== 'ospf') return;
-    const routerId = state.ospfRouterId || state.routerId || state.ip || deviceId;
+    if (!isOspfProtocol(state.routingProtocol)) return;
+    const isV6 = isOspfV3(state.routingProtocol);
+    const routerId = state.ospfRouterId || state.routerId || state.ip || state.hostname || deviceId;
     const areas = state.ospfAreas || [0];
 
     const isAsbr = !!state.bgpAs;
@@ -286,17 +316,30 @@ export function buildOSPFLinkStateDatabase(
       // Collect external networks from this ASBR
       const externalNetworks: Array<{ network: string; mask: string; metric: number }> = [];
       Object.values(state.ports).forEach(port => {
-        if (!port.ipAddress || !port.subnetMask || port.shutdown) return;
-        if (port.ospfEnabled === false) return;
-        const portArea = port.ospfArea !== undefined ? parseInt(port.ospfArea) : area;
-        if (portArea !== area) return;
+        if (port.shutdown) return;
 
-        const networkAddr = getNetworkAddress(port.ipAddress, port.subnetMask);
-        externalNetworks.push({
-          network: networkAddr,
-          mask: port.subnetMask,
-          metric: calculateOSPFInterfaceCost(port)
-        });
+        if (isV6) {
+          if (!port.ipv6Address || port.ipv6Prefix === undefined) return;
+          if (!port.ipv6Ospf?.enabled) return;
+
+          externalNetworks.push({
+            network: port.ipv6Address,
+            mask: String(port.ipv6Prefix),
+            metric: calculateOSPFInterfaceCost(port)
+          });
+        } else {
+          if (!port.ipAddress || !port.subnetMask) return;
+          if (port.ospfEnabled === false) return;
+          const portArea = port.ospfArea !== undefined ? parseInt(port.ospfArea) : area;
+          if (portArea !== area) return;
+
+          const networkAddr = getNetworkAddress(port.ipAddress, port.subnetMask);
+          externalNetworks.push({
+            network: networkAddr,
+            mask: port.subnetMask,
+            metric: calculateOSPFInterfaceCost(port)
+          });
+        }
       });
 
       if (externalNetworks.length === 0) return;
@@ -550,9 +593,10 @@ export function calculateOSPFRoutes(
   deviceStates: Map<string, SwitchState>
 ): Route[] {
   const state = deviceStates.get(deviceId);
-  if (!state || state.routingProtocol !== 'ospf') return [];
+  if (!state || !isOspfProtocol(state.routingProtocol)) return [];
 
-  const routerId = state.ospfRouterId || state.routerId || state.ip || deviceId;
+  const isV6 = isOspfV3(state.routingProtocol);
+  const routerId = state.ospfRouterId || state.routerId || state.ip || state.hostname || deviceId;
   const areas = state.ospfAreas || [0];
   const lsdb = buildOSPFLinkStateDatabase(deviceStates);
   const routes: Route[] = [];
@@ -581,14 +625,25 @@ export function calculateOSPFRoutes(
               const idx = routes.indexOf(existing);
               routes.splice(idx, 1);
             }
-            routes.push({
-              destination: dest,
-              subnetMask: link.data,
-              nextHop: node.nextHop,
-              type: 'dynamic',
-              metric: node.cost + link.metric,
-              area: area
-            });
+            if (isV6) {
+              routes.push({
+                destination: dest,
+                prefixLength: parseInt(link.data),
+                nextHop: node.nextHop,
+                type: 'dynamic',
+                metric: node.cost + link.metric,
+                area: area
+              });
+            } else {
+              routes.push({
+                destination: dest,
+                subnetMask: link.data,
+                nextHop: node.nextHop,
+                type: 'dynamic',
+                metric: node.cost + link.metric,
+                area: area
+              });
+            }
           }
         }
       });
@@ -617,14 +672,25 @@ export function calculateOSPFRoutes(
           const idx = routes.indexOf(existing);
           routes.splice(idx, 1);
         }
-        routes.push({
-          destination: lsa.network,
-          subnetMask: lsa.mask,
-          nextHop: nextHop === 'self' ? lsa.network : nextHop,
-          type: 'dynamic',
-          metric: totalCost,
-          area: area
-        });
+        if (isV6) {
+          routes.push({
+            destination: lsa.network,
+            prefixLength: parseInt(lsa.mask),
+            nextHop: nextHop === 'self' ? lsa.network : nextHop,
+            type: 'dynamic',
+            metric: totalCost,
+            area: area
+          });
+        } else {
+          routes.push({
+            destination: lsa.network,
+            subnetMask: lsa.mask,
+            nextHop: nextHop === 'self' ? lsa.network : nextHop,
+            type: 'dynamic',
+            metric: totalCost,
+            area: area
+          });
+        }
       }
     });
   });
@@ -652,27 +718,50 @@ export function calculateOSPFRoutes(
 
       const existingN1 = routes.find(r => r.destination === lsa.network && r.ospfRouteType === 'N1');
       if (!existingN1 || (existingN1.metric ?? 0) > n1Cost) {
-        routes.push({
-          destination: lsa.network,
-          subnetMask: lsa.mask,
-          nextHop: nextHop === 'self' ? lsa.network : nextHop,
-          type: 'dynamic',
-          metric: n1Cost,
-          area: area,
-          ospfRouteType: 'N1'
-        });
+        if (isV6) {
+          routes.push({
+            destination: lsa.network,
+            prefixLength: parseInt(lsa.mask),
+            nextHop: nextHop === 'self' ? lsa.network : nextHop,
+            type: 'dynamic',
+            metric: n1Cost,
+            area: area,
+            ospfRouteType: 'N1'
+          });
+        } else {
+          routes.push({
+            destination: lsa.network,
+            subnetMask: lsa.mask,
+            nextHop: nextHop === 'self' ? lsa.network : nextHop,
+            type: 'dynamic',
+            metric: n1Cost,
+            area: area,
+            ospfRouteType: 'N1'
+          });
+        }
       }
 
       const existingN2 = routes.find(r => r.destination === lsa.network && r.ospfRouteType === 'N2');
       if (!existingN2 || (existingN2.metric ?? 0) > n2Cost) {
-        routes.push({
-          destination: lsa.network,
-          subnetMask: lsa.mask,
-          nextHop: nextHop === 'self' ? lsa.network : nextHop,
-          type: 'dynamic',
-          metric: n2Cost,
-          area: area
-        });
+        if (isV6) {
+          routes.push({
+            destination: lsa.network,
+            prefixLength: parseInt(lsa.mask),
+            nextHop: nextHop === 'self' ? lsa.network : nextHop,
+            type: 'dynamic',
+            metric: n2Cost,
+            area: area
+          });
+        } else {
+          routes.push({
+            destination: lsa.network,
+            subnetMask: lsa.mask,
+            nextHop: nextHop === 'self' ? lsa.network : nextHop,
+            type: 'dynamic',
+            metric: n2Cost,
+            area: area
+          });
+        }
       }
     });
   });
@@ -698,28 +787,52 @@ export function calculateOSPFRoutes(
 
       const existingE1 = routes.find(r => r.destination === lsa.network && r.ospfRouteType === 'E1');
       if (!existingE1 || (existingE1.metric ?? 0) > e1Cost) {
-        routes.push({
-          destination: lsa.network,
-          subnetMask: lsa.mask,
-          nextHop: nextHop === 'self' ? lsa.network : nextHop,
-          type: 'dynamic',
-          metric: e1Cost,
-          area: area,
-          ospfRouteType: 'E1'
-        });
+        if (isV6) {
+          routes.push({
+            destination: lsa.network,
+            prefixLength: parseInt(lsa.mask),
+            nextHop: nextHop === 'self' ? lsa.network : nextHop,
+            type: 'dynamic',
+            metric: e1Cost,
+            area: area,
+            ospfRouteType: 'E1'
+          });
+        } else {
+          routes.push({
+            destination: lsa.network,
+            subnetMask: lsa.mask,
+            nextHop: nextHop === 'self' ? lsa.network : nextHop,
+            type: 'dynamic',
+            metric: e1Cost,
+            area: area,
+            ospfRouteType: 'E1'
+          });
+        }
       }
 
       const existingE2 = routes.find(r => r.destination === lsa.network && r.ospfRouteType === 'E2');
       if (!existingE2 || (existingE2.metric ?? 0) > e2Cost) {
-        routes.push({
-          destination: lsa.network,
-          subnetMask: lsa.mask,
-          nextHop: nextHop === 'self' ? lsa.network : nextHop,
-          type: 'dynamic',
-          metric: e2Cost,
-          area: area,
-          ospfRouteType: 'E2'
-        });
+        if (isV6) {
+          routes.push({
+            destination: lsa.network,
+            prefixLength: parseInt(lsa.mask),
+            nextHop: nextHop === 'self' ? lsa.network : nextHop,
+            type: 'dynamic',
+            metric: e2Cost,
+            area: area,
+            ospfRouteType: 'E2'
+          });
+        } else {
+          routes.push({
+            destination: lsa.network,
+            subnetMask: lsa.mask,
+            nextHop: nextHop === 'self' ? lsa.network : nextHop,
+            type: 'dynamic',
+            metric: e2Cost,
+            area: area,
+            ospfRouteType: 'E2'
+          });
+        }
       }
     });
   });

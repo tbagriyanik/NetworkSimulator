@@ -605,24 +605,34 @@ export function GuidedModePanel({
 
         {/* Progress Bar & Points */}
         <div className="px-4 py-2 bg-secondary-50 dark:bg-secondary-900/50 border-b border-secondary-200 dark:border-secondary-700">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-secondary-500 dark:text-secondary-400">{t.progress}</span>
-            <span className="text-xs font-medium text-secondary-700 dark:text-secondary-300">
-              {completedCount} / {project.steps.length}
-            </span>
-          </div>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] uppercase tracking-wider text-secondary-400 font-bold">{t.totalScore}</span>
-            <div className="flex items-center gap-1">
-              <Award className="w-3.5 h-3.5 text-warning-500 fill-warning-500" />
-              <span className="text-sm font-black text-warning-600 dark:text-warning-400 tabular-nums">
-                {currentPoints} <span className="text-[10px] text-secondary-400 font-normal">/ {totalPoints}</span>
-              </span>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="flex-1">
+              <span className="text-[10px] uppercase tracking-wider text-secondary-400 font-bold">{t.progress}</span>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="text-2xl font-black text-primary-600 dark:text-primary-400 tabular-nums">
+                  {completedCount}
+                </span>
+                <span className="text-xs text-secondary-500 dark:text-secondary-400 font-medium">
+                  / {project.steps.length}
+                </span>
+                <span className="text-xs text-secondary-400 ml-1">
+                  ({project.steps.length - completedCount} {language === 'tr' ? 'kaldı' : 'remaining'})
+                </span>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className="text-[10px] uppercase tracking-wider text-secondary-400 font-bold">{t.totalScore}</span>
+              <div className="flex items-center gap-1 justify-end mt-0.5">
+                <Award className="w-3.5 h-3.5 text-warning-500 fill-warning-500" />
+                <span className="text-sm font-black text-warning-600 dark:text-warning-400 tabular-nums">
+                  {currentPoints} <span className="text-[10px] text-secondary-400 font-normal">/ {totalPoints}</span>
+                </span>
+              </div>
             </div>
           </div>
-          <div className="w-full h-1.5 bg-secondary-200 dark:bg-secondary-700 rounded-full overflow-hidden">
+          <div className="w-full h-2 bg-secondary-200 dark:bg-secondary-700 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-primary-500 via-primary-400 to-success-500 transition-all duration-500"
+              className="h-full bg-gradient-to-r from-primary-500 via-primary-400 to-success-500 transition-all duration-500 rounded-full"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -630,22 +640,22 @@ export function GuidedModePanel({
             <div className="mt-2 flex flex-col gap-2">
               <div className="text-xs text-success-600 dark:text-success-400 font-medium text-center animate-pulse">
                 {t.allStepsCompleted}
-              {project.startedAt && (() => {
-                const lastCompletedStep = project.steps.filter(s => s.completed).sort((a, b) =>
-                  (b.completedAt?.getTime() || 0) - (a.completedAt?.getTime() || 0)
-                )[0];
-                if (lastCompletedStep?.completedAt) {
-                  const duration = Math.round((new Date(lastCompletedStep.completedAt).getTime() - new Date(project.startedAt).getTime()) / 1000);
-                  const minutes = Math.floor(duration / 60);
-                  const seconds = duration % 60;
-                  return (
-                    <span className="ml-2 text-secondary-500 dark:text-secondary-400">
-                      ({minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`})
-                    </span>
-                  );
-                }
-                return null;
-              })()}
+                {project.startedAt && (() => {
+                  const lastCompletedStep = project.steps.filter(s => s.completed).sort((a, b) =>
+                    (b.completedAt?.getTime() || 0) - (a.completedAt?.getTime() || 0)
+                  )[0];
+                  if (lastCompletedStep?.completedAt) {
+                    const duration = Math.round((new Date(lastCompletedStep.completedAt).getTime() - new Date(project.startedAt).getTime()) / 1000);
+                    const minutes = Math.floor(duration / 60);
+                    const seconds = duration % 60;
+                    return (
+                      <span className="ml-2 text-secondary-500 dark:text-secondary-400">
+                        ({minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`})
+                      </span>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
               <button
                 onClick={handleDownloadCertificate}
@@ -661,10 +671,15 @@ export function GuidedModePanel({
         {/* Current Step Highlight */}
         {currentStep && !currentStep.completed && (
           <div className="p-3 bg-primary-50 dark:bg-primary-900/20 border-b border-primary-100 dark:border-primary-800">
-            <div className="flex items-center gap-2 mb-2">
-              <Target className="w-4 h-4 text-primary-500" />
-              <span className="text-xs font-semibold text-primary-600 dark:text-primary-400">
-                {t.currentStep}: {currentStep.order}
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Target className="w-4 h-4 text-primary-500" />
+                <span className="text-xs font-semibold text-primary-600 dark:text-primary-400">
+                  {t.currentStep}: {currentStep.order}
+                </span>
+              </div>
+              <span className="text-[10px] font-bold text-primary-500/70 dark:text-primary-400/70 bg-primary-100 dark:bg-primary-900/40 px-2 py-0.5 rounded-full">
+                {currentStep.order}/{project.steps.length}
               </span>
             </div>
             <div className="flex items-center justify-between gap-2 mb-1">
@@ -774,88 +789,125 @@ export function GuidedModePanel({
         {/* Steps List */}
         <ScrollArea className="flex-1 overflow-y-auto guided-steps-scrollbar">
           <div className="p-2 space-y-1 pr-3">
-            {project.steps.map((step, index) => {
-              const isActive = index === currentStepIndex;
-              const isCompleted = step.completed;
-              return (
-                <div
-                  key={step.id}
-                  ref={isActive ? activeStepRef : undefined}
-                  className={cn(
-                    "flex items-start gap-2 p-2 rounded-lg transition-all",
-                    isActive && "bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-800",
-                    isCompleted && !isActive && "bg-secondary-100 dark:bg-secondary-800 opacity-60",
-                    !isActive && !isCompleted && "hover:bg-secondary-50 dark:hover:bg-secondary-700/50"
-                  )}
-                >
-                  {/* Status Icon */}
-                  <div className="mt-0.5">
-                    {isCompleted ? (
-                      <CheckCircle2 className="w-5 h-5 text-success-500" />
-                    ) : isActive ? (
-                      <Circle className="w-5 h-5 text-primary-500 animate-pulse" />
-                    ) : (
-                      <Circle className="w-5 h-5 text-secondary-300 dark:text-secondary-600" />
-                    )}
-                  </div>
+            {(() => {
+              let currentSection: string | null = null;
+              const elements: React.ReactNode[] = [];
 
-                  {/* Undo button for completed steps */}
-                  {isCompleted && (
-                    <button
-                      onClick={() => onStepUncomplete(step.id)}
-                      className="text-xs text-secondary-400 hover:text-secondary-600 dark:hover:text-secondary-300 transition-colors flex-shrink-0"
+              project.steps.forEach((step, index) => {
+                const isActive = index === currentStepIndex;
+                const isCompleted = step.completed;
+
+                // Show section header when section changes
+                if (step.sectionTitle && step.sectionTitle[language] !== currentSection) {
+                  currentSection = step.sectionTitle[language];
+                  const sectionSteps = project.steps.filter(s =>
+                    s.sectionTitle && s.sectionTitle[language] === currentSection
+                  ).length;
+                  const sectionCompleted = project.steps.filter(s =>
+                    s.sectionTitle && s.sectionTitle[language] === currentSection && s.completed
+                  ).length;
+
+                  elements.push(
+                    <div
+                      key={`section-${index}`}
+                      className="px-2 pt-3 pb-1.5"
                     >
-                      {t.uncomplete}
-                    </button>
-                  )}
-
-                  {/* Step Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className={cn(
-                        "text-xs font-medium",
-                        isActive && "text-primary-600 dark:text-primary-400",
-                        isCompleted && "text-secondary-600 dark:text-white line-through",
-                        !isActive && !isCompleted && "text-secondary-500 dark:text-secondary-400"
-                      )}>
-                        {step.order}. {step.title[language]}
-                      </span>
-                      {step.points && (
-                        <span className={cn(
-                          "text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0",
-                          isCompleted
-                            ? "bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400"
-                            : "bg-secondary-100 text-secondary-500 dark:bg-secondary-800 dark:text-secondary-400"
-                        )}>
-                          {step.points} {t.pts}
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-primary-600 dark:text-primary-400">
+                          {step.sectionTitle[language]}
                         </span>
+                        {(sectionSteps > 1) && (
+                          <span className="text-[10px] text-secondary-400 tabular-nums">
+                            {sectionCompleted}/{sectionSteps}
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-1 h-px bg-gradient-to-r from-primary-200 dark:from-primary-800 to-transparent" />
+                    </div>
+                  );
+                }
+
+                elements.push(
+                  <div
+                    key={step.id}
+                    ref={isActive ? activeStepRef : undefined}
+                    className={cn(
+                      "flex items-start gap-2 p-2 rounded-lg transition-all",
+                      isActive && "bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-800",
+                      isCompleted && !isActive && "bg-secondary-100 dark:bg-secondary-800 opacity-60",
+                      !isActive && !isCompleted && "hover:bg-secondary-50 dark:hover:bg-secondary-700/50"
+                    )}
+                  >
+                    {/* Status Icon */}
+                    <div className="mt-0.5">
+                      {isCompleted ? (
+                        <CheckCircle2 className="w-5 h-5 text-success-500" />
+                      ) : isActive ? (
+                        <Circle className="w-5 h-5 text-primary-500 animate-pulse" />
+                      ) : (
+                        <Circle className="w-5 h-5 text-secondary-300 dark:text-secondary-600" />
                       )}
                     </div>
 
-                    {isActive && (
-                      <p className="text-xs text-secondary-500 dark:text-secondary-400 mt-1 truncate">
-                        {step.description[language]}
-                      </p>
+                    {/* Undo button for completed steps */}
+                    {isCompleted && (
+                      <button
+                        onClick={() => onStepUncomplete(step.id)}
+                        className="text-xs text-secondary-400 hover:text-secondary-600 dark:hover:text-secondary-300 transition-colors flex-shrink-0"
+                      >
+                        {t.uncomplete}
+                      </button>
                     )}
 
-                    {/* Completion Time */}
-                    {isCompleted && step.completedAt && project.startedAt && (
-                      <p className="text-[10px] text-secondary-400 dark:text-secondary-300 mt-0.5">
-                        {t.completedAt}: {new Date(step.completedAt).toLocaleTimeString(language === 'tr' ? 'tr-TR' : 'en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                        <span className="ml-1 text-secondary-400">
-                          ({(() => {
-                            const duration = Math.round((new Date(step.completedAt).getTime() - new Date(project.startedAt).getTime()) / 1000);
-                            const minutes = Math.floor(duration / 60);
-                            const seconds = duration % 60;
-                            return minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
-                          })()})
+                    {/* Step Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className={cn(
+                          "text-xs font-medium",
+                          isActive && "text-primary-600 dark:text-primary-400",
+                          isCompleted && "text-secondary-600 dark:text-white line-through",
+                          !isActive && !isCompleted && "text-secondary-500 dark:text-secondary-400"
+                        )}>
+                          {step.order}. {step.title[language]}
                         </span>
-                      </p>
-                    )}
+                        {step.points && (
+                          <span className={cn(
+                            "text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0",
+                            isCompleted
+                              ? "bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400"
+                              : "bg-secondary-100 text-secondary-500 dark:bg-secondary-800 dark:text-secondary-400"
+                          )}>
+                            {step.points} {t.pts}
+                          </span>
+                        )}
+                      </div>
+
+                      {isActive && (
+                        <p className="text-xs text-secondary-500 dark:text-secondary-400 mt-1 truncate">
+                          {step.description[language]}
+                        </p>
+                      )}
+
+                      {/* Completion Time */}
+                      {isCompleted && step.completedAt && project.startedAt && (
+                        <p className="text-[10px] text-secondary-400 dark:text-secondary-300 mt-0.5">
+                          {t.completedAt}: {new Date(step.completedAt).toLocaleTimeString(language === 'tr' ? 'tr-TR' : 'en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                          <span className="ml-1 text-secondary-400">
+                            ({(() => {
+                              const duration = Math.round((new Date(step.completedAt).getTime() - new Date(project.startedAt).getTime()) / 1000);
+                              const minutes = Math.floor(duration / 60);
+                              const seconds = duration % 60;
+                              return minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+                            })()})
+                          </span>
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              });
+              return elements;
+            })()}
           </div>
         </ScrollArea>
 

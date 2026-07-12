@@ -94,7 +94,7 @@ export function RefreshReportPanel({
     >
       <Collapsible open={!isCollapsed} onOpenChange={(open) => setIsCollapsed(!open)}>
         <div
-          className={`flex items-center justify-between px-3 py-2 border-b rounded-t-xl cursor-pointer active:cursor-grabbing select-none ${isDark ? 'bg-white/5 border-success-500/20' : 'bg-black/5 border-success-500/30'}`}
+          className={`flex items-center justify-between px-3 py-2 border-b rounded-t-xl cursor-grab active:cursor-grabbing select-none ${isDark ? 'bg-white/5 border-success-500/20' : 'bg-black/5 border-success-500/30'}`}
           data-drag-handle={true}
         >
           <h3 className="text-sm font-bold flex items-center gap-2">

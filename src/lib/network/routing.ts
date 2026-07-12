@@ -101,6 +101,26 @@ function buildRoutingTable(
     });
   }
 
+  // 6. OSPFv3 route computation
+  if (state.routingProtocol === 'ospfv3') {
+    const ospfV3Routes = calculateOSPFRoutes(deviceId, deviceStates);
+    ospfV3Routes.forEach(r => {
+      if (!routes.some(existing => existing.destination === r.destination && (existing.type === 'connected' || existing.type === 'static'))) {
+        routes.push(r);
+      }
+    });
+  }
+
+  // 7. RIPng route computation
+  if (state.routingProtocol === 'ripng') {
+    const ripngRoutes = calculateRipngRoutes(deviceId, deviceStates);
+    ripngRoutes.forEach(r => {
+      if (!routes.some(existing => existing.destination === r.destination && (existing.type === 'connected' || existing.type === 'static'))) {
+        routes.push(r);
+      }
+    });
+  }
+
   return routes;
 }
 
@@ -321,6 +341,15 @@ function buildBasicRoutingTable(state: SwitchState): Route[] {
         metric: 0
       });
     }
+    if (port.ipv6Address && port.ipv6Prefix && !port.shutdown) {
+      routes.push({
+        destination: port.ipv6Address,
+        prefixLength: port.ipv6Prefix,
+        nextHop: portId,
+        type: 'connected',
+        metric: 0
+      });
+    }
 
     // HSRP/VRRP virtual IPs (connected routes if Active)
     if (port.hsrp?.groups) {
@@ -342,10 +371,16 @@ function buildBasicRoutingTable(state: SwitchState): Route[] {
   if (state.staticRoutes) {
     routes.push(...state.staticRoutes);
   }
+  if (state.ipv6StaticRoutes) {
+    routes.push(...state.ipv6StaticRoutes);
+  }
 
   // 3. Dynamic routes
   if (state.dynamicRoutes) {
     routes.push(...state.dynamicRoutes);
+  }
+  if (state.ipv6DynamicRoutes) {
+    routes.push(...state.ipv6DynamicRoutes);
   }
 
   return routes;
@@ -354,6 +389,76 @@ function buildBasicRoutingTable(state: SwitchState): Route[] {
 export interface L3Hop {
   name: string;
   ip: string;
+}
+
+/**
+ * Calculate RIPng (RIP for IPv6) routes for a device
+ * Shares connected IPv6 networks from RIPng-enabled interfaces
+ */
+function calculateRipngRoutes(
+  deviceId: string,
+  deviceStates: Map<string, SwitchState>
+): Route[] {
+  const routes: Route[] = [];
+  const state = deviceStates.get(deviceId);
+  if (!state || state.routingProtocol !== 'ripng') return routes;
+
+  const visitedAds = new Set<string>();
+
+  // Collect RIPng routes from all RIPng-enabled devices
+  for (const [otherId, otherState] of deviceStates) {
+    if (otherState.routingProtocol !== 'ripng') continue;
+    if (otherId === deviceId) continue;
+
+    // Check adjacency: both must share a common subnet
+    let isAdjacent = false;
+    for (const otherPort of Object.values(otherState.ports)) {
+      if (!otherPort.ipv6Address || !otherPort.ipv6Prefix) continue;
+      if (!otherPort.ipv6Rip?.enabled) continue;
+      if (otherPort.shutdown) continue;
+
+      for (const thisPort of Object.values(state.ports)) {
+        if (!thisPort.ipv6Address || !thisPort.ipv6Prefix) continue;
+        if (!thisPort.ipv6Rip?.enabled) continue;
+        if (thisPort.shutdown) continue;
+
+        if (isIpv6InNetwork(otherPort.ipv6Address, thisPort.ipv6Address, Math.min(otherPort.ipv6Prefix, thisPort.ipv6Prefix))) {
+          isAdjacent = true;
+          break;
+        }
+      }
+      if (isAdjacent) break;
+    }
+
+    if (!isAdjacent) continue;
+
+    // Collect networks advertised by the adjacent RIPng neighbor
+    for (const otherPort of Object.values(otherState.ports)) {
+      if (!otherPort.ipv6Address || !otherPort.ipv6Prefix) continue;
+      if (!otherPort.ipv6Rip?.enabled) continue;
+      if (otherPort.shutdown) continue;
+
+      const routeKey = `${otherPort.ipv6Address}/${otherPort.ipv6Prefix}`;
+      if (visitedAds.has(routeKey)) continue;
+      visitedAds.add(routeKey);
+
+      // Don't add route for the same network this device already has
+      const alreadyHas = Object.values(state.ports).some(
+        p => p.ipv6Address === otherPort.ipv6Address && p.ipv6Prefix === otherPort.ipv6Prefix
+      );
+      if (alreadyHas) continue;
+
+      routes.push({
+        destination: otherPort.ipv6Address,
+        prefixLength: otherPort.ipv6Prefix,
+        nextHop: otherPort.ipv6Address,
+        type: 'dynamic',
+        metric: 120
+      });
+    }
+  }
+
+  return routes;
 }
 
 export function getL3Hops(

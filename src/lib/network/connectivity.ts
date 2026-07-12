@@ -1455,6 +1455,62 @@ export function checkConnectivity(
   // Fallback for simple topologies without advanced device states
   const basicConnectivityPossible = !deviceStates && !routingRequired;
 
+  // Track which router in the path applied NAT (for reverse-path verification)
+  let natTranslatedAt: string | null = null;
+
+  // 6.5 DHCP Snooping Enforcement
+  // Rogue DHCP server protection: DHCP OFFER/ACK blocked on untrusted ports
+  if (deviceStates) {
+    for (let i = 0; i < path.length; i++) {
+      const deviceId = path[i];
+      const state = safeDeviceStates.get(deviceId);
+      const device = deviceMap.get(deviceId);
+
+      if (state && device && isSwitchDeviceType(device.type)) {
+        if (!state.dhcpSnoopingEnabled) continue;
+
+        const prevDeviceId = i > 0 ? path[i - 1] : null;
+        if (!prevDeviceId) continue;
+
+        const ingressConn = pathConnections.get(`${prevDeviceId}-${deviceId}`);
+        if (!ingressConn) continue;
+
+        const rawIngressPortId = ingressConn.sourceDeviceId === deviceId ? ingressConn.sourcePort : ingressConn.targetPort;
+        if (!rawIngressPortId) continue;
+
+        const normalizedId = normalizePortId(rawIngressPortId) || rawIngressPortId;
+        const ingressPort = state.ports[normalizedId];
+        if (!ingressPort) continue;
+
+        // Check if this VLAN is being snooped
+        const portVlan = getPortVlan(ingressPort);
+        const snoopingVlans = state.dhcpSnoopingVlans || [];
+        if (snoopingVlans.length > 0 && !snoopingVlans.includes(String(portVlan))) continue;
+
+        if (!ingressPort.dhcpSnoopingTrust) {
+          // Untrusted port — check if the previous-hop device is a DHCP server
+          const hopSourceState = safeDeviceStates.get(prevDeviceId);
+          const isDhcpServer = hopSourceState ? (
+            (hopSourceState.dhcpPools && Object.keys(hopSourceState.dhcpPools).length > 0) ||
+            (hopSourceState.services?.dhcp?.pools && hopSourceState.services.dhcp.pools.length > 0)
+          ) : false;
+
+          if (isDhcpServer) {
+            return {
+              success: false,
+              hops: hopNames.slice(0, i + 1),
+              hopIds: path.slice(0, i + 1),
+              targetId: targetDevice.id,
+              error: language === 'tr'
+                ? `DHCP snooping: Yetkisiz DHCP sunucusu ${device.name} port ${normalizedId} üzerinden engellendi.`
+                : `DHCP snooping: Rogue DHCP server blocked on ${device.name} port ${normalizedId}.`
+            };
+          }
+        }
+      }
+    }
+  }
+
   // 7. ACL, NAT & Firewall Logic - Check rules for any firewalls or ACLs in the path
   // BOLT: Use pre-resolved safeDeviceStates
   for (let i = 0; i < path.length; i++) {
@@ -1536,6 +1592,11 @@ export function checkConnectivity(
               }
             }
           }
+
+          // Record translation for reverse-path verification
+          if (translated && state.natStaticTranslations?.length) {
+            natTranslatedAt = stepDeviceId;
+          }
         } else if (ingressPort.natSide === 'outside' && egressPort.natSide === 'inside') {
           // Destination NAT (Outside -> Inside) - Typically for return traffic or port forwarding
           let translated = false;
@@ -1557,6 +1618,24 @@ export function checkConnectivity(
               translated = true;
             }
           }
+        }
+      }
+
+      // 7.1.6 Reverse NAT verification
+      // When source NAT is applied (inside→outside), verify that the return traffic
+      // can be reverse-translated — needed for bidirectional protocols like ping.
+      if (natTranslatedAt === stepDeviceId && state.natStaticTranslations) {
+        const hasReverse = state.natStaticTranslations.some(t => t.globalIp === currentSourceIp);
+        if (!hasReverse) {
+          return {
+            success: false,
+            hops: hopNames.slice(0, i + 1),
+            hopIds: path.slice(0, i + 1),
+            targetId: targetDevice.id,
+            error: language === 'tr'
+              ? `NAT çevrimi tamamlanamıyor: ${currentSourceIp} için ters çevrim bulunamadı.`
+              : `NAT translation incomplete: no reverse mapping for ${currentSourceIp}.`
+          };
         }
       }
 
