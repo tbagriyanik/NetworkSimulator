@@ -906,7 +906,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
         window.parent.postMessage({
           type: 'router-admin-focus-device',
           deviceId: deviceId
-        }, window.parent.location.origin);
+        }, '*');
       } catch (err) {
         console.warn('Could not send focus device message:', err);
       }
@@ -922,13 +922,13 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
           payload: {
             iotDeviceId: deviceId
           }
-        }, window.parent.location.origin);
+        }, '*');
       } catch (err) {
         console.warn('Could not disconnect IoT device:', err);
         var errorMessage = isTurkish
           ? 'Cihaz bağlantısı kesilemedi: ' + (err && err.message ? err.message : String(err))
           : 'Failed to disconnect device: ' + (err && err.message ? err.message : String(err));
-        window.parent.postMessage({ type: 'router-admin-toast', payload: { type: 'error', message: errorMessage } }, window.parent.location.origin);
+        window.parent.postMessage({ type: 'router-admin-toast', payload: { type: 'error', message: errorMessage } }, '*');
       }
     };
 
@@ -940,7 +940,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
           payload: {
             iotDeviceId: deviceId
           }
-        }, window.parent.location.origin);
+        }, '*');
       } catch (err) {
         console.warn('Could not renew IoT device IP:', err);
         alert('❌ ${isTurkish ? 'IP yenilenemedi' : 'Failed to renew IoT device IP'}');
@@ -985,7 +985,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
                 password: ${jsWifiPassword},
                 channel: ${jsChannel}
               }
-            }, window.parent.location.origin);
+            }, '*');
             successCount++;
           } catch (err) {
             console.warn('Could not connect IoT device ' + deviceId + ':', err);
@@ -1048,13 +1048,13 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
 
       if (!ssid) {
         const errorMessage = isTurkish ? 'Lütfen bir ağ adı (SSID) girin' : 'Please enter a network name (SSID)';
-window.parent.postMessage({ type: 'router-admin-toast', payload: { type: 'error', message: errorMessage } }, window.parent.location.origin);
+window.parent.postMessage({ type: 'router-admin-toast', payload: { type: 'error', message: errorMessage } }, '*');
         return;
       }
 
       if (security !== 'open' && password.length < 8) {
         const errorMessage = isTurkish ? 'Parola en az 8 karakter olmalıdır' : 'Password must be at least 8 characters';
-window.parent.postMessage({ type: 'router-admin-toast', payload: { type: 'error', message: errorMessage } }, window.parent.location.origin);
+window.parent.postMessage({ type: 'router-admin-toast', payload: { type: 'error', message: errorMessage } }, '*');
         return;
       }
 
@@ -1073,7 +1073,7 @@ window.parent.postMessage({ type: 'router-admin-toast', payload: { type: 'error'
             type: 'success',
             message: isTurkish ? 'Wi-Fi ayarları başarıyla kaydedildi!' : 'Wi-Fi settings saved successfully!'
           }
-        }, window.parent.location.origin);
+        }, '*');
       }, 1000);
 
       try {
@@ -1090,7 +1090,7 @@ window.parent.postMessage({ type: 'router-admin-toast', payload: { type: 'error'
             maxClients: Number(maxClients),
             password
           }
-        }, window.parent.location.origin);
+        }, '*');
       } catch (err) {
         console.warn('Could not sync router settings to parent:', err);
       }
