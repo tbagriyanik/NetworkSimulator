@@ -224,6 +224,19 @@ function exportWorkspaceLayout() {
 }
 ```
 
+## Collapsible Window State Preservation
+
+Panel windows also save their **collapsed/minimized state** to localStorage independently from position.
+
+| Component | localStorage Key | State |
+|---|---|---|
+| `RefreshReportPanel` | `refresh-report-collapsed` | `"true"` / `"false"` |
+| `DraggableWindowWrapper` (Router, PC, etc.) | `{id}-collapsed` (internal) | In-memory only |
+| `PCInfoPopover` | `pc-info-window-collapsed-{id}` | `"true"` / `"false"` |
+| `RouterInfoPopover` | `router-info-window-collapsed-{id}` | `"true"` / `"false"` |
+
+When a panel is collapsed, only its header bar remains visible. The collapse state persists across page reloads and network refreshes.
+
 ## Related Features
 
 - **useModalDragResize**: Hook that manages individual modal positions

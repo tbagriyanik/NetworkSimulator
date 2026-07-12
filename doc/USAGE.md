@@ -79,7 +79,7 @@
 | `Page Up` | Scroll canvas up | Canvas'ı yukarı kaydır |
 | `Page Down` | Scroll canvas down | Canvas'ı aşağı kaydır |
 | `Double-click (Empty Space)` | Reset topology view | Topoloji görünümünü sıfırla |
-| `Double-click (Device)` | Open device panel | Cihaz panelini aç |
+| `Double-click (Device)` | Open collapsible device panel | Daraltılabilir cihaz panelini aç |
 
 ### Ping Packet Analysis / Ping Paket Analizi
 | Shortcut / Kısayol | EN | TR |
@@ -136,4 +136,4 @@
 - **P** and **N** control ping packet animation playback / `P` ve `N` ping animasyonunu kontrol eder
 - **F5** refreshes the network topology / `F5` topolojiyi yeniler
 - Config panel shows live `running-config` / Config paneli canlı `running-config` gösterir
-- Windows are auto-positioned and restored on refresh / Pencereler otomatik konumlanır ve yenilemede geri yüklenir
+- Windows are auto-positioned and restored on refresh / Pencereler otomatik konumlanır ve yenilemede geri yüklenir; Ağ Yenilendi Paneli'nin daraltılmış/genişletilmiş durumu da korunur

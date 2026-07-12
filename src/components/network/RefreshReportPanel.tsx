@@ -8,7 +8,7 @@ import { LiveDeviceList } from '@/components/network/LiveDeviceList';
 import { CanvasDevice } from './networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { RefreshNetworkReport } from '@/hooks/useRefreshReport';
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 
 interface LiveSummary {
   deviceCount: { total: number; routers: number; switches: number; pcs: number; iot: number; firewalls: number; wlcs: number };

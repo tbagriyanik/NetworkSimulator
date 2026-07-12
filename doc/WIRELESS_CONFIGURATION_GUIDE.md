@@ -331,6 +331,6 @@ Radio Configurations:
 - Network Simulator Documentation
 
 ---
-
-**Son Güncelleme:** 2026-07-08
-**Versiyon:** 1.9.6
+ 
+**Son Güncelleme:** 2026-07-12
+**Versiyon**: 1.9.7

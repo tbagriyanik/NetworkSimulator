@@ -1571,6 +1571,11 @@ To use these examples:
 4. The example will load with pre-configured devices and connections.
 5. Follow the notes provided in the canvas for specific configuration steps.
 
+### Related Example Documents
+
+- [Window Position Preservation](../examples/window-position-preservation.md) — How window positions are saved and restored
+- [Collapsible Panels](../examples/collapsible-panels.md) — How info panels can be collapsed/minimized with state persistence
+
 ## Contributing
 
 To add a new example:

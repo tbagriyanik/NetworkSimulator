@@ -1,6 +1,13 @@
 
 ## Latest Updates
 
+### v1.9.7 (2026-07-12)
+
+| English | Türkçe |
+| --- | --- |
+| **Collapsible Info Panels**: PC and Router information popups are now collapsible; sections (WiFi, Services, IP Mode, etc.) can be toggled with a single click and state is persisted in localStorage | **Daraltılabilir Bilgi Panelleri**: PC ve Router bilgilendirme popup'ları artık daraltılabilir; bölümler (WiFi, Servisler, IP Modu, vb.) tek tıkla gizlenip gösterilebilir ve durum localStorage'da saklanır |
+| **Collapsible Network Refresh Report Panel**: The Ağ Yenilendi Paneli (Network Refresh Report) is now collapsible; the header button allows expanding/collapsing and state is persisted in localStorage | **Daraltılabilir Ağ Yenileme Raporu Paneli**: Ağ Yenilendi Paneli artık daraltılabilir; başlık düğmesiyle genişletme/daraltma mümkün ve durum localStorage'da saklanır |
+
 ### v1.9.6 (2026-07-08)
 | English | Türkçe |
 | --- | --- |

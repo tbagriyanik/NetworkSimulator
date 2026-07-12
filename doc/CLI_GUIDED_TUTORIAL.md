@@ -2730,7 +2730,7 @@ Network Simulator, farklı zorluk seviyelerinde **40 hazır örnek proje** ile b
 **Beklenen Sonuç:** Tüm ağ servisleri (DNS, HTTP, FTP, MAIL, NTP, DHCP) çalışır durumdadır.
 
 ---
-
-**Son Güncelleme:** Haziran 2026  
-**Versiyon:** 1.9.6
+ 
+**Son Güncelleme:** Temmuz 2026  
+**Versiyon:** 1.9.7
 

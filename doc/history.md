@@ -15,6 +15,16 @@ Yeniden eskiye, tarih ve özellik listesi.
 
 ---
 
+## v1.9.7 — 2026-07-12
+
+| Tarih | Özellik |
+|-------|---------|
+| 2026-07-12 | **Daraltılabilir Bilgi Panelörleri** — PC ve Router bilgilendirme popup'ları artık daraltılabilir; bölümler (WiFi, Servisler, IP Modu, vb.) tek tıkla gizlenip gösterilebilir ve durum localStorage'da saklanır |
+| 2026-07-12 | **Daraltılabilir Ağ Yenileme Raporu Paneli** — Ağ yenileme raporu panelini (Ağ Yenilendi) artık daraltılabilir; başlık düğmesiyle genişletme/daraltma mümkün ve durum localStorage'da saklanır |
+| 2026-07-12 | **Sürüm Güncellemesi** — Uygulama versiyonu 1.9.6'dan 1.9.7'ye yükseltildi |
+
+---
+
 ## v1.9.5 — 2026-07-07
 
 | Tarih | Özellik |

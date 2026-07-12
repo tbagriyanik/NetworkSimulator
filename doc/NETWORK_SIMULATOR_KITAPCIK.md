@@ -14,7 +14,7 @@
 
 # Network Simulator 2026
 
-![Version](https://img.shields.io/badge/version-1.9.6-blue)
+![Version](https://img.shields.io/badge/version-1.9.7-blue)
 ![Stack](https://img.shields.io/badge/stack-Next.js%2016.2%20|%20React%2019%20|%20TypeScript%206.0%20|%20Tailwind%204-green)
 ![FOSS](https://img.shields.io/badge/FOSS-Free%20Open%20Source-brightgreen)
 ![Total Lines](https://img.shields.io/badge/total--lines-100,327-lightgrey)
@@ -300,7 +300,7 @@ Free and open source. See [LICENSE](LICENSE).
 | `Page Up` | Scroll canvas up | Canvas'ı yukarı kaydır |
 | `Page Down` | Scroll canvas down | Canvas'ı aşağı kaydır |
 | `Double-click (Empty Space)` | Reset topology view | Topoloji görünümünü sıfırla |
-| `Double-click (Device)` | Open device panel | Cihaz panelini aç |
+| `Double-click (Device)` | Open collapsible device panel | Cihaz panelini aç |
 
 ### Ping Packet Analysis / Ping Paket Analizi
 | Shortcut / Kısayol | EN | TR |
@@ -375,7 +375,7 @@ The simulator supports **280+ commands** across multiple configuration modes.
 | `Arrow Up/Down` | Navigate command history in CLI |
 | `Enter` | Execute command / Confirm action |
 | `Delete` | Delete selected items |
-| `F5` | Refresh network topology |
+| `F5` | Refresh network topology; Ağ Yenilendi Paneli'nin durumu korunur |
 
 ### Canvas Navigation
 | Shortcut | Action |
@@ -3627,8 +3627,8 @@ Network Simulator, farklı zorluk seviyelerinde **40 hazır örnek proje** ile b
 
 ---
 
-**Son Güncelleme:** Haziran 2026
-**Versiyon:** 1.9.6
+**Son Güncelleme:** Temmuz 2026
+**Versiyon:** 1.9.7
 
 \n\n<div style="page-break-after: always;"></div>\n\n
 # 🎓 Rehberli Ders Adımları (Guided Steps)

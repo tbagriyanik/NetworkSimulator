@@ -1,9 +1,9 @@
 # Network Simulator 2026
 
-![Version](https://img.shields.io/badge/version-1.9.6-blue)
+![Version](https://img.shields.io/badge/version-1.9.7-blue)
 ![Stack](https://img.shields.io/badge/stack-Next.js%2016.2%20|%20React%2019%20|%20TypeScript%206.0%20|%20Tailwind%204-green)
 ![FOSS](https://img.shields.io/badge/FOSS-Free%20Open%20Source-brightgreen)
-![Total Lines](https://img.shields.io/badge/total--lines-106,152-lightgrey)
+![Total Lines](https://img.shields.io/badge/total--lines-106,500-lightgrey)
 
 A browser-based network simulator for learning switching, routing, wireless, IoT, CLI, and exam workflows.
 
@@ -16,8 +16,10 @@ A browser-based network simulator for learning switching, routing, wireless, IoT
 ```bash
 npm install && npm run dev
 ```
+
 ## Recent Updates / Son Güncellemeler
 
+- **Collapsible Info Panels / Daraltılabilir Bilgi Panelleri:** PC ve Router bilgi panelleri artık daraltılabilir ve durumları localStorage ile kalıcı hale getirildi. Ağ yenileme raporu paneli de aynı özelliği destekler.
 - **Mobile PNG Export / Mobil PNG Kaydetme:** Mobil cihazlarda sorunsuz çalışması için native 'Web Share API' (Paylaşım Ekranı) entegrasyonu ve bellek optimizasyonu sağlandı.
 - **Improved Connection UX / Geliştirilmiş Kablo Bağlantı Deneyimi:** Porttan porta tıklayarak kablo bağlama işlemi (`onPointerDown` kullanılarak) anında tepki verecek şekilde kararlı hale getirildi.
 - **Advanced Timeline / Gelişmiş İşlem Geçmişi:** İşlem adımlarına kaydırma (scroll) desteği ve daha detaylı bildirimler ("Switch1 ve PC1 arasına bağlantı eklendi") eklendi. Tüm geçmiş adımlarını `.txt` dosyası olarak indirebilme (dışa aktarma) özelliği getirildi. Geçmiş kayıtları sayfa yenilendiğinde (F5) kaybolmamak üzere yerel depolama (localStorage) ile kalıcı hale getirildi.
@@ -32,9 +34,9 @@ npm install && npm run dev
 
 | Metric / Metrik | Value / Değer |
 | --- | ---: |
-| Total Lines / Toplam Satır (src/) | 106,152 |
-| Source Files / Kaynak Dosya | 300 |
-| Documentation Files / Dokümantasyon Dosya | 16 |
+| Total Lines / Toplam Satır (src/) | 106,500 |
+| Source Files / Kaynak Dosya | 300+ |
+| Documentation Files / Dokümantasyon Dosya | 16+ |
 | Example Projects / Örnek Proje | 49 |
 | Guided Lessons / Rehberli Ders | 19 |
 | Exams / Sınavlar | 6 |
