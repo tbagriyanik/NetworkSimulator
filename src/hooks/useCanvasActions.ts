@@ -3,6 +3,7 @@ import { CanvasDevice, CanvasNote, CanvasConnection, DeviceType } from '../compo
 import { generateRandomLinkLocalIpv4, generateRandomLinkLocalIpv6 } from '@/lib/network/linkLocal';
 import { getDeviceWidth, getDeviceHeight } from '../components/network/networkTopology.helpers';
 import { generateSwitchPorts, generateL3SwitchPorts, generateRouterPorts, generateWLCPorts } from '../components/network/networkTopology.portGenerators';
+import { buildRunningConfig } from '@/lib/network/core/configBuilder';
 
 const generateMacAddress = (seed?: number): string => {
   const chars = '0123456789ABCDEF';
@@ -278,6 +279,9 @@ export function useCanvasActions({
       Object.entries(groupedDevices).forEach(([type, devs]) => {
         summaryText += `[ ${type} ]\n`;
         devs.forEach(d => {
+          // The runtime state is the source of truth for all CLI-capable
+          // devices: it includes changes made from both the terminal and web UI.
+          const dState = deviceStates?.get(d.id);
           summaryText += `• ${d.name}:\n`;
           if (d.ip && d.ip !== '0.0.0.0') {
             summaryText += `  IP: ${d.ip}${d.subnet ? '/' + d.subnet : ''}\n`;
@@ -406,7 +410,6 @@ export function useCanvasActions({
               cli += `    service dhcp\n    ip dhcp pool ${pool.poolName}\n    network ${pool.startIp} ${pool.subnetMask}\n    default-router ${pool.defaultGateway}\n    dns-server ${pool.dnsServer}\n`;
             }
 
-            const dState = deviceStates?.get(d.id);
             if (dState && dState.security) {
               const sec = dState.security;
               if (sec.enableSecret) cli += `    enable secret ${sec.enableSecret}\n`;
@@ -473,9 +476,46 @@ export function useCanvasActions({
               }
             }
 
+            // Include the actual wireless AP configuration in the generated
+            // topology note. Prefer runtime state because it reflects CLI/web
+            // panel changes that may not yet be mirrored on the canvas device.
+            const wlanPort = dState?.ports?.wlan0;
+            const wifi = wlanPort?.wifi || d.wifi;
+            const isAccessPoint = wifi?.enabled !== false
+              && !wlanPort?.shutdown
+              && (wifi?.mode === 'ap' || wifi?.mode === 'root');
+            if (isAccessPoint && wifi?.ssid) {
+              const wlanId = 1;
+              const channel = wifi.channel === '5GHz' ? 36 : 6;
+              cli += `    ! ${isTr ? 'Access Point yapılandırması' : 'Access Point configuration'}\n`;
+              cli += `    wlan ${wifi.ssid} ${wlanId} ${wifi.ssid}\n`;
+              if (wifi.security && wifi.security !== 'open') {
+                cli += `    security wpa psk set-key ascii 0 ${wifi.password || 'password123'}\n`;
+              }
+              cli += `    station-role root\n`;
+              cli += `    channel ${channel}\n`;
+              cli += `    interface WLAN0\n`;
+              cli += `    no shutdown\n`;
+              cli += `    exit\n`;
+            }
+
             if (cli) {
               summaryText += isTr ? `\n  [CLI Komutları]:\n` : `\n  [CLI Commands]:\n`;
               summaryText += `    enable\n    configure terminal\n    hostname ${d.name}\n${cli}`;
+            }
+          }
+
+          // Append the complete generated running configuration rather than
+          // maintaining a second, incomplete list of supported CLI options.
+          // This covers every configured interface, VLAN, routing/security and
+          // wireless setting for routers, switches, WLCs and firewalls.
+          if (dState) {
+            const runningConfig = buildRunningConfig(dState);
+            if (runningConfig.length > 0) {
+              summaryText += isTr ? `\n  [Tam Çalışan Yapılandırma]:\n` : `\n  [Complete Running Configuration]:\n`;
+              runningConfig.forEach(line => {
+                summaryText += `    ${line}\n`;
+              });
             }
           }
 

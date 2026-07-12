@@ -31,6 +31,8 @@ export interface CanvasPort {
     password?: string;
     channel: '2.4GHz' | '5GHz';
     mode?: 'ap' | 'client' | 'disabled' | 'sta';
+    hidden?: boolean;
+    maxClients?: number;
   };
   spanningTree?: {
     role?: 'root' | 'designated' | 'alternate' | 'backup' | 'disabled';
@@ -172,6 +174,8 @@ export interface CanvasDevice {
     password?: string;
     channel: '2.4GHz' | '5GHz';
     mode: 'ap' | 'client';
+    hidden?: boolean;
+    maxClients?: number;
   };
   iot?: {
     sensorType: 'temperature' | 'sound' | 'motion' | 'humidity' | 'light';

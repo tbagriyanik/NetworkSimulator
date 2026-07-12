@@ -1181,8 +1181,8 @@ function getDefaultWifiConfig(device: CanvasDevice): WifiAdminConfig {
     password: device.wifi?.password || 'password123',
     channel: device.wifi?.channel || '2.4GHz',
     mode: device.wifi?.mode || 'ap',
-    hidden: false,
-    maxClients: 32,
+    hidden: device.wifi?.hidden ?? false,
+    maxClients: device.wifi?.maxClients ?? 32,
   };
 }
 
@@ -1200,8 +1200,8 @@ function getRouterWifiConfig(device: CanvasDevice, state?: SwitchState): WifiAdm
     password: wlanWifi.password || base.password,
     channel: (wlanWifi.channel as '2.4GHz' | '5GHz') || base.channel,
     mode: (wlanWifi.mode === 'client' ? 'client' : 'ap'),
-    hidden: base.hidden,
-    maxClients: base.maxClients,
+    hidden: wlanWifi.hidden ?? base.hidden,
+    maxClients: wlanWifi.maxClients ?? base.maxClients,
   };
 }
 

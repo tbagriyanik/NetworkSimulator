@@ -149,6 +149,8 @@ export function usePageNetworkLogic({
                 password: wifi.password || '',
                 channel: wifi.channel || '2.4GHz',
                 mode: wifi.mode || 'ap',
+                hidden: wifi.hidden,
+                maxClients: wifi.maxClients,
               },
             },
           },
