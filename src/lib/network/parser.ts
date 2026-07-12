@@ -2854,6 +2854,30 @@ export const commandPatterns: Record<string, CommandPattern> = {
     minArgs: 1,
     maxArgs: 1
   },
+  'area stub no-summary': {
+    pattern: /^area\s+(\d+)\s+stub\s+no-summary$/i,
+    modes: ['router-config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'area nssa no-summary': {
+    pattern: /^area\s+(\d+)\s+nssa\s+no-summary$/i,
+    modes: ['router-config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'no area stub': {
+    pattern: /^no\s+area\s+(\d+)\s+stub$/i,
+    modes: ['router-config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'no area nssa': {
+    pattern: /^no\s+area\s+(\d+)\s+nssa$/i,
+    modes: ['router-config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
 
   // ── End of Configuration ──────────────────────────────────────────────────
 };

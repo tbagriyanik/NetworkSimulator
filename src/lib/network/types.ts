@@ -513,6 +513,10 @@ export interface SwitchState {
   }>;
   // OSPF areas
   ospfAreas?: number[];
+  ospfStubAreas?: string[];
+  ospfTotallyStubAreas?: string[];
+  ospfNssaAreas?: string[];
+  ospfTotallyNssaAreas?: string[];
   isAbr?: boolean;
   // World mode for dot11d
   worldModeDot11d?: string;
@@ -754,4 +758,5 @@ export interface Route {
   metric?: number;          // Administrative distance/metric
   type: 'connected' | 'static' | 'dynamic'; // Route type
   area?: number;            // For OSPF
+  ospfRouteType?: 'E1' | 'E2' | 'N1' | 'N2';
 }

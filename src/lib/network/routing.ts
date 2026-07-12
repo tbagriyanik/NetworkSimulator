@@ -11,6 +11,7 @@ export interface Route {
   metric?: number;          // Administrative distance/metric
   type: 'connected' | 'static' | 'dynamic'; // Route type
   area?: number;            // For OSPF
+  ospfRouteType?: 'E1' | 'E2' | 'N1' | 'N2';
 }
 
 /**

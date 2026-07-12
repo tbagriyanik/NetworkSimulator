@@ -8,7 +8,19 @@ enum LSAType {
   Router = 1,       // Type 1: Router LSA (Intra-area)
   Network = 2,      // Type 2: Network LSA (Intra-area, for multi-access links)
   Summary = 3,      // Type 3: Summary LSA (Inter-area, from ABR)
-  ASExternal = 5    // Type 5: AS External LSA (From ASBR)
+  ASExternal = 5,   // Type 5: AS External LSA (From ASBR)
+  NSSA = 7          // Type 7: NSSA External LSA (From ASBR in NSSA)
+}
+
+/**
+ * OSPF Area Types
+ */
+export enum OSPFAreaType {
+  Normal = 'normal',
+  Stub = 'stub',
+  TotallyStubby = 'totally-stubby',
+  NSSA = 'nssa',
+  TotallyNSSA = 'totally-nssa'
 }
 
 /**
@@ -54,12 +66,40 @@ interface SummaryLSA extends LSA {
 }
 
 /**
+ * Type 5: AS-External LSA
+ * Advertises external routes (from ASBR).
+ */
+interface ASExternalLSA extends LSA {
+  type: LSAType.ASExternal;
+  network: string;
+  mask: string;
+  metric: number;
+  forwardingAddress?: string;
+}
+
+/**
+ * Type 7: NSSA External LSA
+ * Advertises external routes within an NSSA (converted to Type 5 by ABR).
+ */
+interface NSSAExternalLSA extends LSA {
+  type: LSAType.NSSA;
+  network: string;
+  mask: string;
+  metric: number;
+  forwardingAddress?: string;
+  propagate: boolean; // Converted to Type 5 by ABR
+}
+
+/**
  * Link State Database (LSDB)
  */
 export interface LSDB {
   [area: number]: {
     routerLSAs: Map<string, RouterLSA>;
     summaryLSAs: Map<string, SummaryLSA>;
+    asExternalLSAs?: Map<string, ASExternalLSA>;
+    nssaLsas?: Map<string, NSSAExternalLSA>;
+    areaType?: OSPFAreaType;
   };
 }
 
@@ -86,6 +126,56 @@ function getPortBandwidthKbps(port: Port): number {
 }
 
 /**
+ * Get area type for a given area number from router state
+ */
+function getAreaType(area: number, state: SwitchState): OSPFAreaType {
+  const areaStr = String(area);
+
+  if (state.ospfTotallyNssaAreas?.includes(areaStr)) return OSPFAreaType.TotallyNSSA;
+  if (state.ospfTotallyStubAreas?.includes(areaStr)) return OSPFAreaType.TotallyStubby;
+  if (state.ospfNssaAreas?.includes(areaStr)) return OSPFAreaType.NSSA;
+  if (state.ospfStubAreas?.includes(areaStr)) return OSPFAreaType.Stub;
+  return OSPFAreaType.Normal;
+}
+
+/**
+ * Check if an LSA type should be allowed into the given area type
+ */
+function isLSAAllowedInArea(areaType: OSPFAreaType, lsaType: LSAType): boolean {
+  switch (areaType) {
+    case OSPFAreaType.Normal:
+      return true; // All LSA types allowed
+    case OSPFAreaType.Stub:
+      // Stub: no Type 5 (AS-External), Type 7 doesn't exist in stub
+      return lsaType !== LSAType.ASExternal;
+    case OSPFAreaType.TotallyStubby:
+      // Totally Stubby: no Type 3 (Summary), no Type 5
+      return lsaType !== LSAType.Summary && lsaType !== LSAType.ASExternal;
+    case OSPFAreaType.NSSA:
+      // NSSA: no Type 5 (AS-External), Type 7 replaces Type 5
+      return lsaType !== LSAType.ASExternal;
+    case OSPFAreaType.TotallyNSSA:
+      // Totally NSSA: no Type 3, no Type 5. Type 7 replaces Type 5.
+      return lsaType !== LSAType.Summary && lsaType !== LSAType.ASExternal;
+    default:
+      return true;
+  }
+}
+
+/**
+ * Get display string for area type
+ */
+export function getAreaTypeDisplay(areaType: OSPFAreaType): string {
+  switch (areaType) {
+    case OSPFAreaType.Normal: return 'normal';
+    case OSPFAreaType.Stub: return 'stub';
+    case OSPFAreaType.TotallyStubby: return 'totally stubby';
+    case OSPFAreaType.NSSA: return 'nssa';
+    case OSPFAreaType.TotallyNSSA: return 'totally nssa';
+  }
+}
+
+/**
  * Dijkstra SPF Algorithm Implementation
  */
 interface SPFNode {
@@ -103,6 +193,36 @@ export function buildOSPFLinkStateDatabase(
 ): LSDB {
   const lsdb: LSDB = {};
 
+  // First pass: detect all area types by checking each router's configuration
+  const areaTypes = new Map<number, OSPFAreaType>();
+  deviceStates.forEach((state) => {
+    if (state.routingProtocol !== 'ospf') return;
+    const areas = state.ospfAreas || [0];
+    areas.forEach(area => {
+      const existingType = areaTypes.get(area);
+      const thisAreaType = getAreaType(area, state);
+      // If this is the first router for this area, or it's more restrictive, use it
+      if (!existingType || getTypeRestrictiveness(thisAreaType) > getTypeRestrictiveness(existingType)) {
+        areaTypes.set(area, thisAreaType);
+      }
+      // Ensure area entry exists in LSDB
+      if (!lsdb[area]) {
+        lsdb[area] = {
+          routerLSAs: new Map(),
+          summaryLSAs: new Map()
+        };
+      }
+    });
+  });
+
+  // Apply area types to LSDB
+  areaTypes.forEach((areaType, area) => {
+    if (lsdb[area]) {
+      lsdb[area].areaType = areaType;
+    }
+  });
+
+  // Second pass: build Router LSAs (Type 1)
   deviceStates.forEach((state, deviceId) => {
     if (state.routingProtocol !== 'ospf') return;
 
@@ -121,14 +241,11 @@ export function buildOSPFLinkStateDatabase(
       const links: OSPFLink[] = [];
       Object.values(state.ports).forEach(port => {
         if (!port.ipAddress || !port.subnetMask || port.shutdown) return;
-        if (port.ospfEnabled === false) return; // Explicitly disabled
+        if (port.ospfEnabled === false) return;
 
-        // Check if port is in this area
         const portArea = port.ospfArea !== undefined ? parseInt(port.ospfArea) : area;
         if (portArea !== area) return;
 
-        // Simplify: for our simulator, we treat everything as either p2p or stub
-        // In a real SPF, transit would require Type 2 LSAs
         links.push({
           id: getNetworkAddress(port.ipAddress, port.subnetMask),
           data: port.subnetMask,
@@ -145,7 +262,7 @@ export function buildOSPFLinkStateDatabase(
         sequence: 1,
         ageNumber: 0,
         isAbr: !!state.isAbr || areas.length > 1,
-        isAsbr: !!state.bgpAs, // Simplified ASBR check
+        isAsbr: !!state.bgpAs,
         links
       };
 
@@ -153,8 +270,80 @@ export function buildOSPFLinkStateDatabase(
     });
   });
 
-  // ABRs generate Type 3 Summary LSAs
-  // ABRs advertise networks reachable in one area into other areas
+  // Third pass: generate Type 5 (AS-External) and Type 7 (NSSA) LSAs
+  deviceStates.forEach((state, deviceId) => {
+    if (state.routingProtocol !== 'ospf') return;
+    const routerId = state.ospfRouterId || state.routerId || state.ip || deviceId;
+    const areas = state.ospfAreas || [0];
+
+    const isAsbr = !!state.bgpAs;
+    if (!isAsbr) return;
+
+    areas.forEach(area => {
+      if (!lsdb[area]) return;
+      const areaType = lsdb[area].areaType || OSPFAreaType.Normal;
+
+      // Collect external networks from this ASBR
+      const externalNetworks: Array<{ network: string; mask: string; metric: number }> = [];
+      Object.values(state.ports).forEach(port => {
+        if (!port.ipAddress || !port.subnetMask || port.shutdown) return;
+        if (port.ospfEnabled === false) return;
+        const portArea = port.ospfArea !== undefined ? parseInt(port.ospfArea) : area;
+        if (portArea !== area) return;
+
+        const networkAddr = getNetworkAddress(port.ipAddress, port.subnetMask);
+        externalNetworks.push({
+          network: networkAddr,
+          mask: port.subnetMask,
+          metric: calculateOSPFInterfaceCost(port)
+        });
+      });
+
+      if (externalNetworks.length === 0) return;
+
+      if (areaType === OSPFAreaType.NSSA || areaType === OSPFAreaType.TotallyNSSA) {
+        const nssaLsas = lsdb[area].nssaLsas ?? (lsdb[area].nssaLsas = new Map());
+        externalNetworks.forEach(ext => {
+          const nssaLsa: NSSAExternalLSA = {
+            id: `7-${ext.network}`,
+            advRouter: routerId,
+            type: LSAType.NSSA,
+            area,
+            sequence: 1,
+            ageNumber: 0,
+            network: ext.network,
+            mask: ext.mask,
+            metric: ext.metric,
+            propagate: true
+          };
+          nssaLsas.set(nssaLsa.id, nssaLsa);
+        });
+      } else if (areaType === OSPFAreaType.Normal) {
+        // Generate Type 5 LSAs in normal areas
+        if (!lsdb[area].asExternalLSAs) {
+          lsdb[area].asExternalLSAs = new Map();
+        }
+        externalNetworks.forEach(ext => {
+          const externalLsa: ASExternalLSA = {
+            id: ext.network,
+            advRouter: routerId,
+            type: LSAType.ASExternal,
+            area,
+            sequence: 1,
+            ageNumber: 0,
+            network: ext.network,
+            mask: ext.mask,
+            metric: ext.metric
+          };
+          const asExtLsas = lsdb[area].asExternalLSAs ?? (lsdb[area].asExternalLSAs = new Map());
+          asExtLsas.set(externalLsa.id, externalLsa);
+        });
+      }
+      // Stub areas: no Type 5 allowed (blocked by isLSAAllowedInArea)
+    });
+  });
+
+  // Fourth pass: ABRs generate Type 3 Summary LSAs (filtered by area type)
   deviceStates.forEach((state, deviceId) => {
     const routerId = state.ospfRouterId || state.routerId || state.ip || deviceId;
     const areas = state.ospfAreas || [0];
@@ -164,13 +353,22 @@ export function buildOSPFLinkStateDatabase(
         const sourceAreaData = lsdb[sourceArea];
         if (!sourceAreaData) return;
 
-        // For each network (Type 1 Router LSA links) in source area
         sourceAreaData.routerLSAs.forEach((lsa) => {
           lsa.links.forEach(link => {
             if (link.type === 'stub') {
-              // Advertise this network to all OTHER areas this ABR is connected to
               areas.forEach(targetArea => {
                 if (sourceArea === targetArea) return;
+
+                if (!lsdb[targetArea]) {
+                  lsdb[targetArea] = { routerLSAs: new Map(), summaryLSAs: new Map() };
+                }
+
+                const targetAreaType = lsdb[targetArea].areaType || OSPFAreaType.Normal;
+
+                // Check if Summary LSA is allowed in target area
+                if (!isLSAAllowedInArea(targetAreaType, LSAType.Summary)) {
+                  return; // Totally Stubby and Totally NSSA block Type 3
+                }
 
                 const summaryLSA: SummaryLSA = {
                   id: link.id,
@@ -181,21 +379,104 @@ export function buildOSPFLinkStateDatabase(
                   ageNumber: 0,
                   network: link.id,
                   mask: link.data,
-                  metric: link.metric // Simplified: should be cost to reach this link
+                  metric: link.metric
                 };
-                if (!lsdb[targetArea]) {
-                  lsdb[targetArea] = { routerLSAs: new Map(), summaryLSAs: new Map() };
-                }
                 lsdb[targetArea].summaryLSAs.set(`${summaryLSA.id}-${routerId}`, summaryLSA);
               });
             }
           });
         });
       });
+
+      // ABR converts Type 7 NSSA LSAs to Type 5 for other areas
+      areas.forEach(sourceArea => {
+        const sourceAreaData = lsdb[sourceArea];
+        if (!sourceAreaData?.nssaLsas) return;
+        const sourceAreaType = sourceAreaData.areaType || OSPFAreaType.Normal;
+        if (sourceAreaType !== OSPFAreaType.NSSA && sourceAreaType !== OSPFAreaType.TotallyNSSA) return;
+
+        sourceAreaData.nssaLsas.forEach((nssaLsa) => {
+          if (!nssaLsa.propagate) return;
+
+          areas.forEach(targetArea => {
+            if (sourceArea === targetArea) return;
+            if (!lsdb[targetArea]) {
+              lsdb[targetArea] = { routerLSAs: new Map(), summaryLSAs: new Map() };
+            }
+            if (!lsdb[targetArea].asExternalLSAs) {
+              lsdb[targetArea].asExternalLSAs = new Map();
+            }
+
+            const targetAreaType = lsdb[targetArea].areaType || OSPFAreaType.Normal;
+            // Only inject Type 5 into non-stub/non-nssa areas
+            if (!isLSAAllowedInArea(targetAreaType, LSAType.ASExternal)) return;
+
+            const externalLsa: ASExternalLSA = {
+              id: nssaLsa.network,
+              advRouter: routerId,
+              type: LSAType.ASExternal,
+              area: targetArea,
+              sequence: 1,
+              ageNumber: 0,
+              network: nssaLsa.network,
+              mask: nssaLsa.mask,
+              metric: nssaLsa.metric
+            };
+            const asExtLsas = lsdb[targetArea].asExternalLSAs ?? (lsdb[targetArea].asExternalLSAs = new Map());
+            asExtLsas.set(externalLsa.id, externalLsa);
+          });
+        });
+      });
+    }
+  });
+
+  // Fifth pass: inject default route for stub/totally-stubby areas
+  // ABR injects 0.0.0.0/0 as a Type 3 summary into stub areas
+  deviceStates.forEach((state, deviceId) => {
+    const routerId = state.ospfRouterId || state.routerId || state.ip || deviceId;
+    const areas = state.ospfAreas || [0];
+
+    if (areas.length > 1) {
+      areas.forEach(targetArea => {
+        if (!lsdb[targetArea]) return;
+        const targetAreaType = lsdb[targetArea].areaType || OSPFAreaType.Normal;
+
+        if (targetAreaType === OSPFAreaType.Stub ||
+            targetAreaType === OSPFAreaType.TotallyStubby ||
+            targetAreaType === OSPFAreaType.NSSA ||
+            targetAreaType === OSPFAreaType.TotallyNSSA) {
+          // Inject default route
+          const defaultSummary: SummaryLSA = {
+            id: '0.0.0.0',
+            advRouter: routerId,
+            type: LSAType.Summary,
+            area: targetArea,
+            sequence: 1,
+            ageNumber: 0,
+            network: '0.0.0.0',
+            mask: '0.0.0.0',
+            metric: 1 // Default route cost in stub areas
+          };
+          lsdb[targetArea].summaryLSAs.set(`0.0.0.0-${routerId}`, defaultSummary);
+        }
+      });
     }
   });
 
   return lsdb;
+}
+
+/**
+ * Helper to determine how restrictive an area type is (higher = more filtering)
+ */
+function getTypeRestrictiveness(type: OSPFAreaType): number {
+  switch (type) {
+    case OSPFAreaType.Normal: return 0;
+    case OSPFAreaType.Stub: return 1;
+    case OSPFAreaType.NSSA: return 2;
+    case OSPFAreaType.TotallyStubby: return 3;
+    case OSPFAreaType.TotallyNSSA: return 4;
+  }
 }
 
 /**
@@ -279,6 +560,7 @@ export function calculateOSPFRoutes(
   areas.forEach(area => {
     const areaData = lsdb[area];
     if (!areaData) return;
+    const areaType = areaData.areaType || OSPFAreaType.Normal;
 
     // 1. Run Dijkstra for Intra-area routes (O)
     const spt = runOSPFDijkstra(routerId, area, lsdb);
@@ -313,8 +595,11 @@ export function calculateOSPFRoutes(
     });
 
     // 2. Process Summary LSAs for Inter-area routes (O IA)
+    // Excluding default route (0.0.0.0/0) for now - handle separately
     areaData.summaryLSAs.forEach(lsa => {
-      // Find the ABR that advertised this Summary LSA in our SPT
+      // Check if this LSA type is allowed in this area
+      if (!isLSAAllowedInArea(areaType, LSAType.Summary)) return;
+
       const abrNode = spt.get(lsa.advRouter);
       if (!abrNode && lsa.advRouter !== routerId) return;
 
@@ -327,7 +612,6 @@ export function calculateOSPFRoutes(
         if (existing) {
           // Intra-area routes (O) always preferred over Inter-area (O IA)
           if (existing.area === area && !areaData.summaryLSAs.has(`${lsa.network}-${lsa.advRouter}`)) {
-             // If existing is O and we are O IA, don't replace
              return;
           }
           const idx = routes.indexOf(existing);
@@ -336,10 +620,105 @@ export function calculateOSPFRoutes(
         routes.push({
           destination: lsa.network,
           subnetMask: lsa.mask,
-          nextHop: nextHop === 'self' ? lsa.network : nextHop, // Simplified
+          nextHop: nextHop === 'self' ? lsa.network : nextHop,
           type: 'dynamic',
           metric: totalCost,
           area: area
+        });
+      }
+    });
+  });
+
+  // 3. Process Type 7 (NSSA) LSAs for N1/N2 routes
+  areas.forEach(area => {
+    const areaData = lsdb[area];
+    if (!areaData?.nssaLsas) return;
+    const areaType = areaData.areaType || OSPFAreaType.Normal;
+
+    areaData.nssaLsas.forEach(lsa => {
+      if (!isLSAAllowedInArea(areaType, LSAType.ASExternal)) return;
+
+      // Find the ASBR in the SPT
+      const spt = runOSPFDijkstra(routerId, area, lsdb);
+      const asbrNode = spt.get(lsa.advRouter);
+      if (!asbrNode && lsa.advRouter !== routerId) return;
+
+      const costToAsbr = asbrNode ? asbrNode.cost : 0;
+      // Type N1: cost = cost_to_asbr + external_metric
+      // Type N2: cost = external_metric only (cost_to_asbr not added)
+      const n1Cost = costToAsbr + lsa.metric;
+      const n2Cost = lsa.metric;
+      const nextHop = asbrNode ? asbrNode.nextHop : 'self';
+
+      const existingN1 = routes.find(r => r.destination === lsa.network && r.ospfRouteType === 'N1');
+      if (!existingN1 || (existingN1.metric ?? 0) > n1Cost) {
+        routes.push({
+          destination: lsa.network,
+          subnetMask: lsa.mask,
+          nextHop: nextHop === 'self' ? lsa.network : nextHop,
+          type: 'dynamic',
+          metric: n1Cost,
+          area: area,
+          ospfRouteType: 'N1'
+        });
+      }
+
+      const existingN2 = routes.find(r => r.destination === lsa.network && r.ospfRouteType === 'N2');
+      if (!existingN2 || (existingN2.metric ?? 0) > n2Cost) {
+        routes.push({
+          destination: lsa.network,
+          subnetMask: lsa.mask,
+          nextHop: nextHop === 'self' ? lsa.network : nextHop,
+          type: 'dynamic',
+          metric: n2Cost,
+          area: area
+        });
+      }
+    });
+  });
+
+  // 4. Process Type 5 (AS-External) LSAs for E1/E2 routes
+  areas.forEach(area => {
+    const areaData = lsdb[area];
+    if (!areaData?.asExternalLSAs) return;
+    const areaType = areaData.areaType || OSPFAreaType.Normal;
+
+    if (!isLSAAllowedInArea(areaType, LSAType.ASExternal)) return;
+
+    const spt = runOSPFDijkstra(routerId, area, lsdb);
+
+    areaData.asExternalLSAs.forEach(lsa => {
+      const asbrNode = spt.get(lsa.advRouter);
+      if (!asbrNode && lsa.advRouter !== routerId) return;
+
+      const costToAsbr = asbrNode ? asbrNode.cost : 0;
+      const e1Cost = costToAsbr + lsa.metric;
+      const e2Cost = lsa.metric;
+      const nextHop = asbrNode ? asbrNode.nextHop : 'self';
+
+      const existingE1 = routes.find(r => r.destination === lsa.network && r.ospfRouteType === 'E1');
+      if (!existingE1 || (existingE1.metric ?? 0) > e1Cost) {
+        routes.push({
+          destination: lsa.network,
+          subnetMask: lsa.mask,
+          nextHop: nextHop === 'self' ? lsa.network : nextHop,
+          type: 'dynamic',
+          metric: e1Cost,
+          area: area,
+          ospfRouteType: 'E1'
+        });
+      }
+
+      const existingE2 = routes.find(r => r.destination === lsa.network && r.ospfRouteType === 'E2');
+      if (!existingE2 || (existingE2.metric ?? 0) > e2Cost) {
+        routes.push({
+          destination: lsa.network,
+          subnetMask: lsa.mask,
+          nextHop: nextHop === 'self' ? lsa.network : nextHop,
+          type: 'dynamic',
+          metric: e2Cost,
+          area: area,
+          ospfRouteType: 'E2'
         });
       }
     });

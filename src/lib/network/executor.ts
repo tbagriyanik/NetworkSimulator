@@ -406,6 +406,8 @@ export const commandHelp: Record<string, Record<string, string[]>> = {
   'router-config': {
     '': ['area', 'auto-summary', 'bgp', 'default-information', 'do', 'eigrp', 'end', 'exit', 'neighbor', 'network', 'no', 'passive-interface', 'router-id'],
     ...pfx('area', ['range', 'stub', 'nssa']),
+    'area stub no-summary': [],
+    'area nssa no-summary': [],
     'area range': [],
     'area stub': [],
     'area nssa': [],

@@ -1455,7 +1455,16 @@ function cmdShowIpProtocols(state: SwitchState, _input: string, _ctx: CommandCon
     output += '  Incoming update filter list for all interfaces is not set\n';
     output += `  Router ID ${routerId}\n`;
     if (state.isAbr) output += '  It is an area border router\n';
-    output += `  Number of areas in this router is ${areaCount}. ${areaCount} normal 0 stub 0 nssa\n`;
+    let normalCount = 0, stubCount = 0, totallyStubCount = 0, nssaCount = 0, totallyNssaCount = 0;
+    areas.forEach(a => {
+      const aStr = String(a);
+      if (state.ospfTotallyNssaAreas?.includes(aStr)) totallyNssaCount++;
+      else if (state.ospfNssaAreas?.includes(aStr)) nssaCount++;
+      else if (state.ospfTotallyStubAreas?.includes(aStr)) totallyStubCount++;
+      else if (state.ospfStubAreas?.includes(aStr)) stubCount++;
+      else normalCount++;
+    });
+    output += `  Number of areas in this router is ${areaCount}. ${normalCount} normal ${stubCount + totallyStubCount} stub ${nssaCount + totallyNssaCount} nssa\n`;
     output += '  Maximum path: 4\n';
     output += '  Routing for Networks:\n';
     if (state.dynamicRoutes && state.dynamicRoutes.length > 0) {
@@ -1616,15 +1625,32 @@ function cmdShowIpOspf(state: SwitchState, _input: string, _ctx: CommandContext)
   output += ' Number of opaque AS LSA 0. Checksum Sum 0x000000\n';
   output += ' Number of DCbitless external and opaque AS LSA 0\n';
   output += ' Number of DoNotAge external and opaque AS LSA 0\n';
-  output += ` Number of areas in this router is ${areaCount}. ${areaCount} normal 0 stub 0 nssa\n`;
+  let normalCount = 0, stubCount = 0, totallyStubCount = 0, nssaCount = 0, totallyNssaCount = 0;
+  areas.forEach(a => {
+    const aStr = String(a);
+    if (state.ospfTotallyNssaAreas?.includes(aStr)) totallyNssaCount++;
+    else if (state.ospfNssaAreas?.includes(aStr)) nssaCount++;
+    else if (state.ospfTotallyStubAreas?.includes(aStr)) totallyStubCount++;
+    else if (state.ospfStubAreas?.includes(aStr)) stubCount++;
+    else normalCount++;
+  });
+  output += ` Number of areas in this router is ${areaCount}. ${normalCount} normal ${stubCount + totallyStubCount} stub ${nssaCount + totallyNssaCount} nssa\n`;
   output += ' Number of areas transit capable is 0\n';
   output += ' External flood list length 0\n';
   output += ' IETF NSF helper support enabled\n';
   output += ' Reference bandwidth unit is 100 mbps\n';
 
   Array.from(areas).forEach(area => {
+    const aStr = String(area);
+    let areaTypeStr = 'normal';
+    if (state.ospfTotallyNssaAreas?.includes(aStr)) areaTypeStr = 'totally nssa';
+    else if (state.ospfNssaAreas?.includes(aStr)) areaTypeStr = 'nssa';
+    else if (state.ospfTotallyStubAreas?.includes(aStr)) areaTypeStr = 'totally stubby';
+    else if (state.ospfStubAreas?.includes(aStr)) areaTypeStr = 'stub';
+
     output += `    Area ${area === 0 ? 'BACKBONE(0)' : area}\n`;
     output += `        Number of interfaces in this area is 1\n`;
+    output += `        It is a ${areaTypeStr} area\n`;
     output += `        Area has no authentication\n`;
     output += `        SPF algorithm last executed 00:01:15.000 ago\n`;
     output += `        SPF algorithm executed 2 times\n`;

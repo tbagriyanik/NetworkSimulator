@@ -26,6 +26,10 @@ export const routerConfigHandlers: Record<string, CommandHandler> = {
     'area range': cmdAreaRange,
     'area stub': cmdAreaStub,
     'area nssa': cmdAreaNssa,
+    'area stub no-summary': cmdAreaStubNoSummary,
+    'area nssa no-summary': cmdAreaNssaNoSummary,
+    'no area stub': cmdNoAreaStub,
+    'no area nssa': cmdNoAreaNssa,
 };
 
 // Router subcommands in OSPF/RIP config mode
@@ -348,6 +352,72 @@ function cmdAreaNssa(state: SwitchState, input: string): CommandResult {
         success: true,
         output: `Area ${match[1]} configured as NSSA`,
         newState: { ospfNssaAreas: [...nssaAreas, match[1]] } as unknown as Partial<SwitchState>
+    };
+}
+
+/**
+ * area stub no-summary (Totally Stubby)
+ */
+function cmdAreaStubNoSummary(state: SwitchState, input: string): CommandResult {
+    const match = input.match(/^area\s+(\d+)\s+stub\s+no-summary$/i);
+    if (!match) return { success: false, error: '% Incomplete command.' };
+    const totallyStubAreas: string[] = (state as SwitchState & { ospfTotallyStubAreas?: string[] }).ospfTotallyStubAreas || [];
+    return {
+        success: true,
+        output: `Area ${match[1]} configured as totally stubby`,
+        newState: { ospfTotallyStubAreas: [...totallyStubAreas, match[1]] } as unknown as Partial<SwitchState>
+    };
+}
+
+/**
+ * area nssa no-summary (Totally NSSA)
+ */
+function cmdAreaNssaNoSummary(state: SwitchState, input: string): CommandResult {
+    const match = input.match(/^area\s+(\d+)\s+nssa\s+no-summary$/i);
+    if (!match) return { success: false, error: '% Incomplete command.' };
+    const totallyNssaAreas: string[] = (state as SwitchState & { ospfTotallyNssaAreas?: string[] }).ospfTotallyNssaAreas || [];
+    return {
+        success: true,
+        output: `Area ${match[1]} configured as totally NSSA`,
+        newState: { ospfTotallyNssaAreas: [...totallyNssaAreas, match[1]] } as unknown as Partial<SwitchState>
+    };
+}
+
+/**
+ * no area stub
+ */
+function cmdNoAreaStub(state: SwitchState, input: string): CommandResult {
+    const match = input.match(/^no\s+area\s+(\d+)\s+stub$/i);
+    if (!match) return { success: false, error: '% Incomplete command.' };
+    const stubAreas: string[] = (state as SwitchState & { ospfStubAreas?: string[] }).ospfStubAreas || [];
+    const totallyStubAreas: string[] = (state as SwitchState & { ospfTotallyStubAreas?: string[] }).ospfTotallyStubAreas || [];
+    const areaStr = match[1];
+    return {
+        success: true,
+        output: `Area ${areaStr} removed from stub configuration`,
+        newState: {
+            ospfStubAreas: stubAreas.filter(a => a !== areaStr),
+            ospfTotallyStubAreas: totallyStubAreas.filter(a => a !== areaStr)
+        } as unknown as Partial<SwitchState>
+    };
+}
+
+/**
+ * no area nssa
+ */
+function cmdNoAreaNssa(state: SwitchState, input: string): CommandResult {
+    const match = input.match(/^no\s+area\s+(\d+)\s+nssa$/i);
+    if (!match) return { success: false, error: '% Incomplete command.' };
+    const nssaAreas: string[] = (state as SwitchState & { ospfNssaAreas?: string[] }).ospfNssaAreas || [];
+    const totallyNssaAreas: string[] = (state as SwitchState & { ospfTotallyNssaAreas?: string[] }).ospfTotallyNssaAreas || [];
+    const areaStr = match[1];
+    return {
+        success: true,
+        output: `Area ${areaStr} removed from NSSA configuration`,
+        newState: {
+            ospfNssaAreas: nssaAreas.filter(a => a !== areaStr),
+            ospfTotallyNssaAreas: totallyNssaAreas.filter(a => a !== areaStr)
+        } as unknown as Partial<SwitchState>
     };
 }
 
