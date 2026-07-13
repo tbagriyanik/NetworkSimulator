@@ -43,9 +43,9 @@ export function useCanvasHistory({
         }
 
         const snapshot: HistorySnapshot = {
-            devices: JSON.parse(JSON.stringify(latestDevicesRef.current)),
-            connections: JSON.parse(JSON.stringify(latestConnectionsRef.current)),
-            notes: JSON.parse(JSON.stringify(latestNotesRef.current)),
+            devices: structuredClone(latestDevicesRef.current),
+            connections: structuredClone(latestConnectionsRef.current),
+            notes: structuredClone(latestNotesRef.current),
         };
 
         const truncated = historyRef.current.slice(0, historyIndexRef.current + 1);
@@ -75,9 +75,9 @@ export function useCanvasHistory({
             historyIndexRef.current -= 1;
             const state = historyRef.current[historyIndexRef.current];
             if (state) {
-                setDevices(JSON.parse(JSON.stringify(state.devices)));
-                setConnections(JSON.parse(JSON.stringify(state.connections)));
-                setNotes(JSON.parse(JSON.stringify(state.notes)));
+                setDevices(structuredClone(state.devices));
+                setConnections(structuredClone(state.connections));
+                setNotes(structuredClone(state.notes));
                 setHistoryIndex(historyIndexRef.current);
             }
         }
@@ -88,9 +88,9 @@ export function useCanvasHistory({
             historyIndexRef.current += 1;
             const state = historyRef.current[historyIndexRef.current];
             if (state) {
-                setDevices(JSON.parse(JSON.stringify(state.devices)));
-                setConnections(JSON.parse(JSON.stringify(state.connections)));
-                setNotes(JSON.parse(JSON.stringify(state.notes)));
+                setDevices(structuredClone(state.devices));
+                setConnections(structuredClone(state.connections));
+                setNotes(structuredClone(state.notes));
                 setHistoryIndex(historyIndexRef.current);
             }
         }

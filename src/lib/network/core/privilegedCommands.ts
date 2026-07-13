@@ -861,7 +861,7 @@ function cmdClearCounters(state: SwitchState, input: string, _ctx: CommandContex
     const match = input.match(/clear\s+counters\s+(?:interface\s+)?(\S+)?/i);
     const interfaceName = match?.[1];
 
-    const newState = JSON.parse(JSON.stringify(state));
+    const newState = structuredClone(state);
 
     if (interfaceName) {
         // Clear counters for specific interface

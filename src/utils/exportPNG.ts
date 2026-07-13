@@ -1,6 +1,7 @@
 import { CanvasDevice, CanvasConnection, CanvasNote } from '../components/network/networkTopology.types';
 import { isCableCompatible } from '@/lib/network/types';
 import { CABLE_COLORS } from '../components/network/networkTopology.constants';
+import { logger } from '@/lib/logger';
 
 export interface ExportPNGOptions {
   svgElement: SVGSVGElement;
@@ -442,7 +443,7 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
           }
         } catch (err) {
           // If the user cancelled or it failed, just fall back to normal download
-          console.warn('Share API failed or was cancelled:', err);
+          logger.warn('Share API failed or was cancelled:', err);
         }
       }
 

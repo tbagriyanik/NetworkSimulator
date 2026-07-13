@@ -1,5 +1,6 @@
 import { Redis } from '@upstash/redis';
 import type { RoomData, StudentProgress, RoomMeta, CertificateRecord } from './roomTypes';
+import { logger } from '@/lib/logger';
 
 const redisUrl = process.env.KV_REST_API_URL;
 const redisToken = process.env.KV_REST_API_TOKEN;
@@ -103,7 +104,7 @@ export async function getActiveRoomCount(): Promise<number> {
     } while (cursor !== 0);
     return keys.length;
   } catch (e) {
-    console.error('Error getting active room count:', e);
+    logger.error('Error getting active room count:', e);
     return 0;
   }
 }

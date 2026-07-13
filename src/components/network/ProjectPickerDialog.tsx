@@ -1,8 +1,9 @@
-﻿'use client';
+'use client';
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 import { FolderOpen, X, BookOpen, Clock, Target, Search, Sparkles, File, FilePlus } from 'lucide-react';
 import type { Translations } from '@/contexts/LanguageContext';
 import type { ExampleProject, ExampleProjectLevel } from '@/lib/network/exampleProjects';
@@ -212,7 +213,7 @@ export function ProjectPickerDialog({
                         closeProjectPicker();
                         onConvertProjectToExam(projectData);
                       } catch (err) {
-                        console.error('Failed to parse project data for conversion', err);
+                        logger.error('Failed to parse project data for conversion', err);
                       }
                     };
                     reader.readAsText(file);

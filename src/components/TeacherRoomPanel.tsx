@@ -1,8 +1,9 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
 import { Copy, Check, X, LogOut, FileDown, Loader2, UserKey } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { logger } from '@/lib/logger';
 import { Input } from '@/components/ui/input';
 import { useRoomStudents } from '@/hooks/useRoomStudents';
 import { Badge } from '@/components/ui/badge';
@@ -212,7 +213,7 @@ export function TeacherRoomPanel() {
           setActiveRoomCount(json.count);
         }
       } catch (err) {
-        console.error('Failed to fetch active room count', err);
+        logger.error('Failed to fetch active room count', err);
       }
     };
 

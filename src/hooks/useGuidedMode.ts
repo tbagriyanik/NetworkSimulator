@@ -9,6 +9,7 @@ import {
   generateGuidedIntegrityHash,
   verifyGuidedIntegrity
 } from '@/lib/network/guidedMode';
+import { logger } from '@/lib/logger';
 
 interface UseGuidedModeReturn {
   // State
@@ -98,7 +99,7 @@ export function useGuidedMode(): UseGuidedModeReturn {
       if (deserialized) {
         // Verify integrity before loading
         if (deserialized.integrityHash && !verifyGuidedIntegrity(deserialized)) {
-          console.error('Guided mode integrity compromised! Resetting progress...');
+          logger.error('Guided mode integrity compromised! Resetting progress...');
           // Tampering detected, don't load the saved state
           localStorage.removeItem(STORAGE_KEY);
           localStorage.removeItem(`${STORAGE_KEY}_stepIndex`);

@@ -2,6 +2,7 @@ import { logger } from '@/lib/logger';
 import { isRateLimited } from '@/lib/security/rateLimiter';
 import { sanitizeObject } from '@/lib/security/sanitizer';
 import { NextRequest, NextResponse } from 'next/server';
+import { withErrorHandling } from '@/lib/api/withErrorHandling';
 
 interface ContactFormData {
   name: string;
@@ -63,156 +64,143 @@ function validateContactData(data: Partial<ContactFormData>): { valid: boolean; 
  * POST /api/contact
  * Handle contact form submissions
  */
-export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse>> {
-  try {
-    // Rate limiting: 5 submissions per hour per IP
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'unknown';
-    const { allowed, remaining, resetTime } = await isRateLimited(
-      `contact_${ip}`,
-      5,
-      60 * 60 * 1000
+export const POST = withErrorHandling(async (req: NextRequest): Promise<NextResponse<ApiResponse>> => {
+  // Rate limiting: 5 submissions per hour per IP
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'unknown';
+  const { allowed, remaining, resetTime } = await isRateLimited(
+    `contact_${ip}`,
+    5,
+    60 * 60 * 1000
+  );
+
+  if (!allowed) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Too many requests. Please try again later.',
+        code: 'RATE_LIMIT_EXCEEDED',
+      },
+      {
+        status: 429,
+        headers: {
+          'X-RateLimit-Limit': '5',
+          'X-RateLimit-Remaining': String(remaining),
+          'X-RateLimit-Reset': String(Math.ceil(resetTime / 1000)),
+        },
+      }
     );
+  }
 
-    if (!allowed) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Too many requests. Please try again later.',
-          code: 'RATE_LIMIT_EXCEEDED',
-        },
-        {
-          status: 429,
-          headers: {
-            'X-RateLimit-Limit': '5',
-            'X-RateLimit-Remaining': String(remaining),
-            'X-RateLimit-Reset': String(Math.ceil(resetTime / 1000)),
-          },
-        }
-      );
-    }
+  // Parse request body
+  let body: Partial<ContactFormData>;
+  try {
+    const rawBody = await req.json();
+    body = sanitizeObject(rawBody);
+  } catch {
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Invalid JSON in request body',
+        code: 'INVALID_JSON',
+      },
+      { status: 400 }
+    );
+  }
 
-    // Parse request body
-    let body: Partial<ContactFormData>;
-    try {
-      const rawBody = await req.json();
-      body = sanitizeObject(rawBody);
-    } catch {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid JSON in request body',
-          code: 'INVALID_JSON',
-        },
-        { status: 400 }
-      );
-    }
+  // Validate contact data
+  const { valid, errors } = validateContactData(body);
+  if (!valid) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: errors.join('; '),
+        code: 'VALIDATION_ERROR',
+      },
+      { status: 400 }
+    );
+  }
 
-    // Validate contact data
-    const { valid, errors } = validateContactData(body);
-    if (!valid) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: errors.join('; '),
-          code: 'VALIDATION_ERROR',
-        },
-        { status: 400 }
-      );
-    }
+  const { name, email, type, message } = body as ContactFormData;
+  const timestamp = new Date().toISOString();
+  const userAgent = req.headers.get('user-agent') || 'unknown';
 
-    const { name, email, type, message } = body as ContactFormData;
-    const timestamp = new Date().toISOString();
-    const userAgent = req.headers.get('user-agent') || 'unknown';
+  // Get submission endpoint from environment
+  const CONTACT_SUBMISSION_URL = process.env.GOOGLE_SHEETS_CONTACT_URL;
 
-    // Get submission endpoint from environment
-    const CONTACT_SUBMISSION_URL = process.env.GOOGLE_SHEETS_CONTACT_URL;
+  if (!CONTACT_SUBMISSION_URL) {
+    // Log to console for local development
+    logger.debug('📧 Contact Form Submission (Local):', {
+      name,
+      email,
+      type,
+      message,
+      timestamp,
+      userAgent,
+    });
 
-    if (!CONTACT_SUBMISSION_URL) {
-      // Log to console for local development
-      logger.debug('📧 Contact Form Submission (Local):', {
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Message received (logged locally)',
+      },
+      { status: 200 }
+    );
+  }
+
+  // Send to external endpoint (Google Sheets, etc.)
+  try {
+    const response = await fetch(CONTACT_SUBMISSION_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         name,
         email,
         type,
         message,
         timestamp,
         userAgent,
+      }),
+      redirect: 'follow',
+      signal: AbortSignal.timeout(10000), // 10 second timeout
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      logger.error('❌ External Submission Error:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText,
       });
-
-      return NextResponse.json(
-        {
-          success: true,
-          message: 'Message received (logged locally)',
-        },
-        { status: 200 }
-      );
-    }
-
-    // Send to external endpoint (Google Sheets, etc.)
-    try {
-      const response = await fetch(CONTACT_SUBMISSION_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          email,
-          type,
-          message,
-          timestamp,
-          userAgent,
-        }),
-        redirect: 'follow',
-        signal: AbortSignal.timeout(10000), // 10 second timeout
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        logger.error('❌ External Submission Error:', {
-          status: response.status,
-          statusText: response.statusText,
-          body: errorText,
-        });
-
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'Failed to submit form. Please try again later.',
-            code: 'SUBMISSION_FAILED',
-          },
-          { status: 500 }
-        );
-      }
-
-      logger.debug('✅ Contact Form Submitted:', { email, type });
-
-      return NextResponse.json(
-        {
-          success: true,
-          message: 'Thank you for your message. We will get back to you soon.',
-        },
-        { status: 200 }
-      );
-    } catch (fetchError) {
-      logger.error('❌ Network Error:', fetchError);
 
       return NextResponse.json(
         {
           success: false,
-          error: 'Network error. Please try again later.',
-          code: 'NETWORK_ERROR',
+          error: 'Failed to submit form. Please try again later.',
+          code: 'SUBMISSION_FAILED',
         },
-        { status: 503 }
+        { status: 500 }
       );
     }
-  } catch (error) {
-    logger.error('❌ Unexpected Error:', error);
+
+    logger.debug('✅ Contact Form Submitted:', { email, type });
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Thank you for your message. We will get back to you soon.',
+      },
+      { status: 200 }
+    );
+  } catch (fetchError) {
+    logger.error('❌ Network Error:', fetchError);
 
     return NextResponse.json(
       {
         success: false,
-        error: 'An unexpected error occurred',
-        code: 'INTERNAL_ERROR',
+        error: 'Network error. Please try again later.',
+        code: 'NETWORK_ERROR',
       },
-      { status: 500 }
+      { status: 503 }
     );
   }
-}
+});

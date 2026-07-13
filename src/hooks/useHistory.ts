@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import { SwitchState, CableInfo } from '@/lib/network/types';
 import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType } from '@/components/network/networkTopology.types';
 import { TerminalOutput } from '@/components/network/Terminal';
+import { logger } from '@/lib/logger';
 
 interface PCOutputLine {
   id: string;
@@ -96,9 +97,9 @@ function cloneProjectState(newState: ProjectState): ProjectState {
     deviceOutputs: new Map(newState.deviceOutputs),
     pcOutputs: new Map(newState.pcOutputs),
     pcHistories: new Map(newState.pcHistories),
-    topologyDevices: JSON.parse(JSON.stringify(newState.topologyDevices)),
-    topologyConnections: JSON.parse(JSON.stringify(newState.topologyConnections)),
-    topologyNotes: JSON.parse(JSON.stringify(newState.topologyNotes)),
+    topologyDevices: structuredClone(newState.topologyDevices),
+    topologyConnections: structuredClone(newState.topologyConnections),
+    topologyNotes: structuredClone(newState.topologyNotes),
     cableInfo: { ...newState.cableInfo }
   };
 }
@@ -194,7 +195,7 @@ export function useHistory(initialState: ProjectState) {
           }
         }
       } catch (e) {
-        console.warn('Could not load history from localStorage', e);
+        logger.warn('Could not load history from localStorage', e);
       }
     }
     return {
@@ -225,14 +226,14 @@ export function useHistory(initialState: ProjectState) {
             const cutSize = Math.floor(itemsToSave.length / 2);
             trySave(itemsToSave.slice(cutSize), Math.max(0, idx - cutSize));
           } else {
-            console.warn("Could not save history to localStorage", e);
+            logger.warn('Could not save history to localStorage', e);
           }
         }
       };
       
       trySave(state.items, state.index);
     } catch (e) {
-      console.warn("Could not process history save", e);
+      logger.warn('Could not process history save', e);
     }
   }, [state]);
 

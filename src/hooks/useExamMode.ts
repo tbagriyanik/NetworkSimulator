@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { ExamProject, type ExamTask, getExamProjects, encryptExamData, generateExamIntegrityHash, verifyExamIntegrity } from '@/lib/network/examMode';
 import { checkStepCompletion, type GuidedStep } from '@/lib/network/guidedMode';
+import { logger } from '@/lib/logger';
 
 interface UseExamModeReturn {
   activeExam: ExamProject | null;
@@ -60,7 +61,7 @@ export function useExamMode(): UseExamModeReturn {
         if (parsed.integrityHash) {
           const tempProject = { ...parsed };
           if (!verifyExamIntegrity(tempProject as ExamProject)) {
-            console.error('Exam integrity compromised! Resetting exam...');
+            logger.error('Exam integrity compromised! Resetting exam...');
             // Tampering detected, don't load the saved state
             localStorage.removeItem(STORAGE_KEY);
             return;
@@ -68,7 +69,7 @@ export function useExamMode(): UseExamModeReturn {
         }
         setTimeout(() => setActiveExam(parsed), 0);
       } catch (e) {
-        console.error('Failed to load exam state', e);
+        logger.error('Failed to load exam state', e);
       }
     }
   }, []);

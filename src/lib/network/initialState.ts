@@ -662,9 +662,9 @@ export function createInitialWLCState(
 export function buildStartupConfig(state: SwitchState): StartupConfig {
   return {
     hostname: state.hostname,
-    ports: JSON.parse(JSON.stringify(state.ports)),
-    vlans: JSON.parse(JSON.stringify(state.vlans)),
-    security: JSON.parse(JSON.stringify(state.security)),
+    ports: structuredClone(state.ports),
+    vlans: structuredClone(state.vlans),
+    security: structuredClone(state.security),
     bannerMOTD: state.bannerMOTD,
     domainName: state.domainName,
     defaultGateway: state.defaultGateway,
@@ -721,8 +721,8 @@ export function applyStartupConfig(baseState: SwitchState, startup: StartupConfi
     ...baseState,
     hostname: startup.hostname,
     ports: mergedPorts,
-    vlans: JSON.parse(JSON.stringify(startup.vlans)),
-    security: JSON.parse(JSON.stringify(startup.security)),
+    vlans: structuredClone(startup.vlans),
+    security: structuredClone(startup.security),
     bannerMOTD: startup.bannerMOTD,
     domainName: startup.domainName,
     defaultGateway: startup.defaultGateway,

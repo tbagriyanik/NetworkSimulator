@@ -33,7 +33,7 @@ export function AboutModal({ isOpen, onClose, onStartTour }: AboutModalProps) {
   const CONTACT_EMAIL_MAX_LENGTH = 254;
   const CONTACT_MESSAGE_MAX_LENGTH = 1000;
   const [activeTab, setActiveTab] = useState<TabType>('help');
-  const isContactEnabled = process.env.NEXT_PUBLIC_IS_CONTACT_ENABLED === 'true';
+  const isContactEnabled = process.env.NEXT_PUBLIC_IS_CONTACT_ENABLED == 'true';
   const isDark = theme === 'dark';
   const lang = (t as unknown as Record<string, string>).language || 'en';
   const isTR = lang === 'tr';

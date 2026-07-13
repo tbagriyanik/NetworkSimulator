@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
@@ -46,7 +46,7 @@ export class AppErrorBoundary extends React.Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <ErrorFallback
+        <ErrorFallbackWithContext
           error={this.state.error}
           fallbackTitle={this.props.fallbackTitle}
           fallbackDescription={this.props.fallbackDescription}
@@ -66,33 +66,45 @@ interface ErrorFallbackProps {
   onReset: () => void;
 }
 
-function ErrorFallback({
+/**
+ * Inner component that reads context — hooks are called unconditionally here.
+ * If the context providers are not mounted (e.g. during a catastrophic failure),
+ * this component itself will be caught by the class-based boundary and we fall
+ * back to the safe defaults below.
+ */
+function ErrorFallbackWithContext({
   error,
   fallbackTitle,
   fallbackDescription,
   onReset,
 }: ErrorFallbackProps) {
-  let theme = 'dark';
-  let language = 'en';
+  const { theme } = useTheme();
+  const { language } = useLanguage();
+  return (
+    <ErrorFallbackUI
+      error={error}
+      fallbackTitle={fallbackTitle}
+      fallbackDescription={fallbackDescription}
+      onReset={onReset}
+      theme={theme}
+      language={language}
+    />
+  );
+}
 
-  try {
-    const themeContext = useTheme();
-    if (themeContext) {
-      theme = themeContext.theme;
-    }
-  } catch (_e) {
-    // Ignore error if context is not available
-  }
+interface ErrorFallbackUIProps extends ErrorFallbackProps {
+  theme: string;
+  language: string;
+}
 
-  try {
-    const languageContext = useLanguage();
-    if (languageContext) {
-      language = languageContext.language;
-    }
-  } catch (_e) {
-    // Ignore error if context is not available
-  }
-
+function ErrorFallbackUI({
+  error,
+  fallbackTitle,
+  fallbackDescription,
+  onReset,
+  theme,
+  language,
+}: ErrorFallbackUIProps) {
   const isDark = theme === 'dark' || theme === 'high-contrast';
 
   return (
@@ -158,3 +170,6 @@ function ErrorFallback({
     </div>
   );
 }
+
+
+
