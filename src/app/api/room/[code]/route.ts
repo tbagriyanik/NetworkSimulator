@@ -21,13 +21,14 @@ export const GET = withErrorHandling(async (
     );
   }
 
-  if (code.length > 20) {
+  const upperCode = code.toUpperCase().trim();
+  if (upperCode.length < 4 || upperCode.length > 10) {
     return NextResponse.json(
-      { success: false, error: 'Invalid room code', code: 'INVALID_CODE' },
+      { success: false, error: 'Room code must be 4-10 characters', code: 'INVALID_CODE' },
       { status: 400 },
     );
   }
 
-  const exists = await checkRoomExists(code.toUpperCase());
+  const exists = await checkRoomExists(upperCode);
   return NextResponse.json({ success: true, data: { exists } }, { status: 200 });
 });

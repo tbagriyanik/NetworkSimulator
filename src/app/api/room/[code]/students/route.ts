@@ -38,9 +38,10 @@ export const GET = withErrorHandling(async (
     );
   }
 
-  if (code.length > 20) {
+  const upperCode = code.toUpperCase().trim();
+  if (upperCode.length < 4 || upperCode.length > 10) {
     return NextResponse.json(
-      { success: false, error: 'Invalid room code', code: 'INVALID_CODE' },
+      { success: false, error: 'Room code must be 4-10 characters', code: 'INVALID_CODE' },
       { status: 400 },
     );
   }
@@ -48,21 +49,13 @@ export const GET = withErrorHandling(async (
   const url = new URL(req.url);
   const rawTeacherId = url.searchParams.get('teacherId');
   const teacherId = rawTeacherId ? sanitizeInput(rawTeacherId) : null;
-  if (teacherId && teacherId.length > 100) {
+
+  if (!teacherId || teacherId.length < 8 || teacherId.length > 100) {
     return NextResponse.json(
-      { success: false, error: 'Invalid teacher ID', code: 'INVALID_TEACHER_ID' },
+      { success: false, error: 'Valid teacher ID is required (8-100 chars)', code: 'INVALID_TEACHER_ID' },
       { status: 400 },
     );
   }
-
-  if (!teacherId) {
-    return NextResponse.json(
-      { success: false, error: 'Teacher ID is required', code: 'MISSING_TEACHER_ID' },
-      { status: 401 },
-    );
-  }
-
-  const upperCode = code.toUpperCase();
   const meta = await getRoomMeta(upperCode);
   if (!meta) {
     return NextResponse.json(
@@ -81,6 +74,6 @@ export const GET = withErrorHandling(async (
     );
   }
 
-  const students = await getRoomStudents(code.toUpperCase());
+  const students = await getRoomStudents(upperCode);
   return NextResponse.json({ success: true, data: students }, { status: 200 });
 });
