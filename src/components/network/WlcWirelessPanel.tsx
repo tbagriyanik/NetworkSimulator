@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { WlcIcon } from './PCPanelWidgets';
+import { sanitizeInput } from '@/lib/security/sanitizer';
 import type { SwitchState } from '@/lib/network/types';
 
 interface WlcWirelessPanelProps {
@@ -34,9 +35,16 @@ export function WlcWirelessPanel({
 
     const createWlan = async () => {
         if (!wlanName || !wlanId || !wlanSsid) return;
+
+        const cleanName = sanitizeInput(wlanName).replace(/\s+/g, '');
+        const cleanId = wlanId.replace(/[^0-9]/g, '');
+        const cleanSsid = sanitizeInput(wlanSsid).replace(/\s+/g, '');
+
+        if (!cleanName || !cleanId || !cleanSsid) return;
+
         setBusy(true);
         try {
-            await onExecuteCommand(`wlan ${wlanName} ${wlanId} ${wlanSsid}`);
+            await onExecuteCommand(`wlan ${cleanName} ${cleanId} ${cleanSsid}`);
             setWlanName('');
             setWlanId('');
             setWlanSsid('');

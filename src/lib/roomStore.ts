@@ -124,3 +124,45 @@ export async function getCertificate(verifyCode: string): Promise<CertificateRec
   const key = `cert:${verifyCode.toUpperCase()}`;
   return redis.get<CertificateRecord>(key);
 }
+
+// ─── IP Lockout on Certificate verification failures ────────────────────────
+
+export async function isIpLockedOut(ip: string): Promise<boolean> {
+  if (!redis) return false;
+  const lockKey = `cert_lockout:${ip}`;
+  const locked = await redis.get<number>(lockKey);
+  return !!locked;
+}
+
+export async function incrementVerifyFail(ip: string): Promise<void> {
+  if (!redis) return;
+  const failKey = `cert_fails:${ip}`;
+  const lockKey = `cert_lockout:${ip}`;
+  const fails = await redis.incr(failKey);
+  await redis.expire(failKey, 1800); // Expire failure count after 30 mins
+
+  if (fails >= 3) {
+    await redis.set(lockKey, 1, { ex: 1800 }); // Lockout for 30 minutes
+    await redis.del(failKey); // Clear failure count
+  }
+}
+
+export async function resetVerifyFail(ip: string): Promise<void> {
+  if (!redis) return;
+  const failKey = `cert_fails:${ip}`;
+  await redis.del(failKey);
+}
+
+export async function deleteRoom(code: string, teacherId: string): Promise<boolean> {
+  if (!redis) return false;
+  const metaKey = `room:${code}:meta`;
+  const studentsKey = `room:${code}:students`;
+
+  const meta = await redis.get<RoomMeta>(metaKey);
+  if (!meta) return false;
+  if (meta.teacherId !== teacherId) return false;
+
+  await redis.del(metaKey);
+  await redis.del(studentsKey);
+  return true;
+}

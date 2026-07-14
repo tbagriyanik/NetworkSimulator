@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCertificate } from '@/lib/roomStore';
+import { getCertificate, isIpLockedOut, incrementVerifyFail, resetVerifyFail } from '@/lib/roomStore';
 import type { RoomApiResponse, CertificateRecord } from '@/lib/roomTypes';
 import { isRateLimited } from '@/lib/security/rateLimiter';
 import { withErrorHandling } from '@/lib/api/withErrorHandling';
@@ -15,7 +15,18 @@ export const GET = withErrorHandling(async (
   { params }: { params: Promise<RouteParams> },
 ): Promise<NextResponse<RoomApiResponse<CertificateRecord>>> => {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'unknown';
-  const { allowed } = await isRateLimited(`cert_verify_${ip}`, 600, 60 * 60 * 1000); // 600 verifications per hour
+
+  // 1. IP Lockout Check on Verification Failures
+  const isLocked = await isIpLockedOut(ip);
+  if (isLocked) {
+    return NextResponse.json(
+      { success: false, error: 'Too many verification failures. Locked out for 30 minutes.', code: 'LOCKED_OUT' },
+      { status: 403 },
+    );
+  }
+
+  // 2. Reduced Rate Limit: 50 verifications per hour
+  const { allowed } = await isRateLimited(`cert_verify_${ip}`, 50, 60 * 60 * 1000);
 
   if (!allowed) {
     return NextResponse.json(
@@ -36,11 +47,15 @@ export const GET = withErrorHandling(async (
   const record = await getCertificate(code);
 
   if (!record) {
+    // 3. Track failed verification attempt
+    await incrementVerifyFail(ip);
     return NextResponse.json(
       { success: false, error: 'Certificate not found', code: 'NOT_FOUND' },
       { status: 404 },
     );
   }
 
+  // 4. Success: reset failure count
+  await resetVerifyFail(ip);
   return NextResponse.json({ success: true, data: record }, { status: 200 });
 });
