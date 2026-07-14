@@ -2968,6 +2968,16 @@ export function getLevenshteinDistance(a: string, b: string): number {
 
 // Komut parse et
 export function parseCommand(input: string, currentMode: CommandMode, state?: Partial<SwitchState>): ParsedCommand | null {
+  if (input && input.length > 256) {
+    return {
+      command: '',
+      args: [],
+      rawInput: input,
+      resolvedInput: '',
+      intent: { family: 'other', action: 'unknown' }
+    };
+  }
+
   const inferredDeviceType = state
     ? (state.deviceType === 'switch'
       ? (state.switchLayer === 'L3' ? 'switchL3' : 'switchL2')
@@ -3127,6 +3137,13 @@ export function validateCommand(
   currentMode: CommandMode,
   state?: Partial<SwitchState>
 ): CommandValidationResult {
+  if (parsed.rawInput && parsed.rawInput.length > 256) {
+    return {
+      valid: false,
+      reason: 'unknown-command',
+      error: '% Command exceeds maximum length of 256 characters.'
+    };
+  }
 
   const resolvedInput = resolveAliases(parsed.rawInput, state);
   const inferredDeviceType = state

@@ -162,6 +162,25 @@ describe('Command Parser Functions', () => {
     });
   });
 
+  describe('Command Length Limit', () => {
+    it('should handle commands longer than 256 characters in parseCommand', () => {
+      const longInput = 'a'.repeat(257);
+      const parsed = parseCommand(longInput, 'user');
+      expect(parsed).not.toBeNull();
+      expect(parsed?.rawInput).toBe(longInput);
+      expect(parsed?.command).toBe('');
+    });
+
+    it('should reject commands longer than 256 characters in validateCommand', () => {
+      const longInput = 'a'.repeat(257);
+      const parsed = parseCommand(longInput, 'user')!;
+      const validation = validateCommand(parsed, 'user');
+      expect(validation.valid).toBe(false);
+      expect(validation.reason).toBe('unknown-command');
+      expect(validation.error).toContain('Command exceeds maximum length of 256 characters.');
+    });
+  });
+
   describe('getInvalidCommandError', () => {
     it('should generate error message for unknown command', () => {
       const result = getInvalidCommandError('enable');

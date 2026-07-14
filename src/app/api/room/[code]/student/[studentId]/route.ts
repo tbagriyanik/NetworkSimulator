@@ -40,16 +40,17 @@ export const PATCH = withErrorHandling(async (
     );
   }
 
-  if (code.length > 20) {
+  const upperCode = code.toUpperCase().trim();
+  if (upperCode.length < 4 || upperCode.length > 10) {
     return NextResponse.json(
-      { success: false, error: 'Invalid room code', code: 'INVALID_CODE' },
+      { success: false, error: 'Room code must be 4-10 characters', code: 'INVALID_CODE' },
       { status: 400 },
     );
   }
 
-  if (studentId.length > 100) {
+  if (studentId.length < 8 || studentId.length > 100) {
     return NextResponse.json(
-      { success: false, error: 'Invalid student ID', code: 'INVALID_ID' },
+      { success: false, error: 'Student ID must be 8-100 characters', code: 'INVALID_ID' },
       { status: 400 },
     );
   }
@@ -100,7 +101,7 @@ export const PATCH = withErrorHandling(async (
     );
   }
 
-  const student = await updateStudent(code.toUpperCase(), studentId, {
+  const student = await updateStudent(upperCode, studentId, {
     displayName,
     currentTask,
     completedTasks,

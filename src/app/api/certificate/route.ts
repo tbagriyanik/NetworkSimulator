@@ -44,26 +44,53 @@ export const POST = withErrorHandling(async (
     );
   }
 
-  if (Number(score) < 0 || Number(totalScore) <= 0 || Number(score) > Number(totalScore)) {
+  const numScore = Number(score);
+  const numTotalScore = Number(totalScore);
+
+  if (isNaN(numScore) || isNaN(numTotalScore) || !isFinite(numScore) || !isFinite(numTotalScore)) {
+    return NextResponse.json(
+      { success: false, error: 'Scores must be valid numbers', code: 'INVALID_SCORE' },
+      { status: 400 },
+    );
+  }
+
+  if (numScore < 0 || numTotalScore <= 0 || numScore > numTotalScore) {
     return NextResponse.json(
       { success: false, error: 'Invalid score boundaries', code: 'INVALID_SCORE_RANGE' },
       { status: 400 },
     );
   }
 
+  if (String(studentName).length > 200 || String(projectTitle).length > 300) {
+    return NextResponse.json(
+      { success: false, error: 'Input fields exceed maximum allowed length', code: 'INPUT_TOO_LONG' },
+      { status: 400 },
+    );
+  }
+
   // --- Server-side Score Validation ---
   if (roomCode && studentId) {
+    const upperRoomCode = String(roomCode).toUpperCase().trim();
+    const cleanStudentId = String(studentId).trim();
+
+    if (upperRoomCode.length < 4 || upperRoomCode.length > 10 || cleanStudentId.length < 8 || cleanStudentId.length > 100) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid room code or student ID format', code: 'INVALID_METADATA' },
+        { status: 400 },
+      );
+    }
+
     try {
-      const students = await getRoomStudents(roomCode);
-      const student = students.find(s => s.studentId === studentId);
+      const students = await getRoomStudents(upperRoomCode);
+      const student = students.find(s => s.studentId === cleanStudentId);
 
       if (student) {
         const serverProgressRatio = student.totalTasks > 0 ? student.completedTasks / student.totalTasks : 0;
-        const claimedRatio = Number(totalScore) > 0 ? Number(score) / Number(totalScore) : 0;
+        const claimedRatio = numTotalScore > 0 ? numScore / numTotalScore : 0;
 
         // Allow up to 2% tolerance for float rounding in exam scoring
         if (claimedRatio - serverProgressRatio > 0.02) {
-          logger.warn(`Certificate validation failed for ${studentName} in room ${roomCode}. Claimed: ${claimedRatio}, Server: ${serverProgressRatio}`);
+          logger.warn(`Certificate validation failed for ${studentName} in room ${upperRoomCode}. Claimed: ${claimedRatio}, Server: ${serverProgressRatio}`);
           return NextResponse.json(
             { success: false, error: 'Score validation failed', code: 'INVALID_SCORE' },
             { status: 400 },
