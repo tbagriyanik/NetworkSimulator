@@ -228,7 +228,7 @@ export function AppHeader({
                   <div className={cn("w-px h-5 mx-1", isDark ? "bg-secondary-700" : "bg-secondary-300")} />
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button aria-label={language === 'tr' ? 'PNG Kaydet' : 'Save as PNG'}
+                      <button aria-label={t.saveAsPNG}
                         className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50", isDark ? 'text-secondary-300 hover:text-success-400 hover:bg-secondary-700/50' : 'text-secondary-600 hover:text-success-600')}
                         onClick={() => window.dispatchEvent(new CustomEvent('trigger-topology-export-png'))}
                       >
@@ -236,12 +236,12 @@ export function AppHeader({
                       </button>
                     </TooltipTrigger>
                     <TooltipContent className="flex items-center gap-2">
-                      <span>{language === 'tr' ? 'PNG Kaydet' : 'Save as PNG'}</span>
+                      <span>{t.saveAsPNG}</span>
                     </TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button aria-label={language === 'tr' ? 'Özet Notu Oluştur' : 'Generate Summary Note'}
+                      <button aria-label={t.generateSummary}
                         className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50", isDark ? 'text-secondary-300 hover:text-primary-400 hover:bg-secondary-700/50' : 'text-secondary-600 hover:text-primary-600')}
                         onClick={() => window.dispatchEvent(new CustomEvent('add-summary-note'))}
                       >
@@ -249,7 +249,7 @@ export function AppHeader({
                       </button>
                     </TooltipTrigger>
                     <TooltipContent className="flex items-center gap-2">
-                      <span>{language === 'tr' ? 'Özet Notu Oluştur' : 'Generate Summary Note'}</span>
+                      <span>{t.generateSummary}</span>
                     </TooltipContent>
                   </Tooltip>
                   <Tooltip>
@@ -281,9 +281,9 @@ export function AppHeader({
 
               {/* Settings & Theme */}
               <div className={`w-px h-4 mx-1 ${isDark ? 'bg-secondary-700' : 'bg-secondary-300'} hidden md:block`} />
-              <TooltipWrapper title={language === 'tr' ? 'Switch to English' : 'Türkçe\'ye Geç'}>
+              <TooltipWrapper title={language === 'tr' ? 'Switch to English' : "Türkçe'ye Geç"}>
                 <button
-                  aria-label={language === 'tr' ? 'Switch to English' : 'Türkçe\'ye Geç'}
+                  aria-label={language === 'tr' ? 'Switch to English' : "Türkçe'ye Geç"}
                   onClick={() => setLanguage(language === 'tr' ? 'en' : 'tr')}
                   className={cn("text-[10px] font-bold h-7 px-1.5 flex items-center gap-1 rounded transition-all ui-hover-surface", isDark ? 'text-secondary-300 hover:text-purple-300' : 'text-secondary-700 hover:text-purple-700')}
                 >
@@ -320,7 +320,13 @@ export function AppHeader({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
-                    aria-label={'Difficulty Level'}
+                    aria-label={`${t.helpLevelLabel}: ${
+                      helpLevel === 'beginner'
+                        ? t.beginner
+                        : helpLevel === 'intermediate'
+                          ? t.intermediate
+                          : t.advanced
+                    }`}
                     className={cn(
                       "h-7 w-7 rounded flex items-center justify-center transition-all ui-hover-surface",
                       helpLevel === 'beginner' ? 'text-success-500' : helpLevel === 'intermediate' ? 'text-warning-500' : 'text-error-500'
@@ -339,13 +345,13 @@ export function AppHeader({
                 </TooltipTrigger>
                 <TooltipContent>
                   <div className="flex flex-col gap-1">
-                    <span className="font-bold">{language === 'tr' ? 'Yardım Seviyesi' : 'Help Level'}</span>
+                    <span className="font-bold">{t.helpLevelLabel}</span>
                     <span className="text-[10px] opacity-80">
                       {helpLevel === 'beginner'
-                        ? (language === 'tr' ? '🟢 Başlangıç (Tam İpucu)' : '🟢 Beginner (Full Hints)')
+                        ? `🟢 ${t.beginnerLevel}`
                         : helpLevel === 'intermediate'
-                          ? (language === 'tr' ? '🟡 Orta (Sadece Hata İpucu)' : '🟡 Intermediate (Errors Only)')
-                          : (language === 'tr' ? '🔴 Uzman (Hiç İpucu Yok)' : '🔴 Advanced (No Hints)')}
+                          ? `🟡 ${t.intermediateLevel}`
+                          : `🔴 ${t.advancedLevel}`}
                     </span>
                   </div>
                 </TooltipContent>
@@ -409,14 +415,14 @@ export function AppHeader({
                         className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-success-400' : 'hover:text-success-600'}`}
                         onClick={() => { window.dispatchEvent(new CustomEvent('trigger-topology-export-png')); setShowMobileMenu(false); }}
                       >
-                        <ImageDown className="w-3.5 h-3.5 flex-shrink-0" /> <span>{language === 'tr' ? 'PNG Kaydet' : 'Save PNG'}</span>
+                        <ImageDown className="w-3.5 h-3.5 flex-shrink-0" /> <span>{t.saveAsPNG}</span>
                       </Button>
                       <Button
                         variant="secondary"
                         className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-primary-400' : 'hover:text-primary-600'}`}
                         onClick={() => { window.dispatchEvent(new CustomEvent('add-summary-note')); setShowMobileMenu(false); }}
                       >
-                        <FileText className="w-3.5 h-3.5 flex-shrink-0" /> <span>{language === 'tr' ? 'Özet Notu Oluştur' : 'Generate Summary'}</span>
+                        <FileText className="w-3.5 h-3.5 flex-shrink-0" /> <span>{t.generateSummary}</span>
                       </Button>
                     </div>
                   </div>

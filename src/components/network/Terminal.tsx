@@ -849,8 +849,8 @@ export function Terminal({
         // Provide feedback if multiple matches exist
         if (matches.length > 1) {
           toast({
-            title: language === 'tr' ? 'Birden fazla eşleşme' : 'Multiple matches',
-            description: language === 'tr' ? `Daha fazlası için Tab'a basın (${matches.length} seçenek)` : `Press Tab to cycle (${matches.length} options)`,
+            title: t.multipleMatches,
+            description: t.pressTabToCycle.replace('{count}', matches.length.toString()),
             duration: 1500
           });
         }
@@ -1449,7 +1449,7 @@ export function Terminal({
                             <span className="shrink-0">💡</span>
                             <div className="text-[11px] leading-relaxed">
                               <span className="font-black uppercase tracking-tighter mr-1 opacity-70">
-                                {language === 'tr' ? 'Eğitici Not:' : 'Learning Note:'}
+                                {t.learningNote}
                               </span>
                               {typeof line.hint === 'string' ? line.hint : (language === 'tr' ? line.hint?.tr : line.hint?.en)}
                             </div>
@@ -1536,7 +1536,7 @@ export function Terminal({
                       : "text-primary"
                   )}>
                     {state.awaitingPassword || localPasswordPrompt
-                      ? (language === 'tr' ? 'Parola:' : 'Password:')
+                      ? t.passwordLabel
                       : confirmDialog?.show || isReloadConfirmationPending
                         ? '[confirm]'
                         : prompt}
@@ -1662,6 +1662,7 @@ export function Terminal({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t.search + "..."}
+              aria-label={t.search}
               className="pr-9"
               autoFocus
             />
