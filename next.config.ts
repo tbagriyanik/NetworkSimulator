@@ -37,6 +37,8 @@ function getAppVersion(): string {
   }
 }
 
+const FALLBACK_COMMIT_COUNT = 1656; // Fallback value when git history is unavailable and API fetch fails
+
 // Function to fetch the total commits dynamically
 async function getCommitCount(): Promise<number> {
   let localCount = 0;
@@ -75,7 +77,7 @@ async function getCommitCount(): Promise<number> {
   }
 
   // Fallback to local count if above 0, else a sensible baseline
-  return localCount > 0 ? localCount : 1656;
+  return localCount > 0 ? localCount : FALLBACK_COMMIT_COUNT;
 }
 
 const config = async () => {
