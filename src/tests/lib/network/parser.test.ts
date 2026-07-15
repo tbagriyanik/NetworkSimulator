@@ -173,8 +173,9 @@ describe('Command Parser Functions', () => {
 
     it('should reject commands longer than 256 characters in validateCommand', () => {
       const longInput = 'a'.repeat(257);
-      const parsed = parseCommand(longInput, 'user')!;
-      const validation = validateCommand(parsed, 'user');
+      const parsed = parseCommand(longInput, 'user');
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const validation = validateCommand(parsed!, 'user');
       expect(validation.valid).toBe(false);
       expect(validation.reason).toBe('unknown-command');
       expect(validation.error).toContain('Command exceeds maximum length of 256 characters.');
