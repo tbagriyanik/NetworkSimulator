@@ -61,7 +61,7 @@ function truncateWithEllipsis(text: string, maxLength: number) {
 }
 
 export function TopologyToolbar({
-  t, isDark, language,
+  t, isDark,
   topologyDevices, deviceStates,
   activeDeviceId, activeDeviceType,
   cableInfo, deviceSearchQuery,
@@ -147,17 +147,11 @@ export function TopologyToolbar({
                           ? 'bg-success-400'
                           : 'bg-warning-400';
                     const statusLabel =
-                      language === 'tr'
-                        ? status === 'offline'
-                          ? 'Kapalı'
-                          : status === 'online'
-                            ? 'Çevrimiçi'
-                            : 'Bilinmeyen'
-                        : status === 'offline'
-                          ? 'Offline'
-                          : status === 'online'
-                            ? 'Online'
-                            : 'Unknown';
+                      status === 'offline'
+                        ? t.offline
+                        : status === 'online'
+                          ? t.online
+                          : t.unknown;
                     return (
                       <>
                         <TooltipWrapper title={statusLabel}>
@@ -202,6 +196,7 @@ export function TopologyToolbar({
                   value={deviceSearchQuery}
                   onChange={e => setDeviceSearchQuery(e.target.value)}
                   placeholder={t.searchShort}
+                  aria-label={t.searchShort}
                   className="h-7 pl-6 pr-7 text-xs"
                   autoFocus
                   onKeyDown={e => e.stopPropagation()}
@@ -219,14 +214,24 @@ export function TopologyToolbar({
           )}
           <ScrollArea className={topologyDevices.length > 0 ? "h-56" : "h-auto"}>
             {topologyDevices.length > 0 ? (
-              topologyDevices
-                .filter(device => {
-                  if (!deviceSearchQuery.trim()) return true;
-                  const q = deviceSearchQuery.toLowerCase();
-                  const name = (deviceStates.get(device.id)?.hostname || device.name).toLowerCase();
-                  return name.includes(q) || device.type.toLowerCase().includes(q);
-                })
-                .map((device) => {
+              (() => {
+                const filtered = topologyDevices
+                  .filter(device => {
+                    if (!deviceSearchQuery.trim()) return true;
+                    const q = deviceSearchQuery.toLowerCase();
+                    const name = (deviceStates.get(device.id)?.hostname || device.name).toLowerCase();
+                    return name.includes(q) || device.type.toLowerCase().includes(q);
+                  });
+
+                if (filtered.length === 0 && deviceSearchQuery.trim()) {
+                  return (
+                    <div className="p-4 text-center text-[11px] text-secondary-500 italic">
+                      {t.noResultsFound}
+                    </div>
+                  );
+                }
+
+                return filtered.map((device) => {
                   const currentDeviceState = deviceStates.get(device.id);
                   const displayName = currentDeviceState?.hostname || device.name;
                   const status = device.status || 'online';
@@ -257,7 +262,8 @@ export function TopologyToolbar({
                       </div>
                     </DropdownMenuItem>
                   );
-                })
+                });
+              })()
             ) : (
               <div className="p-3 text-center text-[11px] text-secondary-500 italic">
                 {t.noDevicesInTopology}

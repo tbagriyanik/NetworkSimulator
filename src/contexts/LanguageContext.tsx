@@ -63,6 +63,7 @@ export interface Translations {
   bathroom: string;
   bedroom: string;
   beginner: string;
+  beginnerLevel: string;
   blocked: string;
   bootInitializing: string;
   bootLoading: string;
@@ -271,6 +272,7 @@ export interface Translations {
   goodSecurity: string;
   guidedMode: string;
   help: string;
+  helpLevelLabel: string;
   hideHint: string;
   hideAnimation: string;
   showAnimation: string;
@@ -303,6 +305,7 @@ export interface Translations {
   ipRenew: string;
   ipRouting: string;
   ipRoutingEngine: string;
+  learningNote: string;
   jsonDownloaded: string;
   keyboardNav: string;
   kitchen: string;
@@ -331,6 +334,7 @@ export interface Translations {
   menu: string;
   minimize: string;
   minutes: string;
+  multipleMatches: string;
   mode: string;
   modeConfig: string;
   modeInterface: string;
@@ -365,6 +369,7 @@ export interface Translations {
   noFreePortsMessage: string;
   noIp: string;
   noIpInterfaces: string;
+  noResultsFound: string;
   noServices: string;
   noWifiConfig: string;
   noWifiDevices: string;
@@ -376,7 +381,9 @@ export interface Translations {
   noteStyle: string;
   of: string;
   off: string;
+  offline: string;
   on: string;
+  online: string;
   opacityLabel: string;
   open: string;
   openCLI: string;
@@ -391,6 +398,7 @@ export interface Translations {
   pan: string;
   passive: string;
   passwordEncryption: string;
+  passwordLabel: string;
   paste: string;
   pcAccessDenied: string;
   pcCableError: string;
@@ -434,6 +442,7 @@ export interface Translations {
   powerOff: string;
   powerOn: string;
   powerStatus: string;
+  pressTabToCycle: string;
   pressEnterToConfirm: string;
   processing: string;
   progress: string;
@@ -654,7 +663,9 @@ export interface Translations {
   yes: string;
   language: Language;
   intermediate: string;
+  intermediateLevel: string;
   advanced: string;
+  advancedLevel: string;
   basarilarim: string;
   basarilarimEmpty: string;
   sessionDuration: string;
@@ -726,6 +737,9 @@ export interface Translations {
   simulationMode: string;
   exportAsSVG: string;
   exportAsPNG: string;
+  generateSummary: string;
+  saveAsPNG: string;
+  unknown: string;
 }
 
 const translations: Record<Language, Translations> = {
@@ -788,6 +802,7 @@ const translations: Record<Language, Translations> = {
     bathroom: 'Banyo',
     bedroom: 'Yatak Odası',
     beginner: 'Başlangıç',
+    beginnerLevel: 'Başlangıç (Tam İpucu)',
     blocked: 'Engellenen',
     bootInitializing: 'Donanım başlatılıyor...',
     bootLoading: 'Sistem yükleniyor...',
@@ -996,6 +1011,7 @@ const translations: Record<Language, Translations> = {
     goodSecurity: 'İyi güvenlik seviyesi',
     guidedMode: 'Rehberli Ders',
     help: 'Yardım',
+    helpLevelLabel: 'Yardım Seviyesi',
     hideHint: 'İpucu Gizle',
     hideAnimation: 'Animasyonu Gizle',
     showAnimation: 'Nasıl Yapılır? (İzle)',
@@ -1028,6 +1044,7 @@ const translations: Record<Language, Translations> = {
     ipRenew: 'IP Yenile',
     ipRouting: 'IP Yönlendirme',
     ipRoutingEngine: 'IP Yönlendirme Motoru',
+    learningNote: 'Eğitici Not:',
     jsonDownloaded: 'JSON dosyası indirildi.',
     keyboardNav: 'Klavye Navigasyonu',
     kitchen: 'Mutfak',
@@ -1056,6 +1073,7 @@ const translations: Record<Language, Translations> = {
     menu: 'Menü',
     minimize: 'Küçült',
     minutes: 'dakika',
+    multipleMatches: 'Birden fazla eşleşme',
     mode: 'Kip',
     modeConfig: 'Global Yapılandırma',
     modeInterface: 'Arayüz Yapılandırma',
@@ -1090,6 +1108,7 @@ const translations: Record<Language, Translations> = {
     noFreePortsMessage: 'Lütfen, önce bazı kabloları çıkarın.',
     noIp: 'IP Yok',
     noIpInterfaces: 'IP adresi yapılandırılmış arayüz yok.',
+    noResultsFound: 'Sonuç bulunamadı',
     noServices: 'Servis yok',
     noWifiConfig: 'WiFi yapılandırması bulunmuyor.',
     noWifiDevices: 'WiFi cihazı bulunamadı',
@@ -1101,7 +1120,9 @@ const translations: Record<Language, Translations> = {
     noteStyle: 'Not Biçimi',
     of: '/',
     off: 'Kapalı',
+    offline: 'Kapalı',
     on: 'Açık',
+    online: 'Çevrimiçi',
     opacityLabel: 'Saydamlık',
     open: 'Aç',
     openCLI: 'CLI Aç',
@@ -1116,6 +1137,7 @@ const translations: Record<Language, Translations> = {
     pan: 'Kaydır',
     passive: 'PASİF',
     passwordEncryption: 'Parola Şifreleme',
+    passwordLabel: 'Parola:',
     paste: 'Yapıştır',
     pcAccessDenied: 'Adrese doğrudan erişim yok.',
     pcCableError: 'Ağ kablosu bağlı değil.',
@@ -1159,6 +1181,7 @@ const translations: Record<Language, Translations> = {
     powerOff: 'Gücü Kapat',
     powerOn: 'Gücü Aç',
     powerStatus: 'Güç Durumu',
+    pressTabToCycle: "Daha fazlası için Tab'a basın ({count} seçenek)",
     pressEnterToConfirm: 'Devam etmek için Enter\'a basın',
     processing: 'İşleniyor...',
     progress: 'İlerleme',
@@ -1379,7 +1402,9 @@ const translations: Record<Language, Translations> = {
     yes: 'Evet',
     language: 'tr',
     intermediate: 'Orta Seviye',
+    intermediateLevel: 'Orta (Sadece Hata İpucu)',
     advanced: 'İleri Seviye',
+    advancedLevel: 'Uzman (Hiç İpucu Yok)',
     basarilarim: 'Başarılarım',
     basarilarimEmpty: 'Henüz kayıt bulunmuyor. Rehberli dersleri tamamlayarak, sınavlara girerek ve projeler kaydederek başarılarınızı burada görebilirsiniz.',
     sessionDuration: 'Oturum Süresi',
@@ -1450,7 +1475,9 @@ const translations: Record<Language, Translations> = {
     simulationMode: 'Simülasyon Modu',
     exportAsSVG: 'SVG Olarak Dışa Aktar',
     exportAsPNG: 'PNG Olarak Dışa Aktar',
-
+    generateSummary: 'Özet Notu Oluştur',
+    saveAsPNG: 'PNG Kaydet',
+    unknown: 'Bilinmeyen',
   },
   en: {
     about: 'Help',
@@ -1510,6 +1537,7 @@ const translations: Record<Language, Translations> = {
     bathroom: 'Bathroom',
     bedroom: 'Bedroom',
     beginner: 'Beginner',
+    beginnerLevel: 'Beginner (Full Hints)',
     blocked: 'Blocked',
     bootInitializing: 'Initializing hardware...',
     bootLoading: 'Loading system...',
@@ -1718,6 +1746,7 @@ const translations: Record<Language, Translations> = {
     goodSecurity: 'Good security level',
     guidedMode: 'Guided Lesson',
     help: 'Help',
+    helpLevelLabel: 'Help Level',
     hideHint: 'Hide Hint',
     hideAnimation: 'Hide Animation',
     showAnimation: 'How to do it? (Watch)',
@@ -1750,6 +1779,7 @@ const translations: Record<Language, Translations> = {
     ipRenew: 'IP Renew',
     ipRouting: 'IP Routing',
     ipRoutingEngine: 'IP Routing Engine',
+    learningNote: 'Learning Note:',
     jsonDownloaded: 'JSON file downloaded.',
     keyboardNav: 'Keyboard Navigation',
     kitchen: 'Kitchen',
@@ -1778,6 +1808,7 @@ const translations: Record<Language, Translations> = {
     menu: 'Menu',
     minimize: 'Minimize',
     minutes: 'minutes',
+    multipleMatches: 'Multiple matches',
     mode: 'Mode',
     modeConfig: 'Global Config',
     modeInterface: 'Interface Config',
@@ -1812,6 +1843,7 @@ const translations: Record<Language, Translations> = {
     noFreePortsMessage: 'Please disconnect some cables first.',
     noIp: 'No IP',
     noIpInterfaces: 'No interfaces with IP configured.',
+    noResultsFound: 'No results found',
     noServices: 'No services',
     noWifiConfig: 'No WiFi configuration found.',
     noWifiDevices: 'No WiFi device found',
@@ -1823,7 +1855,9 @@ const translations: Record<Language, Translations> = {
     noteStyle: 'Note Style',
     of: 'of',
     off: 'OFF',
+    offline: 'Offline',
     on: 'ON',
+    online: 'Online',
     opacityLabel: 'Opacity',
     open: 'Open',
     openCLI: 'Open CLI',
@@ -1838,6 +1872,7 @@ const translations: Record<Language, Translations> = {
     pan: 'Pan',
     passive: 'PASSIVE',
     passwordEncryption: 'Password Encryption',
+    passwordLabel: 'Password:',
     paste: 'Paste',
     pcAccessDenied: 'No direct access to address.',
     pcCableError: 'Network cable not connected.',
@@ -1881,6 +1916,7 @@ const translations: Record<Language, Translations> = {
     powerOff: 'Power Off',
     powerOn: 'Power On',
     powerStatus: 'Power Status',
+    pressTabToCycle: 'Press Tab to cycle ({count} options)',
     pressEnterToConfirm: 'Press Enter to confirm',
     processing: 'Processing...',
     progress: 'Progress',
@@ -2101,7 +2137,9 @@ const translations: Record<Language, Translations> = {
     yes: 'Yes',
     language: 'en',
     intermediate: 'Intermediate Level',
+    intermediateLevel: 'Intermediate (Errors Only)',
     advanced: 'Advanced Level',
+    advancedLevel: 'Advanced (No Hints)',
     basarilarim: 'My Achievements',
     basarilarimEmpty: 'No records yet. Complete guided lessons, take exams, and save projects to see your achievements here.',
     sessionDuration: 'Session Duration',
@@ -2172,6 +2210,9 @@ const translations: Record<Language, Translations> = {
     simulationMode: 'Simulation Mode',
     exportAsSVG: 'Export as SVG',
     exportAsPNG: 'Export as PNG',
+    generateSummary: 'Generate Summary Note',
+    saveAsPNG: 'Save as PNG',
+    unknown: 'Unknown',
   }
 };
 

@@ -302,6 +302,7 @@ export function ProjectPickerDialog({
                 type="text"
                 value={projectSearchQuery}
                 placeholder={language === 'tr' ? 'Ara...' : 'Search...'}
+                aria-label={t.searchProjects}
                 onChange={(e) => setProjectSearchQuery(e.target.value)}
                 autoFocus
                 className={`flex-1 bg-transparent outline-none text-sm ${isDark ? 'text-white placeholder-secondary-500' : 'text-secondary-900 placeholder-secondary-400'}`}
