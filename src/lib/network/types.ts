@@ -84,6 +84,7 @@ export interface Port {
   isRoutedPort?: boolean;       // For L3 switch routed ports
   isSubinterface?: boolean;     // For subinterfaces (e.g., gi0/0.10)
   parentInterface?: string;     // Parent interface for subinterfaces
+  dot1qVlan?: number;           // Dot1q VLAN for subinterfaces
   nameif?: string;              // ASA interface name (inside, outside, etc.)
   securityLevel?: number;       // ASA security level (0-100)
   wifi?: {

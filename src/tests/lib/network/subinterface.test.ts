@@ -4,12 +4,10 @@ import { interfaceHandlers } from '../../../lib/network/core/interfaceCommands';
 import { CommandContext } from '../../../lib/network/core/commandTypes';
 
 const mockCtx: CommandContext = {
-  dispatch: () => {},
-  allDevices: {},
-  deviceId: 'test-device',
-  sourceDeviceId: 'test-device',
+  language: 'en',
   deviceStates: new Map(),
-  connections: []
+  connections: [],
+  sourceDeviceId: 'test-device'
 };
 
 describe('Router Subinterfaces', () => {
