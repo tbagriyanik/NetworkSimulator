@@ -2732,5 +2732,5 @@ Network Simulator, farklı zorluk seviyelerinde **40 hazır örnek proje** ile b
 ---
  
 **Son Güncelleme:** Temmuz 2026  
-**Versiyon:** 1.9.7
+**Versiyon:** 1.9.8
 

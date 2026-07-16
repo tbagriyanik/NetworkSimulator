@@ -1,29 +1,41 @@
 import { describe, it, expect } from 'vitest';
 import { detectEtherChannelBundles } from '@/lib/network/etherchannel';
 import { CanvasConnection } from '@/components/network/networkTopology.types';
-import { SwitchState } from '@/lib/network/types';
+import { SwitchState, Port, SwitchModel, SwitchLayer, SecurityConfig, Vlan, CableType } from '@/lib/network/types';
 
 describe('EtherChannel Detection', () => {
-  const createMockSwitchState = (ports: Record<string, any>): SwitchState => ({
-    deviceId: 'sw',
-    deviceName: 'sw',
-    currentMode: 'privileged',
-    commandHistory: [],
-    ports: Object.fromEntries(
-      Object.entries(ports).map(([id, config]) => [
-        id,
-        {
+  const createMockSwitchState = (ports: Record<string, Partial<Port>>, overrides: Partial<SwitchState> = {}): SwitchState => {
+    const baseState: SwitchState = {
+      hostname: 'sw',
+      macAddress: '00:00:00:00:00:00',
+      switchModel: 'WS-C2960-24TT-L' as SwitchModel,
+      switchLayer: 'L2' as SwitchLayer,
+      currentMode: 'privileged',
+      commandHistory: [],
+      ports: Object.fromEntries(
+        Object.entries(ports).map(([id, config]) => [
           id,
-          name: id,
-          status: 'online',
-          ...config,
-        },
-      ])
-    ),
-    vlanTable: {},
-    routingProtocol: 'none',
-    ipRouting: false,
-  } as any);
+          {
+            id,
+            name: id,
+            status: 'connected',
+            ...config,
+          } as Port,
+        ])
+      ),
+      vlans: {} as Record<string, Vlan>,
+      security: {} as SecurityConfig,
+      runningConfig: [],
+      historyIndex: 0,
+      bootTime: Date.now(),
+      ipRouting: false,
+      macAddressTable: [],
+      arpCache: [],
+      version: { nosVersion: '', modelName: '', serialNumber: '', uptime: '' },
+      ...overrides,
+    };
+    return baseState;
+  };
 
   const createMockConnection = (id: string, srcDev: string, srcPort: string, tgtDev: string, tgtPort: string): CanvasConnection => ({
     id,
@@ -31,8 +43,9 @@ describe('EtherChannel Detection', () => {
     sourcePort: srcPort,
     targetDeviceId: tgtDev,
     targetPort: tgtPort,
+    cableType: 'straight' as CableType,
     active: true,
-  } as any);
+  });
 
   it('should detect a basic LACP bundle (active/active)', () => {
     const sw1State = createMockSwitchState({

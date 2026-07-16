@@ -271,7 +271,7 @@ export interface SecurityConfig {
 }
 
 export type { SwitchModel } from './switchModels';
-type SwitchLayer = 'L2' | 'L3' | 'FW' | 'WLC';
+export type SwitchLayer = 'L2' | 'L3' | 'FW' | 'WLC';
 
 export interface StpVlanState {
   vlanId: number;

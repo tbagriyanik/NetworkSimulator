@@ -1,4 +1,4 @@
-## Comprehensive Feature Analysis: Network Simulator v1.9.7 vs Tracer
+## Comprehensive Feature Analysis: Network Simulator v1.9.8 vs Tracer
 
 ---
 

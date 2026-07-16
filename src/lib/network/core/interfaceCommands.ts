@@ -2293,7 +2293,7 @@ function cmdSwitchportTrunkEncapsulation(state: SwitchState, input: string, _ctx
   const updatePort = (port: Port) => ({
     ...port,
     trunkEncapsulation: encap,
-    encapsulation: encap === 'dot1q' ? '802.1q' : (encap as any)
+    encapsulation: (encap === 'dot1q' ? '802.1q' : (encap === 'isl' ? 'isl' : 'negotiate')) as Port['encapsulation']
   });
   if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
