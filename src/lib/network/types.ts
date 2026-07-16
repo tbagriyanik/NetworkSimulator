@@ -163,6 +163,7 @@ export interface Port {
   // Trunk specific properties
   trunkAllowedVlans?: number[] | string;  // VLAN range (e.g., "1-4094,except 1002-1005")
   trunkNativeVlan?: number;               // VLAN that doesn't get tagged
+  trunkEncapsulation?: 'dot1q' | 'isl' | 'negotiate';
   vlanPruning?: {
     enabled: boolean;
     prunedVlans?: number[];

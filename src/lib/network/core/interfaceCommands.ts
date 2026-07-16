@@ -665,7 +665,7 @@ function cmdSwitchportMode(state: SwitchState, input: string, ctx: CommandContex
       : state.currentInterface ? [state.currentInterface] : [];
     const missingEncapsulation = targetPorts.some((portId: string) => {
       const port = state.ports?.[portId];
-      return !port?.encapsulation || (port.encapsulation as string) !== 'dot1q';
+      return !port?.encapsulation || (port.encapsulation as string) !== '802.1q';
     });
     if (missingEncapsulation) {
       return { success: false, error: "% Command rejected: An interface whose trunk encapsulation is 'Auto' cannot be configured to 'trunk' mode." };
@@ -2289,7 +2289,12 @@ function cmdSwitchportTrunkEncapsulation(state: SwitchState, input: string, _ctx
   if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
   const match = input.match(/^switchport\s+trunk\s+encapsulation\s+(dot1q|isl|negotiate)$/i);
   if (!match) return { success: false, error: '% Invalid encapsulation command' };
-  const updatePort = (port: Port) => ({ ...port, trunkEncapsulation: match[1].toLowerCase(), encapsulation: match[1].toLowerCase() });
+  const encap = match[1].toLowerCase() as 'dot1q' | 'isl' | 'negotiate';
+  const updatePort = (port: Port) => ({
+    ...port,
+    trunkEncapsulation: encap,
+    encapsulation: encap === 'dot1q' ? '802.1q' : (encap as any)
+  });
   if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const newPorts = { ...state.ports };
