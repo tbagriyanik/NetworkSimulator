@@ -443,7 +443,7 @@ function cmdSpeed(state: SwitchState, input: string, ctx: CommandContext): Comma
 
   return {
     success: true,
-    newState: myUpdatedState || { ports: newPorts },
+    newState: myUpdatedState || ({ ports: newPorts } as Partial<SwitchState>),
     deviceStates: allUpdatedStates
   };
 }
@@ -665,7 +665,7 @@ function cmdSwitchportMode(state: SwitchState, input: string, ctx: CommandContex
       : state.currentInterface ? [state.currentInterface] : [];
     const missingEncapsulation = targetPorts.some((portId: string) => {
       const port = state.ports?.[portId];
-      return !port?.encapsulation || (port.encapsulation as string) !== 'dot1q';
+      return !port?.encapsulation || (port.encapsulation as string) !== '802.1q';
     });
     if (missingEncapsulation) {
       return { success: false, error: "% Command rejected: An interface whose trunk encapsulation is 'Auto' cannot be configured to 'trunk' mode." };
@@ -684,7 +684,7 @@ function cmdSwitchportMode(state: SwitchState, input: string, ctx: CommandContex
 
   return {
     success: true,
-    newState: myUpdatedState || { ports: newPorts },
+    newState: myUpdatedState || ({ ports: newPorts } as Partial<SwitchState>),
     deviceStates: allUpdatedStates,
     hint: normalizedMode === 'access' ? {
       tr: '💡 Gerçek dünyada: Access portlar genelde PC, IP Telefon veya yazıcı gibi uç cihazlara bağlanır.',
@@ -1960,7 +1960,7 @@ function cmdSwitchportNonegotiate(state: SwitchState, _input: string, _ctx: Comm
   const updatePort = (port: Port) => ({ ...port, nonegotiate: true });
 
   if (state.selectedInterfaces?.length) {
-    return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+    return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   }
 
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
@@ -1987,7 +1987,7 @@ function cmdSwitchportVoiceVlan(state: SwitchState, input: string, _ctx: Command
   const updatePort = (port: Port) => ({ ...port, voiceVlan: vlanId });
 
   if (state.selectedInterfaces?.length) {
-    return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+    return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   }
 
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
@@ -2012,7 +2012,7 @@ function cmdCdpEnable(state: SwitchState, _input: string, _ctx: CommandContext):
   const updatePort = (port: Port) => ({ ...port, cdpEnabled: true });
 
   if (state.selectedInterfaces?.length) {
-    return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+    return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   }
 
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
@@ -2033,7 +2033,7 @@ function cmdSpanningTreeBpduguardDisable(state: SwitchState, _input: string, _ct
   const updatePort = (port: Port) => ({ ...port, bpduguard: false });
 
   if (state.selectedInterfaces?.length) {
-    return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+    return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   }
 
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
@@ -2076,7 +2076,7 @@ function cmdSpanningTreeCost(state: SwitchState, input: string, ctx: CommandCont
   return {
     success: true,
     output: `STP cost set to ${cost}`,
-    newState: myUpdatedState || { ports: newPorts },
+    newState: myUpdatedState || ({ ports: newPorts } as Partial<SwitchState>),
     deviceStates: allUpdatedStates
   };
 }
@@ -2270,7 +2270,7 @@ function cmdSpanningTreePriority(state: SwitchState, input: string, _ctx: Comman
   const updatePort = (port: Port) => ({ ...port, stpPriority: priority });
 
   if (state.selectedInterfaces?.length) {
-    return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+    return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   }
 
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
@@ -2289,8 +2289,13 @@ function cmdSwitchportTrunkEncapsulation(state: SwitchState, input: string, _ctx
   if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
   const match = input.match(/^switchport\s+trunk\s+encapsulation\s+(dot1q|isl|negotiate)$/i);
   if (!match) return { success: false, error: '% Invalid encapsulation command' };
-  const updatePort = (port: Port) => ({ ...port, trunkEncapsulation: match[1].toLowerCase() });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  const encap = match[1].toLowerCase() as 'dot1q' | 'isl' | 'negotiate';
+  const updatePort = (port: Port) => ({
+    ...port,
+    trunkEncapsulation: encap,
+    encapsulation: encap === 'dot1q' ? '802.1q' : (encap as any)
+  });
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
@@ -2319,7 +2324,7 @@ function cmdEncapsulationHdlc(state: SwitchState, _input: string, _ctx: CommandC
   const port = state.ports[state.currentInterface];
   if (port?.type !== 'serial') return { success: false, error: '% HDLC encapsulation is only supported on serial interfaces' };
   const updatePort = (p: Port) => ({ ...p, serialEncapsulation: 'hdlc' as const, encapsulation: 'hdlc' as const });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
   return { success: true, output: 'Encapsulation set to HDLC', newState: { ports: newPorts } };
@@ -2334,7 +2339,7 @@ function cmdEncapsulationPpp(state: SwitchState, _input: string, _ctx: CommandCo
   const port = state.ports[state.currentInterface];
   if (port?.type !== 'serial') return { success: false, error: '% PPP encapsulation is only supported on serial interfaces' };
   const updatePort = (p: Port) => ({ ...p, serialEncapsulation: 'ppp' as const, encapsulation: 'ppp' as const });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
   return { success: true, output: 'Encapsulation set to PPP', newState: { ports: newPorts } };
@@ -2349,7 +2354,7 @@ function cmdNoEncapsulation(state: SwitchState, _input: string, _ctx: CommandCon
   const port = state.ports[state.currentInterface];
   if (port?.type !== 'serial') return { success: false, error: '% Encapsulation is only supported on serial interfaces' };
   const updatePort = (p: Port) => ({ ...p, serialEncapsulation: undefined, encapsulation: 'hdlc' as const });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
   return { success: true, output: 'Encapsulation reset to default HDLC', newState: { ports: newPorts } };
@@ -2373,7 +2378,7 @@ function cmdClockRate(state: SwitchState, input: string, _ctx: CommandContext): 
   }
   // Only mark as DCE if interface is wired for DCE (clock rate implies DCE side)
   const updatePort = (p: Port) => ({ ...p, clockRate: rate, dce: true });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
   return { success: true, output: `Clock rate set to ${rate} bps`, newState: { ports: newPorts } };
@@ -2388,7 +2393,7 @@ function cmdNoClockRate(state: SwitchState, _input: string, _ctx: CommandContext
   const port = state.ports[state.currentInterface];
   if (port?.type !== 'serial') return { success: false, error: '% Clock rate is only supported on serial interfaces' };
   const updatePort = (p: Port) => ({ ...p, clockRate: undefined, dce: undefined });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
   return { success: true, output: 'Clock rate removed', newState: { ports: newPorts } };
@@ -2403,7 +2408,7 @@ function cmdPppAuthPap(state: SwitchState, _input: string, _ctx: CommandContext)
   const port = state.ports[state.currentInterface];
   if (port?.type !== 'serial') return { success: false, error: '% PPP authentication is only supported on serial interfaces' };
   const updatePort = (p: Port) => ({ ...p, pppAuth: 'pap' as const });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
   return { success: true, output: 'PPP PAP authentication enabled', newState: { ports: newPorts } };
@@ -2418,7 +2423,7 @@ function cmdPppAuthChap(state: SwitchState, _input: string, _ctx: CommandContext
   const port = state.ports[state.currentInterface];
   if (port?.type !== 'serial') return { success: false, error: '% PPP authentication is only supported on serial interfaces' };
   const updatePort = (p: Port) => ({ ...p, pppAuth: 'chap' as const });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
   return { success: true, output: 'PPP CHAP authentication enabled', newState: { ports: newPorts } };
@@ -2433,7 +2438,7 @@ function cmdNoPppAuth(state: SwitchState, _input: string, _ctx: CommandContext):
   const port = state.ports[state.currentInterface];
   if (port?.type !== 'serial') return { success: false, error: '% PPP authentication is only supported on serial interfaces' };
   const updatePort = (p: Port) => ({ ...p, pppAuth: undefined });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
   return { success: true, output: 'PPP authentication removed', newState: { ports: newPorts } };
@@ -2452,7 +2457,7 @@ function cmdPppPapSentUsername(state: SwitchState, input: string, _ctx: CommandC
   const username = match[1];
   const password = match[2];
   const updatePort = (p: Port) => ({ ...p, pppPapUsername: username, pppPapPassword: password, pppAuth: 'pap' as const });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
   return { success: true, output: `PPP PAP sent-username ${username} configured`, newState: { ports: newPorts } };
@@ -2464,7 +2469,7 @@ function cmdPppPapSentUsername(state: SwitchState, input: string, _ctx: CommandC
 function cmdSwitchportProtected(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
   const updatePort = (port: Port) => ({ ...port, protected: true });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
@@ -2479,7 +2484,7 @@ function cmdSwitchportBlock(state: SwitchState, input: string, _ctx: CommandCont
   const match = input.match(/^switchport\s+block\s+(unicast|multicast)$/i);
   if (!match) return { success: false, error: '% Invalid switchport block command' };
   const updatePort = (port: Port) => ({ ...port, [`block${match[1]}`]: true });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
@@ -2545,7 +2550,7 @@ function cmdMlsQosTrust(state: SwitchState, input: string, _ctx: CommandContext)
   const match = input.match(/^mls\s+qos\s+trust\s+(cos|dscp|ip-precedence)$/i);
   if (!match) return { success: false, error: '% Invalid mls qos trust command' };
   const updatePort = (port: Port) => ({ ...port, qosTrust: match[1] });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
@@ -2560,7 +2565,7 @@ function cmdMlsQosCos(state: SwitchState, input: string, _ctx: CommandContext): 
   const match = input.match(/^mls\s+qos\s+cos\s+(\d)$/i);
   if (!match) return { success: false, error: '% Invalid mls qos cos command' };
   const updatePort = (port: Port) => ({ ...port, qosCos: parseInt(match[1]) });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
@@ -2573,7 +2578,7 @@ function cmdMlsQosCos(state: SwitchState, input: string, _ctx: CommandContext): 
 function cmdIpDhcpSnoopingTrust(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
   const updatePort = (port: Port) => ({ ...port, dhcpSnoopingTrust: true });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
@@ -2586,7 +2591,7 @@ function cmdIpDhcpSnoopingTrust(state: SwitchState, _input: string, _ctx: Comman
 function cmdNoIpDhcpSnoopingTrust(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
   const updatePort = (port: Port) => ({ ...port, dhcpSnoopingTrust: false });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
@@ -2599,7 +2604,7 @@ function cmdNoIpDhcpSnoopingTrust(state: SwitchState, _input: string, _ctx: Comm
 function cmdIpArpInspectionTrust(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
   const updatePort = (port: Port) => ({ ...port, arpInspectionTrust: true });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
@@ -2612,7 +2617,7 @@ function cmdIpArpInspectionTrust(state: SwitchState, _input: string, _ctx: Comma
 function cmdNoIpArpInspectionTrust(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
   const updatePort = (port: Port) => ({ ...port, arpInspectionTrust: false });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
@@ -2627,7 +2632,7 @@ function cmdBandwidth(state: SwitchState, input: string, _ctx: CommandContext): 
   const match = input.match(/^bandwidth\s+(\d+)$/i);
   if (!match) return { success: false, error: '% Invalid bandwidth command' };
   const updatePort = (port: Port) => ({ ...port, bandwidth: parseInt(match[1]) });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
@@ -2643,7 +2648,7 @@ function cmdDelay(state: SwitchState, input: string, _ctx: CommandContext): Comm
   if (!match) return { success: false, error: '% Invalid delay command' };
   const delayValue = parseInt(match[1]);
   const updatePort = (port: Port) => ({ ...port, delay: delayValue });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
@@ -2662,7 +2667,7 @@ function cmdMtu(state: SwitchState, input: string, _ctx: CommandContext): Comman
     return { success: false, error: '% MTU must be between 68 and 65535' };
   }
   const updatePort = (port: Port) => ({ ...port, mtu: mtuValue });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
@@ -2677,7 +2682,7 @@ function cmdKeepalive(state: SwitchState, input: string, _ctx: CommandContext): 
   const match = input.match(/^keepalive(?:\s+(\d+))?$/i);
   const interval = match?.[1] ? parseInt(match[1]) : 10;
   const updatePort = (port: Port) => ({ ...port, keepalive: interval });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
@@ -2690,7 +2695,7 @@ function cmdKeepalive(state: SwitchState, input: string, _ctx: CommandContext): 
 function cmdIpProxyArp(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
   const updatePort = (port: Port) => ({ ...port, proxyArp: true });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
@@ -2708,7 +2713,7 @@ function cmdIpVerifySource(state: SwitchState, input: string, _ctx: CommandConte
     ipVerifySource: true,
     ipVerifySourcePortSecurity: hasPortSecurity || port.ipVerifySourcePortSecurity
   });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
@@ -2721,7 +2726,7 @@ function cmdIpVerifySource(state: SwitchState, input: string, _ctx: CommandConte
 function cmdUdldEnable(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
   const updatePort = (port: Port) => ({ ...port, udld: { enabled: true, ...(port.udld ? { mode: port.udld.mode } : {}) } });
-  if (state.selectedInterfaces?.length) return { success: true, newState: applyToSelectedPorts(state, updatePort) };
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const newPorts = { ...state.ports };
   newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
