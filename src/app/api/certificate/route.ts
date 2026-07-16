@@ -80,6 +80,13 @@ export const POST = withErrorHandling(async (
       );
     }
 
+    if (!/^[A-Z0-9]+$/.test(upperRoomCode) || !/^[a-zA-Z0-9-]+$/.test(cleanStudentId)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid characters in room code or student ID', code: 'INVALID_METADATA_FORMAT' },
+        { status: 400 },
+      );
+    }
+
     try {
       const students = await getRoomStudents(upperRoomCode);
       const student = students.find(s => s.studentId === cleanStudentId);
@@ -110,7 +117,7 @@ export const POST = withErrorHandling(async (
     projectTitle: sanitizeInput(String(projectTitle)).slice(0, 200),
     score: Number(score),
     totalScore: Number(totalScore),
-    date: String(date).slice(0, 30),
+    date: sanitizeInput(String(date)).slice(0, 30),
     language: language === 'tr' ? 'tr' : 'en',
     issuedAt: Date.now(),
   });
