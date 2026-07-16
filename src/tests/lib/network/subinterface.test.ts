@@ -14,7 +14,7 @@ const mockCtx: CommandContext = {
 
 describe('Router Subinterfaces', () => {
   it('should create a subinterface', () => {
-    let state = createInitialRouterState();
+    const state = createInitialRouterState();
     state.currentMode = 'config';
 
     const result = interfaceHandlers['interface'](state, 'interface gi0/1.10', mockCtx);

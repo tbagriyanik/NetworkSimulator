@@ -29,6 +29,13 @@ export const GET = withErrorHandling(async (
     );
   }
 
+  if (!/^[A-Z0-9]+$/.test(upperCode)) {
+    return NextResponse.json(
+      { success: false, error: 'Room code must be alphanumeric', code: 'INVALID_CODE_FORMAT' },
+      { status: 400 },
+    );
+  }
+
   const exists = await checkRoomExists(upperCode);
   return NextResponse.json({ success: true, data: { exists } }, { status: 200 });
 });

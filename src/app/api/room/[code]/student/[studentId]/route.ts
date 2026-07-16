@@ -48,9 +48,23 @@ export const PATCH = withErrorHandling(async (
     );
   }
 
+  if (!/^[A-Z0-9]+$/.test(upperCode)) {
+    return NextResponse.json(
+      { success: false, error: 'Room code must be alphanumeric', code: 'INVALID_CODE_FORMAT' },
+      { status: 400 },
+    );
+  }
+
   if (studentId.length < 8 || studentId.length > 100) {
     return NextResponse.json(
       { success: false, error: 'Student ID must be 8-100 characters', code: 'INVALID_ID' },
+      { status: 400 },
+    );
+  }
+
+  if (!/^[a-zA-Z0-9-]+$/.test(studentId)) {
+    return NextResponse.json(
+      { success: false, error: 'Student ID must be alphanumeric and hyphens only', code: 'INVALID_ID_FORMAT' },
       { status: 400 },
     );
   }

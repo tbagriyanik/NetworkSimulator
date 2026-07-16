@@ -46,6 +46,13 @@ export const GET = withErrorHandling(async (
     );
   }
 
+  if (!/^[A-Z0-9]+$/.test(upperCode)) {
+    return NextResponse.json(
+      { success: false, error: 'Room code must be alphanumeric', code: 'INVALID_CODE_FORMAT' },
+      { status: 400 },
+    );
+  }
+
   const url = new URL(req.url);
   const rawTeacherId = url.searchParams.get('teacherId');
   const teacherId = rawTeacherId ? sanitizeInput(rawTeacherId) : null;
@@ -53,6 +60,13 @@ export const GET = withErrorHandling(async (
   if (!teacherId || teacherId.length < 8 || teacherId.length > 100) {
     return NextResponse.json(
       { success: false, error: 'Valid teacher ID is required (8-100 chars)', code: 'INVALID_TEACHER_ID' },
+      { status: 400 },
+    );
+  }
+
+  if (!/^[a-zA-Z0-9-]+$/.test(teacherId)) {
+    return NextResponse.json(
+      { success: false, error: 'Teacher ID must be alphanumeric and hyphens only', code: 'INVALID_TEACHER_ID_FORMAT' },
       { status: 400 },
     );
   }

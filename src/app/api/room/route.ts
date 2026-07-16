@@ -53,10 +53,24 @@ export const POST = withErrorHandling(async (req: NextRequest): Promise<NextResp
     );
   }
 
+  if (!/^[a-zA-Z0-9-]+$/.test(teacherId)) {
+    return NextResponse.json(
+      { success: false, error: 'Teacher ID must be alphanumeric and hyphens only', code: 'INVALID_TEACHER_ID' },
+      { status: 400 },
+    );
+  }
+
   const trimmed = code.trim().toUpperCase();
   if (trimmed.length < 4 || trimmed.length > 10) {
     return NextResponse.json(
       { success: false, error: 'Room code must be 4-10 characters', code: 'INVALID_CODE' },
+      { status: 400 },
+    );
+  }
+
+  if (!/^[A-Z0-9]+$/.test(trimmed)) {
+    return NextResponse.json(
+      { success: false, error: 'Room code must be alphanumeric', code: 'INVALID_CODE_FORMAT' },
       { status: 400 },
     );
   }
