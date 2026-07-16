@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { sanitizeInput, sanitizeObject } from '@/lib/security/sanitizer';
 
-describe('sanitizeInput', () => {
+describe('sanitizeInput (XSS Protection)', () => {
   it('should remove javascript: schemes', () => {
     expect(sanitizeInput('javascript:alert(1)')).toBe('alert(1)');
     expect(sanitizeInput('JAVASCRIPT:alert(1)')).toBe('alert(1)');
@@ -24,8 +24,9 @@ describe('sanitizeInput', () => {
     expect(sanitizeInput('java<javascript:>script:alert(1)')).toBe('alert(1)');
   });
 
-  it('should strip HTML tags', () => {
+  it('should explicitly protect against common XSS vectors (strip HTML)', () => {
     expect(sanitizeInput('<script>alert(1)</script>')).toBe('alert(1)');
+    expect(sanitizeInput('<img src="x" onerror="alert(1)">')).toBe('');
     expect(sanitizeInput('<div>Hello</div>')).toBe('Hello');
   });
 
@@ -35,7 +36,7 @@ describe('sanitizeInput', () => {
   });
 });
 
-describe('sanitizeObject', () => {
+describe('sanitizeObject (XSS & Prototype Pollution Protection)', () => {
   it('should sanitize strings in an object', () => {
     const input = {
       name: '<script>alert(1)</script>John',

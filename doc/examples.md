@@ -1,12 +1,13 @@
 # Network Simulator 2026 - Example Projects
 
-This document provides detailed descriptions of all 40 example projects available in the Network Simulator 2026.
+This document provides detailed descriptions of all 49 example projects available in the Network Simulator 2026.
 
 ## Table of Contents
 
 - [Basic Level](#basic-level)
 - [Intermediate Level](#intermediate-level)
 - [Advanced Level](#advanced-level)
+- [Troubleshooting Level](#troubleshooting-level)
 
 ---
 
@@ -1532,19 +1533,61 @@ IPv6 adresleme, DHCPv6 havuzları ve OSPFv3 dinamik yönlendirme.
 4. **DHCPv6:** İstemciler için DHCPv6 havuzu oluşturun.
 5. **OSPFv3:** `ipv6 router ospf 1` ile router'lar arası dinamik rota paylaşımı sağlayın.
 
-### 41. Troubleshooting: Inter-VLAN Routing
+## Troubleshooting Level
+
+### 42. Troubleshooting: Inter-VLAN Routing
 **ID:** `troubleshooting-ivr`
 **Tag:** ARIZA
 **Description:** Yapılandırılmış ama hatalı bir Inter-VLAN senaryosunu onarın.
 **Details:** VLAN mismatch ve yanlış subinterface IP'lerini bulun ve düzeltin.
 
-### 42. Troubleshooting: OSPF Area Mismatch
+### 43. Troubleshooting: OSPF Area Mismatch
 **ID:** `troubleshooting-ospf-area`
 **Tag:** ARIZA
 **Description:** Komşuluk kuramayan OSPF router'larındaki area mismatch hatasını giderin.
 **Details:** Area ID'lerini senkronize ederek yönlendirme tablosunu düzeltin.
 
-### 43. Advanced: IPv6 Master Lab (OSPFv3 & ACL)
+### 44. Troubleshooting: VLAN Mismatch
+**ID:** `troubleshooting-vlan`
+**Tag:** ARIZA
+**Description:** Switch trunk portlarındaki VLAN uyumsuzluğu sorununu giderin.
+**Details:** Farklı native VLAN ID'leri ve eksik VLAN tanımlarını bulup düzeltin.
+
+### 45. Troubleshooting: Subnet Mask
+**ID:** `troubleshooting-mask`
+**Tag:** ARIZA
+**Description:** Yanlış subnet mask kullanımından kaynaklanan bağlantı sorununu çözün.
+**Details:** PC2'deki yanlış subnet mask'ı düzelterek ağ iletişimini sağlayın.
+
+### 46. Troubleshooting: Interface Shutdown
+**ID:** `troubleshooting-shutdown`
+**Tag:** ARIZA
+**Description:** Administratively down olan switch portunu tespit edip etkinleştirin.
+**Details:** Fa0/1 arayüzünü no shutdown komutu ile açın.
+
+### 47. Troubleshooting: Default Gateway
+**ID:** `troubleshooting-gateway`
+**Tag:** ARIZA
+**Description:** Eksik varsayılan ağ geçidi yapılandırmasını düzeltin.
+**Details:** PC1'e doğru default gateway girerek farklı subnet'teki cihazlara erişim sağlayın.
+
+### 48. Troubleshooting: Duplicate IP
+**ID:** `troubleshooting-duplicate`
+**Tag:** ARIZA
+**Description:** Aynı IP adresini kullanan iki cihazdan kaynaklanan çakışmayı çözün.
+**Details:** PC2'nin IP adresini değiştirerek IP çakışmasını giderin.
+
+### 49. Troubleshooting: ACL Blocking
+**ID:** `troubleshooting-acl`
+**Tag:** ARIZA
+**Description:** Router üzerinde tüm trafiği engelleyen hatalı ACL kuralını düzeltin.
+**Details:** R1 Gi0/0 arayüzündeki 101 numaralı ACL'i kaldırarak trafiği serbest bırakın.
+
+---
+
+## Advanced Level (continued)
+
+### 50. Advanced: IPv6 Master Lab (OSPFv3 & ACL)
 **ID:** `ipv6-master-lab`
 **Tag:** IPv6
 **Description:** Dual-stack, OSPFv3 ve IPv6 ACL içeren kapsamlı ileri seviye laboratuvar.
@@ -1557,10 +1600,11 @@ IPv6 adresleme, DHCPv6 havuzları ve OSPFv3 dinamik yönlendirme.
 | Level / Seviye | Count / Adet |
 |-------|-------|
 | Basic / Temel | 9 |
-| Intermediate / Orta | 13 |
-| Advanced / İleri | 21 |
-| **Total Examples** | **43** |
-| **Total Project Lines (src/)** | **105,450** |
+| Intermediate / Orta | 14 |
+| Advanced / İleri | 19 |
+| Troubleshooting / Arıza | 8 |
+| **Total Examples** | **50** |
+| **Total Project Lines (src/)** | **111,140** |
 
 ## Getting Started
 

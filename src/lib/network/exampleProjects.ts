@@ -3,12 +3,7 @@ import type { SwitchState, CableInfo } from './types';
 import { FaultDefinition } from './faults';
 import type { CanvasDevice, CanvasConnection, CanvasNote, DeviceType } from '@/components/network/networkTopology.types';
 import { generateRandomLinkLocalIpv4 } from './linkLocal';
-import macExampleA from './examples/40-sayfa2-mac-tablosu.json';
-import dnsHttpExample from './examples/59-sayfa3-dns-http.json';
-import macExampleB from './examples/69-sayfa4-mac-tablosu.json';
-import ipConfigExample from './examples/76-sayfa1-ip-yapilandirma.json';
-import dhcpExample from './examples/87-sayfa6-dhcp.json';
-import trunk2SwitchExample from './examples/166-sayfa5uygulama-2switchTrunk.json';
+
 
 type ProjectData = {
   version: string;
@@ -42,18 +37,7 @@ type FirewallRule = {
   enabled: boolean;
 };
 
-const defaultCableInfo: CableInfo = {
-  connected: true,
-  cableType: 'straight',
-  sourceDevice: 'pc',
-  targetDevice: 'switchL2'
-};
 
-const normalizeDeviceType = (type: string): CanvasDevice['type'] => {
-  if (type === 'switch') return 'switchL2';
-  if (type === 'switchL2' || type === 'switchL3' || type === 'pc' || type === 'iot' || type === 'router' || type === 'firewall' || type === 'wlc') return type;
-  throw new Error(`Invalid device type: ${type}`);
-};
 
 const isValidIpv4 = (value?: string) => {
   if (!value) return false;
@@ -91,71 +75,7 @@ const applyLinkLocalToUnconfiguredHosts = (devices: CanvasDevice[]): CanvasDevic
   });
 };
 
-const normalizeMacAddress = (mac?: string): string | undefined => {
-  if (!mac) return mac;
-  if (/^[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}$/.test(mac)) {
-    return mac.toUpperCase();
-  }
-  const clean = mac.replace(/[^0-9A-Fa-f]/g, '');
-  if (clean.length === 12) {
-    const part1 = clean.slice(0, 4).toUpperCase();
-    const part2 = clean.slice(4, 8).toUpperCase();
-    const part3 = clean.slice(8, 12).toUpperCase();
-    return `${part1}.${part2}.${part3}`;
-  }
-  return mac;
-};
 
-const ensureProjectData = (source: unknown): ProjectData => {
-  const asRecord = (value: unknown): Record<string, unknown> =>
-    value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
-  const partial = asRecord(source);
-  const topology = asRecord(partial.topology);
-  const cableInfo = asRecord(partial.cableInfo);
-
-  const safeNormalizeType = (deviceType: string): CanvasDevice['type'] => {
-    return normalizeDeviceType(deviceType);
-  };
-
-  return {
-    version: typeof partial.version === 'string' ? partial.version : '1.0',
-    timestamp: typeof partial.timestamp === 'string' ? partial.timestamp : new Date().toISOString(),
-    devices: Array.isArray(partial.devices) ? (partial.devices as { id: string; state: SwitchState }[]) : [],
-    deviceOutputs: Array.isArray(partial.deviceOutputs) ? (partial.deviceOutputs as { id: string; outputs: unknown[] }[]) : [],
-    pcOutputs: Array.isArray(partial.pcOutputs) ? (partial.pcOutputs as { id: string; outputs: unknown[] }[]) : [],
-    pcHistories: Array.isArray(partial.pcHistories) ? (partial.pcHistories as { id: string; history: string[] }[]) : [],
-    topology: {
-      devices: applyLinkLocalToUnconfiguredHosts(((Array.isArray(topology.devices) ? topology.devices : []) as CanvasDevice[]).map((device: CanvasDevice) => ({
-        ...device,
-        type: safeNormalizeType(device.type),
-        macAddress: normalizeMacAddress(device.macAddress) ?? '',
-        ports: Array.isArray(device.ports) ? device.ports.map(port => ({
-          ...port,
-          macAddress: normalizeMacAddress(port.macAddress)
-        })) : device.ports
-      }))),
-      connections: Array.isArray(topology.connections) ? (topology.connections as CanvasConnection[]) : [],
-      notes: Array.isArray(topology.notes) ? (topology.notes as CanvasNote[]) : []
-    },
-    cableInfo: Object.keys(cableInfo).length
-      ? {
-        connected: typeof cableInfo.connected === 'boolean' ? cableInfo.connected : defaultCableInfo.connected,
-        cableType: cableInfo.cableType === 'straight' || cableInfo.cableType === 'crossover' || cableInfo.cableType === 'console' ? cableInfo.cableType : defaultCableInfo.cableType,
-        sourcePort: typeof cableInfo.sourcePort === 'string' ? cableInfo.sourcePort : '',
-        targetPort: typeof cableInfo.targetPort === 'string' ? cableInfo.targetPort : '',
-        sourceDevice: safeNormalizeType(typeof cableInfo.sourceDevice === 'string' ? cableInfo.sourceDevice : 'pc'),
-        targetDevice: safeNormalizeType(typeof cableInfo.targetDevice === 'string' ? cableInfo.targetDevice : 'switchL2'),
-      }
-      : defaultCableInfo,
-    activeDeviceId: typeof partial.activeDeviceId === 'string' ? partial.activeDeviceId : 'switch-1',
-    activeDeviceType: safeNormalizeType(typeof partial.activeDeviceType === 'string' ? partial.activeDeviceType : 'switchL2'),
-    activeTab: partial.activeTab === 'topology' || partial.activeTab === 'cmd' || partial.activeTab === 'terminal' || partial.activeTab === 'ports' || partial.activeTab === 'vlan' || partial.activeTab === 'security' ? partial.activeTab : 'topology',
-    zoom: typeof partial.zoom === 'number' ? partial.zoom : 1,
-    pan: (partial.pan && typeof partial.pan === 'object' && typeof (partial.pan as { x?: unknown }).x === 'number' && typeof (partial.pan as { y?: unknown }).y === 'number')
-      ? { x: (partial.pan as { x: number }).x, y: (partial.pan as { y: number }).y }
-      : { x: 0, y: 0 }
-  };
-};
 
 export type ExampleProjectLevel = 'basic' | 'intermediate' | 'advanced';
 
@@ -171,12 +91,7 @@ export type ExampleProject = {
   injectedFaults?: FaultDefinition[];
 };
 
-const macExampleAData: ProjectData = ensureProjectData(macExampleA);
-const dnsHttpExampleData: ProjectData = ensureProjectData(dnsHttpExample);
-const macExampleBData: ProjectData = ensureProjectData(macExampleB);
-const ipConfigExampleData: ProjectData = ensureProjectData(ipConfigExample);
-const dhcpExampleData: ProjectData = ensureProjectData(dhcpExample);
-const trunk2SwitchData: ProjectData = ensureProjectData(trunk2SwitchExample);
+
 
 const deterministicMac = (seed: string, scope: string = 'example-projects') => {
   const input = `${scope}:${seed}`;
@@ -3676,88 +3591,6 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
         : 'Rule 1: DENY ICMP | Rule 2: ALLOW ANY | PC-1 ping FAIL, wget SUCCESS',
       level: 'basic',
       data: baseProjectData(firewallBasicDevices, firewallBasicConnections, firewallBasicNotes, [])
-    },
-    {
-      id: 'mac-table-lab',
-      tag: isTr ? 'MAC' : 'MAC',
-      title: isTr ? 'MAC Tablo Öğrenme' : 'MAC Table Lab',
-      description: isTr
-        ? 'Switch MAC adres tablosu öğrenme özelliği incelenir.'
-        : 'Switch MAC address table learning feature is examined.',
-      detail: isTr
-        ? 'PC1 MAC: 00-e0-f7-01-a1-b1, PC2 MAC: 97-31-e5-97-a7-03'
-        : 'PC1 MAC: 00-e0-f7-01-a1-b1, PC2 MAC: 97-31-e5-97-a7-03',
-      level: 'basic',
-      data: macExampleAData
-    },
-    {
-      id: 'dns-http',
-      tag: isTr ? 'DNS/HTTP' : 'DNS/HTTP',
-      title: isTr
-        ? 'DNS ve HTTP Test (Domain Name System / Hypertext Transfer Protocol - görev: isim çözümleme + web erişimi)'
-        : 'DNS + HTTP Test (Domain Name System / Hypertext Transfer Protocol - task: name resolution + web access)',
-      description: isTr
-        ? 'DNS name resolution ve HTTP web erişimi test edilir.'
-        : 'DNS name resolution and HTTP web access are tested.',
-      detail: isTr
-        ? 'Test: wget 192.168.1.10, wget a10.com, nslookup a10.com'
-        : 'Test: wget 192.168.1.10, wget a10.com, nslookup a10.com',
-      level: 'intermediate',
-      data: dnsHttpExampleData
-    },
-    {
-      id: 'mac-arp-lab',
-      tag: isTr ? 'MAC' : 'MAC',
-      title: isTr ? 'ARP ve MAC Tablo Çalışması' : 'ARP vs MAC Table',
-      description: isTr
-        ? 'ARP ve MAC adres tablosu arasındaki ilişki incelenir.'
-        : 'The relationship between ARP and MAC address table is examined.',
-      detail: isTr
-        ? 'PC: arp -a, Switch: show mac address-table'
-        : 'PC: arp -a, Switch: show mac address-table',
-      level: 'basic',
-      data: macExampleBData
-    },
-    {
-      id: 'ip-config-lab',
-      tag: isTr ? 'IP' : 'IP',
-      title: isTr ? 'IP Yapılandırma Laboratuvarı' : 'IP Configuration Lab',
-      description: isTr
-        ? 'IP yapılandırmasının ağ bağlantısı üzerindeki etkisi incelenir.'
-        : 'The effect of IP configuration on network connectivity is examined.',
-      detail: isTr
-        ? 'PC1/PC2: 192.168.1.x/24, PC3: farklı subnet'
-        : 'PC1/PC2: 192.168.1.x/24, PC3: different subnet',
-      level: 'basic',
-      data: ipConfigExampleData
-    },
-    {
-      id: 'dhcp-distribution',
-      tag: isTr ? 'DHCP' : 'DHCP',
-      title: isTr
-        ? 'DHCP Dağıtım Senaryosu (Dynamic Host Configuration Protocol - görev: otomatik IP dağıtımı)'
-        : 'DHCP Distribution Scenario (Dynamic Host Configuration Protocol - task: automatic IP assignment)',
-      description: isTr
-        ? 'DHCP sunucusu otomatik IP dağıtımı yaparken manuel yapılandırma karşılaştırılır.'
-        : 'DHCP automatic IP assignment is compared with manual configuration.',
-      detail: isTr
-        ? 'DHCP sunucusu PC1 ve PC2ye IP atarken PC3 manuel yapılandırma ile kalır.'
-        : 'DHCP server assigns IPs to PC1 and PC2 while PC3 remains manually configured.',
-      level: 'intermediate',
-      data: dhcpExampleData
-    },
-    {
-      id: 'trunk-2switch',
-      tag: isTr ? 'TRUNK' : 'TRUNK',
-      title: isTr ? '2 Switch Trunk Uygulaması' : '2 Switch Trunk Application',
-      description: isTr
-        ? 'İki switch trunk bağlantısı ile VLAN trafiğini taşır.'
-        : 'Two switches carry VLAN traffic via trunk connection.',
-      detail: isTr
-        ? 'SW-1/2: Fa0/1 VLAN100, Fa0/11 VLAN200, Gi0/1 trunk'
-        : 'SW-1/2: Fa0/1 VLAN100, Fa0/11 VLAN200, Gi0/1 trunk',
-      level: 'intermediate',
-      data: trunk2SwitchData
     },
     {
       id: 'native-vlan-basic',

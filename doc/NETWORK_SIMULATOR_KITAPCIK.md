@@ -8,7 +8,7 @@
 3. [CLI Komut Referansı](#cli-komut-referansi)
 4. [30 Derste CLI Eğitimi](#30-derste-cli-egitimi)
 5. [Rehberli Uygulama Adımları (148 Adım)](#rehberli-uygulama-adimlari)
-6. [40 Örnek Proje ve Adım Adım Yapılışları](#40-ornek-proje-ve-adim-adim-yapilislari)
+6. [49 Örnek Proje ve Adım Adım Yapılışları](#49-ornek-proje-ve-adim-adim-yapilislari)
 
 <div style="page-break-after: always;"></div>
 
@@ -17,7 +17,7 @@
 ![Version](https://img.shields.io/badge/version-1.9.8-blue)
 ![Stack](https://img.shields.io/badge/stack-Next.js%2016.2%20|%20React%2019%20|%20TypeScript%206.0%20|%20Tailwind%204-green)
 ![FOSS](https://img.shields.io/badge/FOSS-Free%20Open%20Source-brightgreen)
-![Total Lines](https://img.shields.io/badge/total--lines-100,327-lightgrey)
+![Total Lines](https://img.shields.io/badge/total--lines-111,140-lightgrey)
 
 A browser-based network simulator for learning switching, routing, wireless, IoT, CLI, and exam workflows.
 
@@ -153,13 +153,13 @@ npm install && npm run dev
 
 | Metric / Metrik | Value / Değer |
 | --- | ---: |
-| Total Lines / Toplam Satır | 100,327 |
-| Source Files / Kaynak Dosya | 220 |
-| Documentation Files / Dokümantasyon Dosya | 16 |
-| Example Projects / Örnek Proje | 40 |
-| Guided Lessons / Rehberli Ders | 19 |
+| Total Lines / Toplam Satır | 111,140 |
+| Source Files / Kaynak Dosya | 321 |
+| Documentation Files / Dokümantasyon Dosya | 23 |
+| Example Projects / Örnek Proje | 49 |
+| Guided Lessons / Rehberli Ders | 18 |
 | Exams / Sınav | 7 |
-| CLI Commands / CLI Komutları | 450+ |
+| CLI Commands / CLI Komutları | 386+ |
 
 ## Documentation / Dokümantasyon
 
@@ -938,7 +938,7 @@ Bu rehber, Network Simulator'daki tüm CLI komutlarını pratik örneklerle öğ
 10. [İleri Konular](#ileri-konular)
 
 ### Ek Bölümler
-- [Örnek Projeler (40 Proje)](#örnek-projeler)
+- [Örnek Projeler (49 Proje)](#örnek-projeler)
 - [Pratik Senaryolar](#pratik-senaryolar)
 - [Hızlı Referans Tablosu](#hızlı-referans-tablosu)
 - [Sorun Giderme İpuçları](#sorun-giderme-ipuçları)
@@ -953,7 +953,7 @@ Bu ders serisi, Network Simulator'da CLI komutlarını öğrenmek için tasarlan
 - **4 Zorluk Seviyesi:** ⭐ Başlangıç → ⭐⭐⭐⭐ Çok İleri
 - **5 Cihaz Türü:** Switch, Router, WLC, AP, IoT
 - **150+ Komut Örneği:** Gerçek dünya senaryoları
-- **40 Örnek Proje:** Farklı senaryolar için hazır ağ topolojileri
+- **49 Örnek Proje:** Farklı senaryolar için hazır ağ topolojileri
 - **Adım Adım Talimatlar:** Her ders için detaylı açıklamalar
 - **Beklenen Sonuçlar:** Her adımdan sonra ne olması gerektiği
 
@@ -2694,7 +2694,7 @@ ICMP echo reply received from 192.168.1.2
 
 ## 📁 Örnek Projeler
 
-Network Simulator, farklı zorluk seviyelerinde **40 hazır örnek proje** ile birlikte gelir. Her proje önceden yapılandırılmış cihazlar ve bağlantılarla birlikte yüklenir.
+Network Simulator, farklı zorluk seviyelerinde **49 hazır örnek proje** ile birlikte gelir. Her proje önceden yapılandırılmış cihazlar ve bağlantılarla birlikte yüklenir.
 
 | # | Proje | Etiket | Seviye | Açıklama |
 |---|-------|--------|--------|----------|
@@ -4672,7 +4672,7 @@ Network Simulator, farklı zorluk seviyelerinde **40 hazır örnek proje** ile b
 \n\n<div style="page-break-after: always;"></div>\n\n
 # Network Simulator 2026 - Example Projects
 
-This document provides detailed descriptions of all 40 example projects available in the Network Simulator 2026.
+This document provides detailed descriptions of all 49 example projects available in the Network Simulator 2026.
 
 ## Table of Contents
 
@@ -6224,8 +6224,8 @@ IPv6 adresleme, DHCPv6 havuzları ve OSPFv3 dinamik yönlendirme.
 | Basic | 9 |
 | Intermediate | 13 |
 | Advanced | 18 |
-| **Total Examples** | **40** |
-| **Total Code Lines** | **15,650** |
+| **Total Examples** | **49** |
+| **Total Code Lines** | **111,140** |
 
 ## Getting Started
 

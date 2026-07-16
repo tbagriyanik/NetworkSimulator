@@ -3,7 +3,7 @@
 ![Version](https://img.shields.io/badge/version-1.9.8-blue)
 ![Stack](https://img.shields.io/badge/stack-Next.js%2016.2%20|%20React%2019%20|%20TypeScript%206.0%20|%20Tailwind%204-green)
 ![FOSS](https://img.shields.io/badge/FOSS-Free%20Open%20Source-brightgreen)
-![Total Lines](https://img.shields.io/badge/total--lines-108,570-lightgrey)
+![Total Lines](https://img.shields.io/badge/total--lines-111,140-lightgrey)
 
 A browser-based network simulator for learning switching, routing, wireless, IoT, CLI, and exam workflows.
 
@@ -19,28 +19,22 @@ npm install && npm run dev
 
 ## Recent Updates / Son Güncellemeler
 
-- **Collapsible Info Panels / Daraltılabilir Bilgi Panelleri:** PC ve Router bilgi panelleri artık daraltılabilir ve durumları localStorage ile kalıcı hale getirildi. Ağ yenileme raporu paneli de aynı özelliği destekler.
-- **Mobile PNG Export / Mobil PNG Kaydetme:** Mobil cihazlarda sorunsuz çalışması için native 'Web Share API' (Paylaşım Ekranı) entegrasyonu ve bellek optimizasyonu sağlandı.
-- **Improved Connection UX / Geliştirilmiş Kablo Bağlantı Deneyimi:** Porttan porta tıklayarak kablo bağlama işlemi (`onPointerDown` kullanılarak) anında tepki verecek şekilde kararlı hale getirildi.
-- **Advanced Timeline / Gelişmiş İşlem Geçmişi:** İşlem adımlarına kaydırma (scroll) desteği ve daha detaylı bildirimler ("Switch1 ve PC1 arasına bağlantı eklendi") eklendi. Tüm geçmiş adımlarını `.txt` dosyası olarak indirebilme (dışa aktarma) özelliği getirildi. Geçmiş kayıtları sayfa yenilendiğinde (F5) kaybolmamak üzere yerel depolama (localStorage) ile kalıcı hale getirildi.
 - **Industry-Specific Scenarios / Sektörel Senaryolar:** Hastane, E-Ticaret, Okul Kampüsü ve SOHO gibi gerçek dünya kullanım senaryoları eklendi.
-- **Voice Narration (TTS) / Sesli Anlatım:** Rehberli derslerdeki talimatlar için yerleşik metin okuma desteği (TTS) entegre edildi.
-- **PDF Success Certificates / PDF Başarı Sertifikaları:** Laboratuvarları tamamlayan öğrenciler için otomatik sertifika üretme ve indirme özelliği getirildi.
 - **Advanced IPv6 Master Lab / Gelişmiş IPv6 Laboratuvarı:** Dual-stack, OSPFv3 ve IPv6 ACL konularını içeren kapsamlı yeni eğitim modülü eklendi.
 - **"Bana Öğret" Rehberli Dersleri / Teach Me Guided Lessons:** Sıfırdan öğretim için 3 yeni seviye (Temel, Orta, İleri) eklendi; ipconfig, enable, configure terminal, hostname, router IP yapılandırma, OSPF ve ACL adım adım öğretiliyor.
 - **PC Tabanlı Arıza Giderme / PC-based Troubleshooting:** Arıza tanımları artık PC özelliklerini (IP, gateway, DNS) doğrulayabiliyor; otomatik komut yazdırma (`pc-auto-type`) desteği eklendi.
-
+ 
 ## Stats / İstatistikler
 
 | Metric / Metrik | Value / Değer |
 | --- | ---: |
-| Total Lines / Toplam Satır (src/) | 108,570 |
-| Source Files / Kaynak Dosya | 315+ |
-| Documentation Files / Dokümantasyon Dosya | 16+ |
-| Example Projects / Örnek Proje | 49 |
+| Total Lines / Toplam Satır (src/) | 111,140 |
+| Source Files / Kaynak Dosya | 321 |
+| Documentation Files / Dokümantasyon Dosya | 23 |
+| Example Projects / Örnek Proje | 43 |
 | Guided Lessons / Rehberli Ders | 19 |
 | Exams / Sınavlar | 6 |
-| CLI Commands / CLI Komutları | 450+ |
+| CLI Commands / CLI Komutları | 386+ |
 
 ## Documentation / Dokümantasyon
 
@@ -52,8 +46,45 @@ npm install && npm run dev
 | [history.md](doc/history.md) | Full changelog newest-to-oldest / Yeniden eskiye tam değişiklik geçmişi |
 | [DOCUMENTATION_INDEX.md](doc/DOCUMENTATION_INDEX.md) | Documentation index & reading map / Diğer tüm belgeler için indeks |
 | [ProjeOzellikleri.md](doc/ProjeOzellikleri.md) | Full features inventory (TR/EN) / Tüm özellikler envanteri (TR/EN) |
+| [AGENTS.md](AGENTS.md) | Dev agent conventions, version bump & rollback / Agent kuralları, versiyon & rollback |
 
 ## Architecture / Mimari
+
+### C4 Architecture Diagrams
+
+**1. System Context Diagram**
+```mermaid
+C4Context
+    title System Context Diagram for Network Simulator 2026
+    
+    Person(user, "User", "Student, Instructor, or Network Enthusiast")
+    System(netsim, "Network Simulator 2026", "Browser-based interactive network simulator for learning switching, routing, wireless, and IoT.")
+    
+    Rel(user, netsim, "Uses", "Web Browser")
+```
+
+**2. Container Diagram**
+```mermaid
+C4Container
+    title Container Diagram for Network Simulator 2026
+
+    Person(user, "User", "Student, Instructor, or Network Enthusiast")
+
+    System_Boundary(netsim_system, "Network Simulator 2026") {
+        Container(web_app, "Web Application", "Next.js, React, Tailwind CSS", "Delivers the SPA, renders the interactive topology canvas, CLI panels, and UI modals.")
+        Container(sim_engine, "Simulation Engine", "TypeScript", "Core logic handling OSI layers, CLI parsing, packet forwarding, STP, ARP, and dynamic routing.")
+        Container(state_store, "State Management", "Zustand", "Centralized store holding global application state and topology configurations.")
+        ContainerDb(local_storage, "Local Storage", "Browser LocalStorage & IndexedDB", "Persists saved topologies, custom settings, and achievement records locally.")
+    }
+
+    Rel(user, web_app, "Interacts with", "Web Browser")
+    Rel(web_app, state_store, "Reads/Updates state", "Zustand hooks")
+    Rel(web_app, sim_engine, "Triggers network events", "Function calls")
+    Rel(sim_engine, state_store, "Calculates & mutates state", "Direct modifications")
+    Rel(state_store, local_storage, "Persists state", "Browser APIs")
+```
+
+### Directory Structure
 
 ```
 src/
@@ -78,7 +109,7 @@ src/
 │   ├── performance/     # Performance optimization (spatial partitioning)
 │   └── storage/         # Storage utilities (window position management)
 ├── utils/               # Utilities (achievement records tracking)
-└── tests/               # Test files
+└── tests/               # Unit & integration tests (Vitest, 552 tests)
 ```
 
 ## Tech Stack / Teknoloji

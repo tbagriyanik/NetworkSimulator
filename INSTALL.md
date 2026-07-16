@@ -5,25 +5,25 @@
 ### 1. Bağımlılıkları Yükle
 
 ```bash
-npm install
+pnpm install
 ```
 
 veya
 
 ```bash
-bun install
+npm install
 ```
 
 ### 2. Geliştirme Sunucusunu Başlat
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 veya
 
 ```bash
-bun run dev
+npm run dev
 ```
 
 Tarayıcıda açın: [http://localhost:3000](http://localhost:3000)
@@ -66,23 +66,23 @@ Tarayıcıda açın: [http://localhost:3000](http://localhost:3000)
 
 ### TypeScript
 ```bash
-npm run type-check
+pnpm tsc --noEmit
 ```
 
 ### Linting
 ```bash
-npm run lint
+pnpm lint
 ```
 
 ### Build
 ```bash
-npm run build
+pnpm build
 ```
 
 ### Test
 ```bash
-npm run test
-npm run test:watch
+pnpm test
+pnpm vitest        # watch mode
 ```
 
 ## 🐛 Sorun Giderme
@@ -123,17 +123,17 @@ npm run dev -- -p 3001
 
 ```
 src/
-├── app/              # Next.js app directory
-├── components/       # React components
-│   └── network/      # Network simulator components
-├── contexts/         # React contexts
-├── hooks/            # Custom hooks
-├── lib/              # Utility functions
-│   └── network/      # Network logic
-└── styles/           # Global styles
+├── app/              # Next.js App Router (pages, API, layout)
+├── components/       # React components (ui/, network/)
+├── contexts/         # React contexts (theme, mode, language)
+├── hooks/            # Custom React hooks
+├── lib/              # Core logic (network/, security/, store/, etc.)
+├── utils/            # Utilities (achievements, etc.)
+└── tests/            # Unit & integration tests (Vitest, 552+ tests)
 
-public/              # Static files
-doc/                 # Project documentation
+public/              # Static files (icons, device images)
+doc/                 # Project documentation (23 files)
+examples/            # Feature demo docs
 ```
 
 ## 🎯 Özellikler

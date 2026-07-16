@@ -255,14 +255,14 @@ const response = await apiClient.post('/api/contact', data);
 
 | Metrik | Değer |
 |--------|-------|
-| **Dokümantasyon Sayfaları** | 17 |
+| **Dokümantasyon Sayfaları** | 23 |
 | **Toplam Okuma Süresi** | ~350 dakika |
-| **Toplam Kaynak Satırı** | 103.245 |
-| **Test Sayısı** | 517 (45 dosya) |
+| **Toplam Kaynak Satırı** | 111.140 |
+| **Test Sayısı** | 552 (52 dosya) |
 
 ---
 
-## ✨ Tamamlanan Özellikler (v1.9.5)
+## ✨ Tamamlanan Özellikler (v1.9.8)
 
 **Sektörel & Eğitim**
 ✅ Sektörel Senaryolar (SOHO, Hastane, Okul, E-Ticaret)  
@@ -361,9 +361,9 @@ const response = await apiClient.post('/api/contact', data);
 
 ## 📅 Bilgi
 
-**Versiyon**: 1.9.6
+**Versiyon**: 1.9.8
 **Durum**: ✅ Güncel  
-**Son Güncelleme**: 2026-07-07  
+**Son Güncelleme**: 2026-07-16  
 
 ---
 
