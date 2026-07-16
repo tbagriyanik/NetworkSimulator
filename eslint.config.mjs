@@ -68,7 +68,7 @@ const eslintConfig = [...nextCoreWebVitals, ...nextTypescript, {
     "no-console": "off",
   },
 }, {
-  ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts", "examples/**", "skills", "playwright_verify.ts"]
+  ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "coverage/**", "next-env.d.ts", "examples/**", "skills", "playwright_verify.ts"]
 }];
 
 export default eslintConfig;
