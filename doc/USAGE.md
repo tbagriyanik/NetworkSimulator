@@ -1,4 +1,4 @@
-# Network Simulator 2026 - Usage Guide / Kullanım Kılavuzu
+# Network Simulator - Usage Guide / Kullanım Kılavuzu
 
 ---
 

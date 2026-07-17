@@ -1,6 +1,6 @@
-# Network Simulator 2026 - Example Projects
+# Network Simulator - Example Projects
 
-This document provides detailed descriptions of all 49 example projects available in the Network Simulator 2026.
+This document provides detailed descriptions of all example projects available in the Network Simulator.
 
 ## Table of Contents
 
@@ -1609,7 +1609,7 @@ IPv6 adresleme, DHCPv6 havuzları ve OSPFv3 dinamik yönlendirme.
 ## Getting Started
 
 To use these examples:
-1. Open the Network Simulator 2026.
+1. Open the Network Simulator.
 2. Click on "Example Projects" in the sidebar.
 3. Select an example from the list.
 4. The example will load with pre-configured devices and connections.

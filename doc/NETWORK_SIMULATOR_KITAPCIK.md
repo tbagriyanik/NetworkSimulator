@@ -1,4 +1,4 @@
-# 🌐 Network Simulator 2026 - Kapsamlı Kullanım Kılavuzu ve Eğitim Kitapçığı
+# 🌐 Network Simulator - Kapsamlı Kullanım Kılavuzu ve Eğitim Kitapçığı
 
 ![Simulator Logo](https://network2026.vercel.app/og-image.png)
 
@@ -12,7 +12,7 @@
 
 <div style="page-break-after: always;"></div>
 
-# Network Simulator 2026
+# Network Simulator
 
 ![Version](https://img.shields.io/badge/version-1.9.8-blue)
 ![Stack](https://img.shields.io/badge/stack-Next.js%2016.2%20|%20React%2019%20|%20TypeScript%206.0%20|%20Tailwind%204-green)
@@ -156,9 +156,9 @@ npm install && npm run dev
 | Total Lines / Toplam Satır | 111,140 |
 | Source Files / Kaynak Dosya | 321 |
 | Documentation Files / Dokümantasyon Dosya | 23 |
-| Example Projects / Örnek Proje | 49 |
-| Guided Lessons / Rehberli Ders | 18 |
-| Exams / Sınav | 7 |
+| Example Projects / Örnek Proje | 43 |
+| Guided Lessons / Rehberli Ders | 19 |
+| Exams / Sınav | 6 |
 | CLI Commands / CLI Komutları | 386+ |
 
 ## Documentation / Dokümantasyon
@@ -219,7 +219,7 @@ Free and open source. See [LICENSE](LICENSE).
 
 Özgür ve açık kaynak. [LICENSE](LICENSE) dosyasına bakın.
 \n\n<div style="page-break-after: always;"></div>\n\n
-# Network Simulator 2026 - Usage Guide / Kullanım Kılavuzu
+# Network Simulator - Usage Guide / Kullanım Kılavuzu
 
 ---
 
@@ -2694,7 +2694,7 @@ ICMP echo reply received from 192.168.1.2
 
 ## 📁 Örnek Projeler
 
-Network Simulator, farklı zorluk seviyelerinde **49 hazır örnek proje** ile birlikte gelir. Her proje önceden yapılandırılmış cihazlar ve bağlantılarla birlikte yüklenir.
+Network Simulator, farklı zorluk seviyelerinde **43 hazır örnek proje** ile birlikte gelir. Her proje önceden yapılandırılmış cihazlar ve bağlantılarla birlikte yüklenir.
 
 | # | Proje | Etiket | Seviye | Açıklama |
 |---|-------|--------|--------|----------|
@@ -4670,9 +4670,9 @@ Network Simulator, farklı zorluk seviyelerinde **49 hazır örnek proje** ile b
 ---
 
 \n\n<div style="page-break-after: always;"></div>\n\n
-# Network Simulator 2026 - Example Projects
+# Network Simulator - Example Projects
 
-This document provides detailed descriptions of all 49 example projects available in the Network Simulator 2026.
+This document provides detailed descriptions of all example projects available in the Network Simulator.
 
 ## Table of Contents
 
@@ -6230,7 +6230,7 @@ IPv6 adresleme, DHCPv6 havuzları ve OSPFv3 dinamik yönlendirme.
 ## Getting Started
 
 To use these examples:
-1. Open the Network Simulator 2026.
+1. Open the Network Simulator.
 2. Click on "Example Projects" in the sidebar.
 3. Select an example from the list.
 4. The example will load with pre-configured devices and connections.

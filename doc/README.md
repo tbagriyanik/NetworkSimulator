@@ -1,6 +1,6 @@
 # 📚 Dokümantasyon
 
-Bu klasör, Network Simulator 2026 projesi için tüm dokümantasyon dosyalarını içerir.
+Bu klasör, Network Simulator projesi için tüm dokümantasyon dosyalarını içerir.
 
 ## 📖 Dosyalar
 

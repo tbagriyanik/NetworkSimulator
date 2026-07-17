@@ -1,4 +1,4 @@
-# Ağ Topolojisi Görsel Örnekleri - Network Simulator 2026
+# Ağ Topolojisi Görsel Örnekleri - Network Simulator
 
 ## 1. Temel Topoloji: Tek Switch ile VLAN Yapıllandırması
 
@@ -507,4 +507,4 @@ graph TB
 
 ---
 
-*Bu dosya Network Simulator 2026 uygulaması tarafından desteklenen tüm cihaz türlerini ve ağ yapılandırma senaryolarını görsel olarak göstermektedir.*
+*Bu dosya Network Simulator uygulaması tarafından desteklenen tüm cihaz türlerini ve ağ yapılandırma senaryolarını görsel olarak göstermektedir.*

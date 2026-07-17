@@ -1,4 +1,4 @@
-# Network Simulator 2026
+# Network Simulator
 
 ![Version](https://img.shields.io/badge/version-1.9.8-blue)
 ![Stack](https://img.shields.io/badge/stack-Next.js%2016.2%20|%20React%2019%20|%20TypeScript%206.0%20|%20Tailwind%204-green)
@@ -114,10 +114,10 @@ Simülatör kontrollerine hızlıca göz atmak için aşağıdaki listeyi geniş
 **1. System Context Diagram**
 ```mermaid
 C4Context
-    title System Context Diagram for Network Simulator 2026
+    title System Context Diagram for Network Simulator
     
     Person(user, "User", "Student, Instructor, or Network Enthusiast")
-    System(netsim, "Network Simulator 2026", "Browser-based interactive network simulator for learning switching, routing, wireless, and IoT.")
+    System(netsim, "Network Simulator", "Browser-based interactive network simulator for learning switching, routing, wireless, and IoT.")
     
     Rel(user, netsim, "Uses", "Web Browser")
 ```
@@ -125,11 +125,11 @@ C4Context
 **2. Container Diagram**
 ```mermaid
 C4Container
-    title Container Diagram for Network Simulator 2026
+    title Container Diagram for Network Simulator 
 
     Person(user, "User", "Student, Instructor, or Network Enthusiast")
 
-    System_Boundary(netsim_system, "Network Simulator 2026") {
+    System_Boundary(netsim_system, "Network Simulator") {
         Container(web_app, "Web Application", "Next.js, React, Tailwind CSS", "Delivers the SPA, renders the interactive topology canvas, CLI panels, and UI modals.")
         Container(sim_engine, "Simulation Engine", "TypeScript", "Core logic handling OSI layers, CLI parsing, packet forwarding, STP, ARP, and dynamic routing.")
         Container(state_store, "State Management", "Zustand", "Centralized store holding global application state and topology configurations.")

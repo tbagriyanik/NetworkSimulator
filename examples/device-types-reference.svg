@@ -17,8 +17,8 @@
   <rect width="800" height="500" fill="url(#bg)" rx="16"/>
 
   <!-- Title -->
-  <text x="400" y="45" text-anchor="middle" fill="#00d4ff" font-size="24" font-weight="bold" font-family="Segoe UI, sans-serif">Network Simulator 2026 - Desteklenen Cihazlar</text>
-  <text x="400" y="70" text-anchor="middle" fill="#7c3aed" font-size="14" font-family="Segoe UI, sans-serif">7 Cihaz Türü • 450+ CLI Komutu • 49 Örnek Proje</text>
+  <text x="400" y="45" text-anchor="middle" fill="#00d4ff" font-size="24" font-weight="bold" font-family="Segoe UI, sans-serif">Network Simulator - Desteklenen Cihazlar</text>
+  <text x="400" y="70" text-anchor="middle" fill="#7c3aed" font-size="14" font-family="Segoe UI, sans-serif">7 Cihaz Türü • 450+ CLI Komutu • Örnek Projeler</text>
 
   <!-- PC -->
   <g transform="translate(80, 120)">
@@ -137,5 +137,5 @@
   </g>
 
   <!-- Footer -->
-  <text x="400" y="485" text-anchor="middle" fill="#64748b" font-size="11" font-family="Segoe UI, sans-serif">Network Simulator 2026 • Next.js 16 • React 19 • TypeScript • Tailwind CSS</text>
+  <text x="400" y="485" text-anchor="middle" fill="#64748b" font-size="11" font-family="Segoe UI, sans-serif">Network Simulator • Next.js 16 • React 19 • TypeScript • Tailwind CSS</text>
 </svg>

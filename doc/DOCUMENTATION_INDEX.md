@@ -1,6 +1,6 @@
 # 📚 Dokümantasyon İndeksi
 
-Bu indeks, Network Simulator 2026 projesinin tüm dokümantasyon dosyalarını ve içeriklerini listeler.
+Bu indeks, Network Simulator projesinin tüm dokümantasyon dosyalarını ve içeriklerini listeler.
 
 ---
 
