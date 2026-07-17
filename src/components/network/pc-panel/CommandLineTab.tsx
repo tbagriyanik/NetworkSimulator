@@ -83,6 +83,8 @@ export function CommandLineTab({
       {/* Output Area - Scrollable */}
       <div
         ref={outputRef}
+        role="log"
+        aria-live="polite"
         onClick={handleContainerClick}
         className={cn(
           "flex-1 overflow-y-auto overflow-x-hidden scroll-smooth p-3 md:p-6 space-y-1.5 font-geist-mono leading-relaxed custom-scrollbar min-h-0",
@@ -145,6 +147,7 @@ export function CommandLineTab({
                 onKeyDown={handleKeyDown}
                 className="flex-1 bg-transparent border-none outline-none font-geist-mono text-[16px] sm:text-[13px] placeholder:text-muted-foreground/50 min-w-0"
                 placeholder={t.typeCommand}
+                aria-label={t.typeCommand}
                 autoComplete="off"
                 spellCheck={false}
                 disabled={isCmdInputDisabled}

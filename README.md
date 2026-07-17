@@ -41,17 +41,17 @@ npm install && npm run dev
 | Document / Doküman | Description / Açıklama |
 | --- | --- |
 | [INSTALL.md](INSTALL.md) | Installation & build instructions / Kurulum & derleme talimatları |
-| [USAGE.md](doc/USAGE.md) | Usage guide & keyboard shortcuts (TR/EN) / Kullanım kılavuzu & klavye kısayolları |
-| [NETWORK_SIMULATOR_KITAPCIK.md](doc/NETWORK_SIMULATOR_KITAPCIK.md) | Comprehensive Turkish training booklet / Kapsamlı Türkçe eğitim kitapçığı |
+| [USAGE.md](doc/getting-started/USAGE.md) | Usage guide & keyboard shortcuts (TR/EN) / Kullanım kılavuzu & klavye kısayolları |
+| [NETWORK_SIMULATOR_KITAPCIK.md](doc/training/NETWORK_SIMULATOR_KITAPCIK.md) | Comprehensive Turkish training booklet / Kapsamlı Türkçe eğitim kitapçığı |
 | [history.md](doc/history.md) | Full changelog newest-to-oldest / Yeniden eskiye tam değişiklik geçmişi |
 | [DOCUMENTATION_INDEX.md](doc/DOCUMENTATION_INDEX.md) | Documentation index & reading map / Diğer tüm belgeler için indeks |
-| [ProjeOzellikleri.md](doc/ProjeOzellikleri.md) | Full features inventory (TR/EN) / Tüm özellikler envanteri (TR/EN) |
-| [AGENTS.md](AGENTS.md) | Dev agent conventions, version bump & rollback / Agent kuralları, version & rollback |
+| [ProjeOzellikleri.md](doc/training/ProjeOzellikleri.md) | Full features inventory (TR/EN) / Tüm özellikler envanteri (TR/EN) |
+| [CONTRIBUTING.md](doc/development/CONTRIBUTING.md) | Dev agent conventions, version bump & rollback + contribution guide |
 
 ## Keyboard Shortcuts / Klavye Kısayolları
 
-For a quick reference of simulator controls, expand the list below. For more details, see [USAGE.md](doc/USAGE.md).
-Simülatör kontrollerine hızlıca göz atmak için aşağıdaki listeyi genişletin. Daha fazla detay için [USAGE.md](doc/USAGE.md) dosyasına bakın.
+For a quick reference of simulator controls, expand the list below. For more details, see [USAGE.md](doc/getting-started/USAGE.md).
+Simülatör kontrollerine hızlıca göz atmak için aşağıdaki listeyi genişletin. Daha fazla detay için [USAGE.md](doc/getting-started/USAGE.md) dosyasına bakın.
 
 <details>
 <summary><b>⌨️ Click to expand Keyboard Shortcuts / Klavye Kısayollarını görmek için tıklayın</b></summary>

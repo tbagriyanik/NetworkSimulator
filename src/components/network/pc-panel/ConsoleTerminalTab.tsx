@@ -135,6 +135,8 @@ export function ConsoleTerminalTab({
       {/* Output Area - Scrollable */}
       <div
         ref={outputRef}
+        role="log"
+        aria-live="polite"
         onClick={handleContainerClick}
         className={cn(
           "flex-1 overflow-y-auto overflow-x-hidden scroll-smooth p-3 md:p-6 space-y-1.5 font-geist-mono leading-relaxed custom-scrollbar min-h-0",
@@ -241,6 +243,7 @@ export function ConsoleTerminalTab({
                       : (t.language === 'tr' ? 'Enter\'a basın veya yazın...' : 'Press Enter or type...'))
                     : t.typeCommand
                 }
+                aria-label={t.typeCommand}
                 autoComplete="off"
                 spellCheck={false}
                 disabled={isConsoleInputDisabled}

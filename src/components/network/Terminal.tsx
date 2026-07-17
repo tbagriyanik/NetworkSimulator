@@ -1382,6 +1382,9 @@ export function Terminal({
         <div className="flex-1 flex flex-col min-h-0 relative overflow-hidden">
           <div
             ref={terminalRef}
+            role="log"
+            aria-live="polite"
+            aria-label={t.typeCommand}
             className={cn(
               "flex-1 overflow-y-auto overflow-x-hidden font-geist-mono leading-relaxed custom-scrollbar min-h-0",
               isMobile ? "mobile-scroll p-3 pb-36" : "p-6 pb-32",

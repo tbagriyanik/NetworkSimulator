@@ -538,6 +538,7 @@ export function PingPacketInfoPanel({
             mobileFullScreen={false}
             headerActions={headerActions}
             collapsible={false}
+            disableResize={isMinimized}
         >
             {!isMinimized && (
                 <div className="flex-1 overflow-y-auto min-h-0 flex flex-col" onMouseDown={onFocus}>

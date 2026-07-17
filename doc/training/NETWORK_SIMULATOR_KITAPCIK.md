@@ -165,21 +165,21 @@ npm install && npm run dev
 
 | Document / Doküman | Description / Açıklama |
 | --- | --- |
-| [details.md](doc/details.md) | Projects details / Proje detayları |
-| [examples.md](doc/examples.md) | Example projects with step-by-step guides / Adım adım örnek projeler |
+| [details.md](doc/reference/details.md) | Projects details / Proje detayları |
+| [examples.md](doc/reference/examples.md) | Example projects with step-by-step guides / Adım adım örnek projeler |
 | [INSTALL.md](INSTALL.md) | Installation & build instructions / Kurulum & derleme talimatları |
-| [doc/USAGE.md](doc/USAGE.md) | Usage guide & keyboard shortcuts (TR/EN) / Kullanım kılavuzu & klavye kısayolları |
-| [doc/CLI_GUIDED_TUTORIAL.md](doc/CLI_GUIDED_TUTORIAL.md) | 30-lesson CLI guided tutorial (incl. ACL, NAT, OSPF, EIGRP) / 30 derslik CLI rehberli eğitim |
-| [doc/CLI_COMMANDS.md](doc/CLI_COMMANDS.md) | 450+ CLI commands reference / 450+ CLI komut referansı |
-| [doc/QUICK_REFERENCE.md](doc/QUICK_REFERENCE.md) | Quick reference & code snippets / Hızlı referans & kod parçacıkları |
-| [doc/WIRELESS_CONFIGURATION_GUIDE.md](doc/WIRELESS_CONFIGURATION_GUIDE.md) | Wireless network configuration / Kablosuz ağ yapılandırma |
-| [doc/L3_SWITCH_CONFIGURATION.md](doc/L3_SWITCH_CONFIGURATION.md) | Layer 3 switching guide / L3 anahtarlama rehberi |
-| [doc/GOOGLE_SHEETS_SETUP.md](doc/GOOGLE_SHEETS_SETUP.md) | Google Sheets integration / Google Sheets entegrasyonu |
-| [doc/ROOM_TRACKING_SETUP.md](doc/ROOM_TRACKING_SETUP.md) | Room tracking system setup / Oda takip sistemi kurulumu |
-| [doc/DOCUMENTATION_INDEX.md](doc/DOCUMENTATION_INDEX.md) | Documentation index & reading map / Dokümantasyon indeksi & okuma haritası |
-| [doc/SERVICE_FEATURES.md](doc/SERVICE_FEATURES.md) | PC service features (FTP, Mail, NTP, DNS, HTTP, DHCP) / PC servis özellikleri |
-| [doc/ERROR_HANDLING_GUIDE.md](doc/ERROR_HANDLING_GUIDE.md) | Error handling guide / Hata kontrol rehberi |
-| [doc/INTEGRATION_GUIDE.md](doc/INTEGRATION_GUIDE.md) | Integration guide / Entegrasyon rehberi |
+| [USAGE.md](doc/getting-started/USAGE.md) | Usage guide & keyboard shortcuts (TR/EN) / Kullanım kılavuzu & klavye kısayolları |
+| [CLI_GUIDED_TUTORIAL.md](doc/cli/CLI_GUIDED_TUTORIAL.md) | 30-lesson CLI guided tutorial / 30 derslik CLI rehberli eğitim |
+| [CLI_COMMANDS.md](doc/cli/CLI_COMMANDS.md) | 450+ CLI commands reference / 450+ CLI komut referansı |
+| [QUICK_REFERENCE.md](doc/getting-started/QUICK_REFERENCE.md) | Quick reference & code snippets / Hızlı referans & kod parçacıkları |
+| [WIRELESS_CONFIGURATION_GUIDE.md](doc/network/WIRELESS_CONFIGURATION_GUIDE.md) | Wireless network configuration / Kablosuz ağ yapılandırma |
+| [L3_SWITCH_CONFIGURATION.md](doc/network/L3_SWITCH_CONFIGURATION.md) | Layer 3 switching guide / L3 anahtarlama rehberi |
+| [GOOGLE_SHEETS_SETUP.md](doc/network/GOOGLE_SHEETS_SETUP.md) | Google Sheets integration / Google Sheets entegrasyonu |
+| [ROOM_TRACKING_SETUP.md](doc/network/ROOM_TRACKING_SETUP.md) | Room tracking system setup / Oda takip sistemi kurulumu |
+| [DOCUMENTATION_INDEX.md](doc/DOCUMENTATION_INDEX.md) | Documentation index & reading map / Dokümantasyon indeksi & okuma haritası |
+| [CONTRIBUTING.md](doc/development/CONTRIBUTING.md) | Dev conventions & agent rules / Geliştirici kuralları |
+| [ERROR_HANDLING_GUIDE.md](doc/development/ERROR_HANDLING_GUIDE.md) | Error handling guide / Hata kontrol rehberi |
+| [INTEGRATION_GUIDE.md](doc/development/INTEGRATION_GUIDE.md) | Integration guide / Entegrasyon rehberi |
 
 ## Architecture / Mimari
 

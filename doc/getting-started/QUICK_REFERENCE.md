@@ -300,7 +300,7 @@ if (error) {
 
 - **Detaylı Rehber**: `ERROR_HANDLING_GUIDE.md`
 - **Entegrasyon Rehberi**: `INTEGRATION_GUIDE.md`
-- **İyileştirmeler**: `SERVICE_FEATURES.md` (PC Servis Özellikleri)
+- **Detaylı Eğitim**: `training/NETWORK_SIMULATOR_KITAPCIK.md` (Kapsamlı Eğitim Kitapçığı)
 
 ---
 

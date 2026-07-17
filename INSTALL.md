@@ -211,7 +211,7 @@ Detaylı belgelendirme `doc/` klasöründe bulunur:
 - **WIRELESS_CONFIGURATION_GUIDE.md** - Kablosuz ağ yapılandırma rehberi
 - **GOOGLE_SHEETS_SETUP.md** - Google Sheets entegrasyonu kurulumu
 - **ROOM_TRACKING_SETUP.md** - Oda takip sistemi kurulumu
-- **SERVICE_FEATURES.md** - PC servis özellikleri (FTP, Mail, NTP, DNS, HTTP, DHCP)
+- **CONTRIBUTING.md** - Katkı rehberi ve agent konvansiyonları
 - **ERROR_HANDLING_GUIDE.md** - Hata kontrol rehberi
 - **INTEGRATION_GUIDE.md** - Entegrasyon rehberi
 - **DOCUMENTATION_INDEX.md** - Dokümantasyon haritası

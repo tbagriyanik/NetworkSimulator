@@ -254,7 +254,7 @@ export function AppHeader({
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button aria-label={t.contactTitle} className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50", isDark ? 'text-secondary-300 hover:text-primary-400 hover:bg-secondary-700/50' : 'text-secondary-500 hover:text-primary-600')} onClick={() => setShowAboutModal(true)}>
+                      <button aria-label={t.contactTitle} className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50", isDark ? 'text-secondary-300 hover:text-primary-400 hover:bg-secondary-700/50' : 'text-secondary-500 hover:text-primary-600')} onClick={(e) => { e.stopPropagation(); setShowAboutModal(true); }}>
                         <Info className="w-4 h-4" />
                       </button>
                     </TooltipTrigger>
@@ -560,7 +560,7 @@ export function AppHeader({
                       <Button
                         variant="outline"
                         className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-accent-400' : 'hover:text-accent-600'}`}
-                        onClick={() => { setShowAboutModal(true); setShowMobileMenu(false); }}
+                        onClick={(e) => { e.stopPropagation(); setShowAboutModal(true); setShowMobileMenu(false); }}
                       >
                         <Info className="w-3.5 h-3.5 flex-shrink-0" />
                         <span>{t.help}</span>

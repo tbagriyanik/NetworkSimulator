@@ -3,6 +3,7 @@ import { X, ChevronUp, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useWindowStore } from '@/hooks/useWindowStore';
 import { DragPosition as ModalPosition, DragSize as ModalSize } from '@/hooks/useDrag';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface DraggableWindowWrapperProps {
   id: string;
@@ -23,6 +24,7 @@ interface DraggableWindowWrapperProps {
   mobileFullScreen?: boolean;
   headerActions?: React.ReactNode;
   collapsible?: boolean;
+  disableResize?: boolean;
 }
 
 export function DraggableWindowWrapper({
@@ -44,12 +46,14 @@ export function DraggableWindowWrapper({
   mobileFullScreen = true,
   headerActions,
   collapsible = true,
+  disableResize = false,
 }: DraggableWindowWrapperProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Local z-index state initialized from store
   const [zIndex, setZIndex] = useState(100);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { t, language } = useLanguage();
   
   const activeWindowId = useWindowStore(state => state.activeWindowId);
   const setActiveWindow = useWindowStore(state => state.setActiveWindow);
@@ -182,8 +186,9 @@ export function DraggableWindowWrapper({
                 ? "text-secondary-400 hover:text-white hover:bg-secondary-700" 
                 : "text-secondary-500 hover:text-secondary-900 hover:bg-secondary-200"
             )}
-            aria-label={isCollapsed ? "Genişlet" : "Küçült"}
-            title={isCollapsed ? "Genişlet" : "Küçült"}
+            aria-expanded={!isCollapsed}
+            aria-label={isCollapsed ? t.expand : (language === 'tr' ? 'Küçült' : 'Collapse')}
+            title={isCollapsed ? t.expand : (language === 'tr' ? 'Küçült' : 'Collapse')}
             onPointerDown={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
           >
@@ -203,8 +208,8 @@ export function DraggableWindowWrapper({
                 ? "text-secondary-400 hover:text-white hover:bg-error-500/80" 
                 : "text-secondary-500 hover:text-white hover:bg-error-500"
             )}
-            aria-label="Kapat"
-            title="Kapat"
+            aria-label={t.close}
+            title={t.close}
             onPointerDown={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
           >
@@ -221,7 +226,7 @@ export function DraggableWindowWrapper({
       )}
 
       {/* Resize Handles (Desktop and Mobile non-fullscreen) */}
-      {(!isMobile || !isMobileFullScreen) && !isCollapsed && (
+      {(!isMobile || !isMobileFullScreen) && !isCollapsed && !disableResize && (
         <>
           {/* Corners */}
           <div className="absolute right-1 bottom-1 w-4 h-4 cursor-se-resize z-50 flex items-end justify-end select-none" onPointerDown={(e) => handleResizeStart?.(e, 'se', id)}>

@@ -317,6 +317,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     targetDevice: 'switchL2',
   });
   const [lastTaskEvent, setLastTaskEvent] = useState<{ type: 'completed' | 'failed'; taskName: string; timestamp: number } | null>(null);
+  const [isPingPanelOpen, setIsPingPanelOpen] = useState(false);
   const [isExamLoadedFromFile, setIsExamLoadedFromFile] = useState(false);
   const [isTimelineMinimized, setIsTimelineMinimized] = useState(false);
   const toggleTimelineMinimize = useCallback(() => setIsTimelineMinimized(prev => !prev), []);
@@ -350,6 +351,14 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     setRefreshNetworkReport(null);
     setProjectSearchQuery('');
     setLoadedExampleId('');
+    
+    // Additional resets to prevent old project remnants
+    setLastCommand('');
+    setLastOutput('');
+    setIsPingPanelOpen(false);
+    setCableInfo({ connected: false, cableType: 'straight', sourceDevice: 'pc', targetDevice: 'switchL2' });
+    setFocusedOverlay('packet');
+    setLastTaskEvent(null);
   }, [
     setActiveDeviceId,
     setActiveDeviceType,
@@ -376,6 +385,12 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     setRefreshNetworkReport,
     setProjectSearchQuery,
     setLoadedExampleId,
+    setLastCommand,
+    setLastOutput,
+    setIsPingPanelOpen,
+    setCableInfo,
+    setFocusedOverlay,
+    setLastTaskEvent
   ]);
 
   // Track project name from guided/exam mode
@@ -575,8 +590,6 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     pendingFocusDeviceRef,
     graphicsQuality,
   });
-
-  const [isPingPanelOpen, setIsPingPanelOpen] = useState(false);
 
   const {
     isTroubleshootingMinimized,

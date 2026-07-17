@@ -3797,6 +3797,22 @@ export function NetworkTopology({
     isPingPanelVisible
   });
 
+  const _liveRegionText = useMemo(() => {
+    const selectedCount = selectedDeviceIds.length;
+    const totalCount = devices.length;
+    const deviceLabel = totalCount === 1
+      ? (language === 'tr' ? 'cihaz' : 'device')
+      : (language === 'tr' ? 'cihaz' : 'devices');
+    let text = `${totalCount} ${deviceLabel}`;
+    if (selectedCount > 0) {
+      const selLabel = selectedCount === 1
+        ? (language === 'tr' ? 'seçili' : 'selected')
+        : (language === 'tr' ? 'seçili' : 'selected');
+      text += `, ${selectedCount} ${selLabel}`;
+    }
+    return text;
+  }, [devices.length, selectedDeviceIds.length, language]);
+
   return (
     <div
       onContextMenu={(e) => e.preventDefault()}
@@ -3939,6 +3955,7 @@ export function NetworkTopology({
           )}
 
           {/* Canvas */}
+          <div aria-live="polite" aria-atomic="true" className="sr-only">{_liveRegionText}</div>
           <div
             ref={canvasRef}
             className={`w-full h-full flex-1 min-h-[500px] overflow-hidden relative touch-none select-none print:overflow-visible print:h-auto print:min-h-full topology-print-area ${pingMode || isSelecting ? 'cursor-crosshair' : isPanning ? 'cursor-grabbing' : 'cursor-default'}`}

@@ -3,16 +3,20 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
+let collapsibleIdCounter = 0
+
 interface CollapsibleProps {
   children: React.ReactNode
   open?: boolean
   onOpenChange?: (open: boolean) => void
   defaultOpen?: boolean
+  id?: string
 }
 
 interface CollapsibleContextValue {
   open: boolean
   onOpenChange: (open: boolean) => void
+  contentId: string
 }
 
 const CollapsibleContext = React.createContext<CollapsibleContextValue | undefined>(undefined)
@@ -29,9 +33,11 @@ const Collapsible: React.FC<CollapsibleProps> = ({
   children, 
   open: controlledOpen, 
   onOpenChange,
-  defaultOpen = false 
+  defaultOpen = false,
+  id
 }) => {
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen)
+  const [contentId] = React.useState(() => id || `collapsible-content-${++collapsibleIdCounter}`)
   
   const isControlled = controlledOpen !== undefined
   const open = isControlled ? controlledOpen : uncontrolledOpen
@@ -44,7 +50,7 @@ const Collapsible: React.FC<CollapsibleProps> = ({
   }, [isControlled, onOpenChange])
 
   return (
-    <CollapsibleContext.Provider value={{ open, onOpenChange: handleOpenChange }}>
+    <CollapsibleContext.Provider value={{ open, onOpenChange: handleOpenChange, contentId }}>
       {children}
     </CollapsibleContext.Provider>
   )
@@ -56,18 +62,22 @@ interface CollapsibleTriggerProps {
 }
 
 const CollapsibleTrigger: React.FC<CollapsibleTriggerProps> = ({ children, asChild }) => {
-  const { open, onOpenChange } = useCollapsible()
+  const { open, onOpenChange, contentId } = useCollapsible()
   
   const handleClick = () => {
     onOpenChange(!open)
   }
 
   if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children as React.ReactElement<{ onClick?: () => void }>, { onClick: handleClick })
+    return React.cloneElement(children as React.ReactElement<{ onClick?: () => void; "aria-expanded"?: boolean; "aria-controls"?: string }>, {
+      onClick: handleClick,
+      "aria-expanded": open,
+      "aria-controls": contentId,
+    })
   }
 
   return (
-    <button type="button" onClick={handleClick}>
+    <button type="button" onClick={handleClick} aria-expanded={open} aria-controls={contentId}>
       {children}
     </button>
   )
@@ -79,10 +89,13 @@ interface CollapsibleContentProps {
 }
 
 const CollapsibleContent: React.FC<CollapsibleContentProps> = ({ children, className }) => {
-  const { open } = useCollapsible()
+  const { open, contentId } = useCollapsible()
   
   return (
-    <div 
+    <div
+      id={contentId}
+      role="region"
+      aria-live="polite"
       className={cn(
         "overflow-hidden transition-all duration-300",
         open ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0",

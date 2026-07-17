@@ -4,6 +4,46 @@
 
 Network Simulator'da wireless cihazlar (Access Point, Router) için WiFi ayarları gerçek komutları ile yapılabilir. Bu rehber, SSID yapılandırması, güvenlik ayarları, kanal seçimi, güç ayarları ve MAC filtreleme işlemlerini açıklar.
 
+## 🚀 Hızlı Başlangıç
+
+### Basit SSID Oluşturma
+
+```bash
+Router# configure terminal
+Router(config)# dot11 ssid MyWiFi
+Router(config-ssid)# authentication open
+Router(config-ssid)# guest-mode
+Router(config-ssid)# exit
+Router(config)# interface dot11radio 0
+Router(config-if)# ssid MyWiFi
+Router(config-if)# channel 6
+Router(config-if)# station-role root
+Router(config-if)# exit
+Router(config)# end
+```
+
+### WPA2 ile Güvenli WiFi
+
+```bash
+Router# configure terminal
+Router(config)# dot11 ssid SecureWiFi
+Router(config-ssid)# authentication open
+Router(config-ssid)# authentication key-management wpa version 2
+Router(config-ssid)# wpa-psk ascii MyPassword123!
+Router(config-ssid)# guest-mode
+Router(config-ssid)# exit
+Router(config)# interface dot11radio 0
+Router(config-if)# encryption mode ciphers aes-ccm
+Router(config-if)# ssid SecureWiFi
+Router(config-if)# channel 6
+Router(config-if)# power full
+Router(config-if)# station-role root
+Router(config-if)# exit
+Router(config)# end
+```
+
+---
+
 ## Desteklenen Wireless Komutları
 
 ### 1. SSID Yapılandırması

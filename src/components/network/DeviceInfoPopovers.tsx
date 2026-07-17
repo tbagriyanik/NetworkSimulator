@@ -106,6 +106,7 @@ export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zInde
             <button
               onClick={(e) => { e.stopPropagation(); setWindowCollapsed(!windowCollapsed); }}
               className={`w-5 h-5 rounded-md cursor-pointer transition-colors inline-flex items-center justify-center shrink-0 ${isDark ? 'hover:bg-secondary-700 text-secondary-400' : 'hover:bg-secondary-200 text-secondary-500'}`}
+              aria-expanded={!windowCollapsed}
               aria-label={windowCollapsed ? (language === 'tr' ? 'Genişlet' : 'Expand') : (language === 'tr' ? 'Küçült' : 'Collapse')}
               title={windowCollapsed ? (language === 'tr' ? 'Genişlet' : 'Expand') : (language === 'tr' ? 'Küçült' : 'Collapse')}
               onPointerDown={(e) => e.stopPropagation()}
@@ -355,6 +356,7 @@ export function RouterInfoPopover({ router, routerState, t, language, isDark, on
             <button
               onClick={(e) => { e.stopPropagation(); setWindowCollapsed(!windowCollapsed); }}
               className={`w-5 h-5 rounded-md cursor-pointer transition-colors inline-flex items-center justify-center shrink-0 ${isDark ? 'hover:bg-secondary-700 text-secondary-400' : 'hover:bg-secondary-200 text-secondary-500'}`}
+              aria-expanded={!windowCollapsed}
               aria-label={windowCollapsed ? (language === 'tr' ? 'Genişlet' : 'Expand') : (language === 'tr' ? 'Küçült' : 'Collapse')}
               title={windowCollapsed ? (language === 'tr' ? 'Genişlet' : 'Expand') : (language === 'tr' ? 'Küçült' : 'Collapse')}
               onPointerDown={(e) => e.stopPropagation()}
