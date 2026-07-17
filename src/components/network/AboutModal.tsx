@@ -14,9 +14,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { cn } from '@/lib/utils';
-import { Info, Terminal, Search, X, ChevronDown, Compass, Mail, Loader2, MessageSquare, Bug, Lightbulb, Check } from 'lucide-react';
+import { Info, Terminal, Search, X, ChevronDown, Compass, Mail, Loader2, MessageSquare, Bug, Lightbulb, Check, Play, Cpu } from 'lucide-react';
 import Image from 'next/image';
 import { getCommandCategories } from './networkTopology.commands';
+import { TutorialAnimationPlayer } from './TutorialAnimationPlayer';
 
 interface AboutModalProps {
   isOpen: boolean;
@@ -37,6 +38,9 @@ export function AboutModal({ isOpen, onClose, onStartTour }: AboutModalProps) {
   const isDark = theme === 'dark';
   const lang = (t as unknown as Record<string, string>).language || 'en';
   const isTR = lang === 'tr';
+
+  const [selectedAnimId, setSelectedAnimId] = useState<string>('broadcast-vis');
+  const [animationKey, setAnimationKey] = useState<number>(0);
 
   // Help content data - memoized to prevent infinite loops
   const helpCategories = useMemo(() => getCommandCategories(isTR), [isTR]);
@@ -172,6 +176,7 @@ export function AboutModal({ isOpen, onClose, onStartTour }: AboutModalProps) {
               <Terminal className="w-4 h-4" />
               {t.commandReference}
             </button>
+
             {isContactEnabled && (
               <button
                 onClick={() => setActiveTab('contact')}
@@ -528,6 +533,59 @@ export function AboutModal({ isOpen, onClose, onStartTour }: AboutModalProps) {
                     </div>
                   );
                 })}
+
+                {/* Educational Animations Section at the bottom of Help Tab */}
+                <div className={cn("mt-6 pt-6 border-t", isDark ? "border-secondary-800" : "border-secondary-200")}>
+                  <h4 className={cn("text-base font-bold mb-3 flex items-center gap-2", isDark ? "text-white" : "text-secondary-900")}>
+                    <Play className="w-5 h-5 text-success-500 fill-current" />
+                    {isTR ? 'Eğitim Animasyonları' : 'Educational Animations'}
+                  </h4>
+                  <p className="text-xs text-secondary-500 mb-4 leading-relaxed">
+                    {isTR 
+                      ? "Ağ protokollerinin ve veri iletim süreçlerinin animasyonlu canlandırmalarını izleyin."
+                      : "Watch animated step-by-step visualizations of network protocols and data transmission processes."}
+                  </p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Buttons on the left/top */}
+                    <div className="md:col-span-1 flex flex-col gap-1.5">
+                      {[
+                        { id: 'broadcast-vis', title: isTR ? 'Broadcast Görselleştirme' : 'Broadcast Visualization' },
+                        { id: 'arp-anim', title: isTR ? 'ARP Adres Çözümleme' : 'ARP Address Resolution' },
+                        { id: 'ping-anim', title: isTR ? 'ICMP Ping Süreci' : 'ICMP Ping Process' },
+                        { id: 'dhcp-flow', title: isTR ? 'DHCP (DORA) Akışı' : 'DHCP (DORA) Flow' }
+                      ].map((anim) => (
+                        <button
+                          key={`help-tab-${anim.id}`}
+                          onClick={() => {
+                            setSelectedAnimId(anim.id);
+                            setAnimationKey(prev => prev + 1);
+                          }}
+                          className={cn(
+                            "w-full text-left px-3 py-2 rounded-lg border transition-all text-xs font-semibold flex items-center gap-2",
+                            selectedAnimId === anim.id
+                              ? isDark
+                                ? "bg-success-500/10 border-success-500/40 text-success-300 shadow-md"
+                                : "bg-success-50 border-success-400 text-success-700 shadow-sm"
+                              : isDark
+                                ? "bg-secondary-900/40 border-secondary-800 text-secondary-400 hover:text-secondary-200 hover:bg-secondary-800/60"
+                                : "bg-white border-secondary-200 text-secondary-600 hover:text-secondary-800 hover:bg-secondary-50"
+                          )}
+                        >
+                          <Cpu className="w-3.5 h-3.5 shrink-0" />
+                          {anim.title}
+                        </button>
+                      ))}
+                    </div>
+                    
+                    {/* Player on the right/bottom */}
+                    <div className="md:col-span-2 flex flex-col gap-2">
+                      <div className="rounded-xl border border-secondary-200 dark:border-secondary-800 bg-secondary-950/20 p-1">
+                        <TutorialAnimationPlayer key={`help-tab-player-${animationKey}`} animationId={selectedAnimId} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
