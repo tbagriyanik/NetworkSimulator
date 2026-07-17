@@ -3029,8 +3029,19 @@ function isKeywordToken(token: string): boolean {
   return /^[a-z0-9-]+$/i.test(token);
 }
 
+// BOLT: Cache map to store built command trees to avoid rebuilding the trie on every key press
+const commandTreeCache = new Map<string, CommandTreeNode>();
+
 function ensureCommandTree(mode: CommandMode, capabilities?: DeviceCapabilities): CommandTreeNode {
-  // If we have specific capabilities, we don't cache since trees might differ per device
+  // BOLT: Construct a unique cache key based on the mode and capability flags
+  const routing = capabilities ? !!capabilities.routing : false;
+  const switching = capabilities ? !!capabilities.switching : false;
+  const firewall = capabilities ? !!capabilities.firewall : false;
+  const cacheKey = `${mode}:${routing}:${switching}:${firewall}`;
+
+  const cached = commandTreeCache.get(cacheKey);
+  if (cached) return cached;
+
   const root = createNode();
 
   for (const [patternName, pattern] of Object.entries(commandPatterns)) {
@@ -3051,6 +3062,7 @@ function ensureCommandTree(mode: CommandMode, capabilities?: DeviceCapabilities)
     current.terminalPatterns.push(patternName);
   }
 
+  commandTreeCache.set(cacheKey, root);
   return root;
 }
 
