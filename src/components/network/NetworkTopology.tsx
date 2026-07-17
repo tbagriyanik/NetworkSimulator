@@ -288,10 +288,24 @@ export function NetworkTopology({
   const [isDraggingZoom, setIsDraggingZoom] = useState(false);
   const zoomDragRef = useRef({ isDragging: false, startX: 0, startZoom: 0 });
 
+  const currentViewport = useMemo(() => {
+    if (canvasDimensions.width === 0 || canvasDimensions.height === 0 || !zoom || zoom <= 0) {
+      return null;
+    }
+    return {
+      x: pan.x,
+      y: pan.y,
+      width: canvasDimensions.width,
+      height: canvasDimensions.height,
+      zoom,
+    };
+  }, [pan.x, pan.y, canvasDimensions.width, canvasDimensions.height, zoom]);
+
   // Use spatial partitioning for efficient visibility culling
-  const { visibleDeviceIds, visibleConnectionIds, updateViewport } = useSpatialPartitioning(
+  const { visibleDeviceIds, visibleConnectionIds } = useSpatialPartitioning(
     devices,
     connections,
+    currentViewport,
     { cellSize: 256, margin: 100, enabled: true }
   );
 
@@ -307,15 +321,6 @@ export function NetworkTopology({
     if (width === 0 || height === 0 || !zoom || zoom <= 0) {
       return { visibleDevices: devices, visibleConnections: connections, visibleNotes: notes };
     }
-
-    // Update viewport for spatial partitioning
-    updateViewport({
-      x: pan.x,
-      y: pan.y,
-      width,
-      height,
-      zoom,
-    });
 
     const margin = 100; // Extra margin to prevent pop-in
 
@@ -339,7 +344,7 @@ export function NetworkTopology({
     });
 
     return { visibleDevices: vDevices, visibleConnections: vConnections, visibleNotes: vNotes };
-  }, [devices, connections, notes, zoom, pan, isActive, canvasDimensions, visibleDeviceIds, visibleConnectionIds, updateViewport]);
+  }, [devices, connections, notes, zoom, pan, isActive, canvasDimensions, visibleDeviceIds, visibleConnectionIds]);
 
   useEffect(() => {
     updateCanvasRect();
