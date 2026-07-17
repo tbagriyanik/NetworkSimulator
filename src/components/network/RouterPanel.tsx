@@ -23,17 +23,21 @@ import {
   AlertCircle,
   ChevronUp,
   ChevronDown,
+  Compass,
+  Search,
 } from 'lucide-react';
 import { cn, normalizeMAC } from '@/lib/utils';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
-import type { CanvasDevice } from './networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from './networkTopology.types';
 import { RouterIcon } from './PCPanelWidgets';
+import { getRoutingTable, findRoute, Route } from '@/lib/network/routing';
 
 interface RouterPanelProps {
   deviceId: string;
   isVisible: boolean;
   onClose: () => void;
   topologyDevices?: CanvasDevice[];
+  topologyConnections?: CanvasConnection[];
   deviceStates?: Map<string, SwitchState>;
   modalPosition?: { x: number; y: number };
   modalSize?: { width: number; height: number };
@@ -57,6 +61,7 @@ export function RouterPanel({
   isVisible,
   onClose,
   topologyDevices = [],
+  topologyConnections = [],
   deviceStates,
   modalPosition = { x: 0, y: 0 },
   modalSize = { width: 896, height: 600 },
@@ -69,7 +74,7 @@ export function RouterPanel({
 
   const isDark = theme === 'dark';
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'ports' | 'wifi' | 'dhcp'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'ports' | 'wifi' | 'dhcp' | 'routes'>('overview');
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() => {
     if (typeof window === 'undefined') return {};
     try {
@@ -160,6 +165,80 @@ export function RouterPanel({
 
     return result;
   }, [routerState]);
+
+  const [routeSearch, setRouteSearch] = useState('');
+  const [lookupIp, setLookupIp] = useState('');
+  const [lookupResult, setLookupResult] = useState<{
+    route: Route | null;
+    explanation: string;
+    searched: boolean;
+  }>({ route: null, explanation: '', searched: false });
+
+  const routingTable = useMemo(() => {
+    if (!deviceStates) return [];
+    return getRoutingTable(deviceId, deviceStates, topologyDevices, topologyConnections);
+  }, [deviceId, deviceStates, topologyDevices, topologyConnections]);
+
+  const filteredRoutes = useMemo(() => {
+    if (!routeSearch.trim()) return routingTable;
+    const query = routeSearch.toLowerCase();
+    return routingTable.filter(r =>
+      r.destination.toLowerCase().includes(query) ||
+      (r.subnetMask && r.subnetMask.toLowerCase().includes(query)) ||
+      (r.prefixLength !== undefined && String(r.prefixLength).includes(query)) ||
+      r.nextHop.toLowerCase().includes(query) ||
+      r.type.toLowerCase().includes(query)
+    );
+  }, [routingTable, routeSearch]);
+
+  const handleRouteLookup = () => {
+    if (!lookupIp.trim()) {
+      setLookupResult({ route: null, explanation: '', searched: false });
+      return;
+    }
+    const isIpv4 = /^[0-9.]+$/.test(lookupIp);
+    const isIpv6 = /^[0-9a-fA-F:]+$/.test(lookupIp);
+    if (!isIpv4 && !isIpv6) {
+      setLookupResult({
+        route: null,
+        explanation: language === 'tr' ? 'Geçersiz IP adresi formatı.' : 'Invalid IP address format.',
+        searched: true
+      });
+      return;
+    }
+
+    const matchedRoute = findRoute(lookupIp.trim(), routingTable);
+    if (matchedRoute) {
+      let desc = '';
+      if (matchedRoute.type === 'connected') {
+        desc = language === 'tr'
+          ? `Doğrudan bağlı ağ eşleşmesi. Paket ${matchedRoute.nextHop} arayüzü üzerinden doğrudan iletilecek.`
+          : `Directly connected network match. Packet will be forwarded directly via interface ${matchedRoute.nextHop}.`;
+      } else if (matchedRoute.destination === '0.0.0.0' || matchedRoute.destination === '::') {
+        desc = language === 'tr'
+          ? `Özel rota bulunamadı. Varsayılan rota (Default Route) kullanılıyor. Next Hop: ${matchedRoute.nextHop}.`
+          : `No specific route found. Using Default Route. Next Hop: ${matchedRoute.nextHop}.`;
+      } else {
+        const protocol = matchedRoute.type === 'static' ? (language === 'tr' ? 'Statik' : 'Static') : matchedRoute.type.toUpperCase();
+        desc = language === 'tr'
+          ? `${protocol} yönlendirme kuralı eşleşti (En Uzun Önek Eşleşmesi). Hedefe gitmek için paket şu Next Hop'a iletilecek: ${matchedRoute.nextHop}.`
+          : `${protocol} routing rule matched (Longest Prefix Match). Packet will be forwarded to Next Hop: ${matchedRoute.nextHop}.`;
+      }
+      setLookupResult({
+        route: matchedRoute,
+        explanation: desc,
+        searched: true
+      });
+    } else {
+      setLookupResult({
+        route: null,
+        explanation: language === 'tr'
+          ? 'Hedef ağ bulunamadı. Yönlendirme tablosunda bu IP adresiyle eşleşen bir kural yok ve varsayılan ağ geçidi (0.0.0.0/0) yapılandırılmamış.'
+          : 'Destination host unreachable. No matching route in the routing table, and no default gateway (0.0.0.0/0) is configured.',
+        searched: true
+      });
+    }
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -300,6 +379,23 @@ export function RouterPanel({
           >
             <Server className="w-4 h-4 mr-2" />
             DHCP
+          </Button>
+          <Button
+            variant="ghost"
+            className={cn(
+              "flex-1 rounded-none border-b-2",
+              activeTab === 'routes'
+                ? "border-purple-500 text-purple-600 dark:text-purple-400"
+                : "border-transparent text-muted-foreground"
+            )}
+            onClick={() => setActiveTab('routes')}
+            role="tab"
+            aria-selected={activeTab === 'routes'}
+            aria-controls="routes-panel"
+            aria-current={activeTab === 'routes' ? 'page' : undefined}
+          >
+            <Compass className="w-4 h-4 mr-2" />
+            {t.routingTableTab}
           </Button>
         </div>
 
@@ -662,6 +758,155 @@ export function RouterPanel({
                     </p>
                   </div>
                 )}
+              </div>
+            )}
+
+            {activeTab === 'routes' && (
+              <div id="routes-panel" role="tabpanel" className="space-y-4 animate-in fade-in duration-200">
+                {/* Router IP routing status check */}
+                {routerState && !routerState.ipRouting && (
+                  <div className="p-3 rounded-lg border border-error-500/20 bg-error-500/10 text-error-400 text-xs flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>
+                      {language === 'tr'
+                        ? 'IP Yönlendirme kapalı! Cihaz paket yönlendirmesi yapamaz. CLI üzerinden "ip routing" komutunu çalıştırarak aktif edebilirsiniz.'
+                        : 'IP Routing is disabled! This device cannot forward packets. You can enable it by running the "ip routing" command in CLI.'}
+                    </span>
+                  </div>
+                )}
+
+                {/* Route Lookup Visual Debugger */}
+                <div className={cn("rounded-lg border p-4", isDark ? "bg-secondary-900 border-secondary-800/80" : "bg-secondary-50 border-secondary-200")}>
+                  <h3 className="text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2 text-primary">
+                    <Compass className="w-4 h-4 text-purple-500" />
+                    {t.routeLookup} (Visual Debugger)
+                  </h3>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={lookupIp}
+                      onChange={(e) => setLookupIp(e.target.value)}
+                      placeholder={language === 'tr' ? 'Hedef IP Adresi (örn: 192.168.1.5)' : 'Target IP Address (e.g. 192.168.1.5)'}
+                      className={cn(
+                        "flex-1 px-3 py-2 rounded-lg text-xs border outline-none",
+                        isDark ? "bg-secondary-950 border-secondary-800 text-white focus:border-purple-500" : "bg-white border-secondary-300 text-secondary-900 focus:border-purple-600"
+                      )}
+                      onKeyDown={(e) => e.key === 'Enter' && handleRouteLookup()}
+                    />
+                    <Button size="sm" onClick={handleRouteLookup} className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-4">
+                      {language === 'tr' ? 'Sorgula' : 'Lookup'}
+                    </Button>
+                  </div>
+
+                  {lookupResult.searched && (
+                    <div className={cn("mt-3 p-3 rounded-lg text-xs border animate-in zoom-in-95 duration-200", 
+                      lookupResult.route
+                        ? (isDark ? "bg-success-950/20 border-success-500/20 text-success-300" : "bg-success-50/50 border-success-200 text-success-800")
+                        : (isDark ? "bg-error-950/20 border-error-500/20 text-error-300" : "bg-error-50/50 border-error-200 text-error-800")
+                    )}>
+                      <div className="font-bold flex items-center gap-1.5 mb-1.5">
+                        {lookupResult.route ? (
+                          <>
+                            <CheckCircle2 className="w-4 h-4 text-success-500" />
+                            <span>{language === 'tr' ? 'Rota Eşleşti!' : 'Route Matched!'}</span>
+                            <span className="font-mono bg-success-500/10 px-1.5 py-0.5 rounded text-[10px]">
+                              {lookupResult.route.destination}
+                              {lookupResult.route.subnetMask ? `/${lookupResult.route.subnetMask}` : lookupResult.route.prefixLength ? `/${lookupResult.route.prefixLength}` : ''}
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="w-4 h-4 text-error-500" />
+                            <span>{language === 'tr' ? 'Eşleşen Rota Yok!' : 'No Matching Route!'}</span>
+                          </>
+                        )}
+                      </div>
+                      <p className="opacity-90 leading-relaxed">{lookupResult.explanation}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Search & Routing Table list */}
+                <div className={cn("rounded-lg border overflow-hidden", isDark ? "bg-secondary-900 border-secondary-800/80" : "bg-secondary-50 border-secondary-200")}>
+                  <div className="p-3 border-b border-secondary-200 dark:border-secondary-800/80 flex items-center justify-between gap-3 bg-secondary-100/30 dark:bg-secondary-950/10">
+                    <h3 className="font-semibold text-xs flex items-center gap-2 shrink-0">
+                      <Network className="w-4 h-4 text-primary" />
+                      {t.routingTableTab} ({filteredRoutes.length})
+                    </h3>
+                    <div className="relative w-48 shrink-0">
+                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                      <input
+                        type="text"
+                        value={routeSearch}
+                        onChange={(e) => setRouteSearch(e.target.value)}
+                        placeholder={language === 'tr' ? 'Ara...' : 'Search...'}
+                        className={cn(
+                          "w-full pl-8 pr-3 py-1.5 rounded-md text-[11px] border outline-none",
+                          isDark ? "bg-secondary-950 border-secondary-800 text-white focus:border-purple-500" : "bg-white border-secondary-300 text-secondary-900 focus:border-purple-600"
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="overflow-x-auto max-h-[300px]">
+                    <table className="w-full text-xs text-left">
+                      <thead className={cn("border-b text-[10px] uppercase tracking-wider font-semibold sticky top-0 z-10", isDark ? "bg-secondary-950 border-secondary-800 text-secondary-400" : "bg-secondary-100 border-secondary-200 text-secondary-600")}>
+                        <tr>
+                          <th className="p-3 w-24">{language === 'tr' ? 'Tip' : 'Type'}</th>
+                          <th className="p-3">{language === 'tr' ? 'Hedef Ağ' : 'Destination Network'}</th>
+                          <th className="p-3 w-32">{language === 'tr' ? 'Metrik [AD/Metrik]' : 'Metric [AD/Metric]'}</th>
+                          <th className="p-3">{language === 'tr' ? 'Sonraki Hop / Arayüz' : 'Next Hop / Interface'}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredRoutes.length > 0 ? (
+                          filteredRoutes.map((route, idx) => {
+                            const isSelectedLookup = lookupResult.route && lookupResult.route.destination === route.destination && lookupResult.route.nextHop === route.nextHop;
+                            return (
+                              <tr
+                                key={idx}
+                                className={cn(
+                                  "border-b last:border-0 transition-colors",
+                                  isDark ? "border-secondary-800 hover:bg-secondary-800/40" : "border-secondary-200 hover:bg-secondary-100/50",
+                                  isSelectedLookup && (isDark ? "bg-success-950/20 font-semibold" : "bg-success-50 font-semibold")
+                                )}
+                              >
+                                <td className="p-3">
+                                  <span className={cn(
+                                    "px-2 py-0.5 rounded-md text-[9px] font-bold uppercase border",
+                                    route.type === 'connected'
+                                      ? "bg-success-500/10 text-success-500 border-success-500/20"
+                                      : route.type === 'static'
+                                      ? "bg-primary-500/10 text-primary-500 border-primary-500/20"
+                                      : "bg-warning-500/10 text-warning-500 border-warning-500/20"
+                                  )}>
+                                    {route.type === 'connected' ? (language === 'tr' ? 'Bağlı' : 'Connected') : route.type}
+                                  </span>
+                                </td>
+                                <td className="p-3 font-mono">
+                                  {route.destination}
+                                  {route.subnetMask ? `/${route.subnetMask}` : route.prefixLength ? `/${route.prefixLength}` : ''}
+                                </td>
+                                <td className="p-3 text-muted-foreground font-mono">
+                                  {route.type === 'connected' ? '0/0' : `[${route.metric ?? 1}/0]`}
+                                </td>
+                                <td className="p-3 font-semibold font-mono">
+                                  {route.nextHop}
+                                </td>
+                              </tr>
+                            );
+                          })
+                        ) : (
+                          <tr>
+                            <td colSpan={4} className="p-6 text-center text-muted-foreground italic">
+                              {language === 'tr' ? 'Kayıtlı rota bulunamadı.' : 'No routes found.'}
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             )}
           </div>

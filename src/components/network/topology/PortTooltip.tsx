@@ -141,6 +141,24 @@ export const PortTooltip: React.FC<PortTooltipProps> = ({
           </div>
 
           {(() => {
+            const devState = deviceStates?.get(portTooltip.deviceId);
+            const simPort = devState?.ports?.[portTooltip.portId];
+            const stpRole = simPort?.spanningTree?.role;
+            if (stpRole === 'root' || stpRole === 'alternate') {
+              const roleName = stpRole === 'root' ? 'Root Port (RP)' : 'Alternate Port (AP)';
+              return (
+                <div className="text-xs font-bold">
+                  {language === 'tr' ? 'STP Rolü:' : 'STP Role:'}{' '}
+                  <span className="text-purple-400">
+                    {roleName}
+                  </span>
+                </div>
+              );
+            }
+            return null;
+          })()}
+
+          {(() => {
             const dev = deviceMap.get(portTooltip.deviceId);
                 const prt = dev?.ports.find((p: CanvasPort) => p.id === portTooltip.portId);
             if (prt?.ipAddress) {

@@ -3481,6 +3481,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
             isVisible={showRouterPanel && !isTablet}
             onClose={() => setShowRouterPanel(false)}
             topologyDevices={topologyDevices || undefined}
+            topologyConnections={topologyConnections}
             deviceStates={deviceStates}
             modalPosition={routerDrag.position}
             modalSize={routerDrag.size}

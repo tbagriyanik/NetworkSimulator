@@ -78,6 +78,7 @@ export function TopologyToolbar({
   const graphicsQuality = useAppStore((state) => state.graphicsQuality);
   const isSimulationMode = useAppStore((state) => state.topology.isSimulationMode);
   const setSimulationMode = useAppStore((state) => state.setSimulationMode);
+
   const isHighQuality = graphicsQuality === 'high';
   // Register Home key shortcut for reset view
    const toolbarGlowClass = isHighQuality
@@ -580,6 +581,7 @@ className="h-8 w-8 p-0 text-warning-500 hover:bg-warning-500/10"
           <ShortcutBadge shortcut="S" variant="danger" />
         </TooltipContent>
       </Tooltip>
+
 
       <div className={`w-px h-4 ${isDark ? 'bg-secondary-700' : 'bg-secondary-200'}`} />
 

@@ -46,7 +46,66 @@ npm install && npm run dev
 | [history.md](doc/history.md) | Full changelog newest-to-oldest / Yeniden eskiye tam değişiklik geçmişi |
 | [DOCUMENTATION_INDEX.md](doc/DOCUMENTATION_INDEX.md) | Documentation index & reading map / Diğer tüm belgeler için indeks |
 | [ProjeOzellikleri.md](doc/ProjeOzellikleri.md) | Full features inventory (TR/EN) / Tüm özellikler envanteri (TR/EN) |
-| [AGENTS.md](AGENTS.md) | Dev agent conventions, version bump & rollback / Agent kuralları, versiyon & rollback |
+| [AGENTS.md](AGENTS.md) | Dev agent conventions, version bump & rollback / Agent kuralları, version & rollback |
+
+## Keyboard Shortcuts / Klavye Kısayolları
+
+For a quick reference of simulator controls, expand the list below. For more details, see [USAGE.md](doc/USAGE.md).
+Simülatör kontrollerine hızlıca göz atmak için aşağıdaki listeyi genişletin. Daha fazla detay için [USAGE.md](doc/USAGE.md) dosyasına bakın.
+
+<details>
+<summary><b>⌨️ Click to expand Keyboard Shortcuts / Klavye Kısayollarını görmek için tıklayın</b></summary>
+
+### Canvas / Tuval
+
+| Shortcut / Kısayol | Action (EN) | İşlem (TR) |
+| :--- | :--- | :--- |
+| <kbd>Ctrl</kbd> + <kbd>Z</kbd> | Undo | Geri al |
+| <kbd>Ctrl</kbd> + <kbd>Y</kbd> / <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd> | Redo | Yeniden yap |
+| <kbd>Ctrl</kbd> + <kbd>C</kbd> | Copy selected device | Seçili cihazı kopyala |
+| <kbd>Ctrl</kbd> + <kbd>X</kbd> | Cut selected device | Seçili cihazı kes |
+| <kbd>Ctrl</kbd> + <kbd>V</kbd> | Paste | Yapıştır |
+| <kbd>Ctrl</kbd> + <kbd>A</kbd> | Select all | Tümünü seç |
+| <kbd>Ctrl</kbd> + <kbd>S</kbd> | Save project | Projeyi kaydet |
+| <kbd>Ctrl</kbd> + <kbd>O</kbd> | Open project file | Proje dosyasını aç |
+| <kbd>Ctrl</kbd> + <kbd>N</kbd> / <kbd>Alt</kbd> + <kbd>N</kbd> | New project | Yeni proje |
+| <kbd>Ctrl</kbd> + <kbd>P</kbd> | Print topology | Topolojiyi yazdır |
+| <kbd>Ctrl</kbd> + <kbd>F</kbd> | Toggle fullscreen | Tam ekrana geç / çık |
+| <kbd>Alt</kbd> + <kbd>R</kbd> | Reset zoom/pan view | Görünümü sıfırla |
+| <kbd>Delete</kbd> / <kbd>Backspace</kbd> | Delete selected | Seçili öğeyi sil |
+| <kbd>Escape</kbd> | Cancel selection / Close mode | Seçimi iptal et / Modu kapat |
+| <kbd>Ctrl</kbd> + <kbd>Scroll</kbd> | Zoom in / out | Yakınlaştır / Uzaklaştır |
+| <kbd>Space</kbd> + <kbd>Drag</kbd> | Pan canvas | Canvas'ı kaydır |
+| <kbd>Arrow Keys</kbd> | Move selected device(s) | Seçili cihaz(lar)ı taşı |
+| <kbd>Shift</kbd> + <kbd>Arrow Keys</kbd> | Move selected device(s) faster | Seçili cihaz(lar)ı daha hızlı taşı |
+| <kbd>F1</kbd> | Open / close help panel | Yardım panelini aç / kapat |
+| <kbd>F5</kbd> | Refresh network topology | Ağ topolojisini yenile |
+| <kbd>Home</kbd> | Reset topology view | Topoloji görünümünü sıfırla |
+| <kbd>End</kbd> | Focus last element | Son öğeye odaklan |
+| <kbd>Page Up</kbd> | Scroll canvas up | Canvas'ı yukarı kaydır |
+| <kbd>Page Down</kbd> | Scroll canvas down | Canvas'ı aşağı kaydır |
+| <kbd>Double-click (Empty Space)</kbd> | Reset topology view | Topoloji görünümünü sıfırla |
+| <kbd>Double-click (Device)</kbd> | Open collapsible device panel | Daraltılabilir cihaz panelini aç |
+
+### Ping Packet Analysis / Ping Paket Analizi
+
+| Shortcut / Kısayol | Action (EN) | İşlem (TR) |
+| :--- | :--- | :--- |
+| <kbd>P</kbd> | Play / Pause packet analysis | Paket analizi: Oynat / Duraklat |
+| <kbd>N</kbd> | Next hop (when paused) | Sonraki Hop (duraklatıldığında) |
+
+### CLI / CMD
+
+| Shortcut / Kısayol | Action (EN) | İşlem (TR) |
+| :--- | :--- | :--- |
+| <kbd>Tab</kbd> | Auto-complete command | Komut tamamlama |
+| <kbd>Arrow Up</kbd> / <kbd>Down</kbd> | Command history | Komut geçmişi |
+| <kbd>Enter</kbd> | Execute command | Komutu çalıştır |
+| <kbd>Ctrl</kbd> + <kbd>L</kbd> | Clear terminal | Terminali temizle |
+| <kbd>?</kbd> | Show available commands | Kullanılabilir komutları göster |
+| <kbd>Ctrl</kbd> + <kbd>C</kbd> | Cancel command (CLI) | Komutu iptal et |
+
+</details>
 
 ## Architecture / Mimari
 

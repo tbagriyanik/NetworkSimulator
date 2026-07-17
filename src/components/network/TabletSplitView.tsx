@@ -21,8 +21,8 @@ interface TabletSplitViewProps {
   setShowUnifiedDeviceModal: (show: boolean) => void;
   showRouterPanel: boolean;
   setShowRouterPanel: (show: boolean) => void;
-  unifiedDeviceActiveTab: 'console' | 'settings';
-  setUnifiedDeviceActiveTab: (tab: 'console' | 'settings') => void;
+  unifiedDeviceActiveTab: 'console' | 'settings' | 'stp';
+  setUnifiedDeviceActiveTab: (tab: 'console' | 'settings' | 'stp') => void;
   activeDeviceId: string;
   activeDeviceType: DeviceType;
   deviceStates: Map<string, SwitchState>;
@@ -189,6 +189,7 @@ export function TabletSplitView({
             isVisible={true}
             onClose={() => setShowRouterPanel(false)}
             topologyDevices={topologyDevices || undefined}
+            topologyConnections={topologyConnections}
             deviceStates={deviceStates}
             modalPosition={{ x: 0, y: 0 }}
             modalSize={{ width: 0, height: 0 }}

@@ -32,8 +32,8 @@ const WlcWirelessPanel = dynamic(() => import('./WlcWirelessPanel').then(m => m.
 interface UnifiedDevicePanelProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
-    activeTab: 'console' | 'settings';
-    onTabChange: (tab: 'console' | 'settings') => void;
+    activeTab: 'console' | 'settings' | 'stp';
+    onTabChange: (tab: 'console' | 'settings' | 'stp') => void;
     deviceId: string;
     deviceType: DeviceType;
     deviceStates: Map<string, SwitchState>;
@@ -98,6 +98,7 @@ export function UnifiedDevicePanel({
     className
 }: UnifiedDevicePanelProps) {
 
+    const [selectedVlan, setSelectedVlan] = React.useState(1);
     const isNarrow = modalSize.width < 1100;
 
     const deviceName = useMemo(() => {
@@ -146,7 +147,7 @@ export function UnifiedDevicePanel({
             className={`liquid-glass-light ${isDark ? '!bg-secondary-950/40 border-emerald-950/80 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]' : '!bg-white/60 border-emerald-950/80 shadow-[0_8px_28px_rgba(15,23,42,0.12)]'} ${className || ''}`}
             title={
                 <div className="flex items-center gap-2 px-2">
-                    <Tabs value={activeTab} onValueChange={(v: string) => onTabChange(v as 'console' | 'settings')} className="min-w-0">
+                    <Tabs value={activeTab} onValueChange={(v: string) => onTabChange(v as 'console' | 'settings' | 'stp')} className="min-w-0">
                         <TabsList className={cn("h-7 p-0.5", isDark ? "bg-secondary-800" : "bg-secondary-100")}>
                             <TabsTrigger value="console" className="flex items-center gap-1.5 px-2 h-6 text-xs">
                                 <TerminalIcon className="w-3 h-3" />
@@ -156,6 +157,12 @@ export function UnifiedDevicePanel({
                                 <Settings className="w-3 h-3" />
                                 <span>{t.quickSettingsAndTasks}</span>
                             </TabsTrigger>
+                            {(deviceType === 'switchL2' || deviceType === 'switchL3') && (
+                                <TabsTrigger value="stp" className="flex items-center gap-1.5 px-2 h-6 text-xs">
+                                    <Layers className="w-3 h-3 text-warning-500" />
+                                    <span>{t.stpTab}</span>
+                                </TabsTrigger>
+                            )}
                         </TabsList>
                     </Tabs>
                     <div className={cn(
@@ -295,6 +302,204 @@ export function UnifiedDevicePanel({
                                             </div>
                                         )}
                                     </div>
+                                </div>
+                            </TabsContent>
+
+                            <TabsContent value="stp" className="h-full m-0 p-0 overflow-y-auto custom-scrollbar">
+                                <div className="p-4 sm:p-6 space-y-6">
+                                    {/* VLAN Selector & STP info */}
+                                    {(() => {
+                                        const deviceState = deviceStates.get(deviceId);
+                                        const stpStateMap = deviceState?.stpState || {};
+                                        const vlanIds = Object.keys(stpStateMap).map(Number).sort((a, b) => a - b);
+                                        const currentVlan = vlanIds.includes(selectedVlan) ? selectedVlan : (vlanIds[0] || 1);
+                                        const stpVlanState = stpStateMap[currentVlan];
+
+                                        if (!stpVlanState) {
+                                            return (
+                                                <div className={cn("p-8 rounded-lg border text-center", isDark ? "bg-secondary-800 border-secondary-700" : "bg-secondary-50 border-secondary-200")}>
+                                                    <Layers className="w-12 h-12 mx-auto mb-3 text-muted-foreground animate-pulse" />
+                                                    <p className="text-muted-foreground text-sm font-medium">
+                                                        {language === 'tr' ? 'Bu cihazda STP aktif değil veya henüz başlatılmadı.' : 'STP is not active or has not initialized on this device.'}
+                                                    </p>
+                                                </div>
+                                            );
+                                        }
+
+                                        const localBridgePriority = stpVlanState.bridgeId.split('.')[0];
+                                        const localBridgeMac = stpVlanState.bridgeId.split('.').slice(1).join('.');
+
+                                        return (
+                                            <div className="space-y-5">
+                                                {/* Header and VLAN Selector */}
+                                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                                                    <div>
+                                                        <h3 className="text-sm font-semibold flex items-center gap-2 text-primary">
+                                                            <Layers className="w-4 h-4 text-warning-500" />
+                                                            {language === 'tr' ? 'Spanning Tree Protokolü (STP)' : 'Spanning Tree Protocol (STP)'}
+                                                        </h3>
+                                                        <p className="text-xs text-muted-foreground mt-0.5">
+                                                            {language === 'tr' ? 'Cihazın ve portların Spanning Tree durumlarını inceleyin.' : 'Inspect Spanning Tree states of the device and its ports.'}
+                                                        </p>
+                                                    </div>
+                                                    {vlanIds.length > 1 && (
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-xs text-muted-foreground">VLAN:</span>
+                                                            <select
+                                                                value={currentVlan}
+                                                                onChange={(e) => setSelectedVlan(Number(e.target.value))}
+                                                                className={cn(
+                                                                    "px-2 py-1 rounded text-xs border outline-none",
+                                                                    isDark ? "bg-secondary-900 border-secondary-800 text-white" : "bg-white border-secondary-300 text-secondary-900"
+                                                                )}
+                                                            >
+                                                                {vlanIds.map(vid => (
+                                                                    <option key={vid} value={vid}>VLAN {vid}</option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Root Bridge Status Card */}
+                                                <div className={cn(
+                                                    "p-4 rounded-lg border flex flex-col md:flex-row md:items-center md:justify-between gap-4",
+                                                    stpVlanState.isRoot
+                                                        ? (isDark ? "bg-warning-950/20 border-warning-500/30 text-warning-200" : "bg-warning-50/70 border-warning-200 text-warning-800")
+                                                        : (isDark ? "bg-secondary-900 border-secondary-800/80" : "bg-secondary-50 border-secondary-200")
+                                                )}>
+                                                    <div className="space-y-1">
+                                                        <div className="flex items-center gap-2 font-bold text-sm">
+                                                            {stpVlanState.isRoot ? (
+                                                                <>
+                                                                    <span className="text-lg">👑</span>
+                                                                    <span>{language === 'tr' ? 'Cihaz Kök Köprü (Root Bridge) Durumunda' : 'This Switch is the Root Bridge'}</span>
+                                                                </>
+                                                            ) : (
+                                                                <span>{language === 'tr' ? 'Kök Köprü Bilgisi' : 'Root Bridge Information'}</span>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-xs opacity-80 font-mono">
+                                                            Root Bridge ID: <span className="font-semibold">{stpVlanState.rootBridgeId}</span>
+                                                        </p>
+                                                        {!stpVlanState.isRoot && (
+                                                            <p className="text-xs opacity-80 font-mono">
+                                                                Root Path Cost: <span className="font-semibold text-primary">{stpVlanState.rootCost}</span>
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-4 text-xs font-mono border-t md:border-t-0 md:border-l pt-3 md:pt-0 md:pl-6 border-secondary-700/30">
+                                                        <div>
+                                                            <span className="opacity-60">{language === 'tr' ? 'Köprü Önceliği:' : 'Bridge Priority:'}</span>
+                                                            <p className="font-semibold">{localBridgePriority}</p>
+                                                        </div>
+                                                        <div>
+                                                            <span className="opacity-60">Bridge MAC:</span>
+                                                            <p className="font-semibold text-xs leading-none mt-1">{localBridgeMac}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Port STP States Table */}
+                                                <div className={cn("rounded-lg border overflow-hidden", isDark ? "bg-secondary-900 border-secondary-800/80" : "bg-secondary-50 border-secondary-200")}>
+                                                    <div className="px-4 py-2.5 border-b border-secondary-800/80 bg-secondary-100/20 dark:bg-secondary-950/10">
+                                                        <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                                            {language === 'tr' ? 'Port Rol ve Durumları' : 'Port Roles and States'}
+                                                        </h4>
+                                                    </div>
+                                                    <div className="overflow-x-auto">
+                                                        <table className="w-full text-xs text-left">
+                                                            <thead className={cn("border-b text-[10px] uppercase tracking-wider font-semibold", isDark ? "bg-secondary-950 border-secondary-800 text-secondary-400" : "bg-secondary-100 border-secondary-200 text-secondary-600")}>
+                                                                <tr>
+                                                                    <th className="p-3">{language === 'tr' ? 'Arayüz' : 'Interface'}</th>
+                                                                    <th className="p-3">{language === 'tr' ? 'Rol (Role)' : 'Role'}</th>
+                                                                    <th className="p-3">{language === 'tr' ? 'Durum (State)' : 'State'}</th>
+                                                                    <th className="p-3">{language === 'tr' ? 'Maliyet (Cost)' : 'Cost'}</th>
+                                                                    <th className="p-3">{language === 'tr' ? 'Öncelik' : 'Priority'}</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {Object.keys(stpVlanState.ports).length > 0 ? (
+                                                                    Object.entries(stpVlanState.ports).map(([portName, portStp]) => {
+                                                                        const role = portStp.role;
+                                                                        const state = portStp.state;
+
+                                                                        const roleLabels: Record<string, string> = language === 'tr' ? {
+                                                                            root: 'Kök Port (RP)',
+                                                                            designated: 'Atanmış Port (DP)',
+                                                                            alternate: 'Alternatif Port (AP)',
+                                                                            backup: 'Yedek Port (BP)',
+                                                                            disabled: 'Devre Dışı'
+                                                                        } : {
+                                                                            root: 'Root Port (RP)',
+                                                                            designated: 'Designated Port (DP)',
+                                                                            alternate: 'Alternate Port (AP)',
+                                                                            backup: 'Backup Port (BP)',
+                                                                            disabled: 'Disabled'
+                                                                        };
+
+                                                                        const stateLabels: Record<string, string> = language === 'tr' ? {
+                                                                            forwarding: 'İletiyor (FWD)',
+                                                                            blocking: 'Engelliyor (BLK)',
+                                                                            learning: 'Öğreniyor (LRN)',
+                                                                            listening: 'Dinliyor (LIS)',
+                                                                            disabled: 'Devre Dışı'
+                                                                        } : {
+                                                                            forwarding: 'Forwarding (FWD)',
+                                                                            blocking: 'Blocking (BLK)',
+                                                                            learning: 'Learning (LRN)',
+                                                                            listening: 'Listening (LIS)',
+                                                                            disabled: 'Disabled'
+                                                                        };
+
+                                                                        return (
+                                                                            <tr key={portName} className={cn("border-b last:border-0 hover:bg-secondary-800/10 dark:hover:bg-secondary-800/30", isDark ? "border-secondary-800" : "border-secondary-200")}>
+                                                                                <td className="p-3 font-semibold font-mono">{portName}</td>
+                                                                                <td className="p-3">
+                                                                                    <span className={cn(
+                                                                                        "px-2 py-0.5 rounded text-[10px] font-bold uppercase border",
+                                                                                        role === 'root'
+                                                                                            ? "bg-primary-500/10 text-primary-500 border-primary-500/20"
+                                                                                            : role === 'designated'
+                                                                                            ? "bg-success-500/10 text-success-500 border-success-500/20"
+                                                                                            : role === 'alternate'
+                                                                                            ? "bg-warning-500/10 text-warning-500 border-warning-500/20"
+                                                                                            : "bg-secondary-500/10 text-secondary-500 border-secondary-500/20"
+                                                                                    )}>
+                                                                                        {roleLabels[role] || role}
+                                                                                    </span>
+                                                                                </td>
+                                                                                <td className="p-3">
+                                                                                    <span className={cn(
+                                                                                        "px-2 py-0.5 rounded text-[10px] font-bold uppercase",
+                                                                                        state === 'forwarding'
+                                                                                            ? "bg-success-500/10 text-success-500 border border-success-500/20"
+                                                                                            : state === 'blocking'
+                                                                                            ? "bg-error-500/10 text-error-500 border border-error-500/20 animate-pulse"
+                                                                                            : "bg-secondary-500/10 text-secondary-500 border border-secondary-500/20"
+                                                                                    )}>
+                                                                                        {stateLabels[state] || state}
+                                                                                    </span>
+                                                                                </td>
+                                                                                <td className="p-3 font-mono text-muted-foreground">{portStp.cost || 19}</td>
+                                                                                <td className="p-3 font-mono text-muted-foreground">128</td>
+                                                                            </tr>
+                                                                        );
+                                                                    })
+                                                                ) : (
+                                                                    <tr>
+                                                                        <td colSpan={5} className="p-4 text-center text-muted-foreground italic">
+                                                                            {language === 'tr' ? 'Port STP bilgisi yok.' : 'No port STP information.'}
+                                                                        </td>
+                                                                    </tr>
+                                                                )}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                             </TabsContent>
                         </Tabs>

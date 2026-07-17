@@ -3,6 +3,7 @@
 import React from 'react';
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+
 import { CanvasDevice, CanvasConnection } from '../networkTopology.types';
 import { SwitchState, Port } from '@/lib/network/types';
 import { getWirelessSignalStrength } from '@/lib/network/connectivity';
@@ -75,6 +76,7 @@ export function DeviceRenderer({
   isDrawingConnection = false,
   connectionStart = null
 }: DeviceRendererProps) {
+
   const isTargetingThisDevice = isDrawingConnection && connectionStart && connectionStart.deviceId !== device.id;
   const isTR = language === 'tr';
   const isSwitchDevice = (type: string) => type === 'switchL2' || type === 'switchL3';
@@ -585,6 +587,68 @@ export function DeviceRenderer({
         )}
       </Tooltip>
 
+      {/* STP Overlay Bridge Badges */}
+      {isSwitchDeviceType(device.type) && (() => {
+        const deviceState = deviceStates?.get(device.id);
+        const defaultStp = deviceState?.stpState?.[1]; // VLAN 1 is default
+        if (!defaultStp) return null;
+        const isRootBridge = defaultStp.isRoot === true;
+        if (isRootBridge) {
+          return (
+            <g transform={`translate(${deviceWidth / 2}, 0)`}>
+              <rect
+                x="-22"
+                y="-10"
+                width="44"
+                height="13"
+                rx="3.5"
+                fill="var(--color-warning-500)"
+                stroke="var(--color-warning-400)"
+                strokeWidth="1"
+                className="animate-pulse"
+              />
+              <text
+                y="-2.5"
+                fill="var(--color-secondary-950)"
+                fontSize="7.5"
+                fontWeight="bold"
+                textAnchor="middle"
+                dominantBaseline="middle"
+                style={{ userSelect: 'none', pointerEvents: 'none' }}
+              >
+                👑 ROOT
+              </text>
+            </g>
+          );
+        } else {
+          return (
+            <g transform={`translate(${deviceWidth / 2}, 0)`}>
+              <rect
+                x="-24"
+                y="-10"
+                width="48"
+                height="13"
+                rx="3.5"
+                fill={isDark ? 'var(--color-secondary-800)' : 'var(--color-secondary-200)'}
+                stroke={isDark ? 'var(--color-secondary-700)' : 'var(--color-secondary-300)'}
+                strokeWidth="1"
+              />
+              <text
+                y="-2.5"
+                fill={isDark ? 'var(--color-secondary-200)' : 'var(--color-secondary-800)'}
+                fontSize="6.5"
+                fontWeight="semibold"
+                textAnchor="middle"
+                dominantBaseline="middle"
+                style={{ userSelect: 'none', pointerEvents: 'none' }}
+              >
+                Pri: {defaultStp.bridgeId.split('.')[0]}
+              </text>
+            </g>
+          );
+        }
+      })()}
+
       {/* Device name */}
       <text
         x={deviceWidth / 2}
@@ -845,6 +909,10 @@ export function DeviceRenderer({
                 else { portFill = 'var(--color-primary-500)'; portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)'; }
               }
 
+              const hasStpInfo = isSwitchDeviceType(device.type) && simulatorPort?.spanningTree;
+              const stpRole = simulatorPort?.spanningTree?.role;
+              const roleAbbr = stpRole === 'root' ? 'RP' : stpRole === 'alternate' ? 'AP' : stpRole === 'backup' ? 'BP' : '';
+
               return (
                 <g
                   key={port.id}
@@ -883,6 +951,37 @@ export function DeviceRenderer({
                   <text y={1} style={{ fill: 'var(--color-background)', userSelect: 'none', pointerEvents: 'none' }} fontSize="6" textAnchor="middle" dominantBaseline="middle">
                     {displayNum}
                   </text>
+                  {hasStpInfo && roleAbbr && (
+                    <g transform={`translate(0, ${row === 0 ? -11 : 11})`}>
+                      <rect
+                        x="-7"
+                        y="-5"
+                        width="14"
+                        height="9"
+                        rx="2"
+                        fill={
+                          stpRole === 'root'
+                            ? 'var(--color-primary-500)'
+                            : stpRole === 'designated'
+                            ? 'var(--color-success-500)'
+                            : 'var(--color-warning-500)'
+                        }
+                        stroke={isDark ? 'var(--color-secondary-950)' : 'var(--color-secondary-50)'}
+                        strokeWidth="0.5"
+                      />
+                      <text
+                        y="-0.5"
+                        fill="white"
+                        fontSize="5"
+                        fontWeight="bold"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        style={{ userSelect: 'none', pointerEvents: 'none' }}
+                      >
+                        {roleAbbr}
+                      </text>
+                    </g>
+                  )}
                 </g>
               );
             };
@@ -973,6 +1072,10 @@ export function DeviceRenderer({
               }
             }
 
+            const hasStpInfo = isSwitchDeviceType(device.type) && simulatorPort?.spanningTree;
+            const stpRole = simulatorPort?.spanningTree?.role;
+            const roleAbbr = stpRole === 'root' ? 'RP' : stpRole === 'alternate' ? 'AP' : stpRole === 'backup' ? 'BP' : '';
+
             return (
               <g
                 key={port.id}
@@ -1011,6 +1114,37 @@ export function DeviceRenderer({
                 <text y={1} style={{ fill: 'var(--color-background)', userSelect: 'none', pointerEvents: 'none' }} fontSize="6" textAnchor="middle" dominantBaseline="middle">
                   {displayNum}
                 </text>
+                {hasStpInfo && roleAbbr && (
+                  <g transform={`translate(0, ${row === 0 ? -11 : 11})`}>
+                    <rect
+                      x="-7"
+                      y="-5"
+                      width="14"
+                      height="9"
+                      rx="2"
+                      fill={
+                        stpRole === 'root'
+                          ? 'var(--color-primary-500)'
+                          : stpRole === 'designated'
+                          ? 'var(--color-success-500)'
+                          : 'var(--color-warning-500)'
+                      }
+                      stroke={isDark ? 'var(--color-secondary-950)' : 'var(--color-secondary-50)'}
+                      strokeWidth="0.5"
+                    />
+                    <text
+                      y="-0.5"
+                      fill="white"
+                      fontSize="5"
+                      fontWeight="bold"
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      style={{ userSelect: 'none', pointerEvents: 'none' }}
+                    >
+                      {roleAbbr}
+                    </text>
+                  </g>
+                )}
               </g>
             );
           })

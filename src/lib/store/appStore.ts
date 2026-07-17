@@ -81,6 +81,7 @@ interface TopologyState {
     pan: { x: number; y: number };
     environment: EnvironmentSettings;
     isSimulationMode: boolean;
+    showSTPOverlay: boolean;
 }
 
 interface DeviceStates {
@@ -122,6 +123,7 @@ interface AppState {
     setPan: (pan: { x: number; y: number } | ((prev: { x: number; y: number }) => { x: number; y: number })) => void;
     setEnvironment: (settings: EnvironmentSettings | ((prev: EnvironmentSettings) => EnvironmentSettings)) => void;
     setSimulationMode: (enabled: boolean) => void;
+    setSTPOverlay: (enabled: boolean) => void;
 
     // Device state management
     setSwitchState: (deviceId: string, state: SwitchState) => void;
@@ -159,6 +161,7 @@ const initialTopologyState: TopologyState = {
     pan: { x: 0, y: 0 },
     environment: initialEnvironmentSettings,
     isSimulationMode: false,
+    showSTPOverlay: false,
 };
 
 const initialDeviceStates: DeviceStates = {
@@ -217,6 +220,7 @@ function sanitizePersistedState(input: Record<string, unknown> | undefined): Par
             activeCaptureConnectionId: typeof top.activeCaptureConnectionId === 'string' ? top.activeCaptureConnectionId : null,
             capturedPackets: (top.capturedPackets as Record<string, CapturedPacket[]>) || {},
             isSimulationMode: !!top.isSimulationMode,
+            showSTPOverlay: !!top.showSTPOverlay,
             zoom: typeof top.zoom === 'number' ? top.zoom as number : 1,
             pan: { x: Number((top.pan as Record<string, unknown>)?.x ?? 0), y: Number((top.pan as Record<string, unknown>)?.y ?? 0) },
             environment: {
@@ -236,6 +240,7 @@ function sanitizePersistedState(input: Record<string, unknown> | undefined): Par
             activeCaptureConnectionId: typeof topology.activeCaptureConnectionId === 'string' ? topology.activeCaptureConnectionId : null,
             capturedPackets: (topology.capturedPackets as Record<string, CapturedPacket[]>) || {},
             isSimulationMode: !!topology.isSimulationMode,
+            showSTPOverlay: !!topology.showSTPOverlay,
             environment: {
                 ...initialEnvironmentSettings,
                 ...((topology.environment as Record<string, unknown>) || {})
@@ -418,6 +423,9 @@ const createActions = (set: (partial: Partial<AppState> | ((state: AppState) => 
     setSimulationMode: (enabled: boolean) => {
         set({ topology: { ...get().topology, isSimulationMode: enabled } });
     },
+    setSTPOverlay: (enabled: boolean) => {
+        set({ topology: { ...get().topology, showSTPOverlay: enabled } });
+    },
 
     // Device state management
     setSwitchState: (deviceId: string, state: SwitchState) =>
@@ -560,5 +568,6 @@ export const usePan = () => useAppStore(state => state.topology.pan);
 export const useActiveTab = () => useAppStore(state => state.activeTab);
 export const useGraphicsQuality = () => useAppStore(state => state.graphicsQuality);
 export const useIsSimulationMode = () => useAppStore(state => state.topology.isSimulationMode);
+export const useShowSTPOverlay = () => useAppStore(state => state.topology.showSTPOverlay);
 
 

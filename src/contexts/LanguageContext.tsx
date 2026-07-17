@@ -482,6 +482,8 @@ export interface Translations {
   routerInfoPanel: string;
   routing: string;
   routingTasks: string;
+  routingTableTab: string;
+  routeLookup: string;
   runningConfig: string;
   save: string;
   saveError: string;
@@ -547,6 +549,8 @@ export interface Translations {
   step1: string;
   step2: string;
   stpSwitchesUpdated: string;
+  stpTab: string;
+  stpToggleOverlay: string;
   straight: string;
   straightCable: string;
   straightShort: string;
@@ -1221,6 +1225,8 @@ const translations: Record<Language, Translations> = {
     routerInfoPanel: 'Router Bilgi Paneli',
     routing: 'Yönlendirme',
     routingTasks: 'Yönlendirme Görevleri',
+    routingTableTab: 'Yönlendirme Tablosu',
+    routeLookup: 'Rota Sorgulama',
     runningConfig: 'Running-Config',
     save: 'Kaydet (wr)',
     saveError: 'Kaydetme sırasında bir hata oluştu',
@@ -1286,6 +1292,8 @@ const translations: Record<Language, Translations> = {
     step1: 'Adım 1: Kaynak',
     step2: 'Adım 2: Hedef',
     stpSwitchesUpdated: 'STP: X switch güncellendi',
+    stpTab: 'Spanning Tree (STP)',
+    stpToggleOverlay: 'STP Gösterimi',
     straight: 'Düz',
     straightCable: 'Düz Kablo',
     straightShort: 'Düz',
@@ -1956,6 +1964,8 @@ const translations: Record<Language, Translations> = {
     routerInfoPanel: 'Router Information Panel',
     routing: 'Routing',
     routingTasks: 'Routing Tasks',
+    routingTableTab: 'Routing Table',
+    routeLookup: 'Route Lookup',
     runningConfig: 'Running-Config',
     save: 'Save (wr)',
     saveError: 'Error occurred while saving',
@@ -2021,6 +2031,8 @@ const translations: Record<Language, Translations> = {
     step1: 'Step 1: Source',
     step2: 'Step 2: Destination',
     stpSwitchesUpdated: 'STP: X switches updated',
+    stpTab: 'Spanning Tree (STP)',
+    stpToggleOverlay: 'STP Overlay',
     straight: 'Straight',
     straightCable: 'Straight Cable',
     straightShort: 'Straight',
