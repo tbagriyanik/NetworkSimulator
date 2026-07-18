@@ -17,19 +17,20 @@ export function encryptMd5Password(password: string, salt?: string): string {
 }
 
 /**
- * Generate random salt for MD5 encryption (8 characters) using CSPRNG
+ * Generate random salt for MD5 encryption (8 characters)
+ * Uses cryptographically secure random values (CSPRNG) if available.
  */
 function generateSalt(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789./';
   let salt = '';
-  try {
-    const randomBytes = new Uint32Array(8);
-    globalThis.crypto.getRandomValues(randomBytes);
+  const bytes = new Uint8Array(8);
+  if (typeof globalThis !== 'undefined' && globalThis.crypto?.getRandomValues) {
+    globalThis.crypto.getRandomValues(bytes);
     for (let i = 0; i < 8; i++) {
-      salt += chars.charAt(randomBytes[i] % chars.length);
+      salt += chars.charAt(bytes[i] % chars.length);
     }
-  } catch {
-    // Fallback to Math.random if CSPRNG is unavailable in environment
+  } else {
+    // Fallback if CSPRNG is not supported in the environment
     for (let i = 0; i < 8; i++) {
       salt += chars.charAt(Math.floor(Math.random() * chars.length));
     }
