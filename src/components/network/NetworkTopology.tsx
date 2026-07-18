@@ -51,6 +51,8 @@ import { useTopologyDeviceActions } from './hooks/useTopologyDeviceActions';
 import { usePingAnimation } from './hooks/usePingAnimation';
 import { useTopologyPingUI } from './hooks/useTopologyPingUI';
 import { usePingSequence, type PingAnimationState, type BroadcastAnimTarget } from './hooks/usePingSequence';
+import { useTopologyIot } from './hooks/useTopologyIot';
+import { useTopologyTooltipHandlers } from './hooks/useTopologyTooltipHandlers';
 import { CanvasToolbar } from './topology/CanvasToolbar';
 import { DeviceRenderer } from './topology/DeviceRenderer';
 
@@ -551,32 +553,6 @@ export function NetworkTopology({
   const [portSelectorStep, setPortSelectorStep] = useState<'source' | 'target'>('source');
   const [selectedSourcePort, setSelectedSourcePort] = useState<{ deviceId: string; portId: string } | null>(null);
   const [connectionError, setConnectionError] = useState<string | null>(null);
-  const [hoveredConnectionId, setHoveredConnectionId] = useState<string | null>(null);
-  const [connectionTooltip, setConnectionTooltip] = useState<{
-    x: number;
-    y: number;
-    sourceDeviceName: string;
-    sourcePort: string;
-    targetDeviceName: string;
-    targetPort: string;
-    cableType: string;
-    statusMessage: string;
-    visible: boolean;
-  } | null>(null);
-  const connectionTooltipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [portTooltip, setPortTooltip] = useState<{
-    deviceId: string;
-    portId: string;
-    x: number;
-    y: number;
-    visible: boolean;
-  } | null>(null);
-  const [deviceTooltip, setDeviceTooltip] = useState<{
-    deviceId: string;
-    x: number;
-    y: number;
-    visible: boolean;
-  } | null>(null);
 
   // Ping animation state
   const [pingAnimation, setPingAnimation] = useState<{
@@ -664,8 +640,25 @@ export function NetworkTopology({
   const noteTextareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
   const lastStateRef = useRef<string>('');
   const topologyChangeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const portTooltipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const deviceTooltipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const {
+    getLivePort,
+    getLiveDeviceVlan,
+    getIotDeviceStatus,
+    getIotPowerStatus,
+    getIotOpenCloseStatus,
+    getIotMeasuredValue,
+    getLivePortVlanText,
+  } = useTopologyIot({
+    connections,
+    deviceStates,
+    deviceMap,
+    language,
+    environment,
+    mousePosRef,
+    t,
+  });
+
+
 
 
   const {
@@ -760,6 +753,41 @@ export function NetworkTopology({
     dragStartPosRef,
     isActuallyDraggingRef,
     dragStartDevicePositionsRef
+  });
+
+  // Canvas Selection Hook
+  const {
+    hoveredConnectionId,
+    connectionTooltip,
+    portTooltip,
+    setPortTooltip,
+    deviceTooltip,
+    setDeviceTooltip,
+    handlePortHover,
+    handlePortMouseLeave,
+    handleConnectionClick,
+    handleConnectionMouseEnter,
+    handleConnectionMouseLeave,
+    handleDeviceMouseLeave,
+    portTooltipTimerRef,
+    connectionTooltipTimerRef,
+  } = useTopologyTooltipHandlers({
+    devices,
+    canvasRef,
+    deviceMap,
+    getLivePort,
+    activeCaptureConnectionId,
+    setActiveCaptureConnection,
+    setContextMenu,
+    zoomRef,
+    panRef,
+    isDrawingConnection,
+    isPanning,
+    isSelecting,
+    isActuallyDragging,
+    isTouchDragging,
+    TOOLTIP_DELAY,
+    TOOLTIP_OFFSET_Y,
   });
 
   // Canvas Selection Hook
@@ -3247,217 +3275,7 @@ export function NetworkTopology({
       if (topologyChangeTimerRef.current) clearTimeout(topologyChangeTimerRef.current);
     };
   }, [devices, connections, notes, onTopologyChange]);
-  const getLivePort = useCallback((deviceId: string, portId: string) => {
-    const deviceState = deviceStates?.get(deviceId);
-    if (deviceState?.ports?.[portId]) {
-      return deviceState.ports[portId];
-    }
-    const device = deviceMap.get(deviceId);
-    return device?.ports.find(p => p.id === portId);
-  }, [deviceStates, devices]);
 
-  const hasPortMode = (port: ReturnType<typeof getLivePort>): port is NonNullable<ReturnType<typeof getLivePort>> & { mode: 'access' | 'trunk' | 'routed' } => {
-    return !!port && typeof port === 'object' && 'mode' in port;
-  };
-
-  const getLiveDeviceVlan = useCallback((device: CanvasDevice) => {
-    if (device.type !== 'pc') return null;
-    if (typeof device.vlan === 'number' && device.vlan > 0) {
-      return device.vlan;
-    }
-
-    const connectedPort = connections.find(conn => conn.sourceDeviceId === device.id || conn.targetDeviceId === device.id);
-    if (!connectedPort) return 1;
-
-    const otherDeviceId = connectedPort.sourceDeviceId === device.id ? connectedPort.targetDeviceId : connectedPort.sourceDeviceId;
-    const otherPortId = connectedPort.sourceDeviceId === device.id ? connectedPort.targetPort : connectedPort.sourcePort;
-    const otherPort = getLivePort(otherDeviceId, otherPortId);
-
-    if (!otherPort) return 1;
-    if (hasPortMode(otherPort) && otherPort.mode === 'trunk') return 'Trunk';
-    return Number(otherPort.accessVlan || otherPort.vlan || 1);
-  }, [connections, getLivePort]);
-
-  const getIotDeviceStatus = useCallback((device: CanvasDevice) => {
-    return device.iot?.collaborationEnabled === false
-      ? (language === 'tr' ? 'Pasif' : 'Inactive')
-      : (language === 'tr' ? 'Aktif' : 'Active');
-  }, [language]);
-
-  const getIotPowerStatus = useCallback((device: CanvasDevice) => {
-    return device.status === 'offline'
-      ? (language === 'tr' ? 'Kapalı' : 'Off')
-      : (language === 'tr' ? 'Açık' : 'On');
-  }, [language]);
-
-  const getIotOpenCloseStatus = useCallback((device: CanvasDevice) => {
-    const isOn = device.status !== 'offline' && device.iot?.collaborationEnabled !== false && (device.iot?.value ?? false);
-    return language === 'tr' ? (isOn ? 'Açık' : 'Kapalı') : (isOn ? 'On' : 'Off');
-  }, [language]);
-
-  const getIotMeasuredValue = useCallback((device: CanvasDevice) => {
-    const kind = device.iot?.kind;
-    const sensorType = device.iot?.sensorType || 'temperature';
-    const baseTemp = environment?.temperature ?? 22;
-    const baseHumidity = environment?.humidity ?? 50;
-    const baseLight = environment?.light ?? 70;
-
-    // Controllable devices use open/close state, not sensor measurements
-    if (kind === 'lamp' || kind === 'heater' || kind === 'cooler') {
-      return getIotOpenCloseStatus(device);
-    }
-
-    if (device.status === 'offline') {
-      return language === 'tr' ? 'Kapalı' : 'Off';
-    }
-
-    if (device.iot?.collaborationEnabled === false) {
-      return t.passive;
-    }
-
-    // Add small random fluctuation to simulate real sensor readings
-    const tempFluctuation = (Math.random() - 0.5) * 2; // ±1°C
-    const humidityFluctuation = (Math.random() - 0.5) * 4; // ±2%
-    const lightFluctuation = (Math.random() - 0.5) * 10; // ±5%
-
-    switch (sensorType) {
-      case 'temperature':
-        return `${(baseTemp + tempFluctuation).toFixed(1)} °C`;
-      case 'humidity':
-        return `${(baseHumidity + humidityFluctuation).toFixed(1)} %`;
-      case 'light':
-        return `${(baseLight + lightFluctuation).toFixed(0)} lx`;
-      case 'sound':
-        // Ses sensörü: device.iot.value'dan gerçek dB değerini al
-        const sounddB = typeof device.iot?.value === 'number' ? device.iot.value : 0;
-        return `${sounddB} dB`;
-      case 'motion':
-        const deviceWidth = getDeviceWidth(device.type);
-        const deviceHeight = getDeviceHeight(device.type, device.ports?.length || 0);
-        const dx = mousePosRef.current.x - device.x - (deviceWidth / 2);
-        const dy = mousePosRef.current.y - device.y - (deviceHeight / 2);
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        return distance < 75 ? t.motionYes : t.motionNo;
-      default:
-        return '-';
-    }
-  }, [language, environment, getIotOpenCloseStatus, t.passive, t.motionYes, t.motionNo]);
-
-  const getLivePortVlanText = useCallback((deviceId: string, portId: string) => {
-    const device = deviceMap.get(deviceId);
-    const livePort = getLivePort(deviceId, portId);
-    if (!device || !livePort) return '1';
-
-    if (device.type === 'pc' || device.type === 'iot') {
-      const conn = connections.find(c =>
-        (c.sourceDeviceId === deviceId && c.sourcePort === portId) ||
-        (c.targetDeviceId === deviceId && c.targetPort === portId)
-      );
-      if (!conn) return '1';
-
-      const peerDeviceId = conn.sourceDeviceId === deviceId ? conn.targetDeviceId : conn.sourceDeviceId;
-      const peerPortId = conn.sourceDeviceId === deviceId ? conn.targetPort : conn.sourcePort;
-      const peerPort = getLivePort(peerDeviceId, peerPortId);
-      if (!peerPort) return '1';
-      if (hasPortMode(peerPort) && peerPort.mode === 'trunk') return 'Trunk';
-      return String(peerPort.accessVlan || peerPort.vlan || 1);
-    }
-
-    if (hasPortMode(livePort) && livePort.mode === 'trunk') return 'Trunk';
-    return String(livePort.accessVlan || livePort.vlan || 1);
-  }, [connections, devices, getLivePort]);
-
-  const showPortTooltip = useCallback((e: ReactMouseEvent | MouseEvent, deviceId: string, portId: string) => {
-    const device = deviceMap.get(deviceId);
-    const port = getLivePort(deviceId, portId);
-    if (!device || !port) return;
-
-    if (portTooltipTimerRef.current) {
-      clearTimeout(portTooltipTimerRef.current);
-    }
-
-    // Hemen tooltip'i göster
-    portTooltipTimerRef.current = setTimeout(() => {
-      setPortTooltip({
-        deviceId,
-        portId,
-        x: e.clientX,
-        y: e.clientY,
-        visible: true,
-      });
-
-      // 2000ms sonra tooltip'i gizle
-      portTooltipTimerRef.current = setTimeout(() => {
-        setPortTooltip(prev => prev ? { ...prev, visible: false } : null);
-      }, 2000);
-    }, TOOLTIP_DELAY);
-  }, [devices, getLivePort, setPortTooltip]);
-
-  const handlePortHover = useCallback((e: ReactMouseEvent, deviceId: string, portId: string) => {
-    // Kablo takarken, ekranı kaydırırken veya seçim yaparken port ipuçlarını gösterme
-    if (isDrawingConnection || isPanning || isSelecting || isActuallyDragging || isTouchDragging) return;
-    showPortTooltip(e, deviceId, portId);
-  }, [showPortTooltip, isDrawingConnection, isPanning, isSelecting, isActuallyDragging, isTouchDragging]);
-
-  const handlePortMouseLeave = useCallback(() => {
-    if (portTooltipTimerRef.current) {
-      clearTimeout(portTooltipTimerRef.current);
-    }
-    setPortTooltip(null);
-  }, [setPortTooltip]);
-
-  const handleConnectionClick = useCallback((e: React.MouseEvent, connId: string) => {
-    e.stopPropagation();
-    if (activeCaptureConnectionId === connId) {
-      setActiveCaptureConnection(null);
-    } else {
-      setActiveCaptureConnection(connId);
-    }
-    setContextMenu(null);
-  }, [activeCaptureConnectionId, setActiveCaptureConnection]);
-
-  const handleConnectionMouseEnter = useCallback((e: React.MouseEvent<SVGPathElement>, connId: string, sourceDeviceName: string, sourcePort: string, targetDeviceName: string, targetPort: string, cableType: string, statusMessage: string) => {
-    setHoveredConnectionId(connId);
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const cz = zoomRef.current;
-    const cp = panRef.current;
-    let tx = e.clientX;
-    let ty = e.clientY;
-    const tooltipW = 200;
-    const tooltipH = 70;
-    for (const d of devices) {
-      const devW = getDeviceWidth(d.type);
-      const devH = getDeviceHeight(d.type, d.ports.length);
-      const cx = rect.left + d.x * cz + cp.x + devW * cz / 2;
-      const cy = rect.top + d.y * cz + cp.y + devH * cz / 2;
-      if (Math.abs(tx - cx) < devW * cz / 2 + tooltipW / 2 && Math.abs(ty - cy) < devH * cz / 2 + tooltipH / 2) {
-        tx = e.clientX + 130;
-        ty = e.clientY - 40;
-      }
-    }
-    if (connectionTooltipTimerRef.current) clearTimeout(connectionTooltipTimerRef.current);
-    connectionTooltipTimerRef.current = setTimeout(() => {
-      setConnectionTooltip({ x: tx, y: ty + TOOLTIP_OFFSET_Y, sourceDeviceName, sourcePort, targetDeviceName, targetPort, cableType, statusMessage, visible: true });
-      connectionTooltipTimerRef.current = setTimeout(() => {
-        setConnectionTooltip(prev => prev ? { ...prev, visible: false } : null);
-      }, 3000);
-    }, TOOLTIP_DELAY);
-  }, [devices, setHoveredConnectionId, setConnectionTooltip]);
-
-  const handleConnectionMouseLeave = useCallback(() => {
-    setHoveredConnectionId(null);
-    if (connectionTooltipTimerRef.current) clearTimeout(connectionTooltipTimerRef.current);
-    setConnectionTooltip(null);
-  }, [setHoveredConnectionId, setConnectionTooltip]);
-
-  const handleDeviceMouseLeave = useCallback(() => {
-    if (deviceTooltipTimerRef.current) {
-      clearTimeout(deviceTooltipTimerRef.current);
-      deviceTooltipTimerRef.current = null;
-    }
-    setDeviceTooltip(null);
-  }, [setDeviceTooltip]);
 
   // Sync device counters with current devices to prevent ID collisions
   useEffect(() => {
