@@ -17,11 +17,9 @@ import { ModernPanel } from '@/components/ui/ModernPanel';
 import { useIsMobile } from '@/hooks/use-breakpoint';
 import { sanitizeHTTPContent } from '@/lib/security/sanitizer';
 import { generateRouterAdminPage, isRouterDevice } from '@/components/network/WifiControlPanel';
-import { generateIotWebPanelContent, generateIotDevicePageContent } from '@/lib/network/iotWebPanel';
-import { generateRandomLinkLocalIpv4 } from '@/lib/network/linkLocal';
+import { generateIotWebPanelContent } from '@/lib/network/iotWebPanel';
 import { expandCommandContext, DESKTOP_COMMANDS } from './pcPanel.utils';
 import { errorHandler, STORAGE_ERRORS, DHCP_ERRORS, CLIPBOARD_ERRORS, DEVICE_ERRORS } from '@/lib/errors/errorHandler';
-import { logger } from '@/lib/logger';
 import { getL3Hops } from '@/lib/network/routing';
 import { SearchOutputDialog } from './pc-panel/SearchOutputDialog';
 import { HiddenNavigationTabs } from './pc-panel/HiddenNavigationTabs';
@@ -33,6 +31,8 @@ import { getDefaultPcFiles, getPCConfigDefaults } from './pc-panel/pcPanelFiles'
 import { usePCPanelNtp } from './pc-panel/usePCPanelNtp';
 import { usePCPanelMail } from './pc-panel/usePCPanelMail';
 import { usePCPanelDhcp } from './pc-panel/usePCPanelDhcp';
+import { usePCPanelRouterAdmin } from './pc-panel/usePCPanelRouterAdmin';
+import { usePCPanelBrowser } from './pc-panel/usePCPanelBrowser';
 import type { DhcpPoolConfig, FtpSession, OutputLine, PCActiveTab, PCPanelProps, PcFile } from './pc-panel/PCPanel.types';
 import { CommandLineTab } from './pc-panel/CommandLineTab';
 import { ConsoleTerminalTab } from './pc-panel/ConsoleTerminalTab';
@@ -1827,557 +1827,48 @@ export function PCPanel({
     });
   }, [canReachTargetIp, resolveDomainWithDnsServicesCallback, topologyDevices, deviceStates, deviceId]);
 
-  const openWebPage = useCallback((rawTarget?: string, rawUrl?: string) => {
-    const rawInput = (rawTarget || '').trim();
-    const normalizedInput = rawInput || '192.168.1.10';
-    let lookupTarget = normalizeLookupTargetCallback(normalizedInput);
-    let displayUrl = normalizedInput.startsWith('http://') || normalizedInput.startsWith('https://')
-      ? normalizedInput
-      : `http://${normalizedInput}`;
-    if (rawUrl && rawUrl.trim().length > 0) {
-      const candidate = rawUrl.trim();
-      displayUrl = candidate.startsWith('http://') || candidate.startsWith('https://') ? candidate : `http://${candidate}`;
-      lookupTarget = normalizeLookupTargetCallback(candidate);
-    }
+  const { openWebPage } = usePCPanelBrowser({
+    language,
+    deviceId,
+    pcDNS,
+    pcIPv6,
+    topologyDevices,
+    topologyConnections,
+    deviceStates,
+    iotDevices,
+    httpAppDeviceId,
+    setHttpAppUrl,
+    setHttpAppContent,
+    setHttpAppTitle,
+    setHttpAppDeviceId,
+    addLocalOutput,
+    normalizeLookupTargetCallback,
+    resolveDeviceNameTargetCallback,
+    hasGatewayForTargetCallback,
+    isLoopbackTarget,
+    isValidIpv4,
+    isValidIpv6,
+    findHttpServerByTargetCallback,
+    getConnectedIotDevices,
+    getAvailableIotDevices,
+    t,
+  });
 
-    // Handle special IoT Web Panel URL
-    if (rawTarget === 'http://iot-panel' || rawTarget === 'iot-panel') {
-      setHttpAppUrl(displayUrl);
-      setHttpAppContent(generateIotWebPanelContent(iotDevices, language, undefined, undefined, topologyConnections as unknown as { sourceDeviceId: string; targetDeviceId: string }[]));
-      setHttpAppTitle(t.iotWebPanel);
-      setHttpAppDeviceId(null);
-      return;
-    }
-
-    // Handle special IoT Device URL
-    if (rawTarget?.startsWith('iot://iot-device/')) {
-      const targetDeviceId = rawTarget.split('iot://iot-device/')[1];
-      const targetDevice = topologyDevices.find(d => d.id === targetDeviceId);
-      if (targetDevice && targetDevice.type === 'iot') {
-        const isActive = targetDevice.iot?.collaborationEnabled ?? true;
-        const isPoweredOff = targetDevice.status === 'offline';
-        const kind = targetDevice.iot?.kind || 'sensor';
-        const rules = targetDevice.iot?.rules || [];
-        const sensorType = targetDevice.iot?.sensorType || 'temperature';
-        const dataFlowDirection = targetDevice.iot?.dataFlowDirection || (kind === 'sensor' ? 'input' : 'output');
-        const iotDevicePage = generateIotDevicePageContent(targetDevice.id, targetDevice.name || targetDevice.id, language, isActive, isPoweredOff, kind, rules, sensorType, iotDevices, dataFlowDirection, topologyDevices);
-        setHttpAppUrl(displayUrl);
-        setHttpAppContent(iotDevicePage);
-        setHttpAppTitle(`${targetDevice.name || targetDevice.id} ${t.deviceManagement}`);
-        setHttpAppDeviceId(targetDevice.id);
-      }
-      return;
-    }
-
-    // Browser-style inputs can include protocol/path/query. We only resolve host/IP.
-    try {
-      const parsed = new URL(displayUrl);
-      lookupTarget = parsed.hostname || lookupTarget;
-      displayUrl = parsed.toString();
-    } catch (_err) {
-      // URL parsing failed - using raw input as fallback
-    }
-
-    // Strip brackets from IPv6 hostnames if present (e.g. [2001:db8::1] -> 2001:db8::1)
-    if (lookupTarget.startsWith('[') && lookupTarget.endsWith(']')) {
-      lookupTarget = lookupTarget.slice(1, -1);
-    }
-
-    const target = lookupTarget.trim() || '192.168.1.10';
-    const namedTarget = resolveDeviceNameTargetCallback(target);
-    const resolvedTargetIp = namedTarget?.ip || target;
-
-    const isIpV6 = isValidIpv6(resolvedTargetIp);
-    if (!isIpV6 && !isValidIpv4(resolvedTargetIp)) {
-      // Domain lookup
-      if (!isValidIpv4(pcDNS) && !isValidIpv6(pcDNS)) {
-        addLocalOutput('error', t.dnsAddressRequired);
-        return;
-      }
-      if (isValidIpv4(pcDNS) && !hasGatewayForTargetCallback(pcDNS)) {
-        addLocalOutput('error', t.dnsGatewayRequired);
-        return;
-      }
-    } else if (isValidIpv4(resolvedTargetIp)) {
-      if (!isLoopbackTarget(resolvedTargetIp) && !hasGatewayForTargetCallback(resolvedTargetIp)) {
-        addLocalOutput('error', t.targetGatewayRequired);
-        return;
-      }
-    } else if (isIpV6) {
-      if (!pcIPv6) {
-        addLocalOutput('error', language === 'tr' ? 'PC\'de IPv6 adresi yapılandırılmamış.' : 'IPv6 address is not configured on this PC.');
-        return;
-      }
-    }
-
-    // Check firewall for HTTP traffic
-    const connectivityResult = checkConnectivity(deviceId, resolvedTargetIp, topologyDevices, topologyConnections as unknown as CanvasConnection[], deviceStates || new Map(), language as 'tr' | 'en', { protocol: 'tcp', port: '80' });
-    if (!connectivityResult.success && connectivityResult.error?.includes('firewall')) {
-      setHttpAppDeviceId(null);
-      setHttpAppTitle('Access Denied');
-      setHttpAppContent(`
-        <main style="padding:32px;font-family:system-ui,-apple-system,Segoe UI,sans-serif;text-align:center;">
-          <div style="font-size:64px;margin-bottom:16px;">🛡️</div>
-          <h1 style="margin:0 0 8px;font-size:24px;color:var(--color-error-500);">${language === 'tr' ? 'Erişim Engellendi' : 'Access Denied'}</h1>
-          <p style="margin:0 0 12px;font-size:16px;color:var(--color-muted-foreground);">${connectivityResult.error}</p>
-          <code style="display:inline-block;padding:6px 10px;border-radius:8px;background:var(--color-error-100);color:var(--color-error-800);font-size:13px;">${displayUrl}</code>
-        </main>
-      `);
-      addLocalOutput('error', connectivityResult.error);
-      return;
-    }
-
-    const httpServer = findHttpServerByTargetCallback(resolvedTargetIp);
-    setHttpAppUrl(displayUrl);
-
-    if (!httpServer) {
-      setHttpAppDeviceId(null);
-      setHttpAppTitle('404 Not Found');
-      setHttpAppContent(`
-        <main style="padding:32px;font-family:system-ui,-apple-system,Segoe UI,sans-serif;">
-          <h1 style="margin:0 0 8px;font-size:28px;">404</h1>
-          <p style="margin:0 0 12px;font-size:16px;">${language === 'tr' ? 'Sayfa bulunamadı' : 'Page not found'}</p>
-          <code style="display:inline-block;padding:6px 10px;border-radius:8px;background:var(--color-secondary-100);color:var(--color-secondary-900);">${displayUrl}</code>
-        </main>
-      `);
-      addLocalOutput('error', `404 Not Found: ${target}`);
-    } else if (isRouterDevice(httpServer)) {
-      const runtimeState = deviceStates?.get(httpServer.id);
-      const connectedIot = getConnectedIotDevices(httpServer.id);
-      const availableIot = getAvailableIotDevices(httpServer.id);
-      const adminPage = generateRouterAdminPage(httpServer, language, runtimeState, connectedIot, availableIot);
-      setHttpAppDeviceId(httpServer.id);
-      setHttpAppContent(adminPage);
-      setHttpAppTitle(language === 'tr' ? 'Yönlendirici Yönetimi' : 'Router Management');
-      addLocalOutput('success', language === 'tr'
-        ? 'HTTP sayfası yeni pencerede açıldı.'
-        : 'HTTP page opened in a new window.');
-    } else {
-      setHttpAppDeviceId(null);
-      addLocalOutput('html', httpServer.services?.http?.content || t.helloWorld);
-    }
-  }, [addLocalOutput, deviceStates, findHttpServerByTargetCallback, getAvailableIotDevices, getConnectedIotDevices, hasGatewayForTargetCallback, isLoopbackTarget, isValidIpv4, isValidIpv6, language, normalizeLookupTargetCallback, pcDNS, resolveDeviceNameTargetCallback, t, iotDevices, topologyDevices, generateIotWebPanelContent, generateIotDevicePageContent, httpAppDeviceId, topologyConnections, pcIPv6]);
-
-  useEffect(() => {
-    const handleRouterAdminMessage = (event: MessageEvent) => {
-      // Security: Validate origin to prevent cross-site scripting or data injection from malicious frames.
-      // We allow window.location.origin for same-origin messages and 'null' for local srcdoc iframes.
-      if (event.origin !== window.location.origin && event.origin !== 'null') {
-        return;
-      }
-
-      const data = event.data;
-
-      if (!data) {
-        return;
-      }
-
-      if (data.type === 'router-admin-toast') {
-        const payload = data.payload || {};
-        const variant = payload.type === 'error' ? 'destructive' : undefined;
-        toast({
-          title: payload.type === 'error'
-            ? (language === 'tr' ? 'Hata' : 'Error')
-            : payload.type === 'success'
-              ? (language === 'tr' ? 'Başarılı' : 'Success')
-              : payload.type === 'warning'
-                ? (language === 'tr' ? 'Uyarı' : 'Warning')
-                : (language === 'tr' ? 'Bilgi' : 'Info'),
-          description: payload.message || '',
-          variant,
-        });
-        return;
-      }
-
-      // Track which tab is active in the router admin page
-      if (data.type === 'router-admin-tab-change') {
-        routerActiveTabRef.current = data.tab || 'wireless';
-        return;
-      }
-
-      // For WiFi save operations, require httpAppDeviceId match
-      const isRouterSpecificMessage = data.type === 'router-admin-save-wifi';
-      if (isRouterSpecificMessage && httpAppDeviceId && data.deviceId && data.deviceId !== httpAppDeviceId) {
-        return;
-      }
-
-      // IoT messages are always accepted (deviceId in payload)
-
-
-      const allocateIotIpConfig = (routerDeviceId: string, excludeDeviceId?: string) => {
-        const routerDevice = topologyDevices.find((d) => d.id === routerDeviceId);
-        const routerState = routerDeviceId ? deviceStates?.get(routerDeviceId) : undefined;
-        let routerIp = routerDevice?.ip || '';
-        let routerSubnet = routerDevice?.subnet || '';
-
-        // Prefer the actual configured interface IP/subnet when the topology card is stale.
-        if (routerState?.ports) {
-          for (const port of Object.values(routerState.ports)) {
-            if (!port.shutdown && port.ipAddress) {
-              routerIp = port.ipAddress;
-              routerSubnet = port.subnetMask || routerSubnet;
-              break;
-            }
-          }
-        }
-
-        if (!routerIp) routerIp = '192.168.1.1';
-        if (!routerSubnet) routerSubnet = '255.255.255.0';
-        const baseIpParts = routerIp.split('.');
-        let newIp = '';
-
-        const usedIps = new Set<string>();
-        topologyDevices.forEach((d) => {
-          if (d.id === excludeDeviceId) return;
-          if (d.ip && d.ip.startsWith(baseIpParts[0] + '.' + baseIpParts[1] + '.' + baseIpParts[2])) {
-            usedIps.add(d.ip);
-          }
-        });
-
-        for (let i = 100; i <= 254; i++) {
-          const testIp = `${baseIpParts[0]}.${baseIpParts[1]}.${baseIpParts[2]}.${i}`;
-          if (!usedIps.has(testIp)) {
-            newIp = testIp;
-            break;
-          }
-        }
-
-        if (!newIp) {
-          for (let i = 2; i < 100; i++) {
-            const testIp = `${baseIpParts[0]}.${baseIpParts[1]}.${baseIpParts[2]}.${i}`;
-            if (!usedIps.has(testIp) && testIp !== routerIp) {
-              newIp = testIp;
-              break;
-            }
-          }
-        }
-
-        if (!newIp) {
-          const fallbackUsedIps = new Set<string>();
-          topologyDevices.forEach((d) => {
-            if (d.id !== excludeDeviceId && d.ip) fallbackUsedIps.add(d.ip);
-          });
-          return {
-            ip: generateRandomLinkLocalIpv4(fallbackUsedIps),
-            gateway: '0.0.0.0',
-            subnet: '255.255.0.0',
-            dns: '0.0.0.0',
-            source: 'apipa' as const,
-          };
-        }
-
-        return {
-          ip: newIp,
-          gateway: routerIp,
-          subnet: routerSubnet,
-          dns: routerIp,
-          source: 'dhcp' as const,
-        };
-      };
-
-      // Handle WiFi settings save
-      if (data.type === 'router-admin-save-wifi') {
-        const device = topologyDevices.find((d) => d.id === httpAppDeviceId);
-        const payload = data.payload || {};
-        const nextWifi = {
-          enabled: Boolean(payload.enabled),
-          ssid: String(payload.ssid || ''),
-          security: payload.security || 'open',
-          password: String(payload.password || ''),
-          channel: payload.channel || '2.4GHz',
-          mode: payload.mode || 'ap',
-          hidden: Boolean(payload.hidden),
-          maxClients: Number(payload.maxClients || 32),
-          bssid: device?.wifi?.bssid || '',
-        };
-
-        window.dispatchEvent(new CustomEvent('update-topology-device-config', {
-          detail: {
-            deviceId: httpAppDeviceId,
-            config: {
-              wifi: nextWifi,
-            },
-          },
-        }));
-
-        addLocalOutput(
-          'success',
-          language === 'tr'
-            ? `${device?.name || 'Cihaz'} WiFi ayarları uygulandı.`
-            : `${device?.name || 'Device'} WiFi settings applied.`
-        );
-      }
-
-      // Handle IoT device connect (existing device)
-      if (data.type === 'router-admin-connect-iot') {
-        const payload = data.payload || {};
-        const iotDeviceId = payload.iotDeviceId;
-
-        if (!iotDeviceId) {
-          logger.warn('No iotDeviceId provided');
-          return;
-        }
-
-        const iotDevice = topologyDevices.find((d) => d.id === iotDeviceId);
-        if (!iotDevice || iotDevice.type !== 'iot') {
-          logger.warn('IoT device not found or wrong type:', iotDeviceId);
-          return;
-        }
-
-        const ipConfig = allocateIotIpConfig(httpAppDeviceId || '', iotDeviceId);
-
-        // Update the IoT device's WiFi config to connect to this AP
-        const updatedWifi = {
-          enabled: true,
-          ssid: payload.ssid || '',
-          security: payload.security || 'open',
-          password: payload.password || '',
-          channel: payload.channel || '2.4GHz',
-          mode: 'client' as const,
-          bssid: httpAppDeviceId,
-        };
-
-        // Dispatch event to update the IoT device with IP
-        window.dispatchEvent(new CustomEvent('update-topology-device-config', {
-          detail: {
-            deviceId: iotDeviceId,
-            config: {
-              wifi: updatedWifi,
-              status: 'online',
-              ip: ipConfig.ip,
-              ipConfigMode: 'dhcp' as const,
-              gateway: ipConfig.gateway,
-              subnet: ipConfig.subnet,
-              dns: ipConfig.dns,
-            },
-          },
-        }));
-
-        addLocalOutput(
-          'success',
-          language === 'tr'
-            ? `IoT cihaz "${iotDevice.name}" ağa bağlandı. IP: ${ipConfig.ip}`
-            : `IoT device "${iotDevice.name}" connected to the network. IP: ${ipConfig.ip}`
-        );
-      }
-
-      if (data.type === 'router-admin-renew-iot') {
-        const payload = data.payload || {};
-        const iotDeviceId = payload.iotDeviceId;
-
-        if (!iotDeviceId) return;
-
-        const iotDevice = topologyDevices.find((d) => d.id === iotDeviceId);
-        if (!iotDevice || iotDevice.type !== 'iot') return;
-
-        const ipConfig = allocateIotIpConfig(httpAppDeviceId || '', iotDeviceId);
-
-        window.dispatchEvent(new CustomEvent('update-topology-device-config', {
-          detail: {
-            deviceId: iotDeviceId,
-            config: {
-              ip: ipConfig.ip,
-              ipConfigMode: 'dhcp' as const,
-              gateway: ipConfig.gateway,
-              subnet: ipConfig.subnet,
-              dns: ipConfig.dns,
-            },
-          },
-        }));
-
-        addLocalOutput(
-          'success',
-          language === 'tr'
-            ? `IoT cihaz "${iotDevice.name}" için IP yenilendi: ${ipConfig.ip}`
-            : `Renewed IP for IoT device "${iotDevice.name}": ${ipConfig.ip}`
-        );
-
-        if (httpAppDeviceId) {
-          const targetDevice = topologyDevices.find((d) => d.id === httpAppDeviceId);
-          if (targetDevice && isRouterDevice(targetDevice)) {
-            const runtimeState = deviceStates?.get(httpAppDeviceId);
-            const connectedIot = getConnectedIotDevices(httpAppDeviceId);
-            const availableIot = getAvailableIotDevices(httpAppDeviceId);
-            const refreshed = generateRouterAdminPage(targetDevice, language, runtimeState, connectedIot, availableIot, undefined, undefined, routerActiveTabRef.current);
-            setHttpAppContent(refreshed);
-          }
-        }
-      }
-
-      // Handle IoT device delete
-      if (data.type === 'router-admin-delete-iot') {
-        const payload = data.payload || {};
-        const iotDeviceId = payload.iotDeviceId;
-
-        if (!iotDeviceId) return;
-
-        if (onDeleteDevice) {
-          onDeleteDevice(iotDeviceId);
-        }
-      }
-
-      // Handle IoT device disconnect
-      if (data.type === 'router-admin-disconnect-iot') {
-        const payload = data.payload || {};
-        const iotDeviceId = payload.iotDeviceId;
-
-        if (!iotDeviceId) {
-          logger.warn('No iotDeviceId provided for disconnect');
-          return;
-        }
-
-        const iotDevice = topologyDevices.find((d) => d.id === iotDeviceId);
-        if (!iotDevice || iotDevice.type !== 'iot') {
-          logger.warn('IoT device not found or wrong type for disconnect:', iotDeviceId);
-          return;
-        }
-
-        // Update the IoT device's WiFi config to disconnect (disable WiFi)
-        const updatedWifi = {
-          enabled: false,
-          ssid: '',
-          security: 'open' as const,
-          password: '',
-          channel: '2.4GHz' as const,
-          mode: 'client' as const,
-          bssid: undefined,
-        };
-
-        // Update ports to clear WiFi connection
-        const updatedPorts = iotDevice.ports.map(p =>
-          p.id === 'wlan0'
-            ? { ...p, status: 'disconnected' as const, ipAddress: undefined, subnetMask: undefined, wifi: { ssid: '', security: 'open' as const, channel: '2.4GHz' as const, mode: 'client' as const } }
-            : p
-        );
-
-        // Dispatch event to update the IoT device
-        window.dispatchEvent(new CustomEvent('update-topology-device-config', {
-          detail: {
-            deviceId: iotDeviceId,
-            config: {
-              wifi: updatedWifi,
-              ip: '',
-              subnet: '',
-              gateway: '',
-              ports: updatedPorts,
-            },
-          },
-        }));
-
-        // Delete any physical cable connections between this AP and the IoT device
-        if (topologyConnections) {
-          topologyConnections.forEach(conn => {
-            if ((conn.sourceDeviceId === httpAppDeviceId && conn.targetDeviceId === iotDeviceId) ||
-              (conn.targetDeviceId === httpAppDeviceId && conn.sourceDeviceId === iotDeviceId)) {
-              window.dispatchEvent(new CustomEvent('delete-topology-connection', {
-                detail: { connectionId: (conn as CanvasConnection).id }
-              }));
-            }
-          });
-        }
-        addLocalOutput(
-          'success',
-          language === 'tr'
-            ? `IoT cihaz "${iotDevice.name}" ağdan çıkarıldı.`
-            : `IoT device "${iotDevice.name}" disconnected from the network.`
-        );
-
-        // Refresh router admin page to update device list
-        if (httpAppDeviceId) {
-          const targetDevice = topologyDevices.find((d) => d.id === httpAppDeviceId);
-          if (targetDevice && isRouterDevice(targetDevice)) {
-            const runtimeState = deviceStates?.get(httpAppDeviceId);
-            const connectedIot = getConnectedIotDevices(httpAppDeviceId);
-            const availableIot = getAvailableIotDevices(httpAppDeviceId);
-            const refreshed = generateRouterAdminPage(targetDevice, language, runtimeState, connectedIot, availableIot, undefined, undefined, routerActiveTabRef.current);
-            setHttpAppContent(refreshed);
-          }
-        }
-      }
-
-      // Handle refresh devices request (after bulk operations)
-      if (data.type === 'router-admin-refresh-devices') {
-        if (httpAppDeviceId) {
-          const targetDevice = topologyDevices.find((d) => d.id === httpAppDeviceId);
-          if (targetDevice && isRouterDevice(targetDevice)) {
-            const runtimeState = deviceStates?.get(httpAppDeviceId);
-            const connectedIot = getConnectedIotDevices(httpAppDeviceId);
-            const availableIot = getAvailableIotDevices(httpAppDeviceId);
-            const refreshed = generateRouterAdminPage(targetDevice, language, runtimeState, connectedIot, availableIot, undefined, undefined, routerActiveTabRef.current);
-            setHttpAppContent(refreshed);
-          }
-        }
-      }
-
-      // Handle messages from IoT Web Panel
-      if (data.type === 'open-iot-device') {
-        const { deviceId } = data;
-        openWebPage(`iot://iot-device/${deviceId}`);
-      }
-
-      // Handle back to IoT list message
-      if (data.type === 'back-to-iot-list') {
-        setHttpAppDeviceId(null);
-        setHttpAppContent(null); // Clear content to force regeneration
-        setTimeout(() => {
-          openWebPage('http://iot-panel');
-        }, 50); // Small delay to ensure state updates
-      }
-
-      // Handle toggle IoT device status message
-      if (data.type === 'toggle-iot-device') {
-        const { deviceId, active } = data;
-        const targetDevice = topologyDevices.find((d) => d.id === deviceId);
-        if (targetDevice && targetDevice.type === 'iot') {
-          window.dispatchEvent(new CustomEvent('update-topology-device-config', {
-            detail: {
-              deviceId: deviceId,
-              config: {
-                iot: {
-                  ...targetDevice.iot,
-                  collaborationEnabled: active,
-                },
-              },
-            },
-          }));
-          addLocalOutput(
-            'success',
-            language === 'tr'
-              ? `IoT cihaz "${targetDevice.name || deviceId}" durumu ${active ? 'aktif edildi.' : 'pasif edildi.'}`
-              : `IoT device "${targetDevice.name || deviceId}" status ${active ? 'activated.' : 'deactivated.'}`
-          );
-        }
-      }
-
-      // Handle update IoT rules message
-      if (data.type === 'update-iot-rules') {
-        const { deviceId, rules } = data;
-        const targetDevice = topologyDevices.find((d) => d.id === deviceId);
-        if (targetDevice && targetDevice.type === 'iot') {
-          window.dispatchEvent(new CustomEvent('update-topology-device-config', {
-            detail: {
-              deviceId: deviceId,
-              config: {
-                iot: {
-                  ...targetDevice.iot,
-                  rules: rules,
-                },
-              },
-            },
-          }));
-          addLocalOutput(
-            'success',
-            language === 'tr'
-              ? `IoT cihaz "${targetDevice.name || deviceId}" kuralları güncellendi.`
-              : `IoT device "${targetDevice.name || deviceId}" rules updated.`
-          );
-        }
-      }
-    };
-
-    window.addEventListener('message', handleRouterAdminMessage);
-    return () => window.removeEventListener('message', handleRouterAdminMessage);
-  }, [addLocalOutput, httpAppDeviceId, language, topologyDevices, topologyConnections, getConnectedIotDevices, getAvailableIotDevices, openWebPage]);
+  usePCPanelRouterAdmin({
+    language,
+    httpAppDeviceId,
+    setHttpAppDeviceId,
+    setHttpAppContent,
+    routerActiveTabRef,
+    topologyDevices,
+    topologyConnections: topologyConnections as CanvasConnection[],
+    deviceStates,
+    getConnectedIotDevices,
+    getAvailableIotDevices,
+    openWebPage,
+    addLocalOutput,
+    onDeleteDevice,
+  });
 
   useEffect(() => {
     if (!httpAppContent || !isMobile || typeof window === 'undefined') return;
