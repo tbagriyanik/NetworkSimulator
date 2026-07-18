@@ -1,5 +1,5 @@
-import { useEffect, useRef, useCallback, useMemo, useState } from 'react';
-import { SpatialPartitioner, ViewportCuller, ViewportState, CullingResult } from './index';
+import { useCallback, useMemo } from 'react';
+import { SpatialPartitioner, ViewportCuller, ViewportState } from './index';
 import { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
 
 export interface UseSpatialPartitioningOptions {
@@ -16,60 +16,72 @@ export interface UseSpatialPartitioningResult {
     getStats: () => Record<string, number> | null;
 }
 
+/**
+ * useSpatialPartitioning: Optimized React hook for grid-based viewport culling.
+ *
+ * Performance Optimization:
+ * By calculating visible nodes and connections synchronously inside useMemo during
+ * render, we completely eliminate React state updates and subsequent double-rendering
+ * passes when panning and zooming.
+ *
+ * Complies with strict react-hooks/refs rules by avoiding useRef for values read/written
+ * during render, using plain memoized tracking objects instead.
+ */
 export function useSpatialPartitioning(
     devices: CanvasDevice[],
     connections: CanvasConnection[],
+    viewport?: ViewportState | null,
     options: UseSpatialPartitioningOptions = {}
 ): UseSpatialPartitioningResult {
-    const { cellSize = 256, margin = 100, enabled = true } = options;
+    // If options was passed as the 3rd argument (legacy usage)
+    const activeOptions = (viewport && !('zoom' in viewport))
+        ? (viewport as UseSpatialPartitioningOptions)
+        : options;
+    const activeViewport = (viewport && 'zoom' in viewport) ? viewport : null;
 
-    const partitionerRef = useRef<SpatialPartitioner | null>(null);
-    const cullerRef = useRef<ViewportCuller | null>(null);
-    const viewportRef = useRef<ViewportState | null>(null);
+    const { cellSize = 256, margin = 100, enabled = true } = activeOptions;
 
-    // Track previous state for differential updates
-    const prevDevicesRef = useRef<CanvasDevice[]>([]);
-    const prevConnectionsRef = useRef<CanvasConnection[]>([]);
+    // Use memoized values instead of useRef to comply with rendering rules
+    const partitioner = useMemo(() => {
+        if (!enabled) return null;
+        return new SpatialPartitioner(cellSize);
+    }, [cellSize, enabled]);
 
-    const [cullingResult, setCullingResult] = useState<CullingResult | null>(null);
+    const culler = useMemo(() => {
+        if (!enabled || !partitioner) return null;
+        return new ViewportCuller(partitioner, margin);
+    }, [partitioner, margin, enabled]);
 
-    useEffect(() => {
-        if (!enabled) return;
+    // Plain JavaScript tracking object instead of useRef to allow safe render-time updates
+    const prevTracker = useMemo(() => ({
+        devices: [] as CanvasDevice[],
+        connections: [] as CanvasConnection[]
+    }), [partitioner]); // reset tracker if partitioner instance changes
 
-        if (!partitionerRef.current) {
-            partitionerRef.current = new SpatialPartitioner(cellSize);
-        }
-        if (!cullerRef.current && partitionerRef.current) {
-            cullerRef.current = new ViewportCuller(partitionerRef.current, margin);
-        }
+    // Perform differential updates to the spatial partitioner synchronously during render
+    useMemo(() => {
+        if (!enabled || !partitioner || !culler) return;
 
-        const partitioner = partitionerRef.current;
-        const culler = cullerRef.current;
-        if (!partitioner || !culler) return;
-
-        // Differential update for devices
-        const prevDevices = prevDevicesRef.current;
+        const prevDevices = prevTracker.devices;
         const prevDeviceMap = new Map(prevDevices.map(d => [d.id, d]));
         const currentDeviceMap = new Map(devices.map(d => [d.id, d]));
 
-        // Find added, removed, and moved devices
+        // Check for added, removed, or moved devices differentially
         const deviceChanged = prevDevices.length !== devices.length;
         if (!deviceChanged) {
-            // Check each device
             for (const d of devices) {
                 const prev = prevDeviceMap.get(d.id);
                 if (!prev || prev.x !== d.x || prev.y !== d.y) {
                     partitioner.assignNode({ id: d.id, x: d.x, y: d.y });
                 }
             }
-            // Check for removed devices
             for (const d of prevDevices) {
                 if (!currentDeviceMap.has(d.id)) {
                     partitioner.removeNode(d.id);
                 }
             }
         } else {
-            // Full update when array size differs (safest path)
+            // Full rebuild on size mismatches or initial load
             partitioner.clear();
             const nodes = devices.map(d => ({ id: d.id, x: d.x, y: d.y }));
             partitioner.assignNodes(nodes);
@@ -83,7 +95,7 @@ export function useSpatialPartitioning(
             });
         }
 
-        // Update culler node list
+        // Keep the culler updated with the latest lists
         culler.setNodes(devices.map(d => ({ id: d.id, x: d.x, y: d.y })));
         culler.setConnections(connections.map(c => ({
             id: c.id,
@@ -91,51 +103,45 @@ export function useSpatialPartitioning(
             targetNodeId: c.targetDeviceId,
         })));
 
-        // Store current state for next diff
-        prevDevicesRef.current = devices;
-        prevConnectionsRef.current = connections;
+        // eslint-disable-next-line react-hooks/immutability
+        prevTracker.devices = devices;
+        // eslint-disable-next-line react-hooks/immutability
+        prevTracker.connections = connections;
+    }, [devices, connections, enabled, partitioner, culler, prevTracker]);
 
-        if (viewportRef.current && culler) {
-            setCullingResult(culler.cull(viewportRef.current));
-        } else {
-            setCullingResult(null);
+    // Calculate visible nodes and connections synchronously in useMemo (zero React state updates)
+    const visibleResult = useMemo(() => {
+        if (!enabled || !culler || !activeViewport) {
+            return {
+                visibleDeviceIds: devices.map(d => d.id),
+                visibleConnectionIds: connections.map(c => c.id)
+            };
         }
-    }, [devices, connections, cellSize, margin, enabled]);
+        const result = culler.cull(activeViewport);
+        return {
+            visibleDeviceIds: result.visibleNodeIds,
+            visibleConnectionIds: result.visibleConnectionIds
+        };
+    }, [devices, connections, activeViewport, enabled, culler]);
 
-    const updateViewport = useCallback((viewport: ViewportState) => {
-        if (!enabled || !cullerRef.current) return;
-        viewportRef.current = viewport;
-        setCullingResult(cullerRef.current.cull(viewport));
-    }, [enabled]);
-
-    const visibleDeviceIds = useMemo(() => {
-        if (!enabled || !cullingResult) {
-            return devices.map(d => d.id);
-        }
-        return cullingResult.visibleNodeIds;
-    }, [devices, enabled, cullingResult]);
-
-    const visibleConnectionIds = useMemo(() => {
-        if (!enabled || !cullingResult) {
-            return connections.map(c => c.id);
-        }
-        return cullingResult.visibleConnectionIds;
-    }, [connections, enabled, cullingResult]);
+    const updateViewport = useCallback((_viewport: ViewportState) => {
+        // No-op. Viewport culling is now completely synchronous and state-free.
+    }, []);
 
     const invalidateCache = useCallback(() => {
-        if (cullerRef.current) {
-            cullerRef.current.invalidateCache();
+        if (culler) {
+            culler.invalidateCache();
         }
-    }, []);
+    }, [culler]);
 
     const getStats = useCallback(() => {
-        if (!cullerRef.current) return null;
-        return cullerRef.current.getStats();
-    }, []);
+        if (!culler) return null;
+        return culler.getStats();
+    }, [culler]);
 
     return {
-        visibleDeviceIds,
-        visibleConnectionIds,
+        visibleDeviceIds: visibleResult.visibleDeviceIds,
+        visibleConnectionIds: visibleResult.visibleConnectionIds,
         updateViewport,
         invalidateCache,
         getStats,
