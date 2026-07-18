@@ -18,7 +18,7 @@ interface UseTopologyTooltipHandlersProps {
   isPanning: boolean;
   isSelecting: boolean;
   isActuallyDragging: boolean;
-  isTouchDragging: boolean;
+  isTouchDraggingRef: React.MutableRefObject<boolean>;
   TOOLTIP_DELAY: number;
   TOOLTIP_OFFSET_Y: number;
 }
@@ -37,7 +37,7 @@ export function useTopologyTooltipHandlers({
   isPanning,
   isSelecting,
   isActuallyDragging,
-  isTouchDragging,
+  isTouchDraggingRef,
   TOOLTIP_DELAY,
   TOOLTIP_OFFSET_Y,
 }: UseTopologyTooltipHandlersProps) {
@@ -107,9 +107,9 @@ export function useTopologyTooltipHandlers({
   }, [deviceMap, getLivePort, TOOLTIP_DELAY]);
 
   const handlePortHover = useCallback((e: React.MouseEvent, deviceId: string, portId: string) => {
-    if (isDrawingConnection || isPanning || isSelecting || isActuallyDragging || isTouchDragging) return;
+    if (isDrawingConnection || isPanning || isSelecting || isActuallyDragging || isTouchDraggingRef.current) return;
     showPortTooltip(e, deviceId, portId);
-  }, [showPortTooltip, isDrawingConnection, isPanning, isSelecting, isActuallyDragging, isTouchDragging]);
+  }, [showPortTooltip, isDrawingConnection, isPanning, isSelecting, isActuallyDragging, isTouchDraggingRef]);
 
   const handlePortMouseLeave = useCallback(() => {
     if (portTooltipTimerRef.current) {

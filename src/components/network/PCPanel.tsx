@@ -30,6 +30,9 @@ import { HttpBrowserWindow } from './pc-panel/HttpBrowserWindow';
 import { HomeLauncher } from './pc-panel/HomeLauncher';
 import { PowerOffOverlay } from './pc-panel/PowerOffOverlay';
 import { getDefaultPcFiles, getPCConfigDefaults } from './pc-panel/pcPanelFiles';
+import { usePCPanelNtp } from './pc-panel/usePCPanelNtp';
+import { usePCPanelMail } from './pc-panel/usePCPanelMail';
+import { usePCPanelDhcp } from './pc-panel/usePCPanelDhcp';
 import type { DhcpPoolConfig, FtpSession, OutputLine, PCActiveTab, PCPanelProps, PcFile } from './pc-panel/PCPanel.types';
 import { CommandLineTab } from './pc-panel/CommandLineTab';
 import { ConsoleTerminalTab } from './pc-panel/ConsoleTerminalTab';
@@ -155,7 +158,7 @@ export function PCPanel({
     return () => window.removeEventListener('tablet-back', handleTabletPopState as EventListener);
   }, []);
 
-  const [currentTime, setCurrentTime] = useState(new Date());
+
   const [fontSize, setFontSize] = useState<number>(() => {
     try {
       return parseInt(localStorage.getItem('terminal-font-size') || '13', 10);
@@ -419,7 +422,7 @@ export function PCPanel({
   const pcSubnetRef = useRef(pcSubnet);
   const pcGatewayRef = useRef(pcGateway);
   const pcDNSRef = useRef(pcDNS);
-  const applyDhcpLeaseRef = useRef<((force?: boolean) => ReturnType<typeof applyDhcpLease> | null) | undefined>(undefined);
+  const applyDhcpLeaseRef = useRef<((force?: boolean) => { ip: string; subnetMask: string; gateway: string; dns: string; serverName: string; poolName: string } | null) | null>(null);
 
   // Keep refs in sync with state
   useEffect(() => { pcIpRef.current = pcIP; }, [pcIP]);
@@ -535,233 +538,30 @@ export function PCPanel({
     [topologyDevices, pcIP, pcSubnet, pcGateway, wifiEnabled, wifiSSID, deviceId, topologyConnections]
   );
 
-  const formatFullDateTime = useCallback((date: Date) => {
-    try {
-      return new Intl.DateTimeFormat(language === 'tr' ? 'tr-TR' : 'en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      }).format(date);
-    } catch {
-      return date.toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US');
-    }
-  }, [language]);
-
-  const ntpPanelTime = useMemo(() => {
-    if (!serviceNtpEnabled && !serviceNtpServer.trim()) return currentTime;
-    const date = serviceNtpDate || currentTime.toISOString().slice(0, 10);
-    const time = serviceNtpTime || currentTime.toTimeString().slice(0, 8);
-    const combined = new Date(`${date}T${time}`);
-    return Number.isNaN(combined.getTime()) ? currentTime : combined;
-  }, [currentTime, serviceNtpDate, serviceNtpEnabled, serviceNtpTime, serviceNtpServer]);
-
-
-
   const isValidIpAddress = useCallback((value: string) => {
     const parts = value.trim().split('.');
     return parts.length === 4 && parts.every((part) => /^\d{1,3}$/.test(part) && Number(part) >= 0 && Number(part) <= 255);
   }, []);
 
-  const formatLocalDate = useCallback((date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }, []);
-
-  const ntpSyncState = useMemo(() => {
-    const serverIp = serviceNtpServer.trim();
-    if (!serviceNtpEnabled && !serverIp) return null;
-
-    // local-clock: use real system time
-    if (serverIp === 'local-clock' || (!serverIp && serviceNtpEnabled)) {
-      const now = new Date();
-      return {
-        date: now.toISOString().slice(0, 10),
-        time: now.toTimeString().slice(0, 8),
-        realtime: true,
-      };
-    }
-
-    if (!isValidIpAddress(serverIp)) return null;
-    const canReach = checkConnectivity(deviceId, serverIp, topologyDevices, topologyConnections as unknown as CanvasConnection[], deviceStates || new Map(), language as 'tr' | 'en', { protocol: 'any' });
-    if (!canReach.success) return null;
-
-    let serverDate = '';
-    let serverTime = '';
-
-    if (canReach.targetId) {
-      const targetDev = topologyDevices.find(d => d.id === canReach.targetId);
-      if (targetDev) {
-        if (targetDev.type === 'switchL2' || targetDev.type === 'switchL3' || targetDev.type === 'router') {
-          const devState = deviceStates?.get(canReach.targetId);
-          if (devState?.services?.ntp?.enabled) {
-            const timeOffset = devState.services.ntp.timeOffset || 0;
-            const adjustedTime = new Date(new Date().getTime() + timeOffset);
-            serverDate = adjustedTime.toISOString().slice(0, 10);
-            serverTime = adjustedTime.toTimeString().slice(0, 8);
-          }
-        } else {
-          // PC/Server
-          if (targetDev.services?.ntp?.enabled) {
-            serverDate = targetDev.services.ntp.date || '';
-            serverTime = targetDev.services.ntp.time || '';
-          }
-        }
-      }
-    }
-
-    if (serverDate && serverTime) {
-      const serverDateTime = new Date(`${serverDate}T${serverTime}`);
-      if (!Number.isNaN(serverDateTime.getTime())) {
-        const offset = serverDateTime.getTime() - new Date().getTime();
-        return {
-          date: serverDate,
-          time: serverTime,
-          realtime: false,
-          offset,
-        };
-      }
-    }
-
-    const now = new Date();
-    return {
-      date: now.toISOString().slice(0, 10),
-      time: now.toTimeString().slice(0, 8),
-      realtime: true,
-      offset: 0,
-    };
-  }, [deviceId, isValidIpAddress, serviceNtpEnabled, serviceNtpServer, topologyConnections, topologyDevices, deviceStates, language]);
-
-  useEffect(() => {
-    if (!ntpSyncState) {
-      const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-      return () => clearInterval(timer);
-    }
-
-    if (ntpSyncState?.realtime) {
-      // NTP server is synced – tick every second with real time
-      const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-      return () => clearInterval(timer);
-    }
-
-    // Tick every second with the offset applied
-    const offset = ntpSyncState.offset || 0;
-    const timer = setInterval(() => {
-      const adjusted = new Date(new Date().getTime() + offset);
-      setCurrentTime(adjusted);
-      setServiceNtpDate(adjusted.toISOString().slice(0, 10));
-      setServiceNtpTime(adjusted.toTimeString().slice(0, 8));
-    }, 1000);
-
-    const initialAdjusted = new Date(new Date().getTime() + offset);
-    setTimeout(() => setCurrentTime(initialAdjusted), 0);
-    setTimeout(() => setServiceNtpDate(initialAdjusted.toISOString().slice(0, 10)), 0);
-    setTimeout(() => setServiceNtpTime(initialAdjusted.toTimeString().slice(0, 8)), 0);
-
-    return () => clearInterval(timer);
-  }, [ntpSyncState]);
-
-  const applyNtpServerTime = useCallback((serverAddress: string) => {
-    const normalized = serverAddress.trim();
-    if (!normalized || !isValidIpAddress(normalized)) return null;
-
-    const canReach = checkConnectivity(deviceId, normalized, topologyDevices, topologyConnections as unknown as CanvasConnection[], deviceStates || new Map(), language as 'tr' | 'en', { protocol: 'any' });
-    if (!canReach.success) return null;
-
-    let serverDate = '';
-    let serverTime = '';
-
-    if (canReach.targetId) {
-      const targetDev = topologyDevices.find(d => d.id === canReach.targetId);
-      if (targetDev) {
-        if (targetDev.type === 'switchL2' || targetDev.type === 'switchL3' || targetDev.type === 'router') {
-          const devState = deviceStates?.get(canReach.targetId);
-          if (devState?.services?.ntp?.enabled) {
-            const timeOffset = devState.services.ntp.timeOffset || 0;
-            const adjustedTime = new Date(new Date().getTime() + timeOffset);
-            serverDate = adjustedTime.toISOString().slice(0, 10);
-            serverTime = adjustedTime.toTimeString().slice(0, 8);
-          }
-        } else {
-          // PC/Server
-          if (targetDev.services?.ntp?.enabled) {
-            serverDate = targetDev.services.ntp.date || '';
-            serverTime = targetDev.services.ntp.time || '';
-          }
-        }
-      }
-    }
-
-    const nextDate = serverDate || new Date().toISOString().slice(0, 10);
-    const nextTime = serverTime || new Date().toTimeString().slice(0, 8);
-
-    const syncedDateTime = new Date(`${nextDate}T${nextTime}`);
-    if (!Number.isNaN(syncedDateTime.getTime())) {
-      setCurrentTime(syncedDateTime);
-    }
-    setServiceNtpDate(nextDate);
-    setServiceNtpTime(nextTime);
-    setServiceNtpServerPreset(
-      normalized === 'pool.ntp.org'
-        ? 'pool.ntp.org'
-        : normalized === 'time.google.com'
-          ? 'time.google.com'
-          : normalized === 'time.cloudflare.com'
-            ? 'time.cloudflare.com'
-            : normalized === 'local-clock'
-              ? 'local-clock'
-              : 'custom'
-    );
-    return { date: nextDate, time: nextTime };
-  }, [deviceId, isValidIpAddress, topologyConnections, topologyDevices, deviceStates, language]);
-
-  useEffect(() => {
-    if (!serviceNtpEnabled) return;
-    if (ntpSyncState) return;
-
-    const timer = setInterval(() => {
-      setServiceNtpDate((prevDate) => {
-        const startDate = prevDate || new Date().toISOString().slice(0, 10);
-        const startTime = ntpTimeRef.current || new Date().toTimeString().slice(0, 8);
-        const next = new Date(`${startDate}T${startTime}`);
-        if (Number.isNaN(next.getTime())) return prevDate;
-        next.setSeconds(next.getSeconds() + 1);
-        const nextDate = formatLocalDate(next);
-        const nextTime = next.toTimeString().slice(0, 8);
-        setServiceNtpTime(nextTime);
-        setCurrentTime(next);
-        return nextDate;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [formatLocalDate, ntpSyncState, serviceNtpEnabled]);
-
-  const lastSyncedServerRef = useRef<string>('');
-  const lastSyncedServerDataRef = useRef<string>('');
-  const ntpTimeRef = useRef(serviceNtpTime);
-  // eslint-disable-next-line react-hooks/refs, react-hooks/immutability
-  ntpTimeRef.current = serviceNtpTime;
-
-  useEffect(() => {
-    const serverIp = serviceNtpServer.trim();
-    if (!serverIp || !isValidIpAddress(serverIp)) return;
-
-    const currentServerData = JSON.stringify({ ip: serverIp, connections: topologyConnections });
-
-    if (lastSyncedServerRef.current === serverIp && lastSyncedServerDataRef.current === currentServerData) return;
-
-    lastSyncedServerRef.current = serverIp;
-    lastSyncedServerDataRef.current = currentServerData;
-
-    void applyNtpServerTime(serverIp);
-  }, [applyNtpServerTime, isValidIpAddress, serviceNtpServer, topologyConnections, topologyDevices, deviceStates]);
-
+  const {
+    ntpPanelTime,
+    applyNtpServerTime,
+    formatFullDateTime,
+  } = usePCPanelNtp({
+    language,
+    deviceId,
+    topologyDevices,
+    topologyConnections,
+    deviceStates,
+    serviceNtpEnabled,
+    serviceNtpServer,
+    serviceNtpDate,
+    setServiceNtpDate,
+    serviceNtpTime,
+    setServiceNtpTime,
+    setServiceNtpServerPreset,
+    isValidIpAddress,
+  });
   const [selectedIotDeviceId, setSelectedIotDeviceId] = useState<string>('');
   const selectedIotDevice = useMemo(
     () => iotDevices.find((d) => d.id === selectedIotDeviceId) || null,
@@ -2728,520 +2528,38 @@ export function PCPanel({
     return `Interface: ${pcIP} --- 0x3\n  Internet Address      Physical Address      Type\n${rows}`;
   }, [canReachTargetIp, deviceId, formatMacForArp, pcIP, topologyDevices]);
 
-  const ipToNumber = useCallback((ip: string) => {
-    const parts = ip.split('.').map(Number);
-    if (parts.length !== 4 || parts.some((p) => Number.isNaN(p) || p < 0 || p > 255)) return null;
-    return (((parts[0] * 256 + parts[1]) * 256 + parts[2]) * 256 + parts[3]) >>> 0;
-  }, []);
-
-  const numberToIp = useCallback((num: number) => {
-    const a = (num >>> 24) & 255;
-    const b = (num >>> 16) & 255;
-    const c = (num >>> 8) & 255;
-    const d = num & 255;
-    return `${a}.${b}.${c}.${d}`;
-  }, []);
-
-  const getDhcpLease = useCallback((): { ip: string; subnetMask: string; gateway: string; dns: string; serverName: string; poolName: string } | null => {
-    try {
-      const usedIps = new Set(
-        topologyDevices
-          .filter((d) => d.id !== deviceId && validateIP(d.ip || ''))
-          .map((d) => d.ip)
-      );
-
-      // 1. Check PC DHCP servers from topology
-      const pcServers = topologyDevices.filter(
-        (d) =>
-          d.id !== deviceId &&
-          d.services?.dhcp?.enabled &&
-          (d.services?.dhcp?.pools?.length || 0) > 0 &&
-          !!d.ip &&
-          (hasPhysicalPathToDevice(d.id) || canReachTargetIp(d.ip))
-      );
-
-      for (const server of pcServers) {
-        const pools = server.services?.dhcp?.pools || [];
-        for (const pool of pools) {
-          if (!validateIP(pool.startIp) || !validateIP(pool.subnetMask) || !validateIP(pool.defaultGateway) || !validateIP(pool.dnsServer)) {
-            continue;
-          }
-          if (!isDhcpPoolCompatibleForClientCallback(pool.defaultGateway, pool.startIp, pool.subnetMask, server)) {
-            continue;
-          }
-          const start = ipToNumber(pool.startIp);
-          if (start === null) continue;
-          const maxUsers = Math.max(1, Number(pool.maxUsers || 1));
-
-          // Check if pool is full
-          let availableCount = 0;
-          for (let i = 0; i < maxUsers; i += 1) {
-            const candidate = numberToIp(start + i);
-            if (!usedIps.has(candidate)) {
-              availableCount++;
-            }
-          }
-
-          // Skip full pools
-          if (availableCount === 0) {
-            continue;
-          }
-
-          for (let i = 0; i < maxUsers; i += 1) {
-            const candidate = numberToIp(start + i);
-            if (!usedIps.has(candidate)) {
-              return {
-                ip: candidate,
-                subnetMask: pool.subnetMask,
-                gateway: pool.defaultGateway,
-                dns: pool.dnsServer,
-                serverName: server.name,
-                poolName: pool.poolName,
-              };
-            }
-          }
-        }
-      }
-
-      // 2. Check Router/Switch DHCP servers from deviceStates (CLI-configured pools)
-      const safeDeviceStates = ensureDeviceStatesMap(deviceStates);
-
-      if (safeDeviceStates) {
-        for (const [deviceId_, state] of safeDeviceStates.entries()) {
-          if (deviceId_ === deviceId) continue;
-          const device = topologyDevices.find(d => d.id === deviceId_);
-          if (!device || (device.type !== 'router' && device.type !== 'switchL2' && device.type !== 'switchL3')) continue;
-
-          // Check DHCP pools from both runtime services mirror and raw CLI state.
-          // Some flows may have dhcpPools populated while services mirror is stale.
-          const mirroredPools = state.services?.dhcp?.pools || [];
-          const cliPools = Object.entries(state.dhcpPools || {}).map(([poolName, pool]: [string, { network?: string; subnetMask?: string; startIp?: string; defaultRouter?: string; dnsServer?: string; maxUsers?: number | string }]) => {
-            const networkBase = typeof pool?.network === 'string' ? pool.network : '';
-            const networkPrefix = networkBase.split('.').slice(0, 3).join('.');
-            const fallbackStart = networkPrefix ? `${networkPrefix}.100` : '192.168.1.100';
-            const fallbackGateway = networkPrefix ? `${networkPrefix}.1` : '192.168.1.1';
-            return {
-              poolName,
-              subnetMask: pool?.subnetMask || '255.255.255.0',
-              startIp: pool?.startIp || fallbackStart,
-              defaultGateway: pool?.defaultRouter || fallbackGateway,
-              dnsServer: pool?.dnsServer || '8.8.8.8',
-              maxUsers: Number(pool?.maxUsers || 50),
-            };
-          });
-          const dhcpPools = [...mirroredPools];
-          for (const pool of cliPools) {
-            if (!dhcpPools.some((p: DhcpPoolConfig) => p.poolName === pool.poolName)) {
-              dhcpPools.push(pool);
-            }
-          }
-          if (dhcpPools.length === 0) continue;
-
-          // DHCP DISCOVER is L2 broadcast; client has no usable IP yet.
-          // In that case, only physical path is required (no server IP prerequisite).
-          let deviceIp = device.ip;
-          if (!deviceIp && state.ports) {
-            for (const portId in state.ports) {
-              const port = state.ports[portId];
-              if (port.ipAddress && !port.shutdown) {
-                deviceIp = port.ipAddress;
-                break;
-              }
-            }
-          }
-
-          // Check if PC can reach this DHCP server:
-          // - no client IP yet => physical path is enough
-          // - client already has IP => normal reachability check by server IP
-          const canReach = hasPhysicalPathToDevice(deviceId_) || (!!deviceIp && canReachTargetIp(deviceIp));
-          if (!canReach) continue;
-
-          // Use this device's DHCP pools
-          for (const pool of dhcpPools) {
-            if (!validateIP(pool.startIp) || !validateIP(pool.subnetMask) || !validateIP(pool.defaultGateway) || !validateIP(pool.dnsServer)) {
-              continue;
-            }
-            if (!isDhcpPoolCompatibleForClientCallback(pool.defaultGateway, pool.startIp, pool.subnetMask, device, state)) {
-              continue;
-            }
-            const start = ipToNumber(pool.startIp);
-            if (start === null) continue;
-            const maxUsers = Math.max(1, Number(pool.maxUsers || 50));
-
-            // Check if pool is full
-            let availableCount = 0;
-            for (let i = 0; i < maxUsers; i += 1) {
-              const candidate = numberToIp(start + i);
-              if (!usedIps.has(candidate)) {
-                availableCount++;
-              }
-            }
-
-            // Skip full pools
-            if (availableCount === 0) {
-              continue;
-            }
-
-            for (let i = 0; i < maxUsers; i += 1) {
-              const candidate = numberToIp(start + i);
-              if (!usedIps.has(candidate)) {
-                return {
-                  ip: candidate,
-                  subnetMask: pool.subnetMask,
-                  gateway: pool.defaultGateway,
-                  dns: pool.dnsServer,
-                  serverName: device.name || state.hostname || deviceId_,
-                  poolName: pool.poolName,
-                };
-              }
-            }
-          }
-        }
-      }
-
-      return null;
-    } catch (err) {
-      errorHandler.logError(DHCP_ERRORS.LEASE_FAILED({ deviceId, source: 'getDhcpLease', error: String(err) }));
-      return null;
-    }
-  }, [canReachTargetIp, deviceId, deviceStates, hasPhysicalPathToDevice, ipToNumber, isDhcpPoolCompatibleForClientCallback, numberToIp, topologyDevices, validateIP]);
-
-  // Check if DHCP pools are available and get failure reason
-  const checkDhcpAvailability = useCallback((): { available: boolean; reason: string } => {
-    const usedIps = new Set(
-      topologyDevices
-        .filter((d) => d.id !== deviceId && validateIP(d.ip || ''))
-        .map((d) => d.ip)
-    );
-
-    // Check PC DHCP servers
-    const pcServers = topologyDevices.filter(
-      (d) =>
-        d.id !== deviceId &&
-        d.services?.dhcp?.enabled &&
-        (d.services?.dhcp?.pools?.length || 0) > 0 &&
-        !!d.ip &&
-        (hasPhysicalPathToDevice(d.id) || canReachTargetIp(d.ip))
-    );
-
-    // Check Router/Switch DHCP servers availability
-    let hasAnyDhcpService = pcServers.length > 0;
-
-    // Safety check: ensure deviceStates is iterable
-    const safeDeviceStates = ensureDeviceStatesMap(deviceStates);
-
-    if (!hasAnyDhcpService && safeDeviceStates) {
-      for (const [deviceId_, state] of safeDeviceStates.entries()) {
-        if (deviceId_ === deviceId) continue;
-        const device = topologyDevices.find(d => d.id === deviceId_);
-        if (!device || (device.type !== 'router' && device.type !== 'switchL2' && device.type !== 'switchL3')) continue;
-
-        const mirroredPools = state.services?.dhcp?.pools || [];
-        const cliPools = Object.entries(state.dhcpPools || {}).length;
-        if (mirroredPools.length > 0 || cliPools > 0) {
-          hasAnyDhcpService = true;
-          break;
-        }
-      }
-    }
-
-    // If no DHCP service available at all
-    if (!hasAnyDhcpService) {
-      return { available: false, reason: 'no_dhcp_service' };
-    }
-
-    for (const server of pcServers) {
-      const pools = server.services?.dhcp?.pools || [];
-      for (const pool of pools) {
-        if (!validateIP(pool.startIp) || !validateIP(pool.subnetMask) || !validateIP(pool.defaultGateway) || !validateIP(pool.dnsServer)) {
-          continue;
-        }
-        if (!isDhcpPoolCompatibleForClientCallback(pool.defaultGateway, pool.startIp, pool.subnetMask, server)) {
-          continue;
-        }
-        const start = ipToNumber(pool.startIp);
-        if (start === null) continue;
-        const maxUsers = Math.max(1, Number(pool.maxUsers || 1));
-
-        let availableCount = 0;
-        for (let i = 0; i < maxUsers; i += 1) {
-          const candidate = numberToIp(start + i);
-          if (!usedIps.has(candidate)) {
-            availableCount++;
-          }
-        }
-
-        if (availableCount > 0) {
-          return { available: true, reason: '' };
-        }
-      }
-    }
-
-    // Check Router/Switch DHCP servers
-    if (deviceStates) {
-      for (const [deviceId_, state] of ensureDeviceStatesMap(deviceStates).entries()) {
-        if (deviceId_ === deviceId) continue;
-        const device = topologyDevices.find(d => d.id === deviceId_);
-        if (!device || (device.type !== 'router' && device.type !== 'switchL2' && device.type !== 'switchL3')) continue;
-
-        const mirroredPools = state.services?.dhcp?.pools || [];
-        const cliPools = Object.entries(state.dhcpPools || {}).map(([poolName, pool]: [string, { network?: string; subnetMask?: string; startIp?: string; defaultRouter?: string; dnsServer?: string; maxUsers?: number | string }]) => {
-          const networkBase = typeof pool?.network === 'string' ? pool.network : '';
-          const networkPrefix = networkBase.split('.').slice(0, 3).join('.');
-          const fallbackStart = networkPrefix ? `${networkPrefix}.100` : '192.168.1.100';
-          const fallbackGateway = networkPrefix ? `${networkPrefix}.1` : '192.168.1.1';
-          return {
-            poolName,
-            subnetMask: pool?.subnetMask || '255.255.255.0',
-            startIp: pool?.startIp || fallbackStart,
-            defaultGateway: pool?.defaultRouter || fallbackGateway,
-            dnsServer: pool?.dnsServer || '8.8.8.8',
-            maxUsers: Number(pool?.maxUsers || 50),
-          };
-        });
-        const dhcpPools = [...mirroredPools];
-        for (const pool of cliPools) {
-          if (!dhcpPools.some((p: DhcpPoolConfig) => p.poolName === pool.poolName)) {
-            dhcpPools.push(pool);
-          }
-        }
-        if (dhcpPools.length === 0) continue;
-
-        let deviceIp = device.ip;
-        if (!deviceIp && state.ports) {
-          for (const portId in state.ports) {
-            const port = state.ports[portId];
-            if (port.ipAddress && !port.shutdown) {
-              deviceIp = port.ipAddress;
-              break;
-            }
-          }
-        }
-
-        const canReach = hasPhysicalPathToDevice(deviceId_) || (!!deviceIp && canReachTargetIp(deviceIp));
-        if (!canReach) continue;
-
-        for (const pool of dhcpPools) {
-          if (!validateIP(pool.startIp) || !validateIP(pool.subnetMask) || !validateIP(pool.defaultGateway) || !validateIP(pool.dnsServer)) {
-            continue;
-          }
-          if (!isDhcpPoolCompatibleForClientCallback(pool.defaultGateway, pool.startIp, pool.subnetMask, device, state)) {
-            continue;
-          }
-          const start = ipToNumber(pool.startIp);
-          if (start === null) continue;
-          const maxUsers = Math.max(1, Number(pool.maxUsers || 50));
-
-          let availableCount = 0;
-          for (let i = 0; i < maxUsers; i += 1) {
-            const candidate = numberToIp(start + i);
-            if (!usedIps.has(candidate)) {
-              availableCount++;
-            }
-          }
-
-          if (availableCount > 0) {
-            return { available: true, reason: '' };
-          }
-        }
-      }
-    }
-
-    return { available: false, reason: 'all_pools_full' };
-  }, [canReachTargetIp, deviceId, deviceStates, hasPhysicalPathToDevice, ipToNumber, isDhcpPoolCompatibleForClientCallback, numberToIp, topologyDevices, validateIP]);
-
-  // Keep ref in sync with callback
-  useEffect(() => {
-    checkDhcpAvailabilityRef.current = checkDhcpAvailability;
-  }, [checkDhcpAvailability]);
-
-  const applyDhcpLease = useCallback((force = false) => {
-    const lease = getDhcpLease();
-    // Use refs for comparison to avoid dependency issues
-    const currentPcIP = pcIpRef.current;
-    const currentPcSubnet = pcSubnetRef.current;
-    const currentPcGateway = pcGatewayRef.current;
-    const currentPcDNS = pcDNSRef.current;
-
-    if (!lease) {
-      const usedIps = new Set(
-        topologyDevices
-          .filter((d) => d.id !== deviceId && validateIP(d.ip || ''))
-          .map((d) => d.ip)
-      );
-      const linkLocalIp = generateRandomLinkLocalIpv4(usedIps);
-      const linkLocalLease = {
-        ip: linkLocalIp,
-        subnetMask: '255.255.0.0',
-        gateway: '0.0.0.0',
-        dns: '0.0.0.0',
-        serverName: 'link-local',
-        poolName: 'APIPA',
-      };
-      if (!force &&
-        linkLocalLease.ip === currentPcIP &&
-        linkLocalLease.subnetMask === currentPcSubnet &&
-        linkLocalLease.gateway === currentPcGateway &&
-        linkLocalLease.dns === currentPcDNS
-      ) {
-        return linkLocalLease;
-      }
-      setPcIP(linkLocalLease.ip);
-      setPcSubnet(linkLocalLease.subnetMask);
-      setPcGateway(linkLocalLease.gateway);
-      setPcDNS(linkLocalLease.dns);
-      // Update topology to persist the link-local IP
-      window.dispatchEvent(new CustomEvent('update-topology-device-config', {
-        detail: {
-          deviceId,
-          config: {
-            ip: linkLocalLease.ip,
-            subnet: linkLocalLease.subnetMask,
-            gateway: linkLocalLease.gateway,
-            dns: linkLocalLease.dns,
-            ipConfigMode: 'dhcp'
-          }
-        }
-      }));
-      return linkLocalLease;
-    }
-    if (!force &&
-      lease.ip === currentPcIP &&
-      lease.subnetMask === currentPcSubnet &&
-      lease.gateway === currentPcGateway &&
-      lease.dns === currentPcDNS
-    ) {
-      return lease;
-    }
-    setPcIP(lease.ip);
-    setPcSubnet(lease.subnetMask);
-    setPcGateway(lease.gateway);
-    setPcDNS(lease.dns);
-    // Update topology to persist the DHCP lease IP
-    window.dispatchEvent(new CustomEvent('update-topology-device-config', {
-      detail: {
-        deviceId,
-        config: {
-          ip: lease.ip,
-          subnet: lease.subnetMask,
-          gateway: lease.gateway,
-          dns: lease.dns,
-          ipConfigMode: 'dhcp'
-        }
-      }
-    }));
-    return lease;
-  }, [getDhcpLease, deviceId, topologyDevices, validateIP]); // Removed pcIP, pcSubnet, pcGateway, pcDNS - using refs instead
-
-  // Keep ref in sync with callback to avoid dependency issues in useEffect
-  useEffect(() => {
-    applyDhcpLeaseRef.current = applyDhcpLease;
-  }, [applyDhcpLease]);
-
-  // When DHCP mode is selected, request a lease immediately and notify the user.
-  // Also retry if topology connections change, in case we were waiting for a cable.
-  // Also retry on page load if device has link-local IP (169.254.x.x) and is in DHCP mode.
-  useEffect(() => {
-    // Skip if DHCP button was manually clicked (toast already shown by button handler)
-    if (manualDhcpClickRef.current) {
-      prevIpConfigModeRef.current = ipConfigMode;
-      return;
-    }
-
-    // Check if IP is link-local (APIPA) - 169.254.x.x range
-    const isLinkLocal = pcIP && pcIP.startsWith('169.254.');
-    // If we already have a valid non-link-local IP and we didn't just switch to DHCP mode,
-    // don't try to get a new lease automatically on every connection change.
-    const hasValidIp = pcIP && pcIP !== '0.0.0.0' && !isLinkLocal;
-
-    if (ipConfigMode !== 'dhcp') {
-      prevIpConfigModeRef.current = ipConfigMode;
-      return;
-    }
-
-    // If mode hasn't changed AND we already have a valid IP (not link-local), don't re-trigger
-    // However, if we have a link-local IP, always try to get a proper DHCP lease
-    if (prevIpConfigModeRef.current === 'dhcp' && hasValidIp && !isLinkLocal) {
-      return;
-    }
-
-    let lease;
-    try {
-      lease = applyDhcpLeaseRef.current?.(true);
-    } catch (err) {
-      errorHandler.logError(DHCP_ERRORS.LEASE_FAILED({ deviceId, source: 'applyDhcpLease', error: String(err) }));
-    }
-    if (lease && lease.serverName !== 'link-local') {
-      toast({
-        title: t.dhcpSuccessTitle,
-        description: t.dhcpSuccessDescription.replace('{ip}', lease.ip),
-      });
-    } else {
-      // DHCP bulunamadıysa otomatik link-local (APIPA) atandı.
-      if (lease && lease.serverName === 'link-local' && prevIpConfigModeRef.current !== 'dhcp') {
-        toast({
-          title: language === 'tr' ? 'DHCP bulunamadı' : 'DHCP not found',
-          description: language === 'tr'
-            ? `Link-local IP atandı: ${lease.ip}`
-            : `Assigned link-local IP: ${lease.ip}`,
-        });
-      } else if (prevIpConfigModeRef.current !== 'dhcp') {
-        // Legacy failure toast (should be rare now; kept for safety)
-        try {
-          const dhcpCheck = checkDhcpAvailabilityRef.current();
-          let errorMessage = t.dhcpFailureDescription;
-          if (dhcpCheck.reason === 'all_pools_full') {
-            errorMessage = language === 'tr'
-              ? 'DHCP havuzları dolu! Maksimum IP sayısına ulaşıldı.'
-              : 'All DHCP pools are full! Maximum number of IP addresses reached.';
-          } else if (dhcpCheck.reason === 'no_dhcp_service') {
-            errorMessage = language === 'tr'
-              ? 'Ağda DHCP hizmeti bulunamadı! Lütfen bir DHCP sunucusu yapılandırın.'
-              : 'No DHCP service found on the network! Please configure a DHCP server.';
-          }
-          toast({
-            title: t.dhcpFailureTitle,
-            description: errorMessage,
-            variant: 'destructive',
-          });
-        } catch (checkErr) {
-          errorHandler.logError(DHCP_ERRORS.LEASE_FAILED({ deviceId, source: 'checkDhcpAvailability', error: String(checkErr) }));
-          toast({
-            title: t.dhcpFailureTitle,
-            description: t.dhcpFailureDescription,
-            variant: 'destructive',
-          });
-        }
-      }
-    }
-
-    prevIpConfigModeRef.current = ipConfigMode;
-  }, [ipConfigMode, t, topologyConnections, language]); // Removed applyDhcpLease - using ref instead
-
-  // Listen for auto-renew-dhcp event from page.tsx
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const handleAutoRenewDhcp = (event: Event) => {
-      const customEvent = event as CustomEvent<{ deviceId: string }>;
-      if (customEvent.detail && customEvent.detail.deviceId === deviceId) {
-        // Only trigger if this PC is in DHCP mode and has no valid IP (0.0.0.0 or 169.254.x.x)
-        if (ipConfigMode === 'dhcp' && (!pcIP || pcIP === '0.0.0.0' || pcIP.startsWith('169.254.'))) {
-          try {
-            const lease = applyDhcpLeaseRef.current?.(true);
-            if (lease && lease.serverName !== 'link-local') {
-              addLocalOutput('success', `DHCP lease renewed. New IP: ${lease.ip}`);
-            }
-          } catch (err) {
-            errorHandler.logError(DHCP_ERRORS.LEASE_FAILED({ deviceId, source: 'autoRenewDhcp', error: String(err) }));
-          }
-        }
-      }
-    };
-
-    window.addEventListener('auto-renew-dhcp', handleAutoRenewDhcp);
-    return () => window.removeEventListener('auto-renew-dhcp', handleAutoRenewDhcp);
-  }, [deviceId, ipConfigMode, pcIP, addLocalOutput]); // Removed applyDhcpLease - using ref instead
+  const {
+    getDhcpLease: _getDhcpLease,
+    checkDhcpAvailability: _checkDhcpAvailability,
+    applyDhcpLease: _applyDhcpLease,
+  } = usePCPanelDhcp({
+    language,
+    deviceId,
+    topologyDevices,
+    topologyConnections,
+    deviceStates,
+    ipConfigMode,
+    pcIP,
+    pcIpRef,
+    pcSubnetRef,
+    pcGatewayRef,
+    pcDNSRef,
+    setPcIP,
+    setPcSubnet,
+    setPcGateway,
+    setPcDNS,
+    validateIP,
+    hasPhysicalPathToDevice,
+    canReachTargetIp,
+    isDhcpPoolCompatibleForClientCallback,
+    checkDhcpAvailabilityRef,
+    applyDhcpLeaseRef,
+    manualDhcpClickRef,
+    prevIpConfigModeRef,
+    addLocalOutput,
+    toast,
+    t,
+  });
 
   const handleConnect = async () => {
     if (!consoleDevice) return;
@@ -4380,128 +3698,37 @@ ${fileLines}
   ], [language, isDark]);
 
 
-  const handleComposeSend = useCallback((to: string, subject: string, body: string, onError: (err: string) => void, onSuccess: () => void) => {
-    const recipient = to.trim();
-    const subj = subject.trim() || '(no subject)';
-    const bdy = body.trim();
-    if (!recipient || !bdy) return;
-    const [reqUser, reqDomain] = recipient.includes('@') ? recipient.split('@') : [recipient, serviceMailDomain];
-    const targetDevice = topologyDevices.find((d: CanvasDevice) => {
-      const mail = d.services?.mail;
-      if (mail?.username === reqUser && mail?.domain === (reqDomain || serviceMailDomain)) return true;
-      const isNameMatch = d.name === reqUser || d.ip === reqUser || d.id === reqUser;
-      const isDomainMatch = d.ip === reqDomain;
-      return isNameMatch && (isDomainMatch || !reqDomain);
-    });
-    if (!targetDevice) {
-      onError(language === 'tr' ? 'Alıcı bulunamadı.' : 'Recipient not found.');
-      return;
-    }
-    if (targetDevice.ip) {
-      const connectivity = checkConnectivity(deviceId, targetDevice.ip, topologyDevices, topologyConnections as unknown as CanvasConnection[], deviceStates || new Map(), language as 'tr' | 'en', { protocol: 'tcp', port: '25' });
-      if (!connectivity.success) {
-        onError(language === 'tr' ? 'SMTP (port 25) engellendi. Posta gönderilemiyor.' : 'SMTP (port 25) blocked. Cannot send mail.');
-        return;
-      }
-    }
-    onError('');
-    const timestamp = new Date().toISOString();
-    const senderName = deviceFromTopology?.name || pcIP || serviceMailUsername;
-    const senderEmail = `${serviceMailUsername}@${serviceMailDomain}`;
-    const from = `${senderName} <${senderEmail}>`;
-    const newInboxEntry = { from, to: recipient, subject: subj, body: bdy, timestamp };
-    let existingInbox = targetDevice.services?.mail?.inbox || [];
-    if (typeof window !== 'undefined') {
-      try { const stored = localStorage.getItem(`mail_inbox_${targetDevice.id}`); if (stored) existingInbox = JSON.parse(stored); } catch (_e) {}
-    }
-    const updatedInbox = [newInboxEntry, ...existingInbox];
-    if (typeof window !== 'undefined') localStorage.setItem(`mail_inbox_${targetDevice.id}`, JSON.stringify(updatedInbox));
-    const newSentEntry = { from, to: recipient, subject: subj, body: bdy, timestamp };
-    setServiceMailSent((prev) => [newSentEntry, ...prev]);
-    window.dispatchEvent(new CustomEvent('update-topology-device-config', {
-      detail: { deviceId: targetDevice.id, config: { services: { mail: { enabled: targetDevice.services?.mail?.enabled ?? false, domain: targetDevice.services?.mail?.domain || serviceMailDomain, username: targetDevice.services?.mail?.username || serviceMailUsername, inbox: updatedInbox } } } }
-    }));
-    window.dispatchEvent(new CustomEvent('update-topology-device-config', {
-      detail: { deviceId, config: { services: { mail: { enabled: serviceMailEnabled, domain: serviceMailDomain, username: serviceMailUsername, password: serviceMailPassword, inbox: serviceMailInbox, sent: [newSentEntry, ...serviceMailSent] } } } }
-    }));
-    addLocalOutput('success', language === 'tr' ? 'Mesaj gönderildi.' : 'Message sent.');
-    onSuccess();
-  }, [serviceMailDomain, serviceMailUsername, serviceMailEnabled, serviceMailPassword, serviceMailInbox, serviceMailSent, topologyDevices, topologyConnections, deviceStates, deviceId, addLocalOutput, language, deviceFromTopology, pcIP]);
-
-  const handleViewReplySend = useCallback((replyBody: string, msg: { from?: string; to?: string; subject: string; body: string; timestamp?: string }, onError: (err: string) => void, onSuccess: () => void) => {
-    if (!replyBody.trim() || !msg) return;
-    if (!msg.from) return;
-    const emailMatch = msg.from.match(/<([^>]+)>/);
-    const senderEmail = emailMatch ? emailMatch[1] : msg.from;
-    const [reqUser, reqDomain] = senderEmail.includes('@') ? senderEmail.split('@') : [senderEmail, ''];
-    const targetDevice = topologyDevices.find((d: CanvasDevice) => {
-      const mail = d.services?.mail;
-      return mail?.username === reqUser && mail?.domain === reqDomain;
-    });
-    if (!targetDevice) {
-      onError(language === 'tr' ? 'Alıcı cihaz bulunamadı.' : 'Target device not found.');
-      return;
-    }
-    if (targetDevice.ip) {
-      const connectivity = checkConnectivity(deviceId, targetDevice.ip, topologyDevices, topologyConnections as unknown as CanvasConnection[], deviceStates || new Map(), language as 'tr' | 'en', { protocol: 'tcp', port: '25' });
-      if (!connectivity.success) {
-        onError(language === 'tr' ? 'SMTP (port 25) engellendi. Yanıt gönderilemiyor.' : 'SMTP (port 25) blocked. Cannot send reply.');
-        return;
-      }
-    }
-    onError('');
-    const subject = `Re: ${msg.subject}`;
-    const timestamp = new Date().toISOString();
-    const senderName = deviceFromTopology?.name || pcIP || serviceMailUsername;
-    const senderAddr = `${serviceMailUsername}@${serviceMailDomain}`;
-    const from = `${senderName} <${senderAddr}>`;
-    const newInboxEntry = { from, to: msg.from, subject, body: replyBody, timestamp };
-    let existingInbox = targetDevice.services?.mail?.inbox || [];
-    if (typeof window !== 'undefined') {
-      try { const stored = localStorage.getItem(`mail_inbox_${targetDevice.id}`); if (stored) existingInbox = JSON.parse(stored); } catch (_e) {}
-    }
-    const updatedInbox = [newInboxEntry, ...existingInbox];
-    if (typeof window !== 'undefined') localStorage.setItem(`mail_inbox_${targetDevice.id}`, JSON.stringify(updatedInbox));
-    const newSentEntry = { from, to: msg.from, subject, body: replyBody, timestamp };
-    setServiceMailSent((prev) => [newSentEntry, ...prev]);
-    window.dispatchEvent(new CustomEvent('update-topology-device-config', {
-      detail: { deviceId: targetDevice.id, config: { services: { mail: { enabled: targetDevice.services?.mail?.enabled ?? false, domain: targetDevice.services?.mail?.domain || serviceMailDomain, username: targetDevice.services?.mail?.username || serviceMailUsername, inbox: updatedInbox } } } }
-    }));
-    window.dispatchEvent(new CustomEvent('update-topology-device-config', {
-      detail: { deviceId, config: { services: { mail: { enabled: serviceMailEnabled, domain: serviceMailDomain, username: serviceMailUsername, password: serviceMailPassword, inbox: serviceMailInbox, sent: [newSentEntry, ...serviceMailSent] } } } }
-    }));
-    addLocalOutput('success', language === 'tr' ? 'Yanıt gönderildi.' : 'Reply sent.');
-    onSuccess();
-  }, [serviceMailDomain, serviceMailUsername, serviceMailEnabled, serviceMailPassword, serviceMailInbox, serviceMailSent, topologyDevices, topologyConnections, deviceStates, deviceId, addLocalOutput, language, deviceFromTopology, pcIP]);
-
-  const handleDeleteInbox = useCallback((idx: number) => {
-    const updated = serviceMailInbox.filter((_, i) => i !== idx);
-    setServiceMailInbox(updated);
-    dispatchDeviceConfig({
-      services: {
-        dns: { enabled: serviceDnsEnabled, records: serviceDnsRecords },
-        http: { enabled: serviceHttpEnabled, content: serviceHttpContent },
-        ftp: { enabled: serviceFtpEnabled },
-        mail: { enabled: serviceMailEnabled, domain: serviceMailDomain, username: serviceMailUsername, password: serviceMailPassword, inbox: updated, sent: serviceMailSent },
-        dhcp: { enabled: serviceDhcpEnabled, pools: serviceDhcpPools }
-      }
-    });
-  }, [serviceMailInbox, serviceMailEnabled, serviceMailDomain, serviceMailUsername, serviceMailPassword, serviceMailSent, serviceDnsEnabled, serviceDnsRecords, serviceHttpEnabled, serviceHttpContent, serviceFtpEnabled, serviceDhcpEnabled, serviceDhcpPools, dispatchDeviceConfig]);
-
-  const handleDeleteSent = useCallback((idx: number) => {
-    const updated = serviceMailSent.filter((_, i) => i !== idx);
-    setServiceMailSent(updated);
-    dispatchDeviceConfig({
-      services: {
-        dns: { enabled: serviceDnsEnabled, records: serviceDnsRecords },
-        http: { enabled: serviceHttpEnabled, content: serviceHttpContent },
-        ftp: { enabled: serviceFtpEnabled },
-        mail: { enabled: serviceMailEnabled, domain: serviceMailDomain, username: serviceMailUsername, password: serviceMailPassword, inbox: serviceMailInbox, sent: updated },
-        dhcp: { enabled: serviceDhcpEnabled, pools: serviceDhcpPools }
-      }
-    });
-  }, [serviceMailSent, serviceMailEnabled, serviceMailDomain, serviceMailUsername, serviceMailPassword, serviceMailInbox, serviceDnsEnabled, serviceDnsRecords, serviceHttpEnabled, serviceHttpContent, serviceFtpEnabled, serviceDhcpEnabled, serviceDhcpPools, dispatchDeviceConfig]);
-
+  const {
+    handleComposeSend,
+    handleViewReplySend,
+    handleDeleteInbox,
+    handleDeleteSent,
+  } = usePCPanelMail({
+    language,
+    deviceId,
+    deviceFromTopology,
+    topologyDevices,
+    topologyConnections,
+    deviceStates,
+    pcIP,
+    serviceMailDomain,
+    serviceMailUsername,
+    serviceMailEnabled,
+    serviceMailPassword,
+    serviceMailInbox,
+    setServiceMailInbox,
+    serviceMailSent,
+    setServiceMailSent,
+    serviceDnsEnabled,
+    serviceDnsRecords,
+    serviceHttpEnabled,
+    serviceHttpContent,
+    serviceFtpEnabled,
+    serviceDhcpEnabled,
+    serviceDhcpPools,
+    dispatchDeviceConfig,
+    addLocalOutput,
+  });
   useEffect(() => {
     executeCommandRef.current = executeCommand;
   }, [executeCommand]);

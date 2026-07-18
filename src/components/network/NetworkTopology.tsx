@@ -21,9 +21,9 @@ import { ConnectionLine } from './ConnectionLine';
 import { ConnectionHandle } from './ConnectionHandle';
 import { DeviceNode } from './DeviceNode';
 import LazyNetworkTopologyContextMenu from './LazyNetworkTopologyContextMenu';
-import { Trash2, X } from "lucide-react";
+import { X } from "lucide-react";
 
-import { areArraysEqual } from '@/lib/network/equality';
+
 import {
   getDeviceWidth,
   getDeviceHeight,
@@ -33,14 +33,16 @@ import {
   getDeviceCenter,
   getPortPosition,
 } from './networkTopology.helpers';
-import { CABLE_COLORS, DRAG_THRESHOLD, LONG_PRESS_DURATION, TOOLTIP_DELAY, TOOLTIP_OFFSET_Y, VIRTUAL_CANVAS_WIDTH_MOBILE, VIRTUAL_CANVAS_HEIGHT_MOBILE, VIRTUAL_CANVAS_WIDTH_DESKTOP, VIRTUAL_CANVAS_HEIGHT_DESKTOP, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, NOTE_COLORS, NOTE_FONTS_DESKTOP as NOTE_FONTS, NOTE_FONT_SIZES, NOTE_OPACITY as NOTE_OPACITY_OPTIONS, PC_PORT_SPACING, PORT_SPACING, PORT_START_X, MOMENTUM_THRESHOLD, MOMENTUM_DECAY, MOMENTUM_MIN_SPEED } from './networkTopology.constants';
-import { logger } from '@/lib/logger';
+import { CABLE_COLORS, DRAG_THRESHOLD, LONG_PRESS_DURATION, TOOLTIP_DELAY, TOOLTIP_OFFSET_Y, VIRTUAL_CANVAS_WIDTH_MOBILE, VIRTUAL_CANVAS_HEIGHT_MOBILE, VIRTUAL_CANVAS_WIDTH_DESKTOP, VIRTUAL_CANVAS_HEIGHT_DESKTOP, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, NOTE_COLORS, NOTE_FONTS_DESKTOP as NOTE_FONTS, NOTE_FONT_SIZES, NOTE_OPACITY as NOTE_OPACITY_OPTIONS, PC_PORT_SPACING, PORT_SPACING, PORT_START_X } from './networkTopology.constants';
+
 import { NoteNode } from './topology/NoteNode';
 
 import { useCanvasActions } from '../../hooks/useCanvasActions';
 import { exportTopologyToPNG } from '../../utils/exportPNG';
 
 import { useCanvasZoomPan } from './hooks/useCanvasZoomPan';
+import { useTopologyTouch } from './hooks/useTopologyTouch';
+import { useTopologyMouse } from './hooks/useTopologyMouse';
 import { useCanvasKeyboard } from './hooks/useCanvasKeyboard';
 import { useCanvasClipboard } from './hooks/useCanvasClipboard';
 import { useDeviceDrag } from './hooks/useDeviceDrag';
@@ -64,6 +66,9 @@ import { TopologyModals } from './topology/TopologyModals';
 import { TempConnection } from './topology/TempConnection';
 import { EnvironmentBackgrounds } from './topology/EnvironmentBackgrounds';
 import { DEVICE_ICONS } from './topology/DeviceIcons';
+import { TopologySelectionToolbar } from './topology/TopologySelectionToolbar';
+import { SelectionBoxOverlay } from './topology/SelectionBoxOverlay';
+import { PingAnimationOverlay } from './topology/PingAnimationOverlay';
 
 
 
@@ -465,10 +470,11 @@ export function NetworkTopology({
   // ─── Touch performance refs ───
   const isTouchDraggingRef = useRef(false);
   const touchDraggedDeviceRef = useRef<CanvasDevice | null>(null);
-  const touchDragStartPosRef = useRef<{ x: number; y: number } | null>(null);
-  const touchDragOffsetRef = useRef({ x: 0, y: 0 });
   const activePointerDragRef = useRef(false);
   const activeDragPointerIdRef = useRef<number | null>(null);
+  // Double-tap detection refs for pointer events (used in handleDevicePointerDown)
+  const lastTapTimeRef = useRef(0);
+  const lastTappedDeviceRef = useRef<string | null>(null);
 
   // Mouse position animation frame ref for smooth tracking
   const mousePosAnimationFrameRef = useRef<number | null>(null);
@@ -532,18 +538,7 @@ export function NetworkTopology({
 
   // Touch/Mobile state
   const isMobile = useIsMobile();
-  const [isTouchDragging, setIsTouchDragging] = useState(false);
-  const [touchDraggedDevice, setTouchDraggedDevice] = useState<CanvasDevice | null>(null);
-  const [touchDragStartPos, setTouchDragStartPos] = useState<{ x: number; y: number } | null>(null);
-  const [touchDragOffset, setTouchDragOffset] = useState({ x: 0, y: 0 });
-  const [lastTouchDistance, setLastTouchDistance] = useState<number | null>(null);
-  const [_touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
-  const [longPressTimer, setLongPressTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
-  const lastTapTimeRef = useRef(0);
-  const lastTappedDeviceRef = useRef<string | null>(null);
 
-  // Advanced Canvas Pan/Zoom Touch state
-  const [lastTouchCenter, setLastTouchCenter] = useState<{ x: number; y: number } | null>(null);
 
   // Tap-tap connection state
   const [mobileConnectionSource, setMobileConnectionSource] = useState<string | null>(null);
@@ -785,7 +780,7 @@ export function NetworkTopology({
     isPanning,
     isSelecting,
     isActuallyDragging,
-    isTouchDragging,
+    isTouchDraggingRef,
     TOOLTIP_DELAY,
     TOOLTIP_OFFSET_Y,
   });
@@ -902,7 +897,7 @@ export function NetworkTopology({
     setContextMenu: setContextMenu as React.Dispatch<React.SetStateAction<ContextMenuState | null>>,
   });
 
-  const isDraggingInteractionDisabled = isActuallyDragging || isTouchDragging;
+
 
 
 
@@ -1071,79 +1066,7 @@ export function NetworkTopology({
     return Array.from(new Set([...selectionBaseIdsRef.current, ...boxSelectedIds]));
   }, []);
 
-  // Handle canvas pan start
-  // Reads pan via ref to avoid re-creating callback on every pan state change
-  const handleCanvasMouseDown = useCallback((e: ReactMouseEvent) => {
-    const targetEl = e.target as HTMLElement;
-    const isOnDevice = !!targetEl.closest('[data-device-id]');
-    const isOnNote = !!targetEl.closest('[data-note-id]');
-    const isOnEditable = targetEl.tagName === 'TEXTAREA' || targetEl.tagName === 'INPUT' || targetEl.isContentEditable;
-
-    if (e.button === 0 && !isOnDevice && !isOnNote && !isOnEditable) {
-      // Left click on empty canvas - PAN start
-      e.preventDefault();
-
-      // Cancel active interaction modes on empty canvas click
-      setSelectedDeviceIds([]);
-      setSelectedNoteIds([]);
-      setSelectAllMode(false);
-      if (pingMode || pingSource) {
-        setPingMode(false);
-        setPingSource(null);
-        setPingResult(null);
-      }
-      cancelConnectionDrawing();
-
-      const currentPan = panRef.current;
-      const ps = { x: e.clientX - currentPan.x, y: e.clientY - currentPan.y };
-      setPanStart(ps);
-      panStartRef.current = ps;
-      setIsPanning(true);
-      isPanningRef.current = true;
-      // PERFORMANCE: Hint browser that transform will change during pan (promotes to GPU layer)
-      if (svgContentGroupRef.current) {
-        svgContentGroupRef.current.style.willChange = 'transform';
-        svgContentGroupRef.current.style.transition = 'none';
-      }
-      setContextMenu(null);
-      return;
-    } else if (e.button === 1 && !isOnEditable) {
-      // Middle click on canvas - RECTANGLE SELECTION (no Shift required)
-      e.preventDefault();
-      // Prevent default browser auto-scroll behavior
-      e.stopPropagation();
-      // Cancel ping mode on middle click
-      if (pingMode) {
-        setPingMode(false);
-        setPingSource(null);
-        setPingResult(null);
-        return;
-      }
-
-      // Start rectangle selection with visual feedback
-      const rect = canvasRef.current?.getBoundingClientRect();
-      if (rect) {
-        const startX = (e.clientX - rect.left - panRef.current.x) / zoomRef.current;
-        const startY = (e.clientY - rect.top - panRef.current.y) / zoomRef.current;
-
-        const box = { start: { x: startX, y: startY }, current: { x: startX, y: startY } };
-        selectionAdditiveRef.current = e.shiftKey;
-        selectionBaseIdsRef.current = e.shiftKey ? selectedDeviceIdsRef.current : [];
-        setSelectionBox(box);
-        selectionBoxRef.current = box;
-        setIsSelecting(true);
-        isSelectingRef.current = true;
-        
-        // Change cursor to indicate selection mode
-        document.body.style.cursor = 'crosshair';
-        canvasRef.current?.focus();
-      }
-
-      setContextMenu(null);
-      setSelectAllMode(false);
-    }
-    // Right click (button === 2) - handled by onContextMenu event for context menu only
-  }, [openContextMenu, pingMode, cancelConnectionDrawing]);
+  // handleCanvasMouseDown removed by patch3
 
   // Keep refs in sync with state on every render (no cost - just ref assignment)
   useLayoutEffect(() => {
@@ -1173,796 +1096,8 @@ export function NetworkTopology({
     g.style.transform = `translate3d(${pan.x}px, ${pan.y}px, 0px) scale(${zoom})`;
   }, [pan, zoom, isPanning, isActuallyDragging]);
 
-  // Handle mouse move for panning and dragging
-  // Registered ONCE (empty deps) - reads all mutable values through refs to avoid stale closures
-  useEffect(() => {
-    const CANVAS_W_D = VIRTUAL_CANVAS_WIDTH_DESKTOP;
-    const CANVAS_H_D = VIRTUAL_CANVAS_HEIGHT_DESKTOP;
-
-    const handleMouseMove = (e: globalThis.MouseEvent) => {
-      // Always update mouse position ref for motion detection and other proximity features
-      if (canvasRef.current) {
-        const rect = canvasRectRef.current ?? canvasRef.current.getBoundingClientRect();
-        const currentPan = panRef.current;
-        const currentZoom = zoomRef.current;
-        mousePosRef.current = {
-          x: (e.clientX - rect.left - currentPan.x) / currentZoom,
-          y: (e.clientY - rect.top - currentPan.y) / currentZoom,
-        };
-        // BOLT: Removed setMousePos from here to avoid 60fps re-renders during panning/hovering.
-        // It's only needed for TempConnection when drawing.
-      }
-
-      if (isPanningRef.current) {
-        // Track velocity for momentum
-        const now = Date.now();
-        const dt = now - lastMouseMoveTimeRef.current;
-        if (dt > 0) {
-          const dx = e.clientX - lastMouseMovePosRef.current.x;
-          const dy = e.clientY - lastMouseMovePosRef.current.y;
-          // Exponential moving average for velocity to smooth out noise
-          velocityRef.current = {
-            x: velocityRef.current.x * 0.2 + (dx / dt) * 0.8,
-            y: velocityRef.current.y * 0.2 + (dy / dt) * 0.8,
-          };
-        }
-        lastMouseMoveTimeRef.current = now;
-        lastMouseMovePosRef.current = { x: e.clientX, y: e.clientY };
-
-        // PERFORMANCE: Write transform directly to DOM to bypass React re-render on every frame.
-        // The full React state (setPan) is only synced on mouseUp.
-        // Capture mouse position immediately — cancel any pending RAF so we always
-        // use the LATEST cursor position rather than skipping frames.
-        const capturedX = e.clientX;
-        const capturedY = e.clientY;
-        if (panAnimationFrameRef.current !== null) {
-          cancelAnimationFrame(panAnimationFrameRef.current);
-        }
-        panAnimationFrameRef.current = requestAnimationFrame(() => {
-          const newPanX = capturedX - panStartRef.current.x;
-          const newPanY = capturedY - panStartRef.current.y;
-          // Write directly to the SVG <g> element's transform (no React re-render)
-          const g = svgContentGroupRef.current;
-          if (g) {
-            g.style.transform = `translate3d(${newPanX}px, ${newPanY}px, 0px) scale(${zoomRef.current})`;
-          }
-          // Store pending pan for sync to React state on mouseUp
-          pendingPanRef.current = { x: newPanX, y: newPanY };
-          // Also update panRef so other code that reads it gets fresh values
-          panRef.current = { x: newPanX, y: newPanY };
-          panAnimationFrameRef.current = null;
-        });
-      } else if (isSelectingRef.current && canvasRef.current) {
-        // Rectangle selection update
-        const rect = canvasRectRef.current ?? canvasRef.current.getBoundingClientRect();
-        const currentX = (e.clientX - rect.left - panRef.current.x) / zoomRef.current;
-        const currentY = (e.clientY - rect.top - panRef.current.y) / zoomRef.current;
-
-        const currentBox = selectionBoxRef.current;
-        if (currentBox) {
-          const newBox = { ...currentBox, current: { x: currentX, y: currentY } };
-          selectionBoxRef.current = newBox;
-
-          // Compute intersecting devices immediately (reads from refs, no React state)
-          const selectedIds = mergeSelectionIds(getDeviceIdsInSelectionBox(newBox));
-
-          if (!areArraysEqual(selectedIds, selectedDeviceIdsRef.current)) {
-            selectedDeviceIdsRef.current = selectedIds;
-          }
-
-          // Direct DOM: update selection rectangle instantly
-          const rectEl = document.getElementById('selection-rectangle');
-          if (rectEl) {
-            const rx = Math.min(newBox.start.x, newBox.current.x);
-            const ry = Math.min(newBox.start.y, newBox.current.y);
-            const rw = Math.abs(newBox.current.x - newBox.start.x);
-            const rh = Math.abs(newBox.current.y - newBox.start.y);
-            rectEl.setAttribute('x', rx.toString());
-            rectEl.setAttribute('y', ry.toString());
-            rectEl.setAttribute('width', rw.toString());
-            rectEl.setAttribute('height', rh.toString());
-          }
-          
-          // Update selection counter tooltip
-          const counterEl = document.getElementById('selection-counter');
-          if (counterEl) {
-            counterEl.textContent = `${selectedIds.length} ${selectedIds.length === 1 ? 'device' : 'devices'}`;
-            counterEl.setAttribute('x', (Math.min(newBox.start.x, newBox.current.x) + 10).toString());
-            counterEl.setAttribute('y', (Math.min(newBox.start.y, newBox.current.y) - 10).toString());
-          }
-
-          // RAF-throttle React state updates (one per frame max) to avoid cascading renders
-          if (selectionAnimationFrameRef.current === null) {
-            selectionAnimationFrameRef.current = requestAnimationFrame(() => {
-              setSelectedDeviceIds(selectedDeviceIdsRef.current);
-              selectionAnimationFrameRef.current = null;
-            });
-          }
-        }
-      } else if (draggedDeviceRef.current && canvasRef.current) {
-        // Check if we've moved enough to consider it a drag
-        const dsp = dragStartPosRef.current;
-        if (dsp) {
-          const dx2 = e.clientX - dsp.x;
-          const dy2 = e.clientY - dsp.y;
-          const dist = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-          if (dist > DRAG_THRESHOLD) {
-            if (!isActuallyDraggingRef.current) {
-              setIsActuallyDragging(true);
-              isActuallyDraggingRef.current = true;
-              setDeviceTooltip(null);
-              setPortTooltip(null);
-              // Set grabbing cursor when drag starts
-              document.body.style.cursor = 'grabbing';
-              // GPU layer promotion for dragged devices
-              const currentDragged = draggedDeviceRef.current;
-              if (!currentDragged) return;
-              const dragIds = selectedDeviceIdsRef.current.includes(currentDragged)
-                ? selectedDeviceIdsRef.current
-                : [currentDragged];
-              for (let wi = 0; wi < dragIds.length; wi++) {
-                const we = document.querySelector('[data-device-id="' + dragIds[wi] + '"]') as SVGGElement | null;
-                if (we) {
-                  we.style.willChange = 'transform';
-                  const ichild = we.querySelector('g');
-                  if (ichild) ichild.style.willChange = 'transform';
-                }
-              }
-            }
-            wasDraggingRef.current = true;
-          }
-        }
-
-        if (isActuallyDraggingRef.current) {
-          // Throttle drag with RAF
-          if (dragAnimationFrameRef.current !== null) return;
-
-          const clientX = e.clientX;
-          const clientY = e.clientY;
-          const ctrlKey = e.ctrlKey;
-          lastDragEventRef.current = { clientX, clientY, ctrlKey };
-
-          dragAnimationFrameRef.current = requestAnimationFrame(() => {
-            if (!canvasRef.current) { dragAnimationFrameRef.current = null; return; }
-            const rect = canvasRef.current.getBoundingClientRect();
-            const currentPan = panRef.current;
-            const currentZoom = zoomRef.current;
-            const currentDragStartPos = dragStartPosRef.current;
-            const currentDraggedDevice = draggedDeviceRef.current;
-            const currentSnapToGrid = snapToGridRef.current;
-            const currentSelectedIds = selectedDeviceIdsRef.current;
-            const currentStartPositions = dragStartDevicePositionsRef.current;
-
-            if (!currentDragStartPos || !currentDraggedDevice) {
-              dragAnimationFrameRef.current = null;
-              return;
-            }
-
-            const mouseX = (clientX - rect.left - currentPan.x) / currentZoom;
-            const mouseY = (clientY - rect.top - currentPan.y) / currentZoom;
-            const startMouseX = (currentDragStartPos.x - rect.left - currentPan.x) / currentZoom;
-            const startMouseY = (currentDragStartPos.y - rect.top - currentPan.y) / currentZoom;
-            const dx = mouseX - startMouseX;
-            const dy = mouseY - startMouseY;
-
-            const canvasW = CANVAS_W_D;
-            const canvasH = CANVAS_H_D;
-
-            // PERFORMANCE: Direct DOM updates during drag - bypass React/Zustand entirely.
-            // Positions are synced back to Zustand state on mouseup (handleMouseUp).
-            const devicesToMove = currentSelectedIds.includes(currentDraggedDevice)
-              ? currentSelectedIds
-              : [currentDraggedDevice];
-
-            const newPositions = new Map<string, { x: number; y: number }>();
-            const doSnap = currentSnapToGrid && ctrlKey;
-
-            devicesToMove.forEach(id => {
-              const initialPos = currentStartPositions[id];
-              if (!initialPos) return;
-              let newX = initialPos.x + dx;
-              let newY = initialPos.y + dy;
-              if (doSnap) {
-                newX = Math.round(newX / 16) * 16;
-                newY = Math.round(newY / 16) * 16;
-              }
-              const clampedX = Math.max(20, Math.min(newX, canvasW - 100));
-              const clampedY = Math.max(20, Math.min(newY, canvasH - 100));
-              newPositions.set(id, { x: clampedX, y: clampedY });
-
-              // Direct DOM: update device <g> transform
-              const outerG = document.querySelector('[data-device-id="' + id + '"]');
-              if (outerG) {
-                const innerG = outerG.querySelector('g');
-                if (innerG) innerG.setAttribute('transform', 'translate(' + clampedX + ', ' + clampedY + ')');
-              }
-            });
-
-            // Also update connection paths attached to moved devices directly in DOM
-            if (newPositions.size > 0) {
-              const movedSet = new Set(devicesToMove);
-              const liveConns = latestConnectionsRef.current;
-              for (let ci = 0; ci < liveConns.length; ci++) {
-                const conn = liveConns[ci];
-                if (!movedSet.has(conn.sourceDeviceId) && !movedSet.has(conn.targetDeviceId)) continue;
-
-                const srcDev = latestDevicesRef.current.find(function (d) { return d.id === conn.sourceDeviceId; });
-                const tgtDev = latestDevicesRef.current.find(function (d) { return d.id === conn.targetDeviceId; });
-                if (!srcDev || !tgtDev) continue;
-
-                const sp = newPositions.get(conn.sourceDeviceId) || { x: srcDev.x, y: srcDev.y };
-                const tp = newPositions.get(conn.targetDeviceId) || { x: tgtDev.x, y: tgtDev.y };
-
-                // Calculate port positions using the same logic as getPortPosition
-                const srcPort = getPortPositionRef.current(
-                  Object.assign({}, srcDev, { x: sp.x, y: sp.y }),
-                  conn.sourcePort
-                );
-                const tgtPort = getPortPositionRef.current(
-                  Object.assign({}, tgtDev, { x: tp.x, y: tp.y }),
-                  conn.targetPort
-                );
-
-                const isWireless = conn.cableType === 'wireless';
-                const midX = (srcPort.x + tgtPort.x) / 2;
-                const meta = connectionMetaRef.current.get(conn.id) || { index: 0, total: 1 };
-                const sameConnIndex = meta.index;
-                const totalSameConns = meta.total;
-                const maxOffset = 20;
-                const offset = totalSameConns > 1
-                  ? (sameConnIndex - (totalSameConns - 1) / 2) * (maxOffset / Math.max(totalSameConns - 1, 1))
-                  : 0;
-
-                const dxVal = tgtPort.x - srcPort.x;
-                const dyVal = tgtPort.y - srcPort.y;
-                const len = Math.sqrt(dxVal * dxVal + dyVal * dyVal) || 1;
-                const perpX = -dyVal / len * offset;
-                const perpY = dxVal / len * offset;
-
-                const controlPoint1 = {
-                  x: midX + perpX,
-                  y: srcPort.y + perpY + Math.abs(offset) * 0.5
-                };
-                const controlPoint2 = {
-                  x: midX + perpX,
-                  y: tgtPort.y + perpY - Math.abs(offset) * 0.5
-                };
-
-                const buildWavePath = (sx: number, sy: number, tx: number, ty: number) => {
-                  const dx = tx - sx;
-                  const dy = ty - sy;
-                  const length = Math.sqrt(dx * dx + dy * dy) || 1;
-                  const ux = dx / length;
-                  const uy = dy / length;
-                  const px = -uy;
-                  const py = ux;
-                  const waveCount = Math.max(3, Math.round(length / 28));
-                  const amplitude = 8;
-                  const points = [`M ${sx} ${sy}`];
-                  for (let i = 0; i < waveCount; i++) {
-                    const t1 = (i + 0.5) / waveCount;
-                    const t2 = (i + 1) / waveCount;
-                    const mx = sx + ux * length * t1 + px * amplitude * (i % 2 === 0 ? 1 : -1);
-                    const my = sy + uy * length * t1 + py * amplitude * (i % 2 === 0 ? 1 : -1);
-                    const ex = sx + ux * length * t2;
-                    const ey = sy + uy * length * t2;
-                    points.push(`Q ${mx} ${my} ${ex} ${ey}`);
-                  }
-                  return points.join(' ');
-                };
-
-                const pathD = isWireless
-                  ? buildWavePath(srcPort.x, srcPort.y, tgtPort.x, tgtPort.y)
-                  : `M ${srcPort.x} ${srcPort.y} C ${controlPoint1.x} ${controlPoint1.y}, ${controlPoint2.x} ${controlPoint2.y}, ${tgtPort.x} ${tgtPort.y}`;
-
-                const connEl = document.querySelector('[data-connection-id="' + conn.id + '"]');
-                if (connEl) {
-                  const pathNodes = connEl.querySelectorAll('path');
-                  for (let pi2 = 0; pi2 < pathNodes.length; pi2++) {
-                    pathNodes[pi2].setAttribute('d', pathD);
-                  }
-
-                  // Update text labels in real-time
-                  const bezierPoint = (tVal: number) => {
-                    if (isWireless) {
-                      return { x: srcPort.x + (tgtPort.x - srcPort.x) * tVal, y: srcPort.y + (tgtPort.y - srcPort.y) * tVal };
-                    }
-                    const mt = 1 - tVal;
-                    return {
-                      x: mt * mt * mt * srcPort.x + 3 * mt * mt * tVal * controlPoint1.x + 3 * mt * tVal * tVal * controlPoint2.x + tVal * tVal * tVal * tgtPort.x,
-                      y: mt * mt * mt * srcPort.y + 3 * mt * mt * tVal * controlPoint1.y + 3 * mt * tVal * tVal * controlPoint2.y + tVal * tVal * tVal * tgtPort.y
-                    };
-                  };
-
-                  const srcPos = bezierPoint(0.42);
-                  const tgtPos = bezierPoint(0.58);
-                  const srcLabel = { x: srcPos.x + perpX, y: srcPos.y + perpY };
-                  const tgtLabel = { x: tgtPos.x + perpX, y: tgtPos.y + perpY };
-                  const labelOffsetY = -10;
-
-                  const textNodes = connEl.querySelectorAll('text');
-                  if (textNodes.length >= 4) {
-                    textNodes[0].setAttribute('x', String(srcLabel.x));
-                    textNodes[0].setAttribute('y', String(srcLabel.y + labelOffsetY));
-                    textNodes[1].setAttribute('x', String(srcLabel.x));
-                    textNodes[1].setAttribute('y', String(srcLabel.y + labelOffsetY));
-                    textNodes[2].setAttribute('x', String(tgtLabel.x));
-                    textNodes[2].setAttribute('y', String(tgtLabel.y + labelOffsetY));
-                    textNodes[3].setAttribute('x', String(tgtLabel.x));
-                    textNodes[3].setAttribute('y', String(tgtLabel.y + labelOffsetY));
-                  }
-                }
-
-                // Update connection handle position in real-time
-                const tTrash = 0.5;
-                const invT = 1 - tTrash;
-                const trashX =
-                  invT * invT * invT * srcPort.x +
-                  3 * invT * invT * tTrash * controlPoint1.x +
-                  3 * invT * tTrash * tTrash * controlPoint2.x +
-                  tTrash * tTrash * tTrash * tgtPort.x;
-                const trashY =
-                  invT * invT * invT * srcPort.y +
-                  3 * invT * invT * tTrash * controlPoint1.y +
-                  3 * invT * tTrash * tTrash * controlPoint2.y +
-                  tTrash * tTrash * tTrash * tgtPort.y;
-
-                const handleEl = document.querySelector('[data-connection-handle-id="' + conn.id + '"]');
-                if (handleEl) {
-                  const innerG = handleEl.querySelector('[data-handle-inner="true"]');
-                  if (innerG) {
-                    innerG.setAttribute('transform', 'translate(' + trashX + ', ' + trashY + ')');
-                  }
-                }
-              }
-            }
-
-            liveDeviceDragPositionsRef.current = newPositions;
-            dragAnimationFrameRef.current = null;
-          });
-        }
-      } else if (isDrawingConnectionRef.current && canvasRef.current) {
-        // Smooth mouse position tracking for connection drawing
-        if (mousePosAnimationFrameRef.current !== null) return;
-
-        mousePosAnimationFrameRef.current = requestAnimationFrame(() => {
-          const rect = canvasRectRef.current ?? canvasRef.current?.getBoundingClientRect();
-          if (!rect) {
-            mousePosAnimationFrameRef.current = null;
-            return;
-          }
-
-          const currentPan = panRef.current;
-          const currentZoom = zoomRef.current;
-          const newPos = {
-            x: (e.clientX - rect.left - currentPan.x) / currentZoom,
-            y: (e.clientY - rect.top - currentPan.y) / currentZoom,
-          };
-          mousePosRef.current = newPos;
-          // BOLT: Update state only when drawing connection to minimize re-renders
-          setMousePos(newPos);
-          mousePosAnimationFrameRef.current = null;
-        });
-      }
-    };
-
-    const handleMouseUp = (e: globalThis.MouseEvent) => {
-      activePointerDragRef.current = false;
-      activeDragPointerIdRef.current = null;
-
-      if (draggedDeviceRef.current && canvasRef.current && dragStartPosRef.current) {
-        const rect = canvasRef.current.getBoundingClientRect();
-        const currentPan = panRef.current;
-        const currentZoom = zoomRef.current;
-        const currentDragStartPos = dragStartPosRef.current;
-        const currentDraggedDevice = draggedDeviceRef.current;
-        const currentSelectedIds = selectedDeviceIdsRef.current;
-        const currentStartPositions = dragStartDevicePositionsRef.current;
-        const lastDragEvent = lastDragEventRef.current ?? { clientX: e.clientX, clientY: e.clientY, ctrlKey: e.ctrlKey };
-        const mouseX = (lastDragEvent.clientX - rect.left - currentPan.x) / currentZoom;
-        const mouseY = (lastDragEvent.clientY - rect.top - currentPan.y) / currentZoom;
-        const startMouseX = (currentDragStartPos.x - rect.left - currentPan.x) / currentZoom;
-        const startMouseY = (currentDragStartPos.y - rect.top - currentPan.y) / currentZoom;
-        const dx = mouseX - startMouseX;
-        const dy = mouseY - startMouseY;
-        const devicesToMove = currentSelectedIds.includes(currentDraggedDevice)
-          ? currentSelectedIds
-          : [currentDraggedDevice];
-        const finalPositions = new Map<string, { x: number; y: number }>();
-        const doSnap = snapToGridRef.current && lastDragEvent.ctrlKey;
-
-        devicesToMove.forEach(id => {
-          const initialPos = currentStartPositions[id];
-          if (!initialPos) return;
-          let newX = initialPos.x + dx;
-          let newY = initialPos.y + dy;
-          if (doSnap) {
-            newX = Math.round(newX / 16) * 16;
-            newY = Math.round(newY / 16) * 16;
-          }
-          finalPositions.set(id, {
-            x: Math.max(20, Math.min(newX, VIRTUAL_CANVAS_WIDTH_DESKTOP - 100)),
-            y: Math.max(20, Math.min(newY, VIRTUAL_CANVAS_HEIGHT_DESKTOP - 100)),
-          });
-        });
-
-        if (finalPositions.size > 0) {
-          liveDeviceDragPositionsRef.current = finalPositions;
-        }
-      }
-
-      // Cancel any pending animation frames
-      if (dragAnimationFrameRef.current) {
-        cancelAnimationFrame(dragAnimationFrameRef.current);
-        dragAnimationFrameRef.current = null;
-      }
-      if (panAnimationFrameRef.current) {
-        cancelAnimationFrame(panAnimationFrameRef.current);
-        panAnimationFrameRef.current = null;
-      }
-      if (mousePosAnimationFrameRef.current) {
-        cancelAnimationFrame(mousePosAnimationFrameRef.current);
-        mousePosAnimationFrameRef.current = null;
-      }
-      if (momentumAnimationFrameRef.current) {
-        cancelAnimationFrame(momentumAnimationFrameRef.current);
-        momentumAnimationFrameRef.current = null;
-      }
-      if (selectionAnimationFrameRef.current) {
-        cancelAnimationFrame(selectionAnimationFrameRef.current);
-        selectionAnimationFrameRef.current = null;
-      }
-
-      // Right-click context menu handled by onContextMenu event only
-
-      if (isSelectingRef.current && selectionBoxRef.current) {
-        const box = selectionBoxRef.current;
-        // Detect devices intersecting selection box (any overlap counts)
-        const boxSelectedIds = getDeviceIdsInSelectionBox(box);
-        const selectedIds = mergeSelectionIds(boxSelectedIds);
-
-        if (boxSelectedIds.length > 0 || selectionAdditiveRef.current) {
-          setSelectedDeviceIds(selectedIds);
-          selectedDeviceIdsRef.current = selectedIds;
-
-          // Select first device of selection to update parent state (for panel sync)
-          const firstDevice = latestDevicesRef.current.find(d => d.id === selectedIds[0]);
-          if (firstDevice) {
-            onDeviceSelect(firstDevice.type, firstDevice.id, isSwitchDeviceType(firstDevice.type) ? firstDevice.switchModel : undefined, firstDevice.name);
-          }
-        } else {
-          // Only clear selection if we actually dragged a box of significant size
-          const dragDistance = Math.sqrt(
-            Math.pow(box.current.x - box.start.x, 2) +
-            Math.pow(box.current.y - box.start.y, 2)
-          );
-
-          if (dragDistance > 10) {
-            setSelectedDeviceIds([]);
-            selectedDeviceIdsRef.current = [];
-          }
-        }
-
-        setIsSelecting(false);
-        isSelectingRef.current = false;
-        setSelectionBox(null);
-        selectionBoxRef.current = null;
-        selectionAdditiveRef.current = false;
-        selectionBaseIdsRef.current = [];
-        
-        // Restore cursor after selection ends
-        document.body.style.cursor = '';
-      }
-      
-      // Restore cursor after Shift key multi-selection
-      if (document.body.style.cursor === 'copy') {
-        document.body.style.cursor = '';
-      }
-      
-      if (!isPanningRef.current && !isActuallyDraggingRef.current && !wasDraggingRef.current) {
-        // Simple click on background (not device, not note, not drag)
-        const targetEl = e.target as HTMLElement;
-        const isOnDevice = !!targetEl.closest?.('[data-device-id]');
-        const isOnNote = !!targetEl.closest?.('[data-note-id]');
-        const isOnMenu = !!targetEl.closest?.('.context-menu') || !!targetEl.closest?.('.palette') || !!targetEl.closest?.('.modal') || !!targetEl.closest?.('.selection-toolbar');
-
-        if (!isOnDevice && !isOnNote && !isOnMenu) {
-          setSelectedDeviceIds([]);
-          selectedDeviceIdsRef.current = [];
-          if (onDeviceSelect) onDeviceSelect(null as unknown as DeviceType, null as unknown as string | undefined, undefined, null as unknown as string | undefined);
-          setSelectedNoteIds([]);
-          setPingMode(false);
-          setPingSource(null);
-          setPingResult(null);
-          setIsDrawingConnection(false);
-          setConnectionStart(null);
-          setContextMenu(null);
-        }
-      }
-
-      setIsPanning(false);
-      isPanningRef.current = false;
-      // PERFORMANCE: Sync the final pan value from direct DOM writes back to React state.
-      // During panning, we wrote directly to svgContentGroupRef.current.style.transform to avoid
-      // re-rendering the entire component on every mouse move frame.
-      if (pendingPanRef.current) {
-        setPan(pendingPanRef.current);
-        pendingPanRef.current = null;
-      }
-
-      // MOMENTUM SCROLL: Smooth inertia effect on pan release
-      if (!isActuallyDraggingRef.current && !document.body.classList.contains('graphics-low')) {
-        const vel = velocityRef.current;
-        const speed = Math.sqrt(vel.x * vel.x + vel.y * vel.y);
-        if (speed > MOMENTUM_THRESHOLD && svgContentGroupRef.current) {
-          const g = svgContentGroupRef.current;
-          g.style.willChange = 'transform';
-          let mVelX = vel.x;
-          let mVelY = vel.y;
-          let mPanX = panRef.current.x;
-          let mPanY = panRef.current.y;
-          const animateMomentum = () => {
-            mVelX *= MOMENTUM_DECAY;
-            mVelY *= MOMENTUM_DECAY;
-            mPanX += mVelX;
-            mPanY += mVelY;
-            g.style.transform = `translate3d(${mPanX}px, ${mPanY}px, 0px) scale(${zoomRef.current})`;
-            panRef.current = { x: mPanX, y: mPanY };
-            const remainingSpeed = Math.sqrt(mVelX * mVelX + mVelY * mVelY);
-            if (remainingSpeed > MOMENTUM_MIN_SPEED) {
-              momentumAnimationFrameRef.current = requestAnimationFrame(animateMomentum);
-            } else {
-              momentumAnimationFrameRef.current = null;
-              setPan({ x: mPanX, y: mPanY });
-              g.style.willChange = '';
-            }
-          };
-          momentumAnimationFrameRef.current = requestAnimationFrame(animateMomentum);
-        }
-      }
-      velocityRef.current = { x: 0, y: 0 };
-
-      // Remove will-change hint after pan/momentum ends
-      if (!momentumAnimationFrameRef.current && svgContentGroupRef.current) {
-        svgContentGroupRef.current.style.willChange = '';
-      }
-
-      // PERFORMANCE: Sync device drag positions from direct DOM writes back to Zustand state
-      const finalDragPositions = liveDeviceDragPositionsRef.current;
-      const finalDragDeviceIds = [...finalDragPositions.keys()];
-      if (finalDragPositions.size > 0) {
-        setDevices(prev => {
-          const newDevices = [...prev];
-          let changed = false;
-          finalDragPositions.forEach((pos, id) => {
-            const idx = newDevices.findIndex(d => d.id === id);
-            if (idx !== -1) {
-              if (Math.abs(newDevices[idx].x - pos.x) > 0.1 || Math.abs(newDevices[idx].y - pos.y) > 0.1) {
-                newDevices[idx] = { ...newDevices[idx], x: pos.x, y: pos.y };
-                changed = true;
-              }
-            }
-          });
-          return changed ? newDevices : prev;
-        });
-        finalDragPositions.clear();
-      }
-
-      // Remove GPU will-change hints from dragged devices
-      for (let wi = 0; wi < finalDragDeviceIds.length; wi++) {
-        const we = document.querySelector('[data-device-id="' + finalDragDeviceIds[wi] + '"]') as SVGGElement | null;
-        if (we) {
-          we.style.willChange = '';
-          const ichild = we.querySelector('g');
-          if (ichild) ichild.style.willChange = '';
-        }
-      }
-
-      setDraggedDevice(null);
-      draggedDeviceRef.current = null;
-      dragStartPosRef.current = null;
-      lastDragEventRef.current = null;
-
-      // Eğer cihaz gerçekten sürüklendiyse ve kablo çizimi başlamışsa iptal et
-      if (isActuallyDraggingRef.current && isDrawingConnectionRef.current) {
-        setIsDrawingConnection(false);
-        setConnectionStart(null);
-      }
-
-      setIsActuallyDragging(false);
-      isActuallyDraggingRef.current = false;
-      lastDragPositionRef.current = null;
-
-      // Reset cursor when drag ends
-      document.body.style.cursor = '';
-    };
-
-    const handlePointerMove = (e: PointerEvent) => {
-      if (e.pointerType !== 'mouse' && activeDragPointerIdRef.current === e.pointerId) {
-        handleMouseMove(e as unknown as globalThis.MouseEvent);
-      }
-    };
-    const handlePointerUp = (e: PointerEvent) => {
-      if (e.pointerType !== 'mouse' && activeDragPointerIdRef.current === e.pointerId) {
-        handleMouseUp(e as unknown as globalThis.MouseEvent);
-      }
-    };
-
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    window.addEventListener('mouseup', handleMouseUp);
-    window.addEventListener('pointermove', handlePointerMove, { passive: true });
-    window.addEventListener('pointerup', handlePointerUp);
-    window.addEventListener('pointercancel', handlePointerUp);
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
-      window.removeEventListener('pointercancel', handlePointerUp);
-      if (dragAnimationFrameRef.current) cancelAnimationFrame(dragAnimationFrameRef.current);
-      if (panAnimationFrameRef.current) cancelAnimationFrame(panAnimationFrameRef.current);
-      if (mousePosAnimationFrameRef.current) cancelAnimationFrame(mousePosAnimationFrameRef.current);
-      if (momentumAnimationFrameRef.current) cancelAnimationFrame(momentumAnimationFrameRef.current);
-      if (selectionAnimationFrameRef.current) cancelAnimationFrame(selectionAnimationFrameRef.current);
-    };
-  }, []);
-  // Global touch event handlers for device dragging on mobile
-  // FIXED: uses refs to avoid re-registering the listener on ogni state change
-  useEffect(() => {
-    const handleGlobalTouchMove = (e: globalThis.TouchEvent) => {
-      const currentTouchDraggedDevice = touchDraggedDeviceRef.current;
-      if (e.touches.length !== 1 || !currentTouchDraggedDevice || !canvasRef.current) return;
-
-      const touch = e.touches[0];
-      const currentTouchDragStartPos = touchDragStartPosRef.current;
-
-      // Check if we've moved enough to consider it a drag
-      if (currentTouchDragStartPos && !isTouchDraggingRef.current) {
-        const distance = getDistance(currentTouchDragStartPos.x, currentTouchDragStartPos.y, touch.clientX, touch.clientY);
-        if (distance > DRAG_THRESHOLD) {
-          setIsTouchDragging(true);
-          isTouchDraggingRef.current = true;
-          setDeviceTooltip(null);
-          setPortTooltip(null);
-          if (longPressTimer) {
-            clearTimeout(longPressTimer);
-            setLongPressTimer(null);
-          }
-        }
-      }
-
-      if (isTouchDraggingRef.current) {
-        if (e.cancelable) e.preventDefault();
-        const currentZoom = zoomRef.current;
-        const currentTouchDragStartPos = touchDragStartPosRef.current;
-
-        if (!currentTouchDragStartPos) return;
-        const dx = (touch.clientX - currentTouchDragStartPos.x) / currentZoom;
-        const dy = (touch.clientY - currentTouchDragStartPos.y) / currentZoom;
-        const initialPositions = dragStartDevicePositionsRef.current;
-        const canvasDims = getCanvasDimensions();
-
-        if (!dragAnimationFrameRef.current) {
-          dragAnimationFrameRef.current = requestAnimationFrame(() => {
-            const touchNewPositions = new Map<string, { x: number; y: number }>();
-            const initialKeys = Object.keys(initialPositions);
-            for (let ti = 0; ti < initialKeys.length; ti++) {
-              const id = initialKeys[ti];
-              const init = initialPositions[id];
-              if (!init) continue;
-              const clampedX = Math.max(50, Math.min(init.x + dx, canvasDims.width - 120));
-              const clampedY = Math.max(50, Math.min(init.y + dy, canvasDims.height - 150));
-              touchNewPositions.set(id, { x: clampedX, y: clampedY });
-              const touchOuterG = document.querySelector('[data-device-id="' + id + '"]');
-              if (touchOuterG) {
-                const touchInnerG = touchOuterG.querySelector('g');
-                if (touchInnerG) touchInnerG.setAttribute('transform', 'translate(' + clampedX + ', ' + clampedY + ')');
-              }
-            }
-            liveDeviceDragPositionsRef.current = touchNewPositions;
-            dragAnimationFrameRef.current = null;
-          });
-        }
-      }
-    };
-
-    const handleGlobalTouchEnd = () => {
-      // Cancel any pending animation frame
-      if (dragAnimationFrameRef.current) {
-        cancelAnimationFrame(dragAnimationFrameRef.current);
-        dragAnimationFrameRef.current = null;
-      }
-
-      const currentTouchDraggedDevice = touchDraggedDeviceRef.current;
-      const currentIsTouchDragging = isTouchDraggingRef.current;
-
-      // If we weren't dragging, treat it as a tap (select)
-      if (currentTouchDraggedDevice && !currentIsTouchDragging) {
-        const device = latestDevicesRef.current.find(d => d.id === currentTouchDraggedDevice.id);
-        if (device) {
-          // Keep multi-selection if device was already selected
-          const currentSelected = selectedDeviceIdsRef.current;
-          if (currentSelected.length > 1 && currentSelected.includes(device.id)) {
-            // already set, keep as-is
-          } else {
-            setSelectedDeviceIds([device.id]);
-          }
-          onDeviceSelect(device.type, device.id, isSwitchDeviceType(device.type) ? device.switchModel : undefined, device.name);
-        }
-      }
-
-      // Save to history if we were dragging (already saved at touch start)
-      if (currentIsTouchDragging && currentTouchDraggedDevice) {
-        // no-op: saved at touch start
-      }
-
-      // PERFORMANCE: Sync touch drag positions back to Zustand state
-      const touchFinalPositions = liveDeviceDragPositionsRef.current;
-      const touchFinalDeviceIds = [...touchFinalPositions.keys()];
-      if (touchFinalPositions.size > 0) {
-        setDevices(prev => {
-          const newDevices = [...prev];
-          let changed = false;
-          touchFinalPositions.forEach((pos, id) => {
-            const idx = newDevices.findIndex(d => d.id === id);
-            if (idx !== -1) {
-              if (Math.abs(newDevices[idx].x - pos.x) > 0.1 || Math.abs(newDevices[idx].y - pos.y) > 0.1) {
-                newDevices[idx] = { ...newDevices[idx], x: pos.x, y: pos.y };
-                changed = true;
-              }
-            }
-          });
-          return changed ? newDevices : prev;
-        });
-        touchFinalPositions.clear();
-      }
-
-      // Remove GPU will-change hints from touch-dragged devices
-      for (let wi = 0; wi < touchFinalDeviceIds.length; wi++) {
-        const we = document.querySelector('[data-device-id="' + touchFinalDeviceIds[wi] + '"]') as SVGGElement | null;
-        if (we) {
-          we.style.willChange = '';
-          const ichild = we.querySelector('g');
-          if (ichild) ichild.style.willChange = '';
-        }
-      }
-
-      setTouchDraggedDevice(null);
-      touchDraggedDeviceRef.current = null;
-      setTouchDragStartPos(null);
-      touchDragStartPosRef.current = null;
-
-      // Touch sürükleme olduysa ve kablo çizimi başlamışsa iptal et
-      if (currentIsTouchDragging && isDrawingConnectionRef.current) {
-        setIsDrawingConnection(false);
-        setConnectionStart(null);
-      }
-
-      setIsTouchDragging(false);
-      isTouchDraggingRef.current = false;
-      setLastTouchDistance(null);
-      setTouchStart(null);
-      lastDragPositionRef.current = null;
-
-      if (longPressTimer) {
-        clearTimeout(longPressTimer);
-        setLongPressTimer(null);
-      }
-    };
-
-    window.addEventListener('touchmove', handleGlobalTouchMove, { passive: false });
-    window.addEventListener('touchend', handleGlobalTouchEnd);
-    window.addEventListener('touchcancel', handleGlobalTouchEnd);
-
-    return () => {
-      window.removeEventListener('touchmove', handleGlobalTouchMove);
-      window.removeEventListener('touchend', handleGlobalTouchEnd);
-      window.removeEventListener('touchcancel', handleGlobalTouchEnd);
-      if (dragAnimationFrameRef.current) {
-        cancelAnimationFrame(dragAnimationFrameRef.current);
-      }
-    };
-  }, [onDeviceSelect, saveToHistory, getCanvasDimensions]);
+  // mouseMove useEffect removed by patch
+  // Global touch event handlers removed by patch5
 
   // Handle device drag start
   const handleDeviceMouseDown = useCallback((e: ReactMouseEvent, deviceId: string) => {
@@ -2276,317 +1411,79 @@ export function NetworkTopology({
     openContextMenu(x, y, deviceId || null, deviceId ? 'device' : 'canvas');
   }, [openContextMenu, pingMode]);
 
-  // Handle device touch start - for mobile dragging
-  const handleDeviceTouchStart = useCallback((e: ReactTouchEvent, deviceId: string) => {
-    // If pointer drag was already active, we want touch events to take precedence
-    // especially on mobile devices where pointer events might be less reliable for dragging.
-    if (activePointerDragRef.current) {
-      activePointerDragRef.current = false;
-      // We don't reset draggedDeviceRef here because it might be needed for the new touch drag
-    }
+  const {
+    handleDeviceTouchStart,
+    handleDeviceTouchMove,
+    handleDeviceTouchEnd,
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
+    isTouchDragging,
+    touchDraggedDevice,
+  } = useTopologyTouch({
+    canvasRef,
+    deviceMap,
+    devices,
+    pan,
+    panRef,
+    zoom,
+    zoomRef,
+    selectedDeviceIds,
+    setSelectedDeviceIds,
+    saveToHistory,
+    openContextMenu,
+    handleDeviceDoubleClick,
+    onDeviceSelect,
+    isDrawingConnection,
+    mobileConnectionSource,
+    setMobileConnectionSource,
+    isMobile,
+    isTR,
+    toast,
+    getCanvasDimensions,
+    getDistance,
+    setDevices,
+    isSwitchDeviceType,
+    LONG_PRESS_DURATION,
+    DRAG_THRESHOLD,
+    MIN_ZOOM,
+    MAX_ZOOM,
+    setZoom,
+    setPan,
+    panStartRef,
+    svgContentGroupRef,
+    pendingPanRef,
+    activePointerDragRef,
+    dragStartDevicePositionsRef,
+    dragAnimationFrameRef,
+    liveDeviceDragPositionsRef,
+    latestDevicesRef,
+    selectedDeviceIdsRef,
+    isDrawingConnectionRef,
+    setIsDrawingConnection,
+    setConnectionStart,
+    lastDragPositionRef,
+    setDeviceTooltip,
+    setPortTooltip,
+  });
 
-    if (e.touches.length !== 1) return;
-    e.stopPropagation();
+  const isDraggingInteractionDisabled = isActuallyDragging || isTouchDragging;
 
-    if (!canvasRef.current) return;
 
-    const touch = e.touches[0];
-    const rect = canvasRef.current.getBoundingClientRect();
-    const device = deviceMap.get(deviceId);
-    if (!device) return;
 
-    saveToHistory();
-
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-      setLongPressTimer(null);
-    }
-
-    setTouchDragStartPos({ x: touch.clientX, y: touch.clientY });
-    touchDragStartPosRef.current = { x: touch.clientX, y: touch.clientY };
-    setIsTouchDragging(false);
-    setTouchDraggedDevice(device);
-    touchDraggedDeviceRef.current = device;
-
-    // Determine selection: if device is already selected, keep all for group drag
-    const alreadySelected = selectedDeviceIds.length > 1 && selectedDeviceIds.includes(deviceId);
-    const idsForDrag = alreadySelected ? selectedDeviceIds : [deviceId];
-    if (!alreadySelected) setSelectedDeviceIds(idsForDrag);
-
-    setTouchDragOffset({
-      x: (touch.clientX - rect.left - pan.x) - device.x * zoom,
-      y: (touch.clientY - rect.top - pan.y) - device.y * zoom,
-    });
-    touchDragOffsetRef.current = {
-      x: (touch.clientX - rect.left - pan.x) - device.x * zoom,
-      y: (touch.clientY - rect.top - pan.y) - device.y * zoom,
-    };
-
-    // Store initial positions of all devices that will be dragged
-    const initialPositions: { [key: string]: { x: number; y: number } } = {};
-    devices.forEach(d => {
-      if (idsForDrag.includes(d.id)) {
-        initialPositions[d.id] = { x: d.x, y: d.y };
-      }
-    });
-    dragStartDevicePositionsRef.current = initialPositions;
-
-    const now = Date.now();
-    if (now - lastTapTimeRef.current < 300 && lastTappedDeviceRef.current === deviceId) {
-      handleDeviceDoubleClick(device);
-      lastTapTimeRef.current = 0;
-      lastTappedDeviceRef.current = null;
-    } else {
-      lastTapTimeRef.current = now;
-      lastTappedDeviceRef.current = deviceId;
-
-      // Start long-press timer to open device context menu on mobile
-      const timer = setTimeout(() => {
-        openContextMenu(touch.clientX, touch.clientY, deviceId, 'device');
-        setLongPressTimer(null);
-        setTouchDraggedDevice(null);
-        touchDraggedDeviceRef.current = null;
-      }, LONG_PRESS_DURATION);
-      setLongPressTimer(timer);
-    }
-  }, [devices, pan, zoom, longPressTimer, handleDeviceDoubleClick, selectedDeviceIds, openContextMenu]);
-
-  // Handle device touch move - for mobile dragging
-  const handleDeviceTouchMove = useCallback((e: ReactTouchEvent) => {
-    if (e.touches.length !== 1 || !touchDraggedDevice || !canvasRef.current) return;
-    // e.stopPropagation(); // Removed to allow event bubbling
-    // e.preventDefault(); // Removed to allow browser-native behavior
-
-    const touch = e.touches[0];
-
-    if (touchDragStartPos) {
-      const distance = getDistance(touchDragStartPos.x, touchDragStartPos.y, touch.clientX, touch.clientY);
-      if (distance > DRAG_THRESHOLD) {
-        setIsTouchDragging(true);
-        if (longPressTimer) {
-          clearTimeout(longPressTimer);
-          setLongPressTimer(null);
-        }
-      }
-    }
-
-    if (isTouchDragging && touchDragStartPos) {
-      const dx = (touch.clientX - touchDragStartPos.x) / zoom;
-      const dy = (touch.clientY - touchDragStartPos.y) / zoom;
-      const initialPositions = dragStartDevicePositionsRef.current;
-      const canvasDims = getCanvasDimensions();
-      setDevices((prev) =>
-        prev.map((d) => {
-          const init = initialPositions[d.id];
-          if (!init) return d;
-          return {
-            ...d,
-            x: Math.max(50, Math.min(init.x + dx, canvasDims.width - 120)),
-            y: Math.max(50, Math.min(init.y + dy, canvasDims.height - 150)),
-          };
-        })
-      );
-    }
-  }, [touchDraggedDevice, touchDragStartPos, isTouchDragging, zoom, getCanvasDimensions, getDistance]);
-
-  // Handle device touch end - for mobile dragging
-  const handleDeviceTouchEnd = useCallback(() => {
-    // If we weren't dragging, treat it as a tap (select)
-    if (touchDraggedDevice && !isTouchDragging) {
-      const deviceId = touchDraggedDevice.id;
-
-      // Tap-tap connection logic
-      if (isMobile && !isDrawingConnection) {
-        if (!mobileConnectionSource) {
-          setMobileConnectionSource(deviceId);
-          toast({
-            title: isTR ? "Bağlantı Başlatıldı" : "Connection Started",
-            description: isTR ? "Hedef cihazı seçin." : "Select the target device.",
-            duration: 3000,
-          });
-        } else {
-          // Tap same device again: cancel
-          setMobileConnectionSource(null);
-        }
-      }
-
-      // touchDraggedDevice is already CanvasDevice, no need to find again
-      setSelectedDeviceIds([touchDraggedDevice.id]);
-      onDeviceSelect(touchDraggedDevice.type, touchDraggedDevice.id, isSwitchDeviceType(touchDraggedDevice.type) ? touchDraggedDevice.switchModel : undefined, touchDraggedDevice.name);
-    }
-
-    setTouchDraggedDevice(null);
-    touchDraggedDeviceRef.current = null;
-    setTouchDragStartPos(null);
-    touchDragStartPosRef.current = null;
-    setIsTouchDragging(false);
-  }, [touchDraggedDevice, isTouchDragging, onDeviceSelect]);
-
-  // Canvas-level touch handlers (pan, pinch, long-press for context)
-  const handleTouchStart = useCallback((e: ReactTouchEvent) => {
-    if (!canvasRef.current) return;
-
-    // Check if target is not a device
-    const isDevice = (e.target as HTMLElement).closest('[data-device-id]') || false;
-    if (isDevice) return; // handled by handleDeviceTouchStart
-
-    // Cancel any existing long-press timer
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-      setLongPressTimer(null);
-    }
-
-    if (e.touches.length === 1) {
-      const touch = e.touches[0];
-      const currentPan = panRef.current;
-      setTouchStart({ x: touch.clientX, y: touch.clientY });
-      setIsPanning(true);
-      const ps = { x: touch.clientX - currentPan.x, y: touch.clientY - currentPan.y };
-      setPanStart(ps);
-      panStartRef.current = ps;
-      isPanningRef.current = true;
-      // Hint browser for GPU acceleration during touch pan
-      if (svgContentGroupRef.current) {
-        svgContentGroupRef.current.style.willChange = 'transform';
-        svgContentGroupRef.current.style.transition = 'none';
-      }
-
-      // Start long-press to open context menu
-      const timer = setTimeout(() => {
-        openContextMenu(touch.clientX, touch.clientY, null);
-        setLongPressTimer(null);
-        setIsPanning(false);
-        isPanningRef.current = false;
-      }, LONG_PRESS_DURATION);
-      setLongPressTimer(timer);
-    } else if (e.touches.length === 2) {
-      setIsPanning(false);
-      isPanningRef.current = false;
-      // Pinch start - track initial distance and center
-      const a = e.touches[0];
-      const b = e.touches[1];
-      setLastTouchDistance(getDistance(a.clientX, a.clientY, b.clientX, b.clientY));
-      setLastTouchCenter({
-        x: (a.clientX + b.clientX) / 2,
-        y: (a.clientY + b.clientY) / 2
-      });
-    }
-  }, [longPressTimer, getDistance]);  // Removed pan dep - uses panRef.current instead
-
-  const handleTouchMove = useCallback((e: ReactTouchEvent) => {
-    if (!canvasRef.current) return;
-    const isDevice = (e.target as HTMLElement).closest('[data-device-id]') || false;
-    if (isDevice) return;
-
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-      setLongPressTimer(null);
-    }
-
-    if (e.touches.length === 1 && isPanningRef.current) {
-      // PERFORMANCE: Write transform directly to DOM during touch pan to bypass React re-renders
-      const touch = e.touches[0];
-      const ps = panStartRef.current;
-      const newPanX = touch.clientX - ps.x;
-      const newPanY = touch.clientY - ps.y;
-      const g = svgContentGroupRef.current;
-      if (g) {
-        g.style.transform = `translate3d(${newPanX}px, ${newPanY}px, 0px) scale(${zoomRef.current})`;
-      }
-      pendingPanRef.current = { x: newPanX, y: newPanY };
-      panRef.current = { x: newPanX, y: newPanY };
-    } else if (e.touches.length === 2 && lastTouchDistance !== null && lastTouchCenter !== null) {
-      const a = e.touches[0];
-      const b = e.touches[1];
-
-      const newDistance = getDistance(a.clientX, a.clientY, b.clientX, b.clientY);
-      const newCenter = {
-        x: (a.clientX + b.clientX) / 2,
-        y: (a.clientY + b.clientY) / 2
-      };
-
-      // Calculate zoom factor with smoothing
-      const currentZoom = zoomRef.current;
-      const currentPan = panRef.current;
-      const zoomFactor = newDistance / lastTouchDistance;
-      let newZoom = currentZoom * zoomFactor;
-      newZoom = Math.max(MIN_ZOOM, Math.min(newZoom, MAX_ZOOM));
-
-      if (Math.abs(newZoom - currentZoom) > 0.01) {
-        // Adjust pan to zoom relative to the gesture center
-        const rect = canvasRef.current.getBoundingClientRect();
-        const cursorX = newCenter.x - rect.left;
-        const cursorY = newCenter.y - rect.top;
-
-        const deltaX = cursorX - (cursorX - currentPan.x) * (newZoom / currentZoom);
-        const deltaY = cursorY - (cursorY - currentPan.y) * (newZoom / currentZoom);
-
-        // Also add the pan movement of the center point itself
-        const panDeltaX = newCenter.x - lastTouchCenter.x;
-        const panDeltaY = newCenter.y - lastTouchCenter.y;
-
-        const newPan = { x: deltaX + panDeltaX, y: deltaY + panDeltaY };
-        setZoom(newZoom);
-        setPan(newPan);
-        // Also write to DOM directly for immediate feedback
-        const g = svgContentGroupRef.current;
-        if (g) {
-          g.style.transform = `translate3d(${newPan.x}px, ${newPan.y}px, 0px) scale(${newZoom})`;
-        }
-      } else {
-        // If zoom didn't change (hit limits), at least we can pan
-        const panDeltaX = newCenter.x - lastTouchCenter.x;
-        const panDeltaY = newCenter.y - lastTouchCenter.y;
-        const newPan = { x: currentPan.x + panDeltaX, y: currentPan.y + panDeltaY };
-        setPan(newPan);
-        const g = svgContentGroupRef.current;
-        if (g) {
-          g.style.transform = `translate3d(${newPan.x}px, ${newPan.y}px, 0px) scale(${zoomRef.current})`;
-        }
-      }
-
-      setLastTouchDistance(newDistance);
-      setLastTouchCenter(newCenter);
-    }
-  }, [longPressTimer, lastTouchDistance, lastTouchCenter, getDistance]);  // Removed isPanning, panStart, pan, zoom deps
-
-  const handleTouchEnd = useCallback((e: globalThis.TouchEvent | ReactTouchEvent) => {
-    // Clear long-press timer
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-      setLongPressTimer(null);
-    }
-
-    // If no more touches, reset pinch/touch tracking
-    const touchesLength = (e as ReactTouchEvent).touches ? (e as ReactTouchEvent).touches.length : 0;
-    if (touchesLength === 0) {
-      setLastTouchDistance(null);
-      setLastTouchCenter(null);
-      setTouchStart(null);
-      setIsPanning(false);
-      isPanningRef.current = false;
-      // PERFORMANCE: Sync pending pan from direct DOM writes back to React state
-      if (pendingPanRef.current) {
-        setPan(pendingPanRef.current);
-        pendingPanRef.current = null;
-      }
-      // Remove will-change hint
-      if (svgContentGroupRef.current) {
-        svgContentGroupRef.current.style.willChange = '';
-      }
-    } else if (touchesLength === 1) {
-      // Revert to panning with one finger if the other is lifted
-      const touch = (e as ReactTouchEvent).touches[0];
-      setIsPanning(true);
-      isPanningRef.current = true;
-      const currentPan = panRef.current;
-      const ps = { x: touch.clientX - currentPan.x, y: touch.clientY - currentPan.y };
-      setPanStart(ps);
-      panStartRef.current = ps;
-      setLastTouchDistance(null);
-      setLastTouchCenter(null);
-    }
-  }, [longPressTimer]);  // Removed pan dep - uses panRef.current
+  const { handleCanvasMouseDown } = useTopologyMouse({
+    canvasRef, canvasRectRef, panRef, zoomRef, mousePosRef, isPanningRef, lastMouseMoveTimeRef, lastMouseMovePosRef,
+    velocityRef, panAnimationFrameRef, panStartRef, svgContentGroupRef, pendingPanRef, isSelectingRef, selectionBoxRef,
+    selectionAdditiveRef, selectionBaseIdsRef, selectedDeviceIdsRef, selectionAnimationFrameRef, draggedDeviceRef,
+    dragStartPosRef, isActuallyDraggingRef, wasDraggingRef, lastDragEventRef, dragStartDevicePositionsRef, snapToGridRef,
+    liveDeviceDragPositionsRef, isDrawingConnectionRef, activePointerDragRef, activeDragPointerIdRef, latestDevicesRef,
+    latestConnectionsRef, getPortPositionRef, connectionMetaRef, lastDragPositionRef, dragAnimationFrameRef,
+    mousePosAnimationFrameRef, momentumAnimationFrameRef, setMousePos, setDevices, setIsPanning, setPan, setIsSelecting,
+    setSelectionBox, setSelectedDeviceIds, setIsActuallyDragging, setDraggedDevice, setIsDrawingConnection,
+    setConnectionStart, setDeviceTooltip, setPortTooltip, setContextMenu, setSelectAllMode, setPingMode, setPingSource,
+    setPingResult, setPanStart, setSelectedNoteIds, mergeSelectionIds, getDeviceIdsInSelectionBox,
+    openContextMenu, cancelConnectionDrawing, onDeviceSelect, pingMode, pingSource
+  });
 
   // Handle Wheel and Middle Click Auto-scroll Prevention
   useEffect(() => {
@@ -2907,8 +1804,6 @@ export function NetworkTopology({
     noteResizeDirectionRef.current = noteResizeDirection;
     isTouchDraggingRef.current = isTouchDragging;
     touchDraggedDeviceRef.current = touchDraggedDevice;
-    touchDragStartPosRef.current = touchDragStartPos;
-    touchDragOffsetRef.current = touchDragOffset;
   }, [
     devices,
     connections,
@@ -2919,8 +1814,6 @@ export function NetworkTopology({
     noteResizeStart,
     isTouchDragging,
     touchDraggedDevice,
-    touchDragStartPos,
-    touchDragOffset,
   ]);
   const handleExportPNG = useCallback(() => {
     setIsExporting(true);
@@ -3684,98 +2577,17 @@ export function NetworkTopology({
             </div>
           )}
 
-          {/* Selection Toolbar */}
-          {selectedDeviceIds.length > 1 && (
-            <div
-              style={{
-                position: 'absolute',
-                top: '8px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                zIndex: 1000,
-                pointerEvents: 'auto'
-              }}
-              className={`px-3 py-1.5 rounded-xl shadow-2xl flex items-center gap-2 selection-toolbar panel-ambient-glow ${isDark ? 'bg-secondary-800/95 text-white border border-secondary-700' : 'bg-white text-secondary-900 border border-secondary-200'
-                } backdrop-blur-md`}
-              onClick={(e) => {
-                e.stopPropagation();
-                logger.debug('[Toolbar] Container clicked');
-              }}
-              onMouseDown={(e) => {
-                e.stopPropagation();
-                // preventDefault removed to ensure button clicks fire correctly
-              }}
-              onMouseUp={(e) => {
-                e.stopPropagation();
-              }}
-            >
-              <TooltipWrapper title={t.alignLeft}>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    logger.debug('[Toolbar] Align left clicked');
-                    handleAlign('left');
-                  }}
-                  className={`p-1.5 rounded-lg transition-colors ${isDark ? 'hover:bg-secondary-700 text-secondary-300' : 'hover:bg-secondary-100 text-secondary-600'}`}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 2v20M8 5h10M8 11h7M8 17h12" />
-                  </svg>
-                </button>
-              </TooltipWrapper>
-              <TooltipWrapper title={t.alignTop}>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    logger.debug('[Toolbar] Align top clicked');
-                    handleAlign('top');
-                  }}
-                  className={`p-1.5 rounded-lg transition-colors ${isDark ? 'hover:bg-secondary-700 text-secondary-300' : 'hover:bg-secondary-100 text-secondary-600'}`}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2 4h20M5 8v10M11 8v7M17 8v12" />
-                  </svg>
-                </button>
-              </TooltipWrapper>
-              <div className="w-px h-4 bg-secondary-700/30 mx-1" />
-              <span className="text-xs font-semibold whitespace-nowrap bg-secondary-700/30 px-2 py-0.5 rounded">
-                {selectedDeviceIds.length}
-              </span>
-              <TooltipWrapper title={t.cancel}>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    logger.debug('[Toolbar] Cancel clicked');
-                    const firstId = selectedDeviceIds[0];
-                    const firstDevice = deviceMap.get(firstId);
-                    setSelectedDeviceIds(firstId ? [firstId] : []);
-                    if (firstDevice) onDeviceSelect(firstDevice.type === 'router' ? 'router' : firstDevice.type, firstId, undefined, firstDevice.name);
-                  }}
-                  className={`p-1.5 rounded-lg transition-colors ${isDark ? 'hover:bg-secondary-700 text-secondary-200' : 'hover:bg-secondary-100 text-secondary-600'}`}
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </TooltipWrapper>
-              <TooltipWrapper title={t.delete}>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    logger.debug('[Toolbar] Delete clicked');
-                    saveToHistory();
-                    selectedDeviceIds.forEach(id => deleteDevice(id));
-                    setSelectedDeviceIds([]);
-                  }}
-                  className="p-1.5 rounded-lg hover:bg-error-500/20 text-error-500 transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </TooltipWrapper>
-            </div>
-          )}
+          <TopologySelectionToolbar
+            isDark={isDark}
+            t={t}
+            selectedDeviceIds={selectedDeviceIds}
+            deviceMap={deviceMap}
+            handleAlign={handleAlign}
+            setSelectedDeviceIds={setSelectedDeviceIds}
+            onDeviceSelect={onDeviceSelect}
+            saveToHistory={saveToHistory}
+            deleteDevice={deleteDevice}
+          />
 
           {/* Canvas */}
           <div aria-live="polite" aria-atomic="true" className="sr-only">{_liveRegionText}</div>
@@ -4049,188 +2861,26 @@ export function NetworkTopology({
                     });
                   })()}
                   {/* Ping Animation - rendered LAST for top z-order */}
-                  {pingAnimation && (() => {
-                    const { path, currentHopIndex, progress, success, error } = pingAnimation;
-
-                    // Show error message if ping failed
-                    if (success === false && error) {
-                      return (
-                        <g key="ping-error" opacity={0.95}>
-                          <foreignObject x="20" y="20" width="300" height="auto">
-                            <div className={`p-3 rounded-lg shadow-lg border ${isDark ? 'bg-error-500/20 border-error-500/50' : 'bg-error-50 border-error-200'}`}>
-                              <div className={`text-sm font-bold ${isDark ? 'text-error-300' : 'text-error-700'}`}>
-                                {t.pingFailed}
-                              </div>
-                              <div className={`text-xs mt-1 ${isDark ? 'text-error-200' : 'text-error-600'}`}>
-                                {error}
-                              </div>
-                            </div>
-                          </foreignObject>
-                        </g>
-                      );
-                    }
-
-                    // Show success message if ping succeeded
-                    if (success === true) {
-                      return (
-                        <g key="ping-success" opacity={0.95}>
-                          <foreignObject x="20" y="20" width="300" height="auto">
-                            <div className={`p-3 rounded-lg shadow-lg border ${isDark ? 'bg-success-500/20 border-success-500/50' : 'bg-success-50 border-success-200'}`}>
-                              <div className={`text-sm font-bold ${isDark ? 'text-success-300' : 'text-success-700'}`}>
-                                {t.pingSuccess}
-                              </div>
-                            </div>
-                          </foreignObject>
-                        </g>
-                      );
-                    }
-
-                    if (!path || path.length < 2 || success !== null) return null;
-
-                    const fromDevice = deviceMap.get(path[currentHopIndex]);
-                    const toDevice = deviceMap.get(path[currentHopIndex + 1]);
-                    if (!fromDevice || !toDevice) return null;
-
-                    const conn = connections.find(
-                      c => (c.sourceDeviceId === fromDevice.id && c.targetDeviceId === toDevice.id) ||
-                        (c.sourceDeviceId === toDevice.id && c.targetDeviceId === fromDevice.id)
-                    );
-
-                    let source: { x: number; y: number };
-                    let target: { x: number; y: number };
-
-                    if (conn) {
-                      source = getPortPosition(fromDevice, conn.sourceDeviceId === fromDevice.id ? conn.sourcePort : conn.targetPort);
-                      target = getPortPosition(toDevice, conn.sourceDeviceId === toDevice.id ? conn.sourcePort : conn.targetPort);
-                    } else {
-                      source = getDeviceCenter(fromDevice);
-                      target = getDeviceCenter(toDevice);
-                    }
-
-                    const midX = (source.x + target.x) / 2;
-                    const sameDeviceConnections = connections.filter(
-                      c => (c.sourceDeviceId === fromDevice.id && c.targetDeviceId === toDevice.id) ||
-                        (c.sourceDeviceId === toDevice.id && c.targetDeviceId === fromDevice.id)
-                    );
-                    const sameConnIndex = conn ? sameDeviceConnections.findIndex(c => c.id === conn.id) : 0;
-                    const totalSameConns = sameDeviceConnections.length;
-                    const maxOffset = 20;
-                    const offset = totalSameConns > 1
-                      ? (sameConnIndex - (totalSameConns - 1) / 2) * (maxOffset / Math.max(totalSameConns - 1, 1))
-                      : 0;
-
-                    const dx = target.x - source.x;
-                    const dy = target.y - source.y;
-                    const len = Math.sqrt(dx * dx + dy * dy) || 1;
-                    const perpX = -dy / len * offset;
-                    const perpY = dx / len * offset;
-
-                    const controlPoint1 = { x: midX + perpX, y: source.y + perpY + Math.abs(offset) * 0.5 };
-                    const controlPoint2 = { x: midX + perpX, y: target.y + perpY - Math.abs(offset) * 0.5 };
-
-                    const progressVal = progress;
-                    const p2 = progressVal * progressVal; const p3 = p2 * progressVal;
-                    const mt = 1 - progressVal; const mt2 = mt * mt; const mt3 = mt2 * mt;
-
-                    const bezierX = mt3 * source.x + 3 * mt2 * progressVal * controlPoint1.x + 3 * mt * p2 * controlPoint2.x + p3 * target.x;
-                    const bezierY = mt3 * source.y + 3 * mt2 * progressVal * controlPoint1.y + 3 * mt * p2 * controlPoint2.y + p3 * target.y;
-
-                    const tangentDx = -3 * mt2 * source.x + 3 * (mt2 - 2 * mt * progressVal) * controlPoint1.x + 3 * (2 * mt * progressVal - p2) * controlPoint2.x + 3 * p2 * target.x;
-                    const tangentDy = -3 * mt2 * source.y + 3 * (mt2 - 2 * mt * progressVal) * controlPoint1.y + 3 * (2 * mt * progressVal - p2) * controlPoint2.y + 3 * p2 * target.y;
-                    const tangentLen = Math.sqrt(tangentDx * tangentDx + tangentDy * tangentDy) || 1;
-
-                    const envelopeX = bezierX + (tangentDy / tangentLen * 20);
-                    const envelopeY = bezierY + (-tangentDx / tangentLen * 20);
-
-                    const getBezierPoint = (t: number) => {
-                      const mt = 1 - t;
-                      return {
-                        x: mt * mt * mt * source.x + 3 * mt * mt * t * controlPoint1.x + 3 * mt * t * t * controlPoint2.x + t * t * t * target.x,
-                        y: mt * mt * mt * source.y + 3 * mt * mt * t * controlPoint1.y + 3 * mt * t * t * controlPoint2.y + t * t * t * target.y,
-                      };
-                    };
-
-                    return (
-                      <g key="ping-animation" opacity={0.9}>
-
-                        {/* Packet trail - fading circles behind envelope in high graphics */}
-                        {graphicsQuality === 'high' && (
-                          [0.03, 0.06, 0.09, 0.12, 0.15].map((offset, i) => {
-                            const trailT = progressVal - offset;
-                            if (trailT < 0) return null;
-                            const pt = getBezierPoint(trailT);
-                            const mtT = 1 - trailT;
-                            const tDx = -3 * mtT * mtT * source.x + 3 * (mtT * mtT - 2 * mtT * trailT) * controlPoint1.x + 3 * (2 * mtT * trailT - trailT * trailT) * controlPoint2.x + 3 * trailT * trailT * target.x;
-                            const tDy = -3 * mtT * mtT * source.y + 3 * (mtT * mtT - 2 * mtT * trailT) * controlPoint1.y + 3 * (2 * mtT * trailT - trailT * trailT) * controlPoint2.y + 3 * trailT * trailT * target.y;
-                            const tLen = Math.sqrt(tDx * tDx + tDy * tDy) || 1;
-                            const tx = pt.x + (tDy / tLen * 20);
-                            const ty = pt.y + (-tDx / tLen * 20);
-                            const opacity = Math.max(0, 0.4 - i * 0.07);
-                            const radius = Math.max(1.5, 5 - i * 0.7);
-                            return (
-                              <circle
-                                key={i}
-                                cx={tx}
-                                cy={ty}
-                                r={radius}
-                                fill="var(--color-accent-500)"
-                                opacity={opacity}
-                                filter={i === 0 ? 'url(#packetGlow)' : undefined}
-                                className={i === 0 ? 'animate-ping-trail' : undefined}
-                                style={{ pointerEvents: 'none' }}
-                              />
-                            );
-                          })
-                        )}
-
-                        <g
-                          transform={`translate(${envelopeX}, ${envelopeY})`}
-                          className="cursor-pointer"
-                          onClick={handleEnvelopeClick}
-                        >
-                          {/* Glow highlight */}
-                          {graphicsQuality === 'high' ? (
-                            <circle cx="0" cy="0" r="16" style={{ fill: 'var(--color-accent-500)' }} opacity="0.2" filter="url(#packetGlow)" className="animate-ping-glow" />
-                          ) : (
-                            <circle cx="0" cy="0" r="14" style={{ fill: 'var(--color-accent-500)' }} opacity="0.1" className="animate-ping-glow-low" />
-                          )}
-                          <rect x="-10" y="-7" width="20" height="14" rx="2" fill="var(--color-accent-500)" style={{ stroke: 'var(--color-accent-600)', strokeWidth: '1.5' }} />
-                          <path d="M-8 -3 L0 4 L8 -3" fill="none" stroke="var(--color-white)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </g>
-                      </g>
-                    );
-                  })()}
+                  <PingAnimationOverlay
+                    pingAnimation={pingAnimation}
+                    deviceMap={deviceMap}
+                    connections={connections}
+                    getPortPosition={getPortPosition}
+                    getDeviceCenter={getDeviceCenter}
+                    graphicsQuality={graphicsQuality}
+                    isDark={isDark}
+                    t={t}
+                    handleEnvelopeClick={handleEnvelopeClick}
+                  />
 
                   {/* Rectangle Selection Box */}
                   {selectionBox && (
-                    <>
-                    <rect
-                      id="selection-rectangle"
-                      x={Math.min(selectionBox.start.x, selectionBox.current.x)}
-                      y={Math.min(selectionBox.start.y, selectionBox.current.y)}
-                      width={Math.abs(selectionBox.current.x - selectionBox.start.x)}
-                      height={Math.abs(selectionBox.current.y - selectionBox.start.y)}
-                      fill="var(--color-success-500)"
-                      fillOpacity={isDark ? 0.2 : 0.15}
-                      stroke="var(--color-success-500)"
-                      strokeOpacity={isDark ? 1 : 0.9}
-                      strokeWidth={2 / zoom}
-                      strokeDasharray={`${6 / zoom}, ${6 / zoom}`}
-                      pointerEvents="none"
+                    <SelectionBoxOverlay
+                      selectionBox={selectionBox}
+                      isDark={isDark}
+                      zoom={zoom}
+                      selectedDeviceCount={selectedDeviceIds.length}
                     />
-                    <text
-                      id="selection-counter"
-                      x={Math.min(selectionBox.start.x, selectionBox.current.x) + 10}
-                      y={Math.min(selectionBox.start.y, selectionBox.current.y) - 10}
-                      fill={isDark ? 'var(--color-success-400)' : 'var(--color-success-600)'}
-                      fontSize={14 / zoom}
-                      fontWeight="bold"
-                      pointerEvents="none"
-                      style={{ textShadow: isDark ? '0 0 4px rgba(0,0,0,0.8)' : '0 0 4px rgba(255,255,255,0.8)' }}
-                    >
-                      {selectedDeviceIds.length} {selectedDeviceIds.length === 1 ? 'device' : 'devices'}
-                    </text>
-                    </>
                   )}
 
                 </g>

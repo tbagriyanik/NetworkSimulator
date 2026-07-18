@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import { FormInput } from '@/components/ui/FormInput';
@@ -49,7 +49,7 @@ interface IpSettingsTabProps {
   applyNtpServerTime: (serverAddress: string) => { date: string; time: string } | null;
   deviceId: string;
   manualDhcpClickRef: React.RefObject<boolean>;
-  applyDhcpLeaseRef: React.RefObject<((force?: boolean) => { ip: string; subnetMask: string; gateway: string; dns: string; serverName: string; poolName: string; } | null) | undefined>;
+  applyDhcpLeaseRef: React.RefObject<((force?: boolean) => { ip: string; subnetMask: string; gateway: string; dns: string; serverName: string; poolName: string; } | null) | null>;
 }
 
 export function IpSettingsTab({

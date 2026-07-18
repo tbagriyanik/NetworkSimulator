@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback, Dispatch, SetStateAction } from 'react';
 import type { CanvasDevice, CanvasConnection } from '../networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { checkConnectivity } from '@/lib/network/connectivity';
@@ -9,18 +9,24 @@ interface UsePCPanelNtpOptions {
   language: string;
   deviceId: string;
   topologyDevices: CanvasDevice[];
-  topologyConnections: { sourceDeviceId: string; sourcePort: string; targetDeviceId: string; targetPort: string; cableType?: string; active?: boolean }[];
+  topologyConnections: {
+    sourceDeviceId: string;
+    sourcePort: string;
+    targetDeviceId: string;
+    targetPort: string;
+    cableType?: string;
+    active?: boolean;
+  }[];
   deviceStates: Map<string, SwitchState> | undefined;
   serviceNtpEnabled: boolean;
-  setServiceNtpEnabled: (v: boolean) => void;
   serviceNtpServer: string;
-  setServiceNtpServer: (v: string) => void;
   serviceNtpDate: string;
-  setServiceNtpDate: (v: string) => void;
+  setServiceNtpDate: Dispatch<SetStateAction<string>>;
   serviceNtpTime: string;
-  setServiceNtpTime: (v: string) => void;
-  serviceNtpServerPreset: 'pool.ntp.org' | 'time.google.com' | 'time.cloudflare.com' | 'local-clock' | 'custom';
-  setServiceNtpServerPreset: (v: 'pool.ntp.org' | 'time.google.com' | 'time.cloudflare.com' | 'local-clock' | 'custom') => void;
+  setServiceNtpTime: Dispatch<SetStateAction<string>>;
+  setServiceNtpServerPreset: (
+    v: 'pool.ntp.org' | 'time.google.com' | 'time.cloudflare.com' | 'local-clock' | 'custom'
+  ) => void;
   isValidIpAddress: (value: string) => boolean;
 }
 
@@ -41,21 +47,24 @@ export function usePCPanelNtp({
 }: UsePCPanelNtpOptions) {
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  const formatFullDateTime = useCallback((date: Date) => {
-    try {
-      return new Intl.DateTimeFormat(language === 'tr' ? 'tr-TR' : 'en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      }).format(date);
-    } catch {
-      return date.toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US');
-    }
-  }, [language]);
+  const formatFullDateTime = useCallback(
+    (date: Date) => {
+      try {
+        return new Intl.DateTimeFormat(language === 'tr' ? 'tr-TR' : 'en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        }).format(date);
+      } catch {
+        return date.toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US');
+      }
+    },
+    [language]
+  );
 
   const ntpPanelTime = useMemo(() => {
     if (!serviceNtpEnabled && !serviceNtpServer.trim()) return currentTime;
@@ -86,16 +95,28 @@ export function usePCPanelNtp({
     }
 
     if (!isValidIpAddress(serverIp)) return null;
-    const canReach = checkConnectivity(deviceId, serverIp, topologyDevices, topologyConnections as unknown as CanvasConnection[], deviceStates || new Map(), language as 'tr' | 'en', { protocol: 'any' });
+    const canReach = checkConnectivity(
+      deviceId,
+      serverIp,
+      topologyDevices,
+      topologyConnections as unknown as CanvasConnection[],
+      deviceStates || new Map(),
+      language as 'tr' | 'en',
+      { protocol: 'any' }
+    );
     if (!canReach.success) return null;
 
     let serverDate = '';
     let serverTime = '';
 
     if (canReach.targetId) {
-      const targetDev = topologyDevices.find(d => d.id === canReach.targetId);
+      const targetDev = topologyDevices.find((d) => d.id === canReach.targetId);
       if (targetDev) {
-        if (targetDev.type === 'switchL2' || targetDev.type === 'switchL3' || targetDev.type === 'router') {
+        if (
+          targetDev.type === 'switchL2' ||
+          targetDev.type === 'switchL3' ||
+          targetDev.type === 'router'
+        ) {
           const devState = deviceStates?.get(canReach.targetId);
           if (devState?.services?.ntp?.enabled) {
             const timeOffset = devState.services.ntp.timeOffset || 0;
@@ -132,7 +153,16 @@ export function usePCPanelNtp({
       realtime: true,
       offset: 0,
     };
-  }, [deviceId, isValidIpAddress, serviceNtpEnabled, serviceNtpServer, topologyConnections, topologyDevices, deviceStates, language]);
+  }, [
+    deviceId,
+    isValidIpAddress,
+    serviceNtpEnabled,
+    serviceNtpServer,
+    topologyConnections,
+    topologyDevices,
+    deviceStates,
+    language,
+  ]);
 
   useEffect(() => {
     if (!ntpSyncState) {
@@ -161,89 +191,104 @@ export function usePCPanelNtp({
     return () => clearInterval(timer);
   }, [ntpSyncState]);
 
-  const applyNtpServerTime = useCallback((serverAddress: string) => {
-    const normalized = serverAddress.trim();
-    if (!normalized || !isValidIpAddress(normalized)) return null;
+  const applyNtpServerTime = useCallback(
+    (serverAddress: string) => {
+      const normalized = serverAddress.trim();
+      if (!normalized || !isValidIpAddress(normalized)) return null;
 
-    const canReach = checkConnectivity(deviceId, normalized, topologyDevices, topologyConnections as unknown as CanvasConnection[], deviceStates || new Map(), language as 'tr' | 'en', { protocol: 'any' });
-    if (!canReach.success) return null;
+      const canReach = checkConnectivity(
+        deviceId,
+        normalized,
+        topologyDevices,
+        topologyConnections as unknown as CanvasConnection[],
+        deviceStates || new Map(),
+        language as 'tr' | 'en',
+        { protocol: 'any' }
+      );
+      if (!canReach.success) return null;
 
-    let serverDate = '';
-    let serverTime = '';
+      let serverDate = '';
+      let serverTime = '';
 
-    if (canReach.targetId) {
-      const targetDev = topologyDevices.find(d => d.id === canReach.targetId);
-      if (targetDev) {
-        if (targetDev.type === 'switchL2' || targetDev.type === 'switchL3' || targetDev.type === 'router') {
-          const devState = deviceStates?.get(canReach.targetId);
-          if (devState?.services?.ntp?.enabled) {
-            const timeOffset = devState.services.ntp.timeOffset || 0;
-            const adjustedTime = new Date(new Date().getTime() + timeOffset);
-            serverDate = adjustedTime.toISOString().slice(0, 10);
-            serverTime = adjustedTime.toTimeString().slice(0, 8);
-          }
-        } else {
-          if (targetDev.services?.ntp?.enabled) {
-            serverDate = targetDev.services.ntp.date || '';
-            serverTime = targetDev.services.ntp.time || '';
+      if (canReach.targetId) {
+        const targetDev = topologyDevices.find((d) => d.id === canReach.targetId);
+        if (targetDev) {
+          if (
+            targetDev.type === 'switchL2' ||
+            targetDev.type === 'switchL3' ||
+            targetDev.type === 'router'
+          ) {
+            const devState = deviceStates?.get(canReach.targetId);
+            if (devState?.services?.ntp?.enabled) {
+              const timeOffset = devState.services.ntp.timeOffset || 0;
+              const adjustedTime = new Date(new Date().getTime() + timeOffset);
+              serverDate = adjustedTime.toISOString().slice(0, 10);
+              serverTime = adjustedTime.toTimeString().slice(0, 8);
+            }
+          } else {
+            if (targetDev.services?.ntp?.enabled) {
+              serverDate = targetDev.services.ntp.date || '';
+              serverTime = targetDev.services.ntp.time || '';
+            }
           }
         }
       }
-    }
 
-    const nextDate = serverDate || new Date().toISOString().slice(0, 10);
-    const nextTime = serverTime || new Date().toTimeString().slice(0, 8);
+      const nextDate = serverDate || new Date().toISOString().slice(0, 10);
+      const nextTime = serverTime || new Date().toTimeString().slice(0, 8);
 
-    const syncedDateTime = new Date(`${nextDate}T${nextTime}`);
-    if (!Number.isNaN(syncedDateTime.getTime())) {
-      setCurrentTime(syncedDateTime);
-    }
-    setServiceNtpDate(nextDate);
-    setServiceNtpTime(nextTime);
-    setServiceNtpServerPreset(
-      normalized === 'pool.ntp.org'
-        ? 'pool.ntp.org'
-        : normalized === 'time.google.com'
-          ? 'time.google.com'
-          : normalized === 'time.cloudflare.com'
-            ? 'time.cloudflare.com'
-            : normalized === 'local-clock'
-              ? 'local-clock'
-              : 'custom'
-    );
-    return { date: nextDate, time: nextTime };
-  }, [deviceId, isValidIpAddress, topologyConnections, topologyDevices, deviceStates, language]);
+      const syncedDateTime = new Date(`${nextDate}T${nextTime}`);
+      if (!Number.isNaN(syncedDateTime.getTime())) {
+        setCurrentTime(syncedDateTime);
+      }
+      setServiceNtpDate(nextDate);
+      setServiceNtpTime(nextTime);
+      setServiceNtpServerPreset(
+        normalized === 'pool.ntp.org'
+          ? 'pool.ntp.org'
+          : normalized === 'time.google.com'
+            ? 'time.google.com'
+            : normalized === 'time.cloudflare.com'
+              ? 'time.cloudflare.com'
+              : normalized === 'local-clock'
+                ? 'local-clock'
+                : 'custom'
+      );
+      return { date: nextDate, time: nextTime };
+    },
+    [deviceId, isValidIpAddress, topologyConnections, topologyDevices, deviceStates, language]
+  );
 
-  const lastSyncedServerRef = useRef<string>('');
-  const lastSyncedServerDataRef = useRef<string>('');
   const ntpTimeRef = useRef(serviceNtpTime);
-  const ntpDateRef = useRef(serviceNtpDate);
 
   useEffect(() => {
     ntpTimeRef.current = serviceNtpTime;
-    ntpDateRef.current = serviceNtpDate;
-  }, [serviceNtpTime, serviceNtpDate]);
+  }, [serviceNtpTime]);
 
   useEffect(() => {
     if (!serviceNtpEnabled) return;
     if (ntpSyncState) return;
 
     const timer = setInterval(() => {
-      const prevDate = ntpDateRef.current;
-      const startDate = prevDate || new Date().toISOString().slice(0, 10);
-      const startTime = ntpTimeRef.current || new Date().toTimeString().slice(0, 8);
-      const next = new Date(`${startDate}T${startTime}`);
-      if (Number.isNaN(next.getTime())) return;
-      next.setSeconds(next.getSeconds() + 1);
-      const nextDate = formatLocalDate(next);
-      const nextTime = next.toTimeString().slice(0, 8);
-      setServiceNtpTime(nextTime);
-      setCurrentTime(next);
-      setServiceNtpDate(nextDate);
+      setServiceNtpDate((prevDate) => {
+        const startDate = prevDate || new Date().toISOString().slice(0, 10);
+        const startTime = ntpTimeRef.current || new Date().toTimeString().slice(0, 8);
+        const next = new Date(`${startDate}T${startTime}`);
+        if (Number.isNaN(next.getTime())) return prevDate;
+        next.setSeconds(next.getSeconds() + 1);
+        const nextDate = formatLocalDate(next);
+        const nextTime = next.toTimeString().slice(0, 8);
+        setServiceNtpTime(nextTime);
+        setCurrentTime(next);
+        return nextDate;
+      });
     }, 1000);
 
     return () => clearInterval(timer);
   }, [formatLocalDate, ntpSyncState, serviceNtpEnabled]);
+
+  const lastSyncedServerRef = useRef<string>('');
+  const lastSyncedServerDataRef = useRef<string>('');
 
   useEffect(() => {
     const serverIp = serviceNtpServer.trim();
@@ -251,7 +296,11 @@ export function usePCPanelNtp({
 
     const currentServerData = JSON.stringify({ ip: serverIp, connections: topologyConnections });
 
-    if (lastSyncedServerRef.current === serverIp && lastSyncedServerDataRef.current === currentServerData) return;
+    if (
+      lastSyncedServerRef.current === serverIp &&
+      lastSyncedServerDataRef.current === currentServerData
+    )
+      return;
 
     lastSyncedServerRef.current = serverIp;
     lastSyncedServerDataRef.current = currentServerData;
