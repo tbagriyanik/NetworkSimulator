@@ -13,10 +13,25 @@ import { useLanguage } from '@/contexts/LanguageContext';
 type SortField = 'name' | 'duration' | 'tasks' | 'score';
 type SortDir = 'asc' | 'desc';
 
+/**
+ * Generate cryptographically secure 5-character classroom room code.
+ * Uses CSPRNG if available.
+ */
 function generateRoomCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let code = '';
-  for (let i = 0; i < 5; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  const bytes = new Uint8Array(5);
+  if (typeof globalThis !== 'undefined' && globalThis.crypto?.getRandomValues) {
+    globalThis.crypto.getRandomValues(bytes);
+    for (let i = 0; i < 5; i++) {
+      code += chars[bytes[i] % chars.length];
+    }
+  } else {
+    // Fallback if CSPRNG is not supported in the client browser
+    for (let i = 0; i < 5; i++) {
+      code += chars[Math.floor(Math.random() * chars.length)];
+    }
+  }
   return code;
 }
 
