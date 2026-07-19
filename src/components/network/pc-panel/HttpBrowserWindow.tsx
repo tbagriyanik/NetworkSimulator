@@ -29,6 +29,23 @@ type ResizeState = {
   originH: number;
 };
 
+const clampWindow = (win: BrowserWindowState): BrowserWindowState => {
+  if (typeof window === 'undefined') return win;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  const minW = 280;
+  const minH = 150;
+
+  const width = Math.min(vw, Math.max(minW, win.width));
+  const height = Math.min(vh, Math.max(minH, win.height));
+
+  const x = Math.max(0, Math.min(win.x, vw - 120));
+  const y = Math.max(0, Math.min(win.y, vh - 60));
+
+  return { x, y, width, height };
+};
+
 interface HttpBrowserWindowProps {
   isOpen: boolean;
   isMobile: boolean;
@@ -88,10 +105,20 @@ export function HttpBrowserWindow({
   }, []);
 
   useEffect(() => {
+    const clamped = clampWindow(browserWindow);
     // eslint-disable-next-line react-hooks/set-state-in-effect -- Required: sync local state with parent prop during drag/resize
-    setLocalWindow(browserWindow);
-    localWindowRef.current = browserWindow;
+    setLocalWindow(clamped);
+    localWindowRef.current = clamped;
   }, [browserWindow.x, browserWindow.y, browserWindow.width, browserWindow.height]);
+
+  useEffect(() => {
+    if (isOpen) {
+      const clamped = clampWindow(localWindowRef.current);
+      setLocalWindow(clamped);
+      localWindowRef.current = clamped;
+      onBrowserWindowChange?.(clamped);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     const handleMove = (e: PointerEvent) => {
@@ -99,13 +126,25 @@ export function HttpBrowserWindow({
         const state = localDragRef.current;
         const dx = e.clientX - state.startX;
         const dy = e.clientY - state.startY;
+
+        // Clamp coordinates during live drag to keep close button visible
+        const rawX = state.originX + dx;
+        const rawY = state.originY + dy;
+        const vw = typeof window !== 'undefined' ? window.innerWidth : 1024;
+        const vh = typeof window !== 'undefined' ? window.innerHeight : 768;
+
+        const clampedX = Math.max(0, Math.min(rawX, vw - 120));
+        const clampedY = Math.max(0, Math.min(rawY, vh - 60));
+
         localWindowRef.current = {
           ...localWindowRef.current,
-          x: state.originX + dx,
-          y: state.originY + dy,
+          x: clampedX,
+          y: clampedY,
         };
         if (windowRef.current) {
-          windowRef.current.style.transform = `translate(${dx}px, ${dy}px)`;
+          windowRef.current.style.left = `${clampedX}px`;
+          windowRef.current.style.top = `${clampedY}px`;
+          windowRef.current.style.transform = '';
         }
       } else if (localResizeRef.current) {
         const state = localResizeRef.current;
@@ -162,32 +201,49 @@ export function HttpBrowserWindow({
     };
     
     const handleUp = () => {
+      const clamped = clampWindow(localWindowRef.current);
+      localWindowRef.current = clamped;
+
+      if (windowRef.current) {
+        windowRef.current.style.left = `${clamped.x}px`;
+        windowRef.current.style.top = `${clamped.y}px`;
+        windowRef.current.style.width = `${clamped.width}px`;
+        windowRef.current.style.height = `${clamped.height}px`;
+        windowRef.current.style.transform = '';
+      }
+      setLocalWindow(clamped);
+
       if (localDragRef.current) {
         localDragRef.current = null;
-        if (windowRef.current) {
-          windowRef.current.style.left = `${localWindowRef.current.x}px`;
-          windowRef.current.style.top = `${localWindowRef.current.y}px`;
-          windowRef.current.style.transform = '';
-        }
-        setLocalWindow(prev => ({
-          ...prev,
-          x: localWindowRef.current.x,
-          y: localWindowRef.current.y,
-        }));
       }
       if (localResizeRef.current) {
         localResizeRef.current = null;
       }
-      onBrowserWindowChange?.(localWindowRef.current);
+      onBrowserWindowChange?.(clamped);
+    };
+
+    const handleResize = () => {
+      const clamped = clampWindow(localWindowRef.current);
+      setLocalWindow(clamped);
+      localWindowRef.current = clamped;
+      onBrowserWindowChange?.(clamped);
+      if (windowRef.current) {
+        windowRef.current.style.width = `${clamped.width}px`;
+        windowRef.current.style.height = `${clamped.height}px`;
+        windowRef.current.style.left = `${clamped.x}px`;
+        windowRef.current.style.top = `${clamped.y}px`;
+      }
     };
 
     window.addEventListener('pointermove', handleMove);
     window.addEventListener('pointerup', handleUp);
     window.addEventListener('pointercancel', handleUp);
+    window.addEventListener('resize', handleResize);
     return () => {
       window.removeEventListener('pointermove', handleMove);
       window.removeEventListener('pointerup', handleUp);
       window.removeEventListener('pointercancel', handleUp);
+      window.removeEventListener('resize', handleResize);
     };
   }, [onBrowserWindowChange]);
 
