@@ -105,26 +105,12 @@ const ProjectPickerDialog = dynamic(() => import('@/components/network/ProjectPi
 const OnboardingDialog = dynamic(() => import('@/components/network/OnboardingDialog').then((m) => m.OnboardingDialog));
 const PageModals = dynamic(() => import('@/components/network/panels/PageModals').then((m) => m.PageModals), { ssr: false });
 
-type TabType = 'topology' | 'cmd' | 'terminal' | 'tasks';
-
-// PC Output type for PCPanel
-interface PCOutputLine {
-  id: string;
-  type: 'command' | 'output' | 'error' | 'success';
-  content: string;
-}
-
-const SWITCH_DEVICE_TYPES: DeviceType[] = ['switchL2', 'switchL3'];
-
-const ALL_TABS = [
-  {
-    id: 'topology' as TabType,
-    labelKey: 'networkTopology' as const,
-    showFor: ['pc', 'iot', ...SWITCH_DEVICE_TYPES, 'router'] as DeviceType[],
-  },
-];
-
-const exampleLevelOrder: ExampleProjectLevel[] = ['basic', 'intermediate', 'advanced'];
+import { TabType, PCOutputLine, ALL_TABS, exampleLevelOrder } from './page.types';
+import {
+  isSwitchDeviceType, normalizeWifiMode, hasValidIp, isIpInPoolRange,
+  firstValue, isWirelessMatch, propagateVtpVlans, validateTopologyConnections,
+  releaseDisconnectedPorts,
+} from './refreshNetworkUtils';
 
 import { useHistory, ProjectState } from '@/hooks/useHistory';
 
@@ -393,34 +379,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     setLastTaskEvent
   ]);
 
-  // Track project name from guided/exam mode
-  useEffect(() => {
-    if (activeGuidedProject) {
-      setTimeout(() => setProjectName(activeGuidedProject.title), 0);
 
-      // Auto-focus target device for the current step to act as a "Wizard pointer"
-      if (guidedStepIndex < activeGuidedProject.steps.length) {
-        const step = activeGuidedProject.steps[guidedStepIndex];
-        const targetId = step.checkParams?.targetDeviceId || step.checkParams?.sourceDevice;
-        if (targetId) {
-          const device = topologyDevices.find(d => d.id === targetId);
-          if (device) {
-            setFocusDeviceId(targetId);
-            // Pan and zoom to the target device
-            focusDeviceInTopology(targetId, 1.0, device);
-            // Auto-clear focus after 3 seconds so it doesn't stay locked
-            setTimeout(() => setFocusDeviceId(null), 3000);
-          }
-        }
-      }
-    } else if (activeExam) {
-      setTimeout(() => setProjectName(activeExam.title), 0);
-      // Auto-open editor for blank templates
-      if (activeExam.isCustom && activeExam.tasks.length === 0) {
-        toggleEditor(true);
-      }
-    }
-  }, [activeGuidedProject, activeExam, toggleEditor]);
 
   // Persist project name across refreshes
   useEffect(() => {
@@ -1138,56 +1097,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     startExamProject,
   });
 
-  // Persistence: Load from URL ID or localStorage on mount
-  useEffect(() => {
-    if (initialProjectId) {
-      // 1. Try example projects (dynamic import — not in initial bundle)
-      import('@/lib/network/exampleProjects').then(({ exampleProjects }) => {
-        const examples = exampleProjects(language);
-        const example = examples.find(p => p.id === initialProjectId);
-        if (example) {
-          applyExampleProject(example.data, example.id);
-          return;
-        }
-      });
 
-      // 2. Try guided projects (Lessons)
-      const lessons = getGuidedProjects(language);
-      const lesson = lessons.find(p => p.id === initialProjectId);
-      if (lesson) {
-        handleStartGuidedProject(lesson);
-        // Note: applyExampleProject or startGuidedProject handles topology loading
-        return;
-      }
-
-      // 3. Try exams
-      const exams = getExamProjects(language);
-      const exam = exams.find(p => p.id === initialProjectId);
-      if (exam) {
-        startExamFromCatalog(exam);
-        return;
-      }
-    }
-
-    let savedData: string | null = null;
-    try { savedData = localStorage.getItem('netsim_autosave'); } catch { /* storage unavailable */ }
-    if (savedData) {
-      try {
-        const projectData = safeParse<unknown>(savedData);
-        setTimeout(() => loadProjectData(projectData, { keepActiveDevice: true }), 0);
-        // Load last save time from timestamp
-        const parsedProject = (projectData && typeof projectData === 'object') ? projectData as Record<string, unknown> : null;
-        if (parsedProject?.timestamp) {
-          const date = new Date(String(parsedProject.timestamp));
-          setTimeout(() => setLastSaveTime(date.toLocaleTimeString()), 0);
-        } else {
-          setTimeout(() => setLastSaveTime(new Date().toLocaleTimeString()), 0);
-        }
-      } catch (e) {
-        errorHandler.logError(STORAGE_ERRORS.LOAD_FAILED({ operation: 'autosave', error: String(e) }));
-      }
-    }
-  }, [loadProjectData]);
 
   // Refresh network connections and WiFi status
   const handleRefreshNetwork = useCallback(() => {
@@ -1196,27 +1106,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     setSelectedDevice(null);
     window.dispatchEvent(new CustomEvent('network-refresh'));
 
-    const isSwitchDeviceType = (type: string) => type === 'switchL2' || type === 'switchL3';
-    const normalizeWifiMode = (mode: string | undefined): 'ap' | 'client' | 'disabled' => {
-      if (!mode) return 'disabled';
-      const normalized = mode.toLowerCase().replace(/^wifi-/, '');
-      if (normalized === 'client' || normalized === 'sta') return 'client';
-      if (normalized === 'ap') return 'ap';
-      return 'disabled';
-    };
-    const hasValidIp = (ip: string | undefined) => !!ip && ip !== '0.0.0.0' && ip !== '169.254.0.0';
-    const ipToNumber = (ip: string): number | null => {
-      const parts = ip.split('.').map((p) => Number(p));
-      if (parts.length !== 4 || parts.some((p) => Number.isNaN(p) || p < 0 || p > 255)) return null;
-      return ((parts[0] << 24) >>> 0) + ((parts[1] << 16) >>> 0) + ((parts[2] << 8) >>> 0) + (parts[3] >>> 0);
-    };
-    const isIpInPoolRange = (ip: string, pool: { startIp: string; maxUsers: number }) => {
-      const ipNum = ipToNumber(ip);
-      const startNum = ipToNumber(pool.startIp);
-      if (ipNum === null || startNum === null) return false;
-      const maxUsers = Math.max(1, Number(pool.maxUsers || 1));
-      return ipNum >= startNum && ipNum < (startNum + maxUsers);
-    };
+
     const getEffectiveWifi = (device: CanvasDevice): CanvasDevice['wifi'] => {
       const state = deviceStates?.get(device.id);
       const wlan = state?.ports?.['wlan0'];
@@ -1239,8 +1129,6 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
         mode: resolvedMode,
       };
     };
-    const firstValue = (...values: Array<string | undefined | null>) =>
-      values.find((value) => !!value && value !== '0.0.0.0') || '-';
     const getOpenServices = (device: CanvasDevice, state?: SwitchState) => {
       const services = new Set<string>();
       if (device.services?.dhcp?.enabled || state?.services?.dhcp?.enabled) services.add('DHCP');
@@ -1282,142 +1170,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
       });
     };
 
-    const propagateVtpVlans = (devices: CanvasDevice[], states: Map<string, SwitchState>, connections: CanvasConnection[]) => {
-      const byId = new Map(devices.map((d) => [d.id, d]));
-      const nextStates = new Map(states);
 
-      for (const conn of connections) {
-        if (!conn.active) continue;
-        const a = byId.get(conn.sourceDeviceId);
-        const b = byId.get(conn.targetDeviceId);
-        if (!a || !b) continue;
-        if (!isSwitchDeviceType(a.type) || !isSwitchDeviceType(b.type)) continue;
-
-        const aState = nextStates.get(a.id);
-        const bState = nextStates.get(b.id);
-        if (!aState || !bState) continue;
-
-        const aPort = aState.ports?.[conn.sourcePort];
-        const bPort = bState.ports?.[conn.targetPort];
-        const aIsTrunk = !!aPort && !aPort.shutdown && aPort.mode === 'trunk';
-        const bIsTrunk = !!bPort && !bPort.shutdown && bPort.mode === 'trunk';
-        if (!aIsTrunk || !bIsTrunk) continue;
-
-        const aMode = aState.vtpMode || 'server';
-        const bMode = bState.vtpMode || 'server';
-        const aDomain = (aState.vtpDomain || '').trim();
-        const bDomain = (bState.vtpDomain || '').trim();
-        if (!aDomain || !bDomain) continue;
-        if (aDomain !== bDomain) continue;
-
-        const aRev = aState.vtpRevision || 0;
-        const bRev = bState.vtpRevision || 0;
-
-        // VTP: server pushes VLAN database to client if revision is newer or equal
-        if (aMode === 'server' && bMode === 'client' && aRev >= bRev) {
-          nextStates.set(b.id, { ...bState, vlans: { ...(aState.vlans || {}) }, vtpRevision: aRev });
-        } else if (bMode === 'server' && aMode === 'client' && bRev >= aRev) {
-          nextStates.set(a.id, { ...aState, vlans: { ...(bState.vlans || {}) }, vtpRevision: bRev });
-        }
-      }
-
-      return nextStates;
-    };
-
-    const validateTopologyConnections = (devices: CanvasDevice[], connections: CanvasConnection[]) => {
-      const byId = new Map(devices.map((device) => [device.id, device]));
-      const usedPorts = new Set<string>();
-      let invalidCount = 0;
-
-      const sanitizedConnections = connections.map((connection) => {
-        const sourceDevice = byId.get(connection.sourceDeviceId);
-        const targetDevice = byId.get(connection.targetDeviceId);
-        const sourcePortExists = !!sourceDevice?.ports?.some((port) => port.id === connection.sourcePort);
-        const targetPortExists = !!targetDevice?.ports?.some((port) => port.id === connection.targetPort);
-        const sourceKey = `${connection.sourceDeviceId}:${connection.sourcePort}`;
-        const targetKey = `${connection.targetDeviceId}:${connection.targetPort}`;
-        const duplicatePort = usedPorts.has(sourceKey) || usedPorts.has(targetKey);
-        const invalid = !sourceDevice ||
-          !targetDevice ||
-          !sourcePortExists ||
-          !targetPortExists ||
-          connection.sourceDeviceId === connection.targetDeviceId ||
-          duplicatePort;
-
-        if (connection.active !== false) {
-          if (invalid) {
-            invalidCount++;
-          } else {
-            usedPorts.add(sourceKey);
-            usedPorts.add(targetKey);
-          }
-        }
-
-        return invalid ? { ...connection, active: false } : connection;
-      });
-
-      return { sanitizedConnections, invalidCount };
-    };
-
-    const releaseDisconnectedPorts = (devices: CanvasDevice[], states: Map<string, SwitchState>, connections: CanvasConnection[]) => {
-      const activePortKeys = new Set<string>();
-      connections.forEach((connection) => {
-        if (connection.active === false) return;
-        activePortKeys.add(`${connection.sourceDeviceId}:${connection.sourcePort}`);
-        activePortKeys.add(`${connection.targetDeviceId}:${connection.targetPort}`);
-      });
-
-      const nextDevices = devices.map((device) => ({
-        ...device,
-        ports: device.ports.map((port) => {
-          const key = `${device.id}:${port.id}`;
-          if (port.shutdown || port.status === 'disabled' || port.status === 'err-disabled') return port;
-          if (activePortKeys.has(key)) return { ...port, status: 'connected' as const };
-          // Only change to disconnected if it was previously connected
-          if (port.status === 'connected') {
-            return { ...port, status: 'disconnected' as const };
-          }
-          return port;
-        }),
-      }));
-
-      const nextStates = new Map(states);
-      devices.forEach((device) => {
-        const state = nextStates.get(device.id);
-        if (!state?.ports) return;
-        const nextPorts = { ...state.ports };
-        let changed = false;
-
-        Object.entries(nextPorts).forEach(([portId, port]) => {
-          const key = `${device.id}:${portId}`;
-          if (port.shutdown || port.status === 'disabled' || port.status === 'err-disabled') return;
-          if (activePortKeys.has(key)) {
-            if (port.status !== 'connected') {
-              nextPorts[portId] = { ...port, status: 'connected' };
-              changed = true;
-            }
-            return;
-          }
-          // Only change to notconnect if it was previously connected
-          if (port.status === 'connected') {
-            nextPorts[portId] = {
-              ...port,
-              status: 'notconnect',
-              spanningTree: port.spanningTree
-                ? { ...port.spanningTree, state: 'disabled', role: 'disabled' }
-                : port.spanningTree,
-            };
-            changed = true;
-          }
-        });
-
-        if (changed) {
-          nextStates.set(device.id, { ...state, ports: nextPorts });
-        }
-      });
-
-      return { devices: nextDevices, states: nextStates };
-    };
 
     const disconnectedPCs: string[] = [];
     const disconnectedAPs: string[] = [];
@@ -1449,20 +1202,6 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
         wifi: getEffectiveWifi(device),
       }));
       const releasedDeviceStates = releasedTopology.states;
-
-      const isWirelessMatch = (client: CanvasDevice, ap: CanvasDevice) => {
-        const clientWifi = client.wifi;
-        const apWifi = ap.wifi;
-        if (!clientWifi?.enabled || clientWifi.mode !== 'client' || !clientWifi.ssid) return false;
-        if (!apWifi?.enabled || apWifi.mode !== 'ap' || !apWifi.ssid) return false;
-        if (apWifi.ssid !== clientWifi.ssid) return false;
-        if (clientWifi.bssid && clientWifi.bssid !== ap.id) return false;
-
-        const apSecurity = apWifi.security || 'open';
-        const clientSecurity = clientWifi.security || 'open';
-        if (apSecurity !== clientSecurity) return false;
-        return apSecurity === 'open' || apWifi.password === clientWifi.password;
-      };
 
       // 1. Recalculate wireless associations and persist the effective BSSID.
       refreshedDevices = refreshedDevices.map((device) => {
@@ -2937,7 +2676,6 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
       if (!eventDevices || !eventConnections || !eventStates) return;
 
       // Run VTP propagation logic
-      const isSwitchDeviceType = (type: string) => type === 'switchL2' || type === 'switchL3';
       const byId = new Map(eventDevices.map((d: CanvasDevice) => [d.id, d]));
       const nextStates = new Map(eventStates);
 
@@ -3265,6 +3003,86 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     resetWorkspaceUiState();
     startGuidedProject(project);
   }, [startGuidedProject, closeExam, resetWorkspaceUiState]);
+
+  // Track project name from guided/exam mode
+  useEffect(() => {
+    if (activeGuidedProject) {
+      setTimeout(() => setProjectName(activeGuidedProject.title), 0);
+
+      // Auto-focus target device for the current step to act as a "Wizard pointer"
+      if (guidedStepIndex < activeGuidedProject.steps.length) {
+        const step = activeGuidedProject.steps[guidedStepIndex];
+        const targetId = step.checkParams?.targetDeviceId || step.checkParams?.sourceDevice;
+        if (targetId) {
+          const device = topologyDevices.find(d => d.id === targetId);
+          if (device) {
+            setFocusDeviceId(targetId);
+            // Pan and zoom to the target device
+            focusDeviceInTopology(targetId, 1.0, device);
+            // Auto-clear focus after 3 seconds so it doesn't stay locked
+            setTimeout(() => setFocusDeviceId(null), 3000);
+          }
+        }
+      }
+    } else if (activeExam) {
+      setTimeout(() => setProjectName(activeExam.title), 0);
+      // Auto-open editor for blank templates
+      if (activeExam.isCustom && activeExam.tasks.length === 0) {
+        toggleEditor(true);
+      }
+    }
+  }, [activeGuidedProject, activeExam, toggleEditor]);
+
+  // Persistence: Load from URL ID or localStorage on mount
+  useEffect(() => {
+    if (initialProjectId) {
+      // 1. Try example projects (dynamic import — not in initial bundle)
+      import('@/lib/network/exampleProjects').then(({ exampleProjects }) => {
+        const examples = exampleProjects(language);
+        const example = examples.find(p => p.id === initialProjectId);
+        if (example) {
+          setTimeout(() => applyExampleProject(example.data, example.id), 0);
+          return;
+        }
+      });
+
+      // 2. Try guided projects (Lessons)
+      const lessons = getGuidedProjects(language);
+      const lesson = lessons.find(p => p.id === initialProjectId);
+      if (lesson) {
+        setTimeout(() => handleStartGuidedProject(lesson), 0);
+        // Note: applyExampleProject or startGuidedProject handles topology loading
+        return;
+      }
+
+      // 3. Try exams
+      const exams = getExamProjects(language);
+      const exam = exams.find(p => p.id === initialProjectId);
+      if (exam) {
+        setTimeout(() => startExamFromCatalog(exam), 0);
+        return;
+      }
+    }
+
+    let savedData: string | null = null;
+    try { savedData = localStorage.getItem('netsim_autosave'); } catch { /* storage unavailable */ }
+    if (savedData) {
+      try {
+        const projectData = safeParse<unknown>(savedData);
+        setTimeout(() => loadProjectData(projectData, { keepActiveDevice: true }), 0);
+        // Load last save time from timestamp
+        const parsedProject = (projectData && typeof projectData === 'object') ? projectData as Record<string, unknown> : null;
+        if (parsedProject?.timestamp) {
+          const date = new Date(String(parsedProject.timestamp));
+          setTimeout(() => setLastSaveTime(date.toLocaleTimeString()), 0);
+        } else {
+          setTimeout(() => setLastSaveTime(new Date().toLocaleTimeString()), 0);
+        }
+      } catch (e) {
+        errorHandler.logError(STORAGE_ERRORS.LOAD_FAILED({ operation: 'autosave', error: String(e) }));
+      }
+    }
+  }, [loadProjectData]);
 
   const isDark = (effectiveTheme ?? theme) === 'dark';
   const isRoomEnabled = process.env.NEXT_PUBLIC_IS_ROOM_ENABLED === 'true';
