@@ -23,4 +23,17 @@ describe('Room & Student API Regex validation', () => {
     expect(idRegex.test('student_123')).toBe(false); // Underscores not allowed
     expect(idRegex.test('student/123')).toBe(false); // Slashes not allowed
   });
+
+  it('should validate certificate verification code strictly', () => {
+    const certCodeRegex = /^[A-Z0-9]{4,20}$/;
+    expect(certCodeRegex.test('AB3KPQ7R2N')).toBe(true); // Standard 10-char
+    expect(certCodeRegex.test('ABCD')).toBe(true); // Minimum 4-char
+    expect(certCodeRegex.test('A'.repeat(20))).toBe(true); // Maximum 20-char
+    expect(certCodeRegex.test('A'.repeat(21))).toBe(false); // Too long
+    expect(certCodeRegex.test('ABC')).toBe(false); // Too short
+    expect(certCodeRegex.test('AB-3KPQ7R2')).toBe(false); // Hyphen not allowed
+    expect(certCodeRegex.test('AB_3KPQ7R2')).toBe(false); // Underscore not allowed
+    expect(certCodeRegex.test('AB3KPQ7R2N/')).toBe(false); // Special char not allowed
+    expect(certCodeRegex.test('abc1234567')).toBe(false); // Lowercase not allowed (it should be normalized to uppercase)
+  });
 });

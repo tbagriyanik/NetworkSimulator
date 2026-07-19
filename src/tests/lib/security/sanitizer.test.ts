@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeInput, sanitizeObject } from '@/lib/security/sanitizer';
+import { sanitizeInput, sanitizeObject, generateSecureId } from '@/lib/security/sanitizer';
 
 describe('sanitizeInput (XSS Protection)', () => {
   it('should remove javascript: schemes', () => {
@@ -99,5 +99,19 @@ describe('sanitizeObject (XSS & Prototype Pollution Protection)', () => {
     const regex = /test/;
     expect(sanitizeObject(date)).toBe(date);
     expect(sanitizeObject(regex)).toBe(regex);
+  });
+});
+
+describe('generateSecureId', () => {
+  it('should generate a valid string representation of UUID/ID', () => {
+    const id = generateSecureId();
+    expect(typeof id).toBe('string');
+    expect(id.length).toBeGreaterThanOrEqual(10);
+  });
+
+  it('should generate unique values on sequential calls', () => {
+    const id1 = generateSecureId();
+    const id2 = generateSecureId();
+    expect(id1).not.toBe(id2);
   });
 });

@@ -98,4 +98,45 @@ export function safeJSONForHTML(data: unknown): string {
         .replace(/'/g, '\\u0027');
 }
 
+/**
+ * Generate a cryptographically secure random ID (UUID-compatible format).
+ * Safely falls back if crypto or crypto.randomUUID is not available in the environment.
+ */
+export function generateSecureId(): string {
+    if (typeof window !== 'undefined' && window.crypto) {
+        if (typeof window.crypto.randomUUID === 'function') {
+            try {
+                return window.crypto.randomUUID();
+            } catch {
+                // Fall through to manual generation
+            }
+        }
+        try {
+            const arr = new Uint8Array(16);
+            window.crypto.getRandomValues(arr);
+            // Construct a valid UUID v4 format
+            // Set the version digit to 4
+            arr[6] = (arr[6] & 0x0f) | 0x40;
+            // Set the variant bits (8, 9, a, or b)
+            arr[8] = (arr[8] & 0x3f) | 0x80;
+
+            let hex = '';
+            for (let i = 0; i < 16; i++) {
+                hex += arr[i].toString(16).padStart(2, '0');
+            }
+            return [
+                hex.slice(0, 8),
+                hex.slice(8, 12),
+                hex.slice(12, 16),
+                hex.slice(16, 20),
+                hex.slice(20, 32),
+            ].join('-');
+        } catch {
+            // Fall through to timestamp/Math.random
+        }
+    }
+
+    // Fallback for SSR or completely missing crypto
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+}
 
