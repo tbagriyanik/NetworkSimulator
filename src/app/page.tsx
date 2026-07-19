@@ -108,6 +108,7 @@ const LazyAboutModal = dynamic(() => import('@/components/network/LazyAboutModal
 const ProjectPickerDialog = dynamic(() => import('@/components/network/ProjectPickerDialog').then((m) => m.ProjectPickerDialog));
 const OnboardingDialog = dynamic(() => import('@/components/network/OnboardingDialog').then((m) => m.OnboardingDialog));
 const PageModals = dynamic(() => import('@/components/network/panels/PageModals').then((m) => m.PageModals), { ssr: false });
+const TopologyGeneratorDialog = dynamic(() => import('@/components/network/topology/TopologyGeneratorDialog').then(m => m.TopologyGeneratorDialog), { ssr: false });
 
 import { TabType, ALL_TABS, exampleLevelOrder } from './page.types';
 import { useHistory, ProjectState } from '@/hooks/useHistory';
@@ -212,6 +213,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   }, [loadedExampleId]);
   const [projectSearchQuery, setProjectSearchQuery] = useState('');
   const [showBasarilarim, setShowBasarilarim] = useState(false);
+  const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
 
   usePWA();
 
@@ -623,6 +625,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     setShowBasarilarim(false);
     setShowTeacherPanel(false);
     setShowRoomJoinDialog(false);
+    setIsGeneratorOpen(false);
     if (!isExamActive) {
       setRefreshNetworkReport(prev => prev ? { ...prev, show: false } : null);
     }
@@ -1516,6 +1519,33 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     action();
   }, [hasUnsavedChanges, handleSaveProject, setSaveDialog, t.unsavedChangesConfirm]);
 
+  const handleGeneratedTopology = useCallback((data: {
+    devices: CanvasDevice[];
+    connections: CanvasConnection[];
+    deviceStates: Map<string, SwitchState>;
+  }) => {
+    // Clear existing and set generated
+    resetWorkspaceUiState();
+    resetToEmptyProject();
+    setDevices(data.devices);
+    setConnections(data.connections);
+    setDeviceStates(data.deviceStates);
+    setNotes([]);
+    setZoom(1.0);
+    setPan({ x: 0, y: 0 });
+
+    // Automatically trigger "add-summary-note" to create the summary canvas note
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('add-summary-note'));
+    }, 500);
+  }, [resetWorkspaceUiState, resetToEmptyProject, setDevices, setConnections, setDeviceStates, setNotes, setZoom, setPan]);
+
+  useEffect(() => {
+    const handleOpenGenerator = () => setIsGeneratorOpen(true);
+    window.addEventListener('trigger-topology-generator', handleOpenGenerator);
+    return () => window.removeEventListener('trigger-topology-generator', handleOpenGenerator);
+  }, []);
+
   function handleNewProject() {
     setProjectSearchQuery(''); // Reset search when opening new project dialog
     closeExam();
@@ -1966,6 +1996,12 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
             helpLevel={helpLevel}
             setHelpLevel={(level) => useAppStore.getState().setHelpLevel(level)}
           />
+
+          {isGeneratorOpen && <TopologyGeneratorDialog
+            open={isGeneratorOpen}
+            onOpenChange={setIsGeneratorOpen}
+            onGenerate={handleGeneratedTopology}
+          />}
 
           {showProjectPicker && <ProjectPickerDialog
             open={showProjectPicker}

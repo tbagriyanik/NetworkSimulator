@@ -241,6 +241,19 @@ export function AppHeader({
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
+                      <button aria-label={t.topologyGenerator}
+                        className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50", isDark ? 'text-secondary-300 hover:text-primary-400 hover:bg-secondary-700/50' : 'text-secondary-600 hover:text-primary-600')}
+                        onClick={() => window.dispatchEvent(new CustomEvent('trigger-topology-generator'))}
+                      >
+                        <Sparkles className="w-4 h-4 text-purple-500 animate-pulse" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="flex items-center gap-2">
+                      <span>{t.topologyGenerator}</span>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
                       <button aria-label={t.generateSummary}
                         className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50", isDark ? 'text-secondary-300 hover:text-primary-400 hover:bg-secondary-700/50' : 'text-secondary-600 hover:text-primary-600')}
                         onClick={() => window.dispatchEvent(new CustomEvent('add-summary-note'))}
