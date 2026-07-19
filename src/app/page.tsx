@@ -2460,6 +2460,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
             onJumpTo={handleJumpTo}
             isMinimized={isTimelineMinimized}
             onMinimize={toggleTimelineMinimize}
+            isMobile={isMobile}
           />
 
           {/* Exam Editor Panel */}

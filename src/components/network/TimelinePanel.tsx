@@ -16,6 +16,7 @@ interface TimelinePanelProps {
   onJumpTo: (index: number) => void;
   isMinimized: boolean;
   onMinimize: () => void;
+  isMobile?: boolean;
 }
 
 export function TimelinePanel({
@@ -23,7 +24,8 @@ export function TimelinePanel({
   historyIndex,
   onJumpTo,
   isMinimized,
-  onMinimize
+  onMinimize,
+  isMobile = false
 }: TimelinePanelProps) {
   const { t, language } = useLanguage();
   const { theme } = useTheme();
@@ -47,7 +49,6 @@ export function TimelinePanel({
 
   const clampPosition = (nextPosition: { x: number; y: number }) => {
     if (typeof window === 'undefined') return nextPosition;
-    const isMobile = window.innerWidth < 640;
     const panelWidth = isMobile ? Math.min(window.innerWidth - 16, 448) : 576;
     const panelHeight = isMinimized ? 48 : 152;
     const maxX = Math.max(0, window.innerWidth - panelWidth - 8);
@@ -59,6 +60,7 @@ export function TimelinePanel({
   };
 
   const handlePointerDown = (e: React.PointerEvent) => {
+    if (isMobile) return;
     if ((e.target as HTMLElement).closest('button')) return;
     panelRef.current?.focus();
     setIsDragging(true);
@@ -68,6 +70,7 @@ export function TimelinePanel({
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
+    if (isMobile) return;
     if (!isDragging) return;
     const dx = e.clientX - dragStartPos.current.x;
     const dy = e.clientY - dragStartPos.current.y;
@@ -82,6 +85,7 @@ export function TimelinePanel({
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
+    if (isMobile) return;
     if (!isDragging) return;
     setIsDragging(false);
     setPosition(positionRef.current);
@@ -212,7 +216,9 @@ export function TimelinePanel({
       onPointerDownCapture={() => bringElementToFront(panelRef.current)}
       className={cn(
         "absolute z-30 liquid-glass-light transition-all duration-300 flex flex-col overflow-hidden rounded-xl outline-none select-none",
-        "left-2 right-2 bottom-[72px] w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] sm:left-4 sm:right-auto sm:bottom-20 sm:max-w-none",
+        isMobile
+          ? (isMinimized ? "left-1/2 -translate-x-1/2 bottom-[72px]" : "left-2 right-2 bottom-[72px]")
+          : "sm:left-4 sm:right-auto sm:bottom-20 sm:max-w-none",
         isMinimized ? "w-48 h-12 rounded-full" : "sm:w-[36rem] w-[calc(100vw-1rem)] h-[152px]",
         isDark
           ? isFocused
@@ -224,8 +230,8 @@ export function TimelinePanel({
         isDragging ? "transition-none" : "transition-transform"
       )}
       style={{
-        transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
-        touchAction: 'none'
+        transform: isMobile ? 'none' : `translate3d(${position.x}px, ${position.y}px, 0)`,
+        touchAction: isMobile ? 'auto' : 'none'
       }}
       onFocus={() => setIsFocused(true)}
       onBlur={(e) => {

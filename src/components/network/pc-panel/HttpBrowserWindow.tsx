@@ -105,8 +105,8 @@ export function HttpBrowserWindow({
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Required: sync local state with parent prop during drag/resize
     const clamped = clampWindow(browserWindow);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Required: sync local state with parent prop during drag/resize
     setLocalWindow(clamped);
     localWindowRef.current = clamped;
   }, [browserWindow.x, browserWindow.y, browserWindow.width, browserWindow.height]);
