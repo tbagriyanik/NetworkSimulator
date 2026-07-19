@@ -26,14 +26,29 @@ export const GET = withErrorHandling(async (
 
   const { code } = await params;
 
-  if (!code || code.length > 20) {
+  if (!code) {
     return NextResponse.json(
-      { success: false, error: 'Invalid verification code', code: 'INVALID_CODE' },
+      { success: false, error: 'Missing verification code', code: 'MISSING_CODE' },
       { status: 400 },
     );
   }
 
-  const record = await getCertificate(code);
+  const upperCode = code.toUpperCase().trim();
+  if (upperCode.length < 4 || upperCode.length > 20) {
+    return NextResponse.json(
+      { success: false, error: 'Invalid verification code length', code: 'INVALID_CODE_LENGTH' },
+      { status: 400 },
+    );
+  }
+
+  if (!/^[A-Z0-9]+$/.test(upperCode)) {
+    return NextResponse.json(
+      { success: false, error: 'Invalid verification code format', code: 'INVALID_CODE_FORMAT' },
+      { status: 400 },
+    );
+  }
+
+  const record = await getCertificate(upperCode);
 
   if (!record) {
     return NextResponse.json(
