@@ -369,8 +369,3 @@ Radio Configurations:
 - IEEE 802.11 Wireless Standards
 - WPA2/WPA3 Security Standards
 - Network Simulator Documentation
-
----
- 
-**Son Güncelleme:** 2026-07-12
-**Versiyon**: 1.9.8

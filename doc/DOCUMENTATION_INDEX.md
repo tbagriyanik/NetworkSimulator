@@ -579,12 +579,4 @@ doc/
 
 ---
 
-## 📅 Güncelleme Tarihi
-
-**Son Güncelleme**: 2026-07-12
-**Versiyon**: 1.9.8
-**Durum**: ✅ Güncel
-
----
-
 *Tüm dokümantasyon dosyaları `doc/` klasöründe bulunur.*

@@ -49,12 +49,6 @@ New features should include corresponding tests in `src/tests`. We prioritize lo
 
 The project uses **manual semantic versioning** via `npm version`.
 
-```bash
-npm version patch  # 1.9.8 → 1.9.9 (bug fixes)
-npm version minor  # 1.9.8 → 1.10.0 (new features, backward-compatible)
-npm version major  # 1.9.8 → 2.0.0 (breaking changes)
-```
-
 Steps for each release:
 1. Update `doc/history.md` with the new version, date, and changelog entries.
 2. Run `npm version <bump>` — this tags the commit and updates `package.json`.

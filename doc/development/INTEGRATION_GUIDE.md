@@ -561,8 +561,3 @@ export function AdvancedForm() {
 ## 📞 Sorular?
 
 Detaylı bilgi için `ERROR_HANDLING_GUIDE.md` dosyasını okuyun.
-
----
-
-**Güncelleme Tarihi**: 2026-07-12  
-**Versiyon**: 1.9.8

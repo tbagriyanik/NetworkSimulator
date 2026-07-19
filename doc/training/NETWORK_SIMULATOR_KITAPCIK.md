@@ -1,6 +1,6 @@
 # 🌐 Network Simulator - Kapsamlı Kullanım Kılavuzu ve Eğitim Kitapçığı
 
-![Simulator Logo](https://network2026.vercel.app/og-image.png)
+![Simulator Logo](https://network2026.vercel.app/app.png)
 
 ## 📘 İçindekiler
 1. [Uygulama Özellikleri ve Yenilikler](#uygulama-ozellikleri-ve-yenilikler)
@@ -8,16 +8,11 @@
 3. [CLI Komut Referansı](#cli-komut-referansi)
 4. [30 Derste CLI Eğitimi](#30-derste-cli-egitimi)
 5. [Rehberli Uygulama Adımları (148 Adım)](#rehberli-uygulama-adimlari)
-6. [49 Örnek Proje ve Adım Adım Yapılışları](#49-ornek-proje-ve-adim-adim-yapilislari)
+6. [43 Örnek Proje ve Adım Adım Yapılışları](#43-ornek-proje-ve-adim-adim-yapilislari)
 
 <div style="page-break-after: always;"></div>
 
 # Network Simulator
-
-![Version](https://img.shields.io/badge/version-1.9.8-blue)
-![Stack](https://img.shields.io/badge/stack-Next.js%2016.2%20|%20React%2019%20|%20TypeScript%206.0%20|%20Tailwind%204-green)
-![FOSS](https://img.shields.io/badge/FOSS-Free%20Open%20Source-brightgreen)
-![Total Lines](https://img.shields.io/badge/total--lines-111,140-lightgrey)
 
 A browser-based network simulator for learning switching, routing, wireless, IoT, CLI, and exam workflows.
 
@@ -3625,10 +3620,6 @@ Network Simulator, farklı zorluk seviyelerinde **43 hazır örnek proje** ile b
 
 **Beklenen Sonuç:** Tüm ağ servisleri (DNS, HTTP, FTP, MAIL, NTP, DHCP) çalışır durumdadır.
 
----
-
-**Son Güncelleme:** Temmuz 2026
-**Versiyon:** 1.9.8
 
 \n\n<div style="page-break-after: always;"></div>\n\n
 # 🎓 Rehberli Ders Adımları (Guided Steps)

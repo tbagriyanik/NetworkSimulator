@@ -356,9 +356,3 @@ Router(config-if)# ipv6 ospf 1 area 0
 Router# show ipv6 route
 Router# show ipv6 interface brief
 ```
-
----
- 
-**Güncelleme Tarihi**: 2026-07-12
-**Versiyon**: 1.9.8
-**Durum**: ✅ Hazır

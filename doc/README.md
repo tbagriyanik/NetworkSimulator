@@ -224,12 +224,4 @@ Kaynak kodları inceleyin
 
 ---
 
-## 📅 Bilgi
-
-**Versiyon**: 1.9.8
-**Durum**: ✅ Güncel
-**Son Güncelleme**: 2026-07-16
-
----
-
 *Tüm dokümantasyon dosyaları `doc/` klasörü altında kategorilere ayrılmıştır.*

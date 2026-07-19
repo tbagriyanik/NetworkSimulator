@@ -2728,9 +2728,3 @@ Network Simulator, farklı zorluk seviyelerinde **40 hazır örnek proje** ile b
 **Test:** PC'den `nslookup www.lab.local`, `wget www.lab.local`, `ftp 192.168.1.40`, Switch > `ntp server 192.168.1.60`, `show clock`
 
 **Beklenen Sonuç:** Tüm ağ servisleri (DNS, HTTP, FTP, MAIL, NTP, DHCP) çalışır durumdadır.
-
----
- 
-**Son Güncelleme:** Temmuz 2026  
-**Versiyon:** 1.9.8
-
