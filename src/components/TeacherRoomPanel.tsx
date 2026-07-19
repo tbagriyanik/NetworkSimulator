@@ -9,6 +9,7 @@ import { useRoomStudents } from '@/hooks/useRoomStudents';
 import { Badge } from '@/components/ui/badge';
 import { useRoom } from '@/contexts/RoomContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { generateSecureId } from '@/lib/security/sanitizer';
 
 type SortField = 'name' | 'duration' | 'tasks' | 'score';
 type SortDir = 'asc' | 'desc';
@@ -240,8 +241,7 @@ export function TeacherRoomPanel() {
   const getTeacherId = (): string => {
     const stored = localStorage.getItem('teacher-browser-id');
     if (stored) return stored;
-    let id: string;
-    try { id = crypto.randomUUID(); } catch { id = `${Date.now()}-${Math.random().toString(36).slice(2)}`; }
+    const id = generateSecureId();
     localStorage.setItem('teacher-browser-id', id);
     return id;
   };

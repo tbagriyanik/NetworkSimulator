@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { generateSecureId } from '@/lib/security/sanitizer';
 
 interface UseRoomSyncOptions {
   roomCode: string | null;
@@ -32,7 +33,7 @@ export function useRoomSync({
       if (stored) {
         studentIdRef.current = stored;
       } else {
-        studentIdRef.current = crypto.randomUUID();
+        studentIdRef.current = generateSecureId();
         localStorage.setItem('room-student-id', studentIdRef.current);
       }
     }
