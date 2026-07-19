@@ -269,4 +269,49 @@ describe('roomStore', () => {
       expect(result).toBe(0);
     });
   });
+
+  describe('Certificate actions', () => {
+    it('should save certificate record correctly in redis', async () => {
+      mockRedis.set.mockResolvedValue('OK');
+      const record = {
+        verifyCode: 'XYZ123',
+        studentName: 'Ali',
+        projectTitle: 'Network Lab',
+        score: 10,
+        totalScore: 10,
+        date: '2023-10-10',
+        language: 'tr' as const,
+        issuedAt: 1234567,
+      };
+
+      const { saveCertificate } = await import('@/lib/roomStore');
+      await saveCertificate(record);
+
+      expect(mockRedis.set).toHaveBeenCalledWith(
+        'cert:XYZ123',
+        record,
+        { ex: 60 * 60 * 24 * 365 }
+      );
+    });
+
+    it('should get certificate record correctly and uppercase the code', async () => {
+      const record = {
+        verifyCode: 'XYZ123',
+        studentName: 'Ali',
+        projectTitle: 'Network Lab',
+        score: 10,
+        totalScore: 10,
+        date: '2023-10-10',
+        language: 'tr' as const,
+        issuedAt: 1234567,
+      };
+      mockRedis.get.mockResolvedValue(record);
+
+      const { getCertificate } = await import('@/lib/roomStore');
+      const result = await getCertificate('xyz123');
+
+      expect(mockRedis.get).toHaveBeenCalledWith('cert:XYZ123');
+      expect(result).toEqual(record);
+    });
+  });
 });

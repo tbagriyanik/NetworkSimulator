@@ -28,7 +28,7 @@ export const GET = withErrorHandling(async (
 
   if (!code) {
     return NextResponse.json(
-      { success: false, error: 'Invalid verification code', code: 'INVALID_CODE' },
+      { success: false, error: 'Missing verification code', code: 'MISSING_CODE' },
       { status: 400 },
     );
   }
