@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, KeyboardEvent, useCallback, useMemo, type CSSProperties } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, type CSSProperties } from 'react';
 import { useEnvironment } from '@/lib/store/appStore';
 import { SwitchState } from '@/lib/network/types';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -18,7 +18,6 @@ import { useIsMobile } from '@/hooks/use-breakpoint';
 import { sanitizeHTTPContent } from '@/lib/security/sanitizer';
 import { generateRouterAdminPage, isRouterDevice } from '@/components/network/WifiControlPanel';
 import { generateIotWebPanelContent } from '@/lib/network/iotWebPanel';
-import { expandCommandContext, DESKTOP_COMMANDS } from './pcPanel.utils';
 import { errorHandler, STORAGE_ERRORS, CLIPBOARD_ERRORS } from '@/lib/errors/errorHandler';
 import { SearchOutputDialog } from './pc-panel/SearchOutputDialog';
 import { HiddenNavigationTabs } from './pc-panel/HiddenNavigationTabs';
@@ -33,6 +32,7 @@ import { usePCPanelDhcp } from './pc-panel/usePCPanelDhcp';
 import { usePCPanelRouterAdmin } from './pc-panel/usePCPanelRouterAdmin';
 import { usePCPanelBrowser } from './pc-panel/usePCPanelBrowser';
 import { usePCPanelCommands } from './pc-panel/usePCPanelCommands';
+import { usePCPanelInput } from './pc-panel/usePCPanelInput';
 import { validateIP, validateIPv6, isValidIpAddress, formatMacForArp, highlightText as highlightTextHelper, getInitialPcOutput } from './pc-panel/pcPanelHelpers';
 import type { DhcpPoolConfig, FtpSession, OutputLine, PCActiveTab, PCPanelProps, PcFile } from './pc-panel/PCPanel.types';
 import { CommandLineTab } from './pc-panel/CommandLineTab';
@@ -1460,40 +1460,6 @@ export function PCPanel({
 </html>`;
   }, [httpAppContent]);
 
-  const buildCompletedInput = useCallback((selected: string) => {
-    const mode = getCommandMode();
-    const { contextTokens } = expandCommandContext(mode, input);
-    const prefix = contextTokens.join(' ');
-    return prefix ? `${prefix} ${selected}` : selected;
-  }, [input, getCommandMode]);
-
-  const completeAutocompleteSelection = useCallback((selected: string) => {
-    const completed = buildCompletedInput(selected);
-    setInput(completed);
-    setShowAutocomplete(false);
-    setAutocompleteIndex(-1);
-    setAutocompleteNavigated(false);
-    return completed;
-  }, [buildCompletedInput]);
-
-  useEffect(() => {
-    if (!showAutocomplete) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node | null;
-      if (autocompleteRef.current && target && !autocompleteRef.current.contains(target)) {
-        setShowAutocomplete(false);
-        setAutocompleteIndex(-1);
-        setAutocompleteNavigated(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showAutocomplete]);
-
   const [consolePasswordAttempted, setConsolePasswordAttempted] = useState(false);
 
   const consoleAuthenticated = useMemo(() => {
@@ -2100,364 +2066,52 @@ export function PCPanel({
     setPcHostname,
   });
 
-  const handleTabComplete = useCallback(() => {
-    const value = input;
-    if (!value && tabCycleIndex === -1) return;
-
-    const isIpv4 = (raw: string) => /^(25[0-5]|2[0-4]\d|1?\d?\d)(\.(25[0-5]|2[0-4]\d|1?\d?\d)){3}$/.test(raw);
-    const trimmed = value.trim();
-    const hasTrailingSpace = /\s$/.test(value);
-
-    const ipAddressMatch = trimmed.match(/^ip\s+address\s+(\S+)(?:\s+(\S+))?$/i);
-    if (ipAddressMatch) {
-      const ip = ipAddressMatch[1];
-      const mask = ipAddressMatch[2];
-      if (isIpv4(ip) && !mask) {
-        setInput(`ip address ${ip} 255.255.255.0`);
-        setTabCycleIndex(-1);
-        return;
-      }
-      if (isIpv4(ip) && mask && isIpv4(mask) && !hasTrailingSpace) {
-        setInput(`${trimmed} `);
-        setTabCycleIndex(-1);
-        return;
-      }
-    }
-
-    const singleIpArgMatch = trimmed.match(/^(?:ip\s+default-gateway|ping|http|telnet|ssh)\s+(\S+)$/i);
-    if (singleIpArgMatch && isIpv4(singleIpArgMatch[1]) && !hasTrailingSpace) {
-      setInput(`${trimmed} `);
-      setTabCycleIndex(-1);
-      return;
-    }
-
-    const networkMatch = trimmed.match(/^network\s+(\S+)(?:\s+(\S+))?$/i);
-    if (networkMatch) {
-      const netIp = networkMatch[1];
-      const mask = networkMatch[2];
-      if (isIpv4(netIp) && !mask) {
-        setInput(`network ${netIp} 255.255.255.0`);
-        setTabCycleIndex(-1);
-        return;
-      }
-      if (isIpv4(netIp) && mask && isIpv4(mask) && !hasTrailingSpace) {
-        setInput(`${trimmed} `);
-        setTabCycleIndex(-1);
-        return;
-      }
-    }
-
-    const dhcpSingleIpArgMatch = trimmed.match(/^(?:default-router|dns-server)\s+(\S+)$/i);
-    if (dhcpSingleIpArgMatch && isIpv4(dhcpSingleIpArgMatch[1]) && !hasTrailingSpace) {
-      setInput(`${trimmed} `);
-      setTabCycleIndex(-1);
-      return;
-    }
-
-    let matches: string[] = [];
-    let contextTokens: string[] = [];
-
-    if (activeTab === 'desktop') {
-      const tokens = value.trim().split(/\s+/).filter(Boolean);
-      const currentWord = value.endsWith(' ') ? '' : (tokens[tokens.length - 1] || '').toLowerCase();
-      contextTokens = [];
-      matches = DESKTOP_COMMANDS.filter(opt => opt !== '?' && opt.toLowerCase().startsWith(currentWord));
-    } else {
-      const mode = getCommandMode();
-      const context = expandCommandContext(mode, value);
-      contextTokens = context.contextTokens;
-      matches = context.candidates.filter(opt => opt !== '?' && opt.toLowerCase().startsWith(context.currentWord));
-    }
-
-    if (matches.length > 0) {
-      if (tabCycleIndex === -1) {
-        setLastTabInput(value);
-        setTabCycleIndex(0);
-        const completion = matches[0];
-        const prefix = contextTokens.join(' ');
-        setInput(prefix ? `${prefix} ${completion}` : completion);
-      } else {
-        const nextIndex = (tabCycleIndex + 1) % matches.length;
-        setTabCycleIndex(nextIndex);
-        const originalParts = lastTabInput.split(/\s+/);
-        const originalContext = lastTabInput.endsWith(' ') ? lastTabInput.trim() : originalParts.slice(0, -1).join(' ');
-        const completion = matches[nextIndex];
-        setInput(originalContext ? `${originalContext} ${completion}` : completion);
-      }
-    } else if (value.trim() && activeTab === 'terminal' && isConsoleConnected) {
-      // No matches in console mode - trigger help
-      executeCommand(value.trim() + ' ?');
-    }
-  }, [input, tabCycleIndex, lastTabInput, getCommandMode, executeCommand, isConsoleConnected, activeTab, setTabCycleIndex, setLastTabInput]);
-
-  // Undo/Redo helpers
-  const handleUndo = useCallback(() => {
-    if (undoStack.length > 0) {
-      const newUndoStack = [...undoStack];
-      const previousInput = newUndoStack.pop() || '';
-      setRedoStack([input, ...redoStack]);
-      setInput(previousInput);
-      setUndoStack(newUndoStack);
-    }
-  }, [input, undoStack, redoStack]);
-
-  const handleRedo = useCallback(() => {
-    if (redoStack.length > 0) {
-      const newRedoStack = [...redoStack];
-      const nextInput = newRedoStack.shift() || '';
-      setUndoStack([...undoStack, input]);
-      setInput(nextInput);
-      setRedoStack(newRedoStack);
-    }
-  }, [input, undoStack, redoStack]);
-
-  const handleInputChange = useCallback((newValue: string) => {
-    // Intercept '?' for immediate help in terminal mode (NOS style)
-    if (activeTab === 'terminal' && isConsoleConnected && newValue.endsWith('?') && !consoleNeedsPassword && !consoleConfirmDialog?.show) {
-      const partialCommand = newValue.slice(0, -1);
-      setUndoStack([...undoStack, input]);
-      setRedoStack([]);
-      setInput(partialCommand); // Keep part before ?
-
-      // Trigger help command immediately
-      void executeCommand(newValue);
-      return;
-    }
-
-    setUndoStack([...undoStack, input]);
-    setRedoStack([]);
-    setInput(newValue);
-    setAutocompleteNavigated(false);
-
-    if (newValue.trim().length > 0) {
-      const suggestions = getAutocompleteSuggestionsCallback(newValue);
-      if (suggestions.length > 0) {
-        setShowAutocomplete(true);
-        setAutocompleteIndex(-1);
-      } else {
-        setShowAutocomplete(false);
-      }
-    } else {
-      setShowAutocomplete(false);
-    }
-  }, [input, undoStack, getAutocompleteSuggestionsCallback]);
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    // Global terminal shortcuts
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
-      e.preventDefault();
-      setSearchOpen(true);
-      return;
-    }
-
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'l') {
-      e.preventDefault();
-      if (activeTab === 'desktop') setPcOutput([]);
-      else if (activeTab === 'terminal') setConsoleConnectionTime(Date.now());
-      setInput('');
-      setShowAutocomplete(false);
-      setAutocompleteIndex(-1);
-      setAutocompleteNavigated(false);
-      return;
-    }
-
-    const autocompleteSuggestions = renderAutocompleteSuggestions;
-    const canUseAutocomplete = showAutocomplete && autocompleteSuggestions.length > 0;
-
-    if (e.ctrlKey && e.key.toLowerCase() === 'l') {
-      e.preventDefault();
-      if (activeTab === 'desktop') {
-        setPcOutput([]);
-      } else if (activeTab === 'terminal') {
-        // Reset console view by moving the window start time forward
-        setConsoleConnectionTime(Date.now());
-      }
-      return;
-    }
-
-    // Handle Ctrl+Z (Undo)
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
-      e.preventDefault();
-      handleUndo();
-      return;
-    }
-
-    // Handle Ctrl+Y (Redo)
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
-      e.preventDefault();
-      handleRedo();
-      return;
-    }
-
-    // Escape cancels password/confirm and returns to normal input
-    if (e.key === 'Escape') {
-      if (showAutocomplete) {
-        e.preventDefault();
-        setShowAutocomplete(false);
-        setAutocompleteIndex(-1);
-        setAutocompleteNavigated(false);
-        return;
-      }
-      if (activeTab === 'terminal' && isConsoleConnected && (consoleNeedsPassword || consoleConfirmDialog?.show || consoleReloadPending)) {
-        e.preventDefault();
-        if (onExecuteDeviceCommand && connectedDeviceId) {
-          if (consoleNeedsPassword) {
-            onExecuteDeviceCommand(connectedDeviceId, '__PASSWORD_CANCELLED__');
-          } else if (consoleReloadPending) {
-            // For reload, send 'n' to cancel
-            onExecuteDeviceCommand(connectedDeviceId, 'n');
-          }
-        }
-        if (consoleNeedsPassword) {
-          setConsolePasswordAttempted(false);
-          setIsConsoleConnected(false);
-          setConnectedDeviceId(null);
-        }
-        setInput('');
-        return;
-      }
-    }
-
-    // Handle Ctrl+A (Select All) - Let browser handle natively
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
-      // Don't preventDefault - let browser handle select all
-      return;
-    }
-
-    // Handle Ctrl+X (Cut) - Let browser handle natively
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'x') {
-      // Don't preventDefault - let browser handle cut
-      return;
-    }
-
-    // Handle Ctrl+C (Copy) - Let browser handle natively
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
-      // Don't preventDefault - let browser handle copy
-      return;
-    }
-
-    // Handle Ctrl+V (Paste) - Let browser handle natively
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
-      return;
-    }
-
-    // Handle Ctrl+X (Cut)
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'x') {
-      e.preventDefault();
-      const inputElement = e.currentTarget as HTMLInputElement;
-      if (input) {
-        const start = inputElement.selectionStart || 0;
-        const end = inputElement.selectionEnd || 0;
-        if (start !== end) {
-          const selectedText = input.substring(start, end);
-          navigator.clipboard.writeText(selectedText).then(() => {
-            const newInput = input.substring(0, start) + input.substring(end);
-            setInput(newInput);
-          });
-        }
-      }
-      return;
-    }
-
-    // Handle Ctrl+C (Copy)
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
-      e.preventDefault();
-      const inputElement = e.currentTarget as HTMLInputElement;
-      if (input) {
-        const start = inputElement.selectionStart || 0;
-        const end = inputElement.selectionEnd || 0;
-        if (start !== end) {
-          const selectedText = input.substring(start, end);
-          navigator.clipboard.writeText(selectedText);
-        } else if (input) {
-          // If no selection, copy all
-          navigator.clipboard.writeText(input);
-        }
-      }
-      return;
-    }
-
-    // Handle Ctrl+V (Paste) - Let browser handle it naturally, just prevent default to stop any global handlers
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
-      // Don't prevent default - let the browser handle paste natively
-      // The only reason we had custom handling was to control cursor position
-      // But browser default is more reliable
-      return;
-    }
-
-    if (e.key === 'Enter') {
-      if (canUseAutocomplete && autocompleteNavigated) {
-        e.preventDefault();
-        const completed = completeAutocompleteSelection(autocompleteSuggestions[autocompleteIndex] || autocompleteSuggestions[0]);
-        executeCommand(completed);
-        return;
-      }
-      executeCommand();
-    } else if (e.key === 'Tab') {
-      e.preventDefault();
-      if (canUseAutocomplete) {
-        completeAutocompleteSelection(autocompleteSuggestions[autocompleteIndex] || autocompleteSuggestions[0]);
-        return;
-      }
-      handleTabComplete();
-    } else if (e.key === 'ArrowUp') {
-      if (canUseAutocomplete) {
-        e.preventDefault();
-        setAutocompleteIndex(prev => {
-          if (prev === -1) return autocompleteSuggestions.length - 1;
-          return prev <= 0 ? autocompleteSuggestions.length - 1 : prev - 1;
-        });
-        setAutocompleteNavigated(true);
-        return;
-      }
-      e.preventDefault();
-      if (activeTab === 'desktop') {
-        if (desktopHistory.length > 0 && desktopHistoryIndex < desktopHistory.length - 1) {
-          const ni = desktopHistoryIndex + 1;
-          setDesktopHistoryIndex(ni);
-          setInput(desktopHistory[ni]);
-        }
-      } else if (activeTab === 'terminal') {
-        if (consoleHistory.length > 0 && consoleHistoryIndex < consoleHistory.length - 1) {
-          const ni = consoleHistoryIndex + 1;
-          setConsoleHistoryIndex(ni);
-          setInput(consoleHistory[ni]);
-        }
-      }
-    } else if (e.key === 'ArrowDown') {
-      if (canUseAutocomplete) {
-        e.preventDefault();
-        setAutocompleteIndex(prev => {
-          if (prev === -1) return 0;
-          return (prev + 1) % autocompleteSuggestions.length;
-        });
-        setAutocompleteNavigated(true);
-        return;
-      }
-      e.preventDefault();
-      if (activeTab === 'desktop') {
-        if (desktopHistoryIndex > 0) {
-          const ni = desktopHistoryIndex - 1;
-          setDesktopHistoryIndex(ni);
-          setInput(desktopHistory[ni]);
-        } else if (desktopHistoryIndex === 0) {
-          setDesktopHistoryIndex(-1);
-          setInput('');
-        }
-      } else if (activeTab === 'terminal') {
-        if (consoleHistoryIndex > 0) {
-          const ni = consoleHistoryIndex - 1;
-          setConsoleHistoryIndex(ni);
-          setInput(consoleHistory[ni]);
-        } else if (consoleHistoryIndex === 0) {
-          setConsoleHistoryIndex(-1);
-          setInput('');
-        }
-      }
-    }
-  };
-
-
+  const {
+    completeAutocompleteSelection,
+    handleInputChange,
+    handleKeyDown,
+  } = usePCPanelInput({
+    input,
+    setInput,
+    activeTab,
+    tabCycleIndex,
+    setTabCycleIndex,
+    lastTabInput,
+    setLastTabInput,
+    undoStack,
+    setUndoStack,
+    redoStack,
+    setRedoStack,
+    showAutocomplete,
+    setShowAutocomplete,
+    autocompleteIndex,
+    setAutocompleteIndex,
+    autocompleteNavigated,
+    setAutocompleteNavigated,
+    setSearchOpen,
+    autocompleteRef,
+    getCommandMode,
+    executeCommand,
+    getAutocompleteSuggestionsCallback,
+    isConsoleConnected,
+    consoleNeedsPassword,
+    consoleConfirmDialog,
+    consoleReloadPending,
+    connectedDeviceId,
+    onExecuteDeviceCommand,
+    setConsolePasswordAttempted,
+    setIsConsoleConnected,
+    setConnectedDeviceId,
+    desktopHistory,
+    desktopHistoryIndex,
+    setDesktopHistoryIndex,
+    consoleHistory,
+    consoleHistoryIndex,
+    setConsoleHistoryIndex,
+    setPcOutput,
+    setConsoleConnectionTime,
+    renderAutocompleteSuggestions,
+  });
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString(language === 'tr' ? 'tr-TR' : 'en-US', { hour: '2-digit', minute: '2-digit' });
