@@ -351,7 +351,7 @@ export function NetworkTopology({
     });
 
     return { visibleDevices: vDevices, visibleConnections: vConnections, visibleNotes: vNotes };
-  }, [devices, connections, notes, zoom, pan, isActive, canvasDimensions, visibleDeviceIds, visibleConnectionIds]);
+  }, [devices, connections, notes, zoom, pan, isActive, canvasDimensions, visibleDeviceIds, visibleConnectionIds, isExporting]);
 
   useEffect(() => {
     updateCanvasRect();
@@ -1847,7 +1847,7 @@ export function NetworkTopology({
       } finally {
         setIsExporting(false);
       }
-    }, 150);
+    }, 300);
   }, [devices, connections, notes, deviceStates]);
 
   // Handle toolbar events from page.tsx
