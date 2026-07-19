@@ -80,6 +80,7 @@ import { useOnboarding } from '@/hooks/useOnboarding';
 import { useProjectExport } from '@/hooks/useProjectExport';
 import { useProjectReset } from '@/hooks/useProjectReset';
 import { useAutoDhcpRenewal } from '@/hooks/useAutoDhcpRenewal';
+import { useDeviceDelete } from '@/hooks/useDeviceDelete';
 import { usePWA } from '@/hooks/usePWA';
 import { computeLiveSummary } from '@/lib/network/liveSummary';
 
@@ -113,20 +114,7 @@ import {
 } from './refreshNetworkUtils';
 
 import { useHistory, ProjectState } from '@/hooks/useHistory';
-
-
-function serializeState(s: ProjectState) {
-  return JSON.stringify({
-    t: s.topologyDevices,
-    c: s.topologyConnections,
-    n: s.topologyNotes,
-    s: Array.from(s.deviceStates.entries()),
-    o: Array.from(s.deviceOutputs.entries()),
-    p: Array.from(s.pcOutputs.entries()),
-    id: s.activeDeviceId,
-    tab: s.activeTab,
-  });
-}
+import { serializeState } from './page.utils';
 
 export default function Home({ initialProjectId }: { initialProjectId?: string }) {
   const { t, language, setLanguage } = useLanguage();
@@ -2097,131 +2085,26 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
 
 
   // Handle device deletion - update active device if needed
-  const handleDeviceDelete = useCallback((deviceId: string) => {
-    // Close PC panel if showing the deleted device
-    if (showPCDeviceId === deviceId) {
-      setShowPCPanel(false);
-      setShowPCDeviceId('pc-1');
-    }
-
-    // Close Router panel if showing the deleted device
-    if (showRouterDeviceId === deviceId) {
-      setShowRouterPanel(false);
-      setShowRouterDeviceId('router-1');
-    }
-
-    // Close PC info panel if deleted device was the active device
-    if (activeDeviceId === deviceId) {
-      setSelectedDevice(null);
-      setActiveDeviceId('');
-    }
-
-    // Reset selected device if deleted
-    if (selectedDevice) {
-      setSelectedDevice(null);
-    }
-
-    // 1. Identify connections and ports to disconnect FIRST (capture current state)
-    setTopologyConnections(prevConnections => {
-      const connectionsToRemove = prevConnections.filter(conn =>
-        conn.sourceDeviceId === deviceId || conn.targetDeviceId === deviceId
-      );
-
-      const portsToDisconnect = connectionsToRemove.map(conn => {
-        if (conn.sourceDeviceId === deviceId) {
-          return { deviceId: conn.targetDeviceId, portId: conn.targetPort };
-        } else {
-          return { deviceId: conn.sourceDeviceId, portId: conn.sourcePort };
-        }
-      });
-
-      const remainingConnections = prevConnections.filter(conn =>
-        conn.sourceDeviceId !== deviceId && conn.targetDeviceId !== deviceId
-      );
-
-      // 2. Release ports on OTHER devices in simulation state (deviceStates)
-      setDeviceStates(prev => {
-        const newMap = new Map(prev);
-        portsToDisconnect.forEach(p => {
-          const targetState = newMap.get(p.deviceId);
-          if (targetState && targetState.ports) {
-            const updatedPorts = { ...targetState.ports };
-            const portToReset = updatedPorts[p.portId];
-            if (portToReset) {
-              updatedPorts[p.portId] = {
-                ...portToReset,
-                status: 'notconnect'
-              };
-              newMap.set(p.deviceId, {
-                ...targetState,
-                ports: updatedPorts
-              });
-            }
-          }
-        });
-        newMap.delete(deviceId);
-        return newMap;
-      });
-
-      // 3. Clear other state maps
-      setDeviceOutputs(prev => {
-        const newMap = new Map(prev);
-        newMap.delete(deviceId);
-        return newMap;
-      });
-
-      setPcOutputs(prev => {
-        const newMap = new Map(prev);
-        newMap.delete(deviceId);
-        return newMap;
-      });
-
-      // 4. Update topology: Update ports on remaining devices based on remaining connections
-      setTopologyDevices(prev => {
-        const nextDevices = prev.filter(d => d.id !== deviceId).map(device => {
-          const updatedPorts = device.ports.map(port => {
-            const isActuallyConnected = remainingConnections.some(conn =>
-              (conn.sourceDeviceId === device.id && conn.sourcePort === port.id) ||
-              (conn.targetDeviceId === device.id && conn.targetPort === port.id)
-            );
-            return {
-              ...port,
-              status: isActuallyConnected ? 'connected' as const : 'disconnected' as const
-            };
-          });
-          return { ...device, ports: updatedPorts };
-        });
-
-        // Trigger STP recalculation when device is deleted
-        window.dispatchEvent(new CustomEvent('stp-recalculation-needed', {
-          detail: { topologyDevices: nextDevices, topologyConnections: remainingConnections }
-        }));
-
-        return nextDevices;
-      });
-
-      return remainingConnections;
-    });
-
-    // If the deleted device was the active one, switch to another device
-    if (activeDeviceId === deviceId) {
-      setTopologyDevices(prev => {
-        const currentDevices = prev.filter(d => d.id !== deviceId);
-        if (currentDevices.length > 0) {
-          const nextDevice = currentDevices[0];
-          setActiveDeviceId(nextDevice.id);
-          setActiveDeviceType(nextDevice.type as DeviceType);
-          setActiveTab('topology');
-        } else {
-          setActiveDeviceId('');
-          setActiveDeviceType('switchL2');
-          setActiveTab('topology');
-        }
-        return prev;
-      });
-    }
-    setHasUnsavedChanges(true);
-  }, [activeDeviceId, showPCDeviceId, selectedDevice, setDeviceStates, setDeviceOutputs, setPcOutputs, setShowPCPanel, setShowPCDeviceId, setSelectedDevice, setActiveDeviceId, setActiveDeviceType, setActiveTab, setHasUnsavedChanges, setTopologyConnections, setTopologyDevices]);
+  const handleDeviceDelete = useDeviceDelete({
+    showPCDeviceId,
+    showRouterDeviceId,
+    activeDeviceId,
+    selectedDevice,
+    setShowPCPanel,
+    setShowPCDeviceId,
+    setShowRouterPanel,
+    setShowRouterDeviceId,
+    setSelectedDevice,
+    setActiveDeviceId,
+    setActiveDeviceType,
+    setTopologyConnections,
+    setDeviceStates,
+    setDeviceOutputs,
+    setPcOutputs,
+    setTopologyDevices,
+    setActiveTab,
+    setHasUnsavedChanges,
+  });
 
   // Handle device rename - propagate topology label change to deviceStates hostname
   const handleDeviceRename = useCallback((deviceId: string, newName: string) => {
