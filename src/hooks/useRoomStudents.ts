@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { StudentProgress } from '@/lib/roomTypes';
+import { generateSecureId } from '@/lib/security/sanitizer';
 
 export function useRoomStudents(roomCode: string | null) {
   const [students, setStudents] = useState<StudentProgress[]>([]);
@@ -10,8 +11,7 @@ export function useRoomStudents(roomCode: string | null) {
   const getTeacherId = (): string => {
     const stored = localStorage.getItem('teacher-browser-id');
     if (stored) return stored;
-    let id: string;
-    try { id = crypto.randomUUID(); } catch { id = `${Date.now()}-${Math.random().toString(36).slice(2)}`; }
+    const id = generateSecureId();
     localStorage.setItem('teacher-browser-id', id);
     return id;
   };

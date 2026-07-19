@@ -36,7 +36,7 @@ export const GET = withErrorHandling(async (
   const upperCode = code.toUpperCase().trim();
   if (upperCode.length < 4 || upperCode.length > 20) {
     return NextResponse.json(
-      { success: false, error: 'Invalid verification code length', code: 'INVALID_CODE_LENGTH' },
+      { success: false, error: 'Invalid verification code length', code: 'INVALID_CODE' },
       { status: 400 },
     );
   }

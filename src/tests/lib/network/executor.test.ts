@@ -10,9 +10,13 @@ vi.mock('@/lib/network/switchModels', () => ({
   isRouterModel: vi.fn(() => false),
 }));
 
-vi.mock('@/lib/network/initialState', () => ({
-  getModePrompt: vi.fn(() => ''),
-}));
+vi.mock('@/lib/network/initialState', async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return {
+    ...actual,
+    getModePrompt: vi.fn(() => ''),
+  };
+});
 
 vi.mock('@/lib/network/networkUtils', () => ({
   ensureDeviceStatesMap: vi.fn((deviceStates) => deviceStates || new Map()),

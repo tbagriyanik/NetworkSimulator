@@ -26,12 +26,14 @@ describe('Room & Student API Regex validation', () => {
 
   it('should validate certificate verification code strictly', () => {
     const certCodeRegex = /^[A-Z0-9]{4,20}$/;
-    expect(certCodeRegex.test('ABCD123456')).toBe(true);
-    expect(certCodeRegex.test('ABCD')).toBe(true);
-    expect(certCodeRegex.test('A1B2C3D4E5F6G7H8I9J0')).toBe(true); // 20 chars
+    expect(certCodeRegex.test('AB3KPQ7R2N')).toBe(true); // Standard 10-char
+    expect(certCodeRegex.test('ABCD')).toBe(true); // Minimum 4-char
+    expect(certCodeRegex.test('A'.repeat(20))).toBe(true); // Maximum 20-char
+    expect(certCodeRegex.test('A'.repeat(21))).toBe(false); // Too long
     expect(certCodeRegex.test('ABC')).toBe(false); // Too short
-    expect(certCodeRegex.test('A1B2C3D4E5F6G7H8I9J0K')).toBe(false); // Too long (21 chars)
-    expect(certCodeRegex.test('ABCD-1234')).toBe(false); // No special chars
-    expect(certCodeRegex.test('abcd1234')).toBe(false); // Uppercase only
+    expect(certCodeRegex.test('AB-3KPQ7R2')).toBe(false); // Hyphen not allowed
+    expect(certCodeRegex.test('AB_3KPQ7R2')).toBe(false); // Underscore not allowed
+    expect(certCodeRegex.test('AB3KPQ7R2N/')).toBe(false); // Special char not allowed
+    expect(certCodeRegex.test('abc1234567')).toBe(false); // Lowercase not allowed (it should be normalized to uppercase)
   });
 });
