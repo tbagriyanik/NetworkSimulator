@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -10,12 +10,11 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Sparkles, Loader2, RefreshCw, Layers, Compass, Server, Monitor } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { CanvasDevice, CanvasConnection, CanvasNote } from '../networkTopology.types';
+import { CanvasDevice, CanvasConnection } from '../networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { generateSwitchPorts, generateRouterPorts } from '../networkTopology.portGenerators';
 
@@ -41,7 +40,6 @@ export function TopologyGeneratorDialog({
 
   const [scenario, setScenario] = useState<'soho' | 'routing' | 'roas' | 'ospf'>('soho');
   const [pcCount, setPcCount] = useState<number>(2);
-  const [switchCount, setSwitchCount] = useState<number>(1);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleGenerate = () => {
@@ -49,6 +47,12 @@ export function TopologyGeneratorDialog({
 
     setTimeout(() => {
       try {
+        const getPortType = (id: string): 'serial' | 'fastethernet' | 'gigabitethernet' => {
+          if (id.startsWith('se')) return 'serial';
+          if (id.startsWith('gi')) return 'gigabitethernet';
+          return 'fastethernet';
+        };
+
         const generatedDevices: CanvasDevice[] = [];
         const generatedConnections: CanvasConnection[] = [];
         const generatedDeviceStates = new Map<string, SwitchState>();
@@ -79,6 +83,7 @@ export function TopologyGeneratorDialog({
             type: 'router',
             name: 'R1',
             macAddress: '0011.2233.9901',
+            ip: '',
             x: rX,
             y: rY,
             status: 'online',
@@ -87,11 +92,12 @@ export function TopologyGeneratorDialog({
           generatedDevices.push(router);
 
           // Router state
-          const routerState: SwitchState = {
-            deviceId: routerId,
+          const routerState = {
             deviceType: 'router',
             hostname: 'R1',
             macAddress: '0011.2233.9901',
+            switchModel: 'WS-C3650-24PS',
+            switchLayer: 'L3',
             currentMode: 'user',
             commandHistory: [],
             vlanDatabase: {},
@@ -99,19 +105,18 @@ export function TopologyGeneratorDialog({
             ipRouting: true,
             dhcpPools: {
               'LAN-POOL': {
-                poolName: 'LAN-POOL',
                 network: '192.168.1.0',
                 subnetMask: '255.255.255.0',
                 defaultRouter: '192.168.1.1',
                 dnsServer: '8.8.8.8',
               },
             },
-          };
+          } as any;
           // Initialize ports on state
           router.ports.forEach(p => {
             routerState.ports[p.id] = {
               id: p.id,
-              type: p.id.startsWith('se') ? 'serial' : 'ethernet',
+              type: getPortType(p.id),
               status: 'notconnect',
               shutdown: p.id === 'gi0/0' ? false : true, // Enable gi0/0 by default
               accessVlan: 1,
@@ -129,6 +134,7 @@ export function TopologyGeneratorDialog({
             type: 'switchL2',
             name: 'SW1',
             macAddress: '0011.2233.8801',
+            ip: '',
             x: sX,
             y: sY,
             status: 'online',
@@ -138,20 +144,21 @@ export function TopologyGeneratorDialog({
           generatedDevices.push(sw);
 
           // Switch state
-          const swState: SwitchState = {
-            deviceId: switchId,
+          const swState = {
             deviceType: 'switchL2',
             hostname: 'SW1',
             macAddress: '0011.2233.8801',
+            switchModel: 'WS-C2960-24TT-L',
+            switchLayer: 'L2',
             currentMode: 'user',
             commandHistory: [],
             vlanDatabase: { '1': 'default' },
             ports: {},
-          };
+          } as any;
           sw.ports.forEach(p => {
             swState.ports[p.id] = {
               id: p.id,
-              type: 'ethernet',
+              type: getPortType(p.id),
               status: 'notconnect',
               shutdown: false,
               accessVlan: 1,
@@ -230,6 +237,7 @@ export function TopologyGeneratorDialog({
             type: 'router',
             name: 'R1',
             macAddress: '0011.2233.9901',
+            ip: '',
             x: 250,
             y: 80,
             status: 'online',
@@ -237,11 +245,12 @@ export function TopologyGeneratorDialog({
           };
           generatedDevices.push(r1);
 
-          const r1State: SwitchState = {
-            deviceId: r1Id,
+          const r1State = {
             deviceType: 'router',
             hostname: 'R1',
             macAddress: '0011.2233.9901',
+            switchModel: 'WS-C3650-24PS',
+            switchLayer: 'L3',
             currentMode: 'user',
             commandHistory: [],
             vlanDatabase: {},
@@ -250,11 +259,11 @@ export function TopologyGeneratorDialog({
             staticRoutes: [
               { destination: '192.168.2.0', subnetMask: '255.255.255.0', nextHop: '10.0.0.2' },
             ],
-          };
+          } as any;
           r1.ports.forEach(p => {
             r1State.ports[p.id] = {
               id: p.id,
-              type: p.id.startsWith('se') ? 'serial' : 'ethernet',
+              type: getPortType(p.id),
               status: 'notconnect',
               shutdown: (p.id === 'gi0/0' || p.id === 'se0/0/0') ? false : true,
               accessVlan: 1,
@@ -271,6 +280,7 @@ export function TopologyGeneratorDialog({
             type: 'router',
             name: 'R2',
             macAddress: '0011.2233.9902',
+            ip: '',
             x: 550,
             y: 80,
             status: 'online',
@@ -278,11 +288,12 @@ export function TopologyGeneratorDialog({
           };
           generatedDevices.push(r2);
 
-          const r2State: SwitchState = {
-            deviceId: r2Id,
+          const r2State = {
             deviceType: 'router',
             hostname: 'R2',
             macAddress: '0011.2233.9902',
+            switchModel: 'WS-C3650-24PS',
+            switchLayer: 'L3',
             currentMode: 'user',
             commandHistory: [],
             vlanDatabase: {},
@@ -291,11 +302,11 @@ export function TopologyGeneratorDialog({
             staticRoutes: [
               { destination: '192.168.1.0', subnetMask: '255.255.255.0', nextHop: '10.0.0.1' },
             ],
-          };
+          } as any;
           r2.ports.forEach(p => {
             r2State.ports[p.id] = {
               id: p.id,
-              type: p.id.startsWith('se') ? 'serial' : 'ethernet',
+              type: getPortType(p.id),
               status: 'notconnect',
               shutdown: (p.id === 'gi0/0' || p.id === 'se0/0/0') ? false : true,
               accessVlan: 1,
@@ -325,6 +336,7 @@ export function TopologyGeneratorDialog({
             type: 'switchL2',
             name: 'SW1',
             macAddress: '0011.2233.8801',
+            ip: '',
             x: 250,
             y: 200,
             status: 'online',
@@ -336,6 +348,7 @@ export function TopologyGeneratorDialog({
             type: 'switchL2',
             name: 'SW2',
             macAddress: '0011.2233.8802',
+            ip: '',
             x: 550,
             y: 200,
             status: 'online',
@@ -344,17 +357,19 @@ export function TopologyGeneratorDialog({
           };
           generatedDevices.push(sw1, sw2);
 
-          const sw1State: SwitchState = {
-            deviceId: sw1Id, deviceType: 'switchL2', hostname: 'SW1', macAddress: '0011.2233.8801',
+          const sw1State = {
+            deviceType: 'switchL2', hostname: 'SW1', macAddress: '0011.2233.8801',
+            switchModel: 'WS-C2960-24TT-L', switchLayer: 'L2',
             currentMode: 'user', commandHistory: [], vlanDatabase: { '1': 'default' }, ports: {}
-          };
-          const sw2State: SwitchState = {
-            deviceId: sw2Id, deviceType: 'switchL2', hostname: 'SW2', macAddress: '0011.2233.8802',
+          } as any;
+          const sw2State = {
+            deviceType: 'switchL2', hostname: 'SW2', macAddress: '0011.2233.8802',
+            switchModel: 'WS-C2960-24TT-L', switchLayer: 'L2',
             currentMode: 'user', commandHistory: [], vlanDatabase: { '1': 'default' }, ports: {}
-          };
+          } as any;
 
-          sw1.ports.forEach(p => { sw1State.ports[p.id] = { id: p.id, type: 'ethernet', status: 'notconnect', shutdown: false, accessVlan: 1, mode: 'access' }; });
-          sw2.ports.forEach(p => { sw2State.ports[p.id] = { id: p.id, type: 'ethernet', status: 'notconnect', shutdown: false, accessVlan: 1, mode: 'access' }; });
+          sw1.ports.forEach(p => { sw1State.ports[p.id] = { id: p.id, type: getPortType(p.id), status: 'notconnect', shutdown: false, accessVlan: 1, mode: 'access' }; });
+          sw2.ports.forEach(p => { sw2State.ports[p.id] = { id: p.id, type: getPortType(p.id), status: 'notconnect', shutdown: false, accessVlan: 1, mode: 'access' }; });
 
           generatedDeviceStates.set(sw1Id, sw1State);
           generatedDeviceStates.set(sw2Id, sw2State);
@@ -440,6 +455,7 @@ export function TopologyGeneratorDialog({
             type: 'router',
             name: 'R1',
             macAddress: '0011.2233.9901',
+            ip: '',
             x: rX,
             y: rY,
             status: 'online',
@@ -447,21 +463,22 @@ export function TopologyGeneratorDialog({
           };
           generatedDevices.push(router);
 
-          const routerState: SwitchState = {
-            deviceId: routerId,
+          const routerState = {
             deviceType: 'router',
             hostname: 'R1',
             macAddress: '0011.2233.9901',
+            switchModel: 'WS-C3650-24PS',
+            switchLayer: 'L3',
             currentMode: 'user',
             commandHistory: [],
             vlanDatabase: {},
             ports: {},
             ipRouting: true,
-          };
+          } as any;
           router.ports.forEach(p => {
             routerState.ports[p.id] = {
               id: p.id,
-              type: 'ethernet',
+              type: getPortType(p.id),
               status: 'notconnect',
               shutdown: p.id === 'gi0/0' ? false : true,
               accessVlan: 1,
@@ -471,7 +488,7 @@ export function TopologyGeneratorDialog({
           // Add subinterfaces for VLAN 10 and 20
           routerState.ports['gi0/0.10'] = {
             id: 'gi0/0.10',
-            type: 'ethernet',
+            type: getPortType('gi0/0.10'),
             status: 'connected',
             shutdown: false,
             accessVlan: 10,
@@ -481,7 +498,7 @@ export function TopologyGeneratorDialog({
           };
           routerState.ports['gi0/0.20'] = {
             id: 'gi0/0.20',
-            type: 'ethernet',
+            type: getPortType('gi0/0.20'),
             status: 'connected',
             shutdown: false,
             accessVlan: 20,
@@ -498,6 +515,7 @@ export function TopologyGeneratorDialog({
             type: 'switchL2',
             name: 'SW1',
             macAddress: '0011.2233.8801',
+            ip: '',
             x: sX,
             y: sY,
             status: 'online',
@@ -506,20 +524,21 @@ export function TopologyGeneratorDialog({
           };
           generatedDevices.push(sw);
 
-          const swState: SwitchState = {
-            deviceId: switchId,
+          const swState = {
             deviceType: 'switchL2',
             hostname: 'SW1',
             macAddress: '0011.2233.8801',
+            switchModel: 'WS-C2960-24TT-L',
+            switchLayer: 'L2',
             currentMode: 'user',
             commandHistory: [],
             vlanDatabase: { '1': 'default', '10': 'Sales', '20': 'Marketing' },
             ports: {},
-          };
+          } as any;
           sw.ports.forEach(p => {
             swState.ports[p.id] = {
               id: p.id,
-              type: 'ethernet',
+              type: getPortType(p.id),
               status: 'notconnect',
               shutdown: false,
               accessVlan: p.id === 'fa0/2' ? 10 : p.id === 'fa0/3' ? 20 : 1,
@@ -615,6 +634,7 @@ export function TopologyGeneratorDialog({
             type: 'router',
             name: 'R1',
             macAddress: '0011.2233.9901',
+            ip: '',
             x: 250,
             y: 80,
             status: 'online',
@@ -622,11 +642,12 @@ export function TopologyGeneratorDialog({
           };
           generatedDevices.push(r1);
 
-          const r1State: SwitchState = {
-            deviceId: r1Id,
+          const r1State = {
             deviceType: 'router',
             hostname: 'R1',
             macAddress: '0011.2233.9901',
+            switchModel: 'WS-C3650-24PS',
+            switchLayer: 'L3',
             currentMode: 'user',
             commandHistory: [],
             vlanDatabase: {},
@@ -639,11 +660,11 @@ export function TopologyGeneratorDialog({
               { destination: '192.168.1.0', subnetMask: '0.0.0.255', area: 0 },
               { destination: '10.0.0.0', subnetMask: '0.0.0.3', area: 0 },
             ],
-          };
+          } as any;
           r1.ports.forEach(p => {
             r1State.ports[p.id] = {
               id: p.id,
-              type: p.id.startsWith('se') ? 'serial' : 'ethernet',
+              type: getPortType(p.id),
               status: 'notconnect',
               shutdown: (p.id === 'gi0/0' || p.id === 'se0/0/0') ? false : true,
               accessVlan: 1,
@@ -660,6 +681,7 @@ export function TopologyGeneratorDialog({
             type: 'router',
             name: 'R2',
             macAddress: '0011.2233.9902',
+            ip: '',
             x: 550,
             y: 80,
             status: 'online',
@@ -667,11 +689,12 @@ export function TopologyGeneratorDialog({
           };
           generatedDevices.push(r2);
 
-          const r2State: SwitchState = {
-            deviceId: r2Id,
+          const r2State = {
             deviceType: 'router',
             hostname: 'R2',
             macAddress: '0011.2233.9902',
+            switchModel: 'WS-C3650-24PS',
+            switchLayer: 'L3',
             currentMode: 'user',
             commandHistory: [],
             vlanDatabase: {},
@@ -684,11 +707,11 @@ export function TopologyGeneratorDialog({
               { destination: '192.168.2.0', subnetMask: '0.0.0.255', area: 0 },
               { destination: '10.0.0.0', subnetMask: '0.0.0.3', area: 0 },
             ],
-          };
+          } as any;
           r2.ports.forEach(p => {
             r2State.ports[p.id] = {
               id: p.id,
-              type: p.id.startsWith('se') ? 'serial' : 'ethernet',
+              type: getPortType(p.id),
               status: 'notconnect',
               shutdown: (p.id === 'gi0/0' || p.id === 'se0/0/0') ? false : true,
               accessVlan: 1,
@@ -718,6 +741,7 @@ export function TopologyGeneratorDialog({
             type: 'switchL2',
             name: 'SW1',
             macAddress: '0011.2233.8801',
+            ip: '',
             x: 250,
             y: 200,
             status: 'online',
@@ -729,6 +753,7 @@ export function TopologyGeneratorDialog({
             type: 'switchL2',
             name: 'SW2',
             macAddress: '0011.2233.8802',
+            ip: '',
             x: 550,
             y: 200,
             status: 'online',
@@ -737,17 +762,19 @@ export function TopologyGeneratorDialog({
           };
           generatedDevices.push(sw1, sw2);
 
-          const sw1State: SwitchState = {
-            deviceId: sw1Id, deviceType: 'switchL2', hostname: 'SW1', macAddress: '0011.2233.8801',
+          const sw1State = {
+            deviceType: 'switchL2', hostname: 'SW1', macAddress: '0011.2233.8801',
+            switchModel: 'WS-C2960-24TT-L', switchLayer: 'L2',
             currentMode: 'user', commandHistory: [], vlanDatabase: { '1': 'default' }, ports: {}
-          };
-          const sw2State: SwitchState = {
-            deviceId: sw2Id, deviceType: 'switchL2', hostname: 'SW2', macAddress: '0011.2233.8802',
+          } as any;
+          const sw2State = {
+            deviceType: 'switchL2', hostname: 'SW2', macAddress: '0011.2233.8802',
+            switchModel: 'WS-C2960-24TT-L', switchLayer: 'L2',
             currentMode: 'user', commandHistory: [], vlanDatabase: { '1': 'default' }, ports: {}
-          };
+          } as any;
 
-          sw1.ports.forEach(p => { sw1State.ports[p.id] = { id: p.id, type: 'ethernet', status: 'notconnect', shutdown: false, accessVlan: 1, mode: 'access' }; });
-          sw2.ports.forEach(p => { sw2State.ports[p.id] = { id: p.id, type: 'ethernet', status: 'notconnect', shutdown: false, accessVlan: 1, mode: 'access' }; });
+          sw1.ports.forEach(p => { sw1State.ports[p.id] = { id: p.id, type: getPortType(p.id), status: 'notconnect', shutdown: false, accessVlan: 1, mode: 'access' }; });
+          sw2.ports.forEach(p => { sw2State.ports[p.id] = { id: p.id, type: getPortType(p.id), status: 'notconnect', shutdown: false, accessVlan: 1, mode: 'access' }; });
 
           generatedDeviceStates.set(sw1Id, sw1State);
           generatedDeviceStates.set(sw2Id, sw2State);

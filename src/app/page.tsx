@@ -20,7 +20,7 @@ import { useDeviceSelection } from '@/hooks/useDeviceSelection';
 import { useAppStore, useTopologyDevices, useTopologyConnections, useTopologyNotes, useZoom, usePan, useActiveTab, useEnvironment } from '@/lib/store/appStore';
 import { ExamTask } from '@/lib/network/examMode';
 import { cn } from '@/lib/utils';
-import { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
+import { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/networkTopology.types';
 import { getPrompt } from '@/lib/network/executor';
 import { errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
 import { safeParse, safeStringify } from '@/lib/network/serialization';
