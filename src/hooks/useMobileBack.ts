@@ -18,9 +18,18 @@ export function useMobileBack() {
       
       // Check for custom panels that might not have the attributes above
       if (!overlayOpen) {
-          const panels = document.querySelectorAll('.fixed.z-40, .fixed.z-50');
+          const panels = document.querySelectorAll('.fixed');
           for (let i = 0; i < panels.length; i++) {
-              if (panels[i].getBoundingClientRect().height > 100 && panels[i].tagName !== 'HEADER' && panels[i].tagName !== 'NAV') {
+              const panel = panels[i] as HTMLElement;
+              const classes = panel.className || '';
+              if (
+                  (classes.includes('z-') || classes.includes('z-[')) &&
+                  panel.getBoundingClientRect().height > 100 &&
+                  panel.tagName !== 'HEADER' &&
+                  panel.tagName !== 'NAV' &&
+                  panel.tagName !== 'FOOTER' &&
+                  !classes.includes('pointer-events-none')
+              ) {
                   overlayOpen = true;
                   break;
               }
