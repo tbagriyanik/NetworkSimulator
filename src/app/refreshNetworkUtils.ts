@@ -1,5 +1,6 @@
 import type { SwitchState } from '@/lib/network/types';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import { REFRESH_DEVICE_TYPE_ORDER, type RefreshDeviceSummary } from '@/components/network/LiveDeviceList';
 
 export const isSwitchDeviceType = (type: string): boolean =>
   type === 'switchL2' || type === 'switchL3';
@@ -189,4 +190,69 @@ export const releaseDisconnectedPorts = (
   });
 
   return { devices: nextDevices, states: nextStates };
+};
+
+export const getEffectiveWifi = (device: CanvasDevice, deviceStates: Map<string, SwitchState>): CanvasDevice['wifi'] => {
+  const state = deviceStates?.get(device.id);
+  const wlan = state?.ports?.['wlan0'];
+  const runtimeWifi = wlan?.wifi;
+  if (!runtimeWifi) return device.wifi;
+
+  const normalizedMode = normalizeWifiMode(runtimeWifi.mode);
+  const enabled = !wlan.shutdown && normalizedMode !== 'disabled';
+  const fallbackMode: 'ap' | 'client' = device.type === 'pc' ? 'client' : 'ap';
+  const resolvedMode: 'ap' | 'client' = normalizedMode === 'disabled'
+    ? (device.wifi?.mode || fallbackMode)
+    : (normalizedMode === 'client' ? 'client' : 'ap');
+  return {
+    ...device.wifi,
+    enabled,
+    ssid: runtimeWifi.ssid || device.wifi?.ssid || '',
+    security: runtimeWifi.security || device.wifi?.security || 'open',
+    password: runtimeWifi.password || device.wifi?.password,
+    channel: runtimeWifi.channel || device.wifi?.channel || '2.4GHz',
+    mode: resolvedMode,
+  };
+};
+
+export const getOpenServices = (device: CanvasDevice, state: SwitchState | undefined, deviceStates: Map<string, SwitchState>, noneText: string): string => {
+  const services = new Set<string>();
+  if (device.services?.dhcp?.enabled || state?.services?.dhcp?.enabled) services.add('DHCP');
+  if (device.services?.dns?.enabled || state?.services?.dns?.enabled) services.add('DNS');
+  if (device.services?.http?.enabled || state?.services?.http?.enabled) services.add('HTTP');
+  const effectiveWifi = getEffectiveWifi(device, deviceStates);
+  if (effectiveWifi?.enabled) services.add(effectiveWifi.mode === 'ap' ? 'WiFi AP' : 'WiFi Client');
+  if (state?.security?.vtyLines?.transportInput?.some((input) => input === 'ssh' || input === 'all')) services.add('SSH');
+  if (state?.security?.vtyLines?.transportInput?.some((input) => input === 'telnet' || input === 'all')) services.add('Telnet');
+  return Array.from(services).join(', ') || noneText;
+};
+
+export const buildRefreshDeviceSummaries = (devices: CanvasDevice[], states: Map<string, SwitchState>, deviceStates: Map<string, SwitchState>, language: string, noneText: string): RefreshDeviceSummary[] => {
+  const summaries = devices.map((device) => {
+    const state = states.get(device.id);
+    const statePorts = Object.values(state?.ports || {});
+    const topologyPorts = device.ports || [];
+    const portIp = statePorts.find((port) => hasValidIp(port.ipAddress))?.ipAddress
+      || topologyPorts.find((port) => hasValidIp(port.ipAddress))?.ipAddress;
+    const portMac = statePorts.find((port) => port.macAddress)?.macAddress
+      || topologyPorts.find((port) => port.macAddress)?.macAddress;
+    const portIpv6 = statePorts.find((port) => port.ipv6Address)?.ipv6Address;
+
+    return {
+      id: device.id,
+      name: device.name || device.id,
+      type: device.type,
+      ip: firstValue(device.ip, portIp),
+      mac: firstValue(device.macAddress, state?.macAddress, portMac),
+      gateway: device.gateway || state?.defaultGateway || '0.0.0.0',
+      ipv6: device.ipv6 || portIpv6 || '::',
+      services: getOpenServices(device, state, deviceStates, noneText),
+    };
+  });
+
+  return summaries.sort((a, b) => {
+    const typeDiff = REFRESH_DEVICE_TYPE_ORDER.indexOf(a.type) - REFRESH_DEVICE_TYPE_ORDER.indexOf(b.type);
+    if (typeDiff !== 0) return typeDiff;
+    return a.name.localeCompare(b.name, language === 'tr' ? 'tr' : 'en');
+  });
 };

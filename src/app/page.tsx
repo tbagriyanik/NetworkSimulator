@@ -20,12 +20,12 @@ import { useDeviceSelection } from '@/hooks/useDeviceSelection';
 import { useAppStore, useTopologyDevices, useTopologyConnections, useTopologyNotes, useZoom, usePan, useActiveTab, useEnvironment } from '@/lib/store/appStore';
 import { ExamTask } from '@/lib/network/examMode';
 import { cn, normalizeMAC } from '@/lib/utils';
-import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType } from '@/components/network/networkTopology.types';
+import { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
 import { getPrompt } from '@/lib/network/executor';
 import { formatErrorForUser, errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
 import { safeParse, safeStringify } from '@/lib/network/serialization';
 import { recalculateStp } from '@/lib/network/stp';
-import { createInitialState, createInitialRouterState, createInitialFirewallState, createInitialWLCState } from '@/lib/network/initialState';
+import { createInitialState } from '@/lib/network/initialState';
 import type { TerminalOutput } from '@/components/network/Terminal';
 
 const NetworkTopology = dynamic(
@@ -52,8 +52,8 @@ import {
   getTaskStatus
 } from '@/lib/network/taskDefinitions';
 import type { ExampleProject, ExampleProjectLevel } from '@/lib/network/exampleProjects';
-import { getGuidedProjects, type GuidedProject } from '@/lib/network/guidedMode';
-import { getExamProjects, type ExamProject, type ProjectData, generateExamFromProject } from '@/lib/network/examMode';
+import { getGuidedProjects } from '@/lib/network/guidedMode';
+import { getExamProjects, type ExamProject } from '@/lib/network/examMode';
 import { buildRunningConfig } from '@/lib/network/core/configBuilder';
 import { performanceMonitor } from '@/lib/performance/monitoring';
 import { useGuidedMode } from '@/hooks/useGuidedMode';
@@ -73,14 +73,16 @@ import { useRoom } from '@/contexts/RoomContext';
 import { useRoomSync } from '@/hooks/useRoomSync';
 import { useToast } from '@/hooks/use-toast';
 
-import { RefreshDeviceSummary, REFRESH_DEVICE_TYPE_ORDER } from '@/components/network/LiveDeviceList';
+
 import { useNetworkSimulation } from '@/hooks/useNetworkSimulation';
 import { useTroubleshootingMode } from '@/hooks/useTroubleshootingMode';
+import { useProjectApplication } from '@/hooks/useProjectApplication';
 import { useOnboarding } from '@/hooks/useOnboarding';
 import { useProjectExport } from '@/hooks/useProjectExport';
 import { useProjectReset } from '@/hooks/useProjectReset';
 import { useAutoDhcpRenewal } from '@/hooks/useAutoDhcpRenewal';
 import { useDeviceDelete } from '@/hooks/useDeviceDelete';
+import { useNetworkEventListeners } from '@/hooks/useNetworkEventListeners';
 import { usePWA } from '@/hooks/usePWA';
 import { computeLiveSummary } from '@/lib/network/liveSummary';
 
@@ -108,9 +110,10 @@ const PageModals = dynamic(() => import('@/components/network/panels/PageModals'
 
 import { TabType, PCOutputLine, ALL_TABS, exampleLevelOrder } from './page.types';
 import {
-  isSwitchDeviceType, normalizeWifiMode, hasValidIp, isIpInPoolRange,
-  firstValue, isWirelessMatch, propagateVtpVlans, validateTopologyConnections,
-  releaseDisconnectedPorts,
+  isSwitchDeviceType, hasValidIp, isIpInPoolRange,
+  isWirelessMatch, propagateVtpVlans, validateTopologyConnections,
+  releaseDisconnectedPorts, getEffectiveWifi,
+  buildRefreshDeviceSummaries,
 } from './refreshNetworkUtils';
 
 import { useHistory, ProjectState } from '@/hooks/useHistory';
@@ -1095,71 +1098,6 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     window.dispatchEvent(new CustomEvent('network-refresh'));
 
 
-    const getEffectiveWifi = (device: CanvasDevice): CanvasDevice['wifi'] => {
-      const state = deviceStates?.get(device.id);
-      const wlan = state?.ports?.['wlan0'];
-      const runtimeWifi = wlan?.wifi;
-      if (!runtimeWifi) return device.wifi;
-
-      const normalizedMode = normalizeWifiMode(runtimeWifi.mode);
-      const enabled = !wlan.shutdown && normalizedMode !== 'disabled';
-      const fallbackMode: 'ap' | 'client' = device.type === 'pc' ? 'client' : 'ap';
-      const resolvedMode: 'ap' | 'client' = normalizedMode === 'disabled'
-        ? (device.wifi?.mode || fallbackMode)
-        : (normalizedMode === 'client' ? 'client' : 'ap');
-      return {
-        ...device.wifi,
-        enabled,
-        ssid: runtimeWifi.ssid || device.wifi?.ssid || '',
-        security: runtimeWifi.security || device.wifi?.security || 'open',
-        password: runtimeWifi.password || device.wifi?.password,
-        channel: runtimeWifi.channel || device.wifi?.channel || '2.4GHz',
-        mode: resolvedMode,
-      };
-    };
-    const getOpenServices = (device: CanvasDevice, state?: SwitchState) => {
-      const services = new Set<string>();
-      if (device.services?.dhcp?.enabled || state?.services?.dhcp?.enabled) services.add('DHCP');
-      if (device.services?.dns?.enabled || state?.services?.dns?.enabled) services.add('DNS');
-      if (device.services?.http?.enabled || state?.services?.http?.enabled) services.add('HTTP');
-      const effectiveWifi = getEffectiveWifi(device);
-      if (effectiveWifi?.enabled) services.add(effectiveWifi.mode === 'ap' ? 'WiFi AP' : 'WiFi Client');
-      if (state?.security?.vtyLines?.transportInput?.some((input) => input === 'ssh' || input === 'all')) services.add('SSH');
-      if (state?.security?.vtyLines?.transportInput?.some((input) => input === 'telnet' || input === 'all')) services.add('Telnet');
-      return Array.from(services).join(', ') || t.none;
-    };
-    const buildRefreshDeviceSummaries = (devices: CanvasDevice[], states: Map<string, SwitchState>): RefreshDeviceSummary[] => {
-      const summaries = devices.map((device) => {
-        const state = states.get(device.id);
-        const statePorts = Object.values(state?.ports || {});
-        const topologyPorts = device.ports || [];
-        const portIp = statePorts.find((port) => hasValidIp(port.ipAddress))?.ipAddress
-          || topologyPorts.find((port) => hasValidIp(port.ipAddress))?.ipAddress;
-        const portMac = statePorts.find((port) => port.macAddress)?.macAddress
-          || topologyPorts.find((port) => port.macAddress)?.macAddress;
-        const portIpv6 = statePorts.find((port) => port.ipv6Address)?.ipv6Address;
-
-        return {
-          id: device.id,
-          name: device.name || device.id,
-          type: device.type,
-          ip: firstValue(device.ip, portIp),
-          mac: firstValue(device.macAddress, state?.macAddress, portMac),
-          gateway: device.gateway || state?.defaultGateway || '0.0.0.0',
-          ipv6: device.ipv6 || portIpv6 || '::',
-          services: getOpenServices(device, state),
-        };
-      });
-
-      return summaries.sort((a, b) => {
-        const typeDiff = REFRESH_DEVICE_TYPE_ORDER.indexOf(a.type) - REFRESH_DEVICE_TYPE_ORDER.indexOf(b.type);
-        if (typeDiff !== 0) return typeDiff;
-        return a.name.localeCompare(b.name, language === 'tr' ? 'tr' : 'en');
-      });
-    };
-
-
-
     const disconnectedPCs: string[] = [];
     const disconnectedAPs: string[] = [];
     const connectedWirelessClients: string[] = [];
@@ -1187,7 +1125,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
       const releasedTopology = releaseDisconnectedPorts(topologyDevices, deviceStates, sanitizedConnections);
       let refreshedDevices = releasedTopology.devices.map((device) => ({
         ...device,
-        wifi: getEffectiveWifi(device),
+        wifi: getEffectiveWifi(device, deviceStates),
       }));
       const releasedDeviceStates = releasedTopology.states;
 
@@ -1472,7 +1410,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
         else dhcpClientNoLeaseCount++;
       });
 
-      const refreshDeviceSummaries = buildRefreshDeviceSummaries(iotProcessedDevices, portSecurityUpdatedStates);
+      const refreshDeviceSummaries = buildRefreshDeviceSummaries(iotProcessedDevices, portSecurityUpdatedStates, deviceStates, language, t.none);
 
       const ipOwners = new Map<string, string[]>();
       const macOwners = new Map<string, string[]>();
@@ -2546,87 +2484,17 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     };
     window.addEventListener('keydown', handleKeyDown);
 
-    // Handle VTP propagation event
-    const handleVtpPropagation = (e: Event) => {
-      const customEvent = e as CustomEvent<{
-        deviceId: string;
-        topologyDevices: CanvasDevice[];
-        topologyConnections: CanvasConnection[];
-        deviceStates: Map<string, SwitchState>;
-      }>;
-      const { topologyDevices: eventDevices, topologyConnections: eventConnections, deviceStates: eventStates } = customEvent.detail;
-
-      if (!eventDevices || !eventConnections || !eventStates) return;
-
-      // Run VTP propagation logic
-      const byId = new Map(eventDevices.map((d: CanvasDevice) => [d.id, d]));
-      const nextStates = new Map(eventStates);
-
-      for (const conn of eventConnections) {
-        if (!conn.active) continue;
-        const a = byId.get(conn.sourceDeviceId);
-        const b = byId.get(conn.targetDeviceId);
-        if (!a || !b) continue;
-        if (!isSwitchDeviceType(a.type) || !isSwitchDeviceType(b.type)) continue;
-
-        const aState = nextStates.get(a.id);
-        const bState = nextStates.get(b.id);
-        if (!aState || !bState) continue;
-
-        const aPort = aState.ports?.[conn.sourcePort];
-        const bPort = bState.ports?.[conn.targetPort];
-        const aIsTrunk = !!aPort && !aPort.shutdown && aPort.mode === 'trunk';
-        const bIsTrunk = !!bPort && !bPort.shutdown && bPort.mode === 'trunk';
-        if (!aIsTrunk || !bIsTrunk) continue;
-
-        const aMode = aState.vtpMode || 'server';
-        const bMode = bState.vtpMode || 'server';
-        const aDomain = (aState.vtpDomain || '').trim();
-        const bDomain = (bState.vtpDomain || '').trim();
-        if (!aDomain || !bDomain) continue;
-        if (aDomain !== bDomain) continue;
-
-        const aRev = aState.vtpRevision || 0;
-        const bRev = bState.vtpRevision || 0;
-
-        // VTP: server pushes VLAN database to client if revision is newer or equal
-        if (aMode === 'server' && bMode === 'client' && aRev >= bRev) {
-          nextStates.set(b.id, { ...bState, vlans: { ...(aState.vlans || {}) }, vtpRevision: aRev });
-        } else if (bMode === 'server' && aMode === 'client' && bRev >= aRev) {
-          nextStates.set(a.id, { ...aState, vlans: { ...(bState.vlans || {}) }, vtpRevision: bRev });
-        }
-      }
-
-      setDeviceStates(nextStates);
-    };
-    window.addEventListener('vtp-propagation-needed', handleVtpPropagation);
-
-    // Handle STP recalculation when connection is deleted
-    const handleSTPRecalculation = (event: Event) => {
-      const { topologyConnections: updatedConnections } = (event as CustomEvent).detail;
-      if (updatedConnections) {
-        // Perform STP calculation for all devices
-        const allUpdatedStates = recalculateStp(deviceStates, updatedConnections);
-        setDeviceStates(allUpdatedStates);
-      }
-    };
-    window.addEventListener('stp-recalculation-needed', handleSTPRecalculation as EventListener);
-
-    // Handle print dialog (from browser menu or Ctrl+P)
-    const handleBeforePrint = () => {
-      if (activeTabRef.current !== 'topology') {
-        setActiveTab('topology');
-      }
-    };
-    window.addEventListener('beforeprint', handleBeforePrint);
-
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('vtp-propagation-needed', handleVtpPropagation);
-      window.removeEventListener('stp-recalculation-needed', handleSTPRecalculation);
-      window.removeEventListener('beforeprint', handleBeforePrint);
     };
-  }, [showMobileMenu, confirmDialog, saveDialog, showPCPanel, showRouterPanel, showProjectPicker, handleSaveProject, handleNewProject, handleUndo, handleRedo, tabs, setShowMobileMenu, setConfirmDialog, setSaveDialog, setShowPCPanel, setShowRouterPanel, setShowProjectPicker, setActiveTab, activeTab, topologyDevices, topologyConnections, deviceStates, setDeviceStates, handleDeviceDoubleClick, handleRefreshNetwork, closeEscLikeWindows]);
+  }, [showMobileMenu, confirmDialog, saveDialog, showPCPanel, showRouterPanel, showProjectPicker, handleSaveProject, handleNewProject, handleUndo, handleRedo, tabs, setShowMobileMenu, setConfirmDialog, setSaveDialog, setShowPCPanel, setShowRouterPanel, setShowProjectPicker, setActiveTab, activeTab, topologyDevices, handleDeviceDoubleClick, handleRefreshNetwork, closeEscLikeWindows]);
+
+  useNetworkEventListeners({
+    setDeviceStates,
+    deviceStates,
+    activeTabRef,
+    setActiveTab,
+  });
 
   // Load project from JSON file
   const handleLoadProject = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -2720,172 +2588,33 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     doLoad();
   }, [loadProjectData, setHasUnsavedChanges, t.invalidProjectFile, t.failedLoadProject, language, setZoom, setPan, closeGuidedMode, closeExam, setProjectName, hasUnsavedChanges, handleSaveProject, setSaveDialog, t.unsavedChangesConfirm, startExamProject]);
 
-  const applyExampleProjectAsTemplate = useCallback((projectData: unknown, exampleId?: string) => {
-    const data = (projectData && typeof projectData === 'object') ? projectData as Record<string, unknown> : {};
-    const topology = (data.topology && typeof data.topology === 'object') ? data.topology as Record<string, unknown> : {};
-    const safeTopologyDevices = Array.isArray(topology.devices) ? topology.devices as CanvasDevice[] : [];
-    const safeTopologyConnections = Array.isArray(topology.connections) ? topology.connections : [];
-    const safeTopologyNotes = Array.isArray(topology.notes) ? topology.notes as CanvasNote[] : [];
-
-    // Create fresh initial states for each managed device
-    const freshDeviceStates: { id: string; state: SwitchState }[] = [];
-    safeTopologyDevices.forEach(device => {
-      if (device.type === 'switchL2' || device.type === 'switchL3') {
-        freshDeviceStates.push({
-          id: device.id,
-          state: createInitialState(device.macAddress, device.switchModel === 'WS-C3650-24PS' ? 'WS-C3650-24PS' : 'WS-C2960-24TT-L')
-        });
-      } else if (device.type === 'router') {
-        freshDeviceStates.push({
-          id: device.id,
-          state: createInitialRouterState(device.macAddress)
-        });
-      } else if (device.type === 'firewall') {
-        freshDeviceStates.push({
-          id: device.id,
-          state: createInitialFirewallState(device.macAddress)
-        });
-      } else if (device.type === 'wlc') {
-        freshDeviceStates.push({
-          id: device.id,
-          state: createInitialWLCState(device.macAddress)
-        });
-      }
-    });
-
-    // Modify notes to indicate template mode
-    const templatePrefix = language === 'tr'
-      ? '⚠️ Şablon (Cihazlar yapılandırılmamıştır)\n▸ Aşağıdaki adımları kendiniz uygulayın\n\n'
-      : '⚠️ Template (Devices are not configured)\n▸ Apply the steps below yourself\n\n';
-    const templateNotes: CanvasNote[] = safeTopologyNotes.length > 0
-      ? safeTopologyNotes.map((note: CanvasNote) => ({
-        ...note,
-        text: note.text.includes('⚠️ Şablon') || note.text.includes('⚠️ Template')
-          ? note.text
-          : templatePrefix + note.text
-      }))
-      : [{
-        id: 'template-note',
-        text: templatePrefix + (language === 'tr'
-          ? 'Cihazları yapılandırmak için terminali kullanın.'
-          : 'Use the terminal to configure devices.'),
-        x: 100, y: 100, width: 350, height: 120,
-        color: 'var(--color-warning-400)', font: 'monospace', fontSize: 16, opacity: 0.75
-      } as unknown as CanvasNote];
-
-    const templateData: Record<string, unknown> = {
-      version: '1.0',
-      timestamp: new Date().toISOString(),
-      devices: freshDeviceStates,
-      deviceOutputs: [],
-      pcOutputs: [],
-      pcHistories: [],
-      topology: {
-        devices: safeTopologyDevices,
-        connections: safeTopologyConnections,
-        notes: templateNotes
-      },
-      cableInfo: (data.cableInfo && typeof data.cableInfo === 'object') ? data.cableInfo : {
-        connected: true, cableType: 'straight', sourceDevice: 'pc', targetDevice: 'switchL2'
-      },
-      activeDeviceId: freshDeviceStates[0]?.id || safeTopologyDevices[0]?.id || 'switch-1',
-      activeDeviceType: safeTopologyDevices[0]?.type || 'switchL2',
-      activeTab: 'topology',
-      zoom: 1.0,
-      pan: { x: 0, y: 0 }
-    };
-
-    loadProjectData(templateData);
-    setRefreshNetworkReport(null);
-    let loadedTitle = projectName;
-    if (exampleId) {
-      setLoadedExampleId(exampleId);
-      for (const level of exampleLevelOrder) {
-        const projects = groupedExampleProjects[level];
-        if (projects) {
-          const found = projects.find(p => p.id === exampleId);
-          if (found) {
-            loadedTitle = language === 'tr' ? `${found.title} (Şablon)` : `${found.title} (Template)`;
-            setProjectName(loadedTitle);
-            break;
-          }
-        }
-      }
-    }
-    setShowProjectPicker(false);
-    closeGuidedMode();
-    closeExam();
-    addProjectRecord(loadedTitle);
-    setZoom(1.0);
-    setPan({ x: 0, y: 0 });
-    if (typeof window !== 'undefined') {
-      window.scrollTo(0, 0);
-    }
-  }, [loadProjectData, setShowProjectPicker, setZoom, setPan, closeGuidedMode, setProjectName, setLoadedExampleId, setRefreshNetworkReport, groupedExampleProjects, exampleLevelOrder, projectName, addProjectRecord, language]);
-
-  const applyExampleProject = useCallback((projectData: unknown, exampleId?: string) => {
-    loadProjectData(projectData);
-    setRefreshNetworkReport(null);
-    let loadedTitle = projectName;
-    if (exampleId) {
-      setLoadedExampleId(exampleId);
-      // Look up example project title
-      for (const level of exampleLevelOrder) {
-        const projects = groupedExampleProjects[level];
-        if (projects) {
-          const found = projects.find(p => p.id === exampleId);
-          if (found) {
-            loadedTitle = found.title;
-            setProjectName(found.title);
-            break;
-          }
-        }
-      }
-    }
-    setShowProjectPicker(false);
-    // Close guided/exam mode panel if open (unless it's a guided project itself)
-    closeGuidedMode();
-    closeExam();
-
-    // Record example project as an achievement
-    addProjectRecord(loadedTitle);
-
-    // Reset zoom and pan to top-left
-    setZoom(1.0);
-    setPan({ x: 0, y: 0 });
-
-    if (typeof window !== 'undefined') {
-      window.scrollTo(0, 0);
-    }
-  }, [loadProjectData, setShowProjectPicker, setZoom, setPan, closeGuidedMode, setProjectName, setLoadedExampleId, setRefreshNetworkReport, groupedExampleProjects, exampleLevelOrder, projectName, addProjectRecord]);
-
-  const startExamFromCatalog = useCallback((project: ExamProject) => {
-    setIsExamLoadedFromFile(false);
-    closeGuidedMode();
-    startExamProject(project);
-  }, [startExamProject, closeGuidedMode]);
-
-  const handleConvertProjectToExam = useCallback((projectData: unknown) => {
-    document.body.style.cursor = 'wait';
-    closeExam();
-    closeGuidedMode();
-    resetWorkspaceUiState();
-    const exam = generateExamFromProject(projectData as ProjectData, language);
-    startExamProject(exam);
-    loadProjectData(projectData);
-    toggleEditor(true);
-    document.body.style.cursor = '';
-    toast({
-      title: language === 'tr' ? 'Proje Dönüştürüldü' : 'Project Converted',
-      description: language === 'tr' ? 'Görevler otomatik olarak çıkarıldı ve Sınav Düzenleyici açıldı.' : 'Tasks were automatically extracted and the Exam Editor was opened.',
-    });
-  }, [closeExam, closeGuidedMode, language, startExamProject, loadProjectData, toggleEditor, toast, resetWorkspaceUiState]);
-
-  const handleStartGuidedProject = useCallback((project: GuidedProject) => {
-    closeExam();
-    resetWorkspaceUiState();
-    startGuidedProject(project);
-  }, [startGuidedProject, closeExam, resetWorkspaceUiState]);
+  const {
+    applyExampleProjectAsTemplate,
+    applyExampleProject,
+    startExamFromCatalog,
+    handleConvertProjectToExam,
+    handleStartGuidedProject,
+  } = useProjectApplication({
+    loadProjectData,
+    setShowProjectPicker,
+    setZoom,
+    setPan,
+    setProjectName,
+    setLoadedExampleId,
+    setRefreshNetworkReport,
+    closeGuidedMode,
+    closeExam,
+    startExamProject,
+    startGuidedProject,
+    toggleEditor,
+    setIsExamLoadedFromFile,
+    resetWorkspaceUiState,
+    groupedExampleProjects,
+    exampleLevelOrder,
+    projectName,
+    language,
+    toast,
+  });
 
   // Track project name from guided/exam mode
   useEffect(() => {
