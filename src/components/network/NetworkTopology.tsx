@@ -351,7 +351,7 @@ export function NetworkTopology({
     });
 
     return { visibleDevices: vDevices, visibleConnections: vConnections, visibleNotes: vNotes };
-  }, [devices, connections, notes, zoom, pan, isActive, canvasDimensions, visibleDeviceIds, visibleConnectionIds]);
+  }, [devices, connections, notes, zoom, pan, isActive, canvasDimensions, visibleDeviceIds, visibleConnectionIds, isExporting]);
 
   useEffect(() => {
     updateCanvasRect();
@@ -1009,12 +1009,19 @@ export function NetworkTopology({
       setPortSelectorStep('source');
       setSelectedSourcePort(null);
     };
+    const closeAllModals = () => {
+      setIsPaletteOpen(false);
+      setShowPortSelector(false);
+      setContextMenu(null);
+    };
 
     window.addEventListener('trigger-topology-palette', openPalette as EventListener);
     window.addEventListener('trigger-topology-connect', openConnect as EventListener);
+    window.addEventListener('close-menus-broadcast', closeAllModals as EventListener);
     return () => {
       window.removeEventListener('trigger-topology-palette', openPalette as EventListener);
       window.removeEventListener('trigger-topology-connect', openConnect as EventListener);
+      window.removeEventListener('close-menus-broadcast', closeAllModals as EventListener);
     };
   }, []);
 
@@ -1840,7 +1847,7 @@ export function NetworkTopology({
       } finally {
         setIsExporting(false);
       }
-    }, 150);
+    }, 300);
   }, [devices, connections, notes, deviceStates]);
 
   // Handle toolbar events from page.tsx

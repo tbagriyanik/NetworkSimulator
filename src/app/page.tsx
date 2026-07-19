@@ -122,6 +122,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   // Multi-tab warning system
   const { showWarning, tabCount, acknowledgeWarning, clearCurrentTabData } = useMultiTabWarning();
   const { toast } = useToast();
+  const { studentRoomCode, studentDisplayName, setShowRoomJoinDialog, setShowTeacherPanel } = useRoom();
 
   // Refs moved to top to avoid TDZ errors
   const isApplyingHistoryRef = useRef(false);
@@ -620,11 +621,13 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     setShowProjectPicker(false);
     setShowOnboarding(false);
     setShowBasarilarim(false);
+    setShowTeacherPanel(false);
+    setShowRoomJoinDialog(false);
     if (!isExamActive) {
       setRefreshNetworkReport(prev => prev ? { ...prev, show: false } : null);
     }
     window.dispatchEvent(new CustomEvent('close-menus-broadcast', { detail: { source: 'escape' } }));
-  }, []);
+  }, [isExamActive, setRefreshNetworkReport, setShowTeacherPanel, setShowRoomJoinDialog]);
 
   useEffect(() => {
     const handleMobileBack = () => {
@@ -958,7 +961,6 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   const currentTaskName = activeDeviceTasks.length > 0
     ? activeDeviceTasks.find(t => !getTaskStatus(t, state, taskContext))?.name[language] ?? activeDeviceTasks[activeDeviceTasks.length - 1].name[language]
     : '';
-  const { studentRoomCode, studentDisplayName, setShowRoomJoinDialog, setShowTeacherPanel } = useRoom();
   useRoomSync({
     roomCode: studentRoomCode,
     displayName: studentDisplayName,
