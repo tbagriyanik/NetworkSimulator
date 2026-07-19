@@ -744,6 +744,7 @@ export interface Translations {
   generateSummary: string;
   saveAsPNG: string;
   unknown: string;
+  topologyGenerator: string;
 }
 
 const translations: Record<Language, Translations> = {
@@ -1486,6 +1487,7 @@ const translations: Record<Language, Translations> = {
     generateSummary: 'Özet Notu Oluştur',
     saveAsPNG: 'PNG Kaydet',
     unknown: 'Bilinmeyen',
+    topologyGenerator: 'Topoloji Üretici',
   },
   en: {
     about: 'Help',
@@ -2225,6 +2227,7 @@ const translations: Record<Language, Translations> = {
     generateSummary: 'Generate Summary Note',
     saveAsPNG: 'Save as PNG',
     unknown: 'Unknown',
+    topologyGenerator: 'Topology Generator',
   }
 };
 
