@@ -151,16 +151,16 @@ export function UnifiedDevicePanel({
                         <TabsList className={cn("h-7 p-0.5", isDark ? "bg-secondary-800" : "bg-secondary-100")}>
                             <TabsTrigger value="console" className="flex items-center gap-1.5 px-2 h-6 text-xs">
                                 <TerminalIcon className="w-3 h-3" />
-                                <span>{t.cliInterface}</span>
+                                <span className="hidden sm:inline">{t.cliInterface}</span>
                             </TabsTrigger>
                             <TabsTrigger value="settings" className="flex items-center gap-1.5 px-2 h-6 text-xs">
                                 <Settings className="w-3 h-3" />
-                                <span>{t.quickSettingsAndTasks}</span>
+                                <span className="hidden sm:inline">{t.quickSettingsAndTasks}</span>
                             </TabsTrigger>
                             {(deviceType === 'switchL2' || deviceType === 'switchL3') && (
                                 <TabsTrigger value="stp" className="flex items-center gap-1.5 px-2 h-6 text-xs">
                                     <Layers className="w-3 h-3 text-warning-500" />
-                                    <span>{t.stpTab}</span>
+                                    <span className="hidden sm:inline">{t.stpTab}</span>
                                 </TabsTrigger>
                             )}
                         </TabsList>
