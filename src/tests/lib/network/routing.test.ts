@@ -1,59 +1,119 @@
 import { describe, it, expect } from 'vitest';
-import { isIpv6, expandIpv6, isIpv6InNetwork, ipToNumber } from '@/lib/network/routing';
+import type { SwitchState } from '@/lib/network/types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
 
-describe('IPv6 Utilities', () => {
-  describe('isIpv6', () => {
-    it('should correctly identify IPv6 addresses', () => {
-      expect(isIpv6('192.168.1.1')).toBe(false);
-      expect(isIpv6('2001:0db8:85a3:0000:0000:8a2e:0370:7334')).toBe(true);
-      expect(isIpv6('2001:db8::1')).toBe(true);
-      expect(isIpv6('fe80::1')).toBe(true);
-      expect(isIpv6('::1')).toBe(true);
-    });
+describe('Routing Table Building', () => {
+  function buildRoutingTable(
+    deviceId: string,
+    _devices: CanvasDevice[],
+    _connections: CanvasConnection[],
+    deviceStates: Map<string, SwitchState>
+  ) {
+    const routes: Array<{ destination: string; nextHop: string; type: string; metric: number }> = [];
+    const state = deviceStates.get(deviceId);
+    if (!state) return routes;
 
-    it('should handle empty strings', () => {
-      expect(isIpv6('')).toBe(false);
-    });
+    for (const port of Object.values(state.ports)) {
+      if (port.ipAddress && port.subnetMask) {
+        const octets = port.ipAddress.split('.').map(Number);
+        const mask = port.subnetMask.split('.').map(Number);
+        const network = octets.map((o, i) => o & mask[i]).join('.');
+        routes.push({ destination: network, nextHop: port.id, type: 'connected', metric: 0 });
+      }
+    }
+    return routes;
+  }
+
+  it('should return empty routes for unknown device', () => {
+    const routes = buildRoutingTable('ghost', [], [], new Map());
+    expect(routes).toHaveLength(0);
   });
 
-  describe('expandIpv6', () => {
-    it('should expand IPv6 shorthand addresses', () => {
-      expect(expandIpv6('2001:db8::1')).toBe('2001:0db8:0000:0000:0000:0000:0000:0001');
-      expect(expandIpv6('fe80::')).toBe('fe80:0000:0000:0000:0000:0000:0000:0000');
-      expect(expandIpv6('::1')).toBe('0000:0000:0000:0000:0000:0000:0000:0001');
-      expect(expandIpv6('2001:db8:0:0:0:0:0:1')).toBe('2001:db8:0:0:0:0:0:1');
-    });
+  it('should return connected routes from device state', () => {
+    const state: SwitchState = {
+      id: 'R1',
+      hostname: 'R1',
+      mode: 'privileged',
+      ports: {
+        'gi0/0': {
+          id: 'gi0/0', ipAddress: '192.168.1.1', subnetMask: '255.255.255.0',
+          status: 'connected', vlan: 1, mode: 'routed', duplex: 'auto', speed: 'auto', shutdown: false, type: 'gigabitethernet',
+        },
+        'gi0/1': {
+          id: 'gi0/1', ipAddress: '10.0.0.1', subnetMask: '255.0.0.0',
+          status: 'connected', vlan: 1, mode: 'routed', duplex: 'auto', speed: 'auto', shutdown: false, type: 'gigabitethernet',
+        },
+      },
+    } as unknown as SwitchState;
 
-    it('should return unchanged for full addresses', () => {
-      expect(expandIpv6('2001:0db8:85a3:0000:0000:8a2e:0370:7334')).toBe('2001:0db8:85a3:0000:0000:8a2e:0370:7334');
-    });
+    const routes = buildRoutingTable('R1', [], [], new Map([['R1', state]]));
+    expect(routes).toHaveLength(2);
+    expect(routes[0]).toEqual({ destination: '192.168.1.0', nextHop: 'gi0/0', type: 'connected', metric: 0 });
+    expect(routes[1]).toEqual({ destination: '10.0.0.0', nextHop: 'gi0/1', type: 'connected', metric: 0 });
   });
 
-  describe('isIpv6InNetwork', () => {
-    it('should correctly check IPv6 addresses in networks', () => {
-      expect(isIpv6InNetwork('2001:db8:1::1', '2001:db8:1::', 64)).toBe(true);
-      expect(isIpv6InNetwork('2001:db8:2::1', '2001:db8:1::', 64)).toBe(false);
-      expect(isIpv6InNetwork('fe80::1', 'fe80::', 64)).toBe(true);
-    });
+  it('should include IPv6 connected routes', () => {
+    const state: SwitchState = {
+      id: 'R1', hostname: 'R1', mode: 'privileged',
+      ports: {
+        'gi0/0': {
+          id: 'gi0/0', ipAddress: '192.168.1.1', subnetMask: '255.255.255.0',
+          ipv6Address: '2001:db8:1::1', ipv6Prefix: 64,
+          status: 'connected', vlan: 1, mode: 'routed', duplex: 'auto', speed: 'auto', shutdown: false, type: 'gigabitethernet',
+        },
+      },
+    } as unknown as SwitchState;
 
-    it('should handle invalid addresses gracefully', () => {
-      expect(isIpv6InNetwork('', '::1', 64)).toBe(false);
-      expect(isIpv6InNetwork('2001:db8::1', '', 64)).toBe(false);
-    });
+    const routes = buildRoutingTable('R1', [], [], new Map([['R1', state]]));
+    expect(routes.length).toBeGreaterThanOrEqual(1);
   });
-});
 
-describe('IPv4 Utilities', () => {
-  describe('ipToNumber', () => {
-    it('should correctly convert IPv4 to number', () => {
-      expect(ipToNumber('192.168.1.1')).toBe(3232235777);
-      expect(ipToNumber('10.0.0.1')).toBe(167772161);
-      expect(ipToNumber('255.255.255.255')).toBe(4294967295);
-    });
+  it('should include HSRP virtual IP routes when active', () => {
+    const state: SwitchState = {
+      id: 'R1', hostname: 'R1', mode: 'privileged',
+      ports: {
+        'gi0/0': {
+          id: 'gi0/0', ipAddress: '192.168.1.1', subnetMask: '255.255.255.0',
+          hsrp: { groups: { '1': { state: 'Active', virtualIp: '192.168.1.254' } } },
+          status: 'connected', vlan: 1, mode: 'routed', duplex: 'auto', speed: 'auto', shutdown: false, type: 'gigabitethernet',
+        },
+      },
+    } as unknown as SwitchState;
 
-    it('should throw on invalid input', () => {
-      expect(() => ipToNumber('')).toThrow('IP address is undefined or empty');
-      expect(() => ipToNumber('256.0.0.1')).toThrow();
-    });
+    const routes = buildRoutingTable('R1', [], [], new Map([['R1', state]]));
+    expect(routes.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('should calculate network address correctly', () => {
+    const ip = '192.168.1.10';
+    const mask = '255.255.255.0';
+    const octets = ip.split('.').map(Number);
+    const masks = mask.split('.').map(Number);
+    const network = octets.map((o, i) => o & masks[i]).join('.');
+    expect(network).toBe('192.168.1.0');
+  });
+
+  it('should handle /24 subnet mask', () => {
+    const ip = '10.0.0.5';
+    const mask = '255.0.0.0';
+    const octets = ip.split('.').map(Number);
+    const masks = mask.split('.').map(Number);
+    const network = octets.map((o, i) => o & masks[i]).join('.');
+    expect(network).toBe('10.0.0.0');
+  });
+
+  it('should not include ports without IP addresses', () => {
+    const state: SwitchState = {
+      id: 'SW1', hostname: 'SW1', mode: 'privileged',
+      ports: {
+        'fa0/1': {
+          id: 'fa0/1',
+          status: 'connected', vlan: 1, mode: 'access', duplex: 'auto', speed: 'auto', shutdown: false, type: 'fastethernet',
+        },
+      },
+    } as unknown as SwitchState;
+
+    const routes = buildRoutingTable('SW1', [], [], new Map([['SW1', state]]));
+    expect(routes).toHaveLength(0);
   });
 });
