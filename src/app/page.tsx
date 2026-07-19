@@ -4,7 +4,7 @@ import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 
-import { SwitchState, CableInfo, Port, CommandResult } from '@/lib/network/types';
+import { SwitchState, CableInfo, CommandResult } from '@/lib/network/types';
 import { useDeviceManager } from '@/hooks/useDeviceManager';
 import { useNetworkLogic } from '@/hooks/useNetworkLogic';
 import { usePageNetworkLogic } from '@/hooks/usePageNetworkLogic';
@@ -19,12 +19,11 @@ import { useRefreshReport } from '@/hooks/useRefreshReport';
 import { useDeviceSelection } from '@/hooks/useDeviceSelection';
 import { useAppStore, useTopologyDevices, useTopologyConnections, useTopologyNotes, useZoom, usePan, useActiveTab, useEnvironment } from '@/lib/store/appStore';
 import { ExamTask } from '@/lib/network/examMode';
-import { cn, normalizeMAC } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
 import { getPrompt } from '@/lib/network/executor';
-import { formatErrorForUser, errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
+import { errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
 import { safeParse, safeStringify } from '@/lib/network/serialization';
-import { recalculateStp } from '@/lib/network/stp';
 import { createInitialState } from '@/lib/network/initialState';
 import type { TerminalOutput } from '@/components/network/Terminal';
 
@@ -53,12 +52,11 @@ import {
 } from '@/lib/network/taskDefinitions';
 import type { ExampleProject, ExampleProjectLevel } from '@/lib/network/exampleProjects';
 import { getGuidedProjects } from '@/lib/network/guidedMode';
-import { getExamProjects, type ExamProject } from '@/lib/network/examMode';
+import { getExamProjects } from '@/lib/network/examMode';
 import { buildRunningConfig } from '@/lib/network/core/configBuilder';
 import { performanceMonitor } from '@/lib/performance/monitoring';
 import { useGuidedMode } from '@/hooks/useGuidedMode';
 import { useExamMode } from '@/hooks/useExamMode';
-import { decryptExamData } from '@/lib/network/examMode';
 
 import { PCInfoPopover, RouterInfoPopover } from '@/components/network/DeviceInfoPopovers';
 import { BasarilarimPanel } from '@/components/ui/BasarilarimPanel';
@@ -78,6 +76,8 @@ import { useNetworkSimulation } from '@/hooks/useNetworkSimulation';
 import { useTroubleshootingMode } from '@/hooks/useTroubleshootingMode';
 import { useProjectApplication } from '@/hooks/useProjectApplication';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { useRefreshNetwork } from '@/hooks/useRefreshNetwork';
+import { useLoadProject } from '@/hooks/useLoadProject';
 import { useOnboarding } from '@/hooks/useOnboarding';
 import { useProjectExport } from '@/hooks/useProjectExport';
 import { useProjectReset } from '@/hooks/useProjectReset';
@@ -109,14 +109,7 @@ const ProjectPickerDialog = dynamic(() => import('@/components/network/ProjectPi
 const OnboardingDialog = dynamic(() => import('@/components/network/OnboardingDialog').then((m) => m.OnboardingDialog));
 const PageModals = dynamic(() => import('@/components/network/panels/PageModals').then((m) => m.PageModals), { ssr: false });
 
-import { TabType, PCOutputLine, ALL_TABS, exampleLevelOrder } from './page.types';
-import {
-  isSwitchDeviceType, hasValidIp, isIpInPoolRange,
-  isWirelessMatch, propagateVtpVlans, validateTopologyConnections,
-  releaseDisconnectedPorts, getEffectiveWifi,
-  buildRefreshDeviceSummaries,
-} from './refreshNetworkUtils';
-
+import { TabType, ALL_TABS, exampleLevelOrder } from './page.types';
 import { useHistory, ProjectState } from '@/hooks/useHistory';
 import { serializeState } from './page.utils';
 
@@ -1091,647 +1084,27 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
 
 
 
-  // Refresh network connections and WiFi status
-  const handleRefreshNetwork = useCallback(() => {
-    // Close floating panels on network refresh
-    setActiveDeviceId('');
-    setSelectedDevice(null);
-    window.dispatchEvent(new CustomEvent('network-refresh'));
-
-
-    const disconnectedPCs: string[] = [];
-    const disconnectedAPs: string[] = [];
-    const connectedWirelessClients: string[] = [];
-    const activeAPs: string[] = [];
-    let dhcpServerActiveCount = 0;
-    let dhcpServerNoPoolCount = 0;
-    let dhcpClientWithLeaseCount = 0;
-    let dhcpClientNoLeaseCount = 0;
-    let duplicateIpCount = 0;
-    let duplicateMacCount = 0;
-    let duplicateIpv6Count = 0;
-    let subnetMismatchCount = 0;
-    let invalidGatewayCount = 0;
-    let disconnectedLinkCount = 0;
-    let loopDetectedCount = 0;
-    let vlanInconsistencyCount = 0;
-
-    if (topologyDevices && deviceStates) {
-      const { sanitizedConnections, invalidCount } = validateTopologyConnections(topologyDevices, topologyConnections);
-      const connectionsChanged = sanitizedConnections.some((connection, index) => connection !== topologyConnections[index]);
-      if (connectionsChanged) {
-        setTopologyConnections(sanitizedConnections);
-      }
-
-      const releasedTopology = releaseDisconnectedPorts(topologyDevices, deviceStates, sanitizedConnections);
-      let refreshedDevices = releasedTopology.devices.map((device) => ({
-        ...device,
-        wifi: getEffectiveWifi(device, deviceStates),
-      }));
-      const releasedDeviceStates = releasedTopology.states;
-
-      // 1. Recalculate wireless associations and persist the effective BSSID.
-      refreshedDevices = refreshedDevices.map((device) => {
-        if (device.type !== 'pc' && device.type !== 'iot') return device;
-        const clientWifi = device.wifi;
-        if (!clientWifi?.enabled || clientWifi.mode !== 'client' || !clientWifi.ssid) return device;
-
-        const matchedAp = refreshedDevices.find((ap) =>
-          ap.id !== device.id &&
-          (ap.type === 'router' || isSwitchDeviceType(ap.type)) &&
-          isWirelessMatch(device, ap)
-        );
-
-        if (matchedAp) {
-          connectedWirelessClients.push(device.name || device.id);
-          return {
-            ...device,
-            wifi: {
-              ...clientWifi,
-              bssid: matchedAp.id,
-            },
-          };
-        }
-
-        disconnectedPCs.push(device.name || device.id);
-        return {
-          ...device,
-          wifi: {
-            ...clientWifi,
-            bssid: undefined,
-          },
-        };
-      });
-
-      // 2. Check and update AP connections (router/switch)
-      refreshedDevices.filter(d => d.type === 'router' || isSwitchDeviceType(d.type)).forEach(ap => {
-        const apWifi = ap.wifi;
-        if (!apWifi || apWifi.mode !== 'ap' || !apWifi.ssid) return;
-
-        let hasClient = false;
-
-        // Check if any wireless client is associated with this AP
-        refreshedDevices.forEach(pc => {
-          if (pc.type !== 'pc' && pc.type !== 'iot') return;
-          const pcWifi = pc.wifi;
-          if (!pcWifi?.enabled || pcWifi.mode !== 'client') return;
-          if (pcWifi.bssid !== ap.id) return;
-
-          hasClient = true;
-        });
-
-        if (hasClient) {
-          activeAPs.push(ap.name || ap.id);
-        } else {
-          disconnectedAPs.push(ap.name || ap.id);
-        }
-      });
-
-      // 3. VTP propagation (server -> client over trunk)
-      const vtpUpdatedStates = propagateVtpVlans(refreshedDevices, releasedDeviceStates, sanitizedConnections);
-
-      // 4. STP calculation
-      const stpUpdatedStates = recalculateStp(vtpUpdatedStates, sanitizedConnections);
-      const stpUpdatedCount = Array.from(vtpUpdatedStates.keys()).filter(id => {
-        const d = refreshedDevices.find(dev => dev.id === id);
-        return d && (d.type === 'switchL2' || d.type === 'switchL3');
-      }).length;
-
-      // 8.5. DHCP Assignment - Do this before showing the refresh panel
-      const dhcpClients = refreshedDevices.filter(d => (d.type === 'pc' || d.type === 'iot') && d.ipConfigMode === 'dhcp');
-      const dhcpAssignments: Array<{ name: string, ip: string }> = [];
-      const finalDevicesForRefresh = [...refreshedDevices];
-
-      if (dhcpClients.length > 0) {
-        dhcpClients.forEach(pc => {
-          const lease = assignDhcpLeaseForPc(pc, finalDevicesForRefresh, stpUpdatedStates, sanitizedConnections) || buildLinkLocalLease(pc, finalDevicesForRefresh);
-          if (lease) {
-            const idx = finalDevicesForRefresh.findIndex(d => d.id === pc.id);
-            if (idx !== -1) {
-              finalDevicesForRefresh[idx] = {
-                ...finalDevicesForRefresh[idx],
-                ip: lease.ip,
-                subnet: lease.subnet,
-                gateway: lease.gateway,
-                dns: lease.dns
-              };
-              if (!lease.ip.startsWith('169.254.')) {
-                dhcpAssignments.push({ name: pc.name || pc.id, ip: lease.ip });
-              }
-
-              // Update PC terminal output
-              const pcOut = pcOutputs.get(pc.id);
-              if (pcOut) {
-                const updatedOut = pcOut.map(line => {
-                  if (line.id === '1' || line.content?.includes('IPv4 Address')) {
-                    return {
-                      ...line,
-                      content: `\nEthernet adapter Ethernet connection:\n   IPv4 Address. . . . . . . . . . . : ${lease.ip}\n   Subnet Mask . . . . . . . . . . : ${lease.subnet}\n   Default Gateway . . . . . . . . . : ${lease.gateway}\n`
-                    };
-                  }
-                  return line;
-                });
-                setPcOutputs(prev => new Map(prev).set(pc.id, updatedOut as unknown as PCOutputLine[]));
-              }
-            }
-          }
-        });
-
-        // Show combined DHCP toast if any assignments were made
-        if (dhcpAssignments.length > 0) {
-          toast({
-            title: `📝 ${t.dhcpAssignments}`,
-            description: (
-              <div className="flex flex-col gap-1 text-xs">
-                {dhcpAssignments.map((asgn, i) => (
-                  <div key={i} className="flex justify-between gap-4">
-                    <span className="font-medium">{asgn.name}:</span>
-                    <span className="text-primary-400">{asgn.ip}</span>
-                  </div>
-                ))}
-              </div>
-            ),
-            duration: 4000,
-          });
-        }
-      }
-
-      // 8.6. Port Security Check - Check all switch ports for MAC violations
-      const portSecurityUpdatedStates = new Map(stpUpdatedStates);
-      let portSecurityViolationCount = 0;
-      let portSecurityRecoveredCount = 0;
-
-      sanitizedConnections.forEach(conn => {
-        if (!conn.active) return;
-
-        // Find switch device and connected device
-        const switchDevice = finalDevicesForRefresh.find(d =>
-          (d.type === 'switchL2' || d.type === 'switchL3') &&
-          (d.id === conn.sourceDeviceId || d.id === conn.targetDeviceId)
-        );
-        const connectedDevice = finalDevicesForRefresh.find(d =>
-          d.type === 'pc' &&
-          (d.id === conn.sourceDeviceId || d.id === conn.targetDeviceId)
-        );
-
-        if (!switchDevice || !connectedDevice) return;
-
-        // Determine which port on the switch
-        const switchPortId = switchDevice.id === conn.sourceDeviceId ? conn.sourcePort : conn.targetPort;
-        const switchState = portSecurityUpdatedStates.get(switchDevice.id);
-        if (!switchState) return;
-
-        const switchPort = switchState.ports[switchPortId];
-        if (!switchPort?.portSecurity?.enabled) return;
-
-        // Get the connected device's MAC address
-        const deviceMac = connectedDevice.macAddress;
-        if (!deviceMac) return;
-
-        // Normalize MAC for comparison
-        const normalizedDeviceMac = deviceMac.toLowerCase().replace(/[-:.]/g, '');
-        const staticMacs = switchPort.staticMacs || [];
-        const normalizedStaticMacs = staticMacs.map(m => m.toLowerCase().replace(/[-:.]/g, ''));
-
-        // Check if MAC is in the allowed list
-        const isAllowed = normalizedStaticMacs.includes(normalizedDeviceMac);
-
-        const updatedPorts = { ...switchState.ports };
-
-        if (!isAllowed) {
-          // Port security violation - block the port
-          if (!switchPort.shutdown || switchPort.status !== 'err-disabled') {
-            updatedPorts[switchPortId] = {
-              ...switchPort,
-              shutdown: true,
-              status: 'err-disabled',
-              portSecurity: switchPort.portSecurity ? {
-                ...switchPort.portSecurity,
-                violations: (switchPort.portSecurity.violations || 0) + 1
-              } : undefined
-            };
-            portSecurityUpdatedStates.set(switchDevice.id, {
-              ...switchState,
-              ports: updatedPorts
-            });
-            portSecurityViolationCount++;
-          }
-        } else {
-          // MAC matches - recover the port if it was err-disabled
-          if (switchPort.shutdown && switchPort.status === 'err-disabled') {
-            updatedPorts[switchPortId] = {
-              ...switchPort,
-              shutdown: false,
-              status: 'connected',
-              portSecurity: switchPort.portSecurity ? {
-                ...switchPort.portSecurity
-              } : undefined
-            };
-            portSecurityUpdatedStates.set(switchDevice.id, {
-              ...switchState,
-              ports: updatedPorts
-            });
-            portSecurityRecoveredCount++;
-          }
-        }
-      });
-
-      setDeviceStates(portSecurityUpdatedStates);
-
-      // 8.7. Sync STP state and Port Security state from deviceStates to topologyDevices ports
-      const stpSyncedDevices = finalDevicesForRefresh.map((device) => {
-        const deviceState = portSecurityUpdatedStates.get(device.id);
-        if (!deviceState || !deviceState.ports) return device;
-
-        // Update ports with spanningTree state and port security state from deviceState
-        const updatedPorts = device.ports.map((port) => {
-          const statePort = deviceState.ports[port.id];
-          if (statePort) {
-            return {
-              ...port,
-              spanningTree: statePort.spanningTree,
-              shutdown: statePort.shutdown,
-              portSecurity: statePort.portSecurity
-            };
-          }
-          return port;
-        });
-
-        return {
-          ...device,
-          ports: updatedPorts
-        };
-      });
-
-      // Update topology devices with STP-synced ports, then run one explicit IoT automation pass for F5 refresh.
-      const iotProcessedDevices = iotAutomationPass(stpSyncedDevices);
-      setTopologyDevices(iotProcessedDevices);
-
-      const allDhcpPools: Array<{ startIp: string; maxUsers: number }> = [];
-      dhcpServerActiveCount = 0;
-      dhcpServerNoPoolCount = 0;
-      dhcpClientWithLeaseCount = 0;
-      dhcpClientNoLeaseCount = 0;
-
-      iotProcessedDevices.forEach((device) => {
-        const state = portSecurityUpdatedStates.get(device.id);
-        const topologyPools = device.services?.dhcp?.pools || [];
-        const runtimePools = state?.services?.dhcp?.pools || [];
-        const cliPoolEntries = Object.values(state?.dhcpPools || {});
-        const cliPools = cliPoolEntries.map((pool: Record<string, unknown>) => {
-          const networkPrefix = ((pool?.network as string) || '').split('.').slice(0, 3).join('.');
-          return {
-            startIp: (pool?.startIp as string) || (networkPrefix ? `${networkPrefix}.100` : ''),
-            maxUsers: Number(pool?.maxUsers || 50),
-          };
-        }).filter((p: Record<string, unknown>) => p.startIp);
-        const poolCount = topologyPools.length + runtimePools.length + cliPools.length;
-        const dhcpEnabled = !!(device.services?.dhcp?.enabled || state?.services?.dhcp?.enabled || cliPoolEntries.length > 0);
-
-        if (dhcpEnabled) {
-          if (poolCount > 0) dhcpServerActiveCount++;
-          else dhcpServerNoPoolCount++;
-        }
-
-        topologyPools.forEach((p) => allDhcpPools.push({ startIp: p.startIp, maxUsers: Number(p.maxUsers || 50) }));
-        runtimePools.forEach((p) => allDhcpPools.push({ startIp: p.startIp, maxUsers: Number(p.maxUsers || 50) }));
-        cliPools.forEach((p: Record<string, unknown>) => allDhcpPools.push({ startIp: p.startIp as string, maxUsers: Number(p.maxUsers || 50) }));
-      });
-
-      iotProcessedDevices.forEach((device) => {
-        if (device.type !== 'pc' && device.type !== 'iot' || device.ipConfigMode !== 'dhcp') return;
-        const state = portSecurityUpdatedStates.get(device.id);
-        const runtimeIp = state?.ports?.['eth0']?.ipAddress || state?.ports?.['wlan0']?.ipAddress || '';
-        const candidateIp = hasValidIp(device.ip) ? device.ip : runtimeIp;
-        const hasLease = !!candidateIp &&
-          !candidateIp.startsWith('169.254.') &&
-          allDhcpPools.some((pool) => isIpInPoolRange(candidateIp, pool));
-
-        if (hasLease) dhcpClientWithLeaseCount++;
-        else dhcpClientNoLeaseCount++;
-      });
-
-      const refreshDeviceSummaries = buildRefreshDeviceSummaries(iotProcessedDevices, portSecurityUpdatedStates, deviceStates, language, t.none);
-
-      const ipOwners = new Map<string, string[]>();
-      const macOwners = new Map<string, string[]>();
-      const ipv6Owners = new Map<string, string[]>();
-      const rememberIdentity = (deviceName: string, ip?: string, mac?: string, ipv6?: string) => {
-        if (ip && isValidIpv4(ip)) {
-          const owners = ipOwners.get(ip) || [];
-          owners.push(deviceName);
-          ipOwners.set(ip, owners);
-        }
-        if (mac) {
-          const normalized = normalizeMAC(mac || '').toLowerCase();
-          if (normalized) {
-            const owners = macOwners.get(normalized) || [];
-            owners.push(deviceName);
-            macOwners.set(normalized, owners);
-          }
-        }
-        if (ipv6 && ipv6.trim()) {
-          const normalized = ipv6.trim().toLowerCase();
-          const owners = ipv6Owners.get(normalized) || [];
-          owners.push(deviceName);
-          ipv6Owners.set(normalized, owners);
-        }
-      };
-
-      iotProcessedDevices.forEach((device) => {
-        const state = portSecurityUpdatedStates.get(device.id);
-        const deviceName = device.name || device.id;
-        rememberIdentity(deviceName, device.ip, device.macAddress, device.ipv6);
-        Object.values(state?.ports || {}).forEach((port: Port) => {
-          rememberIdentity(`${deviceName}:${String(port?.id || '')}`, port?.ipAddress, port?.macAddress, port?.ipv6Address);
-        });
-      });
-      duplicateIpCount = Array.from(ipOwners.values()).filter((owners) => owners.length > 1).length;
-      duplicateMacCount = Array.from(macOwners.values()).filter((owners) => owners.length > 1).length;
-      duplicateIpv6Count = Array.from(ipv6Owners.values()).filter((owners) => owners.length > 1).length;
-
-      iotProcessedDevices.forEach((device) => {
-        if ((device.type !== 'pc' && device.type !== 'iot') || !device.gateway || !isValidIpv4(device.ip) || !isValidIpv4(device.subnet || '')) return;
-        const gateway = device.gateway || '';
-        if (!isValidIpv4(gateway) || gateway === '0.0.0.0') {
-          invalidGatewayCount++;
-          return;
-        }
-        if (!isSameSubnetByMask(device.ip, gateway, device.subnet)) {
-          subnetMismatchCount++;
-          invalidGatewayCount++;
-        }
-      });
-
-      // Disconnected links: endpoints are present but link is inactive or one side admin-down/blocked.
-      sanitizedConnections.forEach((connection) => {
-        const aState = portSecurityUpdatedStates.get(connection.sourceDeviceId);
-        const bState = portSecurityUpdatedStates.get(connection.targetDeviceId);
-        const aPort = aState?.ports?.[connection.sourcePort];
-        const bPort = bState?.ports?.[connection.targetPort];
-        if (!aPort || !bPort) return;
-        const aDown = aPort.shutdown || aPort.adminStatus === 'down' || aPort.operStatus === 'down' || aPort.status === 'blocked' || aPort.status === 'err-disabled';
-        const bDown = bPort.shutdown || bPort.adminStatus === 'down' || bPort.operStatus === 'down' || bPort.status === 'blocked' || bPort.status === 'err-disabled';
-        if (connection.active === false || aDown || bDown) disconnectedLinkCount++;
-      });
-
-      const graph = new Map<string, string[]>();
-      const addEdge = (a: string, b: string) => {
-        graph.set(a, [...(graph.get(a) || []), b]);
-        graph.set(b, [...(graph.get(b) || []), a]);
-      };
-      sanitizedConnections.forEach((connection) => {
-        if (connection.active === false) return;
-        addEdge(connection.sourceDeviceId, connection.targetDeviceId);
-      });
-      const visited = new Set<string>();
-      const hasCycle = (node: string, parent: string | null): boolean => {
-        visited.add(node);
-        for (const next of graph.get(node) || []) {
-          if (!visited.has(next)) {
-            if (hasCycle(next, node)) return true;
-          } else if (next !== parent) {
-            return true;
-          }
-        }
-        return false;
-      };
-      for (const node of graph.keys()) {
-        if (!visited.has(node) && hasCycle(node, null)) {
-          loopDetectedCount = 1;
-          break;
-        }
-      }
-
-      sanitizedConnections.forEach((connection) => {
-        if (connection.active === false) return;
-        const aState = portSecurityUpdatedStates.get(connection.sourceDeviceId);
-        const bState = portSecurityUpdatedStates.get(connection.targetDeviceId);
-        const aPort = aState?.ports?.[connection.sourcePort];
-        const bPort = bState?.ports?.[connection.targetPort];
-        if (!aPort || !bPort) return;
-        const aTrunk = aPort.mode === 'trunk';
-        const bTrunk = bPort.mode === 'trunk';
-        if (aTrunk && bTrunk) {
-          if (Number(aPort.nativeVlan || 1) !== Number(bPort.nativeVlan || 1)) vlanInconsistencyCount++;
-          return;
-        }
-        const aVlan = Number(aPort.accessVlan || aPort.vlan || 1);
-        const bVlan = Number(bPort.accessVlan || bPort.vlan || 1);
-        if (aVlan !== bVlan) vlanInconsistencyCount++;
-      });
-
-      // ── Compute network summary ──
-      const allVlans = new Set<number>();
-      let totalRoutes = 0, connectedRoutes = 0, staticRoutes = 0, dynamicRoutes = 0;
-      portSecurityUpdatedStates.forEach((state) => {
-        if (state.vlans) Object.keys(state.vlans).forEach((vId) => allVlans.add(Number(vId)));
-        [state.staticRoutes, state.dynamicRoutes].forEach((routes) => {
-          if (!routes) return;
-          routes.forEach((r) => {
-            totalRoutes++;
-            if (r.type === 'connected') connectedRoutes++;
-            else if (r.type === 'static') staticRoutes++;
-            else if (r.type === 'dynamic') dynamicRoutes++;
-          });
-        });
-        Object.values(state.ports).forEach((port) => {
-          if (port.ipAddress && port.subnetMask) {
-            totalRoutes++;
-            connectedRoutes++;
-          }
-        });
-      });
-      const summaryWarnings: string[] = [];
-      if (subnetMismatchCount > 0) summaryWarnings.push(language === 'tr' ? `Alt ağ uyumsuzluğu: ${subnetMismatchCount}` : `Subnet mismatch: ${subnetMismatchCount}`);
-      if (invalidGatewayCount > 0) summaryWarnings.push(language === 'tr' ? `Geçersiz ağ geçidi: ${invalidGatewayCount}` : `Invalid gateway: ${invalidGatewayCount}`);
-      if (disconnectedLinkCount > 0) summaryWarnings.push(language === 'tr' ? `Kopuk bağlantı: ${disconnectedLinkCount}` : `Disconnected link: ${disconnectedLinkCount}`);
-      if (loopDetectedCount > 0) summaryWarnings.push(language === 'tr' ? `Döngü algılandı` : `Loop detected`);
-      if (vlanInconsistencyCount > 0) summaryWarnings.push(language === 'tr' ? `VLAN tutarsızlığı: ${vlanInconsistencyCount}` : `VLAN inconsistency: ${vlanInconsistencyCount}`);
-      if (duplicateIpCount > 0) summaryWarnings.push(language === 'tr' ? `IP çakışması: ${duplicateIpCount}` : `IP conflict: ${duplicateIpCount}`);
-      if (duplicateMacCount > 0) summaryWarnings.push(language === 'tr' ? `MAC çakışması: ${duplicateMacCount}` : `MAC conflict: ${duplicateMacCount}`);
-      if (portSecurityViolationCount > 0) summaryWarnings.push(language === 'tr' ? `Port güvenlik ihlali: ${portSecurityViolationCount}` : `Port security violation: ${portSecurityViolationCount}`);
-      if (dhcpServerNoPoolCount > 0) summaryWarnings.push(language === 'tr' ? `DHCP havuz yok: ${dhcpServerNoPoolCount}` : `DHCP no pool: ${dhcpServerNoPoolCount}`);
-      if (dhcpClientNoLeaseCount > 0) summaryWarnings.push(language === 'tr' ? `DHCP kiralama yok: ${dhcpClientNoLeaseCount}` : `DHCP no lease: ${dhcpClientNoLeaseCount}`);
-      const summary = {
-        deviceCount: {
-          total: iotProcessedDevices.length,
-          routers: iotProcessedDevices.filter((d) => d.type === 'router').length,
-          switches: iotProcessedDevices.filter((d) => d.type === 'switchL2' || d.type === 'switchL3').length,
-          pcs: iotProcessedDevices.filter((d) => d.type === 'pc').length,
-          iot: iotProcessedDevices.filter((d) => d.type === 'iot').length,
-          firewalls: iotProcessedDevices.filter((d) => d.type === 'firewall').length,
-          wlcs: iotProcessedDevices.filter((d) => d.type === 'wlc').length,
-        },
-        activeLinks: sanitizedConnections.filter((c) => c.active).length,
-        vlanCount: allVlans.size,
-        routingTableSummary: { totalRoutes, connected: connectedRoutes, static: staticRoutes, dynamic: dynamicRoutes },
-        networkWarnings: summaryWarnings,
-      };
-
-      // 9. Show detailed notification (delayed if DHCP assignments were made)
-      const showRefreshPanel = () => {
-        const totalDevices = connectedWirelessClients.length + activeAPs.length + disconnectedPCs.length + disconnectedAPs.length;
-        const stpMessage = stpUpdatedCount > 0
-          ? `✓ ${language === 'tr' ? t.stpSwitchesUpdated.replace('X', String(stpUpdatedCount)) : `STP: ${stpUpdatedCount} ${stpUpdatedCount === 1 ? 'switch updated' : 'switches updated'}`}`
-          : '';
-        const portSecurityMessage = (portSecurityViolationCount > 0 || portSecurityRecoveredCount > 0)
-          ? `🔒 ${t.portSecurityBlocked.replace('X', String(portSecurityViolationCount)).replace('Y', String(portSecurityRecoveredCount))}`
-          : '';
-        const topologyMessage = invalidCount > 0
-          ? `${language === 'tr' ? t.topologyInvalidConnections.replace('X', String(invalidCount)) : `Topology: ${invalidCount} ${invalidCount === 1 ? 'invalid connection disabled' : 'invalid connections disabled'}`}`
-          : '';
-        const validationMessages = [
-          subnetMismatchCount > 0 ? (language === 'tr' ? `⚠ Alt ağ uyumsuzluğu: ${subnetMismatchCount}` : `⚠ Subnet mismatch: ${subnetMismatchCount}`) : '',
-          invalidGatewayCount > 0 ? (language === 'tr' ? `⚠ Geçersiz ağ geçidi: ${invalidGatewayCount}` : `⚠ Invalid gateway: ${invalidGatewayCount}`) : '',
-          disconnectedLinkCount > 0 ? (language === 'tr' ? `⚠ Kopuk bağlantı: ${disconnectedLinkCount}` : `⚠ Disconnected link: ${disconnectedLinkCount}`) : '',
-          loopDetectedCount > 0 ? (language === 'tr' ? `⚠ Döngü algılandı` : `⚠ Loop detected`) : '',
-          vlanInconsistencyCount > 0 ? (language === 'tr' ? `⚠ VLAN tutarsızlığı: ${vlanInconsistencyCount}` : `⚠ VLAN inconsistency: ${vlanInconsistencyCount}`) : '',
-        ].filter(Boolean);
-
-        if (totalDevices > 0 || dhcpClients.length > 0) {
-          const wifiMessages = [];
-          if (connectedWirelessClients.length > 0) {
-            wifiMessages.push(language === 'tr'
-              ? `✓ ${connectedWirelessClients.length} kablosuz istemci bağlandı`
-              : `✓ ${connectedWirelessClients.length} wireless client${connectedWirelessClients.length > 1 ? 's' : ''} connected`);
-          }
-          if (activeAPs.length > 0) {
-            wifiMessages.push(language === 'tr'
-              ? `✓ ${activeAPs.length} AP aktif`
-              : `✓ ${activeAPs.length} AP active`);
-          }
-          if (disconnectedPCs.length > 0) {
-            wifiMessages.push(language === 'tr'
-              ? `⚠ ${disconnectedPCs.length} kablosuz istemcinin bağlantısı yok`
-              : `⚠ ${disconnectedPCs.length} wireless client${disconnectedPCs.length > 1 ? 's' : ''} disconnected`);
-          }
-          if (disconnectedAPs.length > 0) {
-            wifiMessages.push(language === 'tr'
-              ? `⚠ ${disconnectedAPs.length} AP'nin istemcisi yok`
-              : `⚠ ${disconnectedAPs.length} AP no client${disconnectedAPs.length > 1 ? 's' : ''}`);
-          }
-
-          // Show combined WiFi status as a single toast
-          if (wifiMessages.length > 0) {
-            toast({
-              title: `📶 ${t.wirelessStatus}`,
-              description: wifiMessages.join('\n'),
-              duration: 4000,
-            });
-          }
-
-          // Individual conflict toasts (staggered to respect TOAST_LIMIT=1)
-          let conflictToastDelay = 0;
-          const showConflictToast = (title: string, description: string) => {
-            if (conflictToastDelay === 0) {
-              toast({ title, description, duration: 4500, variant: 'destructive' });
-            } else {
-              setTimeout(() => toast({ title, description, duration: 4500, variant: 'destructive' }), conflictToastDelay);
-            }
-            conflictToastDelay += 5000;
-          };
-
-          if (duplicateIpCount > 0) {
-            const dupIpDesc = Array.from(ipOwners.entries())
-              .filter(([, owners]) => owners.length > 1)
-              .map(([ip, owners]) => `${ip}: ${owners.join(', ')}`)
-              .join('\n');
-            showConflictToast(t.ipConflict, dupIpDesc);
-          }
-          if (duplicateMacCount > 0) {
-            const dupMacDesc = Array.from(macOwners.entries())
-              .filter(([, owners]) => owners.length > 1)
-              .map(([mac, owners]) => `${mac}: ${owners.join(', ')}`)
-              .join('\n');
-            showConflictToast(
-              language === 'tr' ? `MAC Çakışması (${duplicateMacCount})` : `MAC Conflict (${duplicateMacCount})`,
-              dupMacDesc
-            );
-          }
-
-          if (duplicateIpv6Count > 0) {
-            const dupIpv6Desc = Array.from(ipv6Owners.entries())
-              .filter(([, owners]) => owners.length > 1)
-              .map(([ipv6, owners]) => `${ipv6}: ${owners.join(', ')}`)
-              .join('\n');
-            showConflictToast(
-              language === 'tr' ? `IPv6 Çakışması (${duplicateIpv6Count})` : `IPv6 Conflict (${duplicateIpv6Count})`,
-              dupIpv6Desc
-            );
-          }
-
-          if (validationMessages.length > 0) {
-            toast({
-              title: language === 'tr' ? 'Topoloji Doğrulama Uyarıları' : 'Topology Validation Warnings',
-              description: validationMessages.join('\n'),
-              duration: 5000,
-            });
-          }
-
-          const dhcpMessages = [
-            language === 'tr'
-              ? `DHCP: ${dhcpServerActiveCount} sunucu aktif`
-              : `DHCP: ${dhcpServerActiveCount} ${dhcpServerActiveCount <= 1 ? 'active server' : 'active servers'}`,
-            language === 'tr'
-              ? `${dhcpClientWithLeaseCount} istemci kiraladı`
-              : `${dhcpClientWithLeaseCount} ${dhcpClientWithLeaseCount <= 1 ? 'client leased' : 'clients leased'}`,
-          ];
-          if (dhcpServerNoPoolCount > 0) {
-            dhcpMessages.push(language === 'tr'
-              ? `⚠ ${dhcpServerNoPoolCount} ${t.dhcpNoPool}`
-              : `⚠ ${dhcpServerNoPoolCount} ${t.dhcpNoPool}`);
-          }
-          if (dhcpClientNoLeaseCount > 0) {
-            dhcpMessages.push(language === 'tr'
-              ? `⚠ ${dhcpClientNoLeaseCount} ${t.dhcpNoLease}`
-              : `⚠ ${dhcpClientNoLeaseCount} ${t.dhcpNoLease}`);
-          }
-
-          setRefreshNetworkReport({
-            show: true,
-            title: t.networkStatusUpdated,
-            dhcpMessages,
-            stpMessage,
-            portSecurityMessage,
-            topologyMessage,
-            devices: refreshDeviceSummaries,
-            summary
-          });
-        } else {
-          const isDhcpMissing = dhcpServerActiveCount === 0 && dhcpClientWithLeaseCount === 0;
-          const dhcpSummary = isDhcpMissing
-            ? ''
-            : (language === 'tr'
-              ? `DHCP: ${dhcpServerActiveCount} sunucu aktif, ${dhcpClientWithLeaseCount} kiralama`
-              : `DHCP: ${dhcpServerActiveCount} ${dhcpServerActiveCount <= 1 ? 'active server' : 'active servers'}, ${dhcpClientWithLeaseCount} ${dhcpClientWithLeaseCount <= 1 ? 'lease' : 'leases'}`);
-
-          setRefreshNetworkReport({
-            show: true,
-            title: t.networkRefreshed,
-            dhcpMessages: [
-              stpMessage
-                ? `${dhcpSummary} • ${stpMessage}`.replace(/^ • /, '')
-                : (isDhcpMissing
-                  ? ''
-                  : `${t.noWifiDevices} • ${dhcpSummary}`)
-            ].filter(msg => msg.trim()),
-            stpMessage: '',
-            portSecurityMessage: '',
-            topologyMessage,
-            devices: refreshDeviceSummaries,
-            summary
-          });
-        }
-      };
-
-      if (dhcpAssignments.length > 0) {
-        setTimeout(showRefreshPanel, 1000); // 1 second delay if DHCP happened
-      } else {
-        showRefreshPanel();
-      }
-    }
-  }, [iotAutomationPass, assignDhcpLeaseForPc, buildLinkLocalLease, topologyDevices, topologyConnections, deviceStates, setDeviceStates, setTopologyConnections, language, t, pcOutputs]);
+  const handleRefreshNetwork = useRefreshNetwork({
+    setActiveDeviceId,
+    setSelectedDevice,
+    setTopologyConnections,
+    setPcOutputs,
+    setDeviceStates,
+    setTopologyDevices,
+    setRefreshNetworkReport,
+    topologyDevices,
+    topologyConnections,
+    deviceStates,
+    pcOutputs,
+    language,
+    t,
+    isValidIpv4,
+    isSameSubnetByMask,
+    iotAutomationPass,
+    assignDhcpLeaseForPc,
+    buildLinkLocalLease,
+    toast,
+  });
 
 
   // Auto-renew DHCP for devices with link-local IPs and sequential DHCP toasts
@@ -2367,96 +1740,24 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   });
 
   // Load project from JSON file
-  const handleLoadProject = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    // Prevent previously active exam session from re-appearing while opening another file/workflow
-    closeExam();
-    // Reset input
-    event.target.value = '';
-
-    const doLoad = () => {
-      document.body.style.cursor = 'wait';
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const content = e.target?.result as string;
-          let projectData: unknown;
-
-          // Try decrypting as exam file first if extension matches
-          if (file.name.endsWith('.exam')) {
-            projectData = decryptExamData(content);
-            if (projectData) {
-              const exam = projectData as ExamProject;
-              setIsExamLoadedFromFile(true);
-              closeGuidedMode();
-              startExamProject(exam);
-              loadProjectData(exam.data);
-              setHasUnsavedChanges(false);
-              setProjectName((exam.title as unknown as { en: string }).en);
-              document.body.style.cursor = '';
-              toast({
-                title: language === 'tr' ? 'Sınav Modu Başlatıldı' : 'Exam Mode Started',
-                description: (exam.title as unknown as { tr: string; en: string })[language === 'tr' ? 'tr' : 'en'],
-              });
-              return;
-            }
-          }
-
-          projectData = safeParse<unknown>(content);
-          if (loadProjectData(projectData)) {
-            setHasUnsavedChanges(false);
-            const loadedName = file.name.replace(/\.[^/.]+$/, '');
-            setProjectName(loadedName);
-            closeGuidedMode();
-            closeExam();
-            setRefreshNetworkReport(null);
-            addProjectRecord(loadedName);
-            document.body.style.cursor = '';
-            toast({
-              title: `"${loadedName}" ${language === 'tr' ? 'projesi yüklendi' : 'project loaded'}`,
-              description: t.fileImportedSuccessfully,
-            });
-            setZoom(1.0);
-            setPan({ x: 0, y: 0 });
-            if (typeof window !== 'undefined') {
-              window.scrollTo(0, 0);
-            }
-          } else {
-            document.body.style.cursor = '';
-            toast({
-              title: t.invalidProjectFile,
-              description: t.invalidProjectFile,
-              variant: "destructive",
-            });
-          }
-        } catch (error) {
-          document.body.style.cursor = '';
-          errorHandler.logError(STORAGE_ERRORS.LOAD_FAILED({ operation: 'fileUpload', error: String(error) }));
-          toast({
-            title: t.loadFailed,
-            description: formatErrorForUser(error as Error, t.failedLoadProject).userMessage,
-            variant: "destructive",
-          });
-        }
-      };
-      reader.readAsText(file);
-    };
-
-    if (hasUnsavedChanges) {
-      setSaveDialog({
-        show: true,
-        message: t.unsavedChangesConfirm,
-        onConfirm: (save: boolean) => {
-          setSaveDialog(null);
-          if (save) handleSaveProject();
-          doLoad();
-        }
-      });
-      return;
-    }
-    doLoad();
-  }, [loadProjectData, setHasUnsavedChanges, t.invalidProjectFile, t.failedLoadProject, language, setZoom, setPan, closeGuidedMode, closeExam, setProjectName, hasUnsavedChanges, handleSaveProject, setSaveDialog, t.unsavedChangesConfirm, startExamProject]);
+  const handleLoadProject = useLoadProject({
+    loadProjectData: loadProjectData as (data: unknown) => boolean,
+    setHasUnsavedChanges,
+    setZoom,
+    setPan,
+    setProjectName,
+    closeGuidedMode,
+    closeExam,
+    setRefreshNetworkReport,
+    setIsExamLoadedFromFile,
+    startExamProject,
+    hasUnsavedChanges,
+    handleSaveProject,
+    setSaveDialog,
+    language,
+    t,
+    toast,
+  });
 
   const {
     applyExampleProjectAsTemplate,
