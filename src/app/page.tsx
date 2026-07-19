@@ -77,6 +77,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useNetworkSimulation } from '@/hooks/useNetworkSimulation';
 import { useTroubleshootingMode } from '@/hooks/useTroubleshootingMode';
 import { useProjectApplication } from '@/hooks/useProjectApplication';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useOnboarding } from '@/hooks/useOnboarding';
 import { useProjectExport } from '@/hooks/useProjectExport';
 import { useProjectReset } from '@/hooks/useProjectReset';
@@ -2314,180 +2315,49 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     return;
   }, [topologyDevices, topologyConnections, handleRefreshNetwork]);
 
-  // Handle key events: ESC to close, ENTER to confirm
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // F1 - Open About Modal (Help)
-      if (e.key === 'F1' || e.code === 'F1') {
-        e.preventDefault();
-        setShowAboutModal(prev => !prev);
-        return;
-      }
-
-      // F5 - Refresh network connections and WiFi status
-      if (e.key === 'F5') {
-        e.preventDefault();
-        setTopologyKey(prev => prev + 1);
-        handleRefreshNetwork();
-        return;
-      }
-
-      if (e.key === 'Escape') {
-        if (!showPCPanel) {
-          closeEscLikeWindows();
-        }
-      }
-
-      // Ctrl Shortcuts
-      if (e.ctrlKey || e.metaKey) {
-        const key = e.key.toLowerCase();
-
-        // Check if an input element is focused
-        const tag = (document.activeElement as HTMLElement)?.tagName?.toLowerCase();
-        const isEditable = tag === 'input' || tag === 'textarea' || (document.activeElement as HTMLElement)?.isContentEditable;
-
-        // Print - switch to topology tab first
-        if (key === 'p') {
-          e.preventDefault();
-          if (activeTabRef.current !== 'topology') {
-            setActiveTab('topology');
-            setTimeout(() => window.print(), 150);
-          } else {
-            window.print();
-          }
-        }
-
-        // Only handle undo/redo in topology tab if no input is focused
-        if (key === 'z') {
-          if (activeTabRef.current === 'topology' && !isEditable) {
-            e.preventDefault();
-            handleUndo();
-          }
-        }
-        if (key === 'y') {
-          if (activeTabRef.current === 'topology' && !isEditable) {
-            e.preventDefault();
-            handleRedo();
-          }
-        }
-        if (key === 's') {
-          e.preventDefault();
-          handleSaveProject();
-        }
-        if (key === 'o') {
-          e.preventDefault();
-          fileInputRef.current?.click();
-        }
-        if (key === 'n' && !e.shiftKey) {
-          e.preventDefault();
-          handleNewProject();
-        }
-      }
-
-      // Shift Shortcuts
-      if (e.altKey && !e.ctrlKey && !e.metaKey) {
-        const key = e.key.toLowerCase();
-        if (key === 'n') {
-          e.preventDefault();
-          handleNewProject();
-        }
-      }
-
-      if (!e.ctrlKey && !e.metaKey && !e.altKey) {
-        const tag = (document.activeElement as HTMLElement)?.tagName?.toLowerCase();
-        const isEditable = tag === 'input' || tag === 'textarea' || (document.activeElement as HTMLElement)?.isContentEditable;
-        const isWindowFocused = document.hasFocus();
-        const isTopologyOnly = activeTabRef.current === 'topology'
-          && !showPCPanel
-          && !showRouterPanel
-          && !showFirewallPanel
-          && !showUnifiedDeviceModal
-          && !showProjectPicker
-          && !showAboutModal
-          && !showOnboarding
-          && !showMobileMenu;
-
-        if (!isEditable && isTopologyOnly) {
-          const isQuoteToggle = e.key === '"' || e.code === 'Quote';
-          if (isQuoteToggle) {
-            e.preventDefault();
-            if (isWindowFocused && isTimelineMinimized) {
-              setIsTimelineMinimized(false);
-            } else {
-              setIsTimelineMinimized(prev => !prev);
-            }
-            return;
-          }
-        }
-      }
-
-      if (e.key === 'Tab') {
-        if (showProjectPicker) {
-          return;
-        }
-        // Tab key navigation - only cycle devices in topology if no panel is open
-        // If a panel is open (PC panel, Router panel, etc.), let the panel handle Tab navigation
-        if (activeTab === 'topology' && topologyDevices.length > 0 && !showPCPanel && !showRouterPanel && !showUnifiedDeviceModal) {
-          e.preventDefault();
-
-          // Cancel current selection if multiple devices are selected or all devices are selected
-          if (selectedDevice) {
-            setSelectedDevice(null);
-            setClearSelectionTrigger(prev => prev + 1);
-          }
-
-          const currentIndex = topologyDevices.findIndex(d => d.id === activeDeviceId);
-          const direction = e.shiftKey ? -1 : 1;
-          const nextIndex = currentIndex === -1
-            ? (direction > 0 ? 0 : topologyDevices.length - 1)
-            : (currentIndex + direction + topologyDevices.length) % topologyDevices.length;
-          const nextDevice = topologyDevices[nextIndex];
-          if (nextDevice) {
-            setActiveDeviceId(nextDevice.id);
-            setActiveDeviceType(nextDevice.type);
-          }
-        }
-      }
-
-      if (e.key === 'Enter') {
-        // Skip if already handled by canvas (e.g., multi-select → last device)
-        if (e.defaultPrevented) return;
-        // Don't handle Enter when any modal/panel is open
-        if (showUnifiedDeviceModal || showAboutModal || showPCPanel || showFirewallPanel || showRouterPanel || showProjectPicker || showOnboarding || !!confirmDialog?.show || !!saveDialog?.show) {
-          return;
-        }
-        if (confirmDialog?.show) {
-          e.preventDefault();
-          confirmDialog.onConfirm();
-        } else if (saveDialog?.show) {
-          e.preventDefault();
-          saveDialog.onConfirm(true);
-        } else if (activeTab === 'topology' && activeDeviceId && !activeDeviceId.startsWith('note-')) {
-          // Open selected device with Enter key
-          e.preventDefault();
-          const device = topologyDevices.find(d => d.id === activeDeviceId);
-          if (device) {
-            // For routers and switches, open CLI terminal modal
-            if (device.type === 'router' || device.type === 'switchL2' || device.type === 'switchL3') {
-              const deviceState = getOrCreateDeviceState(device.id, device.type, device.name, device.macAddress, device.switchModel);
-              getOrCreateDeviceOutputs(device.id, deviceState);
-              setActiveDeviceId(device.id);
-              setActiveDeviceType(device.type);
-              setUnifiedDeviceActiveTab('console');
-              setShowUnifiedDeviceModal(true);
-            } else {
-              handleDeviceDoubleClick(device.type, device.id);
-            }
-          }
-        }
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [showMobileMenu, confirmDialog, saveDialog, showPCPanel, showRouterPanel, showProjectPicker, handleSaveProject, handleNewProject, handleUndo, handleRedo, tabs, setShowMobileMenu, setConfirmDialog, setSaveDialog, setShowPCPanel, setShowRouterPanel, setShowProjectPicker, setActiveTab, activeTab, topologyDevices, handleDeviceDoubleClick, handleRefreshNetwork, closeEscLikeWindows]);
+  useKeyboardShortcuts({
+    showMobileMenu,
+    confirmDialog,
+    saveDialog,
+    showPCPanel,
+    showRouterPanel,
+    showFirewallPanel,
+    showUnifiedDeviceModal,
+    showAboutModal,
+    showProjectPicker,
+    showOnboarding,
+    isTimelineMinimized,
+    selectedDevice,
+    activeDeviceId,
+    activeTab,
+    topologyDevices,
+    activeTabRef,
+    fileInputRef,
+    handleSaveProject,
+    handleNewProject,
+    handleUndo,
+    handleRedo,
+    handleDeviceDoubleClick,
+    handleRefreshNetwork,
+    closeEscLikeWindows,
+    getOrCreateDeviceState,
+    getOrCreateDeviceOutputs,
+    setShowMobileMenu,
+    setShowPCPanel,
+    setShowRouterPanel,
+    setShowProjectPicker,
+    setShowAboutModal,
+    setTopologyKey,
+    setIsTimelineMinimized,
+    setClearSelectionTrigger,
+    setSelectedDevice,
+    setActiveDeviceId,
+    setActiveDeviceType,
+    setActiveTab,
+    setUnifiedDeviceActiveTab,
+    setShowUnifiedDeviceModal,
+    tabs,
+  });
 
   useNetworkEventListeners({
     setDeviceStates,
