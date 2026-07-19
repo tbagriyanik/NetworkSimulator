@@ -217,7 +217,7 @@ export function TimelinePanel({
       className={cn(
         "absolute z-30 liquid-glass-light transition-all duration-300 flex flex-col overflow-hidden rounded-xl outline-none select-none",
         isMobile
-          ? (isMinimized ? "left-1/2 -translate-x-1/2 bottom-[72px]" : "left-2 right-2 bottom-[72px]")
+          ? (isMinimized ? "left-2 bottom-[72px]" : "left-2 right-2 bottom-[72px]")
           : "sm:left-4 sm:right-auto sm:bottom-20 sm:max-w-none",
         isMinimized ? "w-48 h-12 rounded-full" : "sm:w-[36rem] w-[calc(100vw-1rem)] h-[152px]",
         isDark
