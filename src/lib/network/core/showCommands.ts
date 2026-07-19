@@ -4,11 +4,21 @@ import { isRouterModel } from '../switchModels';
 import { buildRunningConfig } from './configBuilder';
 import { SwitchState, Port, CommandResult, Route } from '../types';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import {
+  isPhysicalEthernetPort, getAllowedVlansString, getNativeVlanString, getSTPCost,
+  getSwitchDisplayProfile, getPrefixLength, getNetworkAddress, formatPortName,
+  formatMacAddressSimple, getPortNumber, isIpInNetwork,
+} from './showHelpers';
 import { buildOSPFLinkStateDatabase } from '../ospf';
 import { normalizePortId } from '../initialState';
 import { checkConnectivity } from '../connectivity';
 import { ensureDeviceStatesMap } from '../networkUtils';
 import { detectEtherChannelBundles, getLoadBalanceAlgorithm, formatLoadBalance } from '../etherchannel';
+import {
+  cmdShowWireless, cmdShowWlanSummary,
+  cmdShowApSummary, cmdShowApConfig, cmdShowApJoinStats,
+  cmdShowDot11Associations, cmdShowDot11Statistics, cmdShowWlan,
+} from './showWlcDisplay';
 
 // Show komutları (show running-config, show vlan, show ip route, vs.)
 
@@ -119,101 +129,6 @@ export const showHandlers: Record<string, CommandHandler> = {
   'show ipv6 rip': cmdShowIpv6Rip,
   'show ipv6 ospf': cmdShowIpv6Ospf,
 };
-
-function isPhysicalEthernetPort(portId: string): boolean {
-  const p = portId.toLowerCase();
-  return (p.startsWith('fa') || p.startsWith('gi')) && !p.includes('.') && !p.startsWith('vlan') && !p.startsWith('wlan') && p !== 'console' && !p.startsWith('s');
-}
-
-function getAllowedVlansString(port: Port | undefined): string {
-  const allowed = port?.allowedVlans ?? port?.trunkAllowedVlans;
-  if (!allowed) return '1-4094';
-  if (Array.isArray(allowed)) return allowed.join(',');
-  if (allowed === 'all') return '1-4094';
-  return String(allowed);
-}
-
-function getNativeVlanString(port: Port | undefined): string {
-  const native = port?.nativeVlan;
-  return native ? String(native) : '1';
-}
-
-function getSTPCost(port: Port | undefined): number {
-  if (!port) return 19;
-  // If manual STP cost is set, use it
-  if (port.stpCost !== undefined) {
-    return port.stpCost;
-  }
-
-  // Calculate cost based on actual speed (IEEE 802.1D standard)
-  const speed = port.speed;
-  if (speed === '10000') return 2;
-  if (speed === '1000') return 4;
-  if (speed === '100') return 19;
-  if (speed === '10') return 100;
-
-  // Fallback to port type if speed is auto or unknown
-  if (port.type === 'gigabitethernet') return 4;
-  return 19;
-}
-
-function getSwitchDisplayProfile(state: SwitchState) {
-  const switchModel = state.switchModel || 'WS-C2960-24TT-L';
-  const modelName = state.version?.modelName || '';
-  const isRouter = isRouterModel(modelName) || isRouterModel(switchModel);
-  const isL3 = switchModel === 'WS-C3650-24PS' || (isRouter && !switchModel.includes('2960'));
-  const isFirewall = state.deviceType === 'firewall' || state.switchLayer === 'FW' || modelName.includes('ASA') || modelName.includes('Firepower');
-
-  if (isFirewall) {
-    const reportedGiCount = 2;
-
-    return {
-      switchModel: 'ASA 5506-X',
-      isL3: false,
-      isRouter: false,
-      bootImage: 'asa-software.bin',
-      softwareImage: 'Adaptive Security Appliance Software',
-      rom: 'ASA boot loader',
-      bootldr: 'ASA Boot Loader',
-      systemImage: 'flash:asa-software.bin',
-      processor: 'ASA 5506-X (Intel Celeron) processor (revision 01) with 8192K bytes of memory',
-      reportedFeCount: 0,
-      reportedGiCount,
-    };
-  }
-
-  if (isRouter) {
-    return {
-      switchModel: modelName,
-      isL3: true,
-      isRouter: true,
-      bootImage: 'router-software.bin',
-      softwareImage: 'Network Simulator nOS Software, Version',
-      rom: 'Router boot loader',
-      bootldr: 'Router Boot Loader',
-      systemImage: 'flash:router-software.bin',
-      processor: `${modelName} (PowerPC405) processor (revision 01) with 4096K bytes of memory`,
-      reportedFeCount: 0,
-      reportedGiCount: 4,
-    };
-  }
-
-  return {
-    switchModel,
-    isL3,
-    isRouter: false,
-    bootImage: isL3 ? 'l3switch-software.bin' : 'l2switch-software.bin',
-    softwareImage: isL3 ? 'L3 Switch Software' : 'L2 Switch Software',
-    rom: isL3 ? 'L3 Switch boot loader' : 'L2 Switch boot loader',
-    bootldr: isL3 ? 'L3 Switch Boot Loader' : 'L2 Switch Boot Loader',
-    systemImage: isL3 ? 'flash:l3switch-software.bin' : 'flash:l2switch-software.bin',
-    processor: isL3 ? 'WS-C3650-24PS (PowerPC405) processor (revision 01) with 131072K bytes of memory' : 'WS-C2960-24TT-L (PowerPC405) processor (revision C0) with 65536K bytes of memory',
-    reportedFeCount: isL3 ? 0 : 24,
-    reportedGiCount: isL3 ? 28 : 2,
-  };
-}
-
-
 
 /**
  * Show Running Configuration
@@ -1240,17 +1155,6 @@ function cmdShowMacAddressTable(
   return { success: true, output };
 }
 
-// Helper function to format MAC address: xxxx.xxxx.xxxx
-function formatMacAddressSimple(mac: string): string {
-  if (!mac) return '0000.0000.0000';
-  // Remove all separators (dots, dashes, colons)
-  const cleanMac = mac.replace(/[-:.]/g, '').toLowerCase();
-  // Pad with zeros to ensure 12 characters
-  const padded = cleanMac.padStart(12, '0').slice(0, 12);
-  // Add dots every 4 characters for format
-  return padded.match(/.{1,4}/g)?.join('.') || padded;
-}
-
 /**
  * Show CDP Neighbors
  */
@@ -1845,15 +1749,6 @@ function cmdShowBoot(
   return { success: true, output };
 }
 
-/**
- * Helper to extract port number from port ID (fa0/1 -> 1, gi0/24 -> 24)
- */
-function getPortNumber(portId: string): number {
-  const match = portId.match(/\/(\d+)$/);
-  return match ? parseInt(match[1], 10) : 1;
-}
-
-
 /** Show Spanning Tree
  */
 function cmdShowSpanningTree(
@@ -2054,58 +1949,6 @@ function cmdShowPortSecurity(
 }
 
 /**
- * Helper function to get prefix length from subnet mask
- */
-function getPrefixLength(subnetMask: string | undefined): number {
-  if (!subnetMask) return 0;
-  const parts = subnetMask.split('.').map(Number);
-  let count = 0;
-
-  for (const part of parts) {
-    if (part === 255) count += 8;
-    else if (part === 254) { count += 7; break; }
-    else if (part === 252) { count += 6; break; }
-    else if (part === 248) { count += 5; break; }
-    else if (part === 240) { count += 4; break; }
-    else if (part === 224) { count += 3; break; }
-    else if (part === 192) { count += 2; break; }
-    else if (part === 128) { count += 1; break; }
-    else break;
-  }
-
-  return count;
-}
-
-/**
- * Helper function to calculate network address from IP and subnet mask
- */
-function getNetworkAddress(ipAddress: string, subnetMask: string): string {
-  const ipParts = ipAddress.split('.').map(Number);
-  const maskParts = subnetMask.split('.').map(Number);
-
-  const networkParts = ipParts.map((part, index) => part & maskParts[index]);
-
-  return networkParts.join('.');
-}
-
-/**
- * Helper function to format port name (fa0/1 -> FastEthernet0/1, gi0/1 -> GigabitEthernet0/1)
- */
-function formatPortName(portName: string): string {
-  const lowerName = portName.toLowerCase();
-
-  if (lowerName.startsWith('fa')) {
-    return 'FastEthernet' + lowerName.slice(2);
-  } else if (lowerName.startsWith('gi')) {
-    return 'GigabitEthernet' + lowerName.slice(2);
-  } else if (lowerName.startsWith('eth')) {
-    return 'Ethernet' + lowerName.slice(4);
-  }
-
-  return portName;
-}
-
-/**
  * Do Show - Execute show command from config mode
  */
 function cmdDoShow(
@@ -2179,241 +2022,6 @@ function cmdDoShow(
 /**
  * Show Wireless - Display WiFi settings
  */
-function cmdShowWireless(
-  state: SwitchState,
-  _input: string,
-  ctx: CommandContext
-): CommandResult {
-  // Check if device is a switch - show wireless is not a switch command
-  const device = ctx.devices?.find((d: CanvasDevice) => d.id === ctx.sourceDeviceId);
-  if (device && (device.type === 'switchL2' || device.type === 'switchL3')) {
-    return { success: false, error: '% Invalid command. show wireless is not a switch command.\nWireless summary is only available on Wireless LAN Controllers (WLC).\nWLC commands: show wlan summary, show ap summary' };
-  }
-
-  let output = '\nWireless Configuration Status\n';
-  output += '-------------------------------------------\n';
-  output += 'Interface   Mode     SSID           Security   Channel  Status\n';
-  output += '---------   ------   -------------  ---------  -------  ----------\n';
-
-  let found = false;
-  Object.keys(state.ports || {}).forEach(portName => {
-    const port = state.ports[portName];
-    if (portName.toLowerCase().startsWith('wlan')) {
-      found = true;
-      const wifi = port.wifi;
-      const mode = (wifi?.mode || 'disabled').padEnd(8);
-      const ssid = (wifi?.ssid || '-').padEnd(14);
-      const security = (wifi?.security || 'open').padEnd(10);
-      const channel = (wifi?.channel || '2.4GHz').padEnd(8);
-      const status = (port.shutdown ? 'Down' : 'Up');
-
-      output += `${portName.padEnd(11)} ${mode}${ssid}${security}${channel}${status}\n`;
-    }
-  });
-
-  if (!found) {
-    output += 'No wireless interfaces found on this device.\n';
-  }
-
-  output += '!\n';
-  return { success: true, output };
-}
-
-/**
- * Show WLAN Summary - Display WLAN configuration summary (WLC only)
- */
-function cmdShowWlanSummary(
-  state: SwitchState,
-  input: string,
-  ctx: CommandContext
-): CommandResult {
-  const device = ctx.devices?.find((d: CanvasDevice) => d.id === ctx.sourceDeviceId);
-  if (device && (device.type === 'switchL2' || device.type === 'switchL3')) {
-    return { success: false, error: '% Invalid command. show wlan summary is only available on Wireless LAN Controllers (WLC).' };
-  }
-
-  // Check for specific WLAN ID
-  const idMatch = input.match(/show\s+wlan\s+summary\s+(\d+)/i);
-  const specificId = idMatch ? idMatch[1] : null;
-
-  let output = '\nWLAN Summary\n';
-  output += '-----------\n';
-
-  // Use WLC wlcWlans if available
-  const wlcWlans = state.wlcWlans || {};
-  const wlans = state.wlans || {};
-
-  if (Object.keys(wlcWlans).length > 0 || Object.keys(wlans).length > 0) {
-    output += 'WLAN ID  Profile Name  SSID              Status  Security  VLAN\n';
-    output += '--------  ------------  ----------------  ------  --------  ----\n';
-
-    // Show WLC-managed WLANs
-    Object.entries(wlcWlans).forEach(([id, wlan]) => {
-      if (specificId && id !== specificId) return;
-      output += `${String(wlan.id).padEnd(8)}  ${wlan.name.padEnd(12)}  ${wlan.ssid.padEnd(16)}  ${wlan.status === 'enabled' ? 'Up' : 'Down'}  ${wlan.security.padEnd(8)}  ${wlan.vlan || 1}\n`;
-    });
-
-    // Show legacy wlans (from wlan command)
-    Object.entries(wlans).forEach(([id, wlan]) => {
-      if (specificId && id !== specificId) return;
-      output += `${id.padEnd(8)}  ${wlan.name.padEnd(12)}  ${wlan.ssid.padEnd(16)}  Up      ${state.ports['wlan0']?.wifi?.security || 'open'.padEnd(8)}  ${1}\n`;
-    });
-  } else if (specificId) {
-    return { success: false, error: `% WLAN ${specificId} not found` };
-  } else {
-    output += 'No WLANs configured.\n';
-  }
-
-  output += `\nNumber of WLANs: ${Object.keys(wlcWlans).length + Object.keys(wlans).length}\n`;
-  output += '!\n';
-  return { success: true, output };
-}
-
-/**
- * Show AP Summary - Display AP summary (WLC only)
- */
-function cmdShowApSummary(
-  state: SwitchState,
-  input: string,
-  ctx: CommandContext
-): CommandResult {
-  const device = ctx.devices?.find((d: CanvasDevice) => d.id === ctx.sourceDeviceId);
-  if (device && (device.type === 'switchL2' || device.type === 'switchL3')) {
-    return { success: false, error: '% Invalid command. show ap summary is only available on Wireless LAN Controllers (WLC).' };
-  }
-
-  // Check for specific AP name
-  const nameMatch = input.match(/show\s+ap\s+summary\s+(\S+)/i);
-  const specificAp = nameMatch ? nameMatch[1] : null;
-
-  // Use WLC wlcAps state for managed LAPs
-  const wlcAps = state.wlcAps || {};
-
-  let output = '\nAP Summary\n';
-  output += '----------\n';
-  output += 'AP Name           MAC Address      IP Address       Status         Model           WLANs\n';
-  output += '----------------  ---------------  ---------------  -------------  --------------  -----\n';
-
-  let apCount = 0;
-
-  Object.entries(wlcAps).forEach(([apId, ap]) => {
-    if (specificAp && ap.name !== specificAp && apId !== specificAp) return;
-    apCount++;
-    const status = ap.status.padEnd(14);
-    const model = (ap.model || 'AIR-AP1852I').padEnd(15);
-    const wlanCount = ap.wlans?.length ? ap.wlans.join(',') : '-';
-    output += `${ap.name.padEnd(17)}  ${ap.macAddress.padEnd(16)}  ${(ap.ipAddress || '-').padEnd(16)}  ${status}${model}${wlanCount}\n`;
-  });
-
-  // Also show wlan0 as a local AP if configured
-  const wlan = state.ports['wlan0'];
-  if (wlan && !wlan.shutdown && wlan.wifi?.ssid) {
-    if (!specificAp || specificAp === device?.name?.toLowerCase()) {
-      apCount++;
-      output += `${(device?.name || 'AP-local').padEnd(17)}  ${state.macAddress?.padEnd(16) || '0000.0000.0000   '}  ${(wlan.ipAddress || '-').padEnd(16)}  ${'Up'.padEnd(14)}${'Built-in'.padEnd(15)}${wlan.wifi.ssid}\n`;
-    }
-  }
-
-  if (apCount === 0) {
-    output += 'No APs configured or joined.\n';
-  }
-
-  output += `\nNumber of APs: ${apCount}\n`;
-  output += '!\n';
-  return { success: true, output };
-}
-
-/**
- * Show AP Config - Display detailed AP configuration (WLC only)
- */
-function cmdShowApConfig(
-  state: SwitchState,
-  input: string,
-  ctx: CommandContext
-): CommandResult {
-  const device = ctx.devices?.find((d: CanvasDevice) => d.id === ctx.sourceDeviceId);
-  if (device && (device.type === 'switchL2' || device.type === 'switchL3')) {
-    return { success: false, error: '% Invalid command. show ap config is only available on Wireless LAN Controllers (WLC).' };
-  }
-
-  const match = input.match(/show\s+ap\s+config\s+(\S+)/i);
-  const apName = match?.[1];
-
-  const wlcAps = state.wlcAps || {};
-  const ap = apName ? Object.values(wlcAps).find(a => a.name.toLowerCase() === apName.toLowerCase()) : null;
-
-  if (apName && !ap) {
-    return { success: false, error: `% AP ${apName} not found` };
-  }
-
-  let output = '\n';
-  if (ap) {
-    output += `AP Name          : ${ap.name}\n`;
-    output += `MAC Address      : ${ap.macAddress}\n`;
-    output += `IP Address       : ${ap.ipAddress || 'Not assigned'}\n`;
-    output += `Status           : ${ap.status}\n`;
-    output += `Model            : ${ap.model || 'AIR-AP1852I'}\n`;
-    output += `AP Group         : ${ap.apGroup || 'default'}\n`;
-    const ap5ghz = ap.dot11?.['5ghz'];
-    output += `RF Channel       : ${ap5ghz?.rfChannel ?? ap.rfChannel ?? 'Auto'}\n`;
-    output += `Power Level      : ${ap5ghz?.powerConstraint ?? ap.power ?? 'Auto'}\n`;
-    output += `Uptime           : ${ap.uptime || 'Unknown'}\n`;
-    output += `Associated WLANs : ${ap.wlans?.length ? ap.wlans.join(', ') : 'None'}\n`;
-  } else {
-    if (Object.keys(wlcAps).length === 0) {
-      output += 'No APs configured.\n';
-    } else {
-      output += 'AP Name           MAC Address      Status       Uptime\n';
-      output += '----------------  ---------------  -----------  -------------------------\n';
-      Object.values(wlcAps).forEach(a => {
-        output += `${a.name.padEnd(17)}  ${a.macAddress.padEnd(16)}  ${a.status.padEnd(12)}  ${a.uptime || 'Unknown'}\n`;
-      });
-    }
-  }
-
-  output += '!\n';
-  return { success: true, output };
-}
-
-/**
- * Show AP Join Statistics - Display AP join statistics (WLC only)
- */
-function cmdShowApJoinStats(
-  state: SwitchState,
-  _input: string,
-  ctx: CommandContext
-): CommandResult {
-  const device = ctx.devices?.find((d: CanvasDevice) => d.id === ctx.sourceDeviceId);
-  if (device && (device.type === 'switchL2' || device.type === 'switchL3')) {
-    return { success: false, error: '% Invalid command. show ap join statistics is only available on Wireless LAN Controllers (WLC).' };
-  }
-
-  let output = '\nAP Join Statistics\n';
-  output += '------------------\n';
-  output += 'Total APs Discovered: 0\n';
-  output += 'Total APs Joined    : ' + Object.keys(state.wlcAps || {}).length + '\n';
-  output += 'Total APs Rejected  : 0\n';
-  output += 'Last Join Time      : N/A\n';
-  output += '\nJoin Process:\n';
-  output += '  1. Discovery Request      - Sent to WLC\n';
-  output += '  2. Discovery Response     - WLC responds\n';
-  output += '  3. Join Request           - AP requests to join\n';
-  output += '  4. Join Response          - WLC accepts join\n';
-  output += '  5. Config Download        - AP downloads config\n';
-  output += '  6. Software Download      - If version mismatch\n';
-  output += '  7. CAPWAP State           - Run state\n';
-
-  if (Object.keys(state.wlcAps || {}).length > 0) {
-    output += '\nCurrently Joined APs:\n';
-    Object.values(state.wlcAps || {}).forEach(ap => {
-      output += `  ${ap.name} (${ap.macAddress}) - ${ap.status}\n`;
-    });
-  }
-
-  output += '!\n';
-  return { success: true, output };
-}
-
 /**
  * Show SSH - Display SSH server configuration and session summary
  */
@@ -3121,26 +2729,6 @@ function cmdShowIpDhcpBinding(state: SwitchState, _input: string, ctx: CommandCo
   return { success: true, output };
 }
 
-// Helper for DHCP check
-function isIpInNetwork(ip: string, network: string, mask: string): boolean {
-  try {
-    const ipParts = ip.split('.').map(Number);
-    const netParts = network.split('.').map(Number);
-    const maskParts = mask.split('.').map(Number);
-
-    if (ipParts.length !== 4 || netParts.length !== 4 || maskParts.length !== 4) return false;
-
-    for (let i = 0; i < 4; i++) {
-      if ((ipParts[i] & maskParts[i]) !== (netParts[i] & maskParts[i])) {
-        return false;
-      }
-    }
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 /**
  * Show IP Source Binding
  */
@@ -3727,57 +3315,6 @@ function cmdShowIpAccessGroup(state: SwitchState, _input: string, _ctx: CommandC
 /**
  * Show Dot11 Associations (wireless clients)
  */
-function cmdShowDot11Associations(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  const anyState = state as SwitchState & { wirelessClients?: Array<{ iface?: string; ssid?: string; mac?: string; status?: string }> };
-  const clients = anyState.wirelessClients || [];
-  if (clients.length === 0) {
-    return { success: true, output: '\n% No wireless clients associated\n' };
-  }
-  let output = '\nInterface    SSID                         MAC Address        Status\n';
-  output += '--------     ----                         ------------       ------\n';
-  clients.forEach((c: { iface?: string; ssid?: string; mac?: string; status?: string }) => {
-    const iface = c.iface || 'Dot11Radio0';
-    const ssid = c.ssid || '-';
-    const mac = c.mac || '-';
-    const status = c.status || 'associated';
-    output += `${iface.padEnd(12)}${ssid.padEnd(30)}${mac.padEnd(18)}${status}\n`;
-  });
-  output += '!\n';
-  return { success: true, output };
-}
-
-/**
- * Show Dot11 Statistics
- */
-function cmdShowDot11Statistics(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  const anyState = state as SwitchState & { dot11Stats?: { rxPackets?: number; txPackets?: number; crcErrors?: number; retries?: number } };
-  let output = '\nDot11 Radio Statistics:\n';
-  output += `  Packets Received: ${anyState.dot11Stats?.rxPackets || 0}\n`;
-  output += `  Packets Transmitted: ${anyState.dot11Stats?.txPackets || 0}\n`;
-  output += `  CRC Errors: ${anyState.dot11Stats?.crcErrors || 0}\n`;
-  output += `  Retries: ${anyState.dot11Stats?.retries || 0}\n`;
-  output += '!\n';
-  return { success: true, output };
-}
-
-/**
- * Show WLAN details
- */
-function cmdShowWlan(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  const match = input.match(/show\s+wlan\s+(\d+)/i);
-  const wlanId = match?.[1];
-  const wlans = state.wlans || {};
-  const wlan = wlans[wlanId || ''];
-  if (!wlan) {
-    return { success: false, error: `% WLAN ${wlanId} not found` };
-  }
-  let output = `\nWLAN ID: ${wlanId}\n`;
-  output += `  Name: ${wlan.name || '-'}\n`;
-  output += `  SSID: ${wlan.ssid || '-'}\n`;
-  output += '!\n';
-  return { success: true, output };
-}
-
 /**
  * Show VTP Password
  */
