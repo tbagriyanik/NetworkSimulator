@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+import { toast } from '@/hooks/use-toast';
 
 interface CertificateData {
   studentName: string;
@@ -128,15 +129,33 @@ export const generateCertificate = async (data: CertificateData): Promise<void> 
         studentId
       }),
     });
-    if (res.ok) {
-      const json = await res.json();
-      if (json.success && json.data?.verifyCode) {
-        verifyCode = json.data.verifyCode;
-      }
+
+    if (!res.ok) {
+      let errMsg = 'Registration failed';
+      try {
+        const json = await res.json();
+        errMsg = json.error || errMsg;
+      } catch {}
+      throw new Error(errMsg);
     }
+
+    const json = await res.json();
+    if (!json.success || !json.data?.verifyCode) {
+      throw new Error(json.error || 'Failed to register certificate');
+    }
+
+    verifyCode = json.data.verifyCode;
     verifyUrl = `${PRODUCTION_URL}/verify?code=${verifyCode}`;
-  } catch {
-    verifyUrl = `${PRODUCTION_URL}/verify?code=${verifyCode}`;
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : String(error);
+    toast({
+      title: isTr ? 'Sertifika Hatası' : 'Certificate Error',
+      description: isTr
+        ? `Sertifika sunucuya kaydedilemedi: ${errMsg}`
+        : `Failed to register certificate on server: ${errMsg}`,
+      variant: 'destructive',
+    });
+    return;
   }
 
   // ─── Step 2: Fetch all resources in parallel ──────────────────────────────
