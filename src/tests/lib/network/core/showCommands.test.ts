@@ -24,7 +24,7 @@ describe('Show Commands Suite', () => {
   };
 
   it('should generate show version output', () => {
-    const output = `Cisco IOS Software, Version ${switchState.version}\nSW1 uptime is ${switchState.uptime}`;
+    const output = `netsim IOS Software, Version ${switchState.version}\nSW1 uptime is ${switchState.uptime}`;
     expect(output).toContain('16.9.1');
     expect(output).toContain('2 days');
   });

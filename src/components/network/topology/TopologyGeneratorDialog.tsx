@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState } from 'react';
 import {
@@ -12,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Sparkles, Loader2, RefreshCw, Layers, Compass, Server, Monitor } from 'lucide-react';
+import { Loader2, RefreshCw, Layers, Compass, Server, Monitor, Wand2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { CanvasDevice, CanvasConnection } from '../networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
@@ -48,7 +49,7 @@ export function TopologyGeneratorDialog({
     setTimeout(() => {
       try {
         const getPortType = (id: string): 'serial' | 'fastethernet' | 'gigabitethernet' => {
-          if (id.startsWith('se')) return 'serial';
+          if (id.startsWith('s')) return 'serial';
           if (id.startsWith('gi')) return 'gigabitethernet';
           return 'fastethernet';
         };
@@ -265,11 +266,11 @@ export function TopologyGeneratorDialog({
               id: p.id,
               type: getPortType(p.id),
               status: 'notconnect',
-              shutdown: (p.id === 'gi0/0' || p.id === 'se0/0/0') ? false : true,
+              shutdown: (p.id === 'gi0/0' || p.id === 's0/0/0') ? false : true,
               accessVlan: 1,
               mode: 'routed',
-              ipAddress: p.id === 'gi0/0' ? '192.168.1.1' : p.id === 'se0/0/0' ? '10.0.0.1' : undefined,
-              subnetMask: p.id === 'gi0/0' ? '255.255.255.0' : p.id === 'se0/0/0' ? '255.255.255.252' : undefined,
+              ipAddress: p.id === 'gi0/0' ? '192.168.1.1' : p.id === 's0/0/0' ? '10.0.0.1' : undefined,
+              subnetMask: p.id === 'gi0/0' ? '255.255.255.0' : p.id === 's0/0/0' ? '255.255.255.252' : undefined,
             };
           });
           generatedDeviceStates.set(r1Id, r1State);
@@ -308,11 +309,11 @@ export function TopologyGeneratorDialog({
               id: p.id,
               type: getPortType(p.id),
               status: 'notconnect',
-              shutdown: (p.id === 'gi0/0' || p.id === 'se0/0/0') ? false : true,
+              shutdown: (p.id === 'gi0/0' || p.id === 's0/0/0') ? false : true,
               accessVlan: 1,
               mode: 'routed',
-              ipAddress: p.id === 'gi0/0' ? '192.168.2.1' : p.id === 'se0/0/0' ? '10.0.0.2' : undefined,
-              subnetMask: p.id === 'gi0/0' ? '255.255.255.0' : p.id === 'se0/0/0' ? '255.255.255.252' : undefined,
+              ipAddress: p.id === 'gi0/0' ? '192.168.2.1' : p.id === 's0/0/0' ? '10.0.0.2' : undefined,
+              subnetMask: p.id === 'gi0/0' ? '255.255.255.0' : p.id === 's0/0/0' ? '255.255.255.252' : undefined,
             };
           });
           generatedDeviceStates.set(r2Id, r2State);
@@ -321,14 +322,14 @@ export function TopologyGeneratorDialog({
           generatedConnections.push({
             id: 'conn-r1-r2-serial',
             sourceDeviceId: r1Id,
-            sourcePort: 'se0/0/0',
+            sourcePort: 's0/0/0',
             targetDeviceId: r2Id,
-            targetPort: 'se0/0/0',
+            targetPort: 's0/0/0',
             cableType: 'serial',
             active: true,
           });
-          r1State.ports['se0/0/0'].status = 'connected';
-          r2State.ports['se0/0/0'].status = 'connected';
+          r1State.ports['s0/0/0'].status = 'connected';
+          r2State.ports['s0/0/0'].status = 'connected';
 
           // Add SW1 & SW2
           const sw1: CanvasDevice = {
@@ -666,11 +667,11 @@ export function TopologyGeneratorDialog({
               id: p.id,
               type: getPortType(p.id),
               status: 'notconnect',
-              shutdown: (p.id === 'gi0/0' || p.id === 'se0/0/0') ? false : true,
+              shutdown: (p.id === 'gi0/0' || p.id === 's0/0/0') ? false : true,
               accessVlan: 1,
               mode: 'routed',
-              ipAddress: p.id === 'gi0/0' ? '192.168.1.1' : p.id === 'se0/0/0' ? '10.0.0.1' : undefined,
-              subnetMask: p.id === 'gi0/0' ? '255.255.255.0' : p.id === 'se0/0/0' ? '255.255.255.252' : undefined,
+              ipAddress: p.id === 'gi0/0' ? '192.168.1.1' : p.id === 's0/0/0' ? '10.0.0.1' : undefined,
+              subnetMask: p.id === 'gi0/0' ? '255.255.255.0' : p.id === 's0/0/0' ? '255.255.255.252' : undefined,
             };
           });
           generatedDeviceStates.set(r1Id, r1State);
@@ -713,11 +714,11 @@ export function TopologyGeneratorDialog({
               id: p.id,
               type: getPortType(p.id),
               status: 'notconnect',
-              shutdown: (p.id === 'gi0/0' || p.id === 'se0/0/0') ? false : true,
+              shutdown: (p.id === 'gi0/0' || p.id === 's0/0/0') ? false : true,
               accessVlan: 1,
               mode: 'routed',
-              ipAddress: p.id === 'gi0/0' ? '192.168.2.1' : p.id === 'se0/0/0' ? '10.0.0.2' : undefined,
-              subnetMask: p.id === 'gi0/0' ? '255.255.255.0' : p.id === 'se0/0/0' ? '255.255.255.252' : undefined,
+              ipAddress: p.id === 'gi0/0' ? '192.168.2.1' : p.id === 's0/0/0' ? '10.0.0.2' : undefined,
+              subnetMask: p.id === 'gi0/0' ? '255.255.255.0' : p.id === 's0/0/0' ? '255.255.255.252' : undefined,
             };
           });
           generatedDeviceStates.set(r2Id, r2State);
@@ -726,14 +727,14 @@ export function TopologyGeneratorDialog({
           generatedConnections.push({
             id: 'conn-r1-r2-serial',
             sourceDeviceId: r1Id,
-            sourcePort: 'se0/0/0',
+            sourcePort: 's0/0/0',
             targetDeviceId: r2Id,
-            targetPort: 'se0/0/0',
+            targetPort: 's0/0/0',
             cableType: 'serial',
             active: true,
           });
-          r1State.ports['se0/0/0'].status = 'connected';
-          r2State.ports['se0/0/0'].status = 'connected';
+          r1State.ports['s0/0/0'].status = 'connected';
+          r2State.ports['s0/0/0'].status = 'connected';
 
           // Add SW1 & SW2
           const sw1: CanvasDevice = {
@@ -878,7 +879,7 @@ export function TopologyGeneratorDialog({
       <DialogContent className={`${isDark ? 'bg-secondary-900 border-success-500/30 text-white' : 'bg-white border-success-500 text-secondary-900'} sm:max-w-md rounded-none md:rounded-3xl shadow-2xl`}>
         <DialogHeader>
           <DialogTitle className="text-lg font-bold flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-purple-500 animate-pulse" />
+            <Wand2 className="w-5 h-5 text-purple-500 animate-pulse" />
             {isTr ? 'Otomatik Topoloji Üretici' : 'Automatic Topology Generator'}
           </DialogTitle>
           <DialogDescription className={isDark ? 'text-secondary-400' : 'text-secondary-500'}>
@@ -954,7 +955,7 @@ export function TopologyGeneratorDialog({
             {t.cancel}
           </Button>
           <Button onClick={handleGenerate} className="bg-purple-600 hover:bg-purple-700 text-white font-bold" disabled={isLoading}>
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Sparkles className="w-4 h-4 mr-1" />}
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Wand2 className="w-4 h-4 mr-1" />}
             {isTr ? 'Üret' : 'Generate'}
           </Button>
         </div>

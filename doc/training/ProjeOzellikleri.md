@@ -12,7 +12,7 @@
 - Spatial partitioning (100+ cihazda yüksek performans optimizasyonu).
 
 ### ⌨️ CLI / Terminal
-- Gerçek Cisco IOS benzeri komut satırı (user, privileged, global-config, interface, line, vlan, router-config ve adlandırılmış-ACL modları).
+- Gerçek IOS benzeri komut satırı (user, privileged, global-config, interface, line, vlan, router-config ve adlandırılmış-ACL modları).
 - Tab tuşu ile otomatik komut tamamlama.
 - Komut geçmişi (Yukarı/Aşağı ok tuşları, kalıcı state).
 - Pipe filtreleme (`show run | include` vb.).
@@ -91,7 +91,7 @@
 - Spatial partitioning (optimized high performance for 100+ devices).
 
 ### ⌨️ CLI / Terminal
-- Realistic Cisco IOS-like command-line interface (user, privileged, global-config, interface, line, vlan, router-config, and named-ACL modes).
+- Realistic IOS-like command-line interface (user, privileged, global-config, interface, line, vlan, router-config, and named-ACL modes).
 - Tab completion for command auto-suggest.
 - Command history (Arrow Up/Down, persisted state).
 - Pipe filtering (e.g., `show run | include`).

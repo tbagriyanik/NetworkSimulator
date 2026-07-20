@@ -502,19 +502,23 @@ export function useCanvasActions({
             if (cli) {
               summaryText += isTr ? `\n  [CLI Komutları]:\n` : `\n  [CLI Commands]:\n`;
               summaryText += `    enable\n    configure terminal\n    hostname ${d.name}\n${cli}`;
+            }
           }
-        }
-
-        summaryText += '\n';
+          summaryText += '\n';
         });
         summaryText += '------------------------\n';
       });
     }
 
+    // Place the summary note to the right of all devices to prevent overlapping
+    const maxX = devices.length > 0 ? Math.max(...devices.map(d => d.x)) : 600;
+    const noteX = Math.max(750, maxX + 150);
+    const noteY = 50;
+
     const newNote: CanvasNote = {
       id: getNextNoteId(),
-      x: 150 + Math.random() * 50,
-      y: 150 + Math.random() * 50,
+      x: noteX,
+      y: noteY,
       width: 450,
       height: Math.min(400, Math.max(200, 50 + devices.length * 100)),
       text: summaryText.trim(),

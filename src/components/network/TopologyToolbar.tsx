@@ -20,7 +20,7 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { DeviceIcon } from '@/components/network/DeviceIcon';
-import {   ChevronDown, Plus, Undo2, Redo2, Search, X, Cable, LineSquiggle, Leaf, Plug, TrendingUpDown, Users, UserKey, Activity, Sparkles } from 'lucide-react';
+import {   ChevronDown, Plus, Undo2, Redo2, Search, X, Cable, LineSquiggle, Leaf, Plug, TrendingUpDown, Users, UserKey, Activity } from 'lucide-react';
 import type { Translations } from '@/contexts/LanguageContext';
 import type { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
 import type { SwitchState, CableType, CableInfo } from '@/lib/network/types';
@@ -544,23 +544,6 @@ className="h-8 w-8 p-0 text-warning-500 hover:bg-warning-500/10"
         <TooltipContent>{t.addNote}</TooltipContent>
       </Tooltip>
 
-      {/* Topology Generator Button */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            aria-label={t.topologyGenerator}
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-purple-500 hover:bg-purple-500/10"
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent('trigger-topology-generator'));
-            }}
-          >
-            <Sparkles className={cn("w-4 h-4 animate-pulse", toolbarGlowClass)} />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{t.topologyGenerator}</TooltipContent>
-      </Tooltip>
 
 
       {/* Environment Settings Button */}

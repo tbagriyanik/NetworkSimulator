@@ -17,7 +17,7 @@ describe('System Commands', () => {
   });
 
   it('should configure enable password', () => {
-    const cmd = 'enable password cisco';
+    const cmd = 'enable password netsim';
     expect(cmd).toContain('enable password');
   });
 

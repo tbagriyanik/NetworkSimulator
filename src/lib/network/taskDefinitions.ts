@@ -50,7 +50,7 @@ export const portTasks: TaskDefinition[] = [
     description: { tr: 'En az 1 portu aktif hale getirin', en: 'Activate at least 1 port' },
     tip: { tr: 'no shutdown komutu ile port açın', en: 'Use no shutdown command to open port' },
     weight: 20,
-    checkFn: (state) => Object.values(state.ports).filter(p => !p.shutdown).length > 0,
+    checkFn: (state) => Object.values(state.ports || {}).filter(p => !p.shutdown).length > 0,
   },
   {
     id: 'create-trunk',
@@ -58,7 +58,7 @@ export const portTasks: TaskDefinition[] = [
     description: { tr: 'Bir portu trunk moduna alın', en: 'Set a port to trunk mode' },
     tip: { tr: 'switchport mode trunk komutunu kullanın', en: 'Use switchport mode trunk command' },
     weight: 25,
-    checkFn: (state) => Object.values(state.ports).some(p => p.mode === 'trunk'),
+    checkFn: (state) => Object.values(state.ports || {}).some(p => p.mode === 'trunk'),
   },
   {
     id: 'add-description',
@@ -66,7 +66,7 @@ export const portTasks: TaskDefinition[] = [
     description: { tr: 'Portlara açıklayıcı isim verin', en: 'Add descriptive names to ports' },
     tip: { tr: 'description isim komutu ile ekleyin', en: 'Add with description name command' },
     weight: 20,
-    checkFn: (state) => Object.values(state.ports).some(p => !!(p.description?.trim() || p.name?.trim())),
+    checkFn: (state) => Object.values(state.ports || {}).some(p => !!(p.description?.trim() || p.name?.trim())),
   },
   {
     id: 'configure-speed',
@@ -74,7 +74,7 @@ export const portTasks: TaskDefinition[] = [
     description: { tr: 'Port hızını manuel ayarlayın', en: 'Manually configure port speed' },
     tip: { tr: 'speed 100 veya speed 1000 kullanın', en: 'Use speed 100 or speed 1000' },
     weight: 15,
-    checkFn: (state) => Object.values(state.ports).some(p => p.speed !== 'auto'),
+    checkFn: (state) => Object.values(state.ports || {}).some(p => p.speed !== 'auto'),
   },
   {
     id: 'configure-duplex',
@@ -82,7 +82,7 @@ export const portTasks: TaskDefinition[] = [
     description: { tr: 'Port duplex ayarını yapın', en: 'Configure port duplex setting' },
     tip: { tr: 'duplex full veya duplex half kullanın', en: 'Use duplex full or duplex half' },
     weight: 10,
-    checkFn: (state) => Object.values(state.ports).some(p => p.duplex !== 'auto'),
+    checkFn: (state) => Object.values(state.ports || {}).some(p => p.duplex !== 'auto'),
   },
   {
     id: 'all-ports-up',
@@ -90,7 +90,7 @@ export const portTasks: TaskDefinition[] = [
     description: { tr: 'Tüm portları aktif edin', en: 'Activate all ports' },
     tip: { tr: 'interface range ile toplu işlem yapın', en: 'Use interface range for bulk operation' },
     weight: 10,
-    checkFn: (state) => Object.values(state.ports).filter(p => !p.shutdown).length === Object.keys(state.ports).length,
+    checkFn: (state) => Object.values(state.ports || {}).filter(p => !p.shutdown).length === Object.keys(state.ports || {}).length,
   },
 ];
 
@@ -102,7 +102,7 @@ export const vlanTasks: TaskDefinition[] = [
     description: { tr: 'En az 1 kullanıcı VLAN\'ı oluşturun', en: 'Create at least 1 user VLAN' },
     tip: { tr: 'vlan 10 komutu ile yeni VLAN açın', en: 'Open new VLAN with vlan 10 command' },
     weight: 20,
-    checkFn: (state) => Object.values(state.vlans).filter(v => v.id > 1 && v.id < 1002).length >= 1,
+    checkFn: (state) => Object.values(state.vlans || {}).filter(v => v.id > 1 && v.id < 1002).length >= 1,
   },
   {
     id: 'name-vlan',
@@ -110,7 +110,7 @@ export const vlanTasks: TaskDefinition[] = [
     description: { tr: 'VLAN\'lara anlamlı isim verin', en: 'Give meaningful names to VLANs' },
     tip: { tr: 'name Muhasebe komutu ile isimlendirin', en: 'Name with name Accounting command' },
     weight: 15,
-    checkFn: (state) => Object.values(state.vlans).some(v => v.id > 1 && v.id < 1002 && v.name !== `VLAN${v.id}`),
+    checkFn: (state) => Object.values(state.vlans || {}).some(v => v.id > 1 && v.id < 1002 && v.name !== `VLAN${v.id}`),
   },
   {
     id: 'assign-port',
@@ -118,7 +118,7 @@ export const vlanTasks: TaskDefinition[] = [
     description: { tr: 'Portları VLAN\'lara atayın', en: 'Assign ports to VLANs' },
     tip: { tr: 'switchport access vlan 10 komutu ile', en: 'Use switchport access vlan 10 command' },
     weight: 20,
-    checkFn: (state) => Object.values(state.ports).filter(p => Number(p.accessVlan || p.vlan || 1) !== 1 && !p.shutdown).length >= 1,
+    checkFn: (state) => Object.values(state.ports || {}).filter(p => Number(p.accessVlan || p.vlan || 1) !== 1 && !p.shutdown).length >= 1,
   },
   {
     id: 'multiple-vlans',
@@ -126,7 +126,7 @@ export const vlanTasks: TaskDefinition[] = [
     description: { tr: 'En az 3 farklı VLAN oluşturun', en: 'Create at least 3 different VLANs' },
     tip: { tr: 'Her departman için ayrı VLAN açın', en: 'Create separate VLAN for each department' },
     weight: 20,
-    checkFn: (state) => Object.values(state.vlans).filter(v => v.id > 1 && v.id < 1002).length >= 3,
+    checkFn: (state) => Object.values(state.vlans || {}).filter(v => v.id > 1 && v.id < 1002).length >= 3,
   },
   {
     id: 'trunk-config',
@@ -134,7 +134,7 @@ export const vlanTasks: TaskDefinition[] = [
     description: { tr: 'Trunk portları yapılandırın', en: 'Configure trunk ports' },
     tip: { tr: 'Trunk portlar birden fazla VLAN taşır', en: 'Trunk ports carry multiple VLANs' },
     weight: 15,
-    checkFn: (state) => Object.values(state.ports).some(p => p.mode === 'trunk'),
+    checkFn: (state) => Object.values(state.ports || {}).some(p => p.mode === 'trunk'),
   },
   {
     id: 'all-named',
@@ -143,7 +143,7 @@ export const vlanTasks: TaskDefinition[] = [
     tip: { tr: 'Standart isimlendirme kuralı uygulayın', en: 'Apply standard naming convention' },
     weight: 10,
     checkFn: (state) => {
-      const userVlans = Object.values(state.vlans).filter(v => v.id > 1 && v.id < 1002);
+      const userVlans = Object.values(state.vlans || {}).filter(v => v.id > 1 && v.id < 1002);
       const namedVlans = userVlans.filter(v => v.name !== `VLAN${v.id}`);
       return userVlans.length > 0 && namedVlans.length === userVlans.length;
     },
@@ -158,7 +158,7 @@ export const securityTasks: TaskDefinition[] = [
     description: { tr: 'Privileged mode için şifre belirleyin', en: 'Set password for privileged mode' },
     tip: { tr: 'enable secret network komutu ile', en: 'Use enable secret network command' },
     weight: 25,
-    checkFn: (state) => !!state.security.enableSecret,
+    checkFn: (state) => !!state.security?.enableSecret,
   },
   {
     id: 'console-security',
@@ -166,7 +166,7 @@ export const securityTasks: TaskDefinition[] = [
     description: { tr: 'Console erişimine şifre koyun', en: 'Secure console access with password' },
     tip: { tr: 'line console 0 altında password kullanın', en: 'Use password under line console 0' },
     weight: 20,
-    checkFn: (state) => state.security.consoleLine.login && !!state.security.consoleLine.password,
+    checkFn: (state) => state.security?.consoleLine?.login && !!state.security?.consoleLine?.password,
   },
   {
     id: 'vty-security',
@@ -174,7 +174,7 @@ export const securityTasks: TaskDefinition[] = [
     description: { tr: 'Uzaktan erişimi güvenli hale getirin', en: 'Secure remote access' },
     tip: { tr: 'line vty 0 4 altında login local kullanın', en: 'Use login local under line vty 0 4' },
     weight: 20,
-    checkFn: (state) => state.security.vtyLines.login && !!state.security.vtyLines.password,
+    checkFn: (state) => state.security?.vtyLines?.login && !!state.security?.vtyLines?.password,
   },
   {
     id: 'password-encryption',
@@ -182,7 +182,7 @@ export const securityTasks: TaskDefinition[] = [
     description: { tr: 'Şifreleri şifreli olarak saklayın', en: 'Store passwords in encrypted form' },
     tip: { tr: 'service password-encryption komutu ile', en: 'Use service password-encryption command' },
     weight: 15,
-    checkFn: (state) => state.security.servicePasswordEncryption,
+    checkFn: (state) => state.security?.servicePasswordEncryption,
   },
   {
     id: 'ssh-only',
@@ -190,7 +190,7 @@ export const securityTasks: TaskDefinition[] = [
     description: { tr: 'Sadece SSH ile erişime izin verin', en: 'Allow only SSH access' },
     tip: { tr: 'transport input ssh komutu ile', en: 'Use transport input ssh command' },
     weight: 10,
-    checkFn: (state) => state.security.vtyLines.transportInput.includes('ssh'),
+    checkFn: (state) => state.security?.vtyLines?.transportInput?.includes('ssh'),
   },
   {
     id: 'create-user',
@@ -198,7 +198,7 @@ export const securityTasks: TaskDefinition[] = [
     description: { tr: 'Yerel kullanıcı hesabı oluşturun', en: 'Create local user account' },
     tip: { tr: 'username admin secret network ile', en: 'Use username admin secret network' },
     weight: 10,
-    checkFn: (state) => state.security.users.length > 0,
+    checkFn: (state) => (state.security?.users || []).length > 0,
   },
 ];
 
@@ -215,7 +215,7 @@ export const wirelessTasks: TaskDefinition[] = [
     checkFn: (state, ctx) => {
       // L2 switches don't have wireless support (no WLC)
       if (ctx.selectedDevice === 'switchL2') return false;
-      const wlan = state.ports['wlan0'];
+      const wlan = state.ports?.['wlan0'];
       return wlan && !wlan.shutdown;
     },
   },
@@ -229,7 +229,7 @@ export const wirelessTasks: TaskDefinition[] = [
     checkFn: (state, ctx) => {
       // L2 switches don't have wireless support (no WLC)
       if (ctx.selectedDevice === 'switchL2') return false;
-      const wlan = state.ports['wlan0'];
+      const wlan = state.ports?.['wlan0'];
       return !!wlan?.wifi?.ssid;
     },
   },
@@ -243,7 +243,7 @@ export const wirelessTasks: TaskDefinition[] = [
     checkFn: (state, ctx) => {
       // L2 switches don't have wireless support (no WLC)
       if (ctx.selectedDevice === 'switchL2') return false;
-      const wlan = state.ports['wlan0'];
+      const wlan = state.ports?.['wlan0'];
       return !!(wlan?.wifi && wlan.wifi.mode !== 'disabled' && wlan.wifi.security === 'wpa2' && wlan.wifi.password);
     },
   },
@@ -257,7 +257,7 @@ export const wirelessTasks: TaskDefinition[] = [
     checkFn: (state, ctx) => {
       // L2 switches don't have wireless support (no WLC)
       if (ctx.selectedDevice === 'switchL2') return false;
-      const wlan = state.ports['wlan0'];
+      const wlan = state.ports?.['wlan0'];
       return !!(wlan && !wlan.shutdown && wlan.wifi?.mode === 'ap' && wlan.wifi.ssid);
     },
   },

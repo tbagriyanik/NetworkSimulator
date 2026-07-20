@@ -21,7 +21,7 @@ import {
 import { cn } from '@/lib/utils';
 import {
   Menu, Plus, Save, FolderOpen, Languages, Sun, Moon, File, Undo2, Redo2, BookOpen, Leaf, Compass, Info, Sparkles, Cloud, Trophy,
-  Mail, GraduationCap, ImageDown, FileText
+  Mail, GraduationCap, ImageDown, FileText, Wand2
 } from 'lucide-react';
 import type { Translations } from '@/contexts/LanguageContext';
 import type { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
@@ -245,7 +245,7 @@ export function AppHeader({
                         className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50", isDark ? 'text-secondary-300 hover:text-primary-400 hover:bg-secondary-700/50' : 'text-secondary-600 hover:text-primary-600')}
                         onClick={() => window.dispatchEvent(new CustomEvent('trigger-topology-generator'))}
                       >
-                        <Sparkles className="w-4 h-4 text-purple-500 animate-pulse" />
+                        <Wand2 className="w-4 h-4 text-purple-500 animate-pulse" />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent className="flex items-center gap-2">
@@ -402,6 +402,19 @@ export function AppHeader({
                         onClick={() => { setShowProjectPicker(true); setShowMobileMenu(false); }}
                       >
                         <File className="w-3.5 h-3.5 flex-shrink-0" /> <span>{t.new}</span>
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        className={`justify-start gap-2 h-9 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover ${isDark ? 'hover:text-purple-400' : 'hover:text-purple-600'}`}
+                        onClick={() => {
+                          if (typeof window !== 'undefined') {
+                            window.dispatchEvent(new CustomEvent('trigger-topology-generator'));
+                          }
+                          setShowMobileMenu(false);
+                        }}
+                      >
+                        <Wand2 className="w-3.5 h-3.5 flex-shrink-0 text-purple-500" />
+                        <span>{t.topologyGenerator}</span>
                       </Button>
                       <Button
                         variant="secondary"

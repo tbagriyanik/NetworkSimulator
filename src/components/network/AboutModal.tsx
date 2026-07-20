@@ -302,7 +302,7 @@ export function AboutModal({ isOpen, onClose, onStartTour }: AboutModalProps) {
                       {isTR ? 'Sürüm' : 'Version'}
                     </span>
                     <span className="text-sm font-semibold text-secondary-800 dark:text-secondary-200">
-                      {process.env.NEXT_PUBLIC_APP_VERSION || '1.9.9'}
+                      {process.env.NEXT_PUBLIC_APP_VERSION || '2.0.0'}
                     </span>
                   </div>
                   <div className="flex flex-col">

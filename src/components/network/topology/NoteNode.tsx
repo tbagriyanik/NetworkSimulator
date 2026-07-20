@@ -78,7 +78,6 @@ export const NoteNode = memo(function NoteNode({
   const [matchIndex, setMatchIndex] = React.useState(-1);
   const [lastQuery, setLastQuery] = React.useState('');
 
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const handleSearchNext = React.useCallback(() => {
     const textarea = noteTextareaRefs.current[note.id];
     if (!textarea || !searchQuery) return;
@@ -123,7 +122,6 @@ export const NoteNode = memo(function NoteNode({
     const prefix = textarea.value.substring(0, start);
     const numLines = prefix.split('\n').length;
     const lineHeight = 16; // approximate line height in px
-    // eslint-disable-next-line react-hooks/immutability
     textarea.scrollTop = Math.max(0, (numLines - 3) * lineHeight);
   }, [note.id, searchQuery, lastQuery, matchIndex, noteTextareaRefs]);
 
@@ -344,7 +342,6 @@ export const NoteNode = memo(function NoteNode({
         >
           <textarea
             aria-label={language === 'tr' ? 'Not içeriği' : 'Note content'}
-            // eslint-disable-next-line react-hooks/immutability
             ref={(el) => { noteTextareaRefs.current[note.id] = el; }}
             value={note.text}
             onChange={(e) => updateNoteText(note.id, e.target.value)}

@@ -17,9 +17,9 @@ graph TB
         PC4["🖥️ PC-4 (Sunucu)<br/>192.168.30.10/24<br/>Gateway: 192.168.30.1"]
     end
 
-    SW1["🔀 Cisco WS-C2960-24TT-L<br/>SW1<br/>─────────────<br/>Fa0/1 → VLAN 10 Access<br/>Fa0/2 → VLAN 20 Access<br/>Fa0/3 → VLAN 20 Access<br/>Fa0/4 → VLAN 30 Access<br/>Gi0/1 → Trunk (VLAN 10,20,30)"]
+    SW1["🔀 WS-C2960-24TT-L<br/>SW1<br/>─────────────<br/>Fa0/1 → VLAN 10 Access<br/>Fa0/2 → VLAN 20 Access<br/>Fa0/3 → VLAN 20 Access<br/>Fa0/4 → VLAN 30 Access<br/>Gi0/1 → Trunk (VLAN 10,20,30)"]
 
-    R1["🌐 Cisco Router<br/>R1<br/>─────────────<br/>Gi0/0.10 → 192.168.10.1/24<br/>Gi0/0.20 → 192.168.20.1/24<br/>Gi0/0.30 → 192.168.30.1/24<br/>Router-on-a-Stick"]
+    R1["🌐 Router<br/>R1<br/>─────────────<br/>Gi0/0.10 → 192.168.10.1/24<br/>Gi0/0.20 → 192.168.20.1/24<br/>Gi0/0.30 → 192.168.30.1/24<br/>Router-on-a-Stick"]
 
     PC1 -->|"Straight Cable<br/>Fa0/1"| SW1
     PC2 -->|"Straight Cable<br/>Fa0/2"| SW1
