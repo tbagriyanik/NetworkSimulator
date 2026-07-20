@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { CanvasNote, CanvasDevice, CanvasConnection } from '../networkTopology.types';
 
@@ -36,7 +36,14 @@ export interface NoteNodeProps {
   bringNoteToFront: (id: string) => void;
 }
 
-export function NoteNode({
+/**
+ * NoteNode Component - Rendered on the SVG Canvas
+ *
+ * BOLT: Wrapped with `memo` to prevent unnecessary re-renders when panning/zooming the canvas,
+ * or when dragging/modifying other devices or notes. Re-renders will only trigger if the note
+ * itself, selection states, or relevant config props actually change.
+ */
+export const NoteNode = memo(function NoteNode({
   note,
   isDark,
   selectedNoteIds,
@@ -410,4 +417,4 @@ export function NoteNode({
       </div>
     </foreignObject>
   );
-}
+});
