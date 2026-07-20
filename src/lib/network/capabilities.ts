@@ -19,7 +19,7 @@ export function getDeviceCapabilities(device?: Pick<CanvasDevice, 'type'> | null
     routing: type === 'router' || isL3Switch,
     switching: isSwitch,
     firewall: type === 'firewall',
-    wirelessController: type === 'router' || type === 'firewall' || isWLC,
+    wirelessController: isWLC,
     wlc: isWLC,
   };
 }

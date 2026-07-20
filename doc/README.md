@@ -151,7 +151,7 @@ Kaynak kodları inceleyin
 
 | Metrik | Değer |
 |--------|-------|
-| **Dokümantasyon Sayfaları** | 17 (6 kategoride) |
+| **Dokümantasyon Sayfaları** | 19 (6 kategoride) |
 | **Toplam Okuma Süresi** | ~350 dakika |
 | **Toplam Kaynak Satırı** | 111.140 |
 | **Test Sayısı** | 552 (52 dosya) |

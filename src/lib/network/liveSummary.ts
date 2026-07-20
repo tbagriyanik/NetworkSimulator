@@ -24,12 +24,6 @@ export function computeLiveSummary(
         else if (r.type === 'dynamic') dynamicRoutes++;
       });
     });
-    Object.values(state.ports).forEach((port) => {
-      if (port.ipAddress && port.subnetMask) {
-        totalRoutes++;
-        connectedRoutes++;
-      }
-    });
     if (state.ospfAreas && state.ospfAreas.length > 0) {
       ospfCount++;
       ospfNeighbors += (state.ospfNeighbors || []).length;
@@ -40,13 +34,15 @@ export function computeLiveSummary(
       }
     });
     const hasRootPort = Object.values(state.ports).some(p => p.spanningTree?.role === 'root');
-    const isSwitch = devices.find(d => d.id === deviceId)?.type.startsWith('switch');
+    const device = devices.find(d => d.id === deviceId);
+    const isSwitch = device ? device.type.startsWith('switch') : false;
     if (isSwitch && !hasRootPort && Object.values(state.ports).some(p => p.spanningTree)) {
       stpRootCount++;
     }
     Object.values(state.ports).forEach(port => {
-      if (port.hsrp?.groups) {
-        Object.values(port.hsrp.groups).forEach(group => {
+      const groups = port.hsrp?.groups;
+      if (groups) {
+        Object.values(groups).forEach(group => {
           if (group.state === 'Active') hsrpActive++;
           if (group.state === 'Standby') hsrpStandby++;
         });

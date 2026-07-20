@@ -4,9 +4,9 @@
  */
 
 /**
- * Checks if two string arrays are equal by length and content.
+ * Checks if two arrays are equal by length and content.
  */
-export function areArraysEqual(a: string[] | undefined | null, b: string[] | undefined | null): boolean {
+export function areArraysEqual<T>(a: T[] | undefined | null, b: T[] | undefined | null): boolean {
   if (a === b) return true;
   if (!a || !b) return false;
   if (a.length !== b.length) return false;

@@ -80,8 +80,10 @@ describe('computeLiveSummary', () => {
     expect(result.routingTableSummary).toEqual({ totalRoutes: 2, connected: 0, static: 1, dynamic: 1 });
   });
 
-  it('should count connected routes from ports with ip/subnet', () => {
-    const state = mockState({ ports: { 'Fa0/1': { ...basePort, id: 'Fa0/1', name: 'Fa0/1', status: 'connected', ipAddress: '10.0.0.1', subnetMask: '255.255.255.0' } } });
+  it('should count connected routes from route entries', () => {
+    const state = mockState({
+      staticRoutes: [{ destination: '10.0.0.0', subnetMask: '255.255.255.0', nextHop: '0.0.0.0', type: 'connected', interface: 'Fa0/1' }],
+    });
     const result = assertResult(computeLiveSummary([], [], new Map([['sw1', state]])));
     expect(result.routingTableSummary).toEqual({ totalRoutes: 1, connected: 1, static: 0, dynamic: 0 });
   });

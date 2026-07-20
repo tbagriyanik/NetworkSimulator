@@ -351,7 +351,7 @@ doc/
 | applicationProperties.md | 40.4 KB | 30 min |
 | examples.md | 55.2 KB | 45 min |
 | details.md | 24.6 KB | 10 min |
-| **Toplam (17 dosya, 6 kategori)** | — | **~340-420 min** |
+| **Toplam (19 dosya, 6 kategori)** | — | **~340-420 min** |
 
 ---
 

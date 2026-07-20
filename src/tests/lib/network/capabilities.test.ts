@@ -38,7 +38,7 @@ describe('getDeviceCapabilities', () => {
     const result = getDeviceCapabilities({ type: 'firewall' });
     expect(result.firewall).toBe(true);
     expect(result.routing).toBe(false);
-    expect(result.wirelessController).toBe(true);
+    expect(result.wirelessController).toBe(false);
   });
 
   it('should detect WLC capabilities', () => {
