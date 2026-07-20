@@ -72,7 +72,7 @@ export function usePCPanelRouterAdmin({
 
       if (data.type === 'router-admin-toast') {
         const payload = data.payload || {};
-        console.log('[router-admin-toast]', payload.message || '');
+        logger.debug('[router-admin-toast]', payload.message || '');
         return;
       }
 

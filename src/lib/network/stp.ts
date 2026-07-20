@@ -39,10 +39,10 @@ function isBpduSuperior(newBp: Bpdu, currentBp: Bpdu): boolean {
  * Format: priority.mac (e.g., "32768.0000.0000.0001")
  */
 function calculateBridgeId(priority: number, mac: string | undefined): string {
-  const cleanMac = (mac || '0000.0000.0000').replace(/[:.-]/g, '').toLowerCase();
-  // Ensure MAC is formatted as XXXX.XXXX.XXXX
-  const formattedMac = cleanMac.match(/.{1,4}/g)?.join('.') || cleanMac;
-  // Pad priority to 5 digits to ensure correct lexicographical comparison
+  let cleanMac = (mac || '000000000000').replace(/[:.-]/g, '').toLowerCase();
+  cleanMac = cleanMac.padEnd(12, '0').slice(0, 12);
+  const match = cleanMac.match(/.{1,4}/g);
+  const formattedMac = match ? match.join('.') : cleanMac;
   return `${priority.toString().padStart(5, '0')}.${formattedMac}`;
 }
 

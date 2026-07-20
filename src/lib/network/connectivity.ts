@@ -6,43 +6,17 @@ import { learnMacAddress, findMacPort } from './macLearning';
 import { ensureDeviceStatesMap } from './networkUtils';
 import { recalculateStp } from './stp';
 import { normalizePortId } from './initialState';
+import { getDeviceWifiConfig, getWirelessSignalStrength, getWirelessDistance, buildImplicitWirelessConnections, type DeviceWifiConfig } from './wireless';
+import { isExternalDomain, resolveHostname } from './dns';
 
-type WifiMode = 'ap' | 'client' | 'disabled' | 'sta';
-
-export interface DeviceWifiConfig {
-  enabled: boolean;
-  ssid: string;
-  bssid?: string;
-  password?: string;
-  security: 'open' | 'wpa' | 'wpa2' | 'wpa3';
-  channel: '2.4GHz' | '5GHz';
-  mode: WifiMode;
-  hidden?: boolean;
-  maxClients?: number;
-}
-
-const normalizeWifiMode = (mode: string | undefined, fallback: WifiMode): WifiMode => {
-  if (!mode) return fallback;
-  const words = mode.toLowerCase();
-  if (words === 'ap') return 'ap';
-  if (words === 'client') return 'client';
-  if (words === 'sta') return 'sta';
-  if (words === 'disabled') return 'disabled';
-  return fallback;
-};
-
-const normalizeSecurity = (security: string | undefined): DeviceWifiConfig['security'] => {
-  const value = security ? security.toLowerCase() : 'open';
-  if (value === 'wpa3') return 'wpa3';
-  if (value === 'wpa2') return 'wpa2';
-  if (value === 'wpa') return 'wpa';
-  return 'open';
-};
-
-const normalizeChannel = (channel: string | undefined): DeviceWifiConfig['channel'] => {
-  const value = channel ? channel.toLowerCase() : '2.4ghz';
-  if (value === '5ghz') return '5GHz';
-  return '2.4GHz';
+export {
+  getDeviceWifiConfig,
+  getWirelessSignalStrength,
+  getWirelessDistance,
+  buildImplicitWirelessConnections,
+  type DeviceWifiConfig,
+  isExternalDomain,
+  resolveHostname
 };
 
 /**
@@ -137,427 +111,9 @@ function checkPortSecurityViolation(
   return null;
 }
 
-export function getDeviceWifiConfig(device: CanvasDevice | undefined, deviceStates?: Map<string, SwitchState>): DeviceWifiConfig | undefined {
-  if (!device) return undefined;
-  const safeDeviceStates = ensureDeviceStatesMap(deviceStates);
-  const state = safeDeviceStates?.get(device.id);
-  const wlanState: Port | undefined = state?.ports['wlan0'];
-  const defaultMode: WifiMode = device.type === 'pc' ? 'client' : 'ap';
 
-  if (wlanState?.wifi?.ssid) {
-    const mode = normalizeWifiMode(wlanState.wifi.mode, defaultMode);
-    const enabled = mode !== 'disabled' && !(wlanState.shutdown ?? false);
-    return {
-      enabled,
-      ssid: wlanState.wifi.ssid,
-      password: wlanState.wifi.password,
-      security: normalizeSecurity(wlanState.wifi.security),
-      channel: normalizeChannel(wlanState.wifi.channel),
-      mode,
-      hidden: wlanState.wifi.hidden,
-      maxClients: wlanState.wifi.maxClients,
-    };
-  }
 
-  if (device.wifi?.ssid) {
-    const mode = normalizeWifiMode(device.wifi.mode, defaultMode);
-    return {
-      enabled: device.wifi.enabled ?? true,
-      ssid: device.wifi.ssid,
-      password: device.wifi.password,
-      security: normalizeSecurity(device.wifi.security),
-      channel: normalizeChannel(device.wifi.channel),
-      mode,
-      hidden: device.wifi.hidden,
-      maxClients: device.wifi.maxClients,
-    };
-  }
 
-  const wlanPort = device.ports.find(p => p.id === 'wlan0' && p.wifi?.ssid);
-  if (wlanPort && wlanPort.wifi) {
-    const mode = normalizeWifiMode(wlanPort.wifi.mode, defaultMode);
-    return {
-      enabled: mode !== 'disabled' && !(wlanPort.shutdown ?? false),
-      ssid: wlanPort.wifi.ssid,
-      password: wlanPort.wifi.password,
-      security: normalizeSecurity(wlanPort.wifi.security),
-      channel: normalizeChannel(wlanPort.wifi.channel),
-      mode,
-      hidden: wlanPort.wifi.hidden,
-      maxClients: wlanPort.wifi.maxClients,
-    };
-  }
-
-  return undefined;
-}
-
-export function getWirelessSignalStrength(
-  device: CanvasDevice | undefined,
-  devices: CanvasDevice[] = [],
-  deviceStates?: Map<string, SwitchState>
-): number {
-  if (!device) return 0;
-  // BOLT: Resolve safeDeviceStates once outside loops
-  const safeDeviceStates = ensureDeviceStatesMap(deviceStates);
-  const pcWifi = getDeviceWifiConfig(device, safeDeviceStates);
-  if (!pcWifi || !pcWifi.enabled || !pcWifi.ssid) return 0;
-  if (pcWifi.mode !== 'client' && pcWifi.mode !== 'sta') return 0;
-
-  const targetSsid = pcWifi.ssid.toLowerCase();
-  let minDist = Infinity;
-
-  devices.forEach(dev => {
-    if (dev.id === device.id) return;
-    // BOLT: Use pre-resolved safeDeviceStates
-    const apWifi = getDeviceWifiConfig(dev, safeDeviceStates);
-    if (!apWifi || apWifi.mode !== 'ap' || !apWifi.enabled) {
-      // WLC broadcasts SSIDs through wlcWlans state
-      const devState = safeDeviceStates.get(dev.id);
-      if (devState?.wlcWlans) {
-        const wlan = Object.values(devState.wlcWlans).find(w => w.status === 'enabled' && w.ssid?.toLowerCase() === targetSsid);
-        if (!wlan) return;
-      } else {
-        return;
-      }
-    } else if (apWifi.ssid?.toLowerCase() !== targetSsid) {
-      return;
-    }
-    const dx = (device.x || 0) - (dev.x || 0);
-    const dy = (device.y || 0) - (dev.y || 0);
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist < minDist) minDist = dist;
-  });
-
-  if (minDist === Infinity) return 0;
-  if (minDist < 150) return 5;
-  if (minDist < 250) return 4;
-  if (minDist < 350) return 3;
-  if (minDist < 450) return 2;
-  if (minDist < 550) return 1;
-  return 0;
-}
-
-/**
- * Returns the distance (px) to the nearest AP with matching SSID.
- * Returns Infinity if no AP found or device is not a WiFi client.
- */
-export function getWirelessDistance(
-  device: CanvasDevice | undefined,
-  devices: CanvasDevice[] = [],
-  deviceStates?: Map<string, SwitchState>
-): number {
-  if (!device) return Infinity;
-  // BOLT: Resolve safeDeviceStates once outside loops
-  const safeDeviceStates = ensureDeviceStatesMap(deviceStates);
-  const pcWifi = getDeviceWifiConfig(device, safeDeviceStates);
-  if (!pcWifi || !pcWifi.enabled || !pcWifi.ssid) return Infinity;
-  if (pcWifi.mode !== 'client' && pcWifi.mode !== 'sta') return Infinity;
-
-  const targetSsid = pcWifi.ssid.toLowerCase();
-  let minDist = Infinity;
-
-  devices.forEach(dev => {
-    if (dev.id === device.id) return;
-    // BOLT: Use pre-resolved safeDeviceStates
-    const apWifi = getDeviceWifiConfig(dev, safeDeviceStates);
-    if (!apWifi || apWifi.mode !== 'ap' || !apWifi.enabled) {
-      // WLC broadcasts SSIDs through wlcWlans state
-      const devState = safeDeviceStates.get(dev.id);
-      if (devState?.wlcWlans) {
-        const wlan = Object.values(devState.wlcWlans).find(w => w.status === 'enabled' && w.ssid?.toLowerCase() === targetSsid);
-        if (!wlan) return;
-      } else {
-        return;
-      }
-    } else if (apWifi.ssid?.toLowerCase() !== targetSsid) {
-      return;
-    }
-    const dx = (device.x || 0) - (dev.x || 0);
-    const dy = (device.y || 0) - (dev.y || 0);
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist < minDist) minDist = dist;
-  });
-
-  return minDist;
-}
-
-function getApMaxClients(apWifi: DeviceWifiConfig | undefined): number {
-  const value = Number(apWifi?.maxClients);
-  if (!Number.isFinite(value) || value <= 0) return Number.POSITIVE_INFINITY;
-  return Math.floor(value);
-}
-
-function wifiSecurityMatches(apWifi: DeviceWifiConfig, clientWifi: DeviceWifiConfig): boolean {
-  const apSecurity = (apWifi.security || 'open').toLowerCase();
-  const clientSecurity = (clientWifi.security || 'open').toLowerCase();
-  return apSecurity === clientSecurity && (apSecurity === 'open' || apWifi.password === clientWifi.password);
-}
-
-export function buildImplicitWirelessConnections(
-  devices: CanvasDevice[],
-  deviceStates?: Map<string, SwitchState>,
-  idPrefix = 'wireless'
-): CanvasConnection[] {
-  const safeDeviceStates = ensureDeviceStatesMap(deviceStates);
-  const apDevices = devices.filter(d => d.type === 'switchL2' || d.type === 'switchL3' || d.type === 'router' || d.type === 'wlc');
-  const clientDevices = devices.filter(d => {
-    const wifi = getDeviceWifiConfig(d, safeDeviceStates);
-    return (d.type === 'pc' || d.type === 'iot') && !!wifi && wifi.enabled && !!wifi.ssid && (wifi.mode === 'client' || wifi.mode === 'sta');
-  });
-
-  const candidatesByAp = new Map<string, Array<{ client: CanvasDevice; dist: number }>>();
-
-  for (const ap of apDevices) {
-    const apWifi = getDeviceWifiConfig(ap, safeDeviceStates);
-    if (!apWifi || !apWifi.enabled || apWifi.mode !== 'ap' || !apWifi.ssid) continue;
-
-    const apSsid = apWifi.ssid.toLowerCase();
-    for (const client of clientDevices) {
-      const clientWifi = getDeviceWifiConfig(client, safeDeviceStates);
-      if (!clientWifi || !clientWifi.enabled || !clientWifi.ssid) continue;
-      if (clientWifi.bssid && clientWifi.bssid !== ap.id) continue;
-      if (clientWifi.ssid.toLowerCase() !== apSsid) continue;
-      if (!wifiSecurityMatches(apWifi, clientWifi)) continue;
-
-      const dx = (client.x || 0) - (ap.x || 0);
-      const dy = (client.y || 0) - (ap.y || 0);
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist >= 550) continue;
-
-      const list = candidatesByAp.get(ap.id) || [];
-      list.push({ client, dist });
-      candidatesByAp.set(ap.id, list);
-    }
-  }
-
-  const wirelessConnections: CanvasConnection[] = [];
-
-  for (const ap of apDevices) {
-    const apWifi = getDeviceWifiConfig(ap, safeDeviceStates);
-    const candidates = candidatesByAp.get(ap.id) || [];
-    const limit = getApMaxClients(apWifi);
-    candidates
-      .sort((a, b) => a.dist - b.dist || a.client.id.localeCompare(b.client.id))
-      .slice(0, limit)
-      .forEach(({ client }) => {
-        wirelessConnections.push({
-          id: `${idPrefix}-${client.id}-${ap.id}`,
-          sourceDeviceId: client.id,
-          sourcePort: 'wlan0',
-          targetDeviceId: ap.id,
-          targetPort: 'wlan0',
-          cableType: 'wireless',
-          active: true,
-        } as CanvasConnection);
-      });
-  }
-
-  return wirelessConnections;
-}
-
-/**
- * Check if a hostname is an external domain (not in local network)
- */
-function isExternalDomain(hostname: string, devices: CanvasDevice[], deviceStates?: Map<string, SwitchState>): boolean {
-  // Clean hostname
-  const cleanHostname = hostname.toLowerCase().replace(/^www\./, '');
-
-  // Check if it's an IP address (not external)
-  const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
-  if (ipRegex.test(cleanHostname)) {
-    return false;
-  }
-
-  // Check if it matches any local device name
-  for (const device of devices) {
-    const deviceName = device.name?.toLowerCase();
-    if (deviceName === cleanHostname) {
-      return false;
-    }
-  }
-
-  // Check if it matches any configured hostname
-  if (deviceStates) {
-    const safeDeviceStates = ensureDeviceStatesMap(deviceStates);
-    for (const [, state] of safeDeviceStates.entries()) {
-      const deviceHostname = state.hostname?.toLowerCase();
-      if (deviceHostname === cleanHostname) {
-        return false;
-      }
-    }
-  }
-
-  // Check if it's a known external domain (has dots and not local)
-  if (cleanHostname.includes('.')) {
-    const parts = cleanHostname.split('.');
-    if (parts.length >= 2) {
-      const tld = parts[parts.length - 1];
-      // Common TLDs indicate external domains
-      const commonTlds = ['com', 'org', 'net', 'edu', 'gov', 'mil', 'int', 'io', 'co', 'us', 'uk', 'de', 'fr', 'jp', 'cn', 'au', 'ca'];
-      return commonTlds.includes(tld);
-    }
-  }
-
-  return false;
-}
-
-/**
- * Simulate external DNS lookup for domain names
- * Generates consistent IP addresses for known domains
- */
-function simulateDnsLookup(hostname: string): string | null {
-  // Clean hostname
-  const cleanHostname = hostname.toLowerCase().replace(/^www\./, '');
-
-  // Known domain mappings (simulated DNS records)
-  const knownDomains: Record<string, string> = {
-    'portal.local': '192.0.2.10',
-    'docs.local': '192.0.2.20',
-    'search.local': '192.0.2.30',
-    'mail.local': '192.0.2.40',
-    'files.local': '192.0.2.50',
-    'video.local': '192.0.2.60',
-    'social.local': '192.0.2.70',
-    'wiki.local': '192.0.2.80',
-    'forum.local': '192.0.2.90',
-    'a10.com': '52.8.34.123', // Added for the specific case
-  };
-
-  // Return known domain IP if exists
-  if (knownDomains[cleanHostname]) {
-    return knownDomains[cleanHostname];
-  }
-
-  // Generate consistent pseudo-random IP for unknown domains
-  // This ensures the same domain always gets the same IP
-  let hash = 0;
-  for (let i = 0; i < cleanHostname.length; i++) {
-    const char = cleanHostname.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-
-  // Generate IP from hash (ensuring valid public IP ranges)
-  const octet1 = Math.abs(hash % 224) + 1; // 1-224 (avoid multicast/reserved)
-  const octet2 = Math.abs((hash >> 8) % 256);
-  const octet3 = Math.abs((hash >> 16) % 256);
-  const octet4 = Math.abs((hash >> 24) % 256);
-
-  // Avoid private IP ranges
-  if (octet1 === 10 || (octet1 === 192 && octet2 === 168) || (octet1 === 172 && octet2 >= 16 && octet2 <= 31)) {
-    return simulateDnsLookup(cleanHostname + '1'); // Recurse with slight variation
-  }
-
-  return `${octet1}.${octet2}.${octet3}.${octet4}`;
-}
-
-/**
- * Resolve hostname to IP address
- * Checks device hostnames and domain names to find matching IP
- * Falls back to external DNS lookup for unknown domains
- */
-function resolveHostname(
-  hostname: string,
-  devices: CanvasDevice[],
-  deviceStates?: Map<string, SwitchState>,
-  deviceMap?: Map<string, CanvasDevice>
-): string | null {
-  // Clean hostname (remove www., convert to lowercase)
-  const cleanHostname = hostname.toLowerCase().replace(/^www\./, '');
-
-  // 1. Check exact hostname matches against device names
-  if (deviceMap) {
-    for (const device of deviceMap.values()) {
-      const deviceName = device.name?.toLowerCase();
-      if (deviceName === cleanHostname && device.ip) {
-        return device.ip;
-      }
-    }
-  } else {
-    for (const device of devices) {
-      const deviceName = device.name?.toLowerCase();
-      if (deviceName === cleanHostname && device.ip) {
-        return device.ip;
-      }
-    }
-  }
-
-  // 2. Check against device hostnames in device states
-  if (deviceStates) {
-    const safeDeviceStates = ensureDeviceStatesMap(deviceStates);
-    for (const [deviceId, state] of safeDeviceStates.entries()) {
-      const deviceHostname = state.hostname?.toLowerCase();
-      if (deviceHostname === cleanHostname) {
-        // Find the device and get its IP
-        const device = deviceMap ? deviceMap.get(deviceId) : devices.find(d => d.id === deviceId);
-        if (device?.ip) return device.ip;
-
-        // Check interfaces for IP if device IP is not set
-        for (const portId in state.ports) {
-          const port = state.ports[portId];
-          if (port.ipAddress) {
-            return port.ipAddress;
-          }
-        }
-      }
-    }
-  }
-
-  // 3. Check domain name matches (hostname.domain.com)
-  const parts = cleanHostname.split('.');
-  if (parts.length > 1) {
-    const baseHostname = parts[0];
-    const domain = parts.slice(1).join('.');
-
-    // Check devices with matching domain
-    if (deviceStates) {
-      const safeDeviceStates = ensureDeviceStatesMap(deviceStates);
-    for (const [deviceId, state] of safeDeviceStates.entries()) {
-        const deviceDomain = state.domainName?.toLowerCase();
-        const deviceHostname = state.hostname?.toLowerCase();
-
-        if (deviceDomain === domain && deviceHostname === baseHostname) {
-          const device = deviceMap ? deviceMap.get(deviceId) : devices.find(d => d.id === deviceId);
-          if (device?.ip) return device.ip;
-
-          // Check interfaces for IP
-          for (const portId in state.ports) {
-            const port = state.ports[portId];
-            if (port.ipAddress) {
-              return port.ipAddress;
-            }
-          }
-        }
-      }
-    }
-  }
-
-  // 4. Fallback: check if any device name contains the hostname as substring
-  if (deviceMap) {
-    for (const device of deviceMap.values()) {
-      const deviceName = device.name?.toLowerCase();
-      if (deviceName && deviceName.includes(cleanHostname) && device.ip) {
-        return device.ip;
-      }
-    }
-  } else {
-    for (const device of devices) {
-      const deviceName = device.name?.toLowerCase();
-      if (deviceName && deviceName.includes(cleanHostname) && device.ip) {
-        return device.ip;
-      }
-    }
-  }
-
-  // 5. External DNS lookup for unknown domains
-  // This handles external domain names like a10.com, etc.
-  const externalIp = simulateDnsLookup(cleanHostname);
-  if (externalIp) {
-    return externalIp;
-  }
-
-  return null;
-}
 
 /**
  * Check serial encapsulation compatibility between two ports on a serial link.
@@ -1495,7 +1051,10 @@ export function checkConnectivity(
             (hopSourceState.services?.dhcp?.pools && hopSourceState.services.dhcp.pools.length > 0)
           ) : false;
 
-          if (isDhcpServer) {
+          // Only block if this could be a DHCP packet (exempt ICMP and TCP)
+          const isDhcpTraffic = options?.protocol !== 'icmp' && options?.protocol !== 'tcp';
+
+          if (isDhcpServer && isDhcpTraffic) {
             return {
               success: false,
               hops: hopNames.slice(0, i + 1),
@@ -1622,11 +1181,13 @@ export function checkConnectivity(
       }
 
       // 7.1.6 Reverse NAT verification
-      // When source NAT is applied (inside→outside), verify that the return traffic
-      // can be reverse-translated — needed for bidirectional protocols like ping.
+      // Verify that return traffic can be reverse-translated.
+      // If dynamic NAT is configured, we assume stateful reverse translation succeeds.
       if (natTranslatedAt === stepDeviceId && state.natStaticTranslations) {
-        const hasReverse = state.natStaticTranslations.some(t => t.globalIp === currentSourceIp);
-        if (!hasReverse) {
+        const hasStaticReverse = state.natStaticTranslations.some(t => t.globalIp === currentSourceIp);
+        const hasDynamicNat = state.natDynamicRules && state.natDynamicRules.length > 0;
+        
+        if (!hasStaticReverse && !hasDynamicNat) {
           return {
             success: false,
             hops: hopNames.slice(0, i + 1),
