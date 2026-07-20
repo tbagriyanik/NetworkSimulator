@@ -119,9 +119,12 @@ export function ProjectPickerDialog({
       const nextId = visibleProjectIds[nextIdx];
       setSelectedProjectId(nextId);
       scrollRef.current?.querySelector(`[data-project-id="${CSS.escape(nextId)}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    } else if (e.key === 'Enter' && selectedProjectId) {
-      e.preventDefault();
-      (scrollRef.current?.querySelector(`[data-project-id="${CSS.escape(selectedProjectId)}"]`) as HTMLButtonElement | null)?.click();
+    } else if (e.key === 'Enter') {
+      const targetId = selectedProjectId || (visibleProjectIds.length > 0 ? visibleProjectIds[0] : null);
+      if (targetId) {
+        e.preventDefault();
+        (scrollRef.current?.querySelector(`[data-project-id="${CSS.escape(targetId)}"]`) as HTMLButtonElement | null)?.click();
+      }
     }
   }, [visibleProjectIds, selectedProjectId]);
 
@@ -146,6 +149,34 @@ export function ProjectPickerDialog({
 
     window.addEventListener('keydown', handleGlobalTab, true);
     return () => window.removeEventListener('keydown', handleGlobalTab, true);
+  }, [open, visibleProjectIds, selectedProjectId]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const handleGlobalEnter = (e: KeyboardEvent) => {
+      if (e.key !== 'Enter') return;
+
+      const activeEl = document.activeElement;
+      if (activeEl && (activeEl.tagName === 'BUTTON' || activeEl.tagName === 'A') && activeEl !== document.body) {
+        if (!activeEl.getAttribute('data-project-id')) {
+          return;
+        }
+      }
+
+      const targetId = selectedProjectId || (visibleProjectIds.length > 0 ? visibleProjectIds[0] : null);
+      if (targetId) {
+        e.preventDefault();
+        e.stopPropagation();
+        const btn = scrollRef.current?.querySelector(`[data-project-id="${CSS.escape(targetId)}"]`) as HTMLButtonElement | null;
+        if (btn) {
+          btn.click();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalEnter, true);
+    return () => window.removeEventListener('keydown', handleGlobalEnter, true);
   }, [open, visibleProjectIds, selectedProjectId]);
 
   return (
@@ -308,69 +339,10 @@ export function ProjectPickerDialog({
                 className={`flex-1 bg-transparent outline-none text-sm ${isDark ? 'text-white placeholder-secondary-500' : 'text-secondary-900 placeholder-secondary-400'}`}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    if (selectedProjectId) {
+                    const targetId = selectedProjectId || (visibleProjectIds.length > 0 ? visibleProjectIds[0] : null);
+                    if (targetId) {
                       e.preventDefault();
-                      (scrollRef.current?.querySelector(`[data-project-id="${CSS.escape(selectedProjectId)}"]`) as HTMLButtonElement | null)?.click();
-                      return;
-                    }
-                    const q = projectSearchQuery.trim().toLowerCase();
-                    // Search example projects first
-                    let firstProject: ExampleProject | null = null;
-                    for (const level of exampleLevelOrder) {
-                      const projects = groupedExampleProjects[level] || [];
-                      const filtered = projects.filter(project =>
-                        project.title.toLowerCase().includes(q) ||
-                        project.description.toLowerCase().includes(q) ||
-                        project.tag.toLowerCase().includes(q) ||
-                        (project.detail && project.detail.toLowerCase().includes(q))
-                      );
-                      if (filtered.length > 0) {
-                        firstProject = filtered[0];
-                        break;
-                      }
-                    }
-                    // If not found, search guided lessons
-                    if (!firstProject) {
-                      const guided = getAvailableProjects(language).find(proj =>
-                        proj.title.toLowerCase().includes(q) ||
-                        proj.description.toLowerCase().includes(q) ||
-                        proj.tag.toLowerCase().includes(q) ||
-                        (proj.detail && proj.detail.toLowerCase().includes(q))
-                      );
-                      if (guided) {
-                        closeProjectPicker();
-                        setZoom(1.0);
-                        setPan({ x: 0, y: 0 });
-                        startGuidedProject(guided);
-                        loadProjectData(guided.data);
-                        return;
-                      }
-                    }
-                    // If still not found, search exams
-                    if (!firstProject) {
-                      const exam = getAvailableExams(language)
-                        .filter((proj: ExamProject) => proj.id !== 'exam-template-blank')
-                        .find(proj =>
-                          proj.title.toLowerCase().includes(q) ||
-                          proj.description.toLowerCase().includes(q) ||
-                          proj.tag.toLowerCase().includes(q) ||
-                          (proj.detail && proj.detail.toLowerCase().includes(q))
-                        );
-                      if (exam) {
-                        closeProjectPicker();
-                        setZoom(1.0);
-                        setPan({ x: 0, y: 0 });
-                        startExamProject(exam);
-                        loadProjectData(exam.data);
-                        return;
-                      }
-                    }
-                    if (firstProject) {
-                      closeProjectPicker();
-                      applyExampleProject(firstProject.data, firstProject.id);
-                    } else {
-                      closeProjectPicker();
-                      resetToEmptyProject();
+                      (scrollRef.current?.querySelector(`[data-project-id="${CSS.escape(targetId)}"]`) as HTMLButtonElement | null)?.click();
                     }
                   }
                 }}

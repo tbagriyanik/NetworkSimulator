@@ -1523,6 +1523,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     devices: CanvasDevice[];
     connections: CanvasConnection[];
     deviceStates: Map<string, SwitchState>;
+    projectName?: string;
   }) => {
     // Clear existing and set generated
     resetWorkspaceUiState();
@@ -1533,12 +1534,15 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     setNotes([]);
     setZoom(1.0);
     setPan({ x: 0, y: 0 });
+    if (data.projectName) {
+      setProjectName(data.projectName);
+    }
 
     // Automatically trigger "add-summary-note" to create the summary canvas note
     setTimeout(() => {
       window.dispatchEvent(new CustomEvent('add-summary-note'));
     }, 500);
-  }, [resetWorkspaceUiState, resetToEmptyProject, setDevices, setConnections, setDeviceStates, setNotes, setZoom, setPan]);
+  }, [resetWorkspaceUiState, resetToEmptyProject, setDevices, setConnections, setDeviceStates, setNotes, setZoom, setPan, setProjectName]);
 
   useEffect(() => {
     const handleOpenGenerator = () => setIsGeneratorOpen(true);
