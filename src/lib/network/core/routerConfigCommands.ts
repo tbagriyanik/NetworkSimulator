@@ -1,4 +1,3 @@
-'use client';
 import { iosModeError } from './iosErrors';
 
 import type { CommandHandler } from './commandTypes';

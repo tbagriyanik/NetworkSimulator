@@ -1,7 +1,7 @@
 import { SwitchState } from './types';
 import { errorHandler } from '@/lib/errors/errorHandler';
 
-// BOLT: Cache Map representation of deviceStates to avoid O(N) conversion in hot paths.
+// Cache Map representation of deviceStates to avoid O(N) conversion in hot paths.
 // Since the store uses immutable state, we can use the Record object as a key.
 const deviceStatesCache = new WeakMap<Record<string, SwitchState>, Map<string, SwitchState>>();
 const EMPTY_MAP = new Map<string, SwitchState>();
@@ -14,7 +14,7 @@ export function ensureDeviceStatesMap(deviceStates: Map<string, SwitchState> | R
   if (!deviceStates) return EMPTY_MAP;
   if (deviceStates instanceof Map) return deviceStates;
   
-  // BOLT: Check cache first
+  // Check cache first
   const cached = deviceStatesCache.get(deviceStates);
   if (cached) return cached;
 

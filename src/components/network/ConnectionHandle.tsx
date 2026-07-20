@@ -1,6 +1,7 @@
 ﻿import { memo } from 'react';
 import { CanvasConnection, CanvasDevice } from './networkTopology.types';
-import { isCableCompatible, CableInfo } from '@/lib/network/types';
+import { isCableCompatible } from '@/lib/network/types';
+import type { CableInfo } from '@/lib/network/types';
 import { Trash2, Unplug, PlugZap } from 'lucide-react';
 
 const STUB_BG = 'var(--color-secondary-50)';

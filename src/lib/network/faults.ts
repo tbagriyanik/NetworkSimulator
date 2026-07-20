@@ -22,12 +22,6 @@ export interface FaultDefinition {
 }
 
 /**
- * Applies a fault to a device state.
- * Returns a new state with the fault injected.
- */
-
-
-/**
  * Checks if a fault has been resolved by comparing current state with the correct value.
  */
 export function checkFaultResolved(state: SwitchState, fault: FaultDefinition): boolean {

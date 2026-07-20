@@ -1,4 +1,4 @@
-import { CableInfo, SwitchState } from '@/lib/network/types';
+import type { CableInfo, SwitchState } from '@/lib/network/types';
 import type { CableType } from '@/lib/network/types';
 
 export type DeviceType = 'pc' | 'iot' | 'switchL2' | 'switchL3' | 'router' | 'firewall' | 'wlc';

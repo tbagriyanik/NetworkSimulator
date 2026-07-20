@@ -1,6 +1,6 @@
 import type { SwitchState, CableInfo } from '../types';
 import type { CanvasDevice, CanvasConnection, CanvasNote, DeviceType } from '@/components/network/networkTopology.types';
-import { FaultDefinition } from '../faults';
+import type { FaultDefinition } from '../faults';
 
 export type ProjectData = {
   version: string;

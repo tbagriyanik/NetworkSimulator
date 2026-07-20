@@ -1,6 +1,5 @@
 /**
  * Fast equality helpers for performance-critical paths.
- * BOLT: Replaces expensive JSON.stringify calls in memo comparators and event handlers.
  */
 
 /**
