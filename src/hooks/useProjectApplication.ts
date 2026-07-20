@@ -128,6 +128,7 @@ export function useProjectApplication({
     let loadedTitle = projectName;
     if (exampleId) {
       setLoadedExampleId(exampleId);
+      let foundDesc = '';
       for (const level of exampleLevelOrder) {
         const projects = groupedExampleProjects[level];
         if (projects) {
@@ -135,10 +136,18 @@ export function useProjectApplication({
           if (found) {
             loadedTitle = language === 'tr' ? `${found.title} (\u015Eablon)` : `${found.title} (Template)`;
             setProjectName(loadedTitle);
+            foundDesc = found.description;
             break;
           }
         }
       }
+      if (foundDesc) {
+        localStorage.setItem('lastProjectDescription', foundDesc);
+      } else {
+        localStorage.removeItem('lastProjectDescription');
+      }
+    } else {
+      localStorage.removeItem('lastProjectDescription');
     }
     setShowProjectPicker(false);
     closeGuidedMode();
@@ -157,6 +166,7 @@ export function useProjectApplication({
     let loadedTitle = projectName;
     if (exampleId) {
       setLoadedExampleId(exampleId);
+      let foundDesc = '';
       for (const level of exampleLevelOrder) {
         const projects = groupedExampleProjects[level];
         if (projects) {
@@ -164,10 +174,18 @@ export function useProjectApplication({
           if (found) {
             loadedTitle = found.title;
             setProjectName(found.title);
+            foundDesc = found.description;
             break;
           }
         }
       }
+      if (foundDesc) {
+        localStorage.setItem('lastProjectDescription', foundDesc);
+      } else {
+        localStorage.removeItem('lastProjectDescription');
+      }
+    } else {
+      localStorage.removeItem('lastProjectDescription');
     }
     setShowProjectPicker(false);
     closeGuidedMode();

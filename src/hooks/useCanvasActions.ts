@@ -263,8 +263,17 @@ export function useCanvasActions({
     saveToHistory();
     const isTr = language === 'tr';
     const projectName = typeof window !== 'undefined' ? localStorage.getItem('lastProjectName') || 'Untitled' : 'Untitled';
+    const projectDesc = typeof window !== 'undefined' ? localStorage.getItem('lastProjectDescription') : null;
     let summaryText = isTr ? `📋 TOPOLOJİ ÖZETİ: ${projectName}\n` : `📋 TOPOLOGY SUMMARY: ${projectName}\n`;
-    summaryText += '========================\n';
+    
+    if (projectDesc) {
+      summaryText += `${projectDesc}\n`;
+    } else {
+      summaryText += isTr 
+        ? `Bu belge projedeki cihazların ağ yapısını ve temel yapılandırma parametrelerini özetler.\n`
+        : `This document summarizes the network topology and basic configuration parameters of the devices in the project.\n`;
+    }
+    summaryText += '========================\n\n';
 
     if (devices.length === 0) {
       summaryText += isTr ? 'Cihaz bulunamadı.' : 'No devices found.';

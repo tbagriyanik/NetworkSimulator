@@ -1524,6 +1524,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     connections: CanvasConnection[];
     deviceStates: Map<string, SwitchState>;
     projectName?: string;
+    projectDescription?: string;
   }) => {
     // Clear existing and set generated
     resetWorkspaceUiState();
@@ -1536,6 +1537,12 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     setPan({ x: 0, y: 0 });
     if (data.projectName) {
       setProjectName(data.projectName);
+    }
+    
+    if (data.projectDescription) {
+      localStorage.setItem('lastProjectDescription', data.projectDescription);
+    } else {
+      localStorage.removeItem('lastProjectDescription');
     }
 
     // Automatically trigger "add-summary-note" to create the summary canvas note

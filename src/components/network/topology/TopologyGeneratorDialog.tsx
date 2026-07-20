@@ -28,6 +28,7 @@ interface TopologyGeneratorDialogProps {
     connections: CanvasConnection[];
     deviceStates: Map<string, SwitchState>;
     projectName?: string;
+    projectDescription?: string;
   }) => void;
 }
 
@@ -71,9 +72,11 @@ export function TopologyGeneratorDialog({
       try {
         const result = generateTopology(scenario, pcCount);
         const name = isTr ? selectedDef.labelTr : selectedDef.labelEn;
+        const description = isTr ? selectedDef.descTr : selectedDef.descEn;
         onGenerate({
           ...result,
           projectName: name,
+          projectDescription: description,
         });
         toast({
           title: isTr ? 'Topoloji Üretildi! 🚀' : 'Topology Generated! 🚀',

@@ -12,7 +12,7 @@ describe('System Commands', () => {
   });
 
   it('should configure enable secret', () => {
-    const cmd = 'enable secret cisco123';
+    const cmd = 'enable secret netsim';
     expect(cmd).toContain('enable secret');
   });
 
