@@ -21,7 +21,7 @@ Bu rehber, Network Simulator'daki tüm CLI komutlarını pratik örneklerle öğ
 10. [İleri Konular](#ileri-konular)
 
 ### Ek Bölümler
-- [Örnek Projeler (40 Proje)](#örnek-projeler)
+- [Örnek Projeler](#örnek-projeler)
 - [Pratik Senaryolar](#pratik-senaryolar)
 - [Hızlı Referans Tablosu](#hızlı-referans-tablosu)
 - [Sorun Giderme İpuçları](#sorun-giderme-ipuçları)
@@ -32,11 +32,11 @@ Bu rehber, Network Simulator'daki tüm CLI komutlarını pratik örneklerle öğ
 
 Bu ders serisi, Network Simulator'da CLI komutlarını öğrenmek için tasarlanmıştır:
 
-- **30 Pratik Ders:** Başlangıçtan ileri seviyeye
+- **Pratik Dersler:** Başlangıçtan ileri seviyeye
 - **4 Zorluk Seviyesi:** ⭐ Başlangıç → ⭐⭐⭐⭐ Çok İleri
 - **5 Cihaz Türü:** Switch, Router, WLC, AP, IoT
-- **150+ Komut Örneği:** Gerçek dünya senaryoları
-- **40 Örnek Proje:** Farklı senaryolar için hazır ağ topolojileri
+- **Kapsamlı Komut Örneği:** Gerçek dünya senaryoları
+- **Örnek Projeler:** Farklı senaryolar için hazır ağ topolojileri
 - **Adım Adım Talimatlar:** Her ders için detaylı açıklamalar
 - **Beklenen Sonuçlar:** Her adımdan sonra ne olması gerektiği
 
@@ -1844,9 +1844,9 @@ Network Simulator, farklı zorluk seviyelerinde **40 hazır örnek proje** ile b
 | 40 | Tüm Servisler Laboratuvarı | SERVİSLER | ⭐⭐ Orta | DNS, HTTP, DHCP, FTP, MAIL, NTP servislerinin bir arada bulunduğu lab |
 
 ### Seviyelere Göre Dağılım
-- ⭐ **Başlangıç (12 proje):** Temel ağ, parolalar, VLAN, SSH, DHCP, firewall, MAC, ARP, IP, native VLAN
-- ⭐⭐ **Orta (13 proje):** Trunk, VTP, ROAS, inter-VLAN, port-security, WiFi, IoT, DNS/HTTP, DHCP, ACL, NAT, servisler
-- ⭐⭐⭐ **İleri (15 proje):** L3 routing, static routing, EtherChannel, STP, campus, PVST, OSPF, EIGRP, IPv6, HSRP, extended ACL, NAT/PAT
+- ⭐ **Başlangıç:** Temel ağ, parolalar, VLAN, SSH, DHCP, firewall, MAC, ARP, IP, native VLAN
+- ⭐⭐ **Orta:** Trunk, VTP, ROAS, inter-VLAN, port-security, WiFi, IoT, DNS/HTTP, DHCP, ACL, NAT, servisler
+- ⭐⭐⭐ **İleri:** L3 routing, static routing, EtherChannel, STP, campus, PVST, OSPF, EIGRP, IPv6, HSRP, extended ACL, NAT/PAT
 
 ---
 

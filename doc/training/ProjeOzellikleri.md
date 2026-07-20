@@ -1,4 +1,4 @@
-# NetworkSim2026 — Tam Özellik Envanteri / Full Feature Inventory
+# NetworkSimulator — Tam Özellik Envanteri / Full Feature Inventory
 
 ## Türkçe (Turkish)
 
@@ -34,8 +34,8 @@
 - ARP, MAC öğrenme, TTL/Hop simülasyonu.
 
 ### 📚 Eğitim Modülleri
-- 15 adet rehberli ders (Guided Mode) — adım adım yönergeler ve otomatik doğrulama.
-- 50 adet hazır örnek uygulama projesi.
+- Rehberli dersler (Guided Mode) — adım adım yönergeler ve otomatik doğrulama.
+- Hazır örnek uygulama projeleri.
 - Sınav Modu (Öğretmenler için sınav editörü + otomatik puanlama).
 - 3 seviyeli akıllı yardım sistemi (Başlangıç, Orta, Sınav).
 - Ses sentezleyici ders anlatımı (Metin okuma - TTS).
@@ -74,8 +74,8 @@
 - Kapsamlı CI iş akışı: TypeScript tip doğrulaması, ESLint, npm audit, vitest testleri ve Next.js build kontrolü.
 - Otomatik README istatistik güncelleyici.
 
-### 📄 Dokümantasyon (17 dosya)
-- CLI komut referansı, rehberli ders kılavuzları, hata yönetimi, entegrasyon kılavuzu, L3 switch konfigürasyonu, kablosuz ağlar, oda takip sistemi, kullanım kılavuzları ve 43 örnek projenin çözüm adımlarını barındıran Türkçe Eğitim Kitapçığı.
+### 📄 Dokümantasyon 
+- CLI komut referansı, rehberli ders kılavuzları, hata yönetimi, entegrasyon kılavuzu, L3 switch konfigürasyonu, kablosuz ağlar, oda takip sistemi, kullanım kılavuzları ve örnek projelerin çözüm adımlarını barındıran Türkçe Eğitim Kitapçığı.
 
 ---
 

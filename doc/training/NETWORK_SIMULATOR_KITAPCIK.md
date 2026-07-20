@@ -3,12 +3,11 @@
 ![Simulator Logo](https://network2026.vercel.app/app.png)
 
 ## 📘 İçindekiler
-1. [Uygulama Özellikleri ve Yenilikler](#uygulama-ozellikleri-ve-yenilikler)
-2. [Kullanım Kılavuzu ve Kısayollar](#kullanim-kilavuzu-ve-kisayollar)
-3. [CLI Komut Referansı](#cli-komut-referansi)
-4. [30 Derste CLI Eğitimi](#30-derste-cli-egitimi)
-5. [Rehberli Uygulama Adımları (148 Adım)](#rehberli-uygulama-adimlari)
-6. [43 Örnek Proje ve Adım Adım Yapılışları](#43-ornek-proje-ve-adim-adim-yapilislari)
+1. [Network Simulator (Özellikler ve Yenilikler)](#network-simulator)
+2. [Kullanım Kılavuzu ve Kısayollar](#network-simulator---usage-guide--kullanım-kılavuzu)
+3. [CLI Komut Referansı](#-network-cli-commands-reference)
+4. [Rehberli Dersler ve CLI Eğitimi](#-network-simulator---rehberli-dersler)
+5. [Örnek Proje ve Adım Adım Yapılışları](#network-simulator---example-projects)
 
 <div style="page-break-after: always;"></div>
 
@@ -933,10 +932,10 @@ Bu rehber, Network Simulator'daki tüm CLI komutlarını pratik örneklerle öğ
 10. [İleri Konular](#ileri-konular)
 
 ### Ek Bölümler
-- [Örnek Projeler (49 Proje)](#örnek-projeler)
-- [Pratik Senaryolar](#pratik-senaryolar)
-- [Hızlı Referans Tablosu](#hızlı-referans-tablosu)
-- [Sorun Giderme İpuçları](#sorun-giderme-ipuçları)
+- [Örnek Projeler](#network-simulator---example-projects)
+- [Pratik Senaryolar](#-pratik-senaryolar)
+- [Hızlı Referans Tablosu](#-hızlı-referans-tablosu)
+- [Sorun Giderme İpuçları](#-sorun-giderme-i̇puçları)
 
 ---
 
@@ -944,11 +943,11 @@ Bu rehber, Network Simulator'daki tüm CLI komutlarını pratik örneklerle öğ
 
 Bu ders serisi, Network Simulator'da CLI komutlarını öğrenmek için tasarlanmıştır:
 
-- **30 Pratik Ders:** Başlangıçtan ileri seviyeye
+- **Pratik Dersler:** Başlangıçtan ileri seviyeye
 - **4 Zorluk Seviyesi:** ⭐ Başlangıç → ⭐⭐⭐⭐ Çok İleri
 - **5 Cihaz Türü:** Switch, Router, WLC, AP, IoT
-- **150+ Komut Örneği:** Gerçek dünya senaryoları
-- **49 Örnek Proje:** Farklı senaryolar için hazır ağ topolojileri
+- **Kapsamlı Komut Örneği:** Gerçek dünya senaryoları
+- **Örnek Projeler:** Farklı senaryolar için hazır ağ topolojileri
 - **Adım Adım Talimatlar:** Her ders için detaylı açıklamalar
 - **Beklenen Sonuçlar:** Her adımdan sonra ne olması gerektiği
 
@@ -2735,9 +2734,9 @@ Network Simulator, farklı zorluk seviyelerinde **43 hazır örnek proje** ile b
 | 40 | Tüm Servisler Laboratuvarı | SERVİSLER | ⭐⭐ Orta | DNS, HTTP, DHCP, FTP, MAIL, NTP servislerinin bir arada bulunduğu lab |
 
 ### Seviyelere Göre Dağılım
-- ⭐ **Başlangıç (12 proje):** Temel ağ, parolalar, VLAN, SSH, DHCP, firewall, MAC, ARP, IP, native VLAN
-- ⭐⭐ **Orta (13 proje):** Trunk, VTP, ROAS, inter-VLAN, port-security, WiFi, IoT, DNS/HTTP, DHCP, ACL, NAT, servisler
-- ⭐⭐⭐ **İleri (15 proje):** L3 routing, static routing, EtherChannel, STP, campus, PVST, OSPF, EIGRP, IPv6, HSRP, extended ACL, NAT/PAT
+- ⭐ **Başlangıç:** Temel ağ, parolalar, VLAN, SSH, DHCP, firewall, MAC, ARP, IP, native VLAN
+- ⭐⭐ **Orta:** Trunk, VTP, ROAS, inter-VLAN, port-security, WiFi, IoT, DNS/HTTP, DHCP, ACL, NAT, servisler
+- ⭐⭐⭐ **İleri:** L3 routing, static routing, EtherChannel, STP, campus, PVST, OSPF, EIGRP, IPv6, HSRP, extended ACL, NAT/PAT
 
 ---
 

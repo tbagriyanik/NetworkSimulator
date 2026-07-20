@@ -10,7 +10,7 @@ Bu indeks, Network Simulator projesinin tüm dokümantasyon dosyalarını ve iç
 **Amaç**: Tüm CLI komutlarının pratik rehberli dersleri  
 **Okuma Süresi**: 2-3 saat (tüm dersler)  
 **İçerik**:
-- 30 pratik ders (Başlangıç → İleri)
+- Pratik dersler (Başlangıç → İleri)
 - Adım adım örnekler
 - Her ders için beklenen sonuçlar
 - 5 pratik senaryo
@@ -29,7 +29,7 @@ Bu indeks, Network Simulator projesinin tüm dokümantasyon dosyalarını ve iç
 **Amaç**: CLI komut referansı  
 **Okuma Süresi**: 15 dakika  
 **İçerik**:
-- 450+ CLI komutu
+- Kapsamlı CLI komutları
 - Tüm modlar (User EXEC, Privileged, Global, Interface, VLAN, Routing, SSID, Dot11, WLAN, DHCP)
 - Seri/WAN, IoT, güvenlik duvarı komutları
 - Klavye kısayolları
@@ -238,7 +238,7 @@ doc/
 │   └── QUICK_REFERENCE.md          (Hızlı referans)
 │
 ├── cli/
-│   ├── CLI_GUIDED_TUTORIAL.md      (30 pratik ders)
+│   ├── CLI_GUIDED_TUTORIAL.md      (pratik dersler)
 │   └── CLI_COMMANDS.md             (Komut referansı)
 │
 ├── network/
@@ -556,8 +556,8 @@ doc/
 
 ## ✅ Kontrol Listesi
 
-- [x] CLI Rehberli Ders oluşturuldu (30 ders)
-- [x] CLI Komut Referansı oluşturuldu (450+ komut)
+- [x] CLI Rehberli Dersler oluşturuldu
+- [x] CLI Komut Referansı oluşturuldu
 - [x] Kullanım Kılavuzu hazırlandı
 - [x] Hızlı referans oluşturuldu
 - [x] Entegrasyon rehberi yazıldı

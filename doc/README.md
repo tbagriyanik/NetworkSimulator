@@ -158,7 +158,7 @@ Kaynak kodları inceleyin
 
 ---
 
-## ✨ Tamamlanan Özellikler (v1.9.8)
+## ✨ Tamamlanan Özellikler (v2.0.0)
 
 **Sektörel & Eğitim**
 ✅ Sektörel Senaryolar (SOHO, Hastane, Okul, E-Ticaret)
@@ -167,8 +167,8 @@ Kaynak kodları inceleyin
 ✅ IPv6 Master Lab (OSPFv3 + ACL dual-stack)
 ✅ Gelişmiş Arıza Giderme (Trunk / OSPF)
 ✅ Rehberli Mod & Eğitim Sihirbazı
-✅ CLI Rehberli Ders (30 ders)
-✅ "Bana Öğret" Rehberli Dersleri (Temel / Orta / İleri — 19 rehberli ders)
+✅ CLI Rehberli Dersler
+✅ "Bana Öğret" Rehberli Dersleri (Temel / Orta / İleri)
 ✅ PC Tabanlı Arıza Giderme & Otomatik Komut Yazdırma
 ✅ Akıllı CLI Asistanı
 ✅ Kapsamlı Türkçe Eğitim Kitapçığı
@@ -203,7 +203,7 @@ Kaynak kodları inceleyin
 ✅ IoT Panel Sekmeleri & Sensör Geliştirmeleri
 ✅ Pencere Notları & Drag-Resize
 ✅ API Hız Sınırlama
-✅ CLI Komut Referansı (450+ komut)
+✅ Kapsamlı CLI Komut Referansı
 
 ---
 

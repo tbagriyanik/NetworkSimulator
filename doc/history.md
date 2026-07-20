@@ -4,14 +4,22 @@ Yeniden eskiye, tarih ve özellik listesi.
 
 ---
 
-## v1.9.6 — 2026-07-08
+## v2.0.0 — 2026-07-20
 
 | Tarih | Özellik |
 |-------|---------|
-| 2026-07-08 | **"Bana Öğret" Rehberli Dersleri** — Sıfırdan öğretim için 3 yeni rehberli proje: Temel (PC ipconfig, switch enable/configure terminal/hostname), Orta (router IP yapılandırma) ve İleri (OSPF + ACL) seviyeleri |
-| 2026-07-08 | **PC Tabanlı Arıza Giderme** — Arıza tanımı artık `pc.` ön eki ile PC özelliklerini (IP, gateway, DNS, hostname vb.) doğrulayabiliyor; TroubleshootingPanel `topologyDevices` üzerinden PC arızalarını çözüyor |
-| 2026-07-08 | **Otomatik Komut Yazdırma** — `pc-auto-type` olayı ile dışarıdan komutların karakter karakter PC CMD'ye yazdırılması ve otomatik çalıştırılması desteği |
-| 2026-07-08 | **Yeni Pencere Olayları** — `pc-tab-changed` ve `pc-command-executed` olayları ile PC paneli durumu dış bileşenlere bildiriliyor |
+| 2026-07-20 | **İsim ve Marka Güncellemesi** — Proje adı "NetworkSimulator" olarak güncellendi ve tüm markalama buna göre düzenlendi. |
+| 2026-07-20 | **LocalStorage Güvenliği (XOR+Base64)** — Yerel depolama verileri, tüm uygulamayı kapsayan bir interceptor aracılığıyla (XOR ve Base64 kullanarak) şifrelendi; geriye dönük uyumluluk eklendi. |
+| 2026-07-20 | **Metin Limiti ve XSS Koruması** — İsim ve proje açıklama alanları için aşırı uzun girdileri engelleyecek otomatik karakter limitleri ve anti-XSS (`<`, `>` filtrelemesi) korumaları aktif edildi. |
+| 2026-07-20 | **Gelişmiş Topoloji Üretimi** — "Topoloji Üret" sihirbazına arama işlevi eklendi; üretilen şablonlar kendi özgün proje başlıklarını ve açıklamalarını özet notlarına otomatik olarak ekliyor. |
+
+---
+
+## v1.9.9 — 2026-07-18
+
+| Tarih | Özellik |
+|-------|---------|
+| 2026-07-18 | **Minör Güncelleme** — Hata düzeltmeleri, stabilite artışı ve genel performans iyileştirmeleri |
 
 ---
 
@@ -22,6 +30,25 @@ Yeniden eskiye, tarih ve özellik listesi.
 | 2026-07-12 | **Daraltılabilir Bilgi Panelörleri** — PC ve Router bilgilendirme popup'ları artık daraltılabilir; bölümler (WiFi, Servisler, IP Modu, vb.) tek tıkla gizlenip gösterilebilir ve durum localStorage'da saklanır |
 | 2026-07-12 | **Daraltılabilir Ağ Yenileme Raporu Paneli** — Ağ yenileme raporu panelini (Ağ Yenilendi) artık daraltılabilir; başlık düğmesiyle genişletme/daraltma mümkün ve durum localStorage'da saklanır |
 | 2026-07-16 | **Sürüm Güncellemesi** — Uygulama versiyonu 1.9.7'den 1.9.8'e yükseltildi |
+
+---
+
+## v1.9.7 — 2026-07-12
+
+| Tarih | Özellik |
+|-------|---------|
+| 2026-07-12 | **Minör Güncelleme** — Arayüzdeki ufak hataların giderilmesi ve altyapı iyileştirmeleri |
+
+---
+
+## v1.9.6 — 2026-07-08
+
+| Tarih | Özellik |
+|-------|---------|
+| 2026-07-08 | **"Bana Öğret" Rehberli Dersleri** — Sıfırdan öğretim için 3 yeni rehberli proje: Temel (PC ipconfig, switch enable/configure terminal/hostname), Orta (router IP yapılandırma) ve İleri (OSPF + ACL) seviyeleri |
+| 2026-07-08 | **PC Tabanlı Arıza Giderme** — Arıza tanımı artık `pc.` ön eki ile PC özelliklerini (IP, gateway, DNS, hostname vb.) doğrulayabiliyor; TroubleshootingPanel `topologyDevices` üzerinden PC arızalarını çözüyor |
+| 2026-07-08 | **Otomatik Komut Yazdırma** — `pc-auto-type` olayı ile dışarıdan komutların karakter karakter PC CMD'ye yazdırılması ve otomatik çalıştırılması desteği |
+| 2026-07-08 | **Yeni Pencere Olayları** — `pc-tab-changed` ve `pc-command-executed` olayları ile PC paneli durumu dış bileşenlere bildiriliyor |
 
 ---
 
@@ -37,6 +64,14 @@ Yeniden eskiye, tarih ve özellik listesi.
 | 2026-07-07 | **Mobil PNG Dışa Aktarma** — Web Share API ile mobil paylaşım ve bellek optimizasyonu |
 | 2026-07-07 | **Gelişmiş Kablo Bağlantı Deneyimi** — `onPointerDown` ile porttan porta tıklayarak kablo bağlama kararlı hale getirildi |
 | 2026-07-07 | **Gelişmiş İşlem Geçmişi (Timeline)** — Scroll desteği, ayrıntılı bildirimler, `.txt` dışa aktarma, localStorage kalıcılığı |
+
+---
+
+## v1.9.4 — 2026-07-04
+
+| Tarih | Özellik |
+|-------|---------|
+| 2026-07-04 | **Minör Güncelleme** — Küçük UI iyileştirmeleri ve performans optimizasyonları |
 
 ---
 
@@ -65,7 +100,23 @@ Yeniden eskiye, tarih ve özellik listesi.
 
 ---
 
-## v1.9.x (Önceki Sürümler)
+## v1.9.2 — 2026-06-28
+
+| Tarih | Özellik |
+|-------|---------|
+| 2026-06-28 | **Minör Güncelleme** — Geri bildirimler doğrultusunda stabilite güncellemeleri |
+
+---
+
+## v1.9.1 — 2026-06-25
+
+| Tarih | Özellik |
+|-------|---------|
+| 2026-06-25 | **Minör Güncelleme** — Yayın sonrası ilk hata düzeltmeleri ve minör optimizasyonlar |
+
+---
+
+## v1.9.0 — 2026-06-21
 
 | Tarih | Özellik |
 |-------|---------|
@@ -79,7 +130,7 @@ Yeniden eskiye, tarih ve özellik listesi.
 | 2026-06-21 | **Seri / WAN Arayüzleri** — HDLC ve PPP kapsülleme, clock rate, PAP/CHAP kimlik doğrulama, DCE/DTE tespiti |
 | 2026-06-21 | **Gelişmiş Yönlendirme** — EIGRP (named/config), BGP (temel), OSPFv3 (IPv6), RIPng (IPv6), rota yeniden dağıtımı |
 | 2026-06-21 | **IoT & Güvenlik Duvarı CLI** — IoT sensör/aktüatör yönetimi ve güvenlik duvarı kural/politika yapılandırması CLI komutları |
-| 2026-06-21 | **Yardım Sistemi Revizyonu** — 150+ CLI komutu; iki dilli yardım paneli; cihaz bağlamına göre düzenli |
+| 2026-06-21 | **Yardım Sistemi Revizyonu** — Kapsamlı CLI komutları; iki dilli yardım paneli; cihaz bağlamına göre düzenli |
 | 2026-06-21 | **Kanvas Sürükleme Pürüzsüzlüğü** — Frame başına taze DOM rect; SVG geçişleri hareket sırasında devre dışı |
 | 2026-06-21 | **Türkçe Eğitim Kitapçığı** — Ağ temelleri, CLI, yönlendirme, WAN, kablosuz ve güvenlik konularını kapsayan kapsamlı kitapçık |
 | 2026-06-21 | **Seri Kapsülleme** — Bağlantı kontrollerinde HDLC/PPP uyumsuzluğu tespiti |
@@ -102,7 +153,7 @@ Yeniden eskiye, tarih ve özellik listesi.
 | Özellik |
 |---------|
 | **Ağ Tuvali** — Sürükle-bırak topoloji oluşturucu; Router, Switch, PC, Laptop, Server, IoT, Wireless cihaz paleti |
-| **CLI Motoru** — enable modu, configure terminal, interface config; 450+ komut |
+| **CLI Motoru** — enable modu, configure terminal, interface config; kapsamlı komut desteği |
 | **Switching** — VLAN, STP, trunk/access portları, MAC öğrenmesi, switchport güvenliği |
 | **Yönlendirme** — Statik rotalar, OSPF, RIP; VLAN'lar arası yönlendirme; L3 anahtarlama |
 | **DHCP / DNS** — DHCP sunucu-istemci, adres havuzları; DNS ad çözümleme |
@@ -126,7 +177,7 @@ Yeniden eskiye, tarih ve özellik listesi.
 
 ---
 
-## İstatistikler (v1.9.5)
+## İstatistikler (v2.0.0)
 
 | Metrik | Değer |
 |--------|-------|
