@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import type { SwitchState } from '@/lib/network/types';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import { getRoutingTable } from '@/lib/network/routing';
+
 
 describe('Routing Table Building', () => {
   function buildRoutingTable(
@@ -115,5 +117,77 @@ describe('Routing Table Building', () => {
 
     const routes = buildRoutingTable('SW1', [], [], new Map([['SW1', state]]));
     expect(routes).toHaveLength(0);
+  });
+});
+
+describe('RIP Dynamic Routing', () => {
+  it('should dynamically learn RIP routes from adjacent RIP neighbor', () => {
+    const devices = [
+      { id: 'R1', name: 'R1', type: 'router' },
+      { id: 'R2', name: 'R2', type: 'router' }
+    ] as unknown as CanvasDevice[];
+    const connections = [
+      { id: 'c1', sourceDeviceId: 'R1', sourcePort: 'gi0/0', targetDeviceId: 'R2', targetPort: 'gi0/0', active: true }
+    ] as unknown as CanvasConnection[];
+
+    const r1State = {
+      id: 'R1',
+      hostname: 'R1',
+      deviceType: 'router',
+      routingProtocol: 'rip',
+      ipRouting: true,
+      ports: {
+        'gi0/0': {
+          id: 'gi0/0',
+          ipAddress: '19.16.1.1',
+          subnetMask: '255.255.255.0',
+          shutdown: false,
+          mode: 'routed'
+        },
+        'gi0/1': {
+          id: 'gi0/1',
+          ipAddress: '192.168.10.1',
+          subnetMask: '255.255.255.0',
+          shutdown: false,
+          mode: 'routed'
+        }
+      }
+    } as unknown as SwitchState;
+
+    const r2State = {
+      id: 'R2',
+      hostname: 'R2',
+      deviceType: 'router',
+      routingProtocol: 'rip',
+      ipRouting: true,
+      ports: {
+        'gi0/0': {
+          id: 'gi0/0',
+          ipAddress: '19.16.1.2',
+          subnetMask: '255.255.255.0',
+          shutdown: false,
+          mode: 'routed'
+        },
+        'gi0/1': {
+          id: 'gi0/1',
+          ipAddress: '192.168.20.1',
+          subnetMask: '255.255.255.0',
+          shutdown: false,
+          mode: 'routed'
+        }
+      }
+    } as unknown as SwitchState;
+
+    const deviceStates = new Map<string, SwitchState>([
+      ['R1', r1State],
+      ['R2', r2State]
+    ]);
+
+    const routesR1 = getRoutingTable('R1', deviceStates, devices, connections);
+    const ripRoute = routesR1.find(r => r.destination === '192.168.20.0');
+    expect(ripRoute).toBeDefined();
+    expect(ripRoute?.nextHop).toBe('19.16.1.2');
+    expect(ripRoute?.type).toBe('dynamic');
+    expect(ripRoute?.metric).toBe(120);
   });
 });

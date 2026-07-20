@@ -1,7 +1,9 @@
 import { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
-import { SwitchState } from './types';
+import { SwitchState, Port } from './types';
 import { calculateOSPFRoutes } from './ospf';
 import { calculateEigrpRoutes } from './eigrp-dual';
+import { validateSviStatus } from './core/L3Validation';
+
 
 export interface Route {
   destination: string;      // e.g., "192.168.2.0" or "2001:db8:1::"
@@ -29,6 +31,19 @@ function buildRoutingTable(
 
   // 1. Connected routes (directly connected networks)
   for (const [portId, port] of Object.entries(state.ports)) {
+    if (port.shutdown) continue;
+
+    // Check SVI status if it's a VLAN interface
+    if (portId.toLowerCase().startsWith('vlan')) {
+      const vlanId = parseInt(portId.replace(/vlan/i, ''), 10);
+      if (!isNaN(vlanId)) {
+        const sviStatus = validateSviStatus(state, vlanId);
+        if (sviStatus.status !== 'up') {
+          continue;
+        }
+      }
+    }
+
     if (port.ipAddress && port.subnetMask) {
       routes.push({
         destination: getNetworkAddress(port.ipAddress, port.subnetMask),
@@ -95,6 +110,16 @@ function buildRoutingTable(
   if (state.routingProtocol === 'eigrp' && state.eigrpAs) {
     const eigrpRoutes = calculateEigrpRoutes(deviceId, deviceStates);
     eigrpRoutes.forEach(r => {
+      if (!routes.some(existing => existing.destination === r.destination && (existing.type === 'connected' || existing.type === 'static'))) {
+        routes.push(r);
+      }
+    });
+  }
+
+  // RIP dynamic routing learning
+  if (state.routingProtocol === 'rip') {
+    const ripRoutes = calculateRipRoutes(deviceId, deviceStates);
+    ripRoutes.forEach(r => {
       if (!routes.some(existing => existing.destination === r.destination && (existing.type === 'connected' || existing.type === 'static'))) {
         routes.push(r);
       }
@@ -332,7 +357,20 @@ function buildBasicRoutingTable(state: SwitchState): Route[] {
 
   // 1. Connected routes
   for (const [portId, port] of Object.entries(state.ports)) {
-    if (port.ipAddress && port.subnetMask && !port.shutdown) {
+    if (port.shutdown) continue;
+
+    // Check SVI status if it's a VLAN interface
+    if (portId.toLowerCase().startsWith('vlan')) {
+      const vlanId = parseInt(portId.replace(/vlan/i, ''), 10);
+      if (!isNaN(vlanId)) {
+        const sviStatus = validateSviStatus(state, vlanId);
+        if (sviStatus.status !== 'up') {
+          continue;
+        }
+      }
+    }
+
+    if (port.ipAddress && port.subnetMask) {
       routes.push({
         destination: getNetworkAddress(port.ipAddress, port.subnetMask),
         subnetMask: port.subnetMask,
@@ -341,7 +379,7 @@ function buildBasicRoutingTable(state: SwitchState): Route[] {
         metric: 0
       });
     }
-    if (port.ipv6Address && port.ipv6Prefix && !port.shutdown) {
+    if (port.ipv6Address && port.ipv6Prefix) {
       routes.push({
         destination: port.ipv6Address,
         prefixLength: port.ipv6Prefix,
@@ -389,6 +427,95 @@ function buildBasicRoutingTable(state: SwitchState): Route[] {
 export interface L3Hop {
   name: string;
   ip: string;
+}
+
+/**
+ * Calculate RIP (RIP for IPv4) routes for a device
+ */
+function calculateRipRoutes(
+  deviceId: string,
+  deviceStates: Map<string, SwitchState>
+): Route[] {
+  const routes: Route[] = [];
+  const state = deviceStates.get(deviceId);
+  if (!state || state.routingProtocol !== 'rip') return routes;
+
+  const visitedAds = new Set<string>();
+
+  for (const [otherId, otherState] of deviceStates) {
+    if (otherState.routingProtocol !== 'rip') continue;
+    if (otherId === deviceId) continue;
+
+    // Check adjacency
+    let isAdjacent = false;
+    let neighborIp: string | undefined;
+    let localPort: Port | undefined;
+
+    for (const otherPort of Object.values(otherState.ports)) {
+      if (!otherPort.ipAddress || !otherPort.subnetMask || otherPort.shutdown) continue;
+
+      for (const thisPort of Object.values(state.ports)) {
+        if (!thisPort.ipAddress || !thisPort.subnetMask || thisPort.shutdown) continue;
+
+        if (getNetworkAddress(otherPort.ipAddress, otherPort.subnetMask) === getNetworkAddress(thisPort.ipAddress, thisPort.subnetMask)) {
+          isAdjacent = true;
+          neighborIp = otherPort.ipAddress;
+          localPort = thisPort;
+          break;
+        }
+      }
+      if (isAdjacent) break;
+    }
+
+    if (!isAdjacent || !neighborIp || !localPort) continue;
+
+    // Collect networks from adjacent RIP neighbor
+    for (const otherPort of Object.values(otherState.ports)) {
+      if (!otherPort.ipAddress || !otherPort.subnetMask || otherPort.shutdown) continue;
+
+      const dest = getNetworkAddress(otherPort.ipAddress, otherPort.subnetMask);
+      const routeKey = `${dest}/${otherPort.subnetMask}`;
+      if (visitedAds.has(routeKey)) continue;
+      visitedAds.add(routeKey);
+
+      const alreadyHas = Object.values(state.ports).some(
+        p => p.ipAddress && p.subnetMask && getNetworkAddress(p.ipAddress, p.subnetMask) === dest
+      );
+      if (alreadyHas) continue;
+
+      routes.push({
+        destination: dest,
+        subnetMask: otherPort.subnetMask,
+        nextHop: neighborIp,
+        type: 'dynamic',
+        metric: 120
+      });
+    }
+
+    // Propagate dynamically learned or configured RIP networks
+    for (const route of otherState.dynamicRoutes || []) {
+      if (route.type !== 'dynamic' || !route.destination || !route.subnetMask) continue;
+
+      const routeKey = `${route.destination}/${route.subnetMask}`;
+      if (visitedAds.has(routeKey)) continue;
+      visitedAds.add(routeKey);
+
+      const alreadyHas = Object.values(state.ports).some(
+        p => p.ipAddress && p.subnetMask && getNetworkAddress(p.ipAddress, p.subnetMask) === route.destination
+      );
+      if (alreadyHas) continue;
+
+      routes.push({
+        destination: route.destination,
+        subnetMask: route.subnetMask,
+        nextHop: neighborIp,
+        type: 'dynamic',
+        metric: 120
+      });
+    }
+  }
+
+  return routes;
 }
 
 /**

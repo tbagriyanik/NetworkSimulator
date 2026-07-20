@@ -1,6 +1,6 @@
 # 🌐 Network Simulator - Kapsamlı Kullanım Kılavuzu ve Eğitim Kitapçığı
 
-![Simulator Logo](https://network2026.vercel.app/app.png)
+![Simulator Logo](https://network2026.vercel.app/app.png){:width="150px"}
 
 ## 📘 İçindekiler
 1. [Network Simulator (Özellikler ve Yenilikler)](#network-simulator)

@@ -15,14 +15,14 @@ The project is a Next.js application built with TypeScript and Tailwind CSS.
 
 ## 🛠️ Development Workflow
 
-We use **pnpm** for package management.
+We use **npm** for package management.
 
 ### Common Commands:
-- **Install Dependencies**: `pnpm install`
-- **Run Development Server**: `pnpm dev`
-- **Run Tests**: `pnpm test`
-- **Lint Code**: `pnpm lint`
-- **Build for Production**: `pnpm build`
+- **Install Dependencies**: `npm install`
+- **Run Development Server**: `npm run dev`
+- **Run Tests**: `npm run test`
+- **Lint Code**: `npm run lint`
+- **Build for Production**: `npm run build`
 
 ## 🎨 Coding Conventions
 

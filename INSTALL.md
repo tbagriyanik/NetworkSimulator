@@ -5,22 +5,10 @@
 ### 1. Bağımlılıkları Yükle
 
 ```bash
-pnpm install
-```
-
-veya
-
-```bash
 npm install
 ```
 
 ### 2. Geliştirme Sunucusunu Başlat
-
-```bash
-pnpm dev
-```
-
-veya
 
 ```bash
 npm run dev
@@ -66,23 +54,23 @@ Tarayıcıda açın: [http://localhost:3000](http://localhost:3000)
 
 ### TypeScript
 ```bash
-pnpm tsc --noEmit
+npm run tsc --noEmit
 ```
 
 ### Linting
 ```bash
-pnpm lint
+npm run lint
 ```
 
 ### Build
 ```bash
-pnpm build
+npm run build
 ```
 
 ### Test
 ```bash
-pnpm test
-pnpm vitest        # watch mode
+npm run test
+npm run test -- --watch
 ```
 
 ## 🐛 Sorun Giderme

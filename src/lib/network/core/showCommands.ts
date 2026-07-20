@@ -974,8 +974,19 @@ function cmdShowMemory(_state: SwitchState, _input: string, _ctx: CommandContext
 /**
  * Show SDM Prefer
  */
-function cmdShowSdmPrefer(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  return { success: true, output: '\nThe current template is "default" template.\n The selected template optimizes the resources in\n the switch to support this level of features for\n 8 routed interfaces and 1024 VLANs.\n' };
+function cmdShowSdmPrefer(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  const template = state.sdmTemplate || 'default';
+  let output = `\nThe current template is "${template}" template.\n`;
+  if (template === 'lanbase-routing' || template === 'routing') {
+    output += ` The selected template optimizes the resources in\n the switch to support this level of features for\n 16384 IPv4 ACL entries, 2048 QoS labels, 16384 IPv4 Multicast entries.\n`;
+  } else if (template === 'lanbase') {
+    output += ` The selected template optimizes the resources in\n the switch to support this level of features for\n 8192 IPv4 ACL entries, 2048 QoS labels, 2048 IPv4 Multicast entries.\n`;
+  } else if (template === 'desktop') {
+    output += ` The selected template optimizes the resources in\n the switch to support this level of features for\n 4096 IPv4 ACL entries, 512 QoS labels, 256 IPv4 Multicast entries.\n`;
+  } else {
+    output += ` The selected template optimizes the resources in\n the switch to support this level of features for\n 8 routed interfaces and 1024 VLANs.\n`;
+  }
+  return { success: true, output };
 }
 
 /**
