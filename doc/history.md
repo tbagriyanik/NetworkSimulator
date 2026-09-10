@@ -2,6 +2,14 @@
 
 Yeniden eskiye, tarih mevcuttur.
 
+## v4.9.0 — 2026-09-10
+
+**UI Canlı Simülasyon Kontrolü, Hızlı Komut Paleti (Ctrl+K), AES-GCM Güvenlik Katmanı ve Kod Modülerleştirmesi** —
+- **🚀 Canlı Simülasyon Hız Kontrolü (`SimulationSpeedControl.tsx`)**: Topolojide paket simülasyon hızı `0.5x`, `1x`, `2x`, `5x` olarak ayarlanabilmekte, simülasyon duraklatılabilmekte ve adım adım (step-by-step) paket takibi yapılabilmektedir.
+- **⚡ Hızlı Komut Paleti (`ShortcutPaletteModal.tsx`)**: `Ctrl+K` / `Cmd+K` kısayolu ile açılan arama destekli interaktif komut paleti eklendi.
+- **🛡️ Web Crypto API (AES-GCM) Şifreli Depolama (`secureStorage.ts`)**: `XOR + Base64` obfüskasyonu yerine 256-bit AES-GCM Web Crypto API standardı kullanılarak cihaz bazlı güvenli veri depolama katmanı ve Vitest birim testleri uygulandı.
+- **🧩 Bileşen Modülerleştirmesi & Error Boundary (`NetworkErrorBoundary.tsx`)**: CLI Terminal bileşeninde komut geçmişi (`useTerminalHistory.ts`) ve klavye kısayolları (`useTerminalKeybindings.ts`) ayrıştırıldı; topoloji tuvali için React Error Boundary hata yalıtımı entegre edildi.
+
 ## v4.8.0 — 2026-09-08
 
 **CLI İyileştirmeleri, Canlı Arayüz Sayaçları, Ağ Teşhis Detektörleri, STP/OSPF/EIGRP/NAT Motor Güncellemeleri ve Network Health Check** —

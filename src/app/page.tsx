@@ -32,6 +32,8 @@ const NetworkTopology = dynamic(
   { ssr: false }
 );
 
+import { NetworkErrorBoundary } from '@/components/network/NetworkErrorBoundary';
+
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
@@ -1189,48 +1191,50 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
                 )}
 
                 <div ref={topologyContainerRef} className="flex-1 w-full h-full min-h-0 overflow-hidden relative">
-                  <NetworkTopology
-                    onPingPanelOpenChange={setIsPingPanelOpen}
-                    key={topologyKey}
-                    cableInfo={cableInfo}
-                    onCableChange={setCableInfo}
-                    selectedDevice={selectedDevice}
-                    onDeviceSelect={handleDeviceSelectFromCanvas}
-                    onDeviceDoubleClick={handleDeviceDoubleClick}
-                    onDeviceDelete={handleDeviceDelete}
-                    onDeviceRename={handleDeviceRename}
-                    initialDevices={topologyDevices || undefined}
-                    initialConnections={topologyConnections || undefined}
-                    initialNotes={topologyNotes || undefined}
-                    isActive={activeTab === 'topology'}
-                    activeDeviceId={activeDeviceId}
-                    deviceStates={deviceStates}
-                    onDeviceStatesChange={setDeviceStates}
-                    zoom={zoom}
-                    onZoomChange={setZoom}
-                    pan={pan}
-                    onPanChange={setPan}
-                    canUndo={canUndo}
-                    canRedo={canRedo}
-                    onUndo={handleUndo}
-                    onRedo={handleRedo}
-                    onRefreshNetwork={handleRefreshNetwork}
-                    focusDeviceId={focusDeviceId}
-                    isExamActive={isExamActive}
-                    isExamEditorOpen={isEditorOpen}
-                    onOpenTasks={(deviceId: string) => {
-                      setActiveDeviceId(deviceId);
-                      const device = topologyDevices?.find(d => d.id === deviceId);
-                      if (!device || device.type === 'pc') return;
-                      setActiveDeviceType(device.type);
-                      setUnifiedDeviceActiveTab('settings');
-                      setShowUnifiedDeviceModal(true);
-                    }}
-                    clearSelectionTrigger={clearSelectionTrigger}
-                    onPacketPanelFocus={() => setFocusedOverlay('packet')}
-                    packetPanelZIndex={focusedOverlay === 'packet' ? 35 : 30}
-                    onAction={commitAction}
-                  />
+                  <NetworkErrorBoundary fallbackTitle="Topoloji Tuvali Yüklenirken Bir Hata Oluştu">
+                    <NetworkTopology
+                      onPingPanelOpenChange={setIsPingPanelOpen}
+                      key={topologyKey}
+                      cableInfo={cableInfo}
+                      onCableChange={setCableInfo}
+                      selectedDevice={selectedDevice}
+                      onDeviceSelect={handleDeviceSelectFromCanvas}
+                      onDeviceDoubleClick={handleDeviceDoubleClick}
+                      onDeviceDelete={handleDeviceDelete}
+                      onDeviceRename={handleDeviceRename}
+                      initialDevices={topologyDevices || undefined}
+                      initialConnections={topologyConnections || undefined}
+                      initialNotes={topologyNotes || undefined}
+                      isActive={activeTab === 'topology'}
+                      activeDeviceId={activeDeviceId}
+                      deviceStates={deviceStates}
+                      onDeviceStatesChange={setDeviceStates}
+                      zoom={zoom}
+                      onZoomChange={setZoom}
+                      pan={pan}
+                      onPanChange={setPan}
+                      canUndo={canUndo}
+                      canRedo={canRedo}
+                      onUndo={handleUndo}
+                      onRedo={handleRedo}
+                      onRefreshNetwork={handleRefreshNetwork}
+                      focusDeviceId={focusDeviceId}
+                      isExamActive={isExamActive}
+                      isExamEditorOpen={isEditorOpen}
+                      onOpenTasks={(deviceId: string) => {
+                        setActiveDeviceId(deviceId);
+                        const device = topologyDevices?.find(d => d.id === deviceId);
+                        if (!device || device.type === 'pc') return;
+                        setActiveDeviceType(device.type);
+                        setUnifiedDeviceActiveTab('settings');
+                        setShowUnifiedDeviceModal(true);
+                      }}
+                      clearSelectionTrigger={clearSelectionTrigger}
+                      onPacketPanelFocus={() => setFocusedOverlay('packet')}
+                      packetPanelZIndex={focusedOverlay === 'packet' ? 35 : 30}
+                      onAction={commitAction}
+                    />
+                  </NetworkErrorBoundary>
 
                   {(() => {
                     const activeDevice = activeDeviceId

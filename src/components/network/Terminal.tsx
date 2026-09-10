@@ -22,6 +22,8 @@ import { RouterIcon, SwitchIcon, WlcIcon } from './PCPanelWidgets';
 import { BootProgressBar, completedBootIds, BOOT_PROGRESS_MARKER } from './terminal/BootProgressBar';
 import { useTerminalTabCompletion } from './terminal/useTerminalTabCompletion';
 import { TerminalHeaderActions } from './terminal/TerminalHeaderActions';
+import { useTerminalHistory } from './terminal/useTerminalHistory';
+import { handleTerminalShortcuts } from './terminal/useTerminalKeybindings';
 
 export interface TerminalOutput {
   id: string;
@@ -113,8 +115,12 @@ export function Terminal({
   deviceStates
 }: TerminalProps) {
   const [input, setInput] = useState('');
-  const [history, setHistory] = useState<string[]>(() => state.commandHistory || []);
-  const [historyIndex, setHistoryIndex] = useState(-1);
+  const {
+    history,
+    addHistoryCommand,
+    navigateUp,
+    navigateDown,
+  } = useTerminalHistory(deviceId, state.commandHistory);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSettings, setShowSettings] = useState(false);
@@ -222,21 +228,7 @@ export function Terminal({
     return null;
   }, [device?.type, state.switchModel]);
 
-  // Sync with global history — adjust state during render instead of effect
-  const [prevHistorySync, setPrevHistorySync] = useState<{
-    deviceId: string | null;
-    history: string[] | undefined;
-  }>({ deviceId: null, history: undefined });
-  const globalHistory = state.commandHistory || [];
-  if (prevHistorySync.deviceId !== deviceId || prevHistorySync.history !== state.commandHistory) {
-    const deviceChanged = prevHistorySync.deviceId !== deviceId;
-    setPrevHistorySync({ deviceId, history: state.commandHistory });
-    setHistory(globalHistory);
-    // Reset index only when device actually changes
-    if (deviceChanged) {
-      setHistoryIndex(-1);
-    }
-  }
+
 
   const [tabCycleIndex, setTabCycleIndex] = useState(-1);
   const [lastTabInput, setLastTabInput] = useState('');
@@ -245,6 +237,7 @@ export function Terminal({
   const terminalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<HTMLDivElement>(null);
+  const autocompleteListRef = useRef<HTMLDivElement>(null);
   const wasWifiConnectedRef = useRef<boolean>(true);
 
   const {
@@ -338,12 +331,11 @@ export function Terminal({
         const nextCommand = commandQueueRef.current.shift();
         if (!nextCommand) continue;
 
-        if (currentHistory[0] !== nextCommand) {
-          currentHistory = [nextCommand, ...currentHistory].slice(0, 50);
-          setHistory(currentHistory);
+        const updatedHistory = addHistoryCommand(nextCommand);
+        if (updatedHistory !== currentHistory) {
+          currentHistory = updatedHistory;
           if (onUpdateHistory) onUpdateHistory(deviceId, currentHistory);
         }
-        setHistoryIndex(-1);
         setTabCycleIndex(-1);
         setShowAutocomplete(false);
         setAutocompleteIndex(-1);
@@ -367,7 +359,7 @@ export function Terminal({
     } finally {
       isProcessingQueueRef.current = false;
     }
-  }, [history, deviceId, onCommand, onUpdateHistory]);
+  }, [history, addHistoryCommand, deviceId, onCommand, onUpdateHistory]);
 
   useEffect(() => {
     if (!showAutocomplete) return;
@@ -388,10 +380,17 @@ export function Terminal({
 
   // Scroll active autocomplete item into view when navigating with arrow keys
   useEffect(() => {
-    if (showAutocomplete && autocompleteIndex >= 0 && autocompleteRef.current) {
-      const activeEl = autocompleteRef.current.querySelector(`[data-autocomplete-index="${autocompleteIndex}"]`) as HTMLElement | null;
-      if (activeEl) {
-        activeEl.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    if (showAutocomplete && autocompleteIndex >= 0) {
+      const container = autocompleteListRef.current;
+      const activeEl = autocompleteRef.current?.querySelector(`[data-autocomplete-index="${autocompleteIndex}"]`) as HTMLElement | null;
+      if (container && activeEl) {
+        const containerRect = container.getBoundingClientRect();
+        const itemRect = activeEl.getBoundingClientRect();
+        if (itemRect.top < containerRect.top) {
+          container.scrollTop += itemRect.top - containerRect.top;
+        } else if (itemRect.bottom > containerRect.bottom) {
+          container.scrollTop += itemRect.bottom - containerRect.bottom;
+        }
       }
     }
   }, [showAutocomplete, autocompleteIndex]);
@@ -720,12 +719,10 @@ export function Terminal({
     const command = (cmdToExecute || input).trim();
     if (!command || isInputDisabled) return;
 
-    if (history[0] !== command) {
-      const newHistory = [command, ...history].slice(0, 50);
-      setHistory(newHistory);
-      if (onUpdateHistory) onUpdateHistory(deviceId, newHistory);
+    const updatedHistory = addHistoryCommand(command);
+    if (onUpdateHistory && updatedHistory !== history) {
+      onUpdateHistory(deviceId, updatedHistory);
     }
-    setHistoryIndex(-1);
     setTabCycleIndex(-1);
     setInput('');
     setShowAutocomplete(false);
@@ -1077,86 +1074,16 @@ export function Terminal({
     // Block history/tab navigation during password/confirm modes
     if (state.awaitingPassword || localPasswordPrompt || state.awaitingConfigSource || confirmDialog?.show) return;
 
-    // Handle Ctrl+Z (Undo)
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
-      e.preventDefault();
-      handleUndo();
-      return;
-    }
-
-    // Handle Ctrl+Y (Redo)
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
-      e.preventDefault();
-      handleRedo();
-      return;
-    }
-
-    // Handle Ctrl+A (Select All)
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
-      e.preventDefault();
-      if (inputRef.current) {
-        inputRef.current.select();
-      }
-      return;
-    }
-
-    // Handle Ctrl+X (Cut)
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'x') {
-      e.preventDefault();
-      if (inputRef.current && input) {
-        const start = inputRef.current.selectionStart || 0;
-        const end = inputRef.current.selectionEnd || 0;
-        if (start !== end) {
-          const selectedText = input.substring(start, end);
-          navigator.clipboard.writeText(selectedText).then(() => {
-            const newInput = input.substring(0, start) + input.substring(end);
-            setInput(newInput);
-          });
-        }
-      }
-      return;
-    }
-
-    // Handle Ctrl+C (Copy)
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
-      e.preventDefault();
-      if (inputRef.current && input) {
-        const start = inputRef.current.selectionStart || 0;
-        const end = inputRef.current.selectionEnd || 0;
-        if (start !== end) {
-          const selectedText = input.substring(start, end);
-          navigator.clipboard?.writeText(selectedText)?.catch?.(() => { });
-        } else if (input) {
-          // If no selection, copy all
-          navigator.clipboard?.writeText(input)?.catch?.(() => { });
-        }
-      }
-      return;
-    }
-
-    // Handle Ctrl+V (Paste)
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
-      e.preventDefault();
-      navigator.clipboard?.readText()?.then(text => {
-        if (text && text.includes('\n')) {
-          queueCommands(text.split('\n'));
-          setInput('');
-          void processCommandQueue();
-          return;
-        }
-
-        if (text) {
-          const start = inputRef.current?.selectionStart || 0;
-          const end = inputRef.current?.selectionEnd || 0;
-          const newInput = input.substring(0, start) + text + input.substring(end);
-          setInput(newInput);
-          setTimeout(() => {
-            if (inputRef.current) {
-              inputRef.current.selectionStart = inputRef.current.selectionEnd = start + text.length;
-            }
-          }, 0);
-        }
-      })?.catch?.(() => { });
+    // Handle terminal keyboard shortcuts (Ctrl+Z, Ctrl+Y, Ctrl+A, Ctrl+X, Ctrl+C, Ctrl+V)
+    if (handleTerminalShortcuts(e, {
+      input,
+      setInput,
+      inputRef,
+      onUndo: handleUndo,
+      onRedo: handleRedo,
+      queueCommands,
+      processCommandQueue,
+    })) {
       return;
     }
 
@@ -1172,11 +1099,9 @@ export function Terminal({
       e.preventDefault();
       setShowAutocomplete(false);
       setAutocompleteIndex(-1);
-      const currentHist = history;
-      if (currentHist.length > 0 && historyIndex < currentHist.length - 1) {
-        const ni = historyIndex + 1;
-        setHistoryIndex(ni);
-        setInput(currentHist[ni]);
+      const prevCmd = navigateUp();
+      if (prevCmd !== null) {
+        setInput(prevCmd);
       }
     } else if (e.key === 'ArrowDown') {
       if (canUseAutocomplete) {
@@ -1190,14 +1115,9 @@ export function Terminal({
       e.preventDefault();
       setShowAutocomplete(false);
       setAutocompleteIndex(-1);
-      const currentHist = history;
-      if (historyIndex > 0) {
-        const ni = historyIndex - 1;
-        setHistoryIndex(ni);
-        setInput(currentHist[ni]);
-      } else if (historyIndex === 0) {
-        setHistoryIndex(-1);
-        setInput('');
+      const nextCmd = navigateDown();
+      if (nextCmd !== null) {
+        setInput(nextCmd);
       }
     } else if (e.key === 'Tab' && !e.ctrlKey && !e.metaKey) {
       e.preventDefault();
@@ -1587,7 +1507,7 @@ export function Terminal({
                   "rounded-lg border shadow-xl overflow-hidden",
                   isDark ? "bg-secondary-800 border-secondary-700" : "bg-white border-secondary-200"
                 )}>
-                  <div className="max-h-40 overflow-y-auto overflow-x-hidden font-geist-mono flex flex-col">
+                  <div ref={autocompleteListRef} className="max-h-40 overflow-y-auto overflow-x-hidden font-geist-mono flex flex-col">
                     {renderAutocompleteSuggestions.map((cmd, idx) => (
                       <button
                         key={idx}

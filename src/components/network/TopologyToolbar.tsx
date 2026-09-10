@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -20,12 +21,14 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { DeviceIcon } from '@/components/network/DeviceIcon';
-import { ChevronDown, Plus, Undo2, Redo2, Search, X, Cable, LineSquiggle, Leaf, Plug, TrendingUpDown, Users, UserKey, Activity } from 'lucide-react';
+import { ChevronDown, Plus, Undo2, Redo2, Search, X, Cable, LineSquiggle, Leaf, Plug, TrendingUpDown, Users, UserKey, Activity, Command } from 'lucide-react';
 import type { Translations } from '@/contexts/LanguageContext';
 import type { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
 import type { SwitchState, CableType, CableInfo } from '@/lib/network/types';
 import { useAppStore } from '@/lib/store/appStore';
 import { cn } from '@/lib/utils';
+import { SimulationSpeedControl } from './SimulationSpeedControl';
+import { ShortcutPaletteModal } from './ShortcutPaletteModal';
 
 interface TopologyToolbarProps {
   t: Translations;
@@ -94,8 +97,12 @@ export function TopologyToolbar({
   const graphicsQuality = useAppStore((state) => state.graphicsQuality);
   const isSimulationMode = useAppStore((state) => state.topology.isSimulationMode);
   const setSimulationMode = useAppStore((state) => state.setSimulationMode);
+  const topologyZoom = useAppStore((state) => state.topology.zoom);
 
   const isHighQuality = graphicsQuality === 'high';
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [simulationSpeed, setSimulationSpeed] = useState(1);
+  const [isSimPaused, setIsSimPaused] = useState(false);
   // Register Home key shortcut for reset view
   const toolbarGlowClass = isHighQuality
     ? 'drop-shadow-[0_0_2px_rgba(34,211,238,0.15)] dark:drop-shadow-[0_0_2px_rgba(34,211,238,0.12)]'
@@ -509,7 +516,56 @@ export function TopologyToolbar({
             <ShortcutBadge shortcut="S" variant="danger" />
           </TooltipContent>
         </Tooltip>
+
+        {/* Simulation Speed & Command Palette Buttons (hidden by default) */}
+        {process.env.NEXT_PUBLIC_SHOW_EXPERIMENTAL_CONTROLS && (
+          <>
+            {isSimulationMode && (
+              <SimulationSpeedControl
+                speedMultiplier={simulationSpeed}
+                onSpeedChange={setSimulationSpeed}
+                isPaused={isSimPaused}
+                onTogglePause={() => setIsSimPaused(!isSimPaused)}
+                onStepForward={() => {
+                  const event = new CustomEvent('step-simulation');
+                  window.dispatchEvent(event);
+                }}
+              />
+            )}
+
+            {/* Command Palette Button (Ctrl+K) */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  aria-label="Komut Paleti"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 p-0 text-primary-500 hover:bg-primary-500/10"
+                  onClick={() => setIsPaletteOpen(true)}
+                >
+                  <Command className={`w-4 h-4 ${toolbarGlowClass}`} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="flex items-center gap-2">
+                <span>Komut Paleti</span>
+                <ShortcutBadge shortcut="Ctrl+K" variant="primary" />
+              </TooltipContent>
+            </Tooltip>
+          </>
+        )}
       </div>
+
+      {process.env.NEXT_PUBLIC_SHOW_EXPERIMENTAL_CONTROLS && (
+        <ShortcutPaletteModal
+          isOpen={isPaletteOpen}
+          onClose={() => setIsPaletteOpen(false)}
+          onAddDevice={(type) => handleDeviceSelectFromMenu(type)}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          onZoomIn={() => setZoom(Math.min(2.5, topologyZoom + 0.1))}
+          onZoomOut={() => setZoom(Math.max(0.4, topologyZoom - 0.1))}
+        />
+      )}
 
       {/* History Group (Undo / Redo) */}
       <div className={`flex items-center gap-0 p-1 rounded-xl border shrink-0 ${isDark ? 'bg-secondary-900/40 border-secondary-700/30' : 'bg-primary-50/50 border-primary-100/50'}`}>
