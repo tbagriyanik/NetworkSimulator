@@ -9,8 +9,9 @@ import type {
   LacpPortRecord,
 } from './protocols/protocolStateMachines';
 import type { Route, BgpNeighbor } from './types/routingTypes';
+import type { NveInterface, EigrpNamedInstance, OspfVirtualLinkConfig } from './types/protocols';
 
-export type { Route, BgpNeighbor };
+export type { Route, BgpNeighbor, NveInterface, EigrpNamedInstance, OspfVirtualLinkConfig };
 export * from './types/ports';
 export * from './types/routingTypes';
 export * from './types/protocols';
@@ -571,6 +572,9 @@ export interface SwitchState {
   ospfAreaRanges?: { areaId: string; network: string; mask: string; advertise: boolean }[];
   vrfInstances?: Record<string, { name: string; rd?: string; interfaces: string[] }>;
   qosPolicies?: Record<string, { name: string; classes: { name: string; priorityPercent?: number; bandwidthKbps?: number }[] }>;
+  nveInterfaces?: Record<string, NveInterface>;
+  eigrpNamedInstances?: Record<string, EigrpNamedInstance>;
+  ospfVirtualLinks?: Record<string, OspfVirtualLinkConfig>;
   bootTime: number;
   // New optional properties for extended features
   domainName?: string;

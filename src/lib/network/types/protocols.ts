@@ -50,3 +50,28 @@ export interface QosPolicy {
     policeRateKbps?: number;
   }>;
 }
+
+export interface NveInterface {
+  name: string;
+  sourceInterface: string;
+  vniMappings: Record<number, { vlanId: number; ingressReplication?: boolean }>;
+  status: 'up' | 'down';
+}
+
+export interface EigrpNamedInstance {
+  name: string;
+  addressFamilies: Record<string, {
+    asNumber: number;
+    networks: string[];
+    routerId?: string;
+    metrics64Bit?: boolean;
+  }>;
+}
+
+export interface OspfVirtualLinkConfig {
+  transitAreaId: string;
+  neighborRouterId: string;
+  authType?: 'null' | 'simple' | 'md5';
+  authKey?: string;
+  status: 'up' | 'down';
+}
