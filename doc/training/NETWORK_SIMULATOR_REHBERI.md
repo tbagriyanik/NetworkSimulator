@@ -1,6 +1,6 @@
 # Network Simulator — Kapsamlı Uygulama ve Kullanım Rehberi
 
-**Sürüm / Version:** 4.7.0  
+**Sürüm / Version:** 4.10.0  
 **Doküman Tipi:** Kullanım, Mimari, Komut Referansı ve Laboratuvar Kılavuzu  
 **Dil:** Türkçe (Turkish)
 
@@ -27,6 +27,12 @@ Network Simulator; bilgisayar ağları, anahtarlama (switching), yönlendirme (r
 
 - **%100 İstemci Taraflı (Client-Side) ve Hızlı:** React 19, Next.js 16 ve TypeScript altyapısıyla herhangi bir sunucu kurulumu gerektirmeden tarayıcıda çalışır.
 - **11 Tam Donanımlı Cihaz Tipi:** Router, L2/L3 Switch, Firewall, WLC, AP, PC, IoT, Multiport Hub (`hub`), Aktif Bulut WAN Geçidi (`cloud`), Kablosuz Akıllı Telefon (`mobile`) ve Ağ Yazıcısı (`printer`).
+- **🧩 NetSim Modüler Donanım Şasisi & Yuva Yönetimi:** Router ve Switch cihazlarında fiziksel yuvalara (Slots) NetSim WIC-2T (Serial), NetSim HWIC-4ESW (Switch), NetSim SFP-10G-LR (Fiber), NetSim NM-1GE (Copper) modülleri takıp çıkarabilme, Donanım Güç Anahtarı (Power Switch) ile sıcak değişim koruması ve dinamik port tablosu.
+- **🗺️ İnteraktif Mini-Harita & Subnet Navigatörü:** Sağ alt köşede sürüklenebilir tuval penceresi, "Ekrana Sığdır" (Fit to Screen) ve OSPF/VLAN/Subnet alanlarına anında kamera odaklama (Focus Subnet).
+- **🎨 VLAN & OSPF/BGP Alan Renklendirme Overlay'i:** Andrew Monotone Chain 2D konveks zarf algoritması ve SVG yumuşak yumru çizimi ile OSPF Area 0/1, VLAN Bölgeleri, BGP AS ve IP Subnet'lerinin cihazlar arkasında parlayan renkli bulutlarla gösterimi.
+- **🖼️ Snapshot & Checkpoint Portal Modalı:** `createPortal(..., document.body)` ile tam ekran bağımsız modal rendering, anlık topoloji durum dondurma, arama, JSON içe/dışa aktarma ve onaylı geri yükleme (Rollback).
+- **🩺 "Neden Ping Gitmiyor?" Kök Neden Teşhisi:** L1 fiziksel link/shutdown, L2 VLAN/Trunk/Native VLAN uyumsuzlukları, L3 Subnet & Default Gateway eksikliklerini otomatik tarayıp çözüm önerileri sunan Stethoscope teşhis motoru ve modalı.
+- **🌐 BGP / MP-BGP & MPLS LDP Motorları:** Autonomous System (AS) yönlendirmesi, eBGP/iBGP durum makineleri (`Established`), VRF/RD/RT taşıma, LDP oturumları, LFIB etiket takası ve PHP `Implicit-Null` desteği.
 - **📱 Sekmeli Paket Analizi & Mobil Geri Tuşu Uyumlu Pencere Mimarisi:** Paket Analizi penceresi içinde entegre sekmeli (Paket Akışı / İzleme Detayları) görünüm, mobil tam ekran responsive düzen ve tüm sürüklenebilir/modal pencerelerin mobil tarayıcı/donanım Geri düğmesi (`mobile-back-pressed` / `popstate`) ve `Escape` tuşu ile sorunsuz kapatılma altyapısı.
 - **📋 Fare Seçimi İle Otomatik Panoya Kopyalama (Auto-Copy):** PC CMD, Linux Terminali, Cihaz Konsol Sekmesi ve Ana CLI Terminal pencerelerinde komut geçmişinden fare ile metin seçilip bırakıldığı anda (`onMouseUp`) otomatik panoya (clipboard) kopyalama.
 - **☁️ Fonksiyonel Bulut / WAN Geçit Cihazı (`cloud`) & ICMP Ping:** Topolojideki Bulut cihazı `203.0.113.1` genel WAN IP adresi, `eth0..eth3` portları, kamu DNS/WAN IP'leri (`8.8.8.8`, `1.1.1.1`) için hem Web hem de ICMP Ping yönlendirme ve NTP (`pool.ntp.org`) desteği.

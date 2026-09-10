@@ -2,6 +2,23 @@
 
 Yeniden eskiye, tarih mevcuttur.
 
+## v4.10.0 — 2026-09-10
+
+**NetSim Donanım Modülasyonu (WIC/HWIC/SFP), Fiziksel Şasi Paneli, İnteraktif Mini-Harita Navigatörü, VLAN/OSPF Alan Renklendirme Overlay'i, Portal Tabanlı Snapshot Rollback ve Render Performans Düzeltmeleri** —
+- **🧩 Çoklu Arayüz & Modüler Cihaz Genişletme (`modularExpansion.ts`, `PhysicalDeviceView.tsx`)**:
+  - **NetSim WIC-2T**: 2 Portlu Seri WAN modülü (Se0/X/0, Se0/X/1)
+  - **NetSim HWIC-4ESW**: 4 Portlu 10/100 Switch modülü (Fa0/X/0 - Fa0/X/3)
+  - **NetSim SFP-10G-LR**: 10G Fiber Uplink optik modülü (Te0/X/0)
+  - **NetSim NM-1GE**: 1 Portlu Gigabit Ethernet bakır modülü (Gi0/X/0)
+  - Router ve Switch cihazlarında yuvalara (Slots) modül takıp çıkarabilme, donanım güç anahtarı (Power Switch) ile sıcak değişim koruması ve dinamik port yaşam döngüsü.
+- **🗺️ İnteraktif Mini-Harita & Subnet Navigatörü (`MinimapNavigator.tsx`)**: Sağ alt köşede genişletilebilir ve sürüklenebilir tuval penceresi, "Ekrana Sığdır" (Fit to Screen) ve OSPF/VLAN/Subnet alanlarına anında kamera odaklama (Focus Subnet) açılır menüsü.
+- **🎨 VLAN & OSPF/BGP Alan Renklendirme Overlay'i (`areaOverlayEngine.ts`, `TopologyAreaOverlay.tsx`)**: Andrew Monotone Chain 2D konveks zarf algoritması ve SVG yumuşak yumru çizimi ile OSPF Area 0/1, VLAN Bölgeleri, BGP AS ve IP Subnet'lerinin cihazlar arkasında parlayan renkli bulutlarla gösterimi.
+- **🖼️ Snapshot & Checkpoint Portal Modalı (`SnapshotManagerModal.tsx`)**: `createPortal(..., document.body)` ile tam ekran bağımsız modal rendering, anlık topoloji durum dondurma, arama, JSON içe/dışa aktarma ve onaylı geri yükleme (Rollback).
+- **🏷️ NetSim Standartlaşması**: Cisco marka adları `NetSim` standart adlarıyla güncellendi (`NetSim WIC-2T`, `NetSim Modular Chassis View`, `NetSim RESTCONF Explorer`, `netsim-native:native` YANG modeli).
+- **⚡ Multi-Selection & Asenkron Packet Capture Fix (`useTopologyMouse.ts`, `usePageNetworkLogic.ts`)**:
+  - Tuval zemininde mouse-up yapıldığında aktif kutu seçiminin silinmesi engellendi.
+  - Global paket capture dinleyicisi `queueMicrotask` ile asenkronlaştırılarak React render sırasında `setState` hatası tamamen çözüldü.
+
 ## v4.9.0 — 2026-09-10
 
 **BGP / MP-BGP, MPLS LDP, Görsel DHCP Havuz Yönetimi, Kök Neden Teşhisi, Akıllı CLI İpuçları, Otomatik Topoloji Düzenleme ve Port Etiketleri** —

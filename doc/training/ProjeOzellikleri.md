@@ -1,8 +1,17 @@
 # NetworkSimulator — Tam Özellik Envanteri / Full Feature Inventory
 
-**Sürüm / Version:** 4.9.0 · **Son doğrulama / Last verified:** 2026-09-10
+**Sürüm / Version:** 4.10.0 · **Son doğrulama / Last verified:** 2026-09-10
 
-## Son Ağ Simülasyonu Geliştirmeleri (2026-09-10 - v4.9.0)
+## Son Ağ Simülasyonu Geliştirmeleri (2026-09-10 - v4.10.0)
+
+| Özellik | Güncel kapsam ve sınır |
+|---|---|
+| **NetSim Modüler Donanım Şasisi & Yuva Yönetimi** | Router ve Switch cihazlarında fiziksel yuvalara (Slots) NetSim WIC-2T (Serial), NetSim HWIC-4ESW (Switch), NetSim SFP-10G-LR (Fiber), NetSim NM-1GE (Copper) modülleri takıp çıkarabilme, Donanım Güç Anahtarı (Power Switch) ile sıcak değişim koruması (`modularExpansion.ts`, `PhysicalDeviceView.tsx`). |
+| **İnteraktif Mini-Harita Navigatörü** | Sağ alt köşede sürüklenebilir tuval penceresi, "Ekrana Sığdır" (Fit to Screen) ve OSPF/VLAN/Subnet alanlarına anında kamera odaklama (`MinimapNavigator.tsx`). |
+| **VLAN & OSPF/BGP Alan Renklendirme Overlay'i** | Andrew Monotone Chain 2D konveks zarf algoritması ve SVG yumuşak yumru çizimi ile OSPF Area 0/1, VLAN Bölgeleri, BGP AS ve IP Subnet'lerinin cihazlar arkasında parlayan renkli bulutlarla gösterimi (`areaOverlayEngine.ts`, `TopologyAreaOverlay.tsx`). |
+| **Snapshot & Checkpoint Portal Modalı** | `createPortal(..., document.body)` ile tam ekran bağımsız modal rendering, anlık topoloji durum dondurma, arama, JSON içe/dışa aktarma ve onaylı geri yükleme (`SnapshotManagerModal.tsx`). |
+| **NetSim Marka Standartlaşması** | Cisco marka adları `NetSim` standart adlarıyla güncellendi (`NetSim WIC-2T`, `NetSim Modular Chassis View`, `NetSim RESTCONF Explorer`, `netsim-native:native` YANG modeli). |
+| **Multi-Selection & Render Optimisation** | Tuval zemininde mouse-up yapıldığında aktif kutu seçiminin silinmesi engellendi; global paket capture dinleyicisi `queueMicrotask` ile asenkronlaştırıldı (`useTopologyMouse.ts`, `usePageNetworkLogic.ts`). |
 
 | Özellik | Güncel kapsam ve sınır |
 |---|---|
