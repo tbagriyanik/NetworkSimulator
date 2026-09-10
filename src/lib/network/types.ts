@@ -447,6 +447,7 @@ export interface Port {
   pppPapUsername?: string;
   pppPapPassword?: string;
   lapGroup?: number;        // Lightweight AP group (WLC)
+  mplsEnabled?: boolean;    // MPLS / LDP enabled on interface
 }
 
 export interface Vlan {
@@ -659,7 +660,8 @@ export interface SwitchState {
     bytes: number;
     active: number;
   }[];
-  // New routing fields
+  bgpConfig?: unknown;
+  mplsConfig?: unknown;
   isLayer3Switch?: boolean;        // L3 switch capability
   staticRoutes?: Route[];          // Static routing table
   dynamicRoutes?: Route[];         // Dynamic routing table

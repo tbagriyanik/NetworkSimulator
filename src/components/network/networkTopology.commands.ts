@@ -1043,7 +1043,42 @@ export function getCommandCategories(isTR: boolean): CommandDefinition[] {
         ['NETCONF', isTR ? 'Network Configuration Protocol - YANG verisini güvenli RPC ile yönetme protokolü' : 'Network Configuration Protocol - secure RPC protocol for managing YANG data'],
         ['RESTCONF', isTR ? 'RESTful Configuration Protocol - YANG kaynaklarına HTTP/REST erişimi' : 'RESTful Configuration Protocol - HTTP/REST access to YANG resources'],
         ['API', isTR ? 'Application Programming Interface - Uygulamaların birbirleriyle iletişim arayüzü' : 'Application Programming Interface - interface through which software systems communicate'],
+        ['MPLS', isTR ? 'Multiprotocol Label Switching - Etiket anahtarlama tabanlı yüksek hızlı iletim protokolü' : 'Multiprotocol Label Switching - label switching high speed forwarding'],
+        ['LDP', isTR ? 'Label Distribution Protocol - MPLS etiketlerini komşular arasında dağıtan protokol' : 'Label Distribution Protocol - protocol for distributing MPLS labels'],
+        ['LFIB', isTR ? 'Label Forwarding Information Base - MPLS etiket yönlendirme bilgi tablosu' : 'Label Forwarding Information Base - label switching forwarding table'],
+        ['MP-BGP', isTR ? 'Multi-Protocol BGP - IPv4/IPv6 yanı sıra VPNv4 etiketli rotaları taşıyan BGP uzantısı' : 'Multi-Protocol BGP - BGP extension carrying VPNv4 and IPv6 routes'],
+        ['VRF', isTR ? 'Virtual Routing and Forwarding - Sanal yönlendirme ve iletim tablosu' : 'Virtual Routing and Forwarding - virtual routing instances'],
+        ['RD / RT', isTR ? 'Route Distinguisher / Route Target - VPNv4 rota ayrıştırıcı ve hedef etiketleri' : 'Route Distinguisher / Route Target - VPNv4 route uniqueness and import/export targets'],
         ['NBI / SBI', isTR ? 'Northbound/Southbound Interface - Controller’ın uygulama ve altyapı yönündeki arayüzleri' : 'Northbound/Southbound Interface - controller interfaces toward applications and infrastructure'],
+      ]
+    },
+    {
+      id: 'bgp_mpls_commands',
+      icon: Router,
+      title: isTR ? 'BGP, MPLS & L3VPN Komutları' : 'BGP, MPLS & L3VPN Commands',
+      type: 'commands',
+      cmds: [
+        ['router bgp <as>', isTR ? 'BGP yönlendirme sürecini başlat' : 'Start BGP routing process', '(config)'],
+        ['neighbor <ip> remote-as <as>', isTR ? 'BGP komşusu ve AS numarası tanımla' : 'Define BGP peer and AS number', '(config-router)'],
+        ['network <ip> mask <mask>', isTR ? 'BGP ağı anons et' : 'Advertise network in BGP', '(config-router)'],
+        ['address-family vpnv4', isTR ? 'MP-BGP VPNv4 adres ailesine geç' : 'Enter MP-BGP VPNv4 address-family', '(config-router)'],
+        ['mpls ip', isTR ? 'Arayüzde MPLS ve LDP etiketlemeyi etkinleştir' : 'Enable MPLS and LDP on interface', '(config-if)'],
+        ['show ip bgp', isTR ? 'BGP yönlendirme bilgi tablosunu (RIB) görüntüle' : 'Display BGP routing table (RIB)', '#'],
+        ['show ip bgp summary', isTR ? 'BGP komşuluk durumlarını ve sayaçlarını listele' : 'Display BGP neighbor states and counters', '#'],
+        ['show mpls forwarding-table', isTR ? 'MPLS LFIB etiket tablosunu görüntüle' : 'Display MPLS LFIB table', '#'],
+        ['show mpls ldp neighbor', isTR ? 'LDP komşuluk oturumlarını görüntüle' : 'Display LDP neighbor sessions', '#'],
+      ]
+    },
+    {
+      id: 'tools_diagnostics',
+      icon: Lightbulb,
+      title: isTR ? 'Teşhis, Otomatik Düzen & DHCP Yönetimi' : 'Diagnostics, Auto Layout & DHCP Management',
+      type: 'info',
+      cmds: [
+        [isTR ? 'Kök Neden Analizcisi (Stethoscope)' : 'Root Cause Analyzer (Stethoscope)', isTR ? 'İki cihaz arasında ping gitmeme nedenlerini L1/L2/L3/Gateway/VLAN katmanlarında otomatik denetler ve çözüm önerir.' : 'Diagnoses why ping fails across L1/L2/L3/VLAN/Gateway and provides instant suggested fixes.'],
+        [isTR ? 'Otomatik Topoloji Düzenleme' : 'Auto Topology Layout', isTR ? 'Karışık topolojileri tek tıkla Hiyerarşik (3-Tier), Yıldız (Star), Halka (Ring) veya Matris (Grid) geometrisinde dizer.' : 'One-click automatic layout for Hierarchical (3-Tier), Star, Ring, or Grid matrices.'],
+        [isTR ? 'DHCP Havuz Yönetimi' : 'DHCP Pool Manager', isTR ? 'Router ve Server DHCP havuz doluluk oranlarını, kiralanmış IP-MAC eşleşmelerini görsel tabloda sunar.' : 'Visual overview of DHCP pool capacity, active client IP/MAC leases, and expiration timers.'],
+        [isTR ? 'Kablo & Port Etiketleri' : 'Cable & Port Labels', isTR ? 'Görünüm menüsünden kabloların bağlı olduğu port adlarını (Gi0/0, Fa0/1) tuvalde açıp kapatabilirsiniz.' : 'Toggle port names (Gi0/0, Fa0/1) directly on topology canvas cables from View menu.'],
       ]
     },
   ];

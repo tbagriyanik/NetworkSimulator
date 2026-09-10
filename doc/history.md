@@ -4,11 +4,17 @@ Yeniden eskiye, tarih mevcuttur.
 
 ## v4.9.0 — 2026-09-10
 
-**UI Canlı Simülasyon Kontrolü, Hızlı Komut Paleti (Ctrl+K), AES-GCM Güvenlik Katmanı ve Kod Modülerleştirmesi** —
+**BGP / MP-BGP, MPLS LDP, Görsel DHCP Havuz Yönetimi, Kök Neden Teşhisi, Akıllı CLI İpuçları, Otomatik Topoloji Düzenleme ve Port Etiketleri** —
+- **🌐 BGP & MP-BGP Rotalama Motoru (`bgpEngine.ts`)**: Autonomous System (AS) yönlendirmesi, eBGP/iBGP durum makineleri (`Established`), AS-Path döngü koruması, `address-family vpnv4` ile VRF/RD/RT rota değişimi ve `show ip bgp` / `show ip bgp summary` komutları eklendi.
+- **⚡ MPLS & LDP Etiket Anahtarlama (`mplsLdpEngine.ts`)**: Çekirdek ISP şebekeleri için LDP oturumları, LFIB (Label Forwarding Information Base) etiket takası (In-Label / Out-Label), Penultimate Hop Popping (PHP - `Implicit-Null`) ve `show mpls forwarding-table` desteği uygulandı.
+- **📊 Görsel DHCP Sunucu & Havuz Yönetimi (`DhcpPoolManagerModal.tsx`)**: Router ve Sunucu cihazlarında tanımlı DHCP havuzlarının kapasite/doluluk oranlarını (% bar), kiralanan IP, MAC, Hostname ve sürelerini filtreleyip yöneten interaktif modal ve UnifiedDevicePanel entegrasyonu sağlandı.
+- **🩺 "Neden Ping Gitmiyor?" Kök Neden Teşhisi (`networkTroubleshooter.ts`, `NetworkDiagnosticsModal.tsx`)**: L1 fiziksel link/shutdown, L2 VLAN/Trunk/Native VLAN uyumsuzlukları, L3 Subnet & Default Gateway eksikliklerini otomatik tarayıp çözüm önerileri sunan Stethoscope teşhis motoru ve modalı geliştirildi.
+- **💡 Akıllı CLI İpucu & Sözdizimi Tamamlama Motoru (`smartCliHints.ts`)**: `ip address`, `ip route`, `switchport mode`, `router ospf` komutlarında eksik parametre girildiğinde doğru formatı ve parametre şablonunu terminalde anında gösteren akıllı yönlendirme uygulandı.
+- **📐 Otomatik Topoloji Düzenleme (`autoLayoutEngine.ts`)**: Karışık ağları tek tuşla 3-Tier Hiyerarşik (Core-Distribution-Access), Yıldız (Star), Halka (Ring) veya Matris (Grid) düzenlerine dizen yerleşim algoritması ve Toolbar menüsü eklendi.
+- **🏷️ Kablo & Port Etiketleri Aç/Kapa (`ViewVisibilityMenu.tsx`)**: Kablolar üzerindeki arayüz isimlerini (Gi0/0, Fa0/1) tuvalde doğrudan açıp kapatabilme seçeneği ve dinamik SVG etiketleri eklendi.
 - **🚀 Canlı Simülasyon Hız Kontrolü (`SimulationSpeedControl.tsx`)**: Topolojide paket simülasyon hızı `0.5x`, `1x`, `2x`, `5x` olarak ayarlanabilmekte, simülasyon duraklatılabilmekte ve adım adım (step-by-step) paket takibi yapılabilmektedir.
 - **⚡ Hızlı Komut Paleti (`ShortcutPaletteModal.tsx`)**: `Ctrl+K` / `Cmd+K` kısayolu ile açılan arama destekli interaktif komut paleti eklendi.
-- **🛡️ Web Crypto API (AES-GCM) Şifreli Depolama (`secureStorage.ts`)**: `XOR + Base64` obfüskasyonu yerine 256-bit AES-GCM Web Crypto API standardı kullanılarak cihaz bazlı güvenli veri depolama katmanı ve Vitest birim testleri uygulandı.
-- **🧩 Bileşen Modülerleştirmesi & Error Boundary (`NetworkErrorBoundary.tsx`)**: CLI Terminal bileşeninde komut geçmişi (`useTerminalHistory.ts`) ve klavye kısayolları (`useTerminalKeybindings.ts`) ayrıştırıldı; topoloji tuvali için React Error Boundary hata yalıtımı entegre edildi.
+- **🛡️ Web Crypto API (AES-GCM) Şifreli Depolama (`secureStorage.ts`)**: 256-bit AES-GCM Web Crypto API standardı kullanılarak cihaz bazlı güvenli veri depolama katmanı ve Vitest birim testleri uygulandı.
 
 ## v4.8.0 — 2026-09-08
 

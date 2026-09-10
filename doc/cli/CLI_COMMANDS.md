@@ -210,6 +210,11 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `no mls qos` | Disable MLS QoS |
 | `router rip` | Enable RIP routing |
 | `router ospf [<id>]` | Enable OSPF routing |
+| `router bgp <as>` | Enable BGP routing process with Autonomous System number |
+| `no router bgp <as>` | Disable BGP routing process |
+| `neighbor <ip> remote-as <as>` | Configure BGP peer/neighbor (eBGP/iBGP) |
+| `address-family vpnv4` | Enter MP-BGP VPNv4 address-family configuration mode |
+| `mpls ip` | Enable MPLS and LDP label switching on interface |
 | `no router rip` | Disable RIP |
 | `no router ospf` | Disable OSPF |
 | `ip dhcp pool <name>` | Create DHCP pool / enter dhcp-config mode |
@@ -783,6 +788,10 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `show ip ospf` | Display OSPF information and ABR status |
 | `show standby [brief]` | Display HSRP status |
 | `show glbp [brief]` | Display GLBP status and AVG election |
+| `show ip bgp` | Display BGP routing table (RIB) |
+| `show ip bgp summary` | Display BGP neighbor status, AS numbers and state |
+| `show mpls forwarding-table` | Display MPLS LFIB forwarding table |
+| `show mpls ldp neighbor` | Display MPLS LDP neighbor sessions |
 | `show ip cache flow` | Display NetFlow active flow cache table |
 | `show ip flow export` | Display NetFlow export parameters |
 | `show route-map` | Display route-map policies and rules |

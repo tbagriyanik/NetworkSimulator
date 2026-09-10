@@ -1,11 +1,18 @@
 # NetworkSimulator — Tam Özellik Envanteri / Full Feature Inventory
 
-**Sürüm / Version:** 4.7.0 · **Son doğrulama / Last verified:** 2026-09-07
+**Sürüm / Version:** 4.9.0 · **Son doğrulama / Last verified:** 2026-09-10
 
-## Son Ağ Simülasyonu Geliştirmeleri (2026-09-07 - v4.7.0)
+## Son Ağ Simülasyonu Geliştirmeleri (2026-09-10 - v4.9.0)
 
 | Özellik | Güncel kapsam ve sınır |
 |---|---|
+| **BGP & MP-BGP (Border Gateway Protocol)** | Autonomous System (AS) yönlendirmesi, eBGP/iBGP durum makineleri (`Established`, `Active`), AS-Path döngü engelleme, `address-family vpnv4` ile VRF/RD/RT taşıma ve `show ip bgp` / `show ip bgp summary` dökümü (`bgpEngine.ts`). |
+| **MPLS & LDP (Label Distribution Protocol)** | Çekirdek ISP şebekeleri için LDP oturumları, LFIB (Label Forwarding Information Base) etiket takası (In-Label / Out-Label), Penultimate Hop Popping (PHP - `Implicit-Null`) ve `show mpls forwarding-table` desteği (`mplsLdpEngine.ts`). |
+| **Görsel DHCP Sunucu & Havuz Yönetimi** | Router ve Sunucularda tanımlı DHCP havuzlarının kapasite/doluluk oranları (% bar), kiralanan IP, MAC, Hostname ve sürelerini filtreleyip yöneten interaktif modal (`DhcpPoolManagerModal.tsx`). |
+| **"Neden Ping Gitmiyor?" Kök Neden Teşhisi** | L1 fiziksel link/shutdown, L2 VLAN/Trunk/Native VLAN uyumsuzlukları, L3 Subnet & Default Gateway eksikliklerini otomatik tarayıp çözüm önerileri sunan Stethoscope teşhis motoru ve modalı (`networkTroubleshooter.ts`, `NetworkDiagnosticsModal.tsx`). |
+| **Akıllı CLI İpucu & Sözdizimi Tamamlama Motoru** | `ip address`, `ip route`, `switchport mode`, `router ospf` komutlarında eksik parametre girildiğinde doğru formatı ve parametre şablonunu terminalde anında gösteren akıllı yönlendirme (`smartCliHints.ts`). |
+| **Otomatik Topoloji Düzenleme (Auto Layout)** | Karışık ağları tek tuşla 3-Tier Hiyerarşik (Core-Distribution-Access), Yıldız (Star), Halka (Ring) veya Matris (Grid) düzenlerine dizen yerleşim algoritması (`autoLayoutEngine.ts`). |
+| **Kablo & Port Etiketleri Aç/Kapa** | Kablolar üzerindeki arayüz isimlerini (Gi0/0, Fa0/1) tuvalde doğrudan açıp kapatabilme seçeneği (`ViewVisibilityMenu.tsx`). |
 | **WLC Wi-Fi SSID & Güvenlik Yansıması** | WLC'de tanımlı ve aktif (`status: enabled`) WLAN'ların SSID, parola ve güvenlik modu bilgisi, `getDeviceWifiConfig` üzerinden kablosuz ağ yapılandırmasına (AP modu) otomatik yansıtılıyor (`wireless.ts`). |
 | **WLC Varsayılan Yönetim IP Düzeltmesi** | WLC GigabitEthernet0/1 varsayılan IP adresi ağ geçidiyle uyumlu olması için `192.168.1.254` yerine `192.168.1.1` yapıldı (`initialState.ts`). |
 | **PC/IoT/Yazıcı/WLC Cihazlarında HTTP Varsayılan Açık** | Araç çubuğundan eklenen PC, IoT, Yazıcı ve WLC cihazlarında HTTP servisi varsayılan `enabled: true` ile oluşturuluyor; PC'ler için `Welcome to <cihaz adı> Web Server` içerik şablonu, WLC'ler için `WLC-DHCP-POOL` (gw `192.168.1.1`, DNS `8.8.8.8`) tanımlanıyor (`useCanvasActions.ts`). |

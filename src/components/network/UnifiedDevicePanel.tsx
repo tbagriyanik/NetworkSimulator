@@ -16,6 +16,7 @@ import {
     Globe,
     Printer as PrinterIcon,
     Smartphone,
+    Database,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DeviceIcon } from './DeviceIcon';
@@ -27,6 +28,8 @@ import type { TerminalOutput } from './Terminal';
 import type { Translations } from '@/contexts/LanguageContext';
 import type { TaskDefinition, TaskContext } from '@/lib/network/taskDefinitions';
 import { getRoutingTable } from '@/lib/network/routing';
+
+const DhcpPoolManagerModal = dynamic(() => import('./DhcpPoolManagerModal').then(m => m.DhcpPoolManagerModal), { ssr: false });
 
 const Terminal = dynamic(() => import('./Terminal').then(m => m.Terminal), { ssr: false });
 const PortPanel = dynamic(() => import('./PortPanel').then(m => m.PortPanel), { ssr: false });
@@ -114,6 +117,7 @@ export function UnifiedDevicePanel({
 
     const [selectedVlan, setSelectedVlan] = React.useState(1);
     const [routeSearch, setRouteSearch] = React.useState('');
+    const [isDhcpModalOpen, setIsDhcpModalOpen] = React.useState(false);
     const isNarrow = modalSize.width < 1100;
 
     const deviceName = useMemo(() => {
@@ -463,6 +467,18 @@ export function UnifiedDevicePanel({
                                                     {language === 'tr' ? 'Cihazın aktif IP rotaları ve ağ yönlendirme bilgileri.' : 'Active IP routes and network forwarding table for this router.'}
                                                 </p>
                                             </div>
+                                            <button
+                                                onClick={() => setIsDhcpModalOpen(true)}
+                                                className={cn(
+                                                    "px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-2 transition-all shrink-0",
+                                                    isDark
+                                                        ? "bg-teal-500/10 border-teal-500/30 text-teal-300 hover:bg-teal-500/20"
+                                                        : "bg-teal-50 border-teal-200 text-teal-700 hover:bg-teal-100"
+                                                )}
+                                            >
+                                                <Database className="w-3.5 h-3.5 text-teal-400" />
+                                                <span>{language === 'tr' ? 'DHCP Havuz Yönetimi' : 'DHCP Pool Manager'}</span>
+                                            </button>
                                         </div>
 
                                         {/* Routing Table Card */}
@@ -740,6 +756,17 @@ export function UnifiedDevicePanel({
                     </TabsContent>
                 </Tabs>
             </div>
+            {isDhcpModalOpen && (
+                <DhcpPoolManagerModal
+                    open={isDhcpModalOpen}
+                    onOpenChange={setIsDhcpModalOpen}
+                    deviceId={deviceId}
+                    deviceName={deviceName}
+                    state={state}
+                    isDark={isDark}
+                    language={language as 'tr' | 'en'}
+                />
+            )}
         </DraggableWindowWrapper>
     );
 }

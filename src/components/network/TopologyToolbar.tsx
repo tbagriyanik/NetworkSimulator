@@ -712,20 +712,22 @@ export function TopologyToolbar({
       </div>
 
       <div className="ml-auto flex items-center gap-1">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              aria-label={language === 'tr' ? 'Ağ Teşhis & Kök Neden Analizi' : 'Network Diagnostics & Root Cause'}
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-amber-500 hover:bg-amber-500/10 hover:text-amber-400"
-              onClick={() => setIsDiagnosticsOpen(true)}
-            >
-              <Stethoscope className="w-4 h-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{language === 'tr' ? 'Ağ Teşhis & Kök Neden Analizcisi' : 'Network Diagnostics & Root Cause Analyzer'}</TooltipContent>
-        </Tooltip>
+        {!isExamActive && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                aria-label={language === 'tr' ? 'Ağ Teşhis & Kök Neden Analizi' : 'Network Diagnostics & Root Cause'}
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-amber-500 hover:bg-amber-500/10 hover:text-amber-400"
+                onClick={() => setIsDiagnosticsOpen(true)}
+              >
+                <Stethoscope className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{language === 'tr' ? 'Ağ Teşhis & Kök Neden Analizcisi' : 'Network Diagnostics & Root Cause Analyzer'}</TooltipContent>
+          </Tooltip>
+        )}
 
         <ViewVisibilityMenu isDark={isDark} />
 
