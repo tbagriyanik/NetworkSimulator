@@ -10,6 +10,7 @@ import { useDrag } from '@/hooks/useDrag';
 import { getWirelessSignalStrength } from '@/lib/network/connectivity';
 import { secureStorage } from '@/lib/storage/secureStorage';
 import { useState, useEffect } from 'react';
+import { useUiPreferences } from '@/hooks/useUiPreferences';
 import type { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import type { Translations } from '@/contexts/LanguageContext';
@@ -47,6 +48,7 @@ interface PCInfoPopoverProps {
 }
 
 export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zIndex, isFocused = false, handleDeviceDoubleClick, onOpenPanel, onOpenSettings, topologyDevices, deviceStates }: PCInfoPopoverProps) {
+  const { preferences } = useUiPreferences();
   const { containerRef, handleDragStart, position } = useDrag({
     storageKey: `pc-info-pos-${pc.id}`,
     defaultPosition: { x: 16, y: 96 },
@@ -84,6 +86,10 @@ export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zInde
       secureStorage.setItem(`pc-info-window-collapsed-${pc.id}`, String(windowCollapsed));
     }
   }, [windowCollapsed, pc.id]);
+
+  if (!preferences.showDevicePopovers) {
+    return null;
+  }
 
   return (
     <div
@@ -302,6 +308,7 @@ export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zInde
 }
 
 export function RouterInfoPopover({ router, routerState, t, language, isDark, onClose, onFocus, zIndex, handleDeviceDoubleClick, onOpenPanel, onOpenSettings, topologyConnections }: RouterInfoPopoverProps) {
+  const { preferences } = useUiPreferences();
   const { containerRef, handleDragStart, position } = useDrag({
     storageKey: `router-info-pos-${router.id}`,
     defaultPosition: { x: 16, y: 96 },
@@ -352,6 +359,10 @@ export function RouterInfoPopover({ router, routerState, t, language, isDark, on
     .filter((p) => p.ipAddress && !p.shutdown)
     .map((p) => `${p.id}: ${p.ipAddress}${p.subnetMask ? `/${p.subnetMask}` : ''}`)
     .slice(0, 3);
+
+  if (!preferences.showDevicePopovers) {
+    return null;
+  }
 
   return (
     <div

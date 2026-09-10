@@ -6,6 +6,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip
 import { ShortcutBadge } from '@/components/ui/ShortcutBadge';
 import { AlertCircle, Map } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useUiPreferences } from '@/hooks/useUiPreferences';
 
 interface CanvasToolbarProps {
   zoom: number;
@@ -47,10 +48,11 @@ export function CanvasToolbar({
   isMinimapOpen = false,
 }: CanvasToolbarProps) {
   const { language } = useLanguage();
+  const { preferences } = useUiPreferences();
   return (
     <div
-      className={`fixed bottom-[50px] right-[10px] items-center gap-1 px-2 py-1 rounded-xl border ${isDark ? 'bg-secondary-800/90 border-secondary-700/50 shadow-lg' : 'bg-white/95 border-secondary-200/60 shadow-md'
-        } flex z-40`}
+      className={`fixed ${preferences.showFooter ? 'bottom-[50px]' : 'bottom-[12px]'} right-[10px] items-center gap-1 px-2 py-1 rounded-xl border ${isDark ? 'bg-secondary-800/90 border-secondary-700/50 shadow-lg' : 'bg-white/95 border-secondary-200/60 shadow-md'
+        } flex z-40 transition-all duration-200`}
     >
       <TooltipWrapper
         title={
@@ -167,50 +169,55 @@ export function CanvasToolbar({
         </TooltipContent>
       </Tooltip>
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            aria-label={language === 'tr' ? 'Mini Haritayı Aç/Kapat' : 'Toggle Mini-map'}
-            onClick={onToggleMinimap}
-            className={`w-8 h-8 flex items-center justify-center rounded transition-colors ${isMinimapOpen
-                ? 'bg-primary-500 text-white'
-                : isDark
-                  ? 'hover:bg-secondary-700 text-secondary-300'
-                  : 'hover:bg-secondary-100 text-secondary-600'
-              }`}
-          >
-            <Map className="w-4 h-4" />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent className="flex items-center gap-2">
-          <span>{language === 'tr' ? 'Mini Haritayı Aç/Kapat' : 'Toggle Mini-map'}</span>
-          <ShortcutBadge shortcut="Alt+M" variant="primary" />
-        </TooltipContent>
-      </Tooltip>
+      {preferences.showMinimap && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              aria-label={language === 'tr' ? 'Mini Haritayı Aç/Kapat' : 'Toggle Mini-map'}
+              onClick={onToggleMinimap}
+              className={`w-8 h-8 flex items-center justify-center rounded transition-colors ${isMinimapOpen
+                  ? 'bg-primary-500 text-white'
+                  : isDark
+                    ? 'hover:bg-secondary-700 text-secondary-300'
+                    : 'hover:bg-secondary-100 text-secondary-600'
+                }`}
+            >
+              <Map className="w-4 h-4" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent className="flex items-center gap-2">
+            <span>{language === 'tr' ? 'Mini Haritayı Aç/Kapat' : 'Toggle Mini-map'}</span>
+            <ShortcutBadge shortcut="Alt+M" variant="primary" />
+          </TooltipContent>
+        </Tooltip>
+      )}
 
-      <div className={`w-px h-5 ${isDark ? 'bg-secondary-600' : 'bg-secondary-300'} mx-1`} />
-
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            aria-label={language === 'tr' ? 'Ağ Olay Günlüğü' : 'Network Event Log'}
-            onClick={onToggleLogPanel}
-            className={`relative px-2 py-1 flex items-center justify-center rounded ui-hover-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${isDark ? 'text-secondary-300 hover:text-secondary-100' : 'text-secondary-600 hover:text-secondary-900'
-              }`}
-          >
-            <AlertCircle className="w-4 h-4" />
-            {logCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-primary-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white dark:border-slate-900 shadow-sm min-w-[16px] flex items-center justify-center">
-                {logCount > 99 ? '99+' : logCount}
-              </span>
-            )}
-          </button>
-        </TooltipTrigger>
-        <TooltipContent className="flex items-center gap-2">
-          <span>{language === 'tr' ? 'Ağ Olay Günlüğü' : 'Network Event Log'}</span>
-          <ShortcutBadge shortcut="Alt+L" variant="primary" />
-        </TooltipContent>
-      </Tooltip>
+      {preferences.showEventLogs && (
+        <>
+          <div className={`w-px h-5 ${isDark ? 'bg-secondary-600' : 'bg-secondary-300'} mx-1`} />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                aria-label={language === 'tr' ? 'Ağ Olay Günlüğü' : 'Network Event Log'}
+                onClick={onToggleLogPanel}
+                className={`relative px-2 py-1 flex items-center justify-center rounded ui-hover-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${isDark ? 'text-secondary-300 hover:text-secondary-100' : 'text-secondary-600 hover:text-secondary-900'
+                  }`}
+              >
+                <AlertCircle className="w-4 h-4" />
+                {logCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-primary-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white dark:border-slate-900 shadow-sm min-w-[16px] flex items-center justify-center">
+                    {logCount > 99 ? '99+' : logCount}
+                  </span>
+                )}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent className="flex items-center gap-2">
+              <span>{language === 'tr' ? 'Ağ Olay Günlüğü' : 'Network Event Log'}</span>
+              <ShortcutBadge shortcut="Alt+L" variant="primary" />
+            </TooltipContent>
+          </Tooltip>
+        </>
+      )}
 
     </div>
   );

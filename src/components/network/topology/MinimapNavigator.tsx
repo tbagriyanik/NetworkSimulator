@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { Map, ChevronDown, ChevronUp } from 'lucide-react';
 import type { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+import { useUiPreferences } from '@/hooks/useUiPreferences';
 
 interface MinimapNavigatorProps {
   devices: CanvasDevice[];
@@ -152,9 +153,11 @@ export function MinimapNavigator({
     }
   };
 
+  const { preferences } = useUiPreferences();
+
   return (
     <div
-      className={`fixed bottom-[110px] right-[10px] z-40 transition-all duration-200 select-none ${
+      className={`fixed ${preferences.showFooter ? 'bottom-[110px]' : 'bottom-[70px]'} right-[10px] z-40 transition-all duration-200 select-none ${
         isDark ? 'text-white' : 'text-slate-900'
       }`}
     >

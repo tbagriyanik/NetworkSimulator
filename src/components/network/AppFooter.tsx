@@ -8,6 +8,7 @@ import { useMultiWindowStore } from '@/hooks/useMultiWindowStore';
 import { useWindowStore } from '@/hooks/useWindowStore';
 import { DeviceIcon } from '@/components/network/DeviceIcon';
 import type { DeviceType } from '@/components/network/networkTopology.types';
+import { useUiPreferences } from '@/hooks/useUiPreferences';
 
 interface AppFooterProps {
   t: Translations;
@@ -40,6 +41,12 @@ export function AppFooter({
     restoreWindow(id);
     setActiveWindow(id);
   };
+  const { preferences } = useUiPreferences();
+
+  if (!preferences.showFooter) {
+    return null;
+  }
+
   const getDeviceCountLabel = (count: number) => (
     language === 'tr' ? 'Cihaz' : (count === 1 ? 'Device' : 'Devices')
   );

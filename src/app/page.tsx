@@ -63,6 +63,7 @@ import { AppFooter } from '@/components/network/AppFooter';
 import { TopologyToolbar } from '@/components/network/TopologyToolbar';
 import { bringElementToFront } from '@/lib/utils/zIndex';
 import { AppSkeleton } from '@/components/ui/AppSkeleton';
+import { useUiPreferences } from '@/hooks/useUiPreferences';
 import { AppErrorBoundary } from '@/components/ui/AppErrorBoundary';
 import { useRoom } from '@/contexts/RoomContext';
 import { useRoomSync } from '@/hooks/useRoomSync';
@@ -241,6 +242,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   const [isExamLoadedFromFile, setIsExamLoadedFromFile] = useState(false);
   const [isTimelineMinimized, setIsTimelineMinimized] = useState(false);
   const toggleTimelineMinimize = useCallback(() => setIsTimelineMinimized(prev => !prev), []);
+  const { preferences } = useUiPreferences();
 
   const setActiveTab = useAppStore((state) => state.setActiveTab);
 
@@ -1151,7 +1153,8 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
           />
 
           <main className={cn(
-            "overflow-hidden flex flex-col min-h-0 h-[calc(100vh-44px)] pt-14 sm:pt-16",
+            "overflow-hidden flex flex-col min-h-0 pt-14 sm:pt-16",
+            preferences.showFooter ? "h-[calc(100vh-44px)]" : "h-screen",
             activeTab === 'topology' ? 'md:pt-[116px]' : 'md:pt-16',
             isTablet && (showPCPanel || showUnifiedDeviceModal || showRouterPanel) && "flex-row md:pt-16"
           )}>
@@ -1236,7 +1239,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
                     />
                   </NetworkErrorBoundary>
 
-                  {(() => {
+                  {preferences.showDevicePopovers && (() => {
                     const activeDevice = activeDeviceId
                       ? topologyDevices?.find(d => d.id === activeDeviceId) ?? null
                       : null;
@@ -1268,7 +1271,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
                     ) : null;
                   })()}
 
-                  {activeDeviceId && (activeDeviceId.startsWith('router-') || topologyDevices?.find(d => d.id === activeDeviceId)?.type === 'router') && topologyDevices && (
+                  {preferences.showDevicePopovers && activeDeviceId && (activeDeviceId.startsWith('router-') || topologyDevices?.find(d => d.id === activeDeviceId)?.type === 'router') && topologyDevices && (
                     <RouterInfoPopover
                       router={topologyDevices.find(d => d.id === activeDeviceId) as CanvasDevice}
                       routerState={deviceStates.get(activeDeviceId)}
@@ -1364,20 +1367,22 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
             />
           </main>
 
-          <AppFooter
-            t={t}
-            isDark={isDark}
-            language={language}
-            activeTab={activeTab}
-            hasUnsavedChanges={hasUnsavedChanges}
-            lastSaveTime={lastSaveTime}
-            projectName={projectName}
-            topologyDevices={topologyDevices}
-            showProjectPicker={showProjectPicker}
-            showOnboarding={showOnboarding}
-            setShowAboutModal={setShowAboutModal}
-            onShortcut={(shortcut) => handlePageShortcut(shortcut, topologyDevices, activeDeviceId, handleDeviceSelectFromMenu)}
-          />
+          {preferences.showFooter && (
+            <AppFooter
+              t={t}
+              isDark={isDark}
+              language={language}
+              activeTab={activeTab}
+              hasUnsavedChanges={hasUnsavedChanges}
+              lastSaveTime={lastSaveTime}
+              projectName={projectName}
+              topologyDevices={topologyDevices}
+              showProjectPicker={showProjectPicker}
+              showOnboarding={showOnboarding}
+              setShowAboutModal={setShowAboutModal}
+              onShortcut={(shortcut) => handlePageShortcut(shortcut, topologyDevices, activeDeviceId, handleDeviceSelectFromMenu)}
+            />
+          )}
 
           <PageOverlayPanels
             t={t}

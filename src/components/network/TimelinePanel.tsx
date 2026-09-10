@@ -9,6 +9,7 @@ import { HistoryEntry } from '@/hooks/useHistory';
 import { Button } from '@/components/ui/button';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { bringElementToFront } from '@/lib/utils/zIndex';
+import { useUiPreferences } from '@/hooks/useUiPreferences';
 
 interface TimelinePanelProps {
   historyItems: HistoryEntry[];
@@ -207,7 +208,11 @@ export function TimelinePanel({
     }
   };
 
-  // Pencerenin her zaman görünür olması istendiği için historyItems.length <= 1 kontrolü kaldırıldı.
+  const { preferences } = useUiPreferences();
+
+  if (!preferences.showEventLogs) {
+    return null;
+  }
 
   return (
     <div
@@ -217,8 +222,10 @@ export function TimelinePanel({
       className={cn(
         "absolute z-30 liquid-glass-light transition-all duration-300 flex flex-col overflow-hidden rounded-xl outline-none select-none",
         isMobile
-          ? (isMinimized ? "left-2 bottom-[72px]" : "left-2 right-2 bottom-[72px]")
-          : "sm:left-4 sm:right-auto sm:bottom-20 sm:max-w-none",
+          ? (isMinimized
+            ? (preferences.showFooter ? "left-2 bottom-[72px]" : "left-2 bottom-[24px]")
+            : (preferences.showFooter ? "left-2 right-2 bottom-[72px]" : "left-2 right-2 bottom-[24px]"))
+          : (preferences.showFooter ? "sm:left-4 sm:right-auto sm:bottom-20 sm:max-w-none" : "sm:left-4 sm:right-auto sm:bottom-6 sm:max-w-none"),
         isMinimized ? "w-48 h-12 rounded-full" : "sm:w-[36rem] w-[calc(100vw-1rem)] h-[152px]",
         isDark
           ? isFocused

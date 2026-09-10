@@ -29,6 +29,7 @@ import { useAppStore } from '@/lib/store/appStore';
 import { cn } from '@/lib/utils';
 import { SimulationSpeedControl } from './SimulationSpeedControl';
 import { ShortcutPaletteModal } from './ShortcutPaletteModal';
+import { ViewVisibilityMenu } from './ViewVisibilityMenu';
 
 interface TopologyToolbarProps {
   t: Translations;
@@ -638,6 +639,8 @@ export function TopologyToolbar({
 
 
       <div className="ml-auto flex items-center gap-1">
+        <ViewVisibilityMenu isDark={isDark} />
+
         {onOpenStudentJoin && (
           <Tooltip>
             <TooltipTrigger asChild>

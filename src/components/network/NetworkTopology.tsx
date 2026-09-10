@@ -58,6 +58,7 @@ import { useVisualConnectionActions } from './hooks/useVisualConnectionActions';
 import { CanvasToolbar } from './topology/CanvasToolbar';
 import { TopologyDeviceRenderer } from './topology/TopologyDeviceRenderer';
 import { NetworkEventLogPanel } from './topology/NetworkEventLogPanel';
+import { useUiPreferences } from '@/hooks/useUiPreferences';
 import { TopologyModals } from './topology/TopologyModals';
 import { DEVICE_ICONS } from './topology/DeviceIcons';
 import { TopologySelectionToolbar } from './topology/TopologySelectionToolbar';
@@ -119,6 +120,7 @@ export function NetworkTopology({
   const clearAllCapturedPackets = useAppStore((state) => state.clearAllCapturedPackets);
   const networkEventLogs = useNetworkEventLogs();
   const [showLogPanel, setShowLogPanel] = useState(false);
+  const { preferences } = useUiPreferences();
 
   // Zoom & Pan state
   const [zoom, setZoom] = useState(zoomProp ?? DEFAULT_ZOOM);
@@ -1535,31 +1537,35 @@ export function NetworkTopology({
           />
 
           {/* Zoom Controls */}
-          <CanvasToolbar
-            zoom={zoom}
-            setZoom={setZoom}
-            setPan={setPan}
-            canvasRef={canvasRef}
-            resetView={resetView}
-            zoomToFit={zoomToFit}
-            handleZoomMouseDown={handleZoomMouseDown}
-            handleZoomWheel={handleZoomWheel}
-            isDraggingZoom={isDraggingZoom}
-            isDark={isDark}
-            t={t}
-            MIN_ZOOM={MIN_ZOOM}
-            MAX_ZOOM={MAX_ZOOM}
-            onToggleLogPanel={() => setShowLogPanel(!showLogPanel)}
-            logCount={networkEventLogs.length}
-            onToggleMinimap={() => setIsMinimapOpen(!isMinimapOpen)}
-            isMinimapOpen={isMinimapOpen}
-          />
+          {preferences.showZoomToolbar && (
+            <CanvasToolbar
+              zoom={zoom}
+              setZoom={setZoom}
+              setPan={setPan}
+              canvasRef={canvasRef}
+              resetView={resetView}
+              zoomToFit={zoomToFit}
+              handleZoomMouseDown={handleZoomMouseDown}
+              handleZoomWheel={handleZoomWheel}
+              isDraggingZoom={isDraggingZoom}
+              isDark={isDark}
+              t={t}
+              MIN_ZOOM={MIN_ZOOM}
+              MAX_ZOOM={MAX_ZOOM}
+              onToggleLogPanel={() => setShowLogPanel(!showLogPanel)}
+              logCount={networkEventLogs.length}
+              onToggleMinimap={() => setIsMinimapOpen(!isMinimapOpen)}
+              isMinimapOpen={isMinimapOpen}
+            />
+          )}
 
-          <NetworkEventLogPanel
-            isOpen={showLogPanel}
-            onClose={() => setShowLogPanel(false)}
-            isDark={isDark}
-          />
+          {preferences.showEventLogs && (
+            <NetworkEventLogPanel
+              isOpen={showLogPanel}
+              onClose={() => setShowLogPanel(false)}
+              isDark={isDark}
+            />
+          )}
         </div>
       </div>
 
@@ -1623,91 +1629,97 @@ export function NetworkTopology({
         note={notes.find((n) => n.id === contextMenu?.noteId)}
       />
 
-      <TopologyTooltips
-        portTooltip={portTooltip}
-        deviceMap={deviceMap}
-        deviceStates={deviceStates}
-        isDark={isDark}
-        language={language}
-        getIotDeviceStatus={getIotDeviceStatus}
-        getIotPowerStatus={getIotPowerStatus}
-        getIotOpenCloseStatus={getIotOpenCloseStatus}
-        getLivePortVlanText={getLivePortVlanText}
-        connectionTooltip={connectionTooltip}
-        CABLE_COLORS={CABLE_COLORS}
-        deviceTooltip={deviceTooltip}
-        isTR={isTR}
-        isDraggingInteractionDisabled={isDraggingInteractionDisabled}
-        t={{
-          ipAddress: t.ipAddress,
-          subnetMask: t.subnetMask,
-          gateway: t.gateway,
-          dnsServer: t.dnsServer,
-          macAddress: t.macAddress,
-          dhcpEnabled: t.dhcpEnabled,
-          openServices: t.openServices,
-          active: t.active,
-        }}
-      />
+      {preferences.showDevicePopovers && (
+        <TopologyTooltips
+          portTooltip={portTooltip}
+          deviceMap={deviceMap}
+          deviceStates={deviceStates}
+          isDark={isDark}
+          language={language}
+          getIotDeviceStatus={getIotDeviceStatus}
+          getIotPowerStatus={getIotPowerStatus}
+          getIotOpenCloseStatus={getIotOpenCloseStatus}
+          getLivePortVlanText={getLivePortVlanText}
+          connectionTooltip={connectionTooltip}
+          CABLE_COLORS={CABLE_COLORS}
+          deviceTooltip={deviceTooltip}
+          isTR={isTR}
+          isDraggingInteractionDisabled={isDraggingInteractionDisabled}
+          t={{
+            ipAddress: t.ipAddress,
+            subnetMask: t.subnetMask,
+            gateway: t.gateway,
+            dnsServer: t.dnsServer,
+            macAddress: t.macAddress,
+            dhcpEnabled: t.dhcpEnabled,
+            openServices: t.openServices,
+            active: t.active,
+          }}
+        />
+      )}
 
-      <TopologyModals
-        configuringDevice={configuringDevice}
-        deviceMap={deviceMap}
-        cancelDeviceConfig={cancelDeviceConfig}
-        saveDeviceConfig={saveDeviceConfig}
-        isMobile={isMobile}
-        isDark={isDark}
-        pingAnimation={pingAnimation}
-        hopPacketInfos={hopPacketInfos}
-        handlePingPlay={handlePingPlay}
-        handlePingPause={handlePingPause}
-        handlePingNext={handlePingNext}
-        handlePingClose={handlePingClose}
-        language={language}
-        graphicsQuality={graphicsQuality}
-        onPacketPanelFocus={onPacketPanelFocus}
-        packetPanelZIndex={packetPanelZIndex}
-        packetPopupHop={packetPopupHop}
-        setPacketPopupHop={setPacketPopupHop}
-        errorToast={errorToast}
-        setErrorToast={setErrorToast}
-        connectionError={connectionError}
-        mobilePaletteOpen={mobilePaletteOpen}
-        setMobilePaletteOpen={setMobilePaletteOpen}
-        isTR={isTR}
-        addDevice={addDevice}
-        cableInfo={cableInfo}
-        onCableChange={onCableChange}
-        showPortSelector={showPortSelector}
-        devices={devices}
-        portSelectorStep={portSelectorStep}
-        selectedSourcePort={selectedSourcePort}
-        setShowPortSelector={setShowPortSelector}
-        setPortSelectorStep={setPortSelectorStep}
-        setSelectedSourcePort={setSelectedSourcePort}
-        setConnections={setConnections}
-        setDevices={setDevices}
-        connections={connections}
-        activeCaptureConnectionId={activeCaptureConnectionId}
-        clearCapturedPackets={clearCapturedPackets}
-        clearAllCapturedPackets={clearAllCapturedPackets}
-        setActiveCaptureConnection={setActiveCaptureConnection}
-        capturedPacketsMap={capturedPacketsMap}
-        t={t}
-      />
+      {preferences.showDevicePopovers && (
+        <TopologyModals
+          configuringDevice={configuringDevice}
+          deviceMap={deviceMap}
+          cancelDeviceConfig={cancelDeviceConfig}
+          saveDeviceConfig={saveDeviceConfig}
+          isMobile={isMobile}
+          isDark={isDark}
+          pingAnimation={pingAnimation}
+          hopPacketInfos={hopPacketInfos}
+          handlePingPlay={handlePingPlay}
+          handlePingPause={handlePingPause}
+          handlePingNext={handlePingNext}
+          handlePingClose={handlePingClose}
+          language={language}
+          graphicsQuality={graphicsQuality}
+          onPacketPanelFocus={onPacketPanelFocus}
+          packetPanelZIndex={packetPanelZIndex}
+          packetPopupHop={packetPopupHop}
+          setPacketPopupHop={setPacketPopupHop}
+          errorToast={errorToast}
+          setErrorToast={setErrorToast}
+          connectionError={connectionError}
+          mobilePaletteOpen={mobilePaletteOpen}
+          setMobilePaletteOpen={setMobilePaletteOpen}
+          isTR={isTR}
+          addDevice={addDevice}
+          cableInfo={cableInfo}
+          onCableChange={onCableChange}
+          showPortSelector={showPortSelector}
+          devices={devices}
+          portSelectorStep={portSelectorStep}
+          selectedSourcePort={selectedSourcePort}
+          setShowPortSelector={setShowPortSelector}
+          setPortSelectorStep={setPortSelectorStep}
+          setSelectedSourcePort={setSelectedSourcePort}
+          setConnections={setConnections}
+          setDevices={setDevices}
+          connections={connections}
+          activeCaptureConnectionId={activeCaptureConnectionId}
+          clearCapturedPackets={clearCapturedPackets}
+          clearAllCapturedPackets={clearAllCapturedPackets}
+          setActiveCaptureConnection={setActiveCaptureConnection}
+          capturedPacketsMap={capturedPacketsMap}
+          t={t}
+        />
+      )}
 
-      <MinimapNavigator
-        devices={devices}
-        connections={connections}
-        zoom={zoom}
-        pan={pan}
-        setPan={setPan}
-        canvasRef={canvasRef}
-        isDark={isDark}
-        language={language}
-        isOpen={isMinimapOpen}
-        onToggle={() => setIsMinimapOpen(!isMinimapOpen)}
-      />
+      {preferences.showMinimap && (
+        <MinimapNavigator
+          devices={devices}
+          connections={connections}
+          zoom={zoom}
+          pan={pan}
+          setPan={setPan}
+          canvasRef={canvasRef}
+          isDark={isDark}
+          language={language}
+          isOpen={isMinimapOpen}
+          onToggle={() => setIsMinimapOpen(!isMinimapOpen)}
+        />
+      )}
     </div>
   );
 }
