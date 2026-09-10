@@ -4,7 +4,7 @@ export function getOrCreateErrdisableConfig(state: SwitchState) {
   if (!state.errdisableConfig) {
     state.errdisableConfig = {
       enabledCauses: [],
-      interval: 300, // 300 seconds default Cisco interval
+      interval: 300, // 300 seconds default interval
     };
   }
   return state.errdisableConfig;

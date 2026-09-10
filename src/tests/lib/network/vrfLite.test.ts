@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { setVrfRouteDistinguisher, assignInterfaceToVrf, filterRoutesByVrf } from '@/lib/network/vrfLite';
 import type { SwitchState } from '@/lib/network/types';
 
-describe('vrfLite (Cisco VRF-Lite Virtual Routing and Forwarding)', () => {
+describe('vrfLite (VRF-Lite Virtual Routing and Forwarding)', () => {
   it('should create VRF instance with RD and assign interfaces', () => {
     const mockState = {} as SwitchState;
 

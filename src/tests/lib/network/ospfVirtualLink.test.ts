@@ -10,7 +10,7 @@ import type { SwitchState } from '@/lib/network/types';
 describe('OSPF Virtual-Link Simulation (Transit Area & Backbone Continuity)', () => {
   it('should configure OSPF virtual-link across non-backbone transit area', () => {
     const mockState = {} as SwitchState;
-    configureOspfVirtualLink(mockState, '1', '2.2.2.2', 'md5', 'cisco123');
+    configureOspfVirtualLink(mockState, '1', '2.2.2.2', 'md5', 'netsim123');
 
     const vlinks = getOrCreateOspfVirtualLinks(mockState);
     expect(vlinks['1_2.2.2.2']).toBeDefined();

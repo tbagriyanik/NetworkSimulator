@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { addClassToQosPolicy } from '@/lib/network/qosClassMapPolicyMap';
 import type { SwitchState } from '@/lib/network/types';
 
-describe('qosClassMapPolicyMap (Cisco Class-Based QoS)', () => {
+describe('qosClassMapPolicyMap (Class-Based QoS)', () => {
   it('should create policy-map and attach class-map bandwidth/priority rules', () => {
     const mockState = {} as SwitchState;
 

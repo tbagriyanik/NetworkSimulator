@@ -4,6 +4,7 @@ import { commandAliases } from './initialState';
 import { useAppStore } from '../store/appStore';
 import { IOS_ERRORS } from "./core/iosErrors";
 import { getDeviceCapabilities, type DeviceCapabilities } from './capabilities';
+import { getSmartCliHint } from './core/smartCliHints';
 import type { DeviceType } from '@/components/network/networkTopology.types';
 
 // Modüler komut pattern'leri
@@ -483,8 +484,12 @@ export function getInvalidCommandError(
     const firstWord = cmdTokens[0];
 
     const isTr = language === 'tr';
-    // Educational hints for specific commands
-    if (firstWord === 'interface' || firstWord === 'int') {
+    const smartHint = getSmartCliHint(cleanedInput);
+    if (smartHint) {
+      errorMsg += `\n\n📋 ${isTr ? 'Kullanım Formatı' : 'Syntax'}: ${smartHint.template}`;
+      errorMsg += `\n💡 ${isTr ? 'Örnek' : 'Example'}: ${smartHint.example}`;
+      errorMsg += `\nℹ️  ${smartHint.explanation[language]}`;
+    } else if (firstWord === 'interface' || firstWord === 'int') {
       errorMsg += isTr
         ? `\n💡 İpucu: "interface" komutundan sonra bir arayüz adı bekleniyor (Örn: "fa0/1").`
         : `\n💡 Hint: "interface" command expects an interface name (e.g. "fa0/1").`;

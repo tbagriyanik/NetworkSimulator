@@ -8,6 +8,7 @@ export interface UiPreferences {
   showEventLogs: boolean;
   showFooter: boolean;
   showDevicePopovers: boolean;
+  showPortLabels: boolean;
 }
 
 export const defaultUiPreferences: UiPreferences = {
@@ -16,6 +17,7 @@ export const defaultUiPreferences: UiPreferences = {
   showEventLogs: true,
   showFooter: true,
   showDevicePopovers: true,
+  showPortLabels: true,
 };
 
 interface UiPreferencesStore {

@@ -7,7 +7,7 @@ import {
 } from '@/lib/network/ospfAreaSummarization';
 import type { SwitchState, Route } from '@/lib/network/types';
 
-describe('ospfAreaSummarization (Cisco OSPF Multi-Area ABR Summarization)', () => {
+describe('ospfAreaSummarization (OSPF Multi-Area ABR Summarization)', () => {
   it('should register and update OSPF area range for ABR summarization', () => {
     const mockState = {} as SwitchState;
 

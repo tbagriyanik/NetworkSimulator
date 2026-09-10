@@ -101,6 +101,15 @@ export function ViewVisibilityMenu({ isDark = true }: ViewVisibilityMenuProps) {
           {isTr ? 'PC / Router Bilgi Pencereleri' : 'Device Info Modals'}
         </DropdownMenuCheckboxItem>
 
+        <DropdownMenuCheckboxItem
+          checked={preferences.showPortLabels}
+          onCheckedChange={(checked) => updatePreference('showPortLabels', checked)}
+          onSelect={(e) => e.preventDefault()}
+          className="text-xs cursor-pointer"
+        >
+          {isTr ? 'Kablo & Port Etiketleri' : 'Cable & Port Labels'}
+        </DropdownMenuCheckboxItem>
+
         <DropdownMenuSeparator className={isDark ? 'bg-secondary-800' : 'bg-secondary-100'} />
 
         <div className="flex items-center gap-1 p-1">

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { enableErrdisableCause, setErrdisableInterval } from '@/lib/network/errdisableRecovery';
 import type { SwitchState } from '@/lib/network/types';
 
-describe('errdisableRecovery (Cisco Errdisable Auto-Recovery)', () => {
+describe('errdisableRecovery (Errdisable Auto-Recovery)', () => {
   it('should enable recovery causes and set interval correctly', () => {
     const mockState = {} as SwitchState;
 

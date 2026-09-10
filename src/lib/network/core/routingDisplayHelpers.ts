@@ -1,5 +1,5 @@
 /**
- * Routing Display Helper utilities for Cisco CLI `show ip route` & `show ipv6 route`.
+ * Routing Display Helper utilities for CLI `show ip route` & `show ipv6 route`.
  */
 
 export const ROUTE_LEGEND_HEADER = `Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP

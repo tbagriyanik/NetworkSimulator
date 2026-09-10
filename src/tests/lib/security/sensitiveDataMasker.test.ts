@@ -7,13 +7,13 @@ describe('sensitiveDataMasker', () => {
 hostname Router1
 enable secret 5 $1$mERr$bC
 line vty 0 4
- password cisco123
+ password netsim123
 login
 `;
     const masked = maskSensitiveConfig(rawConfig);
 
     expect(masked).not.toContain('5 $1$mERr$bC');
-    expect(masked).not.toContain('cisco123');
+    expect(masked).not.toContain('netsim123');
     expect(masked).toContain('enable secret ••••••••');
     expect(masked).toContain('password ••••••••');
   });

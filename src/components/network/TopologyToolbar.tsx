@@ -20,8 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
-import { DeviceIcon } from '@/components/network/DeviceIcon';
-import { ChevronDown, Plus, Undo2, Redo2, Search, X, Cable, LineSquiggle, Leaf, Plug, TrendingUpDown, Users, UserKey, Activity, Command } from 'lucide-react';
+import { ChevronDown, Plus, Undo2, Redo2, Search, X, Cable, LineSquiggle, Leaf, Plug, TrendingUpDown, Users, UserKey, Activity, Command, Stethoscope, LayoutGrid } from 'lucide-react';
 import type { Translations } from '@/contexts/LanguageContext';
 import type { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
 import type { SwitchState, CableType, CableInfo } from '@/lib/network/types';
@@ -30,11 +29,14 @@ import { cn } from '@/lib/utils';
 import { SimulationSpeedControl } from './SimulationSpeedControl';
 import { ShortcutPaletteModal } from './ShortcutPaletteModal';
 import { ViewVisibilityMenu } from './ViewVisibilityMenu';
+import { DeviceIcon } from './DeviceIcon';
+import { NetworkDiagnosticsModal } from './NetworkDiagnosticsModal';
+import { applyAutoLayout } from '@/lib/network/autoLayoutEngine';
 
 interface TopologyToolbarProps {
   t: Translations;
   isDark: boolean;
-  language: 'tr' | 'en';
+  language?: 'tr' | 'en';
   topologyDevices: CanvasDevice[];
   deviceStates: Map<string, SwitchState>;
   activeDeviceId: string;
@@ -81,7 +83,7 @@ const TOOLBAR_ITEMS: Array<{ type: DeviceType; labelKey: keyof Translations; col
 
 
 export function TopologyToolbar({
-  t, isDark,
+  t, isDark, language = 'tr',
   topologyDevices, deviceStates,
   activeDeviceId, activeDeviceType,
   cableInfo, deviceSearchQuery,
@@ -102,6 +104,7 @@ export function TopologyToolbar({
 
   const isHighQuality = graphicsQuality === 'high';
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState(false);
   const [simulationSpeed, setSimulationSpeed] = useState(1);
   const [isSimPaused, setIsSimPaused] = useState(false);
   // Register Home key shortcut for reset view
@@ -638,7 +641,92 @@ export function TopologyToolbar({
 
 
 
+      {/* Auto Layout Menu */}
+      <div className="hidden sm:block">
+        <DropdownMenu>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  aria-label={language === 'tr' ? 'Otomatik Düzenle' : 'Auto Layout'}
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-sky-500 hover:bg-sky-500/10 hover:text-sky-400"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent>{language === 'tr' ? 'Topolojiyi Otomatik Düzenle' : 'Auto Layout Topology'}</TooltipContent>
+          </Tooltip>
+          <DropdownMenuContent
+            align="end"
+            className={`w-48 p-1.5 z-50 ${isDark ? 'bg-secondary-900 border-secondary-800 text-secondary-200' : 'bg-white border-secondary-200 text-secondary-800'}`}
+          >
+            <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-secondary-400 px-2 py-1">
+              {language === 'tr' ? 'Düzen Algoritması' : 'Layout Algorithm'}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator className={isDark ? 'bg-secondary-800' : 'bg-secondary-100'} />
+            <DropdownMenuItem
+              onClick={() => {
+                const conns = useAppStore.getState().topology.connections;
+                const newDevices = applyAutoLayout(topologyDevices, conns, { algorithm: 'hierarchical' });
+                useAppStore.getState().setDevices(newDevices);
+              }}
+              className="text-xs cursor-pointer"
+            >
+              {language === 'tr' ? '🏛️ Hiyerarşik (3-Tier)' : '🏛️ Hierarchical (3-Tier)'}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                const conns = useAppStore.getState().topology.connections;
+                const newDevices = applyAutoLayout(topologyDevices, conns, { algorithm: 'star' });
+                useAppStore.getState().setDevices(newDevices);
+              }}
+              className="text-xs cursor-pointer"
+            >
+              {language === 'tr' ? '⭐ Yıldız (Star)' : '⭐ Star Topology'}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                const conns = useAppStore.getState().topology.connections;
+                const newDevices = applyAutoLayout(topologyDevices, conns, { algorithm: 'ring' });
+                useAppStore.getState().setDevices(newDevices);
+              }}
+              className="text-xs cursor-pointer"
+            >
+              {language === 'tr' ? '⭕ Halka (Ring)' : '⭕ Ring Topology'}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                const conns = useAppStore.getState().topology.connections;
+                const newDevices = applyAutoLayout(topologyDevices, conns, { algorithm: 'grid' });
+                useAppStore.getState().setDevices(newDevices);
+              }}
+              className="text-xs cursor-pointer"
+            >
+              {language === 'tr' ? '📐 Matris (Grid)' : '📐 Grid Matrix'}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
       <div className="ml-auto flex items-center gap-1">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              aria-label={language === 'tr' ? 'Ağ Teşhis & Kök Neden Analizi' : 'Network Diagnostics & Root Cause'}
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-amber-500 hover:bg-amber-500/10 hover:text-amber-400"
+              onClick={() => setIsDiagnosticsOpen(true)}
+            >
+              <Stethoscope className="w-4 h-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{language === 'tr' ? 'Ağ Teşhis & Kök Neden Analizcisi' : 'Network Diagnostics & Root Cause Analyzer'}</TooltipContent>
+        </Tooltip>
+
         <ViewVisibilityMenu isDark={isDark} />
 
         {onOpenStudentJoin && (
@@ -674,6 +762,17 @@ export function TopologyToolbar({
           </Tooltip>
         )}
       </div>
+
+      <NetworkDiagnosticsModal
+        open={isDiagnosticsOpen}
+        onOpenChange={setIsDiagnosticsOpen}
+        devices={topologyDevices}
+        connections={useAppStore.getState().topology.connections}
+        deviceStates={deviceStates}
+        isDark={isDark}
+        language={language}
+        defaultSourceId={activeDeviceId}
+      />
     </div>
   );
 }

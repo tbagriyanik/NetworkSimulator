@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { setGreTunnelSource, setGreTunnelDestination } from '@/lib/network/greTunnel';
 import type { SwitchState } from '@/lib/network/types';
 
-describe('greTunnel (Cisco GRE Tunneling)', () => {
+describe('greTunnel (GRE Tunneling)', () => {
   it('should configure GRE tunnel source and destination endpoints', () => {
     const mockState = {} as SwitchState;
 

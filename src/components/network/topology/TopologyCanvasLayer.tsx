@@ -14,6 +14,7 @@ import { PingAnimationOverlay } from './PingAnimationOverlay';
 import type { PingAnimationOverlayProps } from './PingAnimationOverlay';
 import type { CanvasConnection, CanvasDevice, CanvasNote, ContextMenuState } from '../networkTopology.types';
 import type { SwitchState, CableInfo } from '@/lib/network/types';
+import { useUiPreferences } from '@/hooks/useUiPreferences';
 
 export interface TopologyCanvasLayerProps {
     canvasRef: React.RefObject<HTMLDivElement | null>;
@@ -171,6 +172,7 @@ export function TopologyCanvasLayer({
     isDarkForPing,
     tForPing,
 }: TopologyCanvasLayerProps) {
+    const { preferences } = useUiPreferences();
     const canvasSize = getCanvasDimensions();
     const connectionGroups = React.useMemo(() => {
         const groups = new Map<string, string[]>();
@@ -354,6 +356,7 @@ export function TopologyCanvasLayer({
                                         CABLE_COLORS={CABLE_COLORS}
                                         zoom={zoom}
                                         graphicsQuality={graphicsQuality}
+                                        showLabel={preferences.showPortLabels}
                                         isHovered={hoveredConnectionId === conn.id || activeCaptureConnectionId === conn.id}
                                         onMouseEnter={(e: React.MouseEvent<SVGPathElement>) => handleConnectionMouseEnter(e, conn.id, sourceDevice.name, conn.sourcePort, targetDevice.name, conn.targetPort, conn.cableType, getConnectionStatusMessage(conn, devices, language))}
                                         onMouseLeave={handleConnectionMouseLeave}
