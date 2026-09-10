@@ -12,7 +12,7 @@ interface PanelState {
   showRouterPanel: boolean;
   showRouterDeviceId: string;
   showUnifiedDeviceModal: boolean;
-  unifiedDeviceActiveTab: 'console' | 'settings' | 'stp';
+  unifiedDeviceActiveTab: 'console' | 'settings' | 'stp' | 'physical';
   showAboutModal: boolean;
   showMobileMenu: boolean;
   isEnvironmentPanelOpen: boolean;
@@ -32,7 +32,7 @@ interface PanelActions {
   setShowRouterPanel: Dispatch<SetStateAction<boolean>>;
   setShowRouterDeviceId: Dispatch<SetStateAction<string>>;
   setShowUnifiedDeviceModal: Dispatch<SetStateAction<boolean>>;
-  setUnifiedDeviceActiveTab: Dispatch<SetStateAction<'console' | 'settings' | 'stp'>>;
+  setUnifiedDeviceActiveTab: Dispatch<SetStateAction<'console' | 'settings' | 'stp' | 'physical'>>;
   setShowAboutModal: Dispatch<SetStateAction<boolean>>;
   setShowMobileMenu: Dispatch<SetStateAction<boolean>>;
   setIsEnvironmentPanelOpen: Dispatch<SetStateAction<boolean>>;
@@ -53,7 +53,7 @@ export function usePanels(): PanelState & PanelActions {
   const [showRouterPanel, setShowRouterPanel] = useState(false);
   const [showRouterDeviceId, setShowRouterDeviceId] = useState<string>('router-1');
   const [showUnifiedDeviceModal, setShowUnifiedDeviceModal] = useState(false);
-  const [unifiedDeviceActiveTab, setUnifiedDeviceActiveTab] = useState<'console' | 'settings' | 'stp'>('console');
+  const [unifiedDeviceActiveTab, setUnifiedDeviceActiveTab] = useState<'console' | 'settings' | 'stp' | 'physical'>('console');
   const [showAboutModal, setShowAboutModal] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isEnvironmentPanelOpen, setIsEnvironmentPanelOpen] = useState(false);

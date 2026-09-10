@@ -198,6 +198,10 @@ export interface Port {
   stickyMacs?: string[]; // Sticky MAC addresses for port security
   protected?: boolean; // Protected port (PVLAN edge)
   ipv6Address?: string;
+  zoneMember?: string; // Zone-Based Firewall security zone member
+  ipv6RaGuard?: boolean; // IPv6 First-Hop Security RA Guard
+  ipv6DhcpGuard?: boolean; // IPv6 First-Hop Security DHCPv6 Guard
+
   ipv6Prefix?: number;
   ipv6LinkLocal?: string;
   ipv6Autoconfig?: boolean;
@@ -532,6 +536,7 @@ export interface SwitchState {
   bannerMOTD?: string;
   bannerLogin?: string;
   bannerExec?: string;
+  installedModules?: Record<number, string>; // slot index -> module ID (e.g. 1 -> 'WIC-2T')
   version: {
     nosVersion: string;
     modelName: string;
@@ -839,8 +844,22 @@ export interface SwitchState {
     remotePort?: number;
     type?: 'static' | 'dynamic';
     timeout?: number;
+    timestamp?: number;
+    flags?: string;
   }>;
+
+  // Zone-Based Firewall (ZBFW)
+  zones?: string[];
+  zonePairs?: Array<{
+    name: string;
+    sourceZone: string;
+    destinationZone: string;
+    servicePolicy?: string;
+    action: 'inspect' | 'pass' | 'drop';
+  }>;
+
   // OSPF areas
+
   ospfAreas?: number[];
   ospfStubAreas?: string[];
   ospfTotallyStubAreas?: string[];

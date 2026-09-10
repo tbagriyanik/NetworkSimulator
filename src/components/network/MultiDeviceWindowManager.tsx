@@ -324,7 +324,7 @@ export function MultiDeviceWindowManager({
 
         const output = deviceOutputs.get(win.id) || [];
         const prompt = (deviceState as unknown as { prompt?: string }).prompt || `${deviceName}>`;
-        const currentActiveTab = (activeTabs[win.id] || win.initialTab || 'console') as 'console' | 'settings' | 'stp';
+        const currentActiveTab = (activeTabs[win.id] || win.initialTab || 'console') as 'console' | 'settings' | 'stp' | 'physical';
 
         return (
           <UnifiedDevicePanel

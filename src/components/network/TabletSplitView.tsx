@@ -21,8 +21,8 @@ interface TabletSplitViewProps {
   setShowUnifiedDeviceModal: (show: boolean) => void;
   showRouterPanel: boolean;
   setShowRouterPanel: (show: boolean) => void;
-  unifiedDeviceActiveTab: 'console' | 'settings' | 'stp';
-  setUnifiedDeviceActiveTab: (tab: 'console' | 'settings' | 'stp') => void;
+  unifiedDeviceActiveTab: 'console' | 'settings' | 'stp' | 'physical';
+  setUnifiedDeviceActiveTab: (tab: 'console' | 'settings' | 'stp' | 'physical') => void;
   activeDeviceId: string;
   activeDeviceType: DeviceType;
   deviceStates: Map<string, SwitchState>;

@@ -13,7 +13,10 @@ export type PacketProtocolType =
   | 'LLDP'
   | 'PPPOE'
   | 'IPV4'
-  | 'IPV6';
+  | 'IPV6'
+  | 'TCP'
+  | 'UDP';
+
 
 export interface ArpPayload {
   operation: 'request' | 'reply';

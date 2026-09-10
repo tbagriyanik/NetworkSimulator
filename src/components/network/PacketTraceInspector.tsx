@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { PipelineResult, PacketTrace, HopResult } from '@/lib/network/forwarding/packetPipeline';
 import { getDropReasonDetail } from '@/lib/network/forwarding/dropReasons';
+import { VisualPduInspectorModal } from './VisualPduInspectorModal';
+
 
 interface PacketTraceInspectorProps {
   isOpen?: boolean;
@@ -261,6 +263,7 @@ export const PacketTraceView: React.FC<{
 };
 
 export const PacketTraceInspector: React.FC<PacketTraceInspectorProps> = ({
+
   isOpen = true,
   onClose,
   pipelineResult,
@@ -268,8 +271,28 @@ export const PacketTraceInspector: React.FC<PacketTraceInspectorProps> = ({
   embedded = false,
   isDark = true,
 }) => {
+  const [showPduModal, setShowPduModal] = useState<boolean>(false);
+
   if (embedded) {
-    return <PacketTraceView pipelineResult={pipelineResult} onSelectHop={onSelectHop} isDark={isDark} />;
+    return (
+      <div className="flex flex-col h-full">
+        <div className="flex justify-end p-2 border-b border-slate-700/40">
+          <button
+            onClick={() => setShowPduModal(true)}
+            className="px-3 py-1 bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-400 border border-cyan-500/40 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors"
+          >
+            🔍 Görsel PDU & Wireshark İnceleyici
+          </button>
+        </div>
+        <PacketTraceView pipelineResult={pipelineResult} onSelectHop={onSelectHop} isDark={isDark} />
+        <VisualPduInspectorModal
+          isOpen={showPduModal}
+          onClose={() => setShowPduModal(false)}
+          pipelineResult={pipelineResult}
+          isDark={isDark}
+        />
+      </div>
+    );
   }
 
   if (!isOpen || !pipelineResult) return null;
@@ -292,17 +315,32 @@ export const PacketTraceInspector: React.FC<PacketTraceInspectorProps> = ({
               </p>
             </div>
           </div>
-          {onClose && (
+          <div className="flex items-center gap-2">
             <button
-              onClick={onClose}
-              className="px-3 py-1.5 text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg transition"
+              onClick={() => setShowPduModal(true)}
+              className="px-3 py-1.5 text-xs text-cyan-300 bg-cyan-950/60 hover:bg-cyan-900/60 border border-cyan-500/40 rounded-lg transition font-medium"
             >
-              Kapat (ESC)
+              🔍 PDU & Wireshark İnceleyici
             </button>
-          )}
+            {onClose && (
+              <button
+                onClick={onClose}
+                className="px-3 py-1.5 text-xs text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg transition"
+              >
+                Kapat (ESC)
+              </button>
+            )}
+          </div>
         </div>
         <PacketTraceView pipelineResult={pipelineResult} onSelectHop={onSelectHop} isDark={isDark} />
+        <VisualPduInspectorModal
+          isOpen={showPduModal}
+          onClose={() => setShowPduModal(false)}
+          pipelineResult={pipelineResult}
+          isDark={isDark}
+        />
       </div>
     </div>
   );
 };
+

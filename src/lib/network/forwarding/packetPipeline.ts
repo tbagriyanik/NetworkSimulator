@@ -37,6 +37,10 @@ import { dispatchCapturedPackets } from '@/utils/packetCapture';
 import { buildConnectionIndex } from '@/lib/network/connectionIndex';
 import { generateIcmpUnreachable } from './icmpUtils';
 import { DropReasonCode, formatDropReason } from './dropReasons';
+import { processNatPacket } from './natEngine';
+import { evaluateWredDrop } from '@/lib/network/qosScheduler';
+import { evaluateZbf } from './zbfEngine';
+import { evaluateIpv6FirstHopSecurity } from './ipv6FirstHopSecurity';
 
 // ─────────────────────────────────────────────
 // Pipeline Trace Types
@@ -46,6 +50,7 @@ export type PipelineStage =
   | 'ingress-l1'
   | 'port-security'
   | 'dhcp-snooping'
+  | 'ipv6-fhs'
   | 'stp-state'
   | 'vlan-check'
   | 'acl-ingress'
@@ -53,10 +58,14 @@ export type PipelineStage =
   | 'arp-resolution'
   | 'mac-lookup'
   | 'route-lookup'
+  | 'nat-translation'
+  | 'zbf'
   | 'acl-egress'
   | 'qos'
   | 'egress'
   | 'capture';
+
+
 
 export type PipelineAction = 'pass' | 'drop' | 'trap' | 'flood' | 'forward' | 'skip';
 
@@ -335,6 +344,14 @@ export function runHopPipeline(
   }
   traces.push(makeTrace(hopIndex, device, ingressPortId, 'dhcp-snooping', 'pass', 'DHCP snooping OK', frame));
 
+  // ── Stage 3b: IPv6 First-Hop Security (RA Guard & DHCPv6 Guard) ────────
+  const fhsResult = evaluateIpv6FirstHopSecurity(ingressPort, frame);
+  if (fhsResult.isViolation) {
+    return drop('ipv6-fhs', fhsResult.dropReason || 'IPv6 First-Hop Security Violation');
+  }
+  traces.push(makeTrace(hopIndex, device, ingressPortId, 'ipv6-fhs', 'pass', 'IPv6 First-Hop Security OK', frame));
+
+
   // ── Stage 4: STP Port State ────────────────────────────────────────────
   if (frame.protocol !== 'STP') {
     const stpState = ingressPort?.spanningTree?.state;
@@ -405,7 +422,65 @@ export function runHopPipeline(
   const reasonText = routeDecision || `${forwardAction === 'flood' ? 'Flooding' : 'Forwarding'} to ${egressPorts.join(', ')}`;
   traces.push(makeTrace(hopIndex, device, ingressPortId, forwardStage, forwardAction, reasonText, frame));
 
+  // ── Stage 9b: NAT / PAT Translation ────────────────────────────────
+  if ((device.type === 'router' || device.type === 'firewall') && state && egressPorts[0] && frame.srcIp && frame.dstIp) {
+    const natRes = processNatPacket(
+      state,
+      ingressPortId,
+      egressPorts[0],
+      frame.srcIp,
+      frame.dstIp,
+      undefined,
+      undefined,
+      frame.protocol,
+      now
+    );
+
+    if (natRes.translated) {
+      if (natRes.newSourceIp) frame.srcIp = natRes.newSourceIp;
+      if (natRes.newTargetIp) frame.dstIp = natRes.newTargetIp;
+      traces.push(makeTrace(
+        hopIndex,
+        device,
+        egressPorts[0],
+        'nat-translation',
+        'pass',
+        natRes.logMessage || `NAT translation applied: ${frame.srcIp} -> ${frame.dstIp}`,
+        frame
+      ));
+    } else {
+      traces.push(makeTrace(
+        hopIndex,
+        device,
+        ingressPortId,
+        'nat-translation',
+        'skip',
+        'No NAT translation required for this flow',
+        frame
+      ));
+    }
+  }
+
+  // ── Stage 9c: Zone-Based Firewall (ZBFW) ─────────────────────────────
+  if (state && egressPorts[0] && frame.srcIp && frame.dstIp) {
+    const egressPort: Port | undefined = state.ports?.[egressPorts[0]];
+    const zbfResult = evaluateZbf(state, ingressPort, egressPort, frame.srcIp, frame.dstIp, frame.protocol, undefined, undefined, now);
+    if (!zbfResult.permitted) {
+      return drop('zbf', zbfResult.reason);
+    }
+    traces.push(makeTrace(
+      hopIndex,
+      device,
+      egressPorts[0],
+      'zbf',
+      zbfResult.action === 'skip' ? 'skip' : 'pass',
+      zbfResult.reason,
+      frame
+    ));
+  }
+
   // ── Stage 10: ACL Egress ─────────────────────────────────────────────
+
   for (const egressPortId of egressPorts) {
     const egressPort: Port | undefined = state?.ports?.[egressPortId];
     if (egressPort?.accessGroupOut && state && frame.srcIp && frame.dstIp) {
@@ -422,6 +497,30 @@ export function runHopPipeline(
         `ACL ${egressPort.accessGroupOut} (out) permit`, frame));
     }
   }
+
+  // ── Stage 10b: QoS Queue & Policing Check ────────────────────────────
+  for (const egressPortId of egressPorts) {
+    const egressPort: Port | undefined = state?.ports?.[egressPortId];
+    if (egressPort?.qos) {
+      const qDepth = (egressPort.stats?.txPackets || 0) % 50; // simulated buffer occupancy
+      const wredRes = evaluateWredDrop(qDepth, {
+        dscpOrPrec: egressPort.qosCos || 0,
+        minThreshold: 35,
+        maxThreshold: 48,
+        maxDropProbability: 0.1,
+      });
+
+      if (wredRes.shouldDrop) {
+        updatePortStats(egressPort, 'txdrop');
+        const code = wredRes.dropType === 'tail-drop' ? DropReasonCode.QOS_TAIL_DROP : DropReasonCode.QOS_WRED_DROP;
+        return drop('qos', formatDropReason(code, wredRes.reason));
+      }
+      traces.push(makeTrace(hopIndex, device, egressPortId, 'qos', 'pass', wredRes.reason, frame));
+    } else {
+      traces.push(makeTrace(hopIndex, device, egressPortId, 'qos', 'skip', 'Best-effort queue (No QoS policy active)', frame));
+    }
+  }
+
 
   // ── Stage 11: Egress + Packet Capture ────────────────────────────────
   const capturedOnLinks: string[] = [];

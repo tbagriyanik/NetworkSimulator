@@ -650,6 +650,11 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
         selectionAnimationFrameRef.current = null;
       }
 
+      const wasSelecting = isSelectingRef.current;
+      const wasPanning = isPanningRef.current;
+      const wasActuallyDragging = isActuallyDraggingRef.current;
+      const wasDragging = wasDraggingRef.current;
+
       if (isSelectingRef.current && selectionBoxRef.current) {
         const box = selectionBoxRef.current;
         const boxSelectedIds = getDeviceIdsInSelectionBox(box);
@@ -689,7 +694,7 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
         document.body.style.cursor = '';
       }
 
-      if (!isPanningRef.current && !isActuallyDraggingRef.current && !wasDraggingRef.current) {
+      if (!wasSelecting && !wasPanning && !wasActuallyDragging && !wasDragging) {
         const targetEl = e.target as HTMLElement;
         const isOnDevice = !!targetEl.closest?.('[data-device-id]');
         const isOnNote = !!targetEl.closest?.('[data-note-id]');

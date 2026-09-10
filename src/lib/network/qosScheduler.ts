@@ -246,3 +246,63 @@ export function scheduleQosPackets(
 
   return { transmitted, dropped, byClass: stats };
 }
+
+export interface WredProfile {
+  dscpOrPrec: number;
+  minThreshold: number; // in packets or KB
+  maxThreshold: number; // in packets or KB
+  maxDropProbability: number; // e.g., 0.1 for 10%
+}
+
+export interface WredEvaluationResult {
+  shouldDrop: boolean;
+  dropType: 'none' | 'wred-probabilistic' | 'tail-drop';
+  dropProbability: number;
+  reason: string;
+}
+
+/**
+ * Weighted Random Early Detection (WRED) Congestion Avoidance Engine.
+ */
+export function evaluateWredDrop(
+  currentQueueDepth: number,
+  profile: WredProfile,
+  randomValue: number = Math.random()
+): WredEvaluationResult {
+  const { minThreshold, maxThreshold, maxDropProbability } = profile;
+
+  // Below minimum threshold: never drop
+  if (currentQueueDepth < minThreshold) {
+    return {
+      shouldDrop: false,
+      dropType: 'none',
+      dropProbability: 0,
+      reason: `Queue depth (${currentQueueDepth}) is below min threshold (${minThreshold}). No drop.`,
+    };
+  }
+
+  // Above maximum threshold: 100% Tail drop
+  if (currentQueueDepth >= maxThreshold) {
+    return {
+      shouldDrop: true,
+      dropType: 'tail-drop',
+      dropProbability: 1.0,
+      reason: `Queue depth (${currentQueueDepth}) reached or exceeded max threshold (${maxThreshold}). Tail drop applied.`,
+    };
+  }
+
+  // Between min and max threshold: calculate drop probability slope
+  const slope = (currentQueueDepth - minThreshold) / (maxThreshold - minThreshold);
+  const dropProb = slope * maxDropProbability;
+
+  const shouldDrop = randomValue < dropProb;
+  return {
+    shouldDrop,
+    dropType: shouldDrop ? 'wred-probabilistic' : 'none',
+    dropProbability: parseFloat(dropProb.toFixed(4)),
+    reason: shouldDrop
+      ? `WRED Early Drop triggered (Prob: ${(dropProb * 100).toFixed(1)}%, Queue: ${currentQueueDepth}/${maxThreshold}).`
+      : `WRED checked: packet admitted (Prob: ${(dropProb * 100).toFixed(1)}%).`,
+  };
+}
+

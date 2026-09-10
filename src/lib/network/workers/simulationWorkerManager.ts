@@ -4,6 +4,8 @@
  */
 
 import type { WorkerTaskRequest, WorkerTaskResponse } from './simulationWorker';
+import { calculateDijkstraSpf } from './simulationWorker';
+
 
 export interface SimulationWorkerManagerOptions {
   timeoutMs?: number;
@@ -65,8 +67,12 @@ export class SimulationWorkerManager {
     }
   }
 
-  public executeTask<T>(type: 'CALCULATE_PATH' | 'HEALTH_CHECK', payload: Record<string, unknown>): Promise<T> {
+  public executeTask<T>(
+    type: 'CALCULATE_PATH' | 'CALCULATE_SPF' | 'TICK_PROTOCOLS' | 'HEALTH_CHECK',
+    payload: Record<string, unknown>
+  ): Promise<T> {
     const id = `task-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+
 
     if (!this.isSupported || !this.worker) {
       // Synchronous Main-Thread Fallback
@@ -91,8 +97,17 @@ export class SimulationWorkerManager {
     if (type === 'HEALTH_CHECK') {
       return { status: 'healthy-fallback' } as unknown as T;
     }
+    if (type === 'CALCULATE_SPF') {
+      const { nodes, links, sourceId } = payload as {
+        nodes: string[];
+        links: Array<{ source: string; target: string; cost: number }>;
+        sourceId: string;
+      };
+      return calculateDijkstraSpf(nodes || [], links || [], sourceId || '') as unknown as T;
+    }
     return payload as unknown as T;
   }
+
 
   public terminate() {
     this.pendingRequests.forEach((p) => clearTimeout(p.timer));

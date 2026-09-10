@@ -9,6 +9,7 @@ export interface UiPreferences {
   showFooter: boolean;
   showDevicePopovers: boolean;
   showPortLabels: boolean;
+  areaOverlayMode: 'none' | 'ospf' | 'vlan' | 'bgp' | 'subnet';
 }
 
 export const defaultUiPreferences: UiPreferences = {
@@ -18,11 +19,12 @@ export const defaultUiPreferences: UiPreferences = {
   showFooter: true,
   showDevicePopovers: true,
   showPortLabels: true,
+  areaOverlayMode: 'none',
 };
 
 interface UiPreferencesStore {
   preferences: UiPreferences;
-  updatePreference: (key: keyof UiPreferences, value: boolean) => void;
+  updatePreference: <K extends keyof UiPreferences>(key: K, value: UiPreferences[K]) => void;
   resetPreferences: () => void;
 }
 

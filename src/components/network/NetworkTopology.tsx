@@ -1713,6 +1713,8 @@ export function NetworkTopology({
           zoom={zoom}
           pan={pan}
           setPan={setPan}
+          setZoom={setZoom}
+          zoomToFit={zoomToFit}
           canvasRef={canvasRef}
           isDark={isDark}
           language={language}

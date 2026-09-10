@@ -1,10 +1,12 @@
 import { useState, useRef, useCallback } from 'react';
 import { CanvasDevice, CanvasConnection, CanvasNote } from '@/components/network/networkTopology.types';
+import type { SwitchState } from '@/lib/network/types';
 
 interface HistorySnapshot {
     devices: CanvasDevice[];
     connections: CanvasConnection[];
     notes: CanvasNote[];
+    deviceStates?: Record<string, SwitchState>;
 }
 
 interface UseCanvasHistoryOptions {
@@ -14,6 +16,8 @@ interface UseCanvasHistoryOptions {
     latestDevicesRef: React.MutableRefObject<CanvasDevice[]>;
     latestConnectionsRef: React.MutableRefObject<CanvasConnection[]>;
     latestNotesRef: React.MutableRefObject<CanvasNote[]>;
+    setDeviceStates?: (states: Record<string, SwitchState>) => void;
+    latestDeviceStatesRef?: React.MutableRefObject<Record<string, SwitchState>>;
     maxHistory?: number;
     onAction?: (desc: string) => void;
 }
@@ -29,6 +33,8 @@ export function useCanvasHistory({
     latestDevicesRef,
     latestConnectionsRef,
     latestNotesRef,
+    setDeviceStates,
+    latestDeviceStatesRef,
     maxHistory = 100,
     onAction
 }: UseCanvasHistoryOptions) {
@@ -46,6 +52,7 @@ export function useCanvasHistory({
             devices: structuredClone(latestDevicesRef.current),
             connections: structuredClone(latestConnectionsRef.current),
             notes: structuredClone(latestNotesRef.current),
+            deviceStates: latestDeviceStatesRef ? structuredClone(latestDeviceStatesRef.current) : undefined,
         };
 
         const truncated = historyRef.current.slice(0, historyIndexRef.current + 1);
@@ -56,7 +63,8 @@ export function useCanvasHistory({
             last &&
             JSON.stringify(last.devices) === JSON.stringify(snapshot.devices) &&
             JSON.stringify(last.connections) === JSON.stringify(snapshot.connections) &&
-            JSON.stringify(last.notes) === JSON.stringify(snapshot.notes)
+            JSON.stringify(last.notes) === JSON.stringify(snapshot.notes) &&
+            (!latestDeviceStatesRef || JSON.stringify(last.deviceStates) === JSON.stringify(snapshot.deviceStates))
         ) {
             return;
         }
@@ -68,7 +76,7 @@ export function useCanvasHistory({
         historyIndexRef.current = truncated.length - 1;
         setHistoryIndex(historyIndexRef.current);
         setHistoryLength(truncated.length);
-    }, [latestDevicesRef, latestConnectionsRef, latestNotesRef, maxHistory]);
+    }, [latestDevicesRef, latestConnectionsRef, latestNotesRef, latestDeviceStatesRef, maxHistory, onAction]);
 
     const handleUndo = useCallback(() => {
         if (historyIndexRef.current >= 0) {
@@ -78,6 +86,7 @@ export function useCanvasHistory({
                     devices: structuredClone(latestDevicesRef.current),
                     connections: structuredClone(latestConnectionsRef.current),
                     notes: structuredClone(latestNotesRef.current),
+                    deviceStates: latestDeviceStatesRef ? structuredClone(latestDeviceStatesRef.current) : undefined,
                 };
                 const last = historyRef.current[historyRef.current.length - 1];
                 if (
@@ -98,11 +107,14 @@ export function useCanvasHistory({
                     setDevices(structuredClone(state.devices));
                     setConnections(structuredClone(state.connections));
                     setNotes(structuredClone(state.notes));
+                    if (setDeviceStates && state.deviceStates) {
+                        setDeviceStates(structuredClone(state.deviceStates));
+                    }
                     setHistoryIndex(historyIndexRef.current);
                 }
             }
         }
-    }, [setDevices, setConnections, setNotes, latestDevicesRef, latestConnectionsRef, latestNotesRef]);
+    }, [setDevices, setConnections, setNotes, setDeviceStates, latestDevicesRef, latestConnectionsRef, latestNotesRef, latestDeviceStatesRef]);
 
     const handleRedo = useCallback(() => {
         if (historyIndexRef.current < historyRef.current.length - 1) {
@@ -112,10 +124,13 @@ export function useCanvasHistory({
                 setDevices(structuredClone(state.devices));
                 setConnections(structuredClone(state.connections));
                 setNotes(structuredClone(state.notes));
+                if (setDeviceStates && state.deviceStates) {
+                    setDeviceStates(structuredClone(state.deviceStates));
+                }
                 setHistoryIndex(historyIndexRef.current);
             }
         }
-    }, [setDevices, setConnections, setNotes]);
+    }, [setDevices, setConnections, setNotes, setDeviceStates]);
 
     const canUndo = historyIndex > 0;
     const canRedo = historyIndex < historyLength - 1;
@@ -130,3 +145,4 @@ export function useCanvasHistory({
         historyLength,
     };
 }
+

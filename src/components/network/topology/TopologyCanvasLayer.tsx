@@ -11,6 +11,7 @@ import { EnvironmentBackgrounds } from './EnvironmentBackgrounds';
 import { CanvasDefs } from './CanvasDefs';
 import { SelectionBoxOverlay } from './SelectionBoxOverlay';
 import { PingAnimationOverlay } from './PingAnimationOverlay';
+import { TopologyAreaOverlay } from './TopologyAreaOverlay';
 import type { PingAnimationOverlayProps } from './PingAnimationOverlay';
 import type { CanvasConnection, CanvasDevice, CanvasNote, ContextMenuState } from '../networkTopology.types';
 import type { SwitchState, CableInfo } from '@/lib/network/types';
@@ -154,7 +155,7 @@ export function TopologyCanvasLayer({
     setSelectedNoteIds,
     setSelectedDeviceIds,
     setContextMenu,
-    setSelectAllMode,
+    setSelectAllMode: _setSelectAllMode,
     cancelConnectionDrawing,
     setPingCursorPos,
     setZoom,
@@ -232,9 +233,6 @@ export function TopologyCanvasLayer({
             }}
             onClick={() => {
                 canvasRef.current?.focus();
-                setSelectedDeviceIds([]);
-                setSelectedNoteIds([]);
-                setSelectAllMode(false);
                 cancelConnectionDrawing();
                 setContextMenu(null);
             }}
@@ -296,6 +294,15 @@ export function TopologyCanvasLayer({
                         <rect data-export-hide="true" x="0" y="0" width={canvasSize.width} height={canvasSize.height} fill="url(#gridPattern)" />
 
                         <EnvironmentBackgrounds environment={environment} isDark={isDark} t={t} />
+
+                        {/* VLAN, OSPF, BGP Area Overlay Highlighting */}
+                        <TopologyAreaOverlay
+                            devices={devices}
+                            deviceStates={deviceStates}
+                            overlayMode={preferences.areaOverlayMode || 'none'}
+                            zoom={zoom}
+                            isDark={isDark}
+                        />
 
                         {/* Notes are intentionally below cables and devices in SVG paint order. */}
                         {visibleNotes.map((note) => (

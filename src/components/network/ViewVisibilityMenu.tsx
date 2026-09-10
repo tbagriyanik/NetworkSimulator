@@ -112,6 +112,32 @@ export function ViewVisibilityMenu({ isDark = true }: ViewVisibilityMenuProps) {
 
         <DropdownMenuSeparator className={isDark ? 'bg-secondary-800' : 'bg-secondary-100'} />
 
+        <DropdownMenuLabel className="text-[11px] font-bold uppercase tracking-wider text-secondary-400 px-2 py-1">
+          {isTr ? 'Bölge Renklendirme (Overlay)' : 'Area Highlighting Overlay'}
+        </DropdownMenuLabel>
+
+        {(['none', 'ospf', 'vlan', 'bgp', 'subnet'] as const).map((mode) => (
+          <DropdownMenuCheckboxItem
+            key={mode}
+            checked={(preferences.areaOverlayMode || 'none') === mode}
+            onCheckedChange={() => updatePreference('areaOverlayMode', mode)}
+            onSelect={(e) => e.preventDefault()}
+            className="text-xs cursor-pointer"
+          >
+            {mode === 'none'
+              ? (isTr ? '🚫 Kapalı' : '🚫 Disabled')
+              : mode === 'ospf'
+              ? (isTr ? '🌐 OSPF Alanları (Areas)' : '🌐 OSPF Areas')
+              : mode === 'vlan'
+              ? (isTr ? '🏷️ VLAN Bölgeleri' : '🏷️ VLAN Zones')
+              : mode === 'bgp'
+              ? (isTr ? '🏛️ BGP Otonom Sistemler (AS)' : '🏛️ BGP AS Zones')
+              : (isTr ? '📡 IP Alt Ağları (Subnets)' : '📡 IP Subnets')}
+          </DropdownMenuCheckboxItem>
+        ))}
+
+        <DropdownMenuSeparator className={isDark ? 'bg-secondary-800' : 'bg-secondary-100'} />
+
         <div className="flex items-center gap-1 p-1">
           <Button
             variant="ghost"

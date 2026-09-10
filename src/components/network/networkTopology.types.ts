@@ -173,6 +173,7 @@ export interface CanvasDevice {
   y: number;
   status: 'online' | 'offline' | 'error';
   switchModel?: string; // WS-C2960-24TT-L (L2) veya WS-C3650-24PS (L3)
+  installedModules?: Record<number, string>; // slot index -> module ID
   ports: CanvasPort[];
   wifi?: CanvasWifiConfig;
   iot?: {

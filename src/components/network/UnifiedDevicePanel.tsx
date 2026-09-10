@@ -42,13 +42,14 @@ const PrinterDeviceView = dynamic(() => import('./deviceViews/PrinterDeviceView'
 const MobileDeviceView = dynamic(() => import('./deviceViews/MobileDeviceView').then(m => m.MobileDeviceView), { ssr: false });
 const CloudDeviceView = dynamic(() => import('./deviceViews/CloudDeviceView').then(m => m.CloudDeviceView), { ssr: false });
 const IotDeviceView = dynamic(() => import('./deviceViews/IotDeviceView').then(m => m.IotDeviceView), { ssr: false });
-
+const PhysicalDeviceView = dynamic(() => import('./PhysicalDeviceView').then(m => m.PhysicalDeviceView), { ssr: false });
+import { useAppStore } from '@/lib/store/appStore';
 
 interface UnifiedDevicePanelProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
-    activeTab: 'console' | 'settings' | 'stp';
-    onTabChange: (tab: 'console' | 'settings' | 'stp') => void;
+    activeTab: 'console' | 'settings' | 'stp' | 'physical';
+    onTabChange: (tab: 'console' | 'settings' | 'stp' | 'physical') => void;
     deviceId: string;
     deviceType: DeviceType;
     deviceStates: Map<string, SwitchState>;
@@ -207,6 +208,13 @@ export function UnifiedDevicePanel({
                                     <TabsTrigger value="stp" className="flex items-center gap-1.5 px-2 h-6 text-xs">
                                         <Layers className="w-3 h-3 text-warning-500" />
                                         <span className="hidden sm:inline">{deviceType === 'router' ? (language === 'tr' ? 'Ağ & Detaylar' : 'Network & Details') : t.stpTab}</span>
+                                    </TabsTrigger>
+                                )}
+
+                                {(deviceType === 'switchL2' || deviceType === 'switchL3' || deviceType === 'router' || deviceType === 'firewall') && (
+                                    <TabsTrigger value="physical" className="flex items-center gap-1.5 px-2 h-6 text-xs">
+                                        <Cpu className="w-3 h-3 text-emerald-400" />
+                                        <span className="hidden sm:inline">{language === 'tr' ? 'Fiziksel Görünüm' : 'Physical View'}</span>
                                     </TabsTrigger>
                                 )}
                             </TabsList>
@@ -753,6 +761,33 @@ export function UnifiedDevicePanel({
                                 );
                             })()}
                         </div>
+                    </TabsContent>
+
+                    <TabsContent value="physical" className="h-full m-0 p-0 overflow-hidden">
+                        {(() => {
+                            const dev = topologyDevices?.find(d => d.id === deviceId);
+                            if (!dev) return null;
+                            return (
+                                <PhysicalDeviceView
+                                    device={dev}
+                                    switchState={state}
+                                    connections={topologyConnections}
+                                    isDark={isDark}
+                                    language={language}
+                                    onUpdateDevice={(updatedDev, _updatedSwitch, removedConns) => {
+                                        const curDevs = useAppStore.getState().topology.devices || [];
+                                        const nextDevs = curDevs.map(d => d.id === updatedDev.id ? updatedDev : d);
+                                        useAppStore.getState().setDevices(nextDevs);
+
+                                        if (removedConns && removedConns.length > 0) {
+                                            const curConns = useAppStore.getState().topology.connections || [];
+                                            const nextConns = curConns.filter(c => !removedConns.includes(c.id));
+                                            useAppStore.getState().setConnections(nextConns);
+                                        }
+                                    }}
+                                />
+                            );
+                        })()}
                     </TabsContent>
                 </Tabs>
             </div>

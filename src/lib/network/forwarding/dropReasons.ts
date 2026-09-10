@@ -6,7 +6,7 @@
  * helper functions for UI display and event logging.
  */
 
-export type DropCategory = 'L1' | 'L2' | 'L3' | 'ACL' | 'SECURITY' | 'STP' | 'CONTROL_PLANE';
+export type DropCategory = 'L1' | 'L2' | 'L3' | 'ACL' | 'SECURITY' | 'STP' | 'CONTROL_PLANE' | 'QOS' | 'NAT';
 
 export enum DropReasonCode {
   // L1 Physical
@@ -32,11 +32,20 @@ export enum DropReasonCode {
   DHCP_SNOOPING_UNTRUSTED_SERVER = 'DHCP_SNOOPING_UNTRUSTED_SERVER',
   DAI_INVALID_ARP = 'DAI_INVALID_ARP',
 
+  // QoS & Queue drops
+  QOS_POLICING_DROP = 'QOS_POLICING_DROP',
+  QOS_TAIL_DROP = 'QOS_TAIL_DROP',
+  QOS_WRED_DROP = 'QOS_WRED_DROP',
+
+  // NAT drops
+  NAT_NO_TRANSLATION = 'NAT_NO_TRANSLATION',
+
   // System
   MAX_HOPS_EXCEEDED = 'MAX_HOPS_EXCEEDED',
   ROUTING_LOOP_DETECTED = 'ROUTING_LOOP_DETECTED',
   DEVICE_NOT_FOUND = 'DEVICE_NOT_FOUND',
 }
+
 
 export interface DropReasonDetail {
   code: DropReasonCode;
@@ -152,7 +161,36 @@ export const DROP_REASON_REGISTRY: Record<DropReasonCode, DropReasonDetail> = {
     description: 'ARP packet payload IP/MAC binding does not match DHCP snooping database',
     suggestedFix: 'Configure static ARP inspection binding or trust port',
   },
+  [DropReasonCode.QOS_POLICING_DROP]: {
+    code: DropReasonCode.QOS_POLICING_DROP,
+    category: 'QOS',
+    title: 'QoS Policing Rate Exceeded',
+    description: 'Traffic rate exceeded configured Committed Information Rate (CIR)',
+    suggestedFix: 'Increase policing rate or shape traffic before egress',
+  },
+  [DropReasonCode.QOS_TAIL_DROP]: {
+    code: DropReasonCode.QOS_TAIL_DROP,
+    category: 'QOS',
+    title: 'QoS Queue Overflow (Tail Drop)',
+    description: 'Interface output queue buffer full; incoming packet dropped',
+    suggestedFix: 'Increase queue buffer limit or enable Fair Queuing/WRED',
+  },
+  [DropReasonCode.QOS_WRED_DROP]: {
+    code: DropReasonCode.QOS_WRED_DROP,
+    category: 'QOS',
+    title: 'QoS WRED Early Drop',
+    description: 'Packet dropped early by Weighted Random Early Detection to prevent queue congestion',
+    suggestedFix: 'Adjust WRED minimum/maximum thresholds or DSCP drop probabilities',
+  },
+  [DropReasonCode.NAT_NO_TRANSLATION]: {
+    code: DropReasonCode.NAT_NO_TRANSLATION,
+    category: 'NAT',
+    title: 'NAT Translation Unavailable',
+    description: 'No matching static or dynamic NAT translation rule found for packet',
+    suggestedFix: 'Check "ip nat inside source" rules, ACL permissions or NAT pool exhaustion',
+  },
   [DropReasonCode.MAX_HOPS_EXCEEDED]: {
+
     code: DropReasonCode.MAX_HOPS_EXCEEDED,
     category: 'CONTROL_PLANE',
     title: 'Routing Loop / Max Hops Exceeded',

@@ -84,7 +84,7 @@ export function useKeyboardShortcuts({
   setActiveDeviceId: Dispatch<SetStateAction<string>>;
   setActiveDeviceType: Dispatch<SetStateAction<DeviceType>>;
   setActiveTab: (tab: 'topology' | 'terminal' | 'cmd' | 'tasks') => void;
-  setUnifiedDeviceActiveTab: Dispatch<SetStateAction<'console' | 'settings' | 'stp'>>;
+  setUnifiedDeviceActiveTab: Dispatch<SetStateAction<'console' | 'settings' | 'stp' | 'physical'>>;
   setShowUnifiedDeviceModal: Dispatch<SetStateAction<boolean>>;
   tabs: { label: string }[];
 }) {

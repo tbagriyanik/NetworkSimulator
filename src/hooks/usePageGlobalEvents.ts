@@ -16,7 +16,7 @@ type GuidedModeContext = {
 };
 
 type PcPanelTab = 'home' | 'desktop' | 'terminal' | 'settings' | 'services' | 'wireless' | 'iot';
-type UnifiedDeviceTab = 'console' | 'settings' | 'stp';
+type UnifiedDeviceTab = 'console' | 'settings' | 'stp' | 'physical';
 
 export interface UsePageGlobalEventsParams {
   topologyDevices: CanvasDevice[];
