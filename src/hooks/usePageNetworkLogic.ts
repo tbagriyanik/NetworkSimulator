@@ -342,8 +342,10 @@ export function usePageNetworkLogic({
   useEffect(() => {
     const handlePacketCaptured = ((e: CustomEvent) => {
       if (e.detail) {
-        const addCapturedPacket = useAppStore.getState().addCapturedPacket;
-        addCapturedPacket(e.detail);
+        queueMicrotask(() => {
+          const addCapturedPacket = useAppStore.getState().addCapturedPacket;
+          addCapturedPacket(e.detail);
+        });
       }
     }) as EventListener;
     window.addEventListener('packet-captured', handlePacketCaptured);

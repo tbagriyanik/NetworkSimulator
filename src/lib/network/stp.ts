@@ -78,12 +78,17 @@ function getPortNumber(portId: string): number {
   return match ? parseInt(match[1], 10) : 1;
 }
 
+export interface StpOptions {
+  silent?: boolean;
+}
+
 /**
  * Recalculate Spanning Tree Protocol for all switches in the topology.
  */
 export function recalculateStp(
   deviceStates: Map<string, SwitchState>,
-  connections: CanvasConnection[]
+  connections: CanvasConnection[],
+  options?: StpOptions
 ): Map<string, SwitchState> {
   const updatedStates = new Map<string, SwitchState>();
   const switchIds: string[] = [];
@@ -161,7 +166,7 @@ export function recalculateStp(
 
   // For each VLAN, run STP calculation
   allVlanIds.forEach(vlanId => {
-    runStpForVlan(vlanId, switchIds, connections, connectionIndex, updatedStates, hasInterSwitchLinks);
+    runStpForVlan(vlanId, switchIds, connections, connectionIndex, updatedStates, hasInterSwitchLinks, options?.silent);
   });
 
   return updatedStates;
@@ -203,7 +208,8 @@ function runStpForVlan(
   connections: CanvasConnection[],
   connectionIndex: ConnectionIndex,
   deviceStates: Map<string, SwitchState>,
-  hasInterSwitchLinks: boolean
+  hasInterSwitchLinks: boolean,
+  silent?: boolean
 ) {
   // If no switch-to-switch links exist, all ports are designated (forwarding)
   // A single switch or multiple isolated switches cannot form a loop
@@ -466,7 +472,7 @@ function runStpForVlan(
           }
 
           // Dispatch STP BPDU packet to packet capture panel
-          if (typeof window !== 'undefined') {
+          if (!silent && typeof window !== 'undefined') {
             const connId = conn.id || `${conn.sourceDeviceId}-${conn.targetDeviceId}`;
             dispatchCapturedPackets([{
               connectionId: connId,

@@ -132,7 +132,7 @@ export function checkConnectivity(
   // Recalculate STP states for accurate blocking
   let stpDeviceStates = safeDeviceStates;
   if (safeDeviceStates.size > 0) {
-    stpDeviceStates = recalculateStp(safeDeviceStates, connections);
+    stpDeviceStates = recalculateStp(safeDeviceStates, connections, { silent: true });
   }
 
   // BOLT: Pre-calculate an ipMap for O(1) device resolution
