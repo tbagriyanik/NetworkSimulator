@@ -295,6 +295,8 @@ export function cmdSwitchportAccessVlan(state: SwitchState, input: string, ctx: 
   };
 }
 
+
+
 /**
  * Switchport Trunk Native VLAN
  */

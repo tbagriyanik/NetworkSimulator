@@ -583,6 +583,12 @@ export interface SwitchState {
   };
   // Reload confirmation state
   awaitingReloadConfirm?: boolean;
+  spanSessions?: Record<number, { id: number; sourceInterfaces: string[]; destinationInterface?: string; enabled: boolean }>;
+  errdisableConfig?: { enabledCauses: string[]; interval: number };
+  greTunnels?: Record<string, { id: string; source?: string; destination?: string; tunnelIp?: string; subnetMask?: string }>;
+  ospfAreaRanges?: { areaId: string; network: string; mask: string; advertise: boolean }[];
+  vrfInstances?: Record<string, { name: string; rd?: string; interfaces: string[] }>;
+  qosPolicies?: Record<string, { name: string; classes: { name: string; priorityPercent?: number; bandwidthKbps?: number }[] }>;
   bootTime: number;
   // New optional properties for extended features
   domainName?: string;
