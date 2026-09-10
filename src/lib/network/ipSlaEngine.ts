@@ -83,7 +83,7 @@ export function evaluateIpSlaOperations(
         }
       }
 
-      // Update associated Track objects
+      // Update associated Track objects and apply HSRP/VRRP priority decrement
       const targetState = reachable ? 'up' : 'down';
       Object.entries(currentTracks).forEach(([trackId, trackObj]) => {
         if (trackObj.operationId === slaId && trackObj.state !== targetState) {
@@ -93,6 +93,49 @@ export function evaluateIpSlaOperations(
             lastChange: now
           };
           deviceUpdated = true;
+
+          // Apply HSRP / VRRP Priority Decrement if tracking is configured on device ports
+          const decrement = trackObj.decrement ?? 10;
+          const ports = { ...state.ports };
+          let portUpdated = false;
+
+          Object.entries(ports).forEach(([pName, pObj]) => {
+            if (pObj.hsrp?.groups) {
+              const groups: Record<string, typeof pObj.hsrp.groups[number]> = { ...pObj.hsrp.groups };
+              let groupUpdated = false;
+
+              Object.entries(groups).forEach(([gId, groupConfig]) => {
+                if (groupConfig && (groupConfig.trackId === trackId || groupConfig.trackId === String(trackId))) {
+                  const basePriority = groupConfig.basePriority ?? groupConfig.priority ?? 100;
+                  const newPriority = targetState === 'down' 
+                    ? Math.max(1, basePriority - decrement) 
+                    : basePriority;
+
+                  groups[gId] = {
+                    ...groupConfig,
+                    basePriority,
+                    priority: newPriority
+                  };
+                  groupUpdated = true;
+                }
+              });
+
+              if (groupUpdated) {
+                ports[pName] = {
+                  ...pObj,
+                  hsrp: {
+                    ...pObj.hsrp,
+                    groups
+                  }
+                };
+                portUpdated = true;
+              }
+            }
+          });
+
+          if (portUpdated) {
+            state.ports = ports;
+          }
         }
       });
     });

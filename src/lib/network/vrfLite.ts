@@ -32,3 +32,28 @@ export function assignInterfaceToVrf(state: SwitchState, name: string, ifName: s
     vrf.interfaces.push(normalized);
   }
 }
+
+export function filterRoutesByVrf<T extends { interface?: string }>(
+  state: SwitchState,
+  vrfName: string | undefined,
+  routes: T[]
+): T[] {
+  if (!vrfName) {
+    // Global routing table: excludes interfaces assigned to specific VRFs
+    const assignedInterfaces = new Set<string>();
+    if (state.vrfInstances) {
+      Object.values(state.vrfInstances).forEach((vrf) => {
+        vrf.interfaces.forEach((iface) => assignedInterfaces.add(iface.toLowerCase()));
+      });
+    }
+    return routes.filter((r) => !r.interface || !assignedInterfaces.has(r.interface.toLowerCase()));
+  }
+
+  const key = vrfName.toLowerCase();
+  const vrf = state.vrfInstances?.[key];
+  if (!vrf) return [];
+
+  const vrfInterfaces = new Set(vrf.interfaces.map((i) => i.toLowerCase()));
+  return routes.filter((r) => r.interface && vrfInterfaces.has(r.interface.toLowerCase()));
+}
+

@@ -80,4 +80,57 @@ describe('IP SLA Automated Timer Trigger & Object Tracking', () => {
     expect(showConfigRes.success).toBe(true);
     expect(showConfigRes.output).toContain('192.168.1.2');
   });
+
+  it('should decrement HSRP priority when tracked IP SLA target becomes unreachable', () => {
+    let state: any = {
+      hostname: 'R1',
+      currentMode: 'config',
+      ports: {
+        Gi0_0: {
+          id: 'Gi0_0',
+          name: 'GigabitEthernet0/0',
+          status: 'connected',
+          shutdown: false,
+          hsrp: {
+            groups: {
+              '1': {
+                groupId: '1',
+                virtualIp: '192.168.1.254',
+                priority: 110,
+                basePriority: 110,
+                trackId: '1',
+                state: 'Active',
+              },
+            },
+          },
+        },
+      },
+      ipSlaOperations: {
+        '10': {
+          id: '10',
+          target: '10.254.254.254', // Unreachable target
+          type: 'icmp-echo',
+          frequency: 10,
+          running: true,
+          statistics: { attempts: 0, successes: 0, failures: 0, samples: [] },
+        },
+      },
+      ipSlaTracks: {
+        '1': { operationId: '10', state: 'up', decrement: 20 },
+      },
+    };
+
+    const devices: CanvasDevice[] = [
+      { id: 'r1', name: 'R1', type: 'router', x: 0, y: 0, ip: '192.168.1.1', status: 'online', ports: [] },
+    ];
+    const connections: CanvasConnection[] = [];
+    const states = new Map<string, SwitchState>([['r1', state]]);
+
+    const slaEval = evaluateIpSlaOperations(states, devices, connections, Date.now());
+    const r1Updated = slaEval.updatedStates.get('r1');
+
+    expect(r1Updated?.ipSlaTracks?.['1']?.state).toBe('down');
+    expect(r1Updated?.ports?.Gi0_0?.hsrp?.groups?.['1']?.priority).toBe(90); // 110 - 20 = 90
+  });
 });
+

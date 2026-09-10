@@ -1228,7 +1228,7 @@ export function cmdShowIpBgpSummary(state: SwitchState, _input: string, ctx?: Co
     rawNeighbors.forEach(n => {
       neighborList.push({
         ip: n.ip,
-        as: n.as,
+        as: n.as || n.remoteAs || '65000',
         state: n.state || currentState.bgpNeighborState?.[n.ip]
       });
     });

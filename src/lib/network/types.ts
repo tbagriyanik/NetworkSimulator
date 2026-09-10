@@ -8,6 +8,12 @@ import type {
   DhcpClientRecord,
   LacpPortRecord,
 } from './protocols/protocolStateMachines';
+import type { Route, BgpNeighbor } from './types/routingTypes';
+
+export type { Route, BgpNeighbor };
+export * from './types/ports';
+export * from './types/routingTypes';
+export * from './types/protocols';
 
 // ============================================
 // CENTRALIZED TYPE DEFINITIONS
@@ -387,21 +393,26 @@ export interface Port {
     bidirectionalStatus?: 'up' | 'down' | 'unknown';
   };
   hsrp?: {
-    groups?: Record<number, {
+    groups?: Record<string | number, {
+      groupId?: string;
       virtualIp?: string;
       ipv6VirtualIp?: string;
       virtualMac?: string;
       version?: number;
       priority?: number;
+      basePriority?: number;
+      trackId?: string;
       preempt?: boolean;
       state?: 'Initial' | 'Listen' | 'Speak' | 'Standby' | 'Active';
     }>;
   };
   vrrp?: {
-    groups?: Record<number, {
+    groups?: Record<string | number, {
       virtualIp?: string;
       virtualMac?: string;
       priority?: number;
+      basePriority?: number;
+      trackId?: string;
       preempt?: boolean;
       state?: 'Init' | 'Backup' | 'Master';
     }>;
@@ -496,35 +507,6 @@ export interface DhcpSnoopingBinding {
   type: 'dynamic' | 'static';
 }
 
-/**
- * Advanced BGP neighbor configuration (BGP router-config mode).
- * Extends the basic { ip, as } pair with the full feature set: route policies,
- * peering options, authentication, timers and route-reflector attributes.
- */
-export interface BgpNeighbor {
-  ip: string;
-  as: string;
-  state?: string;
-  weight?: number;
-  routeMapIn?: string;
-  routeMapOut?: string;
-  nextHopSelf?: boolean;
-  ebgpMultihop?: number;
-  updateSource?: string;
-  timersKeepalive?: number;
-  timersHoldtime?: number;
-  password?: string;
-  description?: string;
-  shutdown?: boolean;
-  defaultOriginate?: boolean;
-  removePrivateAs?: boolean;
-  maximumPrefix?: number;
-  allowAsIn?: number;
-  sendCommunity?: boolean;
-  routeReflectorClient?: boolean;
-  asOverride?: boolean;
-  softReconfiguration?: boolean;
-}
 
 export interface SwitchState {
   hostname: string;
@@ -935,7 +917,7 @@ export interface SwitchState {
   syslogTrapLevel?: string;
   currentSlaId?: string;
   ipSlaOperations?: Record<string, IpSlaOperation>;
-  ipSlaTracks?: Record<string, { operationId: string; state: 'up' | 'down'; lastChange: number }>;
+  ipSlaTracks?: Record<string, { operationId: string; state: 'up' | 'down'; lastChange: number; decrement?: number }>;
   qosClassMaps?: Record<string, { match: 'all' | 'any'; criteria: string[] }>;
   qosPolicyMaps?: Record<string, { classes: Record<string, { priority?: boolean; bandwidthPercent?: number; setDscp?: string; setCos?: number; policeRate?: number; match?: 'all' | 'any' }> }>;
   qosServicePolicies?: Record<string, { direction: 'input' | 'output'; policy: string }>;
@@ -1201,26 +1183,4 @@ export function isCableCompatible(cable: CableInfo): boolean {
   return allowedTypes ? allowedTypes.includes(cable.cableType) : false;
 }
 
-// Port LED renkleri
-export type PortLEDColor = 'green' | 'gray' | 'orange' | 'off' | 'white' | 'red';
-
-// Route interface for routing functionality
-export interface Route {
-  destination: string;      // e.g., "192.168.2.0" or "2001:db8:1::"
-  network?: string;         // Alias for destination
-  mask?: string;            // Alias for subnetMask
-  subnetMask?: string;      // e.g., "255.255.255.0" (for IPv4)
-  prefixLength?: number;     // e.g., 64 (for IPv6)
-  nextHop: string;          // e.g., "192.168.1.1" or "2001:db8:1::1" or interface name
-  interface?: string;       // Exit interface name
-  metric?: number;          // Administrative distance/metric
-  type: 'connected' | 'static' | 'dynamic'; // Route type
-  area?: number;            // For OSPF
-  ospfRouteType?: 'E1' | 'E2' | 'N1' | 'N2';
-  code?: string;
-  administrativeDistance?: number;
-  asPath?: string;          // For BGP — AS path attribute
-  localPreference?: number; // For BGP — local preference attribute
-  weight?: number;          // For BGP — weight attribute
-}
 
