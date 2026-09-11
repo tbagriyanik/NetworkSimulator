@@ -2,7 +2,7 @@ import { cliModeError } from './cliErrors';
 import type { CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult } from '../types';
 import { buildRunningConfig } from './configBuilder';
-import { createIpSlaOperation } from '../ipSla';
+import { createIpSlaOperation } from '../ipSlaEngine';
 
 export function cmdNtpServer(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') return { success: false, error: cliModeError() };

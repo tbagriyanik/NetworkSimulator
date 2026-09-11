@@ -1,5 +1,5 @@
-﻿import { describe, expect, it } from 'vitest';
-import { createIpSlaOperation, formatIpSlaStatistics, isIpSlaDue, runSyntheticIpSlaProbe } from '@/lib/network/ipSla';
+import { describe, expect, it } from 'vitest';
+import { createIpSlaOperation, formatIpSlaStatistics, isIpSlaDue, runSyntheticIpSlaProbe } from '@/lib/network/ipSlaEngine';
 import { executeCommand } from '@/lib/network/executor';
 import { createInitialState } from '@/lib/network/initialState';
 

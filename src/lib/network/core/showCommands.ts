@@ -4,7 +4,7 @@ import { buildRunningConfig } from './configBuilder';
 import { SwitchState, CommandResult } from '../types';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
 import { getSwitchDisplayProfile } from './showHelpers';
-import { formatIpSlaStatistics } from '../ipSla';
+import { formatIpSlaStatistics } from '../ipSlaEngine';
 import { diagnoseVlanMismatches, diagnoseDuplicateAddresses, diagnoseOrphanDevices } from '../vlanDiagnostics';
 import { detectRoutingLoops, getRoutingTable, findRoute, ipToNumber } from '../routing';
 import {
