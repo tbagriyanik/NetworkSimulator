@@ -117,8 +117,8 @@ export function useTopologyTouch({
   const lastTappedDeviceRef = React.useRef<string | null>(null);
 
   // Touch gesture smoothing (EMA)
-  const ZOOM_SMOOTHING = 0.65;
-  const PAN_SMOOTHING = 0.55;
+  const ZOOM_SMOOTHING = 0.85;
+  const PAN_SMOOTHING = 0.75;
   const lastSmoothedZoomRef = React.useRef<number | null>(null);
   const lastSmoothedPanRef = React.useRef<{ x: number; y: number } | null>(null);
 
@@ -384,7 +384,7 @@ export function useTopologyTouch({
         : rawPanDeltaY;
       lastSmoothedPanRef.current = { x: smoothedPanDeltaX, y: smoothedPanDeltaY };
 
-      if (Math.abs(newZoom - currentZoom) > 0.005) {
+      if (Math.abs(newZoom - currentZoom) > 0.001) {
         const rect = canvasRef.current.getBoundingClientRect();
         const cursorX = newCenter.x - rect.left;
         const cursorY = newCenter.y - rect.top;

@@ -5,9 +5,16 @@ import type { ContextMenuMode, ContextMenuState } from '../networkTopology.types
 interface TopologyContextMenuOptions {
   setContextMenu: (menu: ContextMenuState | null) => void;
   pingMode: boolean;
+  isDrawingConnection?: boolean;
+  cancelConnectionDrawing?: () => void;
 }
 
-export function useTopologyContextMenu({ setContextMenu, pingMode }: TopologyContextMenuOptions) {
+export function useTopologyContextMenu({
+  setContextMenu,
+  pingMode,
+  isDrawingConnection,
+  cancelConnectionDrawing,
+}: TopologyContextMenuOptions) {
   const openContextMenu = useCallback((clientX: number, clientY: number, deviceId: string | null = null, mode: ContextMenuMode = deviceId ? 'device' : 'canvas', noteId: string | null = null) => {
     const menuWidth = 180;
     const menuHeight = deviceId ? 400 : 200;
@@ -20,9 +27,13 @@ export function useTopologyContextMenu({ setContextMenu, pingMode }: TopologyCon
   const handleContextMenu = useCallback((event: ReactMouseEvent, deviceId?: string) => {
     event.preventDefault();
     event.stopPropagation();
+    if (isDrawingConnection && cancelConnectionDrawing) {
+      cancelConnectionDrawing();
+      return;
+    }
     if (pingMode) return;
     openContextMenu(event.clientX, event.clientY, deviceId || null, deviceId ? 'device' : 'canvas');
-  }, [openContextMenu, pingMode]);
+  }, [openContextMenu, pingMode, isDrawingConnection, cancelConnectionDrawing]);
 
   return { openContextMenu, handleContextMenu };
 }

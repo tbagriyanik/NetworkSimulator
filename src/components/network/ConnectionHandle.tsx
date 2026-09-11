@@ -78,20 +78,6 @@ const ConnectionHandle = memo(function ConnectionHandle({
     <g key={`handle-${connection.id}`} data-connection-handle-id={connection.id} data-export-hide="true">
       {isCompatible && connection.cableType !== 'wireless' && (
         <g transform={`translate(${trashX}, ${trashY})`} data-handle-inner="true">
-          {/* Active LED Pulse Indicator */}
-          {connection.active !== false && (
-            <circle
-              cx="0"
-              cy="0"
-              r="14"
-              fill="none"
-              stroke={isDark ? 'var(--color-success-400)' : 'var(--color-success-500)'}
-              strokeWidth="1.5"
-              opacity="0.6"
-              className="animate-ping"
-              style={{ pointerEvents: 'none' }}
-            />
-          )}
           {/* Delete Button */}
           <g
             className="cursor-pointer group"

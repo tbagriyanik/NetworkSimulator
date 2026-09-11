@@ -2,6 +2,16 @@
 
 Yeniden eskiye, tarih mevcuttur.
 
+## v5.1.0 — 2026-09-11
+
+**Çoklu Cihaz Dağıtım Araçları, Nokta Izgara & Izgaraya Hizalama (Snap-to-Grid), Canlı Kablo Veri Akış Animasyonları, Kapsamlı Kısayol Modalı, Dokunmatik Pinch-Zoom Hassasiyeti ve Katman/Çakışma İyileştirmeleri** —
+- **📐 Çoklu Cihaz Yatay & Dikey Dağıtım Araçları (`TopologySelectionToolbar.tsx`)**: 3 veya daha fazla cihaz seçildiğinde beliren "Yatay Eşit Dağıt" (Distribute Horizontally) ve "Dikey Eşit Dağıt" (Distribute Vertically) butonları ile cihazların tuval üzerinde milimetrik aralıklarla hizalanması sağlandı.
+- **🎯 Nokta Izgara & Dinamik Snap-to-Grid**: [`CanvasDefs.tsx`](file:///f:/NetworkSimulator/src/components/network/topology/CanvasDefs.tsx) ve [`CanvasToolbar.tsx`](file:///f:/NetworkSimulator/src/components/network/topology/CanvasToolbar.tsx) üzerinde Snap-to-Grid anahtarı eklendi. Cihaz taşırken `Ctrl` tuşuna basılı tutulduğunda da dinamik hizalama çalışmaktadır.
+- **✨ Neon Kablo Akış Animasyonu & İptal Desteği**: Aktif bağlantılara süzülen neon veri akış parçacıkları ve SVG gölgeleri eklendi. Çizim esnasında sağ tıklama veya `Escape` ile kablo bağlama modundan güvenli çıkış sağlandı.
+- **⌨️ Kapsamlı Klavye & Tuval Kısayolları Modalı (`ShortcutsModal.tsx`)**: `Shift + ?` ve `Shift + /` veya araç çubuğu tetikleyicisi ile açılan 3 sütunlu genişletilmiş kısayol diyalog ekranı eklendi.
+- **📱 Dokunmatik Pinch-to-Zoom Hassasiyet İyileştirmesi (`useTopologyTouch.ts`)**: EMA yumuşatması `0.85` seviyesine yükseltildi, minimum zoom adım eşiği `0.001` değerine çekilerek 2 parmakla akıcı ve anlık ölçekleme sağlandı.
+- **🎨 Not Başlık Çubuğu & Z-Index İyileştirmeleri (`NoteNode.tsx`, `ConnectionHandle.tsx`)**: Not başlık çubuğu rengi notun kendi zemin tonuyla uyumlu `rgba(0,0,0,0.15)` koyuluğuna getirildi; kablo silme butonundaki gereksiz yeşil halka efekti temizlendi.
+
 ## v5.0.0 — 2026-09-11
 
 **CLI Stub Temizliği, VRF-Lite & RESTCONF Entegrasyonu, Python Sanal Dosya I/O (open/read/write), Topoloji Snapshot/Rollback Türkçe UI Dönüşümü ve Dokümantasyon Güncellemeleri** —

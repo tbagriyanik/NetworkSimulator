@@ -110,6 +110,15 @@ export function ViewVisibilityMenu({ isDark = true }: ViewVisibilityMenuProps) {
           {isTr ? 'Kablo & Port Etiketleri' : 'Cable & Port Labels'}
         </DropdownMenuCheckboxItem>
 
+        <DropdownMenuCheckboxItem
+          checked={preferences.snapToGrid}
+          onCheckedChange={(checked) => updatePreference('snapToGrid', checked)}
+          onSelect={(e) => e.preventDefault()}
+          className="text-xs cursor-pointer"
+        >
+          {isTr ? 'Izgaraya Hizala (Snap to Grid)' : 'Snap to Grid'}
+        </DropdownMenuCheckboxItem>
+
         <DropdownMenuSeparator className={isDark ? 'bg-secondary-800' : 'bg-secondary-100'} />
 
         <DropdownMenuLabel className="text-[11px] font-bold uppercase tracking-wider text-secondary-400 px-2 py-1">

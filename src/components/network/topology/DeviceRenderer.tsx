@@ -1,17 +1,18 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 
 import { CanvasDevice, CanvasConnection } from '../networkTopology.types';
-import { SwitchState, Port } from '@/lib/network/types';
-import { getWirelessSignalStrength } from '@/lib/network/connectivity';
-import { getChannelBand, getDeviceWifiConfig, getApActiveSsids, wifiChannelMatches, wifiMacFilterMatches } from '@/lib/network/wireless';
+import { SwitchState } from '@/lib/network/types';
+import { getChannelBand } from '@/lib/network/wireless';
 import { getDeviceWidth } from '../networkTopology.helpers';
 import {
   STATUS_COLORS,
   PORT_COLORS,
   SELECTION_HIGHLIGHT_COLOR
 } from '../networkTopology.constants';
+import { DeviceIconSvg } from './DeviceIconSvg';
+import { DeviceWifiStatus } from './DeviceWifiStatus';
 
 export interface DeviceRendererProps {
   device: CanvasDevice;
@@ -53,14 +54,6 @@ const PORT_GIGABIT_UP = 'var(--color-warning-500)';
 const PORT_GIGABIT_UP_STROKE = 'var(--color-warning-300)';
 
 const isGigabitPort = (portId: string) => portId.toLowerCase().startsWith('gi');
-
-const wifiBarRects = [
-  { x: 1, y: 10.5, width: 2.5, height: 3 },
-  { x: 5, y: 8.5, width: 2.5, height: 5 },
-  { x: 9, y: 6.5, width: 2.5, height: 7 },
-  { x: 13, y: 4.5, width: 2.5, height: 9 },
-  { x: 17, y: 2.5, width: 2.5, height: 11 },
-];
 
 
 export const DeviceRenderer = React.memo(function DeviceRenderer({
@@ -522,226 +515,29 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
       )}
 
       {/* WiFi Status Icon */}
-      {(() => {
-        const wlanPort = device.ports.find(p => p.id === 'wlan0');
-        const pcWifi = device.wifi;
-        const usesWifiBars = device.type === 'pc' || device.type === 'iot' || device.type === 'mobile' || device.type === 'printer';
-        const isSwitchL3 = device.type === 'switchL3';
-        const isRouter = device.type === 'router';
-        const isWlc = device.type === 'wlc';
-        const devState = deviceStates?.get(device.id);
-        const wlanState = devState?.ports['wlan0'];
-
-        let wifiColor = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
-        const showWifi = usesWifiBars || isSwitchL3 || isRouter || isWlc;
-
-        let isEnabled = false;
-        if (showWifi) {
-          if (isWlc) isEnabled = true; // WLC her zaman kablosuz yeteneğe sahiptir
-          else if (wlanPort) isEnabled = !wlanPort.shutdown;
-          else isEnabled = pcWifi?.enabled !== false;
-        }
-
-        // Wireless connection state
-        const hasActiveWirelessConn = deviceConnections.some(c => c.cableType === 'wireless' && c.active !== false);
-        const hasWirelessConnLine = deviceConnections.some(c => c.cableType === 'wireless');
-        if (usesWifiBars && isEnabled && !hasActiveWirelessConn && hasWirelessConnLine) {
-          isEnabled = false;
-        }
-
-        const isConnected = wlanState?.status === 'connected' ||
-          (isEnabled && (hasActiveWirelessConn || !hasWirelessConnLine));
-
-        const activeWifiConfig = wlanState?.wifi || pcWifi;
-        const isMacBlocked = usesWifiBars && !isConnected && !!pcWifi?.ssid && topologyDevices.some(ap => {
-          if (ap.id === device.id || ap.status === 'offline') return false;
-          const apState = deviceStates?.get(ap.id);
-          const apWifi = getDeviceWifiConfig(ap, deviceStates);
-          if (!apWifi || !pcWifi) return false;
-          const matchingSsid = getApActiveSsids(apWifi, apState, deviceStates)
-            .find(item => item.ssid.toLowerCase() === pcWifi.ssid.toLowerCase());
-          if (!matchingSsid) return false;
-
-          // Normalize configs for comparison
-          const normalizedApWifi = {
-            ...apWifi,
-            security: apWifi.security || 'open',
-            channel: apWifi.channel || '2.4GHz',
-          };
-          const normalizedPcWifi = {
-            ...pcWifi,
-            security: pcWifi.security || 'open',
-            channel: pcWifi.channel || '2.4GHz',
-          };
-
-          if (!wifiChannelMatches(normalizedApWifi, normalizedPcWifi)) return false;
-          const clientSecurity = (pcWifi.security || 'open').toLowerCase();
-          const apSecurity = (matchingSsid.security || 'open').toLowerCase();
-          if (clientSecurity !== apSecurity) return false;
-          if (apSecurity !== 'open' && matchingSsid.password !== pcWifi.password) return false;
-          return !wifiMacFilterMatches(apWifi, device, deviceStates);
-        });
-
-        if (showWifi && isEnabled && !isPoweredOff) {
-          const isNetworkHost = isRouter || isWlc || isSwitchL3;
-          if (isNetworkHost) {
-            const needsConfig = !activeWifiConfig || activeWifiConfig.security === 'open' || activeWifiConfig.password === 'password123' || !activeWifiConfig.ssid;
-            const hasError = isWlc && Object.values(devState?.ports || {}).some((p: Port) => p.status === 'err-disabled');
-            if (hasError || needsConfig) {
-              wifiColor = 'var(--color-warning-500)';
-            } else {
-              wifiColor = 'var(--color-success-500)';
-            }
-          } else {
-            wifiColor = isConnected ? 'var(--color-success-500)' : 'var(--color-warning-500)';
-          }
-        }
-
-        if (!showWifi) return null;
-
-        const is5Ghz = getChannelBand(activeWifiConfig?.channel) === '5GHz';
-        const hasPassword = activeWifiConfig?.security && activeWifiConfig.security !== 'open';
-
-        if (usesWifiBars) {
-          const activeColor = 'var(--color-success-500)';
-          const dimColor = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
-          const strength = (isPoweredOff || !isConnected) ? 0 : getWirelessSignalStrength(device, topologyDevices, deviceStates);
-
-          return (
-            <g transform={`translate(${deviceWidth - 23}, 7)`}>
-              <title>{[`SSID: ${pcWifi?.ssid ?? 'N/A'}`, isConnected ? 'Bağlı' : 'Bağlı değil', `Sinyal: ${strength}/5`, `Güvenlik: ${pcWifi?.security ?? 'open'}`, `Kanal: ${pcWifi?.channel ?? 'N/A'}`, `Parola: ${pcWifi?.password ? 'Evet' : 'Hayır'}`].join(' • ')}</title>
-              <svg x="-2" y="1" width="22" height="14" viewBox="0 0 22 14" className="pointer-events-none">
-                {wifiBarRects.map((bar, index) => (
-                  <rect
-                    key={index}
-                    x={bar.x}
-                    y={bar.y}
-                    width={bar.width}
-                    height={bar.height}
-                    fill={strength >= index + 1 ? activeColor : dimColor}
-                    rx="0.3"
-                  />
-                ))}
-              </svg>
-              {/* printer signal percentage removed */}
-              {is5Ghz && (
-                <text x="0" y="14" fontSize="4.5" fontWeight="900" fill={strength > 0 ? activeColor : dimColor} textAnchor="middle" style={{ pointerEvents: 'none' }}>
-                  5
-                </text>
-              )}
-              {hasPassword && (
-                <g transform="translate(14, 10)">
-                  <rect x="0" y="2" width="3.5" height="2.5" rx="0.5" fill={isDark ? 'var(--color-warning-400)' : 'var(--color-warning-500)'} />
-                  <path d="M0.5 2V1.2C0.5 0.5 1 0 1.75 0C2.5 0 3 0.5 3 1.2V2" fill="none" stroke={isDark ? 'var(--color-warning-400)' : 'var(--color-warning-500)'} strokeWidth="0.8" />
-                </g>
-              )}
-              {isMacBlocked && (
-                <g transform="translate(13, 0)" aria-label="MAC blocked">
-                  <circle cx="2.5" cy="2.5" r="2.5" fill="var(--color-error-500)" />
-                  <path d="M1.2 1.2l2.6 2.6M3.8 1.2L1.2 3.8" stroke="white" strokeWidth="0.8" strokeLinecap="round" />
-                </g>
-              )}
-            </g>
-          );
-        }
-
-        return (
-          <g transform={`translate(${deviceWidth - 22}, 6)`}>
-            <circle cx="8" cy="8" r="9" fill={isDark ? 'var(--color-secondary-900)' : 'var(--color-secondary-50)'} stroke={isDark ? 'var(--color-secondary-800)' : 'var(--color-secondary-200)'} strokeWidth="1" opacity="0.8" />
-            <path
-              d="M3 5.5a7.5 7.5 0 0 1 10 0M4.8 7.3a4.8 4.8 0 0 1 6.4 0M6.5 9.1a2.3 2.3 0 0 1 3 0M8 10.5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1"
-              fill="none"
-              stroke={wifiColor}
-              strokeWidth="1.25"
-              strokeLinecap="round"
-            />
-            {is5Ghz && (
-              <text x="4" y="14" fontSize="4.5" fontWeight="900" fill={wifiColor} textAnchor="middle" style={{ pointerEvents: 'none' }}>
-                5
-              </text>
-            )}
-            {hasPassword && (
-              <g transform="translate(10, 10)">
-                <rect x="0" y="2" width="3.5" height="2.5" rx="0.5" fill={isDark ? 'var(--color-warning-400)' : 'var(--color-warning-500)'} />
-                <path d="M0.5 2V1.2C0.5 0.5 1 0 1.75 0C2.5 0 3 0.5 3 1.2V2" fill="none" stroke={isDark ? 'var(--color-warning-400)' : 'var(--color-warning-500)'} strokeWidth="0.8" />
-              </g>
-            )}
-          </g>
-        );
-      })()}
+      <DeviceWifiStatus
+        device={device}
+        topologyDevices={topologyDevices}
+        deviceStates={deviceStates}
+        deviceConnections={deviceConnections}
+        isDark={isDark}
+        deviceWidth={deviceWidth}
+        isPoweredOff={isPoweredOff}
+      />
 
       {/* Device Icon Visual */}
       <g transform={`translate(${deviceWidth / 2 - 16}, 12)`}>
-        {device.type === 'pc' ? (
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ stroke: isPoweredOff ? STATUS_COLORS.offline : isDark ? 'var(--color-primary-200)' : 'var(--color-primary-700)' }} strokeWidth="1.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 0 0 2-2V5a2 2 0 0 0 -2-2H5a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2z" />
-          </svg>
-        ) : device.type === 'mobile' ? (
-          <g>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ stroke: isPoweredOff ? STATUS_COLORS.offline : (device.activeVoipCall ? (device.activeVoipCall.status === 'ringing' ? 'var(--color-warning-500)' : 'var(--color-success-500)') : (isDark ? 'var(--color-sky-300)' : 'var(--color-sky-600)')) }} strokeWidth="1.5">
-              <rect x="7" y="2" width="10" height="20" rx="2" strokeLinecap="round" strokeLinejoin="round" />
-              <line x1="11" y1="18" x2="13" y2="18" strokeLinecap="round" />
-              <line x1="10" y1="5" x2="14" y2="5" strokeLinecap="round" />
-            </svg>
-            {device.activeVoipCall && (
-              (() => {
-                const isCaller = device.activeVoipCall.callerId === device.id;
-                const isRinging = device.activeVoipCall.status === 'ringing';
-                const badgeBg = isRinging ? 'var(--color-amber-500)' : 'var(--color-emerald-500)';
-                return (
-                  <g transform="translate(-10, -6)">
-                    <circle cx="8" cy="8" r="9" fill={badgeBg} />
-                    {/* Handset shifted 1.5px to the left */}
-                    <path d="M3.5 3.5C3.5 3.22 3.72 3 4 3H5.3C5.54 3 5.74 3.17 5.79 3.41L6.18 5.37C6.22 5.59 6.14 5.81 5.97 5.95L5.11 6.67C5.77 8.01 6.87 9.1 8.21 9.77L8.93 8.91C9.07 8.74 9.29 8.66 9.51 8.7L11.47 9.09C11.71 9.14 11.88 9.34 11.88 9.58V10.88C11.88 11.16 11.66 11.38 11.38 11.38C7.03 11.38 3.5 7.85 3.5 3.5Z" fill="white" />
-                    {/* Direction arrow: outgoing = green (#22c55e), incoming = red (#ef4444) */}
-                    {isCaller ? (
-                      <path d="M11 1L16 1L16 6M16 1L11 6" stroke="var(--color-success-500)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-                    ) : (
-                      <path d="M16 6L11 6L11 1M11 6L16 1" stroke="var(--color-error-500)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-                    )}
-                  </g>
-                );
-              })()
-            )}
-          </g>
-        ) : device.type === 'printer' ? (
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ stroke: isPoweredOff ? STATUS_COLORS.offline : isDark ? 'var(--color-pink-200)' : 'var(--color-pink-700)' }} strokeWidth="1.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z" />
-          </svg>
-        ) : device.type === 'hub' ? (
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ stroke: isPoweredOff ? STATUS_COLORS.offline : isDark ? 'var(--color-teal-200)' : 'var(--color-teal-700)' }} strokeWidth="1.5">
-            <rect x="2" y="7" width="20" height="10" rx="2" />
-            <circle cx="6" cy="12" r="1" fill="currentColor" />
-            <circle cx="10" cy="12" r="1" fill="currentColor" />
-            <circle cx="14" cy="12" r="1" fill="currentColor" />
-            <circle cx="18" cy="12" r="1" fill="currentColor" />
-          </svg>
-        ) : device.type === 'cloud' ? null : device.type === 'iot' ? (
-          <svg width="32" height="32" viewBox="0 -2 27 27" fill="none" style={{ stroke: isPoweredOff ? STATUS_COLORS.offline : isDark ? 'var(--color-warning-100)' : 'var(--color-warning-800)' }} strokeWidth="1.5">
-            <title>{`${device.name || 'IoT'} • ${device.iot?.sensorType || 'sensor'} • ${getIotMeasuredValue(device)}`}</title>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16.247 7.761a6 6 0 0 1 0 8.478" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19.075 4.933a10 10 0 0 1 0 14.134" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4.925 19.067a10 10 0 0 1 0-14.134" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M7.753 16.239a6 6 0 0 1 0-8.478" />
-            <circle strokeLinecap="round" strokeLinejoin="round" cx="12" cy="12" r="2" />
-          </svg>
-        ) : isSwitchDeviceType(device.type) ? (
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ stroke: isPoweredOff ? STATUS_COLORS.offline : (device.type === 'switchL3' || device.switchModel === 'NS-L3-24PS' ? (isDark ? 'var(--color-purple-200)' : 'var(--color-purple-700)') : (isDark ? 'var(--color-accent-200)' : 'var(--color-accent-700)')) }} strokeWidth="1.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M5 12a2 2 0 0 1 -2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2M5 12a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 -2-2m-2-4h.01M17 16h.01" />
-          </svg>
-        ) : device.type === 'router' ? (
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ stroke: isPoweredOff ? STATUS_COLORS.offline : isDark ? 'var(--color-purple-200)' : 'var(--color-purple-700)' }} strokeWidth="1.5">
-            <circle strokeLinecap="round" strokeLinejoin="round" cx="12" cy="12" r="9" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14M12 5l-2 2m2-2l2 2m-2 12l-2-2m2 2l2-2M5 12l2-2m-2 2l2 2M19 12l-2-2m2 2l-2 2" />
-          </svg>
-        ) : device.type === 'wlc' ? (
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ stroke: isPoweredOff ? STATUS_COLORS.offline : isDark ? 'var(--color-indigo-200)' : 'var(--color-indigo-600)' }} strokeWidth="1.5">
-            <circle cx="12" cy="12" r="9" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14M12 5l-2 2m2-2l2 2m-2 12l-2-2m2 2l2-2M5 12l2-2m-2 2l2 2M19 12l-2-2m2 2l-2 2" />
-            <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.3" />
-          </svg>
-        ) : null}
-
+        <DeviceIconSvg
+          type={device.type}
+          isPoweredOff={isPoweredOff}
+          isDark={isDark}
+          activeVoipCall={device.activeVoipCall}
+          deviceId={device.id}
+          name={device.name}
+          iotSensorType={device.iot?.sensorType}
+          iotMeasuredValue={getIotMeasuredValue(device)}
+          switchModel={device.switchModel}
+        />
       </g>
 
 

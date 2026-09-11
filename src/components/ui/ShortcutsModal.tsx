@@ -57,7 +57,7 @@ export function ShortcutsModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={`max-w-2xl rounded-2xl border shadow-2xl p-6 ${isDark ? 'bg-secondary-900 border-secondary-800 text-white' : 'bg-white border-secondary-200 text-secondary-900'}`}>
+      <DialogContent className={`max-w-4xl w-[92vw] rounded-2xl border shadow-2xl p-6 ${isDark ? 'bg-secondary-900 border-secondary-800 text-white' : 'bg-white border-secondary-200 text-secondary-900'}`}>
         <DialogHeader className="flex flex-row items-center gap-3 border-b pb-4 mb-4 dark:border-secondary-800 border-secondary-200">
           <div className={`p-2.5 rounded-xl ${isDark ? 'bg-primary-500/20 text-primary-400' : 'bg-primary-50 text-primary-600'}`}>
             <Keyboard className="w-5 h-5" />
@@ -72,25 +72,25 @@ export function ShortcutsModal({
           </div>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-h-[60vh] overflow-y-auto pr-1">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-h-[70vh] overflow-y-auto pr-1">
           {shortcutGroups.map((group, gIdx) => {
             const Icon = group.icon;
             return (
               <div
                 key={gIdx}
-                className={`p-4 rounded-xl border flex flex-col gap-3 ${isDark ? 'bg-secondary-950/40 border-secondary-800/60' : 'bg-secondary-50/60 border-secondary-200/80'}`}
+                className={`p-4 rounded-xl border flex flex-col gap-3.5 ${isDark ? 'bg-secondary-950/40 border-secondary-800/60' : 'bg-secondary-50/60 border-secondary-200/80'}`}
               >
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary-500">
-                  <Icon className="w-4 h-4" />
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary-500 border-b pb-2 dark:border-secondary-800 border-secondary-200/60">
+                  <Icon className="w-4 h-4 shrink-0" />
                   <span>{group.title}</span>
                 </div>
-                <div className="flex flex-col gap-2.5">
+                <div className="flex flex-col gap-3">
                   {group.shortcuts.map((sc, sIdx) => (
-                    <div key={sIdx} className="flex items-center justify-between gap-2 text-xs">
-                      <span className={`text-[11px] font-medium leading-tight ${isDark ? 'text-secondary-300' : 'text-secondary-700'}`}>
+                    <div key={sIdx} className="flex items-start justify-between gap-3 text-xs">
+                      <span className={`text-xs font-medium leading-normal flex-1 ${isDark ? 'text-secondary-300' : 'text-secondary-700'}`}>
                         {sc.label}
                       </span>
-                      <ShortcutBadge shortcut={sc.key} variant="primary" className="shrink-0 text-[10px]" />
+                      <ShortcutBadge shortcut={sc.key} variant="primary" className="shrink-0 text-[10px] mt-0.5 whitespace-nowrap" />
                     </div>
                   ))}
                 </div>

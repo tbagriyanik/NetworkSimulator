@@ -36,10 +36,10 @@ export const TopologySelectionToolbar: React.FC<TopologySelectionToolbarProps> =
     <div
       style={{
         position: 'absolute',
-        top: '8px',
+        top: '72px',
         left: '50%',
         transform: 'translateX(-50%)',
-        zIndex: 1000,
+        zIndex: 40,
         pointerEvents: 'auto'
       }}
       className={`px-3 py-1.5 rounded-xl shadow-2xl flex items-center gap-2 selection-toolbar panel-ambient-glow ${isDark ? 'bg-secondary-800/95 text-white border border-secondary-700' : 'bg-white text-secondary-900 border border-secondary-200'

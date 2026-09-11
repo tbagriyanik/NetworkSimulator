@@ -9,6 +9,7 @@ export interface UiPreferences {
   showFooter: boolean;
   showDevicePopovers: boolean;
   showPortLabels: boolean;
+  snapToGrid: boolean;
   areaOverlayMode: 'none' | 'ospf' | 'vlan' | 'bgp' | 'subnet';
 }
 
@@ -19,6 +20,7 @@ export const defaultUiPreferences: UiPreferences = {
   showFooter: true,
   showDevicePopovers: true,
   showPortLabels: true,
+  snapToGrid: true,
   areaOverlayMode: 'none',
 };
 

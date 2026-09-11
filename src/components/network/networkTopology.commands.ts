@@ -17,6 +17,7 @@ export function getCommandCategories(isTR: boolean): CommandDefinition[] {
       type: 'info',
       cmds: [
         ['F1', isTR ? 'Yardım / Kısayollar panelini aç' : 'Open Help / Shortcuts panel'],
+        ['Shift + ? / Shift + /', isTR ? 'Klavye & Tuval Kısayol Kılavuzu modalını aç' : 'Open Keyboard & Canvas Shortcuts guide modal'],
         ['F5', isTR ? 'Ağı yenile' : 'Refresh network'],
         ['Escape', isTR ? 'Pencereleri kapat / Seçimi kaldır' : 'Close windows / Clear selection'],
         ['Tab', isTR ? 'Cihazlar arasında gezin' : 'Navigate between devices'],

@@ -11,6 +11,7 @@ import {
   MOMENTUM_MIN_SPEED
 } from '../networkTopology.constants';
 import { isSwitchDeviceType } from '../networkTopology.helpers';
+import { computeDeltaPositions } from './topologyMouseUtils';
 
 export interface UseTopologyMouseProps {
   canvasRef: React.RefObject<HTMLDivElement | null>;
@@ -232,9 +233,6 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
   ]);
 
   useEffect(() => {
-    const CANVAS_W_D = VIRTUAL_CANVAS_WIDTH_DESKTOP;
-    const CANVAS_H_D = VIRTUAL_CANVAS_HEIGHT_DESKTOP;
-
     const handleMouseMove = (e: globalThis.MouseEvent) => {
       if (canvasRef.current) {
         const rect = canvasRectRef.current ?? canvasRef.current.getBoundingClientRect();
@@ -385,8 +383,6 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
             const dx = mouseX - startMouseX;
             const dy = mouseY - startMouseY;
 
-            const canvasW = CANVAS_W_D;
-            const canvasH = CANVAS_H_D;
             // Connection updates can touch many links. Avoid scanning the full
             // device array once per endpoint and frame while dragging.
             const devicesById = new Map(latestDevicesRef.current.map(device => [device.id, device]));
@@ -395,25 +391,13 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
               ? currentSelectedIds
               : [currentDraggedDevice];
 
-            const newPositions = new Map<string, { x: number; y: number }>();
             const doSnap = currentSnapToGrid || ctrlKey;
+            const newPositions = computeDeltaPositions(currentStartPositions, devicesToMove, dx, dy, doSnap);
 
-            devicesToMove.forEach(id => {
-              const initialPos = currentStartPositions[id];
-              if (!initialPos) return;
-              let newX = initialPos.x + dx;
-              let newY = initialPos.y + dy;
-              if (doSnap) {
-                newX = Math.round(newX / 20) * 20;
-                newY = Math.round(newY / 20) * 20;
-              }
-              const clampedX = Math.max(20, Math.min(newX, canvasW - 100));
-              const clampedY = Math.max(20, Math.min(newY, canvasH - 100));
-              newPositions.set(id, { x: clampedX, y: clampedY });
-
+            newPositions.forEach((pos, id) => {
               const outerG = document.querySelector('[data-device-id="' + id + '"]');
               if (outerG) {
-                outerG.setAttribute('transform', 'translate(' + clampedX + ', ' + clampedY + ')');
+                outerG.setAttribute('transform', 'translate(' + pos.x + ', ' + pos.y + ')');
               }
             });
 

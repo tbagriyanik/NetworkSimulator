@@ -40,6 +40,7 @@ interface CanvasKeyboardProps {
   isFullscreen: boolean;
   onFullscreenChange?: (val: boolean) => void;
   isPingPanelVisible: boolean;
+  onOpenShortcutsModal?: () => void;
 }
 
 export function useCanvasKeyboard({
@@ -79,6 +80,7 @@ export function useCanvasKeyboard({
   isFullscreen,
   onFullscreenChange,
   isPingPanelVisible,
+  onOpenShortcutsModal,
 }: CanvasKeyboardProps) {
   useEffect(() => {
     const handleCloseBroadcast = () => {
@@ -232,6 +234,14 @@ export function useCanvasKeyboard({
           setPingResult(null);
         }
       }
+
+      // Shift + ? or Shift + / to open shortcuts guide
+      if (!isEditable && (e.key === '?' || (e.shiftKey && (e.key === '/' || key === '?')))) {
+        if (onOpenShortcutsModal) {
+          e.preventDefault();
+          onOpenShortcutsModal();
+        }
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -273,6 +283,7 @@ export function useCanvasKeyboard({
     isFullscreen,
     onFullscreenChange,
     isPingPanelVisible,
+    onOpenShortcutsModal,
     setPingMode,
     setPingSource,
     setPingResult,

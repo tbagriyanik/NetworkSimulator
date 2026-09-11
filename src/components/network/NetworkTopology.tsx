@@ -122,7 +122,12 @@ export function NetworkTopology({
   const networkEventLogs = useNetworkEventLogs();
   const [showLogPanel, setShowLogPanel] = useState(false);
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
-  const { preferences } = useUiPreferences();
+  const { preferences, updatePreference } = useUiPreferences();
+  const snapToGrid = preferences.snapToGrid;
+  const setSnapToGrid = useCallback((value: boolean | ((prev: boolean) => boolean)) => {
+    const nextVal = typeof value === 'function' ? value(preferences.snapToGrid) : value;
+    updatePreference('snapToGrid', nextVal);
+  }, [preferences.snapToGrid, updatePreference]);
 
   // Zoom & Pan state
   const [zoom, setZoom] = useState(zoomProp ?? DEFAULT_ZOOM);
@@ -214,7 +219,6 @@ export function NetworkTopology({
   const selectedDeviceSet = useMemo(() => new Set(selectedDeviceIds), [selectedDeviceIds]);
 
   const [selectedNoteIds, setSelectedNoteIds] = useState<string[]>([]);
-  const [snapToGrid, setSnapToGrid] = useState(true);
   const canvasRef = useRef<HTMLDivElement>(null);
   const canvasRectRef = useRef<DOMRect | null>(null);
 
@@ -734,6 +738,8 @@ export function NetworkTopology({
   const { openContextMenu, handleContextMenu } = useTopologyContextMenu({
     setContextMenu,
     pingMode,
+    isDrawingConnection,
+    cancelConnectionDrawing,
   });
 
   const getDeviceIdsInSelectionBox = useCallback((box: { start: { x: number; y: number }; current: { x: number; y: number } }) => {
@@ -1389,6 +1395,7 @@ export function NetworkTopology({
     isFullscreen,
     onFullscreenChange,
     isPingPanelVisible,
+    onOpenShortcutsModal: () => setShowShortcutsModal(true),
   });
 
   const _liveRegionText = useMemo(() => {

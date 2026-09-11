@@ -197,9 +197,10 @@ export const NoteNode = memo(function NoteNode({
             e.stopPropagation();
             handleNoteHeaderTouchStart(e, note.id);
           }}
-          className={`relative flex items-center justify-center px-2 text-[10px] font-semibold tracking-widest select-none ${isDark ? 'bg-black/10' : 'bg-black/5'
-            } ${draggedNoteId === note.id ? 'cursor-grabbing' : 'cursor-grab'}`}
-          style={{ height: '24px' }}
+          className={`relative flex items-center justify-center px-2 text-[10px] font-semibold tracking-widest select-none ${
+            draggedNoteId === note.id ? 'cursor-grabbing' : 'cursor-grab'
+          }`}
+          style={{ height: '24px', backgroundColor: 'rgba(0, 0, 0, 0.15)' }}
         >
           <div
             className="flex items-center justify-center gap-1"
