@@ -25,7 +25,7 @@ export function renderWifiAdminLoginTemplate({ deviceName, isTurkish, username }
           <div id="login-error" class="error-message" style="display:none;">
             ❌ ${isTurkish ? 'Hatalı kullanıcı adı veya şifre!' : 'Invalid username or password!'}
           </div>
-          <button type="submit" class="btn btn-primary btn-block">🔓 ${isTurkish ? 'Giriş Yap' : 'Login'}</button>
+          <button type="submit" onclick="handleLogin(event)" class="btn btn-primary btn-block">🔓 ${isTurkish ? 'Giriş Yap' : 'Login'}</button>
           <span class="hint" style="display:block;text-align:center;margin-top:10px;">${isTurkish ? 'Varsayılan: admin / admin' : 'Default: admin / admin'}</span>
         </form>
       </div>

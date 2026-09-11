@@ -26,8 +26,7 @@ export function PCPanelContent() {
   return (
     <div className={cn(
       'relative z-10 flex-1 min-h-0 flex flex-col overflow-hidden',
-      'p-[5px]',
-      isMobile ? 'mx-[10px]' : ''
+      isMobile ? 'p-2' : 'p-[5px]'
     )}>
       {activeTab === 'home' && !isPcPoweredOff && (
         <HomeLauncher

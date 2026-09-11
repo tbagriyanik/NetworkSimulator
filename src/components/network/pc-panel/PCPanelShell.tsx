@@ -4,7 +4,6 @@ import { type RefObject } from 'react';
 import { Terminal as TerminalIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ModernPanel } from '@/components/ui/ModernPanel';
-import { colors } from '@/lib/design-tokens/colors';
 import { usePCPanel } from './PCPanelContext';
 import { PCPanelContent } from './PCPanelContent';
 import { PCPanelHeader } from './PCPanelHeader';
@@ -77,23 +76,20 @@ export function PCPanelShell({ panelRef, className, onTogglePower }: PCPanelShel
         /> : undefined}
       />
 
-      <div className="flex-1 min-h-0 px-2 pb-2 md:px-2 md:pb-2">
+      <div className="flex-1 min-h-0 p-0 md:px-2 md:pb-2">
         <div className="mx-auto flex h-full min-h-0 w-full max-w-[1500px] items-center justify-center overflow-hidden">
           <div
             className={cn(
               "relative flex h-full min-h-0 w-full flex-col overflow-hidden shadow-[0_15px_50px_rgba(15,23,42,0.1)]",
               isMobile
-                ? (isDark
-                  ? "max-w-[430px] rounded-[2.5rem] border-[10px] border-secondary-950 bg-transparent"
-                  : "max-w-[430px] rounded-[2.5rem] border-[10px] border-secondary-200 bg-transparent")
+                ? "rounded-xl border-none bg-transparent"
                 : (isDark
                   ? "rounded-[2rem] border border-white/10 bg-transparent"
                   : "rounded-[2rem] border border-white/70 bg-transparent")
             )}
           >
             <div
-              className="relative flex-1 min-h-0 flex flex-col overflow-hidden"
-              style={{ background: isDark ? `linear-gradient(180deg, ${colors.neutral[900]} 0%, ${colors.topology.bg} 45%, ${colors.neutral[800]} 100%)` : `linear-gradient(180deg, ${colors.common.white} 0%, ${colors.blue[100]} 55%, ${colors.blue[100]} 100%)` }}
+              className="relative flex-1 min-h-0 flex flex-col overflow-hidden bg-transparent"
             >
               <div className="pointer-events-none absolute inset-0">
               </div>
@@ -124,7 +120,6 @@ export function PCPanelShell({ panelRef, className, onTogglePower }: PCPanelShel
                   onCopyAll={handleCopyAll}
                   onToggleCmdSettings={() => setShowCmdSettings(!showCmdSettings)}
                 /> : undefined}
-                showHeaderOnMobile
                 noPadding
                 style={{ height: '100%' }}
                 className="w-full min-w-0 h-full flex flex-col relative bg-transparent border-none shadow-none"

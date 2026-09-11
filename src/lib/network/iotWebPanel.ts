@@ -457,7 +457,7 @@ export const generateIotWebPanelContent = (
               <label for="password">${isTurkish ? 'Parola' : 'Password'}:</label>
               <input type="password" id="password" placeholder="${isTurkish ? 'Parola girin' : 'Enter password'}" />
             </div>
-            <button type="submit" class="login-button">
+            <button type="submit" class="login-button" onclick="window.checkPassword(event)">
               ${isTurkish ? 'Giriş Yap' : 'Login'}
             </button>
             <div id="errorMessage" class="error-message">

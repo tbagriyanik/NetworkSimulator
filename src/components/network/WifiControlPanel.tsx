@@ -803,10 +803,14 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
 
     var currentAdminUser = ${jsUsername};
     var currentAdminPass = ${jsPassword};
+    window.__router_auth_state = false;
 
     window.handleLogin = function(event) {
       try {
-        event.preventDefault();
+        if (event) {
+          event.preventDefault();
+          if (typeof event.stopPropagation === 'function') event.stopPropagation();
+        }
         const get = (id) => document.getElementById(id);
         const usernameEl = get('login-username');
         const passwordEl = get('login-password');
@@ -817,23 +821,40 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
         const passwordInput = passwordEl ? (passwordEl.value || '') : '';
 
         if (usernameInput === currentAdminUser && passwordInput === currentAdminPass) {
+          window.__router_auth_state = true;
           try {
-            localStorage.setItem('router_admin_auth_' + ${jsDeviceId}, 'true');
-            sessionStorage.setItem('router_admin_auth_' + ${jsDeviceId}, 'true');
-          } catch {}
+            if (typeof localStorage !== 'undefined' && localStorage) {
+              localStorage.setItem('router_admin_auth_' + ${jsDeviceId}, 'true');
+            }
+          } catch (_) {}
+          try {
+            if (typeof sessionStorage !== 'undefined' && sessionStorage) {
+              sessionStorage.setItem('router_admin_auth_' + ${jsDeviceId}, 'true');
+            }
+          } catch (_) {}
           if (loginForm) loginForm.style.display = 'none';
           if (mainContent) mainContent.style.display = 'block';
         } else {
           if (loginError) loginError.style.display = 'block';
         }
-      } catch (err) {}
+      } catch (err) {
+        console.warn('Router admin handleLogin error:', err);
+      }
+      return false;
     };
 
     window.handleLogout = function() {
+      window.__router_auth_state = false;
       try {
-        localStorage.removeItem('router_admin_auth_' + ${jsDeviceId});
-        sessionStorage.removeItem('router_admin_auth_' + ${jsDeviceId});
-      } catch {}
+        if (typeof localStorage !== 'undefined' && localStorage) {
+          localStorage.removeItem('router_admin_auth_' + ${jsDeviceId});
+        }
+      } catch (_) {}
+      try {
+        if (typeof sessionStorage !== 'undefined' && sessionStorage) {
+          sessionStorage.removeItem('router_admin_auth_' + ${jsDeviceId});
+        }
+      } catch (_) {}
       var loginForm = document.getElementById('login-form');
       var mainContent = document.getElementById('main-content');
       var loginError = document.getElementById('login-error');
@@ -1171,9 +1192,19 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
 
     function checkRouterAuth() {
       try {
-        var localAuth = localStorage.getItem('router_admin_auth_' + ${jsDeviceId});
-        var sessionAuth = sessionStorage.getItem('router_admin_auth_' + ${jsDeviceId});
-        if (localAuth === 'true' || sessionAuth === 'true') {
+        var localAuth = null;
+        var sessionAuth = null;
+        try {
+          if (typeof localStorage !== 'undefined' && localStorage) {
+            localAuth = localStorage.getItem('router_admin_auth_' + ${jsDeviceId});
+          }
+        } catch (_) {}
+        try {
+          if (typeof sessionStorage !== 'undefined' && sessionStorage) {
+            sessionAuth = sessionStorage.getItem('router_admin_auth_' + ${jsDeviceId});
+          }
+        } catch (_) {}
+        if (localAuth === 'true' || sessionAuth === 'true' || window.__router_auth_state === true) {
           var loginForm = document.getElementById('login-form');
           var mainContent = document.getElementById('main-content');
           if (loginForm) loginForm.style.display = 'none';

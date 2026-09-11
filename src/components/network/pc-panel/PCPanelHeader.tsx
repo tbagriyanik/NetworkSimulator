@@ -48,7 +48,7 @@ export function PCPanelHeader({
   terminalToolbar,
 }: PCPanelHeaderProps) {
   return (
-    <div className="shrink-0 px-2 pt-2 md:px-2 md:pt-2">
+    <div className="shrink-0 px-2 pt-0.5 md:px-2 md:pt-2">
       <div className={cn(
         "mx-auto flex items-center justify-between gap-2 rounded-xl border px-2 py-1.5 md:px-3 md:py-2 backdrop-blur-xl shadow-[0_10px_30px_rgba(15,23,42,0.08)]",
         isDark

@@ -655,18 +655,68 @@ export function PingPacketInfoPanel({
     );
 
     const headerActions = (
-        <button
-            onClick={(e) => {
-                e.stopPropagation();
-                setIsMinimized(prev => !prev);
-            }}
-            className={`p-1 rounded transition-colors ${isDark ? 'text-secondary-400 hover:text-white hover:bg-white/10' : 'text-secondary-500 hover:bg-black/5'}`}
-            title={isMinimized ? (language === 'tr' ? 'Büyüt' : 'Expand') : (language === 'tr' ? 'Minimize Et' : 'Minimize')}
-            onPointerDown={(e) => e.stopPropagation()}
-            onMouseDown={(e) => e.stopPropagation()}
-        >
-            {isMinimized ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-        </button>
+        <div className="flex items-center gap-1">
+            {!isDone && (
+                <>
+                    {isPaused ? (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handlePlay();
+                            }}
+                            onPointerDown={(e) => e.stopPropagation()}
+                            onMouseDown={(e) => e.stopPropagation()}
+                            className="p-1.5 rounded bg-success-500 hover:bg-success-600 text-white transition-all shadow-sm flex items-center justify-center active:scale-95"
+                            title={t.play}
+                        >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21" /></svg>
+                        </button>
+                    ) : (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onPause();
+                            }}
+                            onPointerDown={(e) => e.stopPropagation()}
+                            onMouseDown={(e) => e.stopPropagation()}
+                            className="p-1.5 rounded bg-warning-500 hover:bg-warning-600 text-white transition-all shadow-sm flex items-center justify-center active:scale-95"
+                            title={t.pause}
+                        >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                <rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" />
+                            </svg>
+                        </button>
+                    )}
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (isPaused) handleNext();
+                        }}
+                        disabled={!isPaused}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        className={`p-1.5 rounded transition-all shadow-sm flex items-center justify-center ${isPaused ? 'bg-primary-500 hover:bg-primary-600 text-white active:scale-95' : 'bg-secondary-200 dark:bg-secondary-800 text-secondary-400 dark:text-secondary-600 cursor-not-allowed opacity-50'}`}
+                        title={t.next}
+                    >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                            <polygon points="5,3 14,12 5,21" /><rect x="16" y="3" width="3" height="18" />
+                        </svg>
+                    </button>
+                </>
+            )}
+            <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    setIsMinimized(prev => !prev);
+                }}
+                className={`p-1 rounded transition-colors ${isDark ? 'text-secondary-400 hover:text-white hover:bg-white/10' : 'text-secondary-500 hover:bg-black/5'}`}
+                title={isMinimized ? (language === 'tr' ? 'Büyüt' : 'Expand') : (language === 'tr' ? 'Minimize Et' : 'Minimize')}
+                onPointerDown={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+            >
+                {isMinimized ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            </button>
+        </div>
     );
 
     return (
@@ -693,7 +743,7 @@ export function PingPacketInfoPanel({
                         : '!bg-white/95 border-emerald-950/80 shadow-[0_8px_28px_rgba(15,23,42,0.10)]'))
             }
             contentClassName="min-h-0"
-            mobileFullScreen={true}
+            mobileFullScreen={false}
             headerActions={headerActions}
             collapsible={false}
             disableResize={isMinimized}
@@ -739,40 +789,6 @@ export function PingPacketInfoPanel({
                                     )}
                                 </button>
                             </div>
-
-                            {!isDone && (
-                                <div className="flex items-center gap-1 pl-1 border-l border-secondary-200 dark:border-secondary-800">
-                                    {isPaused ? (
-                                        <button
-                                            onClick={handlePlay}
-                                            className="p-1 rounded bg-success-500 hover:bg-success-600 text-white transition-colors flex items-center gap-1 px-2.5 py-1 text-xs"
-                                        >
-                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21" /></svg>
-                                            <span>{t.play}</span>
-                                        </button>
-                                    ) : (
-                                        <button
-                                            onClick={onPause}
-                                            className="p-1 rounded bg-warning-500 hover:bg-warning-600 text-white transition-colors flex items-center gap-1 px-2.5 py-1 text-xs"
-                                        >
-                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                                                <rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" />
-                                            </svg>
-                                            <span>{t.pause}</span>
-                                        </button>
-                                    )}
-                                    <button
-                                        onClick={handleNext}
-                                        disabled={!isPaused}
-                                        className={`p-1 rounded transition-colors flex items-center gap-1 px-2.5 py-1 text-xs ${isPaused ? 'bg-primary-500 hover:bg-primary-600 text-white' : 'bg-secondary-200 dark:bg-secondary-800 text-secondary-400 dark:text-secondary-600 cursor-not-allowed'}`}
-                                    >
-                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                                            <polygon points="5,3 14,12 5,21" /><rect x="16" y="3" width="3" height="18" />
-                                        </svg>
-                                        <span>{t.next}</span>
-                                    </button>
-                                </div>
-                            )}
                         </div>
 
                         {isPaused && currentInfo?.actionDescription && !isDone && (
