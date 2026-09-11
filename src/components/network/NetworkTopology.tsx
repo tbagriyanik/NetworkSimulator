@@ -10,6 +10,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useIsMobile } from '@/hooks/use-breakpoint';
 import { useNetworkRefreshWithPositions } from '@/hooks/useNetworkRefreshWithPositions';
 import { toast } from "@/hooks/use-toast";
+import { ShortcutsModal } from '@/components/ui/ShortcutsModal';
 import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType, ContextMenuState, NetworkTopologyProps } from './networkTopology.types';
 import type { CableType } from '@/lib/network/types';
 import { useCanvasHistory } from '@/hooks/useCanvasHistory';
@@ -120,6 +121,7 @@ export function NetworkTopology({
   const clearAllCapturedPackets = useAppStore((state) => state.clearAllCapturedPackets);
   const networkEventLogs = useNetworkEventLogs();
   const [showLogPanel, setShowLogPanel] = useState(false);
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false);
   const { preferences } = useUiPreferences();
 
   // Zoom & Pan state
@@ -1558,8 +1560,16 @@ export function NetworkTopology({
               isMinimapOpen={isMinimapOpen}
               snapToGrid={snapToGrid}
               onToggleSnapToGrid={() => setSnapToGrid((prev) => !prev)}
+              onOpenShortcutsModal={() => setShowShortcutsModal(true)}
             />
           )}
+
+          <ShortcutsModal
+            open={showShortcutsModal}
+            onOpenChange={setShowShortcutsModal}
+            isDark={isDark}
+            language={language}
+          />
 
           {preferences.showEventLogs && (
             <NetworkEventLogPanel

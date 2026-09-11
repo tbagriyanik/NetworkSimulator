@@ -4,7 +4,7 @@ import React from 'react';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { ShortcutBadge } from '@/components/ui/ShortcutBadge';
-import { AlertCircle, Map, Grid } from 'lucide-react';
+import { AlertCircle, Map, Grid, Keyboard } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useUiPreferences } from '@/hooks/useUiPreferences';
 
@@ -28,6 +28,7 @@ interface CanvasToolbarProps {
   isMinimapOpen?: boolean;
   snapToGrid?: boolean;
   onToggleSnapToGrid?: () => void;
+  onOpenShortcutsModal?: () => void;
 }
 
 export function CanvasToolbar({
@@ -50,6 +51,7 @@ export function CanvasToolbar({
   isMinimapOpen = false,
   snapToGrid = false,
   onToggleSnapToGrid,
+  onOpenShortcutsModal,
 }: CanvasToolbarProps) {
   const { language } = useLanguage();
   const { preferences } = useUiPreferences();
@@ -190,6 +192,22 @@ export function CanvasToolbar({
         </TooltipTrigger>
         <TooltipContent className="flex items-center gap-2">
           <span>{language === 'tr' ? `Izgaraya Hizala: ${snapToGrid ? 'Açık' : 'Kapalı'}` : `Snap to Grid: ${snapToGrid ? 'On' : 'Off'}`}</span>
+        </TooltipContent>
+      </Tooltip>
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            aria-label={language === 'tr' ? 'Kısayollar Kılavuzu' : 'Shortcuts Guide'}
+            onClick={onOpenShortcutsModal}
+            className={`w-8 h-8 flex items-center justify-center rounded transition-colors ${isDark ? 'hover:bg-secondary-700 text-secondary-300' : 'hover:bg-secondary-100 text-secondary-600'}`}
+          >
+            <Keyboard className="w-4 h-4" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent className="flex items-center gap-2">
+          <span>{language === 'tr' ? 'Kısayollar Kılavuzu' : 'Shortcuts Guide'}</span>
+          <ShortcutBadge shortcut="Shift+?" variant="primary" />
         </TooltipContent>
       </Tooltip>
 

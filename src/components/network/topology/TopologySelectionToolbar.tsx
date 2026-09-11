@@ -4,13 +4,14 @@ import { TooltipWrapper } from "@/components/ui/TooltipWrapper";
 import { logger } from '@/lib/logger';
 import { triggerHapticFeedback } from '@/lib/utils';
 import { CanvasDevice, DeviceType } from '../networkTopology.types';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export interface TopologySelectionToolbarProps {
   isDark: boolean;
   t: Record<string, string>;
   selectedDeviceIds: string[];
   deviceMap: Map<string, CanvasDevice>;
-  handleAlign: (alignment: 'left' | 'right' | 'top' | 'bottom' | 'h-center' | 'v-center') => void;
+  handleAlign: (alignment: 'left' | 'right' | 'top' | 'bottom' | 'h-center' | 'v-center' | 'distribute-h' | 'distribute-v') => void;
   setSelectedDeviceIds: (ids: string[]) => void;
   onDeviceSelect: (type: DeviceType, id: string | undefined, model: string | undefined, name: string | undefined) => void;
   saveToHistory: () => void;
@@ -28,6 +29,7 @@ export const TopologySelectionToolbar: React.FC<TopologySelectionToolbarProps> =
   saveToHistory,
   deleteDevice
 }) => {
+  const { language } = useLanguage();
   if (selectedDeviceIds.length <= 1) return null;
 
   return (
@@ -157,6 +159,51 @@ export const TopologySelectionToolbar: React.FC<TopologySelectionToolbarProps> =
           </svg>
         </button>
       </TooltipWrapper>
+
+      {/* Yatay Eşit Dağıt (Distribute Horizontally) */}
+      {selectedDeviceIds.length >= 3 && (
+        <TooltipWrapper title={language === 'tr' ? 'Yatay Eşit Dağıt' : 'Distribute Horizontally'}>
+          <button
+            aria-label={language === 'tr' ? 'Yatay Eşit Dağıt' : 'Distribute Horizontally'}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              saveToHistory();
+              handleAlign('distribute-h');
+            }}
+            className={`p-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${isDark ? 'hover:bg-secondary-700 text-secondary-300' : 'hover:bg-secondary-100 text-secondary-600'}`}
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="4" y="6" width="3" height="12" rx="0.5" />
+              <rect x="10.5" y="6" width="3" height="12" rx="0.5" />
+              <rect x="17" y="6" width="3" height="12" rx="0.5" />
+            </svg>
+          </button>
+        </TooltipWrapper>
+      )}
+
+      {/* Dikey Eşit Dağıt (Distribute Vertically) */}
+      {selectedDeviceIds.length >= 3 && (
+        <TooltipWrapper title={language === 'tr' ? 'Dikey Eşit Dağıt' : 'Distribute Vertically'}>
+          <button
+            aria-label={language === 'tr' ? 'Dikey Eşit Dağıt' : 'Distribute Vertically'}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              saveToHistory();
+              handleAlign('distribute-v');
+            }}
+            className={`p-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${isDark ? 'hover:bg-secondary-700 text-secondary-300' : 'hover:bg-secondary-100 text-secondary-600'}`}
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="6" y="4" width="12" height="3" rx="0.5" />
+              <rect x="6" y="10.5" width="12" height="3" rx="0.5" />
+              <rect x="6" y="17" width="12" height="3" rx="0.5" />
+            </svg>
+          </button>
+        </TooltipWrapper>
+      )}
+
       <div className="w-px h-4 bg-secondary-700/30 mx-1" />
       <span className="text-xs font-semibold whitespace-nowrap bg-secondary-700/30 px-2 py-0.5 rounded">
         {selectedDeviceIds.length}

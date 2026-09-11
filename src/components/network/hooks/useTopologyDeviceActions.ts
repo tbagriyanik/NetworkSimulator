@@ -81,7 +81,7 @@ export function useTopologyDeviceActions({
   }, [setDevices, devices]);
 
   // Handle alignment for multiple selected devices
-  const handleAlign = useCallback((type: 'top' | 'bottom' | 'left' | 'right' | 'h-center' | 'v-center') => {
+  const handleAlign = useCallback((type: 'top' | 'bottom' | 'left' | 'right' | 'h-center' | 'v-center' | 'distribute-h' | 'distribute-v') => {
     logger.debug('[handleAlign] called with type:', type, 'selectedDeviceIds:', selectedDeviceIds);
     if (selectedDeviceIds.length < 2) {
       logger.debug('[handleAlign] early return - less than 2 devices selected');
@@ -97,6 +97,24 @@ export function useTopologyDeviceActions({
 
       let targetX = 0;
       let targetY = 0;
+
+      if (type === 'distribute-h' && selectedDevices.length >= 3) {
+        const sorted = [...selectedDevices].sort((a, b) => a.x - b.x);
+        const minX = sorted[0].x;
+        const maxX = sorted[sorted.length - 1].x;
+        const gap = (maxX - minX) / (sorted.length - 1);
+        const posMap = new Map(sorted.map((d, i) => [d.id, minX + i * gap]));
+        return prev.map(d => posMap.has(d.id) ? { ...d, x: posMap.get(d.id)! } : d);
+      }
+
+      if (type === 'distribute-v' && selectedDevices.length >= 3) {
+        const sorted = [...selectedDevices].sort((a, b) => a.y - b.y);
+        const minY = sorted[0].y;
+        const maxY = sorted[sorted.length - 1].y;
+        const gap = (maxY - minY) / (sorted.length - 1);
+        const posMap = new Map(sorted.map((d, i) => [d.id, minY + i * gap]));
+        return prev.map(d => posMap.has(d.id) ? { ...d, y: posMap.get(d.id)! } : d);
+      }
 
       switch (type) {
         case 'top':

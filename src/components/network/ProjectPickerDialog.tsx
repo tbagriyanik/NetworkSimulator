@@ -359,6 +359,32 @@ export function ProjectPickerDialog({
                 </button>
               )}
             </div>
+
+            {/* Quick Filter Tag Chips */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+              {['VLAN', 'Routing', 'DHCP', 'ACL', 'Basic', 'Switch'].map((chip) => {
+                const isActive = projectSearchQuery.toLowerCase() === chip.toLowerCase();
+                return (
+                  <button
+                    key={chip}
+                    type="button"
+                    onClick={() => setProjectSearchQuery(isActive ? '' : chip)}
+                    className={cn(
+                      'px-2.5 py-1 text-[11px] font-semibold rounded-full border transition-all shrink-0',
+                      isActive
+                        ? isDark
+                          ? 'bg-primary-500/20 text-primary-300 border-primary-500/40 shadow-sm'
+                          : 'bg-primary-50 text-primary-700 border-primary-300 shadow-sm'
+                        : isDark
+                          ? 'bg-secondary-900/60 text-secondary-400 border-secondary-800 hover:text-secondary-200 hover:bg-secondary-800'
+                          : 'bg-secondary-100/60 text-secondary-600 border-secondary-200 hover:text-secondary-900 hover:bg-secondary-200'
+                    )}
+                  >
+                    #{chip}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div
@@ -494,10 +520,10 @@ export function ProjectPickerDialog({
                       {(() => {
                         const getStr = (val: string | { tr: string; en: string } | undefined) =>
                           typeof val === 'string' ? val : (val ? (language === 'tr' ? val.tr : val.en) : '');
-                        return getAvailableExams(language)
+                        const q = projectSearchQuery.trim().toLowerCase();
+                        const filteredExams = getAvailableExams(language)
                           .filter(ep => ep.id !== 'exam-template-blank')
                           .filter((examProject, idx) => {
-                            const q = projectSearchQuery.trim().toLowerCase();
                             const titleStr = getStr(examProject.title);
                             const descStr = getStr(examProject.description);
                             return q === '' ||
@@ -506,88 +532,81 @@ export function ProjectPickerDialog({
                               examProject.tag.toLowerCase().includes(q) ||
                               (examProject.detail && examProject.detail.toLowerCase().includes(q)) ||
                               String(idx + 1).includes(q);
-                          })
-                          .map((examProject: ExamProject) => {
-                            const titleStr = getStr(examProject.title);
-                            const descStr = getStr(examProject.description);
-                            return (
-                              <Button
-                                key={examProject.id}
-                                data-project-id={examProject.id}
-                                variant='ghost'
-                                className={`group h-auto min-h-[140px] md:min-h-[180px] flex-col items-start gap-3 md:gap-5 p-5 md:p-8 rounded-2xl md:rounded-[2rem] border-2 text-left transition-all duration-300 hover:translate-y-[-4px] active:scale-[0.98] ${isDark ? 'border-error-800/40 bg-error-900/10 hover:bg-error-900/30 hover:border-error-500/50' : 'border-error-200/50 bg-error-50/30 hover:bg-error-50 hover:border-error-500/40'} w-full overflow-hidden shadow-sm hover:shadow-2xl relative ${selectedProjectId === examProject.id ? (isDark ? 'ring-2 ring-error-400 ring-offset-2 ring-offset-secondary-900' : 'ring-2 ring-error-500 ring-offset-2 ring-offset-white') : ''}`}
-                                onClick={() => {
-                                  closeProjectPicker();
-                                  resetToEmptyProject();
-                                  setZoom(1.0);
-                                  setPan({ x: 0, y: 0 });
-                                  startExamProject(examProject);
-                                  loadProjectData(examProject.data);
-                                }}
-                              >
-                                <div className='flex items-center justify-between w-full gap-4 overflow-hidden flex-nowrap'>
-                                  <span className={`font-black text-base md:text-2xl leading-none transition-colors duration-300 break-words flex-1 min-w-0 ${isDark ? 'group-hover:text-error-400 text-error-100' : 'group-hover:text-error-600 text-black'}`}>
-                                    <span className={`${isDark ? 'text-secondary-500' : 'text-secondary-400'} mr-2`}>{getAvailableExams(language).filter((project) => project.id !== 'exam-template-blank').findIndex((project) => project.id === examProject.id) + 1}.</span>{titleStr}
-                                  </span>
-                                  <span className={`text-[8px] md:text-[10px] font-black tracking-[0.2em] px-3 py-1.5 rounded-full whitespace-nowrap border shrink-0 flex-shrink-0 ${isDark ? 'bg-error-500/20 text-error-400 border-error-500/30' : 'bg-error-100 text-error-600 border-error-200'}`}>
-                                    {examProject.tag}
-                                  </span>
-                                </div>
-                                <p className={`text-[11px] md:text-sm leading-relaxed font-medium italic transition-colors whitespace-normal break-words w-full ${isDark ? 'text-secondary-300/80 group-hover:text-secondary-200' : 'text-secondary-600 group-hover:text-secondary-800'}`}>
-                                  {descStr}
-                                </p>
-
-                                <div className='mt-auto pt-3 flex items-center gap-4 w-full border-t border-secondary-800/10 dark:border-secondary-700/50'>
-                                  <div className="flex items-center gap-1 text-[10px] text-secondary-500 dark:text-secondary-400">
-                                    <Clock className="w-3 h-3" />
-                                    {examProject.durationMinutes} {language === 'tr' ? 'dk' : 'min'}
-                                  </div>
-                                  <div className="flex items-center gap-1 text-[10px] text-secondary-500 dark:text-secondary-400">
-                                    <Target className="w-3 h-3" />
-                                    {examProject.tasks.length} {language === 'tr' ? 'görev' : (examProject.tasks.length <= 1 ? 'task' : 'tasks')}
-                                  </div>
-                                  <div className="flex items-center gap-1 text-[10px] text-secondary-500 dark:text-secondary-400 capitalize">
-                                    <GraduationCap className="w-3 h-3" />
-                                    {examProject.difficulty === 'beginner'
-                                      ? (language === 'tr' ? 'Başlangıç' : 'Beginner')
-                                      : examProject.difficulty === 'intermediate'
-                                        ? (language === 'tr' ? 'Orta' : 'Intermediate')
-                                        : examProject.difficulty === 'advanced'
-                                          ? (language === 'tr' ? 'İleri' : 'Advanced')
-                                          : examProject.difficulty}
-                                  </div>
-                                </div>
-
-                                {examProject.detail && (
-                                  <div className='pt-2 flex items-center gap-2 w-full'>
-                                    <div className='w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-error-500 shrink-0 shadow-[0_0_3px_rgba(244,63,94,0.2)]' />
-                                    <span className={`text-[8px] md:text-[11px] font-bold tracking-wide whitespace-normal break-words w-full ${isDark ? 'text-error-400/80' : 'text-error-700/80'}`}>
-                                      {examProject.detail}
-                                    </span>
-                                  </div>
-                                )}
-                              </Button>
-                            );
                           });
+
+                        if (filteredExams.length === 0) {
+                          return (
+                            <div className={`text-center py-12 ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
+                              <p className="text-sm">
+                                {language === 'tr' ? 'Aramanızla eşleşen sınav bulunamadı.' : 'No exams found matching your search.'}
+                              </p>
+                            </div>
+                          );
+                        }
+
+                        return filteredExams.map((examProject: ExamProject) => {
+                          const titleStr = getStr(examProject.title);
+                          const descStr = getStr(examProject.description);
+                          return (
+                            <Button
+                              key={examProject.id}
+                              data-project-id={examProject.id}
+                              variant='ghost'
+                              className={`group h-auto min-h-[140px] md:min-h-[180px] flex-col items-start gap-3 md:gap-5 p-5 md:p-8 rounded-2xl md:rounded-[2rem] border-2 text-left transition-all duration-300 hover:translate-y-[-4px] active:scale-[0.98] ${isDark ? 'border-error-800/40 bg-error-900/10 hover:bg-error-900/30 hover:border-error-500/50' : 'border-error-200/50 bg-error-50/30 hover:bg-error-50 hover:border-error-500/40'} w-full overflow-hidden shadow-sm hover:shadow-2xl relative ${selectedProjectId === examProject.id ? (isDark ? 'ring-2 ring-error-400 ring-offset-2 ring-offset-secondary-900' : 'ring-2 ring-error-500 ring-offset-2 ring-offset-white') : ''}`}
+                              onClick={() => {
+                                closeProjectPicker();
+                                resetToEmptyProject();
+                                setZoom(1.0);
+                                setPan({ x: 0, y: 0 });
+                                startExamProject(examProject);
+                                loadProjectData(examProject.data);
+                              }}
+                            >
+                              <div className='flex items-center justify-between w-full gap-4 overflow-hidden flex-nowrap'>
+                                <span className={`font-black text-base md:text-2xl leading-none transition-colors duration-300 break-words flex-1 min-w-0 ${isDark ? 'group-hover:text-error-400 text-error-100' : 'group-hover:text-error-600 text-black'}`}>
+                                  <span className={`${isDark ? 'text-secondary-500' : 'text-secondary-400'} mr-2`}>{getAvailableExams(language).filter((project) => project.id !== 'exam-template-blank').findIndex((project) => project.id === examProject.id) + 1}.</span>{titleStr}
+                                </span>
+                                <span className={`text-[8px] md:text-[10px] font-black tracking-[0.2em] px-3 py-1.5 rounded-full whitespace-nowrap border shrink-0 flex-shrink-0 ${isDark ? 'bg-error-500/20 text-error-400 border-error-500/30' : 'bg-error-100 text-error-600 border-error-200'}`}>
+                                  {examProject.tag}
+                                </span>
+                              </div>
+                              <p className={`text-[11px] md:text-sm leading-relaxed font-medium italic transition-colors whitespace-normal break-words w-full ${isDark ? 'text-secondary-300/80 group-hover:text-secondary-200' : 'text-secondary-600 group-hover:text-secondary-800'}`}>
+                                {descStr}
+                              </p>
+
+                              <div className='mt-auto pt-3 flex items-center gap-4 w-full border-t border-secondary-800/10 dark:border-secondary-700/50'>
+                                <div className="flex items-center gap-1 text-[10px] text-secondary-500 dark:text-secondary-400">
+                                  <Clock className="w-3 h-3" />
+                                  {examProject.durationMinutes} {language === 'tr' ? 'dk' : 'min'}
+                                </div>
+                                <div className="flex items-center gap-1 text-[10px] text-secondary-500 dark:text-secondary-400">
+                                  <Target className="w-3 h-3" />
+                                  {examProject.tasks.length} {language === 'tr' ? 'görev' : (examProject.tasks.length <= 1 ? 'task' : 'tasks')}
+                                </div>
+                                <div className="flex items-center gap-1 text-[10px] text-secondary-500 dark:text-secondary-400 capitalize">
+                                  <GraduationCap className="w-3 h-3" />
+                                  {examProject.difficulty === 'beginner'
+                                    ? (language === 'tr' ? 'Başlangıç' : 'Beginner')
+                                    : examProject.difficulty === 'intermediate'
+                                      ? (language === 'tr' ? 'Orta' : 'Intermediate')
+                                      : examProject.difficulty === 'advanced'
+                                        ? (language === 'tr' ? 'İleri' : 'Advanced')
+                                        : examProject.difficulty}
+                                </div>
+                              </div>
+
+                              {examProject.detail && (
+                                <div className='pt-2 flex items-center gap-2 w-full'>
+                                  <div className='w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-error-500 shrink-0 shadow-[0_0_3px_rgba(244,63,94,0.2)]' />
+                                  <span className={`text-[8px] md:text-[11px] font-bold tracking-wide whitespace-normal break-words w-full ${isDark ? 'text-error-400/80' : 'text-error-700/80'}`}>
+                                    {examProject.detail}
+                                  </span>
+                                </div>
+                              )}
+                            </Button>
+                          );
+                        });
                       })()}
-                      {getAvailableExams(language)
-                        .filter(ep => ep.id !== 'exam-template-blank')
-                        .filter((examProject) => {
-                          const q = projectSearchQuery.trim().toLowerCase();
-                          const getStr = (val: string | { tr: string; en: string } | undefined) =>
-                            typeof val === 'string' ? val : (val ? (language === 'tr' ? val.tr : val.en) : '');
-                          return q === '' ||
-                            getStr(examProject.title).toLowerCase().includes(q) ||
-                            getStr(examProject.description).toLowerCase().includes(q) ||
-                            examProject.tag.toLowerCase().includes(q) ||
-                            (examProject.detail && examProject.detail.toLowerCase().includes(q));
-                        }).length === 0 && (
-                          <div className={`text-center py-12 ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
-                            <p className="text-sm">
-                              {language === 'tr' ? 'Aramanızla eşleşen sınav bulunamadı.' : 'No exams found matching your search.'}
-                            </p>
-                          </div>
-                        )}
                     </div>
                   </section>
                 </div>
