@@ -1213,17 +1213,42 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
       } catch(err) {}
     }
 
+    function initRouterLoginForm() {
+      var rForm = document.getElementById('router-login-form');
+      var rBtn = document.getElementById('btn-router-login');
+      if (rForm && !rForm.__bound) {
+        rForm.__bound = true;
+        rForm.addEventListener('submit', function(e) {
+          window.handleLogin(e);
+        });
+      }
+      if (rBtn && !rBtn.__bound) {
+        rBtn.__bound = true;
+        rBtn.addEventListener('click', function(e) {
+          window.handleLogin(e);
+        });
+      }
+    }
+
     // Initialize lists & session state on document ready
     renderSsidList();
     renderConnectedWirelessClients();
     renderMacFilterList();
+    initRouterLoginForm();
     checkRouterAuth();
 
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      initRouterLoginForm();
       checkRouterAuth();
     } else {
-      window.addEventListener('load', checkRouterAuth);
-      document.addEventListener('DOMContentLoaded', checkRouterAuth);
+      window.addEventListener('load', function() {
+        initRouterLoginForm();
+        checkRouterAuth();
+      });
+      document.addEventListener('DOMContentLoaded', function() {
+        initRouterLoginForm();
+        checkRouterAuth();
+      });
     }
   </script>
 </body>

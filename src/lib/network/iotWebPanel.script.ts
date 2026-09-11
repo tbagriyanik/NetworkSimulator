@@ -167,15 +167,26 @@ export function generateIotPanelScript(): string {
     };
 
     // Attach event listeners safely
+    function initIotLoginForm() {
+      const loginSection = document.getElementById('loginSection');
+      const iotLoginBtn = document.getElementById('iotLoginButton');
+      if (loginSection && !loginSection.__bound) {
+        loginSection.__bound = true;
+        loginSection.addEventListener('submit', function(event) {
+          window.checkPassword(event);
+        });
+      }
+      if (iotLoginBtn && !iotLoginBtn.__bound) {
+        iotLoginBtn.__bound = true;
+        iotLoginBtn.addEventListener('click', function(event) {
+          window.checkPassword(event);
+        });
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
       try {
-        // Login form
-        const loginSection = document.getElementById('loginSection');
-        if (loginSection) {
-          loginSection.addEventListener('submit', function(event) {
-            window.checkPassword(event);
-          });
-        }
+        initIotLoginForm();
 
         // Settings toggle
         const settingsToggle = document.getElementById('settingsToggle');
@@ -249,10 +260,16 @@ export function generateIotPanelScript(): string {
 
     // Run authentication check immediately if DOM is already ready (e.g. in srcdoc iframe)
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
-      try { window.checkAuthentication(); } catch (_) {}
+      try {
+        initIotLoginForm();
+        window.checkAuthentication();
+      } catch (_) {}
     } else {
       window.addEventListener('load', function() {
-        try { window.checkAuthentication(); } catch (_) {}
+        try {
+          initIotLoginForm();
+          window.checkAuthentication();
+        } catch (_) {}
       });
     }
   `;

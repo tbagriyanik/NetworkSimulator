@@ -74,6 +74,12 @@ export function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-nonce', nonce);
   const response = NextResponse.next({ request: { headers: requestHeaders } });
+  const isFontRequest = request.nextUrl.pathname.startsWith('/fonts/');
+  if (isFontRequest) {
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    response.headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+  }
   if (isApiRequest) {
     const origin = request.headers.get('origin');
     if (origin === request.nextUrl.origin) response.headers.set('Access-Control-Allow-Origin', origin);

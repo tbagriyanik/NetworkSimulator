@@ -451,7 +451,7 @@ export function HttpBrowserWindow({
         <iframe
           title={title}
           srcDoc={srcDoc}
-          sandbox="allow-forms allow-scripts allow-modals allow-same-origin"
+          sandbox="allow-forms allow-scripts allow-modals"
           className="h-full w-full border-0 bg-white rounded-sm overflow-auto custom-scrollbar"
           style={{ display: 'block', touchAction: 'manipulation' }}
         />
