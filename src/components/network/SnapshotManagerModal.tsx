@@ -164,7 +164,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
     }
 
     setShowConfirmRollback(false);
-    showNotification(`Topoloji "${cp.name}" anına başarıyla geri yüklendi (Rollback yapıldı)!`);
+    showNotification(`Topoloji "${cp.name}" anına başarıyla geri yüklendi!`);
     setTimeout(() => {
       onClose();
     }, 700);
@@ -242,9 +242,9 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold tracking-tight">Topoloji Snapshot & Rollback Yöneticisi</h3>
+                <h3 className="text-base font-bold tracking-tight">Topoloji Anlık Görüntü (Snapshot) & Geri Yükleme Yöneticisi</h3>
                 <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                  Checkpoint System
+                  Geri Yükleme Noktası (Checkpoint)
                 </span>
               </div>
               <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -455,7 +455,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
                     className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 transition shadow active:scale-95"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
-                    Geri Yükle (Rollback)
+                    Geri Yükle (Eski Hali)
                   </button>
                 </div>
               </div>
@@ -474,7 +474,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
               <div className="flex items-center gap-3 text-amber-400">
                 <AlertCircle className="w-6 h-6 shrink-0" />
                 <div>
-                  <h4 className="font-bold text-sm">Geri Yüklemeyi (Rollback) Onayla</h4>
+                  <h4 className="font-bold text-sm">Geri Yüklemeyi Onayla</h4>
                   <span className="text-[10px] text-slate-400 font-mono">Hedef: {selectedCheckpoint.name}</span>
                 </div>
               </div>

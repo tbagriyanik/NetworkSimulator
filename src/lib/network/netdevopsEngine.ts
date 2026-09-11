@@ -113,7 +113,7 @@ export function executeNetDevOpsPythonScript(
   const logs: string[] = [];
   const affectedDevices: string[] = [];
 
-  logs.push('[NetDevOps] Initializing virtual Python 3.11 environment...');
+  logs.push('[NetDevOps] Initializing virtual Python environment...');
   logs.push('[NetDevOps] Loading libraries: netmiko, requests, urllib3, json...');
 
   const lines = scriptCode.split('\n').map((l) => l.trim());

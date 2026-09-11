@@ -624,7 +624,7 @@ export function TopologyToolbar({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              aria-label="Topoloji Snapshot Al & Geri Yükle"
+              aria-label="Topoloji Anlık Görüntüsü Al & Geri Yükle"
               variant="ghost"
               size="icon"
               className="h-8 w-8 p-0 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10"
@@ -634,8 +634,8 @@ export function TopologyToolbar({
             </Button>
           </TooltipTrigger>
           <TooltipContent className="flex items-center gap-2">
-            <span>Snapshot & Checkpoint</span>
-            <ShortcutBadge shortcut="Rollback" variant="primary" />
+            <span>Anlık Görüntü (Snapshot)</span>
+            <ShortcutBadge shortcut="Geri Yükle" variant="primary" />
           </TooltipContent>
         </Tooltip>
 

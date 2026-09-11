@@ -733,7 +733,7 @@ export async function executeLinuxCommand(
   if (command === 'python' || command === 'python3') {
     const scriptArg = args[0];
     if (!scriptArg) {
-      addLocalOutput('output', `Python 3.11.4 (main, Jun 2026)\nType "exit()" or "quit()" for interactive python.`);
+      addLocalOutput('output', `Python (main)\nType "exit()" or "quit()" for interactive python.`);
       return;
     }
     if (scriptArg === '-c') {

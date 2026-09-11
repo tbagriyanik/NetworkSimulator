@@ -8,10 +8,9 @@ import { canAssignIPToPhysicalPort, isLayer3Switch } from '../switchModels';
 import { getPvstUpdate } from './commandHelpers';
 import { getDeviceCapabilities } from '../capabilities';
 import { validateIpRoutingSupport } from './L3Validation';
-import { createStubHandler } from './stubCommandHints';
 import { cmdAccessList, cmdNoAccessList } from './interface/cmd.misc';
 import { cmdIpDhcpPool, cmdNoIpDhcpPool, cmdIpv6DhcpPool, cmdIpDhcpExcludedAddress, cmdNoIpDhcpExcludedAddress, cmdIpDhcpSnoopingVlan, cmdNoIpDhcpSnooping, cmdIpDhcpSnoopingInformationOption } from './globalConfigDhcpCommands';
-import { cmdIpNatPool, cmdIpNatInsideSourceStatic, cmdIpNatInsideSourceList, cmdLoggingHost, cmdLoggingTrap, cmdNtpServer, cmdNtpMaster, cmdNoNtpServer, cmdClockTimezone, cmdIpNameServer, cmdIpHost, cmdAliasExec, cmdNoAliasExec, cmdIpSla, cmdTrack, cmdLldpTlvSelect, cmdSpanningTreeMst, cmdIpPrefixList, cmdRouteMap, cmdIpv6RouterEigrp, cmdSpanningTreeLoopguardDefault, cmdIpFlowExport, cmdNoIpPrefixList, cmdNoIpv6PrefixList, cmdNoRouteMap, cmdVrfDefinition, cmdRestconfEnable, cmdMplsIpGlobal } from './globalConfigNetworkCommands';
+import { cmdIpNatPool, cmdIpNatInsideSourceStatic, cmdIpNatInsideSourceList, cmdLoggingHost, cmdLoggingTrap, cmdNtpServer, cmdNtpMaster, cmdNoNtpServer, cmdClockTimezone, cmdIpNameServer, cmdIpHost, cmdAliasExec, cmdNoAliasExec, cmdIpSla, cmdTrack, cmdLldpTlvSelect, cmdSpanningTreeMst, cmdIpPrefixList, cmdRouteMap, cmdIpv6RouterEigrp, cmdSpanningTreeLoopguardDefault, cmdIpFlowExport, cmdNoIpPrefixList, cmdNoIpv6PrefixList, cmdNoRouteMap, cmdVrfDefinition, cmdRestconfEnable, cmdMplsIpGlobal, cmdArchive, cmdMacroName, cmdConfigureReplace, cmdMacAccessList, cmdTemplate } from './globalConfigNetworkCommands';
 
 import { cmdClassMap, cmdPolicyMap, cmdClass, cmdSetDscp, cmdSetCoS, cmdPolice, cmdNoClassMap, cmdNoPolicyMap } from './qosMqcCommands';
 import { cmdDot1xSystem } from './dot1xCommands';
@@ -225,13 +224,15 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'snmp-server community': cmdSnmpCommunity,
   'snmp-server contact': cmdSnmpContact,
   'snmp-server location': cmdSnmpLocation,
-  'archive': createStubHandler('archive'),
+  'archive': cmdArchive,
   'alias': cmdAliasExec,
   'no alias': cmdNoAliasExec,
-  'macro': createStubHandler('macro'),
+  'macro': cmdMacroName,
+  'macro name': cmdMacroName,
   'default interface': cmdDefaultInterface,
-  'configure replace': createStubHandler('configure replace'),
-  'mac access-list': createStubHandler('mac access-list'),
+  'configure replace': cmdConfigureReplace,
+  'mac access-list': cmdMacAccessList,
+  'mac access-list extended': cmdMacAccessList,
   'class-map': cmdClassMap,
   'no class-map': cmdNoClassMap,
   'policy-map': cmdPolicyMap,
@@ -240,7 +241,7 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'police': cmdPolice,
   'set dscp': cmdSetDscp,
   'set cos': cmdSetCoS,
-  'template': createStubHandler('template'),
+  'template': cmdTemplate,
   'access-list': cmdAccessList,
   'no access-list': cmdNoAccessList,
   'ip access-list': cmdIpAccessList,

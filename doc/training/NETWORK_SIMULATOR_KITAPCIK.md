@@ -6901,8 +6901,8 @@ Kabloları mantıksal tek bir hatta birleştirme:
 ### 18. Çift Tıklama ile Daraltılabilir Cihaz Paneli
 - Tuval üzerinde herhangi bir cihaza çift tıklandığında açılan cihaz paneli, yan taraftaki ok simgesi kullanılarak veya ekran kenarından tutularak tamamen daraltılabilir (collapsed). Böylece kullanıcı terminal komutlarını yazarken tuval alanını rahatlıkla görebilir.
 
-### 19. Tam Kapsamlı Python 3 Yorumlayıcısı & OOP (Object Oriented Programming) Desteği
-PC cihaz panellerinde (CMD ve Dosya Düzenleyici) doğrudan tarayıcı içinde çalışan gelişmiş Python 3 motoru:
+### 19. Tam Kapsamlı Python Yorumlayıcısı & OOP (Object Oriented Programming) Desteği
+PC cihaz panellerinde (CMD ve Dosya Düzenleyici) doğrudan tarayıcı içinde çalışan gelişmiş Python motoru:
 - **Çalıştırma Modları:** `python script.py`, `python -c "..."`, interaktif REPL (`python`) ve Dosya Düzenleyicisi'nden **Play (▶)** butonu ile çalıştırma.
 - **OOP:** `class ClassName(Base):`, kurucu `__init__`, nitelik bağlama (`self`), kalıtım, `super()`, `isinstance()`.
 - **Nitelik & Metot Decorator'ları:** `@property`, `@<prop>.setter` getter/setter kapsülleme, `@staticmethod`, `@classmethod` ve özel wrapper decorator'lar.

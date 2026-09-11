@@ -35,7 +35,9 @@ npm run check
 ## 🚀 Key Features / Öne Çıkan Özellikler
 
 - **💻 Gelişmiş CLI & IOS Simülasyonu:** Switch (L2/L3), Router, ASA Firewall, WLC, PC, IoT ve Hub cihazları için tam kapsamlı terminal ve komut motoru.
-- **🌐 Geniş Protokol Desteği:** VLAN, VTP, STP/RSTP/MSTP, EtherChannel, L3 Rotalama (OSPF, EIGRP, BGP, Static), DHCP, NAT, ACL (IPv4/IPv6), Port Security, IP SLA ve QoS.
+- **🌐 Geniş Protokol Desteği:** VLAN, VTP, STP/RSTP/MSTP, EtherChannel, VRF-Lite, MPLS & LDP, L3 Rotalama (OSPF, EIGRP, BGP, Static), RESTCONF API, DHCP, NAT, ACL (IPv4/IPv6/MAC), Port Security, IP SLA ve QoS.
+- **📸 Topoloji Anlık Görüntü (Snapshot) & Geri Yükleme:** Ağ topolojisini tek tıkla dondurma, kontrol noktaları (Checkpoint) oluşturma, JSON dışa/içe aktarma ve anlık geri yükleme.
+- **🐍 Python Yorumlayıcısı & Dosya İşlemleri:** PC terminalinde OOP, Decorator, Generator, `open()` ile sanal dosya okuma/yazma/düzenleme ve soket ağ programlama.
 - **🔍 Gelişmiş Teşhis & Sağlık Denetimi:** Native VLAN mismatch, çakışan IP/MAC tespiti, routing loop tespiti, orphan port denetimi ve tek komutla `show network health` raporu.
 - **⚡ Performanslı & Modüler Mimari:** $O(1)$ komşuluk indeksi, deterministik simülasyon motoru, mobil haptic geribildirim ve tam erişilebilirlik (A11y) uyumluluğu.
 

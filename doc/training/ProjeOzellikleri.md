@@ -2,6 +2,14 @@
 
 **Sürüm / Version:** 4.10.0 · **Son doğrulama / Last verified:** 2026-09-10
 
+| Özellik | Güncel kapsam me sınır |
+|---|---|
+| **CLI Stub Temizliği & Durum Değiştirici Komutlar** | `archive`, `macro`, `configure replace`, `mac access-list`, `template`, `transport output`, `transport preferred`, `access-class`, `session-limit`, `lockable` dâhil tüm stub komutlar kaldırıldı ve doğrudan `LineConfig`/`SwitchState` durumlarını güncelleyen aktif komut motorlarına dönüştürüldü (`lineCommands.ts`, `globalConfigNetworkCommands.ts`). |
+| **VRF-Lite & RESTCONF Desteği** | `ip vrf <name>`, `rd <asn:nn>`, `route-target`, arayüz `ip vrf forwarding <name>` ile sanal yönlendirme tablosu izolasyonu; `ip restconf` ile YANG/RESTCONF HTTP servisi aktifleştirme (`globalConfigNetworkCommands.ts`). |
+| **Python Dosya Okuma, Yazma & Düzenleme (File I/O)** | PC Python yorumlayıcısına `open(file, mode)` (r, w, a, r+) desteği eklendi; sanal dosya sisteminde dosya oluşturma, okuma, yazma ve düzenleme tam işlevsel kılındı (`pythonInterpreter.ts`). |
+| **Topoloji Anlık Görüntü (Snapshot) & Geri Yükleme Türkçe UI** | Snapshot/Rollback terimleri Türkçe arayüze dönüştürüldü: "Topoloji Anlık Görüntü (Snapshot) & Geri Yükleme Yöneticisi", "Geri Yükleme Noktası (Checkpoint)", "Geri Yükle" (`SnapshotManagerModal.tsx`, `TopologyToolbar.tsx`). |
+| **Yardım & Kısayollar Paneli Güncellemesi** | F1 Yardım penceresine VRF-Lite, RESTCONF API, MPLS, Python Dosya İşlemleri ve yeni eklenen CLI komutları tam Türkçe/İngilizce açıklamaları ile eklendi (`networkTopology.commands.ts`). |
+
 ## Son Ağ Simülasyonu Geliştirmeleri (2026-09-10 - v4.10.0)
 
 | Özellik | Güncel kapsam ve sınır |
@@ -155,7 +163,7 @@ IP SLA, QoS, parser/CLI, LLDP, MSTP, 802.1X, SDN ve ağ entegrasyonları için o
 
 ### ⌨️ CLI / Terminal
 - Gerçekçi CLI komut satırı (user, privileged, global-config, interface, line, vlan, router-config ve adlandırılmış-ACL modları).
-- PC CMD ve Dosya Düzenleyici ortamında simüle edilmiş **Python 3 yorumlayıcısı** (öğretim amaçlı kapsam):
+- PC CMD ve Dosya Düzenleyici ortamında simüle edilmiş **Python yorumlayıcısı** (öğretim amaçlı kapsam):
   - **OOP:** Sınıflar (`class`), kurucu metot (`__init__`), nitelik bağlama (`self`), kalıtım (inheritance), `super()`, `isinstance()`.
   - **Decorator'lar:** `@property`, `@<name>.setter`, `@staticmethod`, `@classmethod` ve kullanıcı tanımlı decorator fonksiyonları.
   - **Generator'lar:** `yield` ve `yield from` ile tembel iterasyon (lazy evaluation).

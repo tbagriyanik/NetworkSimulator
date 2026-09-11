@@ -1,6 +1,6 @@
 # 🐍 Python Programlama Kılavuzu & Yorumlayıcı Referansı
 
-Network Simulator PC panelinde çalışan yerleşik Python 3 yorumlayıcısı, Nesne Yönelimli Programlama (OOP), Generator'lar, Decorator'lar ve Temel Algoritma konularını öğretmek amacıyla tasarlanmış güvenli bir JS/TS motorudur.
+Network Simulator PC panelinde çalışan yerleşik Python yorumlayıcısı, Nesne Yönelimli Programlama (OOP), Generator'lar, Decorator'lar ve Temel Algoritma konularını öğretmek amacıyla tasarlanmış güvenli bir JS/TS motorudur.
 
 ---
 
@@ -24,7 +24,7 @@ python -c "import math; print(math.sqrt(16))"
 CMD terminaline `python` yazarak interaktif yorumlayıcıya girilebilir:
 ```cmd
 C:\> python
-Python 3.11.0 (simulated) on win32
+Python (simulated) on win32
 Type "help", "copyright", "credits" or "license" for more information.
 >>> x = 10
 >>> print(x * 2)
@@ -115,14 +115,26 @@ finally:
     print("İşlem tamamlandı.")
 ```
 
-### D. Bağlam Yöneticisi (`with open(...)`)
+### D. Bağlam Yöneticisi ve Dosya Okuma/Yazma (`open(...)`)
+NetworkSimulator PC sanal dosya sistemi üzerinde `open(file, mode)` fonksiyonu ile dosya okuma (`r`), yazma (`w`), ekleme (`a`) ve okuma-yazma (`r+`) işlemleri tam desteklenmektedir:
+
 ```python
+# Dosyaya yazma
 with open("log.txt", "w") as f:
     f.write("Ağ başlangıç kaydı\n")
+    f.write("Status: OK\n")
 
+# Dosyadan okuma
 with open("log.txt", "r") as f:
     content = f.read()
-    print(content)
+    print("Dosya İçeriği:\n" + content)
+
+# Satır satır okuma
+f = open("log.txt", "r")
+lines = f.readlines()
+for line in lines:
+    print("Satır:", line.strip())
+f.close()
 ```
 
 ---

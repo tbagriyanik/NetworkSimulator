@@ -274,7 +274,7 @@ echo "Toplam Kapalı Cihaz: $INACTIVE_COUNT"
 
 ## 6. Python Programlama ve Nesne Yönelimli (OOP) Kodlama
 
-PC ve Laptop cihazlarında **Desktop > Python IDE** uygulaması açılarak gelişmiş Python 3 betikleri yazılabilir ve simüle edilen Python ortamında çalıştırılabilir.
+PC ve Laptop cihazlarında **Desktop > Python IDE** uygulaması açılarak gelişmiş Python betikleri yazılabilir ve simüle edilen Python ortamında çalıştırılabilir.
 
 ### 🐍 Desteklenen Python Özellikleri
 - **Nesne Yönelimli Programlama (OOP):** `class`, `__init__`, kalıtım (inheritance), `super()`, `isinstance()`.

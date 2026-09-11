@@ -468,6 +468,12 @@ interface LineConfig {
   login: boolean;
   loginLocal?: boolean;
   transportInput: ('ssh' | 'telnet' | 'all' | 'none')[];
+  transportOutput?: ('ssh' | 'telnet' | 'all' | 'none')[];
+  transportPreferred?: string;
+  accessClassIn?: string;
+  accessClassOut?: string;
+  sessionLimit?: number;
+  lockable?: boolean;
   loggingSynchronous?: boolean;
   historySize?: number;
   exec?: boolean;
@@ -668,6 +674,10 @@ export interface SwitchState {
   bgpConfig?: unknown;
   mplsConfig?: unknown;
   restconfEnabled?: boolean;
+  archiveConfig?: { path?: string; maximum?: number };
+  macros?: Record<string, string[]>;
+  macAcls?: Record<string, unknown[]>;
+  templates?: Record<string, string[]>;
   isLayer3Switch?: boolean;        // L3 switch capability
   staticRoutes?: Route[];          // Static routing table
   dynamicRoutes?: Route[];         // Dynamic routing table

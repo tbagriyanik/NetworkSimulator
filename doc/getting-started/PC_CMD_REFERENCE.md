@@ -301,7 +301,7 @@ PC panelindeki **Linux Terminal** sekmesinde kullanılabilen komutlar, dosya izi
 
 ## 🐍 Python Betikleri & Yorumlayıcı (python)
 
-PC Komut İstemi'nde dahili Python 3 yorumlayıcısı ile betik çalıştırabilir veya interaktif REPL moduna girebilirsiniz.
+PC Komut İstemi'nde dahili Python yorumlayıcısı ile betik çalıştırabilir veya interaktif REPL moduna girebilirsiniz.
 
 ### Çalıştırma Sözdizimi
 ```

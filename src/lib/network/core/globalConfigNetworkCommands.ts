@@ -572,3 +572,63 @@ export function cmdMplsIpGlobal(state: SwitchState, input: string, _ctx: Command
     newState: { mplsConfig, runningConfig: buildRunningConfig(updatedState) },
   };
 }
+
+export function cmdArchive(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  return {
+    success: true,
+    output: 'Archive configuration mode initialized',
+    newState: { archiveConfig: { path: 'flash:/archive', maximum: 14 } },
+  };
+}
+
+export function cmdMacroName(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const match = input.match(/^macro\s+name\s+(\S+)$/i);
+  if (!match) return { success: false, error: '% Usage: macro name <name>' };
+  const macroName = match[1];
+  const macros = { ...state.macros };
+  macros[macroName] = [];
+  return {
+    success: true,
+    output: `Macro ${macroName} defined`,
+    newState: { macros },
+  };
+}
+
+export function cmdConfigureReplace(_state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  const match = input.match(/^configure\s+replace\s+(\S+)(?:\s+force)?$/i);
+  if (!match) return { success: false, error: '% Usage: configure replace <filename> [force]' };
+  return {
+    success: true,
+    output: `Configuration replace executed from ${match[1]}`,
+  };
+}
+
+export function cmdMacAccessList(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const match = input.match(/^mac\s+access-list\s+extended\s+(\S+)$/i);
+  if (!match) return { success: false, error: '% Usage: mac access-list extended <name>' };
+  const name = match[1];
+  const macAcls = { ...state.macAcls };
+  if (!macAcls[name]) macAcls[name] = [];
+  return {
+    success: true,
+    output: `MAC access-list ${name} created`,
+    newState: { macAcls },
+  };
+}
+
+export function cmdTemplate(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const match = input.match(/^template\s+(\S+)$/i);
+  if (!match) return { success: false, error: '% Usage: template <name>' };
+  const tName = match[1];
+  const templates = { ...state.templates };
+  templates[tName] = [];
+  return {
+    success: true,
+    output: `Template ${tName} configured`,
+    newState: { templates },
+  };
+}
