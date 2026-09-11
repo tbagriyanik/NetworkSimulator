@@ -25,7 +25,6 @@ import type { Translations } from '@/contexts/LanguageContext';
 import type { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
 import type { SwitchState, CableType, CableInfo } from '@/lib/network/types';
 import { useAppStore } from '@/lib/store/appStore';
-import { useUiPreferences } from '@/hooks/useUiPreferences';
 import { cn } from '@/lib/utils';
 import { SimulationSpeedControl } from './SimulationSpeedControl';
 import { ShortcutPaletteModal } from './ShortcutPaletteModal';
@@ -106,8 +105,6 @@ export function TopologyToolbar({
   const topologyZoom = useAppStore((state) => state.topology.zoom);
 
   const isHighQuality = graphicsQuality === 'high';
-  const isTR = language === 'tr';
-  const { preferences, updatePreference } = useUiPreferences();
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState(false);
   const [isSnapshotModalOpen, setIsSnapshotModalOpen] = useState(false);
@@ -816,7 +813,6 @@ export function TopologyToolbar({
             window.dispatchEvent(event);
           }
         }}
-        isDark={isDark}
       />
     </div>
   );
