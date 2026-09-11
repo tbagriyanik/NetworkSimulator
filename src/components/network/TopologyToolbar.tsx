@@ -648,11 +648,10 @@ export function TopologyToolbar({
                   aria-label="Alan & VLAN/OSPF Renklendirme Overlay"
                   variant="ghost"
                   size="icon"
-                  className={`h-8 w-8 p-0 transition-colors ${
-                    preferences.areaOverlayMode !== 'none'
-                      ? 'text-cyan-400 bg-cyan-500/20 hover:bg-cyan-500/30'
-                      : 'text-secondary-400 hover:text-cyan-400 hover:bg-cyan-500/10'
-                  }`}
+                  className={`h-8 w-8 p-0 transition-colors ${preferences.areaOverlayMode !== 'none'
+                    ? 'text-cyan-400 bg-cyan-500/20 hover:bg-cyan-500/30'
+                    : 'text-secondary-400 hover:text-cyan-400 hover:bg-cyan-500/10'
+                    }`}
                 >
                   <Palette className={`w-4 h-4 ${toolbarGlowClass}`} />
                 </Button>
@@ -682,11 +681,10 @@ export function TopologyToolbar({
               <DropdownMenuItem
                 key={mode}
                 onClick={() => updatePreference('areaOverlayMode', mode)}
-                className={`text-xs cursor-pointer flex items-center justify-between px-2 py-1.5 rounded ${
-                  (preferences.areaOverlayMode || 'none') === mode
-                    ? 'font-bold bg-primary-500/15 text-primary-400'
-                    : ''
-                }`}
+                className={`text-xs cursor-pointer flex items-center justify-between px-2 py-1.5 rounded ${(preferences.areaOverlayMode || 'none') === mode
+                  ? 'font-bold bg-primary-500/15 text-primary-400'
+                  : ''
+                  }`}
               >
                 <span>{label}</span>
                 {(preferences.areaOverlayMode || 'none') === mode && <span className="w-1.5 h-1.5 rounded-full bg-primary-400" />}
@@ -799,7 +797,7 @@ export function TopologyToolbar({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                aria-label={language === 'tr' ? 'Ağ Teşhis & Kök Neden Analizi' : 'Network Diagnostics & Root Cause'}
+                aria-label={language === 'tr' ? 'Ağ Sorun Neden Analizcisi' : 'Network Diagnostics & Root Cause'}
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-amber-500 hover:bg-amber-500/10 hover:text-amber-400"
@@ -808,7 +806,7 @@ export function TopologyToolbar({
                 <Stethoscope className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{language === 'tr' ? 'Ağ Teşhis & Kök Neden Analizcisi' : 'Network Diagnostics & Root Cause Analyzer'}</TooltipContent>
+            <TooltipContent>{language === 'tr' ? 'Ağ Sorun Neden Analizcisi' : 'Network Diagnostics Analyzer'}</TooltipContent>
           </Tooltip>
         )}
 

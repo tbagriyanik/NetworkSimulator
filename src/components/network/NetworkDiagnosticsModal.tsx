@@ -62,9 +62,8 @@ export function NetworkDiagnosticsModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className={`max-w-2xl max-h-[85vh] overflow-y-auto p-6 rounded-2xl border shadow-2xl ${
-          isDark ? 'bg-secondary-950 border-secondary-800 text-secondary-100' : 'bg-white border-secondary-200 text-secondary-900'
-        }`}
+        className={`max-w-2xl max-h-[85vh] overflow-y-auto p-6 rounded-2xl border shadow-2xl ${isDark ? 'bg-secondary-950 border-secondary-800 text-secondary-100' : 'bg-white border-secondary-200 text-secondary-900'
+          }`}
       >
         <DialogHeader className="border-b pb-3 border-secondary-800/60">
           <div className="flex items-center gap-2">
@@ -73,7 +72,7 @@ export function NetworkDiagnosticsModal({
             </div>
             <div>
               <DialogTitle className="text-base font-bold flex items-center gap-2">
-                {isTr ? 'Ağ Teşhis & Kök Neden Analizcisi' : 'Network Diagnostics & Root Cause Analyzer'}
+                {isTr ? 'Ağ Sorun Neden Analizcisi' : 'Network Diagnostics & Root Cause Analyzer'}
               </DialogTitle>
               <DialogDescription className="text-xs text-secondary-400">
                 {isTr
@@ -127,11 +126,10 @@ export function NetworkDiagnosticsModal({
 
         {/* Status Banner */}
         <div
-          className={`p-3.5 rounded-xl border flex items-center gap-3 transition-all ${
-            diagnosticResult.canCommunicate
+          className={`p-3.5 rounded-xl border flex items-center gap-3 transition-all ${diagnosticResult.canCommunicate
               ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300'
               : 'bg-rose-950/30 border-rose-500/40 text-rose-300'
-          }`}
+            }`}
         >
           {diagnosticResult.canCommunicate ? (
             <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
@@ -145,8 +143,8 @@ export function NetworkDiagnosticsModal({
                   ? 'Bağlantı Başarılı: Paketler sorunsuz iletiliyor'
                   : 'Connection Healthy: Packets can flow end-to-end'
                 : isTr
-                ? `Bağlantı Başarısız: ${diagnosticResult.issues.length} sorun tespit edildi`
-                : `Connection Failed: ${diagnosticResult.issues.length} issue(s) detected`}
+                  ? `Bağlantı Başarısız: ${diagnosticResult.issues.length} sorun tespit edildi`
+                  : `Connection Failed: ${diagnosticResult.issues.length} issue(s) detected`}
             </div>
             <div className="text-xs opacity-80">
               {diagnosticResult.canCommunicate
@@ -154,8 +152,8 @@ export function NetworkDiagnosticsModal({
                   ? 'Kaynak ve hedef cihaz arasındaki tüm L1-L3 protokolleri ve yönlendirme kuralları geçerli.'
                   : 'Physical, data-link, and network layer configurations are valid.'
                 : isTr
-                ? 'Aşağıdaki adımları inceleyerek bağlantıyı onarabilirsiniz.'
-                : 'Review the identified issues and recommendations below.'}
+                  ? 'Aşağıdaki adımları inceleyerek bağlantıyı onarabilirsiniz.'
+                  : 'Review the identified issues and recommendations below.'}
             </div>
           </div>
         </div>
@@ -171,23 +169,26 @@ export function NetworkDiagnosticsModal({
               {diagnosticResult.issues.map((issue) => (
                 <div
                   key={issue.id}
-                  className={`p-3 rounded-xl border ${
-                    isDark ? 'bg-secondary-900/60 border-rose-900/40' : 'bg-rose-50/50 border-rose-200'
-                  }`}
+                  className={`p-3 rounded-xl border ${isDark ? 'bg-secondary-900/60 border-rose-900/40' : 'bg-rose-50/50 border-rose-200'
+                    }`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-bold text-rose-400 flex items-center gap-1.5">
                       <ShieldAlert className="w-3.5 h-3.5" />
                       {issue.title[language]}
                     </span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 uppercase font-mono">
-                      {issue.category}
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 font-mono font-bold">
+                      {issue.category === 'ip' ? 'IP' :
+                       issue.category === 'physical' ? (isTr ? 'Fiziksel' : 'Physical') :
+                       issue.category === 'gateway' ? (isTr ? 'Gateway' : 'Gateway') :
+                       issue.category === 'vlan' ? 'VLAN' :
+                       issue.category === 'routing' ? (isTr ? 'Yönlendirme' : 'Routing') :
+                       issue.category.toUpperCase()}
                     </span>
                   </div>
                   <p className="text-xs text-secondary-300 mt-1">{issue.description[language]}</p>
-                  <div className={`mt-2 p-2 rounded-lg text-xs flex items-start gap-1.5 border ${
-                    isDark ? 'bg-amber-950/20 border-amber-500/20 text-amber-200' : 'bg-amber-50 border-amber-200 text-amber-800'
-                  }`}>
+                  <div className={`mt-2 p-2 rounded-lg text-xs flex items-start gap-1.5 border ${isDark ? 'bg-amber-950/20 border-amber-500/20 text-amber-200' : 'bg-amber-50 border-amber-200 text-amber-800'
+                    }`}>
                     <Lightbulb className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
                     <div>
                       <span className="font-semibold">{isTr ? 'Çözüm Önerisi: ' : 'Suggested Fix: '}</span>
@@ -211,9 +212,8 @@ export function NetworkDiagnosticsModal({
               {diagnosticResult.passedChecks.map((check, idx) => (
                 <div
                   key={idx}
-                  className={`p-2 rounded-lg text-xs flex items-center gap-2 border ${
-                    isDark ? 'bg-secondary-900/40 border-secondary-800/60 text-secondary-300' : 'bg-secondary-50 border-secondary-200 text-secondary-700'
-                  }`}
+                  className={`p-2 rounded-lg text-xs flex items-center gap-2 border ${isDark ? 'bg-secondary-900/40 border-secondary-800/60 text-secondary-300' : 'bg-secondary-50 border-secondary-200 text-secondary-700'
+                    }`}
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
                   <span className="truncate">{check[language]}</span>

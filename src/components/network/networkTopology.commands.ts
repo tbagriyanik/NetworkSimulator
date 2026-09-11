@@ -1092,7 +1092,7 @@ export function getCommandCategories(isTR: boolean): CommandDefinition[] {
       title: isTR ? 'Teşhis, Otomatik Düzen & DHCP Yönetimi' : 'Diagnostics, Auto Layout & DHCP Management',
       type: 'info',
       cmds: [
-        [isTR ? 'Kök Neden Analizcisi (Stethoscope)' : 'Root Cause Analyzer (Stethoscope)', isTR ? 'İki cihaz arasında ping gitmeme nedenlerini L1/L2/L3/Gateway/VLAN katmanlarında otomatik denetler ve çözüm önerir.' : 'Diagnoses why ping fails across L1/L2/L3/VLAN/Gateway and provides instant suggested fixes.'],
+        [isTR ? 'Ağ Sorun Neden Analizcisi' : 'Root Cause Analyzer', isTR ? 'İki cihaz arasında ping gitmeme nedenlerini L1/L2/L3/Gateway/VLAN katmanlarında otomatik denetler ve çözüm önerir.' : 'Diagnoses why ping fails across L1/L2/L3/VLAN/Gateway and provides instant suggested fixes.'],
         [isTR ? 'Otomatik Topoloji Düzenleme' : 'Auto Topology Layout', isTR ? 'Karışık topolojileri tek tıkla Hiyerarşik (3-Tier), Yıldız (Star), Halka (Ring) veya Matris (Grid) geometrisinde dizer.' : 'One-click automatic layout for Hierarchical (3-Tier), Star, Ring, or Grid matrices.'],
         [isTR ? 'DHCP Havuz Yönetimi' : 'DHCP Pool Manager', isTR ? 'Router ve Server DHCP havuz doluluk oranlarını, kiralanmış IP-MAC eşleşmelerini görsel tabloda sunar.' : 'Visual overview of DHCP pool capacity, active client IP/MAC leases, and expiration timers.'],
         [isTR ? 'Kablo & Port Etiketleri' : 'Cable & Port Labels', isTR ? 'Görünüm menüsünden kabloların bağlı olduğu port adlarını (Gi0/0, Fa0/1) tuvalde açıp kapatabilirsiniz.' : 'Toggle port names (Gi0/0, Fa0/1) directly on topology canvas cables from View menu.'],
