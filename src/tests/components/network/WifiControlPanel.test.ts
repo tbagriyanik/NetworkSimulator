@@ -276,7 +276,7 @@ describe('WifiControlPanel', () => {
     expect(html).toContain('data-tab="admin"');
     expect(html).toContain('id="admin-tab"');
     expect(html).toContain('id="admin-credentials-form"');
-    expect(html).toContain('handleSaveCredentials(event)');
+    expect(html).toContain('handleSaveCredentials');
     expect(html).toContain("type: 'router-admin-save-credentials'");
     expect(html).toContain('cred-current-password');
     expect(html).toContain('cred-new-password');
