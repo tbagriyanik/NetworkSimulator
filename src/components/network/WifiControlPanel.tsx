@@ -324,7 +324,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
       
       <h2 class="panel-title">${isTurkish ? 'Temel Kablosuz Ayarları' : 'Basic Wireless Settings (Primary SSID)'}</h2>
       
-      <form id="wifi-form" onsubmit="handleSavePrimarySettings(event)">
+      <form id="wifi-form" action="javascript:void(0);">
         <div class="form-group">
           <label for="wifi-ssid">${isTurkish ? 'Ana Ağ Adı' : 'Primary Network Name (SSID)'}</label>
           <input type="text" id="wifi-ssid" name="ssid" value="${safeSsid}" placeholder="${isTurkish ? 'WiFi ağ adınızı girin' : 'Enter your WiFi network name'}" maxlength="32" aria-describedby="wifi-ssid-hint">
@@ -1226,6 +1226,20 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
         rBtn.__bound = true;
         rBtn.addEventListener('click', function(e) {
           window.handleLogin(e);
+        });
+      }
+      var wForm = document.getElementById('wifi-form');
+      if (wForm && !wForm.__bound) {
+        wForm.__bound = true;
+        wForm.addEventListener('submit', function(e) {
+          window.handleSavePrimarySettings(e);
+        });
+      }
+      var aForm = document.getElementById('admin-credentials-form');
+      if (aForm && !aForm.__bound) {
+        aForm.__bound = true;
+        aForm.addEventListener('submit', function(e) {
+          window.handleSaveCredentials(e);
         });
       }
     }

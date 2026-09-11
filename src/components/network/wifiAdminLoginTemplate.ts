@@ -13,7 +13,7 @@ export function renderWifiAdminLoginTemplate({ deviceName, isTurkish, username }
           <h2>${deviceName}</h2>
           <p>${isTurkish ? 'Yönetici Paneli Girişi' : 'Admin Panel Login'}</p>
         </div>
-        <form id="router-login-form">
+        <form id="router-login-form" action="javascript:void(0);">
           <div class="form-group">
             <label for="login-username">${isTurkish ? 'Kullanıcı Adı' : 'Username'}</label>
             <input type="text" id="login-username" value="${username}" placeholder="${isTurkish ? 'Kullanıcı adını girin' : 'Enter username'}" required autocomplete="off" autocapitalize="none" autocorrect="off">

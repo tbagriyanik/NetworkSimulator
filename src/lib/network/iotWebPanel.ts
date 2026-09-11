@@ -448,7 +448,7 @@ export const generateIotWebPanelContent = (
         <div class="container">
           <h1>${isTurkish ? 'IoT Web Paneli' : 'IoT Web Panel'}</h1>
           
-          <form id="loginSection" class="login-form">
+          <form id="loginSection" class="login-form" action="javascript:void(0);">
             <div class="form-group">
               <label for="username">${isTurkish ? 'Kullanıcı Adı' : 'Username'}:</label>
               <input type="text" id="username" value="admin" placeholder="${isTurkish ? 'Kullanıcı adı girin' : 'Enter username'}" autocapitalize="none" autocorrect="off" />

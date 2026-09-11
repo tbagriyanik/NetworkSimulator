@@ -23,7 +23,7 @@ export function middleware(request: NextRequest) {
   const csp = [
     "default-src 'self'",
     "base-uri 'self'",
-    "form-action 'self'",
+    "form-action 'self' *",
     "frame-ancestors 'none'",
     "object-src 'none'",
     `script-src 'self' blob: 'nonce-${nonce}' ${NEXT_DEV_INLINE_SCRIPT_HASHES}`,
@@ -40,7 +40,7 @@ export function middleware(request: NextRequest) {
   const cspReportOnlyBase = [
     "default-src 'self'",
     "base-uri 'self'",
-    "form-action 'self'",
+    "form-action 'self' *",
     "frame-ancestors 'none'",
     "object-src 'none'",
     `script-src 'self' blob: 'nonce-${nonce}' ${NEXT_DEV_INLINE_SCRIPT_HASHES}`,
