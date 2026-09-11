@@ -20,13 +20,16 @@ const NEXT_DEV_INLINE_SCRIPT_HASHES = "'sha256-h09xGrgXSXqNe+hPe6yJWX9EXQ3ZZV3Yk
 export function middleware(request: NextRequest) {
   // Generate a random nonce for this request
   const nonce = generateNonce();
+  const isProd = process.env.NODE_ENV === 'production';
+  const scriptSrcDev = isProd ? "" : " 'unsafe-eval'";
+
   const csp = [
     "default-src 'self'",
     "base-uri 'self'",
     "form-action 'self' *",
     "frame-ancestors 'none'",
     "object-src 'none'",
-    `script-src 'self' blob: 'nonce-${nonce}' ${NEXT_DEV_INLINE_SCRIPT_HASHES}`,
+    `script-src 'self' blob: 'nonce-${nonce}' ${NEXT_DEV_INLINE_SCRIPT_HASHES}${scriptSrcDev}`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
     "font-src 'self' data:",
@@ -35,25 +38,6 @@ export function middleware(request: NextRequest) {
     "manifest-src 'self'",
     "upgrade-insecure-requests",
   ].join('; ');
-
-  const isProd = process.env.NODE_ENV === 'production';
-  const cspReportOnlyBase = [
-    "default-src 'self'",
-    "base-uri 'self'",
-    "form-action 'self' *",
-    "frame-ancestors 'none'",
-    "object-src 'none'",
-    `script-src 'self' blob: 'nonce-${nonce}' ${NEXT_DEV_INLINE_SCRIPT_HASHES}`,
-    "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob:",
-    "font-src 'self' data:",
-    "connect-src 'self' ws: wss: https:",
-    "worker-src 'self' blob:",
-    "manifest-src 'self'",
-  ].join('; ');
-  const cspReportOnly = isProd
-    ? `${cspReportOnlyBase}; require-trusted-types-for 'script'; trusted-types default; report-uri /csp-report`
-    : cspReportOnlyBase;
 
   const isApiRequest = request.nextUrl.pathname.startsWith('/api/');
   const isUnsafeMethod = !['GET', 'HEAD', 'OPTIONS'].includes(request.method);
@@ -99,7 +83,6 @@ export function middleware(request: NextRequest) {
   response.headers.set('Content-Security-Policy', csp);
   // Expose the nonce to the client for inline script tags
   response.headers.set('x-nonce', nonce);
-  response.headers.set('Content-Security-Policy-Report-Only', cspReportOnly);
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
