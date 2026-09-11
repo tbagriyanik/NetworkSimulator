@@ -52,6 +52,7 @@ export function getCommandCategories(isTR: boolean): CommandDefinition[] {
         ['Metin Seçimi (Mouse Selection)', isTR ? 'CMD, CLI & Konsol geçmişinden metin seçince OTOMATİK KOPYALA' : 'Auto-Copy text selection from CMD, CLI & Console outputs'],
         ['Side-by-Side (Böl)', isTR ? 'Açık pencereleri ekranda yan yana bölünmüş yerleştir' : 'Arrange open windows side-by-side (Split View)'],
         ['Tabbed View (Sekme)', isTR ? 'Açık pencereleri sekme moduna dönüştür' : 'Switch open windows to tabbed layout mode'],
+        ['Topoloji Kayıt Yöneticisi', isTR ? 'Anlık görüntü al, JSON içe/dışa aktar (Uyumsuz JSON doğrulama & hata korumalı)' : 'Take topology snapshot, import/export JSON (with strict structure validation)'],
       ]
     },
     {

@@ -109,10 +109,11 @@ export function useLoadProject({
           }
         } catch (error) {
           document.body.style.cursor = '';
-          errorHandler.logError(STORAGE_ERRORS.LOAD_FAILED({ operation: 'fileUpload', error: String(error) }));
+          const errMessage = error instanceof Error ? error.message : String(error);
+          errorHandler.logError(STORAGE_ERRORS.LOAD_FAILED({ operation: 'fileUpload', error: errMessage }));
           toast({
-            title: t.loadFailed,
-            description: formatErrorForUser(error as Error, t.failedLoadProject).userMessage,
+            title: t.loadFailed || (language === 'tr' ? 'Yükleme Başarısız' : 'Load Failed'),
+            description: formatErrorForUser(error as Error, t.failedLoadProject || (language === 'tr' ? 'Proje dosyası okunamadı' : 'Failed to load project')).userMessage,
             variant: "destructive",
           });
         }

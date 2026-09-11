@@ -8,7 +8,7 @@ Yeniden eskiye, tarih mevcuttur.
 - **🛠️ CLI Stub Temizliği & Durum Değiştirici Komutlar**: `archive`, `macro`, `configure replace`, `mac access-list`, `template`, `transport output`, `transport preferred`, `access-class`, `session-limit`, `lockable` stub komutları kaldırılarak `LineConfig` ve `SwitchState` verilerini doğrudan değiştiren gerçek komut işleyicilerine dönüştürüldü.
 - **🌐 VRF-Lite & RESTCONF Desteği**: `ip vrf <name>`, `rd <asn:nn>`, `route-target`, `ip vrf forwarding` ile sanal yönlendirme tablosu izolasyonu; `ip restconf` komutu ile RESTCONF HTTP API servisi sağlandı.
 - **🐍 Python Sanal Dosya İşlemleri (`open/read/write`)**: PC Python yorumlayıcısında sanal dosya sisteminde dosya açma (`open`), okuma (`read`), yazma (`write`), ekleme (`a`) ve dosya akış kapatma işlevsel hale getirildi.
-- **🇹🇷 Topoloji Anlık Görüntü & Geri Yükleme Türkçe UI**: Snapshot/Rollback terimleri Türkçe arayüz standartlarına dönüştürüldü.
+- **🇹🇷 Topoloji Anlık Görüntü & Geri Yükleme Türkçe UI & Sıkı JSON Doğrulaması**: Snapshot/Rollback terimleri Türkçe arayüze dönüştürüldü. İçe aktarılan JSON dosyalarında `validateTopologyCheckpoint` fonksiyonu ile şema, zorunlu cihaz (`id`, `name`, `type`) ve bağlantı nesne yapısı sıkı bir şekilde doğrulanır; geçersiz/bozuk veya uyumsuz JSON'larda aktarım engellenip kullanıcıya anlaşılır hata uyarısı verilir.
 - **📖 Dokümantasyon & F1 Yardım Paneli Güncellemesi**: Tüm markdown kılavuzları ve F1 Yardım komut penceresi güncel özelliklerle senkronize edildi.
 
 ## v4.10.0 — 2026-09-10

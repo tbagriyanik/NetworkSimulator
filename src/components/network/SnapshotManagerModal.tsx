@@ -39,6 +39,7 @@ interface SnapshotManagerModalProps {
   onRestoreCheckpoint?: (checkpoint: TopologyCheckpoint) => void;
   isDark?: boolean;
   language?: 'tr' | 'en';
+  isExamActive?: boolean;
 }
 
 export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
@@ -51,6 +52,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
   onRestoreCheckpoint,
   isDark = true,
   language = 'tr',
+  isExamActive = false,
 }) => {
   const isTr = language === 'tr';
   const [mounted, setMounted] = useState(false);
@@ -68,7 +70,13 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
   }, []);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && isExamActive) {
+      onClose();
+    }
+  }, [isOpen, isExamActive, onClose]);
+
+  useEffect(() => {
+    if (isOpen && !isExamActive) {
       const stored = loadCheckpointsFromStorage();
       setCheckpoints(stored);
       setIsCreating(false);
@@ -78,11 +86,11 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
       setNewSnapshotName('');
       setNewSnapshotDesc('');
     }
-  }, [isOpen]);
+  }, [isOpen, isExamActive]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isOpen) return;
+      if (!isOpen || isExamActive) return;
       if (e.key === 'Escape') {
         if (showConfirmRollback) {
           setShowConfirmRollback(false);
@@ -95,9 +103,9 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, showConfirmRollback, isCreating, onClose]);
+  }, [isOpen, showConfirmRollback, isCreating, onClose, isExamActive]);
 
-  if (!isOpen || !mounted) return null;
+  if (!isOpen || !mounted || isExamActive) return null;
 
   const showNotification = (text: string, type: 'success' | 'error' = 'success') => {
     setFeedbackMsg({ text, type });

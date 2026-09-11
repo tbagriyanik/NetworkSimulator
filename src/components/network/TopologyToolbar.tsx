@@ -625,14 +625,23 @@ export function TopologyToolbar({
               aria-label={language === 'tr' ? 'Topoloji Anlık Görüntüsü Al & Geri Yükle' : 'Snapshot & Restore Topology'}
               variant="ghost"
               size="icon"
-              className="h-8 w-8 p-0 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10"
-              onClick={() => setIsSnapshotModalOpen(true)}
+              disabled={isExamActive}
+              className={`h-8 w-8 p-0 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 ${isExamActive ? 'opacity-40 cursor-not-allowed' : ''}`}
+              onClick={() => {
+                if (!isExamActive) {
+                  setIsSnapshotModalOpen(true);
+                }
+              }}
             >
               <Camera className={`w-4 h-4 ${toolbarGlowClass}`} />
             </Button>
           </TooltipTrigger>
           <TooltipContent className="flex items-center gap-2">
-            <span>{language === 'tr' ? 'Anlık Kayıt & Geri Yükle' : 'Snapshot & Restore'}</span>
+            <span>
+              {isExamActive
+                ? (language === 'tr' ? 'Sınav sırasında anlık kayıt desteği devre dışıdır' : 'Snapshot & Restore is disabled during exam')
+                : (language === 'tr' ? 'Anlık Kayıt & Geri Yükle' : 'Snapshot & Restore')}
+            </span>
           </TooltipContent>
         </Tooltip>
       </div>
