@@ -2,6 +2,15 @@
 
 Yeniden eskiye, tarih mevcuttur.
 
+## v5.0.0 — 2026-09-11
+
+**CLI Stub Temizliği, VRF-Lite & RESTCONF Entegrasyonu, Python Sanal Dosya I/O (open/read/write), Topoloji Snapshot/Rollback Türkçe UI Dönüşümü ve Dokümantasyon Güncellemeleri** —
+- **🛠️ CLI Stub Temizliği & Durum Değiştirici Komutlar**: `archive`, `macro`, `configure replace`, `mac access-list`, `template`, `transport output`, `transport preferred`, `access-class`, `session-limit`, `lockable` stub komutları kaldırılarak `LineConfig` ve `SwitchState` verilerini doğrudan değiştiren gerçek komut işleyicilerine dönüştürüldü.
+- **🌐 VRF-Lite & RESTCONF Desteği**: `ip vrf <name>`, `rd <asn:nn>`, `route-target`, `ip vrf forwarding` ile sanal yönlendirme tablosu izolasyonu; `ip restconf` komutu ile RESTCONF HTTP API servisi sağlandı.
+- **🐍 Python Sanal Dosya İşlemleri (`open/read/write`)**: PC Python yorumlayıcısında sanal dosya sisteminde dosya açma (`open`), okuma (`read`), yazma (`write`), ekleme (`a`) ve dosya akış kapatma işlevsel hale getirildi.
+- **🇹🇷 Topoloji Anlık Görüntü (Snapshot) & Geri Yükleme Türkçe UI**: Snapshot/Rollback terimleri Türkçe arayüz standartlarına dönüştürüldü.
+- **📖 Dokümantasyon & F1 Yardım Paneli Güncellemesi**: Tüm markdown kılavuzları ve F1 Yardım komut penceresi güncel özelliklerle senkronize edildi.
+
 ## v4.10.0 — 2026-09-10
 
 **NetSim Donanım Modülasyonu (WIC/HWIC/SFP), Fiziksel Şasi Paneli, İnteraktif Mini-Harita Navigatörü, VLAN/OSPF Alan Renklendirme Overlay'i, Portal Tabanlı Snapshot Rollback ve Render Performans Düzeltmeleri** —

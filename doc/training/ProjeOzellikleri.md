@@ -1,6 +1,6 @@
 # NetworkSimulator — Tam Özellik Envanteri / Full Feature Inventory
 
-**Sürüm / Version:** 4.10.0 · **Son doğrulama / Last verified:** 2026-09-10
+**Sürüm / Version:** 5.0.0 · **Son doğrulama / Last verified:** 2026-09-11
 
 | Özellik | Güncel kapsam me sınır |
 |---|---|
