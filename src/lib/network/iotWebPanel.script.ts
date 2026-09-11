@@ -5,45 +5,50 @@
 
 export function generateIotPanelScript(): string {
   return `
-    // Safe storage wrapper with fallback (prefers localStorage for persistent login)
+    // Safe storage wrapper with fallback (prefers memory storage for Vercel production)
     const safeStorage = {
       getItem: function(key) {
         try {
-          if (typeof window !== 'undefined' && window.localStorage) {
-            const val = window.localStorage.getItem(key);
-            if (val !== null) return val;
+          // Prefer memory storage for Vercel production to avoid storage access issues
+          if (window['__iot_' + key] !== undefined) {
+            return window['__iot_' + key];
           }
           if (typeof window !== 'undefined' && window.sessionStorage) {
             const val = window.sessionStorage.getItem(key);
             if (val !== null) return val;
           }
-          return window['__iot_' + key] || null;
+          if (typeof window !== 'undefined' && window.localStorage) {
+            const val = window.localStorage.getItem(key);
+            if (val !== null) return val;
+          }
+          return null;
         } catch (e) {
           return window['__iot_' + key] || null;
         }
       },
       setItem: function(key, value) {
         try {
-          if (typeof window !== 'undefined' && window.localStorage) {
-            window.localStorage.setItem(key, value);
-          }
+          // Store in memory first for reliability
+          window['__iot_' + key] = value;
           if (typeof window !== 'undefined' && window.sessionStorage) {
             window.sessionStorage.setItem(key, value);
           }
-          window['__iot_' + key] = value;
+          if (typeof window !== 'undefined' && window.localStorage) {
+            window.localStorage.setItem(key, value);
+          }
         } catch (e) {
           window['__iot_' + key] = value;
         }
       },
       removeItem: function(key) {
         try {
-          if (typeof window !== 'undefined' && window.localStorage) {
-            window.localStorage.removeItem(key);
-          }
+          delete window['__iot_' + key];
           if (typeof window !== 'undefined' && window.sessionStorage) {
             window.sessionStorage.removeItem(key);
           }
-          delete window['__iot_' + key];
+          if (typeof window !== 'undefined' && window.localStorage) {
+            window.localStorage.removeItem(key);
+          }
         } catch (e) {
           delete window['__iot_' + key];
         }

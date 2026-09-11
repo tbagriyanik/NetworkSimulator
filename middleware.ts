@@ -29,7 +29,7 @@ export function middleware(request: NextRequest) {
     "form-action 'self' *",
     "frame-ancestors 'none'",
     "object-src 'none'",
-    `script-src 'self' blob: 'nonce-${nonce}' ${NEXT_DEV_INLINE_SCRIPT_HASHES}${scriptSrcDev}`,
+    `script-src 'self' blob: 'nonce-${nonce}' 'unsafe-inline' ${NEXT_DEV_INLINE_SCRIPT_HASHES}${scriptSrcDev}`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
     "font-src 'self' data:",

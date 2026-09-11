@@ -822,14 +822,15 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
 
         if (usernameInput.toLowerCase() === String(currentAdminUser || '').trim().toLowerCase() && passwordInput === String(currentAdminPass || '').trim()) {
           window.__router_auth_state = true;
-          try {
-            if (typeof localStorage !== 'undefined' && localStorage) {
-              localStorage.setItem('router_admin_auth_' + ${jsDeviceId}, 'true');
-            }
-          } catch (_) {}
+          window['__router_admin_auth_' + ${jsDeviceId}] = 'true';
           try {
             if (typeof sessionStorage !== 'undefined' && sessionStorage) {
               sessionStorage.setItem('router_admin_auth_' + ${jsDeviceId}, 'true');
+            }
+          } catch (_) {}
+          try {
+            if (typeof localStorage !== 'undefined' && localStorage) {
+              localStorage.setItem('router_admin_auth_' + ${jsDeviceId}, 'true');
             }
           } catch (_) {}
           if (loginForm) loginForm.style.display = 'none';
@@ -845,14 +846,15 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
 
     window.handleLogout = function() {
       window.__router_auth_state = false;
-      try {
-        if (typeof localStorage !== 'undefined' && localStorage) {
-          localStorage.removeItem('router_admin_auth_' + ${jsDeviceId});
-        }
-      } catch (_) {}
+      window['__router_admin_auth_' + ${jsDeviceId}] = null;
       try {
         if (typeof sessionStorage !== 'undefined' && sessionStorage) {
           sessionStorage.removeItem('router_admin_auth_' + ${jsDeviceId});
+        }
+      } catch (_) {}
+      try {
+        if (typeof localStorage !== 'undefined' && localStorage) {
+          localStorage.removeItem('router_admin_auth_' + ${jsDeviceId});
         }
       } catch (_) {}
       var loginForm = document.getElementById('login-form');
@@ -1194,17 +1196,18 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
       try {
         var localAuth = null;
         var sessionAuth = null;
-        try {
-          if (typeof localStorage !== 'undefined' && localStorage) {
-            localAuth = localStorage.getItem('router_admin_auth_' + ${jsDeviceId});
-          }
-        } catch (_) {}
+        var memoryAuth = window['__router_admin_auth_' + ${jsDeviceId}];
         try {
           if (typeof sessionStorage !== 'undefined' && sessionStorage) {
             sessionAuth = sessionStorage.getItem('router_admin_auth_' + ${jsDeviceId});
           }
         } catch (_) {}
-        if (localAuth === 'true' || sessionAuth === 'true' || window.__router_auth_state === true) {
+        try {
+          if (typeof localStorage !== 'undefined' && localStorage) {
+            localAuth = localStorage.getItem('router_admin_auth_' + ${jsDeviceId});
+          }
+        } catch (_) {}
+        if (memoryAuth === 'true' || sessionAuth === 'true' || localAuth === 'true' || window.__router_auth_state === true) {
           var loginForm = document.getElementById('login-form');
           var mainContent = document.getElementById('main-content');
           if (loginForm) loginForm.style.display = 'none';
