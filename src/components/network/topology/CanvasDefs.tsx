@@ -67,13 +67,13 @@ export const CanvasDefs: React.FC<CanvasDefsProps> = ({
           </>
         )}
       </radialGradient>
-      {/* Grid pattern with improved visibility */}
-      <pattern id="gridPattern" width="16" height="16" patternUnits="userSpaceOnUse">
-        <circle cx="8" cy="8" r="1" style={{ fill: isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-500)', shapeRendering: 'geometricPrecision' }} opacity="0.6" />
+      {/* Grid pattern with modern dot grid styling */}
+      <pattern id="gridPattern" width="20" height="20" patternUnits="userSpaceOnUse">
+        <circle cx="10" cy="10" r={isDark ? "1.2" : "1.1"} style={{ fill: isDark ? 'var(--color-primary-400)' : 'var(--color-secondary-400)', shapeRendering: 'geometricPrecision' }} opacity={isDark ? "0.35" : "0.45"} />
       </pattern>
       {/* Major grid lines pattern */}
-      <pattern id="majorGridPattern" width="80" height="80" patternUnits="userSpaceOnUse">
-        <rect width="80" height="80" fill="none" style={{ stroke: isDark ? 'var(--color-secondary-700)' : 'var(--color-secondary-300)', shapeRendering: 'crispEdges' }} strokeWidth="0.5" opacity="0.3" />
+      <pattern id="majorGridPattern" width="100" height="100" patternUnits="userSpaceOnUse">
+        <rect width="100" height="100" fill="none" style={{ stroke: isDark ? 'var(--color-primary-500)' : 'var(--color-secondary-300)', shapeRendering: 'crispEdges' }} strokeWidth="0.75" opacity={isDark ? "0.15" : "0.25"} />
       </pattern>
       {/* Device 3D Gradients for Dark Mode */}
       <linearGradient id="pcGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useCallback } from 'react';
 import type { CanvasDevice, CanvasNote } from '@/components/network/networkTopology.types';
@@ -218,18 +218,21 @@ export function useProjectApplication({
 
   const handleConvertProjectToExam = useCallback((projectData: unknown) => {
     document.body.style.cursor = 'wait';
-    closeExam();
-    closeGuidedMode();
-    resetWorkspaceUiState();
-    resetToEmptyProject();
-    startExamProject(generateExamFromProject(projectData as ProjectData, language));
-    loadProjectData(projectData);
-    toggleEditor(true);
-    document.body.style.cursor = '';
-    toast({
-      title: language === 'tr' ? 'Proje Dönüştürüldü' : 'Project Converted',
-      description: language === 'tr' ? 'Görevler otomatik olarak çıkarıldı ve Sınav Düzenleyici açıldı.' : 'Tasks were automatically extracted and the Exam Editor was opened.',
-    });
+    try {
+      closeExam();
+      closeGuidedMode();
+      resetWorkspaceUiState();
+      resetToEmptyProject();
+      startExamProject(generateExamFromProject(projectData as ProjectData, language));
+      loadProjectData(projectData);
+      toggleEditor(true);
+      toast({
+        title: language === 'tr' ? 'Proje Dönüştürüldü' : 'Project Converted',
+        description: language === 'tr' ? 'Görevler otomatik olarak çıkarıldı ve Sınav Düzenleyici açıldı.' : 'Tasks were automatically extracted and the Exam Editor was opened.',
+      });
+    } finally {
+      document.body.style.cursor = '';
+    }
   }, [closeExam, closeGuidedMode, language, startExamProject, loadProjectData, toggleEditor, toast, resetWorkspaceUiState, resetToEmptyProject]);
 
   const handleStartGuidedProject = useCallback((project: GuidedProject) => {

@@ -212,7 +212,7 @@ export function NetworkTopology({
   const selectedDeviceSet = useMemo(() => new Set(selectedDeviceIds), [selectedDeviceIds]);
 
   const [selectedNoteIds, setSelectedNoteIds] = useState<string[]>([]);
-  const [snapToGrid] = useState(true);
+  const [snapToGrid, setSnapToGrid] = useState(true);
   const canvasRef = useRef<HTMLDivElement>(null);
   const canvasRectRef = useRef<DOMRect | null>(null);
 
@@ -1552,10 +1552,12 @@ export function NetworkTopology({
               t={t}
               MIN_ZOOM={MIN_ZOOM}
               MAX_ZOOM={MAX_ZOOM}
-              onToggleLogPanel={() => setShowLogPanel(!showLogPanel)}
+              onToggleLogPanel={() => setShowLogPanel((prev) => !prev)}
               logCount={networkEventLogs.length}
-              onToggleMinimap={() => setIsMinimapOpen(!isMinimapOpen)}
+              onToggleMinimap={() => setIsMinimapOpen((prev) => !prev)}
               isMinimapOpen={isMinimapOpen}
+              snapToGrid={snapToGrid}
+              onToggleSnapToGrid={() => setSnapToGrid((prev) => !prev)}
             />
           )}
 

@@ -325,7 +325,9 @@ export function ExamModePanel({
                   ? (language === 'tr' ? 'Sınav Tamamlandı' : 'Exam Completed')
                   : t.examMode}
               </h3>
-              <p className="text-xs text-error-100 truncate max-w-[160px]">{project.title}</p>
+              <p className="text-xs text-error-100 truncate max-w-[160px]">
+                {typeof project.title === 'string' ? project.title : (language === 'tr' ? project.title.tr : project.title.en)}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-1">

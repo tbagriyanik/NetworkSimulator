@@ -4,7 +4,7 @@ import React from 'react';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { ShortcutBadge } from '@/components/ui/ShortcutBadge';
-import { AlertCircle, Map } from 'lucide-react';
+import { AlertCircle, Map, Grid } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useUiPreferences } from '@/hooks/useUiPreferences';
 
@@ -26,6 +26,8 @@ interface CanvasToolbarProps {
   logCount: number;
   onToggleMinimap?: () => void;
   isMinimapOpen?: boolean;
+  snapToGrid?: boolean;
+  onToggleSnapToGrid?: () => void;
 }
 
 export function CanvasToolbar({
@@ -46,6 +48,8 @@ export function CanvasToolbar({
   logCount,
   onToggleMinimap,
   isMinimapOpen = false,
+  snapToGrid = false,
+  onToggleSnapToGrid,
 }: CanvasToolbarProps) {
   const { language } = useLanguage();
   const { preferences } = useUiPreferences();
@@ -166,6 +170,26 @@ export function CanvasToolbar({
         <TooltipContent className="flex items-center gap-2">
           <span>{language === 'tr' ? 'Tümünü Ekrana Sığdır' : 'Zoom to Fit'}</span>
           <ShortcutBadge shortcut="Alt+F" variant="primary" />
+        </TooltipContent>
+      </Tooltip>
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            aria-label={language === 'tr' ? 'Izgaraya Hizala (Snap to Grid)' : 'Snap to Grid'}
+            onClick={onToggleSnapToGrid}
+            className={`w-8 h-8 flex items-center justify-center rounded transition-colors ${snapToGrid
+                ? 'bg-primary-500 text-white'
+                : isDark
+                  ? 'hover:bg-secondary-700 text-secondary-300'
+                  : 'hover:bg-secondary-100 text-secondary-600'
+              }`}
+          >
+            <Grid className="w-4 h-4" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent className="flex items-center gap-2">
+          <span>{language === 'tr' ? `Izgaraya Hizala: ${snapToGrid ? 'Açık' : 'Kapalı'}` : `Snap to Grid: ${snapToGrid ? 'On' : 'Off'}`}</span>
         </TooltipContent>
       </Tooltip>
 

@@ -290,10 +290,10 @@ export const ConnectionLine = memo(function ConnectionLine({
         />
       )}
 
-      {/* Animated data flow - only for compatible cables and NOT during dragging */}
+      {/* Animated data flow - enhanced high visibility glowing particles */}
       {showAnimation && graphicsQuality === 'high' && isEffectivelyActive && !isDragging && (
         <>
-          <circle r={Math.max(2, 4 / zoom)} fill={color} opacity={0.25}>
+          <circle r={Math.max(2.5, 4.5 / zoom)} fill={color} className="animate-pulse" style={{ filter: isDark ? `drop-shadow(0 0 3px ${color})` : 'none', opacity: isDark ? 0.95 : 0.85 }}>
             <animateMotion
               dur={animationDuration}
               repeatCount="indefinite"
@@ -301,7 +301,7 @@ export const ConnectionLine = memo(function ConnectionLine({
               <mpath href={`#${motionPathId}`} />
             </animateMotion>
           </circle>
-          <circle r={Math.max(2, 4 / zoom)} fill={color} opacity={0.25}>
+          <circle r={Math.max(2.5, 4.5 / zoom)} fill={color} className="animate-pulse" style={{ filter: isDark ? `drop-shadow(0 0 3px ${color})` : 'none', opacity: isDark ? 0.95 : 0.85 }}>
             <animateMotion
               dur={animationDuration}
               repeatCount="indefinite"

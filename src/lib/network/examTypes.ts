@@ -127,7 +127,9 @@ export interface ExamTask {
   completedAt?: Date;
 }
 
-export interface ExamProject extends ExampleProject {
+export interface ExamProject extends Omit<ExampleProject, 'title' | 'description'> {
+  title: string | { tr: string; en: string };
+  description: string | { tr: string; en: string };
   isExam: true;
   tasks: ExamTask[];
   durationMinutes: number;

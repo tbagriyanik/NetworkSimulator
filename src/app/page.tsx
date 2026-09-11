@@ -854,7 +854,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   });
 
   const handleLoadProject = useLoadProject({
-    loadProjectData: loadProjectData as (data: unknown) => boolean, setHasUnsavedChanges, setZoom, setPan, setProjectName,
+    loadProjectData: loadProjectData as (data: unknown) => boolean, setHasUnsavedChanges, setProjectName,
     closeGuidedMode, closeExam, setRefreshNetworkReport, setIsExamLoadedFromFile, startExamProject, resetToEmptyProject,
     hasUnsavedChanges, handleSaveProject, setSaveDialog, language, t, toast,
   });
@@ -884,7 +884,10 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
         }
       }
     } else if (activeExam) {
-      setTimeout(() => setProjectName(activeExam.title), 0);
+      const examTitleStr = typeof activeExam.title === 'string'
+        ? activeExam.title
+        : (language === 'tr' ? activeExam.title.tr : activeExam.title.en);
+      setTimeout(() => setProjectName(examTitleStr), 0);
       if (activeExam.isCustom && activeExam.tasks.length === 0) {
         toggleEditor(true);
       }

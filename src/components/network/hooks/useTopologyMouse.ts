@@ -396,7 +396,7 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
               : [currentDraggedDevice];
 
             const newPositions = new Map<string, { x: number; y: number }>();
-            const doSnap = currentSnapToGrid && ctrlKey;
+            const doSnap = currentSnapToGrid || ctrlKey;
 
             devicesToMove.forEach(id => {
               const initialPos = currentStartPositions[id];
@@ -404,8 +404,8 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
               let newX = initialPos.x + dx;
               let newY = initialPos.y + dy;
               if (doSnap) {
-                newX = Math.round(newX / 16) * 16;
-                newY = Math.round(newY / 16) * 16;
+                newX = Math.round(newX / 20) * 20;
+                newY = Math.round(newY / 20) * 20;
               }
               const clampedX = Math.max(20, Math.min(newX, canvasW - 100));
               const clampedY = Math.max(20, Math.min(newY, canvasH - 100));
@@ -607,7 +607,7 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
           ? currentSelectedIds
           : [currentDraggedDevice];
         const finalPositions = new Map<string, { x: number; y: number }>();
-        const doSnap = snapToGridRef.current && lastDragEvent.ctrlKey;
+        const doSnap = snapToGridRef.current || lastDragEvent.ctrlKey;
 
         devicesToMove.forEach(id => {
           const initialPos = currentStartPositions[id];
@@ -615,8 +615,8 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
           let newX = initialPos.x + dx;
           let newY = initialPos.y + dy;
           if (doSnap) {
-            newX = Math.round(newX / 16) * 16;
-            newY = Math.round(newY / 16) * 16;
+            newX = Math.round(newX / 20) * 20;
+            newY = Math.round(newY / 20) * 20;
           }
           finalPositions.set(id, {
             x: Math.max(20, Math.min(newX, VIRTUAL_CANVAS_WIDTH_DESKTOP - 100)),

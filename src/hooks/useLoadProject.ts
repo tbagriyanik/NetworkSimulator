@@ -2,16 +2,18 @@
 
 import { useCallback } from 'react';
 import type { ExamProject } from '@/lib/network/examMode';
-import { decryptExamData } from '@/lib/network/examMode';
+import { decryptExamData, verifyExamIntegrity } from '@/lib/network/examMode';
 import { safeParse } from '@/lib/network/serialization';
 import { formatErrorForUser, errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
 import { addProjectRecord } from '../utils/achievementRecords';
 
+import { useAppStore } from '@/lib/store/appStore';
+
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB limit
+
 export function useLoadProject({
   loadProjectData,
   setHasUnsavedChanges,
-  setZoom,
-  setPan,
   setProjectName,
   closeGuidedMode,
   closeExam,
@@ -28,8 +30,6 @@ export function useLoadProject({
 }: {
   loadProjectData: (data: unknown) => boolean;
   setHasUnsavedChanges: (v: boolean) => void;
-  setZoom: (v: number) => void;
-  setPan: (v: { x: number; y: number }) => void;
   setProjectName: (v: string) => void;
   closeGuidedMode: () => void;
   closeExam: () => void;
@@ -44,11 +44,22 @@ export function useLoadProject({
   t: Record<string, string>;
   toast: (params: { title: string; description: string; variant?: 'default' | 'destructive' }) => void;
 }) {
+  const setZoom = useAppStore((state) => state.setZoom);
+  const setPan = useAppStore((state) => state.setPan);
   const handleLoadProject = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
     closeExam();
     event.target.value = '';
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      toast({
+        title: language === 'tr' ? 'Dosya Çok Büyük' : 'File Too Large',
+        description: language === 'tr' ? 'Maksimum yükleme boyutu 10 MB\'dir.' : 'Maximum file load size is 10 MB.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     const doLoad = () => {
       // Fully tear down the previously loaded project (memory + localStorage)
@@ -65,16 +76,29 @@ export function useLoadProject({
             projectData = decryptExamData(content);
             if (projectData) {
               const exam = projectData as ExamProject;
+              
+              // Verify exam integrity hash if present
+              if (exam.integrityHash && !verifyExamIntegrity(exam)) {
+                toast({
+                  title: language === 'tr' ? 'Uyarı: Dosya Değiştirilmiş Olabilir' : 'Warning: File Integrity Alert',
+                  description: language === 'tr' ? 'Sınav dosyasının bütünlük doğrulaması başarısız oldu.' : 'Exam file integrity check failed.',
+                  variant: 'destructive',
+                });
+              }
+
               setIsExamLoadedFromFile(true);
               closeGuidedMode();
               startExamProject(exam);
               loadProjectData(exam.data);
+              const examTitleStr = typeof exam.title === 'string'
+                ? exam.title
+                : (language === 'tr' ? exam.title.tr : exam.title.en);
+
               setHasUnsavedChanges(false);
-              setProjectName((exam.title as unknown as { en: string }).en);
-              document.body.style.cursor = '';
+              setProjectName(examTitleStr);
               toast({
-                title: language === 'tr' ? 'S\u0131nav Modu Ba\u015Flat\u0131ld\u0131' : 'Exam Mode Started',
-                description: (exam.title as unknown as { tr: string; en: string })[language === 'tr' ? 'tr' : 'en'],
+                title: language === 'tr' ? 'Sınav Modu Başlatıldı' : 'Exam Mode Started',
+                description: examTitleStr,
               });
               return;
             }
@@ -89,7 +113,6 @@ export function useLoadProject({
             closeExam();
             setRefreshNetworkReport(null);
             addProjectRecord(loadedName);
-            document.body.style.cursor = '';
             toast({
               title: `"${loadedName}" ${language === 'tr' ? 'projesi y\u00FCklendi' : 'project loaded'}`,
               description: t.fileImportedSuccessfully,
@@ -100,7 +123,6 @@ export function useLoadProject({
               window.scrollTo(0, 0);
             }
           } else {
-            document.body.style.cursor = '';
             toast({
               title: t.invalidProjectFile,
               description: t.invalidProjectFile,
@@ -108,7 +130,6 @@ export function useLoadProject({
             });
           }
         } catch (error) {
-          document.body.style.cursor = '';
           const errMessage = error instanceof Error ? error.message : String(error);
           errorHandler.logError(STORAGE_ERRORS.LOAD_FAILED({ operation: 'fileUpload', error: errMessage }));
           toast({
@@ -116,7 +137,17 @@ export function useLoadProject({
             description: formatErrorForUser(error as Error, t.failedLoadProject || (language === 'tr' ? 'Proje dosyası okunamadı' : 'Failed to load project')).userMessage,
             variant: "destructive",
           });
+        } finally {
+          document.body.style.cursor = '';
         }
+      };
+      reader.onerror = () => {
+        document.body.style.cursor = '';
+        toast({
+          title: t.loadFailed || (language === 'tr' ? 'Yükleme Başarısız' : 'Load Failed'),
+          description: t.failedLoadProject || (language === 'tr' ? 'Proje dosyası okunamadı' : 'Failed to load project'),
+          variant: "destructive",
+        });
       };
       reader.readAsText(file);
     };

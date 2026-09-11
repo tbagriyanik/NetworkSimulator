@@ -156,7 +156,7 @@ export function ExamEditorPanel({
                   {isTr ? 'Sınav Başlığı' : 'Exam Title'}
                 </label>
                 <Input
-                  value={activeExam.title}
+                  value={typeof activeExam.title === 'string' ? activeExam.title : (isTr ? activeExam.title.tr : activeExam.title.en)}
                   onChange={(e) => {
                     updateExamMeta({ title: e.target.value });
                   }}
