@@ -200,6 +200,46 @@ export function cmdShowInterface(
     requestedInterface = requestedInterface.replace(/\s+/g, '');
   }
 
+  // Handle GRE Tunnel interfaces
+  if (requestedInterface.startsWith('tunnel') || /^tunnel\s*\d+$/i.test(originalInterface)) {
+    const numStr = requestedInterface.replace(/\D/g, '') || '0';
+    const tunName = `Tunnel${numStr}`;
+    const greTun = state.greTunnels?.[requestedInterface] || state.greTunnels?.[`tunnel${numStr}`] || state.greTunnels?.[numStr];
+    const portTun = (state.ports || {})[requestedInterface] || (state.ports || {})[tunName.toLowerCase()];
+
+    if (greTun || portTun) {
+      const source = greTun?.source || portTun?.tunnel?.source || 'not set';
+      const destination = greTun?.destination || portTun?.tunnel?.destination || 'not set';
+      const ipAddr = greTun?.tunnelIp || portTun?.ipAddress || '';
+      const mask = greTun?.subnetMask || portTun?.subnetMask || '255.255.255.252';
+      const isUp = Boolean(source !== 'not set' && destination !== 'not set' && !portTun?.shutdown);
+
+      let output = `${tunName} is ${isUp ? 'up' : 'up'}, line protocol is ${isUp ? 'up' : 'down'}\n`;
+      output += `  Hardware is Tunnel\n`;
+      if (ipAddr) {
+        output += `  Internet address is ${ipAddr}/${mask}\n`;
+      }
+      output += `  MTU 1792 bytes, BW 9 Kbit/sec, DLY 500000 usec,\n`;
+      output += `     reliability 255/255, txload 1/255, rxload 1/255\n`;
+      output += `  Encapsulation TUNNEL, loopback not set\n`;
+      output += `  Keepalive not set\n`;
+      output += `  Tunnel source ${source}, destination ${destination}\n`;
+      output += `  Tunnel protocol/transport GRE/IP\n`;
+      output += `    Key disabled, sequencing disabled\n`;
+      output += `    Checksumming disabled\n`;
+      output += `  Tunnel TTL 255, Fast tunneling enabled\n`;
+      output += `  Tunnel transport MTU 1476 bytes\n`;
+      output += `  Last input 00:00:02, last output 00:00:02, output hang never\n`;
+      output += `  Queueing strategy: fifo\n`;
+      output += `  Output queue 0/0, 0 drops; input queue 0/75, 0 drops\n`;
+      output += `     42 packets input, 4368 bytes, 0 no buffer\n`;
+      output += `     42 packets output, 4368 bytes, 0 underruns\n`;
+      output += `!\n\n`;
+
+      return { success: true, output };
+    }
+  }
+
   let port = (state.ports || {})[requestedInterface];
   if (!port) {
     // Try looking up by stripping the full prefix (FastEthernet -> f, GigabitEthernet -> g)
@@ -442,6 +482,23 @@ export function cmdShowIpInterfaceBrief(
 
     output += `${displayPortName.padEnd(22)} ${ipStr.padEnd(15)} YES ${ipMethod.padEnd(6)} ${status.padEnd(21)} ${protocol}\n`;
   });
+
+  // Show GRE Tunnel interfaces if configured in state.greTunnels
+  if (state.greTunnels) {
+    Object.keys(state.greTunnels).forEach(tId => {
+      const tun = state.greTunnels![tId];
+      const numStr = tId.replace(/\D/g, '') || '0';
+      const tunName = `Tunnel${numStr}`;
+      // avoid duplicating if port already rendered
+      if (Object.keys(state.ports || {}).some(p => p.toLowerCase() === tunName.toLowerCase())) return;
+      const ipStr = tun.tunnelIp || 'unassigned';
+      const ipMethod = tun.tunnelIp ? 'manual' : 'unset';
+      const isUp = Boolean(tun.source && tun.destination);
+      const status = isUp ? 'up' : 'up';
+      const protocol = isUp ? 'up' : 'down';
+      output += `${tunName.padEnd(22)} ${ipStr.padEnd(15)} YES ${ipMethod.padEnd(6)} ${status.padEnd(21)} ${protocol}\n`;
+    });
+  }
 
   output += '!\n';
   return { success: true, output };

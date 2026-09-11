@@ -4,6 +4,7 @@ import {
   saveCheckpointsToStorage,
   loadCheckpointsFromStorage,
   deleteCheckpointFromList,
+  validateTopologyCheckpoint,
   TopologyCheckpoint,
 } from '@/lib/network/snapshotManager';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
@@ -85,5 +86,51 @@ describe('snapshotManager (Topology Checkpoint & Rollback System)', () => {
     const reloaded = loadCheckpointsFromStorage();
     expect(reloaded).toHaveLength(1);
     expect(reloaded[0].id).toBe(cp2.id);
+  });
+
+  describe('validateTopologyCheckpoint', () => {
+    it('validates a correct topology object successfully', () => {
+      const validObj = {
+        name: 'Test Topology',
+        devices: [
+          { id: 'R1', name: 'Router1', type: 'router' },
+        ],
+        connections: [
+          { id: 'conn-1', sourceDeviceId: 'R1', targetDeviceId: 'SW1' },
+        ],
+      };
+      const res = validateTopologyCheckpoint(validObj);
+      expect(res.valid).toBe(true);
+      expect(res.error).toBeUndefined();
+    });
+
+    it('rejects non-object or null input', () => {
+      expect(validateTopologyCheckpoint(null).valid).toBe(false);
+      expect(validateTopologyCheckpoint('invalid json').valid).toBe(false);
+      expect(validateTopologyCheckpoint([]).valid).toBe(false);
+    });
+
+    it('rejects JSON missing devices array', () => {
+      const res = validateTopologyCheckpoint({ name: 'No Devices' });
+      expect(res.valid).toBe(false);
+      expect(res.error).toContain('devices');
+    });
+
+    it('rejects JSON with invalid device structure', () => {
+      const res = validateTopologyCheckpoint({
+        devices: [{ name: 'Missing ID' }],
+      });
+      expect(res.valid).toBe(false);
+      expect(res.error).toContain('id');
+    });
+
+    it('rejects JSON with invalid connection structure', () => {
+      const res = validateTopologyCheckpoint({
+        devices: [{ id: 'R1', name: 'Router1', type: 'router' }],
+        connections: [{ id: 'c1' }], // missing sourceDeviceId & targetDeviceId
+      });
+      expect(res.valid).toBe(false);
+      expect(res.error).toContain('kaynak/hedef');
+    });
   });
 });

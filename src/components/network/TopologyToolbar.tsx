@@ -64,7 +64,8 @@ interface TopologyToolbarProps {
   isPingPanelOpen?: boolean;
 }
 
-function truncateWithEllipsis(text: string, maxLength: number) {
+function truncateWithEllipsis(text: string | undefined | null, maxLength: number) {
+  if (!text) return '';
   if (text.length <= maxLength) return text;
   return `${text.slice(0, maxLength)}...`;
 }

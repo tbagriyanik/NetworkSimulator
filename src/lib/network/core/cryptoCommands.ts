@@ -180,21 +180,104 @@ export const cmdShowCryptoIsakmpSa: CommandHandler = (state, _input, _ctx) => {
         });
     }
 
+    output += '\nIPv6 Crypto ISAKMP SA\n';
+    output += 'dst             src             state          conn-id slot status\n';
+    output += '-------------------------------------------------------------------\n';
+    output += '[Educational Note: Phase 1 ISAKMP SA (IKE Phase 1) status QM_IDLE indicates Diffie-Hellman key exchange and authentication succeeded. The secure control channel is ACTIVE.]\n';
+
     return { success: true, output };
 };
 
 export const cmdShowCryptoIpsecSa: CommandHandler = (state, _input, _ctx) => {
-    let output = '\ninterface: Tunnel0\n';
-    output += '    Crypto map tag: IPSEC-MAP, local addr ' + (state.ip || '10.0.0.1') + '\n\n';
+    const maps = state.cryptoMaps || {};
+    const mapNames = Object.keys(maps);
+    const localIp = state.ip || '10.0.0.1';
 
-    output += '   protected vrf: (none)\n';
-    output += '   local ident (addr/mask/prot/port): (0.0.0.0/0.0.0.0/0/0)\n';
-    output += '   remote ident (addr/mask/prot/port): (0.0.0.0/0.0.0.0/0/0)\n';
-    output += '   current_peer 203.0.113.2 port 500\n';
-    output += '     PERMIT, flags={origin_is_acl,}\n';
-    output += '    #pkts encaps: 142, #pkts encrypt: 142, #pkts digest: 142\n';
-    output += '    #pkts decaps: 142, #pkts decrypt: 142, #pkts verify: 142\n';
-    output += '    #send errors 0, #recv errors 0\n';
+    let output = '';
+
+    if (mapNames.length === 0) {
+        const peer = Object.keys(state.cryptoIsakmpKeys || {})[0] || '203.0.113.2';
+        output += '\ninterface: Tunnel0\n';
+        output += `    Crypto map tag: IPSEC-MAP, local addr ${localIp}\n\n`;
+        output += '   protected vrf: (none)\n';
+        output += '   local ident (addr/mask/prot/port): (0.0.0.0/0.0.0.0/0/0)\n';
+        output += '   remote ident (addr/mask/prot/port): (0.0.0.0/0.0.0.0/0/0)\n';
+        output += `   current_peer ${peer} port 500\n`;
+        output += '     PERMIT, flags={origin_is_acl,}\n';
+        output += '    #pkts encaps: 142, #pkts encrypt: 142, #pkts digest: 142\n';
+        output += '    #pkts decaps: 142, #pkts decrypt: 142, #pkts verify: 142\n';
+        output += '    #send errors 0, #recv errors 0\n\n';
+        output += `      local crypto endpt.: ${localIp}, remote crypto endpt.: ${peer}\n`;
+        output += '      plaintext mtu 1438, path mtu 1500, ip mtu 1500, ip mtu idb GigabitEthernet0/0\n';
+        output += '      current outbound spi: 0xC3B84E1A(3283635738)\n';
+        output += '      PFS (Diffie-Hellman group): group2\n\n';
+        output += '      inbound esp sas:\n';
+        output += '        spi: 0x7F1A9D02(2132417794)\n';
+        output += '          transform: esp-aes esp-sha-hmac ,\n';
+        output += '          in use settings ={Tunnel, }\n';
+        output += '          conn id: 2001, flow_id: SW:1, sibling_flags: 80000040, crypto map: IPSEC-MAP\n';
+        output += '          sa timing: remaining key lifetime (kbytes/sec): (4608000/3420)\n';
+        output += '          IV size: 16 bytes\n';
+        output += '          replay detection support: Y\n';
+        output += '          Status: ACTIVE(ACTIVE)\n\n';
+        output += '      outbound esp sas:\n';
+        output += '        spi: 0xC3B84E1A(3283635738)\n';
+        output += '          transform: esp-aes esp-sha-hmac ,\n';
+        output += '          in use settings ={Tunnel, }\n';
+        output += '          conn id: 2002, flow_id: SW:2, sibling_flags: 80000040, crypto map: IPSEC-MAP\n';
+        output += '          sa timing: remaining key lifetime (kbytes/sec): (4608000/3418)\n';
+        output += '          IV size: 16 bytes\n';
+        output += '          replay detection support: Y\n';
+        output += '          Status: ACTIVE(ACTIVE)\n';
+    } else {
+        mapNames.forEach(mapName => {
+            const seqs = maps[mapName];
+            Object.keys(seqs).forEach((seqStr, idx) => {
+                const entry = seqs[Number(seqStr)];
+                const peer = entry.setPeer || '203.0.113.2';
+                const transformName = entry.setTransformSet || 'TS-1';
+                const transformObj = state.cryptoIpsecTransformSets?.[transformName];
+                const transformStr = transformObj
+                    ? `${transformObj.espEncryption} ${transformObj.espAuth}`
+                    : 'esp-aes esp-sha-hmac';
+
+                output += `\ninterface: Tunnel${idx}\n`;
+                output += `    Crypto map tag: ${mapName}, local addr ${localIp}\n\n`;
+                output += `   protected vrf: (none)\n`;
+                output += `   local ident (addr/mask/prot/port): (${entry.matchAddress || '0.0.0.0/0.0.0.0/0/0'})\n`;
+                output += `   remote ident (addr/mask/prot/port): (0.0.0.0/0.0.0.0/0/0)\n`;
+                output += `   current_peer ${peer} port 500\n`;
+                output += `     PERMIT, flags={origin_is_acl,}\n`;
+                output += `    #pkts encaps: 248, #pkts encrypt: 248, #pkts digest: 248\n`;
+                output += `    #pkts decaps: 248, #pkts decrypt: 248, #pkts verify: 248\n`;
+                output += `    #send errors 0, #recv errors 0\n\n`;
+                output += `      local crypto endpt.: ${localIp}, remote crypto endpt.: ${peer}\n`;
+                output += `      plaintext mtu 1438, path mtu 1500, ip mtu 1500, ip mtu idb GigabitEthernet0/0\n`;
+                output += `      current outbound spi: 0xC3B84E1A(3283635738)\n`;
+                output += `      PFS (Diffie-Hellman group): group2\n\n`;
+                output += `      inbound esp sas:\n`;
+                output += `        spi: 0x7F1A9D02(2132417794)\n`;
+                output += `          transform: ${transformStr} ,\n`;
+                output += `          in use settings ={Tunnel, }\n`;
+                output += `          conn id: ${2001 + idx}, flow_id: SW:${1 + idx}, sibling_flags: 80000040, crypto map: ${mapName}\n`;
+                output += `          sa timing: remaining key lifetime (kbytes/sec): (4608000/3420)\n`;
+                output += `          IV size: 16 bytes\n`;
+                output += `          replay detection support: Y\n`;
+                output += `          Status: ACTIVE(ACTIVE)\n\n`;
+                output += `      outbound esp sas:\n`;
+                output += `        spi: 0xC3B84E1A(3283635738)\n`;
+                output += `          transform: ${transformStr} ,\n`;
+                output += `          in use settings ={Tunnel, }\n`;
+                output += `          conn id: ${2002 + idx}, flow_id: SW:${2 + idx}, sibling_flags: 80000040, crypto map: ${mapName}\n`;
+                output += `          sa timing: remaining key lifetime (kbytes/sec): (4608000/3418)\n`;
+                output += `          IV size: 16 bytes\n`;
+                output += `          replay detection support: Y\n`;
+                output += `          Status: ACTIVE(ACTIVE)\n`;
+            });
+        });
+    }
+
+    output += '\n[Educational Note: IPsec Phase 2 Security Association (SA) is ACTIVE. Encrypted packets are protected using ESP (Encapsulating Security Payload) with negotiation metrics.]\n';
 
     return { success: true, output };
 };

@@ -26,6 +26,7 @@ import {
   loadCheckpointsFromStorage,
   saveCheckpointsToStorage,
   deleteCheckpointFromList,
+  validateTopologyCheckpoint,
 } from '@/lib/network/snapshotManager';
 
 interface SnapshotManagerModalProps {
@@ -192,7 +193,8 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
       fileReader.onload = (event) => {
         try {
           const parsed = JSON.parse(event.target?.result as string);
-          if (parsed && Array.isArray(parsed.devices)) {
+          const validation = validateTopologyCheckpoint(parsed);
+          if (validation.valid) {
             const imported: TopologyCheckpoint = {
               ...parsed,
               id: `checkpoint-imp-${Date.now()}`,
@@ -200,16 +202,23 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
               createdAt: Date.now(),
               deviceCount: parsed.devices.length,
               connectionCount: Array.isArray(parsed.connections) ? parsed.connections.length : 0,
+              devices: parsed.devices,
+              connections: Array.isArray(parsed.connections) ? parsed.connections : [],
+              notes: Array.isArray(parsed.notes) ? parsed.notes : [],
+              deviceStates: parsed.deviceStates && typeof parsed.deviceStates === 'object' ? parsed.deviceStates : {},
             };
             const updated = [imported, ...checkpoints];
             setCheckpoints(updated);
             saveCheckpointsToStorage(updated);
             showNotification(isTr ? `"${imported.name}" başarıyla içe aktarıldı!` : `"${imported.name}" successfully imported!`);
           } else {
-            showNotification(isTr ? 'Geçersiz checkpoint JSON formatı.' : 'Invalid checkpoint JSON format.', 'error');
+            const errMsg = validation.error
+              ? (isTr ? `Uyumsuz JSON: ${validation.error}` : `Incompatible JSON: ${validation.error}`)
+              : (isTr ? 'Geçersiz veya uyumsuz checkpoint JSON formatı.' : 'Invalid or incompatible checkpoint JSON format.');
+            showNotification(errMsg, 'error');
           }
         } catch {
-          showNotification(isTr ? 'JSON dosyası okunamadı.' : 'Failed to read JSON file.', 'error');
+          showNotification(isTr ? 'JSON dosyası okunamadı veya ayrıştırılamadı.' : 'Failed to read or parse JSON file.', 'error');
         }
       };
     }
