@@ -107,6 +107,7 @@ export const generateIotWebPanelContent = (
       <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' ws: wss: https:; worker-src 'self' blob:;">
         <title>${isTurkish ? 'IoT Web Paneli' : 'IoT Web Panel'}</title>
         <style>
           ${IFRAME_FONT_FACES_CSS}
@@ -552,6 +553,7 @@ export const generateIotDevicePageContent = (
       <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' ws: wss: https:; worker-src 'self' blob:;">
         <title>${isTurkish ? 'IoT Cihaz Yönetimi' : 'IoT Device Management'}: ${safeName}</title>
         <style>
           ${IFRAME_FONT_FACES_CSS}
