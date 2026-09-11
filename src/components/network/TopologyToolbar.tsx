@@ -20,7 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Plus, Undo2, Redo2, Search, X, Cable, LineSquiggle, Leaf, Plug, TrendingUpDown, Users, UserKey, Activity, Command, Stethoscope, LayoutGrid, Camera, Palette } from 'lucide-react';
+import { ChevronDown, Plus, Undo2, Redo2, Search, X, Cable, LineSquiggle, Leaf, Plug, TrendingUpDown, Users, UserKey, Activity, Command, Stethoscope, LayoutGrid, Camera } from 'lucide-react';
 import type { Translations } from '@/contexts/LanguageContext';
 import type { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
 import type { SwitchState, CableType, CableInfo } from '@/lib/network/types';
@@ -624,7 +624,7 @@ export function TopologyToolbar({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              aria-label="Topoloji Anlık Görüntüsü Al & Geri Yükle"
+              aria-label={language === 'tr' ? 'Topoloji Anlık Görüntüsü Al & Geri Yükle' : 'Snapshot & Restore Topology'}
               variant="ghost"
               size="icon"
               className="h-8 w-8 p-0 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10"
@@ -634,64 +634,9 @@ export function TopologyToolbar({
             </Button>
           </TooltipTrigger>
           <TooltipContent className="flex items-center gap-2">
-            <span>Anlık Görüntü (Snapshot)</span>
-            <ShortcutBadge shortcut="Geri Yükle" variant="primary" />
+            <span>{language === 'tr' ? 'Anlık Kayıt & Geri Yükle' : 'Snapshot & Restore'}</span>
           </TooltipContent>
         </Tooltip>
-
-        {/* Area Overlay Mode Quick Dropdown */}
-        <DropdownMenu>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  aria-label="Alan & VLAN/OSPF Renklendirme Overlay"
-                  variant="ghost"
-                  size="icon"
-                  className={`h-8 w-8 p-0 transition-colors ${preferences.areaOverlayMode !== 'none'
-                    ? 'text-cyan-400 bg-cyan-500/20 hover:bg-cyan-500/30'
-                    : 'text-secondary-400 hover:text-cyan-400 hover:bg-cyan-500/10'
-                    }`}
-                >
-                  <Palette className={`w-4 h-4 ${toolbarGlowClass}`} />
-                </Button>
-              </DropdownMenuTrigger>
-            </TooltipTrigger>
-            <TooltipContent className="flex items-center gap-2">
-              <span>{isTR ? 'Alan Renklendirme (OSPF/VLAN)' : 'Area Highlighting Overlay'}</span>
-              <ShortcutBadge shortcut={preferences.areaOverlayMode.toUpperCase()} variant="primary" />
-            </TooltipContent>
-          </Tooltip>
-
-          <DropdownMenuContent
-            align="start"
-            className={`w-52 p-1 z-50 ${isDark ? 'bg-secondary-900 border-secondary-800 text-secondary-200' : 'bg-white border-secondary-200 text-secondary-800'}`}
-          >
-            <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-secondary-400 px-2 py-1">
-              {isTR ? 'Alan Renklendirme (Overlay)' : 'Area Overlay'}
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator className={isDark ? 'bg-secondary-800' : 'bg-secondary-100'} />
-            {([
-              { mode: 'none', label: isTR ? '🚫 Kapalı (None)' : '🚫 Disabled' },
-              { mode: 'ospf', label: isTR ? '🌐 OSPF Alanları (Areas)' : '🌐 OSPF Areas' },
-              { mode: 'vlan', label: isTR ? '🏷️ VLAN Bölgeleri' : '🏷️ VLAN Zones' },
-              { mode: 'bgp', label: isTR ? '🏛️ BGP Otonom Sistem (AS)' : '🏛️ BGP AS' },
-              { mode: 'subnet', label: isTR ? '📡 IP Alt Ağları (Subnets)' : '📡 IP Subnets' },
-            ] as const).map(({ mode, label }) => (
-              <DropdownMenuItem
-                key={mode}
-                onClick={() => updatePreference('areaOverlayMode', mode)}
-                className={`text-xs cursor-pointer flex items-center justify-between px-2 py-1.5 rounded ${(preferences.areaOverlayMode || 'none') === mode
-                  ? 'font-bold bg-primary-500/15 text-primary-400'
-                  : ''
-                  }`}
-              >
-                <span>{label}</span>
-                {(preferences.areaOverlayMode || 'none') === mode && <span className="w-1.5 h-1.5 rounded-full bg-primary-400" />}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
 
 
@@ -863,6 +808,8 @@ export function TopologyToolbar({
         devices={topologyDevices}
         connections={useAppStore.getState().topology.connections}
         deviceStates={Object.fromEntries(deviceStates.entries())}
+        isDark={isDark}
+        language={language}
         onRestoreCheckpoint={(checkpoint) => {
           if (typeof window !== 'undefined') {
             const event = new CustomEvent('restore-checkpoint', { detail: checkpoint });
