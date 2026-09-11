@@ -17,6 +17,7 @@ import {
   formatChannelDisplay,
   normalizeChannel,
 } from '@/lib/network/wireless';
+import { isRouterAuthenticated } from '@/lib/network/adminSessionManager';
 
 export type { ConnectedIoTDevice, AvailableIoTDevice } from './wifiAdminTypes';
 
@@ -39,7 +40,7 @@ interface RouterWebConfig {
  * Generates a WiFi Control Panel HTML for router/switch admin interface
  * Styled like a typical router web admin page (e.g., 192.168.1.1)
  */
-function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string = 'wireless'): string {
+function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string = 'wireless', isAuthenticated: boolean = false): string {
   const { wifi, deviceName, deviceIp, deviceId, connectedIotDevices = [], availableIotDevices = [], username, password, language = 'en', device, runtimeState } = config;
   const isTurkish = language === 'tr';
   const pluralize = (count: number, singular: string, plural: string) => (count === 1 ? singular : plural);
@@ -124,10 +125,10 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
 
   const { passwordField, hiddenCheckbox, maxClientsField } = renderWifiConfigFieldTemplates(wifi, isTurkish, safeWifiPassword);
 
-  const loginFormHTML = renderWifiAdminLoginTemplate({ deviceName: safeDeviceName, isTurkish, username: adminUsername });
+  const loginFormHTML = renderWifiAdminLoginTemplate({ deviceName: safeDeviceName, isTurkish, username: adminUsername, isAuthenticated });
 
   const mainContent = `
-    <div id="main-content" style="display:none;">
+    <div id="main-content" style="display:${isAuthenticated ? 'block' : 'none'};">
   `;
 
   return `
@@ -803,7 +804,10 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
 
     var currentAdminUser = ${jsUsername};
     var currentAdminPass = ${jsPassword};
-    window.__router_auth_state = false;
+    window.__router_auth_state = ${isAuthenticated ? 'true' : 'false'};
+    if (window.__router_auth_state) {
+      window['__router_admin_auth_' + ${jsDeviceId}] = 'true';
+    }
 
     window.handleLogin = function(event) {
       try {
@@ -823,6 +827,9 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
         if (usernameInput.toLowerCase() === String(currentAdminUser || '').trim().toLowerCase() && passwordInput === String(currentAdminPass || '').trim()) {
           window.__router_auth_state = true;
           window['__router_admin_auth_' + ${jsDeviceId}] = 'true';
+          try {
+            window.parent.postMessage({ type: 'router-admin-auth-success', deviceId: ${jsDeviceId} }, '*');
+          } catch (_) {}
           try {
             if (typeof sessionStorage !== 'undefined' && sessionStorage) {
               sessionStorage.setItem('router_admin_auth_' + ${jsDeviceId}, 'true');
@@ -847,6 +854,9 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
     window.handleLogout = function() {
       window.__router_auth_state = false;
       window['__router_admin_auth_' + ${jsDeviceId}] = null;
+      try {
+        window.parent.postMessage({ type: 'router-admin-logout', deviceId: ${jsDeviceId} }, '*');
+      } catch (_) {}
       try {
         if (typeof sessionStorage !== 'undefined' && sessionStorage) {
           sessionStorage.removeItem('router_admin_auth_' + ${jsDeviceId});
@@ -1363,12 +1373,14 @@ export function generateRouterAdminPage(
   availableIotDevices?: AvailableIoTDevice[],
   username?: string,
   password?: string,
-  activeTab?: string
+  activeTab?: string,
+  isAuthenticated?: boolean
 ): string {
   const interfaceIp = state?.ports ? Object.values(state.ports).find((p) => p?.ipAddress && !p.shutdown)?.ipAddress : undefined;
   // Persisted admin credentials live in services.http (changeable via Admin tab); fall back to defaults inside the panel
   const persistedUsername = state?.services?.http?.username ?? device.services?.http?.username;
   const persistedPassword = state?.services?.http?.password ?? device.services?.http?.password;
+  const isAuth = isAuthenticated !== undefined ? isAuthenticated : isRouterAuthenticated(device.id);
   const config: RouterWebConfig = {
     wifi: getRouterWifiConfig(device, state),
     deviceName: device.name,
@@ -1384,7 +1396,7 @@ export function generateRouterAdminPage(
     runtimeState: state,
   };
 
-  return generateWifiControlPanelHTML(config, activeTab);
+  return generateWifiControlPanelHTML(config, activeTab, isAuth);
 }
 
 export function isRouterDevice(device: CanvasDevice): boolean {

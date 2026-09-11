@@ -6,6 +6,7 @@ import { IotRule } from './iotWebPanel.types';
 import { generateIotPanelStyles } from './iotWebPanel.styles';
 import { generateIotPanelScript } from './iotWebPanel.script';
 import { IFRAME_FONT_FACES_CSS, INRIA_SANS_STACK, GEIST_MONO_STACK } from '@/lib/design-tokens/iframeFonts';
+import { isIotPanelAuthenticated } from './adminSessionManager';
 
 // Re-export IotRule for backward compatibility
 export type { IotRule };
@@ -16,8 +17,10 @@ export const generateIotWebPanelContent = (
   routerId?: string,
   routerSsid?: string,
   topologyConnections?: { sourceDeviceId: string; targetDeviceId: string; from?: string; to?: string }[],
+  isAuthenticated?: boolean,
 ): string => {
   const isTurkish = language === 'tr';
+  const isAuth = isAuthenticated !== undefined ? isAuthenticated : isIotPanelAuthenticated();
 
   // Filter IoT devices based on router if routerId is provided
   const filteredIotDevices = routerId
@@ -448,7 +451,7 @@ export const generateIotWebPanelContent = (
         <div class="container">
           <h1>${isTurkish ? 'IoT Web Paneli' : 'IoT Web Panel'}</h1>
           
-          <form id="loginSection" class="login-form" action="javascript:void(0);">
+          <form id="loginSection" class="login-form ${isAuth ? 'hidden' : ''}" action="javascript:void(0);">
             <div class="form-group">
               <label for="username">${isTurkish ? 'Kullanıcı Adı' : 'Username'}:</label>
               <input type="text" id="username" value="admin" placeholder="${isTurkish ? 'Kullanıcı adı girin' : 'Enter username'}" autocapitalize="none" autocorrect="off" />
@@ -465,7 +468,7 @@ export const generateIotWebPanelContent = (
             </div>
           </form>
 
-          <div id="deviceSection" class="hidden">
+          <div id="deviceSection" class="${isAuth ? '' : 'hidden'}">
             <button type="button" class="settings-icon" id="settingsToggle">
               ⚙️
             </button>
@@ -494,7 +497,7 @@ export const generateIotWebPanelContent = (
         </div>
 
         <script>
-          ${generateIotPanelScript()}
+          ${generateIotPanelScript(isAuth)}
         </script>
       </body>
     </html>

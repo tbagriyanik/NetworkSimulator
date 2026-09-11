@@ -152,7 +152,7 @@ describe('iotWebPanel', () => {
 
       expect(result).toContain('id="loginSection"');
       expect(result).toContain('id="password"');
-      expect(result).toContain('checkPassword()');
+      expect(result).toContain('checkPassword');
     });
 
     it('should include device section', () => {

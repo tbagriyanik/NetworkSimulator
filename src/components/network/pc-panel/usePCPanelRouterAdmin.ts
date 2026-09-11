@@ -9,6 +9,7 @@ import { generateRouterAdminPage, isRouterDevice } from '@/components/network/Wi
 import { logger } from '@/lib/logger';
 import { useAppStore } from '@/lib/store/appStore';
 import { getDeviceWifiConfig } from '@/lib/network/wireless';
+import { setRouterAuthenticated, setIotPanelAuthenticated } from '@/lib/network/adminSessionManager';
 
 interface ConnectedIoTDevice {
   id: string;
@@ -77,6 +78,26 @@ export function usePCPanelRouterAdmin({
       if (data.type === 'router-admin-toast') {
         const payload = data.payload || {};
         logger.debug('[router-admin-toast]', payload.message || '');
+        return;
+      }
+
+      if (data.type === 'router-admin-auth-success') {
+        if (data.deviceId) setRouterAuthenticated(data.deviceId, true);
+        return;
+      }
+
+      if (data.type === 'router-admin-logout') {
+        if (data.deviceId) setRouterAuthenticated(data.deviceId, false);
+        return;
+      }
+
+      if (data.type === 'iot-panel-auth-success') {
+        setIotPanelAuthenticated(true);
+        return;
+      }
+
+      if (data.type === 'iot-panel-logout') {
+        setIotPanelAuthenticated(false);
         return;
       }
 

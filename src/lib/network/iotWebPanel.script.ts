@@ -3,8 +3,12 @@
  * Generates secure JavaScript for IoT web panel functionality
  */
 
-export function generateIotPanelScript(): string {
+export function generateIotPanelScript(isAuthenticated: boolean = false): string {
   return `
+    if (${isAuthenticated ? 'true' : 'false'}) {
+      window['__iot_iotPanelAuthenticated'] = 'true';
+    }
+
     // Safe storage wrapper with fallback (prefers memory storage for Vercel production)
     const safeStorage = {
       getItem: function(key) {
@@ -75,6 +79,9 @@ export function generateIotPanelScript(): string {
 
         if (username.toLowerCase() === correctUsername && password === correctPassword) {
           safeStorage.setItem('iotPanelAuthenticated', 'true');
+          try {
+            window.parent.postMessage({ type: 'iot-panel-auth-success' }, '*');
+          } catch (_) {}
           loginSection?.classList.add('hidden');
           deviceSection?.classList.remove('hidden');
         } else {
@@ -108,6 +115,9 @@ export function generateIotPanelScript(): string {
     window.logout = function() {
       try {
         safeStorage.removeItem('iotPanelAuthenticated');
+        try {
+          window.parent.postMessage({ type: 'iot-panel-logout' }, '*');
+        } catch (_) {}
         const loginSection = document.getElementById('loginSection');
         const deviceSection = document.getElementById('deviceSection');
         const userEl = document.getElementById('username');

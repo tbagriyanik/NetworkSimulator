@@ -2,11 +2,12 @@ export interface WifiAdminLoginTemplateParams {
   deviceName: string;
   isTurkish: boolean;
   username: string;
+  isAuthenticated?: boolean;
 }
 
-export function renderWifiAdminLoginTemplate({ deviceName, isTurkish, username }: WifiAdminLoginTemplateParams): string {
+export function renderWifiAdminLoginTemplate({ deviceName, isTurkish, username, isAuthenticated = false }: WifiAdminLoginTemplateParams): string {
   return `
-    <div id="login-form" class="login-overlay" style="display:flex;">
+    <div id="login-form" class="login-overlay" style="display:${isAuthenticated ? 'none' : 'flex'};">
       <div class="login-card">
         <div class="login-header">
           <div class="login-icon">🔒</div>

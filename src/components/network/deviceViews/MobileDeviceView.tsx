@@ -13,6 +13,7 @@ import { wrapIframeContent } from '@/lib/design-tokens/iframeFonts';
 import { HttpBrowserWindow } from '@/components/network/pc-panel/HttpBrowserWindow';
 import { dispatchCapturedPackets } from '@/utils/packetCapture';
 import { isSameSubnet } from '@/components/network/pc-panel/pcBrowser.utils';
+import { setRouterAuthenticated, setIotPanelAuthenticated } from '@/lib/network/adminSessionManager';
 
 import type { CanvasDevice, CanvasConnection } from '../networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
@@ -737,7 +738,19 @@ export function MobileDeviceView({
       const data = event.data;
       if (!data) return;
 
-      if (data.type === 'open-iot-device' && data.deviceId) {
+      if (data.type === 'router-admin-auth-success') {
+        if (data.deviceId) setRouterAuthenticated(data.deviceId, true);
+        return;
+      } else if (data.type === 'router-admin-logout') {
+        if (data.deviceId) setRouterAuthenticated(data.deviceId, false);
+        return;
+      } else if (data.type === 'iot-panel-auth-success') {
+        setIotPanelAuthenticated(true);
+        return;
+      } else if (data.type === 'iot-panel-logout') {
+        setIotPanelAuthenticated(false);
+        return;
+      } else if (data.type === 'open-iot-device' && data.deviceId) {
         handleNavigateBrowser(`iot://iot-device/${data.deviceId}`);
       } else if (data.type === 'back-to-iot-list') {
         handleNavigateBrowser('http://iot-panel');
