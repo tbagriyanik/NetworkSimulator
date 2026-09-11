@@ -10,7 +10,7 @@ import { getDeviceCapabilities } from '../capabilities';
 import { validateIpRoutingSupport } from './L3Validation';
 import { cmdAccessList, cmdNoAccessList } from './interface/cmd.misc';
 import { cmdIpDhcpPool, cmdNoIpDhcpPool, cmdIpv6DhcpPool, cmdIpDhcpExcludedAddress, cmdNoIpDhcpExcludedAddress, cmdIpDhcpSnoopingVlan, cmdNoIpDhcpSnooping, cmdIpDhcpSnoopingInformationOption } from './globalConfigDhcpCommands';
-import { cmdIpNatPool, cmdIpNatInsideSourceStatic, cmdIpNatInsideSourceList, cmdLoggingHost, cmdLoggingTrap, cmdNtpServer, cmdNtpMaster, cmdNoNtpServer, cmdClockTimezone, cmdIpNameServer, cmdIpHost, cmdAliasExec, cmdNoAliasExec, cmdIpSla, cmdTrack, cmdLldpTlvSelect, cmdSpanningTreeMst, cmdIpPrefixList, cmdRouteMap, cmdIpv6RouterEigrp, cmdSpanningTreeLoopguardDefault, cmdIpFlowExport, cmdNoIpPrefixList, cmdNoIpv6PrefixList, cmdNoRouteMap, cmdVrfDefinition, cmdRestconfEnable, cmdMplsIpGlobal, cmdArchive, cmdMacroName, cmdConfigureReplace, cmdMacAccessList, cmdTemplate } from './globalConfigNetworkCommands';
+import { cmdIpNatPool, cmdIpNatInsideSourceStatic, cmdIpNatInsideSourceList, cmdLoggingHost, cmdLoggingTrap, cmdNtpServer, cmdNtpMaster, cmdNoNtpServer, cmdClockTimezone, cmdIpNameServer, cmdIpHost, cmdAliasExec, cmdNoAliasExec, cmdIpSla, cmdTrack, cmdLldpTlvSelect, cmdSpanningTreeMst, cmdIpPrefixList, cmdRouteMap, cmdIpv6RouterEigrp, cmdSpanningTreeLoopguardDefault, cmdIpFlowExport, cmdNoIpPrefixList, cmdNoIpv6PrefixList, cmdNoRouteMap, cmdVrfDefinition, cmdVrfRd, cmdVrfRouteTarget, cmdMplsLdpRouterId, cmdVxlanInterface, cmdVxlanMemberVni, cmdZoneSecurity, cmdZonePairSecurity, cmdRestconfEnable, cmdMplsIpGlobal, cmdArchive, cmdMacroName, cmdConfigureReplace, cmdMacAccessList, cmdTemplate } from './globalConfigNetworkCommands';
 
 import { cmdClassMap, cmdPolicyMap, cmdClass, cmdSetDscp, cmdSetCoS, cmdPolice, cmdNoClassMap, cmdNoPolicyMap } from './qosMqcCommands';
 import { cmdDot1xSystem } from './dot1xCommands';
@@ -204,6 +204,15 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'no ipv6 prefix-list': cmdNoIpv6PrefixList,
   'route-map': cmdRouteMap,
   'no route-map': cmdNoRouteMap,
+  'vrf definition': cmdVrfDefinition,
+  'ip vrf': cmdVrfDefinition,
+  'rd': cmdVrfRd,
+  'route-target': cmdVrfRouteTarget,
+  'mpls ldp router-id': cmdMplsLdpRouterId,
+  'interface nve': cmdVxlanInterface,
+  'member vni': cmdVxlanMemberVni,
+  'zone security': cmdZoneSecurity,
+  'zone-pair security': cmdZonePairSecurity,
   'spanning-tree loopguard default': cmdSpanningTreeLoopguardDefault,
   'no spanning-tree loopguard default': cmdSpanningTreeLoopguardDefault,
   'ip flow-export': cmdIpFlowExport,
@@ -271,7 +280,6 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'track': cmdTrack,
   'no track': cmdTrack,
   'spanning-tree mst configuration': cmdSpanningTreeMst,
-  'vrf definition': cmdVrfDefinition,
   'restconf': cmdRestconfEnable,
   'no restconf': cmdRestconfEnable,
   'mpls ip': cmdMplsIpGlobal,

@@ -752,3 +752,13 @@ export function cmdIpVrfForwarding(state: SwitchState, input: string, _ctx: Comm
   const newPorts = applyToSelectedPorts(state, (port: Port) => ({ ...port, vrfName }));
   return { success: true, newState: { ports: newPorts } };
 }
+
+export function cmdZoneMember(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
+  const match = input.match(/^(?:no\s+)?zone-member\s+security\s+(\S+)$/i);
+  const isNo = /^no\s+/i.test(input);
+  if (!match && !isNo) return { success: false, error: '% Usage: zone-member security <zone-name>' };
+  const zoneMember = isNo ? undefined : match?.[1];
+  const newPorts = applyToSelectedPorts(state, (port: Port) => ({ ...port, zoneMember }));
+  return { success: true, newState: { ports: newPorts } };
+}

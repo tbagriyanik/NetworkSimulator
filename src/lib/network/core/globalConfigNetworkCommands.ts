@@ -533,8 +533,8 @@ export function cmdNoRouteMap(state: SwitchState, input: string, _ctx: CommandCo
 
 export function cmdVrfDefinition(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
-  const match = input.match(/^vrf\s+definition\s+(\S+)$/i);
-  if (!match) return { success: false, error: '% Usage: vrf definition <name>' };
+  const match = input.match(/^(?:vrf\s+definition|ip\s+vrf)\s+(\S+)$/i);
+  if (!match) return { success: false, error: '% Usage: vrf definition <name> or ip vrf <name>' };
   const name = match[1];
   const vrfInstances = { ...state.vrfInstances };
   const key = name.toLowerCase();
@@ -544,8 +544,107 @@ export function cmdVrfDefinition(state: SwitchState, input: string, _ctx: Comman
   const updatedState = { ...state, vrfInstances };
   return {
     success: true,
-    output: `VRF definition ${name} configured`,
+    output: `VRF ${name} configured`,
     newState: { vrfInstances, runningConfig: buildRunningConfig(updatedState) },
+  };
+}
+
+export function cmdVrfRd(_state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  const match = input.match(/^rd\s+(\S+)$/i);
+  if (!match) return { success: false, error: '% Usage: rd <asn:nn>' };
+  const rd = match[1];
+  return {
+    success: true,
+    output: `VRF Route Distinguisher set to ${rd}`,
+  };
+}
+
+export function cmdVrfRouteTarget(_state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  const match = input.match(/^route-target\s+(import|export|both)\s+(\S+)$/i);
+  if (!match) return { success: false, error: '% Usage: route-target {import|export|both} <rt>' };
+  const [_, action, rt] = match;
+  return {
+    success: true,
+    output: `VRF Route Target ${action} ${rt} configured`,
+  };
+}
+
+export function cmdMplsLdpRouterId(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const match = input.match(/^mpls\s+ldp\s+router-id\s+(\S+)(?:\s+force)?$/i);
+  if (!match) return { success: false, error: '% Usage: mpls ldp router-id <interface|ip> [force]' };
+  const target = match[1];
+  const mplsConfig = { ...(state.mplsConfig as object), routerId: target };
+  return {
+    success: true,
+    output: `MPLS LDP router-id set to ${target}`,
+    newState: { mplsConfig },
+  };
+}
+
+export function cmdVxlanInterface(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const match = input.match(/^interface\s+(nve\d+)$/i);
+  if (!match) return { success: false, error: '% Usage: interface nve<id>' };
+  const nveName = match[1];
+  const nveInterfaces = { ...state.nveInterfaces };
+  const key = nveName.toLowerCase();
+  if (!nveInterfaces[key]) {
+    nveInterfaces[key] = {
+      name: nveName,
+      sourceInterface: 'Loopback0',
+      vniMappings: {},
+      status: 'up',
+    };
+  }
+  return {
+    success: true,
+    output: `NVE interface ${nveName} configured`,
+    newState: { nveInterfaces },
+  };
+}
+
+export function cmdVxlanMemberVni(_state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  const match = input.match(/^member\s+vni\s+(\d+)(?:\s+vlan\s+(\d+))?/i);
+  if (!match) return { success: false, error: '% Usage: member vni <vni> [vlan <vlan-id>]' };
+  const vni = parseInt(match[1], 10);
+  const vlanId = match[2] ? parseInt(match[2], 10) : 1;
+  return {
+    success: true,
+    output: `VXLAN VNI ${vni} mapped to VLAN ${vlanId}`,
+  };
+}
+
+export function cmdZoneSecurity(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const match = input.match(/^zone\s+security\s+(\S+)$/i);
+  if (!match) return { success: false, error: '% Usage: zone security <zone-name>' };
+  const zoneName = match[1];
+  const zones = Array.from(new Set([...(state.zones || []), zoneName]));
+  return {
+    success: true,
+    output: `Security zone ${zoneName} created`,
+    newState: { zones, runningConfig: buildRunningConfig({ ...state, zones }) },
+  };
+}
+
+export function cmdZonePairSecurity(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const match = input.match(/^zone-pair\s+security\s+(\S+)\s+source\s+(\S+)\s+destination\s+(\S+)$/i);
+  if (!match) return { success: false, error: '% Usage: zone-pair security <name> source <src-zone> destination <dst-zone>' };
+  const [_, name, sourceZone, destinationZone] = match;
+  const zonePairs = [...(state.zonePairs || [])];
+  const existingIndex = zonePairs.findIndex((zp) => zp.name.toLowerCase() === name.toLowerCase());
+  const newPair = { name, sourceZone, destinationZone, action: 'inspect' as const };
+  if (existingIndex >= 0) {
+    zonePairs[existingIndex] = newPair;
+  } else {
+    zonePairs.push(newPair);
+  }
+  return {
+    success: true,
+    output: `Zone-pair ${name} (${sourceZone} -> ${destinationZone}) created`,
+    newState: { zonePairs, runningConfig: buildRunningConfig({ ...state, zonePairs }) },
   };
 }
 

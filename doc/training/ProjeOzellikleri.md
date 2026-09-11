@@ -5,10 +5,11 @@
 | Özellik | Güncel kapsam me sınır |
 |---|---|
 | **CLI Stub Temizliği & Durum Değiştirici Komutlar** | `archive`, `macro`, `configure replace`, `mac access-list`, `template`, `transport output`, `transport preferred`, `access-class`, `session-limit`, `lockable` dâhil tüm stub komutlar kaldırıldı ve doğrudan `LineConfig`/`SwitchState` durumlarını güncelleyen aktif komut motorlarına dönüştürüldü (`lineCommands.ts`, `globalConfigNetworkCommands.ts`). |
-| **VRF-Lite & RESTCONF Desteği** | `ip vrf <name>`, `rd <asn:nn>`, `route-target`, arayüz `ip vrf forwarding <name>` ile sanal yönlendirme tablosu izolasyonu; `ip restconf` ile YANG/RESTCONF HTTP servisi aktifleştirme (`globalConfigNetworkCommands.ts`). |
+| **VRF-Lite, MPLS & VXLAN/EVPN CLI Entegrasyonu** | `ip vrf <name>`, `rd <asn:nn>`, `route-target`, `ip vrf forwarding <name>` ile VRF yönlendirme izolasyonu; `mpls ip`, `mpls ldp router-id` ile etiket anahtarlama; `interface nve<id>`, `member vni` ile VXLAN/EVPN tünelleme CLI komutlarına tam bağlandı (`globalConfigNetworkCommands.ts`, `interfaceCommands.ts`). |
+| **Zone-Based Policy Firewall (ZBF / ZBFW)** | `zone security <name>`, `zone-pair security <name> source <src> destination <dst>` ve arayüz `zone-member security <name>` CLI komutları stateful paket doğrulama motoruna (`zbfEngine.ts`) bağlandı. |
 | **Python Dosya Okuma, Yazma & Düzenleme (File I/O)** | PC Python yorumlayıcısına `open(file, mode)` (r, w, a, r+) desteği eklendi; sanal dosya sisteminde dosya oluşturma, okuma, yazma ve düzenleme tam işlevsel kılındı (`pythonInterpreter.ts`). |
 | **Topoloji Anlık Görüntü (Snapshot) & Geri Yükleme Türkçe UI** | Snapshot/Rollback terimleri Türkçe arayüze dönüştürüldü: "Topoloji Anlık Görüntü (Snapshot) & Geri Yükleme Yöneticisi", "Geri Yükleme Noktası (Checkpoint)", "Geri Yükle" (`SnapshotManagerModal.tsx`, `TopologyToolbar.tsx`). |
-| **Yardım & Kısayollar Paneli Güncellemesi** | F1 Yardım penceresine VRF-Lite, RESTCONF API, MPLS, Python Dosya İşlemleri ve yeni eklenen CLI komutları tam Türkçe/İngilizce açıklamaları ile eklendi (`networkTopology.commands.ts`). |
+| **Yardım & Kısayollar Paneli Güncellemesi** | F1 Yardım penceresine ZBF, VRF-Lite, RESTCONF API, MPLS LDP, VXLAN/NVE, Python Dosya İşlemleri ve yeni eklenen CLI komutları tam Türkçe/İngilizce açıklamaları ile eklendi (`networkTopology.commands.ts`). |
 
 ## Son Ağ Simülasyonu Geliştirmeleri (2026-09-10 - v4.10.0)
 

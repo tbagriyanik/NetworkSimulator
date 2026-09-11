@@ -212,6 +212,7 @@ import {
   cmdTunnelMode,
   cmdMplsIpInterface,
   cmdIpVrfForwarding,
+  cmdZoneMember,
 } from './interface/cmd.ipAddress';
 
 import {
@@ -390,6 +391,8 @@ export const interfaceHandlers: Record<string, CommandHandler> = {
   'no mpls ip': cmdMplsIpInterface,
   'ip vrf forwarding': cmdIpVrfForwarding,
   'no ip vrf forwarding': cmdIpVrfForwarding,
+  'zone-member security': cmdZoneMember,
+  'no zone-member security': cmdZoneMember,
   'no ip dhcp snooping trust': cmdNoIpDhcpSnoopingTrust,
   'ip dhcp snooping limit rate': cmdIpDhcpSnoopingLimitRate,
   'no ip dhcp snooping limit rate': cmdIpDhcpSnoopingLimitRate,

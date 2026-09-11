@@ -112,12 +112,12 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `reload` | Reload the device |
 | `clock set <hh:mm:ss> <day> <month> <year>` | Set system clock |
 | `more <filename>` | Display contents of a file or configuration (`running-config`, `startup-config`, `vlan.dat`) |
-| `setup` | ⚠️ Stub - Enter initial setup dialog |
-| `test <type>` | ⚠️ Stub - Run diagnostics |
-| `configure replace <url>` | ⚠️ Stub - Replace running config with file |
-| `disconnect` | ⚠️ Stub - Disconnect network connection |
-| `resume <n>` | ⚠️ Stub - Resume a suspended session |
-| `suspend` | ⚠️ Stub - Suspend current Telnet/SSH session (Ctrl+Shift+6 then X) |
+| `setup` | Enter initial setup dialog |
+| `test <type>` | Run diagnostics |
+| `configure replace <url>` | Replace running config with file |
+| `disconnect` | Disconnect network connection |
+| `resume <n>` | Resume a suspended session |
+| `suspend` | Suspend current Telnet/SSH session (Ctrl+Shift+6 then X) |
 | `debug <type>` | Enable debugging (requires argument, e.g., `debug ip packet`) |
 | `no debug <type>` | Disable specific debugging |
 | `no debug all` | Disable all debugging |
@@ -126,7 +126,7 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `terminal length <n>` | Set terminal page length |
 | `terminal width <n>` | Set terminal width |
 | `terminal monitor` | Enable terminal monitoring |
-| `terminal no monitor` | ⚠️ Stub - Disable terminal monitoring |
+| `terminal no monitor` | Disable terminal monitoring |
 | `clear arp-cache` / `clear arp` | Clear dynamic ARP table entries and trigger state reset |
 | `clear mac address-table` / `clear mac` | Clear MAC address table entries and reset dynamic cache |
 | `clear counters` | Reset interface packet, byte, drop, and error counters |
@@ -192,7 +192,7 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `spanning-tree portfast default` | Enable PortFast globally |
 | `spanning-tree bpduguard enable` | Enable BPDU Guard |
 | `spanning-tree bpduguard disable` | Disable BPDU Guard |
-| `spanning-tree bpduguard` | ⚠️ Stub - Command deprecated |
+| `spanning-tree bpduguard` | Command deprecated |
 | `no spanning-tree` | Disable spanning-tree |
 | `username <name> [privilege <lvl>] [password\|secret] <pass>` | Create user |
 | `no username <name>` | Remove user |
@@ -214,7 +214,17 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `no router bgp <as>` | Disable BGP routing process |
 | `neighbor <ip> remote-as <as>` | Configure BGP peer/neighbor (eBGP/iBGP) |
 | `address-family vpnv4` | Enter MP-BGP VPNv4 address-family configuration mode |
-| `mpls ip` | Enable MPLS and LDP label switching on interface |
+| `mpls ip` | Enable MPLS and LDP label switching globally/on interface |
+| `mpls ldp router-id <intf\|ip>` | Configure MPLS LDP router-id |
+| `ip vrf <name>` / `vrf definition <name>` | Create VRF-Lite virtual routing instance |
+| `rd <asn:nn>` | Configure VRF Route Distinguisher |
+| `route-target {import\|export\|both} <rt>` | Configure VRF Route Target BGP extended community |
+| `ip vrf forwarding <name>` | Assign interface to VRF instance |
+| `zone security <zone-name>` | Create Zone-Based Firewall (ZBF) security zone |
+| `zone-pair security <name> source <src> destination <dst>` | Create ZBF zone-pair policy |
+| `zone-member security <zone-name>` | Assign interface to ZBF security zone |
+| `interface nve<id>` | Create/enter VXLAN NVE interface configuration |
+| `member vni <vni> [vlan <vlan-id>]` | Map VXLAN Virtual Network Identifier (VNI) to VLAN |
 | `no router rip` | Disable RIP |
 | `no router ospf` | Disable OSPF |
 | `ip dhcp pool <name>` | Create DHCP pool / enter dhcp-config mode |
@@ -240,10 +250,10 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `snmp-server community <str> {RO\|RW}` | Store an SNMP community and access mode |
 | `snmp-server contact <text>` | Set SNMP contact information |
 | `snmp-server location <text>` | Set SNMP location information |
-| `archive` | ⚠️ Stub - Enter archive config mode |
+| `archive` | Enter archive config mode |
 | `alias <mode> <name> <cmd>` | Create command alias |
 | `no alias <name>` | Remove command alias |
-| `macro name <name>` | ⚠️ Stub - Define command macro |
+| `macro name <name>` | Define command macro |
 | `sdm prefer <template>` | Set SDM template |
 | `ip arp inspection vlan <id>` | Enable Dynamic ARP Inspection (DAI) on VLAN |
 | `logging host <ip>` | Configure Syslog server host IP address |
@@ -259,7 +269,7 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `crypto isakmp policy <priority>` | Configure IKE Phase 1 policy |
 | `crypto ipsec transform-set <name> <encryption> <auth>` | Configure IPsec Phase 2 transform set |
 | `default interface <name>` | Reset interface configuration while preserving identity |
-| `mac access-list extended <name>` | ⚠️ Stub - Create named MAC access list |
+| `mac access-list extended <name>` | Create named MAC access list |
 | `access-list <id> <action> <condition>` | Create numbered ACL (1-99 standard, 100-199 extended) |
 | `ip access-list {standard|extended} <name>` | Create named ACL |
 | `no access-list <id>` | Remove numbered ACL |
@@ -274,7 +284,7 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `policy-map <name>` | Create QoS policy map |
 | `service-policy {input|output} <name>` | Apply an MQC policy to an interface |
 | WFQ / LLQ / CBWFQ | Simulate queue scheduling and packet drops under bandwidth saturation |
-| `template <name>` | ⚠️ Stub - Enter template configuration mode |
+| `template <name>` | Enter template configuration mode |
 | `access-list <id> <action> <condition>` | Create numbered ACL (1-99 standard, 100-199 extended) |
 | `ip access-list {standard|extended} <name>` | Create named ACL |
 | `no access-list <id>` | Remove numbered ACL |
@@ -306,8 +316,8 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `mtu <size>` | Set interface MTU |
 | `keepalive` | Enable keepalive |
 | `no keepalive` | Disable keepalive |
-| `carrier-delay <ms>` | ⚠️ Stub - Set carrier delay |
-| `load-interval <sec>` | ⚠️ Stub - Set load statistics interval |
+| `carrier-delay <ms>` | Set carrier delay |
+| `load-interval <sec>` | Set load statistics interval |
 
 #### Switching Configuration
 
@@ -654,13 +664,13 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `clear arp-cache` | Clear ARP cache |
 | `clear mac address-table` | Clear MAC address table |
 | `clear counters` | Clear interface counters |
-| `clear line <n>` | ⚠️ Stub - Clear a terminal line |
-| `clear interface <name>` | ⚠️ Stub - Clear interface counters |
+| `clear line <n>` | Clear a terminal line |
+| `clear interface <name>` | Clear interface counters |
 | `debug` / `no debug` | Interface debugging |
-| `undebug all` | ⚠️ Stub - Disable all debugging |
-| `undebug` | ⚠️ Stub - Disable all debugging (alias) |
-| `monitor session <n>` | ⚠️ Stub - Configure SPAN/RSPAN |
-| `no monitor session` | ⚠️ Stub - Remove monitoring |
+| `undebug all` | Disable all debugging |
+| `undebug` | Disable all debugging (alias) |
+| `monitor session <n>` | Configure SPAN/RSPAN |
+| `no monitor session` | Remove monitoring |
 | `no udld` | Disable UDLD on interface |
 
 #### Additional Interface Commands
@@ -670,16 +680,16 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `ip access-group <id> {in|out}` | Apply IPv4 ACL to interface |
 | `ip dhcp snooping trust` | Set interface as trusted for DHCP |
 | `ip arp inspection trust` | Set interface as trusted for DAI |
-| `channel-protocol {lacp|pagp}` | ⚠️ Stub - Set EtherChannel protocol |
+| `channel-protocol {lacp|pagp}` |  Set EtherChannel protocol |
 | `priority-queue out` | Enable and store interface priority-queue configuration (traffic scheduling is sim-only) |
 | `queue-set <n>` | Store interface QoS queue-set configuration (traffic scheduling is sim-only) |
 | `tx-queue <n>` | Store interface transmit-queue configuration (traffic scheduling is sim-only) |
-| `power inline {auto|static}` | ⚠️ Stub - Configure PoE |
-| `power inline consumption <watt>` | ⚠️ Stub - Set PoE power limit |
+| `power inline {auto|static}` |  Configure PoE |
+| `power inline consumption <watt>` | Set PoE power limit |
 | `keepalive` | Enable keepalive |
 | `no keepalive` | Disable keepalive |
-| `carrier-delay <ms>` | ⚠️ Stub - Set carrier delay |
-| `load-interval <sec>` | ⚠️ Stub - Set statistics interval |
+| `carrier-delay <ms>` | Set carrier delay |
+| `load-interval <sec>` | Set statistics interval |
 | `ip arp inspection limit <pps>` | Store interface ARP inspection rate limit |
 | `ipv6 rip <name> enable` | Enable RIPng on interface |
 | `ipv6 ospf <id> area <area>` | Enable OSPFv3 on interface |

@@ -15,7 +15,6 @@ export default defineConfig({
       ],
       exclude: [
         'src/lib/network/types.ts',
-        'src/lib/network/core/stubCommandHints.ts',
         'src/lib/network/core/routerConfigCommands.ts',
         'src/lib/network/core/interfaceCommands.ts',
         'src/lib/network/core/configBuilder.ts',

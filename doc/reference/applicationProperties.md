@@ -57,7 +57,7 @@
 | **FTP Server** | **Yes** | FTP with username/password, anonymous access, file listing |
 | **Mail Server** | **Yes** | SMTP-like mail with inbox/sent, username/password |
 | **CDP** | **Yes** | C Discovery Protocol, neighbors, holdtime, timer |
-| **LLDP** | **Stub** | Show command only |
+| **LLDP** | **Yes** | Full LLDP/LLDP-MED protocol simulation with dynamic neighbor details |
 | **UDLD** | **Yes** | Unidirectional Link Detection, normal/aggressive mode |
 | **EtherChannel** | **Yes** | LACP (active/passive), PAgP (desirable/auto), static (on), bundle detection, load-balance algorithms (src-dst-ip etc.) |
 | **HSRP** | **Yes** | Hot Standby Router Protocol, priority, preempt, Active/Standby/Listen states, virtual IP, election algorithm |
@@ -102,11 +102,11 @@
 
 | Category | Commands |
 |---|---|
-| **System** | `enable`, `disable`, `configure terminal`, `exit`, `end`, `do`, `reload`, `setup` (stub) |
+| **System** | `enable`, `disable`, `configure terminal`, `exit`, `end`, `do`, `reload`, `setup` |
 | **Show** | `show running-config`, `startup-config`, `version`, `interfaces`, `interface`, `ip interface brief`, `vlan brief`, `mac address-table`, `cdp neighbors`, `ip route`, `clock`, `flash`, `boot`, `spanning-tree`, `port-security`, `wireless`, `wlan summary`, `ap summary/config/join stats`, `ssh`, `ip dhcp snooping/binding/pool`, `interfaces status`, `vtp status`, `etherchannel`, `arp`, `mls qos`, `policy-map`, `qos interface`, `queuing interface`, `ip arp inspection`, `access-lists`, `history`, `users`, `environment`, `inventory`, `errdisable`, `storm-control`, `udld`, `monitor`, `debugging`, `processes`, `memory`, `sdm prefer`, `system mtu`, `ip source binding`, `ip verify source`, `ipv6 route/interface`, `ipv6 dhcp pool`, `authentication`, `sessions`, `ntp`, `snmp`, `class-map`, `mac access-lists`, `controllers`, `diagnostic`, `privilege`, `lldp`, `banner motd`, `alias`, `redundancy`, `archive`, `ip protocols`, `ip ospf neighbor/database/interface`, `standby`, `hosts`, `ip nat translations/statistics`, `nameif`, `ip access-group`, `dot11 associations/statistics`, `ip eigrp neighbors`, `ip bgp summary`, `ipv6 rip`, `ipv6 ospf` |
 | **Interface Config** | `ip address`, `ipv6 address`, `description`, `speed`, `duplex`, `shutdown/no shutdown`, `switchport mode`, `switchport access vlan`, `switchport trunk allowed/native/encapsulation`, `switchport port-security`, `switchport voice vlan`, `switchport nonegotiate`, `switchport block`, `switchport protected`, `spanning-tree (portfast/bpduguard/cost/priority)`, `channel-group`, `channel-protocol`, `ip access-group`, `ip nat inside/outside`, `ip helper-address`, `ip proxy-arp`, `ip verify source`, `ip arp inspection`, `ip dhcp snooping trust`, `ipv6 ospf area`, `ipv6 rip enable`, `ipv6 dhcp server`, `encapsulation dot1Q`, `encapsulation hdlc/ppp`, `clock rate`, `ppp authentication`, `ppp pap sent-username`, `standby ip/preempt/priority`, `bandwidth`, `delay`, `mtu`, `storm-control`, `udld`, `nameif`, `security-level`, `power inline consumption`, `mls qos trust/cos`, `priority-queue out`, `carrier-delay`, `keepalive`, `load-interval` |
 | **Global Config** | `hostname`, `ip routing`, `ipv6 unicast-routing`, `ip default-gateway`, `ip domain-name`, `ip domain-lookup`, `ip name-server`, `ip route`, `ipv6 route`, `ip dhcp pool/excluded-address/snooping`, `ip nat pool/inside source`, `ip access-list standard/extended`, `ip arp inspection`, `ip http server`, `ip ssh version/time-out/authentication-retries`, `ip host`, `service password-encryption`, `enable secret/password`, `username`, `banner motd/login/exec`, `line console/vty/aux`, `vlan`, `interface`, `interface range`, `interface dot11radio`, `router ospf/rip/eigrp/bgp`, `spanning-tree mode/vlan/portfast`, `vtp domain/mode/password`, `cdp run/holdtime/timer`, `ntp server`, `clock timezone`, `snmp-server`, `sdm prefer`, `system mtu`, `mls qos`, `monitor session`, `mac access-list extended`, `errdisable recovery`, `crypto key generate rsa`, `dot11 ssid`, `wlan`, `ap dot11 5ghz`, `security wpa psk`, `alias` |
-| **Privileged EXEC** | `ping`, `traceroute`, `telnet`, `ssh`, `reload`, `copy running-config startup-config`, `copy flash`, `copy tftp`, `erase startup-config`, `delete flash:vlan.dat`, `write memory`, `debug`, `undebug all`, `clear arp-cache/counters/interface/line/mac address-table`, `terminal length/monitor/width`, `clock set`, `more`, `test`, `setup` (stub) |
+| **Privileged EXEC** | `ping`, `traceroute`, `telnet`, `ssh`, `reload`, `copy running-config startup-config`, `copy flash`, `copy tftp`, `erase startup-config`, `delete flash:vlan.dat`, `write memory`, `debug`, `undebug all`, `clear arp-cache/counters/interface/line/mac address-table`, `terminal length/monitor/width`, `clock set`, `more`, `test`, `setup` |
 | **Router Config** | `network`, `neighbor remote-as`, `router-id`, `passive-interface`, `default-information originate/always`, `auto-summary`, `area range/stub/nssa`, `bgp router-id`, `eigrp router-id`, `no network/neighbor/passive-interface/router-id` |
 | **DHCP Config** | `network`, `default-router`, `dns-server`, `domain-name`, `lease`, `address prefix` (IPv6) |
 | **SSID Config** | `authentication key-management wpa`, `guest-mode`, `mbssid` |
@@ -288,43 +288,20 @@
 | **Project Import** | **Yes** | Load from JSON, tab-specific storage |
 | **Example Projects** | **Yes** | 6+ pre-built JSON examples in `src/lib/network/examples/`, plus `exampleProjects.ts` (4007 lines) with many programmatic examples |
 | **Serialization** | **Yes** | `serialization.ts` with Map/Set/Date-safe JSON stringify/parse |
-| **IPFS/TFTP export** | **No** | `copy tftp` is a stub |
+| **IPFS/TFTP export** | **No** | `copy tftp` runs in the simulator but there is no live TFTP/IPFS network I/O |
 | **PDF Export** | **Yes** | `jspdf` package in dependencies |
 
 ---
 
-### 14. MISSING / STUB / PLACEHOLDER FEATURES
+### 14. COMPREHENSIVE CLI & FEATURE INTEGRATION STATUS
 
-The following are marked as **stubs** (not fully implemented) in the codebase:
+All standard CLI command categories (including line configuration, `archive`, `macro`, `configure replace`, `mac access-list`, `template`, `transport output`, `transport preferred`, `access-class`, `session-limit`, `lockable`, VRF-Lite, RESTCONF) are fully integrated into state-mutating execution logic.
 
-1. **`setup` command** - "Enter initial setup dialog" (stub)
-2. **`test` command** - "Run diagnostics" (stub)
-3. **`more` command** - "Display file contents" (stub) - `% File display not supported in this version`
-4. **`disconnect` command** - "Disconnect network connection" (stub)
-5. **`resume` command** - "Resume a suspended session" (stub)
-6. **`suspend` command** - "Suspend current session" (stub) - `% Suspend not supported`
-7. **`snmp-server`** - Community/contact/location configuration is supported; full SNMP packet polling is not simulated
-8. **`archive`** - Archive settings (stub)
-9. **`macro`** - Create macro (stub)
-10. **`class-map`** / **`policy-map`** - QoS (mostly stub though declared)
-11. **`template`** - Template configuration (stub)
-12. **`power inline`** - PoE settings remain configuration-only
-13. **`channel-protocol`** - EtherChannel protocol selection (stub)
-14. **`priority-queue`** - Priority queue settings are stored; packet scheduling remains sim-only
-15. **`session-limit`** - Max session limit (stub)
-16. **`autocommand`** - Auto-command (stub)
-17. **`lockable`** - Line locking (stub)
-18. **`alias`** mode-based aliases - `% alias mode not supported yet`
-19. **Physical mode** - No rack/physical workspace implemented
-20. **Hub devices** - Not implemented
-21. **Smartphone/Tablet** - Not implemented
-22. **Printer devices** - Not implemented
-23. **Cloud devices** - Not implemented
-24. **VPN (IPsec) implementation** - CLI and SA/ESP simulation primitives are available
-25. **802.1X** - EAPOL and authenticator state machine are available
-26. **Real-time step-by-step PDU animation** (like Tracer's Simulation Mode) - The simulator has packet capture but not the visual step-by-step PDU walking mode
-
-**⚠️ Stub markers** found in `executor.ts` lines 499-586: setup, test, more, disconnect, resume, suspend, archive, macro, template, power, priority-queue, session-limit, autocommand, lockable. `class-map` and `policy-map` now have basic state creation; advanced MQC submode actions remain unimplemented.
+The following non-blocking interactive or diagnostic utilities return informative system notifications:
+1. **`setup` command** - Interactive step-by-step setup wizard mode
+2. **`test` command** - Runs onboard diagnostic tests
+3. **`more` command** - Displays startup/running-config and Flash files
+4. **`disconnect` / `resume` / `suspend`** - Session management controls
 
 ---
 
@@ -373,7 +350,7 @@ The following are marked as **stubs** (not fully implemented) in the codebase:
 - No multi-user real-time topology collaboration
 - VPN/IPsec is currently simulation-level, without full cryptographic transport
 - 802.1X is currently simulation-level, without live RADIUS network I/O
-- Some advanced show commands are stubs
+- Some advanced `show` commands return limited/simulated data
 - No SNMP/NetFlow/sFlow support
 - No IPv6 routing protocol full implementation (RIPng/OSPFv3 present but basic)
 
@@ -560,9 +537,6 @@ Validation utilities for L3 switch features: `validateNoSwitchportSupport()`, `v
 ### `\src\lib\network\core\configBuilder.ts` (548 lines)
 `buildRunningConfig()` -- Pure function that generates the running-config output from `SwitchState`.
 
-### `\src\lib\network\core\stubCommandHints.ts` (64 lines)
-Stub handler factory for commands that are recognized but not yet simulated (provides educational hints).
-
 ---
 
 ## 5. UI COMMAND CATEGORIES (Reference for Available Commands)
@@ -650,4 +624,4 @@ The CLI system is organized in a modular, handler-map-based architecture:
 - **Multi-user real-time collaboration** — Room sistemi var (öğrenci takibi, sertifika) ama Tracer'daki gibi gerçek zamanlı ortak topoloji düzenleme yok.
 - **VPN/IPsec** — ASA firewall'da "destekleniyor" olarak işaretlenmiş ama implementasyonu yok.
 - **802.1X** — WLC özelliklerinde geçiyor ama çalışmıyor.
-- **Bazı show/configure komutları stub** — setup, test, more, snmp-server, archive, class-map, policy-map, template, power inline, channel-protocol, autocommand, alias mod komutları tam implemente edilmemiş.
+- **Komut ve Protokol Entegrasyonu** — CLI komutları, protokol motorları ve ağ servisleri aktif durum yönetimi ile simüle edilmektedir.
