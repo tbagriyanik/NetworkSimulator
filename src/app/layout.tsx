@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { headers } from "next/headers";
 import Script from "next/script";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -163,17 +162,14 @@ export const viewport: Viewport = {
   interactiveWidget: "resizes-content",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const nonce = (await headers()).get('x-nonce') ?? '';
   return (
     <html lang="en" suppressHydrationWarning className="dark">
       <head>
-        {/* Apply the nonce to a placeholder script so Next’s internal inline scripts inherit it */}
-        <Script id="csp-nonce" strategy="beforeInteractive" nonce={nonce} dangerouslySetInnerHTML={{ __html: '' }} />
         <Script id="secure-storage-interceptor" strategy="beforeInteractive" dangerouslySetInnerHTML={{
           __html: `
           (function() {
