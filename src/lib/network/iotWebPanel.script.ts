@@ -63,12 +63,12 @@ export function generateIotPanelScript(): string {
         const deviceSection = get('deviceSection');
         const errorMessage = get('errorMessage');
 
-        const username = userEl ? (userEl.value || '') : '';
-        const password = pwdEl ? (pwdEl.value || '') : '';
+        const username = userEl ? String(userEl.value || '').trim() : '';
+        const password = pwdEl ? String(pwdEl.value || '').trim() : '';
         const correctUsername = 'admin';
-        const correctPassword = safeStorage.getItem('iotPanelPassword') || 'admin';
+        const correctPassword = String(safeStorage.getItem('iotPanelPassword') || 'admin').trim();
 
-        if (username === correctUsername && password === correctPassword) {
+        if (username.toLowerCase() === correctUsername && password === correctPassword) {
           safeStorage.setItem('iotPanelAuthenticated', 'true');
           loginSection?.classList.add('hidden');
           deviceSection?.classList.remove('hidden');

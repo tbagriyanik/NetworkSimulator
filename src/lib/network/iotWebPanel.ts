@@ -451,11 +451,11 @@ export const generateIotWebPanelContent = (
           <form id="loginSection" class="login-form">
             <div class="form-group">
               <label for="username">${isTurkish ? 'Kullanıcı Adı' : 'Username'}:</label>
-              <input type="text" id="username" value="admin" placeholder="${isTurkish ? 'Kullanıcı adı girin' : 'Enter username'}" />
+              <input type="text" id="username" value="admin" placeholder="${isTurkish ? 'Kullanıcı adı girin' : 'Enter username'}" autocapitalize="none" autocorrect="off" />
             </div>
             <div class="form-group">
               <label for="password">${isTurkish ? 'Parola' : 'Password'}:</label>
-              <input type="password" id="password" placeholder="${isTurkish ? 'Parola girin' : 'Enter password'}" />
+              <input type="password" id="password" placeholder="${isTurkish ? 'Parola girin' : 'Enter password'}" autocapitalize="none" autocorrect="off" />
             </div>
             <button type="submit" class="login-button" onclick="window.checkPassword(event)">
               ${isTurkish ? 'Giriş Yap' : 'Login'}

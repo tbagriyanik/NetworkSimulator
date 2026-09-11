@@ -817,10 +817,10 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
         const loginForm = get('login-form');
         const mainContent = get('main-content');
         const loginError = get('login-error');
-        const usernameInput = usernameEl ? (usernameEl.value || '') : '';
-        const passwordInput = passwordEl ? (passwordEl.value || '') : '';
+        const usernameInput = usernameEl ? String(usernameEl.value || '').trim() : '';
+        const passwordInput = passwordEl ? String(passwordEl.value || '').trim() : '';
 
-        if (usernameInput === currentAdminUser && passwordInput === currentAdminPass) {
+        if (usernameInput.toLowerCase() === String(currentAdminUser || '').trim().toLowerCase() && passwordInput === String(currentAdminPass || '').trim()) {
           window.__router_auth_state = true;
           try {
             if (typeof localStorage !== 'undefined' && localStorage) {

@@ -16,11 +16,11 @@ export function renderWifiAdminLoginTemplate({ deviceName, isTurkish, username }
         <form onsubmit="handleLogin(event)">
           <div class="form-group">
             <label for="login-username">${isTurkish ? 'Kullanıcı Adı' : 'Username'}</label>
-            <input type="text" id="login-username" value="${username}" placeholder="${isTurkish ? 'Kullanıcı adını girin' : 'Enter username'}" required autocomplete="off">
+            <input type="text" id="login-username" value="${username}" placeholder="${isTurkish ? 'Kullanıcı adını girin' : 'Enter username'}" required autocomplete="off" autocapitalize="none" autocorrect="off">
           </div>
           <div class="form-group">
             <label for="login-password">${isTurkish ? 'Şifre' : 'Password'}</label>
-            <input type="password" id="login-password" placeholder="${isTurkish ? 'Şifrenizi girin' : 'Enter password'}" required>
+            <input type="password" id="login-password" placeholder="${isTurkish ? 'Şifrenizi girin' : 'Enter password'}" required autocapitalize="none" autocorrect="off">
           </div>
           <div id="login-error" class="error-message" style="display:none;">
             ❌ ${isTurkish ? 'Hatalı kullanıcı adı veya şifre!' : 'Invalid username or password!'}
