@@ -5,6 +5,7 @@ import type { KeyboardEvent } from 'react';
 import type { PCActiveTab, OutputLine } from './PCPanel.types';
 import { expandCommandContext, DESKTOP_COMMANDS } from '../pcPanel.utils';
 import { resolveAliases, expandKeywordPrefixes } from '@/lib/network/parser';
+import type { CommandMode } from '@/lib/network/types';
 import { loadFs, listDir, isDir, resolvePath } from './pcFileSystem';
 
 export interface UsePCPanelInputParams {
@@ -123,7 +124,7 @@ export function usePCPanelInput(params: UsePCPanelInputParams) {
     }
 
     const mode = getCommandMode();
-    const resolvedInput = expandKeywordPrefixes(resolveAliases(input), mode as any);
+    const resolvedInput = expandKeywordPrefixes(resolveAliases(input), mode as CommandMode);
     const { contextTokens, currentWord } = expandCommandContext(mode, resolvedInput.length > 0 ? resolvedInput : input);
     const isIp = /^(25[0-5]|2[0-4]\d|1?\d?\d)(\.(25[0-5]|2[0-4]\d|1?\d?\d)){3}$/.test(selected);
     if (isIp && currentWord) {

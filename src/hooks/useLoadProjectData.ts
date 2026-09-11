@@ -154,7 +154,7 @@ export function useLoadProjectData({
           const deviceId = item.id;
           const state = item.state;
           const isRouter = deviceId.includes('router');
-          const isL3Switch = state?.switchLayer === 'L3' || state?.switchModel?.includes('3650');
+          const isL3Switch = state?.switchLayer === 'L3' || state?.switchModel?.includes('NS-L3');
           const isPC = deviceId.includes('pc-');
           const isIoT = deviceId.includes('iot-');
 
@@ -168,8 +168,8 @@ export function useLoadProjectData({
             const syslog = t.syslogStarted;
             bootMessages = [
               { id: `boot-1-${suffix}`, type: 'output', content: '\n\nSystem Bootstrap\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1996-2026 by Network Systems, Inc.\n' },
-              { id: `boot-2-${suffix}`, type: 'output', content: `ISR4451/K9 platform with 4096 K bytes of memory\n\n${syslog}\nLoad/bootstrap symbols loaded, GOXR initialization\nReading all bootflash vectors\nPOST: CPU PCIe port Check PASS\nCPU memory test . . . . . . . . . . . . . OK\nBoard initialization completed\nInitializing flash file system\n` },
-              { id: `boot-3-${suffix}`, type: 'output', content: '\nBooting flash:c1900-universalk9-mz.SPA.154-3.M.bin...OK!\nExtracting files from flash:c1900-universalk9-mz.SPA.154-3.M.bin...\n  ########## [OK]\n  0 bytes remaining in flash device\n' },
+              { id: `boot-2-${suffix}`, type: 'output', content: `NS-R-4451 platform with 4096 K bytes of memory\n\n${syslog}\nLoad/bootstrap symbols loaded, NetSim OS initialization\nReading all bootflash vectors\nPOST: CPU PCIe port Check PASS\nCPU memory test . . . . . . . . . . . . . OK\nBoard initialization completed\nInitializing flash file system\n` },
+              { id: `boot-3-${suffix}`, type: 'output', content: '\nBooting flash:ns-r-universalk9-mz.SPA.154-3.M.bin...OK!\nExtracting files from flash:ns-r-universalk9-mz.SPA.154-3.M.bin...\n  ########## [OK]\n  0 bytes remaining in flash device\n' },
               ...(state?.bannerMOTD ? [{ id: `banner-${suffix}`, type: 'output' as const, content: `\n${state.bannerMOTD}\n` }] : []),
               { id: `boot-ready-${suffix}`, type: 'output', content: BOOT_PROGRESS_MARKER }
             ];
@@ -177,8 +177,8 @@ export function useLoadProjectData({
             const syslog = t.syslogStarted;
             bootMessages = [
               { id: `boot-1-${suffix}`, type: 'output', content: '\n\nSystem Bootstrap\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1996-2026 by Network Systems, Inc.\n' },
-              { id: `boot-2-${suffix}`, type: 'output', content: `C3650 platform with 131072 K bytes of memory\n\n${syslog}\nLoad/bootstrap symbols loaded\nReading all bootflash vectors\nPOST: CPU PCIe port Check PASS\nCPU memory test . . . . . . . . . . . . . OK\nBoard initialization completed\nInitializing flash file system\n` },
-              { id: `boot-3-${suffix}`, type: 'output', content: '\nBooting flash:C3650-ipbase-mz.152-2.SE4.bin...OK!\nExtracting files from flash:C3650-ipbase-mz.152-2.SE4.bin...\n  ########## [OK]\n  0 bytes remaining in flash device\n' },
+              { id: `boot-2-${suffix}`, type: 'output', content: `NS-L3 platform with 131072 K bytes of memory\n\n${syslog}\nLoad/bootstrap symbols loaded\nReading all bootflash vectors\nPOST: CPU PCIe port Check PASS\nCPU memory test . . . . . . . . . . . . . OK\nBoard initialization completed\nInitializing flash file system\n` },
+              { id: `boot-3-${suffix}`, type: 'output', content: '\nBooting flash:ns-l3-ipbase-mz.152-2.SE4.bin...OK!\nExtracting files from flash:ns-l3-ipbase-mz.152-2.SE4.bin...\n  ########## [OK]\n  0 bytes remaining in flash device\n' },
               ...(state?.bannerMOTD ? [{ id: `banner-${suffix}`, type: 'output' as const, content: `\n${state.bannerMOTD}\n` }] : []),
               { id: `boot-ready-${suffix}`, type: 'output', content: BOOT_PROGRESS_MARKER }
             ];
@@ -186,8 +186,8 @@ export function useLoadProjectData({
             const syslog = t.syslogStarted;
             bootMessages = [
               { id: `boot-1-${suffix}`, type: 'output', content: '\n\nSystem Bootstrap\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1996-2026 by Network Systems, Inc.\n' },
-              { id: `boot-2-${suffix}`, type: 'output', content: `C2960 platform with 65536 K bytes of memory\n\n${syslog}\nLoad/bootstrap symbols loaded\nReading all bootflash vectors\nPOST: CPU Ethernet port Check PASS\nCPU memory test . . . . . . . . . . . . . OK\nBoard initialization completed\nInitializing flash file system\n` },
-              { id: `boot-3-${suffix}`, type: 'output', content: '\nBooting flash:c2960-lanbase-mz.152-2.E6.bin...OK!\nExtracting files from flash:c2960-lanbase-mz.152-2.E6.bin...\n  ########## [OK]\n  0 bytes remaining in flash device\n' },
+              { id: `boot-2-${suffix}`, type: 'output', content: `NS-L2 platform with 65536 K bytes of memory\n\n${syslog}\nLoad/bootstrap symbols loaded\nReading all bootflash vectors\nPOST: CPU Ethernet port Check PASS\nCPU memory test . . . . . . . . . . . . . OK\nBoard initialization completed\nInitializing flash file system\n` },
+              { id: `boot-3-${suffix}`, type: 'output', content: '\nBooting flash:ns-l2-lanbase-mz.152-2.E6.bin...OK!\nExtracting files from flash:ns-l2-lanbase-mz.152-2.E6.bin...\n  ########## [OK]\n  0 bytes remaining in flash device\n' },
               ...(state?.bannerMOTD ? [{ id: `banner-${suffix}`, type: 'output' as const, content: `\n${state.bannerMOTD}\n` }] : []),
               { id: `boot-ready-${suffix}`, type: 'output', content: BOOT_PROGRESS_MARKER }
             ];

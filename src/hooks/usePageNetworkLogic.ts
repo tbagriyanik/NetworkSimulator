@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+﻿import { useEffect, useCallback } from 'react';
 import { useAppStore } from '@/lib/store/appStore';
 import { CanvasDevice, CanvasConnection, FirewallRule } from '@/components/network/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
@@ -274,7 +274,7 @@ export function usePageNetworkLogic({
           const iotState: Record<string, unknown> = {
             hostname: device.name,
             macAddress: device.macAddress || '00-00-00-00-00-00',
-            switchModel: 'WS-C2960-24TT-L',
+            switchModel: 'NS-L2-24TT-L',
             switchLayer: 'L2' as const,
             currentMode: 'user' as const,
             ports: {

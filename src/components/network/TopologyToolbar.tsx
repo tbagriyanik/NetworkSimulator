@@ -672,16 +672,16 @@ export function TopologyToolbar({
               {isTR ? 'Alan Renklendirme (Overlay)' : 'Area Overlay'}
             </DropdownMenuLabel>
             <DropdownMenuSeparator className={isDark ? 'bg-secondary-800' : 'bg-secondary-100'} />
-            {[
+            {([
               { mode: 'none', label: isTR ? '🚫 Kapalı (None)' : '🚫 Disabled' },
               { mode: 'ospf', label: isTR ? '🌐 OSPF Alanları (Areas)' : '🌐 OSPF Areas' },
               { mode: 'vlan', label: isTR ? '🏷️ VLAN Bölgeleri' : '🏷️ VLAN Zones' },
               { mode: 'bgp', label: isTR ? '🏛️ BGP Otonom Sistem (AS)' : '🏛️ BGP AS' },
               { mode: 'subnet', label: isTR ? '📡 IP Alt Ağları (Subnets)' : '📡 IP Subnets' },
-            ].map(({ mode, label }) => (
+            ] as const).map(({ mode, label }) => (
               <DropdownMenuItem
                 key={mode}
-                onClick={() => updatePreference('areaOverlayMode', mode as any)}
+                onClick={() => updatePreference('areaOverlayMode', mode)}
                 className={`text-xs cursor-pointer flex items-center justify-between px-2 py-1.5 rounded ${
                   (preferences.areaOverlayMode || 'none') === mode
                     ? 'font-bold bg-primary-500/15 text-primary-400'

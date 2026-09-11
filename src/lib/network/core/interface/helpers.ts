@@ -1,4 +1,4 @@
-import { iosModeError } from '../iosErrors';
+import { cliModeError } from '../cliErrors';
 import type { SwitchState, Port, CommandResult } from '../../types';
 
 // Helper function to check if in interface mode (single or range)
@@ -17,7 +17,7 @@ export function getVlanPortKey(interfaceName: string): string {
 export function mutatePortAtInterface(
   state: SwitchState,
   mutator: (port: Port) => Port,
-  modeError: () => string = iosModeError
+  modeError: () => string = cliModeError
 ): CommandResult {
   if (!isInInterfaceMode(state) || !state.currentInterface) {
     return { success: false, error: modeError() };

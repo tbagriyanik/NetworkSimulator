@@ -1,4 +1,4 @@
-import { createSwitchDevice, createL3SwitchDevice, createPcDevice, connectPorts, baseProjectData } from './helpers';
+﻿import { createSwitchDevice, createL3SwitchDevice, createPcDevice, connectPorts, baseProjectData } from './helpers';
 ;
 import type { ExampleProject } from './types';
 import { createInitialState } from '../initialState';
@@ -42,15 +42,15 @@ const example = (isTr: boolean): ExampleProject => {
   connectPorts(ripRoutingDevices, ripRoutingConnections, 'switch3-l2', 'fa0/1', 'pc2', 'eth0');
   connectPorts(ripRoutingDevices, ripRoutingConnections, 'switch3-l2', 'fa0/2', 'pc3', 'eth0');
 
-  const switch0L2State = createInitialState('00:1A:2B:3C:4D:92', 'WS-C2960-24TT-L');
+  const switch0L2State = createInitialState('00:1A:2B:3C:4D:92', 'NS-L2-24TT-L');
   switch0L2State.hostname = 'Switch0-L2';
   switch0L2State.ports['fa0/1'] = { ...switch0L2State.ports['fa0/1'], vlan: 1, mode: 'access', status: 'connected' };
   switch0L2State.ports['fa0/2'] = { ...switch0L2State.ports['fa0/2'], vlan: 1, mode: 'access', status: 'connected' };
   switch0L2State.ports['fa0/24'] = { ...switch0L2State.ports['fa0/24'], vlan: 1, mode: 'access', status: 'connected' };
 
-  const eigrpMlswitch0State = createInitialState('00:1A:2B:3C:4D:E0', 'WS-C3650-24PS');
+  const eigrpMlswitch0State = createInitialState('00:1A:2B:3C:4D:E0', 'NS-L3-24PS');
   eigrpMlswitch0State.hostname = 'MultilayerSwitch0';
-  eigrpMlswitch0State.switchModel = 'WS-C3650-24PS';
+  eigrpMlswitch0State.switchModel = 'NS-L3-24PS';
   eigrpMlswitch0State.switchLayer = 'L3';
   eigrpMlswitch0State.ipRouting = true;
   eigrpMlswitch0State.routingProtocol = 'eigrp';
@@ -84,9 +84,9 @@ const example = (isTr: boolean): ExampleProject => {
     'end'
   ];
 
-  const eigrpMlswitch1State = createInitialState('00:1A:2B:3C:4D:E1', 'WS-C3650-24PS');
+  const eigrpMlswitch1State = createInitialState('00:1A:2B:3C:4D:E1', 'NS-L3-24PS');
   eigrpMlswitch1State.hostname = 'MultilayerSwitch1';
-  eigrpMlswitch1State.switchModel = 'WS-C3650-24PS';
+  eigrpMlswitch1State.switchModel = 'NS-L3-24PS';
   eigrpMlswitch1State.switchLayer = 'L3';
   eigrpMlswitch1State.ipRouting = true;
   eigrpMlswitch1State.routingProtocol = 'eigrp';
@@ -120,7 +120,7 @@ const example = (isTr: boolean): ExampleProject => {
     'end'
   ];
 
-  const switch3L2State = createInitialState('00:1A:2B:3C:4D:93', 'WS-C2960-24TT-L');
+  const switch3L2State = createInitialState('00:1A:2B:3C:4D:93', 'NS-L2-24TT-L');
   switch3L2State.hostname = 'Switch3-L2';
   switch3L2State.ports['fa0/1'] = { ...switch3L2State.ports['fa0/1'], vlan: 1, mode: 'access', status: 'connected' };
   switch3L2State.ports['fa0/2'] = { ...switch3L2State.ports['fa0/2'], vlan: 1, mode: 'access', status: 'connected' };

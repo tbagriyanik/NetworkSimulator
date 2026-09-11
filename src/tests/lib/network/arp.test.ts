@@ -15,7 +15,7 @@ function makeState(overrides?: Partial<SwitchState>): SwitchState {
     id: 'R1',
     hostname: 'R1',
     macAddress: '00:11:22:33:44:55',
-    switchModel: 'ISR4451-X',
+    switchModel: 'NS-R-4451-X',
     switchLayer: 'L3',
     currentMode: 'privileged',
     ports: {},

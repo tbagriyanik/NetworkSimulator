@@ -2,7 +2,7 @@
 import { CommandMode, ParsedCommand, CommandValidationResult, SwitchState } from './types';
 import { commandAliases } from './initialState';
 import { useAppStore } from '../store/appStore';
-import { IOS_ERRORS } from "./core/iosErrors";
+import { CLI_ERRORS } from "./core/cliErrors";
 import { getDeviceCapabilities, type DeviceCapabilities } from './capabilities';
 import { getSmartCliHint } from './core/smartCliHints';
 import type { DeviceType } from '@/components/network/networkTopology.types';
@@ -417,7 +417,7 @@ export function validateCommand(
     return { valid: false, reason: 'ambiguous', error: `% Ambiguous command:  "${ambiguousToken}"` };
   }
   if (treeResolution.kind === 'incomplete') {
-    return { valid: false, reason: 'incomplete', error: IOS_ERRORS.incomplete };
+    return { valid: false, reason: 'incomplete', error: CLI_ERRORS.incomplete };
   }
 
   // Check for potentially incomplete commands by token count
@@ -433,7 +433,7 @@ export function validateCommand(
   });
 
   if (matchedBase && !commandPatterns[matchedBase].pattern.test(resolvedInput)) {
-    return { valid: false, reason: 'incomplete', error: IOS_ERRORS.incomplete };
+    return { valid: false, reason: 'incomplete', error: CLI_ERRORS.incomplete };
   }
 
   // Eşleşme bulunamadı
@@ -477,7 +477,7 @@ export function getInvalidCommandError(
   const indicatorPos = calculateCaretPosition(input, failedTokenIndex ?? 0);
   const cleanedInput = input.replace(/\s+$/g, '');
   const indicator = ' '.repeat(indicatorPos) + '^';
-  let errorMsg = `${cleanedInput}\n${indicator}\n${IOS_ERRORS.invalidInput}`;
+  let errorMsg = `${cleanedInput}\n${indicator}\n${CLI_ERRORS.invalidInput}`;
 
   if (currentMode && helpLevel !== 'exam') {
     const cmdTokens = cleanedInput.toLowerCase().split(/\s+/);
@@ -544,7 +544,7 @@ export function getInvalidCommandError(
  */
 function checkDeviceCompatibility(commandName: string, state: Partial<SwitchState>): { valid: boolean; error?: string } {
   const model = state.switchModel || '';
-  const isModelL3 = typeof model === 'string' && model.includes('3650');
+  const isModelL3 = typeof model === 'string' && model.includes('NS-L3');
   const isLayer3 = state.isLayer3Switch || state.switchLayer === 'L3' || isModelL3;
   const deviceType = state.deviceType === 'router'
     ? 'router'
@@ -558,7 +558,7 @@ function checkDeviceCompatibility(commandName: string, state: Partial<SwitchStat
       : deviceType === 'router'
         ? 'router'
         : 'firewall';
-  const unsupported = (cmd: string) => `${IOS_ERRORS.invalidInput}\n${cmd} is not supported on this ${deviceLabel}.`;
+  const unsupported = (cmd: string) => `${CLI_ERRORS.invalidInput}\n${cmd} is not supported on this ${deviceLabel}.`;
 
   // 1. Router üzerinde Switchport komutları
   if (deviceType === 'router' && (commandName.startsWith('switchport') || commandName === 'vlan' || commandName === 'no vlan')) {
@@ -570,7 +570,7 @@ function checkDeviceCompatibility(commandName: string, state: Partial<SwitchStat
     return { valid: false, error: unsupported(commandName) };
   }
 
-  // 3. Firewall (ASA) spesifik olmayan ama interface modunda olan komutlar
+  // 3. Firewall spesifik olmayan ama interface modunda olan komutlar
   if (deviceType === 'firewall' && (commandName.startsWith('switchport') || commandName === 'vlan')) {
     return { valid: false, error: unsupported(commandName) };
   }

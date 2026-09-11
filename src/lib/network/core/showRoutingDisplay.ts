@@ -10,6 +10,11 @@ import {
   getPrefixLength, getNetworkAddress, formatPortName, isIpInNetwork, getSTPCost,
 } from './showHelpers';
 
+function routeInlineAd(route: Route): number {
+  const extra = route as Route & { distance?: number; ad?: number };
+  return route.administrativeDistance ?? extra.distance ?? extra.ad ?? 1;
+}
+
 /**
  * Show IP OSPF Interface
  */
@@ -181,7 +186,7 @@ function collectRouteCandidates(state: SwitchState, ctx: CommandContext): Route[
     const mask = route.mask || route.subnetMask;
     const network = route.network || route.destination;
     if (mask && network) {
-      const ad = (route as any).distance ?? (route as any).ad ?? 1;
+      const ad = routeInlineAd(route);
       candidates.push({
         destination: network,
         subnetMask: mask,
@@ -203,9 +208,9 @@ function collectRouteCandidates(state: SwitchState, ctx: CommandContext): Route[
       let code = 'R';
       let ad = 120;
       if (state.routingProtocol === 'ospf') {
-        const myAreas = (state.dynamicRoutes || []).map(r => (r as any).area).filter((a: number | undefined) => a !== undefined);
+        const myAreas = (state.dynamicRoutes || []).map(r => r.area).filter((a: number | undefined) => a !== undefined);
         if (state.ospfAreas) state.ospfAreas.forEach(a => myAreas.push(a));
-        const isInterArea = (route as any).area !== undefined && !myAreas.includes((route as any).area);
+        const isInterArea = route.area !== undefined && !myAreas.includes(route.area);
         code = isInterArea ? 'O IA' : 'O';
         ad = 110;
       } else if (state.routingProtocol === 'eigrp') {
@@ -440,7 +445,7 @@ export function cmdShowIpRoute(
         const network = route.network || route.destination;
         if (mask && network) {
           const prefixLength = getPrefixLength(mask);
-          const ad = (route as any).distance ?? (route as any).ad ?? 1;
+          const ad = routeInlineAd(route);
           const metric = route.metric ?? 0;
           const outInt = route.interface ? formatPortName(route.interface) : '';
           if (route.nextHop) {
@@ -1280,18 +1285,17 @@ export function cmdShowIpBgp(state: SwitchState, input: string, ctx?: CommandCon
     ? calculateBgpRoutes(ctx.sourceDeviceId, ctx.deviceStates)
     : dynamicRoutes.filter(r => r.code === 'B');
 
-  learnedRoutes.forEach(r => {
-    const routeObj = r as any;
-    if (!bgpNetworks.some(n => n.network === routeObj.destination)) {
+  learnedRoutes.forEach((r: Route) => {
+    if (!bgpNetworks.some(n => n.network === r.destination)) {
       entries.push({
-        network: routeObj.destination,
-        prefixLength: routeObj.prefixLength || getPrefixLength(routeObj.mask || routeObj.subnetMask || '255.255.255.0'),
-        nextHop: routeObj.nextHop || '0.0.0.0',
-        metric: routeObj.metric ?? 0,
-        asPath: routeObj.asPath || 'i',
-        localPref: routeObj.localPreference ?? 100,
-        weight: routeObj.weight,
-        internal: routeObj.administrativeDistance === 200,
+        network: r.destination,
+        prefixLength: r.prefixLength || getPrefixLength(r.mask || r.subnetMask || '255.255.255.0'),
+        nextHop: r.nextHop || '0.0.0.0',
+        metric: r.metric ?? 0,
+        asPath: r.asPath || 'i',
+        localPref: r.localPreference ?? 100,
+        weight: r.weight,
+        internal: r.administrativeDistance === 200,
       });
     }
   });
@@ -1360,7 +1364,7 @@ export function cmdShowIpBgpNeighbors(state: SwitchState, input: string, ctx?: C
     learnedRoutes = calculateBgpRoutes(ctx.sourceDeviceId, ctx.deviceStates);
   }
   const learnedByNeighbor = new Map<string, number>();
-  learnedRoutes.forEach(r => {
+  learnedRoutes.forEach((r: Route) => {
     learnedByNeighbor.set(r.nextHop, (learnedByNeighbor.get(r.nextHop) || 0) + 1);
   });
 
@@ -1788,5 +1792,28 @@ export function cmdShowIpCacheFlow(state: SwitchState, _input: string, _ctx: Com
     output += `Gi0/0          ${c.srcIp.padEnd(15)} Gi0/1          ${c.dstIp.padEnd(15)} ${c.proto} ${c.srcPort.toString().padStart(4, '0')} ${c.dstPort.toString().padStart(4, '0')} ${c.pkts.toString().padStart(5)}\n`;
   });
 
+  return { success: true, output };
+}
+
+export function cmdShowVrf(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  const vrfs = state.vrfInstances;
+  if (!vrfs || Object.keys(vrfs).length === 0) {
+    return { success: true, output: '\n% No VRFs configured\n' };
+  }
+  let output = '\nName                             Default RD            Protocols  Interfaces\n';
+  Object.values(vrfs).forEach(v => {
+    output += `${v.name.padEnd(32)} ${ (v.rd || '<not set>').padEnd(20)} ipv4,ipv6  ${v.interfaces.join(', ') || 'none'}\n`;
+  });
+  return { success: true, output };
+}
+
+export function cmdShowMpls(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  const mpls = state.mplsConfig as { enabled?: boolean; ldpEnabled?: boolean; lfib?: Record<string, unknown> } | undefined;
+  if (!mpls || !mpls.enabled) {
+    return { success: true, output: '\n% MPLS is not enabled\n' };
+  }
+  let output = '\nMPLS LDP Status: Operating\n';
+  output += `LDP Discovery/Session: ${mpls.ldpEnabled ? 'Enabled' : 'Disabled'}\n`;
+  output += `LFIB Entries: ${Object.keys(mpls.lfib || {}).length}\n`;
   return { success: true, output };
 }

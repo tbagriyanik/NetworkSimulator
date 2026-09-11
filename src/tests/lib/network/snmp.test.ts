@@ -22,7 +22,7 @@ describe('SNMP Engine', () => {
       runningConfig: [],
       commandHistory: [],
       historyIndex: 0,
-      version: { nosVersion: '15.2', modelName: 'Switch 2960', serialNumber: '123456', uptime: '10' },
+      version: { nosVersion: '15.2', modelName: 'Switch NS-L2', serialNumber: '123456', uptime: '10' },
       macAddressTable: [],
       arpCache: [],
       bootTime: Date.now() - 100000,
@@ -42,7 +42,7 @@ describe('SNMP Engine', () => {
 
     const sysDescr = oids.find((o: SnmpOidEntry) => o.oid === '.1.3.6.1.2.1.1.1.0');
     expect(sysDescr).toBeDefined();
-    expect(sysDescr?.value).toContain('Switch 2960');
+    expect(sysDescr?.value).toContain('Switch NS-L2');
 
     const sysName = oids.find((o: SnmpOidEntry) => o.oid === '.1.3.6.1.2.1.1.5.0');
     expect(sysName?.value).toBe('Switch1');

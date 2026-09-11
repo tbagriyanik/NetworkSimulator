@@ -25,7 +25,7 @@ describe('Common Forwarding Engine & Event Pipeline', () => {
       ports: {
         gi0_0: { id: 'gi0_0', name: 'Gi0/0', type: 'gigabitethernet', status: 'connected', shutdown: false, ipAddress: '192.168.1.1', duplex: 'auto', speed: 'auto', mode: 'access', vlan: 1 }
       }
-    } as any;
+    } as unknown as SwitchState;
 
     const arpFrame: NetworkPacketFrame = {
       id: 'arp-1',
@@ -65,8 +65,8 @@ describe('Common Forwarding Engine & Event Pipeline', () => {
     ];
 
     const states = new Map<string, SwitchState>([
-      ['r1', { hostname: 'R1', ospfRouterId: '1.1.1.1', routingProtocol: 'ospf', eigrpAs: '100', ports: { 'Gi0/0': { id: 'Gi0/0', name: 'Gi0/0', type: 'gigabitethernet', status: 'connected', shutdown: false, duplex: 'auto', speed: 'auto', mode: 'access', vlan: 1 } } } as any],
-      ['r2', { hostname: 'R2', ospfRouterId: '2.2.2.2', routingProtocol: 'ospf', ports: { 'Gi0/0': { id: 'Gi0/0', name: 'Gi0/0', type: 'gigabitethernet', status: 'connected', shutdown: false, duplex: 'auto', speed: 'auto', mode: 'access', vlan: 1 } } } as any]
+      ['r1', { hostname: 'R1', ospfRouterId: '1.1.1.1', routingProtocol: 'ospf', eigrpAs: '100', ports: { 'Gi0/0': { id: 'Gi0/0', name: 'Gi0/0', type: 'gigabitethernet', status: 'connected', shutdown: false, duplex: 'auto', speed: 'auto', mode: 'access', vlan: 1 } } } as unknown as SwitchState],
+      ['r2', { hostname: 'R2', ospfRouterId: '2.2.2.2', routingProtocol: 'ospf', ports: { 'Gi0/0': { id: 'Gi0/0', name: 'Gi0/0', type: 'gigabitethernet', status: 'connected', shutdown: false, duplex: 'auto', speed: 'auto', mode: 'access', vlan: 1 } } } as unknown as SwitchState]
     ]);
 
 

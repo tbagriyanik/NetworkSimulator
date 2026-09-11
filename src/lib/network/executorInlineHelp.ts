@@ -1,7 +1,7 @@
 import { SwitchState, CommandMode } from './types';
 import { commandHelp, commandDescriptions } from './executorCommandHelp';
 import { commandPatterns, getLevenshteinDistance, expandKeywordPrefixes, resolveAliases } from './parser';
-import { IOS_ERRORS } from './core/iosErrors';
+import { CLI_ERRORS } from './core/cliErrors';
 import { getDeviceCapabilities } from './capabilities';
 import type { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
 
@@ -245,7 +245,7 @@ function getInlineHelp(mode: CommandMode, partialInput: string, prompt: string, 
   }
 
   if (suggestions.length === 0 && !canCR) {
-    lines.push(IOS_ERRORS.unknown);
+    lines.push(CLI_ERRORS.unknown);
   } else {
     if (canCR && !suggestions.includes('<cr>')) {
       suggestions.push('<cr>');

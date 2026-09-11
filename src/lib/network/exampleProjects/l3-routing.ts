@@ -1,4 +1,4 @@
-import { createInitialState } from '../initialState';
+﻿import { createInitialState } from '../initialState';
 import { createL3SwitchDevice, createPcDevice, connectPorts, baseProjectData } from './helpers';
 ;
 import type { CanvasConnection, CanvasNote } from '@/components/network/networkTopology.types';
@@ -34,7 +34,7 @@ const example = (isTr: boolean): ExampleProject => {
       opacity: 0.75
     }
   ];
-  const l3RoutingState = createInitialState(undefined, 'WS-C3650-24PS');
+  const l3RoutingState = createInitialState(undefined, 'NS-L3-24PS');
   l3RoutingState.hostname = 'L3SW1';
   l3RoutingState.ipRouting = true;
   l3RoutingState.vlans[10] = { id: 10, name: 'VLAN10', status: 'active', ports: ['GI1/0/1'] };

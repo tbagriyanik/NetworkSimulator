@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback } from 'react';
 import type { CanvasDevice, CanvasNote } from '@/components/network/networkTopology.types';
@@ -65,7 +65,7 @@ export function useProjectApplication({
       if (device.type === 'switchL2' || device.type === 'switchL3') {
         freshDeviceStates.push({
           id: device.id,
-          state: createInitialState(device.macAddress, device.switchModel === 'WS-C3650-24PS' ? 'WS-C3650-24PS' : 'WS-C2960-24TT-L')
+          state: createInitialState(device.macAddress, device.switchModel === 'NS-L3-24PS' ? 'NS-L3-24PS' : 'NS-L2-24TT-L')
         });
       } else if (device.type === 'router') {
         freshDeviceStates.push({

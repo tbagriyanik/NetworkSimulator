@@ -239,8 +239,8 @@ export interface Port {
   };
   parentInterface?: string;     // Parent interface for subinterfaces
   dot1qVlan?: number;           // Dot1q VLAN for subinterfaces
-  nameif?: string;              // ASA interface name (inside, outside, etc.)
-  securityLevel?: number;       // ASA security level (0-100)
+  nameif?: string;              // firewall interface name (nameif) (inside, outside, etc.)
+  securityLevel?: number;       // firewall security level (0-100)
   wifi?: Partial<WifiConfig> & {
     ssid: string;
     mode: WifiMode;
@@ -667,6 +667,7 @@ export interface SwitchState {
   }[];
   bgpConfig?: unknown;
   mplsConfig?: unknown;
+  restconfEnabled?: boolean;
   isLayer3Switch?: boolean;        // L3 switch capability
   staticRoutes?: Route[];          // Static routing table
   dynamicRoutes?: Route[];         // Dynamic routing table
@@ -686,7 +687,7 @@ export interface SwitchState {
   bgpMaximumPaths?: number;          // maximum-paths <n> multipath
   bgpGracefulRestart?: boolean;      // bgp graceful-restart
   bgpClusterId?: string;             // bgp cluster-id <id> (route-reflector)
-  bgpSynchronization?: boolean;      // synchronization (default false on modern IOS)
+  bgpSynchronization?: boolean;      // synchronization (default false on modern router software)
   bgpAggregateAddresses?: { network: string; mask: string; summaryOnly?: boolean }[]; // aggregate-address <ip> <mask>
   bgpTimers?: { keepalive: number; holdtime: number }; // timers bgp <keepalive> <holdtime>
   passiveInterfaces?: string[];    // Interfaces that should not send updates
@@ -920,7 +921,7 @@ export interface SwitchState {
   stpState?: Record<number, StpVlanState>;
 
   sameSecurityTraffic?: boolean;
-  // Firewall ASA-specific state
+  // Firewall-specific state
   firewallObjects?: Record<string, {
     name: string;
     subnet?: { ip: string; mask: string };

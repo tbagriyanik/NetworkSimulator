@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useEffect, KeyboardEvent, useCallback, useMemo, ClipboardEvent } from 'react';
 import { SwitchState, CommandMode } from '@/lib/network/types';
@@ -216,9 +216,9 @@ export function Terminal({
 
     if (deviceType === 'router') {
       return { icon: RouterIcon, color: 'text-purple-400' };
-    } else if (deviceType === 'switchL3' || switchModel === 'WS-C3650-24PS') {
+    } else if (deviceType === 'switchL3' || switchModel === 'NS-L3-24PS') {
       return { icon: SwitchIcon, color: 'text-purple-400', isL3: true };
-    } else if (deviceType === 'switchL2' || switchModel === 'WS-C2960-24TT-L') {
+    } else if (deviceType === 'switchL2' || switchModel === 'NS-L2-24TT-L') {
       return { icon: SwitchIcon, color: 'text-success-400', isL3: false };
     } else if (deviceType === 'pc') {
       return { icon: Laptop, color: 'text-primary-400' };

@@ -4,7 +4,8 @@ import { recalculateStp } from '@/lib/network/stp';
 import { detectEtherChannelBundles } from '@/lib/network/etherchannel';
 import { runAgingTick } from '@/lib/network/agingEngine';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
-import type { SwitchState } from '@/lib/network/types';
+import type { SwitchState } from '@/lib/network/types'; 
+import type { NetworkPacketFrame } from '@/lib/network/forwarding/packetFrame';
 
 describe('Advanced Network Diagnostics & Counters Engine (Features 6 - 9)', () => {
   let devices: CanvasDevice[];
@@ -13,17 +14,17 @@ describe('Advanced Network Diagnostics & Counters Engine (Features 6 - 9)', () =
 
   beforeEach(() => {
     devices = [
-      { id: 'PC1', name: 'PC1', type: 'pc', x: 100, y: 100, ip: '10.0.0.2', subnetMask: '255.255.255.0', macAddress: '00:11:22:33:44:55' } as any,
-      { id: 'SW1', name: 'SW1', type: 'switchL2', x: 200, y: 100 } as any,
-      { id: 'SW2', name: 'SW2', type: 'switchL2', x: 300, y: 100 } as any,
-      { id: 'PC2', name: 'PC2', type: 'pc', x: 400, y: 100, ip: '10.0.0.3', subnetMask: '255.255.255.0', macAddress: 'AA:BB:CC:DD:EE:FF' } as any,
+      { id: 'PC1', name: 'PC1', type: 'pc', x: 100, y: 100, ip: '10.0.0.2', subnetMask: '255.255.255.0', macAddress: '00:11:22:33:44:55' } as unknown as CanvasDevice,
+      { id: 'SW1', name: 'SW1', type: 'switchL2', x: 200, y: 100 } as unknown as CanvasDevice,
+      { id: 'SW2', name: 'SW2', type: 'switchL2', x: 300, y: 100 } as unknown as CanvasDevice,
+      { id: 'PC2', name: 'PC2', type: 'pc', x: 400, y: 100, ip: '10.0.0.3', subnetMask: '255.255.255.0', macAddress: 'AA:BB:CC:DD:EE:FF' } as unknown as CanvasDevice,
     ];
 
     connections = [
-      { id: 'c1', sourceDeviceId: 'PC1', sourcePort: 'Eth0', targetDeviceId: 'SW1', targetPort: 'Fa0/1' } as any,
-      { id: 'c2', sourceDeviceId: 'SW1', sourcePort: 'Fa0/2', targetDeviceId: 'SW2', targetPort: 'Fa0/2' } as any,
-      { id: 'c3', sourceDeviceId: 'SW1', sourcePort: 'Fa0/3', targetDeviceId: 'SW2', targetPort: 'Fa0/3' } as any,
-      { id: 'c4', sourceDeviceId: 'SW2', sourcePort: 'Fa0/1', targetDeviceId: 'PC2', targetPort: 'Eth0' } as any,
+      { id: 'c1', sourceDeviceId: 'PC1', sourcePort: 'Eth0', targetDeviceId: 'SW1', targetPort: 'Fa0/1' } as unknown as CanvasConnection,
+      { id: 'c2', sourceDeviceId: 'SW1', sourcePort: 'Fa0/2', targetDeviceId: 'SW2', targetPort: 'Fa0/2' } as unknown as CanvasConnection,
+      { id: 'c3', sourceDeviceId: 'SW1', sourcePort: 'Fa0/3', targetDeviceId: 'SW2', targetPort: 'Fa0/3' } as unknown as CanvasConnection,
+      { id: 'c4', sourceDeviceId: 'SW2', sourcePort: 'Fa0/1', targetDeviceId: 'PC2', targetPort: 'Eth0' } as unknown as CanvasConnection,
     ];
 
     deviceStates = new Map<string, SwitchState>([
@@ -33,7 +34,7 @@ describe('Advanced Network Diagnostics & Counters Engine (Features 6 - 9)', () =
           ports: {
             Eth0: { id: 'Eth0', name: 'Ethernet0', status: 'connected', shutdown: false, vlan: 1, mode: 'access', duplex: 'full', speed: '1000', type: 'fastethernet', ipAddress: '10.0.0.2', subnetMask: '255.255.255.0' },
           },
-        } as any,
+        } as unknown as SwitchState,
       ],
       [
         'SW1',
@@ -50,7 +51,7 @@ describe('Advanced Network Diagnostics & Counters Engine (Features 6 - 9)', () =
             'Fa0/2': { id: 'Fa0/2', name: 'FastEthernet0/2', status: 'connected', shutdown: false, vlan: 1, mode: 'access', duplex: 'full', speed: '100', type: 'fastethernet' },
             'Fa0/3': { id: 'Fa0/3', name: 'FastEthernet0/3', status: 'connected', shutdown: false, vlan: 1, mode: 'access', duplex: 'full', speed: '100', type: 'fastethernet' },
           },
-        } as any,
+        } as unknown as SwitchState,
       ],
       [
         'SW2',
@@ -67,7 +68,7 @@ describe('Advanced Network Diagnostics & Counters Engine (Features 6 - 9)', () =
             'Fa0/2': { id: 'Fa0/2', name: 'FastEthernet0/2', status: 'connected', shutdown: false, vlan: 1, mode: 'access', duplex: 'full', speed: '100', type: 'fastethernet' },
             'Fa0/3': { id: 'Fa0/3', name: 'FastEthernet0/3', status: 'connected', shutdown: false, vlan: 1, mode: 'access', duplex: 'full', speed: '100', type: 'fastethernet' },
           },
-        } as any,
+        } as unknown as SwitchState,
       ],
       [
         'PC2',
@@ -75,13 +76,14 @@ describe('Advanced Network Diagnostics & Counters Engine (Features 6 - 9)', () =
           ports: {
             Eth0: { id: 'Eth0', name: 'Ethernet0', status: 'connected', shutdown: false, vlan: 1, mode: 'access', duplex: 'full', speed: '1000', type: 'fastethernet', ipAddress: '10.0.0.3', subnetMask: '255.255.255.0' },
           },
-        } as any,
+        } as unknown as SwitchState,
       ],
     ]);
   });
 
   it('Feature 6: Increments Rx/Tx/Error/Drop port counters during packet forwarding', () => {
-    const frame = {
+    const frame: NetworkPacketFrame = {
+      id: 'f1',
       srcMac: '00:11:22:33:44:55',
       dstMac: 'AA:BB:CC:DD:EE:FF',
       srcIp: '10.0.0.2',
@@ -90,9 +92,13 @@ describe('Advanced Network Diagnostics & Counters Engine (Features 6 - 9)', () =
       ttl: 64,
       vlanId: 1,
       ingressPortId: 'Eth0',
+      timestamp: Date.now(),
+      etherType: '0x0800',
+      length: 74,
+      info: 'ICMP Echo Request',
     };
 
-    const res = runFullPacketPipeline(frame as any, 'PC1', devices, deviceStates, connections);
+    const res = runFullPacketPipeline(frame, 'PC1', devices, deviceStates, connections);
     expect(res.allTraces.length).toBeGreaterThan(0);
 
     const sw1Port1 = deviceStates.get('SW1')!.ports['Fa0/1'];

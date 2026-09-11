@@ -1,9 +1,9 @@
-import { iosModeError } from './iosErrors';
+import { cliModeError } from './cliErrors';
 import type { CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult } from '../types';
 
 export function cmdAaaNewModel(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   return {
     success: true,
     output: '',
@@ -12,7 +12,7 @@ export function cmdAaaNewModel(state: SwitchState, _input: string, _ctx: Command
 }
 
 export function cmdNoAaaNewModel(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   return {
     success: true,
     output: '',
@@ -21,7 +21,7 @@ export function cmdNoAaaNewModel(state: SwitchState, _input: string, _ctx: Comma
 }
 
 export function cmdAaaAuthentication(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^aaa\s+authentication\s+(.+)$/i);
   if (!match) return { success: false, error: '% Invalid AAA authentication command' };
 
@@ -34,7 +34,7 @@ export function cmdAaaAuthentication(state: SwitchState, input: string, _ctx: Co
 }
 
 export function cmdRadiusServerHost(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^radius-server\s+host\s+([0-9.]+)(?:\s+key\s+(\S+))?/i);
   if (!match) return { success: false, error: '% Invalid radius-server host command' };
 
@@ -53,7 +53,7 @@ export function cmdRadiusServerHost(state: SwitchState, input: string, _ctx: Com
 }
 
 export function cmdTacacsServerHost(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^tacacs-server\s+host\s+([0-9.]+)(?:\s+key\s+(\S+))?/i);
   if (!match) return { success: false, error: '% Invalid tacacs-server host command' };
 
@@ -72,7 +72,7 @@ export function cmdTacacsServerHost(state: SwitchState, input: string, _ctx: Com
 }
 
 export function cmdRadiusServerKey(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^radius-server\s+key\s+(\S+)/i);
   if (!match) return { success: false, error: '% Invalid radius-server key command' };
   return {
@@ -83,7 +83,7 @@ export function cmdRadiusServerKey(state: SwitchState, input: string, _ctx: Comm
 }
 
 export function cmdTacacsServerKey(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^tacacs-server\s+key\s+(\S+)/i);
   if (!match) return { success: false, error: '% Invalid tacacs-server key command' };
   return {

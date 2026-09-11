@@ -4,9 +4,9 @@ import { getDeviceCapabilities } from '@/lib/network/capabilities';
 import type { DeviceType } from '@/components/network/networkTopology.types';
 
 describe('Router Identification and Capabilities', () => {
-  const routerModels = ['ISR4451-X', 'C1900', 'C2900', 'C7200', 'ASR1001'];
-  const l3SwitchModels = ['WS-C3650-24PS'];
-  const l2SwitchModels = ['WS-C2960-24TT-L'];
+  const routerModels = ['NS-R-4451-X', 'NS-R-1900', 'NS-R-2900', 'NS-R-7200', 'NS-R-1001'];
+  const l3SwitchModels = ['NS-L3-24PS'];
+  const l2SwitchModels = ['NS-L2-24TT-L'];
 
   it('should correctly identify router models', () => {
     routerModels.forEach(model => {

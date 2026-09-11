@@ -15,7 +15,7 @@ import { runFhrpElection } from '@/lib/network/fhrp';
 
 const isSwitchDeviceType = (type?: DeviceType | string) => type === 'switchL2' || type === 'switchL3';
 const resolveSwitchBootType = (switchModel?: string): 'switchL2' | 'switchL3' =>
-  switchModel === 'WS-C3650-24PS' ? 'switchL3' : 'switchL2';
+  switchModel === 'NS-L3-24PS' ? 'switchL3' : 'switchL2';
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -86,14 +86,14 @@ export function useDeviceManager() {
 
   const getBootMessage = useCallback((deviceType: Exclude<DeviceType, 'pc'>, switchModel?: string, language: 'tr' | 'en' = 'en') => {
     const isRouter = deviceType === 'router';
-    const isFirewall = deviceType === 'firewall' || switchModel?.includes('ASA');
-    const isL3Switch = deviceType === 'switchL3' || switchModel?.includes('3650');
-    const isWLC = deviceType === 'wlc' || switchModel?.includes('AIR-CT');
+    const isFirewall = deviceType === 'firewall' || switchModel?.includes('NS-FW');
+    const isL3Switch = deviceType === 'switchL3' || switchModel?.includes('NS-L3');
+    const isWLC = deviceType === 'wlc' || switchModel?.includes('NS-WLC');
 
     if (isFirewall) {
       return {
-        boot1: `\n\nAdaptive Security Appliance Software\n\n`,
-        boot2: `Compiled on Mon 21-Mar-16 11:52 PDT by builders\nSystem Bootstrap\n\nASA 5506-X platform with 4096 K bytes of memory\n`,
+        boot1: `\n\nNetSim Firewall Software\n\n`,
+        boot2: `Compiled on Mon 21-Mar-16 11:52 PDT by builders\nSystem Bootstrap\n\nNS-FW-5506 platform with 4096 K bytes of memory\n`,
         boot3: `\nReading from flash... OK\nValidating image checksum... OK\n\n`,
         initMessage: language === 'tr' ? 'Firewall başlatılıyor' : 'Firewall is starting'
       };
@@ -103,8 +103,8 @@ export function useDeviceManager() {
       const syslog = language === 'tr' ? '*** Syslog istemcisi başlatıldı' : '*** Syslog client started';
       return {
         boot1: `\n\nSystem Bootstrap\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1996-2026 by Network Systems, Inc.\n`,
-        boot2: `ISR4451/K9 platform with 4096 K bytes of memory\n\n${syslog}\nLoad/bootstrap symbols loaded, GOXR initialization\nReading all bootflash vectors\nPOST: CPU PCIe port Check PASS\nCPU memory test . . . . . . . . . . . . . OK\nBoard initialization completed\nInitializing flash file system\n`,
-        boot3: `\nBooting flash:c1900-universalk9-mz.SPA.154-3.M.bin...OK!\nExtracting files from flash:c1900-universalk9-mz.SPA.154-3.M.bin...\n  ########## [OK]\n  0 bytes remaining in flash device\n`,
+        boot2: `NS-R-4451 platform with 4096 K bytes of memory\n\n${syslog}\nLoad/bootstrap symbols loaded, NetSim OS initialization\nReading all bootflash vectors\nPOST: CPU PCIe port Check PASS\nCPU memory test . . . . . . . . . . . . . OK\nBoard initialization completed\nInitializing flash file system\n`,
+        boot3: `\nBooting flash:ns-r-universalk9-mz.SPA.154-3.M.bin...OK!\nExtracting files from flash:ns-r-universalk9-mz.SPA.154-3.M.bin...\n  ########## [OK]\n  0 bytes remaining in flash device\n`,
         initMessage: language === 'tr' ? 'Sistem başlatılıyor' : 'Initializing system'
       };
     }
@@ -113,8 +113,8 @@ export function useDeviceManager() {
       const syslog = language === 'tr' ? '*** Syslog istemcisi başlatıldı' : '*** Syslog client started';
       return {
         boot1: `\n\nSystem Bootstrap\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1996-2026 by Network Systems, Inc.\n`,
-        boot2: `AIR-CT2504 platform with 2097152 K bytes of memory\n\n${syslog}\nLoad/bootstrap symbols loaded\nReading all bootflash vectors\nPOST: CPU PCIe port Check PASS\nCPU memory test . . . . . . . . . . . . . OK\nBoard initialization completed\nInitializing flash file system\n`,
-        boot3: `\nBooting flash:CT2504-k9-8-0-125-0.bin...OK!\nExtracting files from flash:CT2504-k9-8-0-125-0.bin...\n  ########## [OK]\n  0 bytes remaining in flash device\n`,
+        boot2: `NS-WLC-2504 platform with 2097152 K bytes of memory\n\n${syslog}\nLoad/bootstrap symbols loaded\nReading all bootflash vectors\nPOST: CPU PCIe port Check PASS\nCPU memory test . . . . . . . . . . . . . OK\nBoard initialization completed\nInitializing flash file system\n`,
+        boot3: `\nBooting flash:ns-wlc-8-0-125-0.bin...OK!\nExtracting files from flash:ns-wlc-8-0-125-0.bin...\n  ########## [OK]\n  0 bytes remaining in flash device\n`,
         initMessage: language === 'tr' ? 'WLC başlatılıyor' : 'WLC is starting'
       };
     }
@@ -123,8 +123,8 @@ export function useDeviceManager() {
       const syslog = language === 'tr' ? '*** Syslog istemcisi başlatıldı' : '*** Syslog client started';
       return {
         boot1: `\n\nSystem Bootstrap\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1996-2026 by Network Systems, Inc.\n`,
-        boot2: `C3650 platform with 131072 K bytes of memory\n\n${syslog}\nLoad/bootstrap symbols loaded\nReading all bootflash vectors\nPOST: CPU PCIe port Check PASS\nCPU memory test . . . . . . . . . . . . . OK\nBoard initialization completed\nInitializing flash file system\n`,
-        boot3: `\nBooting flash:C3650-ipbase-mz.152-2.SE4.bin...OK!\nExtracting files from flash:C3650-ipbase-mz.152-2.SE4.bin...\n  ########## [OK]\n  0 bytes remaining in flash device\n`,
+        boot2: `NS-L3 platform with 131072 K bytes of memory\n\n${syslog}\nLoad/bootstrap symbols loaded\nReading all bootflash vectors\nPOST: CPU PCIe port Check PASS\nCPU memory test . . . . . . . . . . . . . OK\nBoard initialization completed\nInitializing flash file system\n`,
+        boot3: `\nBooting flash:ns-l3-ipbase-mz.152-2.SE4.bin...OK!\nExtracting files from flash:ns-l3-ipbase-mz.152-2.SE4.bin...\n  ########## [OK]\n  0 bytes remaining in flash device\n`,
         initMessage: language === 'tr' ? 'Sistem açıldı' : 'System is powered on'
       };
     }
@@ -132,8 +132,8 @@ export function useDeviceManager() {
     const syslog = language === 'tr' ? '*** Syslog istemcisi başlatıldı' : '*** Syslog client started';
     return {
       boot1: `\n\nSystem Bootstrap\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1996-2026 by Network Systems, Inc.\n`,
-      boot2: `C2960 platform with 65536 K bytes of memory\n\n${syslog}\nLoad/bootstrap symbols loaded\nReading all bootflash vectors\nPOST: CPU Ethernet port Check PASS\nCPU memory test . . . . . . . . . . . . . OK\nBoard initialization completed\nInitializing flash file system\n`,
-      boot3: `\nBooting flash:c2960-lanbase-mz.152-2.E6.bin...OK!\nExtracting files from flash:c2960-lanbase-mz.152-2.E6.bin...\n  ########## [OK]\n  0 bytes remaining in flash device\n`,
+      boot2: `NS-L2 platform with 65536 K bytes of memory\n\n${syslog}\nLoad/bootstrap symbols loaded\nReading all bootflash vectors\nPOST: CPU Ethernet port Check PASS\nCPU memory test . . . . . . . . . . . . . OK\nBoard initialization completed\nInitializing flash file system\n`,
+      boot3: `\nBooting flash:ns-l2-lanbase-mz.152-2.E6.bin...OK!\nExtracting files from flash:ns-l2-lanbase-mz.152-2.E6.bin...\n  ########## [OK]\n  0 bytes remaining in flash device\n`,
       initMessage: language === 'tr' ? 'Sistem açıldı' : 'System is powered on'
     };
   }, []);
@@ -142,7 +142,7 @@ export function useDeviceManager() {
     if (!model) return state;
 
     const normalizedModel = model as string;
-    const baseState = isRouter ? createInitialRouterState(macAddress || state.macAddress) : createInitialState(macAddress || state.macAddress, normalizedModel as 'WS-C2960-24TT-L' | 'WS-C3650-24PS');
+    const baseState = isRouter ? createInitialRouterState(macAddress || state.macAddress) : createInitialState(macAddress || state.macAddress, normalizedModel as 'NS-L2-24TT-L' | 'NS-L3-24PS');
 
     // Model changed? If so, we need to be careful about merging ports
     const modelChanged = state.switchModel !== normalizedModel;
@@ -177,7 +177,7 @@ export function useDeviceManager() {
           const oldType = port.type;
           const newType = mergedPorts[id]?.type;
           // Skip merge if old and new states have different port types for the same numeric port
-          // This prevents WS-C2960 FastEthernet ports (fa0/x) from corrupting WS-C3650 GigabitEthernet ports (gi1/0/x)
+          // This prevents L2 FastEthernet ports (fa0/x) from corrupting L3 GigabitEthernet ports (gi1/0/x)
           if (oldType && newType && oldType !== newType && /^[a-z]+\d*\/\d+$/.test(id)) {
             return; // Use new state's port type exclusively
           }
@@ -229,16 +229,16 @@ export function useDeviceManager() {
         // Power on: reset device state and show boot sequence
         const existingState = deviceStates.get(deviceId);
         const isRouter = deviceType === 'router' || deviceId.includes('router') || existingState?.switchLayer === 'L3';
-        const isSwitchL3 = deviceType === 'switchL3' || existingState?.switchLayer === 'L3' || existingState?.switchModel === 'WS-C3650-24PS';
+        const isSwitchL3 = deviceType === 'switchL3' || existingState?.switchLayer === 'L3' || existingState?.switchModel === 'NS-L3-24PS';
         const isWLC = deviceType === 'wlc' || deviceId.includes('wlc') || existingState?.switchLayer === 'WLC';
 
-        // Get the switch model from existing state or default. L3 switches should start as 3650.
-        const switchModel = existingState?.switchModel || incomingModel || (isWLC ? 'AIR-CT2504-K9' : isRouter || isSwitchL3 ? 'WS-C3650-24PS' : 'WS-C2960-24TT-L');
+        // Get the switch model from existing state or default. L3 switches use the NS-L3-24PS model.
+        const switchModel = existingState?.switchModel || incomingModel || (isWLC ? 'NS-WLC-2504' : isRouter || isSwitchL3 ? 'NS-L3-24PS' : 'NS-L2-24TT-L');
         const baseState = isRouter
           ? createInitialRouterState(existingState?.macAddress)
           : isWLC
             ? createInitialWLCState(existingState?.macAddress)
-            : createInitialState(existingState?.macAddress, switchModel as 'WS-C2960-24TT-L' | 'WS-C3650-24PS');
+            : createInitialState(existingState?.macAddress, switchModel as 'NS-L2-24TT-L' | 'NS-L3-24PS');
 
         // Get existing state to preserve saved configuration and identity
         const startupConfig = existingState?.startupConfig;
@@ -318,15 +318,15 @@ export function useDeviceManager() {
     // Prevent creating state for empty/invalid device IDs
     if (!deviceId || deviceId.trim() === '') {
       logger.warn('Attempted to create device state with empty ID');
-      return createInitialState(initialMac || '', 'WS-C2960-24TT-L');
+      return createInitialState(initialMac || '', 'NS-L2-24TT-L');
     }
 
     let deviceState = deviceStates.get(deviceId);
     const defaultName = deviceType === 'router' ? 'Router' : deviceType === 'firewall' ? 'asa' : deviceType === 'iot' ? 'IoT' : deviceType === 'wlc' ? 'WLC' : deviceType === 'hub' ? 'Hub' : deviceType === 'cloud' ? 'Cloud' : deviceType === 'printer' ? 'Printer' : deviceType === 'mobile' ? 'Mobile' : 'Switch';
 
     if (!deviceState) {
-      // Use the provided switchModel, default to L2 for switches, L3 for routers, ASA for firewall, or AIR-CT2504-K9 for WLC
-      const model = switchModel || (deviceType === 'router' ? 'WS-C3650-24PS' : deviceType === 'switchL3' ? 'WS-C3650-24PS' : deviceType === 'firewall' ? 'ASA-5506-X' : deviceType === 'wlc' ? 'AIR-CT2504-K9' : 'WS-C2960-24TT-L');
+      // Use the provided switchModel, default to L2 for switches, L3 for routers, NS-FW-5506 for firewall, or NS-WLC-2504 for WLC
+      const model = switchModel || (deviceType === 'router' ? 'NS-L3-24PS' : deviceType === 'switchL3' ? 'NS-L3-24PS' : deviceType === 'firewall' ? 'NS-FW-5506' : deviceType === 'wlc' ? 'NS-WLC-2504' : 'NS-L2-24TT-L');
 
       let newState: SwitchState;
       if (deviceType === 'firewall') {
@@ -336,7 +336,7 @@ export function useDeviceManager() {
       } else if (deviceType === 'wlc') {
         newState = createInitialWLCState(initialMac);
       } else {
-        newState = createInitialState(initialMac, model as 'WS-C2960-24TT-L' | 'WS-C3650-24PS');
+        newState = createInitialState(initialMac, model as 'NS-L2-24TT-L' | 'NS-L3-24PS');
       }
 
       let hostname = initialHostname || defaultName;
@@ -347,7 +347,8 @@ export function useDeviceManager() {
       const stateDeviceType = ((deviceType === 'switchL2' || deviceType === 'switchL3') ? 'switch' : deviceType) as SwitchState['deviceType'];
       newState = { ...newState, hostname, deviceType: stateDeviceType };
       if (deviceType === 'hub' || deviceType === 'cloud' || deviceType === 'printer' || deviceType === 'mobile') {
-        delete (newState as any).switchModel;
+        const { switchModel: _removedSwitchModel, ...newStateWithoutModel } = newState;
+        newState = { ...newStateWithoutModel, switchModel: 'NS-L2-24TT-L', hostname, deviceType: stateDeviceType };
       }
 
       // A freshly-hosted HTTP-capable end device (PC, IoT, Printer, WLC) must
@@ -427,7 +428,7 @@ export function useDeviceManager() {
       }
 
       if (!deviceState.switchModel) {
-        const fallbackModel = switchModel || (deviceType === 'router' ? 'WS-C3650-24PS' : deviceType === 'switchL3' ? 'WS-C3650-24PS' : deviceType === 'wlc' ? 'AIR-CT2504-K9' : 'WS-C2960-24TT-L');
+        const fallbackModel = switchModel || (deviceType === 'router' ? 'NS-L3-24PS' : deviceType === 'switchL3' ? 'NS-L3-24PS' : deviceType === 'wlc' ? 'NS-WLC-2504' : 'NS-L2-24TT-L');
         const updatedState = ensureSwitchModelConsistency(deviceState, fallbackModel, initialMac, deviceType === 'router');
         setTimeout(() => {
           if (isMounted.current) {
@@ -437,7 +438,7 @@ export function useDeviceManager() {
         deviceState = updatedState;
       }
 
-      if (isSwitchDeviceType(deviceType) && deviceState.switchModel === 'WS-C3650-24PS' && (!deviceState.ports['gi1/1/3'] || !deviceState.ports['gi1/1/4'])) {
+      if (isSwitchDeviceType(deviceType) && deviceState.switchModel === 'NS-L3-24PS' && (!deviceState.ports['gi1/1/3'] || !deviceState.ports['gi1/1/4'])) {
         const healedState = ensureSwitchModelConsistency(deviceState, deviceState.switchModel, initialMac, false);
         setTimeout(() => {
           if (isMounted.current) {
@@ -502,7 +503,7 @@ export function useDeviceManager() {
 
       const bootInfo = getBootMessage(inferredDeviceType, state?.switchModel, language);
       const fallbackSwitchModel = state?.switchModel || deviceStates.get(deviceId)?.switchModel;
-      const fallbackState = state || (isRouter ? createInitialRouterState() : isWLC ? createInitialWLCState() : createInitialState(undefined, fallbackSwitchModel as 'WS-C2960-24TT-L' | 'WS-C3650-24PS'));
+      const fallbackState = state || (isRouter ? createInitialRouterState() : isWLC ? createInitialWLCState() : createInitialState(undefined, fallbackSwitchModel as 'NS-L2-24TT-L' | 'NS-L3-24PS'));
       const suffix = fallbackState?.macAddress || deviceId;
 
       const newBootMessages: TerminalOutput[] = [
@@ -920,7 +921,7 @@ export function useDeviceManager() {
         if (result.reloadDevice) {
           const baseState = deviceId.includes('router')
             ? createInitialRouterState(deviceState.macAddress)
-            : createInitialState(deviceState.macAddress, deviceState.switchModel as 'WS-C2960-24TT-L' | 'WS-C3650-24PS');
+            : createInitialState(deviceState.macAddress, deviceState.switchModel as 'NS-L2-24TT-L' | 'NS-L3-24PS');
           const startupConfig = deviceState.startupConfig;
           const hasStartupConfig = !!startupConfig;
           const baseIdentityState = {

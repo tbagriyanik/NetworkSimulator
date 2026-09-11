@@ -1,4 +1,4 @@
-import { iosModeError } from './iosErrors';
+import { cliModeError } from './cliErrors';
 import type { CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult } from '../types';
 import { isLayer3Switch } from '../switchModels';
@@ -8,7 +8,7 @@ import { isLayer3Switch } from '../switchModels';
  */
 export function cmdNoIpHttpServer(state: SwitchState, _input: string, ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const lang = ctx.language || 'en';
@@ -36,7 +36,7 @@ export function cmdNoIpHttpServer(state: SwitchState, _input: string, ctx: Comma
  */
 export function cmdNoIpDomainLookup(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   return {
@@ -47,7 +47,7 @@ export function cmdNoIpDomainLookup(state: SwitchState, _input: string, _ctx: Co
 
 export function cmdNoIpDomainName(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
   return {
     success: true,
@@ -60,7 +60,7 @@ export function cmdNoIpDomainName(state: SwitchState, _input: string, _ctx: Comm
  */
 export function cmdNoIpRouting(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   return {
@@ -74,7 +74,7 @@ export function cmdNoIpRouting(state: SwitchState, _input: string, _ctx: Command
  */
 export function cmdNoIpSshTimeOut(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   return {
@@ -88,7 +88,7 @@ export function cmdNoIpSshTimeOut(state: SwitchState, _input: string, _ctx: Comm
  */
 export function cmdNoMlsQos(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   return {
@@ -102,7 +102,7 @@ export function cmdNoMlsQos(state: SwitchState, _input: string, _ctx: CommandCon
  */
 export function cmdIpSshVersion(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^ip\s+ssh\s+version\s+(1|2)$/i);
@@ -122,19 +122,19 @@ export function cmdIpSshVersion(state: SwitchState, input: string, _ctx: Command
  * IP DHCP Snooping VLAN
  */
 export function cmdIpDomainLookup(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   return { success: true, newState: { domainLookup: true } };
 }
 
 export function cmdSystemMtu(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^system\s+mtu\s+(\d+)$/i);
   if (!match) return { success: false, error: '% Invalid system mtu command' };
   return { success: true, output: `Changes to the MTU will take effect after reload\nSystem MTU size is ${match[1]} bytes` };
 }
 
 export function cmdSdmPrefer(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
 
   const match = input.match(/^sdm\s+prefer\s+(\S+)(?:\s+(\S+))?/i);
   if (!match) {
@@ -190,7 +190,7 @@ export function cmdSdmPrefer(state: SwitchState, input: string, _ctx: CommandCon
 }
 
 export function cmdIpSshAuthRetries(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^ip\s+ssh\s+authentication-retries\s+(\d+)$/i);
   if (!match) return { success: false, error: '% Invalid command' };
   const retries = parseInt(match[1], 10);

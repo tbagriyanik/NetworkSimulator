@@ -1,4 +1,4 @@
-import { iosModeError } from '../iosErrors';
+import { cliModeError } from '../cliErrors';
 import type { CommandContext } from '../commandTypes';
 import type { SwitchState, CommandResult, Port, SpeedMode, DuplexMode } from '../../types';
 import { normalizePortId } from '../../initialState';
@@ -16,7 +16,7 @@ import {
  */
 export function cmdInterface(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^interface\s+(.+)$/i);
@@ -310,7 +310,7 @@ export function cmdInterface(state: SwitchState, input: string, _ctx: CommandCon
  */
 export function cmdShutdown(state: SwitchState, _input: string, ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state) || !state.currentInterface) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   // VLAN interface'i için shutdown
@@ -360,7 +360,7 @@ export function cmdShutdown(state: SwitchState, _input: string, ctx: CommandCont
  */
 export function cmdNoShutdown(state: SwitchState, _input: string, ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state) || !state.currentInterface) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   // VLAN interface'i için no shutdown
@@ -414,7 +414,7 @@ export function cmdNoShutdown(state: SwitchState, _input: string, ctx: CommandCo
  */
 export function cmdSpeed(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state) || !state.currentInterface) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^speed\s+(10|100|1000|10000|auto)$/i);
@@ -440,7 +440,7 @@ export function cmdSpeed(state: SwitchState, input: string, ctx: CommandContext)
  */
 export function cmdDuplex(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state) || !state.currentInterface) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^duplex\s+(half|full|auto)$/i);
@@ -471,7 +471,7 @@ export function cmdDuplex(state: SwitchState, input: string, _ctx: CommandContex
  * standby <group> ip <virtual-ip>
  */
 export function cmdStandbyIp(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
   const match = input.match(/^standby\s+(\d+)\s+ip\s+([0-9.]+)$/i);
   if (!match) return { success: false, error: '% Invalid standby command' };
 
@@ -493,7 +493,7 @@ export function cmdStandbyIp(state: SwitchState, input: string, _ctx: CommandCon
  * standby <group> priority <priority>
  */
 export function cmdStandbyPriority(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
   const match = input.match(/^standby\s+(\d+)\s+priority\s+(\d+)$/i);
   if (!match) return { success: false, error: '% Invalid standby command' };
 
@@ -515,7 +515,7 @@ export function cmdStandbyPriority(state: SwitchState, input: string, _ctx: Comm
  * standby <group> ipv6 <virtual-ipv6>
  */
 export function cmdStandbyIpv6(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
   const match = input.match(/^standby\s+(\d+)\s+ipv6\s+([0-9a-fA-F:]+)$/i);
   if (!match) return { success: false, error: '% Invalid standby command' };
 
@@ -535,7 +535,7 @@ export function cmdStandbyIpv6(state: SwitchState, input: string, _ctx: CommandC
 }
 
 export function cmdStandbyPreempt(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
   const match = input.match(/^standby\s+(\d+)\s+preempt$/i);
   if (!match) return { success: false, error: '% Invalid standby command' };
 
@@ -557,7 +557,7 @@ export function cmdStandbyPreempt(state: SwitchState, input: string, _ctx: Comma
  */
 export function cmdDescription(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state) || !state.currentInterface) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^description\s+(.+)$/i);

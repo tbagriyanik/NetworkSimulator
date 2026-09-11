@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+﻿import { useCallback } from 'react';
 import { generateRandomLinkLocalIpv4 } from '@/lib/network/linkLocal';
 import { useAppStore } from '@/lib/store/appStore';
 import { useMultiWindowStore } from '@/hooks/useMultiWindowStore';
@@ -143,7 +143,7 @@ export function useProjectReset({
         macAddress: '0011.2233.4401',
         ip: '',
         status: 'online',
-        switchModel: 'WS-C2960-24TT-L',
+        switchModel: 'NS-L2-24TT-L',
         ports: [
           ...Array.from({ length: 24 }, (_, i) => ({ id: `fa0/${i + 1}`, label: `Fa0/${i + 1}`, status: 'disconnected' as const })),
           { id: 'gi0/1', label: 'Gi0/1', status: 'disconnected' as const },
@@ -220,7 +220,7 @@ export function useProjectReset({
           macAddress: '0011.2233.4401',
           ip: '',
           status: 'online',
-          switchModel: 'WS-C2960-24TT-L',
+          switchModel: 'NS-L2-24TT-L',
           ports: [
             { id: 'console', label: 'Console', status: 'disconnected' as const },
             ...Array.from({ length: 24 }, (_, i) => ({ id: `fa0/${i + 1}`, label: `Fa0/${i + 1}`, status: 'disconnected' as const })),

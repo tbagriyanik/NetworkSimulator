@@ -330,7 +330,7 @@ function handlePasswordInput(state: SwitchState, password: string, language: 'tr
 
   return {
     success: false,
-    error: IOS_ERRORS.badPasswords,
+    error: CLI_ERRORS.badPasswords,
     newState: {
       awaitingPassword: true,
       passwordContext: state.passwordContext
@@ -345,7 +345,7 @@ function handleFtpSessionCommand(
   ctx: { devices?: CanvasDevice[]; connections?: CanvasConnection[]; deviceStates?: Map<string, SwitchState>; sourceDeviceId?: string }
 ): CommandResult {
   const session = state.ftpSession;
-  if (!session) return { success: false, error: IOS_ERRORS.unknown };
+  if (!session) return { success: false, error: CLI_ERRORS.unknown };
   const target = session.targetDeviceId ? ctx.devices?.find(d => d.id === session.targetDeviceId) : findDeviceByHost(ctx, session.host);
   const targetState = session.targetDeviceId ? ctx.deviceStates?.get(session.targetDeviceId) : target ? ctx.deviceStates?.get(target.id) : undefined;
   const ftp = targetState?.services?.ftp;
@@ -433,7 +433,7 @@ function handleMailSessionCommand(
   ctx: { devices?: CanvasDevice[]; connections?: CanvasConnection[]; deviceStates?: Map<string, SwitchState>; sourceDeviceId?: string }
 ): CommandResult {
   const session = state.mailSession;
-  if (!session) return { success: false, error: IOS_ERRORS.unknown };
+  if (!session) return { success: false, error: CLI_ERRORS.unknown };
   const target = session.targetDeviceId ? ctx.devices?.find(d => d.id === session.targetDeviceId) : findDeviceByHost(ctx, session.domain || session.address);
   const targetState = session.targetDeviceId ? ctx.deviceStates?.get(session.targetDeviceId) : target ? ctx.deviceStates?.get(target.id) : undefined;
   const mail = targetState?.services?.mail;
@@ -510,7 +510,7 @@ function handleMailSessionCommand(
 
 // Import encryption functions
 import { verifyMd5Password, encryptType7Password } from './crypto';
-import { IOS_ERRORS } from './core/iosErrors';
+import { CLI_ERRORS } from './core/cliErrors';
 
 export {
   handleConsoleConnect,

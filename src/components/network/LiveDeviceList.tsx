@@ -103,20 +103,21 @@ function getRecommendedCliCommands(
       });
     }
 
-    const rawStateAny = rawState as any;
+    const rawStateAny = rawState as unknown as Record<string, unknown>;
     if (rawStateAny.ipRoutes && Array.isArray(rawStateAny.ipRoutes) && rawStateAny.ipRoutes.length > 0) {
-      rawStateAny.ipRoutes.forEach((route: any) => {
+      rawStateAny.ipRoutes.forEach((route: Record<string, unknown>) => {
         cmds.push({
-          cmd: `ip route ${route.prefix || route.network || '0.0.0.0'} ${route.mask || '0.0.0.0'} ${route.nextHop || route.interface || ''}`,
+          cmd: `ip route ${route.prefix || route.network || '0.0.0.0'} ${route.mask || '0.0.0.0'} ${(route.nextHop as string) || (route.interface as string) || ''}`,
           desc: isTR ? 'Statik Yönlendirme Kuralı' : 'Static Route',
           mode: '(config)#'
         });
       });
     }
 
-    if (rawStateAny.ospf?.enabled) {
+    const ospfObj = rawStateAny.ospf as { enabled?: boolean; processId?: number; networks?: Array<{ network?: string }> } | undefined;
+    if (ospfObj?.enabled) {
       cmds.push({
-        cmd: `router ospf ${rawStateAny.ospf.processId || 1}\n network ${rawStateAny.ospf.networks?.[0]?.network || '192.168.1.0'} 0.0.0.255 area 0`,
+        cmd: `router ospf ${ospfObj.processId || 1}\n network ${ospfObj.networks?.[0]?.network || '192.168.1.0'} 0.0.0.255 area 0`,
         desc: isTR ? 'OSPF Yönlendirme Yapılandırması' : 'OSPF Routing Config',
         mode: '(config)#'
       });

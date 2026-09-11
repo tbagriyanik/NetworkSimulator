@@ -11,9 +11,9 @@ const mockCtx: CommandContext = {
 
 function makeBaseState(overrides: Record<string, any> = {}): SwitchState {
   return {
-    hostname: 'ASA',
+    hostname: 'NS-FW',
     macAddress: '00:11:22:33:44:55',
-    switchModel: 'WS-C2960-24TT-L' as const,
+    switchModel: 'NS-L2-24TT-L' as const,
     switchLayer: 'L2' as const,
     currentMode: 'config' as const,
     currentInterface: 'gi0/1',
@@ -75,8 +75,8 @@ describe('firewallHandlers', () => {
       });
       const result = firewallHandlers['no nameif'](state, 'no nameif', mockCtx);
       expect(result.success).toBe(true);
-      const updatedPort = (result.newState as any)?.ports?.['gi0/1'];
-      expect(updatedPort.nameif).toBeUndefined();
+      const updatedPort = result.newState?.ports?.['gi0/1'];
+      expect(updatedPort?.nameif).toBeUndefined();
     });
 
     it('should return error when no interface selected', () => {
@@ -91,15 +91,15 @@ describe('firewallHandlers', () => {
       const state = makeBaseState();
       const result = firewallHandlers['nameif'](state, 'nameif inside', mockCtx);
       expect(result.success).toBe(true);
-      const updatedPort = (result.newState as any)?.ports?.['gi0/1'];
-      expect(updatedPort.nameif).toBe('inside');
+      const updatedPort = result.newState?.ports?.['gi0/1'];
+      expect(updatedPort?.nameif).toBe('inside');
     });
 
     it('should auto-set security level 100 for inside', () => {
       const state = makeBaseState();
       const result = firewallHandlers['nameif'](state, 'nameif inside', mockCtx);
-      const updatedPort = (result.newState as any)?.ports?.['gi0/1'];
-      expect(updatedPort.securityLevel).toBe(100);
+      const updatedPort = result.newState?.ports?.['gi0/1'];
+      expect(updatedPort?.securityLevel).toBe(100);
     });
 
     it('should return error when no interface selected', () => {
@@ -114,8 +114,8 @@ describe('firewallHandlers', () => {
       const state = makeBaseState();
       const result = firewallHandlers['security-level'](state, 'security-level 50', mockCtx);
       expect(result.success).toBe(true);
-      const updatedPort = (result.newState as any)?.ports?.['gi0/1'];
-      expect(updatedPort.securityLevel).toBe(50);
+      const updatedPort = result.newState?.ports?.['gi0/1'];
+      expect(updatedPort?.securityLevel).toBe(50);
     });
 
     it('should reject invalid security level', () => {

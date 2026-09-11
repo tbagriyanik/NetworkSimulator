@@ -190,13 +190,13 @@ export function cmdShowCdpNeighbors(
       if (connectedDevice) {
         const deviceType = connectedDevice.type;
         let capability = 'Switch';
-        let platform = 'WS-C2960-24TT-L';
-        let version = 'NOS Software, C2960 Software (C2960-LANBASEK9-M), Version 15.0(2)SE4, RELEASE SOFTWARE (fc1)';
+        let platform = 'NS-L2-24TT-L';
+        let version = 'NOS Software, NS-L2 Software (NS-L2-LANBASEK9-M), Version 15.0(2)SE4, RELEASE SOFTWARE (fc1)';
 
         if (deviceType === 'router') {
           capability = 'Router';
-          platform = 'C2911';
-          version = 'NOS Software, C2900 Software (C2900-UNIVERSALK9-M), Version 15.1(4)M4, RELEASE SOFTWARE (fc2)';
+          platform = 'NS-R-2911';
+          version = 'NOS Software, NS-R Software (NS-R-UNIVERSALK9-M), Version 15.1(4)M4, RELEASE SOFTWARE (fc2)';
         } else if (deviceType === 'pc') {
           capability = 'Host';
           platform = 'PC / Workstation';
@@ -207,7 +207,7 @@ export function cmdShowCdpNeighbors(
           version = 'Embedded MicroOS v2.4';
         } else if (deviceType === 'wlc') {
           capability = 'Switch, WLAN';
-          platform = 'AIR-CT2504-K9';
+          platform = 'NS-WLC-2504';
           version = 'NOS Software, Version 8.5.140.0';
         } else if (deviceType === 'firewall') {
           capability = 'Router';
@@ -261,17 +261,17 @@ export function cmdShowCdpNeighbors(
       if (connectedDevice) {
         const deviceType = connectedDevice.type;
         let capability = 'S';
-        let platform = 'WS-C2960-24TT-L';
+        let platform = 'NS-L2-24TT-L';
 
         if (deviceType === 'router') {
           capability = 'R';
-          platform = 'C2911';
+          platform = 'NS-R-2911';
         } else if (deviceType === 'pc' || deviceType === 'iot') {
           capability = 'H';
           platform = deviceType === 'pc' ? 'PC' : 'IoT';
         } else if (deviceType === 'wlc') {
           capability = 'S';
-          platform = 'AIR-CT2504';
+          platform = 'NS-WLC-2504';
         } else if (deviceType === 'firewall') {
           capability = 'R';
           platform = 'ASA5505';
@@ -815,11 +815,11 @@ export function cmdShowLldp(state: SwitchState, input: string, ctx: CommandConte
           if (deviceType === 'router') {
             capability = 'B,R';
             enabledCapability = 'B,R';
-            systemDescription = 'NOS Software, 7200 Series Software';
+            systemDescription = 'NetSim NOS, Router Series Software';
           } else if (deviceType === 'switchL2' || deviceType === 'switchL3') {
             capability = 'B';
             enabledCapability = 'B';
-            systemDescription = 'NOS Software, C2960 Software';
+            systemDescription = 'NetSim NOS, NS-L2 Software';
           } else if (deviceType === 'pc') {
             capability = 'S';
             enabledCapability = 'S';
@@ -831,11 +831,11 @@ export function cmdShowLldp(state: SwitchState, input: string, ctx: CommandConte
           } else if (deviceType === 'wlc') {
             capability = 'B,W';
             enabledCapability = 'B,W';
-            systemDescription = 'IOS-XE Software, Wireless LAN Controller';
+            systemDescription = 'NetSim Software, Wireless LAN Controller';
           } else if (deviceType === 'firewall') {
             capability = 'B,R';
             enabledCapability = 'B,R';
-            systemDescription = 'ASA Software, Adaptive Security Appliance';
+            systemDescription = 'NetSim Software, NetSim Firewall';
           }
 
           output += `------------------------------------------------\n`;

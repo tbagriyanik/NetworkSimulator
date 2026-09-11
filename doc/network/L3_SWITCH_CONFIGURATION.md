@@ -404,7 +404,7 @@ Switch(config-if)# exit
 
 ## References
 
--  Catalyst 2960 (L2): Limited to VLAN management only
--  Catalyst 3650 (L3): Full inter-VLAN routing support
+-  2960 (L2): Limited to VLAN management only
+-  3650 (L3): Full inter-VLAN routing support
 -  NOS Command Reference: ip routing, no switchport, sdm prefer
 -  Documentation: L2 vs L3 switching differences

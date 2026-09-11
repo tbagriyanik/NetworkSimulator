@@ -4,7 +4,9 @@ import { cmdClearArpCache, cmdClearMacAddressTable, cmdClearCounters } from '@/l
 import { getInterfaceStateUpdate } from '@/lib/network/core/commandHelpers';
 import { cmdShowIpRoute } from '@/lib/network/core/showRoutingDisplay';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
-import type { SwitchState } from '@/lib/network/types';
+import type { SwitchState } from '@/lib/network/types'; 
+import type { NetworkPacketFrame } from '@/lib/network/forwarding/packetFrame'; 
+import type { CommandContext } from '@/lib/network/core/commandTypes';
 
 describe('Features 11 - 15: Decision Explanations, ACL Trace, Clear Commands & Interface State Updates', () => {
   let devices: CanvasDevice[];
@@ -13,14 +15,14 @@ describe('Features 11 - 15: Decision Explanations, ACL Trace, Clear Commands & I
 
   beforeEach(() => {
     devices = [
-      { id: 'PC1', name: 'PC1', type: 'pc', x: 100, y: 100, ip: '10.0.0.2', subnetMask: '255.255.255.0', macAddress: '00:11:22:33:44:55' } as any,
-      { id: 'R1', name: 'R1', type: 'router', x: 200, y: 100 } as any,
-      { id: 'PC2', name: 'PC2', type: 'pc', x: 300, y: 100, ip: '192.168.1.2', subnetMask: '255.255.255.0', macAddress: 'AA:BB:CC:DD:EE:FF' } as any,
+      { id: 'PC1', name: 'PC1', type: 'pc', x: 100, y: 100, ip: '10.0.0.2', subnetMask: '255.255.255.0', macAddress: '00:11:22:33:44:55' } as unknown as CanvasDevice,
+      { id: 'R1', name: 'R1', type: 'router', x: 200, y: 100 } as unknown as CanvasDevice,
+      { id: 'PC2', name: 'PC2', type: 'pc', x: 300, y: 100, ip: '192.168.1.2', subnetMask: '255.255.255.0', macAddress: 'AA:BB:CC:DD:EE:FF' } as unknown as CanvasDevice,
     ];
 
     connections = [
-      { id: 'c1', sourceDeviceId: 'PC1', sourcePort: 'Eth0', targetDeviceId: 'R1', targetPort: 'Gi0/0' } as any,
-      { id: 'c2', sourceDeviceId: 'R1', sourcePort: 'Gi0/1', targetDeviceId: 'PC2', targetPort: 'Eth0' } as any,
+      { id: 'c1', sourceDeviceId: 'PC1', sourcePort: 'Eth0', targetDeviceId: 'R1', targetPort: 'Gi0/0' } as unknown as CanvasConnection,
+      { id: 'c2', sourceDeviceId: 'R1', sourcePort: 'Gi0/1', targetDeviceId: 'PC2', targetPort: 'Eth0' } as unknown as CanvasConnection,
     ];
 
     deviceStates = new Map<string, SwitchState>([
@@ -30,7 +32,7 @@ describe('Features 11 - 15: Decision Explanations, ACL Trace, Clear Commands & I
           ports: {
             Eth0: { id: 'Eth0', name: 'Ethernet0', status: 'connected', shutdown: false, vlan: 1, mode: 'access', duplex: 'full', speed: '1000', type: 'fastethernet', ipAddress: '10.0.0.2', subnetMask: '255.255.255.0' },
           },
-        } as any,
+        } as unknown as SwitchState,
       ],
       [
         'R1',
@@ -50,7 +52,7 @@ describe('Features 11 - 15: Decision Explanations, ACL Trace, Clear Commands & I
           macAddressTable: [
             { mac: '00:11:22:33:44:55', vlan: 1, port: 'Gi0/0', type: 'DYNAMIC' },
           ],
-        } as any,
+        } as unknown as SwitchState,
       ],
       [
         'PC2',
@@ -58,13 +60,14 @@ describe('Features 11 - 15: Decision Explanations, ACL Trace, Clear Commands & I
           ports: {
             Eth0: { id: 'Eth0', name: 'Ethernet0', status: 'connected', shutdown: false, vlan: 1, mode: 'access', duplex: 'full', speed: '1000', type: 'fastethernet', ipAddress: '192.168.1.2', subnetMask: '255.255.255.0' },
           },
-        } as any,
+        } as unknown as SwitchState,
       ],
     ]);
   });
 
   it('Feature 11: Route lookup provides decision explanation in pipeline trace', () => {
-    const frame = {
+    const frame: NetworkPacketFrame = {
+      id: 'f1',
       srcMac: '00:11:22:33:44:55',
       dstMac: 'AA:BB:CC:DD:EE:FF',
       srcIp: '10.0.0.2',
@@ -73,17 +76,21 @@ describe('Features 11 - 15: Decision Explanations, ACL Trace, Clear Commands & I
       ttl: 64,
       vlanId: 1,
       ingressPortId: 'Gi0/0',
+      timestamp: Date.now(),
+      etherType: '0x0800',
+      length: 74,
+      info: 'ICMP Echo Request',
     };
 
     // The routed hop's forward trace must carry the route decision explanation
-    const res = runFullPacketPipeline(frame as any, 'R1', devices, deviceStates, connections);
+    const res = runFullPacketPipeline(frame, 'R1', devices, deviceStates, connections);
     expect(res.allTraces.length).toBeGreaterThan(0);
     const routedTrace = res.allTraces.find(t => t.deviceId === 'R1' && /LPM 192\.168\.1\.0\/24 \[AD:0\/Metric:0\] via Gi0\/1/.test(t.reason));
     expect(routedTrace).toBeDefined();
 
     // CLI: show ip route <destination> exposes the same decision 
     const r1State = deviceStates.get('R1')!;
-    const ctx = { sourceDeviceId: 'R1', devices, connections } as any;
+    const ctx: CommandContext = { language: 'en', sourceDeviceId: 'R1', devices, connections, deviceStates };
     const lookup = cmdShowIpRoute(r1State, 'show ip route 192.168.1.2', ctx);
     expect(lookup.success).toBe(true);
     expect(lookup.output).toContain('Routing entry for 192.168.1.0/24');
@@ -111,7 +118,8 @@ describe('Features 11 - 15: Decision Explanations, ACL Trace, Clear Commands & I
     };
     r1State.ports['Gi0/0'].accessGroupIn = '100';
 
-    const frame = {
+    const frame: NetworkPacketFrame = {
+      id: 'f1',
       srcMac: '00:11:22:33:44:55',
       dstMac: 'AA:BB:CC:DD:EE:FF',
       srcIp: '10.0.0.2',
@@ -120,9 +128,13 @@ describe('Features 11 - 15: Decision Explanations, ACL Trace, Clear Commands & I
       ttl: 64,
       vlanId: 1,
       ingressPortId: 'Gi0/0',
+      timestamp: Date.now(),
+      etherType: '0x0800',
+      length: 74,
+      info: 'ICMP Echo Request',
     };
 
-    const res = runFullPacketPipeline(frame as any, 'R1', devices, deviceStates, connections);
+    const res = runFullPacketPipeline(frame, 'R1', devices, deviceStates, connections);
     expect(res.allTraces.length).toBeGreaterThan(0);
     // The packet must be stopped by the ingress ACL with an ACL-category drop trace
     const aclDrop = res.allTraces.find(t => t.stage === 'acl-ingress' && t.action === 'drop');
@@ -134,7 +146,7 @@ describe('Features 11 - 15: Decision Explanations, ACL Trace, Clear Commands & I
 
   it('Feature 13: Verifies clear arp / clear mac / clear counters commands', () => {
     const r1State = deviceStates.get('R1')!;
-    const ctx = { sourceDeviceId: 'R1', deviceStates } as any;
+    const ctx: CommandContext = { language: 'en', sourceDeviceId: 'R1', deviceStates };
 
     // Seed counters on both stat systems so the reset is observable
     r1State.ports['Gi0/0'].statistics = { inputPackets: 42, outputPackets: 17, drops: 3, lastCleared: 0 };
@@ -190,7 +202,7 @@ describe('Features 11 - 15: Decision Explanations, ACL Trace, Clear Commands & I
   const newStateFrom = (res: { newState?: Partial<SwitchState> }): SwitchState => res.newState as SwitchState;
 
   it('Feature 14: Recalculates topology and flushes stale entries on interface shutdown/no shutdown', () => {
-    const ctx = { sourceDeviceId: 'R1', deviceStates, connections } as any;
+    const ctx: CommandContext = { language: 'en', sourceDeviceId: 'R1', deviceStates, connections };
     const r1State = deviceStates.get('R1')!;
     const updatedState = {
       ...r1State,

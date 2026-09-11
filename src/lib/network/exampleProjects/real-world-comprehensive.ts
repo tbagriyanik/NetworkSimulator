@@ -1,4 +1,4 @@
-import {
+﻿import {
   baseProjectData,
   connectPorts,
   createFirewallDevice,
@@ -181,9 +181,9 @@ const example = (isTr: boolean): ExampleProject => {
     ,{ id: 'services-note', text: isTr ? 'İLERİ DÜZEY LAB\n\nSunucu: DNS + DHCP + HTTP + FTP + MAIL\nYönetim: SSH (22) güvenli, TELNET (23) yalnızca lab/test\n\nSW-CORE: L3 SVI routing + IPv6\nSW-CORE ↔ SW-ACCESS: 802.1Q trunk, VTP domain HQ-LAB\nSTP: root SW-CORE\nPort-channel: Gi1/0/6-7 (LACP)\nGüvenlik: enable secret, console/vty parola, port-security.' : 'ADVANCED LAB\n\nServer: DNS + DHCP + HTTP + FTP + MAIL\nManagement: SSH (22) secure, TELNET (23) lab/test only\n\nSW-CORE: L3 SVI routing + IPv6\nSW-CORE ↔ SW-ACCESS: 802.1Q trunk, VTP domain HQ-LAB\nSTP: SW-CORE is root\nPort-channel: Gi1/0/6-7 (LACP)\nSecurity: enable secret, console/vty password, port-security.', x: 50, y: 300, width: 540, height: 250, color: 'var(--color-error-500)', font: 'verdana', fontSize: 12, opacity: 0.75 },
     { id: 'iot-ip-note', text: isTr ? 'WLC + IoT BAĞLANTISI\n\nWLC SSID: HQ-IoT\nGüvenlik: WPA2 / IoT-Only-2026\nAğ: 10.80.10.0/24\nAğ geçidi: 10.80.10.1\n\nIoT-TEMP      10.80.10.10\nIoT-HUMIDITY  10.80.10.11\nIoT-MOTION    10.80.10.12\nIoT-LIGHT     10.80.10.13\n\nIoT cihazları kablosuz olarak WLC’nin HQ-IoT WLAN’ına katılır. WLC, SSID ve erişim politikasını merkezi olarak yönetir.' : 'WLC + IoT CONNECTION\n\nWLC SSID: HQ-IoT\nSecurity: WPA2 / IoT-Only-2026\nNetwork: 10.80.10.0/24\nGateway: 10.80.10.1\n\nIoT-TEMP      10.80.10.10\nIoT-HUMIDITY  10.80.10.11\nIoT-MOTION    10.80.10.12\nIoT-LIGHT     10.80.10.13\n\nIoT devices join the WLC HQ-IoT WLAN wirelessly. The WLC centrally manages the SSID and access policy.', x: 1450, y: 1680, width: 600, height: 260, color: 'var(--color-success-500)', font: 'verdana', fontSize: 12, opacity: 0.75 }
   ];
-  const floorState = createInitialState('00:50:00:00:60:02', 'WS-C3650-24PS');
+  const floorState = createInitialState('00:50:00:00:60:02', 'NS-L3-24PS');
   floorState.hostname = 'SW-FLOOR-2';
-  floorState.switchModel = 'WS-C3650-24PS';
+  floorState.switchModel = 'NS-L3-24PS';
   floorState.switchLayer = 'L3';
   floorState.ipRouting = true;
   floorState.vlans[60] = { id: 60, name: 'FLOOR-USERS', status: 'active', ports: ['gi1/0/2', 'gi1/0/3'] };
@@ -196,9 +196,9 @@ const example = (isTr: boolean): ExampleProject => {
   floorState.ports['gi1/0/2'] = { ...floorState.ports['gi1/0/2'], status: 'connected', vlan: 60, accessVlan: 60, mode: 'access', shutdown: false };
   floorState.ports['gi1/0/3'] = { ...floorState.ports['gi1/0/3'], status: 'connected', vlan: 60, accessVlan: 60, mode: 'access', shutdown: false };
 
-  const coreState = createInitialState('00:50:00:00:40:02', 'WS-C3650-24PS');
+  const coreState = createInitialState('00:50:00:00:40:02', 'NS-L3-24PS');
   coreState.hostname = 'SW-CORE';
-  coreState.switchModel = 'WS-C3650-24PS';
+  coreState.switchModel = 'NS-L3-24PS';
   coreState.switchLayer = 'L3';
   coreState.ipRouting = true;
   [10, 20, 40].forEach((vlan) => {
@@ -228,9 +228,9 @@ const example = (isTr: boolean): ExampleProject => {
   floorRouterState.ports['gi0/2'] = { ...floorRouterState.ports['gi0/2'], status: 'connected', adminStatus: 'up', operStatus: 'up', ipAddress: '10.50.10.1', subnetMask: '255.255.255.0', shutdown: false };
   floorRouterState.ports['gi0/3'] = { ...floorRouterState.ports['gi0/3'], status: 'connected', adminStatus: 'up', operStatus: 'up', ipAddress: '10.50.10.254', subnetMask: '255.255.255.0', shutdown: false };
 
-  const accessState = createInitialState('00:50:00:00:10:02', 'WS-C2960-24TT-L');
+  const accessState = createInitialState('00:50:00:00:10:02', 'NS-L2-24TT-L');
   accessState.hostname = 'SW-ACCESS';
-  accessState.switchModel = 'WS-C2960-24TT-L';
+  accessState.switchModel = 'NS-L2-24TT-L';
   accessState.switchLayer = 'L2';
   accessState.vlans[10] = { id: 10, name: 'OFFICE', status: 'active', ports: ['fa0/1', 'fa0/2', 'fa0/3'] };
   accessState.ports['vlan10'] = {

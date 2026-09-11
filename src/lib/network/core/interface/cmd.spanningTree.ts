@@ -1,4 +1,4 @@
-import { iosModeError } from '../iosErrors';
+import { cliModeError } from '../cliErrors';
 import type { CommandContext } from '../commandTypes';
 import type { SwitchState, CommandResult, Port, EtherChannelMode } from '../../types';
 import { getPvstUpdate } from '../commandHelpers';
@@ -20,7 +20,7 @@ export function cmdSpanningTreePortfast(state: SwitchState, _input: string, _ctx
  */
 export function cmdSpanningTreeBpduguard(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state)) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^spanning-tree\s+bpduguard(?:\s+(enable|disable))?$/i);
@@ -66,7 +66,7 @@ export function cmdNoSpanningTree(state: SwitchState, _input: string, _ctx: Comm
 
 export function cmdChannelGroup(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state)) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^channel-group\s+(\d+)\s+mode\s+(active|passive|on|desirable|auto)$/i);
@@ -106,7 +106,7 @@ export function cmdNoChannelGroup(state: SwitchState, _input: string, _ctx: Comm
 
 export function cmdSpanningTreeBpduguardDisable(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state)) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const updatePort = (port: Port) => {
@@ -127,7 +127,7 @@ export function cmdSpanningTreeBpduguardDisable(state: SwitchState, _input: stri
 
 export function cmdSpanningTreeCost(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state)) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^spanning-tree\s+(?:vlan\s+\d+\s+)?cost\s+(\d+)$/i);
@@ -176,7 +176,7 @@ export function cmdSpanningTreeCost(state: SwitchState, input: string, ctx: Comm
 
 export function cmdNoSpanningTreeCost(state: SwitchState, _input: string, ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state)) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const updatePort = (port: Port) => {
@@ -219,7 +219,7 @@ export function cmdNoSpanningTreeCost(state: SwitchState, _input: string, ctx: C
 
 export function cmdSpanningTreePriority(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state)) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^spanning-tree\s+priority\s+(\d+)$/i);

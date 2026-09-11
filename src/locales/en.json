@@ -584,7 +584,7 @@
   "switchMode": "Switch Mode",
   "switchTasks": "Switch to Tasks",
   "switchTerminal": "switchTerminal",
-  "switchTitle": "Network 2960 Switch",
+  "switchTitle": "Network L2 Switch",
   "syslogStarted": "*** Syslog client started",
   "tabComplete": "command completion",
   "tabDescCmd": "Execute commands like ping, ipconfig in PC Command Prompt (CMD).",

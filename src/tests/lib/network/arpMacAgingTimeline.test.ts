@@ -8,7 +8,7 @@ const baseSwitchState = (id: string): SwitchState => ({
   hostname: id,
   macAddress: '0000.0000.0001',
   deviceType: 'switch',
-  switchModel: 'WS-C2960-24TT-L',
+  switchModel: 'NS-L2-24TT-L',
   switchLayer: 'L2',
   currentMode: 'privileged',
   ports: {
@@ -24,7 +24,7 @@ const baseSwitchState = (id: string): SwitchState => ({
   arpCache: [],
   ipRouting: false,
   bootTime: Date.now(),
-} as any);
+} as unknown as SwitchState);
 
 describe('ARP/MAC aging event timeline', () => {
   it('runAgingTick reports expired ARP entries with device attribution', () => {
@@ -67,7 +67,7 @@ describe('ARP/MAC aging event timeline', () => {
     ];
     const states = new Map<string, SwitchState>([['SW1', state]]);
     const devices: CanvasDevice[] = [
-      { id: 'SW1', name: 'SW1', type: 'switchL2', x: 0, y: 0, ip: '192.168.1.1', macAddress: '00:00:00:00:00:01' } as any,
+      { id: 'SW1', name: 'SW1', type: 'switchL2', x: 0, y: 0, ip: '192.168.1.1', macAddress: '00:00:00:00:00:01' } as unknown as CanvasDevice,
     ];
     const connections: CanvasConnection[] = [];
 
@@ -101,7 +101,7 @@ describe('ARP/MAC aging event timeline', () => {
     ];
     const states = new Map<string, SwitchState>([['SW1', state]]);
     const devices: CanvasDevice[] = [
-      { id: 'SW1', name: 'SW1', type: 'switchL2', x: 0, y: 0, ip: '192.168.1.1', macAddress: '00:00:00:00:00:01' } as any,
+      { id: 'SW1', name: 'SW1', type: 'switchL2', x: 0, y: 0, ip: '192.168.1.1', macAddress: '00:00:00:00:00:01' } as unknown as CanvasDevice,
     ];
 
     const res = runNetworkEventPipeline(states, devices, [], 1000);

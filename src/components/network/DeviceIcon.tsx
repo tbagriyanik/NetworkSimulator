@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { cn } from '@/lib/utils';
 import { DEVICE_ICON_COLORS } from './networkTopology.constants';
@@ -28,7 +28,7 @@ export function DeviceIcon({
     if (type === 'router') return DEVICE_ICON_COLORS.router;
     if (type === 'wlc') return DEVICE_ICON_COLORS.wlc;
     if (type === 'switchL2') return DEVICE_ICON_COLORS.switchL2;
-    if (type === 'switchL3') return (switchModel === 'WS-C3650-24PS' ? 'var(--color-purple-500)' : DEVICE_ICON_COLORS.switchL3);
+    if (type === 'switchL3') return (switchModel === 'NS-L3-24PS' ? 'var(--color-purple-500)' : DEVICE_ICON_COLORS.switchL3);
     return DEVICE_ICON_COLORS[type as keyof typeof DEVICE_ICON_COLORS] ?? DEVICE_ICON_COLORS.pc;
   })();
 

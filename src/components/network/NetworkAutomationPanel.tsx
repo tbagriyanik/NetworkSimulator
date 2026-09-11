@@ -1,15 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Terminal, Send, Play, Copy, Check, Code, Globe, Server, CheckCircle2, RotateCcw } from 'lucide-react';
 import type { CanvasDevice } from './networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { handleRestconfRequest, executeNetDevOpsPythonScript, RestconfResponse } from '@/lib/network/netdevopsEngine';
+import { DraggableWindowWrapper } from './DraggableWindowWrapper';
+import { useDrag } from '@/hooks/useDrag';
 
-interface NetworkAutomationPanelProps {
+export interface NetworkAutomationPanelProps {
   isOpen: boolean;
   onClose: () => void;
   devices: CanvasDevice[];
   deviceStates: Map<string, SwitchState>;
   isDark?: boolean;
+  defaultDeviceId?: string;
 }
 
 const SAMPLE_PYTHON_SCRIPT = `# NetDevOps Automated Provisioning Script
@@ -45,12 +48,21 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
   devices,
   deviceStates,
   isDark = true,
+  defaultDeviceId,
 }) => {
   const [activeTab, setActiveTab] = useState<'restconf' | 'python'>('restconf');
 
+  const automationDrag = useDrag({
+    storageKey: 'netdevops_automation_window',
+    defaultPosition: { x: 120, y: 120 },
+    defaultSize: { width: 920, height: 600 },
+    minSize: { width: 480, height: 380 },
+    mode: 'drag-resize',
+  });
+
   // RESTCONF State
   const [restconfMethod, setRestconfMethod] = useState<'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'>('GET');
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string>(devices[0]?.id || '');
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>(defaultDeviceId || devices[0]?.id || '');
   const [restconfUri, setRestconfUri] = useState<string>('/restconf/data/ietf-interfaces:interfaces');
   const [restconfBody, setRestconfBody] = useState<string>('{\n  "ietf-interfaces:interface": {\n    "name": "GigabitEthernet0/0",\n    "enabled": true\n  }\n}');
   const [restconfResponse, setRestconfResponse] = useState<RestconfResponse | null>(null);
@@ -60,6 +72,14 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
   const [pythonScript, setPythonScript] = useState<string>(SAMPLE_PYTHON_SCRIPT);
   const [pythonOutput, setPythonOutput] = useState<string>('');
   const [isRunningScript, setIsRunningScript] = useState(false);
+
+  useEffect(() => {
+    if (defaultDeviceId) {
+      setSelectedDeviceId(defaultDeviceId);
+    } else if (!selectedDeviceId && devices.length > 0) {
+      setSelectedDeviceId(devices[0].id);
+    }
+  }, [defaultDeviceId, devices, selectedDeviceId]);
 
   if (!isOpen) return null;
 
@@ -100,74 +120,56 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div
-        className={`w-full max-w-5xl h-[85vh] rounded-xl flex flex-col shadow-2xl border overflow-hidden ${
-          isDark ? 'bg-slate-900 border-slate-700 text-slate-100' : 'bg-white border-slate-200 text-slate-800'
-        }`}
-      >
-        {/* Header */}
-        <div
-          className={`px-6 py-4 border-b flex items-center justify-between shrink-0 ${
-            isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-slate-50 border-slate-200'
-          }`}
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold">
-              <Terminal className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold">NetDevOps & RESTCONF Otomasyon Konsolu</h3>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-semibold">
-                  API & Scripting
-                </span>
-              </div>
-              <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                RESTCONF YANG API sorgulama ve Python Netmiko otomasyon betikleri
-              </p>
-            </div>
+    <DraggableWindowWrapper
+      id="netdevops-automation-window"
+      title={
+        <div className="flex items-center gap-2">
+          <div className="w-5 h-5 rounded-md bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+            <Terminal className="w-3.5 h-3.5" />
           </div>
-
-          <div className="flex items-center gap-3">
-            <div className="flex rounded-lg p-0.5 border border-slate-700/60 bg-slate-950/40 text-xs">
-              <button
-                onClick={() => setActiveTab('restconf')}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-md transition-all ${
-                  activeTab === 'restconf'
-                    ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <Globe className="w-3.5 h-3.5" />
-                RESTCONF API
-              </button>
-              <button
-                onClick={() => setActiveTab('python')}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-md transition-all ${
-                  activeTab === 'python'
-                    ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <Code className="w-3.5 h-3.5" />
-                Python Netmiko
-              </button>
-            </div>
-
-            <button
-              onClick={onClose}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition ${
-                isDark ? 'border-slate-700 hover:bg-slate-800 text-slate-300' : 'border-slate-300 hover:bg-slate-100'
-              }`}
-            >
-              Kapat
-            </button>
-          </div>
+          <span className="font-bold text-xs">NetDevOps & RESTCONF Otomasyon</span>
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold">
+            API / Python
+          </span>
         </div>
-
-        {/* Content Area */}
-        <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+      }
+      isOpen={isOpen}
+      onClose={onClose}
+      isDark={isDark}
+      modalPosition={automationDrag.position}
+      modalSize={automationDrag.size}
+      handlePointerDown={automationDrag.handlePointerDown}
+      handleResizeStart={automationDrag.handleResizeStart}
+      collapsible
+      onEscapeKeyDown={onClose}
+      headerActions={
+        <div className="flex rounded-lg p-0.5 border border-slate-700/60 bg-slate-950/40 text-xs mr-2">
+          <button
+            onClick={() => setActiveTab('restconf')}
+            className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-semibold transition-all ${
+              activeTab === 'restconf'
+                ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Globe className="w-3 h-3" />
+            RESTCONF
+          </button>
+          <button
+            onClick={() => setActiveTab('python')}
+            className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-semibold transition-all ${
+              activeTab === 'python'
+                ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Code className="w-3 h-3" />
+            Netmiko (Python)
+          </button>
+        </div>
+      }
+    >
+      <div className={`flex-1 min-h-0 overflow-hidden flex flex-col ${isDark ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-800'}`}>
           {activeTab === 'restconf' && (
             <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden divide-y md:divide-y-0 md:divide-x divide-slate-800">
               {/* Left: Request Builder */}
@@ -182,7 +184,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                     <label className="text-[11px] font-semibold text-slate-400 mb-1 block">Metod</label>
                     <select
                       value={restconfMethod}
-                      onChange={(e) => setRestconfMethod(e.target.value as any)}
+                      onChange={(e) => setRestconfMethod(e.target.value as 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE')}
                       className={`w-full px-2.5 py-1.5 text-xs font-bold rounded-lg border focus:outline-none ${
                         isDark ? 'bg-slate-950 border-slate-700 text-emerald-400' : 'bg-white border-slate-300 text-emerald-600'
                       }`}
@@ -359,8 +361,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
               </div>
             </div>
           )}
-        </div>
       </div>
-    </div>
+    </DraggableWindowWrapper>
   );
 };

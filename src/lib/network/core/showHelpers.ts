@@ -34,11 +34,11 @@ export function getSTPCost(port: Port | undefined): number {
 }
 
 export function getSwitchDisplayProfile(state: SwitchState) {
-  const switchModel = state.switchModel || 'WS-C2960-24TT-L';
+  const switchModel = state.switchModel || 'NS-L2-24TT-L';
   const modelName = state.version?.modelName || '';
   const isRouter = isRouterModel(modelName) || isRouterModel(switchModel);
-  const isL3 = switchModel === 'WS-C3650-24PS' || (isRouter && !switchModel.includes('2960'));
-  const isFirewall = state.deviceType === 'firewall' || state.switchLayer === 'FW' || modelName.includes('ASA') || modelName.includes('Firepower');
+  const isL3 = switchModel === 'NS-L3-24PS' || (isRouter && !switchModel.includes('NS-L2'));
+  const isFirewall = state.deviceType === 'firewall' || state.switchLayer === 'FW' || modelName.includes('NS-FW');
 
   if (isFirewall) {
     const reportedGiCount = 2;
@@ -46,11 +46,11 @@ export function getSwitchDisplayProfile(state: SwitchState) {
       switchModel: 'Firewall',
       isL3: false,
       isRouter: false,
-      bootImage: 'asa-software.bin',
-      softwareImage: 'Adaptive Security Appliance Software',
-      rom: 'ASA boot loader',
-      bootldr: 'ASA Boot Loader',
-      systemImage: 'flash:asa-software.bin',
+      bootImage: 'fw-software.bin',
+      softwareImage: 'NetSim Firewall Software',
+      rom: 'NetSim boot loader',
+      bootldr: 'NetSim Boot Loader',
+      systemImage: 'flash:fw-software.bin',
       processor: 'Firewall processor (revision 01) with 8192K bytes of memory',
       reportedFeCount: 0,
       reportedGiCount,

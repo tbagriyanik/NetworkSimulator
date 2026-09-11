@@ -1,4 +1,4 @@
-import { iosModeError } from './iosErrors';
+import { cliModeError } from './cliErrors';
 import type { CommandHandler, CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult } from '../types';
 import { createStubHandler } from './stubCommandHints';
@@ -40,7 +40,7 @@ export const lineHandlers: Record<string, CommandHandler> = {
  */
 function cmdLineConsole(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^line\s+console\s+(\d+)$/i);
@@ -62,7 +62,7 @@ function cmdLineConsole(state: SwitchState, input: string, _ctx: CommandContext)
  */
 function cmdLineVty(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^line\s+vty\s+(\d+)\s+(\d+)$/i);
@@ -84,7 +84,7 @@ function cmdLineVty(state: SwitchState, input: string, _ctx: CommandContext): Co
  */
 function cmdPassword(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'line' || !state.currentLine) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^password\s+(.+)$/i);
@@ -117,7 +117,7 @@ function cmdPassword(state: SwitchState, input: string, _ctx: CommandContext): C
  */
 function cmdLogin(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'line' || !state.currentLine) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const newSecurity = { ...state.security };
@@ -148,7 +148,7 @@ function cmdLogin(state: SwitchState, input: string, _ctx: CommandContext): Comm
  */
 function cmdNoLogin(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'line' || !state.currentLine) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const newSecurity = { ...state.security };
@@ -178,7 +178,7 @@ function cmdNoLogin(state: SwitchState, _input: string, _ctx: CommandContext): C
  */
 function cmdTransportInput(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'line' || !state.currentLine) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^transport\s+input\s+(.+)$/i);
@@ -216,7 +216,7 @@ function cmdTransportInput(state: SwitchState, input: string, _ctx: CommandConte
  */
 function cmdLoggingSynchronous(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'line' || !state.currentLine) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const newSecurity = { ...state.security };
@@ -239,7 +239,7 @@ function cmdLoggingSynchronous(state: SwitchState, _input: string, _ctx: Command
  */
 function cmdExecTimeout(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'line' || !state.currentLine) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^exec-timeout\s+(\d+)(?:\s+(\d+))?$/i);
@@ -275,7 +275,7 @@ function cmdExecTimeout(state: SwitchState, input: string, _ctx: CommandContext)
  */
 function cmdNoPassword(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'line' || !state.currentLine) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const newSecurity = { ...state.security };
@@ -303,7 +303,7 @@ function cmdNoPassword(state: SwitchState, _input: string, _ctx: CommandContext)
  */
 function cmdNoTransportInput(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'line' || !state.currentLine) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const newSecurity = { ...state.security };
@@ -326,7 +326,7 @@ function cmdNoTransportInput(state: SwitchState, _input: string, _ctx: CommandCo
  */
 function cmdNoLoggingSynchronous(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'line' || !state.currentLine) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const newSecurity = { ...state.security };
@@ -349,7 +349,7 @@ function cmdNoLoggingSynchronous(state: SwitchState, _input: string, _ctx: Comma
  */
 function cmdNoExecTimeout(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'line' || !state.currentLine) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const newSecurity = { ...state.security };
@@ -377,7 +377,7 @@ function cmdNoExecTimeout(state: SwitchState, _input: string, _ctx: CommandConte
  */
 function cmdHistory(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'line' || !state.currentLine) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^history\s+size\s+(\d+)$/i);
@@ -411,7 +411,7 @@ function cmdHistory(state: SwitchState, input: string, _ctx: CommandContext): Co
  */
 function cmdNoHistory(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'line' || !state.currentLine) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const newSecurity = { ...state.security };
@@ -439,7 +439,7 @@ function cmdNoHistory(state: SwitchState, _input: string, _ctx: CommandContext):
  */
 function cmdExec(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'line' || !state.currentLine) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const newSecurity = { ...state.security };
@@ -467,7 +467,7 @@ function cmdExec(state: SwitchState, _input: string, _ctx: CommandContext): Comm
  */
 function cmdNoExec(state: SwitchState, _input: string, _cmd: CommandContext): CommandResult {
   if (state.currentMode !== 'line' || !state.currentLine) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const newSecurity = { ...state.security };
@@ -495,7 +495,7 @@ function cmdNoExec(state: SwitchState, _input: string, _cmd: CommandContext): Co
  */
 function cmdAutocommand(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'line' || !state.currentLine) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^autocommand\s+(.+)$/i);
@@ -523,7 +523,7 @@ function cmdAutocommand(state: SwitchState, input: string, _ctx: CommandContext)
  */
 function cmdNoAutocommand(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'line' || !state.currentLine) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const newSecurity = { ...state.security };
@@ -562,7 +562,7 @@ function cmdLine(_state: SwitchState, input: string, _ctx: CommandContext): Comm
  */
 function cmdPrivilegeLevel(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'line' || !state.currentLine) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^privilege\s+level\s+(\d+)$/i);

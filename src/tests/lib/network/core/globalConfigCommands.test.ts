@@ -1,4 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest'; 
+import type { SwitchState } from '@/lib/network/types'; 
+import type { CommandContext } from '@/lib/network/core/commandTypes';
 
 describe('Global Configuration Commands', () => {
   it('should configure IP routing', () => {
@@ -65,22 +67,22 @@ describe('Global Configuration Commands', () => {
       currentMode: 'config-std-nacl',
       currentNamedAcl: 'SECURE-ACL',
       accessLists: {},
-    } as any;
+    } as unknown as SwitchState;
 
-    const res1 = cmdNamedAclPermit(state, '20 permit 192.168.1.0 0.0.0.255', {} as any);
+    const res1 = cmdNamedAclPermit(state, '20 permit 192.168.1.0 0.0.0.255', {} as CommandContext);
     state = { ...state, ...res1.newState };
-    const res2 = cmdNamedAclDeny(state, '10 deny host 10.0.0.1', {} as any);
+    const res2 = cmdNamedAclDeny(state, '10 deny host 10.0.0.1', {} as CommandContext);
     state = { ...state, ...res2.newState };
 
-    expect(state.accessLists['SECURE-ACL']).toEqual([
+    expect(state.accessLists!['SECURE-ACL']).toEqual([
       '10 deny host 10.0.0.1',
       '20 permit 192.168.1.0 0.0.0.255',
     ]);
 
-    const res3 = cmdNamedAclNoPermit(state, 'no 10', {} as any);
+    const res3 = cmdNamedAclNoPermit(state, 'no 10', {} as CommandContext);
     state = { ...state, ...res3.newState };
 
-    expect(state.accessLists['SECURE-ACL']).toEqual([
+    expect(state.accessLists!['SECURE-ACL']).toEqual([
       '20 permit 192.168.1.0 0.0.0.255',
     ]);
   });

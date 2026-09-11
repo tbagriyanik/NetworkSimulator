@@ -16,7 +16,7 @@ const example = (isTr: boolean): ExampleProject => {
   const r1 = createRouterDevice('router-1', 'R1-Gateway', 380, 60, '192.168.1.1');
   const sw1 = createSwitchDevice('switch-1', 'SW1-Core', 380, 210);
 
-  // Standalone Access Points (Wireless-enabled Layer 3 Switches - WS-C3650-24PS)
+  // Standalone Access Points (Wireless-enabled Layer 3 Switches - NS-L3-24PS)
   const wap1 = createL3SwitchDevice('wap-1', 'WAP-Staff', 180, 360);
   wap1.ip = '192.168.10.2';
   wap1.wifi = {
@@ -182,8 +182,8 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'wap-multi-note',
       text: isTr
-        ? 'Amaç: Çoklu Wireless Destekli L3 Switch (WAP) ve VLAN tabanlı Multi-SSID kurumsal kablosuz dağıtımını incelemek.\n\nWireless L3 Switch WAP & Multi-SSID Laboratuvarı:\n1) WAP-Staff (3650 L3 Sw, 2.4GHz) -> SSID: Staff-WiFi (VLAN 10, WPA2-PSK: SecureStaff2026)\n2) WAP-Guest (3650 L3 Sw, 5GHz) -> SSID: Guest-WiFi (VLAN 20, Açık/Open)\n3) R1-Gateway üzerinde Inter-VLAN Routing (ROAS) ve DHCP havuzları aktiftir.\n4) SW1 Switch portları:\n   • Fa0/1: Trunk (R1 ile bağlantı)\n   • Fa0/2: Access VLAN 10 (WAP-Staff gi1/0/1)\n   • Fa0/3: Access VLAN 20 (WAP-Guest gi1/0/1)\n   • Fa0/4: Access VLAN 1 (Yönetim PC)\n5) Testler:\n   • Laptop-Staff > ping 192.168.10.1 (VLAN 10 Gateway testi)\n   • Laptop-Guest > ping 192.168.20.1 (VLAN 20 Gateway testi)\n   • Laptop-Staff > ping 192.168.20.101 (Inter-VLAN yönlendirme testi)\n   • Laptop-Staff > ping 192.168.10.2 (WAP-Staff L3 Switch IP)\n\n⚠️ Not: Ağı Yenile (F5)'
-        : 'Goal: Explore Wireless-enabled Layer 3 Switch WAPs and VLAN-based multi-SSID wireless deployment.\n\nWireless L3 Switch WAP & Multi-SSID Lab:\n1) WAP-Staff (3650 L3 Sw, 2.4GHz) -> SSID: Staff-WiFi (VLAN 10, WPA2-PSK: SecureStaff2026)\n2) WAP-Guest (3650 L3 Sw, 5GHz) -> SSID: Guest-WiFi (VLAN 20, Open)\n3) R1-Gateway handles Inter-VLAN Routing (ROAS) and DHCP.\n4) SW1 Switch ports:\n   • Fa0/1: Trunk (Link to R1)\n   • Fa0/2: Access VLAN 10 (WAP-Staff gi1/0/1)\n   • Fa0/3: Access VLAN 20 (WAP-Guest gi1/0/1)\n   • Fa0/4: Access VLAN 1 (Admin PC)\n5) Connectivity Tests:\n   • Laptop-Staff > ping 192.168.10.1 (VLAN 10 Gateway)\n   • Laptop-Guest > ping 192.168.20.1 (VLAN 20 Gateway)\n   • Laptop-Staff > ping 192.168.20.101 (Inter-VLAN routing test)\n   • Laptop-Staff > ping 192.168.10.2 (WAP-Staff L3 Switch IP)\n\n⚠️ Note: Refresh Network (F5)',
+        ? 'Amaç: Çoklu Wireless Destekli L3 Switch (WAP) ve VLAN tabanlı Multi-SSID kurumsal kablosuz dağıtımını incelemek.\n\nWireless L3 Switch WAP & Multi-SSID Laboratuvarı:\n1) WAP-Staff (NS-L3 Sw, 2.4GHz) -> SSID: Staff-WiFi (VLAN 10, WPA2-PSK: SecureStaff2026)\n2) WAP-Guest (NS-L3 Sw, 5GHz) -> SSID: Guest-WiFi (VLAN 20, Açık/Open)\n3) R1-Gateway üzerinde Inter-VLAN Routing (ROAS) ve DHCP havuzları aktiftir.\n4) SW1 Switch portları:\n   • Fa0/1: Trunk (R1 ile bağlantı)\n   • Fa0/2: Access VLAN 10 (WAP-Staff gi1/0/1)\n   • Fa0/3: Access VLAN 20 (WAP-Guest gi1/0/1)\n   • Fa0/4: Access VLAN 1 (Yönetim PC)\n5) Testler:\n   • Laptop-Staff > ping 192.168.10.1 (VLAN 10 Gateway testi)\n   • Laptop-Guest > ping 192.168.20.1 (VLAN 20 Gateway testi)\n   • Laptop-Staff > ping 192.168.20.101 (Inter-VLAN yönlendirme testi)\n   • Laptop-Staff > ping 192.168.10.2 (WAP-Staff L3 Switch IP)\n\n⚠️ Not: Ağı Yenile (F5)'
+        : 'Goal: Explore Wireless-enabled Layer 3 Switch WAPs and VLAN-based multi-SSID wireless deployment.\n\nWireless L3 Switch WAP & Multi-SSID Lab:\n1) WAP-Staff (NS-L3 Sw, 2.4GHz) -> SSID: Staff-WiFi (VLAN 10, WPA2-PSK: SecureStaff2026)\n2) WAP-Guest (NS-L3 Sw, 5GHz) -> SSID: Guest-WiFi (VLAN 20, Open)\n3) R1-Gateway handles Inter-VLAN Routing (ROAS) and DHCP.\n4) SW1 Switch ports:\n   • Fa0/1: Trunk (Link to R1)\n   • Fa0/2: Access VLAN 10 (WAP-Staff gi1/0/1)\n   • Fa0/3: Access VLAN 20 (WAP-Guest gi1/0/1)\n   • Fa0/4: Access VLAN 1 (Admin PC)\n5) Connectivity Tests:\n   • Laptop-Staff > ping 192.168.10.1 (VLAN 10 Gateway)\n   • Laptop-Guest > ping 192.168.20.1 (VLAN 20 Gateway)\n   • Laptop-Staff > ping 192.168.20.101 (Inter-VLAN routing test)\n   • Laptop-Staff > ping 192.168.10.2 (WAP-Staff L3 Switch IP)\n\n⚠️ Note: Refresh Network (F5)',
       x: 340,
       y: 620,
       width: 520,
@@ -333,10 +333,10 @@ const example = (isTr: boolean): ExampleProject => {
     'end'
   ];
 
-  // WAP-1 State (Staff - L3 Switch WS-C3650-24PS)
-  const wap1State = createInitialState('00:50:00:00:00:93', 'WS-C3650-24PS');
+  // WAP-1 State (Staff - L3 Switch NS-L3-24PS)
+  const wap1State = createInitialState('00:50:00:00:00:93', 'NS-L3-24PS');
   wap1State.hostname = 'WAP-Staff';
-  wap1State.switchModel = 'WS-C3650-24PS';
+  wap1State.switchModel = 'NS-L3-24PS';
   wap1State.switchLayer = 'L3';
   wap1State.deviceType = 'switchL3';
   wap1State.ipRouting = true;
@@ -365,10 +365,10 @@ const example = (isTr: boolean): ExampleProject => {
     }
   };
 
-  // WAP-2 State (Guest - L3 Switch WS-C3650-24PS)
-  const wap2State = createInitialState('00:50:00:00:00:94', 'WS-C3650-24PS');
+  // WAP-2 State (Guest - L3 Switch NS-L3-24PS)
+  const wap2State = createInitialState('00:50:00:00:00:94', 'NS-L3-24PS');
   wap2State.hostname = 'WAP-Guest';
-  wap2State.switchModel = 'WS-C3650-24PS';
+  wap2State.switchModel = 'NS-L3-24PS';
   wap2State.switchLayer = 'L3';
   wap2State.deviceType = 'switchL3';
   wap2State.ipRouting = true;

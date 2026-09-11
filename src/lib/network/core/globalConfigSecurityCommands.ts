@@ -1,4 +1,4 @@
-import { IOS_ERRORS, iosModeError } from './iosErrors';
+import { CLI_ERRORS, cliModeError } from './cliErrors';
 import type { CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult } from '../types';
 import { getPvstUpdate } from './commandHelpers';
@@ -9,7 +9,7 @@ import { encryptMd5Password, encryptType7Password } from '../crypto';
  */
 export function cmdNoSpanningTree(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const lang = ctx.language || 'en';
@@ -57,7 +57,7 @@ export function cmdNoSpanningTree(state: SwitchState, input: string, ctx: Comman
  */
 export function cmdNoUsername(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^no\s+username\s+(\S+)$/i);
@@ -85,7 +85,7 @@ export function cmdNoUsername(state: SwitchState, input: string, _ctx: CommandCo
  */
 export function cmdNoInterface(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^no\s+interface\s+vlan\s+(\d+)$/i);
@@ -116,7 +116,7 @@ export function cmdNoInterface(state: SwitchState, input: string, _ctx: CommandC
  * Spanning-Tree VLAN - Enable STP on VLAN or configure priority/root
  */
 export function cmdSpanningTreeVlan(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
 
   const match = input.match(/^spanning-tree\s+vlan\s+(\d+)(?:\s+(priority|root)(?:\s+(primary|secondary|\d+))?)?$/i);
   if (!match) return { success: false, error: '% Invalid spanning-tree vlan command' };
@@ -201,17 +201,17 @@ export function cmdSpanningTreeVlan(state: SwitchState, input: string, ctx: Comm
 }
 
 export function cmdSpanningTreePortfastDefault(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   return { success: true, output: 'PortFast will be configured in all non-trunking ports', newState: { spanningTreePortfastDefault: true } };
 }
 
 export function cmdErrdisableRecovery(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   return { success: true, output: 'Errdisable recovery configured' };
 }
 
 export function cmdVtpPassword(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^vtp\s+password\s+(\S+)$/i);
   if (!match) return { success: false, error: '% Invalid vtp password command' };
   return { success: true, newState: { vtpPassword: match[1] } };
@@ -221,7 +221,7 @@ export function cmdVtpPassword(state: SwitchState, input: string, _ctx: CommandC
  * IP ARP Inspection VLAN
  */
 export function cmdIpArpInspection(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^ip\s+arp\s+inspection\s+vlan\s+(.+)$/i);
   if (match) {
     const vlans = match[1].split(',').map((v: string) => v.trim());
@@ -235,7 +235,7 @@ export function cmdIpArpInspection(state: SwitchState, input: string, _ctx: Comm
 }
 
 export function cmdNoIpArpInspection(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^no\s+ip\s+arp\s+inspection\s+vlan\s+(.+)$/i);
   if (match && state.arpInspectionVlans) {
     const removeVlans = match[1].split(',').map((v: string) => v.trim());
@@ -253,7 +253,7 @@ export function cmdNoIpArpInspection(state: SwitchState, input: string, _ctx: Co
  * Crypto Key Generate RSA
  */
 export function cmdCryptoKeyGenerateRsa(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
 
   const match = input.match(/^crypto\s+key\s+generate\s+rsa(?:\s+modulus\s+(\d+))?$/i);
   const modulus = match?.[1] ? parseInt(match[1], 10) : 1024;
@@ -281,10 +281,10 @@ export function cmdCryptoKeyGenerateRsa(state: SwitchState, input: string, _ctx:
  * Crypto Key Zeroize RSA
  */
 export function cmdCryptoKeyZeroizeRsa(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
 
   if (!/^crypto\s+key\s+zeroize\s+rsa$/i.test(input)) {
-    return { success: false, error: IOS_ERRORS.invalidInput };
+    return { success: false, error: CLI_ERRORS.invalidInput };
   }
 
   if (!state.rsaKeys) {
@@ -313,12 +313,12 @@ export function cmdCryptoKeyZeroizeRsa(state: SwitchState, input: string, ctx: C
 
 export function cmdUsername(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^username\s+(\S+)(?:\s+privilege\s+(\d+))?(?:\s+(secret|password)\s+(.+))?$/i);
   if (!match) {
-    return { success: false, error: IOS_ERRORS.invalidInput };
+    return { success: false, error: CLI_ERRORS.invalidInput };
   }
 
   const username = match[1];
@@ -346,7 +346,7 @@ export function cmdUsername(state: SwitchState, input: string, _ctx: CommandCont
 
 export function cmdServicePasswordEncryption(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   return {
@@ -362,7 +362,7 @@ export function cmdServicePasswordEncryption(state: SwitchState, _input: string,
 
 export function cmdNoServicePasswordEncryption(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   return {
@@ -378,7 +378,7 @@ export function cmdNoServicePasswordEncryption(state: SwitchState, _input: strin
 
 export function cmdEnableSecret(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^enable\s+secret\s+(.+)$/i);
@@ -403,7 +403,7 @@ export function cmdEnableSecret(state: SwitchState, input: string, _ctx: Command
 
 export function cmdEnablePassword(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^enable\s+password\s+(.+)$/i);
@@ -429,7 +429,7 @@ export function cmdEnablePassword(state: SwitchState, input: string, _ctx: Comma
 
 export function cmdNoEnableSecret(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const newSecurity = { ...state.security };
@@ -442,7 +442,7 @@ export function cmdNoEnableSecret(state: SwitchState, _input: string, _ctx: Comm
 
 export function cmdNoEnablePassword(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const newSecurity = { ...state.security };
@@ -455,7 +455,7 @@ export function cmdNoEnablePassword(state: SwitchState, _input: string, _ctx: Co
 
 export function cmdBannerMotd(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^banner\s+motd\s+(.)([\s\S]*?)\1\s*$/i);
@@ -471,7 +471,7 @@ export function cmdBannerMotd(state: SwitchState, input: string, _ctx: CommandCo
 
 export function cmdNoBannerMotd(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   return {
@@ -482,7 +482,7 @@ export function cmdNoBannerMotd(state: SwitchState, _input: string, _ctx: Comman
 
 export function cmdBannerLogin(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^banner\s+login\s+(.)([\s\S]*?)\1\s*$/i);
@@ -498,7 +498,7 @@ export function cmdBannerLogin(state: SwitchState, input: string, _ctx: CommandC
 
 export function cmdNoBannerLogin(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   return {
@@ -509,7 +509,7 @@ export function cmdNoBannerLogin(state: SwitchState, _input: string, _ctx: Comma
 
 export function cmdBannerExec(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^banner\s+exec\s+(.)([\s\S]*?)\1\s*$/i);
@@ -525,7 +525,7 @@ export function cmdBannerExec(state: SwitchState, input: string, _ctx: CommandCo
 
 export function cmdNoBannerExec(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   return {

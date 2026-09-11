@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { executeCommand } from '../../../lib/network/executor';
-import type { SwitchState } from '../../../lib/network/types';
+import type { SwitchState, Port } from '../../../lib/network/types';
 
 function createMockState(overrides?: any): SwitchState {
   return {
     hostname: 'Switch1',
     macAddress: '0001.0002.0003',
-    switchModel: 'WS-C2960-24TT-L' as any,
+    switchModel: 'NS-L2-24TT-L',
     switchLayer: 'L2',
     deviceType: 'switch',
     currentMode: 'privileged',
@@ -88,7 +88,7 @@ describe('CLI Stubs & Feature Enhancements', () => {
     const r2 = executeCommand(state, 'switchport block unicast');
     expect(r2.success).toBe(true);
     state = mergeState(state, r2.newState);
-    expect((state.ports['FastEthernet0/1'] as any)?.blockUnicast).toBe(true);
+    expect((state.ports['FastEthernet0/1'] as Port & { blockUnicast?: boolean })?.blockUnicast).toBe(true);
 
     const r3 = executeCommand(state, 'no switchport protected');
     expect(r3.success).toBe(true);

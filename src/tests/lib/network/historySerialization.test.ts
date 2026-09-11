@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import type { SwitchState, CableInfo, Port } from '@/lib/network/types';
 import type { HistoryEntry, ProjectState } from '@/hooks/useHistory';
 import { encodeHistoryForFile, decodeHistoryFile } from '@/lib/network/historySerialization';
@@ -22,7 +22,7 @@ function makeSwitchState(hostname: string, withStp: boolean): SwitchState {
   const state: SwitchState = {
     hostname,
     ports,
-    switchModel: 'WS-C2960-24TT-L',
+    switchModel: 'NS-L2-24TT-L',
     switchLayer: 'L2',
     deviceType: 'switchL2',
     macAddress: '00:11:22:33:44:55',
@@ -40,7 +40,7 @@ function makeSwitchState(hostname: string, withStp: boolean): SwitchState {
     commandHistory: [],
     historyIndex: -1,
     bootTime: Date.now(),
-    version: { nosVersion: '12.2', modelName: 'WS-C2960-24TT-L', serialNumber: 'SN123', uptime: '1h' },
+    version: { nosVersion: '12.2', modelName: 'NS-L2-24TT-L', serialNumber: 'SN123', uptime: '1h' },
     macAddressTable: [],
     arpCache: [],
     stpState: withStp ? {

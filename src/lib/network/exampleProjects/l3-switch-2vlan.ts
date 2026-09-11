@@ -1,4 +1,4 @@
-import { createInitialState } from '../initialState';
+﻿import { createInitialState } from '../initialState';
 import { createL3SwitchDevice, createPcDevice, connectPorts, baseProjectData } from './helpers';
 ;
 ;
@@ -47,9 +47,9 @@ const example = (isTr: boolean): ExampleProject => {
     }
   ];
 
-  const l3Switch2State = createInitialState('00:1A:2B:3C:4D:70', 'WS-C3650-24PS');
+  const l3Switch2State = createInitialState('00:1A:2B:3C:4D:70', 'NS-L3-24PS');
   l3Switch2State.hostname = 'Switch2';
-  l3Switch2State.switchModel = 'WS-C3650-24PS';
+  l3Switch2State.switchModel = 'NS-L3-24PS';
   l3Switch2State.switchLayer = 'L3';
   l3Switch2State.ipRouting = true;
   l3Switch2State.vlans[10] = { id: 10, name: 'AG1', status: 'active', ports: ['GI1/0/1', 'GI1/0/2', 'GI1/0/5'] };
@@ -121,9 +121,9 @@ const example = (isTr: boolean): ExampleProject => {
     'end'
   ];
 
-  const l3Switch4State = createInitialState('00:1A:2B:3C:4D:71', 'WS-C3650-24PS');
+  const l3Switch4State = createInitialState('00:1A:2B:3C:4D:71', 'NS-L3-24PS');
   l3Switch4State.hostname = 'Switch4';
-  l3Switch4State.switchModel = 'WS-C3650-24PS';
+  l3Switch4State.switchModel = 'NS-L3-24PS';
   l3Switch4State.switchLayer = 'L3';
   l3Switch4State.ipRouting = true;
   l3Switch4State.vlans[10] = { id: 10, name: 'AG1', status: 'active', ports: ['GI1/0/1', 'GI1/0/2', 'GI1/0/5'] };

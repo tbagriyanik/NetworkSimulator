@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { computeLiveSummary } from '@/lib/network/liveSummary';
 import { SwitchState, SecurityConfig, CableType, Port } from '@/lib/network/types';
 import { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
@@ -24,7 +24,7 @@ function mockConnection(id: string, active: boolean): CanvasConnection {
 
 function mockState(overrides: Partial<SwitchState> = {}): SwitchState {
   return {
-    hostname: 'sw1', macAddress: '0011.0000.0000', switchModel: 'WS-C2960-24TT-L',
+    hostname: 'sw1', macAddress: '0011.0000.0000', switchModel: 'NS-L2-24TT-L',
     switchLayer: 'L2', currentMode: 'privileged', commandHistory: [],
     ports: {}, vlans: {}, security: defaultSecurity, runningConfig: [],
     historyIndex: 0, bootTime: Date.now(), ipRouting: false,

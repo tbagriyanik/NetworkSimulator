@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Vlan, Port } from '@/lib/network/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -114,17 +114,17 @@ export function VlanPanel({ vlans, ports, deviceName, deviceModel, onExecuteComm
       <CardHeader className={`py-3 px-5 border-b ${isDark ? 'border-secondary-500/60 bg-secondary-700' : 'border-secondary-200 bg-secondary-50'}`}>
         <div className="flex items-center justify-between gap-3">
           <CardTitle className={
-            deviceModel === 'ISR 4451 X' || deviceModel === 'WS-C3650-24PS'
+            deviceModel === 'NS-R-4451-X' || deviceModel === 'NS-L3-24PS'
               ? "text-purple-400 text-base sm:text-lg flex items-center gap-2"
-              : deviceModel === 'WS-C2960-24TT-L'
+              : deviceModel === 'NS-L2-24TT-L'
                 ? "text-success-400 text-base sm:text-lg flex items-center gap-2"
                 : "text-purple-400 text-base sm:text-lg flex items-center gap-2"
           }>
-            {deviceModel === 'ISR 4451 X' ? (
+            {deviceModel === 'NS-R-4451-X' ? (
               <RouterIcon className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
-            ) : deviceModel === 'WS-C3650-24PS' ? (
+            ) : deviceModel === 'NS-L3-24PS' ? (
               <SwitchIcon className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" isL3={true} />
-            ) : deviceModel === 'WS-C2960-24TT-L' ? (
+            ) : deviceModel === 'NS-L2-24TT-L' ? (
               <SwitchIcon className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" isL3={false} />
             ) : (
               <Layers className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />

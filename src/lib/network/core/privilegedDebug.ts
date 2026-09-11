@@ -1,4 +1,4 @@
-import { iosModeError } from './iosErrors';
+import { cliModeError } from './cliErrors';
 import type { CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult } from '../types';
 
@@ -7,7 +7,7 @@ import type { SwitchState, CommandResult } from '../types';
  */
 export function cmdDebug(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
     if (state.currentMode !== 'privileged') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^debug\s+(.+)$/i);
@@ -117,7 +117,7 @@ export function cmdDebug(state: SwitchState, input: string, _ctx: CommandContext
  */
 export function cmdUndebugAll(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
     if (state.currentMode !== 'privileged') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     return {

@@ -584,7 +584,7 @@
   "switchMode": "Switch Modu",
   "switchTasks": "Görevlere geç",
   "switchTerminal": "switchTerminal",
-  "switchTitle": "Network 2960 Switch",
+  "switchTitle": "Network L2 Switch",
   "syslogStarted": "*** Syslog istemcisi başlatıldı",
   "tabComplete": "komut tamamlama",
   "tabDescCmd": "PC Command Prompt (CMD) ile ping, ipconfig vb. komutları çalıştır.",

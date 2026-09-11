@@ -47,7 +47,7 @@ DOS=HIGH,UMB`,
       },
       'body.txt': {
         type: 'file',
-        content: 'Sistem guncelemelerimiz tamamlanmistir. Detaylar icin iletisime gecebilirsiniz.',
+        content: 'Sistem güncelemelerimiz tamamlanmıştır. Detaylar için iletişime geçebilirsiniz.',
         size: 80,
         modifiedAt: DEFAULT_TIMESTAMP,
       },
@@ -255,7 +255,7 @@ print("First 10 Fibonacci numbers:", fibonacci(10))
           },
           'body.txt': {
             type: 'file',
-            content: 'Sistem guncelemelerimiz tamamlanmistir. Detaylar icin iletisime gecebilirsiniz.',
+            content: 'Sistem güncelemelerimiz tamamlanmıştır. Detaylar için iletişime geçebilirsiniz.',
             size: 80,
             modifiedAt: '2026-08-25T11:20:00.000Z',
           },

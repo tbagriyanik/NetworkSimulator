@@ -1,4 +1,4 @@
-import { iosModeError } from './iosErrors';
+import { cliModeError } from './cliErrors';
 import type { CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult } from '../types';
 import { buildRunningConfig } from './configBuilder';
@@ -8,7 +8,7 @@ import { buildRunningConfig } from './configBuilder';
  */
 export function cmdReload(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
     if (state.currentMode !== 'privileged') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
     return {
         success: true,

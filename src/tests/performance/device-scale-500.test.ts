@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
+import type { NetworkPacketFrame } from '@/lib/network/forwarding/packetFrame';
 import { getRoutingTable } from '@/lib/network/routing';
 import { detectEtherChannelBundles, computeEtherChannelChanges } from '@/lib/network/etherchannel';
 import { runFullPacketPipeline } from '@/lib/network/forwarding/packetPipeline';
@@ -157,7 +158,7 @@ describe('500-Device Scale Smoke / Benchmark', () => {
     };
 
     const started = performance.now();
-    const res = runFullPacketPipeline(frame as any, 'L3100', devices, states, connections, 12);
+    const res = runFullPacketPipeline(frame as NetworkPacketFrame, 'L3100', devices, states, connections, 12);
     const elapsed = performance.now() - started;
     expect(Array.isArray(res.allTraces)).toBe(true);
     expect(elapsed).toBeLessThan(3000);

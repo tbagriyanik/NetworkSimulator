@@ -8,22 +8,25 @@ describe('computeProtocolNeighborChanges (OSPF/EIGRP state-change timeline)', ()
   const baseState = (id: string): SwitchState => ({
     hostname: id,
     macAddress: '0000.0000.0001',
+    switchModel: 'NS-L3-24PS',
+    switchLayer: 'L3',
     deviceType: 'router',
     currentMode: 'privileged',
     ports: {
-      'gi0/0': { id: 'gi0/0', name: 'Gi0/0', status: 'connected', shutdown: false, mode: 'routed', duplex: 'full', speed: '1000', type: 'gigabitethernet', ipAddress: '10.0.0.1', subnetMask: '255.255.255.0' },
-      'gi0/1': { id: 'gi0/1', name: 'Gi0/1', status: 'connected', shutdown: false, mode: 'routed', duplex: 'full', speed: '1000', type: 'gigabitethernet', ipAddress: '10.0.1.1', subnetMask: '255.255.255.0' },
+      'gi0/0': { id: 'gi0/0', name: 'Gi0/0', status: 'connected', shutdown: false, mode: 'routed', duplex: 'full', speed: '1000', type: 'gigabitethernet', ipAddress: '10.0.0.1', subnetMask: '255.255.255.0', vlan: 1 },
+      'gi0/1': { id: 'gi0/1', name: 'Gi0/1', status: 'connected', shutdown: false, mode: 'routed', duplex: 'full', speed: '1000', type: 'gigabitethernet', ipAddress: '10.0.1.1', subnetMask: '255.255.255.0', vlan: 1 },
     },
     vlans: {},
-    security: { users: [], consoleLine: { login: false, transportInput: [] }, vtyLines: { login: false, transportInput: [] } },
+    security: { enableSecretEncrypted: false, servicePasswordEncryption: false, users: [], consoleLine: { login: false, transportInput: [] }, vtyLines: { login: false, transportInput: [] } },
     runningConfig: [],
     commandHistory: [],
+    historyIndex: -1,
     version: { nosVersion: '1.0', modelName: 'Mock', serialNumber: 'SN', uptime: '1d' },
     macAddressTable: [],
     arpCache: [],
     bootTime: Date.now(),
     ipRouting: true,
-  } as any);
+  });
 
   const ospfRecord = (over: Partial<OspfNeighborRecord> = {}): OspfNeighborRecord => ({
     neighborId: '2.2.2.2',
@@ -170,15 +173,15 @@ describe('computeProtocolNeighborChanges (OSPF/EIGRP state-change timeline)', ()
 
   it('integration: runNetworkEventPipeline surfaces OSPF adjacency establishment via protocolEvents', () => {
     const devices: CanvasDevice[] = [
-      { id: 'R1', name: 'R1', type: 'router', x: 0, y: 0, ip: '10.0.0.1', macAddress: '00:11:11:11:11:11' } as any,
-      { id: 'R2', name: 'R2', type: 'router', x: 100, y: 0, ip: '10.0.0.2', macAddress: '00:22:22:22:22:22' } as any,
+      { id: 'R1', name: 'R1', type: 'router', x: 0, y: 0, ip: '10.0.0.1', macAddress: '00:11:11:11:11:11', status: 'online', ports: [] },
+      { id: 'R2', name: 'R2', type: 'router', x: 100, y: 0, ip: '10.0.0.2', macAddress: '00:22:22:22:22:22', status: 'online', ports: [] },
     ];
     const connections: CanvasConnection[] = [
       { id: 'c1', sourceDeviceId: 'R1', sourcePort: 'gi0/0', targetDeviceId: 'R2', targetPort: 'gi0/0', cableType: 'straight', active: true },
     ];
     const states = new Map<string, SwitchState>([
-      ['R1', { ...withNeighbors(baseState('R1'), undefined, undefined), ospfRouterId: '1.1.1.1', routingProtocol: 'ospf' } as any],
-      ['R2', { ...withNeighbors(baseState('R2'), undefined, undefined), ospfRouterId: '2.2.2.2', routingProtocol: 'ospf' } as any],
+      ['R1', { ...withNeighbors(baseState('R1'), undefined, undefined), ospfRouterId: '1.1.1.1', routingProtocol: 'ospf' }],
+      ['R2', { ...withNeighbors(baseState('R2'), undefined, undefined), ospfRouterId: '2.2.2.2', routingProtocol: 'ospf' }],
     ]);
 
     const res = runNetworkEventPipeline(states, devices, connections, 1000);

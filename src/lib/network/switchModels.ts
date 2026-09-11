@@ -1,6 +1,6 @@
 // Switch Model Definitions and Utilities
 
-export type SwitchModel = 'WS-C2960-24TT-L' | 'WS-C3650-24PS' | 'ASA-5506-X' | 'AIR-CT2504-K9';
+export type SwitchModel = 'NS-L2-24TT-L' | 'NS-L3-24PS' | 'NS-FW-5506' | 'NS-WLC-2504';
 export type SwitchLayer = 'L2' | 'L3' | 'FW' | 'WLC';
 
 export interface SwitchModelInfo {
@@ -13,8 +13,8 @@ export interface SwitchModelInfo {
 }
 
 export const SWITCH_MODELS: Record<SwitchModel, SwitchModelInfo> = {
-    'WS-C2960-24TT-L': {
-        model: 'WS-C2960-24TT-L',
+    'NS-L2-24TT-L': {
+        model: 'NS-L2-24TT-L',
         name: 'Layer 2 Switch (24-Port)',
         layer: 'L2',
         ports: 26,
@@ -27,8 +27,8 @@ export const SWITCH_MODELS: Record<SwitchModel, SwitchModelInfo> = {
             'Management VLAN (Vlan1) only'
         ]
     },
-    'WS-C3650-24PS': {
-        model: 'WS-C3650-24PS',
+    'NS-L3-24PS': {
+        model: 'NS-L3-24PS',
         name: 'Layer 3 Switch (24-Port PoE)',
         layer: 'L3',
         ports: 29,
@@ -44,8 +44,8 @@ export const SWITCH_MODELS: Record<SwitchModel, SwitchModelInfo> = {
             'Wireless Access Point'
         ]
     },
-    'ASA-5506-X': {
-        model: 'ASA-5506-X',
+    'NS-FW-5506': {
+        model: 'NS-FW-5506',
         name: 'Next-Generation Firewall',
         layer: 'FW',
         ports: 9, // 8 GE + 1 Console
@@ -58,8 +58,8 @@ export const SWITCH_MODELS: Record<SwitchModel, SwitchModelInfo> = {
             'Advanced Malware Protection'
         ]
     },
-    'AIR-CT2504-K9': {
-        model: 'AIR-CT2504-K9',
+    'NS-WLC-2504': {
+        model: 'NS-WLC-2504',
         name: 'Wireless LAN Controller',
         layer: 'WLC',
         ports: 5, // 4 GE + 1 Console + 1 Service
@@ -107,18 +107,18 @@ export function isLayer3Switch(model: SwitchModel | string | undefined): boolean
 export function isRouterModel(model: string | undefined): boolean {
     if (!model) return false;
     const m = model.toUpperCase();
-    return m.includes('ISR') || m.includes('4451') || m.includes('1900') || m.includes('2900') || m.includes('ASR') || m.includes('7200');
+    return m.includes('NS-R') || m.includes('4451') || m.includes('1900') || m.includes('2900') || m.includes('7200') || m.includes('ASR') || m.includes('ISR') || m.includes('ROUTER');
 }
 
 export function isWLCModel(model: string | undefined): boolean {
     if (!model) return false;
     const m = model.toUpperCase();
-    return m.includes('AIR-CT') || m === 'AIR-CT2504-K9';
+    return m === 'NS-WLC-2504' || m.includes('NS-WLC') || m.includes('AIR-CT') || m.includes('WLC') || m.includes('5508');
 }
 
 export function canAssignIPToPhysicalPort(model: SwitchModel | string | undefined): boolean {
     if (!model) return true; // Default to allowing IP assignment if model is unknown (for routers)
-    return isLayer3Switch(model) || model === 'ASA-5506-X' || isRouterModel(model) || isWLCModel(model);
+    return isLayer3Switch(model) || model === 'NS-FW-5506' || isRouterModel(model) || isWLCModel(model);
 }
 
 export function getAvailableSwitchModels(): SwitchModel[] {

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 
@@ -726,7 +726,7 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
             <circle strokeLinecap="round" strokeLinejoin="round" cx="12" cy="12" r="2" />
           </svg>
         ) : isSwitchDeviceType(device.type) ? (
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ stroke: isPoweredOff ? STATUS_COLORS.offline : (device.type === 'switchL3' || device.switchModel === 'WS-C3650-24PS' ? (isDark ? 'var(--color-purple-200)' : 'var(--color-purple-700)') : (isDark ? 'var(--color-accent-200)' : 'var(--color-accent-700)')) }} strokeWidth="1.5">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ stroke: isPoweredOff ? STATUS_COLORS.offline : (device.type === 'switchL3' || device.switchModel === 'NS-L3-24PS' ? (isDark ? 'var(--color-purple-200)' : 'var(--color-purple-700)') : (isDark ? 'var(--color-accent-200)' : 'var(--color-accent-700)')) }} strokeWidth="1.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M5 12a2 2 0 0 1 -2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2M5 12a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0 -2-2m-2-4h.01M17 16h.01" />
           </svg>
         ) : device.type === 'router' ? (

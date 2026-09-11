@@ -8,7 +8,7 @@ function createMockState(overrides?: Partial<SwitchState>): SwitchState {
   return {
     hostname: 'Router1',
     macAddress: '0001.0002.0003',
-    switchModel: 'WS-C3650-24PS' as any,
+    switchModel: 'NS-L3-24PS',
     switchLayer: 'L3',
     deviceType: 'router',
     currentMode: 'privileged',
@@ -54,7 +54,7 @@ function createMockState(overrides?: Partial<SwitchState>): SwitchState {
     historyIndex: 0,
     version: {
       nosVersion: '15.2',
-      modelName: 'ISR4331',
+      modelName: 'NS-R-4331',
       serialNumber: 'SN12345',
       uptime: '1 hour'
     },
@@ -257,7 +257,7 @@ describe('Advanced Networking Features', () => {
 
   describe('Loop Guard & NetFlow', () => {
     it('configures STP loopguard globally and per interface', () => {
-      let state = createMockState({ switchLayer: 'L3', deviceType: 'switchL3', switchModel: 'WS-C3650-24PS' });
+      let state = createMockState({ switchLayer: 'L3', deviceType: 'switchL3', switchModel: 'NS-L3-24PS' });
       state = { ...state, ...executeCommand(state, 'configure terminal').newState };
 
       let res = executeCommand(state, 'spanning-tree loopguard default');

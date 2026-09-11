@@ -3,12 +3,12 @@ import { getDeviceCapabilities, isWirelessController } from '@/lib/network/capab
 
 vi.mock('@/lib/network/switchModels', () => ({
   isWLCModel: vi.fn((model?: string) => {
-    if (model === 'AIR-CT2504-K9') return true;
+    if (model === 'NS-WLC-2504') return true;
     return false;
   }),
   canAssignIPToPhysicalPort: vi.fn((model?: string) => {
-    if (model === 'WS-C3650-24PS') return true;
-    if (model?.includes('ISR')) return true;
+    if (model === 'NS-L3-24PS') return true;
+    if (model?.includes('NS-R')) return true;
     return false;
   }),
 }));
@@ -29,7 +29,7 @@ describe('getDeviceCapabilities', () => {
   });
 
   it('should detect L3 switch capabilities', () => {
-    const result = getDeviceCapabilities({ type: 'switchL3' }, 'WS-C3650-24PS');
+    const result = getDeviceCapabilities({ type: 'switchL3' }, 'NS-L3-24PS');
     expect(result.routing).toBe(true);
     expect(result.switching).toBe(true);
   });
@@ -42,7 +42,7 @@ describe('getDeviceCapabilities', () => {
   });
 
   it('should detect WLC capabilities', () => {
-    const result = getDeviceCapabilities({ type: 'wlc' }, 'AIR-CT2504-K9');
+    const result = getDeviceCapabilities({ type: 'wlc' }, 'NS-WLC-2504');
     expect(result.wlc).toBe(true);
     expect(result.wirelessController).toBe(true);
   });

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { calculateRssiDbm, shouldClientRoam } from '@/lib/network/wireless';
 import { cmdShowCryptoIsakmpSa, cmdShowCryptoIpsecSa, cmdShowCryptoMap } from '@/lib/network/core/cryptoCommands';
 import type { SwitchState } from '@/lib/network/types';
+import type { CommandContext } from '@/lib/network/core/commandTypes';
 
 describe('Advanced Networking Features (IPsec, BGP, Option 82, Wireless Roaming)', () => {
   it('calculates RSSI dBm and evaluates wireless client roaming', () => {
@@ -26,15 +27,15 @@ describe('Advanced Networking Features (IPsec, BGP, Option 82, Wireless Roaming)
     };
 
 
-    const isakmpRes = cmdShowCryptoIsakmpSa(mockState as SwitchState, 'show crypto isakmp sa', {} as any);
+    const isakmpRes = cmdShowCryptoIsakmpSa(mockState as SwitchState, 'show crypto isakmp sa', {} as CommandContext);
     expect(isakmpRes.output).toContain('203.0.113.2');
     expect(isakmpRes.output).toContain('QM_IDLE');
 
-    const ipsecRes = cmdShowCryptoIpsecSa(mockState as SwitchState, 'show crypto ipsec sa', {} as any);
+    const ipsecRes = cmdShowCryptoIpsecSa(mockState as SwitchState, 'show crypto ipsec sa', {} as CommandContext);
     expect(ipsecRes.output).toContain('Tunnel0');
     expect(ipsecRes.output).toContain('encaps');
 
-    const mapRes = cmdShowCryptoMap(mockState as SwitchState, 'show crypto map', {} as any);
+    const mapRes = cmdShowCryptoMap(mockState as SwitchState, 'show crypto map', {} as CommandContext);
     expect(mapRes.output).toContain('MY-MAP');
     expect(mapRes.output).toContain('203.0.113.2');
   });

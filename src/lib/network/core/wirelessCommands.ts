@@ -1,4 +1,4 @@
-import { IOS_ERRORS, iosModeError } from './iosErrors';
+import { CLI_ERRORS, cliModeError } from './cliErrors';
 import type { CommandHandler } from './commandTypes';
 
 /**
@@ -10,12 +10,12 @@ import type { CommandHandler } from './commandTypes';
 // Wireless SSID Configuration Handler
 const cmdDot11Ssid: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^dot11\s+ssid\s+(\S+)$/i);
     if (!match) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     const ssidName = match[1];
@@ -59,12 +59,12 @@ const cmdDot11Ssid: CommandHandler = (state, input, _ctx) => {
 // Authentication command
 const cmdAuthentication: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'ssid-config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^authentication\s+(.+)$/i);
     if (!match) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     const authType = match[1].trim().toLowerCase();
@@ -78,7 +78,7 @@ const cmdAuthentication: CommandHandler = (state, input, _ctx) => {
     }
 
     if (!state.wirelessConfig || !state.currentSsid) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     state.wirelessConfig[state.currentSsid].authentication = authType as 'open' | 'shared' | 'network-eap';
@@ -89,12 +89,12 @@ const cmdAuthentication: CommandHandler = (state, input, _ctx) => {
 // Key Management (WPA/WPA2/WPA3)
 const cmdAuthenticationKeyManagement: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'ssid-config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^authentication\s+key-management\s+wpa\s+version\s+(\d+)$/i);
     if (!match) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     const version = parseInt(match[1]);
@@ -106,7 +106,7 @@ const cmdAuthenticationKeyManagement: CommandHandler = (state, input, _ctx) => {
     }
 
     if (!state.wirelessConfig || !state.currentSsid) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     state.wirelessConfig[state.currentSsid].keyManagement = 'wpa';
@@ -118,12 +118,12 @@ const cmdAuthenticationKeyManagement: CommandHandler = (state, input, _ctx) => {
 // WPA Pre-Shared Key (Password)
 const cmdWpaPsk: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'ssid-config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^wpa-psk\s+(?:ascii|hex)\s+(.+)$/i);
     if (!match) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     const password = match[1].trim();
@@ -137,7 +137,7 @@ const cmdWpaPsk: CommandHandler = (state, input, _ctx) => {
     }
 
     if (!state.wirelessConfig || !state.currentSsid) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     state.wirelessConfig[state.currentSsid].presharedKey = password;
@@ -148,11 +148,11 @@ const cmdWpaPsk: CommandHandler = (state, input, _ctx) => {
 // Guest Mode (SSID broadcast)
 const cmdGuestMode: CommandHandler = (state, _input, _ctx) => {
     if (state.currentMode !== 'ssid-config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     if (!state.wirelessConfig || !state.currentSsid) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     state.wirelessConfig[state.currentSsid].guestMode = true;
@@ -163,12 +163,12 @@ const cmdGuestMode: CommandHandler = (state, _input, _ctx) => {
 // Interface dot11Radio configuration
 const cmdInterfaceDot11Radio: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^interface\s+dot11radio\s+(\d+)$/i);
     if (!match) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     const radioId = match[1];
@@ -211,12 +211,12 @@ const cmdInterfaceDot11Radio: CommandHandler = (state, input, _ctx) => {
 // Encryption mode and cipher
 const cmdEncryptionMode: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'dot11-config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^encryption\s+mode\s+ciphers\s+(.+)$/i);
     if (!match) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     const cipher = match[1].trim().toLowerCase();
@@ -230,7 +230,7 @@ const cmdEncryptionMode: CommandHandler = (state, input, _ctx) => {
     }
 
     if (!state.wirelessRadios || !state.currentRadio) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     state.wirelessRadios[state.currentRadio].encryption = cipher;
@@ -241,12 +241,12 @@ const cmdEncryptionMode: CommandHandler = (state, input, _ctx) => {
 // SSID binding to radio interface configuration
 const cmdSsidBinding: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'dot11-config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^ssid\s+(\S+)$/i);
     if (!match) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     const ssidName = match[1];
@@ -270,7 +270,7 @@ const cmdSsidBinding: CommandHandler = (state, input, _ctx) => {
     }
 
     if (!state.wirelessRadios || !state.currentRadio) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     state.wirelessRadios[state.currentRadio].ssid = ssidName;
@@ -281,18 +281,18 @@ const cmdSsidBinding: CommandHandler = (state, input, _ctx) => {
 // Channel selection
 const cmdChannel: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'dot11-config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^channel\s+(\d+)$/i);
     if (!match) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     const channel = parseInt(match[1]);
 
     if (!state.wirelessRadios || !state.currentRadio) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     const radioId = state.currentRadio;
@@ -321,12 +321,12 @@ const cmdChannel: CommandHandler = (state, input, _ctx) => {
 // Transmit power
 const cmdPower: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'dot11-config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^power\s+(\d+|full|half|quarter|eighth)$/i);
     if (!match) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     const power = match[1].toLowerCase();
@@ -340,7 +340,7 @@ const cmdPower: CommandHandler = (state, input, _ctx) => {
     }
 
     if (!state.wirelessRadios || !state.currentRadio) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     state.wirelessRadios[state.currentRadio].power = power;
@@ -351,12 +351,12 @@ const cmdPower: CommandHandler = (state, input, _ctx) => {
 // Station role (AP or Client)
 const cmdStationRole: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'dot11-config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^station-role\s+(\S+)$/i);
     if (!match) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     const role = match[1].toLowerCase();
@@ -370,7 +370,7 @@ const cmdStationRole: CommandHandler = (state, input, _ctx) => {
     }
 
     if (!state.wirelessRadios || !state.currentRadio) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     state.wirelessRadios[state.currentRadio].stationRole = role as 'root' | 'repeater' | 'client';
@@ -381,12 +381,12 @@ const cmdStationRole: CommandHandler = (state, input, _ctx) => {
 // MAC address filtering
 const cmdMacFilter: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'dot11-config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^mac-filter\s+(?:allow|deny)\s+(.+)$/i);
     if (!match) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     const action = input.match(/^mac-filter\s+(allow|deny)/i)?.[1].toLowerCase() || 'allow';
@@ -402,7 +402,7 @@ const cmdMacFilter: CommandHandler = (state, input, _ctx) => {
     }
 
     if (!state.wirelessRadios || !state.currentRadio) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     if (!state.wirelessRadios[state.currentRadio].macFilter) {
@@ -432,7 +432,7 @@ const cmdMacFilter: CommandHandler = (state, input, _ctx) => {
 // Show wireless configuration
 const cmdShowWireless: CommandHandler = (state, _input, ctx) => {
     if (!['privileged', 'user'].includes(state.currentMode)) {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     let output = '';
@@ -499,12 +499,12 @@ const cmdShowWireless: CommandHandler = (state, _input, ctx) => {
 
 const cmdApName: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^ap\s+(\S+)$/i);
     if (!match) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     const apName = match[1];
@@ -529,12 +529,12 @@ const cmdApName: CommandHandler = (state, input, _ctx) => {
 
 const cmdApAuthMac: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'ap-config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^auth-mac\s+([0-9a-fA-F]{4}\.[0-9a-fA-F]{4}\.[0-9a-fA-F]{4})$/i);
     if (!match) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     if (!state.currentApName || !state.wlcAps || !state.wlcAps[state.currentApName]) {
@@ -548,12 +548,12 @@ const cmdApAuthMac: CommandHandler = (state, input, _ctx) => {
 
 const cmdApRfChannel: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'ap-config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^rf-channel\s+(\d+)$/i);
     if (!match) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     if (!state.currentApName || !state.wlcAps || !state.wlcAps[state.currentApName]) {
@@ -576,12 +576,12 @@ const cmdApRfChannel: CommandHandler = (state, input, _ctx) => {
 
 const cmdApDot115Ghz: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'ap-config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^dot11\s+5ghz\s+(power-constraint|channelswitch\s+mode)\s+(.+)$/i);
     if (!match) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     if (!state.currentApName || !state.wlcAps || !state.wlcAps[state.currentApName]) {
@@ -614,11 +614,11 @@ const cmdApDot115Ghz: CommandHandler = (state, input, _ctx) => {
 
 const cmdMbssid: CommandHandler = (state, _input, _ctx) => {
     if (state.currentMode !== 'ssid-config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     if (!state.wirelessConfig || !state.currentSsid) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     state.wirelessConfig[state.currentSsid].mbssid = true;
@@ -628,11 +628,11 @@ const cmdMbssid: CommandHandler = (state, _input, _ctx) => {
 
 const cmdNoMbssid: CommandHandler = (state, _input, _ctx) => {
     if (state.currentMode !== 'ssid-config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     if (!state.wirelessConfig || !state.currentSsid) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     state.wirelessConfig[state.currentSsid].mbssid = false;
@@ -642,7 +642,7 @@ const cmdNoMbssid: CommandHandler = (state, _input, _ctx) => {
 
 const cmdNoSecurityWpaPsk: CommandHandler = (state, _input, _ctx) => {
     if (state.currentMode !== 'config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     if (!state.wlcWlans || Object.keys(state.wlcWlans).length === 0) {
@@ -659,7 +659,7 @@ const cmdNoSecurityWpaPsk: CommandHandler = (state, _input, _ctx) => {
 
 const cmdNoSecurityWep: CommandHandler = (state, _input, _ctx) => {
     if (state.currentMode !== 'config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     if (!state.wlcWlans || Object.keys(state.wlcWlans).length === 0) {
@@ -678,7 +678,7 @@ const cmdNoSecurityWep: CommandHandler = (state, _input, _ctx) => {
 
 const cmdWlanShutdown: CommandHandler = (state, _input, _ctx) => {
     if (state.currentMode !== 'config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     if (!state.wlcWlans || Object.keys(state.wlcWlans).length === 0) {
@@ -694,7 +694,7 @@ const cmdWlanShutdown: CommandHandler = (state, _input, _ctx) => {
 
 const cmdNoWlanShutdown: CommandHandler = (state, _input, _ctx) => {
     if (state.currentMode !== 'config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     if (!state.wlcWlans || Object.keys(state.wlcWlans).length === 0) {
@@ -710,12 +710,12 @@ const cmdNoWlanShutdown: CommandHandler = (state, _input, _ctx) => {
 
 const cmdWorldModeDot11d: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^world-mode\s+dot11d\s+country-code\s+([A-Za-z]{2})\s+(indoor|outdoor|both)$/i);
     if (!match) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     state.worldModeDot11d = `country-code ${match[1].toUpperCase()} ${match[2].toLowerCase()}`;

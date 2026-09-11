@@ -12,15 +12,15 @@ import type { SwitchState } from '@/lib/network/types';
 vi.mock('@/lib/network/switchModels', () => ({
   isLayer3Switch: vi.fn((model?: string) => {
     if (!model) return false;
-    return model === 'WS-C3650-24PS' || model?.toUpperCase().includes('ISR');
+    return model === 'NS-L3-24PS' || model?.toUpperCase().includes('NS-R');
   }),
   isLayer2Switch: vi.fn((model?: string) => {
     if (!model) return false;
-    return model === 'WS-C2960-24TT-L';
+    return model === 'NS-L2-24TT-L';
   }),
   isRouterModel: vi.fn((model?: string) => {
     if (!model) return false;
-    return model?.toUpperCase().includes('ISR');
+    return model?.toUpperCase().includes('NS-R');
   }),
 }));
 
@@ -29,7 +29,7 @@ function makeState(overrides?: Partial<SwitchState>): SwitchState {
     id: 'SW1',
     hostname: 'SW1',
     macAddress: '00:11:22:33:44:55',
-    switchModel: 'WS-C2960-24TT-L',
+    switchModel: 'NS-L2-24TT-L',
     switchLayer: 'L2',
     currentMode: 'privileged',
     ports: {},
@@ -39,12 +39,12 @@ function makeState(overrides?: Partial<SwitchState>): SwitchState {
 
 describe('validateNoSwitchportSupport', () => {
   it('should allow routed ports on L3 switches', () => {
-    const result = validateNoSwitchportSupport('WS-C3650-24PS');
+    const result = validateNoSwitchportSupport('NS-L3-24PS');
     expect(result.valid).toBe(true);
   });
 
   it('should reject routed ports on L2 switches', () => {
-    const result = validateNoSwitchportSupport('WS-C2960-24TT-L');
+    const result = validateNoSwitchportSupport('NS-L2-24TT-L');
     expect(result.valid).toBe(false);
     expect(result.error).toContain('Layer 2 switch');
   });
@@ -62,28 +62,28 @@ describe('validateNoSwitchportSupport', () => {
 
 describe('validateIpRoutingSupport', () => {
   it('should allow ip routing on L3 switches', () => {
-    const state = makeState({ switchModel: 'WS-C3650-24PS' });
-    const result = validateIpRoutingSupport('WS-C3650-24PS', state);
+    const state = makeState({ switchModel: 'NS-L3-24PS' });
+    const result = validateIpRoutingSupport('NS-L3-24PS', state);
     expect(result.valid).toBe(true);
   });
 
   it('should reject ip routing on L2 switches', () => {
-    const state = makeState({ switchModel: 'WS-C2960-24TT-L' });
-    const result = validateIpRoutingSupport('WS-C2960-24TT-L', state);
+    const state = makeState({ switchModel: 'NS-L2-24TT-L' });
+    const result = validateIpRoutingSupport('NS-L2-24TT-L', state);
     expect(result.valid).toBe(false);
     expect(result.error).toContain('does not support IP routing');
   });
 
   it('should require reload when sdm prefer configured', () => {
-    const state = makeState({ switchModel: 'WS-C3650-24PS', sdmPreferConfigured: true, reloaded: false });
-    const result = validateIpRoutingSupport('WS-C3650-24PS', state);
+    const state = makeState({ switchModel: 'NS-L3-24PS', sdmPreferConfigured: true, reloaded: false });
+    const result = validateIpRoutingSupport('NS-L3-24PS', state);
     expect(result.valid).toBe(false);
     expect(result.requiresReload).toBe(true);
   });
 
   it('should allow after reload', () => {
-    const state = makeState({ switchModel: 'WS-C3650-24PS', sdmPreferConfigured: true, reloaded: true });
-    const result = validateIpRoutingSupport('WS-C3650-24PS', state);
+    const state = makeState({ switchModel: 'NS-L3-24PS', sdmPreferConfigured: true, reloaded: true });
+    const result = validateIpRoutingSupport('NS-L3-24PS', state);
     expect(result.valid).toBe(true);
   });
 
@@ -178,26 +178,26 @@ describe('validateIpRoutingEnabled', () => {
 
 describe('getIpAddressPurpose', () => {
   it('should return unknown for no interface', () => {
-    const state = makeState({ switchModel: 'WS-C3650-24PS' });
+    const state = makeState({ switchModel: 'NS-L3-24PS' });
     const result = getIpAddressPurpose(state, undefined);
     expect(result.purpose).toBe('unknown');
   });
 
   it('should return management for VLAN interface on L2 switch', () => {
-    const state = makeState({ switchModel: 'WS-C2960-24TT-L' });
+    const state = makeState({ switchModel: 'NS-L2-24TT-L' });
     const result = getIpAddressPurpose(state, 'Vlan1');
     expect(result.purpose).toBe('management');
   });
 
   it('should return both for VLAN interface on L3 switch', () => {
-    const state = makeState({ switchModel: 'WS-C3650-24PS' });
+    const state = makeState({ switchModel: 'NS-L3-24PS' });
     const result = getIpAddressPurpose(state, 'Vlan1');
     expect(result.purpose).toBe('both');
   });
 
   it('should return routing for routed port on L3 switch', () => {
     const state = makeState({
-      switchModel: 'WS-C3650-24PS',
+      switchModel: 'NS-L3-24PS',
       ports: {
         'gi0/1': { id: 'gi0/1', name: 'Routed Port', mode: 'routed', vlan: 1, status: 'connected', shutdown: false, duplex: 'auto', speed: 'auto', type: 'gigabitethernet' },
       },
@@ -210,7 +210,7 @@ describe('getIpAddressPurpose', () => {
 describe('validateL3SwitchPrerequisites', () => {
   it('should pass all prerequisites for well-configured L3 switch', () => {
     const state = makeState({
-      switchModel: 'WS-C3650-24PS',
+      switchModel: 'NS-L3-24PS',
       ipRouting: true,
       ports: {
         'gi0/1': { id: 'gi0/1', name: 'Port1', shutdown: false, type: 'gigabitethernet', vlan: 1, status: 'connected', mode: 'access', duplex: 'auto', speed: 'auto' },
@@ -222,7 +222,7 @@ describe('validateL3SwitchPrerequisites', () => {
   });
 
   it('should report errors for missing prerequisites', () => {
-    const state = makeState({ switchModel: 'WS-C2960-24TT-L' });
+    const state = makeState({ switchModel: 'NS-L2-24TT-L' });
     const result = validateL3SwitchPrerequisites(state);
     expect(result.valid).toBe(false);
     expect(result.errors.length).toBeGreaterThan(0);

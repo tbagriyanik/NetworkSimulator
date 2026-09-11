@@ -10,7 +10,7 @@ interface TopologyPaletteSheetProps {
   isDark: boolean;
   isTR: boolean;
   t: Record<string, string>;
-  addDevice: (type: 'pc' | 'iot' | 'switch' | 'router' | 'firewall' | 'wlc', layer?: 'L2' | 'L3') => void;
+  addDevice: (type: 'pc' | 'iot' | 'switch' | 'router' | 'firewall' | 'wlc' | 'hub' | 'cloud' | 'mobile' | 'printer', layer?: 'L2' | 'L3') => void;
   cableInfo: CableInfo;
   onCableChange: (cableInfo: CableInfo) => void;
   DEVICE_ICONS: Record<string, React.ReactNode>;
@@ -105,7 +105,7 @@ export const TopologyPaletteSheet: React.FC<TopologyPaletteSheetProps> = ({
                       onClick={() => {
                         if (type === 'switchL2') { addDevice('switch', 'L2'); return; }
                         if (type === 'switchL3') { addDevice('switch', 'L3'); return; }
-                        addDevice(type as any);
+                        addDevice(type);
                       }}
                       className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200 group ${isDark
                         ? 'border-secondary-800 bg-secondary-800/30 hover:bg-secondary-800/60 hover:border-secondary-700'

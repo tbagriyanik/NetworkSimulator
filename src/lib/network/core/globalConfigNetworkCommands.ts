@@ -1,11 +1,11 @@
-import { iosModeError } from './iosErrors';
+import { cliModeError } from './cliErrors';
 import type { CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult } from '../types';
 import { buildRunningConfig } from './configBuilder';
 import { createIpSlaOperation } from '../ipSla';
 
 export function cmdNtpServer(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^ntp\s+server\s+(\S+)$/i);
   if (!match) return { success: false, error: '% Invalid ntp server command' };
   const servers = [...(state.ntpServers || [])];
@@ -43,7 +43,7 @@ export function cmdNtpServer(state: SwitchState, input: string, _ctx: CommandCon
 }
 
 export function cmdNtpMaster(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^ntp\s+master\s+(\d{1,2})$/i);
   if (!match) return { success: false, error: '% Invalid ntp master command' };
   const stratum = Number(match[1]);
@@ -60,7 +60,7 @@ export function cmdNtpMaster(state: SwitchState, input: string, _ctx: CommandCon
 }
 
 export function cmdNoNtpServer(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^no\s+ntp\s+server(?:\s+(\S+))?$/i);
   if (!match) return { success: false, error: '% Invalid no ntp server command' };
   if (match[1]) {
@@ -87,21 +87,21 @@ export function cmdNoNtpServer(state: SwitchState, input: string, _ctx: CommandC
 }
 
 export function cmdClockTimezone(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^clock\s+timezone\s+(\S+)\s+([+-]?\d+)(?:\s+(\d+))?$/i);
   if (!match) return { success: false, error: '% Invalid clock timezone command' };
   return { success: true, output: `Timezone set to ${match[1]} UTC${match[2]}` };
 }
 
 export function cmdIpNameServer(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^ip\s+name-server\s+(\S+)$/i);
   if (!match) return { success: false, error: '% Invalid ip name-server command' };
   return { success: true, output: `Name server ${match[1]} configured`, newState: { dnsServer: match[1] } };
 }
 
 export function cmdIpHost(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
 
   const match = input.match(/^ip\s+host\s+(\S+)\s+(\d{1,3}(?:\.\d{1,3}){3})$/i);
   if (!match) return { success: false, error: '% Invalid ip host command. Usage: ip host <name> <ip>' };
@@ -134,7 +134,7 @@ export function cmdIpHost(state: SwitchState, input: string, _ctx: CommandContex
 
 export function cmdAliasExec(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^alias\s+(exec|configure|interface|line)\s+(\S+)\s+(.+)$/i);
@@ -166,7 +166,7 @@ export function cmdAliasExec(state: SwitchState, input: string, _ctx: CommandCon
 
 export function cmdNoAliasExec(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^no\s+alias\s+(exec|configure|interface|line)\s+(\S+)$/i);
@@ -200,7 +200,7 @@ export function cmdNoAliasExec(state: SwitchState, input: string, _ctx: CommandC
 }
 
 export function cmdIpNatPool(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^ip\s+nat\s+pool\s+(\S+)\s+([0-9.]+)\s+([0-9.]+)\s+netmask\s+([0-9.]+)$/i);
   if (!match) return { success: false, error: '% Invalid NAT pool command' };
 
@@ -212,7 +212,7 @@ export function cmdIpNatPool(state: SwitchState, input: string, _ctx: CommandCon
 }
 
 export function cmdIpNatInsideSourceStatic(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^ip\s+nat\s+inside\s+source\s+static\s+([0-9.]+)\s+([0-9.]+)$/i);
   if (!match) return { success: false, error: '% Invalid static NAT command' };
 
@@ -224,7 +224,7 @@ export function cmdIpNatInsideSourceStatic(state: SwitchState, input: string, _c
 }
 
 export function cmdIpNatInsideSourceList(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
 
   const interfaceMatch = input.match(/^ip\s+nat\s+inside\s+source\s+list\s+(\d+)\s+interface\s+(\S+)\s+overload$/i);
   if (interfaceMatch) {
@@ -250,7 +250,7 @@ export function cmdIpNatInsideSourceList(state: SwitchState, input: string, _ctx
  * Logging host & trap commands (Syslog support)
  */
 export function cmdLoggingHost(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^logging\s+(?:host\s+)?([0-9.]+)/i);
   if (!match) return { success: false, error: '% Invalid logging host command' };
 
@@ -264,7 +264,7 @@ export function cmdLoggingHost(state: SwitchState, input: string, _ctx: CommandC
 }
 
 export function cmdLoggingTrap(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^logging\s+trap\s+(\w+)/i);
   if (!match) return { success: false, error: '% Invalid logging trap command' };
 
@@ -281,7 +281,7 @@ export function cmdLoggingTrap(state: SwitchState, input: string, _ctx: CommandC
  * IP SLA & MSTP CLI configuration handlers
  */
 export function cmdIpSla(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
 
   // ip sla schedule <id> life <life> start-time <now|time>
   const schedule = input.match(/^ip\s+sla\s+schedule\s+(\d+)(?:\s+life\s+(\S+))?(?:\s+start-time\s+(\S+))?/i);
@@ -335,7 +335,7 @@ export function cmdIpSla(state: SwitchState, input: string, _ctx: CommandContext
 }
 
 export function cmdTrack(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
 
   // no track <num>
   const noTrack = input.match(/^no\s+track\s+(\d+)/i);
@@ -373,7 +373,7 @@ export function cmdTrack(state: SwitchState, input: string, _ctx: CommandContext
 
 
 export function cmdLldpTlvSelect(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^lldp\s+tlv-select\s+(.+)$/i);
   if (!match) return { success: false, error: '% Invalid LLDP TLV selection' };
   const selected = match[1].trim().split(/\s+/).map(v => v.toLowerCase());
@@ -381,7 +381,7 @@ export function cmdLldpTlvSelect(state: SwitchState, input: string, _ctx: Comman
 }
 
 export function cmdSpanningTreeMst(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   return {
     success: true,
     output: '',
@@ -390,7 +390,7 @@ export function cmdSpanningTreeMst(state: SwitchState, _input: string, _ctx: Com
 }
 
 export function cmdIpPrefixList(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^(?:ip|ipv6)\s+prefix-list\s+(\S+)(?:\s+seq\s+(\d+))?\s+(permit|deny)\s+(\S+)(?:\s+ge\s+(\d+))?(?:\s+le\s+(\d+))?$/i);
   const isIpv6 = /^ipv6/i.test(input);
   if (!match) return { success: false, error: `% Invalid ${isIpv6 ? 'ipv6' : 'ip'} prefix-list command syntax` };
@@ -421,7 +421,7 @@ export function cmdIpPrefixList(state: SwitchState, input: string, _ctx: Command
 }
 
 export function cmdRouteMap(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^route-map\s+(\S+)(?:\s+(permit|deny))?(?:\s+(\d+))?$/i);
   if (!match) return { success: false, error: '% Invalid route-map command syntax' };
 
@@ -449,7 +449,7 @@ export function cmdRouteMap(state: SwitchState, input: string, _ctx: CommandCont
 }
 
 export function cmdIpv6RouterEigrp(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^ipv6\s+router\s+eigrp\s+(\d+)$/i);
   if (!match) return { success: false, error: '% Invalid ipv6 router eigrp command syntax' };
 
@@ -468,7 +468,7 @@ export function cmdIpv6RouterEigrp(state: SwitchState, input: string, _ctx: Comm
 }
 
 export function cmdSpanningTreeLoopguardDefault(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const isNo = /^no\s+/i.test(input);
   return {
     success: true,
@@ -478,7 +478,7 @@ export function cmdSpanningTreeLoopguardDefault(state: SwitchState, input: strin
 }
 
 export function cmdIpFlowExport(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   if (/^no\s+ip\s+flow-export/i.test(input)) {
     return { success: true, output: 'NetFlow export disabled', newState: { netflowConfig: undefined } };
   }
@@ -499,7 +499,7 @@ export function cmdIpFlowExport(state: SwitchState, input: string, _ctx: Command
 }
 
 export function cmdNoIpPrefixList(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^no\s+ip\s+prefix-list\s+(\S+)$/i);
   if (!match) return { success: false, error: '% Invalid no ip prefix-list syntax' };
   const name = match[1];
@@ -510,7 +510,7 @@ export function cmdNoIpPrefixList(state: SwitchState, input: string, _ctx: Comma
 }
 
 export function cmdNoIpv6PrefixList(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^no\s+ipv6\s+prefix-list\s+(\S+)$/i);
   if (!match) return { success: false, error: '% Invalid no ipv6 prefix-list syntax' };
   const name = match[1];
@@ -521,7 +521,7 @@ export function cmdNoIpv6PrefixList(state: SwitchState, input: string, _ctx: Com
 }
 
 export function cmdNoRouteMap(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^no\s+route-map\s+(\S+)$/i);
   if (!match) return { success: false, error: '% Invalid no route-map syntax' };
   const name = match[1];
@@ -529,4 +529,46 @@ export function cmdNoRouteMap(state: SwitchState, input: string, _ctx: CommandCo
   delete existingMap[name];
   const updatedState = { ...state, routeMaps: existingMap };
   return { success: true, output: `Route-map ${name} removed`, newState: { routeMaps: existingMap, runningConfig: buildRunningConfig(updatedState) } };
+}
+
+export function cmdVrfDefinition(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const match = input.match(/^vrf\s+definition\s+(\S+)$/i);
+  if (!match) return { success: false, error: '% Usage: vrf definition <name>' };
+  const name = match[1];
+  const vrfInstances = { ...state.vrfInstances };
+  const key = name.toLowerCase();
+  if (!vrfInstances[key]) {
+    vrfInstances[key] = { name, interfaces: [] };
+  }
+  const updatedState = { ...state, vrfInstances };
+  return {
+    success: true,
+    output: `VRF definition ${name} configured`,
+    newState: { vrfInstances, runningConfig: buildRunningConfig(updatedState) },
+  };
+}
+
+export function cmdRestconfEnable(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const isNo = /^no\s+/i.test(input);
+  const restconfEnabled = !isNo;
+  const updatedState = { ...state, restconfEnabled };
+  return {
+    success: true,
+    output: restconfEnabled ? 'RESTCONF service enabled' : 'RESTCONF service disabled',
+    newState: { restconfEnabled, runningConfig: buildRunningConfig(updatedState) },
+  };
+}
+
+export function cmdMplsIpGlobal(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const isNo = /^no\s+/i.test(input);
+  const mplsConfig = { ...(state.mplsConfig as object), enabled: !isNo, ldpEnabled: !isNo };
+  const updatedState = { ...state, mplsConfig };
+  return {
+    success: true,
+    output: !isNo ? 'MPLS IP globally enabled' : 'MPLS IP globally disabled',
+    newState: { mplsConfig, runningConfig: buildRunningConfig(updatedState) },
+  };
 }

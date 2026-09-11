@@ -7,8 +7,8 @@
 | Device Type | Tracer | This Simulator | Details |
 |---|---|---|---|
 | PC (Desktop/Laptop) | Yes | **Yes** | Full IP config, services (DNS, HTTP, FTP, Mail, DHCP, NTP), WiFi client |
-| Switch L2 (Catalyst 2960) | Yes | **Yes** | WS-C2960-24TT-L model, 24 FastEthernet + 2 Gigabit ports |
-| Switch L3 (Catalyst 3650) | Yes | **Yes** | WS-C3650-24PS model, 24 Gigabit + 4 Gigabit + PoE, IP routing, routed ports |
+| Switch L2 (2960) | Yes | **Yes** | WS-C2960-24TT-L model, 24 FastEthernet + 2 Gigabit ports |
+| Switch L3 (3650) | Yes | **Yes** | WS-C3650-24PS model, 24 Gigabit + 4 Gigabit + PoE, IP routing, routed ports |
 | Router (ISR) | Yes | **Yes** | ISR/4451/1900/2900/ASR/7200 model detection via `isRouterModel()`, full routing protocols |
 | Firewall (ASA) | Yes | **Yes** | ASA-5506-X model, nameif, security-level, stateful firewall rules |
 | WLC (Wireless LAN Controller) | Yes | **Yes** | AIR-CT2504-K9 model, CAPWAP, Lightweight AP management, WLAN config |

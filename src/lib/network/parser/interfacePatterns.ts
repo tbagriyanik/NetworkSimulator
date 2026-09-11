@@ -1,8 +1,8 @@
-// Firewall ASA ve interface komutlari
+// Firewall ve interface komutlari
 import type { CommandPattern } from './commandPatterns.types';
 
 export const interfacePatterns: Record<string, CommandPattern> = {
-  // Firewall ASA specific commands
+  // Firewall specific commands
   'access-group': {
     pattern: /^access-group\s+(\S+)\s+in\s+interface\s+(\S+)$/i,
     modes: ['config'],

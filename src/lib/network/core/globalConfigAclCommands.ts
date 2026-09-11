@@ -1,4 +1,4 @@
-import { iosModeError } from './iosErrors';
+import { cliModeError } from './cliErrors';
 import type { CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult } from '../types';
 
@@ -68,7 +68,7 @@ export function cmdIpv6AccessList(state: SwitchState, input: string, _ctx: Comma
 
 export function cmdIpv6AclPermit(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config-ipv6-acl' || !state.currentIpv6Acl) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^permit\s+(.+)$/i);
@@ -87,7 +87,7 @@ export function cmdIpv6AclPermit(state: SwitchState, input: string, _ctx: Comman
 
 export function cmdIpv6AclDeny(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config-ipv6-acl' || !state.currentIpv6Acl) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^deny\s+(.+)$/i);
@@ -129,7 +129,7 @@ function addOrReplaceAclRule(existingRules: string[], ruleText: string, seqNum?:
 
 export function cmdNamedAclPermit(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config-std-nacl' || !state.currentNamedAcl) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^(?:(\d+)\s+)?permit\s+(.+)$/i);
@@ -149,7 +149,7 @@ export function cmdNamedAclPermit(state: SwitchState, input: string, _ctx: Comma
 
 export function cmdNamedAclDeny(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config-std-nacl' || !state.currentNamedAcl) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^(?:(\d+)\s+)?deny\s+(.+)$/i);
@@ -169,7 +169,7 @@ export function cmdNamedAclDeny(state: SwitchState, input: string, _ctx: Command
 
 export function cmdNamedAclNoPermit(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config-std-nacl' || !state.currentNamedAcl) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const seqMatch = input.match(/^no\s+(\d+)$/i);
@@ -196,7 +196,7 @@ export function cmdNamedAclNoPermit(state: SwitchState, input: string, _ctx: Com
 
 export function cmdNamedAclNoDeny(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config-std-nacl' || !state.currentNamedAcl) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const seqMatch = input.match(/^no\s+(\d+)$/i);

@@ -1,4 +1,4 @@
-import { iosModeError } from './iosErrors';
+import { cliModeError } from './cliErrors';
 import type { CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult, Port } from '../types';
 import type { CanvasDevice } from '@/components/network/networkTopology.types';
@@ -9,7 +9,7 @@ import { isValidIPv4Format } from '../dns';
  */
 export function cmdWriteMemory(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
     if (state.currentMode !== 'privileged') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     return {
@@ -24,7 +24,7 @@ export function cmdWriteMemory(state: SwitchState, _input: string, _ctx: Command
  */
 export function cmdCopyRunningStartup(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
     if (state.currentMode !== 'privileged') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     return {
@@ -39,7 +39,7 @@ export function cmdCopyRunningStartup(state: SwitchState, _input: string, _ctx: 
  */
 export function cmdCopyRunningFlash(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
     if (state.currentMode !== 'privileged') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^copy\s+running-config\s+flash:(\S+)?$/i);
@@ -63,7 +63,7 @@ export function cmdCopyRunningFlash(state: SwitchState, input: string, _ctx: Com
  */
 export function cmdCopyFlashStartup(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
     if (state.currentMode !== 'privileged') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^copy\s+flash:(\S+)?\s+startup-config$/i);
@@ -103,7 +103,7 @@ export function cmdCopyFlashStartup(state: SwitchState, input: string, _ctx: Com
  */
 export function cmdEraseStartupConfig(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
     if (state.currentMode !== 'privileged') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     return {
@@ -121,7 +121,7 @@ export function cmdEraseStartupConfig(state: SwitchState, _input: string, _ctx: 
  */
 export function cmdEraseNvram(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
     if (state.currentMode !== 'privileged') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     return {
@@ -139,7 +139,7 @@ export function cmdEraseNvram(state: SwitchState, _input: string, _ctx: CommandC
  */
 export function cmdCopyTftp(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
     if (state.currentMode !== 'privileged') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
     const lang = ctx.language || 'en';
     const isRestore = /^copy\s+tftp/i.test(input.trim());
@@ -246,7 +246,7 @@ export function cmdCopyStartupRunning(_state: SwitchState, _input: string, _ctx:
  */
 export function cmdDeleteVlanDat(state: SwitchState, _input: string, ctx: CommandContext): CommandResult {
     if (state.currentMode !== 'privileged') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     // Check if this is a confirmation (skipConfirm is passed from useDeviceManager)

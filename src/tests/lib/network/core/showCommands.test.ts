@@ -1,4 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest'; 
+import type { SwitchState } from '@/lib/network/types'; 
+import type { CommandContext } from '@/lib/network/core/commandTypes';
 
 describe('Show Commands Suite', () => {
   const switchState = {
@@ -87,20 +89,20 @@ describe('Show Commands Suite', () => {
 
   it('should render show ntp status and show ntp associations', async () => {
     const { cmdShowNtp } = await import('@/lib/network/core/showCommands');
-    const disabled = cmdShowNtp({ hostname: 'SW1' } as any, 'show ntp status', {} as any);
+    const disabled = cmdShowNtp({ hostname: 'SW1' } as SwitchState, 'show ntp status', {} as CommandContext);
     expect(disabled.output).toContain('NTP is not enabled');
 
     const stateWithNtp = {
       hostname: 'SW1',
       ntpServers: ['192.168.1.100', '192.168.1.200'],
-    } as any;
+    } as SwitchState;
 
-    const status = cmdShowNtp(stateWithNtp, 'show ntp status', { devices: [{ id: 'srv', ip: '192.168.1.100' }] } as any);
+    const status = cmdShowNtp(stateWithNtp, 'show ntp status', { devices: [{ id: 'srv', ip: '192.168.1.100' }] } as unknown as CommandContext);
     expect(status.success).toBe(true);
     expect(status.output).toContain('Clock is synchronized');
     expect(status.output).toContain('192.168.1.100');
 
-    const assoc = cmdShowNtp(stateWithNtp, 'show ntp associations', { devices: [{ id: 'srv', ip: '192.168.1.100' }] } as any);
+    const assoc = cmdShowNtp(stateWithNtp, 'show ntp associations', { devices: [{ id: 'srv', ip: '192.168.1.100' }] } as unknown as CommandContext);
     expect(assoc.success).toBe(true);
     expect(assoc.output).toContain('*~192.168.1.100');
     expect(assoc.output).toContain('+192.168.1.200');

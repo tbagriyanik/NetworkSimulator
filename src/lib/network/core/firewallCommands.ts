@@ -1,6 +1,6 @@
 import { CommandHandler } from './commandTypes';
 import type { SwitchState, CommandResult } from '../types';
-import { IOS_ERRORS } from './iosErrors';
+import { CLI_ERRORS } from './cliErrors';
 
 export const firewallHandlers: Record<string, CommandHandler> = {
   'access-group': cmdAccessGroup,
@@ -106,12 +106,12 @@ export const firewallHandlers: Record<string, CommandHandler> = {
 };
 
 // ============================================================
-// Firewall ASA command handlers (fully implemented)
+// Firewall command handlers (fully implemented)
 // ============================================================
 
 /**
  * access-group <acl-name> in interface <nameif>
- * Apply an access-list to an interface (ASA style)
+ * Apply an access-list to an interface (firewall style)
  */
 function cmdAccessGroup(state: SwitchState, input: string): CommandResult {
   if (state.currentMode !== 'config') {
@@ -119,7 +119,7 @@ function cmdAccessGroup(state: SwitchState, input: string): CommandResult {
   }
   const match = input.match(/^access-group\s+(\S+)\s+in\s+interface\s+(\S+)$/i);
   if (!match) {
-    return { success: false, error: IOS_ERRORS.invalidInput };
+    return { success: false, error: CLI_ERRORS.invalidInput };
   }
   const aclName = match[1];
   const ifName = match[2].toLowerCase();
@@ -151,7 +151,7 @@ function cmdNoAccessGroup(state: SwitchState, input: string): CommandResult {
   }
   const match = input.match(/^no\s+access-group\s+(\S+)\s+in\s+interface\s+(\S+)$/i);
   if (!match) {
-    return { success: false, error: IOS_ERRORS.invalidInput };
+    return { success: false, error: CLI_ERRORS.invalidInput };
   }
   const ifName = match[2].toLowerCase();
 
@@ -174,7 +174,7 @@ function cmdNoAccessGroup(state: SwitchState, input: string): CommandResult {
 
 /**
  * object network <name>
- * Create or enter a network object (ASA NAT)
+ * Create or enter a network object (firewall NAT)
  */
 function cmdObjectNetwork(state: SwitchState, input: string): CommandResult {
   if (state.currentMode !== 'config') {
@@ -182,7 +182,7 @@ function cmdObjectNetwork(state: SwitchState, input: string): CommandResult {
   }
   const match = input.match(/^object\s+network\s+(\S+)$/i);
   if (!match) {
-    return { success: false, error: IOS_ERRORS.invalidInput };
+    return { success: false, error: CLI_ERRORS.invalidInput };
   }
   const objName = match[1];
 
@@ -209,7 +209,7 @@ function cmdNoObjectNetwork(state: SwitchState, input: string): CommandResult {
   }
   const match = input.match(/^no\s+object\s+network\s+(\S+)$/i);
   if (!match) {
-    return { success: false, error: IOS_ERRORS.invalidInput };
+    return { success: false, error: CLI_ERRORS.invalidInput };
   }
   const objName = match[1];
   const objects = { ...state.firewallObjects };
@@ -282,7 +282,7 @@ function cmdNat(state: SwitchState, input: string): CommandResult {
       };
     }
   }
-  return { success: false, error: IOS_ERRORS.invalidInput };
+  return { success: false, error: CLI_ERRORS.invalidInput };
 }
 
 /**
@@ -294,7 +294,7 @@ function cmdNoNat(_state: SwitchState, _input: string): CommandResult {
 
 /**
  * route <ifname> <network> <mask> <gateway> [distance]
- * Add static route on ASA
+ * Add static route on firewall
  */
 function cmdRoute(state: SwitchState, input: string): CommandResult {
   if (state.currentMode !== 'config') {
@@ -302,7 +302,7 @@ function cmdRoute(state: SwitchState, input: string): CommandResult {
   }
   const match = input.match(/^route\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)(?:\s+(\d+))?$/i);
   if (!match) {
-    return { success: false, error: IOS_ERRORS.invalidInput };
+    return { success: false, error: CLI_ERRORS.invalidInput };
   }
   const [, ifName, network, mask, gateway, distance] = match;
   return {
@@ -332,7 +332,7 @@ function cmdNoRoute(state: SwitchState, input: string): CommandResult {
   }
   const match = input.match(/^no\s+route\s+(\S+)\s+(\S+)\s+(\S+)(?:\s+(\S+))?$/i);
   if (!match) {
-    return { success: false, error: IOS_ERRORS.invalidInput };
+    return { success: false, error: CLI_ERRORS.invalidInput };
   }
   const [, , network, mask] = match;
   const filtered = (state.staticRoutes || []).filter(
@@ -353,7 +353,7 @@ function cmdTimeout(state: SwitchState, input: string): CommandResult {
   }
   const match = input.match(/^timeout\s+(\S+)\s+(\S+)$/i);
   if (!match) {
-    return { success: false, error: IOS_ERRORS.invalidInput };
+    return { success: false, error: CLI_ERRORS.invalidInput };
   }
   const proto = match[1].toLowerCase();
   const value = match[2];
@@ -366,7 +366,7 @@ function cmdTimeout(state: SwitchState, input: string): CommandResult {
 }
 
 /**
- * passwd <password> — set enable password on ASA
+ * passwd <password> — set enable password on firewall
  */
 function cmdPasswd(state: SwitchState, input: string): CommandResult {
   if (state.currentMode !== 'config') {
@@ -374,7 +374,7 @@ function cmdPasswd(state: SwitchState, input: string): CommandResult {
   }
   const match = input.match(/^passwd\s+(.+)$/i);
   if (!match) {
-    return { success: false, error: IOS_ERRORS.invalidInput };
+    return { success: false, error: CLI_ERRORS.invalidInput };
   }
   return {
     success: true,
@@ -432,7 +432,7 @@ function cmdSshAsa(state: SwitchState, input: string): CommandResult {
   }
   const match = input.match(/^ssh\s+(\S+)\s+(\S+)\s+(\S+)$/i);
   if (!match) {
-    return { success: false, error: IOS_ERRORS.invalidInput };
+    return { success: false, error: CLI_ERRORS.invalidInput };
   }
   const [, ip, mask, ifName] = match;
   return {
@@ -457,7 +457,7 @@ function cmdTelnetAsa(state: SwitchState, input: string): CommandResult {
   }
   const match = input.match(/^telnet\s+(\S+)\s+(\S+)\s+(\S+)$/i);
   if (!match) {
-    return { success: false, error: IOS_ERRORS.invalidInput };
+    return { success: false, error: CLI_ERRORS.invalidInput };
   }
   const [, ip, mask, ifName] = match;
   return {

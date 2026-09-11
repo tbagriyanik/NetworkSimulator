@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { evaluateIpSlaOperations } from '@/lib/network/ipSlaEngine';
 import { cmdIpSla, cmdTrack } from '@/lib/network/core/globalConfigNetworkCommands';
 import { cmdShowTrack, cmdShowIpSlaSummary, cmdShowIpSlaConfiguration } from '@/lib/network/core/showRoutingDisplay';
-import type { SwitchState } from '@/lib/network/types';
+import type { SwitchState } from '@/lib/network/types'; 
+import type { CommandContext } from '@/lib/network/core/commandTypes';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
 
 describe('IP SLA Automated Timer Trigger & Object Tracking', () => {
@@ -15,17 +16,17 @@ describe('IP SLA Automated Timer Trigger & Object Tracking', () => {
 
 
     // Configure IP SLA 10 icmp-echo 192.168.1.2 frequency 10
-    let res = cmdIpSla(state, 'ip sla 10 icmp-echo 192.168.1.2 frequency 10', {} as any);
+    let res = cmdIpSla(state, 'ip sla 10 icmp-echo 192.168.1.2 frequency 10', {} as CommandContext);
     expect(res.success).toBe(true);
     state = { ...state, ...res.newState };
 
     // Schedule IP SLA 10
-    res = cmdIpSla(state, 'ip sla schedule 10 life forever start-time now', {} as any);
+    res = cmdIpSla(state, 'ip sla schedule 10 life forever start-time now', {} as CommandContext);
     expect(res.success).toBe(true);
     state = { ...state, ...res.newState };
 
     // Configure track 1 ip sla 10 reachability
-    res = cmdTrack(state, 'track 1 ip sla 10 reachability', {} as any);
+    res = cmdTrack(state, 'track 1 ip sla 10 reachability', {} as CommandContext);
     expect(res.success).toBe(true);
     state = { ...state, ...res.newState };
 
@@ -52,7 +53,7 @@ describe('IP SLA Automated Timer Trigger & Object Tracking', () => {
 
     const states = new Map<string, SwitchState>([
       ['r1', state],
-      ['r2', { hostname: 'R2', ports: { gi0_0: { id: 'gi0_0', name: 'Gi0/0', type: 'gigabitethernet', status: 'connected', shutdown: false, ipAddress: '192.168.1.2', subnetMask: '255.255.255.0' } } } as any]
+      ['r2', { hostname: 'R2', ports: { gi0_0: { id: 'gi0_0', name: 'Gi0/0', type: 'gigabitethernet', status: 'connected', shutdown: false, ipAddress: '192.168.1.2', subnetMask: '255.255.255.0' } } } as unknown as SwitchState]
     ]);
 
     // Run automated timer trigger evaluation
@@ -65,18 +66,18 @@ describe('IP SLA Automated Timer Trigger & Object Tracking', () => {
     expect(r1Updated?.ipSlaTracks?.['1']?.state).toBe('up');
 
     // Test show track command
-    const showTrackRes = cmdShowTrack(r1Updated!, 'show track 1', {} as any);
+    const showTrackRes = cmdShowTrack(r1Updated!, 'show track 1', {} as CommandContext);
     expect(showTrackRes.success).toBe(true);
     expect(showTrackRes.output).toContain('Reachability is Up');
 
     // Test show ip sla summary command
-    const showSummaryRes = cmdShowIpSlaSummary(r1Updated!, 'show ip sla summary', {} as any);
+    const showSummaryRes = cmdShowIpSlaSummary(r1Updated!, 'show ip sla summary', {} as CommandContext);
     expect(showSummaryRes.success).toBe(true);
     expect(showSummaryRes.output).toContain('ICMP-ECHO');
     expect(showSummaryRes.output).toContain('OK');
 
     // Test show ip sla configuration command
-    const showConfigRes = cmdShowIpSlaConfiguration(r1Updated!, 'show ip sla configuration', {} as any);
+    const showConfigRes = cmdShowIpSlaConfiguration(r1Updated!, 'show ip sla configuration', {} as CommandContext);
     expect(showConfigRes.success).toBe(true);
     expect(showConfigRes.output).toContain('192.168.1.2');
   });

@@ -362,7 +362,7 @@ export function useHistory(initialState: ProjectState) {
                   const allKeys = new Set([...Object.keys(pState), ...Object.keys(st)]);
                   for (const key of allKeys) {
 
-                    if (JSON.stringify((pState as any)[key]) !== JSON.stringify((st as any)[key])) {
+                    if (JSON.stringify((pState as unknown as Record<string, unknown>)[key]) !== JSON.stringify((st as unknown as Record<string, unknown>)[key])) {
                       changes.push(key);
                     }
                   }

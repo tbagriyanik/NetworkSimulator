@@ -3,7 +3,9 @@ import { ChevronDown, ChevronUp, Activity, Layers } from 'lucide-react';
 import { CanvasDevice, CanvasConnection } from './networkTopology.types';
 import { type BroadcastAnimTarget } from './hooks/usePingSequence';
 import { cn } from '@/lib/utils';
-import { PacketTraceView } from './PacketTraceInspector';
+import { PacketTraceInspector } from './PacketTraceInspector';
+import type { PacketProtocolType } from '@/lib/network/forwarding/packetFrame';
+import type { PipelineResult } from '@/lib/network/forwarding/packetPipeline';
 
 import { CABLE_COLORS } from './networkTopology.constants';
 import { colors } from '@/lib/design-tokens/colors';
@@ -399,7 +401,7 @@ export function PingPacketInfoPanel({
         mode: 'drag-resize'
     });
 
-    const pipelineResult = React.useMemo(() => {
+    const pipelineResult = React.useMemo<PipelineResult | null>(() => {
         if (!hopPacketInfos || hopPacketInfos.length === 0) return null;
         return {
             success: success !== false,
@@ -422,7 +424,7 @@ export function PingPacketInfoPanel({
                         dstMac: hop.dstMac,
                         srcIp: hop.srcIp,
                         dstIp: hop.dstIp,
-                        protocol: (hop.protocol || 'ICMP') as any,
+                        protocol: (hop.protocol || 'ICMP') as PacketProtocolType,
                         length: 64,
                         ttl: hop.ttl,
                         ingressPortId: 'Fa0/1',
@@ -435,7 +437,7 @@ export function PingPacketInfoPanel({
                     deviceId: hop.fromDevice.name,
                     deviceName: hop.fromDevice.name,
                     portId: 'Fa0/1',
-                    stage: (hop.fromDevice.type.includes('router') ? 'route-lookup' : 'mac-lookup') as any,
+                    stage: (hop.fromDevice.type.includes('router') ? 'route-lookup' : 'mac-lookup'),
                     action: 'forward' as const,
                     reason: hop.actionDescription || `Forwarding frame from ${hop.fromDevice.name} to ${hop.toDevice.name}`,
                     frameSnapshot: {
@@ -446,7 +448,7 @@ export function PingPacketInfoPanel({
                         dstMac: hop.dstMac,
                         srcIp: hop.srcIp,
                         dstIp: hop.dstIp,
-                        protocol: (hop.protocol || 'ICMP') as any,
+                        protocol: (hop.protocol || 'ICMP') as PacketProtocolType,
                         length: 64,
                         ttl: hop.ttl,
                         ingressPortId: 'Fa0/1',
@@ -478,7 +480,7 @@ export function PingPacketInfoPanel({
                             dstMac: hop.dstMac,
                             srcIp: hop.srcIp,
                             dstIp: hop.dstIp,
-                            protocol: (hop.protocol || 'ICMP') as any,
+                            protocol: (hop.protocol || 'ICMP') as PacketProtocolType,
                             length: 64,
                             ttl: hop.ttl,
                             ingressPortId: 'Fa0/1',
@@ -491,7 +493,7 @@ export function PingPacketInfoPanel({
                         deviceId: hop.fromDevice.name,
                         deviceName: hop.fromDevice.name,
                         portId: 'Fa0/1',
-                        stage: (hop.fromDevice.type.includes('router') ? 'route-lookup' : 'mac-lookup') as any,
+                        stage: (hop.fromDevice.type.includes('router') ? 'route-lookup' : 'mac-lookup'),
                         action: 'forward' as const,
                         reason: hop.actionDescription || `Forwarding frame from ${hop.fromDevice.name} to ${hop.toDevice.name}`,
                         frameSnapshot: {
@@ -502,7 +504,7 @@ export function PingPacketInfoPanel({
                             dstMac: hop.dstMac,
                             srcIp: hop.srcIp,
                             dstIp: hop.dstIp,
-                            protocol: (hop.protocol || 'ICMP') as any,
+                            protocol: (hop.protocol || 'ICMP') as PacketProtocolType,
                             length: 64,
                             ttl: hop.ttl,
                             ingressPortId: 'Fa0/1',
@@ -958,7 +960,7 @@ export function PingPacketInfoPanel({
                         </div>
                     ) : (
                         <div className="flex-1 overflow-hidden min-h-0 flex flex-col">
-                            <PacketTraceView pipelineResult={pipelineResult} isDark={isDark} />
+                            <PacketTraceInspector embedded={true} pipelineResult={pipelineResult} isDark={isDark} />
                         </div>
                     )}
                 </div>

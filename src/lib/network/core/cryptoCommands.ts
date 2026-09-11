@@ -1,18 +1,18 @@
 import type { CommandHandler } from './commandTypes';
-import { IOS_ERRORS, iosModeError } from './iosErrors';
+import { CLI_ERRORS, cliModeError } from './cliErrors';
 
 /**
- * VPN/IPsec Configuration Commands (ASA / Router)
+ * VPN/IPsec Configuration Commands (Firewall / Router)
  */
 
 export const cmdCryptoIsakmpPolicy: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^crypto\s+isakmp\s+policy\s+(\d+)$/i);
     if (!match) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     const priority = parseInt(match[1], 10);
@@ -26,7 +26,7 @@ export const cmdCryptoIsakmpPolicy: CommandHandler = (state, input, _ctx) => {
     }
 
     // For simplicity, we just create the policy and stay in config mode.
-    // Real ASA would enter config-isakmp mode.
+    // A real firewall would enter config-isakmp mode.
     return {
         success: true,
         output: '',
@@ -35,7 +35,7 @@ export const cmdCryptoIsakmpPolicy: CommandHandler = (state, input, _ctx) => {
 
 export const cmdCryptoIpsecTransformSet: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^crypto\s+ipsec\s+transform-set\s+(\S+)\s+(esp-[a-z0-9-]+)\s+(esp-[a-z0-9-]+)$/i);
@@ -62,7 +62,7 @@ export const cmdCryptoIpsecTransformSet: CommandHandler = (state, input, _ctx) =
 
 export const cmdCryptoMap: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^crypto\s+map\s+(\S+)\s+(\d+)\s+ipsec-isakmp$/i);
@@ -92,7 +92,7 @@ export const cmdCryptoMap: CommandHandler = (state, input, _ctx) => {
             }
             return { success: true, output: '' };
         }
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     const name = match[1];
@@ -107,7 +107,7 @@ export const cmdCryptoMap: CommandHandler = (state, input, _ctx) => {
 
 export const cmdTunnelGroup: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const typeMatch = input.match(/^tunnel-group\s+(\S+)\s+type\s+(ipsec-l2l|remote-access)$/i);
@@ -135,17 +135,17 @@ export const cmdTunnelGroup: CommandHandler = (state, input, _ctx) => {
         return { success: true, output: '' };
     }
 
-    return { success: false, error: IOS_ERRORS.invalidInput };
+    return { success: false, error: CLI_ERRORS.invalidInput };
 };
 
 export const cmdCryptoIsakmpKey: CommandHandler = (state, input, _ctx) => {
     if (state.currentMode !== 'config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^crypto\s+isakmp\s+key\s+(\S+)\s+address\s+([0-9.]+)/i);
     if (!match) {
-        return { success: false, error: IOS_ERRORS.invalidInput };
+        return { success: false, error: CLI_ERRORS.invalidInput };
     }
 
     const key = match[1];

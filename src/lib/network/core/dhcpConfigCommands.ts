@@ -1,4 +1,4 @@
-import { iosModeError } from './iosErrors';
+import { cliModeError } from './cliErrors';
 
 import type { CommandHandler, CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult } from '../types';
@@ -8,7 +8,7 @@ import { buildRunningConfig } from './configBuilder';
 
 function cmdDhcpNetwork(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
     if (state.currentMode !== 'dhcp-config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
     const match = input.match(/^network\s+(\d+\.\d+\.\d+\.\d+)\s+(\d+\.\d+\.\d+\.\d+)$/i);
     if (!match) {
@@ -48,7 +48,7 @@ function cmdDhcpNetwork(state: SwitchState, input: string, _ctx: CommandContext)
 
 function cmdDhcpDefaultRouter(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
     if (state.currentMode !== 'dhcp-config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
     const match = input.match(/^default-router\s+(.+)$/i);
     if (!match) return { success: false, error: '% Invalid default-router command' };
@@ -74,7 +74,7 @@ function cmdDhcpDefaultRouter(state: SwitchState, input: string, _ctx: CommandCo
 
 function cmdDhcpDnsServer(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
     if (state.currentMode !== 'dhcp-config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
     const match = input.match(/^dns-server\s+(.+)$/i);
     if (!match) return { success: false, error: '% Invalid dns-server command' };
@@ -100,7 +100,7 @@ function cmdDhcpDnsServer(state: SwitchState, input: string, _ctx: CommandContex
 
 function cmdDhcpLease(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
     if (state.currentMode !== 'dhcp-config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
     const match = input.match(/^lease\s+(.+)$/i);
     if (!match) return { success: false, error: '% Invalid lease command' };
@@ -117,7 +117,7 @@ function cmdDhcpLease(state: SwitchState, input: string, _ctx: CommandContext): 
 
 function cmdDhcpDomainName(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
     if (state.currentMode !== 'dhcp-config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
     const match = input.match(/^domain-name\s+(\S+)$/i);
     if (!match) return { success: false, error: '% Invalid domain-name command' };
@@ -134,7 +134,7 @@ function cmdDhcpDomainName(state: SwitchState, input: string, _ctx: CommandConte
 
 function cmdIpv6DhcpAddressPrefix(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
     if (state.currentMode !== 'dhcp-config') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
     const match = input.match(/^address\s+prefix\s+([0-9a-fA-F:]+\/\d+)$/i);
     if (!match) return { success: false, error: '% Invalid address prefix command' };
@@ -167,7 +167,7 @@ export const dhcpConfigHandlers: Record<string, CommandHandler> = {
  * no network - Remove network from DHCP pool
  */
 function cmdNoDhcpNetwork(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-    if (state.currentMode !== 'dhcp-config') return { success: false, error: iosModeError() };
+    if (state.currentMode !== 'dhcp-config') return { success: false, error: cliModeError() };
     const poolName = state.currentDhcpPool;
     if (!poolName) return { success: false, error: '% No active DHCP pool' };
 
@@ -194,7 +194,7 @@ function cmdNoDhcpNetwork(state: SwitchState, _input: string, _ctx: CommandConte
  * no default-router
  */
 function cmdNoDhcpDefaultRouter(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-    if (state.currentMode !== 'dhcp-config') return { success: false, error: iosModeError() };
+    if (state.currentMode !== 'dhcp-config') return { success: false, error: cliModeError() };
     const poolName = state.currentDhcpPool;
     if (!poolName) return { success: false, error: '% No active DHCP pool' };
 
@@ -215,7 +215,7 @@ function cmdNoDhcpDefaultRouter(state: SwitchState, _input: string, _ctx: Comman
  * no dns-server
  */
 function cmdNoDhcpDnsServer(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-    if (state.currentMode !== 'dhcp-config') return { success: false, error: iosModeError() };
+    if (state.currentMode !== 'dhcp-config') return { success: false, error: cliModeError() };
     const poolName = state.currentDhcpPool;
     if (!poolName) return { success: false, error: '% No active DHCP pool' };
 
@@ -236,7 +236,7 @@ function cmdNoDhcpDnsServer(state: SwitchState, _input: string, _ctx: CommandCon
  * no domain-name
  */
 function cmdNoDhcpDomainName(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-    if (state.currentMode !== 'dhcp-config') return { success: false, error: iosModeError() };
+    if (state.currentMode !== 'dhcp-config') return { success: false, error: cliModeError() };
     const poolName = state.currentDhcpPool;
     if (!poolName) return { success: false, error: '% No active DHCP pool' };
 
@@ -251,7 +251,7 @@ function cmdNoDhcpDomainName(state: SwitchState, _input: string, _ctx: CommandCo
  * no address prefix
  */
 function cmdNoIpv6DhcpAddressPrefix(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-    if (state.currentMode !== 'dhcp-config') return { success: false, error: iosModeError() };
+    if (state.currentMode !== 'dhcp-config') return { success: false, error: cliModeError() };
     const poolName = state.currentIpv6DhcpPool;
     if (!poolName) return { success: false, error: '% No active IPv6 DHCP pool' };
 

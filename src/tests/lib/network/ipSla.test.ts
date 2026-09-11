@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 import { createIpSlaOperation, formatIpSlaStatistics, isIpSlaDue, runSyntheticIpSlaProbe } from '@/lib/network/ipSla';
 import { executeCommand } from '@/lib/network/executor';
 import { createInitialState } from '@/lib/network/initialState';
@@ -25,7 +25,7 @@ describe('IP SLA active probes', () => {
   });
 
   it('accepts the CLI operation and schedule forms', () => {
-    let state = createInitialState('TestRouter', 'WS-C3650-24PS');
+    let state = createInitialState('TestRouter', 'NS-L3-24PS');
     state = { ...state, currentMode: 'config' };
     let result = executeCommand(state, 'ip sla 10 icmp-echo 192.0.2.1 frequency 10', 'en');
     expect(result.success).toBe(true);

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+﻿import { describe, it, expect, vi } from 'vitest';
 import { parseCommand, validateCommand } from '@/lib/network/parser';
 
 vi.mock('@/lib/network/capabilities', () => ({
@@ -7,14 +7,14 @@ vi.mock('@/lib/network/capabilities', () => ({
 
 describe('CLI Error Handling (Invalid / Incomplete / Ambiguous)', () => {
   const privilegedState = {
-    switchModel: 'WS-C2960-24TT-L' as const,
+    switchModel: 'NS-L2-24TT-L' as const,
     switchLayer: 'L2' as const,
     isLayer3Switch: false,
     currentMode: 'privileged' as const,
   };
 
   const configState = {
-    switchModel: 'WS-C2960-24TT-L' as const,
+    switchModel: 'NS-L2-24TT-L' as const,
     switchLayer: 'L2' as const,
     isLayer3Switch: false,
     currentMode: 'config' as const,

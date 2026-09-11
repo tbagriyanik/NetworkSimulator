@@ -45,12 +45,12 @@ function addSwitch(
 ): { device: CanvasDevice; state: any } {
   const device: CanvasDevice = {
     id, type: 'switchL2', name, macAddress: mac, ip: '', x, y,
-    status: 'online', switchModel: 'WS-C2960-24TT-L', ports: generateSwitchPorts(),
+    status: 'online', switchModel: 'NS-L2-24TT-L', ports: generateSwitchPorts(),
   };
   ctx.devices.push(device);
   const state = {
     deviceType: 'switchL2', hostname: name, macAddress: mac,
-    switchModel: 'WS-C2960-24TT-L', switchLayer: 'L2',
+    switchModel: 'NS-L2-24TT-L', switchLayer: 'L2',
     currentMode: 'user', commandHistory: [], vlanDatabase: { ...vlanDb }, ports: {},
     security: {
       enableSecretEncrypted: false,
@@ -59,10 +59,10 @@ function addSwitch(
       consoleLine: { login: false, transportInput: ['all'], execTimeout: { minutes: 10, seconds: 0 } },
       vtyLines: { login: false, transportInput: ['all'], execTimeout: { minutes: 10, seconds: 0 } }
     },
-  } as any;
+  } as unknown as SwitchState;
   device.ports.forEach(p => {
     state.ports[p.id] = {
-      id: p.id, type: getPortType(p.id), status: 'notconnect',
+      id: p.id, name: p.label || p.id, vlan: 1, duplex: 'full', speed: '1000', type: getPortType(p.id), status: 'notconnect',
       shutdown: false, accessVlan: 1, mode: 'access',
     };
   });
@@ -84,7 +84,7 @@ function addRouter(
   ctx.devices.push(device);
   const state = {
     deviceType: 'router', hostname: name, macAddress: mac,
-    switchModel: 'WS-C3650-24PS', switchLayer: 'L3',
+    switchModel: 'NS-L3-24PS', switchLayer: 'L3',
     currentMode: 'user', commandHistory: [], vlanDatabase: {}, ports: {},
     ipRouting: true,
     security: {
@@ -95,10 +95,10 @@ function addRouter(
       vtyLines: { login: false, transportInput: ['all'], execTimeout: { minutes: 10, seconds: 0 } }
     },
     ...extras,
-  } as any;
+  } as unknown as SwitchState;
   device.ports.forEach(p => {
     state.ports[p.id] = {
-      id: p.id, type: getPortType(p.id), status: 'notconnect',
+      id: p.id, name: p.label || p.id, vlan: 1, duplex: 'full', speed: '1000', type: getPortType(p.id), status: 'notconnect',
       shutdown: true, accessVlan: 1, mode: 'routed',
     };
   });
@@ -652,7 +652,7 @@ function generateWireless(pcCount: number): Ctx {
 
   const apState = {
     deviceType: 'router', hostname: 'AP-1', macAddress: '0011.2233.AA01',
-    switchModel: 'WS-C3650-24PS', switchLayer: 'L3',
+    switchModel: 'NS-L3-24PS', switchLayer: 'L3',
     currentMode: 'user', commandHistory: [], vlanDatabase: {}, ports: {},
     ipRouting: true,
     services: {
@@ -665,10 +665,10 @@ function generateWireless(pcCount: number): Ctx {
       consoleLine: { login: false, transportInput: ['all'], execTimeout: { minutes: 10, seconds: 0 } },
       vtyLines: { login: false, transportInput: ['all'], execTimeout: { minutes: 10, seconds: 0 } },
     },
-  } as any;
+  } as unknown as SwitchState;
   ap.ports.forEach(p => {
     apState.ports[p.id] = {
-      id: p.id, type: getPortType(p.id), status: 'notconnect',
+      id: p.id, name: p.label || p.id, vlan: 1, duplex: 'full', speed: '1000', type: getPortType(p.id), status: 'notconnect',
       shutdown: p.id === 'gi0/0' || p.id === 'wlan0' ? false : true, accessVlan: 1, mode: 'routed',
     };
     if (p.id === 'gi0/0') {

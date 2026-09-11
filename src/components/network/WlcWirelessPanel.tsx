@@ -330,7 +330,7 @@ export function WlcWirelessPanel({
                                     <div className="min-w-0">
                                         <div className="text-sm font-medium truncate flex items-center gap-2">
                                             <span>{ap.name}</span>
-                                            <Badge variant="outline" className="text-[10px] py-0 px-1 font-mono">{ap.model || 'AIR-CAP3702I'}</Badge>
+                                            <Badge variant="outline" className="text-[10px] py-0 px-1 font-mono">{ap.model || 'NS-AP3702I'}</Badge>
                                         </div>
                                         <div className={`text-xs ${muted} font-mono mt-0.5`}>
                                             MAC: {ap.macAddress} · {tr('Mode: Local', 'Mod: Local')} · {tr('Tunnel: CAPWAP Data Encrypt', 'Tünel: CAPWAP Veri Şifreleme')}

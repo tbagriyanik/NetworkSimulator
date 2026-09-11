@@ -94,9 +94,8 @@ export function PhysicalDeviceView({
   return (
     <div className={`flex flex-col h-full overflow-y-auto p-4 space-y-4 select-none ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
       {/* Header Info & Power Switch Banner */}
-      <div className={`p-4 rounded-xl border flex flex-wrap items-center justify-between gap-4 backdrop-blur-md ${
-        isDark ? 'bg-secondary-900/80 border-secondary-800' : 'bg-slate-100/90 border-slate-200 shadow-sm'
-      }`}>
+      <div className={`p-4 rounded-xl border flex flex-wrap items-center justify-between gap-4 backdrop-blur-md ${isDark ? 'bg-secondary-900/80 border-secondary-800' : 'bg-slate-100/90 border-slate-200 shadow-sm'
+        }`}>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
             <Cpu className="w-5 h-5" />
@@ -104,11 +103,10 @@ export function PhysicalDeviceView({
           <div>
             <div className="flex items-center gap-2">
               <span className="font-bold text-sm tracking-wide">
-                {isRouter ? 'NetSim Modular Services Router (ISR Equivalent)' : 'NetSim Managed Enterprise Switch (Catalyst Equivalent)'}
+                {isRouter ? 'NetSim Modular Services Router' : 'NetSim Managed Enterprise Switch'}
               </span>
-              <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${
-                powerOn ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
-              }`}>
+              <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${powerOn ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
+                }`}>
                 {powerOn ? (isTR ? 'GÜÇ AÇIK' : 'POWER ON') : (isTR ? 'GÜÇ KAPALI' : 'POWER OFF')}
               </span>
             </div>
@@ -132,11 +130,10 @@ export function PhysicalDeviceView({
           </div>
           <button
             onClick={handleTogglePower}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs transition-all shadow-md active:scale-95 ${
-              powerOn
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs transition-all shadow-md active:scale-95 ${powerOn
                 ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/40'
                 : 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-900/40'
-            }`}
+              }`}
           >
             <Power className="w-4 h-4" />
             <span>{powerOn ? 'POWER: ON [I]' : 'POWER: OFF [O]'}</span>
@@ -153,9 +150,8 @@ export function PhysicalDeviceView({
       )}
 
       {/* Realistic NetSim Chassis Hardware Rear/Front Panel Visual */}
-      <div className={`p-4 rounded-2xl border ${
-        isDark ? 'bg-gradient-to-b from-slate-900 via-slate-950 to-black border-slate-700' : 'bg-gradient-to-b from-slate-200 to-slate-300 border-slate-400 shadow-inner'
-      }`}>
+      <div className={`p-4 rounded-2xl border ${isDark ? 'bg-gradient-to-b from-slate-900 via-slate-950 to-black border-slate-700' : 'bg-gradient-to-b from-slate-200 to-slate-300 border-slate-400 shadow-inner'
+        }`}>
         <div className="flex items-center justify-between mb-3 text-[11px] font-mono text-slate-400">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
@@ -169,14 +165,12 @@ export function PhysicalDeviceView({
         </div>
 
         {/* Chassis Metal Frame */}
-        <div className={`p-4 rounded-xl border-2 border-dashed ${
-          isDark ? 'bg-slate-950/90 border-slate-700/80 shadow-[inset_0_2px_10px_rgba(0,0,0,0.8)]' : 'bg-slate-100 border-slate-400 shadow-inner'
-        }`}>
+        <div className={`p-4 rounded-xl border-2 border-dashed ${isDark ? 'bg-slate-950/90 border-slate-700/80 shadow-[inset_0_2px_10px_rgba(0,0,0,0.8)]' : 'bg-slate-100 border-slate-400 shadow-inner'
+          }`}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Built-in Fixed Motherboard Ports */}
-            <div className={`p-3 rounded-lg border flex flex-col justify-between ${
-              isDark ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-300'
-            }`}>
+            <div className={`p-3 rounded-lg border flex flex-col justify-between ${isDark ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-300'
+              }`}>
               <div className="flex items-center justify-between text-[10px] font-mono mb-2 text-slate-400">
                 <span className="font-bold">SLOT 0 (BUILT-IN)</span>
                 <span className="text-emerald-500 font-semibold">FIXED</span>
@@ -188,11 +182,10 @@ export function PhysicalDeviceView({
                   .map((p) => (
                     <div
                       key={p.id}
-                      className={`px-2 py-1 rounded text-[10px] font-mono border flex items-center gap-1 ${
-                        p.status === 'connected' || p.linkStatus === 'up'
+                      className={`px-2 py-1 rounded text-[10px] font-mono border flex items-center gap-1 ${p.status === 'connected' || p.linkStatus === 'up'
                           ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                           : 'bg-slate-800 text-slate-400 border-slate-700'
-                      }`}
+                        }`}
                       title={`${p.id} (${p.status})`}
                     >
                       <span className={`w-1.5 h-1.5 rounded-full ${p.status === 'connected' || p.linkStatus === 'up' ? 'bg-emerald-400' : 'bg-slate-500'}`} />
@@ -211,15 +204,14 @@ export function PhysicalDeviceView({
                 <div
                   key={slot.slotIndex}
                   onClick={() => setSelectedSlot(selectedSlot === slot.slotIndex ? null : slot.slotIndex)}
-                  className={`p-3 rounded-lg border-2 transition-all cursor-pointer relative group ${
-                    installedMod
+                  className={`p-3 rounded-lg border-2 transition-all cursor-pointer relative group ${installedMod
                       ? isDark
                         ? 'bg-slate-900 border-cyan-500/50 hover:border-cyan-400 shadow-md'
                         : 'bg-cyan-50/70 border-cyan-400 shadow-sm'
                       : isDark
-                      ? 'bg-slate-950/60 border-slate-800 border-dashed hover:border-slate-600'
-                      : 'bg-slate-50 border-slate-300 border-dashed hover:border-slate-400'
-                  } ${selectedSlot === slot.slotIndex ? 'ring-2 ring-primary-500' : ''}`}
+                        ? 'bg-slate-950/60 border-slate-800 border-dashed hover:border-slate-600'
+                        : 'bg-slate-50 border-slate-300 border-dashed hover:border-slate-400'
+                    } ${selectedSlot === slot.slotIndex ? 'ring-2 ring-primary-500' : ''}`}
                 >
                   <div className="flex items-center justify-between text-[10px] font-mono mb-1">
                     <span className="font-bold text-slate-300">{slot.slotName}</span>
@@ -277,9 +269,8 @@ export function PhysicalDeviceView({
       </div>
 
       {/* Module Catalog & Insertion Panel */}
-      <div className={`p-4 rounded-xl border space-y-3 ${
-        isDark ? 'bg-secondary-900/60 border-secondary-800' : 'bg-white border-slate-200 shadow-sm'
-      }`}>
+      <div className={`p-4 rounded-xl border space-y-3 ${isDark ? 'bg-secondary-900/60 border-secondary-800' : 'bg-white border-slate-200 shadow-sm'
+        }`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Layers className="w-4 h-4 text-primary-400" />
@@ -303,9 +294,8 @@ export function PhysicalDeviceView({
             return (
               <div
                 key={mod.id}
-                className={`p-3 rounded-xl border transition-all ${
-                  isDark ? 'bg-secondary-950/70 border-secondary-800' : 'bg-slate-50 border-slate-200'
-                } ${!isSupported ? 'opacity-40 grayscale cursor-not-allowed' : 'hover:border-primary-500/50'}`}
+                className={`p-3 rounded-xl border transition-all ${isDark ? 'bg-secondary-950/70 border-secondary-800' : 'bg-slate-50 border-slate-200'
+                  } ${!isSupported ? 'opacity-40 grayscale cursor-not-allowed' : 'hover:border-primary-500/50'}`}
               >
                 <div className="flex items-start justify-between gap-2 mb-1.5">
                   <div>
@@ -320,11 +310,10 @@ export function PhysicalDeviceView({
                   <button
                     disabled={!selectedSlot || !isSupported}
                     onClick={() => selectedSlot && handleInstall(selectedSlot, mod.id)}
-                    className={`px-3 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1 ${
-                      selectedSlot && isSupported
+                    className={`px-3 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1 ${selectedSlot && isSupported
                         ? 'bg-primary-600 hover:bg-primary-500 text-white shadow-sm active:scale-95'
                         : 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                    }`}
+                      }`}
                   >
                     <Plus className="w-3 h-3" />
                     <span>{isTR ? 'Yuvaya Tak' : 'Insert'}</span>
@@ -340,9 +329,8 @@ export function PhysicalDeviceView({
       </div>
 
       {/* Port Inventory Table */}
-      <div className={`p-4 rounded-xl border space-y-2 ${
-        isDark ? 'bg-secondary-900/60 border-secondary-800' : 'bg-white border-slate-200 shadow-sm'
-      }`}>
+      <div className={`p-4 rounded-xl border space-y-2 ${isDark ? 'bg-secondary-900/60 border-secondary-800' : 'bg-white border-slate-200 shadow-sm'
+        }`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Activity className="w-4 h-4 text-emerald-400" />
@@ -378,9 +366,8 @@ export function PhysicalDeviceView({
                     <td className="p-2 text-slate-400">{p.speed ? `${p.speed} Mbps` : 'Auto'}</td>
                     <td className="p-2 text-slate-400">{p.mode || (isRouter ? 'routed' : 'access')}</td>
                     <td className="p-2">
-                      <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold ${
-                        isConn ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-500'
-                      }`}>
+                      <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold ${isConn ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-500'
+                        }`}>
                         {isConn ? <CheckCircle2 className="w-2.5 h-2.5" /> : null}
                         {isConn ? (isTR ? 'Bağlı' : 'Connected') : (isTR ? 'Boş' : 'Unused')}
                       </span>

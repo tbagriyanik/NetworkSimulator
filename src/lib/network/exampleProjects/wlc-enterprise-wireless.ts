@@ -30,7 +30,7 @@ const example = (isTr: boolean): ExampleProject => {
     }
   };
 
-  // Lightweight Access Points (Wireless-enabled Layer 3 Switches - WS-C3650-24PS)
+  // Lightweight Access Points (Wireless-enabled Layer 3 Switches - NS-L3-24PS)
   const lap1 = createL3SwitchDevice('lap-1', 'LAP-Floor1', 400, 360);
   lap1.ip = '192.168.1.51';
   lap1.wifi = {
@@ -291,10 +291,10 @@ const example = (isTr: boolean): ExampleProject => {
     'end'
   ];
 
-  // SW1 (Layer 3 Switch WS-C3650-24PS)
-  const sw1State = createInitialState('00:50:00:00:00:82', 'WS-C3650-24PS');
+  // SW1 (Layer 3 Switch NS-L3-24PS)
+  const sw1State = createInitialState('00:50:00:00:00:82', 'NS-L3-24PS');
   sw1State.hostname = 'SW1';
-  sw1State.switchModel = 'WS-C3650-24PS';
+  sw1State.switchModel = 'NS-L3-24PS';
   sw1State.switchLayer = 'L3';
   sw1State.deviceType = 'switchL3';
   sw1State.ipRouting = false;
@@ -361,7 +361,7 @@ const example = (isTr: boolean): ExampleProject => {
       macAddress: '00E0.F711.2233',
       ipAddress: '192.168.1.51',
       status: 'joined',
-      model: 'AIR-AP1852I',
+      model: 'NS-AP1852I',
       apGroup: 'default-group',
       rfChannel: 1,
       power: '1',
@@ -373,7 +373,7 @@ const example = (isTr: boolean): ExampleProject => {
       macAddress: '00E0.F744.5566',
       ipAddress: '192.168.1.52',
       status: 'joined',
-      model: 'AIR-AP1852I',
+      model: 'NS-AP1852I',
       apGroup: 'default-group',
       rfChannel: 6,
       power: '1',
@@ -404,10 +404,10 @@ const example = (isTr: boolean): ExampleProject => {
     'end'
   ];
 
-  // LAP-1 State (Layer 3 Switch WS-C3650-24PS)
-  const lap1State = createInitialState('00:50:00:00:00:84', 'WS-C3650-24PS');
+  // LAP-1 State (Layer 3 Switch NS-L3-24PS)
+  const lap1State = createInitialState('00:50:00:00:00:84', 'NS-L3-24PS');
   lap1State.hostname = 'LAP-Floor1';
-  lap1State.switchModel = 'WS-C3650-24PS';
+  lap1State.switchModel = 'NS-L3-24PS';
   lap1State.switchLayer = 'L3';
   lap1State.deviceType = 'switchL3';
   lap1State.ipRouting = true;
@@ -436,10 +436,10 @@ const example = (isTr: boolean): ExampleProject => {
     }
   };
 
-  // LAP-2 State (Layer 3 Switch WS-C3650-24PS)
-  const lap2State = createInitialState('00:50:00:00:00:85', 'WS-C3650-24PS');
+  // LAP-2 State (Layer 3 Switch NS-L3-24PS)
+  const lap2State = createInitialState('00:50:00:00:00:85', 'NS-L3-24PS');
   lap2State.hostname = 'LAP-Floor2';
-  lap2State.switchModel = 'WS-C3650-24PS';
+  lap2State.switchModel = 'NS-L3-24PS';
   lap2State.switchLayer = 'L3';
   lap2State.deviceType = 'switchL3';
   lap2State.ipRouting = true;

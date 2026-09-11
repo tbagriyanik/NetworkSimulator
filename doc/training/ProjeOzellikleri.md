@@ -10,7 +10,6 @@
 | **İnteraktif Mini-Harita Navigatörü** | Sağ alt köşede sürüklenebilir tuval penceresi, "Ekrana Sığdır" (Fit to Screen) ve OSPF/VLAN/Subnet alanlarına anında kamera odaklama (`MinimapNavigator.tsx`). |
 | **VLAN & OSPF/BGP Alan Renklendirme Overlay'i** | Andrew Monotone Chain 2D konveks zarf algoritması ve SVG yumuşak yumru çizimi ile OSPF Area 0/1, VLAN Bölgeleri, BGP AS ve IP Subnet'lerinin cihazlar arkasında parlayan renkli bulutlarla gösterimi (`areaOverlayEngine.ts`, `TopologyAreaOverlay.tsx`). |
 | **Snapshot & Checkpoint Portal Modalı** | `createPortal(..., document.body)` ile tam ekran bağımsız modal rendering, anlık topoloji durum dondurma, arama, JSON içe/dışa aktarma ve onaylı geri yükleme (`SnapshotManagerModal.tsx`). |
-| **NetSim Marka Standartlaşması** | Cisco marka adları `NetSim` standart adlarıyla güncellendi (`NetSim WIC-2T`, `NetSim Modular Chassis View`, `NetSim RESTCONF Explorer`, `netsim-native:native` YANG modeli). |
 | **Multi-Selection & Render Optimisation** | Tuval zemininde mouse-up yapıldığında aktif kutu seçiminin silinmesi engellendi; global paket capture dinleyicisi `queueMicrotask` ile asenkronlaştırıldı (`useTopologyMouse.ts`, `usePageNetworkLogic.ts`). |
 
 | Özellik | Güncel kapsam ve sınır |

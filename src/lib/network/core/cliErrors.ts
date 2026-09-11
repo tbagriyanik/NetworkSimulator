@@ -1,4 +1,4 @@
-export const IOS_ERRORS = {
+export const CLI_ERRORS = {
   invalidInput: "% Invalid input detected at '^' marker.",
   incomplete: '% Incomplete command.',
   ambiguous: '% Ambiguous command',
@@ -8,7 +8,7 @@ export const IOS_ERRORS = {
   marker: '^'
 } as const;
 
-export const iosModeError = (currentMode?: string): string => {
+export const cliModeError = (currentMode?: string): string => {
   const modeNames: Record<string, string> = {
     user: 'User EXEC',
     privileged: 'Privileged EXEC',

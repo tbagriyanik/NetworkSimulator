@@ -3,8 +3,8 @@ import { isRouterModel } from './switchModels';
 
 export function computeInterfaceSummary(state: SwitchState): string {
   const isRouter = isRouterModel(state.version.modelName) || isRouterModel(state.switchModel);
-  const isL3Switch = state.version.modelName.includes('3650');
-  const isFirewall = state.deviceType === 'firewall' || state.switchLayer === 'FW' || state.version.modelName.includes('ASA') || state.version.modelName.includes('Firepower');
+  const isL3Switch = state.version.modelName.includes('NS-L3');
+  const isFirewall = state.deviceType === 'firewall' || state.switchLayer === 'FW' || state.version.modelName.includes('NS-FW');
   const reportedFeCount = isRouter ? 0 : 24;
   const reportedGiCount = isFirewall ? 2 : (isRouter || isL3Switch) ? 4 : 2;
   const wlanCount = Object.values(state.ports || {}).filter(p => (p?.id || '').startsWith('wlan')).length;
@@ -17,15 +17,15 @@ export function computeInterfaceSummary(state: SwitchState): string {
 
 export function generateBootMessages(state: SwitchState, language: 'tr' | 'en', full: boolean): string {
   const isRouter = isRouterModel(state.version.modelName) || isRouterModel(state.switchModel);
-  const isL3Switch = state.version.modelName.includes('3650');
+  const isL3Switch = state.version.modelName.includes('NS-L3');
   const ifaceSummary = computeInterfaceSummary(state);
   const syslog = language === 'tr' ? '*** Syslog istemcisi başlatıldı' : '*** Syslog client started';
-  const platform = isRouter ? 'ISR4451/K9 platform with 4096 K bytes of memory' : isL3Switch ? 'C3650 platform with 131072 K bytes of memory' : 'C2960 platform with 65536 K bytes of memory';
+  const platform = isRouter ? 'NS-R-4451 platform with 4096 K bytes of memory' : isL3Switch ? 'NS-L3 platform with 131072 K bytes of memory' : 'NS-L2 platform with 65536 K bytes of memory';
   const bootBin = isRouter ? 'router-software.bin' : isL3Switch ? 'l3switch-software.bin' : 'l2switch-software.bin';
   const postCheck = isRouter || isL3Switch ? 'POST: CPU PCIe port Check PASS' : 'POST: CPU Ethernet port Check PASS';
   let body: string;
   if (full) {
-    const initLines = isRouter ? `Load/bootstrap symbols loaded, GOXR initialization\nReading all bootflash vectors` : `Load/bootstrap symbols loaded\nReading all bootflash vectors`;
+    const initLines = isRouter ? `Load/bootstrap symbols loaded, NetSim OS initialization\nReading all bootflash vectors` : `Load/bootstrap symbols loaded\nReading all bootflash vectors`;
     body = `${platform}\n\n${syslog}\n${initLines}\n${postCheck}\nCPU memory test . . . . . . . . . . . . . OK\nBoard initialization completed\nInitializing flash file system\n\nBooting flash:${bootBin}...OK!\nExtracting files from flash:${bootBin}...\n  ########## [OK]\n  0 bytes remaining in flash device\n\n${ifaceSummary}`;
   } else {
     const fullBootLines = `${syslog}\nLoad/bootstrap symbols loaded\nReading all bootflash vectors\n${postCheck}\nCPU memory test . . . . . . . . . . . . . OK\nBoard initialization completed\nInitializing flash file system\n\nBooting flash:${bootBin}...OK!\nExtracting files from flash:${bootBin}...\n  ########## [OK]\n  0 bytes remaining in flash device\n\n${ifaceSummary}`;

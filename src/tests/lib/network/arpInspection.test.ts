@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { cmdIpArpInspectionTrust, cmdNoIpArpInspectionTrust } from '@/lib/network/core/interface/cmd.ipAddress';
 import { SwitchState, Port, SwitchModel, SwitchLayer, Vlan, SecurityConfig } from '@/lib/network/types';
 import type { CommandContext } from '@/lib/network/core/commandTypes';
@@ -12,7 +12,7 @@ describe('IP ARP Inspection Command Support', () => {
   const createMockState = (): SwitchState => ({
     hostname: 'Switch-1',
     macAddress: '00:11:22:33:44:55',
-    switchModel: 'WS-C2960-24TT-L' as SwitchModel,
+    switchModel: 'NS-L2-24TT-L' as SwitchModel,
     switchLayer: 'L2' as SwitchLayer,
     currentMode: 'config',
     commandHistory: [],

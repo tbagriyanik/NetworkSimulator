@@ -426,7 +426,7 @@ export function buildRunningConfig(state: SwitchState): string[] {
             }
             if (!isRouterLike) {
                 if (port.mode === 'trunk') {
-                    if (modelName.includes('3650') || modelName.includes('c3650')) {
+                    if (modelName.includes('NS-L3') || modelName.includes('ns-l3')) {
                         lines.push(' switchport trunk encapsulation dot1q');
                     }
                     lines.push(' switchport mode trunk');

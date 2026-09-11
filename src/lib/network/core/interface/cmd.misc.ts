@@ -1,4 +1,4 @@
-import { iosModeError } from '../iosErrors';
+import { cliModeError } from '../cliErrors';
 import type { CommandContext } from '../commandTypes';
 import type { SwitchState, CommandResult, Port } from '../../types';
 import { buildRunningConfig } from '../configBuilder';
@@ -11,7 +11,7 @@ import {
  * standby <group> ip <virtual-ip>
  */
 export function cmdStandbyIp(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
   const match = input.match(/^standby\s+(\d+)\s+ip\s+([0-9.]+)$/i);
   if (!match) return { success: false, error: '% Invalid standby command' };
 
@@ -33,7 +33,7 @@ export function cmdStandbyIp(state: SwitchState, input: string, _ctx: CommandCon
  * standby <group> priority <priority>
  */
 export function cmdStandbyPriority(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
   const match = input.match(/^standby\s+(\d+)\s+priority\s+(\d+)$/i);
   if (!match) return { success: false, error: '% Invalid standby command' };
 
@@ -55,7 +55,7 @@ export function cmdStandbyPriority(state: SwitchState, input: string, _ctx: Comm
  * standby <group> ipv6 <virtual-ipv6>
  */
 export function cmdStandbyIpv6(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
   const match = input.match(/^standby\s+(\d+)\s+ipv6\s+([0-9a-fA-F:]+)$/i);
   if (!match) return { success: false, error: '% Invalid standby command' };
 
@@ -75,7 +75,7 @@ export function cmdStandbyIpv6(state: SwitchState, input: string, _ctx: CommandC
 }
 
 export function cmdStandbyPreempt(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
   const match = input.match(/^standby\s+(\d+)\s+preempt$/i);
   if (!match) return { success: false, error: '% Invalid standby command' };
 
@@ -96,7 +96,7 @@ export function cmdStandbyPreempt(state: SwitchState, input: string, _ctx: Comma
  * vrrp <group> ip <virtual-ip>
  */
 export function cmdVrrpIp(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
   const match = input.match(/^vrrp\s+(\d+)\s+ip\s+([0-9.]+)$/i);
   if (!match) return { success: false, error: '% Invalid vrrp command' };
 
@@ -118,7 +118,7 @@ export function cmdVrrpIp(state: SwitchState, input: string, _ctx: CommandContex
  * vrrp <group> priority <priority>
  */
 export function cmdVrrpPriority(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
   const match = input.match(/^vrrp\s+(\d+)\s+priority\s+(\d+)$/i);
   if (!match) return { success: false, error: '% Invalid vrrp command' };
 
@@ -140,7 +140,7 @@ export function cmdVrrpPriority(state: SwitchState, input: string, _ctx: Command
  * vrrp <group> preempt
  */
 export function cmdVrrpPreempt(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
   const match = input.match(/^vrrp\s+(\d+)\s+preempt$/i);
   if (!match) return { success: false, error: '% Invalid vrrp command' };
 
@@ -485,7 +485,7 @@ export function cmdNoSpanningTree(state: SwitchState, _input: string, _ctx: Comm
  */
 export function cmdDebug(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'privileged') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^debug\s+(.+)$/i);
@@ -501,7 +501,7 @@ export function cmdDebug(state: SwitchState, input: string, _ctx: CommandContext
  */
 export function cmdNoDebug(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'privileged' && state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^no\s+debug(?:\s+(.+))?$/i);
@@ -522,7 +522,7 @@ export function cmdNoDebug(state: SwitchState, input: string, _ctx: CommandConte
  */
 export function cmdMonitorSession(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^monitor\s+session\s+(\d+)\s+(source|destination)\s+(.+)$/i);
@@ -538,7 +538,7 @@ export function cmdMonitorSession(state: SwitchState, input: string, _ctx: Comma
  */
 export function cmdNoMonitorSession(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^no\s+monitor\s+session\s+(\d+)$/i);
@@ -554,7 +554,7 @@ export function cmdNoMonitorSession(state: SwitchState, input: string, _ctx: Com
  */
 export function cmdAccessList(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^access-list\s+(\d+)\s+(?:(\d+)\s+)?(permit|deny)\s+(.+)$/i);
@@ -624,7 +624,7 @@ export function cmdAccessList(state: SwitchState, input: string, _ctx: CommandCo
  */
 export function cmdNoAccessList(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^no\s+access-list\s+(\d+)(?:\s+(\d+))?$/i);
@@ -671,7 +671,7 @@ export function cmdNoAccessList(state: SwitchState, input: string, _ctx: Command
  */
 export function cmdCdpEnable(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state)) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   if (state.cdpEnabled === false) {
@@ -692,7 +692,7 @@ export function cmdCdpEnable(state: SwitchState, _input: string, _ctx: CommandCo
 }
 
 export function cmdLldpTransmit(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const updatePort = (port: Port) => ({ ...port, lldpTransmit: true });
   if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
@@ -702,7 +702,7 @@ export function cmdLldpTransmit(state: SwitchState, _input: string, _ctx: Comman
 }
 
 export function cmdNoLldpTransmit(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const updatePort = (port: Port) => ({ ...port, lldpTransmit: false });
   if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
@@ -712,7 +712,7 @@ export function cmdNoLldpTransmit(state: SwitchState, _input: string, _ctx: Comm
 }
 
 export function cmdLldpReceive(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const updatePort = (port: Port) => ({ ...port, lldpReceive: true });
   if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
@@ -722,7 +722,7 @@ export function cmdLldpReceive(state: SwitchState, _input: string, _ctx: Command
 }
 
 export function cmdNoLldpReceive(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const updatePort = (port: Port) => ({ ...port, lldpReceive: false });
   if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
@@ -735,7 +735,7 @@ export function cmdNoLldpReceive(state: SwitchState, _input: string, _ctx: Comma
  * Spanning-Tree BPDUGuard Disable
  */
 export function cmdEncapsulationDot1q(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const match = input.match(/^encapsulation\s+dot1[qQ]\s+(\d+)$/i);
   if (!match) return { success: false, error: '% Invalid encapsulation command' };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
@@ -748,7 +748,7 @@ export function cmdEncapsulationDot1q(state: SwitchState, input: string, _ctx: C
  * Encapsulation HDLC - Set serial encapsulation to HDLC (default)
  */
 export function cmdEncapsulationHdlc(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const port = state.ports[state.currentInterface];
   if (port?.type !== 'serial') return { success: false, error: '% HDLC encapsulation is only supported on serial interfaces' };
@@ -763,7 +763,7 @@ export function cmdEncapsulationHdlc(state: SwitchState, _input: string, _ctx: C
  * Encapsulation PPP - Set serial encapsulation to PPP
  */
 export function cmdEncapsulationPpp(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const port = state.ports[state.currentInterface];
   if (port?.type !== 'serial') return { success: false, error: '% PPP encapsulation is only supported on serial interfaces' };
@@ -778,7 +778,7 @@ export function cmdEncapsulationPpp(state: SwitchState, _input: string, _ctx: Co
  * No Encapsulation - Reset serial encapsulation to default (HDLC)
  */
 export function cmdNoEncapsulation(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const port = state.ports[state.currentInterface];
   if (port?.type !== 'serial') return { success: false, error: '% Encapsulation is only supported on serial interfaces' };
@@ -793,7 +793,7 @@ export function cmdNoEncapsulation(state: SwitchState, _input: string, _ctx: Com
  * Clock Rate - Set DCE clock rate on serial interface
  */
 export function cmdClockRate(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const match = input.match(/^clock\s+rate\s+(\d+)$/i);
   if (!match) return { success: false, error: '% Invalid clock rate command' };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
@@ -817,7 +817,7 @@ export function cmdClockRate(state: SwitchState, input: string, _ctx: CommandCon
  * No Clock Rate - Remove clock rate from serial interface
  */
 export function cmdNoClockRate(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const port = state.ports[state.currentInterface];
   if (port?.type !== 'serial') return { success: false, error: '% Clock rate is only supported on serial interfaces' };
@@ -832,7 +832,7 @@ export function cmdNoClockRate(state: SwitchState, _input: string, _ctx: Command
  * PPP Authentication PAP - Set PPP PAP authentication
  */
 export function cmdPppAuthPap(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const port = state.ports[state.currentInterface];
   if (port?.type !== 'serial') return { success: false, error: '% PPP authentication is only supported on serial interfaces' };
@@ -847,7 +847,7 @@ export function cmdPppAuthPap(state: SwitchState, _input: string, _ctx: CommandC
  * PPP Authentication CHAP - Set PPP CHAP authentication
  */
 export function cmdPppAuthChap(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const port = state.ports[state.currentInterface];
   if (port?.type !== 'serial') return { success: false, error: '% PPP authentication is only supported on serial interfaces' };
@@ -860,7 +860,7 @@ export function cmdPppAuthChap(state: SwitchState, _input: string, _ctx: Command
 
 /** PPPoE CHAP credentials (Dialer/serial interfaces). */
 export function cmdPppChapCredentials(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
   const port = state.ports[state.currentInterface];
   const hostname = input.match(/^ppp\s+chap\s+hostname\s+(\S+)$/i);
   const password = input.match(/^ppp\s+chap\s+password\s+(?:0\s+)?(\S+)$/i);
@@ -872,7 +872,7 @@ export function cmdPppChapCredentials(state: SwitchState, input: string, _ctx: C
  * No PPP Authentication - Remove PPP authentication
  */
 export function cmdNoPppAuth(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const port = state.ports[state.currentInterface];
   if (port?.type !== 'serial') return { success: false, error: '% PPP authentication is only supported on serial interfaces' };
@@ -887,7 +887,7 @@ export function cmdNoPppAuth(state: SwitchState, _input: string, _ctx: CommandCo
  * PPP PAP Sent-Username - Set PPP PAP credentials
  */
 export function cmdPppPapSentUsername(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const match = input.match(/^ppp\s+pap\s+sent-username\s+(\S+)\s+password\s+0\s+(\S+)$/i);
   if (!match) return { success: false, error: '% Invalid command. Usage: ppp pap sent-username <username> password 0 <password>' };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
@@ -906,7 +906,7 @@ export function cmdPppPapSentUsername(state: SwitchState, input: string, _ctx: C
  * Switchport Protected
  */
 export function cmdStormControl(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const match = input.match(/^storm-control\s+(broadcast|multicast|unicast)\s+level\s+([\d.]+)(?:\s+([\d.]+))?$/i);
   if (!match) return { success: false, error: '% Invalid storm-control command. Use: storm-control {broadcast|multicast|unicast} level <rising> [falling]' };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
@@ -919,7 +919,7 @@ export function cmdStormControl(state: SwitchState, input: string, _ctx: Command
  * Storm-Control Action
  */
 export function cmdStormControlAction(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const match = input.match(/^storm-control\s+action\s+(shutdown|trap)$/i);
   if (!match) return { success: false, error: '% Invalid storm-control action command' };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
@@ -932,7 +932,7 @@ export function cmdStormControlAction(state: SwitchState, input: string, _ctx: C
  * MLS QoS Trust
  */
 export function cmdMlsQosTrust(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const match = input.match(/^mls\s+qos\s+trust\s+(cos|dscp|ip-precedence)$/i);
   if (!match) return { success: false, error: '% Invalid mls qos trust command' };
   const trustVal = match[1] as 'cos' | 'dscp' | 'ip-precedence';
@@ -948,7 +948,7 @@ export function cmdMlsQosTrust(state: SwitchState, input: string, _ctx: CommandC
  * MLS QoS CoS
  */
 export function cmdMlsQosCos(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const match = input.match(/^mls\s+qos\s+cos\s+(\d)$/i);
   if (!match) return { success: false, error: '% Invalid mls qos cos command' };
   const updatePort = (port: Port) => ({ ...port, qosCos: parseInt(match[1]) });
@@ -960,7 +960,7 @@ export function cmdMlsQosCos(state: SwitchState, input: string, _ctx: CommandCon
 }
 
 export function cmdQosSetDscp(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
   const match = input.match(/^set\s+dscp\s+(\S+)$/i);
   if (!match) return { success: false, error: '% Invalid DSCP value' };
   const port = state.ports[state.currentInterface];
@@ -968,7 +968,7 @@ export function cmdQosSetDscp(state: SwitchState, input: string, _ctx: CommandCo
 }
 
 export function cmdIpDhcpSnoopingLimitRate(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const isNo = input.trim().toLowerCase().startsWith('no ');
   const match = input.match(/^(?:no\s+)?ip\s+dhcp\s+snooping\s+limit\s+rate(?:\s+(\d+))?$/i);
   const rate = isNo ? undefined : (match && match[1] ? parseInt(match[1], 10) : 15);
@@ -984,7 +984,7 @@ export function cmdIpDhcpSnoopingLimitRate(state: SwitchState, input: string, _c
  * IP DHCP Snooping Trust
  */
 export function cmdBandwidth(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const match = input.match(/^bandwidth\s+(\d+)$/i);
   if (!match) return { success: false, error: '% Invalid bandwidth command' };
   const updatePort = (port: Port) => ({ ...port, bandwidth: parseInt(match[1]) });
@@ -999,7 +999,7 @@ export function cmdBandwidth(state: SwitchState, input: string, _ctx: CommandCon
  * Delay
  */
 export function cmdDelay(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const match = input.match(/^delay\s+(\d+)$/i);
   if (!match) return { success: false, error: '% Invalid delay command' };
   const delayValue = parseInt(match[1]);
@@ -1015,7 +1015,7 @@ export function cmdDelay(state: SwitchState, input: string, _ctx: CommandContext
  * MTU
  */
 export function cmdMtu(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const match = input.match(/^mtu\s+(\d+)$/i);
   if (!match) return { success: false, error: '% Invalid MTU command' };
   const mtuValue = parseInt(match[1]);
@@ -1034,7 +1034,7 @@ export function cmdMtu(state: SwitchState, input: string, _ctx: CommandContext):
  * Keepalive
  */
 export function cmdKeepalive(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const match = input.match(/^keepalive(?:\s+(\d+))?$/i);
   const interval = match?.[1] ? parseInt(match[1]) : 10;
   const updatePort = (port: Port) => ({ ...port, keepalive: interval });
@@ -1049,7 +1049,7 @@ export function cmdKeepalive(state: SwitchState, input: string, _ctx: CommandCon
  * IP Proxy-ARP (enable)
  */
 export function cmdIpProxyArp(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const updatePort = (port: Port) => ({ ...port, proxyArp: true });
   if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
@@ -1062,7 +1062,7 @@ export function cmdIpProxyArp(state: SwitchState, _input: string, _ctx: CommandC
  * IP Verify Source
  */
 export function cmdIpVerifySource(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const hasPortSecurity = input.includes('port-security');
   const updatePort = (port: Port) => ({
     ...port,
@@ -1080,7 +1080,7 @@ export function cmdIpVerifySource(state: SwitchState, input: string, _ctx: Comma
  * UDLD Enable / Port
  */
 export function cmdUdldEnable(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const updatePort = (port: Port) => ({ ...port, udld: { enabled: true, ...(port.udld ? { mode: port.udld.mode } : {}) } });
   if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
@@ -1091,7 +1091,7 @@ export function cmdUdldEnable(state: SwitchState, _input: string, _ctx: CommandC
 
 /** Configure EtherChannel negotiation protocol on the selected interface(s). */
 export function cmdChannelProtocol(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const match = input.match(/^channel-protocol\s+(lacp|pagp)$/i);
   if (!match) return { success: false, error: '% Invalid channel-protocol command' };
   const protocol = match[1].toLowerCase() as 'lacp' | 'pagp';
@@ -1107,7 +1107,7 @@ export function cmdChannelProtocol(state: SwitchState, input: string, _ctx: Comm
 
 /** Enable or disable directed broadcasts on the selected interface(s). */
 export function cmdDirectedBroadcast(state: SwitchState, _input: string, enabled: boolean): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const updatePort = (port: Port) => ({ ...port, directedBroadcast: enabled });
   const ports = state.selectedInterfaces?.length
     ? applyToSelectedPorts(state, updatePort)
@@ -1119,7 +1119,7 @@ export function cmdDirectedBroadcast(state: SwitchState, _input: string, enabled
 }
 
 export function cmdCarrierDelay(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const match = input.match(/^carrier-delay\s+(\d+)$/i);
   if (!match) return { success: false, error: '% Invalid carrier-delay command' };
   const delay = Number(match[1]);
@@ -1130,7 +1130,7 @@ export function cmdCarrierDelay(state: SwitchState, input: string, _ctx: Command
 }
 
 export function cmdLoadInterval(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const match = input.match(/^load-interval\s+(\d+)$/i);
   if (!match) return { success: false, error: '% Invalid load-interval command' };
   const interval = Number(match[1]);
@@ -1142,7 +1142,7 @@ export function cmdLoadInterval(state: SwitchState, input: string, _ctx: Command
 }
 
 export function cmdArpInspectionLimit(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const match = input.match(/^ip\s+arp\s+inspection\s+limit\s+(\d+)$/i);
   if (!match || Number(match[1]) < 1) return { success: false, error: '% Invalid ARP inspection rate' };
   const updatePort = (port: Port) => ({ ...port, arpInspectionLimitRate: Number(match[1]) });
@@ -1160,7 +1160,7 @@ export function cmdPriorityQueueOut(state: SwitchState, input: string, _ctx: Com
 }
 
 export function cmdQueueSet(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const match = input.match(/^queue-set\s+(\d+)$/i);
   if (!match) return { success: false, error: '% Invalid queue-set command' };
   const updatePort = (port: Port) => ({ ...port, qos: { ...port.qos, enabled: true, egressQueue: Number(match[1]) } });
@@ -1170,7 +1170,7 @@ export function cmdQueueSet(state: SwitchState, input: string, _ctx: CommandCont
 }
 
 export function cmdTxQueue(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const match = input.match(/^tx-queue\s+(\d+)$/i);
   if (!match) return { success: false, error: '% Invalid tx-queue command' };
   const updatePort = (port: Port) => ({ ...port, qos: { ...port.qos, enabled: true, ingressQueue: Number(match[1]) } });
@@ -1180,7 +1180,7 @@ export function cmdTxQueue(state: SwitchState, input: string, _ctx: CommandConte
 }
 
 export function cmdPowerInline(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const match = input.match(/^power\s+inline$/i);
   if (!match) return { success: false, error: '% Invalid power inline command' };
   const updatePort = (port: Port) => ({ ...port, powerInline: { ...port.powerInline, enabled: true } });
@@ -1190,7 +1190,7 @@ export function cmdPowerInline(state: SwitchState, input: string, _ctx: CommandC
 }
 
 export function cmdPowerInlineConsumption(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const match = input.match(/^power\s+inline\s+consumption\s+(\d+)$/i);
   if (!match) return { success: false, error: '% Invalid power inline consumption command' };
   const consumption = Number(match[1]);

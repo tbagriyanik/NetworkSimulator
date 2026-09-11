@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import {
   computeConvexHull,
   generateZoneSvgPath,
@@ -87,7 +87,7 @@ describe('Area Overlay Engine (Convex Hull & Highlighting)', () => {
     deviceStates.set('r1', {
       hostname: 'R1',
       macAddress: '00:11:22:33:44:55',
-      switchModel: 'WS-C2960-24TT-L',
+      switchModel: 'NS-L2-24TT-L',
       switchLayer: 'L2',
       currentMode: 'user',
       bootTime: Date.now(),
@@ -112,7 +112,7 @@ describe('Area Overlay Engine (Convex Hull & Highlighting)', () => {
     deviceStates.set('r2', {
       hostname: 'R2',
       macAddress: '00:11:22:33:44:66',
-      switchModel: 'WS-C2960-24TT-L',
+      switchModel: 'NS-L2-24TT-L',
       switchLayer: 'L2',
       currentMode: 'user',
       bootTime: Date.now(),

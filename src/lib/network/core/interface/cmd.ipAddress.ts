@@ -1,4 +1,4 @@
-import { iosModeError } from '../iosErrors';
+import { cliModeError } from '../cliErrors';
 import type { CommandContext } from '../commandTypes';
 import type { SwitchState, CommandResult, Port } from '../../types';
 import { buildRunningConfig } from '../configBuilder';
@@ -96,8 +96,8 @@ export function cmdIpAddress(state: SwitchState, input: string, _ctx: CommandCon
       (state.deviceType as string) === 'switchL3' ||
       state.switchLayer === 'L2' ||
       state.switchLayer === 'L3' ||
-      state.switchModel === 'WS-C2960-24TT-L' ||
-      state.switchModel === 'WS-C3650-24PS') &&
+      state.switchModel === 'NS-L2-24TT-L' ||
+      state.switchModel === 'NS-L3-24PS') &&
     state.deviceType !== 'router'; // Routers must be excluded from this check
   if (isSwitchDevice && !canAssignIPToPhysicalPort(state.switchModel)) {
     const port = state.ports[state.currentInterface];
@@ -186,7 +186,7 @@ export function cmdNoIpAddress(state: SwitchState, _input: string, _ctx: Command
  * IP ARP Inspection Trust
  */
 export function cmdIpArpInspectionTrust(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const updatePort = (port: Port) => ({ ...port, arpInspectionTrust: true });
   if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
@@ -199,7 +199,7 @@ export function cmdIpArpInspectionTrust(state: SwitchState, _input: string, _ctx
  * No IP ARP Inspection Trust
  */
 export function cmdNoIpArpInspectionTrust(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const updatePort = (port: Port) => ({ ...port, arpInspectionTrust: false });
   if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
@@ -259,7 +259,7 @@ export function cmdNoIpProxyArp(state: SwitchState, _input: string, _ctx: Comman
  */
 export function cmdIpAccessGroup(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state) || !state.currentInterface) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^ip\s+access-group\s+(\S+)\s+(in|out)$/i);
@@ -285,7 +285,7 @@ export function cmdIpAccessGroup(state: SwitchState, input: string, _ctx: Comman
  */
 export function cmdNoIpAccessGroup(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state) || !state.currentInterface) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^no\s+ip\s+access-group\s+(\S+)\s+(in|out)$/i);
@@ -310,7 +310,7 @@ export function cmdNoIpAccessGroup(state: SwitchState, input: string, _ctx: Comm
  */
 export function cmdIpHelperAddress(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state)) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^ip\s+helper-address\s+(\d+\.\d+\.\d+\.\d+)$/i);
@@ -335,7 +335,7 @@ export function cmdIpHelperAddress(state: SwitchState, input: string, _ctx: Comm
  */
 export function cmdNoIpHelperAddress(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state)) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^no\s+ip\s+helper-address(?:\s+(\d+\.\d+\.\d+\.\d+|[\w.-]+))?$/i);
@@ -616,7 +616,7 @@ export function cmdNoIpOspfArea(state: SwitchState, input: string, _ctx: Command
  * IP Proxy ARP
  */
 export function cmdIpProxyArp(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const updatePort = (port: Port) => ({ ...port, proxyArp: true });
   if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
@@ -629,7 +629,7 @@ export function cmdIpProxyArp(state: SwitchState, _input: string, _ctx: CommandC
  * IP Verify Source
  */
 export function cmdIpVerifySource(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const hasPortSecurity = input.includes('port-security');
   const updatePort = (port: Port) => ({
     ...port,
@@ -647,7 +647,7 @@ export function cmdIpVerifySource(state: SwitchState, input: string, _ctx: Comma
  * IP NAT Inside
  */
 export function cmdIpNatInside(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
   const newPorts = applyToSelectedPorts(state, (port: Port) => ({ ...port, natSide: 'inside' }));
   return { success: true, newState: { ports: newPorts } };
 }
@@ -656,7 +656,7 @@ export function cmdIpNatInside(state: SwitchState, _input: string, _ctx: Command
  * IP NAT Outside
  */
 export function cmdIpNatOutside(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
   const newPorts = applyToSelectedPorts(state, (port: Port) => ({ ...port, natSide: 'outside' }));
   return { success: true, newState: { ports: newPorts } };
 }
@@ -665,7 +665,7 @@ export function cmdIpNatOutside(state: SwitchState, _input: string, _ctx: Comman
  * No IP NAT Inside - Remove NAT inside designation from interface
  */
 export function cmdNoIpNatInside(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
   const newPorts = applyToSelectedPorts(state, (port: Port) => ({ ...port, natSide: undefined }));
   return { success: true, newState: { ports: newPorts } };
 }
@@ -674,19 +674,19 @@ export function cmdNoIpNatInside(state: SwitchState, _input: string, _ctx: Comma
  * No IP NAT Outside - Remove NAT outside designation from interface
  */
 export function cmdNoIpNatOutside(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
   const newPorts = applyToSelectedPorts(state, (port: Port) => ({ ...port, natSide: undefined }));
   return { success: true, newState: { ports: newPorts } };
 }
 
 export function cmdIpDhcpSnoopingTrust(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
   const newPorts = applyToSelectedPorts(state, (port: Port) => ({ ...port, dhcpSnoopingTrust: true }));
   return { success: true, newState: { ports: newPorts } };
 }
 
 export function cmdTunnelSource(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state) || !state.currentInterface?.startsWith('tunnel')) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state) || !state.currentInterface?.startsWith('tunnel')) return { success: false, error: cliModeError() };
   const match = input.match(/^tunnel\s+source\s+(\S+)$/i);
   if (!match) return { success: false, error: '% Invalid tunnel source command' };
   const port = state.ports[state.currentInterface];
@@ -694,7 +694,7 @@ export function cmdTunnelSource(state: SwitchState, input: string, _ctx: Command
 }
 
 export function cmdTunnelDestination(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state) || !state.currentInterface?.startsWith('tunnel')) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state) || !state.currentInterface?.startsWith('tunnel')) return { success: false, error: cliModeError() };
   const match = input.match(/^tunnel\s+destination\s+(\S+)$/i);
   if (!match) return { success: false, error: '% Invalid tunnel destination command' };
   const port = state.ports[state.currentInterface];
@@ -702,7 +702,7 @@ export function cmdTunnelDestination(state: SwitchState, input: string, _ctx: Co
 }
 
 export function cmdTunnelMode(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state) || !state.currentInterface?.startsWith('tunnel')) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state) || !state.currentInterface?.startsWith('tunnel')) return { success: false, error: cliModeError() };
   const match = input.match(/^tunnel\s+mode\s+(gre\s+ip|ipsec\s+ipv4|gre\s+ipv6)$/i);
   if (!match) return { success: false, error: '% Invalid tunnel mode command. Supported: gre ip, ipsec ipv4' };
   const modeStr = match[1].toLowerCase().startsWith('gre') ? 'gre' : 'ipsec';
@@ -722,16 +722,33 @@ export function cmdTunnelMode(state: SwitchState, input: string, _ctx: CommandCo
 }
 
 export function cmdNoIpDhcpSnoopingTrust(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
   const newPorts = applyToSelectedPorts(state, (port: Port) => ({ ...port, dhcpSnoopingTrust: false }));
   return { success: true, newState: { ports: newPorts } };
 }
 
 export function cmdIpv6DhcpServer(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
   const match = input.match(/^ipv6\s+dhcp\s+server\s+(\S+)$/i);
   if (!match) return { success: false, error: '% Invalid ipv6 dhcp server command' };
   const poolName = match[1];
   const newPorts = applyToSelectedPorts(state, (port: Port) => ({ ...port, ipv6DhcpServerPool: poolName }));
+  return { success: true, newState: { ports: newPorts } };
+}
+
+export function cmdMplsIpInterface(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
+  const isNo = /^no\s+/i.test(input);
+  const newPorts = applyToSelectedPorts(state, (port: Port) => ({ ...port, mplsEnabled: !isNo }));
+  return { success: true, newState: { ports: newPorts } };
+}
+
+export function cmdIpVrfForwarding(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
+  const match = input.match(/^(?:no\s+)?ip\s+vrf\s+forwarding\s+(\S+)$/i);
+  const isNo = /^no\s+/i.test(input);
+  if (!match && !isNo) return { success: false, error: '% Usage: ip vrf forwarding <vrf-name>' };
+  const vrfName = isNo ? undefined : match?.[1];
+  const newPorts = applyToSelectedPorts(state, (port: Port) => ({ ...port, vrfName }));
   return { success: true, newState: { ports: newPorts } };
 }

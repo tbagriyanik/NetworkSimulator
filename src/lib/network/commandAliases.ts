@@ -1,4 +1,4 @@
-// Komut kısaltmaları için eşleşme - TÜM NETWORK 2960 KOMUTLARI
+// Komut kısaltmaları için eşleşme - TÜM NETWORK KOMUTLARI
 export const commandAliases: Record<string, string> = {
   // Enable/Disable
   'en': 'enable',

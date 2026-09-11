@@ -859,11 +859,11 @@ export function assignValueToLhs(
           for (let m = 0; m < evaluatedIndices.length - 1; m++) {
             const idxKey = evaluatedIndices[m];
             if (current === null || typeof current !== 'object') break;
-            current = current[idxKey as any];
+            current = current[idxKey as string | number];
           }
           if (current !== null && typeof current === 'object') {
             const lastKey = evaluatedIndices[evaluatedIndices.length - 1];
-            current[lastKey as any] = rhsVal;
+            current[lastKey as string | number] = rhsVal;
             return true;
           }
         }

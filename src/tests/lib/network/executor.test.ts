@@ -108,11 +108,11 @@ describe('Executor & Network Utilities', () => {
   });
 
   describe('Switch Model Command Execution', () => {
-    it('should allow show spanning-tree on 3560 switch model', () => {
+    it('should allow show spanning-tree on NS-L3 switch model', () => {
       const baseState = createInitialState();
       const state = {
         ...baseState,
-        switchModel: 'WS-C3650-24PS',
+        switchModel: 'NS-L3-24PS',
         switchLayer: 'L3' as const,
         deviceType: 'switchL3' as const,
         currentMode: 'privileged' as const,
@@ -123,11 +123,11 @@ describe('Executor & Network Utilities', () => {
       expect(result.output).not.toContain('is not supported on this');
     });
 
-    it('should allow show spanning-tree on 2960 switch model', () => {
+    it('should allow show spanning-tree on NS-L2 switch model', () => {
       const baseState = createInitialState();
       const state = {
         ...baseState,
-        switchModel: 'WS-C2960-24TT-L',
+        switchModel: 'NS-L2-24TT-L',
         switchLayer: 'L2' as const,
         deviceType: 'switchL2' as const,
         currentMode: 'privileged' as const,
@@ -142,7 +142,7 @@ describe('Executor & Network Utilities', () => {
       const baseState = createInitialState();
       const state = {
         ...baseState,
-        switchModel: 'WS-C2960-24TT-L',
+        switchModel: 'NS-L2-24TT-L',
         switchLayer: 'L2' as const,
         deviceType: 'switchL2' as const,
         currentMode: 'interface' as const,
@@ -163,7 +163,7 @@ describe('Executor & Network Utilities', () => {
       const state = {
         ...baseState,
         id: 'SW1',
-        switchModel: 'WS-C2960-24TT-L',
+        switchModel: 'NS-L2-24TT-L',
         switchLayer: 'L2' as const,
         deviceType: 'switchL2' as const,
         currentMode: 'interface' as const,

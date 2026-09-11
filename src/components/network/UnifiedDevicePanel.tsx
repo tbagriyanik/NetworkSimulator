@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useMemo, useEffect } from 'react';
 import { DragPosition as ModalPosition, DragSize as ModalSize } from '@/hooks/useDrag';
@@ -17,6 +17,7 @@ import {
     Printer as PrinterIcon,
     Smartphone,
     Database,
+    Code,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DeviceIcon } from './DeviceIcon';
@@ -30,6 +31,7 @@ import type { TaskDefinition, TaskContext } from '@/lib/network/taskDefinitions'
 import { getRoutingTable } from '@/lib/network/routing';
 
 const DhcpPoolManagerModal = dynamic(() => import('./DhcpPoolManagerModal').then(m => m.DhcpPoolManagerModal), { ssr: false });
+const NetworkAutomationPanel = dynamic(() => import('./NetworkAutomationPanel').then(m => m.NetworkAutomationPanel), { ssr: false });
 
 const Terminal = dynamic(() => import('./Terminal').then(m => m.Terminal), { ssr: false });
 const PortPanel = dynamic(() => import('./PortPanel').then(m => m.PortPanel), { ssr: false });
@@ -119,7 +121,19 @@ export function UnifiedDevicePanel({
     const [selectedVlan, setSelectedVlan] = React.useState(1);
     const [routeSearch, setRouteSearch] = React.useState('');
     const [isDhcpModalOpen, setIsDhcpModalOpen] = React.useState(false);
+    const [isAutomationWindowOpen, setIsAutomationWindowOpen] = React.useState(false);
     const isNarrow = modalSize.width < 1100;
+
+    useEffect(() => {
+        const handleOpenNetdevops = (e: Event) => {
+            const customEvent = e as CustomEvent<{ deviceId?: string }>;
+            if (!customEvent.detail?.deviceId || customEvent.detail.deviceId === deviceId) {
+                setIsAutomationWindowOpen(true);
+            }
+        };
+        window.addEventListener('open-netdevops-window', handleOpenNetdevops);
+        return () => window.removeEventListener('open-netdevops-window', handleOpenNetdevops);
+    }, [deviceId]);
 
     const deviceName = useMemo(() => {
         const deviceObj = topologyDevices?.find(d => d.id === deviceId);
@@ -132,8 +146,8 @@ export function UnifiedDevicePanel({
 
 
     const deviceModel = useMemo(() => {
-        if (deviceType === 'router') return 'ISR 4451 X';
-        if (deviceType === 'switchL2' || deviceType === 'switchL3') return state?.switchModel || 'WS-C2960-24TT-L';
+        if (deviceType === 'router') return 'NS-R-4451-X';
+        if (deviceType === 'switchL2' || deviceType === 'switchL3') return state?.switchModel || 'NS-L2-24TT-L';
         return '';
     }, [deviceType, state]);
 
@@ -184,7 +198,7 @@ export function UnifiedDevicePanel({
                     </div>
                 ) : (
                     <div className="flex items-center gap-2 px-2">
-                        <Tabs value={activeTab} onValueChange={(v: string) => onTabChange(v as 'console' | 'settings' | 'stp')} className="min-w-0">
+                        <Tabs value={activeTab} onValueChange={(v: string) => onTabChange(v as 'console' | 'settings' | 'stp' | 'physical')} className="min-w-0">
                             <TabsList className={cn("h-7 p-0.5", isDark ? "bg-secondary-800" : "bg-secondary-100")}>
                                 <TabsTrigger value="console" className="flex items-center gap-1.5 px-2 h-6 text-xs">
                                     {deviceType === 'hub' ? <DeviceIcon type="hub" size={14} color="var(--color-teal-500)" /> : deviceType === 'cloud' ? <Globe className="w-3 h-3 text-cyan-400" /> : deviceType === 'printer' ? <PrinterIcon className="w-3 h-3 text-purple-400" /> : deviceType === 'mobile' ? <Smartphone className="w-3 h-3 text-sky-400" /> : <TerminalIcon className="w-3 h-3" />}
@@ -426,6 +440,42 @@ export function UnifiedDevicePanel({
                                             isDevicePoweredOff={isOffline}
                                         />
                                     </div>
+
+                                    {(deviceType === 'router' || deviceType === 'switchL3') && (
+                                        <div className="space-y-3 pt-2">
+                                            <div className="flex items-center justify-between p-3 rounded-xl border border-primary-500/30 bg-primary-500/10">
+                                                <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                                                    <Database className="w-4 h-4 text-primary-400" />
+                                                    <span>{language === 'tr' ? 'DHCP Havuz Yönetimi' : 'DHCP Pool Management'}</span>
+                                                </div>
+                                                <button
+                                                    onClick={() => setIsDhcpModalOpen(true)}
+                                                    className="px-3 py-1 text-xs font-semibold rounded-lg bg-primary-600 hover:bg-primary-500 text-white shadow-sm transition-colors flex items-center gap-1.5"
+                                                >
+                                                    <Database className="w-3.5 h-3.5" />
+                                                    <span>{language === 'tr' ? 'Havuzları İncele' : 'View Pools'}</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {(deviceType === 'router' || deviceType === 'switchL3' || deviceType === 'switchL2' || deviceType === 'firewall') && (
+                                        <div className="space-y-3 pt-2">
+                                            <div className="flex items-center justify-between p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10">
+                                                <div className="flex items-center gap-2 text-sm font-semibold text-emerald-400">
+                                                    <Code className="w-4 h-4 text-emerald-400" />
+                                                    <span>{language === 'tr' ? 'NetDevOps & RESTCONF Otomasyonu' : 'NetDevOps & RESTCONF Automation'}</span>
+                                                </div>
+                                                <button
+                                                    onClick={() => setIsAutomationWindowOpen(true)}
+                                                    className="px-3 py-1 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 shadow-sm transition-colors flex items-center gap-1.5"
+                                                >
+                                                    <Code className="w-3.5 h-3.5" />
+                                                    <span>{language === 'tr' ? 'Ayrı Pencerede Aç' : 'Open in Window'}</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
 
                                 </div>
 
@@ -800,6 +850,16 @@ export function UnifiedDevicePanel({
                     state={state}
                     isDark={isDark}
                     language={language as 'tr' | 'en'}
+                />
+            )}
+            {isAutomationWindowOpen && (
+                <NetworkAutomationPanel
+                    isOpen={isAutomationWindowOpen}
+                    onClose={() => setIsAutomationWindowOpen(false)}
+                    devices={topologyDevices}
+                    deviceStates={deviceStates}
+                    defaultDeviceId={deviceId}
+                    isDark={isDark}
                 />
             )}
         </DraggableWindowWrapper>

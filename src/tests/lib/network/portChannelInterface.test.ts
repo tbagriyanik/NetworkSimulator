@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { cmdInterface } from '@/lib/network/core/interface/cmd.interface';
 import { cmdChannelGroup } from '@/lib/network/core/interface/cmd.spanningTree';
 import { SwitchState, Port, SwitchModel, SwitchLayer, Vlan, SecurityConfig } from '@/lib/network/types';
@@ -14,7 +14,7 @@ describe('Port-channel Interface Command Support', () => {
   const createMockState = (): SwitchState => ({
     hostname: 'Switch',
     macAddress: '00:11:22:33:44:55',
-    switchModel: 'WS-C2960-24TT-L' as SwitchModel,
+    switchModel: 'NS-L2-24TT-L' as SwitchModel,
     switchLayer: 'L2' as SwitchLayer,
     currentMode: 'config',
     commandHistory: [],

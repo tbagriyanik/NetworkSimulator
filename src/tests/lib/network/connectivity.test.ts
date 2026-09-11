@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { checkConnectivity, portsFormTrunk } from '@/lib/network/connectivity';
 import type { SwitchState, Port } from '@/lib/network/types';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
@@ -398,7 +398,7 @@ describe('Connectivity Functions', () => {
       const switchState = {
         hostname: id,
         macAddress: '00:00:00:00:00:' + id.charCodeAt(id.length - 1),
-        switchModel: 'WS-C2960-24TT-L',
+        switchModel: 'NS-L2-24TT-L',
         switchLayer: 'L2' as const,
         ports: {},
         vlans: { '1': { id: 1, name: 'default', status: 'active', ports: [] }, '10': { id: 10, name: 'VLAN10', status: 'active', ports: [] } },

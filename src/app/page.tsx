@@ -1124,7 +1124,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
             isDark={isDark}
             language={language}
             theme={theme}
-            t={t as any}
+            t={t}
             toggleDevicePower={toggleDevicePower}
             updateDeviceConfig={updateDeviceConfig}
             confirmDialog={confirmDialog}

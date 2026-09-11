@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { evaluatePppoeSessions } from '@/lib/network/pppoeEngine';
 import { evaluateDhcpv6ForDevice } from '@/lib/network/eui64';
 import { cmdShowIpv6DhcpBinding, cmdShowIpv6DhcpPool, cmdShowPppoeSession, cmdShowCaller } from '@/lib/network/core/showRoutingDisplay';
-import type { SwitchState } from '@/lib/network/types';
+import type { SwitchState } from '@/lib/network/types'; 
+import type { CommandContext } from '@/lib/network/core/commandTypes';
 import type { CanvasConnection } from '@/components/network/networkTopology.types';
 
 describe('DHCPv6 Lease & Identity Association (IA_NA) Simulation', () => {
@@ -67,14 +68,14 @@ describe('DHCPv6 Lease & Identity Association (IA_NA) Simulation', () => {
     expect(binding?.duid).toContain('00:03:00:01:');
 
     // Verify show ipv6 dhcp binding command output
-    const bindingCmd = cmdShowIpv6DhcpBinding(updatedServerState!, 'show ipv6 dhcp binding', {} as any);
+    const bindingCmd = cmdShowIpv6DhcpBinding(updatedServerState!, 'show ipv6 dhcp binding', {} as CommandContext);
     expect(bindingCmd.success).toBe(true);
     expect(bindingCmd.output).toContain('IA_NA: IAID 0x00010001');
     expect(bindingCmd.output).toContain('2001:db8:1:');
 
 
     // Verify show ipv6 dhcp pool shows active clients: 1
-    const poolCmd = cmdShowIpv6DhcpPool(updatedServerState!, 'show ipv6 dhcp pool LAN-POOL', {} as any);
+    const poolCmd = cmdShowIpv6DhcpPool(updatedServerState!, 'show ipv6 dhcp pool LAN-POOL', {} as CommandContext);
     expect(poolCmd.success).toBe(true);
     expect(poolCmd.output).toContain('Active clients: 1');
   });
@@ -157,13 +158,13 @@ describe('PPPoE Session & LCP/IPCP Simulation', () => {
     expect(session?.peerIp).toBe('100.64.1.1');
 
     // Test show pppoe session command
-    const showPppoe = cmdShowPppoeSession(clientRes!, 'show pppoe session', {} as any);
+    const showPppoe = cmdShowPppoeSession(clientRes!, 'show pppoe session', {} as CommandContext);
     expect(showPppoe.success).toBe(true);
     expect(showPppoe.output).toContain('UP (LCP/IPCP Opened)');
     expect(showPppoe.output).toContain('100.64.1.2');
 
     // Test show caller command
-    const showCaller = cmdShowCaller(clientRes!, 'show caller', {} as any);
+    const showCaller = cmdShowCaller(clientRes!, 'show caller', {} as CommandContext);
     expect(showCaller.success).toBe(true);
     expect(showCaller.output).toContain('user@isp.net');
     expect(showCaller.output).toContain('100.64.1.2');

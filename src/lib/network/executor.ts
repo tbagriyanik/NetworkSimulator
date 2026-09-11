@@ -6,7 +6,7 @@ import { getDeviceCapabilities } from './capabilities';
 import { applyPipeFilterOutput as applyPipeFilterOutputExternal, processCommandResult as processCommandResultExternal } from './executorResultUtils';
 import { getSmartHint as getSmartHintExternal } from './executorHints';
 import { ensureDeviceStatesMap } from './networkUtils';
-import { IOS_ERRORS, iosModeError } from './core/iosErrors';
+import { CLI_ERRORS, cliModeError } from './core/cliErrors';
 import { buildRunningConfig } from './core/configBuilder';
 import type { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/networkTopology.types';
 
@@ -61,7 +61,7 @@ export function executeCommand(
   // Special reload control tokens from Terminal to avoid normal parsing
   if (input === '__RELOAD_CONFIRM__' || input === '__RELOAD_CANCEL__') {
     // No longer used - reload is immediate
-    return { success: false, error: IOS_ERRORS.unknown };
+    return { success: false, error: CLI_ERRORS.unknown };
   }
 
   if (input === '__TELNET_CONNECT__') {
@@ -197,7 +197,7 @@ export function executeCommand(
   if (!commandName) {
     return processCommandResultExternal({
       success: false,
-      error: IOS_ERRORS.unknown
+      error: CLI_ERRORS.unknown
     }, cmdToProcess, state.currentMode, state, language, getEstimatedSuggestions);
   }
 
@@ -235,21 +235,21 @@ export function executeCommand(
   const needsRouting = requiresRouting.some(prefix => commandName === prefix || commandName.startsWith(`${prefix} `));
   const needsFirewall = requiresFirewall.some(prefix => commandName === prefix || commandName.startsWith(`${prefix} `));
 
-  const isFirewall = state.deviceType === 'firewall' || state.switchLayer === 'FW' || (state.version?.modelName || '').includes('ASA');
-  const isL3Switch = state.switchModel === 'WS-C3650-24PS' ||
-    (state.switchModel && (state.switchModel.includes('3650') || state.switchModel.includes('3560') || state.switchModel.includes('3750'))) ||
+  const isFirewall = state.deviceType === 'firewall' || state.switchLayer === 'FW' || (state.version?.modelName || '').includes('NS-FW');
+  const isL3Switch = state.switchModel === 'NS-L3-24PS' ||
+    (state.switchModel && (state.switchModel.includes('NS-L3') || state.switchModel.includes('NS-R'))) ||
     state.deviceType === 'switchL3' ||
     state.switchLayer === 'L3';
   const isL2Switch = !isL3Switch && (
-    state.switchModel === 'WS-C2960-24TT-L' ||
-    (state.switchModel && (state.switchModel.includes('2960') || state.switchModel.includes('2950') || state.switchModel.includes('2900'))) ||
+    state.switchModel === 'NS-L2-24TT-L' ||
+    (state.switchModel && state.switchModel.includes('NS-L2')) ||
     state.deviceType === 'switch' ||
     state.deviceType === 'switchL2' ||
     state.switchLayer === 'L2' ||
     capabilities.switching
   );
   const isRouter = state.deviceType === 'router' || (!isFirewall && !isL2Switch && !isL3Switch && capabilities.routing);
-  const isWLC = state.deviceType === 'wlc' || state.switchModel === 'AIR-CT2504-K9';
+  const isWLC = state.deviceType === 'wlc' || state.switchModel === 'NS-WLC-2504';
 
   const l3OnlyCommands = [
     'show ip route', 'show ipv6 route', 'show ip protocols', 'show ip ospf', 'show ip ospf neighbor', 'show ip ospf database', 'show ip ospf interface',
@@ -321,7 +321,7 @@ const commandHandlers: Record<string, CommandHandler> = {
   // System commands
   ...systemHandlers,
 
-  // ASA Firewall commands
+  // Firewall commands
   ...firewallHandlers,
 
   // Show commands
@@ -353,12 +353,12 @@ const commandHandlers: Record<string, CommandHandler> = {
   'network': (state, input, ctx) => {
     if (state.currentMode === 'dhcp-config') return dhcpConfigHandlers['network'](state, input, ctx);
     if (state.currentMode === 'router-config') return routerConfigHandlers['network'](state, input, ctx);
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   },
   'no network': (state, input, ctx) => {
     if (state.currentMode === 'dhcp-config') return dhcpConfigHandlers['no network'](state, input, ctx);
     if (state.currentMode === 'router-config') return routerConfigHandlers['no network'](state, input, ctx);
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   },
   // Interface/global dual-mode dispatchers
   'no spanning-tree': (state, input, ctx) => {
@@ -382,11 +382,11 @@ const commandHandlers: Record<string, CommandHandler> = {
     return globalConfigHandlers['set dscp'](state, input, ctx);
   },
   'set cos': (state, input, ctx) => {
-    if (state.currentMode === 'interface' || state.currentMode === 'config-if-range') return interfaceHandlers['set cos']?.(state, input, ctx) ?? { success: false, error: iosModeError() };
+    if (state.currentMode === 'interface' || state.currentMode === 'config-if-range') return interfaceHandlers['set cos']?.(state, input, ctx) ?? { success: false, error: cliModeError() };
     return globalConfigHandlers['set cos'](state, input, ctx);
   },
   'match': (state, input, _ctx) => {
-    if (state.currentMode !== 'config-route-map' || !state.currentRouteMap) return { success: false, error: iosModeError() };
+    if (state.currentMode !== 'config-route-map' || !state.currentRouteMap) return { success: false, error: cliModeError() };
     const [mapName, seqStr] = state.currentRouteMap.split(':');
     const seq = parseInt(seqStr, 10);
     const existing = { ...state.routeMaps };
@@ -415,7 +415,7 @@ const commandHandlers: Record<string, CommandHandler> = {
     return { success: true, output: '', newState: { ...newState, runningConfig: buildRunningConfig({ ...state, ...newState }) } };
   },
   'set': (state, input, _ctx) => {
-    if (state.currentMode !== 'config-route-map' || !state.currentRouteMap) return { success: false, error: iosModeError() };
+    if (state.currentMode !== 'config-route-map' || !state.currentRouteMap) return { success: false, error: cliModeError() };
     const [mapName, seqStr] = state.currentRouteMap.split(':');
     const seq = parseInt(seqStr, 10);
     const existing = { ...state.routeMaps };

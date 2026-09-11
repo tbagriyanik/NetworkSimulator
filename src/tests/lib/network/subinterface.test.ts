@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { createInitialRouterState, createInitialState } from '../../../lib/network/initialState';
 import { interfaceHandlers } from '../../../lib/network/core/interfaceCommands';
 import { CommandContext } from '../../../lib/network/core/commandTypes';
@@ -77,7 +77,7 @@ describe('Router Subinterfaces', () => {
 
 describe('L3 Switch Trunking', () => {
   it('should require dot1q encapsulation for trunking on L3 switch', () => {
-    let state = createInitialState(undefined, 'WS-C3650-24PS');
+    let state = createInitialState(undefined, 'NS-L3-24PS');
     state.currentMode = 'config';
 
     // Select a port
@@ -91,7 +91,7 @@ describe('L3 Switch Trunking', () => {
   });
 
   it('should allow trunk mode after setting encapsulation on L3 switch', () => {
-    let state = createInitialState(undefined, 'WS-C3650-24PS');
+    let state = createInitialState(undefined, 'NS-L3-24PS');
     state.currentMode = 'config';
 
     // Select a port

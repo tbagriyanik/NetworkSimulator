@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { exampleProjects, validateExampleProject } from '@/lib/network/exampleProjects';
 
 describe('exampleProjects', () => {
@@ -249,11 +249,11 @@ describe('exampleProjects', () => {
       const lap1 = devices.find(d => d.id === 'lap-1');
       const lap2 = devices.find(d => d.id === 'lap-2');
       expect(sw1?.type).toBe('switchL3');
-      expect(sw1?.switchModel).toBe('WS-C3650-24PS');
+      expect(sw1?.switchModel).toBe('NS-L3-24PS');
       expect(lap1?.type).toBe('switchL3');
-      expect(lap1?.switchModel).toBe('WS-C3650-24PS');
+      expect(lap1?.switchModel).toBe('NS-L3-24PS');
       expect(lap2?.type).toBe('switchL3');
-      expect(lap2?.switchModel).toBe('WS-C3650-24PS');
+      expect(lap2?.switchModel).toBe('NS-L3-24PS');
 
       // 1. Laptop-1 to Laptop-2 (Inter-VLAN Wireless ping)
       const res1 = checkConnectivity('laptop-1', '192.168.20.101', devices, connections, deviceStates, 'en');
@@ -284,9 +284,9 @@ describe('exampleProjects', () => {
       const wap1 = devices.find(d => d.id === 'wap-1');
       const wap2 = devices.find(d => d.id === 'wap-2');
       expect(wap1?.type).toBe('switchL3');
-      expect(wap1?.switchModel).toBe('WS-C3650-24PS');
+      expect(wap1?.switchModel).toBe('NS-L3-24PS');
       expect(wap2?.type).toBe('switchL3');
-      expect(wap2?.switchModel).toBe('WS-C3650-24PS');
+      expect(wap2?.switchModel).toBe('NS-L3-24PS');
 
       // 2. Laptop-Staff to Laptop-Guest
       const res1 = checkConnectivity('laptop-staff', '192.168.20.101', devices, connections, deviceStates, 'en');

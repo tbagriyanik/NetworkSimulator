@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { DraggableWindowWrapper } from './DraggableWindowWrapper';
@@ -8,9 +8,10 @@ import { UnifiedDevicePanel } from './UnifiedDevicePanel';
 import { CanvasDevice, CanvasConnection, DeviceType, FirewallRule } from './networkTopology.types';
 import { CableInfo, SwitchState } from '@/lib/network/types';
 import { TerminalOutput } from './Terminal';
-import { OutputLine as PCOutputLine, PcOutputsSetter } from './pc-panel/PCPanel.types';
+import { OutputLine as PCOutputLine, PcOutputsSetter, type PCActiveTab } from './pc-panel/PCPanel.types';
 import { useMultiWindowStore, DeviceWindowItem } from '@/hooks/useMultiWindowStore';
 import { TaskDefinition, TaskContext } from '@/lib/network/taskDefinitions';
+import type { Translations } from '@/contexts/LanguageContext';
 
 interface MultiDeviceWindowManagerProps {
   topologyDevices: CanvasDevice[];
@@ -28,11 +29,11 @@ interface MultiDeviceWindowManagerProps {
   isDark: boolean;
   language: string;
   theme?: string;
-  t: Record<string, unknown>;
+  t: Translations;
   toggleDevicePower: (deviceId: string) => void;
   updateDeviceConfig?: (deviceId: string, config: { firewallRules?: FirewallRule[] }) => void;
-  confirmDialog?: { show: boolean; message: string; action: string; onConfirm: () => void } | null;
-  setConfirmDialog?: (dialog: { show: boolean; message: string; action: string; onConfirm: () => void } | null) => void;
+  confirmDialog: { show: boolean; message: string; action: string; onConfirm: () => void } | null;
+  setConfirmDialog: (dialog: { show: boolean; message: string; action: string; onConfirm: () => void } | null) => void;
   isTablet?: boolean;
 }
 
@@ -55,8 +56,8 @@ export function MultiDeviceWindowManager({
   t,
   toggleDevicePower,
   updateDeviceConfig,
-  confirmDialog,
-  setConfirmDialog,
+  confirmDialog = null,
+  setConfirmDialog = () => {},
 }: MultiDeviceWindowManagerProps) {
   const {
     openWindows,
@@ -248,7 +249,7 @@ export function MultiDeviceWindowManager({
                   className="h-full min-h-0 !border-none"
                   deviceId={win.id}
                   cableInfo={cableInfo}
-                  initialTab={(win.initialTab as any) || 'home'}
+                  initialTab={(win.initialTab as PCActiveTab) || 'home'}
                   isVisible={true}
                   onClose={() => closeDeviceWindow(win.id)}
                   onTogglePower={toggleDevicePower}
@@ -289,7 +290,7 @@ export function MultiDeviceWindowManager({
               <div className="flex-1 overflow-y-auto rounded-b-xl p-4 custom-scrollbar">
                 <FirewallPanel
                   device={(deviceObj || { id: win.id, name: deviceName, type: 'firewall', x: 0, y: 0, ports: [] }) as unknown as CanvasDevice}
-                  t={t as any}
+                  t={t}
                   theme={theme}
                   isDevicePoweredOff={deviceObj?.status === 'offline'}
                   onUpdateRules={(rules) => {
@@ -299,8 +300,8 @@ export function MultiDeviceWindowManager({
                   deviceOutputs={deviceOutputs}
                   onExecuteCommand={(cmd) => handleExecuteCommand(win.id, cmd)}
                   onUpdateHistory={(devId, hist) => handleUpdateHistory(win.id, Array.isArray(hist) ? hist : (Array.isArray(devId) ? devId : []))}
-                  setConfirmDialog={setConfirmDialog as any}
-                  confirmDialog={confirmDialog as any}
+                  setConfirmDialog={setConfirmDialog}
+                  confirmDialog={confirmDialog}
                   topologyDevices={topologyDevices}
                   activeTab={(activeTabs[win.id] || win.initialTab || 'console') as 'console' | 'settings'}
                   onTabChange={(tab) => setActiveTabs((prev) => ({ ...prev, [win.id]: tab }))}
@@ -314,7 +315,7 @@ export function MultiDeviceWindowManager({
         const isSwitch = deviceType === 'switchL2' || deviceType === 'switchL3';
         const deviceState = (deviceStates.get(win.id) || {
           hostname: deviceName,
-          switchModel: isSwitch ? 'WS-C2960-24TT-L' : undefined,
+          switchModel: isSwitch ? 'NS-L2-24TT-L' : undefined,
           ports: {},
           vlanTable: {},
           security: {},
@@ -345,9 +346,9 @@ export function MultiDeviceWindowManager({
               deviceOutputs.set(win.id, []);
             }}
             handleUpdateHistory={(devId, hist) => handleUpdateHistory(win.id, Array.isArray(hist) ? hist : (Array.isArray(devId) ? devId : []))}
-            confirmDialog={confirmDialog as any}
-            setConfirmDialog={setConfirmDialog as any}
-            t={t as any}
+            confirmDialog={confirmDialog}
+            setConfirmDialog={setConfirmDialog}
+            t={t}
             theme={theme}
             language={language}
             helpLevel="intermediate"

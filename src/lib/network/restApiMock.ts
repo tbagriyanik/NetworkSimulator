@@ -59,7 +59,7 @@ export function handleRestApiRequest(
       id: d.id,
       hostname: d.name || `Device-${d.id}`,
       managementIpAddress: d.ip || `10.0.0.${index + 1}`,
-      type: d.type === 'router' ? 'ISR4331 Router' : d.type.startsWith('switch') ? 'Catalyst 9300 Switch' : 'Enterprise Host',
+      type: d.type === 'router' ? 'NetSim Router' : d.type.startsWith('switch') ? 'NetSim Switch' : 'Enterprise Host',
       family: d.type === 'router' ? 'Routers' : d.type.startsWith('switch') ? 'Switches and Hubs' : 'Unified AP',
       macAddress: d.macAddress || `00:1A:2B:3C:4D:${(index + 10).toString(16)}`,
       upTime: '14 days, 03:22:15',

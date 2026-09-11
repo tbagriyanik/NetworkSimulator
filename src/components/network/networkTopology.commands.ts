@@ -492,7 +492,7 @@ export function getCommandCategories(isTR: boolean): CommandDefinition[] {
     {
       id: 'firewall',
       icon: Shield,
-      title: isTR ? 'Güvenlik Duvarı (ASA/Firewall)' : 'Firewall (ASA)',
+      title: isTR ? 'Güvenlik Duvarı' : 'Firewall',
       type: 'commands',
       cmds: [
         ['nameif <name>', isTR ? 'Arayüz adını belirle' : 'Set interface name', '(config-if)#'],
@@ -1005,7 +1005,7 @@ export function getCommandCategories(isTR: boolean): CommandDefinition[] {
         ['STP', isTR ? 'Spanning Tree Protocol - Ağ halkalarını önleyen protokol' : 'Spanning Tree Protocol - prevents network loops'],
         ['OSPF', isTR ? 'Open Shortest Path First - Dinamik yönlendirme protokolü' : 'Open Shortest Path First - dynamic routing protocol'],
         ['RIP', isTR ? 'Routing Information Protocol - Basit yönlendirme protokolü' : 'Routing Information Protocol - basic routing protocol'],
-        ['BGP', isTR ? 'Border Gateway Protocol - InterASA yönlendirme protokolü' : 'Border Gateway Protocol - inter-AS routing protocol'],
+        ['BGP', isTR ? 'Border Gateway Protocol - Otonom sistemler arası yönlendirme protokolü' : 'Border Gateway Protocol - inter-AS routing protocol'],
         ['SNMP', isTR ? 'Simple Network Management Protocol - Ağ yönetim protokolü' : 'Simple Network Management Protocol - network management protocol'],
         ['NTP', isTR ? 'Network Time Protocol - Ağ zaman senkronizasyon' : 'Network Time Protocol - network time synchronization'],
         ['LDAP', isTR ? 'Lightweight Directory Access Protocol - Kullanıcı dizin hizmeti' : 'Lightweight Directory Access Protocol - directory service protocol'],

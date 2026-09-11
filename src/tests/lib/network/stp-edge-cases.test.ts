@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { recalculateStp } from '@/lib/network/stp';
 import { SwitchState } from '@/lib/network/types';
 import { CanvasConnection } from '@/components/network/networkTopology.types';
@@ -7,7 +7,7 @@ describe('STP Edge Cases', () => {
   const createMockSwitch = (id: string, mac: string, priority: number = 32768): SwitchState => ({
     hostname: id,
     macAddress: mac,
-    switchModel: 'WS-C2960-24TT-L',
+    switchModel: 'NS-L2-24TT-L',
     switchLayer: 'L2',
     deviceType: 'switch',
     currentMode: 'user',

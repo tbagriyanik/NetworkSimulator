@@ -1,4 +1,4 @@
-import { IOS_ERRORS } from './iosErrors';
+import { CLI_ERRORS } from './cliErrors';
 import type { CommandHandler, CommandContext } from './commandTypes';
 import { buildRunningConfig } from './configBuilder';
 import { SwitchState, CommandResult } from '../types';
@@ -45,7 +45,8 @@ import {
   cmdShowPrefixList, cmdShowRouteMap, cmdShowIpv6EigrpNeighbors, cmdShowIpv6EigrpTopology, cmdShowIpv6EigrpInterfaces,
   cmdShowGlbp, cmdShowIpFlowExport, cmdShowIpCacheFlow, cmdShowIpv6Neighbors,
   cmdShowIpv6DhcpBinding, cmdShowPppoeSession, cmdShowCaller,
-  cmdShowTrack, cmdShowIpSlaSummary, cmdShowIpSlaConfiguration
+  cmdShowTrack, cmdShowIpSlaSummary, cmdShowIpSlaConfiguration,
+  cmdShowVrf, cmdShowMpls
 } from './showRoutingDisplay';
 
 
@@ -197,6 +198,10 @@ export const showHandlers: Record<string, CommandHandler> = {
   'show ip prefix-list': cmdShowPrefixList,
   'show ipv6 prefix-list': cmdShowPrefixList,
   'show route-map': cmdShowRouteMap,
+  'show vrf': cmdShowVrf,
+  'show vrf brief': cmdShowVrf,
+  'show mpls': cmdShowMpls,
+  'show mpls ip': cmdShowMpls,
   'show ipv6 eigrp neighbors': cmdShowIpv6EigrpNeighbors,
   'show ipv6 eigrp topology': cmdShowIpv6EigrpTopology,
   'show ipv6 eigrp interfaces': cmdShowIpv6EigrpInterfaces,
@@ -638,7 +643,7 @@ function cmdShowSystemMtu(_state: SwitchState, _input: string, _ctx: CommandCont
  * Show parent command (incomplete)
  */
 function cmdShowParent(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  return { success: false, error: IOS_ERRORS.incomplete };
+  return { success: false, error: CLI_ERRORS.incomplete };
 }
 
 

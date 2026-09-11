@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { cmdIpDhcpSnoopingTrust, cmdNoIpDhcpSnoopingTrust } from '@/lib/network/core/interface/cmd.ipAddress';
 import { cmdIpDhcpSnoopingVlan } from '@/lib/network/core/globalConfigExtraCommands';
 import { cmdShowIpDhcpSnooping } from '@/lib/network/core/showRoutingDisplay';
@@ -14,7 +14,7 @@ describe('DHCP Snooping Trust Command Support', () => {
   const createMockState = (): SwitchState => ({
     hostname: 'Switch-1',
     macAddress: '00:11:22:33:44:55',
-    switchModel: 'WS-C2960-24TT-L' as SwitchModel,
+    switchModel: 'NS-L2-24TT-L' as SwitchModel,
     switchLayer: 'L2' as SwitchLayer,
     currentMode: 'interface',
     currentInterface: 'gi0/1',

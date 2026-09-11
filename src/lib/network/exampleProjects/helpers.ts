@@ -1,4 +1,4 @@
-import type { SwitchState } from '../types';
+﻿import type { SwitchState } from '../types';
 import type { CanvasDevice, CanvasConnection, CanvasNote, DeviceType } from '@/components/network/networkTopology.types';
 import { generateRandomLinkLocalIpv4 } from '../linkLocal';
 import type { FirewallRule, ProjectData } from './types';
@@ -76,7 +76,7 @@ const createSwitchDevice = (id: string, name: string, x: number, y: number, ip: 
   ip,
   macAddress: deterministicMac(id),
   status: 'online',
-  switchModel: 'WS-C2960-24TT-L',
+  switchModel: 'NS-L2-24TT-L',
   ports: [
     ...Array.from({ length: 24 }, (_, i) => ({ id: `fa0/${i + 1}`, label: `Fa0/${i + 1}`, status: 'disconnected' as const, macAddress: deterministicMac(`${id}:fa0/${i + 1}`) })),
     { id: 'console', label: 'Console', status: 'disconnected' as const },
@@ -95,7 +95,7 @@ const createL3SwitchDevice = (id: string, name: string, x: number, y: number): C
   ipConfigMode: 'static',
   macAddress: deterministicMac(id),
   status: 'online',
-  switchModel: 'WS-C3650-24PS',
+  switchModel: 'NS-L3-24PS',
   ports: [
     ...Array.from({ length: 24 }, (_, i) => ({ id: `gi1/0/${i + 1}`, label: `Gi1/0/${i + 1}`, status: 'disconnected' as const })),
     { id: 'console', label: 'Console', status: 'disconnected' as const },
@@ -215,7 +215,7 @@ const createWlcDevice = (id: string, name: string, x: number, y: number, ip: str
     ip,
     macAddress: baseMac,
     status: 'online',
-    switchModel: 'AIR-CT2504-K9',
+    switchModel: 'NS-WLC-2504',
     ports: [
       { id: 'console', label: 'Console', status: 'disconnected' as const },
       { id: 'service', label: 'Service', status: 'disconnected' as const, macAddress: deterministicMac(`${id}:service`) },

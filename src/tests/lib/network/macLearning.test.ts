@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+﻿import { describe, it, expect, beforeEach } from 'vitest';
 import {
   learnMacAddress,
   cleanExpiredMacEntries,
@@ -20,7 +20,7 @@ function makeState(overrides?: Partial<SwitchState>): SwitchState {
     id: 'SW1',
     hostname: 'SW1',
     macAddress: '00:11:22:33:44:55',
-    switchModel: 'WS-C2960-24TT-L',
+    switchModel: 'NS-L2-24TT-L',
     switchLayer: 'L2',
     currentMode: 'privileged',
     ports: {},

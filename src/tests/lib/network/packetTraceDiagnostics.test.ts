@@ -7,7 +7,9 @@ import { diagnoseVlanMismatches, diagnoseDuplicateAddresses } from '@/lib/networ
 import { cmdShowInterfaces } from '@/lib/network/core/showInterfaceDisplay';
 import { runAgingTick } from '@/lib/network/agingEngine';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
-import type { SwitchState } from '@/lib/network/types';
+import type { SwitchState } from '@/lib/network/types'; 
+import type { NetworkPacketFrame } from '@/lib/network/forwarding/packetFrame'; 
+import type { CommandContext } from '@/lib/network/core/commandTypes';
 
 describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
   let devices: CanvasDevice[];
@@ -16,18 +18,18 @@ describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
 
   beforeEach(() => {
     devices = [
-      { id: 'PC1', name: 'PC1', type: 'pc', x: 100, y: 100, ip: '10.0.0.2', subnetMask: '255.255.255.0', macAddress: '00:11:22:33:44:55' } as any,
-      { id: 'SW1', name: 'SW1', type: 'switchL2', x: 200, y: 100 } as any,
-      { id: 'R1', name: 'R1', type: 'router', x: 300, y: 100 } as any,
-      { id: 'R2', name: 'R2', type: 'router', x: 400, y: 100 } as any,
-      { id: 'PC2', name: 'PC2', type: 'pc', x: 500, y: 100, ip: '192.168.1.2', subnetMask: '255.255.255.0', macAddress: 'AA:BB:CC:DD:EE:FF' } as any,
+      { id: 'PC1', name: 'PC1', type: 'pc', x: 100, y: 100, ip: '10.0.0.2', subnetMask: '255.255.255.0', macAddress: '00:11:22:33:44:55' } as unknown as CanvasDevice,
+      { id: 'SW1', name: 'SW1', type: 'switchL2', x: 200, y: 100 } as unknown as CanvasDevice,
+      { id: 'R1', name: 'R1', type: 'router', x: 300, y: 100 } as unknown as CanvasDevice,
+      { id: 'R2', name: 'R2', type: 'router', x: 400, y: 100 } as unknown as CanvasDevice,
+      { id: 'PC2', name: 'PC2', type: 'pc', x: 500, y: 100, ip: '192.168.1.2', subnetMask: '255.255.255.0', macAddress: 'AA:BB:CC:DD:EE:FF' } as unknown as CanvasDevice,
     ];
 
     connections = [
-      { id: 'c1', sourceDeviceId: 'PC1', sourcePort: 'Eth0', targetDeviceId: 'SW1', targetPort: 'Fa0/1' } as any,
-      { id: 'c2', sourceDeviceId: 'SW1', sourcePort: 'Fa0/2', targetDeviceId: 'R1', targetPort: 'Gi0/0' } as any,
-      { id: 'c3', sourceDeviceId: 'R1', sourcePort: 'Gi0/1', targetDeviceId: 'R2', targetPort: 'Gi0/0' } as any,
-      { id: 'c4', sourceDeviceId: 'R2', sourcePort: 'Gi0/1', targetDeviceId: 'PC2', targetPort: 'Eth0' } as any,
+      { id: 'c1', sourceDeviceId: 'PC1', sourcePort: 'Eth0', targetDeviceId: 'SW1', targetPort: 'Fa0/1' } as unknown as CanvasConnection,
+      { id: 'c2', sourceDeviceId: 'SW1', sourcePort: 'Fa0/2', targetDeviceId: 'R1', targetPort: 'Gi0/0' } as unknown as CanvasConnection,
+      { id: 'c3', sourceDeviceId: 'R1', sourcePort: 'Gi0/1', targetDeviceId: 'R2', targetPort: 'Gi0/0' } as unknown as CanvasConnection,
+      { id: 'c4', sourceDeviceId: 'R2', sourcePort: 'Gi0/1', targetDeviceId: 'PC2', targetPort: 'Eth0' } as unknown as CanvasConnection,
     ];
 
     deviceStates = new Map<string, SwitchState>([
@@ -37,7 +39,7 @@ describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
           ports: {
             Eth0: { id: 'Eth0', name: 'Ethernet0', status: 'connected', shutdown: false, vlan: 1, mode: 'access', duplex: 'full', speed: '1000', type: 'fastethernet', ipAddress: '10.0.0.2', subnetMask: '255.255.255.0' },
           },
-        } as any,
+        } as unknown as SwitchState,
       ],
       [
         'SW1',
@@ -50,7 +52,7 @@ describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
             'Fa0/1': { id: 'Fa0/1', name: 'FastEthernet0/1', status: 'connected', shutdown: false, vlan: 1, mode: 'access', duplex: 'full', speed: '100', type: 'fastethernet' },
             'Fa0/2': { id: 'Fa0/2', name: 'FastEthernet0/2', status: 'connected', shutdown: false, vlan: 1, mode: 'access', duplex: 'full', speed: '100', type: 'fastethernet' },
           },
-        } as any,
+        } as unknown as SwitchState,
       ],
       [
         'R1',
@@ -62,7 +64,7 @@ describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
           staticRoutes: [
             { destination: '192.168.1.0', subnetMask: '255.255.255.0', nextHop: 'Gi0/1', type: 'static', metric: 1 },
           ],
-        } as any,
+        } as unknown as SwitchState,
       ],
       [
         'R2',
@@ -74,7 +76,7 @@ describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
           staticRoutes: [
             { destination: '10.0.0.0', subnetMask: '255.255.255.0', nextHop: 'Gi0/0', type: 'static', metric: 1 },
           ],
-        } as any,
+        } as unknown as SwitchState,
       ],
       [
         'PC2',
@@ -82,13 +84,14 @@ describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
           ports: {
             Eth0: { id: 'Eth0', name: 'Ethernet0', status: 'connected', shutdown: false, vlan: 1, mode: 'access', duplex: 'full', speed: '1000', type: 'fastethernet', ipAddress: '192.168.1.2', subnetMask: '255.255.255.0' },
           },
-        } as any,
+        } as unknown as SwitchState,
       ],
     ]);
   });
 
   it('Feature 1 & 10: Runs full packet pipeline with traces and standardized drop reasons', () => {
-    const frame = {
+    const frame: NetworkPacketFrame = {
+      id: 'f1',
       srcMac: '00:11:22:33:44:55',
       dstMac: 'AA:BB:CC:DD:EE:FF',
       srcIp: '10.0.0.2',
@@ -97,24 +100,33 @@ describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
       ttl: 64,
       vlanId: 1,
       ingressPortId: 'Eth0',
+      timestamp: Date.now(),
+      etherType: '0x0800',
+      length: 74,
+      info: 'ICMP Echo Request',
     };
 
-    const res = runFullPacketPipeline(frame as any, 'PC1', devices, deviceStates, connections);
+    const res = runFullPacketPipeline(frame, 'PC1', devices, deviceStates, connections);
     expect(res.allTraces.length).toBeGreaterThan(0);
     expect(res.hopResults.length).toBeGreaterThan(0);
   });
 
   it('Feature 2: Generates RFC-compliant ICMP error frames with codes', () => {
-    const frame = {
+    const frame: NetworkPacketFrame = {
+      id: 'f2',
       srcIp: '10.0.0.2',
       dstIp: '192.168.1.2',
       srcMac: '00:11:22:33:44:55',
       dstMac: 'AA:BB:CC:DD:EE:FF',
       protocol: 'UDP',
       ttl: 64,
+      timestamp: Date.now(),
+      etherType: '0x0800',
+      length: 60,
+      info: 'UDP Datagram',
     };
 
-    const icmpUnreach = generateIcmpUnreachable(frame as any, 'destination-unreachable', 'ACL Denied', 13, '10.0.0.1');
+    const icmpUnreach = generateIcmpUnreachable(frame, 'destination-unreachable', 'ACL Denied', 13, '10.0.0.1');
     expect(icmpUnreach.protocol).toBe('ICMP');
     expect(icmpUnreach.srcIp).toBe('10.0.0.1');
     expect(icmpUnreach.dstIp).toBe('10.0.0.2');
@@ -127,7 +139,8 @@ describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
   });
 
   it('Feature 3: Standardizes TTL decrementing across L3 hops and drops on TTL 0', () => {
-    const frame = {
+    const frame: NetworkPacketFrame = {
+      id: 'f3',
       srcMac: '00:11:22:33:44:55',
       dstMac: 'AA:BB:CC:DD:EE:FF',
       srcIp: '10.0.0.2',
@@ -136,9 +149,13 @@ describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
       ttl: 1, // Only 1 hop allowed before router drops
       vlanId: 1,
       ingressPortId: 'Gi0/0',
+      timestamp: Date.now(),
+      etherType: '0x0800',
+      length: 74,
+      info: 'ICMP Echo Request',
     };
 
-    const res = runFullPacketPipeline(frame as any, 'R1', devices, deviceStates, connections);
+    const res = runFullPacketPipeline(frame, 'R1', devices, deviceStates, connections);
     expect(res.success).toBe(false);
     expect(res.dropReason).toContain('Time to Live (TTL) Exceeded');
     expect(res.finalFrame?.protocol).toBe('ICMP');
@@ -197,19 +214,23 @@ describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
   });
 
   it('Feature 9: Updates interface rx/tx/drop counters on real traffic', () => {
-    const frame = {
+    const frame: NetworkPacketFrame = {
+      id: 'f4',
       srcMac: '00:11:22:33:44:55',
       dstMac: 'AA:BB:CC:DD:EE:FF',
       srcIp: '10.0.0.2',
       dstIp: '192.168.1.2',
       protocol: 'ICMP',
       ttl: 64,
-      length: 128,
       vlanId: 1,
       ingressPortId: 'Fa0/1',
+      timestamp: Date.now(),
+      etherType: '0x0800',
+      length: 128,
+      info: 'ICMP Echo Request',
     };
 
-    runFullPacketPipeline(frame as any, 'SW1', devices, deviceStates, connections);
+    runFullPacketPipeline(frame, 'SW1', devices, deviceStates, connections);
 
     const sw1Port = deviceStates.get('SW1')?.ports['Fa0/1'];
     expect(sw1Port?.stats).toBeDefined();
@@ -227,22 +248,26 @@ describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
   });
 
   it('Feature 21: show interfaces reflects real rx/tx counters after traffic', () => {
-    const frame = {
+    const frame: NetworkPacketFrame = {
+      id: 'f4',
       srcMac: '00:11:22:33:44:55',
       dstMac: 'AA:BB:CC:DD:EE:FF',
       srcIp: '10.0.0.2',
       dstIp: '192.168.1.2',
       protocol: 'ICMP',
       ttl: 64,
-      length: 128,
       vlanId: 1,
       ingressPortId: 'Fa0/1',
+      timestamp: Date.now(),
+      etherType: '0x0800',
+      length: 128,
+      info: 'ICMP Echo Request',
     };
 
-    runFullPacketPipeline(frame as any, 'SW1', devices, deviceStates, connections);
+    runFullPacketPipeline(frame, 'SW1', devices, deviceStates, connections);
 
     const sw1State = deviceStates.get('SW1')!;
-    const res = cmdShowInterfaces(sw1State, 'show interfaces', {} as any);
+    const res = cmdShowInterfaces(sw1State, 'show interfaces', {} as CommandContext);
     expect(res.success).toBe(true);
     expect(res.output).toMatch(/FastEthernet0\/1 is up/);
     expect(res.output).toMatch(/FastEthernet0\/2 is up/);
@@ -272,19 +297,23 @@ describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
     };
     sw1State.namedAclTypes = { 'DENY-ALL': 'extended' };
 
-    const frame = {
+    const frame: NetworkPacketFrame = {
+      id: 'f4',
       srcMac: '00:11:22:33:44:55',
       dstMac: 'AA:BB:CC:DD:EE:FF',
       srcIp: '10.0.0.2',
       dstIp: '192.168.1.2',
       protocol: 'ICMP',
       ttl: 64,
-      length: 128,
       vlanId: 1,
       ingressPortId: 'Fa0/1',
+      timestamp: Date.now(),
+      etherType: '0x0800',
+      length: 128,
+      info: 'ICMP Echo Request',
     };
 
-    runFullPacketPipeline(frame as any, 'SW1', devices, deviceStates, connections);
+    runFullPacketPipeline(frame, 'SW1', devices, deviceStates, connections);
 
     const ingress = sw1State.ports['Fa0/1'];
     const egress = sw1State.ports['Fa0/2'];
@@ -295,7 +324,7 @@ describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
     expect(egress?.stats?.txDrops).toBe(1);
     expect(egress?.statistics?.drops).toBe(1);
 
-    const res = cmdShowInterfaces(sw1State, 'show interfaces', {} as any);
+    const res = cmdShowInterfaces(sw1State, 'show interfaces', {} as CommandContext);
     // Output queue drops distinct from input queue drops
     expect(res.output).toMatch(/Output queue 0\/40, 1 drops; input queue 0\/75, 0 drops/);
   });
@@ -303,12 +332,12 @@ describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
   it('Feature 10: Detects duplicate device IPs across devices', () => {
     const dupDevices = [
       ...devices,
-      { id: 'PC3', name: 'PC3', type: 'pc', x: 600, y: 100, ip: '10.0.0.2', subnetMask: '255.255.255.0', macAddress: '11:11:11:11:11:11' } as any,
+      { id: 'PC3', name: 'PC3', type: 'pc', x: 600, y: 100, ip: '10.0.0.2', subnetMask: '255.255.255.0', macAddress: '11:11:11:11:11:11' } as unknown as CanvasDevice,
     ];
     const dupStates = new Map(deviceStates);
     dupStates.set('PC3', {
       ports: { Eth0: { id: 'Eth0', name: 'Ethernet0', status: 'connected', shutdown: false, vlan: 1, mode: 'access', duplex: 'full', speed: '1000', type: 'fastethernet', ipAddress: '10.0.0.2', subnetMask: '255.255.255.0' } },
-    } as any);
+    } as unknown as SwitchState);
 
     const issues = diagnoseDuplicateAddresses(dupDevices, dupStates);
     const ipIssue = issues.find(i => i.type === 'DUPLICATE_IP');
@@ -321,12 +350,12 @@ describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
   it('Feature 11: Detects duplicate MACs via macAddress field (not old mac field)', () => {
     const dupDevices = [
       ...devices,
-      { id: 'PC3', name: 'PC3', type: 'pc', x: 600, y: 100, ip: '10.0.0.5', subnetMask: '255.255.255.0', macAddress: '00:11:22:33:44:55' } as any,
+      { id: 'PC3', name: 'PC3', type: 'pc', x: 600, y: 100, ip: '10.0.0.5', subnetMask: '255.255.255.0', macAddress: '00:11:22:33:44:55' } as unknown as CanvasDevice,
     ];
     const dupStates = new Map(deviceStates);
     dupStates.set('PC3', {
       ports: { Eth0: { id: 'Eth0', name: 'Ethernet0', status: 'connected', shutdown: false, vlan: 1, mode: 'access', duplex: 'full', speed: '1000', type: 'fastethernet', ipAddress: '10.0.0.5', subnetMask: '255.255.255.0', macAddress: '11:11:11:11:11:11' } },
-    } as any);
+    } as unknown as SwitchState);
 
     const issues = diagnoseDuplicateAddresses(dupDevices, dupStates);
     const macIssue = issues.find(i => i.type === 'DUPLICATE_MAC');
@@ -361,7 +390,7 @@ describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
       staticRoutes: [
         { destination: '192.168.1.0', subnetMask: '255.255.255.0', nextHop: '172.16.0.2', type: 'static', metric: 1 },
       ],
-    } as any);
+    } as unknown as SwitchState);
     loopStates.set('R2', {
       ports: {
         'Gi0/0': { id: 'Gi0/0', name: 'GigabitEthernet0/0', status: 'connected', shutdown: false, vlan: 1, mode: 'routed', duplex: 'full', speed: '1000', type: 'gigabitethernet', ipAddress: '172.16.0.2', subnetMask: '255.255.255.0' },
@@ -369,14 +398,14 @@ describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
       staticRoutes: [
         { destination: '192.168.1.0', subnetMask: '255.255.255.0', nextHop: '172.16.0.1', type: 'static', metric: 1 },
       ],
-    } as any);
+    } as unknown as SwitchState);
 
     const loopDevices = [
-      { id: 'R1', name: 'R1', type: 'router', x: 100, y: 100, ip: '172.16.0.1', subnet: '255.255.255.0' } as any,
-      { id: 'R2', name: 'R2', type: 'router', x: 200, y: 100, ip: '172.16.0.2', subnet: '255.255.255.0' } as any,
+      { id: 'R1', name: 'R1', type: 'router', x: 100, y: 100, ip: '172.16.0.1', subnet: '255.255.255.0' } as unknown as CanvasDevice,
+      { id: 'R2', name: 'R2', type: 'router', x: 200, y: 100, ip: '172.16.0.2', subnet: '255.255.255.0' } as unknown as CanvasDevice,
     ];
     const loopConnections = [
-      { id: 'l1', sourceDeviceId: 'R1', sourcePort: 'Gi0/0', targetDeviceId: 'R2', targetPort: 'Gi0/0' } as any,
+      { id: 'l1', sourceDeviceId: 'R1', sourcePort: 'Gi0/0', targetDeviceId: 'R2', targetPort: 'Gi0/0' } as unknown as CanvasConnection,
     ];
 
     const issues = detectRoutingLoops(loopDevices, loopStates, loopConnections);
@@ -398,14 +427,14 @@ describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
     const sw1State = deviceStates.get('SW1')!;
 
     // Add SW2 for a switch-to-switch link
-    devices.push({ id: 'SW2', name: 'SW2', type: 'switchL2', x: 250, y: 100 } as any);
+    devices.push({ id: 'SW2', name: 'SW2', type: 'switchL2', x: 250, y: 100 } as unknown as CanvasDevice);
     deviceStates.set('SW2', {
       hostname: 'SW2',
       ports: {
         'Fa0/1': { id: 'Fa0/1', name: 'FastEthernet0/1', status: 'connected', shutdown: false, vlan: 1, mode: 'access', duplex: 'full', speed: '100', type: 'fastethernet' },
       },
-    } as any);
-    connections.push({ id: 'c5', sourceDeviceId: 'SW1', sourcePort: 'Fa0/1', targetDeviceId: 'SW2', targetPort: 'Fa0/1' } as any);
+    } as unknown as SwitchState);
+    connections.push({ id: 'c5', sourceDeviceId: 'SW1', sourcePort: 'Fa0/1', targetDeviceId: 'SW2', targetPort: 'Fa0/1' } as unknown as CanvasConnection);
 
     // SW1 side is trunk, SW2 side is access -> mode mismatch
     sw1State.ports['Fa0/1'].mode = 'trunk';
@@ -419,14 +448,14 @@ describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
 
   it('Feature 16: Does not flag allowed-VLAN when one side is "all"', () => {
     const sw1State = deviceStates.get('SW1')!;
-    devices.push({ id: 'SW2', name: 'SW2', type: 'switchL2', x: 250, y: 100 } as any);
+    devices.push({ id: 'SW2', name: 'SW2', type: 'switchL2', x: 250, y: 100 } as unknown as CanvasDevice);
     deviceStates.set('SW2', {
       hostname: 'SW2',
       ports: {
         'Fa0/1': { id: 'Fa0/1', name: 'FastEthernet0/1', status: 'connected', shutdown: false, vlan: 1, mode: 'access', duplex: 'full', speed: '100', type: 'fastethernet' },
       },
-    } as any);
-    connections.push({ id: 'c5', sourceDeviceId: 'SW1', sourcePort: 'Fa0/1', targetDeviceId: 'SW2', targetPort: 'Fa0/1' } as any);
+    } as unknown as SwitchState);
+    connections.push({ id: 'c5', sourceDeviceId: 'SW1', sourcePort: 'Fa0/1', targetDeviceId: 'SW2', targetPort: 'Fa0/1' } as unknown as CanvasConnection);
     const sw2State = deviceStates.get('SW2')!;
 
     sw1State.ports['Fa0/1'].mode = 'trunk';
@@ -446,7 +475,8 @@ describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
     // Route for 192.168.1.0/24 points out Gi0/1
     r1State.ports['Gi0/1'].shutdown = true;
     // Simulate a frame arriving at R1 from SW1 (ingress Gi0/0)
-    const frame = {
+    const frame: NetworkPacketFrame = {
+      id: 'f5',
       srcMac: '00:11:22:33:44:55',
       dstMac: '00:00:00:00:00:01',
       srcIp: '10.0.0.2',
@@ -455,9 +485,13 @@ describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
       ttl: 64,
       vlanId: 1,
       ingressPortId: 'Gi0/0',
+      timestamp: Date.now(),
+      etherType: '0x0800',
+      length: 74,
+      info: 'ICMP Echo Request',
     };
 
-    const res = runFullPacketPipeline(frame as any, 'R1', devices, deviceStates, connections);
+    const res = runFullPacketPipeline(frame, 'R1', devices, deviceStates, connections);
     const r1Hop = res.allTraces.find(t => t.deviceId === 'R1');
     const dropTrace = res.allTraces.find(t => t.deviceId === 'R1' && t.action === 'drop');
     expect(r1Hop).toBeDefined();
@@ -468,11 +502,12 @@ describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
 
   it('Feature 18: Interface shutdown flushes stale ARP/MAC/NDP entries for the port', async () => {
     const { getInterfaceStateUpdate } = await import('@/lib/network/core/commandHelpers');
-    const ctx = {
+    const ctx: CommandContext = {
+      language: 'en',
       sourceDeviceId: 'R1',
       deviceStates,
       connections,
-    } as any;
+    };
 
     const r1State = deviceStates.get('R1')!;
     r1State.arpCache = [
@@ -516,8 +551,8 @@ describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
     sw1.ports['Fa0/1'].spanningTree = { role: 'designated', state: 'forwarding' };
     sw1.ports['Fa0/2'].spanningTree = { role: 'root', state: 'forwarding' };
 
-    const ctx = { devices, connections, deviceStates } as any;
-    const res = cmdShowNetworkHealth({} as any, '', ctx);
+    const ctx: CommandContext = { language: 'en', devices, connections, deviceStates };
+    const res = cmdShowNetworkHealth({} as SwitchState, '', ctx);
 
     expect(res.success).toBe(true);
     expect(res.output).toContain('NETWORK HEALTH CHECK REPORT');
@@ -546,8 +581,8 @@ describe('Advanced Packet Forwarding & Diagnostics Engine', () => {
     sw1.ports['Fa0/1'].spanningTree = { role: 'designated', state: 'listening' };
     sw1.ports['Fa0/2'].spanningTree = { role: 'root', state: 'blocking' };
 
-    const ctx = { devices, connections, deviceStates } as any;
-    const res = cmdShowNetworkHealth({} as any, '', ctx);
+    const ctx: CommandContext = { language: 'en', devices, connections, deviceStates };
+    const res = cmdShowNetworkHealth({} as SwitchState, '', ctx);
 
     expect(res.success).toBe(true);
     // Interface health section flagged the shutdown port

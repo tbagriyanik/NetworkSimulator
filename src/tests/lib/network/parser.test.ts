@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+﻿import { describe, it, expect, vi } from 'vitest';
 import { parseCommand, validateCommand, resolveAliases, getLevenshteinDistance, expandKeywordPrefixes, getInvalidCommandError } from '@/lib/network/parser';
 import type { ParsedCommand } from '@/lib/network/types';
 
@@ -118,7 +118,7 @@ describe('Command Parser Functions', () => {
 
   describe('validateCommand', () => {
     const mockState = {
-      switchModel: 'WS-C2960-24TT-L' as const,
+      switchModel: 'NS-L2-24TT-L' as const,
       switchLayer: 'L2' as const,
       currentMode: 'user' as const,
       isLayer3Switch: false

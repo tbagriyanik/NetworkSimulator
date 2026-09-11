@@ -44,7 +44,7 @@ function createInitialPorts(gigabitPortCount: number = 2, baseMac?: string, hasW
 
   const isL3GigabitLayout = gigabitPortCount === 4;
 
-  // Access ports (L2: FastEthernet0/1-24, L3-3650: GigabitEthernet1/0/1-24)
+  // Access ports (L2: FastEthernet0/1-24, L3: GigabitEthernet1/0/1-24)
   for (let i = 1; i <= 24; i++) {
     const portId = isL3GigabitLayout ? `gi1/0/${i}` : `fa0/${i}`;
     const portMac = formatMacFromNumber(parseInt(switchBaseMac.replace(/\./g, ''), 16) + i);
@@ -134,7 +134,7 @@ function createInitialFirewallPorts(baseMac?: string): Record<string, Port> {
     type: 'fastethernet'
   };
 
-  // ASA 5506-X has 8 GigabitEthernet ports (Gi1/0/0-7) + Management 1/1
+  // Firewall has 8 GigabitEthernet ports (Gi1/0/0-7) + Management 1/1
   for (let i = 0; i <= 7; i++) {
     const portId = `gi1/0/${i}`;
     const portMacNumber = parseInt(firewallBaseMac.replace(/\./g, ''), 16) + i + 1;
@@ -212,7 +212,7 @@ function createInitialSecurity(): SecurityConfig {
 // Ana başlangıç durumu
 export function createInitialState(
   mac?: string,
-  switchModel: 'WS-C2960-24TT-L' | 'WS-C3650-24PS' = 'WS-C2960-24TT-L',
+  switchModel: 'NS-L2-24TT-L' | 'NS-L3-24PS' = 'NS-L2-24TT-L',
   options: { bootTime?: number; now?: Date } = {}
 ): SwitchState {
   const { bootTime = 1715600000000, now = new Date(1715600000000) } = options;
@@ -421,7 +421,7 @@ export function createInitialRouterState(
   return {
     hostname: 'Router',
     macAddress,
-    switchModel: 'ISR4451-X' as SwitchModel,
+    switchModel: 'NS-R-4451-X' as SwitchModel,
     switchLayer: 'L3',
     deviceType: 'router',
     currentMode: 'user',
@@ -459,7 +459,7 @@ export function createInitialRouterState(
     bannerMOTD: 'Welcome to the Network Simulator\nUnauthorized access is strictly prohibited.',
     version: {
       nosVersion: '15.4(3)M4',
-      modelName: 'ISR 4451 X',
+      modelName: 'NS-R-4451-X',
       serialNumber: 'FTX1234ABCD',
       uptime: '1 week, 2 days, 4 hours'
     },
@@ -481,7 +481,7 @@ export function createInitialFirewallState(
   return {
     hostname: 'asa',
     macAddress,
-    switchModel: 'ASA-5506-X' as SwitchModel,
+    switchModel: 'NS-FW-5506' as SwitchModel,
     switchLayer: 'FW',
     deviceType: 'firewall',
     currentMode: 'user',
@@ -515,10 +515,10 @@ export function createInitialFirewallState(
     ],
     commandHistory: [],
     historyIndex: -1,
-    bannerMOTD: 'Adaptive Security Appliance Software\n',
+    bannerMOTD: 'NetSim Firewall Software\n',
     version: {
       nosVersion: '9.6(1)',
-      modelName: 'ASA-5506-X',
+      modelName: 'NS-FW-5506',
       serialNumber: 'ASA12345678',
       uptime: '1 day, 2 hours, 15 minutes'
     },
@@ -597,7 +597,7 @@ export function createInitialWLCState(
   return {
     hostname: 'WLC',
     macAddress,
-    switchModel: 'AIR-CT2504-K9' as SwitchModel,
+    switchModel: 'NS-WLC-2504' as SwitchModel,
     switchLayer: 'WLC',
     deviceType: 'wlc',
     currentMode: 'user',
@@ -657,7 +657,7 @@ export function createInitialWLCState(
     bannerMOTD: 'Wireless LAN Controller\n',
     version: {
       nosVersion: '8.5.105.0',
-      modelName: 'AIR-CT2504 WLC',
+      modelName: 'NS-WLC-2504 WLC',
       serialNumber: 'WLC2504ABCD',
       uptime: '3 days, 2 hours, 30 minutes'
     },

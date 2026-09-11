@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseCommand, validateCommand } from '@/lib/network/parser';
-import { IOS_ERRORS } from '@/lib/network/core/iosErrors';
+import { CLI_ERRORS } from '@/lib/network/core/cliErrors';
 
 describe('CLI Error Messages Completeness & Caret Accuracy', () => {
   it('detects invalid input with ^ marker for unrecognized command', () => {
@@ -9,7 +9,7 @@ describe('CLI Error Messages Completeness & Caret Accuracy', () => {
     const res = validateCommand(parsed!, 'privileged');
     expect(res.valid).toBe(false);
     expect(res.reason).toBe('unknown-command');
-    expect(res.error).toContain(IOS_ERRORS.invalidInput);
+    expect(res.error).toContain(CLI_ERRORS.invalidInput);
     expect(res.error).toContain('^');
   });
 
@@ -20,7 +20,7 @@ describe('CLI Error Messages Completeness & Caret Accuracy', () => {
     const res = validateCommand(parsedIp!, 'config');
     expect(res.valid).toBe(false);
     expect(res.reason).toBe('incomplete');
-    expect(res.error).toContain(IOS_ERRORS.incomplete);
+    expect(res.error).toContain(CLI_ERRORS.incomplete);
   });
 
   it('detects ambiguous command when prefix matches multiple candidates', () => {
@@ -29,7 +29,7 @@ describe('CLI Error Messages Completeness & Caret Accuracy', () => {
     const res = validateCommand(parsed!, 'privileged');
     expect(res.valid).toBe(false);
     expect(res.reason).toBe('ambiguous');
-    expect(res.error).toContain(IOS_ERRORS.ambiguous);
+    expect(res.error).toContain(CLI_ERRORS.ambiguous);
     expect(res.error).toContain('co');
   });
 });

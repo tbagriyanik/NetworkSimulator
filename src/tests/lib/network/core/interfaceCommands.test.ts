@@ -13,7 +13,7 @@ function makeBaseState(overrides: Record<string, any> = {}): SwitchState {
   return {
     hostname: 'SW1',
     macAddress: '00:11:22:33:44:55',
-    switchModel: 'WS-C2960-24TT-L' as const,
+    switchModel: 'NS-L2-24TT-L' as const,
     switchLayer: 'L2' as const,
     currentMode: 'config' as const,
     ports: {
@@ -47,18 +47,18 @@ describe('interfaceHandlers - WLAN commands', () => {
       const state = makeBaseState();
       const result = interfaceHandlers['wlan'](state, 'wlan MyWLAN 1 MySSID', mockCtx);
       expect(result.success).toBe(true);
-      const newWlans = (result.newState as any)?.wlans;
+      const newWlans = result.newState?.wlans;
       expect(newWlans).toBeDefined();
-      expect(newWlans['1']).toEqual({ name: 'MyWLAN', ssid: 'MySSID' });
+      expect(newWlans!['1']).toEqual({ name: 'MyWLAN', ssid: 'MySSID' });
     });
 
     it('should update wlan0 interface with the ssid', () => {
       const state = makeBaseState();
       const result = interfaceHandlers['wlan'](state, 'wlan CorpNet 2 CorpSSID', mockCtx);
       expect(result.success).toBe(true);
-      const newPorts = (result.newState as any)?.ports;
+      const newPorts = result.newState?.ports;
       expect(newPorts).toBeDefined();
-      expect(newPorts['wlan0'].wifi).toBeDefined();
+      expect(newPorts!['wlan0'].wifi).toBeDefined();
     });
 
     it('should return error for invalid syntax', () => {
@@ -71,17 +71,17 @@ describe('interfaceHandlers - WLAN commands', () => {
   describe('cmdNoWlan', () => {
     it('should delete an existing WLAN', () => {
       const state = makeBaseState();
-      (state as any).wlans = { '1': { name: 'MyWLAN', ssid: 'MySSID' } };
+      state.wlans = { '1': { name: 'MyWLAN', ssid: 'MySSID' } };
       const result = interfaceHandlers['no wlan'](state, 'no wlan 1', mockCtx);
       expect(result.success).toBe(true);
-      const newWlans = (result.newState as any)?.wlans;
+      const newWlans = result.newState?.wlans;
       expect(newWlans).toBeDefined();
-      expect(newWlans['1']).toBeUndefined();
+      expect(newWlans!['1']).toBeUndefined();
     });
 
     it('should return error when WLAN does not exist', () => {
       const state = makeBaseState();
-      (state as any).wlans = {};
+      state.wlans = {};
       const result = interfaceHandlers['no wlan'](state, 'no wlan 99', mockCtx);
       expect(result.success).toBe(false);
     });
@@ -138,7 +138,7 @@ describe('interfaceHandlers - previously stubbed interface commands', () => {
     expect(ospf.newState?.routingProtocol).toBe('ospf');
     expect(ospf.newState?.ospfAreas).toContain(0);
 
-    const noOspf = interfaceHandlers['no ip ospf area'](ospf.newState as any, 'no ip ospf 1 area 0', mockCtx);
+    const noOspf = interfaceHandlers['no ip ospf area']({ ...makeBaseState(), ...ospf.newState }, 'no ip ospf 1 area 0', mockCtx);
     expect(noOspf.success).toBe(true);
     expect(noOspf.newState?.ports?.['gi0/1'].ospfEnabled).toBe(false);
     expect(noOspf.newState?.ports?.['gi0/1'].ospfArea).toBeUndefined();

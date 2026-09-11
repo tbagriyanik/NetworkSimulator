@@ -1,4 +1,4 @@
-import type { CableInfo, SwitchState, PortMode, PortStatus, WifiConfig, WifiMode, CableType } from '@/lib/network/types';
+﻿import type { CableInfo, SwitchState, PortMode, PortStatus, WifiConfig, WifiMode, CableType } from '@/lib/network/types';
 import type { Dispatch, SetStateAction } from 'react';
 
 // Canvas-specific WiFi config that allows partial compatibility with legacy code
@@ -172,7 +172,7 @@ export interface CanvasDevice {
   x: number;
   y: number;
   status: 'online' | 'offline' | 'error';
-  switchModel?: string; // WS-C2960-24TT-L (L2) veya WS-C3650-24PS (L3)
+  switchModel?: string; // NS-L2-24TT-L (L2) veya NS-L3-24PS (L3)
   installedModules?: Record<number, string>; // slot index -> module ID
   ports: CanvasPort[];
   wifi?: CanvasWifiConfig;

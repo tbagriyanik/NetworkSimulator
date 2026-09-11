@@ -1,4 +1,4 @@
-import { createInitialState } from '../initialState';
+﻿import { createInitialState } from '../initialState';
 import { createL3SwitchDevice, createPcDevice, connectPorts, baseProjectData } from './helpers';
 ;
 ;
@@ -94,9 +94,9 @@ const example = (isTr: boolean): ExampleProject => {
     }
   ];
 
-  const stpPvstSw1 = createInitialState('00:11:00:00:01:00', 'WS-C3650-24PS');
+  const stpPvstSw1 = createInitialState('00:11:00:00:01:00', 'NS-L3-24PS');
   stpPvstSw1.hostname = 'SW1';
-  stpPvstSw1.switchModel = 'WS-C3650-24PS';
+  stpPvstSw1.switchModel = 'NS-L3-24PS';
   stpPvstSw1.switchLayer = 'L3';
   stpPvstSw1.ipRouting = true;
   stpPvstSw1.spanningTreeMode = 'pvst';
@@ -172,9 +172,9 @@ const example = (isTr: boolean): ExampleProject => {
     '!'
   ];
 
-  const stpPvstSw2 = createInitialState('00:11:00:00:02:00', 'WS-C3650-24PS');
+  const stpPvstSw2 = createInitialState('00:11:00:00:02:00', 'NS-L3-24PS');
   stpPvstSw2.hostname = 'SW2';
-  stpPvstSw2.switchModel = 'WS-C3650-24PS';
+  stpPvstSw2.switchModel = 'NS-L3-24PS';
   stpPvstSw2.switchLayer = 'L3';
   stpPvstSw2.ipRouting = true;
   stpPvstSw2.spanningTreeMode = 'pvst';
@@ -250,9 +250,9 @@ const example = (isTr: boolean): ExampleProject => {
     '!'
   ];
 
-  const stpPvstSw3 = createInitialState('00:11:00:00:03:00', 'WS-C3650-24PS');
+  const stpPvstSw3 = createInitialState('00:11:00:00:03:00', 'NS-L3-24PS');
   stpPvstSw3.hostname = 'SW3';
-  stpPvstSw3.switchModel = 'WS-C3650-24PS';
+  stpPvstSw3.switchModel = 'NS-L3-24PS';
   stpPvstSw3.switchLayer = 'L3';
   stpPvstSw3.ipRouting = true;
   stpPvstSw3.spanningTreeMode = 'pvst';

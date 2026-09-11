@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+﻿import { useCallback } from 'react';
 import { CanvasDevice, CanvasNote, CanvasConnection, DeviceType } from '../components/network/networkTopology.types';
 import { generateRandomLinkLocalIpv4, generateRandomLinkLocalIpv6 } from '@/lib/network/linkLocal';
 import { getDeviceWidth, getDeviceHeight } from '../components/network/networkTopology.helpers';
@@ -292,7 +292,7 @@ export function useCanvasActions({
     }
 
     const switchLayer = layer || 'L2';
-    const switchModel = switchLayer === 'L3' ? 'WS-C3650-24PS' : 'WS-C2960-24TT-L';
+    const switchModel = switchLayer === 'L3' ? 'NS-L3-24PS' : 'NS-L2-24TT-L';
     const resolvedType = type === 'switch'
       ? (switchLayer === 'L3' ? 'switchL3' : 'switchL2')
       : type;
@@ -320,7 +320,7 @@ export function useCanvasActions({
       x: spawnX,
       y: spawnY,
       status: 'online',
-      switchModel: type === 'switch' ? switchModel : type === 'wlc' ? 'AIR-CT2504-K9' as const : undefined,
+      switchModel: type === 'switch' ? switchModel : type === 'wlc' ? 'NS-WLC-2504' as const : undefined,
       ports:
         type === 'pc' || type === 'iot' || type === 'mobile' || type === 'printer'
           ? [

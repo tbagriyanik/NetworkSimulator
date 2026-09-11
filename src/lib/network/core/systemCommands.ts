@@ -1,4 +1,4 @@
-import { iosModeError } from './iosErrors';
+import { cliModeError } from './cliErrors';
 import type { CommandHandler, CommandContext } from './commandTypes';
 import { showHandlers } from './showCommands';
 import { privilegedHandlers } from './privilegedCommands';
@@ -81,7 +81,7 @@ function cmdDisable(
   _ctx: CommandContext
 ): CommandResult {
   if (state.currentMode !== 'privileged') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   return {
@@ -101,7 +101,7 @@ function cmdConfigureTerminal(
   _ctx: CommandContext
 ): CommandResult {
   if (state.currentMode !== 'privileged') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   // Explicit "configure terminal" (or alias-resolved form) enters config mode directly.

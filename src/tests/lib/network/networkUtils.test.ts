@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+﻿import { describe, it, expect, vi } from 'vitest';
 import { ensureDeviceStatesMap } from '@/lib/network/networkUtils';
 import type { SwitchState } from '@/lib/network/types';
 import { getDevicePairKey } from '@/components/network/networkTopology.helpers';
@@ -8,7 +8,7 @@ vi.mock('@/lib/errors/errorHandler', () => ({
 }));
 
 function makeState(overrides?: Partial<SwitchState>): SwitchState {
-  return { id: 'SW1', hostname: 'SW1', macAddress: '00:11:22:33:44:55', switchModel: 'WS-C2960-24TT-L', switchLayer: 'L2', currentMode: 'privileged', ports: {}, ...overrides } as SwitchState;
+  return { id: 'SW1', hostname: 'SW1', macAddress: '00:11:22:33:44:55', switchModel: 'NS-L2-24TT-L', switchLayer: 'L2', currentMode: 'privileged', ports: {}, ...overrides } as SwitchState;
 }
 
 describe('ensureDeviceStatesMap', () => {

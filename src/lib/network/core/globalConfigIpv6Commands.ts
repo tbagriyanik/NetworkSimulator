@@ -1,20 +1,20 @@
-import { iosModeError } from './iosErrors';
+import { cliModeError } from './cliErrors';
 import type { CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult, Route } from '../types';
 
 export function cmdIpv6UnicastRouting(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   return { success: true, newState: { ipv6Enabled: true } };
 }
 
 export function cmdNoIpv6UnicastRouting(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   return { success: true, newState: { ipv6Enabled: false } };
 }
 
 export function cmdIpv6Route(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^ipv6\s+route\s+([0-9a-fA-F:]+\/\d+)\s+(\S+)(?:\s+(\d+))?$/i);
@@ -49,7 +49,7 @@ export function cmdIpv6Route(state: SwitchState, input: string, _ctx: CommandCon
 
 export function cmdNoIpv6Route(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^no\s+ipv6\s+route\s+([0-9a-fA-F:]+\/\d+)(?:\s+(\S+))?$/i);
@@ -78,7 +78,7 @@ export function cmdNoIpv6Route(state: SwitchState, input: string, _ctx: CommandC
 
 export function cmdIpv6RouterRip(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^ipv6\s+router\s+rip\s+(\S+)$/i);
@@ -97,7 +97,7 @@ export function cmdIpv6RouterRip(state: SwitchState, input: string, _ctx: Comman
 
 export function cmdIpv6RouterOspf(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^ipv6\s+router\s+ospf\s+(\d+)$/i);
@@ -117,7 +117,7 @@ export function cmdIpv6RouterOspf(state: SwitchState, input: string, _ctx: Comma
 
 export function cmdNoIpv6RouterRip(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   return {
@@ -131,7 +131,7 @@ export function cmdNoIpv6RouterRip(state: SwitchState, _input: string, _ctx: Com
 
 export function cmdNoIpv6RouterOspf(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   return {

@@ -1,4 +1,4 @@
-import { iosModeError } from './iosErrors';
+import { cliModeError } from './cliErrors';
 import type { CommandContext } from './commandTypes';
 import { checkConnectivity, getWirelessDistance } from '../connectivity';
 import { dispatchCapturedPackets } from '../../../utils/packetCapture';
@@ -50,7 +50,7 @@ function formatHopTimes(base: number): string {
  */
 export function cmdPing(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
     if (state.currentMode !== 'privileged') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^ping\s+([0-9a-fA-F:.]+|[\w.-]+)(?:\s+(\d+))?(?:\s+(\d+))?$/i);
@@ -258,7 +258,7 @@ export function cmdPing(state: SwitchState, input: string, ctx: CommandContext):
 export function cmdTelnet(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
     // Allow telnet from both user and privileged modes
     if (state.currentMode !== 'user' && state.currentMode !== 'privileged') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^telnet\s+([0-9.]+|[\w.-]+)(?:\s+(\d+))?$/i);
@@ -323,7 +323,7 @@ export function cmdTelnet(state: SwitchState, input: string, ctx: CommandContext
 export function cmdSsh(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
     // Allow ssh from both user and privileged modes
     if (state.currentMode !== 'user' && state.currentMode !== 'privileged') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^ssh\s+(-l\s+\S+\s+)?([0-9.]+|[\w.-]+)$/i);
@@ -414,7 +414,7 @@ export function cmdSsh(state: SwitchState, input: string, ctx: CommandContext): 
  */
 export function cmdTraceroute(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
     if (state.currentMode !== 'privileged') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^traceroute\s+([0-9.]+|[\w.-]+)$/i);

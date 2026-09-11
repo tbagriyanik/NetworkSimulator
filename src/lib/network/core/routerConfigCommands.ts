@@ -1,4 +1,4 @@
-import { iosModeError } from './iosErrors';
+import { cliModeError } from './cliErrors';
 
 import type { CommandHandler } from './commandTypes';
 import type { SwitchState, CommandResult, BgpNeighbor } from '../types';
@@ -83,7 +83,7 @@ function cmdRoutingVersion(state: SwitchState, input: string): CommandResult {
     const match = input.match(/^version\s+([12])$/i);
     if (!match) return { success: false, error: '% Invalid routing protocol version.' };
     if (state.routingProtocol !== 'rip') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     return {
@@ -308,7 +308,7 @@ function cmdPassiveInterface(state: SwitchState, input: string): CommandResult {
  */
 function cmdNeighborRemoteAs(state: SwitchState, input: string): CommandResult {
     if (state.routingProtocol !== 'bgp') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
 
     const match = input.match(/^neighbor\s+([0-9.]+)\s+remote-as\s+(\d+)$/i);
@@ -328,7 +328,7 @@ function cmdNeighborRemoteAs(state: SwitchState, input: string): CommandResult {
 }
 
 function cmdNeighborRouteMap(state: SwitchState, input: string): CommandResult {
-    if (state.routingProtocol !== 'bgp') return { success: false, error: iosModeError() };
+    if (state.routingProtocol !== 'bgp') return { success: false, error: cliModeError() };
     const match = input.match(/^neighbor\s+([0-9.]+)\s+route-map\s+(\S+)\s+(in|out)$/i);
     if (!match) return { success: false, error: '% Invalid command. Usage: neighbor <ip> route-map <map> in|out' };
 
@@ -349,7 +349,7 @@ function cmdNeighborRouteMap(state: SwitchState, input: string): CommandResult {
 }
 
 function cmdNeighborWeight(state: SwitchState, input: string): CommandResult {
-    if (state.routingProtocol !== 'bgp') return { success: false, error: iosModeError() };
+    if (state.routingProtocol !== 'bgp') return { success: false, error: cliModeError() };
     const match = input.match(/^neighbor\s+([0-9.]+)\s+weight\s+(\d+)$/i);
     if (!match) return { success: false, error: '% Invalid command. Usage: neighbor <ip> weight <value>' };
 
@@ -557,7 +557,7 @@ function cmdNoAreaNssa(state: SwitchState, input: string): CommandResult {
  * redistribute - Redistribute routes from another protocol
  */
 function cmdRedistribute(state: SwitchState, input: string): CommandResult {
-    if (state.currentMode !== 'router-config') return { success: false, error: iosModeError() };
+    if (state.currentMode !== 'router-config') return { success: false, error: cliModeError() };
     if (!state.routingProtocol || state.routingProtocol === 'none') {
         return { success: false, error: '% No routing protocol active' };
     }
@@ -597,7 +597,7 @@ function cmdRedistribute(state: SwitchState, input: string): CommandResult {
  * no redistribute
  */
 function cmdNoRedistribute(state: SwitchState, input: string): CommandResult {
-    if (state.currentMode !== 'router-config') return { success: false, error: iosModeError() };
+    if (state.currentMode !== 'router-config') return { success: false, error: cliModeError() };
     const match = input.match(/^no\s+redistribute\s+(ospf|rip|eigrp|bgp|static|connected)/i);
     if (!match) return { success: false, error: '% Invalid no redistribute command syntax' };
 
@@ -622,7 +622,7 @@ function cmdNoRedistribute(state: SwitchState, input: string): CommandResult {
 /** Guard: command only valid inside BGP router-config mode. */
 function requireBgp(state: SwitchState): CommandResult | null {
     if (state.routingProtocol !== 'bgp') {
-        return { success: false, error: iosModeError() };
+        return { success: false, error: cliModeError() };
     }
     return null;
 }

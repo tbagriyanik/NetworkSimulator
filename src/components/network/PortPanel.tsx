@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Port, PortLEDColor } from '@/lib/network/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -323,19 +323,19 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
         <CardHeader className={`py-3 px-5 border-b ${isDark ? 'border-secondary-500/60 bg-secondary-700' : 'border-secondary-200 bg-secondary-50'}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${deviceModel === 'ISR 4451 X' ? (isDark ? 'bg-purple-900/30' : 'bg-purple-100') : deviceModel === 'WS-C3650-24PS' ? (isDark ? 'bg-purple-900/30' : 'bg-purple-100') : deviceModel === 'WS-C2960-24TT-L' ? (isDark ? 'bg-success-900/30' : 'bg-success-100') : (isDark ? 'bg-accent-900/30' : 'bg-accent-100')}`}>
-                {deviceModel === 'ISR 4451 X' ? (
+              <div className={`p-2 rounded-lg ${deviceModel === 'NS-R-4451-X' ? (isDark ? 'bg-purple-900/30' : 'bg-purple-100') : deviceModel === 'NS-L3-24PS' ? (isDark ? 'bg-purple-900/30' : 'bg-purple-100') : deviceModel === 'NS-L2-24TT-L' ? (isDark ? 'bg-success-900/30' : 'bg-success-100') : (isDark ? 'bg-accent-900/30' : 'bg-accent-100')}`}>
+                {deviceModel === 'NS-R-4451-X' ? (
                   <RouterIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                ) : deviceModel === 'WS-C3650-24PS' ? (
+                ) : deviceModel === 'NS-L3-24PS' ? (
                   <SwitchIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" isL3={true} />
-                ) : deviceModel === 'WS-C2960-24TT-L' ? (
+                ) : deviceModel === 'NS-L2-24TT-L' ? (
                   <SwitchIcon className="w-5 h-5 text-success-600 dark:text-success-400" isL3={false} />
                 ) : (
                   <Database className="w-5 h-5 text-accent-600 dark:text-accent-400" />
                 )}
               </div>
               <div>
-                <CardTitle className={deviceModel === 'ISR 4451 X' ? "text-purple-400 text-base sm:text-lg" : deviceModel === 'WS-C3650-24PS' ? "text-purple-400 text-base sm:text-lg" : deviceModel === 'WS-C2960-24TT-L' ? "text-success-400 text-base sm:text-lg" : "text-accent-400 text-base sm:text-lg"}>
+                <CardTitle className={deviceModel === 'NS-R-4451-X' ? "text-purple-400 text-base sm:text-lg" : deviceModel === 'NS-L3-24PS' ? "text-purple-400 text-base sm:text-lg" : deviceModel === 'NS-L2-24TT-L' ? "text-success-400 text-base sm:text-lg" : "text-accent-400 text-base sm:text-lg"}>
                   {deviceName || t.switchTitle}
                   <span className={`text-xs font-mono px-2 py-0.5 rounded ${isDark ? 'bg-secondary-700 text-secondary-400' : 'bg-secondary-100 text-secondary-500'} ml-2`}>
                     {deviceModel}
@@ -367,7 +367,7 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
                     {t.close}
                   </TooltipContent>
                 </Tooltip>
-                <span className={`text-xs ${isDark ? 'text-secondary-400' : 'text-secondary-600'}`}>{deviceModel || 'WS-C2960-24TT-L'}</span>
+                <span className={`text-xs ${isDark ? 'text-secondary-400' : 'text-secondary-600'}`}>{deviceModel || 'NS-L2-24TT-L'}</span>
               </div>
               <div className="flex gap-2">
                 {renderStatusLed(

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { detectEtherChannelBundles, computeEtherChannelChanges } from '@/lib/network/etherchannel';
 import { CanvasConnection } from '@/components/network/networkTopology.types';
 import { SwitchState, Port, SwitchModel, SwitchLayer, SecurityConfig, Vlan, CableType } from '@/lib/network/types';
@@ -7,7 +7,7 @@ const createMockSwitchState = (ports: Record<string, Partial<Port>>, overrides: 
   const baseState: SwitchState = {
     hostname: 'sw',
     macAddress: '00:00:00:00:00:00',
-    switchModel: 'WS-C2960-24TT-L' as SwitchModel,
+    switchModel: 'NS-L2-24TT-L' as SwitchModel,
     switchLayer: 'L2' as SwitchLayer,
     currentMode: 'privileged',
     commandHistory: [],

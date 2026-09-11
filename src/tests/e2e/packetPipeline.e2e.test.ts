@@ -75,8 +75,8 @@ function makeSwitchState(hostname: string, overrides: Partial<SwitchState> = {})
   return {
     hostname,
     macAddress: `00:00:00:00:00:01`,
-    switchModel: 'catalyst' as any,
-    switchLayer: 'L3' as any,
+    switchModel: 'NS-L3-24PS',
+    switchLayer: 'L3',
     currentMode: 'privileged',
     ports: {},
     vlans: { '1': { id: 1, name: 'default', status: 'active', ports: [] } },

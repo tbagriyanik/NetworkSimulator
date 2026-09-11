@@ -1,4 +1,4 @@
-import { createSwitchDevice, createL3SwitchDevice, createPcDevice, createRouterDevice, connectPorts, baseProjectData } from './helpers';
+﻿import { createSwitchDevice, createL3SwitchDevice, createPcDevice, createRouterDevice, connectPorts, baseProjectData } from './helpers';
 import { createInitialState, createInitialRouterState } from '../initialState';
 import type { ExampleProject } from './types';
 import type { CanvasConnection, CanvasNote } from '@/components/network/networkTopology.types';
@@ -39,9 +39,9 @@ const example = (isTr: boolean): ExampleProject => {
     }
   ];
 
-  const mlSwitch1State = createInitialState('00:1A:2B:3C:A1:00', 'WS-C3650-24PS');
+  const mlSwitch1State = createInitialState('00:1A:2B:3C:A1:00', 'NS-L3-24PS');
   mlSwitch1State.hostname = 'MultilayerSwitch1';
-  mlSwitch1State.switchModel = 'WS-C3650-24PS';
+  mlSwitch1State.switchModel = 'NS-L3-24PS';
   mlSwitch1State.switchLayer = 'L3';
   mlSwitch1State.ipRouting = true;
   mlSwitch1State.ports['gi1/0/1'] = { ...mlSwitch1State.ports['gi1/0/1'], mode: 'routed', isRoutedPort: true, ipAddress: '10.0.0.1', subnetMask: '255.0.0.0', status: 'connected', shutdown: false };
@@ -103,9 +103,9 @@ const example = (isTr: boolean): ExampleProject => {
     'end'
   ];
 
-  const mlSwitch2State = createInitialState('00:1A:2B:3C:A1:40', 'WS-C3650-24PS');
+  const mlSwitch2State = createInitialState('00:1A:2B:3C:A1:40', 'NS-L3-24PS');
   mlSwitch2State.hostname = 'MultilayerSwitch2';
-  mlSwitch2State.switchModel = 'WS-C3650-24PS';
+  mlSwitch2State.switchModel = 'NS-L3-24PS';
   mlSwitch2State.switchLayer = 'L3';
   mlSwitch2State.ipRouting = true;
   mlSwitch2State.ports['gi1/0/1'] = { ...mlSwitch2State.ports['gi1/0/1'], mode: 'routed', isRoutedPort: true, ipAddress: '20.0.0.2', subnetMask: '255.0.0.0', status: 'connected', shutdown: false };
@@ -134,12 +134,12 @@ const example = (isTr: boolean): ExampleProject => {
     'end'
   ];
 
-  const switch0State = createInitialState('00:1A:2B:3C:A1:80', 'WS-C2960-24TT-L');
+  const switch0State = createInitialState('00:1A:2B:3C:A1:80', 'NS-L2-24TT-L');
   switch0State.hostname = 'Switch0';
   switch0State.ports['fa0/1'] = { ...switch0State.ports['fa0/1'], vlan: 1, mode: 'access', status: 'connected' };
   switch0State.ports['fa0/2'] = { ...switch0State.ports['fa0/2'], vlan: 1, mode: 'access', status: 'connected' };
 
-  const switch1State = createInitialState('00:1A:2B:3C:A1:C0', 'WS-C2960-24TT-L');
+  const switch1State = createInitialState('00:1A:2B:3C:A1:C0', 'NS-L2-24TT-L');
   switch1State.hostname = 'Switch1';
   switch1State.ports['fa0/1'] = { ...switch1State.ports['fa0/1'], vlan: 1, mode: 'access', status: 'connected' };
   switch1State.ports['fa0/2'] = { ...switch1State.ports['fa0/2'], vlan: 1, mode: 'access', status: 'connected' };

@@ -61,41 +61,52 @@ export function TopologyAreaOverlay({
           />
 
           {/* Area Zone Badge / Label */}
-          <g transform={`translate(${zone.center.x}, ${zone.center.y})`} className="select-none">
-            {/* Pill Background */}
-            <rect
-              x={-60 / zoom}
-              y={-12 / zoom}
-              width={120 / zoom}
-              height={24 / zoom}
-              rx={12 / zoom}
-              fill={isDark ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.90)'}
-              stroke={zone.color}
-              strokeWidth={1.5 / zoom}
-              strokeOpacity={0.9}
-            />
+          {(() => {
+            const labelText = zone.badgeLabel.length > 20 ? `${zone.badgeLabel.slice(0, 19)}…` : zone.badgeLabel;
+            const approxCharWidth = 6.5;
+            const pillWidth = Math.max(90, (labelText.length * approxCharWidth) + 36);
+            const halfWidth = pillWidth / 2;
+            const dotX = -halfWidth + 14;
+            const textX = -halfWidth + 24;
 
-            {/* Color Dot */}
-            <circle
-              cx={-45 / zoom}
-              cy={0}
-              r={3.5 / zoom}
-              fill={zone.color}
-            />
+            return (
+              <g transform={`translate(${zone.center.x}, ${zone.center.y})`} className="select-none">
+                {/* Pill Background */}
+                <rect
+                  x={-halfWidth / zoom}
+                  y={-12 / zoom}
+                  width={pillWidth / zoom}
+                  height={24 / zoom}
+                  rx={12 / zoom}
+                  fill={isDark ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.90)'}
+                  stroke={zone.color}
+                  strokeWidth={1.5 / zoom}
+                  strokeOpacity={0.9}
+                />
 
-            {/* Badge Text */}
-            <text
-              x={-35 / zoom}
-              y={3.5 / zoom}
-              fontSize={10 / zoom}
-              fontWeight="bold"
-              fontFamily="var(--font-geist-mono), monospace"
-              fill={isDark ? '#f8fafc' : '#0f172a'}
-              textAnchor="start"
-            >
-              {zone.badgeLabel.length > 15 ? `${zone.badgeLabel.slice(0, 14)}…` : zone.badgeLabel}
-            </text>
-          </g>
+                {/* Color Dot */}
+                <circle
+                  cx={dotX / zoom}
+                  cy={0}
+                  r={3.5 / zoom}
+                  fill={zone.color}
+                />
+
+                {/* Badge Text */}
+                <text
+                  x={textX / zoom}
+                  y={3.5 / zoom}
+                  fontSize={10 / zoom}
+                  fontWeight="bold"
+                  fontFamily="var(--font-geist-mono), monospace"
+                  fill={isDark ? '#f8fafc' : '#0f172a'}
+                  textAnchor="start"
+                >
+                  {labelText}
+                </text>
+              </g>
+            );
+          })()}
         </g>
       ))}
     </g>

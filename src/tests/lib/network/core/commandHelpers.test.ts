@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+﻿import { describe, it, expect, vi } from 'vitest';
 import { getPvstUpdate } from '@/lib/network/core/commandHelpers';
 import { SwitchState, SecurityConfig } from '@/lib/network/types';
 import { CommandContext } from '@/lib/network/core/commandTypes';
@@ -19,7 +19,7 @@ function mockState(): SwitchState {
   return {
     hostname: 'sw1',
     macAddress: '0011.0000.0000',
-    switchModel: 'WS-C2960-24TT-L',
+    switchModel: 'NS-L2-24TT-L',
     switchLayer: 'L2',
     currentMode: 'privileged',
     commandHistory: [],

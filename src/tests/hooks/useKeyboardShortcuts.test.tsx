@@ -3,6 +3,7 @@ import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import { createRef } from 'react';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useMultiWindowStore } from '@/hooks/useMultiWindowStore';
+import { createInitialState } from '@/lib/network/initialState';
 
 afterEach(cleanup);
 beforeEach(() => {
@@ -24,9 +25,9 @@ const baseProps = {
   selectedDevice: null,
   activeDeviceId: '',
   activeTab: 'topology',
-  topologyDevices: [] as any[],
-  activeTabRef: { current: 'topology' } as any,
-  fileInputRef: { current: null } as any,
+  topologyDevices: [],
+  activeTabRef: { current: 'topology' } as React.RefObject<string | null>,
+  fileInputRef: { current: null } as React.RefObject<HTMLInputElement | null>,
   handleSaveProject: () => { },
   handleNewProject: () => { },
   handleUndo: () => { },
@@ -34,8 +35,8 @@ const baseProps = {
   handleDeviceDoubleClick: () => { },
   handleRefreshNetwork: () => { },
   closeEscLikeWindows: () => { },
-  getOrCreateDeviceState: (() => ({})) as any,
-  getOrCreateDeviceOutputs: (() => []) as any,
+  getOrCreateDeviceState: () => createInitialState(),
+  getOrCreateDeviceOutputs: () => [],
   setShowAboutModal: () => { },
   setTopologyKey: () => { },
   setIsTimelineMinimized: () => { },
@@ -56,7 +57,7 @@ function TerminalHarness({ showPCPanel }: { showPCPanel: boolean }) {
       ref={ref}
       data-terminal-input
       onKeyDown={(e) => {
-        if (e.key === 'Tab') (e.currentTarget as any)._gotTab = true;
+        if (e.key === 'Tab') (e.currentTarget as HTMLInputElement & { _gotTab?: boolean })._gotTab = true;
       }}
     />
   );
@@ -81,7 +82,7 @@ describe('global shortcut handler', () => {
       input.focus();
       fireEvent.keyDown(input, { key: 'Tab' });
     });
-    expect((input as any)._gotTab).toBe(true);
+    expect((input as HTMLInputElement & { _gotTab?: boolean })._gotTab).toBe(true);
   });
 
   it('Tab cycles focus within an open modal (first -> second)', () => {
@@ -107,7 +108,7 @@ describe('global shortcut handler', () => {
   });
 
   it('Shift+Tab in a focused CLI/CMD terminal input opens the window switcher', () => {
-    useMultiWindowStore.setState({ openWindows: [{ id: 'w1' }, { id: 'w2' }] as any, isSwitcherOpen: false });
+    useMultiWindowStore.setState({ openWindows: [{ id: 'w1', type: 'pc' }, { id: 'w2', type: 'pc' }], isSwitcherOpen: false });
     const { container } = render(<TerminalHarness showPCPanel />);
     const input = container.querySelector('[data-terminal-input]') as HTMLInputElement;
     act(() => {

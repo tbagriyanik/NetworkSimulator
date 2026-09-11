@@ -1,4 +1,4 @@
-import { IOS_ERRORS, iosModeError } from '../iosErrors';
+import { CLI_ERRORS, cliModeError } from '../cliErrors';
 import type { CommandContext } from '../commandTypes';
 import type { SwitchState, CommandResult, Port } from '../../types';
 import { getPvstUpdate } from '../commandHelpers';
@@ -22,7 +22,7 @@ export function cmdSwitchportPortSecurity(state: SwitchState, _input: string, _c
  */
 export function cmdSwitchportPortSecurityMaximum(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state) || !state.currentInterface) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^switchport\s+port-security\s+maximum\s+(\d+)$/i);
@@ -42,7 +42,7 @@ export function cmdSwitchportPortSecurityMaximum(state: SwitchState, input: stri
  */
 export function cmdSwitchportPortSecurityViolation(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state) || !state.currentInterface) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^switchport\s+port-security\s+violation\s+(protect|restrict|shutdown)$/i);
@@ -80,12 +80,12 @@ export function cmdSwitchportPortSecuritySticky(state: SwitchState, input: strin
 
 export function cmdNoSwitchport(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state) || !state.currentInterface) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const noSwitchportValidation = validateNoSwitchportSupport(state.switchModel, state.deviceType);
   if (!noSwitchportValidation.valid) {
-    return { success: false, error: noSwitchportValidation.error || IOS_ERRORS.invalidInput };
+    return { success: false, error: noSwitchportValidation.error || CLI_ERRORS.invalidInput };
   }
 
   // Don't allow on VLAN interfaces
@@ -163,7 +163,7 @@ export function cmdNoSwitchport(state: SwitchState, _input: string, _ctx: Comman
  */
 export function cmdSwitchportMode(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state) || !state.currentInterface) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^switchport\s+mode\s+(access|trunk|dynamic\s+auto|dynamic\s+desirable|dot1q-tunnel)$/i);
@@ -213,7 +213,7 @@ export function cmdSwitchportMode(state: SwitchState, input: string, ctx: Comman
 }
 export function cmdSwitchportAccessVlan(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state) || !state.currentInterface) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^switchport\s+access\s+vlan\s+(\d+)$/i);
@@ -302,7 +302,7 @@ export function cmdSwitchportAccessVlan(state: SwitchState, input: string, ctx: 
  */
 export function cmdSwitchportTrunkNativeVlan(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state) || !state.currentInterface) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^switchport\s+trunk\s+native\s+vlan\s+(\d+)$/i);
@@ -323,7 +323,7 @@ export function cmdSwitchportTrunkNativeVlan(state: SwitchState, input: string, 
  */
 export function cmdSwitchportTrunkAllowedVlan(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state) || !state.currentInterface) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^switchport\s+trunk\s+allowed\s+vlan\s+(.+)$/i);
@@ -460,7 +460,7 @@ export function cmdNoSwitchportPortSecurity(state: SwitchState, _input: string, 
  */
 export function cmdSwitchportNonegotiate(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state)) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const updatePort = (port: Port) => ({ ...port, nonegotiate: true });
@@ -481,7 +481,7 @@ export function cmdSwitchportNonegotiate(state: SwitchState, _input: string, _ct
  */
 export function cmdSwitchportVoiceVlan(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state)) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^switchport\s+voice\s+vlan\s+(\d+)$/i);
@@ -507,7 +507,7 @@ export function cmdSwitchportVoiceVlan(state: SwitchState, input: string, _ctx: 
  * CDP Enable - Enable CDP on interface
  */
 export function cmdSwitchportTrunkEncapsulation(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const match = input.match(/^switchport\s+trunk\s+encapsulation\s+(dot1q|isl|negotiate)$/i);
   if (!match) return { success: false, error: '% Invalid encapsulation command' };
   const encap = match[1].toLowerCase() as 'dot1q' | 'isl' | 'negotiate';
@@ -527,7 +527,7 @@ export function cmdSwitchportTrunkEncapsulation(state: SwitchState, input: strin
  * Encapsulation dot1Q (subinterface)
  */
 export function cmdSwitchportProtected(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const isNo = input.trim().toLowerCase().startsWith('no ');
   const updatePort = (port: Port) => ({ ...port, protected: !isNo });
   if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
@@ -541,7 +541,7 @@ export function cmdSwitchportProtected(state: SwitchState, input: string, _ctx: 
  * Switchport Block (unicast/multicast)
  */
 export function cmdSwitchportBlock(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const isNo = input.trim().toLowerCase().startsWith('no ');
   const match = input.match(/^(?:no\s+)?switchport\s+block\s+(unicast|multicast)$/i);
   if (!match) return { success: false, error: '% Invalid switchport block command' };
@@ -559,7 +559,7 @@ export function cmdSwitchportBlock(state: SwitchState, input: string, _ctx: Comm
  * Switchport Port-Security MAC-Address (static)
  */
 export function cmdSwitchportPortSecurityMacAddress(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (!isInInterfaceMode(state)) return { success: false, error: iosModeError() };
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
 
   // Check if it's the sticky variant
   if (/^switchport\s+port-security\s+mac-address\s+sticky$/i.test(input)) {
@@ -585,7 +585,7 @@ export function cmdSwitchportPortSecurityMacAddress(state: SwitchState, input: s
  */
 export function cmdSwitchportPortSecurityAgingTime(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state) || !state.currentInterface) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^switchport\s+port-security\s+aging\s+time\s+(\d+)$/i);
@@ -609,7 +609,7 @@ export function cmdSwitchportPortSecurityAgingTime(state: SwitchState, input: st
 
 export function cmdSwitchportPortSecurityAgingType(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state) || !state.currentInterface) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^switchport\s+port-security\s+aging\s+type\s+(absolute|inactivity)$/i);

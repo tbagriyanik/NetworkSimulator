@@ -116,7 +116,7 @@ describe('normalizePortId', () => {
     expect(normalizePortId('')).toBeNull();
   });
 
-  it('should handle ASA format GigabitEthernet1/1', () => {
+  it('should handle firewall format GigabitEthernet1/1', () => {
     expect(normalizePortId('GigabitEthernet1/1')).toBe('gi1/1');
   });
 });

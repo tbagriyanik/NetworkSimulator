@@ -1,4 +1,4 @@
-import { iosModeError } from './iosErrors';
+import { cliModeError } from './cliErrors';
 import type { CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult } from '../types';
 import { buildRunningConfig } from './configBuilder';
@@ -8,7 +8,7 @@ import { buildRunningConfig } from './configBuilder';
  */
 export function cmdNoIpDhcpSnooping(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   return {
@@ -19,7 +19,7 @@ export function cmdNoIpDhcpSnooping(state: SwitchState, _input: string, _ctx: Co
 
 export function cmdIpDhcpSnoopingInformationOption(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
   const isNo = input.trim().toLowerCase().startsWith('no ');
   return {
@@ -34,14 +34,14 @@ export function cmdIpDhcpSnoopingInformationOption(state: SwitchState, input: st
  * IP DHCP Snooping VLAN
  */
 export function cmdIpDhcpSnoopingVlan(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^ip\s+dhcp\s+snooping\s+vlan\s+(.+)$/i);
   if (!match) return { success: false, error: '% Invalid command' };
   const vlans = match[1].split(',').map((v: string) => v.trim());
   return {
     success: true,
     output: `DHCP snooping enabled on VLAN(s): ${vlans.join(', ')}`,
-    // IOS enables snooping for the configured VLAN scope. Without this flag
+    // Router software enables snooping for the configured VLAN scope. Without this flag
     // the path resolver would never enforce the untrusted-port check.
     newState: { dhcpSnoopingEnabled: true, dhcpSnoopingVlans: vlans }
   };
@@ -49,7 +49,7 @@ export function cmdIpDhcpSnoopingVlan(state: SwitchState, input: string, _ctx: C
 
 export function cmdIpDhcpPool(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
   const match = input.match(/^ip\s+dhcp\s+pool\s+(\S+)$/i);
   if (!match) return { success: false, error: '% Invalid ip dhcp pool command' };
@@ -90,7 +90,7 @@ export function cmdIpDhcpPool(state: SwitchState, input: string, _ctx: CommandCo
 
 export function cmdNoIpDhcpPool(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
   const match = input.match(/^no\s+ip\s+dhcp\s+pool\s+(\S+)$/i);
   if (!match) return { success: false, error: '% Invalid no ip dhcp pool command' };
@@ -113,7 +113,7 @@ export function cmdNoIpDhcpPool(state: SwitchState, input: string, _ctx: Command
 
 export function cmdIpv6DhcpPool(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
   const match = input.match(/^ipv6\s+dhcp\s+pool\s+(\S+)$/i);
   if (!match) return { success: false, error: '% Invalid ipv6 dhcp pool command' };
@@ -137,7 +137,7 @@ export function cmdIpv6DhcpPool(state: SwitchState, input: string, _ctx: Command
 }
 
 export function cmdNoIpv6DhcpPool(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^no\s+ipv6\s+dhcp\s+pool\s+(\S+)$/i);
   if (!match) return { success: false, error: '% Invalid no ipv6 dhcp pool command' };
 
@@ -154,14 +154,14 @@ export function cmdNoIpv6DhcpPool(state: SwitchState, input: string, _ctx: Comma
 
 export function cmdIpDhcpExcludedAddress(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
   return { success: true };
 }
 
 export function cmdNoIpDhcpExcludedAddress(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
   return { success: true };
 }

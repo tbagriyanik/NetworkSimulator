@@ -1,4 +1,4 @@
-import { createSwitchDevice, createPcDevice, createRouterDevice, connectPorts, baseProjectData } from './helpers';
+﻿import { createSwitchDevice, createPcDevice, createRouterDevice, connectPorts, baseProjectData } from './helpers';
 ;
 import type { CanvasConnection, CanvasNote } from '@/components/network/networkTopology.types';
 import type { ExampleProject } from './types';
@@ -35,7 +35,7 @@ const example = (isTr: boolean): ExampleProject => {
       opacity: 0.75
     }
   ];
-  const staticSw1 = createInitialState('00:1A:2B:3C:4D:67', 'WS-C2960-24TT-L');
+  const staticSw1 = createInitialState('00:1A:2B:3C:4D:67', 'NS-L2-24TT-L');
   staticSw1.hostname = 'SW1';
   staticSw1.ports['fa0/1'] = { ...staticSw1.ports['fa0/1'], vlan: 1, mode: 'access', status: 'connected' };
   staticSw1.ports['gi0/1'] = { ...staticSw1.ports['gi0/1'], vlan: 1, mode: 'access', status: 'connected' };
@@ -56,7 +56,7 @@ const example = (isTr: boolean): ExampleProject => {
     { destination: '192.168.10.0', subnetMask: '255.255.255.0', nextHop: '192.168.1.1', metric: 1, type: 'static' }
   ];
 
-  const staticSw2 = createInitialState('00:1A:2B:3C:4D:68', 'WS-C2960-24TT-L');
+  const staticSw2 = createInitialState('00:1A:2B:3C:4D:68', 'NS-L2-24TT-L');
   staticSw2.hostname = 'SW2';
   staticSw2.ports['fa0/1'] = { ...staticSw2.ports['fa0/1'], vlan: 1, mode: 'access', status: 'connected' };
   staticSw2.ports['gi0/1'] = { ...staticSw2.ports['gi0/1'], vlan: 1, mode: 'access', status: 'connected' };

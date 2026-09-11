@@ -1,4 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest'; 
+import type { SwitchState } from '@/lib/network/types'; 
+import type { CommandContext } from '@/lib/network/core/commandTypes';
 
 describe('Show Switching Display', () => {
   it('should display MAC address table', () => {
@@ -61,7 +63,7 @@ describe('Show Switching Display', () => {
 
   it('should render show cdp neighbors and show cdp neighbors detail', async () => {
     const { cmdShowCdpNeighbors } = await import('@/lib/network/core/showSwitchingDisplay');
-    const mockState = { hostname: 'SW1', cdpEnabled: true } as any;
+    const mockState = { hostname: 'SW1', cdpEnabled: true } as SwitchState;
     const mockContext = {
       sourceDeviceId: 'sw-1',
       devices: [
@@ -71,7 +73,7 @@ describe('Show Switching Display', () => {
       connections: [
         { id: 'c-1', sourceDeviceId: 'sw-1', sourcePort: 'gi0/1', targetDeviceId: 'r-1', targetPort: 'gi0/0' },
       ],
-    } as any;
+    } as unknown as CommandContext;
 
     const brief = cmdShowCdpNeighbors(mockState, 'show cdp neighbors', mockContext);
     expect(brief.success).toBe(true);

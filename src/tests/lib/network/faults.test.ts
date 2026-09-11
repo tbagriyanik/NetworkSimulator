@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { checkFaultResolved } from '@/lib/network/faults';
 import { SwitchState, SecurityConfig } from '@/lib/network/types';
 
@@ -14,7 +14,7 @@ function createMockState(overrides: Partial<SwitchState> = {}): SwitchState {
   return {
     hostname: 'sw1',
     macAddress: '0011.0000.0000',
-    switchModel: 'WS-C2960-24TT-L',
+    switchModel: 'NS-L2-24TT-L',
     switchLayer: 'L2',
     currentMode: 'privileged',
     commandHistory: [],

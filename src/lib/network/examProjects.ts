@@ -1,4 +1,4 @@
-import { ExampleProject } from './exampleProjects';
+﻿import { ExampleProject } from './exampleProjects';
 import { ExamProject } from './examTypes';
 import {
   basicConnectivityExamTasks,
@@ -69,7 +69,7 @@ export const getExamProjects = (language: 'tr' | 'en'): ExamProject[] => {
               ip: '',
               macAddress: '00:1A:2B:3C:4D:99',
               status: 'online',
-              switchModel: 'WS-C2960-24TT-L',
+              switchModel: 'NS-L2-24TT-L',
               ports: [
                 ...Array.from({ length: 24 }, (_, i) => ({
                   id: `fa0/${i + 1}`,
@@ -468,7 +468,7 @@ export const getExamProjects = (language: 'tr' | 'en'): ExamProject[] => {
               ]
             },
             {
-              id: 'ds-1', type: 'switchL3', name: 'DS1', ip: '', subnet: '', x: 500, y: 250, status: 'online', switchModel: 'WS-C3650-24PS', ports: [
+              id: 'ds-1', type: 'switchL3', name: 'DS1', ip: '', subnet: '', x: 500, y: 250, status: 'online', switchModel: 'NS-L3-24PS', ports: [
                 ...Array.from({ length: 24 }, (_, i) => ({ id: `gi1/0/${i + 1}`, label: `Gi1/0/${i + 1}`, status: 'disconnected' as const })),
                 { id: 'console', label: 'Console', status: 'disconnected' as const },
                 { id: 'gi1/1/1', label: 'Gi1/1/1', status: 'disconnected' as const },
@@ -479,7 +479,7 @@ export const getExamProjects = (language: 'tr' | 'en'): ExamProject[] => {
               ]
             },
             {
-              id: 'as-1', type: 'switchL2', name: 'AS1', ip: '', subnet: '', x: 300, y: 400, status: 'online', switchModel: 'WS-C2960-24TT-L', ports: [
+              id: 'as-1', type: 'switchL2', name: 'AS1', ip: '', subnet: '', x: 300, y: 400, status: 'online', switchModel: 'NS-L2-24TT-L', ports: [
                 ...Array.from({ length: 24 }, (_, i) => ({ id: `fa0/${i + 1}`, label: `Fa0/${i + 1}`, status: 'disconnected' as const })),
                 { id: 'console', label: 'Console', status: 'disconnected' as const },
                 { id: 'gi0/1', label: 'Gi0/1', status: 'disconnected' as const },

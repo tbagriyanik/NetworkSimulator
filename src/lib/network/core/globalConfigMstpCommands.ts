@@ -1,4 +1,4 @@
-import { iosModeError } from './iosErrors';
+import { cliModeError } from './cliErrors';
 import type { SwitchState, CommandResult } from '../types';
 
 export function parseVlanRange(rangeStr: string): number[] {
@@ -21,7 +21,7 @@ export function parseVlanRange(rangeStr: string): number[] {
 }
 
 export function cmdMstName(state: SwitchState, input: string): CommandResult {
-  if (state.currentMode !== 'config-mst') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config-mst') return { success: false, error: cliModeError() };
   const match = input.match(/^name\s+(\S+)/i);
   if (!match) return { success: false, error: '% Invalid name command' };
   const regionName = match[1];
@@ -34,7 +34,7 @@ export function cmdMstName(state: SwitchState, input: string): CommandResult {
 }
 
 export function cmdMstRevision(state: SwitchState, input: string): CommandResult {
-  if (state.currentMode !== 'config-mst') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config-mst') return { success: false, error: cliModeError() };
   const match = input.match(/^revision\s+(\d+)/i);
   if (!match) return { success: false, error: '% Invalid revision command' };
   const rev = parseInt(match[1], 10);
@@ -47,7 +47,7 @@ export function cmdMstRevision(state: SwitchState, input: string): CommandResult
 }
 
 export function cmdMstInstance(state: SwitchState, input: string): CommandResult {
-  if (state.currentMode !== 'config-mst') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config-mst') return { success: false, error: cliModeError() };
   const match = input.match(/^instance\s+(\d+)\s+vlan\s+([0-9,-]+)/i);
   if (!match) return { success: false, error: '% Invalid instance command. Usage: instance <id> vlan <range>' };
   const instanceId = parseInt(match[1], 10);
@@ -66,7 +66,7 @@ export function cmdMstInstance(state: SwitchState, input: string): CommandResult
 }
 
 export function cmdNoMstInstance(state: SwitchState, input: string): CommandResult {
-  if (state.currentMode !== 'config-mst') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config-mst') return { success: false, error: cliModeError() };
   const match = input.match(/^no\s+instance\s+(\d+)/i);
   if (!match) return { success: false, error: '% Invalid no instance command' };
   const instanceId = parseInt(match[1], 10);
@@ -95,7 +95,7 @@ export function cmdMstShowPending(state: SwitchState): CommandResult {
 }
 
 export function cmdSpanningTreeMstPriority(state: SwitchState, input: string): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^spanning-tree\s+mst\s+(\d+)\s+priority\s+(\d+)/i);
   if (!match) return { success: false, error: '% Invalid command format. Usage: spanning-tree mst <id> priority <val>' };
 

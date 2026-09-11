@@ -1,7 +1,8 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { detectEtherChannelBundles } from '@/lib/network/etherchannel';
 import { CanvasConnection } from '@/components/network/networkTopology.types';
 import { SwitchState, Port, SwitchModel, SwitchLayer, SecurityConfig, Vlan, CableType } from '@/lib/network/types';
+import type { CommandContext } from '@/lib/network/core/commandTypes';
 import { cmdNoSwitchport } from '@/lib/network/core/interface/cmd.switchport';
 import { cmdIpAddress } from '@/lib/network/core/interface/cmd.ipAddress';
 
@@ -10,7 +11,7 @@ describe('EtherChannel Detection', () => {
     const baseState: SwitchState = {
       hostname: 'sw',
       macAddress: '00:00:00:00:00:00',
-      switchModel: 'WS-C2960-24TT-L' as SwitchModel,
+      switchModel: 'NS-L2-24TT-L' as SwitchModel,
       switchLayer: 'L2' as SwitchLayer,
       currentMode: 'privileged',
       commandHistory: [],
@@ -257,21 +258,21 @@ describe('EtherChannel Detection', () => {
       'Fa0/1': { channelGroup: 1, channelMode: 'on' },
       'Fa0/2': { channelGroup: 1, channelMode: 'on' },
     }, {
-      switchModel: 'WS-C3650-24PS' as SwitchModel,
+      switchModel: 'NS-L3-24PS' as SwitchModel,
       switchLayer: 'L3' as SwitchLayer,
       currentMode: 'interface',
       currentInterface: 'po1',
     });
 
     // Execute "no switchport" on interface port-channel 1
-    const noSwResult = cmdNoSwitchport(l3SwState, 'no switchport', {} as any);
+    const noSwResult = cmdNoSwitchport(l3SwState, 'no switchport', {} as CommandContext);
     expect(noSwResult.success).toBe(true);
     expect(noSwResult.newState?.ports?.po1?.mode).toBe('routed');
     expect(noSwResult.newState?.ports?.['Fa0/1']?.mode).toBe('routed');
 
     // Execute "ip address 10.1.1.1 255.255.255.0" on interface port-channel 1
     const stateWithRoutedPo = { ...l3SwState, ports: { ...l3SwState.ports, ...noSwResult.newState?.ports } };
-    const ipResult = cmdIpAddress(stateWithRoutedPo, 'ip address 10.1.1.1 255.255.255.0', {} as any);
+    const ipResult = cmdIpAddress(stateWithRoutedPo, 'ip address 10.1.1.1 255.255.255.0', {} as CommandContext);
     expect(ipResult.success).toBe(true);
     expect(ipResult.newState?.ports?.po1?.ipAddress).toBe('10.1.1.1');
     expect(ipResult.newState?.ports?.po1?.subnetMask).toBe('255.255.255.0');

@@ -1,4 +1,4 @@
-import { IOS_ERRORS, iosModeError } from './iosErrors';
+import { CLI_ERRORS, cliModeError } from './cliErrors';
 
 import type { CommandHandler, CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult, Route } from '../types';
@@ -11,7 +11,7 @@ import { validateIpRoutingSupport } from './L3Validation';
 import { createStubHandler } from './stubCommandHints';
 import { cmdAccessList, cmdNoAccessList } from './interface/cmd.misc';
 import { cmdIpDhcpPool, cmdNoIpDhcpPool, cmdIpv6DhcpPool, cmdIpDhcpExcludedAddress, cmdNoIpDhcpExcludedAddress, cmdIpDhcpSnoopingVlan, cmdNoIpDhcpSnooping, cmdIpDhcpSnoopingInformationOption } from './globalConfigDhcpCommands';
-import { cmdIpNatPool, cmdIpNatInsideSourceStatic, cmdIpNatInsideSourceList, cmdLoggingHost, cmdLoggingTrap, cmdNtpServer, cmdNtpMaster, cmdNoNtpServer, cmdClockTimezone, cmdIpNameServer, cmdIpHost, cmdAliasExec, cmdNoAliasExec, cmdIpSla, cmdTrack, cmdLldpTlvSelect, cmdSpanningTreeMst, cmdIpPrefixList, cmdRouteMap, cmdIpv6RouterEigrp, cmdSpanningTreeLoopguardDefault, cmdIpFlowExport, cmdNoIpPrefixList, cmdNoIpv6PrefixList, cmdNoRouteMap } from './globalConfigNetworkCommands';
+import { cmdIpNatPool, cmdIpNatInsideSourceStatic, cmdIpNatInsideSourceList, cmdLoggingHost, cmdLoggingTrap, cmdNtpServer, cmdNtpMaster, cmdNoNtpServer, cmdClockTimezone, cmdIpNameServer, cmdIpHost, cmdAliasExec, cmdNoAliasExec, cmdIpSla, cmdTrack, cmdLldpTlvSelect, cmdSpanningTreeMst, cmdIpPrefixList, cmdRouteMap, cmdIpv6RouterEigrp, cmdSpanningTreeLoopguardDefault, cmdIpFlowExport, cmdNoIpPrefixList, cmdNoIpv6PrefixList, cmdNoRouteMap, cmdVrfDefinition, cmdRestconfEnable, cmdMplsIpGlobal } from './globalConfigNetworkCommands';
 
 import { cmdClassMap, cmdPolicyMap, cmdClass, cmdSetDscp, cmdSetCoS, cmdPolice, cmdNoClassMap, cmdNoPolicyMap } from './qosMqcCommands';
 import { cmdDot1xSystem } from './dot1xCommands';
@@ -270,6 +270,11 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'track': cmdTrack,
   'no track': cmdTrack,
   'spanning-tree mst configuration': cmdSpanningTreeMst,
+  'vrf definition': cmdVrfDefinition,
+  'restconf': cmdRestconfEnable,
+  'no restconf': cmdRestconfEnable,
+  'mpls ip': cmdMplsIpGlobal,
+  'no mpls ip': cmdMplsIpGlobal,
 };
 
 
@@ -278,12 +283,12 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
  */
 function cmdHostname(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^hostname\s+(.+)$/i);
   if (!match) {
-    return { success: false, error: IOS_ERRORS.invalidInput };
+    return { success: false, error: CLI_ERRORS.invalidInput };
   }
 
   const hostname = match[1].trim();
@@ -304,7 +309,7 @@ function cmdHostname(state: SwitchState, input: string, _ctx: CommandContext): C
 
 function cmdNoHostname(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
   return {
     success: true,
@@ -317,7 +322,7 @@ function cmdNoHostname(state: SwitchState, _input: string, _ctx: CommandContext)
  */
 function cmdIpRouting(state: SwitchState, _input: string, ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   // Validate IP routing support with comprehensive checks
@@ -357,7 +362,7 @@ function cmdIpRouting(state: SwitchState, _input: string, ctx: CommandContext): 
  */
 function cmdIpRoute(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   // Check if device supports routing (router or L3 switch)
@@ -399,7 +404,7 @@ function cmdIpRoute(state: SwitchState, input: string, ctx: CommandContext): Com
  * no ip host <name>
  */
 function cmdNoIpHost(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^no\s+ip\s+host\s+(\S+)(?:\s+[0-9.]+)?$/i);
   if (!match) return { success: false, error: '% Invalid no ip host command' };
 
@@ -417,7 +422,7 @@ function cmdNoIpHost(state: SwitchState, input: string, _ctx: CommandContext): C
  * no ipv6 dhcp pool <name>
  */
 function cmdNoIpv6DhcpPool(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') return { success: false, error: iosModeError() };
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^no\s+ipv6\s+dhcp\s+pool\s+(\S+)$/i);
   if (!match) return { success: false, error: '% Invalid no ipv6 dhcp pool command' };
 
@@ -435,7 +440,7 @@ function cmdNoIpv6DhcpPool(state: SwitchState, input: string, _ctx: CommandConte
  */
 function cmdRouterEigrp(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const deviceLabel = state.deviceType === 'router' ? 'router' : (isLayer3Switch(state.switchModel) ? 'Layer 3 switch' : 'Layer 2 switch');
@@ -448,7 +453,7 @@ function cmdRouterEigrp(state: SwitchState, input: string, _ctx: CommandContext)
 
   const match = input.match(/^router\s+eigrp\s+(\d+)$/i);
   if (!match) {
-    return { success: false, error: IOS_ERRORS.incomplete };
+    return { success: false, error: CLI_ERRORS.incomplete };
   }
 
   const asNumber = match[1];
@@ -470,11 +475,11 @@ function cmdRouterEigrp(state: SwitchState, input: string, _ctx: CommandContext)
  */
 function cmdNoRouterEigrp(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^no\s+router\s+eigrp\s+(\d+)$/i);
-  if (!match) return { success: false, error: IOS_ERRORS.incomplete };
+  if (!match) return { success: false, error: CLI_ERRORS.incomplete };
 
   return {
     success: true,
@@ -492,7 +497,7 @@ function cmdNoRouterEigrp(state: SwitchState, input: string, _ctx: CommandContex
  */
 function cmdRouterBgp(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const deviceLabel = state.deviceType === 'router' ? 'router' : (isLayer3Switch(state.switchModel) ? 'Layer 3 switch' : 'Layer 2 switch');
@@ -505,7 +510,7 @@ function cmdRouterBgp(state: SwitchState, input: string, _ctx: CommandContext): 
 
   const match = input.match(/^router\s+bgp\s+(\d+)$/i);
   if (!match) {
-    return { success: false, error: IOS_ERRORS.incomplete };
+    return { success: false, error: CLI_ERRORS.incomplete };
   }
 
   const asNumber = match[1];
@@ -527,11 +532,11 @@ function cmdRouterBgp(state: SwitchState, input: string, _ctx: CommandContext): 
  */
 function cmdNoRouterBgp(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^no\s+router\s+bgp\s+(\d+)$/i);
-  if (!match) return { success: false, error: IOS_ERRORS.incomplete };
+  if (!match) return { success: false, error: CLI_ERRORS.incomplete };
 
   return {
     success: true,
@@ -549,7 +554,7 @@ function cmdNoRouterBgp(state: SwitchState, input: string, _ctx: CommandContext)
  */
 function cmdNoIpRoute(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   // Check if device supports routing (router or L3 switch)
@@ -594,7 +599,7 @@ function cmdNoIpRoute(state: SwitchState, input: string, ctx: CommandContext): C
  */
 function cmdIpSshTimeOut(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^ip\s+ssh\s+time-out\s+(\d+)$/i);
@@ -613,7 +618,7 @@ function cmdIpSshTimeOut(state: SwitchState, input: string, _ctx: CommandContext
  */
 function cmdIpDhcpSnooping(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   return {
@@ -627,7 +632,7 @@ function cmdIpDhcpSnooping(state: SwitchState, _input: string, _ctx: CommandCont
  */
 function cmdMlsQos(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config' && state.currentMode !== 'interface') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   return {
@@ -643,12 +648,12 @@ function cmdMlsQos(state: SwitchState, _input: string, _ctx: CommandContext): Co
  */
 function cmdVlan(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^vlan\s+(\d+)$/i);
   if (!match) {
-    return { success: false, error: IOS_ERRORS.invalidInput };
+    return { success: false, error: CLI_ERRORS.invalidInput };
   }
 
   const vlanId = match[1];
@@ -703,7 +708,7 @@ function cmdVlan(state: SwitchState, input: string, ctx: CommandContext): Comman
  */
 function cmdNoVlan(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^no\s+vlan\s+(\d+)$/i);
@@ -750,7 +755,7 @@ function cmdNoVlan(state: SwitchState, input: string, ctx: CommandContext): Comm
  */
 function cmdVlanName(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'vlan' || state.currentVlan == null) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^name\s+(.+)$/i);
@@ -805,7 +810,7 @@ function cmdNoVlanName(state: SwitchState, _input: string, _ctx: CommandContext)
  */
 function cmdVlanState(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'vlan' || state.currentVlan == null) {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^state\s+(active|suspend)$/i);
@@ -842,7 +847,7 @@ function cmdVlanState(state: SwitchState, input: string, _ctx: CommandContext): 
  */
 function cmdVtpMode(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   // valid VTP modes: server, client, transparent (NOT 'off')
@@ -862,7 +867,7 @@ function cmdVtpMode(state: SwitchState, input: string, _ctx: CommandContext): Co
  */
 function cmdVtpDomain(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^vtp\s+domain\s+(.+)$/i);
@@ -881,12 +886,12 @@ function cmdVtpDomain(state: SwitchState, input: string, _ctx: CommandContext): 
  */
 function cmdSpanningTreeMode(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^spanning-tree\s+mode\s+(pvst|rapid-pvst|mst)$/i);
   if (!match) {
-    return { success: false, error: IOS_ERRORS.invalidInput };
+    return { success: false, error: CLI_ERRORS.invalidInput };
   }
 
   return {
@@ -900,7 +905,7 @@ function cmdSpanningTreeMode(state: SwitchState, input: string, _ctx: CommandCon
  */
 function cmdIpDefaultGateway(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^ip\s+default-gateway\s+([0-9.]+)$/i);
@@ -919,7 +924,7 @@ function cmdIpDefaultGateway(state: SwitchState, input: string, _ctx: CommandCon
  */
 function cmdNoIpDefaultGateway(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   return {
@@ -933,7 +938,7 @@ function cmdNoIpDefaultGateway(state: SwitchState, _input: string, _ctx: Command
  */
 function cmdIpDomainName(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const match = input.match(/^ip\s+domain-name\s+(.+)$/i);
@@ -952,7 +957,7 @@ function cmdIpDomainName(state: SwitchState, input: string, _ctx: CommandContext
  */
 function cmdCdpRun(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   return {
@@ -966,7 +971,7 @@ function cmdCdpRun(state: SwitchState, _input: string, _ctx: CommandContext): Co
  */
 function cmdNoCdpRun(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   return {
@@ -980,7 +985,7 @@ function cmdNoCdpRun(state: SwitchState, _input: string, _ctx: CommandContext): 
  */
 function cmdLldpRun(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   return {
@@ -994,7 +999,7 @@ function cmdLldpRun(state: SwitchState, _input: string, _ctx: CommandContext): C
  */
 function cmdNoLldpRun(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   return {
@@ -1008,7 +1013,7 @@ function cmdNoLldpRun(state: SwitchState, _input: string, _ctx: CommandContext):
  */
 function cmdRouterRip(state: SwitchState, _input: string, ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   // Check if device supports routing (routers and L3 switches only)
@@ -1041,7 +1046,7 @@ function cmdRouterRip(state: SwitchState, _input: string, ctx: CommandContext): 
  */
 function cmdRouterOspf(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   // Check if device supports routing (routers and L3 switches only)
@@ -1076,7 +1081,7 @@ function cmdRouterOspf(state: SwitchState, input: string, _ctx: CommandContext):
  */
 function cmdNoRouterRip(state: SwitchState, _input: string, ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const lang = ctx.language || 'en';
@@ -1097,7 +1102,7 @@ function cmdNoRouterRip(state: SwitchState, _input: string, ctx: CommandContext)
  */
 function cmdNoRouterOspf(state: SwitchState, _input: string, ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const lang = ctx.language || 'en';
@@ -1118,7 +1123,7 @@ function cmdNoRouterOspf(state: SwitchState, _input: string, ctx: CommandContext
  */
 function cmdIpHttpServer(state: SwitchState, _input: string, ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
-    return { success: false, error: iosModeError() };
+    return { success: false, error: cliModeError() };
   }
 
   const lang = ctx.language || 'en';

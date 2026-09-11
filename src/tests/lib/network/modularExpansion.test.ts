@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import {
   getDeviceSlots,
   installExpansionModule,
@@ -29,7 +29,7 @@ describe('Modular Expansion Engine (Slots & WIC Modules)', () => {
   const createMockSwitchState = (): SwitchState => ({
     hostname: 'Router1',
     macAddress: '00:11:22:33:44:55',
-    switchModel: 'WS-C2960-24TT-L',
+    switchModel: 'NS-L2-24TT-L',
     switchLayer: 'L2',
     currentMode: 'user',
     bootTime: Date.now(),

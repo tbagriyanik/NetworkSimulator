@@ -116,7 +116,7 @@ export function usePageHistoryManager({
     setTopologyNotes(state.topologyNotes || []);
     setDeviceStates(new Map(state.deviceStates));
     setDeviceOutputs(new Map(state.deviceOutputs));
-    setPcOutputs(new Map(state.pcOutputs as any));
+    setPcOutputs(new Map(state.pcOutputs));
     setPcHistories(new Map(state.pcHistories || []));
     setCableInfo(state.cableInfo);
     setActiveDeviceId(state.activeDeviceId);
