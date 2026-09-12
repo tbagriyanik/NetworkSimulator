@@ -232,8 +232,10 @@ export const ConnectionLine = memo(function ConnectionLine({
     : `M ${target.x} ${target.y} C ${controlPoint2.x} ${controlPoint2.y}, ${controlPoint1.x} ${controlPoint1.y}, ${source.x} ${source.y}`;
 
   // Keep the apparent travel speed consistent with the physical distance:
-  // nearby devices animate quickly, while distant devices animate slowly.
-  const animationDuration = `${Math.min(5, Math.max(0.7, len / 160))}s`;
+  // nearby devices animate smoothly and moderately, while distant devices animate gently.
+  const durationSec = Math.min(10, Math.max(3.8, len / 55));
+  const animationDuration = `${durationSec}s`;
+  const reverseBeginOffset = `${(durationSec / 2).toFixed(2)}s`;
 
   return (
     <g data-connection-id={connection.id}>
@@ -290,10 +292,10 @@ export const ConnectionLine = memo(function ConnectionLine({
         />
       )}
 
-      {/* Animated data flow - enhanced high visibility glowing particles */}
+      {/* Animated data flow - subtle glowing particles */}
       {showAnimation && graphicsQuality === 'high' && isEffectivelyActive && !isDragging && (
         <>
-          <circle r={Math.max(2.5, 4.5 / zoom)} fill={color} className="animate-pulse" style={{ filter: isDark ? `drop-shadow(0 0 3px ${color})` : 'none', opacity: isDark ? 0.95 : 0.85 }}>
+          <circle r={Math.max(1.8, 3.2 / zoom)} fill={color} className="animate-pulse" style={{ filter: isDark ? `drop-shadow(0 0 2px ${color})` : 'none', opacity: isDark ? 0.9 : 0.8 }}>
             <animateMotion
               dur={animationDuration}
               repeatCount="indefinite"
@@ -301,11 +303,11 @@ export const ConnectionLine = memo(function ConnectionLine({
               <mpath href={`#${motionPathId}`} />
             </animateMotion>
           </circle>
-          <circle r={Math.max(2.5, 4.5 / zoom)} fill={color} className="animate-pulse" style={{ filter: isDark ? `drop-shadow(0 0 3px ${color})` : 'none', opacity: isDark ? 0.95 : 0.85 }}>
+          <circle r={Math.max(1.8, 3.2 / zoom)} fill={color} className="animate-pulse" style={{ filter: isDark ? `drop-shadow(0 0 2px ${color})` : 'none', opacity: isDark ? 0.9 : 0.8 }}>
             <animateMotion
               dur={animationDuration}
               repeatCount="indefinite"
-              begin="1s"
+              begin={reverseBeginOffset}
             >
               <mpath href={`#${reverseMotionPathId}`} />
             </animateMotion>

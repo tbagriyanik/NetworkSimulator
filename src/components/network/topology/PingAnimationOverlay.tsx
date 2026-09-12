@@ -133,8 +133,9 @@ export const PingAnimationOverlay: React.FC<PingAnimationOverlayProps> = ({
   const tangentDy = -3 * mt2 * source.y + 3 * (mt2 - 2 * mt * progressVal) * controlPoint1.y + 3 * (2 * mt * progressVal - p2) * controlPoint2.y + 3 * p2 * target.y;
   const tangentLen = Math.sqrt(tangentDx * tangentDx + tangentDy * tangentDy) || 1;
 
-  const envelopeX = bezierX + (tangentDy / tangentLen * 20);
-  const envelopeY = bezierY + (-tangentDx / tangentLen * 20);
+  const cableOffset = 20;
+  const envelopeX = bezierX + (tangentDy / tangentLen * cableOffset);
+  const envelopeY = bezierY + (-tangentDx / tangentLen * cableOffset);
 
   const getBezierPoint = (t: number) => {
     const mt = 1 - t;
@@ -191,11 +192,11 @@ export const PingAnimationOverlay: React.FC<PingAnimationOverlayProps> = ({
             const by = bt.fromY + (bt.toY - bt.fromY) * broadcastProgress;
             return (
               <g key={`broadcast-packet-${bt.targetId}-${i}`} transform={`translate(${bx}, ${by})`}>
-                <circle cx="0" cy="0" r="14" fill="var(--color-warning-500)" opacity="0.16" className="animate-ping-glow" style={{ pointerEvents: 'none' }} />
+                <circle cx="0" cy="0" r="10" fill="var(--color-warning-500)" opacity="0.16" className="animate-ping-glow" style={{ pointerEvents: 'none' }} />
                 <rect x="-10" y="-7" width="20" height="14" rx="2" fill="var(--color-warning-500)" style={{ stroke: 'var(--color-warning-600)', strokeWidth: '1.5' }} />
                 <path d="M-8 -3 L0 4 L8 -3" fill="none" stroke="var(--color-white)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 {graphicsQuality === 'high' && i < 3 && (
-                  <circle cx="0" cy="0" r="18" fill="none" stroke="var(--color-warning-400)" strokeWidth="1" opacity={0.5 * (1 - broadcastProgress)} style={{ pointerEvents: 'none' }} />
+                  <circle cx="0" cy="0" r="13" fill="none" stroke="var(--color-warning-400)" strokeWidth="0.75" opacity={0.5 * (1 - broadcastProgress)} style={{ pointerEvents: 'none' }} />
                 )}
               </g>
             );
@@ -203,7 +204,7 @@ export const PingAnimationOverlay: React.FC<PingAnimationOverlayProps> = ({
         </g>
       )}
 
-      {/* Packet trail - fading circles behind envelope in high graphics */}
+      {/* Packet trail - fading small circles behind envelope in high graphics */}
       {graphicsQuality === 'high' && (
         [0.03, 0.06, 0.09, 0.12, 0.15].map((offset, i) => {
           const trailT = progressVal - offset;
@@ -213,10 +214,10 @@ export const PingAnimationOverlay: React.FC<PingAnimationOverlayProps> = ({
           const tDx = -3 * mtT * mtT * source.x + 3 * (mtT * mtT - 2 * mtT * trailT) * controlPoint1.x + 3 * (2 * mtT * trailT - trailT * trailT) * controlPoint2.x + 3 * trailT * trailT * target.x;
           const tDy = -3 * mtT * mtT * source.y + 3 * (mtT * mtT - 2 * mtT * trailT) * controlPoint1.y + 3 * (2 * mtT * trailT - trailT * trailT) * controlPoint2.y + 3 * trailT * trailT * target.y;
           const tLen = Math.sqrt(tDx * tDx + tDy * tDy) || 1;
-          const tx = pt.x + (tDy / tLen * 20);
-          const ty = pt.y + (-tDx / tLen * 20);
-          const opacity = Math.max(0, 0.4 - i * 0.07);
-          const radius = Math.max(1.5, 5 - i * 0.7);
+          const tx = pt.x + (tDy / tLen * cableOffset);
+          const ty = pt.y + (-tDx / tLen * cableOffset);
+          const opacity = Math.max(0, 0.35 - i * 0.06);
+          const radius = Math.max(0.75, 2.2 - i * 0.35);
           return (
             <circle
               key={i}
@@ -240,9 +241,9 @@ export const PingAnimationOverlay: React.FC<PingAnimationOverlayProps> = ({
       >
         {/* Glow highlight */}
         {graphicsQuality === 'high' ? (
-          <circle cx="0" cy="0" r="16" style={{ fill: 'var(--color-accent-500)' }} opacity="0.2" filter="url(#packetGlow)" className="animate-ping-glow" />
+          <circle cx="0" cy="0" r="12" style={{ fill: 'var(--color-accent-500)' }} opacity="0.2" filter="url(#packetGlow)" className="animate-ping-glow" />
         ) : (
-          <circle cx="0" cy="0" r="14" style={{ fill: 'var(--color-accent-500)' }} opacity="0.1" className="animate-ping-glow-low" />
+          <circle cx="0" cy="0" r="10" style={{ fill: 'var(--color-accent-500)' }} opacity="0.1" className="animate-ping-glow-low" />
         )}
         <rect x="-10" y="-7" width="20" height="14" rx="2" fill="var(--color-accent-500)" style={{ stroke: 'var(--color-accent-600)', strokeWidth: '1.5' }} />
         <path d="M-8 -3 L0 4 L8 -3" fill="none" stroke="var(--color-white)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

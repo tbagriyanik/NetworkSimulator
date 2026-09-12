@@ -1,17 +1,23 @@
 import React from 'react';
 import { colors } from '@/lib/design-tokens/colors';
+import { useIsMobile } from '@/hooks/use-breakpoint';
 
 interface CanvasDefsProps {
   isDark: boolean;
   canvasWidth: number;
   canvasHeight: number;
+  isMobile?: boolean;
 }
 
 export const CanvasDefs: React.FC<CanvasDefsProps> = ({
   isDark,
   canvasWidth,
-  canvasHeight
+  canvasHeight,
+  isMobile: isMobileProp
 }) => {
+  const isMobileDetected = useIsMobile();
+  const isMobile = isMobileProp ?? isMobileDetected;
+
   return (
     <defs>
       <clipPath id="canvasClip">
@@ -67,13 +73,32 @@ export const CanvasDefs: React.FC<CanvasDefsProps> = ({
           </>
         )}
       </radialGradient>
-      {/* Grid pattern with modern dot grid styling */}
-      <pattern id="gridPattern" width="20" height="20" patternUnits="userSpaceOnUse">
-        <circle cx="10" cy="10" r={isDark ? "1.2" : "1.1"} style={{ fill: isDark ? 'var(--color-primary-400)' : 'var(--color-secondary-400)', shapeRendering: 'geometricPrecision' }} opacity={isDark ? "0.35" : "0.45"} />
+      {/* Grid pattern with modern subtle dot grid styling - aligned to 20px snap coordinates */}
+      <pattern id="gridPattern" x="10" y="10" width="20" height="20" patternUnits="userSpaceOnUse">
+        <circle
+          cx="10"
+          cy="10"
+          r={isMobile ? "0.7" : (isDark ? "0.9" : "0.85")}
+          style={{
+            fill: isDark ? 'var(--color-primary-300)' : 'var(--color-secondary-500)',
+            shapeRendering: 'geometricPrecision'
+          }}
+          opacity={isMobile ? (isDark ? "0.18" : "0.20") : (isDark ? "0.26" : "0.28")}
+        />
       </pattern>
       {/* Major grid lines pattern */}
       <pattern id="majorGridPattern" width="100" height="100" patternUnits="userSpaceOnUse">
-        <rect width="100" height="100" fill="none" style={{ stroke: isDark ? 'var(--color-primary-500)' : 'var(--color-secondary-300)', shapeRendering: 'crispEdges' }} strokeWidth="0.75" opacity={isDark ? "0.15" : "0.25"} />
+        <rect
+          width="100"
+          height="100"
+          fill="none"
+          style={{
+            stroke: isDark ? 'var(--color-primary-400)' : 'var(--color-secondary-400)',
+            shapeRendering: 'crispEdges'
+          }}
+          strokeWidth={isMobile ? "0.5" : "0.65"}
+          opacity={isMobile ? (isDark ? "0.06" : "0.08") : (isDark ? "0.10" : "0.13")}
+        />
       </pattern>
       {/* Device 3D Gradients for Dark Mode */}
       <linearGradient id="pcGradientDark" x1="0%" y1="0%" x2="0%" y2="100%">
