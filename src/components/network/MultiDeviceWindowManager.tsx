@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import { DraggableWindowWrapper } from './DraggableWindowWrapper';
@@ -10,6 +10,8 @@ import { CableInfo, SwitchState } from '@/lib/network/types';
 import { TerminalOutput } from './Terminal';
 import { OutputLine as PCOutputLine, PcOutputsSetter, type PCActiveTab } from './pc-panel/PCPanel.types';
 import { useMultiWindowStore, DeviceWindowItem } from '@/hooks/useMultiWindowStore';
+import { useWindowStore } from '@/hooks/useWindowStore';
+import { DeviceIcon } from './DeviceIcon';
 import { TaskDefinition, TaskContext } from '@/lib/network/taskDefinitions';
 import type { Translations } from '@/contexts/LanguageContext';
 
@@ -62,6 +64,7 @@ export function MultiDeviceWindowManager({
   const {
     openWindows,
     closeDeviceWindow,
+    restoreWindow,
     windowPositions,
     windowSizes,
     windowRestoreRequests,
@@ -73,6 +76,8 @@ export function MultiDeviceWindowManager({
     activeTabId,
     setActiveTabId,
   } = useMultiWindowStore();
+  const activeWindowId = useWindowStore((state) => state.activeWindowId);
+  const setActiveWindow = useWindowStore((state) => state.setActiveWindow);
   const [activeTabs, setActiveTabs] = useState<Record<string, string>>({});
 
   if (openWindows.length === 0) return null;
@@ -81,6 +86,109 @@ export function MultiDeviceWindowManager({
 
   return (
     <>
+      {/* Sol Ortadaki Açık Pencereler Simgeleri (Left-Middle Open Windows Dock) */}
+      {openWindows.length > 0 && (
+        <aside
+          aria-label={language === 'tr' ? 'Açık Pencereler' : 'Open Windows'}
+          className={`fixed left-0 top-1/2 -translate-y-1/2 z-[9995] flex flex-col items-center gap-1.5 p-1.5 rounded-r-2xl border border-l-0 shadow-2xl backdrop-blur-xl transition-all select-none animate-in slide-in-from-left duration-200 ${
+            isDark
+              ? 'bg-secondary-950/95 border-secondary-800/80 shadow-black/60'
+              : 'bg-white/95 border-secondary-200 shadow-secondary-900/20'
+          }`}
+        >
+          {/* Header indicator */}
+          <div className="flex flex-col items-center py-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-[9px] font-bold tracking-wider text-emerald-400 mt-0.5">
+              {openWindows.length}
+            </span>
+          </div>
+
+          <div className="w-5 h-px bg-secondary-700/40 my-0.5" />
+
+          {/* Window Icons List */}
+          <div className="flex flex-col items-center gap-1.5 max-h-[70vh] overflow-y-auto overflow-x-hidden custom-scrollbar pr-0.5">
+            {openWindows.map((win) => {
+              const device = topologyDevices.find((item) => item.id === win.id);
+              const label = device?.name || win.id;
+              const isActive = activeWindowId === win.id || (layoutMode === 'tabs' && win.id === currentTabId);
+
+              return (
+                <div key={`left-dock-${win.id}`} className="relative group flex items-center">
+                  <button
+                    type="button"
+                    aria-label={label}
+                    title={`${label} (${win.type})`}
+                    onClick={() => {
+                      restoreWindow(win.id);
+                      setActiveWindow(win.id);
+                      if (layoutMode === 'tabs') {
+                        setActiveTabId(win.id);
+                      }
+                    }}
+                    className={`relative flex h-9 w-9 items-center justify-center rounded-xl transition-all transform active:scale-95 ${
+                      isActive
+                        ? isDark
+                          ? 'bg-emerald-600/30 text-emerald-300 ring-2 ring-emerald-500 shadow-md shadow-emerald-500/20'
+                          : 'bg-emerald-50 text-emerald-700 ring-2 ring-emerald-500 shadow-md shadow-emerald-500/10'
+                        : isDark
+                          ? 'text-secondary-400 hover:bg-secondary-800/80 hover:text-white hover:scale-105'
+                          : 'text-secondary-600 hover:bg-secondary-100 hover:text-secondary-900 hover:scale-105'
+                    }`}
+                  >
+                    <DeviceIcon
+                      type={(device?.type || win.type) as DeviceType}
+                      switchModel={device?.switchModel}
+                      size={20}
+                      active={isActive}
+                    />
+
+                    {/* Active dot indicator on edge */}
+                    {isActive && (
+                      <span className="absolute -left-1 top-1/2 -translate-y-1/2 w-1 h-3 rounded-r-full bg-emerald-400 shadow-sm" />
+                    )}
+                  </button>
+
+                  {/* Close button on hover */}
+                  <button
+                    type="button"
+                    title={language === 'tr' ? `${label} Penceresini Kapat` : `Close ${label}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      closeDeviceWindow(win.id);
+                    }}
+                    className="absolute -top-1 -right-1 hidden group-hover:flex w-4 h-4 items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold shadow hover:bg-red-600 transition-all z-10"
+                  >
+                    ×
+                  </button>
+
+                  {/* Tooltip flyout on hover */}
+                  <div
+                    className={`absolute left-full ml-2.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap shadow-xl border backdrop-blur-md pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-50 ${
+                      isDark
+                        ? 'bg-secondary-900/95 text-white border-secondary-700'
+                        : 'bg-white text-secondary-900 border-secondary-200'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold">{label}</span>
+                      <span className="text-[10px] px-1 py-0.2 rounded uppercase opacity-60 bg-secondary-700/30">
+                        {win.type}
+                      </span>
+                    </div>
+                    {device?.ip && (
+                      <div className="text-[10px] text-secondary-400 font-mono mt-0.5">
+                        {device.ip}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </aside>
+      )}
+
       {/* Floating Window Controls / Layout Toolbar when multiple windows open */}
       {openWindows.length > 1 && (
         <div className="fixed top-14 left-1/2 -translate-x-1/2 z-[9990] flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary-900/90 text-white border border-secondary-700/60 shadow-xl backdrop-blur-md text-xs select-none">
