@@ -887,5 +887,22 @@ export const interfacePatterns: Record<string, CommandPattern> = {
     minArgs: 1,
     maxArgs: 1
   },
-
+  'mac access-group': {
+    pattern: /^mac\s+access-group\s+(\S+)\s+(in|out)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 2,
+    maxArgs: 2
+  },
+  'no mac access-group': {
+    pattern: /^no\s+mac\s+access-group(?:\s+(\S+)\s+(in|out))?$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 0,
+    maxArgs: 2
+  },
+  'source template': {
+    pattern: /^source\s+template\s+(\S+)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 1,
+    maxArgs: 1
+  },
 };

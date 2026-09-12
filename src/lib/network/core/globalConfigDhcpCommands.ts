@@ -152,16 +152,59 @@ export function cmdNoIpv6DhcpPool(state: SwitchState, input: string, _ctx: Comma
   return { success: true, newState: { ipv6DhcpPools: pools, runningConfig: buildRunningConfig(updatedState) } };
 }
 
-export function cmdIpDhcpExcludedAddress(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+export function cmdIpDhcpExcludedAddress(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
     return { success: false, error: cliModeError() };
   }
-  return { success: true };
+  const match = input.match(/^ip\s+dhcp\s+excluded-address\s+([0-9.]+)(?:\s+([0-9.]+))?$/i);
+  if (!match) {
+    return { success: false, error: '% Invalid ip dhcp excluded-address command. Usage: ip dhcp excluded-address <low-ip> [high-ip]' };
+  }
+
+  const startIp = match[1];
+  const endIp = match[2];
+
+  const currentExcluded = [...(state.dhcpExcludedAddresses || [])];
+  // Add if not duplicate
+  if (!currentExcluded.some(e => e.startIp === startIp && e.endIp === endIp)) {
+    currentExcluded.push({ startIp, endIp });
+  }
+
+  const updatedState = { ...state, dhcpExcludedAddresses: currentExcluded };
+  return {
+    success: true,
+    newState: {
+      dhcpExcludedAddresses: currentExcluded,
+      runningConfig: buildRunningConfig(updatedState)
+    }
+  };
 }
 
-export function cmdNoIpDhcpExcludedAddress(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+export function cmdNoIpDhcpExcludedAddress(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
     return { success: false, error: cliModeError() };
   }
-  return { success: true };
+  const match = input.match(/^no\s+ip\s+dhcp\s+excluded-address(?:\s+([0-9.]+)(?:\s+([0-9.]+))?)?$/i);
+  if (!match) {
+    return { success: false, error: '% Invalid no ip dhcp excluded-address command' };
+  }
+
+  const startIp = match[1];
+  const endIp = match[2];
+
+  let currentExcluded = [...(state.dhcpExcludedAddresses || [])];
+  if (startIp) {
+    currentExcluded = currentExcluded.filter(e => !(e.startIp === startIp && (!endIp || e.endIp === endIp)));
+  } else {
+    currentExcluded = [];
+  }
+
+  const updatedState = { ...state, dhcpExcludedAddresses: currentExcluded };
+  return {
+    success: true,
+    newState: {
+      dhcpExcludedAddresses: currentExcluded,
+      runningConfig: buildRunningConfig(updatedState)
+    }
+  };
 }

@@ -14,6 +14,14 @@ Yeniden eskiye, tarih mevcuttur.
 - **🪟 Sürüklenebilir Pencere Scrollbar & Resize Tutamaç Çakışma Düzeltmesi (`DraggableWindowWrapper.tsx`, `PingPacketInfoPanel.tsx`)**:
   - Pencerelerin sağ (`e-resize`) ve alt (`s-resize`) kenar tutamaçlarının genişlikleri daraltılarak pencere kaydırma çubuklarının (scrollbar) üzerine taşması önlendi.
   - `contentInset` özelliği ile Paket Analizi ve tüm sekmelerindeki (Akış, İzleme, Görsel PDU) kaydırma çubuklarının resize tutamaçlarına takılmadan doğrudan fareyle tıklanıp kaydırılabilmesi sağlandı.
+- **🛡️ Katman 2 MAC Erişim Listesi & Port Filtreleme (`mac access-list`, `mac access-group in`, `commonForwardingEngine.ts`)**:
+  - `mac access-list extended <name>` tanımları ile tanımlanan kurallar (`permit host ... any`, `deny host ... any`, `permit any any`) arayüz seviyesinde `mac access-group <name> in` komutuyla bağlanabilir hale getirildi.
+  - `commonForwardingEngine.ts` ve `checkIngressSanity` motorunda gelen Ethernet çerçeveleri kaynak/hedef MAC kurallarına göre anlık değerlendirilir; eşleşen izin/ret kurallarına ve katı örtük ret (implicit deny) kuralına göre çerçeveler filtrelenir/düşürülür.
+  - `show mac access-lists` ve `show running-config` çıktılarına dinamik MAC ACL durumları ve port eşleştirmeleri entegre edildi.
+- **⚡ Port Şablonu, CLI Makro Yürütme & Donanım Teşhisi (`source template`, `macro apply`, `show diagnostic`)**:
+  - `source template <name>` komutuyla `state.templates` içinde tanımlı port ayarları (access VLAN, portfast, speed, duplex) arayüze otomatik olarak aktarılır.
+  - `macro apply <name>` komutuyla tanımlı toplu CLI makrolarının yürütülmesi sağlandı.
+  - `show diagnostic` çıktısı cihazdaki tüm portların durum, link ve hata sayaçlarını (CRC/Drop) dinamik raporlayacak şekilde güncellendi.
 - **📚 Kapsamlı PDU Kılavuzu**: `doc/network/PDU_INSPECTOR_GUIDE.md` kılavuzu hazırlanıp dokümantasyon indeksine eklendi.
 
 ## v5.2.0 — 2026-09-12

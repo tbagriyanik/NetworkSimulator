@@ -762,3 +762,103 @@ export function cmdZoneMember(state: SwitchState, input: string, _ctx: CommandCo
   const newPorts = applyToSelectedPorts(state, (port: Port) => ({ ...port, zoneMember }));
   return { success: true, newState: { ports: newPorts } };
 }
+
+export function cmdMacAccessGroup(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
+  const match = input.match(/^mac\s+access-group\s+(\S+)\s+(in|out)$/i);
+  if (!match) return { success: false, error: '% Usage: mac access-group <acl-name> {in | out}' };
+
+  const aclName = match[1];
+  const direction = match[2].toLowerCase();
+
+  const newPorts = applyToSelectedPorts(state, (port: Port) => {
+    if (direction === 'in') {
+      return { ...port, macAccessGroupIn: aclName };
+    } else {
+      return { ...port, macAccessGroupOut: aclName };
+    }
+  });
+
+  const updatedState = { ...state, ports: newPorts };
+  return {
+    success: true,
+    output: '',
+    newState: {
+      ports: newPorts,
+      runningConfig: buildRunningConfig(updatedState)
+    }
+  };
+}
+
+export function cmdNoMacAccessGroup(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
+  const match = input.match(/^no\s+mac\s+access-group(?:\s+(\S+)\s+(in|out))?$/i);
+
+  const direction = match?.[2]?.toLowerCase();
+  const newPorts = applyToSelectedPorts(state, (port: Port) => {
+    if (direction === 'in') {
+      return { ...port, macAccessGroupIn: undefined };
+    } else if (direction === 'out') {
+      return { ...port, macAccessGroupOut: undefined };
+    } else {
+      return { ...port, macAccessGroupIn: undefined, macAccessGroupOut: undefined };
+    }
+  });
+
+  const updatedState = { ...state, ports: newPorts };
+  return {
+    success: true,
+    output: '',
+    newState: {
+      ports: newPorts,
+      runningConfig: buildRunningConfig(updatedState)
+    }
+  };
+}
+
+export function cmdSourceTemplate(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
+  const match = input.match(/^source\s+template\s+(\S+)$/i);
+  if (!match) return { success: false, error: '% Usage: source template <template-name>' };
+
+  const tName = match[1];
+  const templates = state.templates || {};
+  if (!templates[tName]) {
+    return { success: false, error: `% Template ${tName} not found` };
+  }
+
+  const lines = templates[tName] || [];
+  const newPorts = applyToSelectedPorts(state, (port: Port) => {
+    const updated = { ...port };
+    for (const rawLine of lines) {
+      const line = rawLine.trim().toLowerCase();
+      if (line === 'switchport mode access') {
+        updated.mode = 'access';
+      } else if (line === 'switchport mode trunk') {
+        updated.mode = 'trunk';
+      } else if (line.startsWith('switchport access vlan')) {
+        const vlanMatch = line.match(/switchport\s+access\s+vlan\s+(\d+)/);
+        if (vlanMatch) updated.accessVlan = parseInt(vlanMatch[1], 10);
+      } else if (line === 'spanning-tree portfast') {
+        updated.spanningTree = { ...updated.spanningTree, portfast: true };
+      } else if (line.startsWith('speed')) {
+        const spMatch = line.match(/speed\s+(\S+)/);
+        if (spMatch) updated.speed = spMatch[1] as Port['speed'];
+      } else if (line.startsWith('duplex')) {
+        const dupMatch = line.match(/duplex\s+(\S+)/);
+        if (dupMatch) updated.duplex = dupMatch[1] as Port['duplex'];
+      }
+    }
+    return updated;
+  });
+
+  const updatedState = { ...state, ports: newPorts };
+  return {
+    success: true,
+    output: `Template ${tName} applied to interface`,
+    newState: {
+      ports: newPorts,
+      runningConfig: buildRunningConfig(updatedState)
+    }
+  };
+}

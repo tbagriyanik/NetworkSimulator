@@ -25,11 +25,16 @@ export const SYSLOG_SEVERITIES: Record<number, string> = {
 
 export const SYSLOG_SEVERITY_LEVELS: Record<string, number> = {
   'emergencies': 0,
+  'emergency': 0,
   'alerts': 1,
+  'alert': 1,
   'critical': 2,
   'errors': 3,
+  'error': 3,
   'warnings': 4,
+  'warning': 4,
   'notifications': 5,
+  'notification': 5,
   'informational': 6,
   'debugging': 7
 };

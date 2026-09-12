@@ -178,6 +178,8 @@ export interface Port {
   allowedVlans?: number[] | 'all'; // For trunk ports
   accessGroupIn?: string;       // Inbound ACL name/ID
   accessGroupOut?: string;      // Outbound ACL name/ID
+  macAccessGroupIn?: string;    // Inbound MAC ACL name
+  macAccessGroupOut?: string;   // Outbound MAC ACL name
   channelGroup?: number; // Port-channel group id
   channelMode?: EtherChannelMode;
   channelProtocol?: EtherChannelProtocol;
@@ -620,6 +622,8 @@ export interface SwitchState {
   mlsQosEnabled?: boolean;
   dhcpSnooping?: { enabled?: boolean; vlans?: number[]; informationOption?: boolean };
   dhcpSnoopingEnabled?: boolean;
+  dhcpExcludedAddresses?: Array<{ startIp: string; endIp?: string }>;
+  clockTimezone?: { name: string; hoursOffset: number; minutesOffset?: number };
   ntpServers?: string[];
   ntpMasterStratum?: number;
   systemClock?: { time: string; day: string; month: string; year: string };

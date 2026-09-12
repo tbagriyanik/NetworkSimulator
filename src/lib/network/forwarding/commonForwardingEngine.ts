@@ -44,6 +44,43 @@ export function checkIngressSanity(
     return { allowed: false, reason: `Port status is ${ingressPort.status}` };
   }
 
+  // MAC Access-List Filtering (Ingress L2 Port ACL)
+  if (ingressPort.macAccessGroupIn && _state?.macAcls) {
+    const aclName = ingressPort.macAccessGroupIn;
+    const rules = _state.macAcls[aclName] || [];
+    if (rules.length > 0) {
+      const srcMacNorm = (frame.srcMac || '').toLowerCase().replace(/[:-]/g, '.');
+      const dstMacNorm = (frame.dstMac || '').toLowerCase().replace(/[:-]/g, '.');
+
+      const matchesMac = (pattern: string, targetMac: string) => {
+        if (!pattern || pattern === 'any') return true;
+        const normPat = pattern.toLowerCase().replace(/[:-]/g, '.');
+        return targetMac.includes(normPat) || normPat.includes(targetMac);
+      };
+
+      for (const ruleItem of rules) {
+        const ruleStr = typeof ruleItem === 'string' ? ruleItem : JSON.stringify(ruleItem);
+        // Format e.g. "permit host 0011.2233.4455 any" or "deny any any" or "permit any any"
+        const permitMatch = ruleStr.match(/^permit\s+(?:host\s+)?(\S+)\s+(?:host\s+)?(\S+)/i);
+        const denyMatch = ruleStr.match(/^deny\s+(?:host\s+)?(\S+)\s+(?:host\s+)?(\S+)/i);
+
+        if (permitMatch) {
+          const [, ruleSrc, ruleDst] = permitMatch;
+          if (matchesMac(ruleSrc, srcMacNorm) && matchesMac(ruleDst, dstMacNorm)) {
+            return { allowed: true, reason: `Permitted by MAC ACL ${aclName}` };
+          }
+        } else if (denyMatch) {
+          const [, ruleSrc, ruleDst] = denyMatch;
+          if (matchesMac(ruleSrc, srcMacNorm) && matchesMac(ruleDst, dstMacNorm)) {
+            return { allowed: false, reason: `Dropped by MAC ACL ${aclName}` };
+          }
+        }
+      }
+      // Implicit deny if list exists but no permit matched
+      return { allowed: false, reason: `Implicitly dropped by MAC ACL ${aclName}` };
+    }
+  }
+
   return { allowed: true, reason: 'Ingress checks passed' };
 }
 
@@ -117,7 +154,29 @@ export function processControlPlaneProtocols(
       const poolKeys = Object.keys(updatedState.dhcpPools || {});
       if (poolKeys.length > 0) {
         const pool = updatedState.dhcpPools![poolKeys[0]];
-        const assignedIp = pool.network ? `${pool.network.split('.').slice(0, 3).join('.')}.${100 + Math.floor(Math.random() * 100)}` : '192.168.1.100';
+        const excludedList = updatedState.dhcpExcludedAddresses || [];
+
+        const ipToNum = (ip: string): number => ip.split('.').reduce((acc, oct) => (acc << 8) + parseInt(oct, 10), 0) >>> 0;
+        const numToIp = (num: number): string => [ (num >>> 24) & 255, (num >>> 16) & 255, (num >>> 8) & 255, num & 255 ].join('.');
+
+        let assignedIp = '192.168.1.100';
+        if (pool.network) {
+          const parts = pool.network.split('.');
+          const baseNum = (parseInt(parts[0], 10) << 24) | (parseInt(parts[1], 10) << 16) | (parseInt(parts[2], 10) << 8);
+          // Find first available IP from .10 to .250 not in excluded ranges
+          for (let host = 10; host <= 250; host++) {
+            const candidateNum = (baseNum | host) >>> 0;
+            const isExcluded = excludedList.some(exc => {
+              const startNum = ipToNum(exc.startIp);
+              const endNum = exc.endIp ? ipToNum(exc.endIp) : startNum;
+              return candidateNum >= startNum && candidateNum <= endNum;
+            });
+            if (!isExcluded) {
+              assignedIp = numToIp(candidateNum);
+              break;
+            }
+          }
+        }
 
         responseFrame = {
           id: `dhcp-ack-${Date.now()}`,

@@ -471,6 +471,19 @@ export function buildRunningConfig(state: SwitchState): string[] {
                 }
             }
 
+            if (port.macAccessGroupIn) {
+                lines.push(` mac access-group ${port.macAccessGroupIn} in`);
+            }
+            if (port.macAccessGroupOut) {
+                lines.push(` mac access-group ${port.macAccessGroupOut} out`);
+            }
+            if (port.accessGroupIn) {
+                lines.push(` ip access-group ${port.accessGroupIn} in`);
+            }
+            if (port.accessGroupOut) {
+                lines.push(` ip access-group ${port.accessGroupOut} out`);
+            }
+
             if (port.ipAddress && port.subnetMask) {
                 lines.push(` ip address ${port.ipAddress} ${port.subnetMask}`);
             } else if (isRouterInterface) {
@@ -679,6 +692,21 @@ export function buildRunningConfig(state: SwitchState): string[] {
     // IP default-gateway is only valid for L2/no-routing behavior
     if (state.defaultGateway && !state.ipRouting) {
         lines.push(`ip default-gateway ${state.defaultGateway}`);
+        lines.push('!');
+    }
+
+    if (state.clockTimezone) {
+        const minStr = state.clockTimezone.minutesOffset ? ` ${state.clockTimezone.minutesOffset}` : '';
+        lines.push(`clock timezone ${state.clockTimezone.name} ${state.clockTimezone.hoursOffset >= 0 ? '+' : ''}${state.clockTimezone.hoursOffset}${minStr}`);
+        lines.push('!');
+    }
+
+    // DHCP excluded addresses
+    if (state.dhcpExcludedAddresses && state.dhcpExcludedAddresses.length > 0) {
+        state.dhcpExcludedAddresses.forEach(exc => {
+            const endStr = exc.endIp ? ` ${exc.endIp}` : '';
+            lines.push(`ip dhcp excluded-address ${exc.startIp}${endStr}`);
+        });
         lines.push('!');
     }
 

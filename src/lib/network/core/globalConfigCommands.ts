@@ -10,7 +10,7 @@ import { getDeviceCapabilities } from '../capabilities';
 import { validateIpRoutingSupport } from './L3Validation';
 import { cmdAccessList, cmdNoAccessList } from './interface/cmd.misc';
 import { cmdIpDhcpPool, cmdNoIpDhcpPool, cmdIpv6DhcpPool, cmdIpDhcpExcludedAddress, cmdNoIpDhcpExcludedAddress, cmdIpDhcpSnoopingVlan, cmdNoIpDhcpSnooping, cmdIpDhcpSnoopingInformationOption } from './globalConfigDhcpCommands';
-import { cmdIpNatPool, cmdIpNatInsideSourceStatic, cmdIpNatInsideSourceList, cmdLoggingHost, cmdLoggingTrap, cmdNtpServer, cmdNtpMaster, cmdNoNtpServer, cmdClockTimezone, cmdIpNameServer, cmdIpHost, cmdAliasExec, cmdNoAliasExec, cmdIpSla, cmdTrack, cmdLldpTlvSelect, cmdSpanningTreeMst, cmdIpPrefixList, cmdRouteMap, cmdIpv6RouterEigrp, cmdSpanningTreeLoopguardDefault, cmdIpFlowExport, cmdNoIpPrefixList, cmdNoIpv6PrefixList, cmdNoRouteMap, cmdVrfDefinition, cmdVrfRd, cmdVrfRouteTarget, cmdMplsLdpRouterId, cmdVxlanInterface, cmdVxlanMemberVni, cmdZoneSecurity, cmdZonePairSecurity, cmdRestconfEnable, cmdMplsIpGlobal, cmdArchive, cmdMacroName, cmdConfigureReplace, cmdMacAccessList, cmdTemplate } from './globalConfigNetworkCommands';
+import { cmdIpNatPool, cmdIpNatInsideSourceStatic, cmdIpNatInsideSourceList, cmdLoggingHost, cmdLoggingTrap, cmdNtpServer, cmdNtpMaster, cmdNoNtpServer, cmdClockTimezone, cmdIpNameServer, cmdIpHost, cmdAliasExec, cmdNoAliasExec, cmdIpSla, cmdTrack, cmdLldpTlvSelect, cmdSpanningTreeMst, cmdIpPrefixList, cmdRouteMap, cmdIpv6RouterEigrp, cmdSpanningTreeLoopguardDefault, cmdIpFlowExport, cmdNoIpPrefixList, cmdNoIpv6PrefixList, cmdNoRouteMap, cmdVrfDefinition, cmdVrfRd, cmdVrfRouteTarget, cmdMplsLdpRouterId, cmdVxlanInterface, cmdVxlanMemberVni, cmdZoneSecurity, cmdZonePairSecurity, cmdRestconfEnable, cmdMplsIpGlobal, cmdArchive, cmdMacroName, cmdMacroApply, cmdConfigureReplace, cmdMacAccessList, cmdTemplate } from './globalConfigNetworkCommands';
 
 import { cmdClassMap, cmdPolicyMap, cmdClass, cmdSetDscp, cmdSetCoS, cmdPolice, cmdNoClassMap, cmdNoPolicyMap } from './qosMqcCommands';
 import { cmdAaaNewModel, cmdNoAaaNewModel, cmdAaaAuthentication, cmdRadiusServerHost, cmdTacacsServerHost, cmdRadiusServerKey, cmdTacacsServerKey, cmdDot1xSystem } from './globalConfigAaaCommands';
@@ -240,6 +240,7 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'no alias': cmdNoAliasExec,
   'macro': cmdMacroName,
   'macro name': cmdMacroName,
+  'macro apply': cmdMacroApply,
   'default interface': cmdDefaultInterface,
   'configure replace': cmdConfigureReplace,
   'mac access-list': cmdMacAccessList,

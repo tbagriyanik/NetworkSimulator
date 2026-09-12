@@ -89,8 +89,20 @@ export function cmdNoNtpServer(state: SwitchState, input: string, _ctx: CommandC
 export function cmdClockTimezone(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^clock\s+timezone\s+(\S+)\s+([+-]?\d+)(?:\s+(\d+))?$/i);
-  if (!match) return { success: false, error: '% Invalid clock timezone command' };
-  return { success: true, output: `Timezone set to ${match[1]} UTC${match[2]}` };
+  if (!match) return { success: false, error: '% Invalid clock timezone command. Usage: clock timezone <name> <hours-offset> [minutes-offset]' };
+  const name = match[1];
+  const hoursOffset = parseInt(match[2], 10);
+  const minutesOffset = match[3] ? parseInt(match[3], 10) : undefined;
+  const clockTimezone = { name, hoursOffset, minutesOffset };
+  const updatedState = { ...state, clockTimezone };
+  return {
+    success: true,
+    output: `Timezone set to ${name} UTC${hoursOffset >= 0 ? '+' : ''}${hoursOffset}${minutesOffset ? `:${minutesOffset}` : ''}`,
+    newState: {
+      clockTimezone,
+      runningConfig: buildRunningConfig(updatedState)
+    }
+  };
 }
 
 export function cmdIpNameServer(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
@@ -695,12 +707,60 @@ export function cmdMacroName(state: SwitchState, input: string, _ctx: CommandCon
   };
 }
 
-export function cmdConfigureReplace(_state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  const match = input.match(/^configure\s+replace\s+(\S+)(?:\s+force)?$/i);
-  if (!match) return { success: false, error: '% Usage: configure replace <filename> [force]' };
+export function cmdMacroApply(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  const match = input.match(/^macro\s+apply\s+(\S+)$/i);
+  if (!match) return { success: false, error: '% Usage: macro apply <macro-name>' };
+
+  const macroName = match[1];
+  const macros = state.macros || {};
+  if (!macros[macroName]) {
+    return { success: false, error: `% Macro ${macroName} not found` };
+  }
+
+  const lines = macros[macroName];
+  if (lines.length === 0) {
+    return { success: true, output: `Macro ${macroName} executed (empty)` };
+  }
+
   return {
     success: true,
-    output: `Configuration replace executed from ${match[1]}`,
+    output: `Applied macro: ${macroName}\nTotal lines executed: ${lines.length}`
+  };
+}
+
+export function cmdConfigureReplace(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  const match = input.match(/^configure\s+replace\s+(\S+)(?:\s+force)?$/i);
+  if (!match) return { success: false, error: '% Usage: configure replace <filename> [force]' };
+
+  const targetFile = match[1].toLowerCase();
+
+  if (targetFile.includes('startup-config') || targetFile.includes('nvram:startup-config')) {
+    const newRunningConfig = state.savedConfig ? state.savedConfig.split('\n') : buildRunningConfig(state);
+    return {
+      success: true,
+      output: `[OK] Rollback to ${match[1]} completed successfully.\nTotal number of passes: 1\nRollback Done`,
+      newState: {
+        runningConfig: newRunningConfig
+      }
+    };
+  } else if (state.flashStartupConfigs && state.flashStartupConfigs[match[1]]) {
+    return {
+      success: true,
+      output: `[OK] Rollback to ${match[1]} completed successfully.\nTotal number of passes: 1\nRollback Done`,
+      newState: {
+        startupConfig: state.flashStartupConfigs[match[1]],
+        runningConfig: buildRunningConfig({ ...state, startupConfig: state.flashStartupConfigs[match[1]] })
+      }
+    };
+  }
+
+  const fallbackConfig = state.savedConfig ? state.savedConfig.split('\n') : buildRunningConfig(state);
+  return {
+    success: true,
+    output: `[OK] Rollback to ${match[1]} completed successfully.\nTotal number of passes: 1\nRollback Done`,
+    newState: {
+      runningConfig: fallbackConfig
+    }
   };
 }
 

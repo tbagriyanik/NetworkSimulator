@@ -444,4 +444,10 @@ export const modePatterns: Record<string, CommandPattern> = {
     minArgs: 0,
     maxArgs: 0
   },
+  'macro apply': {
+    pattern: /^macro\s+apply\s+(\S+)$/i,
+    modes: ['privileged', 'config', 'interface', 'config-if-range'],
+    minArgs: 1,
+    maxArgs: 1
+  },
 };

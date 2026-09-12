@@ -624,8 +624,27 @@ function cmdShowParent(_state: SwitchState, _input: string, _ctx: CommandContext
 /**
  * Show Auth
  */
-function cmdShowAuth(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  return { success: true, output: '\nNo active authentication sessions.\n' };
+function cmdShowAuth(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  const sessions = state.dot1xSessions || {};
+  const entries = Object.values(sessions);
+
+  if (entries.length === 0) {
+    return { success: true, output: '\nNo active authentication sessions.\n' };
+  }
+
+  let output = '\nInterface  Identifier           Method  Domain  Status          Session ID\n';
+  output += '--------------------------------------------------------------------------\n';
+  entries.forEach(s => {
+    const port = s.port.padEnd(10);
+    const id = (s.identity || 'N/A').padEnd(20);
+    const method = 'dot1x'.padEnd(7);
+    const domain = 'DATA'.padEnd(7);
+    const status = (s.state || 'Authz Success').padEnd(15);
+    const sessId = `0A0000010000000${s.port.replace(/\D/g, '') || '1'}`;
+    output += `${port} ${id} ${method} ${domain} ${status} ${sessId}\n`;
+  });
+
+  return { success: true, output };
 }
 
 /**
@@ -783,16 +802,58 @@ function cmdShowClassMap(state: SwitchState, _input: string, _ctx: CommandContex
 /**
  * Show MAC ACL
  */
-function cmdShowMacAcl(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  return { success: true, output: '\n% No MAC access lists configured.\n' };
+function cmdShowMacAcl(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  const acls = state.macAcls || {};
+  const names = Object.keys(acls);
+  if (names.length === 0) {
+    return { success: true, output: '\n% No MAC access lists configured.\n' };
+  }
+
+  let output = '';
+  names.forEach(name => {
+    output += `\nMAC access-list extended ${name}\n`;
+    const rules = acls[name] || [];
+    if (rules.length === 0) {
+      output += '    (empty)\n';
+    } else {
+      rules.forEach((rule, idx) => {
+        output += `    ${(idx + 1) * 10} ${typeof rule === 'string' ? rule : JSON.stringify(rule)}\n`;
+      });
+    }
+  });
+
+  return { success: true, output };
 }
 
 
 /**
  * Show Diagnostic
  */
-function cmdShowDiag(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  return { success: true, output: '\nDiagnostic results: PASS\n' };
+function cmdShowDiag(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  const ports = state.ports || {};
+  const portKeys = Object.keys(ports);
+
+  let output = '\nOverall Diagnostic Result: PASS\n';
+  output += 'Test                              Attributes        Result\n';
+  output += '--------------------------------- ----------------- ---------\n';
+  output += 'TestPortLoopback                  Complete          Passed\n';
+  output += 'TestMacAddressForwarding          Complete          Passed\n';
+  output += 'TestNvramIntegrity                Complete          Passed\n';
+
+  if (portKeys.length > 0) {
+    output += '\nInterface Diagnostic Status:\n';
+    output += 'Port       Status       Link State   Errors/Drops\n';
+    output += '---------- ------------ ------------ ------------\n';
+    portKeys.forEach(pk => {
+      const p = ports[pk];
+      const statusStr = p.shutdown ? 'Disabled' : 'Enabled';
+      const linkStr = p.status === 'connected' ? 'Up' : (p.shutdown ? 'Down' : 'NoCable');
+      const errCount = (p.statistics?.inputErrors || 0) + (p.statistics?.crcErrors || 0) + (p.statistics?.drops || 0);
+      output += `${pk.padEnd(10)} ${statusStr.padEnd(12)} ${linkStr.padEnd(12)} ${errCount.toString()}\n`;
+    });
+  }
+
+  return { success: true, output };
 }
 
 /**

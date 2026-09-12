@@ -310,15 +310,21 @@ export function cmdShowClock(
     }
   }
 
+  const tz = state.clockTimezone;
+  const tzName = tz ? tz.name : 'UTC';
+  const tzOffsetMs = tz ? (tz.hoursOffset * 60 + (tz.minutesOffset || 0)) * 60000 : 0;
+
   if (state.systemClock) {
     const { time, day, month, year } = state.systemClock as { time: string; day: string; month: string; year: string };
     const monthIndex = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].indexOf(month) + 1;
     const dayName = days[new Date(`${year}-${String(monthIndex).padStart(2, '0')}-${String(day).padStart(2, '0')}`).getDay()];
-    return { success: true, output: `\n*${time}.000 UTC ${dayName} ${month} ${parseInt(day)} ${year}\n` };
+    return { success: true, output: `\n*${time}.000 ${tzName} ${dayName} ${month} ${parseInt(day)} ${year}\n` };
   }
 
   const now = new Date();
-  return { success: true, output: `\n*${now.toTimeString().split(' ')[0]}.000 UTC ${days[now.getDay()]} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.getMonth()]} ${now.getDate()} ${now.getFullYear()}\n` };
+  const adjusted = new Date(now.getTime() + tzOffsetMs);
+  const timeStr = adjusted.toTimeString().split(' ')[0];
+  return { success: true, output: `\n*${timeStr}.000 ${tzName} ${days[adjusted.getDay()]} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][adjusted.getMonth()]} ${adjusted.getDate()} ${adjusted.getFullYear()}\n` };
 }
 
 /**

@@ -213,6 +213,9 @@ import {
   cmdMplsIpInterface,
   cmdIpVrfForwarding,
   cmdZoneMember,
+  cmdMacAccessGroup,
+  cmdNoMacAccessGroup,
+  cmdSourceTemplate,
 } from './interface/cmd.ipAddress';
 
 import {
@@ -432,4 +435,7 @@ export const interfaceHandlers: Record<string, CommandHandler> = {
   'ip flow egress': cmdIpFlowInterface,
   'no ip flow ingress': cmdIpFlowInterface,
   'no ip flow egress': cmdIpFlowInterface,
+  'mac access-group': cmdMacAccessGroup,
+  'no mac access-group': cmdNoMacAccessGroup,
+  'source template': cmdSourceTemplate,
 };
