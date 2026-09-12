@@ -34,7 +34,8 @@ npm run check
 
 ## 🚀 Key Features / Öne Çıkan Özellikler
 
-- **💻 Gelişmiş CLI & IOS Simülasyonu:** Switch (L2/L3), Router, ASA Firewall, WLC, PC, IoT ve Hub cihazları için tam kapsamlı terminal ve komut motoru.
+- **💻 Gelişmiş CLI & Ağ İşletim Sistemi (NOS) Simülasyonu:** Switch (L2/L3), Router, Güvenlik Duvarı (Firewall), WLC, PC, IoT ve Hub cihazları için tam kapsamlı terminal ve komut motoru.
+- **🤖 NetDevOps, RESTCONF & Intent API Explorer:** IETF YANG modelleri üzerinden canlı RESTCONF CRUD işlemleri, Netmiko & Python RESTCONF script yürütme motoru ve PC üzerinden çalışan interaktif REST API / Controller Intent Explorer.
 - **🌐 Geniş Protokol Desteği:** VLAN, VTP, STP/RSTP/MSTP, EtherChannel, Zone-Based Policy Firewall (ZBF), VRF-Lite, MPLS & LDP, VXLAN/EVPN, L3 Rotalama (OSPF, EIGRP, BGP, Static), RESTCONF API, DHCP, NAT, ACL (IPv4/IPv6/MAC), Port Security, IP SLA ve QoS.
 - **📸 Topoloji Anlık Görüntü & Geri Yükleme:** Ağ topolojisini tek tıkla dondurma, kontrol noktaları (Checkpoint) oluşturma, JSON dışa/içe aktarma ve anlık geri yükleme.
 - **🐍 Python Yorumlayıcısı & Dosya İşlemleri:** PC terminalinde OOP, Decorator, Generator, `open()` ile sanal dosya okuma/yazma/düzenleme ve soket ağ programlama.

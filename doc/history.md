@@ -4,7 +4,9 @@ Yeniden eskiye, tarih mevcuttur.
 
 ## v5.2.0 — 2026-09-12
 
-**Modüler Port İsimlendirme Ayrımı, Router & L3 Switch Çizim Düzeni, CLI Display Modüler Ayrıştırması ve Çevresel Ayarlar Güncellemesi** —
+**NetDevOps & RESTCONF Otomasyon Motoru, PC REST API Explorer & DNA Center Intent Tester, Modüler Port İsimlendirme Ayrımı, Router & L3 Switch Çizim Düzeni, CLI Display Modüler Ayrıştırması ve Çevresel Ayarlar Güncellemesi** —
+- **🤖 NetDevOps & RESTCONF Otomasyon Motoru (`netdevopsEngine.ts`, `NetworkAutomationPanel.tsx`)**: IETF YANG veri modelleri (`ietf-interfaces`, `ietf-interfaces-state`, `netsim-native`), `GET`/`POST`/`PUT`/`PATCH`/`DELETE` RESTCONF CRUD desteği; Netmiko (`ConnectHandler`, `send_command`, `send_config_set`) ve Python `requests` script yürütme motoru simülatörün çalışan durumuyla (`SwitchState`) tam senkronize çalışır hale getirildi.
+- **⚡ PC REST API Explorer & DNA Center Intent Tester (`RestApiExplorerWindow.tsx`, `restApiMock.ts`)**: Canlı Controller Intent API uç noktaları (`/auth/token`, `/network-device`, `/interface`, `/topology/site-topology`, `/network-health`, `/client-health`) ve doğrudan `/restconf/data/...` köprüsü uygulandı; canlı durum mutasyonları ve `update-device-state` olay yayını sağlandı.
 - **🧩 Modüler Port İsimlendirme Standardı (`modularExpansion.ts`, `portUtils.ts`)**: Harici eklenen modül portları dahili sabit portlarla çakışmayacak şekilde slot bazlı (`Serial1/0/0`, `FastEthernet1/0/0`, `GigabitEthernet1/0/0`, `TenGigabitEthernet1/0/0`) dinamik isimlendirildi; `NS-L3-24PS` L3 switch'in 28 dahili portunun modül takıldığında korunması sağlandı.
 - **📐 Router & Switch Topoloji Çizim İyileştirmeleri (`DeviceRenderer.tsx`, `networkTopology.helpers.ts`)**: Router topoloji SVG çiziminde dahili Gigabit ve Serial/Console portlarının altına modül portları için 3. satır (Row 2) yerleşimi eklendi.
 - **🛠️ `showRoutingDisplay.ts` Modüler Mimarisi**: 1820 satırlık dev dosya tek sorumluluk prensibiyle protokol (`showRoutingProtocols.ts`), yedeklilik (`showRedundancyDisplay.ts`) ve servis (`showServicesDisplay.ts`) modüllerine bölündü.
