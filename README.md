@@ -107,7 +107,7 @@ Simülatör kontrollerine hızlıca göz atmak için aşağıdaki listeyi geniş
 | <kbd>Space</kbd> + <kbd>Drag</kbd> | Pan canvas | Canvas'ı kaydır |
 | <kbd>Arrow Keys</kbd> | Move selected device(s) | Seçili cihaz(lar)ı taşı |
 | <kbd>Shift</kbd> + <kbd>Arrow Keys</kbd> | Move selected device(s) faster | Seçili cihaz(lar)ı daha hızlı taşı |
-| <kbd>Mouse Selection</kbd> | Auto-Copy text on mouse selection | CMD, CLI & Konsol geçmişinden metin seçilince OTOMATİK KOPYALA |
+| <kbd>Mouse Selection</kbd> | Auto-Copy text on mouse selection | CMD, CLI & Konsol geçmişinden metin seçilince otomatik kopyalama |
 | <kbd>F1</kbd> | Open / close help panel | Yardım panelini aç / kapat |
 | <kbd>F5</kbd> | Refresh network topology | Ağ topolojisini yenile |
 | <kbd>Tab</kbd> | Focus next device | Sonraki cihaza odaklan |

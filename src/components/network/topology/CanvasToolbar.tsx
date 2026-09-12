@@ -200,7 +200,7 @@ export function CanvasToolbar({
           <button
             aria-label={language === 'tr' ? 'Kısayollar Kılavuzu' : 'Shortcuts Guide'}
             onClick={onOpenShortcutsModal}
-            className={`w-8 h-8 flex items-center justify-center rounded transition-colors ${isDark ? 'hover:bg-secondary-700 text-secondary-300' : 'hover:bg-secondary-100 text-secondary-600'}`}
+            className={`hidden sm:flex w-8 h-8 items-center justify-center rounded transition-colors ${isDark ? 'hover:bg-secondary-700 text-secondary-300' : 'hover:bg-secondary-100 text-secondary-600'}`}
           >
             <Keyboard className="w-4 h-4" />
           </button>

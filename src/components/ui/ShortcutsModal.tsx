@@ -39,15 +39,13 @@ export function ShortcutsModal({
         { label: isTr ? 'Ekrana Sığdır' : 'Zoom to Fit', key: 'Alt+F' },
         { label: isTr ? 'Mini Haritayı Aç/Kapat' : 'Toggle Mini-map', key: 'Alt+M' },
         { label: isTr ? 'Olay Günlüğü Aç/Kapat' : 'Toggle Event Log', key: 'Alt+L' },
-        { label: isTr ? 'Yakınlaştır / Uzaklaştır' : 'Zoom In / Out', key: 'Ctrl + Scroll' },
-        { label: isTr ? 'Tuvali Kaydır (Pan)' : 'Pan Canvas', key: 'Space + Drag' },
       ],
     },
     {
       title: isTr ? 'Cihaz & Düzenleme' : 'Device & Editing',
       icon: Cpu,
       shortcuts: [
-        { label: isTr ? 'Cihazı Sil' : 'Delete Device', key: 'Delete / Backspace' },
+        { label: isTr ? 'Cihazı Sil' : 'Delete Device', key: 'Delete' },
         { label: isTr ? 'Cihaz Detaylarını Aç' : 'Open Device Config', key: 'Double Click' },
         { label: isTr ? 'Hizalama Izgarası (Snap)' : 'Snap to Grid', key: 'Ctrl (Basılı Tut / Hold)' },
         { label: isTr ? 'Çoklu Seçim' : 'Multi-Select', key: 'Shift + Click / Box' },

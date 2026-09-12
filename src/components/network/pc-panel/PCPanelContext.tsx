@@ -223,7 +223,7 @@ export interface PCPanelContextValue {
   setServiceNtpTime: (t: string) => void;
   applyNtpServerTime: (serverAddress: string) => { date: string; time: string } | null;
   ntpPanelTime: Date;
-  ntpSyncState: any;
+  ntpSyncState: unknown;
 
   // Service state: Mail
   serviceMailEnabled: boolean;

@@ -5,18 +5,18 @@ import type { CanvasDevice, CanvasConnection } from '../networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { isCableCompatible } from '@/lib/network/types';
 
+import type { HopPacketInfo } from '../PingPacketInfoPanel';
+import type { PingAnimationState } from './usePingSequence';
+
 interface PingAnimationProps {
   connections: CanvasConnection[];
   deviceStates?: Map<string, SwitchState>;
   deviceMap: Map<string, CanvasDevice>;
   isTR: boolean;
   // State setters
-
-  setPingAnimation: React.Dispatch<React.SetStateAction<any>>;
-
-  setHopPacketInfos: (infos: any[]) => void;
-
-  setErrorToast: (toast: any) => void;
+  setPingAnimation: React.Dispatch<React.SetStateAction<PingAnimationState | null>>;
+  setHopPacketInfos: (infos: HopPacketInfo[]) => void;
+  setErrorToast: (toast: { message: string; details?: string; type?: 'success' | 'error' } | null) => void;
   setPingMode: (val: boolean) => void;
   // Refs from parent
   pingAnimationRef: React.MutableRefObject<number | null>;

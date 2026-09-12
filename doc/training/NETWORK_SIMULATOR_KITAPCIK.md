@@ -420,7 +420,7 @@ Free and open source. See [LICENSE](LICENSE).
 | `Arrow Up / Down` | Command history | Komut geçmişi |
 | `Enter` | Execute command | Komutu çalıştır |
 | `Ctrl + L` | Clear terminal | Terminali temizle |
-| `Mouse Selection` | Auto-Copy selected text on mouse release | CMD & CLI geçmişinden fare ile metin seçince OTOMATİK KOPYALA |
+| `Mouse Selection` | Auto-Copy selected text on mouse release | CMD, CLI & Konsol geçmişinden fare ile metin seçince otomatik kopyalama |
 | `?` | Show available commands | Kullanılabilir komutları göster |
 | `Ctrl + C` | Cancel command (CLI) | Komutu iptal et |
 

@@ -105,6 +105,7 @@ export function MobileDeviceView({
 
   const urlInputRef = useRef<HTMLInputElement | null>(null);
   const dragStateRef = useRef<{ startX: number; startY: number; originX: number; originY: number } | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const resizeStateRef = useRef<{ side: any; startX: number; startY: number; originX: number; originY: number; originW: number; originH: number } | null>(null);
 
   // Timer for active call duration, RTP metrics & connectivity loss monitoring

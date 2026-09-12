@@ -12,8 +12,10 @@ interface PCWindowProps {
   showPCPanel: boolean;
   setShowPCPanel: (show: boolean) => void;
   showPCDeviceId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pcDrag: any;
   cableInfo: CableInfo;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pcPanelInitialTab: any;
   toggleDevicePower: (id: string) => void;
   topologyDevices?: CanvasDevice[];
@@ -25,11 +27,13 @@ interface PCWindowProps {
   pcHistories: Map<string, string[]>;
   handleUpdatePCHistory: (id: string, history: string[]) => void;
   handleExecuteCommand: (id: string, cmd: string) => Promise<unknown>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handlePCPanelNavigateWrapper: (deviceId: string, program: any) => void;
   handleDeviceDelete: (id: string) => void;
   focusedOverlay: string | null;
   isTablet?: boolean;
   isDark: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   t: Record<string, any>;
 }
 
@@ -92,6 +96,7 @@ export function PCWindow({
           pcHistories={pcHistories}
           onUpdatePCHistory={handleUpdatePCHistory}
           onExecuteDeviceCommand={handleExecuteCommand}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onNavigate={(program: any) => handlePCPanelNavigateWrapper(showPCDeviceId, program)}
           onDeleteDevice={handleDeviceDelete}
           handleResizeStart={pcDrag.handleResizeStart}

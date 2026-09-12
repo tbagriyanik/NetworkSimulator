@@ -363,7 +363,7 @@ export function usePingSequence(deps: PingSequenceDeps) {
           const fromId = partialPath[currentHop];
           const toId = partialPath[currentHop + 1];
           if (!toId) {
-            flushSync(() => { setPingAnimation((prev: any | null) => prev ? { ...prev, success: false, isPaused: false } : null); });
+            flushSync(() => { setPingAnimation((prev: PingAnimationState | null) => prev ? { ...prev, success: false, isPaused: false } : null); });
             setErrorToast({ message: isTR ? 'Ping başarısız!' : 'Ping failed!', details: errorMessage });
             setPingMode(false);
             return;
@@ -384,7 +384,7 @@ export function usePingSequence(deps: PingSequenceDeps) {
           const progress = easeInOutCubic(Math.min((Date.now() - startTime) / dur, 1));
           frameCount++;
           if (progress < 1) {
-            flushSync(() => { setPingAnimation((prev: any) => prev ? { ...prev, currentHopIndex: currentHop, progress, frame: frameCount } : null); });
+            flushSync(() => { setPingAnimation((prev: PingAnimationState | null) => prev ? { ...prev, currentHopIndex: currentHop, progress, frame: frameCount } : null); });
             pingAnimationRef.current = requestAnimationFrame(animateFailed);
             return;
           }
@@ -396,7 +396,7 @@ export function usePingSequence(deps: PingSequenceDeps) {
             currentHop++;
             startTime = Date.now();
             const shouldPause = pingIsPausedRef.current || pingStepModeRef.current;
-            flushSync(() => { setPingAnimation((prev: any) => prev ? { ...prev, currentHopIndex: currentHop, progress: 0, frame: frameCount, isPaused: shouldPause } : null); });
+            flushSync(() => { setPingAnimation((prev: PingAnimationState | null) => prev ? { ...prev, currentHopIndex: currentHop, progress: 0, frame: frameCount, isPaused: shouldPause } : null); });
             if (!shouldPause) {
               pingAnimationRef.current = requestAnimationFrame(animateFailed);
             } else {
@@ -409,7 +409,7 @@ export function usePingSequence(deps: PingSequenceDeps) {
           if (lastFailedHopPackets?.length) {
             dispatchCapturedPackets(lastFailedHopPackets);
           }
-          flushSync(() => { setPingAnimation((prev: any) => prev ? { ...prev, currentHopIndex: currentHop, progress: 1, frame: frameCount, success: false, isPaused: false } : null); });
+          flushSync(() => { setPingAnimation((prev: PingAnimationState | null) => prev ? { ...prev, currentHopIndex: currentHop, progress: 1, frame: frameCount, success: false, isPaused: false } : null); });
           setErrorToast({ message: isTR ? 'Ping başarısız!' : 'Ping failed!', details: errorMessage });
           setPingMode(false);
         };

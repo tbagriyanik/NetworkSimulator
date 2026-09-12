@@ -799,9 +799,9 @@ export function NetworkTopology({
       const device = deviceMap.get(deviceId);
       if (!device) return;
 
-      const currentPingMode = pingModeRef.current;
-      const currentPingSource = pingSourceRef.current;
-      if (currentPingMode) {
+      const currentPingMode = pingModeRef.current || pingMode;
+      const currentPingSource = pingSourceRef.current || pingSource;
+      if (currentPingMode || currentPingSource) {
         if (!currentPingSource) {
           setPingSource(device);
           pingSourceRef.current = device;
@@ -1035,6 +1035,10 @@ export function NetworkTopology({
     lastDragPositionRef,
     setDeviceTooltip,
     setPortTooltip,
+    pingMode,
+    pingSource,
+    pingModeRef,
+    pingSourceRef,
   });
 
   const isDraggingInteractionDisabled = isActuallyDragging || isTouchDragging;
@@ -1633,7 +1637,9 @@ export function NetworkTopology({
           const device = deviceMap.get(id);
           if (device) {
             setPingMode(true);
+            pingModeRef.current = true;
             setPingSource(device);
+            pingSourceRef.current = device;
             setPingResult(null);
           }
         }}

@@ -48,6 +48,10 @@ export interface UseTopologyTouchProps {
   lastDragPositionRef: React.MutableRefObject<{ x: number; y: number } | null>;
   setDeviceTooltip: (tooltip: { deviceId: string; x: number; y: number; visible: boolean } | null) => void;
   setPortTooltip: (tooltip: { deviceId: string; portId: string; x: number; y: number; visible: boolean } | null) => void;
+  pingMode?: boolean;
+  pingSource?: CanvasDevice | null;
+  pingModeRef?: React.MutableRefObject<boolean>;
+  pingSourceRef?: React.MutableRefObject<CanvasDevice | null>;
 }
 
 export function useTopologyTouch({
@@ -95,6 +99,10 @@ export function useTopologyTouch({
   lastDragPositionRef,
   setDeviceTooltip,
   setPortTooltip,
+  pingMode = false,
+  pingSource = null,
+  pingModeRef,
+  pingSourceRef,
 }: UseTopologyTouchProps) {
   const [isTouchDragging, setIsTouchDragging] = useState(false);
   const [touchDraggedDevice, setTouchDraggedDevice] = useState<CanvasDevice | null>(null);
@@ -241,8 +249,11 @@ export function useTopologyTouch({
 
   const handleDeviceTouchEnd = useCallback(() => {
     if (touchDraggedDevice && !isTouchDragging) {
-      setSelectedDeviceIds([touchDraggedDevice.id]);
-      onDeviceSelect(touchDraggedDevice.type, touchDraggedDevice.id, isSwitchDeviceType(touchDraggedDevice.type) ? touchDraggedDevice.switchModel : undefined, touchDraggedDevice.name);
+      const isPingActive = pingMode || Boolean(pingSource) || Boolean(pingModeRef?.current) || Boolean(pingSourceRef?.current);
+      if (!isPingActive) {
+        setSelectedDeviceIds([touchDraggedDevice.id]);
+        onDeviceSelect(touchDraggedDevice.type, touchDraggedDevice.id, isSwitchDeviceType(touchDraggedDevice.type) ? touchDraggedDevice.switchModel : undefined, touchDraggedDevice.name);
+      }
     }
 
     setTouchDraggedDevice(null);
@@ -250,7 +261,7 @@ export function useTopologyTouch({
     setTouchDragStartPos(null);
     touchDragStartPosRef.current = null;
     setIsTouchDragging(false);
-  }, [touchDraggedDevice, isTouchDragging, onDeviceSelect]);
+  }, [touchDraggedDevice, isTouchDragging, onDeviceSelect, pingMode, pingSource, pingModeRef, pingSourceRef]);
 
   const handleTouchStart = useCallback((e: ReactTouchEvent) => {
     if (!canvasRef.current) return;
