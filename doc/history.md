@@ -2,6 +2,20 @@
 
 Yeniden eskiye, tarih mevcuttur.
 
+## v5.3.0 — 2026-09-12
+
+**Görsel PDU İnceleyici Entegrasyonu (OSI Katmanları, Protokol Ağacı, Hex Dump), Gömülü & Modal PDU Sekmesi ve Sürüklenebilir Pencerelerde Scrollbar / Resize Tutamaç İyileştirmesi** —
+- **🔍 Görsel PDU & Canlı Paket İnceleyici (`EmbeddedPduInspector.tsx`, `pduDecoder.ts`, `VisualPduInspectorModal.tsx`)**:
+  - Paket analiz penceresi içine gömülü (embedded) ve bağımsız modal olarak çalışabilen tam teşekküllü Görsel PDU Denetçisi entegre edildi.
+  - **OSI Katman Analizi**: Katman 1 (Fiziksel / Egress Port / Medya Tipi / Frame Boyutu), Katman 2 (Ethernet II / MAC / VLAN / FCS), Katman 3 (IPv4 / IPv6 / ARP / TTL / Header Checksum), Katman 4 (ICMP / TCP / UDP / OSPF) ve Katman 7 (DHCP / DNS / Uygulama Yükü) giriş ve çıkış (`Inbound` / `Outbound`) detayları eklendi.
+  - **Cihaz Karar Günlüğü & Protokol Ağacı**: Her atlama noktasında (Hop) cihazın verdiği yönlendirme/filtreleme kararları ve kapsülleme protokol hiyerarşisi (`Ethernet II` → `802.1Q` → `IPv4` → `Protokol`) görselleştirildi.
+  - **Wireshark Uyumlu Hex & ASCII Dökümü**: Çerçeve içeriğinin 16-baytlık ofsetlerle tam hex dump ve ASCII dökümü sağlandı.
+  - **Hop İlerleme & Simülasyon Oynatıcısı**: Başa dön, oynat/durdur, sonraki atlama adımı ve hız (`0.5x`, `1x`, `2x`) denetimleri uygulandı.
+- **🪟 Sürüklenebilir Pencere Scrollbar & Resize Tutamaç Çakışma Düzeltmesi (`DraggableWindowWrapper.tsx`, `PingPacketInfoPanel.tsx`)**:
+  - Pencerelerin sağ (`e-resize`) ve alt (`s-resize`) kenar tutamaçlarının genişlikleri daraltılarak pencere kaydırma çubuklarının (scrollbar) üzerine taşması önlendi.
+  - `contentInset` özelliği ile Paket Analizi ve tüm sekmelerindeki (Akış, İzleme, Görsel PDU) kaydırma çubuklarının resize tutamaçlarına takılmadan doğrudan fareyle tıklanıp kaydırılabilmesi sağlandı.
+- **📚 Kapsamlı PDU Kılavuzu**: `doc/network/PDU_INSPECTOR_GUIDE.md` kılavuzu hazırlanıp dokümantasyon indeksine eklendi.
+
 ## v5.2.0 — 2026-09-12
 
 **NetDevOps & RESTCONF Otomasyon Motoru, PC REST API Explorer & SDN Intent Controller Tester, Modüler Port İsimlendirme Ayrımı, Router & L3 Switch Çizim Düzeni, CLI Display Modüler Ayrıştırması ve Çevresel Ayarlar Güncellemesi** —

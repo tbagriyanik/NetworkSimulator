@@ -289,7 +289,7 @@ export function DraggableWindowWrapper({
 
       {/* Content */}
       {!isCollapsed && (
-        <div className={cn("flex-1 min-h-0 flex flex-col relative", contentInset && "pb-3 pr-3", contentClassName)}>
+        <div className={cn("flex-1 min-h-0 flex flex-col relative overflow-hidden", contentInset && "pb-2 pr-2", contentClassName)}>
           {children}
         </div>
       )}
@@ -298,18 +298,18 @@ export function DraggableWindowWrapper({
       {(!isMobile || !isMobileFullScreen) && !isCollapsed && !disableResize && (
         <>
           {/* Corners */}
-          <div className={cn("absolute bottom-1 right-1 w-4 h-4 cursor-se-resize z-50 flex items-end justify-end opacity-60 hover:opacity-100 transition-opacity select-none", contentInset && "bottom-0 right-0 w-3 h-3")} onPointerDown={(e) => handleResizePointerDown(e, 'se')}>
-            <div className={cn("w-2.5 h-2.5 rounded-br-lg border-b-2 border-r-2 bg-transparent", isDark ? "border-secondary-400" : "border-secondary-600", isActive && "border-success-500", contentInset && "w-2 h-2")} />
+          <div className={cn("absolute bottom-0 right-0 w-3.5 h-3.5 cursor-se-resize z-50 flex items-end justify-end opacity-60 hover:opacity-100 transition-opacity select-none")} onPointerDown={(e) => handleResizePointerDown(e, 'se')}>
+            <div className={cn("w-2 h-2 rounded-br-sm border-b-2 border-r-2 bg-transparent mr-0.5 mb-0.5", isDark ? "border-secondary-400" : "border-secondary-600", isActive && "border-success-500")} />
           </div>
-          <div className="absolute left-0 bottom-0 w-3 h-3 cursor-sw-resize z-50 hover:bg-success-500/20" onPointerDown={(e) => handleResizePointerDown(e, 'sw')} />
-          <div className="absolute right-0 top-0 w-3 h-3 cursor-ne-resize z-50 hover:bg-success-500/20" onPointerDown={(e) => handleResizePointerDown(e, 'ne')} />
-          <div className="absolute left-0 top-0 w-3 h-3 cursor-nw-resize z-50 hover:bg-success-500/20" onPointerDown={(e) => handleResizePointerDown(e, 'nw')} />
+          <div className="absolute left-0 bottom-0 w-2.5 h-2.5 cursor-sw-resize z-50 hover:bg-success-500/20" onPointerDown={(e) => handleResizePointerDown(e, 'sw')} />
+          <div className="absolute right-0 top-0 w-2.5 h-2.5 cursor-ne-resize z-50 hover:bg-success-500/20" onPointerDown={(e) => handleResizePointerDown(e, 'ne')} />
+          <div className="absolute left-0 top-0 w-2.5 h-2.5 cursor-nw-resize z-50 hover:bg-success-500/20" onPointerDown={(e) => handleResizePointerDown(e, 'nw')} />
 
           {/* Edges */}
-          <div className="absolute right-0 top-3 bottom-3 w-2 cursor-e-resize z-40 hover:bg-success-500/20" onPointerDown={(e) => handleResizePointerDown(e, 'e')} />
-          <div className="absolute left-3 bottom-0 right-3 h-2 cursor-s-resize z-40 hover:bg-success-500/20" onPointerDown={(e) => handleResizePointerDown(e, 's')} />
-          <div className="absolute left-0 top-3 bottom-3 w-2 cursor-w-resize z-40 hover:bg-success-500/20" onPointerDown={(e) => handleResizePointerDown(e, 'w')} />
-          <div className="absolute left-3 top-0 right-3 h-2 cursor-n-resize z-40 hover:bg-success-500/20" onPointerDown={(e) => handleResizePointerDown(e, 'n')} />
+          <div className="absolute right-0 top-3 bottom-3 w-1 cursor-e-resize z-40 hover:bg-success-500/20" onPointerDown={(e) => handleResizePointerDown(e, 'e')} />
+          <div className="absolute left-3 bottom-0 right-3 h-1 cursor-s-resize z-40 hover:bg-success-500/20" onPointerDown={(e) => handleResizePointerDown(e, 's')} />
+          <div className="absolute left-0 top-3 bottom-3 w-1.5 cursor-w-resize z-40 hover:bg-success-500/20" onPointerDown={(e) => handleResizePointerDown(e, 'w')} />
+          <div className="absolute left-3 top-0 right-3 h-1.5 cursor-n-resize z-40 hover:bg-success-500/20" onPointerDown={(e) => handleResizePointerDown(e, 'n')} />
         </>
       )}
     </div>

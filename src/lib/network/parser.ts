@@ -111,7 +111,7 @@ export function resolveAliases(input: string, state?: Partial<SwitchState>): str
       if (rest) {
         // "sh cdp neighbors" gibi, expansion'ın son token'ı kullanıcı tarafından
         // da yazılmışsa tekrarlamayı önle ("show cdp neighbors neighbors").
-        // Cisco'da eksik/ara yazımda son anahtar kelime atlanır.
+        // Eksik/ara yazımda son anahtar kelime atlanır.
         const lastToken = full.trim().split(/\s+/).pop() || '';
         let adjusted = rest;
         if (lastToken && rest.toLowerCase() === lastToken.toLowerCase()) {

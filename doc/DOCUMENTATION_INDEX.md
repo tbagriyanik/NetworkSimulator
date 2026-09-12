@@ -135,6 +135,22 @@ Bu indeks, Network Simulator projesinin tüm dokümantasyon dosyalarını ve iç
 
 ---
 
+### 🔍 network/PDU_INSPECTOR_GUIDE.md
+**Amaç**: Görsel PDU & Canlı Paket İnceleyici Kılavuzu  
+**Okuma Süresi**: 10 dakika  
+**İçerik**:
+- Gömülü ve modal PDU analizi
+- OSI Katmanları (Layer 1 - Layer 7 Giriş & Çıkış PDU)
+- Protokol ağacı çözümlemesi
+- Wireshark uyumlu 16-baytlık Hex & ASCII dökümü
+- Hop oynatıcı ve hız ayarı
+
+**Ne Zaman Okuyacağım?**
+- Paket iletimini ve OSI katmanlarını adım adım incelemek istiyorsanız
+- Protokol başlıklarını ve hex dökümlerini analiz etmek istiyorsanız
+
+---
+
 ### 🔀 network/L3_SWITCH_CONFIGURATION.md
 **Amaç**: Layer 3 anahtarlama yapılandırma rehberi  
 **Okuma Süresi**: 15 dakika  

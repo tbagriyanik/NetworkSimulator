@@ -746,6 +746,7 @@ export function PingPacketInfoPanel({
             mobileFullScreen={false}
             headerActions={headerActions}
             collapsible={false}
+            contentInset
             disableResize={isMinimized}
             onHeaderDoubleClick={() => setIsMinimized(prev => !prev)}
         >
@@ -976,7 +977,7 @@ export function PingPacketInfoPanel({
                         </div>
                     ) : (
                         <div className="flex-1 overflow-hidden min-h-0 flex flex-col">
-                            <PacketTraceInspector embedded={true} pipelineResult={pipelineResult} isDark={isDark} />
+                            <PacketTraceInspector embedded={true} pipelineResult={pipelineResult} isDark={isDark} language={language} />
                         </div>
                     )}
                 </div>
