@@ -35,13 +35,13 @@ export const MODULE_CATALOG: Record<string, ExpansionModule> = {
     badge: 'Serial 2T',
     color: '#0284c7', // sky-600
     portGenerator: (slotIndex: number) => {
-      const port1Id = `Serial0/${slotIndex}/0`;
-      const port2Id = `Serial0/${slotIndex}/1`;
+      const port1Id = `Serial1/${slotIndex}/0`;
+      const port2Id = `Serial1/${slotIndex}/1`;
 
       const canvasPorts: CanvasPort[] = [
         {
           id: port1Id,
-          label: `Se0/${slotIndex}/0`,
+          label: `Se1/${slotIndex}/0`,
           status: 'disconnected',
           type: 'serial',
           adminStatus: 'down',
@@ -53,7 +53,7 @@ export const MODULE_CATALOG: Record<string, ExpansionModule> = {
         },
         {
           id: port2Id,
-          label: `Se0/${slotIndex}/1`,
+          label: `Se1/${slotIndex}/1`,
           status: 'disconnected',
           type: 'serial',
           adminStatus: 'down',
@@ -108,10 +108,10 @@ export const MODULE_CATALOG: Record<string, ExpansionModule> = {
       const switchPorts: Port[] = [];
 
       for (let p = 0; p < 4; p++) {
-        const portId = `FastEthernet0/${slotIndex}/${p}`;
+        const portId = `FastEthernet1/${slotIndex}/${p}`;
         canvasPorts.push({
           id: portId,
-          label: `Fa0/${slotIndex}/${p}`,
+          label: `Fa1/${slotIndex}/${p}`,
           status: 'disconnected',
           type: 'fastEthernet',
           adminStatus: 'up',
@@ -150,11 +150,11 @@ export const MODULE_CATALOG: Record<string, ExpansionModule> = {
     badge: '10G Fiber',
     color: '#8b5cf6', // purple-500
     portGenerator: (slotIndex: number) => {
-      const portId = `TenGigabitEthernet0/${slotIndex}/0`;
+      const portId = `TenGigabitEthernet1/${slotIndex}/0`;
       const canvasPorts: CanvasPort[] = [
         {
           id: portId,
-          label: `Te0/${slotIndex}/0`,
+          label: `Te1/${slotIndex}/0`,
           status: 'disconnected',
           type: 'tenGigabitEthernet',
           adminStatus: 'up',
@@ -194,11 +194,11 @@ export const MODULE_CATALOG: Record<string, ExpansionModule> = {
     badge: '1GE Copper',
     color: '#f59e0b', // amber-500
     portGenerator: (slotIndex: number) => {
-      const portId = `GigabitEthernet0/${slotIndex}/0`;
+      const portId = `GigabitEthernet1/${slotIndex}/0`;
       const canvasPorts: CanvasPort[] = [
         {
           id: portId,
-          label: `Gi0/${slotIndex}/0`,
+          label: `Gi1/${slotIndex}/0`,
           status: 'disconnected',
           type: 'gigabitEthernet',
           adminStatus: 'up',
@@ -397,8 +397,8 @@ export function removeExpansionModule(
   // Find connections using ports from this slot
   const removedConnections: string[] = [];
   connections.forEach((c) => {
-    const sourceIsModulePort = isModulePort(c.sourcePort) && c.sourcePort.includes(`0/${slotIndex}/`);
-    const targetIsModulePort = isModulePort(c.targetPort) && c.targetPort.includes(`0/${slotIndex}/`);
+    const sourceIsModulePort = isModulePort(c.sourcePort) && (c.sourcePort.includes(`/${slotIndex}/`) || c.sourcePort.includes(`0/${slotIndex}/`));
+    const targetIsModulePort = isModulePort(c.targetPort) && (c.targetPort.includes(`/${slotIndex}/`) || c.targetPort.includes(`0/${slotIndex}/`));
     
     if (
       (c.sourceDeviceId === device.id && sourceIsModulePort) ||

@@ -71,11 +71,11 @@ export const isModulePort = (portId: string): boolean => {
     // Additional check: built-in serial ports have the pattern s0/x/0 where x is 0, 1, or 2
     // Module serial ports have different patterns like Serial0/1/0 (first part is not just 's')
     const parts = lower.split('/');
-    if (lower.startsWith('s') && parts.length >= 3) {
+    if (parts.length >= 3) {
       const middlePart = parseInt(parts[1], 10);
       const lastPart = parseInt(parts[2], 10);
       // If it's s0/x/0 pattern where x is 0, 1, or 2, it's built-in
-      if (parts[0] === 's' || parts[0].startsWith('s0')) {
+      if (parts[0] === 's0' || parts[0] === 's') {
         if (middlePart >= 0 && middlePart <= 2 && lastPart === 0) {
           return false;
         }

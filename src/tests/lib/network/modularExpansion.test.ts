@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   getDeviceSlots,
   installExpansionModule,
@@ -89,12 +89,12 @@ describe('Modular Expansion Engine (Slots & WIC Modules)', () => {
 
     expect(res.updatedDevice.installedModules?.[1]).toBe('WIC-2T');
     expect(res.newPorts.length).toBe(2);
-    expect(res.newPorts[0].id).toBe('Serial0/1/0');
-    expect(res.newPorts[1].id).toBe('Serial0/1/1');
+    expect(res.newPorts[0].id).toBe('Serial1/1/0');
+    expect(res.newPorts[1].id).toBe('Serial1/1/1');
     expect(res.newPorts[0].type).toBe('serial');
 
-    expect(res.updatedSwitchState?.ports['Serial0/1/0']).toBeDefined();
-    expect(res.updatedSwitchState?.ports['Serial0/1/0'].type).toBe('serial');
+    expect(res.updatedSwitchState?.ports['Serial1/1/0']).toBeDefined();
+    expect(res.updatedSwitchState?.ports['Serial1/1/0'].type).toBe('serial');
   });
 
   it('should install HWIC-4ESW 4-port switch module', () => {
@@ -105,8 +105,8 @@ describe('Modular Expansion Engine (Slots & WIC Modules)', () => {
 
     expect(res.updatedDevice.installedModules?.[2]).toBe('HWIC-4ESW');
     expect(res.newPorts.length).toBe(4);
-    expect(res.newPorts[0].id).toBe('FastEthernet0/2/0');
-    expect(res.newPorts[3].id).toBe('FastEthernet0/2/3');
+    expect(res.newPorts[0].id).toBe('FastEthernet1/2/0');
+    expect(res.newPorts[3].id).toBe('FastEthernet1/2/3');
   });
 
   it('should remove module and clean up attached connections and ports', () => {
@@ -121,9 +121,9 @@ describe('Modular Expansion Engine (Slots & WIC Modules)', () => {
       {
         id: 'conn-serial-1',
         sourceDeviceId: router.id,
-        sourcePort: 'Serial0/1/0',
+        sourcePort: 'Serial1/1/0',
         targetDeviceId: 'router-2',
-        targetPort: 'Serial0/1/0',
+        targetPort: 'Serial1/1/0',
         cableType: 'serial',
         active: true,
       },
@@ -141,7 +141,7 @@ describe('Modular Expansion Engine (Slots & WIC Modules)', () => {
     const removeRes = removeExpansionModule(router, 1, connections, state);
 
     expect(removeRes.updatedDevice.installedModules?.[1]).toBeUndefined();
-    expect(removeRes.updatedDevice.ports.some((p) => p.id.includes('Serial0/1/'))).toBe(false);
+    expect(removeRes.updatedDevice.ports.some((p) => p.id.includes('Serial1/1/'))).toBe(false);
     expect(removeRes.removedConnections).toContain('conn-serial-1');
     expect(removeRes.removedConnections).not.toContain('conn-gi0');
   });
