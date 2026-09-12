@@ -5,6 +5,7 @@ import React from 'react';
 import { CanvasDevice, CanvasConnection } from '../networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { getChannelBand } from '@/lib/network/wireless';
+import { isModulePort } from '@/lib/network/portUtils';
 import { getDeviceWidth, getDeviceHeight } from '../networkTopology.helpers';
 import {
   STATUS_COLORS,
@@ -814,8 +815,10 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
         device.type === 'router' || device.type === 'wlc' ? (
           (() => {
             const filteredPorts = device.ports.filter(p => p.id !== 'wlan0' && !p.id.startsWith('service'));
-            const giPorts = filteredPorts.filter(p => p.id.toLowerCase().startsWith('gi'));
-            const otherPorts = filteredPorts.filter(p => !p.id.toLowerCase().startsWith('gi'));
+            const builtInPorts = filteredPorts.filter(p => !isModulePort(p.id));
+            const modulePorts = filteredPorts.filter(p => isModulePort(p.id));
+            const giPorts = builtInPorts.filter(p => p.id.toLowerCase().startsWith('gi'));
+            const otherPorts = builtInPorts.filter(p => !p.id.toLowerCase().startsWith('gi'));
             const portSpacing = 14;
             const rowSpacing = 14;
             const startX = 14;
@@ -958,13 +961,14 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
             };
 
             if (device.type === 'wlc') {
-              const orderedPorts = [...giPorts, ...otherPorts];
+              const orderedPorts = [...giPorts, ...otherPorts, ...modulePorts];
               return <>{orderedPorts.map((port, idx) => renderPort(port, idx, 0))}</>;
             }
             return (
               <>
                 {giPorts.map((port, idx) => renderPort(port, idx, 0))}
                 {otherPorts.map((port, idx) => renderPort(port, idx, 1))}
+                {modulePorts.map((port, idx) => renderPort(port, idx % 8, 2 + Math.floor(idx / 8)))}
               </>
             );
           })()

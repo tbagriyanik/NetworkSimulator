@@ -2,6 +2,14 @@
 
 Yeniden eskiye, tarih mevcuttur.
 
+## v5.2.0 — 2026-09-12
+
+**Modüler Port İsimlendirme Ayrımı, Router & L3 Switch Çizim Düzeni, CLI Display Modüler Ayrıştırması ve Çevresel Ayarlar Güncellemesi** —
+- **🧩 Modüler Port İsimlendirme Standardı (`modularExpansion.ts`, `portUtils.ts`)**: Harici eklenen modül portları dahili sabit portlarla çakışmayacak şekilde slot bazlı (`Serial1/0/0`, `FastEthernet1/0/0`, `GigabitEthernet1/0/0`, `TenGigabitEthernet1/0/0`) dinamik isimlendirildi; `NS-L3-24PS` L3 switch'in 28 dahili portunun modül takıldığında korunması sağlandı.
+- **📐 Router & Switch Topoloji Çizim İyileştirmeleri (`DeviceRenderer.tsx`, `networkTopology.helpers.ts`)**: Router topoloji SVG çiziminde dahili Gigabit ve Serial/Console portlarının altına modül portları için 3. satır (Row 2) yerleşimi eklendi.
+- **🛠️ `showRoutingDisplay.ts` Modüler Mimarisi**: 1820 satırlık dev dosya tek sorumluluk prensibiyle protokol (`showRoutingProtocols.ts`), yedeklilik (`showRedundancyDisplay.ts`) ve servis (`showServicesDisplay.ts`) modüllerine bölündü.
+- **🏷️ Çevresel Ayarlar & UI İyileştirmesi**: Genel "Ayarlar" menü/panel başlığı "Çevresel Ayarlar" olarak güncellendi.
+
 ## v5.1.0 — 2026-09-11
 
 **Çoklu Cihaz Dağıtım Araçları, Nokta Izgara & Izgaraya Hizalama (Snap-to-Grid), Canlı Kablo Veri Akış Animasyonları, Kapsamlı Kısayol Modalı, Dokunmatik Pinch-Zoom Hassasiyeti ve Katman/Çakışma İyileştirmeleri** —

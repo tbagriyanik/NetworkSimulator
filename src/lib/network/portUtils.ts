@@ -54,13 +54,13 @@ export const isModulePort = (portId: string): boolean => {
     return false;
   }
 
-  // Switch base ports: fa0/1 - fa0/24, gi1/0/1 - gi1/0/4, etc.
-  if (/^fa0\/([1-9]|1[0-9]|2[0-4])$/.test(lower) || /^gi1\/0\/[1-4]$/.test(lower)) {
+  // Switch base ports: fa0/1 - fa0/24 (L2 switch), gi1/0/1 - gi1/0/24 (L3 switch access ports)
+  if (/^fa0\/([1-9]|1[0-9]|2[0-4])$/.test(lower) || /^gi1\/0\/([1-9]|1[0-9]|2[0-4])$/.test(lower)) {
     return false;
   }
 
-  // Switch base ports: gi0/1, gi0/2 (built-in uplink ports for L2 switches)
-  if (/^gi0\/[1-2]$/.test(lower)) {
+  // Switch base ports: gi0/1, gi0/2 (built-in uplink ports for L2 switches), gi1/1/1 - gi1/1/4 (L3 switch uplinks)
+  if (/^gi0\/[1-2]$/.test(lower) || /^gi1\/1\/[1-4]$/.test(lower)) {
     return false;
   }
 

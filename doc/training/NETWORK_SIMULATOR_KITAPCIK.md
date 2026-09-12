@@ -22,9 +22,16 @@ A browser-based network simulator for learning switching, routing, wireless, IoT
 
 Bu kitapçık projenin tüm kullanıcı, CLI, protokol, laboratuvar ve özellik bilgilerinin birincil kaynağıdır. Diğer Markdown dosyaları yalnızca kısa başvuru, kurulum veya geliştirici ayrıntısı içerir; aynı bilginin güncel sürümü burada tutulmalıdır.
 
-### Güncel özellik durumu (v4.10.0)
+### Güncel özellik durumu (v5.2.0)
 
+- **🧩 Modüler Port İsimlendirme Standardı & L3 Switch Sabit Port Koruması (v5.2.0):** Harici eklenen modül portları (`Serial1/0/0`, `FastEthernet1/0/0`, `GigabitEthernet1/0/0`, `TenGigabitEthernet1/0/0`) dahili portlarla çakışmayacak şekilde slot bazlı isimlendirildi. `NS-L3-24PS` L3 switch'in tüm 28 dahili portunun modül takıldığında korunması sağlandı (`modularExpansion.ts`, `portUtils.ts`).
+- **📐 Router & Switch 3-Satırlı Topoloji Çizim Düzeni (v5.2.0):** Router SVG çiziminde dahili Gigabit ve Serial/Console portlarının altına modül portları 3. satır (Row 2) olarak konumlandırıldı (`DeviceRenderer.tsx`, `networkTopology.helpers.ts`).
+- **🛠️ `showRoutingDisplay.ts` Modüler Mimarisi (v5.2.0):** Tek sorumluluk prensibiyle protokol, yedeklilik ve servis alt modüllerine bölündü.
+- **🏷️ Çevresel Ayarlar & UI İyileştirmesi (v5.2.0):** "Ayarlar" menü/panel başlığı "Çevresel Ayarlar" olarak güncellendi.
+- **🎯 Çoklu Cihaz Dağıtım Araçları, Snap-to-Grid & Neon Kablo Akışı (v5.1.0):** Çoklu cihaz yatay/dikey dağıtımı, nokta ızgara, `Ctrl` ile ızgaraya hizalama ve dinamik neon veri akış animasyonu eklendi.
+- **🌐 VRF-Lite & RESTCONF Entegrasyonu (v5.0.0):** Sanal yönlendirme tablosu izolasyonu ve RESTCONF HTTP API servisi sağlandı.
 - **🧩 NetSim Modüler Donanım Şasisi & Yuva Yönetimi:** Router ve Switch cihazlarında fiziksel yuvalara (Slots) NetSim WIC-2T (Serial), NetSim HWIC-4ESW (Switch), NetSim SFP-10G-LR (Fiber), NetSim NM-1GE (Copper) modülleri takıp çıkarabilme, Donanım Güç Anahtarı (Power Switch) ile sıcak değişim koruması (`modularExpansion.ts`, `PhysicalDeviceView.tsx`).
+
 - **🗺️ İnteraktif Mini-Harita & Subnet Navigatörü:** Sağ alt köşede sürüklenebilir tuval penceresi, "Ekrana Sığdır" (Fit to Screen) ve OSPF/VLAN/Subnet alanlarına anında kamera odaklama (`MinimapNavigator.tsx`).
 - **🎨 VLAN & OSPF/BGP Alan Renklendirme Overlay'i:** Andrew Monotone Chain 2D konveks zarf algoritması ve SVG yumuşak yumru çizimi ile OSPF Area 0/1, VLAN Bölgeleri, BGP AS ve IP Subnet'lerinin cihazlar arkasında parlayan renkli bulutlarla gösterimi (`areaOverlayEngine.ts`, `TopologyAreaOverlay.tsx`).
 - **🖼️ Snapshot & Checkpoint Portal Modalı:** `createPortal(..., document.body)` ile tam ekran bağımsız modal rendering, anlık topoloji durum dondurma, arama, JSON içe/dışa aktarma ve onaylı geri yükleme. İçe aktarılan JSON verilerinde `validateTopologyCheckpoint` ile sıkı şema/cihaz/bağlantı doğrulaması yapılır; geçersiz veya uyumsuz JSON dosyaları içe aktarılmayıp kullanıcıya hata bildirilir (`SnapshotManagerModal.tsx`, `snapshotManager.ts`).
@@ -387,7 +394,7 @@ Free and open source. See [LICENSE](LICENSE).
 | Shortcut / Kısayol | EN | TR |
 |---|---|---|
 | `Ctrl + Z` | Undo | Geri al |
-| `Ctrl + Y` / `Ctrl + Shift + Z` | Redo | Yeniden yap |
+| `Ctrl + Y` | Redo | Yeniden yap |
 | `Ctrl + C` | Copy selected device | Seçili cihazı kopyala |
 | `Ctrl + X` | Cut selected device | Seçili cihazı kes |
 | `Ctrl + V` | Paste | Yapıştır |

@@ -416,7 +416,12 @@ doc/
 - [x] SSH Tam Akışı docümante edildi
 - [x] Subnetting Yardımcısı belgelendi
 - [x] Örnek Laboratuvarlar eklendi
+- [x] Modüler Yuva & Port İsimlendirme Ayrımı (v5.2) belgelendi
+- [x] Router & Switch 3-Satırlı Port Çizim Düzeni (v5.2) belgelendi
+- [x] L3 Switch Sabit Port Koruma & Modül Entegrasyonu (v5.2) güncellendi
+- [x] Çevresel Ayarlar & UI Başlık Güncellemeleri (v5.2) eklendi
 
 ---
 
 *Tüm dokümantasyon dosyaları `doc/` klasöründe bulunur.*
+

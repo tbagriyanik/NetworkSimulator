@@ -1,6 +1,6 @@
 # Network Simulator
 
-![Version](https://img.shields.io/badge/version-5.1.0-blue)
+![Version](https://img.shields.io/badge/version-5.2.0-blue)
 ![Next.js](https://img.shields.io/badge/Next.js-16.3.4-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19.2.8-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-7.0.2-3178C6?logo=typescript&logoColor=white)
@@ -47,7 +47,7 @@ npm run check
 
 | Metrik / Metric | Değer / Value |
 | --- | --- |
-| Version / Sürüm | 5.1.0 |
+| Version / Sürüm | 5.2.0 |
 | Total Lines / Toplam Satır (`src/`) | ~185,501 |
 | Source Files / Kaynak Dosya | 827 |
 | Documentation Files / Dokümantasyon Dosya | 32 |
@@ -61,8 +61,10 @@ npm run check
 
 | Bölüm / Section | Doküman / Document | Açıklama / Description |
 | --- | --- | --- |
-| **Ana kaynak / Main guide** | [NETWORK_SIMULATOR_KITAPCIK.md](doc/training/NETWORK_SIMULATOR_KITAPCIK.md) | Tüm özellikler, eğitim ve laboratuvarlar / Complete guide, features and labs |
+| 📘 **Ana Eğitim Kitapçığı** | [NETWORK_SIMULATOR_KITAPCIK.md](doc/training/NETWORK_SIMULATOR_KITAPCIK.md) | Tüm özellikler, CLI, eğitim, senaryolar ve laboratuvarlar (Kapsamlı Kitapçık) |
+| 📗 **Uygulama & Kullanım Rehberi** | [NETWORK_SIMULATOR_REHBERI.md](doc/training/NETWORK_SIMULATOR_REHBERI.md) | Modüler şasi, mimari, cihaz tipleri, kablolar, bash/python rehberi |
 | **Kurulum / Setup** | [INSTALL.md](INSTALL.md) | Kurulum ve derleme / Installation and build |
+
 | **Başlangıç / Getting started** | [USAGE.md](doc/getting-started/USAGE.md) | Kullanım ve klavye kısayolları / Usage and shortcuts |
 |  | [PC_CMD_REFERENCE.md](doc/getting-started/PC_CMD_REFERENCE.md) | PC CMD komutları / PC CMD commands |
 |  | [TOPOLOGY_GENERATOR.md](doc/getting-started/TOPOLOGY_GENERATOR.md) | Topoloji üretici sihirbazı / Topology generator |

@@ -69,7 +69,7 @@
 | Shortcut / Kısayol | EN | TR |
 |---|---|---|
 | `Ctrl + Z` | Undo | Geri al |
-| `Ctrl + Y` / `Ctrl + Shift + Z` | Redo | Yeniden yap |
+| `Ctrl + Y` | Redo | Yeniden yap |
 | `Ctrl + C` | Copy selected device | Seçili cihazı kopyala |
 | `Ctrl + X` | Cut selected device | Seçili cihazı kes |
 | `Ctrl + V` | Paste | Yapıştır |

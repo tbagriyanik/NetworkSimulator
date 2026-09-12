@@ -1,8 +1,30 @@
 # NetworkSimulator — Tam Özellik Envanteri / Full Feature Inventory
 
-**Sürüm / Version:** 5.0.0 · **Son doğrulama / Last verified:** 2026-09-11
+**Sürüm / Version:** 5.2.0 · **Son doğrulama / Last verified:** 2026-09-12
 
-| Özellik | Güncel kapsam me sınır |
+## Son Ağ Simülasyonu Geliştirmeleri (2026-09-12 - v5.2.0)
+
+| Özellik | Güncel kapsam ve sınır |
+|---|---|
+| **Modüler Port İsimlendirme Ayrımı** | Harici eklenen modül portları (`Serial1/0/0`, `FastEthernet1/0/0`, `GigabitEthernet1/0/0`, `TenGigabitEthernet1/0/0`) dahili sabit portlarla çakışmayacak şekilde slot numarasına bağlı dinamik isimlendirildi (`modularExpansion.ts`, `portUtils.ts`). |
+| **L3 Switch Sabit Port Koruma & Modül Entegrasyonu** | `NS-L3-24PS` (WS-C3650-24PS) cihazına modül takıldığında dahili 24 Gigabit Ethernet (`gi1/0/1..24`) ve 4 Uplink (`gi1/1/1..4`) portlarının silinmesi veya modül sanılması engellendi, tüm sabit portlar eksiksiz korundu (`portUtils.ts`). |
+| **Router & Switch 3-Satırlı Port Çizim Düzeni** | Router topoloji SVG çiziminde dahili Gigabit portları 1. satırda (Row 0), dahili Serial ve Console portları 2. satırda (Row 1), sonradan eklenen genişletme modül portları ise 3. satırda (Row 2) ve sonraki satırlarda ayrı bir blok halinde konumlandırıldı (`DeviceRenderer.tsx`, `networkTopology.helpers.ts`). |
+| **`showRoutingDisplay.ts` Modüler Mimarisi** | 1820 satırlık dev gösterim dosyası tek sorumluluk prensibiyle protokol (`showRoutingProtocols.ts`), yedeklilik (`showRedundancyDisplay.ts`) ve servis (`showServicesDisplay.ts`) alt modüllerine bölündü; kod kalitesi ve bakım kolaylığı artırıldı. |
+| **Çevresel Ayarlar & UI İyileştirmesi** | Genel "Ayarlar" menü/panel başlığı "Çevresel Ayarlar" olarak güncellendi (`tr.json`). |
+
+## Çoklu Seçim, Izgara ve Animasyon Geliştirmeleri (2026-09-11 - v5.1.0)
+
+| Özellik | Güncel kapsam ve sınır |
+|---|---|
+| **Çoklu Cihaz Yatay & Dikey Dağıtım Araçları** | 3 veya daha fazla cihaz seçildiğinde beliren "Yatay Eşit Dağıt" ve "Dikey Eşit Dağıt" butonları ile cihazların tuval üzerinde milimetrik aralıklarla hizalanması sağlandı (`TopologySelectionToolbar.tsx`). |
+| **Nokta Izgara & Dinamik Snap-to-Grid** | Tuval üzerinde Snap-to-Grid anahtarı eklendi. Cihaz taşırken `Ctrl` tuşuna basılı tutulduğunda dinamik ızgaraya hizalama çalışmaktadır (`CanvasDefs.tsx`, `CanvasToolbar.tsx`). |
+| **Neon Kablo Akış Animasyonu & İptal Desteği** | Aktif bağlantılara süzülen neon veri akış parçacıkları ve SVG gölgeleri eklendi. Çizim esnasında sağ tıklama veya `Escape` ile kablo bağlama modundan güvenli çıkış sağlandı (`ConnectionLines.tsx`). |
+| **Kapsamlı Klavye & Tuval Kısayolları Modalı** | `Shift + ?` ve `Shift + /` veya araç çubuğu tetikleyicisi ile açılan 3 sütunlu genişletilmiş kısayol diyalog ekranı eklendi (`ShortcutsModal.tsx`). |
+| **Dokunmatik Pinch-to-Zoom Hassasiyeti** | EMA yumuşatması `0.85` seviyesine yükseltildi, minimum zoom adım eşiği `0.001` değerine çekilerek 2 parmakla akıcı ve anlık ölçekleme sağlandı (`useTopologyTouch.ts`). |
+
+## CLI Stub Temizliği & VRF-Lite / RESTCONF (2026-09-11 - v5.0.0)
+
+| Özellik | Güncel kapsam ve sınır |
 |---|---|
 | **CLI Stub Temizliği & Durum Değiştirici Komutlar** | `archive`, `macro`, `configure replace`, `mac access-list`, `template`, `transport output`, `transport preferred`, `access-class`, `session-limit`, `lockable` dâhil tüm stub komutlar kaldırıldı ve doğrudan `LineConfig`/`SwitchState` durumlarını güncelleyen aktif komut motorlarına dönüştürüldü (`lineCommands.ts`, `globalConfigNetworkCommands.ts`). |
 | **VRF-Lite, MPLS & VXLAN/EVPN CLI Entegrasyonu** | `ip vrf <name>`, `rd <asn:nn>`, `route-target`, `ip vrf forwarding <name>` ile VRF yönlendirme izolasyonu; `mpls ip`, `mpls ldp router-id` ile etiket anahtarlama; `interface nve<id>`, `member vni` ile VXLAN/EVPN tünelleme CLI komutlarına tam bağlandı (`globalConfigNetworkCommands.ts`, `interfaceCommands.ts`). |
