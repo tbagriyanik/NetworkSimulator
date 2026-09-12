@@ -137,13 +137,20 @@ export const getPortPosition = (device: CanvasDevice, portId: string) => {
     const isModulePortId = isModulePort(portId);
     
     if (isModulePortId) {
-      // Module ports go after all built-in ports
+      // Module ports go strictly on the row below all built-in ports
       const builtInPorts = device.ports.filter(p => !isModulePort(p.id) && p.id !== 'wlan0' && !p.id.startsWith('service'));
       const modulePorts = device.ports.filter(p => isModulePort(p.id));
       const modulePortIndex = modulePorts.findIndex(p => p.id === portId);
-      const totalBuiltInPorts = builtInPorts.length;
+      
+      let maxBuiltInRow = 0;
+      if (device.type === 'router') {
+        maxBuiltInRow = 1; // Router built-in ports occupy row 0 (gi) and row 1 (console + serial), so module ports start on row 2 (3rd row)
+      } else {
+        maxBuiltInRow = Math.max(0, Math.floor((builtInPorts.length - 1) / portsPerRow));
+      }
+
       actualCol = modulePortIndex % portsPerRow;
-      actualRow = Math.floor(totalBuiltInPorts / portsPerRow) + Math.floor(modulePortIndex / portsPerRow);
+      actualRow = (maxBuiltInRow + 1) + Math.floor(modulePortIndex / portsPerRow);
     } else if (device.type === 'router') {
       // Router built-in ports: gi ports row 0, other ports row 1
       const filteredPorts = device.ports.filter(p => p.id !== 'wlan0' && !p.id.startsWith('service') && !isModulePort(p.id));

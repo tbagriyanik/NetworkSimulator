@@ -64,23 +64,29 @@ export const isModulePort = (portId: string): boolean => {
     return false;
   }
 
-  // Expansion card ports typically follow slot notation 0/1/x, 0/2/x, or 3-part notation with non-zero middle slot
-  // Module ports like Serial0/1/0, FastEthernet0/1/0, etc.
-  // But exclude built-in serial ports s0/0/0, s0/1/0, s0/2/0 (already handled above)
-  if (/^[a-z]+\d*\/[1-9]\d*(\/\d+)?$/i.test(lower)) {
-    // Additional check: built-in serial ports have the pattern s0/x/0 where x is 0, 1, or 2
-    // Module serial ports have different patterns like Serial0/1/0 (first part is not just 's')
+  // Expansion card ports follow slot notation like Serial1/0/0, Serial0/1/0, FastEthernet1/0/0, GigabitEthernet1/0/0
+  // Or 3-part notation with non-zero slot index or full interface names (Serial, FastEthernet, GigabitEthernet, TenGigabitEthernet)
+  if (/^[a-z]+[1-9]\d*\/\d+(\/\d+)?$/i.test(lower)) {
+    return true;
+  }
+
+  if (/^(serial|fastethernet|gigabitethernet|tengigabitethernet)\d+\/\d+(\/\d+)?$/i.test(lower)) {
     const parts = lower.split('/');
     if (parts.length >= 3) {
       const middlePart = parseInt(parts[1], 10);
       const lastPart = parseInt(parts[2], 10);
-      // If it's s0/x/0 pattern where x is 0, 1, or 2, it's built-in
-      if (parts[0] === 's0' || parts[0] === 's') {
+      // Built-in serial ports use short 's0/0/0', 's0/1/0', 's0/2/0' format
+      if (lower.startsWith('serial0/')) {
         if (middlePart >= 0 && middlePart <= 2 && lastPart === 0) {
-          return false;
+          // If it starts with full 'Serial0/1/0' or 'Serial0/2/0' module naming
+          return true;
         }
       }
     }
+    return true;
+  }
+
+  if (/^[a-z]+\d*\/[1-9]\d*(\/\d+)?$/i.test(lower)) {
     return true;
   }
 

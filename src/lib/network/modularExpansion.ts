@@ -35,13 +35,13 @@ export const MODULE_CATALOG: Record<string, ExpansionModule> = {
     badge: 'Serial 2T',
     color: '#0284c7', // sky-600
     portGenerator: (slotIndex: number) => {
-      const port1Id = `Serial1/${slotIndex}/0`;
-      const port2Id = `Serial1/${slotIndex}/1`;
+      const port1Id = `Serial${slotIndex}/0/0`;
+      const port2Id = `Serial${slotIndex}/0/1`;
 
       const canvasPorts: CanvasPort[] = [
         {
           id: port1Id,
-          label: `Se1/${slotIndex}/0`,
+          label: `Se${slotIndex}/0/0`,
           status: 'disconnected',
           type: 'serial',
           adminStatus: 'down',
@@ -53,7 +53,7 @@ export const MODULE_CATALOG: Record<string, ExpansionModule> = {
         },
         {
           id: port2Id,
-          label: `Se1/${slotIndex}/1`,
+          label: `Se${slotIndex}/0/1`,
           status: 'disconnected',
           type: 'serial',
           adminStatus: 'down',
@@ -108,10 +108,10 @@ export const MODULE_CATALOG: Record<string, ExpansionModule> = {
       const switchPorts: Port[] = [];
 
       for (let p = 0; p < 4; p++) {
-        const portId = `FastEthernet1/${slotIndex}/${p}`;
+        const portId = `FastEthernet${slotIndex}/0/${p}`;
         canvasPorts.push({
           id: portId,
-          label: `Fa1/${slotIndex}/${p}`,
+          label: `Fa${slotIndex}/0/${p}`,
           status: 'disconnected',
           type: 'fastEthernet',
           adminStatus: 'up',
@@ -150,11 +150,11 @@ export const MODULE_CATALOG: Record<string, ExpansionModule> = {
     badge: '10G Fiber',
     color: '#8b5cf6', // purple-500
     portGenerator: (slotIndex: number) => {
-      const portId = `TenGigabitEthernet1/${slotIndex}/0`;
+      const portId = `TenGigabitEthernet${slotIndex}/0/0`;
       const canvasPorts: CanvasPort[] = [
         {
           id: portId,
-          label: `Te1/${slotIndex}/0`,
+          label: `Te${slotIndex}/0/0`,
           status: 'disconnected',
           type: 'tenGigabitEthernet',
           adminStatus: 'up',
@@ -194,11 +194,11 @@ export const MODULE_CATALOG: Record<string, ExpansionModule> = {
     badge: '1GE Copper',
     color: '#f59e0b', // amber-500
     portGenerator: (slotIndex: number) => {
-      const portId = `GigabitEthernet1/${slotIndex}/0`;
+      const portId = `GigabitEthernet${slotIndex}/0/0`;
       const canvasPorts: CanvasPort[] = [
         {
           id: portId,
-          label: `Gi1/${slotIndex}/0`,
+          label: `Gi${slotIndex}/0/0`,
           status: 'disconnected',
           type: 'gigabitEthernet',
           adminStatus: 'up',
@@ -279,6 +279,24 @@ export function getDeviceSlots(device: CanvasDevice): DeviceSlotInfo[] {
   return [];
 }
 
+function extractSlotIndexFromPortId(portId: string): number | null {
+  const lower = portId.toLowerCase();
+  // Case 1: Slot prefix like Serial1/0/0, FastEthernet2/0/0, GigabitEthernet3/0/0, Te1/0/0, Fa2/0/0
+  const prefixMatch = lower.match(/^[a-z]+([1-9]\d*)\/\d+(\/\d+)?$/);
+  if (prefixMatch) {
+    return parseInt(prefixMatch[1], 10);
+  }
+  // Case 2: Middle slot index like Serial0/1/0, Fa0/2/0, Gi0/1/0
+  const parts = lower.split('/');
+  if (parts.length >= 2) {
+    const middlePart = parseInt(parts[1], 10);
+    if (!isNaN(middlePart)) {
+      return middlePart;
+    }
+  }
+  return null;
+}
+
 /**
  * Installs a module into a device chassis slot.
  */
@@ -309,15 +327,9 @@ export function installExpansionModule(
         return true;
       }
       
-      // For module ports, check if they belong to this slot
-      // Module ports have patterns like Serial0/1/0, FastEthernet0/1/0, etc.
-      // We need to check if the slot index matches the second part of the port ID
-      const parts = p.id.toLowerCase().split('/');
-      if (parts.length >= 2) {
-        const middlePart = parseInt(parts[1], 10);
-        if (middlePart === slotIndex) {
-          return false; // Remove this module port from this slot
-        }
+      const portSlot = extractSlotIndexFromPortId(p.id);
+      if (portSlot === slotIndex) {
+        return false; // Remove this module port from this slot
       }
       return true;
     }
@@ -344,12 +356,9 @@ export function installExpansionModule(
     // Remove old slot ports (only module ports)
     Object.keys(nextPorts).forEach((pid) => {
       if (isModulePort(pid)) {
-        const parts = pid.toLowerCase().split('/');
-        if (parts.length >= 2) {
-          const middlePart = parseInt(parts[1], 10);
-          if (middlePart === slotIndex) {
-            delete nextPorts[pid];
-          }
+        const portSlot = extractSlotIndexFromPortId(pid);
+        if (portSlot === slotIndex) {
+          delete nextPorts[pid];
         }
       }
     });
@@ -397,12 +406,12 @@ export function removeExpansionModule(
   // Find connections using ports from this slot
   const removedConnections: string[] = [];
   connections.forEach((c) => {
-    const sourceIsModulePort = isModulePort(c.sourcePort) && (c.sourcePort.includes(`/${slotIndex}/`) || c.sourcePort.includes(`0/${slotIndex}/`));
-    const targetIsModulePort = isModulePort(c.targetPort) && (c.targetPort.includes(`/${slotIndex}/`) || c.targetPort.includes(`0/${slotIndex}/`));
+    const sourceSlot = isModulePort(c.sourcePort) ? extractSlotIndexFromPortId(c.sourcePort) : null;
+    const targetSlot = isModulePort(c.targetPort) ? extractSlotIndexFromPortId(c.targetPort) : null;
     
     if (
-      (c.sourceDeviceId === device.id && sourceIsModulePort) ||
-      (c.targetDeviceId === device.id && targetIsModulePort)
+      (c.sourceDeviceId === device.id && sourceSlot === slotIndex) ||
+      (c.targetDeviceId === device.id && targetSlot === slotIndex)
     ) {
       removedConnections.push(c.id);
     }
@@ -419,12 +428,9 @@ export function removeExpansionModule(
     }
     
     // For module ports, check if they belong to this slot
-    const parts = p.id.toLowerCase().split('/');
-    if (parts.length >= 2) {
-      const middlePart = parseInt(parts[1], 10);
-      if (middlePart === slotIndex) {
-        return false; // Remove this module port from this slot
-      }
+    const portSlot = extractSlotIndexFromPortId(p.id);
+    if (portSlot === slotIndex) {
+      return false; // Remove this module port from this slot
     }
     return true;
   });
@@ -442,12 +448,9 @@ export function removeExpansionModule(
     const nextPorts: Record<string, Port> = { ...switchState.ports };
     Object.keys(nextPorts).forEach((pid) => {
       if (isModulePort(pid)) {
-        const parts = pid.toLowerCase().split('/');
-        if (parts.length >= 2) {
-          const middlePart = parseInt(parts[1], 10);
-          if (middlePart === slotIndex) {
-            delete nextPorts[pid];
-          }
+        const portSlot = extractSlotIndexFromPortId(pid);
+        if (portSlot === slotIndex) {
+          delete nextPorts[pid];
         }
       }
     });
