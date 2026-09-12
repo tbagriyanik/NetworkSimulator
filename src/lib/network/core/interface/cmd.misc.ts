@@ -157,6 +157,52 @@ export function cmdVrrpPreempt(state: SwitchState, input: string, _ctx: CommandC
   return { success: true, newState: { ports: newPorts } };
 }
 
+/**
+ * no vrrp <group> [ip|priority|preempt]
+ */
+export function cmdNoVrrp(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  return noVrrpImpl(state, input);
+}
+
+/**
+ * no vrrp <group> preempt
+ */
+export function cmdNoVrrpPreempt(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  return noVrrpImpl(state, input);
+}
+
+function noVrrpImpl(state: SwitchState, input: string): CommandResult {
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
+  const match = input.match(/^no\s+vrrp\s+(\d+)(?:\s+(ip|priority|preempt))?$/i);
+  if (!match) return { success: false, error: '% Invalid vrrp command' };
+
+  const group = parseInt(match[1], 10);
+  const sub = match[2] ? match[2].toLowerCase() : undefined;
+
+  const updatePort = (port: Port) => {
+    const vrrp = port.vrrp || { groups: {} };
+    const groups = { ...vrrp.groups };
+    const existing = groups[group];
+
+    if (!sub) {
+      delete groups[group];
+    } else if (existing) {
+      if (sub === 'ip') {
+        const { virtualIp: _removed, ...rest } = existing;
+        groups[group] = { ...rest, state: 'Backup' };
+      } else if (sub === 'priority') {
+        groups[group] = { ...existing, priority: 100, basePriority: 100 };
+      } else if (sub === 'preempt') {
+        groups[group] = { ...existing, preempt: false };
+      }
+    }
+    return { ...port, vrrp: { ...vrrp, groups } };
+  };
+
+  const newPorts = applyToSelectedPorts(state, updatePort);
+  return { success: true, newState: { ports: newPorts } };
+}
+
 export function cmdSsid(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state) || !state.currentInterface) {
     return { success: false, error: '% No interface selected' };

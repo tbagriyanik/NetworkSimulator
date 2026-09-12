@@ -108,7 +108,24 @@ export function resolveAliases(input: string, state?: Partial<SwitchState>): str
       }
 
       const rest = input.trim().substring(alias.length).trim();
-      return rest ? full + ' ' + rest : full;
+      if (rest) {
+        // "sh cdp neighbors" gibi, expansion'ın son token'ı kullanıcı tarafından
+        // da yazılmışsa tekrarlamayı önle ("show cdp neighbors neighbors").
+        // Cisco'da eksik/ara yazımda son anahtar kelime atlanır.
+        const lastToken = full.trim().split(/\s+/).pop() || '';
+        let adjusted = rest;
+        if (lastToken && rest.toLowerCase() === lastToken.toLowerCase()) {
+          adjusted = '';
+        } else if (lastToken && rest.split(/\s+/)[0].toLowerCase() === lastToken.toLowerCase()) {
+          adjusted = rest.split(/\s+/).slice(1).join(' ');
+        }
+        if (adjusted) {
+          if (fullLower.endsWith(' ' + adjusted)) return full;
+          return full + ' ' + adjusted;
+        }
+        return full;
+      }
+      return full;
     }
   }
 

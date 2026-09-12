@@ -83,7 +83,7 @@ export function cmdPing(state: SwitchState, input: string, ctx: CommandContext):
 
         // Handle port security violations - update state if needed
         if (connectivity.portSecurityViolations && connectivity.portSecurityViolations.length > 0) {
-            connectivity.portSecurityViolations.forEach(violation => {
+            connectivity.portSecurityViolations.forEach((violation: any) => {
                 if (violation.action === 'shutdown') {
                     const deviceState = updatedDeviceStates.get(violation.deviceId);
                     if (deviceState) {
@@ -115,7 +115,7 @@ export function cmdPing(state: SwitchState, input: string, ctx: CommandContext):
             const bytesPerPacket = parseInt(size, 10) || 56;
             const totalBytes = numPackets * bytesPerPacket;
 
-            connectivity.traversedPorts.forEach(traversed => {
+            connectivity.traversedPorts.forEach((traversed: any) => {
                 const deviceState = updatedDeviceStates.get(traversed.deviceId);
                 if (deviceState) {
                     const updatedPorts = { ...deviceState.ports };

@@ -2,7 +2,7 @@ import type { CanvasDevice, CanvasConnection } from '@/components/network/networ
 import type { SwitchState } from '@/lib/network/types';
 import { scheduleQosPackets, type QosPacket, type QosScheduleResult } from '@/lib/network/qosScheduler';
 import { establishIpsecSa, encapsulateEsp, type EspPacket } from '@/lib/network/ipsec';
-import { checkConnectivity } from './pathResolution';
+import { checkConnectivity } from './pathResolution/algorithm';
 
 /** Resolves a path and applies configured QoS/IPsec simulation to its packet batch. */
 export function resolvePathTraffic(

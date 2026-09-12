@@ -538,6 +538,12 @@ export const routingPatterns: Record<string, CommandPattern> = {
     minArgs: 0,
     maxArgs: 2
   },
+  'no spanning-tree portfast': {
+    pattern: /^no\s+spanning-tree\s+portfast$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 0,
+    maxArgs: 0
+  },
   'errdisable recovery': {
     pattern: /^errdisable\s+recovery\s+(cause|interval)\s+(.+)$/i,
     modes: ['config'],

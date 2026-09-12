@@ -63,7 +63,7 @@ import { useUiPreferences } from '@/hooks/useUiPreferences';
 import { TopologyModals } from './topology/TopologyModals';
 import { DEVICE_ICONS } from './topology/DeviceIcons';
 import { TopologySelectionToolbar } from './topology/TopologySelectionToolbar';
-import { TopologyCanvasLayer } from './topology/TopologyCanvasLayer';
+import { NetworkCanvas } from './NetworkTopology/NetworkCanvas';
 import { TopologyFullscreenButton } from './topology/TopologyFullscreenButton';
 import { TopologyPaletteSheet } from './topology/TopologyPaletteSheet';
 import { TopologyTooltips } from './topology/TopologyTooltips';
@@ -1402,22 +1402,6 @@ export function NetworkTopology({
     onOpenShortcutsModal: () => setShowShortcutsModal(true),
   });
 
-  const _liveRegionText = useMemo(() => {
-    const selectedCount = selectedDeviceIds.length;
-    const totalCount = devices.length;
-    const deviceLabel = totalCount === 1
-      ? (language === 'tr' ? 'cihaz' : 'device')
-      : (language === 'tr' ? 'cihaz' : 'devices');
-    let text = `${totalCount} ${deviceLabel}`;
-    if (selectedCount > 0) {
-      const selLabel = selectedCount === 1
-        ? (language === 'tr' ? 'seçili' : 'selected')
-        : (language === 'tr' ? 'seçili' : 'selected');
-      text += `, ${selectedCount} ${selLabel}`;
-    }
-    return text;
-  }, [devices.length, selectedDeviceIds.length, language]);
-
   return (
     <div
       onContextMenu={(e) => e.preventDefault()}
@@ -1468,11 +1452,7 @@ export function NetworkTopology({
             deleteDevice={deleteDevice}
           />
 
-          {/* Canvas */}
-          <div aria-live="polite" aria-atomic="true" className="sr-only">
-            {_liveRegionText}
-          </div>
-          <TopologyCanvasLayer
+          <NetworkCanvas
             canvasRef={canvasRef}
             svgContentGroupRef={svgContentGroupRef}
             isDark={isDark}
@@ -1512,7 +1492,7 @@ export function NetworkTopology({
             handleTouchStart={handleTouchStart}
             handleTouchMove={handleTouchMove}
             handleTouchEnd={handleTouchEnd}
-            handleContextMenu={(e, deviceId) => handleContextMenu(e as unknown as ReactMouseEvent, deviceId)}
+            handleContextMenu={handleContextMenu}
             handleNoteHeaderMouseDown={handleNoteHeaderMouseDown}
             handleNoteHeaderTouchStart={handleNoteHeaderTouchStart}
             cycleNoteColor={cycleNoteColor}

@@ -9,7 +9,7 @@ import {
   isIpInSubnet,
   isPortShutdown,
 } from '@/lib/network/connectivity.utils';
-import { checkConnectivity } from './pathResolution';
+import { checkConnectivity } from './pathResolution/algorithm';
 
 export function checkDeviceConnectivity(
   sourceId: string,

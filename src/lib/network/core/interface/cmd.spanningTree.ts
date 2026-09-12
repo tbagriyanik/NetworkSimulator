@@ -15,6 +15,27 @@ export function cmdSpanningTreePortfast(state: SwitchState, _input: string, _ctx
   });
 }
 
+export function cmdNoSpanningTreePortfast(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  if (!isInInterfaceMode(state)) {
+    return { success: false, error: cliModeError() };
+  }
+
+  const updatePort = (port: Port) => {
+    const spanningTree = port.spanningTree ?? {};
+    return { ...port, spanningTree: { ...spanningTree, portfast: false } };
+  };
+
+  if (state.selectedInterfaces?.length) {
+    return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
+  }
+
+  if (!state.currentInterface) return { success: false, error: '% No interface selected' };
+
+  const newPorts = { ...state.ports };
+  newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {} as Port);
+  return { success: true, output: 'PortFast disabled', newState: { ports: newPorts } };
+}
+
 /**
  * Spanning-Tree BPDU Guard
  */

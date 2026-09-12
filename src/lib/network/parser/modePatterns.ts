@@ -59,13 +59,13 @@ export const modePatterns: Record<string, CommandPattern> = {
   },
   'exit': {
     pattern: /^exit$/i,
-    modes: ['privileged', 'config', 'interface', 'config-if-range', 'line', 'vlan', 'dhcp-config', 'router-config', 'config-std-nacl', 'config-ext-nacl', 'ap-config', 'dot11-config', 'ssid-config', 'config-mst', 'config-route-map'],
+    modes: ['privileged', 'config', 'interface', 'config-if-range', 'line', 'vlan', 'dhcp-config', 'router-config', 'config-std-nacl', 'config-ext-nacl', 'config-ipv6-acl', 'ap-config', 'dot11-config', 'ssid-config', 'config-mst', 'config-route-map'],
     minArgs: 0,
     maxArgs: 0
   },
   'end': {
     pattern: /^end$/i,
-    modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'dhcp-config', 'router-config', 'config-std-nacl', 'config-ext-nacl', 'ap-config', 'dot11-config', 'ssid-config', 'config-mst', 'config-route-map'],
+    modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'dhcp-config', 'router-config', 'config-std-nacl', 'config-ext-nacl', 'config-ipv6-acl', 'ap-config', 'dot11-config', 'ssid-config', 'config-mst', 'config-route-map'],
     minArgs: 0,
     maxArgs: 0
   },

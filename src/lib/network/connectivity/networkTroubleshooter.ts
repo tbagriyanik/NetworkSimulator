@@ -2,7 +2,7 @@ import { CanvasDevice, CanvasConnection } from '@/components/network/networkTopo
 import { SwitchState } from '@/lib/network/types';
 import { ensureDeviceStatesMap } from '@/lib/network/networkUtils';
 import { isIpInSubnet, isPortShutdown } from '@/lib/network/connectivity.utils';
-import { checkConnectivity } from './pathResolution';
+import { checkConnectivity } from './pathResolution/algorithm';
 
 export interface DiagnosticIssue {
   id: string;

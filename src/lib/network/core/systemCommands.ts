@@ -4,6 +4,7 @@ import { showHandlers } from './showCommands';
 import { privilegedHandlers } from './privilegedCommands';
 import { parseCommand, validateCommand } from '../parser';
 import type { SwitchState, CommandResult, CommandMode } from '../types';
+import { getCommandCapabilityError } from './commandCapabilityCheck';
 
 // Sistem ve oturum komutları (enable, configure terminal, ping, reload, debug, vs.)
 
@@ -231,6 +232,29 @@ function cmdExit(
           currentSsid: undefined
         }
       };
+    case 'config-ipv6-acl':
+      return {
+        success: true,
+        newState: {
+          currentMode: 'config',
+          currentIpv6Acl: undefined
+        }
+      };
+    case 'config-mst':
+      return {
+        success: true,
+        newState: {
+          currentMode: 'config'
+        }
+      };
+    case 'ap-config':
+      return {
+        success: true,
+        newState: {
+          currentMode: 'config',
+          currentApName: undefined
+        }
+      };
     case 'privileged':
     case 'user':
       return {
@@ -260,6 +284,10 @@ function cmdEnd(
     case 'router-config':
     case 'config-std-nacl':
     case 'config-ext-nacl':
+    case 'config-ipv6-acl':
+    case 'config-route-map':
+    case 'config-mst':
+    case 'ap-config':
     case 'dot11-config':
     case 'ssid-config':
       return {
@@ -270,7 +298,9 @@ function cmdEnd(
           currentRadio: undefined,
           currentSsid: undefined,
           currentNamedAcl: undefined,
-          currentExtendedAcl: undefined
+          currentExtendedAcl: undefined,
+          currentIpv6Acl: undefined,
+          currentApName: undefined
         }
       };
     case 'dhcp-config':
@@ -335,6 +365,12 @@ function cmdDo(
 
   const matched = validationSub.matchedPattern;
   const normalizedInput = parsedSub.resolvedInput || subCommand;
+
+  // Enforce the same device capability rules as the direct command path
+  const capabilityError = getCommandCapabilityError(matched, state);
+  if (capabilityError) {
+    return { success: false, error: capabilityError };
+  }
 
   // Special case: 'write memory' / 'copy running-config startup-config' triggers config save
   if (matched === 'write memory' || matched === 'copy running-config startup-config') {

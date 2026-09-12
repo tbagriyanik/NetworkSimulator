@@ -217,6 +217,7 @@ import {
 
 import {
   cmdSpanningTreePortfast,
+  cmdNoSpanningTreePortfast,
   cmdSpanningTreeBpduguard,
   cmdSpanningTreeBpduguardDisable,
   cmdSpanningTreeCost,
@@ -249,6 +250,8 @@ import {
   cmdVrrpIp,
   cmdVrrpPriority,
   cmdVrrpPreempt,
+  cmdNoVrrp,
+  cmdNoVrrpPreempt,
   cmdQosSetDscp,
   cmdIpDhcpSnoopingLimitRate,
 } from './interface/cmd.misc';
@@ -273,6 +276,7 @@ export const interfaceHandlers: Record<string, CommandHandler> = {
   'switchport port-security mac-address sticky': cmdSwitchportPortSecuritySticky,
   'no switchport': cmdNoSwitchport,
   'spanning-tree portfast': cmdSpanningTreePortfast,
+  'no spanning-tree portfast': cmdNoSpanningTreePortfast,
   'spanning-tree bpduguard': cmdSpanningTreeBpduguard,
   'ip address': cmdIpAddress,
   'no ip address': cmdNoIpAddress,
@@ -412,6 +416,8 @@ export const interfaceHandlers: Record<string, CommandHandler> = {
   'vrrp priority': cmdVrrpPriority,
   'vrrp preempt': cmdVrrpPreempt,
   'vrrp': cmdVrrpIp,
+  'no vrrp preempt': cmdNoVrrpPreempt,
+  'no vrrp': cmdNoVrrp,
   'ipv6 traffic-filter': cmdIpv6TrafficFilter,
   'no ipv6 traffic-filter': cmdIpv6TrafficFilter,
   'ip nat inside': cmdIpNatInside,

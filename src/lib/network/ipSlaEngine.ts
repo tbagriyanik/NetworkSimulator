@@ -1,6 +1,6 @@
 import { SwitchState, IpSlaOperation } from './types';
 import { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
-import { checkConnectivity } from './connectivity/pathResolution';
+import { checkConnectivity } from './connectivity/pathResolution/algorithm';
 
 export function createIpSlaOperation(id: string, target: string, type: 'icmp-echo'|'jitter' = 'icmp-echo', frequency = 60, timeout = 5000): IpSlaOperation {
   return { id, target, type, frequency, timeout, running: false,

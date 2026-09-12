@@ -317,3 +317,48 @@ export function cmdNoIpAccessList(state: SwitchState, input: string, _ctx: Comma
 
   return { success: true, output: `IP access-list ${aclName} removed`, newState: { accessLists } };
 }
+
+/**
+ * seq <seq> permit|deny ... inside a named-ACL sub-mode.
+ * Routes to the std/ext handler based on the current sub-mode.
+ */
+export function cmdSeqNamedAcl(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
+  const isExt = state.currentMode === 'config-ext-nacl';
+  const isDeny = /^(?:\d+\s+)?deny\s+/i.test(input);
+  if (isDeny) {
+    return (isExt ? cmdExtAclDeny : cmdNamedAclDeny)(state, input, ctx);
+  }
+  return (isExt ? cmdExtAclPermit : cmdNamedAclPermit)(state, input, ctx);
+}
+
+/**
+ * no <seq> | no permit ... | no deny ... inside a named-ACL sub-mode.
+ */
+export function cmdNoNamedAcl(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
+  const isExt = state.currentMode === 'config-ext-nacl';
+  const seqMatch = input.match(/^no\s+\d+$/i);
+  if (seqMatch) {
+    return (isExt ? cmdExtAclNoPermit : cmdNamedAclNoPermit)(state, input, ctx);
+  }
+  const isDeny = /^no\s+deny\s+/i.test(input);
+  if (isDeny) {
+    return (isExt ? cmdExtAclNoDeny : cmdNamedAclNoDeny)(state, input, ctx);
+  }
+  if (/^no\s+permit\s+/i.test(input)) {
+    return (isExt ? cmdExtAclNoPermit : cmdNamedAclNoPermit)(state, input, ctx);
+  }
+  return { success: false, error: '% Invalid command' };
+}
+
+export function cmdNoIpv6AccessList(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: '% Invalid command' };
+
+  const match = input.match(/^no\s+ipv6\s+access-list\s+(\S+)$/i);
+  if (!match) return { success: false, error: '% Invalid command' };
+
+  const aclName = match[1];
+  const ipv6AccessLists = { ...state.ipv6AccessLists };
+  delete ipv6AccessLists[aclName];
+
+  return { success: true, output: `IPv6 access-list ${aclName} removed`, newState: { ipv6AccessLists } };
+}

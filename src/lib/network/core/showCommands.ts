@@ -93,7 +93,6 @@ export const showHandlers: Record<string, CommandHandler> = {
   'show ap join stats': cmdShowApJoinStats,
   'show ssh': cmdShowSsh,
   'show ip ssh': cmdShowSsh,
-  'do show': cmdDoShow,
   'show ip dhcp snooping': cmdShowIpDhcpSnooping,
   'show interfaces status': cmdShowInterfacesStatus,
   'show cdp': cmdShowCdp,
@@ -300,35 +299,6 @@ function cmdShowRunningConfigInterface(
 
 
 
-
-/**
- * Do Show - Execute show command from config mode
- */
-function cmdDoShow(
-  state: SwitchState,
-  input: string,
-  ctx: CommandContext
-): CommandResult {
-  const match = input.match(/^do\s+(sh(?:ow)?\s+.+)$/i);
-  if (!match) {
-    return { success: false, error: '% Invalid command' };
-  }
-
-  let showCommand = match[1];
-  if (showCommand.startsWith('sh ')) {
-    showCommand = 'show ' + showCommand.substring(3);
-  }
-
-  const lowered = showCommand.toLowerCase();
-  const showKey = Object.keys(showHandlers)
-    .filter(key => lowered === key || lowered.startsWith(`${key} `))
-    .sort((a, b) => b.length - a.length)[0];
-  if (showKey && showHandlers[showKey]) {
-    return showHandlers[showKey](state, showCommand, ctx);
-  }
-
-  return { success: false, error: "% Invalid input detected at '^' marker." };
-}
 
 /**
  * Show Wireless - Display WiFi settings

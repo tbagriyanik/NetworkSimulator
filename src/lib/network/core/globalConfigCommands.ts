@@ -66,7 +66,10 @@ import {
   cmdExtAclDeny,
   cmdExtAclNoPermit,
   cmdExtAclNoDeny,
-  cmdNoIpAccessList
+  cmdNoIpAccessList,
+  cmdSeqNamedAcl,
+  cmdNoNamedAcl,
+  cmdNoIpv6AccessList
 } from './globalConfigAclCommands';
 
 import {
@@ -265,6 +268,9 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'ipv6 access-list': cmdIpv6AccessList,
   'permit (ipv6-acl)': cmdIpv6AclPermit,
   'deny (ipv6-acl)': cmdIpv6AclDeny,
+  'seq permit/deny (named-acl)': cmdSeqNamedAcl,
+  'no (named-acl)': cmdNoNamedAcl,
+  'no ipv6 access-list': cmdNoIpv6AccessList,
   'ip host': cmdIpHost,
   'no ip host': cmdNoIpHost,
   'no ipv6 dhcp pool': cmdNoIpv6DhcpPool,

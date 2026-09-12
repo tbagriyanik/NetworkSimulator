@@ -281,7 +281,7 @@ export const PacketTraceInspector: React.FC<PacketTraceInspectorProps> = ({
             onClick={() => setShowPduModal(true)}
             className="px-3 py-1 bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-400 border border-cyan-500/40 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors"
           >
-            🔍 Görsel PDU & Wireshark İnceleyici
+            🔍 Görsel PDU İnceleyici
           </button>
         </div>
         <PacketTraceView pipelineResult={pipelineResult} onSelectHop={onSelectHop} isDark={isDark} />
@@ -320,7 +320,7 @@ export const PacketTraceInspector: React.FC<PacketTraceInspectorProps> = ({
               onClick={() => setShowPduModal(true)}
               className="px-3 py-1.5 text-xs text-cyan-300 bg-cyan-950/60 hover:bg-cyan-900/60 border border-cyan-500/40 rounded-lg transition font-medium"
             >
-              🔍 PDU & Wireshark İnceleyici
+              🔍 PDU İnceleyici
             </button>
             {onClose && (
               <button

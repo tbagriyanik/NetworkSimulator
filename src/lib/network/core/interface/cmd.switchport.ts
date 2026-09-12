@@ -272,7 +272,7 @@ export function cmdSwitchportAccessVlan(state: SwitchState, input: string, ctx: 
 
     newPorts[portId] = {
       ...port,
-      accessVlan: vlanId,
+      accessVlan: vlanIdNum,
       vlan: targetVlanId,
       mode: 'access',
     };
