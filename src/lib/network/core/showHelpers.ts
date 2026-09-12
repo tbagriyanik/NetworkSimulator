@@ -3,7 +3,14 @@ import type { SwitchState, Port } from '../types';
 
 export function isPhysicalEthernetPort(portId: string): boolean {
   const p = portId.toLowerCase();
-  return (p.startsWith('fa') || p.startsWith('gi')) && !p.includes('.') && !p.startsWith('vlan') && !p.startsWith('wlan') && p !== 'console' && !p.startsWith('s');
+  return (
+    (p.startsWith('fa') || p.startsWith('gi') || p.startsWith('te') || p.startsWith('eth')) &&
+    !p.includes('.') &&
+    !p.startsWith('vlan') &&
+    !p.startsWith('wlan') &&
+    p !== 'console' &&
+    !p.startsWith('s')
+  );
 }
 
 export function getAllowedVlansString(port: Port | undefined): string {
@@ -116,15 +123,65 @@ export function getNetworkAddress(ipAddress: string, subnetMask: string): string
 }
 
 export function formatPortName(portName: string): string {
-  const lowerName = portName.toLowerCase();
-  if (lowerName.startsWith('fa')) {
-    return 'FastEthernet' + lowerName.slice(2);
-  } else if (lowerName.startsWith('gi')) {
-    return 'GigabitEthernet' + lowerName.slice(2);
-  } else if (lowerName.startsWith('eth')) {
-    return 'Ethernet' + lowerName.slice(4);
+  if (!portName) return '';
+  const trimmed = portName.trim();
+  const lower = trimmed.toLowerCase();
+
+  // FastEthernet: fa0/1, fastethernet0/1, fa0/1/0, fastethernet0/1/0, fastethernetstethernet0/1/0 etc.
+  const faMatch = lower.match(/^(?:fastethernet(?:stethernet)?|fast|fa|f)(\d+.*)$/i);
+  if (faMatch) {
+    return `FastEthernet${faMatch[1]}`;
   }
-  return portName;
+
+  // GigabitEthernet: gi0/1, gigabitethernet0/1, gi0/1/0, etc.
+  const giMatch = lower.match(/^(?:gigabitethernet|gigabit|gig|gi|g)(\d+.*)$/i);
+  if (giMatch) {
+    return `GigabitEthernet${giMatch[1]}`;
+  }
+
+  // TenGigabitEthernet: te0/1/0, tengigabitethernet0/1/0, te0/1, etc.
+  const teMatch = lower.match(/^(?:tengigabitethernet|tengigabit|tengig|teng|te)(\d+.*)$/i);
+  if (teMatch) {
+    return `TenGigabitEthernet${teMatch[1]}`;
+  }
+
+  // Serial: s0/0/0, serial0/0/0, se0/0/0, s0/1, etc.
+  const serialMatch = lower.match(/^(?:serial|se|s)(\d+.*)$/i);
+  if (serialMatch) {
+    return `Serial${serialMatch[1]}`;
+  }
+
+  // Ethernet: eth0, ethernet0, e0, eth0/1, etc.
+  const ethMatch = lower.match(/^(?:ethernet|eth|e)(\d+.*)$/i);
+  if (ethMatch) {
+    return `Ethernet${ethMatch[1]}`;
+  }
+
+  // Loopback: lo0, loopback0, etc.
+  const loMatch = lower.match(/^(?:loopback|lo)(\d+.*)$/i);
+  if (loMatch) {
+    return `Loopback${loMatch[1]}`;
+  }
+
+  // VLAN: vlan1, vlan10, etc.
+  const vlanMatch = lower.match(/^vlan(\d+.*)$/i);
+  if (vlanMatch) {
+    return `Vlan${vlanMatch[1]}`;
+  }
+
+  // Port-channel: po1, port-channel1, etc.
+  const poMatch = lower.match(/^(?:port-channel|portchannel|po)(\d+.*)$/i);
+  if (poMatch) {
+    return `Port-channel${poMatch[1]}`;
+  }
+
+  // Tunnel: tunnel0, tun0, etc.
+  const tunMatch = lower.match(/^(?:tunnel|tun)(\d+.*)$/i);
+  if (tunMatch) {
+    return `Tunnel${tunMatch[1]}`;
+  }
+
+  return trimmed;
 }
 
 export function formatMacAddressSimple(mac: string): string {

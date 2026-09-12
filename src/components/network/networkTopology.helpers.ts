@@ -2,6 +2,7 @@ import { DeviceType } from './networkTopology.types';
 import { PORT_SPACING, PORT_START_X, PORT_START_Y, PC_PORT_SPACING } from './networkTopology.constants';
 import { CanvasDevice, CanvasConnection } from './networkTopology.types';
 import { isCableCompatible, CABLE_COMPATIBILITY } from '@/lib/network/types';
+import { isModulePort } from '@/lib/network/portUtils';
 
 // Device dimension constants
 const DEVICE_DIMENSIONS = {
@@ -84,28 +85,7 @@ export const getDeviceCenter = (device: CanvasDevice) => {
   return { x: device.x + deviceWidth / 2, y: device.y + deviceHeight / 2 };
 };
 
-export const isModulePort = (portId: string): boolean => {
-  const lower = portId.toLowerCase();
-  // Base built-in router ports: gi0/0 - gi0/3, console, s0/0/0, s0/1/0, s0/2/0.
-  if (lower === 'console' || lower === 'wlan0' || lower.startsWith('vlan')) return false;
-  
-  // Standard built-in router ports: gi0/0 to gi0/3, s0/0/0 to s0/2/0
-  if (/^gi0\/[0-3]$/.test(lower) || /^s0\/[0-2]\/0$/.test(lower)) {
-    return false;
-  }
 
-  // Switch base ports: fa0/1 - fa0/24, gi1/0/1 - gi1/0/4, etc.
-  if (/^fa0\/([1-9]|1[0-9]|2[0-4])$/.test(lower) || /^gi1\/0\/[1-4]$/.test(lower)) {
-    return false;
-  }
-
-  // Expansion card ports typically follow slot notation 0/1/x, 0/2/x, or 3-part notation with non-zero middle slot
-  if (/^[a-z]+\d*\/[1-9]\d*(\/\d+)?$/i.test(lower)) {
-    return true;
-  }
-
-  return false;
-};
 
 export const getPortPosition = (device: CanvasDevice, portId: string) => {
   // IoT wireless links terminate at the visible Wi-Fi indicator, not at a
@@ -134,22 +114,44 @@ export const getPortPosition = (device: CanvasDevice, portId: string) => {
   // Router/WLC: Gi ports row 0, Console+Serial ports row 1
   let actualCol: number;
   let actualRow: number;
-  if (device.type === 'router' || device.type === 'wlc') {
+  
+  // Handle routers and switches with module ports
+  const isRouterOrSwitch = device.type === 'router' || device.type === 'switchL2' || device.type === 'switchL3';
+  
+  if (device.type === 'wlc') {
     const filteredPorts = device.ports.filter(p => p.id !== 'wlan0' && !p.id.startsWith('service'));
     const portIdLower = portId.toLowerCase();
     const giPorts = filteredPorts.filter(p => p.id.toLowerCase().startsWith('gi'));
     const otherPorts = filteredPorts.filter(p => !p.id.toLowerCase().startsWith('gi'));
     const isGi = portIdLower.startsWith('gi');
-    if (device.type === 'wlc') {
-      // WLC: all ports in single row, console after gi ports
-      if (isGi) {
-        actualCol = giPorts.findIndex(p => p.id === portId);
-      } else {
-        actualCol = giPorts.length + otherPorts.findIndex(p => p.id === portId);
-      }
-      actualRow = 0;
+    
+    // WLC: all ports in single row, console after gi ports
+    if (isGi) {
+      actualCol = giPorts.findIndex(p => p.id === portId);
     } else {
-      // Router: gi ports row 0, other ports row 1
+      actualCol = giPorts.length + otherPorts.findIndex(p => p.id === portId);
+    }
+    actualRow = 0;
+  } else if (isRouterOrSwitch) {
+    // Check if current port is a module port
+    const isModulePortId = isModulePort(portId);
+    
+    if (isModulePortId) {
+      // Module ports go after all built-in ports
+      const builtInPorts = device.ports.filter(p => !isModulePort(p.id) && p.id !== 'wlan0' && !p.id.startsWith('service'));
+      const modulePorts = device.ports.filter(p => isModulePort(p.id));
+      const modulePortIndex = modulePorts.findIndex(p => p.id === portId);
+      const totalBuiltInPorts = builtInPorts.length;
+      actualCol = modulePortIndex % portsPerRow;
+      actualRow = Math.floor(totalBuiltInPorts / portsPerRow) + Math.floor(modulePortIndex / portsPerRow);
+    } else if (device.type === 'router') {
+      // Router built-in ports: gi ports row 0, other ports row 1
+      const filteredPorts = device.ports.filter(p => p.id !== 'wlan0' && !p.id.startsWith('service') && !isModulePort(p.id));
+      const portIdLower = portId.toLowerCase();
+      const giPorts = filteredPorts.filter(p => p.id.toLowerCase().startsWith('gi'));
+      const otherPorts = filteredPorts.filter(p => !p.id.toLowerCase().startsWith('gi'));
+      const isGi = portIdLower.startsWith('gi');
+      
       if (isGi) {
         actualCol = giPorts.findIndex(p => p.id === portId);
         actualRow = 0;
@@ -157,8 +159,13 @@ export const getPortPosition = (device: CanvasDevice, portId: string) => {
         actualCol = otherPorts.findIndex(p => p.id === portId);
         actualRow = 1;
       }
+    } else {
+      // Switch built-in ports maintain their original order
+      actualCol = col;
+      actualRow = row;
     }
   } else {
+    // Other devices: standard positioning
     actualCol = col;
     actualRow = row;
   }

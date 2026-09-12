@@ -1,5 +1,6 @@
 import type { CanvasDevice, CanvasPort, CanvasConnection } from '@/components/network/networkTopology.types';
 import type { SwitchState, Port } from '@/lib/network/types';
+import { isModulePort } from './portUtils';
 
 export interface ExpansionModule {
   id: string; // e.g. 'WIC-2T'
@@ -300,9 +301,31 @@ export function installExpansionModule(
   const { canvasPorts, switchPorts } = moduleDef.portGenerator(slotIndex);
 
   // Filter out any previous ports that might have belonged to this slot
+  // Be careful not to remove built-in ports that might contain similar patterns
   const cleanCanvasPorts = (device.ports || []).filter(
-    (p) => !p.id.includes(`0/${slotIndex}/`)
+    (p) => {
+      // Built-in ports should never be removed
+      if (!isModulePort(p.id)) {
+        return true;
+      }
+      
+      // For module ports, check if they belong to this slot
+      // Module ports have patterns like Serial0/1/0, FastEthernet0/1/0, etc.
+      // We need to check if the slot index matches the second part of the port ID
+      const parts = p.id.toLowerCase().split('/');
+      if (parts.length >= 2) {
+        const middlePart = parseInt(parts[1], 10);
+        if (middlePart === slotIndex) {
+          return false; // Remove this module port from this slot
+        }
+      }
+      return true;
+    }
   );
+
+  // Separate built-in ports from module ports to maintain proper ordering
+  const builtInPorts = cleanCanvasPorts.filter(p => !isModulePort(p.id));
+  const existingModulePorts = cleanCanvasPorts.filter(p => isModulePort(p.id));
 
   const updatedInstalledModules = {
     ...device.installedModules,
@@ -312,16 +335,22 @@ export function installExpansionModule(
   const updatedDevice: CanvasDevice = {
     ...device,
     installedModules: updatedInstalledModules,
-    ports: [...cleanCanvasPorts, ...canvasPorts],
+    ports: [...builtInPorts, ...existingModulePorts, ...canvasPorts],
   };
 
   let updatedSwitchState = switchState;
   if (switchState) {
     const nextPorts: Record<string, Port> = { ...switchState.ports };
-    // Remove old slot ports
+    // Remove old slot ports (only module ports)
     Object.keys(nextPorts).forEach((pid) => {
-      if (pid.includes(`0/${slotIndex}/`)) {
-        delete nextPorts[pid];
+      if (isModulePort(pid)) {
+        const parts = pid.toLowerCase().split('/');
+        if (parts.length >= 2) {
+          const middlePart = parseInt(parts[1], 10);
+          if (middlePart === slotIndex) {
+            delete nextPorts[pid];
+          }
+        }
       }
     });
     // Add new ports
@@ -368,9 +397,12 @@ export function removeExpansionModule(
   // Find connections using ports from this slot
   const removedConnections: string[] = [];
   connections.forEach((c) => {
+    const sourceIsModulePort = isModulePort(c.sourcePort) && c.sourcePort.includes(`0/${slotIndex}/`);
+    const targetIsModulePort = isModulePort(c.targetPort) && c.targetPort.includes(`0/${slotIndex}/`);
+    
     if (
-      (c.sourceDeviceId === device.id && c.sourcePort.includes(`0/${slotIndex}/`)) ||
-      (c.targetDeviceId === device.id && c.targetPort.includes(`0/${slotIndex}/`))
+      (c.sourceDeviceId === device.id && sourceIsModulePort) ||
+      (c.targetDeviceId === device.id && targetIsModulePort)
     ) {
       removedConnections.push(c.id);
     }
@@ -379,18 +411,44 @@ export function removeExpansionModule(
   const updatedInstalledModules = { ...device.installedModules };
   delete updatedInstalledModules[slotIndex];
 
+  // Filter out the module ports while maintaining proper ordering
+  const cleanPorts = (device.ports || []).filter((p) => {
+    // Built-in ports should never be removed
+    if (!isModulePort(p.id)) {
+      return true;
+    }
+    
+    // For module ports, check if they belong to this slot
+    const parts = p.id.toLowerCase().split('/');
+    if (parts.length >= 2) {
+      const middlePart = parseInt(parts[1], 10);
+      if (middlePart === slotIndex) {
+        return false; // Remove this module port from this slot
+      }
+    }
+    return true;
+  });
+  const builtInPorts = cleanPorts.filter(p => !isModulePort(p.id));
+  const remainingModulePorts = cleanPorts.filter(p => isModulePort(p.id));
+
   const updatedDevice: CanvasDevice = {
     ...device,
     installedModules: updatedInstalledModules,
-    ports: (device.ports || []).filter((p) => !p.id.includes(`0/${slotIndex}/`)),
+    ports: [...builtInPorts, ...remainingModulePorts],
   };
 
   let updatedSwitchState = switchState;
   if (switchState) {
     const nextPorts: Record<string, Port> = { ...switchState.ports };
     Object.keys(nextPorts).forEach((pid) => {
-      if (pid.includes(`0/${slotIndex}/`)) {
-        delete nextPorts[pid];
+      if (isModulePort(pid)) {
+        const parts = pid.toLowerCase().split('/');
+        if (parts.length >= 2) {
+          const middlePart = parseInt(parts[1], 10);
+          if (middlePart === slotIndex) {
+            delete nextPorts[pid];
+          }
+        }
       }
     });
 

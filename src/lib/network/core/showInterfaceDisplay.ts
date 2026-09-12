@@ -1,4 +1,3 @@
-import { isRouterModel } from '../switchModels';
 import type { CommandContext } from './commandTypes';
 import type { CanvasConnection } from '@/components/network/networkTopology.types';
 import type { SwitchState, CommandResult, Port } from '../types';
@@ -435,15 +434,8 @@ export function cmdShowIpInterfaceBrief(
   }
 
   let output = 'Interface              IP-Address      OK? Method Status                Protocol\n';
-  const modelName = String(state?.version?.modelName || '');
-  const isRouter = isRouterModel(modelName) || isRouterModel(state?.switchModel) || state?.deviceType === 'router';
   const toDisplayName = (portName: string) => {
-    if (!isRouter) return formatPortName(portName);
-    const p = String(portName);
-    if (/^gi\d+\/\d+$/i.test(p)) return `GigabitEthernet${p.slice(2)}`;
-    if (/^fa\d+\/\d+$/i.test(p)) return `FastEthernet${p.slice(2)}`;
-    if (/^vlan\d+$/i.test(p)) return `Vlan${p.slice(4)}`;
-    return formatPortName(p);
+    return formatPortName(portName);
   };
 
   // Build channel groups map

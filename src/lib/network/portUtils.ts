@@ -39,3 +39,50 @@ export function normalizePortId(input: string): string | null {
   }
   return result;
 }
+
+/**
+ * Determines if a port ID belongs to an expansion module (as opposed to built-in ports).
+ * This logic is shared between networkTopology.helpers.ts and modularExpansion.ts to ensure consistency.
+ */
+export const isModulePort = (portId: string): boolean => {
+  const lower = portId.toLowerCase();
+  // Base built-in router ports: gi0/0 - gi0/3, console, s0/0/0, s0/1/0, s0/2/0.
+  if (lower === 'console' || lower === 'wlan0' || lower.startsWith('vlan')) return false;
+  
+  // Standard built-in router ports: gi0/0 to gi0/3, s0/0/0 to s0/2/0
+  if (/^gi0\/[0-3]$/.test(lower) || /^s0\/[0-2]\/0$/.test(lower)) {
+    return false;
+  }
+
+  // Switch base ports: fa0/1 - fa0/24, gi1/0/1 - gi1/0/4, etc.
+  if (/^fa0\/([1-9]|1[0-9]|2[0-4])$/.test(lower) || /^gi1\/0\/[1-4]$/.test(lower)) {
+    return false;
+  }
+
+  // Switch base ports: gi0/1, gi0/2 (built-in uplink ports for L2 switches)
+  if (/^gi0\/[1-2]$/.test(lower)) {
+    return false;
+  }
+
+  // Expansion card ports typically follow slot notation 0/1/x, 0/2/x, or 3-part notation with non-zero middle slot
+  // Module ports like Serial0/1/0, FastEthernet0/1/0, etc.
+  // But exclude built-in serial ports s0/0/0, s0/1/0, s0/2/0 (already handled above)
+  if (/^[a-z]+\d*\/[1-9]\d*(\/\d+)?$/i.test(lower)) {
+    // Additional check: built-in serial ports have the pattern s0/x/0 where x is 0, 1, or 2
+    // Module serial ports have different patterns like Serial0/1/0 (first part is not just 's')
+    const parts = lower.split('/');
+    if (lower.startsWith('s') && parts.length >= 3) {
+      const middlePart = parseInt(parts[1], 10);
+      const lastPart = parseInt(parts[2], 10);
+      // If it's s0/x/0 pattern where x is 0, 1, or 2, it's built-in
+      if (parts[0] === 's' || parts[0].startsWith('s0')) {
+        if (middlePart >= 0 && middlePart <= 2 && lastPart === 0) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  return false;
+};

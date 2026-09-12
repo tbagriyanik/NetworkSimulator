@@ -4,6 +4,7 @@ import {
   installExpansionModule,
   removeExpansionModule,
 } from '@/lib/network/modularExpansion';
+import { isModulePort } from '@/lib/network/portUtils';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 
@@ -143,5 +144,51 @@ describe('Modular Expansion Engine (Slots & WIC Modules)', () => {
     expect(removeRes.updatedDevice.ports.some((p) => p.id.includes('Serial0/1/'))).toBe(false);
     expect(removeRes.removedConnections).toContain('conn-serial-1');
     expect(removeRes.removedConnections).not.toContain('conn-gi0');
+  });
+
+  it('should maintain built-in port order when adding module ports', () => {
+    const router: CanvasDevice = {
+      id: 'router-1',
+      type: 'router',
+      name: 'Router1',
+      ip: '192.168.1.1',
+      x: 100,
+      y: 100,
+      status: 'online',
+      ports: [
+        { id: 'console', label: 'Console', status: 'disconnected' },
+        { id: 'gi0/0', label: 'Gi0/0', status: 'disconnected' },
+        { id: 'gi0/1', label: 'Gi0/1', status: 'disconnected' },
+        { id: 'gi0/2', label: 'Gi0/2', status: 'disconnected' },
+        { id: 'gi0/3', label: 'Gi0/3', status: 'disconnected' },
+        { id: 's0/0/0', label: 'S0/0/0', status: 'disconnected' },
+        { id: 's0/1/0', label: 'S0/1/0', status: 'disconnected' },
+        { id: 's0/2/0', label: 'S0/2/0', status: 'disconnected' },
+        { id: 'wlan0', label: 'WLAN0', status: 'disconnected', shutdown: true },
+      ],
+    };
+
+    const res = installExpansionModule(router, 1, 'WIC-2T');
+
+    // Check that built-in ports come first
+    const builtInPorts = res.updatedDevice.ports.filter(p => !isModulePort(p.id));
+    const modulePorts = res.updatedDevice.ports.filter(p => isModulePort(p.id));
+
+    expect(builtInPorts.length).toBe(9); // All original built-in ports
+    expect(modulePorts.length).toBe(2); // 2 module ports
+
+    // Check that built-in ports maintain their original order
+    expect(builtInPorts[0].id).toBe('console');
+    expect(builtInPorts[1].id).toBe('gi0/0');
+    expect(builtInPorts[2].id).toBe('gi0/1');
+    expect(builtInPorts[3].id).toBe('gi0/2');
+    expect(builtInPorts[4].id).toBe('gi0/3');
+    expect(builtInPorts[5].id).toBe('s0/0/0');
+    expect(builtInPorts[6].id).toBe('s0/1/0');
+    expect(builtInPorts[7].id).toBe('s0/2/0');
+    expect(builtInPorts[8].id).toBe('wlan0');
+
+    // Check that module ports come after built-in ports
+    expect(res.updatedDevice.ports.indexOf(builtInPorts[8])).toBeLessThan(res.updatedDevice.ports.indexOf(modulePorts[0]));
   });
 });
