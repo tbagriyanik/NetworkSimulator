@@ -7,9 +7,9 @@
 | Özellik | Güncel kapsam ve sınır |
 |---|---|
 | **NetDevOps & RESTCONF Otomasyon Motoru** | `netdevopsEngine.ts` ile IETF YANG veri modelleri (`ietf-interfaces`, `ietf-interfaces-state`, `netsim-native`), `GET`/`POST`/`PUT`/`PATCH`/`DELETE` RESTCONF CRUD işlemleri, Netmiko (`ConnectHandler`, `send_command`, `send_config_set`) ve Python `requests` script koşucusu tam çalışır duruma getirildi. Cihaz konfigürasyon modlarına geçilerek çalışan durumlar (`SwitchState`) canlı senkronize edilir. |
-| **PC REST API Explorer & DNA Center Intent Tester** | `RestApiExplorerWindow.tsx` ve `restApiMock.ts` ile canlı Controller Intent API uç noktaları (`/auth/token`, `/network-device`, `/interface`, `/topology/site-topology`, `/network-health`, `/client-health`) ve doğrudan `/restconf/data/...` köprüsü sağlandı. İstek gövdesi/başlıkları düzenlenebilir, canlı topoloji verileriyle yanıt döner. |
+| **PC REST API Explorer & SDN Intent Controller Tester** | `RestApiExplorerWindow.tsx` ve `restApiMock.ts` ile canlı Controller Intent API uç noktaları (`/auth/token`, `/network-device`, `/interface`, `/topology/site-topology`, `/network-health`, `/client-health`) ve doğrudan `/restconf/data/...` köprüsü sağlandı. İstek gövdesi/başlıkları düzenlenebilir, canlı topoloji verileriyle yanıt döner. |
 | **Modüler Port İsimlendirme Ayrımı** | Harici eklenen modül portları (`Serial1/0/0`, `FastEthernet1/0/0`, `GigabitEthernet1/0/0`, `TenGigabitEthernet1/0/0`) dahili sabit portlarla çakışmayacak şekilde slot numarasına bağlı dinamik isimlendirildi (`modularExpansion.ts`, `portUtils.ts`). |
-| **L3 Switch Sabit Port Koruma & Modül Entegrasyonu** | `NS-L3-24PS` (WS-C3650-24PS) cihazına modül takıldığında dahili 24 Gigabit Ethernet (`gi1/0/1..24`) ve 4 Uplink (`gi1/1/1..4`) portlarının silinmesi veya modül sanılması engellendi, tüm sabit portlar eksiksiz korundu (`portUtils.ts`). |
+| **L3 Switch Sabit Port Koruma & Modül Entegrasyonu** | `NS-L3-24PS` cihazına modül takıldığında dahili 24 Gigabit Ethernet (`gi1/0/1..24`) ve 4 Uplink (`gi1/1/1..4`) portlarının silinmesi veya modül sanılması engellendi, tüm sabit portlar eksiksiz korundu (`portUtils.ts`). |
 | **Router & Switch 3-Satırlı Port Çizim Düzeni** | Router topoloji SVG çiziminde dahili Gigabit portları 1. satırda (Row 0), dahili Serial ve Console portları 2. satırda (Row 1), sonradan eklenen genişletme modül portları ise 3. satırda (Row 2) ve sonraki satırlarda ayrı bir blok halinde konumlandırıldı (`DeviceRenderer.tsx`, `networkTopology.helpers.ts`). |
 | **`showRoutingDisplay.ts` Modüler Mimarisi** | 1820 satırlık dev gösterim dosyası tek sorumluluk prensibiyle protokol (`showRoutingProtocols.ts`), yedeklilik (`showRedundancyDisplay.ts`) ve servis (`showServicesDisplay.ts`) alt modüllerine bölündü; kod kalitesi ve bakım kolaylığı artırıldı. |
 | **Çevresel Ayarlar & UI İyileştirmesi** | Genel "Ayarlar" menü/panel başlığı "Çevresel Ayarlar" olarak güncellendi (`tr.json`). |
@@ -170,7 +170,7 @@ Bu bölüm, özelliklerin gerçekten hangi katmanda çalıştığını ayırır:
 | **MSTP BPDU Engine** | CIST root election, MSTI M-record, region digest ve boundary kontrolü `mstp.ts` helper motorunda vardır; henüz ana `stp.ts` topoloji BPDU akışına tam bağlanmamıştır. |
 | **802.1X EAP** | `dot1x system-auth-control`, interface port-control, EAPOL state machine ve RADIUS erişilebilirliği simüle edilir; gerçek EAPOL/RADIUS taşıması ve tam authenticator daemon’ı yoktur. |
 | **IPsec** | IKE Phase 1/2 SA ve ESP protocol 50 veri modeli ile `resolvePathTraffic` içindeki simülasyon kancası vardır; gerçek şifreleme, anahtar görüşmesi ve `cryptoCommands.ts` CLI kayıt akışı henüz yoktur. |
-| **SDN / YANG / DNA Center** | Minimal YANG module/leaf parser, typed datastore, NETCONF/RESTCONF tarzı in-memory API ve kavramsal SDN/DNA Center quiz’i vardır; HTTP controller daemon’ı yoktur. |
+| **SDN / YANG / Intent Controller** | Minimal YANG module/leaf parser, typed datastore, NETCONF/RESTCONF tarzı in-memory API ve kavramsal SDN Intent Controller quiz’i vardır; HTTP controller daemon’ı yoktur. |
 | **Yardım ve terim sözlüğü** | CLI context help; IP SLA, QoS, LLDP, 802.1X komutları; Türkçe/İngilizce ağ terimleri ve kısaltmaları yardım penceresinde günceldir. |
 
 IP SLA, QoS, parser/CLI, LLDP, MSTP, 802.1X, SDN ve ağ entegrasyonları için otomatik testler bulunmaktadır.
@@ -306,7 +306,7 @@ IP SLA, QoS, parser/CLI, LLDP, MSTP, 802.1X, SDN ve ağ entegrasyonları için o
 | **MSTP** | CIST root election, MSTI M-records, region digest, and boundary helpers exist; the helper engine is not fully connected to the main `stp.ts` topology BPDU flow. |
 | **802.1X EAP** | System/port-control CLI, EAPOL state machine, and RADIUS availability simulation; no real EAPOL/RADIUS transport or authenticator daemon. |
 | **IPsec** | IKE Phase 1/2 SA and ESP protocol 50 data model plus a `resolvePathTraffic` simulation hook; no real cryptography, key exchange, or registered `cryptoCommands.ts` CLI flow. |
-| **SDN / YANG / DNA Center** | Minimal YANG parser, typed in-memory datastore, NETCONF/RESTCONF-style API, and conceptual SDN/DNA Center quiz; no HTTP controller daemon. |
+| **SDN / YANG / Intent Controller** | Minimal YANG parser, typed in-memory datastore, NETCONF/RESTCONF-style API, and conceptual SDN Intent Controller quiz; no HTTP controller daemon. |
 | **Help and terminology** | Context-aware CLI help, current IP SLA/QoS/LLDP/802.1X command trees, and bilingual network terminology/abbreviation lists. |
 
 ### 🖥️ Devices & Topology

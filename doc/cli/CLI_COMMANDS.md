@@ -887,7 +887,7 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | **802.1X / EAPOL** | Port tabanlı erişim kontrolü ve Ethernet üzerindeki kimlik doğrulama çerçeveleri | `dot1x system-auth-control` |
 | **RADIUS / AAA** | Merkezi kimlik doğrulama, yetkilendirme ve hesaplama altyapısı | `radius-server host <ip> key <key>` |
 | **IPsec / ESP / IKE** | IP katmanında güvenlik; ESP veri korur, IKE anahtar ve SA görüşür | IPsec module concepts |
-| **Overlay / underlay** | Overlay mantıksal sanal ağ, underlay onu taşıyan fiziksel/IP altyapıdır | SDN/DNA Center concepts |
+| **Overlay / underlay** | Overlay mantıksal sanal ağ, underlay onu taşıyan fiziksel/IP altyapıdır | SDN / Intent Controller concepts |
 | **SDN** | Kontrol düzlemini yazılımla merkezileştiren ağ yaklaşımı | Controller concepts |
 | **YANG / NETCONF / RESTCONF** | Ağ verisini modelleme ve API üzerinden yapılandırma araçları | Automation concepts |
 
