@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { Port, PortLEDColor } from '@/lib/network/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -102,11 +102,23 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
     .sort(sortPorts);
 
   const giPorts = Object.values(ports)
-    .filter(p => p.type === 'gigabitethernet' && p.id !== 'vlan1' && !p.id.startsWith('wlan'))
+    .filter(p => (p.type === 'gigabitethernet' || p.type === 'tengigabitethernet') && p.id !== 'vlan1' && !p.id.startsWith('wlan'))
     .sort(sortPorts);
 
   const serialPorts = Object.values(ports)
-    .filter(p => p.type === 'serial')
+    .filter(p => p.type === 'serial' || p.id.toLowerCase().startsWith('serial'))
+    .sort(sortPorts);
+
+  const otherExpansionPorts = Object.values(ports)
+    .filter(p =>
+      p.id !== 'vlan1' &&
+      !p.id.startsWith('wlan') &&
+      p.id.toLowerCase() !== 'console' &&
+      !faPorts.includes(p) &&
+      !giPorts.includes(p) &&
+      !serialPorts.includes(p) &&
+      !/^s\d+\/\d+\/\d+$/.test(p.id) // exclude module ports
+    )
     .sort(sortPorts);
 
   const consolePort = Object.values(ports).find(p => p.id.toLowerCase() === 'console');
@@ -149,14 +161,14 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
         <Tooltip key={port.id}>
           <TooltipTrigger asChild>
             <div
-              className={`flex flex-col items-center p-1.5 sm:p-2 rounded-lg transition-all duration-200 cursor-default min-w-[45px] sm:min-w-[60px] hover:bg-secondary-700/30 ${isDark ? 'hover:bg-secondary-700/30' : 'hover:bg-secondary-200'}`}
+              className={`flex flex-col items-center p-1.5 sm:p-2 rounded-lg transition-all duration-200 cursor-default min-w-[70px] sm:min-w-[90px] overflow-hidden whitespace-nowrap text-ellipsis hover:bg-secondary-700/30 ${isDark ? 'hover:bg-secondary-700/30' : 'hover:bg-secondary-200'}`}
             >
               <div className="relative mb-1">
                 <div
                   className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${ledColorClasses[ledColor]} transition-all duration-300`}
                 />
               </div>
-              <span className={`text-sm font-mono ${isDark ? 'text-secondary-300' : 'text-secondary-700'} transition-colors`}>
+              <span className={`text-sm font-mono ${isDark ? 'text-secondary-300' : 'text-secondary-700'} transition-colors overflow-hidden whitespace-nowrap text-ellipsis`}>
                 {port.id}
               </span>
               <Badge
@@ -222,19 +234,22 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
       <Tooltip key={port.id}>
         <TooltipTrigger asChild>
           <div
-            className={`flex flex-col items-center p-1.5 sm:p-2 rounded-lg transition-all duration-200 cursor-default min-w-[45px] sm:min-w-[60px] hover:bg-secondary-700/30 ${isDark ? 'hover:bg-secondary-700/30' : 'hover:bg-secondary-200'}`}
+            className={`flex flex-col items-center justify-between p-2 rounded-lg transition-all duration-200 cursor-default min-w-[72px] sm:min-w-[84px] max-w-[110px] hover:bg-secondary-700/30 ${isDark ? 'hover:bg-secondary-700/30' : 'hover:bg-secondary-200'}`}
           >
             <div className="relative mb-1">
               <div
                 className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${ledColorClasses[ledColor]} transition-all duration-300`}
               />
             </div>
-            <span className={`text-sm font-mono ${isDark ? 'text-secondary-300' : 'text-secondary-700'} transition-colors`}>
+            <span
+              className={`text-xs sm:text-sm font-mono font-medium ${isDark ? 'text-secondary-300' : 'text-secondary-700'} transition-colors truncate max-w-full text-center`}
+              title={port.id}
+            >
               {port.id}
             </span>
             <Badge
               variant={port.mode === 'trunk' ? 'default' : 'secondary'}
-              className={`text-sm px-2 py-0.5 h-auto mt-0.5 transition-all duration-200 ${port.mode === 'trunk' ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' : ''}`}
+              className={`text-[10px] sm:text-xs px-1.5 py-0.5 mt-1 font-semibold transition-all duration-200 truncate max-w-full ${port.mode === 'trunk' ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' : ''}`}
             >
               {port.mode === 'trunk' ? 'Trunk' : `V${getPortVlan(port)}`}
             </Badge>
@@ -390,7 +405,7 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
             {faPorts.length > 0 && (
               <div className="mb-3 sm:mb-4">
                 <div className={`text-xs ${isDark ? 'text-secondary-500' : 'text-secondary-500'} mb-2`}>{t.fastEthernetPorts}</div>
-                <div className="grid grid-cols-6 sm:grid-cols-8 gap-0.5 sm:gap-1">
+                <div className="grid gap-2 sm:gap-4 grid-cols-[repeat(auto-fit,_minmax(70px,_1fr))]">
                   {faPorts.map(renderPort)}
                 </div>
               </div>
@@ -404,7 +419,7 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
                     <div className={`text-xs ${isDark ? 'text-secondary-500' : 'text-secondary-500'} pr-4`}>{t.language === 'tr' ? 'Konsol' : 'Console'}</div>
                   )}
                 </div>
-                <div className="flex gap-2 justify-center items-start flex-wrap">
+                <div className="grid gap-2 sm:gap-4 grid-cols-[repeat(auto-fit,_minmax(70px,_1fr))] justify-center items-start">
                   {giPorts.map(renderPort)}
                   {consolePort && (
                     <div className="flex items-center ml-2 pl-4 border-l border-secondary-700/30">
@@ -418,8 +433,26 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
             {serialPorts.length > 0 && (
               <div className={`pt-2 border-t ${isDark ? 'border-secondary-700' : 'border-secondary-300'}`}>
                 <div className={`text-xs ${isDark ? 'text-secondary-500' : 'text-secondary-500'} mb-2`}>{t.language === 'tr' ? 'Seri Portlar' : 'Serial Ports'}</div>
-                <div className="flex gap-2 justify-center items-start flex-wrap">
+                <div className="grid gap-2 sm:gap-4 grid-cols-[repeat(auto-fit,_minmax(72px,_1fr))]">
                   {serialPorts.map(renderPort)}
+                </div>
+              </div>
+            )}
+
+            {otherExpansionPorts.length > 0 && (
+              <div className={`pt-2 border-t ${isDark ? 'border-secondary-700' : 'border-secondary-300'}`}>
+                <div className={`text-xs ${isDark ? 'text-secondary-500' : 'text-secondary-500'} mb-2`}>{t.language === 'tr' ? 'Ek Modül Portları' : 'Expansion Module Ports'}</div>
+                <div className="grid gap-2 sm:gap-4 grid-cols-[repeat(auto-fit,_minmax(72px,_1fr))]">
+                  {otherExpansionPorts.map(renderPort)}
+                </div>
+              </div>
+            )}
+            {/* Render module ports like s0/1/0 */}
+            {Object.values(ports).filter(p => /^s\d+\/\d+\/\d+$/.test(p.id)).sort(sortPorts).length > 0 && (
+              <div className={`pt-2 border-t ${isDark ? 'border-secondary-700' : 'border-secondary-300'}`}>
+                <div className={`text-xs ${isDark ? 'text-secondary-500' : 'text-secondary-500'} mb-2`}>{t.language === 'tr' ? 'Modül Portları' : 'Module Ports'}</div>
+                <div className="grid gap-2 sm:gap-4 grid-cols-[repeat(auto-fit,_minmax(72px,_1fr))]">
+                  {Object.values(ports).filter(p => /^s\d+\/\d+\/\d+$/.test(p.id)).sort(sortPorts).map(renderPort)}
                 </div>
               </div>
             )}

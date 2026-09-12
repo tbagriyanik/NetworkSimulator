@@ -5,7 +5,7 @@ import React from 'react';
 import { CanvasDevice, CanvasConnection } from '../networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { getChannelBand } from '@/lib/network/wireless';
-import { getDeviceWidth } from '../networkTopology.helpers';
+import { getDeviceWidth, getDeviceHeight } from '../networkTopology.helpers';
 import {
   STATUS_COLORS,
   PORT_COLORS,
@@ -155,10 +155,9 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
                       ? (device.type === 'switchL3' ? 'url(#routerGradientLight)' : 'url(#switchGradientLight)')
                       : 'url(#routerGradientLight)');
 
-  // Calculate device height based on number of ports (8 per row for switch/router)
-  const portsPerRow = isPcLike ? 2 : 8;
-  const numRows = Math.ceil(device.ports.length / portsPerRow);
-  const deviceHeight = isPcLike ? 85 : 80 + numRows * 14 + 5;
+  // Calculate device height based on number of ports
+  const portCount = device.ports.length;
+  const deviceHeight = getDeviceHeight(device.type, portCount);
   const deviceWidth = getDeviceWidth(device.type);
 
   const isIotEffectivelyOn = device.type === 'iot' &&
@@ -901,7 +900,7 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
                     />
                   )}
                   <circle
-                    r={7} // Adjusted to prevent overlap (spacing is 14)
+                    r={7}
                     fill="transparent"
                     style={{ pointerEvents: isDraggingInteractionDisabled ? 'none' : 'all', cursor: isDraggingInteractionDisabled ? 'default' : 'pointer' }}
                     onPointerDown={(e) => {
@@ -990,19 +989,26 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
               const isConsole = portId === 'console';
               const isGigabit = isGigabitPort(port.id);
               const isFastEthernet = portId.startsWith('fa');
+              const isSerial = portId.startsWith('s') && !portId.startsWith('service');
 
               const portNum = port.label.replace(/\D/g, '');
               let displayNum = isConsole ? 'C' : (portNum ? parseInt(portNum, 10).toString() : 'C');
               if (device.type === 'cloud') {
-                displayNum = port.id === 'eth0' ? '1' : port.id === 'eth1' ? '2' : port.id === 'eth2' ? '3' : port.id === 'eth3' ? '4' : (idx + 1).toString();
+                displayNum = port.id === 'eth0' ? '1' : port.id === 'eth1' ? '2' : port.id === 'eth2' ? '3' : port.id === 'eth3' ? '4' : '1';
+              } else if (isSerial) {
+                const parts = portId.split('/');
+                displayNum = parts.length >= 3 ? `${parts[1]}/${parts[2]}` : (portNum ? parseInt(portNum, 10).toString() : 'S');
               }
 
               const deviceState = deviceStates?.get(device.id);
-              const isStartPort = isDrawingConnection && connectionStart?.deviceId === device.id && connectionStart?.portId === port.id;
               const simulatorPort = deviceState?.ports?.[port.id];
               const isSTPBlocked = simulatorPort?.spanningTree?.state === 'blocking' || simulatorPort?.spanningTree?.role === 'alternate';
+              const isStartPort = isDrawingConnection && connectionStart?.deviceId === device.id && connectionStart?.portId === port.id;
+              const deviceVlan = device.vlan || simulatorPort?.accessVlan || simulatorPort?.vlan || 1;
+              const isVlan1 = deviceVlan === 1;
+              const isBlocked = isSTPBlocked && isVlan1;
               const isTargetPort = isTargetingThisDevice && !isConnected;
-              const hasProblem = isShutdown || isDeviceOffline || isSTPBlocked || (isConnected && !isPortConnectionHealthy(port.id));
+              const hasProblem = isShutdown || isDeviceOffline || isBlocked || (isConnected && !isPortConnectionHealthy(port.id));
 
               let portFill: string;
               let portStroke: string;
@@ -1016,37 +1022,21 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
               } else if (isShutdown || isDeviceOffline) {
                 portFill = 'var(--color-error-500)';
                 portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
-              } else if (isSTPBlocked) {
+              } else if (isBlocked) {
                 portFill = PORT_STP_BLOCKED;
                 portStroke = PORT_STP_BLOCKED_STROKE;
               } else if (isConnected) {
-                if (isConsole) {
-                  portFill = 'var(--color-accent-500)';
-                  portStroke = isDark ? 'var(--color-accent-400)' : 'var(--color-accent-400)';
-                } else if (isGigabit) {
-                  portFill = PORT_GIGABIT_UP;
-                  portStroke = PORT_GIGABIT_UP_STROKE;
-                } else if (isFastEthernet) {
-                  portFill = 'var(--color-primary-500)';
-                  portStroke = isDark ? 'var(--color-primary-400)' : 'var(--color-primary-400)';
-                } else {
-                  portFill = 'var(--color-primary-500)';
-                  portStroke = isDark ? 'var(--color-primary-400)' : 'var(--color-primary-400)';
-                }
+                if (isConsole) { portFill = 'var(--color-accent-500)'; portStroke = isDark ? 'var(--color-accent-400)' : 'var(--color-accent-400)'; }
+                else if (isGigabit) { portFill = PORT_GIGABIT_UP; portStroke = PORT_GIGABIT_UP_STROKE; }
+                else if (isFastEthernet) { portFill = 'var(--color-primary-500)'; portStroke = isDark ? 'var(--color-primary-400)' : 'var(--color-primary-400)'; }
+                else if (isSerial) { portFill = 'var(--color-success-500)'; portStroke = isDark ? 'var(--color-success-300)' : 'var(--color-success-300)'; }
+                else { portFill = 'var(--color-primary-500)'; portStroke = isDark ? 'var(--color-primary-400)' : 'var(--color-primary-400)'; }
               } else {
-                if (isConsole) {
-                  portFill = 'var(--color-accent-500)';
-                  portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
-                } else if (isGigabit) {
-                  portFill = 'var(--color-secondary-500)';
-                  portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
-                } else if (isFastEthernet) {
-                  portFill = 'var(--color-primary-500)';
-                  portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
-                } else {
-                  portFill = 'var(--color-primary-500)';
-                  portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
-                }
+                if (isConsole) { portFill = 'var(--color-accent-500)'; portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)'; }
+                else if (isGigabit) { portFill = 'var(--color-secondary-500)'; portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)'; }
+                else if (isFastEthernet) { portFill = 'var(--color-primary-500)'; portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)'; }
+                else if (isSerial) { portFill = 'var(--color-success-500)'; portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)'; }
+                else { portFill = 'var(--color-primary-500)'; portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)'; }
               }
 
               const hasStpInfo = isSwitchDeviceType(device.type) && simulatorPort?.spanningTree;
@@ -1069,7 +1059,7 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
                     />
                   )}
                   <circle
-                    r={7} // Adjusted to prevent overlap (spacing is 14)
+                    r={7}
                     fill="transparent"
                     style={{ pointerEvents: isDraggingInteractionDisabled ? 'none' : 'all', cursor: isDraggingInteractionDisabled ? 'default' : 'pointer' }}
                     onPointerDown={(e) => {
@@ -1083,9 +1073,9 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
                   <circle
                     r={6}
                     fill={portFill}
-                    stroke={isSTPBlocked || isTargetPort ? portStroke : getPortFrameColor(port.id, hasProblem, isConnected)}
+                    stroke={isBlocked || isTargetPort ? portStroke : getPortFrameColor(port.id, hasProblem, isConnected)}
                     strokeWidth={isShutdown || isDeviceOffline || isConnected || isTargetPort ? 2 : 1}
-                    opacity={hasProblem && !isSTPBlocked && !isTargetPort ? 0.45 : 1}
+                    opacity={hasProblem && !isBlocked && !isTargetPort ? 0.45 : 1}
                     style={{ pointerEvents: 'none' }}
                   />
                   <text y={1} style={{ fill: 'var(--color-background)', userSelect: 'none', pointerEvents: 'none' }} fontSize="6" textAnchor="middle" dominantBaseline="middle">

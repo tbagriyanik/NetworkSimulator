@@ -168,7 +168,7 @@ export interface Port {
   duplex: DuplexMode;
   speed: SpeedMode;
   shutdown: boolean;
-  type: 'fastethernet' | 'gigabitethernet' | 'vlan' | 'serial' | 'tunnel';
+  type: 'fastethernet' | 'gigabitethernet' | 'tengigabitethernet' | 'vlan' | 'serial' | 'tunnel';
   previousStatus?: PortStatus;  // shutdown öncesi durum (no shutdown için)
   ipAddress?: string;           // For L3 ports or SVI
   subnetMask?: string;

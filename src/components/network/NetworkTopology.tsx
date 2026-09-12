@@ -1654,82 +1654,78 @@ export function NetworkTopology({
         note={notes.find((n) => n.id === contextMenu?.noteId)}
       />
 
-      {preferences.showDevicePopovers && (
-        <TopologyTooltips
-          portTooltip={portTooltip}
-          deviceMap={deviceMap}
-          deviceStates={deviceStates}
-          isDark={isDark}
-          language={language}
-          getIotDeviceStatus={getIotDeviceStatus}
-          getIotPowerStatus={getIotPowerStatus}
-          getIotOpenCloseStatus={getIotOpenCloseStatus}
-          getLivePortVlanText={getLivePortVlanText}
-          connectionTooltip={connectionTooltip}
-          CABLE_COLORS={CABLE_COLORS}
-          deviceTooltip={deviceTooltip}
-          isTR={isTR}
-          isDraggingInteractionDisabled={isDraggingInteractionDisabled}
-          t={{
-            ipAddress: t.ipAddress,
-            subnetMask: t.subnetMask,
-            gateway: t.gateway,
-            dnsServer: t.dnsServer,
-            macAddress: t.macAddress,
-            dhcpEnabled: t.dhcpEnabled,
-            openServices: t.openServices,
-            active: t.active,
-          }}
-        />
-      )}
+      <TopologyTooltips
+        portTooltip={portTooltip}
+        deviceMap={deviceMap}
+        deviceStates={deviceStates}
+        isDark={isDark}
+        language={language}
+        getIotDeviceStatus={getIotDeviceStatus}
+        getIotPowerStatus={getIotPowerStatus}
+        getIotOpenCloseStatus={getIotOpenCloseStatus}
+        getLivePortVlanText={getLivePortVlanText}
+        connectionTooltip={connectionTooltip}
+        CABLE_COLORS={CABLE_COLORS}
+        deviceTooltip={deviceTooltip}
+        isTR={isTR}
+        isDraggingInteractionDisabled={isDraggingInteractionDisabled}
+        t={{
+          ipAddress: t.ipAddress,
+          subnetMask: t.subnetMask,
+          gateway: t.gateway,
+          dnsServer: t.dnsServer,
+          macAddress: t.macAddress,
+          dhcpEnabled: t.dhcpEnabled,
+          openServices: t.openServices,
+          active: t.active,
+        }}
+      />
 
-      {preferences.showDevicePopovers && (
-        <TopologyModals
-          configuringDevice={configuringDevice}
-          deviceMap={deviceMap}
-          cancelDeviceConfig={cancelDeviceConfig}
-          saveDeviceConfig={saveDeviceConfig}
-          isMobile={isMobile}
-          isDark={isDark}
-          pingAnimation={pingAnimation}
-          hopPacketInfos={hopPacketInfos}
-          handlePingPlay={handlePingPlay}
-          handlePingPause={handlePingPause}
-          handlePingNext={handlePingNext}
-          handlePingClose={handlePingClose}
-          language={language}
-          graphicsQuality={graphicsQuality}
-          onPacketPanelFocus={onPacketPanelFocus}
-          packetPanelZIndex={packetPanelZIndex}
-          packetPopupHop={packetPopupHop}
-          setPacketPopupHop={setPacketPopupHop}
-          errorToast={errorToast}
-          setErrorToast={setErrorToast}
-          connectionError={connectionError}
-          mobilePaletteOpen={mobilePaletteOpen}
-          setMobilePaletteOpen={setMobilePaletteOpen}
-          isTR={isTR}
-          addDevice={addDevice}
-          cableInfo={cableInfo}
-          onCableChange={onCableChange}
-          showPortSelector={showPortSelector}
-          devices={devices}
-          portSelectorStep={portSelectorStep}
-          selectedSourcePort={selectedSourcePort}
-          setShowPortSelector={setShowPortSelector}
-          setPortSelectorStep={setPortSelectorStep}
-          setSelectedSourcePort={setSelectedSourcePort}
-          setConnections={setConnections}
-          setDevices={setDevices}
-          connections={connections}
-          activeCaptureConnectionId={activeCaptureConnectionId}
-          clearCapturedPackets={clearCapturedPackets}
-          clearAllCapturedPackets={clearAllCapturedPackets}
-          setActiveCaptureConnection={setActiveCaptureConnection}
-          capturedPacketsMap={capturedPacketsMap}
-          t={t}
-        />
-      )}
+      <TopologyModals
+        configuringDevice={configuringDevice}
+        deviceMap={deviceMap}
+        cancelDeviceConfig={cancelDeviceConfig}
+        saveDeviceConfig={saveDeviceConfig}
+        isMobile={isMobile}
+        isDark={isDark}
+        pingAnimation={pingAnimation}
+        hopPacketInfos={hopPacketInfos}
+        handlePingPlay={handlePingPlay}
+        handlePingPause={handlePingPause}
+        handlePingNext={handlePingNext}
+        handlePingClose={handlePingClose}
+        language={language}
+        graphicsQuality={graphicsQuality}
+        onPacketPanelFocus={onPacketPanelFocus}
+        packetPanelZIndex={packetPanelZIndex}
+        packetPopupHop={packetPopupHop}
+        setPacketPopupHop={setPacketPopupHop}
+        errorToast={errorToast}
+        setErrorToast={setErrorToast}
+        connectionError={connectionError}
+        mobilePaletteOpen={mobilePaletteOpen}
+        setMobilePaletteOpen={setMobilePaletteOpen}
+        isTR={isTR}
+        addDevice={addDevice}
+        cableInfo={cableInfo}
+        onCableChange={onCableChange}
+        showPortSelector={showPortSelector}
+        devices={devices}
+        portSelectorStep={portSelectorStep}
+        selectedSourcePort={selectedSourcePort}
+        setShowPortSelector={setShowPortSelector}
+        setPortSelectorStep={setPortSelectorStep}
+        setSelectedSourcePort={setSelectedSourcePort}
+        setConnections={setConnections}
+        setDevices={setDevices}
+        connections={connections}
+        activeCaptureConnectionId={activeCaptureConnectionId}
+        clearCapturedPackets={clearCapturedPackets}
+        clearAllCapturedPackets={clearAllCapturedPackets}
+        setActiveCaptureConnection={setActiveCaptureConnection}
+        capturedPacketsMap={capturedPacketsMap}
+        t={t}
+      />
 
       {preferences.showMinimap && (
         <MinimapNavigator

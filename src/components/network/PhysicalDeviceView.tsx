@@ -60,8 +60,8 @@ export function PhysicalDeviceView({
     if (powerOn) {
       setPowerError(
         isTR
-          ? '⚠️ Güvenlik Uyarısı: Modül takmadan önce cihazın güç anahtarını (Power Switch) KAPATIN!'
-          : '⚠️ Safety Warning: Turn the device power OFF before inserting expansion cards!'
+          ? 'Güvenlik Uyarısı: Modül takmadan önce cihazın güç anahtarını (Power Switch) KAPATIN!'
+          : 'Safety Warning: Turn the device power OFF before inserting expansion cards!'
       );
       return;
     }
@@ -80,8 +80,8 @@ export function PhysicalDeviceView({
     if (powerOn) {
       setPowerError(
         isTR
-          ? '⚠️ Güvenlik Uyarısı: Modül çıkarmadan önce cihazın güç anahtarını (Power Switch) KAPATIN!'
-          : '⚠️ Safety Warning: Turn the device power OFF before removing expansion cards!'
+          ? 'Güvenlik Uyarısı: Modül çıkarmadan önce cihazın güç anahtarını (Power Switch) KAPATIN!'
+          : 'Safety Warning: Turn the device power OFF before removing expansion cards!'
       );
       return;
     }
@@ -131,8 +131,8 @@ export function PhysicalDeviceView({
           <button
             onClick={handleTogglePower}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs transition-all shadow-md active:scale-95 ${powerOn
-                ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/40'
-                : 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-900/40'
+              ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/40'
+              : 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-900/40'
               }`}
           >
             <Power className="w-4 h-4" />
@@ -183,8 +183,8 @@ export function PhysicalDeviceView({
                     <div
                       key={p.id}
                       className={`px-2 py-1 rounded text-[10px] font-mono border flex items-center gap-1 ${p.status === 'connected' || p.linkStatus === 'up'
-                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                          : 'bg-slate-800 text-slate-400 border-slate-700'
+                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                        : 'bg-slate-800 text-slate-400 border-slate-700'
                         }`}
                       title={`${p.id} (${p.status})`}
                     >
@@ -205,12 +205,12 @@ export function PhysicalDeviceView({
                   key={slot.slotIndex}
                   onClick={() => setSelectedSlot(selectedSlot === slot.slotIndex ? null : slot.slotIndex)}
                   className={`p-3 rounded-lg border-2 transition-all cursor-pointer relative group ${installedMod
-                      ? isDark
-                        ? 'bg-slate-900 border-cyan-500/50 hover:border-cyan-400 shadow-md'
-                        : 'bg-cyan-50/70 border-cyan-400 shadow-sm'
-                      : isDark
-                        ? 'bg-slate-950/60 border-slate-800 border-dashed hover:border-slate-600'
-                        : 'bg-slate-50 border-slate-300 border-dashed hover:border-slate-400'
+                    ? isDark
+                      ? 'bg-slate-900 border-cyan-500/50 hover:border-cyan-400 shadow-md'
+                      : 'bg-cyan-50/70 border-cyan-400 shadow-sm'
+                    : isDark
+                      ? 'bg-slate-950/60 border-slate-800 border-dashed hover:border-slate-600'
+                      : 'bg-slate-50 border-slate-300 border-dashed hover:border-slate-400'
                     } ${selectedSlot === slot.slotIndex ? 'ring-2 ring-primary-500' : ''}`}
                 >
                   <div className="flex items-center justify-between text-[10px] font-mono mb-1">
@@ -311,8 +311,8 @@ export function PhysicalDeviceView({
                     disabled={!selectedSlot || !isSupported}
                     onClick={() => selectedSlot && handleInstall(selectedSlot, mod.id)}
                     className={`px-3 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1 ${selectedSlot && isSupported
-                        ? 'bg-primary-600 hover:bg-primary-500 text-white shadow-sm active:scale-95'
-                        : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                      ? 'bg-primary-600 hover:bg-primary-500 text-white shadow-sm active:scale-95'
+                      : 'bg-slate-800 text-slate-500 cursor-not-allowed'
                       }`}
                   >
                     <Plus className="w-3 h-3" />

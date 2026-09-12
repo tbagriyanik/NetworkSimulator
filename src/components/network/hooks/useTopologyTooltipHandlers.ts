@@ -91,20 +91,19 @@ export function useTopologyTooltipHandlers({
       clearTimeout(portTooltipTimerRef.current);
     }
 
+    const clientX = e.clientX;
+    const clientY = e.clientY;
+
     portTooltipTimerRef.current = setTimeout(() => {
       setPortTooltip({
         deviceId,
         portId,
-        x: e.clientX,
-        y: e.clientY,
+        x: clientX,
+        y: clientY,
         visible: true,
       });
-
-      portTooltipTimerRef.current = setTimeout(() => {
-        setPortTooltip(prev => prev ? { ...prev, visible: false } : null);
-      }, 2000);
-    }, TOOLTIP_DELAY);
-  }, [deviceMap, getLivePort, TOOLTIP_DELAY]);
+    }, 100);
+  }, [deviceMap, getLivePort]);
 
   const handlePortHover = useCallback((e: React.MouseEvent, deviceId: string, portId: string) => {
     if (isDrawingConnection || isPanning || isSelecting || isActuallyDragging || isTouchDraggingRef.current) return;

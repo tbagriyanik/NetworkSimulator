@@ -84,6 +84,29 @@ export const getDeviceCenter = (device: CanvasDevice) => {
   return { x: device.x + deviceWidth / 2, y: device.y + deviceHeight / 2 };
 };
 
+export const isModulePort = (portId: string): boolean => {
+  const lower = portId.toLowerCase();
+  // Base built-in router ports: gi0/0 - gi0/3, console, s0/0/0, s0/1/0, s0/2/0.
+  if (lower === 'console' || lower === 'wlan0' || lower.startsWith('vlan')) return false;
+  
+  // Standard built-in router ports: gi0/0 to gi0/3, s0/0/0 to s0/2/0
+  if (/^gi0\/[0-3]$/.test(lower) || /^s0\/[0-2]\/0$/.test(lower)) {
+    return false;
+  }
+
+  // Switch base ports: fa0/1 - fa0/24, gi1/0/1 - gi1/0/4, etc.
+  if (/^fa0\/([1-9]|1[0-9]|2[0-4])$/.test(lower) || /^gi1\/0\/[1-4]$/.test(lower)) {
+    return false;
+  }
+
+  // Expansion card ports typically follow slot notation 0/1/x, 0/2/x, or 3-part notation with non-zero middle slot
+  if (/^[a-z]+\d*\/[1-9]\d*(\/\d+)?$/i.test(lower)) {
+    return true;
+  }
+
+  return false;
+};
+
 export const getPortPosition = (device: CanvasDevice, portId: string) => {
   // IoT wireless links terminate at the visible Wi-Fi indicator, not at a
   // second physical port circle.
@@ -94,7 +117,6 @@ export const getPortPosition = (device: CanvasDevice, portId: string) => {
   const portIndex = device.ports.findIndex(p => p.id === portId);
   if (portIndex === -1) return getDeviceCenter(device);
 
-  const deviceWidth = getDeviceWidth(device.type);
   const portsPerRow = (device.type === 'pc' || device.type === 'iot') ? 2 : 8;
   const col = portIndex % portsPerRow;
   const row = Math.floor(portIndex / portsPerRow);
@@ -102,8 +124,9 @@ export const getPortPosition = (device: CanvasDevice, portId: string) => {
   if (device.type === 'pc' || device.type === 'iot') {
     const pcPortSpacing = PC_PORT_SPACING;
     const pcStartY = 85 / 2 - ((device.ports.length - 1) * pcPortSpacing) / 2;
+    const devWidth = getDeviceWidth(device.type);
     return {
-      x: device.x + deviceWidth - 8,
+      x: device.x + devWidth - 8,
       y: device.y + pcStartY + portIndex * pcPortSpacing
     };
   }
@@ -140,8 +163,9 @@ export const getPortPosition = (device: CanvasDevice, portId: string) => {
     actualRow = row;
   }
 
+  const startX = device.type === 'cloud' ? 44 : PORT_START_X;
   return {
-    x: device.x + PORT_START_X + actualCol * PORT_SPACING,
+    x: device.x + startX + actualCol * PORT_SPACING,
     y: device.y + PORT_START_Y + actualRow * PORT_SPACING
   };
 };
