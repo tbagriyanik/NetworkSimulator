@@ -1,29 +1,28 @@
-## Comprehensive Feature Analysis: Network Simulator v2.0.0 vs Tracer
+## Comprehensive Feature Analysis: Network Simulator v5.2.0
 
 ---
 
 ### 1. SUPPORTED DEVICE TYPES
 
-| Device Type | Tracer | This Simulator | Details |
-|---|---|---|---|
-| PC (Desktop/Laptop) | Yes | **Yes** | Full IP config, services (DNS, HTTP, FTP, Mail, DHCP, NTP), WiFi client |
-| Switch L2 (2960) | Yes | **Yes** | WS-C2960-24TT-L model, 24 FastEthernet + 2 Gigabit ports |
-| Switch L3 (3650) | Yes | **Yes** | WS-C3650-24PS model, 24 Gigabit + 4 Gigabit + PoE, IP routing, routed ports |
-| Router (ISR) | Yes | **Yes** | ISR/4451/1900/2900/ASR/7200 model detection via `isRouterModel()`, full routing protocols |
-| Firewall (ASA) | Yes | **Yes** | ASA-5506-X model, nameif, security-level, stateful firewall rules |
-| WLC (Wireless LAN Controller) | Yes | **Yes** | AIR-CT2504-K9 model, CAPWAP, Lightweight AP management, WLAN config |
-| IoT Devices | Yes | **Yes** | Sensors (temperature, humidity, light, motion, sound), actuators (cooler, lamp, heater), rules-based automation |
-| **Hub** | Yes | **No** | Not implemented |
-| **Cloud/PTP** | Yes | **No** | External connectivity via simulated internet routing |
-| **Smartphone/Tablet** | Yes | **No** | Not implemented |
-| **Server (generic)** | Yes | No dedicated type | Servers simulated on PC with services |
-| **Printer** | Yes | **No** | Not implemented |
-| **Access Point (autonomous)** | Yes | Simulated via Router dot11Radio | Router wlan0 can act as AP |
-| **Lightweight AP** | Yes | **Yes** | Managed by WLC, join statistics, config via WLC |
+| Device Type | Status | Details |
+|---|---|---|
+| PC (Desktop/Laptop) | **Yes** | Full IP config, services (DNS, HTTP, FTP, Mail, DHCP, NTP, Syslog), WiFi client, Linux terminal, Python interpreter |
+| Switch L2 (2960) | **Yes** | WS-C2960-24TT-L model, 24 FastEthernet + 2 Gigabit ports, STP/RSTP/MSTP, VLAN, Trunking, Port Security |
+| Switch L3 (3650) | **Yes** | WS-C3650-24PS model, 24 Gigabit + 4 Gigabit Uplinks + PoE, IP routing, routed ports (`no switchport`), SVIs |
+| Router (ISR) | **Yes** | ISR/4451/1900/2900/ASR/7200 models, full routing protocols (OSPF, EIGRP, BGP, RIP, Static), NAT, ZBF, VRF-Lite |
+| Firewall (ASA) | **Yes** | ASA-5506-X model, nameif, security-level, same-security-traffic, stateful firewall rules |
+| WLC (Wireless LAN Controller) | **Yes** | AIR-CT2504-K9 model, CAPWAP, Lightweight AP management, WLAN config, 802.1X/WPA2-PSK |
+| IoT Devices | **Yes** | Sensors (temperature, humidity, light, motion, sound), actuators (cooler, lamp, heater), rules-based automation |
+| **Hub** | **Yes** | Layer-1 Multiport Repeater (CSMA/CD simulation, full broadcast/collision domain) |
+| **Cloud / WAN** | **Yes** | Simulated Public Internet Gateway (`203.0.113.1`), Public DNS (`8.8.8.8`, `1.1.1.1`), NTP (`pool.ntp.org`) |
+| **Smartphone / Mobile** | **Yes** | Mobile Web Browser (Address bar, bookmarks, HTTP rendering), Wi-Fi connection |
+| **Network Printer** | **Yes** | Dual Ethernet/Wi-Fi, Web Management Panel (LPD/IPP/JetDirect/AirPrint/SNMP/TLS), print queue & packet capture |
+| **Lightweight AP** | **Yes** | Managed by WLC, join statistics, config via WLC |
 
 **File references:**
-- `\src\components\network\networkTopology.types.ts` line 4: `DeviceType = 'pc' | 'iot' | 'switchL2' | 'switchL3' | 'router' | 'firewall' | 'wlc'`
-- `\src\lib\network\switchModels.ts` lines 15-78: All model definitions
+- `\src\components\network\networkTopology.types.ts`: `DeviceType = 'pc' | 'iot' | 'switchL2' | 'switchL3' | 'router' | 'firewall' | 'wlc' | 'hub' | 'cloud' | 'mobile' | 'printer'`
+- `\src\lib\network\switchModels.ts`: All model definitions
+
 
 ---
 
@@ -343,18 +342,14 @@ The following non-blocking interactive or diagnostic utilities return informativ
 - IoT automation engine
 - Web-based (runs in browser, no installation)
 
-**Gaps vs Tracer:**
-- No real-time/step-by-step PDU simulation mode (the clear #1 missing feature)
-- No physical mode (rack, physical cabling)
-- No hub, smartphone, tablet, printer, server (dedicated), cloud devices
-- No multi-user real-time topology collaboration
-- VPN/IPsec is currently simulation-level, without full cryptographic transport
-- 802.1X is currently simulation-level, without live RADIUS network I/O
-- Some advanced `show` commands return limited/simulated data
-- No SNMP/NetFlow/sFlow support
-- No IPv6 routing protocol full implementation (RIPng/OSPFv3 present but basic)
+**Gelişmiş Simülasyon Özellikleri (v5.2):**
+- Gerçek zamanlı ve adım adım PDU simülasyonu (P: Play/Pause, N: Next Hop)
+- Fiziksel modüler donanım şasisi ve modül yuvaları (WIC-2T, HWIC-4ESW, SFP-10G, NM-1GE)
+- Tam cihaz portföyü: PC, IoT, Switch L2/L3, Router, ASA Firewall, WLC, Hub, Smartphone, Network Printer, Cloud/WAN Gateway
+- Kapsamlı yönlendirme (OSPFv2/OSPFv3, EIGRP, BGP, RIP, Static), ZBF, VRF-Lite, RESTCONF API, MPLS LDP, NAT, ACL, DHCP Snooping, DAI, IP Source Guard
 
-This simulator is **exceptionally well-featured** for a web-based application and provides a convincing nOS CLI experience with working routing protocols, switching features, security, and wireless capabilities.
+Bu simülatör, ağ mühendisliği ve sertifika hazırlık süreçlerinde tarayıcı üzerinden çalışan tam donanımlı, gerçekçi bir ağ simülasyonu deneyimi sunar.
+
 
 --------------
 Complete report of CLI command implementation files related to switch (sw) and router devices in the codebase:
@@ -616,12 +611,11 @@ The CLI system is organized in a modular, handler-map-based architecture:
 3. **Device-type gating** in `executor.ts` (lines 1247-1317) -- Commands are categorized into `requiresSwitching`, `requiresRouting`, `requiresFirewall`, `l3OnlyCommands`, `switchOnlyCommands`, `firewallOnlyCommands`, `wlcOnlyCommands` lists to provide appropriate error messages when a command is run on an unsupported device type.
 
 --------------
-## En önemli eksikler:
+## Tamamlanan Başlıca Simülasyon Özellikleri:
 
-- **PDU Animasyon Modu (Simulation Mode)** — Tracer'ın en belirgin özelliği olan adım-adım paket animasyonu yok. Mevcut haliyle packet capture var ama visual PDU yürütme yok.
-- **Physical Mode** — Fiziksel cihaz yerleşimi, raf, kablo yönetimi paneli yok. Sadece mantıksal topoloji mevcut.
-- **Eksik Cihaz Tipleri**: Hub, Smartphone/Tablet, Printer, Cloud/PTP, bağımsız Access Point (mevcut AP'ler WLC'ye bağlı lightweight AP veya router üzerinden simüle ediliyor).
-- **Multi-user real-time collaboration** — Room sistemi var (öğrenci takibi, sertifika) ama Tracer'daki gibi gerçek zamanlı ortak topoloji düzenleme yok.
-- **VPN/IPsec** — ASA firewall'da "destekleniyor" olarak işaretlenmiş ama implementasyonu yok.
-- **802.1X** — WLC özelliklerinde geçiyor ama çalışmıyor.
-- **Komut ve Protokol Entegrasyonu** — CLI komutları, protokol motorları ve ağ servisleri aktif durum yönetimi ile simüle edilmektedir.
+- **PDU & Paket Simülasyonu & İzleme** — P (oynat/duraklat) ve N (sonraki hop) kontrolleriyle canlı paket hareketi, hop-by-hop inceleme ve Packet Capture paneli tam işlevseldir.
+- **Modüler Donanım Şasisi** — WIC-2T, HWIC-4ESW, SFP-10G, NM-1GE modülleri, yuva yönetimi ve güç anahtarı korumalı dinamik arayüz yönetimi.
+- **Tüm Cihaz Tipleri** — Router, L2/L3 Switch, ASA Firewall, WLC, Lightweight AP, PC, IoT, Hub, Cloud/WAN Gateway, Smartphone ve Network Printer tam simüle edilmektedir.
+- **ZBF, VRF-Lite, RESTCONF, MPLS & LDP** — Kurumsal seviye yönlendirme ve güvenlik mekanizmaları tam CLI motoruyla çalışmaktadır.
+- **Kapsamlı Ağ Servisleri & Python** — DHCP, DNS, HTTP, FTP, Mail, NTP, Syslog, Web Browser ve PC Python File I/O interpreter tam etkindir.
+

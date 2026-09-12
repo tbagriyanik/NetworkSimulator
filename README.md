@@ -92,7 +92,7 @@ Simülatör kontrollerine hızlıca göz atmak için aşağıdaki listeyi geniş
 | Shortcut / Kısayol | Action (EN) | İşlem (TR) |
 | :--- | :--- | :--- |
 | <kbd>Ctrl</kbd> + <kbd>Z</kbd> | Undo | Geri al |
-| <kbd>Ctrl</kbd> + <kbd>Y</kbd> / <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd> | Redo | Yeniden yap |
+| <kbd>Ctrl</kbd> + <kbd>Y</kbd> | Redo | Yeniden yap |
 | <kbd>Ctrl</kbd> + <kbd>C</kbd> | Copy selected device | Seçili cihazı kopyala |
 | <kbd>Ctrl</kbd> + <kbd>X</kbd> | Cut selected device | Seçili cihazı kes |
 | <kbd>Ctrl</kbd> + <kbd>V</kbd> | Paste | Yapıştır |
@@ -102,9 +102,14 @@ Simülatör kontrollerine hızlıca göz atmak için aşağıdaki listeyi geniş
 | <kbd>Ctrl</kbd> + <kbd>N</kbd> / <kbd>Alt</kbd> + <kbd>N</kbd> | New project | Yeni proje |
 | <kbd>Ctrl</kbd> + <kbd>P</kbd> | Print topology | Topolojiyi yazdır |
 | <kbd>Ctrl</kbd> + <kbd>F</kbd> | Toggle fullscreen | Tam ekrana geç / çık |
+| <kbd>Shift</kbd> + <kbd>?</kbd> | Open Shortcuts guide modal | Kısayol kılavuzu modalını aç |
+| <kbd>Alt</kbd> + <kbd>M</kbd> | Toggle Minimap display | Minimap (Harita) göster / gizle |
+| <kbd>Alt</kbd> + <kbd>L</kbd> | Toggle Network Log panel | Ağ Olay Günlüğü panelini aç / kapat |
+| <kbd>Alt</kbd> + <kbd>F</kbd> | Zoom to fit all devices | Tüm cihazları ekrana sığdır (Fit View) |
 | <kbd>Alt</kbd> + <kbd>R</kbd> | Reset zoom/pan view | Görünümü sıfırla |
 | <kbd>Delete</kbd> / <kbd>Backspace</kbd> | Delete selected | Seçili öğeyi sil |
 | <kbd>Escape</kbd> | Cancel selection / Close mode | Seçimi iptal et / Modu kapat |
+| <kbd>Ctrl</kbd> + <kbd>Drag</kbd> | Snap to grid | Nokta ızgaraya yapıştır |
 | <kbd>Ctrl</kbd> + <kbd>Scroll</kbd> | Zoom in / out | Yakınlaştır / Uzaklaştır |
 | <kbd>Space</kbd> + <kbd>Drag</kbd> | Pan canvas | Canvas'ı kaydır |
 | <kbd>Arrow Keys</kbd> | Move selected device(s) | Seçili cihaz(lar)ı taşı |
@@ -121,6 +126,7 @@ Simülatör kontrollerine hızlıca göz atmak için aşağıdaki listeyi geniş
 | <kbd>Page Down</kbd> | Scroll canvas down | Canvas'ı aşağı kaydır |
 | <kbd>Double-click (Empty Space)</kbd> | Reset topology view | Topoloji görünümünü sıfırla |
 | <kbd>Double-click (Device)</kbd> | Open collapsible device panel | Daraltılabilir cihaz panelini aç |
+
 
 ### Ping Packet Analysis / Ping Paket Analizi
 
