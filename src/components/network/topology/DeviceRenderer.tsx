@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { CanvasDevice, CanvasConnection } from '../networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
@@ -88,6 +88,20 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
   connectionStart = null
 }: DeviceRendererProps) {
   void _mousePosRef;
+  const [isFocusedPulse, setIsFocusedPulse] = useState(false);
+
+  useEffect(() => {
+    const handleFocusDevice = (e: Event) => {
+      const customEvent = e as CustomEvent<{ deviceId?: string }>;
+      if (customEvent.detail?.deviceId !== device.id) return;
+      setIsFocusedPulse(true);
+      const timer = setTimeout(() => setIsFocusedPulse(false), 2200);
+      return () => clearTimeout(timer);
+    };
+    window.addEventListener('focus-device', handleFocusDevice);
+    return () => window.removeEventListener('focus-device', handleFocusDevice);
+  }, [device.id]);
+
   const isTargetingThisDevice = isDrawingConnection && connectionStart && connectionStart.deviceId !== device.id;
   const isTR = language === 'tr';
   const isSwitchDevice = (type: string) => type === 'switchL2' || type === 'switchL3' || type === 'hub';
@@ -210,6 +224,34 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
         handleDeviceTouchEnd(e);
       }}
     >
+      {/* Focused pulse ring animation */}
+      {isFocusedPulse && (
+        <g pointerEvents="none">
+          <circle
+            cx={deviceWidth / 2}
+            cy={deviceHeight / 2}
+            r={Math.max(deviceWidth, deviceHeight) * 0.75}
+            fill="none"
+            stroke="#a855f7"
+            strokeWidth="3"
+            opacity="0.85"
+            className="animate-ping"
+          />
+          <circle
+            cx={deviceWidth / 2}
+            cy={deviceHeight / 2}
+            r={Math.max(deviceWidth, deviceHeight) * 0.9}
+            fill="none"
+            stroke="#06b6d4"
+            strokeWidth="2"
+            strokeDasharray="6 3"
+            opacity="0.9"
+            className="animate-spin"
+            style={{ transformOrigin: `${deviceWidth / 2}px ${deviceHeight / 2}px`, animationDuration: '4s' }}
+          />
+        </g>
+      )}
+
       {/* Selection glow effect */}
       {isSelected && (
         <>

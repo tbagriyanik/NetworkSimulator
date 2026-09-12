@@ -14,6 +14,7 @@ import { useWindowStore } from '@/hooks/useWindowStore';
 import { DeviceIcon } from './DeviceIcon';
 import { TaskDefinition, TaskContext } from '@/lib/network/taskDefinitions';
 import type { Translations } from '@/contexts/LanguageContext';
+import { useAppStore } from '@/lib/store/appStore';
 
 interface MultiDeviceWindowManagerProps {
   topologyDevices: CanvasDevice[];
@@ -459,7 +460,7 @@ export function MultiDeviceWindowManager({
             t={t}
             theme={theme}
             language={language}
-            helpLevel="intermediate"
+            helpLevel={useAppStore.getState().helpLevel}
             isDark={isDark}
             isExecutingCommand={false}
             output={output}

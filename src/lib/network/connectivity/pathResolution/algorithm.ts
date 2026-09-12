@@ -1,4 +1,4 @@
-﻿// This file contains the original implementation of checkConnectivity and related helpers.
+// This file contains the original implementation of checkConnectivity and related helpers.
 // It has been moved from pathResolution.ts to pathResolution/algorithm.ts for modularization.
 
 import { CanvasDevice, CanvasConnection, CanvasPort } from '@/components/network/networkTopology.types';
@@ -329,7 +329,7 @@ export function checkConnectivity(
           hops: [],
           hopIds: [],
           targetId: cloudDev.id,
-          error: language === 'tr' ? 'Bulut (Cloud) cihaz─▒ a─şa ba─şl─▒ de─şil.' : 'Cloud device is not connected to the network.'
+          error: language === 'tr' ? 'Bulut (Cloud) cihazı ağa bağlı değil.' : 'Cloud device is not connected to the network.'
         };
       }
       targetDeviceId = cloudDev.id;
@@ -346,7 +346,6 @@ export function checkConnectivity(
     if (sourceState || safeDeviceStates.size === 0) {
       const isIpv6 = resolvedTargetIp.includes(':');
       const sourceIp = getPrimaryDeviceIp(sourceId, devices, safeDeviceStates, isIpv6, sourceDeviceForArp);
-
       let isInSameSubnet = false;
 
       if (isIpv6) {
@@ -618,7 +617,7 @@ export function checkConnectivity(
             hops: path.slice(0, i + 1).map(id => deviceMap.get(id)?.name || id),
             hopIds: path.slice(0, i + 1),
             targetId: targetDevice.id,
-            error: language === 'tr' ? 'ICMP Zaman A┼ş─▒m─▒ (TTL exceeded)' : 'ICMP Time Exceeded (TTL expired)'
+            error: language === 'tr' ? 'ICMP Zaman Aşımı (TTL exceeded)' : 'ICMP Time Exceeded (TTL expired)'
           };
         }
       }
@@ -788,7 +787,11 @@ export function checkConnectivity(
   for (let i = 0; i < path.length - 1; i++) {
     const aId = path[i];
     const bId = path[i + 1];
-    const conn = pathConnections.get(`${aId}-${bId}`);
+    const conn = connections.find(c =>
+      ((c.sourceDeviceId === aId && c.targetDeviceId === bId) ||
+       (c.sourceDeviceId === bId && c.targetDeviceId === aId)) &&
+      c.active !== false
+    );
     if (conn?.cableType === 'console') {
       hasConsoleConnection = true;
     } else {
@@ -804,7 +807,7 @@ export function checkConnectivity(
       hopIds: path,
       targetId: targetDevice.id,
       error: language === 'tr'
-        ? 'Console ba─şlant─▒s─▒ ├╝zerinden ping yap─▒lamaz.'
+        ? 'Console bağlantısı üzerinden ping yapılamaz.'
         : 'Ping cannot be sent over a console connection.'
     };
   }
@@ -857,7 +860,7 @@ export function checkConnectivity(
             hopIds: path.slice(0, 1),
             targetId: targetDevice.id,
             error: language === 'tr'
-              ? `A─ş ge├ğidi (Default Gateway) yap─▒land─▒r─▒lmam─▒┼ş.`
+              ? `Ağ geçidi (Default Gateway) yapılandırılmamış.`
               : `Default Gateway is not configured on source host.`
           };
         }
@@ -870,7 +873,7 @@ export function checkConnectivity(
             hopIds: path.slice(0, 1),
             targetId: targetDevice.id,
             error: language === 'tr'
-              ? `A─ş ge├ğidi (Default Gateway) kaynak cihaz ile ayn─▒ a─ş blo─şunda de─şil.`
+              ? `Ağ geçidi (Default Gateway) kaynak cihaz ile aynı ağ bloğunda değil.`
               : `Default Gateway is not in the same subnet as the source host.`
           };
         }
@@ -889,7 +892,7 @@ export function checkConnectivity(
             hopIds: path,
             targetId: targetDevice.id,
             error: language === 'tr'
-              ? `Hedef cihaz─▒n A─ş Ge├ğidi (Default Gateway) yap─▒land─▒r─▒lmam─▒┼ş.`
+              ? `Hedef cihazın Ağ Geçidi (Default Gateway) yapılandırılmamış.`
               : `Default Gateway is not configured on target host.`
           };
         }
@@ -900,7 +903,7 @@ export function checkConnectivity(
             hopIds: path,
             targetId: targetDevice.id,
             error: language === 'tr'
-              ? `Hedef cihaz─▒n A─ş Ge├ğidi (Default Gateway) hedef a─ş blo─şunda de─şil.`
+              ? `Hedef cihazın Ağ Geçidi (Default Gateway) hedef ağ bloğunda değil.`
               : `Default Gateway is not in the same subnet as the target host.`
           };
         }
@@ -914,7 +917,7 @@ export function checkConnectivity(
         const device = deviceMap.get(deviceId);
         // BOLT: Use pre-resolved safeDeviceStates
         const state = safeDeviceStates.get(deviceId);
-        if ((device?.type === 'router' || device?.type === 'switchL3') && state?.ipRouting) {
+        if (device && (device.type === 'router' || device.type === 'switchL3') && state?.ipRouting) {
           // Check if this router has a route to the destination network
           const routingTable = getRoutingTable(deviceId, safeDeviceStates, devices, connections);
           const route = findRoute(resolvedTargetIp, routingTable);
@@ -929,7 +932,7 @@ export function checkConnectivity(
               hopIds: path,
               targetId: targetDevice.id,
               error: language === 'tr'
-                ? `Hedefe rota bulunamad─▒. Statik rota yap─▒land─▒rmas─▒ gerekli.`
+                ? `Hedefe rota bulunamadı. Statik rota yapılandırması gerekli.`
                 : `No route to destination. Static route configuration required.`
             };
           }
@@ -975,7 +978,7 @@ export function checkConnectivity(
           hopIds: path,
           targetId: targetDevice.id,
           error: language === 'tr'
-            ? `Hedefe rota bulunamad─▒. Statik rota yap─▒land─▒rmas─▒ gerekli.`
+            ? `Hedefe rota bulunamadı. Statik rota yapılandırması gerekli.`
             : `No route to destination. Static route configuration required.`
         };
       }
@@ -1092,7 +1095,7 @@ export function checkConnectivity(
           hopIds: path.slice(0, i + 2),
           targetId: targetDevice.id,
           error: language === 'tr'
-            ? `Trunk kurulamad─▒: ${a.name} ${aPortId} ve ${b.name} ${bPortId} portlar─▒n─▒n ikisi de trunk modunda olmal─▒.`
+            ? `Trunk kurulamadı: ${a.name} ${aPortId} ve ${b.name} ${bPortId} portlarının ikisi de trunk modunda olmalı.`
             : `Trunk failed: both ${a.name} ${aPortId} and ${b.name} ${bPortId} must be in trunk mode.`
         };
       }
@@ -1106,7 +1109,7 @@ export function checkConnectivity(
             hopIds: path.slice(0, i + 2),
             targetId: targetDevice.id,
             error: language === 'tr'
-              ? `Trunk VLAN filtresi: ${a.name} ${aPortId} ve ${b.name} ${bPortId} ├╝zerinde VLAN ${activeVlan} izinli de─şil.`
+              ? `Trunk VLAN filtresi: ${a.name} ${aPortId} ve ${b.name} ${bPortId} üzerinde VLAN ${activeVlan} izinli değil.`
               : `Trunk VLAN filter: VLAN ${activeVlan} is not allowed on ${a.name} ${aPortId} or ${b.name} ${bPortId}.`
           };
         }
@@ -1305,7 +1308,7 @@ export function checkConnectivity(
         hopIds: path,
         targetId: targetDevice.id,
         error: language === 'tr'
-          ? 'Y├Ânlendirme ba┼şar─▒s─▒z: Ge├ğerli bir rota bulunamad─▒.'
+          ? 'Yönlendirme başarısız: Geçerli bir rota bulunamadı.'
           : 'Routing failed: No valid route found.'
       };
     }
@@ -1348,7 +1351,7 @@ export function checkConnectivity(
         if (snoopingVlans.length > 0 && !snoopingVlans.includes(String(portVlan))) continue;
 
         if (!ingressPort.dhcpSnoopingTrust) {
-          // Untrusted port ÔÇö block DHCP OFFER/ACK from any source
+          // Untrusted port — block DHCP OFFER/ACK from any source
           // Allow DHCP DISCOVER/REQUEST from clients to pass through to trusted servers
           const isDhcpServerResponse = options?.dhcpMessage === 'offer' || options?.dhcpMessage === 'ack';
 
@@ -1367,7 +1370,7 @@ export function checkConnectivity(
                 hopIds: path.slice(0, i + 1),
                 targetId: targetDevice.id,
                 error: language === 'tr'
-                  ? `DHCP snooping: Yetkisiz DHCP sunucusu ${device.name} port ${normalizedId} ├╝zerinden engellendi.`
+                  ? `DHCP snooping: Yetkisiz DHCP sunucusu ${device.name} port ${normalizedId} üzerinden engellendi.`
                   : `DHCP snooping: Rogue DHCP server blocked on ${device.name} port ${normalizedId}.`
               };
             } else {
@@ -1377,7 +1380,7 @@ export function checkConnectivity(
                 hopIds: path.slice(0, i + 1),
                 targetId: targetDevice.id,
                 error: language === 'tr'
-                  ? `DHCP snooping: DHCP OFFER/ACK paketi yetkisiz port ${normalizedId} ├╝zerinden engellendi.`
+                  ? `DHCP snooping: DHCP OFFER/ACK paketi yetkisiz port ${normalizedId} üzerinden engellendi.`
                   : `DHCP snooping: DHCP OFFER/ACK packet blocked on untrusted port ${normalizedId}.`
               };
             }
@@ -1427,7 +1430,7 @@ export function checkConnectivity(
             hopIds: path.slice(0, i + 1),
             targetId: targetDevice.id,
             error: language === 'tr'
-              ? `Paket ${device?.name} ingress port ${ingressPortId} ACL kural─▒ nedeniyle engellendi.`
+              ? `Paket ${device?.name} ingress port ${ingressPortId} ACL kuralı nedeniyle engellendi.`
               : `Packet blocked by inbound ACL on ${device?.name} interface ${ingressPortId}.`
           };
         }
@@ -1448,7 +1451,7 @@ export function checkConnectivity(
             hopIds: path.slice(0, i + 1),
             targetId: targetDevice.id,
             error: language === 'tr'
-              ? `Paket ${device?.name} ingress port ${ingressPortId} IPv6 ACL kural─▒ nedeniyle engellendi.`
+              ? `Paket ${device?.name} ingress port ${ingressPortId} IPv6 ACL kuralı nedeniyle engellendi.`
               : `Packet blocked by inbound IPv6 ACL on ${device?.name} interface ${ingressPortId}.`
           };
         }
@@ -1496,7 +1499,7 @@ export function checkConnectivity(
             hopIds: path.slice(0, i + 1),
             targetId: targetDevice.id,
             error: language === 'tr'
-              ? `Paket ${device?.name} egress port ${egressPortId} ACL kural─▒ nedeniyle engellendi.`
+              ? `Paket ${device?.name} egress port ${egressPortId} ACL kuralı nedeniyle engellendi.`
               : `Packet blocked by outbound ACL on ${device?.name} interface ${egressPortId}.`
           };
         }
@@ -1517,7 +1520,7 @@ export function checkConnectivity(
             hopIds: path.slice(0, i + 1),
             targetId: targetDevice.id,
             error: language === 'tr'
-              ? `Paket ${device?.name} egress port ${egressPortId} IPv6 ACL kural─▒ nedeniyle engellendi.`
+              ? `Paket ${device?.name} egress port ${egressPortId} IPv6 ACL kuralı nedeniyle engellendi.`
               : `Packet blocked by outbound IPv6 ACL on ${device?.name} interface ${egressPortId}.`
           };
         }
@@ -1565,7 +1568,7 @@ export function checkConnectivity(
           hopIds: path.slice(0, i + 1),
           targetId: targetDevice.id,
           error: language === 'tr'
-            ? `Paket firewall (${device.name}) kural─▒ nedeniyle engellendi.`
+            ? `Paket firewall (${device.name}) kuralı nedeniyle engellendi.`
             : `Packet blocked by firewall (${device.name}) rule.`
         };
       }

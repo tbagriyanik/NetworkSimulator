@@ -428,6 +428,21 @@ export function HttpBrowserWindow({
     </form>
   );
 
+  const discoveredWebServers = useMemo(() => {
+    const servers: Array<{ name: string; url: string; ip: string }> = [];
+    devices.forEach((d: CanvasDevice) => {
+      if ((d.type as string) === 'server' || d.type === 'cloud' || d.services?.http?.enabled) {
+        const ip = d.ip || '192.168.1.100';
+        servers.push({
+          name: d.name || d.id,
+          url: `http://${ip}`,
+          ip,
+        });
+      }
+    });
+    return servers;
+  }, [devices]);
+
   return (
     <ResizablePortalWindow
       isOpen={isOpen}
@@ -444,6 +459,35 @@ export function HttpBrowserWindow({
       borderColorClass={isDark ? 'border-success-500/30 bg-secondary-900' : 'border-success-500 bg-white'}
       headerBgClass={isDark ? 'border-success-500/30 bg-secondary-950 text-secondary-100' : 'border-success-500/50 bg-secondary-50 text-secondary-900'}
     >
+      {/* Discovered Web Servers Bookmarks Bar */}
+      {discoveredWebServers.length > 0 && (
+        <div className={`flex items-center gap-1.5 px-3 py-1 border-b text-[11px] select-none overflow-x-auto no-scrollbar shrink-0 ${
+          isDark ? 'bg-secondary-950/80 border-secondary-800' : 'bg-secondary-100 border-secondary-200'
+        }`}>
+          <span className="text-[10px] font-bold text-emerald-400 font-mono shrink-0">🌐 {language === 'tr' ? 'Siteler:' : 'Sites:'}</span>
+          {discoveredWebServers.map((srv, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => {
+                onUrlChange(srv.url);
+                onOpenWebPage(srv.url);
+              }}
+              className={`px-2 py-0.5 rounded text-[10px] font-mono font-medium border transition-colors flex items-center gap-1 shrink-0 ${
+                url === srv.url
+                  ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300 font-bold'
+                  : isDark
+                  ? 'bg-secondary-900 border-secondary-700 text-secondary-300 hover:bg-secondary-800 hover:text-white'
+                  : 'bg-white border-secondary-300 text-secondary-700 hover:bg-secondary-50'
+              }`}
+            >
+              <span>{srv.name}</span>
+              <span className="opacity-60 text-[9px]">({srv.ip})</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       <div
         className="flex-1 overflow-auto custom-scrollbar p-1 bg-gradient-to-b from-transparent to-secondary-50 dark:to-secondary-900"
         style={{ contain: 'layout style paint' }}

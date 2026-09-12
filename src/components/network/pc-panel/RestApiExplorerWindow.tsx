@@ -112,12 +112,53 @@ export function RestApiExplorerWindow({
   const [url, setUrl] = useState('https://controller/dna/intent/api/v1/network-device');
   const [headers, setHeaders] = useState('Content-Type: application/json\nx-auth-token: demo_token_123');
   const [body, setBody] = useState('{\n  "name": "Router-1",\n  "type": "netsim"\n}');
-  const [activeReqTab, setActiveReqTab] = useState<'headers' | 'body'>('headers');
+  const [activeReqTab, setActiveReqTab] = useState<'headers' | 'body' | 'python' | 'curl'>('headers');
   const [activeResTab, setActiveResTab] = useState<'body' | 'headers'>('body');
   const [response, setResponse] = useState<RestApiResponse | null>(null);
   const [isCopied, setIsCopied] = useState(false);
+  const [copiedSnippet, setCopiedSnippet] = useState<string | null>(null);
 
   const isTr = language === 'tr';
+
+  const generateCurlSnippet = () => {
+    const headerLines = headers.split('\n').filter(Boolean);
+    let cmd = `curl -X ${method} "${url}"`;
+    headerLines.forEach(h => {
+      cmd += ` \\\n  -H "${h.trim()}"`;
+    });
+    if ((method === 'POST' || method === 'PUT' || method === 'PATCH') && body.trim()) {
+      const sanitizedBody = body.replace(/"/g, '\\"');
+      cmd += ` \\\n  -d "${sanitizedBody}"`;
+    }
+    return cmd;
+  };
+
+  const generatePythonSnippet = () => {
+    const headerLines = headers.split('\n').filter(Boolean);
+    const headerObj: Record<string, string> = {};
+    headerLines.forEach(l => {
+      const parts = l.split(':');
+      if (parts.length >= 2) headerObj[parts[0].trim()] = parts.slice(1).join(':').trim();
+    });
+
+    let code = `import requests\nimport json\n\nurl = "${url}"\n`;
+    code += `headers = ${JSON.stringify(headerObj, null, 4)}\n\n`;
+
+    if ((method === 'POST' || method === 'PUT' || method === 'PATCH') && body.trim()) {
+      code += `payload = ${body.trim()}\n\n`;
+      code += `response = requests.${method.toLowerCase()}(url, headers=headers, json=payload)\n`;
+    } else {
+      code += `response = requests.${method.toLowerCase()}(url, headers=headers)\n`;
+    }
+    code += `\nprint("Status:", response.status_code)\ntry:\n    print(json.dumps(response.json(), indent=2))\nexcept Exception:\n    print(response.text)\n`;
+    return code;
+  };
+
+  const handleCopySnippet = (text: string, type: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedSnippet(type);
+    setTimeout(() => setCopiedSnippet(null), 2000);
+  };
 
   const handleSend = () => {
     const headerLines = headers.split('\n');
@@ -195,20 +236,56 @@ export function RestApiExplorerWindow({
             </div>
           </div>
 
-          {/* Preset templates dropdown */}
-          <div className="flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <select
-              onChange={(e) => handleSelectTemplate(e.target.value)}
-              className={`text-xs px-2.5 py-1.5 rounded-lg border outline-none font-mono ${
-                isDark ? 'bg-secondary-900 border-secondary-700 text-emerald-400' : 'bg-secondary-100 border-secondary-300 text-emerald-700'
-              }`}
-            >
-              <option value="">{isTr ? '-- Hazır Intent / RESTCONF Şablonu Seç --' : '-- Select Preset Intent / RESTCONF API --'}</option>
-              {TEMPLATE_ENDPOINTS.map((tpl, i) => (
-                <option key={i} value={tpl.url}>{tpl.label}</option>
-              ))}
-            </select>
+          {/* Target Device Selector & Preset templates dropdown */}
+          <div className="flex items-center gap-2">
+            {/* Device Selector */}
+            {devices.length > 0 && (
+              <div className="flex items-center gap-1.5">
+                <Server className="w-3.5 h-3.5 text-sky-400" />
+                <select
+                  aria-label={isTr ? 'Hedef Cihaz' : 'Target Device'}
+                  onChange={(e) => {
+                    const devId = e.target.value;
+                    if (!devId) return;
+                    const matchedDev = devices.find(d => d.id === devId);
+                    const host = matchedDev?.name || devId;
+                    // If current URL has RESTCONF, replace host
+                    if (url.includes('/restconf/')) {
+                      setUrl(url.replace(/https?:\/\/[^/]+/, `https://${host.toLowerCase()}`));
+                    } else {
+                      setUrl(`https://${host.toLowerCase()}/restconf/data/ietf-interfaces:interfaces`);
+                    }
+                  }}
+                  className={`text-xs px-2 py-1.5 rounded-lg border outline-none font-mono ${
+                    isDark ? 'bg-secondary-900 border-secondary-700 text-sky-400' : 'bg-secondary-100 border-secondary-300 text-sky-700'
+                  }`}
+                >
+                  <option value="">{isTr ? '-- Hedef Cihaz Seç --' : '-- Select Target Device --'}</option>
+                  {devices.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name || d.id} ({d.type})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Preset Templates */}
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <select
+                aria-label={isTr ? 'Hazır Şablonlar' : 'Preset Templates'}
+                onChange={(e) => handleSelectTemplate(e.target.value)}
+                className={`text-xs px-2.5 py-1.5 rounded-lg border outline-none font-mono ${
+                  isDark ? 'bg-secondary-900 border-secondary-700 text-emerald-400' : 'bg-secondary-100 border-secondary-300 text-emerald-700'
+                }`}
+              >
+                <option value="">{isTr ? '-- Hazır Şablon Seç --' : '-- Preset Template --'}</option>
+                {TEMPLATE_ENDPOINTS.map((tpl, i) => (
+                  <option key={i} value={tpl.url}>{tpl.label}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
@@ -254,11 +331,11 @@ export function RestApiExplorerWindow({
         </div>
 
         {/* Request Options & Tabs */}
-        <div className="flex flex-col h-[32%] min-h-0 border rounded-lg overflow-hidden dark:border-secondary-800">
+        <div className="flex flex-col h-[35%] min-h-0 border rounded-lg overflow-hidden dark:border-secondary-800">
           <div className={`flex items-center justify-between border-b px-2 py-1 text-[11px] font-bold ${
             isDark ? 'bg-secondary-900 border-secondary-800' : 'bg-secondary-100 border-secondary-200'
           }`}>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setActiveReqTab('headers')}
                 className={`px-2.5 py-0.5 rounded transition-colors ${activeReqTab === 'headers' ? 'bg-emerald-500 text-slate-950 font-bold' : 'opacity-60 hover:opacity-100'}`}
@@ -271,8 +348,43 @@ export function RestApiExplorerWindow({
               >
                 Body (JSON Payload)
               </button>
+              <button
+                onClick={() => setActiveReqTab('python')}
+                className={`px-2 py-0.5 rounded transition-colors ${activeReqTab === 'python' ? 'bg-sky-500 text-slate-950 font-bold' : 'opacity-60 hover:opacity-100 text-sky-400'}`}
+              >
+                Python (requests)
+              </button>
+              <button
+                onClick={() => setActiveReqTab('curl')}
+                className={`px-2 py-0.5 rounded transition-colors ${activeReqTab === 'curl' ? 'bg-amber-500 text-slate-950 font-bold' : 'opacity-60 hover:opacity-100 text-amber-400'}`}
+              >
+                cURL Snippet
+              </button>
             </div>
-            <span className="text-[10px] opacity-50 font-mono">Request Config</span>
+            
+            {activeReqTab === 'python' && (
+              <button
+                onClick={() => handleCopySnippet(generatePythonSnippet(), 'python')}
+                className="flex items-center gap-1 text-[10px] text-sky-400 font-mono hover:underline"
+              >
+                {copiedSnippet === 'python' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                <span>{copiedSnippet === 'python' ? (isTr ? 'Kopyalandı' : 'Copied') : (isTr ? 'Python Kodu Kopyala' : 'Copy Python')}</span>
+              </button>
+            )}
+
+            {activeReqTab === 'curl' && (
+              <button
+                onClick={() => handleCopySnippet(generateCurlSnippet(), 'curl')}
+                className="flex items-center gap-1 text-[10px] text-amber-400 font-mono hover:underline"
+              >
+                {copiedSnippet === 'curl' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                <span>{copiedSnippet === 'curl' ? (isTr ? 'Kopyalandı' : 'Copied') : (isTr ? 'cURL Kopyala' : 'Copy cURL')}</span>
+              </button>
+            )}
+
+            {activeReqTab !== 'python' && activeReqTab !== 'curl' && (
+              <span className="text-[10px] opacity-50 font-mono">Request Config</span>
+            )}
           </div>
 
           <div className="flex-1 p-2 min-h-0 overflow-auto">
@@ -283,13 +395,21 @@ export function RestApiExplorerWindow({
                 placeholder="Content-Type: application/json&#10;x-auth-token: demo_token_123"
                 className={`w-full h-full text-xs font-mono bg-transparent outline-none resize-none leading-relaxed ${isDark ? 'text-slate-200' : 'text-slate-800'}`}
               />
-            ) : (
+            ) : activeReqTab === 'body' ? (
               <textarea
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 placeholder='{ "key": "value" }'
                 className={`w-full h-full text-xs font-mono bg-transparent outline-none resize-none leading-relaxed ${isDark ? 'text-slate-200' : 'text-slate-800'}`}
               />
+            ) : activeReqTab === 'python' ? (
+              <pre className="text-xs font-mono text-sky-300 select-text whitespace-pre-wrap leading-relaxed">
+                {generatePythonSnippet()}
+              </pre>
+            ) : (
+              <pre className="text-xs font-mono text-amber-300 select-text whitespace-pre-wrap leading-relaxed">
+                {generateCurlSnippet()}
+              </pre>
             )}
           </div>
         </div>

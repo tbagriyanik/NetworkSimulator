@@ -17,7 +17,7 @@ Network Simulator, paketlerin ağ üzerindeki iletimini, OSI katman detayların�
 4. **Protokol Ağacı Çözümlemesi (Protocol Tree)**:
    - `Ethernet II` → `802.1Q VLAN` → `IPv4 / IPv6 / ARP` → `ICMP / TCP / UDP / OSPF / DHCP` hiyerarşik protokol ağacı.
 5. **Ham Hex & ASCII Dökümü (Raw Hex Dump)**:
-   - Gerçek Wireshark/pcap uyumlu 16-baytlık ofset, hex baytları ve ASCII karşılıkları dökümü.
+   - Gerçek 16-baytlık ofset, hex baytları ve ASCII karşılıkları dökümü.
 6. **Hop İlerleme & Simülasyon Oynatıcı**:
    - Başa dön, oynat/durdur, sonraki atlamaya geç ve `0.5x`, `1x`, `2x` oynatma hızı ayarı.
 

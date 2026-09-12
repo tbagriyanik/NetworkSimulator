@@ -142,7 +142,7 @@ Bu indeks, Network Simulator projesinin tüm dokümantasyon dosyalarını ve iç
 - Gömülü ve modal PDU analizi
 - OSI Katmanları (Layer 1 - Layer 7 Giriş & Çıkış PDU)
 - Protokol ağacı çözümlemesi
-- Wireshark uyumlu 16-baytlık Hex & ASCII dökümü
+- 16-baytlık Hex & ASCII dökümü
 - Hop oynatıcı ve hız ayarı
 
 **Ne Zaman Okuyacağım?**

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Save, Play, FileCode, File, FolderOpen, Minus, Plus, Scissors, Copy,
   ClipboardPaste, Trash2, ListChecks, Undo2, Redo2, WrapText,
-  Bold, Italic, Underline, Code, Image, Link as LinkIcon, Heading1, Heading2, Heading3
+  Bold, Italic, Underline, Code, Image, Link as LinkIcon, Heading1, Heading2, Heading3, Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
@@ -495,16 +495,39 @@ export function FileEditorModal({
               br
             </Button>
           </TooltipWrapper>
-          <TooltipWrapper title="Liste <ul>">
-            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('ul')} className="h-7 px-2 text-xs shrink-0 font-mono">
-              ul
-            </Button>
-          </TooltipWrapper>
-          <TooltipWrapper title="Liste Elemanı <li>">
-            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('li')} className="h-7 px-2 text-xs shrink-0 font-mono">
-              li
-            </Button>
-          </TooltipWrapper>
+        </div>
+      )}
+      {isPythonFile && (
+        <div className={isDark
+          ? 'flex min-h-9 flex-wrap items-center gap-1 border-b border-secondary-800 bg-secondary-950/90 px-3 py-1 text-xs select-none'
+          : 'flex min-h-9 flex-wrap items-center gap-1 border-b border-secondary-200 bg-secondary-50 px-3 py-1 text-xs select-none'}>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-sky-400 mr-1 flex items-center gap-1">
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Şablonlar:
+          </span>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => updateContent(`# Netmiko ile Cihaz SSH Baglantisi ve VLAN Olusturma\nfrom netmiko import ConnectHandler\n\ndevice = {\n    'device_type': 'cisco_ios',\n    'host': '192.168.1.1',\n    'username': 'admin',\n    'password': 'password123'\n}\n\nprint("Baglanti kuruluyor: " + device['host'])\nnet_connect = ConnectHandler(**device)\noutput = net_connect.send_command('show ip int brief')\nprint(output)\n\nconfig_commands = ['vlan 50', 'name IT_DEPT', 'exit']\ncfg_out = net_connect.send_config_set(config_commands)\nprint("VLAN Konfigurasoynu Basariyla Gonderildi!")\n`)}
+            className="h-7 px-2 text-xs text-sky-400 hover:text-sky-300 hover:bg-sky-500/10 font-mono"
+          >
+            Netmiko (SSH)
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => updateContent(`# RESTCONF ile Port Durumu ve IP Yapilandirmasi\nimport requests\nimport json\n\nurl = "https://router1/restconf/data/ietf-interfaces:interfaces/interface=GigabitEthernet0/0"\nheaders = {\n    "Accept": "application/yang-data+json",\n    "Content-Type": "application/yang-data+json"\n}\npayload = {\n    "ietf-interfaces:interface": {\n        "name": "GigabitEthernet0/0",\n        "enabled": True,\n        "ietf-ip:ipv4": {\n            "address": [{"ip": "10.50.0.1", "netmask": "255.255.255.0"}]\n        }\n    }\n}\n\nprint("RESTCONF PATCH istegi gonderiliyor...")\nresp = requests.patch(url, headers=headers, json=payload)\nprint("Durum Kodu:", resp.status_code)\n`)}
+            className="h-7 px-2 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 font-mono"
+          >
+            RESTCONF (YANG)
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => updateContent(`# Web Sunucusundan Sayfa Cekme (HTTP GET)\nimport requests\n\nurl = "http://192.168.1.100"\nprint("HTTP GET yapiliyor: " + url)\nresp = requests.get(url)\nprint("HTTP Durum:", resp.status_code)\nprint("Icerik Boyutu:", len(resp.text), "karakter")\nprint("Ilk 200 karakter:")\nprint(resp.text[:200])\n`)}
+            className="h-7 px-2 text-xs text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 font-mono"
+          >
+            HTTP GET
+          </Button>
         </div>
       )}
       <div data-code-editor="true" className="flex-1 relative flex flex-col font-mono text-sm overflow-hidden">

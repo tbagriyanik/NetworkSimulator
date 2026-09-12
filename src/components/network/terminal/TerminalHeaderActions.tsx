@@ -1,7 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Search, Copy, Trash2, Download, Settings, Wifi, Type } from 'lucide-react';
+import { Search, Copy, Check, Trash2, Download, Settings, Wifi, Type } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { ShortcutBadge } from '@/components/ui/ShortcutBadge';
@@ -83,6 +84,7 @@ export function TerminalHeaderActions({
   onClose,
   device,
 }: TerminalHeaderActionsProps) {
+  const [copied, setCopied] = useState(false);
   const btnClass = cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-secondary-600 hover:text-secondary-900", isDark && "text-secondary-300 hover:text-secondary-100");
 
   return (
@@ -114,23 +116,27 @@ export function TerminalHeaderActions({
           <Search className="w-4 h-4" aria-hidden="true" />
         </Button>
       </TooltipWrapper>
-      <TooltipWrapper title={t.copy}>
-        <Button variant="ghost" size="icon" onClick={handleCopyAll} className={btnClass}>
-          <Copy className="w-4 h-4" aria-hidden="true" />
+      <TooltipWrapper title={copied ? (language === 'tr' ? 'Kopyalandı!' : 'Copied!') : (language === 'tr' ? 'Çıktıyı Kopyala' : (t.copy || 'Copy Output'))}>
+        <Button variant="ghost" size="icon" onClick={() => {
+          handleCopyAll();
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        }} className={cn(btnClass, copied && "text-success-500 hover:text-success-600 bg-success-500/10")}>
+          {copied ? <Check className="w-4 h-4" aria-hidden="true" /> : <Copy className="w-4 h-4" aria-hidden="true" />}
         </Button>
       </TooltipWrapper>
-      <TooltipWrapper title={t.exportLabel}>
+      <TooltipWrapper title={t.exportLabel || (language === 'tr' ? 'Dışa Aktar' : 'Export')}>
         <Button variant="ghost" size="icon" onClick={exportTerminal} className={btnClass}>
           <Download className="w-4 h-4" aria-hidden="true" />
         </Button>
       </TooltipWrapper>
-      <TooltipWrapper title={t.clearTerminalBtn || 'Clear'}>
+      <TooltipWrapper title={language === 'tr' ? 'Çıktıyı Temizle' : (t.clearTerminalBtn || 'Clear Output')}>
         <Button
           variant="ghost"
           size="icon"
           onClick={clearTerminalView}
           className="h-9 w-9 md:h-8 md:w-8 rounded-lg text-error-500 hover:text-error-600 hover:bg-error-500/10"
-          aria-label={t.clearTerminalBtn}
+          aria-label={language === 'tr' ? 'Çıktıyı Temizle' : (t.clearTerminalBtn || 'Clear')}
         >
           <Trash2 className="w-4 h-4" aria-hidden="true" />
         </Button>

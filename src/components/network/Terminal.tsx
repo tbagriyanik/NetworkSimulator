@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useRef, useEffect, KeyboardEvent, useCallback, useMemo, ClipboardEvent } from 'react';
 import { SwitchState, CommandMode } from '@/lib/network/types';
@@ -1362,9 +1362,10 @@ export function Terminal({
 
         {/* Input Area — matches CommandLineTab absolute positioning */}
         {!isPoweredOff && (
-          <div onClick={() => inputRef.current?.focus()} className={cn("shrink-0 border-t bg-muted/95 backdrop-blur-sm z-20", isMobile ? "p-2 pb-safe" : "p-3")}>
-            {isMobile && !state.awaitingPassword && !confirmDialog?.show && (
-              <div className="flex gap-1.5 overflow-x-auto pb-2 mb-1 px-1 no-scrollbar">
+          <div onClick={() => inputRef.current?.focus()} className={cn("shrink-0 border-t bg-muted/95 backdrop-blur-sm z-20", isMobile ? "p-2 pb-safe" : "p-2.5")}>
+            {!state.awaitingPassword && !confirmDialog?.show && helpLevel !== 'exam' && (
+              <div className="flex gap-1.5 overflow-x-auto pb-1.5 mb-1 px-1 no-scrollbar items-center">
+                <span className="text-[10px] font-mono font-bold opacity-40 uppercase tracking-wider shrink-0 mr-0.5">Quick:</span>
                 {(device?.type === 'pc' ? QUICK_COMMANDS.pc : device?.type === 'iot' ? QUICK_COMMANDS.iot : QUICK_COMMANDS[state.currentMode] || []).map((cmd) => (
                   <Button
                     key={cmd}
@@ -1372,10 +1373,10 @@ export function Terminal({
                     variant="secondary"
                     size="sm"
                     className={cn(
-                      "h-8 px-3 text-[11px] font-bold tracking-tight whitespace-nowrap rounded-lg flex-shrink-0 border shadow-sm",
+                      "h-6 px-2.5 text-[10px] font-mono font-semibold tracking-tight whitespace-nowrap rounded-md flex-shrink-0 border shadow-xs transition-colors",
                       isDark
-                        ? "bg-secondary-800/80 border-secondary-700 text-secondary-300 active:bg-secondary-700"
-                        : "bg-white border-secondary-200 text-secondary-600 active:bg-secondary-100"
+                        ? "bg-secondary-800/90 border-secondary-700/80 text-secondary-300 hover:bg-secondary-700 hover:text-white"
+                        : "bg-white border-secondary-300 text-secondary-700 hover:bg-secondary-100 hover:text-secondary-900"
                     )}
                     onClick={(e) => {
                       e.preventDefault();

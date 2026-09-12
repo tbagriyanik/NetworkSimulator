@@ -171,6 +171,7 @@ export const ConnectionLine = memo(function ConnectionLine({
 
   // Calculate control points for smooth curve with offset
   const midX = (source.x + target.x) / 2;
+  const midY = (source.y + target.y) / 2;
 
   // Apply perpendicular offset for parallel lines
   const dx = target.x - source.x;
@@ -384,6 +385,35 @@ export const ConnectionLine = memo(function ConnectionLine({
             >
               {connection.targetPort}
             </text>
+
+            {/* Midpoint Link Telemetry Tooltip Badge when Hovered */}
+            {isHovered && (
+              <g className="pointer-events-none select-none">
+                <rect
+                  x={midX - 54}
+                  y={midY - 12}
+                  width="108"
+                  height="24"
+                  rx="6"
+                  fill={isDark ? '#0f172a' : '#ffffff'}
+                  stroke={isEffectivelyActive ? '#10b981' : '#f43f5e'}
+                  strokeWidth="1.5"
+                  className="shadow-md"
+                  opacity={0.95}
+                />
+                <text
+                  x={midX}
+                  y={midY + 3}
+                  fill={isDark ? '#38bdf8' : '#0284c7'}
+                  fontSize="9.5"
+                  textAnchor="middle"
+                  fontFamily="monospace"
+                  fontWeight="bold"
+                >
+                  {isEffectivelyActive ? '⚡ 1 Gbps | UP' : '⛔ Link DOWN'}
+                </text>
+              </g>
+            )}
           </>
         );
       })()}

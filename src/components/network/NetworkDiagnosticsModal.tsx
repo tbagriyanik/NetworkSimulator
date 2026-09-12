@@ -190,10 +190,40 @@ export function NetworkDiagnosticsModal({
                   <div className={`mt-2 p-2 rounded-lg text-xs flex items-start gap-1.5 border ${isDark ? 'bg-amber-950/20 border-amber-500/20 text-amber-200' : 'bg-amber-50 border-amber-200 text-amber-800'
                     }`}>
                     <Lightbulb className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                    <div>
+                    <div className="flex-1">
                       <span className="font-semibold">{isTr ? 'Çözüm Önerisi: ' : 'Suggested Fix: '}</span>
                       {issue.suggestedFix[language]}
                     </div>
+                  </div>
+
+                  {/* Direct Jump to Device action */}
+                  <div className="mt-2 flex items-center justify-end gap-2">
+                    {diagnosticResult.sourceDevice && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          onOpenChange(false);
+                          window.dispatchEvent(new CustomEvent('open-device-cli', { detail: { deviceId: diagnosticResult.sourceDevice!.id } }));
+                        }}
+                        className="h-6 px-2 text-[10.5px] font-mono text-sky-400 hover:text-sky-300 hover:bg-sky-500/10"
+                      >
+                        ⚙️ {diagnosticResult.sourceDevice.name} {isTr ? 'CLI Aç' : 'Open CLI'}
+                      </Button>
+                    )}
+                    {diagnosticResult.targetDevice && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          onOpenChange(false);
+                          window.dispatchEvent(new CustomEvent('open-device-cli', { detail: { deviceId: diagnosticResult.targetDevice!.id } }));
+                        }}
+                        className="h-6 px-2 text-[10.5px] font-mono text-purple-400 hover:text-purple-300 hover:bg-purple-500/10"
+                      >
+                        ⚙️ {diagnosticResult.targetDevice.name} {isTr ? 'CLI Aç' : 'Open CLI'}
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}

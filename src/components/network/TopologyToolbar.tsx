@@ -33,6 +33,8 @@ import { DeviceIcon } from './DeviceIcon';
 import { NetworkDiagnosticsModal } from './NetworkDiagnosticsModal';
 import { SnapshotManagerModal } from './SnapshotManagerModal';
 import { applyAutoLayout } from '@/lib/network/autoLayoutEngine';
+import { useUiPreferences } from '@/hooks/useUiPreferences';
+import { getDeviceCenter } from '@/components/network/networkTopology.helpers';
 
 
 interface TopologyToolbarProps {
@@ -58,7 +60,7 @@ interface TopologyToolbarProps {
   handleUndo: () => void;
   handleRedo: () => void;
   handleRefreshNetwork: () => void;
-  setIsEnvironmentPanelOpen: (v: boolean) => void;
+  setIsEnvironmentPanelOpen: (open: boolean) => void;
   onOpenStudentJoin?: () => void;
   onOpenTeacherPanel?: () => void;
   isPingPanelOpen?: boolean;
@@ -100,6 +102,7 @@ export function TopologyToolbar({
   onOpenStudentJoin, onOpenTeacherPanel,
   isPingPanelOpen,
 }: TopologyToolbarProps) {
+  useUiPreferences();
   const graphicsQuality = useAppStore((state) => state.graphicsQuality);
   const isSimulationMode = useAppStore((state) => state.topology.isSimulationMode);
   const setSimulationMode = useAppStore((state) => state.setSimulationMode);
@@ -303,6 +306,22 @@ export function TopologyToolbar({
                   );
                 }
 
+                const selectAndFocusDevice = (device: CanvasDevice) => {
+                  // Pan & Center canvas camera on target device
+                  if (typeof window !== 'undefined') {
+                    const canvasW = window.innerWidth;
+                    const canvasH = window.innerHeight;
+                    const center = getDeviceCenter(device);
+                    const zoomLevel = topologyZoom || 1.0;
+                    const targetPanX = canvasW / 2 - center.x * zoomLevel;
+                    const targetPanY = canvasH / 2 - center.y * zoomLevel;
+                    setPan({ x: targetPanX, y: targetPanY });
+                    window.dispatchEvent(new CustomEvent('focus-device', { detail: { deviceId: device.id } }));
+                  }
+                  handleDeviceSelectFromMenu(device.type, device.id, device.switchModel, device.name);
+                  setDeviceSearchQuery('');
+                };
+
                 return filtered.map((device) => {
                   const currentDeviceState = deviceStates.get(device.id);
                   const displayName = currentDeviceState?.hostname || device.name;
@@ -318,7 +337,7 @@ export function TopologyToolbar({
                     <DropdownMenuItem
                       key={device.id}
                       className={`flex items-center gap-2 py-1.5 cursor-pointer ${activeDeviceId === device.id ? 'bg-purple-500/10 text-purple-400' : ''}`}
-                      onClick={() => { handleDeviceSelectFromMenu(device.type, device.id, device.switchModel, device.name); setDeviceSearchQuery(''); }}
+                      onClick={() => selectAndFocusDevice(device)}
                     >
                       <div className="flex items-center gap-2 cursor-pointer">
                         <span className={`w-1.5 h-1.5 rounded-full ${statusColor}`} />

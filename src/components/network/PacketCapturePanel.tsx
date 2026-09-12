@@ -281,6 +281,36 @@ export const PacketCapturePanel = ({
             </button>
           </div>
 
+          {/* Quick Protocol Filter Pills */}
+          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
+            {[
+              { label: language === 'tr' ? 'Tümü' : 'All', val: '' },
+              { label: 'ICMP', val: 'icmp' },
+              { label: 'ARP', val: 'arp' },
+              { label: 'TCP', val: 'tcp' },
+              { label: 'UDP', val: 'udp' },
+              { label: 'DNS', val: 'dns' },
+              { label: 'HTTP', val: 'http' },
+              { label: 'DHCP', val: 'dhcp' },
+              { label: 'OSPF', val: 'ospf' },
+            ].map(p => (
+              <button
+                key={p.label}
+                type="button"
+                onClick={() => setSearchQuery(p.val)}
+                className={`px-1.5 py-0.5 rounded text-[9.5px] font-mono font-semibold border transition-all shrink-0 ${
+                  searchQuery.toLowerCase() === p.val
+                    ? 'bg-emerald-500 text-slate-950 border-emerald-400 font-bold'
+                    : isDark
+                    ? 'bg-secondary-900/80 border-secondary-700 text-secondary-300 hover:bg-secondary-800 hover:text-white'
+                    : 'bg-white border-secondary-300 text-secondary-700 hover:bg-secondary-100'
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
           {(showExclude || excludeQuery) && (
             <div className={`flex items-center gap-1.5 px-2 py-1 rounded border shadow-sm ${isDark ? (graphicsQuality === 'low' ? 'border-secondary-700 bg-secondary-800' : 'border-secondary-700 bg-secondary-800/80') : 'border-secondary-300 bg-white'}`}>
               <span className={`text-[10px] font-bold shrink-0 ${isDark ? 'text-amber-400' : 'text-amber-700'}`}>

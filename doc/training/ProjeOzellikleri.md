@@ -1,18 +1,20 @@
 # NetworkSimulator — Tam Özellik Envanteri / Full Feature Inventory
 
-**Sürüm / Version:** 5.2.0 · **Son doğrulama / Last verified:** 2026-09-12
+**Sürüm / Version:** 5.3.0 · **Son doğrulama / Last verified:** 2026-09-12
 
-## Son Ağ Simülasyonu Geliştirmeleri (2026-09-12 - v5.2.0)
+## Son Ağ Simülasyonu Geliştirmeleri (2026-09-12 - v5.3.0)
 
 | Özellik | Güncel kapsam ve sınır |
 |---|---|
-| **NetDevOps & RESTCONF Otomasyon Motoru** | `netdevopsEngine.ts` ile IETF YANG veri modelleri (`ietf-interfaces`, `ietf-interfaces-state`, `netsim-native`), `GET`/`POST`/`PUT`/`PATCH`/`DELETE` RESTCONF CRUD işlemleri, Netmiko (`ConnectHandler`, `send_command`, `send_config_set`) ve Python `requests` script koşucusu tam çalışır duruma getirildi. Cihaz konfigürasyon modlarına geçilerek çalışan durumlar (`SwitchState`) canlı senkronize edilir. |
-| **PC REST API Explorer & SDN Intent Controller Tester** | `RestApiExplorerWindow.tsx` ve `restApiMock.ts` ile canlı Controller Intent API uç noktaları (`/auth/token`, `/network-device`, `/interface`, `/topology/site-topology`, `/network-health`, `/client-health`) ve doğrudan `/restconf/data/...` köprüsü sağlandı. İstek gövdesi/başlıkları düzenlenebilir, canlı topoloji verileriyle yanıt döner. |
-| **Modüler Port İsimlendirme Ayrımı** | Harici eklenen modül portları (`Serial1/0/0`, `FastEthernet1/0/0`, `GigabitEthernet1/0/0`, `TenGigabitEthernet1/0/0`) dahili sabit portlarla çakışmayacak şekilde slot numarasına bağlı dinamik isimlendirildi (`modularExpansion.ts`, `portUtils.ts`). |
-| **L3 Switch Sabit Port Koruma & Modül Entegrasyonu** | `NS-L3-24PS` cihazına modül takıldığında dahili 24 Gigabit Ethernet (`gi1/0/1..24`) ve 4 Uplink (`gi1/1/1..4`) portlarının silinmesi veya modül sanılması engellendi, tüm sabit portlar eksiksiz korundu (`portUtils.ts`). |
-| **Router & Switch 3-Satırlı Port Çizim Düzeni** | Router topoloji SVG çiziminde dahili Gigabit portları 1. satırda (Row 0), dahili Serial ve Console portları 2. satırda (Row 1), sonradan eklenen genişletme modül portları ise 3. satırda (Row 2) ve sonraki satırlarda ayrı bir blok halinde konumlandırıldı (`DeviceRenderer.tsx`, `networkTopology.helpers.ts`). |
-| **`showRoutingDisplay.ts` Modüler Mimarisi** | 1820 satırlık dev gösterim dosyası tek sorumluluk prensibiyle protokol (`showRoutingProtocols.ts`), yedeklilik (`showRedundancyDisplay.ts`) ve servis (`showServicesDisplay.ts`) alt modüllerine bölündü; kod kalitesi ve bakım kolaylığı artırıldı. |
-| **Çevresel Ayarlar & UI İyileştirmesi** | Genel "Ayarlar" menü/panel başlığı "Çevresel Ayarlar" olarak güncellendi (`tr.json`). |
+| **Görsel PDU İnceleyici & Canlı Paket Analizi** | OSI Katmanları (1-7), Protokol Hiyerarşi Ağacı, Hex Dump & ASCII dökümü, Inbound/Outbound durumları, Hop simülasyon oynatıcısı (`EmbeddedPduInspector.tsx`, `pduDecoder.ts`, `VisualPduInspectorModal.tsx`). |
+| **Tek Tıkla CLI Çıktı Kopyalama & Temizleme** | Terminal başlığında tek tıkla kopyalama (`Clipboard`), 2 saniyelik görsel onay rozeti ve tek tıkla ekran temizleme (`TerminalHeaderActions.tsx`). |
+| **Arama Kutusundan Cihaz Odaklama (Pan & Center + Pulse Ring)** | Üst araç çubuğundaki cihaz aramasından seçilen cihaza kameranın yumuşakça odaklanması ve 2 saniyelik çift katmanlı neon vurgu halkası (`TopologyToolbar.tsx`, `DeviceRenderer.tsx`). |
+| **Hızlı Konfigürasyon İçe/Dışa Aktar (.cfg / .txt)** | Cihaz yapılandırma modalında `Running-Config` / Host ayarlarını `.cfg` olarak indirme ve `.cfg`/`.txt` dosyalarını yükleyerek toplu çalıştırma (`DeviceConfigModal.tsx`). |
+| **Sınav Modunda Hızlı Komut Panelinin Gizlenmesi** | Sınav (`helpLevel === 'exam'`) modunda `Quick:` hızlı komut ipuçları gizlenir (`Terminal.tsx`, `MultiDeviceWindowManager.tsx`). |
+| **Katman 2 MAC Erişim Listesi & Port Filtreleme** | `mac access-list extended <name>` ve `mac access-group <name> in` kuralları ile Ethernet çerçeve seviyesinde filtreleme ve düşürme (`commonForwardingEngine.ts`). |
+| **Port Şablonu, CLI Makro Yürütme & Donanım Teşhisi** | `source template <name>`, `macro apply <name>`, `show diagnostic` komutları aktif hale getirildi. |
+
+## NetDevOps, RESTCONF ve Port Düzeni Geliştirmeleri (2026-09-12 - v5.2.0)
 
 ## Çoklu Seçim, Izgara ve Animasyon Geliştirmeleri (2026-09-11 - v5.1.0)
 

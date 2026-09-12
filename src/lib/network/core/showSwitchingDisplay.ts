@@ -698,16 +698,13 @@ export function cmdShowEtherchannel(state: SwitchState, input: string, _ctx: Com
   output += '        U - in use      f - failed to allocate aggregator\n\n';
   output += `Number of channel-groups in use: ${Object.keys(groups).length}\n`;
   output += `Number of aggregators:           ${Object.keys(groups).length}\n\n`;
-  output += 'Group  Port-channel  Protocol    Ports\n';
-  output += '------+-------------+-----------+-----------------------------------------------\n';
-
   Object.entries(groups).forEach(([group, ports]) => {
     const info = getBundleInfoForGroup(parseInt(group));
     const poPort = state.ports[`po${group}`];
-const isLayer3 = poPort?.mode === 'routed' || poPort?.isRoutedPort;
-      const layerFlag = isLayer3 ? 'R' : 'S';
-      const protocol = info.protocol === 'static' ? '-' : info.protocol.toUpperCase();
-      output += `${group.padEnd(7)}Po${group.padEnd(13)}${protocol.padEnd(12)}${ports.map(p => `${memberIsUp(p) ? 'P' : 'D'}(${p})`).join(', ')} [${layerFlag}]\n`;
+    const isLayer3 = poPort?.mode === 'routed' || poPort?.isRoutedPort;
+    const layerFlag = isLayer3 ? 'R' : 'S';
+    const protocol = info.protocol === 'static' ? '-' : info.protocol.toUpperCase();
+    output += `${group.padEnd(7)}Po${group.padEnd(13)}${protocol.padEnd(12)}${ports.map(p => `${memberIsUp(p) ? 'P' : 'D'}(${p})`).join(', ')} [${layerFlag}]\n`;
   });
 
   return { success: true, output };
@@ -768,8 +765,30 @@ export function cmdShowArp(state: SwitchState, _input: string, _ctx: CommandCont
 /**
  * Show MAC Static
  */
-export function cmdShowMacStatic(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  return { success: true, output: '\nMac Address Table\n-------------------------------------------\n\nVlan    Mac Address       Type        Ports\n----    -----------       --------    -----\nAll    0100.0ccc.cccc    STATIC      CPU\nAll    0100.0ccc.cccd    STATIC      CPU\n' };
+export function cmdShowMacStatic(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  let output = '          Mac Address Table\n';
+  output += '-------------------------------------------\n\n';
+  output += 'Vlan    Mac Address       Type        Ports\n';
+  output += '----    -----------       --------    -----\n';
+
+  output += 'All     0100.0ccc.cccc    STATIC      CPU\n';
+  output += 'All     0100.0ccc.cccd    STATIC      CPU\n';
+  output += 'All     0180.c200.0000    STATIC      CPU\n';
+
+  let count = 3;
+
+  Object.keys(state.ports || {}).forEach(portName => {
+    const port = state.ports[portName];
+    const vlan = Number(port.accessVlan || port.vlan || 1);
+    const staticList = port.staticMacs || [];
+    staticList.forEach(sm => {
+      count++;
+      output += `${String(vlan).padEnd(8)}${formatMacAddressSimple(sm).padEnd(18)}${'STATIC'.padEnd(12)}${formatPortName(portName)}\n`;
+    });
+  });
+
+  output += '\nTotal Mac Addresses for this criterion: ' + count + '\n';
+  return { success: true, output };
 }
 
 /**

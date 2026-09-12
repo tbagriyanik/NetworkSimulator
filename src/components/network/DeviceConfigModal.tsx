@@ -2,6 +2,11 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { CanvasDevice } from './networkTopology.types';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { normalizeMAC } from '../../lib/utils';
+import { useAppStore } from '../../lib/store/appStore';
+import { buildRunningConfig } from '../../lib/network/core/configBuilder';
+import { executeCommand } from '../../lib/network/executor';
+import { createInitialState } from '../../lib/network/initialState';
+import type { SwitchState } from '../../lib/network/types';
 
 interface DeviceConfigModalProps {
   device: CanvasDevice;
@@ -37,6 +42,173 @@ export function DeviceConfigModal({
   const [ipv6Value, setIpv6Value] = useState(device.ipv6 || '');
   const [dnsValue, setDnsValue] = useState(device.dns || '8.8.8.8');
   const [configError, setConfigError] = useState('');
+  const [configMessage, setConfigMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const isSwitchOrRouter = ['switchL2', 'switchL3', 'router', 'firewall', 'wlc'].includes(device.type);
+
+  const handleExportConfig = () => {
+    try {
+      let configContent = '';
+      const filename = `${(tempNameValue.trim() || device.name || 'device').replace(/\s+/g, '_')}_config.cfg`;
+
+      if (isSwitchOrRouter) {
+        const switchState = useAppStore.getState().deviceStates.switchStates[device.id];
+        if (switchState) {
+          const lines = buildRunningConfig(switchState);
+          configContent = lines.join('\n');
+        } else {
+          configContent = `! Configuration for ${device.name}\nhostname ${tempNameValue.trim() || device.name}\n! No running-config state found\n`;
+        }
+      } else {
+        // PC / IoT config
+        configContent = `! PC / Host Configuration File\n! Device: ${device.name}\nhostname ${tempNameValue.trim() || device.name}\nip address ${ipValue.trim() || '0.0.0.0'} ${subnetValue.trim() || '255.255.255.0'}\ndefault-gateway ${gatewayValue.trim() || '0.0.0.0'}\ndns-server ${dnsValue.trim() || '8.8.8.8'}\nipv6 address ${ipv6Value.trim() || 'none'}\n`;
+      }
+
+      const blob = new Blob([configContent], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      setConfigMessage({
+        text: language === 'tr' ? 'Konfigürasyon dosyası (.cfg) başarıyla indirildi.' : 'Configuration file (.cfg) downloaded successfully.',
+        type: 'success'
+      });
+      setTimeout(() => setConfigMessage(null), 4000);
+    } catch {
+      setConfigMessage({
+        text: language === 'tr' ? 'Konfigürasyon dışa aktarılamadı.' : 'Failed to export configuration.',
+        type: 'error'
+      });
+    }
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        if (!content) return;
+
+        if (isSwitchOrRouter) {
+          const store = useAppStore.getState();
+          let currentState = store.deviceStates.switchStates[device.id];
+          if (!currentState) {
+            currentState = createInitialState(
+              device.macAddress,
+              device.type === 'switchL3' || device.type === 'router' ? 'NS-L3-24PS' : 'NS-L2-24TT-L'
+            );
+            currentState.hostname = tempNameValue.trim() || device.name;
+          }
+
+          const rawLines = content.split(/\r?\n/);
+          let appliedCount = 0;
+          let stateCopy: SwitchState = { ...currentState, currentMode: 'config' };
+
+          for (const rawLine of rawLines) {
+            const line = rawLine.trim();
+            if (!line || line.startsWith('!') || line.startsWith('#')) continue;
+
+            const res = executeCommand(
+              stateCopy,
+              line,
+              language === 'tr' ? 'tr' : 'en',
+              store.topology.devices,
+              store.topology.connections,
+              undefined,
+              device.id,
+              true
+            );
+            if (res.newState) {
+              stateCopy = { ...stateCopy, ...res.newState };
+              appliedCount++;
+            }
+          }
+
+          stateCopy.currentMode = 'privileged';
+          store.setSwitchState(device.id, stateCopy);
+
+          if (stateCopy.hostname && stateCopy.hostname !== tempNameValue) {
+            setTempNameValue(stateCopy.hostname);
+            onSave(device.id, { name: stateCopy.hostname });
+          }
+
+          setConfigMessage({
+            text: language === 'tr'
+              ? `Konfigürasyon uygulandı! (${appliedCount} komut işlendi)`
+              : `Configuration applied! (${appliedCount} commands processed)`,
+            type: 'success'
+          });
+        } else {
+          // PC / IoT configuration parsing
+          const lines = content.split(/\r?\n/);
+          let newName = tempNameValue;
+          let newIp = ipValue;
+          let newSubnet = subnetValue;
+          let newGateway = gatewayValue;
+          let newDns = dnsValue;
+          let newIpv6 = ipv6Value;
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed || trimmed.startsWith('!') || trimmed.startsWith('#')) continue;
+
+            const lower = trimmed.toLowerCase();
+            if (lower.startsWith('hostname ')) {
+              newName = trimmed.slice(9).trim();
+            } else if (lower.startsWith('ip address ') || lower.startsWith('ip ')) {
+              const parts = trimmed.replace(/^ip\s+(address\s+)?/i, '').split(/\s+/);
+              if (parts[0]) newIp = parts[0];
+              if (parts[1]) newSubnet = parts[1];
+            } else if (lower.startsWith('default-gateway ') || lower.startsWith('gateway ')) {
+              newGateway = trimmed.split(/\s+/)[1] || newGateway;
+            } else if (lower.startsWith('dns-server ') || lower.startsWith('dns ')) {
+              newDns = trimmed.split(/\s+/)[1] || newDns;
+            } else if (lower.startsWith('ipv6 address ') || lower.startsWith('ipv6 ')) {
+              newIpv6 = trimmed.replace(/^ipv6\s+(address\s+)?/i, '').trim();
+            }
+          }
+
+          setTempNameValue(newName);
+          setIpValue(newIp);
+          setSubnetValue(newSubnet);
+          setGatewayValue(newGateway);
+          setDnsValue(newDns);
+          setIpv6Value(newIpv6);
+
+          onSave(device.id, {
+            name: newName,
+            ip: newIp,
+            subnet: newSubnet,
+            gateway: newGateway,
+            dns: newDns,
+            ipv6: newIpv6
+          });
+
+          setConfigMessage({
+            text: language === 'tr' ? 'PC yapılandırması başarıyla yüklendi ve uygulandı!' : 'PC configuration loaded and applied successfully!',
+            type: 'success'
+          });
+        }
+        setTimeout(() => setConfigMessage(null), 4000);
+      } catch {
+        setConfigMessage({
+          text: language === 'tr' ? 'Dosya ayrıştırılırken hata oluştu.' : 'Failed to parse configuration file.',
+          type: 'error'
+        });
+      }
+    };
+    reader.readAsText(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   // Validate IPs
   const isValidIpv4 = useCallback((ip: string) => {
@@ -312,6 +484,87 @@ export function DeviceConfigModal({
                   />
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Quick Config Import / Export (.cfg / .txt) */}
+          <div className={`p-3.5 rounded-2xl border ${isDark ? 'bg-secondary-800/30 border-secondary-800/50' : 'bg-secondary-50 border-secondary-200/50'}`}>
+            <div className="flex items-center justify-between mb-2.5">
+              <div className={`text-[10px] font-black tracking-widest uppercase opacity-70 ${isDark ? 'text-accent-400' : 'text-accent-600'}`}>
+                {language === 'tr' ? 'Hızlı Konfigürasyon (.cfg / .txt)' : 'Quick Configuration (.cfg / .txt)'}
+              </div>
+              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-md ${isDark ? 'bg-secondary-800 text-secondary-300' : 'bg-secondary-200 text-secondary-700'}`}>
+                {isSwitchOrRouter ? 'Running-Config' : 'Host Config'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={handleExportConfig}
+                className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 border ${
+                  isDark
+                    ? 'bg-secondary-900/60 hover:bg-secondary-800 border-secondary-700/60 text-secondary-200 hover:text-white'
+                    : 'bg-white hover:bg-secondary-100 border-secondary-200 text-secondary-800 shadow-sm'
+                }`}
+                title={language === 'tr' ? 'Cihazın mevcut konfigürasyonunu .cfg dosyası olarak indir' : 'Download device configuration as .cfg file'}
+              >
+                <svg className="w-4 h-4 text-accent-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                <span>{language === 'tr' ? 'Config İndir (.cfg)' : 'Export (.cfg)'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 border ${
+                  isDark
+                    ? 'bg-secondary-900/60 hover:bg-secondary-800 border-secondary-700/60 text-secondary-200 hover:text-white'
+                    : 'bg-white hover:bg-secondary-100 border-secondary-200 text-secondary-800 shadow-sm'
+                }`}
+                title={language === 'tr' ? 'Hazır bir .cfg veya .txt konfigürasyon dosyası yükle' : 'Upload a .cfg or .txt configuration file'}
+              >
+                <svg className="w-4 h-4 text-primary-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l4-4m0 0l4 4m-4-4v12" />
+                </svg>
+                <span>{language === 'tr' ? 'Config Yükle' : 'Import Config'}</span>
+              </button>
+            </div>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".cfg,.txt,.conf,.config"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+          </div>
+
+          {configMessage && (
+            <div
+              role="alert"
+              aria-live="polite"
+              className={`p-3 rounded-xl text-xs font-bold flex items-center gap-2.5 transition-all duration-300 ${
+                configMessage.type === 'success'
+                  ? isDark
+                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                    : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                  : isDark
+                  ? 'bg-error-500/10 text-error-400 border border-error-500/20'
+                  : 'bg-error-50 text-error-600 border border-error-100'
+              }`}
+            >
+              {configMessage.type === 'success' ? (
+                <svg className="w-4 h-4 flex-shrink-0 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4 flex-shrink-0 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              )}
+              <span>{configMessage.text}</span>
             </div>
           )}
 
