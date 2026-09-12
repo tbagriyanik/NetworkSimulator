@@ -259,6 +259,23 @@ export function UnifiedDevicePanel({
             handleResizeStart={handleResizeStart}
             collapsible
             restoreRequest={restoreRequest}
+            headerActions={
+                (deviceType === 'switchL2' || deviceType === 'switchL3' || deviceType === 'router') ? (
+                    <button
+                        onClick={() => setIsAutomationWindowOpen(true)}
+                        className={cn(
+                            "flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold border transition-all mr-1.5",
+                            isDark
+                                ? "bg-emerald-950/40 border-emerald-800/60 text-emerald-400 hover:bg-emerald-900/50"
+                                : "bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100"
+                        )}
+                        title={language === 'tr' ? "NetDevOps & RESTCONF Otomasyonu Aç" : "Open NetDevOps & RESTCONF Automation"}
+                    >
+                        <Code className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="hidden md:inline font-mono">NetDevOps/API</span>
+                    </button>
+                ) : undefined
+            }
         >
             <div className="flex-1 overflow-hidden relative">
                 <Tabs value={activeTab} className="h-full">
@@ -877,6 +894,24 @@ export function UnifiedDevicePanel({
                 deviceStates={deviceStates}
                 defaultDeviceId={deviceId}
                 isDark={isDark}
+                onUpdateDeviceState={(targetId, updater) => {
+                    const prevState = deviceStates.get(targetId);
+                    if (prevState) {
+                        const nextState = updater(prevState);
+                        window.dispatchEvent(
+                            new CustomEvent('update-device-state', {
+                                detail: { deviceId: targetId, newState: nextState },
+                            })
+                        );
+                    }
+                }}
+                onUpdateDeviceStates={(newStates) => {
+                    window.dispatchEvent(
+                        new CustomEvent('update-device-state', {
+                            detail: { statesMap: newStates },
+                        })
+                    );
+                }}
             />
         )}
         </>

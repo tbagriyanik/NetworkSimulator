@@ -262,16 +262,39 @@ export function cmdInterface(state: SwitchState, input: string, _ctx: CommandCon
   // Check if it's a subinterface (contains a dot)
   const isSubinterface = normalized.includes('.');
 
+  // Match existing port key case-insensitively
+  const existingKey = Object.keys(state.ports || {}).find(
+    (k) => k.toLowerCase() === normalized.toLowerCase() ||
+           k.toLowerCase().replace(/[\s\-_/]/g, '') === normalized.toLowerCase().replace(/[\s\-_/]/g, '')
+  );
+  const targetPortKey = existingKey || normalized;
+
   // For physical interfaces (not subinterfaces), validate the port exists
+  let newPorts = state.ports;
   if (!isSubinterface) {
-    if (!state.ports || !state.ports[normalized]) {
-      return { success: false, error: `% Interface ${interfaceName} does not exist` };
+    if (!state.ports || !state.ports[targetPortKey]) {
+      if (state.deviceType === 'router' || state.isLayer3Switch || normalized.startsWith('gi') || normalized.startsWith('fa') || normalized.startsWith('se')) {
+        newPorts = { ...state.ports };
+        newPorts[targetPortKey] = {
+          id: targetPortKey,
+          name: interfaceName,
+          type: normalized.startsWith('fa') ? 'fastethernet' : normalized.startsWith('se') ? 'serial' : 'gigabitethernet',
+          vlan: 1,
+          status: 'connected',
+          shutdown: false,
+          mode: 'routed',
+          duplex: 'auto',
+          speed: 'auto',
+          isRoutedPort: true,
+        };
+      } else {
+        return { success: false, error: `% Interface ${interfaceName} does not exist` };
+      }
     }
   }
 
   // For subinterfaces, create them if they don't exist
-  let newPorts = state.ports;
-  if (isSubinterface && (!state.ports || !state.ports[normalized])) {
+  if (isSubinterface && (!state.ports || !state.ports[targetPortKey])) {
     newPorts = { ...state.ports };
     // Extract base interface and subinterface number
     const parts = normalized.split('.');
@@ -279,9 +302,9 @@ export function cmdInterface(state: SwitchState, input: string, _ctx: CommandCon
     const subinterfaceNum = parts[1];
 
     // Create the subinterface
-    newPorts[normalized] = {
-      id: normalized,
-      name: `${normalized}`,
+    newPorts[targetPortKey] = {
+      id: targetPortKey,
+      name: `${targetPortKey}`,
       type: normalized.startsWith('fa') ? 'fastethernet' : 'gigabitethernet',
       vlan: parseInt(subinterfaceNum) || 1,
       status: 'notconnect',
@@ -298,9 +321,9 @@ export function cmdInterface(state: SwitchState, input: string, _ctx: CommandCon
     success: true,
     newState: {
       currentMode: 'interface',
-      currentInterface: normalized,
-      selectedInterfaces: [normalized],
-      ...(isSubinterface && newPorts !== state.ports ? { ports: newPorts } : {})
+      currentInterface: targetPortKey,
+      selectedInterfaces: [targetPortKey],
+      ...(newPorts !== state.ports ? { ports: newPorts } : {})
     }
   };
 }

@@ -128,6 +128,23 @@ export function useNetworkEventListeners(params: UseNetworkEventListenersParams)
     };
     window.addEventListener('connection-created', handleConnectionCreated);
 
+    // External NetDevOps and RESTCONF device state mutation handler
+    const handleUpdateDeviceState = (event: Event) => {
+      const detail = (event as CustomEvent<{
+        deviceId?: string;
+        newState?: SwitchState;
+        statesMap?: Map<string, SwitchState>;
+      }>).detail;
+      if (!detail) return;
+
+      if (detail.statesMap) {
+        setDeviceStates(new Map(detail.statesMap));
+      } else if (detail.deviceId && detail.newState) {
+        setDeviceStates((prev) => new Map(prev).set(detail.deviceId!, detail.newState!));
+      }
+    };
+    window.addEventListener('update-device-state', handleUpdateDeviceState);
+
     const handleBeforePrint = () => {
       if (activeTabRef.current !== 'topology') {
         setActiveTab('topology');
@@ -139,6 +156,7 @@ export function useNetworkEventListeners(params: UseNetworkEventListenersParams)
       window.removeEventListener('vtp-propagation-needed', handleVtpPropagation);
       window.removeEventListener('stp-recalculation-needed', handleSTPRecalculation);
       window.removeEventListener('connection-created', handleConnectionCreated);
+      window.removeEventListener('update-device-state', handleUpdateDeviceState);
       window.removeEventListener('beforeprint', handleBeforePrint);
     };
   }, [setDeviceStates, deviceStates, activeTabRef, setActiveTab, addNetworkEventLog]);
