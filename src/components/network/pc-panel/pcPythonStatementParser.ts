@@ -64,7 +64,9 @@ export function handleFromImportStatement(line: string, scope: Record<string, un
     const parts = item.split(/\s+as\s+/i);
     const itemName = parts[0].trim();
     const alias = parts[1] ? parts[1].trim() : itemName;
-    if (modObj && modObj[itemName] !== undefined) {
+    if (itemName === '*' && modObj) {
+      Object.assign(scope, modObj);
+    } else if (modObj && modObj[itemName] !== undefined) {
       scope[alias] = modObj[itemName];
     }
   }

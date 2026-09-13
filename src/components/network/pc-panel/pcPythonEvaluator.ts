@@ -1070,13 +1070,11 @@ export function createExpressionEvaluator(
             ? parseFormatArgs(rawArgs, evaluateExpr)
             : { positional: [], kwargs: {} as Record<string, unknown> };
 
-          const finalArgs = Object.keys(kwargs).length > 0 && positional.length === 1 && typeof positional[0] !== 'object'
-            ? [...positional, kwargs]
-            : Object.keys(kwargs).length > 0 && positional.length === 0
-              ? [null, kwargs]
-              : Object.keys(kwargs).length > 0
-                ? [...positional, kwargs]
-                : positional;
+          const finalArgs = Object.keys(kwargs).length > 0 && positional.length === 0
+            ? [kwargs]
+            : Object.keys(kwargs).length > 0
+              ? [...positional, kwargs]
+              : positional;
 
           const isConstructable = (
             fn.prototype && fn.prototype.constructor === fn && Object.getOwnPropertyNames(fn.prototype).length > 1

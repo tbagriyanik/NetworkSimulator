@@ -530,6 +530,22 @@ export function FileEditorModal({
           <Button
             size="sm"
             variant="ghost"
+            onClick={() => updateContent(`# 3D Sahne Yapimi ve Goruntuleme (Scene3D)\nfrom scene3d import Scene, Plane, Cube, Sphere, Cylinder, Prism\n\n# 1. Sahne Olusturma\nscene = Scene(title="Etkilesimli 3D Sahne", sky="sunset", grid=True)\n\n# 2. Zemin Duzlemi\nfloor = Plane(width=16, height=16, color="#334155")\nfloor.set_position(0, 0, 0)\n\n# 3. Temel Nesneler\ncube1 = Cube(size=2, color="#0284c7")\ncube1.set_position(-3, 1, 0)\n\nsphere1 = Sphere(radius=1.2, color="#ef4444")\nsphere1.set_position(0, 1.2, 0)\n\ncylinder1 = Cylinder(radius=0.9, height=2.5, color="#10b981")\ncylinder1.set_position(3, 1.25, 0)\n\nprism1 = Prism(sides=3, radius=1.3, height=2.4, color="#f59e0b")\nprism1.set_position(0, 1.2, 3)\n\n# 4. Oyulmus Nesne (CSG Subtract)\ncut_cylinder = Cylinder(radius=0.6, height=3, color="#fb7185")\ncarved_cube = Cube(size=2, color="#6366f1")\ncarved_cube.set_position(-2, 1, -3)\ncarved_cube.subtract(cut_cylinder)\n\n# 5. Sahneye Ekleme\nscene.add(floor, cube1, sphere1, cylinder1, prism1, carved_cube)\n\n# 6. Cevresel Isiklandirma\nscene.add_sun(position=[8, 12, 6], intensity=1.2)\nscene.add_lamp(position=[0, 4, 2], intensity=0.9)\n\n# 7. Goster\nscene.show()\n`)}
+            className="h-7 px-2 text-xs text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 font-mono"
+          >
+            3D Sahne
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => updateContent(`# Dinamik Muzik ve Ses Uretimi (Audio & Music Synth)\nimport music\n\nprint("Muzik ve ses sentezleyici baslatiliyor...")\n\n# 1. Ses Efektleri (SFX)\nmusic.play_sfx("coin")\n\n# 2. Akor Calma (C Major Chord)\nmusic.play_chord(["C4", "E4", "G4"], duration_ms=600, wave="triangle")\n\n# 3. Dinamik Melodi Calma\nmelodi = "C4:1 D4:1 E4:1 C4:1 E4:1 F4:1 G4:2"\nmusic.play_melody(melodi, bpm=130, wave="sawtooth")\n\n# 4. WAV Ses Dosyasi Olarak Kaydetme\nmusic.save_wav("melodi.wav", "C4:1 E4:1 G4:1 C5:2", bpm=120)\nprint("Ses dosyasi basariyla kaydedildi: C:\\\\melodi.wav")\n`)}
+            className="h-7 px-2 text-xs text-pink-400 hover:text-pink-300 hover:bg-pink-500/10 font-mono"
+          >
+            Müzik / Ses
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
             onClick={() => updateContent(`# Web Sunucusundan Sayfa Cekme (HTTP GET)\nimport requests\n\nurl = "http://192.168.1.100"\nprint("HTTP GET yapiliyor: " + url)\nresp = requests.get(url)\nprint("HTTP Durum:", resp.status_code)\nprint("Icerik Boyutu:", len(resp.text), "karakter")\nprint("Ilk 200 karakter:")\nprint(resp.text[:200])\n`)}
             className="h-7 px-2 text-xs text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 font-mono"
           >

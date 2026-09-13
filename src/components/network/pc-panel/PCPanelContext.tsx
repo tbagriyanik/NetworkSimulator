@@ -145,6 +145,8 @@ export interface PCPanelContextValue {
   setPythonSession: React.Dispatch<React.SetStateAction<import('./PCPanel.types').PythonSession | null>>;
   activePythonForm?: import('./pcPythonFormTypes').PythonFormState | null;
   setActivePythonForm?: React.Dispatch<React.SetStateAction<import('./pcPythonFormTypes').PythonFormState | null>>;
+  activePython3DScene?: import('./pcPython3DTypes').Python3DSceneState | null;
+  setActivePython3DScene?: React.Dispatch<React.SetStateAction<import('./pcPython3DTypes').Python3DSceneState | null>>;
   editingFile: { path: string; content: string } | null;
   setEditingFile: (f: { path: string; content: string } | null) => void;
 

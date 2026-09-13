@@ -3,6 +3,8 @@ import { getDefaultPcFiles } from './pcPanelFiles';
 import type { FtpSession, PcFile, PythonSession, PCActiveTab } from './PCPanel.types';
 import type { PythonFormState } from './pcPythonFormTypes';
 import { subscribeToDeviceForm } from './pcPythonFormModule';
+import type { Python3DSceneState } from './pcPython3DTypes';
+import { register3DSceneListener } from './pcPython3DModule';
 import { secureStorage } from '@/lib/storage/secureStorage';
 
 export function usePCPanelSessionState(
@@ -14,6 +16,7 @@ export function usePCPanelSessionState(
   const [ftpSession, setFtpSession] = useState<FtpSession | null>(null);
   const [pythonSession, setPythonSession] = useState<PythonSession | null>(null);
   const [activePythonForm, setActivePythonForm] = useState<PythonFormState | null>(null);
+  const [activePython3DScene, setActivePython3DScene] = useState<Python3DSceneState | null>(null);
   const [isFtpFilePickerOpen, setIsFtpFilePickerOpen] = useState(false);
   const [pcLocalFiles, setPcLocalFiles] = useState<PcFile[]>(() => {
     try { const stored = secureStorage.getItem(`pc_files_${deviceId}`); if (stored) return JSON.parse(stored); } catch { /* storage unavailable */ }
@@ -53,6 +56,13 @@ export function usePCPanelSessionState(
   }, [deviceId]);
 
   useEffect(() => {
+    const unsubscribe = register3DSceneListener(deviceId, (scene) => {
+      setActivePython3DScene(scene);
+    });
+    return unsubscribe;
+  }, [deviceId]);
+
+  useEffect(() => {
     if (activeTab === 'desktop') setDesktopHistoryIndex(-1);
     if (activeTab === 'terminal') setConsoleHistoryIndex(-1);
   }, [activeTab]);
@@ -64,6 +74,8 @@ export function usePCPanelSessionState(
     setPythonSession,
     activePythonForm,
     setActivePythonForm,
+    activePython3DScene,
+    setActivePython3DScene,
     isFtpFilePickerOpen,
     setIsFtpFilePickerOpen,
     pcLocalFiles,

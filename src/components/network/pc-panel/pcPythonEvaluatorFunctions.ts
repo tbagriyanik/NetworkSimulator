@@ -64,10 +64,10 @@ export function evaluatePythonFunctionCall(
     }
     if (remaining.length > 0) bound.push(...remaining);
     return bound;
-  })() : (Object.keys(kwargs).length > 0 && positional.length === 1 && typeof positional[0] !== 'object'
-    ? [...positional, kwargs]
-    : Object.keys(kwargs).length > 0 && positional.length === 0
-      ? [null, kwargs]
+  })() : (Object.keys(kwargs).length > 0 && positional.length === 0
+    ? [kwargs]
+    : Object.keys(kwargs).length > 0
+      ? [...positional, kwargs]
       : positional);
 
   if (isConstructable) {

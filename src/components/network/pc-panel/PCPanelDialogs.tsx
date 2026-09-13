@@ -8,8 +8,10 @@ import { FileEditorModal } from './FileEditorModal';
 import { PCBrowser } from './PCBrowser';
 import { PythonInputModal } from './PythonInputModal';
 import { PythonFormWindow } from './PythonFormWindow';
+import { Python3DWindow } from './Python3DWindow';
 import { loadFs, saveFs, writeFile, readFile, getFtpFilesFromUploadDir } from './pcFileSystem';
 import { closeActiveDeviceForm } from './pcPythonFormModule';
+import { closeActiveDevice3DScene } from './pcPython3DModule';
 
 /**
  * Floating dialogs (FTP picker, file editor, browser window).
@@ -28,6 +30,7 @@ export function PCPanelDialogs() {
     setShowUrlSuggestions, selectedSuggestionIndex, setSelectedSuggestionIndex,
     urlInputRef, dragStateRef, openWebPage,
     pythonSession, setPythonSession, activePythonForm, setActivePythonForm,
+    activePython3DScene, setActivePython3DScene,
   } = ctx;
 
   const httpAppSrcDoc = useMemo(() => {
@@ -171,6 +174,22 @@ export function PCPanelDialogs() {
         onOpenInBrowser={(html, title) => {
           setHttpAppTitle(title || 'Python Form');
           setHttpAppUrl('http://localhost/python-form');
+          setHttpAppDeviceId(deviceId);
+          setHttpAppContent(html);
+        }}
+      />
+
+      <Python3DWindow
+        scene={activePython3DScene || null}
+        isDark={isDark}
+        isMobile={isMobile}
+        onClose={() => {
+          closeActiveDevice3DScene(deviceId);
+          setActivePython3DScene?.(null);
+        }}
+        onOpenInBrowser={(html, title) => {
+          setHttpAppTitle(title || '3D Sahne');
+          setHttpAppUrl('http://localhost/scene3d');
           setHttpAppDeviceId(deviceId);
           setHttpAppContent(html);
         }}

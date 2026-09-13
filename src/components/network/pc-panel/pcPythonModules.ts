@@ -1,11 +1,25 @@
 import { PyComplex, pythonRange } from './pcPythonRunnerHelpers';
 import { createPythonFormModule } from './pcPythonFormModule';
+import { createPython3DModule } from './pcPython3DModule';
+import { createPythonAudioModule } from './pcPythonAudioModule';
 
 let currentSeed: number | null = null;
 
 const defaultFormModule = createPythonFormModule('default');
+const default3DModule = createPython3DModule('default');
+const defaultAudioModule = createPythonAudioModule('default');
 
 export const PYTHON_MODULES: Record<string, Record<string, unknown>> = {
+  audio: defaultAudioModule,
+  music: defaultAudioModule,
+  sound: defaultAudioModule,
+  synth: defaultAudioModule,
+  winsound: defaultAudioModule.winsound as Record<string, unknown>,
+  scene3d: default3DModule,
+  vpython: default3DModule,
+  three3d: default3DModule,
+  mesh3d: default3DModule,
+  webgl3d: default3DModule,
   tkinter: defaultFormModule,
   ttk: defaultFormModule.ttk as Record<string, unknown>,
   form: defaultFormModule,

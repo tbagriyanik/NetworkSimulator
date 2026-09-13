@@ -141,6 +141,7 @@ export function PCPanel({
   const {
     ftpSession, setFtpSession, pythonSession, setPythonSession,
     activePythonForm, setActivePythonForm,
+    activePython3DScene, setActivePython3DScene,
     isFtpFilePickerOpen, setIsFtpFilePickerOpen, pcLocalFiles, setPcLocalFiles,
     desktopHistory, setDesktopHistory, desktopHistoryIndex, setDesktopHistoryIndex,
     consoleHistory, setConsoleHistory, consoleHistoryIndex, setConsoleHistoryIndex,
@@ -1542,7 +1543,8 @@ export function PCPanel({
     completeAutocompleteSelection, handleInputChange, handleKeyDown,
     inputRef, outputRef, autocompleteRef, showCmdSettings, setShowCmdSettings,
     handleFontSizeChange, highlightText,
-    ftpSession, pythonSession, setPythonSession, activePythonForm, setActivePythonForm, editingFile, setEditingFile,
+    ftpSession, pythonSession, setPythonSession, activePythonForm, setActivePythonForm,
+    activePython3DScene, setActivePython3DScene, editingFile, setEditingFile,
     isConsoleConnected, setIsConsoleConnected, connectedDeviceId, setConnectedDeviceId,
     setConsoleConnectionTime, isConsoleInputDisabled, consoleNeedsPassword,
     consoleConfirmDialog, consoleReloadPending, consoleDevice, handleConnect,

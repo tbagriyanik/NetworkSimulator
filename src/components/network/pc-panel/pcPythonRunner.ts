@@ -20,6 +20,9 @@ import { Statement, parseProgramLines, parseBlockAt } from './pcPythonParser';
 import { createExpressionEvaluator } from './pcPythonEvaluator';
 import { executeSinglePythonLine } from './pcPythonStatementParser';
 import { createPythonFormModule } from './pcPythonFormModule';
+import { createPython3DModule } from './pcPython3DModule';
+import { createPythonAudioModule } from './pcPythonAudioModule';
+import { audioEngine } from './pcAudioPlayer';
 
 export { PyComplex, pythonRange, formatPythonValue, PyClass, PyInstance, PySuper, PyGenerator, PythonTimeoutException } from './pcPythonRunnerHelpers';
 
@@ -65,6 +68,7 @@ export function executePythonScript(
   scriptArgs: string[] = ['script.py'],
   timeoutMs: number = 3000
 ): PythonExecutionResult {
+  audioEngine.stopAll();
   const startTime = Date.now();
   const deadline = timeoutMs > 0 ? startTime + timeoutMs : Infinity;
   let opCount = 0;
@@ -76,12 +80,24 @@ export function executePythonScript(
     }
   };
   const formModule = createPythonFormModule(deviceId || 'default');
+  const scene3DModule = createPython3DModule(deviceId || 'default');
+  const audioModule = createPythonAudioModule(deviceId || 'default');
   const scope: Record<string, unknown> = {
     PyGenerator,
     tkinter: formModule,
     ttk: formModule.ttk,
     form: formModule,
     gui: formModule,
+    scene3d: scene3DModule,
+    vpython: scene3DModule,
+    three3d: scene3DModule,
+    mesh3d: scene3DModule,
+    webgl3d: scene3DModule,
+    audio: audioModule,
+    music: audioModule,
+    sound: audioModule,
+    synth: audioModule,
+    winsound: audioModule.winsound,
     print: (...args: unknown[]) => {
       outputs.push(args.map(a => formatPythonValue(a)).join(' '));
     },
@@ -524,6 +540,7 @@ export async function executePythonScriptAsync(
   scriptArgs: string[] = ['script.py'],
   timeoutMs: number = 3000
 ): Promise<PythonExecutionResult> {
+  audioEngine.stopAll();
   const startTime = Date.now();
   const deadline = timeoutMs > 0 ? startTime + timeoutMs : Infinity;
   let opCount = 0;
@@ -535,11 +552,23 @@ export async function executePythonScriptAsync(
     }
   };
   const formModule = createPythonFormModule(deviceId || 'default');
+  const scene3DModule = createPython3DModule(deviceId || 'default');
+  const audioModule = createPythonAudioModule(deviceId || 'default');
   const scope: Record<string, unknown> = {
     tkinter: formModule,
     ttk: formModule.ttk,
     form: formModule,
     gui: formModule,
+    scene3d: scene3DModule,
+    vpython: scene3DModule,
+    three3d: scene3DModule,
+    mesh3d: scene3DModule,
+    webgl3d: scene3DModule,
+    audio: audioModule,
+    music: audioModule,
+    sound: audioModule,
+    synth: audioModule,
+    winsound: audioModule.winsound,
     print: (...args: unknown[]) => {
       outputs.push(args.map(a => formatPythonValue(a)).join(' '));
     },
