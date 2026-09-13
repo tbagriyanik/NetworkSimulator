@@ -1,6 +1,7 @@
 'use client';
 
 import type { CableInfo, CableType } from '@/lib/network/types';
+import { colors } from '@/lib/design-tokens/colors';
 
 interface TempConnectionProps {
   isDrawingConnection: boolean;
@@ -35,7 +36,8 @@ export function TempConnection({
         y={-10000}
         width={20000}
         height={20000}
-        fill="rgba(0,0,0,0.1)"
+        fill={colors.common.black}
+        fillOpacity="0.1"
         className="pointer-events-none"
       />
 

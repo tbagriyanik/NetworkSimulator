@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { CanvasNote, CanvasDevice, CanvasConnection, ContextMenuState } from '../networkTopology.types';
+import { colors, withAlpha } from '@/lib/design-tokens/colors';
 
 export interface NoteNodeProps {
   note: CanvasNote;
@@ -200,7 +201,7 @@ export const NoteNode = memo(function NoteNode({
           className={`relative flex items-center justify-center px-2 text-[10px] font-semibold tracking-widest select-none ${
             draggedNoteId === note.id ? 'cursor-grabbing' : 'cursor-grab'
           }`}
-          style={{ height: '24px', backgroundColor: 'rgba(0, 0, 0, 0.15)' }}
+          style={{ height: '24px', backgroundColor: withAlpha(colors.common.black, 0.15) }}
         >
           <div
             className="flex items-center justify-center gap-1"

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { colors } from '@/lib/design-tokens/colors';
 import type { CanvasDevice } from '../networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { computeAreaZones, type OverlayMode } from '@/lib/network/areaOverlayEngine';
@@ -78,7 +79,8 @@ export function TopologyAreaOverlay({
                   width={pillWidth / zoom}
                   height={24 / zoom}
                   rx={12 / zoom}
-                  fill={isDark ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.90)'}
+                  fill={isDark ? colors.topology.bg : colors.common.white}
+                  fillOpacity={isDark ? 0.85 : 0.9}
                   stroke={zone.color}
                   strokeWidth={1.5 / zoom}
                   strokeOpacity={0.9}

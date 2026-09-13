@@ -509,7 +509,7 @@ export class PyScene {
     } else if (p === 'night') {
       this.sky = { type: 'night', topColor: colors.slate[950], bottomColor: colors.topology.bg, stars: true };
     } else if (p === 'sunset') {
-      this.sky = { type: 'sunset', topColor: colors.purple[900], bottomColor: 'rgba(249, 115, 22, 1)', stars: false };
+      this.sky = { type: 'sunset', topColor: colors.purple[900], bottomColor: colors.orange['500'], stars: false };
     } else {
       this.sky = {
         type: 'gradient' as SkyType,

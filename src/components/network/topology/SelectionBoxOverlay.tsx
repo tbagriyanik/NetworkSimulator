@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { colors, withAlpha } from '@/lib/design-tokens/colors';
 
 export interface SelectionBoxOverlayProps {
   selectionBox: { start: { x: number; y: number }; current: { x: number; y: number } };
@@ -42,7 +43,7 @@ export const SelectionBoxOverlay: React.FC<SelectionBoxOverlayProps> = ({
           fontSize={14 / zoom}
           fontWeight="bold"
           pointerEvents="none"
-          style={{ textShadow: isDark ? '0 0 4px rgba(0,0,0,0.8)' : '0 0 4px rgba(255,255,255,0.8)' }}
+          style={{ textShadow: isDark ? `0 0 4px ${withAlpha(colors.common.black, 0.8)}` : `0 0 4px ${withAlpha(colors.common.white, 0.8)}` }}
         >
           {selectedDeviceCount} {deviceLabel}
         </text>

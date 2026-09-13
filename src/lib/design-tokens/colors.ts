@@ -165,6 +165,7 @@ export const colors = {
     50: '#e0f2fe',
     100: '#bae6fd',
     200: '#7dd3fc',
+    400: '#38bdf8',
     500: '#0ea5e9',
   },
 
@@ -208,3 +209,26 @@ export const colors = {
 } as const;
 
 export type ColorTokenGroup = typeof colors;
+
+/**
+ * Builds an `rgba(...)` string from a hex color token and an alpha value.
+ * Keeps component code free of hardcoded color literals.
+ */
+export function withAlpha(hexColor: string, alpha: number): string {
+  const hex = hexColor.replace('#', '').trim();
+  const full = hex.length === 3 ? hex.split('').map((c) => c + c).join('') : hex;
+  const r = parseInt(full.slice(0, 2), 16);
+  const g = parseInt(full.slice(2, 4), 16);
+  const b = parseInt(full.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+/** Extracts the `r, g, b` channels of a hex color token as a comma separated list. */
+export function hexToRgbChannels(hexColor: string): string {
+  const hex = hexColor.replace('#', '').trim();
+  const full = hex.length === 3 ? hex.split('').map((c) => c + c).join('') : hex;
+  const r = parseInt(full.slice(0, 2), 16);
+  const g = parseInt(full.slice(2, 4), 16);
+  const b = parseInt(full.slice(4, 6), 16);
+  return `${r}, ${g}, ${b}`;
+}

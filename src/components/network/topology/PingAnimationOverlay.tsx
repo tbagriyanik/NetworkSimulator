@@ -1,6 +1,7 @@
 import React from 'react';
 import { CanvasDevice, CanvasConnection } from '../networkTopology.types';
 import { BroadcastAnimTarget } from '../hooks/usePingSequence';
+import { colors } from '@/lib/design-tokens/colors';
 
 export interface PingAnimationOverlayProps {
   pingAnimation: {
@@ -158,7 +159,8 @@ export const PingAnimationOverlay: React.FC<PingAnimationOverlayProps> = ({
               width="172"
               height="28"
               rx="6"
-              fill={isDark ? 'rgba(245, 158, 11, 0.16)' : 'rgba(245, 158, 11, 0.14)'}
+              fill={colors.status.warning}
+              fillOpacity={isDark ? 0.16 : 0.14}
               stroke="var(--color-warning-500)"
               strokeWidth="1.2"
               className="animate-pulse"

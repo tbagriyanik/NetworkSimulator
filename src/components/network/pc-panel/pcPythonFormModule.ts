@@ -1,5 +1,5 @@
 import type { PythonFormState, FormElement, FormElementType, FormElementLayout } from './pcPythonFormTypes';
-import { colors } from '@/lib/design-tokens/colors';
+import { colors, withAlpha } from '@/lib/design-tokens/colors';
 
 // Global registry of active forms per device
 const activeForms = new Map<string, PythonFormState>();
@@ -53,10 +53,10 @@ export function generateFormHtml(form: PythonFormState): string {
   <style>
     :root {
       --bg-color: ${colors.topology.bg};
-      --card-bg: rgba(30, 41, 59, 0.85);
+      --card-bg: ${withAlpha(colors.slate['800'], 0.85)};
       --text-color: ${colors.terminal.fg};
       --text-muted: ${colors.topology.subText};
-      --border-color: rgba(51, 65, 85, 0.8);
+      --border-color: ${withAlpha(colors.slate['700'], 0.8)};
       --primary: ${colors.theme.accent};
       --primary-hover: ${colors.sky[500]};
       --primary-fg: ${colors.topology.bg};
@@ -81,7 +81,7 @@ export function generateFormHtml(form: PythonFormState): string {
       backdrop-filter: blur(12px);
       border: 1px solid var(--border-color);
       border-radius: 12px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 10px 25px -5px ${withAlpha(colors.common.black, 0.5)}, 0 8px 10px -6px ${withAlpha(colors.common.black, 0.4)};
       padding: 24px;
       display: flex;
       flex-direction: column;
@@ -103,7 +103,7 @@ export function generateFormHtml(form: PythonFormState): string {
     }
     .badge {
       font-size: 0.7rem;
-      background: rgba(56, 189, 248, 0.15);
+      background: ${withAlpha(colors.sky['400'], 0.15)};
       color: var(--primary);
       padding: 2px 8px;
       border-radius: 9999px;
@@ -139,7 +139,7 @@ export function generateFormHtml(form: PythonFormState): string {
     }
     input[type="text"]:focus, input[type="password"]:focus, textarea:focus, select:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+      box-shadow: 0 0 0 2px ${withAlpha(colors.sky['400'], 0.25)};
     }
     textarea {
       resize: vertical;
@@ -169,12 +169,12 @@ export function generateFormHtml(form: PythonFormState): string {
       transform: translateY(0);
     }
     .btn-secondary {
-      background: rgba(255, 255, 255, 0.08);
+      background: ${withAlpha(colors.common.white, 0.08)};
       color: var(--text-color);
       border: 1px solid var(--border-color);
     }
     .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.15);
+      background: ${withAlpha(colors.common.white, 0.15)};
     }
     .separator {
       height: 1px;
@@ -204,17 +204,17 @@ export function generateFormHtml(form: PythonFormState): string {
       font-size: 0.825rem;
       color: var(--text-color);
       cursor: pointer;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      border-bottom: 1px solid ${withAlpha(colors.common.white, 0.04)};
       transition: background 0.15s;
     }
     .listbox-item:last-child {
       border-bottom: none;
     }
     .listbox-item:hover {
-      background: rgba(255, 255, 255, 0.06);
+      background: ${withAlpha(colors.common.white, 0.06)};
     }
     .listbox-item.selected {
-      background: rgba(56, 189, 248, 0.25);
+      background: ${withAlpha(colors.sky['400'], 0.25)};
       color: var(--primary);
       font-weight: 500;
     }
@@ -236,7 +236,7 @@ export function generateFormHtml(form: PythonFormState): string {
       margin-top: 10px;
       padding: 10px 14px;
       border-radius: 6px;
-      background: rgba(15, 23, 42, 0.6);
+      background: ${withAlpha(colors.topology.bg, 0.6)};
       border: 1px solid var(--border-color);
       font-size: 0.8rem;
       font-family: monospace;

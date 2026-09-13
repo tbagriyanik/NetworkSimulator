@@ -14,6 +14,7 @@ import {
 } from '../networkTopology.constants';
 import { DeviceIconSvg } from './DeviceIconSvg';
 import { DeviceWifiStatus } from './DeviceWifiStatus';
+import { colors } from '@/lib/design-tokens/colors';
 
 export interface DeviceRendererProps {
   device: CanvasDevice;
@@ -277,8 +278,10 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
                   cx={deviceWidth / 2}
                   cy={deviceHeight / 2}
                   r={75}
-                  fill={isDark ? 'rgba(6, 182, 212, 0.15)' : 'rgba(6, 182, 212, 0.1)'}
-                  stroke={isDark ? 'rgba(6, 182, 212, 0.3)' : 'rgba(6, 182, 212, 0.2)'}
+                  fill={colors.cables.wireless}
+                  fillOpacity={isDark ? 0.15 : 0.1}
+                  stroke={colors.cables.wireless}
+                  strokeOpacity={isDark ? 0.3 : 0.2}
                   strokeWidth="1"
                   strokeDasharray="4 2"
                   style={{ pointerEvents: 'none' }}
@@ -310,8 +313,10 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
                 cx={deviceWidth / 2}
                 cy={deviceHeight / 2}
                 r={75}
-                fill={isDark ? 'rgba(6, 182, 212, 0.05)' : 'rgba(6, 182, 212, 0.05)'}
-                stroke={isDark ? 'rgba(6, 182, 212, 0.15)' : 'rgba(6, 182, 212, 0.1)'}
+                fill={colors.cables.wireless}
+                fillOpacity={isDark ? 0.05 : 0.05}
+                stroke={colors.cables.wireless}
+                strokeOpacity={isDark ? 0.15 : 0.1}
                 strokeWidth="1"
                 strokeDasharray="4 2"
                 style={{ pointerEvents: 'none' }}
@@ -323,7 +328,8 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
                     cy={deviceHeight / 2}
                     r={20}
                     fill="none"
-                    stroke={isDark ? 'rgba(6, 182, 212, 0.6)' : 'rgba(6, 182, 212, 0.5)'}
+                    stroke={colors.cables.wireless}
+                    strokeOpacity={isDark ? 0.6 : 0.5}
                     strokeWidth="2"
                     className="iot-motion-ping"
                     style={{ pointerEvents: 'none', transformOrigin: `${deviceWidth / 2}px ${deviceHeight / 2}px` }}
@@ -333,7 +339,8 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
                     cy={deviceHeight / 2}
                     r={20}
                     fill="none"
-                    stroke={isDark ? 'rgba(6, 182, 212, 0.4)' : 'rgba(6, 182, 212, 0.3)'}
+                    stroke={colors.cables.wireless}
+                    strokeOpacity={isDark ? 0.4 : 0.3}
                     strokeWidth="2"
                     className="iot-motion-ping-delayed"
                     style={{ pointerEvents: 'none', transformOrigin: `${deviceWidth / 2}px ${deviceHeight / 2}px` }}
@@ -354,8 +361,10 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
                     cx={deviceWidth / 2}
                     cy={deviceHeight / 2}
                     r={radius}
-                    fill={isDark ? `rgba(34, 197, 94, ${opacity * 0.5})` : `rgba(34, 197, 94, ${opacity * 0.3})`}
-                    stroke={isDark ? `rgba(34, 197, 94, ${opacity})` : `rgba(34, 197, 94, ${opacity * 0.8})`}
+                    fill={colors.cables.active}
+                    fillOpacity={isDark ? opacity * 0.5 : opacity * 0.3}
+                    stroke={colors.cables.active}
+                    strokeOpacity={isDark ? opacity : opacity * 0.8}
                     strokeWidth="1"
                     strokeDasharray="4 2"
                     className={graphicsQuality === 'high' ? 'iot-sound-pulse' : ''}
@@ -403,8 +412,10 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
             cx={deviceWidth / 2}
             cy={deviceHeight / 2}
             r={coverageRadius}
-            fill={isDark ? 'rgba(99, 102, 241, 0.03)' : 'rgba(99, 102, 241, 0.04)'}
-            stroke={isDark ? 'rgba(99, 102, 241, 0.15)' : 'rgba(99, 102, 241, 0.2)'}
+            fill={colors.indigo['500']}
+            fillOpacity={isDark ? 0.03 : 0.04}
+            stroke={colors.indigo['500']}
+            strokeOpacity={isDark ? 0.15 : 0.2}
             strokeWidth="1"
             strokeDasharray="8 4"
             style={{ pointerEvents: 'none' }}
@@ -710,14 +721,14 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
           const isPassive = device.iot?.collaborationEnabled === false;
           if (isPoweredOff) {
             return (
-              <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
+              <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
                 <tspan x={deviceWidth / 2} dy="6">{isTR ? 'Kapalı' : 'Off'}</tspan>
               </text>
             );
           }
           if (isPassive) {
             return (
-              <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
+              <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
                 <tspan x={deviceWidth / 2} dy="6">{t.passive}</tspan>
               </text>
             );
@@ -732,7 +743,7 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
             const isActive = device.iot?.value ?? false;
             const statusColor = isActive ? (isDark ? 'var(--color-warning-400)' : 'var(--color-warning-500)') : (isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)');
             return (
-              <text x={deviceWidth / 2} y={70} style={{ fill: statusColor }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
+              <text x={deviceWidth / 2} y={70} style={{ fill: statusColor }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
                 <tspan x={deviceWidth / 2} dy="6">{value}</tspan>
               </text>
             );
@@ -741,42 +752,42 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
           switch (sensorType) {
             case 'temperature':
               return (
-                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-success-400)' : 'var(--color-success-600)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
+                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-success-400)' : 'var(--color-success-600)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
                   <tspan x={deviceWidth / 2} dy="0">{t.temperature}:</tspan>
                   <tspan x={deviceWidth / 2} dy="12">{value}</tspan>
                 </text>
               );
             case 'humidity':
               return (
-                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-primary-500)' : 'var(--color-primary-600)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
+                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-primary-500)' : 'var(--color-primary-600)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
                   <tspan x={deviceWidth / 2} dy="0">{t.humidity}:</tspan>
                   <tspan x={deviceWidth / 2} dy="12">{value}</tspan>
                 </text>
               );
             case 'light':
               return (
-                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-warning-400)' : 'var(--color-warning-500)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
+                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-warning-400)' : 'var(--color-warning-500)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
                   <tspan x={deviceWidth / 2} dy="0">{t.lightLevel}:</tspan>
                   <tspan x={deviceWidth / 2} dy="12">{value}</tspan>
                 </text>
               );
             case 'sound':
               return (
-                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-warning-600)' : 'var(--color-warning-600)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
+                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-warning-600)' : 'var(--color-warning-600)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
                   <tspan x={deviceWidth / 2} dy="0">{t.sensorSound}:</tspan>
                   <tspan x={deviceWidth / 2} dy="12">{value}</tspan>
                 </text>
               );
             case 'motion':
               return (
-                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-600)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
+                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-600)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
                   <tspan x={deviceWidth / 2} dy="0">{t.sensorMotion}:</tspan>
                   <tspan x={deviceWidth / 2} dy="12">{value}</tspan>
                 </text>
               );
             default:
               return (
-                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-600)' }} fontSize="9" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter="drop-shadow(0px 0px 1px rgba(0,0,0,1))">
+                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-600)' }} fontSize="9" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
                   {value}
                 </text>
               );

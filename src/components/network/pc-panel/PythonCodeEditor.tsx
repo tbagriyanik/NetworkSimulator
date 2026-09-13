@@ -2,7 +2,7 @@
 
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { ClipboardPaste, Copy, ListChecks, Scissors, Trash2 } from 'lucide-react';
-import { colors } from '@/lib/design-tokens/colors';
+import { colors, withAlpha } from '@/lib/design-tokens/colors';
 import { sanitizeHTML } from '@/lib/security/sanitizer';
 
 interface PythonCodeEditorProps {
@@ -284,7 +284,7 @@ export function PythonCodeEditor({ value, onChange, onKeyDown, isDark, placehold
           return (
             <div key={lineIndex} className="absolute left-16" style={{ top: String(16 + lineIndex * Math.round(fontSize * 1.5)) + 'px', height: String(Math.round(fontSize * 1.5)) + 'px' }}>
               {Array.from({ length: level }, (_, guideIndex) => (
-                <span key={guideIndex} className="absolute top-0 bottom-0 w-px" style={{ left: String(guideIndex * fontSize * 2.4) + 'px', backgroundColor: isDark ? 'rgba(148,163,184,0.25)' : 'rgba(71,85,105,0.28)' }} />
+                <span key={guideIndex} className="absolute top-0 bottom-0 w-px" style={{ left: String(guideIndex * fontSize * 2.4) + 'px', backgroundColor: isDark ? withAlpha(colors.neutral['400'], 0.25) : withAlpha(colors.cables.console, 0.28) }} />
               ))}
             </div>
           );
@@ -299,7 +299,7 @@ export function PythonCodeEditor({ value, onChange, onKeyDown, isDark, placehold
               style={{
                 top: String(16 + lineIndex * Math.round(fontSize * 1.5)) + 'px',
                 left: String(Math.max(64, editorWidth - 24)) + 'px',
-                color: isDark ? 'rgba(148,163,184,0.7)' : 'rgba(71,85,105,0.7)',
+                color: isDark ? withAlpha(colors.neutral['400'], 0.7) : withAlpha(colors.cables.console, 0.7),
               }}
             >↵</span>
           ) : null)}

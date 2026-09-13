@@ -1,4 +1,4 @@
-import { colors } from '@/lib/design-tokens/colors';
+import { colors, withAlpha } from '@/lib/design-tokens/colors';
 import { IFRAME_FONT_FACES_CSS, INRIA_SANS_STACK, GEIST_MONO_STACK } from '@/lib/design-tokens/iframeFonts';
 
 export function getWifiControlPanelStyles(): string {
@@ -48,7 +48,7 @@ export function getWifiControlPanelStyles(): string {
       margin: 0 auto;
       background: ${colors.common.white};
       border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 20px ${withAlpha(colors.common.black, 0.08)};
       overflow: hidden;
     }
     
@@ -85,7 +85,7 @@ export function getWifiControlPanelStyles(): string {
     .form-group select option {
       font-size: 13px; font-family: ${INRIA_SANS_STACK}; padding: 6px; background-color: var(--color-white); color: var(--color-secondary-900);
     }
-    .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--color-primary-500); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--color-primary-500); box-shadow: 0 0 0 3px ${withAlpha(colors.status.info, 0.15)}; }
     .hint { display: block; font-size: 11px; color: var(--color-secondary-500); margin-top: 4px; }
     
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -109,8 +109,8 @@ export function getWifiControlPanelStyles(): string {
     input:checked + .slider { background-color: var(--color-success-500); }
     input:checked + .slider:before { transform: translateX(20px); }
     
-    .login-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,23,42,0.8); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; overflow-y: auto; box-sizing: border-box; }
-    .login-card { background: ${colors.common.white}; border-radius: 12px; width: 100%; max-width: 400px; padding: 32px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+    .login-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: ${withAlpha(colors.topology.bg, 0.8)}; backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; overflow-y: auto; box-sizing: border-box; }
+    .login-card { background: ${colors.common.white}; border-radius: 12px; width: 100%; max-width: 400px; padding: 32px; box-shadow: 0 20px 25px -5px ${withAlpha(colors.common.black, 0.1)}; }
     .login-header { text-align: center; margin-bottom: 24px; }
     .login-icon { font-size: 40px; margin-bottom: 8px; }
     .error-message { background: ${colors.red['50']}; border: 1px solid ${colors.red['200']}; color: var(--color-error-600); padding: 10px; border-radius: 6px; font-size: 12px; margin-bottom: 16px; text-align: center; }

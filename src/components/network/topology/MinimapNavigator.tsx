@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useRef, useCallback } from 'react';
+import { colors } from '@/lib/design-tokens/colors';
 import {
   Map,
   ChevronDown,
@@ -346,7 +347,8 @@ export function MinimapNavigator({
                     y1={y1}
                     x2={x2}
                     y2={y2}
-                    stroke={conn.active !== false ? 'rgba(56, 189, 248, 0.6)' : 'rgba(239, 68, 68, 0.5)'}
+                    stroke={conn.active !== false ? colors.cables.selected : colors.status.offline}
+                    strokeOpacity={conn.active !== false ? 0.6 : 0.5}
                     strokeWidth="1.5"
                     strokeDasharray={conn.cableType === 'wireless' ? '3 2' : undefined}
                   />

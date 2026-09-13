@@ -2,7 +2,7 @@
 // Interactive WebGL 3D Scene and Standalone HTML Generator for embedded Python 3D engine
 
 import type { Python3DSceneState } from './pcPython3DTypes';
-import { colors } from '@/lib/design-tokens/colors';
+import { colors, withAlpha } from '@/lib/design-tokens/colors';
 
 /**
  * Escapes unsafe string values for HTML injection
@@ -75,19 +75,19 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(15, 23, 42, 0.75);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: ${withAlpha(colors.topology.bg, 0.75)};
+      border: 1px solid ${withAlpha(colors.common.white, 0.12)};
       border-radius: 12px;
       padding: 6px 10px;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 10px 25px -5px ${withAlpha(colors.common.black, 0.5)};
       pointer-events: auto;
     }
     .btn {
       appearance: none;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid ${withAlpha(colors.common.white, 0.1)};
+      background: ${withAlpha(colors.common.white, 0.06)};
       color: ${colors.topology.noteText};
       padding: 5px 9px;
       border-radius: 8px;
@@ -100,8 +100,8 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
       transition: all 0.15s ease;
     }
     .btn:hover {
-      background: rgba(255, 255, 255, 0.14);
-      border-color: rgba(255, 255, 255, 0.25);
+      background: ${withAlpha(colors.common.white, 0.14)};
+      border-color: ${withAlpha(colors.common.white, 0.25)};
       color: ${colors.common.white};
       transform: translateY(-1px);
     }
@@ -118,9 +118,9 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
       font-family: monospace;
       padding: 2px 6px;
       border-radius: 6px;
-      background: rgba(255, 255, 255, 0.08);
+      background: ${withAlpha(colors.common.white, 0.08)};
       color: ${colors.theme.accent};
-      border: 1px solid rgba(56, 189, 248, 0.2);
+      border: 1px solid ${withAlpha(colors.sky['400'], 0.2)};
     }
     /* Floating Info & Help Footer */
     .footer-help {
@@ -131,8 +131,8 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
       align-items: center;
       gap: 8px;
       padding: 6px 12px;
-      background: rgba(15, 23, 42, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: ${withAlpha(colors.topology.bg, 0.7)};
+      border: 1px solid ${withAlpha(colors.common.white, 0.08)};
       border-radius: 10px;
       font-size: 10px;
       color: ${colors.topology.subText};
@@ -146,7 +146,7 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
       gap: 4px;
     }
     .footer-help kbd {
-      background: rgba(255, 255, 255, 0.12);
+      background: ${withAlpha(colors.common.white, 0.12)};
       border-radius: 4px;
       padding: 1px 4px;
       color: ${colors.terminal.fg};

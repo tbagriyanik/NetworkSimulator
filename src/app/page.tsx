@@ -55,7 +55,7 @@ import { useExamMode } from '@/hooks/useExamMode';
 import { useMultiWindowStore } from '@/hooks/useMultiWindowStore';
 import { useWindowStore } from '@/hooks/useWindowStore';
 
-import { PCInfoPopover, RouterInfoPopover } from '@/components/network/DeviceInfoPopovers';
+import { PageDevicePopovers } from './PageDevicePopovers';
 import { AppHeader } from '@/components/network/AppHeader';
 import { AppFooter } from '@/components/network/AppFooter';
 import { TopologyToolbar } from '@/components/network/TopologyToolbar';
@@ -1140,64 +1140,26 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
                     />
                   </NetworkErrorBoundary>
 
-                  {preferences.showDevicePopovers && (() => {
-                    const activeDevice = activeDeviceId
-                      ? topologyDevices?.find(d => d.id === activeDeviceId) ?? null
-                      : null;
-                    const isPcDevice = activeDevice?.type === 'pc' || activeDeviceId?.startsWith('pc-');
-                    return isPcDevice && activeDevice ? (
-                      <PCInfoPopover
-                        pc={activeDevice}
-                        t={t}
-                        language={language}
-                        isDark={isDark}
-                        isFocused={focusedOverlay === 'pc-info'}
-                        onClose={() => {
-                          setSelectedDevice(null);
-                          setActiveDeviceId('');
-                        }}
-                        onFocus={() => setFocusedOverlay('pc-info')}
-                        zIndex={focusedOverlay === 'pc-info' ? 36 : 25}
-                        handleDeviceDoubleClick={handleDeviceDoubleClick}
-                        onOpenPanel={(id) => handleDeviceDoubleClick('pc', id)}
-                        onOpenSettings={(id) => {
-                          setShowPCDeviceId(id);
-                          getOrCreatePCOutputs(id, topologyDevices);
-                          setPcPanelInitialTab('settings');
-                          useMultiWindowStore.getState().openDeviceWindow(id, 'pc', 'settings');
-                        }}
-                        topologyDevices={topologyDevices}
-                        deviceStates={deviceStates}
-                      />
-                    ) : null;
-                  })()}
-
-                  {preferences.showDevicePopovers && activeDeviceId && (activeDeviceId.startsWith('router-') || topologyDevices?.find(d => d.id === activeDeviceId)?.type === 'router') && topologyDevices && (
-                    <RouterInfoPopover
-                      router={topologyDevices.find(d => d.id === activeDeviceId) as CanvasDevice}
-                      routerState={deviceStates.get(activeDeviceId)}
-                      t={t}
-                      language={language}
-                      isDark={isDark}
-                      isFocused={focusedOverlay === 'router-info'}
-                      onClose={() => {
-                        setSelectedDevice(null);
-                        setActiveDeviceId('');
-                      }}
-                      onFocus={() => setFocusedOverlay('router-info')}
-                      zIndex={focusedOverlay === 'router-info' ? 36 : 25}
-                      handleDeviceDoubleClick={handleDeviceDoubleClick}
-                      onOpenPanel={(id) => handleDeviceDoubleClick('router', id)}
-                      onOpenSettings={(id) => {
-                        setActiveDeviceId(id);
-                        const device = topologyDevices?.find(d => d.id === id);
-                        if (device) setActiveDeviceType(device.type);
-                        setUnifiedDeviceActiveTab('settings');
-                        useMultiWindowStore.getState().openDeviceWindow(id, device?.type || 'router', 'settings');
-                      }}
-                      topologyConnections={topologyConnections}
-                    />
-                  )}
+                  <PageDevicePopovers
+                    showDevicePopovers={preferences.showDevicePopovers}
+                    activeDeviceId={activeDeviceId}
+                    topologyDevices={topologyDevices}
+                    deviceStates={deviceStates}
+                    topologyConnections={topologyConnections}
+                    t={t}
+                    language={language}
+                    isDark={isDark}
+                    focusedOverlay={focusedOverlay}
+                    setFocusedOverlay={setFocusedOverlay}
+                    setSelectedDevice={setSelectedDevice}
+                    setActiveDeviceId={setActiveDeviceId}
+                    setActiveDeviceType={setActiveDeviceType}
+                    setUnifiedDeviceActiveTab={setUnifiedDeviceActiveTab}
+                    setShowPCDeviceId={setShowPCDeviceId}
+                    setPcPanelInitialTab={setPcPanelInitialTab}
+                    getOrCreatePCOutputs={getOrCreatePCOutputs}
+                    handleDeviceDoubleClick={handleDeviceDoubleClick}
+                  />
                 </div>
               </div>
             </div>

@@ -10,6 +10,7 @@ import { renderWifiAdminAccountTemplate } from './wifiAdminAccountTemplate';
 import { renderWifiConfigFieldTemplates } from './wifiAdminConfigTemplate';
 import { sanitizeHTML, safeJSONForHTML } from '@/lib/security/sanitizer';
 import { getWifiControlPanelStyles } from './wifiAdminStyles';
+import { colors } from '@/lib/design-tokens/colors';
 import { getWifiControlPanelScripts } from './wifiAdminScripts';
 import {
   WIRELESS_CHANNELS_2_4GHZ,
@@ -154,7 +155,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
           <span>📡 WLAN Interface: wlan0</span>
         </div>
       </div>
-      <button type="button" class="btn btn-secondary" onclick="handleLogout()" style="padding:8px 16px;font-size:12px;background:#ffffff;border:1px solid var(--color-secondary-300);color:var(--color-secondary-700);cursor:pointer;shrink:0;border-radius:6px;" title="${isTurkish ? 'Oturumu Kapat' : 'Logout'}">
+      <button type="button" class="btn btn-secondary" onclick="handleLogout()" style="padding:8px 16px;font-size:12px;background:${colors.common.white};border:1px solid var(--color-secondary-300);color:var(--color-secondary-700);cursor:pointer;shrink:0;border-radius:6px;" title="${isTurkish ? 'Oturumu Kapat' : 'Logout'}">
         🚪 ${isTurkish ? 'Çıkış Yap' : 'Logout'}
       </button>
     </div>
@@ -244,7 +245,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
 
       <div id="ssid-profiles-container" style="margin-bottom:20px;"></div>
 
-      <div style="background:#ffffff;padding:20px;border-radius:10px;border:1px solid var(--color-secondary-200);margin-bottom:25px;">
+      <div style="background:${colors.common.white};padding:20px;border-radius:10px;border:1px solid var(--color-secondary-200);margin-bottom:25px;">
         <h3 style="margin:0 0 12px 0;font-size:14px;color:var(--color-secondary-900);" id="ssid-form-title">
           ➕ ${isTurkish ? 'Yeni SSID Profili Ekle' : 'Add New SSID Profile'}
         </h3>
@@ -346,7 +347,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
 
       <div id="connected-wireless-clients-container" style="margin-bottom:24px;"></div>
 
-      <div style="background:#ffffff;padding:20px;border-radius:10px;border:1px solid var(--color-secondary-200);">
+      <div style="background:${colors.common.white};padding:20px;border-radius:10px;border:1px solid var(--color-secondary-200);">
         <h3 style="margin-bottom:15px;font-size:15px;color:var(--color-secondary-900);">${isTurkish ? 'Ağ & Yayın Bilgileri' : 'Network & Broadcast Information'}</h3>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
           <div><strong>SSID (Ana):</strong> ${safeSsid || (isTurkish ? 'Yapılandırılmadı' : 'Not configured')}</div>
@@ -363,7 +364,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
       <h2 class="panel-title">${isTurkish ? 'Gelişmiş Kablosuz Ayarları' : 'Advanced Wireless Settings'}</h2>
       <p style="color:var(--color-secondary-500);margin-bottom:20px;">${isTurkish ? 'Kablosuz MAC adresi filtreleme ve güvenlik kurallarını yapılandırın.' : 'Configure wireless MAC address filtering and security rules.'}</p>
       
-      <div style="background:#ffffff;border:1px solid var(--color-secondary-200);border-radius:10px;padding:20px;margin-bottom:24px;">
+      <div style="background:${colors.common.white};border:1px solid var(--color-secondary-200);border-radius:10px;padding:20px;margin-bottom:24px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
           <div>
             <h3 style="margin:0 0 4px 0;font-size:16px;color:var(--color-secondary-900);">🛡️ ${isTurkish ? 'Kablosuz MAC Adresi Filtreleme' : 'Wireless MAC Address Filtering'}</h3>
@@ -408,7 +409,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
       </div>
 
       <!-- DHCP Server Settings Section -->
-      <div style="background:#ffffff;border:1px solid var(--color-secondary-200);border-radius:10px;padding:20px;margin-bottom:24px;">
+      <div style="background:${colors.common.white};border:1px solid var(--color-secondary-200);border-radius:10px;padding:20px;margin-bottom:24px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
           <div>
             <h3 style="margin:0 0 4px 0;font-size:16px;color:var(--color-secondary-900);">🌐 ${isTurkish ? 'DHCP Sunucusu Ayarları' : 'DHCP Server Settings'}</h3>

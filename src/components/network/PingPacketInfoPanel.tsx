@@ -821,11 +821,11 @@ export function PingPacketInfoPanel({
                                                 </feMerge>
                                             </filter>
                                         </defs>
-                                        <rect x="10" y="18" width="460" height="84" rx="18" fill={isDark ? 'rgba(251, 191, 36, 0.06)' : 'rgba(251, 191, 36, 0.08)'} stroke={isDark ? 'rgba(251, 191, 36, 0.35)' : 'rgba(180, 83, 9, 0.28)'} />
-                                        <path d="M 40 60 C 140 30, 180 95, 240 60 S 360 35, 440 60" fill="none" stroke={isDark ? 'rgba(251, 191, 36, 0.28)' : 'rgba(180, 83, 9, 0.22)'} strokeWidth="2" strokeDasharray="7 9" />
+                                        <rect x="10" y="18" width="460" height="84" rx="18" fill={colors.terminal.warning} fillOpacity={isDark ? 0.06 : 0.08} stroke={isDark ? colors.terminal.warning : colors.amber['700']} strokeOpacity={isDark ? 0.35 : 0.28} />
+                                        <path d="M 40 60 C 140 30, 180 95, 240 60 S 360 35, 440 60" fill="none" stroke={isDark ? colors.terminal.warning : colors.amber['700']} strokeOpacity={isDark ? 0.28 : 0.22} strokeWidth="2" strokeDasharray="7 9" />
                                         {broadcastSvgData.map((bt, i) => (
                                             <g key={`${bt.targetId}-${i}`}>
-                                                <line x1={bt.fromX} y1={bt.fromY} x2={bt.x} y2={bt.y} stroke={isDark ? 'rgba(251, 191, 36, 0.85)' : 'rgba(180, 83, 9, 0.85)'} strokeWidth="2" strokeLinecap="round" opacity={0.8} />
+                                                <line x1={bt.fromX} y1={bt.fromY} x2={bt.x} y2={bt.y} stroke={isDark ? colors.terminal.warning : colors.amber['700']} strokeOpacity="0.85" strokeWidth="2" strokeLinecap="round" opacity={0.8} />
                                                 <circle cx={bt.x} cy={bt.y} r="7" fill={isDark ? colors.terminal.warning : colors.amber['600']} filter="url(#panel-broadcast-glow)" opacity={0.9} />
                                                 <rect x={bt.x - 10} y={bt.y - 8} width="20" height="16" rx="3" fill={isDark ? colors.terminal.warning : colors.amber['600']} opacity={0.9} />
                                                 <path d={`M ${bt.x - 7} ${bt.y - 2} L ${bt.x} ${bt.y + 5} L ${bt.x + 7} ${bt.y - 2}`} fill="none" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />

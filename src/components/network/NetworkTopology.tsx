@@ -1,10 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo, MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from 'react';
-import React from 'react';
-import { flushSync } from 'react-dom';
 import { useAppStore, useTopologyDevices, useTopologyConnections, useTopologyNotes, useGraphicsQuality, useIsSimulationMode, useEnvironment, useNetworkEventLogs } from '@/lib/store/appStore';
-import { checkDeviceConnectivity, getPingDiagnostics, getWirelessDistance } from '@/lib/network/connectivity';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useIsMobile } from '@/hooks/use-breakpoint';
@@ -16,14 +13,12 @@ import {
   getDeviceWidth,
   getDeviceHeight,
   isSwitchDeviceType,
-  easeInOutCubic,
   getPortPosition,
 } from './networkTopology.helpers';
 import { CABLE_COLORS, DRAG_THRESHOLD, LONG_PRESS_DURATION, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, NOTE_FONTS_DESKTOP as NOTE_FONTS } from './networkTopology.constants';
 
 import { useCanvasActions } from '../../hooks/useCanvasActions';
 import { exportTopologyToPNG } from '../../utils/exportPNG';
-
 import { useCanvasZoomPan } from './hooks/useCanvasZoomPan';
 import { useTopologyTouch } from './hooks/useTopologyTouch';
 import { useTopologyMouse } from './hooks/useTopologyMouse';
@@ -36,9 +31,7 @@ import { usePeriodicNetworkPackets } from './hooks/usePeriodicNetworkPackets';
 import { useTopologySync } from './hooks/useTopologySync';
 import { useConnectionDrawing } from './hooks/useConnectionDrawing';
 import { useTopologyDeviceActions } from './hooks/useTopologyDeviceActions';
-import { usePingAnimation } from './hooks/usePingAnimation';
-import { useTopologyPingUI } from './hooks/useTopologyPingUI';
-import { usePingSequence, type PingAnimationState } from './hooks/usePingSequence';
+import { useTopologyPingController } from './hooks/useTopologyPingController';
 import { useTopologyIot } from './hooks/useTopologyIot';
 import { useTopologyTooltipHandlers } from './hooks/useTopologyTooltipHandlers';
 import { useTopologyNoteActions } from './hooks/useTopologyNoteActions';
@@ -52,18 +45,11 @@ import { useTopologyPingState } from './hooks/useTopologyPingState';
 import { useVisualConnectionActions } from './hooks/useVisualConnectionActions';
 import { useTopologyDeviceMouseHandlers } from './hooks/useTopologyDeviceMouseHandlers';
 import { useTopologyInteractionState } from './hooks/useTopologyInteractionState';
+import type { PingAnimationState } from './hooks/usePingSequence';
 
-import { CanvasToolbar } from './topology/CanvasToolbar';
+import { TopologyCanvasArea } from './topology/TopologyCanvasArea';
 import { TopologyDeviceRenderer } from './topology/TopologyDeviceRenderer';
 import { useUiPreferences } from '@/hooks/useUiPreferences';
-import { DEVICE_ICONS } from './topology/DeviceIcons';
-import { TopologySelectionToolbar } from './topology/TopologySelectionToolbar';
-import { NetworkCanvas } from './NetworkTopology/NetworkCanvas';
-import { TopologyFullscreenButton } from './topology/TopologyFullscreenButton';
-import { TopologyPaletteSheet } from './topology/TopologyPaletteSheet';
-import { PingCursorOverlay } from './topology/PingCursorOverlay';
-
-import { TopologyModalsContainer } from './topology/TopologyModalsContainer';
 import { useTopologyCanvasLifecycle } from './hooks/useTopologyCanvasLifecycle';
 import { useTopologyKeyboardShortcuts } from './hooks/useTopologyKeyboardShortcuts';
 
@@ -145,7 +131,7 @@ export function NetworkTopology({
     isMobile,
     activeDeviceId,
     focusDeviceId,
-    deviceMap: useMemo(() => new Map(topologyDevices.map((d) => [d.id, d])), [topologyDevices]),
+    deviceMap: useMemo(() => new Map(topologyDevices.map((d: CanvasDevice) => [d.id, d])), [topologyDevices]),
     setSelectedDeviceIds,
   });
 
@@ -246,8 +232,6 @@ export function NetworkTopology({
     isPingPanelVisible,
     handlePingClose,
   } = useTopologyPingState({ onPingPanelOpenChange });
-
-  const startPingAnimationRef = useRef<((sourceId: string, targetId: string) => void) | null>(null);
 
   const [_selectAllMode, setSelectAllMode] = useState(false);
 
@@ -550,27 +534,21 @@ export function NetworkTopology({
     previousCableTypeRef,
   });
 
-  const { cancelPingDueToInterruption } = usePingAnimation({
+  const {
+    startPingAnimation,
+    startPingAnimationRef,
+    cancelPingDueToInterruption,
+    handlePingPause,
+    handlePingPlay,
+    handlePingNext,
+    handleEnvelopeClick,
+  } = useTopologyPingController({
     connections,
     deviceStates,
     deviceMap,
-    isTR,
-    setPingAnimation,
-    setHopPacketInfos,
-    setErrorToast,
-    setPingMode,
-    pingAnimationRef,
-    pingCleanupTimeoutRef,
-    pingIsPausedRef,
-  });
-
-  const { startPingAnimation } = usePingSequence({
+    devices,
     isTR,
     isSimulationMode,
-    devices,
-    connections,
-    deviceStates,
-    deviceMap,
     latestDevicesRef,
     latestConnectionsRef,
     pingAnimationRef,
@@ -585,35 +563,9 @@ export function NetworkTopology({
     setHopPacketInfos: (infos) => setHopPacketInfos(infos),
     setErrorToast: (toast) => setErrorToast(toast),
     setPingMode,
-    getPingDiagnostics,
-    checkDeviceConnectivity,
-    getWirelessDistance,
-    easeInOutCubic,
-    flushSync,
-    cancelAnimationFrame,
-    requestAnimationFrame,
-  });
-
-  const {
-    handlePingPause,
-    handlePingPlay,
-    handlePingNext,
-    handleEnvelopeClick,
-  } = useTopologyPingUI({
-    pingIsPausedRef,
-    pingStepModeRef,
-    pingResumeCallbackRef,
-    pingSkipCallbackRef,
-    pingAnimationRef,
-    pingCleanupTimeoutRef,
-    pingPathRef,
-    cancelPingDueToInterruptionRef,
-    setPingAnimation: setPingAnimation as React.Dispatch<React.SetStateAction<PingAnimationState | null>>,
     setPacketPopupHop,
     onPacketPanelFocus,
     pingAnimation,
-    startPingAnimation,
-    isTR,
   });
 
   const {
@@ -1196,279 +1148,191 @@ export function NetworkTopology({
   });
 
   return (
-    <div
-      onContextMenu={(e) => e.preventDefault()}
-      className={`${isFullscreen ? 'fixed inset-0 z-[9999] overflow-hidden' : 'relative w-full h-full'} flex flex-col ${
-        isDark
-          ? 'bg-gradient-to-br from-secondary-800/90 via-secondary-700/80 to-secondary-800/90'
-          : 'bg-gradient-to-br from-primary-50/50 via-white to-secondary-50/80'
-      }`}
-    >
-      {isFullscreen && (
-        <TopologyFullscreenButton isDark={isDark} label={t.exit} onClick={toggleFullscreen} />
-      )}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Canvas Area */}
-        <div className="flex-1 relative flex flex-col">
-          {/* Palette Sheet */}
-          <TopologyPaletteSheet
-            isPaletteOpen={isPaletteOpen}
-            setIsPaletteOpen={setIsPaletteOpen}
-            isDark={isDark}
-            isTR={isTR}
-            t={t}
-            addDevice={addDevice}
-            cableInfo={cableInfo}
-            onCableChange={onCableChange}
-            DEVICE_ICONS={DEVICE_ICONS}
-          />
-          
-          {/* Ping Mode Target/Source Overlay Badge */}
-          <PingCursorOverlay
-            pingMode={pingMode}
-            pingCursorPos={pingCursorPos}
-            pingSource={pingSource}
-            isDark={isDark}
-            t={{ selectTarget: t.selectTarget, selectSource: t.selectSource }}
-          />
+    <TopologyCanvasArea
+      isFullscreen={isFullscreen}
+      isDark={isDark}
+      t={t}
+      language={language}
+      toggleFullscreen={toggleFullscreen}
+      isPaletteOpen={isPaletteOpen}
+      setIsPaletteOpen={setIsPaletteOpen}
+      isTR={isTR}
+      addDevice={addDevice}
+      cableInfo={cableInfo}
+      onCableChange={onCableChange}
+      pingMode={pingMode}
+      setPingMode={setPingMode}
+      pingCursorPos={pingCursorPos}
+      pingSource={pingSource}
+      selectedDeviceIds={selectedDeviceIds}
+      deviceMap={deviceMap}
+      handleAlign={handleAlign}
+      setSelectedDeviceIds={setSelectedDeviceIds}
+      onDeviceSelect={onDeviceSelect}
+      saveToHistory={saveToHistory}
+      deleteDevice={deleteDevice}
 
-          {/* Multiple Selection Indicator & Tools */}
-          <TopologySelectionToolbar
-            isDark={isDark}
-            t={t}
-            selectedDeviceIds={selectedDeviceIds}
-            deviceMap={deviceMap}
-            handleAlign={handleAlign}
-            setSelectedDeviceIds={setSelectedDeviceIds}
-            onDeviceSelect={onDeviceSelect}
-            saveToHistory={saveToHistory}
-            deleteDevice={deleteDevice}
-          />
+      canvasRef={canvasRef}
+      svgContentGroupRef={svgContentGroupRef}
+      isPanning={isPanning}
+      isSelecting={isSelecting}
+      selectedDeviceSet={selectedDeviceSet}
+      selectedNoteIds={selectedNoteIds}
+      connectionStart={connectionStart}
+      mousePos={mousePos}
+      isDrawingConnection={isDrawingConnection}
+      contextMenu={contextMenu}
+      noteTextareaRefs={noteTextareaRefs}
+      isActuallyDragging={isActuallyDragging}
+      isTouchDragging={isTouchDragging}
+      deviceStates={deviceStates}
+      devices={devices}
+      connections={connections}
+      notes={notes}
+      visibleConnections={visibleConnections}
+      visibleNotes={visibleNotes}
+      devicesSortedForRender={devicesSortedForRender}
+      activeDeviceId={activeDeviceId}
+      iotUpdateTrigger={iotUpdateTrigger}
+      graphicsQuality={graphicsQuality}
+      zoom={zoom}
+      environment={environment}
+      selectionBox={selectionBox}
+      hoveredConnectionId={hoveredConnectionId}
 
-          <NetworkCanvas
-            canvasRef={canvasRef}
-            svgContentGroupRef={svgContentGroupRef}
-            isDark={isDark}
-            isPanning={isPanning}
-            isSelecting={isSelecting}
-            pingMode={pingMode}
-            pingSource={pingSource}
-            selectedDeviceIds={selectedDeviceIds}
-            selectedDeviceSet={selectedDeviceSet}
-            selectedNoteIds={selectedNoteIds}
-            connectionStart={connectionStart}
-            mousePos={mousePos}
-            isDrawingConnection={isDrawingConnection}
-            cableInfo={cableInfo}
-            contextMenu={contextMenu}
-            noteTextareaRefs={noteTextareaRefs}
-            isActuallyDragging={isActuallyDragging}
-            isTouchDragging={isTouchDragging}
-            deviceMap={deviceMap}
-            deviceStates={deviceStates}
-            devices={devices}
-            connections={connections}
-            notes={notes}
-            visibleConnections={visibleConnections}
-            visibleNotes={visibleNotes}
-            devicesSortedForRender={devicesSortedForRender}
-            activeDeviceId={activeDeviceId}
-            iotUpdateTrigger={iotUpdateTrigger}
-            graphicsQuality={graphicsQuality}
-            zoom={zoom}
-            environment={environment}
-            t={t}
-            language={language}
-            selectionBox={selectionBox}
-            hoveredConnectionId={hoveredConnectionId}
-            handleCanvasMouseDown={handleCanvasMouseDown}
-            handleTouchStart={handleTouchStart}
-            handleTouchMove={handleTouchMove}
-            handleTouchEnd={handleTouchEnd}
-            handleContextMenu={handleContextMenu}
-            handleNoteHeaderMouseDown={handleNoteHeaderMouseDown}
-            handleNoteHeaderTouchStart={handleNoteHeaderTouchStart}
-            cycleNoteColor={cycleNoteColor}
-            cycleNoteFont={cycleNoteFont}
-            cycleNoteFontSize={cycleNoteFontSize}
-            cycleNoteOpacity={cycleNoteOpacity}
-            duplicateNote={duplicateNote}
-            deleteNote={deleteNote}
-            updateNoteText={updateNoteText}
-            setNoteTextSelection={setNoteTextSelection}
-            handleNoteResizeStart={handleNoteResizeStart}
-            handleNoteResizeTouchStart={handleNoteResizeTouchStart}
-            bringNoteToFront={bringNoteToFront}
-            setSelectedNoteIds={setSelectedNoteIds}
-            setSelectedDeviceIds={setSelectedDeviceIds}
-            setContextMenu={setContextMenu}
-            setSelectAllMode={setSelectAllMode}
-            cancelConnectionDrawing={cancelConnectionDrawing}
-            setPingCursorPos={setPingCursorPos}
-            setZoom={setZoom}
-            setPan={setPan}
-            handleZoomWheel={handleZoomWheel}
-            resetView={resetView}
-            getCanvasDimensions={getCanvasDimensions}
-            renderDevice={renderDevice}
-            handleConnectionMouseEnter={handleConnectionMouseEnter}
-            handleConnectionMouseLeave={handleConnectionMouseLeave}
-            handleConnectionClick={handleConnectionClick}
-            onDeleteConnection={deleteVisualConnection}
-            onToggleConnectionActive={toggleVisualConnectionActive}
-            pingAnimation={pingAnimation}
-            handleEnvelopeClick={handleEnvelopeClick}
-            isDarkForPing={isDark}
-            tForPing={t}
-          />
+      handleCanvasMouseDown={handleCanvasMouseDown}
+      handleTouchStart={handleTouchStart}
+      handleTouchMove={handleTouchMove}
+      handleTouchEnd={handleTouchEnd}
+      handleContextMenu={handleContextMenu}
+      handleNoteHeaderMouseDown={handleNoteHeaderMouseDown}
+      handleNoteHeaderTouchStart={handleNoteHeaderTouchStart}
+      cycleNoteColor={cycleNoteColor}
+      cycleNoteFont={cycleNoteFont}
+      cycleNoteFontSize={cycleNoteFontSize}
+      cycleNoteOpacity={cycleNoteOpacity}
+      duplicateNote={duplicateNote}
+      deleteNote={deleteNote}
+      updateNoteText={updateNoteText}
+      setNoteTextSelection={setNoteTextSelection}
+      handleNoteResizeStart={handleNoteResizeStart}
+      handleNoteResizeTouchStart={handleNoteResizeTouchStart}
+      bringNoteToFront={bringNoteToFront}
+      setSelectedNoteIds={setSelectedNoteIds}
+      setContextMenu={setContextMenu}
+      setSelectAllMode={setSelectAllMode}
+      cancelConnectionDrawing={cancelConnectionDrawing}
+      setPingCursorPos={setPingCursorPos}
+      setZoom={setZoom}
+      setPan={setPan}
+      handleZoomWheel={handleZoomWheel}
+      resetView={resetView}
+      getCanvasDimensions={getCanvasDimensions}
+      renderDevice={renderDevice}
+      handleConnectionMouseEnter={handleConnectionMouseEnter}
+      handleConnectionMouseLeave={handleConnectionMouseLeave}
+      handleConnectionClick={handleConnectionClick}
+      onDeleteConnection={deleteVisualConnection}
+      onToggleConnectionActive={toggleVisualConnectionActive}
+      pingAnimation={pingAnimation}
+      handleEnvelopeClick={handleEnvelopeClick}
 
-          {/* Zoom Controls */}
-          {preferences.showZoomToolbar && (
-            <CanvasToolbar
-              zoom={zoom}
-              setZoom={setZoom}
-              setPan={setPan}
-              canvasRef={canvasRef}
-              resetView={resetView}
-              zoomToFit={zoomToFit}
-              handleZoomMouseDown={handleZoomMouseDown}
-              handleZoomWheel={handleZoomWheel}
-              isDraggingZoom={isDraggingZoom}
-              isDark={isDark}
-              t={t}
-              MIN_ZOOM={MIN_ZOOM}
-              MAX_ZOOM={MAX_ZOOM}
-              onToggleLogPanel={() => setShowLogPanel((prev) => !prev)}
-              logCount={networkEventLogs.length}
-              onToggleMinimap={() => setIsMinimapOpen((prev) => !prev)}
-              isMinimapOpen={isMinimapOpen}
-              snapToGrid={snapToGrid}
-              onToggleSnapToGrid={() => setSnapToGrid((prev) => !prev)}
-              onOpenShortcutsModal={() => setShowShortcutsModal(true)}
-            />
-          )}
-        </div>
-      </div>
+      showZoomToolbar={preferences.showZoomToolbar}
+      zoomToFit={zoomToFit}
+      handleZoomMouseDown={handleZoomMouseDown}
+      isDraggingZoom={isDraggingZoom}
+      MIN_ZOOM={MIN_ZOOM}
+      MAX_ZOOM={MAX_ZOOM}
+      setShowLogPanel={setShowLogPanel}
+      networkEventLogsCount={networkEventLogs.length}
+      setIsMinimapOpen={setIsMinimapOpen}
+      isMinimapOpen={isMinimapOpen}
+      snapToGrid={snapToGrid}
+      setSnapToGrid={setSnapToGrid}
+      setShowShortcutsModal={setShowShortcutsModal}
 
-      <TopologyModalsContainer
-        contextMenu={contextMenu}
-        contextMenuRef={contextMenuRef}
-        isDark={isDark}
-        language={language}
-        noteFonts={Array.from(NOTE_FONTS)}
-        notes={notes}
-        devices={devices}
-        selectedDeviceIds={selectedDeviceIds}
-        clipboardLength={clipboard.length}
-        noteClipboardLength={noteClipboard.length}
-        historyIndex={historyIndex}
-        historyLength={historyLength}
-        isExamActive={isExamActive}
-        isPingPanelVisible={isPingPanelVisible}
-        setContextMenu={setContextMenu}
-        updateNoteStyle={(id, style) => updateNoteStyle(id, style)}
-        handleNoteTextCut={(id) => handleNoteTextCut(id)}
-        handleNoteTextCopy={(id) => handleNoteTextCopy(id)}
-        handleNoteTextPaste={(id) => handleNoteTextPaste(id)}
-        handleNoteTextDelete={(id) => handleNoteTextDelete(id)}
-        handleNoteTextSelectAll={(id) => handleNoteTextSelectAll(id)}
-        duplicateNote={(id) => duplicateNote(id)}
-        pasteNotes={(x, y) => pasteNotes(x, y)}
-        handleUndo={() => handleUndo()}
-        handleRedo={() => handleRedo()}
-        selectAllDevices={() => selectAllDevices()}
-        handleDeviceDoubleClick={(d) => handleDeviceDoubleClick(d)}
-        saveToHistory={() => saveToHistory()}
-        cutDevice={(ids) => {
-          saveToHistory();
-          cutDevice(ids);
-        }}
-        copyDevice={(ids) => copyDevice(ids)}
-        pasteDevice={() => pasteDevice()}
-        deleteDevice={(id) => {
-          saveToHistory();
-          deleteDevice(id);
-          setSelectedDeviceIds([]);
-        }}
-        setSelectedDeviceIds={setSelectedDeviceIds}
-        startDeviceConfig={startDeviceConfig}
-        deviceMap={deviceMap}
-        setPingMode={setPingMode}
-        pingModeRef={pingModeRef}
-        setPingSource={setPingSource}
-        pingSourceRef={pingSourceRef}
-        setPingResult={setPingResult}
-        togglePowerDevices={(ids) => {
-          saveToHistory();
-          togglePowerDevices(ids);
-        }}
-        onOpenTasks={onOpenTasks}
-        handleRefresh={handleRefresh}
-        portTooltip={portTooltip}
-        deviceStates={deviceStates}
-        getIotDeviceStatus={getIotDeviceStatus}
-        getIotPowerStatus={getIotPowerStatus}
-        getIotOpenCloseStatus={getIotOpenCloseStatus}
-        getLivePortVlanText={getLivePortVlanText}
-        connectionTooltip={connectionTooltip}
-        CABLE_COLORS={CABLE_COLORS}
-        deviceTooltip={deviceTooltip}
-        isTR={isTR}
-        isDraggingInteractionDisabled={isDraggingInteractionDisabled}
-        t={t}
-        configuringDevice={configuringDevice}
-        cancelDeviceConfig={cancelDeviceConfig}
-        saveDeviceConfig={saveDeviceConfig}
-        isMobile={isMobile}
-        pingAnimation={pingAnimation}
-        hopPacketInfos={hopPacketInfos}
-        handlePingPlay={handlePingPlay}
-        handlePingPause={handlePingPause}
-        handlePingNext={handlePingNext}
-        handlePingClose={handlePingClose}
-        graphicsQuality={graphicsQuality}
-        onPacketPanelFocus={onPacketPanelFocus}
-        packetPanelZIndex={packetPanelZIndex}
-        packetPopupHop={packetPopupHop}
-        setPacketPopupHop={setPacketPopupHop}
-        errorToast={errorToast}
-        setErrorToast={setErrorToast}
-        connectionError={connectionError}
-        mobilePaletteOpen={mobilePaletteOpen}
-        setMobilePaletteOpen={setMobilePaletteOpen}
-        addDevice={addDevice}
-        cableInfo={cableInfo}
-        onCableChange={onCableChange}
-        showPortSelector={showPortSelector}
-        portSelectorStep={portSelectorStep}
-        selectedSourcePort={selectedSourcePort}
-        setShowPortSelector={setShowPortSelector}
-        setPortSelectorStep={setPortSelectorStep}
-        setSelectedSourcePort={setSelectedSourcePort}
-        setConnections={setConnections}
-        setDevices={setDevices}
-        connections={connections}
-        activeCaptureConnectionId={activeCaptureConnectionId}
-        clearCapturedPackets={clearCapturedPackets}
-        clearAllCapturedPackets={clearAllCapturedPackets}
-        setActiveCaptureConnection={setActiveCaptureConnection}
-        capturedPacketsMap={capturedPacketsMap}
-        showMinimap={preferences.showMinimap}
-        isMinimapOpen={isMinimapOpen}
-        setIsMinimapOpen={setIsMinimapOpen}
-        zoom={zoom}
-        pan={pan}
-        setPan={setPan}
-        setZoom={setZoom}
-        zoomToFit={zoomToFit}
-        canvasRef={canvasRef}
-        showShortcutsModal={showShortcutsModal}
-        setShowShortcutsModal={setShowShortcutsModal}
-        showEventLogs={preferences.showEventLogs}
-        showLogPanel={showLogPanel}
-        setShowLogPanel={setShowLogPanel}
-      />
-    </div>
+      contextMenuRef={contextMenuRef}
+      NOTE_FONTS={Array.from(NOTE_FONTS)}
+      clipboardLength={clipboard.length}
+      noteClipboardLength={noteClipboard.length}
+      historyIndex={historyIndex}
+      historyLength={historyLength}
+      isExamActive={isExamActive}
+      isPingPanelVisible={isPingPanelVisible}
+      updateNoteStyle={updateNoteStyle}
+      handleNoteTextCut={handleNoteTextCut}
+      handleNoteTextCopy={handleNoteTextCopy}
+      handleNoteTextPaste={handleNoteTextPaste}
+      handleNoteTextDelete={handleNoteTextDelete}
+      handleNoteTextSelectAll={handleNoteTextSelectAll}
+      pasteNotes={pasteNotes}
+      handleUndo={handleUndo}
+      handleRedo={handleRedo}
+      selectAllDevices={selectAllDevices}
+      handleDeviceDoubleClick={handleDeviceDoubleClick}
+      cutDevice={(ids) => {
+        saveToHistory();
+        cutDevice(ids);
+      }}
+      copyDevice={copyDevice}
+      pasteDevice={pasteDevice}
+      startDeviceConfig={startDeviceConfig}
+      pingModeRef={pingModeRef}
+      setPingSource={setPingSource}
+      pingSourceRef={pingSourceRef}
+      setPingResult={setPingResult}
+      togglePowerDevices={(ids) => {
+        saveToHistory();
+        togglePowerDevices(ids);
+      }}
+      onOpenTasks={onOpenTasks}
+      handleRefresh={handleRefresh}
+      portTooltip={portTooltip}
+      getIotDeviceStatus={getIotDeviceStatus}
+      getIotPowerStatus={getIotPowerStatus}
+      getIotOpenCloseStatus={getIotOpenCloseStatus}
+      getLivePortVlanText={getLivePortVlanText}
+      connectionTooltip={connectionTooltip}
+      CABLE_COLORS={CABLE_COLORS}
+      deviceTooltip={deviceTooltip}
+      isDraggingInteractionDisabled={isDraggingInteractionDisabled}
+      configuringDevice={configuringDevice}
+      cancelDeviceConfig={cancelDeviceConfig}
+      saveDeviceConfig={saveDeviceConfig}
+      isMobile={isMobile}
+      hopPacketInfos={hopPacketInfos}
+      handlePingPlay={handlePingPlay}
+      handlePingPause={handlePingPause}
+      handlePingNext={handlePingNext}
+      handlePingClose={handlePingClose}
+      onPacketPanelFocus={onPacketPanelFocus}
+      packetPanelZIndex={packetPanelZIndex}
+      packetPopupHop={packetPopupHop}
+      setPacketPopupHop={setPacketPopupHop}
+      errorToast={errorToast}
+      setErrorToast={setErrorToast}
+      connectionError={connectionError}
+      mobilePaletteOpen={mobilePaletteOpen}
+      setMobilePaletteOpen={setMobilePaletteOpen}
+      showPortSelector={showPortSelector}
+      portSelectorStep={portSelectorStep}
+      selectedSourcePort={selectedSourcePort}
+      setShowPortSelector={setShowPortSelector}
+      setPortSelectorStep={setPortSelectorStep}
+      setSelectedSourcePort={setSelectedSourcePort}
+      setConnections={setConnections}
+      setDevices={setDevices}
+      activeCaptureConnectionId={activeCaptureConnectionId}
+      clearCapturedPackets={clearCapturedPackets}
+      clearAllCapturedPackets={clearAllCapturedPackets}
+      setActiveCaptureConnection={setActiveCaptureConnection}
+      capturedPacketsMap={capturedPacketsMap}
+      showMinimap={preferences.showMinimap}
+      pan={pan}
+      showShortcutsModal={showShortcutsModal}
+      showEventLogs={preferences.showEventLogs}
+      showLogPanel={showLogPanel}
+    />
   );
 }
 
