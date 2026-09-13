@@ -53,6 +53,7 @@ export interface PCPanelContextValue {
 
   // Layout
   isMobile: boolean;
+  isTablet: boolean;
   mobileVerticalScrollStyle: CSSProperties | undefined;
   fontSize: number;
   terminalBg: string;

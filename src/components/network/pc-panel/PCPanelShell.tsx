@@ -46,46 +46,49 @@ export function PCPanelShell({ panelRef, className, onTogglePower }: PCPanelShel
         className
       )}
     >
-      <PCPanelHeader
-        isDark={isDark}
-        internalPcHostname={internalPcHostname}
-        pcIP={pcIP}
-        activeTab={activeTab}
-        language={language}
-        isPcPoweredOff={isPcPoweredOff}
-        wifiSignalStrength={wifiSignalStrength}
-        ntpPanelTime={ntpPanelTime}
-        t={t}
-        deviceId={deviceId}
-        onGoHome={goHome}
-        onNavigateToProgram={navigateToProgram}
-        onTogglePower={onTogglePower}
-        openWebPage={openWebPage}
-        formatTime={formatTime}
-        formatFullDateTime={formatFullDateTime}
-        terminalToolbar={isMobile ? <PCPanelTerminalToolbar
-          activeTab={activeTab}
+      {/* Hide header on mobile home view for authentic smartphone home screen look */}
+      {!(isMobile && activeTab === 'home') && (
+        <PCPanelHeader
           isDark={isDark}
-          t={t}
-          isMobile={isMobile}
+          internalPcHostname={internalPcHostname}
+          pcIP={pcIP}
+          activeTab={activeTab}
           language={language}
-          showCmdSettings={showCmdSettings}
-          onSearchOpen={() => setSearchOpen(true)}
-          onCopyAll={handleCopyAll}
-          onToggleCmdSettings={() => setShowCmdSettings(!showCmdSettings)}
-        /> : undefined}
-      />
+          isPcPoweredOff={isPcPoweredOff}
+          wifiSignalStrength={wifiSignalStrength}
+          ntpPanelTime={ntpPanelTime}
+          t={t}
+          deviceId={deviceId}
+          onGoHome={goHome}
+          onNavigateToProgram={navigateToProgram}
+          onTogglePower={onTogglePower}
+          openWebPage={openWebPage}
+          formatTime={formatTime}
+          formatFullDateTime={formatFullDateTime}
+          terminalToolbar={isMobile ? <PCPanelTerminalToolbar
+            activeTab={activeTab}
+            isDark={isDark}
+            t={t}
+            isMobile={isMobile}
+            language={language}
+            showCmdSettings={showCmdSettings}
+            onSearchOpen={() => setSearchOpen(true)}
+            onCopyAll={handleCopyAll}
+            onToggleCmdSettings={() => setShowCmdSettings(!showCmdSettings)}
+          /> : undefined}
+        />
+      )}
 
-      <div className="flex-1 min-h-0 p-0 md:px-2 md:pb-2">
+      <div className={cn("flex-1 min-h-0", isMobile ? "p-0" : "p-1 md:px-2 md:pb-2")}>
         <div className="mx-auto flex h-full min-h-0 w-full max-w-[1500px] items-center justify-center overflow-hidden">
           <div
             className={cn(
-              "relative flex h-full min-h-0 w-full flex-col overflow-hidden shadow-[0_15px_50px_rgba(15,23,42,0.1)]",
+              "relative flex h-full min-h-0 w-full flex-col overflow-hidden",
               isMobile
-                ? "rounded-xl border-none bg-transparent"
+                ? "rounded-none border-none bg-transparent shadow-none"
                 : (isDark
-                  ? "rounded-[2rem] border border-white/10 bg-transparent"
-                  : "rounded-[2rem] border border-white/70 bg-transparent")
+                  ? "rounded-2xl md:rounded-[2rem] border border-white/10 bg-transparent shadow-[0_15px_50px_rgba(15,23,42,0.1)]"
+                  : "rounded-2xl md:rounded-[2rem] border border-white/70 bg-transparent shadow-[0_15px_50px_rgba(15,23,42,0.1)]")
             )}
           >
             <div

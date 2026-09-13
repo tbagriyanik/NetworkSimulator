@@ -223,10 +223,10 @@ export function TimelinePanel({
         "absolute z-30 liquid-glass-light transition-all duration-300 flex flex-col overflow-hidden rounded-xl outline-none select-none",
         isMobile
           ? (isMinimized
-            ? (preferences.showFooter ? "left-2 bottom-[72px]" : "left-2 bottom-[24px]")
+            ? (preferences.showFooter ? "left-2 bottom-[110px]" : "left-2 bottom-[64px]")
             : (preferences.showFooter ? "left-2 right-2 bottom-[72px]" : "left-2 right-2 bottom-[24px]"))
           : (preferences.showFooter ? "sm:left-4 sm:right-auto sm:bottom-20 sm:max-w-none" : "sm:left-4 sm:right-auto sm:bottom-6 sm:max-w-none"),
-        isMinimized ? "w-48 h-12 rounded-full" : "sm:w-[36rem] w-[calc(100vw-1rem)] h-[152px]",
+        isMinimized ? (isMobile ? "w-36 h-9 rounded-full text-xs" : "w-48 h-12 rounded-full") : "sm:w-[36rem] w-[calc(100vw-1rem)] h-[152px]",
         isDark
           ? isFocused
             ? "bg-secondary-950/40 border border-emerald-400 shadow-[0_0_0_1px_rgba(52,211,153,0.35),0_8px_32px_0_rgba(0,0,0,0.5)]"
@@ -251,7 +251,8 @@ export function TimelinePanel({
       {/* Header */}
       <div
         className={cn(
-          "flex items-center justify-between p-3 shrink-0 border-b",
+          "flex items-center justify-between shrink-0 border-b",
+          isMinimized ? "p-1.5 px-3 border-b-0 h-full" : "p-3",
           isDark ? "bg-primary-950/20 border-primary-900/30" : "bg-primary-50/80 border-primary-100",
           "cursor-grab active:cursor-grabbing",
           "select-none"

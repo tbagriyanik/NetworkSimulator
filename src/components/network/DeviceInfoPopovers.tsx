@@ -51,7 +51,7 @@ export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zInde
   const { preferences } = useUiPreferences();
   const { containerRef, handleDragStart, position } = useDrag({
     storageKey: `pc-info-pos-${pc.id}`,
-    defaultPosition: { x: 16, y: 96 },
+    defaultPosition: { x: 16, y: 150 },
     origin: 'bottom-right',
     disableSnap: true,
   });
@@ -311,7 +311,7 @@ export function RouterInfoPopover({ router, routerState, t, language, isDark, on
   const { preferences } = useUiPreferences();
   const { containerRef, handleDragStart, position } = useDrag({
     storageKey: `router-info-pos-${router.id}`,
-    defaultPosition: { x: 16, y: 96 },
+    defaultPosition: { x: 16, y: 150 },
     origin: 'bottom-right',
     disableSnap: true,
   });

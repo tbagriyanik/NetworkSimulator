@@ -368,11 +368,10 @@ export function FileEditorModal({
 
   const footerBar = (
     <div
-      className={`px-4 py-1.5 flex justify-between items-center text-xs font-mono border-t ${
-        isDark
+      className={`px-4 py-1.5 flex justify-between items-center text-xs font-mono border-t ${isDark
           ? 'border-secondary-800 bg-secondary-900/40 text-secondary-400'
           : 'border-secondary-200 bg-secondary-100/60 text-secondary-600'
-      }`}
+        }`}
     >
       <span className="truncate mr-2">Dosya: {filePath}</span>
       <div className="flex gap-4 shrink-0">
@@ -507,7 +506,7 @@ export function FileEditorModal({
           <Button
             size="sm"
             variant="ghost"
-            onClick={() => updateContent(`# Netmiko ile Cihaz SSH Baglantisi ve VLAN Olusturma\nfrom netmiko import ConnectHandler\n\ndevice = {\n    'device_type': 'cisco_ios',\n    'host': '192.168.1.1',\n    'username': 'admin',\n    'password': 'password123'\n}\n\nprint("Baglanti kuruluyor: " + device['host'])\nnet_connect = ConnectHandler(**device)\noutput = net_connect.send_command('show ip int brief')\nprint(output)\n\nconfig_commands = ['vlan 50', 'name IT_DEPT', 'exit']\ncfg_out = net_connect.send_config_set(config_commands)\nprint("VLAN Konfigurasoynu Basariyla Gonderildi!")\n`)}
+            onClick={() => updateContent(`# Netmiko ile Cihaz SSH Baglantisi ve VLAN Olusturma\nfrom netmiko import ConnectHandler\n\ndevice = {\n    'device_type': 'netsim_nos',\n    'host': '192.168.1.1',\n    'username': 'admin',\n    'password': 'password123'\n}\n\nprint("Baglanti kuruluyor: " + device['host'])\nnet_connect = ConnectHandler(**device)\noutput = net_connect.send_command('show ip int brief')\nprint(output)\n\nconfig_commands = ['vlan 50', 'name IT_DEPT', 'exit']\ncfg_out = net_connect.send_config_set(config_commands)\nprint("VLAN Konfigurasoynu Basariyla Gonderildi!")\n`)}
             className="h-7 px-2 text-xs text-sky-400 hover:text-sky-300 hover:bg-sky-500/10 font-mono"
           >
             Netmiko (SSH)
@@ -542,8 +541,8 @@ export function FileEditorModal({
             isPythonFile
               ? '# Python kodunuzu buraya yazın...\nprint("Merhaba Dunya!")'
               : isBatFile
-              ? '@echo off\necho Network Simulator Batch Script\nset TARGET=192.168.1.1\nping %TARGET%'
-              : '# Metin veya kod yazın...'
+                ? '@echo off\necho Network Simulator Batch Script\nset TARGET=192.168.1.1\nping %TARGET%'
+                : '# Metin veya kod yazın...'
           }
         />
       </div>

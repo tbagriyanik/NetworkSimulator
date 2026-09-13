@@ -240,7 +240,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   const [, setLastTaskEvent] = useState<{ type: 'completed' | 'failed'; taskName: string; timestamp: number } | null>(null);
   const [isPingPanelOpen, setIsPingPanelOpen] = useState(false);
   const [isExamLoadedFromFile, setIsExamLoadedFromFile] = useState(false);
-  const [isTimelineMinimized, setIsTimelineMinimized] = useState(false);
+  const [isTimelineMinimized, setIsTimelineMinimized] = useState(true);
   const toggleTimelineMinimize = useCallback(() => setIsTimelineMinimized(prev => !prev), []);
   const { preferences } = useUiPreferences();
 

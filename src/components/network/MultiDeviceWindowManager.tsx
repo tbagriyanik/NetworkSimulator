@@ -13,6 +13,7 @@ import { useMultiWindowStore, DeviceWindowItem } from '@/hooks/useMultiWindowSto
 import { useWindowStore } from '@/hooks/useWindowStore';
 import { DeviceIcon } from './DeviceIcon';
 import { TaskDefinition, TaskContext } from '@/lib/network/taskDefinitions';
+import { X } from 'lucide-react';
 import type { Translations } from '@/contexts/LanguageContext';
 import { useAppStore } from '@/lib/store/appStore';
 
@@ -91,31 +92,21 @@ export function MultiDeviceWindowManager({
       {openWindows.length > 0 && (
         <aside
           aria-label={language === 'tr' ? 'Açık Pencereler' : 'Open Windows'}
-          className={`fixed left-0 top-1/2 -translate-y-1/2 z-[9995] flex flex-col items-center gap-1.5 p-1.5 rounded-r-2xl border border-l-0 shadow-2xl backdrop-blur-xl transition-all select-none animate-in slide-in-from-left duration-200 ${
+          className={`fixed left-0 top-1/2 -translate-y-1/2 z-[9995] flex flex-col items-center p-1 rounded-r-xl border border-l-0 shadow-xl backdrop-blur-xl transition-all select-none animate-in slide-in-from-left duration-200 ${
             isDark
-              ? 'bg-secondary-950/95 border-secondary-800/80 shadow-black/60'
-              : 'bg-white/95 border-secondary-200 shadow-secondary-900/20'
+              ? 'bg-secondary-950/90 border-secondary-800/80 shadow-black/50'
+              : 'bg-white/90 border-secondary-200 shadow-secondary-900/15'
           }`}
         >
-          {/* Header indicator */}
-          <div className="flex flex-col items-center py-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[9px] font-bold tracking-wider text-emerald-400 mt-0.5">
-              {openWindows.length}
-            </span>
-          </div>
-
-          <div className="w-5 h-px bg-secondary-700/40 my-0.5" />
-
           {/* Window Icons List */}
-          <div className="flex flex-col items-center gap-1.5 max-h-[70vh] overflow-y-auto overflow-x-hidden custom-scrollbar pr-0.5">
+          <div className="flex flex-col items-center gap-1 max-h-[70vh] overflow-y-auto overflow-x-visible custom-scrollbar p-0.5">
             {openWindows.map((win) => {
               const device = topologyDevices.find((item) => item.id === win.id);
               const label = device?.name || win.id;
               const isActive = activeWindowId === win.id || (layoutMode === 'tabs' && win.id === currentTabId);
 
               return (
-                <div key={`left-dock-${win.id}`} className="relative group flex items-center">
+                <div key={`left-dock-${win.id}`} className="relative group flex items-center p-0.5">
                   <button
                     type="button"
                     aria-label={label}
@@ -127,11 +118,11 @@ export function MultiDeviceWindowManager({
                         setActiveTabId(win.id);
                       }
                     }}
-                    className={`relative flex h-9 w-9 items-center justify-center rounded-xl transition-all transform active:scale-95 ${
+                    className={`relative flex h-8 w-8 items-center justify-center rounded-lg transition-all transform active:scale-95 ${
                       isActive
                         ? isDark
-                          ? 'bg-emerald-600/30 text-emerald-300 ring-2 ring-emerald-500 shadow-md shadow-emerald-500/20'
-                          : 'bg-emerald-50 text-emerald-700 ring-2 ring-emerald-500 shadow-md shadow-emerald-500/10'
+                          ? 'bg-emerald-600/30 text-emerald-300 ring-2 ring-emerald-500 shadow-sm'
+                          : 'bg-emerald-50 text-emerald-700 ring-2 ring-emerald-500 shadow-sm'
                         : isDark
                           ? 'text-secondary-400 hover:bg-secondary-800/80 hover:text-white hover:scale-105'
                           : 'text-secondary-600 hover:bg-secondary-100 hover:text-secondary-900 hover:scale-105'
@@ -140,13 +131,13 @@ export function MultiDeviceWindowManager({
                     <DeviceIcon
                       type={(device?.type || win.type) as DeviceType}
                       switchModel={device?.switchModel}
-                      size={20}
+                      size={18}
                       active={isActive}
                     />
 
                     {/* Active dot indicator on edge */}
                     {isActive && (
-                      <span className="absolute -left-1 top-1/2 -translate-y-1/2 w-1 h-3 rounded-r-full bg-emerald-400 shadow-sm" />
+                      <span className="absolute -left-0.5 top-1/2 -translate-y-1/2 w-0.5 h-2.5 rounded-r-full bg-emerald-400 shadow-sm" />
                     )}
                   </button>
 
@@ -158,9 +149,9 @@ export function MultiDeviceWindowManager({
                       e.stopPropagation();
                       closeDeviceWindow(win.id);
                     }}
-                    className="absolute -top-1 -right-1 hidden group-hover:flex w-4 h-4 items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold shadow hover:bg-red-600 transition-all z-10"
+                    className="absolute -top-0.5 -right-0.5 hidden group-hover:flex w-4 h-4 items-center justify-center rounded-full bg-gradient-to-tr from-rose-600 to-red-500 text-white shadow-md ring-1 ring-slate-900 hover:scale-110 active:scale-95 transition-all duration-150 z-30 hover:from-rose-500 hover:to-red-400 shrink-0"
                   >
-                    ×
+                    <X className="w-2.5 h-2.5 stroke-[3]" />
                   </button>
 
                   {/* Tooltip flyout on hover */}

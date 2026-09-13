@@ -12,7 +12,7 @@ import { ensureDeviceStatesMap } from '@/lib/network/networkUtils';
 
 import { toast } from "@/hooks/use-toast";
 import { useOutputSearch } from '@/hooks/useOutputSearch';
-import { useIsMobile } from '@/hooks/use-breakpoint';
+import { useIsMobile, useIsTablet } from '@/hooks/use-breakpoint';
 import { sanitizeHTTPContent } from '@/lib/security/sanitizer';
 import { generateRouterAdminPage, isRouterDevice } from '@/components/network/WifiControlPanel';
 import { generateIotWebPanelContent } from '@/lib/network/iotWebPanel';
@@ -83,6 +83,7 @@ export function PCPanel({
 
   // Responsive hooks
   const isMobile = useIsMobile();
+  const isTablet = useIsTablet();
 
   // The PC panel is a persistent floating window. Closing it is handled by
   // its close button, Escape, or an explicit navigation action.
@@ -1521,7 +1522,7 @@ export function PCPanel({
 
   const contextValue: PCPanelContextValue = {
     deviceId, isDark, language, t, environment,
-    isMobile, mobileVerticalScrollStyle, fontSize, terminalBg, textColor,
+    isMobile, isTablet, mobileVerticalScrollStyle, fontSize, terminalBg, textColor,
     activeTab, setActiveTab, navigateToProgram, goHome,
     isPcPoweredOff, deviceFromTopology, topologyDevices, topologyConnections, deviceStates, deviceOutputs, handleResizeStart,
     pcIP, setPcIP, pcMAC, setPcMAC, pcSubnet, setPcSubnet, pcGateway, setPcGateway, pcDNS, setPcDNS,

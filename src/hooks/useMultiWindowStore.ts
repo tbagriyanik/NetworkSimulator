@@ -182,12 +182,13 @@ export const useMultiWindowStore = create<MultiWindowStoreState>((set, get) => (
         openWindows: remaining,
         switcherSelectedIndex: nextIndex,
         isSwitcherOpen: remaining.length === 0 ? false : state.isSwitcherOpen,
+        layoutMode: remaining.length === 0 ? 'free' : state.layoutMode,
       };
     });
   },
 
   closeAllDeviceWindows: () => {
-    set({ openWindows: [], isSwitcherOpen: false, switcherSelectedIndex: 0 });
+    set({ openWindows: [], isSwitcherOpen: false, switcherSelectedIndex: 0, layoutMode: 'free' });
   },
 
   updateWindowPosition: (id: string, position: { x: number; y: number }) => {

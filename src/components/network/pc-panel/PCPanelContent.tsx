@@ -18,9 +18,9 @@ import { RestApiExplorerWindow } from './RestApiExplorerWindow';
  */
 export function PCPanelContent() {
   const {
-    activeTab, isPcPoweredOff, isDark, isMobile,
+    activeTab, isPcPoweredOff, isDark, isMobile, isTablet,
     mobileVerticalScrollStyle, launcherApps, navigateToProgram,
-    language, topologyDevices,
+    language, topologyDevices, internalPcHostname, pcIP, wifiSignalStrength,
   } = usePCPanel();
 
   return (
@@ -32,9 +32,13 @@ export function PCPanelContent() {
         <HomeLauncher
           apps={launcherApps}
           isDark={isDark}
+          isTablet={isTablet}
           isPoweredOff={isPcPoweredOff}
           mobileVerticalScrollStyle={mobileVerticalScrollStyle}
           onNavigate={navigateToProgram}
+          internalPcHostname={internalPcHostname}
+          pcIP={pcIP}
+          wifiSignalStrength={wifiSignalStrength}
         />
       )}
 
