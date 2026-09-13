@@ -312,7 +312,55 @@ print(response)
 s.close()
 ```
 
-### E. Diğer Standart Modüller
+### E. 3D Sahne Motoru (`scene3d` / `vpython` / `three3d`)
+3D grafik sahneler oluşturmak, geometrik nesneleri yönetmek ve CSG işlemleri yapmak için simüle edilmiş 3D sahne modülü:
+
+```python
+import scene3d as s3d
+
+# Sahne oluşturma ve gökyüzü/ışık ayarları
+scene = s3d.Scene(title="Ağ Veri Merkezi 3D", background="dark")
+scene.set_sky("sunset")
+scene.set_light("sun", intensity=1.2)
+
+# Primitif 3D Nesneler
+p = s3d.Plane(x=0, y=0, z=0, width=20, height=20, color="gray")
+c1 = s3d.Cube(x=-2, y=1, z=0, size=2, color="blue", opacity=0.9)
+s1 = s3d.Sphere(x=2, y=1, z=0, radius=1, color="red")
+cyl = s3d.Cylinder(x=0, y=2, z=-3, radius=0.8, height=3, color="green")
+
+# Yapıcı Katı Geometri (CSG) Operasyonları
+comb = c1.union(s1)          # Birleştirme (Union)
+diff = cyl.subtract(c1)      # Çıkarma (Difference)
+
+# Nesne Özellikleri Güncelleme (Getter / Setter)
+c1.color = "cyan"
+c1.wireframe = True
+c1.position = (1, 2, 3)
+```
+
+### F. Dinamik Ses ve Müzik Sentetörü (`audio` / `music` / `synth` / `winsound`)
+Web Audio API sentezleyicisi üzerinden ses efekti, nota, polifonik akor ve melodi üretip diske kaydetme modülü:
+
+```python
+import audio
+
+# Tekil Nota ve Frekans Çalma
+audio.play_tone(frequency=440, duration=0.5, volume=0.8) # 440Hz A4
+audio.play_note("C4", duration=0.4)                       # Do 4
+
+# Polifonik Akor ve Melodi Dizileri
+audio.play_chord(["C4", "E4", "G4"], duration=1.0)       # C Major Akoru
+audio.play_melody(["C4", "D4", "E4", "F4", "G4"], speed=1.2)
+
+# Oyun ve Arayüz Ses Efektleri
+audio.play_sfx("coin")      # 'coin', 'laser', 'jump', 'explosion', 'powerup'
+
+# WAV Dosyası Oluşturup Diske Kaydetme
+audio.save_wav("C:\\music\\melody.wav", notes=["C4", "E4", "G4", "C5"])
+```
+
+### G. Diğer Standart Modüller
 - `math`: `sqrt`, `pow`, `sin`, `cos`, `floor`, `ceil`, `pi`, `e`, `log10`.
 - `random`: `randint`, `choice`, `shuffle`, `random`, `randrange`, `uniform`.
 - `datetime` / `time`: `datetime.now()`, `time.time()`, `time.sleep()`.

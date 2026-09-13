@@ -1,6 +1,6 @@
 # Network Simulator — Kapsamlı Uygulama ve Kullanım Rehberi
 
-**Sürüm / Version:** 5.2.0  
+**Sürüm / Version:** 5.4.0  
 **Doküman Tipi:** Kullanım, Mimari, Komut Referansı ve Laboratuvar Kılavuzu  
 **Dil:** Türkçe (Turkish)
 
@@ -26,6 +26,8 @@
 Network Simulator; bilgisayar ağları, anahtarlama (switching), yönlendirme (routing), kablosuz ağlar (wireless), IoT (Nesnelerin İnterneti), siber güvenlik ve sistem yönetimi konularını interaktif ve görsel olarak öğretmek için tasarlanmış tarayıcı tabanlı (client-side) tam kapsamlı bir ağ simülatörüdür.
 
 - **%100 İstemci Taraflı (Client-Side) ve Hızlı:** React 19, Next.js 16 ve TypeScript altyapısıyla herhangi bir sunucu kurulumu gerektirmeden tarayıcıda çalışır.
+- **🧊 3D Grafik Sahne Motoru & Görselleştirme:** Gömülü Python scriptleri üzerinden interaktif 3D nesneler (`Plane`, `Cube`, `Sphere`, `Cylinder`, `Prism`), CSG mantıksal katı geometri (`union`/`subtract`), materyal kaplamaları, ışıklandırma ve sürüklenebilir 3D portal penceresi (`Python3DWindow`).
+- **🎵 Web Audio API Tabanlı Dinamik Müzik & Ses Sentetörü:** Gömülü Python ile nota, polifonik akor, melodi ve ses efekti (`coin`, `laser`, `jump`, `explosion`, `powerup`) sentezleme ve WAV formatında diske (`C:\*.wav`) aktarabilme.
 - **11 Tam Donanımlı Cihaz Tipi:** Router, L2/L3 Switch, Firewall, WLC, AP, PC, IoT, Multiport Hub (`hub`), Aktif Bulut WAN Geçidi (`cloud`), Kablosuz Akıllı Telefon (`mobile`) ve Ağ Yazıcısı (`printer`).
 - **🧩 NetSim Modüler Donanım Şasisi & Yuva Yönetimi:** Router ve Switch cihazlarında fiziksel yuvalara (Slots) NetSim WIC-2T (Serial), NetSim HWIC-4ESW (Switch), NetSim SFP-10G-LR (Fiber), NetSim NM-1GE (Copper) modülleri takıp çıkarabilme, Donanım Güç Anahtarı (Power Switch) ile sıcak değişim koruması ve dinamik port tablosu.
 - **🗺️ İnteraktif Mini-Harita & Subnet Navigatörü:** Sağ alt köşede sürüklenebilir tuval penceresi, "Ekrana Sığdır" (Fit to Screen) ve OSPF/VLAN/Subnet alanlarına anında kamera odaklama (Focus Subnet).

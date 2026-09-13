@@ -2,6 +2,24 @@
 
 Yeniden eskiye, tarih mevcuttur.
 
+## v5.4.0 — 2026-09-13
+
+**3D Grafik Sahne Motoru (CSG Operasyonları, Işıklandırma, Materyaller) & Web Audio API Tabanlı Dinamik Müzik ve Ses Sentatörü Entegrasyonu** —
+- **🧊 3D Grafik Sahne Motoru (`scene3d` / `vpython` / `three3d`, `Python3DWindow.tsx`, `pcPython3DModule.ts`, `pcPython3DRenderer.ts`)**:
+  - Embedded Python terminalinde 3D nesneler (`Plane`, `Cube`/`Box`, `Sphere`, `Cylinder`/`Silindir`, `Prism`/`Prizma`) oluşturma, yönetme ve boyutlandırma desteği eklendi.
+  - Nesneler arası yapıcı katı geometri (CSG) mantıksal birleştirme (`union`) ve çıkarma (`subtract`) operasyonları uygulandı.
+  - Renk (`color`), pürüzsüzlük (`roughness`), metaliklik (`metalness`), tel kafes (`wireframe`) ve şeffaflık (`opacity`) gibi gelişmiş materyal yönetimi sunuldu.
+  - Özelleştirilebilir gökyüzü temaları (`gradient`, `dark`, `sunset`), zemin ızgarası (`grid`), ortam (`ambient`), güneş (`sun`) ve nokta (`lamp`) ışık kaynakları desteklendi.
+  - Masaüstünde sürüklenebilir interaktif 3D pencere (`Python3DWindow`) ve web browser içinde 3D görünüm entegrasyonu sağlandı.
+- **🎵 Web Audio API Tabanlı Dinamik Müzik & Ses Motoru (`audio` / `music` / `sound` / `synth` / `winsound`, `pcAudioPlayer.ts`, `pcPythonAudioModule.ts`)**:
+  - Gömülü Python scriptleri üzerinden canlı ses sentezleme ve müzik besteleme altyapısı kuruldu.
+  - Notaları frekansa dönüştüren (C0-B8) monofonik/polifonik sentezleyici, hazır akor dizilimleri (`play_chord`), melodi dizileri (`play_melody`) ve oyun ses efektleri (`coin`, `laser`, `jump`, `explosion`, `powerup`) eklendi.
+  - ADSR zarfı (Attack, Decay, Sustain, Release) ile sentezlenen ses ve müziklerin ham WAV formatında sanal diske (`C:\*.wav`) aktarılabilmesi sağlandı.
+- **🛠️ Hata Düzeltmeleri & Kararlılık İyileştirmeleri**:
+  - Kwargs yalnız çağrılan Python metotlarındaki parametre hizalama hatası düzeltildi.
+  - Browser audio kanallarında non-finite `linearRampToValueAtTime` hataları için finite kontrolleri ve try-catch koruması eklendi.
+  - 3D pencere olay yayınları tüm cihaz `ID` dinleyicilerini kapsayacak şekilde güncellendi.
+
 ## v5.3.0 — 2026-09-12
 
 **Görsel PDU İnceleyici Entegrasyonu (OSI Katmanları, Protokol Ağacı, Hex Dump), Gömülü & Modal PDU Sekmesi ve Sürüklenebilir Pencerelerde Scrollbar / Resize Tutamaç İyileştirmesi** —
