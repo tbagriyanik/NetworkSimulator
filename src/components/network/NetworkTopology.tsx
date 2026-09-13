@@ -9,13 +9,10 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useIsMobile } from '@/hooks/use-breakpoint';
 import { useNetworkRefreshWithPositions } from '@/hooks/useNetworkRefreshWithPositions';
-import { toast } from "@/hooks/use-toast";
-import { ShortcutsModal } from '@/components/ui/ShortcutsModal';
+import { toast } from '@/hooks/use-toast';
 import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType, ContextMenuState, NetworkTopologyProps } from './networkTopology.types';
 import type { CableType } from '@/lib/network/types';
 import { useCanvasHistory } from '@/hooks/useCanvasHistory';
-import LazyNetworkTopologyContextMenu from './LazyNetworkTopologyContextMenu';
-
 import {
   getDeviceWidth,
   getDeviceHeight,
@@ -23,7 +20,7 @@ import {
   easeInOutCubic,
   getPortPosition,
 } from './networkTopology.helpers';
-import { CABLE_COLORS, DRAG_THRESHOLD, LONG_PRESS_DURATION, VIRTUAL_CANVAS_WIDTH_MOBILE, VIRTUAL_CANVAS_HEIGHT_MOBILE, VIRTUAL_CANVAS_WIDTH_DESKTOP, VIRTUAL_CANVAS_HEIGHT_DESKTOP, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, NOTE_FONTS_DESKTOP as NOTE_FONTS } from './networkTopology.constants';
+import { CABLE_COLORS, DRAG_THRESHOLD, LONG_PRESS_DURATION, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, NOTE_FONTS_DESKTOP as NOTE_FONTS } from './networkTopology.constants';
 
 import { useCanvasActions } from '../../hooks/useCanvasActions';
 import { exportTopologyToPNG } from '../../utils/exportPNG';
@@ -31,7 +28,6 @@ import { exportTopologyToPNG } from '../../utils/exportPNG';
 import { useCanvasZoomPan } from './hooks/useCanvasZoomPan';
 import { useTopologyTouch } from './hooks/useTopologyTouch';
 import { useTopologyMouse } from './hooks/useTopologyMouse';
-import { useCanvasKeyboard } from './hooks/useCanvasKeyboard';
 import { useCanvasClipboard } from './hooks/useCanvasClipboard';
 import { useDeviceDrag } from './hooks/useDeviceDrag';
 import { useCanvasSelection } from './hooks/useCanvasSelection';
@@ -59,17 +55,17 @@ import { useTopologyDeviceMouseHandlers } from './hooks/useTopologyDeviceMouseHa
 
 import { CanvasToolbar } from './topology/CanvasToolbar';
 import { TopologyDeviceRenderer } from './topology/TopologyDeviceRenderer';
-import { NetworkEventLogPanel } from './topology/NetworkEventLogPanel';
 import { useUiPreferences } from '@/hooks/useUiPreferences';
-import { TopologyModals } from './topology/TopologyModals';
 import { DEVICE_ICONS } from './topology/DeviceIcons';
 import { TopologySelectionToolbar } from './topology/TopologySelectionToolbar';
 import { NetworkCanvas } from './NetworkTopology/NetworkCanvas';
 import { TopologyFullscreenButton } from './topology/TopologyFullscreenButton';
 import { TopologyPaletteSheet } from './topology/TopologyPaletteSheet';
-import { TopologyTooltips } from './topology/TopologyTooltips';
-import { MinimapNavigator } from './topology/MinimapNavigator';
 import { PingCursorOverlay } from './topology/PingCursorOverlay';
+
+import { TopologyModalsContainer } from './topology/TopologyModalsContainer';
+import { useTopologyCanvasLifecycle } from './hooks/useTopologyCanvasLifecycle';
+import { useTopologyKeyboardShortcuts } from './hooks/useTopologyKeyboardShortcuts';
 
 export function NetworkTopology({
   cableInfo,
@@ -133,7 +129,25 @@ export function NetworkTopology({
   // Zoom & Pan state
   const [zoom, setZoom] = useState(zoomProp ?? DEFAULT_ZOOM);
   const [pan, setPan] = useState(panProp ?? { x: 0, y: 0 });
-  const [canvasDimensions, setCanvasDimensions] = useState({ width: 0, height: 0 });
+  const isMobile = useIsMobile();
+
+  const [selectedDeviceIds, setSelectedDeviceIds] = useState<string[]>(activeDeviceId ? [activeDeviceId] : []);
+  const selectedDeviceSet = useMemo(() => new Set(selectedDeviceIds), [selectedDeviceIds]);
+  const [selectedNoteIds, setSelectedNoteIds] = useState<string[]>([]);
+
+  // Canvas Lifecycle & Window Resize Hook
+  const {
+    canvasRef,
+    canvasRectRef,
+    canvasDimensions,
+    getCanvasDimensions,
+  } = useTopologyCanvasLifecycle({
+    isMobile,
+    activeDeviceId,
+    focusDeviceId,
+    deviceMap: useMemo(() => new Map(topologyDevices.map((d) => [d.id, d])), [topologyDevices]),
+    setSelectedDeviceIds,
+  });
 
   // Custom hook for derived topology states, lookup maps, and spatial culling
   const {
@@ -199,34 +213,8 @@ export function NetworkTopology({
     onDeviceStatesChange,
   });
 
-  // Update canvas dimensions on resize and mount
-  useLayoutEffect(() => {
-    if (!canvasRef.current) return;
-    const updateDimensions = () => {
-      if (canvasRef.current) {
-        const { width, height } = canvasRef.current.getBoundingClientRect();
-        setCanvasDimensions({ width, height });
-      }
-    };
-    updateDimensions();
-    window.addEventListener('resize', updateDimensions);
-    return () => window.removeEventListener('resize', updateDimensions);
-  }, []);
-
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
-  const [selectedDeviceIds, setSelectedDeviceIds] = useState<string[]>(activeDeviceId ? [activeDeviceId] : []);
-
-  const selectedDeviceSet = useMemo(() => new Set(selectedDeviceIds), [selectedDeviceIds]);
-
-  const [selectedNoteIds, setSelectedNoteIds] = useState<string[]>([]);
-  const canvasRef = useRef<HTMLDivElement>(null);
-  const canvasRectRef = useRef<DOMRect | null>(null);
-
-  const updateCanvasRect = useCallback(() => {
-    if (!canvasRef.current) return;
-    canvasRectRef.current = canvasRef.current.getBoundingClientRect();
-  }, []);
 
   // Ping Mode State Hook
   const {
@@ -260,38 +248,6 @@ export function NetworkTopology({
   } = useTopologyPingState({ onPingPanelOpenChange });
 
   const startPingAnimationRef = useRef<((sourceId: string, targetId: string) => void) | null>(null);
-
-  useEffect(() => {
-    updateCanvasRect();
-    const handleUpdate = () => updateCanvasRect();
-    window.addEventListener('resize', handleUpdate, { passive: true });
-    window.addEventListener('scroll', handleUpdate, { passive: true, capture: true });
-    return () => {
-      window.removeEventListener('resize', handleUpdate);
-      window.removeEventListener('scroll', handleUpdate, { capture: true } as EventListenerOptions);
-    };
-  }, [updateCanvasRect]);
-
-  // Sync internal selection with prop from parent
-  useEffect(() => {
-    if (activeDeviceId) {
-      queueMicrotask(() => {
-        setSelectedDeviceIds((prev) => {
-          if (prev.includes(activeDeviceId)) return prev;
-          return [activeDeviceId];
-        });
-      });
-    }
-  }, [activeDeviceId]);
-
-  // Handle external focus device request (selection only)
-  useEffect(() => {
-    if (focusDeviceId && deviceMap.get(focusDeviceId)) {
-      queueMicrotask(() => {
-        setSelectedDeviceIds([focusDeviceId]);
-      });
-    }
-  }, [focusDeviceId, deviceMap]);
 
   const [_selectAllMode, setSelectAllMode] = useState(false);
 
@@ -436,8 +392,6 @@ export function NetworkTopology({
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
   const [mobileConnectionSource, setMobileConnectionSource] = useState<string | null>(null);
-
-  const isMobile = useIsMobile();
 
   const [showPortSelector, setShowPortSelector] = useState(false);
   const [portSelectorStep, setPortSelectorStep] = useState<'source' | 'target'>('source');
@@ -707,13 +661,6 @@ export function NetworkTopology({
     saveToHistory,
     setDevicesState,
   });
-
-  const getCanvasDimensions = useCallback(() => {
-    if (typeof window === 'undefined') return { width: VIRTUAL_CANVAS_WIDTH_DESKTOP, height: VIRTUAL_CANVAS_HEIGHT_DESKTOP };
-    return isMobile
-      ? { width: VIRTUAL_CANVAS_WIDTH_MOBILE, height: VIRTUAL_CANVAS_HEIGHT_MOBILE }
-      : { width: VIRTUAL_CANVAS_WIDTH_DESKTOP, height: VIRTUAL_CANVAS_HEIGHT_DESKTOP };
-  }, [isMobile]);
 
   const getDistance = useCallback((x1: number, y1: number, x2: number, y2: number): number => {
     const dx = x2 - x1;
@@ -1223,7 +1170,7 @@ export function NetworkTopology({
     );
   };
 
-  useCanvasKeyboard({
+  useTopologyKeyboardShortcuts({
     selectedDeviceIds,
     selectedNoteIds,
     deleteDevice,
@@ -1415,26 +1362,10 @@ export function NetworkTopology({
               onOpenShortcutsModal={() => setShowShortcutsModal(true)}
             />
           )}
-
-          <ShortcutsModal
-            open={showShortcutsModal}
-            onOpenChange={setShowShortcutsModal}
-            isDark={isDark}
-            language={language}
-          />
-
-          {preferences.showEventLogs && (
-            <NetworkEventLogPanel
-              isOpen={showLogPanel}
-              onClose={() => setShowLogPanel(false)}
-              isDark={isDark}
-            />
-          )}
         </div>
       </div>
 
-      {/* Context Menu */}
-      <LazyNetworkTopologyContextMenu
+      <TopologyModalsContainer
         contextMenu={contextMenu}
         contextMenuRef={contextMenuRef}
         isDark={isDark}
@@ -1445,62 +1376,51 @@ export function NetworkTopology({
         selectedDeviceIds={selectedDeviceIds}
         clipboardLength={clipboard.length}
         noteClipboardLength={noteClipboard.length}
-        canUndo={historyIndex > 0}
-        canRedo={historyIndex < historyLength - 1}
+        historyIndex={historyIndex}
+        historyLength={historyLength}
         isExamActive={isExamActive}
-        isPingPanelOpen={isPingPanelVisible}
-        onClose={() => setContextMenu(null)}
-        onUpdateNoteStyle={(id, style) => updateNoteStyle(id, style)}
-        onNoteCut={(id) => handleNoteTextCut(id)}
-        onNoteCopy={(id) => handleNoteTextCopy(id)}
-        onNotePaste={(id) => handleNoteTextPaste(id)}
-        onNoteDeleteText={(id) => handleNoteTextDelete(id)}
-        onNoteSelectAllText={(id) => handleNoteTextSelectAll(id)}
-        onDuplicateNote={(id) => duplicateNote(id)}
-        onPasteNotes={(x, y) => pasteNotes(x, y)}
-        onUndo={() => handleUndo()}
-        onRedo={() => handleRedo()}
-        onSelectAll={() => selectAllDevices()}
-        onOpenDevice={(d) => handleDeviceDoubleClick(d)}
-        onCutDevices={(ids) => {
+        isPingPanelVisible={isPingPanelVisible}
+        setContextMenu={setContextMenu}
+        updateNoteStyle={(id, style) => updateNoteStyle(id, style)}
+        handleNoteTextCut={(id) => handleNoteTextCut(id)}
+        handleNoteTextCopy={(id) => handleNoteTextCopy(id)}
+        handleNoteTextPaste={(id) => handleNoteTextPaste(id)}
+        handleNoteTextDelete={(id) => handleNoteTextDelete(id)}
+        handleNoteTextSelectAll={(id) => handleNoteTextSelectAll(id)}
+        duplicateNote={(id) => duplicateNote(id)}
+        pasteNotes={(x, y) => pasteNotes(x, y)}
+        handleUndo={() => handleUndo()}
+        handleRedo={() => handleRedo()}
+        selectAllDevices={() => selectAllDevices()}
+        handleDeviceDoubleClick={(d) => handleDeviceDoubleClick(d)}
+        saveToHistory={() => saveToHistory()}
+        cutDevice={(ids) => {
           saveToHistory();
           cutDevice(ids);
         }}
-        onCopyDevices={(ids) => copyDevice(ids)}
-        onPasteDevice={() => pasteDevice()}
-        onDeleteDevices={(ids) => {
+        copyDevice={(ids) => copyDevice(ids)}
+        pasteDevice={() => pasteDevice()}
+        deleteDevice={(id) => {
           saveToHistory();
-          ids.forEach((id) => deleteDevice(id));
+          deleteDevice(id);
           setSelectedDeviceIds([]);
         }}
-        onStartConfig={startDeviceConfig}
-        onStartPing={(id) => {
-          const device = deviceMap.get(id);
-          if (device) {
-            setPingMode(true);
-            pingModeRef.current = true;
-            setPingSource(device);
-            pingSourceRef.current = device;
-            setPingResult(null);
-          }
-        }}
-        onTogglePowerDevices={(ids) => {
+        setSelectedDeviceIds={setSelectedDeviceIds}
+        startDeviceConfig={startDeviceConfig}
+        deviceMap={deviceMap}
+        setPingMode={setPingMode}
+        pingModeRef={pingModeRef}
+        setPingSource={setPingSource}
+        pingSourceRef={pingSourceRef}
+        setPingResult={setPingResult}
+        togglePowerDevices={(ids) => {
           saveToHistory();
           togglePowerDevices(ids);
         }}
-        onSaveToHistory={() => saveToHistory()}
-        onClearDeviceSelection={() => setSelectedDeviceIds([])}
         onOpenTasks={onOpenTasks}
-        onRefreshNetwork={handleRefresh}
-        note={notes.find((n) => n.id === contextMenu?.noteId)}
-      />
-
-      <TopologyTooltips
+        handleRefresh={handleRefresh}
         portTooltip={portTooltip}
-        deviceMap={deviceMap}
         deviceStates={deviceStates}
-        isDark={isDark}
-        language={language}
         getIotDeviceStatus={getIotDeviceStatus}
         getIotPowerStatus={getIotPowerStatus}
         getIotOpenCloseStatus={getIotOpenCloseStatus}
@@ -1510,32 +1430,17 @@ export function NetworkTopology({
         deviceTooltip={deviceTooltip}
         isTR={isTR}
         isDraggingInteractionDisabled={isDraggingInteractionDisabled}
-        t={{
-          ipAddress: t.ipAddress,
-          subnetMask: t.subnetMask,
-          gateway: t.gateway,
-          dnsServer: t.dnsServer,
-          macAddress: t.macAddress,
-          dhcpEnabled: t.dhcpEnabled,
-          openServices: t.openServices,
-          active: t.active,
-        }}
-      />
-
-      <TopologyModals
+        t={t}
         configuringDevice={configuringDevice}
-        deviceMap={deviceMap}
         cancelDeviceConfig={cancelDeviceConfig}
         saveDeviceConfig={saveDeviceConfig}
         isMobile={isMobile}
-        isDark={isDark}
         pingAnimation={pingAnimation}
         hopPacketInfos={hopPacketInfos}
         handlePingPlay={handlePingPlay}
         handlePingPause={handlePingPause}
         handlePingNext={handlePingNext}
         handlePingClose={handlePingClose}
-        language={language}
         graphicsQuality={graphicsQuality}
         onPacketPanelFocus={onPacketPanelFocus}
         packetPanelZIndex={packetPanelZIndex}
@@ -1546,12 +1451,10 @@ export function NetworkTopology({
         connectionError={connectionError}
         mobilePaletteOpen={mobilePaletteOpen}
         setMobilePaletteOpen={setMobilePaletteOpen}
-        isTR={isTR}
         addDevice={addDevice}
         cableInfo={cableInfo}
         onCableChange={onCableChange}
         showPortSelector={showPortSelector}
-        devices={devices}
         portSelectorStep={portSelectorStep}
         selectedSourcePort={selectedSourcePort}
         setShowPortSelector={setShowPortSelector}
@@ -1565,25 +1468,22 @@ export function NetworkTopology({
         clearAllCapturedPackets={clearAllCapturedPackets}
         setActiveCaptureConnection={setActiveCaptureConnection}
         capturedPacketsMap={capturedPacketsMap}
-        t={t}
+        showMinimap={preferences.showMinimap}
+        isMinimapOpen={isMinimapOpen}
+        setIsMinimapOpen={setIsMinimapOpen}
+        zoom={zoom}
+        pan={pan}
+        setPan={setPan}
+        setZoom={setZoom}
+        zoomToFit={zoomToFit}
+        canvasRef={canvasRef}
+        showShortcutsModal={showShortcutsModal}
+        setShowShortcutsModal={setShowShortcutsModal}
+        showEventLogs={preferences.showEventLogs}
+        showLogPanel={showLogPanel}
+        setShowLogPanel={setShowLogPanel}
       />
-
-      {preferences.showMinimap && (
-        <MinimapNavigator
-          devices={devices}
-          connections={connections}
-          zoom={zoom}
-          pan={pan}
-          setPan={setPan}
-          setZoom={setZoom}
-          zoomToFit={zoomToFit}
-          canvasRef={canvasRef}
-          isDark={isDark}
-          language={language}
-          isOpen={isMinimapOpen}
-          onToggle={() => setIsMinimapOpen(!isMinimapOpen)}
-        />
-      )}
     </div>
   );
 }
+
