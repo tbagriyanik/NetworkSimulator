@@ -45,6 +45,11 @@ export function evaluatePythonFunctionCall(
     return { handled: true, value: instance };
   }
 
+  // Check if fn is a native JavaScript class constructor (e.g. Tk, PyButton, etc.)
+  const isConstructable = typeof fn === 'function' && (
+    fn.prototype && fn.prototype.constructor === fn && Object.getOwnPropertyNames(fn.prototype).length > 1
+  );
+
   const paramNames = (fn as unknown as Record<string, unknown>).__pythonParamNames as string[] | undefined;
   const orderedArgs = paramNames ? (() => {
     const bound: unknown[] = [];
@@ -59,7 +64,28 @@ export function evaluatePythonFunctionCall(
     }
     if (remaining.length > 0) bound.push(...remaining);
     return bound;
-  })() : positional;
+  })() : (Object.keys(kwargs).length > 0 && positional.length === 1 && typeof positional[0] !== 'object'
+    ? [...positional, kwargs]
+    : Object.keys(kwargs).length > 0 && positional.length === 0
+      ? [null, kwargs]
+      : positional);
 
-  return { handled: true, value: fn(...orderedArgs) };
+  if (isConstructable) {
+    try {
+      const Ctor = fn as unknown as new (...args: unknown[]) => unknown;
+      return { handled: true, value: new Ctor(...orderedArgs) };
+    } catch {
+      // Fallback to normal function call if constructor fails
+    }
+  }
+
+  try {
+    return { handled: true, value: (fn as (...args: unknown[]) => unknown)(...orderedArgs) };
+  } catch (callErr: unknown) {
+    if (callErr instanceof Error && callErr.message.includes("must be invoked with 'new'")) {
+      const Ctor = fn as unknown as new (...args: unknown[]) => unknown;
+      return { handled: true, value: new Ctor(...orderedArgs) };
+    }
+    throw callErr;
+  }
 }

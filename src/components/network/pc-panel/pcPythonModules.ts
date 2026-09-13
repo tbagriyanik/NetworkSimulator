@@ -1,8 +1,15 @@
 import { PyComplex, pythonRange } from './pcPythonRunnerHelpers';
+import { createPythonFormModule } from './pcPythonFormModule';
 
 let currentSeed: number | null = null;
 
+const defaultFormModule = createPythonFormModule('default');
+
 export const PYTHON_MODULES: Record<string, Record<string, unknown>> = {
+  tkinter: defaultFormModule,
+  ttk: defaultFormModule.ttk as Record<string, unknown>,
+  form: defaultFormModule,
+  gui: defaultFormModule,
   random: {
     seed: (s?: unknown) => {
       if (s !== undefined && s !== null) {

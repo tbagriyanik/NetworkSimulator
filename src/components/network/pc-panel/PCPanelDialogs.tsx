@@ -7,7 +7,9 @@ import { FtpFileTransferDialog } from './FtpFileTransferDialog';
 import { FileEditorModal } from './FileEditorModal';
 import { PCBrowser } from './PCBrowser';
 import { PythonInputModal } from './PythonInputModal';
+import { PythonFormWindow } from './PythonFormWindow';
 import { loadFs, saveFs, writeFile, readFile, getFtpFilesFromUploadDir } from './pcFileSystem';
+import { closeActiveDeviceForm } from './pcPythonFormModule';
 
 /**
  * Floating dialogs (FTP picker, file editor, browser window).
@@ -21,11 +23,11 @@ export function PCPanelDialogs() {
     handleFtpSessionCommand, executeFtpPut, editingFile, setEditingFile,
     setServiceHttpContent, setActiveTab, executeCommand, inputRef,
     httpAppContent, httpAppUrl, httpAppTitle,
-    setHttpAppUrl, setHttpAppContent, setHttpAppDeviceId,
+    setHttpAppUrl, setHttpAppContent, setHttpAppDeviceId, setHttpAppTitle,
     browserWindow, setBrowserWindow, filteredSuggestions, showUrlSuggestions,
     setShowUrlSuggestions, selectedSuggestionIndex, setSelectedSuggestionIndex,
     urlInputRef, dragStateRef, openWebPage,
-    pythonSession, setPythonSession,
+    pythonSession, setPythonSession, activePythonForm, setActivePythonForm,
   } = ctx;
 
   const httpAppSrcDoc = useMemo(() => {
@@ -90,7 +92,14 @@ export function PCPanelDialogs() {
             const fileName = editingFile.path.split(/[\\/]/).pop() || '';
             setActiveTab('desktop');
             const isBat = fileName.toLowerCase().endsWith('.bat') || fileName.toLowerCase().endsWith('.cmd');
-            setTimeout(() => { void executeCommand(isBat ? fileName : `python ${fileName}`); }, 50);
+            const cmd = isBat ? fileName : `python ${fileName}`;
+            setTimeout(() => {
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('pc-run-command', {
+                  detail: { deviceId, command: cmd }
+                }));
+              }
+            }, 50);
           }
         }}
         onClose={() => {
@@ -148,6 +157,22 @@ export function PCPanelDialogs() {
         onCancel={() => {
           setPythonSession(null);
           inputRef.current?.focus();
+        }}
+      />
+
+      <PythonFormWindow
+        form={activePythonForm || null}
+        isDark={isDark}
+        isMobile={isMobile}
+        onClose={() => {
+          closeActiveDeviceForm(deviceId);
+          setActivePythonForm?.(null);
+        }}
+        onOpenInBrowser={(html, title) => {
+          setHttpAppTitle(title || 'Python Form');
+          setHttpAppUrl('http://localhost/python-form');
+          setHttpAppDeviceId(deviceId);
+          setHttpAppContent(html);
         }}
       />
     </>

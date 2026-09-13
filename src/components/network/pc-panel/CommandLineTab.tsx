@@ -239,6 +239,94 @@ export function CommandLineTab({
     return () => window.removeEventListener('new-project-reset', handleNewProjectReset);
   }, [deviceId, internalPcHostname, setInput]);
 
+  // Add local output for Linux mode
+  const addLinuxOutput = useCallback((type: OutputLine['type'], content: string, prompt?: string) => {
+    const newLine: OutputLine = {
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      type,
+      content,
+      prompt,
+    };
+    setLinuxOutput(prev => [...prev, newLine]);
+  }, []);
+
+  // Listen for programmatic command runs (e.g. from File Editor "Run")
+  useEffect(() => {
+    const handleRunCommand = async (e: Event) => {
+      const detail = (e as CustomEvent<{ deviceId: string; command: string }>).detail;
+      if (!detail || detail.deviceId !== deviceId) return;
+
+      const cmdToRun = detail.command.trim();
+      if (!cmdToRun) return;
+
+      if (activeTerminalTab === 'cmd') {
+        await executeCommand(cmdToRun);
+      } else {
+        setInput('');
+        setLinuxAutocompleteIndex(-1);
+        setIsLinuxAutocompleteDismissed(false);
+        setLinuxHistory(prev => [cmdToRun, ...prev.filter(c => c !== cmdToRun)].slice(0, 50));
+        setLinuxHistoryIndex(-1);
+
+        await executeLinuxCommand(cmdToRun, {
+          deviceId,
+          internalPcHostname,
+          setPcHostname,
+          setEditingFile,
+          pcIP,
+          setPcIP,
+          applyDhcpLease,
+          pcSubnet,
+          pcMAC,
+          pcGateway,
+          pcDNS,
+          pcIPv6,
+          wifiEnabled,
+          currentPath,
+          setCurrentPath,
+          canReachTargetIp,
+          resolveDeviceNameTargetCallback,
+          openWebPage,
+          addLocalOutput: addLinuxOutput,
+          setLinuxOutput,
+          executeCommand,
+          linuxHistory: [cmdToRun, ...linuxHistory.filter(c => c !== cmdToRun)].slice(0, 50),
+          buildArpTableOutput,
+          getNtpNow,
+        });
+      }
+    };
+
+    window.addEventListener('pc-run-command', handleRunCommand);
+    return () => window.removeEventListener('pc-run-command', handleRunCommand);
+  }, [
+    deviceId,
+    activeTerminalTab,
+    executeCommand,
+    internalPcHostname,
+    setPcHostname,
+    setEditingFile,
+    pcIP,
+    setPcIP,
+    applyDhcpLease,
+    pcSubnet,
+    pcMAC,
+    pcGateway,
+    pcDNS,
+    pcIPv6,
+    wifiEnabled,
+    currentPath,
+    setCurrentPath,
+    canReachTargetIp,
+    resolveDeviceNameTargetCallback,
+    openWebPage,
+    addLinuxOutput,
+    linuxHistory,
+    buildArpTableOutput,
+    getNtpNow,
+    setInput,
+  ]);
+
   // Switch tab and persist choice
   const handleTabSwitch = useCallback((tab: 'cmd' | 'linux') => {
     setActiveTerminalTab(tab);
@@ -305,17 +393,6 @@ export function CommandLineTab({
     }, 100);
     return () => clearTimeout(timer);
   }, [activeTerminalTab, inputRef]);
-
-  // Add local output for Linux mode
-  const addLinuxOutput = useCallback((type: OutputLine['type'], content: string, prompt?: string) => {
-    const newLine: OutputLine = {
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
-      type,
-      content,
-      prompt,
-    };
-    setLinuxOutput(prev => [...prev, newLine]);
-  }, []);
 
   // Filter Linux suggestions
   const linuxFilteredSuggestions = getLinuxSuggestions(input, currentPath, deviceId);

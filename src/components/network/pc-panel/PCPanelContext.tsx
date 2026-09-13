@@ -143,6 +143,8 @@ export interface PCPanelContextValue {
   ftpSession: import('./PCPanel.types').FtpSession | null;
   pythonSession: import('./PCPanel.types').PythonSession | null;
   setPythonSession: React.Dispatch<React.SetStateAction<import('./PCPanel.types').PythonSession | null>>;
+  activePythonForm?: import('./pcPythonFormTypes').PythonFormState | null;
+  setActivePythonForm?: React.Dispatch<React.SetStateAction<import('./pcPythonFormTypes').PythonFormState | null>>;
   editingFile: { path: string; content: string } | null;
   setEditingFile: (f: { path: string; content: string } | null) => void;
 

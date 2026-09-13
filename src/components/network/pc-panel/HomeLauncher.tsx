@@ -4,6 +4,7 @@ import { type CSSProperties, useState, useEffect } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { BatteryCharging, Wifi as WifiIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useGraphicsQuality } from '@/lib/store/appStore';
 import type { PCActiveTab } from './PCPanel.types';
 
 export interface LauncherApp {
@@ -35,6 +36,8 @@ export function HomeLauncher({
   onNavigate,
   internalPcHostname = 'PC-Workstation',
 }: HomeLauncherProps) {
+  const graphicsQuality = useGraphicsQuality();
+  const isLowGraphics = graphicsQuality === 'low';
   const [currentTime, setCurrentTime] = useState<string>('');
 
   useEffect(() => {
@@ -55,11 +58,13 @@ export function HomeLauncher({
       {/* ---------------- 1. MOBILE SMARTPHONE VIEW (Telefon Ana Ekranı) ---------------- */}
       <div className="flex @[640px]:hidden flex-1 min-h-0 flex-col relative overflow-hidden rounded-2xl border shadow-2xl bg-gradient-to-b from-slate-950/90 via-slate-900/90 to-slate-950/95 border-white/10 backdrop-blur-xl">
         {/* Phone Ambient Wallpaper Glow */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-16 -left-16 w-56 h-56 rounded-full bg-primary-600/25 blur-3xl" />
-          <div className="absolute top-1/3 -right-20 w-64 h-64 rounded-full bg-emerald-600/20 blur-3xl" />
-          <div className="absolute -bottom-16 left-1/4 w-60 h-60 rounded-full bg-indigo-600/20 blur-3xl" />
-        </div>
+        {!isLowGraphics && (
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute -top-16 -left-16 w-56 h-56 rounded-full bg-primary-600/25 blur-3xl" />
+            <div className="absolute top-1/3 -right-20 w-64 h-64 rounded-full bg-emerald-600/20 blur-3xl" />
+            <div className="absolute -bottom-16 left-1/4 w-60 h-60 rounded-full bg-indigo-600/20 blur-3xl" />
+          </div>
+        )}
 
         {/* Mobile Phone Status Bar */}
         <div className="relative z-10 flex items-center justify-between px-5 pt-3 pb-1 text-xs font-semibold tracking-wide text-white/90">
@@ -112,10 +117,12 @@ export function HomeLauncher({
         isDark ? "bg-secondary-950/80 border-white/10" : "bg-white/80 border-slate-200"
       )}>
         {/* Ambient Glow */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-primary-500/15 blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-emerald-500/15 blur-3xl" />
-        </div>
+        {!isLowGraphics && (
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-primary-500/15 blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-emerald-500/15 blur-3xl" />
+          </div>
+        )}
 
         {/* Tablet Apps Grid */}
         <div className="relative z-10 flex-1 overflow-y-auto custom-scrollbar">
@@ -159,8 +166,12 @@ export function HomeLauncher({
               ? "bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/20 via-slate-950/80 to-slate-950"
               : "bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-100/50 via-white/80 to-slate-100/90"
           )} />
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-primary-500/10 blur-3xl pointer-events-none" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
+          {!isLowGraphics && (
+            <>
+              <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-primary-500/10 blur-3xl pointer-events-none" />
+              <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
+            </>
+          )}
         </div>
 
         {/* Desktop Canvas (Desktop Icons Grid) */}

@@ -522,6 +522,14 @@ export function FileEditorModal({
           <Button
             size="sm"
             variant="ghost"
+            onClick={() => updateContent(`# Python GUI Form Uygulamasi (Tkinter / Form)\nimport tkinter as tk\nfrom tkinter import ttk\n\nroot = tk.Tk()\nroot.title("Ag Kontrol Paneli")\nroot.geometry("460x520")\n\n# Etiket (Label)\nlbl_title = ttk.Label(root, text="Ag Cihazi Kontrol ve Yapilandirma Formu")\nlbl_title.pack(pady=4)\n\n# Yatay Cizgi (Separator)\nsep1 = ttk.Separator(root, orient="horizontal")\nsep1.pack(fill="x", pady=4)\n\n# Metin Kutusu (Entry)\nent_ip = ttk.Entry(root, placeholder="Ornek IP: 192.168.1.1")\nent_ip.insert(0, "192.168.1.1")\nent_ip.pack(pady=4)\n\n# Acilir Kutu (Combobox)\ncmb_proto = ttk.Combobox(root, values=["SSH (Port 22)", "Telnet (Port 23)", "HTTP (Port 80)", "HTTPS (Port 443)"])\ncmb_proto.pack(pady=4)\n\n# Onay Kutusu (Checkbox)\nchk_secure = ttk.Checkbutton(root, text="Guvenli Baglanti (SSL/TLS)", checked=True)\nchk_secure.pack(pady=4)\n\n# Radyo Dugmesi Grubu (RadioGroup)\nrad_mode1 = ttk.Radiobutton(root, text="Normal Mod", value="normal", checked=True)\nrad_mode1.pack(pady=2)\nrad_mode2 = ttk.Radiobutton(root, text="Hata Ayiklama (Debug)", value="debug")\nrad_mode2.pack(pady=2)\n\n# Metin Alani (TextArea)\ntxt_log = tk.Text(root, height=4)\ntxt_log.insert("1.0", "Hazir. Cihaz bilgileri bekleniyor...")\ntxt_log.pack(fill="both", pady=4)\n\n# Liste (Listbox)\nlst_items = tk.Listbox(root)\nlst_items.insert(0, "GigabitEthernet0/0 - UP")\nlst_items.insert(1, "GigabitEthernet0/1 - DOWN")\nlst_items.insert(2, "Vlan 1 - UP")\nlst_items.pack(fill="both", pady=4)\n\n# Dugme (Button) ve Olay Fonksiyonu\ndef on_connect():\n    ip = ent_ip.get()\n    proto = cmb_proto.get()\n    txt_log.delete("1.0", "end")\n    txt_log.insert("1.0", f"Baglanti baslatildi -> {ip} ({proto})")\n\nbtn_action = ttk.Button(root, text="Baglantiyi Baslat", command=on_connect)\nbtn_action.pack(pady=6)\n\n# Pencere veya Web Tarayicisi icinde calistir\nroot.mainloop()\n`)}
+            className="h-7 px-2 text-xs text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 font-mono"
+          >
+            GUI Form
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
             onClick={() => updateContent(`# Web Sunucusundan Sayfa Cekme (HTTP GET)\nimport requests\n\nurl = "http://192.168.1.100"\nprint("HTTP GET yapiliyor: " + url)\nresp = requests.get(url)\nprint("HTTP Durum:", resp.status_code)\nprint("Icerik Boyutu:", len(resp.text), "karakter")\nprint("Ilk 200 karakter:")\nprint(resp.text[:200])\n`)}
             className="h-7 px-2 text-xs text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 font-mono"
           >

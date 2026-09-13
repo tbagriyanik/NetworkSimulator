@@ -19,6 +19,7 @@ import {
 import { Statement, parseProgramLines, parseBlockAt } from './pcPythonParser';
 import { createExpressionEvaluator } from './pcPythonEvaluator';
 import { executeSinglePythonLine } from './pcPythonStatementParser';
+import { createPythonFormModule } from './pcPythonFormModule';
 
 export { PyComplex, pythonRange, formatPythonValue, PyClass, PyInstance, PySuper, PyGenerator, PythonTimeoutException } from './pcPythonRunnerHelpers';
 
@@ -74,8 +75,13 @@ export function executePythonScript(
       throw new PythonTimeoutException(`TimeoutError: Execution exceeded time limit of ${timeoutMs / 1000}s`);
     }
   };
+  const formModule = createPythonFormModule(deviceId || 'default');
   const scope: Record<string, unknown> = {
     PyGenerator,
+    tkinter: formModule,
+    ttk: formModule.ttk,
+    form: formModule,
+    gui: formModule,
     print: (...args: unknown[]) => {
       outputs.push(args.map(a => formatPythonValue(a)).join(' '));
     },
@@ -528,7 +534,12 @@ export async function executePythonScriptAsync(
       throw new PythonTimeoutException(`TimeoutError: Execution exceeded time limit of ${timeoutMs / 1000}s`);
     }
   };
+  const formModule = createPythonFormModule(deviceId || 'default');
   const scope: Record<string, unknown> = {
+    tkinter: formModule,
+    ttk: formModule.ttk,
+    form: formModule,
+    gui: formModule,
     print: (...args: unknown[]) => {
       outputs.push(args.map(a => formatPythonValue(a)).join(' '));
     },

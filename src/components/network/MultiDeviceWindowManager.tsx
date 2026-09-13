@@ -88,11 +88,11 @@ export function MultiDeviceWindowManager({
 
   return (
     <>
-      {/* Sol Ortadaki Açık Pencereler Simgeleri (Left-Middle Open Windows Dock) */}
+      {/* Sol Ortadaki Açık Pencereler Simgeleri (Left-Middle Open Windows Dock - mobilde tek pencere olduğu için gizlenir) */}
       {openWindows.length > 0 && (
         <aside
           aria-label={language === 'tr' ? 'Açık Pencereler' : 'Open Windows'}
-          className={`fixed left-0 top-1/2 -translate-y-1/2 z-[9995] flex flex-col items-center p-1 rounded-r-xl border border-l-0 shadow-xl backdrop-blur-xl transition-all select-none animate-in slide-in-from-left duration-200 ${
+          className={`hidden md:flex fixed left-0 top-1/2 -translate-y-1/2 z-[9995] flex-col items-center p-1 rounded-r-xl border border-l-0 shadow-xl backdrop-blur-xl transition-all select-none animate-in slide-in-from-left duration-200 ${
             isDark
               ? 'bg-secondary-950/90 border-secondary-800/80 shadow-black/50'
               : 'bg-white/90 border-secondary-200 shadow-secondary-900/15'

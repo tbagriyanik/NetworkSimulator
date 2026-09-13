@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { getDefaultPcFiles } from './pcPanelFiles';
 import type { FtpSession, PcFile, PythonSession, PCActiveTab } from './PCPanel.types';
+import type { PythonFormState } from './pcPythonFormTypes';
+import { subscribeToDeviceForm } from './pcPythonFormModule';
 import { secureStorage } from '@/lib/storage/secureStorage';
 
 export function usePCPanelSessionState(
@@ -11,6 +13,7 @@ export function usePCPanelSessionState(
 ) {
   const [ftpSession, setFtpSession] = useState<FtpSession | null>(null);
   const [pythonSession, setPythonSession] = useState<PythonSession | null>(null);
+  const [activePythonForm, setActivePythonForm] = useState<PythonFormState | null>(null);
   const [isFtpFilePickerOpen, setIsFtpFilePickerOpen] = useState(false);
   const [pcLocalFiles, setPcLocalFiles] = useState<PcFile[]>(() => {
     try { const stored = secureStorage.getItem(`pc_files_${deviceId}`); if (stored) return JSON.parse(stored); } catch { /* storage unavailable */ }
@@ -43,9 +46,35 @@ export function usePCPanelSessionState(
   }, [deviceId, desktopHistory]);
 
   useEffect(() => {
+    const unsubscribe = subscribeToDeviceForm(deviceId, (form) => {
+      setActivePythonForm(form);
+    });
+    return unsubscribe;
+  }, [deviceId]);
+
+  useEffect(() => {
     if (activeTab === 'desktop') setDesktopHistoryIndex(-1);
     if (activeTab === 'terminal') setConsoleHistoryIndex(-1);
   }, [activeTab]);
 
-  return { ftpSession, setFtpSession, pythonSession, setPythonSession, isFtpFilePickerOpen, setIsFtpFilePickerOpen, pcLocalFiles, setPcLocalFiles, desktopHistory, setDesktopHistory, desktopHistoryIndex, setDesktopHistoryIndex, consoleHistory, setConsoleHistory, consoleHistoryIndex, setConsoleHistoryIndex };
+  return {
+    ftpSession,
+    setFtpSession,
+    pythonSession,
+    setPythonSession,
+    activePythonForm,
+    setActivePythonForm,
+    isFtpFilePickerOpen,
+    setIsFtpFilePickerOpen,
+    pcLocalFiles,
+    setPcLocalFiles,
+    desktopHistory,
+    setDesktopHistory,
+    desktopHistoryIndex,
+    setDesktopHistoryIndex,
+    consoleHistory,
+    setConsoleHistory,
+    consoleHistoryIndex,
+    setConsoleHistoryIndex,
+  };
 }

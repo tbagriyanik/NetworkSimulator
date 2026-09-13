@@ -1065,8 +1065,41 @@ export function createExpressionEvaluator(
         }
 
         if (objectValue && typeof objectValue[methodName] === 'function') {
-          const argList = rawArgs ? splitOutsideQuotesAndParens(rawArgs, ',').map(a => evaluateExpr(a)) : [];
-          return (objectValue[methodName] as (...args: unknown[]) => unknown)(...argList);
+          const fn = objectValue[methodName] as (...args: unknown[]) => unknown;
+          const { positional, kwargs } = rawArgs
+            ? parseFormatArgs(rawArgs, evaluateExpr)
+            : { positional: [], kwargs: {} as Record<string, unknown> };
+
+          const finalArgs = Object.keys(kwargs).length > 0 && positional.length === 1 && typeof positional[0] !== 'object'
+            ? [...positional, kwargs]
+            : Object.keys(kwargs).length > 0 && positional.length === 0
+              ? [null, kwargs]
+              : Object.keys(kwargs).length > 0
+                ? [...positional, kwargs]
+                : positional;
+
+          const isConstructable = (
+            fn.prototype && fn.prototype.constructor === fn && Object.getOwnPropertyNames(fn.prototype).length > 1
+          );
+
+          if (isConstructable) {
+            try {
+              const Ctor = fn as unknown as new (...args: unknown[]) => unknown;
+              return new Ctor(...finalArgs);
+            } catch {
+              // Fallback to normal method call
+            }
+          }
+
+          try {
+            return fn.apply(objectValue, finalArgs);
+          } catch (callErr: unknown) {
+            if (callErr instanceof Error && callErr.message.includes("must be invoked with 'new'")) {
+              const Ctor = fn as unknown as new (...args: unknown[]) => unknown;
+              return new Ctor(...finalArgs);
+            }
+            throw callErr;
+          }
         }
       }
     }
