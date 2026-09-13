@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { Smartphone, Wifi, Server, CheckCircle2, RefreshCw, Send, Radio, BatteryCharging, Signal, Globe, PhoneCall, PhoneOff, Phone, User, Trash2 } from 'lucide-react';
+import { Smartphone, Wifi, Server, Send, BatteryCharging, Signal, Globe, PhoneCall } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/lib/store/appStore';
 import { checkConnectivity } from '@/lib/network/connectivity/pathResolution';
@@ -12,8 +12,11 @@ import { generateIotWebPanelContent, generateIotDevicePageContent } from '@/lib/
 import { wrapIframeContent } from '@/lib/design-tokens/iframeFonts';
 import { HttpBrowserWindow } from '@/components/network/pc-panel/HttpBrowserWindow';
 import { dispatchCapturedPackets } from '@/utils/packetCapture';
-import { isSameSubnet } from '@/components/network/pc-panel/pcBrowser.utils';
 import { setRouterAuthenticated, setIotPanelAuthenticated } from '@/lib/network/adminSessionManager';
+import { MobileWifiTab } from './mobile/MobileWifiTab';
+import { MobileIpSettingsTab } from './mobile/MobileIpSettingsTab';
+import { MobilePingTab } from './mobile/MobilePingTab';
+import { MobileVoipTab } from './mobile/MobileVoipTab';
 
 import type { CanvasDevice, CanvasConnection } from '../networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
@@ -645,9 +648,9 @@ export function MobileDeviceView({
       setBrowserContent(`
         <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
           <div style="font-size:48px;margin-bottom:12px;">🚫</div>
-          <h1 style="margin:0 0 8px;font-size:22px;color:var(--color-danger-500, #ef4444);">${isTr ? 'Sunucuya Ulaşılamıyor' : 'Server Unreachable'}</h1>
-          <p style="margin:0 0 12px;font-size:14px;color:var(--color-secondary-500, #64748b);">${connRes.error || (isTr ? 'Ağ geçidi veya sunucu yanıt vermiyor.' : 'Gateway or server not responding.')}</p>
-          <code style="display:inline-block;padding:6px 12px;border-radius:8px;background:var(--color-danger-100, #fee2e2);color:var(--color-danger-800, #991b1b);font-size:12px;">${displayUrl}</code>
+          <h1 style="margin:0 0 8px;font-size:22px;color:var(--color-danger-500);">${isTr ? 'Sunucuya Ulaşılamıyor' : 'Server Unreachable'}</h1>
+          <p style="margin:0 0 12px;font-size:14px;color:var(--color-secondary-500);">${connRes.error || (isTr ? 'Ağ geçidi veya sunucu yanıt vermiyor.' : 'Gateway or server not responding.')}</p>
+          <code style="display:inline-block;padding:6px 12px;border-radius:8px;background:var(--color-danger-100);color:var(--color-danger-800);font-size:12px;">${displayUrl}</code>
         </main>
       `);
       return;
@@ -675,9 +678,9 @@ export function MobileDeviceView({
         setBrowserContent(`
           <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
             <div style="font-size:48px;margin-bottom:12px;">🌐⚡</div>
-            <h1 style="margin:0 0 8px;font-size:22px;color:var(--color-danger-500, #ef4444);">${isTr ? 'Bulut (WAN) Cihazı Bulunamadı' : 'Cloud (WAN) Device Not Found'}</h1>
-            <p style="margin:0 0 12px;font-size:14px;color:var(--color-secondary-500, #64748b);">${isTr ? 'Ağda bağlı bir Bulut (Cloud/WAN) cihazı bulunmuyor!' : 'No Cloud (WAN) device exists on the network!'}</p>
-            <code style="display:inline-block;padding:6px 12px;border-radius:8px;background:var(--color-danger-100, #fee2e2);color:var(--color-danger-800, #991b1b);font-size:12px;">${displayUrl}</code>
+            <h1 style="margin:0 0 8px;font-size:22px;color:var(--color-danger-500);">${isTr ? 'Bulut (WAN) Cihazı Bulunamadı' : 'Cloud (WAN) Device Not Found'}</h1>
+            <p style="margin:0 0 12px;font-size:14px;color:var(--color-secondary-500);">${isTr ? 'Ağda bağlı bir Bulut (Cloud/WAN) cihazı bulunmuyor!' : 'No Cloud (WAN) device exists on the network!'}</p>
+            <code style="display:inline-block;padding:6px 12px;border-radius:8px;background:var(--color-danger-100);color:var(--color-danger-800);font-size:12px;">${displayUrl}</code>
           </main>
         `);
         return;
@@ -687,9 +690,9 @@ export function MobileDeviceView({
         setBrowserContent(`
           <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
             <div style="font-size:48px;margin-bottom:12px;">☁️⚡</div>
-            <h1 style="margin:0 0 8px;font-size:22px;color:var(--color-danger-500, #ef4444);">${isTr ? 'Bulut Hizmeti Kapalı' : 'Cloud Service Offline'}</h1>
-            <p style="margin:0 0 12px;font-size:14px;color:var(--color-secondary-500, #64748b);">${isTr ? 'Hedef Bulut (WAN) cihazının gücü kapalı (Power Off) durumda!' : 'Target Cloud (WAN) device is powered off!'}</p>
-            <code style="display:inline-block;padding:6px 12px;border-radius:8px;background:var(--color-danger-100, #fee2e2);color:var(--color-danger-800, #991b1b);font-size:12px;">${displayUrl}</code>
+            <h1 style="margin:0 0 8px;font-size:22px;color:var(--color-danger-500);">${isTr ? 'Bulut Hizmeti Kapalı' : 'Cloud Service Offline'}</h1>
+            <p style="margin:0 0 12px;font-size:14px;color:var(--color-secondary-500);">${isTr ? 'Hedef Bulut (WAN) cihazının gücü kapalı (Power Off) durumda!' : 'Target Cloud (WAN) device is powered off!'}</p>
+            <code style="display:inline-block;padding:6px 12px;border-radius:8px;background:var(--color-danger-100);color:var(--color-danger-800);font-size:12px;">${displayUrl}</code>
           </main>
         `);
         return;
@@ -697,11 +700,11 @@ export function MobileDeviceView({
       setBrowserTitle(isTr ? 'Genel Arama Kapısı - WAN' : 'Public Search Portal - WAN');
       setBrowserContent(`
         <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-          <div style="font-size:36px;font-weight:bold;color:var(--color-primary-500, #3b82f6);margin-bottom:8px;">🌐 ${isTr ? 'Arama Kapısı' : 'Web Portal'}</div>
-          <p style="font-size:14px;color:var(--color-secondary-500, #64748b);margin-bottom:20px;">${isTr ? 'Genel WAN İnternet Geçidi (8.8.8.8)' : 'Public WAN Internet Gateway (8.8.8.8)'}</p>
-          <div style="border:1px solid var(--color-secondary-300, #cbd5e1);border-radius:24px;padding:10px 20px;max-width:320px;margin:0 auto 20px;font-size:13px;color:var(--color-secondary-700, #475569);">🔍 ${isTr ? 'Arama yapın veya URL girin' : 'Search or type URL'}</div>
-          <div style="background:var(--color-secondary-100, #f1f5f9);padding:16px;border-radius:12px;font-size:12px;color:var(--color-secondary-800, #334155);text-align:left;max-width:400px;margin:0 auto;">
-            <strong style="color:var(--color-secondary-900, #1e293b);">${isTr ? 'İnternet Bağlantısı Aktif' : 'Internet Connection Active'}</strong><br/>
+          <div style="font-size:36px;font-weight:bold;color:var(--color-primary-500);margin-bottom:8px;">🌐 ${isTr ? 'Arama Kapısı' : 'Web Portal'}</div>
+          <p style="font-size:14px;color:var(--color-secondary-500);margin-bottom:20px;">${isTr ? 'Genel WAN İnternet Geçidi (8.8.8.8)' : 'Public WAN Internet Gateway (8.8.8.8)'}</p>
+          <div style="border:1px solid var(--color-secondary-300);border-radius:24px;padding:10px 20px;max-width:320px;margin:0 auto 20px;font-size:13px;color:var(--color-secondary-700);">🔍 ${isTr ? 'Arama yapın veya URL girin' : 'Search or type URL'}</div>
+          <div style="background:var(--color-secondary-100);padding:16px;border-radius:12px;font-size:12px;color:var(--color-secondary-800);text-align:left;max-width:400px;margin:0 auto;">
+            <strong style="color:var(--color-secondary-900);">${isTr ? 'İnternet Bağlantısı Aktif' : 'Internet Connection Active'}</strong><br/>
             ${isTr ? 'WAN Köprüsü ve Genel DNS Sunucusu başarıyla yanıt verdi.' : 'WAN Transit Bridge and Public DNS Server responded successfully.'}
           </div>
         </main>
@@ -711,8 +714,8 @@ export function MobileDeviceView({
     else if (targetDev && (targetDev.services?.http?.enabled || targetDev.ip)) {
       const pageContent = targetDev.services?.http?.content || `
         <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-          <h2 style="font-size:24px;color:var(--color-success-500, #10b981);margin-bottom:8px;">Welcome to ${targetDev.name || targetDev.id}</h2>
-          <p style="font-size:14px;color:var(--color-secondary-700, #475569);">HTTP Web Server is online and active.</p>
+          <h2 style="font-size:24px;color:var(--color-success-500);margin-bottom:8px;">Welcome to ${targetDev.name || targetDev.id}</h2>
+          <p style="font-size:14px;color:var(--color-secondary-700);">HTTP Web Server is online and active.</p>
         </main>
       `;
       setBrowserTitle(`${targetDev.name || targetDev.id} Web`);
@@ -724,8 +727,8 @@ export function MobileDeviceView({
       setBrowserContent(`
         <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
           <h1 style="font-size:40px;margin:0 0 8px;">404</h1>
-          <p style="font-size:14px;color:var(--color-secondary-500, #64748b);margin:0 0 12px;">${isTr ? 'Web Sayfası Bulunamadı' : 'Web Page Not Found'}</p>
-          <code style="display:inline-block;padding:6px 12px;border-radius:8px;background:var(--color-secondary-100, #f1f5f9);color:var(--color-secondary-900, #0f172a);font-size:12px;">${displayUrl}</code>
+          <p style="font-size:14px;color:var(--color-secondary-500);margin:0 0 12px;">${isTr ? 'Web Sayfası Bulunamadı' : 'Web Page Not Found'}</p>
+          <code style="display:inline-block;padding:6px 12px;border-radius:8px;background:var(--color-secondary-100);color:var(--color-secondary-900);font-size:12px;">${displayUrl}</code>
         </main>
       `);
     }
@@ -850,540 +853,71 @@ export function MobileDeviceView({
         {/* Screen Content */}
         <div className={cn("min-h-[280px] flex-1 rounded-2xl p-4 border text-xs space-y-4", isDark ? "bg-slate-900 border-slate-800 text-white" : "bg-slate-50 border-slate-200 text-slate-900")}>
           {activeScreen === 'wifi' && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between font-bold border-b border-slate-800 pb-2">
-                <span className="flex items-center gap-1.5 text-sky-400">
-                  <Radio className="w-4 h-4" />
-                  {isTr ? 'Kablosuz Ağlar (Wi-Fi)' : 'Available Wi-Fi SSIDs'}
-                </span>
-                {isWifiConnected ? (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-semibold border border-emerald-500/30">
-                    {isTr ? 'Ağ Aktif' : 'Link Active'}
-                  </span>
-                ) : (
-                  <span className="text-[10px] text-slate-500">802.11ax Ready</span>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                {availableSsids.length === 0 ? (
-                  <div className="p-4 rounded-xl border border-slate-800 bg-slate-950/40 text-center text-slate-400 text-xs">
-                    {isTr ? 'Kapsama alanında aktif Wi-Fi ağı bulunamadı' : 'No active Wi-Fi networks found in range'}
-                  </div>
-                ) : (
-                  availableSsids.map((ssid, idx) => {
-                    const isConnected = selectedSsid === ssid && isWifiConnected;
-                    return (
-                      <div
-                        key={idx}
-                        onClick={() => {
-                          if (isConnected) {
-                            handleDisconnectWifi();
-                          } else {
-                            handleSelectSsid(ssid);
-                          }
-                        }}
-                        className={cn(
-                          "p-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all",
-                          isConnected ? "bg-sky-950/60 border-sky-500 text-white shadow-sm shadow-sky-900/30" : "bg-slate-950/40 border-slate-800 text-slate-300 hover:bg-slate-800/40"
-                        )}
-                      >
-                        <div className="flex items-center gap-2">
-                          <Wifi className={cn("w-4 h-4", isConnected ? "text-sky-400 animate-pulse" : "text-slate-500")} />
-                          <div>
-                            <div className="font-semibold text-xs">{ssid}</div>
-                            <div className="text-[10px] opacity-60">WPA2/WPA3 Enterprise • 5GHz</div>
-                          </div>
-                        </div>
-                        {isConnected ? (
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 font-medium border border-sky-500/30">
-                              {isTr ? 'Bağlı' : 'Connected'}
-                            </span>
-                            <span className="text-[10px] px-2 py-0.5 rounded-lg bg-rose-950/80 text-rose-300 border border-rose-800 hover:bg-rose-900 font-medium">
-                              {isTr ? 'Kapat' : 'Disconnect'}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-[10px] text-sky-400 hover:text-sky-300 font-medium">{isTr ? 'Bağlan' : 'Connect'}</span>
-                        )}
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-
-              <div className="pt-2 flex gap-2">
-                {isWifiConnected && (
-                  <button
-                    onClick={handleDisconnectWifi}
-                    className="flex-1 py-2 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800/60 font-semibold text-xs transition-colors flex items-center justify-center gap-1.5"
-                  >
-                    <Radio className="w-3.5 h-3.5" />
-                    {isTr ? 'Bağlantıyı Kopar' : 'Disconnect Wi-Fi'}
-                  </button>
-                )}
-                <button
-                  onClick={handleSaveIp}
-                  className="flex-1 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  {isTr ? 'Ağı Güncelle' : 'Update Wireless Link'}
-                </button>
-              </div>
-            </div>
+            <MobileWifiTab
+              isDark={isDark}
+              isTr={isTr}
+              isWifiConnected={isWifiConnected}
+              availableSsids={availableSsids}
+              selectedSsid={selectedSsid}
+              onDisconnectWifi={handleDisconnectWifi}
+              onSelectSsid={handleSelectSsid}
+            />
           )}
 
           {activeScreen === 'ip' && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between font-bold border-b border-slate-800 pb-2">
-                <span className="flex items-center gap-1.5 text-sky-400">
-                  <Server className="w-4 h-4" />
-                  {isTr ? 'IP Adresi Ayarları' : 'IP Address Settings'}
-                </span>
-                <div className="flex gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 text-[10px]">
-                  <button
-                    onClick={() => handleSetIpMode('dhcp')}
-                    className={cn("px-2 py-0.5 rounded font-medium", ipMode === 'dhcp' ? "bg-sky-600 text-white" : "text-slate-400")}
-                  >
-                    DHCP
-                  </button>
-                  <button
-                    onClick={() => handleSetIpMode('static')}
-                    className={cn("px-2 py-0.5 rounded font-medium", ipMode === 'static' ? "bg-sky-600 text-white" : "text-slate-400")}
-                  >
-                    {isTr ? 'Statik' : 'Static'}
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-2 text-xs">
-                <div>
-                  <label className="block mb-1 font-medium opacity-80">{isTr ? 'IP Adresi' : 'IP Address'}</label>
-                  <input
-                    type="text"
-                    disabled={ipMode === 'dhcp'}
-                    value={ip}
-                    onChange={e => setIp(e.target.value)}
-                    className={cn(
-                      "w-full px-2.5 py-1.5 rounded-lg border font-mono outline-none transition-colors",
-                      isDark ? "bg-slate-950 border-slate-800 text-white" : "bg-white border-slate-300 text-slate-900",
-                      ipMode === 'dhcp' && "opacity-50 cursor-not-allowed"
-                    )}
-                  />
-                </div>
-                <div>
-                  <label className="block mb-1 font-medium opacity-80">{isTr ? 'Alt Ağ Maskesi' : 'Subnet Mask'}</label>
-                  <input
-                    type="text"
-                    disabled={ipMode === 'dhcp'}
-                    value={subnet}
-                    onChange={e => setSubnet(e.target.value)}
-                    className={cn(
-                      "w-full px-2.5 py-1.5 rounded-lg border font-mono outline-none transition-colors",
-                      isDark ? "bg-slate-950 border-slate-800 text-white" : "bg-white border-slate-300 text-slate-900",
-                      ipMode === 'dhcp' && "opacity-50 cursor-not-allowed"
-                    )}
-                  />
-                </div>
-                <div>
-                  <label className="block mb-1 font-medium opacity-80">{isTr ? 'Ağ Geçidi' : 'Gateway'}</label>
-                  <input
-                    type="text"
-                    disabled={ipMode === 'dhcp'}
-                    value={gateway}
-                    onChange={e => setGateway(e.target.value)}
-                    className={cn(
-                      "w-full px-2.5 py-1.5 rounded-lg border font-mono outline-none transition-colors",
-                      isDark ? "bg-slate-950 border-slate-800 text-white" : "bg-white border-slate-300 text-slate-900",
-                      ipMode === 'dhcp' && "opacity-50 cursor-not-allowed"
-                    )}
-                  />
-                </div>
-                <div>
-                  <label className="block mb-1 font-medium opacity-80">{isTr ? 'DNS Sunucusu' : 'DNS Server'}</label>
-                  <input
-                    type="text"
-                    disabled={ipMode === 'dhcp'}
-                    value={dns}
-                    onChange={e => setDns(e.target.value)}
-                    className={cn(
-                      "w-full px-2.5 py-1.5 rounded-lg border font-mono outline-none transition-colors",
-                      isDark ? "bg-slate-950 border-slate-800 text-white" : "bg-white border-slate-300 text-slate-900",
-                      ipMode === 'dhcp' && "opacity-50 cursor-not-allowed"
-                    )}
-                  />
-                </div>
-              </div>
-
-              <div className="pt-2 flex items-center justify-between">
-                <button
-                  onClick={handleSaveIp}
-                  className="w-full py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  {isTr ? 'Kaydet' : 'Save Config'}
-                </button>
-              </div>
-              {saveSuccess && (
-                <div className="text-[10px] text-emerald-500 text-center font-medium animate-pulse">
-                  {isTr ? 'Ağ ayarları güncellendi!' : 'Network settings saved!'}
-                </div>
-              )}
-            </div>
+            <MobileIpSettingsTab
+              isDark={isDark}
+              isTr={isTr}
+              ipMode={ipMode}
+              setIpMode={handleSetIpMode}
+              ip={ip}
+              setIp={setIp}
+              subnet={subnet}
+              setSubnet={setSubnet}
+              gateway={gateway}
+              setGateway={setGateway}
+              dns={dns}
+              setDns={setDns}
+              saveSuccess={saveSuccess}
+              onSaveIp={handleSaveIp}
+            />
           )}
 
           {activeScreen === 'ping' && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between font-bold border-b border-slate-800 pb-2">
-                <span className="flex items-center gap-1.5 text-sky-400">
-                  <Send className="w-4 h-4" />
-                  {isTr ? 'Ping Teşhis Uygulaması' : 'Ping Diagnostics App'}
-                </span>
-              </div>
-
-              <div className="flex gap-1.5">
-                <input
-                  type="text"
-                  value={targetPingIp}
-                  onChange={e => setTargetPingIp(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleSendPing();
-                    }
-                  }}
-                  placeholder={isTr ? "Hedef IP (192.168.1.1)" : "Target IP (192.168.1.1)"}
-                  className={cn(
-                    "flex-1 px-2.5 py-1.5 rounded-lg border font-mono outline-none text-xs transition-colors",
-                    isDark ? "bg-slate-950 border-slate-800 text-white" : "bg-white border-slate-300 text-slate-900"
-                  )}
-                />
-                <button
-                  onClick={handleSendPing}
-                  disabled={isPinging}
-                  className="px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-semibold text-xs flex items-center gap-1"
-                >
-                  {isPinging ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
-                  Ping
-                </button>
-              </div>
-
-              {pingResults.length > 0 && (
-                <div className="p-2.5 rounded-lg bg-black font-mono text-[10px] text-emerald-400 space-y-1 overflow-x-auto border border-slate-800 max-h-[140px]">
-                  {pingResults.map((line, idx) => (
-                    <div key={idx}>{line}</div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <MobilePingTab
+              isDark={isDark}
+              isTr={isTr}
+              targetPingIp={targetPingIp}
+              setTargetPingIp={setTargetPingIp}
+              isPinging={isPinging}
+              pingResults={pingResults}
+              onSendPing={handleSendPing}
+            />
           )}
 
           {activeScreen === 'voip' && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between font-bold border-b border-slate-800 pb-2">
-                <span className="flex items-center gap-1.5 text-emerald-400">
-                  <PhoneCall className="w-4 h-4" />
-                  {isTr ? 'IP Voice / VoIP Phone' : 'IP Voice / VoIP Phone'}
-                </span>
-                <span className="text-[10px] text-slate-400 font-mono">SIP/RTP 802.1Q</span>
-              </div>
-
-              {/* Incoming or Active VoIP Call Screen */}
-              {device.activeVoipCall && device.activeVoipCall.callerId !== device.id && device.activeVoipCall.status === 'ringing' ? (
-                /* Callee (Ringing) View: Answer / Decline */
-                <div className="space-y-4 py-4 text-center">
-                  <div className="w-16 h-16 rounded-full mx-auto flex items-center justify-center bg-emerald-950/60 border-2 border-emerald-500 text-emerald-400 animate-bounce shadow-lg shadow-emerald-500/30">
-                    <PhoneCall className="w-7 h-7" />
-                  </div>
-                  <div>
-                    <div className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider animate-pulse">
-                      {isTr ? 'Gelen Sesli Çağrı...' : 'Incoming Voice Call...'}
-                    </div>
-                    <div className="font-bold text-base text-white mt-1">
-                      {device.activeVoipCall.callerName}
-                    </div>
-                    <div className="text-xs font-mono text-slate-400">
-                      {device.activeVoipCall.callerIp || 'SIP Client'}
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 pt-2">
-                    <button
-                      onClick={handleAnswerVoipCall}
-                      className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-950"
-                    >
-                      <Phone className="w-4 h-4" />
-                      {isTr ? 'Cevapla' : 'Answer'}
-                    </button>
-                    <button
-                      onClick={handleEndVoipCall}
-                      className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-rose-950"
-                    >
-                      <PhoneOff className="w-4 h-4" />
-                      {isTr ? 'Reddet' : 'Decline'}
-                    </button>
-                  </div>
-                </div>
-              ) : callState === 'idle' && !device.activeVoipCall ? (
-                <div className="space-y-3">
-                  {/* Number Input / Display */}
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={dialNumber}
-                      onChange={e => setDialNumber(e.target.value)}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          const val = dialNumber.trim();
-                          const isValidTarget = val && (
-                            /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(val) ||
-                            /^[0-9*#]+$/.test(val) ||
-                            topologyDevices.some(d => d.name?.toLowerCase() === val.toLowerCase() || d.id === val)
-                          );
-                          if (isValidTarget) {
-                            handleInitiateVoipCall();
-                          }
-                        }
-                      }}
-                      placeholder={isTr ? "IP veya Dahili No Girin (192.168.1.50)..." : "Enter IP or Extension (192.168.1.50)..."}
-                      className="w-full pl-3 pr-8 py-2 rounded-xl bg-slate-950 border border-slate-800 font-mono text-center text-sm text-emerald-400 placeholder:text-slate-600 outline-none"
-                    />
-                    {dialNumber && (
-                      <button
-                        onClick={handleDialDelete}
-                        className="absolute right-2 top-2.5 text-xs text-slate-500 hover:text-rose-400 px-1 font-bold"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Dial Pad Grid (3x4) */}
-                  <div className="grid grid-cols-3 gap-1.5 max-w-[200px] mx-auto">
-                    {['1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '0', '#'].map(key => (
-                      <button
-                        key={key}
-                        onClick={() => handleDialKeyPress(key)}
-                        className="h-9 rounded-xl bg-slate-950 border border-slate-800 hover:bg-slate-800 hover:border-slate-700 font-bold text-sm text-slate-200 transition-all active:scale-95 flex items-center justify-center"
-                      >
-                        {key}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-2 pt-1">
-                    <button
-                      onClick={() => handleInitiateVoipCall()}
-                      disabled={(() => {
-                        const val = dialNumber.trim();
-                        if (!val) return true;
-                        const isIp = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(val);
-                        const isExtensionDigits = /^[0-9*#]+$/.test(val);
-                        const isKnownDeviceName = topologyDevices.some(d => d.name?.toLowerCase() === val.toLowerCase() || d.id === val);
-                        return !(isIp || isExtensionDigits || isKnownDeviceName);
-                      })()}
-                      className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:hover:bg-emerald-600 disabled:cursor-not-allowed text-white font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-950"
-                    >
-                      <Phone className="w-3.5 h-3.5" />
-                      {isTr ? 'Ara' : 'Call'}
-                    </button>
-                  </div>
-
-                  {/* Topology Directory / Quick Contacts */}
-                  <div className="pt-2 border-t border-slate-800/80 space-y-2">
-                    <div>
-                      <div className="text-[10px] font-semibold text-slate-400 mb-1.5 flex items-center gap-1">
-                        <User className="w-3 h-3 text-sky-400" />
-                        {isTr ? 'Ağdaki Cihaz Rehberi' : 'Network Directory'}
-                      </div>
-                      <div className="space-y-1 max-h-[85px] overflow-y-auto pr-1 custom-scrollbar">
-                        {topologyDevices.filter(d => {
-                          if (d.id === device.id || d.type !== 'mobile' || !d.ip || !device.ip) return false;
-                          const devSubnet = device.subnet || '255.255.255.0';
-                          return isSameSubnet(device.ip, d.ip, devSubnet) || Boolean(device.gateway && device.gateway !== '0.0.0.0');
-                        }).length === 0 ? (
-                          <div className="text-[10px] text-slate-500 italic text-center py-1.5">
-                            {isTr ? 'Aynı ağda ulaşılan başka telefon yok' : 'No reachable phones in same network'}
-                          </div>
-                        ) : (
-                          topologyDevices
-                            .filter(d => {
-                              if (d.id === device.id || d.type !== 'mobile' || !d.ip || !device.ip) return false;
-                              const devSubnet = device.subnet || '255.255.255.0';
-                              return isSameSubnet(device.ip, d.ip, devSubnet) || Boolean(device.gateway && device.gateway !== '0.0.0.0');
-                            })
-                            .map((d, i) => {
-                              const check = checkConnectivity(
-                                device.id,
-                                d.ip!,
-                                topologyDevices,
-                                topologyConnections,
-                                deviceStates,
-                                isTr ? 'tr' : 'en',
-                                { protocol: 'udp', port: '5060' }
-                              );
-                              const isTargetPoweredOn = d.status !== 'offline';
-                              const isReachOk = check.success && isTargetPoweredOn;
-
-                              return (
-                                <div
-                                  key={i}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleInitiateVoipCall(d.ip);
-                                  }}
-                                  className={cn(
-                                    "p-1.5 rounded-lg border flex items-center justify-between cursor-pointer transition-colors",
-                                    isReachOk
-                                      ? "bg-slate-950/60 hover:bg-slate-800 border-slate-800/60"
-                                      : "bg-rose-950/30 hover:bg-rose-900/40 border-rose-800/40"
-                                  )}
-                                >
-                                  <div className="truncate flex-1 mr-2">
-                                    <div className="font-medium text-[11px] text-slate-200 truncate flex items-center gap-1.5">
-                                      <span>{d.name}</span>
-                                      {!isReachOk && (
-                                        <span className="text-[9px] px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 font-normal">
-                                          {!isTargetPoweredOn
-                                            ? (isTr ? 'Cihaz Kapalı' : 'Powered Off')
-                                            : (check.error || (isTr ? 'Ağ Sorunu' : 'Network Issue'))}
-                                        </span>
-                                      )}
-                                    </div>
-                                    <div className={cn("text-[9px] font-mono", isReachOk ? "text-emerald-400/80" : "text-rose-400/80")}>
-                                      {d.ip}
-                                    </div>
-                                  </div>
-                                  <span className={cn(
-                                    "text-[10px] px-2 py-0.5 rounded-md border flex items-center gap-1 shrink-0 font-medium",
-                                    isReachOk
-                                      ? "text-emerald-400 bg-emerald-950/60 border-emerald-800/50"
-                                      : "text-rose-300 bg-rose-950/60 border-rose-800/50"
-                                  )}>
-                                    <PhoneCall className="w-2.5 h-2.5" />
-                                    {isReachOk ? (isTr ? 'Ara' : 'Call') : (isTr ? 'Ağ Sorunlu' : 'Issue')}
-                                  </span>
-                                </div>
-                              );
-                            })
-                        )}
-                      </div>
-                    </div>
-
-                    {/* VoIP Call History Log */}
-                    <div className="pt-2 border-t border-slate-800/60">
-                      <div className="text-[10px] font-semibold text-slate-400 mb-1.5 flex items-center justify-between">
-                        <span className="flex items-center gap-1">
-                          <PhoneCall className="w-3 h-3 text-emerald-400" />
-                          {isTr ? 'Arama Geçmişi' : 'Call History'}
-                        </span>
-                        {device.voipHistory && device.voipHistory.length > 0 && (
-                          <button
-                            onClick={handleClearVoipHistory}
-                            className="text-[9px] text-rose-400 hover:text-rose-300 flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-rose-950/40 border border-rose-800/40 transition-colors"
-                            title={isTr ? 'Arama geçmişini temizle' : 'Clear call history'}
-                          >
-                            <Trash2 className="w-2.5 h-2.5" />
-                            {isTr ? 'Temizle' : 'Clear'}
-                          </button>
-                        )}
-                      </div>
-                      <div className="space-y-1 max-h-[110px] overflow-y-auto pr-1 custom-scrollbar">
-                        {!device.voipHistory || device.voipHistory.length === 0 ? (
-                          <div className="text-[10px] text-slate-500 italic text-center py-2">
-                            {isTr ? 'Henüz arama kaydı yok' : 'No recent calls'}
-                          </div>
-                        ) : (
-                          device.voipHistory.map((item) => (
-                            <div key={item.id} className="p-1.5 rounded-lg bg-slate-950/40 border border-slate-800/40 flex items-center justify-between text-[10px]">
-                              <div className="truncate">
-                                <div className="font-medium text-slate-200 flex items-center gap-1 truncate">
-                                  <span className={item.type === 'outgoing' ? "text-sky-400 font-bold" : "text-emerald-400 font-bold"}>
-                                    {item.type === 'outgoing' ? '↗' : '↙'}
-                                  </span>
-                                  {item.peerName}
-                                </div>
-                                <div className="text-[9px] text-slate-400 font-mono">
-                                  {item.timestamp} {item.peerIp ? `• ${item.peerIp}` : ''}
-                                </div>
-                              </div>
-                              <div className="text-right shrink-0 font-mono">
-                                <div className={cn(
-                                  "font-semibold text-[9px]",
-                                  item.status === 'answered' ? "text-emerald-400" : "text-rose-400"
-                                )}>
-                                  {item.status === 'answered' ? formatDuration(item.durationSeconds) : (isTr ? 'Cevapsız' : 'Missed')}
-                                </div>
-                              </div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                /* Active / In-Progress Call Screen */
-                <div className="space-y-4 py-2 text-center">
-                  <div className="relative inline-block">
-                    <div className={cn(
-                      "w-16 h-16 rounded-full mx-auto flex items-center justify-center border-2 transition-all",
-                      callState === 'calling' ? "bg-amber-950/40 border-amber-500 text-amber-400 animate-pulse" :
-                        callState === 'connected' ? "bg-emerald-950/60 border-emerald-500 text-emerald-400 shadow-lg shadow-emerald-500/20" :
-                          "bg-rose-950/40 border-rose-500 text-rose-400"
-                    )}>
-                      <PhoneCall className="w-7 h-7" />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="font-bold text-sm text-white">
-                      {activeCallTargetRef.current ? activeCallTargetRef.current.name : (device.activeVoipCall?.callerName || dialNumber || 'VoIP Peer')}
-                    </div>
-                    <div className="text-[11px] font-mono text-emerald-400 mt-0.5">
-                      {callStatusMessage || (callState === 'connected' ? (isTr ? 'Bağlantı Aktif' : 'Call Connected') : '')}
-                    </div>
-                    {callState === 'connected' && (
-                      <div className="text-xs font-mono font-semibold text-slate-300 mt-1">
-                        {formatDuration(callDuration)}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Real-Time RTP Quality Metrics */}
-                  {callState === 'connected' && (
-                    <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 grid grid-cols-3 gap-2 text-[10px] font-mono">
-                      <div>
-                        <div className="text-slate-500">RTT (Latency)</div>
-                        <div className="text-emerald-400 font-bold">{rtpMetrics.rtt} ms</div>
-                      </div>
-                      <div>
-                        <div className="text-slate-500">Jitter</div>
-                        <div className="text-emerald-400 font-bold">{rtpMetrics.jitter} ms</div>
-                      </div>
-                      <div>
-                        <div className="text-slate-500">Loss</div>
-                        <div className="text-emerald-400 font-bold">{rtpMetrics.loss}%</div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* End Call Button */}
-                  <div className="pt-2">
-                    <button
-                      onClick={handleEndVoipCall}
-                      className="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-2 shadow-lg shadow-rose-950"
-                    >
-                      <PhoneOff className="w-4 h-4" />
-                      {isTr ? 'Aramayı Sonlandır' : 'End Call'}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+            <MobileVoipTab
+              device={device}
+              topologyDevices={topologyDevices}
+              topologyConnections={topologyConnections}
+              deviceStates={deviceStates}
+              isDark={isDark}
+              isTr={isTr}
+              dialNumber={dialNumber}
+              setDialNumber={setDialNumber}
+              callState={callState}
+              callDuration={callDuration}
+              callStatusMessage={callStatusMessage}
+              rtpMetrics={rtpMetrics}
+              activeCallTarget={activeCallTargetRef.current}
+              onInitiateCall={handleInitiateVoipCall}
+              onAnswerCall={handleAnswerVoipCall}
+              onEndCall={handleEndVoipCall}
+              onClearVoipHistory={handleClearVoipHistory}
+              onDialKeyPress={handleDialKeyPress}
+              onDialDelete={handleDialDelete}
+              formatDuration={formatDuration}
+            />
           )}
         </div>
       </div>

@@ -1,8 +1,8 @@
 # NetworkSimulator — Tam Özellik Envanteri / Full Feature Inventory
 
-**Sürüm / Version:** 5.4.0 · **Son doğrulama / Last verified:** 2026-09-13
+**Sürüm / Version:** 5.4.1 · **Son doğrulama / Last verified:** 2026-09-13
 
-## Son Ağ Simülasyonu Geliştirmeleri (2026-09-13 - v5.4.0)
+## Son Ağ Simülasyonu Geliştirmeleri (2026-09-13 - v5.4.1)
 
 | Özellik | Güncel kapsam ve sınır |
 |---|---|
@@ -468,17 +468,26 @@ src/
 │   ├── api/             # API routes (contact, rooms, certificates)
 │   ├── [id]/            # Dynamic routes
 │   ├── layout.tsx       # Root layout
-│   ├── page.tsx         # Home page
+│   ├── page.tsx         # Home page (page.utils.ts, page.types.ts, usePage* hooks)
+│   ├── PageDialogs.tsx  # Modal & dialog management for home page
+│   ├── PagePanelWindows.tsx  # Floating panel window management
+│   ├── PageOverlayPanels.tsx # Overlay panels for home page
 │   └── globals.css      # Global styles & design tokens
 ├── components/           # React components
 │   ├── ui/              # Reusable UI (cards, dialogs, panels, inputs)
 │   └── network/         # Network-specific (Terminal, Topology, PCPanel)
+│       ├── hooks/       # Topology/canvas interaction hooks (useTopology*, useCanvas*)
+│       ├── pc-panel/    # PC panel (desktop, terminal, Python, browser)
+│       ├── terminal/    # Terminal components & hooks
+│       ├── topology/    # Topology canvas renderers & helpers
+│       └── panels/      # Panel barrel re-exports (index.ts)
 ├── contexts/            # React contexts (theme, mode, language)
 ├── hooks/               # Custom React hooks
 ├── lib/
 │   ├── design-tokens/  # Design tokens (colors, typography, spacing, animations)
 │   ├── store/          # Zustand state management (appStore.ts)
 │   ├── network/         # Network simulation engine
+│   │   ├── connectivity/ # Path resolution & packet flow (pathResolution/, pingDiagnostics)
 │   │   ├── core/        # CLI command implementations
 │   │   ├── parser/      # CLI command parsers and patterns
 │   │   └── exampleProjects.ts # Example project definitions

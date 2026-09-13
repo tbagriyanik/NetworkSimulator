@@ -2,6 +2,16 @@
 
 Yeniden eskiye, tarih mevcuttur.
 
+## v5.4.1 — 2026-09-13
+
+**Kod Mimarisi Modüler Ayrıştırma Dalgası (Monolit Dosyaların Tek Sorumluluk Modüllerine Bölünmesi) ve Gereksiz Kod Denetimi** —
+- **🖥️ Terminal Modülarizasyonu (`Terminal.tsx`, `components/network/terminal/`)**: 1561 satırlık monolit 773 satıra indirildi; konsol çıktısı, autocomplete, kısayollar, komut kuyruğu, geçmiş, geri alma/yineleme, boot ilerleme çubuğu ve başlık eylemleri sırasıyla `TerminalOutputLines.tsx`, `TerminalAutocompleteDropdown.tsx`, `TerminalSettingsBar.tsx`, `QuickCommandsBar.tsx`, `BootProgressBar.tsx`, `TerminalHeaderActions.tsx` bileşenlerine ve `useTerminalCommandQueue.ts`, `useTerminalAutocomplete.ts`, `useTerminalHistory.ts`, `useTerminalKeybindings.ts`, `useTerminalOutputSync.ts`, `useTerminalTabCompletion.ts`, `useTerminalUndoRedo.ts` hook'larına ayrıştırıldı.
+- **🧩 Path Resolution Motoru Ayrıştırması (`pathResolution/algorithm.ts` → `connectivity/pathResolution/`)**: 1595 satırlık `algorithm.ts` tek sorumluluk prensibiyle `algorithm.ts` (108 satır), `arpNdpResolution.ts`, `dhcpSnooping.ts`, `forwardingControls.ts`, `l2Checks.ts`, `l3Routing.ts`, `pathFinding.ts`, `pathUtils.ts`, `targetResolution.ts`, `traceRecording.ts`, `types.ts` modüllerine bölündü; paket akışı ve teşhis mantıkları yeni `lib/network/connectivity/` dizininde toplandı.
+- **🪟 PCPanel Modülarizasyonu (`PCPanel.tsx`)**: 1592 satırlık PCPanel 915 satıra indirildi; durum, komut, senkronizasyon, oturum ve girdi yönetimi `pc-panel/` dizinindeki `usePCPanel*` hook'larına (`usePCPanelState.ts`, `usePCPanelCommands.ts`, `usePCPanelSync.ts`, `usePCPanelSessionState.ts`, `usePCPanelInput.ts` vb.) taşındı.
+- **📄 Ana Sayfa Ayrıştırması (`page.tsx`)**: `page.tsx` 1472 satırdan 1370 satıra indirildi; diyalog yönetimi `PageDialogs.tsx`, yüzen pencere yönetimi `PagePanelWindows.tsx` ve overlay paneller `PageOverlayPanels.tsx` dosyalarına taşındı.
+- **🖱️ Topoloji Fare İşleyicileri (`NetworkTopology.tsx`, `hooks/useTopologyDeviceMouseHandlers.ts`)**: 1728 satırlık NetworkTopology monoliti 1589 satıra indirildi; cihaz fare olayları (`handleDeviceMouseDown`, `handleDeviceClick`, `handleDeviceDoubleClick`, `handleDevicePointerDown`) 253 satırlık `useTopologyDeviceMouseHandlers.ts` hook'una taşındı.
+- **🧹 Gereksiz Kod Denetimi**: Referans (import) taraması ve lint/typecheck doğrulamasıyla herhangi bir modül tarafından kullanılmayan 9 dosya tespit edildi (`panels/modes.ts`, `panels/windows.ts`, `pc-panel/pcPythonEvaluatorClasses.ts`, `core/routingDisplayHelpers.ts`, `examProjectGeneration.ts`, `iotWebPanel.auth.ts`, `workers/simulationWorker.ts`, `scripts/validate_examples.ts`, `utils/sanitize.ts`).
+
 ## v5.4.0 — 2026-09-13
 
 **3D Grafik Sahne Motoru (CSG Operasyonları, Işıklandırma, Materyaller) & Web Audio API Tabanlı Dinamik Müzik ve Ses Sentatörü Entegrasyonu** —

@@ -10,8 +10,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useIsMobile } from '@/hooks/use-breakpoint';
 import { useNetworkRefreshWithPositions } from '@/hooks/useNetworkRefreshWithPositions';
 import { toast } from '@/hooks/use-toast';
-import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType, ContextMenuState, NetworkTopologyProps } from './networkTopology.types';
-import type { CableType } from '@/lib/network/types';
+import { CanvasDevice, DeviceType, ContextMenuState, NetworkTopologyProps } from './networkTopology.types';
 import { useCanvasHistory } from '@/hooks/useCanvasHistory';
 import {
   getDeviceWidth,
@@ -52,6 +51,7 @@ import { useTopologyWindowEvents } from './hooks/useTopologyWindowEvents';
 import { useTopologyPingState } from './hooks/useTopologyPingState';
 import { useVisualConnectionActions } from './hooks/useVisualConnectionActions';
 import { useTopologyDeviceMouseHandlers } from './hooks/useTopologyDeviceMouseHandlers';
+import { useTopologyInteractionState } from './hooks/useTopologyInteractionState';
 
 import { CanvasToolbar } from './topology/CanvasToolbar';
 import { TopologyDeviceRenderer } from './topology/TopologyDeviceRenderer';
@@ -266,80 +266,74 @@ export function NetworkTopology({
     }
   }, [clearSelectionTrigger]);
 
-  // Selection box state
+  // Ref and interaction state hook
+  const {
+    selectionBoxRef,
+    selectionAdditiveRef,
+    selectionBaseIdsRef,
+    isSelectingRef,
+    dragAnimationFrameRef,
+    selectionAnimationFrameRef,
+    lastDragPositionRef,
+    wasDraggingRef,
+    liveDeviceDragPositionsRef,
+    lastDragEventRef,
+    getPortPositionRef,
+    connectionMetaRef,
+    isPanningRef,
+    panStartRef,
+    zoomRef,
+    panRef,
+    draggedDeviceRef,
+    dragStartPosRef,
+    dragStartDevicePositionsRef,
+    isActuallyDraggingRef,
+    selectedDeviceIdsRef,
+    snapToGridRef,
+    isDrawingConnectionRef,
+    panAnimationFrameRef,
+    momentumAnimationFrameRef,
+    velocityRef,
+    lastMouseMoveTimeRef,
+    lastMouseMovePosRef,
+    svgContentGroupRef,
+    pendingPanRef,
+    pendingZoomRef,
+    wheelSyncTimerRef,
+    isTouchDraggingRef,
+    touchDraggedDeviceRef,
+    activePointerDragRef,
+    activeDragPointerIdRef,
+    mousePosAnimationFrameRef,
+    connectionStartRef,
+    contextMenuRef,
+    notesClipboard,
+    latestDevicesRef,
+    latestConnectionsRef,
+    latestNotesRef,
+    draggedNoteIdRef,
+    resizingNoteIdRef,
+    noteDragStartRef,
+    noteResizeStartRef,
+    noteResizeDirectionRef,
+    syncingZoomFromPropRef,
+    syncingPanFromPropRef,
+    deviceCounterRef,
+    noteCounterRef,
+    noteTextareaRefs,
+    previousCableTypeRef,
+  } = useTopologyInteractionState();
+
   const [selectionBox, setSelectionBox] = useState<{ start: { x: number; y: number }; current: { x: number; y: number } } | null>(null);
-  const selectionBoxRef = useRef<{ start: { x: number; y: number }; current: { x: number; y: number } } | null>(null);
-  const selectionAdditiveRef = useRef(false);
-  const selectionBaseIdsRef = useRef<string[]>([]);
   const [isSelecting, setIsSelecting] = useState(false);
-  const isSelectingRef = useRef(false);
-
-  const dragAnimationFrameRef = useRef<number | null>(null);
-  const selectionAnimationFrameRef = useRef<number | null>(null);
-  const lastDragPositionRef = useRef<{ x: number; y: number } | null>(null);
-  const wasDraggingRef = useRef(false);
-  const liveDeviceDragPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
-  const lastDragEventRef = useRef<{ clientX: number; clientY: number; ctrlKey: boolean } | null>(null);
-
-  const getPortPositionRef = useRef<(device: CanvasDevice, portId: string) => { x: number; y: number }>((_d, _p) => ({ x: 0, y: 0 }));
-
-  const connectionMetaRef = useRef<Map<string, { index: number; total: number }>>(new Map());
-  const isPanningRef = useRef(false);
-  const panStartRef = useRef({ x: 0, y: 0 });
-  const zoomRef = useRef(DEFAULT_ZOOM);
-  const panRef = useRef({ x: 0, y: 0 });
-  const draggedDeviceRef = useRef<string | null>(null);
-  const dragStartPosRef = useRef<{ x: number; y: number } | null>(null);
-  const dragStartDevicePositionsRef = useRef<{ [key: string]: { x: number; y: number } }>({});
-  const isActuallyDraggingRef = useRef(false);
-  const selectedDeviceIdsRef = useRef<string[]>([]);
-  const snapToGridRef = useRef(true);
-  const isDrawingConnectionRef = useRef(false);
-  const panAnimationFrameRef = useRef<number | null>(null);
-  const momentumAnimationFrameRef = useRef<number | null>(null);
-  const velocityRef = useRef({ x: 0, y: 0 });
-  const lastMouseMoveTimeRef = useRef<number>(0);
-  const lastMouseMovePosRef = useRef({ x: 0, y: 0 });
-
-  const svgContentGroupRef = useRef<SVGGElement | null>(null);
-  const pendingPanRef = useRef<{ x: number; y: number } | null>(null);
-  const pendingZoomRef = useRef<number | null>(null);
-  const wheelSyncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const isTouchDraggingRef = useRef(false);
-  const touchDraggedDeviceRef = useRef<CanvasDevice | null>(null);
-  const activePointerDragRef = useRef(false);
-  const activeDragPointerIdRef = useRef<number | null>(null);
-
-  const mousePosAnimationFrameRef = useRef<number | null>(null);
-
   const [isDrawingConnection, setIsDrawingConnection] = useState(false);
   const [connectionStart, setConnectionStart] = useState<{
     deviceId: string;
     portId: string;
     point: { x: number; y: number };
   } | null>(null);
-  const connectionStartRef = useRef<{
-    deviceId: string;
-    portId: string;
-    point: { x: number; y: number };
-  } | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
-  const contextMenuRef = useRef<HTMLDivElement | null>(null);
-
-  const [notesClipboard] = useState<CanvasNote[]>([]);
-
-  const latestDevicesRef = useRef<CanvasDevice[]>([]);
-  const latestConnectionsRef = useRef<CanvasConnection[]>([]);
-  const latestNotesRef = useRef<CanvasNote[]>([]);
-
-  const draggedNoteIdRef = useRef<string | null>(null);
-  const resizingNoteIdRef = useRef<string | null>(null);
-  const noteDragStartRef = useRef<{ x: number; y: number } | null>(null);
-  const noteResizeStartRef = useRef<{ x: number; y: number; width: number; height: number; noteX: number; noteY: number } | null>(null);
-  const noteResizeDirectionRef = useRef<string>('se');
 
   const {
     saveToHistory,
@@ -355,9 +349,6 @@ export function NetworkTopology({
     latestConnectionsRef,
     latestNotesRef,
   });
-
-  const syncingZoomFromPropRef = useRef(false);
-  const syncingPanFromPropRef = useRef(false);
 
   const {
     handleZoomWheel,
@@ -404,7 +395,6 @@ export function NetworkTopology({
     onRefreshNetwork?.();
   }, [onRefreshNetwork, setPacketPopupHop, setPingAnimation]);
 
-  const deviceCounterRef = useRef<Record<string, number>>({ pc: 0, iot: 0, switch: 0, router: 0, firewall: 0, wlc: 0, hub: 0, cloud: 0, mobile: 0, printer: 0 });
   const getCounterKey = useCallback((type: DeviceType | string): string => {
     if (type === 'switchL2' || type === 'switchL3' || type === 'switch') return 'switch';
     return type;
@@ -413,9 +403,6 @@ export function NetworkTopology({
   useEffect(() => {
     pingStepModeRef.current = isSimulationMode;
   }, [isSimulationMode, pingStepModeRef]);
-
-  const noteCounterRef = useRef<number>(0);
-  const noteTextareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
 
   const {
     getLivePort,
@@ -551,8 +538,6 @@ export function NetworkTopology({
     panRef,
     zoomRef,
   });
-
-  const previousCableTypeRef = useRef<CableType | null>(null);
 
   const { cancelConnectionDrawing } = useConnectionDrawing({
     setIsDrawingConnection,

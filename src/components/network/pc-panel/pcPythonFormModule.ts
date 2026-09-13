@@ -262,7 +262,6 @@ export function generateFormHtml(form: PythonFormState): string {
       const box = document.getElementById('statusBox');
       box.style.display = 'block';
       box.textContent = '[' + new Date().toLocaleTimeString() + '] ' + actionType + ' -> ' + elemId + (val !== undefined ? ': ' + val : '');
-      console.log('Python Event:', { elemId, actionType, val });
     }
 
     function selectListItem(item, elemId, val) {

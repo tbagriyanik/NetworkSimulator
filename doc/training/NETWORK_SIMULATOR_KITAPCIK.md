@@ -22,7 +22,7 @@ A browser-based network simulator for learning switching, routing, wireless, IoT
 
 Bu kitapçık projenin tüm kullanıcı, CLI, protokol, laboratuvar ve özellik bilgilerinin birincil kaynağıdır. Diğer Markdown dosyaları yalnızca kısa başvuru, kurulum veya geliştirici ayrıntısı içerir; aynı bilginin güncel sürümü burada tutulmalıdır.
 
-### Güncel özellik durumu (v5.4.0)
+### Güncel özellik durumu (v5.4.1)
 
 - **🧊 3D Grafik Sahne Motoru & Katı Geometri (v5.4.0):** Gömülü Python terminalinde 3D nesneler (`Plane`, `Cube`, `Sphere`, `Cylinder`, `Prism`), nesneler arası yapıcı katı geometri (CSG `union` & `subtract`), materyal kaplama (renk, pürüzsüzlük, metaliklik, wireframe, opacity), ortam/güneş ışıklandırmaları ve masaüstünde sürüklenebilir `Python3DWindow` ile web tarayıcısı 3D görünüm desteği sağlandı (`pcPython3DModule.ts`, `pcPython3DRenderer.ts`, `Python3DWindow.tsx`).
 - **🎵 Web Audio API Tabanlı Dinamik Müzik & Ses Sentetörü (v5.4.0):** Gömülü Python (`audio` / `music` / `sound` / `synth` / `winsound`) üzerinden nota frekans çevrimi (C0-B8), polifonik akorlar (`play_chord`), hazır melodiler (`play_melody`), ses efektleri (`coin`, `laser`, `jump`, `explosion`, `powerup`) ve ADSR zarfı sentezli seslerin ham WAV formatında sanal diske (`C:\*.wav`) aktarılması eklendi (`pcAudioPlayer.ts`, `pcPythonAudioModule.ts`).
@@ -262,7 +262,7 @@ npm install && npm run dev
 
 | Metric / Metrik | Value / Değer |
 | --- | ---: |
-| Version / Sürüm | 5.4.0 |
+| Version / Sürüm | 5.4.1 |
 | Total Lines / Toplam Satır (src/) | 145,145 |
 | Source Files / Kaynak Dosya | 644 |
 | Documentation Files / Dokümantasyon Dosya | 24 |
@@ -303,17 +303,26 @@ src/
 │   ├── api/             # API routes (contact, etc.)
 │   ├── [id]/            # Dynamic routes
 │   ├── layout.tsx       # Root layout
-│   ├── page.tsx         # Home page
+│   ├── page.tsx         # Home page (page.utils.ts, page.types.ts, usePage* hooks)
+│   ├── PageDialogs.tsx  # Modal & dialog management for home page
+│   ├── PagePanelWindows.tsx  # Floating panel window management
+│   ├── PageOverlayPanels.tsx # Overlay panels for home page
 │   └── globals.css      # Global styles & design tokens
 ├── components/           # React components
 │   ├── ui/              # Reusable UI (cards, dialogs, panels, inputs)
 │   └── network/         # Network-specific (Terminal, Topology, PCPanel)
+│       ├── hooks/       # Topology/canvas interaction hooks (useTopology*, useCanvas*)
+│       ├── pc-panel/    # PC panel (desktop, terminal, Python, browser)
+│       ├── terminal/    # Terminal components & hooks
+│       ├── topology/    # Topology canvas renderers & helpers
+│       └── panels/      # Panel barrel re-exports (index.ts)
 ├── contexts/            # React contexts (theme, mode, language)
 ├── hooks/               # Custom React hooks
 ├── lib/
 │   ├── design-tokens/  # Design tokens (colors, typography, spacing, animations)
 │   ├── store/          # Zustand state management (appStore.ts)
 │   ├── network/         # Network simulation engine
+│   │   ├── connectivity/ # Path resolution & packet flow (pathResolution/, pingDiagnostics)
 │   │   ├── core/        # CLI command implementations
 │   │   └── examples/    # Example project JSON files
 │   ├── security/        # Security utilities (sanitization, rate limiting)
