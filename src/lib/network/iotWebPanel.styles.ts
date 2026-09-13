@@ -3,7 +3,7 @@
  * Generates CSS styles for IoT web panel
  */
 
-import { colors } from '@/lib/design-tokens/colors';
+import { colors, withAlpha } from '@/lib/design-tokens/colors';
 import { IFRAME_FONT_FACES_CSS, INRIA_SANS_STACK, GEIST_MONO_STACK } from '@/lib/design-tokens/iframeFonts';
 
 export function generateIotPanelStyles(): string {
@@ -18,18 +18,17 @@ export function generateIotPanelStyles(): string {
       --color-secondary-300: ${colors.terminal.output};
       --color-success-500: ${colors.status.active};
       --color-success-600: ${colors.green['600']};
+      --color-warning-500: ${colors.status.warning};
+      --color-warning-700: ${colors.amber['700']};
       --color-error-500: ${colors.status.offline};
       --color-error-600: ${colors.red['600']};
-      --color-warning-100: ${colors.amber['100']};
-      --color-warning-700: ${colors.amber['700']};
+      --color-theme.primary: ${colors.theme.primary};
+      --color-theme.primaryHover: ${colors.theme.primaryHover};
     }
-    html, body {
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      width: 100%;
-      min-height: 100%;
-      overflow-y: auto;
-      overflow-x: auto;
     }
     body {
       font-family: ${INRIA_SANS_STACK};
@@ -46,7 +45,7 @@ export function generateIotPanelStyles(): string {
     .container {
       background-color: ${colors.common.white};
       border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 12px ${withAlpha(colors.common.black, 0.08)};
       padding: 30px;
       max-width: 600px;
       width: 100%;
@@ -210,7 +209,7 @@ export function generateIotPanelStyles(): string {
     }
     .iot-device-card:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 12px ${withAlpha(colors.common.black, 0.1)};
     }
     @media (min-width: 768px) {
       .device-list {
@@ -303,7 +302,7 @@ export function generateIotPanelStyles(): string {
       background-color: ${colors.common.white};
       border: 1px solid var(--color-secondary-200);
       border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 4px 12px ${withAlpha(colors.common.black, 0.15)};
       padding: 15px;
       min-width: 250px;
       z-index: 1000;

@@ -1,7 +1,7 @@
 
 import { CanvasDevice } from '@/components/network/networkTopology.types';
 import { sanitizeHTML, safeJSONForHTML } from '@/lib/security/sanitizer';
-import { colors } from '@/lib/design-tokens/colors';
+import { colors, withAlpha } from '@/lib/design-tokens/colors';
 import { IotRule } from './iotWebPanel.types';
 import { generateIotPanelStyles } from './iotWebPanel.styles';
 import { generateIotPanelScript } from './iotWebPanel.script';
@@ -117,7 +117,7 @@ export const generateIotWebPanelContent = (
           .container {
             background-color: ${colors.common.white};
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 12px ${withAlpha(colors.common.black, 0.08)};
             padding: 30px;
             max-width: 600px;
             width: 100%;
@@ -281,7 +281,7 @@ export const generateIotWebPanelContent = (
           }
           .iot-device-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px ${withAlpha(colors.common.black, 0.1)};
           }
           @media (min-width: 768px) {
             .device-list {
@@ -379,7 +379,7 @@ export const generateIotWebPanelContent = (
             background-color: ${colors.common.white};
             border: 1px solid var(--color-secondary-200);
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 12px ${withAlpha(colors.common.black, 0.15)};
             padding: 15px;
             min-width: 250px;
             z-index: 1000;
@@ -593,7 +593,7 @@ export const generateIotDevicePageContent = (
           .device-panel {
             background-color: ${colors.common.white};
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 12px ${withAlpha(colors.common.black, 0.08)};
             padding: 30px;
             max-width: 500px;
             width: 100%;
