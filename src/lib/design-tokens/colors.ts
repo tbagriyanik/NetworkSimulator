@@ -172,6 +172,21 @@ export const colors = {
   purple: {
     400: '#c084fc',
     500: '#a855f7',
+    900: '#581c87',
+  },
+
+  // Orange shades
+  orange: {
+    100: '#ffedd5',
+    500: '#f97316',
+  },
+
+  // Slate shades
+  slate: {
+    700: '#334155',
+    800: '#1e293b',
+    900: '#0f172a',
+    950: '#020617',
   },
 
   // Teal shades

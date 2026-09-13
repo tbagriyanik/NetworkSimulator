@@ -1,6 +1,7 @@
 import { cliModeError } from './cliErrors';
 import type { CommandContext } from './commandTypes';
 import { checkConnectivity, getWirelessDistance } from '../connectivity';
+import type { PortSecurityViolation, TraversedPort } from '../connectivity/pathResolution/types';
 import { dispatchCapturedPackets } from '../../../utils/packetCapture';
 import type { CanvasDevice } from '@/components/network/networkTopology.types';
 import type { SwitchState, CommandResult } from '../types';
@@ -8,7 +9,11 @@ import { getL3Hops } from '../routing';
 import { isValidIPv4Format } from '../dns';
 
 let _seed = 42;
-function deterministicRandom(): number {
+export function resetDeterministicRandomSeed(seed = 42): void {
+    _seed = seed;
+}
+
+export function deterministicRandom(): number {
     _seed = (_seed * 1103515245 + 12345) & 0x7fffffff;
     return _seed / 0x7fffffff;
 }
@@ -18,7 +23,7 @@ function deterministicRandom(): number {
  * Uses exponential curve: close = very fast, far = much slower (realistic WiFi behavior).
  * distance 0px → ~1ms, 450px (signal 1) → ~150ms, 549px → ~210ms
  */
-function generatePingLatencies(distance: number): { min: number; avg: number; max: number } {
+export function generatePingLatencies(distance: number): { min: number; avg: number; max: number } {
     const jitter = (base: number, pct: number) =>
         Math.max(1, Math.round(base * (1 + (deterministicRandom() * 2 - 1) * pct)));
 
@@ -37,7 +42,7 @@ function generatePingLatencies(distance: number): { min: number; avg: number; ma
  * Wired hops stay at 1ms (<1 msec); wireless paths grow toward the destination RTT.
  * Only a bounded ±1ms jitter is applied so the timing reflects the actual link.
  */
-function formatHopTimes(base: number): string {
+export function formatHopTimes(base: number): string {
     const fmt = (ms: number) => ms <= 1 ? '<1' : String(ms);
     const t1 = Math.max(1, base);
     const t2 = Math.max(1, base + (deterministicRandom() > 0.5 ? 1 : 0));
@@ -83,7 +88,7 @@ export function cmdPing(state: SwitchState, input: string, ctx: CommandContext):
 
         // Handle port security violations - update state if needed
         if (connectivity.portSecurityViolations && connectivity.portSecurityViolations.length > 0) {
-            connectivity.portSecurityViolations.forEach((violation: any) => {
+            connectivity.portSecurityViolations.forEach((violation: PortSecurityViolation) => {
                 if (violation.action === 'shutdown') {
                     const deviceState = updatedDeviceStates.get(violation.deviceId);
                     if (deviceState) {
@@ -115,7 +120,7 @@ export function cmdPing(state: SwitchState, input: string, ctx: CommandContext):
             const bytesPerPacket = parseInt(size, 10) || 56;
             const totalBytes = numPackets * bytesPerPacket;
 
-            connectivity.traversedPorts.forEach((traversed: any) => {
+            connectivity.traversedPorts.forEach((traversed: TraversedPort) => {
                 const deviceState = updatedDeviceStates.get(traversed.deviceId);
                 if (deviceState) {
                     const updatedPorts = { ...deviceState.ports };

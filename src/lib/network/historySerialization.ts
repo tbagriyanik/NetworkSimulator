@@ -2,9 +2,11 @@ import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType } from '@/compon
 import { SwitchState, CableInfo } from '@/lib/network/types';
 import { TerminalOutput } from '@/components/network/Terminal';
 import { PCOutputLine } from '@/types/pageTypes';
-import type { HistoryEntry, ProjectState, SerializedHistoryEntry, HistoryOperationType } from '@/hooks/useHistory';
+import type { HistoryEntry, ProjectState, SerializedHistoryEntry, HistoryOperationType, SerializedProjectStateMaps } from '@/hooks/useHistory';
 
 const DELTA_FORMAT = 'delta-v1';
+
+export type SerializedCleanProjectState = Omit<ProjectState, 'deviceStates' | 'deviceOutputs' | 'pcOutputs' | 'pcHistories'> & SerializedProjectStateMaps;
 
 export interface SerializedHistoryDelta {
   operationType: HistoryOperationType;
@@ -85,7 +87,7 @@ function cleanState(
 }
 
 
-function serializeState(state: CleanProjectState): any {
+function serializeState(state: CleanProjectState): SerializedCleanProjectState {
   return {
     topologyDevices: state.topologyDevices,
     topologyConnections: state.topologyConnections,
@@ -104,7 +106,7 @@ function serializeState(state: CleanProjectState): any {
 }
 
 
-function deserializeState(serialized: any): ProjectState {
+function deserializeState(serialized?: Partial<SerializedCleanProjectState> | null): ProjectState {
   if (!serialized || typeof serialized !== 'object') {
     return {
       topologyDevices: [],

@@ -481,7 +481,7 @@ export class PyScene {
 
     // Default Lighting
     this.add_sun([5, 12, 5], 1.0, colors.common.white);
-    this.add_lamp([0, 4, 0], 0.8, '#ffedd5', 15);
+    this.add_lamp([0, 4, 0], 0.8, colors.orange[100], 15);
     this.add_ambient(0.3, colors.common.white);
   }
 
@@ -507,9 +507,9 @@ export class PyScene {
     if (p === 'day') {
       this.sky = { type: 'day', topColor: colors.theme.accent, bottomColor: colors.sky[50], stars: false };
     } else if (p === 'night') {
-      this.sky = { type: 'night', topColor: '#020617', bottomColor: colors.topology.bg, stars: true };
+      this.sky = { type: 'night', topColor: colors.slate[950], bottomColor: colors.topology.bg, stars: true };
     } else if (p === 'sunset') {
-      this.sky = { type: 'sunset', topColor: '#581c87', bottomColor: 'rgba(249, 115, 22, 1)', stars: false };
+      this.sky = { type: 'sunset', topColor: colors.purple[900], bottomColor: 'rgba(249, 115, 22, 1)', stars: false };
     } else {
       this.sky = {
         type: 'gradient' as SkyType,
@@ -549,7 +549,7 @@ export class PyScene {
     const params = parseNamedOrPosArgs(args, ['position', 'intensity', 'color', 'distance'], {
       position: [0, 4, 0],
       intensity: 1.0,
-      color: '#ffedd5',
+      color: colors.orange[100],
       distance: 20,
     });
     const pos = Array.isArray(params.position) ? params.position : [0, 4, 0];

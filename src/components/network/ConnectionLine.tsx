@@ -327,8 +327,8 @@ export const ConnectionLine = memo(function ConnectionLine({
             y: mt * mt * mt * source.y + 3 * mt * mt * t * controlPoint1.y + 3 * mt * t * t * controlPoint2.y + t * t * t * target.y
           };
         };
-        const srcPos = bezierPoint(0.42);
-        const tgtPos = bezierPoint(0.58);
+        const srcPos = bezierPoint(0.30);
+        const tgtPos = bezierPoint(0.70);
         // Calculate label orientation offset
         const angle = Math.atan2(dy, dx);
         const isVertical = Math.abs(Math.sin(angle)) > 0.7;
@@ -337,6 +337,9 @@ export const ConnectionLine = memo(function ConnectionLine({
 
         const srcLabel = { x: srcPos.x + perpX + orientX, y: srcPos.y + perpY + orientY };
         const tgtLabel = { x: tgtPos.x + perpX + orientX, y: tgtPos.y + perpY + orientY };
+
+        const badgeX = midX + perpX;
+        const badgeY = midY + perpY - 26;
 
         return (
           <>
@@ -386,24 +389,24 @@ export const ConnectionLine = memo(function ConnectionLine({
               {connection.targetPort}
             </text>
 
-            {/* Midpoint Link Telemetry Tooltip Badge when Hovered */}
+            {/* Midpoint Link Telemetry Tooltip Badge when Hovered - elevated above delete button */}
             {isHovered && (
               <g className="pointer-events-none select-none">
                 <rect
-                  x={midX - 54}
-                  y={midY - 12}
+                  x={badgeX - 54}
+                  y={badgeY - 11}
                   width="108"
-                  height="24"
+                  height="22"
                   rx="6"
                   fill={isDark ? 'var(--color-slate-900, #0f172a)' : 'var(--color-common-white, #ffffff)'}
                   stroke={isEffectivelyActive ? 'var(--color-emerald-500, #10b981)' : 'var(--color-rose-500, #f43f5e)'}
                   strokeWidth="1.5"
                   className="shadow-md"
-                  opacity={0.95}
+                  opacity={0.98}
                 />
                 <text
-                  x={midX}
-                  y={midY + 3}
+                  x={badgeX}
+                  y={badgeY + 4}
                   fill={isDark ? 'var(--color-sky-400, #38bdf8)' : 'var(--color-sky-600, #0284c7)'}
                   fontSize="9.5"
                   textAnchor="middle"
