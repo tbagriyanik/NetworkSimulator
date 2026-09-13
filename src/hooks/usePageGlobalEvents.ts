@@ -198,8 +198,40 @@ export function usePageGlobalEvents({
         }
       }
     };
+
+    const handleOpenDeviceCli = (e: Event) => {
+      const customEv = e as CustomEvent<{ deviceId: string }>;
+      const deviceId = customEv.detail?.deviceId;
+      if (!deviceId) return;
+      const device = topologyDevices.find(d => d.id === deviceId);
+      if (!device) return;
+
+      const { openDeviceWindow, restoreWindow } = useMultiWindowStore.getState();
+
+      if (device.type === 'pc') {
+        setShowPCDeviceId(deviceId);
+        setPcPanelInitialTab('desktop');
+        if (window.innerWidth >= 641 && window.innerWidth <= 1024) {
+          setShowPCPanel(true);
+        } else {
+          openDeviceWindow(deviceId, 'pc', 'desktop');
+        }
+      } else {
+        setActiveDeviceId(deviceId);
+        setActiveDeviceType(device.type);
+        setUnifiedDeviceActiveTab('console');
+        openDeviceWindow(deviceId, device.type, 'console');
+      }
+
+      restoreWindow(deviceId);
+    };
+
     window.addEventListener('request-show-me', handleShowMe);
-    return () => window.removeEventListener('request-show-me', handleShowMe);
+    window.addEventListener('open-device-cli', handleOpenDeviceCli);
+    return () => {
+      window.removeEventListener('request-show-me', handleShowMe);
+      window.removeEventListener('open-device-cli', handleOpenDeviceCli);
+    };
   }, [
     topologyDevices, setActiveDeviceId, setActiveDeviceType,
     setShowUnifiedDeviceModal, setActiveTab, setShowPCDeviceId,

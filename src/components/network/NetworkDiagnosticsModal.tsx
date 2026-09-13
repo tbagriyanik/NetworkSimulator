@@ -208,7 +208,7 @@ export function NetworkDiagnosticsModal({
                         }}
                         className="h-6 px-2 text-[10.5px] font-mono text-sky-400 hover:text-sky-300 hover:bg-sky-500/10"
                       >
-                        ⚙️ {diagnosticResult.sourceDevice.name} {isTr ? 'CLI Aç' : 'Open CLI'}
+                        ⚙️ {diagnosticResult.sourceDevice.name} {diagnosticResult.sourceDevice.type === 'pc' ? (isTr ? 'CMD Aç' : 'Open CMD') : (isTr ? 'CLI Aç' : 'Open CLI')}
                       </Button>
                     )}
                     {diagnosticResult.targetDevice && (
@@ -221,7 +221,7 @@ export function NetworkDiagnosticsModal({
                         }}
                         className="h-6 px-2 text-[10.5px] font-mono text-purple-400 hover:text-purple-300 hover:bg-purple-500/10"
                       >
-                        ⚙️ {diagnosticResult.targetDevice.name} {isTr ? 'CLI Aç' : 'Open CLI'}
+                        ⚙️ {diagnosticResult.targetDevice.name} {diagnosticResult.targetDevice.type === 'pc' ? (isTr ? 'CMD Aç' : 'Open CMD') : (isTr ? 'CLI Aç' : 'Open CLI')}
                       </Button>
                     )}
                   </div>
