@@ -360,7 +360,46 @@ audio.play_sfx("coin")      # 'coin', 'laser', 'jump', 'explosion', 'powerup'
 audio.save_wav("C:\\music\\melody.wav", notes=["C4", "E4", "G4", "C5"])
 ```
 
-### G. Diğer Standart Modüller
+### G. Görsel Form ve Arayüz Penceresi (`tkinter` / `form` / `ttk`)
+PC Masaüstünde interaktif grafik form pencereleri (`PythonFormWindow`) tasarlamak, buton tıklama callback'leri bağlamak, girdi kutuları ve seçim listeleri yönetmek için form modülü:
+
+```python
+import tkinter as tk
+from tkinter import ttk
+
+# Ana Form Penceresi Tanımlama
+root = tk.Tk()
+root.title("Ağ Cihazı Yönetim Paneli")
+root.geometry("400x350")
+
+# Başlık ve Açıklama Etiketleri (Label)
+lbl = tk.Label(root, text="Sunucu IP Yapılandırması", font=("Segoe UI", 12, "bold"))
+lbl.pack(pady=5)
+
+# Metin Girdisi (Entry / StringVar)
+ip_var = tk.StringVar(value="192.168.1.100")
+entry_ip = tk.Entry(root, textvariable=ip_var)
+entry_ip.pack(pady=4)
+
+# Seçim Kutusu (Combobox / ttk)
+combo_role = ttk.Combobox(root, values=["Web Server", "DNS Server", "DHCP Server", "Router"])
+combo_role.set("Web Server")
+combo_role.pack(pady=4)
+
+# Onay Kutusu (Checkbutton)
+ssl_enabled = tk.BooleanVar(value=True)
+chk = tk.Checkbutton(root, text="HTTPS / SSL Aktif", variable=ssl_enabled)
+chk.pack(pady=4)
+
+# Eylem Butonu ve Callback İşlevi
+def on_save():
+    print(f"[FORM] Kaydedildi: IP={ip_var.get()} Rol={combo_role.get()} SSL={ssl_enabled.get()}")
+
+btn = tk.Button(root, text="Yapılandırmayı Kaydet", command=on_save)
+btn.pack(pady=10)
+```
+
+### H. Diğer Standart Modüller
 - `math`: `sqrt`, `pow`, `sin`, `cos`, `floor`, `ceil`, `pi`, `e`, `log10`.
 - `random`: `randint`, `choice`, `shuffle`, `random`, `randrange`, `uniform`.
 - `datetime` / `time`: `datetime.now()`, `time.time()`, `time.sleep()`.

@@ -113,8 +113,9 @@ Bu kitapçık projenin tüm kullanıcı, CLI, protokol, laboratuvar ve özellik 
 
 ## Latest Updates (v4.1.0)
 
-| English | Türkçe |
-| --- | --- |
+| **3D Graphic Scene Engine & Visualization**: Interactive 3D objects (`Plane`, `Cube`, `Sphere`, `Cylinder`, `Prism`), CSG boolean solid geometry (`union`/`subtract`), lighting and floating `Python3DWindow` via embedded Python. | **3D Grafik Sahne Motoru & Görselleştirme**: Gömülü Python üzerinden 3D nesneler (`Plane`, `Cube`, `Sphere`, `Cylinder`, `Prism`), CSG katı geometri (`union`/`subtract`), ışıklandırma ve sürüklenebilir `Python3DWindow`. |
+| **Dynamic Audio & Music Synthesizer**: Web Audio API tone synthesis, polyphonic chords (`play_chord`), melodies (`play_melody`), sound effects (`play_sfx`) and disk WAV export (`save_wav`). | **Dinamik Ses ve Müzik Sentetörü**: Web Audio API tabanlı nota sentezi, polifonik akorlar (`play_chord`), melodiler (`play_melody`), ses efektleri (`play_sfx`) ve diske WAV kaydetme (`save_wav`). |
+| **Python Form GUI Window Engine**: Desktop windowed interactive form applications (`tkinter` / `form` / `ttk`) with buttons, entries, textareas, comboboxes, checkboxes, and layout managers (`pack`, `grid`, `place`). | **Python Görsel Form & Arayüz Motoru**: Masaüstü pencereli form uygulamaları (`tkinter` / `form` / `ttk`), butonlar, girişler, metin alanları, seçim listeleri, onay kutuları ve layout yöneticileri (`pack`, `grid`, `place`). |
 | **Guided Lessons Knowledge Quizzes**: Interactive 2-3 question knowledge quizzes added to 19 guided lesson topics with live progress points integration. | **Rehberli Ders Konu Quiz'leri**: 19 rehberli ders konusuna özel 2-3 soruluk bilgi quiz'leri entegre edildi ve canlı puan sistemine bağlandı. |
 | **High-DPI Turkish Character PDF Engine**: Canvas 2400x1700 High-DPI engine for Turkish characters (Ş, İ, Ğ, Ç, Ö, Ü) with ~150KB PDF file size compression. | **High-DPI Türkçe Karakter PDF Motoru**: Türkçe karakter destekli Canvas 2400x1700 High-DPI motoru ve ~150KB PDF sıkıştırma optimizasyonu. |
 | **CLI Parser Pattern Loop Fix**: Multi-pattern match resolution for ACL, `mls qos`, `permit/deny` and interface commands. | **CLI Parser Mod Ayrıştırma Düzeltmesi**: ACL, `mls qos`, `permit/deny` ve arayüz komutları için çoklu mod ayrıştırma eşleşmesi. |

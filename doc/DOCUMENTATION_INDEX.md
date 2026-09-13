@@ -41,7 +41,7 @@ Bu indeks, Network Simulator projesinin tüm dokümantasyon dosyalarını ve iç
 ---
 
 ### 🐍 getting-started/PYTHON_PROGRAMMING_GUIDE.md
-**Amaç**: Python programlama dili temelleri, OOP, Decorator'lar, 3D Sahne Motoru & Web Audio Sentetörü rehberi  
+**Amaç**: Python programlama dili temelleri, OOP, Decorator'lar, 3D Sahne Motoru, Web Audio Sentetörü & Görsel Form Penceresi rehberi  
 **Okuma Süresi**: 25 dakika  
 **İçerik**:
 - Python betiklerini CMD ve Dosya Düzenleyici'de çalıştırma
@@ -50,10 +50,11 @@ Bu indeks, Network Simulator projesinin tüm dokümantasyon dosyalarını ve iç
 - Nesne Yönelimli Programlama (OOP)
 - 3D Sahne Motoru (`scene3d` / `vpython`) & CSG katı geometri
 - Web Audio API Tabanlı Müzik ve Ses Sentetörü (`audio` / `winsound`)
+- Görsel Form & GUI Pencere Motoru (`tkinter` / `form` / `ttk`)
 - Standart Modüller & Soket Programlama Simülasyonu
 
 **Ne Zaman Okuyacağım?**
-- Python OOP, 3D Grafik veya Ses/Müzik kodlaması pratik yapmak istiyorsanız
+- Python OOP, 3D Grafik, Ses/Müzik veya GUI Form pencereleri kodlaması pratik yapmak istiyorsanız
 - PC üzerinde Python betikleri yazmak veya ağ socket simülasyonunu incelemek istiyorsanız
 
 ---

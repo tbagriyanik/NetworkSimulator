@@ -28,6 +28,7 @@ Network Simulator; bilgisayar ağları, anahtarlama (switching), yönlendirme (r
 - **%100 İstemci Taraflı (Client-Side) ve Hızlı:** React 19, Next.js 16 ve TypeScript altyapısıyla herhangi bir sunucu kurulumu gerektirmeden tarayıcıda çalışır.
 - **🧊 3D Grafik Sahne Motoru & Görselleştirme:** Gömülü Python scriptleri üzerinden interaktif 3D nesneler (`Plane`, `Cube`, `Sphere`, `Cylinder`, `Prism`), CSG mantıksal katı geometri (`union`/`subtract`), materyal kaplamaları, ışıklandırma ve sürüklenebilir 3D portal penceresi (`Python3DWindow`).
 - **🎵 Web Audio API Tabanlı Dinamik Müzik & Ses Sentetörü:** Gömülü Python ile nota, polifonik akor, melodi ve ses efekti (`coin`, `laser`, `jump`, `explosion`, `powerup`) sentezleme ve WAV formatında diske (`C:\*.wav`) aktarabilme.
+- **🖼️ Görsel Form & GUI Pencere Motoru (`tkinter` / `form`):** PC Python ortamında interaktif form pencereleri (`PythonFormWindow`), düğmeler (Button), metin girişleri (Entry), çok satırlı metin kutuları (Text), açılır menüler (Combobox), onay kutuları (Checkbutton) ve düzen yöneticileri (`pack`, `grid`, `place`).
 - **11 Tam Donanımlı Cihaz Tipi:** Router, L2/L3 Switch, Firewall, WLC, AP, PC, IoT, Multiport Hub (`hub`), Aktif Bulut WAN Geçidi (`cloud`), Kablosuz Akıllı Telefon (`mobile`) ve Ağ Yazıcısı (`printer`).
 - **🧩 NetSim Modüler Donanım Şasisi & Yuva Yönetimi:** Router ve Switch cihazlarında fiziksel yuvalara (Slots) NetSim WIC-2T (Serial), NetSim HWIC-4ESW (Switch), NetSim SFP-10G-LR (Fiber), NetSim NM-1GE (Copper) modülleri takıp çıkarabilme, Donanım Güç Anahtarı (Power Switch) ile sıcak değişim koruması ve dinamik port tablosu.
 - **🗺️ İnteraktif Mini-Harita & Subnet Navigatörü:** Sağ alt köşede sürüklenebilir tuval penceresi, "Ekrana Sığdır" (Fit to Screen) ve OSPF/VLAN/Subnet alanlarına anında kamera odaklama (Focus Subnet).
@@ -283,6 +284,9 @@ PC ve Laptop cihazlarında **Desktop > Python IDE** uygulaması açılarak geli�
 - **Decorator'lar:** `@property`, `@staticmethod`, `@classmethod` ve kullanıcı tanımlı decorator fonksiyonları.
 - **Generator'lar ve İteratörler:** `yield` ve `yield from` ile bellek dostu veri işleme.
 - **Standart Modüller:** `json`, `re` (düzenli ifadeler), `os.path`, `math`, `random`, `datetime`, `sys` ve simüle edilmiş `socket` kütüphanesi.
+- **3D Grafik Sahne Motoru (`scene3d` / `three3d`):** 3D nesneler (`Plane`, `Cube`, `Sphere`, `Cylinder`, `Prism`), CSG `union`/`subtract` katı geometri, ışıklandırma ve interaktif 3D sahne penceresi (`Python3DWindow`).
+- **Dinamik Müzik ve Ses Sentetörü (`audio` / `music` / `synth`):** Web Audio API tabanlı nota, frekans, polifonik akor (`play_chord`), melodi (`play_melody`), ses efektleri (`play_sfx`) ve WAV dosyası kaydetme (`save_wav`).
+- **Görsel Form & GUI Arayüz Motoru (`tkinter` / `form` / `ttk`):** Grafik pencereli form uygulamaları (`Tk`, `Button`, `Label`, `Entry`, `Text`, `Combobox`, `Checkbutton`, `Radiobutton`, `pack`, `grid`, `place`).
 
 ### 🚀 Örnek Python Nesne Yönelimli Ağ Cihazı Sınıfı ve Soket İstemcisi
 

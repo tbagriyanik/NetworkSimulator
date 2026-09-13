@@ -331,7 +331,7 @@ python
 - **Nesne Yönelimli Programlama (OOP):** `class`, `__init__`, `self`, Kalıtım (Inheritance), `super()`, `isinstance()`.
 - **Nitelik Kapsülleme (Decorators):** `@property`, `@<name>.setter`, `@staticmethod`, `@classmethod` ve kullanıcı tanımlı decorator'lar.
 - **Generator'lar:** `yield` ve `yield from` ile lazy iterator'lar.
-- **Standart Modüller:** `json`, `re`, `os.path`, simüle `socket` (ağ betikleri için), `math`, `random`, `datetime`, `sys`, `itertools`.
+- **Standart & Grafik/Ses/3D Modülleri:** `json`, `re`, `os.path`, simüle `socket` (ağ betikleri), `math`, `random`, `datetime`, `sys`, `itertools`, `scene3d`/`three3d` (3D sahne/CSG modelleme), `audio`/`music`/`synth` (Web Audio sentezleyici/WAV dışa aktarma) ve `tkinter`/`form`/`ttk` (pencereli GUI form uygulamaları).
 
 Detaylı kullanım rehberi ve kod örnekleri için **[PYTHON_PROGRAMMING_GUIDE.md](PYTHON_PROGRAMMING_GUIDE.md)** dokümanını inceleyin.
 

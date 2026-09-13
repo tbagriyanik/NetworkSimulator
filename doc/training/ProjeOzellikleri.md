@@ -8,6 +8,7 @@
 |---|---|
 | **3D Grafik Sahne Motoru** | Embedded Python ile 3D nesneler (`Plane`, `Cube`, `Sphere`, `Cylinder`, `Prism`), CSG `union`/`subtract`, materyal/ışık/gökyüzü ayarları, `Python3DWindow` ve browser 3D görünümü (`pcPython3DModule.ts`, `pcPython3DRenderer.ts`). |
 | **Dinamik Müzik ve Ses Sentetörü** | Embedded Python ile Web Audio API tabanlı nota, polifonik akor (`play_chord`), melodi (`play_melody`), ses efektleri (`play_sfx`) sentezleme ve diske WAV kaydetme (`pcAudioPlayer.ts`, `pcPythonAudioModule.ts`). |
+| **Görsel Form & GUI Arayüz Motoru** | Embedded Python ile masaüstü pencereli form uygulamaları (`PythonFormWindow`), `tkinter`/`form`/`ttk` bileşenleri (`Button`, `Label`, `Entry`, `Text`, `Combobox`, `Checkbutton`, `Radiobutton`), `pack`/`grid`/`place` yerleşim motoru (`pcPythonFormModule.ts`, `PythonFormWindow.tsx`). |
 
 ## Önceki Geliştirmeler (2026-09-12 - v5.3.0)
 
