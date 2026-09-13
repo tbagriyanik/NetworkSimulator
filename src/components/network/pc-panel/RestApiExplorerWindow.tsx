@@ -127,7 +127,7 @@ export function RestApiExplorerWindow({
       cmd += ` \\\n  -H "${h.trim()}"`;
     });
     if ((method === 'POST' || method === 'PUT' || method === 'PATCH') && body.trim()) {
-      const sanitizedBody = body.replace(/"/g, '\\"');
+      const sanitizedBody = body.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
       cmd += ` \\\n  -d "${sanitizedBody}"`;
     }
     return cmd;
