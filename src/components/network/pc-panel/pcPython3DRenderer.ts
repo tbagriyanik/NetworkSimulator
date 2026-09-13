@@ -2,6 +2,7 @@
 // Interactive WebGL 3D Scene and Standalone HTML Generator for embedded Python 3D engine
 
 import type { Python3DSceneState } from './pcPython3DTypes';
+import { colors } from '@/lib/design-tokens/colors';
 
 /**
  * Escapes unsafe string values for HTML injection
@@ -25,9 +26,9 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
   return `<!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>${escapeHtml(scene.title || '3D Sahne')}</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>${escapeHtml(scene.title || '3D WebGL Sahne')}</title>
   <style>
     * {
       box-sizing: border-box;
@@ -40,9 +41,9 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: #0b0f19;
+      background-color: ${colors.terminal.bg};
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      color: #e2e8f0;
+      color: ${colors.topology.noteText};
     }
     #viewport-container {
       position: absolute;
@@ -64,19 +65,20 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
       left: 12px;
       right: 12px;
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
+      gap: 8px;
       pointer-events: none;
       z-index: 20;
     }
     .toolbar-group {
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 6px 10px;
       background: rgba(15, 23, 42, 0.75);
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 12px;
+      padding: 6px 10px;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
@@ -86,7 +88,7 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
       appearance: none;
       border: 1px solid rgba(255, 255, 255, 0.1);
       background: rgba(255, 255, 255, 0.06);
-      color: #e2e8f0;
+      color: ${colors.topology.noteText};
       padding: 5px 9px;
       border-radius: 8px;
       font-size: 11px;
@@ -100,16 +102,16 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
     .btn:hover {
       background: rgba(255, 255, 255, 0.14);
       border-color: rgba(255, 255, 255, 0.25);
-      color: #ffffff;
+      color: ${colors.common.white};
       transform: translateY(-1px);
     }
     .btn:active {
       transform: translateY(0);
     }
     .btn.active {
-      background: #0284c7;
-      border-color: #38bdf8;
-      color: #ffffff;
+      background: ${colors.theme.primary};
+      border-color: ${colors.theme.accent};
+      color: ${colors.common.white};
     }
     .badge {
       font-size: 10px;
@@ -117,7 +119,7 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
       padding: 2px 6px;
       border-radius: 6px;
       background: rgba(255, 255, 255, 0.08);
-      color: #38bdf8;
+      color: ${colors.theme.accent};
       border: 1px solid rgba(56, 189, 248, 0.2);
     }
     /* Floating Info & Help Footer */
@@ -133,7 +135,7 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 10px;
       font-size: 10px;
-      color: #94a3b8;
+      color: ${colors.topology.subText};
       backdrop-filter: blur(8px);
       pointer-events: none;
       z-index: 20;
@@ -147,7 +149,7 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
       background: rgba(255, 255, 255, 0.12);
       border-radius: 4px;
       padding: 1px 4px;
-      color: #f1f5f9;
+      color: ${colors.terminal.fg};
       font-family: monospace;
       font-size: 9px;
     }
@@ -160,7 +162,7 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
 
   <header class="toolbar">
     <div class="toolbar-group">
-      <span style="font-weight: 700; font-size: 12px; color: #38bdf8; margin-right: 4px;">🧊 ${escapeHtml(scene.title || '3D Sahne')}</span>
+      <span style="font-weight: 700; font-size: 12px; color: ${colors.theme.accent}; margin-right: 4px;">🧊 ${escapeHtml(scene.title || '3D Sahne')}</span>
       <span class="badge" id="obj-count-badge">${scene.objects.length} Nesne</span>
     </div>
     <div class="toolbar-group">
@@ -701,7 +703,7 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
         renderables.push({
           data: obj,
           buffers,
-          color: parseColor(obj.material && obj.material.color ? obj.material.color : '#3b82f6'),
+          color: parseColor(obj.material && obj.material.color ? obj.material.color : '${colors.status.info}'),
           roughness: obj.material && obj.material.roughness !== undefined ? obj.material.roughness : 0.4,
           metalness: obj.material && obj.material.metalness !== undefined ? obj.material.metalness : 0.1,
           operation: obj.operation || 'none',

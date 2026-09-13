@@ -1,29 +1,34 @@
 'use client';
 
-import { useState, useRef, useEffect, KeyboardEvent, useCallback, useMemo, ClipboardEvent } from 'react';
-import { SwitchState, CommandMode } from '@/lib/network/types';
+import { useState, useRef, useEffect, KeyboardEvent, useCallback, useMemo } from 'react';
+import { SwitchState } from '@/lib/network/types';
 import { getModePrompt } from '@/lib/network/initialState';
 import { Translations } from '@/contexts/LanguageContext';
 import { getDeviceWifiConfig, getWirelessSignalStrength } from '@/lib/network/connectivity';
 import { Button } from '@/components/ui/button';
-import { Laptop, CornerDownLeft, Trash2, X } from 'lucide-react';
+import { CornerDownLeft, X } from 'lucide-react';
 import { SearchOutputDialog } from './pc-panel/SearchOutputDialog';
-import { ShortcutBadge } from '@/components/ui/ShortcutBadge';
 import { toast } from "@/hooks/use-toast";
 import { useOutputSearch } from '@/hooks/useOutputSearch';
-import { commandHelp } from '@/lib/network/executor';
-import { commandPatterns } from '@/lib/network/parser';
 import { ModernPanel } from '@/components/ui/ModernPanel';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-breakpoint';
 import type { CanvasDevice } from './networkTopology.types';
 import { RouterIcon, SwitchIcon, WlcIcon } from './PCPanelWidgets';
+import { Laptop } from 'lucide-react';
 
-import { BootProgressBar, completedBootIds, BOOT_PROGRESS_MARKER } from './terminal/BootProgressBar';
-import { useTerminalTabCompletion } from './terminal/useTerminalTabCompletion';
+import { completedBootIds, BOOT_PROGRESS_MARKER } from './terminal/BootProgressBar';
 import { TerminalHeaderActions } from './terminal/TerminalHeaderActions';
 import { useTerminalHistory } from './terminal/useTerminalHistory';
 import { handleTerminalShortcuts } from './terminal/useTerminalKeybindings';
+import { useTerminalOutputSync } from './terminal/useTerminalOutputSync';
+import { useTerminalCommandQueue } from './terminal/useTerminalCommandQueue';
+import { useTerminalUndoRedo } from './terminal/useTerminalUndoRedo';
+import { useTerminalAutocomplete } from './terminal/useTerminalAutocomplete';
+import { TerminalOutputLines, type DeviceIconInfo } from './terminal/TerminalOutputLines';
+import { QuickCommandsBar } from './terminal/QuickCommandsBar';
+import { TerminalAutocompleteDropdown } from './terminal/TerminalAutocompleteDropdown';
+import { TerminalSettingsBar } from './terminal/TerminalSettingsBar';
 
 export interface TerminalOutput {
   id: string;
@@ -36,22 +41,6 @@ export interface TerminalOutput {
 }
 
 export { BOOT_PROGRESS_MARKER };
-
-const QUICK_COMMANDS: Record<string, string[]> = {
-  user: ['enable', 'show ip int brief', 'show version', 'ping '],
-  privileged: ['conf t', 'show run', 'show ip route', 'show mac address-table', 'show vlan brief', 'wr', 'disable', 'exit'],
-  config: ['int fa0/1', 'int gi0/1', 'vlan ', 'ip dhcp pool ', 'router ospf 1', 'hostname ', 'exit', 'end'],
-  interface: ['ip add ', 'no shut', 'switchport mode access', 'switchport mode trunk', 'switchport access vlan ', 'exit', 'end'],
-  'config-if-range': ['switchport mode access', 'switchport access vlan ', 'no shut', 'exit', 'end'],
-  line: ['password ', 'login', 'exit', 'end'],
-  vlan: ['name ', 'exit', 'end'],
-  'router-config': ['network ', 'passive-interface ', 'exit', 'end'],
-  'dhcp-config': ['network ', 'default-router ', 'dns-server ', 'exit', 'end'],
-  'config-std-nacl': ['permit ', 'deny ', 'exit', 'end'],
-  'config-ext-nacl': ['permit ', 'deny ', 'exit', 'end'],
-  pc: ['ipconfig', 'ping ', 'tracert ', 'nslookup ', 'telnet ', 'ssh ', 'help', 'cls'],
-  iot: ['help', 'cls']
-};
 
 interface TerminalProps {
   deviceId: string;
@@ -115,12 +104,8 @@ export function Terminal({
   deviceStates
 }: TerminalProps) {
   const [input, setInput] = useState('');
-  const {
-    history,
-    addHistoryCommand,
-    navigateUp,
-    navigateDown,
-  } = useTerminalHistory(deviceId, state.commandHistory);
+  const { history, addHistoryCommand, navigateUp, navigateDown } = useTerminalHistory(deviceId, state.commandHistory);
+
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSettings, setShowSettings] = useState(false);
@@ -131,86 +116,27 @@ export function Terminal({
     ? getModePrompt(state.currentMode, state.hostname || 'Switch')
     : prompt;
 
-  // Mobile virtual keyboard height handling
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.visualViewport) return;
-
     const handleResize = () => {
       if (!window.visualViewport) return;
       const height = window.innerHeight - window.visualViewport.height;
       setKeyboardHeight(Math.max(0, height));
     };
-
     window.visualViewport.addEventListener('resize', handleResize);
     return () => window.visualViewport?.removeEventListener('resize', handleResize);
   }, []);
 
-  // State for displaying output
-  const [displayedLines, setDisplayedLines] = useState<Array<{ id: string, type: string, content: string, prompt?: string, realismLevel?: 'real' | 'stub' | 'sim-only', hint?: string | { tr: string; en: string } }>>(() => {
-    // Initialize from output on mount to show history when terminal opens
-    const initialLines: Array<{ id: string, type: string, content: string, prompt?: string, realismLevel?: 'real' | 'stub' | 'sim-only', hint?: string | { tr: string; en: string } }> = [];
-    if (output && output.length > 0) {
-      output.forEach((outputItem) => {
-        if (!outputItem || !outputItem.id) return;
-        if (outputItem.content && outputItem.content.includes('\n')) {
-          const lines = outputItem.content.split('\n');
-          lines.forEach((line, index) => {
-            initialLines.push({
-              id: `${outputItem.id}-line-${index}`,
-              type: outputItem.type,
-              content: line,
-              prompt: index === 0 ? outputItem.prompt : '',
-              realismLevel: index === lines.length - 1 ? outputItem.realismLevel : undefined,
-              hint: index === lines.length - 1 ? outputItem.hint : undefined
-            });
-          });
-        } else {
-          initialLines.push({
-            id: outputItem.id,
-            type: outputItem.type,
-            content: outputItem.content,
-            prompt: outputItem.prompt,
-            realismLevel: outputItem.realismLevel,
-            hint: outputItem.hint
-          });
-        }
-      });
-    }
-    return initialLines;
-  });
-  const processedOutputIdsRef = useRef<Set<string>>(new Set());
-  const cancelOutputRef = useRef(false);
+  const { displayedLines, clearTerminalLines } = useTerminalOutputSync({ output, deviceId });
 
-  // Initialize processedOutputIdsRef with existing output IDs on mount
-  useEffect(() => {
-    if (output && output.length > 0) {
-      const ids = new Set<string>();
-      output.forEach((outputItem) => {
-        if (outputItem && outputItem.id) {
-          ids.add(outputItem.id);
-        }
-      });
-      processedOutputIdsRef.current = ids;
-    }
-  }, []);
-
-  // Undo/Redo state
-  const [undoStack, setUndoStack] = useState<string[]>([]);
-  const [redoStack, setRedoStack] = useState<string[]>([]);
-
-  // Autocomplete state
-  const [showAutocomplete, setShowAutocomplete] = useState(false);
-  const [autocompleteIndex, setAutocompleteIndex] = useState(-1);
   const [localPasswordPrompt, setLocalPasswordPrompt] = useState(false);
 
   const isDark = theme === 'dark';
   const isMobile = useIsMobile();
 
-
-  // Determine device icon and color
-  const deviceIconInfo = useMemo(() => {
+  const deviceIconInfo = useMemo<DeviceIconInfo | null>(() => {
     const deviceType = device?.type;
     const switchModel = state.switchModel;
 
@@ -228,16 +154,8 @@ export function Terminal({
     return null;
   }, [device?.type, state.switchModel]);
 
-
-
-  const [tabCycleIndex, setTabCycleIndex] = useState(-1);
-  const [lastTabInput, setLastTabInput] = useState('');
-  const [bootVersion, setBootVersion] = useState(0);
-
   const terminalRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const autocompleteRef = useRef<HTMLDivElement>(null);
-  const autocompleteListRef = useRef<HTMLDivElement>(null);
   const wasWifiConnectedRef = useRef<boolean>(true);
 
   const {
@@ -247,6 +165,7 @@ export function Terminal({
     goToPrev: goToPrevMatch,
   } = useOutputSearch({ searchQuery, containerRef: terminalRef });
 
+  const [bootVersion, setBootVersion] = useState(0);
   const isBooted = useMemo(() => {
     const bootMarkers = output.filter(o => o.content === BOOT_PROGRESS_MARKER);
     return bootMarkers.every(m => completedBootIds.has(m.id));
@@ -259,399 +178,58 @@ export function Terminal({
     }
   }, [isBooted]);
 
-  // Restore input focus when the search popup closes so the next ESC can close the terminal
   useEffect(() => {
     if (!searchOpen && isBooted && !isInputDisabled) {
       inputRef.current?.focus();
     }
   }, [searchOpen, isBooted, isInputDisabled]);
 
-  const commandQueueRef = useRef<string[]>([]);
-  const isProcessingQueueRef = useRef(false);
-  const isLoadingRef = useRef<boolean>(isLoading);
-  const awaitingPasswordRef = useRef<boolean>(!!state.awaitingPassword);
-  const awaitingConfigSourceRef = useRef<boolean>(!!state.awaitingConfigSource);
-  const confirmDialogOpenRef = useRef<boolean>(!!confirmDialog?.show);
-  useEffect(() => {
-    isLoadingRef.current = isLoading;
-  }, [isLoading]);
-
-  useEffect(() => {
-    awaitingPasswordRef.current = !!state.awaitingPassword;
-  }, [state.awaitingPassword]);
-
-  useEffect(() => {
-    awaitingConfigSourceRef.current = !!state.awaitingConfigSource;
-  }, [state.awaitingConfigSource]);
-
-  useEffect(() => {
-    confirmDialogOpenRef.current = !!confirmDialog?.show;
-  }, [confirmDialog?.show]);
-
-  // Check WiFi connectivity but do NOT auto-close terminal (user requested modals stay open)
   useEffect(() => {
     if (!device || !devices || !deviceStates) return;
-
-    // Check if this device has WiFi and if it's connected
     if (device.type !== 'pc') return;
-
-    // For PC devices, check WiFi signal strength
     const signalStrength = getWirelessSignalStrength(device, devices, deviceStates);
     const isCurrentlyConnected = signalStrength > 0;
-
-    // Update the ref for next check but do NOT close terminal
     wasWifiConnectedRef.current = isCurrentlyConnected;
   }, [device, devices, deviceStates]);
 
-  // Mobile back button handling removed - terminal should stay open per user request
-
   const clearTerminalView = useCallback(() => {
-    cancelOutputRef.current = true;
-    processedOutputIdsRef.current.clear();
-    setDisplayedLines([]);
+    clearTerminalLines();
     onClear();
-  }, [onClear]);
+  }, [clearTerminalLines, onClear]);
 
-  const queueCommands = useCallback((commands: string[]) => {
-    const sanitized = commands
-      .map((line) => line.replace(/\r/g, '').trim())
-      .filter((line) => line.length > 0);
+  const {
+    showAutocomplete,
+    setShowAutocomplete,
+    autocompleteIndex,
+    setAutocompleteIndex,
+    setTabCycleIndex,
+    suggestions: autocompleteSuggestions,
+    shouldShowAutocomplete,
+    autocompleteRef,
+    autocompleteListRef,
+    refreshAutocomplete,
+    handleTabComplete,
+    completeAutocompleteSelection,
+  } = useTerminalAutocomplete({ input, setInput, state, devices, deviceStates, onCommand, t, inputRef });
 
-    if (sanitized.length === 0) return;
-    commandQueueRef.current.push(...sanitized);
-  }, []);
+  const { handleUndo, handleRedo, pushUndo } = useTerminalUndoRedo(input, setInput);
 
-  const processCommandQueue = useCallback(async () => {
-    if (isProcessingQueueRef.current) return;
-    isProcessingQueueRef.current = true;
-
-    try {
-      let currentHistory = history;
-      while (commandQueueRef.current.length > 0) {
-        const nextCommand = commandQueueRef.current.shift();
-        if (!nextCommand) continue;
-
-        const updatedHistory = addHistoryCommand(nextCommand);
-        if (updatedHistory !== currentHistory) {
-          currentHistory = updatedHistory;
-          if (onUpdateHistory) onUpdateHistory(deviceId, currentHistory);
-        }
-        setTabCycleIndex(-1);
-        setShowAutocomplete(false);
-        setAutocompleteIndex(-1);
-
-        await onCommand(nextCommand);
-
-        // Wait until the command lifecycle is fully settled before next command.
-        // This prevents pasted commands from overlapping.
-        await new Promise((resolve) => setTimeout(resolve, 20));
-        let guard = 0;
-        while (isLoadingRef.current && guard < 600) {
-          await new Promise((resolve) => setTimeout(resolve, 25));
-          guard += 1;
-        }
-
-        // If command triggered an interactive mode, pause the queue.
-        if (awaitingPasswordRef.current || awaitingConfigSourceRef.current || confirmDialogOpenRef.current) {
-          break;
-        }
-      }
-    } finally {
-      isProcessingQueueRef.current = false;
-    }
-  }, [history, addHistoryCommand, deviceId, onCommand, onUpdateHistory]);
-
-  useEffect(() => {
-    if (!showAutocomplete) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node | null;
-      if (autocompleteRef.current && target && !autocompleteRef.current.contains(target)) {
-        setShowAutocomplete(false);
-        setAutocompleteIndex(-1);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showAutocomplete]);
-
-  // Scroll active autocomplete item into view when navigating with arrow keys
-  useEffect(() => {
-    if (showAutocomplete && autocompleteIndex >= 0) {
-      const container = autocompleteListRef.current;
-      const activeEl = autocompleteRef.current?.querySelector(`[data-autocomplete-index="${autocompleteIndex}"]`) as HTMLElement | null;
-      if (container && activeEl) {
-        const containerRect = container.getBoundingClientRect();
-        const itemRect = activeEl.getBoundingClientRect();
-        if (itemRect.top < containerRect.top) {
-          container.scrollTop += itemRect.top - containerRect.top;
-        } else if (itemRect.bottom > containerRect.bottom) {
-          container.scrollTop += itemRect.bottom - containerRect.bottom;
-        }
-      }
-    }
-  }, [showAutocomplete, autocompleteIndex]);
-
-  // Process output lines — show all at once, no artificial delays
-  const prevFirstOutputIdRef = useRef<string | null>(null);
-  const prevOutputLengthRef = useRef(0);
-  const isInitializedRef = useRef(false);
-  const lastDeviceIdRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    // Check if deviceId changed - if so, re-initialize from output
-    const deviceChanged = lastDeviceIdRef.current !== null && lastDeviceIdRef.current !== deviceId;
-    lastDeviceIdRef.current = deviceId;
-
-    // On initial mount or device change, initialize displayedLines from output if empty
-    if (!isInitializedRef.current || deviceChanged) {
-      isInitializedRef.current = true;
-      // If displayedLines is empty but output has content, process it
-      if (displayedLines.length === 0 && output.length > 0) {
-        const newLines: Array<{ id: string; type: string; content: string; prompt?: string; realismLevel?: 'real' | 'stub' | 'sim-only'; hint?: string | { tr: string; en: string } }> = [];
-        output.forEach((outputItem) => {
-          if (!outputItem || !outputItem.id) return;
-          processedOutputIdsRef.current.add(outputItem.id);
-          if (outputItem.content && outputItem.content.includes('\n')) {
-            const lines = outputItem.content.split('\n');
-            lines.forEach((line, index) => {
-              newLines.push({
-                id: `${outputItem.id}-line-${index}`,
-                type: outputItem.type,
-                content: line,
-                prompt: index === 0 ? outputItem.prompt : '',
-                realismLevel: index === lines.length - 1 ? outputItem.realismLevel : undefined,
-                hint: index === lines.length - 1 ? outputItem.hint : undefined
-              });
-            });
-          } else {
-            newLines.push({
-              id: outputItem.id,
-              type: outputItem.type,
-              content: outputItem.content,
-              prompt: outputItem.prompt,
-              realismLevel: outputItem.realismLevel,
-              hint: outputItem.hint
-            });
-          }
-        });
-        if (newLines.length > 0) {
-          setDisplayedLines(newLines);
-        }
-      }
-      return;
-    }
-
-    if (output.length === 0) {
-      setDisplayedLines([]);
-      processedOutputIdsRef.current.clear();
-      prevFirstOutputIdRef.current = null;
-      prevOutputLengthRef.current = 0;
-      return;
-    }
-
-    // Detect a full output reset (boot/reload): first item id changed
-    const firstId = output[0]?.id ?? null;
-    if (firstId !== prevFirstOutputIdRef.current) {
-      prevFirstOutputIdRef.current = firstId;
-      setDisplayedLines([]);
-      processedOutputIdsRef.current.clear();
-      cancelOutputRef.current = false;
-    }
-
-    const newLinesBatch: Array<{ id: string; type: string; content: string; prompt?: string; realismLevel?: 'real' | 'stub' | 'sim-only'; hint?: string | { tr: string; en: string } }> = [];
-
-    for (const outputItem of output) {
-      if (!outputItem || !outputItem.id) continue;
-      if (processedOutputIdsRef.current.has(outputItem.id)) continue;
-      processedOutputIdsRef.current.add(outputItem.id);
-
-      if (outputItem.content && outputItem.content.includes('\n')) {
-        const lines = outputItem.content.split('\n');
-        lines.forEach((line, index) => {
-          newLinesBatch.push({
-            id: `${outputItem.id}-line-${index}`,
-            type: outputItem.type,
-            content: line,
-            prompt: index === 0 ? outputItem.prompt : '',
-            realismLevel: index === lines.length - 1 ? outputItem.realismLevel : undefined,
-            hint: index === lines.length - 1 ? outputItem.hint : undefined
-          });
-        });
-      } else {
-        newLinesBatch.push({
-          id: outputItem.id,
-          type: outputItem.type,
-          content: outputItem.content,
-          prompt: outputItem.prompt,
-          realismLevel: outputItem.realismLevel,
-          hint: outputItem.hint
-        });
-      }
-    }
-
-    if (newLinesBatch.length > 0) {
-      setDisplayedLines(prev => {
-        const existingIds = new Set(prev.map(l => l.id));
-        const toAdd = newLinesBatch.filter(l => !existingIds.has(l.id));
-        return toAdd.length > 0 ? [...prev, ...toAdd] : prev;
-      });
-    }
-
-    prevOutputLengthRef.current = output.length;
-  }, [output, deviceId]);
-
-  // Reset processed output IDs when modal opens (to re-render all output)
-  useEffect(() => {
-    // If displayedLines is empty but output has content, reset tracking to re-render
-    if (displayedLines.length === 0 && output.length > 0) {
-      processedOutputIdsRef.current.clear();
-      prevFirstOutputIdRef.current = null;
-    }
-  }, [output.length, displayedLines.length]);
-
-  // Clear command queue when switching devices (displayedLines re-initialization is handled by main effect)
-  useEffect(() => {
-    commandQueueRef.current = [];
-    isProcessingQueueRef.current = false;
-  }, [deviceId]);
+  const { queueCommands, processCommandQueue } = useTerminalCommandQueue({
+    deviceId,
+    history,
+    addHistoryCommand,
+    onCommand,
+    onUpdateHistory,
+    isLoading,
+    awaitingPassword: !!state.awaitingPassword,
+    awaitingConfigSource: !!state.awaitingConfigSource,
+    confirmDialogOpen: !!confirmDialog?.show,
+    setTabCycleIndex,
+    setShowAutocomplete,
+    setAutocompleteIndex,
+  });
 
   const isReloadConfirmationPending = false;
-
-  // Command Context for Autocomplete
-  const expandCommandContext = useCallback((mode: keyof typeof commandHelp, rawValue: string) => {
-    const isDoPrefix = rawValue.trim().toLowerCase().startsWith('do ') && mode !== 'privileged' && mode !== 'user';
-    const effectiveMode = isDoPrefix ? 'privileged' : mode;
-    const valueToProcess = isDoPrefix ? (rawValue.trim().substring(3) + (rawValue.endsWith(' ') ? ' ' : '')) : rawValue;
-
-    const helpTree = commandHelp[effectiveMode] || commandHelp.user;
-    const tokens = valueToProcess.trim().split(/\s+/).filter(Boolean);
-    const hasTrailingSpace = valueToProcess.endsWith(' ');
-    const contextTokens = hasTrailingSpace ? tokens : tokens.slice(0, -1);
-    const currentWord = hasTrailingSpace ? '' : (tokens[tokens.length - 1] || '').toLowerCase();
-    const contextKey = contextTokens.join(' ').toLowerCase();
-
-    const finalContextTokens = isDoPrefix ? ['do', ...contextTokens] : contextTokens;
-
-    // 1. Try commandHelp tree first
-    let candidates: string[] = contextTokens.length === 0
-      ? helpTree[''] || []
-      : helpTree[contextKey] || [];
-
-    // 2. Fallback: derive from commandPatterns for multi-word prefixes (e.g. "no ip", "do ping")
-    if (candidates.length === 0 && contextKey) {
-      const patternCandidates: string[] = [];
-      for (const [name, pattern] of Object.entries(commandPatterns)) {
-        if (!pattern.modes.includes(effectiveMode as CommandMode)) continue;
-        const nameLower = name.toLowerCase();
-        const prefix = contextKey + ' ';
-        if (!nameLower.startsWith(prefix)) continue;
-        const remaining = nameLower.substring(prefix.length).trim();
-        if (!remaining) continue;
-        const nextWord = remaining.split(' ')[0];
-        if (nextWord && !patternCandidates.includes(nextWord)) {
-          patternCandidates.push(nextWord);
-        }
-      }
-      candidates = patternCandidates;
-    }
-
-    // 3. Filter candidates based on currentWord (for TAB completion)
-    // This ensures TAB shows only matching options
-    const filteredCandidates = currentWord
-      ? candidates.filter(c => c.toLowerCase().startsWith(currentWord))
-      : candidates;
-
-    return {
-      candidates: filteredCandidates,
-      currentWord,
-      contextTokens: finalContextTokens,
-      hasTrailingSpace,
-      allCandidates: candidates // Keep all candidates for ? help
-    };
-  }, []);
-
-  // Syntax Highlighting for Commands
-  const highlightCommand = useCallback((text: string) => {
-    if (!text) return text;
-    const parts = text.split(/\s+/);
-    if (parts.length === 0) return text;
-
-    return (
-      <>
-        <span className="text-accent-400 font-bold">{parts[0]}</span>
-        {parts.length > 1 && (
-          <span className="text-secondary-300"> {parts.slice(1).join(' ')}</span>
-        )}
-      </>
-    );
-  }, []);
-
-  // Text search highlight
-  const highlightText = useCallback((text: string) => {
-    const q = searchQuery.trim();
-    if (!q) return text;
-    const safe = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const re = new RegExp(safe, 'gi');
-    const parts = text.split(re);
-    const matches = text.match(re);
-    if (!matches) return text;
-    const out: React.ReactNode[] = [];
-    for (let i = 0; i < parts.length; i++) {
-      if (parts[i]) out.push(<span key={`p-${i}`}>{parts[i]}</span>);
-      if (matches[i]) {
-        out.push(
-          <mark key={`m-${i}`} className={cn('px-0.5 rounded', isDark ? 'bg-accent-500/30 text-accent-200' : 'bg-accent-200 text-secondary-900')}>
-            {matches[i]}
-          </mark>
-        );
-      }
-    }
-    return <>{out}</>;
-  }, [searchQuery, isDark]);
-
-  // Auto-scroll and focus
-  useEffect(() => {
-    if (terminalRef.current) {
-      requestAnimationFrame(() => {
-        if (terminalRef.current) {
-          terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
-        }
-      });
-    }
-    inputRef.current?.focus();
-  }, [output, isLoading, deviceId]);
-
-  // Auto-scroll when displayedLines updates (handles async content rendering)
-  useEffect(() => {
-    requestAnimationFrame(() => {
-      if (terminalRef.current) {
-        terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
-      }
-    });
-    // Additional scroll to ensure it reaches the end
-    setTimeout(() => {
-      if (terminalRef.current) {
-        terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
-      }
-    }, 50);
-  }, [displayedLines]);
-
-  useEffect(() => {
-    if (state.awaitingPassword || state.awaitingConfigSource || confirmDialog?.show || isReloadConfirmationPending) {
-      setTimeout(() => setInput(''), 0);
-      setTimeout(() => inputRef.current?.focus(), 0);
-    }
-  }, [state.awaitingPassword, state.awaitingConfigSource, confirmDialog?.show, isReloadConfirmationPending]);
-
-  useEffect(() => {
-    // Keep password mode strictly tied to live device state.
-    // Old password-prompt lines can remain in output history and must not lock input.
-    setTimeout(() => setLocalPasswordPrompt(!!state.awaitingPassword), 0);
-  }, [state.awaitingPassword]);
 
   const handleSubmitRef = useRef<((cmd?: string) => Promise<void>) | null>(null);
 
@@ -682,7 +260,6 @@ export function Terminal({
   }, [deviceId]);
 
   const handleSubmit = async (cmdToExecute?: string) => {
-    // Config source mode: send whatever is typed (default 'terminal' on empty) as the source
     if (state.awaitingConfigSource) {
       const answer = (cmdToExecute ?? input).trim();
       setInput('');
@@ -690,7 +267,6 @@ export function Terminal({
       return;
     }
 
-    // Password mode: send whatever is typed (including empty) as password
     if (state.awaitingPassword || localPasswordPrompt) {
       const pwd = cmdToExecute ?? input;
       setInput('');
@@ -698,18 +274,15 @@ export function Terminal({
       return;
     }
 
-    // Handle confirmation dialog - trigger inline confirmation or cancel
     if (confirmDialog?.show) {
       const trimmedInput = (cmdToExecute || input).trim().toLowerCase();
       setInput('');
-      // 'n' or 'no' cancels the operation
       if (trimmedInput === 'n' || trimmedInput === 'no') {
         if (setConfirmDialog) {
           setConfirmDialog(null);
         }
         return;
       }
-      // Any other input (including empty, 'confirm', 'y', 'yes') confirms
       if (confirmDialog.onConfirm) {
         confirmDialog.onConfirm();
       }
@@ -728,7 +301,6 @@ export function Terminal({
     setShowAutocomplete(false);
     setAutocompleteIndex(-1);
     await onCommand(command);
-    // Scroll to input field after command execution
     setTimeout(() => {
       inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 100);
@@ -753,7 +325,7 @@ export function Terminal({
     }
   };
 
-  const handlePaste = useCallback((e: ClipboardEvent<HTMLInputElement>) => {
+  const handlePaste = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => {
     const pastedText = e.clipboardData.getData('text');
     if (!pastedText || !pastedText.includes('\n')) return;
 
@@ -763,233 +335,16 @@ export function Terminal({
     void processCommandQueue();
   }, [processCommandQueue, queueCommands]);
 
-  const { getAutocompleteContext } = useTerminalTabCompletion({
-    state,
-    expandCommandContext,
-  });
-
-  const handleTabComplete = useCallback(() => {
-    const value = input;
-    if (!value && tabCycleIndex === -1) return;
-
-    const isIpv4 = (raw: string) => /^(25[0-5]|2[0-4]\d|1?\d?\d)(\.(25[0-5]|2[0-4]\d|1?\d?\d)){3}$/.test(raw);
-    const trimmed = value.trim();
-    const hasTrailingSpace = /\s$/.test(value);
-
-    const ipAddressMatch = trimmed.match(/^ip\s+address\s+(\S+)(?:\s+(\S+))?$/i);
-    if (ipAddressMatch) {
-      const ip = ipAddressMatch[1];
-      const mask = ipAddressMatch[2];
-      if (isIpv4(ip) && !mask) {
-        setInput(`ip address ${ip} 255.255.255.0 `);
-        setTabCycleIndex(-1);
-        return;
-      }
-      if (isIpv4(ip) && mask && isIpv4(mask) && !hasTrailingSpace) {
-        setInput(`${trimmed} `);
-        setTabCycleIndex(-1);
-        return;
-      }
-    }
-
-    const singleIpArgMatch = trimmed.match(/^(?:ip\s+default-gateway|ping|curl|wget|telnet|ssh)\s+(\S+)$/i);
-    if (singleIpArgMatch && isIpv4(singleIpArgMatch[1]) && !hasTrailingSpace) {
-      setInput(`${trimmed} `);
-      setTabCycleIndex(-1);
-      return;
-    }
-
-    const networkMatch = trimmed.match(/^network\s+(\S+)(?:\s+(\S+))?$/i);
-    if (networkMatch) {
-      const netIp = networkMatch[1];
-      const mask = networkMatch[2];
-      if (isIpv4(netIp) && !mask) {
-        setInput(`network ${netIp} 255.255.255.0 `);
-        setTabCycleIndex(-1);
-        return;
-      }
-      if (isIpv4(netIp) && mask && isIpv4(mask) && !hasTrailingSpace) {
-        setInput(`${trimmed} `);
-        setTabCycleIndex(-1);
-        return;
-      }
-    }
-
-    const dhcpSingleIpArgMatch = trimmed.match(/^(?:default-router|dns-server)\s+(\S+)$/i);
-    if (dhcpSingleIpArgMatch && isIpv4(dhcpSingleIpArgMatch[1]) && !hasTrailingSpace) {
-      setInput(`${trimmed} `);
-      setTabCycleIndex(-1);
-      return;
-    }
-
-    const context = getAutocompleteContext(value);
-    const { candidates, currentWord, contextTokens } = context;
-
-    // Use filtered candidates for TAB completion (supports interface shorthands like g0/1, fa0/1, v10)
-    const matches = candidates.filter((opt) => {
-      if (opt === '?') return false;
-      const optLower = opt.toLowerCase();
-      const cwLower = currentWord.toLowerCase();
-      if (optLower.startsWith(cwLower)) return true;
-
-      const expandShorthand = (s: string) => s
-        .replace(/^gi?(?=\d)/, 'gigabitethernet')
-        .replace(/^fa?(?=\d)/, 'fastethernet')
-        .replace(/^eth?(?=\d)/, 'ethernet')
-        .replace(/^v(?=\d)/, 'vlan')
-        .replace(/^lo(?=\d)/, 'loopback');
-
-      if (cwLower.length > 0 && /^[a-z]+\d/i.test(cwLower)) {
-        return optLower.startsWith(expandShorthand(cwLower));
-      }
-      return false;
-    });
-
-    if (matches.length > 0) {
-      if (tabCycleIndex === -1) {
-        setLastTabInput(value);
-        setTabCycleIndex(0);
-        const completion = matches[0];
-        const prefix = contextTokens.join(' ');
-        const nextValue = prefix ? `${prefix} ${completion} ` : `${completion} `;
-        setInput(nextValue);
-
-        // Provide feedback if multiple matches exist
-        if (matches.length > 1) {
-          toast({
-            title: t.multipleMatches,
-            description: t.pressTabToCycle.replace('{count}', matches.length.toString()),
-            duration: 1500
-          });
-        }
-      } else {
-        const nextIndex = (tabCycleIndex + 1) % matches.length;
-        setTabCycleIndex(nextIndex);
-        const originalParts = lastTabInput.split(/\s+/);
-        const originalContext = lastTabInput.endsWith(' ') ? lastTabInput.trim() : originalParts.slice(0, -1).join(' ');
-        const completion = matches[nextIndex];
-        setInput(originalContext ? `${originalContext} ${completion} ` : `${completion} `);
-      }
-
-      // Ensure cursor moves to end after state update
-      setTimeout(() => {
-        if (inputRef.current) {
-          const len = inputRef.current.value.length;
-          inputRef.current.setSelectionRange(len, len);
-        }
-      }, 0);
-    } else if (value.trim()) {
-      // No matches - show help with all available options
-      // This shows available commands/parameters for the current context
-      onCommand(value.trim() + ' ?');
-    }
-  }, [input, tabCycleIndex, lastTabInput, getAutocompleteContext, onCommand]);
-
-  // Undo/Redo helpers
-  const handleUndo = useCallback(() => {
-    if (undoStack.length > 0) {
-      const newUndoStack = [...undoStack];
-      const previousInput = newUndoStack.pop() || '';
-      setRedoStack([input, ...redoStack]);
-      setInput(previousInput);
-      setUndoStack(newUndoStack);
-    }
-  }, [input, undoStack, redoStack]);
-
-  const handleRedo = useCallback(() => {
-    if (redoStack.length > 0) {
-      const newRedoStack = [...redoStack];
-      const nextInput = newRedoStack.shift() || '';
-      setUndoStack([...undoStack, input]);
-      setInput(nextInput);
-      setRedoStack(newRedoStack);
-    }
-  }, [input, undoStack, redoStack]);
-
-  const getAutocompleteSuggestions = useCallback((value: string) => {
-    const isIpv4 = (raw: string) => /^(25[0-5]|2[0-4]\d|1?\d?\d)(\.(25[0-5]|2[0-4]\d|1?\d?\d)){3}$/.test(raw);
-    const collectKnownIps = () => {
-      const fromDevices = (devices || [])
-        .map((d) => d.ip)
-        .filter((ip): ip is string => !!ip && isIpv4(ip) && ip !== '0.0.0.0' && ip !== '169.254.0.0');
-      const fromStates = Array.from(deviceStates?.values() || [])
-        .flatMap((s) => Object.values(s.ports || {}).map((p) => p?.ipAddress))
-        .filter((ip): ip is string => !!ip && isIpv4(ip) && ip !== '0.0.0.0' && ip !== '169.254.0.0');
-      return Array.from(new Set([...fromDevices, ...fromStates]));
-    };
-
-    const { candidates, currentWord } = getAutocompleteContext(value);
-    const baseSuggestions = candidates.filter(
-      opt => opt !== '?' && opt.toLowerCase().startsWith(currentWord)
-    );
-
-    const trimmed = value.trim();
-    const expectsIpArg = /^(?:telnet|ssh|ping|curl|wget|ip\s+default-gateway|default-router|dns-server)\s+\S*$/i.test(trimmed)
-      || /^(?:telnet|ssh|ping|curl|wget|ip\s+default-gateway|default-router|dns-server)\s*$/i.test(trimmed);
-
-    if (!expectsIpArg) {
-      return baseSuggestions.slice(0, 50);
-    }
-
-    const knownIps = collectKnownIps().filter((ip) => ip.toLowerCase().startsWith(currentWord));
-    const merged = Array.from(new Set([...knownIps, ...baseSuggestions]));
-    return merged.slice(0, 50);
-  }, [getAutocompleteContext, devices, deviceStates]);
-
-  const renderAutocompleteSuggestions = useMemo(
-    () => getAutocompleteSuggestions(input),
-    [getAutocompleteSuggestions, input]
-  );
-
-  const shouldShowAutocomplete = useMemo(
-    () => showAutocomplete && input.trim().length > 0 && renderAutocompleteSuggestions.length > 0,
-    [showAutocomplete, input, renderAutocompleteSuggestions]
-  );
-
   const handleInputChange = useCallback((newValue: string) => {
-    setUndoStack([...undoStack, input]);
-    setRedoStack([]);
+    pushUndo();
     setInput(newValue);
-
-    // Autocomplete logic
-    if (newValue.trim().length > 0) {
-      const suggestions = getAutocompleteSuggestions(newValue);
-      if (suggestions.length > 0) {
-        setShowAutocomplete(true);
-        setAutocompleteIndex(-1);
-      } else {
-        setShowAutocomplete(false);
-      }
-    } else {
-      setShowAutocomplete(false);
-    }
-  }, [input, undoStack, getAutocompleteSuggestions, onCommand, state.awaitingPassword, confirmDialog?.show]);
-
-  const buildCompletedInput = useCallback((selected: string) => {
-    const { contextTokens, currentWord } = getAutocompleteContext(input);
-    const isIp = /^(25[0-5]|2[0-4]\d|1?\d?\d)(\.(25[0-5]|2[0-4]\d|1?\d?\d)){3}$/.test(selected);
-    if (isIp && currentWord) {
-      const tokens = input.trim().split(/\s+/);
-      const commandPrefix = input.endsWith(' ') ? input.trim() : tokens.slice(0, -1).join(' ');
-      return commandPrefix ? `${commandPrefix} ${selected} ` : `${selected} `;
-    }
-    const prefix = contextTokens.join(' ');
-    return prefix ? `${prefix} ${selected} ` : `${selected} `;
-  }, [input, getAutocompleteContext]);
-
-  const completeAutocompleteSelection = useCallback((selected: string) => {
-    const completed = buildCompletedInput(selected);
-    setInput(completed);
-    setShowAutocomplete(false);
-    setAutocompleteIndex(-1);
-    return completed;
-  }, [buildCompletedInput]);
+    refreshAutocomplete(newValue);
+  }, [pushUndo, refreshAutocomplete, setInput]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    const autocompleteSuggestions = renderAutocompleteSuggestions;
-    const canUseAutocomplete = showAutocomplete && autocompleteSuggestions.length > 0;
+    const suggestions = autocompleteSuggestions;
+    const canUseAutocomplete = showAutocomplete && suggestions.length > 0;
 
-    // Terminal clear shortcut
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'l') {
       e.preventDefault();
       setInput('');
@@ -999,19 +354,15 @@ export function Terminal({
       return;
     }
 
-    // Terminal search shortcut
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
       e.preventDefault();
       setSearchOpen(true);
       return;
     }
 
-    // Handle ? for inline help
     if (e.key === '?' && !state.awaitingPassword && !state.awaitingConfigSource && !confirmDialog?.show) {
       e.preventDefault();
-      const currentInput = input;
-      // Execute the command with ? suffix
-      void onCommand(currentInput + '?');
+      void onCommand(input + '?');
       return;
     }
 
@@ -1026,7 +377,7 @@ export function Terminal({
       void handleSubmit();
       return;
     }
-    // Escape closes autocomplete dropdown first, then cancels password/confirm, then closes window
+
     if (e.key === 'Escape') {
       if (shouldShowAutocomplete) {
         e.preventDefault();
@@ -1043,7 +394,6 @@ export function Terminal({
           } else if (state.awaitingConfigSource) {
             onCommand('__CONFIG_SOURCE_CANCEL__');
           } else if (isReloadConfirmationPending) {
-            // Send 'n' to cancel reload
             onCommand('n');
           }
         }
@@ -1064,17 +414,15 @@ export function Terminal({
         setShowSettings(false);
         return;
       }
-      // Close terminal with ESC when no dialogs are active
       if (onClose) {
         e.preventDefault();
         onClose();
         return;
       }
     }
-    // Block history/tab navigation during password/confirm modes
+
     if (state.awaitingPassword || localPasswordPrompt || state.awaitingConfigSource || confirmDialog?.show) return;
 
-    // Handle terminal keyboard shortcuts (Ctrl+Z, Ctrl+Y, Ctrl+A, Ctrl+X, Ctrl+C, Ctrl+V)
     if (handleTerminalShortcuts(e, {
       input,
       setInput,
@@ -1161,20 +509,14 @@ export function Terminal({
     URL.revokeObjectURL(url);
   };
 
-  // Calculate WiFi signal strength for devices with WiFi
   const wifiSignalStrength = useMemo(() => {
     if (!device) return null;
     const wifi = getDeviceWifiConfig(device, deviceStates);
     if (!wifi || !wifi.enabled) return null;
-
-    // AP mode devices always show full signal (they are broadcasting)
     if (wifi.mode === 'ap') return 5;
-
-    // Client mode devices show signal based on distance to AP
     if (device.type === 'pc' && (wifi.mode === 'client' || wifi.mode === 'sta')) {
       return getWirelessSignalStrength(device, devices, deviceStates);
     }
-
     return null;
   }, [device, devices, deviceStates]);
 
@@ -1229,29 +571,11 @@ export function Terminal({
       className={cn("flex flex-col h-full max-h-[85vh] sm:max-h-none", className)}
       style={{ height: '100%' }}
     >
-      {/* Outer container — matches CommandLineTab exactly */}
       <div className={cn("flex flex-col flex-1 min-h-0 h-full overflow-hidden relative", isDark ? "bg-black" : "bg-secondary-50")}>
-        {/* Settings Bar */}
         {showSettings && (
-          <div className="px-3 md:px-4 py-2 border-b bg-muted/30 flex items-center gap-4 animate-in slide-in-from-top-2 shrink-0">
-            <label className="text-[10px] font-black tracking-widest text-muted-foreground whitespace-nowrap">
-              {t.fontSizeLabel}: {fontSize}px
-            </label>
-            <input
-              type="range" min="10" max="20" value={fontSize}
-              aria-label={t.fontSizeLabel}
-              onChange={(e) => { const v = parseInt(e.target.value); setFontSize(v); try { localStorage.setItem('terminal-font-size', String(v)); } catch { } }}
-              className="flex-1 h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-            />
-            <Button variant="ghost" size="sm" onClick={clearTerminalView} className="h-7 text-[10px] font-black tracking-widest text-error-500 gap-1.5">
-              <Trash2 className="w-3 h-3" />
-              {t.clearTerminalBtn}
-              <ShortcutBadge shortcut="Ctrl+L" variant="danger" className="scale-75 origin-right" />
-            </Button>
-          </div>
+          <TerminalSettingsBar t={t} fontSize={fontSize} setFontSize={setFontSize} onClear={clearTerminalView} />
         )}
 
-        {/* Output Area — matches CommandLineTab scroll styles */}
         <div
           ref={terminalRef}
           role="log"
@@ -1279,118 +603,32 @@ export function Terminal({
             contain: 'layout style paint'
           }}
         >
-          {isPoweredOff ? (
-            <div className="h-full flex flex-col items-center justify-center gap-3">
-              <svg className="w-16 h-16 text-error-600 opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v10" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636a9 9 0 1 1-12.728 0" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M18.36 5.64a9 9 0 1 1-12.73 0" />
-              </svg>
-            </div>
-          ) : (
-            <div>
-              {displayedLines.filter(line => line != null).map((line) => (
-                <div key={line.id} className="break-all animate-in fade-in slide-in-from-left-1 duration-200">
-                  {line.type === 'command' ? (
-                    <div className="flex items-start gap-2 text-accent-500 font-bold">
-                      {deviceIconInfo && (
-                        <span className={`shrink-0 ${deviceIconInfo.color}`}>
-                          {deviceIconInfo.icon === RouterIcon ? (
-                            <RouterIcon className="w-4 h-4" />
-                          ) : deviceIconInfo.icon === SwitchIcon ? (
-                            <SwitchIcon className="w-4 h-4" isL3={deviceIconInfo.isL3} />
-                          ) : (
-                            <deviceIconInfo.icon className="w-4 h-4" />
-                          )}
-                        </span>
-                      )}
-                      <span className="shrink-0 opacity-40 select-none font-geist-mono">{line.prompt || currentPrompt}</span>
-                      <span className={isDark ? "text-secondary-100" : "text-secondary-900"}>{highlightCommand(line.content)}</span>
-                    </div>
-                  ) : (
-                    <>
-                      {line.type === 'output' && (
-                        <div className={cn(isDark ? 'text-secondary-300' : 'text-secondary-700', "whitespace-pre-wrap")}>
-                          <span>
-                            {line.content === BOOT_PROGRESS_MARKER
-                              ? (completedBootIds.has(line.id)
-                                ? <span className={`font-mono font-bold ${isDark ? 'text-success-400' : 'text-success-600'}`}>{'#'.repeat(10)} {t.bootReady}</span>
-                                : <BootProgressBar key={line.id} id={line.id} isDark={isDark} readyText={t.bootReady} onDone={(id) => { completedBootIds.add(id); setBootVersion(v => v + 1); }} />)
-                              : highlightText(line.content)}
-                          </span>
-                        </div>
-                      )}
-                      {line.type === 'error' && <span className="text-error-500 font-bold italic">{highlightText(line.content)}</span>}
-                      {line.type === 'success' && (
-                        <span className={cn(
-                          "font-bold tracking-widest opacity-80",
-                          line.realismLevel === 'stub' ? "text-warning-500" :
-                            line.realismLevel === 'sim-only' ? "text-primary-500" : "text-accent-500"
-                        )}>{highlightText(line.content)}</span>
-                      )}
-                      {line.type === 'password-prompt' && (
-                        <div className={cn(isDark ? 'text-secondary-300' : 'text-secondary-700', "whitespace-pre-wrap")}>
-                          <span>{highlightText(line.content)}</span>
-                        </div>
-                      )}
-                      {line.hint && (helpLevel === 'beginner' || (helpLevel === 'intermediate' && line.type === 'error')) && (
-                        <div className={cn(
-                          "mt-1 mb-2 p-2 rounded-lg border flex gap-2 animate-in zoom-in-95 duration-300",
-                          isDark ? "bg-accent-500/5 border-accent-500/20 text-accent-200" : "bg-accent-50 border-accent-200 text-accent-800"
-                        )}>
-                          <span className="shrink-0">💡</span>
-                          <div className="text-[11px] leading-relaxed">
-                            <span className="font-black uppercase tracking-tighter mr-1 opacity-70">
-                              {t.learningNote}
-                            </span>
-                            {typeof line.hint === 'string' ? line.hint : (language === 'tr' ? line.hint?.tr : line.hint?.en)}
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              ))}
-              {isLoading && (
-                <div className="flex items-center gap-2 text-primary/50 italic py-1 animate-pulse">
-                  <span className="text-[10px] font-black tracking-widest">{t.processing}...</span>
-                </div>
-              )}
-            </div>
-          )}
+          <TerminalOutputLines
+            lines={displayedLines}
+            isPoweredOff={isPoweredOff}
+            isLoading={isLoading}
+            isDark={isDark}
+            deviceIconInfo={deviceIconInfo}
+            currentPrompt={currentPrompt}
+            helpLevel={helpLevel}
+            language={language}
+            t={t}
+            searchQuery={searchQuery}
+            onBootDone={(id) => { completedBootIds.add(id); setBootVersion(v => v + 1); }}
+          />
         </div>
 
-        {/* Input Area — matches CommandLineTab absolute positioning */}
         {!isPoweredOff && (
           <div onClick={() => inputRef.current?.focus()} className={cn("shrink-0 border-t bg-muted/95 backdrop-blur-sm z-20", isMobile ? "p-2 pb-safe" : "p-2.5")}>
             {!state.awaitingPassword && !confirmDialog?.show && helpLevel !== 'exam' && (
-              <div className="flex gap-1.5 overflow-x-auto pb-1.5 mb-1 px-1 no-scrollbar items-center">
-                <span className="text-[10px] font-mono font-bold opacity-40 uppercase tracking-wider shrink-0 mr-0.5">Quick:</span>
-                {(device?.type === 'pc' ? QUICK_COMMANDS.pc : device?.type === 'iot' ? QUICK_COMMANDS.iot : QUICK_COMMANDS[state.currentMode] || []).map((cmd) => (
-                  <Button
-                    key={cmd}
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    className={cn(
-                      "h-6 px-2.5 text-[10px] font-mono font-semibold tracking-tight whitespace-nowrap rounded-md flex-shrink-0 border shadow-xs transition-colors",
-                      isDark
-                        ? "bg-secondary-800/90 border-secondary-700/80 text-secondary-300 hover:bg-secondary-700 hover:text-white"
-                        : "bg-white border-secondary-300 text-secondary-700 hover:bg-secondary-100 hover:text-secondary-900"
-                    )}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleQuickCommand(cmd);
-                    }}
-                  >
-                    {cmd.trim()}
-                  </Button>
-                ))}
-              </div>
+              <QuickCommandsBar
+                deviceType={device?.type}
+                mode={state.currentMode}
+                isDark={isDark}
+                onRun={handleQuickCommand}
+              />
             )}
             <form onSubmit={handleFormSubmit} className="flex items-center gap-3 relative">
-              {/* Contextual hint above input */}
               {(confirmDialog?.show || isReloadConfirmationPending) && helpLevel !== 'exam' && (
                 <div className="absolute -top-7 left-4 right-4 text-[10px] font-black tracking-widest text-warning-400 animate-pulse">
                   {confirmDialog?.show
@@ -1498,45 +736,23 @@ export function Terminal({
               </Button>
             </form>
 
-            {/* Autocomplete Dropdown */}
             {shouldShowAutocomplete && (
-              <div
-                ref={autocompleteRef}
-                className="absolute bottom-16 sm:bottom-20 left-2 sm:left-4 z-20 w-[min(420px,calc(100%-1rem))]"
-              >
-                <div className={cn(
-                  "rounded-lg border shadow-xl overflow-hidden",
-                  isDark ? "bg-secondary-800 border-secondary-700" : "bg-white border-secondary-200"
-                )}>
-                  <div ref={autocompleteListRef} className="max-h-40 overflow-y-auto overflow-x-hidden font-geist-mono flex flex-col">
-                    {renderAutocompleteSuggestions.map((cmd, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        data-autocomplete-index={idx}
-                        onClick={() => {
-                          completeAutocompleteSelection(cmd);
-                          inputRef.current?.focus();
-                        }}
-                        className={cn(
-                          "w-full text-left px-2.5 py-1 text-[11px] font-geist-mono transition-colors",
-                          autocompleteIndex >= 0 && idx === autocompleteIndex
-                            ? (isDark ? "bg-accent-500/20 text-accent-200" : "bg-accent-50 text-accent-900")
-                            : (isDark ? "text-secondary-300 hover:bg-primary/10" : "text-secondary-700 hover:bg-primary/10")
-                        )}
-                      >
-                        {cmd}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              <TerminalAutocompleteDropdown
+                suggestions={autocompleteSuggestions}
+                activeIndex={autocompleteIndex}
+                isDark={isDark}
+                containerRef={autocompleteRef}
+                listRef={autocompleteListRef}
+                onSelect={(cmd) => {
+                  completeAutocompleteSelection(cmd);
+                  inputRef.current?.focus();
+                }}
+              />
             )}
           </div>
         )}
       </div>
 
-      {/* Search popup */}
       <SearchOutputDialog
         open={searchOpen}
         onOpenChange={setSearchOpen}
@@ -1555,7 +771,6 @@ export function Terminal({
         matchIndex={searchMatchIndex}
         matchCount={searchMatchCount}
       />
-      {/* ... Password and Confirm Dialogs ... */}
     </ModernPanel>
   );
 }

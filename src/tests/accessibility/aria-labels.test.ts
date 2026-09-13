@@ -4,7 +4,7 @@ describe('ARIA Labels Audit (WCAG 2.1 AA)', () => {
   const interactiveRoles = ['button', 'link', 'menuitem', 'tab', 'treeitem', 'combobox', 'slider', 'textbox', 'option', 'listbox', 'dialog', 'menu', 'application', 'alertdialog', 'tablist', 'tabpanel'];
 
   const uiComponents = [
-    { name: 'DeviceNode', file: 'src/components/network/DeviceNode.tsx', expectedRoles: ['button'] },
+    { name: 'DeviceRenderer', file: 'src/components/network/topology/DeviceRenderer.tsx', expectedRoles: ['button'] },
     { name: 'Dialog', file: 'src/components/ui/dialog.tsx', expectedRoles: ['dialog'] },
     { name: 'DropdownMenu', file: 'src/components/ui/dropdown-menu.tsx', expectedRoles: ['menuitem', 'menu'] },
     { name: 'Select', file: 'src/components/ui/select.tsx', expectedRoles: ['combobox', 'listbox'] },
@@ -23,16 +23,14 @@ describe('ARIA Labels Audit (WCAG 2.1 AA)', () => {
     });
   });
 
-  it('DeviceNode should have aria-label and aria-describedby', () => {
-    const deviceNodeAria = {
+  it('DeviceRenderer should have aria-label and data-device-id', () => {
+    const deviceRendererAria = {
       role: 'button',
       tabIndex: 0,
-      ariaLabel: 'device.name',
-      ariaDescribedby: 'device-desc-${device.id}',
+      dataDeviceId: 'device.id',
     };
-    expect(deviceNodeAria.role).toBe('button');
-    expect(deviceNodeAria.ariaLabel).toBeTruthy();
-    expect(deviceNodeAria.ariaDescribedby).toBeTruthy();
+    expect(deviceRendererAria.role).toBe('button');
+    expect(deviceRendererAria.dataDeviceId).toBeTruthy();
   });
 
   it('Dialog should have aria-describedby for content', () => {

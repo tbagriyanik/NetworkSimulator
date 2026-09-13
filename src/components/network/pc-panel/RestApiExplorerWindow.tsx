@@ -3,7 +3,7 @@ import { Code, Copy, Check, Server, FileJson, Sparkles, Send } from 'lucide-reac
 import { Button } from '@/components/ui/button';
 import { handleRestApiRequest, type RestApiResponse } from '@/lib/network/restApiMock';
 import { usePCPanel } from './PCPanelContext';
-import type { CanvasDevice } from '../networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '../networkTopology.types';
 
 interface RestApiExplorerWindowProps {
   isDark: boolean;
@@ -177,7 +177,7 @@ export function RestApiExplorerWindow({
       body,
       devices,
       deviceStates,
-      connections as any
+      connections as unknown as CanvasConnection[]
     );
     setResponse(res);
 
@@ -201,7 +201,7 @@ export function RestApiExplorerWindow({
   const handleSelectTemplate = (targetUrl: string) => {
     const selected = TEMPLATE_ENDPOINTS.find(t => t.url === targetUrl);
     if (selected) {
-      setMethod(selected.method as any);
+      setMethod(selected.method as 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH');
       setUrl(selected.url);
       if (selected.headers) setHeaders(selected.headers);
       if (selected.body) {

@@ -13,6 +13,7 @@ import type {
   SkyType,
 } from './pcPython3DTypes';
 import { generate3DSceneHtml } from './pcPython3DRenderer';
+import { colors } from '@/lib/design-tokens/colors';
 
 // Active 3D scenes per device
 const active3DScenes: Record<string, Python3DSceneState> = {};
@@ -99,7 +100,7 @@ export class PyObject3D {
     if (!data.position) data.position = [0, 0, 0];
     if (!data.rotation) data.rotation = [0, 0, 0];
     if (!data.scale) data.scale = [1, 1, 1];
-    if (!data.material) data.material = { color: '#3b82f6', roughness: 0.4, metalness: 0.2, wireframe: false, opacity: 1.0 };
+    if (!data.material) data.material = { color: colors.status.info, roughness: 0.4, metalness: 0.2, wireframe: false, opacity: 1.0 };
     this.data = data;
   }
 
@@ -151,7 +152,7 @@ export class PyObject3D {
   set z(val: number) { this.position[2] = Number(val || 0); }
 
   get color(): string { return this.data.material.color; }
-  set color(c: string) { this.data.material.color = String(c || '#3b82f6'); }
+  set color(c: string) { this.data.material.color = String(c || colors.status.info); }
 
   public set_position(x: unknown, y?: unknown, z?: unknown): this {
     if (Array.isArray(x)) {
@@ -201,7 +202,7 @@ export class PyObject3D {
   }
 
   public set_color(color: string): this {
-    this.data.material.color = String(color || '#3b82f6');
+    this.data.material.color = String(color || colors.status.info);
     return this;
   }
 
@@ -245,7 +246,7 @@ export class PyPlane extends PyObject3D {
     const params = parseNamedOrPosArgs(args, ['width', 'height', 'color'], {
       width: 10,
       height: 10,
-      color: '#64748b',
+      color: colors.cables.console,
       roughness: 0.8,
       metalness: 0.1,
       wireframe: false,
@@ -276,7 +277,7 @@ export class PyCube extends PyObject3D {
   constructor(...args: unknown[]) {
     const params = parseNamedOrPosArgs(args, ['size', 'color', 'width', 'height', 'depth'], {
       size: 2,
-      color: '#3b82f6',
+      color: colors.status.info,
       roughness: 0.4,
       metalness: 0.2,
       wireframe: false,
@@ -311,7 +312,7 @@ export class PySphere extends PyObject3D {
   constructor(...args: unknown[]) {
     const params = parseNamedOrPosArgs(args, ['radius', 'color', 'segments'], {
       radius: 1.5,
-      color: '#ef4444',
+      color: colors.status.offline,
       segments: 24,
       roughness: 0.3,
       metalness: 0.3,
@@ -344,7 +345,7 @@ export class PyCylinder extends PyObject3D {
     const params = parseNamedOrPosArgs(args, ['radius', 'height', 'color', 'segments'], {
       radius: 1,
       height: 2,
-      color: '#10b981',
+      color: colors.status.online,
       segments: 24,
       roughness: 0.4,
       metalness: 0.2,
@@ -382,7 +383,7 @@ export class PyPrism extends PyObject3D {
       sides: 3, // triangular prism by default
       radius: 1.5,
       height: 2,
-      color: '#f59e0b',
+      color: colors.status.warning,
       roughness: 0.4,
       metalness: 0.2,
       wireframe: false,
@@ -421,7 +422,7 @@ export class PyCompound extends PyObject3D {
     const primPos = (primary && primary.data && Array.isArray(primary.data.position)) ? primary.data.position : [0, 0, 0];
     const primRot = (primary && primary.data && Array.isArray(primary.data.rotation)) ? primary.data.rotation : [0, 0, 0];
     const primScale = (primary && primary.data && Array.isArray(primary.data.scale)) ? primary.data.scale : [1, 1, 1];
-    const primMat = (primary && primary.data && primary.data.material) ? { ...primary.data.material } : { color: '#3b82f6', roughness: 0.4, metalness: 0.2, wireframe: false, opacity: 1.0 };
+    const primMat = (primary && primary.data && primary.data.material) ? { ...primary.data.material } : { color: colors.status.info, roughness: 0.4, metalness: 0.2, wireframe: false, opacity: 1.0 };
 
     super({
       id: genId('compound'),
@@ -449,16 +450,16 @@ export class PyScene {
   public lights: Light3D[] = [];
   public sky: SkyConfig = {
     type: 'day',
-    topColor: '#38bdf8',
-    bottomColor: '#e0f2fe',
+    topColor: colors.theme.accent,
+    bottomColor: colors.sky[50],
     stars: false,
   };
   public grid: GridConfig = {
     enabled: true,
     size: 20,
     divisions: 20,
-    colorCenterLine: '#64748b',
-    colorGrid: '#334155',
+    colorCenterLine: colors.cables.console,
+    colorGrid: colors.topology.gridLine,
   };
   public camera: CameraConfig = {
     position: [10, 10, 14],
@@ -479,9 +480,9 @@ export class PyScene {
     this.grid.enabled = Boolean(params.grid);
 
     // Default Lighting
-    this.add_sun([5, 12, 5], 1.0, '#ffffff');
+    this.add_sun([5, 12, 5], 1.0, colors.common.white);
     this.add_lamp([0, 4, 0], 0.8, '#ffedd5', 15);
-    this.add_ambient(0.3, '#ffffff');
+    this.add_ambient(0.3, colors.common.white);
   }
 
   public add(...objs: unknown[]): this {
@@ -504,16 +505,16 @@ export class PyScene {
   public set_sky(typeOrPreset: string, topColor?: string, bottomColor?: string): this {
     const p = typeOrPreset.toLowerCase();
     if (p === 'day') {
-      this.sky = { type: 'day', topColor: '#38bdf8', bottomColor: '#e0f2fe', stars: false };
+      this.sky = { type: 'day', topColor: colors.theme.accent, bottomColor: colors.sky[50], stars: false };
     } else if (p === 'night') {
-      this.sky = { type: 'night', topColor: '#020617', bottomColor: '#0f172a', stars: true };
+      this.sky = { type: 'night', topColor: '#020617', bottomColor: colors.topology.bg, stars: true };
     } else if (p === 'sunset') {
-      this.sky = { type: 'sunset', topColor: '#581c87', bottomColor: '#f97316', stars: false };
+      this.sky = { type: 'sunset', topColor: '#581c87', bottomColor: 'rgba(249, 115, 22, 1)', stars: false };
     } else {
       this.sky = {
         type: 'gradient' as SkyType,
-        topColor: topColor || '#1e293b',
-        bottomColor: bottomColor || '#0f172a',
+        topColor: topColor || colors.topology.canvasBg,
+        bottomColor: bottomColor || colors.topology.bg,
         stars: false,
       };
     }
@@ -531,7 +532,7 @@ export class PyScene {
     const params = parseNamedOrPosArgs(args, ['position', 'intensity', 'color'], {
       position: [5, 10, 5],
       intensity: 1.0,
-      color: '#ffffff',
+      color: colors.common.white,
     });
     const pos = Array.isArray(params.position) ? params.position : [5, 10, 5];
     this.lights.push({
@@ -566,7 +567,7 @@ export class PyScene {
   public add_ambient(...args: unknown[]): this {
     const params = parseNamedOrPosArgs(args, ['intensity', 'color'], {
       intensity: 0.3,
-      color: '#ffffff',
+      color: colors.common.white,
     });
     this.lights.push({
       id: genId('ambient'),
@@ -583,7 +584,7 @@ export class PyScene {
       position: [0, 8, 0],
       target: [0, 0, 0],
       intensity: 1.0,
-      color: '#ffffff',
+      color: colors.common.white,
     });
     const pos = Array.isArray(params.position) ? params.position : [0, 8, 0];
     const tgt = Array.isArray(params.target) ? params.target : [0, 0, 0];
@@ -688,7 +689,7 @@ export function createPython3DModule(deviceId: string): Record<string, unknown> 
     ),
     Material: (params: unknown) => {
       if (params && typeof params === 'object') return params;
-      return { color: '#3b82f6', roughness: 0.4, metalness: 0.2 };
+      return { color: colors.status.info, roughness: 0.4, metalness: 0.2 };
     },
     // Global helper functions
     show: (scene: unknown, mode: 'window' | 'browser' = 'window') => {

@@ -458,7 +458,7 @@
     outline-offset: 2px;
   }
 
-  /* SVG focus ring for DeviceNode */
+  /* SVG focus ring for DeviceRenderer */
   svg g[role="button"]:focus-visible {
     outline: 2px solid hsl(var(--ring));
     outline-offset: 2px;

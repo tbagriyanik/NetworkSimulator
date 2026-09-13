@@ -645,9 +645,9 @@ export function MobileDeviceView({
       setBrowserContent(`
         <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
           <div style="font-size:48px;margin-bottom:12px;">🚫</div>
-          <h1 style="margin:0 0 8px;font-size:22px;color:#ef4444;">${isTr ? 'Sunucuya Ulaşılamıyor' : 'Server Unreachable'}</h1>
-          <p style="margin:0 0 12px;font-size:14px;color:#64748b;">${connRes.error || (isTr ? 'Ağ geçidi veya sunucu yanıt vermiyor.' : 'Gateway or server not responding.')}</p>
-          <code style="display:inline-block;padding:6px 12px;border-radius:8px;background:#fee2e2;color:#991b1b;font-size:12px;">${displayUrl}</code>
+          <h1 style="margin:0 0 8px;font-size:22px;color:var(--color-danger-500, #ef4444);">${isTr ? 'Sunucuya Ulaşılamıyor' : 'Server Unreachable'}</h1>
+          <p style="margin:0 0 12px;font-size:14px;color:var(--color-secondary-500, #64748b);">${connRes.error || (isTr ? 'Ağ geçidi veya sunucu yanıt vermiyor.' : 'Gateway or server not responding.')}</p>
+          <code style="display:inline-block;padding:6px 12px;border-radius:8px;background:var(--color-danger-100, #fee2e2);color:var(--color-danger-800, #991b1b);font-size:12px;">${displayUrl}</code>
         </main>
       `);
       return;
@@ -675,9 +675,9 @@ export function MobileDeviceView({
         setBrowserContent(`
           <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
             <div style="font-size:48px;margin-bottom:12px;">🌐⚡</div>
-            <h1 style="margin:0 0 8px;font-size:22px;color:#ef4444;">${isTr ? 'Bulut (WAN) Cihazı Bulunamadı' : 'Cloud (WAN) Device Not Found'}</h1>
-            <p style="margin:0 0 12px;font-size:14px;color:#64748b;">${isTr ? 'Ağda bağlı bir Bulut (Cloud/WAN) cihazı bulunmuyor!' : 'No Cloud (WAN) device exists on the network!'}</p>
-            <code style="display:inline-block;padding:6px 12px;border-radius:8px;background:#fee2e2;color:#991b1b;font-size:12px;">${displayUrl}</code>
+            <h1 style="margin:0 0 8px;font-size:22px;color:var(--color-danger-500, #ef4444);">${isTr ? 'Bulut (WAN) Cihazı Bulunamadı' : 'Cloud (WAN) Device Not Found'}</h1>
+            <p style="margin:0 0 12px;font-size:14px;color:var(--color-secondary-500, #64748b);">${isTr ? 'Ağda bağlı bir Bulut (Cloud/WAN) cihazı bulunmuyor!' : 'No Cloud (WAN) device exists on the network!'}</p>
+            <code style="display:inline-block;padding:6px 12px;border-radius:8px;background:var(--color-danger-100, #fee2e2);color:var(--color-danger-800, #991b1b);font-size:12px;">${displayUrl}</code>
           </main>
         `);
         return;
@@ -687,9 +687,9 @@ export function MobileDeviceView({
         setBrowserContent(`
           <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
             <div style="font-size:48px;margin-bottom:12px;">☁️⚡</div>
-            <h1 style="margin:0 0 8px;font-size:22px;color:#ef4444;">${isTr ? 'Bulut Hizmeti Kapalı' : 'Cloud Service Offline'}</h1>
-            <p style="margin:0 0 12px;font-size:14px;color:#64748b;">${isTr ? 'Hedef Bulut (WAN) cihazının gücü kapalı (Power Off) durumda!' : 'Target Cloud (WAN) device is powered off!'}</p>
-            <code style="display:inline-block;padding:6px 12px;border-radius:8px;background:#fee2e2;color:#991b1b;font-size:12px;">${displayUrl}</code>
+            <h1 style="margin:0 0 8px;font-size:22px;color:var(--color-danger-500, #ef4444);">${isTr ? 'Bulut Hizmeti Kapalı' : 'Cloud Service Offline'}</h1>
+            <p style="margin:0 0 12px;font-size:14px;color:var(--color-secondary-500, #64748b);">${isTr ? 'Hedef Bulut (WAN) cihazının gücü kapalı (Power Off) durumda!' : 'Target Cloud (WAN) device is powered off!'}</p>
+            <code style="display:inline-block;padding:6px 12px;border-radius:8px;background:var(--color-danger-100, #fee2e2);color:var(--color-danger-800, #991b1b);font-size:12px;">${displayUrl}</code>
           </main>
         `);
         return;
@@ -697,11 +697,11 @@ export function MobileDeviceView({
       setBrowserTitle(isTr ? 'Genel Arama Kapısı - WAN' : 'Public Search Portal - WAN');
       setBrowserContent(`
         <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-          <div style="font-size:36px;font-weight:bold;color:#3b82f6;margin-bottom:8px;">🌐 ${isTr ? 'Arama Kapısı' : 'Web Portal'}</div>
-          <p style="font-size:14px;color:#64748b;margin-bottom:20px;">${isTr ? 'Genel WAN İnternet Geçidi (8.8.8.8)' : 'Public WAN Internet Gateway (8.8.8.8)'}</p>
-          <div style="border:1px solid #cbd5e1;border-radius:24px;padding:10px 20px;max-width:320px;margin:0 auto 20px;font-size:13px;color:#475569;">🔍 ${isTr ? 'Arama yapın veya URL girin' : 'Search or type URL'}</div>
-          <div style="background:#f1f5f9;padding:16px;border-radius:12px;font-size:12px;color:#334155;text-align:left;max-width:400px;margin:0 auto;">
-            <strong style="color:#1e293b;">${isTr ? 'İnternet Bağlantısı Aktif' : 'Internet Connection Active'}</strong><br/>
+          <div style="font-size:36px;font-weight:bold;color:var(--color-primary-500, #3b82f6);margin-bottom:8px;">🌐 ${isTr ? 'Arama Kapısı' : 'Web Portal'}</div>
+          <p style="font-size:14px;color:var(--color-secondary-500, #64748b);margin-bottom:20px;">${isTr ? 'Genel WAN İnternet Geçidi (8.8.8.8)' : 'Public WAN Internet Gateway (8.8.8.8)'}</p>
+          <div style="border:1px solid var(--color-secondary-300, #cbd5e1);border-radius:24px;padding:10px 20px;max-width:320px;margin:0 auto 20px;font-size:13px;color:var(--color-secondary-700, #475569);">🔍 ${isTr ? 'Arama yapın veya URL girin' : 'Search or type URL'}</div>
+          <div style="background:var(--color-secondary-100, #f1f5f9);padding:16px;border-radius:12px;font-size:12px;color:var(--color-secondary-800, #334155);text-align:left;max-width:400px;margin:0 auto;">
+            <strong style="color:var(--color-secondary-900, #1e293b);">${isTr ? 'İnternet Bağlantısı Aktif' : 'Internet Connection Active'}</strong><br/>
             ${isTr ? 'WAN Köprüsü ve Genel DNS Sunucusu başarıyla yanıt verdi.' : 'WAN Transit Bridge and Public DNS Server responded successfully.'}
           </div>
         </main>
@@ -711,8 +711,8 @@ export function MobileDeviceView({
     else if (targetDev && (targetDev.services?.http?.enabled || targetDev.ip)) {
       const pageContent = targetDev.services?.http?.content || `
         <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-          <h2 style="font-size:24px;color:#10b981;margin-bottom:8px;">Welcome to ${targetDev.name || targetDev.id}</h2>
-          <p style="font-size:14px;color:#475569;">HTTP Web Server is online and active.</p>
+          <h2 style="font-size:24px;color:var(--color-success-500, #10b981);margin-bottom:8px;">Welcome to ${targetDev.name || targetDev.id}</h2>
+          <p style="font-size:14px;color:var(--color-secondary-700, #475569);">HTTP Web Server is online and active.</p>
         </main>
       `;
       setBrowserTitle(`${targetDev.name || targetDev.id} Web`);
@@ -724,8 +724,8 @@ export function MobileDeviceView({
       setBrowserContent(`
         <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
           <h1 style="font-size:40px;margin:0 0 8px;">404</h1>
-          <p style="font-size:14px;color:#64748b;margin:0 0 12px;">${isTr ? 'Web Sayfası Bulunamadı' : 'Web Page Not Found'}</p>
-          <code style="display:inline-block;padding:6px 12px;border-radius:8px;background:#f1f5f9;color:#0f172a;font-size:12px;">${displayUrl}</code>
+          <p style="font-size:14px;color:var(--color-secondary-500, #64748b);margin:0 0 12px;">${isTr ? 'Web Sayfası Bulunamadı' : 'Web Page Not Found'}</p>
+          <code style="display:inline-block;padding:6px 12px;border-radius:8px;background:var(--color-secondary-100, #f1f5f9);color:var(--color-secondary-900, #0f172a);font-size:12px;">${displayUrl}</code>
         </main>
       `);
     }

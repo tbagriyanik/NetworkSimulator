@@ -216,7 +216,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
     .form-group { margin-bottom: 18px; }
     .form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px; }
     .form-group input[type="text"], .form-group input[type="password"], .form-group input[type="number"], .form-group select {
-      width: 100%; padding: 10px 12px; border: 1px solid var(--color-secondary-300); border-radius: 6px; font-size: 13px; font-family: ${INRIA_SANS_STACK}; transition: border-color 0.2s; background-color: var(--color-common-white, #fff); color: var(--color-secondary-900);
+      width: 100%; padding: 10px 12px; border: 1px solid var(--color-secondary-300); border-radius: 6px; font-size: 13px; font-family: ${INRIA_SANS_STACK}; transition: border-color 0.2s; background-color: var(--color-common-white, ${colors.common.white}); color: var(--color-secondary-900);
     }
     .form-group select option {
       font-size: 13px; font-family: ${INRIA_SANS_STACK}; padding: 6px; background-color: var(--color-white); color: var(--color-secondary-900);

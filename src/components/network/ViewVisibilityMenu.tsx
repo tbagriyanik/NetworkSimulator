@@ -107,7 +107,7 @@ export function ViewVisibilityMenu({ isDark = true }: ViewVisibilityMenuProps) {
           onSelect={(e) => e.preventDefault()}
           className="text-xs cursor-pointer"
         >
-          {isTr ? 'Kablo & Port Etiketleri' : 'Cable & Port Labels'}
+          {isTr ? 'Kablo Etiketleri' : 'Cable Labels'}
         </DropdownMenuCheckboxItem>
 
         <DropdownMenuCheckboxItem
@@ -136,12 +136,12 @@ export function ViewVisibilityMenu({ isDark = true }: ViewVisibilityMenuProps) {
             {mode === 'none'
               ? (isTr ? '🚫 Kapalı' : '🚫 Disabled')
               : mode === 'ospf'
-              ? (isTr ? '🌐 OSPF Alanları (Areas)' : '🌐 OSPF Areas')
-              : mode === 'vlan'
-              ? (isTr ? '🏷️ VLAN Bölgeleri' : '🏷️ VLAN Zones')
-              : mode === 'bgp'
-              ? (isTr ? '🏛️ BGP Otonom Sistemler (AS)' : '🏛️ BGP AS Zones')
-              : (isTr ? '📡 IP Alt Ağları (Subnets)' : '📡 IP Subnets')}
+                ? (isTr ? '🌐 OSPF Alanları (Areas)' : '🌐 OSPF Areas')
+                : mode === 'vlan'
+                  ? (isTr ? '🏷️ VLAN Bölgeleri' : '🏷️ VLAN Zones')
+                  : mode === 'bgp'
+                    ? (isTr ? '🏛️ BGP Otonom Sistemler (AS)' : '🏛️ BGP AS Zones')
+                    : (isTr ? '📡 IP Alt Ağları (Subnets)' : '📡 IP Subnets')}
           </DropdownMenuCheckboxItem>
         ))}
 

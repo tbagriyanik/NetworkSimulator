@@ -55,6 +55,7 @@ import { useTopologyDerivedState } from './hooks/useTopologyDerivedState';
 import { useTopologyWindowEvents } from './hooks/useTopologyWindowEvents';
 import { useTopologyPingState } from './hooks/useTopologyPingState';
 import { useVisualConnectionActions } from './hooks/useVisualConnectionActions';
+import { useTopologyDeviceMouseHandlers } from './hooks/useTopologyDeviceMouseHandlers';
 
 import { CanvasToolbar } from './topology/CanvasToolbar';
 import { TopologyDeviceRenderer } from './topology/TopologyDeviceRenderer';
@@ -353,8 +354,6 @@ export function NetworkTopology({
   const touchDraggedDeviceRef = useRef<CanvasDevice | null>(null);
   const activePointerDragRef = useRef(false);
   const activeDragPointerIdRef = useRef<number | null>(null);
-  const lastTapTimeRef = useRef(0);
-  const lastTappedDeviceRef = useRef<string | null>(null);
 
   const mousePosAnimationFrameRef = useRef<number | null>(null);
 
@@ -791,132 +790,43 @@ export function NetworkTopology({
     g.style.transform = `translate3d(${pan.x}px, ${pan.y}px, 0px) scale(${zoom})`;
   }, [pan, zoom, isPanning, isActuallyDragging]);
 
-  const handleDeviceMouseDown = useCallback(
-    (e: ReactMouseEvent, deviceId: string) => {
-      e.stopPropagation();
-      if (!canvasRef.current) return;
-
-      const device = deviceMap.get(deviceId);
-      if (!device) return;
-
-      const currentPingMode = pingModeRef.current || pingMode;
-      const currentPingSource = pingSourceRef.current || pingSource;
-      if (currentPingMode || currentPingSource) {
-        if (!currentPingSource) {
-          setPingSource(device);
-          pingSourceRef.current = device;
-          setPingResult(null);
-
-          pingIsPausedRef.current = false;
-          pingStepModeRef.current = false;
-          if (pingAnimationRef.current) {
-            cancelAnimationFrame(pingAnimationRef.current);
-            pingAnimationRef.current = null;
-          }
-          if (pingCleanupTimeoutRef.current) {
-            clearTimeout(pingCleanupTimeoutRef.current);
-            pingCleanupTimeoutRef.current = null;
-          }
-          setPingAnimation(null);
-          setHopPacketInfos([]);
-          setPacketPopupHop(null);
-
-          return;
-        } else {
-          if (device.id === currentPingSource.id) return;
-          setPingMode(false);
-          pingModeRef.current = false;
-          setPingSource(null);
-          pingSourceRef.current = null;
-          setPacketPopupHop(null);
-          startPingAnimationRef.current?.(currentPingSource.id, device.id);
-          return;
-        }
-      }
-
-      saveToHistory();
-      wasDraggingRef.current = false;
-      canvasRef.current?.focus();
-
-      let newSelectedIds: string[];
-      const currentSelectedIds = [...selectedDeviceIdsRef.current];
-
-      if (e.shiftKey) {
-        newSelectedIds = currentSelectedIds.includes(deviceId)
-          ? currentSelectedIds.filter((id) => id !== deviceId)
-          : [...currentSelectedIds, deviceId];
-
-        if (newSelectedIds.length > 0) {
-          const firstSelectedDevice = deviceMap.get(newSelectedIds[0]);
-          if (firstSelectedDevice) {
-            onDeviceSelect(firstSelectedDevice.type, newSelectedIds[0], undefined, firstSelectedDevice.name);
-          }
-        } else if (onDeviceSelect) {
-          onDeviceSelect(null as unknown as DeviceType, null as unknown as string | undefined, undefined, null as unknown as string | undefined);
-        }
-
-        setSelectedDeviceIds(newSelectedIds);
-        document.body.style.cursor = 'copy';
-      } else {
-        if (!currentSelectedIds.includes(deviceId)) {
-          newSelectedIds = [deviceId];
-          setSelectedDeviceIds(newSelectedIds);
-          onDeviceSelect(device.type, deviceId, isSwitchDeviceType(device.type) ? device.switchModel : undefined, device.name);
-        } else {
-          newSelectedIds = currentSelectedIds;
-        }
-      }
-
-      const initialPositions: { [key: string]: { x: number; y: number } } = {};
-      devices.forEach((d) => {
-        if (newSelectedIds.includes(d.id)) {
-          initialPositions[d.id] = { x: d.x, y: d.y };
-        }
-      });
-      startDeviceDrag(e, deviceId, newSelectedIds, initialPositions);
-    },
-    [
-      devices,
-      selectedDeviceIds,
-      onDeviceSelect,
-      pingMode,
-      pingSource,
-      startDeviceDrag,
-      deviceMap,
-      saveToHistory,
-      setPingSource,
-      setPingResult,
-      setPingAnimation,
-      setHopPacketInfos,
-      setPacketPopupHop,
-      setPingMode,
-    ]
-  );
-
-  const handleDeviceClick = useCallback(
-    (e: ReactMouseEvent, device: CanvasDevice) => {
-      e.stopPropagation();
-
-      setContextMenu(null);
-
-      if (wasDraggingRef.current) return;
-
-      if (pingModeRef.current || pingSourceRef.current) {
-        return;
-      }
-
-      setSelectedNoteIds([]);
-
-      if (!e.shiftKey) {
-        onDeviceSelect(device.type, device.id, isSwitchDeviceType(device.type) ? device.switchModel : undefined, device.name);
-        if (!e.isTrusted) {
-          setSelectedDeviceIds([device.id]);
-        }
-      }
-      canvasRef.current?.focus();
-    },
-    [onDeviceSelect, pingMode, pingSource, setContextMenu]
-  );
+  const {
+    handleDeviceMouseDown,
+    handleDeviceClick,
+    handleDeviceDoubleClick,
+    handleDevicePointerDown,
+  } = useTopologyDeviceMouseHandlers({
+    devices,
+    deviceMap,
+    canvasRef,
+    selectedDeviceIds,
+    selectedDeviceIdsRef,
+    wasDraggingRef,
+    activePointerDragRef,
+    activeDragPointerIdRef,
+    setSelectedDeviceIds,
+    setSelectedNoteIds,
+    setContextMenu,
+    onDeviceSelect,
+    onDeviceDoubleClick,
+    saveToHistory,
+    startDeviceDrag,
+    startPingAnimationRef,
+    pingMode,
+    pingModeRef,
+    pingSource,
+    pingSourceRef,
+    pingIsPausedRef,
+    pingStepModeRef,
+    pingAnimationRef,
+    pingCleanupTimeoutRef,
+    setPingMode,
+    setPingSource,
+    setPingResult,
+    setPingAnimation,
+    setHopPacketInfos,
+    setPacketPopupHop,
+  });
 
   const { handleDeviceKeyDown } = useDeviceNavigation({
     devices,
@@ -930,55 +840,6 @@ export function NetworkTopology({
     panRef,
     svgContentGroupRef,
   });
-
-  const handleDeviceDoubleClick = useCallback(
-    (device: CanvasDevice) => {
-      if (onDeviceDoubleClick) {
-        onDeviceDoubleClick(device.type, device.id);
-      } else {
-        if (device.type === 'pc' || device.type === 'iot') {
-          onDeviceSelect('pc', device.id, undefined, device.name);
-        } else if (isSwitchDeviceType(device.type) || device.type === 'router') {
-          onDeviceSelect(device.type, device.id, isSwitchDeviceType(device.type) ? device.switchModel : undefined, device.name);
-        }
-      }
-    },
-    [onDeviceDoubleClick, onDeviceSelect]
-  );
-
-  const handleDevicePointerDown = useCallback(
-    (e: React.PointerEvent<SVGGElement>, deviceId: string) => {
-      if (e.pointerType === 'mouse') return;
-      if (activeDragPointerIdRef.current !== null) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-      activePointerDragRef.current = true;
-      activeDragPointerIdRef.current = e.pointerId;
-
-      try {
-        e.currentTarget.setPointerCapture(e.pointerId);
-      } catch {
-        // SVG pointer capture fallback
-      }
-
-      const device = deviceMap.get(deviceId);
-      if (device) {
-        const now = Date.now();
-        if (now - lastTapTimeRef.current < 300 && lastTappedDeviceRef.current === deviceId) {
-          handleDeviceDoubleClick(device);
-          lastTapTimeRef.current = 0;
-          lastTappedDeviceRef.current = null;
-        } else {
-          lastTapTimeRef.current = now;
-          lastTappedDeviceRef.current = deviceId;
-        }
-      }
-
-      handleDeviceMouseDown(e as unknown as ReactMouseEvent, deviceId);
-    },
-    [handleDeviceMouseDown, deviceMap, handleDeviceDoubleClick]
-  );
 
   const {
     handleDeviceTouchStart,

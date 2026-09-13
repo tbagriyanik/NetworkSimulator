@@ -19,35 +19,37 @@ export interface AreaZone {
   badgeLabel: string;
 }
 
+import { colors } from '@/lib/design-tokens/colors';
+
 const PALETTES = {
   ospf: [
-    '#06b6d4', // cyan-500 (Area 0 - Backbone)
-    '#10b981', // emerald-500 (Area 1)
-    '#f59e0b', // amber-500 (Area 2)
-    '#a855f7', // purple-500 (Area 3)
-    '#ec4899', // pink-500
-    '#3b82f6', // blue-500
+    colors.cables.wireless, // cyan-500 (Area 0 - Backbone)
+    colors.status.online,   // emerald-500 (Area 1)
+    colors.status.warning,  // amber-500 (Area 2)
+    colors.purple[500],     // purple-500 (Area 3)
+    colors.cables.serial,   // pink-500
+    colors.status.info,     // blue-500
   ],
   vlan: [
-    '#3b82f6', // blue (VLAN 1)
-    '#10b981', // emerald (VLAN 10)
-    '#f97316', // orange (VLAN 20)
-    '#8b5cf6', // violet (VLAN 30)
-    '#ec4899', // pink (VLAN 40)
-    '#06b6d4', // cyan (VLAN 50)
-    '#eab308', // yellow (VLAN 100)
+    colors.status.info,     // blue (VLAN 1)
+    colors.status.online,   // emerald (VLAN 10)
+    'rgba(249, 115, 22, 1)', // orange (VLAN 20)
+    colors.cables.fiber,    // violet (VLAN 30)
+    colors.cables.serial,   // pink (VLAN 40)
+    colors.cables.wireless, // cyan (VLAN 50)
+    colors.packet.http,     // yellow (VLAN 100)
   ],
   bgp: [
-    '#14b8a6', // teal-500
-    '#f43f5e', // rose-500
-    '#6366f1', // indigo-500
-    '#84cc16', // lime-500
+    'rgba(20, 184, 166, 1)', // teal-500
+    'rgba(244, 63, 94, 1)',  // rose-500
+    colors.indigo[500],      // indigo-500
+    'rgba(132, 204, 22, 1)', // lime-500
   ],
   subnet: [
-    '#0ea5e9', // sky-500
-    '#8b5cf6', // violet-500
-    '#10b981', // emerald-500
-    '#f59e0b', // amber-500
+    colors.sky[500],        // sky-500
+    colors.cables.fiber,    // violet-500
+    colors.status.online,   // emerald-500
+    colors.status.warning,  // amber-500
   ],
 };
 

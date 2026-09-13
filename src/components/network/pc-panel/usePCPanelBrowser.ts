@@ -275,11 +275,11 @@ export function usePCPanelBrowser({
       setHttpAppTitle(language === 'tr' ? 'Genel Arama Kapısı - WAN' : 'Public Search Portal - WAN');
       setHttpAppContent(`
         <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-          <div style="font-size:36px;font-weight:bold;color:#3b82f6;margin-bottom:8px;">🌐 ${language === 'tr' ? 'Arama Kapısı' : 'Web Portal'}</div>
-          <p style="font-size:14px;color:#64748b;margin-bottom:20px;">${language === 'tr' ? 'Genel WAN İnternet Geçidi (1.1.1.1)' : 'Public WAN Internet Gateway (1.1.1.1)'}</p>
-          <div style="border:1px solid #cbd5e1;border-radius:24px;padding:10px 20px;max-width:320px;margin:0 auto 20px;font-size:13px;color:#475569;">🔍 ${language === 'tr' ? 'Arama yapın veya URL girin' : 'Search or type URL'}</div>
-          <div style="background:#f1f5f9;padding:16px;border-radius:12px;font-size:12px;color:#334155;text-align:left;max-width:400px;margin:0 auto;">
-            <strong style="color:#1e293b;">${language === 'tr' ? 'İnternet Bağlantısı Aktif' : 'Internet Connection Active'}</strong><br/>
+          <div style="font-size:36px;font-weight:bold;color:var(--color-primary-500, #3b82f6);margin-bottom:8px;">🌐 ${language === 'tr' ? 'Arama Kapısı' : 'Web Portal'}</div>
+          <p style="font-size:14px;color:var(--color-secondary-500, #64748b);margin-bottom:20px;">${language === 'tr' ? 'Genel WAN İnternet Geçidi (1.1.1.1)' : 'Public WAN Internet Gateway (1.1.1.1)'}</p>
+          <div style="border:1px solid var(--color-secondary-300, #cbd5e1);border-radius:24px;padding:10px 20px;max-width:320px;margin:0 auto 20px;font-size:13px;color:var(--color-secondary-700, #475569);">🔍 ${language === 'tr' ? 'Arama yapın veya URL girin' : 'Search or type URL'}</div>
+          <div style="background:var(--color-secondary-100, #f1f5f9);padding:16px;border-radius:12px;font-size:12px;color:var(--color-secondary-800, #334155);text-align:left;max-width:400px;margin:0 auto;">
+            <strong style="color:var(--color-secondary-900, #1e293b);">${language === 'tr' ? 'İnternet Bağlantısı Aktif' : 'Internet Connection Active'}</strong><br/>
             ${language === 'tr' ? 'WAN Köprüsü ve Genel DNS Sunucusu başarıyla yanıt verdi.' : 'WAN Transit Bridge and Public DNS Server responded successfully.'}
           </div>
         </main>

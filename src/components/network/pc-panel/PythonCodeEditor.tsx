@@ -32,7 +32,7 @@ export const SYNTAX_COLORS = {
   builtin: colors.theme.accent,
   string: colors.green[300],
   number: colors.amber[400],
-  constant: '#fb7185',
+  constant: colors.syntax.constant,
   comment: colors.topology.subText,
 } as const;
 

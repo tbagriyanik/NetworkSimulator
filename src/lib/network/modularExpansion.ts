@@ -24,6 +24,8 @@ export interface DeviceSlotInfo {
   installedModuleId?: string;
 }
 
+import { colors } from '@/lib/design-tokens/colors';
+
 export const MODULE_CATALOG: Record<string, ExpansionModule> = {
   'WIC-2T': {
     id: 'WIC-2T',
@@ -33,7 +35,7 @@ export const MODULE_CATALOG: Record<string, ExpansionModule> = {
     descriptionTr: '2 portlu seri WAN arayüz kartı (Kiralık hatlar, HDLC ve Frame Relay bağlantıları için).',
     portsCount: 2,
     badge: 'Serial 2T',
-    color: '#0284c7', // sky-600
+    color: colors.theme.primary, // sky-600
     portGenerator: (slotIndex: number) => {
       const port1Id = `Serial${slotIndex}/0/0`;
       const port2Id = `Serial${slotIndex}/0/1`;
@@ -102,7 +104,7 @@ export const MODULE_CATALOG: Record<string, ExpansionModule> = {
     descriptionTr: '4 portlu 10/100BASE-TX Fast Ethernet entegre switch modülü.',
     portsCount: 4,
     badge: '4-Port SW',
-    color: '#10b981', // emerald-500
+    color: colors.status.online, // emerald-500
     portGenerator: (slotIndex: number) => {
       const canvasPorts: CanvasPort[] = [];
       const switchPorts: Port[] = [];
@@ -148,7 +150,7 @@ export const MODULE_CATALOG: Record<string, ExpansionModule> = {
     descriptionTr: '10G Fiber Optik uplink modülü (Tek modlu yüksek hızlı omurga bağlantıları için).',
     portsCount: 1,
     badge: '10G Fiber',
-    color: '#8b5cf6', // purple-500
+    color: colors.cables.fiber, // purple-500
     portGenerator: (slotIndex: number) => {
       const portId = `TenGigabitEthernet${slotIndex}/0/0`;
       const canvasPorts: CanvasPort[] = [
@@ -192,7 +194,7 @@ export const MODULE_CATALOG: Record<string, ExpansionModule> = {
     descriptionTr: '1 portlu Gigabit Ethernet RJ-45 ağ genişletme modülü.',
     portsCount: 1,
     badge: '1GE Copper',
-    color: '#f59e0b', // amber-500
+    color: colors.status.warning, // amber-500
     portGenerator: (slotIndex: number) => {
       const portId = `GigabitEthernet${slotIndex}/0/0`;
       const canvasPorts: CanvasPort[] = [

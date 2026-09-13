@@ -60,7 +60,7 @@ describe('NetworkTopology Re-render Profiling', () => {
   });
 
   it('should use memo/React.memo for device rendering', () => {
-    const memoizedComponents = ['DeviceNode', 'ConnectionLine', 'DeviceRenderer'];
+    const memoizedComponents = ['ConnectionLine', 'DeviceRenderer'];
     expect(memoizedComponents.length).toBeGreaterThan(0);
   });
 

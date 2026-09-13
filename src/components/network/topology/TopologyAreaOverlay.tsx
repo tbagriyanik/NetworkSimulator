@@ -99,7 +99,7 @@ export function TopologyAreaOverlay({
                   fontSize={10 / zoom}
                   fontWeight="bold"
                   fontFamily="var(--font-geist-mono), monospace"
-                  fill={isDark ? '#f8fafc' : '#0f172a'}
+                  fill={isDark ? 'var(--color-slate-50, #f8fafc)' : 'var(--color-slate-900, #0f172a)'}
                   textAnchor="start"
                 >
                   {labelText}

@@ -52,8 +52,6 @@ import {
 import type { ExampleProject, ExampleProjectLevel } from '@/lib/network/exampleProjects';
 import { useGuidedMode } from '@/hooks/useGuidedMode';
 import { useExamMode } from '@/hooks/useExamMode';
-import { MultiDeviceWindowManager } from '@/components/network/MultiDeviceWindowManager';
-import { WindowSwitcherModal } from '@/components/network/WindowSwitcherModal';
 import { useMultiWindowStore } from '@/hooks/useMultiWindowStore';
 import { useWindowStore } from '@/hooks/useWindowStore';
 
@@ -88,18 +86,10 @@ import { useNetworkEventListeners } from '@/hooks/useNetworkEventListeners';
 import { usePWA } from '@/hooks/usePWA';
 import { computeLiveSummary } from '@/lib/network/liveSummary';
 
-const { RouterPanel, UnifiedDevicePanel, PCWindow, FirewallWindow, TabletSplitView, RefreshReportPanel } = {
-  RouterPanel: dynamic(() => import('@/components/network/panels').then((m) => m.RouterPanel)),
-  UnifiedDevicePanel: dynamic(() => import('@/components/network/panels').then((m) => m.UnifiedDevicePanel)),
-  PCWindow: dynamic(() => import('@/components/network/panels').then((m) => m.PCWindow), { ssr: false }),
-  FirewallWindow: dynamic(() => import('@/components/network/panels').then((m) => m.FirewallWindow), { ssr: false }),
+const { TabletSplitView, RefreshReportPanel } = {
   TabletSplitView: dynamic(() => import('@/components/network/panels').then((m) => m.TabletSplitView), { ssr: false }),
   RefreshReportPanel: dynamic(() => import('@/components/network/panels').then((m) => m.RefreshReportPanel), { ssr: false }),
 };
-
-const ProjectPickerDialog = dynamic(() => import('@/components/network/ProjectPickerDialog').then((m) => m.ProjectPickerDialog));
-const OnboardingDialog = dynamic(() => import('@/components/network/OnboardingDialog').then((m) => m.OnboardingDialog));
-const TopologyGeneratorDialog = dynamic(() => import('@/components/network/topology/TopologyGeneratorDialog').then(m => m.TopologyGeneratorDialog), { ssr: false });
 
 import { TabType, ALL_TABS, exampleLevelOrder } from './page.types';
 import { usePageProjectStorage } from './usePageProjectStorage';
@@ -112,6 +102,8 @@ import { usePageHistoryManager } from './usePageHistoryManager';
 import { usePageSyncEffects } from './usePageSyncEffects';
 import { usePageInitialLoad } from './usePageInitialLoad';
 import { PageOverlayPanels } from './PageOverlayPanels';
+import { PageDialogs } from './PageDialogs';
+import { PagePanelWindows } from './PagePanelWindows';
 
 export default function Home({ initialProjectId }: { initialProjectId?: string }) {
   const { t, language, setLanguage } = useLanguage();
@@ -297,18 +289,6 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     message: string;
     onConfirm: (save: boolean) => void;
   } | null>(null);
-
-  const exampleLevelLabels = useMemo(() => ({
-    basic: t.levelBasic,
-    intermediate: t.levelIntermediate,
-    advanced: t.levelAdvanced
-  }), [t]);
-
-  const exampleLevelHints = useMemo(() => ({
-    basic: t.basicHint,
-    intermediate: t.intermediateHint,
-    advanced: (t as Record<string, string>).advancedHint ?? t.intermediateHint
-  }), [t]);
 
   const [groupedExampleProjects, setGroupedExampleProjects] = useState<Record<ExampleProjectLevel, ExampleProject[]>>(
     () => ({ basic: [], intermediate: [], advanced: [] })
@@ -980,66 +960,57 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
             setHelpLevel={useAppStore.getState().setHelpLevel}
           />
 
-          {isGeneratorOpen && (
-            <TopologyGeneratorDialog
-              open={isGeneratorOpen}
-              onOpenChange={setIsGeneratorOpen}
-              onGenerate={handleGeneratedTopology}
-            />
-          )}
+          <PageDialogs
+            t={t}
+            isDark={isDark}
+            language={language}
+            isGeneratorOpen={isGeneratorOpen}
+            setIsGeneratorOpen={setIsGeneratorOpen}
+            handleGeneratedTopology={handleGeneratedTopology}
+            showProjectPicker={showProjectPicker}
+            setShowProjectPicker={setShowProjectPicker}
+            projectPickerTab={projectPickerTab}
+            setProjectPickerTab={setProjectPickerTab}
+            projectSearchQuery={projectSearchQuery}
+            setProjectSearchQuery={setProjectSearchQuery}
+            groupedExampleProjects={groupedExampleProjects}
+            exampleLevelOrder={exampleLevelOrder}
+            getAvailableProjects={getAvailableProjects}
+            getAvailableExams={getAvailableExams}
+            resetToEmptyProject={resetToEmptyProject}
+            applyExampleProject={applyExampleProject}
+            applyExampleProjectAsTemplate={applyExampleProjectAsTemplate}
+            handleStartGuidedProject={handleStartGuidedProject}
+            startExamFromCatalog={startExamFromCatalog}
+            loadProjectData={loadProjectData}
+            setZoom={setZoom}
+            setPan={setPan}
+            handleConvertProjectToExam={handleConvertProjectToExam}
+            fileInputRef={fileInputRef}
+            showOnboarding={showOnboarding}
+            onboardingStep={onboardingStep}
+            onboardingSteps={onboardingSteps}
+            closeOnboardingForever={closeOnboardingForever}
+            prevOnboarding={prevOnboarding}
+            nextOnboarding={nextOnboarding}
+          />
 
-          {showProjectPicker && (
-            <ProjectPickerDialog
-              open={showProjectPicker}
-              onOpenChange={setShowProjectPicker}
-              t={t}
-              isDark={isDark}
-              language={language}
-              projectPickerTab={projectPickerTab}
-              setProjectPickerTab={setProjectPickerTab}
-              projectSearchQuery={projectSearchQuery}
-              setProjectSearchQuery={setProjectSearchQuery}
-              groupedExampleProjects={groupedExampleProjects}
-              exampleLevelLabels={exampleLevelLabels}
-              exampleLevelHints={exampleLevelHints}
-              exampleLevelOrder={exampleLevelOrder}
-              getAvailableProjects={getAvailableProjects}
-              getAvailableExams={getAvailableExams}
-              resetToEmptyProject={resetToEmptyProject}
-              applyExampleProject={applyExampleProject}
-              applyExampleProjectAsTemplate={applyExampleProjectAsTemplate}
-              startGuidedProject={handleStartGuidedProject}
-              startExamProject={startExamFromCatalog}
-              loadProjectData={loadProjectData}
-              setZoom={setZoom}
-              setPan={setPan}
-              closeProjectPicker={() => setShowProjectPicker(false)}
-              onOpenFile={() => fileInputRef.current?.click()}
-              onConvertProjectToExam={handleConvertProjectToExam}
-            />
-          )}
-
-          {showOnboarding && (
-            <OnboardingDialog
-              open={showOnboarding}
-              t={t}
-              isDark={isDark}
-              onboardingStep={onboardingStep}
-              onboardingSteps={onboardingSteps}
-              closeOnboardingForever={closeOnboardingForever}
-              prevOnboarding={prevOnboarding}
-              nextOnboarding={nextOnboarding}
-            />
-          )}
-
-          <UnifiedDevicePanel
-            isOpen={showUnifiedDeviceModal && !isTablet}
-            onOpenChange={setShowUnifiedDeviceModal}
-            activeTab={unifiedDeviceActiveTab}
-            onTabChange={setUnifiedDeviceActiveTab}
-            deviceId={activeDeviceId}
-            deviceType={activeDeviceType}
+          <PagePanelWindows
+            t={t}
+            theme={theme}
+            isDark={isDark}
+            isTR={isTR}
+            language={language}
+            isTablet={isTablet}
+            helpLevel={helpLevel}
+            showUnifiedDeviceModal={showUnifiedDeviceModal}
+            setShowUnifiedDeviceModal={setShowUnifiedDeviceModal}
+            unifiedDeviceActiveTab={unifiedDeviceActiveTab}
+            setUnifiedDeviceActiveTab={setUnifiedDeviceActiveTab}
+            activeDeviceId={activeDeviceId}
+            activeDeviceType={activeDeviceType}
             deviceStates={deviceStates}
+            deviceOutputs={deviceOutputs}
             topologyDevices={topologyDevices}
             topologyConnections={topologyConnections}
             handleCommand={handleCommand}
@@ -1047,112 +1018,39 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
             handleUpdateHistory={handleUpdateHistory}
             confirmDialog={confirmDialog}
             setConfirmDialog={setConfirmDialog}
-            t={t}
-            theme={theme}
-            language={language}
-            helpLevel={helpLevel}
-            isDark={isDark}
             isExecutingCommand={isExecutingCommand}
             output={output}
             prompt={prompt}
             state={state}
             activeDeviceTasks={activeDeviceTasks}
             taskContext={taskContext}
-            modalPosition={unifiedDrag.position}
-            modalSize={unifiedDrag.size}
-            handlePointerDown={unifiedDrag.handlePointerDown}
-            handleResizeStart={unifiedDrag.handleResizeStart}
-          />
-
-          <FirewallWindow
+            unifiedDrag={unifiedDrag}
+            firewallDrag={firewallDrag}
             showFirewallPanel={showFirewallPanel}
             setShowFirewallPanel={setShowFirewallPanel}
             activeFirewallId={activeFirewallId}
-            topologyDevices={topologyDevices}
-            t={t}
-            theme={theme}
-            isDark={isDark}
-            isTR={isTR}
             firewallActiveTab={firewallActiveTab}
             setFirewallActiveTab={setFirewallActiveTab}
-            deviceStates={deviceStates}
-            deviceOutputs={deviceOutputs}
             handleExecuteCommand={handleExecuteCommand}
-            handleUpdateHistory={handleUpdateHistory}
-            setConfirmDialog={setConfirmDialog}
-            confirmDialog={confirmDialog}
             toggleDevicePower={toggleDevicePower}
             updateDeviceConfig={updateDeviceConfig}
-            firewallDrag={firewallDrag}
-          />
-
-          <PCWindow
             showPCPanel={showPCPanel}
             setShowPCPanel={setShowPCPanel}
-            isTablet={isTablet}
             showPCDeviceId={showPCDeviceId}
-            topologyDevices={topologyDevices}
-            topologyConnections={topologyConnections}
             cableInfo={cableInfo}
             pcPanelInitialTab={pcPanelInitialTab}
-            deviceStates={deviceStates}
-            deviceOutputs={deviceOutputs}
             pcOutputs={pcOutputs}
             setPcOutputs={setPcOutputs as PcOutputsSetter}
             pcHistories={pcHistories}
             handleUpdatePCHistory={handleUpdatePCHistory}
-            handleExecuteCommand={handleExecuteCommand}
             handlePCPanelNavigateWrapper={handlePCPanelNavigateWrapper}
             handleDeviceDelete={handleDeviceDelete}
             focusedOverlay={focusedOverlay}
-            isDark={isDark}
-            t={t}
-            toggleDevicePower={toggleDevicePower}
             pcDrag={pcDrag}
-          />
-
-          <MultiDeviceWindowManager
-            topologyDevices={topologyDevices}
-            topologyConnections={topologyConnections}
-            cableInfo={cableInfo}
-            deviceStates={deviceStates}
-            deviceOutputs={deviceOutputs}
-            pcOutputs={pcOutputs}
-            setPcOutputs={setPcOutputs as PcOutputsSetter}
-            pcHistories={pcHistories}
-            handleUpdatePCHistory={handleUpdatePCHistory}
-            handleUpdateHistory={handleUpdateHistory}
-            handleExecuteCommand={handleExecuteCommand}
-            handleDeviceDelete={handleDeviceDelete}
-            isDark={isDark}
-            language={language}
-            theme={theme}
-            t={t}
-            toggleDevicePower={toggleDevicePower}
-            updateDeviceConfig={updateDeviceConfig}
-            confirmDialog={confirmDialog}
-            setConfirmDialog={setConfirmDialog}
-            isTablet={isTablet}
-          />
-
-          <WindowSwitcherModal
-            topologyDevices={topologyDevices}
-            isDark={isDark}
-            language={language}
-          />
-
-          <RouterPanel
-            deviceId={showRouterDeviceId}
-            isVisible={showRouterPanel && !isTablet}
-            onClose={() => setShowRouterPanel(false)}
-            topologyDevices={topologyDevices || undefined}
-            topologyConnections={topologyConnections}
-            deviceStates={deviceStates}
-            modalPosition={routerDrag.position}
-            modalSize={routerDrag.size}
-            handlePointerDown={routerDrag.handlePointerDown}
-            handleResizeStart={routerDrag.handleResizeStart}
-            className={focusedOverlay === 'router-info' ? "border-emerald-400 shadow-[0_0_0_1px_rgba(52,211,153,0.35)]" : "border-emerald-950/80"}
+            showRouterPanel={showRouterPanel}
+            setShowRouterPanel={setShowRouterPanel}
+            showRouterDeviceId={showRouterDeviceId}
+            routerDrag={routerDrag}
           />
 
           <main className={cn(

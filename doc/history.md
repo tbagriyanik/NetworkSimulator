@@ -96,9 +96,8 @@ Yeniden eskiye, tarih mevcuttur.
 - **🩺 "Neden Ping Gitmiyor?" Kök Neden Teşhisi (`networkTroubleshooter.ts`, `NetworkDiagnosticsModal.tsx`)**: L1 fiziksel link/shutdown, L2 VLAN/Trunk/Native VLAN uyumsuzlukları, L3 Subnet & Default Gateway eksikliklerini otomatik tarayıp çözüm önerileri sunan teşhis motoru ve modalı geliştirildi.
 - **💡 Akıllı CLI İpucu & Sözdizimi Tamamlama Motoru (`smartCliHints.ts`)**: `ip address`, `ip route`, `switchport mode`, `router ospf` komutlarında eksik parametre girildiğinde doğru formatı ve parametre şablonunu terminalde anında gösteren akıllı yönlendirme uygulandı.
 - **📐 Otomatik Topoloji Düzenleme (`autoLayoutEngine.ts`)**: Karışık ağları tek tuşla 3-Tier Hiyerarşik (Core-Distribution-Access), Yıldız (Star), Halka (Ring) veya Matris (Grid) düzenlerine dizen yerleşim algoritması ve Toolbar menüsü eklendi.
-- **🏷️ Kablo & Port Etiketleri Aç/Kapa (`ViewVisibilityMenu.tsx`)**: Kablolar üzerindeki arayüz isimlerini (Gi0/0, Fa0/1) tuvalde doğrudan açıp kapatabilme seçeneği ve dinamik SVG etiketleri eklendi.
+- **🏷️ Kablo Etiketleri Aç/Kapa (`ViewVisibilityMenu.tsx`)**: Kablolar üzerindeki arayüz isimlerini (Gi0/0, Fa0/1) tuvalde doğrudan açıp kapatabilme seçeneği ve dinamik SVG etiketleri eklendi.
 - **🚀 Canlı Simülasyon Hız Kontrolü (`SimulationSpeedControl.tsx`)**: Topolojide paket simülasyon hızı `0.5x`, `1x`, `2x`, `5x` olarak ayarlanabilmekte, simülasyon duraklatılabilmekte ve adım adım (step-by-step) paket takibi yapılabilmektedir.
-- **⚡ Hızlı Komut Paleti (`ShortcutPaletteModal.tsx`)**: `Ctrl+K` / `Cmd+K` kısayolu ile açılan arama destekli interaktif komut paleti eklendi.
 - **🛡️ Web Crypto API (AES-GCM) Şifreli Depolama (`secureStorage.ts`)**: 256-bit AES-GCM Web Crypto API standardı kullanılarak cihaz bazlı güvenli veri depolama katmanı ve Vitest birim testleri uygulandı.
 
 ## v4.8.0 — 2026-09-08

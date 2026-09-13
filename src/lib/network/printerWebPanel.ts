@@ -1,4 +1,5 @@
 import type { CanvasDevice } from '@/components/network/networkTopology.types';
+import { colors } from '@/lib/design-tokens/colors';
 
 export function generatePrinterWebPanelContent(device: CanvasDevice, language: string): string {
   const isTr = language === 'tr';
@@ -12,27 +13,27 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
   const wifiSsid = device.wifi?.ssid || '';
 
   return `
-    <div style="font-family:'Inria Sans',sans-serif;background:#0f172a;color:#f8fafc;padding:24px;min-height:100%;box-sizing:border-box;">
-      <div style="max-w:800px;margin:0 auto;background:#1e293b;border:1px solid #334155;border-radius:16px;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.5);">
+    <div style="font-family:'Inria Sans',sans-serif;background:${colors.topology.bg};color:${colors.topology.deviceText};padding:24px;min-height:100%;box-sizing:border-box;">
+      <div style="max-w:800px;margin:0 auto;background:${colors.topology.canvasBg};border:1px solid ${colors.topology.gridLine};border-radius:16px;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.5);">
         
         <!-- Header -->
-        <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #334155;padding-bottom:16px;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid ${colors.topology.gridLine};padding-bottom:16px;margin-bottom:20px;">
           <div style="display:flex;align-items:center;gap:12px;">
-            <div style="width:48px;height:48px;border-radius:12px;background:rgba(236,72,153,0.15);border:1px solid rgba(236,72,153,0.3);display:flex;align-items:center;justify-content:center;color:#ec4899;font-size:24px;">
+            <div style="width:48px;height:48px;border-radius:12px;background:rgba(236,72,153,0.15);border:1px solid rgba(236,72,153,0.3);display:flex;align-items:center;justify-content:center;color:${colors.cables.serial};font-size:24px;">
               🖨️
             </div>
             <div>
-              <h1 style="margin:0;font-size:18px;font-weight:700;color:#f8fafc;">${name}</h1>
-              <div style="font-size:12px;color:#94a3b8;margin-top:2px;">Embedded Print Server Web Management</div>
+              <h1 style="margin:0;font-size:18px;font-weight:700;color:${colors.topology.deviceText};">${name}</h1>
+              <div style="font-size:12px;color:${colors.topology.subText};margin-top:2px;">Embedded Print Server Web Management</div>
             </div>
           </div>
           <div style="text-align:right;display:flex;align-items:center;gap:10px;">
-            <span style="display:inline-block;padding:4px 12px;border-radius:9999px;background:${device.status === 'offline' ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)'};color:${device.status === 'offline' ? '#f87171' : '#34d399'};font-size:12px;font-weight:600;">
+            <span style="display:inline-block;padding:4px 12px;border-radius:9999px;background:${device.status === 'offline' ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)'};color:${device.status === 'offline' ? colors.terminal.error : colors.status.online};font-size:12px;font-weight:600;">
               ● ${device.status === 'offline' ? (isTr ? 'Çevrimdışı / Kapalı' : 'Offline / Disabled') : (isTr ? 'Çevrimiçi / Hazır' : 'Online / Ready')}
             </span>
             <button type="button"
               onclick="if(window.parent) window.parent.postMessage({type:'TOGGLE_PRINTER_WIFI',deviceId:'${device.id}'},'*')"
-              style="background:${device.wifi?.enabled !== false ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)'};border:1px solid ${device.wifi?.enabled !== false ? 'rgba(239,68,68,0.4)' : 'rgba(16,185,129,0.4)'};color:${device.wifi?.enabled !== false ? '#f87171' : '#34d399'};padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;"
+              style="background:${device.wifi?.enabled !== false ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)'};border:1px solid ${device.wifi?.enabled !== false ? 'rgba(239,68,68,0.4)' : 'rgba(16,185,129,0.4)'};color:${device.wifi?.enabled !== false ? colors.terminal.error : colors.status.online};padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;"
               onmouseover="this.style.opacity='0.8'"
               onmouseout="this.style.opacity='1'"
             >
@@ -44,101 +45,101 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
 
         <!-- Network Info Grid -->
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px;">
-          <div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:12px;">
-            <div style="font-size:11px;color:#64748b;text-transform:uppercase;font-weight:600;">IP Address (${mode})</div>
-            <div style="font-family:'Geist Mono','Courier New',monospace;font-size:14px;color:#38bdf8;margin-top:4px;font-weight:600;">${ip}</div>
+          <div style="background:${colors.topology.bg};border:1px solid ${colors.topology.gridLine};border-radius:10px;padding:12px;">
+            <div style="font-size:11px;color:${colors.cables.console};text-transform:uppercase;font-weight:600;">IP Address (${mode})</div>
+            <div style="font-family:'Geist Mono','Courier New',monospace;font-size:14px;color:${colors.topology.deviceSelectedBorder};margin-top:4px;font-weight:600;">${ip}</div>
           </div>
-          <div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:12px;">
-            <div style="font-size:11px;color:#64748b;text-transform:uppercase;font-weight:600;">Subnet / Gateway</div>
-            <div style="font-family:'Geist Mono','Courier New',monospace;font-size:12px;color:#cbd5e1;margin-top:4px;">${subnet} / ${gateway}</div>
+          <div style="background:${colors.topology.bg};border:1px solid ${colors.topology.gridLine};border-radius:10px;padding:12px;">
+            <div style="font-size:11px;color:${colors.cables.console};text-transform:uppercase;font-weight:600;">Subnet / Gateway</div>
+            <div style="font-family:'Geist Mono','Courier New',monospace;font-size:12px;color:${colors.terminal.output};margin-top:4px;">${subnet} / ${gateway}</div>
           </div>
-          <div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:12px;display:flex;flex-direction:column;justify-content:space-between;">
+          <div style="background:${colors.topology.bg};border:1px solid ${colors.topology.gridLine};border-radius:10px;padding:12px;display:flex;flex-direction:column;justify-content:space-between;">
             <div>
-              <div style="font-size:11px;color:#64748b;text-transform:uppercase;font-weight:600;">Wi‑Fi Network (SSID)</div>
-              <div style="font-family:'Geist Mono','Courier New',monospace;font-size:14px;color:${device.wifi?.enabled !== false ? '#a855f7' : '#94a3b8'};margin-top:4px;font-weight:600;">
+              <div style="font-size:11px;color:${colors.cables.console};text-transform:uppercase;font-weight:600;">Wi‑Fi Network (SSID)</div>
+              <div style="font-family:'Geist Mono','Courier New',monospace;font-size:14px;color:${device.wifi?.enabled !== false ? colors.purple[500] : colors.topology.subText};margin-top:4px;font-weight:600;">
                 📶 ${wifiSsid || (isTr ? '(Devre Dışı)' : '(Disabled)')}
               </div>
             </div>
             <button type="button"
               onclick="if(window.parent) window.parent.postMessage({type:'TOGGLE_PRINTER_WIFI',deviceId:'${device.id}'},'*')"
-              style="margin-top:8px;background:${device.wifi?.enabled !== false ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)'};border:1px solid ${device.wifi?.enabled !== false ? 'rgba(239,68,68,0.4)' : 'rgba(16,185,129,0.4)'};color:${device.wifi?.enabled !== false ? '#f87171' : '#34d399'};padding:5px 10px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;width:100%;text-align:center;"
+              style="margin-top:8px;background:${device.wifi?.enabled !== false ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)'};border:1px solid ${device.wifi?.enabled !== false ? 'rgba(239,68,68,0.4)' : 'rgba(16,185,129,0.4)'};color:${device.wifi?.enabled !== false ? colors.terminal.error : colors.status.online};padding:5px 10px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;width:100%;text-align:center;"
               onmouseover="this.style.opacity='0.8'"
               onmouseout="this.style.opacity='1'"
             >
               ${isTr ? (device.wifi?.enabled !== false ? '❌ Wi‑Fi (SSID) Kapat' : '✅ Wi‑Fi (SSID) Aç') : (device.wifi?.enabled !== false ? '❌ Disable Wi‑Fi SSID' : '✅ Enable Wi‑Fi SSID')}
             </button>
           </div>
-          <div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:12px;">
-            <div style="font-size:11px;color:#64748b;text-transform:uppercase;font-weight:600;">MAC / DNS</div>
-            <div style="font-family:'Geist Mono','Courier New',monospace;font-size:12px;color:#cbd5e1;margin-top:4px;">${mac} • ${dns}</div>
+          <div style="background:${colors.topology.bg};border:1px solid ${colors.topology.gridLine};border-radius:10px;padding:12px;">
+            <div style="font-size:11px;color:${colors.cables.console};text-transform:uppercase;font-weight:600;">MAC / DNS</div>
+            <div style="font-family:'Geist Mono','Courier New',monospace;font-size:12px;color:${colors.terminal.output};margin-top:4px;">${mac} • ${dns}</div>
           </div>
         </div>
 
         <!-- Supplies Status -->
-        <div style="background:#0f172a;border:1px solid #334155;border-radius:12px;padding:16px;margin-bottom:24px;">
-          <h2 style="margin:0 0 12px 0;font-size:14px;font-weight:600;color:#e2e8f0;display:flex;align-items:center;gap:8px;">
+        <div style="background:${colors.topology.bg};border:1px solid ${colors.topology.gridLine};border-radius:12px;padding:16px;margin-bottom:24px;">
+          <h2 style="margin:0 0 12px 0;font-size:14px;font-weight:600;color:${colors.topology.noteText};display:flex;align-items:center;gap:8px;">
             <span>📦</span> ${isTr ? 'Toner & Sarf Malzeme Durumu' : 'Toner & Cartridge Status'}
           </h2>
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;font-family:'Geist Mono','Courier New',monospace;font-size:11px;">
-            <div style="background:#1e293b;border:1px solid #475569;border-radius:8px;padding:10px;color:#f8fafc;">
+            <div style="background:${colors.topology.canvasBg};border:1px solid ${colors.topology.deviceBorder};border-radius:8px;padding:10px;color:${colors.topology.deviceText};">
               <div style="font-weight:700;">BLACK</div>
-              <div style="color:#34d399;margin-top:4px;font-weight:700;">98%</div>
+              <div style="color:${colors.status.online};margin-top:4px;font-weight:700;">98%</div>
             </div>
-            <div style="background:#083344;border:1px solid #0891b2;border-radius:8px;padding:10px;color:#67e8f9;">
+            <div style="background:rgba(8, 51, 68, 0.8);border:1px solid rgba(8, 145, 178, 0.8);border-radius:8px;padding:10px;color:${colors.cables.wireless};">
               <div style="font-weight:700;">CYAN</div>
-              <div style="color:#22d3ee;margin-top:4px;font-weight:700;">92%</div>
+              <div style="color:${colors.cables.wireless};margin-top:4px;font-weight:700;">92%</div>
             </div>
-            <div style="background:#4c0519;border:1px solid #be123c;border-radius:8px;padding:10px;color:#fda4af;">
+            <div style="background:rgba(76, 5, 25, 0.8);border:1px solid rgba(190, 18, 60, 0.8);border-radius:8px;padding:10px;color:${colors.syntax.constant};">
               <div style="font-weight:700;">MAGENTA</div>
-              <div style="color:#fb7185;margin-top:4px;font-weight:700;">95%</div>
+              <div style="color:${colors.syntax.constant};margin-top:4px;font-weight:700;">95%</div>
             </div>
-            <div style="background:#451a03;border:1px solid #b45309;border-radius:8px;padding:10px;color:#fde68a;">
+            <div style="background:rgba(69, 26, 3, 0.8);border:1px solid rgba(180, 83, 9, 0.8);border-radius:8px;padding:10px;color:${colors.amber[200]};">
               <div style="font-weight:700;">YELLOW</div>
-              <div style="color:#fbbf24;margin-top:4px;font-weight:700;">90%</div>
+              <div style="color:${colors.amber[400]};margin-top:4px;font-weight:700;">90%</div>
             </div>
           </div>
         </div>
 
         <!-- Print Server Settings & Configuration -->
-        <div style="background:#0f172a;border:1px solid #334155;border-radius:12px;padding:16px;margin-bottom:24px;">
-          <h2 style="margin:0 0 12px 0;font-size:14px;font-weight:600;color:#e2e8f0;display:flex;align-items:center;gap:8px;">
+        <div style="background:${colors.topology.bg};border:1px solid ${colors.topology.gridLine};border-radius:12px;padding:16px;margin-bottom:24px;">
+          <h2 style="margin:0 0 12px 0;font-size:14px;font-weight:600;color:${colors.topology.noteText};display:flex;align-items:center;gap:8px;">
             <span>⚙️</span> ${isTr ? 'Yazıcı Sunucusu Yapılandırması & Ayarlar' : 'Print Server Configuration & Settings'}
           </h2>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;font-size:12px;">
-            <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:12px;">
-              <div style="font-weight:600;color:#94a3b8;margin-bottom:4px;">${isTr ? 'Ağ Protokolleri' : 'Network Protocols'}</div>
-              <div style="display:flex;flex-direction:column;gap:4px;color:#cbd5e1;font-size:11px;">
-                <span>• LPD / LPR Spooler: <strong style="color:#34d399;">Enabled (Port 515)</strong></span>
-                <span>• Raw IP Printing (JetDirect): <strong style="color:#34d399;">Enabled (Port 9100)</strong></span>
-                <span>• IPP / IPPS Protocol: <strong style="color:#34d399;">Enabled (Port 631)</strong></span>
-                <span>• AirPrint / Bonjour Broadcast: <strong style="color:#34d399;">Active</strong></span>
+            <div style="background:${colors.topology.canvasBg};border:1px solid ${colors.topology.gridLine};border-radius:8px;padding:12px;">
+              <div style="font-weight:600;color:${colors.topology.subText};margin-bottom:4px;">${isTr ? 'Ağ Protokolleri' : 'Network Protocols'}</div>
+              <div style="display:flex;flex-direction:column;gap:4px;color:${colors.terminal.output};font-size:11px;">
+                <span>• LPD / LPR Spooler: <strong style="color:${colors.status.online};">Enabled (Port 515)</strong></span>
+                <span>• Raw IP Printing (JetDirect): <strong style="color:${colors.status.online};">Enabled (Port 9100)</strong></span>
+                <span>• IPP / IPPS Protocol: <strong style="color:${colors.status.online};">Enabled (Port 631)</strong></span>
+                <span>• AirPrint / Bonjour Broadcast: <strong style="color:${colors.status.online};">Active</strong></span>
               </div>
             </div>
-            <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:12px;">
-              <div style="font-weight:600;color:#94a3b8;margin-bottom:4px;">${isTr ? 'Güvenlik & Yönetim' : 'Security & Management'}</div>
-              <div style="display:flex;flex-direction:column;gap:4px;color:#cbd5e1;font-size:11px;">
-                <span>• SNMP v1/v2c Monitoring: <strong style="color:#38bdf8;">Public Community</strong></span>
-                <span>• HTTPS Web Admin: <strong style="color:#34d399;">TLS v1.3 Encrypted</strong></span>
-                <span>• Wi-Fi Interface: <strong style="color:#a855f7;">${wifiSsid} (WPA2-PSK)</strong></span>
-                <span>• Access Control: <strong style="color:#f59e0b;">Allow All Subnets</strong></span>
+            <div style="background:${colors.topology.canvasBg};border:1px solid ${colors.topology.gridLine};border-radius:8px;padding:12px;">
+              <div style="font-weight:600;color:${colors.topology.subText};margin-bottom:4px;">${isTr ? 'Güvenlik & Yönetim' : 'Security & Management'}</div>
+              <div style="display:flex;flex-direction:column;gap:4px;color:${colors.terminal.output};font-size:11px;">
+                <span>• SNMP v1/v2c Monitoring: <strong style="color:${colors.topology.deviceSelectedBorder};">Public Community</strong></span>
+                <span>• HTTPS Web Admin: <strong style="color:${colors.status.online};">TLS v1.3 Encrypted</strong></span>
+                <span>• Wi-Fi Interface: <strong style="color:${colors.purple[500]};">${wifiSsid} (WPA2-PSK)</strong></span>
+                <span>• Access Control: <strong style="color:${colors.status.warning};">Allow All Subnets</strong></span>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Print Queue -->
-        <div style="background:#0f172a;border:1px solid #334155;border-radius:12px;padding:16px;">
+        <div style="background:${colors.topology.bg};border:1px solid ${colors.topology.gridLine};border-radius:12px;padding:16px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-            <h2 style="margin:0;font-size:14px;font-weight:600;color:#e2e8f0;display:flex;align-items:center;gap:8px;">
+            <h2 style="margin:0;font-size:14px;font-weight:600;color:${colors.topology.noteText};display:flex;align-items:center;gap:8px;">
               <span>📑</span> ${isTr ? 'Yazdırma Kuyruğu & Gelen Belgeler' : 'Print Queue & Received Documents'}
             </h2>
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-size:11px;color:#a855f7;font-family:'Geist Mono','Courier New',monospace;font-weight:600;">${(device.printJobs || []).length} ${isTr ? 'Aktif Görev / Belge' : 'Active Jobs'}</span>
+              <span style="font-size:11px;color:${colors.purple[500]};font-family:'Geist Mono','Courier New',monospace;font-weight:600;">${(device.printJobs || []).length} ${isTr ? 'Aktif Görev / Belge' : 'Active Jobs'}</span>
               ${(device.printJobs || []).length > 0 ? `
                 <button
                   type="button"
                   onclick="if(window.parent) window.parent.postMessage({type:'CLEAR_PRINTER_QUEUE',deviceId:'${device.id}'},'*')"
-                  style="background:rgba(225,29,72,0.2);border:1px solid rgba(225,29,72,0.4);color:#fda4af;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all 0.2s;"
+                  style="background:rgba(225,29,72,0.2);border:1px solid rgba(225,29,72,0.4);color:${colors.syntax.constant};padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all 0.2s;"
                   onmouseover="this.style.background='rgba(225,29,72,0.4)'"
                   onmouseout="this.style.background='rgba(225,29,72,0.2)'"
                 >
@@ -148,22 +149,22 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
             </div>
           </div>
           ${(!device.printJobs || device.printJobs.length === 0) ? `
-            <div style="font-size:12px;color:#64748b;font-style:italic;">
+            <div style="font-size:12px;color:${colors.cables.console};font-style:italic;">
               ${isTr ? 'Kuyrukta bekleyen yazdırma görevi yok. Sistem yazdırmaya hazır.' : 'No active jobs in print spooler. Ready to process network print jobs.'}
             </div>
           ` : `
             <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;">
               ${device.printJobs.map(j => `
-                <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center;font-size:12px;">
+                <div style="background:${colors.topology.canvasBg};border:1px solid ${colors.topology.gridLine};border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center;font-size:12px;">
                   <div>
-                    <div style="font-weight:700;color:#c084fc;">📄 ${j.documentTitle}</div>
-                    <div style="font-size:10px;color:#94a3b8;font-family:'Geist Mono','Courier New',monospace;margin-top:2px;">Sender: ${j.senderName} • ${j.pages} page(s)</div>
+                    <div style="font-weight:700;color:${colors.purple[400]};">📄 ${j.documentTitle}</div>
+                    <div style="font-size:10px;color:${colors.topology.subText};font-family:'Geist Mono','Courier New',monospace;margin-top:2px;">Sender: ${j.senderName} • ${j.pages} page(s)</div>
                   </div>
                   <div style="text-align:right;">
-                    <span style="display:inline-block;padding:2px 8px;border-radius:4px;background:rgba(16,185,129,0.2);color:#34d399;font-size:10px;font-weight:600;font-family:'Geist Mono','Courier New',monospace;">
+                    <span style="display:inline-block;padding:2px 8px;border-radius:4px;background:rgba(16,185,129,0.2);color:${colors.status.online};font-size:10px;font-weight:600;font-family:'Geist Mono','Courier New',monospace;">
                       COMPLETED
                     </span>
-                    <div style="font-size:10px;color:#64748b;font-family:'Geist Mono','Courier New',monospace;margin-top:2px;">${j.timestamp}</div>
+                    <div style="font-size:10px;color:${colors.cables.console};font-family:'Geist Mono','Courier New',monospace;margin-top:2px;">${j.timestamp}</div>
                   </div>
                 </div>
               `).join('')}

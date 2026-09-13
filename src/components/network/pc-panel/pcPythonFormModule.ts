@@ -1,7 +1,5 @@
-// pcPythonFormModule.ts
-// Python GUI and Form module implementation (compatible with tkinter / form / gui)
-
 import type { PythonFormState, FormElement, FormElementType, FormElementLayout } from './pcPythonFormTypes';
+import { colors } from '@/lib/design-tokens/colors';
 
 // Global registry of active forms per device
 const activeForms = new Map<string, PythonFormState>();
@@ -54,16 +52,16 @@ export function generateFormHtml(form: PythonFormState): string {
   <title>${escapeHtml(title)}</title>
   <style>
     :root {
-      --bg-color: #0f172a;
+      --bg-color: ${colors.topology.bg};
       --card-bg: rgba(30, 41, 59, 0.85);
-      --text-color: #f1f5f9;
-      --text-muted: #94a3b8;
+      --text-color: ${colors.terminal.fg};
+      --text-muted: ${colors.topology.subText};
       --border-color: rgba(51, 65, 85, 0.8);
-      --primary: #38bdf8;
-      --primary-hover: #0ea5e9;
-      --primary-fg: #0f172a;
-      --input-bg: #1e293b;
-      --accent: #6366f1;
+      --primary: ${colors.theme.accent};
+      --primary-hover: ${colors.sky[500]};
+      --primary-fg: ${colors.topology.bg};
+      --input-bg: ${colors.topology.canvasBg};
+      --accent: ${colors.indigo[500]};
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -100,13 +98,13 @@ export function generateFormHtml(form: PythonFormState): string {
     .form-header h1 {
       font-size: 1.15rem;
       font-weight: 600;
-      color: #38bdf8;
+      color: var(--primary);
       letter-spacing: -0.01em;
     }
     .badge {
       font-size: 0.7rem;
       background: rgba(56, 189, 248, 0.15);
-      color: #38bdf8;
+      color: var(--primary);
       padding: 2px 8px;
       border-radius: 9999px;
       font-family: monospace;
@@ -135,41 +133,50 @@ export function generateFormHtml(form: PythonFormState): string {
       padding: 8px 12px;
       color: var(--text-color);
       font-size: 0.875rem;
+      font-family: inherit;
       outline: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
+      transition: all 0.2s;
     }
-    input[type="text"]:focus, textarea:focus, select:focus {
+    input[type="text"]:focus, input[type="password"]:focus, textarea:focus, select:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
     }
     textarea {
-      min-height: 80px;
       resize: vertical;
-      font-family: monospace;
+      min-height: 70px;
     }
     .btn {
       background: var(--primary);
       color: var(--primary-fg);
-      font-weight: 600;
-      font-size: 0.875rem;
-      padding: 8px 16px;
       border: none;
       border-radius: 6px;
+      padding: 9px 16px;
+      font-size: 0.875rem;
+      font-weight: 600;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      transition: background-color 0.15s, transform 0.05s;
+      gap: 8px;
+      transition: all 0.2s;
+      width: 100%;
     }
     .btn:hover {
       background: var(--primary-hover);
+      transform: translateY(-1px);
     }
     .btn:active {
-      transform: scale(0.98);
+      transform: translateY(0);
     }
-    .hr-line {
-      border: 0;
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+    .separator {
       height: 1px;
       background: var(--border-color);
       margin: 8px 0;
@@ -189,19 +196,26 @@ export function generateFormHtml(form: PythonFormState): string {
       background: var(--input-bg);
       max-height: 140px;
       overflow-y: auto;
+      display: flex;
+      flex-direction: column;
     }
     .listbox-item {
       padding: 6px 12px;
-      font-size: 0.85rem;
+      font-size: 0.825rem;
+      color: var(--text-color);
       cursor: pointer;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      transition: background 0.1s;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      transition: background 0.15s;
     }
-    .listbox-item:last-child { border-bottom: none; }
-    .listbox-item:hover { background: rgba(56, 189, 248, 0.15); }
+    .listbox-item:last-child {
+      border-bottom: none;
+    }
+    .listbox-item:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
     .listbox-item.selected {
       background: rgba(56, 189, 248, 0.25);
-      color: #38bdf8;
+      color: var(--primary);
       font-weight: 500;
     }
     .checkbox-label, .radio-label {
@@ -226,7 +240,7 @@ export function generateFormHtml(form: PythonFormState): string {
       border: 1px solid var(--border-color);
       font-size: 0.8rem;
       font-family: monospace;
-      color: #38bdf8;
+      color: var(--primary);
       display: none;
     }
   </style>
@@ -276,7 +290,7 @@ function renderElementHtml(el: FormElement): string {
     case 'label':
       return `
       <div class="form-item">
-        <label id="${el.id}" style="color: #f1f5f9; font-size: 0.95rem;">${escapeHtml(el.text || '')}</label>
+        <label id="${el.id}" style="color: var(--text-color); font-size: 0.95rem;">${escapeHtml(el.text || '')}</label>
       </div>`;
 
     case 'entry':

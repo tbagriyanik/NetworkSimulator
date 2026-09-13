@@ -215,7 +215,7 @@ export function IpSettingsTab({
             value={pcSubnet}
             onChange={(newSubnet) => {
               setPcSubnet(newSubnet);
-              setErrors(prev => { const { subnet: _, ...rest } = prev; return rest; });
+              setErrors(prev => { const { subnet: _subnet, ...rest } = prev; return rest; });
             }}
             placeholder="255.255.255.0"
             error={errors.subnet}

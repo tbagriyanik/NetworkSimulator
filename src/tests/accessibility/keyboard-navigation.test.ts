@@ -16,12 +16,12 @@ describe('Keyboard Navigation Full Flow (WCAG 2.1 AA)', () => {
     expect(focusableSelectors.length).toBeGreaterThan(0);
   });
 
-  it('DeviceNode (SVG g element) should have tabIndex=0', () => {
-    const deviceNodeProps = { tabIndex: 0, role: 'button' };
-    expect(deviceNodeProps.tabIndex).toBe(0);
+  it('DeviceRenderer (SVG g element) should have tabIndex=0', () => {
+    const deviceRendererProps = { tabIndex: 0, role: 'button' };
+    expect(deviceRendererProps.tabIndex).toBe(0);
   });
 
-  it('should handle keyboard events on DeviceNode', () => {
+  it('should handle keyboard events on DeviceRenderer', () => {
     const keyboardHandler = {
       onKeyDown: true,
       keys: ['Tab', 'Enter', 'Space', 'Delete', 'Escape', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'],

@@ -1,25 +1,17 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback, useMemo, type CSSProperties } from 'react';
+import { useState, useRef, useEffect, useCallback, type CSSProperties } from 'react';
 import { useEnvironment } from '@/lib/store/appStore';
-import { SwitchState } from '@/lib/network/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import type { CanvasDevice, CanvasConnection } from './networkTopology.types';
-import { checkConnectivity, getWirelessSignalStrength, getDeviceWifiConfig, getDeviceMacAddress, getApActiveSsids, wifiMacFilterMatches } from '@/lib/network/connectivity';
-import { dispatchCapturedPackets } from '@/utils/packetCapture';
-import { ensureDeviceStatesMap } from '@/lib/network/networkUtils';
+import type { CanvasConnection } from './networkTopology.types';
 
 import { toast } from "@/hooks/use-toast";
 import { useOutputSearch } from '@/hooks/useOutputSearch';
 import { useIsMobile, useIsTablet } from '@/hooks/use-breakpoint';
-import { sanitizeHTTPContent } from '@/lib/security/sanitizer';
 import { generateRouterAdminPage, isRouterDevice } from '@/components/network/WifiControlPanel';
 import { generateIotWebPanelContent } from '@/lib/network/iotWebPanel';
-import { errorHandler } from '@/lib/errors/errorHandler';
 
-import { loadFs, readFile, getFtpFilesFromUploadDir, syncMailFilesToFs, syncHttpContentToFs } from './pc-panel/pcFileSystem';
-import { secureStorage } from '@/lib/storage/secureStorage';
 import { getPCConfigDefaults } from './pc-panel/pcPanelFiles';
 import { usePCPanelSessionState } from './pc-panel/usePCPanelSessionState';
 import { usePCPanelNtp } from './pc-panel/usePCPanelNtp';
@@ -33,20 +25,17 @@ import { usePCPanelRouterAdmin } from './pc-panel/usePCPanelRouterAdmin';
 import { usePCPanelBrowser } from './pc-panel/usePCPanelBrowser';
 import { usePCPanelCommands } from './pc-panel/usePCPanelCommands';
 import { usePCPanelInput } from './pc-panel/usePCPanelInput';
-import { validateIP, validateIPv6, isValidIpAddress, highlightText as highlightTextHelper, getInitialPcOutput } from './pc-panel/pcPanelHelpers';
-import type { DhcpPoolConfig, OutputLine, PCPanelProps, PcFile } from './pc-panel/PCPanel.types';
+import { usePCPanelNetworkConfig } from './pc-panel/usePCPanelNetworkConfig';
+import { usePCPanelDiscovery } from './pc-panel/usePCPanelDiscovery';
+import { usePCPanelWifiClients } from './pc-panel/usePCPanelWifiClients';
+import { usePCPanelNetworkSupport } from './pc-panel/usePCPanelNetworkSupport';
+import { usePCPanelOutput } from './pc-panel/usePCPanelOutput';
+import { validateIP, isValidIpAddress, highlightText as highlightTextHelper, getInitialPcOutput } from './pc-panel/pcPanelHelpers';
+import type { OutputLine, PCPanelProps } from './pc-panel/PCPanel.types';
 import { usePCPanelState } from './pc-panel/usePCPanelState';
 import { PCPanelContext, type PCPanelContextValue } from './pc-panel/PCPanelContext';
 import { PCPanelShell } from './pc-panel/PCPanelShell';
 import { PCPanelDialogs } from './pc-panel/PCPanelDialogs';
-import {
-  hasGatewayForTarget,
-  normalizeLookupTarget,
-  resolveDeviceNameTarget,
-  resolveDomainWithDnsServices,
-  findHttpServerByTarget,
-  isDhcpPoolCompatibleForClient
-} from './pc-panel/pcBrowser.utils';
 import { usePCPanelNavigation } from './pc-panel/usePCPanelNavigation';
 import { usePCPanelArp } from './pc-panel/usePCPanelArp';
 import { usePCPanelLauncherApps } from './pc-panel/usePCPanelLauncherApps';
@@ -160,274 +149,78 @@ export function PCPanel({
     }
   }, [deviceId, currentPath]);
 
-
-  // Get device from topology
-  const wifiSignalStrength = useMemo(
-    () => getWirelessSignalStrength(deviceFromTopology, topologyDevices, deviceStates),
-    [deviceFromTopology, topologyDevices, deviceStates]
-  );
-
-  // Local settings state
-  const [pcIP, setPcIP] = useState(deviceFromTopology?.ip || defaultConfig.ip);
-  const [internalPcHostname, setInternalPcHostname] = useState(deviceFromTopology?.name || deviceId);
-
-  const setPcHostname = useCallback((hostname: string) => {
-    let processedHostname = hostname.trim();
-    if (processedHostname.length > 20) {
-      processedHostname = processedHostname.substring(0, 20);
-    }
-    setInternalPcHostname(processedHostname);
-  }, []);
-
-  // Hostname initialization only on mount
-  useEffect(() => {
-    setTimeout(() => setInternalPcHostname(deviceFromTopology?.name || deviceId), 0);
-  }, []);
-
-  const [pcMAC, setPcMAC] = useState(deviceFromTopology?.macAddress || defaultConfig.mac);
-  const [ipConfigMode, setIpConfigMode] = useState<'static' | 'dhcp'>(deviceFromTopology?.ipConfigMode || 'static');
-  const [pcGateway, setPcGateway] = useState(deviceFromTopology?.gateway || '192.168.1.1');
-  const [pcDNS, setPcDNS] = useState(deviceFromTopology?.dns || '8.8.8.8');
-  const [pcSubnet, setPcSubnet] = useState(deviceFromTopology?.subnet || '255.255.255.0');
-  const [pcIPv6, setPcIPv6] = useState(deviceFromTopology?.ipv6 || '2001:db8:acad:1::10');
-  const [pcIPv6Prefix, setPcIPv6Prefix] = useState(deviceFromTopology?.ipv6Prefix || '64');
-  const [serviceDnsEnabled, setServiceDnsEnabled] = useState(deviceFromTopology?.services?.dns?.enabled ?? false);
-  const [serviceDnsRecords, setServiceDnsRecords] = useState<Array<{ domain: string; address: string }>>(
-    deviceFromTopology?.services?.dns?.records || []
-  );
-  const [dnsFormDomain, setDnsFormDomain] = useState('');
-  const [dnsFormAddress, setDnsFormAddress] = useState('');
-
-  const handleAddDnsRecord = useCallback(() => {
-    isDnsEditingRef.current = true;
-    const domain = dnsFormDomain.trim().toLowerCase();
-    const address = dnsFormAddress.trim();
-    if (!domain || !address) return;
-    const newRecords = serviceDnsRecords.filter((r) => r.domain.toLowerCase() !== domain);
-    newRecords.push({ domain, address });
-    setServiceDnsRecords(newRecords);
-
-    // Get current values from state variables that are defined below
-    // Note: Since these are in a closure, we need to be careful with ordering or use refs
-    // For now, let's fix the ordering of declarations in this file.
-
-    window.dispatchEvent(new CustomEvent('update-topology-device-config', {
-      detail: {
-        deviceId,
-        config: {
-          services: {
-            dns: { enabled: serviceDnsEnabled, records: newRecords }
-          }
-        }
-      }
-    }));
-
-    setDnsFormDomain('');
-    setDnsFormAddress('');
-    setTimeout(() => { isDnsEditingRef.current = false; }, 1000);
-  }, [dnsFormDomain, dnsFormAddress, serviceDnsRecords, deviceId, serviceDnsEnabled]);
-
-  const [serviceHttpEnabled, setServiceHttpEnabled] = useState(deviceFromTopology?.services?.http?.enabled ?? true);
-  const [serviceHttpContent, setServiceHttpContent] = useState(() => {
-    const fs = loadFs(deviceId);
-    const wwwIndex = readFile(fs, 'C:\\www\\index.html') || readFile(fs, 'www/index.html');
-    return wwwIndex || deviceFromTopology?.services?.http?.content || t.helloWorld;
-  });
-  const [serviceFtpEnabled, setServiceFtpEnabled] = useState(deviceFromTopology?.services?.ftp?.enabled ?? false);
-  const [serviceFtpFiles, setServiceFtpFiles] = useState<PcFile[]>(() => getFtpFilesFromUploadDir(deviceId));
-  const [serviceMailEnabled, setServiceMailEnabled] = useState(deviceFromTopology?.services?.mail?.enabled ?? false);
-  const [serviceMailDomain, setServiceMailDomain] = useState(deviceFromTopology?.services?.mail?.domain || 'local.lan');
-  const [serviceMailUsername, setServiceMailUsername] = useState(deviceFromTopology?.services?.mail?.username || 'user');
-  const [serviceMailPassword, setServiceMailPassword] = useState(deviceFromTopology?.services?.mail?.password || 'mail123');
-  const [serviceMailInbox, setServiceMailInbox] = useState<Array<{ from: string; subject: string; body: string; timestamp?: string }>>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = secureStorage.getItem(`mail_inbox_${deviceId}`);
-        if (stored) return JSON.parse(stored);
-      } catch { }
-    }
-    return deviceFromTopology?.services?.mail?.inbox || [];
-  });
-  const [serviceMailSent, setServiceMailSent] = useState<Array<{ to: string; subject: string; body: string; timestamp?: string }>>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = secureStorage.getItem(`mail_sent_${deviceId}`);
-        if (stored) return JSON.parse(stored);
-      } catch { }
-    }
-    return deviceFromTopology?.services?.mail?.sent || [];
+  const {
+    pcIP, setPcIP,
+    internalPcHostname, setInternalPcHostname, setPcHostname,
+    pcMAC, setPcMAC,
+    ipConfigMode, setIpConfigMode,
+    pcGateway, setPcGateway,
+    pcDNS, setPcDNS,
+    pcSubnet, setPcSubnet,
+    pcIPv6, setPcIPv6,
+    pcIPv6Prefix, setPcIPv6Prefix,
+    serviceDnsEnabled, setServiceDnsEnabled,
+    serviceDnsRecords, setServiceDnsRecords,
+    dnsFormDomain, setDnsFormDomain,
+    dnsFormAddress, setDnsFormAddress,
+    handleAddDnsRecord,
+    serviceHttpEnabled, setServiceHttpEnabled,
+    serviceHttpContent, setServiceHttpContent,
+    serviceFtpEnabled, setServiceFtpEnabled,
+    serviceFtpFiles, setServiceFtpFiles,
+    serviceMailEnabled, setServiceMailEnabled,
+    serviceMailDomain, setServiceMailDomain,
+    serviceMailUsername, setServiceMailUsername,
+    serviceMailPassword, setServiceMailPassword,
+    serviceMailInbox, setServiceMailInbox,
+    serviceMailSent, setServiceMailSent,
+    mailPop3Blocked,
+    serviceNtpEnabled, setServiceNtpEnabled,
+    serviceNtpServer, setServiceNtpServer,
+    serviceNtpServerError, setServiceNtpServerError,
+    setServiceNtpServerPreset,
+    serviceNtpDate, setServiceNtpDate,
+    serviceNtpTime, setServiceNtpTime,
+    serviceDhcpEnabled, setServiceDhcpEnabled,
+    serviceDhcpPools, setServiceDhcpPools,
+    serviceSyslogEnabled, setServiceSyslogEnabled,
+    serviceSyslogMessages, setServiceSyslogMessages,
+    isDhcpEditingRef, isDnsEditingRef,
+    checkDhcpAvailabilityRef, manualDhcpClickRef,
+    pcIpRef, pcSubnetRef, pcGatewayRef, pcDNSRef,
+    applyDhcpLeaseRef,
+    dhcpForm, setDhcpForm,
+    editingDhcpIndex, setEditingDhcpIndex,
+    wifiEnabled, setWifiEnabled,
+    wifiSSID, setWifiSSID,
+    wifiSecurity, setWifiSecurity,
+    wifiPassword, setWifiPassword,
+    wifiChannel, setWifiChannel,
+    wifiBSSID, setWifiBSSID,
+  } = usePCPanelNetworkConfig({
+    deviceId,
+    deviceFromTopology,
+    defaultConfig,
+    t,
+    activeServiceTab,
+    topologyDevices,
+    topologyConnections,
+    deviceStates,
+    language,
   });
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      secureStorage.setItem(`mail_inbox_${deviceId}`, JSON.stringify(serviceMailInbox));
-      secureStorage.setItem(`mail_sent_${deviceId}`, JSON.stringify(serviceMailSent));
-    }
-    syncMailFilesToFs(deviceId, serviceMailInbox, serviceMailSent);
-  }, [serviceMailInbox, serviceMailSent, deviceId]);
-
-  useEffect(() => {
-    if (deviceId) {
-      const fs = loadFs(deviceId);
-      const wwwIndex = readFile(fs, 'C:\\www\\index.html') || readFile(fs, 'www/index.html');
-      if (wwwIndex !== null) {
-        setServiceHttpContent(wwwIndex);
-      }
-    }
-  }, [deviceId]);
-
-  useEffect(() => {
-    if (deviceId && serviceHttpContent) {
-      syncHttpContentToFs(deviceId, serviceHttpContent);
-    }
-  }, [serviceHttpContent, deviceId]);
-  const mailPop3Blocked = useMemo(() => {
-    if (activeServiceTab !== 'mail' || !pcIP) return false;
-    const result = checkConnectivity(deviceId, pcIP, topologyDevices, topologyConnections as unknown as CanvasConnection[], deviceStates || new Map(), language as 'tr' | 'en', { protocol: 'tcp', port: '110' });
-    return !result.success;
-  }, [activeServiceTab, pcIP, deviceId, topologyDevices, topologyConnections, deviceStates, language]);
-
-  const [serviceNtpEnabled, setServiceNtpEnabled] = useState(deviceFromTopology?.services?.ntp?.enabled ?? false);
-  const [serviceNtpServer, setServiceNtpServer] = useState(deviceFromTopology?.services?.ntp?.server || '');
-  const [serviceNtpServerError, setServiceNtpServerError] = useState('');
-  const [, setServiceNtpServerPreset] = useState<'pool.ntp.org' | 'local-clock' | 'custom'>(
-    (deviceFromTopology?.services?.ntp?.server === 'pool.ntp.org'
-      ? 'pool.ntp.org'
-      : deviceFromTopology?.services?.ntp?.server === 'local-clock'
-        ? 'local-clock'
-        : 'custom')
-  );
-  const [serviceNtpDate, setServiceNtpDate] = useState(deviceFromTopology?.services?.ntp?.date || new Date().toISOString().slice(0, 10));
-  const [serviceNtpTime, setServiceNtpTime] = useState(deviceFromTopology?.services?.ntp?.time || new Date().toTimeString().slice(0, 8));
-  const [serviceDhcpEnabled, setServiceDhcpEnabled] = useState(deviceFromTopology?.services?.dhcp?.enabled ?? false);
-  const [serviceDhcpPools, setServiceDhcpPools] = useState<DhcpPoolConfig[]>(deviceFromTopology?.services?.dhcp?.pools || []);
-  const [serviceSyslogEnabled, setServiceSyslogEnabled] = useState(deviceFromTopology?.services?.syslog?.enabled ?? false);
-  const [serviceSyslogMessages, setServiceSyslogMessages] = useState<import('@/lib/network/syslog').SyslogMessage[]>(deviceFromTopology?.services?.syslog?.messages || []);
-  const isDhcpEditingRef = useRef(false); // Track if user is actively editing DHCP pools
-  const isDnsEditingRef = useRef(false); // Track if user is actively editing DNS records
-  const checkDhcpAvailabilityRef = useRef<() => { available: boolean; reason: string }>(() => ({ available: true, reason: '' }));
-  const manualDhcpClickRef = useRef(false); // Track if DHCP button was manually clicked to prevent infinite loop
-  const pcIpRef = useRef(''); // Track pcIP to detect changes
-  const pcSubnetRef = useRef(pcSubnet);
-  const pcGatewayRef = useRef(pcGateway);
-  const pcDNSRef = useRef(pcDNS);
-  const applyDhcpLeaseRef = useRef<((force?: boolean) => { ip: string; subnetMask: string; gateway: string; dns: string; serverName: string; poolName: string } | null) | null>(null);
-
-  // Keep refs in sync with state
-  useEffect(() => { pcIpRef.current = pcIP; }, [pcIP]);
-  useEffect(() => { pcSubnetRef.current = pcSubnet; }, [pcSubnet]);
-  useEffect(() => { pcGatewayRef.current = pcGateway; }, [pcGateway]);
-  useEffect(() => { pcDNSRef.current = pcDNS; }, [pcDNS]);
-  const [dhcpForm, setDhcpForm] = useState<DhcpPoolConfig>({
-    poolName: '',
-    defaultGateway: '',
-    dnsServer: '',
-    startIp: '',
-    subnetMask: '255.255.255.0',
-    maxUsers: 50,
+  const { wifiSignalStrength, iotDevices, availableSSIDs } = usePCPanelDiscovery({
+    deviceFromTopology,
+    deviceId,
+    topologyDevices,
+    topologyConnections,
+    deviceStates,
+    pcIP,
+    pcSubnet,
+    pcGateway,
+    wifiEnabled,
+    wifiSSID,
   });
-  const [editingDhcpIndex, setEditingDhcpIndex] = useState<number | null>(null);
-  const [wifiEnabled, setWifiEnabled] = useState(
-    (deviceFromTopology?.wifi?.enabled ?? false) && !(deviceFromTopology?.wifi?.powerDisabled ?? false)
-  );
-  const [wifiSSID, setWifiSSID] = useState(deviceFromTopology?.wifi?.ssid ?? '');
-  const [wifiSecurity, setWifiSecurity] = useState(deviceFromTopology?.wifi?.security ?? 'open');
-  const [wifiPassword, setWifiPassword] = useState(deviceFromTopology?.wifi?.password ?? '');
-  const [wifiChannel, setWifiChannel] = useState(deviceFromTopology?.wifi?.channel ?? '2.4GHz');
-  const [wifiBSSID, setWifiBSSID] = useState(deviceFromTopology?.wifi?.bssid ?? '');
-  const iotDevices = useMemo(
-    () => {
-      const allIotDevices = topologyDevices.filter((d) => d.type === 'iot');
-      // Filter IoT devices that are reachable from the PC
-      return allIotDevices.filter(device => {
-        // Check if device has an IP and is in the same subnet or reachable via gateway
-        if (device.ip && pcIP && pcSubnet && pcGateway) {
-          try {
-            const a = pcIP.split('.').map(Number);
-            const b = device.ip.split('.').map(Number);
-            const m = pcSubnet.split('.').map(Number);
-            if (a.length === 4 && b.length === 4 && m.length === 4) {
-              let sameSubnet = true;
-              for (let i = 0; i < 4; i++) {
-                if ((a[i] & m[i]) !== (b[i] & m[i])) {
-                  sameSubnet = false;
-                  break;
-                }
-              }
-              if (sameSubnet) return true;
-            }
-          } catch {
-            // Invalid IP format, skip silently - this is expected for malformed IPs
-            if (process.env.NODE_ENV === 'development') {
-              errorHandler.logError(new Error('IP validation failed'), { deviceId: device.id, ip: device.ip, pcIP, pcSubnet });
-            }
-          }
-
-          // Check if device is reachable via gateway
-          if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(pcGateway.trim())) return true;
-        }
-
-        // Check if device is connected via WiFi to the same AP as PC
-        if (device.wifi?.enabled && device.wifi?.ssid && wifiEnabled && wifiSSID) {
-          if (device.wifi.ssid === wifiSSID) return true;
-        }
-
-        // Check if device is connected via cable to the PC or in the same network
-        if (topologyConnections.some(c =>
-          (c.sourceDeviceId === deviceId && c.targetDeviceId === device.id) ||
-          (c.targetDeviceId === deviceId && c.sourceDeviceId === device.id)
-        )) {
-          return true;
-        }
-
-        // Check if device is connected to the same router/AP as PC
-        const connectedToSameRouter = topologyConnections.some(c => {
-          const otherDeviceId = c.sourceDeviceId === deviceId ? c.targetDeviceId : c.targetDeviceId === deviceId ? c.sourceDeviceId : null;
-          if (!otherDeviceId) return false;
-
-          const otherDevice = topologyDevices.find(d => d.id === otherDeviceId);
-          if (!otherDevice || (otherDevice.type !== 'router' && otherDevice.type !== 'switchL2' && otherDevice.type !== 'switchL3')) return false;
-
-          // Check if the router/switch is in the PC's network
-          if (otherDevice.ip && pcIP && pcSubnet) {
-            try {
-              const a = pcIP.split('.').map(Number);
-              const r = otherDevice.ip.split('.').map(Number);
-              const m = pcSubnet.split('.').map(Number);
-              if (a.length === 4 && r.length === 4 && m.length === 4) {
-                let routerInSameSubnet = true;
-                for (let i = 0; i < 4; i++) {
-                  if ((a[i] & m[i]) !== (r[i] & m[i])) {
-                    routerInSameSubnet = false;
-                    break;
-                  }
-                }
-                if (!routerInSameSubnet) return false;
-              }
-            } catch {
-              // Invalid IP format, skip silently - expected for malformed IPs
-              if (process.env.NODE_ENV === 'development') {
-                errorHandler.logError(new Error('Router IP validation failed'), { deviceId: otherDevice.id, ip: otherDevice.ip, pcIP, pcSubnet });
-              }
-            }
-          } else if (!otherDevice.ip) {
-            // Router has no IP, cannot verify network - skip
-            return false;
-          }
-
-          return topologyConnections.some(c2 =>
-            (c2.sourceDeviceId === otherDeviceId && c2.targetDeviceId === device.id) ||
-            (c2.targetDeviceId === otherDeviceId && c2.sourceDeviceId === device.id)
-          );
-        });
-
-        if (connectedToSameRouter) return true;
-
-        return false;
-      });
-    },
-    [topologyDevices, pcIP, pcSubnet, pcGateway, wifiEnabled, wifiSSID, deviceId, topologyConnections]
-  );
 
   const {
     ntpPanelTime,
@@ -454,36 +247,6 @@ export function PCPanel({
     iotSensorType, setIotSensorType, iotKind, setIotKind,
     iotCollaborationEnabled, setIotCollaborationEnabled, iotDataStore, setIotDataStore,
   } = usePCPanelIotConfig({ iotDevices, language, t });
-  // Scan for available APs and SSIDs in the network topology dynamically
-  const availableSSIDs = useMemo(() => {
-    const results: { ssid: string; deviceId: string; deviceName: string; channel?: string }[] = [];
-    const addedKeys = new Set<string>();
-    const safeStates = deviceStates ? ensureDeviceStatesMap(deviceStates) : undefined;
-
-    topologyDevices.forEach((device) => {
-      if (device.id === deviceId) return; // skip self
-      if (device.type !== 'router' && device.type !== 'switchL2' && device.type !== 'switchL3' && device.type !== 'wlc') return;
-      const state = safeStates?.get(device.id);
-      const apWifi = getDeviceWifiConfig(device, safeStates);
-      const activeSsids = getApActiveSsids(apWifi, state, safeStates);
-
-      activeSsids.forEach(item => {
-        if (!item.ssid) return;
-        const uniqueKey = `${device.id}:${item.ssid}`;
-        if (!addedKeys.has(uniqueKey)) {
-          addedKeys.add(uniqueKey);
-          results.push({
-            ssid: item.ssid,
-            deviceId: device.id,
-            deviceName: device.name,
-            channel: apWifi?.channel || '2.4GHz',
-          });
-        }
-      });
-    });
-
-    return results;
-  }, [deviceStates, deviceId, topologyDevices]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
 
@@ -759,387 +522,50 @@ export function PCPanel({
     });
   }, [pcOutput, activeConsoleOutput, activeTab]);
 
+  // Dragging and resizing is handled entirely by HttpBrowserWindow.tsx via direct DOM updates
 
+  const { addLocalOutput, addMultilineOutput } = usePCPanelOutput({
+    setHttpAppContent,
+    setHttpAppTitle,
+    setPcOutput,
+    outputRef,
+    t,
+    language,
+  });
 
+  const { getConnectedIotDevices, getAvailableIotDevices } = usePCPanelWifiClients({
+    topologyDevices,
+    topologyConnections,
+    deviceStates,
+  });
 
-
-
-
-
-
-
-
-
-
-
-
-
-  const addLocalOutput = useCallback((type: OutputLine['type'], content: string, prompt?: string) => {
-    // HTML çıktısını pop-up (modal) içinde aç
-    if (type === 'html') {
-      const safe = sanitizeHTTPContent(content || '') || ' ';
-      const withLineBreaks = safe.replace(/\r?\n/g, '<br />');
-      setHttpAppContent(withLineBreaks.trim() ? withLineBreaks : '<em>No HTTP content</em>');
-      setHttpAppTitle(t.httpManagementPage);
-
-      // Terminalde bilgilendir
-      setPcOutput(prev => [...prev, {
-        id: Math.random().toString(36).substr(2, 9),
-        type: 'success',
-        content: t.httpPageOpened
-      }]);
-      setTimeout(() => {
-        if (outputRef.current) outputRef.current.scrollTop = outputRef.current.scrollHeight;
-      }, 0);
-      return;
-    }
-
-    const newLine: OutputLine = { id: Math.random().toString(36).substr(2, 9), type, content, prompt };
-    setPcOutput(prev => [...prev, newLine]);
-    setTimeout(() => {
-      if (outputRef.current) outputRef.current.scrollTop = outputRef.current.scrollHeight;
-    }, 0);
-  }, [language]);
-
-  // Get connected wireless & IoT devices for a router/AP
-  const getConnectedIotDevices = useCallback((routerId: string) => {
-    const routerDevice = topologyDevices.find(d => d.id === routerId);
-    if (!routerDevice) return [];
-
-    const routerSsids = new Map<string, { security: string; password?: string }>();
-    if (routerDevice.wifi?.ssid) {
-      routerSsids.set(routerDevice.wifi.ssid.toLowerCase(), {
-        security: routerDevice.wifi.security || 'open',
-        password: routerDevice.wifi.password,
-      });
-    }
-    if (Array.isArray(routerDevice.wifi?.ssids)) {
-      for (const s of routerDevice.wifi.ssids) {
-        if (s.enabled && s.ssid) {
-          routerSsids.set(s.ssid.toLowerCase(), {
-            security: s.security || 'open',
-            password: s.password,
-          });
-        }
-      }
-    }
-    const routerState = deviceStates?.get(routerId);
-    if (routerState?.wlcWlans) {
-      for (const wlan of Object.values(routerState.wlcWlans)) {
-        if (wlan.status === 'enabled' && wlan.ssid) {
-          routerSsids.set(wlan.ssid.toLowerCase(), {
-            security: wlan.security || 'open',
-            password: wlan.password,
-          });
-        }
-      }
-    }
-
-    return topologyDevices
-      .filter(d => {
-        if (d.id === routerId) return false;
-        if (d.type !== 'iot' && d.type !== 'pc' && d.type !== 'mobile' && d.type !== 'printer') return false;
-
-        let isWifiConnected = false;
-        const clientWifi = getDeviceWifiConfig(d, deviceStates);
-        // Only client/STA radios are wireless clients. APs and WLCs can
-        // advertise the same SSID but must never appear in this list.
-        const isWirelessClient = clientWifi?.mode === 'client' || clientWifi?.mode === 'sta';
-        if (isWirelessClient && clientWifi.enabled && !clientWifi.powerDisabled && clientWifi.ssid) {
-          const clientSsidLower = clientWifi.ssid.toLowerCase();
-          const matchedSsid = routerSsids.get(clientSsidLower);
-          if (matchedSsid) {
-            const clientSec = (clientWifi.security || 'open').toLowerCase();
-            const apSec = (matchedSsid.security || 'open').toLowerCase();
-            if (clientSec === apSec && (apSec === 'open' || matchedSsid.password === clientWifi.password)) {
-              isWifiConnected = true;
-            }
-          }
-        }
-        if (isWirelessClient && (clientWifi?.bssid === routerId || d.wifi?.bssid === routerId)) {
-          isWifiConnected = true;
-        }
-
-        if (isWifiConnected) {
-          const routerApWifi = getDeviceWifiConfig(routerDevice, deviceStates);
-          if (!wifiMacFilterMatches(routerApWifi, d, deviceStates)) {
-            isWifiConnected = false;
-          }
-        }
-
-        const isWiredConnected = topologyConnections.some(c =>
-          (c.sourceDeviceId === routerId && c.targetDeviceId === d.id) ||
-          (c.targetDeviceId === routerId && c.sourceDeviceId === d.id)
-        );
-
-        return isWifiConnected || isWiredConnected;
-      })
-      .map(d => {
-        const isWiredConnected = topologyConnections.some(c =>
-          (c.sourceDeviceId === routerId && c.targetDeviceId === d.id) ||
-          (c.targetDeviceId === routerId && c.sourceDeviceId === d.id)
-        );
-
-        let deviceIp = d.ip;
-        if (isWiredConnected && !deviceIp) {
-          const routerIp = routerDevice?.ip || '192.168.1.1';
-          const baseIpParts = routerIp.split('.');
-          const usedIps = new Set<string>();
-          topologyDevices.forEach(td => {
-            if (td.ip && td.ip.startsWith(baseIpParts[0] + '.' + baseIpParts[1] + '.' + baseIpParts[2])) {
-              usedIps.add(td.ip);
-            }
-          });
-          for (let i = 100; i <= 254; i++) {
-            const testIp = `${baseIpParts[0]}.${baseIpParts[1]}.${baseIpParts[2]}.${i}`;
-            if (!usedIps.has(testIp)) {
-              deviceIp = testIp;
-              break;
-            }
-          }
-          if (!deviceIp) deviceIp = `${baseIpParts[0]}.${baseIpParts[1]}.${baseIpParts[2]}.150`;
-
-          // Assign IP asynchronously to avoid state mutation during render
-          setTimeout(() => {
-            window.dispatchEvent(new CustomEvent('update-topology-device-config', {
-              detail: {
-                deviceId: d.id,
-                config: {
-                  ip: deviceIp,
-                  ipConfigMode: 'dhcp',
-                  gateway: routerIp,
-                  subnet: routerDevice?.subnet || '255.255.255.0',
-                  dns: routerIp,
-                },
-              },
-            }));
-          }, 0);
-        }
-
-        const clientWifi = getDeviceWifiConfig(d, deviceStates);
-        const routerWifi = getDeviceWifiConfig(routerDevice, deviceStates);
-        const macAddr = getDeviceMacAddress(d, deviceStates) || d.macAddress || d.ports?.[0]?.macAddress || `00:11:22:${d.id.slice(-2)}:33:44`;
-
-        // A device is "connected" if it is physically wired to the router OR it
-        // is actually associated to this AP's SSID (wifi enabled + matching
-        // SSID/security). A client whose wireless link was cut (wifi disabled
-        // or ssid cleared) must not remain reported as connected.
-        const clientMode = clientWifi?.mode || d.wifi?.mode;
-        const isWirelessClient = clientMode === 'client' || clientMode === 'sta';
-        let isAssociated = false;
-        const clientSsid = clientWifi?.ssid || '';
-        if (isWirelessClient && clientWifi?.enabled && clientSsid) {
-          const matchedSsid = routerSsids.get(clientSsid.toLowerCase());
-          if (matchedSsid) {
-            const clientSec = (clientWifi.security || 'open').toLowerCase();
-            const apSec = (matchedSsid.security || 'open').toLowerCase();
-            if (clientSec === apSec && (apSec === 'open' || matchedSsid.password === clientWifi.password)) {
-              const routerApWifi = routerWifi;
-              if (wifiMacFilterMatches(routerApWifi, d, deviceStates)) {
-                isAssociated = true;
-              }
-            }
-          }
-        }
-        if (isWirelessClient && (clientWifi?.bssid === routerId || d.wifi?.bssid === routerId)) {
-          isAssociated = true;
-        }
-
-        let signalPercent = 100;
-        if (!isWiredConnected) {
-          const dx = (d.x || 0) - (routerDevice.x || 0);
-          const dy = (d.y || 0) - (routerDevice.y || 0);
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 150) signalPercent = 100;
-          else if (dist < 250) signalPercent = 85;
-          else if (dist < 350) signalPercent = 70;
-          else if (dist < 450) signalPercent = 50;
-          else if (dist < 550) signalPercent = 30;
-          else signalPercent = 15;
-        }
-        const rssiDbm = isWiredConnected ? -30 : Math.min(-30, Math.max(-95, Math.round(-95 + (signalPercent * 0.65))));
-
-        return {
-          id: d.id,
-          name: d.name,
-          sensorType: (d.iot?.sensorType || (d.type === 'pc' ? 'Laptop/PC' : d.type)) as 'temperature' | 'sound' | 'motion' | 'humidity' | 'light',
-          connected: !!(isWiredConnected || isAssociated),
-          ip: deviceIp || d.ip,
-          mac: macAddr,
-          ssid: d.status !== 'offline' ? (clientSsid || routerDevice.wifi?.ssid || 'WiFi') : (clientSsid || 'WiFi'),
-          isWired: isWiredConnected,
-          signalPercent,
-          rssiDbm,
-        };
-      });
-  }, [topologyDevices, topologyConnections, deviceStates]);
-
-  // Get available IoT devices that can be connected (not connected to this AP)
-  const getAvailableIotDevices = useCallback((routerId: string) => {
-    const routerDevice = topologyDevices.find(d => d.id === routerId);
-    if (!routerDevice) return [];
-
-    const routerSsid = routerDevice.wifi?.ssid || '';
-
-    return topologyDevices
-      .filter(d => {
-        if (d.type !== 'iot') return false;
-
-        const isWiredConnected = topologyConnections.some(c =>
-          (c.sourceDeviceId === routerId && c.targetDeviceId === d.id) ||
-          (c.targetDeviceId === routerId && c.sourceDeviceId === d.id)
-        );
-
-        if (isWiredConnected) return false;
-
-        if (!routerSsid) return true;
-        const isConnectedToThisAp = d.wifi?.bssid === routerId || d.wifi?.ssid === routerSsid;
-        return !isConnectedToThisAp;
-      })
-      .map(d => ({
-        id: d.id,
-        name: d.name,
-        sensorType: d.iot?.sensorType || 'temperature',
-        currentSsid: d.wifi?.ssid || undefined,
-      }));
-  }, [topologyDevices, topologyConnections]);
-
-  const canReachTargetIp = useCallback((targetIp: string, options: { protocol?: 'tcp' | 'udp' | 'icmp' | 'any'; port?: string } = { protocol: 'icmp' }) => {
-    const result = checkConnectivity(deviceId, targetIp, topologyDevices, topologyConnections as unknown as CanvasConnection[], deviceStates || new Map(), language as 'tr' | 'en', options);
-
-    // Global packet capture integration
-    dispatchCapturedPackets(result.capturedPackets);
-
-    return result.success;
-  }, [deviceId, topologyDevices, topologyConnections, deviceStates, language]);
-
-  const isValidIpv4 = useCallback((value: string) => validateIP(value), []);
-  const isValidIpv6 = useCallback((value: string) => validateIPv6(value), []);
-
-  const isDhcpPoolCompatibleForClientCallback = useCallback((
-    poolGateway: string,
-    poolStartIp: string,
-    poolSubnetMask: string,
-    serverDevice: CanvasDevice | undefined,
-    serverState?: SwitchState
-  ) => {
-    return isDhcpPoolCompatibleForClient({
-      poolGateway,
-      poolStartIp,
-      poolSubnetMask,
-      serverDevice,
-      serverState,
-      clientDevice: deviceFromTopology,
-      deviceStates,
-      topologyConnections: topologyConnections as unknown as CanvasConnection[],
-      isValidIpv4,
-      getDeviceWifiConfig,
-    });
-  }, [deviceFromTopology, deviceStates, topologyConnections, isValidIpv4]);
-
-  const deviceName = deviceFromTopology?.name;
-  const isLoopbackTarget = useCallback((target: string): boolean => {
-    const trimmed = target.trim().toLowerCase();
-    return Boolean(
-      trimmed === '127.0.0.1' ||
-      trimmed === 'localhost' ||
-      (deviceId && trimmed === deviceId.toLowerCase()) ||
-      (deviceName && trimmed === deviceName.toLowerCase()) ||
-      (internalPcHostname && trimmed === internalPcHostname.toLowerCase()) ||
-      (pcIP && trimmed === pcIP.toLowerCase())
-    );
-  }, [deviceId, deviceName, internalPcHostname, pcIP]);
-
-  const hasGatewayForTargetCallback = useCallback((targetIp: string) => {
-    return hasGatewayForTarget({
-      pcIP,
-      targetIp,
-      pcSubnet,
-      pcGateway,
-      isValidIpv4
-    });
-  }, [pcGateway, pcIP, pcSubnet, isValidIpv4]);
-
-  const normalizeLookupTargetCallback = useCallback((raw: string) => {
-    return normalizeLookupTarget(raw);
-  }, []);
-
-  const resolveDeviceNameTargetCallback = useCallback((raw: string) => {
-    return resolveDeviceNameTarget({
-      raw,
-      internalPcHostname,
-      deviceId,
-      topologyDevices,
-      deviceStates,
-      isValidIpv4
-    });
-  }, [deviceId, deviceStates, internalPcHostname, isValidIpv4, topologyDevices]);
-
-  const resolveDomainWithDnsServicesCallback = useCallback((domain: string) => {
-    return resolveDomainWithDnsServices({
-      domain,
-      pcDNS,
-      topologyDevices,
-      deviceStates,
-      canReachTargetIp,
-      isValidIpv4,
-      isValidIpv6
-    });
-  }, [canReachTargetIp, isValidIpv4, isValidIpv6, pcDNS, topologyDevices, deviceStates]);
-
-  const getDnsRecordDisplay = useCallback((record: { domain: string; address: string }) => {
-    const chain: string[] = [record.domain, record.address.trim()];
-    const startAddress = record.address.trim().toLowerCase();
-    const isIp = !startAddress || isValidIpv4(startAddress) || isValidIpv6(startAddress);
-    const recordType = isIp
-      ? (isValidIpv6(startAddress)
-        ? (language === 'tr' ? 'AAAA Kaydı' : 'AAAA Record')
-        : (language === 'tr' ? 'A Kaydı' : 'A Record'))
-      : (language === 'tr' ? 'CNAME Kaydı' : 'CNAME Record');
-    if (isIp) {
-      return `${recordType}: ${chain.join(' -> ')}`;
-    }
-
-    const visited = new Set<string>([record.domain.toLowerCase(), startAddress]);
-    let currentDomain = startAddress;
-
-    for (let depth = 0; depth < 10; depth += 1) {
-      const nextRecord = serviceDnsRecords.find((r) => r.domain.toLowerCase() === currentDomain);
-      if (!nextRecord) break;
-
-      const nextAddress = nextRecord.address.trim();
-      if (!nextAddress) break;
-      chain.push(nextAddress);
-
-      const normalizedNext = nextAddress.toLowerCase();
-      if (isValidIpv4(normalizedNext) || isValidIpv6(normalizedNext)) break;
-      if (visited.has(normalizedNext)) break;
-
-      visited.add(normalizedNext);
-      currentDomain = normalizedNext;
-    }
-
-    return `${recordType}: ${chain.join(' -> ')}`;
-  }, [isValidIpv4, isValidIpv6, language, serviceDnsRecords]);
-
-  const findHttpServerByTargetCallback = useCallback((target: string) => {
-    return findHttpServerByTarget({
-      target,
-      deviceId,
-      topologyDevices,
-      deviceStates,
-      canReachTargetIp,
-      resolveDomainWithDnsServices: resolveDomainWithDnsServicesCallback,
-    });
-  }, [canReachTargetIp, resolveDomainWithDnsServicesCallback, topologyDevices, deviceStates, deviceId]);
-
-  // NOTE: usePCPanelBrowser is called below, after addPcArpEntry is defined,
-  // so that addPcArpEntry can be passed as a prop for ARP updates on curl/wget.
-  // (See the usePCPanelBrowser call site further below.)
-
-
-  // NOTE: usePCPanelRouterAdmin is also moved below (depends on openWebPage).
-  // Placeholder to preserve code structure — see call sites below.
+  const {
+    canReachTargetIp,
+    isValidIpv4,
+    isValidIpv6,
+    isDhcpPoolCompatibleForClientCallback,
+    isLoopbackTarget,
+    hasGatewayForTargetCallback,
+    normalizeLookupTargetCallback,
+    resolveDeviceNameTargetCallback,
+    resolveDomainWithDnsServicesCallback,
+    getDnsRecordDisplay,
+    findHttpServerByTargetCallback,
+    hasPhysicalPathToDevice,
+  } = usePCPanelNetworkSupport({
+    deviceId,
+    deviceFromTopology,
+    internalPcHostname,
+    pcIP,
+    pcSubnet,
+    pcGateway,
+    pcDNS,
+    topologyDevices,
+    topologyConnections,
+    deviceStates,
+    serviceDnsRecords,
+    language,
+  });
 
   useEffect(() => {
     if (!httpAppContent || !isMobile || typeof window === 'undefined') return;
@@ -1162,109 +588,6 @@ export function PCPanel({
     const refreshed = generateRouterAdminPage(targetDevice, language, runtimeState, connectedIot, availableIot, undefined, undefined, routerActiveTabRef.current);
     setHttpAppContent(refreshed);
   }, [httpAppDeviceId, topologyDevices, deviceStates, getConnectedIotDevices, getAvailableIotDevices]);
-
-  // Dragging and resizing is handled entirely by HttpBrowserWindow.tsx via direct DOM updates
-
-  // Add multi-line output with delay between each line for realistic typing effect
-  const addMultilineOutput = useCallback(async (type: OutputLine['type'], content: string, delayMs: number = 50) => {
-    const lines = content.split('\n');
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      const isLast = i === lines.length - 1;
-
-      const newLine: OutputLine = {
-        id: Math.random().toString(36).substr(2, 9),
-        type,
-        content: line,
-        prompt: i === 0 ? undefined : '' // Empty prompt for continuation lines
-      };
-
-      setPcOutput(prev => [...prev, newLine]);
-
-      // Scroll after each line
-      setTimeout(() => {
-        if (outputRef.current) outputRef.current.scrollTop = outputRef.current.scrollHeight;
-      }, 0);
-
-      // Wait before next line (except for last)
-      if (!isLast && delayMs > 0) {
-        await new Promise(resolve => setTimeout(resolve, delayMs));
-      }
-    }
-  }, []);
-
-  const hasPhysicalPathToDevice = useCallback((targetDeviceId: string) => {
-    if (!targetDeviceId || targetDeviceId === deviceId) return false;
-    const sourceDevice = topologyDevices.find((d) => d.id === deviceId);
-    const targetDevice = topologyDevices.find((d) => d.id === targetDeviceId);
-    if (!sourceDevice || !targetDevice) return false;
-    if (sourceDevice.status === 'offline' || targetDevice.status === 'offline') return false;
-
-    // DHCP discover can also traverse an implicit Wi-Fi link.
-    const sourceWifi = getDeviceWifiConfig(sourceDevice, deviceStates);
-    const targetWifi = getDeviceWifiConfig(targetDevice, deviceStates);
-    const safeStates = ensureDeviceStatesMap(deviceStates);
-    const targetState = safeStates.get(targetDeviceId);
-
-    const isTargetApMatching = (() => {
-      if (!sourceWifi?.ssid) return false;
-      const targetSsid = sourceWifi.ssid.toLowerCase();
-
-      // Check standard AP wifi
-      if (targetWifi?.enabled && targetWifi.mode === 'ap' && targetWifi.ssid && targetWifi.ssid.toLowerCase() === targetSsid) {
-        return true;
-      }
-
-      // Check WLC centralized WLANs
-      if (targetDevice.type === 'wlc' && targetState?.wlcWlans) {
-        const wlan = Object.values(targetState.wlcWlans).find(
-          w => w.status === 'enabled' && w.ssid?.toLowerCase() === targetSsid
-        );
-        if (wlan) return true;
-      }
-
-      return false;
-    })();
-
-    if (
-      sourceDevice.type === 'pc' &&
-      sourceWifi?.enabled &&
-      (sourceWifi.mode === 'client' || sourceWifi.mode === 'sta') &&
-      isTargetApMatching &&
-      getWirelessSignalStrength(sourceDevice, topologyDevices, deviceStates) > 0
-    ) {
-      return true;
-    }
-
-    const queue: string[] = [deviceId];
-    const visited = new Set<string>([deviceId]);
-
-    while (queue.length > 0) {
-      const current = queue.shift() as string;
-      if (current === targetDeviceId) return true;
-
-      const neighbors = topologyConnections
-        .filter((c) => c.active !== false && (c.sourceDeviceId === current || c.targetDeviceId === current))
-        .map((c) => (c.sourceDeviceId === current ? c.targetDeviceId : c.sourceDeviceId));
-
-      for (const next of neighbors) {
-        if (visited.has(next)) continue;
-        const nextDevice = topologyDevices.find((d) => d.id === next);
-        if (!nextDevice || nextDevice.status === 'offline') continue;
-        visited.add(next);
-        queue.push(next);
-      }
-    }
-
-    return false;
-  }, [deviceId, topologyConnections, topologyDevices, deviceStates]);
-
-
-
-
-
-
 
   // PC ARP table state lives in usePCPanelArp (synced via localStorage and custom events).
   const { addPcArpEntry, removePcArpEntry, clearPcArpTable, buildArpTableOutput } = usePCPanelArp({ deviceId, pcIP });
@@ -1315,11 +638,7 @@ export function PCPanel({
     onDeleteDevice,
   });
 
-  const {
-    getDhcpLease: _getDhcpLease,
-    checkDhcpAvailability: _checkDhcpAvailability,
-    applyDhcpLease: _applyDhcpLease,
-  } = usePCPanelDhcp({
+  usePCPanelDhcp({
     language,
     deviceId,
     topologyDevices,

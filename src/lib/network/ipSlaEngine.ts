@@ -82,9 +82,9 @@ export function evaluateIpSlaOperations(
       );
 
       const reachable = pathRes.success;
-      // Calculate deterministic latency based on path hop count and probe cycle
+      // Calculate deterministic latency based strictly on path hop count (2ms per hop)
       const hopCount = pathRes.hops?.length || 1;
-      const latency = reachable ? Math.max(1, hopCount * 2 + (Math.floor(now / 1000) % 3)) : undefined;
+      const latency = reachable ? Math.max(1, hopCount * 2) : undefined;
 
       // Update SLA Operation statistics
       const updatedOp = recordIpSlaProbe(op, latency, now);

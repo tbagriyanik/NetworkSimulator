@@ -1,10 +1,5 @@
 import React from 'react';
 import { TopologyCanvasLayer } from '../topology/TopologyCanvasLayer';
-import { PingCursorOverlay } from '../topology/PingCursorOverlay';
-import { TopologySelectionToolbar } from '../topology/TopologySelectionToolbar';
-import { TopologyPaletteSheet } from '../topology/TopologyPaletteSheet';
-import { ShortcutsModal } from '@/components/ui/ShortcutsModal';
-import { NetworkEventLogPanel } from '../topology/NetworkEventLogPanel';
 
 export const NetworkCanvas: React.FC<any> = ({
   canvasRef,
@@ -84,42 +79,7 @@ export const NetworkCanvas: React.FC<any> = ({
 }) => {
   return (
     <>
-      {/* Palette Sheet */}
-      <TopologyPaletteSheet
-        isPaletteOpen={false}
-        setIsPaletteOpen={() => {}}
-        isDark={isDark}
-        isTR={false}
-        t={t}
-        addDevice={() => {}}
-        cableInfo={cableInfo}
-        onCableChange={() => {}}
-        DEVICE_ICONS={{}}
-      />
-
-      {/* Ping Mode Target/Source Overlay Badge */}
-      <PingCursorOverlay
-        pingMode={pingMode}
-        pingCursorPos={null}
-        pingSource={pingSource}
-        isDark={isDark}
-        t={{ selectTarget: t.selectTarget, selectSource: t.selectSource }}
-      />
-
-      {/* Multiple Selection Indicator & Tools */}
-      <TopologySelectionToolbar
-        isDark={isDark}
-        t={t}
-        selectedDeviceIds={selectedDeviceIds}
-        deviceMap={deviceMap}
-        handleAlign={() => {}}
-        setSelectedDeviceIds={setSelectedDeviceIds}
-        onDeviceSelect={() => {}}
-        saveToHistory={() => {}}
-        deleteDevice={() => {}}
-      />
-
-      {/* Canvas */}
+      {/* Canvas Live Region */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">
         {/* Live region placeholder */}
       </div>
@@ -199,13 +159,6 @@ export const NetworkCanvas: React.FC<any> = ({
         isDarkForPing={isDarkForPing}
         tForPing={tForPing}
       />
-
-      {/* Zoom Controls placeholder */}
-
-      <ShortcutsModal open={false} onOpenChange={() => {}} isDark={isDark} language={language} />
-
-      {/* Event Logs */}
-      <NetworkEventLogPanel isOpen={false} onClose={() => {}} isDark={isDark} />
     </>
   );
 };
