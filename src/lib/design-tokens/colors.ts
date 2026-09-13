@@ -192,7 +192,33 @@ export const colors = {
 
   // Teal shades
   teal: {
+    500: '#14b8a6',
     600: '#0d9488',
+  },
+
+  // Rose shades
+  rose: {
+    500: '#f43f5e',
+    700: '#be123c',
+    950: '#4c0519',
+  },
+
+  // Lime shades
+  lime: {
+    500: '#84cc16',
+  },
+
+  // Pink shades
+  pink: {
+    500: '#ec4899',
+    600: '#db2777',
+  },
+
+  // Cyan shades
+  cyan: {
+    500: '#06b6d4',
+    600: '#0891b2',
+    950: '#083344',
   },
 
   // Yellow shades

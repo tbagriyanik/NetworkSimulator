@@ -55,7 +55,7 @@ interface TopologyModalsProps {
   mobilePaletteOpen: boolean;
   setMobilePaletteOpen: (open: boolean) => void;
   isTR: boolean;
-  addDevice: (type: 'pc' | 'iot' | 'switch' | 'router' | 'firewall' | 'wlc', layer?: 'L2' | 'L3') => void;
+  addDevice: (type: 'pc' | 'iot' | 'switch' | 'router' | 'firewall' | 'wlc' | 'hub' | 'cloud' | 'mobile' | 'printer', layer?: 'L2' | 'L3') => void;
   cableInfo: CableInfo;
   onCableChange: (info: CableInfo) => void;
 

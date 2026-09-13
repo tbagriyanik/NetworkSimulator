@@ -1,9 +1,10 @@
 'use client';
 
-import { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { PCInfoPopover, RouterInfoPopover } from '@/components/network/DeviceInfoPopovers';
 import { useMultiWindowStore } from '@/hooks/useMultiWindowStore';
+import type { Translations } from '@/contexts/LanguageContext';
 
 interface PageDevicePopoversProps {
   showDevicePopovers: boolean;
@@ -11,8 +12,8 @@ interface PageDevicePopoversProps {
   topologyDevices: CanvasDevice[];
   deviceStates: Map<string, SwitchState>;
   topologyConnections: CanvasConnection[];
-  t: Record<string, any>;
-  language: string;
+  t: Translations;
+  language: 'tr' | 'en';
   isDark: boolean;
   focusedOverlay: string | null;
   setFocusedOverlay: (overlay: any) => void;
@@ -23,7 +24,7 @@ interface PageDevicePopoversProps {
   setShowPCDeviceId: (id: string) => void;
   setPcPanelInitialTab: (tab: any) => void;
   getOrCreatePCOutputs: (id: string, devices: CanvasDevice[]) => void;
-  handleDeviceDoubleClick: (type: any, id: string) => void;
+  handleDeviceDoubleClick: (type: DeviceType, id: string) => void;
 }
 
 export function PageDevicePopovers({
@@ -58,8 +59,8 @@ export function PageDevicePopovers({
       {isPcDevice && activeDevice && (
         <PCInfoPopover
           pc={activeDevice}
-          t={t as any}
-          language={language as 'tr' | 'en'}
+          t={t}
+          language={language}
           isDark={isDark}
           isFocused={focusedOverlay === 'pc-info'}
           onClose={() => {
@@ -68,7 +69,7 @@ export function PageDevicePopovers({
           }}
           onFocus={() => setFocusedOverlay('pc-info')}
           zIndex={focusedOverlay === 'pc-info' ? 36 : 25}
-          handleDeviceDoubleClick={handleDeviceDoubleClick as any}
+          handleDeviceDoubleClick={handleDeviceDoubleClick}
           onOpenPanel={(id) => handleDeviceDoubleClick('pc', id)}
           onOpenSettings={(id) => {
             setShowPCDeviceId(id);
@@ -85,8 +86,8 @@ export function PageDevicePopovers({
         <RouterInfoPopover
           router={topologyDevices.find(d => d.id === activeDeviceId) as CanvasDevice}
           routerState={deviceStates.get(activeDeviceId)}
-          t={t as any}
-          language={language as 'tr' | 'en'}
+          t={t}
+          language={language}
           isDark={isDark}
           isFocused={focusedOverlay === 'router-info'}
           onClose={() => {
@@ -95,7 +96,7 @@ export function PageDevicePopovers({
           }}
           onFocus={() => setFocusedOverlay('router-info')}
           zIndex={focusedOverlay === 'router-info' ? 36 : 25}
-          handleDeviceDoubleClick={handleDeviceDoubleClick as any}
+          handleDeviceDoubleClick={handleDeviceDoubleClick}
           onOpenPanel={(id) => handleDeviceDoubleClick('router', id)}
           onOpenSettings={(id) => {
             setActiveDeviceId(id);

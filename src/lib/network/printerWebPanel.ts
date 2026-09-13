@@ -1,5 +1,5 @@
 import type { CanvasDevice } from '@/components/network/networkTopology.types';
-import { colors } from '@/lib/design-tokens/colors';
+import { colors, withAlpha } from '@/lib/design-tokens/colors';
 
 export function generatePrinterWebPanelContent(device: CanvasDevice, language: string): string {
   const isTr = language === 'tr';
@@ -14,12 +14,12 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
 
   return `
     <div style="font-family:'Inria Sans',sans-serif;background:${colors.topology.bg};color:${colors.topology.deviceText};padding:24px;min-height:100%;box-sizing:border-box;">
-      <div style="max-w:800px;margin:0 auto;background:${colors.topology.canvasBg};border:1px solid ${colors.topology.gridLine};border-radius:16px;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.5);">
+      <div style="max-w:800px;margin:0 auto;background:${colors.topology.canvasBg};border:1px solid ${colors.topology.gridLine};border-radius:16px;padding:24px;box-shadow:0 20px 25px -5px ${withAlpha(colors.common.black, 0.5)};">
         
         <!-- Header -->
         <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid ${colors.topology.gridLine};padding-bottom:16px;margin-bottom:20px;">
           <div style="display:flex;align-items:center;gap:12px;">
-            <div style="width:48px;height:48px;border-radius:12px;background:rgba(236,72,153,0.15);border:1px solid rgba(236,72,153,0.3);display:flex;align-items:center;justify-content:center;color:${colors.cables.serial};font-size:24px;">
+            <div style="width:48px;height:48px;border-radius:12px;background:${withAlpha(colors.pink[500], 0.15)};border:1px solid ${withAlpha(colors.pink[500], 0.3)};display:flex;align-items:center;justify-content:center;color:${colors.cables.serial};font-size:24px;">
               🖨️
             </div>
             <div>
@@ -28,12 +28,12 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
             </div>
           </div>
           <div style="text-align:right;display:flex;align-items:center;gap:10px;">
-            <span style="display:inline-block;padding:4px 12px;border-radius:9999px;background:${device.status === 'offline' ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)'};color:${device.status === 'offline' ? colors.terminal.error : colors.status.online};font-size:12px;font-weight:600;">
+            <span style="display:inline-block;padding:4px 12px;border-radius:9999px;background:${device.status === 'offline' ? withAlpha(colors.status.offline, 0.2) : withAlpha(colors.status.online, 0.2)};color:${device.status === 'offline' ? colors.terminal.error : colors.status.online};font-size:12px;font-weight:600;">
               ● ${device.status === 'offline' ? (isTr ? 'Çevrimdışı / Kapalı' : 'Offline / Disabled') : (isTr ? 'Çevrimiçi / Hazır' : 'Online / Ready')}
             </span>
             <button type="button"
               onclick="if(window.parent) window.parent.postMessage({type:'TOGGLE_PRINTER_WIFI',deviceId:'${device.id}'},'*')"
-              style="background:${device.wifi?.enabled !== false ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)'};border:1px solid ${device.wifi?.enabled !== false ? 'rgba(239,68,68,0.4)' : 'rgba(16,185,129,0.4)'};color:${device.wifi?.enabled !== false ? colors.terminal.error : colors.status.online};padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;"
+              style="background:${device.wifi?.enabled !== false ? withAlpha(colors.status.offline, 0.2) : withAlpha(colors.status.online, 0.2)};border:1px solid ${device.wifi?.enabled !== false ? withAlpha(colors.status.offline, 0.4) : withAlpha(colors.status.online, 0.4)};color:${device.wifi?.enabled !== false ? colors.terminal.error : colors.status.online};padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;"
               onmouseover="this.style.opacity='0.8'"
               onmouseout="this.style.opacity='1'"
             >
@@ -62,7 +62,7 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
             </div>
             <button type="button"
               onclick="if(window.parent) window.parent.postMessage({type:'TOGGLE_PRINTER_WIFI',deviceId:'${device.id}'},'*')"
-              style="margin-top:8px;background:${device.wifi?.enabled !== false ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)'};border:1px solid ${device.wifi?.enabled !== false ? 'rgba(239,68,68,0.4)' : 'rgba(16,185,129,0.4)'};color:${device.wifi?.enabled !== false ? colors.terminal.error : colors.status.online};padding:5px 10px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;width:100%;text-align:center;"
+              style="margin-top:8px;background:${device.wifi?.enabled !== false ? withAlpha(colors.status.offline, 0.2) : withAlpha(colors.status.online, 0.2)};border:1px solid ${device.wifi?.enabled !== false ? withAlpha(colors.status.offline, 0.4) : withAlpha(colors.status.online, 0.4)};color:${device.wifi?.enabled !== false ? colors.terminal.error : colors.status.online};padding:5px 10px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;width:100%;text-align:center;"
               onmouseover="this.style.opacity='0.8'"
               onmouseout="this.style.opacity='1'"
             >
@@ -85,15 +85,15 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
               <div style="font-weight:700;">BLACK</div>
               <div style="color:${colors.status.online};margin-top:4px;font-weight:700;">98%</div>
             </div>
-            <div style="background:rgba(8, 51, 68, 0.8);border:1px solid rgba(8, 145, 178, 0.8);border-radius:8px;padding:10px;color:${colors.cables.wireless};">
+            <div style="background:${withAlpha(colors.cyan[950], 0.8)};border:1px solid ${withAlpha(colors.cyan[600], 0.8)};border-radius:8px;padding:10px;color:${colors.cables.wireless};">
               <div style="font-weight:700;">CYAN</div>
               <div style="color:${colors.cables.wireless};margin-top:4px;font-weight:700;">92%</div>
             </div>
-            <div style="background:rgba(76, 5, 25, 0.8);border:1px solid rgba(190, 18, 60, 0.8);border-radius:8px;padding:10px;color:${colors.syntax.constant};">
+            <div style="background:${withAlpha(colors.rose[950], 0.8)};border:1px solid ${withAlpha(colors.rose[700], 0.8)};border-radius:8px;padding:10px;color:${colors.syntax.constant};">
               <div style="font-weight:700;">MAGENTA</div>
               <div style="color:${colors.syntax.constant};margin-top:4px;font-weight:700;">95%</div>
             </div>
-            <div style="background:rgba(69, 26, 3, 0.8);border:1px solid rgba(180, 83, 9, 0.8);border-radius:8px;padding:10px;color:${colors.amber[200]};">
+            <div style="background:${withAlpha(colors.amber[800], 0.4)};border:1px solid ${withAlpha(colors.amber[700], 0.8)};border-radius:8px;padding:10px;color:${colors.amber[200]};">
               <div style="font-weight:700;">YELLOW</div>
               <div style="color:${colors.amber[400]};margin-top:4px;font-weight:700;">90%</div>
             </div>
@@ -139,9 +139,9 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
                 <button
                   type="button"
                   onclick="if(window.parent) window.parent.postMessage({type:'CLEAR_PRINTER_QUEUE',deviceId:'${device.id}'},'*')"
-                  style="background:rgba(225,29,72,0.2);border:1px solid rgba(225,29,72,0.4);color:${colors.syntax.constant};padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all 0.2s;"
-                  onmouseover="this.style.background='rgba(225,29,72,0.4)'"
-                  onmouseout="this.style.background='rgba(225,29,72,0.2)'"
+                  style="background:${withAlpha(colors.rose[500], 0.2)};border:1px solid ${withAlpha(colors.rose[500], 0.4)};color:${colors.syntax.constant};padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all 0.2s;"
+                  onmouseover="this.style.background='${withAlpha(colors.rose[500], 0.4)}'"
+                  onmouseout="this.style.background='${withAlpha(colors.rose[500], 0.2)}'"
                 >
                   🗑️ ${isTr ? 'Kuyruğu Temizle' : 'Clear Queue'}
                 </button>
@@ -161,7 +161,7 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
                     <div style="font-size:10px;color:${colors.topology.subText};font-family:'Geist Mono','Courier New',monospace;margin-top:2px;">Sender: ${j.senderName} • ${j.pages} page(s)</div>
                   </div>
                   <div style="text-align:right;">
-                    <span style="display:inline-block;padding:2px 8px;border-radius:4px;background:rgba(16,185,129,0.2);color:${colors.status.online};font-size:10px;font-weight:600;font-family:'Geist Mono','Courier New',monospace;">
+                    <span style="display:inline-block;padding:2px 8px;border-radius:4px;background:${withAlpha(colors.status.online, 0.2)};color:${colors.status.online};font-size:10px;font-weight:600;font-family:'Geist Mono','Courier New',monospace;">
                       COMPLETED
                     </span>
                     <div style="font-size:10px;color:${colors.cables.console};font-family:'Geist Mono','Courier New',monospace;margin-top:2px;">${j.timestamp}</div>

@@ -33,17 +33,17 @@ const PALETTES = {
   vlan: [
     colors.status.info,     // blue (VLAN 1)
     colors.status.online,   // emerald (VLAN 10)
-    'rgba(249, 115, 22, 1)', // orange (VLAN 20)
+    colors.orange[500],     // orange (VLAN 20)
     colors.cables.fiber,    // violet (VLAN 30)
     colors.cables.serial,   // pink (VLAN 40)
     colors.cables.wireless, // cyan (VLAN 50)
     colors.packet.http,     // yellow (VLAN 100)
   ],
   bgp: [
-    'rgba(20, 184, 166, 1)', // teal-500
-    'rgba(244, 63, 94, 1)',  // rose-500
-    colors.indigo[500],      // indigo-500
-    'rgba(132, 204, 22, 1)', // lime-500
+    colors.teal[500],       // teal-500
+    colors.rose[500],       // rose-500
+    colors.indigo[500],     // indigo-500
+    colors.lime[500],       // lime-500
   ],
   subnet: [
     colors.sky[500],        // sky-500

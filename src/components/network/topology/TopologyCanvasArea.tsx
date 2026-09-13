@@ -23,7 +23,7 @@ export interface TopologyCanvasAreaProps {
   isPaletteOpen: boolean;
   setIsPaletteOpen: (open: boolean) => void;
   isTR: boolean;
-  addDevice: any;
+  addDevice: (type: 'pc' | 'iot' | 'switch' | 'router' | 'firewall' | 'wlc' | 'hub' | 'cloud' | 'mobile' | 'printer', layer?: 'L2' | 'L3') => void;
   cableInfo: CableInfo;
   onCableChange?: (cable: CableInfo) => void;
   pingMode: boolean;
@@ -607,7 +607,7 @@ export function TopologyCanvasArea(props: TopologyCanvasAreaProps) {
         connectionError={connectionError}
         mobilePaletteOpen={mobilePaletteOpen}
         setMobilePaletteOpen={setMobilePaletteOpen}
-        addDevice={addDevice as any}
+        addDevice={addDevice}
         cableInfo={cableInfo}
         onCableChange={onCableChange || (() => {})}
         showPortSelector={showPortSelector}
