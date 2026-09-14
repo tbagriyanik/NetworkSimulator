@@ -6,7 +6,7 @@
 
 | Özellik | Güncel kapsam ve sınır |
 |---|---|
-| **Cisco Layer 2 Güvenlik Paketi** | Dynamic ARP Inspection (`dai.ts`), IP Source Guard (`ipsg.ts`), Private VLAN (`pvlan.ts`), STP Root Guard / BPDU Filter ve Flex-Links active/standby failover motorları. |
+| **Layer 2 Güvenlik Paketi** | Dynamic ARP Inspection (`dai.ts`), IP Source Guard (`ipsg.ts`), Private VLAN (`pvlan.ts`), STP Root Guard / BPDU Filter ve Flex-Links active/standby failover motorları. |
 | **Gelişmiş L3 Yönlendirme & Protokol Entegrasyonları** | Policy-Based Routing (PBR - `ip policy route-map`), LISP (`lispEngine.ts`), CoPP CPU Koruması (`coppEngine.ts`), OSPF Auth/Stub/Passive-Interface, EIGRP Stub ve iBGP / BGP Path Attributes. |
 
 | Özellik | Güncel kapsam ve sınır |

@@ -1,6 +1,6 @@
 import { cliModeError } from './cliErrors';
 import type { CommandContext } from './commandTypes';
-import type { SwitchState, CommandResult } from '../types';
+import type { SwitchState, CommandResult, CommandMode } from '../types';
 import { buildRunningConfig } from './configBuilder';
 import { createIpSlaOperation } from '../ipSlaEngine';
 import { getOrCreateLispConfig, addLispMapping } from '../lispEngine';
@@ -790,7 +790,7 @@ export function cmdVxlanInterface(state: SwitchState, input: string, _ctx: Comma
     success: true,
     output: `NVE interface ${nveName} configured`,
     newState: { 
-      currentMode: 'config-if' as any,
+      currentMode: 'config-if' as CommandMode,
       currentInterface: nveName,
       vxlanConfig: vxlan
     },

@@ -1,11 +1,11 @@
 /**
  * flexLinks.ts — Flex-Links Engine
  *
- * Implements Cisco Flex-Links: a pair of Layer 2 interfaces where one
+ * Implements Flex-Links: a pair of Layer 2 interfaces where one
  * acts as the active link and the other as a standby backup.
  * When the active link fails, the standby automatically takes over.
  *
- * Cisco command: `switchport backup interface <interface>`
+ * command: `switchport backup interface <interface>`
  */
 import type { SwitchState } from './types';
 import type { CanvasConnection } from '@/components/network/networkTopology.types';

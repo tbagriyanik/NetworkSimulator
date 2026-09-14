@@ -35,7 +35,7 @@ function mkPort(id: string, ip: string, mask: string) {
 }
 
 describe('EIGRP Stub Routing', () => {
-  it('cmdEigrpStub with no keywords enables connected+summary (Cisco default)', () => {
+  it('cmdEigrpStub with no keywords enables connected+summary (default)', () => {
     const state = router('100');
     const res = runRouterCmd(state, 'eigrp stub');
     expect(res.success).toBe(true);

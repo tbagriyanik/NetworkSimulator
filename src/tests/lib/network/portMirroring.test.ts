@@ -3,6 +3,7 @@ import { setSpanSourceInterface, setSpanDestinationInterface, setSpanRemoteVlan,
 import type { SwitchState } from '@/lib/network/types';
 import { cmdMonitorSession, cmdNoMonitorSession } from '@/lib/network/core/interface/cmd.misc';
 import { cmdShowMonitor } from '@/lib/network/core/showCommands';
+import type { CommandContext } from '@/lib/network/core/commandTypes';
 import { buildRunningConfig } from '@/lib/network/core/configBuilder';
 import { runHopPipeline } from '@/lib/network/forwarding/packetPipeline';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
@@ -34,30 +35,30 @@ describe('portMirroring (SPAN / RSPAN)', () => {
   });
 
   it('should execute CLI monitor session commands and show monitor output', () => {
-    const state: SwitchState = {
+    const state: Partial<SwitchState> = {
       currentMode: 'config',
       hostname: 'Switch1',
       deviceType: 'switchL2',
       ports: {},
       spanSessions: {},
-    } as any;
-    const ctx = { currentMode: 'config', hostname: 'Switch1' } as any;
+    };
+    const ctx: CommandContext = { language: 'tr', deviceStates: new Map([[ 'Switch1', state as SwitchState ]]) };
 
-    const res1 = cmdMonitorSession(state, 'monitor session 1 source interface GigabitEthernet0/1', ctx);
+    const res1 = cmdMonitorSession(state as SwitchState, 'monitor session 1 source interface GigabitEthernet0/1', ctx);
     expect(res1.success).toBe(true);
 
-    const res2 = cmdMonitorSession(state, 'monitor session 1 destination interface GigabitEthernet0/2', ctx);
+    const res2 = cmdMonitorSession(state as SwitchState, 'monitor session 1 destination interface GigabitEthernet0/2', ctx);
     expect(res2.success).toBe(true);
 
-    const showRes = cmdShowMonitor(state, 'show monitor', ctx);
+    const showRes = cmdShowMonitor(state as SwitchState, 'show monitor', ctx);
     expect(showRes.output).toContain('Session 1');
     expect(showRes.output).toContain('Destination Port       : gigabitethernet0/2');
 
-    const configLines = buildRunningConfig(state);
+    const configLines = buildRunningConfig(state as SwitchState);
     expect(configLines).toContain('monitor session 1 source interface gigabitethernet0/1');
     expect(configLines).toContain('monitor session 1 destination interface gigabitethernet0/2');
 
-    const noRes = cmdNoMonitorSession(state, 'no monitor session 1', ctx);
+    const noRes = cmdNoMonitorSession(state as SwitchState, 'no monitor session 1', ctx);
     expect(noRes.success).toBe(true);
     expect(state.spanSessions?.[1]).toBeUndefined();
   });
@@ -93,7 +94,7 @@ describe('portMirroring (SPAN / RSPAN)', () => {
         { mac: '00:00:00:00:00:02', port: port2, vlan: 1, type: 'dynamic' },
       ],
       spanSessions: {},
-    } as any;
+    } as unknown as SwitchState;
 
     setSpanSourceInterface(state, 1, port1);
     setSpanDestinationInterface(state, 1, port3);
@@ -173,7 +174,7 @@ describe('portMirroring (SPAN / RSPAN)', () => {
         { mac: '00:00:00:00:00:02', port: port3, vlan: 1, type: 'dynamic' },
       ],
       spanSessions: {},
-    } as any;
+    } as unknown as SwitchState;
 
     setSpanSourceInterface(state, 1, port1);
     setSpanRemoteVlan(state, 1, 100, false);
@@ -226,7 +227,7 @@ describe('portMirroring (SPAN / RSPAN)', () => {
         [port2]: { id: port2, name: port2, type: 'gigabit', shutdown: false, mode: 'access', vlan: 1, status: 'connected' },
       },
       spanSessions: {},
-    } as any;
+    } as unknown as SwitchState;
 
     setSpanRemoteVlan(state, 1, 100, true);
     setSpanDestinationInterface(state, 1, port2);
@@ -254,21 +255,21 @@ describe('portMirroring (SPAN / RSPAN)', () => {
   });
 
   it('should emit RSPAN monitor session lines in running-config', () => {
-    const state: SwitchState = {
+    const state: Partial<SwitchState> = {
       currentMode: 'config',
       hostname: 'Switch1',
       deviceType: 'switchL2',
       ports: {},
       spanSessions: {},
-    } as any;
-    const ctx = { currentMode: 'config', hostname: 'Switch1' } as any;
+    };
+    const ctx: CommandContext = { language: 'tr', deviceStates: new Map([[ 'Switch1', state as SwitchState ]]) };
 
-    cmdMonitorSession(state, 'monitor session 1 source interface GigabitEthernet0/1', ctx);
-    cmdMonitorSession(state, 'monitor session 1 source remote vlan 100', ctx);
-    cmdMonitorSession(state, 'monitor session 2 destination remote vlan 100', ctx);
-    cmdMonitorSession(state, 'monitor session 2 destination interface GigabitEthernet0/24', ctx);
+    cmdMonitorSession(state as SwitchState, 'monitor session 1 source interface GigabitEthernet0/1', ctx);
+    cmdMonitorSession(state as SwitchState, 'monitor session 1 source remote vlan 100', ctx);
+    cmdMonitorSession(state as SwitchState, 'monitor session 2 destination remote vlan 100', ctx);
+    cmdMonitorSession(state as SwitchState, 'monitor session 2 destination interface GigabitEthernet0/24', ctx);
 
-    const configLines = buildRunningConfig(state);
+    const configLines = buildRunningConfig(state as SwitchState);
     expect(configLines).toContain('monitor session 1 source interface gigabitethernet0/1');
     expect(configLines).toContain('monitor session 1 source remote vlan 100');
     expect(configLines).toContain('monitor session 2 destination remote vlan 100');

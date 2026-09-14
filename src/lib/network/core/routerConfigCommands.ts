@@ -450,7 +450,7 @@ function cmdEigrpStub(state: SwitchState, input: string): CommandResult {
     let summary = false;
     let receiveOnly = false;
     if (tokens.length === 0) {
-        // Cisco default: eigrp stub means connected + summary
+        // default: eigrp stub means connected + summary
         connected = true;
         summary = true;
     } else {

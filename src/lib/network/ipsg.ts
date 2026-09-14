@@ -2,7 +2,7 @@
  * ipsg.ts — IP Source Guard (IPSG) Engine
  *
  * Validates source IP (and optionally MAC) of frames against the
- * DHCP Snooping binding table. Cisco: `ip verify source [port-security]`
+ * DHCP Snooping binding table. `ip verify source [port-security]`
  */
 import type { SwitchState } from './types';
 

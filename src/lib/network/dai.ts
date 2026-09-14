@@ -2,7 +2,7 @@
  * dai.ts — Dynamic ARP Inspection (DAI) Engine
  *
  * Validates ARP packets against the DHCP Snooping binding table.
- * Cisco equivalent: `ip arp inspection vlan <vlan>` + `ip arp inspection trust`
+ * equivalent: `ip arp inspection vlan <vlan>` + `ip arp inspection trust`
  */
 import type { SwitchState } from './types';
 

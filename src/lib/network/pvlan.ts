@@ -1,12 +1,12 @@
 /**
  * pvlan.ts — Private VLAN (PVLAN) Engine
  *
- * Implements Cisco Private VLAN isolation rules:
+ * Implements Private VLAN isolation rules:
  * - Isolated ports: can only communicate with promiscuous ports
  * - Community ports: can communicate within same community + promiscuous
  * - Promiscuous ports: can communicate with all secondary VLAN ports
  *
- * Cisco commands: `switchport mode private-vlan host/promiscuous`
+ * commands: `switchport mode private-vlan host/promiscuous`
  */
 import type { SwitchState, Port } from './types';
 
