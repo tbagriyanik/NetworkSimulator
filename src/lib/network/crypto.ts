@@ -1,4 +1,5 @@
 import { pbkdf2Sync, randomBytes, timingSafeEqual } from 'crypto';
+import { cryptoRandomInteger } from './randomServices';
 
 function checkExamHmacKeyStartup(): void {
   if (
@@ -129,16 +130,8 @@ export function encryptMd5Password(cliConfigInput: string, saltValue?: string): 
 function generateSalt(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789./';
   let salt = '';
-  if (typeof globalThis !== 'undefined' && globalThis.crypto?.getRandomValues) {
-    const bytes = new Uint8Array(8);
-    globalThis.crypto.getRandomValues(bytes);
-    for (let i = 0; i < 8; i++) {
-      salt += chars.charAt(bytes[i] % chars.length);
-    }
-  } else {
-    for (let i = 0; i < 8; i++) {
-      salt += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
+  for (let i = 0; i < 8; i++) {
+    salt += chars.charAt(cryptoRandomInteger(0, chars.length - 1));
   }
   return salt;
 }

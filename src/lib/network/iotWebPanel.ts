@@ -896,7 +896,7 @@ export const generateIotDevicePageContent = (
             const fullAction = target === 'this' ? action : \`\${target}:\${action}\`;
 
             const newRule = {
-              id: Math.random().toString(36).substr(2, 9),
+              id: 'rule-' + Date.now().toString(36) + '-' + (rules.length + 1),
               condition,
               action: fullAction,
               enabled: true

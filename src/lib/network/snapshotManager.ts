@@ -1,5 +1,6 @@
 import type { CanvasDevice, CanvasConnection, CanvasNote } from '@/components/network/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
+import { deterministicIdWithPrefix } from '@/lib/network/randomServices';
 
 export interface TopologyCheckpoint {
   id: string;
@@ -25,7 +26,7 @@ export function createCheckpoint(
   description?: string
 ): TopologyCheckpoint {
   return {
-    id: `checkpoint-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+    id: deterministicIdWithPrefix('checkpoint'),
     name: name.trim() || `Checkpoint ${new Date().toLocaleTimeString()}`,
     description: description?.trim(),
     createdAt: Date.now(),

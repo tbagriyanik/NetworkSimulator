@@ -4,8 +4,8 @@ import type { SwitchState, CommandResult, DhcpSnoopingBinding } from '../types';
 function getDhcpSnoopingBindingsList(state: SwitchState): DhcpSnoopingBinding[] {
   const map = new Map<string, DhcpSnoopingBinding>();
 
-  (state.dhcpSnoopingBindings || []).forEach(b => {
-    const key = (b.macAddress || b.ipAddress || Math.random().toString()).toLowerCase();
+  (state.dhcpSnoopingBindings || []).forEach((b, idx) => {
+    const key = (b.macAddress || b.ipAddress || `b-${idx}`).toLowerCase();
     map.set(key, b);
   });
 

@@ -4,6 +4,7 @@ import type { NetworkPacketFrame } from './packetFrame';
 import { getRoutingTable, findRoute, Route } from '@/lib/network/routing';
 import { learnMacAddress } from '@/lib/network/macLearning';
 import { generateIcmpUnreachable } from './icmpUtils';
+import { deterministicIdWithPrefix } from '@/lib/network/randomServices';
 
 export interface ForwardingEngineResult {
   accepted: boolean;
@@ -123,7 +124,7 @@ export function processControlPlaneProtocols(
     if (operation === 'request' && targetIp && localIps.includes(targetIp)) {
       const myMac = device.macAddress || Object.values(updatedState.ports || {})[0]?.macAddress || '00:00:00:00:00:00';
       responseFrame = {
-        id: `arp-reply-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        id: deterministicIdWithPrefix('arp-reply'),
         protocol: 'ARP',
         timestamp: now,
         ingressDeviceId: device.id,

@@ -61,7 +61,8 @@ function allocateGlobalPort(
     }
   }
 
-  return 1024 + Math.floor(Math.random() * 60000);
+  // All ephemeral ports are used up — deterministic saturation fallback
+  return 65535;
 }
 
 /**

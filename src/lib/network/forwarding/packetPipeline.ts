@@ -42,7 +42,7 @@ import { processNatPacket } from './natEngine';
 import { evaluateWredDrop } from '@/lib/network/qosScheduler';
 import { evaluateZbf } from './zbfEngine';
 import { evaluateIpv6FirstHopSecurity } from './ipv6FirstHopSecurity';
-import { getSpanMirrorDestinations } from '@/lib/network/portMirroring';
+import { getSpanMirrorDestinations, getRspanDestinationSessions } from '@/lib/network/portMirroring';
 
 // ─────────────────────────────────────────────
 // Pipeline Trace Types
@@ -542,14 +542,39 @@ export function runHopPipeline(
           egressPorts.push(dest.destinationInterface);
         }
         traces.push(makeTrace(hopIndex, device, dest.destinationInterface, 'span-mirror', 'forward',
-          `SPAN: Mirroring ingress traffic from ${ingressPortId} to destination ${dest.destinationInterface}`, frame));
-      } else if (dest.remoteVlan) {
+          `SPAN: Mirroring ingress traffic from ${ingressPortId} to analyzer port ${dest.destinationInterface}`, frame));
+      } else if (dest.remoteVlan !== undefined) {
+        const rspanVlan = dest.remoteVlan;
+        const rspanTrunkPorts: string[] = [];
+        if (state.ports) {
+          for (const [pid, p] of Object.entries(state.ports)) {
+            if (pid === ingressPortId) continue;
+            if (p.shutdown) continue;
+            if (p.mode === 'trunk') {
+              const allowed = p.allowedVlans;
+              if (allowed === 'all' || (Array.isArray(allowed) && allowed.includes(rspanVlan))) {
+                rspanTrunkPorts.push(pid);
+              }
+            }
+          }
+        }
+        for (const trunkPort of rspanTrunkPorts) {
+          if (!egressPorts.includes(trunkPort)) {
+            egressPorts.push(trunkPort);
+          }
+        }
         traces.push(makeTrace(hopIndex, device, ingressPortId, 'span-mirror', 'forward',
-          `RSPAN: Mirroring ingress traffic from ${ingressPortId} onto remote VLAN ${dest.remoteVlan}`, {
-            ...frame,
-            vlanId: dest.remoteVlan,
-          }));
+          `RSPAN: Mirroring ingress traffic from ${ingressPortId} onto remote VLAN ${rspanVlan} via trunk ${rspanTrunkPorts.length ? rspanTrunkPorts.join(',') : 'none'}`,
+          { ...frame, vlanId: rspanVlan }));
       }
+    }
+    const rspanDestSessions = getRspanDestinationSessions(state, frame.vlanId);
+    for (const dest of rspanDestSessions) {
+      if (dest.destinationInterface && !egressPorts.includes(dest.destinationInterface)) {
+        egressPorts.push(dest.destinationInterface);
+      }
+      traces.push(makeTrace(hopIndex, device, dest.destinationInterface || ingressPortId, 'span-mirror', 'forward',
+        `RSPAN: Frame on remote VLAN ${frame.vlanId} delivered to analyzer port ${dest.destinationInterface}`, frame));
     }
   }
 

@@ -17,6 +17,20 @@
 // OSPF Neighbor State Machine  (RFC 2328 §10.3)
 // ─────────────────────────────────────────────
 
+/** Deterministic monotonic counters for protocol transaction IDs. */
+let ddSeqCounter = 0x100000;
+let dhcpXidCounter = 0x20000000;
+
+function nextDdSeq(): number {
+  ddSeqCounter = (ddSeqCounter + 1) % 0xFFFFFF;
+  return ddSeqCounter;
+}
+
+function nextDhcpXid(): number {
+  dhcpXidCounter = (dhcpXidCounter + 1) >>> 0;
+  return dhcpXidCounter;
+}
+
 /** OSPF neighbor states per RFC 2328 Table 10.1 */
 export type OspfNeighborState =
   | 'Down'
@@ -105,7 +119,7 @@ export function ospfNeighborTransition(
         // Decide whether to form adjacency (P2P or DR/BDR involved)
         // For simplicity: always proceed to ExStart on P2P links
         next.state = 'ExStart';
-        next.ddSeq = Math.floor(Math.random() * 0xFFFFFF);
+        next.ddSeq = nextDdSeq();
         events.push({ type: 'SendDD', neighborId: neighbor.neighborId, interfaceId: neighbor.interfaceId, isMaster: myRouterId > neighbor.neighborId });
         events.push({ type: 'LogEvent', message: `OSPF: Neighbor ${neighbor.neighborId} → ExStart` });
       }
@@ -455,7 +469,7 @@ export function dhcpClientTransition(
   switch (event) {
     case 'Discover': {
       next.state = 'SELECTING';
-      next.xid = Math.floor(Math.random() * 0xFFFFFFFF);
+      next.xid = nextDhcpXid();
       next.retryCount = 0;
       return { nextClient: next, frameToSend: 'DISCOVER', logMessage: `DHCP: ${client.interfaceId} SELECTING — sent DISCOVER` };
     }

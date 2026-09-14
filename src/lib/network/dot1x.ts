@@ -1,4 +1,5 @@
 import type { SwitchState } from './types';
+import { cryptoRandomInteger } from './randomServices';
 
 export type Dot1xState = 'force-authorized' | 'force-unauthorized' | 'connecting' | 'authenticating' | 'authorized' | 'unauthorized' | 'held' | 'failed';
 
@@ -144,7 +145,7 @@ export function processEapolFrame(
       eapCode: 'request',
       eapId: 2,
       eapType: 'md5-challenge',
-      challenge: `CHALLENGE_${Math.floor(Math.random() * 100000)}`
+      challenge: `CHALLENGE_${cryptoRandomInteger(100000, 999999)}`
     };
 
     return {

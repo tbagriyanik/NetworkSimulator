@@ -1,6 +1,7 @@
 import { ProjectData, ExamProject, ExamTask } from './examTypes';
 import { DevicePort, ProjectDevice } from './examTypes';
 import { extractCliCommandsFromNotes, extractPcConfigsFromNotes, extractConnectionsFromNotes } from './examNoteExtractors';
+import { deterministicIdWithPrefix } from './randomServices';
 
 /**
  * Automatically generates exam tasks from a project data object.
@@ -25,7 +26,7 @@ export function generateExamFromProject(projectData: ProjectData, language: 'tr'
       })
       .map((item: ExamTask) => ({
         ...item,
-        id: item.id || `task-${Date.now()}-${Math.random()}`,
+        id: item.id || deterministicIdWithPrefix('task'),
         completed: false,
         completedAt: undefined
       }));

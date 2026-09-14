@@ -1,4 +1,5 @@
 import { SwitchState } from './types';
+import { deterministicIdWithPrefix } from './randomServices';
 
 export interface SyslogMessage {
   id: string;
@@ -47,7 +48,7 @@ export function generateSyslogMessage(
   message: string
 ): SyslogMessage {
   return {
-    id: Math.random().toString(36).substring(2, 11),
+    id: deterministicIdWithPrefix('syslog'),
     timestamp: Date.now(),
     sourceIp: sourceDevice.ip || '0.0.0.0',
     sourceName: sourceDevice.hostname,
