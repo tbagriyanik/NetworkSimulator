@@ -450,14 +450,22 @@ export function ExamModePanel({
         {isFinishedState && (
           <div className="p-3 bg-secondary-50 dark:bg-secondary-900/50 border-t border-secondary-200 dark:border-secondary-700">
             <Button
-              className="w-full bg-success-600 hover:bg-success-700 text-white font-bold h-9 rounded-lg gap-2"
+              className="w-full bg-success-600 hover:bg-success-700 text-white font-bold h-9 rounded-lg gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-auto"
               onClick={handleDownloadCertificate}
+              disabled={Math.round(score) < 50}
+              title={Math.round(score) < 50 ? (language === 'tr' ? 'Sertifika için en az 50 puan gereklidir.' : 'A minimum score of 50 is required for a certificate.') : undefined}
             >
               <Download className="w-4 h-4" />
               {language === 'tr' ? 'Sertifikayı İndir' : 'Download Certificate'}
             </Button>
+            {Math.round(score) < 50 && (
+              <p className="text-center text-xs text-warning-500 dark:text-warning-400 mt-1.5">
+                {language === 'tr' ? `Sertifika için en az 50 puan gerekli (Mevcut: ${Math.round(score)})` : `Min. 50 pts required (Current: ${Math.round(score)})`}
+              </p>
+            )}
           </div>
         )}
+
       </div>
     </div>
   );

@@ -803,6 +803,12 @@ export function getModePrompt(mode: CommandMode, hostname: string, _context?: st
       return `${hostname}(config-mst)#`;
     case 'config-route-map':
       return `${hostname}(config-route-map)#`;
+    case 'config-flow-record':
+      return `${hostname}(config-flow-record)#`;
+    case 'config-flow-exporter':
+      return `${hostname}(config-flow-exporter)#`;
+    case 'config-flow-monitor':
+      return `${hostname}(config-flow-monitor)#`;
     case 'dhcp-config':
       return `${hostname}(dhcp-config)#`;
     case 'ssid-config':

@@ -6,6 +6,7 @@ import {
   isInInterfaceMode,
   applyToSelectedPorts
 } from './helpers';
+import { getOrCreateSpanSession, setSpanSourceInterface, setSpanDestinationInterface, setSpanRemoteVlan } from '../../portMirroring';
 
 /**
  * standby <group> ip <virtual-ip>
@@ -571,12 +572,36 @@ export function cmdMonitorSession(state: SwitchState, input: string, _ctx: Comma
     return { success: false, error: cliModeError() };
   }
 
-  const match = input.match(/^monitor\s+session\s+(\d+)\s+(source|destination)\s+(.+)$/i);
+  // monitor session 1 source interface Gi0/1
+  // monitor session 1 destination interface Gi0/2
+  // monitor session 1 destination remote vlan 100
+  // monitor session 1 source remote vlan 100
+  const match = input.match(/^monitor\s+session\s+(\d+)\s+(source|destination)\s+(interface\s+(\S+)|remote\s+vlan\s+(\d+))/i);
   if (!match) {
-    return { success: false, error: '% Invalid monitor session command' };
+    return { success: false, error: '% Usage: monitor session <id> {source | destination} {interface <if> | remote vlan <vlan>}' };
   }
 
-  return { success: true, output: `Monitor session ${match[1]} configured` };
+  const sessionId = parseInt(match[1], 10);
+  const type = match[2].toLowerCase() as 'source' | 'destination';
+  const interfaceId = match[4];
+  const remoteVlanStr = match[5];
+
+  getOrCreateSpanSession(state, sessionId);
+
+  if (interfaceId) {
+    if (type === 'source') {
+      setSpanSourceInterface(state, sessionId, interfaceId);
+    } else {
+      setSpanDestinationInterface(state, sessionId, interfaceId);
+    }
+    return { success: true, output: `Monitor session ${sessionId} ${type} interface ${interfaceId} configured`, newState: { spanSessions: state.spanSessions } };
+  } else if (remoteVlanStr) {
+    const vlanId = parseInt(remoteVlanStr, 10);
+    setSpanRemoteVlan(state, sessionId, vlanId, type === 'destination');
+    return { success: true, output: `RSPAN Monitor session ${sessionId} ${type} remote vlan ${vlanId} configured`, newState: { spanSessions: state.spanSessions } };
+  }
+
+  return { success: true, output: `Monitor session ${sessionId} configured` };
 }
 
 /**
@@ -589,10 +614,15 @@ export function cmdNoMonitorSession(state: SwitchState, input: string, _ctx: Com
 
   const match = input.match(/^no\s+monitor\s+session\s+(\d+)$/i);
   if (!match) {
-    return { success: false, error: '% Invalid monitor session command' };
+    return { success: false, error: '% Usage: no monitor session <1-8>' };
   }
 
-  return { success: true, output: `Monitor session ${match[1]} removed` };
+  const sessionId = parseInt(match[1], 10);
+  if (state.spanSessions) {
+    delete state.spanSessions[sessionId];
+  }
+
+  return { success: true, output: `Monitor session ${sessionId} removed`, newState: { spanSessions: state.spanSessions } };
 }
 
 /**

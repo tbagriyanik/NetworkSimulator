@@ -95,6 +95,7 @@ interface NSSAExternalLSA extends LSA {
  * Link State Database (LSDB)
  */
 export interface LSDB {
+  passiveLinks?: Set<string>;
   [area: number]: {
     routerLSAs: Map<string, RouterLSA>;
     summaryLSAs: Map<string, SummaryLSA>;
@@ -111,6 +112,7 @@ const OSPF_REFERENCE_BANDWIDTH = 100000; // 100 Mbps in Kbps (Standard default)
  * Formula: reference-bandwidth / interface-bandwidth
  */
 function calculateOSPFInterfaceCost(port: Port): number {
+  if (port.ospfCost !== undefined) return port.ospfCost; // ip ospf cost override
   if (port.stpCost !== undefined) return port.stpCost; // Manual override if provided
 
   const bandwidth = getPortBandwidthKbps(port);
@@ -200,10 +202,20 @@ function isOspfV3(protocol: string | undefined): boolean {
   return protocol === 'ospfv3';
 }
 
+/**
+ * Whether an interface is passive for OSPF: it is still advertised as a stub
+ * network, but no adjacency/transit is formed over it.
+ */
+function isOspfInterfacePassive(state: SwitchState, portId: string): boolean {
+  const port = state.ports?.[portId];
+  if (port?.passiveInterface) return true;
+  return (state.passiveInterfaces || []).some(p => p.toLowerCase() === portId.toLowerCase());
+}
+
 export function buildOSPFLinkStateDatabase(
   deviceStates: Map<string, SwitchState>
 ): LSDB {
-  const lsdb: LSDB = {};
+  const lsdb: LSDB = { passiveLinks: new Set() };
 
   // First pass: detect all area types by checking each router's configuration
   const areaTypes = new Map<number, OSPFAreaType>();
@@ -252,7 +264,7 @@ export function buildOSPFLinkStateDatabase(
 
       // Create Type 1 Router LSA
       const links: OSPFLink[] = [];
-      Object.values(state.ports).forEach(port => {
+      Object.entries(state.ports || {}).forEach(([portId, port]) => {
         if (port.shutdown) return;
 
         if (isV6) {
@@ -268,6 +280,10 @@ export function buildOSPFLinkStateDatabase(
             type: 'stub',
             metric: calculateOSPFInterfaceCost(port)
           });
+
+          if (isOspfInterfacePassive(state, portId)) {
+            lsdb.passiveLinks?.add(`${routerId}|${area}|${port.ipv6Address}`);
+          }
         } else {
           if (!port.ipAddress || !port.subnetMask) return;
           if (port.ospfEnabled === false) return;
@@ -275,12 +291,17 @@ export function buildOSPFLinkStateDatabase(
           const portArea = port.ospfArea !== undefined ? parseInt(port.ospfArea) : area;
           if (portArea !== area) return;
 
+          const networkAddr = getNetworkAddress(port.ipAddress, port.subnetMask);
           links.push({
-            id: getNetworkAddress(port.ipAddress, port.subnetMask),
+            id: networkAddr,
             data: port.subnetMask,
             type: 'stub',
             metric: calculateOSPFInterfaceCost(port)
           });
+
+          if (isOspfInterfacePassive(state, portId)) {
+            lsdb.passiveLinks?.add(`${routerId}|${area}|${networkAddr}`);
+          }
         }
       });
 
@@ -563,6 +584,10 @@ function runOSPFDijkstra(
       // We look for other Router LSAs that advertise the same link.
       areaData.routerLSAs.forEach((otherLsa, neighborId) => {
         if (neighborId === current.routerId) return;
+
+        // Passive interfaces form no adjacency — no transit across them
+        if (lsdb.passiveLinks?.has(`${current.routerId}|${area}|${link.id}`)) return;
+        if (lsdb.passiveLinks?.has(`${neighborId}|${area}|${link.id}`)) return;
 
         const isNeighbor = otherLsa.links.some(otherLink =>
           (otherLink.id === link.id)

@@ -10,10 +10,11 @@ import { getDeviceCapabilities } from '../capabilities';
 import { validateIpRoutingSupport } from './L3Validation';
 import { cmdAccessList, cmdNoAccessList } from './interface/cmd.misc';
 import { cmdIpDhcpPool, cmdNoIpDhcpPool, cmdIpv6DhcpPool, cmdIpDhcpExcludedAddress, cmdNoIpDhcpExcludedAddress, cmdIpDhcpSnoopingVlan, cmdNoIpDhcpSnooping, cmdIpDhcpSnoopingInformationOption } from './globalConfigDhcpCommands';
-import { cmdIpNatPool, cmdIpNatInsideSourceStatic, cmdIpNatInsideSourceList, cmdLoggingHost, cmdLoggingTrap, cmdNtpServer, cmdNtpMaster, cmdNoNtpServer, cmdClockTimezone, cmdIpNameServer, cmdIpHost, cmdAliasExec, cmdNoAliasExec, cmdIpSla, cmdTrack, cmdLldpTlvSelect, cmdSpanningTreeMst, cmdIpPrefixList, cmdRouteMap, cmdIpv6RouterEigrp, cmdSpanningTreeLoopguardDefault, cmdIpFlowExport, cmdNoIpPrefixList, cmdNoIpv6PrefixList, cmdNoRouteMap, cmdVrfDefinition, cmdVrfRd, cmdVrfRouteTarget, cmdMplsLdpRouterId, cmdVxlanInterface, cmdVxlanMemberVni, cmdZoneSecurity, cmdZonePairSecurity, cmdRestconfEnable, cmdMplsIpGlobal, cmdArchive, cmdMacroName, cmdMacroApply, cmdConfigureReplace, cmdMacAccessList, cmdTemplate } from './globalConfigNetworkCommands';
+import { cmdIpNatPool, cmdIpNatInsideSourceStatic, cmdIpNatInsideSourceList, cmdLoggingHost, cmdLoggingTrap, cmdNtpServer, cmdNtpMaster, cmdNoNtpServer, cmdClockTimezone, cmdIpNameServer, cmdIpHost, cmdAliasExec, cmdNoAliasExec, cmdIpSla, cmdTrack, cmdLldpTlvSelect, cmdSpanningTreeMst, cmdIpPrefixList, cmdRouteMap, cmdRouteMapSetNextHop, cmdRouteMapSetInterface, cmdRouteMapSetPrecedence, cmdRouteMapSetDscp, cmdIpv6RouterEigrp, cmdSpanningTreeLoopguardDefault, cmdIpFlowExport, cmdNoIpPrefixList, cmdNoIpv6PrefixList, cmdNoRouteMap, cmdVrfDefinition, cmdVrfRd, cmdVrfRouteTarget, cmdMplsLdpRouterId, cmdMplsLdpGracefulRestart, cmdMplsLdpSessionProtection, cmdVxlanInterface, cmdZoneSecurity, cmdZonePairSecurity, cmdRestconfEnable, cmdMplsIpGlobal, cmdArchive, cmdMacroName, cmdMacroApply, cmdConfigureReplace, cmdMacAccessList, cmdTemplate, cmdLispRouter, cmdLispEidTable, cmdControlPlane } from './globalConfigNetworkCommands';
 
 import { cmdClassMap, cmdPolicyMap, cmdClass, cmdSetDscp, cmdSetCoS, cmdPolice, cmdNoClassMap, cmdNoPolicyMap } from './qosMqcCommands';
 import { cmdAaaNewModel, cmdNoAaaNewModel, cmdAaaAuthentication, cmdRadiusServerHost, cmdTacacsServerHost, cmdRadiusServerKey, cmdTacacsServerKey, cmdDot1xSystem } from './globalConfigAaaCommands';
+import { cmdFlowRecord, cmdNoFlowRecord, cmdFlowExporter, cmdNoFlowExporter, cmdFlowMonitor, cmdNoFlowMonitor } from './flowCommands';
 import {
   cmdNoIpHttpServer,
   cmdNoIpDomainLookup,
@@ -211,14 +212,23 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'rd': cmdVrfRd,
   'route-target': cmdVrfRouteTarget,
   'mpls ldp router-id': cmdMplsLdpRouterId,
+  'mpls ldp graceful-restart': cmdMplsLdpGracefulRestart,
+  'no mpls ldp graceful-restart': cmdMplsLdpGracefulRestart,
+  'mpls ldp session protection': cmdMplsLdpSessionProtection,
+  'no mpls ldp session protection': cmdMplsLdpSessionProtection,
   'interface nve': cmdVxlanInterface,
-  'member vni': cmdVxlanMemberVni,
   'zone security': cmdZoneSecurity,
   'zone-pair security': cmdZonePairSecurity,
   'spanning-tree loopguard default': cmdSpanningTreeLoopguardDefault,
   'no spanning-tree loopguard default': cmdSpanningTreeLoopguardDefault,
   'ip flow-export': cmdIpFlowExport,
   'no ip flow-export': cmdIpFlowExport,
+  'flow record': cmdFlowRecord,
+  'no flow record': cmdNoFlowRecord,
+  'flow exporter': cmdFlowExporter,
+  'no flow exporter': cmdNoFlowExporter,
+  'flow monitor': cmdFlowMonitor,
+  'no flow monitor': cmdNoFlowMonitor,
   'ip ssh authentication-retries': cmdIpSshAuthRetries,
   'crypto key generate rsa': cmdCryptoKeyGenerateRsa,
   'crypto key zeroize rsa': cmdCryptoKeyZeroizeRsa,
@@ -290,6 +300,14 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'no restconf': cmdRestconfEnable,
   'mpls ip': cmdMplsIpGlobal,
   'no mpls ip': cmdMplsIpGlobal,
+  'set ip next-hop': cmdRouteMapSetNextHop,
+  'set interface': cmdRouteMapSetInterface,
+  'set ip precedence': cmdRouteMapSetPrecedence,
+  'set ip dscp': cmdRouteMapSetDscp,
+  'router lisp': cmdLispRouter,
+  'no router lisp': cmdLispRouter,
+  'database-mapping': cmdLispEidTable,
+  'control-plane': cmdControlPlane,
 };
 
 
@@ -375,7 +393,7 @@ function cmdIpRouting(state: SwitchState, _input: string, ctx: CommandContext): 
 /**
  * IP Route - Add static route
  */
-function cmdIpRoute(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
+export function cmdIpRoute(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
     return { success: false, error: cliModeError() };
   }
@@ -391,12 +409,12 @@ function cmdIpRoute(state: SwitchState, input: string, ctx: CommandContext): Com
     };
   }
 
-  const match = input.match(/^ip\s+route\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+|\S+)(?:\s+(\d+))?$/i);
+  const match = input.match(/^ip\s+route\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+|\S+)(?:\s+(\d+))?(?:\s+track\s+(\d+))?$/i);
   if (!match) {
-    return { success: false, error: '% Invalid ip route command. Use: ip route <network> <mask> <next-hop|interface> [administrative-distance]' };
+    return { success: false, error: '% Invalid ip route command. Use: ip route <network> <mask> <next-hop|interface> [administrative-distance] [track <track-id>]' };
   }
 
-  const [, network, mask, nextHop, adminDistance] = match;
+  const [, network, mask, nextHop, adminDistance, trackId] = match;
   const metric = adminDistance ? parseInt(adminDistance, 10) : 1;
 
   const newStaticRoutes = [...(state.staticRoutes || [])];
@@ -404,7 +422,14 @@ function cmdIpRoute(state: SwitchState, input: string, ctx: CommandContext): Com
   const filteredRoutes = newStaticRoutes.filter(
     (route: Route) => !(route.destination === network && route.subnetMask === mask)
   );
-  filteredRoutes.push({ destination: network, subnetMask: mask, nextHop, metric, type: 'static' });
+  filteredRoutes.push({
+    destination: network,
+    subnetMask: mask,
+    nextHop,
+    metric,
+    type: 'static',
+    ...(trackId ? { trackId: parseInt(trackId, 10) } : {})
+  });
 
   return {
     success: true,
@@ -502,7 +527,8 @@ function cmdNoRouterEigrp(state: SwitchState, input: string, _ctx: CommandContex
     newState: {
       routingProtocol: 'none',
       dynamicRoutes: [],
-      eigrpAs: undefined
+      eigrpAs: undefined,
+      eigrpStub: null
     }
   };
 }
@@ -567,7 +593,7 @@ function cmdNoRouterBgp(state: SwitchState, input: string, _ctx: CommandContext)
 /**
  * No IP Route - Remove static route
  */
-function cmdNoIpRoute(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
+export function cmdNoIpRoute(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
     return { success: false, error: cliModeError() };
   }
@@ -583,7 +609,7 @@ function cmdNoIpRoute(state: SwitchState, input: string, ctx: CommandContext): C
     };
   }
 
-  const match = input.match(/^no\s+ip\s+route\s+([0-9.]+)\s+([0-9.]+)(?:\s+([0-9.]+|\S+))?$/i);
+  const match = input.match(/^no\s+ip\s+route\s+([0-9.]+)\s+([0-9.]+)(?:\s+([0-9.]+|\S+))?(?:\s+track\s+\d+)?$/i);
   if (!match) {
     return { success: false, error: '% Invalid no ip route command' };
   }

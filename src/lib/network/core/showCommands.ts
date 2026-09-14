@@ -44,6 +44,7 @@ import {
   cmdShowVrrp, cmdShowVrrpBrief, cmdShowIpv6AccessList,
   cmdShowPrefixList, cmdShowRouteMap, cmdShowIpv6EigrpNeighbors, cmdShowIpv6EigrpTopology, cmdShowIpv6EigrpInterfaces,
   cmdShowGlbp, cmdShowIpFlowExport, cmdShowIpCacheFlow, cmdShowIpv6Neighbors,
+  cmdShowFlowRecord, cmdShowFlowExporter, cmdShowFlowMonitor,
   cmdShowIpv6DhcpBinding, cmdShowPppoeSession, cmdShowCaller,
   cmdShowTrack, cmdShowIpSlaSummary, cmdShowIpSlaConfiguration,
   cmdShowVrf, cmdShowMpls
@@ -56,6 +57,10 @@ import {
 import {
   cmdShowCryptoIsakmpSa, cmdShowCryptoIpsecSa, cmdShowCryptoMap
 } from './cryptoCommands';
+import {
+  cmdShowVlanPrivateVlan, cmdShowInterfacesBackup, cmdShowLisp, cmdShowControlPlane,
+  cmdShowNveInterface, cmdShowEvpn
+} from './showServicesDisplay';
 
 
 // Show komutları (show running-config, show vlan, show ip route, vs.)
@@ -201,6 +206,16 @@ export const showHandlers: Record<string, CommandHandler> = {
   'show vrf brief': cmdShowVrf,
   'show mpls': cmdShowMpls,
   'show mpls ip': cmdShowMpls,
+  'show mpls ldp neighbor': cmdShowMpls,
+  'show mpls ldp discovery': cmdShowMpls,
+  'show mpls forwarding-table': cmdShowMpls,
+  'show mpls bindings': cmdShowMpls,
+  'show vlan private-vlan': cmdShowVlanPrivateVlan,
+  'show interfaces backup': cmdShowInterfacesBackup,
+  'show nve interface': cmdShowNveInterface,
+  'show evpn': cmdShowEvpn,
+  'show evpn mac': cmdShowEvpn,
+  'show evpn neighbor': cmdShowEvpn,
   'show ipv6 eigrp neighbors': cmdShowIpv6EigrpNeighbors,
   'show ipv6 eigrp topology': cmdShowIpv6EigrpTopology,
   'show ipv6 eigrp interfaces': cmdShowIpv6EigrpInterfaces,
@@ -209,6 +224,11 @@ export const showHandlers: Record<string, CommandHandler> = {
   'show glbp brief': cmdShowGlbp,
   'show ip flow export': cmdShowIpFlowExport,
   'show ip cache flow': cmdShowIpCacheFlow,
+  'show lisp': cmdShowLisp,
+  'show control-plane': cmdShowControlPlane,
+  'show flow record': cmdShowFlowRecord,
+  'show flow exporter': cmdShowFlowExporter,
+  'show flow monitor': cmdShowFlowMonitor,
 };
 
 function cmdShowIpSlaStatistics(state: SwitchState): CommandResult {

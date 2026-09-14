@@ -7,6 +7,8 @@ export type CheckOptions = {
   protocol?: 'tcp' | 'udp' | 'icmp' | 'any';
   port?: string;
   dhcpMessage?: 'discover' | 'offer' | 'request' | 'ack';
+  packetType?: string;
+  arpMessage?: string;
 };
 
 export type ConnectivityResult = {

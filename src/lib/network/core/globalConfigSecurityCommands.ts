@@ -222,16 +222,34 @@ export function cmdVtpPassword(state: SwitchState, input: string, _ctx: CommandC
  */
 export function cmdIpArpInspection(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+
+  // ip arp inspection validate src-mac dst-mac ip
+  const validateMatch = input.match(/^ip\s+arp\s+inspection\s+validate\s+(.+)$/i);
+  if (validateMatch) {
+    const args = validateMatch[1].toLowerCase();
+    return {
+      success: true,
+      output: `ARP inspection validate: ${validateMatch[1]}`,
+      newState: {
+        daiValidate: {
+          srcMac: args.includes('src-mac'),
+          dstMac: args.includes('dst-mac'),
+          ip: args.includes('ip'),
+        }
+      }
+    };
+  }
+
   const match = input.match(/^ip\s+arp\s+inspection\s+vlan\s+(.+)$/i);
   if (match) {
     const vlans = match[1].split(',').map((v: string) => v.trim());
     return {
       success: true,
       output: `ARP inspection enabled on VLAN(s): ${vlans.join(', ')}`,
-      newState: { arpInspectionEnabled: true, arpInspectionVlans: vlans }
+      newState: { arpInspectionEnabled: true, daiEnabled: true, arpInspectionVlans: vlans }
     };
   }
-  return { success: true, output: 'ARP inspection configured', newState: { arpInspectionEnabled: true } };
+  return { success: true, output: 'ARP inspection configured', newState: { arpInspectionEnabled: true, daiEnabled: true } };
 }
 
 export function cmdNoIpArpInspection(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
@@ -243,11 +261,12 @@ export function cmdNoIpArpInspection(state: SwitchState, input: string, _ctx: Co
     return {
       success: true,
       output: remaining.length > 0 ? `ARP inspection remaining VLAN(s): ${remaining.join(', ')}` : 'ARP inspection disabled',
-      newState: { arpInspectionVlans: remaining.length > 0 ? remaining : undefined, arpInspectionEnabled: remaining.length > 0 }
+      newState: { arpInspectionVlans: remaining.length > 0 ? remaining : undefined, arpInspectionEnabled: remaining.length > 0, daiEnabled: remaining.length > 0 }
     };
   }
-  return { success: true, output: 'ARP inspection disabled', newState: { arpInspectionEnabled: false, arpInspectionVlans: undefined } };
+  return { success: true, output: 'ARP inspection disabled', newState: { arpInspectionEnabled: false, daiEnabled: false, arpInspectionVlans: undefined } };
 }
+
 
 /**
  * Crypto Key Generate RSA

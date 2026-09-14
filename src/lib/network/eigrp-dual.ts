@@ -46,12 +46,19 @@ export function buildEigrpTopologyTable(
   const state = deviceStates.get(deviceId);
   if (!state || state.routingProtocol !== 'eigrp' || !state.eigrpAs) return [];
 
+  // A stub router (non receive-only) accepts no routes from its neighbors:
+  // it only has its directly connected + summary routes.
+  if (state.eigrpStub && !state.eigrpStub.receiveOnly) return [];
+
   const topologyTable: EigrpTopologyEntry[] = [];
   const myAs = state.eigrpAs;
 
   deviceStates.forEach((otherState, otherId) => {
     if (otherId === deviceId) return;
     if (otherState.routingProtocol !== 'eigrp' || otherState.eigrpAs !== myAs) return;
+
+    // A receive-only stub advertises nothing to its neighbors.
+    if (otherState.eigrpStub?.receiveOnly) return;
 
     // Find the link to this neighbor
     let connectedPort: Port | undefined;
@@ -105,9 +112,11 @@ export function buildEigrpTopologyTable(
       });
     });
 
-    // 2. Routes neighbor learned (propagated RD)
+    // 2. Routes neighbor learned (propagated RD) — a stub neighbor does not re-advertise
+    //    transit routes it learned elsewhere; it only advertises its own connected networks.
     (otherState.dynamicRoutes || []).forEach(route => {
       if (route.type !== 'dynamic') return;
+      if (otherState.eigrpStub && !otherState.eigrpStub.receiveOnly && route.nextHop !== 'directly connected') return;
 
       const dest = route.destination;
       const mask = route.subnetMask || '255.255.255.0';

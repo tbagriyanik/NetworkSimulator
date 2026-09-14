@@ -737,11 +737,19 @@ export function GuidedModePanel({
               </div>
               <button
                 onClick={handleDownloadCertificate}
-                className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-success-500 hover:bg-success-600 text-white rounded-lg font-bold text-xs transition-all shadow-lg shadow-success-500/20"
+                disabled={totalPoints > 0 && (currentPoints / totalPoints) * 100 < 50}
+                title={totalPoints > 0 && (currentPoints / totalPoints) * 100 < 50 ? (language === 'tr' ? 'Sertifika için en az %50 tamamlama gereklidir.' : 'At least 50% completion is required for a certificate.') : undefined}
+                className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-success-500 hover:bg-success-600 text-white rounded-lg font-bold text-xs transition-all shadow-lg shadow-success-500/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-success-500"
               >
                 <Award className="w-4 h-4" />
                 {language === 'tr' ? 'Sertifikayı İndir' : 'Download Certificate'}
               </button>
+              {totalPoints > 0 && (currentPoints / totalPoints) * 100 < 50 && (
+                <p className="text-center text-xs text-warning-500 dark:text-warning-400 mt-1.5">
+                  {language === 'tr' ? `Sertifika için en az %50 gerekli (Mevcut: %${Math.round((currentPoints / totalPoints) * 100)})` : `Min. 50% required (Current: ${Math.round((currentPoints / totalPoints) * 100)}%)`}
+                </p>
+              )}
+
             </div>
           )}
         </div>

@@ -8,6 +8,8 @@ import type { SwitchState, CommandResult, BgpNeighbor } from '../types';
 export const routerConfigHandlers: Record<string, CommandHandler> = {
     'network': cmdRouterNetwork,
     'version': cmdRoutingVersion,
+    'eigrp stub': cmdEigrpStub,
+    'no eigrp stub': cmdNoEigrpStub,
     'neighbor remote-as': cmdNeighborRemoteAs,
     'neighbor route-map': cmdNeighborRouteMap,
     'neighbor weight': cmdNeighborWeight,
@@ -26,6 +28,8 @@ export const routerConfigHandlers: Record<string, CommandHandler> = {
     'neighbor route-reflector-client': cmdNeighborRouteReflectorClient,
     'neighbor as-override': cmdNeighborAsOverride,
     'neighbor soft-reconfiguration': cmdNeighborSoftReconfig,
+    'neighbor med': cmdNeighborMed,
+    'no neighbor med': cmdNoNeighborMed,
     'no neighbor next-hop-self': cmdNoNeighborNextHopSelf,
     'no neighbor ebgp-multihop': cmdNoNeighborEbgpMultihop,
     'no neighbor update-source': cmdNoNeighborUpdateSource,
@@ -49,6 +53,8 @@ export const routerConfigHandlers: Record<string, CommandHandler> = {
     'no bgp graceful-restart': cmdNoBgpGracefulRestart,
     'bgp cluster-id': cmdBgpClusterId,
     'no bgp cluster-id': cmdNoBgpClusterId,
+    'bgp default local-preference': cmdBgpDefaultLocalPref,
+    'no bgp default local-preference': cmdNoBgpDefaultLocalPref,
     'synchronization': cmdBgpSynchronization,
     'no synchronization': cmdNoBgpSynchronization,
     'timers bgp': cmdBgpTimers,
@@ -418,6 +424,69 @@ function cmdNoEigrpRouterId(_state: SwitchState, _input: string): CommandResult 
         success: true,
         output: 'EIGRP router-id removed',
         newState: { routerId: undefined }
+    };
+}
+
+/**
+ * eigrp stub [connected] [summary] [static] [redistributed] [receive-only]
+ * Configures the device as an EIGRP stub router (classic mode). A stub router only
+ * advertises its directly connected and summary routes, and (unless receive-only) does
+ * not accept routes learned from other neighbors.
+ */
+function cmdEigrpStub(state: SwitchState, input: string): CommandResult {
+    if (state.routingProtocol !== 'eigrp') {
+        return { success: false, error: cliModeError() };
+    }
+
+    const match = input.match(/^eigrp\s+stub(?:\s+([a-z-]+(?:\s+[a-z-]+)*))?$/i);
+    if (!match) return { success: false, error: '% Invalid eigrp stub command syntax' };
+
+    const tokens = (match[1] || '').toLowerCase().split(/\s+/).filter(Boolean);
+    if (tokens.some(t => !['connected', 'summary', 'static', 'redistributed', 'receive-only'].includes(t))) {
+        return { success: false, error: '% Invalid keyword. Allowed: connected, summary, static, redistributed, receive-only' };
+    }
+
+    let connected = false;
+    let summary = false;
+    let receiveOnly = false;
+    if (tokens.length === 0) {
+        // Cisco default: eigrp stub means connected + summary
+        connected = true;
+        summary = true;
+    } else {
+        connected = tokens.includes('connected');
+        summary = tokens.includes('summary');
+        receiveOnly = tokens.includes('receive-only');
+    }
+
+    const stub = {
+        connected,
+        summary,
+        static: tokens.includes('static'),
+        redistributed: tokens.includes('redistributed'),
+        receiveOnly,
+    };
+
+    return {
+        success: true,
+        output: tokens.length === 0
+            ? 'EIGRP stub routing enabled (connected, summary)'
+            : `EIGRP stub routing enabled (${tokens.join(', ')})`,
+        newState: { eigrpStub: stub }
+    };
+}
+
+/**
+ * no eigrp stub
+ */
+function cmdNoEigrpStub(state: SwitchState, input: string): CommandResult {
+    if (state.routingProtocol !== 'eigrp' || !/^no\s+eigrp\s+stub$/i.test(input)) {
+        return { success: false, error: '% Invalid no eigrp stub command syntax' };
+    }
+    return {
+        success: true,
+        output: 'EIGRP stub routing disabled',
+        newState: { eigrpStub: null }
     };
 }
 
@@ -1028,6 +1097,43 @@ function cmdNoBgpTimers(state: SwitchState, input: string): CommandResult {
     if (err) return err;
     void input;
     return { success: true, output: 'BGP timers reset to defaults (60/180)', newState: { bgpTimers: undefined } };
+}
+
+function cmdBgpDefaultLocalPref(state: SwitchState, input: string): CommandResult {
+    const err = requireBgp(state);
+    if (err) return err;
+    const match = input.match(/^bgp\s+default\s+local-preference\s+(\d+)$/i);
+    if (!match) return { success: false, error: '% Invalid command. Usage: bgp default local-preference <1-4294967295>' };
+    const value = parseInt(match[1], 10);
+    if (value < 1 || value > 4294967295) return { success: false, error: '% Invalid local-preference value' };
+    return { success: true, output: `BGP default local-preference set to ${value}`, newState: { bgpLocalPreference: value } };
+}
+
+function cmdNoBgpDefaultLocalPref(state: SwitchState, input: string): CommandResult {
+    const err = requireBgp(state);
+    if (err) return err;
+    void input;
+    return { success: true, output: 'BGP default local-preference reset to 100', newState: { bgpLocalPreference: undefined } };
+}
+
+function cmdNeighborMed(state: SwitchState, input: string): CommandResult {
+    const err = requireBgp(state);
+    if (err) return err;
+    const match = input.match(/^neighbor\s+([0-9.]+)\s+med\s+(\d+)$/i);
+    if (!match) return { success: false, error: '% Invalid command. Usage: neighbor <ip> med <1-4294967295>' };
+    const value = parseInt(match[2], 10);
+    if (value < 1 || value > 4294967295) return { success: false, error: '% Invalid MED value' };
+    const { neighbors } = patchBgpNeighbor(state, match[1], { med: value });
+    return { success: true, output: `BGP neighbor ${match[1]} MED set to ${value}`, newState: { bgpNeighbors: neighbors } };
+}
+
+function cmdNoNeighborMed(state: SwitchState, input: string): CommandResult {
+    const err = requireBgp(state);
+    if (err) return err;
+    const match = input.match(/^no\s+neighbor\s+([0-9.]+)\s+med$/i);
+    if (!match) return { success: false, error: '% Invalid command' };
+    const { neighbors } = patchBgpNeighbor(state, match[1], { med: undefined });
+    return { success: true, output: `BGP neighbor ${match[1]} MED reset`, newState: { bgpNeighbors: neighbors } };
 }
 
 

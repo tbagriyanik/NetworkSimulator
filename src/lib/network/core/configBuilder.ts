@@ -295,9 +295,60 @@ export function buildRunningConfig(state: SwitchState): string[] {
                 if (c.setRules.metric !== undefined) lines.push(` set metric ${c.setRules.metric}`);
                 if (c.setRules.nextHop) lines.push(` set ip next-hop ${c.setRules.nextHop}`);
                 if (c.setRules.localPreference !== undefined) lines.push(` set local-preference ${c.setRules.localPreference}`);
+                if (c.setRules.weight !== undefined) lines.push(` set weight ${c.setRules.weight}`);
+                if (Array.isArray(c.setRules.asPathPrepend) && c.setRules.asPathPrepend.length) lines.push(` set as-path prepend ${c.setRules.asPathPrepend.join(' ')}`);
             });
         });
         lines.push('!');
+    }
+
+    // LISP Configuration
+    if (state.lispConfig?.enabled) {
+        lines.push('router lisp');
+        state.lispConfig.eidMappings?.forEach((m: any) => {
+            lines.push(` database-mapping ${m.eidPrefix} ${m.rlocIp}`);
+        });
+        lines.push('!');
+    }
+
+    // CoPP Configuration
+    if (state.coppConfig?.enabled) {
+        lines.push('control-plane');
+        lines.push('!');
+    }
+
+    // Flexible NetFlow Records / Exporters / Monitors
+    if (state.flowRecords) {
+        Object.entries(state.flowRecords).forEach(([name, rec]) => {
+            lines.push(`flow record ${name}`);
+            (rec.matchFields || []).forEach(f => lines.push(` ${f}`));
+            (rec.collectFields || []).forEach(f => lines.push(` ${f}`));
+            lines.push('exit');
+        });
+        if (Object.keys(state.flowRecords).length > 0) lines.push('!');
+    }
+    if (state.flowExporters) {
+        Object.entries(state.flowExporters).forEach(([name, exp]) => {
+            lines.push(`flow exporter ${name}`);
+            if (exp.destination) lines.push(` destination ${exp.destination}`);
+            if (exp.transportPort) lines.push(` transport udp ${exp.transportPort}`);
+            if (exp.version) lines.push(` version ${exp.version}`);
+            if (exp.source) lines.push(` source ${exp.source}`);
+            if (exp.templateDataTimeout) lines.push(` template data timeout ${exp.templateDataTimeout}`);
+            lines.push('exit');
+        });
+        if (Object.keys(state.flowExporters).length > 0) lines.push('!');
+    }
+    if (state.flowMonitors) {
+        Object.entries(state.flowMonitors).forEach(([name, mon]) => {
+            lines.push(`flow monitor ${name}`);
+            if (mon.record) lines.push(` record ${mon.record}`);
+            if (mon.exporter) lines.push(` exporter ${mon.exporter}`);
+            if (mon.cacheTimeoutActive) lines.push(` cache timeout active ${mon.cacheTimeoutActive}`);
+            if (mon.cacheTimeoutInactive) lines.push(` cache timeout inactive ${mon.cacheTimeoutInactive}`);
+            lines.push('exit');
+        });
+        if (Object.keys(state.flowMonitors).length > 0) lines.push('!');
     }
 
     // NetFlow Export
@@ -424,6 +475,23 @@ export function buildRunningConfig(state: SwitchState): string[] {
             if (port.spanningTree?.bpduguard) {
                 lines.push(' spanning-tree bpduguard enable');
             }
+            if (port.spanningTree?.bpdufilter) {
+                lines.push(' spanning-tree bpdufilter enable');
+            }
+            if (port.spanningTree?.guardRoot) {
+                lines.push(' spanning-tree guard root');
+            }
+            if (port.pvlanMode === 'promiscuous') {
+                lines.push(' switchport mode private-vlan promiscuous');
+            } else if (port.pvlanMode === 'host') {
+                lines.push(' switchport mode private-vlan host');
+                if (port.pvlanHostAssociation) {
+                    lines.push(` switchport private-vlan host-association ${port.pvlanHostAssociation.primary} ${port.pvlanHostAssociation.secondary}`);
+                }
+            }
+            if (port.flexLinkBackup) {
+                lines.push(` switchport backup interface ${port.flexLinkBackup}`);
+            }
             if (!isRouterLike) {
                 if (port.mode === 'trunk') {
                     if (modelName.includes('NS-L3') || modelName.includes('ns-l3')) {
@@ -491,6 +559,19 @@ export function buildRunningConfig(state: SwitchState): string[] {
             }
             if (port.ospfEnabled && port.ospfProcessId && port.ospfArea !== undefined) {
                 lines.push(` ip ospf ${port.ospfProcessId} area ${port.ospfArea}`);
+                if (port.ospfAuthType === 'md5') {
+                    lines.push(' ip ospf authentication message-digest');
+                    if (port.ospfMd5KeyId !== undefined && port.ospfAuthKey) {
+                        lines.push(` ip ospf message-digest-key ${port.ospfMd5KeyId} md5 ${port.ospfAuthKey}`);
+                    }
+                } else if (port.ospfAuthType === 'simple' && port.ospfAuthKey) {
+                    lines.push(' ip ospf authentication');
+                    lines.push(` ip ospf authentication-key ${port.ospfAuthKey}`);
+                }
+                if (port.ospfCost !== undefined) lines.push(` ip ospf cost ${port.ospfCost}`);
+                if (port.ospfHelloInterval !== undefined) lines.push(` ip ospf hello-interval ${port.ospfHelloInterval}`);
+                if (port.ospfDeadInterval !== undefined) lines.push(` ip ospf dead-interval ${port.ospfDeadInterval}`);
+                if (port.ospfPriority !== undefined) lines.push(` ip ospf priority ${port.ospfPriority}`);
             }
             if (port.ipv6Address && port.ipv6Prefix) {
                 lines.push(` ipv6 address ${port.ipv6Address}/${port.ipv6Prefix}`);
@@ -539,6 +620,7 @@ export function buildRunningConfig(state: SwitchState): string[] {
             }
             if (port.netflowIngress) lines.push(' ip flow ingress');
             if (port.netflowEgress) lines.push(' ip flow egress');
+            if (port.flowMonitor) lines.push(` ip flow monitor ${port.flowMonitor}`);
             if (port.qos?.enabled) {
                 if (port.qos.egressQueue) lines.push(` queue-set ${port.qos.egressQueue}`);
                 if (port.qos.ingressQueue) lines.push(` tx-queue ${port.qos.ingressQueue}`);
@@ -619,6 +701,9 @@ export function buildRunningConfig(state: SwitchState): string[] {
         (state.redistributeRules || []).filter(r => r.targetProtocol === 'ospf').forEach(r => {
             lines.push(`  redistribute ${r.sourceProtocol}${r.processId ? ' ' + r.processId : ''}${r.metric !== undefined ? ' metric ' + r.metric : ''}${r.subnets ? ' subnets' : ''}`);
         });
+        (state.passiveInterfaces || []).forEach(p => {
+            lines.push(`  passive-interface ${p}`);
+        });
         lines.push('!');
     } else if (state.routingProtocol === 'eigrp') {
         lines.push(`router eigrp ${state.eigrpAs || '1'}`);
@@ -629,6 +714,17 @@ export function buildRunningConfig(state: SwitchState): string[] {
             lines.push(`  redistribute ${r.sourceProtocol}${r.processId ? ' ' + r.processId : ''}${r.metric !== undefined ? ' metric ' + r.metric : ''}`);
         });
         if (state.autoSummary === false) lines.push(' no auto-summary');
+        if (state.eigrpStub) {
+            const keywords: string[] = [];
+            if (state.eigrpStub.receiveOnly) keywords.push('receive-only');
+            else {
+                if (state.eigrpStub.connected) keywords.push('connected');
+                if (state.eigrpStub.summary) keywords.push('summary');
+                if (state.eigrpStub.static) keywords.push('static');
+                if (state.eigrpStub.redistributed) keywords.push('redistributed');
+            }
+            lines.push(`  eigrp stub${keywords.length ? ' ' + keywords.join(' ') : ''}`);
+        }
         lines.push('!');
     } else if (state.routingProtocol === 'bgp') {
         lines.push(`router bgp ${state.bgpAs || '65000'}`);
@@ -664,12 +760,14 @@ export function buildRunningConfig(state: SwitchState): string[] {
             if (n.routeMapIn) lines.push(`  neighbor ${n.ip} route-map ${n.routeMapIn} in`);
             if (n.routeMapOut) lines.push(`  neighbor ${n.ip} route-map ${n.routeMapOut} out`);
             if (n.weight !== undefined) lines.push(`  neighbor ${n.ip} weight ${n.weight}`);
+            if (n.med !== undefined) lines.push(`  neighbor ${n.ip} med ${n.med}`);
         });
         // Global BGP knobs
         if (state.bgpMaximumPaths !== undefined && state.bgpMaximumPaths !== 1) lines.push(`  maximum-paths ${state.bgpMaximumPaths}`);
         if (state.bgpGracefulRestart) lines.push(`  bgp graceful-restart`);
         if (state.bgpClusterId) lines.push(`  bgp cluster-id ${state.bgpClusterId}`);
         if (state.bgpSynchronization) lines.push(`  synchronization`);
+        if (state.bgpLocalPreference !== undefined) lines.push(`  bgp default local-preference ${state.bgpLocalPreference}`);
         if (state.bgpTimers) lines.push(`  timers bgp ${state.bgpTimers.keepalive} ${state.bgpTimers.holdtime}`);
         (state.bgpAggregateAddresses || []).forEach(agg => {
             lines.push(`  aggregate-address ${agg.network} ${agg.mask}${agg.summaryOnly ? ' summary-only' : ''}`);

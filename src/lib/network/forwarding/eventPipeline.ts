@@ -413,13 +413,36 @@ function _processProtocolNeighborDiscovery(
       const srcRouterId = srcState.ospfRouterId || srcDevice.ip || srcDevice.id;
       const dstRouterId = dstState.ospfRouterId || dstDevice.ip || dstDevice.id;
 
-      // Register src → dst neighbor
-      _upsertOspfNeighbor(srcState, dstRouterId, dstDevice.ip || dstDevice.id, conn.sourcePort, now);
-      // Register dst → src neighbor
-      _upsertOspfNeighbor(dstState, srcRouterId, srcDevice.ip || srcDevice.id, conn.targetPort, now);
+      const adjacencyAllowed = ospfAdjacencyAllowed(
+        srcState,
+        conn.sourcePort,
+        srcRouterId,
+        dstState,
+        conn.targetPort,
+        dstRouterId
+      );
 
-      updatedStates.set(srcDevice.id, srcState);
-      updatedStates.set(dstDevice.id, dstState);
+      if (adjacencyAllowed) {
+        // Register src → dst neighbor
+        _upsertOspfNeighbor(srcState, dstRouterId, dstDevice.ip || dstDevice.id, conn.sourcePort, now);
+        // Register dst → src neighbor
+        _upsertOspfNeighbor(dstState, srcRouterId, srcDevice.ip || srcDevice.id, conn.targetPort, now);
+
+        updatedStates.set(srcDevice.id, srcState);
+        updatedStates.set(dstDevice.id, dstState);
+      } else {
+        // Blocked adjacency: remove any stale neighbor entries on this link
+        if (srcState.ospfNeighborStates) {
+          delete srcState.ospfNeighborStates[dstRouterId];
+          srcState.ospfNeighbors = srcState.ospfNeighbors?.filter(n => n !== dstRouterId);
+        }
+        if (dstState.ospfNeighborStates) {
+          delete dstState.ospfNeighborStates[srcRouterId];
+          dstState.ospfNeighbors = dstState.ospfNeighbors?.filter(n => n !== srcRouterId);
+        }
+        updatedStates.set(srcDevice.id, srcState);
+        updatedStates.set(dstDevice.id, dstState);
+      }
     }
 
     // ── EIGRP Neighbor Discovery ───────────────────────────────────────
@@ -436,6 +459,50 @@ function _processProtocolNeighborDiscovery(
       updatedStates.set(dstDevice.id, dstState);
     }
   }
+}
+
+function isOspfInterfacePassive(state: SwitchState, portId: string): boolean {
+  const port = state.ports?.[portId];
+  if (port?.passiveInterface) return true;
+  return (state.passiveInterfaces || []).some(p => p.toLowerCase() === portId.toLowerCase());
+}
+
+/**
+ * Decide whether an OSPF adjacency may form across a physical link.
+ * Returns false when: interface areas differ, either side is passive,
+ * or authentication type/keys/IDs mismatch between the two endpoints.
+ */
+function ospfAdjacencyAllowed(
+  srcState: SwitchState,
+  srcPortId: string,
+  _srcRouterId: string,
+  dstState: SwitchState,
+  dstPortId: string,
+  _dstRouterId: string
+): boolean {
+  const srcPort = srcState.ports?.[srcPortId];
+  const dstPort = dstState.ports?.[dstPortId];
+
+  const srcArea = srcPort?.ospfArea !== undefined ? parseInt(String(srcPort.ospfArea), 10) : (srcState.ospfAreas?.[0] ?? 0);
+  const dstArea = dstPort?.ospfArea !== undefined ? parseInt(String(dstPort.ospfArea), 10) : (dstState.ospfAreas?.[0] ?? 0);
+  if (srcArea !== dstArea) return false;
+
+  if (isOspfInterfacePassive(srcState, srcPortId)) return false;
+  if (isOspfInterfacePassive(dstState, dstPortId)) return false;
+
+  const srcAuth = srcPort?.ospfAuthType || 'none';
+  const dstAuth = dstPort?.ospfAuthType || 'none';
+
+  if (srcAuth === 'md5' || dstAuth === 'md5') {
+    if (srcAuth !== 'md5' || dstAuth !== 'md5') return false;
+    if (srcPort?.ospfMd5KeyId !== dstPort?.ospfMd5KeyId) return false;
+    if (srcPort?.ospfAuthKey !== dstPort?.ospfAuthKey) return false;
+  } else if (srcAuth === 'simple' || dstAuth === 'simple') {
+    if (srcAuth !== 'simple' || dstAuth !== 'simple') return false;
+    if (srcPort?.ospfAuthKey !== dstPort?.ospfAuthKey) return false;
+  }
+
+  return true;
 }
 
 function _upsertOspfNeighbor(

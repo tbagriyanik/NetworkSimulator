@@ -30,6 +30,7 @@ import type { CanvasDevice, CanvasConnection } from '@/components/network/networ
 import type { SwitchState, Port } from '@/lib/network/types';
 import type { NetworkPacketFrame } from './packetFrame';
 import { checkIngressSanity, processControlPlaneProtocols } from './commonForwardingEngine';
+import { captureNetFlow } from './netflowEngine';
 import { evaluateAcl } from '@/lib/network/connectivity/acl';
 import { learnMacAddress } from '@/lib/network/macLearning';
 import { getRoutingTable, findRouteDetailed } from '@/lib/network/routing';
@@ -62,6 +63,7 @@ export type PipelineStage =
   | 'zbf'
   | 'acl-egress'
   | 'qos'
+  | 'netflow'
   | 'egress'
   | 'capture';
 
@@ -521,6 +523,13 @@ export function runHopPipeline(
     }
   }
 
+
+  // ── Stage 10c: NetFlow Accounting ─────────────────────────────────────
+  if (state) {
+    captureNetFlow(state, frame, ingressPortId, egressPorts, now);
+    traces.push(makeTrace(hopIndex, device, ingressPortId, 'netflow', 'pass',
+      `NetFlow accounting: ${frame.srcIp || ''}→${frame.dstIp || ''} (${egressPorts.length} egress)`, frame));
+  }
 
   // ── Stage 11: Egress + Packet Capture ────────────────────────────────
   const capturedOnLinks: string[] = [];

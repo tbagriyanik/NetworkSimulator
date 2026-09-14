@@ -1,8 +1,13 @@
 # NetworkSimulator — Tam Özellik Envanteri / Full Feature Inventory
 
-**Sürüm / Version:** 5.4.1 · **Son doğrulama / Last verified:** 2026-09-13
+**Sürüm / Version:** 5.5.0 · **Son doğrulama / Last verified:** 2026-09-14
 
-## Son Ağ Simülasyonu Geliştirmeleri (2026-09-13 - v5.4.1)
+## Son Ağ Simülasyonu Geliştirmeleri (2026-09-14 - v5.5.0)
+
+| Özellik | Güncel kapsam ve sınır |
+|---|---|
+| **Cisco Layer 2 Güvenlik Paketi** | Dynamic ARP Inspection (`dai.ts`), IP Source Guard (`ipsg.ts`), Private VLAN (`pvlan.ts`), STP Root Guard / BPDU Filter ve Flex-Links active/standby failover motorları. |
+| **Gelişmiş L3 Yönlendirme & Protokol Entegrasyonları** | Policy-Based Routing (PBR - `ip policy route-map`), LISP (`lispEngine.ts`), CoPP CPU Koruması (`coppEngine.ts`), OSPF Auth/Stub/Passive-Interface, EIGRP Stub ve iBGP / BGP Path Attributes. |
 
 | Özellik | Güncel kapsam ve sınır |
 |---|---|

@@ -3,6 +3,9 @@ import type { CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult } from '../types';
 import { buildRunningConfig } from './configBuilder';
 import { createIpSlaOperation } from '../ipSlaEngine';
+import { getOrCreateLispConfig, addLispMapping } from '../lispEngine';
+import { getOrCreateCoppConfig } from '../coppEngine';
+import { getOrCreateNveInterface, getOrCreateVxlanConfig } from '../vxlanEvpn';
 
 export function cmdNtpServer(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
@@ -460,6 +463,163 @@ export function cmdRouteMap(state: SwitchState, input: string, _ctx: CommandCont
   };
 }
 
+export function cmdRouteMapSetNextHop(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config-route-map' || !state.currentRouteMap) {
+    return { success: false, error: '% Command only valid in route-map configuration mode' };
+  }
+  
+  const match = input.match(/^set\s+ip\s+next-hop\s+(\S+)(?:\s+(\S+))?$/i);
+  if (!match) return { success: false, error: '% Usage: set ip next-hop <ip-address> [ip-address]' };
+  
+  const nextHop = match[1];
+  const [mapName, seqStr] = state.currentRouteMap.split(':');
+  const seq = parseInt(seqStr, 10);
+  
+  const existingMap = { ...state.routeMaps };
+  const clauses = [...(existingMap[mapName] || [])];
+  const clauseIndex = clauses.findIndex(c => c.seq === seq);
+  
+  if (clauseIndex >= 0) {
+    clauses[clauseIndex] = { 
+      ...clauses[clauseIndex], 
+      setNextHop: nextHop,
+      setRules: { ...clauses[clauseIndex].setRules, nextHop }
+    };
+    existingMap[mapName] = clauses;
+  }
+  
+  return {
+    success: true,
+    output: `Route-map set next-hop to ${nextHop}`,
+    newState: { routeMaps: existingMap }
+  };
+}
+
+export function cmdRouteMapSetInterface(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config-route-map' || !state.currentRouteMap) {
+    return { success: false, error: '% Command only valid in route-map configuration mode' };
+  }
+  
+  const match = input.match(/^set\s+interface\s+(\S+)$/i);
+  if (!match) return { success: false, error: '% Usage: set interface <interface-name>' };
+  
+  const interfaceName = match[1];
+  const [mapName, seqStr] = state.currentRouteMap.split(':');
+  const seq = parseInt(seqStr, 10);
+  
+  const existingMap = { ...state.routeMaps };
+  const clauses = [...(existingMap[mapName] || [])];
+  const clauseIndex = clauses.findIndex(c => c.seq === seq);
+  
+  if (clauseIndex >= 0) {
+    clauses[clauseIndex] = { 
+      ...clauses[clauseIndex], 
+      setInterface: interfaceName,
+      setRules: { ...clauses[clauseIndex].setRules, interface: interfaceName }
+    };
+    existingMap[mapName] = clauses;
+  }
+  
+  return {
+    success: true,
+    output: `Route-map set interface to ${interfaceName}`,
+    newState: { routeMaps: existingMap }
+  };
+}
+
+export function cmdRouteMapSetPrecedence(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config-route-map' || !state.currentRouteMap) {
+    return { success: false, error: '% Command only valid in route-map configuration mode' };
+  }
+  
+  const match = input.match(/^set\s+ip\s+precedence\s+(\S+)$/i);
+  if (!match) return { success: false, error: '% Usage: set ip precedence <0-7|critical|flash|etc>' };
+  
+  const precedenceStr = match[1];
+  const precedenceMap: Record<string, number> = {
+    'routine': 0, 'priority': 1, 'immediate': 2, 'flash': 3,
+    'flash-override': 4, 'critical': 5, 'internet': 6, 'network': 7
+  };
+  
+  const precedence = precedenceMap[precedenceStr.toLowerCase()] !== undefined 
+    ? precedenceMap[precedenceStr.toLowerCase()]
+    : parseInt(precedenceStr, 10);
+    
+  if (isNaN(precedence) || precedence < 0 || precedence > 7) {
+    return { success: false, error: '% Invalid precedence value (0-7)' };
+  }
+  
+  const [mapName, seqStr] = state.currentRouteMap.split(':');
+  const seq = parseInt(seqStr, 10);
+  
+  const existingMap = { ...state.routeMaps };
+  const clauses = [...(existingMap[mapName] || [])];
+  const clauseIndex = clauses.findIndex(c => c.seq === seq);
+  
+  if (clauseIndex >= 0) {
+    clauses[clauseIndex] = { 
+      ...clauses[clauseIndex], 
+      setPrecedence: precedence,
+      setRules: { ...clauses[clauseIndex].setRules, precedence }
+    };
+    existingMap[mapName] = clauses;
+  }
+  
+  return {
+    success: true,
+    output: `Route-map set precedence to ${precedence}`,
+    newState: { routeMaps: existingMap }
+  };
+}
+
+export function cmdRouteMapSetDscp(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config-route-map' || !state.currentRouteMap) {
+    return { success: false, error: '% Command only valid in route-map configuration mode' };
+  }
+  
+  const match = input.match(/^set\s+ip\s+dscp\s+(\S+)$/i);
+  if (!match) return { success: false, error: '% Usage: set ip dscp <0-63|af11|etc>' };
+  
+  const dscpStr = match[1];
+  const dscpMap: Record<string, number> = {
+    'default': 0, 'cs1': 8, 'af11': 10, 'af12': 12, 'af13': 14,
+    'cs2': 16, 'af21': 18, 'af22': 20, 'af23': 22,
+    'cs3': 24, 'af31': 26, 'af32': 28, 'af33': 30,
+    'cs4': 32, 'af41': 34, 'af42': 36, 'af43': 38,
+    'cs5': 40, 'ef': 46, 'cs6': 48, 'cs7': 56
+  };
+  
+  const dscp = dscpMap[dscpStr.toLowerCase()] !== undefined 
+    ? dscpMap[dscpStr.toLowerCase()]
+    : parseInt(dscpStr, 10);
+    
+  if (isNaN(dscp) || dscp < 0 || dscp > 63) {
+    return { success: false, error: '% Invalid DSCP value (0-63)' };
+  }
+  
+  const [mapName, seqStr] = state.currentRouteMap.split(':');
+  const seq = parseInt(seqStr, 10);
+  
+  const existingMap = { ...state.routeMaps };
+  const clauses = [...(existingMap[mapName] || [])];
+  const clauseIndex = clauses.findIndex(c => c.seq === seq);
+  
+  if (clauseIndex >= 0) {
+    clauses[clauseIndex] = { 
+      ...clauses[clauseIndex], 
+      setDscp: dscp,
+      setRules: { ...clauses[clauseIndex].setRules, dscp }
+    };
+    existingMap[mapName] = clauses;
+  }
+  
+  return {
+    success: true,
+    output: `Route-map set DSCP to ${dscp}`,
+    newState: { routeMaps: existingMap }
+  };
+}
+
 export function cmdIpv6RouterEigrp(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^ipv6\s+router\s+eigrp\s+(\d+)$/i);
@@ -594,36 +754,46 @@ export function cmdMplsLdpRouterId(state: SwitchState, input: string, _ctx: Comm
   };
 }
 
+export function cmdMplsLdpGracefulRestart(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const isNo = /^no\s+/i.test(input);
+  const mplsConfig = { ...(state.mplsConfig as object), gracefulRestartEnabled: !isNo };
+  return {
+    success: true,
+    output: !isNo ? 'MPLS LDP graceful restart enabled' : 'MPLS LDP graceful restart disabled',
+    newState: { mplsConfig },
+  };
+}
+
+export function cmdMplsLdpSessionProtection(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const isNo = /^no\s+/i.test(input);
+  const mplsConfig = { ...(state.mplsConfig as object), sessionProtectionEnabled: !isNo };
+  return {
+    success: true,
+    output: !isNo ? 'MPLS LDP session protection enabled' : 'MPLS LDP session protection disabled',
+    newState: { mplsConfig },
+  };
+}
+
 export function cmdVxlanInterface(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
   const match = input.match(/^interface\s+(nve\d+)$/i);
   if (!match) return { success: false, error: '% Usage: interface nve<id>' };
   const nveName = match[1];
-  const nveInterfaces = { ...state.nveInterfaces };
-  const key = nveName.toLowerCase();
-  if (!nveInterfaces[key]) {
-    nveInterfaces[key] = {
-      name: nveName,
-      sourceInterface: 'Loopback0',
-      vniMappings: {},
-      status: 'up',
-    };
-  }
+  
+  const vxlan = getOrCreateVxlanConfig(state);
+  vxlan.enabled = true;
+  getOrCreateNveInterface(state, nveName);
+  
   return {
     success: true,
     output: `NVE interface ${nveName} configured`,
-    newState: { nveInterfaces },
-  };
-}
-
-export function cmdVxlanMemberVni(_state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  const match = input.match(/^member\s+vni\s+(\d+)(?:\s+vlan\s+(\d+))?/i);
-  if (!match) return { success: false, error: '% Usage: member vni <vni> [vlan <vlan-id>]' };
-  const vni = parseInt(match[1], 10);
-  const vlanId = match[2] ? parseInt(match[2], 10) : 1;
-  return {
-    success: true,
-    output: `VXLAN VNI ${vni} mapped to VLAN ${vlanId}`,
+    newState: { 
+      currentMode: 'config-if' as any,
+      currentInterface: nveName,
+      vxlanConfig: vxlan
+    },
   };
 }
 
@@ -784,10 +954,45 @@ export function cmdTemplate(state: SwitchState, input: string, _ctx: CommandCont
   if (!match) return { success: false, error: '% Usage: template <name>' };
   const tName = match[1];
   const templates = { ...state.templates };
-  templates[tName] = [];
   return {
     success: true,
     output: `Template ${tName} configured`,
     newState: { templates },
   };
 }
+
+export function cmdLispRouter(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const isNo = /^no\s+/i.test(input);
+  const lispConfig = getOrCreateLispConfig(state);
+  lispConfig.enabled = !isNo;
+  return {
+    success: true,
+    output: !isNo ? 'LISP routing enabled' : 'LISP routing disabled',
+    newState: { lispConfig }
+  };
+}
+
+export function cmdLispEidTable(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const match = input.match(/^database-mapping\s+(\S+)\s+(\S+)$/i);
+  if (!match) return { success: false, error: '% Usage: database-mapping <eid-prefix> <rloc-ip>' };
+  addLispMapping(state, { eidPrefix: match[1], rlocIp: match[2] });
+  return {
+    success: true,
+    output: `LISP EID mapping added: ${match[1]} -> ${match[2]}`,
+    newState: { lispConfig: state.lispConfig }
+  };
+}
+
+export function cmdControlPlane(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const coppConfig = getOrCreateCoppConfig(state);
+  coppConfig.enabled = true;
+  return {
+    success: true,
+    output: 'Control-plane configuration mode enabled',
+    newState: { coppConfig }
+  };
+}
+

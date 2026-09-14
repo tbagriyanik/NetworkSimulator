@@ -273,6 +273,18 @@ export const interfacePatterns: Record<string, CommandPattern> = {
     minArgs: 0,
     maxArgs: 0
   },
+  'ip flow monitor': {
+    pattern: /^ip\s+flow\s+monitor\s+(\S+)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'no ip flow monitor': {
+    pattern: /^no\s+ip\s+flow\s+monitor\s+(\S+)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 1,
+    maxArgs: 1
+  },
   'no shutdown': {
     pattern: /^no\s+shutdown$/i,
     modes: ['interface', 'config-if-range', 'dot11-config'],

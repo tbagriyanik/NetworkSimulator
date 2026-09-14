@@ -335,11 +335,19 @@ export function TroubleshootingPanel({
                 </div>
                 <button
                   onClick={handleDownloadCertificate}
-                  className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-success-600 hover:bg-success-700 text-white rounded-lg font-bold text-sm transition-all shadow-lg shadow-success-900/40"
+                  disabled={progressPercentage < 50}
+                  title={progressPercentage < 50 ? (language === 'tr' ? 'Sertifika için en az %50 tamamlama gereklidir.' : 'At least 50% completion is required for a certificate.') : undefined}
+                  className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-success-600 hover:bg-success-700 text-white rounded-lg font-bold text-sm transition-all shadow-lg shadow-success-900/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-success-600"
                 >
                   <Award className="w-5 h-5" />
                   {language === 'tr' ? 'Sertifikayı İndir' : 'Download Certificate'}
                 </button>
+                {progressPercentage < 50 && (
+                  <p className="text-center text-xs text-warning-400 mt-1.5">
+                    {language === 'tr' ? `Sertifika için en az %50 gerekli (Mevcut: %${progressPercentage})` : `Min. 50% required (Current: ${progressPercentage}%)`}
+                  </p>
+                )}
+
               </div>
             )}
           </div>

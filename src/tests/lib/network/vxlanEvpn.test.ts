@@ -44,6 +44,8 @@ describe('BGP EVPN and VXLAN Overlay Simulation', () => {
         ipAddress: '10.1.1.100',
         nextHopVtep: '192.168.0.2',
         routeType: 'Type-2',
+        local: true,
+        uptime: 100,
       },
       {
         vni: 10020,
@@ -51,6 +53,8 @@ describe('BGP EVPN and VXLAN Overlay Simulation', () => {
         ipAddress: '10.1.2.200',
         nextHopVtep: '192.168.0.3',
         routeType: 'Type-2',
+        local: true,
+        uptime: 100,
       },
     ];
 

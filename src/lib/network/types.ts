@@ -134,7 +134,10 @@ export type CommandMode =
   | 'config-ext-nacl'  // Router(config-ext-nacl)# - Named extended ACL
   | 'config-ipv6-acl'  // Router(config-ipv6-acl)# - Named IPv6 ACL
   | 'config-mst'        // Switch(config-mst)# - MST configuration mode
-  | 'config-route-map'; // Router(config-route-map)# - Route-map configuration mode
+  | 'config-route-map'  // Router(config-route-map)# - Route-map configuration mode
+  | 'config-flow-record'   // Router(config-flow-record)# - Flexible NetFlow record mode
+  | 'config-flow-exporter' // Router(config-flow-exporter)# - Flexible NetFlow exporter mode
+  | 'config-flow-monitor'; // Router(config-flow-monitor)# - Flexible NetFlow monitor mode
 
 // Port status and mode types are now defined above as centralized types
 type VoiceVlanMode = number | 'dot1p' | 'none' | 'untagged';
@@ -220,6 +223,14 @@ export interface Port {
   ospfEnabled?: boolean;
   ospfProcessId?: string;
   ospfArea?: string;
+  ospfCost?: number;
+  ospfHelloInterval?: number;
+  ospfDeadInterval?: number;
+  ospfPriority?: number;
+  ospfAuthType?: 'none' | 'simple' | 'md5';
+  ospfAuthKey?: string;
+  ospfMd5KeyId?: number;
+  passiveInterface?: boolean;
   ipv6DhcpServer?: string;
   ipv6DhcpServerPool?: string; // Pool name for 'ipv6 dhcp server <pool>' on interface
   pppoeClientDialPool?: number; // pppoe-client dial-pool-number N
@@ -234,6 +245,7 @@ export interface Port {
   lldpReceive?: boolean;        // default: true when LLDP enabled
   isRoutedPort?: boolean;       // For L3 switch routed ports
   isSubinterface?: boolean;     // For subinterfaces (e.g., gi0/0.10)
+  policyRouteMap?: string;      // PBR route-map applied to interface
   tunnel?: {
     source?: string;
     destination?: string;
@@ -264,6 +276,8 @@ export interface Port {
     state?: 'forwarding' | 'blocking' | 'listening' | 'learning' | 'disabled';
     portfast?: boolean;
     bpduguard?: boolean;
+    bpdufilter?: boolean;
+    guardRoot?: boolean;
     loopguard?: 'enable' | 'disable' | 'default';
     loopInconsistent?: boolean;
     instances?: Record<number, {
@@ -307,6 +321,16 @@ export interface Port {
   dhcpSnoopingLimitRate?: number; // DHCP rate limit (packets per second) on untrusted ports
   arpInspectionTrust?: boolean;
   arpInspectionLimitRate?: number;
+  // IPSG — IP Source Guard
+  ipVerifySource?: boolean;
+  ipVerifySourcePortSecurity?: boolean;
+  // Private VLAN port config
+  pvlanMode?: 'host' | 'promiscuous' | 'trunk';
+  pvlanHostAssociation?: { primary: number; secondary: number };
+  pvlanMapping?: { primary: number; secondary: number[] }[];
+  // Flex-Links
+  flexLinkBackup?: string;   // backup interface port ID
+  flexLinkActive?: boolean;  // true = this port is active, false = standby
   carrierDelay?: number;
   loadInterval?: number;
   directedBroadcast?: boolean;
@@ -319,8 +343,8 @@ export interface Port {
     consumption?: number;
   };
   nonegotiate?: boolean;
-  ipVerifySource?: boolean;
-  ipVerifySourcePortSecurity?: boolean;
+  // (ipVerifySource / ipVerifySourcePortSecurity moved to above — kept here for compatibility)
+  _ipVerifySourceLegacy?: never;
   // Statistics & Counters
   statistics?: {
     inputPackets?: number;
@@ -442,6 +466,7 @@ export interface Port {
   };
   netflowIngress?: boolean;
   netflowEgress?: boolean;
+  flowMonitor?: string;      // Flexible NetFlow monitor applied to interface
   ipv6TrafficFilterIn?: string;
   ipv6TrafficFilterOut?: string;
   natSide?: 'inside' | 'outside';
@@ -580,13 +605,16 @@ export interface SwitchState {
   };
   // Reload confirmation state
   awaitingReloadConfirm?: boolean;
-  spanSessions?: Record<number, { id: number; sourceInterfaces: string[]; destinationInterface?: string; enabled: boolean }>;
+  spanSessions?: Record<number, { id: number; sourceInterfaces: string[]; destinationInterface?: string; remoteVlan?: number; type?: 'local' | 'rspan-source' | 'rspan-destination'; enabled: boolean }>;
   errdisableConfig?: { enabledCauses: string[]; interval: number };
   greTunnels?: Record<string, { id: string; source?: string; destination?: string; tunnelIp?: string; subnetMask?: string }>;
   ospfAreaRanges?: { areaId: string; network: string; mask: string; advertise: boolean }[];
   vrfInstances?: Record<string, { name: string; rd?: string; interfaces: string[] }>;
   qosPolicies?: Record<string, { name: string; classes: { name: string; priorityPercent?: number; bandwidthKbps?: number }[] }>;
   nveInterfaces?: Record<string, NveInterface>;
+  vxlanConfig?: any;
+  lispConfig?: any;
+  coppConfig?: any;
   eigrpNamedInstances?: Record<string, EigrpNamedInstance>;
   ospfVirtualLinks?: Record<string, OspfVirtualLinkConfig>;
   bootTime: number;
@@ -654,18 +682,47 @@ export interface SwitchState {
     le?: number;
   }[]>;
   currentRouteMap?: string;
+  currentFlowRecordName?: string;    // Current flow record being configured
+  currentFlowExporterName?: string;  // Current flow exporter being configured
+  currentFlowMonitorName?: string;   // Current flow monitor being configured
   routeMaps?: Record<string, {
     seq: number;
     action: 'permit' | 'deny';
     matchRules: Record<string, unknown>;
     setRules: Record<string, unknown>;
+    setNextHop?: string;
+    setInterface?: string;
+    setPrecedence?: number;
+    setDscp?: number;
   }[]>;
+  flowRecords?: Record<string, {
+    matchFields?: string[];
+    collectFields?: string[];
+  }>;
+  flowExporters?: Record<string, {
+    destination?: string;
+    transportProtocol: 'udp';
+    transportPort?: number;
+    version?: number;
+    source?: string;
+    templateDataTimeout?: number;
+  }>;
+  flowMonitors?: Record<string, {
+    exporter?: string;
+    record?: string;
+    cacheTimeoutActive?: number;
+    cacheTimeoutInactive?: number;
+  }>;
   netflowConfig?: {
     exportDestination?: string;
     exportPort?: number;
     version?: number;
+    exportedPackets?: number;
+    exportedFlows?: number;
   };
   netflowCache?: {
+    srcIf?: string;
+    dstIf?: string;
     srcIp: string;
     dstIp: string;
     proto: string;
@@ -674,6 +731,7 @@ export interface SwitchState {
     pkts: number;
     bytes: number;
     active: number;
+    lastSeen: number;
   }[];
   bgpConfig?: unknown;
   mplsConfig?: unknown;
@@ -692,6 +750,13 @@ export interface SwitchState {
   autoSummary?: boolean;           // Auto-summary for routing protocols
   ospfNeighbors?: string[];        // OSPF neighbor IDs/IPs
   eigrpAs?: string;                // EIGRP AS number
+  eigrpStub?: {                    // EIGRP Stub Routing (eigrp stub [connected|summary|static|redistributed|receive-only])
+    connected: boolean;
+    summary: boolean;
+    static: boolean;
+    redistributed: boolean;
+    receiveOnly: boolean;
+  } | null;
   eigrpNeighbors?: string[];       // EIGRP neighbor IDs/IPs
   bgpAs?: string;                  // BGP AS number
   bgpNeighbors?: BgpNeighbor[];   // BGP neighbor configurations
@@ -699,6 +764,7 @@ export interface SwitchState {
   bgpNetworks?: { network: string; mask: string }[]; // BGP advertised networks (network <ip> mask <mask>)
   // --- Advanced BGP global settings (router-config mode for BGP) ---
   bgpMaximumPaths?: number;          // maximum-paths <n> multipath
+  bgpLocalPreference?: number;       // bgp default local-preference <n>
   bgpGracefulRestart?: boolean;      // bgp graceful-restart
   bgpClusterId?: string;             // bgp cluster-id <id> (route-reflector)
   bgpSynchronization?: boolean;      // synchronization (default false on modern router software)
@@ -835,6 +901,20 @@ export interface SwitchState {
   dhcpSnoopingVlans?: string[];
   dhcpSnoopingBindings?: DhcpSnoopingBinding[];
   arpInspectionVlans?: string[];
+  // DAI — Dynamic ARP Inspection
+  daiEnabled?: boolean;
+  daiStaticBindings?: { ip: string; mac: string; vlan: number; portId: string }[];
+  daiStats?: Record<string, { forwarded: number; dropped: number; portId: string; vlan: number }>;
+  daiValidate?: { srcMac: boolean; dstMac: boolean; ip: boolean };
+  // IPSG — IP Source Guard binding table (populated from DHCP snooping)
+  ipsgBindings?: { ip: string; mac?: string; vlan: number; portId: string }[];
+  // Private VLAN domain config
+  pvlanDomain?: {
+    primaryVlan?: number;
+    isolatedVlan?: number;
+    communityVlans?: number[];
+    associations?: { primary: number; secondaries: number[] }[];
+  };
   accessLists?: Record<string, string[]>;
   ipv6AccessLists?: Record<string, string[]>;
   namedAclTypes?: Record<string, 'standard' | 'extended'>;  // Track named ACL types for display

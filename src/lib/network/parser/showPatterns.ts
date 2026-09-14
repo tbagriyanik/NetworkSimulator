@@ -481,6 +481,54 @@ export const showPatterns: Record<string, CommandPattern> = {
     minArgs: 0,
     maxArgs: 2
   },
+  'show mpls ldp neighbor': {
+    pattern: /^show\s+mpls\s+ldp\s+neighbor.*$/i,
+    modes: ['privileged'],
+    minArgs: 0,
+    maxArgs: 3
+  },
+  'show mpls ldp discovery': {
+    pattern: /^show\s+mpls\s+ldp\s+discovery.*$/i,
+    modes: ['privileged'],
+    minArgs: 0,
+    maxArgs: 3
+  },
+  'show mpls forwarding-table': {
+    pattern: /^show\s+mpls\s+forwarding-table.*$/i,
+    modes: ['privileged'],
+    minArgs: 0,
+    maxArgs: 3
+  },
+  'show mpls bindings': {
+    pattern: /^show\s+mpls\s+bindings.*$/i,
+    modes: ['privileged'],
+    minArgs: 0,
+    maxArgs: 3
+  },
+  'show vlan private-vlan': {
+    pattern: /^show\s+vlan\s+private-vlan.*$/i,
+    modes: ['privileged'],
+    minArgs: 0,
+    maxArgs: 3
+  },
+  'show interfaces backup': {
+    pattern: /^show\s+interfaces\s+backup.*$/i,
+    modes: ['privileged'],
+    minArgs: 0,
+    maxArgs: 3
+  },
+  'show nve interface': {
+    pattern: /^show\s+nve\s+interface.*$/i,
+    modes: ['privileged'],
+    minArgs: 0,
+    maxArgs: 3
+  },
+  'show evpn': {
+    pattern: /^show\s+evpn.*$/i,
+    modes: ['privileged'],
+    minArgs: 0,
+    maxArgs: 3
+  },
   'show ipv6 eigrp neighbors': {
     pattern: /^show\s+ipv6\s+eigrp\s+(neighbors|topology)$/i,
     modes: ['privileged'],
@@ -504,5 +552,23 @@ export const showPatterns: Record<string, CommandPattern> = {
     modes: ['privileged'],
     minArgs: 0,
     maxArgs: 2
+  },
+  'show flow record': {
+    pattern: /^show\s+flow\s+record(?:\s+(\S+))?$/i,
+    modes: ['privileged'],
+    minArgs: 0,
+    maxArgs: 1
+  },
+  'show flow exporter': {
+    pattern: /^show\s+flow\s+exporter(?:\s+(\S+))?$/i,
+    modes: ['privileged'],
+    minArgs: 0,
+    maxArgs: 1
+  },
+  'show flow monitor': {
+    pattern: /^show\s+flow\s+monitor(?:\s+(\S+))?$/i,
+    modes: ['privileged'],
+    minArgs: 0,
+    maxArgs: 1
   },
 };

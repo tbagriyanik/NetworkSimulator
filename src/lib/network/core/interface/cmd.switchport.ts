@@ -631,4 +631,113 @@ export function cmdSwitchportPortSecurityAgingType(state: SwitchState, input: st
   });
 }
 
+// ─── Private VLAN Commands ──────────────────────────────────────────────────
+
+/**
+ * switchport mode private-vlan host | promiscuous | trunk
+ */
+export function cmdSwitchportModePvlan(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  const match = input.match(/^switchport\s+mode\s+private-vlan\s+(host|promiscuous|trunk)$/i);
+  if (!match) return { success: false, error: '% Invalid private-vlan mode. Use: host, promiscuous, or trunk' };
+  const mode = match[1].toLowerCase() as 'host' | 'promiscuous' | 'trunk';
+  return mutatePortAtInterface(state, (port) => ({ ...port, pvlanMode: mode }));
+}
+
+/**
+ * switchport private-vlan host-association <primary-vlan> <secondary-vlan>
+ */
+export function cmdSwitchportPvlanHostAssociation(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  const match = input.match(/^switchport\s+private-vlan\s+host-association\s+(\d+)\s+(\d+)$/i);
+  if (!match) return { success: false, error: '% Invalid command. Usage: switchport private-vlan host-association <primary> <secondary>' };
+  const primary = parseInt(match[1]);
+  const secondary = parseInt(match[2]);
+  return mutatePortAtInterface(state, (port) => ({
+    ...port,
+    pvlanMode: port.pvlanMode ?? 'host',
+    pvlanHostAssociation: { primary, secondary },
+  }));
+}
+
+/**
+ * switchport private-vlan mapping <primary-vlan> <secondary-vlan-list>
+ */
+export function cmdSwitchportPvlanMapping(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  const match = input.match(/^switchport\s+private-vlan\s+mapping\s+(\d+)\s+(.+)$/i);
+  if (!match) return { success: false, error: '% Invalid command. Usage: switchport private-vlan mapping <primary> <secondary-list>' };
+  const primary = parseInt(match[1]);
+  const secondaries = match[2].split(',').map((s: string) => parseInt(s.trim())).filter((n: number) => !isNaN(n));
+  return mutatePortAtInterface(state, (port) => {
+    const existing = port.pvlanMapping ?? [];
+    const idx = existing.findIndex((m) => m.primary === primary);
+    const updated = [...existing];
+    if (idx >= 0) {
+      updated[idx] = { primary, secondary: secondaries };
+    } else {
+      updated.push({ primary, secondary: secondaries });
+    }
+    return { ...port, pvlanMode: port.pvlanMode ?? 'promiscuous', pvlanMapping: updated };
+  });
+}
+
+// ─── STP Guard: Root Guard & BPDU Filter ────────────────────────────────────
+
+/**
+ * spanning-tree guard root / no spanning-tree guard root
+ */
+export function cmdSpanningTreeGuardRoot(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  const isNo = input.trim().toLowerCase().startsWith('no ');
+  return mutatePortAtInterface(state, (port) => ({ ...port, rootGuard: !isNo }));
+}
+
+/**
+ * spanning-tree bpdufilter enable | disable
+ */
+export function cmdSpanningTreeBpdufilter(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  const isNo = input.trim().toLowerCase().startsWith('no ');
+  const disableMatch = input.match(/spanning-tree\s+bpdufilter\s+(enable|disable)/i);
+  const enable = isNo ? false : (disableMatch ? disableMatch[1].toLowerCase() === 'enable' : true);
+  return mutatePortAtInterface(state, (port) => ({ ...port, bpduFilter: enable }));
+}
+
+// ─── Flex-Links ─────────────────────────────────────────────────────────────
+
+/**
+ * switchport backup interface <interface>
+ */
+export function cmdSwitchportBackupInterface(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (!isInInterfaceMode(state) || !state.currentInterface) {
+    return { success: false, error: cliModeError() };
+  }
+  const match = input.match(/^switchport\s+backup\s+interface\s+(\S+)$/i);
+  if (!match) return { success: false, error: '% Invalid command. Usage: switchport backup interface <interface>' };
+  const backupInterfaceId = match[1].toLowerCase();
+  const updatedState = mutatePortAtInterface(state, (port) => ({
+    ...port,
+    flexLinkBackup: backupInterfaceId,
+    flexLinkActive: true,
+  }));
+  if (!updatedState.success || !updatedState.newState) return updatedState;
+  const backupPortKey = Object.keys(state.ports).find(
+    (k) => k.toLowerCase() === backupInterfaceId || k.toLowerCase().replace(/\s+/g, '') === backupInterfaceId.replace(/\s+/g, '')
+  );
+  if (backupPortKey) {
+    const ports = { ...(updatedState.newState.ports ?? state.ports) };
+    ports[backupPortKey] = { ...ports[backupPortKey], flexLinkActive: false };
+    return { ...updatedState, newState: { ...updatedState.newState, ports }, output: `Flex-Links: ${state.currentInterface} (active) → backup: ${backupInterfaceId} (standby)` };
+  }
+  return { ...updatedState, output: `Flex-Links: ${state.currentInterface} (active) → backup: ${backupInterfaceId} (standby)` };
+}
+
+/**
+ * no switchport backup interface
+ */
+export function cmdNoSwitchportBackupInterface(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  return mutatePortAtInterface(state, (port) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { flexLinkBackup: _b, flexLinkActive: _a, ...rest } = port;
+    return rest as typeof port;
+  });
+}
+
+
 

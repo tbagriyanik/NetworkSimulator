@@ -1,6 +1,9 @@
 import type { CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult } from '../types';
-import { isIpInNetwork } from './showHelpers';
+import { isIpInNetwork, getPrefixLength } from './showHelpers';
+import { getOrCreateMplsConfig, getLdpDiscoveryInfo, getLdpNeighborTable, getLfibTable, getLibTable, generateLfib, generateLib } from '../mplsLdpEngine';
+import { getEvpnMacTable, getEvpnNeighborTable, getNveInterfaceTable, getOrCreateVxlanConfig } from '../vxlanEvpn';
+import { ageOutNetflowCache } from '../forwarding/netflowEngine';
 
 /**
  * Show Hosts - Display DNS host mapping
@@ -26,9 +29,65 @@ export function cmdShowHosts(state: SwitchState, _input: string, _ctx: CommandCo
 /**
  * Show IP ARP Inspection
  */
-export function cmdShowIpArpInspection(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  return { success: true, output: '\nSource Mac Validation      : Disabled\nDestination Mac Validation : Disabled\nIP Address Validation      : Disabled\n\n Vlan     Configuration    Operation   ACL Match          Static ACL\n------   -------------    ---------   ---------          ----------\n' };
+export function cmdShowIpArpInspection(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  // show ip arp inspection statistics
+  if (input.includes('statistics')) {
+    if (!state.daiStats || Object.keys(state.daiStats).length === 0) {
+      return { success: true, output: '\n Vlan      Forwarded        Dropped     DHCP Drops      ACL Drops\n ----      ---------        -------     ----------      ---------\n (No statistics available)\n' };
+    }
+    let output = '\n Vlan      Forwarded        Dropped     DHCP Drops      ACL Drops\n';
+    output +=    ' ----      ---------        -------     ----------      ---------\n';
+    for (const stat of Object.values(state.daiStats)) {
+      output += ` ${String(stat.vlan).padEnd(9)} ${String(stat.forwarded).padEnd(16)} ${String(stat.dropped).padEnd(11)} ${String(0).padEnd(15)} ${0}\n`;
+    }
+    return { success: true, output };
+  }
+
+  const enabled = state.daiEnabled || (state.arpInspectionVlans?.length ?? 0) > 0;
+  const vlans = state.arpInspectionVlans || [];
+  const validate = state.daiValidate;
+
+  let output = '\n';
+  output += `Source Mac Validation      : ${validate?.srcMac ? 'Enabled' : 'Disabled'}\n`;
+  output += `Destination Mac Validation : ${validate?.dstMac ? 'Enabled' : 'Disabled'}\n`;
+  output += `IP Address Validation      : ${validate?.ip ? 'Enabled' : 'Disabled'}\n`;
+  output += '\n';
+  output += ' Vlan     Configuration    Operation   ACL Match          Static ACL\n';
+  output += '------   -------------    ---------   ---------          ----------\n';
+
+  if (!enabled || vlans.length === 0) {
+    output += ' (DAI not enabled on any VLAN)\n';
+  } else {
+    for (const vlan of vlans) {
+      output += ` ${vlan.padEnd(8)} Enabled          Active      dhcp-snooping      --\n`;
+    }
+  }
+
+  output += '\n';
+
+  // Show binding table
+  const staticBindings = state.daiStaticBindings || [];
+  const dynamicBindings = (state.dhcpSnoopingBindings || []).map((b) => ({
+    ip: b.ipAddress, mac: b.macAddress, vlan: b.vlan, portId: b.portId, type: 'dynamic' as const
+  }));
+
+  const allBindings = [
+    ...dynamicBindings,
+    ...staticBindings.map((b) => ({ ...b, type: 'static' as const }))
+  ];
+
+  if (allBindings.length > 0) {
+    output += ' IP address      MAC address         VLAN  Interface    Type\n';
+    output += ' ----------      -----------         ----  ---------    ----\n';
+    for (const b of allBindings) {
+      output += ` ${b.ip.padEnd(16)} ${b.mac.padEnd(19)} ${String(b.vlan).padEnd(5)} ${b.portId.padEnd(12)} ${b.type}\n`;
+    }
+  }
+
+  return { success: true, output };
 }
+
+
 
 export function cmdShowIpDhcpBinding(state: SwitchState, _input: string, ctx: CommandContext): CommandResult {
   let output = '\nIP address       Client-ID/              Lease expiration        Type\n' +
@@ -242,7 +301,30 @@ export function cmdShowTrack(state: SwitchState, input: string, _ctx: CommandCon
     output += `  Latest operation return code: ${op?.statistics?.successes ? 'OK' : 'Timeout'}\n`;
     output += `  Latest RTT: ${op?.statistics?.last !== undefined ? `${op.statistics.last} ms` : 'N/A'}\n`;
     output += `  Tracked by:\n`;
-    output += `    Static IP Route 0.0.0.0/0\n\n`;
+
+    const trackedId = parseInt(id, 10);
+    const trackedV4 = (state.staticRoutes || []).filter((r: { trackId?: number }) => r.trackId === trackedId);
+    const trackedV6 = (state.ipv6StaticRoutes || []).filter((r: { trackId?: number }) => r.trackId === trackedId);
+    let trackedAny = false;
+
+    trackedV4.forEach((r: { destination?: string; network?: string; subnetMask?: string; mask?: string; nextHop?: string }) => {
+      const network = r.network || r.destination || '';
+      const mask = r.mask || r.subnetMask || '';
+      const prefixPart = mask ? `/${getPrefixLength(mask)}` : '';
+      output += `    Static IP Route ${network}${prefixPart} via ${r.nextHop || 'n/a'}\n`;
+      trackedAny = true;
+    });
+    trackedV6.forEach((r: { network?: string; destination?: string; prefixLength?: number; nextHop?: string }) => {
+      const network = r.network || r.destination || '';
+      output += `    Static IPv6 Route ${network}/${r.prefixLength ?? ''} via ${r.nextHop || 'n/a'}\n`;
+      trackedAny = true;
+    });
+
+    if (!trackedAny) {
+      output += `    (no static routes currently using track ${id})\n`;
+    }
+
+    output += `\n`;
   });
 
   return { success: true, output };
@@ -294,17 +376,34 @@ export function cmdShowIpSlaConfiguration(state: SwitchState, _input: string, _c
  * Show IP Verify Source
  */
 export function cmdShowIpVerifySource(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  let output = '\nInterface        Filter Type    Filter Mode    IP Address      MacAddress       Vlan\n';
-  output += '---------------  -------------  -------------  --------------  ---------------  ----\n';
+  let output = '\nInterface        Filter-type  Filter-mode  IP-address       Mac-address        Vlan\n';
+  output += '---------------  -----------  -----------  ---------------  -----------------  ----\n';
 
   let hasEntries = false;
+
+  // Collect IPSG-enabled ports and their bindings
+  const snoopingBindings = state.dhcpSnoopingBindings || [];
+  const ipsgBindings = state.ipsgBindings || [];
+
+  const allBindings = [
+    ...snoopingBindings.map((b) => ({ ip: b.ipAddress, mac: b.macAddress, vlan: b.vlan, portId: b.portId })),
+    ...ipsgBindings,
+  ];
+
   Object.keys(state.ports || {}).forEach(portName => {
     const port = state.ports[portName];
-    if (port.ipVerifySource) {
-      hasEntries = true;
-      const filterType = port.ipVerifySourcePortSecurity ? 'ip+mac' : 'ip';
-      const filterMode = 'active';
-      output += `${portName.padEnd(15)}  ${filterType.padEnd(13)}  ${filterMode.padEnd(13)}  ${(port.ipAddress || 'N/A').padEnd(14)}  ${(port.macAddress || 'N/A').padEnd(15)}  ${port.vlan || 1}\n`;
+    if (!port.ipVerifySource) return;
+
+    hasEntries = true;
+    const filterType = port.ipVerifySourcePortSecurity ? 'ip-mac     ' : 'ip         ';
+    const portBindings = allBindings.filter((b) => b.portId === portName);
+
+    if (portBindings.length === 0) {
+      output += `${portName.padEnd(16)} ${filterType} active       deny-all         --                 ${port.vlan || 1}\n`;
+    } else {
+      for (const b of portBindings) {
+        output += `${portName.padEnd(16)} ${filterType} active       ${b.ip.padEnd(16)} ${(b.mac || '--').padEnd(18)} ${b.vlan}\n`;
+      }
     }
   });
 
@@ -314,6 +413,8 @@ export function cmdShowIpVerifySource(state: SwitchState, _input: string, _ctx: 
 
   return { success: true, output };
 }
+
+
 
 /**
  * Show IPv6 Access-Lists
@@ -365,29 +466,132 @@ export function cmdShowIpFlowExport(state: SwitchState, _input: string, _ctx: Co
     return { success: true, output: '\nNetFlow export is disabled\n' };
   }
 
+  const exportedPackets = conf.exportedPackets || 0;
+  const exportedFlows = conf.exportedFlows || 0;
+
   let output = '\nNetFlow export status:\n';
   output += `  Version ${conf.version || 5} export flow records\n`;
   output += `  Exporting flows to ${conf.exportDestination} port ${conf.exportPort || 2055}\n`;
   output += '  Exporting source loopback 0\n';
-  output += '  1542 packets exported, 34 exports executed\n';
+  output += `  ${exportedPackets} packets exported, ${exportedFlows} exports executed\n`;
   return { success: true, output };
 }
 
 export function cmdShowIpCacheFlow(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  const cache = state.netflowCache || [
-    { srcIp: '10.0.0.5', dstIp: '192.168.1.100', proto: '06', srcPort: 443, dstPort: 80, pkts: 24, bytes: 14200, active: 12 },
-    { srcIp: '10.0.0.8', dstIp: '172.16.0.2', proto: '11', srcPort: 53, dstPort: 53, pkts: 4, bytes: 320, active: 2 }
-  ];
+  const now = Date.now();
+  ageOutNetflowCache(state, now, state.flowMonitors ? 15 : 15);
 
-  let output = '\nIP packet size distribution (100 total packets):\n';
+  const cache = state.netflowCache || [];
+  const totalPackets = cache.reduce((sum, c) => sum + c.pkts, 0);
+
+  let output = `\nIP packet size distribution (${totalPackets} total packets):\n`;
   output += '  1-32   64  128  256  512 1024\n';
   output += '  .000 .800 .100 .050 .050 .000\n\n';
-  output += 'SrcIf          SrcIPaddress    DstIf          DstIPaddress    Pr SrcP DstP  Pkts\n';
+  output += 'IP Flow Switching Cache, 2785088 bytes\n';
+  output += `  ${cache.length} active, 4096 inactive, ${cache.length} added\n`;
+  output += '  0 ager polls, 0 flow alloc failures\n\n';
+  output += '  last clearing of statistics never\n\n';
+  output += 'SrcIf          SrcIPaddress    DstIf          DstIPaddress    Pr SrcP   DstP   Pkts\n';
 
   cache.forEach(c => {
-    output += `Gi0/0          ${c.srcIp.padEnd(15)} Gi0/1          ${c.dstIp.padEnd(15)} ${c.proto} ${c.srcPort.toString().padStart(4, '0')} ${c.dstPort.toString().padStart(4, '0')} ${c.pkts.toString().padStart(5)}\n`;
+    const srcIf = (c.srcIf || 'Gi0/0').padEnd(13);
+    const srcIp = c.srcIp.padEnd(16);
+    const dstIf = (c.dstIf || 'Gi0/1').padEnd(14);
+    const dstIp = c.dstIp.padEnd(16);
+    output += `${srcIf} ${srcIp} ${dstIf} ${dstIp} ${c.proto} ${c.srcPort.toString().padStart(4, '0')} ${c.dstPort.toString().padStart(4, '0')} ${c.pkts.toString().padStart(5)}\n`;
   });
 
+  if (cache.length === 0) {
+    output += '  No active flows\n';
+  }
+
+  return { success: true, output };
+}
+
+export function cmdShowFlowRecord(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  const records = state.flowRecords || {};
+  const nameMatch = input.match(/^show\s+flow\s+record\s+(\S+)$/i);
+  const name = nameMatch?.[1];
+
+  if (name) {
+    const rec = records[name];
+    if (!rec) return { success: true, output: `\n% Flow record ${name} not found\n` };
+    let output = `\nFlow record ${name}:\n`;
+    output += '  Description: User defined\n';
+    output += '  Fields:\n';
+    (rec.matchFields || []).forEach(f => { output += `    ${f}\n`; });
+    (rec.collectFields || []).forEach(f => { output += `    ${f}\n`; });
+    return { success: true, output };
+  }
+
+  const names = Object.keys(records);
+  if (names.length === 0) return { success: true, output: '\n% No flow records configured\n' };
+  let output = '\nFlow Record                                                      Fields:\n';
+  const matchCounts = Object.entries(records).map(([n, r]) => [n, (r.matchFields || []).length] as const);
+  matchCounts.forEach(([n, cnt]) => {
+    output += `${n.padEnd(80)} match ${cnt}\n`;
+  });
+  return { success: true, output };
+}
+
+export function cmdShowFlowExporter(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  const exporters = state.flowExporters || {};
+  const nameMatch = input.match(/^show\s+flow\s+exporter\s+(\S+)$/i);
+  const name = nameMatch?.[1];
+
+  if (name) {
+    const exp = exporters[name];
+    if (!exp) return { success: true, output: `\n% Flow exporter ${name} not found\n` };
+    let output = `\nFlow exporter ${name}:\n`;
+    output += `  Description: User defined\n`;
+    output += `  Export protocol: NetFlow Version ${exp.version || 5}\n`;
+    output += `  Transport Configuration:\n`;
+    output += `    Destination IP address: ${exp.destination || 'not set'}\n`;
+    output += `    Source IP address: ${exp.source || 'not set'}\n`;
+    output += `    Transport Protocol: ${exp.transportProtocol}\n`;
+    output += `    Destination Port: ${exp.transportPort || 2055}\n`;
+    output += `    Source Port: 0\n`;
+    output += `  Template Data Timeout: ${exp.templateDataTimeout ?? 1800} seconds\n`;
+    return { success: true, output };
+  }
+
+  const names = Object.keys(exporters);
+  if (names.length === 0) return { success: true, output: '\n% No flow exporters configured\n' };
+  let output = '\nFlow Exporter                                                            Status\n';
+  Object.entries(exporters).forEach(([n, exp]) => {
+    const status = exp.destination ? 'Operational' : 'Not configured';
+    output += `${n.padEnd(88)} ${status}\n`;
+  });
+  return { success: true, output };
+}
+
+export function cmdShowFlowMonitor(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  const monitors = state.flowMonitors || {};
+  const nameMatch = input.match(/^show\s+flow\s+monitor\s+(\S+)$/i);
+  const name = nameMatch?.[1];
+
+  if (name) {
+    const mon = monitors[name];
+    if (!mon) return { success: true, output: `\n% Flow monitor ${name} not found\n` };
+    let output = `\nFlow monitor ${name}:\n`;
+    output += '  Description: User defined\n';
+    output += `  Flow Record: ${mon.record || 'not set'}\n`;
+    output += `  Flow Exporter: ${mon.exporter || 'not set'}\n`;
+    output += `  Cache type: Normal (Platform cache)\n`;
+    output += `  Cache size: 4096\n`;
+    output += `  Cache timeout: ${mon.cacheTimeoutActive ?? 1800} seconds (active), ${mon.cacheTimeoutInactive ?? 15} seconds (inactive)\n`;
+    const applied = Object.entries(state.ports || {}).filter(([, p]) => p.flowMonitor === name).map(([id]) => id);
+    output += `  Applied to interface(s): ${applied.join(', ') || 'none'}\n`;
+    return { success: true, output };
+  }
+
+  const names = Object.keys(monitors);
+  if (names.length === 0) return { success: true, output: '\n% No flow monitors configured\n' };
+  let output = '\nFlow Monitor                                                            Status\n';
+  Object.entries(monitors).forEach(([n, mon]) => {
+    const status = mon.record && mon.exporter ? 'Active' : 'Incomplete';
+    output += `${n.padEnd(88)} ${status}\n`;
+  });
   return { success: true, output };
 }
 
@@ -403,13 +607,191 @@ export function cmdShowVrf(state: SwitchState, _input: string, _ctx: CommandCont
   return { success: true, output };
 }
 
-export function cmdShowMpls(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  const mpls = state.mplsConfig as { enabled?: boolean; ldpEnabled?: boolean; lfib?: Record<string, unknown> } | undefined;
+export function cmdShowMpls(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  // Update LFIB and LIB before showing
+  generateLfib(state);
+  generateLib(state);
+  
+  const mpls = getOrCreateMplsConfig(state);
   if (!mpls || !mpls.enabled) {
     return { success: true, output: '\n% MPLS is not enabled\n' };
   }
+
   let output = '\nMPLS LDP Status: Operating\n';
+  output += `LDP Router ID: ${mpls.routerId}\n`;
   output += `LDP Discovery/Session: ${mpls.ldpEnabled ? 'Enabled' : 'Disabled'}\n`;
-  output += `LFIB Entries: ${Object.keys(mpls.lfib || {}).length}\n`;
+  output += `Label Range: ${mpls.labelRange.min} - ${mpls.labelRange.max}\n`;
+  output += `Graceful Restart: ${mpls.gracefulRestartEnabled ? 'Enabled' : 'Disabled'}\n`;
+  output += `Session Protection: ${mpls.sessionProtectionEnabled ? 'Enabled' : 'Disabled'}\n`;
+  
+  // Parse input to determine what to show
+  const inputLower = input.toLowerCase();
+  
+  if (inputLower.includes('ldp neighbor')) {
+    output += getLdpNeighborTable(state);
+  } else if (inputLower.includes('ldp discovery')) {
+    output += getLdpDiscoveryInfo(state);
+  } else if (inputLower.includes('lfib') || inputLower.includes('forwarding')) {
+    output += getLfibTable(state);
+  } else if (inputLower.includes('lib') || inputLower.includes('bindings')) {
+    output += getLibTable(state);
+  } else {
+    // Show summary
+    output += `\n${getLdpDiscoveryInfo(state)}`;
+    output += `\n${getLdpNeighborTable(state)}`;
+    output += `\n${getLfibTable(state)}`;
+  }
+  
   return { success: true, output };
 }
+
+// ─── Private VLAN Show Commands ───────────────────────────────────────────────
+
+/**
+ * show vlan private-vlan [type]
+ */
+export function cmdShowVlanPrivateVlan(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  const domain = state.pvlanDomain;
+
+  let output = '\nPrimary  Secondary  Type      Interfaces\n';
+  output += '-------  ---------  --------  --------------------\n';
+
+  if (!domain || !domain.primaryVlan) {
+    output += '(No private-vlan configuration found)\n';
+    return { success: true, output };
+  }
+
+  // Isolated VLAN
+  if (domain.isolatedVlan) {
+    const ports = Object.entries(state.ports)
+      .filter(([, p]) => p.pvlanMode === 'host' && p.pvlanHostAssociation?.secondary === domain.isolatedVlan)
+      .map(([id]) => id).join(', ') || '--';
+    output += `${String(domain.primaryVlan).padEnd(8)} ${String(domain.isolatedVlan).padEnd(10)} isolated  ${ports}\n`;
+  }
+
+  // Community VLANs
+  for (const communityVlan of domain.communityVlans || []) {
+    const ports = Object.entries(state.ports)
+      .filter(([, p]) => p.pvlanMode === 'host' && p.pvlanHostAssociation?.secondary === communityVlan)
+      .map(([id]) => id).join(', ') || '--';
+    output += `${String(domain.primaryVlan).padEnd(8)} ${String(communityVlan).padEnd(10)} community ${ports}\n`;
+  }
+
+  // Promiscuous ports
+  const promiscuousPorts = Object.entries(state.ports)
+    .filter(([, p]) => p.pvlanMode === 'promiscuous')
+    .map(([id]) => id);
+  if (promiscuousPorts.length > 0) {
+    output += `\nPromiscuous ports: ${promiscuousPorts.join(', ')}\n`;
+  }
+
+  return { success: true, output };
+}
+
+// ─── Flex-Links Show Commands ──────────────────────────────────────────────────
+
+/**
+ * show interfaces [<if>] backup detail
+ */
+export function cmdShowInterfacesBackup(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  let output = '\n';
+  output +=   'Interface   Backup-Interface         State        Preemption  Bandwidth\n';
+  output +=   '---------   ----------------         -----        ----------  ---------\n';
+
+  let hasPairs = false;
+
+  for (const [portId, port] of Object.entries(state.ports)) {
+    if (!port.flexLinkBackup) continue;
+    hasPairs = true;
+
+    const primaryStatus = port.shutdown ? 'down/standby' : (port.flexLinkActive !== false ? 'up/active' : 'up/standby');
+
+    output += `${portId.padEnd(12)} ${port.flexLinkBackup.padEnd(25)} ${primaryStatus.padEnd(12)} off         --\n`;
+  }
+
+  if (!hasPairs) {
+    output += '(No Flex-Link pairs configured)\n';
+  }
+
+  return { success: true, output };
+}
+
+// ─── VXLAN-EVPN Show Commands ─────────────────────────────────────────────────
+
+/**
+ * show nve interface
+ */
+export function cmdShowNveInterface(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  const vxlan = getOrCreateVxlanConfig(state);
+  
+  if (!vxlan.enabled) {
+    return { success: true, output: '% VXLAN is not enabled' };
+  }
+
+  return { success: true, output: getNveInterfaceTable(state) };
+}
+
+/**
+ * show evpn
+ */
+export function cmdShowEvpn(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  const vxlan = getOrCreateVxlanConfig(state);
+  
+  if (!vxlan.enabled) {
+    return { success: true, output: '% VXLAN-EVPN is not enabled' };
+  }
+
+  let output = '\nVXLAN-EVPN Status: Enabled\n';
+  output += `BGP EVPN: ${vxlan.bgpEvpnEnabled ? 'Enabled' : 'Disabled'}\n`;
+  
+  const inputLower = input.toLowerCase();
+  
+  if (inputLower.includes('mac') || inputLower.includes('mac-table')) {
+    output += getEvpnMacTable(state);
+  } else if (inputLower.includes('neighbor') || inputLower.includes('neighbor')) {
+    output += getEvpnNeighborTable(state);
+  } else {
+    output += `\n${getNveInterfaceTable(state)}`;
+    output += `\n${getEvpnNeighborTable(state)}`;
+    output += `\n${getEvpnMacTable(state)}`;
+  }
+  
+  return { success: true, output };
+}
+
+/**
+ * show lisp
+ */
+export function cmdShowLisp(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  const lisp = state.lispConfig;
+  if (!lisp || !lisp.enabled) {
+    return { success: true, output: '\n% LISP is not enabled\n' };
+  }
+  let output = '\nLISP Routing Table / Map-Cache\n';
+  output += 'EID Prefix           RLOC IP          Priority  Weight\n';
+  output += '------------------   ---------------  --------  ------\n';
+  lisp.eidMappings?.forEach((m: any) => {
+    output += `${m.eidPrefix.padEnd(20)} ${(m.rlocIp || 'site-map').padEnd(16)} ${String(m.priority || 1).padEnd(9)} ${m.weight || 100}\n`;
+  });
+  return { success: true, output };
+}
+
+/**
+ * show control-plane
+ */
+export function cmdShowControlPlane(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  const copp = state.coppConfig;
+  if (!copp || !copp.enabled) {
+    return { success: true, output: '\n% CoPP (Control-Plane Policing) is not enabled\n' };
+  }
+  let output = '\nControl-Plane Policing Status: Active\n';
+  output += 'Class                Rate(pps)  Conforming(pkts)  Exceeded(pkts)\n';
+  output += '-------------------  ---------  ----------------  --------------\n';
+  Object.values(copp.classPolicies || {}).forEach((p: any) => {
+    output += `${p.className.padEnd(20)} ${String(p.policeRatePps).padEnd(10)} ${String(p.conformingPackets).padEnd(17)} ${p.exceededPackets}\n`;
+  });
+  return { success: true, output };
+}
+
+
+

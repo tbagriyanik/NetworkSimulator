@@ -34,6 +34,7 @@ import { privilegedHandlers } from './core/privilegedCommands';
 import { dhcpConfigHandlers } from './core/dhcpConfigCommands';
 import { firewallHandlers } from './core/firewallCommands';
 import { wirelessHandlers } from './core/wirelessCommands';
+import { flowSubmodeHandlers } from './core/flowCommands';
 
 // --- Command handler types & context ---
 import { CommandContext, CommandHandler } from './core/commandTypes';
@@ -274,6 +275,9 @@ export const commandHandlers: Record<string, CommandHandler> = {
   // Wireless commands
   ...wirelessHandlers,
 
+  // Flexible NetFlow submode commands (flow record/exporter/monitor)
+  ...flowSubmodeHandlers,
+
   // DHCP pool sub-commands (exclude generic 'network'/'no network' to avoid shadowing router versions)
   ...Object.fromEntries(Object.entries(dhcpConfigHandlers).filter(([k]) => k !== 'network' && k !== 'no network')),
   'network': (state, input, ctx) => {
@@ -353,6 +357,8 @@ export const commandHandlers: Record<string, CommandHandler> = {
     const setMetric = input.match(/^set\s+metric\s+(\d+)/i);
     const setNextHop = input.match(/^set\s+(?:ip|ipv6)\s+next-hop\s+(\S+)/i);
     const setLocalPref = input.match(/^set\s+local-preference\s+(\d+)/i);
+    const setWeight = input.match(/^set\s+weight\s+(\d+)/i);
+    const setAsPathPrepend = input.match(/^set\s+as-path\s+prepend\s+(.+)$/i);
 
     if (setMetric) {
       setRules['metric'] = parseInt(setMetric[1], 10);
@@ -360,6 +366,14 @@ export const commandHandlers: Record<string, CommandHandler> = {
       setRules['nextHop'] = setNextHop[1];
     } else if (setLocalPref) {
       setRules['localPreference'] = parseInt(setLocalPref[1], 10);
+    } else if (setWeight) {
+      setRules['weight'] = parseInt(setWeight[1], 10);
+    } else if (setAsPathPrepend) {
+      const asns = setAsPathPrepend[1].trim().split(/\s+/).filter(Boolean);
+      if (asns.length === 0 || asns.some(a => !/^\d+$/.test(a))) {
+        return { success: false, error: '% Invalid as-path prepend' };
+      }
+      setRules['asPathPrepend'] = asns;
     } else {
       return { success: false, error: '% Invalid set command' };
     }

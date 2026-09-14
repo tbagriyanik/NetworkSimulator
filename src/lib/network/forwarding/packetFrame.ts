@@ -109,6 +109,10 @@ export interface NetworkPacketFrame {
   eigrpPayload?: EigrpPayload;
   ipSlaPayload?: IpSlaPayload;
 
+  // Layer 4 Ports (used by NetFlow accounting / firewalls)
+  srcPort?: number;
+  dstPort?: number;
+
   // Raw length & description info
   length: number;
   info: string;

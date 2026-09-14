@@ -165,8 +165,21 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `ip ssh version {1\|2}` | Set SSH version |
 | `ip ssh time-out <seconds>` | Set SSH timeout |
 | `no ip ssh time-out` | Remove SSH timeout |
-| `ip dhcp snooping` | Enable DHCP snooping |
-| `ip dhcp snooping vlan <ids>` | Enable DHCP snooping on VLANs |
+| `ip dhcp snooping` | Enable DHCP Snooping globally |
+| `ip dhcp snooping vlan <vlan-ids>` | Enable DHCP Snooping on specified VLANs |
+| `ip arp inspection vlan <vlan-ids>` | Enable Dynamic ARP Inspection (DAI) on specified VLANs |
+| `ip verify source` | Enable IP Source Guard (IPSG) on interface |
+| `switchport mode private-vlan {host\|promiscuous\|trunk}` | Configure Private VLAN (PVLAN) port mode |
+| `switchport private-vlan host-association <primary> <secondary>` | Associate Private VLAN host port with primary and secondary VLAN |
+| `switchport backup interface <interface>` | Configure Flex-Links backup interface for active/standby L2 failover |
+| `spanning-tree guard root` | Enable STP Root Guard on interface |
+| `spanning-tree bpdufilter enable` | Enable STP BPDU Filter on interface |
+| `router lisp` | Enable LISP (Locator/ID Separation Protocol) routing |
+| `database-mapping <eid-prefix> <rloc-ip>` | Configure LISP EID to RLOC mapping |
+| `control-plane` | Enter Control Plane Policing (CoPP) CPU protection mode |
+| `ip policy route-map <map-name>` | Apply Policy-Based Routing (PBR) policy-map on interface |
+| `monitor session <id> source remote vlan <vlan-id>` | Configure Remote SPAN (RSPAN) source VLAN |
+| `monitor session <id> destination remote vlan <vlan-id>` | Configure Remote SPAN (RSPAN) destination VLAN |
 | `ip dhcp snooping information option` | Enable DHCP Option 82 insertion |
 | `no ip dhcp snooping information option` | Disable DHCP Option 82 insertion |
 | `no ip dhcp snooping` | Disable DHCP snooping |

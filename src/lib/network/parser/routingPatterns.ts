@@ -274,6 +274,18 @@ export const routingPatterns: Record<string, CommandPattern> = {
     minArgs: 2,
     maxArgs: 2
   },
+  'neighbor med': {
+    pattern: /^neighbor\s+[0-9.]+\s+med\s+\d+$/i,
+    modes: ['router-config'],
+    minArgs: 2,
+    maxArgs: 2
+  },
+  'no neighbor med': {
+    pattern: /^no\s+neighbor\s+[0-9.]+\s+med$/i,
+    modes: ['router-config'],
+    minArgs: 2,
+    maxArgs: 2
+  },
   'aggregate-address': {
     pattern: /^aggregate-address\s+[0-9.]+\s+[0-9.]+(?:\s+summary-only)?$/i,
     modes: ['router-config'],
@@ -318,6 +330,18 @@ export const routingPatterns: Record<string, CommandPattern> = {
   },
   'no bgp cluster-id': {
     pattern: /^no\s+bgp\s+cluster-id$/i,
+    modes: ['router-config'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'bgp default local-preference': {
+    pattern: /^bgp\s+default\s+local-preference\s+\d+$/i,
+    modes: ['router-config'],
+    minArgs: 2,
+    maxArgs: 2
+  },
+  'no bgp default local-preference': {
+    pattern: /^no\s+bgp\s+default\s+local-preference$/i,
     modes: ['router-config'],
     minArgs: 0,
     maxArgs: 0
@@ -795,6 +819,144 @@ export const routingPatterns: Record<string, CommandPattern> = {
     modes: ['config'],
     minArgs: 0,
     maxArgs: 4
+  },
+  'flow record': {
+    pattern: /^flow\s+record\s+(\S+)$/i,
+    modes: ['config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'no flow record': {
+    pattern: /^no\s+flow\s+record\s+(\S+)$/i,
+    modes: ['config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'flow exporter': {
+    pattern: /^flow\s+exporter\s+(\S+)$/i,
+    modes: ['config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'no flow exporter': {
+    pattern: /^no\s+flow\s+exporter\s+(\S+)$/i,
+    modes: ['config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'flow monitor': {
+    pattern: /^flow\s+monitor\s+(\S+)$/i,
+    modes: ['config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'no flow monitor': {
+    pattern: /^no\s+flow\s+monitor\s+(\S+)$/i,
+    modes: ['config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'match ipv4 source address': {
+    pattern: /^match\s+ipv4\s+source\s+address$/i,
+    modes: ['config-flow-record'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'match ipv4 destination address': {
+    pattern: /^match\s+ipv4\s+destination\s+address$/i,
+    modes: ['config-flow-record'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'match ipv4 protocol': {
+    pattern: /^match\s+ipv4\s+protocol$/i,
+    modes: ['config-flow-record'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'match transport source-port': {
+    pattern: /^match\s+transport\s+source-port$/i,
+    modes: ['config-flow-record'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'match transport destination-port': {
+    pattern: /^match\s+transport\s+destination-port$/i,
+    modes: ['config-flow-record'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'collect counter bytes': {
+    pattern: /^collect\s+counter\s+bytes$/i,
+    modes: ['config-flow-record'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'collect counter packets': {
+    pattern: /^collect\s+counter\s+packets$/i,
+    modes: ['config-flow-record'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'collect counter flows': {
+    pattern: /^collect\s+counter\s+flows$/i,
+    modes: ['config-flow-record'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'destination': {
+    pattern: /^destination\s+\S+$/i,
+    modes: ['config-flow-exporter'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'transport udp': {
+    pattern: /^transport\s+udp\s+\d+$/i,
+    modes: ['config-flow-exporter'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'version 9': {
+    pattern: /^version\s+(?:5|9)$/i,
+    modes: ['config-flow-exporter'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'template data timeout': {
+    pattern: /^template\s+data\s+timeout\s+\d+$/i,
+    modes: ['config-flow-exporter'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'source': {
+    pattern: /^source\s+\S+$/i,
+    modes: ['config-flow-exporter'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'exporter': {
+    pattern: /^exporter\s+\S+$/i,
+    modes: ['config-flow-monitor'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'record': {
+    pattern: /^record\s+\S+$/i,
+    modes: ['config-flow-monitor'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'cache timeout active': {
+    pattern: /^cache\s+timeout\s+active\s+\d+$/i,
+    modes: ['config-flow-monitor'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'cache timeout inactive': {
+    pattern: /^cache\s+timeout\s+inactive\s+\d+$/i,
+    modes: ['config-flow-monitor'],
+    minArgs: 1,
+    maxArgs: 1
   },
   'spanning-tree loopguard default': {
     pattern: /^spanning-tree\s+loopguard\s+default$/i,

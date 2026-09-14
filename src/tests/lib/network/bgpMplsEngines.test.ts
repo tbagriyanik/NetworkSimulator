@@ -73,7 +73,7 @@ describe('MPLS & LDP Core Engine', () => {
     expect(lfib.length).toBeGreaterThan(0);
     expect(lfib[0].outLabel).toBe('Implicit-Null');
 
-    const ldpPeer = establishLdpSession(state, '2.2.2.2', '10.1.1.2');
+    const ldpPeer = establishLdpSession(state, '2.2.2.2', '10.1.1.2', 'Gi0/0');
     expect(ldpPeer.tcpState).toBe('Operational');
   });
 });

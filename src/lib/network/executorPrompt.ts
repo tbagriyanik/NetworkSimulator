@@ -36,6 +36,12 @@ export function getPrompt(state: SwitchState): string {
       return `${hostname}(config-mst)#`;
     case 'config-route-map':
       return `${hostname}(config-route-map)#`;
+    case 'config-flow-record':
+      return `${hostname}(config-flow-record)#`;
+    case 'config-flow-exporter':
+      return `${hostname}(config-flow-exporter)#`;
+    case 'config-flow-monitor':
+      return `${hostname}(config-flow-monitor)#`;
     case 'dot11-config':
       return `${hostname}(config-if)#`;
     case 'ap-config':

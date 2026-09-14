@@ -2,7 +2,7 @@ import type { CommandContext } from './commandTypes';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
 import type { SwitchState, CommandResult, Route, Port } from '../types';
 import { buildOSPFLinkStateDatabase, electOspfDrBdr, type OspfCandidate } from '../ospf';
-import { recalculateBgpNeighbors, calculateBgpRoutes, findRouteDetailed } from '../routing';
+import { recalculateBgpNeighbors, calculateBgpRoutes, findRouteDetailed, isTrackedRouteActive } from '../routing';
 import { buildEigrp6TopologyTable, EigrpTopologyEntry } from '../eigrp-dual';
 import { ensureDeviceStatesMap } from '../networkUtils';
 import {
@@ -41,14 +41,24 @@ export function cmdShowIpOspfInterface(state: SwitchState, input: string, _ctx: 
       found = true;
       const portArea = port.ospfArea !== undefined ? port.ospfArea : '0';
       const portProcess = port.ospfProcessId || state.ospfProcessId || '1';
+      const cost = port.ospfCost !== undefined ? port.ospfCost : getSTPCost(port);
+      const hello = port.ospfHelloInterval ?? 10;
+      const dead = port.ospfDeadInterval ?? 40;
+      const priority = port.ospfPriority ?? 1;
+      const authType = port.ospfAuthType || 'None';
+      const passive = (port.passiveInterface || (state.passiveInterfaces || []).some(p => p.toLowerCase() === name.toLowerCase()));
       output += `${name} is up, line protocol is up\n`;
       output += `  Internet Address ${port.ipAddress}/${getPrefixLength(port.subnetMask)}, Area ${portArea}\n`;
-      output += `  Process ID ${portProcess}, Router ID ${state.ospfRouterId || state.ip || '192.168.1.1'}, Network Type BROADCAST, Cost: ${getSTPCost(port)}\n`;
-      output += `  Transmit Delay is 1 sec, State DR, Priority 1\n`;
+      output += `  Process ID ${portProcess}, Router ID ${state.ospfRouterId || state.ip || '192.168.1.1'}, Network Type BROADCAST, Cost: ${cost}\n`;
+      output += `  Transmit Delay is 1 sec, State DR, Priority ${priority}\n`;
       output += `  Designated Router (ID) ${state.ip || '192.168.1.1'}, Interface address ${port.ipAddress}\n`;
       output += `  Backup Designated router (ID) 0.0.0.0, Interface address 0.0.0.0\n`;
-      output += `  Timer intervals configured, Hello 10, Dead 40, Wait 40, Retransmit 5\n`;
+      output += `  Timer intervals configured, Hello ${hello}, Dead ${dead}, Wait ${dead}, Retransmit 5\n`;
       output += `    Hello due in 00:00:07\n`;
+      output += `  Authentication type (${authType}) is ${authType === 'None' ? 'No Authentication' : `configured${port.ospfMd5KeyId !== undefined ? ` (MD5 key id ${port.ospfMd5KeyId})` : ''}`}\n`;
+      if (passive) {
+        output += `  Passive Interface: enabled\n`;
+      }
       output += `  Index 1/1, flood queue length 0\n`;
       output += `  Next 0x0(0)/0x0(0)\n`;
       output += `  Last flood scan length is 0, maximum is 0\n`;
@@ -123,7 +133,7 @@ function collectRouteCandidates(state: SwitchState, ctx: CommandContext): Route[
   }
 
   // Static routes
-  (state.staticRoutes || []).forEach((route: Route) => {
+  (state.staticRoutes || []).filter((route: Route) => isTrackedRouteActive(state, route)).forEach((route: Route) => {
     const mask = route.mask || route.subnetMask;
     const network = route.network || route.destination;
     if (mask && network) {
@@ -372,7 +382,7 @@ export function cmdShowIpRoute(
 
   if (!filter || filter === 'static') {
     if (state.staticRoutes && state.staticRoutes.length > 0) {
-      state.staticRoutes.forEach((route) => {
+      state.staticRoutes.filter((route: Route) => isTrackedRouteActive(state, route)).forEach((route) => {
         const mask = route.mask || route.subnetMask;
         const network = route.network || route.destination;
         if (mask && network) {
@@ -380,10 +390,11 @@ export function cmdShowIpRoute(
           const ad = routeInlineAd(route);
           const metric = route.metric ?? 0;
           const outInt = route.interface ? formatPortName(route.interface) : '';
+          const trackPart = route.trackId !== undefined ? `, track ${route.trackId}` : '';
           if (route.nextHop) {
-            output += `S     ${network}/${prefixLength} [${ad}/${metric}] via ${route.nextHop}${outInt ? `, ${outInt}` : ''}\n`;
+            output += `S     ${network}/${prefixLength} [${ad}/${metric}] via ${route.nextHop}${outInt ? `, ${outInt}` : ''}${trackPart}\n`;
           } else if (outInt) {
-            output += `S     ${network}/${prefixLength} is directly connected, ${outInt}\n`;
+            output += `S     ${network}/${prefixLength} is directly connected, ${outInt}${trackPart}\n`;
           }
         }
       });
@@ -489,6 +500,18 @@ export function cmdShowIpProtocols(state: SwitchState, _input: string, _ctx: Com
     output += '  Default networks accepted in routing updates\n';
     output += '  Default networks will not be sent in routing updates\n';
     output += `  EIGRP-IPv4 Protocol for AS(${asNum})\n`;
+    if (state.eigrpStub) {
+      const keywords: string[] = [];
+      if (state.eigrpStub.receiveOnly) {
+        keywords.push('receive-only');
+      } else {
+        if (state.eigrpStub.connected) keywords.push('connected');
+        if (state.eigrpStub.summary) keywords.push('summary');
+        if (state.eigrpStub.static) keywords.push('static');
+        if (state.eigrpStub.redistributed) keywords.push('redistributed');
+      }
+      output += `  Stub: ${keywords.join(', ')} routes enabled\n`;
+    }
     output += '    Metric weight K1=1, K2=0, K3=1, K4=0, K5=0\n';
     output += '    NSF-aware route hold timer is 240\n';
     output += `    Router-ID: ${state.ospfRouterId || state.ip || '10.0.0.1'}\n`;
@@ -935,6 +958,9 @@ export function cmdShowIpBgp(state: SwitchState, input: string, ctx?: CommandCon
   let output = `BGP table version is 1, local router ID ${routerId}\n`;
   output += `Status codes: s suppressed, d damped, h history, * valid, > best, i - internal\n`;
   output += `Origin codes: i - IGP, e - EGP, ? - incomplete\n\n`;
+  if (state.bgpLocalPreference !== undefined) {
+    output += `BGP default local-preference is ${state.bgpLocalPreference}\n`;
+  }
   output += `   Network          Next Hop            Metric LocPrf Weight Path\n`;
 
   if (entries.length === 0) {
@@ -1011,6 +1037,7 @@ export function cmdShowIpBgpNeighbors(state: SwitchState, input: string, ctx?: C
     if (n.routeMapIn) output += `  Incoming update route-map filter is ${n.routeMapIn}\n`;
     if (n.routeMapOut) output += `  Outgoing update route-map filter is ${n.routeMapOut}\n`;
     if (n.weight !== undefined) output += `  BGP weight is ${n.weight}\n`;
+    if (n.med !== undefined) output += `  MED is ${n.med}\n`;
     output += `  Received prefix count: ${learnedByNeighbor.get(n.ip) || 0}\n`;
     return { success: true, output };
   }
@@ -1123,6 +1150,10 @@ export function cmdShowRouteMap(state: SwitchState, _input: string, _ctx: Comman
         if (c.setRules.metric !== undefined) output += `    metric ${c.setRules.metric}\n`;
         if (c.setRules.nextHop) output += `    ip next-hop ${c.setRules.nextHop}\n`;
         if (c.setRules.localPreference !== undefined) output += `    local-preference ${c.setRules.localPreference}\n`;
+        if (c.setRules.weight !== undefined) output += `    weight ${c.setRules.weight}\n`;
+        if (Array.isArray(c.setRules.asPathPrepend) && c.setRules.asPathPrepend.length) {
+          output += `    as-path prepend ${c.setRules.asPathPrepend.join(' ')}\n`;
+        }
       }
     });
   });

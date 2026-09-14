@@ -88,8 +88,15 @@ export function recalculateBgpNeighbors(
  * Collect the IPv4 prefixes a BGP speaker would advertise to its peers.
  * Advertised set = `network <ip> mask <mask>` statements + redistributed
  * routes (`redistribute <proto>`) whose target protocol is BGP.
+ *
+ * When a `recipient` is provided (route being sent to that peer), BGP-learned
+ * routes from `state.dynamicRoutes` are also reflected subject to
+ * route-reflector split-horizon rules:
+ *  - routes with an external ASN in the path are advertised to everyone;
+ *  - iBGP-learned routes (path 'i') are re-advertised only to route-reflector
+ *    clients (otherwise a full mesh would be required).
  */
-function collectBgpAdvertisedPrefixes(state: SwitchState): Route[] {
+function collectBgpAdvertisedPrefixes(state: SwitchState, recipient?: SwitchState): Route[] {
   const prefixes: Route[] = [];
 
   (state.bgpNetworks || []).forEach(n => {
@@ -140,6 +147,36 @@ function collectBgpAdvertisedPrefixes(state: SwitchState): Route[] {
             code: 'B'
           });
         }
+      });
+    });
+  }
+
+  if (recipient) {
+    const recipientIps = getActiveBgpDeviceIps(recipient);
+    const recipientIsRrClient = (state.bgpNeighbors || []).some(
+      n => n.routeReflectorClient === true && recipientIps.includes(n.ip)
+    );
+    const recipientIsEbgp = isIBgpSession(state, recipient) === false;
+
+    (state.dynamicRoutes || []).forEach(br => {
+      if (br.code !== 'B' || !br.destination) return;
+      if (prefixes.some(p => p.destination === br.destination && p.subnetMask === (br.subnetMask || br.mask))) return;
+
+      const path = (br.asPath || '').trim();
+      const isInternalOnly = asPathAsnCount(path) === 0;
+
+      if (isInternalOnly && !recipientIsEbgp && !recipientIsRrClient) return;
+
+      prefixes.push({
+        destination: br.destination,
+        subnetMask: br.subnetMask || br.mask,
+        nextHop: '0.0.0.0',
+        metric: typeof br.metric === 'number' ? br.metric : 0,
+        type: 'dynamic',
+        code: 'B',
+        asPath: br.asPath,
+        localPreference: br.localPreference,
+        weight: br.weight
       });
     });
   }
@@ -223,7 +260,7 @@ function bgpRouteMapSetRules(
   state: SwitchState,
   mapName: string,
   candidate: { destination: string; mask?: string; subnetMask?: string }
-): { metric?: number; localPreference?: number; nextHop?: string } {
+): { metric?: number; localPreference?: number; nextHop?: string; weight?: number; asPathPrepend?: string[] } {
   const clauses = (state.routeMaps || {})[mapName];
   if (!clauses || clauses.length === 0) return {};
 
@@ -249,10 +286,45 @@ function bgpRouteMapSetRules(
     return {
       metric: typeof setRules.metric === 'number' ? setRules.metric : undefined,
       localPreference: typeof setRules.localPreference === 'number' ? setRules.localPreference : undefined,
-      nextHop: typeof setRules.nextHop === 'string' ? setRules.nextHop : undefined
+      nextHop: typeof setRules.nextHop === 'string' ? setRules.nextHop : undefined,
+      weight: typeof setRules.weight === 'number' ? setRules.weight : undefined,
+      asPathPrepend: Array.isArray(setRules.asPathPrepend)
+        ? setRules.asPathPrepend.filter((a): a is string => typeof a === 'string')
+        : undefined
     };
   }
   return {};
+}
+
+/** Whether two devices peer over iBGP (same local ASN). */
+function isIBgpSession(a: SwitchState, b: SwitchState): boolean {
+  return String(a.bgpAs || '') === String(b.bgpAs || '');
+}
+
+/** Number of ASNs carried in an AS_PATH string ('65000 65001 i' -> 2). */
+function asPathAsnCount(path: string | undefined): number {
+  const p = (path || '').trim();
+  if (!p) return 0;
+  return p
+    .replace(/\s+i$/, '')
+    .trim()
+    .split(/\s+/)
+    .filter(t => Boolean(t) && t !== 'i').length;
+}
+
+/** BGP best-path selection for two routes to the same prefix. */
+function bgpBestPath(r: Route, existing: Route): boolean {
+  if ((r.weight || 0) !== (existing.weight || 0)) return (r.weight || 0) > (existing.weight || 0);
+  if ((r.localPreference ?? 100) !== (existing.localPreference ?? 100)) {
+    return (r.localPreference ?? 100) > (existing.localPreference ?? 100);
+  }
+  const rPathLen = asPathAsnCount(r.asPath);
+  const ePathLen = asPathAsnCount(existing.asPath);
+  if (rPathLen !== ePathLen) return rPathLen < ePathLen;
+  if ((r.metric || 0) !== (existing.metric || 0)) return (r.metric || 0) < (existing.metric || 0);
+  const rAd = r.administrativeDistance || 200;
+  const eAd = existing.administrativeDistance || 200;
+  return rAd < eAd;
 }
 
 /**
@@ -291,16 +363,18 @@ export function calculateBgpRoutes(
     if (!peerNeighborCfg || peerNeighborCfg.shutdown) return;
 
     const isIBgp = peerAs === ownAs;
-    const asPath = isIBgp ? [] : [peerAs];
-    const pathString = `${asPath.join(' ')}${asPath.length ? ' ' : ''}i`;
-
-    const advertised = collectBgpAdvertisedPrefixes(peerState);
+    const advertised = collectBgpAdvertisedPrefixes(peerState, myState);
     let receivedCount = 0;
     advertised.forEach(prefix => {
       // Outbound policy applied on advertising peer
       if (peerNeighborCfg.routeMapOut && !bgpRouteMapAllows(peerState, peerNeighborCfg.routeMapOut, prefix)) return;
+      const peerOutSet = peerNeighborCfg.routeMapOut
+        ? bgpRouteMapSetRules(peerState, peerNeighborCfg.routeMapOut, prefix)
+        : {};
 
       // AS-loop prevention: drop when our AS already appears in the AS_PATH
+      const prepend = peerOutSet.asPathPrepend || [];
+      const asPath = isIBgp ? [...prepend] : [peerAs, ...prepend];
       if (asPath.includes(ownAs)) {
         const allowedLoops = myNeighbor.allowAsIn ?? 0;
         const loopCount = asPath.filter(a => a === ownAs).length;
@@ -317,18 +391,24 @@ export function calculateBgpRoutes(
       receivedCount += 1;
       if (myNeighbor.maximumPrefix !== undefined && receivedCount > myNeighbor.maximumPrefix) return;
 
-      const nextHop = setRules.nextHop || myNeighbor.ip;
+      const nextHop =
+        setRules.nextHop ||
+        peerOutSet.nextHop ||
+        (isIBgp && !myNeighbor.nextHopSelf ? peerState.routerId || myNeighbor.ip : myNeighbor.ip);
+
+      const pathString = prefix.asPath || `${asPath.join(' ')}${asPath.length ? ' ' : ''}i`;
 
       learned.push({
         destination: prefix.destination,
         subnetMask: prefix.subnetMask,
         nextHop,
-        metric: setRules.metric ?? prefix.metric ?? 0,
+        metric: setRules.metric ?? peerOutSet.metric ?? peerNeighborCfg.med ?? prefix.metric ?? 0,
         type: 'dynamic',
         code: 'B',
         administrativeDistance: isIBgp ? 200 : 20,
         asPath: pathString,
-        localPreference: setRules.localPreference ?? 100
+        localPreference: setRules.localPreference ?? prefix.localPreference ?? myState.bgpLocalPreference ?? 100,
+        weight: setRules.weight ?? prefix.weight ?? myNeighbor.weight ?? 0
       });
     });
 
@@ -343,12 +423,15 @@ export function calculateBgpRoutes(
         code: 'B',
         administrativeDistance: isIBgp ? 200 : 20,
         asPath: isIBgp ? 'i' : `${peerAs} i`,
-        localPreference: 100
+        localPreference: myState.bgpLocalPreference ?? 100,
+        weight: myNeighbor.weight ?? 0
       });
     }
   });
 
-  // Deduplicate: prefer most specific prefix (longest mask), then lowest AD.
+  // Deduplicate: prefer most specific prefix (longest mask), then BGP best-path
+  // (highest weight > highest local-pref > shortest AS_PATH > lowest MED >
+  // eBGP over iBGP > lowest AD).
   const bestByKey = new Map<string, Route>();
   learned.forEach(r => {
     const key = `${r.destination}/${getPrefixLength(r.subnetMask || '255.255.255.255')}`;
@@ -359,7 +442,7 @@ export function calculateBgpRoutes(
     }
     const existingLen = getPrefixLength(existing.subnetMask || '255.255.255.255');
     const newLen = getPrefixLength(r.subnetMask || '255.255.255.255');
-    if (newLen > existingLen || (newLen === existingLen && (r.administrativeDistance || 200) < (existing.administrativeDistance || 200))) {
+    if (newLen > existingLen || (newLen === existingLen && bgpBestPath(r, existing))) {
       bestByKey.set(key, r);
     }
   });

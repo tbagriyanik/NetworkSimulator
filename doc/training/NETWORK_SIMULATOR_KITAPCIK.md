@@ -22,8 +22,10 @@ A browser-based network simulator for learning switching, routing, wireless, IoT
 
 Bu kitapçık projenin tüm kullanıcı, CLI, protokol, laboratuvar ve özellik bilgilerinin birincil kaynağıdır. Diğer Markdown dosyaları yalnızca kısa başvuru, kurulum veya geliştirici ayrıntısı içerir; aynı bilginin güncel sürümü burada tutulmalıdır.
 
-### Güncel özellik durumu (v5.4.1)
+### Güncel özellik durumu (v5.5.0)
 
+- **🛡️ Cisco Layer 2 Güvenlik Paketi (v5.5.0):** Dynamic ARP Inspection (`dai.ts`), IP Source Guard (`ipsg.ts`), Private VLAN (`pvlan.ts`), STP Root Guard / BPDU Filter ve Flex-Links active/standby failover paket engelleme motorları entegre edildi.
+- **🛣️ Gelişmiş L3 Yönlendirme & Protokol Paketleri (v5.5.0):** Policy-Based Routing (PBR - `ip policy route-map`), LISP (`lispEngine.ts`), CoPP CPU Koruması (`coppEngine.ts`), OSPF Auth/Stub/Passive-Interface, EIGRP Stub, Remote SPAN (RSPAN) ve iBGP / BGP Path Attributes motorları sisteme eklendi.
 - **🧊 3D Grafik Sahne Motoru & Katı Geometri (v5.4.0):** Gömülü Python terminalinde 3D nesneler (`Plane`, `Cube`, `Sphere`, `Cylinder`, `Prism`), nesneler arası yapıcı katı geometri (CSG `union` & `subtract`), materyal kaplama (renk, pürüzsüzlük, metaliklik, wireframe, opacity), ortam/güneş ışıklandırmaları ve masaüstünde sürüklenebilir `Python3DWindow` ile web tarayıcısı 3D görünüm desteği sağlandı (`pcPython3DModule.ts`, `pcPython3DRenderer.ts`, `Python3DWindow.tsx`).
 - **🎵 Web Audio API Tabanlı Dinamik Müzik & Ses Sentetörü (v5.4.0):** Gömülü Python (`audio` / `music` / `sound` / `synth` / `winsound`) üzerinden nota frekans çevrimi (C0-B8), polifonik akorlar (`play_chord`), hazır melodiler (`play_melody`), ses efektleri (`coin`, `laser`, `jump`, `explosion`, `powerup`) ve ADSR zarfı sentezli seslerin ham WAV formatında sanal diske (`C:\*.wav`) aktarılması eklendi (`pcAudioPlayer.ts`, `pcPythonAudioModule.ts`).
 - **🔍 Görsel PDU & Canlı Paket İnceleyici (v5.3.0):** OSI Katmanları (Layer 1 - Layer 7 Giriş & Çıkış PDU), Protokol Ağacı Hiyerarşisi, 16-baytlık Hex & ASCII Dökümü ve Adım Adım Hop Oynatıcısı entegre edildi (`EmbeddedPduInspector.tsx`, `pduDecoder.ts`, `VisualPduInspectorModal.tsx`).

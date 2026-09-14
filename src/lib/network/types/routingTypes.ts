@@ -15,6 +15,7 @@ export interface Route {
   asPath?: string;          // For BGP — AS path attribute
   localPreference?: number; // For BGP — local preference attribute
   weight?: number;          // For BGP — weight attribute
+  trackId?: number;         // For floating static — IP SLA track object id (route only installed while track is Up)
 }
 
 export interface BgpNeighbor {
@@ -23,6 +24,7 @@ export interface BgpNeighbor {
   remoteAs?: string | number;
   state?: string;
   weight?: number;
+  med?: number;
   routeMapIn?: string;
   routeMapOut?: string;
   nextHopSelf?: boolean;

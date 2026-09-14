@@ -14,6 +14,7 @@ import {
   isNetworkOrBroadcastAddress,
   applyToSelectedPorts
 } from './helpers';
+import { mapVlanToVni, getOrCreateNveInterface } from '../../vxlanEvpn';
 
 export function cmdIpAddress(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state) || !state.currentInterface) {
@@ -749,8 +750,112 @@ export function cmdIpVrfForwarding(state: SwitchState, input: string, _ctx: Comm
   const isNo = /^no\s+/i.test(input);
   if (!match && !isNo) return { success: false, error: '% Usage: ip vrf forwarding <vrf-name>' };
   const vrfName = isNo ? undefined : match?.[1];
-  const newPorts = applyToSelectedPorts(state, (port: Port) => ({ ...port, vrfName }));
-  return { success: true, newState: { ports: newPorts } };
+  
+  const newPorts = applyToSelectedPorts(state, (port: Port) => ({ 
+    ...port, 
+    vrfForwarding: vrfName 
+  }));
+  
+  return { 
+    success: true, 
+    output: isNo ? `VRF forwarding removed from interface` : `VRF ${vrfName} forwarding configured on interface`,
+    newState: { ports: newPorts } 
+  };
+}
+
+export function cmdVxlanMemberVniInterface(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (!isInInterfaceMode(state) || !state.currentInterface?.startsWith('nve')) {
+    return { success: false, error: '% Command only valid in NVE interface configuration mode' };
+  }
+  
+  const match = input.match(/^member\s+vni\s+(\d+)(?:\s+vlan\s+(\d+))?/i);
+  if (!match) return { success: false, error: '% Usage: member vni <vni> [vlan <vlan-id>]' };
+  
+  const vni = parseInt(match[1], 10);
+  const vlanId = match[2] ? parseInt(match[2], 10) : 1;
+  const nveName = state.currentInterface;
+  
+  mapVlanToVni(state, nveName, vlanId, vni);
+  
+  return {
+    success: true,
+    output: `VXLAN VNI ${vni} mapped to VLAN ${vlanId}`,
+    newState: { vxlanConfig: state.vxlanConfig }
+  };
+}
+
+export function cmdVxlanSourceInterfaceInterface(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (!isInInterfaceMode(state) || !state.currentInterface?.startsWith('nve')) {
+    return { success: false, error: '% Command only valid in NVE interface configuration mode' };
+  }
+  
+  const match = input.match(/^source-interface\s+(\S+)$/i);
+  if (!match) return { success: false, error: '% Usage: source-interface <interface>' };
+  
+  const sourceInterface = match[1];
+  const nveName = state.currentInterface;
+  
+  const nve = getOrCreateNveInterface(state, nveName);
+  nve.sourceInterface = sourceInterface;
+  
+  return {
+    success: true,
+    output: `NVE source interface set to ${sourceInterface}`,
+    newState: { vxlanConfig: state.vxlanConfig }
+  };
+}
+
+export function cmdVxlanIngressReplicationInterface(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (!isInInterfaceMode(state) || !state.currentInterface?.startsWith('nve')) {
+    return { success: false, error: '% Command only valid in NVE interface configuration mode' };
+  }
+  
+  const match = input.match(/^ingress-replication\s+(protocol\s+)?bgp$/i);
+  if (!match) return { success: false, error: '% Usage: ingress-replication [protocol] bgp' };
+  
+  return {
+    success: true,
+    output: 'NVE ingress-replication protocol set to BGP',
+    newState: { vxlanConfig: state.vxlanConfig }
+  };
+}
+
+export function cmdIpPolicyRouteMap(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (!isInInterfaceMode(state) || !state.currentInterface) {
+    return { success: false, error: '% Command only valid in interface configuration mode' };
+  }
+  
+  const match = input.match(/^ip\s+policy\s+route-map\s+(\S+)$/i);
+  if (!match) return { success: false, error: '% Usage: ip policy route-map <map-name>' };
+  
+  const routeMapName = match[1];
+  const newPorts = applyToSelectedPorts(state, (port: Port) => ({ 
+    ...port, 
+    policyRouteMap: routeMapName 
+  }));
+  
+  return { 
+    success: true, 
+    output: `Policy-based routing enabled using route-map ${routeMapName}`,
+    newState: { ports: newPorts } 
+  };
+}
+
+export function cmdNoIpPolicyRouteMap(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  if (!isInInterfaceMode(state) || !state.currentInterface) {
+    return { success: false, error: '% Command only valid in interface configuration mode' };
+  }
+  
+  const newPorts = applyToSelectedPorts(state, (port: Port) => ({ 
+    ...port, 
+    policyRouteMap: undefined 
+  }));
+  
+  return { 
+    success: true, 
+    output: 'Policy-based routing disabled on interface',
+    newState: { ports: newPorts } 
+  };
 }
 
 export function cmdZoneMember(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {

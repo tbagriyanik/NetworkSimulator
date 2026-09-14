@@ -109,3 +109,13 @@ export function maskFromPrefixLength(length: number): string {
   const num = length >= 32 ? 0xffffffff : (0xffffffff << (32 - length)) >>> 0;
   return [24, 16, 8, 0].map(shift => (num >>> shift) & 0xff).join('.');
 }
+
+/** Check whether a static route's associated IP SLA track is Up (or route has no track). */
+export function isTrackedRouteActive(
+  state: { ipSlaTracks?: Record<string, { state: 'up' | 'down' }> },
+  route: { trackId?: number }
+): boolean {
+  if (route.trackId === undefined || route.trackId === null) return true;
+  const track = state.ipSlaTracks?.[String(route.trackId)];
+  return !!track && track.state === 'up';
+}

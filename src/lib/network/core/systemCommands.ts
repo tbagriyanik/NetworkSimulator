@@ -191,6 +191,30 @@ function cmdExit(
           currentRouteMap: undefined
         }
       };
+    case 'config-flow-record':
+      return {
+        success: true,
+        newState: {
+          currentMode: 'config',
+          currentFlowRecordName: undefined
+        }
+      };
+    case 'config-flow-exporter':
+      return {
+        success: true,
+        newState: {
+          currentMode: 'config',
+          currentFlowExporterName: undefined
+        }
+      };
+    case 'config-flow-monitor':
+      return {
+        success: true,
+        newState: {
+          currentMode: 'config',
+          currentFlowMonitorName: undefined
+        }
+      };
     case 'config-ext-nacl':
       return {
         success: true,
@@ -287,6 +311,9 @@ function cmdEnd(
     case 'config-ipv6-acl':
     case 'config-route-map':
     case 'config-mst':
+    case 'config-flow-record':
+    case 'config-flow-exporter':
+    case 'config-flow-monitor':
     case 'ap-config':
     case 'dot11-config':
     case 'ssid-config':
@@ -300,7 +327,11 @@ function cmdEnd(
           currentNamedAcl: undefined,
           currentExtendedAcl: undefined,
           currentIpv6Acl: undefined,
-          currentApName: undefined
+          currentApName: undefined,
+          currentRouteMap: undefined,
+          currentFlowRecordName: undefined,
+          currentFlowExporterName: undefined,
+          currentFlowMonitorName: undefined
         }
       };
     case 'dhcp-config':

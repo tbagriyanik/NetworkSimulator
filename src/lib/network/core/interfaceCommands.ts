@@ -1,6 +1,7 @@
 import type { CommandHandler } from './commandTypes';
 import type { SwitchState } from '../types';
 import { buildRunningConfig } from './configBuilder';
+import { ospfInterfaceHandlers } from './interface/cmd.ospf';
 
 const getTargetPortKey = (state: SwitchState): string | undefined => {
   if (!state.currentInterface) return undefined;
@@ -111,15 +112,25 @@ const cmdIpFlowInterface: CommandHandler = (state, input, _ctx) => {
   if (!port) return { success: false, error: '% Interface not found' };
 
   const isNo = /^no\s+/i.test(input);
-  const isIngress = /ingress/i.test(input);
-  const isEgress = /egress/i.test(input);
+  const monitorMatch = input.match(/^(?:no\s+)?ip\s+flow\s+monitor\s+(\S+)$/i);
 
-  if (isNo) {
-    if (isIngress) port.netflowIngress = false;
-    if (isEgress) port.netflowEgress = false;
+  if (monitorMatch) {
+    if (isNo) {
+      port.flowMonitor = undefined;
+    } else {
+      port.flowMonitor = monitorMatch[1];
+      port.netflowIngress = true;
+    }
   } else {
-    if (isIngress) port.netflowIngress = true;
-    if (isEgress) port.netflowEgress = true;
+    const isIngress = /ingress/i.test(input);
+    const isEgress = /egress/i.test(input);
+    if (isNo) {
+      if (isIngress) port.netflowIngress = false;
+      if (isEgress) port.netflowEgress = false;
+    } else {
+      if (isIngress) port.netflowIngress = true;
+      if (isEgress) port.netflowEgress = true;
+    }
   }
 
   const newState = { ports };
@@ -216,6 +227,11 @@ import {
   cmdMacAccessGroup,
   cmdNoMacAccessGroup,
   cmdSourceTemplate,
+  cmdVxlanMemberVniInterface,
+  cmdVxlanSourceInterfaceInterface,
+  cmdVxlanIngressReplicationInterface,
+  cmdIpPolicyRouteMap,
+  cmdNoIpPolicyRouteMap,
 } from './interface/cmd.ipAddress';
 
 import {
@@ -230,6 +246,16 @@ import {
   cmdChannelGroup,
   cmdNoChannelGroup,
 } from './interface/cmd.spanningTree';
+
+import {
+  cmdSwitchportModePvlan,
+  cmdSwitchportPvlanHostAssociation,
+  cmdSwitchportPvlanMapping,
+  cmdSpanningTreeGuardRoot,
+  cmdSpanningTreeBpdufilter,
+  cmdSwitchportBackupInterface,
+  cmdNoSwitchportBackupInterface,
+} from './interface/cmd.switchport';
 
 import {
   cmdStandbyIp,
@@ -398,6 +424,11 @@ export const interfaceHandlers: Record<string, CommandHandler> = {
   'no mpls ip': cmdMplsIpInterface,
   'ip vrf forwarding': cmdIpVrfForwarding,
   'no ip vrf forwarding': cmdIpVrfForwarding,
+  'member vni': cmdVxlanMemberVniInterface,
+  'source-interface': cmdVxlanSourceInterfaceInterface,
+  'ingress-replication': cmdVxlanIngressReplicationInterface,
+  'ip policy route-map': cmdIpPolicyRouteMap,
+  'no ip policy route-map': cmdNoIpPolicyRouteMap,
   'zone-member security': cmdZoneMember,
   'no zone-member security': cmdZoneMember,
   'no ip dhcp snooping trust': cmdNoIpDhcpSnoopingTrust,
@@ -431,11 +462,23 @@ export const interfaceHandlers: Record<string, CommandHandler> = {
   'glbp': cmdGlbp,
   'spanning-tree guard loop': cmdSpanningTreeGuardLoop,
   'spanning-tree guard none': cmdSpanningTreeGuardLoop,
+  'spanning-tree guard root': cmdSpanningTreeGuardRoot,
+  'no spanning-tree guard root': cmdSpanningTreeGuardRoot,
+  'spanning-tree bpdufilter': cmdSpanningTreeBpdufilter,
+  'no spanning-tree bpdufilter': cmdSpanningTreeBpdufilter,
+  'switchport mode private-vlan': cmdSwitchportModePvlan,
+  'switchport private-vlan host-association': cmdSwitchportPvlanHostAssociation,
+  'switchport private-vlan mapping': cmdSwitchportPvlanMapping,
+  'switchport backup interface': cmdSwitchportBackupInterface,
+  'no switchport backup interface': cmdNoSwitchportBackupInterface,
   'ip flow ingress': cmdIpFlowInterface,
   'ip flow egress': cmdIpFlowInterface,
   'no ip flow ingress': cmdIpFlowInterface,
   'no ip flow egress': cmdIpFlowInterface,
+  'ip flow monitor': cmdIpFlowInterface,
+  'no ip flow monitor': cmdIpFlowInterface,
   'mac access-group': cmdMacAccessGroup,
   'no mac access-group': cmdNoMacAccessGroup,
   'source template': cmdSourceTemplate,
+  ...ospfInterfaceHandlers,
 };

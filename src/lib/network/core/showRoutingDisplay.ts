@@ -49,8 +49,15 @@ export {
   cmdShowIpv6Neighbors,
   cmdShowIpFlowExport,
   cmdShowIpCacheFlow,
+  cmdShowFlowRecord,
+  cmdShowFlowExporter,
+  cmdShowFlowMonitor,
   cmdShowVrf,
   cmdShowMpls,
+  cmdShowVlanPrivateVlan,
+  cmdShowInterfacesBackup,
+  cmdShowNveInterface,
+  cmdShowEvpn,
 } from './showServicesDisplay';
 
 export {

@@ -13,7 +13,8 @@ import {
   isIpv6InNetwork,
   isIpInNetwork,
   ipToNumber,
-  getPrefixLength
+  getPrefixLength,
+  isTrackedRouteActive
 } from './routing/routingUtils';
 import { calculateRipRoutes, calculateRipngRoutes } from './routing/ripRouting';
 import { recalculateBgpNeighbors, calculateBgpRoutes } from './routing/bgpRouting';
@@ -28,7 +29,8 @@ export {
   isIpv6InNetwork,
   ipToNumber,
   calculateBgpRoutes,
-  recalculateBgpNeighbors
+  recalculateBgpNeighbors,
+  isTrackedRouteActive
 };
 
 /**
@@ -92,12 +94,12 @@ function buildRoutingTable(
     }
   }
 
-  // 2. Static routes
+  // 2. Static routes (floating static: route with a track object is only installed while the track is Up)
   if (state.staticRoutes) {
-    routes.push(...state.staticRoutes);
+    routes.push(...state.staticRoutes.filter(r => isTrackedRouteActive(state, r)));
   }
   if (state.ipv6StaticRoutes) {
-    routes.push(...state.ipv6StaticRoutes);
+    routes.push(...state.ipv6StaticRoutes.filter(r => isTrackedRouteActive(state, r)));
   }
 
   // 3. Dynamic routes (Learned or configured)
@@ -264,10 +266,46 @@ export function getAdministrativeDistance(route: Route): number {
 }
 
 /**
- * Find best route to destination IP with full decision details (LPM, AD, Metric)
+ * Find best route to destination IP with full decision details (LPM, AD, Metric, PBR)
  */
-export function findRouteDetailed(destinationIp: string, routingTable: Route[]): RouteDecisionDetails | null {
+export function findRouteDetailed(
+  destinationIp: string,
+  routingTable: Route[],
+  pbrConfig?: { ports?: Record<string, any>; routeMaps?: Record<string, any[]> }
+): RouteDecisionDetails | null {
   if (!destinationIp) return null;
+
+  // 0. Check Policy-Based Routing (PBR) override first if configured
+  if (pbrConfig?.ports && pbrConfig?.routeMaps) {
+    for (const port of Object.values(pbrConfig.ports)) {
+      if (port.policyRouteMap && pbrConfig.routeMaps[port.policyRouteMap]) {
+        const clauses = pbrConfig.routeMaps[port.policyRouteMap];
+        const pbrClause = clauses.find((c: any) => c.setRules?.nextHop);
+        if (pbrClause?.setRules?.nextHop) {
+          const nextHop = pbrClause.setRules.nextHop;
+          const pbrRoute: Route = {
+            destination: '0.0.0.0',
+            subnetMask: '0.0.0.0',
+            nextHop: nextHop,
+            type: 'static',
+            code: 'PBR',
+            metric: 0,
+            administrativeDistance: 0
+          };
+          return {
+            route: pbrRoute,
+            destinationIp,
+            matchedPrefix: 'PBR Policy Match',
+            prefixLength: 0,
+            administrativeDistance: 0,
+            metric: 0,
+            type: 'static',
+            explanation: `PBR policy-map ${port.policyRouteMap} forced next-hop ${nextHop}`
+          };
+        }
+      }
+    }
+  }
 
   let bestRoute: Route | null = null;
   let bestPrefixLength = -1;
@@ -300,10 +338,6 @@ export function findRouteDetailed(destinationIp: string, routingTable: Route[]):
     const ad = getAdministrativeDistance(route);
     const metric = route.metric ?? 0;
 
-    // Selection rules:
-    // 1. Longest Prefix Match (higher prefix length)
-    // 2. Lower Administrative Distance (AD)
-    // 3. Lower Metric
     if (prefixLen > bestPrefixLength) {
       bestPrefixLength = prefixLen;
       bestAd = ad;
@@ -340,8 +374,8 @@ export function findRouteDetailed(destinationIp: string, routingTable: Route[]):
 /**
  * Find best route to destination IP
  */
-export function findRoute(destinationIp: string, routingTable: Route[]): Route | null {
-  const detailed = findRouteDetailed(destinationIp, routingTable);
+export function findRoute(destinationIp: string, routingTable: Route[], pbrConfig?: { ports?: Record<string, any>; routeMaps?: Record<string, any[]> }): Route | null {
+  const detailed = findRouteDetailed(destinationIp, routingTable, pbrConfig);
   return detailed ? detailed.route : null;
 }
 
@@ -423,12 +457,12 @@ function buildBasicRoutingTable(state: SwitchState): Route[] {
     }
   }
 
-  // 2. Static routes
+  // 2. Static routes (floating static: route with a track object is only installed while the track is Up)
   if (state.staticRoutes) {
-    routes.push(...state.staticRoutes);
+    routes.push(...state.staticRoutes.filter(r => isTrackedRouteActive(state, r)));
   }
   if (state.ipv6StaticRoutes) {
-    routes.push(...state.ipv6StaticRoutes);
+    routes.push(...state.ipv6StaticRoutes.filter(r => isTrackedRouteActive(state, r)));
   }
 
   // 3. Dynamic routes

@@ -148,10 +148,23 @@ export function validateL3Routing(deps: L3RoutingDeps): L3RoutingResult {
         // BOLT: Use pre-resolved safeDeviceStates
         const state = safeDeviceStates.get(deviceId);
         if (device && (device.type === 'router' || device.type === 'switchL3') && state?.ipRouting) {
+          // Check for PBR (Policy-Based Routing)
+          let hasPbrRoute = false;
+          for (const p of Object.values(state.ports || {})) {
+            if (p.policyRouteMap && state.routeMaps?.[p.policyRouteMap]) {
+              const clauses = state.routeMaps[p.policyRouteMap];
+              const pbrClause = clauses.find(c => c.setRules?.nextHop);
+              if (pbrClause) {
+                hasPbrRoute = true;
+                break;
+              }
+            }
+          }
+
           // Check if this router has a route to the destination network
           const routingTable = getRoutingTable(deviceId, safeDeviceStates, devices, connections);
           const route = findRoute(resolvedTargetIp, routingTable);
-          if (route || targetDevice.type === 'cloud') {
+          if (hasPbrRoute || route || targetDevice.type === 'cloud') {
             hasL3Gateway = true;
             break;
           } else {
