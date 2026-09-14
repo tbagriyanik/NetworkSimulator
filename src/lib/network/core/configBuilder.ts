@@ -934,6 +934,23 @@ export function buildRunningConfig(state: SwitchState): string[] {
         lines.push('!');
     }
 
+    // SPAN / RSPAN monitor sessions
+    if (state.spanSessions && Object.keys(state.spanSessions).length > 0) {
+        Object.values(state.spanSessions).forEach(sess => {
+            sess.sourceInterfaces.forEach(src => {
+                lines.push(`monitor session ${sess.id} source interface ${src}`);
+            });
+            if (sess.destinationInterface) {
+                lines.push(`monitor session ${sess.id} destination interface ${sess.destinationInterface}`);
+            }
+            if (sess.remoteVlan) {
+                const rspanType = sess.type === 'rspan-destination' ? 'destination' : 'source';
+                lines.push(`monitor session ${sess.id} ${rspanType} remote vlan ${sess.remoteVlan}`);
+            }
+        });
+        lines.push('!');
+    }
+
     lines.push('end');
 
     return lines;

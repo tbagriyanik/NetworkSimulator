@@ -573,11 +573,27 @@ function cmdShowUdld(state: SwitchState, input: string, _ctx: CommandContext): C
   return { success: true, output };
 }
 
-/**
- * Show Monitor (SPAN)
- */
-function cmdShowMonitor(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  return { success: true, output: '\n% No SPAN sessions configured\n' };
+export function cmdShowMonitor(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  if (!state.spanSessions || Object.keys(state.spanSessions).length === 0) {
+    return { success: true, output: '\n% No SPAN sessions configured\n' };
+  }
+
+  let output = '\n';
+  for (const sess of Object.values(state.spanSessions)) {
+    output += `Session ${sess.id}\n`;
+    output += `---------\n`;
+    output += `Type                   : ${sess.type || 'local'}\n`;
+    output += `Source Ports           : ${sess.sourceInterfaces.length > 0 ? sess.sourceInterfaces.join(', ') : 'None'}\n`;
+    if (sess.destinationInterface) {
+      output += `Destination Port       : ${sess.destinationInterface}\n`;
+    }
+    if (sess.remoteVlan) {
+      output += `Remote VLAN            : ${sess.remoteVlan}\n`;
+    }
+    output += `Status                 : ${sess.enabled ? 'Active' : 'Disabled'}\n\n`;
+  }
+
+  return { success: true, output };
 }
 
 /**

@@ -42,6 +42,7 @@ import { processNatPacket } from './natEngine';
 import { evaluateWredDrop } from '@/lib/network/qosScheduler';
 import { evaluateZbf } from './zbfEngine';
 import { evaluateIpv6FirstHopSecurity } from './ipv6FirstHopSecurity';
+import { getSpanMirrorDestinations } from '@/lib/network/portMirroring';
 
 // ─────────────────────────────────────────────
 // Pipeline Trace Types
@@ -64,6 +65,7 @@ export type PipelineStage =
   | 'acl-egress'
   | 'qos'
   | 'netflow'
+  | 'span-mirror'
   | 'egress'
   | 'capture';
 
@@ -529,6 +531,26 @@ export function runHopPipeline(
     captureNetFlow(state, frame, ingressPortId, egressPorts, now);
     traces.push(makeTrace(hopIndex, device, ingressPortId, 'netflow', 'pass',
       `NetFlow accounting: ${frame.srcIp || ''}→${frame.dstIp || ''} (${egressPorts.length} egress)`, frame));
+  }
+
+  // ── Stage 10d: SPAN / RSPAN Port Mirroring ──────────────────────────────
+  if (state && ingressPortId) {
+    const spanDests = getSpanMirrorDestinations(state, ingressPortId);
+    for (const dest of spanDests) {
+      if (dest.destinationInterface) {
+        if (!egressPorts.includes(dest.destinationInterface)) {
+          egressPorts.push(dest.destinationInterface);
+        }
+        traces.push(makeTrace(hopIndex, device, dest.destinationInterface, 'span-mirror', 'forward',
+          `SPAN: Mirroring ingress traffic from ${ingressPortId} to destination ${dest.destinationInterface}`, frame));
+      } else if (dest.remoteVlan) {
+        traces.push(makeTrace(hopIndex, device, ingressPortId, 'span-mirror', 'forward',
+          `RSPAN: Mirroring ingress traffic from ${ingressPortId} onto remote VLAN ${dest.remoteVlan}`, {
+            ...frame,
+            vlanId: dest.remoteVlan,
+          }));
+      }
+    }
   }
 
   // ── Stage 11: Egress + Packet Capture ────────────────────────────────
