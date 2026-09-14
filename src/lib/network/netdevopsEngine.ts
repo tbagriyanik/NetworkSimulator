@@ -511,7 +511,7 @@ export function executeNetDevOpsPythonScript(
   const affectedDevices: string[] = [];
   const updatedStates = new Map<string, SwitchState>(deviceStates ? new Map(deviceStates) : new Map());
 
-  logs.push('[NetDevOps Engine] Initializing virtual Python 3 environment...');
+  logs.push('[NetDevOps Engine] Initializing virtual Python environment...');
   logs.push('[NetDevOps Engine] Loaded modules: netmiko, requests, json, sys, re, time.');
 
   const lines = scriptCode.split('\n');

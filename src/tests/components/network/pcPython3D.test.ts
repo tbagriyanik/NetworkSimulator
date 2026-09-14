@@ -3,7 +3,7 @@ import { executePythonScript } from '@/components/network/pc-panel/pcPythonRunne
 import { getActiveDevice3DScene } from '@/components/network/pc-panel/pcPython3DModule';
 import { generate3DSceneHtml } from '@/components/network/pc-panel/pcPython3DRenderer';
 
-describe('Embedded Python 3D Engine (scene3d)', () => {
+describe('Python 3D Engine (scene3d)', () => {
   it('creates an interactive 3D scene with primitives, lights, and shows it', () => {
     const code = `
 from scene3d import Scene, Plane, Cube, Sphere, Cylinder, Prism

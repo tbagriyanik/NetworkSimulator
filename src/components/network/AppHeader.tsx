@@ -308,8 +308,15 @@ export function AppHeader({
                       }`}
                     className={cn(
                       "h-8 w-8 rounded flex items-center justify-center transition-all ui-hover-surface",
-                      helpLevel === 'beginner' ? 'text-success-500' : helpLevel === 'intermediate' ? 'text-warning-500' : 'text-error-500'
+                      helpLevel === 'beginner'
+                        ? 'text-success-500 hover:text-success-600 active:text-success-600'
+                        : helpLevel === 'intermediate'
+                        ? 'text-warning-500 hover:text-warning-600 active:text-warning-600'
+                        : 'text-error-500 hover:text-error-600 active:text-error-600',
+                      isExamActive ? 'opacity-40 cursor-not-allowed' : '',
+                      "touch-hover"
                     )}
+                    disabled={isExamActive}
                     onClick={() => {
                       const next: Record<string, 'beginner' | 'intermediate' | 'exam'> = {
                         beginner: 'intermediate',
