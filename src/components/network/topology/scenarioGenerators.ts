@@ -1432,7 +1432,7 @@ function generateNetautoPython(_pcCount: number): Ctx {
   routers.forEach(r => {
     const { state: rState } = addRouter(ctx, r.id, r.name, r.mac, r.x, r.y, {
       security: {
-        users: [{ username: 'admin', privilege: 15, password: 'ciscopassword' }],
+        users: [{ username: 'admin', privilege: 15, password: 'password' }],
         vtyLines: { login: true, transportInput: ['ssh', 'telnet'], execTimeout: { minutes: 15, seconds: 0 } },
       },
     });

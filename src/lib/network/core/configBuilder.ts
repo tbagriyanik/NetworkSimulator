@@ -305,7 +305,7 @@ export function buildRunningConfig(state: SwitchState): string[] {
     // LISP Configuration
     if (state.lispConfig?.enabled) {
         lines.push('router lisp');
-        state.lispConfig.eidMappings?.forEach((m: any) => {
+        state.lispConfig.eidMappings.forEach((m) => {
             lines.push(` database-mapping ${m.eidPrefix} ${m.rlocIp}`);
         });
         lines.push('!');

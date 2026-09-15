@@ -265,13 +265,23 @@ export function getAdministrativeDistance(route: Route): number {
   }
 }
 
+interface PbrPortConfig {
+  policyRouteMap?: string;
+}
+
+interface PbrRouteMapClause {
+  setRules?: {
+    nextHop?: string;
+  };
+}
+
 /**
  * Find best route to destination IP with full decision details (LPM, AD, Metric, PBR)
  */
 export function findRouteDetailed(
   destinationIp: string,
   routingTable: Route[],
-  pbrConfig?: { ports?: Record<string, any>; routeMaps?: Record<string, any[]> }
+  pbrConfig?: { ports?: Record<string, PbrPortConfig>; routeMaps?: Record<string, PbrRouteMapClause[]> }
 ): RouteDecisionDetails | null {
   if (!destinationIp) return null;
 
@@ -280,7 +290,7 @@ export function findRouteDetailed(
     for (const port of Object.values(pbrConfig.ports)) {
       if (port.policyRouteMap && pbrConfig.routeMaps[port.policyRouteMap]) {
         const clauses = pbrConfig.routeMaps[port.policyRouteMap];
-        const pbrClause = clauses.find((c: any) => c.setRules?.nextHop);
+        const pbrClause = clauses.find((c) => c.setRules?.nextHop);
         if (pbrClause?.setRules?.nextHop) {
           const nextHop = pbrClause.setRules.nextHop;
           const pbrRoute: Route = {

@@ -1,4 +1,4 @@
-﻿import type { SwitchState } from '../types';
+import type { SwitchState } from '../types';
 import type { CanvasDevice, CanvasConnection, CanvasNote, DeviceType } from '@/components/network/networkTopology.types';
 import { generateRandomLinkLocalIpv4 } from '../linkLocal';
 import type { FirewallRule, ProjectData } from './types';
@@ -203,6 +203,51 @@ const createFirewallDevice = (id: string, name: string, x: number, y: number, ip
   };
 };
 
+const createPrinterDevice = (id: string, name: string, x: number, y: number, ip: string, gateway?: string): CanvasDevice => ({
+  id,
+  type: 'printer',
+  name,
+  x,
+  y,
+  ip,
+  vlan: 1,
+  subnet: '255.255.255.0',
+  gateway,
+  macAddress: deterministicMac(id),
+  status: 'online',
+  services: {
+    http: { enabled: true, mode: 'simple', content: `<h1>${name} Control Panel</h1><p>Status: Ready | Paper: OK | Toner: 95%</p>` }
+  },
+  ports: [
+    { id: 'eth0', label: 'Eth0', status: 'disconnected' as const, shutdown: false }
+  ]
+});
+
+const createMobileDevice = (id: string, name: string, x: number, y: number, ip: string, wifiConfig?: { ssid: string; password?: string; security?: 'open' | 'wpa2' | 'wpa3' }, gateway?: string): CanvasDevice => ({
+  id,
+  type: 'mobile',
+  name,
+  x,
+  y,
+  ip,
+  vlan: 1,
+  subnet: '255.255.255.0',
+  gateway,
+  macAddress: deterministicMac(id),
+  status: 'online',
+  wifi: {
+    enabled: true,
+    ssid: wifiConfig?.ssid || '',
+    security: wifiConfig?.security || 'open',
+    password: wifiConfig?.password || '',
+    channel: '2.4GHz',
+    mode: 'client'
+  },
+  ports: [
+    { id: 'wlan0', label: 'WLAN0', status: 'disconnected' as const, shutdown: false, wifi: { ssid: wifiConfig?.ssid || '', security: wifiConfig?.security || 'open', channel: '2.4GHz', mode: 'client' } }
+  ]
+});
+
 const createWlcDevice = (id: string, name: string, x: number, y: number, ip: string = '192.168.1.1'): CanvasDevice => {
   const baseMac = deterministicMac(id);
 
@@ -217,13 +262,13 @@ const createWlcDevice = (id: string, name: string, x: number, y: number, ip: str
     status: 'online',
     switchModel: 'NS-WLC-2504',
     ports: [
-      { id: 'console', label: 'Console', status: 'disconnected' as const },
-      { id: 'service', label: 'Service', status: 'disconnected' as const, macAddress: deterministicMac(`${id}:service`) },
-      { id: 'gi0/0', label: 'Gi0/0', status: 'disconnected' as const, macAddress: deterministicMac(`${id}:gi0/0`) },
-      { id: 'gi0/1', label: 'Gi0/1', status: 'disconnected' as const, macAddress: deterministicMac(`${id}:gi0/1`) },
-      { id: 'gi0/2', label: 'Gi0/2', status: 'disconnected' as const, macAddress: deterministicMac(`${id}:gi0/2`) },
-      { id: 'gi0/3', label: 'Gi0/3', status: 'disconnected' as const, macAddress: deterministicMac(`${id}:gi0/3`) },
-      { id: 'wlan0', label: 'WLAN0', status: 'disconnected' as const, macAddress: deterministicMac(`${id}:wlan0`) }
+      { id: 'console', label: 'Console', status: 'disconnected' as const, shutdown: false },
+      { id: 'service', label: 'Service', status: 'disconnected' as const, macAddress: deterministicMac(`${id}:service`), shutdown: false },
+      { id: 'gi0/0', label: 'Gi0/0', status: 'disconnected' as const, macAddress: deterministicMac(`${id}:gi0/0`), shutdown: false },
+      { id: 'gi0/1', label: 'Gi0/1', status: 'disconnected' as const, macAddress: deterministicMac(`${id}:gi0/1`), shutdown: false },
+      { id: 'gi0/2', label: 'Gi0/2', status: 'disconnected' as const, macAddress: deterministicMac(`${id}:gi0/2`), shutdown: false },
+      { id: 'gi0/3', label: 'Gi0/3', status: 'disconnected' as const, macAddress: deterministicMac(`${id}:gi0/3`), shutdown: false },
+      { id: 'wlan0', label: 'WLAN0', status: 'disconnected' as const, macAddress: deterministicMac(`${id}:wlan0`), shutdown: false }
     ]
   };
 };
@@ -297,6 +342,8 @@ export {
   createPcDevice,
   createRouterDevice,
   createIotDevice,
+  createPrinterDevice,
+  createMobileDevice,
   createFirewallDevice,
   createWlcDevice,
   connectPorts,

@@ -75,3 +75,8 @@ export interface OspfVirtualLinkConfig {
   authKey?: string;
   status: 'up' | 'down';
 }
+
+export type { LispEidMapping, LispConfig } from '../lispEngine';
+export type { CoppClassPolicy, CoppConfig } from '../coppEngine';
+
+

@@ -9,9 +9,9 @@ import type {
   LacpPortRecord,
 } from './protocols/protocolStateMachines';
 import type { Route, BgpNeighbor } from './types/routingTypes';
-import type { NveInterface, EigrpNamedInstance, OspfVirtualLinkConfig } from './types/protocols';
+import type { NveInterface, EigrpNamedInstance, OspfVirtualLinkConfig, LispConfig, CoppConfig } from './types/protocols';
 
-export type { Route, BgpNeighbor, NveInterface, EigrpNamedInstance, OspfVirtualLinkConfig };
+export type { Route, BgpNeighbor, NveInterface, EigrpNamedInstance, OspfVirtualLinkConfig, LispConfig, CoppConfig };
 export * from './types/ports';
 export * from './types/routingTypes';
 export * from './types/protocols';
@@ -612,9 +612,9 @@ export interface SwitchState {
   vrfInstances?: Record<string, { name: string; rd?: string; interfaces: string[] }>;
   qosPolicies?: Record<string, { name: string; classes: { name: string; priorityPercent?: number; bandwidthKbps?: number }[] }>;
   nveInterfaces?: Record<string, NveInterface>;
-  vxlanConfig?: any;
-  lispConfig?: any;
-  coppConfig?: any;
+  vxlanConfig?: import('./vxlanEvpn').VxlanConfig;
+  lispConfig?: LispConfig;
+  coppConfig?: CoppConfig;
   eigrpNamedInstances?: Record<string, EigrpNamedInstance>;
   ospfVirtualLinks?: Record<string, OspfVirtualLinkConfig>;
   bootTime: number;

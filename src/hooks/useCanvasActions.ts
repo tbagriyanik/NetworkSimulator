@@ -174,7 +174,7 @@ export interface UseCanvasActionsProps {
   notes: CanvasNote[];
   setNotes: React.Dispatch<React.SetStateAction<CanvasNote[]>>;
 
-  deviceStates: Map<string, any> | undefined | null;
+  deviceStates: Map<string, SwitchState> | undefined | null;
   saveToHistory: () => void;
   isExamActive: boolean;
   isExamEditorOpen: boolean;
@@ -189,11 +189,11 @@ export interface UseCanvasActionsProps {
   onDeviceSelect: (type: DeviceType, id: string, switchModel?: string, name?: string, isNew?: boolean, device?: CanvasDevice) => void;
   onDeviceDelete?: (deviceId: string) => void;
 
-  setConnectionStart: React.Dispatch<React.SetStateAction<any>>;
+  setConnectionStart: React.Dispatch<React.SetStateAction<{ deviceId: string; portId: string; point: { x: number; y: number } } | null>>;
   setIsDrawingConnection: React.Dispatch<React.SetStateAction<boolean>>;
   language: string;
 
-  t: any;
+  t: (key: string) => string;
 }
 
 export function useCanvasActions({

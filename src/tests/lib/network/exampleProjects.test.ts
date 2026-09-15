@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { exampleProjects, validateExampleProject } from '@/lib/network/exampleProjects';
 
 describe('exampleProjects', () => {
@@ -61,7 +61,7 @@ describe('exampleProjects', () => {
 
   describe('Project data integrity', () => {
     it('should have valid device types in all projects', () => {
-      const validTypes = ['pc', 'switchL2', 'switchL3', 'router', 'iot', 'firewall', 'wlc'];
+      const validTypes = ['pc', 'switchL2', 'switchL3', 'router', 'iot', 'firewall', 'wlc', 'printer', 'mobile', 'hub', 'cloud'];
       const projects = exampleProjects('en');
 
       for (const project of projects) {
@@ -225,6 +225,9 @@ describe('exampleProjects', () => {
         'eigrp-basic-1',
         'ipv6-advanced-lab',
         'all-services-lab',
+        'office-printer-iot',
+        'netauto-python-lab',
+        'dmz-firewall-enterprise',
       ];
 
       for (const expectedId of expectedIds) {

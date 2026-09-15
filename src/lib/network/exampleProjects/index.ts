@@ -45,6 +45,9 @@ import troubleGateway from './trouble-gateway';
 import troubleDuplicate from './trouble-duplicate';
 import troubleAcl from './trouble-acl';
 import realWorldComprehensive from './real-world-comprehensive';
+import officePrinterIot from './office-printer-iot';
+import netautoPythonLab from './netauto-python-lab';
+import dmzFirewallEnterprise from './dmz-firewall-enterprise';
 
 const builders = [
   basicSecure, singleVlan, trunkVtp, roas, legacyRouting,
@@ -52,11 +55,11 @@ const builders = [
   stpRedundant, stpTriangle, campusNetwork, wifiIntermediate,
   wlcEnterpriseWireless, wapMultiSsid,
   iotWifiLab, greenhouseIotLab, routerSsh1pc, routerDhcp2pc,
-  firewallBasic, nativeVlanBasic, stp3switchPvst, l3Switch2vlan,
+  firewallBasic, dmzFirewallEnterprise, nativeVlanBasic, stp3switchPvst, l3Switch2vlan,
   staticL3Routing, ripDynamicRouting, aclStandardBasic, aclExtendedBasic,
   natStaticBasic, natDynamicBasic, natPatBasic, hsrpRedundancyBasic,
   ospfMultiArea1, ospfMultiArea2, eigrpBasic1, ipv6AdvancedLab,
-  ipv6MasterLab, allServicesLab,
+  ipv6MasterLab, allServicesLab, officePrinterIot, netautoPythonLab,
   troubleIvr, troubleOspfArea, troubleVlan, troubleMask,
   troubleShutdown, troubleGateway, troubleDuplicate, troubleAcl, realWorldComprehensive
 ];

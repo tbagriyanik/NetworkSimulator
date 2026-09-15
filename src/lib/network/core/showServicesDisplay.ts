@@ -1,5 +1,5 @@
 import type { CommandContext } from './commandTypes';
-import type { SwitchState, CommandResult } from '../types';
+import type { SwitchState, CommandResult, LispEidMapping, CoppClassPolicy } from '../types';
 import { isIpInNetwork, getPrefixLength } from './showHelpers';
 import { getOrCreateMplsConfig, getLdpDiscoveryInfo, getLdpNeighborTable, getLfibTable, getLibTable, generateLfib, generateLib } from '../mplsLdpEngine';
 import { getEvpnMacTable, getEvpnNeighborTable, getNveInterfaceTable, getOrCreateVxlanConfig } from '../vxlanEvpn';
@@ -770,7 +770,7 @@ export function cmdShowLisp(state: SwitchState, _input: string, _ctx: CommandCon
   let output = '\nLISP Routing Table / Map-Cache\n';
   output += 'EID Prefix           RLOC IP          Priority  Weight\n';
   output += '------------------   ---------------  --------  ------\n';
-  lisp.eidMappings?.forEach((m: any) => {
+  lisp.eidMappings?.forEach((m: LispEidMapping) => {
     output += `${m.eidPrefix.padEnd(20)} ${(m.rlocIp || 'site-map').padEnd(16)} ${String(m.priority || 1).padEnd(9)} ${m.weight || 100}\n`;
   });
   return { success: true, output };
@@ -787,7 +787,7 @@ export function cmdShowControlPlane(state: SwitchState, _input: string, _ctx: Co
   let output = '\nControl-Plane Policing Status: Active\n';
   output += 'Class                Rate(pps)  Conforming(pkts)  Exceeded(pkts)\n';
   output += '-------------------  ---------  ----------------  --------------\n';
-  Object.values(copp.classPolicies || {}).forEach((p: any) => {
+  Object.values(copp.classPolicies || {}).forEach((p: CoppClassPolicy) => {
     output += `${p.className.padEnd(20)} ${String(p.policeRatePps).padEnd(10)} ${String(p.conformingPackets).padEnd(17)} ${p.exceededPackets}\n`;
   });
   return { success: true, output };

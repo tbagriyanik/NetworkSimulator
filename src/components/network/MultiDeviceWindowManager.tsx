@@ -99,7 +99,7 @@ export function MultiDeviceWindowManager({
           }`}
         >
           {/* Window Icons List */}
-          <div className="flex flex-col items-center gap-1 max-h-[70vh] overflow-y-auto overflow-x-visible custom-scrollbar p-0.5">
+          <div className="flex flex-col items-center gap-1 max-h-[70vh] overflow-y-auto overflow-x-hidden custom-scrollbar p-0.5">
             {openWindows.map((win) => {
               const device = topologyDevices.find((item) => item.id === win.id);
               const label = device?.name || win.id;
