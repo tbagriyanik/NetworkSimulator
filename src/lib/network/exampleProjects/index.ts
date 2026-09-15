@@ -68,14 +68,30 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
   const isTr = language === 'tr';
   return builders.map(build => {
     const project = build(isTr);
+
+    const formatProjectNoteText = (): string => {
+      const fault = project.injectedFaults?.[0];
+      if (fault) {
+        const faultDesc = typeof fault.description === 'string' ? fault.description : (isTr ? fault.description?.tr : fault.description?.en) || '';
+        const faultHint = fault.hint ? (typeof fault.hint === 'string' ? fault.hint : (isTr ? fault.hint.tr : fault.hint.en)) : '';
+        return isTr
+          ? `🔍 ${project.title}\n\n🎯 Amaç:\n${project.description}\n\n⚠️ Arıza Belirtisi:\n${faultDesc}\n\n💡 İpucu & Çözüm Yolu:\n${faultHint || 'Cihaz yapılandırmalarını ve arayüz durumlarını CLI komutlarıyla denetleyin.'}`
+          : `🔍 ${project.title}\n\n🎯 Objective:\n${project.description}\n\n⚠️ Fault Symptom:\n${faultDesc}\n\n💡 Hint & Troubleshooting:\n${faultHint || 'Inspect running configuration and interface statuses via CLI.'}`;
+      }
+
+      return isTr
+        ? `📋 ${project.title}\n\n🎯 Amaç ve Senaryo:\n${project.description}\n\n⚙️ Yapılandırma Detayı:\n${project.detail || 'Topoloji üzerindeki cihazlar hazır konfigürasyonlarla yüklenmiştir.'}\n\n🧪 Test & Doğrulama:\n• Uç cihazlar arasında ping ve servis erişimlerini test edin.\n• Cihaz konsollarından "show ip interface brief" ve yönlendirme tablolarını inceleyin.`
+        : `📋 ${project.title}\n\n🎯 Objective & Scenario:\n${project.description}\n\n⚙️ Configuration Details:\n${project.detail || 'Topology devices are initialized with active baseline configurations.'}\n\n🧪 Verification & Testing:\n• Test connectivity via ping and application service queries across hosts.\n• Inspect interface states and routing tables via "show ip interface brief".`;
+    };
+
     const overviewNote = {
       id: `${project.id}-overview`,
-      text: `${project.title}\n\n${project.description}`,
+      text: formatProjectNoteText(),
       x: 40,
       y: 40,
-      width: 420,
-      height: 180,
-      color: 'var(--color-warning-500)',
+      width: 520,
+      height: 240,
+      color: project.injectedFaults && project.injectedFaults.length > 0 ? 'var(--color-error-500)' : 'var(--color-primary-500)',
       font: 'verdana',
       fontSize: 12 as const,
       opacity: 0.75 as const,

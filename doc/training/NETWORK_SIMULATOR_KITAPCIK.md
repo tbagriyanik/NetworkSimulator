@@ -22,8 +22,10 @@ A browser-based network simulator for learning switching, routing, wireless, IoT
 
 Bu kitapçık projenin tüm kullanıcı, CLI, protokol, laboratuvar ve özellik bilgilerinin birincil kaynağıdır. Diğer Markdown dosyaları yalnızca kısa başvuru, kurulum veya geliştirici ayrıntısı içerir; aynı bilginin güncel sürümü burada tutulmalıdır.
 
-### Güncel özellik durumu (v5.5.0)
+### Güncel özellik durumu (v5.6.0)
 
+- **🏗️ 28 Kategori ve 49+ Örnek Proje Kataloğu (v5.6.0):** Otomatik Topoloji Üretici penceresinde 8 ana kategori (Temel, Topoloji, Veri Merkezi, Kablosuz, Servisler, Anahtarlama, Yönlendirme, Güvenlik) ve 28 hazır mimari senaryo (`scenarioGenerators.ts`, `topologyScenarios.ts`). Ofis Yazıcısı & Akıllı IoT Sensör, Python Ağ Otomasyonu (OOBM Filosu) ve Kurumsal DMZ Güvenlik Duvarı laboratuvarları (`office-printer-iot.ts`, `netauto-python-lab.ts`, `dmz-firewall-enterprise.ts`).
+- **📝 Yapılandırılmış Kılavuz & Açıklama Şablonu (v5.6.0):** Tüm örnek projeler ve üretilen senaryolar için 🎯 Amaç ve Senaryo Özeti, ⚙️ Yapılandırma Detayları, ⚠️ Arıza Belirtisi ve 🧪 Test & Doğrulama adımlarını içeren iki dilli (TR/EN) kanvas kılavuz notları.
 - **🛡️ Layer 2 Güvenlik Paketi (v5.5.0):** Dynamic ARP Inspection (`dai.ts`), IP Source Guard (`ipsg.ts`), Private VLAN (`pvlan.ts`), STP Root Guard / BPDU Filter ve Flex-Links active/standby failover paket engelleme motorları entegre edildi.
 - **🛣️ Gelişmiş L3 Yönlendirme & Protokol Paketleri (v5.5.0):** Policy-Based Routing (PBR - `ip policy route-map`), LISP (`lispEngine.ts`), CoPP CPU Koruması (`coppEngine.ts`), OSPF Auth/Stub/Passive-Interface, EIGRP Stub, Remote SPAN (RSPAN) ve iBGP / BGP Path Attributes motorları sisteme eklendi.
 - **🧊 3D Grafik Sahne Motoru & Katı Geometri (v5.4.0):** Gömülü Python terminalinde 3D nesneler (`Plane`, `Cube`, `Sphere`, `Cylinder`, `Prism`), nesneler arası yapıcı katı geometri (CSG `union` & `subtract`), materyal kaplama (renk, pürüzsüzlük, metaliklik, wireframe, opacity), ortam/güneş ışıklandırmaları ve masaüstünde sürüklenebilir `Python3DWindow` ile web tarayıcısı 3D görünüm desteği sağlandı (`pcPython3DModule.ts`, `pcPython3DRenderer.ts`, `Python3DWindow.tsx`).

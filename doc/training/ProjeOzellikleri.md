@@ -1,16 +1,22 @@
 # NetworkSimulator — Tam Özellik Envanteri / Full Feature Inventory
 
-**Sürüm / Version:** 5.5.0 · **Son doğrulama / Last verified:** 2026-09-14
+**Sürüm / Version:** 5.6.0 · **Son doğrulama / Last verified:** 2026-09-15
 
-## Son Ağ Simülasyonu Geliştirmeleri (2026-09-14 - v5.5.0)
+## Son Ağ Simülasyonu Geliştirmeleri (2026-09-15 - v5.6.0)
+
+| Özellik | Güncel kapsam ve sınır |
+|---|---|
+| **Otomatik Topoloji Üretici Kataloğu (28 Senaryo, 8 Kategori)** | 8 Kategori (Temel, Topoloji, Veri Merkezi, Kablosuz, Servisler, Anahtarlama, Yönlendirme, Güvenlik) altında 28 hazır topoloji senaryosu (`scenarioGenerators.ts`, `topologyScenarios.ts`, `TopologyGeneratorDialog.tsx`). Portlar varsayılan olarak `no shutdown` açık ve servisler entegre gelir. |
+| **Genişletilmiş Örnek Projeler Kataloğu (49 Proje)** | Modern Ofis (Ağ Yazıcısı, Akıllı İklim IoT Sensörü, Mobil Tablet), Python Ağ Otomasyonu (OOBM Yönetim Switch'i & 3 Router Filosu) ve Kurumsal DMZ Güvenlik Duvarı (NGFW Web & DNS Bölgesi) projeleri eklendi (`office-printer-iot.ts`, `netauto-python-lab.ts`, `dmz-firewall-enterprise.ts`). |
+| **Gelişmiş Yapılandırılmış Açıklamalar & Kılavuz Notları** | Tüm örnek projeler ve üretilen topolojiler için 🎯 Amaç, ⚙️ Mimari Yapılandırma, ⚠️ Arıza Belirtisi ve 🧪 Test & Doğrulama adımlarını içeren zengin kanvas kılavuz notları. |
+| **Açık Pencereler Dock İyileştirmesi & Tip Güvenliği** | Sol-orta açık pencereler dock'unda dikey kaydırma korunurken yatay taşma engellendi (`overflow-x-hidden`). Tüm motorlar ve hooks üzerinde `as any` temizliği ve sıkı TypeScript tip güvenliği sağlandı (`MultiDeviceWindowManager.tsx`, `useCanvasActions.ts`, `types.ts`). |
+
+## Önceki Geliştirmeler (2026-09-14 - v5.5.0)
 
 | Özellik | Güncel kapsam ve sınır |
 |---|---|
 | **Layer 2 Güvenlik Paketi** | Dynamic ARP Inspection (`dai.ts`), IP Source Guard (`ipsg.ts`), Private VLAN (`pvlan.ts`), STP Root Guard / BPDU Filter ve Flex-Links active/standby failover motorları. |
 | **Gelişmiş L3 Yönlendirme & Protokol Entegrasyonları** | Policy-Based Routing (PBR - `ip policy route-map`), LISP (`lispEngine.ts`), CoPP CPU Koruması (`coppEngine.ts`), OSPF Auth/Stub/Passive-Interface, EIGRP Stub ve iBGP / BGP Path Attributes. |
-
-| Özellik | Güncel kapsam ve sınır |
-|---|---|
 | **3D Grafik Sahne Motoru** | Embedded Python ile 3D nesneler (`Plane`, `Cube`, `Sphere`, `Cylinder`, `Prism`), CSG `union`/`subtract`, materyal/ışık/gökyüzü ayarları, `Python3DWindow` ve browser 3D görünümü (`pcPython3DModule.ts`, `pcPython3DRenderer.ts`). |
 | **Dinamik Müzik ve Ses Sentetörü** | Embedded Python ile Web Audio API tabanlı nota, polifonik akor (`play_chord`), melodi (`play_melody`), ses efektleri (`play_sfx`) sentezleme ve diske WAV kaydetme (`pcAudioPlayer.ts`, `pcPythonAudioModule.ts`). |
 | **Görsel Form & GUI Arayüz Motoru** | Embedded Python ile masaüstü pencereli form uygulamaları (`PythonFormWindow`), `tkinter`/`form`/`ttk` bileşenleri (`Button`, `Label`, `Entry`, `Text`, `Combobox`, `Checkbutton`, `Radiobutton`), `pack`/`grid`/`place` yerleşim motoru (`pcPythonFormModule.ts`, `PythonFormWindow.tsx`). |

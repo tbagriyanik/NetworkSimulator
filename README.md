@@ -1,12 +1,12 @@
 # Network Simulator
 
-![Version](https://img.shields.io/badge/version-5.5.0-blue)
+![Version](https://img.shields.io/badge/version-5.6.0-blue)
 ![Next.js](https://img.shields.io/badge/Next.js-16.3.5-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19.2.8-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-7.0.2-3178C6?logo=typescript&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-4.3.3-06B6D4?logo=tailwindcss&logoColor=white)
 ![FOSS](https://img.shields.io/badge/FOSS-Free%20Open%20Source-brightgreen)
-![Total Lines](https://img.shields.io/badge/total--lines-~202k-lightgrey)
+![Total Lines](https://img.shields.io/badge/total--lines-~203k-lightgrey)
 
 A comprehensive, client-side, browser-based network simulator for learning switching, routing, wireless, security, IoT, CLI terminal workflows.
 
@@ -34,6 +34,7 @@ npm run check
 
 ## 🚀 Key Features / Öne Çıkan Özellikler
 
+- **🏗️ 28 Kategori ve 49+ Örnek Proje Kataloğu (v5.6.0):** Otomatik Topoloji Üretici penceresinde 8 ana kategori (Temel, Topoloji, Veri Merkezi, Kablosuz, Servisler, Anahtarlama, Yönlendirme, Güvenlik) ve 28 hazır mimari senaryo. Ofis Yazıcısı & Akıllı IoT Sensör, Python Ağ Otomasyonu (OOBM Filosu) ve Kurumsal DMZ Güvenlik Duvarı laboratuvarları.
 - **💻 Gelişmiş CLI & Ağ İşletim Sistemi (NOS) Simülasyonu:** Switch (L2/L3), Router, Güvenlik Duvarı (Firewall), WLC, PC, IoT ve Hub cihazları için tam kapsamlı terminal ve komut motoru.
 - **🛡️ L2 Güvenlik Paketi:** Dynamic ARP Inspection (DAI), IP Source Guard (IPSG), Private VLAN (PVLAN), STP Root Guard / BPDU Filter ve Flex-Links aktif paket engelleme motorları.
 - **🛣️ Gelişmiş Yönlendirme & L3 Servisleri:** PBR (Policy-Based Routing), LISP (Locator/ID Separation), CoPP (Control Plane Policing CPU koruması), OSPF Auth/Stub, EIGRP Stub ve iBGP / BGP Path Attributes.
@@ -49,11 +50,11 @@ npm run check
 
 | Metrik / Metric | Değer / Value |
 | --- | --- |
-| Version / Sürüm | 5.5.0 |
-| Total Lines / Toplam Satır (`src/`) | ~202,102 |
-| Source Files / Kaynak Dosya | 890 |
+| Version / Sürüm | 5.6.0 |
+| Total Lines / Toplam Satır (`src/`) | ~203,500 |
+| Source Files / Kaynak Dosya | 895 |
 | Documentation Files / Dokümantasyon Dosya | 32 |
-| Example Projects / Örnek Proje | 46 |
+| Example Projects / Örnek Proje | 49 |
 | Guided Lessons / Rehberli Ders | 19 |
 | Exams / Sınavlar | 6 |
 
