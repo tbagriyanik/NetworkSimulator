@@ -1,10 +1,19 @@
+export interface IpSlaSample {
+  success: boolean;
+  rtt?: number;
+  timestamp: number;
+}
+
 export interface IpSlaOperation {
   id: string;
   type: 'icmp-echo' | 'http' | 'dns' | 'jitter';
   target: string;
   frequency: number;
   timeout?: number;
+  sourceInterface?: string;
   running: boolean;
+  startTime?: string;
+  life?: string;
   lastRunAt?: number;
   statistics: {
     attempts: number;
@@ -78,5 +87,3 @@ export interface OspfVirtualLinkConfig {
 
 export type { LispEidMapping, LispConfig } from '../lispEngine';
 export type { CoppClassPolicy, CoppConfig } from '../coppEngine';
-
-

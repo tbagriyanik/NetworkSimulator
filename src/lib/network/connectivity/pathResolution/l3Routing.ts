@@ -147,7 +147,7 @@ export function validateL3Routing(deps: L3RoutingDeps): L3RoutingResult {
         const device = deviceMap.get(deviceId);
         // BOLT: Use pre-resolved safeDeviceStates
         const state = safeDeviceStates.get(deviceId);
-        if (device && (device.type === 'router' || device.type === 'switchL3') && state?.ipRouting) {
+        if (device && (device.type === 'router' || device.type === 'switchL3' || device.type === 'firewall') && state?.ipRouting) {
           // Check for PBR (Policy-Based Routing)
           let hasPbrRoute = false;
           for (const p of Object.values(state.ports || {})) {
@@ -188,7 +188,7 @@ export function validateL3Routing(deps: L3RoutingDeps): L3RoutingResult {
       // If no router in path with proper route, try to find a connected router
       if (!hasL3Gateway) {
         // Find all routers in the topology
-        const routers = devices.filter(d => (d.type === 'router' || d.type === 'switchL3'));
+        const routers = devices.filter(d => (d.type === 'router' || d.type === 'switchL3' || d.type === 'firewall'));
         for (const router of routers) {
           // BOLT: Use pre-resolved safeDeviceStates
           const routerState = safeDeviceStates.get(router.id);
@@ -290,7 +290,7 @@ export function checkL3Connectivity(deps: L3ConnectivityDeps): L3ConnectivityRes
           const device = deviceMap.get(deviceId);
           const hasRouting = isTargetIpv6 ? (state?.ipv6Enabled || state?.ipRouting) : state?.ipRouting;
 
-          if (hasRouting && (device?.type === 'router' || device?.type === 'switchL3')) {
+          if (hasRouting && (device?.type === 'router' || device?.type === 'switchL3' || device?.type === 'firewall')) {
             // Router in path - check if it has routes to both source and target networks
             // BOLT: Use pre-resolved safeDeviceStates
             const routes = getRoutingTable(deviceId, safeDeviceStates, devices, connections);

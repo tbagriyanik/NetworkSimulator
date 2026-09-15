@@ -456,4 +456,102 @@ describe('Packet Capture Backend', () => {
     expect(learned?.port).toBe('fa0/1');
     expect(learned?.type).toBe('DYNAMIC');
   });
+
+  test('captures DROP packet when blocked by firewall rule', () => {
+    const pcSource: CanvasDevice = {
+      id: 'pc-src',
+      type: 'pc',
+      name: 'PC-Source',
+      ip: '10.0.0.10',
+      subnet: '255.255.255.0',
+      gateway: '10.0.0.1',
+      macAddress: '00:00:00:00:00:10',
+      x: 0, y: 0, status: 'online',
+      ports: [{ id: 'eth0', label: 'Eth0', status: 'connected' }]
+    };
+
+    const fwDevice: CanvasDevice = {
+      id: 'fw-edge',
+      type: 'firewall',
+      name: 'Perimeter-FW',
+      ip: '10.0.0.1',
+      subnet: '255.255.255.0',
+      macAddress: '00:00:00:00:00:F1',
+      x: 100, y: 0, status: 'online',
+      ports: [
+        { id: 'gi0/0', label: 'Gi0/0', status: 'connected', ipAddress: '10.0.0.1', subnetMask: '255.255.255.0' },
+        { id: 'gi0/1', label: 'Gi0/1', status: 'connected', ipAddress: '172.16.0.1', subnetMask: '255.255.255.0' },
+      ],
+      firewallRules: [
+        { id: 'r1', action: 'deny', protocol: 'icmp', sourceIp: 'any', targetIp: 'any', port: '*', enabled: true }
+      ]
+    };
+
+    const pcTarget: CanvasDevice = {
+      id: 'pc-dst',
+      type: 'pc',
+      name: 'PC-Dest',
+      ip: '172.16.0.10',
+      subnet: '255.255.255.0',
+      gateway: '172.16.0.1',
+      macAddress: '00:00:00:00:00:20',
+      x: 200, y: 0, status: 'online',
+      ports: [{ id: 'eth0', label: 'Eth0', status: 'connected' }]
+    };
+
+    const fwConns: CanvasConnection[] = [
+      { id: 'conn-src-fw', sourceDeviceId: 'pc-src', sourcePort: 'eth0', targetDeviceId: 'fw-edge', targetPort: 'gi0/0', cableType: 'straight', active: true },
+      { id: 'conn-fw-dst', sourceDeviceId: 'fw-edge', sourcePort: 'gi0/1', targetDeviceId: 'pc-dst', targetPort: 'eth0', cableType: 'straight', active: true },
+    ];
+
+    const fwStates = new Map<string, SwitchState>();
+    fwStates.set('pc-src', {
+      hostname: 'PC-Source',
+      macAddress: '00:00:00:00:00:10',
+      ports: { 'eth0': { id: 'eth0', label: 'Eth0', status: 'connected', shutdown: false } },
+      arpCache: [{ ip: '10.0.0.1', mac: '00:00:00:00:00:F1', interface: 'eth0' }]
+    } as unknown as SwitchState);
+
+    fwStates.set('fw-edge', {
+      hostname: 'Perimeter-FW',
+      deviceType: 'firewall',
+      macAddress: '00:00:00:00:00:F1',
+      ipRouting: true,
+      ports: {
+        'gi0/0': { id: 'gi0/0', label: 'Gi0/0', status: 'connected', shutdown: false, ipAddress: '10.0.0.1', subnetMask: '255.255.255.0', mode: 'routed', type: 'gigabitethernet' },
+        'gi0/1': { id: 'gi0/1', label: 'Gi0/1', status: 'connected', shutdown: false, ipAddress: '172.16.0.1', subnetMask: '255.255.255.0', mode: 'routed', type: 'gigabitethernet' },
+      },
+      arpCache: [{ ip: '172.16.0.10', mac: '00:00:00:00:00:20', interface: 'gi0/1' }],
+      routingTable: [
+        { destination: '10.0.0.0', mask: '255.255.255.0', nextHop: 'Direct', interface: 'gi0/0', protocol: 'C' },
+        { destination: '172.16.0.0', mask: '255.255.255.0', nextHop: 'Direct', interface: 'gi0/1', protocol: 'C' },
+      ],
+      firewallRules: [
+        { id: 'r1', action: 'deny', protocol: 'icmp', sourceIp: 'any', targetIp: 'any', enabled: true, desc: 'Block ICMP Ping' }
+      ]
+    } as unknown as SwitchState);
+
+    fwStates.set('pc-dst', {
+      hostname: 'PC-Dest',
+      macAddress: '00:00:00:00:00:20',
+      ports: { 'eth0': { id: 'eth0', label: 'Eth0', status: 'connected', shutdown: false } },
+      arpCache: [{ ip: '172.16.0.1', mac: '00:00:00:00:00:F1', interface: 'eth0' }]
+    } as unknown as SwitchState);
+
+    const result = checkConnectivity('pc-src', '172.16.0.10', [pcSource, fwDevice, pcTarget], fwConns, fwStates, 'en', { protocol: 'icmp' });
+
+    expect(result.success).toBe(false);
+    expect(result.capturedPackets).toBeDefined();
+    expect(result.capturedPackets?.length).toBeGreaterThan(0);
+
+    const dropPacket = result.capturedPackets?.find(p => p.info.includes('[DROP]'));
+    expect(dropPacket).toBeDefined();
+    expect(dropPacket?.connectionId).toBe('conn-src-fw');
+    expect(dropPacket?.info).toContain('Blocked by Firewall');
+
+    // Downstream connection conn-fw-dst should not have received the dropped packet
+    const downstreamPacket = result.capturedPackets?.find(p => p.connectionId === 'conn-fw-dst' && p.protocol === 'ICMP');
+    expect(downstreamPacket).toBeUndefined();
+  });
 });
+

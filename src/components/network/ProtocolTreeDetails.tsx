@@ -74,12 +74,38 @@ export function ProtocolTreeDetails({ packet, isDark, language }: ProtocolTreeDe
   const srcMac = packet.srcMac || '00:1A:2B:3C:4D:5E';
   const dstMac = packet.dstMac || '00:5E:4D:3C:2B:1A';
 
+  const isDropped =
+    packet.info.toLowerCase().includes('[drop]') ||
+    packet.info.toLowerCase().includes('drop') ||
+    packet.info.toLowerCase().includes('blocked') ||
+    packet.info.toLowerCase().includes('denied') ||
+    packet.info.toLowerCase().includes('engellendi');
+
   return (
     <div className="p-2 space-y-1 custom-scrollbar overflow-auto h-full pr-2">
 
+      {/* Dropped Frame Banner */}
+      {isDropped && (
+        <div className={`p-2 mb-1.5 rounded border flex items-start gap-2 text-[11px] font-mono ${
+          isDark
+            ? 'bg-rose-950/40 border-rose-600/50 text-rose-200'
+            : 'bg-rose-50 border-rose-300 text-rose-900'
+        }`}>
+          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-rose-600 text-white shrink-0">
+            {isTr ? 'ENGELLENDİ' : 'DROPPED'}
+          </span>
+          <div className="flex flex-col">
+            <span className="font-bold text-xs">
+              {isTr ? 'Güvenlik / Filtre Engellemesi (Drop)' : 'Security / Firewall Drop Action'}
+            </span>
+            <span className="opacity-90 mt-0.5">{packet.info}</span>
+          </div>
+        </div>
+      )}
+
       {/* Frame Layer */}
       <TreeNode
-        title={`Frame: ${pktLen} bytes on wire (${pktLen * 8} bits), ${pktLen} bytes captured`}
+        title={`Frame: ${pktLen} bytes on wire (${pktLen * 8} bits), ${pktLen} bytes captured${isDropped ? ' [DROPPED]' : ''}`}
         isDark={isDark}
       >
         <TreeLeaf label={isTr ? 'Arayüz İsim/ID' : 'Interface'} value="eth0" isDark={isDark} />

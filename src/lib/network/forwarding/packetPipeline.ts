@@ -695,6 +695,19 @@ export function runFullPacketPipeline(
 
     if (hopResult.traces.some(t => t.action === 'drop')) {
       const dropTrace = hopResult.traces.find(t => t.action === 'drop')!;
+      const ingressPortId = currentFrame.ingressPortId;
+      const ingressConn = ingressPortId ? connectionIndex.byPort.get(`${currentDeviceId}:${ingressPortId}`) : null;
+      if (ingressConn) {
+        capturedOnLinks.push(ingressConn.id);
+        dispatchCapturedPackets([{
+          connectionId: ingressConn.id,
+          sourceIp: currentFrame.srcIp || '',
+          targetIp: currentFrame.dstIp || '',
+          protocol: currentFrame.protocol,
+          length: currentFrame.length,
+          info: `[DROP] Dropped at ${device.name}: ${dropTrace.reason}`,
+        }]);
+      }
       return {
         success: false,
         hopResults,

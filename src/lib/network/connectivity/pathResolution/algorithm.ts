@@ -103,7 +103,21 @@ export function checkConnectivity(
   if (dhcpResult.type === 'error') return dhcpResult.result;
 
   // 7. ACL, NAT & Firewall Logic
-  const fwResult = applyForwardingControls({ path, deviceMap, safeDeviceStates, pathConnections, options, language, hopNames, targetDevice, currentSourceIp, currentTargetIp });
+  const fwResult = applyForwardingControls({
+    path,
+    deviceMap,
+    safeDeviceStates,
+    pathConnections,
+    options,
+    language,
+    hopNames,
+    targetDevice,
+    currentSourceIp,
+    currentTargetIp,
+    capturedPackets,
+    traversedPorts,
+    portSecurityViolations,
+  });
   if (fwResult.type === 'error') return fwResult.result;
   currentSourceIp = fwResult.currentSourceIp;
   currentTargetIp = fwResult.currentTargetIp;
