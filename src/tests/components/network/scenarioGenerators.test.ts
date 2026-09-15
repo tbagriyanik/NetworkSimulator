@@ -11,7 +11,7 @@ describe('topology generator scenarios', () => {
       const addresses = topology.devices.map(d => d.ip).filter(Boolean);
       expect(new Set(addresses).size, `${scenario.id}: duplicate IP`).toBe(addresses.length);
       expect(topology.devices.length, scenario.id).toBeGreaterThan(0);
-      const managedDevices = topology.devices.filter(d => d.type !== 'pc' && d.type !== 'iot');
+      const managedDevices = topology.devices.filter(d => d.type !== 'pc' && d.type !== 'iot' && d.type !== 'mobile' && d.type !== 'printer');
       expect(topology.deviceStates.size, scenario.id).toBe(managedDevices.length);
       for (const connection of topology.connections) {
         expect(ids.has(connection.sourceDeviceId), `${scenario.id}: source`).toBe(true);

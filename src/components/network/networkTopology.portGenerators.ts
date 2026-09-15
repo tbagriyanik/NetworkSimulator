@@ -79,7 +79,7 @@ export function generateHubPorts(): CanvasPort[] {
     return ports;
 }
 
-/** Generates firewall ports: Gi0/0 + Gi0/1 */
+/** Generates firewall ports: Gi0/0 (Outside), Gi0/1 (Inside), Gi0/2 (DMZ), Gi0/3 (MGMT) */
 export function generateFirewallPorts(): CanvasPort[] {
     const formatMacFromNumber = (value: number): string => {
         const base = value.toString(16).padStart(12, '0').toUpperCase();
@@ -89,5 +89,7 @@ export function generateFirewallPorts(): CanvasPort[] {
     return [
         { id: 'gi0/0', label: 'Gi0/0', status: 'disconnected' as const, macAddress: formatMacFromNumber(baseMacNumber) },
         { id: 'gi0/1', label: 'Gi0/1', status: 'disconnected' as const, macAddress: formatMacFromNumber(baseMacNumber + 1) },
+        { id: 'gi0/2', label: 'Gi0/2', status: 'disconnected' as const, macAddress: formatMacFromNumber(baseMacNumber + 2) },
+        { id: 'gi0/3', label: 'Gi0/3', status: 'disconnected' as const, macAddress: formatMacFromNumber(baseMacNumber + 3) },
     ];
 }
