@@ -7,8 +7,9 @@
 2. [Kullanım Kılavuzu ve Kısayollar](#network-simulator---usage-guide--kullanım-kılavuzu)
 3. [CLI Komut Referansı](#-network-cli-commands-reference)
 4. [Rehberli Dersler ve CLI Eğitimi](#-network-simulator---rehberli-dersler)
-5. [Gelişmiş Paket Yakalama ve Protokol Analizi](#-gelişmiş-paket-yakalama-ve-protokol-analizi)
-6. [Örnek Proje ve Adım Adım Yapılışları](#network-simulator---example-projects)
+5. [Örnek Projeler ve Laboratuvarlar](#network-simulator---example-projects)
+6. [Gelişmiş Paket Yakalama ve Protokol Analizi](#-gelişmiş-paket-yakalama-ve-protokol-analizi)
+7. [Gelişmiş Özellikler ve Protokoller](#-gelişmiş-özellikler-ve-protokoller-v270-güncellemesi)
 
 <div style="page-break-after: always;"></div>
 
@@ -108,10 +109,10 @@ Bu kitapçık projenin tüm kullanıcı, CLI, protokol, laboratuvar ve özellik 
 
 | İçerik | Bu kitapçıktaki bölüm | Tamamlayıcı dosya |
 |---|---|---|
-| CLI sözdizimi | CLI Komut Referansı | `doc/cli/CLI_COMMANDS.md` |
-| Uygulama adımları | Rehberli Dersler ve Örnek Projeler | `doc/cli/CLI_GUIDED_TUTORIAL.md`, `doc/training/ORNEK_LABLAR.md` |
-| Kısa başvuru | Kullanım ve kısayollar | `doc/getting-started/USAGE.md`, `QUICK_REFERENCE.md` |
-| Teknik kurulum | Ağ ve geliştirme rehberleri | `doc/network/`, `doc/development/` |
+| CLI sözdizimi | CLI Komut Referansı | [CLI_COMMANDS.md](../cli/CLI_COMMANDS.md) |
+| Uygulama adımları | Rehberli Dersler ve Örnek Projeler | [CLI_GUIDED_TUTORIAL.md](../cli/CLI_GUIDED_TUTORIAL.md), [ORNEK_LABLAR.md](ORNEK_LABLAR.md) |
+| Kısa başvuru | Kullanım ve kısayollar | [USAGE.md](../getting-started/USAGE.md), [QUICK_REFERENCE.md](../getting-started/QUICK_REFERENCE.md) |
+| Teknik kurulum | Ağ ve geliştirme rehberleri | [WIRELESS_CONFIGURATION_GUIDE.md](../network/WIRELESS_CONFIGURATION_GUIDE.md), [CONTRIBUTING.md](../development/CONTRIBUTING.md) |
 
 ---
 
@@ -267,38 +268,37 @@ npm install && npm run dev
 
 | Metric / Metrik | Value / Değer |
 | --- | ---: |
-| Version / Sürüm | 5.4.1 |
-| Total Lines / Toplam Satır (src/) | 145,145 |
-| Source Files / Kaynak Dosya | 644 |
-| Documentation Files / Dokümantasyon Dosya | 24 |
-| Example Projects / Örnek Proje | 46 |
+| Version / Sürüm | 5.6.0 |
+| Total Lines / Toplam Satır (src/) | ~202,800 |
+| Source Files / Kaynak Dosya | 908 |
+| Documentation Files / Dokümantasyon Dosya | 23 |
+| Example Projects / Örnek Proje | 49 |
 | Guided Lessons / Rehberli Ders | 19 |
 | Exams / Sınav | 6 |
-| Tests / Test | 1169 (119 dosya) |
 | CLI Commands / CLI Komutları | 400+ |
 
 ## Documentation / Dokümantasyon
 
 | Document / Doküman | Description / Açıklama |
 | --- | --- |
-| [INSTALL.md](INSTALL.md) | Kurulum & derleme / Installation & build |
-| [USAGE.md](doc/getting-started/USAGE.md) | Kullanım kılavuzu & kısayollar / Usage guide & shortcuts |
-| [PC_CMD_REFERENCE.md](doc/getting-started/PC_CMD_REFERENCE.md) | PC CMD parametreleri / PC CMD command parameters |
-| [TOPOLOGY_GENERATOR.md](doc/getting-started/TOPOLOGY_GENERATOR.md) | Topoloji üretici sihirbazı / Topology generator guide |
-| [CLI_COMMANDS.md](doc/cli/CLI_COMMANDS.md) | CLI komut referansı / CLI command reference |
-| [CLI_GUIDED_TUTORIAL.md](doc/cli/CLI_GUIDED_TUTORIAL.md) | Rehberli CLI dersleri / Guided CLI lessons |
-| [QUICK_REFERENCE.md](doc/getting-started/QUICK_REFERENCE.md) | Hızlı referans / Quick reference |
-| [WIRELESS_CONFIGURATION_GUIDE.md](doc/network/WIRELESS_CONFIGURATION_GUIDE.md) | Kablosuz ağ / Wireless configuration |
-| [L3_SWITCH_CONFIGURATION.md](doc/network/L3_SWITCH_CONFIGURATION.md) | L3 switch yapılandırma / L3 switch guide |
-| [PACKET_CAPTURE_GUIDE.md](doc/network/PACKET_CAPTURE_GUIDE.md) | Paket yakalama paneli / Packet capture guide |
-| [GOOGLE_SHEETS_SETUP.md](doc/network/GOOGLE_SHEETS_SETUP.md) | Google Sheets entegrasyonu / Google Sheets setup |
-| [ROOM_TRACKING_SETUP.md](doc/network/ROOM_TRACKING_SETUP.md) | Oda takip sistemi / Room tracking setup |
-| [DOCUMENTATION_INDEX.md](doc/DOCUMENTATION_INDEX.md) | Tüm belgeler indeksi / Full documentation index |
-| [CONTRIBUTING.md](doc/development/CONTRIBUTING.md) | Katkı rehberi / Contribution guide |
-| [ERROR_HANDLING_GUIDE.md](doc/development/ERROR_HANDLING_GUIDE.md) | Hata kontrol rehberi / Error handling guide |
-| [INTEGRATION_GUIDE.md](doc/development/INTEGRATION_GUIDE.md) | Entegrasyon rehberi / Integration guide |
-| [examples.md](doc/reference/examples.md) | Adım adım örnek projeler / Example projects |
-| [details.md](doc/reference/details.md) | Sürüm detayları / Version details |
+| [INSTALL.md](../../INSTALL.md) | Kurulum & derleme / Installation & build |
+| [USAGE.md](../getting-started/USAGE.md) | Kullanım kılavuzu & kısayollar / Usage guide & shortcuts |
+| [PC_CMD_REFERENCE.md](../getting-started/PC_CMD_REFERENCE.md) | PC CMD parametreleri / PC CMD command parameters |
+| [TOPOLOGY_GENERATOR.md](../getting-started/TOPOLOGY_GENERATOR.md) | Topoloji üretici sihirbazı / Topology generator guide |
+| [CLI_COMMANDS.md](../cli/CLI_COMMANDS.md) | CLI komut referansı / CLI command reference |
+| [CLI_GUIDED_TUTORIAL.md](../cli/CLI_GUIDED_TUTORIAL.md) | Rehberli CLI dersleri / Guided CLI lessons |
+| [QUICK_REFERENCE.md](../getting-started/QUICK_REFERENCE.md) | Hızlı referans / Quick reference |
+| [WIRELESS_CONFIGURATION_GUIDE.md](../network/WIRELESS_CONFIGURATION_GUIDE.md) | Kablosuz ağ / Wireless configuration |
+| [L3_SWITCH_CONFIGURATION.md](../network/L3_SWITCH_CONFIGURATION.md) | L3 switch yapılandırma / L3 switch guide |
+| [PACKET_CAPTURE_GUIDE.md](../network/PACKET_CAPTURE_GUIDE.md) | Paket yakalama paneli / Packet capture guide |
+| [GOOGLE_SHEETS_SETUP.md](../network/GOOGLE_SHEETS_SETUP.md) | Google Sheets entegrasyonu / Google Sheets setup |
+| [ROOM_TRACKING_SETUP.md](../network/ROOM_TRACKING_SETUP.md) | Oda takip sistemi / Room tracking setup |
+| [DOCUMENTATION_INDEX.md](../DOCUMENTATION_INDEX.md) | Tüm belgeler indeksi / Full documentation index |
+| [CONTRIBUTING.md](../development/CONTRIBUTING.md) | Katkı rehberi / Contribution guide |
+| [ERROR_HANDLING_GUIDE.md](../development/ERROR_HANDLING_GUIDE.md) | Hata kontrol rehberi / Error handling guide |
+| [INTEGRATION_GUIDE.md](../development/INTEGRATION_GUIDE.md) | Entegrasyon rehberi / Integration guide |
+| [examples.md](../reference/examples.md) | Adım adım örnek projeler / Example projects |
+| [details.md](../reference/details.md) | Sürüm detayları / Version details |
 
 ## Architecture / Mimari
 

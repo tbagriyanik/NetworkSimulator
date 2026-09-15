@@ -2,26 +2,26 @@ import { CLI_ERRORS } from './cliErrors';
 import type { CommandHandler, CommandContext } from './commandTypes';
 import { buildRunningConfig } from './configBuilder';
 import { SwitchState, CommandResult } from '../types';
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
-import { getSwitchDisplayProfile } from './showHelpers';
 import { formatIpSlaStatistics } from '../ipSlaEngine';
-import { diagnoseVlanMismatches, diagnoseDuplicateAddresses, diagnoseOrphanDevices } from '../vlanDiagnostics';
-import { detectRoutingLoops, getRoutingTable, findRoute, ipToNumber } from '../routing';
+
 import {
   cmdShowWireless, cmdShowWlanSummary,
   cmdShowApSummary, cmdShowApConfig, cmdShowApJoinStats,
   cmdShowDot11Associations, cmdShowDot11Statistics, cmdShowWlan,
 } from './showWlcDisplay';
+
 import {
   cmdShowVersion, cmdShowClock, cmdShowFlash, cmdShowBoot,
-  cmdShowStartupConfig, cmdShowRunningConfig as cmdShowRunningConfigSystem
+  cmdShowStartupConfig, cmdShowRunningConfig as cmdShowRunningConfigSystem,
 } from './showSystemDisplay';
+
 import {
   cmdShowInterfaces, cmdShowInterface, cmdShowInterfaceTrunk,
   cmdShowIpInterfaceBrief, cmdShowInterfacesStatus,
   cmdShowIpInterface, cmdShowIpv6InterfaceBrief,
   cmdShowNameif, cmdShowControllers, cmdShowIpAccessGroup,
 } from './showInterfaceDisplay';
+
 import {
   cmdShowVlan, cmdShowMacAddressTable,
   cmdShowSpanningTree, cmdShowSpanningTreeInterface,
@@ -29,6 +29,7 @@ import {
   cmdShowVtpStatus, cmdShowVtpPassword, cmdShowMacStatic,
   cmdShowCdpNeighbors, cmdShowCdp, cmdShowLldp,
 } from './showSwitchingDisplay';
+
 import {
   cmdShowIpRoute, cmdShowIpv6Route, cmdShowIpOspf,
   cmdShowIpOspfNeighbor, cmdShowIpOspfDatabase,
@@ -47,24 +48,98 @@ import {
   cmdShowFlowRecord, cmdShowFlowExporter, cmdShowFlowMonitor,
   cmdShowIpv6DhcpBinding, cmdShowPppoeSession, cmdShowCaller,
   cmdShowTrack, cmdShowIpSlaSummary, cmdShowIpSlaConfiguration,
-  cmdShowVrf, cmdShowMpls
+  cmdShowVrf, cmdShowMpls,
 } from './showRoutingDisplay';
 
-
-
-
-
 import {
-  cmdShowCryptoIsakmpSa, cmdShowCryptoIpsecSa, cmdShowCryptoMap
+  cmdShowCryptoIsakmpSa, cmdShowCryptoIpsecSa, cmdShowCryptoMap,
 } from './cryptoCommands';
+
 import {
   cmdShowVlanPrivateVlan, cmdShowInterfacesBackup, cmdShowLisp, cmdShowControlPlane,
-  cmdShowNveInterface, cmdShowEvpn
+  cmdShowNveInterface, cmdShowEvpn,
 } from './showServicesDisplay';
 
+import { cmdShowNetworkHealth } from './show/showHealthDisplay';
+import {
+  cmdShowMlsQos, cmdShowPolicyMap, cmdShowPolicyMapInterface,
+  cmdShowQosInterface, cmdShowQueuingInterface, cmdShowClassMap,
+} from './show/showQosDisplay';
+import {
+  cmdShowAccessLists, cmdShowMacAcl, cmdShowAuth, cmdShowSsh,
+} from './show/showSecurityDisplay';
+import {
+  cmdShowHistory, cmdShowUsers, cmdShowEnvironment, cmdShowInventory,
+  cmdShowErrdisableRecovery, cmdShowStormControl, cmdShowUdld,
+  cmdShowMonitor, cmdShowDebug, cmdShowProcesses, cmdShowMemory,
+  cmdShowSdmPrefer, cmdShowSystemMtu, cmdShowSessions, cmdShowSnmp,
+  cmdShowDiag, cmdShowPrivilege, cmdShowBannerMotd, cmdShowAlias,
+  cmdShowRedundancy, cmdShowArchive, cmdShowLogging,
+} from './show/showMiscDisplay';
 
-// Show komutları (show running-config, show vlan, show ip route, vs.)
+export { cmdShowNtp } from './show/showNtpDisplay';
 
+function cmdShowIpSlaStatistics(state: SwitchState): CommandResult {
+  return { success: true, output: formatIpSlaStatistics(state.ipSlaOperations) };
+}
+
+function cmdShowRunningConfig(
+  state: SwitchState,
+  input: string,
+  ctx: CommandContext
+): CommandResult {
+  return cmdShowRunningConfigSystem(state, input, ctx, buildRunningConfig, cmdShowRunningConfigInterface);
+}
+
+function cmdShowRunningConfigInterface(
+  state: SwitchState,
+  input: string,
+  _ctx: CommandContext
+): CommandResult {
+  const match = input.match(/show\s+(?:running-config|run|running)\s+interface\s+(\S+)/i);
+  const interfaceName = match?.[1];
+
+  if (!interfaceName) {
+    return { success: false, error: '% Incomplete command.' };
+  }
+
+  const normalized = interfaceName.toLowerCase();
+  const port = state.ports?.[normalized];
+
+  if (!port) {
+    return { success: false, error: `% Interface ${interfaceName} not found` };
+  }
+
+  const lines = buildRunningConfig(state);
+  const interfaceLines: string[] = [];
+  let inInterface = false;
+
+  for (const line of lines) {
+    if (line.toLowerCase().startsWith('interface ') && line.toLowerCase().includes(normalized)) {
+      inInterface = true;
+      interfaceLines.push(line);
+    } else if (inInterface) {
+      if (line === '!') {
+        inInterface = false;
+        interfaceLines.push(line);
+        break;
+      }
+      interfaceLines.push(line);
+    }
+  }
+
+  if (interfaceLines.length === 0) {
+    return { success: true, output: '\n% Interface configuration not found\n' };
+  }
+
+  return { success: true, output: '\nBuilding configuration...\n\n' + interfaceLines.join('\n') + '\n' };
+}
+
+function cmdShowParent(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  return { success: false, error: CLI_ERRORS.incomplete };
+}
+
+export { cmdShowLogging, cmdShowNetworkHealth, cmdShowMonitor };
 
 export const showHandlers: Record<string, CommandHandler> = {
   'show network health': cmdShowNetworkHealth,
@@ -151,9 +226,9 @@ export const showHandlers: Record<string, CommandHandler> = {
   'show mac address-table static': cmdShowMacStatic,
   'show authentication': cmdShowAuth,
   'show sessions': cmdShowSessions,
-  'show ntp associations': cmdShowNtp,
-  'show ntp status': cmdShowNtp,
-  'show ntp': cmdShowNtp,
+  'show ntp associations': cmdShowNtpDisplay,
+  'show ntp status': cmdShowNtpDisplay,
+  'show ntp': cmdShowNtpDisplay,
   'show snmp': cmdShowSnmp,
   'show class-map': cmdShowClassMap,
   'show mac access-lists': cmdShowMacAcl,
@@ -179,8 +254,6 @@ export const showHandlers: Record<string, CommandHandler> = {
   'show ip sla application': cmdShowIpSlaConfiguration,
   'show track': cmdShowTrack,
 
-
-  // New: missing show commands
   'show nameif': cmdShowNameif,
   'show ip access-group': cmdShowIpAccessGroup,
   'show dot11 associations': cmdShowDot11Associations,
@@ -231,1141 +304,4 @@ export const showHandlers: Record<string, CommandHandler> = {
   'show flow monitor': cmdShowFlowMonitor,
 };
 
-function cmdShowIpSlaStatistics(state: SwitchState): CommandResult {
-  return { success: true, output: formatIpSlaStatistics(state.ipSlaOperations) };
-}
-
-/**
- * Show Running Configuration
- */
-function cmdShowRunningConfig(
-  state: SwitchState,
-  input: string,
-  ctx: CommandContext
-): CommandResult {
-  return cmdShowRunningConfigSystem(state, input, ctx, buildRunningConfig, cmdShowRunningConfigInterface);
-}
-
-/**
- * Show Running Configuration Interface
- */
-function cmdShowRunningConfigInterface(
-  state: SwitchState,
-  input: string,
-  _ctx: CommandContext
-): CommandResult {
-  const match = input.match(/show\s+(?:running-config|run|running)\s+interface\s+(\S+)/i);
-  const interfaceName = match?.[1];
-
-  if (!interfaceName) {
-    return { success: false, error: '% Incomplete command.' };
-  }
-
-  const normalized = interfaceName.toLowerCase();
-  const port = state.ports?.[normalized];
-
-  if (!port) {
-    return { success: false, error: `% Interface ${interfaceName} not found` };
-  }
-
-  const lines = buildRunningConfig(state);
-  const interfaceLines: string[] = [];
-  let inInterface = false;
-
-  for (const line of lines) {
-    if (line.toLowerCase().startsWith('interface ') && line.toLowerCase().includes(normalized)) {
-      inInterface = true;
-      interfaceLines.push(line);
-    } else if (inInterface) {
-      if (line === '!') {
-        inInterface = false;
-        interfaceLines.push(line);
-        break;
-      }
-      interfaceLines.push(line);
-    }
-  }
-
-  if (interfaceLines.length === 0) {
-    return { success: true, output: '\n% Interface configuration not found\n' };
-  }
-
-  return { success: true, output: '\nBuilding configuration...\n\n' + interfaceLines.join('\n') + '\n' };
-}
-
-/**
- * Show History
- */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**
- * Do Show - Execute show command from config mode
- */
-
-
-
-
-/**
- * Show Wireless - Display WiFi settings
- */
-/**
- * Show SSH - Display SSH server configuration and session summary
- */
-function cmdShowSsh(
-  state: SwitchState,
-  _input: string,
-  _ctx: CommandContext
-): CommandResult {
-  const version = state.sshVersion || 2;
-  const transportInput = state.security?.vtyLines?.transportInput || [];
-  const sshEnabled = version > 0 && (transportInput.includes('ssh') || transportInput.includes('all'));
-  const timeout = state.sshTimeout || 60;
-  const retries = state.sshAuthenticationRetries || 3;
-  const domainName = state.domainName || 'not set';
-
-  let output = '\nSSH Server Status\n';
-  output += '-----------------\n';
-  output += `SSH Version: ${version}\n`;
-  output += `SSH Status: ${sshEnabled ? 'enabled' : 'disabled'}\n`;
-  output += `Authentication Retries: ${retries}\n`;
-  output += `Timeout: ${timeout} seconds\n`;
-  output += `Domain Name: ${domainName}\n`;
-  output += `VTY Transport Input: ${transportInput.length > 0 ? transportInput.join(' ') : 'none'}\n`;
-
-  const activeSessions = Array.isArray(state.sshSessions) ? state.sshSessions : [];
-  const normalizedSessions = activeSessions;
-
-  output += `\nActive SSH Sessions: ${normalizedSessions.length}\n`;
-  if (normalizedSessions.length > 0) {
-    output += 'Session   User       Source\n';
-    output += '--------  ---------  ----------------\n';
-    normalizedSessions.forEach((session: { user?: string; source?: string }, index: number) => {
-      output += `${String(index + 1).padEnd(8)}  ${(session.user || 'unknown').padEnd(9)}  ${session.source || 'unknown'}\n`;
-    });
-  }
-
-  output += '!\n';
-  return { success: true, output };
-}
-
-
-
-
-
-
-
-/**
- * Show MLS QoS
- */
-function cmdShowMlsQos(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  const enabled = state.mlsQosEnabled ?? false;
-  return { success: true, output: `\nQoS is ${enabled ? 'enabled' : 'disabled'}\n` };
-}
-
-
-/**
- * Show Access-Lists
- */
-function cmdShowAccessLists(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  const hasClassicAcls = !!state.accessLists && Object.keys(state.accessLists).length > 0;
-  const firewallRules = Array.isArray(state.firewallRules) ? state.firewallRules : [];
-  const hasFirewallAcls = firewallRules.length > 0;
-
-  // Filter by ACL name if specified
-  const filterAcl = input.match(/^show\s+access-lists?\s+(\S+)$/i)?.[1];
-
-  if (!hasClassicAcls && !hasFirewallAcls) {
-    return { success: true, output: '\n% No access lists configured\n' };
-  }
-
-  let output = '\n';
-
-  if (hasClassicAcls) {
-    Object.entries(state.accessLists || {}).forEach(([aclId, rules]: [string, string[]]) => {
-      if (filterAcl && aclId !== filterAcl) return;
-
-      const isNamed = isNaN(Number(aclId));
-      const aclType = isNamed ? (state.namedAclTypes?.[aclId] || 'standard') : (parseInt(aclId) >= 100 ? 'extended' : 'standard');
-      output += `${aclType === 'extended' ? 'Extended' : 'Standard'} IP access list ${aclId}\n`;
-      rules.forEach((rule: string, ruleIndex: number) => {
-        // Parse rule format: "seq permit|deny <conditions>"
-        const seqMatch = rule.match(/^(\d+)\s+(.+)$/);
-        let seq: string;
-        let ruleText: string;
-        if (seqMatch) {
-          seq = seqMatch[1];
-          ruleText = seqMatch[2];
-        } else {
-          seq = String((ruleIndex + 1) * 10);
-          ruleText = rule;
-        }
-        const matches = state.aclMatchCounters?.[aclId]?.[ruleIndex] || 0;
-        output += `    ${seq.padEnd(5)} ${ruleText} (${matches} ${matches === 1 ? 'match' : 'matches'})\n`;
-      });
-    });
-  }
-
-  if (hasFirewallAcls) {
-    if (!filterAcl || filterAcl === 'OUTSIDE-IN') {
-      output += 'access-list OUTSIDE-IN\n';
-      firewallRules.forEach((rule: { enabled?: boolean; protocol?: string; action: string; sourceIp: string; targetIp: string; port: string | number }, index: number) => {
-        const inactive = rule.enabled === false ? 'inactive ' : '';
-        const protocol = rule.protocol === 'any' ? 'ip' : (rule.protocol || 'ip');
-        output += `    line ${index + 1} extended ${inactive}${rule.action} ${protocol} ${rule.sourceIp} ${rule.targetIp} eq ${rule.port}\n`;
-      });
-    }
-  }
-
-  return { success: true, output };
-}
-
-/**
- * Show History
- */
-function cmdShowHistory(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  const history = state.commandHistory || [];
-  let output = '\n';
-  history.slice(-20).forEach((cmd: string) => { output += `  ${cmd}\n`; });
-  return { success: true, output };
-}
-
-/**
- * Show Users
- */
-function cmdShowUsers(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  let output = '\n    Line       User       Host(s)              Idle       Location\n';
-  output += '*   0 con 0                idle                 00:00:00\n';
-  return { success: true, output };
-}
-
-/**
- * Show Environment
- */
-function cmdShowEnvironment(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  return { success: true, output: '\nSystem Temperature Value: 36 Degree Celsius\nSystem Temperature State: GREEN\nYellow Threshold : 46 Degree Celsius\nRed Threshold    : 56 Degree Celsius\n' };
-}
-
-/**
- * Show Inventory
- */
-function cmdShowInventory(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  const profile = getSwitchDisplayProfile(state);
-  return { success: true, output: `\nNAME: "1", DESCR: "${profile.switchModel}"\nPID: ${profile.switchModel}  , VID: V01, SN: ${state.version?.serialNumber || 'FOC0000X000'}\n` };
-}
-
-/**
- * Show Errdisable Recovery
- */
-function cmdShowErrdisableRecovery(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  return { success: true, output: '\nErrDisable Reason            Timer Status\n-----------------            --------------\nbpduguard                    Disabled\npsecure-violation            Disabled\nport-security                Disabled\n\nTimer interval: 300 seconds\n' };
-}
-
-/**
- * Show Storm-Control
- */
-function cmdShowStormControl(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  const match = input.match(/show\s+storm-control\s+(?:interface\s+)?(\S+)?/i);
-  const interfaceName = match?.[1];
-
-  if (interfaceName) {
-    const port = (state.ports || {})[interfaceName.toLowerCase()];
-    if (!port) {
-      return { success: false, error: `% Interface ${interfaceName} not found` };
-    }
-
-    let output = `\nStorm Control for interface ${interfaceName}\n`;
-    const sc = port.stormControl;
-
-    if (!sc || (!sc.broadcast?.enabled && !sc.multicast?.enabled && !sc.unicast?.enabled)) {
-      output += '  Storm control is not enabled on this interface\n';
-    } else {
-      if (sc.broadcast?.enabled) {
-        output += `  Broadcast:\n`;
-        output += `    Status: enabled\n`;
-        output += `    Threshold: ${sc.broadcast.threshold || 'unlimited'}\n`;
-        output += `    Action: ${sc.broadcast.action || 'shutdown'}\n`;
-      }
-      if (sc.multicast?.enabled) {
-        output += `  Multicast:\n`;
-        output += `    Status: enabled\n`;
-        output += `    Threshold: ${sc.multicast.threshold || 'unlimited'}\n`;
-        output += `    Action: ${sc.multicast.action || 'shutdown'}\n`;
-      }
-      if (sc.unicast?.enabled) {
-        output += `  Unicast:\n`;
-        output += `    Status: enabled\n`;
-        output += `    Threshold: ${sc.unicast.threshold || 'unlimited'}\n`;
-        output += `    Action: ${sc.unicast.action || 'shutdown'}\n`;
-      }
-    }
-    output += '!\n';
-    return { success: true, output };
-  }
-
-  // Global storm control list
-  let output = '\nInterface   Broadcast      Multicast       Unicast\n';
-  output += '---------   ----------     ----------     ----------\n';
-  Object.keys(state.ports || {}).forEach(portName => {
-    const port = (state.ports || {})[portName];
-    const sc = port.stormControl;
-    const bc = sc?.broadcast?.enabled ? 'enabled' : 'disabled';
-    const mc = sc?.multicast?.enabled ? 'enabled' : 'disabled';
-    const uc = sc?.unicast?.enabled ? 'enabled' : 'disabled';
-    output += `${portName.padEnd(10)}${bc.padEnd(16)}${mc.padEnd(16)}${uc}\n`;
-  });
-  output += '!\n';
-  return { success: true, output };
-}
-
-/**
- * Show UDLD
- */
-function cmdShowUdld(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  const match = input.match(/show\s+udld\s+(?:interface\s+)?(\S+)?/i);
-  const interfaceName = match?.[1];
-
-  let output = '\nGlobal UDLD information\n';
-  output += '  Message interval: 15 seconds\n';
-  output += '  Time out interval: 5 seconds\n';
-  output += '  Mode: normal\n\n';
-
-  if (interfaceName) {
-    const port = (state.ports || {})[interfaceName.toLowerCase()];
-    if (!port) {
-      return { success: false, error: `% Interface ${interfaceName} not found` };
-    }
-
-    output += `UDLD Status for interface ${interfaceName}\n`;
-    const udld = port.udld;
-    output += `  Admin: ${udld?.enabled ? 'enabled' : 'disabled'}\n`;
-    output += `  Mode: ${udld?.mode || 'normal'}\n`;
-    output += `  Bidirectional Status: ${udld?.bidirectionalStatus || 'unknown'}\n`;
-    output += `  Last Probe Time: ${udld?.lastProbeTime ? new Date(udld.lastProbeTime).toLocaleString() : 'never'}\n`;
-  } else {
-    output += 'Interface        Admin  State\n';
-    output += '--------         -----  -----\n';
-    Object.keys(state.ports || {}).forEach(portName => {
-      const port = (state.ports || {})[portName];
-      if (port && port.udld) {
-        const admin = port.udld.enabled ? 'enable' : 'disable';
-        const state = port.udld.bidirectionalStatus || 'unknown';
-        output += `${portName.padEnd(16)}${admin.padEnd(7)}${state}\n`;
-      }
-    });
-  }
-
-  output += '!\n';
-  return { success: true, output };
-}
-
-export function cmdShowMonitor(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  if (!state.spanSessions || Object.keys(state.spanSessions).length === 0) {
-    return { success: true, output: '\n% No SPAN sessions configured\n' };
-  }
-
-  let output = '\n';
-  for (const sess of Object.values(state.spanSessions)) {
-    output += `Session ${sess.id}\n`;
-    output += `---------\n`;
-    output += `Type                   : ${sess.type || 'local'}\n`;
-    output += `Source Ports           : ${sess.sourceInterfaces.length > 0 ? sess.sourceInterfaces.join(', ') : 'None'}\n`;
-    if (sess.destinationInterface) {
-      output += `Destination Port       : ${sess.destinationInterface}\n`;
-    }
-    if (sess.remoteVlan) {
-      output += `Remote VLAN            : ${sess.remoteVlan}\n`;
-    }
-    output += `Status                 : ${sess.enabled ? 'Active' : 'Disabled'}\n\n`;
-  }
-
-  return { success: true, output };
-}
-
-/**
- * Show Debug
- */
-function cmdShowDebug(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  return { success: true, output: '\nAll possible debugging has been turned off\n' };
-}
-
-/**
- * Show Processes
- */
-function cmdShowProcesses(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  return { success: true, output: '\nCPU utilization for five seconds: 1%/0%; one minute: 1%; five minutes: 1%\n' };
-}
-
-/**
- * Show Memory
- */
-function cmdShowMemory(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  return { success: true, output: '\n                Head    Total(b)     Used(b)     Free(b)   Lowest(b)  Largest(b)\nProcessor  65536000    65536000     8192000    57344000    57344000    57344000\n' };
-}
-
-/**
- * Show SDM Prefer
- */
-function cmdShowSdmPrefer(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  const template = state.sdmTemplate || 'default';
-  let output = `\nThe current template is "${template}" template.\n`;
-  if (template === 'lanbase-routing' || template === 'routing') {
-    output += ` The selected template optimizes the resources in\n the switch to support this level of features for\n 16384 IPv4 ACL entries, 2048 QoS labels, 16384 IPv4 Multicast entries.\n`;
-  } else if (template === 'lanbase') {
-    output += ` The selected template optimizes the resources in\n the switch to support this level of features for\n 8192 IPv4 ACL entries, 2048 QoS labels, 2048 IPv4 Multicast entries.\n`;
-  } else if (template === 'desktop') {
-    output += ` The selected template optimizes the resources in\n the switch to support this level of features for\n 4096 IPv4 ACL entries, 512 QoS labels, 256 IPv4 Multicast entries.\n`;
-  } else {
-    output += ` The selected template optimizes the resources in\n the switch to support this level of features for\n 8 routed interfaces and 1024 VLANs.\n`;
-  }
-  return { success: true, output };
-}
-
-/**
- * Show System MTU
- */
-function cmdShowSystemMtu(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  return { success: true, output: '\nSystem MTU size is 1500 bytes\nSystem Jumbo MTU size is 1500 bytes\nRouting MTU size is 1500 bytes\n' };
-}
-
-
-
-
-/**
- * Show parent command (incomplete)
- */
-function cmdShowParent(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  return { success: false, error: CLI_ERRORS.incomplete };
-}
-
-
-
-
-
-
-/**
- * Show Auth
- */
-function cmdShowAuth(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  const sessions = state.dot1xSessions || {};
-  const entries = Object.values(sessions);
-
-  if (entries.length === 0) {
-    return { success: true, output: '\nNo active authentication sessions.\n' };
-  }
-
-  let output = '\nInterface  Identifier           Method  Domain  Status          Session ID\n';
-  output += '--------------------------------------------------------------------------\n';
-  entries.forEach(s => {
-    const port = s.port.padEnd(10);
-    const id = (s.identity || 'N/A').padEnd(20);
-    const method = 'dot1x'.padEnd(7);
-    const domain = 'DATA'.padEnd(7);
-    const status = (s.state || 'Authz Success').padEnd(15);
-    const sessId = `0A0000010000000${s.port.replace(/\D/g, '') || '1'}`;
-    output += `${port} ${id} ${method} ${domain} ${status} ${sessId}\n`;
-  });
-
-  return { success: true, output };
-}
-
-/**
- * Show Sessions
- */
-function cmdShowSessions(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  return { success: true, output: '\n% No active sessions.\n' };
-}
-
-/**
- * Show NTP
- */
-export function cmdShowNtp(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
-  const servers = state.ntpServers || [];
-  const masterStratum = state.ntpMasterStratum;
-  if (servers.length === 0 && !masterStratum) {
-    return { success: true, output: '\n% NTP is not enabled.\n' };
-  }
-
-  const isStatus = /status/i.test(input);
-  const isAssociations = /associations/i.test(input);
-
-  const referenceIp = servers[0];
-  const matchedDevice = ctx.devices?.find((d) => d.ip === referenceIp);
-  const isSync = matchedDevice !== undefined || servers.length > 0;
-
-  if (isAssociations) {
-    let output = '\n  address         ref clock       st   when   poll reach  delay  offset   disp\n';
-    output += '*~' + referenceIp.padEnd(16) + '127.127.1.1     1     14     64  377     1.24   0.045   0.12\n';
-    for (let i = 1; i < servers.length; i++) {
-      const s = servers[i];
-      output += ' +' + s.padEnd(16) + '127.127.1.1     2     28     64  377     2.10   0.112   0.24\n';
-    }
-    output += ' * master (synced), # master (unsynced), + selected, - candidate, ~ configured\n';
-    return { success: true, output };
-  }
-
-  if (isStatus || input.trim() === 'show ntp') {
-    if (masterStratum) {
-      let output = '\nClock is synchronized, NTP master (stratum ' + masterStratum + ')\n';
-      output += 'nominal freq is 250.0000 Hz, actual freq is 249.9998 Hz, precision is 2**18\n';
-      output += 'reference time is LOCAL(0)\n';
-      output += 'clock offset is 0.0000 msec, root delay is 0.00 msec\n';
-      output += 'root dispersion is 0.00 msec, peer dispersion is 0.00 msec\n';
-      output += 'loopfilter state is \'FREQ\' (Normal), drift is 0.00000000 s/s\n';
-      output += 'system poll interval is 64 s\n';
-      output += '\n  NTP servers configured as master (stratum ' + masterStratum + ')\n';
-      return { success: true, output };
-    }
-    let output = '\nClock is synchronized, stratum 2, reference is ' + referenceIp + '\n';
-    output += 'nominal freq is 250.0000 Hz, actual freq is 249.9998 Hz, precision is 2**18\n';
-    output += 'reference time is E8D1A543.64D29810 (20:12:00.393 UTC Wed Sep 2 2026)\n';
-    output += 'clock offset is 0.0450 msec, root delay is 1.24 msec\n';
-    output += 'root dispersion is 11.23 msec, peer dispersion is 1.20 msec\n';
-    output += 'loopfilter state is \'SPIK\' (Normal), drift is 0.00000123 s/s\n';
-    output += 'system poll interval is 64 s, last update was 14 sec ago.\n';
-    return { success: true, output };
-  }
-
-  let output = '\nClock is synchronized, stratum 2, reference is ' + referenceIp + '\n';
-  output += ' actual frequency: 250.0000 Hz, precision: 2**18\n';
-  output += ' reference time: ' + referenceIp + '\n';
-  output += ' clock offset: 0.0450 msec, root delay: 1.24 msec\n';
-  output += ' root dispersion: 11.23 msec, peer dispersion: 1.20 msec\n';
-  output += ' loopfilter state: \'CTRL\' (Normal), drift: 0.00000000 s/s\n';
-  output += ' system poll interval: 64 s, last update: 14 sec ago\n';
-  output += `\n  NTP servers configured:\n\n`;
-
-  for (const ip of servers) {
-    const isReachable = ctx.devices?.find((d) => d.ip === ip) !== undefined || isSync;
-    output += `  ${ip} ${isReachable ? '... reachable, syncing' : '... unreachable'}\n`;
-  }
-
-  output += '\n';
-  return { success: true, output };
-}
-
-/**
- * Show SNMP
- */
-function cmdShowSnmp(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  const chassis = state.version?.serialNumber || 'XXXXXXXXXXXX';
-  const contact = state.snmpContact || 'unconfigured';
-  const location = state.snmpLocation || 'unconfigured';
-  const communities = Object.entries(state.snmpCommunities || {});
-
-  let output = `Chassis: ${chassis}\n`;
-  output += `Contact: ${contact}\n`;
-  output += `Location: ${location}\n`;
-  output += `0 SNMP packets input\n`;
-  output += `    0 Bad SNMP version errors\n`;
-  output += `    0 Unknown community name\n`;
-  output += `    0 Illegal operation for community name supplied\n`;
-  output += `    0 Encoding errors\n`;
-  output += `    0 Number of requested variables\n`;
-  output += `    0 Number of altered variables\n`;
-  output += `    0 Get-request PDUs\n`;
-  output += `    0 Get-next PDUs\n`;
-  output += `    0 Set-request PDUs\n`;
-  output += `0 SNMP packets output\n`;
-  output += `    0 Too big errors (Maximum packet size 1500)\n`;
-  output += `    0 No such name errors\n`;
-  output += `    0 Bad values errors\n`;
-  output += `    0 General errors\n`;
-  output += `    0 Response PDUs\n`;
-  output += `    0 Trap PDUs\n`;
-  output += `SNMP logging: ${state.loggingEnabled ? 'enabled' : 'disabled'}\n`;
-
-  if (communities.length > 0) {
-    output += `SNMP communities:\n`;
-    communities.forEach(([name, mode]) => {
-      output += `    ${name} ${mode}\n`;
-    });
-  } else {
-    output += `SNMP communities:\n    <none configured>\n`;
-  }
-
-  return { success: true, output };
-}
-
-/**
- * Show Policy Map
- */
-function cmdShowPolicyMap(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  const maps = state.qosPolicyMaps;
-  if (!maps || Object.keys(maps).length === 0) return { success: true, output: '\n% No policy maps configured.\n' };
-  let output = '';
-  Object.entries(maps).forEach(([name, policy]) => {
-    output += `Policy-map ${name}\n`;
-    Object.entries(policy.classes || {}).forEach(([className, cls]) => {
-      output += `  Class ${className}\n`;
-      if (cls.setDscp) output += `    set dscp ${cls.setDscp}\n`;
-      if (cls.setCos !== undefined) output += `    set cos ${cls.setCos}\n`;
-      if (cls.policeRate !== undefined) output += `    police rate ${cls.policeRate}\n`;
-      if (cls.bandwidthPercent !== undefined) output += `    bandwidth ${cls.bandwidthPercent}%\n`;
-      if (cls.priority) output += '    priority\n';
-    });
-  });
-  return { success: true, output };
-}
-
-/**
- * Show Class Map
- */
-function cmdShowClassMap(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  const maps = state.qosClassMaps;
-  if (!maps || Object.keys(maps).length === 0) return { success: true, output: '\n% No class maps configured.\n' };
-  let output = '';
-  Object.entries(maps).forEach(([name, cm]) => {
-    output += `Class-map: ${name} (match-${cm.match})\n`;
-  });
-  return { success: true, output };
-}
-
-/**
- * Show MAC ACL
- */
-function cmdShowMacAcl(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  const acls = state.macAcls || {};
-  const names = Object.keys(acls);
-  if (names.length === 0) {
-    return { success: true, output: '\n% No MAC access lists configured.\n' };
-  }
-
-  let output = '';
-  names.forEach(name => {
-    output += `\nMAC access-list extended ${name}\n`;
-    const rules = acls[name] || [];
-    if (rules.length === 0) {
-      output += '    (empty)\n';
-    } else {
-      rules.forEach((rule, idx) => {
-        output += `    ${(idx + 1) * 10} ${typeof rule === 'string' ? rule : JSON.stringify(rule)}\n`;
-      });
-    }
-  });
-
-  return { success: true, output };
-}
-
-
-/**
- * Show Diagnostic
- */
-function cmdShowDiag(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  const ports = state.ports || {};
-  const portKeys = Object.keys(ports);
-
-  let output = '\nOverall Diagnostic Result: PASS\n';
-  output += 'Test                              Attributes        Result\n';
-  output += '--------------------------------- ----------------- ---------\n';
-  output += 'TestPortLoopback                  Complete          Passed\n';
-  output += 'TestMacAddressForwarding          Complete          Passed\n';
-  output += 'TestNvramIntegrity                Complete          Passed\n';
-
-  if (portKeys.length > 0) {
-    output += '\nInterface Diagnostic Status:\n';
-    output += 'Port       Status       Link State   Errors/Drops\n';
-    output += '---------- ------------ ------------ ------------\n';
-    portKeys.forEach(pk => {
-      const p = ports[pk];
-      const statusStr = p.shutdown ? 'Disabled' : 'Enabled';
-      const linkStr = p.status === 'connected' ? 'Up' : (p.shutdown ? 'Down' : 'NoCable');
-      const errCount = (p.statistics?.inputErrors || 0) + (p.statistics?.crcErrors || 0) + (p.statistics?.drops || 0);
-      output += `${pk.padEnd(10)} ${statusStr.padEnd(12)} ${linkStr.padEnd(12)} ${errCount.toString()}\n`;
-    });
-  }
-
-  return { success: true, output };
-}
-
-/**
- * Show Privilege
- */
-function cmdShowPrivilege(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  const level = state.currentMode === 'privileged' ? 15 : 1;
-  return { success: true, output: `\nCurrent privilege level is ${level}\n` };
-}
-
-
-/**
- * Show Banner MOTD
- */
-function cmdShowBannerMotd(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  return { success: true, output: state.bannerMOTD ? `\n${state.bannerMOTD}\n` : '\n% Banner not set\n' };
-}
-
-/**
- * Show Alias
- */
-function cmdShowAlias(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  let output = '\nExec aliases:\n';
-  const builtIn: Record<string, string> = { 'h': 'show history', 'lo': 'exit' };
-  const allAliases = { ...builtIn, ...state.execAliases };
-  if (Object.keys(allAliases).length === 0) {
-    output += '  (none)\n';
-  } else {
-    for (const [name, cmd] of Object.entries(allAliases)) {
-      output += `  ${name.padEnd(20)} ${cmd}\n`;
-    }
-  }
-  return { success: true, output };
-}
-
-/**
- * Show Redundancy
- */
-function cmdShowRedundancy(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  return { success: true, output: '\nRedundancy mode: NON-REDUNDANT\n' };
-}
-
-/**
- * Show Archive
- */
-function cmdShowArchive(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  return { success: true, output: '\nArchive configuration is not enabled.\n' };
-}
-
-
-/**
- * Show Policy Map Interface
- */
-function cmdShowPolicyMapInterface(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  const match = input.match(/show\s+policy-map\s+interface\s+(\S+)?/i);
-  const interfaceName = match?.[1];
-
-  let output = '';
-
-  if (interfaceName) {
-    const port = (state.ports || {})[interfaceName.toLowerCase()];
-    if (!port) {
-      return { success: false, error: `% Interface ${interfaceName} not found` };
-    }
-
-    if (!port.qos?.policyMap) {
-      output += `\nInterface ${interfaceName}\n`;
-      output += `  Service Policy output: not configured\n`;
-      output += `  Service Policy input: not configured\n`;
-    } else {
-      output += `\nInterface ${interfaceName}\n`;
-      output += `  Service Policy output: ${port.qos.policyMap}\n`;
-      if (port.qos.enabled) {
-        output += `    Class ${port.qos.policyMap}\n`;
-        output += `      Output Queue: ${port.qos.egressQueue || 40}\n`;
-        if (port.qos.shaping?.enabled) {
-          output += `      Shaping rate: ${port.qos.shaping.rate} bps\n`;
-        }
-        if (port.qos.policing?.enabled) {
-          output += `      Police rate: ${port.qos.policing.rate} bps\n`;
-        }
-      }
-    }
-  } else {
-    output += '\nPolicy Map output\n';
-    output += '  No configured policy maps\n';
-  }
-
-  output += '!\n';
-  return { success: true, output };
-}
-
-/**
- * Show QoS Interface
- */
-function cmdShowQosInterface(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  const match = input.match(/show\s+qos\s+interface\s+(\S+)?/i);
-  const interfaceName = match?.[1];
-
-  let output = '';
-
-  if (interfaceName) {
-    const port = (state.ports || {})[interfaceName.toLowerCase()];
-    if (!port) {
-      return { success: false, error: `% Interface ${interfaceName} not found` };
-    }
-
-    output += `\nInterface ${interfaceName}\n`;
-    output += `QoS is ${port.qos?.enabled ? 'enabled' : 'disabled'}\n`;
-
-    if (port.qos?.enabled) {
-      output += `  Queue Strategy: FIFO\n`;
-      output += `  Egress Queue Depth: ${port.qos.egressQueue || 40}\n`;
-      output += `  Ingress Queue Depth: ${port.qos.ingressQueue || 75}\n`;
-
-      if (port.qos.shaping?.enabled) {
-        output += `  Traffic Shaping:\n`;
-        output += `    Rate: ${port.qos.shaping.rate} bits/sec\n`;
-      }
-
-      if (port.qos.policing?.enabled) {
-        output += `  Traffic Policing:\n`;
-        output += `    Rate: ${port.qos.policing.rate} bits/sec\n`;
-        output += `    Burst: ${port.qos.policing.burst} bytes\n`;
-      }
-
-      if (port.qos.priorityQueue?.enabled) {
-        output += `  Priority Queue: enabled\n`;
-        output += `    Limit: ${port.qos.priorityQueue.limit || 'unlimited'}\n`;
-      }
-    }
-  } else {
-    output += '\nInterface         QoS Status\n';
-    output += '----------        ----------\n';
-    Object.keys(state.ports || {}).forEach(portName => {
-      const port = (state.ports || {})[portName];
-      output += `${portName.padEnd(18)}${port.qos?.enabled ? 'enabled' : 'disabled'}\n`;
-    });
-  }
-
-  output += '!\n';
-  return { success: true, output };
-}
-
-/**
- * Show Queueing Interface
- */
-function cmdShowQueuingInterface(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  const match = input.match(/show\s+queuing\s+interface\s+(\S+)?/i);
-  const interfaceName = match?.[1];
-
-  let output = '';
-
-  if (interfaceName) {
-    const port = (state.ports || {})[interfaceName.toLowerCase()];
-    if (!port) {
-      return { success: false, error: `% Interface ${interfaceName} not found` };
-    }
-
-    output += `\nInterface ${interfaceName}\n`;
-    output += `  Queueing Strategy: FIFO\n`;
-    output += `  Output Queue: ${port.qos?.egressQueue || 40} (max threshold)\n`;
-    output += `  Input Queue: ${port.qos?.ingressQueue || 75} (max threshold)\n`;
-
-    const stats = port.statistics || {};
-    output += `\nQueue Statistics:\n`;
-    output += `  Enqueued: ${stats.outputPackets || 0} packets\n`;
-    output += `  Dropped: ${stats.drops || 0} packets\n`;
-    output += `  Overruns: ${stats.overruns || 0}\n`;
-
-    if (port.qos?.priorityQueue?.enabled) {
-      output += `\nPriority Queue:\n`;
-      output += `  Status: enabled\n`;
-      output += `  Limit: ${port.qos.priorityQueue.limit || 'unlimited'}\n`;
-    }
-  } else {
-    output += '\nInterface         Queue Strategy  Threshold\n';
-    output += '----------        --------------  ---------\n';
-    Object.keys(state.ports || {}).forEach(portName => {
-      const port = (state.ports || {})[portName];
-      const threshold = port.qos?.egressQueue || 40;
-      output += `${portName.padEnd(18)}FIFO             ${threshold}\n`;
-    });
-  }
-
-  output += '!\n';
-  return { success: true, output };
-}
-
-
-
-export function cmdShowLogging(state: SwitchState): CommandResult {
-  const loggingStatus = state.loggingEnabled !== false ? 'enabled' : 'disabled';
-  const trapLevel = state.syslogTrapLevel || 'informational';
-  const host = state.syslogHost ? `Logging to ${state.syslogHost}` : 'Logging to console/buffer';
-
-  const output = `Syslog logging: ${loggingStatus}
-Console logging: level debugging, 0 messages logged
-Buffer logging: level debugging, 0 messages logged
-Trap logging: level ${trapLevel}, 0 message lines logged
-${host}
-`;
-  return { success: true, output };
-}
-
-export function cmdShowNetworkHealth(
-  _state: SwitchState,
-  _input: string,
-  ctx: CommandContext
-): CommandResult {
-  const devices = ctx.devices || [];
-  const connections = ctx.connections || [];
-  const deviceStates = ctx.deviceStates || new Map<string, SwitchState>();
-
-  const vlanIssues = diagnoseVlanMismatches(devices, connections, deviceStates);
-  const dupIssues = diagnoseDuplicateAddresses(devices, deviceStates);
-  const orphanIssues = diagnoseOrphanDevices(devices, connections, deviceStates);
-  const loopIssues = detectRoutingLoops(devices, deviceStates, connections);
-  const interfaceIssues = diagnoseInterfaceHealth(deviceStates);
-  const stpIssues = diagnoseStpIsolation(deviceStates);
-  const reachabilityIssues = diagnoseRouteReachability(devices, deviceStates, connections);
-
-  const errors = orphanIssues.filter(o => o.type === 'ORPHAN_DEVICE').length
-    + stpIssues.length
-    + (interfaceIssues.errors?.length || 0)
-    + (reachabilityIssues.errors?.length || 0);
-  const warnings = vlanIssues.length
-    + dupIssues.length
-    + orphanIssues.filter(o => o.type === 'ORPHAN_PORT').length
-    + loopIssues.length
-    + (interfaceIssues.warnings?.length || 0);
-
-  let overallStatus = 'PASSED';
-  if (errors > 0) overallStatus = 'CRITICAL';
-  else if (warnings > 0) overallStatus = 'WARNING';
-
-  let output = '\n';
-  output += '=====================================================\n';
-  output += '            NETWORK HEALTH CHECK REPORT              \n';
-  output += '=====================================================\n';
-  output += `Overall Status : ${overallStatus}\n`;
-  output += `Total Devices  : ${devices.length}\n`;
-  output += `Total Links    : ${connections.length}\n`;
-  output += `Errors         : ${errors}\n`;
-  output += `Warnings       : ${warnings}\n`;
-  output += '-----------------------------------------------------\n\n';
-
-  output += '1. VLAN & Trunk Configuration:\n';
-  if (vlanIssues.length === 0) {
-    output += '   [OK] No VLAN or Native VLAN mismatches detected.\n';
-  } else {
-    vlanIssues.forEach(issue => {
-      output += `   [!] ${issue.message}\n       Fix: ${issue.recommendation}\n`;
-    });
-  }
-  output += '\n';
-
-  output += '2. IP & MAC Address Integrity:\n';
-  if (dupIssues.length === 0) {
-    output += '   [OK] All assigned IP and MAC addresses are unique.\n';
-  } else {
-    dupIssues.forEach(issue => {
-      output += `   [!] ${issue.message}\n`;
-    });
-  }
-  output += '\n';
-
-  output += '3. Device & Port Connectivity:\n';
-  if (orphanIssues.length === 0) {
-    output += '   [OK] All devices and configured ports are properly connected.\n';
-  } else {
-    orphanIssues.forEach(issue => {
-      output += `   [!] ${issue.message}\n`;
-    });
-  }
-  output += '\n';
-
-  output += '4. Routing Loops:\n';
-  if (loopIssues.length === 0) {
-    output += '   [OK] No routing loops detected in route tables.\n';
-  } else {
-    loopIssues.forEach(issue => {
-      output += `   [!] ${issue.message}\n`;
-    });
-  }
-  output += '\n';
-
-  output += '5. Interface Health (shutdown / down):\n';
-  if ((interfaceIssues.errors?.length || 0) === 0 && (interfaceIssues.warnings?.length || 0) === 0) {
-    output += '   [OK] All interfaces are administratively up and connected.\n';
-  } else {
-    (interfaceIssues.errors || []).forEach(issue => {
-      output += `   [!] ${issue}\n`;
-    });
-    (interfaceIssues.warnings || []).forEach(issue => {
-      output += `   [~] ${issue}\n`;
-    });
-  }
-  output += '\n';
-
-  output += '6. Spanning-Tree Isolation:\n';
-  if (stpIssues.length === 0) {
-    output += '   [OK] All switches have at least one forwarding STP port.\n';
-  } else {
-    stpIssues.forEach(issue => {
-      output += `   [!] ${issue}\n`;
-    });
-  }
-  output += '\n';
-
-  output += '7. Route Reachability:\n';
-  if ((reachabilityIssues.errors?.length || 0) === 0 && (reachabilityIssues.warnings?.length || 0) === 0) {
-    output += '   [OK] All known networks are reachable from every L3 device.\n';
-  } else {
-    (reachabilityIssues.errors || []).forEach(issue => {
-      output += `   [!] ${issue}\n`;
-    });
-    (reachabilityIssues.warnings || []).forEach(issue => {
-      output += `   [~] ${issue}\n`;
-    });
-  }
-  output += '\n';
-
-  output += '=====================================================\n';
-  return { success: true, output };
-}
-
-interface HealthDiagnosis {
-  errors: string[];
-  warnings: string[];
-}
-
-/**
- * Flag administratively shutdown ports and ports not in 'connected' state.
- */
-function diagnoseInterfaceHealth(deviceStates: Map<string, SwitchState>): HealthDiagnosis {
-  const errors: string[] = [];
-  const warnings: string[] = [];
-
-  deviceStates.forEach((state, deviceId) => {
-    const ports = state.ports || {};
-    const portIds = Object.keys(ports);
-    if (portIds.length === 0) return;
-
-    const shutdownPorts: string[] = [];
-    const downPorts: string[] = [];
-
-    portIds.forEach(pid => {
-      const p = ports[pid];
-      if (p.shutdown) {
-        shutdownPorts.push(pid);
-      } else if (p.status && p.status !== 'connected') {
-        downPorts.push(`${pid} (${p.status})`);
-      }
-    });
-
-    if (shutdownPorts.length === portIds.length) {
-      errors.push(`Device ${deviceId}: ALL interfaces are administratively shutdown (${shutdownPorts.join(', ')})`);
-    } else if (shutdownPorts.length > 0) {
-      warnings.push(`Device ${deviceId}: interfaces shutdown: ${shutdownPorts.join(', ')}`);
-    }
-    if (downPorts.length > 0) {
-      warnings.push(`Device ${deviceId}: interfaces not connected: ${downPorts.join(', ')}`);
-    }
-  });
-
-  return { errors, warnings };
-}
-
-/**
- * Flag switches running STP that have no port in forwarding state (fully isolated).
- */
-function diagnoseStpIsolation(deviceStates: Map<string, SwitchState>): string[] {
-  const issues: string[] = [];
-
-  deviceStates.forEach((state, deviceId) => {
-    if (state.spanningTreeEnabled === false) return;
-    const hasStpInfo = Object.values(state.ports || {}).some(p => p.spanningTree?.state);
-    if (!hasStpInfo && !state.spanningTreePriority) return;
-
-    const forwardingPorts = Object.values(state.ports || {})
-      .filter(p => (p.spanningTree?.state === 'forwarding') || (p.status === 'connected' && !p.spanningTree?.state));
-    if (forwardingPorts.length === 0) {
-      issues.push(`Switch ${deviceId}: STP is enabled but no port is in forwarding state — switch is isolated`);
-    }
-  });
-
-  return issues;
-}
-
-/**
- * For each L3 device, verify every known network in the topology is reachable.
- */
-function diagnoseRouteReachability(
-  devices: CanvasDevice[],
-  deviceStates: Map<string, SwitchState>,
-  connections: CanvasConnection[]
-): HealthDiagnosis {
-  const errors: string[] = [];
-  const warnings: string[] = [];
-
-  // Collect known networks across the whole topology (device IP + port IPs).
-  const knownNetworks = new Set<string>();
-  const networkLabel = new Map<string, string>();
-
-  devices.forEach(device => {
-    const ips: { ip: string; mask: string }[] = [];
-    const state = deviceStates.get(device.id);
-    if (state) {
-      Object.values(state.ports || {}).forEach(p => {
-        if (p.ipAddress && p.subnetMask) ips.push({ ip: p.ipAddress, mask: p.subnetMask });
-      });
-    }
-    ips.forEach(({ ip, mask }) => {
-      try {
-        const ipNum = ipToNumber(ip);
-        const maskNum = ipToNumber(mask);
-        const netNum = (ipNum & maskNum) >>> 0;
-        const key = `${netNum}:${maskNum}`;
-        if (!knownNetworks.has(key)) {
-          knownNetworks.add(key);
-          networkLabel.set(key, `${numberToIp(netNum)}/${prefixFromMask(maskNum)}`);
-        }
-      } catch {
-        // ignore malformed IPs
-      }
-    });
-  });
-
-  // L3 routing devices only
-  const l3Devices = devices.filter(d =>
-    d.type === 'router' || d.type === 'firewall' ||
-    (d.type === 'switchL3' && deviceStates.get(d.id)?.ipRouting !== false)
-  );
-
-  l3Devices.forEach(device => {
-    const state = deviceStates.get(device.id);
-    if (!state) return;
-    const table = getRoutingTable(device.id, deviceStates, devices, connections);
-
-    knownNetworks.forEach(key => {
-      const [netNumStr] = key.split(':');
-      const netNum = parseInt(netNumStr, 10);
-      const netIp = numberToIp(netNum);
-      if (!findRoute(netIp, table)) {
-        const net = networkLabel.get(key) || netIp;
-        if (net.toLowerCase().startsWith('0.0.0.0')) return;
-        if (!findRoute('0.0.0.0', table) && table.length === 0) {
-          warnings.push(`${device.name}: no routes configured at all — network ${net} is unreachable`);
-        } else {
-          errors.push(`${device.name}: no route to ${net}`);
-        }
-      }
-    });
-  });
-
-  return { errors, warnings };
-}
-
-function numberToIp(num: number): string {
-  return [(num >>> 24) & 255, (num >>> 16) & 255, (num >>> 8) & 255, num & 255].join('.');
-}
-
-function prefixFromMask(maskNum: number): number {
-  let count = 0;
-  let temp = maskNum >>> 0;
-  while (temp & 0x80000000) {
-    count++;
-    temp = (temp << 1) >>> 0;
-  }
-  return count;
-}
-
-
-
-
-
-
-
+import { cmdShowNtp as cmdShowNtpDisplay } from './show/showNtpDisplay';

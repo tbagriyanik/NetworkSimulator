@@ -617,11 +617,15 @@ ISP(config-router)# exit
 
 ## 📌 Özet ve Ek Kaynaklar
 
-Bu rehber dokümanı, **Network Simulator v4.1.0** sürümünün sunduğu tüm kabiliyetleri, arayüz modüllerini, kodlama ortamlarını ve uygulama senaryolarını detaylandırmaktadır. 
+Bu rehber dokümanı, **Network Simulator v5.6.0** sürümünün sunduğu tüm kabiliyetleri, arayüz modüllerini, kodlama ortamlarını ve uygulama senaryolarını detaylandırmaktadır. 
 
 Daha fazla detaylı teknik döküman için projedeki diğer Markdown rehberlerini inceleyebilirsiniz:
-- 📖 [Tam Özellik Envanteri (ProjeOzellikleri.md)](file:///f:/netsim2026/networksim/doc/training/ProjeOzellikleri.md)
-- 📚 [Network Simulator Kitapçığı (NETWORK_SIMULATOR_KITAPCIK.md)](file:///f:/netsim2026/networksim/doc/training/NETWORK_SIMULATOR_KITAPCIK.md)
-- 💻 [CLI Komut Referansı (CLI_COMMANDS.md)](file:///f:/netsim2026/networksim/doc/cli/CLI_COMMANDS.md)
-- 🐍 [Python Programlama Rehberi (PYTHON_PROGRAMMING_GUIDE.md)](file:///f:/netsim2026/networksim/doc/getting-started/PYTHON_PROGRAMMING_GUIDE.md)
+- 📖 [Tam Özellik Envanteri (ProjeOzellikleri.md)](ProjeOzellikleri.md)
+- 📚 [Network Simulator Kitapçığı (NETWORK_SIMULATOR_KITAPCIK.md)](NETWORK_SIMULATOR_KITAPCIK.md)
+- 💻 [CLI Komut Referansı (CLI_COMMANDS.md)](../cli/CLI_COMMANDS.md)
+- 🎓 [Rehberli CLI Dersleri (CLI_GUIDED_TUTORIAL.md)](../cli/CLI_GUIDED_TUTORIAL.md)
+- 🐍 [Python Programlama Rehberi (PYTHON_PROGRAMMING_GUIDE.md)](../getting-started/PYTHON_PROGRAMMING_GUIDE.md)
+- ⚡ [Hızlı Referans (QUICK_REFERENCE.md)](../getting-started/QUICK_REFERENCE.md)
+- 🗺️ [Dokümantasyon İndeksi (DOCUMENTATION_INDEX.md)](../DOCUMENTATION_INDEX.md)
+
 
