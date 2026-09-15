@@ -1,5 +1,6 @@
 import type { CanvasDevice } from '../../networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
+import { createInitialState } from '@/lib/network/initialState';
 import { generateRouterPorts } from '../../networkTopology.portGenerators';
 import {
   type Ctx,
@@ -9,6 +10,7 @@ import {
   addRouter,
   addSwitch,
   addWlc,
+  addAccessPoint,
   addPcToSwitch,
   connect,
   enableRouterPort,
@@ -27,43 +29,11 @@ export function generateEnterpriseWlc(): Ctx {
   connect(ctx, 'conn-wlc-core', 'wlc-1', 'gi0/0', wlcState, 'sw-core', 'fa0/1', swCore);
 
   // AP 1 (Floor 1)
-  const ap1: CanvasDevice = {
-    id: 'ap-floor1',
-    type: 'router',
-    name: 'AP-Floor1',
-    macAddress: '0011.2233.AA01',
-    ip: '192.168.1.10',
-    subnet: '255.255.255.0',
-    gateway: '192.168.1.1',
-    x: 240,
-    y: 260,
-    status: 'online',
-    wifi: { enabled: true, ssid: 'Corp-WiFi', security: 'wpa2', password: 'password123', channel: '2.4GHz', mode: 'ap' },
-    ports: generateRouterPorts(),
-  };
-  ctx.devices.push(ap1);
-  const ap1State = { deviceType: 'router', hostname: 'AP-Floor1', ports: {} } as unknown as SwitchState;
-  ctx.states.set('ap-floor1', ap1State);
+  const { state: ap1State } = addAccessPoint(ctx, 'ap-floor1', 'AP-Floor1', '0011.2233.AA01', '192.168.1.10', 240, 260, 'Corp-WiFi', '2.4GHz');
   connect(ctx, 'conn-ap1-core', 'ap-floor1', 'gi0/0', ap1State, 'sw-core', 'fa0/2', swCore);
 
   // AP 2 (Floor 2)
-  const ap2: CanvasDevice = {
-    id: 'ap-floor2',
-    type: 'router',
-    name: 'AP-Floor2',
-    macAddress: '0011.2233.AA02',
-    ip: '192.168.1.11',
-    subnet: '255.255.255.0',
-    gateway: '192.168.1.1',
-    x: 520,
-    y: 260,
-    status: 'online',
-    wifi: { enabled: true, ssid: 'Corp-WiFi', security: 'wpa2', password: 'password123', channel: '5GHz', mode: 'ap' },
-    ports: generateRouterPorts(),
-  };
-  ctx.devices.push(ap2);
-  const ap2State = { deviceType: 'router', hostname: 'AP-Floor2', ports: {} } as unknown as SwitchState;
-  ctx.states.set('ap-floor2', ap2State);
+  const { state: ap2State } = addAccessPoint(ctx, 'ap-floor2', 'AP-Floor2', '0011.2233.AA02', '192.168.1.11', 520, 260, 'Corp-WiFi', '5GHz');
   connect(ctx, 'conn-ap2-core', 'ap-floor2', 'gi0/0', ap2State, 'sw-core', 'fa0/3', swCore);
 
   // Mobile / Laptop Clients
@@ -106,10 +76,10 @@ export function generateEnterpriseWlc(): Ctx {
 export function generateIotSmartHome(): Ctx {
   const ctx = newCtx();
   // Gateway
-  const { state: gwState } = addRouter(ctx, 'iot-gw', 'Home-Gateway', '0011.2233.9901', 350, 60, {
+  const { device: gwDevice, state: gwState } = addRouter(ctx, 'iot-gw', 'Home-Gateway', '0011.2233.9901', 350, 60, {
     dhcpPools: { 'IOT-POOL': { network: '192.168.50.0', subnetMask: '255.255.255.0', defaultRouter: '192.168.50.1', dnsServer: '8.8.8.8' } },
-    wifi: { enabled: true, ssid: 'SmartHome-IoT', security: 'wpa2', password: 'iotpassword', channel: '2.4GHz', mode: 'ap' },
   });
+  gwDevice.wifi = { enabled: true, ssid: 'SmartHome-IoT', security: 'wpa2', password: 'iotpassword', channel: '2.4GHz', mode: 'ap' };
   enableRouterPort(gwState, 'gi0/0', '192.168.50.1', '255.255.255.0');
 
   // IoT Switch
@@ -202,26 +172,15 @@ export function generateWireless(pcCount: number): Ctx {
   };
   ctx.devices.push(ap);
 
-  const apState = {
+  const apState: SwitchState = {
+    ...createInitialState('0011.2233.AA01', 'NS-L3-24PS'),
     deviceType: 'router',
     hostname: 'AP-1',
-    macAddress: '0011.2233.AA01',
-    switchModel: 'NS-L3-24PS',
     switchLayer: 'L3',
-    currentMode: 'user',
-    commandHistory: [],
-    vlanDatabase: {},
-    ports: {},
     ipRouting: true,
     services: { http: { enabled: true, content: '', fontSize: 16 } },
-    security: {
-      enableSecretEncrypted: false,
-      servicePasswordEncryption: false,
-      users: [],
-      consoleLine: { login: false, transportInput: ['all'], execTimeout: { minutes: 10, seconds: 0 } },
-      vtyLines: { login: false, transportInput: ['all'], execTimeout: { minutes: 10, seconds: 0 } },
-    },
-  } as unknown as SwitchState;
+  };
+  apState.ports = {};
   ap.ports.forEach(p => {
     apState.ports[p.id] = {
       id: p.id,
@@ -300,10 +259,10 @@ export function generateWireless(pcCount: number): Ctx {
 export function generateOfficePrinterIot(_pcCount: number): Ctx {
   const ctx = newCtx();
   // Main Office Router
-  const { state: rState } = addRouter(ctx, 'r-office', 'Office-Router', '0011.2233.9901', 380, 50, {
+  const { device: rDevice, state: rState } = addRouter(ctx, 'r-office', 'Office-Router', '0011.2233.9901', 380, 50, {
     dhcpPools: { 'OFFICE-POOL': { network: '192.168.1.0', subnetMask: '255.255.255.0', defaultRouter: '192.168.1.1', dnsServer: '8.8.8.8' } },
-    wifi: { enabled: true, ssid: 'Office-Staff-WiFi', security: 'wpa2', password: 'officepassword', channel: '5GHz', mode: 'ap' },
   });
+  rDevice.wifi = { enabled: true, ssid: 'Office-Staff-WiFi', security: 'wpa2', password: 'officepassword', channel: '5GHz', mode: 'ap' };
   enableRouterPort(rState, 'gi0/0', '192.168.1.1', '255.255.255.0');
 
   // Department Switch

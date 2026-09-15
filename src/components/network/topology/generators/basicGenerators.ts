@@ -106,7 +106,7 @@ export function generateFullMesh(_pcCount: number): Ctx {
   const rList = nodes.map((n, idx) => {
     const { state, device } = addRouter(ctx, n.id, n.name, n.mac, n.x, n.y, {
       routingProtocol: 'ospf', ospfProcessId: '1', routerId: `${idx + 1}.${idx + 1}.${idx + 1}.${idx + 1}`,
-      dynamicRoutes: [{ destination: '10.0.0.0', subnetMask: '0.255.255.255', area: 0 }]
+      dynamicRoutes: [{ destination: '10.0.0.0', subnetMask: '0.255.255.255', area: 0, nextHop: '', type: 'dynamic' }]
     });
     return { state, device };
   });

@@ -121,12 +121,9 @@ export function generateNetautoPython(_pcCount: number): Ctx {
   ];
 
   routers.forEach(r => {
-    const { state: rState } = addRouter(ctx, r.id, r.name, r.mac, r.x, r.y, {
-      security: {
-        users: [{ username: 'admin', privilege: 15, password: 'password' }],
-        vtyLines: { login: true, transportInput: ['ssh', 'telnet'], execTimeout: { minutes: 15, seconds: 0 } },
-      },
-    });
+    const { state: rState } = addRouter(ctx, r.id, r.name, r.mac, r.x, r.y);
+    rState.security.users = [{ username: 'admin', privilege: 15, password: 'password' }];
+    rState.security.vtyLines = { login: true, transportInput: ['ssh', 'telnet'], execTimeout: { minutes: 15, seconds: 0 } };
     enableRouterPort(rState, 'gi0/0', r.ip, '255.255.255.0');
     connect(ctx, `conn-${r.id}-mgmt`, r.id, 'gi0/0', rState, 'sw-mgmt', r.swPort, swMgmt);
   });

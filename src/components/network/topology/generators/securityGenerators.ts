@@ -17,10 +17,10 @@ export function generateDmzFirewall(_pcCount: number): Ctx {
   // 3-Zone Stateful Firewall (gi0/0: Outside, gi0/1: Inside, gi0/2: DMZ)
   const { state: fwState } = addFirewall(ctx, 'fw-1', 'Edge-Firewall', '0011.2233.9901', 360, 200, {
     firewallRules: [
-      { id: 'rule-1', action: 'permit', protocol: 'tcp', srcIp: 'any', dstIp: '192.168.100.10', dstPort: '80', desc: 'Permit HTTP to DMZ Web Server' },
-      { id: 'rule-2', action: 'permit', protocol: 'tcp', srcIp: 'any', dstIp: '192.168.100.10', dstPort: '443', desc: 'Permit HTTPS to DMZ Web Server' },
-      { id: 'rule-3', action: 'permit', protocol: 'ip', srcIp: '10.0.1.0/24', dstIp: 'any', desc: 'Permit Inside to Internet' },
-      { id: 'rule-4', action: 'deny', protocol: 'ip', srcIp: 'any', dstIp: '10.0.1.0/24', desc: 'Deny Outside to Inside' },
+      { id: 'rule-1', action: 'allow', protocol: 'tcp', sourceIp: 'any', targetIp: '192.168.100.10', port: '80', enabled: true },
+      { id: 'rule-2', action: 'allow', protocol: 'tcp', sourceIp: 'any', targetIp: '192.168.100.10', port: '443', enabled: true },
+      { id: 'rule-3', action: 'allow', protocol: 'any', sourceIp: '10.0.1.0/24', targetIp: 'any', port: 'any', enabled: true },
+      { id: 'rule-4', action: 'deny', protocol: 'any', sourceIp: 'any', targetIp: '10.0.1.0/24', port: 'any', enabled: true },
     ],
   });
 
@@ -49,15 +49,11 @@ export function generateAcl(pcCount: number): Ctx {
   const ctx = newCtx();
   const { state: rState } = addRouter(ctx, 'router-1', 'R1', '0011.2233.9901', 350, 50, {
     accessLists: {
-      '100': {
-        type: 'extended',
-        name: 'FILTER',
-        entries: [
-          { action: 'permit', protocol: 'tcp', source: 'any', destination: '192.168.1.0 0.0.0.255', port: 'eq 80' },
-          { action: 'deny', protocol: 'icmp', source: 'any', destination: 'any' },
-          { action: 'permit', protocol: 'ip', source: 'any', destination: 'any' },
-        ],
-      },
+      '100': [
+        'permit tcp any 192.168.1.0 0.0.0.255 eq 80',
+        'deny icmp any any',
+        'permit ip any any',
+      ],
     },
   });
   enableRouterPort(rState, 'gi0/0', '192.168.1.1', '255.255.255.0');

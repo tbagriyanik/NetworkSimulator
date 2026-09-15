@@ -17,8 +17,8 @@ export function generateMultiAreaOspf(_pcCount: number): Ctx {
   const { state: r0 } = addRouter(ctx, 'r-area0', 'R0-Backbone', '0011.2233.9901', 360, 60, {
     routingProtocol: 'ospf', ospfProcessId: '1', routerId: '1.1.1.1',
     dynamicRoutes: [
-      { destination: '10.0.0.0', subnetMask: '0.0.0.3', area: 0 },
-      { destination: '10.0.0.4', subnetMask: '0.0.0.3', area: 0 },
+      { destination: '10.0.0.0', subnetMask: '0.0.0.3', area: 0, nextHop: '', type: 'dynamic' },
+      { destination: '10.0.0.4', subnetMask: '0.0.0.3', area: 0, nextHop: '', type: 'dynamic' },
     ],
   });
   enableRouterPort(r0, 'gi0/0', '10.0.0.1', '255.255.255.252');
@@ -28,8 +28,8 @@ export function generateMultiAreaOspf(_pcCount: number): Ctx {
   const { state: r1 } = addRouter(ctx, 'r-area1', 'ABR-Area1', '0011.2233.9902', 160, 220, {
     routingProtocol: 'ospf', ospfProcessId: '1', routerId: '2.2.2.2',
     dynamicRoutes: [
-      { destination: '10.0.0.0', subnetMask: '0.0.0.3', area: 0 },
-      { destination: '192.168.1.0', subnetMask: '0.0.0.255', area: 1 },
+      { destination: '10.0.0.0', subnetMask: '0.0.0.3', area: 0, nextHop: '', type: 'dynamic' },
+      { destination: '192.168.1.0', subnetMask: '0.0.0.255', area: 1, nextHop: '', type: 'dynamic' },
     ],
   });
   enableRouterPort(r1, 'gi0/0', '10.0.0.2', '255.255.255.252');
@@ -40,8 +40,8 @@ export function generateMultiAreaOspf(_pcCount: number): Ctx {
   const { state: r2 } = addRouter(ctx, 'r-area2', 'ABR-Area2', '0011.2233.9903', 560, 220, {
     routingProtocol: 'ospf', ospfProcessId: '1', routerId: '3.3.3.3',
     dynamicRoutes: [
-      { destination: '10.0.0.4', subnetMask: '0.0.0.3', area: 0 },
-      { destination: '192.168.2.0', subnetMask: '0.0.0.255', area: 2 },
+      { destination: '10.0.0.4', subnetMask: '0.0.0.3', area: 0, nextHop: '', type: 'dynamic' },
+      { destination: '192.168.2.0', subnetMask: '0.0.0.255', area: 2, nextHop: '', type: 'dynamic' },
     ],
   });
   enableRouterPort(r2, 'gi0/0', '10.0.0.6', '255.255.255.252');
@@ -97,13 +97,13 @@ export function generateBgpDualHomed(): Ctx {
 export function generateStaticRouting(pcCount: number): Ctx {
   const ctx = newCtx();
   const { state: r1s } = addRouter(ctx, 'router-1', 'R1', '0011.2233.9901', 200, 80, {
-    staticRoutes: [{ destination: '192.168.2.0', subnetMask: '255.255.255.0', nextHop: '10.0.0.2' }],
+    staticRoutes: [{ destination: '192.168.2.0', subnetMask: '255.255.255.0', nextHop: '10.0.0.2', type: 'static' }],
   });
   enableRouterPort(r1s, 'gi0/0', '192.168.1.1', '255.255.255.0');
   enableRouterPort(r1s, 's0/0/0', '10.0.0.1', '255.255.255.252');
 
   const { state: r2s } = addRouter(ctx, 'router-2', 'R2', '0011.2233.9902', 650, 80, {
-    staticRoutes: [{ destination: '192.168.1.0', subnetMask: '255.255.255.0', nextHop: '10.0.0.1' }],
+    staticRoutes: [{ destination: '192.168.1.0', subnetMask: '255.255.255.0', nextHop: '10.0.0.1', type: 'static' }],
   });
   enableRouterPort(r2s, 'gi0/0', '192.168.2.1', '255.255.255.0');
   enableRouterPort(r2s, 's0/0/0', '10.0.0.2', '255.255.255.252');
@@ -134,7 +134,10 @@ export function generateStaticRouting(pcCount: number): Ctx {
 export function generateOspf(pcCount: number): Ctx {
   const ctx = newCtx();
   const ospfExtras = (rid: string, nets: Array<{ destination: string; subnetMask: string; area: number }>) => ({
-    routingProtocol: 'ospf', ospfProcessId: '1', routerId: rid, dynamicRoutes: nets,
+    routingProtocol: 'ospf' as const,
+    ospfProcessId: '1',
+    routerId: rid,
+    dynamicRoutes: nets.map(n => ({ ...n, nextHop: '', type: 'dynamic' as const })),
   });
   const { state: r1s } = addRouter(ctx, 'router-1', 'R1', '0011.2233.9901', 200, 80,
     ospfExtras('1.1.1.1', [
@@ -178,7 +181,10 @@ export function generateOspf(pcCount: number): Ctx {
 export function generateTriangle(pcCount: number): Ctx {
   const ctx = newCtx();
   const ospfExtras = (rid: string, nets: Array<{ destination: string; subnetMask: string; area: number }>) => ({
-    routingProtocol: 'ospf', ospfProcessId: '1', routerId: rid, dynamicRoutes: nets,
+    routingProtocol: 'ospf' as const,
+    ospfProcessId: '1',
+    routerId: rid,
+    dynamicRoutes: nets.map(n => ({ ...n, nextHop: '', type: 'dynamic' as const })),
   });
 
   const { state: r1s } = addRouter(ctx, 'router-1', 'R1', '0011.2233.9901', 400, 40,
@@ -249,19 +255,16 @@ export function generateTriangle(pcCount: number): Ctx {
 export function generateNat(pcCount: number): Ctx {
   const ctx = newCtx();
   const { state: r1s } = addRouter(ctx, 'router-1', 'R1-Edge', '0011.2233.9901', 350, 140, {
-    natConfig: {
-      insideInterface: 'gi0/0',
-      outsideInterface: 'gi0/1',
-      accessList: '1',
-      overload: true,
-    },
-    accessLists: { '1': { type: 'standard', entries: [{ action: 'permit', source: '192.168.1.0', wildcard: '0.0.0.255' }] } },
+    natDynamicRules: [{ aclId: '1', interface: 'gi0/1', overload: true }],
+    accessLists: { '1': ['permit 192.168.1.0 0.0.0.255'] },
   });
   enableRouterPort(r1s, 'gi0/0', '192.168.1.1', '255.255.255.0');
   enableRouterPort(r1s, 'gi0/1', '203.0.113.1', '255.255.255.0');
+  if (r1s.ports['gi0/0']) r1s.ports['gi0/0'].natSide = 'inside';
+  if (r1s.ports['gi0/1']) r1s.ports['gi0/1'].natSide = 'outside';
 
   const { state: r2s } = addRouter(ctx, 'router-2', 'ISP', '0011.2233.9902', 350, 40, {
-    staticRoutes: [{ destination: '192.168.1.0', subnetMask: '255.255.255.0', nextHop: '203.0.113.1' }],
+    staticRoutes: [{ destination: '192.168.1.0', subnetMask: '255.255.255.0', nextHop: '203.0.113.1', type: 'static' }],
   });
   enableRouterPort(r2s, 'gi0/0', '203.0.113.2', '255.255.255.0');
 

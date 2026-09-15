@@ -1,5 +1,6 @@
 import type { CanvasDevice, CanvasConnection } from '../../networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
+import { createInitialState } from '@/lib/network/initialState';
 import {
   generateSwitchPorts,
   generateL3SwitchPorts,
@@ -67,24 +68,25 @@ export function addSwitch(
     ports: generateSwitchPorts(),
   };
   ctx.devices.push(device);
-  const state = {
+  const state: SwitchState = {
+    ...createInitialState(mac, 'NS-L2-24TT-L'),
     deviceType: 'switchL2',
     hostname: name,
-    macAddress: mac,
-    switchModel: 'NS-L2-24TT-L',
-    switchLayer: 'L2',
-    currentMode: 'user',
-    commandHistory: [],
-    vlanDatabase: { ...vlanDb },
-    ports: {},
-    security: {
-      enableSecretEncrypted: false,
-      servicePasswordEncryption: false,
-      users: [],
-      consoleLine: { login: false, transportInput: ['all'], execTimeout: { minutes: 10, seconds: 0 } },
-      vtyLines: { login: false, transportInput: ['all'], execTimeout: { minutes: 10, seconds: 0 } },
-    },
-  } as unknown as SwitchState;
+  };
+  if (vlanDb) {
+    Object.entries(vlanDb).forEach(([vid, vlanName]) => {
+      const vNum = Number(vid);
+      if (!isNaN(vNum)) {
+        state.vlans[vNum] = {
+          id: vNum,
+          name: vlanName,
+          status: 'active',
+          ports: state.vlans[vNum]?.ports || [],
+        };
+      }
+    });
+  }
+  state.ports = {};
   device.ports.forEach(p => {
     state.ports[p.id] = {
       id: p.id,
@@ -114,7 +116,7 @@ export function addL3Switch(
   x: number,
   y: number,
   vlanDb: Record<string, string> = { '1': 'default' },
-  extras: Record<string, unknown> = {},
+  extras: Partial<SwitchState> = {},
 ): { device: CanvasDevice; state: SwitchState } {
   const device: CanvasDevice = {
     id,
@@ -129,26 +131,29 @@ export function addL3Switch(
     ports: generateL3SwitchPorts(),
   };
   ctx.devices.push(device);
-  const state = {
+  const state: SwitchState = {
+    ...createInitialState(mac, 'NS-L3-24PS'),
     deviceType: 'switchL3',
     hostname: name,
-    macAddress: mac,
     switchModel: 'NS-L3-24PS',
     switchLayer: 'L3',
-    currentMode: 'user',
-    commandHistory: [],
-    vlanDatabase: { ...vlanDb },
-    ports: {},
     ipRouting: true,
-    security: {
-      enableSecretEncrypted: false,
-      servicePasswordEncryption: false,
-      users: [],
-      consoleLine: { login: false, transportInput: ['all'], execTimeout: { minutes: 10, seconds: 0 } },
-      vtyLines: { login: false, transportInput: ['all'], execTimeout: { minutes: 10, seconds: 0 } },
-    },
     ...extras,
-  } as unknown as SwitchState;
+  };
+  if (vlanDb) {
+    Object.entries(vlanDb).forEach(([vid, vlanName]) => {
+      const vNum = Number(vid);
+      if (!isNaN(vNum)) {
+        state.vlans[vNum] = {
+          id: vNum,
+          name: vlanName,
+          status: 'active',
+          ports: state.vlans[vNum]?.ports || [],
+        };
+      }
+    });
+  }
+  state.ports = {};
   device.ports.forEach(p => {
     state.ports[p.id] = {
       id: p.id,
@@ -163,6 +168,9 @@ export function addL3Switch(
       mode: 'routed',
     };
   });
+  if (extras.ports) {
+    Object.assign(state.ports, extras.ports);
+  }
   ctx.states.set(id, state);
   return { device, state };
 }
@@ -177,7 +185,7 @@ export function addRouter(
   mac: string,
   x: number,
   y: number,
-  extras: Record<string, unknown> = {},
+  extras: Partial<SwitchState> = {},
 ): { device: CanvasDevice; state: SwitchState } {
   const device: CanvasDevice = {
     id,
@@ -191,26 +199,15 @@ export function addRouter(
     ports: generateRouterPorts(),
   };
   ctx.devices.push(device);
-  const state = {
+  const state: SwitchState = {
+    ...createInitialState(mac, 'NS-L3-24PS'),
     deviceType: 'router',
     hostname: name,
-    macAddress: mac,
-    switchModel: 'NS-L3-24PS',
     switchLayer: 'L3',
-    currentMode: 'user',
-    commandHistory: [],
-    vlanDatabase: {},
-    ports: {},
     ipRouting: true,
-    security: {
-      enableSecretEncrypted: false,
-      servicePasswordEncryption: false,
-      users: [],
-      consoleLine: { login: false, transportInput: ['all'], execTimeout: { minutes: 10, seconds: 0 } },
-      vtyLines: { login: false, transportInput: ['all'], execTimeout: { minutes: 10, seconds: 0 } },
-    },
     ...extras,
-  } as unknown as SwitchState;
+  };
+  state.ports = {};
   device.ports.forEach(p => {
     state.ports[p.id] = {
       id: p.id,
@@ -225,6 +222,9 @@ export function addRouter(
       mode: 'routed',
     };
   });
+  if (extras.ports) {
+    Object.assign(state.ports, extras.ports);
+  }
   ctx.states.set(id, state);
   return { device, state };
 }
@@ -239,7 +239,7 @@ export function addFirewall(
   mac: string,
   x: number,
   y: number,
-  extras: Record<string, unknown> = {},
+  extras: Partial<SwitchState> = {},
 ): { device: CanvasDevice; state: SwitchState } {
   const device: CanvasDevice = {
     id,
@@ -253,21 +253,19 @@ export function addFirewall(
     ports: generateFirewallPorts(),
   };
   ctx.devices.push(device);
-  const state = {
+  const state: SwitchState = {
+    ...createInitialState(mac, 'NS-L3-24PS'),
     deviceType: 'firewall',
     hostname: name,
-    macAddress: mac,
-    currentMode: 'user',
-    commandHistory: [],
-    ports: {},
     ipRouting: true,
     firewallRules: [
-      { id: 'rule-1', action: 'permit', protocol: 'tcp', srcIp: 'any', dstIp: 'any', dstPort: '80', desc: 'Permit HTTP' },
-      { id: 'rule-2', action: 'permit', protocol: 'tcp', srcIp: 'any', dstIp: 'any', dstPort: '443', desc: 'Permit HTTPS' },
-      { id: 'rule-3', action: 'permit', protocol: 'icmp', srcIp: '192.168.1.0/24', dstIp: 'any', desc: 'Internal ICMP' },
+      { id: 'rule-1', action: 'allow', protocol: 'tcp', sourceIp: 'any', targetIp: 'any', port: '80', enabled: true },
+      { id: 'rule-2', action: 'allow', protocol: 'tcp', sourceIp: 'any', targetIp: 'any', port: '443', enabled: true },
+      { id: 'rule-3', action: 'allow', protocol: 'icmp', sourceIp: '192.168.1.0/24', targetIp: 'any', port: 'any', enabled: true },
     ],
     ...extras,
-  } as unknown as SwitchState;
+  };
+  state.ports = {};
   device.ports.forEach(p => {
     state.ports[p.id] = {
       id: p.id,
@@ -281,6 +279,9 @@ export function addFirewall(
       mode: 'routed',
     };
   });
+  if (extras.ports) {
+    Object.assign(state.ports, extras.ports);
+  }
   ctx.states.set(id, state);
   return { device, state };
 }
@@ -297,7 +298,7 @@ export function addWlc(
   y: number,
   ip: string = '192.168.1.5',
   gateway: string = '192.168.1.1',
-  extras: Record<string, unknown> = {},
+  extras: Partial<SwitchState> = {},
 ): { device: CanvasDevice; state: SwitchState } {
   const device: CanvasDevice = {
     id,
@@ -311,20 +312,18 @@ export function addWlc(
     y,
     status: 'online',
     ports: generateWLCPorts(),
-    services: { http: { enabled: true, mode: 'simple', content: `<h1>${name} Controller Web Console</h1>` } },
+    services: { http: { enabled: true, content: `<h1>${name} Controller Web Console</h1>` } },
   };
   ctx.devices.push(device);
-  const state = {
+  const state: SwitchState = {
+    ...createInitialState(mac, 'NS-L2-24TT-L'),
     deviceType: 'wlc',
     hostname: name,
-    macAddress: mac,
-    currentMode: 'user',
-    commandHistory: [],
-    ports: {},
     ipRouting: false,
-    services: { http: { enabled: true, mode: 'simple', content: `<h1>${name} Controller Web Console</h1>` } },
+    services: { http: { enabled: true, content: `<h1>${name} Controller Web Console</h1>` } },
     ...extras,
-  } as unknown as SwitchState;
+  };
+  state.ports = {};
   device.ports.forEach(p => {
     state.ports[p.id] = {
       id: p.id,
@@ -338,6 +337,70 @@ export function addWlc(
       mode: 'access',
     };
   });
+  if (extras.ports) {
+    Object.assign(state.ports, extras.ports);
+  }
+  ctx.states.set(id, state);
+  return { device, state };
+}
+
+// ---------------------------------------------------------------------------
+// Helper: create an Access Point (AP) device
+// ---------------------------------------------------------------------------
+export function addAccessPoint(
+  ctx: Ctx,
+  id: string,
+  name: string,
+  mac: string,
+  ip: string,
+  x: number,
+  y: number,
+  ssid: string = 'Corp-WiFi',
+  channel: string = '2.4GHz',
+  gateway: string = '192.168.1.1',
+  extras: Partial<SwitchState> = {},
+): { device: CanvasDevice; state: SwitchState } {
+  const device: CanvasDevice = {
+    id,
+    type: 'router',
+    name,
+    macAddress: mac,
+    ip,
+    subnet: '255.255.255.0',
+    gateway,
+    x,
+    y,
+    status: 'online',
+    wifi: { enabled: true, ssid, security: 'wpa2', password: 'password123', channel, mode: 'ap' },
+    ports: generateRouterPorts(),
+  };
+  ctx.devices.push(device);
+  const state: SwitchState = {
+    ...createInitialState(mac, 'NS-L3-24PS'),
+    deviceType: 'router',
+    hostname: name,
+    switchLayer: 'L3',
+    ipRouting: true,
+    ...extras,
+  };
+  state.ports = {};
+  device.ports.forEach(p => {
+    state.ports[p.id] = {
+      id: p.id,
+      name: p.label || p.id,
+      vlan: 1,
+      duplex: 'full',
+      speed: '1000',
+      type: getPortType(p.id),
+      status: 'notconnect',
+      shutdown: false,
+      accessVlan: 1,
+      mode: 'routed',
+    };
+  });
+  if (extras.ports) {
+    Object.assign(state.ports, extras.ports);
+  }
   ctx.states.set(id, state);
   return { device, state };
 }

@@ -1,6 +1,4 @@
 import type { CanvasDevice } from '../../networkTopology.types';
-import type { SwitchState } from '@/lib/network/types';
-import { generateRouterPorts } from '../../networkTopology.portGenerators';
 import {
   type Ctx,
   newCtx,
@@ -9,6 +7,7 @@ import {
   addSwitch,
   addFirewall,
   addWlc,
+  addAccessPoint,
   addPcToSwitch,
   connect,
   enableRouterPort,
@@ -88,9 +87,9 @@ export function generateHybridEnterprise(): Ctx {
   // Perimeter Edge Firewall
   const { state: fwState } = addFirewall(ctx, 'fw-edge', 'HQ-Perimeter-FW', '0011.2233.9901', 360, 60, {
     firewallRules: [
-      { id: 'rule-1', action: 'permit', protocol: 'tcp', srcIp: 'any', dstIp: '172.16.0.50', dstPort: '80', desc: 'Permit DMZ HTTP' },
-      { id: 'rule-2', action: 'permit', protocol: 'tcp', srcIp: 'any', dstIp: '172.16.0.50', dstPort: '443', desc: 'Permit DMZ HTTPS' },
-      { id: 'rule-3', action: 'permit', protocol: 'ip', srcIp: '192.168.10.0/24', dstIp: 'any', desc: 'HQ LAN Outbound' },
+      { id: 'rule-1', action: 'allow', protocol: 'tcp', sourceIp: 'any', targetIp: '172.16.0.50', port: '80', enabled: true },
+      { id: 'rule-2', action: 'allow', protocol: 'tcp', sourceIp: 'any', targetIp: '172.16.0.50', port: '443', enabled: true },
+      { id: 'rule-3', action: 'allow', protocol: 'any', sourceIp: '192.168.10.0/24', targetIp: 'any', port: 'any', enabled: true },
     ],
   });
 
@@ -117,23 +116,7 @@ export function generateHybridEnterprise(): Ctx {
   connect(ctx, 'conn-wlc-hqsw', 'wlc-hq', 'gi0/0', wlcState, 'sw-hq', 'fa0/24', hqSw);
 
   // Campus Access Point
-  const ap: CanvasDevice = {
-    id: 'ap-hq',
-    type: 'router',
-    name: 'HQ-Campus-AP',
-    macAddress: '0011.2233.AA01',
-    ip: '192.168.10.10',
-    subnet: '255.255.255.0',
-    gateway: '192.168.10.1',
-    x: 80,
-    y: 350,
-    status: 'online',
-    wifi: { enabled: true, ssid: 'HQ-Corp-WiFi', security: 'wpa2', password: 'password123', channel: '5GHz', mode: 'ap' },
-    ports: generateRouterPorts(),
-  };
-  ctx.devices.push(ap);
-  const apState = { deviceType: 'router', hostname: 'HQ-Campus-AP', ports: {} } as unknown as SwitchState;
-  ctx.states.set('ap-hq', apState);
+  const { state: apState } = addAccessPoint(ctx, 'ap-hq', 'HQ-Campus-AP', '0011.2233.AA01', '192.168.10.10', 80, 350, 'HQ-Corp-WiFi', '5GHz', '192.168.10.1');
   connect(ctx, 'conn-ap-hqsw', 'ap-hq', 'gi0/0', apState, 'sw-hq', 'fa0/23', hqSw);
 
   // Mobile WiFi Client
