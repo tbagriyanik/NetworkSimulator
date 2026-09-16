@@ -8,7 +8,7 @@ export interface CommandDefinition {
   type?: 'commands' | 'info' | 'examples';
 }
 
-export function getCiscoCommands(isTR: boolean): CommandDefinition[] {
+export function getNetSimCommands(isTR: boolean): CommandDefinition[] {
   return [
     {
       id: 'firewall',

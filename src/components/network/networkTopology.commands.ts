@@ -29,7 +29,7 @@ import {
   getAclExample
 } from './networkTopology.commands.examples';
 import { getInfoCategories } from './networkTopology.commands.info';
-import { getCiscoCommands } from './networkTopology.commands.cisco';
+import { getNetSimCommands } from './networkTopology.commands.netsim';
 import { getDesktopCommands } from './networkTopology.commands.desktop';
 
 export function getCommandCategories(isTR: boolean): CommandDefinition[] {
@@ -57,8 +57,8 @@ export function getCommandCategories(isTR: boolean): CommandDefinition[] {
     // Info categories (knowledge, network terms, abbreviations, diagnostics)
     ...getInfoCategories(isTR),
 
-    // Cisco CLI commands (firewall, acl, wlc, interface, wireless, line, admin, router, dhcp, show, bgp/mpls)
-    ...getCiscoCommands(isTR),
+    // CLI commands (firewall, acl, wlc, interface, wireless, line, admin, router, dhcp, show, bgp/mpls)
+    ...getNetSimCommands(isTR),
 
     // Desktop & Python commands
     ...getDesktopCommands(isTR),

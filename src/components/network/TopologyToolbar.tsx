@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -119,16 +119,7 @@ export function TopologyToolbar({
       resetView();
     } else {
       setZoom(1.0);
-      const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
-      const topMargin = isMobile ? 110 : 10;
-      const sideMargin = isMobile ? 16 : 10;
-      if (topologyDevices && topologyDevices.length > 0) {
-        const minX = Math.min(...topologyDevices.map((d) => d.x));
-        const minY = Math.min(...topologyDevices.map((d) => d.y));
-        setPan({ x: sideMargin - minX, y: topMargin - minY });
-      } else {
-        setPan({ x: isMobile ? sideMargin : 0, y: isMobile ? topMargin : 0 });
-      }
+      setPan({ x: 0, y: 0 });
     }
   };
 

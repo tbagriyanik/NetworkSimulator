@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { CanvasDevice, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
@@ -175,7 +175,7 @@ export function useCanvasZoomPan({
     }, 80);
   }, []);  // Empty deps - uses only refs, stable for the lifetime of the component
 
-  // Reset view to (0,0) at top-left corner
+  // Reset view to top-left corner starting directly under canvas header
   const resetView = useCallback(() => {
     setZoom(DEFAULT_ZOOM);
     setPan({ x: 0, y: 0 });
