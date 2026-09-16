@@ -1,4 +1,4 @@
-import { CanvasDevice } from '../networkTopology.types';
+﻿import { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 
 interface PingCursorOverlayProps {
   pingMode: boolean;
@@ -49,3 +49,4 @@ export function PingCursorOverlay({
     </div>
   );
 }
+

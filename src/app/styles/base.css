@@ -78,19 +78,19 @@
 
   /* Python editor token colors (the textarea keeps the caret and selection). */
   .py-highlight .py-keyword {
-    color: #c084fc;
+    color: var(--color-purple-400);
   }
 
   .py-highlight .py-builtin {
-    color: #67e8f9;
+    color: var(--color-accent-300);
   }
 
   .py-highlight .py-string {
-    color: #86efac;
+    color: var(--color-success-300);
   }
 
   .py-highlight .py-number {
-    color: #fbbf24;
+    color: var(--color-warning-400);
   }
 
   .py-highlight .py-constant {
@@ -98,7 +98,7 @@
   }
 
   .py-highlight .py-comment {
-    color: #94a3b8;
+    color: var(--color-secondary-400);
     font-style: italic;
   }
 

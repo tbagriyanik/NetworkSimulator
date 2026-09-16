@@ -1,9 +1,9 @@
-import { createInitialRouterState } from '../initialState';
+﻿import { createInitialRouterState } from '../initialState';
 import { createPcDevice, createRouterDevice, createIotDevice, baseProjectData } from './helpers';
 ;
 ;
 import type { ExampleProject } from './types';
-import type { CanvasConnection, CanvasNote } from '@/components/network/networkTopology.types';
+import type { CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 const example = (isTr: boolean): ExampleProject => {
   const greenhouseDevices = [
@@ -264,7 +264,7 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'greenhouse-note',
       text: isTr
-        ? 'Amaç: Güvenli WiFi ağı ile IoT sensörleri ve aktüatörlerle sera ortamını izlemek.\n\nAKILLI SERA KROKISI:\n1) R1 (Router) WPA2 korumalı WiFi ağı: GreenHouse-Network (şifre: sera)\n2) 4 IoT Sensör: Sıcaklık (2.101), Nem (2.102), Işık (2.103), Kapı/Hareket (2.104)\n3) 3 Aktüatör: Isıtıcı (2.111), Soğutucu (2.112), Lamba (2.113)\n4) Basit programlama hazır: sıcaklık ısıtıcı/soğutucuyu, ışık sensörü lambayı otomatik yönetir\n5) PC-1 ile WiFi panelinden (wget 192.168.2.1) sensörleri izleyin\n6) IoT Panel: wget http://iot-panel (admin/admin) ile cihazları ve kuralları yönetin'
+        ? 'AmaÃ§: GÃ¼venli WiFi aÄŸÄ± ile IoT sensÃ¶rleri ve aktÃ¼atÃ¶rlerle sera ortamÄ±nÄ± izlemek.\n\nAKILLI SERA KROKISI:\n1) R1 (Router) WPA2 korumalÄ± WiFi aÄŸÄ±: GreenHouse-Network (ÅŸifre: sera)\n2) 4 IoT SensÃ¶r: SÄ±caklÄ±k (2.101), Nem (2.102), IÅŸÄ±k (2.103), KapÄ±/Hareket (2.104)\n3) 3 AktÃ¼atÃ¶r: IsÄ±tÄ±cÄ± (2.111), SoÄŸutucu (2.112), Lamba (2.113)\n4) Basit programlama hazÄ±r: sÄ±caklÄ±k Ä±sÄ±tÄ±cÄ±/soÄŸutucuyu, Ä±ÅŸÄ±k sensÃ¶rÃ¼ lambayÄ± otomatik yÃ¶netir\n5) PC-1 ile WiFi panelinden (wget 192.168.2.1) sensÃ¶rleri izleyin\n6) IoT Panel: wget http://iot-panel (admin/admin) ile cihazlarÄ± ve kurallarÄ± yÃ¶netin'
         : 'SMART GREENHOUSE SKETCH:\n1) R1 (Router) WPA2 secured WiFi: GreenHouse-Network (password: sera)\n2) 4 IoT Sensors: Temperature (.101), Humidity (.102), Light (.103), Door/Motion (.104)\n3) 3 Actuators: Heater (.111), Cooler (.112), Lamp (.113)\n4) Simple programming is preconfigured: temperature drives heater/cooler, light drives lamp automatically\n5) Monitor sensors from PC-1 via WiFi panel (wget 192.168.2.1)\n6) IoT Panel: wget http://iot-panel (admin/admin) to manage devices and rules',
       x: 500,
       y: 60,
@@ -344,13 +344,13 @@ const example = (isTr: boolean): ExampleProject => {
 
   return {
     id: 'greenhouse-iot-lab',
-    tag: isTr ? 'ÇEVRE' : 'ENV',
-    title: isTr ? '🌱 Sera Krokisi (Akıllı Tarım)' : '🌱 Greenhouse Sketch (Smart Farm)',
+    tag: isTr ? 'Ã‡EVRE' : 'ENV',
+    title: isTr ? 'ğŸŒ± Sera Krokisi (AkÄ±llÄ± TarÄ±m)' : 'ğŸŒ± Greenhouse Sketch (Smart Farm)',
     description: isTr
-      ? 'Dört çevresel sensör WPA2 güvenli WiFi ile sera izleme yapar.'
+      ? 'DÃ¶rt Ã§evresel sensÃ¶r WPA2 gÃ¼venli WiFi ile sera izleme yapar.'
       : 'Four environmental sensors use WPA2 WiFi for greenhouse monitoring.',
     detail: isTr
-      ? 'SSID: GreenHouse-Network, Şifre: sera (WPA2), 4 sensör'
+      ? 'SSID: GreenHouse-Network, Åifre: sera (WPA2), 4 sensÃ¶r'
       : 'SSID: GreenHouse-Network, Password: sera (WPA2), 4 sensors',
     level: 'intermediate',
     data: baseProjectData(greenhouseDevices, greenhouseConnections, greenhouseNotes, [
@@ -360,5 +360,7 @@ const example = (isTr: boolean): ExampleProject => {
 };
 
 export default example;
+
+
 
 

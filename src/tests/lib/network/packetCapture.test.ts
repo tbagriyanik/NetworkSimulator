@@ -1,9 +1,9 @@
-import { expect, test, describe } from 'vitest';
+﻿import { expect, test, describe } from 'vitest';
 import { checkConnectivity, checkDeviceConnectivity } from '@/lib/network/connectivity';
-import { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { createInitialState } from '@/lib/network/initialState';
-import { buildBroadcastAnimTargets } from '@/components/network/hooks/usePingSequence';
+import { buildBroadcastAnimTargets } from '@/hooks/networkTopology/usePingSequence';
 
 describe('Packet Capture Backend', () => {
   const devices: CanvasDevice[] = [
@@ -325,7 +325,7 @@ describe('Packet Capture Backend', () => {
       deviceStates: new Map([[sw.id, switchState]]),
     });
 
-    // pc-1 (kaynak) hariç, VLAN 10'daki pc-2 ve pc-4 hedeflenir; VLAN 20'deki pc-3 hariç tutulur.
+    // pc-1 (kaynak) hariÃ§, VLAN 10'daki pc-2 ve pc-4 hedeflenir; VLAN 20'deki pc-3 hariÃ§ tutulur.
     expect(targets.map(target => target.targetId)).toEqual(['pc-2', 'pc-4']);
   });
 
@@ -554,4 +554,6 @@ describe('Packet Capture Backend', () => {
     expect(downstreamPacket).toBeUndefined();
   });
 });
+
+
 

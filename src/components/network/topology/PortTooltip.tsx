@@ -1,5 +1,5 @@
-import React from 'react';
-import { CanvasDevice, CanvasPort } from '../networkTopology.types';
+﻿import React from 'react';
+import { CanvasDevice, CanvasPort } from '../NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 
 interface PortTooltipState {
@@ -72,12 +72,12 @@ export const PortTooltip: React.FC<PortTooltipProps> = ({
                       <span className="text-accent-500">{getIotDeviceStatus(dev)}</span>
                     </div>
                     <div>
-                      {language === 'tr' ? 'Güç Durumu:' : 'Power Status:'}{' '}
+                      {language === 'tr' ? 'GÃ¼Ã§ Durumu:' : 'Power Status:'}{' '}
                       <span className="text-accent-500">{getIotPowerStatus(dev)}</span>
                     </div>
                     {isControllable && (
                       <div>
-                        {language === 'tr' ? 'Açık/Kapalı:' : 'Open/Closed:'}{' '}
+                        {language === 'tr' ? 'AÃ§Ä±k/KapalÄ±:' : 'Open/Closed:'}{' '}
                         <span className="text-accent-500">{getIotOpenCloseStatus(dev)}</span>
                       </div>
                     )}
@@ -87,9 +87,9 @@ export const PortTooltip: React.FC<PortTooltipProps> = ({
               if (dev?.type === 'hub') {
                 return (
                   <>
-                    {language === 'tr' ? 'VLAN Desteği:' : 'VLAN Support:'}{' '}
+                    {language === 'tr' ? 'VLAN DesteÄŸi:' : 'VLAN Support:'}{' '}
                     <span className="text-cyan-400">
-                      {language === 'tr' ? 'Yok (Katman-1 Tekrarlayıcı)' : 'None (Layer-1 Repeater)'}
+                      {language === 'tr' ? 'Yok (Katman-1 TekrarlayÄ±cÄ±)' : 'None (Layer-1 Repeater)'}
                     </span>
                   </>
                 );
@@ -128,7 +128,7 @@ export const PortTooltip: React.FC<PortTooltipProps> = ({
                 const isSTPBlocked = simPort?.spanningTree?.state === 'blocking' || simPort?.spanningTree?.role === 'alternate';
 
                 if (dev?.status === 'offline') {
-                  return language === 'tr' ? 'Cihaz Kapalı' : 'Device Off';
+                  return language === 'tr' ? 'Cihaz KapalÄ±' : 'Device Off';
                 }
                 if (isSTPBlocked) {
                   const role = simPort?.spanningTree?.role || '';
@@ -140,12 +140,12 @@ export const PortTooltip: React.FC<PortTooltipProps> = ({
                   return language === 'tr' ? `STP Bloke (${roleText} ${stateText})` : `STP Blocked (${roleText} ${stateText})`;
                 }
                 if (prt?.shutdown) {
-                  return language === 'tr' ? 'Kapalı (Shutdown)' : 'Shutdown';
+                  return language === 'tr' ? 'KapalÄ± (Shutdown)' : 'Shutdown';
                 }
                 if (prt?.status === 'connected') {
-                  return language === 'tr' ? 'Bağlı (Up)' : 'Connected (Up)';
+                  return language === 'tr' ? 'BaÄŸlÄ± (Up)' : 'Connected (Up)';
                 }
-                return language === 'tr' ? 'Bağlı Değil (Down)' : 'Not Connected (Down)';
+                return language === 'tr' ? 'BaÄŸlÄ± DeÄŸil (Down)' : 'Not Connected (Down)';
               })()
               }
             </span>
@@ -159,7 +159,7 @@ export const PortTooltip: React.FC<PortTooltipProps> = ({
               const roleName = stpRole === 'root' ? 'Root Port (RP)' : 'Alternate Port (AP)';
               return (
                 <div className="text-xs font-bold">
-                  {language === 'tr' ? 'STP Rolü:' : 'STP Role:'}{' '}
+                  {language === 'tr' ? 'STP RolÃ¼:' : 'STP Role:'}{' '}
                   <span className="text-purple-400">
                     {roleName}
                   </span>
@@ -187,7 +187,7 @@ export const PortTooltip: React.FC<PortTooltipProps> = ({
 
           {deviceMap.get(portTooltip.deviceId)?.ports.find((p: CanvasPort) => p.id === portTooltip.portId)?.status === 'connected' && (
             <div className="text-[10px] opacity-70">
-              {language === 'tr' ? 'Fiziksel bağlantı aktif' : 'Physical link active'}
+              {language === 'tr' ? 'Fiziksel baÄŸlantÄ± aktif' : 'Physical link active'}
             </div>
           )}
         </div>
@@ -199,3 +199,4 @@ export const PortTooltip: React.FC<PortTooltipProps> = ({
     </div>
   );
 };
+

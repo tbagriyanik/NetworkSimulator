@@ -1,4 +1,4 @@
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+﻿import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { normalizePortId } from '@/lib/network/initialState';
 import type { ConnectivityResult, CheckOptions } from './types';
@@ -81,7 +81,7 @@ export function enforceDai(deps: DaiCheckDeps): DaiCheckResult {
           hopIds: path.slice(0, i + 1),
           targetId: targetDevice.id,
           error: language === 'tr'
-            ? `DAI: ${device.name} cihazında ${normalizedPortId} portunda ARP paketi engellendi. ${result.reason ?? ''}`
+            ? `DAI: ${device.name} cihazÄ±nda ${normalizedPortId} portunda ARP paketi engellendi. ${result.reason ?? ''}`
             : `DAI: ARP packet blocked on ${device.name} port ${normalizedPortId}. ${result.reason ?? ''}`,
         },
       };
@@ -90,3 +90,5 @@ export function enforceDai(deps: DaiCheckDeps): DaiCheckResult {
 
   return { type: 'ok' };
 }
+
+

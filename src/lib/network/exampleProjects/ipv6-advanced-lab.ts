@@ -1,8 +1,8 @@
-import { createPcDevice, createRouterDevice, connectPorts, baseProjectData } from './helpers';
+﻿import { createPcDevice, createRouterDevice, connectPorts, baseProjectData } from './helpers';
 ;
 import type { ExampleProject } from './types';
 import { createInitialRouterState } from '../initialState';
-import type { CanvasConnection, CanvasNote } from '@/components/network/networkTopology.types';
+import type { CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 const example = (isTr: boolean): ExampleProject => {
   const ipv6LabDevices = [
@@ -23,8 +23,8 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'ipv6-lab-note',
       text: isTr
-        ? '🌐 IPv6 Gelişmiş Laboratuvar (Routing, DHCPv6, OSPFv3):\n\n1) IPv6 Unicast Routing: Cihazlarda IPv6 yönlendirmeyi etkinleştirin.\n2) Adresleme: \n   - R1 Gi0/0: 2001:DB8:1::1/64\n   - R1-R2 Link: 2001:DB8:AC::/64\n   - R2 Gi0/0: 2001:DB8:2::1/64\n3) DHCPv6: R1 ve R2 üzerinde PC\'ler için IPv6 havuzları oluşturun.\n4) Yönlendirme (OSPFv3):\n   - R1: ipv6 router ospf 1, area 0\n   - R2: ipv6 router ospf 1, area 0\n\nTest: PC-1 > ping 2001:DB8:2::20'
-        : '🌐 IPv6 Advanced Lab (Routing, DHCPv6, OSPFv3):\n\n1) IPv6 Unicast Routing: Enable IPv6 routing on devices.\n2) Addressing: \n   - R1 Gi0/0: 2001:DB8:1::1/64\n   - R1-R2 Link: 2001:DB8:AC::/64\n   - R2 Gi0/0: 2001:DB8:2::1/64\n3) DHCPv6: Configure IPv6 pools for PCs on R1 and R2.\n4) Routing (OSPFv3):\n   - R1: ipv6 router ospf 1, area 0\n   - R2: ipv6 router ospf 1, area 0\n\nTest: PC-1 > ping 2001:DB8:2::20',
+        ? 'ğŸŒ IPv6 GeliÅŸmiÅŸ Laboratuvar (Routing, DHCPv6, OSPFv3):\n\n1) IPv6 Unicast Routing: Cihazlarda IPv6 yÃ¶nlendirmeyi etkinleÅŸtirin.\n2) Adresleme: \n   - R1 Gi0/0: 2001:DB8:1::1/64\n   - R1-R2 Link: 2001:DB8:AC::/64\n   - R2 Gi0/0: 2001:DB8:2::1/64\n3) DHCPv6: R1 ve R2 Ã¼zerinde PC\'ler iÃ§in IPv6 havuzlarÄ± oluÅŸturun.\n4) YÃ¶nlendirme (OSPFv3):\n   - R1: ipv6 router ospf 1, area 0\n   - R2: ipv6 router ospf 1, area 0\n\nTest: PC-1 > ping 2001:DB8:2::20'
+        : 'ğŸŒ IPv6 Advanced Lab (Routing, DHCPv6, OSPFv3):\n\n1) IPv6 Unicast Routing: Enable IPv6 routing on devices.\n2) Addressing: \n   - R1 Gi0/0: 2001:DB8:1::1/64\n   - R1-R2 Link: 2001:DB8:AC::/64\n   - R2 Gi0/0: 2001:DB8:2::1/64\n3) DHCPv6: Configure IPv6 pools for PCs on R1 and R2.\n4) Routing (OSPFv3):\n   - R1: ipv6 router ospf 1, area 0\n   - R2: ipv6 router ospf 1, area 0\n\nTest: PC-1 > ping 2001:DB8:2::20',
       x: 250,
       y: 300,
       width: 500,
@@ -57,8 +57,8 @@ const example = (isTr: boolean): ExampleProject => {
   return {
     id: 'ipv6-advanced-lab',
     tag: 'IPv6',
-    title: isTr ? 'IPv6 Gelişmiş Laboratuvar (DHCPv6 & OSPFv3)' : 'IPv6 Advanced Lab (DHCPv6 & OSPFv3)',
-    description: isTr ? 'IPv6 adresleme, DHCPv6 havuzları ve OSPFv3 dinamik yönlendirme.' : 'IPv6 addressing, DHCPv6 pools and OSPFv3 dynamic routing.',
+    title: isTr ? 'IPv6 GeliÅŸmiÅŸ Laboratuvar (DHCPv6 & OSPFv3)' : 'IPv6 Advanced Lab (DHCPv6 & OSPFv3)',
+    description: isTr ? 'IPv6 adresleme, DHCPv6 havuzlarÄ± ve OSPFv3 dinamik yÃ¶nlendirme.' : 'IPv6 addressing, DHCPv6 pools and OSPFv3 dynamic routing.',
     detail: 'ipv6 unicast-routing, ipv6 dhcp pool LAN, address prefix 2001:db8:1::/64, ipv6 router ospf 1',
     level: 'advanced',
     data: baseProjectData(ipv6LabDevices, ipv6LabConnections, ipv6LabNotes, [
@@ -69,4 +69,6 @@ const example = (isTr: boolean): ExampleProject => {
 };
 
 export default example;
+
+
 

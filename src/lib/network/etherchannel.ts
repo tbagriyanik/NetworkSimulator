@@ -1,5 +1,5 @@
-import { CanvasConnection } from '@/components/network/networkTopology.types';
-import { getDevicePairKey } from '@/components/network/networkTopology.helpers';
+﻿import { CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
+import { getDevicePairKey } from '@/components/network/NetworkTopology/utils/networkTopology.helpers';
 import { Port, SwitchState, EtherChannelMode } from './types';
 
 export interface EtherChannelMember {
@@ -278,7 +278,7 @@ export function computeEtherChannelChanges(
     const prevBundled = !!prev?.bundled;
     const nextBundled = !!next?.bundled;
 
-    // Whole-bundle transition — emit only the bundle-level event to avoid noise.
+    // Whole-bundle transition â€” emit only the bundle-level event to avoid noise.
     if (!prevBundled && nextBundled) {
       const counts = next ? `${next.upMemberCount} port(s) aggregated` : '';
       for (const deviceId of [devA, devB]) {
@@ -319,7 +319,7 @@ export function computeEtherChannelChanges(
       continue;
     }
 
-    // Bundle stayed up in both snapshots — diff members for join/leave events.
+    // Bundle stayed up in both snapshots â€” diff members for join/leave events.
     if (!prev || !next) continue;
 
     const prevMembers = new Map(prev.members.map(m => [m.connectionId, m]));
@@ -387,3 +387,5 @@ export function formatLoadBalance(algorithm: LoadBalanceAlgorithm): string {
   };
   return map[algorithm];
 }
+
+

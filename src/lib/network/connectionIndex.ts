@@ -1,4 +1,4 @@
-import type { CanvasConnection } from '@/components/network/networkTopology.types';
+﻿import type { CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 export interface IndexedConnection {
   neighborId: string;
@@ -50,4 +50,6 @@ export function buildConnectionIndex(connections: CanvasConnection[]): Connectio
 
 export const getConnectionAtPort = (index: ConnectionIndex, deviceId: string, portId: string) =>
   index.byPort.get(portKey(deviceId, portId));
+
+
 

@@ -1,4 +1,4 @@
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+﻿import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { normalizePortId } from '@/lib/network/initialState';
 import type { ConnectivityResult, CheckOptions } from './types';
@@ -78,7 +78,7 @@ export function enforcePvlan(deps: PvlanCheckDeps): PvlanCheckResult {
           hopIds: path.slice(0, i + 1),
           targetId: targetDevice.id,
           error: language === 'tr'
-            ? `PVLAN: ${device.name} cihazında özel VLAN izolasyonu trafiği engelledi. ${pvlanResult.reason ?? ''}`
+            ? `PVLAN: ${device.name} cihazÄ±nda Ã¶zel VLAN izolasyonu trafiÄŸi engelledi. ${pvlanResult.reason ?? ''}`
             : `PVLAN: Private VLAN isolation blocked traffic on ${device.name}. ${pvlanResult.reason ?? ''}`,
         },
       };
@@ -87,3 +87,5 @@ export function enforcePvlan(deps: PvlanCheckDeps): PvlanCheckResult {
 
   return { type: 'ok' };
 }
+
+

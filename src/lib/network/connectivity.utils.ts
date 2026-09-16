@@ -1,4 +1,4 @@
-import type { CanvasConnection, CanvasDevice } from '@/components/network/networkTopology.types';
+﻿import type { CanvasConnection, CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { CableInfo, SwitchState } from './types';
 import { ipToNumber } from './routing';
 import { ensureDeviceStatesMap } from './networkUtils';
@@ -123,3 +123,5 @@ export function matchIpWithWildcard(ip: string, ruleIp: string, wildcard: string
         return false;
     }
 }
+
+

@@ -1,11 +1,11 @@
-import { useState, useEffect, type RefObject } from 'react';
+﻿import { useState, useEffect, type RefObject } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Trash2, Undo2, Redo2, Scissors, Copy, ClipboardPaste,
   RefreshCw, CheckSquare, ExternalLink, Mail, Power, ListTodo, ImageDown
 } from 'lucide-react';
-import { NOTE_COLORS, NOTE_FONT_SIZES, NOTE_OPACITY } from './networkTopology.constants';
-import { CanvasDevice, CanvasNote, ContextMenuState } from './networkTopology.types';
+import { NOTE_COLORS, NOTE_FONT_SIZES, NOTE_OPACITY } from './NetworkTopology/utils/networkTopology.constants';
+import { CanvasDevice, CanvasNote, ContextMenuState } from './NetworkTopology/types/networkTopology.types';
 
 interface NetworkTopologyContextMenuProps {
   contextMenu: ContextMenuState | null;
@@ -418,4 +418,5 @@ export default function NetworkTopologyContextMenu({
     </div>
   );
 }
+
 

@@ -1,4 +1,4 @@
-import type { CanvasDevice, CanvasConnection, CanvasNote } from '@/components/network/networkTopology.types';
+﻿import type { CanvasDevice, CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { deterministicIdWithPrefix } from '@/lib/network/randomServices';
 
@@ -65,47 +65,47 @@ export function loadCheckpointsFromStorage(): TopologyCheckpoint[] {
 
 export function validateTopologyCheckpoint(data: unknown): { valid: boolean; error?: string } {
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
-    return { valid: false, error: 'JSON verisi geçerli bir nesne değil.' };
+    return { valid: false, error: 'JSON verisi geÃ§erli bir nesne deÄŸil.' };
   }
 
   const obj = data as Record<string, unknown>;
 
   // Must contain devices array
   if (!('devices' in obj) || !Array.isArray(obj.devices)) {
-    return { valid: false, error: 'Topoloji verisinde "devices" dizisi bulunamadı.' };
+    return { valid: false, error: 'Topoloji verisinde "devices" dizisi bulunamadÄ±.' };
   }
 
   // Validate devices structure if not empty
   for (let i = 0; i < obj.devices.length; i++) {
     const dev = obj.devices[i];
     if (!dev || typeof dev !== 'object' || Array.isArray(dev)) {
-      return { valid: false, error: `Cihaz #${i + 1} geçerli bir nesne değil.` };
+      return { valid: false, error: `Cihaz #${i + 1} geÃ§erli bir nesne deÄŸil.` };
     }
     const dObj = dev as Record<string, unknown>;
     if (typeof dObj.id !== 'string' || !dObj.id) {
-      return { valid: false, error: `Cihaz #${i + 1} için zorunlu "id" alanı eksik veya geçersiz.` };
+      return { valid: false, error: `Cihaz #${i + 1} iÃ§in zorunlu "id" alanÄ± eksik veya geÃ§ersiz.` };
     }
     if (typeof dObj.name !== 'string' || !dObj.name) {
-      return { valid: false, error: `Cihaz "${dObj.id}" için zorunlu "name" alanı eksik veya geçersiz.` };
+      return { valid: false, error: `Cihaz "${dObj.id}" iÃ§in zorunlu "name" alanÄ± eksik veya geÃ§ersiz.` };
     }
     if (typeof dObj.type !== 'string' || !dObj.type) {
-      return { valid: false, error: `Cihaz "${dObj.id}" için zorunlu "type" alanı eksik veya geçersiz.` };
+      return { valid: false, error: `Cihaz "${dObj.id}" iÃ§in zorunlu "type" alanÄ± eksik veya geÃ§ersiz.` };
     }
   }
 
   // Validate connections structure if provided
   if ('connections' in obj && obj.connections !== undefined) {
     if (!Array.isArray(obj.connections)) {
-      return { valid: false, error: '"connections" alanı dizi türünde olmalıdır.' };
+      return { valid: false, error: '"connections" alanÄ± dizi tÃ¼rÃ¼nde olmalÄ±dÄ±r.' };
     }
     for (let i = 0; i < obj.connections.length; i++) {
       const conn = obj.connections[i];
       if (!conn || typeof conn !== 'object' || Array.isArray(conn)) {
-        return { valid: false, error: `Bağlantı #${i + 1} geçerli bir nesne değil.` };
+        return { valid: false, error: `BaÄŸlantÄ± #${i + 1} geÃ§erli bir nesne deÄŸil.` };
       }
       const cObj = conn as Record<string, unknown>;
       if (typeof cObj.id !== 'string' || typeof cObj.sourceDeviceId !== 'string' || typeof cObj.targetDeviceId !== 'string') {
-        return { valid: false, error: `Bağlantı #${i + 1} eksik veya geçersiz kaynak/hedef cihaz bilgilerine sahip.` };
+        return { valid: false, error: `BaÄŸlantÄ± #${i + 1} eksik veya geÃ§ersiz kaynak/hedef cihaz bilgilerine sahip.` };
       }
     }
   }
@@ -121,4 +121,6 @@ export function deleteCheckpointFromList(
   saveCheckpointsToStorage(updated);
   return updated;
 }
+
+
 

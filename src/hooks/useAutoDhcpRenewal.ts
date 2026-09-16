@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+﻿import { useEffect, useRef } from 'react';
+import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { PCOutputLine } from '@/types/pageTypes';
 
@@ -155,7 +155,7 @@ export function useAutoDhcpRenewal({
 
           if (assignments.length > 0) {
             toast({
-              title: `📝 ${t.dhcpAssignments}`,
+              title: `ğŸ“ ${t.dhcpAssignments}`,
               description: assignments.map(a => `${a.name}: ${a.ip}`).join('\n'), // Simplified for non-tsx file without react component injection to keep it clean, wait, I can use React nodes if I import React. But keeping string is safer.
               duration: 5000,
             });
@@ -177,3 +177,5 @@ export function useAutoDhcpRenewal({
     }
   }, [assignDhcpLeaseForPc, buildLinkLocalLease, loadedExampleId, topologyDevices, deviceStates, toast, language, setTopologyDevices, handleRefreshNetwork, setLoadedExampleId, setPcOutputs, pcOutputs, t]);
 }
+
+

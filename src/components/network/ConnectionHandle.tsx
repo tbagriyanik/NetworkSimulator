@@ -1,5 +1,5 @@
-import { memo } from 'react';
-import { CanvasConnection, CanvasDevice } from './networkTopology.types';
+﻿import { memo } from 'react';
+import { CanvasConnection, CanvasDevice } from './NetworkTopology/types/networkTopology.types';
 import { isCableCompatible, CableInfo } from '@/lib/network/types';
 import { Trash2 } from 'lucide-react';
 
@@ -135,3 +135,4 @@ const ConnectionHandle = memo(function ConnectionHandle({
 });
 
 export { ConnectionHandle };
+

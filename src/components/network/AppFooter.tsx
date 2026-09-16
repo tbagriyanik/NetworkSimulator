@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import type { CanvasDevice } from '@/components/network/networkTopology.types';
+import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { Translations } from '@/contexts/LanguageContext';
 
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
@@ -100,7 +100,7 @@ export function AppFooter({
                           <button type="button" onClick={() => onShortcut('windows')} className={`px-1.5 py-0.5 rounded text-[10px] font-mono cursor-pointer hover:ring-1 ${isDark ? 'bg-secondary-700 text-secondary-300 hover:ring-secondary-400' : 'bg-secondary-200 text-secondary-700 hover:ring-secondary-400'}`}>Shift+Tab</button>
                           <span className="mx-1">{language === 'tr' ? 'Pencereler' : 'Windows'}</span>
                           <button type="button" onClick={() => onShortcut('minimize')} className={`px-1.5 py-0.5 rounded text-[10px] font-mono cursor-pointer hover:ring-1 ${isDark ? 'bg-secondary-700 text-secondary-300 hover:ring-secondary-400' : 'bg-secondary-200 text-secondary-700 hover:ring-secondary-400'}`}>Ctrl+M</button>
-                          <span className="mx-1">{language === 'tr' ? 'Küçült' : 'Min'}</span>
+                          <span className="mx-1">{language === 'tr' ? 'KÃ¼Ã§Ã¼lt' : 'Min'}</span>
                         </>
                       )}
                       <button type="button" onClick={() => onShortcut('save')} className={`px-1.5 py-0.5 rounded text-[10px] font-mono cursor-pointer hover:ring-1 ${isDark ? 'bg-secondary-700 text-secondary-300 hover:ring-secondary-400' : 'bg-secondary-200 text-secondary-700 hover:ring-secondary-400'}`}>Ctrl+S</button>
@@ -114,13 +114,13 @@ export function AppFooter({
                         </>
                       )}
                       <div className={`flex items-center gap-1 text-[10px] ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
-                        <span className="font-semibold">{language === 'tr' ? 'Sol Tık' : 'LeftMB'}</span>:{t.pan}
-                        <span className="mx-1">·</span>
-                        <span className="font-semibold">{language === 'tr' ? 'Orta Tuş' : 'MidMB'}</span>:{t.boxSelect}
-                        <span className="mx-1">·</span>
-                        <span className="font-semibold">{language === 'tr' ? 'Sağ Tık' : 'RightMB'}</span>:{t.menu}
-                        <span className="mx-1">·</span>
-                        <span className="font-semibold">{language === 'tr' ? 'Tekerlek' : 'Wheel'}</span>:{language === 'tr' ? 'Yakınlaştır' : 'Zoom'}
+                        <span className="font-semibold">{language === 'tr' ? 'Sol TÄ±k' : 'LeftMB'}</span>:{t.pan}
+                        <span className="mx-1">Â·</span>
+                        <span className="font-semibold">{language === 'tr' ? 'Orta TuÅŸ' : 'MidMB'}</span>:{t.boxSelect}
+                        <span className="mx-1">Â·</span>
+                        <span className="font-semibold">{language === 'tr' ? 'SaÄŸ TÄ±k' : 'RightMB'}</span>:{t.menu}
+                        <span className="mx-1">Â·</span>
+                        <span className="font-semibold">{language === 'tr' ? 'Tekerlek' : 'Wheel'}</span>:{language === 'tr' ? 'YakÄ±nlaÅŸtÄ±r' : 'Zoom'}
                       </div>
                     </>
                   )}
@@ -136,7 +136,7 @@ export function AppFooter({
         </div>
       </footer>
 
-      {/* Mobile Footer — status bar / informational messages */}
+      {/* Mobile Footer â€” status bar / informational messages */}
       <footer className={`md:hidden fixed bottom-0 inset-x-0 z-2 border-t backdrop-blur-xl transition-all min-h-[44px] pb-3 flex items-center px-3 text-[11px] select-none pb-safe ${isDark ? 'bg-secondary-900/95 border-secondary-800 text-secondary-300' : 'bg-white/95 border-secondary-200 text-secondary-600'
         } ${showProjectPicker || showOnboarding ? 'hidden' : ''}`}>
         <div className="w-full flex items-center justify-between gap-2 overflow-hidden">
@@ -169,3 +169,5 @@ export function AppFooter({
     </>
   );
 }
+
+

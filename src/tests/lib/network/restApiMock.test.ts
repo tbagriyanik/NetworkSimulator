@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { handleRestApiRequest } from '@/lib/network/restApiMock';
 import { createInitialState } from '@/lib/network/initialState';
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 
 describe('restApiMock (Controller Intent APIs & RESTCONF Explorer)', () => {
@@ -166,3 +166,5 @@ describe('restApiMock (Controller Intent APIs & RESTCONF Explorer)', () => {
     expect(res.updatedState?.ports['Gi0/0'].ipAddress).toBe('10.99.1.1');
   });
 });
+
+

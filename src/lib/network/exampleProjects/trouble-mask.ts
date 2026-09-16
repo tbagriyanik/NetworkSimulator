@@ -1,6 +1,6 @@
-import { createPcDevice, connectPorts, baseProjectData } from './helpers';
+﻿import { createPcDevice, connectPorts, baseProjectData } from './helpers';
 import type { ExampleProject } from './types';
-import type { CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 const example = (isTr: boolean): ExampleProject => {
   const troubleMaskDevices = [
@@ -14,15 +14,15 @@ const example = (isTr: boolean): ExampleProject => {
   return {
     id: 'trouble-mask',
     tag: isTr ? 'ARIZA' : 'TROUBLE',
-    title: isTr ? 'Yanlış Alt Ağ Maskesi' : 'Incorrect Subnet Mask',
-    description: isTr ? 'PC1 ve PC2 aynı ağda olmasına rağmen iletişim kuramıyor.' : 'PC1 and PC2 are on the same network but cannot communicate.',
+    title: isTr ? 'YanlÄ±ÅŸ Alt AÄŸ Maskesi' : 'Incorrect Subnet Mask',
+    description: isTr ? 'PC1 ve PC2 aynÄ± aÄŸda olmasÄ±na raÄŸmen iletiÅŸim kuramÄ±yor.' : 'PC1 and PC2 are on the same network but cannot communicate.',
     level: 'basic',
     injectedFaults: [
       {
         id: 'fault-mask-pc2',
         deviceId: 'pc-2',
         faultType: 'wrongSubnetMask',
-        description: { tr: 'PC2\'nin maskesi 255.255.255.240 olarak ayarlanmış.', en: 'PC2 mask is set to 255.255.255.240.' },
+        description: { tr: 'PC2\'nin maskesi 255.255.255.240 olarak ayarlanmÄ±ÅŸ.', en: 'PC2 mask is set to 255.255.255.240.' },
         configKey: 'pc.pc-2.subnet',
         faultValue: '255.255.255.240',
         correctValue: '255.255.255.0'
@@ -33,3 +33,5 @@ const example = (isTr: boolean): ExampleProject => {
 };
 
 export default example;
+
+

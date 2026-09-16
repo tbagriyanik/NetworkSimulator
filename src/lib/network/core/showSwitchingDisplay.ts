@@ -1,6 +1,6 @@
-import type { CommandContext } from './commandTypes';
+﻿import type { CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult } from '../types';
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { detectEtherChannelBundles, getLoadBalanceAlgorithm, formatLoadBalance } from '../etherchannel';
 import {
   formatMacAddressSimple, getPortNumber, formatPortName,
@@ -971,3 +971,5 @@ export function cmdShowVtpPassword(state: SwitchState, _input: string, _ctx: Com
   }
   return { success: true, output: '\n% VTP password not set\n' };
 }
+
+

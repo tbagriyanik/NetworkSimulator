@@ -1,9 +1,9 @@
-'use client';
+﻿'use client';
 
 import React, { MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from 'react';
-import { CanvasDevice, CanvasConnection, ContextMenuState } from '../networkTopology.types';
+import { CanvasDevice, CanvasConnection, ContextMenuState } from '../NetworkTopology/types/networkTopology.types';
 import { SwitchState, CableInfo } from '@/lib/network/types';
-import { PingAnimationState } from '../hooks/usePingSequence';
+import { PingAnimationState } from '@/hooks/networkTopology/usePingSequence';
 
 import { TopologyFullscreenButton } from './TopologyFullscreenButton';
 import { TopologyPaletteSheet } from './TopologyPaletteSheet';
@@ -643,3 +643,4 @@ export function TopologyCanvasArea(props: TopologyCanvasAreaProps) {
     </div>
   );
 }
+

@@ -1,10 +1,10 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 import type { SwitchState, CommandMode } from '@/lib/network/types';
 import type { Translations } from '@/contexts/LanguageContext';
-import type { CanvasDevice } from '../networkTopology.types';
+import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import { commandHelp } from '@/lib/network/executor';
 import { commandPatterns } from '@/lib/network/parser';
 import { toast } from '@/hooks/use-toast';

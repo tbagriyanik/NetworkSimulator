@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import type { CanvasDevice } from '../networkTopology.types';
+﻿import { useState, useEffect, useMemo } from 'react';
+import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 
 import { secureStorage } from '@/lib/storage/secureStorage';
 
@@ -96,5 +96,6 @@ export function usePCPanelBrowserState({
     setBrowserWindow
   };
 }
+
 
 

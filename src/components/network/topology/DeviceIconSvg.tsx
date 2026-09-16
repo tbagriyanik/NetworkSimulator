@@ -1,5 +1,5 @@
-import React from 'react';
-import { STATUS_COLORS } from '../networkTopology.constants';
+﻿import React from 'react';
+import { STATUS_COLORS } from '../NetworkTopology/utils/networkTopology.constants';
 
 interface DeviceIconSvgProps {
   type: string;
@@ -87,7 +87,7 @@ export const DeviceIconSvg: React.FC<DeviceIconSvgProps> = React.memo(({
   if (type === 'iot') {
     return (
       <svg width="32" height="32" viewBox="0 -2 27 27" fill="none" style={{ stroke: isPoweredOff ? STATUS_COLORS.offline : isDark ? 'var(--color-warning-100)' : 'var(--color-warning-800)' }} strokeWidth="1.5">
-        <title>{`${name || 'IoT'} • ${iotSensorType || 'sensor'} • ${iotMeasuredValue || ''}`}</title>
+        <title>{`${name || 'IoT'} â€¢ ${iotSensorType || 'sensor'} â€¢ ${iotMeasuredValue || ''}`}</title>
         <path strokeLinecap="round" strokeLinejoin="round" d="M16.247 7.761a6 6 0 0 1 0 8.478" />
         <path strokeLinecap="round" strokeLinejoin="round" d="M19.075 4.933a10 10 0 0 1 0 14.134" />
         <path strokeLinecap="round" strokeLinejoin="round" d="M4.925 19.067a10 10 0 0 1 0-14.134" />
@@ -126,3 +126,4 @@ export const DeviceIconSvg: React.FC<DeviceIconSvgProps> = React.memo(({
 
   return null;
 });
+

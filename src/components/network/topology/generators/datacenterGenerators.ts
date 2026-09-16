@@ -1,4 +1,4 @@
-import type { CanvasDevice } from '../../networkTopology.types';
+﻿import type { CanvasDevice } from '../../NetworkTopology/types/networkTopology.types';
 import {
   type Ctx,
   newCtx,
@@ -143,3 +143,4 @@ export function generateHybridEnterprise(): Ctx {
 
   return ctx;
 }
+

@@ -1,4 +1,4 @@
-import type { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+﻿import type { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 
 export interface HopPacketInfo {
     hopIndex: number;
@@ -156,3 +156,4 @@ export function buildHopPacketInfos(
 
     return infos;
 }
+

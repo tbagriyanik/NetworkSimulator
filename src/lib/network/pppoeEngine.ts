@@ -1,5 +1,5 @@
-import { SwitchState, PppoeSession } from './types';
-import { CanvasConnection } from '@/components/network/networkTopology.types';
+﻿import { SwitchState, PppoeSession } from './types';
+import { CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 /**
  * Evaluates and negotiates PPPoE Sessions across topology routers.
@@ -120,3 +120,5 @@ export function evaluatePppoeSessions(
 
   return updatedStates;
 }
+
+

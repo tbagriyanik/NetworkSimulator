@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { Radio, Save, Globe } from 'lucide-react';
@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { normalizeMAC } from "@/lib/utils";
 import { getWirelessSignalStrength } from '@/lib/network/connectivity';
 import { IoTSensorDisplay } from '../PCPanelWidgets';
-import type { CanvasDevice } from '../networkTopology.types';
+import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import type { EnvironmentSettings } from '@/lib/store/appStore';
 
@@ -74,11 +74,11 @@ export function IotDashboardTab({
             <Radio className="w-5 h-5" />
             <div>
               <h3 className="text-sm font-black tracking-widest">
-                {language === 'tr' ? 'IoT Yönetimi' : 'IoT Management'}
+                {language === 'tr' ? 'IoT YÃ¶netimi' : 'IoT Management'}
               </h3>
               <p className="text-[10px] font-medium tracking-normal text-accent-500/70">
                 {language === 'tr'
-                  ? 'Nesneleri yönetmek için yönetim paneli'
+                  ? 'Nesneleri yÃ¶netmek iÃ§in yÃ¶netim paneli'
                   : 'Panel for managing connected devices'}
               </p>
             </div>
@@ -101,7 +101,7 @@ export function IotDashboardTab({
                 }, 300);
               }}
             >
-              {language === 'tr' ? 'Kablosuz Ayarları Aç' : 'Open Wireless Settings'}
+              {language === 'tr' ? 'Kablosuz AyarlarÄ± AÃ§' : 'Open Wireless Settings'}
             </Button>
             <Button
               size="sm"
@@ -114,19 +114,19 @@ export function IotDashboardTab({
                 }, 300);
               }}
             >
-              {language === 'tr' ? 'Web Paneli Aç' : 'Open Web Panel'}
+              {language === 'tr' ? 'Web Paneli AÃ§' : 'Open Web Panel'}
             </Button>
           </div>
         </div>
 
         {iotDevices.length === 0 ? (
           <div className={`text-xs ${isDark ? 'text-secondary-200' : 'text-secondary-600'}`}>
-            {language === 'tr' ? 'Topolojide IoT nesnesi yoktur. Önce topolojiye IoT nesnesi ekleyiniz.' : 'No IoT object in topology. Add one first.'}
+            {language === 'tr' ? 'Topolojide IoT nesnesi yoktur. Ã–nce topolojiye IoT nesnesi ekleyiniz.' : 'No IoT object in topology. Add one first.'}
           </div>
         ) : (
           <>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-secondary-500">{language === 'tr' ? 'Nesne Seçimi' : 'Object Selection'}</label>
+              <label className="text-xs font-bold text-secondary-500">{language === 'tr' ? 'Nesne SeÃ§imi' : 'Object Selection'}</label>
               <Select value={selectedIotDeviceId} onValueChange={setSelectedIotDeviceId}>
                 <SelectTrigger>
                   <SelectValue placeholder="IoT" />
@@ -140,7 +140,7 @@ export function IotDashboardTab({
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-secondary-500">{language === 'tr' ? 'Cihaz Adı' : 'Device Name'}</label>
+              <label className="text-xs font-bold text-secondary-500">{language === 'tr' ? 'Cihaz AdÄ±' : 'Device Name'}</label>
               <Input
                 value={selectedIotDevice?.name || ''}
                 onChange={(e) => {
@@ -152,12 +152,12 @@ export function IotDashboardTab({
                     }
                   }));
                 }}
-                placeholder={language === 'tr' ? 'Cihaz adı...' : 'Device name...'}
+                placeholder={language === 'tr' ? 'Cihaz adÄ±...' : 'Device name...'}
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-secondary-500">{language === 'tr' ? 'Cihaz Türü' : 'Device Type'}</label>
+              <label className="text-xs font-bold text-secondary-500">{language === 'tr' ? 'Cihaz TÃ¼rÃ¼' : 'Device Type'}</label>
               <Select
                 value={`${iotKind}:${iotSensorType}`}
                 onValueChange={(v) => {
@@ -184,14 +184,14 @@ export function IotDashboardTab({
               >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="heater:temperature">{language === 'tr' ? 'Isıtıcı' : 'Heater'}</SelectItem>
+                  <SelectItem value="heater:temperature">{language === 'tr' ? 'IsÄ±tÄ±cÄ±' : 'Heater'}</SelectItem>
                   <SelectItem value="lamp:light">{language === 'tr' ? 'Lamba' : 'Lamp'}</SelectItem>
-                  <SelectItem value="cooler:temperature">{language === 'tr' ? 'Soğutucu' : 'Cooler'}</SelectItem>
-                  <SelectItem value="sensor:temperature">{language === 'tr' ? 'Isı Sensörü' : 'Temperature Sensor'}</SelectItem>
-                  <SelectItem value="sensor:light">{language === 'tr' ? 'Işık Sensörü' : 'Light Sensor'}</SelectItem>
-                  <SelectItem value="sensor:humidity">{language === 'tr' ? 'Nem Sensörü' : 'Humidity Sensor'}</SelectItem>
-                  <SelectItem value="sensor:motion">{language === 'tr' ? 'Hareket Sensörü' : 'Motion Sensor'}</SelectItem>
-                  <SelectItem value="sensor:sound">{language === 'tr' ? 'Ses Sensörü' : 'Sound Sensor'}</SelectItem>
+                  <SelectItem value="cooler:temperature">{language === 'tr' ? 'SoÄŸutucu' : 'Cooler'}</SelectItem>
+                  <SelectItem value="sensor:temperature">{language === 'tr' ? 'IsÄ± SensÃ¶rÃ¼' : 'Temperature Sensor'}</SelectItem>
+                  <SelectItem value="sensor:light">{language === 'tr' ? 'IÅŸÄ±k SensÃ¶rÃ¼' : 'Light Sensor'}</SelectItem>
+                  <SelectItem value="sensor:humidity">{language === 'tr' ? 'Nem SensÃ¶rÃ¼' : 'Humidity Sensor'}</SelectItem>
+                  <SelectItem value="sensor:motion">{language === 'tr' ? 'Hareket SensÃ¶rÃ¼' : 'Motion Sensor'}</SelectItem>
+                  <SelectItem value="sensor:sound">{language === 'tr' ? 'Ses SensÃ¶rÃ¼' : 'Sound Sensor'}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -201,7 +201,7 @@ export function IotDashboardTab({
                 {language === 'tr' ? 'Cihaz Durumu' : 'Device Status'}
               </label>
               <span className={`text-[9px] font-bold ${!iotCollaborationEnabled ? 'text-error-500' : 'text-secondary-200'}`}>
-                {language === 'tr' ? 'PASİF' : 'PASSIVE'}
+                {language === 'tr' ? 'PASÄ°F' : 'PASSIVE'}
               </span>
               <button
                 type="button"
@@ -232,13 +232,13 @@ export function IotDashboardTab({
                 <span className={cn("inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-300", iotCollaborationEnabled ? 'translate-x-8' : 'translate-x-1')} />
               </button>
               <span className={`text-[9px] font-bold ${iotCollaborationEnabled ? 'text-accent-500' : 'text-secondary-200'}`}>
-                {language === 'tr' ? 'AKTİF' : 'ACTIVE'}
+                {language === 'tr' ? 'AKTÄ°F' : 'ACTIVE'}
               </span>
             </div>
 
             <div className="flex items-center gap-4">
               <label className="text-xs font-bold text-secondary-500 shrink-0">
-                {language === 'tr' ? 'Güç Durumu' : 'Power Status'}
+                {language === 'tr' ? 'GÃ¼Ã§ Durumu' : 'Power Status'}
               </label>
               <span className={`text-[9px] font-bold ${selectedIotDevice?.status === 'offline' ? 'text-error-500' : 'text-secondary-200'}`}>
                 {language === 'tr' ? 'KAPALI' : 'OFF'}
@@ -266,7 +266,7 @@ export function IotDashboardTab({
                 <span className={cn("inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-300", selectedIotDevice?.status !== 'offline' ? 'translate-x-8' : 'translate-x-1')} />
               </button>
               <span className={`text-[9px] font-bold ${selectedIotDevice?.status !== 'offline' ? 'text-success-500' : 'text-secondary-200'}`}>
-                {language === 'tr' ? 'AÇIK' : 'ON'}
+                {language === 'tr' ? 'AÃ‡IK' : 'ON'}
               </span>
             </div>
 
@@ -293,7 +293,7 @@ export function IotDashboardTab({
                 }}
                 rows={5}
                 className={`w-full rounded-md border px-3 py-2 text-sm ${isDark ? 'bg-secondary-950 border-secondary-800 text-secondary-100' : 'bg-white border-secondary-300 text-secondary-900'}`}
-                placeholder={language === 'tr' ? 'Sensör verisi veya notlar...' : 'Sensor data or notes...'}
+                placeholder={language === 'tr' ? 'SensÃ¶r verisi veya notlar...' : 'Sensor data or notes...'}
               />
             </div>
 
@@ -311,7 +311,7 @@ export function IotDashboardTab({
                       <div className="flex-1">
                         <div className="text-[11px] font-semibold text-secondary-500 mb-1">{language === 'tr' ? 'IP Adresi' : 'IP Address'}</div>
                         <div className={`text-sm font-mono ${selectedIotDevice?.ip ? 'text-accent-600 dark:text-accent-300' : 'text-secondary-200'}`}>
-                          {selectedIotDevice?.ip || (language === 'tr' ? 'Atanmamış' : 'Not assigned')}
+                          {selectedIotDevice?.ip || (language === 'tr' ? 'AtanmamÄ±ÅŸ' : 'Not assigned')}
                         </div>
                       </div>
                     </div>
@@ -321,11 +321,11 @@ export function IotDashboardTab({
                         <div className="text-sm font-mono text-secondary-600 dark:text-secondary-200">{selectedIotDevice?.macAddress ? normalizeMAC(selectedIotDevice.macAddress) : (language === 'tr' ? 'Yok' : 'N/A')}</div>
                       </div>
                       <div>
-                        <div className="text-[11px] font-semibold text-secondary-500 mb-1">{language === 'tr' ? 'Ağ Geçidi' : 'Gateway'}</div>
+                        <div className="text-[11px] font-semibold text-secondary-500 mb-1">{language === 'tr' ? 'AÄŸ GeÃ§idi' : 'Gateway'}</div>
                         <div className="text-sm font-mono text-secondary-600 dark:text-secondary-200">{selectedIotDevice?.gateway || '-'}</div>
                       </div>
                       <div>
-                        <div className="text-[11px] font-semibold text-secondary-500 mb-1">{language === 'tr' ? 'Alt Ağ Maskesi' : 'Subnet Mask'}</div>
+                        <div className="text-[11px] font-semibold text-secondary-500 mb-1">{language === 'tr' ? 'Alt AÄŸ Maskesi' : 'Subnet Mask'}</div>
                         <div className="text-sm font-mono text-secondary-600 dark:text-secondary-200">{selectedIotDevice?.subnet || '-'}</div>
                       </div>
                       <div>
@@ -334,12 +334,12 @@ export function IotDashboardTab({
                           {isIotConnected ? (
                             <span className="flex items-center gap-1.5">
                               <span className="w-2 h-2 rounded-full bg-success-500 animate-pulse"></span>
-                              {language === 'tr' ? 'Çevrimiçi' : 'Online'}
+                              {language === 'tr' ? 'Ã‡evrimiÃ§i' : 'Online'}
                             </span>
                           ) : (
                             <span className="flex items-center gap-1.5">
                               <span className="w-2 h-2 rounded-full bg-error-500"></span>
-                              {language === 'tr' ? 'Çevrimdışı' : 'Offline'}
+                              {language === 'tr' ? 'Ã‡evrimdÄ±ÅŸÄ±' : 'Offline'}
                             </span>
                           )}
                         </div>
@@ -363,7 +363,7 @@ export function IotDashboardTab({
                         }}
                       >
                         <Globe className="w-4 h-4 mr-2" />
-                        {language === 'tr' ? 'Ping Gönder' : 'Ping'}
+                        {language === 'tr' ? 'Ping GÃ¶nder' : 'Ping'}
                       </Button>
                     )}
                     <Button
@@ -402,7 +402,7 @@ export function IotDashboardTab({
 
             <div className={`text-xs ${isDark ? 'text-secondary-200' : 'text-secondary-500'} flex items-center gap-1`}>
               <Save className="w-3 h-3" />
-              {language === 'tr' ? 'Değişiklikler otomatik kaydediliyor' : 'Changes are auto-saved'}
+              {language === 'tr' ? 'DeÄŸiÅŸiklikler otomatik kaydediliyor' : 'Changes are auto-saved'}
             </div>
           </>
         )}
@@ -410,3 +410,4 @@ export function IotDashboardTab({
     </div>
   );
 }
+

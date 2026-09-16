@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import { useMemo } from 'react';
-import type { CanvasDevice } from '../networkTopology.types';
+import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { getWirelessSignalStrength, getDeviceWifiConfig, getApActiveSsids } from '@/lib/network/connectivity';
 import { ensureDeviceStatesMap } from '@/lib/network/networkUtils';

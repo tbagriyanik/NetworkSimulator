@@ -1,4 +1,4 @@
-import { CanvasDevice } from '@/components/network/networkTopology.types';
+﻿import { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { IndexedConnection } from '@/lib/network/connectionIndex';
 import { performArpResolution, getMacFromArpCache } from '@/lib/network/arp';
@@ -95,3 +95,4 @@ export function performArpNdpResolution(deps: ArpNdpDeps): ArpBroadcast {
 
   return arpBroadcast;
 }
+

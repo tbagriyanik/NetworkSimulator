@@ -1,10 +1,10 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useEffect, useCallback, type CSSProperties } from 'react';
 import { useEnvironment } from '@/lib/store/appStore';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import type { CanvasConnection } from './networkTopology.types';
+import type { CanvasConnection } from './NetworkTopology/types/networkTopology.types';
 
 import { toast } from "@/hooks/use-toast";
 import { useOutputSearch } from '@/hooks/useOutputSearch';

@@ -1,6 +1,6 @@
-import type { CommandHandler, CommandContext } from './commandTypes';
+﻿import type { CommandHandler, CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult } from '../types';
-import type { CanvasDevice } from '@/components/network/networkTopology.types';
+import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 export const cmdShowWireless: CommandHandler = (
   state: SwitchState,
@@ -273,3 +273,5 @@ export const cmdShowWlan: CommandHandler = (
   output += '!\n';
   return { success: true, output };
 };
+
+

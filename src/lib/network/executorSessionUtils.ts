@@ -1,5 +1,5 @@
-import type { SwitchState } from './types';
-import type { CanvasDevice } from '@/components/network/networkTopology.types';
+﻿import type { SwitchState } from './types';
+import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 export function findDeviceByHost(ctx: { devices?: CanvasDevice[]; deviceStates?: Map<string, SwitchState> }, host: string): CanvasDevice | undefined {
   const normalized = host.trim().toLowerCase();
@@ -14,3 +14,5 @@ export function formatBytes(bytes: number): string {
   if (bytes >= 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
   return `${Math.max(1, bytes)} B`;
 }
+
+

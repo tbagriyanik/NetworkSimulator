@@ -1,9 +1,9 @@
-import { cliModeError } from './cliErrors';
+﻿import { cliModeError } from './cliErrors';
 import type { CommandContext } from './commandTypes';
 import { checkConnectivity, getWirelessDistance } from '../connectivity';
 import type { PortSecurityViolation, TraversedPort } from '../connectivity/pathResolution/types';
 import { dispatchCapturedPackets } from '../../../utils/packetCapture';
-import type { CanvasDevice } from '@/components/network/networkTopology.types';
+import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState, CommandResult } from '../types';
 import { getL3Hops } from '../routing';
 import { isValidIPv4Format } from '../dns';
@@ -21,7 +21,7 @@ export function deterministicRandom(): number {
 /**
  * Generate ping latencies proportional to WiFi distance.
  * Uses exponential curve: close = very fast, far = much slower (realistic WiFi behavior).
- * distance 0px → ~1ms, 450px (signal 1) → ~150ms, 549px → ~210ms
+ * distance 0px â†’ ~1ms, 450px (signal 1) â†’ ~150ms, 549px â†’ ~210ms
  */
 export function generatePingLatencies(distance: number): { min: number; avg: number; max: number } {
     const jitter = (base: number, pct: number) =>
@@ -40,7 +40,7 @@ export function generatePingLatencies(distance: number): { min: number; avg: num
 /**
  * Three probe times for a single traceroute hop, consistent with the path latency.
  * Wired hops stay at 1ms (<1 msec); wireless paths grow toward the destination RTT.
- * Only a bounded ±1ms jitter is applied so the timing reflects the actual link.
+ * Only a bounded Â±1ms jitter is applied so the timing reflects the actual link.
  */
 export function formatHopTimes(base: number): string {
     const fmt = (ms: number) => ms <= 1 ? '<1' : String(ms);
@@ -196,8 +196,8 @@ export function cmdPing(state: SwitchState, input: string, ctx: CommandContext):
             const srcDist = getWirelessDistance(sourceDevice, devices, ctx.deviceStates);
             const dstDist = getWirelessDistance(targetDevice, devices, ctx.deviceStates);
 
-            // Both wired → <1ms
-            // One or both wireless → sum their distances for total path latency
+            // Both wired â†’ <1ms
+            // One or both wireless â†’ sum their distances for total path latency
             const srcWired = srcDist === Infinity;
             const dstWired = dstDist === Infinity;
 
@@ -574,3 +574,4 @@ export function cmdTraceroute(state: SwitchState, input: string, ctx: CommandCon
 
     return { success: false, error: '% Traceroute requires network context' };
 }
+

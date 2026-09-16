@@ -1,5 +1,5 @@
-import type { SwitchState, CableInfo } from '../types';
-import type { CanvasDevice, CanvasConnection, CanvasNote, DeviceType } from '@/components/network/networkTopology.types';
+﻿import type { SwitchState, CableInfo } from '../types';
+import type { CanvasDevice, CanvasConnection, CanvasNote, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { FaultDefinition } from '../faults';
 
 export type ProjectData = {
@@ -46,3 +46,5 @@ export type ExampleProject = {
   level: ExampleProjectLevel;
   injectedFaults?: FaultDefinition[];
 };
+
+

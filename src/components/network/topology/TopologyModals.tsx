@@ -1,10 +1,10 @@
-import { SetStateAction, Dispatch, useRef } from 'react';
+﻿import { SetStateAction, Dispatch, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Cable, LineSquiggle, Plug, TrendingUpDown, Wifi } from "lucide-react";
-import { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+import { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import { CableInfo, CableType } from '@/lib/network/types';
-import type { PingAnimationState } from '../hooks/usePingSequence';
+import type { PingAnimationState } from '@/hooks/networkTopology/usePingSequence';
 import type { HopPacketInfo } from '../PingPacketInfoPanel';
 import type { CapturedPacket } from '@/lib/store/appStore';
 import { DeviceConfigModal } from '../DeviceConfigModal';
@@ -280,8 +280,8 @@ export function TopologyModals({
           </p>
           <div className="grid grid-cols-5 gap-2">
             {([
-              { type: 'straight' as const, label: isTR ? 'Düz' : 'Straight', icon: <Cable className="w-5 h-5" />, activeColor: 'text-primary-400', color: 'text-primary-500' },
-              { type: 'crossover' as const, label: isTR ? 'Çapraz' : 'Crossover', icon: <LineSquiggle className="w-5 h-5" />, activeColor: 'text-warning-400', color: 'text-warning-500' },
+              { type: 'straight' as const, label: isTR ? 'DÃ¼z' : 'Straight', icon: <Cable className="w-5 h-5" />, activeColor: 'text-primary-400', color: 'text-primary-500' },
+              { type: 'crossover' as const, label: isTR ? 'Ã‡apraz' : 'Crossover', icon: <LineSquiggle className="w-5 h-5" />, activeColor: 'text-warning-400', color: 'text-warning-500' },
               { type: 'serial' as const, label: isTR ? 'Seri' : 'Serial', icon: <Plug className="w-5 h-5" />, activeColor: 'text-success-400', color: 'text-success-500' },
               { type: 'console' as const, label: isTR ? 'Konsol' : 'Console', icon: <TrendingUpDown className="w-5 h-5" />, activeColor: 'text-accent-400', color: 'text-accent-500' },
               { type: 'wireless' as const, label: isTR ? 'Kablo-' : 'Wireless', icon: <Wifi className="w-5 h-5" />, activeColor: 'text-purple-400', color: 'text-purple-500' },
@@ -453,3 +453,4 @@ export function TopologyModals({
     </>
   );
 }
+

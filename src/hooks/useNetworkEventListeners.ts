@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
+﻿import { useEffect, useRef } from 'react';
 import type { SwitchState } from '@/lib/network/types';
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { isSwitchDeviceType } from '@/app/refreshNetworkUtils';
 import type { TabType } from '@/app/page.types';
 import { recalculateStp, computeStpTopologyChanges } from '@/lib/network/stp';
@@ -161,3 +161,5 @@ export function useNetworkEventListeners(params: UseNetworkEventListenersParams)
     };
   }, [setDeviceStates, deviceStates, activeTabRef, setActiveTab, addNetworkEventLog]);
 }
+
+

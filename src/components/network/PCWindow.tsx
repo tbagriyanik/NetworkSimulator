@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import { DraggableWindowWrapper } from './DraggableWindowWrapper';
 import { PCPanel } from './PCPanel';
-import { CanvasDevice, CanvasConnection } from './networkTopology.types';
+import { CanvasDevice, CanvasConnection } from './NetworkTopology/types/networkTopology.types';
 import { CableInfo, SwitchState } from '@/lib/network/types';
 import { TerminalOutput } from './Terminal';
 import { OutputLine as PCOutputLine, PcOutputsSetter } from './pc-panel/PCPanel.types';
@@ -105,3 +105,4 @@ export function PCWindow({
     </DraggableWindowWrapper>
   );
 }
+

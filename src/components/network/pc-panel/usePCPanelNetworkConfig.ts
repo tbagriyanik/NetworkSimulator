@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { CanvasConnection, CanvasDevice } from '../networkTopology.types';
+import type { CanvasConnection, CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import type { DhcpPoolConfig, PcFile } from './PCPanel.types';
 import { checkConnectivity } from '@/lib/network/connectivity';

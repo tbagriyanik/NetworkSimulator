@@ -1,5 +1,5 @@
-import type { CableType } from '@/lib/network/types';
-import type { CanvasDevice, CanvasPort, DeviceType } from '../networkTopology.types';
+﻿import type { CableType } from '@/lib/network/types';
+import type { CanvasDevice, CanvasPort, DeviceType } from '../NetworkTopology/types/networkTopology.types';
 
 /**
  * Automatically infers the cable type based on the port ID and port type.
@@ -82,5 +82,6 @@ export function findOptimalFreePort(
   // Prefer GigabitEthernet/FastEthernet ports in natural order
   return availablePorts[0];
 }
+
 
 

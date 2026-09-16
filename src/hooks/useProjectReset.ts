@@ -3,7 +3,7 @@ import { generateRandomLinkLocalIpv4 } from '@/lib/network/linkLocal';
 import { useAppStore } from '@/lib/store/appStore';
 import { useMultiWindowStore } from '@/hooks/useMultiWindowStore';
 import { clearProjectLocalStorage } from '@/lib/storage/clearProjectStorage';
-import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType } from '@/components/network/networkTopology.types';
+import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { TerminalOutput } from '@/components/network/Terminal';
 import { clearPcLinuxSessions } from '@/components/network/pc-panel/pcLinuxSessionStorage';
@@ -246,3 +246,5 @@ export function useProjectReset({
 
   return { resetToEmptyProject };
 }
+
+

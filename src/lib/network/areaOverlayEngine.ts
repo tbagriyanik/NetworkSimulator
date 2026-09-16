@@ -1,4 +1,4 @@
-import type { CanvasDevice } from '@/components/network/networkTopology.types';
+﻿import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 
 export type OverlayMode = 'none' | 'ospf' | 'vlan' | 'bgp' | 'subnet';
@@ -291,3 +291,5 @@ export function computeAreaZones(
 
   return result;
 }
+
+

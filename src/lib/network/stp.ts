@@ -1,5 +1,5 @@
-import type { SwitchState, StpVlanState, Port } from './types';
-import type { CanvasConnection } from '@/components/network/networkTopology.types';
+﻿import type { SwitchState, StpVlanState, Port } from './types';
+import type { CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { dispatchCapturedPackets } from '../../utils/packetCapture';
 import { detectEtherChannelBundles } from './etherchannel';
 import { buildConnectionIndex, getConnectionAtPort, type ConnectionIndex } from './connectionIndex';
@@ -653,3 +653,5 @@ export function computeStpTopologyChanges(
 
   return changes;
 }
+
+

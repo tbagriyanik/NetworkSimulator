@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { runRootCauseAnalysis } from '@/lib/network/connectivity/networkTroubleshooter';
 import { getSmartCliHint } from '@/lib/network/core/smartCliHints';
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 describe('Network Troubleshooter & Root Cause Analysis', () => {
   it('should detect when source device is offline', () => {
@@ -79,3 +79,5 @@ describe('Smart CLI Hints Engine', () => {
     expect(hintVlan?.template).toContain('<VLAN_ID>');
   });
 });
+
+

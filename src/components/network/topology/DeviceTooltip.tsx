@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import { Monitor, Network, Laptop } from 'lucide-react';
 import { normalizeMAC } from '@/lib/utils';
-import type { CanvasDevice } from '../networkTopology.types';
+import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 
 interface DeviceTooltipData {
   deviceId: string;
@@ -148,11 +148,11 @@ export function DeviceTooltip({ tooltip, deviceMap, isDark, isTR, isDraggingInte
 
                   {dev.services?.dns?.records && dev.services.dns.records.length > 0 && (
                     <div className="space-y-1 mt-2 pt-2 border-t border-white/5">
-                      <div className="text-[9px] font-bold opacity-30 uppercase tracking-wider">{isTR ? 'DNS Kayıtları' : 'DNS Records'}</div>
+                      <div className="text-[9px] font-bold opacity-30 uppercase tracking-wider">{isTR ? 'DNS KayÄ±tlarÄ±' : 'DNS Records'}</div>
                       {dev.services.dns.records.map((record, idx) => (
                         <div key={idx} className="text-[9px] flex justify-between items-center gap-2 bg-primary-500/10 rounded px-1.5 py-0.5">
                           <span className="font-mono text-primary-400 truncate max-w-[80px]">{record.domain}</span>
-                          <span className="opacity-50">→</span>
+                          <span className="opacity-50">â†’</span>
                           <span className="font-mono">{record.address}</span>
                         </div>
                       ))}
@@ -163,7 +163,7 @@ export function DeviceTooltip({ tooltip, deviceMap, isDark, isTR, isDraggingInte
                     <div className="mt-2 pt-2 border-t border-white/5">
                       <div className="text-[9px] flex justify-between items-center">
                         <span className="opacity-60 uppercase tracking-wider">{isTR ? 'HTTP Sunucu' : 'HTTP Server'}</span>
-                        <span className="text-success-500 text-[9px] font-bold">✓ {t.active}</span>
+                        <span className="text-success-500 text-[9px] font-bold">âœ“ {t.active}</span>
                       </div>
                       {dev.services.http.content && (
                         <div className="text-[8px] opacity-50 mt-1 truncate">{dev.services.http.content.substring(0, 50)}...</div>
@@ -175,12 +175,12 @@ export function DeviceTooltip({ tooltip, deviceMap, isDark, isTR, isDraggingInte
                     <div className="mt-2 pt-2 border-t border-white/5">
                       <div className="text-[9px] flex justify-between items-center">
                         <span className="opacity-60 uppercase tracking-wider">FTP Server</span>
-                        <span className="text-accent-500 text-[9px] font-bold">✓ {t.active}</span>
+                        <span className="text-accent-500 text-[9px] font-bold">âœ“ {t.active}</span>
                       </div>
                       <div className="text-[8px] opacity-50 mt-1">
                         {dev.services.ftp.anonymousAccess
-                          ? (isTR ? 'Anonim erişim açık' : 'Anonymous access enabled')
-                          : (isTR ? 'Kullanıcı girişi gerekli' : 'User login required')}
+                          ? (isTR ? 'Anonim eriÅŸim aÃ§Ä±k' : 'Anonymous access enabled')
+                          : (isTR ? 'KullanÄ±cÄ± giriÅŸi gerekli' : 'User login required')}
                       </div>
                     </div>
                   )}
@@ -189,7 +189,7 @@ export function DeviceTooltip({ tooltip, deviceMap, isDark, isTR, isDraggingInte
                     <div className="mt-2 pt-2 border-t border-white/5">
                       <div className="text-[9px] flex justify-between items-center">
                         <span className="opacity-60 uppercase tracking-wider">MAIL Server</span>
-                        <span className="text-error-500 text-[9px] font-bold">✓ {t.active}</span>
+                        <span className="text-error-500 text-[9px] font-bold">âœ“ {t.active}</span>
                       </div>
                       <div className="text-[8px] opacity-50 mt-1 truncate">
                         {dev.services.mail.domain || 'local.lan'}
@@ -208,3 +208,4 @@ export function DeviceTooltip({ tooltip, deviceMap, isDark, isTR, isDraggingInte
     </div>
   );
 }
+

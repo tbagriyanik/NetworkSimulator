@@ -1,8 +1,8 @@
-import { useMemo, useCallback } from 'react';
+﻿import { useMemo, useCallback } from 'react';
 import type { SwitchState } from '@/lib/network/types';
 import type { TerminalOutput } from '../Terminal';
 import type { OutputLine, PCActiveTab } from './PCPanel.types';
-import type { CanvasDevice } from '../networkTopology.types';
+import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import { toast } from '@/hooks/use-toast';
 import { errorHandler, CLIPBOARD_ERRORS } from '@/lib/errors/errorHandler';
 import { getAutocompleteSuggestions } from './pcTerminal.utils';
@@ -108,4 +108,5 @@ export function usePCPanelTerminalSync({
     shouldShowAutocomplete
   };
 }
+
 

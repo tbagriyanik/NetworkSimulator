@@ -3,7 +3,7 @@ import { createL3SwitchDevice, createPcDevice, connectPorts, baseProjectData } f
 ;
 ;
 import type { ExampleProject } from './types';
-import type { CanvasConnection, CanvasNote } from '@/components/network/networkTopology.types';
+import type { CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 const example = (isTr: boolean): ExampleProject => {
   const stpPvstDevices = [
@@ -348,5 +348,7 @@ const example = (isTr: boolean): ExampleProject => {
 };
 
 export default example;
+
+
 
 

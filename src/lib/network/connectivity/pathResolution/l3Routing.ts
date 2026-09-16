@@ -1,4 +1,4 @@
-import { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+﻿import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { IndexedConnection } from '@/lib/network/connectionIndex';
 import { findRoute, getRoutingTable, isIpv6InNetwork } from '@/lib/network/routing';
@@ -80,7 +80,7 @@ export function validateL3Routing(deps: L3RoutingDeps): L3RoutingResult {
               hopIds: path.slice(0, 1),
               targetId: targetDevice.id,
               error: language === 'tr'
-                ? `Ağ geçidi (Default Gateway) yapılandırılmamış.`
+                ? `AÄŸ geÃ§idi (Default Gateway) yapÄ±landÄ±rÄ±lmamÄ±ÅŸ.`
                 : `Default Gateway is not configured on source host.`
             }
           };
@@ -96,7 +96,7 @@ export function validateL3Routing(deps: L3RoutingDeps): L3RoutingResult {
               hopIds: path.slice(0, 1),
               targetId: targetDevice.id,
               error: language === 'tr'
-                ? `Ağ geçidi (Default Gateway) kaynak cihaz ile aynı ağ bloğunda değil.`
+                ? `AÄŸ geÃ§idi (Default Gateway) kaynak cihaz ile aynÄ± aÄŸ bloÄŸunda deÄŸil.`
                 : `Default Gateway is not in the same subnet as the source host.`
             }
           };
@@ -118,7 +118,7 @@ export function validateL3Routing(deps: L3RoutingDeps): L3RoutingResult {
               hopIds: path,
               targetId: targetDevice.id,
               error: language === 'tr'
-                ? `Hedef cihazın Ağ Geçidi (Default Gateway) yapılandırılmamış.`
+                ? `Hedef cihazÄ±n AÄŸ GeÃ§idi (Default Gateway) yapÄ±landÄ±rÄ±lmamÄ±ÅŸ.`
                 : `Default Gateway is not configured on target host.`
             }
           };
@@ -132,7 +132,7 @@ export function validateL3Routing(deps: L3RoutingDeps): L3RoutingResult {
               hopIds: path,
               targetId: targetDevice.id,
               error: language === 'tr'
-                ? `Hedef cihazın Ağ Geçidi (Default Gateway) hedef ağ bloğunda değil.`
+                ? `Hedef cihazÄ±n AÄŸ GeÃ§idi (Default Gateway) hedef aÄŸ bloÄŸunda deÄŸil.`
                 : `Default Gateway is not in the same subnet as the target host.`
             }
           };
@@ -177,7 +177,7 @@ export function validateL3Routing(deps: L3RoutingDeps): L3RoutingResult {
                 hopIds: path,
                 targetId: targetDevice.id,
                 error: language === 'tr'
-                  ? `Hedefe rota bulunamadı. Statik rota yapılandırması gerekli.`
+                  ? `Hedefe rota bulunamadÄ±. Statik rota yapÄ±landÄ±rmasÄ± gerekli.`
                   : `No route to destination. Static route configuration required.`
               }
             };
@@ -226,7 +226,7 @@ export function validateL3Routing(deps: L3RoutingDeps): L3RoutingResult {
             hopIds: path,
             targetId: targetDevice.id,
             error: language === 'tr'
-              ? `Hedefe rota bulunamadı. Statik rota yapılandırması gerekli.`
+              ? `Hedefe rota bulunamadÄ±. Statik rota yapÄ±landÄ±rmasÄ± gerekli.`
               : `No route to destination. Static route configuration required.`
           }
         };
@@ -319,7 +319,7 @@ export function checkL3Connectivity(deps: L3ConnectivityDeps): L3ConnectivityRes
           hopIds: path,
           targetId: targetDevice.id,
           error: language === 'tr'
-            ? 'Yönlendirme başarısız: Geçerli bir rota bulunamadı.'
+            ? 'YÃ¶nlendirme baÅŸarÄ±sÄ±z: GeÃ§erli bir rota bulunamadÄ±.'
             : 'Routing failed: No valid route found.'
         }
       };
@@ -328,3 +328,4 @@ export function checkL3Connectivity(deps: L3ConnectivityDeps): L3ConnectivityRes
 
   return { type: 'ok', l3ConnectivityPossible };
 }
+

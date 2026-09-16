@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { colors } from '@/lib/design-tokens/colors';
@@ -11,7 +11,7 @@ import {
   Scan,
   Filter,
 } from 'lucide-react';
-import type { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import { useUiPreferences } from '@/hooks/useUiPreferences';
 import { getSubnetPrefix } from '@/lib/network/areaOverlayEngine';
 
@@ -266,7 +266,7 @@ export function MinimapNavigator({
               {zoomToFit && (
                 <button
                   onClick={zoomToFit}
-                  title={isTR ? 'Tüm Topolojiyi Ekrana Sığdır' : 'Fit Topology to Screen'}
+                  title={isTR ? 'TÃ¼m Topolojiyi Ekrana SÄ±ÄŸdÄ±r' : 'Fit Topology to Screen'}
                   className="p-1 rounded hover:bg-slate-700/50 text-slate-300 hover:text-white transition-colors"
                 >
                   <Scan className="w-3.5 h-3.5" />
@@ -276,7 +276,7 @@ export function MinimapNavigator({
               {/* Expand/Collapse Map Size Toggle */}
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                title={isExpanded ? (isTR ? 'Küçült' : 'Shrink') : (isTR ? 'Genişlet' : 'Expand')}
+                title={isExpanded ? (isTR ? 'KÃ¼Ã§Ã¼lt' : 'Shrink') : (isTR ? 'GeniÅŸlet' : 'Expand')}
                 className="p-1 rounded hover:bg-slate-700/50 text-slate-300 hover:text-white transition-colors"
               >
                 {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
@@ -307,7 +307,7 @@ export function MinimapNavigator({
                 }`}
               >
                 <option value="all" className={isDark ? 'bg-slate-900 text-slate-200' : 'bg-white text-slate-800'}>
-                  {isTR ? '🔍 Alt Ağ Odakla (Tümü)' : '🔍 Focus Subnet (All)'}
+                  {isTR ? 'ğŸ” Alt AÄŸ Odakla (TÃ¼mÃ¼)' : 'ğŸ” Focus Subnet (All)'}
                 </option>
                 {detectedSubnets.map((sub) => (
                   <option key={sub} value={sub} className={isDark ? 'bg-slate-900 text-slate-200' : 'bg-white text-slate-800'}>
@@ -404,3 +404,4 @@ export function MinimapNavigator({
     </div>
   );
 }
+

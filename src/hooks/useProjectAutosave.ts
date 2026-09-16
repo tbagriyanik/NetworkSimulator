@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
+﻿import { useEffect, useRef } from 'react';
 import type { SwitchState, CableInfo } from '@/lib/network/types';
-import type { CanvasDevice, CanvasConnection, CanvasNote } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { TerminalOutput } from '@/components/network/Terminal';
 import type { TabType } from '@/app/page.types';
 import { safeStringify } from '@/lib/network/serialization';
@@ -108,3 +108,5 @@ export function useProjectAutosave({
     isAppLoading, zoom, pan, setLastSaveTime, setHasUnsavedChanges
   ]);
 }
+
+

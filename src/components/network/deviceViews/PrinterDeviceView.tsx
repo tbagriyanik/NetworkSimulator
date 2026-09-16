@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo } from 'react';
 import { Printer, Server, CheckCircle2, RefreshCw, Send, HardDrive, Wifi, Radio, Power, Signal, Trash2 } from 'lucide-react';
@@ -7,7 +7,7 @@ import { useAppStore } from '@/lib/store/appStore';
 import { checkConnectivity } from '@/lib/network/connectivity/pathResolution';
 import { getWirelessSignalStrength } from '@/lib/network/connectivity';
 
-import type { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 
 interface PrinterDeviceViewProps {
@@ -270,7 +270,7 @@ export function PrinterDeviceView({
   const handleSendPing = () => {
     if (!targetPingIp.trim()) return;
     setIsPinging(true);
-    setPingResults([isTr ? `Ping gönderiliyor: ${targetPingIp}...` : `Pinging ${targetPingIp}...`]);
+    setPingResults([isTr ? `Ping gÃ¶nderiliyor: ${targetPingIp}...` : `Pinging ${targetPingIp}...`]);
 
     setTimeout(() => {
       const res = checkConnectivity(
@@ -333,11 +333,11 @@ export function PrinterDeviceView({
                   ? "bg-emerald-500/20 text-emerald-400"
                   : "bg-red-500/20 text-red-400"
               )}>
-                {isPowerOn ? (isTr ? 'Açık / Online' : 'Ready / Online') : (isTr ? 'Kapalı / Offline' : 'Powered Off')}
+                {isPowerOn ? (isTr ? 'AÃ§Ä±k / Online' : 'Ready / Online') : (isTr ? 'KapalÄ± / Offline' : 'Powered Off')}
               </span>
             </h2>
             <p className="text-xs opacity-60">
-              {isTr ? 'Ağ Yazıcı Sunucusu (Wi-Fi & Ethernet Çift Arayüzlü)' : 'Network Print Server (Wi-Fi & Ethernet Dual Interface)'}
+              {isTr ? 'AÄŸ YazÄ±cÄ± Sunucusu (Wi-Fi & Ethernet Ã‡ift ArayÃ¼zlÃ¼)' : 'Network Print Server (Wi-Fi & Ethernet Dual Interface)'}
             </p>
           </div>
         </div>
@@ -367,10 +367,10 @@ export function PrinterDeviceView({
                 ? "bg-emerald-500/15 border-emerald-600/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25"
                 : "bg-red-500/15 border-red-600/40 text-red-600 dark:text-red-400 hover:bg-red-500/25"
             )}
-            title={isTr ? (isPowerOn ? 'Yazıcıyı Kapat' : 'Yazıcıyı Aç') : (isPowerOn ? 'Power Off Printer' : 'Power On Printer')}
+            title={isTr ? (isPowerOn ? 'YazÄ±cÄ±yÄ± Kapat' : 'YazÄ±cÄ±yÄ± AÃ§') : (isPowerOn ? 'Power Off Printer' : 'Power On Printer')}
           >
             <Power className="w-3.5 h-3.5" />
-            <span>{isPowerOn ? (isTr ? 'Açık' : 'ON') : (isTr ? 'Kapalı' : 'OFF')}</span>
+            <span>{isPowerOn ? (isTr ? 'AÃ§Ä±k' : 'ON') : (isTr ? 'KapalÄ±' : 'OFF')}</span>
           </button>
         </div>
 
@@ -389,7 +389,7 @@ export function PrinterDeviceView({
           <div className="flex items-center justify-between border-b pb-3 border-secondary-700/40">
             <h3 className="text-sm font-bold flex items-center gap-2">
               <Server className="w-4 h-4 text-purple-400" />
-              {isTr ? 'Ağ & IP Yapılandırması' : 'Network & IP Configuration'}
+              {isTr ? 'AÄŸ & IP YapÄ±landÄ±rmasÄ±' : 'Network & IP Configuration'}
             </h3>
             <div className="flex items-center gap-1 bg-secondary-800/40 p-1 rounded-lg border border-secondary-700/50 text-xs">
               <button
@@ -423,7 +423,7 @@ export function PrinterDeviceView({
               />
             </div>
             <div>
-              <label className="block mb-1 font-medium opacity-80">{isTr ? 'Alt Ağ Maskesi' : 'Subnet Mask'}</label>
+              <label className="block mb-1 font-medium opacity-80">{isTr ? 'Alt AÄŸ Maskesi' : 'Subnet Mask'}</label>
               <input
                 type="text"
                 disabled={ipMode === 'dhcp'}
@@ -437,7 +437,7 @@ export function PrinterDeviceView({
               />
             </div>
             <div>
-              <label className="block mb-1 font-medium opacity-80">{isTr ? 'Varsayılan Ağ Geçidi' : 'Default Gateway'}</label>
+              <label className="block mb-1 font-medium opacity-80">{isTr ? 'VarsayÄ±lan AÄŸ GeÃ§idi' : 'Default Gateway'}</label>
               <input
                 type="text"
                 disabled={ipMode === 'dhcp'}
@@ -470,7 +470,7 @@ export function PrinterDeviceView({
               <div className="flex items-center justify-between">
                 <label className="font-medium opacity-80 flex items-center gap-1.5 text-purple-400">
                   <Wifi className="w-3.5 h-3.5" />
-                  <span>{isTr ? 'Kablosuz Ağ (Wi-Fi SSID)' : 'Wi-Fi Network (SSID)'}</span>
+                  <span>{isTr ? 'Kablosuz AÄŸ (Wi-Fi SSID)' : 'Wi-Fi Network (SSID)'}</span>
                 </label>
                 <button
                   type="button"
@@ -481,15 +481,15 @@ export function PrinterDeviceView({
                       ? "bg-red-950/60 border-red-600/60 text-red-300 hover:bg-red-900/80"
                       : "bg-emerald-950/60 border-emerald-600/60 text-emerald-300 hover:bg-emerald-900/80"
                   )}
-                  title={isTr ? (isWifiEnabled ? 'Wi-Fi bağlantısını kapat' : 'Wi-Fi bağlantısını aç') : (isWifiEnabled ? 'Disconnect Wi-Fi' : 'Connect Wi-Fi')}
+                  title={isTr ? (isWifiEnabled ? 'Wi-Fi baÄŸlantÄ±sÄ±nÄ± kapat' : 'Wi-Fi baÄŸlantÄ±sÄ±nÄ± aÃ§') : (isWifiEnabled ? 'Disconnect Wi-Fi' : 'Connect Wi-Fi')}
                 >
-                  <span>{isWifiEnabled ? '❌' : '✅'}</span>
-                  <span>{isWifiEnabled ? (isTr ? 'Wi-Fi Kapat' : 'Disable Wi-Fi') : (isTr ? 'Wi-Fi Aç' : 'Enable Wi-Fi')}</span>
+                  <span>{isWifiEnabled ? 'âŒ' : 'âœ…'}</span>
+                  <span>{isWifiEnabled ? (isTr ? 'Wi-Fi Kapat' : 'Disable Wi-Fi') : (isTr ? 'Wi-Fi AÃ§' : 'Enable Wi-Fi')}</span>
                 </button>
               </div>
               {availableSsids.length === 0 ? (
                 <div className="p-2.5 rounded-lg border border-secondary-800 bg-secondary-950/40 text-center text-xs opacity-60">
-                  {isTr ? 'Kapsama alanında aktif Wi-Fi ağı yok' : 'No active Wi-Fi networks found'}
+                  {isTr ? 'Kapsama alanÄ±nda aktif Wi-Fi aÄŸÄ± yok' : 'No active Wi-Fi networks found'}
                 </div>
               ) : (
                 <div className="space-y-1.5 max-h-[120px] overflow-y-auto custom-scrollbar">
@@ -512,7 +512,7 @@ export function PrinterDeviceView({
                         </div>
                         {isConnected && (
                           <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono">
-                            {isTr ? 'Bağlı' : 'Connected'}
+                            {isTr ? 'BaÄŸlÄ±' : 'Connected'}
                           </span>
                         )}
                       </div>
@@ -529,7 +529,7 @@ export function PrinterDeviceView({
               className="px-4 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs transition-colors flex items-center gap-1.5"
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
-              {isTr ? 'Ayarları Kaydet' : 'Save Configuration'}
+              {isTr ? 'AyarlarÄ± Kaydet' : 'Save Configuration'}
             </button>
             {saveSuccess && (
               <span className="text-xs text-emerald-400 font-medium animate-pulse">
@@ -546,14 +546,14 @@ export function PrinterDeviceView({
         )}>
           <h3 className="text-sm font-bold flex items-center gap-2 border-b pb-3 border-secondary-700/40">
             <HardDrive className="w-4 h-4 text-purple-400" />
-            {isTr ? 'Donanım & Sarf Malzemeleri' : 'Hardware & Supplies Status'}
+            {isTr ? 'DonanÄ±m & Sarf Malzemeleri' : 'Hardware & Supplies Status'}
           </h3>
 
           <div className="space-y-4 text-xs">
             {/* Paper Tray */}
             <div>
               <div className="flex justify-between mb-1 font-medium">
-                <span>{isTr ? 'Kağıt Kasedi (Tray 1 - A4)' : 'Paper Tray 1 (A4)'}</span>
+                <span>{isTr ? 'KaÄŸÄ±t Kasedi (Tray 1 - A4)' : 'Paper Tray 1 (A4)'}</span>
                 <span className="text-emerald-400 font-mono">100%</span>
               </div>
               <div className="w-full bg-secondary-800 rounded-full h-2 overflow-hidden">
@@ -587,7 +587,7 @@ export function PrinterDeviceView({
             {/* Print Queue */}
             <div className="p-3 rounded-lg bg-secondary-950 border border-secondary-800 space-y-2">
               <div className="flex justify-between items-center text-[11px] font-semibold">
-                <span>{isTr ? 'Yazdırma Kuyruğu & Gelen Belgeler' : 'Print Queue & Incoming Documents'}</span>
+                <span>{isTr ? 'YazdÄ±rma KuyruÄŸu & Gelen Belgeler' : 'Print Queue & Incoming Documents'}</span>
                 <div className="flex items-center gap-2">
                   <span className="text-purple-400 font-mono">{(liveDevice.printJobs || []).length} {isTr ? 'Belge' : 'Jobs'}</span>
                   {(liveDevice.printJobs || []).length > 0 && (
@@ -595,7 +595,7 @@ export function PrinterDeviceView({
                       type="button"
                       onClick={handleClearPrintJobs}
                       className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded bg-red-950/60 hover:bg-red-900 border border-red-700/50 text-red-300 transition-colors cursor-pointer"
-                      title={isTr ? 'Yazdırma kuyruğunu temizle' : 'Clear print queue'}
+                      title={isTr ? 'YazdÄ±rma kuyruÄŸunu temizle' : 'Clear print queue'}
                     >
                       <Trash2 className="w-3 h-3" />
                       <span>{isTr ? 'Temizle' : 'Clear'}</span>
@@ -606,7 +606,7 @@ export function PrinterDeviceView({
 
               {(!liveDevice.printJobs || liveDevice.printJobs.length === 0) ? (
                 <p className="text-[10px] opacity-60 italic">
-                  {isTr ? 'Bekleyen iş yok. Yazıcı hazır konumda.' : 'No active print jobs in queue. Printer ready.'}
+                  {isTr ? 'Bekleyen iÅŸ yok. YazÄ±cÄ± hazÄ±r konumda.' : 'No active print jobs in queue. Printer ready.'}
                 </p>
               ) : (
                 <div className="space-y-1.5 max-h-[140px] overflow-y-auto custom-scrollbar">
@@ -614,7 +614,7 @@ export function PrinterDeviceView({
                     <div key={idx} className="p-2 rounded bg-slate-900 border border-slate-800 text-[11px] flex justify-between items-center">
                       <div>
                         <div className="font-semibold text-purple-300 truncate max-w-[160px]">{job.documentTitle}</div>
-                        <div className="text-[9px] opacity-60 font-mono">{job.senderName} • {job.pages} {isTr ? 'sayfa' : 'pg'}</div>
+                        <div className="text-[9px] opacity-60 font-mono">{job.senderName} â€¢ {job.pages} {isTr ? 'sayfa' : 'pg'}</div>
                       </div>
                       <div className="text-right">
                         <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono">
@@ -638,7 +638,7 @@ export function PrinterDeviceView({
       )}>
         <h3 className="text-sm font-bold flex items-center gap-2 border-b pb-3 border-secondary-700/40">
           <Send className="w-4 h-4 text-purple-400" />
-          {isTr ? 'Yazıcı Ağ Teşhisi (Ping Testi)' : 'Printer Network Diagnostics (Ping Test)'}
+          {isTr ? 'YazÄ±cÄ± AÄŸ TeÅŸhisi (Ping Testi)' : 'Printer Network Diagnostics (Ping Test)'}
         </h3>
 
         <div className="flex gap-2 items-center">
@@ -652,7 +652,7 @@ export function PrinterDeviceView({
                 handleSendPing();
               }
             }}
-            placeholder={isTr ? 'Hedef IP (örn: 192.168.1.1)' : 'Target IP (e.g. 192.168.1.1)'}
+            placeholder={isTr ? 'Hedef IP (Ã¶rn: 192.168.1.1)' : 'Target IP (e.g. 192.168.1.1)'}
             className={cn(
               "flex-1 px-3 py-1.5 rounded-lg border font-mono text-xs outline-none",
               isDark ? "bg-secondary-950 border-secondary-700 text-white" : "bg-slate-50 border-secondary-300 text-slate-900"
@@ -664,7 +664,7 @@ export function PrinterDeviceView({
             className="px-4 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors"
           >
             {isPinging ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-            {isTr ? 'Ping Gönder' : 'Send Ping'}
+            {isTr ? 'Ping GÃ¶nder' : 'Send Ping'}
           </button>
         </div>
 
@@ -679,3 +679,4 @@ export function PrinterDeviceView({
     </div>
   );
 }
+

@@ -1,5 +1,5 @@
-import { useState, useRef, useCallback } from 'react';
-import { CanvasDevice, CanvasConnection, CanvasNote } from '@/components/network/networkTopology.types';
+﻿import { useState, useRef, useCallback } from 'react';
+import { CanvasDevice, CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 
 interface HistorySnapshot {
@@ -145,4 +145,6 @@ export function useCanvasHistory({
         historyLength,
     };
 }
+
+
 

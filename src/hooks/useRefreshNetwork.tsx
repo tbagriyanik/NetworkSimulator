@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import { useCallback, Dispatch, SetStateAction } from 'react';
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import type { PCOutputLine } from '@/app/page.types';
 
@@ -208,7 +208,7 @@ export function useRefreshNetwork({
 
       if (dhcpClients.length > 0) {
         dhcpClients.forEach(pc => {
-          // Preserve existing valid DHCP leases — only reassign if the device
+          // Preserve existing valid DHCP leases â€” only reassign if the device
           // has no IP, a link-local (169.254.x.x) fallback, or its current IP
           // falls outside every available DHCP pool (e.g. pool was resized/removed).
           const currentIp = pc.ip;
@@ -240,7 +240,7 @@ export function useRefreshNetwork({
             return false;
           })();
 
-          if (ipInPool) return; // already has a valid DHCP lease in a pool — skip reassignment
+          if (ipInPool) return; // already has a valid DHCP lease in a pool â€” skip reassignment
 
           const validDhcpLease = assignDhcpLeaseForPc(pc, finalDevicesForRefresh, stpUpdatedStates, sanitizedConnections);
           const lease = validDhcpLease || buildLinkLocalLease(pc, finalDevicesForRefresh);
@@ -293,7 +293,7 @@ export function useRefreshNetwork({
           addNetworkEventLog({
             level: 'info',
             category: 'DHCP',
-            message: t.dhcpAssignments || (language === 'tr' ? 'DHCP Atamaları' : 'DHCP Assignments'),
+            message: t.dhcpAssignments || (language === 'tr' ? 'DHCP AtamalarÄ±' : 'DHCP Assignments'),
             detail: dhcpAssignments.map(asgn => `${asgn.name}: ${asgn.ip}`).join('\n'),
           });
         }
@@ -606,58 +606,58 @@ export function useRefreshNetwork({
       });
       const summaryWarnings: string[] = [];
       if (subnetMismatchCount > 0) {
-        summaryWarnings.push(language === 'tr' ? `Alt ağ uyumsuzluğu: ${subnetMismatchCount}` : `Subnet mismatch: ${subnetMismatchCount}`);
-        addNetworkEventLog({ level: 'warning', category: 'Subnet', message: language === 'tr' ? `Alt ağ uyumsuzluğu tespit edildi (${subnetMismatchCount})` : `Subnet mismatch detected (${subnetMismatchCount})` });
+        summaryWarnings.push(language === 'tr' ? `Alt aÄŸ uyumsuzluÄŸu: ${subnetMismatchCount}` : `Subnet mismatch: ${subnetMismatchCount}`);
+        addNetworkEventLog({ level: 'warning', category: 'Subnet', message: language === 'tr' ? `Alt aÄŸ uyumsuzluÄŸu tespit edildi (${subnetMismatchCount})` : `Subnet mismatch detected (${subnetMismatchCount})` });
       }
       if (invalidGatewayCount > 0) {
         const devList = invalidGatewayDevices.join(', ');
-        summaryWarnings.push(language === 'tr' ? `Geçersiz ağ geçidi (${devList}): ${invalidGatewayCount}` : `Invalid gateway (${devList}): ${invalidGatewayCount}`);
+        summaryWarnings.push(language === 'tr' ? `GeÃ§ersiz aÄŸ geÃ§idi (${devList}): ${invalidGatewayCount}` : `Invalid gateway (${devList}): ${invalidGatewayCount}`);
         addNetworkEventLog({
           level: 'warning',
           category: 'Gateway',
           message: language === 'tr'
-            ? `Geçersiz ağ geçidi tespit edildi: ${devList} (${invalidGatewayCount})`
+            ? `GeÃ§ersiz aÄŸ geÃ§idi tespit edildi: ${devList} (${invalidGatewayCount})`
             : `Invalid gateway detected: ${devList} (${invalidGatewayCount})`
         });
       }
       if (disconnectedLinkCount > 0) {
-        summaryWarnings.push(language === 'tr' ? `Kopuk bağlantı: ${disconnectedLinkCount}` : `Disconnected link: ${disconnectedLinkCount}`);
-        addNetworkEventLog({ level: 'warning', category: 'Link', message: language === 'tr' ? `Kopuk bağlantı tespit edildi (${disconnectedLinkCount})` : `Disconnected link detected (${disconnectedLinkCount})` });
+        summaryWarnings.push(language === 'tr' ? `Kopuk baÄŸlantÄ±: ${disconnectedLinkCount}` : `Disconnected link: ${disconnectedLinkCount}`);
+        addNetworkEventLog({ level: 'warning', category: 'Link', message: language === 'tr' ? `Kopuk baÄŸlantÄ± tespit edildi (${disconnectedLinkCount})` : `Disconnected link detected (${disconnectedLinkCount})` });
       }
       if (loopDetectedCount > 0) {
-        summaryWarnings.push(language === 'tr' ? `Döngü algılandı` : `Loop detected`);
-        addNetworkEventLog({ level: 'error', category: 'Loop', message: language === 'tr' ? `Ağ döngüsü (loop) algılandı` : `Network loop detected` });
+        summaryWarnings.push(language === 'tr' ? `DÃ¶ngÃ¼ algÄ±landÄ±` : `Loop detected`);
+        addNetworkEventLog({ level: 'error', category: 'Loop', message: language === 'tr' ? `AÄŸ dÃ¶ngÃ¼sÃ¼ (loop) algÄ±landÄ±` : `Network loop detected` });
       }
       if (vlanInconsistencyCount > 0) {
-        summaryWarnings.push(language === 'tr' ? `VLAN tutarsızlığı: ${vlanInconsistencyCount}` : `VLAN inconsistency: ${vlanInconsistencyCount}`);
-        addNetworkEventLog({ level: 'warning', category: 'VLAN', message: language === 'tr' ? `VLAN tutarsızlığı tespit edildi (${vlanInconsistencyCount})` : `VLAN inconsistency detected (${vlanInconsistencyCount})` });
+        summaryWarnings.push(language === 'tr' ? `VLAN tutarsÄ±zlÄ±ÄŸÄ±: ${vlanInconsistencyCount}` : `VLAN inconsistency: ${vlanInconsistencyCount}`);
+        addNetworkEventLog({ level: 'warning', category: 'VLAN', message: language === 'tr' ? `VLAN tutarsÄ±zlÄ±ÄŸÄ± tespit edildi (${vlanInconsistencyCount})` : `VLAN inconsistency detected (${vlanInconsistencyCount})` });
       }
       if (duplicateIpCount > 0) {
-        summaryWarnings.push(language === 'tr' ? `IP çakışması: ${duplicateIpCount}` : `IP conflict: ${duplicateIpCount}`);
+        summaryWarnings.push(language === 'tr' ? `IP Ã§akÄ±ÅŸmasÄ±: ${duplicateIpCount}` : `IP conflict: ${duplicateIpCount}`);
         const dupIpDesc = Array.from(ipOwners.entries())
           .filter(([, owners]) => hasCrossDeviceConflict(owners))
           .map(([ip, owners]) => `${ip}: ${owners.join(', ')}`)
           .join('; ');
-        addNetworkEventLog({ level: 'error', category: 'IP Conflict', message: language === 'tr' ? `IP çakışması tespit edildi (${duplicateIpCount})` : `IP conflict detected (${duplicateIpCount})`, detail: dupIpDesc });
+        addNetworkEventLog({ level: 'error', category: 'IP Conflict', message: language === 'tr' ? `IP Ã§akÄ±ÅŸmasÄ± tespit edildi (${duplicateIpCount})` : `IP conflict detected (${duplicateIpCount})`, detail: dupIpDesc });
       }
       if (duplicateMacCount > 0) {
-        summaryWarnings.push(language === 'tr' ? `MAC çakışması: ${duplicateMacCount}` : `MAC conflict: ${duplicateMacCount}`);
+        summaryWarnings.push(language === 'tr' ? `MAC Ã§akÄ±ÅŸmasÄ±: ${duplicateMacCount}` : `MAC conflict: ${duplicateMacCount}`);
         const dupMacDesc = Array.from(macOwners.entries())
           .filter(([, owners]) => hasCrossDeviceConflict(owners))
           .map(([mac, owners]) => `${mac}: ${owners.join(', ')}`)
           .join('; ');
-        addNetworkEventLog({ level: 'error', category: 'MAC Conflict', message: language === 'tr' ? `MAC çakışması tespit edildi (${duplicateMacCount})` : `MAC conflict detected (${duplicateMacCount})`, detail: dupMacDesc });
+        addNetworkEventLog({ level: 'error', category: 'MAC Conflict', message: language === 'tr' ? `MAC Ã§akÄ±ÅŸmasÄ± tespit edildi (${duplicateMacCount})` : `MAC conflict detected (${duplicateMacCount})`, detail: dupMacDesc });
       }
       if (duplicateIpv6Count > 0) {
         const dupIpv6Desc = Array.from(ipv6Owners.entries())
           .filter(([, owners]) => hasCrossDeviceConflict(owners))
           .map(([ipv6, owners]) => `${ipv6}: ${owners.join(', ')}`)
           .join('; ');
-        addNetworkEventLog({ level: 'error', category: 'IPv6 Conflict', message: language === 'tr' ? `IPv6 çakışması tespit edildi (${duplicateIpv6Count})` : `IPv6 conflict detected (${duplicateIpv6Count})`, detail: dupIpv6Desc });
+        addNetworkEventLog({ level: 'error', category: 'IPv6 Conflict', message: language === 'tr' ? `IPv6 Ã§akÄ±ÅŸmasÄ± tespit edildi (${duplicateIpv6Count})` : `IPv6 conflict detected (${duplicateIpv6Count})`, detail: dupIpv6Desc });
       }
       if (portSecurityViolationCount > 0) {
-        summaryWarnings.push(language === 'tr' ? `Port güvenlik ihlali: ${portSecurityViolationCount}` : `Port security violation: ${portSecurityViolationCount}`);
-        addNetworkEventLog({ level: 'error', category: 'Port Security', message: language === 'tr' ? `Port güvenlik ihlali (${portSecurityViolationCount})` : `Port security violation (${portSecurityViolationCount})` });
+        summaryWarnings.push(language === 'tr' ? `Port gÃ¼venlik ihlali: ${portSecurityViolationCount}` : `Port security violation: ${portSecurityViolationCount}`);
+        addNetworkEventLog({ level: 'error', category: 'Port Security', message: language === 'tr' ? `Port gÃ¼venlik ihlali (${portSecurityViolationCount})` : `Port security violation (${portSecurityViolationCount})` });
       }
       if (dhcpServerNoPoolCount > 0) {
         summaryWarnings.push(language === 'tr' ? `DHCP havuz yok: ${dhcpServerNoPoolCount}` : `DHCP no pool: ${dhcpServerNoPoolCount}`);
@@ -665,7 +665,7 @@ export function useRefreshNetwork({
       }
       if (dhcpClientNoLeaseCount > 0) {
         summaryWarnings.push(language === 'tr' ? `DHCP kiralama yok: ${dhcpClientNoLeaseCount}` : `DHCP no lease: ${dhcpClientNoLeaseCount}`);
-        addNetworkEventLog({ level: 'warning', category: 'DHCP', message: language === 'tr' ? `DHCP istemcisi IP kiralayamadı (${dhcpClientNoLeaseCount})` : `DHCP client could not get a lease (${dhcpClientNoLeaseCount})` });
+        addNetworkEventLog({ level: 'warning', category: 'DHCP', message: language === 'tr' ? `DHCP istemcisi IP kiralayamadÄ± (${dhcpClientNoLeaseCount})` : `DHCP client could not get a lease (${dhcpClientNoLeaseCount})` });
       }
       const summary = {
         deviceCount: {
@@ -734,7 +734,7 @@ export function useRefreshNetwork({
             addNetworkEventLog({
               level: 'info',
               category: 'Wireless',
-              message: t.wirelessStatus || (language === 'tr' ? 'Kablosuz Ağ Durumu' : 'Wireless Status'),
+              message: t.wirelessStatus || (language === 'tr' ? 'Kablosuz AÄŸ Durumu' : 'Wireless Status'),
               detail: wifiMessages.join('\n'),
             });
           }
@@ -861,3 +861,5 @@ export function useRefreshNetwork({
 
   return handleRefreshNetwork;
 }
+
+

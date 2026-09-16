@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import React, { useCallback } from 'react';
-import type { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import type { OutputLine } from './PCPanel.types';
 import { checkConnectivity } from '@/lib/network/connectivity';
@@ -88,7 +88,7 @@ export function usePCPanelMail({
         return isNameMatch && (isDomainMatch || !reqDomain);
       });
       if (!targetDevice) {
-        onError(language === 'tr' ? 'Alıcı bulunamadı.' : 'Recipient not found.');
+        onError(language === 'tr' ? 'AlÄ±cÄ± bulunamadÄ±.' : 'Recipient not found.');
         return;
       }
       if (targetDevice.ip) {
@@ -110,12 +110,12 @@ export function usePCPanelMail({
         if (!connectivity.success) {
           onError(
             language === 'tr'
-              ? 'SMTP (port 25) engellendi. Posta gönderilemiyor.'
+              ? 'SMTP (port 25) engellendi. Posta gÃ¶nderilemiyor.'
               : 'SMTP (port 25) blocked. Cannot send mail.'
           );
           return;
         }
-        // ARP güncelle: SMTP bağlantısı başarılı olduğunda ARP tablosu güncellenir
+        // ARP gÃ¼ncelle: SMTP baÄŸlantÄ±sÄ± baÅŸarÄ±lÄ± olduÄŸunda ARP tablosu gÃ¼ncellenir
         if (connectivity.success && targetDevice.macAddress) {
           addPcArpEntry?.(targetDevice.ip, targetDevice.macAddress, targetDevice.type === 'iot');
         }
@@ -184,7 +184,7 @@ export function usePCPanelMail({
           },
         })
       );
-      addLocalOutput('success', language === 'tr' ? 'Mesaj gönderildi.' : 'Message sent.');
+      addLocalOutput('success', language === 'tr' ? 'Mesaj gÃ¶nderildi.' : 'Message sent.');
       onSuccess();
     },
     [
@@ -235,7 +235,7 @@ export function usePCPanelMail({
         return isNameMatch && (isDomainMatch || !reqDomain);
       });
       if (!targetDevice) {
-        onError(language === 'tr' ? 'Alıcı cihaz bulunamadı.' : 'Target device not found.');
+        onError(language === 'tr' ? 'AlÄ±cÄ± cihaz bulunamadÄ±.' : 'Target device not found.');
         return;
       }
       if (targetDevice.ip) {
@@ -257,12 +257,12 @@ export function usePCPanelMail({
         if (!connectivity.success) {
           onError(
             language === 'tr'
-              ? 'SMTP (port 25) engellendi. Yanıt gönderilemiyor.'
+              ? 'SMTP (port 25) engellendi. YanÄ±t gÃ¶nderilemiyor.'
               : 'SMTP (port 25) blocked. Cannot send reply.'
           );
           return;
         }
-        // ARP güncelle: SMTP yanıt bağlantısı başarılı olduğunda ARP tablosu güncellenir
+        // ARP gÃ¼ncelle: SMTP yanÄ±t baÄŸlantÄ±sÄ± baÅŸarÄ±lÄ± olduÄŸunda ARP tablosu gÃ¼ncellenir
         if (connectivity.success && targetDevice.macAddress) {
           addPcArpEntry?.(targetDevice.ip, targetDevice.macAddress, targetDevice.type === 'iot');
         }
@@ -337,7 +337,7 @@ export function usePCPanelMail({
           },
         })
       );
-      addLocalOutput('success', language === 'tr' ? 'Yanıt gönderildi.' : 'Reply sent.');
+      addLocalOutput('success', language === 'tr' ? 'YanÄ±t gÃ¶nderildi.' : 'Reply sent.');
       onSuccess();
     },
     [
@@ -448,3 +448,4 @@ export function usePCPanelMail({
     handleDeleteSent,
   };
 }
+

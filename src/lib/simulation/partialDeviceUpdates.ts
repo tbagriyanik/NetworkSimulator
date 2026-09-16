@@ -1,4 +1,4 @@
-import type { CanvasDevice } from '@/components/network/networkTopology.types';
+﻿import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 export interface DeviceUpdateResult {
   devices: CanvasDevice[];
@@ -31,4 +31,6 @@ export function updateChangedDevices(
 
   return { devices: nextDevices || devices, changedDeviceIds };
 }
+
+
 

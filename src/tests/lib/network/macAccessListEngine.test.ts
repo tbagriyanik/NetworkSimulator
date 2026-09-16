@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { checkIngressSanity } from '@/lib/network/forwarding/commonForwardingEngine';
-import type { CanvasDevice } from '@/components/network/networkTopology.types';
+import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState, Port } from '@/lib/network/types';
 import type { NetworkPacketFrame } from '@/lib/network/forwarding/packetFrame';
 
@@ -130,3 +130,5 @@ describe('MAC Access-List (mac access-group) Ingress Engine Filtering', () => {
     expect(result.reason).toContain('Implicitly dropped by MAC ACL');
   });
 });
+
+

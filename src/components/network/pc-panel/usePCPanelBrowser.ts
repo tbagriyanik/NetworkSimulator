@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import { useCallback } from 'react';
-import type { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import type { OutputLine } from './PCPanel.types';
 import { checkConnectivity } from '@/lib/network/connectivity';
@@ -166,7 +166,7 @@ export function usePCPanelBrowser({
       }
     } else if (isIpV6) {
       if (!pcIPv6) {
-        addLocalOutput('error', language === 'tr' ? 'PC\'de IPv6 adresi yapılandırılmamış.' : 'IPv6 address is not configured on this PC.');
+        addLocalOutput('error', language === 'tr' ? 'PC\'de IPv6 adresi yapÄ±landÄ±rÄ±lmamÄ±ÅŸ.' : 'IPv6 address is not configured on this PC.');
         return;
       }
     }
@@ -187,8 +187,8 @@ export function usePCPanelBrowser({
       setHttpAppTitle('Access Denied');
       setHttpAppContent(`
         <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-          <div style="font-size:64px;margin-bottom:16px;">🛡️</div>
-          <h1 style="margin:0 0 8px;font-size:24px;color:var(--color-error-500);">${language === 'tr' ? 'Erişim Engellendi' : 'Access Denied'}</h1>
+          <div style="font-size:64px;margin-bottom:16px;">ğŸ›¡ï¸</div>
+          <h1 style="margin:0 0 8px;font-size:24px;color:var(--color-error-500);">${language === 'tr' ? 'EriÅŸim Engellendi' : 'Access Denied'}</h1>
           <p style="margin:0 0 12px;font-size:16px;color:var(--color-muted-foreground);">${connectivityResult.error}</p>
           <code style="display:inline-block;padding:6px 10px;border-radius:8px;background:var(--color-error-100);color:var(--color-error-800);font-size:13px;">${displayUrl}</code>
         </main>
@@ -197,7 +197,7 @@ export function usePCPanelBrowser({
       return;
     }
 
-    // ARP güncelle: curl/wget ile HTTP bağlantısı da ARP tablosunu günceller
+    // ARP gÃ¼ncelle: curl/wget ile HTTP baÄŸlantÄ±sÄ± da ARP tablosunu gÃ¼nceller
     if (connectivityResult.success && connectivityResult.targetId) {
       const httpTarget = topologyDevices.find(d => d.id === connectivityResult.targetId)
         || topologyDevices.find(d => d.ip === resolvedTargetIp);
@@ -215,13 +215,13 @@ export function usePCPanelBrowser({
       setHttpAppTitle('Connection Error');
       setHttpAppContent(`
         <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-          <div style="font-size:48px;margin-bottom:12px;">🚫</div>
-          <h1 style="margin:0 0 8px;font-size:22px;color:var(--color-error-500);">${language === 'tr' ? 'Sunucuya Ulaşılamıyor' : 'Server Unreachable'}</h1>
-          <p style="margin:0 0 12px;font-size:14px;color:var(--color-muted-foreground);">${connectivityResult.error || (language === 'tr' ? 'Ağ geçidi veya sunucu yanıt vermiyor.' : 'Gateway or server not responding.')}</p>
+          <div style="font-size:48px;margin-bottom:12px;">ğŸš«</div>
+          <h1 style="margin:0 0 8px;font-size:22px;color:var(--color-error-500);">${language === 'tr' ? 'Sunucuya UlaÅŸÄ±lamÄ±yor' : 'Server Unreachable'}</h1>
+          <p style="margin:0 0 12px;font-size:14px;color:var(--color-muted-foreground);">${connectivityResult.error || (language === 'tr' ? 'AÄŸ geÃ§idi veya sunucu yanÄ±t vermiyor.' : 'Gateway or server not responding.')}</p>
           <code style="display:inline-block;padding:6px 10px;border-radius:8px;background:var(--color-error-100);color:var(--color-error-800);font-size:12px;">${displayUrl}</code>
         </main>
       `);
-      addLocalOutput('error', connectivityResult.error || (language === 'tr' ? 'Sunucuya ulaşılamıyor.' : 'Server unreachable.'));
+      addLocalOutput('error', connectivityResult.error || (language === 'tr' ? 'Sunucuya ulaÅŸÄ±lamÄ±yor.' : 'Server unreachable.'));
       return;
     }
 
@@ -231,13 +231,13 @@ export function usePCPanelBrowser({
         setHttpAppTitle('404 Not Found');
         setHttpAppContent(`
           <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-            <div style="font-size:48px;margin-bottom:12px;">🌐⚡</div>
-            <h1 style="margin:0 0 8px;font-size:22px;color:var(--color-error-500);">${language === 'tr' ? 'Bulut (WAN) Cihazı Bulunamadı' : 'Cloud (WAN) Device Not Found'}</h1>
-            <p style="margin:0 0 12px;font-size:14px;color:var(--color-muted-foreground);">${language === 'tr' ? 'Ağda bağlı bir Bulut (Cloud/WAN) cihazı bulunmuyor!' : 'No Cloud (WAN) device exists on the network!'}</p>
+            <div style="font-size:48px;margin-bottom:12px;">ğŸŒâš¡</div>
+            <h1 style="margin:0 0 8px;font-size:22px;color:var(--color-error-500);">${language === 'tr' ? 'Bulut (WAN) CihazÄ± BulunamadÄ±' : 'Cloud (WAN) Device Not Found'}</h1>
+            <p style="margin:0 0 12px;font-size:14px;color:var(--color-muted-foreground);">${language === 'tr' ? 'AÄŸda baÄŸlÄ± bir Bulut (Cloud/WAN) cihazÄ± bulunmuyor!' : 'No Cloud (WAN) device exists on the network!'}</p>
             <code style="display:inline-block;padding:6px 10px;border-radius:8px;background:var(--color-error-100);color:var(--color-error-800);font-size:12px;">${displayUrl}</code>
           </main>
         `);
-        addLocalOutput('error', language === 'tr' ? 'Bulut (Cloud) cihazı ağda mevcut değil.' : 'Cloud device not found on network.');
+        addLocalOutput('error', language === 'tr' ? 'Bulut (Cloud) cihazÄ± aÄŸda mevcut deÄŸil.' : 'Cloud device not found on network.');
         return;
       }
       const isCloudConnected = cloudTarget && topologyConnections.some(
@@ -245,53 +245,53 @@ export function usePCPanelBrowser({
       );
       if (cloudTarget && !isCloudConnected) {
         setHttpAppDeviceId(null);
-        setHttpAppTitle(language === 'tr' ? 'Bulut Bağlantısız' : 'Cloud Disconnected');
+        setHttpAppTitle(language === 'tr' ? 'Bulut BaÄŸlantÄ±sÄ±z' : 'Cloud Disconnected');
         setHttpAppContent(`
           <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-            <div style="font-size:64px;margin-bottom:16px;">☁️🔌</div>
-            <h1 style="margin:0 0 8px;font-size:24px;color:var(--color-error-500);">${language === 'tr' ? 'Bulut Cihazı Bağlı Değil' : 'Cloud Device Not Connected'}</h1>
-            <p style="margin:0 0 12px;font-size:16px;color:var(--color-muted-foreground);">${language === 'tr' ? 'Topolojideki Bulut (Cloud/WAN) cihazına bağlı bir kablo bulunmuyor!' : 'The Cloud (WAN) device on the topology is not connected with any cable!'}</p>
+            <div style="font-size:64px;margin-bottom:16px;">â˜ï¸ğŸ”Œ</div>
+            <h1 style="margin:0 0 8px;font-size:24px;color:var(--color-error-500);">${language === 'tr' ? 'Bulut CihazÄ± BaÄŸlÄ± DeÄŸil' : 'Cloud Device Not Connected'}</h1>
+            <p style="margin:0 0 12px;font-size:16px;color:var(--color-muted-foreground);">${language === 'tr' ? 'Topolojideki Bulut (Cloud/WAN) cihazÄ±na baÄŸlÄ± bir kablo bulunmuyor!' : 'The Cloud (WAN) device on the topology is not connected with any cable!'}</p>
             <code style="display:inline-block;padding:6px 10px;border-radius:8px;background:var(--color-error-100);color:var(--color-error-800);font-size:13px;">${displayUrl}</code>
           </main>
         `);
-        addLocalOutput('error', language === 'tr' ? 'Bulut (Cloud) cihazı ağa bağlı değil.' : 'Cloud device is not connected to the network.');
+        addLocalOutput('error', language === 'tr' ? 'Bulut (Cloud) cihazÄ± aÄŸa baÄŸlÄ± deÄŸil.' : 'Cloud device is not connected to the network.');
         return;
       }
       if (cloudTarget && cloudTarget.status === 'offline') {
         setHttpAppDeviceId(null);
-        setHttpAppTitle(language === 'tr' ? 'Bulut Kapalı' : 'Cloud Offline');
+        setHttpAppTitle(language === 'tr' ? 'Bulut KapalÄ±' : 'Cloud Offline');
         setHttpAppContent(`
           <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-            <div style="font-size:64px;margin-bottom:16px;">☁️⚡</div>
-            <h1 style="margin:0 0 8px;font-size:24px;color:var(--color-error-500);">${language === 'tr' ? 'Bulut Hizmeti Kapalı' : 'Cloud Service Offline'}</h1>
-            <p style="margin:0 0 12px;font-size:16px;color:var(--color-muted-foreground);">${language === 'tr' ? 'Hedef Bulut (WAN) cihazının gücü kapalı (Power Off) durumda!' : 'Target Cloud (WAN) device is powered off!'}</p>
+            <div style="font-size:64px;margin-bottom:16px;">â˜ï¸âš¡</div>
+            <h1 style="margin:0 0 8px;font-size:24px;color:var(--color-error-500);">${language === 'tr' ? 'Bulut Hizmeti KapalÄ±' : 'Cloud Service Offline'}</h1>
+            <p style="margin:0 0 12px;font-size:16px;color:var(--color-muted-foreground);">${language === 'tr' ? 'Hedef Bulut (WAN) cihazÄ±nÄ±n gÃ¼cÃ¼ kapalÄ± (Power Off) durumda!' : 'Target Cloud (WAN) device is powered off!'}</p>
             <code style="display:inline-block;padding:6px 10px;border-radius:8px;background:var(--color-error-100);color:var(--color-error-800);font-size:13px;">${displayUrl}</code>
           </main>
         `);
-        addLocalOutput('error', language === 'tr' ? 'Bulut cihazı kapalı.' : 'Cloud device is powered off.');
+        addLocalOutput('error', language === 'tr' ? 'Bulut cihazÄ± kapalÄ±.' : 'Cloud device is powered off.');
         return;
       }
       setHttpAppDeviceId(cloudTarget?.id || null);
-      setHttpAppTitle(language === 'tr' ? 'Genel Arama Kapısı - WAN' : 'Public Search Portal - WAN');
+      setHttpAppTitle(language === 'tr' ? 'Genel Arama KapÄ±sÄ± - WAN' : 'Public Search Portal - WAN');
       setHttpAppContent(`
         <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-          <div style="font-size:36px;font-weight:bold;color:var(--color-primary-500);margin-bottom:8px;">🌐 ${language === 'tr' ? 'Arama Kapısı' : 'Web Portal'}</div>
-          <p style="font-size:14px;color:var(--color-secondary-500);margin-bottom:20px;">${language === 'tr' ? 'Genel WAN İnternet Geçidi (1.1.1.1)' : 'Public WAN Internet Gateway (1.1.1.1)'}</p>
-          <div style="border:1px solid var(--color-secondary-300);border-radius:24px;padding:10px 20px;max-width:320px;margin:0 auto 20px;font-size:13px;color:var(--color-secondary-700);">🔍 ${language === 'tr' ? 'Arama yapın veya URL girin' : 'Search or type URL'}</div>
+          <div style="font-size:36px;font-weight:bold;color:var(--color-primary-500);margin-bottom:8px;">ğŸŒ ${language === 'tr' ? 'Arama KapÄ±sÄ±' : 'Web Portal'}</div>
+          <p style="font-size:14px;color:var(--color-secondary-500);margin-bottom:20px;">${language === 'tr' ? 'Genel WAN Ä°nternet GeÃ§idi (1.1.1.1)' : 'Public WAN Internet Gateway (1.1.1.1)'}</p>
+          <div style="border:1px solid var(--color-secondary-300);border-radius:24px;padding:10px 20px;max-width:320px;margin:0 auto 20px;font-size:13px;color:var(--color-secondary-700);">ğŸ” ${language === 'tr' ? 'Arama yapÄ±n veya URL girin' : 'Search or type URL'}</div>
           <div style="background:var(--color-secondary-100);padding:16px;border-radius:12px;font-size:12px;color:var(--color-secondary-800);text-align:left;max-width:400px;margin:0 auto;">
-            <strong style="color:var(--color-secondary-900);">${language === 'tr' ? 'İnternet Bağlantısı Aktif' : 'Internet Connection Active'}</strong><br/>
-            ${language === 'tr' ? 'WAN Köprüsü ve Genel DNS Sunucusu başarıyla yanıt verdi.' : 'WAN Transit Bridge and Public DNS Server responded successfully.'}
+            <strong style="color:var(--color-secondary-900);">${language === 'tr' ? 'Ä°nternet BaÄŸlantÄ±sÄ± Aktif' : 'Internet Connection Active'}</strong><br/>
+            ${language === 'tr' ? 'WAN KÃ¶prÃ¼sÃ¼ ve Genel DNS Sunucusu baÅŸarÄ±yla yanÄ±t verdi.' : 'WAN Transit Bridge and Public DNS Server responded successfully.'}
           </div>
         </main>
       `);
-      addLocalOutput('success', language === 'tr' ? 'Genel WAN Web Kapısı açıldı.' : 'Public WAN Web Portal opened.');
+      addLocalOutput('success', language === 'tr' ? 'Genel WAN Web KapÄ±sÄ± aÃ§Ä±ldÄ±.' : 'Public WAN Web Portal opened.');
     } else if (!httpServer) {
       setHttpAppDeviceId(null);
       setHttpAppTitle('404 Not Found');
       setHttpAppContent(`
         <main style="padding:32px;font-family:'Inria Sans',sans-serif;">
           <h1 style="margin:0 0 8px;font-size:28px;">404</h1>
-          <p style="margin:0 0 12px;font-size:16px;">${language === 'tr' ? 'Sayfa bulunamadı' : 'Page not found'}</p>
+          <p style="margin:0 0 12px;font-size:16px;">${language === 'tr' ? 'Sayfa bulunamadÄ±' : 'Page not found'}</p>
           <code style="display:inline-block;padding:6px 10px;border-radius:8px;background:var(--color-secondary-100);color:var(--color-secondary-900);">${displayUrl}</code>
         </main>
       `);
@@ -300,9 +300,9 @@ export function usePCPanelBrowser({
       const printerPage = generatePrinterWebPanelContent(httpServer, language);
       setHttpAppDeviceId(httpServer.id);
       setHttpAppContent(printerPage);
-      setHttpAppTitle(`${httpServer.name || httpServer.id} - ${language === 'tr' ? 'Yazıcı Yönetimi' : 'Printer Management'}`);
+      setHttpAppTitle(`${httpServer.name || httpServer.id} - ${language === 'tr' ? 'YazÄ±cÄ± YÃ¶netimi' : 'Printer Management'}`);
       addLocalOutput('success', language === 'tr'
-        ? 'Yazıcı web paneli açıldı.'
+        ? 'YazÄ±cÄ± web paneli aÃ§Ä±ldÄ±.'
         : 'Printer web panel opened.');
     } else if (isRouterDevice(httpServer)) {
       const runtimeState = deviceStates?.get(httpServer.id);
@@ -313,10 +313,10 @@ export function usePCPanelBrowser({
       setHttpAppDeviceId(httpServer.id);
       setHttpAppContent(adminPage);
       setHttpAppTitle(isWlc
-        ? (language === 'tr' ? 'Kablosuz Denetleyici Yönetimi' : 'Wireless Controller Management')
-        : (language === 'tr' ? 'Yönlendirici Yönetimi' : 'Router Management'));
+        ? (language === 'tr' ? 'Kablosuz Denetleyici YÃ¶netimi' : 'Wireless Controller Management')
+        : (language === 'tr' ? 'YÃ¶nlendirici YÃ¶netimi' : 'Router Management'));
       addLocalOutput('success', language === 'tr'
-        ? 'HTTP sayfası yeni pencerede açıldı.'
+        ? 'HTTP sayfasÄ± yeni pencerede aÃ§Ä±ldÄ±.'
         : 'HTTP page opened in a new window.');
     } else {
       setHttpAppDeviceId(httpServer.id);
@@ -331,3 +331,4 @@ export function usePCPanelBrowser({
 
   return { openWebPage };
 }
+

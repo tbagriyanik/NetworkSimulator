@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import { useEffect, type RefObject, type Dispatch, type SetStateAction } from 'react';
-import type { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import type { TerminalOutput } from '@/components/network/Terminal';
 import { useAppStore } from '@/lib/store/appStore';
@@ -380,3 +380,5 @@ export function useKeyboardShortcuts({
     setShowUnifiedDeviceModal
   ]);
 }
+
+

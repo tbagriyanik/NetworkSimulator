@@ -1,4 +1,4 @@
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+﻿import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState, Port } from '@/lib/network/types';
 import type { NetworkPacketFrame } from './packetFrame';
 import { getRoutingTable, findRoute, Route } from '@/lib/network/routing';
@@ -393,3 +393,5 @@ export function forwardPacketFrame(
     actionReason: `Forwarded to ${egressPorts.length} egress ports`
   };
 }
+
+

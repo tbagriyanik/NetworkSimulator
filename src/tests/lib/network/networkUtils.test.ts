@@ -1,7 +1,7 @@
 ﻿import { describe, it, expect, vi } from 'vitest';
 import { ensureDeviceStatesMap } from '@/lib/network/networkUtils';
 import type { SwitchState } from '@/lib/network/types';
-import { getDevicePairKey } from '@/components/network/networkTopology.helpers';
+import { getDevicePairKey } from '@/components/network/NetworkTopology/utils/networkTopology.helpers';
 
 vi.mock('@/lib/errors/errorHandler', () => ({
   errorHandler: { logError: vi.fn() },
@@ -54,3 +54,5 @@ describe('getDevicePairKey', () => {
     expect(getDevicePairKey('dev2', 'dev1', '::')).toBe('dev1::dev2');
   });
 });
+
+

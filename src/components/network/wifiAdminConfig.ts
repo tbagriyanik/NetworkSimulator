@@ -1,4 +1,4 @@
-import type { CanvasDevice } from './networkTopology.types';
+﻿import type { CanvasDevice } from './NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import type { DeviceWifiSsidProfile } from '@/lib/network/wireless';
 
@@ -10,8 +10,8 @@ export interface WifiAdminConfig {
 
 export function getDefaultWifiConfig(device: CanvasDevice): WifiAdminConfig {
   const defaultSsids: DeviceWifiSsidProfile[] = Array.isArray(device.wifi?.ssids) && device.wifi.ssids.length > 0 ? device.wifi.ssids : [
-    { id: 'ssid-1', name: 'Ana Ağ (Primary)', ssid: device.wifi?.ssid || `${device.name}_WiFi`, security: device.wifi?.security || 'wpa2', password: device.wifi?.password || 'password123', band: 'both', enabled: true, hidden: device.wifi?.hidden ?? false },
-    { id: 'ssid-2', name: 'Misafir Ağ (Guest)', ssid: `${device.name}_Guest`, security: 'open', band: '2.4GHz', enabled: false, hidden: false },
+    { id: 'ssid-1', name: 'Ana AÄŸ (Primary)', ssid: device.wifi?.ssid || `${device.name}_WiFi`, security: device.wifi?.security || 'wpa2', password: device.wifi?.password || 'password123', band: 'both', enabled: true, hidden: device.wifi?.hidden ?? false },
+    { id: 'ssid-2', name: 'Misafir AÄŸ (Guest)', ssid: `${device.name}_Guest`, security: 'open', band: '2.4GHz', enabled: false, hidden: false },
   ];
   return { enabled: device.wifi?.enabled ?? false, ssid: device.wifi?.ssid || `${device.name}_WiFi`, security: device.wifi?.security || 'wpa2', password: device.wifi?.password || 'password123', channel: device.wifi?.channel || '2.4GHz', mode: (device.wifi?.mode === 'client' || device.wifi?.mode === 'sta') ? 'client' : 'ap', hidden: device.wifi?.hidden ?? false, maxClients: device.wifi?.maxClients ?? 32, macFilterEnabled: device.wifi?.macFilterEnabled ?? false, macFilterMode: device.wifi?.macFilterMode || 'allow', macFilterList: device.wifi?.macFilterList || [], ssids: defaultSsids };
 }
@@ -25,3 +25,4 @@ export function getRouterWifiConfig(device: CanvasDevice, state?: SwitchState): 
   if (!wlanWifi) return base;
   return { enabled: !wlan?.shutdown && wlanWifi.mode !== 'disabled', ssid: wlanWifi.ssid || base.ssid, security: wlanWifi.security || base.security, password: wlanWifi.password || base.password, channel: wlanWifi.channel || base.channel, mode: wlanWifi.mode === 'client' ? 'client' : 'ap', hidden: wlanWifi.hidden ?? base.hidden, maxClients: wlanWifi.maxClients ?? base.maxClients, macFilterEnabled: wlanWifi.macFilterEnabled ?? base.macFilterEnabled, macFilterMode: wlanWifi.macFilterMode || base.macFilterMode, macFilterList: wlanWifi.macFilterList || base.macFilterList, ssids: Array.isArray(wlanWifi.ssids) && wlanWifi.ssids.length > 0 ? wlanWifi.ssids : base.ssids };
 }
+

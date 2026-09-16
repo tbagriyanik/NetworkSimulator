@@ -1,9 +1,9 @@
-import { SwitchState, CommandMode } from './types';
+﻿import { SwitchState, CommandMode } from './types';
 import { commandHelp, commandDescriptions } from './executorCommandHelp';
 import { commandPatterns, getLevenshteinDistance, expandKeywordPrefixes, resolveAliases } from './parser';
 import { CLI_ERRORS } from './core/cliErrors';
 import { getDeviceCapabilities } from './capabilities';
-import type { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 function getInlineHelp(mode: CommandMode, partialInput: string, prompt: string, state?: SwitchState): string {
   const modeCommands = commandHelp[mode] || commandHelp.user;
@@ -17,8 +17,8 @@ function getInlineHelp(mode: CommandMode, partialInput: string, prompt: string, 
 
   let suggestions: string[] = [];
 
-  // Special handling for "do <subcommand>" — delegate to privileged mode tree
-  // e.g. "do ?" → privileged top-level, "do show ?" → privileged show subtree
+  // Special handling for "do <subcommand>" â€” delegate to privileged mode tree
+  // e.g. "do ?" â†’ privileged top-level, "do show ?" â†’ privileged show subtree
   const isDoPrefix = lower === 'do' || lower.startsWith('do ');
   if (isDoPrefix && mode !== 'privileged' && mode !== 'user') {
     const privilegedCommands = commandHelp['privileged'] || {};
@@ -28,12 +28,12 @@ function getInlineHelp(mode: CommandMode, partialInput: string, prompt: string, 
     const subLower = subInput.trim();
 
     if (subLower === '') {
-      // "do ?" → list all privileged top-level commands
+      // "do ?" â†’ list all privileged top-level commands
       suggestions = [...(privilegedCommands[''] || [])].filter(
         c => !['configure', 'disable', '?', 'help'].includes(c)
       );
     } else {
-      // "do show ?" or "do ping ?" etc. → look up in privileged tree
+      // "do show ?" or "do ping ?" etc. â†’ look up in privileged tree
       if (subHasSpace && privilegedCommands[subLower]) {
         suggestions = [...privilegedCommands[subLower]];
       } else {
@@ -120,7 +120,7 @@ function getInlineHelp(mode: CommandMode, partialInput: string, prompt: string, 
         }
       }
     } else {
-      // No trailing space (e.g., "deb?", "debug?") — find completing keywords or exact command match
+      // No trailing space (e.g., "deb?", "debug?") â€” find completing keywords or exact command match
       for (const key of Object.keys(modeCommands)) {
         const tokens = key.split(' ');
         for (const token of tokens) {
@@ -180,7 +180,7 @@ function getInlineHelp(mode: CommandMode, partialInput: string, prompt: string, 
         .sort((a, b) => b[0].length - a[0].length);
       for (const [alias, fullCommand] of sortedUserAliases as [string, string][]) {
         const aliasLower = alias.toLowerCase();
-        // Exact match: "si ?" — resolve and show sub-commands of the resolved command
+        // Exact match: "si ?" â€” resolve and show sub-commands of the resolved command
         if (lower === aliasLower) {
           const resolvedPrefix = fullCommand.trim().toLowerCase();
           // Look up in commandHelp
@@ -202,7 +202,7 @@ function getInlineHelp(mode: CommandMode, partialInput: string, prompt: string, 
           }
           break;
         }
-        // Prefix match: "si s" where alias is "si" — resolve and show sub-commands
+        // Prefix match: "si s" where alias is "si" â€” resolve and show sub-commands
         if (lower.startsWith(aliasLower + ' ')) {
           const rest = lower.substring(aliasLower.length).trim();
           const resolvedPrefix = (fullCommand + ' ' + rest).trim().toLowerCase();
@@ -295,7 +295,7 @@ function getInlineHelp(mode: CommandMode, partialInput: string, prompt: string, 
 }
 
 /**
- * Akıllı hata tahmin ve komut öneri sistemi
+ * AkÄ±llÄ± hata tahmin ve komut Ã¶neri sistemi
  */
 function getEstimatedSuggestions(
   input: string,
@@ -314,26 +314,26 @@ function getEstimatedSuggestions(
   let effectivePrefix = prefix;
   let effectiveLastWord = lastWord;
 
-  // Tüm girdinin geçerli bir prefix olup olmadığını kontrol et (örn: "do")
+  // TÃ¼m girdinin geÃ§erli bir prefix olup olmadÄ±ÄŸÄ±nÄ± kontrol et (Ã¶rn: "do")
   const isEntireInputPrefix = !!modeCommands[inputClean] || Object.keys(commandPatterns).some(name => name.startsWith(inputClean + ' '));
   if (isEntireInputPrefix) {
     effectivePrefix = inputClean;
     effectiveLastWord = '';
   }
 
-  // Kullanıcı tanımlı alias desteği
+  // KullanÄ±cÄ± tanÄ±mlÄ± alias desteÄŸi
   if (state?.execAliases) {
     const sortedUserAliases = Object.entries(state.execAliases)
       .sort((a, b) => b[0].length - a[0].length);
     for (const [alias, fullCommand] of sortedUserAliases as [string, string][]) {
       const aliasLower = alias.toLowerCase();
-      // Tam eşleşme: "si" → "show interfaces"
+      // Tam eÅŸleÅŸme: "si" â†’ "show interfaces"
       if (inputClean === aliasLower) {
         effectivePrefix = fullCommand.trim().toLowerCase();
         effectiveLastWord = '';
         break;
       }
-      // Prefix eşleşme: "si " ile başlayan → resolved komut + kalan
+      // Prefix eÅŸleÅŸme: "si " ile baÅŸlayan â†’ resolved komut + kalan
       if (inputClean.startsWith(aliasLower + ' ')) {
         const rest = inputClean.substring(aliasLower.length).trim();
         effectivePrefix = (fullCommand.trim().toLowerCase() + ' ' + rest).trim();
@@ -352,14 +352,14 @@ function getEstimatedSuggestions(
     : 'switchL2';
   const capabilities = state ? getDeviceCapabilities({ type: inferredDeviceType as DeviceType } as Pick<CanvasDevice, 'type'>, state.switchModel) : undefined;
 
-  // 1. commandHelp ağacından sonraki kelimeleri al
+  // 1. commandHelp aÄŸacÄ±ndan sonraki kelimeleri al
   if (effectivePrefix && modeCommands[effectivePrefix]) {
     modeCommands[effectivePrefix].forEach(cmd => validNextWords.add(cmd));
   } else if (!effectivePrefix) {
     (modeCommands[''] || []).forEach(cmd => validNextWords.add(cmd));
   }
 
-  // 2. commandPatterns ağacından sonraki kelimeleri al
+  // 2. commandPatterns aÄŸacÄ±ndan sonraki kelimeleri al
   for (const [patternName, pattern] of Object.entries(commandPatterns)) {
     if (!pattern.modes.includes(mode)) continue;
     if (capabilities && pattern.capability && !capabilities[pattern.capability]) continue;
@@ -385,7 +385,7 @@ function getEstimatedSuggestions(
   const cleanNextWords = Array.from(validNextWords)
     .filter(s => s && !s.startsWith('<') && !s.endsWith('>'));
 
-  // Eğer kullanıcının yazdığı son kelime varsa, en yakınları süz
+  // EÄŸer kullanÄ±cÄ±nÄ±n yazdÄ±ÄŸÄ± son kelime varsa, en yakÄ±nlarÄ± sÃ¼z
   if (effectiveLastWord) {
     const closeMatches = cleanNextWords.filter(cmd =>
       cmd.startsWith(effectiveLastWord) || getLevenshteinDistance(effectiveLastWord, cmd) <= 2
@@ -399,3 +399,5 @@ function getEstimatedSuggestions(
 }
 
 export { getInlineHelp, getEstimatedSuggestions };
+
+

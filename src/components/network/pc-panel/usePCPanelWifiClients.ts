@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import { useCallback } from 'react';
-import type { CanvasDevice } from '../networkTopology.types';
+import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { getDeviceWifiConfig, getDeviceMacAddress, wifiMacFilterMatches } from '@/lib/network/connectivity';
 

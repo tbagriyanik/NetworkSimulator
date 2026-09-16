@@ -1,6 +1,6 @@
-import { useCallback } from 'react';
+﻿import { useCallback } from 'react';
 import { safeStringify } from '@/lib/network/serialization';
-import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType } from '@/components/network/networkTopology.types';
+import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState, CableInfo } from '@/lib/network/types';
 import { TerminalOutput } from '@/components/network/Terminal';
 import { PCOutputLine } from '@/types/pageTypes';
@@ -190,3 +190,5 @@ export function useProjectExport({
     handleSaveProject
   };
 }
+
+

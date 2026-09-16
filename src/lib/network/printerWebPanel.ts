@@ -1,4 +1,4 @@
-import type { CanvasDevice } from '@/components/network/networkTopology.types';
+﻿import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { colors, withAlpha } from '@/lib/design-tokens/colors';
 
 export function generatePrinterWebPanelContent(device: CanvasDevice, language: string): string {
@@ -20,7 +20,7 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
         <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid ${colors.topology.gridLine};padding-bottom:16px;margin-bottom:20px;">
           <div style="display:flex;align-items:center;gap:12px;">
             <div style="width:48px;height:48px;border-radius:12px;background:${withAlpha(colors.pink[500], 0.15)};border:1px solid ${withAlpha(colors.pink[500], 0.3)};display:flex;align-items:center;justify-content:center;color:${colors.cables.serial};font-size:24px;">
-              🖨️
+              ğŸ–¨ï¸
             </div>
             <div>
               <h1 style="margin:0;font-size:18px;font-weight:700;color:${colors.topology.deviceText};">${name}</h1>
@@ -29,7 +29,7 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
           </div>
           <div style="text-align:right;display:flex;align-items:center;gap:10px;">
             <span style="display:inline-block;padding:4px 12px;border-radius:9999px;background:${device.status === 'offline' ? withAlpha(colors.status.offline, 0.2) : withAlpha(colors.status.online, 0.2)};color:${device.status === 'offline' ? colors.terminal.error : colors.status.online};font-size:12px;font-weight:600;">
-              ● ${device.status === 'offline' ? (isTr ? 'Çevrimdışı / Kapalı' : 'Offline / Disabled') : (isTr ? 'Çevrimiçi / Hazır' : 'Online / Ready')}
+              â— ${device.status === 'offline' ? (isTr ? 'Ã‡evrimdÄ±ÅŸÄ± / KapalÄ±' : 'Offline / Disabled') : (isTr ? 'Ã‡evrimiÃ§i / HazÄ±r' : 'Online / Ready')}
             </span>
             <button type="button"
               onclick="if(window.parent) window.parent.postMessage({type:'TOGGLE_PRINTER_WIFI',deviceId:'${device.id}'},'*')"
@@ -37,8 +37,8 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
               onmouseover="this.style.opacity='0.8'"
               onmouseout="this.style.opacity='1'"
             >
-              <span>${device.wifi?.enabled !== false ? '🔌' : '⚡'}</span>
-              ${isTr ? (device.wifi?.enabled !== false ? 'Bağlantıyı Kapat' : 'Bağlantıyı Aç') : (device.wifi?.enabled !== false ? 'Disconnect Network' : 'Connect Network')}
+              <span>${device.wifi?.enabled !== false ? 'ğŸ”Œ' : 'âš¡'}</span>
+              ${isTr ? (device.wifi?.enabled !== false ? 'BaÄŸlantÄ±yÄ± Kapat' : 'BaÄŸlantÄ±yÄ± AÃ§') : (device.wifi?.enabled !== false ? 'Disconnect Network' : 'Connect Network')}
             </button>
           </div>
         </div>
@@ -55,9 +55,9 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
           </div>
           <div style="background:${colors.topology.bg};border:1px solid ${colors.topology.gridLine};border-radius:10px;padding:12px;display:flex;flex-direction:column;justify-content:space-between;">
             <div>
-              <div style="font-size:11px;color:${colors.cables.console};text-transform:uppercase;font-weight:600;">Wi‑Fi Network (SSID)</div>
+              <div style="font-size:11px;color:${colors.cables.console};text-transform:uppercase;font-weight:600;">Wiâ€‘Fi Network (SSID)</div>
               <div style="font-family:'Geist Mono','Courier New',monospace;font-size:14px;color:${device.wifi?.enabled !== false ? colors.purple[500] : colors.topology.subText};margin-top:4px;font-weight:600;">
-                📶 ${wifiSsid || (isTr ? '(Devre Dışı)' : '(Disabled)')}
+                ğŸ“¶ ${wifiSsid || (isTr ? '(Devre DÄ±ÅŸÄ±)' : '(Disabled)')}
               </div>
             </div>
             <button type="button"
@@ -66,19 +66,19 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
               onmouseover="this.style.opacity='0.8'"
               onmouseout="this.style.opacity='1'"
             >
-              ${isTr ? (device.wifi?.enabled !== false ? '❌ Wi‑Fi (SSID) Kapat' : '✅ Wi‑Fi (SSID) Aç') : (device.wifi?.enabled !== false ? '❌ Disable Wi‑Fi SSID' : '✅ Enable Wi‑Fi SSID')}
+              ${isTr ? (device.wifi?.enabled !== false ? 'âŒ Wiâ€‘Fi (SSID) Kapat' : 'âœ… Wiâ€‘Fi (SSID) AÃ§') : (device.wifi?.enabled !== false ? 'âŒ Disable Wiâ€‘Fi SSID' : 'âœ… Enable Wiâ€‘Fi SSID')}
             </button>
           </div>
           <div style="background:${colors.topology.bg};border:1px solid ${colors.topology.gridLine};border-radius:10px;padding:12px;">
             <div style="font-size:11px;color:${colors.cables.console};text-transform:uppercase;font-weight:600;">MAC / DNS</div>
-            <div style="font-family:'Geist Mono','Courier New',monospace;font-size:12px;color:${colors.terminal.output};margin-top:4px;">${mac} • ${dns}</div>
+            <div style="font-family:'Geist Mono','Courier New',monospace;font-size:12px;color:${colors.terminal.output};margin-top:4px;">${mac} â€¢ ${dns}</div>
           </div>
         </div>
 
         <!-- Supplies Status -->
         <div style="background:${colors.topology.bg};border:1px solid ${colors.topology.gridLine};border-radius:12px;padding:16px;margin-bottom:24px;">
           <h2 style="margin:0 0 12px 0;font-size:14px;font-weight:600;color:${colors.topology.noteText};display:flex;align-items:center;gap:8px;">
-            <span>📦</span> ${isTr ? 'Toner & Sarf Malzeme Durumu' : 'Toner & Cartridge Status'}
+            <span>ğŸ“¦</span> ${isTr ? 'Toner & Sarf Malzeme Durumu' : 'Toner & Cartridge Status'}
           </h2>
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;font-family:'Geist Mono','Courier New',monospace;font-size:11px;">
             <div style="background:${colors.topology.canvasBg};border:1px solid ${colors.topology.deviceBorder};border-radius:8px;padding:10px;color:${colors.topology.deviceText};">
@@ -103,25 +103,25 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
         <!-- Print Server Settings & Configuration -->
         <div style="background:${colors.topology.bg};border:1px solid ${colors.topology.gridLine};border-radius:12px;padding:16px;margin-bottom:24px;">
           <h2 style="margin:0 0 12px 0;font-size:14px;font-weight:600;color:${colors.topology.noteText};display:flex;align-items:center;gap:8px;">
-            <span>⚙️</span> ${isTr ? 'Yazıcı Sunucusu Yapılandırması & Ayarlar' : 'Print Server Configuration & Settings'}
+            <span>âš™ï¸</span> ${isTr ? 'YazÄ±cÄ± Sunucusu YapÄ±landÄ±rmasÄ± & Ayarlar' : 'Print Server Configuration & Settings'}
           </h2>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;font-size:12px;">
             <div style="background:${colors.topology.canvasBg};border:1px solid ${colors.topology.gridLine};border-radius:8px;padding:12px;">
-              <div style="font-weight:600;color:${colors.topology.subText};margin-bottom:4px;">${isTr ? 'Ağ Protokolleri' : 'Network Protocols'}</div>
+              <div style="font-weight:600;color:${colors.topology.subText};margin-bottom:4px;">${isTr ? 'AÄŸ Protokolleri' : 'Network Protocols'}</div>
               <div style="display:flex;flex-direction:column;gap:4px;color:${colors.terminal.output};font-size:11px;">
-                <span>• LPD / LPR Spooler: <strong style="color:${colors.status.online};">Enabled (Port 515)</strong></span>
-                <span>• Raw IP Printing (JetDirect): <strong style="color:${colors.status.online};">Enabled (Port 9100)</strong></span>
-                <span>• IPP / IPPS Protocol: <strong style="color:${colors.status.online};">Enabled (Port 631)</strong></span>
-                <span>• AirPrint / Bonjour Broadcast: <strong style="color:${colors.status.online};">Active</strong></span>
+                <span>â€¢ LPD / LPR Spooler: <strong style="color:${colors.status.online};">Enabled (Port 515)</strong></span>
+                <span>â€¢ Raw IP Printing (JetDirect): <strong style="color:${colors.status.online};">Enabled (Port 9100)</strong></span>
+                <span>â€¢ IPP / IPPS Protocol: <strong style="color:${colors.status.online};">Enabled (Port 631)</strong></span>
+                <span>â€¢ AirPrint / Bonjour Broadcast: <strong style="color:${colors.status.online};">Active</strong></span>
               </div>
             </div>
             <div style="background:${colors.topology.canvasBg};border:1px solid ${colors.topology.gridLine};border-radius:8px;padding:12px;">
-              <div style="font-weight:600;color:${colors.topology.subText};margin-bottom:4px;">${isTr ? 'Güvenlik & Yönetim' : 'Security & Management'}</div>
+              <div style="font-weight:600;color:${colors.topology.subText};margin-bottom:4px;">${isTr ? 'GÃ¼venlik & YÃ¶netim' : 'Security & Management'}</div>
               <div style="display:flex;flex-direction:column;gap:4px;color:${colors.terminal.output};font-size:11px;">
-                <span>• SNMP v1/v2c Monitoring: <strong style="color:${colors.topology.deviceSelectedBorder};">Public Community</strong></span>
-                <span>• HTTPS Web Admin: <strong style="color:${colors.status.online};">TLS v1.3 Encrypted</strong></span>
-                <span>• Wi-Fi Interface: <strong style="color:${colors.purple[500]};">${wifiSsid} (WPA2-PSK)</strong></span>
-                <span>• Access Control: <strong style="color:${colors.status.warning};">Allow All Subnets</strong></span>
+                <span>â€¢ SNMP v1/v2c Monitoring: <strong style="color:${colors.topology.deviceSelectedBorder};">Public Community</strong></span>
+                <span>â€¢ HTTPS Web Admin: <strong style="color:${colors.status.online};">TLS v1.3 Encrypted</strong></span>
+                <span>â€¢ Wi-Fi Interface: <strong style="color:${colors.purple[500]};">${wifiSsid} (WPA2-PSK)</strong></span>
+                <span>â€¢ Access Control: <strong style="color:${colors.status.warning};">Allow All Subnets</strong></span>
               </div>
             </div>
           </div>
@@ -131,10 +131,10 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
         <div style="background:${colors.topology.bg};border:1px solid ${colors.topology.gridLine};border-radius:12px;padding:16px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
             <h2 style="margin:0;font-size:14px;font-weight:600;color:${colors.topology.noteText};display:flex;align-items:center;gap:8px;">
-              <span>📑</span> ${isTr ? 'Yazdırma Kuyruğu & Gelen Belgeler' : 'Print Queue & Received Documents'}
+              <span>ğŸ“‘</span> ${isTr ? 'YazdÄ±rma KuyruÄŸu & Gelen Belgeler' : 'Print Queue & Received Documents'}
             </h2>
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-size:11px;color:${colors.purple[500]};font-family:'Geist Mono','Courier New',monospace;font-weight:600;">${(device.printJobs || []).length} ${isTr ? 'Aktif Görev / Belge' : 'Active Jobs'}</span>
+              <span style="font-size:11px;color:${colors.purple[500]};font-family:'Geist Mono','Courier New',monospace;font-weight:600;">${(device.printJobs || []).length} ${isTr ? 'Aktif GÃ¶rev / Belge' : 'Active Jobs'}</span>
               ${(device.printJobs || []).length > 0 ? `
                 <button
                   type="button"
@@ -143,22 +143,22 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
                   onmouseover="this.style.background='${withAlpha(colors.rose[500], 0.4)}'"
                   onmouseout="this.style.background='${withAlpha(colors.rose[500], 0.2)}'"
                 >
-                  🗑️ ${isTr ? 'Kuyruğu Temizle' : 'Clear Queue'}
+                  ğŸ—‘ï¸ ${isTr ? 'KuyruÄŸu Temizle' : 'Clear Queue'}
                 </button>
               ` : ''}
             </div>
           </div>
           ${(!device.printJobs || device.printJobs.length === 0) ? `
             <div style="font-size:12px;color:${colors.cables.console};font-style:italic;">
-              ${isTr ? 'Kuyrukta bekleyen yazdırma görevi yok. Sistem yazdırmaya hazır.' : 'No active jobs in print spooler. Ready to process network print jobs.'}
+              ${isTr ? 'Kuyrukta bekleyen yazdÄ±rma gÃ¶revi yok. Sistem yazdÄ±rmaya hazÄ±r.' : 'No active jobs in print spooler. Ready to process network print jobs.'}
             </div>
           ` : `
             <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;">
               ${device.printJobs.map(j => `
                 <div style="background:${colors.topology.canvasBg};border:1px solid ${colors.topology.gridLine};border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center;font-size:12px;">
                   <div>
-                    <div style="font-weight:700;color:${colors.purple[400]};">📄 ${j.documentTitle}</div>
-                    <div style="font-size:10px;color:${colors.topology.subText};font-family:'Geist Mono','Courier New',monospace;margin-top:2px;">Sender: ${j.senderName} • ${j.pages} page(s)</div>
+                    <div style="font-weight:700;color:${colors.purple[400]};">ğŸ“„ ${j.documentTitle}</div>
+                    <div style="font-size:10px;color:${colors.topology.subText};font-family:'Geist Mono','Courier New',monospace;margin-top:2px;">Sender: ${j.senderName} â€¢ ${j.pages} page(s)</div>
                   </div>
                   <div style="text-align:right;">
                     <span style="display:inline-block;padding:2px 8px;border-radius:4px;background:${withAlpha(colors.status.online, 0.2)};color:${colors.status.online};font-size:10px;font-weight:600;font-family:'Geist Mono','Courier New',monospace;">
@@ -176,4 +176,6 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
     </div>
   `;
 }
+
+
 

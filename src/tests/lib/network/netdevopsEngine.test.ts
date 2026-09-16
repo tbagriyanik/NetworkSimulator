@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { handleRestconfRequest, executeNetDevOpsPythonScript } from '@/lib/network/netdevopsEngine';
 import { createInitialState } from '@/lib/network/initialState';
-import type { CanvasDevice } from '@/components/network/networkTopology.types';
+import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 
 describe('netdevopsEngine (RESTCONF YANG API & Python Script Runner)', () => {
@@ -237,4 +237,6 @@ print(res.status_code)
     expect(res.logs.some((l) => l.includes('HTTP/200 OK'))).toBe(true);
   });
 });
+
+
 

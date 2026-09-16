@@ -1,7 +1,7 @@
 ﻿import { createInitialState } from '../initialState';
 import { createL3SwitchDevice, createPcDevice, connectPorts, baseProjectData } from './helpers';
 ;
-import type { CanvasConnection, CanvasNote } from '@/components/network/networkTopology.types';
+import type { CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { ExampleProject } from './types';
 ;
 
@@ -67,5 +67,7 @@ const example = (isTr: boolean): ExampleProject => {
 };
 
 export default example;
+
+
 
 

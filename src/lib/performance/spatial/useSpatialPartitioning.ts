@@ -1,6 +1,6 @@
-import { useCallback, useMemo } from 'react';
+﻿import { useCallback, useMemo } from 'react';
 import { SpatialPartitioner, ViewportCuller, ViewportState } from './index';
-import { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 export interface UseSpatialPartitioningOptions {
     cellSize?: number;
@@ -147,3 +147,5 @@ export function useSpatialPartitioning(
         getStats,
     };
 }
+
+

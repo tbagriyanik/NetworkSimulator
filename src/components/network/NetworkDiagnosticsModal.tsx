@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo } from 'react';
 import {
@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertTriangle, CheckCircle2, XCircle, Stethoscope, Lightbulb, Network, ShieldAlert } from 'lucide-react';
-import type { CanvasDevice, CanvasConnection } from './networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from './NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { runRootCauseAnalysis, NetworkDiagnosticResult } from '@/lib/network/connectivity/networkTroubleshooter';
 
@@ -72,11 +72,11 @@ export function NetworkDiagnosticsModal({
             </div>
             <div>
               <DialogTitle className="text-base font-bold flex items-center gap-2">
-                {isTr ? 'Ağ Sorun Neden Analizcisi' : 'Network Diagnostics & Root Cause Analyzer'}
+                {isTr ? 'AÄŸ Sorun Neden Analizcisi' : 'Network Diagnostics & Root Cause Analyzer'}
               </DialogTitle>
               <DialogDescription className="text-xs text-secondary-400">
                 {isTr
-                  ? 'İki cihaz arasındaki bağlantı kopukluklarını, subnet, VLAN ve gateway hatalarını anında analiz edin.'
+                  ? 'Ä°ki cihaz arasÄ±ndaki baÄŸlantÄ± kopukluklarÄ±nÄ±, subnet, VLAN ve gateway hatalarÄ±nÄ± anÄ±nda analiz edin.'
                   : 'Instantly diagnose connectivity issues, subnet, VLAN and gateway misconfigurations.'}
               </DialogDescription>
             </div>
@@ -92,7 +92,7 @@ export function NetworkDiagnosticsModal({
             </label>
             <Select value={sourceId} onValueChange={setSourceId}>
               <SelectTrigger className={`w-full text-xs h-9 ${isDark ? 'bg-secondary-900 border-secondary-800' : 'bg-secondary-50 border-secondary-200'}`}>
-                <SelectValue placeholder={isTr ? 'Kaynak seçin' : 'Select source'} />
+                <SelectValue placeholder={isTr ? 'Kaynak seÃ§in' : 'Select source'} />
               </SelectTrigger>
               <SelectContent className={`z-[10005] ${isDark ? 'bg-secondary-900 border-secondary-800 text-secondary-100' : 'bg-white border-secondary-200 text-secondary-900'}`}>
                 {eligibleDevices.map((d) => (
@@ -111,7 +111,7 @@ export function NetworkDiagnosticsModal({
             </label>
             <Select value={targetId} onValueChange={setTargetId}>
               <SelectTrigger className={`w-full text-xs h-9 ${isDark ? 'bg-secondary-900 border-secondary-800' : 'bg-secondary-50 border-secondary-200'}`}>
-                <SelectValue placeholder={isTr ? 'Hedef seçin' : 'Select target'} />
+                <SelectValue placeholder={isTr ? 'Hedef seÃ§in' : 'Select target'} />
               </SelectTrigger>
               <SelectContent className={`z-[10005] ${isDark ? 'bg-secondary-900 border-secondary-800 text-secondary-100' : 'bg-white border-secondary-200 text-secondary-900'}`}>
                 {eligibleDevices.map((d) => (
@@ -140,19 +140,19 @@ export function NetworkDiagnosticsModal({
             <div className="text-sm font-bold">
               {diagnosticResult.canCommunicate
                 ? isTr
-                  ? 'Bağlantı Başarılı: Paketler sorunsuz iletiliyor'
+                  ? 'BaÄŸlantÄ± BaÅŸarÄ±lÄ±: Paketler sorunsuz iletiliyor'
                   : 'Connection Healthy: Packets can flow end-to-end'
                 : isTr
-                  ? `Bağlantı Başarısız: ${diagnosticResult.issues.length} sorun tespit edildi`
+                  ? `BaÄŸlantÄ± BaÅŸarÄ±sÄ±z: ${diagnosticResult.issues.length} sorun tespit edildi`
                   : `Connection Failed: ${diagnosticResult.issues.length} issue(s) detected`}
             </div>
             <div className="text-xs opacity-80">
               {diagnosticResult.canCommunicate
                 ? isTr
-                  ? 'Kaynak ve hedef cihaz arasındaki tüm L1-L3 protokolleri ve yönlendirme kuralları geçerli.'
+                  ? 'Kaynak ve hedef cihaz arasÄ±ndaki tÃ¼m L1-L3 protokolleri ve yÃ¶nlendirme kurallarÄ± geÃ§erli.'
                   : 'Physical, data-link, and network layer configurations are valid.'
                 : isTr
-                  ? 'Aşağıdaki adımları inceleyerek bağlantıyı onarabilirsiniz.'
+                  ? 'AÅŸaÄŸÄ±daki adÄ±mlarÄ± inceleyerek baÄŸlantÄ±yÄ± onarabilirsiniz.'
                   : 'Review the identified issues and recommendations below.'}
             </div>
           </div>
@@ -163,7 +163,7 @@ export function NetworkDiagnosticsModal({
           <div className="space-y-2.5">
             <div className="text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
               <AlertTriangle className="w-4 h-4" />
-              {isTr ? 'Tespit Edilen Kök Nedenler' : 'Identified Root Causes'}
+              {isTr ? 'Tespit Edilen KÃ¶k Nedenler' : 'Identified Root Causes'}
             </div>
             <div className="space-y-2">
               {diagnosticResult.issues.map((issue) => (
@@ -182,7 +182,7 @@ export function NetworkDiagnosticsModal({
                        issue.category === 'physical' ? (isTr ? 'Fiziksel' : 'Physical') :
                        issue.category === 'gateway' ? (isTr ? 'Gateway' : 'Gateway') :
                        issue.category === 'vlan' ? 'VLAN' :
-                       issue.category === 'routing' ? (isTr ? 'Yönlendirme' : 'Routing') :
+                       issue.category === 'routing' ? (isTr ? 'YÃ¶nlendirme' : 'Routing') :
                        issue.category.toUpperCase()}
                     </span>
                   </div>
@@ -191,7 +191,7 @@ export function NetworkDiagnosticsModal({
                     }`}>
                     <Lightbulb className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
                     <div className="flex-1">
-                      <span className="font-semibold">{isTr ? 'Çözüm Önerisi: ' : 'Suggested Fix: '}</span>
+                      <span className="font-semibold">{isTr ? 'Ã‡Ã¶zÃ¼m Ã–nerisi: ' : 'Suggested Fix: '}</span>
                       {issue.suggestedFix[language]}
                     </div>
                   </div>
@@ -208,7 +208,7 @@ export function NetworkDiagnosticsModal({
                         }}
                         className="h-6 px-2 text-[10.5px] font-mono text-sky-400 hover:text-sky-300 hover:bg-sky-500/10"
                       >
-                        ⚙️ {diagnosticResult.sourceDevice.name} {diagnosticResult.sourceDevice.type === 'pc' ? (isTr ? 'CMD Aç' : 'Open CMD') : (isTr ? 'CLI Aç' : 'Open CLI')}
+                        âš™ï¸ {diagnosticResult.sourceDevice.name} {diagnosticResult.sourceDevice.type === 'pc' ? (isTr ? 'CMD AÃ§' : 'Open CMD') : (isTr ? 'CLI AÃ§' : 'Open CLI')}
                       </Button>
                     )}
                     {diagnosticResult.targetDevice && (
@@ -221,7 +221,7 @@ export function NetworkDiagnosticsModal({
                         }}
                         className="h-6 px-2 text-[10.5px] font-mono text-purple-400 hover:text-purple-300 hover:bg-purple-500/10"
                       >
-                        ⚙️ {diagnosticResult.targetDevice.name} {diagnosticResult.targetDevice.type === 'pc' ? (isTr ? 'CMD Aç' : 'Open CMD') : (isTr ? 'CLI Aç' : 'Open CLI')}
+                        âš™ï¸ {diagnosticResult.targetDevice.name} {diagnosticResult.targetDevice.type === 'pc' ? (isTr ? 'CMD AÃ§' : 'Open CMD') : (isTr ? 'CLI AÃ§' : 'Open CLI')}
                       </Button>
                     )}
                   </div>
@@ -236,7 +236,7 @@ export function NetworkDiagnosticsModal({
           <div className="space-y-2">
             <div className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4" />
-              {isTr ? 'Başarılı Kontroller' : 'Passed Checks'}
+              {isTr ? 'BaÅŸarÄ±lÄ± Kontroller' : 'Passed Checks'}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
               {diagnosticResult.passedChecks.map((check, idx) => (
@@ -266,3 +266,4 @@ export function NetworkDiagnosticsModal({
     </Dialog>
   );
 }
+

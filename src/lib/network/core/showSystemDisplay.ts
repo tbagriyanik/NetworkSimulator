@@ -1,6 +1,6 @@
-import type { CommandContext } from './commandTypes';
+﻿import type { CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult } from '../types';
-import type { CanvasDevice } from '@/components/network/networkTopology.types';
+import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { getSwitchDisplayProfile } from './showHelpers';
 import { checkConnectivity } from '../connectivity';
 
@@ -391,3 +391,5 @@ export function cmdShowBoot(
   output += 'Configuration register is 0x2102\n';
   return { success: true, output };
 }
+
+

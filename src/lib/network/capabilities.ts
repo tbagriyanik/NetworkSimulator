@@ -1,5 +1,5 @@
-import { isWLCModel, canAssignIPToPhysicalPort } from './switchModels';
-import { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
+﻿import { isWLCModel, canAssignIPToPhysicalPort } from './switchModels';
+import { CanvasDevice, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 export type DeviceCapabilities = {
   routing: boolean;
@@ -27,3 +27,5 @@ export function getDeviceCapabilities(device?: Pick<CanvasDevice, 'type'> | null
 export function isWirelessController(capabilities: DeviceCapabilities): boolean {
   return capabilities.wirelessController || capabilities.wlc;
 }
+
+

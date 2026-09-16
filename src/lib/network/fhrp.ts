@@ -1,5 +1,5 @@
-import { SwitchState } from './types';
-import { CanvasDevice } from '@/components/network/networkTopology.types';
+﻿import { SwitchState } from './types';
+import { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { useAppStore } from '@/lib/store/appStore';
 
 export function getHsrpVirtualMac(groupId: number, version: number = 1): string {
@@ -307,3 +307,5 @@ export function runFhrpElection(deviceStates: Map<string, SwitchState>): Map<str
 
   return nextStates;
 }
+
+

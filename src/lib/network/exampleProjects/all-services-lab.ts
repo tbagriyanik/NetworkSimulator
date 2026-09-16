@@ -1,7 +1,7 @@
-import { createSwitchDevice, createPcDevice, connectPorts, baseProjectData } from './helpers';
+﻿import { createSwitchDevice, createPcDevice, connectPorts, baseProjectData } from './helpers';
 ;
 import type { ExampleProject } from './types';
-import type { CanvasConnection, CanvasNote } from '@/components/network/networkTopology.types';
+import type { CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 const example = (isTr: boolean): ExampleProject => {
   const servicesLabDevices = [
@@ -29,7 +29,7 @@ const example = (isTr: boolean): ExampleProject => {
   servicesLabDevices[1].services = {
     http: {
       enabled: true,
-      content: '<h1>Merhaba Dünya! / Hello World!</h1>\n<p>Bu sayfa C:\\www\\index.html dosyasından sunulmaktadır.</p>',
+      content: '<h1>Merhaba DÃ¼nya! / Hello World!</h1>\n<p>Bu sayfa C:\\www\\index.html dosyasÄ±ndan sunulmaktadÄ±r.</p>',
     }
   };
 
@@ -90,8 +90,8 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'services-lab-note',
       text: isTr
-        ? '🌐 Servisler Laboratuvarı:\n\nBu laboratuvarda 6 farklı ağ servisi PC\'ler üzerinde çalışmaktadır:\n\n1) DNS (1.10): www.lab.local, ftp.lab.local çözümlemesi yapar.\n2) HTTP (1.20): Web sunucusu.\n3) DHCP (1.30): 192.168.1.100+ aralığında IP dağıtır.\n4) FTP (1.40): Dosya paylaşım sunucusu.\n5) MAIL (1.50): E-posta sunucusu (admin@lab.local).\n6) NTP (1.60): Zaman sunucusu.\n\nTestler:\n• Bir PC terminalinde "nslookup www.lab.local"\n• "wget www.lab.local" ile web sayfasına bakın.\n• "ftp 192.168.1.40" ile dosya yüklemeyi (put) deneyin.\n• Switch üzerinde "ntp server 192.168.1.60" yapıp "show clock" ile zamanı kontrol edin.'
-        : '🌐 Services Lab:\n\nIn this lab, 6 different network services are running on PCs:\n\n1) DNS (1.10): Resolves www.lab.local, ftp.lab.local.\n2) HTTP (1.20): Web server.\n3) DHCP (1.30): Distributes IPs in 192.168.1.100+ range.\n4) FTP (1.40): File sharing server.\n5) MAIL (1.50): Mail server (admin@lab.local).\n6) NTP (1.60): Time server.\n\nTests:\n• Run "nslookup www.lab.local" in a PC terminal.\n• Use "wget www.lab.local" to view the web page.\n• Use "ftp 192.168.1.40" to try file uploading (put).\n• On the Switch: "ntp server 192.168.1.60" then "show clock" to check time sync.',
+        ? 'ğŸŒ Servisler LaboratuvarÄ±:\n\nBu laboratuvarda 6 farklÄ± aÄŸ servisi PC\'ler Ã¼zerinde Ã§alÄ±ÅŸmaktadÄ±r:\n\n1) DNS (1.10): www.lab.local, ftp.lab.local Ã§Ã¶zÃ¼mlemesi yapar.\n2) HTTP (1.20): Web sunucusu.\n3) DHCP (1.30): 192.168.1.100+ aralÄ±ÄŸÄ±nda IP daÄŸÄ±tÄ±r.\n4) FTP (1.40): Dosya paylaÅŸÄ±m sunucusu.\n5) MAIL (1.50): E-posta sunucusu (admin@lab.local).\n6) NTP (1.60): Zaman sunucusu.\n\nTestler:\nâ€¢ Bir PC terminalinde "nslookup www.lab.local"\nâ€¢ "wget www.lab.local" ile web sayfasÄ±na bakÄ±n.\nâ€¢ "ftp 192.168.1.40" ile dosya yÃ¼klemeyi (put) deneyin.\nâ€¢ Switch Ã¼zerinde "ntp server 192.168.1.60" yapÄ±p "show clock" ile zamanÄ± kontrol edin.'
+        : 'ğŸŒ Services Lab:\n\nIn this lab, 6 different network services are running on PCs:\n\n1) DNS (1.10): Resolves www.lab.local, ftp.lab.local.\n2) HTTP (1.20): Web server.\n3) DHCP (1.30): Distributes IPs in 192.168.1.100+ range.\n4) FTP (1.40): File sharing server.\n5) MAIL (1.50): Mail server (admin@lab.local).\n6) NTP (1.60): Time server.\n\nTests:\nâ€¢ Run "nslookup www.lab.local" in a PC terminal.\nâ€¢ Use "wget www.lab.local" to view the web page.\nâ€¢ Use "ftp 192.168.1.40" to try file uploading (put).\nâ€¢ On the Switch: "ntp server 192.168.1.60" then "show clock" to check time sync.',
       x: 50,
       y: 450,
       width: 600,
@@ -105,10 +105,10 @@ const example = (isTr: boolean): ExampleProject => {
 
   return {
     id: 'all-services-lab',
-    tag: isTr ? 'SERVİSLER' : 'SERVICES',
-    title: isTr ? 'Tüm Servisler Laboratuvarı (DNS, HTTP, FTP, MAIL, NTP, DHCP)' : 'All Services Lab (DNS, HTTP, FTP, MAIL, NTP, DHCP)',
+    tag: isTr ? 'SERVÄ°SLER' : 'SERVICES',
+    title: isTr ? 'TÃ¼m Servisler LaboratuvarÄ± (DNS, HTTP, FTP, MAIL, NTP, DHCP)' : 'All Services Lab (DNS, HTTP, FTP, MAIL, NTP, DHCP)',
     description: isTr
-      ? 'PC\'ler üzerinde çalışan temel ağ servislerinin bir arada bulunduğu kapsamlı laboratuvar.'
+      ? 'PC\'ler Ã¼zerinde Ã§alÄ±ÅŸan temel aÄŸ servislerinin bir arada bulunduÄŸu kapsamlÄ± laboratuvar.'
       : 'A comprehensive lab featuring basic network services running on PCs.',
     detail: 'DNS: 1.10, HTTP: 1.20, DHCP: 1.30, FTP: 1.40, MAIL: 1.50, NTP: 1.60',
     level: 'intermediate',
@@ -117,4 +117,6 @@ const example = (isTr: boolean): ExampleProject => {
 };
 
 export default example;
+
+
 

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { setSpanSourceInterface, setSpanDestinationInterface, setSpanRemoteVlan, isSpanActive, getSpanMirrorDestinations, getRspanDestinationSessions, getRspanSourceVlans } from '@/lib/network/portMirroring';
 import type { SwitchState } from '@/lib/network/types';
 import { cmdMonitorSession, cmdNoMonitorSession } from '@/lib/network/core/interface/cmd.misc';
@@ -7,7 +7,7 @@ import type { CommandContext } from '@/lib/network/core/commandTypes';
 import { buildRunningConfig } from '@/lib/network/core/configBuilder';
 import { runHopPipeline } from '@/lib/network/forwarding/packetPipeline';
 import type { NetworkPacketFrame } from '@/lib/network/forwarding/packetFrame';
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 describe('portMirroring (SPAN / RSPAN)', () => {
   it('should register SPAN source and destination interfaces correctly', () => {
@@ -278,4 +278,6 @@ describe('portMirroring (SPAN / RSPAN)', () => {
     expect(configLines).toContain('monitor session 2 destination interface gigabitethernet0/24');
   });
 });
+
+
 

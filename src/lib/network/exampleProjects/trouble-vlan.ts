@@ -1,6 +1,6 @@
-import { createPcDevice, createSwitchDevice, connectPorts, baseProjectData } from './helpers';
+﻿import { createPcDevice, createSwitchDevice, connectPorts, baseProjectData } from './helpers';
 import type { ExampleProject } from './types';
-import type { CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { createInitialState } from '../initialState';
 
 const example = (isTr: boolean): ExampleProject => {
@@ -23,15 +23,15 @@ const example = (isTr: boolean): ExampleProject => {
   return {
     id: 'trouble-vlan',
     tag: isTr ? 'ARIZA' : 'TROUBLE',
-    title: isTr ? 'Yanlış VLAN Ataması' : 'Wrong VLAN Assignment',
-    description: isTr ? 'PC2 neden PC1\'e ping atamıyor? Switch portlarını kontrol edin.' : 'Why can\'t PC2 ping PC1? Check the switch ports.',
+    title: isTr ? 'YanlÄ±ÅŸ VLAN AtamasÄ±' : 'Wrong VLAN Assignment',
+    description: isTr ? 'PC2 neden PC1\'e ping atamÄ±yor? Switch portlarÄ±nÄ± kontrol edin.' : 'Why can\'t PC2 ping PC1? Check the switch ports.',
     level: 'intermediate',
     injectedFaults: [
       {
         id: 'fault-vlan-2',
         deviceId: 'switch-1',
         faultType: 'wrongVlan',
-        description: { tr: 'Fa0/2 portu yanlışlıkla VLAN 20\'ye atanmış.', en: 'Port Fa0/2 is mistakenly assigned to VLAN 20.' },
+        description: { tr: 'Fa0/2 portu yanlÄ±ÅŸlÄ±kla VLAN 20\'ye atanmÄ±ÅŸ.', en: 'Port Fa0/2 is mistakenly assigned to VLAN 20.' },
         configKey: 'ports.fa0/2.vlan',
         faultValue: 20,
         correctValue: 10
@@ -42,3 +42,5 @@ const example = (isTr: boolean): ExampleProject => {
 };
 
 export default example;
+
+

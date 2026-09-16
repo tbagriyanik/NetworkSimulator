@@ -1,6 +1,6 @@
-import { createPcDevice, createSwitchDevice, connectPorts, baseProjectData } from './helpers';
+﻿import { createPcDevice, createSwitchDevice, connectPorts, baseProjectData } from './helpers';
 import type { ExampleProject } from './types';
-import type { CanvasConnection, CanvasNote } from '@/components/network/networkTopology.types';
+import type { CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { createInitialState } from '../initialState';
 
 const example = (isTr: boolean): ExampleProject => {
@@ -16,8 +16,8 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'vlan-note-1',
       text: isTr
-        ? 'Amaç: Tek bir switch üzerinde VLAN oluşturarak PC\'leri farklı broadcast domain\'lere ayırmak.\n\n🔧 YAPILANDIRMA ADIMLARI:\n\n1) TOPOLOJİ OLUŞTURMA:\n   - 1 adet Switch (SW1) ekle\n   - 2 adet PC ekle (PC-1, PC-2)\n   - PC-1 Eth0 -> SW1 Fa0/1 (Straight kablo)\n   - PC-2 Eth0 -> SW1 Fa0/2 (Straight kablo)\n\n2) SWITCH VLAN KONFİGÜRASYONU:\n   - SW1 terminaline gir: enable, conf t\n   - vlan 10\n     name VLAN10\n   - exit\n   - vlan 20\n     name VLAN20\n   - exit\n\n3) PORT VLAN ATAMASI:\n   - interface fa0/1\n     switchport mode access\n     switchport access vlan 10\n   - exit\n   - interface fa0/2\n     switchport mode access\n     switchport access vlan 20\n   - exit\n\n4) PC IP KONFİGÜRASYONU:\n   - PC-1: IP 192.168.10.10, Subnet 255.255.255.0, VLAN 10\n   - PC-2: IP 192.168.20.10, Subnet 255.255.255.0, VLAN 20\n\n5) DOĞRULAMA:\n   - show vlan brief (VLAN 10 ve 20\'yi gör)\n   - show interfaces status (port VLAN atamalarını kontrol et)\n   - PC-1 ve PC-2 birbirine ping atamaz (farklı VLAN)'
-        : '🔧 BUILD STEPS:\n\n1) CREATE TOPOLOGY:\n   - Add 1 Switch (SW1)\n   - Add 2 PCs (PC-1, PC-2)\n   - Connect PC-1 Eth0 -> SW1 Fa0/1 (Straight cable)\n   - Connect PC-2 Eth0 -> SW1 Fa0/2 (Straight cable)\n\n2) SWITCH VLAN CONFIGURATION:\n   - Enter SW1 terminal: enable, conf t\n   - vlan 10\n     name VLAN10\n   - exit\n   - vlan 20\n     name VLAN20\n   - exit\n\n3) PORT VLAN ASSIGNMENT:\n   - interface fa0/1\n     switchport mode access\n     switchport access vlan 10\n   - exit\n   - interface fa0/2\n     switchport mode access\n     switchport access vlan 20\n   - exit\n\n4) PC IP CONFIGURATION:\n   - PC-1: IP 192.168.10.10, Subnet 255.255.255.0, VLAN 10\n   - PC-2: IP 192.168.20.10, Subnet 255.255.255.0, VLAN 20\n\n5) VERIFICATION:\n   - show vlan brief (see VLAN 10 and 20)\n   - show interfaces status (check port VLAN assignments)\n   - PC-1 and PC-2 cannot ping each other (different VLANs)',
+        ? 'AmaÃ§: Tek bir switch Ã¼zerinde VLAN oluÅŸturarak PC\'leri farklÄ± broadcast domain\'lere ayÄ±rmak.\n\nğŸ”§ YAPILANDIRMA ADIMLARI:\n\n1) TOPOLOJÄ° OLUÅTURMA:\n   - 1 adet Switch (SW1) ekle\n   - 2 adet PC ekle (PC-1, PC-2)\n   - PC-1 Eth0 -> SW1 Fa0/1 (Straight kablo)\n   - PC-2 Eth0 -> SW1 Fa0/2 (Straight kablo)\n\n2) SWITCH VLAN KONFÄ°GÃœRASYONU:\n   - SW1 terminaline gir: enable, conf t\n   - vlan 10\n     name VLAN10\n   - exit\n   - vlan 20\n     name VLAN20\n   - exit\n\n3) PORT VLAN ATAMASI:\n   - interface fa0/1\n     switchport mode access\n     switchport access vlan 10\n   - exit\n   - interface fa0/2\n     switchport mode access\n     switchport access vlan 20\n   - exit\n\n4) PC IP KONFÄ°GÃœRASYONU:\n   - PC-1: IP 192.168.10.10, Subnet 255.255.255.0, VLAN 10\n   - PC-2: IP 192.168.20.10, Subnet 255.255.255.0, VLAN 20\n\n5) DOÄRULAMA:\n   - show vlan brief (VLAN 10 ve 20\'yi gÃ¶r)\n   - show interfaces status (port VLAN atamalarÄ±nÄ± kontrol et)\n   - PC-1 ve PC-2 birbirine ping atamaz (farklÄ± VLAN)'
+        : 'ğŸ”§ BUILD STEPS:\n\n1) CREATE TOPOLOGY:\n   - Add 1 Switch (SW1)\n   - Add 2 PCs (PC-1, PC-2)\n   - Connect PC-1 Eth0 -> SW1 Fa0/1 (Straight cable)\n   - Connect PC-2 Eth0 -> SW1 Fa0/2 (Straight cable)\n\n2) SWITCH VLAN CONFIGURATION:\n   - Enter SW1 terminal: enable, conf t\n   - vlan 10\n     name VLAN10\n   - exit\n   - vlan 20\n     name VLAN20\n   - exit\n\n3) PORT VLAN ASSIGNMENT:\n   - interface fa0/1\n     switchport mode access\n     switchport access vlan 10\n   - exit\n   - interface fa0/2\n     switchport mode access\n     switchport access vlan 20\n   - exit\n\n4) PC IP CONFIGURATION:\n   - PC-1: IP 192.168.10.10, Subnet 255.255.255.0, VLAN 10\n   - PC-2: IP 192.168.20.10, Subnet 255.255.255.0, VLAN 20\n\n5) VERIFICATION:\n   - show vlan brief (see VLAN 10 and 20)\n   - show interfaces status (check port VLAN assignments)\n   - PC-1 and PC-2 cannot ping each other (different VLANs)',
       x: 600,
       y: 40,
       width: 480,
@@ -40,7 +40,7 @@ const example = (isTr: boolean): ExampleProject => {
     tag: isTr ? 'VLAN' : 'VLAN',
     title: isTr ? '1 Switch VLAN' : 'Single Switch VLANs',
     description: isTr
-      ? 'Tek switch üzerinde VLAN 10 ve 20 ile iki PC erişim portu yapılandırması.'
+      ? 'Tek switch Ã¼zerinde VLAN 10 ve 20 ile iki PC eriÅŸim portu yapÄ±landÄ±rmasÄ±.'
       : 'Single switch with VLAN 10 and 20 access port configuration for two PCs.',
     detail: isTr
       ? 'PC-1: VLAN 10 (192.168.10.10), PC-2: VLAN 20 (192.168.20.10)'
@@ -51,3 +51,5 @@ const example = (isTr: boolean): ExampleProject => {
 };
 
 export default example;
+
+

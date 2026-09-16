@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import { DraggableWindowWrapper } from './DraggableWindowWrapper';
 import { FirewallPanel } from './FirewallPanel';
-import { CanvasDevice, FirewallRule } from './networkTopology.types';
+import { CanvasDevice, FirewallRule } from './NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import type { Translations } from '@/contexts/LanguageContext';
 import { TerminalOutput } from './Terminal';
@@ -103,3 +103,4 @@ export function FirewallWindow({
     </DraggableWindowWrapper>
   );
 }
+

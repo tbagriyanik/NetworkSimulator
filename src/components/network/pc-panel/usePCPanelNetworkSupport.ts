@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import { useCallback } from 'react';
-import type { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { checkConnectivity, getWirelessSignalStrength, getDeviceWifiConfig } from '@/lib/network/connectivity';
 import { dispatchCapturedPackets } from '../../../utils/packetCapture';
@@ -141,9 +141,9 @@ export function usePCPanelNetworkSupport({
     const isIp = !startAddress || isValidIpv4(startAddress) || isValidIpv6(startAddress);
     const recordType = isIp
       ? (isValidIpv6(startAddress)
-        ? (language === 'tr' ? 'AAAA Kaydı' : 'AAAA Record')
-        : (language === 'tr' ? 'A Kaydı' : 'A Record'))
-      : (language === 'tr' ? 'CNAME Kaydı' : 'CNAME Record');
+        ? (language === 'tr' ? 'AAAA KaydÄ±' : 'AAAA Record')
+        : (language === 'tr' ? 'A KaydÄ±' : 'A Record'))
+      : (language === 'tr' ? 'CNAME KaydÄ±' : 'CNAME Record');
     if (isIp) {
       return `${recordType}: ${chain.join(' -> ')}`;
     }

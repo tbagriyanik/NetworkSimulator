@@ -1,4 +1,4 @@
-import { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+﻿import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { ConnectionIndex } from '@/lib/network/connectionIndex';
 import {
@@ -145,3 +145,4 @@ export function findPath(deps: PathFindingDeps): PathFindingResult {
 
   return { type: 'ok', path, sourceVlan, sourceIp, sourceDeviceForSubnet };
 }
+

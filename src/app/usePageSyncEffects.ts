@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+﻿import { useEffect, useRef } from 'react';
+import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { addSessionDuration, addGuidedLessonRecord, addExamRecord } from '@/utils/achievementRecords';
 import { performanceMonitor } from '@/lib/performance/monitoring';
@@ -220,3 +220,5 @@ export function usePageSyncEffects({
     return;
   }, [topologyDevices, topologyConnections, handleRefreshNetwork]);
 }
+
+

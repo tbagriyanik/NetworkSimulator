@@ -1,4 +1,4 @@
-import type { CanvasDevice } from '../../networkTopology.types';
+﻿import type { CanvasDevice } from '../../NetworkTopology/types/networkTopology.types';
 import { generatePCPorts } from '../../networkTopology.portGenerators';
 import {
   type Ctx,
@@ -130,3 +130,4 @@ export function generateNetautoPython(_pcCount: number): Ctx {
 
   return ctx;
 }
+

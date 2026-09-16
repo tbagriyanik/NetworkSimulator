@@ -10,7 +10,7 @@
   createWlcDevice
 } from './helpers';
 import { createInitialRouterState, createInitialState, createInitialWLCState } from '../initialState';
-import type { CanvasConnection, CanvasDevice, CanvasNote } from '@/components/network/networkTopology.types';
+import type { CanvasConnection, CanvasDevice, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { ExampleProject } from './types';
 
 const example = (isTr: boolean): ExampleProject => {
@@ -254,3 +254,5 @@ const example = (isTr: boolean): ExampleProject => {
 };
 
 export default example;
+
+

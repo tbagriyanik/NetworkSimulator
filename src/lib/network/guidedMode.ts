@@ -1,6 +1,6 @@
 ﻿// Rehberli Ders (Guided Lesson) - Adım adım öğrenme sistemi
 import { generateSwitchPorts, generateL3SwitchPorts, generateRouterPorts } from '@/components/network/networkTopology.portGenerators';
-import type { CanvasConnection, CanvasDevice } from '@/components/network/networkTopology.types';
+import type { CanvasConnection, CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState, Route, Port } from './types';
 import type { GuidedStep, GuidedProject } from './guidedMode.types';
 import {
@@ -993,6 +993,9 @@ export const getProgressPercentage = (steps: GuidedStep[]): number => {
   if (steps.length === 0) return 0;
   return Math.round((getCompletedStepsCount(steps) / steps.length) * 100);
 };
+
+
+
 
 
 

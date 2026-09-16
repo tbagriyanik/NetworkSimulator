@@ -1,8 +1,8 @@
-import type React from 'react';
+﻿import type React from 'react';
 import { useCallback, useEffect, useMemo, useState, type RefObject } from 'react';
 import type { SwitchState } from '@/lib/network/types';
 import type { TerminalOutput } from '../Terminal';
-import type { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import type { PCActiveTab, OutputLine } from './PCPanel.types';
 import { getConsoleDevice } from './pcTerminal.utils';
 import { toast } from '@/hooks/use-toast';
@@ -196,3 +196,4 @@ export function usePCPanelConsole({
     handleConnect,
   };
 }
+

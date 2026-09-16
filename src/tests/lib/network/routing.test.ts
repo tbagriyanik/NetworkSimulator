@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import type { SwitchState } from '@/lib/network/types';
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { getRoutingTable } from '@/lib/network/routing';
 
 
@@ -191,3 +191,5 @@ describe('RIP Dynamic Routing', () => {
     expect(ripRoute?.metric).toBe(120);
   });
 });
+
+

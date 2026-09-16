@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Cpu, Power, RefreshCw, Wifi, WifiOff, Server, CheckCircle2, Globe } from 'lucide-react';
@@ -9,7 +9,7 @@ import { generateIotWebPanelContent, generateIotDevicePageContent } from '@/lib/
 import { wrapIframeContent } from '@/lib/design-tokens/iframeFonts';
 import { HttpBrowserWindow } from '@/components/network/pc-panel/HttpBrowserWindow';
 
-import type { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 
 interface IotDeviceViewProps {
@@ -310,7 +310,7 @@ export function IotDeviceView({
         const sensorType = targetDevice.iot?.sensorType || 'temperature';
         const dataFlowDirection = targetDevice.iot?.dataFlowDirection || (kind === 'sensor' ? 'input' : 'output');
         const iotDevicePage = generateIotDevicePageContent(targetDevice.id, targetDevice.name || targetDevice.id, language, isActive, isPoweredOff, kind, rules, sensorType, iotDevices, dataFlowDirection, topologyDevices);
-        setBrowserTitle(`${targetDevice.name || targetDevice.id} ${isTr ? 'Cihaz Yönetimi' : 'Device Management'}`);
+        setBrowserTitle(`${targetDevice.name || targetDevice.id} ${isTr ? 'Cihaz YÃ¶netimi' : 'Device Management'}`);
         setBrowserContent(iotDevicePage);
         setIsBrowserOpen(true);
         return;
@@ -414,7 +414,7 @@ export function IotDeviceView({
             )}
           >
             <Power className="w-3.5 h-3.5" />
-            {isPowerOn ? (isTr ? 'Güç Açık' : 'Power On') : (isTr ? 'Güç Kapalı' : 'Power Off')}
+            {isPowerOn ? (isTr ? 'GÃ¼Ã§ AÃ§Ä±k' : 'Power On') : (isTr ? 'GÃ¼Ã§ KapalÄ±' : 'Power Off')}
           </button>
         </div>
       </div>
@@ -423,31 +423,31 @@ export function IotDeviceView({
       <div className={cn("p-4 rounded-xl border space-y-4", isDark ? "bg-slate-900/40 border-slate-800" : "bg-white border-slate-200")}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="font-bold text-muted-foreground">{isTr ? 'Cihaz Adı' : 'Device Name'}</label>
+            <label className="font-bold text-muted-foreground">{isTr ? 'Cihaz AdÄ±' : 'Device Name'}</label>
             <input
               type="text"
               value={deviceName}
               onChange={e => setDeviceName(e.target.value)}
               className={cn("w-full px-3 py-2 rounded-lg border font-mono text-xs outline-none", isDark ? "bg-slate-950 border-slate-800 text-slate-100" : "bg-slate-50 border-slate-300 text-slate-900")}
-              placeholder={isTr ? "IoT Cihaz Adı..." : "IoT Device Name..."}
+              placeholder={isTr ? "IoT Cihaz AdÄ±..." : "IoT Device Name..."}
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="font-bold text-muted-foreground">{isTr ? 'Cihaz Türü / Sensör' : 'Device Type / Sensor'}</label>
+            <label className="font-bold text-muted-foreground">{isTr ? 'Cihaz TÃ¼rÃ¼ / SensÃ¶r' : 'Device Type / Sensor'}</label>
             <Select value={`${iotKind}:${iotSensorType}`} onValueChange={handleTypeChange}>
               <SelectTrigger className={cn("w-full h-9 text-xs", isDark ? "bg-slate-950 border-slate-800" : "bg-slate-50 border-slate-300")}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="heater:temperature">{isTr ? 'Isıtıcı' : 'Heater'}</SelectItem>
+                <SelectItem value="heater:temperature">{isTr ? 'IsÄ±tÄ±cÄ±' : 'Heater'}</SelectItem>
                 <SelectItem value="lamp:light">{isTr ? 'Lamba' : 'Lamp'}</SelectItem>
-                <SelectItem value="cooler:temperature">{isTr ? 'Soğutucu' : 'Cooler'}</SelectItem>
-                <SelectItem value="sensor:temperature">{isTr ? 'Isı Sensörü' : 'Temperature Sensor'}</SelectItem>
-                <SelectItem value="sensor:light">{isTr ? 'Işık Sensörü' : 'Light Sensor'}</SelectItem>
-                <SelectItem value="sensor:humidity">{isTr ? 'Nem Sensörü' : 'Humidity Sensor'}</SelectItem>
-                <SelectItem value="sensor:motion">{isTr ? 'Hareket Sensörü' : 'Motion Sensor'}</SelectItem>
-                <SelectItem value="sensor:sound">{isTr ? 'Ses Sensörü' : 'Sound Sensor'}</SelectItem>
+                <SelectItem value="cooler:temperature">{isTr ? 'SoÄŸutucu' : 'Cooler'}</SelectItem>
+                <SelectItem value="sensor:temperature">{isTr ? 'IsÄ± SensÃ¶rÃ¼' : 'Temperature Sensor'}</SelectItem>
+                <SelectItem value="sensor:light">{isTr ? 'IÅŸÄ±k SensÃ¶rÃ¼' : 'Light Sensor'}</SelectItem>
+                <SelectItem value="sensor:humidity">{isTr ? 'Nem SensÃ¶rÃ¼' : 'Humidity Sensor'}</SelectItem>
+                <SelectItem value="sensor:motion">{isTr ? 'Hareket SensÃ¶rÃ¼' : 'Motion Sensor'}</SelectItem>
+                <SelectItem value="sensor:sound">{isTr ? 'Ses SensÃ¶rÃ¼' : 'Sound Sensor'}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -457,7 +457,7 @@ export function IotDeviceView({
         <div className="flex items-center justify-between py-2 border-y border-slate-800/40">
           <div>
             <div className="font-bold text-foreground">{isTr ? 'Cihaz Durumu' : 'Device Status'}</div>
-            <div className="text-[11px] text-muted-foreground">{isTr ? 'Cihazın ağ ve sensör simülasyon yanıtını açar/kapatır' : 'Toggles sensor response & network automation'}</div>
+            <div className="text-[11px] text-muted-foreground">{isTr ? 'CihazÄ±n aÄŸ ve sensÃ¶r simÃ¼lasyon yanÄ±tÄ±nÄ± aÃ§ar/kapatÄ±r' : 'Toggles sensor response & network automation'}</div>
           </div>
           <button
             type="button"
@@ -476,7 +476,7 @@ export function IotDeviceView({
         {/* IP Configuration (DHCP / Static) */}
         <div className="space-y-3 pt-2 border-t border-slate-800/40">
           <div className="flex items-center justify-between">
-            <label className="font-bold text-muted-foreground">{isTr ? 'IP Yapılandırması' : 'IP Configuration'}</label>
+            <label className="font-bold text-muted-foreground">{isTr ? 'IP YapÄ±landÄ±rmasÄ±' : 'IP Configuration'}</label>
             <div className={cn("inline-flex p-0.5 rounded-lg border", isDark ? "bg-slate-950 border-slate-800" : "bg-slate-100 border-slate-300")}>
               <button
                 type="button"
@@ -522,7 +522,7 @@ export function IotDeviceView({
             </div>
 
             <div className="space-y-1">
-              <label className="text-[11px] text-muted-foreground">{isTr ? 'Alt Ağ Maskesi' : 'Subnet Mask'}</label>
+              <label className="text-[11px] text-muted-foreground">{isTr ? 'Alt AÄŸ Maskesi' : 'Subnet Mask'}</label>
               <input
                 type="text"
                 value={subnet}
@@ -537,7 +537,7 @@ export function IotDeviceView({
             </div>
 
             <div className="space-y-1">
-              <label className="text-[11px] text-muted-foreground">{isTr ? 'Ağ Geçidi (Gateway)' : 'Default Gateway'}</label>
+              <label className="text-[11px] text-muted-foreground">{isTr ? 'AÄŸ GeÃ§idi (Gateway)' : 'Default Gateway'}</label>
               <input
                 type="text"
                 value={gateway}
@@ -576,7 +576,7 @@ export function IotDeviceView({
             onChange={e => setDataStore(e.target.value)}
             rows={3}
             className={cn("w-full px-3 py-2 rounded-lg border font-mono text-xs outline-none custom-scrollbar", isDark ? "bg-slate-950 border-slate-800 text-slate-100" : "bg-slate-50 border-slate-300 text-slate-900")}
-            placeholder={isTr ? "Sensör verileri veya notlar..." : "Sensor data or notes..."}
+            placeholder={isTr ? "SensÃ¶r verileri veya notlar..." : "Sensor data or notes..."}
           />
         </div>
 
@@ -586,7 +586,7 @@ export function IotDeviceView({
             <div className="flex items-center gap-2">
               <Server className="w-4 h-4 text-cyan-400" />
               <span className={isNetworkConnected ? "text-emerald-400 font-bold" : "text-rose-400 font-bold"}>
-                {isNetworkConnected ? (isTr ? 'Ağ Bağlantısı Aktif' : 'Network Connected') : (isTr ? 'Ağ Bağlantısı Yok' : 'No Network Connection')}
+                {isNetworkConnected ? (isTr ? 'AÄŸ BaÄŸlantÄ±sÄ± Aktif' : 'Network Connected') : (isTr ? 'AÄŸ BaÄŸlantÄ±sÄ± Yok' : 'No Network Connection')}
               </span>
             </div>
             {liveDevice.wifi?.ssid && (
@@ -603,7 +603,7 @@ export function IotDeviceView({
               handleConnectWifi(val);
             }}>
               <SelectTrigger className={cn("h-8 min-w-[130px] text-xs font-mono", isDark ? "bg-slate-900 border-slate-700 text-slate-200" : "bg-white border-slate-300 text-slate-900")}>
-                <SelectValue placeholder="WiFi Seç..." />
+                <SelectValue placeholder="WiFi SeÃ§..." />
               </SelectTrigger>
               <SelectContent>
                 {availableSsids.map((ssid) => (
@@ -625,7 +625,7 @@ export function IotDeviceView({
               )}
             >
               <Wifi className="w-3.5 h-3.5" />
-              {isTr ? 'Bağlan' : 'Connect'}
+              {isTr ? 'BaÄŸlan' : 'Connect'}
             </button>
 
             <button
@@ -634,7 +634,7 @@ export function IotDeviceView({
               className="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-semibold text-xs flex items-center gap-1.5 transition-colors shadow-sm h-8"
             >
               <WifiOff className="w-3.5 h-3.5" />
-              {isTr ? 'Bağlantı Kapat' : 'Disconnect'}
+              {isTr ? 'BaÄŸlantÄ± Kapat' : 'Disconnect'}
             </button>
 
             <button
@@ -656,7 +656,7 @@ export function IotDeviceView({
             className="px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors shadow-md"
           >
             {saveSuccess ? <CheckCircle2 className="w-4 h-4 text-white" /> : <RefreshCw className="w-4 h-4" />}
-            {saveSuccess ? (isTr ? 'Kaydedildi!' : 'Saved!') : (isTr ? 'Ayarları Kaydet' : 'Save Settings')}
+            {saveSuccess ? (isTr ? 'Kaydedildi!' : 'Saved!') : (isTr ? 'AyarlarÄ± Kaydet' : 'Save Settings')}
           </button>
         </div>
       </div>
@@ -688,3 +688,4 @@ export function IotDeviceView({
     </div>
   );
 }
+

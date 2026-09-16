@@ -1,4 +1,4 @@
-import type { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+﻿import type { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import type { OutputLine } from './PCPanel.types';
 import { checkConnectivity, getWirelessDistance } from '@/lib/network/connectivity';
@@ -317,3 +317,4 @@ export async function handlePcDiagnosticCommand(
 
   return false;
 }
+

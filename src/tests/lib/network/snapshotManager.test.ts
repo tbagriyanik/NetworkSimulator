@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+﻿import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   createCheckpoint,
   saveCheckpointsToStorage,
@@ -7,7 +7,7 @@ import {
   validateTopologyCheckpoint,
   TopologyCheckpoint,
 } from '@/lib/network/snapshotManager';
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 describe('snapshotManager (Topology Checkpoint & Rollback System)', () => {
   const mockDevices: CanvasDevice[] = [
@@ -134,3 +134,5 @@ describe('snapshotManager (Topology Checkpoint & Rollback System)', () => {
     });
   });
 });
+
+

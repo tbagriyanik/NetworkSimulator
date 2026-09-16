@@ -1,15 +1,15 @@
-import React, { useState, useMemo } from 'react';
+﻿import React, { useState, useMemo } from 'react';
 import { Trash2, Eraser, Search, ChevronLeft, ChevronRight, ChevronDown, X } from 'lucide-react';
 import { useAppStore } from '@/lib/store/appStore';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { CABLE_COLORS } from './networkTopology.constants';
-import { getConnectionStatusMessage } from './networkTopology.helpers';
+import { CABLE_COLORS } from './NetworkTopology/utils/networkTopology.constants';
+import { getConnectionStatusMessage } from './NetworkTopology/utils/networkTopology.helpers';
 import { DraggableWindowWrapper } from './DraggableWindowWrapper';
 import { useDrag } from '@/hooks/useDrag';
 import { useIsMobile } from '@/hooks/use-breakpoint';
 import { ProtocolTreeDetails } from './ProtocolTreeDetails';
 import { PacketHexDump } from './PacketHexDump';
-import type { CanvasConnection } from './networkTopology.types';
+import type { CanvasConnection } from './NetworkTopology/types/networkTopology.types';
 
 interface PacketCapturePanelProps {
   activeCaptureConnectionId: string;
@@ -59,7 +59,7 @@ export const PacketCapturePanel = ({
   }
 
   const statusMessage = conn ? getConnectionStatusMessage(conn, devices, language) : '';
-  const hasError = conn && statusMessage !== 'Bağlantı sorunsuz' && statusMessage !== 'Connection OK';
+  const hasError = conn && statusMessage !== 'BaÄŸlantÄ± sorunsuz' && statusMessage !== 'Connection OK';
 
   const [columnOrder, setColumnOrder] = useState(['time', 'source', 'dest', 'protocol', 'info']);
 
@@ -213,7 +213,7 @@ export const PacketCapturePanel = ({
           </div>
           {hasError && (
             <span className="text-[9px] text-error-500 dark:text-error-400 font-medium pl-[18px]">
-              ⚠️ {statusMessage}
+              âš ï¸ {statusMessage}
             </span>
           )}
         </div>
@@ -258,7 +258,7 @@ export const PacketCapturePanel = ({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={language === 'tr' ? 'IP, protokol veya içerik ara...' : 'Search IP, protocol or info...'}
+              placeholder={language === 'tr' ? 'IP, protokol veya iÃ§erik ara...' : 'Search IP, protocol or info...'}
               className={`flex-1 bg-transparent outline-none text-xs placeholder:opacity-40 ${isDark ? 'text-white' : 'text-slate-900'}`}
             />
             {searchQuery && (
@@ -275,17 +275,17 @@ export const PacketCapturePanel = ({
                 ? isDark ? 'border-amber-500/60 text-amber-300 bg-amber-500/10' : 'border-amber-500 text-amber-800 bg-amber-50'
                 : isDark ? 'border-secondary-700 text-secondary-300 opacity-60 hover:opacity-100' : 'border-secondary-300 text-secondary-700 opacity-60 hover:opacity-100'
                 }`}
-              title={language === 'tr' ? 'Dışlama filtresini aç/kapat' : 'Toggle exclude filter'}
+              title={language === 'tr' ? 'DÄ±ÅŸlama filtresini aÃ§/kapat' : 'Toggle exclude filter'}
             >
-              {language === 'tr' ? 'Dışla' : 'Exclude'}
+              {language === 'tr' ? 'DÄ±ÅŸla' : 'Exclude'}
             </button>
           </div>
 
           {/* Quick Protocol Filter Pills */}
           <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
             {[
-              { label: language === 'tr' ? 'Tümü' : 'All', val: '' },
-              { label: language === 'tr' ? '🚨 DROP' : '🚨 DROP', val: 'drop' },
+              { label: language === 'tr' ? 'TÃ¼mÃ¼' : 'All', val: '' },
+              { label: language === 'tr' ? 'ğŸš¨ DROP' : 'ğŸš¨ DROP', val: 'drop' },
               { label: 'ICMP', val: 'icmp' },
               { label: 'ARP', val: 'arp' },
               { label: 'TCP', val: 'tcp' },
@@ -321,13 +321,13 @@ export const PacketCapturePanel = ({
           {(showExclude || excludeQuery) && (
             <div className={`flex items-center gap-1.5 px-2 py-1 rounded border shadow-sm ${isDark ? (graphicsQuality === 'low' ? 'border-secondary-700 bg-secondary-800' : 'border-secondary-700 bg-secondary-800/80') : 'border-secondary-300 bg-white'}`}>
               <span className={`text-[10px] font-bold shrink-0 ${isDark ? 'text-amber-400' : 'text-amber-700'}`}>
-                {language === 'tr' ? 'Dışlanacak:' : 'Exclude:'}
+                {language === 'tr' ? 'DÄ±ÅŸlanacak:' : 'Exclude:'}
               </span>
               <input
                 type="text"
                 value={excludeQuery}
                 onChange={(e) => setExcludeQuery(e.target.value)}
-                placeholder={language === 'tr' ? 'cdp, arp, stp (virgül veya boşluk ile)...' : 'cdp, arp, stp (comma or space separated)...'}
+                placeholder={language === 'tr' ? 'cdp, arp, stp (virgÃ¼l veya boÅŸluk ile)...' : 'cdp, arp, stp (comma or space separated)...'}
                 className={`w-full bg-transparent outline-none text-xs ${isDark ? 'text-slate-100 placeholder:text-secondary-500' : 'text-slate-900 placeholder:text-slate-400'}`}
               />
               {excludeQuery && (
@@ -442,7 +442,7 @@ export const PacketCapturePanel = ({
                   ) : (
                     <tr>
                       <td colSpan={columnOrder.length} className="px-4 py-8 text-center opacity-40 italic">
-                        {searchQuery ? (language === 'tr' ? 'Aramayla eşleşen paket bulunamadı.' : 'No packets matching search query.') : t.noPacketsCaptured}
+                        {searchQuery ? (language === 'tr' ? 'Aramayla eÅŸleÅŸen paket bulunamadÄ±.' : 'No packets matching search query.') : t.noPacketsCaptured}
                       </td>
                     </tr>
                   )}
@@ -488,7 +488,7 @@ export const PacketCapturePanel = ({
                 onClick={() => setIsTreeExpanded(prev => !prev)}
                 className={`w-full px-2 py-1 text-[10px] font-bold tracking-wider uppercase border-b flex items-center justify-between transition-colors select-none ${isDark ? 'bg-secondary-900/90 text-secondary-400 border-secondary-800 hover:bg-secondary-800/80' : 'bg-secondary-100 text-secondary-600 border-secondary-200 hover:bg-secondary-200/80'}`}
               >
-                <span>{language === 'tr' ? '2. Katman / Protokol Ağacı' : '2. Protocol Details Tree'}</span>
+                <span>{language === 'tr' ? '2. Katman / Protokol AÄŸacÄ±' : '2. Protocol Details Tree'}</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isTreeExpanded ? 'rotate-180' : ''}`} />
               </button>
               {isTreeExpanded && (
@@ -496,7 +496,7 @@ export const PacketCapturePanel = ({
                   <ProtocolTreeDetails packet={activePacket} isDark={isDark} language={language} />
                 ) : (
                   <div className="p-4 text-center text-xs opacity-40 italic">
-                    {language === 'tr' ? 'Detayları görmek için listeden paket seçin' : 'Select a packet from the list to inspect protocol tree'}
+                    {language === 'tr' ? 'DetaylarÄ± gÃ¶rmek iÃ§in listeden paket seÃ§in' : 'Select a packet from the list to inspect protocol tree'}
                   </div>
                 )
               )}
@@ -509,7 +509,7 @@ export const PacketCapturePanel = ({
                 onClick={() => setIsHexExpanded(prev => !prev)}
                 className={`w-full px-2 py-1 text-[10px] font-bold tracking-wider uppercase flex items-center justify-between transition-colors select-none ${isHexExpanded ? 'border-b' : ''} ${isDark ? 'bg-secondary-900/90 text-secondary-400 border-secondary-800 hover:bg-secondary-800/80' : 'bg-secondary-100 text-secondary-600 border-secondary-200 hover:bg-secondary-200/80'}`}
               >
-                <span>{language === 'tr' ? '3. Bayt Dökümü (Hex / ASCII)' : '3. Packet Bytes (Hex / ASCII)'}</span>
+                <span>{language === 'tr' ? '3. Bayt DÃ¶kÃ¼mÃ¼ (Hex / ASCII)' : '3. Packet Bytes (Hex / ASCII)'}</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isHexExpanded ? 'rotate-180' : ''}`} />
               </button>
               {isHexExpanded && (
@@ -517,7 +517,7 @@ export const PacketCapturePanel = ({
                   <PacketHexDump packet={activePacket} isDark={isDark} />
                 ) : (
                   <div className="p-4 text-center text-xs opacity-40 italic">
-                    {language === 'tr' ? 'Bayt dökümü için paket seçin' : 'Select a packet to view hex bytes'}
+                    {language === 'tr' ? 'Bayt dÃ¶kÃ¼mÃ¼ iÃ§in paket seÃ§in' : 'Select a packet to view hex bytes'}
                   </div>
                 )
               )}
@@ -528,3 +528,5 @@ export const PacketCapturePanel = ({
     </DraggableWindowWrapper>
   );
 };
+
+

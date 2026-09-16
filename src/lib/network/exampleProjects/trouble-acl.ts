@@ -1,6 +1,6 @@
-import { createPcDevice, createRouterDevice, connectPorts, baseProjectData } from './helpers';
+﻿import { createPcDevice, createRouterDevice, connectPorts, baseProjectData } from './helpers';
 import type { ExampleProject } from './types';
-import type { CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { createInitialRouterState } from '../initialState';
 
 const example = (isTr: boolean): ExampleProject => {
@@ -27,21 +27,21 @@ const example = (isTr: boolean): ExampleProject => {
   return {
     id: 'trouble-acl',
     tag: isTr ? 'ARIZA' : 'TROUBLE',
-    title: isTr ? 'Hatalı ACL Kısıtlaması' : 'Incorrect ACL Restriction',
-    description: isTr ? 'Router üzerindeki bir ACL trafiği engelliyor. Kuralı düzeltin.' : 'An ACL on the router is blocking traffic. Fix the rule.',
+    title: isTr ? 'HatalÄ± ACL KÄ±sÄ±tlamasÄ±' : 'Incorrect ACL Restriction',
+    description: isTr ? 'Router Ã¼zerindeki bir ACL trafiÄŸi engelliyor. KuralÄ± dÃ¼zeltin.' : 'An ACL on the router is blocking traffic. Fix the rule.',
     level: 'intermediate',
     injectedFaults: [
       {
         id: 'fault-acl-r1',
         deviceId: 'router-1',
         faultType: 'aclBlocking',
-        description: { tr: 'R1 Gi0/0 arayüzünde tüm trafiği engelleyen ACL 101 uygulanmış.', en: 'ACL 101 blocking all traffic is applied on R1 Gi0/0.' },
+        description: { tr: 'R1 Gi0/0 arayÃ¼zÃ¼nde tÃ¼m trafiÄŸi engelleyen ACL 101 uygulanmÄ±ÅŸ.', en: 'ACL 101 blocking all traffic is applied on R1 Gi0/0.' },
         configKey: 'ports.gi0/0.accessGroupIn',
         faultValue: '101',
         correctValue: undefined,
         hint: {
-          tr: 'Komut ipucu: R1# show access-lists → R1# configure terminal → interface gi0/0 → no ip access-group 101 in. Kontrol: show running-config ve PC1’den PC2’ye ping atın.',
-          en: 'Command hint: R1# show access-lists → R1# configure terminal → interface gi0/0 → no ip access-group 101 in. Verify with show running-config and ping PC2 from PC1.'
+          tr: 'Komut ipucu: R1# show access-lists â†’ R1# configure terminal â†’ interface gi0/0 â†’ no ip access-group 101 in. Kontrol: show running-config ve PC1â€™den PC2â€™ye ping atÄ±n.',
+          en: 'Command hint: R1# show access-lists â†’ R1# configure terminal â†’ interface gi0/0 â†’ no ip access-group 101 in. Verify with show running-config and ping PC2 from PC1.'
         }
       }
     ],
@@ -50,3 +50,5 @@ const example = (isTr: boolean): ExampleProject => {
 };
 
 export default example;
+
+

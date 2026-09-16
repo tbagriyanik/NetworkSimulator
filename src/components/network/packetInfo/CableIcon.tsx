@@ -1,4 +1,4 @@
-import { CABLE_COLORS } from '../networkTopology.constants';
+﻿import { CABLE_COLORS } from '../NetworkTopology/utils/networkTopology.constants';
 
 export function getCableColor(cableType: string) {
     if (cableType === 'crossover') return CABLE_COLORS.crossover.primary;
@@ -9,24 +9,24 @@ export function getCableColor(cableType: string) {
     return 'var(--color-secondary-400)';
 }
 
-// Kablo tipine göre SVG simgesi döndürür
+// Kablo tipine gÃ¶re SVG simgesi dÃ¶ndÃ¼rÃ¼r
 export function CableIcon({ cableType, color, width = 56, isMobile = false }: { cableType: string; color: string; width?: number; isMobile?: boolean }) {
     const w = isMobile ? 32 : width;
     if (cableType === 'wireless') {
-        // WiFi dalgaları simgesi
+        // WiFi dalgalarÄ± simgesi
         return (
             <svg width={w} height="16" viewBox="0 0 56 16" fill="none">
                 {/* Merkez nokta */}
                 <circle cx="28" cy="13" r="2" fill={color} />
-                {/* İç dalga */}
+                {/* Ä°Ã§ dalga */}
                 <path d="M22 10 Q28 5 34 10" stroke={color} strokeWidth="2" fill="none" strokeLinecap="round" />
-                {/* Dış dalga */}
+                {/* DÄ±ÅŸ dalga */}
                 <path d="M16 7 Q28 0 40 7" stroke={color} strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.6" />
             </svg>
         );
     }
     if (cableType === 'crossover') {
-        // Çapraz kablo — X geçişli çizgi
+        // Ã‡apraz kablo â€” X geÃ§iÅŸli Ã§izgi
         return (
             <svg width={w} height="14" viewBox="0 0 56 14" fill="none">
                 <line x1="0" y1="4" x2="24" y2="4" stroke={color} strokeWidth="2" />
@@ -41,7 +41,7 @@ export function CableIcon({ cableType, color, width = 56, isMobile = false }: { 
         );
     }
     if (cableType === 'serial') {
-        // Seri kablo — şimşek/zigzag
+        // Seri kablo â€” ÅŸimÅŸek/zigzag
         return (
             <svg width={w} height="14" viewBox="0 0 56 14" fill="none">
                 <polyline points="2,10 14,3 24,11 34,3 44,11 54,4" stroke={color} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
@@ -49,7 +49,7 @@ export function CableIcon({ cableType, color, width = 56, isMobile = false }: { 
             </svg>
         );
     }
-    // Düz kablo (straight / fiber / default)
+    // DÃ¼z kablo (straight / fiber / default)
     return (
         <svg width={w} height="12" viewBox="0 0 56 12" fill="none">
             <line x1="0" y1="6" x2="48" y2="6" stroke={color} strokeWidth="2" />

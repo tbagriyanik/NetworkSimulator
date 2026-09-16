@@ -1,4 +1,4 @@
-import { CanvasConnection } from '@/components/network/networkTopology.types';
+﻿import { CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState, Port } from '@/lib/network/types';
 import { buildConnectionIndex } from '@/lib/network/connectionIndex';
 
@@ -78,3 +78,5 @@ export const getVlanSpecificSTPBlocking = (
   // Returning false allows pathfinding to continue without incorrectly blocking a VLAN path.
   return false;
 };
+
+

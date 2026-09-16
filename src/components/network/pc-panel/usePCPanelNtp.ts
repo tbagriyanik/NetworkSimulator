@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useEffect, useMemo, useCallback, Dispatch, SetStateAction } from 'react';
-import type { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { checkConnectivity } from '@/lib/network/connectivity';
 import { dispatchCapturedPackets } from '../../../utils/packetCapture';
@@ -324,3 +324,4 @@ export function usePCPanelNtp({
     formatLocalDate,
   };
 }
+

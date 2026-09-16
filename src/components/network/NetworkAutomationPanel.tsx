@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Terminal, Send, Play, Copy, Check, Code, Globe, Server, CheckCircle2, RotateCcw, Sparkles } from 'lucide-react';
-import type { CanvasDevice } from './networkTopology.types';
+import type { CanvasDevice } from './NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { handleRestconfRequest, executeNetDevOpsPythonScript, RestconfResponse } from '@/lib/network/netdevopsEngine';
 import { DraggableWindowWrapper } from './DraggableWindowWrapper';
@@ -185,7 +185,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
 
   const handleRunPython = () => {
     setIsRunningScript(true);
-    setPythonOutput('Python betiği yürütülüyor...\n');
+    setPythonOutput('Python betiÄŸi yÃ¼rÃ¼tÃ¼lÃ¼yor...\n');
     setTimeout(() => {
       const res = executeNetDevOpsPythonScript(pythonScript, devices, deviceStates);
       setPythonOutput(res.output);
@@ -288,7 +288,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
               <div className="flex items-center justify-between">
                 <div className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                   <Server className="w-3.5 h-3.5 text-emerald-400" />
-                  RESTCONF İstek Oluşturucu (Request Builder)
+                  RESTCONF Ä°stek OluÅŸturucu (Request Builder)
                 </div>
                 {targetState && (
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
@@ -301,7 +301,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
               <div className="space-y-1">
                 <label className="text-[10px] font-semibold text-slate-400 flex items-center gap-1">
                   <Sparkles className="w-3 h-3 text-amber-400" />
-                  Hazır YANG RESTCONF Şablonları:
+                  HazÄ±r YANG RESTCONF ÅablonlarÄ±:
                 </label>
                 <div className="flex flex-wrap gap-1.5">
                   <button
@@ -404,7 +404,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                 className="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-xs font-bold flex items-center justify-center gap-1.5 transition shadow active:scale-[0.99]"
               >
                 <Send className="w-3.5 h-3.5" />
-                RESTCONF İsteği Gönder (Send Request)
+                RESTCONF Ä°steÄŸi GÃ¶nder (Send Request)
               </button>
             </div>
 
@@ -412,7 +412,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
             <div className="flex-1 p-4 overflow-y-auto space-y-3 min-h-0 flex flex-col">
               <div className="flex items-center justify-between">
                 <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Sunucu Yanıtı (YANG JSON Output)
+                  Sunucu YanÄ±tÄ± (YANG JSON Output)
                 </div>
                 {restconfResponse && (
                   <div className="flex items-center gap-2">
@@ -443,7 +443,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
               >
                 {restconfResponse
                   ? JSON.stringify(restconfResponse.data, null, 2)
-                  : '// RESTCONF isteği gönderildiğinde JSON çıktısı burada gerçek zamanlı olarak görüntülenecektir.'}
+                  : '// RESTCONF isteÄŸi gÃ¶nderildiÄŸinde JSON Ã§Ä±ktÄ±sÄ± burada gerÃ§ek zamanlÄ± olarak gÃ¶rÃ¼ntÃ¼lenecektir.'}
               </pre>
             </div>
           </div>
@@ -456,7 +456,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
               <div className="flex items-center justify-between">
                 <div className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                   <Code className="w-3.5 h-3.5 text-emerald-400" />
-                  Python Script Editörü
+                  Python Script EditÃ¶rÃ¼
                 </div>
                 <div className="flex items-center gap-2">
                   <select
@@ -472,15 +472,15 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                       isDark ? 'bg-slate-950 border-slate-700 text-emerald-400' : 'bg-white border-slate-300 text-emerald-700'
                     }`}
                   >
-                    <option value="netmiko_provision">Netmiko Toplu Yapılandırma</option>
-                    <option value="netmiko_audit">Ağ & IP Sağlık Denetimi</option>
+                    <option value="netmiko_provision">Netmiko Toplu YapÄ±landÄ±rma</option>
+                    <option value="netmiko_audit">AÄŸ & IP SaÄŸlÄ±k Denetimi</option>
                     <option value="restconf_requests">RESTCONF Python Requests</option>
-                    <option value="vlan_automation">Otomatik VLAN Dağıtımı</option>
+                    <option value="vlan_automation">Otomatik VLAN DaÄŸÄ±tÄ±mÄ±</option>
                   </select>
                   <button
                     onClick={() => setPythonScript(PYTHON_TEMPLATES[selectedPythonPreset as keyof typeof PYTHON_TEMPLATES] || PYTHON_TEMPLATES.netmiko_provision)}
                     className="text-[11px] text-slate-400 hover:text-slate-200 p-1"
-                    title="Şablonu Sıfırla"
+                    title="Åablonu SÄ±fÄ±rla"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                   </button>
@@ -501,7 +501,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                 className="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-xs font-bold flex items-center justify-center gap-1.5 transition shadow disabled:opacity-50 active:scale-[0.99]"
               >
                 <Play className="w-3.5 h-3.5" />
-                {isRunningScript ? 'Yürütülüyor...' : 'Python Betiğini Çalıştır (Run NetDevOps Script)'}
+                {isRunningScript ? 'YÃ¼rÃ¼tÃ¼lÃ¼yor...' : 'Python BetiÄŸini Ã‡alÄ±ÅŸtÄ±r (Run NetDevOps Script)'}
               </button>
             </div>
 
@@ -510,7 +510,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
               <div className="flex items-center justify-between">
                 <div className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                  Konsol Çıktısı (NetDevOps Console Output)
+                  Konsol Ã‡Ä±ktÄ±sÄ± (NetDevOps Console Output)
                 </div>
               </div>
 
@@ -519,7 +519,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                   isDark ? 'bg-slate-950 border-slate-800 text-slate-200' : 'bg-slate-900 text-slate-200'
                 }`}
               >
-                {pythonOutput || '// Betiği çalıştırmak için "Python Betiğini Çalıştır" butonuna basın.'}
+                {pythonOutput || '// BetiÄŸi Ã§alÄ±ÅŸtÄ±rmak iÃ§in "Python BetiÄŸini Ã‡alÄ±ÅŸtÄ±r" butonuna basÄ±n.'}
               </pre>
             </div>
           </div>
@@ -528,4 +528,5 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
     </DraggableWindowWrapper>
   );
 };
+
 

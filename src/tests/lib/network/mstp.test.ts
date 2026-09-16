@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 import { mstRegionDigest, areSameMstRegion, getMstInstanceForVlan } from '@/lib/network/mstp';
 import { recalculateStp } from '@/lib/network/stp';
 import type { SwitchState, Port } from '@/lib/network/types';
-import type { CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 describe('IEEE 802.1s MSTP (Multiple Spanning Tree Protocol)', () => {
   it('calculates region digest and detects MST region equality', () => {
@@ -77,3 +77,5 @@ describe('IEEE 802.1s MSTP (Multiple Spanning Tree Protocol)', () => {
     expect(sw2Res?.stpState?.[10]).toBeDefined();
   });
 });
+
+

@@ -1,11 +1,11 @@
-import { describe, test, expect } from 'vitest';
+﻿import { describe, test, expect } from 'vitest';
 import { executeCommand } from '../../../lib/network/executor';
 import { createInitialState, createInitialRouterState } from '../../../lib/network/initialState';
 import { recalculateStp } from '../../../lib/network/stp';
 import { evaluateSlaacForDevice } from '../../../lib/network/eui64';
 import { getRoutingTable, recalculateBgpNeighbors } from '../../../lib/network/routing';
 import type { SwitchState } from '../../../lib/network/types';
-import type { CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 describe('Network Simulator New Features', () => {
 
@@ -233,3 +233,5 @@ describe('Network Simulator New Features', () => {
   });
 
 });
+
+

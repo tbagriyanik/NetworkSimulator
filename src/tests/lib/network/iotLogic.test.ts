@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
+﻿import { describe, it, expect, vi } from 'vitest';
 import { processIotRules } from '@/lib/network/iotLogic';
-import type { CanvasDevice } from '@/components/network/networkTopology.types';
+import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 describe('iotLogic', () => {
   describe('processIotRules', () => {
@@ -235,3 +235,5 @@ describe('iotLogic', () => {
     });
   });
 });
+
+

@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { generateIotWebPanelContent, generateIotDevicePageContent } from '@/lib/network/iotWebPanel';
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { IotRule } from '@/lib/network/iotWebPanel';
 
 describe('iotWebPanel', () => {
@@ -37,7 +37,7 @@ describe('iotWebPanel', () => {
       const result = generateIotWebPanelContent([createIotDevice()], 'tr');
 
       expect(result).toContain('IoT Web Paneli');
-      expect(result).toContain('Giriş Yap');
+      expect(result).toContain('GiriÅŸ Yap');
     });
 
     it('should include English text when language is en', () => {
@@ -235,9 +235,9 @@ describe('iotWebPanel', () => {
     it('should show Turkish text when language is tr', () => {
       const result = generateIotDevicePageContent('sensor-1', 'Test', 'tr');
 
-      expect(result).toContain('IoT Cihaz Yönetimi');
+      expect(result).toContain('IoT Cihaz YÃ¶netimi');
       expect(result).toContain('Cihaz ID');
-      expect(result).toContain('Listeye Dön');
+      expect(result).toContain('Listeye DÃ¶n');
     });
 
     it('should show powered off warning when device is off', () => {
@@ -387,3 +387,5 @@ describe('iotWebPanel', () => {
     });
   });
 });
+
+

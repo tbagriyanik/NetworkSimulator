@@ -1,5 +1,5 @@
-
-import { CanvasDevice } from '@/components/network/networkTopology.types';
+﻿
+import { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { EnvironmentSettings } from '@/lib/store/appStore';
 
 const getSensorReading = (sensor: string, environment: EnvironmentSettings): number => {
@@ -131,3 +131,5 @@ export const processIotRules = (
   // Return flag to trigger topology re-render if any device was updated
   return deviceUpdated;
 };
+
+

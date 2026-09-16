@@ -1,9 +1,9 @@
-'use client';
+﻿'use client';
 
 import { useMemo } from 'react';
 import { Globe, Radio, Server, Activity, ArrowRightLeft, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 
 interface CloudDeviceViewProps {
   device: CanvasDevice;
@@ -44,7 +44,7 @@ export function CloudDeviceView({
               WAN / Internet Service Provider
               <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-normal">
 
-                {isTr ? 'Aktif İnternet Geçidi' : 'Active Internet Gateway'}
+                {isTr ? 'Aktif Ä°nternet GeÃ§idi' : 'Active Internet Gateway'}
               </span>
             </h2>
             <p className="text-xs opacity-60">Global Autonomous System (AS15169 / Public WAN Transit Cloud)</p>
@@ -64,7 +64,7 @@ export function CloudDeviceView({
         )}>
           <h3 className="text-sm font-bold flex items-center gap-2 border-b pb-3 border-secondary-700/40">
             <Server className="w-4 h-4 text-cyan-400" />
-            {isTr ? 'Simüle Edilen Genel İnternet Servisleri' : 'Simulated Public Internet Services'}
+            {isTr ? 'SimÃ¼le Edilen Genel Ä°nternet Servisleri' : 'Simulated Public Internet Services'}
           </h3>
 
           <div className="space-y-3 text-xs">
@@ -83,7 +83,7 @@ export function CloudDeviceView({
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-sky-400" />
                 <div>
-                  <div className="font-semibold">{isTr ? 'İkincil Genel DNS Çözümleyici' : 'Secondary Public DNS Resolver'}</div>
+                  <div className="font-semibold">{isTr ? 'Ä°kincil Genel DNS Ã‡Ã¶zÃ¼mleyici' : 'Secondary Public DNS Resolver'}</div>
                   <div className={cn("text-[10px] font-mono", isDark ? "text-secondary-400" : "text-slate-500")}>1.1.1.1 / 1.0.0.1</div>
                 </div>
               </div>
@@ -110,17 +110,17 @@ export function CloudDeviceView({
         )}>
           <h3 className={cn("text-sm font-bold flex items-center gap-2 border-b pb-3", isDark ? "border-secondary-700/40" : "border-slate-200")}>
             <Activity className="w-4 h-4 text-cyan-400" />
-            {isTr ? 'WAN Bağlantı & Trafik Monitörü' : 'WAN Link & Traffic Monitor'}
+            {isTr ? 'WAN BaÄŸlantÄ± & Trafik MonitÃ¶rÃ¼' : 'WAN Link & Traffic Monitor'}
           </h3>
 
           <div className="space-y-4 text-xs">
             <div className={cn("flex justify-between items-center p-3 rounded-lg border", isDark ? "bg-secondary-950 border-secondary-800" : "bg-slate-50 border-slate-200")}>
-              <span>{isTr ? 'Simüle Edilen Gecikme (WAN Latency)' : 'Simulated WAN Latency'}</span>
+              <span>{isTr ? 'SimÃ¼le Edilen Gecikme (WAN Latency)' : 'Simulated WAN Latency'}</span>
               <span className="font-mono text-cyan-600 dark:text-cyan-400 font-bold">12 ms</span>
             </div>
 
             <div className={cn("flex justify-between items-center p-3 rounded-lg border", isDark ? "bg-secondary-950 border-secondary-800" : "bg-slate-50 border-slate-200")}>
-              <span>{isTr ? 'Aktif WAN Bağlantıları (Customer Links)' : 'Active Customer WAN Links'}</span>
+              <span>{isTr ? 'Aktif WAN BaÄŸlantÄ±larÄ± (Customer Links)' : 'Active Customer WAN Links'}</span>
               <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">{connectedLinks.length} Connections</span>
             </div>
 
@@ -128,13 +128,13 @@ export function CloudDeviceView({
               <div className="flex items-center justify-between text-[11px] font-semibold">
                 <span className="flex items-center gap-1.5">
                   <ArrowRightLeft className="w-3.5 h-3.5 text-cyan-400" />
-                  {isTr ? 'Ağ Geçidi İletim Modu' : 'Gateway Forwarding Mode'}
+                  {isTr ? 'AÄŸ GeÃ§idi Ä°letim Modu' : 'Gateway Forwarding Mode'}
                 </span>
                 <span className="text-cyan-600 dark:text-cyan-400 font-mono">NAT / Transit Bridge</span>
               </div>
               <p className={cn("text-[10px] leading-relaxed", isDark ? "opacity-70" : "text-slate-600")}>
                 {isTr
-                  ? 'Bulut (Cloud) nesnesi dış internet hatlarını ve servis sağlayıcı (ISP) omurgasını temsil eder. Yerel ağınızdaki cihazlar dış dünyadaki IP adreslerine veya alan adlarına eriştiğinde paketler Bulut geçidi üzerinden başarıyla iletilir.'
+                  ? 'Bulut (Cloud) nesnesi dÄ±ÅŸ internet hatlarÄ±nÄ± ve servis saÄŸlayÄ±cÄ± (ISP) omurgasÄ±nÄ± temsil eder. Yerel aÄŸÄ±nÄ±zdaki cihazlar dÄ±ÅŸ dÃ¼nyadaki IP adreslerine veya alan adlarÄ±na eriÅŸtiÄŸinde paketler Bulut geÃ§idi Ã¼zerinden baÅŸarÄ±yla iletilir.'
                   : 'The Cloud device simulates external ISP WAN connectivity. Any internal network devices reaching external IP addresses or domain names are automatically routed and bridged through the Cloud gateway.'}
               </p>
             </div>
@@ -149,7 +149,7 @@ export function CloudDeviceView({
       )}>
         <h3 className="text-sm font-bold flex items-center gap-2 border-b pb-3 border-secondary-700/40">
           <Server className="w-4 h-4 text-cyan-400" />
-          {isTr ? 'ISP Arayüz & Port Listesi (WAN Ethernet Interfaces)' : 'ISP Interface & Port List (WAN Ethernet Interfaces)'}
+          {isTr ? 'ISP ArayÃ¼z & Port Listesi (WAN Ethernet Interfaces)' : 'ISP Interface & Port List (WAN Ethernet Interfaces)'}
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
@@ -190,7 +190,7 @@ export function CloudDeviceView({
                     "text-[10px] px-2 py-0.5 rounded font-mono font-semibold",
                     isConnected ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "bg-secondary-800 text-secondary-400"
                   )}>
-                    {isConnected ? (isTr ? 'BAĞLI / UP' : 'CONNECTED / UP') : (isTr ? 'BOŞTA / DOWN' : 'DISCONNECTED')}
+                    {isConnected ? (isTr ? 'BAÄLI / UP' : 'CONNECTED / UP') : (isTr ? 'BOÅTA / DOWN' : 'DISCONNECTED')}
                   </span>
                 </div>
 
@@ -198,7 +198,7 @@ export function CloudDeviceView({
                   <div>IP: {port.id === 'eth0' ? (device.ip || '203.0.113.1') : 'DHCP/WAN Bridge'}</div>
                   {isConnected && peerDevice && (
                     <div className="text-emerald-400 truncate">
-                      {isTr ? 'Komşu:' : 'Peer:'} {peerDevice.name} ({peerDevice.ip || 'DHCP'})
+                      {isTr ? 'KomÅŸu:' : 'Peer:'} {peerDevice.name} ({peerDevice.ip || 'DHCP'})
                     </div>
                   )}
                 </div>
@@ -210,3 +210,4 @@ export function CloudDeviceView({
     </div>
   );
 }
+

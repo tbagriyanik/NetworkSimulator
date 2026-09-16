@@ -1,5 +1,5 @@
-import { loadFs, listDir, isDir, resolvePath } from './pcFileSystem';
-import type { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+﻿import { loadFs, listDir, isDir, resolvePath } from './pcFileSystem';
+import type { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import type { SwitchState, Port } from '@/lib/network/types';
 import { expandCommandContext, DESKTOP_COMMANDS } from '../pcPanel.utils';
 
@@ -143,4 +143,5 @@ export function getAutocompleteSuggestions({
   if (expectsIpArg && ipSuggestions.length > 0) return ipSuggestions.slice(0, 8);
   return suggestions.slice(0, 8);
 }
+
 

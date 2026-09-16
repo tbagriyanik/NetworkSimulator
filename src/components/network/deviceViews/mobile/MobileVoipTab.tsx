@@ -1,10 +1,10 @@
-'use client';
+﻿'use client';
 
 import { PhoneCall, PhoneOff, Phone, User, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { checkConnectivity } from '@/lib/network/connectivity/pathResolution';
 import { isSameSubnet } from '@/components/network/pc-panel/pcBrowser.utils';
-import type { CanvasDevice, CanvasConnection } from '../../networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '../../NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 
 interface MobileVoipTabProps {
@@ -86,7 +86,7 @@ export function MobileVoipTab({
           </div>
           <div>
             <div className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider animate-pulse">
-              {isTr ? 'Gelen Sesli Çağrı...' : 'Incoming Voice Call...'}
+              {isTr ? 'Gelen Sesli Ã‡aÄŸrÄ±...' : 'Incoming Voice Call...'}
             </div>
             <div className="font-bold text-base text-white mt-1">
               {device.activeVoipCall.callerName}
@@ -147,7 +147,7 @@ export function MobileVoipTab({
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-mono px-1 py-0.5"
                 title="Sil"
               >
-                ✕
+                âœ•
               </button>
             )}
           </div>
@@ -178,7 +178,7 @@ export function MobileVoipTab({
               className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-950"
             >
               <Phone className="w-4 h-4" />
-              {isTr ? 'VoIP Araması Başlat' : 'Initiate VoIP Call'}
+              {isTr ? 'VoIP AramasÄ± BaÅŸlat' : 'Initiate VoIP Call'}
             </button>
           </div>
 
@@ -186,7 +186,7 @@ export function MobileVoipTab({
           <div className="pt-2 border-t border-slate-800/80 space-y-1.5">
             <div className="text-[10px] font-semibold text-slate-400 flex items-center gap-1">
               <User className="w-3 h-3 text-sky-400" />
-              {isTr ? 'Ağdaki Cihaz Rehberi' : 'Network Directory'}
+              {isTr ? 'AÄŸdaki Cihaz Rehberi' : 'Network Directory'}
             </div>
             <div className="space-y-1 max-h-[85px] overflow-y-auto pr-1 custom-scrollbar">
               {topologyDevices.filter(d => {
@@ -195,7 +195,7 @@ export function MobileVoipTab({
                 return isSameSubnet(device.ip, d.ip, devSubnet) || Boolean(device.gateway && device.gateway !== '0.0.0.0');
               }).length === 0 ? (
                 <div className="text-[10px] text-slate-500 italic text-center py-1.5">
-                  {isTr ? 'Aynı ağda ulaşılan başka telefon yok' : 'No reachable phones in same network'}
+                  {isTr ? 'AynÄ± aÄŸda ulaÅŸÄ±lan baÅŸka telefon yok' : 'No reachable phones in same network'}
                 </div>
               ) : (
                 topologyDevices
@@ -237,8 +237,8 @@ export function MobileVoipTab({
                             {!isReachOk && (
                               <span className="text-[9px] px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 font-normal">
                                 {!isTargetPoweredOn
-                                  ? (isTr ? 'Cihaz Kapalı' : 'Powered Off')
-                                  : (check.error || (isTr ? 'Ağ Sorunu' : 'Network Issue'))}
+                                  ? (isTr ? 'Cihaz KapalÄ±' : 'Powered Off')
+                                  : (check.error || (isTr ? 'AÄŸ Sorunu' : 'Network Issue'))}
                               </span>
                             )}
                           </div>
@@ -253,7 +253,7 @@ export function MobileVoipTab({
                             : "text-rose-300 bg-rose-950/60 border-rose-800/50"
                         )}>
                           <PhoneCall className="w-2.5 h-2.5" />
-                          {isReachOk ? (isTr ? 'Ara' : 'Call') : (isTr ? 'Ağ Sorunlu' : 'Issue')}
+                          {isReachOk ? (isTr ? 'Ara' : 'Call') : (isTr ? 'AÄŸ Sorunlu' : 'Issue')}
                         </span>
                       </div>
                     );
@@ -267,13 +267,13 @@ export function MobileVoipTab({
             <div className="text-[10px] font-semibold text-slate-400 mb-1.5 flex items-center justify-between">
               <span className="flex items-center gap-1">
                 <PhoneCall className="w-3 h-3 text-emerald-400" />
-                {isTr ? 'Arama Geçmişi' : 'Call History'}
+                {isTr ? 'Arama GeÃ§miÅŸi' : 'Call History'}
               </span>
               {device.voipHistory && device.voipHistory.length > 0 && (
                 <button
                   onClick={onClearVoipHistory}
                   className="text-[9px] text-rose-400 hover:text-rose-300 flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-rose-950/40 border border-rose-800/40 transition-colors"
-                  title={isTr ? 'Arama geçmişini temizle' : 'Clear call history'}
+                  title={isTr ? 'Arama geÃ§miÅŸini temizle' : 'Clear call history'}
                 >
                   <Trash2 className="w-2.5 h-2.5" />
                   {isTr ? 'Temizle' : 'Clear'}
@@ -283,7 +283,7 @@ export function MobileVoipTab({
             <div className="space-y-1 max-h-[110px] overflow-y-auto pr-1 custom-scrollbar">
               {!device.voipHistory || device.voipHistory.length === 0 ? (
                 <div className="text-[10px] text-slate-500 italic text-center py-2">
-                  {isTr ? 'Henüz arama kaydı yok' : 'No recent calls'}
+                  {isTr ? 'HenÃ¼z arama kaydÄ± yok' : 'No recent calls'}
                 </div>
               ) : (
                 device.voipHistory.map((item) => (
@@ -291,12 +291,12 @@ export function MobileVoipTab({
                     <div className="truncate">
                       <div className="font-medium text-slate-200 flex items-center gap-1 truncate">
                         <span className={item.type === 'outgoing' ? "text-sky-400 font-bold" : "text-emerald-400 font-bold"}>
-                          {item.type === 'outgoing' ? '↗' : '↙'}
+                          {item.type === 'outgoing' ? 'â†—' : 'â†™'}
                         </span>
                         {item.peerName}
                       </div>
                       <div className="text-[9px] text-slate-400 font-mono">
-                        {item.timestamp} {item.peerIp ? `• ${item.peerIp}` : ''}
+                        {item.timestamp} {item.peerIp ? `â€¢ ${item.peerIp}` : ''}
                       </div>
                     </div>
                     <div className="text-right shrink-0 font-mono">
@@ -304,7 +304,7 @@ export function MobileVoipTab({
                         "font-semibold text-[9px]",
                         item.status === 'answered' ? "text-emerald-400" : "text-rose-400"
                       )}>
-                        {item.status === 'answered' ? formatDuration(item.durationSeconds) : (isTr ? 'Cevapsız' : 'Missed')}
+                        {item.status === 'answered' ? formatDuration(item.durationSeconds) : (isTr ? 'CevapsÄ±z' : 'Missed')}
                       </div>
                     </div>
                   </div>
@@ -332,7 +332,7 @@ export function MobileVoipTab({
               {activeCallTarget ? activeCallTarget.name : (device.activeVoipCall?.callerName || dialNumber || 'VoIP Peer')}
             </div>
             <div className="text-[11px] font-mono text-emerald-400 mt-0.5">
-              {callStatusMessage || (callState === 'connected' ? (isTr ? 'Bağlantı Aktif' : 'Call Connected') : '')}
+              {callStatusMessage || (callState === 'connected' ? (isTr ? 'BaÄŸlantÄ± Aktif' : 'Call Connected') : '')}
             </div>
             {callState === 'connected' && (
               <div className="text-xs font-mono font-semibold text-slate-300 mt-1">
@@ -366,7 +366,7 @@ export function MobileVoipTab({
               className="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-2 shadow-lg shadow-rose-950"
             >
               <PhoneOff className="w-4 h-4" />
-              {isTr ? 'Aramayı Sonlandır' : 'End Call'}
+              {isTr ? 'AramayÄ± SonlandÄ±r' : 'End Call'}
             </button>
           </div>
         </div>
@@ -374,3 +374,4 @@ export function MobileVoipTab({
     </div>
   );
 }
+

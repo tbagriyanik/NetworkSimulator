@@ -1,4 +1,4 @@
-import { CanvasDevice } from '../networkTopology.types';
+﻿import { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { PortTooltip } from './PortTooltip';
 import { ConnectionTooltip } from './ConnectionTooltip';
@@ -72,3 +72,4 @@ export function TopologyTooltips({
     </>
   );
 }
+

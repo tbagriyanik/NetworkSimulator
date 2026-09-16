@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import {
   addDeviceGuidedSteps,
   pcCmdGuidedSteps,
@@ -21,7 +21,7 @@ import {
   cliGuidedLessons
 } from '../../../lib/network/lessonSteps';
 import type { GuidedStep } from '../../../lib/network/guidedMode.types';
-import type { CanvasDevice } from '../../../components/network/networkTopology.types';
+import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 // Extraction helper simulating the exact handleShowMe logic from usePageGlobalEvents.ts
 function extractShowMeCommand(step: GuidedStep, topologyDevices: CanvasDevice[] = []): { cleanCommand: string; deviceId?: string; targetDeviceType?: string } {
@@ -59,7 +59,7 @@ function extractShowMeCommand(step: GuidedStep, topologyDevices: CanvasDevice[] 
 
   let cleanCommand = '';
 
-  const quoteMatch = rawStr.match(/["'“”]([^"'“”]+)["'“”]/);
+  const quoteMatch = rawStr.match(/["'â€œâ€]([^"'â€œâ€]+)["'â€œâ€]/);
   if (quoteMatch && quoteMatch[1].trim()) {
     cleanCommand = quoteMatch[1].trim();
   } else {
@@ -70,10 +70,10 @@ function extractShowMeCommand(step: GuidedStep, topologyDevices: CanvasDevice[] 
     .replace(/[\^$()]/g, '')
     .replace(/^[^:]{1,40}:\s*/i, '')
     .replace(/^[a-zA-Z0-9_-]+(\([^)]+\))?[>#]\s*/, '')
-    .replace(/^(type|yazın|yazin)\s+/i, '')
-    .replace(/\s+(yazın|yazin)\.?$/i, '')
+    .replace(/^(type|yazÄ±n|yazin)\s+/i, '')
+    .replace(/\s+(yazÄ±n|yazin)\.?$/i, '')
     .replace(/\s+(and press enter|press enter)\.?$/i, '')
-    .replace(/^["'“”]+|["'“”.,!?]+$/g, '')
+    .replace(/^["'â€œâ€]+|["'â€œâ€.,!?]+$/g, '')
     .trim();
 
   if (!cleanCommand && commandPattern) {
@@ -105,7 +105,7 @@ function extractShowMeCommand(step: GuidedStep, topologyDevices: CanvasDevice[] 
   return { cleanCommand, deviceId, targetDeviceType: resolvedTargetType };
 }
 
-describe('All Guided Lessons "Bana Göster" Audit', () => {
+describe('All Guided Lessons "Bana GÃ¶ster" Audit', () => {
   const allLessonCollections: { name: string; steps: GuidedStep[] }[] = [
     { name: 'addDevice', steps: addDeviceGuidedSteps },
     { name: 'pcCmd', steps: pcCmdGuidedSteps },
@@ -144,7 +144,7 @@ describe('All Guided Lessons "Bana Göster" Audit', () => {
           expect(result.cleanCommand).not.toMatch(/^[a-zA-Z0-9_-]+[>#]/);
 
           // 3. Clean command must not end with prose punctuation or quotes
-          expect(result.cleanCommand).not.toMatch(/["'“”]$/);
+          expect(result.cleanCommand).not.toMatch(/["'â€œâ€]$/);
         }
       }
     }
@@ -152,4 +152,5 @@ describe('All Guided Lessons "Bana Göster" Audit', () => {
     expect(totalCommandSteps).toBeGreaterThan(50);
   });
 });
+
 

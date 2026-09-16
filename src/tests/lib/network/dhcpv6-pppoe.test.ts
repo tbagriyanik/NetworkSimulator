@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { evaluatePppoeSessions } from '@/lib/network/pppoeEngine';
 import { evaluateDhcpv6ForDevice } from '@/lib/network/eui64';
 import { cmdShowIpv6DhcpBinding, cmdShowIpv6DhcpPool, cmdShowPppoeSession, cmdShowCaller } from '@/lib/network/core/showRoutingDisplay';
 import type { SwitchState } from '@/lib/network/types'; 
 import type { CommandContext } from '@/lib/network/core/commandTypes';
-import type { CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 describe('DHCPv6 Lease & Identity Association (IA_NA) Simulation', () => {
   it('should lease IPv6 address and store Dhcpv6Binding entry on DHCPv6 server', () => {
@@ -170,3 +170,5 @@ describe('PPPoE Session & LCP/IPCP Simulation', () => {
     expect(showCaller.output).toContain('100.64.1.2');
   });
 });
+
+

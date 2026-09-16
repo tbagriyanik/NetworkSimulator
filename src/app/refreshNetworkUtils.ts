@@ -1,5 +1,5 @@
-import type { SwitchState } from '@/lib/network/types';
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+﻿import type { SwitchState } from '@/lib/network/types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { REFRESH_DEVICE_TYPE_ORDER, type RefreshDeviceSummary } from '@/components/network/LiveDeviceList';
 
 export const isSwitchDeviceType = (type: string): boolean =>
@@ -276,3 +276,5 @@ export const buildRefreshDeviceSummaries = (devices: CanvasDevice[], states: Map
     return a.name.localeCompare(b.name, language === 'tr' ? 'tr' : 'en');
   });
 };
+
+

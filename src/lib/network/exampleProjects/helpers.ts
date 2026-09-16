@@ -1,5 +1,5 @@
-import type { SwitchState } from '../types';
-import type { CanvasDevice, CanvasConnection, CanvasNote, DeviceType } from '@/components/network/networkTopology.types';
+﻿import type { SwitchState } from '../types';
+import type { CanvasDevice, CanvasConnection, CanvasNote, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { generateRandomLinkLocalIpv4 } from '../linkLocal';
 import type { FirewallRule, ProjectData } from './types';
 
@@ -349,3 +349,5 @@ export {
   connectPorts,
   baseProjectData
 };
+
+

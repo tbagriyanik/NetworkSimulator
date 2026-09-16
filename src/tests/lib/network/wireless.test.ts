@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 import {
   getDeviceWifiConfig,
   getWirelessSignalStrength,
@@ -12,7 +12,7 @@ import {
   formatChannelDisplay,
   wifiChannelMatches,
 } from '@/lib/network/wireless';
-import type { CanvasDevice } from '@/components/network/networkTopology.types';
+import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { parseCommand, validateCommand } from '@/lib/network/parser';
 import { createInitialState } from '@/lib/network/initialState';
@@ -615,4 +615,6 @@ describe('Wireless MAC Address Filtering Support', () => {
     expect(getWirelessSignalStrength(pc2Denied, [apRouterDeny])).toBeGreaterThan(0);
   });
 });
+
+
 

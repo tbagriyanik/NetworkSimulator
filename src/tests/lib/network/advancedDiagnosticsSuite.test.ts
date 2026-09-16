@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+﻿import { describe, it, expect, beforeEach } from 'vitest';
 import { runFullPacketPipeline } from '@/lib/network/forwarding/packetPipeline';
 import { recalculateStp } from '@/lib/network/stp';
 import { detectEtherChannelBundles } from '@/lib/network/etherchannel';
 import { runAgingTick } from '@/lib/network/agingEngine';
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types'; 
 import type { NetworkPacketFrame } from '@/lib/network/forwarding/packetFrame';
 
@@ -147,3 +147,5 @@ describe('Advanced Network Diagnostics & Counters Engine (Features 6 - 9)', () =
     expect(res.agedMacCount).toBeGreaterThan(0);
   });
 });
+
+

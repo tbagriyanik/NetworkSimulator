@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -25,7 +25,7 @@ import {
   Mail, GraduationCap, ImageDown, FileText, Wand2
 } from 'lucide-react';
 import type { Translations } from '@/contexts/LanguageContext';
-import type { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import type { RefObject } from 'react';
 
@@ -267,9 +267,9 @@ export function AppHeader({
 
               {/* Settings & Theme */}
               <div className={`w-px h-4 mx-1 ${isDark ? 'bg-secondary-700' : 'bg-secondary-300'} hidden md:block`} />
-              <TooltipWrapper title={language === 'tr' ? 'Switch to English' : "Türkçe'ye Geç"}>
+              <TooltipWrapper title={language === 'tr' ? 'Switch to English' : "TÃ¼rkÃ§e'ye GeÃ§"}>
                 <button
-                  aria-label={`${language.toUpperCase()}: ${language === 'tr' ? 'Switch to English' : "Türkçe'ye Geç"}`}
+                  aria-label={`${language.toUpperCase()}: ${language === 'tr' ? 'Switch to English' : "TÃ¼rkÃ§e'ye GeÃ§"}`}
                   onClick={() => setLanguage(language === 'tr' ? 'en' : 'tr')}
                   className={cn("text-[10px] font-bold h-8 px-1.5 flex items-center gap-1 rounded transition-all ui-hover-surface", isDark ? 'text-secondary-300 hover:text-purple-300' : 'text-secondary-700 hover:text-purple-700')}
                 >
@@ -334,10 +334,10 @@ export function AppHeader({
                     <span className="font-bold">{t.helpLevelLabel}</span>
                     <span className="text-[10px] opacity-80">
                       {helpLevel === 'beginner'
-                        ? `🟢 ${t.beginnerLevel}`
+                        ? `ğŸŸ¢ ${t.beginnerLevel}`
                         : helpLevel === 'intermediate'
-                          ? `🟡 ${t.intermediateLevel}`
-                          : `🔴 ${t.advancedLevel}`}
+                          ? `ğŸŸ¡ ${t.intermediateLevel}`
+                          : `ğŸ”´ ${t.advancedLevel}`}
                     </span>
                   </div>
                 </TooltipContent>
@@ -613,4 +613,6 @@ export function AppHeader({
     </header>
   );
 }
+
+
 

@@ -1,8 +1,8 @@
 ﻿'use client';
 
 import { cn } from '@/lib/utils';
-import { DEVICE_ICON_COLORS } from './networkTopology.constants';
-import type { DeviceType } from './networkTopology.types';
+import { DEVICE_ICON_COLORS } from './NetworkTopology/utils/networkTopology.constants';
+import type { DeviceType } from './NetworkTopology/types/networkTopology.types';
 
 export interface DeviceIconProps {
   type: DeviceType;
@@ -159,3 +159,4 @@ export function DeviceIcon({
       );
   }
 }
+

@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import { Suspense, lazy, RefObject } from 'react';
-import { ContextMenuState, CanvasDevice, CanvasNote } from './networkTopology.types';
+import { ContextMenuState, CanvasDevice, CanvasNote } from './NetworkTopology/types/networkTopology.types';
 
 const ContextMenuComponent = lazy(() =>
     import('./NetworkTopologyContextMenu').then((m) => ({ default: m.default }))
@@ -64,3 +64,4 @@ export default function LazyNetworkTopologyContextMenu(
         </Suspense>
     );
 }
+

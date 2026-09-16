@@ -1,5 +1,5 @@
-import { CABLE_COLORS } from '../networkTopology.constants';
-import { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+﻿import { CABLE_COLORS } from '../NetworkTopology/utils/networkTopology.constants';
+import { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import { HopPacketInfo } from '../PingPacketInfoPanel';
 import { tr } from './translations';
 type PacketInfoTranslations = typeof tr;

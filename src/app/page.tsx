@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useRef, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
@@ -18,7 +18,7 @@ import { useRefreshReport } from '@/hooks/useRefreshReport';
 import { useDeviceSelection } from '@/hooks/useDeviceSelection';
 import { useAppStore, useTopologyDevices, useTopologyConnections, useTopologyNotes, useZoom, usePan, useActiveTab, useEnvironment } from '@/lib/store/appStore';
 import { cn } from '@/lib/utils';
-import { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/networkTopology.types';
+import { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { getPrompt } from '@/lib/network/executor';
 import { createInitialState } from '@/lib/network/initialState';
 import { buildRunningConfig } from '@/lib/network/core/configBuilder';
@@ -26,12 +26,8 @@ import { addProjectRecord } from '@/utils/achievementRecords';
 import type { TerminalOutput } from '@/components/network/Terminal';
 import type { PcOutputsSetter } from '@/components/network/pc-panel/PCPanel.types';
 
-const NetworkTopology = dynamic(
-  () => import('@/components/network/NetworkTopology').then((m) => m.NetworkTopology),
-  { ssr: false }
-);
 
-import { NetworkErrorBoundary } from '@/components/network/NetworkErrorBoundary';
+
 
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -53,10 +49,8 @@ import { useExamMode } from '@/hooks/useExamMode';
 import { useMultiWindowStore } from '@/hooks/useMultiWindowStore';
 import { useWindowStore } from '@/hooks/useWindowStore';
 
-import { PageDevicePopovers } from './PageDevicePopovers';
 import { AppHeader } from '@/components/network/AppHeader';
 import { AppFooter } from '@/components/network/AppFooter';
-import { TopologyToolbar } from '@/components/network/TopologyToolbar';
 import { bringElementToFront } from '@/lib/utils/zIndex';
 import { AppSkeleton } from '@/components/ui/AppSkeleton';
 import { useUiPreferences } from '@/hooks/useUiPreferences';
@@ -104,6 +98,7 @@ import { PageDialogs } from './PageDialogs';
 import { PagePanelWindows } from './PagePanelWindows';
 
 import { usePageViewState } from './usePageViewState';
+import { TopologySection } from './sections/TopologySection';
 
 export default function Home({ initialProjectId }: { initialProjectId?: string }) {
   const { t, language, setLanguage } = useLanguage();
@@ -1053,110 +1048,66 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
             activeTab === 'topology' ? 'md:pt-[116px]' : 'md:pt-16',
             isTablet && (showPCPanel || showUnifiedDeviceModal || showRouterPanel) && "flex-row md:pt-16"
           )}>
-            <div className={cn(
-              "w-full flex-1 flex flex-col min-h-0 overflow-hidden transition-all duration-500",
-              isTablet && (showPCPanel || showUnifiedDeviceModal || showRouterPanel) && "w-full sm:w-1/2 flex-none border-r border-secondary-200/50 dark:border-secondary-800/50"
-            )}>
-              <div className={`flex-1 flex flex-col min-h-0 ${activeTab === 'topology' ? 'flex' : 'hidden'} print:flex`}>
-                {activeTab === 'topology' && (
-                  <TopologyToolbar
-                    isPingPanelOpen={isPingPanelOpen}
-                    t={t}
-                    isDark={isDark}
-                    language={language}
-                    topologyDevices={topologyDevices}
-                    deviceStates={deviceStates}
-                    activeDeviceId={activeDeviceId}
-                    activeDeviceType={activeDeviceType}
-                    cableInfo={cableInfo}
-                    deviceSearchQuery={deviceSearchQuery}
-                    canUndo={canUndo}
-                    canRedo={canRedo}
-                    hasHydrated={hasHydrated}
-                    isExamActive={isExamActive}
-                    setDeviceSearchQuery={setDeviceSearchQuery}
-                    setCableInfo={setCableInfo}
-                    setZoom={setZoom}
-                    setPan={setPan}
-                    handleDeviceSelectFromMenu={handleDeviceSelectFromMenu}
-                    handleUndo={handleUndo}
-                    handleRedo={handleRedo}
-                    handleRefreshNetwork={handleRefreshNetwork}
-                    setIsEnvironmentPanelOpen={setIsEnvironmentPanelOpen}
-                    onOpenStudentJoin={isRoomEnabled ? () => setShowRoomJoinDialog(true) : undefined}
-                    onOpenTeacherPanel={isRoomEnabled && !studentRoomCode ? () => setShowTeacherPanel(true) : undefined}
-                  />
-                )}
-
-                <div ref={topologyContainerRef} className="flex-1 w-full h-full min-h-0 overflow-hidden relative">
-                  <NetworkErrorBoundary fallbackTitle="Topoloji Tuvali Yüklenirken Bir Hata Oluştu">
-                    <NetworkTopology
-                      onPingPanelOpenChange={setIsPingPanelOpen}
-                      key={topologyKey}
-                      cableInfo={cableInfo}
-                      onCableChange={setCableInfo}
-                      selectedDevice={selectedDevice}
-                      onDeviceSelect={handleDeviceSelectFromCanvas}
-                      onDeviceDoubleClick={handleDeviceDoubleClick}
-                      onDeviceDelete={handleDeviceDelete}
-                      onDeviceRename={handleDeviceRename}
-                      initialDevices={topologyDevices || undefined}
-                      initialConnections={topologyConnections || undefined}
-                      initialNotes={topologyNotes || undefined}
-                      isActive={activeTab === 'topology'}
-                      activeDeviceId={activeDeviceId}
-                      deviceStates={deviceStates}
-                      onDeviceStatesChange={setDeviceStates}
-                      zoom={zoom}
-                      onZoomChange={setZoom}
-                      pan={pan}
-                      onPanChange={setPan}
-                      canUndo={canUndo}
-                      canRedo={canRedo}
-                      onUndo={handleUndo}
-                      onRedo={handleRedo}
-                      onRefreshNetwork={handleRefreshNetwork}
-                      focusDeviceId={focusDeviceId}
-                      isExamActive={isExamActive}
-                      isExamEditorOpen={isEditorOpen}
-                      onOpenTasks={(deviceId: string) => {
-                        setActiveDeviceId(deviceId);
-                        const device = topologyDevices?.find(d => d.id === deviceId);
-                        if (!device || device.type === 'pc') return;
-                        setActiveDeviceType(device.type);
-                        setUnifiedDeviceActiveTab('settings');
-                        setShowUnifiedDeviceModal(true);
-                      }}
-                      clearSelectionTrigger={clearSelectionTrigger}
-                      onPacketPanelFocus={() => setFocusedOverlay('packet')}
-                      packetPanelZIndex={focusedOverlay === 'packet' ? 35 : 30}
-                      onAction={commitAction}
-                    />
-                  </NetworkErrorBoundary>
-
-                  <PageDevicePopovers
-                    showDevicePopovers={preferences.showDevicePopovers}
-                    activeDeviceId={activeDeviceId}
-                    topologyDevices={topologyDevices}
-                    deviceStates={deviceStates}
-                    topologyConnections={topologyConnections}
-                    t={t}
-                    language={language}
-                    isDark={isDark}
-                    focusedOverlay={focusedOverlay}
-                    setFocusedOverlay={setFocusedOverlay}
-                    setSelectedDevice={setSelectedDevice}
-                    setActiveDeviceId={setActiveDeviceId}
-                    setActiveDeviceType={setActiveDeviceType}
-                    setUnifiedDeviceActiveTab={setUnifiedDeviceActiveTab}
-                    setShowPCDeviceId={setShowPCDeviceId}
-                    setPcPanelInitialTab={setPcPanelInitialTab}
-                    getOrCreatePCOutputs={getOrCreatePCOutputs}
-                    handleDeviceDoubleClick={handleDeviceDoubleClick}
-                  />
-                </div>
-              </div>
-            </div>
+                        <TopologySection
+              preferences={preferences}
+              activeTab={activeTab}
+              isTablet={isTablet}
+              showPCPanel={showPCPanel}
+              showUnifiedDeviceModal={showUnifiedDeviceModal}
+              showRouterPanel={showRouterPanel}
+              isPingPanelOpen={isPingPanelOpen}
+              t={t}
+              isDark={isDark}
+              language={language}
+              topologyDevices={topologyDevices}
+              deviceStates={deviceStates}
+              activeDeviceId={activeDeviceId}
+              activeDeviceType={activeDeviceType}
+              cableInfo={cableInfo}
+              deviceSearchQuery={deviceSearchQuery}
+              canUndo={canUndo}
+              canRedo={canRedo}
+              hasHydrated={hasHydrated}
+              isExamActive={isExamActive}
+              setDeviceSearchQuery={setDeviceSearchQuery}
+              setCableInfo={setCableInfo}
+              setZoom={setZoom}
+              setPan={setPan}
+              handleDeviceSelectFromMenu={handleDeviceSelectFromMenu}
+              handleUndo={handleUndo}
+              handleRedo={handleRedo}
+              handleRefreshNetwork={handleRefreshNetwork}
+              setIsEnvironmentPanelOpen={setIsEnvironmentPanelOpen}
+              onOpenStudentJoin={isRoomEnabled ? () => setShowRoomJoinDialog(true) : undefined}
+              onOpenTeacherPanel={isRoomEnabled && !studentRoomCode ? () => setShowTeacherPanel(true) : undefined}
+              topologyContainerRef={topologyContainerRef}
+              topologyKey={topologyKey}
+              selectedDevice={selectedDevice}
+              handleDeviceSelectFromCanvas={handleDeviceSelectFromCanvas}
+              handleDeviceDoubleClick={handleDeviceDoubleClick}
+              handleDeviceDelete={handleDeviceDelete}
+              handleDeviceRename={handleDeviceRename}
+              topologyConnections={topologyConnections}
+              topologyNotes={topologyNotes}
+              setDeviceStates={setDeviceStates}
+              zoom={zoom}
+              pan={pan}
+              focusDeviceId={focusDeviceId}
+              isEditorOpen={isEditorOpen}
+              setActiveDeviceId={setActiveDeviceId}
+              setActiveDeviceType={setActiveDeviceType}
+              setUnifiedDeviceActiveTab={setUnifiedDeviceActiveTab}
+              setShowUnifiedDeviceModal={setShowUnifiedDeviceModal}
+              clearSelectionTrigger={clearSelectionTrigger}
+              setFocusedOverlay={setFocusedOverlay}
+              focusedOverlay={focusedOverlay}
+              commitAction={commitAction}
+              setSelectedDevice={setSelectedDevice}
+              setShowPCDeviceId={setShowPCDeviceId}
+              setPcPanelInitialTab={setPcPanelInitialTab}
+              getOrCreatePCOutputs={getOrCreatePCOutputs}
+              setIsPingPanelOpen={setIsPingPanelOpen}
+            />
 
             <TabletSplitView
               isDark={isDark}
@@ -1324,3 +1275,5 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     </AppErrorBoundary>
   );
 }
+
+

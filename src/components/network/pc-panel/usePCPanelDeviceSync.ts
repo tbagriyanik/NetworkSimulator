@@ -1,6 +1,6 @@
-import type React from 'react';
+﻿import type React from 'react';
 import { useEffect, useRef } from 'react';
-import type { CanvasDevice } from '../networkTopology.types';
+import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import type { DhcpPoolConfig, PcFile } from './PCPanel.types';
 import { loadFs, readFile, getFtpFilesFromUploadDir } from './pcFileSystem';
 import { secureStorage } from '@/lib/storage/secureStorage';
@@ -208,3 +208,4 @@ export function usePCPanelDeviceSync({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultConfig.ip, defaultConfig.mac, deviceFromTopology, deviceId]);
 }
+

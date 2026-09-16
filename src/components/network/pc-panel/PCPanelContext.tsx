@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import { createContext, useContext, type RefObject, type CSSProperties, type Dispatch, type SetStateAction, type PointerEvent, type KeyboardEvent, type ReactNode } from 'react';
 import type { SwitchState } from '@/lib/network/types';
-import type { CanvasConnection, CanvasDevice } from '../networkTopology.types';
+import type { CanvasConnection, CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import type { TerminalOutput } from '../Terminal';
 import type { DhcpPoolConfig, OutputLine, PCActiveTab, PcFile } from './PCPanel.types';
 import type { SyslogMessage } from '@/lib/network/syslog';
@@ -340,3 +340,4 @@ export function usePCPanel(): PCPanelContextValue {
   if (!ctx) throw new Error('usePCPanel must be used within PCPanelProvider');
   return ctx;
 }
+

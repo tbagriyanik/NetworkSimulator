@@ -1,9 +1,9 @@
-'use client';
+﻿'use client';
 
 import { CableType } from '@/lib/network/types';
 import { X, Cable, LineSquiggle, Plug, TrendingUpDown } from 'lucide-react';
-import { DEVICE_ICONS } from './networkTopology.constants';
-import { CanvasDevice, SelectedPortRef } from './networkTopology.types';
+import { DEVICE_ICONS } from './NetworkTopology/utils/networkTopology.constants';
+import { CanvasDevice, SelectedPortRef } from './NetworkTopology/types/networkTopology.types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEffect } from 'react';
 
@@ -303,3 +303,4 @@ export function NetworkTopologyPortSelectorModal({
     </div>
   );
 }
+

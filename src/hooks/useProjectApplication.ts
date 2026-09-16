@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import { useCallback } from 'react';
-import type { CanvasDevice, CanvasNote } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { ExamProject, ProjectData } from '@/lib/network/examMode';
 import { generateExamFromProject } from '@/lib/network/examMode';
 import type { GuidedProject } from '@/lib/network/guidedMode';
@@ -227,8 +227,8 @@ export function useProjectApplication({
       loadProjectData(projectData);
       toggleEditor(true);
       toast({
-        title: language === 'tr' ? 'Proje Dönüştürüldü' : 'Project Converted',
-        description: language === 'tr' ? 'Görevler otomatik olarak çıkarıldı ve Sınav Düzenleyici açıldı.' : 'Tasks were automatically extracted and the Exam Editor was opened.',
+        title: language === 'tr' ? 'Proje DÃ¶nÃ¼ÅŸtÃ¼rÃ¼ldÃ¼' : 'Project Converted',
+        description: language === 'tr' ? 'GÃ¶revler otomatik olarak Ã§Ä±karÄ±ldÄ± ve SÄ±nav DÃ¼zenleyici aÃ§Ä±ldÄ±.' : 'Tasks were automatically extracted and the Exam Editor was opened.',
       });
     } finally {
       document.body.style.cursor = '';
@@ -253,3 +253,5 @@ export function useProjectApplication({
     handleStartGuidedProject,
   };
 }
+
+

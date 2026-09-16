@@ -1,5 +1,5 @@
-import { SwitchState } from '@/lib/network/types';
-import { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+﻿import { SwitchState } from '@/lib/network/types';
+import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 export function computeLiveSummary(
   devices: CanvasDevice[],
@@ -75,3 +75,5 @@ export function computeLiveSummary(
     },
   };
 }
+
+

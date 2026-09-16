@@ -1,4 +1,4 @@
-import type { CanvasDevice, CanvasPort, CanvasConnection } from '@/components/network/networkTopology.types';
+﻿import type { CanvasDevice, CanvasPort, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState, Port } from '@/lib/network/types';
 import { isModulePort } from './portUtils';
 
@@ -32,7 +32,7 @@ export const MODULE_CATALOG: Record<string, ExpansionModule> = {
     name: 'NetSim WIC-2T (2-Port Serial WAN)',
     category: 'serial',
     description: '2-port serial WAN interface card for synchronous leased lines, Frame Relay and HDLC.',
-    descriptionTr: '2 portlu seri WAN arayüz kartı (Kiralık hatlar, HDLC ve Frame Relay bağlantıları için).',
+    descriptionTr: '2 portlu seri WAN arayÃ¼z kartÄ± (KiralÄ±k hatlar, HDLC ve Frame Relay baÄŸlantÄ±larÄ± iÃ§in).',
     portsCount: 2,
     badge: 'Serial 2T',
     color: colors.theme.primary, // sky-600
@@ -101,7 +101,7 @@ export const MODULE_CATALOG: Record<string, ExpansionModule> = {
     name: 'NetSim HWIC-4ESW (4-Port 10/100 Switch)',
     category: 'ethernet',
     description: '4-port 10/100BASE-TX Fast Ethernet switch interface card for integrated L2 switching.',
-    descriptionTr: '4 portlu 10/100BASE-TX Fast Ethernet entegre switch modülü.',
+    descriptionTr: '4 portlu 10/100BASE-TX Fast Ethernet entegre switch modÃ¼lÃ¼.',
     portsCount: 4,
     badge: '4-Port SW',
     color: colors.status.online, // emerald-500
@@ -147,7 +147,7 @@ export const MODULE_CATALOG: Record<string, ExpansionModule> = {
     name: 'NetSim SFP-10G-LR (10G Fiber Uplink)',
     category: 'fiber',
     description: '10 Gigabit Ethernet single-mode optical transceiver module for high-speed core links.',
-    descriptionTr: '10G Fiber Optik uplink modülü (Tek modlu yüksek hızlı omurga bağlantıları için).',
+    descriptionTr: '10G Fiber Optik uplink modÃ¼lÃ¼ (Tek modlu yÃ¼ksek hÄ±zlÄ± omurga baÄŸlantÄ±larÄ± iÃ§in).',
     portsCount: 1,
     badge: '10G Fiber',
     color: colors.cables.fiber, // purple-500
@@ -191,7 +191,7 @@ export const MODULE_CATALOG: Record<string, ExpansionModule> = {
     name: 'NetSim NM-1GE (1-Port Gigabit Ethernet)',
     category: 'ethernet',
     description: '1-port Gigabit Ethernet network module with RJ-45 copper interface.',
-    descriptionTr: '1 portlu Gigabit Ethernet RJ-45 ağ genişletme modülü.',
+    descriptionTr: '1 portlu Gigabit Ethernet RJ-45 aÄŸ geniÅŸletme modÃ¼lÃ¼.',
     portsCount: 1,
     badge: '1GE Copper',
     color: colors.status.warning, // amber-500
@@ -470,3 +470,5 @@ export function removeExpansionModule(
     removedConnections,
   };
 }
+
+

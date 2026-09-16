@@ -1,4 +1,4 @@
-// Network Command Executor (refactored with handler map)
+﻿// Network Command Executor (refactored with handler map)
 import { SwitchState, CommandResult } from './types';
 import { useAppStore } from '../store/appStore';
 import { parseCommand, validateCommand } from './parser';
@@ -8,7 +8,7 @@ import { ensureDeviceStatesMap } from './networkUtils';
 import { CLI_ERRORS, cliModeError } from './core/cliErrors';
 import { buildRunningConfig } from './core/configBuilder';
 import { getCommandCapabilityError } from './core/commandCapabilityCheck';
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 // Import modular components
 import { getPrompt } from './executorPrompt';
@@ -79,7 +79,7 @@ export function executeCommand(
       // Password dialog was cancelled (ESC, back, outside click)
       return {
         success: false,
-        error: language === 'tr' ? '% Erişim reddedildi' : '% Access denied',
+        error: language === 'tr' ? '% EriÅŸim reddedildi' : '% Access denied',
         newState: {
           awaitingPassword: false,
           passwordContext: undefined,
@@ -95,7 +95,7 @@ export function executeCommand(
     if (input === '__CONFIG_SOURCE_CANCEL__') {
       return {
         success: false,
-        error: language === 'tr' ? '% Yapılandırma iptal edildi' : '% Configuration cancelled',
+        error: language === 'tr' ? '% YapÄ±landÄ±rma iptal edildi' : '% Configuration cancelled',
         newState: {
           awaitingConfigSource: false
         }
@@ -144,7 +144,7 @@ export function executeCommand(
       if (!hasEnablePassword) {
         return {
           success: false,
-          error: language === 'tr' ? '% Erişim reddedildi' : '% Access denied'
+          error: language === 'tr' ? '% EriÅŸim reddedildi' : '% Access denied'
         };
       }
     }
@@ -388,4 +388,6 @@ export const commandHandlers: Record<string, CommandHandler> = {
 // Re-export getPrompt and commandHelp for backward compatibility
 export { getPrompt } from './executorPrompt';
 export { commandHelp, commandDescriptions } from './executorCommandHelp';
+
+
 

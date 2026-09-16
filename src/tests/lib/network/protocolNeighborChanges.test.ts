@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { computeProtocolNeighborChanges, runNetworkEventPipeline } from '@/lib/network/forwarding/eventPipeline';
 import type { SwitchState } from '@/lib/network/types';
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { OspfNeighborRecord, EigrpNeighborRecord } from '@/lib/network/protocols';
 
 describe('computeProtocolNeighborChanges (OSPF/EIGRP state-change timeline)', () => {
@@ -193,3 +193,4 @@ describe('computeProtocolNeighborChanges (OSPF/EIGRP state-change timeline)', ()
     expect(res.updatedStates.get('R1')?.ospfNeighborStates?.['2.2.2.2']?.state).toBe('Full');
   });
 });
+

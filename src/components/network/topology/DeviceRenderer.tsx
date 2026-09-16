@@ -1,10 +1,10 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 
-import { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+import { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
-import { getDeviceWidth, getDeviceHeight } from '../networkTopology.helpers';
+import { getDeviceWidth, getDeviceHeight } from '../NetworkTopology/utils/networkTopology.helpers';
 import { DeviceIconSvg } from './DeviceIconSvg';
 import { DeviceWifiStatus } from './DeviceWifiStatus';
 import { DeviceFocusPulse } from './DeviceFocusPulse';

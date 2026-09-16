@@ -1,7 +1,7 @@
-import { colors } from '@/lib/design-tokens';
+﻿import { colors } from '@/lib/design-tokens';
 import { getWirelessSignalStrength } from '@/lib/network/connectivity';
 import { memo } from 'react';
-import { CanvasConnection, CanvasDevice } from './networkTopology.types';
+import { CanvasConnection, CanvasDevice } from './NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { isCableCompatible, CableInfo } from '@/lib/network/types';
 
@@ -140,10 +140,10 @@ export const ConnectionLine = memo(function ConnectionLine({
   const activeWirelessColor = isWireless && typeof connection.ssidIndex === 'number'
     ? wirelessSsidColors[connection.ssidIndex % wirelessSsidColors.length]
     : (CABLE_COLORS.wireless?.primary || colors.wirelessSsid[0]);
-  // Compute signal strength for wireless connections to sync cable visual with device Wi‑Fi status.
+  // Compute signal strength for wireless connections to sync cable visual with device Wiâ€‘Fi status.
   // DeviceRenderer evaluates the client against ALL topology devices (nearest matching AP), so the
-  // drawn link must use the same inputs — otherwise the cable and the device bars disagree. Both ends
-  // are probed because a wireless cable can be drawn in either direction (client→AP or AP→client).
+  // drawn link must use the same inputs â€” otherwise the cable and the device bars disagree. Both ends
+  // are probed because a wireless cable can be drawn in either direction (clientâ†’AP or APâ†’client).
   let wirelessStrength: number | undefined;
   if (isWireless) {
     const signalDevices = topologyDevices ?? [targetDevice];
@@ -413,7 +413,7 @@ export const ConnectionLine = memo(function ConnectionLine({
                   fontFamily="monospace"
                   fontWeight="bold"
                 >
-                  {isEffectivelyActive ? '⚡ 1 Gbps | UP' : '⛔ Link DOWN'}
+                  {isEffectivelyActive ? 'âš¡ 1 Gbps | UP' : 'â›” Link DOWN'}
                 </text>
               </g>
             )}
@@ -458,3 +458,4 @@ export const ConnectionLine = memo(function ConnectionLine({
     getWlan0SignalKey(nextProps.deviceStates, nextProps.targetDevice)
   );
 });
+

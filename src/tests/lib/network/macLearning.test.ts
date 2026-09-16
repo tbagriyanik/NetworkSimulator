@@ -13,7 +13,7 @@ import {
   learnMacsOnNewConnection,
 } from '@/lib/network/macLearning';
 import type { SwitchState } from '@/lib/network/types';
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 function makeState(overrides?: Partial<SwitchState>): SwitchState {
   return {
@@ -288,3 +288,5 @@ describe('MAC Learning Module', () => {
     });
   });
 });
+
+

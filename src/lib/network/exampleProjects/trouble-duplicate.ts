@@ -1,6 +1,6 @@
-import { createPcDevice, connectPorts, baseProjectData } from './helpers';
+﻿import { createPcDevice, connectPorts, baseProjectData } from './helpers';
 import type { ExampleProject } from './types';
-import type { CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 const example = (isTr: boolean): ExampleProject => {
   const troubleDuplicateDevices = [
@@ -14,15 +14,15 @@ const example = (isTr: boolean): ExampleProject => {
   return {
     id: 'trouble-duplicate',
     tag: isTr ? 'ARIZA' : 'TROUBLE',
-    title: isTr ? 'Çakışan IP Adresi' : 'Duplicate IP Address',
-    description: isTr ? 'Ağda iki cihaz aynı IP adresini kullanıyor. Çakışmayı giderin.' : 'Two devices in the network use the same IP. Resolve the conflict.',
+    title: isTr ? 'Ã‡akÄ±ÅŸan IP Adresi' : 'Duplicate IP Address',
+    description: isTr ? 'AÄŸda iki cihaz aynÄ± IP adresini kullanÄ±yor. Ã‡akÄ±ÅŸmayÄ± giderin.' : 'Two devices in the network use the same IP. Resolve the conflict.',
     level: 'basic',
     injectedFaults: [
       {
         id: 'fault-dup-pc2',
         deviceId: 'pc-2',
         faultType: 'duplicateIp',
-        description: { tr: 'PC-2, PC-1 ile aynı IP\'ye (192.168.1.10) sahip.', en: 'PC-2 has the same IP (192.168.1.10) as PC-1.' },
+        description: { tr: 'PC-2, PC-1 ile aynÄ± IP\'ye (192.168.1.10) sahip.', en: 'PC-2 has the same IP (192.168.1.10) as PC-1.' },
         configKey: 'pc.pc-2.ip',
         faultValue: '192.168.1.10',
         correctValue: '192.168.1.11'
@@ -33,3 +33,5 @@ const example = (isTr: boolean): ExampleProject => {
 };
 
 export default example;
+
+

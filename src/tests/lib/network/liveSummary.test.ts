@@ -1,7 +1,7 @@
 ﻿import { describe, it, expect } from 'vitest';
 import { computeLiveSummary } from '@/lib/network/liveSummary';
 import { SwitchState, SecurityConfig, CableType, Port } from '@/lib/network/types';
-import { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 const defaultSecurity: SecurityConfig = {
   enableSecretEncrypted: false, servicePasswordEncryption: false,
@@ -120,3 +120,5 @@ describe('computeLiveSummary', () => {
     expect(result.protocolStats.eigrp).toEqual({ count: 1, neighbors: 2 });
   });
 });
+
+

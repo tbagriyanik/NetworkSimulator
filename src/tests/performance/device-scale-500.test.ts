@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+﻿import { describe, it, expect } from 'vitest';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import type { NetworkPacketFrame } from '@/lib/network/forwarding/packetFrame';
 import { getRoutingTable } from '@/lib/network/routing';
@@ -196,3 +196,4 @@ describe('500-Device Scale Smoke / Benchmark', () => {
     expect(totalMB).toBeGreaterThan(0);
   });
 });
+

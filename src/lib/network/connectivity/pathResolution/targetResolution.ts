@@ -1,4 +1,4 @@
-import { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+﻿import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { recalculateStp } from '@/lib/network/stp';
 import { isExternalDomain, resolveHostname } from '@/lib/network/dns';
@@ -114,7 +114,7 @@ export function resolveTarget(deps: ResolveTargetDeps): TargetResolutionResult {
         if (port.ipAddress) ipMap.set(port.ipAddress, id);
         if (port.ipv6Address) ipMap.set(port.ipv6Address.toLowerCase(), id);
       }
-      // Also map NAT global IPs to this router so that outsideÔåÆinside traffic
+      // Also map NAT global IPs to this router so that outsideÃ”Ã¥Ã†inside traffic
       // (e.g. ping to a static NAT global address) can be path-resolved correctly.
       if (state.natStaticTranslations) {
         for (const entry of state.natStaticTranslations) {
@@ -234,7 +234,7 @@ export function resolveTarget(deps: ResolveTargetDeps): TargetResolutionResult {
 
   // If the resolved target is a NAT global IP, the actual end device is the
   // mapped local IP. Override targetDevice so that BFS finds the full path
-  // Server ÔåÆ R1 ÔåÆ PC-1, and the NAT outsideÔåÆinside translation fires at R1.
+  // Server Ã”Ã¥Ã† R1 Ã”Ã¥Ã† PC-1, and the NAT outsideÃ”Ã¥Ã†inside translation fires at R1.
   if (targetDeviceId && deviceStates) {
     const routerState = deviceStates.get(targetDeviceId);
     const staticEntry = routerState?.natStaticTranslations?.find(
@@ -285,7 +285,7 @@ export function resolveTarget(deps: ResolveTargetDeps): TargetResolutionResult {
             hops: [],
             hopIds: [],
             targetId: cloudDev.id,
-            error: language === 'tr' ? 'Bulut (Cloud) cihazı ağa bağlı değil.' : 'Cloud device is not connected to the network.'
+            error: language === 'tr' ? 'Bulut (Cloud) cihazÄ± aÄŸa baÄŸlÄ± deÄŸil.' : 'Cloud device is not connected to the network.'
           }
         };
       }
@@ -298,3 +298,4 @@ export function resolveTarget(deps: ResolveTargetDeps): TargetResolutionResult {
 
   return { type: 'ok', resolvedTargetIp, targetDevice, targetDeviceId, stpDeviceStates, ipMap };
 }
+

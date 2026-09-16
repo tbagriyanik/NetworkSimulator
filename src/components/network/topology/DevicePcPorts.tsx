@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
-import { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+import { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
-import { STATUS_COLORS, PORT_COLORS } from '../networkTopology.constants';
+import { STATUS_COLORS, PORT_COLORS } from '../NetworkTopology/utils/networkTopology.constants';
 import { isPortConnectionHealthy, getPortFrameColor } from './deviceRenderer.helpers';
 
 interface DevicePcPortsProps {

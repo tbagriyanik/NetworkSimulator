@@ -2,7 +2,7 @@
 import type { SwitchState, CableInfo, Port } from '@/lib/network/types';
 import type { HistoryEntry, ProjectState } from '@/hooks/useHistory';
 import { encodeHistoryForFile, decodeHistoryFile } from '@/lib/network/historySerialization';
-import type { DeviceType } from '@/components/network/networkTopology.types';
+import type { DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 function makeSwitchState(hostname: string, withStp: boolean): SwitchState {
   const ports: Record<string, Port> = {};
@@ -145,3 +145,4 @@ describe('historySerialization', () => {
     expect(decoded).toHaveLength(60);
   });
 });
+

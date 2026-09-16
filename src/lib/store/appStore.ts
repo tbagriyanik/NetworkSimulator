@@ -1,6 +1,6 @@
-import { create } from 'zustand';
+﻿import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { CanvasDevice, CanvasConnection, CanvasNote } from '@/components/network/networkTopology.types';
+import { CanvasDevice, CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { createTabSpecificStorage } from './tabStorage';
 import { errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
@@ -617,7 +617,7 @@ export const useAppStore = create<AppState>()(
 // Each tab now maintains its own isolated data to prevent conflicts.
 // If cross-tab sync is needed in the future, implement a separate mechanism.
 
-// ─── Selectors for granular state access ───
+// â”€â”€â”€ Selectors for granular state access â”€â”€â”€
 // These selectors prevent cascading re-renders by allowing components to subscribe to specific state slices
 
 // Topology selectors
@@ -635,3 +635,5 @@ export const useGraphicsQuality = () => useAppStore(state => state.graphicsQuali
 export const useIsSimulationMode = () => useAppStore(state => state.topology.isSimulationMode);
 export const useShowSTPOverlay = () => useAppStore(state => state.topology.showSTPOverlay);
 export const useNetworkEventLogs = () => useAppStore(state => state.topology.networkEventLogs);
+
+

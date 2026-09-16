@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import { useMemo } from 'react';
 import { colors } from '@/lib/design-tokens/colors';
-import type { CanvasDevice } from '../networkTopology.types';
+import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { computeAreaZones, type OverlayMode } from '@/lib/network/areaOverlayEngine';
 
@@ -63,7 +63,7 @@ export function TopologyAreaOverlay({
 
           {/* Area Zone Badge / Label */}
           {(() => {
-            const labelText = zone.badgeLabel.length > 20 ? `${zone.badgeLabel.slice(0, 19)}…` : zone.badgeLabel;
+            const labelText = zone.badgeLabel.length > 20 ? `${zone.badgeLabel.slice(0, 19)}â€¦` : zone.badgeLabel;
             const approxCharWidth = 6.5;
             const pillWidth = Math.max(90, (labelText.length * approxCharWidth) + 36);
             const halfWidth = pillWidth / 2;
@@ -114,3 +114,4 @@ export function TopologyAreaOverlay({
     </g>
   );
 }
+

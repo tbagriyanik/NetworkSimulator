@@ -1,4 +1,4 @@
-import { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+﻿import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { IndexedConnection } from '@/lib/network/connectionIndex';
 import { learnMacAddress, findMacPort } from '@/lib/network/macLearning';
@@ -69,7 +69,7 @@ export function recordTrace(deps: TraceRecordingDeps): TraceRecordingResult {
               hops: path.slice(0, i + 1).map(id => deviceMap.get(id)?.name || id),
               hopIds: path.slice(0, i + 1),
               targetId: targetDevice.id,
-              error: language === 'tr' ? 'ICMP Zaman Aşımı (TTL exceeded)' : 'ICMP Time Exceeded (TTL expired)'
+              error: language === 'tr' ? 'ICMP Zaman AÅŸÄ±mÄ± (TTL exceeded)' : 'ICMP Time Exceeded (TTL expired)'
             }
           };
         }
@@ -261,7 +261,7 @@ export function recordTrace(deps: TraceRecordingDeps): TraceRecordingResult {
         hopIds: path,
         targetId: targetDevice.id,
         error: language === 'tr'
-          ? 'Console bağlantısı üzerinden ping yapılamaz.'
+          ? 'Console baÄŸlantÄ±sÄ± Ã¼zerinden ping yapÄ±lamaz.'
           : 'Ping cannot be sent over a console connection.'
       }
     };
@@ -269,3 +269,4 @@ export function recordTrace(deps: TraceRecordingDeps): TraceRecordingResult {
 
   return { type: 'ok', pathConnections };
 }
+

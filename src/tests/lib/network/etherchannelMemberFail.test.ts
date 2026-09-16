@@ -1,6 +1,6 @@
 ﻿import { describe, it, expect } from 'vitest';
 import { detectEtherChannelBundles, computeEtherChannelChanges } from '@/lib/network/etherchannel';
-import { CanvasConnection } from '@/components/network/networkTopology.types';
+import { CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState, Port, SwitchModel, SwitchLayer, SecurityConfig, Vlan, CableType } from '@/lib/network/types';
 
 const createMockSwitchState = (ports: Record<string, Partial<Port>>, overrides: Partial<SwitchState> = {}): SwitchState => {
@@ -214,3 +214,4 @@ describe('EtherChannel change timeline (diff)', () => {
     expect(computeEtherChannelChanges(before, after)).toHaveLength(0);
   });
 });
+

@@ -1,5 +1,5 @@
-import { logger } from '@/lib/logger';
-import { CanvasDevice } from '@/components/network/networkTopology.types';
+﻿import { logger } from '@/lib/logger';
+import { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { REFRESH_DEVICE_TYPE_ORDER } from '@/components/network/LiveDeviceList';
 
@@ -101,3 +101,5 @@ export const handleRefreshNetwork = (params: {
   logger.debug('Network refresh executed');
   return { buildRefreshDeviceSummaries };
 };
+
+

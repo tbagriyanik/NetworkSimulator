@@ -1,6 +1,6 @@
-import { useCallback } from 'react';
+﻿import { useCallback } from 'react';
 import type { SwitchState, CommandResult } from '@/lib/network/types';
-import type { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { TabType } from '@/app/page.types';
 
 type GuidedModeContext = {
@@ -174,4 +174,6 @@ export function useCommandExecution({
 
   return { handleCommand, handleExecuteCommand };
 }
+
+
 

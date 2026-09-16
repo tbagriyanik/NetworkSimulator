@@ -1,6 +1,6 @@
 ﻿import { describe, it, expect } from 'vitest';
 import { detectEtherChannelBundles } from '@/lib/network/etherchannel';
-import { CanvasConnection } from '@/components/network/networkTopology.types';
+import { CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState, Port, SwitchModel, SwitchLayer, SecurityConfig, Vlan, CableType } from '@/lib/network/types';
 import type { CommandContext } from '@/lib/network/core/commandTypes';
 import { cmdNoSwitchport } from '@/lib/network/core/interface/cmd.switchport';
@@ -278,3 +278,5 @@ describe('EtherChannel Detection', () => {
     expect(ipResult.newState?.ports?.po1?.subnetMask).toBe('255.255.255.0');
   });
 });
+
+

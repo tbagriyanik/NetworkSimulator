@@ -1,7 +1,7 @@
 ﻿import { describe, it, expect } from 'vitest';
 import { recalculateStp, computeStpTopologyChanges } from '@/lib/network/stp';
 import { SwitchState, StpVlanState } from '@/lib/network/types';
-import { CanvasConnection } from '@/components/network/networkTopology.types';
+import { CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 describe('STP Algorithm', () => {
   const createMockSwitch = (id: string, mac: string, priority: number = 32768): SwitchState => ({
@@ -383,3 +383,5 @@ describe('STP Topology-Change Detection', () => {
     expect(changes.every(c => c.vlanId === 1)).toBe(true);
   });
 });
+
+

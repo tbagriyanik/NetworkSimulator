@@ -1,8 +1,8 @@
-// Device capability gate shared between the direct command path (executor) and
+﻿// Device capability gate shared between the direct command path (executor) and
 // privileged delegation (`do ...` in cmdDo) so both enforce identical rules.
 import type { SwitchState } from '../types';
 import { getDeviceCapabilities } from '../capabilities';
-import type { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 const requiresSwitchingPrefixes = [
   'vlan', 'no vlan', 'switchport', 'spanning-tree', 'vtp', 'show vlan',
@@ -93,3 +93,4 @@ export function getCommandCapabilityError(commandName: string, state: Partial<Sw
 
   return null;
 }
+

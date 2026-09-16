@@ -1,7 +1,7 @@
 ﻿import { createSwitchDevice, createL3SwitchDevice, createPcDevice, createRouterDevice, connectPorts, baseProjectData } from './helpers';
 import { createInitialState, createInitialRouterState } from '../initialState';
 import type { ExampleProject } from './types';
-import type { CanvasConnection, CanvasNote } from '@/components/network/networkTopology.types';
+import type { CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 const example = (isTr: boolean): ExampleProject => {
   const staticL3RoutingDevices = [
@@ -170,3 +170,5 @@ const example = (isTr: boolean): ExampleProject => {
 };
 
 export default example;
+
+

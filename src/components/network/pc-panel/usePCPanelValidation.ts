@@ -1,5 +1,5 @@
-import { useCallback } from 'react';
-import type { CanvasDevice } from '../networkTopology.types';
+﻿import { useCallback } from 'react';
+import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import { validateIP } from './pcPanelHelpers';
 
 export interface UsePCPanelValidationParams {
@@ -61,4 +61,5 @@ export function usePCPanelValidation({
 
   return { validateIpField, validateSubnetField };
 }
+
 

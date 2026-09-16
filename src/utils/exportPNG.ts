@@ -1,6 +1,6 @@
-import { CanvasDevice, CanvasConnection, CanvasNote } from '../components/network/networkTopology.types';
+﻿import { CanvasDevice, CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { isCableCompatible, SwitchState } from '@/lib/network/types';
-import { CABLE_COLORS } from '../components/network/networkTopology.constants';
+import { CABLE_COLORS } from '@/components/network/NetworkTopology/utils/networkTopology.constants';
 import { logger } from '../lib/logger';
 import { colors } from '@/lib/design-tokens/colors';
 
@@ -54,7 +54,7 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
     clone.querySelectorAll('foreignObject').forEach(el => el.remove());
     // Remove connections (will rebuild all with proper port positions)
     clone.querySelectorAll('[data-connection-id]').forEach(el => el.remove());
-    // Remove device elements not in DOM (culled ones left a stale placeholder) — keep full-rendered ones
+    // Remove device elements not in DOM (culled ones left a stale placeholder) â€” keep full-rendered ones
     clone.querySelectorAll('[data-device-id]').forEach(el => {
       const id = el.getAttribute('data-device-id');
       if (id && !domDeviceIds.has(id)) el.remove();
@@ -382,7 +382,7 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
       contentGroup.style.willChange = '';
 
       // Re-append simplified devices inside the content group (same coordinate space as full-rendered ones)
-      // (We already called addSimplifiedDevice above which appended to clone root — move them into contentGroup)
+      // (We already called addSimplifiedDevice above which appended to clone root â€” move them into contentGroup)
       clone.querySelectorAll('[data-device-id][data-simplified="true"]').forEach(el => {
         contentGroup.appendChild(el);
       });
@@ -450,7 +450,7 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
             await navigator.share({
               files: [file],
               title: 'Network Topology',
-              text: 'Ağ topolojimi paylaşıyorum'
+              text: 'AÄŸ topolojimi paylaÅŸÄ±yorum'
             });
             return; // Shared successfully
           }
@@ -479,3 +479,4 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
   img.onerror = () => { URL.revokeObjectURL(url); };
   img.src = url;
 }
+

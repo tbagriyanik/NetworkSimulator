@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Activity, Layers } from 'lucide-react';
-import { type BroadcastAnimTarget } from './hooks/usePingSequence';
+import { type BroadcastAnimTarget } from '@/hooks/networkTopology/usePingSequence';
 import { cn } from '@/lib/utils';
 import { PacketTraceInspector } from './PacketTraceInspector';
 import type { PacketProtocolType } from '@/lib/network/forwarding/packetFrame';
@@ -252,7 +252,7 @@ export function PingPacketInfoPanel({
         onNext();
     };
 
-    // Show packet tables when paused or done — derived directly from props, no local state
+    // Show packet tables when paused or done â€” derived directly from props, no local state
     const showPacketTables = isPaused || success !== null;
 
     // P = Play/Pause, N = Next Hop, ESC = Close keyboard shortcuts
@@ -314,11 +314,11 @@ export function PingPacketInfoPanel({
 
             {isReturn ? (
                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0 ${isDark ? 'bg-warning-900/50 text-warning-300 border border-warning-800/40' : 'bg-warning-50 text-warning-700 border border-warning-200'}`}>
-                    ↩ {isMobile ? '' : t.returnLabel}
+                    â†© {isMobile ? '' : t.returnLabel}
                 </span>
             ) : (
                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0 ${isDark ? 'bg-accent-900/50 text-accent-300 border border-accent-800/40' : 'bg-accent-50 text-accent-700 border border-accent-200'}`}>
-                    → {isMobile ? '' : t.forwardLabel}
+                    â†’ {isMobile ? '' : t.forwardLabel}
                 </span>
             )}
 
@@ -338,7 +338,7 @@ export function PingPacketInfoPanel({
 
             {isPaused && !isDone && (
                 <span className={`${isMobile ? 'w-2 h-2 bg-warning-500 rounded-full animate-pulse shrink-0' : 'text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0 ' + (isDark ? 'bg-warning-900/50 text-warning-300 border border-warning-800/40' : 'bg-warning-50 text-warning-700 border border-warning-200')}`}>
-                    {!isMobile && <>{'⏸ '}{t.paused}</>}
+                    {!isMobile && <>{'â¸ '}{t.paused}</>}
                 </span>
             )}
         </div>
@@ -400,7 +400,7 @@ export function PingPacketInfoPanel({
                     setIsMinimized(prev => !prev);
                 }}
                 className={`p-1 rounded transition-colors ${isDark ? 'text-secondary-400 hover:text-white hover:bg-white/10' : 'text-secondary-500 hover:bg-black/5'}`}
-                title={isMinimized ? (language === 'tr' ? 'Büyüt' : 'Expand') : (language === 'tr' ? 'Minimize Et' : 'Minimize')}
+                title={isMinimized ? (language === 'tr' ? 'BÃ¼yÃ¼t' : 'Expand') : (language === 'tr' ? 'Minimize Et' : 'Minimize')}
                 onPointerDown={(e) => e.stopPropagation()}
                 onMouseDown={(e) => e.stopPropagation()}
             >
@@ -552,7 +552,7 @@ export function PingPacketInfoPanel({
                                                 <div className={`text-xs mt-0.5 font-mono ${isDark ? 'text-emerald-200/90' : 'text-emerald-700'}`}>
                                                     {language === 'tr' ? `${targetIp || targetName}: bayt=32 TTL=${currentInfo?.ttl ?? 64}` : `Reply from ${targetIp || targetName}: bytes=32 TTL=${currentInfo?.ttl ?? 64}`}
                                                 </div>
-                                                <div className={`text-xs mt-0.5 ${isDark ? 'text-emerald-300/80' : 'text-emerald-600'}`}>{sourceName} → {targetName} → {sourceName}</div>
+                                                <div className={`text-xs mt-0.5 ${isDark ? 'text-emerald-300/80' : 'text-emerald-600'}`}>{sourceName} â†’ {targetName} â†’ {sourceName}</div>
                                             </>
                                         ) : (
                                             <>
@@ -566,7 +566,7 @@ export function PingPacketInfoPanel({
                                                 {currentInfo && (
                                                     <div className={`text-xs mt-1 font-mono flex items-center gap-1.5 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                                                         <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
-                                                        <span>{language === 'tr' ? `${currentInfo.fromDevice.name} → ${currentInfo.toDevice.name} adımında başarısız` : `Failed at ${currentInfo.fromDevice.name} → ${currentInfo.toDevice.name}`}</span>
+                                                        <span>{language === 'tr' ? `${currentInfo.fromDevice.name} â†’ ${currentInfo.toDevice.name} adÄ±mÄ±nda baÅŸarÄ±sÄ±z` : `Failed at ${currentInfo.fromDevice.name} â†’ ${currentInfo.toDevice.name}`}</span>
                                                     </div>
                                                 )}
                                             </>
@@ -598,14 +598,14 @@ export function PingPacketInfoPanel({
                                             <div className={`w-2 h-2 rounded-full flex-shrink-0 ${currentInfo.toDevice.type === 'router' ? 'bg-purple-500' : currentInfo.toDevice.type.startsWith('switch') ? 'bg-accent-500' : 'bg-primary-500'}`} />
                                         </div>
                                         {macChanged && (
-                                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${isDark ? 'bg-warning-500/20 text-warning-300 border border-warning-500/30' : 'bg-warning-500/15 text-warning-700 border border-warning-500/30'}`}>⚡ {isMobile ? '' : t.macChanged}</span>
+                                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${isDark ? 'bg-warning-500/20 text-warning-300 border border-warning-500/30' : 'bg-warning-500/15 text-warning-700 border border-warning-500/30'}`}>âš¡ {isMobile ? '' : t.macChanged}</span>
                                         )}
                                         {ipSame && prevInfo && !isMobile && (
-                                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${isDark ? 'bg-success-500/20 text-success-300 border border-success-500/30' : 'bg-success-500/15 text-success-700 border border-success-500/30'}`}>✓ {t.ipSame}</span>
+                                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${isDark ? 'bg-success-500/20 text-success-300 border border-success-500/30' : 'bg-success-500/15 text-success-700 border border-success-500/30'}`}>âœ“ {t.ipSame}</span>
                                         )}
                                     </div>
 
-                                    {/* Packet tables — 3 col desktop, 1 col mobile (tabs) */}
+                                    {/* Packet tables â€” 3 col desktop, 1 col mobile (tabs) */}
                                     {showPacketTables && (isMobile ? (
                                         <MobilePacketTables
                                             currentInfo={currentInfo}
@@ -637,7 +637,7 @@ export function PingPacketInfoPanel({
                                                 style={isGlass ? { backdropFilter: 'blur(12px) saturate(180%)' } : undefined}>
                                                 <div className={`px-3 py-1.5 text-[11px] font-bold tracking-wide border-b ${isGlass
                                                     ? isDark ? 'bg-purple-500/15 border-purple-400/20 text-purple-400' : 'bg-purple-500/10 border-purple-400/20 text-purple-700'
-                                                    : isDark ? 'bg-purple-950/60 border-purple-900/60 text-purple-400' : 'bg-purple-100 border-purple-200 text-purple-700'}`}>{currentInfo.layer3 === 'IPv6' ? (language === 'tr' ? 'Katman 3 — IPv6 Başlığı' : 'Layer 3 — IPv6 Header') : t.layer3}</div>
+                                                    : isDark ? 'bg-purple-950/60 border-purple-900/60 text-purple-400' : 'bg-purple-100 border-purple-200 text-purple-700'}`}>{currentInfo.layer3 === 'IPv6' ? (language === 'tr' ? 'Katman 3 â€” IPv6 BaÅŸlÄ±ÄŸÄ±' : 'Layer 3 â€” IPv6 Header') : t.layer3}</div>
                                                 <table className="w-full"><tbody>
                                                     <FieldRow label={currentInfo.layer3 === 'IPv6' ? (t.srcIp.replace('IP', 'IPv6')) : t.srcIp} value={currentInfo.srcIp} highlight="same" isDark={isDark} />
                                                     <FieldRow label={currentInfo.layer3 === 'IPv6' ? (t.dstIp.replace('IP', 'IPv6')) : t.dstIp} value={currentInfo.dstIp} highlight="same" isDark={isDark} />
@@ -651,7 +651,7 @@ export function PingPacketInfoPanel({
                                                 style={isGlass ? { backdropFilter: 'blur(12px) saturate(180%)' } : undefined}>
                                                 <div className={`px-3 py-1.5 text-[11px] font-bold tracking-wide border-b ${isGlass
                                                     ? isDark ? 'bg-primary-500/15 border-primary-400/20 text-primary-400' : 'bg-primary-500/10 border-primary-400/20 text-primary-700'
-                                                    : isDark ? 'bg-primary-950/60 border-primary-900/60 text-primary-400' : 'bg-primary-100 border-primary-200 text-primary-700'}`}>{currentInfo.layer4 === 'ICMPv6' ? (language === 'tr' ? 'Katman 4 — ICMPv6' : 'Layer 4 — ICMPv6') : t.layer4}</div>
+                                                    : isDark ? 'bg-primary-950/60 border-primary-900/60 text-primary-400' : 'bg-primary-100 border-primary-200 text-primary-700'}`}>{currentInfo.layer4 === 'ICMPv6' ? (language === 'tr' ? 'Katman 4 â€” ICMPv6' : 'Layer 4 â€” ICMPv6') : t.layer4}</div>
                                                 <table className="w-full"><tbody>
                                                     <FieldRow label={currentInfo.layer4 === 'ICMPv6' ? 'ICMPv6 Type' : t.icmpType} value={currentInfo.icmpType} isDark={isDark} />
                                                     <FieldRow label={currentInfo.layer4 === 'ICMPv6' ? 'ICMPv6 Code' : t.icmpCode} value={String(currentInfo.icmpCode)} isDark={isDark} />
@@ -676,3 +676,4 @@ export function PingPacketInfoPanel({
         </>
     );
 }
+

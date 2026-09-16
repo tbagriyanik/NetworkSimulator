@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useEffect, KeyboardEvent, useCallback, useMemo } from 'react';
 import { SwitchState } from '@/lib/network/types';
@@ -13,7 +13,7 @@ import { useOutputSearch } from '@/hooks/useOutputSearch';
 import { ModernPanel } from '@/components/ui/ModernPanel';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-breakpoint';
-import type { CanvasDevice } from './networkTopology.types';
+import type { CanvasDevice } from './NetworkTopology/types/networkTopology.types';
 import { RouterIcon, SwitchIcon, WlcIcon } from './PCPanelWidgets';
 import { Laptop } from 'lucide-react';
 

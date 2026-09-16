@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import { CanvasDevice } from '../networkTopology.types';
+import { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { getChannelBand } from '@/lib/network/wireless';
 import { colors } from '@/lib/design-tokens/colors';

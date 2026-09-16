@@ -1,5 +1,5 @@
-import { useCallback } from 'react';
-import type { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/networkTopology.types';
+﻿import { useCallback } from 'react';
+import type { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 type DeviceSelector = (device: DeviceType, deviceId?: string, switchModel?: string, deviceName?: string, isNew?: boolean, deviceData?: CanvasDevice) => void;
 type GuidedCheck = (context: { deviceAccessed: 'switch' | 'router' | 'pc' | null; deviceAccessedId: string; deviceStates: Map<string, unknown>; topologyConnections: CanvasConnection[]; topologyDevices: CanvasDevice[] }) => void;
@@ -45,3 +45,5 @@ export function usePageTopologyCallbacks(options: PageTopologyCallbackOptions) {
 
   return { handleDeviceSelectFromCanvas, handleDeviceSelectFromMenu };
 }
+
+

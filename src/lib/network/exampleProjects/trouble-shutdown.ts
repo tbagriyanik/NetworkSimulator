@@ -1,6 +1,6 @@
-import { createPcDevice, createSwitchDevice, connectPorts, baseProjectData } from './helpers';
+﻿import { createPcDevice, createSwitchDevice, connectPorts, baseProjectData } from './helpers';
 import type { ExampleProject } from './types';
-import type { CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { createInitialState } from '../initialState';
 
 const example = (isTr: boolean): ExampleProject => {
@@ -18,8 +18,8 @@ const example = (isTr: boolean): ExampleProject => {
   return {
     id: 'trouble-shutdown',
     tag: isTr ? 'ARIZA' : 'TROUBLE',
-    title: isTr ? 'Kapalı Arayüz' : 'Shutdown Interface',
-    description: isTr ? 'Fiziksel bağlantı var ama LED\'ler sönük. Sorunu bulun.' : 'Physical connection exists but LEDs are off. Find the issue.',
+    title: isTr ? 'KapalÄ± ArayÃ¼z' : 'Shutdown Interface',
+    description: isTr ? 'Fiziksel baÄŸlantÄ± var ama LED\'ler sÃ¶nÃ¼k. Sorunu bulun.' : 'Physical connection exists but LEDs are off. Find the issue.',
     level: 'basic',
     injectedFaults: [
       {
@@ -37,3 +37,5 @@ const example = (isTr: boolean): ExampleProject => {
 };
 
 export default example;
+
+

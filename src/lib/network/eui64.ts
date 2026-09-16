@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Helper to calculate IPv6 EUI-64 Host Address from MAC Address and Prefix
  */
 export function calculateEui64(macAddress: string | undefined, prefixStr: string): string {
@@ -52,7 +52,7 @@ export function calculateEui64(macAddress: string | undefined, prefixStr: string
 }
 
 import type { SwitchState } from './types';
-import type { CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 /**
  * Evaluate SLAAC (IPv6 Router Advertisement auto-configuration) for a device
@@ -171,4 +171,6 @@ export function evaluateDhcpv6ForDevice(
 
   return null;
 }
+
+
 

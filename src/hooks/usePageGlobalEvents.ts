@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+﻿import { useEffect } from 'react';
 import type { SwitchState } from '@/lib/network/types';
-import type { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { TabType } from '@/app/page.types';
 import { useMultiWindowStore } from '@/hooks/useMultiWindowStore';
 
@@ -124,7 +124,7 @@ export function usePageGlobalEvents({
       let cleanCommand = '';
 
       // Check if rawStr contains a quoted command like "ipconfig" or "show ip int brief"
-      const quoteMatch = rawStr.match(/["'“”]([^"'“”]+)["'“”]/);
+      const quoteMatch = rawStr.match(/["'â€œâ€]([^"'â€œâ€]+)["'â€œâ€]/);
       if (quoteMatch && quoteMatch[1].trim()) {
         cleanCommand = quoteMatch[1].trim();
       } else {
@@ -136,10 +136,10 @@ export function usePageGlobalEvents({
         .replace(/[\^$()]/g, '')
         .replace(/^[^:]{1,40}:\s*/i, '')
         .replace(/^[a-zA-Z0-9_-]+(\([^)]+\))?[>#]\s*/, '')
-        .replace(/^(type|yazın|yazin)\s+/i, '')
-        .replace(/\s+(yazın|yazin)\.?$/i, '')
+        .replace(/^(type|yazÄ±n|yazin)\s+/i, '')
+        .replace(/\s+(yazÄ±n|yazin)\.?$/i, '')
         .replace(/\s+(and press enter|press enter)\.?$/i, '')
-        .replace(/^["'“”]+|["'“”.,!?]+$/g, '')
+        .replace(/^["'â€œâ€]+|["'â€œâ€.,!?]+$/g, '')
         .trim();
 
       if (!cleanCommand && commandPattern) {
@@ -238,3 +238,5 @@ export function usePageGlobalEvents({
     setPcPanelInitialTab, setShowPCPanel, setUnifiedDeviceActiveTab
   ]);
 }
+
+

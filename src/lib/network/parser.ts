@@ -1,13 +1,13 @@
-// Network Command Parser
+﻿// Network Command Parser
 import { CommandMode, ParsedCommand, CommandValidationResult, SwitchState } from './types';
 import { commandAliases } from './initialState';
 import { useAppStore } from '../store/appStore';
 import { CLI_ERRORS } from "./core/cliErrors";
 import { getDeviceCapabilities, type DeviceCapabilities } from './capabilities';
 import { getSmartCliHint } from './core/smartCliHints';
-import type { DeviceType } from '@/components/network/networkTopology.types';
+import type { DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
-// Modüler komut pattern'leri
+// ModÃ¼ler komut pattern'leri
 import type { CommandPattern } from './parser/commandPatterns.types';
 import { modePatterns } from './parser/modePatterns';
 import { routingPatterns } from './parser/routingPatterns';
@@ -18,7 +18,7 @@ import { systemPatterns } from './parser/systemPatterns';
 
 export type { CommandPattern };
 
-// Desteklenen komutlar ve pattern'leri — alt modüllerden birleştirilir
+// Desteklenen komutlar ve pattern'leri â€” alt modÃ¼llerden birleÅŸtirilir
 export const commandPatterns: Record<string, CommandPattern> = {
   ...modePatterns,
   ...routingPatterns,
@@ -35,7 +35,7 @@ export const commandPatterns: Record<string, CommandPattern> = {
 const cachedSortedAliases = Object.entries(commandAliases || {})
   .sort((a, b) => b[0].length - a[0].length);
 
-// Komut alias'larını çöz - Gelişmiş versiyon
+// Komut alias'larÄ±nÄ± Ã§Ã¶z - GeliÅŸmiÅŸ versiyon
 export function resolveAliases(input: string, state?: Partial<SwitchState>): string {
   const trimmed = input.trim().toLowerCase();
 
@@ -45,7 +45,7 @@ export function resolveAliases(input: string, state?: Partial<SwitchState>): str
     return `interface${trimmed.substring(3)}`;
   }
 
-  // Special handling for "do <subcommand>" — delegate alias resolution to privileged mode
+  // Special handling for "do <subcommand>" â€” delegate alias resolution to privileged mode
   if (trimmed.startsWith('do ')) {
     const subInput = input.trim().substring(3);
     const resolvedSub = resolveAliases(subInput, state);
@@ -59,12 +59,12 @@ export function resolveAliases(input: string, state?: Partial<SwitchState>): str
   };
   const execAliases = { ...builtInExecAliases, ...state?.execAliases };
 
-  // 1. Tam eşleşme (kullanıcı + built-in exec alias)
+  // 1. Tam eÅŸleÅŸme (kullanÄ±cÄ± + built-in exec alias)
   if (execAliases[trimmed]) {
     return execAliases[trimmed];
   }
 
-  // 2. Kısmi eşleşme (prefix match: örn. 'lo ...' veya parametreli alias)
+  // 2. KÄ±smi eÅŸleÅŸme (prefix match: Ã¶rn. 'lo ...' veya parametreli alias)
   const sortedExecAliases = Object.entries(execAliases)
     .sort((a, b) => b[0].length - a[0].length);
   for (const [alias, full] of sortedExecAliases as [string, string][]) {
@@ -82,36 +82,36 @@ export function resolveAliases(input: string, state?: Partial<SwitchState>): str
     }
   }
 
-  // Tam eşleşme - direkt alias
+  // Tam eÅŸleÅŸme - direkt alias
   if (commandAliases[trimmed]) {
     return commandAliases[trimmed];
   }
 
-  // Kısmi eşleşme - daha uzun komutlar için
-  // Önce en uzun alias'ları dene (using the pre-sorted cached static list to eliminate the O(N log N) sorting bottleneck)
+  // KÄ±smi eÅŸleÅŸme - daha uzun komutlar iÃ§in
+  // Ã–nce en uzun alias'larÄ± dene (using the pre-sorted cached static list to eliminate the O(N log N) sorting bottleneck)
   for (const [alias, full] of cachedSortedAliases) {
     const aliasLower = alias.toLowerCase();
     const fullLower = full.toLowerCase();
 
-    // Alias ile tam eşleşme
+    // Alias ile tam eÅŸleÅŸme
     if (trimmed === aliasLower) {
       return full;
     }
 
-    // Alias ile başlıyor ve boşlukla devam ediyorsa (prefix match)
+    // Alias ile baÅŸlÄ±yor ve boÅŸlukla devam ediyorsa (prefix match)
     if (trimmed.startsWith(aliasLower + ' ')) {
-      // Eğer zaten tam komutla (veya onun prefix'iyle) başlıyorsa genişletme yapma
-      // Bu, "clear mac address-table" gibi komutların "clear mac" alias'ı yüzünden
-      // "clear mac address-table address-table" haline gelmesini önler.
+      // EÄŸer zaten tam komutla (veya onun prefix'iyle) baÅŸlÄ±yorsa geniÅŸletme yapma
+      // Bu, "clear mac address-table" gibi komutlarÄ±n "clear mac" alias'Ä± yÃ¼zÃ¼nden
+      // "clear mac address-table address-table" haline gelmesini Ã¶nler.
       if (trimmed === fullLower || trimmed.startsWith(fullLower + ' ')) {
         continue;
       }
 
       const rest = input.trim().substring(alias.length).trim();
       if (rest) {
-        // "sh cdp neighbors" gibi, expansion'ın son token'ı kullanıcı tarafından
-        // da yazılmışsa tekrarlamayı önle ("show cdp neighbors neighbors").
-        // Eksik/ara yazımda son anahtar kelime atlanır.
+        // "sh cdp neighbors" gibi, expansion'Ä±n son token'Ä± kullanÄ±cÄ± tarafÄ±ndan
+        // da yazÄ±lmÄ±ÅŸsa tekrarlamayÄ± Ã¶nle ("show cdp neighbors neighbors").
+        // Eksik/ara yazÄ±mda son anahtar kelime atlanÄ±r.
         const lastToken = full.trim().split(/\s+/).pop() || '';
         let adjusted = rest;
         if (lastToken && rest.toLowerCase() === lastToken.toLowerCase()) {
@@ -132,7 +132,7 @@ export function resolveAliases(input: string, state?: Partial<SwitchState>): str
   return input;
 }
 
-// Levenshtein mesafesi hesaplama (bulanık eşleşme için)
+// Levenshtein mesafesi hesaplama (bulanÄ±k eÅŸleÅŸme iÃ§in)
 export function getLevenshteinDistance(a: string, b: string): number {
   const matrix = Array.from({ length: a.length + 1 }, (_, i) => [i]);
   for (let j = 1; j <= b.length; j++) matrix[0][j] = j;
@@ -155,7 +155,7 @@ export function parseCommand(input: string, currentMode: CommandMode, state?: Pa
   // Guided lesson text may be copied with surrounding quotation marks or a
   // sentence-ending period. Treat those as presentation punctuation, not as
   // part of the CLI command (e.g. `"enable".` -> `enable`).
-  const normalizedInput = input.trim().replace(/^["'“”]+|["'“”.,!?]+$/g, '').trim();
+  const normalizedInput = input.trim().replace(/^["'â€œâ€]+|["'â€œâ€.,!?]+$/g, '').trim();
 
   if (normalizedInput && normalizedInput.length > 256) {
     return {
@@ -177,7 +177,7 @@ export function parseCommand(input: string, currentMode: CommandMode, state?: Pa
 
   if (!resolvedInput) return null;
 
-  // Komut ve argümanları ayır
+  // Komut ve argÃ¼manlarÄ± ayÄ±r
   const parts = resolvedInput.split(/\s+/);
   const command = parts[0];
   const args = parts.slice(1);
@@ -263,7 +263,7 @@ export function expandKeywordPrefixes(input: string, currentMode: CommandMode, c
   const rawTokens = input.trim().split(/\s+/).filter(Boolean);
   if (rawTokens.length === 0) return input;
 
-  // Special handling for "do <subcommand>" — delegating keyword expansion to privileged mode
+  // Special handling for "do <subcommand>" â€” delegating keyword expansion to privileged mode
   if (rawTokens[0].toLowerCase() === 'do' && rawTokens.length > 1 && currentMode !== 'privileged' && currentMode !== 'user') {
     const subInput = input.trim().substring(rawTokens[0].length).trim();
     const expandedSub = expandKeywordPrefixes(subInput, 'privileged', capabilities);
@@ -325,7 +325,7 @@ function resolveByCommandTree(input: string, currentMode: CommandMode, capabilit
     const uniqueKeywords = Array.from(new Set(matchedChildren.map(m => m.keyword)));
 
     // The typed token matches multiple distinct keywords but is not itself a
-    // full keyword — reports this as an ambiguous command ("co" could be
+    // full keyword â€” reports this as an ambiguous command ("co" could be
     // configure / copy / connect). An exact full keyword wins over prefixes.
     if (i === tokens.length - 1 && uniqueKeywords.length > 1 && !uniqueKeywords.includes(token)) {
       return { kind: 'ambiguous', candidates: uniqueKeywords.slice(0, 8), failedTokenIndex: i };
@@ -361,7 +361,7 @@ function resolveByCommandTree(input: string, currentMode: CommandMode, capabilit
   return { kind: 'ok' };
 }
 
-// Komut geçerli mi kontrol et
+// Komut geÃ§erli mi kontrol et
 export function validateCommand(
   parsed: ParsedCommand,
   currentMode: CommandMode,
@@ -407,13 +407,13 @@ export function validateCommand(
       continue;
     }
 
-    // Cihaz uyumluluk kontrolü (Akıllı Destek)
+    // Cihaz uyumluluk kontrolÃ¼ (AkÄ±llÄ± Destek)
     if (state) {
       const compatibility = checkDeviceCompatibility(name, state);
       if (!compatibility.valid) {
         return {
           valid: false,
-          reason: 'unknown-command', // nOS gibi 'invalid' yerine cihaz uyumsuzluğunu belirtiyoruz
+          reason: 'unknown-command', // nOS gibi 'invalid' yerine cihaz uyumsuzluÄŸunu belirtiyoruz
           error: compatibility.error
         };
       }
@@ -453,7 +453,7 @@ export function validateCommand(
     return { valid: false, reason: 'incomplete', error: CLI_ERRORS.incomplete };
   }
 
-  // Eşleşme bulunamadı
+  // EÅŸleÅŸme bulunamadÄ±
   const failedTokenIndex = treeResolution.failedTokenIndex;
   return {
     valid: false,
@@ -463,7 +463,7 @@ export function validateCommand(
 }
 
 
-// Geçersiz komut hatası
+// GeÃ§ersiz komut hatasÄ±
 export function getInvalidCommandError(
   input: string,
   failedTokenIndexOrState?: number | Partial<SwitchState>,
@@ -503,36 +503,36 @@ export function getInvalidCommandError(
     const isTr = language === 'tr';
     const smartHint = getSmartCliHint(cleanedInput);
     if (smartHint) {
-      errorMsg += `\n\n📋 ${isTr ? 'Kullanım Formatı' : 'Syntax'}: ${smartHint.template}`;
-      errorMsg += `\n💡 ${isTr ? 'Örnek' : 'Example'}: ${smartHint.example}`;
-      errorMsg += `\nℹ️  ${smartHint.explanation[language]}`;
+      errorMsg += `\n\nğŸ“‹ ${isTr ? 'KullanÄ±m FormatÄ±' : 'Syntax'}: ${smartHint.template}`;
+      errorMsg += `\nğŸ’¡ ${isTr ? 'Ã–rnek' : 'Example'}: ${smartHint.example}`;
+      errorMsg += `\nâ„¹ï¸  ${smartHint.explanation[language]}`;
     } else if (firstWord === 'interface' || firstWord === 'int') {
       errorMsg += isTr
-        ? `\n💡 İpucu: "interface" komutundan sonra bir arayüz adı bekleniyor (Örn: "fa0/1").`
-        : `\n💡 Hint: "interface" command expects an interface name (e.g. "fa0/1").`;
+        ? `\nğŸ’¡ Ä°pucu: "interface" komutundan sonra bir arayÃ¼z adÄ± bekleniyor (Ã–rn: "fa0/1").`
+        : `\nğŸ’¡ Hint: "interface" command expects an interface name (e.g. "fa0/1").`;
     } else if (firstWord === 'vlan') {
       errorMsg += isTr
-        ? `\n💡 İpucu: "vlan" komutundan sonra bir numara bekleniyor (1-4094).`
-        : `\n💡 Hint: "vlan" command expects a number (1-4094).`;
+        ? `\nğŸ’¡ Ä°pucu: "vlan" komutundan sonra bir numara bekleniyor (1-4094).`
+        : `\nğŸ’¡ Hint: "vlan" command expects a number (1-4094).`;
     } else if (firstWord === 'ip' && cmdTokens[1] === 'address') {
       errorMsg += isTr
-        ? `\n💡 İpucu: "ip address" komutu bir IP ve alt ağ maskesi bekler.`
-        : `\n💡 Hint: "ip address" command expects an IP and subnet mask.`;
+        ? `\nğŸ’¡ Ä°pucu: "ip address" komutu bir IP ve alt aÄŸ maskesi bekler.`
+        : `\nğŸ’¡ Hint: "ip address" command expects an IP and subnet mask.`;
     } else if (firstWord === 'access-list') {
       errorMsg += isTr
-        ? `\n💡 İpucu: "access-list" komutu bir numara, permit/deny ve koşul bekler.`
-        : `\n💡 Hint: "access-list" command expects a number, permit/deny and condition.`;
+        ? `\nğŸ’¡ Ä°pucu: "access-list" komutu bir numara, permit/deny ve koÅŸul bekler.`
+        : `\nğŸ’¡ Hint: "access-list" command expects a number, permit/deny and condition.`;
     } else if (firstWord === 'line' && (cmdTokens[1] === 'vty' || cmdTokens[1] === 'console' || cmdTokens[1] === 'con')) {
       errorMsg += isTr
-        ? `\n💡 İpucu: "line" komutundan sonra hat tipi ve numarası bekleniyor.`
-        : `\n💡 Hint: "line" command expects line type and number.`;
+        ? `\nğŸ’¡ Ä°pucu: "line" komutundan sonra hat tipi ve numarasÄ± bekleniyor.`
+        : `\nğŸ’¡ Hint: "line" command expects line type and number.`;
     } else if (firstWord === 'router' && (cmdTokens[1] === 'ospf' || cmdTokens[1] === 'rip' || cmdTokens[1] === 'eigrp')) {
       errorMsg += isTr
-        ? `\n💡 İpucu: "router" komutundan sonra protokol ve ID bekleniyor.`
-        : `\n💡 Hint: "router" command expects protocol and AS/Process ID.`;
+        ? `\nğŸ’¡ Ä°pucu: "router" komutundan sonra protokol ve ID bekleniyor.`
+        : `\nğŸ’¡ Hint: "router" command expects protocol and AS/Process ID.`;
     }
 
-    // Mevcut mod için geçerli komutların ilk kelimelerini topla
+    // Mevcut mod iÃ§in geÃ§erli komutlarÄ±n ilk kelimelerini topla
     const validFirstWords = new Set<string>();
     Object.entries(commandPatterns).forEach(([name, pattern]) => {
       if (pattern.modes.includes(currentMode)) {
@@ -540,7 +540,7 @@ export function getInvalidCommandError(
       }
     });
 
-    // En yakın 3 komutu bul
+    // En yakÄ±n 3 komutu bul
     const suggestions = Array.from(validFirstWords)
       .map(word => ({ word, distance: getLevenshteinDistance(firstWord, word) }))
       .filter(item => item.distance <= 2)
@@ -557,7 +557,7 @@ export function getInvalidCommandError(
 }
 
 /**
- * Cihaz ve komut uyumluluğunu kontrol eder (Akıllı Yardımcı)
+ * Cihaz ve komut uyumluluÄŸunu kontrol eder (AkÄ±llÄ± YardÄ±mcÄ±)
  */
 function checkDeviceCompatibility(commandName: string, state: Partial<SwitchState>): { valid: boolean; error?: string } {
   const model = state.switchModel || '';
@@ -577,12 +577,12 @@ function checkDeviceCompatibility(commandName: string, state: Partial<SwitchStat
         : 'firewall';
   const unsupported = (cmd: string) => `${CLI_ERRORS.invalidInput}\n${cmd} is not supported on this ${deviceLabel}.`;
 
-  // 1. Router üzerinde Switchport komutları
+  // 1. Router Ã¼zerinde Switchport komutlarÄ±
   if (deviceType === 'router' && (commandName.startsWith('switchport') || commandName === 'vlan' || commandName === 'no vlan')) {
     return { valid: false, error: unsupported(commandName) };
   }
 
-  // 2. L2 Switch üzerinde L3 komutları (no switchport, ip routing, vs.)
+  // 2. L2 Switch Ã¼zerinde L3 komutlarÄ± (no switchport, ip routing, vs.)
   if (deviceType === 'switchL2' && (commandName === 'no switchport' || commandName === 'ip routing' || commandName.startsWith('router ') || commandName.startsWith('ipv6 router '))) {
     return { valid: false, error: unsupported(commandName) };
   }
@@ -611,6 +611,8 @@ function calculateCaretPosition(input: string, tokenIndex: number): number {
   }
   return pos;
 }
+
+
 
 
 

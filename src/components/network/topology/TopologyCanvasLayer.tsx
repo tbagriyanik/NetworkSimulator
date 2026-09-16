@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
-import { CABLE_COLORS } from '../networkTopology.constants';
-import { getConnectionStatusMessage, getPortPosition, getDeviceCenter, getDevicePairKey } from '../networkTopology.helpers';
+import { CABLE_COLORS } from '../NetworkTopology/utils/networkTopology.constants';
+import { getConnectionStatusMessage, getPortPosition, getDeviceCenter, getDevicePairKey } from '../NetworkTopology/utils/networkTopology.helpers';
 import { ConnectionLine } from '../ConnectionLine';
 import { ConnectionHandle } from '../ConnectionHandle';
 import { NoteNode } from './NoteNode';
@@ -13,7 +13,7 @@ import { SelectionBoxOverlay } from './SelectionBoxOverlay';
 import { PingAnimationOverlay } from './PingAnimationOverlay';
 import { TopologyAreaOverlay } from './TopologyAreaOverlay';
 import type { PingAnimationOverlayProps } from './PingAnimationOverlay';
-import type { CanvasConnection, CanvasDevice, CanvasNote, ContextMenuState } from '../networkTopology.types';
+import type { CanvasConnection, CanvasDevice, CanvasNote, ContextMenuState } from '../NetworkTopology/types/networkTopology.types';
 import type { SwitchState, CableInfo } from '@/lib/network/types';
 import { useUiPreferences } from '@/hooks/useUiPreferences';
 
@@ -256,17 +256,17 @@ export function TopologyCanvasLayer({
                                 <foreignObject x="0" y="0" width={canvasSize.width} height={canvasSize.height}>
                                     <div className="w-full h-full flex flex-col items-center justify-center pointer-events-none">
                                         <div className={`text-center p-8 rounded-2xl max-w-md ${isDark ? 'bg-secondary-900/50 border border-secondary-700' : 'bg-white/80 border border-gray-200'}`}>
-                                            <div className="text-6xl mb-4">🌐</div>
+                                            <div className="text-6xl mb-4">ğŸŒ</div>
                                             <h2 className={`text-2xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                                                {language === 'tr' ? 'Network Simulator\'a Hoş Geldiniz' : 'Welcome to Network Simulator'}
+                                                {language === 'tr' ? 'Network Simulator\'a HoÅŸ Geldiniz' : 'Welcome to Network Simulator'}
                                             </h2>
                                             <p className={`text-sm mb-4 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                                                 {language === 'tr'
-                                                    ? 'Ağ topolojisi oluşturmak için bir cihaz ekleyin veya örnek projelerden birini yükleyin.'
+                                                    ? 'AÄŸ topolojisi oluÅŸturmak iÃ§in bir cihaz ekleyin veya Ã¶rnek projelerden birini yÃ¼kleyin.'
                                                     : 'Add a device to start building your network topology or load an example project.'}
                                             </p>
                                             <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                                                {language === 'tr' ? '💡 İpucu: Sol üst köşedeki cihaz paletini kullanın' : '💡 Tip: Use the device palette in the top left corner'}
+                                                {language === 'tr' ? 'ğŸ’¡ Ä°pucu: Sol Ã¼st kÃ¶ÅŸedeki cihaz paletini kullanÄ±n' : 'ğŸ’¡ Tip: Use the device palette in the top left corner'}
                                             </div>
                                         </div>
                                     </div>
@@ -416,11 +416,12 @@ export function TopologyCanvasLayer({
 
                     <rect data-export-hide="true" x="0" y="0" width={canvasSize.width} height={canvasSize.height} fill="none" stroke={isDark ? 'var(--color-primary-600)' : 'var(--color-primary-700)'} strokeWidth={2 / zoom} strokeDasharray={`${6 / zoom},${4 / zoom}`} opacity={0.7} />
                     <text data-export-hide="true" x={canvasSize.width - 80} y={canvasSize.height - 10} style={{ fill: 'var(--color-secondary-500)', fontFamily: 'var(--font-geist-mono)' }} fontSize={12 / zoom}>
-                        {canvasSize.width} × {canvasSize.height}
+                        {canvasSize.width} Ã— {canvasSize.height}
                     </text>
                 </g>
             </svg>
         </div>
     );
 }
+
 

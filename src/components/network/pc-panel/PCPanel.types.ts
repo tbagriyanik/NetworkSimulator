@@ -1,7 +1,7 @@
-import type React from 'react';
+﻿import type React from 'react';
 import type { CableInfo, SwitchState } from '@/lib/network/types';
 import type { TerminalOutput } from '../Terminal';
-import type { CanvasDevice } from '../networkTopology.types';
+import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 
 export type PCActiveTab = 'home' | 'desktop' | 'terminal' | 'settings' | 'services' | 'wireless' | 'iot' | 'rest-api';
 
@@ -69,3 +69,4 @@ export interface PCPanelProps {
 }
 
 export type PcOutputsSetter = React.Dispatch<React.SetStateAction<Map<string, OutputLine[]>>>;
+

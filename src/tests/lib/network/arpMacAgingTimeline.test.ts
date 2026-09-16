@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { runAgingTick } from '@/lib/network/agingEngine';
 import { runNetworkEventPipeline } from '@/lib/network/forwarding/eventPipeline';
 import type { SwitchState } from '@/lib/network/types';
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 const baseSwitchState = (id: string): SwitchState => ({
   hostname: id,
@@ -117,3 +117,4 @@ describe('ARP/MAC aging event timeline', () => {
     expect(res.agingEvents).toBeUndefined();
   });
 });
+

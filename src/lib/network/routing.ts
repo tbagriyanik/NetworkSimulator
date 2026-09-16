@@ -1,4 +1,4 @@
-import { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+﻿import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from './types';
 import { calculateOSPFRoutes } from './ospf';
 import { calculateEigrpRoutes, calculateEigrp6Routes } from './eigrp-dual';
@@ -617,3 +617,5 @@ export function detectRoutingLoops(
 ): RoutingLoopIssue[] {
   return detectLoopsImpl(devices, deviceStates, connections, buildRoutingTable, findRouteDetailed);
 }
+
+

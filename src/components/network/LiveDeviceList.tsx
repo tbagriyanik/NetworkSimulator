@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import { SwitchState } from '@/lib/network/types';
@@ -6,7 +6,7 @@ import { normalizeMAC } from '@/lib/utils';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
+import { CanvasDevice, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import {
   Terminal,
   Copy,
@@ -22,7 +22,7 @@ import {
   Check
 } from 'lucide-react';
 
-// ─── Types & Constants ────────────────────────────────────────────────────────
+// â”€â”€â”€ Types & Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type RefreshDeviceSummary = {
   id: string;
@@ -55,7 +55,7 @@ export const REFRESH_DEVICE_TYPE_ORDER: DeviceType[] = [
   'router', 'switchL3', 'switchL2', 'hub', 'cloud', 'mobile', 'printer', 'pc', 'iot', 'firewall', 'wlc'
 ];
 
-// ─── Helper Functions for CLI & Settings ──────────────────────────────────────
+// â”€â”€â”€ Helper Functions for CLI & Settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function getRecommendedCliCommands(
   type: DeviceType,
@@ -72,7 +72,7 @@ function getRecommendedCliCommands(
         if (vlan.id !== 1 && vlan.id < 1002) {
           cmds.push({
             cmd: `vlan ${vlan.id}\n name ${vlan.name || `VLAN${vlan.id}`}\n exit`,
-            desc: isTR ? `VLAN ${vlan.id} (${vlan.name || `VLAN${vlan.id}`}) Yapılandırması` : `VLAN ${vlan.id} configuration`,
+            desc: isTR ? `VLAN ${vlan.id} (${vlan.name || `VLAN${vlan.id}`}) YapÄ±landÄ±rmasÄ±` : `VLAN ${vlan.id} configuration`,
             mode: '(config)#'
           });
         }
@@ -84,7 +84,7 @@ function getRecommendedCliCommands(
         if (port.ipAddress && !port.shutdown) {
           cmds.push({
             cmd: `interface ${port.id || port.name}\n ip address ${port.ipAddress} ${port.subnetMask || '255.255.255.0'}\n no shutdown\n exit`,
-            desc: isTR ? `${port.id || port.name} IP Yapılandırması` : `${port.id || port.name} IP config`,
+            desc: isTR ? `${port.id || port.name} IP YapÄ±landÄ±rmasÄ±` : `${port.id || port.name} IP config`,
             mode: '(config)#'
           });
         } else if (port.mode === 'trunk' && !port.shutdown) {
@@ -96,7 +96,7 @@ function getRecommendedCliCommands(
         } else if (port.accessVlan && port.accessVlan !== 1 && !port.shutdown) {
           cmds.push({
             cmd: `interface ${port.id || port.name}\n switchport mode access\n switchport access vlan ${port.accessVlan}\n exit`,
-            desc: isTR ? `${port.id || port.name} VLAN ${port.accessVlan} Erişimi` : `${port.id || port.name} Access VLAN ${port.accessVlan}`,
+            desc: isTR ? `${port.id || port.name} VLAN ${port.accessVlan} EriÅŸimi` : `${port.id || port.name} Access VLAN ${port.accessVlan}`,
             mode: '(config)#'
           });
         }
@@ -108,7 +108,7 @@ function getRecommendedCliCommands(
       rawStateAny.ipRoutes.forEach((route: Record<string, unknown>) => {
         cmds.push({
           cmd: `ip route ${route.prefix || route.network || '0.0.0.0'} ${route.mask || '0.0.0.0'} ${(route.nextHop as string) || (route.interface as string) || ''}`,
-          desc: isTR ? 'Statik Yönlendirme Kuralı' : 'Static Route',
+          desc: isTR ? 'Statik YÃ¶nlendirme KuralÄ±' : 'Static Route',
           mode: '(config)#'
         });
       });
@@ -118,7 +118,7 @@ function getRecommendedCliCommands(
     if (ospfObj?.enabled) {
       cmds.push({
         cmd: `router ospf ${ospfObj.processId || 1}\n network ${ospfObj.networks?.[0]?.network || '192.168.1.0'} 0.0.0.255 area 0`,
-        desc: isTR ? 'OSPF Yönlendirme Yapılandırması' : 'OSPF Routing Config',
+        desc: isTR ? 'OSPF YÃ¶nlendirme YapÄ±landÄ±rmasÄ±' : 'OSPF Routing Config',
         mode: '(config)#'
       });
     }
@@ -129,13 +129,13 @@ function getRecommendedCliCommands(
     if (rawDevice.ip && rawDevice.ip !== '0.0.0.0') {
       cmds.push({
         cmd: `ip ${rawDevice.ip} ${rawDevice.subnet || '255.255.255.0'} ${rawDevice.gateway || '0.0.0.0'}`,
-        desc: isTR ? `IP ve Varsayılan Ağ Geçidi Tanımı (${rawDevice.ip})` : `Set IP & Gateway (${rawDevice.ip})`
+        desc: isTR ? `IP ve VarsayÄ±lan AÄŸ GeÃ§idi TanÄ±mÄ± (${rawDevice.ip})` : `Set IP & Gateway (${rawDevice.ip})`
       });
 
       if (rawDevice.gateway && rawDevice.gateway !== '0.0.0.0') {
         cmds.push({
           cmd: `ping ${rawDevice.gateway}`,
-          desc: isTR ? `Varsayılan Ağ Geçidine (${rawDevice.gateway}) Ping Testi` : `Ping default gateway (${rawDevice.gateway})`
+          desc: isTR ? `VarsayÄ±lan AÄŸ GeÃ§idine (${rawDevice.gateway}) Ping Testi` : `Ping default gateway (${rawDevice.gateway})`
         });
       }
     }
@@ -145,18 +145,18 @@ function getRecommendedCliCommands(
   switch (type) {
     case 'router':
       cmds.push(
-        { cmd: 'show ip interface brief', desc: isTR ? 'Arayüz ve IP özeti' : 'IP interface summary', mode: '#' },
-        { cmd: 'show ip route', desc: isTR ? 'Yönlendirme tablosu' : 'Routing table', mode: '#' },
-        { cmd: 'show running-config', desc: isTR ? 'Çalışan yapılandırma' : 'Running configuration', mode: '#' },
-        { cmd: 'show ip protocols', desc: isTR ? 'Aktif yönlendirme protokolleri' : 'Active routing protocols', mode: '#' }
+        { cmd: 'show ip interface brief', desc: isTR ? 'ArayÃ¼z ve IP Ã¶zeti' : 'IP interface summary', mode: '#' },
+        { cmd: 'show ip route', desc: isTR ? 'YÃ¶nlendirme tablosu' : 'Routing table', mode: '#' },
+        { cmd: 'show running-config', desc: isTR ? 'Ã‡alÄ±ÅŸan yapÄ±landÄ±rma' : 'Running configuration', mode: '#' },
+        { cmd: 'show ip protocols', desc: isTR ? 'Aktif yÃ¶nlendirme protokolleri' : 'Active routing protocols', mode: '#' }
       );
       break;
     case 'switchL3':
       cmds.push(
-        { cmd: 'show ip interface brief', desc: isTR ? 'L3 / SVI arayüz özetleri' : 'L3 / SVI interfaces brief', mode: '#' },
-        { cmd: 'show vlan brief', desc: isTR ? 'Tanımlı VLAN listesi' : 'Defined VLANs', mode: '#' },
-        { cmd: 'show ip route', desc: isTR ? 'L3 Yönlendirme tablosu' : 'L3 Routing table', mode: '#' },
-        { cmd: 'show interfaces trunk', desc: isTR ? 'Trunk port durumları' : 'Trunk port status', mode: '#' },
+        { cmd: 'show ip interface brief', desc: isTR ? 'L3 / SVI arayÃ¼z Ã¶zetleri' : 'L3 / SVI interfaces brief', mode: '#' },
+        { cmd: 'show vlan brief', desc: isTR ? 'TanÄ±mlÄ± VLAN listesi' : 'Defined VLANs', mode: '#' },
+        { cmd: 'show ip route', desc: isTR ? 'L3 YÃ¶nlendirme tablosu' : 'L3 Routing table', mode: '#' },
+        { cmd: 'show interfaces trunk', desc: isTR ? 'Trunk port durumlarÄ±' : 'Trunk port status', mode: '#' },
         { cmd: 'show mac address-table', desc: isTR ? 'MAC adres tablosu' : 'MAC address table', mode: '#' }
       );
       break;
@@ -164,48 +164,48 @@ function getRecommendedCliCommands(
       cmds.push(
         { cmd: 'show vlan brief', desc: isTR ? 'VLAN listesi' : 'VLAN list', mode: '#' },
         { cmd: 'show interfaces trunk', desc: isTR ? 'Trunk portlar ve izinli VLANlar' : 'Trunk ports and allowed VLANs', mode: '#' },
-        { cmd: 'show mac address-table', desc: isTR ? 'Öğrenilen MAC adresleri' : 'Learned MAC addresses', mode: '#' },
-        { cmd: 'show spanning-tree', desc: isTR ? 'STP root ve port durumları' : 'STP root and port status', mode: '#' },
-        { cmd: 'show port-security', desc: isTR ? 'Port güvenlik durumu' : 'Port security status', mode: '#' }
+        { cmd: 'show mac address-table', desc: isTR ? 'Ã–ÄŸrenilen MAC adresleri' : 'Learned MAC addresses', mode: '#' },
+        { cmd: 'show spanning-tree', desc: isTR ? 'STP root ve port durumlarÄ±' : 'STP root and port status', mode: '#' },
+        { cmd: 'show port-security', desc: isTR ? 'Port gÃ¼venlik durumu' : 'Port security status', mode: '#' }
       );
       break;
     case 'firewall':
       cmds.push(
-        { cmd: 'show nameif', desc: isTR ? 'Arayüz adları ve güvenlik seviyeleri' : 'Interface names & security levels', mode: '#' },
-        { cmd: 'show ip access-group', desc: isTR ? 'Uygulanan erişim kuralları' : 'Applied access groups', mode: '#' },
-        { cmd: 'show access-lists', desc: isTR ? 'Tanımlı ACL kuralları' : 'Configured ACL rules', mode: '#' },
-        { cmd: 'show running-config', desc: isTR ? 'Güvenlik duvarı yapılandırması' : 'Firewall running config', mode: '#' }
+        { cmd: 'show nameif', desc: isTR ? 'ArayÃ¼z adlarÄ± ve gÃ¼venlik seviyeleri' : 'Interface names & security levels', mode: '#' },
+        { cmd: 'show ip access-group', desc: isTR ? 'Uygulanan eriÅŸim kurallarÄ±' : 'Applied access groups', mode: '#' },
+        { cmd: 'show access-lists', desc: isTR ? 'TanÄ±mlÄ± ACL kurallarÄ±' : 'Configured ACL rules', mode: '#' },
+        { cmd: 'show running-config', desc: isTR ? 'GÃ¼venlik duvarÄ± yapÄ±landÄ±rmasÄ±' : 'Firewall running config', mode: '#' }
       );
       break;
     case 'wlc':
       cmds.push(
-        { cmd: 'show wlan summary', desc: isTR ? 'WLAN listesi ve SSID özeti' : 'WLAN summary & SSIDs', mode: '#' },
-        { cmd: 'show ap summary', desc: isTR ? 'Bağlı Access Pointler' : 'Joined Access Points', mode: '#' },
-        { cmd: 'show ap join statistics', desc: isTR ? 'AP bağlantı istatistikleri' : 'AP join stats', mode: '#' }
+        { cmd: 'show wlan summary', desc: isTR ? 'WLAN listesi ve SSID Ã¶zeti' : 'WLAN summary & SSIDs', mode: '#' },
+        { cmd: 'show ap summary', desc: isTR ? 'BaÄŸlÄ± Access Pointler' : 'Joined Access Points', mode: '#' },
+        { cmd: 'show ap join statistics', desc: isTR ? 'AP baÄŸlantÄ± istatistikleri' : 'AP join stats', mode: '#' }
       );
       break;
     case 'hub':
       break;
     case 'cloud':
       cmds.push(
-        { cmd: 'ping 8.8.8.8', desc: isTR ? 'WAN / İnternet Birincil DNS Ping Testi' : 'WAN / Internet Primary DNS Ping Test' },
-        { cmd: 'ping 1.1.1.1', desc: isTR ? 'WAN / İnternet İkincil DNS Ping Testi' : 'WAN / Internet Secondary DNS Ping Test' },
-        { cmd: 'tracert 8.8.8.8', desc: isTR ? 'WAN İnternet Rota İzleme (Traceroute)' : 'WAN Internet Route Trace' },
-        { cmd: 'nslookup 8.8.8.8', desc: isTR ? 'Genel DNS Çözümleme Sorgusu' : 'Public DNS Lookup Query' }
+        { cmd: 'ping 8.8.8.8', desc: isTR ? 'WAN / Ä°nternet Birincil DNS Ping Testi' : 'WAN / Internet Primary DNS Ping Test' },
+        { cmd: 'ping 1.1.1.1', desc: isTR ? 'WAN / Ä°nternet Ä°kincil DNS Ping Testi' : 'WAN / Internet Secondary DNS Ping Test' },
+        { cmd: 'tracert 8.8.8.8', desc: isTR ? 'WAN Ä°nternet Rota Ä°zleme (Traceroute)' : 'WAN Internet Route Trace' },
+        { cmd: 'nslookup 8.8.8.8', desc: isTR ? 'Genel DNS Ã‡Ã¶zÃ¼mleme Sorgusu' : 'Public DNS Lookup Query' }
       );
       break;
     case 'mobile':
       cmds.push(
-        { cmd: 'ipconfig /all', desc: isTR ? 'Mobil Wi-Fi IP / MAC ve Ağ Geçidi Yapılandırması' : 'Mobile Wi-Fi IP / MAC & GW config' },
-        { cmd: 'http://<gateway-ip>', desc: isTR ? 'Mobil Web Tarayıcı ile Ağ Geçidine ve Servislere Erişim' : 'Mobile Web Browser Gateway & Service Access' },
-        { cmd: 'ping <hedef-ip>', desc: isTR ? 'Kablosuz Ağ ICMP Erişilebilirlik Testi' : 'Wireless ICMP connectivity test' }
+        { cmd: 'ipconfig /all', desc: isTR ? 'Mobil Wi-Fi IP / MAC ve AÄŸ GeÃ§idi YapÄ±landÄ±rmasÄ±' : 'Mobile Wi-Fi IP / MAC & GW config' },
+        { cmd: 'http://<gateway-ip>', desc: isTR ? 'Mobil Web TarayÄ±cÄ± ile AÄŸ GeÃ§idine ve Servislere EriÅŸim' : 'Mobile Web Browser Gateway & Service Access' },
+        { cmd: 'ping <hedef-ip>', desc: isTR ? 'Kablosuz AÄŸ ICMP EriÅŸilebilirlik Testi' : 'Wireless ICMP connectivity test' }
       );
       break;
     case 'printer':
       cmds.push(
-        { cmd: 'ipconfig /all', desc: isTR ? 'Ağ Yazıcısı IP / MAC Yapılandırması' : 'Network Printer IP & MAC config' },
-        { cmd: 'wget http://<yazıcı-ip>', desc: isTR ? 'Yazıcı Web Yönetici Paneline Erişim' : 'Access Printer Web Management' },
-        { cmd: 'ping <hedef-ip>', desc: isTR ? 'Yazdırıcı Sunucu Ağ Testi' : 'Print Server network ping test' }
+        { cmd: 'ipconfig /all', desc: isTR ? 'AÄŸ YazÄ±cÄ±sÄ± IP / MAC YapÄ±landÄ±rmasÄ±' : 'Network Printer IP & MAC config' },
+        { cmd: 'wget http://<yazÄ±cÄ±-ip>', desc: isTR ? 'YazÄ±cÄ± Web YÃ¶netici Paneline EriÅŸim' : 'Access Printer Web Management' },
+        { cmd: 'ping <hedef-ip>', desc: isTR ? 'YazdÄ±rÄ±cÄ± Sunucu AÄŸ Testi' : 'Print Server network ping test' }
       );
       break;
     case 'pc':
@@ -213,12 +213,12 @@ function getRecommendedCliCommands(
     default:
       if (cmds.length === 0) {
         cmds.push(
-          { cmd: 'ipconfig /all', desc: isTR ? 'Ayrıntılı IP/MAC/GW yapılandırması' : 'Detailed IP/MAC/GW config' },
-          { cmd: 'ping <hedef-ip>', desc: isTR ? 'Ağ erişilebilirlik testi (ICMP)' : 'Network connectivity test' },
+          { cmd: 'ipconfig /all', desc: isTR ? 'AyrÄ±ntÄ±lÄ± IP/MAC/GW yapÄ±landÄ±rmasÄ±' : 'Detailed IP/MAC/GW config' },
+          { cmd: 'ping <hedef-ip>', desc: isTR ? 'AÄŸ eriÅŸilebilirlik testi (ICMP)' : 'Network connectivity test' },
           { cmd: 'tracert <hedef-ip>', desc: isTR ? 'Paket rota izleme' : 'Trace route to target' },
-          { cmd: 'nslookup <alan-adı>', desc: isTR ? 'DNS çözümleme sorgusu' : 'DNS lookup query' },
-          { cmd: 'netstat', desc: isTR ? 'Aktif ağ bağlantıları' : 'Active network connections' },
-          { cmd: 'arp -a', desc: isTR ? 'ARP önbellek tablosu' : 'ARP cache table' }
+          { cmd: 'nslookup <alan-adÄ±>', desc: isTR ? 'DNS Ã§Ã¶zÃ¼mleme sorgusu' : 'DNS lookup query' },
+          { cmd: 'netstat', desc: isTR ? 'Aktif aÄŸ baÄŸlantÄ±larÄ±' : 'Active network connections' },
+          { cmd: 'arp -a', desc: isTR ? 'ARP Ã¶nbellek tablosu' : 'ARP cache table' }
         );
       }
       break;
@@ -227,7 +227,7 @@ function getRecommendedCliCommands(
   return cmds;
 }
 
-// ─── RefreshDeviceListToast ───────────────────────────────────────────────────
+// â”€â”€â”€ RefreshDeviceListToast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function RefreshDeviceListToast({
   devices,
@@ -289,16 +289,16 @@ function RefreshDeviceListToast({
       servicesList.push({
         name: rawDev.type === 'printer' ? 'Print Web Server' : 'HTTP Web Server',
         info: rawDev.type === 'printer'
-          ? (isTR ? 'Gömülü Yazıcı Web Yönetim Paneli' : 'Embedded Printer Web Admin')
+          ? (isTR ? 'GÃ¶mÃ¼lÃ¼ YazÄ±cÄ± Web YÃ¶netim Paneli' : 'Embedded Printer Web Admin')
           : rawDev.services?.http?.mode === 'iot'
             ? (isTR ? 'IoT Web Kontrol Paneli' : 'IoT Web Panel')
-            : (isTR ? 'Aktif Web Sayfası' : 'Active Web Page'),
+            : (isTR ? 'Aktif Web SayfasÄ±' : 'Active Web Page'),
         active: true
       });
     }
     if (rawDev.services?.dns?.enabled) {
       const count = rawDev.services.dns.records?.length || 0;
-      servicesList.push({ name: 'DNS Server', info: `${count} ${isTR ? 'A/CNAME kaydı' : 'record(s)'}`, active: true });
+      servicesList.push({ name: 'DNS Server', info: `${count} ${isTR ? 'A/CNAME kaydÄ±' : 'record(s)'}`, active: true });
     }
     if (rawDev.services?.dhcp?.enabled) {
       const pools = rawDev.services.dhcp.pools?.length || 0;
@@ -318,7 +318,7 @@ function RefreshDeviceListToast({
       const msgs = rawDev.services.syslog.messages?.length || 0;
       servicesList.push({
         name: 'Syslog Server',
-        info: `${msgs} ${isTR ? 'log kaydı' : 'log entry(ies)'}`,
+        info: `${msgs} ${isTR ? 'log kaydÄ±' : 'log entry(ies)'}`,
         active: true
       });
     }
@@ -430,14 +430,14 @@ function RefreshDeviceListToast({
               <tbody>
                 {([
                   ['IP', selected.ip, true],
-                  ['Alt Ağ / Mask', rawDev?.subnet || '-', true],
+                  ['Alt AÄŸ / Mask', rawDev?.subnet || '-', true],
                   ['MAC', selected.mac ? normalizeMAC(selected.mac) : '-', true],
                   ['GW', selected.gateway, true],
                   ['DNS', rawDev?.dns || '-', true],
                   ['IPv6', selected.ipv6, true],
-                  [isTR ? 'Açık Hizmetler' : 'Open Services', selected.services, false],
+                  [isTR ? 'AÃ§Ä±k Hizmetler' : 'Open Services', selected.services, false],
                 ] as Array<[string, string, boolean]>).map(([label, value, copyable]) => {
-                  if (value === '-' && (label === 'Alt Ağ / Mask' || label === 'DNS')) return null;
+                  if (value === '-' && (label === 'Alt AÄŸ / Mask' || label === 'DNS')) return null;
                   return (
                     <tr key={label} className="border-t first:border-t-0 border-secondary-200/80 dark:border-secondary-700/80">
                       <td className="w-24 bg-secondary-100/50 px-2 py-1 font-semibold dark:bg-secondary-800/40 text-secondary-600 dark:text-secondary-400">{label}</td>
@@ -471,7 +471,7 @@ function RefreshDeviceListToast({
               >
                 <div className="flex items-center gap-1.5 text-purple-600 dark:text-purple-400">
                   <Server className="w-3.5 h-3.5" />
-                  <span>{isTR ? 'Aktif Hizmetler ve Arayüzler' : 'Active Services & Interfaces'}</span>
+                  <span>{isTR ? 'Aktif Hizmetler ve ArayÃ¼zler' : 'Active Services & Interfaces'}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="text-[10px] text-secondary-500 font-normal">
@@ -497,19 +497,19 @@ function RefreshDeviceListToast({
                     </div>
                   ) : (
                     <div className="text-[11px] opacity-60 italic text-center py-1">
-                      {isTR ? 'Yapılandırılmış ek servis yok.' : 'No additional services configured.'}
+                      {isTR ? 'YapÄ±landÄ±rÄ±lmÄ±ÅŸ ek servis yok.' : 'No additional services configured.'}
                     </div>
                   )}
 
                   {/* PC Settings Quick Summary */}
                   <div className="pt-1.5 border-t border-secondary-200 dark:border-secondary-700/80 grid grid-cols-2 gap-1 text-[10px]">
                     <div className="p-1 rounded bg-secondary-100/40 dark:bg-secondary-800/40">
-                      <span className="opacity-50 block">{isTR ? 'IP Yapılandırması' : 'IP Config'}</span>
+                      <span className="opacity-50 block">{isTR ? 'IP YapÄ±landÄ±rmasÄ±' : 'IP Config'}</span>
                       <span className="font-bold text-success-500">{rawDev?.ipConfigMode === 'dhcp' ? 'DHCP (Auto)' : 'Static (Manual)'}</span>
                     </div>
                     <div className="p-1 rounded bg-secondary-100/40 dark:bg-secondary-800/40">
                       <span className="opacity-50 block">{isTR ? 'Kablosuz (WiFi)' : 'Wireless'}</span>
-                      <span className="font-bold text-purple-500">{rawDev?.wifi?.enabled ? `${rawDev.wifi.ssid || 'Active'}` : (isTR ? 'Kapalı' : 'Disabled')}</span>
+                      <span className="font-bold text-purple-500">{rawDev?.wifi?.enabled ? `${rawDev.wifi.ssid || 'Active'}` : (isTR ? 'KapalÄ±' : 'Disabled')}</span>
                     </div>
                   </div>
                 </div>
@@ -527,7 +527,7 @@ function RefreshDeviceListToast({
               >
                 <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
                   <Terminal className="w-3.5 h-3.5" />
-                  <span>{isTR ? 'CLI Komut ve Durum Özeti' : 'CLI Commands & Status Summary'}</span>
+                  <span>{isTR ? 'CLI Komut ve Durum Ã–zeti' : 'CLI Commands & Status Summary'}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="text-[10px] text-secondary-500 font-normal">
@@ -547,11 +547,11 @@ function RefreshDeviceListToast({
                         <span className="font-bold text-success-500">{switchRouterSummary.upPorts}/{switchRouterSummary.totalPorts} UP</span>
                       </div>
                       <div className="p-1 rounded bg-secondary-100/40 dark:bg-secondary-800/40 text-center">
-                        <span className="opacity-50 block">{isTR ? 'VLAN Sayısı' : 'VLANs'}</span>
+                        <span className="opacity-50 block">{isTR ? 'VLAN SayÄ±sÄ±' : 'VLANs'}</span>
                         <span className="font-bold text-purple-500">{switchRouterSummary.vlanCount} VLAN</span>
                       </div>
                       <div className="p-1 rounded bg-secondary-100/40 dark:bg-secondary-800/40 text-center">
-                        <span className="opacity-50 block">{isTR ? 'Yönlendirme' : 'Routing'}</span>
+                        <span className="opacity-50 block">{isTR ? 'YÃ¶nlendirme' : 'Routing'}</span>
                         <span className={`font-bold ${switchRouterSummary.isL3Routing ? 'text-emerald-500' : 'text-secondary-400'}`}>
                           {switchRouterSummary.isL3Routing ? (isTR ? 'Aktif' : 'Active') : (isTR ? 'Pasif' : 'Disabled')}
                         </span>
@@ -562,7 +562,7 @@ function RefreshDeviceListToast({
                   {/* Active Interface IPs */}
                   {switchRouterSummary?.activeIps && switchRouterSummary.activeIps.length > 0 && (
                     <div className="space-y-0.5">
-                      <span className="text-[10px] font-semibold opacity-60 uppercase">{isTR ? 'Aktif Arayüz IP\'leri:' : 'Active Interface IPs:'}</span>
+                      <span className="text-[10px] font-semibold opacity-60 uppercase">{isTR ? 'Aktif ArayÃ¼z IP\'leri:' : 'Active Interface IPs:'}</span>
                       <div className="flex flex-wrap gap-1">
                         {switchRouterSummary.activeIps.map((ipStr, i) => (
                           <span
@@ -580,7 +580,7 @@ function RefreshDeviceListToast({
 
                   {/* Recommended CLI Commands */}
                   <div className="space-y-1">
-                    <span className="text-[10px] font-semibold opacity-60 uppercase">{isTR ? 'Önerilen CLI Komutları:' : 'Recommended CLI Commands:'}</span>
+                    <span className="text-[10px] font-semibold opacity-60 uppercase">{isTR ? 'Ã–nerilen CLI KomutlarÄ±:' : 'Recommended CLI Commands:'}</span>
                     <div className="space-y-1">
                       {activeCommand && (() => {
                         const isCopied = copiedCmd === activeCommand.cmd;
@@ -615,10 +615,10 @@ function RefreshDeviceListToast({
                           onClick={() => setCommandIndex(index => Math.max(0, index - 1))}
                           disabled={commandIndex === 0}
                           className="flex items-center gap-0.5 px-1 py-0.5 rounded text-[10px] text-secondary-500 hover:bg-secondary-200 dark:hover:bg-secondary-700 disabled:opacity-30 disabled:cursor-not-allowed"
-                          aria-label={isTR ? 'Önceki komut' : 'Previous command'}
+                          aria-label={isTR ? 'Ã–nceki komut' : 'Previous command'}
                         >
                           <ChevronLeft className="w-3 h-3" />
-                          {isTR ? 'Önceki' : 'Previous'}
+                          {isTR ? 'Ã–nceki' : 'Previous'}
                         </button>
                         <span className="min-w-[42px] text-center text-[10px] font-semibold text-secondary-500">
                           {commandIndex + 1} / {recommendedCmds.length}
@@ -651,7 +651,7 @@ function RefreshDeviceListToast({
               >
                 <div className="flex items-center gap-1.5 text-primary-600 dark:text-primary-400">
                   <Terminal className="w-3.5 h-3.5" />
-                  <span>{isTR ? 'Komut Satırı ve Durum Özeti' : 'Command Prompt & Status Summary'}</span>
+                  <span>{isTR ? 'Komut SatÄ±rÄ± ve Durum Ã–zeti' : 'Command Prompt & Status Summary'}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="text-[10px] text-secondary-500 font-normal">
@@ -695,10 +695,10 @@ function RefreshDeviceListToast({
                         onClick={() => setCommandIndex(index => Math.max(0, index - 1))}
                         disabled={commandIndex === 0}
                         className="flex items-center gap-0.5 px-1 py-0.5 rounded text-[10px] text-secondary-500 hover:bg-secondary-200 dark:hover:bg-secondary-700 disabled:opacity-30 disabled:cursor-not-allowed"
-                        aria-label={isTR ? 'Önceki komut' : 'Previous command'}
+                        aria-label={isTR ? 'Ã–nceki komut' : 'Previous command'}
                       >
                         <ChevronLeft className="w-3 h-3" />
-                        {isTR ? 'Önceki' : 'Previous'}
+                        {isTR ? 'Ã–nceki' : 'Previous'}
                       </button>
                       <span className="min-w-[42px] text-center text-[10px] font-semibold text-secondary-500">
                         {commandIndex + 1} / {recommendedCmds.length}
@@ -725,7 +725,7 @@ function RefreshDeviceListToast({
   );
 }
 
-// ─── LiveDeviceList ───────────────────────────────────────────────────────────
+// â”€â”€â”€ LiveDeviceList â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function LiveDeviceList({
   devices,
@@ -781,7 +781,7 @@ export function LiveDeviceList({
 
   const getOpenServices = (device: CanvasDevice, state?: SwitchState) => {
     if (device.type === 'cloud') {
-      return language === 'tr' ? 'Genel WAN Geçidi, DNS (8.8.8.8), NTP' : 'Public WAN Gateway, DNS (8.8.8.8), NTP';
+      return language === 'tr' ? 'Genel WAN GeÃ§idi, DNS (8.8.8.8), NTP' : 'Public WAN Gateway, DNS (8.8.8.8), NTP';
     }
     const services = new Set<string>();
     if (device.services?.dhcp?.enabled || state?.services?.dhcp?.enabled) services.add('DHCP');
@@ -830,3 +830,5 @@ export function LiveDeviceList({
 
   return <RefreshDeviceListToast devices={liveDevices} language={language} showCommandSummary={showCommandSummary} />;
 }
+
+

@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import dynamic from 'next/dynamic';
 import type { PcOutputsSetter } from '@/components/network/pc-panel/PCPanel.types';
-import type { DeviceType } from '@/components/network/networkTopology.types';
+import type { DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { MultiDeviceWindowManager } from '@/components/network/MultiDeviceWindowManager';
 import { WindowSwitcherModal } from '@/components/network/WindowSwitcherModal';
 
@@ -272,3 +272,4 @@ export function PagePanelWindows({
     </>
   );
 }
+

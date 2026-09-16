@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
-import { CanvasDevice } from '../networkTopology.types';
+import { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
-import { isSwitchDeviceType } from '../networkTopology.helpers';
+import { isSwitchDeviceType } from '../NetworkTopology/utils/networkTopology.helpers';
 
 interface DeviceStpBadgeProps {
   device: CanvasDevice;
@@ -41,7 +41,7 @@ export function DeviceStpBadge({ device, deviceWidth, isDark, deviceStates }: De
           dominantBaseline="middle"
           style={{ userSelect: 'none', pointerEvents: 'none' }}
         >
-          👑 ROOT
+          ğŸ‘‘ ROOT
         </text>
       </g>
     );

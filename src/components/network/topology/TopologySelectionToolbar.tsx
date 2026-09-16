@@ -1,9 +1,9 @@
-import React from 'react';
+﻿import React from 'react';
 import { X, Trash2 } from "lucide-react";
 import { TooltipWrapper } from "@/components/ui/TooltipWrapper";
 import { logger } from '@/lib/logger';
 import { triggerHapticFeedback } from '@/lib/utils';
-import { CanvasDevice, DeviceType } from '../networkTopology.types';
+import { CanvasDevice, DeviceType } from '../NetworkTopology/types/networkTopology.types';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export interface TopologySelectionToolbarProps {
@@ -97,10 +97,10 @@ export const TopologySelectionToolbar: React.FC<TopologySelectionToolbarProps> =
         </button>
       </TooltipWrapper>
 
-      {/* Sağa Hizala (Align Right) */}
-      <TooltipWrapper title={t.alignRight || 'Sağa Hizala'}>
+      {/* SaÄŸa Hizala (Align Right) */}
+      <TooltipWrapper title={t.alignRight || 'SaÄŸa Hizala'}>
         <button
-          aria-label={t.alignRight || 'Sağa Hizala'}
+          aria-label={t.alignRight || 'SaÄŸa Hizala'}
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
@@ -118,10 +118,10 @@ export const TopologySelectionToolbar: React.FC<TopologySelectionToolbarProps> =
         </button>
       </TooltipWrapper>
 
-      {/* Üste Hizala (Align Top) */}
-      <TooltipWrapper title={t.alignTop || 'Üste Hizala'}>
+      {/* Ãœste Hizala (Align Top) */}
+      <TooltipWrapper title={t.alignTop || 'Ãœste Hizala'}>
         <button
-          aria-label={t.alignTop || 'Üste Hizala'}
+          aria-label={t.alignTop || 'Ãœste Hizala'}
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
@@ -160,11 +160,11 @@ export const TopologySelectionToolbar: React.FC<TopologySelectionToolbarProps> =
         </button>
       </TooltipWrapper>
 
-      {/* Yatay Eşit Dağıt (Distribute Horizontally) */}
+      {/* Yatay EÅŸit DaÄŸÄ±t (Distribute Horizontally) */}
       {selectedDeviceIds.length >= 3 && (
-        <TooltipWrapper title={language === 'tr' ? 'Yatay Eşit Dağıt' : 'Distribute Horizontally'}>
+        <TooltipWrapper title={language === 'tr' ? 'Yatay EÅŸit DaÄŸÄ±t' : 'Distribute Horizontally'}>
           <button
-            aria-label={language === 'tr' ? 'Yatay Eşit Dağıt' : 'Distribute Horizontally'}
+            aria-label={language === 'tr' ? 'Yatay EÅŸit DaÄŸÄ±t' : 'Distribute Horizontally'}
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
@@ -182,11 +182,11 @@ export const TopologySelectionToolbar: React.FC<TopologySelectionToolbarProps> =
         </TooltipWrapper>
       )}
 
-      {/* Dikey Eşit Dağıt (Distribute Vertically) */}
+      {/* Dikey EÅŸit DaÄŸÄ±t (Distribute Vertically) */}
       {selectedDeviceIds.length >= 3 && (
-        <TooltipWrapper title={language === 'tr' ? 'Dikey Eşit Dağıt' : 'Distribute Vertically'}>
+        <TooltipWrapper title={language === 'tr' ? 'Dikey EÅŸit DaÄŸÄ±t' : 'Distribute Vertically'}>
           <button
-            aria-label={language === 'tr' ? 'Dikey Eşit Dağıt' : 'Distribute Vertically'}
+            aria-label={language === 'tr' ? 'Dikey EÅŸit DaÄŸÄ±t' : 'Distribute Vertically'}
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
@@ -245,3 +245,4 @@ export const TopologySelectionToolbar: React.FC<TopologySelectionToolbarProps> =
     </div>
   );
 };
+

@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/networkTopology.types';
+import { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { PCInfoPopover, RouterInfoPopover } from '@/components/network/DeviceInfoPopovers';
 import { useMultiWindowStore } from '@/hooks/useMultiWindowStore';
@@ -111,3 +111,5 @@ export function PageDevicePopovers({
     </>
   );
 }
+
+

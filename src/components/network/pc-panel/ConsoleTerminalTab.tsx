@@ -1,11 +1,11 @@
-'use client';
+﻿'use client';
 
 import React, { useRef, useEffect } from 'react';
 import { Laptop, CornerDownLeft, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { TerminalOutput } from '../Terminal';
-import type { CanvasDevice } from '../networkTopology.types';
+import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { getModePrompt } from '@/lib/network/initialState';
 import { ensureDeviceStatesMap } from '@/lib/network/networkUtils';
@@ -224,8 +224,8 @@ export function ConsoleTerminalTab({
             {isConsoleConnected && (consoleNeedsPassword || consoleConfirmDialog?.show || consoleReloadPending) && (
               <div className="absolute -top-7 left-4 right-4 text-[10px] font-black tracking-widest text-warning-400 animate-pulse">
                 {consoleNeedsPassword
-                  ? (t.language === 'tr' ? 'Parola girin ve Enter\'a basın' : 'Enter password and press Enter')
-                  : (t.language === 'tr' ? 'Onaylamak için Enter\'a basın' : 'Press Enter to confirm')}
+                  ? (t.language === 'tr' ? 'Parola girin ve Enter\'a basÄ±n' : 'Enter password and press Enter')
+                  : (t.language === 'tr' ? 'Onaylamak iÃ§in Enter\'a basÄ±n' : 'Press Enter to confirm')}
               </div>
             )}
             <div
@@ -278,8 +278,8 @@ export function ConsoleTerminalTab({
                 placeholder={
                   isConsoleConnected && (consoleNeedsPassword || consoleConfirmDialog?.show || consoleReloadPending)
                     ? (consoleNeedsPassword
-                      ? (t.language === 'tr' ? 'Parolayı girin...' : 'Enter password...')
-                      : (t.language === 'tr' ? 'Enter\'a basın veya yazın...' : 'Press Enter or type...'))
+                      ? (t.language === 'tr' ? 'ParolayÄ± girin...' : 'Enter password...')
+                      : (t.language === 'tr' ? 'Enter\'a basÄ±n veya yazÄ±n...' : 'Press Enter or type...'))
                     : t.typeCommand
                 }
                 aria-label={t.typeCommand}
@@ -304,7 +304,7 @@ export function ConsoleTerminalTab({
                   )}>
                     <span>{t.cmdSuggestions}</span>
                     <span className={cn("text-[10px] font-bold", isDark ? 'text-accent-300' : 'text-accent-700')}>
-                      Tab ↹ {t.completeWithTab}
+                      Tab â†¹ {t.completeWithTab}
                     </span>
                   </div>
                   <div className="max-h-40 overflow-y-auto overflow-x-hidden mobile-scroll custom-scrollbar font-geist-mono flex flex-col">
@@ -350,10 +350,10 @@ export function ConsoleTerminalTab({
                   setConnectedDeviceId(null);
                   setInput('');
                 }}
-                title={t.language === 'tr' ? 'İptal' : 'Cancel'}
+                title={t.language === 'tr' ? 'Ä°ptal' : 'Cancel'}
               >
                 <X className={cn("w-4 h-4 mr-1", isMobile && "w-3 h-3")} />
-                <span className="text-error-600 dark:text-error-400 font-medium">{t.language === 'tr' ? 'İptal' : 'Cancel'}</span>
+                <span className="text-error-600 dark:text-error-400 font-medium">{t.language === 'tr' ? 'Ä°ptal' : 'Cancel'}</span>
               </Button>
             )}
 
@@ -377,3 +377,4 @@ export function ConsoleTerminalTab({
     </div>
   );
 }
+

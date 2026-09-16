@@ -1,6 +1,6 @@
-import React from 'react';
-import { CanvasDevice, CanvasConnection } from '../networkTopology.types';
-import { BroadcastAnimTarget } from '../hooks/usePingSequence';
+﻿import React from 'react';
+import { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
+import { BroadcastAnimTarget } from '@/hooks/networkTopology/usePingSequence';
 import { colors } from '@/lib/design-tokens/colors';
 
 export interface PingAnimationOverlayProps {
@@ -175,7 +175,7 @@ export const PingAnimationOverlay: React.FC<PingAnimationOverlayProps> = ({
               fontFamily="var(--font-geist-mono)"
               style={{ userSelect: 'none', pointerEvents: 'none' }}
             >
-              {t.arpBroadcast || 'ARP Broadcast'} — ff:ff:ff:ff:ff:ff
+              {t.arpBroadcast || 'ARP Broadcast'} â€” ff:ff:ff:ff:ff:ff
             </text>
             <text
               y="9"
@@ -253,3 +253,4 @@ export const PingAnimationOverlay: React.FC<PingAnimationOverlayProps> = ({
     </g>
   );
 };
+

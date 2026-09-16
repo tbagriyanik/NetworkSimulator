@@ -1,5 +1,5 @@
-/**
- * eventPipeline.ts — Periodic Network Event Pipeline
+﻿/**
+ * eventPipeline.ts â€” Periodic Network Event Pipeline
  *
  * This module drives the simulation tick. On each call it:
  *
@@ -16,7 +16,7 @@
  *    and display code continue to work unchanged.
  */
 
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import type { NetworkPacketFrame, PipelineExecutionResult, ProtocolNeighborChangeEvent, AgingChangeEvent } from './packetFrame';
 import { forwardPacketFrame } from './commonForwardingEngine';
@@ -32,7 +32,7 @@ import {
   type EigrpNeighborRecord,
 } from '@/lib/network/protocols';
 
-/** Simulated seconds per pipeline tick (wall-clock 250 ms ≈ 0.25 simulated seconds) */
+/** Simulated seconds per pipeline tick (wall-clock 250 ms â‰ˆ 0.25 simulated seconds) */
 const SIM_SECONDS_PER_TICK = 0.25;
 
 export function runNetworkEventPipeline(
@@ -175,7 +175,7 @@ export function runNetworkEventPipeline(
     let stateChanged = false;
     const nextState = { ...state };
 
-    // ── 5a. OSPF Dead Timer ticks ──────────────────────────────────────
+    // â”€â”€ 5a. OSPF Dead Timer ticks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (nextState.ospfNeighborStates && Object.keys(nextState.ospfNeighborStates).length > 0) {
       const updatedNeighbors: Record<string, OspfNeighborRecord> = {};
       for (const [nbrId, nbr] of Object.entries(nextState.ospfNeighborStates)) {
@@ -199,7 +199,7 @@ export function runNetworkEventPipeline(
         .map(n => n.neighborId);
     }
 
-    // ── 5b. EIGRP Hold Timer ticks ────────────────────────────────────
+    // â”€â”€ 5b. EIGRP Hold Timer ticks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (nextState.eigrpNeighborStates && Object.keys(nextState.eigrpNeighborStates).length > 0) {
       const updatedEigrpNbrs: Record<string, EigrpNeighborRecord> = {};
       for (const [nbrIp, nbr] of Object.entries(nextState.eigrpNeighborStates)) {
@@ -215,7 +215,7 @@ export function runNetworkEventPipeline(
         .map(n => n.neighborIp);
     }
 
-    // ── 5c. DHCP Client timer ticks ───────────────────────────────────
+    // â”€â”€ 5c. DHCP Client timer ticks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (nextState.dhcpClientStates) {
       const updatedDhcp = { ...nextState.dhcpClientStates };
       for (const [ifId, dhcpClient] of Object.entries(updatedDhcp)) {
@@ -238,7 +238,7 @@ export function runNetworkEventPipeline(
       nextState.dhcpClientStates = updatedDhcp;
     }
 
-    // ── 5d. STP Port timer ticks ──────────────────────────────────────
+    // â”€â”€ 5d. STP Port timer ticks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (nextState.lacpPortStates) {
       // LACP timers would be ticked here if needed
       // (simple pass-through for now, structure in place)
@@ -298,7 +298,7 @@ export function computeProtocolNeighborChanges(
   nextStates.forEach((next, deviceId) => {
     const prev = prevStates.get(deviceId);
 
-    // ── OSPF ─────────────────────────────────────────────────────────────
+    // â”€â”€ OSPF â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const nextOspf = next.ospfNeighborStates || {};
     const prevOspf = prev?.ospfNeighborStates || {};
     for (const [nbrId, nbr] of Object.entries(nextOspf)) {
@@ -333,7 +333,7 @@ export function computeProtocolNeighborChanges(
       });
     }
 
-    // ── EIGRP ────────────────────────────────────────────────────────────
+    // â”€â”€ EIGRP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const nextEigrp = next.eigrpNeighborStates || {};
     const prevEigrp = prev?.eigrpNeighborStates || {};
     for (const [nbrIp, nbr] of Object.entries(nextEigrp)) {
@@ -405,7 +405,7 @@ function _processProtocolNeighborDiscovery(
     const dstState = updatedStates.get(dstDevice.id);
     if (!srcState || !dstState) continue;
 
-    // ── OSPF Neighbor Discovery ────────────────────────────────────────
+    // â”€â”€ OSPF Neighbor Discovery â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const srcOspf = Boolean(srcState.ospfRouterId || srcState.routingProtocol === 'ospf');
     const dstOspf = Boolean(dstState.ospfRouterId || dstState.routingProtocol === 'ospf');
 
@@ -423,9 +423,9 @@ function _processProtocolNeighborDiscovery(
       );
 
       if (adjacencyAllowed) {
-        // Register src → dst neighbor
+        // Register src â†’ dst neighbor
         _upsertOspfNeighbor(srcState, dstRouterId, dstDevice.ip || dstDevice.id, conn.sourcePort, now);
-        // Register dst → src neighbor
+        // Register dst â†’ src neighbor
         _upsertOspfNeighbor(dstState, srcRouterId, srcDevice.ip || srcDevice.id, conn.targetPort, now);
 
         updatedStates.set(srcDevice.id, srcState);
@@ -445,7 +445,7 @@ function _processProtocolNeighborDiscovery(
       }
     }
 
-    // ── EIGRP Neighbor Discovery ───────────────────────────────────────
+    // â”€â”€ EIGRP Neighbor Discovery â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const srcEigrp = Boolean(srcState.eigrpAs || srcState.routingProtocol === 'eigrp');
     const dstEigrp = Boolean(dstState.eigrpAs || dstState.routingProtocol === 'eigrp');
     const sameAs = srcEigrp && dstEigrp &&
@@ -514,7 +514,7 @@ function _upsertOspfNeighbor(
 ): void {
   if (!state.ospfNeighborStates) state.ospfNeighborStates = {};
   if (!state.ospfNeighborStates[neighborId]) {
-    // New neighbor — start at Init, quickly advance to Full for simulation fidelity
+    // New neighbor â€” start at Init, quickly advance to Full for simulation fidelity
     const record: OspfNeighborRecord = {
       neighborId,
       neighborIp,
@@ -578,3 +578,5 @@ function _upsertEigrpNeighbor(
     };
   }
 }
+
+

@@ -1,4 +1,4 @@
-import type { CanvasDevice, CanvasConnection } from '../../networkTopology.types';
+﻿import type { CanvasDevice, CanvasConnection } from '../../NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { createInitialState } from '@/lib/network/initialState';
 import {
@@ -504,3 +504,4 @@ export function enableRouterPort(state: SwitchState, portId: string, ip?: string
     if (mask) state.ports[portId].subnetMask = mask;
   }
 }
+

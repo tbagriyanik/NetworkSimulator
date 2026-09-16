@@ -1,4 +1,4 @@
-import { CanvasPort } from './networkTopology.types';
+﻿import { CanvasPort } from './NetworkTopology/types/networkTopology.types';
 
 /** Generates standard L2 switch ports: 24x FastEthernet + 2x GigabitEthernet (no WLAN0 for L2) */
 export function generateSwitchPorts(): CanvasPort[] {
@@ -93,3 +93,4 @@ export function generateFirewallPorts(): CanvasPort[] {
         { id: 'gi0/3', label: 'Gi0/3', status: 'disconnected' as const, macAddress: formatMacFromNumber(baseMacNumber + 3) },
     ];
 }
+

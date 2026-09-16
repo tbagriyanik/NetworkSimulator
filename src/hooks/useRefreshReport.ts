@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import { useState, useCallback } from 'react';
-import type { DeviceType } from '@/components/network/networkTopology.types';
+import type { DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 interface RefreshDeviceSummary {
   id: string;
@@ -59,3 +59,5 @@ export function useRefreshReport() {
     clearRefreshReport,
   };
 }
+
+

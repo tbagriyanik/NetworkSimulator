@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import { Suspense, lazy } from 'react';
 import { CableType } from '@/lib/network/types';
-import { CanvasDevice, SelectedPortRef } from './networkTopology.types';
+import { CanvasDevice, SelectedPortRef } from './NetworkTopology/types/networkTopology.types';
 
 type PortSelectorStep = 'source' | 'target';
 
@@ -57,3 +57,4 @@ export function LazyNetworkTopologyPortSelectorModal(
         </Suspense>
     );
 }
+

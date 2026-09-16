@@ -1,5 +1,5 @@
-import dynamic from 'next/dynamic';
-import { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+﻿import dynamic from 'next/dynamic';
+import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { ExamTask } from '@/lib/network/examMode';
 import { BasarilarimPanel } from '@/components/ui/BasarilarimPanel';
@@ -346,3 +346,5 @@ export function PageOverlayPanels({
     </>
   );
 }
+
+

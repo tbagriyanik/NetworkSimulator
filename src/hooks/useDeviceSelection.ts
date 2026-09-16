@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import { useState, useCallback } from 'react';
-import type { DeviceType } from '@/components/network/networkTopology.types';
+import type { DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 export function useDeviceSelection() {
   const [activeDeviceId, setActiveDeviceId] = useState<string>('switch-1');
@@ -26,3 +26,5 @@ export function useDeviceSelection() {
     clearSelection,
   };
 }
+
+

@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { SwitchState } from '@/lib/network/types';
 import { NetworkPacketFrame } from '@/lib/network/forwarding/packetFrame';
 import { captureNetFlow, ageOutNetflowCache, resolveFramePorts, ipProtocolToProtoString, interfaceTracksFlows } from '@/lib/network/forwarding/netflowEngine';
 import { runFullPacketPipeline } from '@/lib/network/forwarding/packetPipeline';
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 function createMockState(overrides?: Partial<SwitchState>): SwitchState {
   return {
@@ -211,3 +211,4 @@ describe('NetFlow Item 10 integration: runFullPacketPipeline', () => {
     expect(netflowTrace?.reason).toContain('10.0.0.2');
   });
 });
+

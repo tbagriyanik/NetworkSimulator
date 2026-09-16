@@ -1,11 +1,11 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useRef, useEffect, useMemo } from 'react';
 import { ensureDeviceStatesMap } from '@/lib/network/networkUtils';
 import { getDeviceWifiConfig } from '@/lib/network/connectivity';
 import { generateRandomLinkLocalIpv4 } from '@/lib/network/linkLocal';
 import { processIotRules } from '@/lib/network/iotLogic';
-import type { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import type { EnvironmentSettings } from '@/lib/store/appStore';
 
@@ -395,3 +395,5 @@ export function useNetworkLogic(
     applyIotAutomationPass,
   };
 }
+
+

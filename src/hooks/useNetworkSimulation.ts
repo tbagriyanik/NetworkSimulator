@@ -1,5 +1,5 @@
-import { useEffect, useRef, useCallback } from 'react';
-import { CanvasDevice } from '@/components/network/networkTopology.types';
+﻿import { useEffect, useRef, useCallback } from 'react';
+import { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { updateChangedDevices } from '@/lib/simulation/partialDeviceUpdates';
 
@@ -101,3 +101,5 @@ export function useNetworkSimulation(
     return () => window.clearInterval(interval);
   }, [advanceNtpDateTime, formatLocalDate, isValidIpv4Address, networkLogic, setTopologyDevices]);
 }
+
+

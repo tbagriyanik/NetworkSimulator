@@ -1,7 +1,7 @@
-import { createInitialState } from '../initialState';
+﻿import { createInitialState } from '../initialState';
 import { createSwitchDevice, createPcDevice, connectPorts, baseProjectData } from './helpers';
 ;
-import type { CanvasConnection, CanvasNote } from '@/components/network/networkTopology.types';
+import type { CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { ExampleProject } from './types';
 ;
 
@@ -17,8 +17,8 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'ps-note-1',
       text: isTr
-        ? 'Amaç: Switch port\'unda port-security yapılandırarak sadece izin verilen MAC adreslerinin bağlanmasına izin vermek.\n\n🔧 YAPILANDIRMA ADIMLARI:\n\n1) TOPOLOJİ OLUŞTURMA:\n   - 1 adet Switch (SW1) ekle\n   - 1 adet PC (PC-1) ekle\n   - PC-1 Eth0 -> SW1 Fa0/3 (Straight kablo)\n\n2) SWITCH KONFİGÜRASYONU:\n   - SW1 terminaline gir: enable, conf t\n   - interface fa0/3\n     switchport mode access\n     switchport port-security\n     switchport port-security maximum 1\n     switchport port-security violation shutdown\n     switchport port-security mac-address sticky\n   - exit\n\n3) PC KONFİGÜRASYONU:\n   - PC-1: IP 192.168.1.10, Subnet 255.255.255.0\n   - PC-1 MAC adresi otomatik öğrenilir (sticky)\n\n4) DOĞRULAMA:\n   - show port-security interface fa0/3\n   - show port-security address\n\n5) TEST:\n   - PC-1\'den trafik gönder (ping)\n   - Farklı bir MAC adresi bağlanırsa port shutdown olur\n\n⚠️ Not: Ağı Yenile (F5)'
-        : '🔧 BUILD STEPS:\n\n1) CREATE TOPOLOGY:\n   - Add 1 Switch (SW1)\n   - Add 1 PC (PC-1)\n   - Connect PC-1 Eth0 -> SW1 Fa0/3 (Straight cable)\n\n2) SWITCH CONFIGURATION:\n   - Enter SW1 terminal: enable, conf t\n   - interface fa0/3\n     switchport mode access\n     switchport port-security\n     switchport port-security maximum 1\n     switchport port-security violation shutdown\n     switchport port-security mac-address sticky\n   - exit\n\n3) PC CONFIGURATION:\n   - PC-1: IP 192.168.1.10, Subnet 255.255.255.0\n   - PC-1 MAC address is automatically learned (sticky)\n\n4) VERIFICATION:\n   - show port-security interface fa0/3\n   - show port-security address\n\n5) TEST:\n   - Send traffic from PC-1 (ping)\n   - If a different MAC connects, the port will shutdown\n\n⚠️ Note: Refresh network (F5)',
+        ? 'AmaÃ§: Switch port\'unda port-security yapÄ±landÄ±rarak sadece izin verilen MAC adreslerinin baÄŸlanmasÄ±na izin vermek.\n\nğŸ”§ YAPILANDIRMA ADIMLARI:\n\n1) TOPOLOJÄ° OLUÅTURMA:\n   - 1 adet Switch (SW1) ekle\n   - 1 adet PC (PC-1) ekle\n   - PC-1 Eth0 -> SW1 Fa0/3 (Straight kablo)\n\n2) SWITCH KONFÄ°GÃœRASYONU:\n   - SW1 terminaline gir: enable, conf t\n   - interface fa0/3\n     switchport mode access\n     switchport port-security\n     switchport port-security maximum 1\n     switchport port-security violation shutdown\n     switchport port-security mac-address sticky\n   - exit\n\n3) PC KONFÄ°GÃœRASYONU:\n   - PC-1: IP 192.168.1.10, Subnet 255.255.255.0\n   - PC-1 MAC adresi otomatik Ã¶ÄŸrenilir (sticky)\n\n4) DOÄRULAMA:\n   - show port-security interface fa0/3\n   - show port-security address\n\n5) TEST:\n   - PC-1\'den trafik gÃ¶nder (ping)\n   - FarklÄ± bir MAC adresi baÄŸlanÄ±rsa port shutdown olur\n\nâš ï¸ Not: AÄŸÄ± Yenile (F5)'
+        : 'ğŸ”§ BUILD STEPS:\n\n1) CREATE TOPOLOGY:\n   - Add 1 Switch (SW1)\n   - Add 1 PC (PC-1)\n   - Connect PC-1 Eth0 -> SW1 Fa0/3 (Straight cable)\n\n2) SWITCH CONFIGURATION:\n   - Enter SW1 terminal: enable, conf t\n   - interface fa0/3\n     switchport mode access\n     switchport port-security\n     switchport port-security maximum 1\n     switchport port-security violation shutdown\n     switchport port-security mac-address sticky\n   - exit\n\n3) PC CONFIGURATION:\n   - PC-1: IP 192.168.1.10, Subnet 255.255.255.0\n   - PC-1 MAC address is automatically learned (sticky)\n\n4) VERIFICATION:\n   - show port-security interface fa0/3\n   - show port-security address\n\n5) TEST:\n   - Send traffic from PC-1 (ping)\n   - If a different MAC connects, the port will shutdown\n\nâš ï¸ Note: Refresh network (F5)',
       x: 400,
       y: 80,
       width: 480,
@@ -40,10 +40,10 @@ const example = (isTr: boolean): ExampleProject => {
 
   return {
     id: 'port-security',
-    tag: isTr ? 'GÜVENLİK' : 'SECURITY',
+    tag: isTr ? 'GÃœVENLÄ°K' : 'SECURITY',
     title: isTr ? 'Port-Security' : 'Port-Security',
     description: isTr
-      ? 'Switch portunda MAC adres tabanlı güvenlik kısıtlaması yapılandırılmıştır.'
+      ? 'Switch portunda MAC adres tabanlÄ± gÃ¼venlik kÄ±sÄ±tlamasÄ± yapÄ±landÄ±rÄ±lmÄ±ÅŸtÄ±r.'
       : 'MAC address-based security restriction configured on switch port.',
     detail: isTr
       ? 'Fa0/3: max MAC 1, violation shutdown, MAC: 00-11-22-33-44-55'
@@ -54,5 +54,7 @@ const example = (isTr: boolean): ExampleProject => {
 };
 
 export default example;
+
+
 
 

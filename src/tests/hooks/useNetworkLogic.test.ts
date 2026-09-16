@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useNetworkLogic } from '@/hooks/useNetworkLogic';
 import type { SwitchState } from '@/lib/network/types';
-import type { CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { EnvironmentSettings } from '@/lib/store/appStore';
 
 describe('useNetworkLogic pure functions', () => {
@@ -74,3 +74,5 @@ describe('useNetworkLogic pure functions', () => {
     expect(result.current.getPortAccessVlan({})).toBe(1); // Default to VLAN 1
   });
 });
+
+

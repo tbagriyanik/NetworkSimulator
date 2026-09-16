@@ -34,8 +34,8 @@ export function BroadcastAnimation({ broadcastSvgData, isGlass, isDark }: Broadc
                 <svg className="w-full h-full" viewBox="0 0 480 120" preserveAspectRatio="xMidYMid meet">
                     <defs>
                         <linearGradient id="broadcastGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.2" />
-                            <stop offset="100%" stopColor="#ef4444" stopOpacity="0.8" />
+                            <stop offset="0%" stopColor="var(--color-warning-500)" stopOpacity="0.2" />
+                            <stop offset="100%" stopColor="var(--color-error-500)" stopOpacity="0.8" />
                         </linearGradient>
                         <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
                             <feGaussianBlur stdDeviation="3" result="blur" />
@@ -49,13 +49,13 @@ export function BroadcastAnimation({ broadcastSvgData, isGlass, isDark }: Broadc
                                 y1={item.fromY}
                                 x2={item.toX}
                                 y2={item.toY}
-                                stroke="#f59e0b"
+                                stroke="var(--color-warning-500)"
                                 strokeWidth="1.5"
                                 strokeDasharray="3 3"
                                 strokeOpacity="0.4"
                             />
                             <circle cx={item.x} cy={item.y} r="6" fill="url(#broadcastGradient)" filter="url(#glow)" />
-                            <circle cx={item.x} cy={item.y} r="2" fill="#ffffff" />
+                                <circle cx={item.x} cy={item.y} r="2" fill="var(--color-background)" />
                         </g>
                     ))}
                 </svg>

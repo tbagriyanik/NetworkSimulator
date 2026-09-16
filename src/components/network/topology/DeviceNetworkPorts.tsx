@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+import { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { getDevicePortLayout } from './deviceRenderer.helpers';
 import { DeviceGridPortPin } from './DeviceGridPortPin';

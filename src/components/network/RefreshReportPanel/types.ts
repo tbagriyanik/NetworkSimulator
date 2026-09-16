@@ -1,5 +1,5 @@
-import React from 'react';
-import { CanvasDevice } from '@/components/network/networkTopology.types';
+﻿import React from 'react';
+import { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { RefreshNetworkReport } from '@/hooks/useRefreshReport';
 
@@ -46,3 +46,5 @@ export interface RefreshReportPanelProps {
   bringElementToFront: (el: HTMLElement) => void;
   isExamActive?: boolean;
 }
+
+

@@ -1,6 +1,6 @@
-import React, { memo } from 'react';
+﻿import React, { memo } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { CanvasNote, CanvasDevice, CanvasConnection, ContextMenuState } from '../networkTopology.types';
+import { CanvasNote, CanvasDevice, CanvasConnection, ContextMenuState } from '../NetworkTopology/types/networkTopology.types';
 import { colors, withAlpha } from '@/lib/design-tokens/colors';
 
 export interface NoteNodeProps {
@@ -81,7 +81,7 @@ export const NoteNode = memo(function NoteNode({
     if (!textarea || !searchQuery) return;
 
     const turkishLowerCase = (str: string) => {
-      return str.replace(/İ/g, 'i').replace(/I/g, 'ı').toLowerCase();
+      return str.replace(/Ä°/g, 'i').replace(/I/g, 'Ä±').toLowerCase();
     };
 
     const textNormalized = turkishLowerCase(textarea.value);
@@ -384,7 +384,7 @@ export const NoteNode = memo(function NoteNode({
           }}
         >
           <textarea
-            aria-label={language === 'tr' ? 'Not içeriği' : 'Note content'}
+            aria-label={language === 'tr' ? 'Not iÃ§eriÄŸi' : 'Note content'}
             ref={(el) => { noteTextareaRefs.current[note.id] = el; }}
             value={note.text}
             onFocus={() => {
@@ -395,20 +395,20 @@ export const NoteNode = memo(function NoteNode({
             }}
             onChange={(e) => updateNoteText(note.id, e.target.value)}
             onMouseDown={(e) => {
-              // Sadece textarea içine tıklandığında olay durdurulsun, 
-              // böylece canvas sürüklenmez ama scrollbar çalışır
+              // Sadece textarea iÃ§ine tÄ±klandÄ±ÄŸÄ±nda olay durdurulsun, 
+              // bÃ¶ylece canvas sÃ¼rÃ¼klenmez ama scrollbar Ã§alÄ±ÅŸÄ±r
               e.stopPropagation();
             }}
             onPointerDown={(e) => {
-              // Fare veya dokunmatik ile scrollbar tutamacına basıldığında kapsayıcının (onPointerDown) notu sürüklemesini engeller
+              // Fare veya dokunmatik ile scrollbar tutamacÄ±na basÄ±ldÄ±ÄŸÄ±nda kapsayÄ±cÄ±nÄ±n (onPointerDown) notu sÃ¼rÃ¼klemesini engeller
               e.stopPropagation();
             }}
             onTouchStart={(e) => {
-              // Mobilde textarea'ya dokunuş - drag'i durdur
+              // Mobilde textarea'ya dokunuÅŸ - drag'i durdur
               e.stopPropagation();
             }}
             onTouchEnd={(e) => {
-              // Mobilde textarea'dan çıkış
+              // Mobilde textarea'dan Ã§Ä±kÄ±ÅŸ
               e.stopPropagation();
             }}
             onSelect={(e) => {
@@ -464,7 +464,7 @@ export const NoteNode = memo(function NoteNode({
                 e.currentTarget.blur();
                 return;
               }
-              // ESC tuşu ile context menu'yü kapat
+              // ESC tuÅŸu ile context menu'yÃ¼ kapat
               if (e.key === 'Escape' && contextMenu?.noteId === note.id) {
                 setContextMenu(null);
               }
@@ -473,7 +473,7 @@ export const NoteNode = memo(function NoteNode({
               e.stopPropagation();
             }}
             onBlur={() => {
-              // Textarea'nın dışında tıklanınca context menu'yü kapat
+              // Textarea'nÄ±n dÄ±ÅŸÄ±nda tÄ±klanÄ±nca context menu'yÃ¼ kapat
               if (contextMenu?.noteId === note.id) {
                 setContextMenu(null);
               }
@@ -505,3 +505,4 @@ export const NoteNode = memo(function NoteNode({
     </foreignObject>
   );
 });
+

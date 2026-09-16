@@ -1,6 +1,6 @@
 ﻿import { useEffect, useCallback } from 'react';
 import { useAppStore } from '@/lib/store/appStore';
-import { CanvasDevice, CanvasConnection, FirewallRule } from '@/components/network/networkTopology.types';
+import { CanvasDevice, CanvasConnection, FirewallRule } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { buildRunningConfig } from '@/lib/network/core/configBuilder';
 import { TerminalOutput } from '@/components/network/Terminal';
@@ -369,3 +369,5 @@ export function usePageNetworkLogic({
     updateDeviceConfig,
   };
 }
+
+

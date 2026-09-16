@@ -1,8 +1,8 @@
-import { useCallback, useRef, useEffect, MutableRefObject } from 'react';
+﻿import { useCallback, useRef, useEffect, MutableRefObject } from 'react';
 import { useHistory, ProjectState } from '@/hooks/useHistory';
 import { serializeState } from './page.utils';
 import { TabType, PCOutputLine } from './page.types';
-import { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/networkTopology.types';
+import { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState, CableInfo } from '@/lib/network/types';
 import type { TerminalOutput } from '@/components/network/Terminal';
 
@@ -206,3 +206,5 @@ export function usePageHistoryManager({
     commitAction,
   };
 }
+
+

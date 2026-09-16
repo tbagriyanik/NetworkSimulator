@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import { useCallback } from 'react';
-import type { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import type { FtpSession, PcFile } from './PCPanel.types';
 import { checkConnectivity } from '@/lib/network/connectivity';
@@ -156,3 +156,4 @@ export function usePCPanelFtpCommands(params: UsePCPanelFtpCommandsParams) {
     handleFtpSessionCommand,
   };
 }
+

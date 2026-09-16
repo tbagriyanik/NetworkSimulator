@@ -1,4 +1,4 @@
-import { CanvasDevice } from '../networkTopology.types';
+﻿import { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import { DeviceRenderer, DeviceRendererProps } from './DeviceRenderer';
 
 type TopologyDeviceRendererProps = Omit<DeviceRendererProps, 'device' | 'isSelected' | 'isDragging'> & {
@@ -23,3 +23,4 @@ export function TopologyDeviceRenderer({
     />
   );
 }
+

@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import type { CanvasDevice } from './networkTopology.types';
+import type { CanvasDevice } from './NetworkTopology/types/networkTopology.types';
 
 /** Router icon with arrows in circle */
 export const RouterIcon = ({ className = 'w-5 h-5' }: { className?: string }) => (
@@ -18,7 +18,7 @@ export const SwitchIcon = ({ className = 'w-5 h-5' }: { className?: string; isL3
     </svg>
 );
 
-/** Wireless LAN Controller icon — router-like circle with inner filled dot */
+/** Wireless LAN Controller icon â€” router-like circle with inner filled dot */
 export const WlcIcon = ({ className = 'w-5 h-5' }: { className?: string }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <circle cx={12} cy={12} r={9} strokeWidth={1.5} />
@@ -54,15 +54,15 @@ export const WifiSignalMeter = ({ strength }: { strength: number }) => {
 const getDeviceIcon = (device: CanvasDevice): string => {
     const kind = device.iot?.kind;
     const sensorType = device.iot?.sensorType;
-    if (kind === 'lamp') return '💡';
-    if (kind === 'heater') return '♨️';
-    if (kind === 'cooler') return '🧊';
-    if (sensorType === 'temperature') return '🌡️';
-    if (sensorType === 'humidity') return '💧';
-    if (sensorType === 'motion') return '🏃';
-    if (sensorType === 'light') return '☀️';
-    if (sensorType === 'sound') return '🔊';
-    return '📟';
+    if (kind === 'lamp') return 'ğŸ’¡';
+    if (kind === 'heater') return 'â™¨ï¸';
+    if (kind === 'cooler') return 'ğŸ§Š';
+    if (sensorType === 'temperature') return 'ğŸŒ¡ï¸';
+    if (sensorType === 'humidity') return 'ğŸ’§';
+    if (sensorType === 'motion') return 'ğŸƒ';
+    if (sensorType === 'light') return 'â˜€ï¸';
+    if (sensorType === 'sound') return 'ğŸ”Š';
+    return 'ğŸ“Ÿ';
 };
 
 /** Live IoT sensor chart + value display, or actuator status display */
@@ -164,13 +164,13 @@ export const IoTSensorDisplay = ({
     // For actuators, show status display instead of sensor data
     if (isActuator) {
         const statusText = isActive
-            ? (language === 'tr' ? 'AÇIK' : 'ON')
+            ? (language === 'tr' ? 'AÃ‡IK' : 'ON')
             : (language === 'tr' ? 'KAPALI' : 'OFF');
         const statusColor = isActive ? 'text-success-500' : 'text-secondary-400';
 
         // Special handling for lamp devices: use distinct on/off visuals
         const displayIcon = device.iot?.kind === 'lamp'
-            ? (isActive ? '💡' : '💡')
+            ? (isActive ? 'ğŸ’¡' : 'ğŸ’¡')
             : deviceIcon;
 
         return (
@@ -202,16 +202,16 @@ export const IoTSensorDisplay = ({
 
     let displayStr = '-';
     if (!device.iot?.collaborationEnabled) {
-        displayStr = language === 'tr' ? 'PASİF' : 'PASSIVE';
+        displayStr = language === 'tr' ? 'PASÄ°F' : 'PASSIVE';
     } else {
         switch (sensorType) {
-            case 'temperature': displayStr = `${latestVal.toFixed(1)} °C`; break;
+            case 'temperature': displayStr = `${latestVal.toFixed(1)} Â°C`; break;
             case 'humidity': displayStr = `${latestVal.toFixed(1)} %`; break;
             case 'light': displayStr = `${Math.round(latestVal)} lx`; break;
             case 'sound': displayStr = `${Math.round(latestVal)} dB`; break;
             case 'motion': displayStr = latestVal > 0.5
-                ? (language === 'tr' ? '🔴 Hareket Var' : '🔴 Detected')
-                : (language === 'tr' ? '🟢 Hareket Yok' : '🟢 None');
+                ? (language === 'tr' ? 'ğŸ”´ Hareket Var' : 'ğŸ”´ Detected')
+                : (language === 'tr' ? 'ğŸŸ¢ Hareket Yok' : 'ğŸŸ¢ None');
                 break;
         }
     }
@@ -250,7 +250,7 @@ export const IoTSensorDisplay = ({
                 <div className="flex items-center justify-between">
                     <div>
                         <div className="text-xs text-secondary-500 mb-1">
-                            {language === 'tr' ? 'Anlık Sensör Değeri' : 'Live Sensor Value'}
+                            {language === 'tr' ? 'AnlÄ±k SensÃ¶r DeÄŸeri' : 'Live Sensor Value'}
                         </div>
                         <div className="text-2xl font-bold text-accent-500" title={displayStr}>{displayStr}</div>
                     </div>
@@ -263,12 +263,12 @@ export const IoTSensorDisplay = ({
             <div className={`p-4 rounded-lg ${isDark ? 'bg-secondary-800/50' : 'bg-secondary-100/50'}`}>
                 <div className="flex justify-between items-end mb-2">
                     <div className="text-xs font-semibold text-secondary-500">
-                        {language === 'tr' ? 'Son 5 Dakika (300sn) Geçmişi' : 'Last 5 Minutes History'}
+                        {language === 'tr' ? 'Son 5 Dakika (300sn) GeÃ§miÅŸi' : 'Last 5 Minutes History'}
                     </div>
                     {!isPassive && (
                         <div className="text-xs text-accent-500/80 font-mono">
                             {latestVal.toFixed(isDigital ? 0 : 1)}{' '}
-                            {isDigital ? '' : (sensorType === 'temperature' ? '°C' : sensorType === 'humidity' ? '%' : sensorType === 'light' ? 'lx' : 'dB')}
+                            {isDigital ? '' : (sensorType === 'temperature' ? 'Â°C' : sensorType === 'humidity' ? '%' : sensorType === 'light' ? 'lx' : 'dB')}
                         </div>
                     )}
                 </div>
@@ -298,3 +298,4 @@ export const IoTSensorDisplay = ({
         </div>
     );
 };
+

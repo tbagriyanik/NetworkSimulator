@@ -1,5 +1,5 @@
-import type { SwitchState, Port, Vlan } from '@/lib/network/types';
-import type { CanvasDevice } from '@/components/network/networkTopology.types';
+﻿import type { SwitchState, Port, Vlan } from '@/lib/network/types';
+import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { executeCommand } from '@/lib/network/executor';
 
 export interface RestconfResponse {
@@ -759,3 +759,5 @@ export function executeNetDevOpsPythonScript(
     updatedDeviceStates: updatedStates,
   };
 }
+
+

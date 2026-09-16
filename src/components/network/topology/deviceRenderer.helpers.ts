@@ -1,4 +1,4 @@
-import { CanvasDevice, CanvasConnection, CanvasPort } from '../networkTopology.types';
+﻿import { CanvasDevice, CanvasConnection, CanvasPort } from '../NetworkTopology/types/networkTopology.types';
 import { isModulePort } from '@/lib/network/portUtils';
 
 export const PORT_FRAME_OK = 'var(--color-secondary-50)';

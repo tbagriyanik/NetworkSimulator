@@ -1,6 +1,6 @@
-// MAC Address Learning Simulation
+﻿// MAC Address Learning Simulation
 import { SwitchState } from './types';
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 export interface MacTableEntry {
   mac: string;
@@ -319,3 +319,5 @@ export function learnMacsOnNewConnection(
 
   return nextStates;
 }
+
+

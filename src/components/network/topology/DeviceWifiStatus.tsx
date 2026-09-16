@@ -1,5 +1,5 @@
-import React from 'react';
-import { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+﻿import React from 'react';
+import { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import { SwitchState, Port } from '@/lib/network/types';
 import { getWirelessSignalStrength } from '@/lib/network/connectivity';
 import { getChannelBand, getDeviceWifiConfig, getApActiveSsids, wifiChannelMatches, wifiMacFilterMatches } from '@/lib/network/wireless';
@@ -115,7 +115,7 @@ export const DeviceWifiStatus: React.FC<DeviceWifiStatusProps> = React.memo(({
 
     return (
       <g transform={`translate(${deviceWidth - 23}, 7)`}>
-        <title>{[`SSID: ${pcWifi?.ssid ?? 'N/A'}`, isConnected ? 'Bağlı' : 'Bağlı değil', `Sinyal: ${strength}/5`, `Güvenlik: ${pcWifi?.security ?? 'open'}`, `Kanal: ${pcWifi?.channel ?? 'N/A'}`, `Parola: ${pcWifi?.password ? 'Evet' : 'Hayır'}`].join(' • ')}</title>
+        <title>{[`SSID: ${pcWifi?.ssid ?? 'N/A'}`, isConnected ? 'BaÄŸlÄ±' : 'BaÄŸlÄ± deÄŸil', `Sinyal: ${strength}/5`, `GÃ¼venlik: ${pcWifi?.security ?? 'open'}`, `Kanal: ${pcWifi?.channel ?? 'N/A'}`, `Parola: ${pcWifi?.password ? 'Evet' : 'HayÄ±r'}`].join(' â€¢ ')}</title>
         <svg x="-2" y="1" width="22" height="14" viewBox="0 0 22 14" className="pointer-events-none">
           {wifiBarRects.map((bar, index) => (
             <rect
@@ -174,3 +174,4 @@ export const DeviceWifiStatus: React.FC<DeviceWifiStatusProps> = React.memo(({
     </g>
   );
 });
+

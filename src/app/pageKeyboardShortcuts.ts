@@ -1,4 +1,4 @@
-import type { CanvasDevice, DeviceType } from '@/components/network/networkTopology.types';
+﻿import type { CanvasDevice, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 export function handlePageShortcut(
   shortcut: 'next-device' | 'windows' | 'minimize' | 'save',
@@ -23,3 +23,5 @@ export function handlePageShortcut(
   });
   window.dispatchEvent(event);
 }
+
+

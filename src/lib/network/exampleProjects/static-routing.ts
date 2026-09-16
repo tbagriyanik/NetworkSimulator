@@ -1,6 +1,6 @@
 ﻿import { createSwitchDevice, createPcDevice, createRouterDevice, connectPorts, baseProjectData } from './helpers';
 ;
-import type { CanvasConnection, CanvasNote } from '@/components/network/networkTopology.types';
+import type { CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { ExampleProject } from './types';
 import { createInitialState, createInitialRouterState } from '../initialState';
 
@@ -82,4 +82,6 @@ const example = (isTr: boolean): ExampleProject => {
 };
 
 export default example;
+
+
 

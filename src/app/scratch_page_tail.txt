@@ -1,0 +1,528 @@
+
+  function handleNewProject() {
+    setProjectSearchQuery('');
+    closeExam();
+    resetWorkspaceUiState();
+    runWithSaveGuard(() => setShowProjectPicker(true));
+  }
+
+  usePageSyncEffects({
+    sessionStart, activeGuidedProject, isAllCompleted, currentPoints, totalPoints, isExamFinished, activeExam, examScore,
+    isExamActive, helpLevel, setHelpLevel, topologyDevices, deviceStates, setTopologyDevices, setHasUnsavedChanges,
+    topologyConnections, handleRefreshNetwork,
+  });
+
+  const tabs = [{ ...ALL_TABS[0], label: t.networkTopology }];
+
+  useKeyboardShortcuts({
+    showMobileMenu, confirmDialog, saveDialog, showPCPanel, showRouterPanel, showFirewallPanel, showUnifiedDeviceModal,
+    showAboutModal, showProjectPicker, showOnboarding, isTimelineMinimized, selectedDevice, activeDeviceId, activeTab,
+    topologyDevices, activeTabRef, fileInputRef, handleSaveProject, handleNewProject, handleUndo, handleRedo, handleDeviceDoubleClick,
+    handleRefreshNetwork, closeEscLikeWindows, getOrCreateDeviceState, getOrCreateDeviceOutputs, setShowMobileMenu, setShowPCPanel,
+    setShowRouterPanel, setShowProjectPicker, setShowAboutModal, setTopologyKey, setIsTimelineMinimized, setClearSelectionTrigger,
+    setSelectedDevice, setActiveDeviceId, setActiveDeviceType, setActiveTab, setUnifiedDeviceActiveTab, setShowUnifiedDeviceModal, tabs,
+  });
+
+  useNetworkEventListeners({
+    setDeviceStates, deviceStates, activeTabRef, setActiveTab,
+  });
+
+  const handleLoadProject = useLoadProject({
+    loadProjectData: loadProjectData as (data: unknown) => boolean, setHasUnsavedChanges, setProjectName,
+    closeGuidedMode, closeExam, setRefreshNetworkReport, setIsExamLoadedFromFile, startExamProject, resetToEmptyProject,
+    hasUnsavedChanges, handleSaveProject, setSaveDialog, language, t, toast,
+  });
+
+  const {
+    applyExampleProjectAsTemplate, applyExampleProject, startExamFromCatalog, handleConvertProjectToExam, handleStartGuidedProject,
+  } = useProjectApplication({
+    loadProjectData, setShowProjectPicker, setZoom, setPan, setProjectName, setLoadedExampleId, setRefreshNetworkReport,
+    closeGuidedMode, closeExam, startExamProject, startGuidedProject, toggleEditor, setIsExamLoadedFromFile, resetWorkspaceUiState,
+    resetToEmptyProject, groupedExampleProjects, exampleLevelOrder, projectName, language, toast,
+  });
+
+  useEffect(() => {
+    if (activeGuidedProject) {
+      setTimeout(() => setProjectName(activeGuidedProject.title), 0);
+
+      if (guidedStepIndex < activeGuidedProject.steps.length) {
+        const step = activeGuidedProject.steps[guidedStepIndex];
+        const targetId = step.checkParams?.targetDeviceId || step.checkParams?.sourceDevice;
+        if (targetId) {
+          const device = topologyDevices.find(d => d.id === targetId);
+          if (device) {
+            setFocusDeviceId(targetId);
+            focusDeviceInTopology(targetId, 1.0, device);
+            setTimeout(() => setFocusDeviceId(null), 3000);
+          }
+        }
+      }
+    } else if (activeExam) {
+      const examTitleStr = typeof activeExam.title === 'string'
+        ? activeExam.title
+        : (language === 'tr' ? activeExam.title.tr : activeExam.title.en);
+      setTimeout(() => setProjectName(examTitleStr), 0);
+      if (activeExam.isCustom && activeExam.tasks.length === 0) {
+        toggleEditor(true);
+      }
+    }
+  }, [activeGuidedProject, activeExam, toggleEditor, setProjectName, guidedStepIndex, topologyDevices, setFocusDeviceId, focusDeviceInTopology]);
+
+  const isDark = (effectiveTheme ?? theme) === 'dark';
+  const isRoomEnabled = process.env.NEXT_PUBLIC_IS_ROOM_ENABLED === 'true';
+
+  return (
+    <AppErrorBoundary fallbackTitle={t.applicationError}>
+      <div className={cn("h-dvh w-full flex flex-col relative transition-colors duration-700 overflow-x-hidden", isAppLoading ? 'bg-secondary-950' : (isDark ? 'bg-secondary-950' : 'bg-secondary-50'))}>
+        {!isAppLoading && (
+          <div className="fixed inset-0 pointer-events-none z-0 opacity-40 dark:opacity-20 transition-opacity duration-1000">
+            <div className="absolute inset-0 mesh-gradient animate-liquid blur-[100px] scale-150 rotate-12" />
+            <div className="absolute inset-0 bg-white/40 dark:bg-secondary-950/40" />
+          </div>
+        )}
+
+        {/* App Loading Screen */}
+        {isAppLoading && (
+          <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-secondary-950">
+            <div className="flex flex-col items-center animate-scale-in">
+              <div className="relative mb-8">
+                <div className="p-2 animate-glitch">
+                  <Image src="/app.png" alt="Logo" width={64} height={64} className="w-16 h-16 object-contain" priority />
+                </div>
+                <div className="absolute inset-0 p-4 rounded-2xl bg-error-500/30 animate-glitch-skew mix-blend-screen" />
+                <div className="absolute inset-0 p-4 rounded-2xl bg-primary-500/30 animate-glitch mix-blend-screen" style={{ animationDelay: '0.1s' }} />
+              </div>
+
+              <h1 className="text-3xl font-black tracking-tighter text-white glitch-text mb-2 text-center" data-text="NETWORK SIMULATOR">
+                NETWORK SIMULATOR
+              </h1>
+
+              <div className="flex items-center gap-2 mt-4">
+                <span className="text-xs font-bold tracking-widest text-accent-500">
+                  {t.initializingSystem}
+                </span>
+              </div>
+            </div>
+            <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,255,0,0.01),rgba(0,0,255,0.03))] bg-[length:100%_4px,3px_100%]" />
+          </div>
+        )}
+
+        {/* Skeleton Loading State */}
+        {showSkeleton && !isAppLoading && (
+          <div className="fixed inset-0 z-[9998] bg-background">
+            <AppSkeleton />
+          </div>
+        )}
+
+        {/* Main Content */}
+        <div className="flex flex-col flex-1 animate-fade-in w-full max-w-[1920px] mx-auto">
+          <AppHeader
+            t={t}
+            isDark={isDark}
+            theme={theme}
+            language={language}
+            isPingPanelOpen={isPingPanelOpen}
+            isExamActive={isExamActive}
+            setLanguage={setLanguage}
+            setTheme={setTheme}
+            graphicsQuality={graphicsQuality}
+            setGraphicsQuality={setGraphicsQuality}
+            activeDeviceType={activeDeviceType}
+            activeDeviceId={activeDeviceId}
+            totalScore={totalScore}
+            maxScore={maxScore}
+            topologyDevices={topologyDevices}
+            deviceStates={deviceStates}
+            handleNewProject={handleNewProject}
+            handleSaveProject={handleSaveProject}
+            handleLoadProject={handleLoadProject}
+            fileInputRef={fileInputRef}
+            showMobileMenu={showMobileMenu}
+            setShowMobileMenu={setShowMobileMenu}
+            setShowProjectPicker={setShowProjectPicker}
+            setShowOnboarding={setShowOnboarding}
+            setOnboardingStep={setOnboardingStep}
+            handleRefreshNetwork={handleRefreshNetwork}
+            setIsEnvironmentPanelOpen={setIsEnvironmentPanelOpen}
+            isGuidedModeActive={isGuidedModeActive}
+            isPanelMinimized={isPanelMinimized}
+            expandPanel={expandPanel}
+            setShowAboutModal={setShowAboutModal}
+            showBasarilarim={showBasarilarim}
+            setShowBasarilarim={setShowBasarilarim}
+            helpLevel={helpLevel}
+            setHelpLevel={useAppStore.getState().setHelpLevel}
+          />
+
+          <PageDialogs
+            t={t}
+            isDark={isDark}
+            language={language}
+            isGeneratorOpen={isGeneratorOpen}
+            setIsGeneratorOpen={setIsGeneratorOpen}
+            handleGeneratedTopology={handleGeneratedTopology}
+            showProjectPicker={showProjectPicker}
+            setShowProjectPicker={setShowProjectPicker}
+            projectPickerTab={projectPickerTab}
+            setProjectPickerTab={setProjectPickerTab}
+            projectSearchQuery={projectSearchQuery}
+            setProjectSearchQuery={setProjectSearchQuery}
+            groupedExampleProjects={groupedExampleProjects}
+            exampleLevelOrder={exampleLevelOrder}
+            getAvailableProjects={getAvailableProjects}
+            getAvailableExams={getAvailableExams}
+            resetToEmptyProject={resetToEmptyProject}
+            applyExampleProject={applyExampleProject}
+            applyExampleProjectAsTemplate={applyExampleProjectAsTemplate}
+            handleStartGuidedProject={handleStartGuidedProject}
+            startExamFromCatalog={startExamFromCatalog}
+            loadProjectData={loadProjectData}
+            setZoom={setZoom}
+            setPan={setPan}
+            handleConvertProjectToExam={handleConvertProjectToExam}
+            fileInputRef={fileInputRef}
+            showOnboarding={showOnboarding}
+            onboardingStep={onboardingStep}
+            onboardingSteps={onboardingSteps}
+            closeOnboardingForever={closeOnboardingForever}
+            prevOnboarding={prevOnboarding}
+            nextOnboarding={nextOnboarding}
+          />
+
+          <PagePanelWindows
+            t={t}
+            theme={theme}
+            isDark={isDark}
+            isTR={isTR}
+            language={language}
+            isTablet={isTablet}
+            helpLevel={helpLevel}
+            showUnifiedDeviceModal={showUnifiedDeviceModal}
+            setShowUnifiedDeviceModal={setShowUnifiedDeviceModal}
+            unifiedDeviceActiveTab={unifiedDeviceActiveTab}
+            setUnifiedDeviceActiveTab={setUnifiedDeviceActiveTab}
+            activeDeviceId={activeDeviceId}
+            activeDeviceType={activeDeviceType}
+            deviceStates={deviceStates}
+            deviceOutputs={deviceOutputs}
+            topologyDevices={topologyDevices}
+            topologyConnections={topologyConnections}
+            handleCommand={handleCommand}
+            handleClearTerminal={handleClearTerminal}
+            handleUpdateHistory={handleUpdateHistory}
+            confirmDialog={confirmDialog}
+            setConfirmDialog={setConfirmDialog}
+            isExecutingCommand={isExecutingCommand}
+            output={output}
+            prompt={prompt}
+            state={state}
+            activeDeviceTasks={activeDeviceTasks}
+            taskContext={taskContext}
+            unifiedDrag={unifiedDrag}
+            firewallDrag={firewallDrag}
+            showFirewallPanel={showFirewallPanel}
+            setShowFirewallPanel={setShowFirewallPanel}
+            activeFirewallId={activeFirewallId}
+            firewallActiveTab={firewallActiveTab}
+            setFirewallActiveTab={setFirewallActiveTab}
+            handleExecuteCommand={handleExecuteCommand}
+            toggleDevicePower={toggleDevicePower}
+            updateDeviceConfig={updateDeviceConfig}
+            showPCPanel={showPCPanel}
+            setShowPCPanel={setShowPCPanel}
+            showPCDeviceId={showPCDeviceId}
+            cableInfo={cableInfo}
+            pcPanelInitialTab={pcPanelInitialTab}
+            pcOutputs={pcOutputs}
+            setPcOutputs={setPcOutputs as PcOutputsSetter}
+            pcHistories={pcHistories}
+            handleUpdatePCHistory={handleUpdatePCHistory}
+            handlePCPanelNavigateWrapper={handlePCPanelNavigateWrapper}
+            handleDeviceDelete={handleDeviceDelete}
+            focusedOverlay={focusedOverlay}
+            pcDrag={pcDrag}
+            showRouterPanel={showRouterPanel}
+            setShowRouterPanel={setShowRouterPanel}
+            showRouterDeviceId={showRouterDeviceId}
+            routerDrag={routerDrag}
+          />
+
+          <main className={cn(
+            "overflow-hidden flex flex-col min-h-0 pt-14 sm:pt-16",
+            preferences.showFooter ? "h-[calc(100vh-44px)]" : "h-screen",
+            activeTab === 'topology' ? 'md:pt-[116px]' : 'md:pt-16',
+            isTablet && (showPCPanel || showUnifiedDeviceModal || showRouterPanel) && "flex-row md:pt-16"
+          )}>
+            <div className={cn(
+              "w-full flex-1 flex flex-col min-h-0 overflow-hidden transition-all duration-500",
+              isTablet && (showPCPanel || showUnifiedDeviceModal || showRouterPanel) && "w-full sm:w-1/2 flex-none border-r border-secondary-200/50 dark:border-secondary-800/50"
+            )}>
+              <div className={`flex-1 flex flex-col min-h-0 ${activeTab === 'topology' ? 'flex' : 'hidden'} print:flex`}>
+                {activeTab === 'topology' && (
+                  <TopologyToolbar
+                    isPingPanelOpen={isPingPanelOpen}
+                    t={t}
+                    isDark={isDark}
+                    language={language}
+                    topologyDevices={topologyDevices}
+                    deviceStates={deviceStates}
+                    activeDeviceId={activeDeviceId}
+                    activeDeviceType={activeDeviceType}
+                    cableInfo={cableInfo}
+                    deviceSearchQuery={deviceSearchQuery}
+                    canUndo={canUndo}
+                    canRedo={canRedo}
+                    hasHydrated={hasHydrated}
+                    isExamActive={isExamActive}
+                    setDeviceSearchQuery={setDeviceSearchQuery}
+                    setCableInfo={setCableInfo}
+                    setZoom={setZoom}
+                    setPan={setPan}
+                    handleDeviceSelectFromMenu={handleDeviceSelectFromMenu}
+                    handleUndo={handleUndo}
+                    handleRedo={handleRedo}
+                    handleRefreshNetwork={handleRefreshNetwork}
+                    setIsEnvironmentPanelOpen={setIsEnvironmentPanelOpen}
+                    onOpenStudentJoin={isRoomEnabled ? () => setShowRoomJoinDialog(true) : undefined}
+                    onOpenTeacherPanel={isRoomEnabled && !studentRoomCode ? () => setShowTeacherPanel(true) : undefined}
+                  />
+                )}
+
+                <div ref={topologyContainerRef} className="flex-1 w-full h-full min-h-0 overflow-hidden relative">
+                  <NetworkErrorBoundary fallbackTitle="Topoloji Tuvali YÃ¼klenirken Bir Hata OluÅŸtu">
+                    <NetworkTopology
+                      onPingPanelOpenChange={setIsPingPanelOpen}
+                      key={topologyKey}
+                      cableInfo={cableInfo}
+                      onCableChange={setCableInfo}
+                      selectedDevice={selectedDevice}
+                      onDeviceSelect={handleDeviceSelectFromCanvas}
+                      onDeviceDoubleClick={handleDeviceDoubleClick}
+                      onDeviceDelete={handleDeviceDelete}
+                      onDeviceRename={handleDeviceRename}
+                      initialDevices={topologyDevices || undefined}
+                      initialConnections={topologyConnections || undefined}
+                      initialNotes={topologyNotes || undefined}
+                      isActive={activeTab === 'topology'}
+                      activeDeviceId={activeDeviceId}
+                      deviceStates={deviceStates}
+                      onDeviceStatesChange={setDeviceStates}
+                      zoom={zoom}
+                      onZoomChange={setZoom}
+                      pan={pan}
+                      onPanChange={setPan}
+                      canUndo={canUndo}
+                      canRedo={canRedo}
+                      onUndo={handleUndo}
+                      onRedo={handleRedo}
+                      onRefreshNetwork={handleRefreshNetwork}
+                      focusDeviceId={focusDeviceId}
+                      isExamActive={isExamActive}
+                      isExamEditorOpen={isEditorOpen}
+                      onOpenTasks={(deviceId: string) => {
+                        setActiveDeviceId(deviceId);
+                        const device = topologyDevices?.find(d => d.id === deviceId);
+                        if (!device || device.type === 'pc') return;
+                        setActiveDeviceType(device.type);
+                        setUnifiedDeviceActiveTab('settings');
+                        setShowUnifiedDeviceModal(true);
+                      }}
+                      clearSelectionTrigger={clearSelectionTrigger}
+                      onPacketPanelFocus={() => setFocusedOverlay('packet')}
+                      packetPanelZIndex={focusedOverlay === 'packet' ? 35 : 30}
+                      onAction={commitAction}
+                    />
+                  </NetworkErrorBoundary>
+
+                  <PageDevicePopovers
+                    showDevicePopovers={preferences.showDevicePopovers}
+                    activeDeviceId={activeDeviceId}
+                    topologyDevices={topologyDevices}
+                    deviceStates={deviceStates}
+                    topologyConnections={topologyConnections}
+                    t={t}
+                    language={language}
+                    isDark={isDark}
+                    focusedOverlay={focusedOverlay}
+                    setFocusedOverlay={setFocusedOverlay}
+                    setSelectedDevice={setSelectedDevice}
+                    setActiveDeviceId={setActiveDeviceId}
+                    setActiveDeviceType={setActiveDeviceType}
+                    setUnifiedDeviceActiveTab={setUnifiedDeviceActiveTab}
+                    setShowPCDeviceId={setShowPCDeviceId}
+                    setPcPanelInitialTab={setPcPanelInitialTab}
+                    getOrCreatePCOutputs={getOrCreatePCOutputs}
+                    handleDeviceDoubleClick={handleDeviceDoubleClick}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <TabletSplitView
+              isDark={isDark}
+              isTablet={isTablet}
+              showPCPanel={showPCPanel}
+              setShowPCPanel={setShowPCPanel}
+              showUnifiedDeviceModal={showUnifiedDeviceModal}
+              setShowUnifiedDeviceModal={setShowUnifiedDeviceModal}
+              showRouterPanel={showRouterPanel}
+              setShowRouterPanel={setShowRouterPanel}
+              unifiedDeviceActiveTab={unifiedDeviceActiveTab}
+              setUnifiedDeviceActiveTab={setUnifiedDeviceActiveTab}
+              activeDeviceId={activeDeviceId}
+              activeDeviceType={activeDeviceType}
+              deviceStates={deviceStates}
+              topologyDevices={topologyDevices}
+              topologyConnections={topologyConnections}
+              handleCommand={handleCommand}
+              handleClearTerminal={handleClearTerminal}
+              toggleDevicePower={toggleDevicePower}
+              handleUpdateHistory={handleUpdateHistory}
+              confirmDialog={confirmDialog}
+              setConfirmDialog={setConfirmDialog}
+              t={t}
+              theme={theme}
+              language={language}
+              helpLevel={helpLevel}
+              isExecutingCommand={isExecutingCommand}
+              output={output}
+              prompt={prompt}
+              state={state}
+              activeDeviceTasks={activeDeviceTasks}
+              taskContext={taskContext}
+              showPCDeviceId={showPCDeviceId}
+              cableInfo={cableInfo}
+              pcPanelInitialTab={pcPanelInitialTab}
+              deviceOutputs={deviceOutputs}
+              pcOutputs={pcOutputs}
+              setPcOutputs={setPcOutputs as PcOutputsSetter}
+              pcHistories={pcHistories}
+              handleUpdatePCHistory={handleUpdatePCHistory}
+              handleExecuteCommand={handleExecuteCommand}
+              handlePCPanelNavigateWrapper={handlePCPanelNavigateWrapper}
+              handleDeviceDelete={handleDeviceDelete}
+              showRouterDeviceId={showRouterDeviceId}
+              focusedOverlay={focusedOverlay}
+            />
+
+            <RefreshReportPanel
+              refreshNetworkReport={refreshNetworkReport}
+              setRefreshNetworkReport={setRefreshNetworkReport}
+              refreshReportRef={refreshReportRef}
+              isMobile={isMobile}
+              isDark={isDark}
+              focusedOverlay={focusedOverlay}
+              setFocusedOverlay={setFocusedOverlay}
+              language={language}
+              t={t}
+              handleRefreshNetwork={handleRefreshNetwork}
+              liveSummary={liveSummary}
+              topologyDevices={topologyDevices}
+              deviceStates={deviceStates}
+              bringElementToFront={bringElementToFront}
+              isExamActive={isExamActive}
+            />
+          </main>
+
+          {preferences.showFooter && (
+            <AppFooter
+              t={t}
+              isDark={isDark}
+              language={language}
+              activeTab={activeTab}
+              hasUnsavedChanges={hasUnsavedChanges}
+              lastSaveTime={lastSaveTime}
+              projectName={projectName}
+              topologyDevices={topologyDevices}
+              showProjectPicker={showProjectPicker}
+              showOnboarding={showOnboarding}
+              setShowAboutModal={setShowAboutModal}
+              onShortcut={(shortcut) => handlePageShortcut(shortcut, topologyDevices, activeDeviceId, handleDeviceSelectFromMenu)}
+            />
+          )}
+
+          <PageOverlayPanels
+            t={t}
+            isDark={isDark}
+            language={language}
+            showAboutModal={showAboutModal}
+            setShowAboutModal={setShowAboutModal}
+            isExamActive={isExamActive}
+            setShowOnboarding={setShowOnboarding}
+            setOnboardingStep={setOnboardingStep}
+            showBasarilarim={showBasarilarim}
+            setShowBasarilarim={setShowBasarilarim}
+            isEnvironmentPanelOpen={isEnvironmentPanelOpen}
+            setIsEnvironmentPanelOpen={setIsEnvironmentPanelOpen}
+
+            isGuidedModeActive={isGuidedModeActive}
+            activeGuidedProject={activeGuidedProject}
+            guidedStepIndex={guidedStepIndex}
+            completeStep={completeStep}
+            uncompleteStep={uncompleteStep}
+            toggleGuidedMinimize={togglePanelMinimize}
+            isGuidedPanelMinimized={isPanelMinimized}
+            lastCompletedStep={lastCompletedStep}
+            isCurrentStepReady={isCurrentStepReady}
+            lastCommand={lastCommand}
+            lastOutput={lastOutput}
+            showUnifiedDeviceModal={showUnifiedDeviceModal}
+            activeDeviceType={activeDeviceType}
+            activeDeviceId={activeDeviceId}
+            state={state}
+            deviceStates={deviceStates}
+            topologyConnections={topologyConnections}
+            topologyDevices={topologyDevices}
+            checkStepCompletionWithContext={checkStepCompletionWithContext}
+
+            activeExam={activeExam}
+            closeExam={closeExam}
+            toggleExamPanelMinimize={toggleExamPanelMinimize}
+            isExamPanelMinimized={isExamPanelMinimized}
+            isExamFinished={isExamFinished}
+            finishExam={finishExam}
+            examScore={examScore}
+            checkExamTasks={checkExamTasks}
+            isExamLoadedFromFile={isExamLoadedFromFile}
+            toggleEditor={toggleEditor}
+            isEditorOpen={isEditorOpen}
+
+            activeTroubleshootingProject={activeTroubleshootingProject}
+            showTroubleshootingPanel={showTroubleshootingPanel}
+            setShowTroubleshootingPanel={setShowTroubleshootingPanel}
+            isTroubleshootingMinimized={isTroubleshootingMinimized}
+            setIsTroubleshootingMinimized={setIsTroubleshootingMinimized}
+
+            historyItems={historyItems}
+            historyIndex={historyIndex}
+            handleJumpTo={handleJumpTo}
+            isTimelineMinimized={isTimelineMinimized}
+            toggleTimelineMinimize={toggleTimelineMinimize}
+            isMobile={isMobile}
+
+            addTask={addTask}
+            updateTask={updateTask}
+            deleteTask={deleteTask}
+            updateExamMeta={updateExamMeta}
+            moveTask={moveTask}
+            smartBalanceWeights={smartBalanceWeights}
+            exportExamFile={exportExamFile}
+            getFullProjectData={getFullProjectData}
+
+            showWarning={showWarning}
+            tabCount={tabCount}
+            clearCurrentTabData={clearCurrentTabData}
+            acknowledgeWarning={acknowledgeWarning}
+            confirmDialog={confirmDialog}
+            setConfirmDialog={setConfirmDialog}
+            saveDialog={saveDialog}
+            setSaveDialog={setSaveDialog}
+            focusActiveTerminalInput={focusActiveTerminalInput}
+          />
+        </div>
+      </div>
+    </AppErrorBoundary>
+  );
+}
+
+

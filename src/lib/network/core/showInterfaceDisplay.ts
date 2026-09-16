@@ -1,5 +1,5 @@
-import type { CommandContext } from './commandTypes';
-import type { CanvasConnection } from '@/components/network/networkTopology.types';
+﻿import type { CommandContext } from './commandTypes';
+import type { CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState, CommandResult, Port } from '../types';
 import { normalizePortId } from '../initialState';
 import { portsFormTrunk } from '../connectivity';
@@ -666,3 +666,5 @@ export function cmdShowIpAccessGroup(state: SwitchState, _input: string, _ctx: C
   output += '!\n';
   return { success: true, output };
 }
+
+

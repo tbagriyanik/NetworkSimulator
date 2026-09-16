@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import { CanvasDevice } from '../networkTopology.types';
+import { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import { colors } from '@/lib/design-tokens/colors';
 
 interface DeviceIotEffectsProps {

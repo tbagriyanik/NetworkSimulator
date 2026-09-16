@@ -1,4 +1,4 @@
-import { CanvasDevice, CanvasPort } from '@/components/network/networkTopology.types';
+﻿import { CanvasDevice, CanvasPort } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState, Port } from '@/lib/network/types';
 import { IndexedConnection } from '@/lib/network/connectionIndex';
 import { portsFormTrunk } from '../vlanAndSwitching';
@@ -86,3 +86,4 @@ export const getFallbackVlanFromPath = (deviceId: string, deps: VlanHelperDeps):
   if (vlan && vlan > 0) return vlan;
   return 1;
 };
+

@@ -1,8 +1,8 @@
-// Orchestrator for checkConnectivity. Pipeline stages live in dedicated modules:
+﻿// Orchestrator for checkConnectivity. Pipeline stages live in dedicated modules:
 // targetResolution, arpNdpResolution, pathFinding, traceRecording, l3Routing,
 // l2Checks, dhcpSnooping and forwardingControls.
 
-import { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { ensureDeviceStatesMap } from '@/lib/network/networkUtils';
 import { buildImplicitWirelessConnections } from '@/lib/network/wireless';
@@ -140,3 +140,4 @@ export function checkConnectivity(
     capturedPackets
   };
 }
+

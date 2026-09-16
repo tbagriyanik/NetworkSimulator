@@ -1,5 +1,5 @@
-import React from 'react';
-import { DeviceType } from '../networkTopology.types';
+﻿import React from 'react';
+import { DeviceType } from '../NetworkTopology/types/networkTopology.types';
 
 export const DEVICE_ICONS: Record<DeviceType | 'switch', React.ReactNode> = {
   pc: (
@@ -76,4 +76,5 @@ export const DEVICE_ICONS: Record<DeviceType | 'switch', React.ReactNode> = {
     </svg>
   ),
 };
+
 

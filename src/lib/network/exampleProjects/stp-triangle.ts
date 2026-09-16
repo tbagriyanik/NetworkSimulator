@@ -1,7 +1,7 @@
-import { createInitialState } from '../initialState';
+﻿import { createInitialState } from '../initialState';
 import { createSwitchDevice, createPcDevice, connectPorts, baseProjectData } from './helpers';
 ;
-import type { CanvasConnection, CanvasNote } from '@/components/network/networkTopology.types';
+import type { CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { ExampleProject } from './types';
 ;
 
@@ -23,8 +23,8 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'stp-triangle-note',
       text: isTr
-        ? 'Amaç: Üç switch arasında triangle topolojide STP kullanarak loop önlemek ve path sağlamak.\n\n🔄 STP Triangle Topology (3 Switch):\n\nSW1, SW2, SW3 üçgen topolojide bağlı.\n\nÜçgen bağlantı:\n- SW1 Fa0/1 ↔ SW3 Fa0/1: Altn BLK\n- SW1 Fa0/2 ↔ SW2 Fa0/1: Desg FWD\n- SW2 Fa0/2 ↔ SW3 Fa0/2: Desg FWD\n\nGörevler:\n1) show spanning-tree ile STP durumunu kontrol et\n2) Bloke port (SW1 Fa0/1)\n3) SW1 Fa0/1 kablo kesilirse otomatik aktif olur\n\n⚠️ Not: Ağı Yenile (F5)'
-        : '🔄 STP Triangle Topology (3 Switches):\n\nSW1, SW2, SW3 connected in triangle topology.\n\nTriangle connections:\n- SW1 Fa0/1 ↔ SW3 Fa0/1: Altn BLK\n- SW1 Fa0/2 ↔ SW2 Fa0/1: Desg FWD\n- SW2 Fa0/2 ↔ SW3 Fa0/2: Desg FWD\n\nTasks:\n1) Verify STP state with show spanning-tree\n2) Blocked port (SW1 Fa0/1) \n3) If SW1 Fa0/1 fails, it automatically becomes active\n\n⚠️ Note: Refresh Network (F5)',
+        ? 'AmaÃ§: ÃœÃ§ switch arasÄ±nda triangle topolojide STP kullanarak loop Ã¶nlemek ve path saÄŸlamak.\n\nğŸ”„ STP Triangle Topology (3 Switch):\n\nSW1, SW2, SW3 Ã¼Ã§gen topolojide baÄŸlÄ±.\n\nÃœÃ§gen baÄŸlantÄ±:\n- SW1 Fa0/1 â†” SW3 Fa0/1: Altn BLK\n- SW1 Fa0/2 â†” SW2 Fa0/1: Desg FWD\n- SW2 Fa0/2 â†” SW3 Fa0/2: Desg FWD\n\nGÃ¶revler:\n1) show spanning-tree ile STP durumunu kontrol et\n2) Bloke port (SW1 Fa0/1)\n3) SW1 Fa0/1 kablo kesilirse otomatik aktif olur\n\nâš ï¸ Not: AÄŸÄ± Yenile (F5)'
+        : 'ğŸ”„ STP Triangle Topology (3 Switches):\n\nSW1, SW2, SW3 connected in triangle topology.\n\nTriangle connections:\n- SW1 Fa0/1 â†” SW3 Fa0/1: Altn BLK\n- SW1 Fa0/2 â†” SW2 Fa0/1: Desg FWD\n- SW2 Fa0/2 â†” SW3 Fa0/2: Desg FWD\n\nTasks:\n1) Verify STP state with show spanning-tree\n2) Blocked port (SW1 Fa0/1) \n3) If SW1 Fa0/1 fails, it automatically becomes active\n\nâš ï¸ Note: Refresh Network (F5)',
       x: 600,
       y: 40,
       width: 500,
@@ -106,7 +106,7 @@ const example = (isTr: boolean): ExampleProject => {
     tag: isTr ? 'STP' : 'STP',
     title: isTr ? 'STP Triangle Topology' : 'STP Triangle Topology',
     description: isTr
-      ? 'Üç switch triangle topolojisinde STP bir portu bloke eder.'
+      ? 'ÃœÃ§ switch triangle topolojisinde STP bir portu bloke eder.'
       : 'Three switches in triangle topology with STP blocking one port.',
     detail: isTr
       ? 'SW1 Fa0/1 bloke (STP), SW2 root'
@@ -121,5 +121,7 @@ const example = (isTr: boolean): ExampleProject => {
 };
 
 export default example;
+
+
 
 

@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { CanvasDevice } from '../networkTopology.types';
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import { toast } from '@/hooks/use-toast';
 
 export type IotSensorType = 'temperature' | 'sound' | 'motion' | 'humidity' | 'light';
@@ -125,3 +125,4 @@ export function usePCPanelIotConfig({ iotDevices, language, t }: UsePCPanelIotCo
     setIotDataStore,
   };
 }
+

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+﻿import { useState, useCallback, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { SwitchState, SwitchModel, Port, CommandResult } from '@/lib/network/types';
 import { createInitialState, createInitialRouterState, createInitialFirewallState, createInitialWLCState, applyStartupConfig, buildStartupConfig } from '@/lib/network/initialState';
@@ -6,7 +6,7 @@ import { buildRunningConfig } from '@/lib/network/core/configBuilder';
 import { executeCommand, getPrompt } from '@/lib/network/executor';
 import type { TerminalOutput } from '@/components/network/Terminal';
 import { BOOT_PROGRESS_MARKER } from '@/components/network/Terminal';
-import { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/networkTopology.types';
+import { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 import { logger } from '@/lib/logger';
@@ -95,46 +95,46 @@ export function useDeviceManager() {
         boot1: `\n\nNetSim Firewall Software\n\n`,
         boot2: `Compiled on Mon 21-Mar-16 11:52 PDT by builders\nSystem Bootstrap\n\nNS-FW-5506 platform with 4096 K bytes of memory\n`,
         boot3: `\nReading from flash... OK\nValidating image checksum... OK\n\n`,
-        initMessage: language === 'tr' ? 'Firewall başlatılıyor' : 'Firewall is starting'
+        initMessage: language === 'tr' ? 'Firewall baÅŸlatÄ±lÄ±yor' : 'Firewall is starting'
       };
     }
 
     if (isRouter) {
-      const syslog = language === 'tr' ? '*** Syslog istemcisi başlatıldı' : '*** Syslog client started';
+      const syslog = language === 'tr' ? '*** Syslog istemcisi baÅŸlatÄ±ldÄ±' : '*** Syslog client started';
       return {
         boot1: `\n\nSystem Bootstrap\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1996-2026 by Network Systems, Inc.\n`,
         boot2: `NS-R-4451 platform with 4096 K bytes of memory\n\n${syslog}\nLoad/bootstrap symbols loaded, NetSim OS initialization\nReading all bootflash vectors\nPOST: CPU PCIe port Check PASS\nCPU memory test . . . . . . . . . . . . . OK\nBoard initialization completed\nInitializing flash file system\n`,
         boot3: `\nBooting flash:ns-r-universalk9-mz.SPA.154-3.M.bin...OK!\nExtracting files from flash:ns-r-universalk9-mz.SPA.154-3.M.bin...\n  ########## [OK]\n  0 bytes remaining in flash device\n`,
-        initMessage: language === 'tr' ? 'Sistem başlatılıyor' : 'Initializing system'
+        initMessage: language === 'tr' ? 'Sistem baÅŸlatÄ±lÄ±yor' : 'Initializing system'
       };
     }
 
     if (isWLC) {
-      const syslog = language === 'tr' ? '*** Syslog istemcisi başlatıldı' : '*** Syslog client started';
+      const syslog = language === 'tr' ? '*** Syslog istemcisi baÅŸlatÄ±ldÄ±' : '*** Syslog client started';
       return {
         boot1: `\n\nSystem Bootstrap\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1996-2026 by Network Systems, Inc.\n`,
         boot2: `NS-WLC-2504 platform with 2097152 K bytes of memory\n\n${syslog}\nLoad/bootstrap symbols loaded\nReading all bootflash vectors\nPOST: CPU PCIe port Check PASS\nCPU memory test . . . . . . . . . . . . . OK\nBoard initialization completed\nInitializing flash file system\n`,
         boot3: `\nBooting flash:ns-wlc-8-0-125-0.bin...OK!\nExtracting files from flash:ns-wlc-8-0-125-0.bin...\n  ########## [OK]\n  0 bytes remaining in flash device\n`,
-        initMessage: language === 'tr' ? 'WLC başlatılıyor' : 'WLC is starting'
+        initMessage: language === 'tr' ? 'WLC baÅŸlatÄ±lÄ±yor' : 'WLC is starting'
       };
     }
 
     if (isL3Switch) {
-      const syslog = language === 'tr' ? '*** Syslog istemcisi başlatıldı' : '*** Syslog client started';
+      const syslog = language === 'tr' ? '*** Syslog istemcisi baÅŸlatÄ±ldÄ±' : '*** Syslog client started';
       return {
         boot1: `\n\nSystem Bootstrap\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1996-2026 by Network Systems, Inc.\n`,
         boot2: `NS-L3 platform with 131072 K bytes of memory\n\n${syslog}\nLoad/bootstrap symbols loaded\nReading all bootflash vectors\nPOST: CPU PCIe port Check PASS\nCPU memory test . . . . . . . . . . . . . OK\nBoard initialization completed\nInitializing flash file system\n`,
         boot3: `\nBooting flash:ns-l3-ipbase-mz.152-2.SE4.bin...OK!\nExtracting files from flash:ns-l3-ipbase-mz.152-2.SE4.bin...\n  ########## [OK]\n  0 bytes remaining in flash device\n`,
-        initMessage: language === 'tr' ? 'Sistem açıldı' : 'System is powered on'
+        initMessage: language === 'tr' ? 'Sistem aÃ§Ä±ldÄ±' : 'System is powered on'
       };
     }
 
-    const syslog = language === 'tr' ? '*** Syslog istemcisi başlatıldı' : '*** Syslog client started';
+    const syslog = language === 'tr' ? '*** Syslog istemcisi baÅŸlatÄ±ldÄ±' : '*** Syslog client started';
     return {
       boot1: `\n\nSystem Bootstrap\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1996-2026 by Network Systems, Inc.\n`,
       boot2: `NS-L2 platform with 65536 K bytes of memory\n\n${syslog}\nLoad/bootstrap symbols loaded\nReading all bootflash vectors\nPOST: CPU Ethernet port Check PASS\nCPU memory test . . . . . . . . . . . . . OK\nBoard initialization completed\nInitializing flash file system\n`,
       boot3: `\nBooting flash:ns-l2-lanbase-mz.152-2.E6.bin...OK!\nExtracting files from flash:ns-l2-lanbase-mz.152-2.E6.bin...\n  ########## [OK]\n  0 bytes remaining in flash device\n`,
-      initMessage: language === 'tr' ? 'Sistem açıldı' : 'System is powered on'
+      initMessage: language === 'tr' ? 'Sistem aÃ§Ä±ldÄ±' : 'System is powered on'
     };
   }, []);
 
@@ -784,10 +784,10 @@ export function useDeviceManager() {
           const timestamp = new Date().toLocaleString();
 
           toast({
-            title: language === 'tr' ? 'Yapılandırma Kaydedildi' : 'Configuration Saved',
+            title: language === 'tr' ? 'YapÄ±landÄ±rma Kaydedildi' : 'Configuration Saved',
             description: language === 'tr'
-              ? `${deviceName} - running-config → startup-config (${timestamp})`
-              : `${deviceName} - running-config → startup-config (${timestamp})`,
+              ? `${deviceName} - running-config â†’ startup-config (${timestamp})`
+              : `${deviceName} - running-config â†’ startup-config (${timestamp})`,
             variant: "default"
           });
         }
@@ -811,10 +811,10 @@ export function useDeviceManager() {
           const timestamp = new Date().toLocaleString();
 
           toast({
-            title: language === 'tr' ? 'Flash Kaydı Tamamlandı' : 'Flash Save Complete',
+            title: language === 'tr' ? 'Flash KaydÄ± TamamlandÄ±' : 'Flash Save Complete',
             description: language === 'tr'
-              ? `${deviceName} - running-config → flash:${flashFilename} (${timestamp})`
-              : `${deviceName} - running-config → flash:${flashFilename} (${timestamp})`,
+              ? `${deviceName} - running-config â†’ flash:${flashFilename} (${timestamp})`
+              : `${deviceName} - running-config â†’ flash:${flashFilename} (${timestamp})`,
             variant: "default"
           });
         }
@@ -841,17 +841,17 @@ export function useDeviceManager() {
 
           if (restored) {
             toast({
-              title: language === 'tr' ? 'Flash Geri Yükleme Tamamlandı' : 'Flash Restore Complete',
+              title: language === 'tr' ? 'Flash Geri YÃ¼kleme TamamlandÄ±' : 'Flash Restore Complete',
               description: language === 'tr'
-                ? `${deviceName} - flash:${sourceFilename} → startup-config (${timestamp})`
-                : `${deviceName} - flash:${sourceFilename} → startup-config (${timestamp})`,
+                ? `${deviceName} - flash:${sourceFilename} â†’ startup-config (${timestamp})`
+                : `${deviceName} - flash:${sourceFilename} â†’ startup-config (${timestamp})`,
               variant: "default"
             });
           } else {
             toast({
-              title: language === 'tr' ? 'Flash Dosyası Bulunamadı' : 'Flash File Not Found',
+              title: language === 'tr' ? 'Flash DosyasÄ± BulunamadÄ±' : 'Flash File Not Found',
               description: language === 'tr'
-                ? `${deviceName} üzerinde flash:${sourceFilename} bulunamadı`
+                ? `${deviceName} Ã¼zerinde flash:${sourceFilename} bulunamadÄ±`
                 : `flash:${sourceFilename} was not found on ${deviceName}`,
               variant: "destructive"
             });
@@ -880,7 +880,7 @@ export function useDeviceManager() {
           const timestamp = new Date().toLocaleString();
 
           toast({
-            title: language === 'tr' ? 'Yapılandırma Silindi' : 'Configuration Erased',
+            title: language === 'tr' ? 'YapÄ±landÄ±rma Silindi' : 'Configuration Erased',
             description: language === 'tr'
               ? `${deviceName} - startup-config silindi (${timestamp})`
               : `${deviceName} - startup-config erased (${timestamp})`,
@@ -912,7 +912,7 @@ export function useDeviceManager() {
           const deviceName = device?.name || deviceId;
 
           toast({
-            title: language === 'tr' ? 'VLAN Veritabanı Silindi' : 'VLAN Database Deleted',
+            title: language === 'tr' ? 'VLAN VeritabanÄ± Silindi' : 'VLAN Database Deleted',
             description: language === 'tr'
               ? `${deviceName} - vlan.dat silindi`
               : `${deviceName} - vlan.dat deleted`,
@@ -1021,7 +1021,7 @@ export function useDeviceManager() {
       if (errorMsg.toLowerCase().includes('password') || errorMsg.toLowerCase().includes('auth')) {
         toast({
           title: language === 'tr' ? 'Hata' : 'Error',
-          description: language === 'tr' ? 'Konsol şifresi hatalı!' : 'Invalid console password!',
+          description: language === 'tr' ? 'Konsol ÅŸifresi hatalÄ±!' : 'Invalid console password!',
           variant: 'destructive',
         });
       }
@@ -1061,3 +1061,5 @@ export function useDeviceManager() {
     resetAll
   };
 }
+
+

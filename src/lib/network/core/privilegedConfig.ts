@@ -1,7 +1,7 @@
-import { cliModeError } from './cliErrors';
+﻿import { cliModeError } from './cliErrors';
 import type { CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult, Port } from '../types';
-import type { CanvasDevice } from '@/components/network/networkTopology.types';
+import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { isValidIPv4Format } from '../dns';
 
 /**
@@ -220,8 +220,8 @@ export function cmdCopyTftp(state: SwitchState, input: string, ctx: CommandConte
     }
 
     const verb = isRestore
-        ? (lang === 'tr' ? 'Yükleniyor' : 'Loading')
-        : (lang === 'tr' ? 'Yazılıyor' : 'Writing');
+        ? (lang === 'tr' ? 'YÃ¼kleniyor' : 'Loading')
+        : (lang === 'tr' ? 'YazÄ±lÄ±yor' : 'Writing');
     const source = isRestore ? `tftp://${targetIp}/${filename}` : 'running-config';
     const dest = isRestore ? 'running-config' : `tftp://${targetIp}/${filename}`;
 
@@ -283,3 +283,4 @@ export function cmdDeleteVlanDat(state: SwitchState, _input: string, ctx: Comman
         deleteVlanDat: true
     };
 }
+

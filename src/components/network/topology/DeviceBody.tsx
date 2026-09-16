@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
-import { CanvasDevice } from '../networkTopology.types';
-import { isSwitchDeviceType } from '../networkTopology.helpers';
+import { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
+import { isSwitchDeviceType } from '../NetworkTopology/utils/networkTopology.helpers';
 import { isSwitchOrHubDeviceType, getDeviceFill } from './deviceRenderer.helpers';
 
 interface DeviceBodyProps {

@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
-import { shouldOpenPingPacketPanel } from '@/components/network/hooks/usePingSequence';
-import { getPortPosition } from '@/components/network/networkTopology.helpers';
+﻿import { describe, it, expect } from 'vitest';
+import { shouldOpenPingPacketPanel } from '@/hooks/networkTopology/usePingSequence';
+import { getPortPosition } from '@/components/network/NetworkTopology/utils/networkTopology.helpers';
 import { isModulePort } from '@/lib/network/portUtils';
-import type { CanvasDevice } from '@/components/network/networkTopology.types';
+import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 describe('NetworkTopology Component', () => {
   it('should render SVG canvas element', () => {
@@ -201,3 +201,5 @@ describe('NetworkTopology Component', () => {
     });
   });
 });
+
+

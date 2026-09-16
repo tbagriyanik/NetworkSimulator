@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { executeCommand } from '@/lib/network/executor';
 import { SwitchState, Port } from '@/lib/network/types';
 import { isDhcpPoolCompatibleForClient } from '@/components/network/pc-panel/pcBrowser.utils';
-import { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 describe('DHCP Relay (ip helper-address)', () => {
   it('should add and remove helper-address on interface via CLI', () => {
@@ -82,3 +82,5 @@ describe('DHCP Relay (ip helper-address)', () => {
     expect(isCompatible).toBe(true);
   });
 });
+
+

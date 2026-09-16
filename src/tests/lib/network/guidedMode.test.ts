@@ -1,6 +1,6 @@
- 
+﻿ 
 import { describe, it, expect } from 'vitest';
-import type { CanvasConnection, CanvasDevice } from '@/components/network/networkTopology.types';
+import type { CanvasConnection, CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import {
   getNextIncompleteStep,
@@ -670,3 +670,5 @@ describe('guidedMode', () => {
     });
   });
 });
+
+

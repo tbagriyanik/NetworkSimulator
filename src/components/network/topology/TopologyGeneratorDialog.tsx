@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
@@ -15,7 +15,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Loader2, Monitor, Wand2, Search, Sparkles, Info } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+import { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { SCENARIOS, CATEGORY_LABELS, type ScenarioType, type ScenarioCategory } from './topologyScenarios';
 import { generateTopology } from './scenarioGenerators';
@@ -78,9 +78,9 @@ export function TopologyGeneratorDialog({
         
         // Structured, rich, and clear project description text for summary notes and documentation
         const formattedDescription = [
-          `📌 ${name}`,
-          `🎯 ${isTr ? 'Amaç' : 'Objective'}: ${objective || description}`,
-          `📋 ${isTr ? 'Ağ Yapısı' : 'Architecture'}: ${description}`,
+          `ğŸ“Œ ${name}`,
+          `ğŸ¯ ${isTr ? 'AmaÃ§' : 'Objective'}: ${objective || description}`,
+          `ğŸ“‹ ${isTr ? 'AÄŸ YapÄ±sÄ±' : 'Architecture'}: ${description}`,
         ].join('\n\n');
 
         onGenerate({
@@ -89,9 +89,9 @@ export function TopologyGeneratorDialog({
           projectDescription: formattedDescription,
         });
         toast({
-          title: isTr ? 'Topoloji Üretildi! 🚀' : 'Topology Generated! 🚀',
+          title: isTr ? 'Topoloji Ãœretildi! ğŸš€' : 'Topology Generated! ğŸš€',
           description: isTr
-            ? `${name} başarıyla oluşturuldu ve özet bilgileri tuvale aktarıldı.`
+            ? `${name} baÅŸarÄ±yla oluÅŸturuldu ve Ã¶zet bilgileri tuvale aktarÄ±ldÄ±.`
             : `${name} successfully generated and summary added to canvas.`,
         });
         onOpenChange(false);
@@ -164,7 +164,7 @@ export function TopologyGeneratorDialog({
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-purple-500/20 shrink-0">
                 <Wand2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
-              <span className="truncate">{isTr ? 'Otomatik Topoloji Üretici' : 'Automatic Topology Generator'}</span>
+              <span className="truncate">{isTr ? 'Otomatik Topoloji Ãœretici' : 'Automatic Topology Generator'}</span>
             </DialogTitle>
             <span className="text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 shrink-0">
               {SCENARIOS.length} {isTr ? 'Mimari' : 'Architectures'}
@@ -172,7 +172,7 @@ export function TopologyGeneratorDialog({
           </div>
           <DialogDescription className={`text-[11px] sm:text-xs leading-tight ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
             {isTr
-              ? 'Standart topolojiler, veri merkezleri ve güvenlik senaryolarını tek tıkla otomatik oluşturun.'
+              ? 'Standart topolojiler, veri merkezleri ve gÃ¼venlik senaryolarÄ±nÄ± tek tÄ±kla otomatik oluÅŸturun.'
               : 'Instantly generate standard topologies, data centers and security architectures with one click.'}
           </DialogDescription>
         </DialogHeader>
@@ -185,7 +185,7 @@ export function TopologyGeneratorDialog({
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={isTr ? 'Örnek veya mimari ara (Spine-Leaf, OSPF, BGP)...' : 'Search scenario (Spine-Leaf, OSPF, BGP)...'}
+              placeholder={isTr ? 'Ã–rnek veya mimari ara (Spine-Leaf, OSPF, BGP)...' : 'Search scenario (Spine-Leaf, OSPF, BGP)...'}
               className={`pl-8 pr-7 h-8 text-[11px] sm:text-xs rounded-lg ${
                 isDark
                   ? 'bg-secondary-800/80 border-secondary-700 text-white placeholder:text-secondary-500 focus-visible:ring-purple-500/40'
@@ -197,7 +197,7 @@ export function TopologyGeneratorDialog({
                 onClick={() => setSearchQuery('')}
                 className={`absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-semibold ${isDark ? 'text-secondary-400 hover:text-white' : 'text-secondary-500 hover:text-secondary-900'}`}
               >
-                ✕
+                âœ•
               </button>
             )}
           </div>
@@ -214,7 +214,7 @@ export function TopologyGeneratorDialog({
                     : 'bg-secondary-100 text-secondary-600 hover:text-secondary-900 hover:bg-secondary-200'
               }`}
             >
-              {isTr ? 'Tümü' : 'All'} ({SCENARIOS.length})
+              {isTr ? 'TÃ¼mÃ¼' : 'All'} ({SCENARIOS.length})
             </button>
             {allCategories.map(cat => {
               const count = SCENARIOS.filter(s => s.category === cat).length;
@@ -305,7 +305,7 @@ export function TopologyGeneratorDialog({
           ) : (
             <div className={`text-center py-8 text-xs flex flex-col items-center justify-center gap-1.5 ${isDark ? 'text-secondary-500' : 'text-secondary-400'}`}>
               <Info className="w-5 h-5 opacity-60" />
-              <span>{isTr ? 'Aradığınız kriterlere uygun senaryo bulunamadı.' : 'No scenarios match your search.'}</span>
+              <span>{isTr ? 'AradÄ±ÄŸÄ±nÄ±z kriterlere uygun senaryo bulunamadÄ±.' : 'No scenarios match your search.'}</span>
             </div>
           )}
         </div>
@@ -329,7 +329,7 @@ export function TopologyGeneratorDialog({
             {/* PC Count Selector if applicable */}
             {selectedDef.showPcCount && (
               <div className="flex items-center gap-1 shrink-0">
-                <Label className="text-[10px] font-bold shrink-0">{isTr ? 'Uç Cihaz:' : 'Clients:'}</Label>
+                <Label className="text-[10px] font-bold shrink-0">{isTr ? 'UÃ§ Cihaz:' : 'Clients:'}</Label>
                 <div className="flex gap-1">
                   {[1, 2, 4].map(num => (
                     <Button
@@ -373,12 +373,12 @@ export function TopologyGeneratorDialog({
               {isLoading ? (
                 <>
                   <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
-                  {isTr ? 'Oluşturuluyor...' : 'Generating...'}
+                  {isTr ? 'OluÅŸturuluyor...' : 'Generating...'}
                 </>
               ) : (
                 <>
                   <Wand2 className="w-3.5 h-3.5 mr-1" />
-                  {isTr ? 'Topolojiyi Üret & Yükle' : 'Generate & Load'}
+                  {isTr ? 'Topolojiyi Ãœret & YÃ¼kle' : 'Generate & Load'}
                 </>
               )}
             </Button>
@@ -388,3 +388,4 @@ export function TopologyGeneratorDialog({
     </Dialog>
   );
 }
+

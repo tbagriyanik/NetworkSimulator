@@ -1,4 +1,4 @@
-import { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+﻿import { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import type { DeviceWifiConfig } from '@/lib/network/connectivity';
 
@@ -469,3 +469,4 @@ export function isDhcpPoolCompatibleForClient({
 
   return false;
 }
+

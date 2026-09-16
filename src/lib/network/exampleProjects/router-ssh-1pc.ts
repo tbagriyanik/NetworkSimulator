@@ -1,9 +1,9 @@
-import { createInitialRouterState } from '../initialState';
+﻿import { createInitialRouterState } from '../initialState';
 import { createPcDevice, createRouterDevice, connectPorts, baseProjectData } from './helpers';
 ;
 ;
 import type { ExampleProject, ProjectData } from './types';
-import type { CanvasConnection, CanvasNote } from '@/components/network/networkTopology.types';
+import type { CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 const example = (isTr: boolean): ExampleProject => {
   const routerSshDevices = [
@@ -16,8 +16,8 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'router-ssh-note',
       text: isTr
-        ? 'Amaç: Router üzerinde SSH yapılandırarak güvenli uzaktan yönetim erişimi sağlamak.\n\n🔧 YAPILANDIRMA ADIMLARI:\n\n1) TOPOLOJİ OLUŞTURMA:\n   - 1 adet Router (R1) ekle\n   - 1 adet PC (PC-1) ekle\n   - PC-1 Eth0 -> R1 Gi0/0 (Straight kablo)\n\n2) ROUTER KONFİGÜRASYONU:\n   - R1 terminaline gir: enable, conf t\n   - hostname R1\n   - ip domain-name lab.local\n   - crypto key generate rsa modulus 1024\n   - ip ssh version 2\n   - username admin privilege 15 secret 1234\n   - enable secret 123\n   - line vty 0 4\n     login local\n     transport input ssh\n   - exit\n\n3) INTERFACE AYARLARI:\n   - interface gi0/0\n     ip address 192.168.1.150 255.255.255.0\n     no shutdown\n   - exit\n\n4) PC KONFİGÜRASYONU:\n   - PC-1: IP 192.168.1.10, Subnet 255.255.255.0, Gateway 192.168.1.150\n\n5) TEST:\n   - PC-1 CMD: ssh admin@192.168.1.150\n   - Şifre: 1234\n   - R1> show ssh (SSH bağlantılarını gör)\n   - R1> show ip ssh (SSH durumunu kontrol et)'
-        : '🔧 BUILD STEPS:\n\n1) CREATE TOPOLOGY:\n   - Add 1 Router (R1)\n   - Add 1 PC (PC-1)\n   - Connect PC-1 Eth0 -> R1 Gi0/0 (Straight cable)\n\n2) ROUTER CONFIGURATION:\n   - Enter R1 terminal: enable, conf t\n   - hostname R1\n   - ip domain-name lab.local\n   - crypto key generate rsa modulus 1024\n   - ip ssh version 2\n   - username admin privilege 15 secret 1234\n   - enable secret 123\n   - line vty 0 4\n     login local\n     transport input ssh\n   - exit\n\n3) INTERFACE SETTINGS:\n   - interface gi0/0\n     ip address 192.168.1.150 255.255.255.0\n     no shutdown\n   - exit\n\n4) PC CONFIGURATION:\n   - PC-1: IP 192.168.1.10, Subnet 255.255.255.0, Gateway 192.168.1.150\n\n5) TEST:\n   - PC-1 CMD: ssh admin@192.168.1.150\n   - Password: 1234\n   - R1> show ssh (view SSH connections)\n   - R1> show ip ssh (check SSH status)',
+        ? 'AmaÃ§: Router Ã¼zerinde SSH yapÄ±landÄ±rarak gÃ¼venli uzaktan yÃ¶netim eriÅŸimi saÄŸlamak.\n\nğŸ”§ YAPILANDIRMA ADIMLARI:\n\n1) TOPOLOJÄ° OLUÅTURMA:\n   - 1 adet Router (R1) ekle\n   - 1 adet PC (PC-1) ekle\n   - PC-1 Eth0 -> R1 Gi0/0 (Straight kablo)\n\n2) ROUTER KONFÄ°GÃœRASYONU:\n   - R1 terminaline gir: enable, conf t\n   - hostname R1\n   - ip domain-name lab.local\n   - crypto key generate rsa modulus 1024\n   - ip ssh version 2\n   - username admin privilege 15 secret 1234\n   - enable secret 123\n   - line vty 0 4\n     login local\n     transport input ssh\n   - exit\n\n3) INTERFACE AYARLARI:\n   - interface gi0/0\n     ip address 192.168.1.150 255.255.255.0\n     no shutdown\n   - exit\n\n4) PC KONFÄ°GÃœRASYONU:\n   - PC-1: IP 192.168.1.10, Subnet 255.255.255.0, Gateway 192.168.1.150\n\n5) TEST:\n   - PC-1 CMD: ssh admin@192.168.1.150\n   - Åifre: 1234\n   - R1> show ssh (SSH baÄŸlantÄ±larÄ±nÄ± gÃ¶r)\n   - R1> show ip ssh (SSH durumunu kontrol et)'
+        : 'ğŸ”§ BUILD STEPS:\n\n1) CREATE TOPOLOGY:\n   - Add 1 Router (R1)\n   - Add 1 PC (PC-1)\n   - Connect PC-1 Eth0 -> R1 Gi0/0 (Straight cable)\n\n2) ROUTER CONFIGURATION:\n   - Enter R1 terminal: enable, conf t\n   - hostname R1\n   - ip domain-name lab.local\n   - crypto key generate rsa modulus 1024\n   - ip ssh version 2\n   - username admin privilege 15 secret 1234\n   - enable secret 123\n   - line vty 0 4\n     login local\n     transport input ssh\n   - exit\n\n3) INTERFACE SETTINGS:\n   - interface gi0/0\n     ip address 192.168.1.150 255.255.255.0\n     no shutdown\n   - exit\n\n4) PC CONFIGURATION:\n   - PC-1: IP 192.168.1.10, Subnet 255.255.255.0, Gateway 192.168.1.150\n\n5) TEST:\n   - PC-1 CMD: ssh admin@192.168.1.150\n   - Password: 1234\n   - R1> show ssh (view SSH connections)\n   - R1> show ip ssh (check SSH status)',
       x: 580,
       y: 80,
       width: 480,
@@ -97,10 +97,10 @@ const example = (isTr: boolean): ExampleProject => {
     tag: 'SSH',
     title: isTr ? 'Router SSH (1 PC + 1 Router)' : 'Router SSH (1 PC + 1 Router)',
     description: isTr
-      ? 'PC-1 üzerinden router R1 cihazına SSH ile güvenli bağlantı.'
+      ? 'PC-1 Ã¼zerinden router R1 cihazÄ±na SSH ile gÃ¼venli baÄŸlantÄ±.'
       : 'Secure SSH connection from PC-1 to router R1.',
     detail: isTr
-      ? 'Komut: ssh admin@192.168.1.150, Şifre: 1234'
+      ? 'Komut: ssh admin@192.168.1.150, Åifre: 1234'
       : 'Command: ssh admin@192.168.1.150, Password: 1234',
     level: 'basic',
     data: routerSshData
@@ -108,5 +108,7 @@ const example = (isTr: boolean): ExampleProject => {
 };
 
 export default example;
+
+
 
 

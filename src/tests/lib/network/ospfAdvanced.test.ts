@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { SwitchState } from '../../../lib/network/types';
 import { runNetworkEventPipeline } from '../../../lib/network/forwarding/eventPipeline';
 import { calculateOSPFRoutes } from '../../../lib/network/ospf';
 import { interfaceHandlers } from '../../../lib/network/core/interfaceCommands';
 import { buildRunningConfig } from '../../../lib/network/core/configBuilder';
-import type { CanvasDevice, CanvasConnection } from '../../../components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 function makeRouter(id: string, opts: Partial<SwitchState> = {}): SwitchState {
   return {
@@ -123,7 +123,7 @@ describe('OSPF Advanced Interface Commands', () => {
   });
 });
 
-describe('OSPF Passive Interface — Adjacency & Route Effect', () => {
+describe('OSPF Passive Interface â€” Adjacency & Route Effect', () => {
   it('passive interface blocks adjacency formation', () => {
     const r1 = makeRouter('R1');
     r1.ports = { eth0: ospfPort('10.0.0.1', '0', { passiveInterface: true }) };
@@ -176,8 +176,8 @@ describe('OSPF Passive Interface — Adjacency & Route Effect', () => {
     expect(r2After.ospfNeighbors ?? []).toContain('R1');
   });
 
-  it('passive link excluded from SPF transit — remote networks not learned', () => {
-    // R1 —(eth0 passive)--- R2 —(eth1)--- 192.168.10.0/24
+  it('passive link excluded from SPF transit â€” remote networks not learned', () => {
+    // R1 â€”(eth0 passive)--- R2 â€”(eth1)--- 192.168.10.0/24
     const r1 = makeRouter('R1');
     r1.ports = { eth0: ospfPort('10.0.0.1', '0', { passiveInterface: true }) };
     const r2 = makeRouter('R2');
@@ -342,7 +342,7 @@ describe('OSPF Cost Override', () => {
 
     const states = new Map<string, SwitchState>([['R1', r1], ['R2', r2]]);
 
-    // With manual cost: R1→eth0 cost=1000, R2→172.16.0.0 cost=1
+    // With manual cost: R1â†’eth0 cost=1000, R2â†’172.16.0.0 cost=1
     const routes = calculateOSPFRoutes('R1', states);
     const route = routes.find(r => r.destination === '172.16.0.0');
     expect(route).toBeDefined();
@@ -383,3 +383,4 @@ describe('OSPF Interface Config Builder', () => {
     expect(config).toContain('passive-interface eth0');
   });
 });
+

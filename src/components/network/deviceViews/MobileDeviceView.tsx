@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { Smartphone, Wifi, Server, Send, BatteryCharging, Signal, Globe, PhoneCall } from 'lucide-react';
@@ -18,7 +18,7 @@ import { MobileIpSettingsTab } from './mobile/MobileIpSettingsTab';
 import { MobilePingTab } from './mobile/MobilePingTab';
 import { MobileVoipTab } from './mobile/MobileVoipTab';
 
-import type { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 
 interface MobileDeviceViewProps {
@@ -151,7 +151,7 @@ export function MobileDeviceView({
             if (!res.success || targetDev.status === 'offline') {
               handleEndVoipCall();
               setCallState('failed');
-              setCallStatusMessage(isTr ? 'Arama Sonlandırıldı: Bağlantı koptu!' : 'Call Ended: Connection lost!');
+              setCallStatusMessage(isTr ? 'Arama SonlandÄ±rÄ±ldÄ±: BaÄŸlantÄ± koptu!' : 'Call Ended: Connection lost!');
               setTimeout(() => {
                 setCallState('idle');
                 setCallStatusMessage('');
@@ -179,7 +179,7 @@ export function MobileDeviceView({
     } else if (device.activeVoipCall.status === 'connected' && callState !== 'connected') {
       setCallState('connected');
       const peerName = device.activeVoipCall.callerName;
-      setCallStatusMessage(isTr ? `Bağlandı: ${peerName}` : `Connected to ${peerName}`);
+      setCallStatusMessage(isTr ? `BaÄŸlandÄ±: ${peerName}` : `Connected to ${peerName}`);
     }
   }, [device.activeVoipCall, callState, isTr]);
 
@@ -342,7 +342,7 @@ export function MobileDeviceView({
   const handleSendPing = () => {
     if (!targetPingIp.trim()) return;
     setIsPinging(true);
-    setPingResults([isTr ? `Ping gönderiliyor: ${targetPingIp}...` : `Pinging ${targetPingIp}...`]);
+    setPingResults([isTr ? `Ping gÃ¶nderiliyor: ${targetPingIp}...` : `Pinging ${targetPingIp}...`]);
 
     setTimeout(() => {
       const res = checkConnectivity(
@@ -396,7 +396,7 @@ export function MobileDeviceView({
     if (!rawTarget) return;
 
     setCallState('calling');
-    setCallStatusMessage(isTr ? `Aranıyor: ${rawTarget}...` : `Calling ${rawTarget}...`);
+    setCallStatusMessage(isTr ? `AranÄ±yor: ${rawTarget}...` : `Calling ${rawTarget}...`);
 
     let targetDev = topologyDevices.find(d => d.ip === rawTarget || d.name?.toLowerCase() === rawTarget.toLowerCase() || d.id === rawTarget);
 
@@ -431,7 +431,7 @@ export function MobileDeviceView({
 
       if (targetDev && targetDev.status === 'offline') {
         setCallState('failed');
-        setCallStatusMessage(isTr ? `Arama Başarısız: "${targetDev.name}" kapalı (Power Off)!` : `Call Failed: "${targetDev.name}" is powered off!`);
+        setCallStatusMessage(isTr ? `Arama BaÅŸarÄ±sÄ±z: "${targetDev.name}" kapalÄ± (Power Off)!` : `Call Failed: "${targetDev.name}" is powered off!`);
         setTimeout(() => {
           setCallState('idle');
           setCallStatusMessage('');
@@ -443,7 +443,7 @@ export function MobileDeviceView({
         activeCallTargetRef.current = targetDev || null;
         setCallState('connected');
         const targetName = targetDev ? targetDev.name : targetIpToTest;
-        setCallStatusMessage(isTr ? `Arama Yapılıyor (Çalıyor): ${targetName}` : `Ringing ${targetName}...`);
+        setCallStatusMessage(isTr ? `Arama YapÄ±lÄ±yor (Ã‡alÄ±yor): ${targetName}` : `Ringing ${targetName}...`);
 
         setDevices(prev =>
           prev.map(d => {
@@ -474,7 +474,7 @@ export function MobileDeviceView({
         );
       } else {
         setCallState('failed');
-        setCallStatusMessage(res.error || (isTr ? 'Arama Başarısız: Hedef Ulaşılamıyor' : 'Call Failed: Target Unreachable'));
+        setCallStatusMessage(res.error || (isTr ? 'Arama BaÅŸarÄ±sÄ±z: Hedef UlaÅŸÄ±lamÄ±yor' : 'Call Failed: Target Unreachable'));
         setTimeout(() => {
           setCallState('idle');
           setCallStatusMessage('');
@@ -617,7 +617,7 @@ export function MobileDeviceView({
         const sensorType = targetDevice.iot?.sensorType || 'temperature';
         const dataFlowDirection = targetDevice.iot?.dataFlowDirection || (kind === 'sensor' ? 'input' : 'output');
         const iotDevicePage = generateIotDevicePageContent(targetDevice.id, targetDevice.name || targetDevice.id, language, isActive, isPoweredOff, kind, rules, sensorType, iotDevices, dataFlowDirection, topologyDevices);
-        setBrowserTitle(`${targetDevice.name || targetDevice.id} ${isTr ? 'Cihaz Yönetimi' : 'Device Management'}`);
+        setBrowserTitle(`${targetDevice.name || targetDevice.id} ${isTr ? 'Cihaz YÃ¶netimi' : 'Device Management'}`);
         setBrowserContent(iotDevicePage);
         return;
       }
@@ -644,12 +644,12 @@ export function MobileDeviceView({
     );
 
     if (!connRes.success) {
-      setBrowserTitle(isTr ? 'Bağlantı Hatası' : 'Connection Error');
+      setBrowserTitle(isTr ? 'BaÄŸlantÄ± HatasÄ±' : 'Connection Error');
       setBrowserContent(`
         <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-          <div style="font-size:48px;margin-bottom:12px;">🚫</div>
-          <h1 style="margin:0 0 8px;font-size:22px;color:var(--color-danger-500);">${isTr ? 'Sunucuya Ulaşılamıyor' : 'Server Unreachable'}</h1>
-          <p style="margin:0 0 12px;font-size:14px;color:var(--color-secondary-500);">${connRes.error || (isTr ? 'Ağ geçidi veya sunucu yanıt vermiyor.' : 'Gateway or server not responding.')}</p>
+          <div style="font-size:48px;margin-bottom:12px;">ğŸš«</div>
+          <h1 style="margin:0 0 8px;font-size:22px;color:var(--color-danger-500);">${isTr ? 'Sunucuya UlaÅŸÄ±lamÄ±yor' : 'Server Unreachable'}</h1>
+          <p style="margin:0 0 12px;font-size:14px;color:var(--color-secondary-500);">${connRes.error || (isTr ? 'AÄŸ geÃ§idi veya sunucu yanÄ±t vermiyor.' : 'Gateway or server not responding.')}</p>
           <code style="display:inline-block;padding:6px 12px;border-radius:8px;background:var(--color-danger-100);color:var(--color-danger-800);font-size:12px;">${displayUrl}</code>
         </main>
       `);
@@ -674,38 +674,38 @@ export function MobileDeviceView({
     // 3. Public WAN / Cloud Internet Services (8.8.8.8, 1.1.1.1)
     else if (hostOrIp === '8.8.8.8' || hostOrIp === '8.8.4.4' || hostOrIp === '1.1.1.1' || targetDev?.type === 'cloud') {
       if (!cloudDevice) {
-        setBrowserTitle(isTr ? 'Cihaz Bulunamadı' : 'Device Not Found');
+        setBrowserTitle(isTr ? 'Cihaz BulunamadÄ±' : 'Device Not Found');
         setBrowserContent(`
           <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-            <div style="font-size:48px;margin-bottom:12px;">🌐⚡</div>
-            <h1 style="margin:0 0 8px;font-size:22px;color:var(--color-danger-500);">${isTr ? 'Bulut (WAN) Cihazı Bulunamadı' : 'Cloud (WAN) Device Not Found'}</h1>
-            <p style="margin:0 0 12px;font-size:14px;color:var(--color-secondary-500);">${isTr ? 'Ağda bağlı bir Bulut (Cloud/WAN) cihazı bulunmuyor!' : 'No Cloud (WAN) device exists on the network!'}</p>
+            <div style="font-size:48px;margin-bottom:12px;">ğŸŒâš¡</div>
+            <h1 style="margin:0 0 8px;font-size:22px;color:var(--color-danger-500);">${isTr ? 'Bulut (WAN) CihazÄ± BulunamadÄ±' : 'Cloud (WAN) Device Not Found'}</h1>
+            <p style="margin:0 0 12px;font-size:14px;color:var(--color-secondary-500);">${isTr ? 'AÄŸda baÄŸlÄ± bir Bulut (Cloud/WAN) cihazÄ± bulunmuyor!' : 'No Cloud (WAN) device exists on the network!'}</p>
             <code style="display:inline-block;padding:6px 12px;border-radius:8px;background:var(--color-danger-100);color:var(--color-danger-800);font-size:12px;">${displayUrl}</code>
           </main>
         `);
         return;
       }
       if (cloudDevice.status === 'offline') {
-        setBrowserTitle(isTr ? 'Bulut Kapalı' : 'Cloud Offline');
+        setBrowserTitle(isTr ? 'Bulut KapalÄ±' : 'Cloud Offline');
         setBrowserContent(`
           <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-            <div style="font-size:48px;margin-bottom:12px;">☁️⚡</div>
-            <h1 style="margin:0 0 8px;font-size:22px;color:var(--color-danger-500);">${isTr ? 'Bulut Hizmeti Kapalı' : 'Cloud Service Offline'}</h1>
-            <p style="margin:0 0 12px;font-size:14px;color:var(--color-secondary-500);">${isTr ? 'Hedef Bulut (WAN) cihazının gücü kapalı (Power Off) durumda!' : 'Target Cloud (WAN) device is powered off!'}</p>
+            <div style="font-size:48px;margin-bottom:12px;">â˜ï¸âš¡</div>
+            <h1 style="margin:0 0 8px;font-size:22px;color:var(--color-danger-500);">${isTr ? 'Bulut Hizmeti KapalÄ±' : 'Cloud Service Offline'}</h1>
+            <p style="margin:0 0 12px;font-size:14px;color:var(--color-secondary-500);">${isTr ? 'Hedef Bulut (WAN) cihazÄ±nÄ±n gÃ¼cÃ¼ kapalÄ± (Power Off) durumda!' : 'Target Cloud (WAN) device is powered off!'}</p>
             <code style="display:inline-block;padding:6px 12px;border-radius:8px;background:var(--color-danger-100);color:var(--color-danger-800);font-size:12px;">${displayUrl}</code>
           </main>
         `);
         return;
       }
-      setBrowserTitle(isTr ? 'Genel Arama Kapısı - WAN' : 'Public Search Portal - WAN');
+      setBrowserTitle(isTr ? 'Genel Arama KapÄ±sÄ± - WAN' : 'Public Search Portal - WAN');
       setBrowserContent(`
         <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-          <div style="font-size:36px;font-weight:bold;color:var(--color-primary-500);margin-bottom:8px;">🌐 ${isTr ? 'Arama Kapısı' : 'Web Portal'}</div>
-          <p style="font-size:14px;color:var(--color-secondary-500);margin-bottom:20px;">${isTr ? 'Genel WAN İnternet Geçidi (8.8.8.8)' : 'Public WAN Internet Gateway (8.8.8.8)'}</p>
-          <div style="border:1px solid var(--color-secondary-300);border-radius:24px;padding:10px 20px;max-width:320px;margin:0 auto 20px;font-size:13px;color:var(--color-secondary-700);">🔍 ${isTr ? 'Arama yapın veya URL girin' : 'Search or type URL'}</div>
+          <div style="font-size:36px;font-weight:bold;color:var(--color-primary-500);margin-bottom:8px;">ğŸŒ ${isTr ? 'Arama KapÄ±sÄ±' : 'Web Portal'}</div>
+          <p style="font-size:14px;color:var(--color-secondary-500);margin-bottom:20px;">${isTr ? 'Genel WAN Ä°nternet GeÃ§idi (8.8.8.8)' : 'Public WAN Internet Gateway (8.8.8.8)'}</p>
+          <div style="border:1px solid var(--color-secondary-300);border-radius:24px;padding:10px 20px;max-width:320px;margin:0 auto 20px;font-size:13px;color:var(--color-secondary-700);">ğŸ” ${isTr ? 'Arama yapÄ±n veya URL girin' : 'Search or type URL'}</div>
           <div style="background:var(--color-secondary-100);padding:16px;border-radius:12px;font-size:12px;color:var(--color-secondary-800);text-align:left;max-width:400px;margin:0 auto;">
-            <strong style="color:var(--color-secondary-900);">${isTr ? 'İnternet Bağlantısı Aktif' : 'Internet Connection Active'}</strong><br/>
-            ${isTr ? 'WAN Köprüsü ve Genel DNS Sunucusu başarıyla yanıt verdi.' : 'WAN Transit Bridge and Public DNS Server responded successfully.'}
+            <strong style="color:var(--color-secondary-900);">${isTr ? 'Ä°nternet BaÄŸlantÄ±sÄ± Aktif' : 'Internet Connection Active'}</strong><br/>
+            ${isTr ? 'WAN KÃ¶prÃ¼sÃ¼ ve Genel DNS Sunucusu baÅŸarÄ±yla yanÄ±t verdi.' : 'WAN Transit Bridge and Public DNS Server responded successfully.'}
           </div>
         </main>
       `);
@@ -727,7 +727,7 @@ export function MobileDeviceView({
       setBrowserContent(`
         <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
           <h1 style="font-size:40px;margin:0 0 8px;">404</h1>
-          <p style="font-size:14px;color:var(--color-secondary-500);margin:0 0 12px;">${isTr ? 'Web Sayfası Bulunamadı' : 'Web Page Not Found'}</p>
+          <p style="font-size:14px;color:var(--color-secondary-500);margin:0 0 12px;">${isTr ? 'Web SayfasÄ± BulunamadÄ±' : 'Web Page Not Found'}</p>
           <code style="display:inline-block;padding:6px 12px;border-radius:8px;background:var(--color-secondary-100);color:var(--color-secondary-900);font-size:12px;">${displayUrl}</code>
         </main>
       `);
@@ -802,7 +802,7 @@ export function MobileDeviceView({
             <Smartphone className="w-4 h-4 text-sky-500" />
             {device.name}
           </h2>
-          <p className={cn("text-[10px]", isDark ? "text-slate-400" : "text-slate-500")}>Mobile OS • Wi-Fi & VoIP</p>
+          <p className={cn("text-[10px]", isDark ? "text-slate-400" : "text-slate-500")}>Mobile OS â€¢ Wi-Fi & VoIP</p>
         </div>
 
         {/* App Navigation Bar (5 Tabs: Wi-Fi, IP Config, Ping, VoIP, Web Browser) */}
@@ -841,10 +841,10 @@ export function MobileDeviceView({
           <button
             onClick={() => handleOpenBrowserWindow()}
             className="py-1.5 rounded-lg font-medium flex items-center justify-center gap-1 transition-colors text-[10px] bg-gradient-to-r from-sky-600 to-blue-600 text-white hover:from-sky-500 hover:to-blue-500 shadow-sm"
-            title={isTr ? 'Mobil Web Tarayıcısı' : 'Mobile Web Browser'}
+            title={isTr ? 'Mobil Web TarayÄ±cÄ±sÄ±' : 'Mobile Web Browser'}
           >
             <Globe className="w-3 h-3" />
-            {isTr ? 'Tarayıcı' : 'Browser'}
+            {isTr ? 'TarayÄ±cÄ±' : 'Browser'}
           </button>
         </div>
 
@@ -949,4 +949,5 @@ export function MobileDeviceView({
     </div>
   );
 }
+
 

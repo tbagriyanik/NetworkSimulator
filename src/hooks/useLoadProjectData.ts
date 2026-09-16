@@ -1,7 +1,7 @@
-import { useCallback } from 'react';
+﻿import { useCallback } from 'react';
 import { useAppStore } from '@/lib/store/appStore';
 import type { SwitchState, CableInfo } from '@/lib/network/types';
-import type { CanvasDevice, CanvasNote, DeviceType } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasNote, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { TerminalOutput } from '@/components/network/Terminal';
 import { BOOT_PROGRESS_MARKER } from '@/components/network/Terminal';
 import type { PCOutputLine } from '@/types/pageTypes';
@@ -353,7 +353,7 @@ export function useLoadProjectData({
           isExam: true,
           data: projectData,
           tag: 'EDIT',
-          description: { tr: 'Düzenleniyor...', en: 'Editing...' }
+          description: { tr: 'DÃ¼zenleniyor...', en: 'Editing...' }
         }) as unknown as ExamProject);
       }
 
@@ -446,3 +446,5 @@ export function useLoadProjectData({
     setZoom, setPan, setActiveTab, language, t, toast
   ]);
 }
+
+

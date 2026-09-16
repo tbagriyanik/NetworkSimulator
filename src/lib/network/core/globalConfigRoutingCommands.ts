@@ -1,7 +1,7 @@
-import { CLI_ERRORS, cliModeError } from './cliErrors';
+﻿import { CLI_ERRORS, cliModeError } from './cliErrors';
 import type { CommandResult, Route, SwitchState } from '../types';
 import type { CommandContext } from './commandTypes';
-import type { CanvasDevice } from '@/components/network/networkTopology.types';
+import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { canAssignIPToPhysicalPort, isLayer3Switch } from '../switchModels';
 import { getDeviceCapabilities } from '../capabilities';
 import { validateIpRoutingSupport } from './L3Validation';
@@ -166,7 +166,7 @@ export function cmdRouterRip(state: SwitchState, _input: string, ctx: CommandCon
   return {
     success: true,
     output: lang === 'tr' ?
-      'RIP Routing Protocol etkinleştirildi' :
+      'RIP Routing Protocol etkinleÅŸtirildi' :
       'RIP Routing Protocol enabled',
     newState: {
       routingProtocol: 'rip',
@@ -219,7 +219,7 @@ export function cmdNoRouterRip(state: SwitchState, _input: string, ctx: CommandC
   return {
     success: true,
     output: lang === 'tr' ?
-      'RIP Routing Protocol devre dışı bırakıldı' :
+      'RIP Routing Protocol devre dÄ±ÅŸÄ± bÄ±rakÄ±ldÄ±' :
       'RIP Routing Protocol disabled',
     newState: {
       routingProtocol: 'none',
@@ -237,7 +237,7 @@ export function cmdNoRouterOspf(state: SwitchState, _input: string, ctx: Command
   return {
     success: true,
     output: lang === 'tr' ?
-      'OSPF Routing Protocol devre dışı bırakıldı' :
+      'OSPF Routing Protocol devre dÄ±ÅŸÄ± bÄ±rakÄ±ldÄ±' :
       'OSPF Routing Protocol disabled',
     newState: {
       routingProtocol: 'none',
@@ -375,3 +375,5 @@ export function cmdNoIpDefaultGateway(state: SwitchState, _input: string, _ctx: 
     newState: { defaultGateway: undefined }
   };
 }
+
+

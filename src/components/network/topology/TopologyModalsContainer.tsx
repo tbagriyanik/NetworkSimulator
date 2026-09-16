@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import LazyNetworkTopologyContextMenu from '../LazyNetworkTopologyContextMenu';
@@ -7,9 +7,9 @@ import { TopologyModals } from './TopologyModals';
 import { MinimapNavigator } from './MinimapNavigator';
 import { ShortcutsModal } from '@/components/ui/ShortcutsModal';
 import { NetworkEventLogPanel } from './NetworkEventLogPanel';
-import type { CanvasDevice, CanvasConnection, CanvasNote, ContextMenuState } from '../networkTopology.types';
+import type { CanvasDevice, CanvasConnection, CanvasNote, ContextMenuState } from '../NetworkTopology/types/networkTopology.types';
 import type { SwitchState, CableInfo } from '@/lib/network/types';
-import type { PingAnimationState } from '../hooks/usePingSequence';
+import type { PingAnimationState } from '@/hooks/networkTopology/usePingSequence';
 import type { HopPacketInfo } from '../PingPacketInfoPanel';
 import type { CapturedPacket } from '@/lib/store/appStore';
 
@@ -414,3 +414,4 @@ export const TopologyModalsContainer: React.FC<TopologyModalsContainerProps> = (
     </>
   );
 };
+

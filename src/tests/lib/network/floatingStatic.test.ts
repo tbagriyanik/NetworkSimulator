@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { cmdIpRoute, cmdNoIpRoute } from '@/lib/network/core/globalConfigCommands';
 import { cmdIpSla, cmdTrack } from '@/lib/network/core/globalConfigNetworkCommands';
 import { cmdShowTrack } from '@/lib/network/core/showRoutingDisplay';
@@ -6,7 +6,7 @@ import { getRoutingTable, findRoute, isTrackedRouteActive } from '@/lib/network/
 import { evaluateIpSlaOperations } from '@/lib/network/ipSlaEngine';
 import type { SwitchState } from '@/lib/network/types';
 import type { CommandContext } from '@/lib/network/core/commandTypes';
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 function makeBaseState(): SwitchState {
   return {
@@ -152,3 +152,4 @@ describe('Floating Static Routes (IP SLA -> Track -> ip route track)', () => {
     expect((noRes.newState?.staticRoutes || []).length).toBe(0);
   });
 });
+

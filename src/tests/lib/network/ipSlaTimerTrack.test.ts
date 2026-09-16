@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { evaluateIpSlaOperations } from '@/lib/network/ipSlaEngine';
 import { cmdIpSla, cmdTrack } from '@/lib/network/core/globalConfigNetworkCommands';
 import { cmdShowTrack, cmdShowIpSlaSummary, cmdShowIpSlaConfiguration } from '@/lib/network/core/showRoutingDisplay';
 import type { SwitchState } from '@/lib/network/types'; 
 import type { CommandContext } from '@/lib/network/core/commandTypes';
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 describe('IP SLA Automated Timer Trigger & Object Tracking', () => {
   it('should run IP SLA probe, update probe statistics and update Track object state to UP when target is reachable', () => {
@@ -134,4 +134,6 @@ describe('IP SLA Automated Timer Trigger & Object Tracking', () => {
     expect(r1Updated?.ports?.Gi0_0?.hsrp?.groups?.['1']?.priority).toBe(90); // 110 - 20 = 90
   });
 });
+
+
 

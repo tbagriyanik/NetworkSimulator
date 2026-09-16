@@ -1,4 +1,4 @@
-import type { DeviceType } from '@/components/network/networkTopology.types';
+﻿import type { DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { ExampleProjectLevel } from '@/lib/network/exampleProjects';
 
 export type TabType = 'topology' | 'cmd' | 'terminal' | 'tasks';
@@ -20,3 +20,5 @@ export const ALL_TABS = [
 ];
 
 export const exampleLevelOrder: ExampleProjectLevel[] = ['basic', 'intermediate', 'advanced'];
+
+

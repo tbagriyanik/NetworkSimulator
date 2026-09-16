@@ -1,6 +1,6 @@
-import { createPcDevice, createSwitchDevice, connectPorts, baseProjectData } from './helpers';
+﻿import { createPcDevice, createSwitchDevice, connectPorts, baseProjectData } from './helpers';
 import type { ExampleProject } from './types';
-import type { CanvasConnection, CanvasNote } from '@/components/network/networkTopology.types';
+import type { CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { createInitialState } from '../initialState';
 
 const example = (isTr: boolean): ExampleProject => {
@@ -16,8 +16,8 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'basic-note-1',
       text: isTr
-        ? 'Amaç: Switch üzerinde konsol, VTY ve enable parolalarını yapılandırmak ve doğrulamak.\n\n🔧 YAPILANDIRMA ADIMLARI:\n\n1) TOPOLOJİ OLUŞTURMA:\n   - 1 adet Switch (SW1) ekle\n   - 1 adet PC (PC-1) ekle\n   - 1 adet PC (PC-2) ekle (Console için)\n   - PC-1 Eth0 -> SW1 Fa0/1 (Straight kablo)\n   - PC-2 COM1 -> SW1 Console (Console kablo)\n\n2) SWITCH KONFİGÜRASYONU:\n   - SW1 terminaline gir: enable, conf t\n   - enable secret class\n   - enable password paswd\n   - service password-encryption\n   - line con 0\n     password console\n     login\n     logging synchronous\n   - line vty 0 4\n     password vty123\n     login\n     transport input telnet ssh\n   - exit\n\n3) VLAN VE IP AYARLARI:\n   - vlan 10\n     name VLAN10\n   - exit\n   - interface vlan 10\n     ip address 192.168.10.150 255.255.255.0\n     no shutdown\n   - exit\n   - interface fa0/1\n     switchport access vlan 10\n     switchport mode access\n   - exit\n\n4) PC KONFİGÜRASYONU:\n   - PC-1: IP 192.168.10.10, Subnet 255.255.255.0, Gateway 192.168.10.150\n   - PC-2: Console bağlantısı için IP gerekmez\n\n5) TEST:\n   - PC-2 Console terminalinden SW1\'e bağlan\n   - PC-1 CMD: telnet 192.168.10.150\n   - Kullanıcı adı: (yok), Şifre: vty123\n   - Enable şifresi: class veya paswd'
-        : '🔧 BUILD STEPS:\n\n1) CREATE TOPOLOGY:\n   - Add 1 Switch (SW1)\n   - Add 1 PC (PC-1)\n   - Add 1 PC (PC-2) for Console\n   - Connect PC-1 Eth0 -> SW1 Fa0/1 (Straight cable)\n   - Connect PC-2 COM1 -> SW1 Console (Console cable)\n\n2) SWITCH CONFIGURATION:\n   - Enter SW1 terminal: enable, conf t\n   - enable secret class\n   - enable password paswd\n   - service password-encryption\n   - line con 0\n     password console\n     login\n     logging synchronous\n   - line vty 0 4\n     password vty123\n     login\n     transport input telnet ssh\n   - exit\n\n3) VLAN AND IP SETTINGS:\n   - vlan 10\n     name VLAN10\n   - exit\n   - interface vlan 10\n     ip address 192.168.10.150 255.255.255.0\n     no shutdown\n   - exit\n   - interface fa0/1\n     switchport access vlan 10\n     switchport mode access\n   - exit\n\n4) PC CONFIGURATION:\n   - PC-1: IP 192.168.10.10, Subnet 255.255.255.0, Gateway 192.168.10.150\n   - PC-2: No IP needed for Console connection\n\n5) TEST:\n   - Connect to SW1 from PC-2 Console terminal\n   - PC-1 CMD: telnet 192.168.10.150\n   - Username: (none), Password: vty123\n   - Enable password: class or paswd',
+        ? 'AmaÃ§: Switch Ã¼zerinde konsol, VTY ve enable parolalarÄ±nÄ± yapÄ±landÄ±rmak ve doÄŸrulamak.\n\nğŸ”§ YAPILANDIRMA ADIMLARI:\n\n1) TOPOLOJÄ° OLUÅTURMA:\n   - 1 adet Switch (SW1) ekle\n   - 1 adet PC (PC-1) ekle\n   - 1 adet PC (PC-2) ekle (Console iÃ§in)\n   - PC-1 Eth0 -> SW1 Fa0/1 (Straight kablo)\n   - PC-2 COM1 -> SW1 Console (Console kablo)\n\n2) SWITCH KONFÄ°GÃœRASYONU:\n   - SW1 terminaline gir: enable, conf t\n   - enable secret class\n   - enable password paswd\n   - service password-encryption\n   - line con 0\n     password console\n     login\n     logging synchronous\n   - line vty 0 4\n     password vty123\n     login\n     transport input telnet ssh\n   - exit\n\n3) VLAN VE IP AYARLARI:\n   - vlan 10\n     name VLAN10\n   - exit\n   - interface vlan 10\n     ip address 192.168.10.150 255.255.255.0\n     no shutdown\n   - exit\n   - interface fa0/1\n     switchport access vlan 10\n     switchport mode access\n   - exit\n\n4) PC KONFÄ°GÃœRASYONU:\n   - PC-1: IP 192.168.10.10, Subnet 255.255.255.0, Gateway 192.168.10.150\n   - PC-2: Console baÄŸlantÄ±sÄ± iÃ§in IP gerekmez\n\n5) TEST:\n   - PC-2 Console terminalinden SW1\'e baÄŸlan\n   - PC-1 CMD: telnet 192.168.10.150\n   - KullanÄ±cÄ± adÄ±: (yok), Åifre: vty123\n   - Enable ÅŸifresi: class veya paswd'
+        : 'ğŸ”§ BUILD STEPS:\n\n1) CREATE TOPOLOGY:\n   - Add 1 Switch (SW1)\n   - Add 1 PC (PC-1)\n   - Add 1 PC (PC-2) for Console\n   - Connect PC-1 Eth0 -> SW1 Fa0/1 (Straight cable)\n   - Connect PC-2 COM1 -> SW1 Console (Console cable)\n\n2) SWITCH CONFIGURATION:\n   - Enter SW1 terminal: enable, conf t\n   - enable secret class\n   - enable password paswd\n   - service password-encryption\n   - line con 0\n     password console\n     login\n     logging synchronous\n   - line vty 0 4\n     password vty123\n     login\n     transport input telnet ssh\n   - exit\n\n3) VLAN AND IP SETTINGS:\n   - vlan 10\n     name VLAN10\n   - exit\n   - interface vlan 10\n     ip address 192.168.10.150 255.255.255.0\n     no shutdown\n   - exit\n   - interface fa0/1\n     switchport access vlan 10\n     switchport mode access\n   - exit\n\n4) PC CONFIGURATION:\n   - PC-1: IP 192.168.10.10, Subnet 255.255.255.0, Gateway 192.168.10.150\n   - PC-2: No IP needed for Console connection\n\n5) TEST:\n   - Connect to SW1 from PC-2 Console terminal\n   - PC-1 CMD: telnet 192.168.10.150\n   - Username: (none), Password: vty123\n   - Enable password: class or paswd',
       x: 600,
       y: 40,
       width: 500,
@@ -57,12 +57,12 @@ const example = (isTr: boolean): ExampleProject => {
   return {
     id: 'basic-secure',
     tag: isTr ? 'TEMEL' : 'BASIC',
-    title: isTr ? 'Basit Ağ + Parolalar' : 'Basic Network + Passwords',
+    title: isTr ? 'Basit AÄŸ + Parolalar' : 'Basic Network + Passwords',
     description: isTr
-      ? 'Temel ağ güvenliği için console, VTY ve enable parolaları yapılandırılmıştır.'
+      ? 'Temel aÄŸ gÃ¼venliÄŸi iÃ§in console, VTY ve enable parolalarÄ± yapÄ±landÄ±rÄ±lmÄ±ÅŸtÄ±r.'
       : 'Basic network security with console, VTY, and enable passwords configured.',
     detail: isTr
-      ? 'Şifreler: enable secret: class, enable password: paswd, console: console, vty: vty123'
+      ? 'Åifreler: enable secret: class, enable password: paswd, console: console, vty: vty123'
       : 'Passwords: enable secret: class, enable password: paswd, console: console, vty: vty123',
     level: 'basic',
     data: baseProjectData(basicDevices, basicConnections, basicNotes, [{ id: 'switch-1', state: basicState }])
@@ -70,3 +70,5 @@ const example = (isTr: boolean): ExampleProject => {
 };
 
 export default example;
+
+

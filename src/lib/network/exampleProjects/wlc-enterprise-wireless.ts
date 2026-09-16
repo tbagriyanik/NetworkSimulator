@@ -1,4 +1,4 @@
-import { createInitialRouterState, createInitialState, createInitialWLCState } from '../initialState';
+﻿import { createInitialRouterState, createInitialState, createInitialWLCState } from '../initialState';
 import {
   createPcDevice,
   createRouterDevice,
@@ -7,7 +7,7 @@ import {
   connectPorts,
   baseProjectData
 } from './helpers';
-import type { CanvasConnection, CanvasNote } from '@/components/network/networkTopology.types';
+import type { CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { ExampleProject } from './types';
 
 const example = (isTr: boolean): ExampleProject => {
@@ -161,8 +161,8 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'wlc-info-note',
       text: isTr
-        ? 'Amaç: WLC (Wireless LAN Controller) ile merkezi AP ve WLAN yapılandırmasını incelemek.\n\nWLC Kurumsal Kablosuz Ağ Laboratuvarı:\n1) WLC-2504 denetleyicisi L3 AP\'leri (LAP-Floor1 & LAP-Floor2) merkezi olarak yönetir.\n2) Tanımlı WLAN\'lar:\n   • WLAN ID 1: "Corp-WiFi" (VLAN 10, WPA2-PSK: SecureNet)\n   • WLAN ID 2: "Guest-WiFi" (VLAN 20, Açık / Open)\n3) CLI Komutları (WLC Terminalinde):\n   • show wlan summary (Tanımlı kablosuz ağlar)\n   • show ap summary (Kayıtlı Access Point listesi)\n   • show ap config LAP-Floor1 (AP detay ve RF durumu)\n4) Bağlantı Testleri:\n   • Laptop-Corp > ping 192.168.20.101 (Laptop-Guest ile iletişim)\n   • Laptop-Corp > ping 192.168.1.10 (WLC Denetleyiciye ping)\n   • Laptop-Corp > wget 192.168.1.10 (WLC Web Yönetim Paneli)\n   • Admin-PC > wget 192.168.1.10 (WLC Web Paneli Arayüzü)\n\n⚠️ Not: Ağı Yenile (F5)'
-        : 'Goal: Explore centralized AP and WLAN management using Wireless LAN Controller (WLC).\n\nWLC Enterprise Wireless Lab:\n1) WLC-2504 centrally manages lightweight L3 APs (LAP-Floor1 & LAP-Floor2).\n2) Configured WLANs:\n   • WLAN ID 1: "Corp-WiFi" (VLAN 10, WPA2-PSK: SecureNet)\n   • WLAN ID 2: "Guest-WiFi" (VLAN 20, Open)\n3) WLC CLI Commands:\n   • show wlan summary (List configured WLANs)\n   • show ap summary (List registered APs)\n   • show ap config LAP-Floor1 (AP details and RF info)\n4) Connectivity Tests:\n   • Laptop-Corp > ping 192.168.20.101 (Inter-laptop ping)\n   • Laptop-Corp > ping 192.168.1.10 (Ping to WLC Controller)\n   • Laptop-Corp > wget 192.168.1.10 (Open WLC Web Panel)\n   • Admin-PC > wget 192.168.1.10 (WLC Web Management UI)\n\n⚠️ Note: Refresh Network (F5)',
+        ? 'AmaÃ§: WLC (Wireless LAN Controller) ile merkezi AP ve WLAN yapÄ±landÄ±rmasÄ±nÄ± incelemek.\n\nWLC Kurumsal Kablosuz AÄŸ LaboratuvarÄ±:\n1) WLC-2504 denetleyicisi L3 AP\'leri (LAP-Floor1 & LAP-Floor2) merkezi olarak yÃ¶netir.\n2) TanÄ±mlÄ± WLAN\'lar:\n   â€¢ WLAN ID 1: "Corp-WiFi" (VLAN 10, WPA2-PSK: SecureNet)\n   â€¢ WLAN ID 2: "Guest-WiFi" (VLAN 20, AÃ§Ä±k / Open)\n3) CLI KomutlarÄ± (WLC Terminalinde):\n   â€¢ show wlan summary (TanÄ±mlÄ± kablosuz aÄŸlar)\n   â€¢ show ap summary (KayÄ±tlÄ± Access Point listesi)\n   â€¢ show ap config LAP-Floor1 (AP detay ve RF durumu)\n4) BaÄŸlantÄ± Testleri:\n   â€¢ Laptop-Corp > ping 192.168.20.101 (Laptop-Guest ile iletiÅŸim)\n   â€¢ Laptop-Corp > ping 192.168.1.10 (WLC Denetleyiciye ping)\n   â€¢ Laptop-Corp > wget 192.168.1.10 (WLC Web YÃ¶netim Paneli)\n   â€¢ Admin-PC > wget 192.168.1.10 (WLC Web Paneli ArayÃ¼zÃ¼)\n\nâš ï¸ Not: AÄŸÄ± Yenile (F5)'
+        : 'Goal: Explore centralized AP and WLAN management using Wireless LAN Controller (WLC).\n\nWLC Enterprise Wireless Lab:\n1) WLC-2504 centrally manages lightweight L3 APs (LAP-Floor1 & LAP-Floor2).\n2) Configured WLANs:\n   â€¢ WLAN ID 1: "Corp-WiFi" (VLAN 10, WPA2-PSK: SecureNet)\n   â€¢ WLAN ID 2: "Guest-WiFi" (VLAN 20, Open)\n3) WLC CLI Commands:\n   â€¢ show wlan summary (List configured WLANs)\n   â€¢ show ap summary (List registered APs)\n   â€¢ show ap config LAP-Floor1 (AP details and RF info)\n4) Connectivity Tests:\n   â€¢ Laptop-Corp > ping 192.168.20.101 (Inter-laptop ping)\n   â€¢ Laptop-Corp > ping 192.168.1.10 (Ping to WLC Controller)\n   â€¢ Laptop-Corp > wget 192.168.1.10 (Open WLC Web Panel)\n   â€¢ Admin-PC > wget 192.168.1.10 (WLC Web Management UI)\n\nâš ï¸ Note: Refresh Network (F5)',
       x: 350,
       y: 620,
       width: 520,
@@ -471,12 +471,12 @@ const example = (isTr: boolean): ExampleProject => {
   return {
     id: 'wlc-enterprise-wireless',
     tag: 'WLC',
-    title: isTr ? 'WLC Merkezi Kablosuz Ağ' : 'WLC Enterprise Wireless Network',
+    title: isTr ? 'WLC Merkezi Kablosuz AÄŸ' : 'WLC Enterprise Wireless Network',
     description: isTr
-      ? 'WLC denetleyicisi ile Lightweight Access Point (LAP) ve çoklu SSID yönetimi.'
+      ? 'WLC denetleyicisi ile Lightweight Access Point (LAP) ve Ã§oklu SSID yÃ¶netimi.'
       : 'Centralized Lightweight AP and multi-SSID management using Wireless LAN Controller.',
     detail: isTr
-      ? 'WLC-2504, 2x LAP (Corp-WiFi & Guest-WiFi), VLAN 10/20, DHCP ve show komutları'
+      ? 'WLC-2504, 2x LAP (Corp-WiFi & Guest-WiFi), VLAN 10/20, DHCP ve show komutlarÄ±'
       : 'WLC-2504, 2x LAP (Corp-WiFi & Guest-WiFi), VLAN 10/20, DHCP, and show commands',
     level: 'advanced',
     data: baseProjectData(devices, connections, notes, [
@@ -490,3 +490,5 @@ const example = (isTr: boolean): ExampleProject => {
 };
 
 export default example;
+
+

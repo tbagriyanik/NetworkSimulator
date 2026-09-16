@@ -1,11 +1,11 @@
-'use client';
+﻿'use client';
 
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { UnifiedDevicePanel } from '@/components/network/UnifiedDevicePanel';
 import { PCPanel } from '@/components/network/PCPanel';
 import { RouterPanel } from '@/components/network/RouterPanel';
-import { CanvasDevice, CanvasConnection, DeviceType } from './networkTopology.types';
+import { CanvasDevice, CanvasConnection, DeviceType } from './NetworkTopology/types/networkTopology.types';
 import { CableInfo, SwitchState } from '@/lib/network/types';
 import type { Translations } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
@@ -204,3 +204,4 @@ export function TabletSplitView({
     </div>
   );
 }
+

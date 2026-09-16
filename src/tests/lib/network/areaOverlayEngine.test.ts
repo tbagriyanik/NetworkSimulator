@@ -5,7 +5,7 @@ import {
   getSubnetPrefix,
   computeAreaZones,
 } from '@/lib/network/areaOverlayEngine';
-import type { CanvasDevice } from '@/components/network/networkTopology.types';
+import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 
 describe('Area Overlay Engine (Convex Hull & Highlighting)', () => {
@@ -144,3 +144,5 @@ describe('Area Overlay Engine (Convex Hull & Highlighting)', () => {
     expect(subnetZones.length).toBe(2); // 192.168.1.0/24 and 10.0.0.0/8
   });
 });
+
+

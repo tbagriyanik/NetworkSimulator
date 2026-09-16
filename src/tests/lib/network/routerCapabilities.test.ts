@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { isRouterModel, isLayer2Switch, isLayer3Switch } from '@/lib/network/switchModels';
 import { getDeviceCapabilities } from '@/lib/network/capabilities';
-import type { DeviceType } from '@/components/network/networkTopology.types';
+import type { DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 describe('Router Identification and Capabilities', () => {
   const routerModels = ['NS-R-4451-X', 'NS-R-1900', 'NS-R-2900', 'NS-R-7200', 'NS-R-1001'];
@@ -37,3 +37,5 @@ describe('Router Identification and Capabilities', () => {
     });
   });
 });
+
+

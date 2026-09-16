@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import { useEffect } from 'react';
-import type { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import type { OutputLine } from './PCPanel.types';
 import { generateRandomLinkLocalIpv4 } from '@/lib/network/linkLocal';
@@ -279,14 +279,14 @@ export function usePCPanelRouterAdmin({
         addLocalOutput(
           'success',
           language === 'tr'
-            ? `${device?.name || 'Cihaz'} WiFi ayarları uygulandı.`
+            ? `${device?.name || 'Cihaz'} WiFi ayarlarÄ± uygulandÄ±.`
             : `${device?.name || 'Device'} WiFi settings applied.`
         );
 
         useAppStore.getState().addNetworkEventLog({
           level: 'info',
           category: 'Wireless',
-          message: language === 'tr' ? `${device?.name || 'Cihaz'} WiFi ayarları güncellendi` : `${device?.name || 'Device'} WiFi settings updated`,
+          message: language === 'tr' ? `${device?.name || 'Cihaz'} WiFi ayarlarÄ± gÃ¼ncellendi` : `${device?.name || 'Device'} WiFi settings updated`,
           detail: `SSID: ${nextWifi.ssid || '(yok)'}, Security: ${nextWifi.security}, Mode: ${nextWifi.mode}`,
         });
       }
@@ -321,14 +321,14 @@ export function usePCPanelRouterAdmin({
         addLocalOutput(
           'success',
           language === 'tr'
-            ? `${device?.name || 'Cihaz'} yönetici bilgileri güncellendi. Kullanıcı: ${nextUsername}`
+            ? `${device?.name || 'Cihaz'} yÃ¶netici bilgileri gÃ¼ncellendi. KullanÄ±cÄ±: ${nextUsername}`
             : `${device?.name || 'Device'} admin credentials updated. User: ${nextUsername}`
         );
 
         useAppStore.getState().addNetworkEventLog({
           level: 'info',
           category: 'Wireless',
-          message: language === 'tr' ? `${device?.name || 'Cihaz'} yönetici şifresi değiştirildi` : `${device?.name || 'Device'} admin password changed`,
+          message: language === 'tr' ? `${device?.name || 'Cihaz'} yÃ¶netici ÅŸifresi deÄŸiÅŸtirildi` : `${device?.name || 'Device'} admin password changed`,
           detail: `User: ${nextUsername}`,
         });
         return;
@@ -382,7 +382,7 @@ export function usePCPanelRouterAdmin({
         addLocalOutput(
           'success',
           language === 'tr'
-            ? `IoT cihaz "${iotDevice.name}" ağa bağlandı. IP: ${ipConfig.ip}`
+            ? `IoT cihaz "${iotDevice.name}" aÄŸa baÄŸlandÄ±. IP: ${ipConfig.ip}`
             : `IoT device "${iotDevice.name}" connected to the network. IP: ${ipConfig.ip}`
         );
       }
@@ -420,7 +420,7 @@ export function usePCPanelRouterAdmin({
         addLocalOutput(
           'success',
           language === 'tr'
-            ? `Cihaz "${targetClient.name}" için IP yenilendi: ${ipConfig.ip}`
+            ? `Cihaz "${targetClient.name}" iÃ§in IP yenilendi: ${ipConfig.ip}`
             : `Renewed IP for device "${targetClient.name}": ${ipConfig.ip}`
         );
 
@@ -510,7 +510,7 @@ export function usePCPanelRouterAdmin({
         addLocalOutput(
           'success',
           language === 'tr'
-            ? `Cihaz "${targetClient.name}" ağdan çıkarıldı.`
+            ? `Cihaz "${targetClient.name}" aÄŸdan Ã§Ä±karÄ±ldÄ±.`
             : `Device "${targetClient.name}" disconnected from the network.`
         );
 
@@ -600,7 +600,7 @@ export function usePCPanelRouterAdmin({
           addLocalOutput(
             'success',
             language === 'tr'
-              ? `IoT cihaz "${targetDevice.name || deviceId}" kuralları güncellendi.`
+              ? `IoT cihaz "${targetDevice.name || deviceId}" kurallarÄ± gÃ¼ncellendi.`
               : `IoT device "${targetDevice.name || deviceId}" rules updated.`
           );
         }
@@ -611,3 +611,4 @@ export function usePCPanelRouterAdmin({
     return () => window.removeEventListener('message', handleRouterAdminMessage);
   }, [addLocalOutput, httpAppDeviceId, language, topologyDevices, topologyConnections, getConnectedIotDevices, getAvailableIotDevices, openWebPage]);
 }
+

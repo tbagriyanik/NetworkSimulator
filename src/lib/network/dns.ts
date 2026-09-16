@@ -1,4 +1,4 @@
-import { CanvasDevice } from '@/components/network/networkTopology.types';
+﻿import { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from './types';
 import { ensureDeviceStatesMap } from './networkUtils';
 
@@ -139,3 +139,5 @@ export function resolveHostname(
 
   return null;
 }
+
+

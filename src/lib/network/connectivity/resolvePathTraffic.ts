@@ -1,4 +1,4 @@
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+﻿import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { scheduleQosPackets, type QosPacket, type QosScheduleResult } from '@/lib/network/qosScheduler';
 import { establishIpsecSa, encapsulateEsp, type EspPacket } from '@/lib/network/ipsec';
@@ -18,3 +18,5 @@ export function resolvePathTraffic(
   const esp = crypto?.setPeer && crypto.setTransformSet ? encapsulateEsp('ip', establishIpsecSa(crypto.setPeer, crypto.setTransformSet)) : undefined;
   return { connectivity, qos, esp };
 }
+
+

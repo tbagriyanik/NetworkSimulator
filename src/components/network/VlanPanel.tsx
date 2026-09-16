@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Translations } from '@/contexts/LanguageContext';
 import { Layers, Trash2 } from 'lucide-react';
 import { RouterIcon, SwitchIcon } from './PCPanelWidgets';
-import type { DeviceType } from './networkTopology.types';
+import type { DeviceType } from './NetworkTopology/types/networkTopology.types';
 
 interface VlanPanelProps {
   vlans: Record<number, Vlan>;
@@ -244,3 +244,4 @@ export function VlanPanel({ vlans, ports, deviceName, deviceModel, onExecuteComm
     </Card>
   );
 }
+

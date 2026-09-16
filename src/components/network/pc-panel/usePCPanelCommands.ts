@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
 import { useCallback } from 'react';
-import type { CanvasDevice } from '../networkTopology.types';
+import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import type { OutputLine, FtpSession, PythonSession, PcFile, PCActiveTab } from './PCPanel.types';
 import { errorHandler, DEVICE_ERRORS } from '@/lib/errors/errorHandler';
@@ -109,7 +109,7 @@ function applyPcPipeFilter(output: string, pipeExpr: string): string {
   const m = pipeExpr.match(
     /^(?:find(?:str)?|grep)\s+((?:\/[ivIV]\s+)*)("[^"]*"|'[^']*'|\S+)/i
   );
-  if (!m) return output; // unrecognised pipe – pass through unchanged
+  if (!m) return output; // unrecognised pipe â€“ pass through unchanged
 
   const flags = m[1].toLowerCase();
   const rawTerm = m[2].replace(/^["']|["']$/g, ''); // strip surrounding quotes
@@ -348,7 +348,7 @@ export function usePCPanelCommands(params: UsePCPanelCommandsParams) {
           pipeExpr = token.slice(pipeIdx + 1).trim();
         }
 
-        // Pipe-aware output helpers — filter ALL command output when a pipe expression is present.
+        // Pipe-aware output helpers â€” filter ALL command output when a pipe expression is present.
         // This means every command automatically supports  cmd | find /i "x"  without per-command changes.
         const emit = (type: OutputLine['type'], content: string, prompt?: string) =>
           addLocalOutput(type, pipeExpr ? applyPcPipeFilter(content, pipeExpr) : content, prompt);
@@ -445,34 +445,34 @@ export function usePCPanelCommands(params: UsePCPanelCommandsParams) {
         } else if (cmd === 'help' || cmd === '?') {
           const isTR = language === 'tr';
           const helpDict: Record<string, string> = isTR ? {
-            'IPCONFIG': 'Ağ arayüzlerinin IP, alt ağ maskesi ve ağ geçidi yapılandırmasını gösterir.',
-            'PING': 'Hedef IP veya bilgisayara ICMP yankı istekleri göndererek ağ bağlantısını test eder.',
-            'TRACERT': 'Hedef adrese giden paketlerin izlediği yönlendirici rotasını görüntüler.',
-            'NSLOOKUP': 'DNS sunucusuna bağlanarak alan adı IP adresi karşılığını sorgular.',
-            'TELNET': 'Uzak ağ cihazına Telnet protokolü ile terminal bağlantısı kurar.',
-            'SSH': 'Uzak ağ cihazına güvenli SSH protokolü ile terminal bağlantısı kurar.',
-            'FTP': 'Ağdaki hedef cihaza FTP ile bağlanıp dosya transfer ekranını açar.',
-            'NETSTAT': 'Aktif ağ bağlantılarını ve dinlenen port istatistiklerini görüntüler.',
-            'NBTSTAT': 'NetBIOS protokol istatistiklerini ve aktif isim tablosunu gösterir.',
-            'GETMAC': 'Bilgisayardaki ağ kartlarının MAC (fiziksel) adreslerini görüntüler.',
-            'ARP': 'IP-MAC adresi eşleşmelerini içeren ARP önbellek tablosunu gösterir.',
-            'CURL': 'Web sunucusundan HTTP isteği göndererek içerik indirir veya görüntüler.',
-            'WGET': 'Web sunucusundan dosya veya içerik indirir.',
-            'HOSTNAME': 'Bilgisayar adını görüntüler veya yeni bilgisayar adı atar (örn: hostname PC-1).',
-            'CD': 'Mevcut dizini gösterir veya değiştirir (örn: cd \\code, cd ..).',
-            'DIR': 'Mevcut dizindeki dosya ve klasörlerin listesini görüntüler.',
-            'MD': 'Yeni bir klasör/dizin oluşturur.',
-            'RD': 'Var olan bir klasörü/dizini siler.',
-            'TYPE': 'Metin dosyasının içeriğini ekrana yazdırır.',
-            'COPY': 'Dosyayı başka bir konuma veya isimle kopyalar.',
-            'MOVE': 'Dosyayı başka bir klasöre taşır.',
-            'REN': 'Dosyanın veya klasörün adını değiştirir.',
-            'DEL': 'Bir veya daha fazla dosyayı siler.',
-            'EDIT': 'Gelişmiş metin düzenleyiciyi açarak dosyayı düzenler.',
-            'PYTHON': 'Python betiği çalıştırır veya etkileşimli Python ortamını açar.',
-            'VER': 'İşletim sistemi sürüm bilgilerini görüntüler.',
-            'CLS': 'Komut satırı ekranındaki tüm yazıları temizler.',
-            'EXIT': 'Komut satırı penceresini kapatır.'
+            'IPCONFIG': 'AÄŸ arayÃ¼zlerinin IP, alt aÄŸ maskesi ve aÄŸ geÃ§idi yapÄ±landÄ±rmasÄ±nÄ± gÃ¶sterir.',
+            'PING': 'Hedef IP veya bilgisayara ICMP yankÄ± istekleri gÃ¶ndererek aÄŸ baÄŸlantÄ±sÄ±nÄ± test eder.',
+            'TRACERT': 'Hedef adrese giden paketlerin izlediÄŸi yÃ¶nlendirici rotasÄ±nÄ± gÃ¶rÃ¼ntÃ¼ler.',
+            'NSLOOKUP': 'DNS sunucusuna baÄŸlanarak alan adÄ± IP adresi karÅŸÄ±lÄ±ÄŸÄ±nÄ± sorgular.',
+            'TELNET': 'Uzak aÄŸ cihazÄ±na Telnet protokolÃ¼ ile terminal baÄŸlantÄ±sÄ± kurar.',
+            'SSH': 'Uzak aÄŸ cihazÄ±na gÃ¼venli SSH protokolÃ¼ ile terminal baÄŸlantÄ±sÄ± kurar.',
+            'FTP': 'AÄŸdaki hedef cihaza FTP ile baÄŸlanÄ±p dosya transfer ekranÄ±nÄ± aÃ§ar.',
+            'NETSTAT': 'Aktif aÄŸ baÄŸlantÄ±larÄ±nÄ± ve dinlenen port istatistiklerini gÃ¶rÃ¼ntÃ¼ler.',
+            'NBTSTAT': 'NetBIOS protokol istatistiklerini ve aktif isim tablosunu gÃ¶sterir.',
+            'GETMAC': 'Bilgisayardaki aÄŸ kartlarÄ±nÄ±n MAC (fiziksel) adreslerini gÃ¶rÃ¼ntÃ¼ler.',
+            'ARP': 'IP-MAC adresi eÅŸleÅŸmelerini iÃ§eren ARP Ã¶nbellek tablosunu gÃ¶sterir.',
+            'CURL': 'Web sunucusundan HTTP isteÄŸi gÃ¶ndererek iÃ§erik indirir veya gÃ¶rÃ¼ntÃ¼ler.',
+            'WGET': 'Web sunucusundan dosya veya iÃ§erik indirir.',
+            'HOSTNAME': 'Bilgisayar adÄ±nÄ± gÃ¶rÃ¼ntÃ¼ler veya yeni bilgisayar adÄ± atar (Ã¶rn: hostname PC-1).',
+            'CD': 'Mevcut dizini gÃ¶sterir veya deÄŸiÅŸtirir (Ã¶rn: cd \\code, cd ..).',
+            'DIR': 'Mevcut dizindeki dosya ve klasÃ¶rlerin listesini gÃ¶rÃ¼ntÃ¼ler.',
+            'MD': 'Yeni bir klasÃ¶r/dizin oluÅŸturur.',
+            'RD': 'Var olan bir klasÃ¶rÃ¼/dizini siler.',
+            'TYPE': 'Metin dosyasÄ±nÄ±n iÃ§eriÄŸini ekrana yazdÄ±rÄ±r.',
+            'COPY': 'DosyayÄ± baÅŸka bir konuma veya isimle kopyalar.',
+            'MOVE': 'DosyayÄ± baÅŸka bir klasÃ¶re taÅŸÄ±r.',
+            'REN': 'DosyanÄ±n veya klasÃ¶rÃ¼n adÄ±nÄ± deÄŸiÅŸtirir.',
+            'DEL': 'Bir veya daha fazla dosyayÄ± siler.',
+            'EDIT': 'GeliÅŸmiÅŸ metin dÃ¼zenleyiciyi aÃ§arak dosyayÄ± dÃ¼zenler.',
+            'PYTHON': 'Python betiÄŸi Ã§alÄ±ÅŸtÄ±rÄ±r veya etkileÅŸimli Python ortamÄ±nÄ± aÃ§ar.',
+            'VER': 'Ä°ÅŸletim sistemi sÃ¼rÃ¼m bilgilerini gÃ¶rÃ¼ntÃ¼ler.',
+            'CLS': 'Komut satÄ±rÄ± ekranÄ±ndaki tÃ¼m yazÄ±larÄ± temizler.',
+            'EXIT': 'Komut satÄ±rÄ± penceresini kapatÄ±r.'
           } : {
             'IPCONFIG': 'Displays all current TCP/IP network configuration values.',
             'PING': 'Tests network connectivity to a target IP or hostname using ICMP.',
@@ -509,7 +509,7 @@ export function usePCPanelCommands(params: UsePCPanelCommandsParams) {
             emit('output', `${targetSubCmd}\n  ${helpDict[targetSubCmd]}`);
           } else {
             const header = isTR
-              ? `Windows Command Prompt Simülatörü [Sürüm 10.0.19045.3803]\nDesteklenen komutlar ve açıklamaları:\n`
+              ? `Windows Command Prompt SimÃ¼latÃ¶rÃ¼ [SÃ¼rÃ¼m 10.0.19045.3803]\nDesteklenen komutlar ve aÃ§Ä±klamalarÄ±:\n`
               : `Windows Command Prompt Simulator [Version 10.0.19045.3803]\nSupported commands and descriptions:\n`;
             const lines = Object.entries(helpDict).map(([k, v]) => `  ${k.padEnd(16)} ${v}`);
             emit('output', header + lines.join('\n'));
@@ -779,7 +779,7 @@ export function usePCPanelCommands(params: UsePCPanelCommandsParams) {
           const targetPath = resolvePath(currentPath, fileName);
           const existingContent = rawFileName ? (readFile(fs, targetPath) ?? '') : '';
           setEditingFile({ path: targetPath, content: existingContent });
-          emit('output', rawFileName ? `Opening editor for ${fileName}...` : (language === 'tr' ? `Boş metin düzenleyicisi açılıyor (${fileName})...` : `Opening empty text editor (${fileName})...`));
+          emit('output', rawFileName ? `Opening editor for ${fileName}...` : (language === 'tr' ? `BoÅŸ metin dÃ¼zenleyicisi aÃ§Ä±lÄ±yor (${fileName})...` : `Opening empty text editor (${fileName})...`));
         } else if (cmd === 'python' || cmd === 'python3' || cmd === 'py') {
           const firstArg = args[0];
           const streamOutput = (chunk: string, replaceLastLine?: boolean) => {
@@ -968,3 +968,4 @@ export function usePCPanelCommands(params: UsePCPanelCommandsParams) {
     handleFtpSessionCommand,
   };
 }
+

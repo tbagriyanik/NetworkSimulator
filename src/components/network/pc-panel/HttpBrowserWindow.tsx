@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, type MutableRefObject } from 'react';
+﻿import React, { useState, useMemo, useEffect, type MutableRefObject } from 'react';
 import { Printer, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,7 +11,7 @@ import { ResizablePortalWindow, type WindowState } from './ResizablePortalWindow
 import { useAppStore } from '@/lib/store/appStore';
 import { dispatchCapturedPackets } from '@/utils/packetCapture';
 import { isIpInSubnet, getPrimaryDeviceIp, getSubnetForDeviceIp } from '@/lib/network/connectivity.utils';
-import type { CanvasDevice } from '../networkTopology.types';
+import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 
 type BrowserWindowState = WindowState;
 
@@ -167,7 +167,7 @@ export function HttpBrowserWindow({
     if (targetPrinter.status === 'offline') {
       alert(
         language === 'tr'
-          ? `Yazdırma Başarısız: Seçilen yazıcı (${targetPrinter.name || targetPrinter.id}) kapalı (Power Off)!`
+          ? `YazdÄ±rma BaÅŸarÄ±sÄ±z: SeÃ§ilen yazÄ±cÄ± (${targetPrinter.name || targetPrinter.id}) kapalÄ± (Power Off)!`
           : `Print Failed: Selected printer (${targetPrinter.name || targetPrinter.id}) is powered off!`
       );
       return;
@@ -187,7 +187,7 @@ export function HttpBrowserWindow({
         if (!sameSubnet) {
           alert(
             language === 'tr'
-              ? `Yazdırma Başarısız: Seçilen yazıcı (${targetPrinter.name || printerIp}) kaynak cihaz ile aynı ağda (subnet) yer almıyor!`
+              ? `YazdÄ±rma BaÅŸarÄ±sÄ±z: SeÃ§ilen yazÄ±cÄ± (${targetPrinter.name || printerIp}) kaynak cihaz ile aynÄ± aÄŸda (subnet) yer almÄ±yor!`
               : `Print Failed: Selected printer (${targetPrinter.name || printerIp}) is not on the same subnet as the source device!`
           );
           return;
@@ -206,7 +206,7 @@ export function HttpBrowserWindow({
           const newJob = {
             id: `job-${Date.now()}`,
             documentTitle: docTitle,
-            senderName: language === 'tr' ? 'İstemci Tarayıcı' : 'Client Browser',
+            senderName: language === 'tr' ? 'Ä°stemci TarayÄ±cÄ±' : 'Client Browser',
             pages: Math.floor(Math.random() * 3) + 1,
             timestamp,
             status: 'completed' as const,
@@ -285,8 +285,8 @@ export function HttpBrowserWindow({
         onClick={isMultiplePrinters ? undefined : handlePrintClick}
         title={
           isNoPrinter
-            ? (language === 'tr' ? 'Ağda kullanılabilir aktif yazıcı bulunamadı' : 'No active printer found on network')
-            : (language === 'tr' ? 'Sayfayı Yazdır (Ağ Yazıcısına Gönder)' : 'Print Page (Send to Network Printer)')
+            ? (language === 'tr' ? 'AÄŸda kullanÄ±labilir aktif yazÄ±cÄ± bulunamadÄ±' : 'No active printer found on network')
+            : (language === 'tr' ? 'SayfayÄ± YazdÄ±r (AÄŸ YazÄ±cÄ±sÄ±na GÃ¶nder)' : 'Print Page (Send to Network Printer)')
         }
         className={`shrink-0 flex items-center gap-1 text-xs px-2.5 py-1 font-medium transition-all ${
           isNoPrinter
@@ -301,8 +301,8 @@ export function HttpBrowserWindow({
         <Printer className="w-3.5 h-3.5" />
         <span className="hidden sm:inline">
           {printSuccess
-            ? (language === 'tr' ? 'Yazdırıldı!' : 'Sent!')
-            : (language === 'tr' ? 'Yazdır' : 'Print')}
+            ? (language === 'tr' ? 'YazdÄ±rÄ±ldÄ±!' : 'Sent!')
+            : (language === 'tr' ? 'YazdÄ±r' : 'Print')}
         </span>
         {isMultiplePrinters && <ChevronDown className="w-3 h-3 ml-0.5 opacity-70" />}
       </Button>
@@ -464,7 +464,7 @@ export function HttpBrowserWindow({
         <div className={`flex items-center gap-1.5 px-3 py-1 border-b text-[11px] select-none overflow-x-auto no-scrollbar shrink-0 ${
           isDark ? 'bg-secondary-950/80 border-secondary-800' : 'bg-secondary-100 border-secondary-200'
         }`}>
-          <span className="text-[10px] font-bold text-emerald-400 font-mono shrink-0">🌐 {language === 'tr' ? 'Siteler:' : 'Sites:'}</span>
+          <span className="text-[10px] font-bold text-emerald-400 font-mono shrink-0">ğŸŒ {language === 'tr' ? 'Siteler:' : 'Sites:'}</span>
           {discoveredWebServers.map((srv, idx) => (
             <button
               key={idx}
@@ -503,3 +503,4 @@ export function HttpBrowserWindow({
     </ResizablePortalWindow>
   );
 }
+

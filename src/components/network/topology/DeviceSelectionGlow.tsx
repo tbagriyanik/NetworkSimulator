@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
-import { CanvasDevice } from '../networkTopology.types';
-import { isSwitchDeviceType } from '../networkTopology.helpers';
-import { SELECTION_HIGHLIGHT_COLOR } from '../networkTopology.constants';
+import { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
+import { isSwitchDeviceType } from '../NetworkTopology/utils/networkTopology.helpers';
+import { SELECTION_HIGHLIGHT_COLOR } from '../NetworkTopology/utils/networkTopology.constants';
 import { colors } from '@/lib/design-tokens/colors';
 
 interface DeviceSelectionGlowProps {

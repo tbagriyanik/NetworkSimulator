@@ -1,4 +1,4 @@
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+﻿import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { handleRestconfRequest } from '@/lib/network/netdevopsEngine';
 
@@ -311,3 +311,5 @@ export function handleRestApiRequest(
     executionTimeMs: Date.now() - startTime,
   };
 }
+
+

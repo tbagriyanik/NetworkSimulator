@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -30,7 +30,7 @@ import {
 import { cn, normalizeMAC } from '@/lib/utils';
 import { useGraphicsQuality } from '@/lib/store/appStore';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
-import type { CanvasDevice, CanvasConnection } from './networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from './NetworkTopology/types/networkTopology.types';
 import { RouterIcon } from './PCPanelWidgets';
 import { getRoutingTable, findRoute, Route } from '@/lib/network/routing';
 
@@ -204,7 +204,7 @@ export function RouterPanel({
     if (!isIpv4 && !isIpv6) {
       setLookupResult({
         route: null,
-        explanation: language === 'tr' ? 'Geçersiz IP adresi formatı.' : 'Invalid IP address format.',
+        explanation: language === 'tr' ? 'GeÃ§ersiz IP adresi formatÄ±.' : 'Invalid IP address format.',
         searched: true
       });
       return;
@@ -215,16 +215,16 @@ export function RouterPanel({
       let desc = '';
       if (matchedRoute.type === 'connected') {
         desc = language === 'tr'
-          ? `Doğrudan bağlı ağ eşleşmesi. Paket ${matchedRoute.nextHop} arayüzü üzerinden doğrudan iletilecek.`
+          ? `DoÄŸrudan baÄŸlÄ± aÄŸ eÅŸleÅŸmesi. Paket ${matchedRoute.nextHop} arayÃ¼zÃ¼ Ã¼zerinden doÄŸrudan iletilecek.`
           : `Directly connected network match. Packet will be forwarded directly via interface ${matchedRoute.nextHop}.`;
       } else if (matchedRoute.destination === '0.0.0.0' || matchedRoute.destination === '::') {
         desc = language === 'tr'
-          ? `Özel rota bulunamadı. Varsayılan rota (Default Route) kullanılıyor. Next Hop: ${matchedRoute.nextHop}.`
+          ? `Ã–zel rota bulunamadÄ±. VarsayÄ±lan rota (Default Route) kullanÄ±lÄ±yor. Next Hop: ${matchedRoute.nextHop}.`
           : `No specific route found. Using Default Route. Next Hop: ${matchedRoute.nextHop}.`;
       } else {
         const protocol = matchedRoute.type === 'static' ? (language === 'tr' ? 'Statik' : 'Static') : matchedRoute.type.toUpperCase();
         desc = language === 'tr'
-          ? `${protocol} yönlendirme kuralı eşleşti (En Uzun Önek Eşleşmesi). Hedefe gitmek için paket şu Next Hop'a iletilecek: ${matchedRoute.nextHop}.`
+          ? `${protocol} yÃ¶nlendirme kuralÄ± eÅŸleÅŸti (En Uzun Ã–nek EÅŸleÅŸmesi). Hedefe gitmek iÃ§in paket ÅŸu Next Hop'a iletilecek: ${matchedRoute.nextHop}.`
           : `${protocol} routing rule matched (Longest Prefix Match). Packet will be forwarded to Next Hop: ${matchedRoute.nextHop}.`;
       }
       setLookupResult({
@@ -236,7 +236,7 @@ export function RouterPanel({
       setLookupResult({
         route: null,
         explanation: language === 'tr'
-          ? 'Hedef ağ bulunamadı. Yönlendirme tablosunda bu IP adresiyle eşleşen bir kural yok ve varsayılan ağ geçidi (0.0.0.0/0) yapılandırılmamış.'
+          ? 'Hedef aÄŸ bulunamadÄ±. YÃ¶nlendirme tablosunda bu IP adresiyle eÅŸleÅŸen bir kural yok ve varsayÄ±lan aÄŸ geÃ§idi (0.0.0.0/0) yapÄ±landÄ±rÄ±lmamÄ±ÅŸ.'
           : 'Destination host unreachable. No matching route in the routing table, and no default gateway (0.0.0.0/0) is configured.',
         searched: true
       });
@@ -289,7 +289,7 @@ export function RouterPanel({
               </div>
             </TooltipTrigger>
             <TooltipContent>
-              {routerDevice.status === 'online' ? (language === 'tr' ? 'Çevrimiçi' : 'Online') : (language === 'tr' ? 'Çevrimdışı' : 'Offline')}
+              {routerDevice.status === 'online' ? (language === 'tr' ? 'Ã‡evrimiÃ§i' : 'Online') : (language === 'tr' ? 'Ã‡evrimdÄ±ÅŸÄ±' : 'Offline')}
             </TooltipContent>
           </Tooltip>
           <div className={`p-1.5 rounded-lg ${isDark ? 'bg-purple-900/30' : 'bg-purple-100'}`}>
@@ -674,7 +674,7 @@ export function RouterPanel({
                         <ShieldCheck className="w-4 h-4" />
                         {t.wifiPassword}
                       </h3>
-                      <p className="font-mono text-sm">••••••••</p>
+                      <p className="font-mono text-sm">â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢</p>
                     </div>
                   )}
                 </>
@@ -710,7 +710,7 @@ export function RouterPanel({
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       {pool.network && (
                         <div>
-                          <span className="text-muted-foreground">{language === 'tr' ? 'Ağ:' : 'Network:'}</span>
+                          <span className="text-muted-foreground">{language === 'tr' ? 'AÄŸ:' : 'Network:'}</span>
                           <p className="font-mono font-medium">{pool.network}</p>
                         </div>
                       )}
@@ -734,13 +734,13 @@ export function RouterPanel({
                       )}
                       {pool.leaseTime && (
                         <div>
-                          <span className="text-muted-foreground">{language === 'tr' ? 'Kira Süresi:' : 'Lease Time:'}</span>
+                          <span className="text-muted-foreground">{language === 'tr' ? 'Kira SÃ¼resi:' : 'Lease Time:'}</span>
                           <p className="font-medium">{pool.leaseTime}</p>
                         </div>
                       )}
                       {pool.domainName && (
                         <div>
-                          <span className="text-muted-foreground">{language === 'tr' ? 'Domain Adı:' : 'Domain Name:'}</span>
+                          <span className="text-muted-foreground">{language === 'tr' ? 'Domain AdÄ±:' : 'Domain Name:'}</span>
                           <p className="font-medium">{pool.domainName}</p>
                         </div>
                       )}
@@ -772,7 +772,7 @@ export function RouterPanel({
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>
                     {language === 'tr'
-                      ? 'IP Yönlendirme kapalı! Cihaz paket yönlendirmesi yapamaz. CLI üzerinden "ip routing" komutunu çalıştırarak aktif edebilirsiniz.'
+                      ? 'IP YÃ¶nlendirme kapalÄ±! Cihaz paket yÃ¶nlendirmesi yapamaz. CLI Ã¼zerinden "ip routing" komutunu Ã§alÄ±ÅŸtÄ±rarak aktif edebilirsiniz.'
                       : 'IP Routing is disabled! This device cannot forward packets. You can enable it by running the "ip routing" command in CLI.'}
                   </span>
                 </div>
@@ -789,7 +789,7 @@ export function RouterPanel({
                     type="text"
                     value={lookupIp}
                     onChange={(e) => setLookupIp(e.target.value)}
-                    placeholder={language === 'tr' ? 'Hedef IP Adresi (örn: 192.168.1.5)' : 'Target IP Address (e.g. 192.168.1.5)'}
+                    placeholder={language === 'tr' ? 'Hedef IP Adresi (Ã¶rn: 192.168.1.5)' : 'Target IP Address (e.g. 192.168.1.5)'}
                     className={cn(
                       "flex-1 px-3 py-2 rounded-lg text-xs border outline-none",
                       isDark ? "bg-secondary-950 border-secondary-800 text-white focus:border-purple-500" : "bg-white border-secondary-300 text-secondary-900 focus:border-purple-600"
@@ -811,7 +811,7 @@ export function RouterPanel({
                       {lookupResult.route ? (
                         <>
                           <CheckCircle2 className="w-4 h-4 text-success-500" />
-                          <span>{language === 'tr' ? 'Rota Eşleşti!' : 'Route Matched!'}</span>
+                          <span>{language === 'tr' ? 'Rota EÅŸleÅŸti!' : 'Route Matched!'}</span>
                           <span className="font-mono bg-success-500/10 px-1.5 py-0.5 rounded text-[10px]">
                             {lookupResult.route.destination}
                             {lookupResult.route.subnetMask ? `/${lookupResult.route.subnetMask}` : lookupResult.route.prefixLength ? `/${lookupResult.route.prefixLength}` : ''}
@@ -820,7 +820,7 @@ export function RouterPanel({
                       ) : (
                         <>
                           <XCircle className="w-4 h-4 text-error-500" />
-                          <span>{language === 'tr' ? 'Eşleşen Rota Yok!' : 'No Matching Route!'}</span>
+                          <span>{language === 'tr' ? 'EÅŸleÅŸen Rota Yok!' : 'No Matching Route!'}</span>
                         </>
                       )}
                     </div>
@@ -856,9 +856,9 @@ export function RouterPanel({
                     <thead className={cn("border-b text-[10px] uppercase tracking-wider font-semibold sticky top-0 z-10", isDark ? "bg-secondary-950 border-secondary-800 text-secondary-400" : "bg-secondary-100 border-secondary-200 text-secondary-600")}>
                       <tr>
                         <th className="p-3 w-24">{language === 'tr' ? 'Tip' : 'Type'}</th>
-                        <th className="p-3">{language === 'tr' ? 'Hedef Ağ' : 'Destination Network'}</th>
+                        <th className="p-3">{language === 'tr' ? 'Hedef AÄŸ' : 'Destination Network'}</th>
                         <th className="p-3 w-32">{language === 'tr' ? 'Metrik [AD/Metrik]' : 'Metric [AD/Metric]'}</th>
-                        <th className="p-3">{language === 'tr' ? 'Sonraki Hop / Arayüz' : 'Next Hop / Interface'}</th>
+                        <th className="p-3">{language === 'tr' ? 'Sonraki Hop / ArayÃ¼z' : 'Next Hop / Interface'}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -883,7 +883,7 @@ export function RouterPanel({
                                       ? "bg-primary-500/10 text-primary-500 border-primary-500/20"
                                       : "bg-warning-500/10 text-warning-500 border-warning-500/20"
                                 )}>
-                                  {route.type === 'connected' ? (language === 'tr' ? 'Bağlı' : 'Connected') : route.type}
+                                  {route.type === 'connected' ? (language === 'tr' ? 'BaÄŸlÄ±' : 'Connected') : route.type}
                                 </span>
                               </td>
                               <td className="p-3 font-mono">
@@ -902,7 +902,7 @@ export function RouterPanel({
                       ) : (
                         <tr>
                           <td colSpan={4} className="p-6 text-center text-muted-foreground italic">
-                            {language === 'tr' ? 'Kayıtlı rota bulunamadı.' : 'No routes found.'}
+                            {language === 'tr' ? 'KayÄ±tlÄ± rota bulunamadÄ±.' : 'No routes found.'}
                           </td>
                         </tr>
                       )}
@@ -917,3 +917,4 @@ export function RouterPanel({
     </DraggableWindowWrapper>
   );
 }
+

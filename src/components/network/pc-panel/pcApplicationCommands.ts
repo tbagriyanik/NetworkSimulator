@@ -1,4 +1,4 @@
-import type { CanvasDevice, CanvasConnection } from '../networkTopology.types';
+﻿import type { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import type { OutputLine, FtpSession, PCActiveTab } from './PCPanel.types';
 import { checkConnectivity } from '@/lib/network/connectivity';
@@ -267,7 +267,7 @@ export async function handlePcApplicationCommand(
           dnsResolved = true;
         } else {
           emit('error', language === 'tr'
-            ? `DNS sorgusu başarısız: '${targetArg}' çözümlenemedi.`
+            ? `DNS sorgusu baÅŸarÄ±sÄ±z: '${targetArg}' Ã§Ã¶zÃ¼mlenemedi.`
             : `Could not resolve hostname '${targetArg}'.`);
           return true;
         }
@@ -294,17 +294,17 @@ export async function handlePcApplicationCommand(
     if (!result.success) {
       const err = result.error || '';
       const displayTarget = dnsResolved ? `${targetArg} [${targetIp}]` : targetIp;
-      if (/firewall|güvenlik duvarı/i.test(err)) {
+      if (/firewall|gÃ¼venlik duvarÄ±/i.test(err)) {
         emit('error', `${displayTarget}: ${err}`);
       } else if (/acl/i.test(err)) {
         emit('error', `${displayTarget}: ${err}`);
       } else if (/ip address/i.test(err)) {
         emit('error', language === 'tr'
-          ? 'FTP bağlantısı sağlanamadı: Kaynak cihazın IP adresi yok.'
+          ? 'FTP baÄŸlantÄ±sÄ± saÄŸlanamadÄ±: Kaynak cihazÄ±n IP adresi yok.'
           : 'Could not connect to FTP server: Source device has no IP address.');
       } else {
         emit('error', language === 'tr'
-          ? `FTP bağlantısı sağlanamadı: ${displayTarget} adresine ulaşılamıyor.`
+          ? `FTP baÄŸlantÄ±sÄ± saÄŸlanamadÄ±: ${displayTarget} adresine ulaÅŸÄ±lamÄ±yor.`
           : `Could not connect to FTP server at ${displayTarget}: Destination unreachable.`);
       }
       return true;
@@ -324,7 +324,7 @@ export async function handlePcApplicationCommand(
             undefined;
     if (!ftpService?.enabled) {
       emit('error', language === 'tr'
-        ? `FTP bağlantısı sağlanamadı: ${targetIp} üzerinde FTP servisi aktif değil.`
+        ? `FTP baÄŸlantÄ±sÄ± saÄŸlanamadÄ±: ${targetIp} Ã¼zerinde FTP servisi aktif deÄŸil.`
         : `FTP service is not enabled on ${targetIp}.`);
       return true;
     }
@@ -334,9 +334,10 @@ export async function handlePcApplicationCommand(
     setIsFtpFilePickerOpen(true);
     emit('output', `Connected to ${targetArg}.`);
     emit('output', '220 FTP server ready.');
-    emit('success', language === 'tr' ? 'Dosya transfer ekranı açıldı.' : 'File transfer window opened.');
+    emit('success', language === 'tr' ? 'Dosya transfer ekranÄ± aÃ§Ä±ldÄ±.' : 'File transfer window opened.');
     return true;
   }
 
   return false;
 }
+

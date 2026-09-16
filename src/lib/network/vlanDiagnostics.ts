@@ -1,5 +1,5 @@
-/**
- * vlanDiagnostics.ts — VLAN and Trunk Mismatch Diagnostic Utility
+﻿/**
+ * vlanDiagnostics.ts â€” VLAN and Trunk Mismatch Diagnostic Utility
  *
  * Scans network topology connections and identifies:
  * - Native VLAN Mismatch between connected trunk ports
@@ -7,7 +7,7 @@
  * - Tagged frame drops due to unallowed VLANs on trunk
  */
 
-import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState, Port } from './types';
 import { normalizeMAC } from '@/lib/utils';
 
@@ -347,3 +347,5 @@ export function diagnoseOrphanDevices(
 
   return issues;
 }
+
+
