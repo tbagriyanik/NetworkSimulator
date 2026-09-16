@@ -313,7 +313,7 @@ export function usePingSequence(deps: PingSequenceDeps) {
       const errorMessage = diagnostics.reasons?.length > 0 ? diagnostics.reasons[0] : (isTR ? 'Ping başarısız' : 'Ping failed');
       const partialPath = connectivity.hopIds?.length >= 1 ? connectivity.hopIds : [sourceId];
       pingPathRef.current = partialPath;
-      setHopPacketInfos(buildHopPacketInfosFn(partialPath, devices, connections, 64, targetIp));
+      setHopPacketInfos(buildHopPacketInfosFn(partialPath, devices, connections, targetIp));
       pingIsPausedRef.current = isSimulationMode;
       pingStepModeRef.current = isSimulationMode;
       setPingAnimation({
@@ -469,7 +469,7 @@ export function usePingSequence(deps: PingSequenceDeps) {
       return;
     }
 
-    setHopPacketInfos(buildHopPacketInfosFn(path, devices, connections, 64, targetIp));
+    setHopPacketInfos(buildHopPacketInfosFn(path, devices, connections, targetIp));
     pingIsPausedRef.current = isSimulationMode;
     pingStepModeRef.current = isSimulationMode;
     setPingAnimation({ sourceId, targetId, path, currentHopIndex: 0, progress: 0, success: null, frame: 0, hopCount: 0, isPaused: isSimulationMode, showPacketPanel: shouldOpenPanel, broadcastTargets: [], broadcastAnim: [], broadcastProgress: 0 });
@@ -540,7 +540,7 @@ export function usePingSequence(deps: PingSequenceDeps) {
         }
       } else {
         const returnPath = [...path].reverse();
-        const returnPacketInfos = buildHopPacketInfosFn(returnPath, devices, connections, 64, sourceIp);
+        const returnPacketInfos = buildHopPacketInfosFn(returnPath, devices, connections, sourceIp);
         setTimeout(() => {
           let returnHop = 0;
           let returnStartTime = Date.now();

@@ -7,13 +7,13 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useIsMobile } from '@/hooks/use-breakpoint';
 import { useNetworkRefreshWithPositions } from '@/hooks/useNetworkRefreshWithPositions';
 import { toast } from '@/hooks/use-toast';
-import { CanvasDevice, DeviceType, ContextMenuState, NetworkTopologyProps } from './networkTopology.types';
+import { CanvasDevice, ContextMenuState, NetworkTopologyProps } from './networkTopology.types';
 import { useCanvasHistory } from '@/hooks/useCanvasHistory';
 import {
-  getDeviceWidth,
-  getDeviceHeight,
   isSwitchDeviceType,
   getPortPosition,
+  getCounterKey,
+  getDistance,
 } from './networkTopology.helpers';
 import { CABLE_COLORS, DRAG_THRESHOLD, LONG_PRESS_DURATION, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, NOTE_FONTS_DESKTOP as NOTE_FONTS } from './networkTopology.constants';
 
@@ -379,11 +379,6 @@ export function NetworkTopology({
     onRefreshNetwork?.();
   }, [onRefreshNetwork, setPacketPopupHop, setPingAnimation]);
 
-  const getCounterKey = useCallback((type: DeviceType | string): string => {
-    if (type === 'switchL2' || type === 'switchL3' || type === 'switch') return 'switch';
-    return type;
-  }, []);
-
   useEffect(() => {
     pingStepModeRef.current = isSimulationMode;
   }, [isSimulationMode, pingStepModeRef]);
@@ -599,12 +594,6 @@ export function NetworkTopology({
     setDevicesState,
   });
 
-  const getDistance = useCallback((x1: number, y1: number, x2: number, y2: number): number => {
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    return Math.sqrt(dx * dx + dy * dy);
-  }, []);
-
   useEffect(() => {
     if (!contextMenu || !contextMenuRef.current) return;
 
@@ -624,30 +613,6 @@ export function NetworkTopology({
     isDrawingConnection,
     cancelConnectionDrawing,
   });
-
-  const getDeviceIdsInSelectionBox = useCallback((box: { start: { x: number; y: number }; current: { x: number; y: number } }) => {
-    const x1 = Math.min(box.start.x, box.current.x);
-    const y1 = Math.min(box.start.y, box.current.y);
-    const x2 = Math.max(box.start.x, box.current.x);
-    const y2 = Math.max(box.start.y, box.current.y);
-
-    return latestDevicesRef.current
-      .filter((d) => {
-        const deviceWidth = getDeviceWidth(d.type);
-        const deviceHeight = getDeviceHeight(d.type, d.ports?.length || 0);
-        const dX1 = d.x;
-        const dY1 = d.y;
-        const dX2 = d.x + deviceWidth;
-        const dY2 = d.y + deviceHeight;
-        return dX1 < x2 && dX2 > x1 && dY1 < y2 && dY2 > y1;
-      })
-      .map((d) => d.id);
-  }, []);
-
-  const mergeSelectionIds = useCallback((boxSelectedIds: string[]) => {
-    if (!selectionAdditiveRef.current) return boxSelectedIds;
-    return Array.from(new Set([...selectionBaseIdsRef.current, ...boxSelectedIds]));
-  }, []);
 
   useLayoutEffect(() => {
     isPanningRef.current = isPanning;
@@ -847,8 +812,6 @@ export function NetworkTopology({
     setPingResult,
     setPanStart,
     setSelectedNoteIds,
-    mergeSelectionIds,
-    getDeviceIdsInSelectionBox,
     openContextMenu,
     cancelConnectionDrawing,
     onDeviceSelect,

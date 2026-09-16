@@ -1,0 +1,88 @@
+import { Globe, LucideIcon } from 'lucide-react';
+
+export interface CommandDefinition {
+  id: string;
+  icon: LucideIcon;
+  title: string;
+  cmds: [string, string, string?][];
+  type?: 'commands' | 'info' | 'examples';
+}
+
+export function getGlobalConfigCommands(isTR: boolean): CommandDefinition {
+  return {
+    id: 'global',
+    icon: Globe,
+    title: isTR ? 'Global Yapılandırma' : 'Global Config',
+    type: 'commands',
+    cmds: [
+      ['hostname <name>', isTR ? 'Cihaz adı' : 'Set hostname', '(config)#'],
+      ['vlan <id>', isTR ? 'VLAN oluştur' : 'Create VLAN', '(config)#'],
+      ['no vlan <id>', isTR ? 'VLAN sil' : 'Delete VLAN', '(config)#'],
+      ['name <name>', isTR ? 'VLAN adı (vlan modunda)' : 'Set VLAN name', '(config-vlan)#'],
+      ['interface <name>', isTR ? 'Arayüz seç' : 'Select interface', '(config)#'],
+      ['interface range <r>', isTR ? 'Arayüz aralığı' : 'Interface range', '(config)#'],
+      ['no interface vlan <id>', isTR ? 'VLAN arayüzünü sil' : 'Delete VLAN interface', '(config)#'],
+      ['ip routing', isTR ? 'IP yönlendirme (L3)' : 'Enable IP routing (L3)', '(config)#'],
+      ['no ip routing', isTR ? 'IP yönlendirmeyi kapat' : 'Disable IP routing', '(config)#'],
+      ['ip default-gateway <ip>', isTR ? 'Varsayılan ağ geçidi' : 'Set default gateway', '(config)#'],
+      ['ip domain-name <name>', isTR ? 'Alan adı' : 'Set domain name', '(config)#'],
+      ['no ip domain lookup', isTR ? 'DNS aramayı kapat' : 'Disable DNS lookup', '(config)#'],
+      ['ip http server', isTR ? 'HTTP sunucusunu aç' : 'Enable HTTP server', '(config)#'],
+      ['no ip http server', isTR ? 'HTTP sunucusunu kapat' : 'Disable HTTP server', '(config)#'],
+      ['ip ssh version {1|2}', isTR ? 'SSH versiyonu' : 'Set SSH version', '(config)#'],
+      ['ip ssh time-out <s>', isTR ? 'SSH zaman aşımı' : 'Set SSH timeout', '(config)#'],
+      ['ip ssh authentication-retries <n>', isTR ? 'SSH deneme sayısı' : 'SSH retry limit', '(config)#'],
+      ['ip dhcp snooping', isTR ? 'DHCP snooping aç' : 'Enable DHCP snooping', '(config)#'],
+      ['ip dhcp snooping vlan <ids>', isTR ? 'VLANlarda DHCP snooping' : 'DHCP snooping on VLANs', '(config)#'],
+      ['service password-enc', isTR ? 'Parolaları şifrele' : 'Encrypt passwords', '(config)#'],
+      ['enable secret <pass>', isTR ? 'Enable secret parolası' : 'Set enable secret', '(config)#'],
+      ['enable password <pass>', isTR ? 'Enable password parolası' : 'Set enable password', '(config)#'],
+      ['banner motd #<msg>#', isTR ? 'MOTD banner' : 'MOTD banner', '(config)#'],
+      ['banner login #<msg>#', isTR ? 'Login banner' : 'Login banner', '(config)#'],
+      ['no banner {motd|login}', isTR ? 'Banner sil' : 'Remove banner', '(config)#'],
+      ['vtp mode {server|client}', isTR ? 'VTP modu' : 'Set VTP mode', '(config)#'],
+      ['vtp domain <name>', isTR ? 'VTP etki alanı' : 'Set VTP domain', '(config)#'],
+      ['vtp password <pass>', isTR ? 'VTP parolası' : 'Set VTP password', '(config)#'],
+      ['spanning-tree mode {m}', isTR ? 'STP modu' : 'Set STP mode', '(config)#'],
+      ['spanning-tree vlan <id> priority <val>', isTR ? 'VLAN STP önceliği' : 'VLAN STP priority', '(config)#'],
+      ['spanning-tree vlan <id> root', isTR ? 'VLAN STP root' : 'VLAN STP root', '(config)#'],
+      ['no spanning-tree', isTR ? 'STP\'yi kapat' : 'Disable spanning-tree', '(config)#'],
+      ['username <n> pass <p>', isTR ? 'Kullanıcı oluştur' : 'Create user', '(config)#'],
+      ['no username <name>', isTR ? 'Kullanıcıyı sil' : 'Remove user', '(config)#'],
+      ['cdp run', isTR ? 'CDP\'yi aç' : 'Enable CDP globally', '(config)#'],
+      ['mls qos', isTR ? 'QoS\'u aç' : 'Enable MLS QoS', '(config)#'],
+      ['ip dhcp pool <name>', isTR ? 'DHCP havuzu' : 'Create DHCP pool', '(config)#'],
+      ['no ip dhcp pool <name>', isTR ? 'DHCP havuzunu sil' : 'Remove DHCP pool', '(config)#'],
+      ['ip dhcp excluded <ip>', isTR ? 'DHCP hariç tut' : 'Exclude DHCP addr', '(config)#'],
+      ['ip nat pool <n> <s-e> <m>', isTR ? 'NAT havuzu tanımla' : 'Define NAT pool', '(config)#'],
+      ['ip nat inside source <rule>', isTR ? 'NAT kuralı ekle' : 'Add NAT rule', '(config)#'],
+      ['ntp server <ip>', isTR ? 'NTP sunucusu' : 'Set NTP server', '(config)#'],
+      ['clock timezone <n> <o>', isTR ? 'Zaman dilimi' : 'Set timezone', '(config)#'],
+      ['ip name-server <ip>', isTR ? 'DNS sunucusu' : 'Set DNS server', '(config)#'],
+      ['system mtu <size>', isTR ? 'Sistem MTU' : 'Set system MTU', '(config)#'],
+      ['errdisable recovery', isTR ? 'Hata kurtarma' : 'Errdisable recovery', '(config)#'],
+      ['spanning-tree portfast default', isTR ? 'Global PortFast' : 'Global PortFast', '(config)#'],
+      ['ipv6 unicast-routing', isTR ? 'IPv6 yönlendirme' : 'Enable IPv6 routing', '(config)#'],
+      ['crypto key generate rsa', isTR ? 'RSA anahtarı üret (SSH)' : 'Generate RSA keys', '(config)#'],
+      ['crypto isakmp policy <pri>', isTR ? 'ISAKMP politikası oluştur' : 'Create ISAKMP policy', '(config)#'],
+      ['crypto isakmp key <secret> address <peer>', isTR ? 'ISAKMP pre-share anahtarı tanımla' : 'Define ISAKMP pre-shared key', '(config)#'],
+      ['crypto ipsec transform-set <name> <encr> <auth>', isTR ? 'IPsec dönüştürme kümesi' : 'Define IPsec transform set', '(config)#'],
+      ['crypto map <name> <seq> ipsec-isakmp', isTR ? 'Crypto Map haritası oluştur' : 'Create Crypto Map', '(config)#'],
+      ['ip dhcp snooping information option', isTR ? 'DHCP Snooping Option 82 bilgi eklemeyi aç' : 'Enable DHCP Snooping Option 82', '(config)#'],
+      ['snmp-server community <c>', isTR ? 'SNMP topluluğu' : 'Set SNMP community', '(config)#'],
+      ['archive', isTR ? 'Arşiv yapılandırması' : 'Archive configuration', '(config)#'],
+      ['macro name <name>', isTR ? 'Makro komut grubu oluştur' : 'Define CLI command macro', '(config)#'],
+      ['configure replace <file>', isTR ? 'Yapılandırmayı dosyadan geri yükle/değiştir' : 'Replace running config from file', '(config)#'],
+      ['ip prefix-list <name> [seq <n>] {permit|deny} <prefix> [ge <ge>] [le <le>]', isTR ? 'IP Prefix List kuralı tanımla' : 'Define IP prefix list rule', '(config)#'],
+      ['ipv6 prefix-list <name> [seq <n>] {permit|deny} <prefix> [ge <ge>] [le <le>]', isTR ? 'IPv6 Prefix List kuralı tanımla' : 'Define IPv6 prefix list rule', '(config)#'],
+      ['route-map <name> {permit|deny} [<seq>]', isTR ? 'Route-Map politikası oluştur' : 'Create Route-Map policy', '(config)#'],
+      ['ip vrf <name>', isTR ? 'VRF-Lite sanal yönlendirme örneği oluştur' : 'Create VRF-Lite routing instance', '(config)#'],
+      ['rd <asn:nn>', isTR ? 'VRF Route Distinguisher tanımla' : 'Set VRF Route Distinguisher', '(config-vrf)#'],
+      ['route-target {import|export|both} <rt>', isTR ? 'VRF Route Target etiketini tanımla' : 'Define VRF Route Target', '(config-vrf)#'],
+      ['zone security <zone-name>', isTR ? 'ZBF güvenlik bölgesi oluştur' : 'Create ZBF security zone', '(config)#'],
+      ['zone-pair security <name> source <src> destination <dst>', isTR ? 'ZBF bölge çifti politikası tanımla' : 'Create ZBF zone-pair policy', '(config)#'],
+      ['mpls ldp router-id <intf|ip>', isTR ? 'MPLS LDP Router ID ayarla' : 'Configure MPLS LDP router-id', '(config)#'],
+      ['ip restconf', isTR ? 'RESTCONF / HTTP RESTful API servisini aç' : 'Enable RESTCONF HTTP API server', '(config)#'],
+    ]
+  };
+}

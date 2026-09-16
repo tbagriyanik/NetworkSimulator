@@ -191,3 +191,58 @@ export const getPortPosition = (device: CanvasDevice, portId: string) => {
 export const getDevicePairKey = (id1: string, id2: string, separator: string = ':'): string => {
   return id1 < id2 ? `${id1}${separator}${id2}` : `${id2}${separator}${id1}`;
 };
+
+/**
+ * Normalizes a device type into a stable counter key so that L2/L3 switches and
+ * generic 'switch' entries share a single name/IP generation counter.
+ */
+export const getCounterKey = (type: DeviceType | string): string => {
+  if (type === 'switchL2' || type === 'switchL3' || type === 'switch') return 'switch';
+  return type;
+};
+
+/**
+ * Euclidean distance between two points, used for touch gesture thresholds.
+ */
+export const getDistance = (x1: number, y1: number, x2: number, y2: number): number => {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  return Math.sqrt(dx * dx + dy * dy);
+};
+
+export interface SelectionBox {
+  start: { x: number; y: number };
+  current: { x: number; y: number };
+}
+
+/**
+ * Returns the ids of every device whose bounding rectangle intersects the given
+ * selection box. Box coordinates are normalized (min/max) so any drag direction works.
+ */
+export const getDeviceIdsInSelectionBox = (devices: CanvasDevice[], box: SelectionBox): string[] => {
+  const x1 = Math.min(box.start.x, box.current.x);
+  const y1 = Math.min(box.start.y, box.current.y);
+  const x2 = Math.max(box.start.x, box.current.x);
+  const y2 = Math.max(box.start.y, box.current.y);
+
+  return devices
+    .filter((d) => {
+      const deviceWidth = getDeviceWidth(d.type);
+      const deviceHeight = getDeviceHeight(d.type, d.ports?.length || 0);
+      const dX1 = d.x;
+      const dY1 = d.y;
+      const dX2 = d.x + deviceWidth;
+      const dY2 = d.y + deviceHeight;
+      return dX1 < x2 && dX2 > x1 && dY1 < y2 && dY2 > y1;
+    })
+    .map((d) => d.id);
+};
+
+/**
+ * Merges box-selected ids with any base selection when additive (ctrl/shift) mode
+ * is active; otherwise the box selection alone wins.
+ */
+export const mergeSelectionIds = (boxSelectedIds: string[], isAdditive: boolean, baseIds: string[]): string[] => {
+  if (!isAdditive) return boxSelectedIds;
+  return Array.from(new Set([...baseIds, ...boxSelectedIds]));
+};

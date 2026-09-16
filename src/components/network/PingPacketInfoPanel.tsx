@@ -1,35 +1,21 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Activity, Layers } from 'lucide-react';
-import { CanvasDevice, CanvasConnection } from './networkTopology.types';
 import { type BroadcastAnimTarget } from './hooks/usePingSequence';
 import { cn } from '@/lib/utils';
 import { PacketTraceInspector } from './PacketTraceInspector';
 import type { PacketProtocolType } from '@/lib/network/forwarding/packetFrame';
 import type { PipelineResult } from '@/lib/network/forwarding/packetPipeline';
 
-import { CABLE_COLORS } from './networkTopology.constants';
-import { colors } from '@/lib/design-tokens/colors';
+import { tr, en } from './packetInfo/translations';
+import { CableIcon, getCableColor } from './packetInfo/CableIcon';
+import { PacketFieldRow as FieldRow } from './packetInfo/PacketFieldRow';
+import { MobilePacketTables } from './packetInfo/MobilePacketTables';
+import { type HopPacketInfo, buildHopPacketInfos } from './packetInfo/hopPacketTransformer';
+import { DraggableWindowWrapper } from './DraggableWindowWrapper';
+import { useDrag } from '@/hooks/useDrag';
 
-export interface HopPacketInfo {
-    hopIndex: number;
-    fromDevice: { id: string; name: string; type: string; ip: string; mac: string };
-    toDevice: { id: string; name: string; type: string; ip: string; mac: string };
-    cableType: string;
-    srcMac: string;
-    dstMac: string;
-    etherType: string;
-    srcIp: string;
-    dstIp: string;
-    ttl: number;
-    protocol: string;
-    icmpType: string;
-    icmpCode: number;
-    icmpSeq: number;
-    layer2: string;
-    layer3: string;
-    layer4: string;
-    actionDescription?: string;
-}
+export type { HopPacketInfo };
+export { buildHopPacketInfos };
 
 interface PingPacketInfoPanelProps {
     isVisible: boolean;
@@ -59,113 +45,6 @@ interface PingPacketInfoPanelProps {
     broadcastAnim?: BroadcastAnimTarget[];
     broadcastProgress?: number;
 }
-const tr = {
-    title: 'Paket Analizi',
-    tabFlow: 'Paket Akışı',
-    tabTrace: 'İzleme Detayları',
-    hop: 'Hop',
-    of: '/',
-    play: 'Oynat',
-    pause: 'Duraklat',
-    next: 'Sonraki Hop',
-    close: 'Kapat',
-    layer2: 'Katman 2 — Ethernet Çerçevesi',
-    layer3: 'Katman 3 — IP Başlığı',
-    layer4: 'Katman 4 — ICMP',
-    srcMac: 'Kaynak MAC',
-    dstMac: 'Hedef MAC',
-    etherType: 'EtherType',
-    srcIp: 'Kaynak IP',
-    dstIp: 'Hedef IP',
-    ttl: 'TTL',
-    protocol: 'Protokol',
-    icmpType: 'ICMP Tipi',
-    icmpCode: 'ICMP Kodu',
-    icmpSeq: 'Sıra No',
-    noHops: 'Henüz hop yok',
-    wireless: 'Kablosuz (WiFi)',
-    wired: 'Kablolu (Ethernet)',
-    crossover: 'Çapraz Kablo',
-    fiber: 'Fiber Optik',
-    console: 'Konsol',
-    serial: 'Seri Kablo',
-    changed: 'Değişti',
-    macChanged: 'MAC değişti — yönlendirme',
-    ipSame: 'IP aynı kaldı — uçtan uca',
-    ttlDec: 'TTL azaldı',
-    segment: 'Segment',
-    via: 'üzerinden',
-    paused: 'Duraklatıldı',
-    // Result strings
-    successTitle: 'Ping Başarılı',
-    successReply: 'Yanıt alındı',
-    failTitle: 'Ping Başarısız',
-    failReason: 'Hata nedeni',
-    returnLabel: 'Echo Reply — Geri Dönüş',
-    forwardLabel: 'Echo Request — İleri',
-    actionLabel: 'İşlem:',
-    replyFrom: 'Yanıt:',
-    bytes: 'bayt',
-    ttlLabel: 'TTL',
-    timeLabel: 'süre',
-    requestTimeout: 'İstek zaman aşımına uğradı',
-    traceDetails: 'İzleme Detayı',
-    traceDetailsTooltip: 'Aşama bazlı detaylı paket analizi (Paket İzleme)',
-};
-
-const en = {
-    title: 'Packet Analysis',
-    tabFlow: 'Packet Flow',
-    tabTrace: 'Trace Details',
-    hop: 'Hop',
-    of: '/',
-    play: 'Play',
-    pause: 'Pause',
-    next: 'Next Hop',
-    close: 'Close',
-    layer2: 'Layer 2 — Ethernet Frame',
-    layer3: 'Layer 3 — IP Header',
-    layer4: 'Layer 4 — ICMP',
-    srcMac: 'Source MAC',
-    dstMac: 'Dest MAC',
-    etherType: 'EtherType',
-    srcIp: 'Source IP',
-    dstIp: 'Dest IP',
-    ttl: 'TTL',
-    protocol: 'Protocol',
-    icmpType: 'ICMP Type',
-    icmpCode: 'ICMP Code',
-    icmpSeq: 'Seq No',
-    noHops: 'No hops yet',
-    wireless: 'Wireless (WiFi)',
-    wired: 'Wired (Ethernet)',
-    crossover: 'Crossover',
-    fiber: 'Fiber Optic',
-    console: 'Console',
-    serial: 'Serial Cable',
-    changed: 'Changed',
-    macChanged: 'MAC changed — routing',
-    ipSame: 'IP unchanged — end-to-end',
-    ttlDec: 'TTL decremented',
-    segment: 'Segment',
-    via: 'via',
-    paused: 'Paused',
-    // Result strings
-    successTitle: 'Ping Successful',
-    successReply: 'Reply received',
-    failTitle: 'Ping Failed',
-    failReason: 'Reason',
-    returnLabel: 'Echo Reply — Return',
-    forwardLabel: 'Echo Request — Forward',
-    actionLabel: 'Action:',
-    replyFrom: 'Reply from',
-    bytes: 'bytes',
-    ttlLabel: 'TTL',
-    timeLabel: 'time',
-    requestTimeout: 'Request timed out',
-    traceDetails: 'Trace Details',
-    traceDetailsTooltip: 'Stage-by-stage detailed packet analysis',
-};
 
 function getCableLabel(cableType: string, t: typeof tr) {
     if (cableType === 'wireless') return t.wireless;
@@ -175,195 +54,6 @@ function getCableLabel(cableType: string, t: typeof tr) {
     if (cableType === 'serial') return t.serial;
     return t.wired;
 }
-
-function getCableColor(cableType: string) {
-    if (cableType === 'crossover') return CABLE_COLORS.crossover.primary;
-    if (cableType === 'fiber') return CABLE_COLORS.fiber.primary;
-    if (cableType === 'console') return CABLE_COLORS.console.primary;
-    if (cableType === 'serial') return CABLE_COLORS.serial.primary;
-    if (cableType === 'straight') return CABLE_COLORS.straight.primary;
-    return 'var(--color-secondary-400)';
-}
-
-// Kablo tipine göre SVG simgesi döndürür
-function CableIcon({ cableType, color, width = 56, isMobile = false }: { cableType: string; color: string; width?: number; isMobile?: boolean }) {
-    const w = isMobile ? 32 : width;
-    if (cableType === 'wireless') {
-        // WiFi dalgaları simgesi
-        return (
-            <svg width={w} height="16" viewBox="0 0 56 16" fill="none">
-                {/* Merkez nokta */}
-                <circle cx="28" cy="13" r="2" fill={color} />
-                {/* İç dalga */}
-                <path d="M22 10 Q28 5 34 10" stroke={color} strokeWidth="2" fill="none" strokeLinecap="round" />
-                {/* Dış dalga */}
-                <path d="M16 7 Q28 0 40 7" stroke={color} strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.6" />
-            </svg>
-        );
-    }
-    if (cableType === 'crossover') {
-        // Çapraz kablo — X geçişli çizgi
-        return (
-            <svg width={w} height="14" viewBox="0 0 56 14" fill="none">
-                <line x1="0" y1="4" x2="24" y2="4" stroke={color} strokeWidth="2" />
-                <line x1="24" y1="4" x2="32" y2="10" stroke={color} strokeWidth="2" />
-                <line x1="32" y1="10" x2="48" y2="10" stroke={color} strokeWidth="2" />
-                <line x1="24" y1="10" x2="32" y2="4" stroke={color} strokeWidth="2" />
-                <line x1="0" y1="10" x2="24" y2="10" stroke={color} strokeWidth="2" />
-                <line x1="32" y1="4" x2="48" y2="4" stroke={color} strokeWidth="2" />
-                <polygon points="48,1 56,4 48,7" fill={color} />
-                <polygon points="48,7 56,10 48,13" fill={color} />
-            </svg>
-        );
-    }
-    if (cableType === 'serial') {
-        // Seri kablo — şimşek/zigzag
-        return (
-            <svg width={w} height="14" viewBox="0 0 56 14" fill="none">
-                <polyline points="2,10 14,3 24,11 34,3 44,11 54,4" stroke={color} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                <polygon points="54,1 58,4 54,7" fill={color} />
-            </svg>
-        );
-    }
-    // Düz kablo (straight / fiber / default)
-    return (
-        <svg width={w} height="12" viewBox="0 0 56 12" fill="none">
-            <line x1="0" y1="6" x2="48" y2="6" stroke={color} strokeWidth="2" />
-            <polygon points="48,2 56,6 48,10" fill={color} />
-        </svg>
-    );
-}
-
-interface FieldRowProps {
-    label: string;
-    value: string;
-    highlight?: 'changed' | 'same' | 'none';
-    isDark: boolean;
-    badge?: string;
-    badgeColor?: string;
-    prevValue?: string;
-}
-
-function FieldRow({ label, value, highlight = 'none', isDark, badge, badgeColor, prevValue }: FieldRowProps) {
-    const highlightClass =
-        highlight === 'changed'
-            ? isDark ? 'text-warning-300' : 'text-warning-600'
-            : highlight === 'same'
-                ? isDark ? 'text-success-300' : 'text-success-600'
-                : isDark ? 'text-secondary-100' : 'text-secondary-800';
-
-    return (
-        <tr className={`border-b last:border-0 ${isDark ? 'border-white/8' : 'border-black/6'}`}>
-            <td className={`py-1 pr-3 text-xs font-medium whitespace-nowrap w-28 ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
-                {label}
-            </td>
-            <td className={`py-1 text-xs font-mono ${highlightClass}`}>
-                <div className="flex items-center gap-1.5 flex-wrap">
-                    <span>{value}</span>
-                    {prevValue && prevValue !== value && (
-                        <span className={`text-[10px] font-mono line-through opacity-50 ${isDark ? 'text-secondary-500' : 'text-secondary-400'}`}>
-                            {prevValue}
-                        </span>
-                    )}
-                    {badge && (
-                        <span
-                            className="px-1.5 py-0.5 rounded text-[10px] font-sans font-semibold"
-                            style={{ background: badgeColor || 'var(--color-secondary-500)', color: 'white' }}
-                        >
-                            {badge}
-                        </span>
-                    )}
-                </div>
-            </td>
-        </tr>
-    );
-}
-
-// Mobile compact: tabbed Layer 2 / 3 / 4 view
-interface MobilePacketTablesProps {
-    currentInfo: HopPacketInfo;
-    prevInfo: HopPacketInfo | null;
-    macChanged: boolean;
-    ttlChanged: boolean;
-    isDark: boolean;
-    isGlass: boolean;
-    t: typeof tr;
-}
-
-function MobilePacketTables({ currentInfo, prevInfo, macChanged, ttlChanged, isDark, isGlass, t }: MobilePacketTablesProps) {
-    const [activeTab, setActiveTab] = React.useState<'l2' | 'l3' | 'l4'>('l2');
-
-    const tabs = [
-        { id: 'l2' as const, label: 'L2', color: 'emerald' },
-        { id: 'l3' as const, label: 'L3', color: 'purple' },
-        { id: 'l4' as const, label: 'L4', color: 'blue' },
-    ];
-
-    const tabColors = {
-        blue: { active: isDark ? 'bg-primary-500/20 text-primary-300 border-primary-400/30' : 'bg-primary-100 text-primary-700 border-primary-300', inactive: isDark ? 'text-secondary-400' : 'text-secondary-500' },
-        emerald: { active: isDark ? 'bg-success-500/20 text-success-300 border-success-400/30' : 'bg-success-100 text-success-700 border-success-300', inactive: isDark ? 'text-secondary-400' : 'text-secondary-500' },
-        purple: { active: isDark ? 'bg-purple-500/20 text-purple-300 border-purple-400/30' : 'bg-purple-100 text-purple-700 border-purple-300', inactive: isDark ? 'text-secondary-400' : 'text-secondary-500' },
-    };
-
-    const containerCls = {
-        blue: isGlass ? (isDark ? 'border-primary-400/20 bg-primary-500/10' : 'border-primary-400/30 bg-primary-500/8') : (isDark ? 'border-primary-900/60 bg-primary-950/50' : 'border-primary-200 bg-primary-50'),
-        emerald: isGlass ? (isDark ? 'border-success-400/20 bg-success-500/10' : 'border-success-400/30 bg-success-500/8') : (isDark ? 'border-success-900/60 bg-success-950/50' : 'border-success-200 bg-success-50'),
-        purple: isGlass ? (isDark ? 'border-purple-400/20 bg-purple-500/10' : 'border-purple-400/30 bg-purple-500/8') : (isDark ? 'border-purple-900/60 bg-purple-950/50' : 'border-purple-200 bg-purple-50'),
-    };
-
-    return (
-        <div>
-            {/* Tab bar */}
-            <div className="flex gap-1 mb-2">
-                {tabs.map(tab => (
-                    <button
-                        key={tab.id}
-                        onMouseDown={e => e.stopPropagation()}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`flex-1 py-1 text-[11px] font-bold rounded-lg border transition-all ${activeTab === tab.id ? tabColors[tab.color as keyof typeof tabColors].active : (isDark ? 'border-transparent text-secondary-500' : 'border-transparent text-secondary-400')}`}
-                    >
-                        {tab.label}
-                    </button>
-                ))}
-            </div>
-            {/* Active tab content */}
-            {activeTab === 'l2' && (
-                <div className={`rounded-xl overflow-hidden border ${containerCls.emerald}`}
-                    style={isGlass ? { backdropFilter: 'blur(12px) saturate(180%)' } : undefined}>
-                    <table className="w-full"><tbody>
-                        <FieldRow label={t.srcMac} value={currentInfo.srcMac} prevValue={prevInfo?.srcMac} highlight={macChanged ? 'changed' : 'none'} isDark={isDark} badge={macChanged ? t.changed : undefined} badgeColor="var(--color-warning-600)" />
-                        <FieldRow label={t.dstMac} value={currentInfo.dstMac} prevValue={prevInfo?.dstMac} highlight={macChanged ? 'changed' : 'none'} isDark={isDark} />
-                        <FieldRow label={t.etherType} value={currentInfo.etherType} isDark={isDark} />
-                    </tbody></table>
-                </div>
-            )}
-            {activeTab === 'l3' && (
-                <div className={`rounded-xl overflow-hidden border ${containerCls.purple}`}
-                    style={isGlass ? { backdropFilter: 'blur(12px) saturate(180%)' } : undefined}>
-                    <table className="w-full"><tbody>
-                        <FieldRow label={currentInfo.layer3 === 'IPv6' ? (t.srcIp.replace('IP', 'IPv6')) : t.srcIp} value={currentInfo.srcIp} highlight="same" isDark={isDark} />
-                        <FieldRow label={currentInfo.layer3 === 'IPv6' ? (t.dstIp.replace('IP', 'IPv6')) : t.dstIp} value={currentInfo.dstIp} highlight="same" isDark={isDark} />
-                        <FieldRow label={currentInfo.layer3 === 'IPv6' ? 'Hop Limit' : t.ttl} value={String(currentInfo.ttl)} prevValue={prevInfo ? String(prevInfo.ttl) : undefined} highlight={ttlChanged ? 'changed' : 'none'} isDark={isDark} badge={ttlChanged ? t.ttlDec : undefined} badgeColor="var(--color-warning-600)" />
-                        <FieldRow label={t.protocol} value={currentInfo.protocol} isDark={isDark} />
-                    </tbody></table>
-                </div>
-            )}
-            {activeTab === 'l4' && (
-                <div className={`rounded-xl overflow-hidden border ${containerCls.blue}`}
-                    style={isGlass ? { backdropFilter: 'blur(12px) saturate(180%)' } : undefined}>
-                    <table className="w-full"><tbody>
-                        <FieldRow label={currentInfo.layer4 === 'ICMPv6' ? 'ICMPv6 Type' : t.icmpType} value={currentInfo.icmpType} isDark={isDark} />
-                        <FieldRow label={currentInfo.layer4 === 'ICMPv6' ? 'ICMPv6 Code' : t.icmpCode} value={String(currentInfo.icmpCode)} isDark={isDark} />
-                        <FieldRow label={t.icmpSeq} value={String(currentInfo.icmpSeq)} isDark={isDark} />
-                    </tbody></table>
-                </div>
-            )}
-        </div>
-    );
-}
-
-import { DraggableWindowWrapper } from './DraggableWindowWrapper';
-import { useDrag } from '@/hooks/useDrag';
 
 export function PingPacketInfoPanel({
     isVisible,
@@ -821,13 +511,13 @@ export function PingPacketInfoPanel({
                                                 </feMerge>
                                             </filter>
                                         </defs>
-                                        <rect x="10" y="18" width="460" height="84" rx="18" fill={colors.terminal.warning} fillOpacity={isDark ? 0.06 : 0.08} stroke={isDark ? colors.terminal.warning : colors.amber['700']} strokeOpacity={isDark ? 0.35 : 0.28} />
-                                        <path d="M 40 60 C 140 30, 180 95, 240 60 S 360 35, 440 60" fill="none" stroke={isDark ? colors.terminal.warning : colors.amber['700']} strokeOpacity={isDark ? 0.28 : 0.22} strokeWidth="2" strokeDasharray="7 9" />
+                                        <rect x="10" y="18" width="460" height="84" rx="18" fill="var(--color-warning-500)" fillOpacity={isDark ? 0.06 : 0.08} stroke={isDark ? 'var(--color-warning-500)' : 'var(--color-amber-700)'} strokeOpacity={isDark ? 0.35 : 0.28} />
+                                        <path d="M 40 60 C 140 30, 180 95, 240 60 S 360 35, 440 60" fill="none" stroke={isDark ? 'var(--color-warning-500)' : 'var(--color-amber-700)'} strokeOpacity={isDark ? 0.28 : 0.22} strokeWidth="2" strokeDasharray="7 9" />
                                         {broadcastSvgData.map((bt, i) => (
                                             <g key={`${bt.targetId}-${i}`}>
-                                                <line x1={bt.fromX} y1={bt.fromY} x2={bt.x} y2={bt.y} stroke={isDark ? colors.terminal.warning : colors.amber['700']} strokeOpacity="0.85" strokeWidth="2" strokeLinecap="round" opacity={0.8} />
-                                                <circle cx={bt.x} cy={bt.y} r="7" fill={isDark ? colors.terminal.warning : colors.amber['600']} filter="url(#panel-broadcast-glow)" opacity={0.9} />
-                                                <rect x={bt.x - 10} y={bt.y - 8} width="20" height="16" rx="3" fill={isDark ? colors.terminal.warning : colors.amber['600']} opacity={0.9} />
+                                                <line x1={bt.fromX} y1={bt.fromY} x2={bt.x} y2={bt.y} stroke={isDark ? 'var(--color-warning-500)' : 'var(--color-amber-700)'} strokeOpacity="0.85" strokeWidth="2" strokeLinecap="round" opacity={0.8} />
+                                                <circle cx={bt.x} cy={bt.y} r="7" fill={isDark ? 'var(--color-warning-500)' : 'var(--color-amber-600)'} filter="url(#panel-broadcast-glow)" opacity={0.9} />
+                                                <rect x={bt.x - 10} y={bt.y - 8} width="20" height="16" rx="3" fill={isDark ? 'var(--color-warning-500)' : 'var(--color-amber-600)'} opacity={0.9} />
                                                 <path d={`M ${bt.x - 7} ${bt.y - 2} L ${bt.x} ${bt.y + 5} L ${bt.x + 7} ${bt.y - 2}`} fill="none" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                                             </g>
                                         ))}
@@ -985,149 +675,4 @@ export function PingPacketInfoPanel({
         </DraggableWindowWrapper>
         </>
     );
-}
-export function buildHopPacketInfos(
-    path: string[],
-    devices: CanvasDevice[],
-    connections: CanvasConnection[],
-    initialTTL = 64,
-    targetIp?: string
-): HopPacketInfo[] {
-    if (!path || path.length < 2) return [];
-
-    const targetDevice = devices.find(d => d.id === path[path.length - 1]);
-
-    const originalDstIp = targetDevice?.ip || targetDevice?.ipv6 || '0.0.0.0';
-
-    const isIPv6 = (targetIp && targetIp.includes(':')) || originalDstIp.includes(':');
-
-    const getMac = (device: CanvasDevice | undefined, fallback: string): string => {
-        if (!device) return fallback;
-        if (device.macAddress) return device.macAddress;
-        const hash = device.id.replace(/[^a-f0-9]/gi, '').padEnd(12, '0').slice(0, 12);
-        return `${hash.slice(0, 2)}:${hash.slice(2, 4)}:${hash.slice(4, 6)}:${hash.slice(6, 8)}:${hash.slice(8, 10)}:${hash.slice(10, 12)}`.toUpperCase();
-    };
-
-    // Check if two devices are connected via wireless
-    const isWirelessConnection = (fromId: string, toId: string): boolean => {
-        const fromDev = devices.find(d => d.id === fromId);
-        const toDev = devices.find(d => d.id === toId);
-
-        if (!fromDev || !toDev) return false;
-
-        // Check if connection exists in connections array
-        const conn = connections.find(c =>
-            (c.sourceDeviceId === fromId && c.targetDeviceId === toId) ||
-            (c.sourceDeviceId === toId && c.targetDeviceId === fromId)
-        );
-
-        // If there's an explicit connection, use its cableType
-        if (conn) {
-            return conn.cableType === 'wireless';
-        }
-
-        // If no connection in array, check if it could be wireless
-        // Only PC/IoT can connect wirelessly to Router/Switch
-        const isFromClient = fromDev.type === 'pc' || fromDev.type === 'iot';
-        const isToAP = toDev.type === 'router' || toDev.type.startsWith('switch');
-        const isToClient = toDev.type === 'pc' || toDev.type === 'iot';
-        const isFromAP = fromDev.type === 'router' || fromDev.type.startsWith('switch');
-
-        // Wireless: PC/IoT -> Router/Switch or Router/Switch -> PC/IoT
-        if ((isFromClient && isToAP) || (isFromAP && isToClient)) {
-            return true;
-        }
-
-        return false;
-    };
-
-    const infos: HopPacketInfo[] = [];
-    let ttl = initialTTL;
-    let icmpSeq = 1;
-
-    for (let i = 0; i < path.length - 1; i++) {
-        const fromDev = devices.find(d => d.id === path[i]);
-        const toDev = devices.find(d => d.id === path[i + 1]);
-
-        const conn = connections.find(c =>
-            (c.sourceDeviceId === path[i] && c.targetDeviceId === path[i + 1]) ||
-            (c.sourceDeviceId === path[i + 1] && c.targetDeviceId === path[i])
-        );
-
-        const isL3Hop = fromDev?.type === 'router' || fromDev?.type === 'switchL3';
-        const srcMac = getMac(fromDev, 'AA:BB:CC:DD:EE:FF');
-        const dstMac = getMac(toDev, 'FF:EE:DD:CC:BB:AA');
-
-        if (i > 0 && isL3Hop) {
-            ttl = Math.max(1, ttl - 1);
-        }
-
-        const cableType = conn?.cableType || (isWirelessConnection(path[i], path[i + 1]) ? 'wireless' : 'straight');
-
-        // Calculate hop-specific IP addresses
-        // For router hops, use interface IPs; for end devices, use device IPs
-        const hopSrcIp = isIPv6 ? (fromDev?.ipv6 || fromDev?.ip || '::') : (fromDev?.ip || '0.0.0.0');
-        const hopDstIp = isIPv6 ? (toDev?.ipv6 || toDev?.ip || '::') : (toDev?.ip || '0.0.0.0');
-
-        // Use configured device/interface addresses only; do not synthesize router interface IPs.
-
-        infos.push({
-            hopIndex: i,
-            fromDevice: {
-                id: fromDev?.id || path[i],
-                name: fromDev?.name || path[i],
-                type: fromDev?.type || 'unknown',
-                ip: isIPv6 ? (fromDev?.ipv6 || fromDev?.ip || '::') : (fromDev?.ip || '0.0.0.0'),
-                mac: srcMac,
-            },
-            toDevice: {
-                id: toDev?.id || path[i + 1],
-                name: toDev?.name || path[i + 1],
-                type: toDev?.type || 'unknown',
-                ip: isIPv6 ? (toDev?.ipv6 || toDev?.ip || '::') : (toDev?.ip || '0.0.0.0'),
-                mac: dstMac,
-            },
-            cableType,
-            srcMac,
-            dstMac,
-            etherType: isIPv6 ? '0x86DD (IPv6)' : '0x0800 (IPv4)',
-            srcIp: hopSrcIp,
-            dstIp: hopDstIp,
-            ttl,
-            protocol: isIPv6 ? 'ICMPv6 (58)' : 'ICMP (1)',
-            icmpType: isIPv6 ? 'Echo Request (128)' : 'Echo Request (8)',
-            icmpCode: 0,
-            icmpSeq: icmpSeq++,
-            layer2: 'Ethernet II',
-            layer3: isIPv6 ? 'IPv6' : 'IPv4',
-            layer4: isIPv6 ? 'ICMPv6' : 'ICMP',
-            actionDescription: generateActionDescription(fromDev, toDev, i, path.length),
-        });
-    }
-
-    return infos;
-}
-
-function generateActionDescription(fromDev: CanvasDevice | undefined, toDev: CanvasDevice | undefined, hopIndex: number, pathLength: number): string {
-    if (!fromDev || !toDev) return '';
-
-    const isFirstHop = hopIndex === 0;
-    const isLastHop = hopIndex === pathLength - 2;
-
-    if (fromDev.type === 'pc' || fromDev.type === 'iot') {
-        if (isFirstHop) return 'Encapsulating ICMP Echo Request and sending to default gateway.';
-        return 'Forwarding frame to next hop.';
-    }
-
-    if (fromDev.type.startsWith('switch')) {
-        if (toDev.type === 'pc' || toDev.type === 'iot') return `Switching frame to target port for ${toDev.name}.`;
-        return 'Switching frame at Layer 2 based on MAC table.';
-    }
-
-    if (fromDev.type === 'router') {
-        if (isLastHop) return `Routing packet to destination network for ${toDev.name}.`;
-        return 'Routing packet at Layer 3 (TTL decremented).';
-    }
-
-    return 'Forwarding network traffic.';
 }

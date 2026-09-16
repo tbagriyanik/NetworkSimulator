@@ -10,7 +10,7 @@ import {
   MOMENTUM_DECAY,
   MOMENTUM_MIN_SPEED
 } from '../networkTopology.constants';
-import { isSwitchDeviceType } from '../networkTopology.helpers';
+import { isSwitchDeviceType, getDeviceIdsInSelectionBox, mergeSelectionIds } from '../networkTopology.helpers';
 import { computeDeltaPositions } from './topologyMouseUtils';
 
 export interface UseTopologyMouseProps {
@@ -74,9 +74,7 @@ export interface UseTopologyMouseProps {
   setPingResult: (result: { success: boolean; message: string } | null) => void;
   setPanStart: (start: { x: number; y: number }) => void;
   setSelectedNoteIds: (ids: string[]) => void;
-  mergeSelectionIds: (ids: string[]) => string[];
 
-  getDeviceIdsInSelectionBox: (box: { start: { x: number; y: number }; current: { x: number; y: number } }) => string[];
   openContextMenu: (x: number, y: number, id: string | null, mode?: ContextMenuMode) => void;
   cancelConnectionDrawing: () => void;
   onDeviceSelect: (type: DeviceType, id: string, model?: string, name?: string) => void;
@@ -147,9 +145,6 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
     setPingResult,
     setPanStart,
     setSelectedNoteIds,
-    mergeSelectionIds,
-
-    getDeviceIdsInSelectionBox,
     openContextMenu,
     cancelConnectionDrawing,
     onDeviceSelect,
@@ -284,7 +279,7 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
           const newBox = { ...currentBox, current: { x: currentX, y: currentY } };
           selectionBoxRef.current = newBox;
 
-          const selectedIds = mergeSelectionIds(getDeviceIdsInSelectionBox(newBox));
+          const selectedIds = mergeSelectionIds(getDeviceIdsInSelectionBox(latestDevicesRef.current, newBox), selectionAdditiveRef.current, selectionBaseIdsRef.current);
 
           if (!areArraysEqual(selectedIds, selectedDeviceIdsRef.current)) {
             selectedDeviceIdsRef.current = selectedIds;
@@ -641,8 +636,8 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
 
       if (isSelectingRef.current && selectionBoxRef.current) {
         const box = selectionBoxRef.current;
-        const boxSelectedIds = getDeviceIdsInSelectionBox(box);
-        const selectedIds = mergeSelectionIds(boxSelectedIds);
+        const boxSelectedIds = getDeviceIdsInSelectionBox(latestDevicesRef.current, box);
+        const selectedIds = mergeSelectionIds(boxSelectedIds, selectionAdditiveRef.current, selectionBaseIdsRef.current);
 
         if (boxSelectedIds.length > 0 || selectionAdditiveRef.current) {
           setSelectedDeviceIds(selectedIds);

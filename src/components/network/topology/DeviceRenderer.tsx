@@ -4,17 +4,17 @@ import React, { useState, useEffect } from 'react';
 
 import { CanvasDevice, CanvasConnection } from '../networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
-import { getChannelBand } from '@/lib/network/wireless';
-import { isModulePort } from '@/lib/network/portUtils';
 import { getDeviceWidth, getDeviceHeight } from '../networkTopology.helpers';
-import {
-  STATUS_COLORS,
-  PORT_COLORS,
-  SELECTION_HIGHLIGHT_COLOR
-} from '../networkTopology.constants';
 import { DeviceIconSvg } from './DeviceIconSvg';
 import { DeviceWifiStatus } from './DeviceWifiStatus';
-import { colors } from '@/lib/design-tokens/colors';
+import { DeviceFocusPulse } from './DeviceFocusPulse';
+import { DeviceSelectionGlow } from './DeviceSelectionGlow';
+import { DeviceIotEffects } from './DeviceIotEffects';
+import { DeviceWirelessCoverage } from './DeviceWirelessCoverage';
+import { DeviceBody } from './DeviceBody';
+import { DeviceStpBadge } from './DeviceStpBadge';
+import { DeviceLabels } from './DeviceLabels';
+import { DevicePorts } from './DevicePorts';
 
 export interface DeviceRendererProps {
   device: CanvasDevice;
@@ -46,17 +46,6 @@ export interface DeviceRendererProps {
   isDrawingConnection?: boolean;
   connectionStart?: { deviceId: string; portId: string } | null;
 }
-
-const isSwitchDeviceType = (type: string) => type === 'switchL2' || type === 'switchL3';
-
-const PORT_FRAME_OK = 'var(--color-secondary-50)';
-const PORT_STP_BLOCKED = 'var(--color-pink-500)';
-const PORT_STP_BLOCKED_STROKE = 'var(--color-pink-300)';
-const PORT_GIGABIT_UP = 'var(--color-warning-500)';
-const PORT_GIGABIT_UP_STROKE = 'var(--color-warning-300)';
-
-const isGigabitPort = (portId: string) => portId.toLowerCase().startsWith('gi');
-
 
 export const DeviceRenderer = React.memo(function DeviceRenderer({
   device,
@@ -103,93 +92,15 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
     return () => window.removeEventListener('focus-device', handleFocusDevice);
   }, [device.id]);
 
-  const isTargetingThisDevice = isDrawingConnection && connectionStart && connectionStart.deviceId !== device.id;
+  const isTargetingThisDevice = (isDrawingConnection && connectionStart && connectionStart.deviceId !== device.id) ?? false;
   const isTR = language === 'tr';
-  const isSwitchDevice = (type: string) => type === 'switchL2' || type === 'switchL3' || type === 'hub';
 
-  // Check if device has any connections
   const deviceConnections = deviceToConnectionsMap.get(device.id) || [];
-
   const isPoweredOff = device.status === 'offline';
-  const isPcLike = device.type === 'pc' || device.type === 'iot' || device.type === 'mobile' || device.type === 'printer';
 
-
-  const getConnectionForPort = (portId: string) =>
-    deviceConnections.find((connection) =>
-      (connection.sourceDeviceId === device.id && connection.sourcePort === portId) ||
-      (connection.targetDeviceId === device.id && connection.targetPort === portId)
-    );
-
-  const isPortConnectionHealthy = (portId: string) => {
-    const connection = getConnectionForPort(portId);
-    return Boolean(connection && connection.active !== false);
-  };
-
-  const getPortFrameColor = (portId: string, hasProblem: boolean, isConnected: boolean) => {
-    if (hasProblem) return isDark ? 'var(--color-secondary-700)' : 'var(--color-secondary-300)';
-    if (isConnected && isPortConnectionHealthy(portId)) return isDark ? PORT_FRAME_OK : 'var(--color-secondary-900)';
-    return isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
-  };
-
-  const deviceFill = isDark
-    ? (device.type === 'hub'
-      ? 'url(#hubGradientDark)'
-      : device.type === 'mobile'
-        ? 'url(#mobileGradientDark)'
-        : device.type === 'printer'
-          ? 'url(#printerGradientDark)'
-          : device.type === 'cloud'
-            ? 'url(#cloudGradientDark)'
-            : device.type === 'iot'
-              ? 'url(#iotGradientDark)'
-              : device.type === 'firewall'
-                ? 'url(#firewallGradientDark)'
-                : device.type === 'wlc'
-                  ? 'url(#wlcGradientDark)'
-                  : isPcLike
-                    ? 'url(#pcGradientDark)'
-                    : isSwitchDevice(device.type)
-                      ? (device.type === 'switchL3' ? 'url(#routerGradientDark)' : 'url(#switchGradientDark)')
-                      : 'url(#routerGradientDark)')
-    : (device.type === 'hub'
-      ? 'url(#hubGradientLight)'
-      : device.type === 'mobile'
-        ? 'url(#mobileGradientLight)'
-        : device.type === 'printer'
-          ? 'url(#printerGradientLight)'
-          : device.type === 'cloud'
-            ? 'url(#cloudGradientLight)'
-            : device.type === 'iot'
-              ? 'url(#iotGradientLight)'
-              : device.type === 'firewall'
-                ? 'url(#firewallGradientLight)'
-                : device.type === 'wlc'
-                  ? 'url(#wlcGradientLight)'
-                  : isPcLike
-                    ? 'url(#pcGradientLight)'
-                    : isSwitchDevice(device.type)
-                      ? (device.type === 'switchL3' ? 'url(#routerGradientLight)' : 'url(#switchGradientLight)')
-                      : 'url(#routerGradientLight)');
-
-  // Calculate device height based on number of ports
   const portCount = device.ports.length;
   const deviceHeight = getDeviceHeight(device.type, portCount);
   const deviceWidth = getDeviceWidth(device.type);
-
-  const isIotEffectivelyOn = device.type === 'iot' &&
-    device.status !== 'offline' &&
-    device.iot?.collaborationEnabled !== false &&
-    device.iot?.value === true;
-
-  const iotGlowColor = isIotEffectivelyOn
-    ? (device.iot?.kind === 'lamp'
-      ? 'var(--color-warning-400)'
-      : device.iot?.kind === 'cooler'
-        ? 'var(--color-accent-400)'
-        : device.iot?.kind === 'heater'
-          ? 'var(--color-error-500)'
-          : null)
-    : null;
 
   return (
     <g
@@ -209,9 +120,6 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
         handleDeviceDoubleClick(device);
       }}
       onMouseLeave={handleDeviceMouseLeave}
-      // Modern mobile browsers dispatch both pointer and touch events. The
-      // pointer path owns dragging there; running the legacy touch path too
-      // races its refs/state and makes a drag intermittently stop.
       onTouchStart={(e) => {
         if (typeof window !== 'undefined' && 'PointerEvent' in window) return;
         handleDeviceTouchStart(e, device.id);
@@ -225,349 +133,32 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
         handleDeviceTouchEnd(e);
       }}
     >
-      {/* Focused pulse ring animation */}
-      {isFocusedPulse && (
-        <g pointerEvents="none">
-          <circle
-            cx={deviceWidth / 2}
-            cy={deviceHeight / 2}
-            r={Math.max(deviceWidth, deviceHeight) * 0.75}
-            fill="none"
-            stroke="var(--color-purple-500, currentColor)"
-            strokeWidth="3"
-            opacity="0.85"
-            className="animate-ping"
-          />
-          <circle
-            cx={deviceWidth / 2}
-            cy={deviceHeight / 2}
-            r={Math.max(deviceWidth, deviceHeight) * 0.9}
-            fill="none"
-            stroke="var(--color-cyan-500, currentColor)"
-            strokeWidth="2"
-            strokeDasharray="6 3"
-            opacity="0.9"
-            className="animate-spin"
-            style={{ transformOrigin: `${deviceWidth / 2}px ${deviceHeight / 2}px`, animationDuration: '4s' }}
-          />
-        </g>
-      )}
+      <DeviceFocusPulse deviceWidth={deviceWidth} deviceHeight={deviceHeight} visible={isFocusedPulse} />
 
-      {/* Selection glow effect */}
       {isSelected && (
-        <>
-          <defs>
-            <filter id="selectionGlowFilter" x="-50%" y="-50%" width="200%" height="200%">
-              <feDropShadow dx="0" dy="0" stdDeviation="2" floodColor={SELECTION_HIGHLIGHT_COLOR} floodOpacity="0.25" />
-            </filter>
-          </defs>
-          {device.type === 'firewall' ? (
-            <>
-              <path d={`M 6 -4 L ${deviceWidth - 6} -4 Q ${deviceWidth + 4} -4 ${deviceWidth + 4} 6 L ${deviceWidth + 4} ${deviceHeight - 11} L ${deviceWidth / 2} ${deviceHeight + 4} L -4 ${deviceHeight - 11} L -4 6 Q -4 -4 6 -4 Z`} fill="none" stroke={SELECTION_HIGHLIGHT_COLOR} strokeWidth="4" opacity="0.5" filter="url(#selectionGlowFilter)" className="selection-glow" />
-              <path d={`M 6 -4 L ${deviceWidth - 6} -4 Q ${deviceWidth + 4} -4 ${deviceWidth + 4} 6 L ${deviceWidth + 4} ${deviceHeight - 11} L ${deviceWidth / 2} ${deviceHeight + 4} L -4 ${deviceHeight - 11} L -4 6 Q -4 -4 6 -4 Z`} fill="none" stroke={SELECTION_HIGHLIGHT_COLOR} strokeWidth="2" opacity="0.35" className="selection-glow-outer" />
-            </>
-          ) : device.type === 'router' ? (
-            <>
-              <path d={`M ${16} -4 L ${deviceWidth - 16} -4 Q ${deviceWidth + 4} -4 ${deviceWidth + 4} 16 L ${deviceWidth + 4} ${deviceHeight + 4} L -4 ${deviceHeight + 4} L -4 16 Q -4 -4 16 -4`} fill="none" stroke={SELECTION_HIGHLIGHT_COLOR} strokeWidth="4" opacity="0.5" filter="url(#selectionGlowFilter)" className="selection-glow" />
-              <path d={`M ${16} -4 L ${deviceWidth - 16} -4 Q ${deviceWidth + 4} -4 ${deviceWidth + 4} 16 L ${deviceWidth + 4} ${deviceHeight + 4} L -4 ${deviceHeight + 4} L -4 16 Q -4 -4 16 -4`} fill="none" stroke={SELECTION_HIGHLIGHT_COLOR} strokeWidth="2" opacity="0.35" className="selection-glow-outer" />
-            </>
-          ) : device.type === 'iot' ? (
-            <>
-              {device.iot?.sensorType === 'motion' && (
-                <circle
-                  cx={deviceWidth / 2}
-                  cy={deviceHeight / 2}
-                  r={75}
-                  fill={colors.cables.wireless}
-                  fillOpacity={isDark ? 0.15 : 0.1}
-                  stroke={colors.cables.wireless}
-                  strokeOpacity={isDark ? 0.3 : 0.2}
-                  strokeWidth="1"
-                  strokeDasharray="4 2"
-                  style={{ pointerEvents: 'none' }}
-                />
-              )}
-              <path d={`M -4 -4 L ${deviceWidth + 4 - 10} -4 Q ${deviceWidth + 4} -4 ${deviceWidth + 4} 6 L ${deviceWidth + 4} ${deviceHeight + 4} L 6 ${deviceHeight + 4} Q -4 ${deviceHeight + 4} -4 ${deviceHeight + 4 - 10} L -4 -4 Z`} fill="none" stroke={SELECTION_HIGHLIGHT_COLOR} strokeWidth="4" opacity="0.5" filter="url(#selectionGlowFilter)" className="selection-glow" />
-              <path d={`M -4 -4 L ${deviceWidth + 4 - 10} -4 Q ${deviceWidth + 4} -4 ${deviceWidth + 4} 6 L ${deviceWidth + 4} ${deviceHeight + 4} L 6 ${deviceHeight + 4} Q -4 ${deviceHeight + 4} -4 ${deviceHeight + 4 - 10} L -4 -4 Z`} fill="none" stroke={SELECTION_HIGHLIGHT_COLOR} strokeWidth="2" opacity="0.35" className="selection-glow-outer" />
-            </>
-          ) : isSwitchDeviceType(device.type) ? (
-            <>
-              <path d={`M -4 -4 L ${deviceWidth + 4} -4 L ${deviceWidth + 4} ${deviceHeight + 4 - 10} Q ${deviceWidth + 4} ${deviceHeight + 4} ${deviceWidth + 4 - 10} ${deviceHeight + 4} L 6 ${deviceHeight + 4} Q -4 ${deviceHeight + 4} -4 ${deviceHeight + 4 - 10} L -4 -4 Z`} fill="none" stroke={SELECTION_HIGHLIGHT_COLOR} strokeWidth="4" opacity="0.5" filter="url(#selectionGlowFilter)" className="selection-glow" />
-              <path d={`M -4 -4 L ${deviceWidth + 4} -4 L ${deviceWidth + 4} ${deviceHeight + 4 - 10} Q ${deviceWidth + 4} ${deviceHeight + 4} ${deviceWidth + 4 - 10} ${deviceHeight + 4} L 6 ${deviceHeight + 4} Q -4 ${deviceHeight + 4} -4 ${deviceHeight + 4 - 10} L -4 -4 Z`} fill="none" stroke={SELECTION_HIGHLIGHT_COLOR} strokeWidth="2" opacity="0.35" className="selection-glow-outer" />
-            </>
-          ) : (
-            <>
-              <rect x="-4" y="-4" width={deviceWidth + 8} height={deviceHeight + 8} rx={10} fill="none" stroke={SELECTION_HIGHLIGHT_COLOR} strokeWidth="4" opacity="0.5" filter="url(#selectionGlowFilter)" className="selection-glow" />
-              <rect x="-4" y="-4" width={deviceWidth + 8} height={deviceHeight + 8} rx={10} fill="none" stroke={SELECTION_HIGHLIGHT_COLOR} strokeWidth="2" opacity="0.35" className="selection-glow-outer" />
-            </>
-          )}
-        </>
+        <DeviceSelectionGlow device={device} deviceWidth={deviceWidth} deviceHeight={deviceHeight} isDark={isDark} />
       )}
 
-      {/* Radius indicator for motion/sound sensors */}
-      {device.type === 'iot' && device.status !== 'offline' && device.iot?.collaborationEnabled !== false && (
-        <>
-          {device.iot?.sensorType === 'motion' && (
-            <>
-              <circle
-                cx={deviceWidth / 2}
-                cy={deviceHeight / 2}
-                r={75}
-                fill={colors.cables.wireless}
-                fillOpacity={isDark ? 0.05 : 0.05}
-                stroke={colors.cables.wireless}
-                strokeOpacity={isDark ? 0.15 : 0.1}
-                strokeWidth="1"
-                strokeDasharray="4 2"
-                style={{ pointerEvents: 'none' }}
-              />
-              {graphicsQuality === 'high' && device.iot?.value === true && (
-                <>
-                  <circle
-                    cx={deviceWidth / 2}
-                    cy={deviceHeight / 2}
-                    r={20}
-                    fill="none"
-                    stroke={colors.cables.wireless}
-                    strokeOpacity={isDark ? 0.6 : 0.5}
-                    strokeWidth="2"
-                    className="iot-motion-ping"
-                    style={{ pointerEvents: 'none', transformOrigin: `${deviceWidth / 2}px ${deviceHeight / 2}px` }}
-                  />
-                  <circle
-                    cx={deviceWidth / 2}
-                    cy={deviceHeight / 2}
-                    r={20}
-                    fill="none"
-                    stroke={colors.cables.wireless}
-                    strokeOpacity={isDark ? 0.4 : 0.3}
-                    strokeWidth="2"
-                    className="iot-motion-ping-delayed"
-                    style={{ pointerEvents: 'none', transformOrigin: `${deviceWidth / 2}px ${deviceHeight / 2}px` }}
-                  />
-                </>
-              )}
-            </>
-          )}
-          {device.iot?.sensorType === 'sound' && (
-            <>
-              {(() => {
-                const dBValue = typeof device.iot?.value === 'number' ? device.iot.value : 0;
-                const radius = Math.min(150, 50 + (dBValue / 120) * 100);
-                const opacity = 0.1 + (dBValue / 120) * 0.3;
+      <DeviceIotEffects
+        device={device}
+        deviceWidth={deviceWidth}
+        deviceHeight={deviceHeight}
+        isDark={isDark}
+        isSelected={isSelected}
+        graphicsQuality={graphicsQuality}
+      />
 
-                return (
-                  <circle
-                    cx={deviceWidth / 2}
-                    cy={deviceHeight / 2}
-                    r={radius}
-                    fill={colors.cables.active}
-                    fillOpacity={isDark ? opacity * 0.5 : opacity * 0.3}
-                    stroke={colors.cables.active}
-                    strokeOpacity={isDark ? opacity : opacity * 0.8}
-                    strokeWidth="1"
-                    strokeDasharray="4 2"
-                    className={graphicsQuality === 'high' ? 'iot-sound-pulse' : ''}
-                    style={{ pointerEvents: 'none', ...(graphicsQuality === 'high' ? { transformOrigin: `${deviceWidth / 2}px ${deviceHeight / 2}px` } : {}) }}
-                  />
-                );
-              })()}
-            </>
-          )}
-        </>
-      )}
+      <DeviceWirelessCoverage
+        device={device}
+        deviceWidth={deviceWidth}
+        deviceHeight={deviceHeight}
+        isDark={isDark}
+        deviceStates={deviceStates}
+        isPoweredOff={isPoweredOff}
+      />
 
-      {device.type === 'iot' && iotGlowColor && (
-        <path
-          d={`M -6 -6 L ${deviceWidth + 6 - 10} -6 Q ${deviceWidth + 6} -6 ${deviceWidth + 6} 8 L ${deviceWidth + 6} ${deviceHeight + 6} L 8 ${deviceHeight + 6} Q -6 ${deviceHeight + 6} -6 ${deviceHeight + 6 - 10} L -6 -6 Z`}
-          fill="none"
-          stroke={iotGlowColor}
-          strokeWidth="7"
-          opacity={isSelected ? 0.4 : 0.7}
-          strokeLinejoin="round"
-          style={{ filter: `drop-shadow(0 0 2px ${iotGlowColor})` }}
-        />
-      )}
+      <DeviceBody device={device} deviceWidth={deviceWidth} deviceHeight={deviceHeight} isDark={isDark} isDragging={isDragging} />
 
-      {/* Wireless Coverage Area */}
-      {(() => {
-        const isWirelessHost = device.type === 'router' || device.type === 'wlc';
-        if (!isWirelessHost) return null;
-
-        const wlanPort = device.ports.find(p => p.id === 'wlan0');
-        const activeWifiConfig = deviceStates?.get(device.id)?.ports['wlan0']?.wifi || device.wifi;
-
-        let isEnabled = false;
-        if (device.type === 'wlc') isEnabled = true;
-        else if (wlanPort) isEnabled = !wlanPort.shutdown;
-        else if (activeWifiConfig) isEnabled = (activeWifiConfig as { enabled?: boolean }).enabled ?? true;
-
-        if (!isEnabled || isPoweredOff) return null;
-
-        const is5Ghz = getChannelBand(activeWifiConfig?.channel) === '5GHz';
-        const coverageRadius = is5Ghz ? 250 : 150;
-
-        return (
-          <circle
-            cx={deviceWidth / 2}
-            cy={deviceHeight / 2}
-            r={coverageRadius}
-            fill={colors.indigo['500']}
-            fillOpacity={isDark ? 0.03 : 0.04}
-            stroke={colors.indigo['500']}
-            strokeOpacity={isDark ? 0.15 : 0.2}
-            strokeWidth="1"
-            strokeDasharray="8 4"
-            style={{ pointerEvents: 'none' }}
-          />
-        );
-      })()}
-
-      {/* Device body */}
-      {device.type === 'firewall' ? (
-        <>
-          <defs>
-            <filter id="deviceShadow" x="-50%" y="-50%" width="200%" height="200%">
-              <feDropShadow dx="1" dy="2" stdDeviation="1.5" floodOpacity={isDark ? "0.15" : "0.1"} />
-            </filter>
-          </defs>
-          <path
-            d={`M 10 0 L ${deviceWidth - 10} 0 Q ${deviceWidth} 0 ${deviceWidth} 10 L ${deviceWidth} ${deviceHeight - 15} L ${deviceWidth / 2} ${deviceHeight} L 0 ${deviceHeight - 15} L 0 10 Q 0 0 10 0 Z`}
-            fill={deviceFill}
-            style={{ stroke: isDark ? 'var(--color-error-500)' : 'var(--color-secondary-300)' }}
-            strokeWidth={1.5}
-            className={isDragging ? '' : 'transition-all duration-150'}
-            filter="url(#deviceShadow)"
-          />
-          {/* Shield Icon inside Firewall device */}
-          <g transform={`translate(${deviceWidth / 2 - 17}, ${deviceHeight / 2 - 40})`} filter="url(#deviceShadow)">
-            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" style={{ stroke: isDark ? 'var(--color-error-200)' : 'var(--color-error-600)' }} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-              <path d="m9 12 2 2 4-4" />
-            </svg>
-          </g>
-        </>
-      ) : device.type === 'cloud' ? (
-        <g>
-          <path
-            d={`M ${deviceWidth * 0.15} ${deviceHeight - 22}
-                A 16 16 0 0 1 ${deviceWidth * 0.30} ${deviceHeight * 0.36}
-                A 26 24 0 0 1 ${deviceWidth * 0.82} ${deviceHeight * 0.44}
-                A 13 13 0 0 1 ${deviceWidth * 0.85} ${deviceHeight - 22}
-                Z`}
-            fill={deviceFill}
-            style={{ stroke: isDark ? 'var(--color-sky-500)' : 'var(--color-secondary-300)' }}
-            strokeWidth={1.5}
-            className={isDragging ? '' : 'transition-all duration-150'}
-            filter="url(#deviceShadow)"
-          />
-        </g>
-      ) : device.type === 'router' ? (
-
-        <path
-          d={`M ${20} 0 L ${deviceWidth - 20} 0 Q ${deviceWidth} 0 ${deviceWidth} 20 L ${deviceWidth} ${deviceHeight} L 0 ${deviceHeight} L 0 20 Q 0 0 20 0`}
-          fill={deviceFill}
-          style={{ stroke: isDark ? 'var(--color-warning-500)' : 'var(--color-secondary-300)' }}
-          strokeWidth={1.5}
-          className={isDragging ? '' : 'transition-all duration-150'}
-          filter="url(#deviceShadow)"
-        />
-      ) : device.type === 'mobile' ? (
-        <rect
-          width={deviceWidth}
-          height={deviceHeight}
-          rx={14}
-          fill={deviceFill}
-          style={{ stroke: isDark ? 'var(--color-sky-400)' : 'var(--color-sky-500)' }}
-          strokeWidth={1.5}
-          className={isDragging ? '' : 'transition-all duration-150'}
-          filter="url(#deviceShadow)"
-        />
-      ) : device.type === 'printer' ? (
-        <path
-          d={`M 12 0 L ${deviceWidth - 12} 0 Q ${deviceWidth} 0 ${deviceWidth} 10 L ${deviceWidth} ${deviceHeight - 6} Q ${deviceWidth} ${deviceHeight} ${deviceWidth - 6} ${deviceHeight} L 6 ${deviceHeight} Q 0 ${deviceHeight} 0 ${deviceHeight - 6} L 0 10 Q 0 0 12 0 Z`}
-          fill={deviceFill}
-          style={{ stroke: isDark ? 'var(--color-amber-500)' : 'var(--color-secondary-300)' }}
-          strokeWidth={1.5}
-          className={isDragging ? '' : 'transition-all duration-150'}
-          filter="url(#deviceShadow)"
-        />
-      ) : device.type === 'iot' ? (
-        <path
-          d={`M 0 0 L ${deviceWidth - 8} 0 Q ${deviceWidth} 0 ${deviceWidth} 8 L ${deviceWidth} ${deviceHeight} L 8 ${deviceHeight} Q 0 ${deviceHeight} 0 ${deviceHeight - 8} L 0 0 Z`}
-          fill={deviceFill}
-          style={{ stroke: isDark ? 'var(--color-secondary-500)' : 'var(--color-secondary-300)' }}
-          strokeWidth={1.5}
-          className={isDragging ? '' : 'transition-all duration-150'}
-          filter="url(#deviceShadow)"
-        />
-      ) : isSwitchDeviceType(device.type) ? (
-        <path
-          d={`M 0 0 L ${deviceWidth} 0 L ${deviceWidth} ${deviceHeight - 8} Q ${deviceWidth} ${deviceHeight} ${deviceWidth - 8} ${deviceHeight} L 8 ${deviceHeight} Q 0 ${deviceHeight} 0 ${deviceHeight - 8} L 0 0 Z`}
-          fill={deviceFill}
-          style={{ stroke: isDark ? 'var(--color-accent-500)' : 'var(--color-secondary-300)' }}
-          strokeWidth={1.5}
-          className={isDragging ? '' : 'transition-all duration-150'}
-          filter="url(#deviceShadow)"
-        />
-      ) : (
-        <rect
-          width={deviceWidth}
-          height={deviceHeight}
-          rx={8}
-          fill={deviceFill}
-          style={{
-            stroke: isDark
-              ? ((device.type as string) === 'pc' ? 'var(--color-primary-500)' : (device.type as string) === 'iot' ? 'var(--color-secondary-500)' : (device.type as string) === 'mobile' ? 'var(--color-emerald-500)' : (device.type as string) === 'printer' ? 'var(--color-amber-500)' : (device.type as string) === 'firewall' ? 'var(--color-error-500)' : isSwitchDeviceType(device.type) ? 'var(--color-accent-500)' : (device.type as string) === 'wlc' ? 'var(--color-warning-400)' : 'var(--color-warning-500)')
-              : 'var(--color-secondary-300)'
-          }}
-          strokeWidth={1.5}
-          className={isDragging ? '' : 'transition-all duration-150'}
-          filter="url(#deviceShadow)"
-        />
-      )}
-
-
-      {/* Device body highlight for 3D effect in dark mode */}
-      {isDark && device.type !== 'mobile' && device.type !== 'printer' && device.type !== 'cloud' && (
-        device.type === 'firewall' ? (
-          <path
-            d={`M 2 5 Q 2 2 5 2 L ${deviceWidth - 5} 2 Q ${deviceWidth - 2} 2 ${deviceWidth - 2} 5 L ${deviceWidth - 2} ${deviceHeight / 3} L 2 ${deviceHeight / 3} Z`}
-            fill="white"
-            opacity="0.08"
-          />
-        ) : device.type === 'router' ? (
-          <path
-            d={`M ${22} 2 L ${deviceWidth - 22} 2 Q ${deviceWidth - 2} 2 ${deviceWidth - 2} 20 L ${deviceWidth - 2} ${deviceHeight / 3} L 2 ${deviceHeight / 3} L 2 20 Q 2 2 22 2`}
-            fill="white"
-            opacity="0.08"
-          />
-        ) : device.type === 'iot' ? (
-          <path
-            d={`M 2 2 L ${deviceWidth - 2 - 6} 2 Q ${deviceWidth - 2} 2 ${deviceWidth - 2} 8 L ${deviceWidth - 2} ${deviceHeight / 3} L 8 ${deviceHeight / 3} Q 2 ${deviceHeight / 3} 2 ${deviceHeight / 3 - 6} L 2 2 Z`}
-            fill="white"
-            opacity="0.08"
-          />
-        ) : isSwitchDeviceType(device.type) ? (
-          <path
-            d={`M 2 2 L ${deviceWidth - 2} 2 L ${deviceWidth - 2} ${deviceHeight / 3} L 2 ${deviceHeight / 3} L 2 2 Z`}
-            fill="white"
-            opacity="0.08"
-          />
-        ) : (
-          <rect
-            x={2}
-            y={2}
-            width={deviceWidth - 4}
-            height={deviceHeight / 3}
-            rx={6}
-            fill="white"
-            opacity="0.08"
-          />
-        )
-      )}
-
-      {/* WiFi Status Icon */}
       <DeviceWifiStatus
         device={device}
         topologyDevices={topologyDevices}
@@ -578,7 +169,6 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
         isPoweredOff={isPoweredOff}
       />
 
-      {/* Device Icon Visual */}
       <g transform={`translate(${deviceWidth / 2 - 16}, 12)`}>
         <DeviceIconSvg
           type={device.type}
@@ -593,593 +183,37 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
         />
       </g>
 
+      <DeviceStpBadge device={device} deviceWidth={deviceWidth} isDark={isDark} deviceStates={deviceStates} />
 
+      <DeviceLabels
+        device={device}
+        deviceWidth={deviceWidth}
+        isSelected={isSelected}
+        isDark={isDark}
+        isTR={isTR}
+        t={t}
+        getLiveDeviceVlan={getLiveDeviceVlan}
+        getIotMeasuredValue={getIotMeasuredValue}
+      />
 
-      {/* STP Overlay Bridge Badges */}
-      {isSwitchDeviceType(device.type) && (() => {
-        const deviceState = deviceStates?.get(device.id);
-        const defaultStp = deviceState?.stpState?.[1]; // VLAN 1 is default
-        if (!defaultStp) return null;
-        const isRootBridge = defaultStp.isRoot === true;
-        if (isRootBridge) {
-          return (
-            <g transform={`translate(${deviceWidth / 2}, 0)`}>
-              <rect
-                x="-22"
-                y="-10"
-                width="44"
-                height="13"
-                rx="3.5"
-                fill="var(--color-warning-500)"
-                stroke="var(--color-warning-400)"
-                strokeWidth="1"
-                className="animate-pulse"
-              />
-              <text
-                y="-2.5"
-                fill="var(--color-secondary-950)"
-                fontSize="7.5"
-                fontWeight="bold"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                style={{ userSelect: 'none', pointerEvents: 'none' }}
-              >
-                👑 ROOT
-              </text>
-            </g>
-          );
-        } else {
-          return (
-            <g transform={`translate(${deviceWidth / 2}, 0)`}>
-              <rect
-                x="-24"
-                y="-10"
-                width="48"
-                height="13"
-                rx="3.5"
-                fill={isDark ? 'var(--color-secondary-800)' : 'var(--color-secondary-200)'}
-                stroke={isDark ? 'var(--color-secondary-700)' : 'var(--color-secondary-300)'}
-                strokeWidth="1"
-              />
-              <text
-                y="-2.5"
-                fill={isDark ? 'var(--color-secondary-200)' : 'var(--color-secondary-800)'}
-                fontSize="6.5"
-                fontWeight="semibold"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                style={{ userSelect: 'none', pointerEvents: 'none' }}
-              >
-                Pri: {defaultStp.bridgeId.split('.')[0]}
-              </text>
-            </g>
-          );
-        }
-      })()}
-
-      {/* Device name */}
-      <text
-        x={deviceWidth / 2}
-        y={58}
-        style={{ fill: isSelected ? SELECTION_HIGHLIGHT_COLOR : isDark ? 'var(--color-secondary-100)' : 'var(--color-secondary-800)' }}
-        fontSize="10"
-        textAnchor="middle"
-        fontWeight={isSelected ? '800' : 'bold'}
-        className="select-none pointer-events-none"
-      >
-        {device.name}
-      </text>
-
-      {/* Device IP */}
-      {(device.type === 'pc' || device.type === 'mobile' || device.type === 'printer') && (
-        <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} fontSize={device.type === 'mobile' ? "9" : "10"} textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none">
-          {device.ip || (device.ipConfigMode === 'dhcp' ? 'DHCP' : '0.0.0.0')}
-        </text>
-      )}
-
-      {/* Device VLAN / IoT Measured Value / Printer Job Count */}
-      {device.type === 'pc' && (
-        <text x={deviceWidth / 2} y={81} style={{ fill: isDark ? 'var(--color-accent-400)' : 'var(--color-accent-700)' }} fontSize="9" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none">
-          VLAN {String(getLiveDeviceVlan(device))}
-        </text>
-      )}
-      {device.type === 'printer' && (
-        <text x={deviceWidth / 2} y={81} style={{ fill: isDark ? 'var(--color-pink-400)' : 'var(--color-pink-700)' }} fontSize="9" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none">
-          {(() => {
-            const completedCount = (device.printJobs || []).filter(j => j.status === 'completed').length;
-            const activeCount = (device.printJobs || []).filter(j => j.status === 'printing' || j.status === 'queued').length;
-            return isTR
-              ? `${completedCount} Görev Tamamlandı${activeCount > 0 ? ` (${activeCount} Yazdırılıyor)` : ''}`
-              : `${completedCount} Jobs Completed${activeCount > 0 ? ` (${activeCount} Printing)` : ''}`;
-          })()}
-        </text>
-      )}
-      {device.type === 'iot' && (
-        (() => {
-          const kind = device.iot?.kind || 'sensor';
-          const kindLabel = isTR
-            ? (kind === 'lamp' ? 'Lamba' : kind === 'heater' ? 'Isıtıcı' : kind === 'cooler' ? 'Soğutucu' : 'Sensör')
-            : (kind === 'lamp' ? 'Lamp' : kind === 'heater' ? 'Heater' : kind === 'cooler' ? 'Cooler' : 'Sensor');
-
-          return (
-            <text
-              x={deviceWidth / 2}
-              y={46}
-              style={{ fill: isDark ? 'var(--color-secondary-300)' : 'var(--color-secondary-500)' }}
-              fontSize="8"
-              textAnchor="middle"
-              className="select-none pointer-events-none italic opacity-80"
-            >
-              ({kindLabel})
-            </text>
-          );
-        })()
-      )}
-      {device.type === 'iot' && (
-        (() => {
-          const isPoweredOff = device.status === 'offline';
-          const isPassive = device.iot?.collaborationEnabled === false;
-          if (isPoweredOff) {
-            return (
-              <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
-                <tspan x={deviceWidth / 2} dy="6">{isTR ? 'Kapalı' : 'Off'}</tspan>
-              </text>
-            );
-          }
-          if (isPassive) {
-            return (
-              <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
-                <tspan x={deviceWidth / 2} dy="6">{t.passive}</tspan>
-              </text>
-            );
-          }
-
-          const kind = device.iot?.kind;
-          const sensorType = device.iot?.sensorType || 'temperature';
-          const value = getIotMeasuredValue(device);
-          const isControllable = kind === 'lamp' || kind === 'heater' || kind === 'cooler';
-
-          if (isControllable) {
-            const isActive = device.iot?.value ?? false;
-            const statusColor = isActive ? (isDark ? 'var(--color-warning-400)' : 'var(--color-warning-500)') : (isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)');
-            return (
-              <text x={deviceWidth / 2} y={70} style={{ fill: statusColor }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
-                <tspan x={deviceWidth / 2} dy="6">{value}</tspan>
-              </text>
-            );
-          }
-
-          switch (sensorType) {
-            case 'temperature':
-              return (
-                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-success-400)' : 'var(--color-success-600)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
-                  <tspan x={deviceWidth / 2} dy="0">{t.temperature}:</tspan>
-                  <tspan x={deviceWidth / 2} dy="12">{value}</tspan>
-                </text>
-              );
-            case 'humidity':
-              return (
-                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-primary-500)' : 'var(--color-primary-600)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
-                  <tspan x={deviceWidth / 2} dy="0">{t.humidity}:</tspan>
-                  <tspan x={deviceWidth / 2} dy="12">{value}</tspan>
-                </text>
-              );
-            case 'light':
-              return (
-                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-warning-400)' : 'var(--color-warning-500)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
-                  <tspan x={deviceWidth / 2} dy="0">{t.lightLevel}:</tspan>
-                  <tspan x={deviceWidth / 2} dy="12">{value}</tspan>
-                </text>
-              );
-            case 'sound':
-              return (
-                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-warning-600)' : 'var(--color-warning-600)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
-                  <tspan x={deviceWidth / 2} dy="0">{t.sensorSound}:</tspan>
-                  <tspan x={deviceWidth / 2} dy="12">{value}</tspan>
-                </text>
-              );
-            case 'motion':
-              return (
-                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-600)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
-                  <tspan x={deviceWidth / 2} dy="0">{t.sensorMotion}:</tspan>
-                  <tspan x={deviceWidth / 2} dy="12">{value}</tspan>
-                </text>
-              );
-            default:
-              return (
-                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-600)' }} fontSize="9" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
-                  {value}
-                </text>
-              );
-          }
-        })()
-      )}
-
-      {/* Ports rendering */}
-      {isPcLike ? (
-        device.ports.filter((port) => port.id !== 'wlan0').map((port, idx) => {
-          const portSpacing = 18;
-          const portX = deviceWidth - 8;
-          const visiblePorts = device.ports.filter((item) => item.id !== 'wlan0');
-          const visiblePortCount = visiblePorts.length;
-          const startY = deviceHeight / 2 - ((visiblePortCount - 1) * portSpacing) / 2;
-          const portY = startY + idx * portSpacing;
-          const isConnected = port.status === 'connected';
-          const isShutdown = port.shutdown;
-          const isDeviceOffline = device.status === 'offline';
-          const isStartPort = isDrawingConnection && connectionStart?.deviceId === device.id && connectionStart?.portId === port.id;
-          const isTargetPort = isTargetingThisDevice && !isConnected;
-          const hasProblem = isShutdown || isDeviceOffline || (isConnected && !isPortConnectionHealthy(port.id));
-
-          const isConsolePort = port.id.toLowerCase().startsWith('com') || port.id.toLowerCase() === 'console';
-          const portLabel = isConsolePort ? 'C' : 'E';
-
-          const portColor = isStartPort ? 'var(--color-success-500)' :
-            isTargetPort ? 'var(--color-warning-500)' :
-              (isShutdown || isDeviceOffline) ? STATUS_COLORS.offline :
-                isConsolePort
-                  ? (isConnected ? PORT_COLORS.console.connected : PORT_COLORS.console.disconnected)
-                  : device.type === 'iot'
-                    ? PORT_COLORS.ethernet.connected
-                    : (isConnected ? PORT_COLORS.ethernet.connected : PORT_COLORS.ethernet.disconnected);
-
-          return (
-            <g
-              key={port.id}
-              transform={`translate(${portX}, ${portY})`}
-              style={{ cursor: isDraggingInteractionDisabled ? 'default' : 'pointer', pointerEvents: isDraggingInteractionDisabled ? 'none' : 'all' }}
-              onMouseEnter={(e) => handlePortHover(e, device.id, port.id)}
-              onMouseLeave={handlePortMouseLeave}
-            >
-              {isTargetPort && (
-                <circle
-                  r={12}
-                  className="animate-pulse"
-                  style={{ fill: 'var(--color-warning-500)', opacity: 0.3 }}
-                />
-              )}
-              <circle
-                r={9}
-                fill="transparent"
-                style={{ pointerEvents: isDraggingInteractionDisabled ? 'none' : 'all', cursor: isDraggingInteractionDisabled ? 'default' : 'pointer' }}
-                onPointerDown={(e) => {
-                  e.stopPropagation();
-                  handlePortClick(e, device.id, port.id);
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-              />
-              <circle
-                r={7}
-                fill={portColor}
-                stroke={isTargetPort ? 'var(--color-warning-400)' : getPortFrameColor(port.id, hasProblem, isConnected)}
-                strokeWidth={isShutdown || isDeviceOffline || isConnected || isTargetPort ? 2 : 1}
-                opacity={hasProblem && !isTargetPort ? 0.45 : 1}
-                style={{ pointerEvents: 'none' }}
-              />
-              <text y={1} fill="var(--color-background)" fontSize="7" fontWeight="700" textAnchor="middle" dominantBaseline="middle" style={{ userSelect: 'none', pointerEvents: 'none' }}>
-                {portLabel}
-              </text>
-            </g>
-          );
-        })
-      ) : (
-        device.type === 'router' || device.type === 'wlc' ? (
-          (() => {
-            const filteredPorts = device.ports.filter(p => p.id !== 'wlan0' && !p.id.startsWith('service'));
-            const builtInPorts = filteredPorts.filter(p => !isModulePort(p.id));
-            const modulePorts = filteredPorts.filter(p => isModulePort(p.id));
-            const giPorts = builtInPorts.filter(p => p.id.toLowerCase().startsWith('gi'));
-            const otherPorts = builtInPorts.filter(p => !p.id.toLowerCase().startsWith('gi'));
-            const portSpacing = 14;
-            const rowSpacing = 14;
-            const startX = 14;
-            const startY = 80;
-
-            const renderPort = (port: typeof filteredPorts[0], col: number, row: number) => {
-              const portX = startX + col * portSpacing;
-              const portY = startY + row * rowSpacing;
-              const isConnected = port.status === 'connected';
-              const isShutdown = port.shutdown;
-              const isDeviceOffline = device.status === 'offline';
-
-              const portId = port.id.toLowerCase();
-              const isConsole = portId === 'console';
-              const isGigabit = isGigabitPort(port.id);
-              const isFastEthernet = portId.startsWith('fa');
-              const isSerial = portId.startsWith('s') && !portId.startsWith('service');
-
-              const portNum = port.label.replace(/\D/g, '');
-              let displayNum = isConsole ? 'C' : (portNum ? parseInt(portNum, 10).toString() : 'C');
-              if (isSerial) {
-                const parts = portId.split('/');
-                displayNum = parts.length >= 3 ? `${parts[1]}/${parts[2]}` : parseInt(portNum, 10).toString();
-              }
-
-              const deviceState = deviceStates?.get(device.id);
-              const simulatorPort = deviceState?.ports?.[port.id];
-              const isSTPBlocked = simulatorPort?.spanningTree?.state === 'blocking' || simulatorPort?.spanningTree?.role === 'alternate';
-              const isStartPort = isDrawingConnection && connectionStart?.deviceId === device.id && connectionStart?.portId === port.id;
-              const deviceVlan = device.vlan || simulatorPort?.accessVlan || simulatorPort?.vlan || 1;
-              const isVlan1 = deviceVlan === 1;
-              const isBlocked = isSTPBlocked && isVlan1;
-              const isTargetPort = isTargetingThisDevice && !isConnected;
-              const hasProblem = isShutdown || isDeviceOffline || isBlocked || (isConnected && !isPortConnectionHealthy(port.id));
-
-              let portFill: string;
-              let portStroke: string;
-
-              if (isStartPort) {
-                portFill = 'var(--color-success-500)';
-                portStroke = 'var(--color-success-400)';
-              } else if (isTargetPort) {
-                portFill = 'var(--color-warning-500)';
-                portStroke = 'var(--color-warning-400)';
-              } else if (isShutdown || isDeviceOffline) {
-                portFill = 'var(--color-error-500)';
-                portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
-              } else if (isBlocked) {
-                portFill = PORT_STP_BLOCKED;
-                portStroke = PORT_STP_BLOCKED_STROKE;
-              } else if (isConnected) {
-                if (isConsole) { portFill = 'var(--color-accent-500)'; portStroke = isDark ? 'var(--color-accent-400)' : 'var(--color-accent-400)'; }
-                else if (isGigabit) { portFill = PORT_GIGABIT_UP; portStroke = PORT_GIGABIT_UP_STROKE; }
-                else if (isFastEthernet) { portFill = 'var(--color-primary-500)'; portStroke = isDark ? 'var(--color-primary-400)' : 'var(--color-primary-400)'; }
-                else if (isSerial) { portFill = 'var(--color-success-500)'; portStroke = isDark ? 'var(--color-success-300)' : 'var(--color-success-300)'; }
-                else { portFill = 'var(--color-primary-500)'; portStroke = isDark ? 'var(--color-primary-400)' : 'var(--color-primary-400)'; }
-              } else {
-                if (isConsole) { portFill = 'var(--color-accent-500)'; portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)'; }
-                else if (isGigabit) { portFill = 'var(--color-secondary-500)'; portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)'; }
-                else if (isFastEthernet) { portFill = 'var(--color-primary-500)'; portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)'; }
-                else if (isSerial) { portFill = 'var(--color-success-500)'; portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)'; }
-                else { portFill = 'var(--color-primary-500)'; portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)'; }
-              }
-
-              const hasStpInfo = isSwitchDeviceType(device.type) && simulatorPort?.spanningTree;
-              const stpRole = simulatorPort?.spanningTree?.role;
-              const roleAbbr = stpRole === 'root' ? 'RP' : stpRole === 'alternate' ? 'AP' : stpRole === 'backup' ? 'BP' : '';
-
-              return (
-                <g
-                  key={port.id}
-                  transform={`translate(${portX}, ${portY})`}
-                  style={{ cursor: isDraggingInteractionDisabled ? 'default' : 'pointer', pointerEvents: isDraggingInteractionDisabled ? 'none' : 'all' }}
-                  onMouseEnter={(e) => handlePortHover(e, device.id, port.id)}
-                  onMouseLeave={handlePortMouseLeave}
-                >
-                  {isTargetPort && (
-                    <circle
-                      r={10}
-                      className="animate-pulse"
-                      style={{ fill: 'var(--color-warning-500)', opacity: 0.3 }}
-                    />
-                  )}
-                  <circle
-                    r={7}
-                    fill="transparent"
-                    style={{ pointerEvents: isDraggingInteractionDisabled ? 'none' : 'all', cursor: isDraggingInteractionDisabled ? 'default' : 'pointer' }}
-                    onPointerDown={(e) => {
-                      e.stopPropagation();
-                      handlePortClick(e, device.id, port.id);
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                  />
-                  <circle
-                    r={6}
-                    fill={portFill}
-                    stroke={isBlocked || isTargetPort ? portStroke : getPortFrameColor(port.id, hasProblem, isConnected)}
-                    strokeWidth={isShutdown || isDeviceOffline || isConnected || isTargetPort ? 2 : 1}
-                    opacity={hasProblem && !isBlocked && !isTargetPort ? 0.45 : 1}
-                    style={{ pointerEvents: 'none' }}
-                  />
-                  <text y={1} style={{ fill: 'var(--color-background)', userSelect: 'none', pointerEvents: 'none' }} fontSize="6" textAnchor="middle" dominantBaseline="middle">
-                    {displayNum}
-                  </text>
-                  {hasStpInfo && roleAbbr && (
-                    <g transform={`translate(0, ${row === 0 ? -11 : 11})`}>
-                      <rect
-                        x="-7"
-                        y="-5"
-                        width="14"
-                        height="9"
-                        rx="2"
-                        fill={
-                          stpRole === 'root'
-                            ? 'var(--color-primary-500)'
-                            : stpRole === 'designated'
-                              ? 'var(--color-success-500)'
-                              : 'var(--color-warning-500)'
-                        }
-                        stroke={isDark ? 'var(--color-secondary-950)' : 'var(--color-secondary-50)'}
-                        strokeWidth="0.5"
-                      />
-                      <text
-                        y="-0.5"
-                        fill="white"
-                        fontSize="5"
-                        fontWeight="bold"
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                        style={{ userSelect: 'none', pointerEvents: 'none' }}
-                      >
-                        {roleAbbr}
-                      </text>
-                    </g>
-                  )}
-                </g>
-              );
-            };
-
-            if (device.type === 'wlc') {
-              const orderedPorts = [...giPorts, ...otherPorts, ...modulePorts];
-              return <>{orderedPorts.map((port, idx) => renderPort(port, idx, 0))}</>;
-            }
-            return (
-              <>
-                {giPorts.map((port, idx) => renderPort(port, idx, 0))}
-                {otherPorts.map((port, idx) => renderPort(port, idx, 1))}
-                {modulePorts.map((port, idx) => renderPort(port, idx % 8, 2 + Math.floor(idx / 8)))}
-              </>
-            );
-          })()
-        ) : (
-          device.ports
-            .filter(p => !p.id.startsWith('vlan') && p.id !== 'wlan0')
-            .map((port, idx) => {
-              const portsPerRow = 8;
-              const col = idx % portsPerRow;
-              const row = Math.floor(idx / portsPerRow);
-              const portSpacing = 14;
-              const rowSpacing = 14;
-              const startX = device.type === 'cloud' ? 44 : 14;
-              const startY = 80;
-              const portX = startX + col * portSpacing;
-              const portY = startY + row * rowSpacing;
-              const isConnected = port.status === 'connected';
-              const isShutdown = port.shutdown;
-              const isDeviceOffline = device.status === 'offline';
-
-              const portId = port.id.toLowerCase();
-              const isConsole = portId === 'console';
-              const isGigabit = isGigabitPort(port.id);
-              const isFastEthernet = portId.startsWith('fa');
-              const isSerial = portId.startsWith('s') && !portId.startsWith('service');
-
-              const portNum = port.label.replace(/\D/g, '');
-              let displayNum = isConsole ? 'C' : (portNum ? parseInt(portNum, 10).toString() : 'C');
-              if (device.type === 'cloud') {
-                displayNum = port.id === 'eth0' ? '1' : port.id === 'eth1' ? '2' : port.id === 'eth2' ? '3' : port.id === 'eth3' ? '4' : '1';
-              } else if (isSerial) {
-                const parts = portId.split('/');
-                displayNum = parts.length >= 3 ? `${parts[1]}/${parts[2]}` : (portNum ? parseInt(portNum, 10).toString() : 'S');
-              }
-
-              const deviceState = deviceStates?.get(device.id);
-              const simulatorPort = deviceState?.ports?.[port.id];
-              const isSTPBlocked = simulatorPort?.spanningTree?.state === 'blocking' || simulatorPort?.spanningTree?.role === 'alternate';
-              const isStartPort = isDrawingConnection && connectionStart?.deviceId === device.id && connectionStart?.portId === port.id;
-              const deviceVlan = device.vlan || simulatorPort?.accessVlan || simulatorPort?.vlan || 1;
-              const isVlan1 = deviceVlan === 1;
-              const isBlocked = isSTPBlocked && isVlan1;
-              const isTargetPort = isTargetingThisDevice && !isConnected;
-              const hasProblem = isShutdown || isDeviceOffline || isBlocked || (isConnected && !isPortConnectionHealthy(port.id));
-
-              let portFill: string;
-              let portStroke: string;
-
-              if (isStartPort) {
-                portFill = 'var(--color-success-500)';
-                portStroke = 'var(--color-success-400)';
-              } else if (isTargetPort) {
-                portFill = 'var(--color-warning-500)';
-                portStroke = 'var(--color-warning-400)';
-              } else if (isShutdown || isDeviceOffline) {
-                portFill = 'var(--color-error-500)';
-                portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)';
-              } else if (isBlocked) {
-                portFill = PORT_STP_BLOCKED;
-                portStroke = PORT_STP_BLOCKED_STROKE;
-              } else if (isConnected) {
-                if (isConsole) { portFill = 'var(--color-accent-500)'; portStroke = isDark ? 'var(--color-accent-400)' : 'var(--color-accent-400)'; }
-                else if (isGigabit) { portFill = PORT_GIGABIT_UP; portStroke = PORT_GIGABIT_UP_STROKE; }
-                else if (isFastEthernet) { portFill = 'var(--color-primary-500)'; portStroke = isDark ? 'var(--color-primary-400)' : 'var(--color-primary-400)'; }
-                else if (isSerial) { portFill = 'var(--color-success-500)'; portStroke = isDark ? 'var(--color-success-300)' : 'var(--color-success-300)'; }
-                else { portFill = 'var(--color-primary-500)'; portStroke = isDark ? 'var(--color-primary-400)' : 'var(--color-primary-400)'; }
-              } else {
-                if (isConsole) { portFill = 'var(--color-accent-500)'; portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)'; }
-                else if (isGigabit) { portFill = 'var(--color-secondary-500)'; portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)'; }
-                else if (isFastEthernet) { portFill = 'var(--color-primary-500)'; portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)'; }
-                else if (isSerial) { portFill = 'var(--color-success-500)'; portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)'; }
-                else { portFill = 'var(--color-primary-500)'; portStroke = isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-400)'; }
-              }
-
-              const hasStpInfo = isSwitchDeviceType(device.type) && simulatorPort?.spanningTree;
-              const stpRole = simulatorPort?.spanningTree?.role;
-              const roleAbbr = stpRole === 'root' ? 'RP' : stpRole === 'alternate' ? 'AP' : stpRole === 'backup' ? 'BP' : '';
-
-              return (
-                <g
-                  key={port.id}
-                  transform={`translate(${portX}, ${portY})`}
-                  style={{ cursor: isDraggingInteractionDisabled ? 'default' : 'pointer', pointerEvents: isDraggingInteractionDisabled ? 'none' : 'all' }}
-                  onMouseEnter={(e) => handlePortHover(e, device.id, port.id)}
-                  onMouseLeave={handlePortMouseLeave}
-                >
-                  {isTargetPort && (
-                    <circle
-                      r={10}
-                      className="animate-pulse"
-                      style={{ fill: 'var(--color-warning-500)', opacity: 0.3 }}
-                    />
-                  )}
-                  <circle
-                    r={7}
-                    fill="transparent"
-                    style={{ pointerEvents: isDraggingInteractionDisabled ? 'none' : 'all', cursor: isDraggingInteractionDisabled ? 'default' : 'pointer' }}
-                    onPointerDown={(e) => {
-                      e.stopPropagation();
-                      handlePortClick(e, device.id, port.id);
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                  />
-                  <circle
-                    r={6}
-                    fill={portFill}
-                    stroke={isBlocked || isTargetPort ? portStroke : getPortFrameColor(port.id, hasProblem, isConnected)}
-                    strokeWidth={isShutdown || isDeviceOffline || isConnected || isTargetPort ? 2 : 1}
-                    opacity={hasProblem && !isBlocked && !isTargetPort ? 0.45 : 1}
-                    style={{ pointerEvents: 'none' }}
-                  />
-                  <text y={1} style={{ fill: 'var(--color-background)', userSelect: 'none', pointerEvents: 'none' }} fontSize="6" textAnchor="middle" dominantBaseline="middle">
-                    {displayNum}
-                  </text>
-                  {hasStpInfo && roleAbbr && (
-                    <g transform={`translate(0, ${row === 0 ? -11 : 11})`}>
-                      <rect
-                        x="-7"
-                        y="-5"
-                        width="14"
-                        height="9"
-                        rx="2"
-                        fill={
-                          stpRole === 'root'
-                            ? 'var(--color-primary-500)'
-                            : stpRole === 'designated'
-                              ? 'var(--color-success-500)'
-                              : 'var(--color-warning-500)'
-                        }
-                        stroke={isDark ? 'var(--color-secondary-950)' : 'var(--color-secondary-50)'}
-                        strokeWidth="0.5"
-                      />
-                      <text
-                        y="-0.5"
-                        fill="white"
-                        fontSize="5"
-                        fontWeight="bold"
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                        style={{ userSelect: 'none', pointerEvents: 'none' }}
-                      >
-                        {roleAbbr}
-                      </text>
-                    </g>
-                  )}
-                </g>
-              );
-            })
-        )
-      )}
+      <DevicePorts
+        device={device}
+        deviceWidth={deviceWidth}
+        deviceHeight={deviceHeight}
+        isDark={isDark}
+        deviceStates={deviceStates}
+        deviceConnections={deviceConnections}
+        isDraggingInteractionDisabled={isDraggingInteractionDisabled}
+        isDrawingConnection={isDrawingConnection}
+        connectionStart={connectionStart}
+        isTargetingThisDevice={isTargetingThisDevice}
+        handlePortHover={handlePortHover}
+        handlePortMouseLeave={handlePortMouseLeave}
+        handlePortClick={handlePortClick}
+      />
     </g>
   );
 }, (prev, next) => {
-  // Device objects are structurally shared by the simulation. This lets an
-  // unrelated device update skip the expensive SVG subtree while still
-  // refreshing a Wi-Fi device when the topology used for signal strength changes.
   const isWifiClientDevice =
     prev.device.type === 'pc' ||
     prev.device.type === 'iot' ||
