@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import { Network, Wifi, Monitor, Eye, EyeOff } from 'lucide-react';
@@ -199,7 +199,7 @@ export function WirelessConfigTab({
                   )}
                 />
                 {wifiSSID && (
-                  <button type="button" onClick={() => { setWifiSSID(''); setWifiBSSID(''); setSsidDropdownOpen(false); }} className="text-secondary-200 hover:text-white text-xs">âœ•</button>
+                  <button type="button" onClick={() => { setWifiSSID(''); setWifiBSSID(''); setSsidDropdownOpen(false); }} className="text-secondary-200 hover:text-white text-xs">✕</button>
                 )}
                 <button type="button" onClick={() => setSsidDropdownOpen(o => !o)} className="text-secondary-200 hover:text-white text-xs">â–¾</button>
               </div>
@@ -366,7 +366,7 @@ export function WirelessConfigTab({
                     {language === 'tr' ? ch.labelTr : ch.labelEn}
                   </SelectItem>
                 ))}
-                <SelectItem value="5GHz">âš¡ 5 GHz ({language === 'tr' ? 'Varsayılan / Tüm 5G' : 'Default / All 5G'})</SelectItem>
+                <SelectItem value="5GHz">⚡ 5 GHz ({language === 'tr' ? 'Varsayılan / Tüm 5G' : 'Default / All 5G'})</SelectItem>
                 {WIRELESS_CHANNELS_5GHZ.map(ch => (
                   <SelectItem key={ch.value} value={ch.value}>
                     {language === 'tr' ? ch.labelTr : ch.labelEn}

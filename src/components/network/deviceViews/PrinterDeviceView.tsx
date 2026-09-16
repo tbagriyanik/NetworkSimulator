@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useMemo } from 'react';
 import { Printer, Server, CheckCircle2, RefreshCw, Send, HardDrive, Wifi, Radio, Power, Signal, Trash2 } from 'lucide-react';
@@ -483,7 +483,7 @@ export function PrinterDeviceView({
                   )}
                   title={isTr ? (isWifiEnabled ? 'Wi-Fi bağlantısını kapat' : 'Wi-Fi bağlantısını aç') : (isWifiEnabled ? 'Disconnect Wi-Fi' : 'Connect Wi-Fi')}
                 >
-                  <span>{isWifiEnabled ? 'âŒ' : 'âœ…'}</span>
+                  <span>{isWifiEnabled ? '❌' : '✅'}</span>
                   <span>{isWifiEnabled ? (isTr ? 'Wi-Fi Kapat' : 'Disable Wi-Fi') : (isTr ? 'Wi-Fi Aç' : 'Enable Wi-Fi')}</span>
                 </button>
               </div>

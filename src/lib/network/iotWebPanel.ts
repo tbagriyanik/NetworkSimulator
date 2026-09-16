@@ -1,4 +1,4 @@
-﻿
+
 import { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { sanitizeHTML, safeJSONForHTML } from '@/lib/security/sanitizer';
 import { colors, withAlpha } from '@/lib/design-tokens/colors';
@@ -819,7 +819,7 @@ export const generateIotDevicePageContent = (
               <div style="font-size: 12px; margin-bottom: 5px; font-weight: 500;">${isTurkish ? 'Yeni Kural Ekle:' : 'Add New Rule:'}</div>
               <div style="display: flex; flex-direction: column; gap: 8px;">
                 <div style="display: flex; align-items: center; gap: 5px;">
-                  <span style="font-size: 12px; min-width: 35px;">${isTurkish ? 'EÄER' : 'IF'}</span>
+                  <span style="font-size: 12px; min-width: 35px;">${isTurkish ? 'EĞER' : 'IF'}</span>
                   <select id="sensorSelect" style="flex: 1;">
                     ${sensorOptionsHtml}
                   </select>
@@ -927,7 +927,7 @@ export const generateIotDevicePageContent = (
 
               const delBtn = document.createElement('button');
               delBtn.className = 'delete-rule-btn';
-              delBtn.textContent = 'Ã—';
+              delBtn.textContent = '×';
               delBtn.addEventListener('click', function () {
                 deleteRule(rule.id);
               });

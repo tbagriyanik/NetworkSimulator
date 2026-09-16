@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Activity, Layers } from 'lucide-react';
 import { type BroadcastAnimTarget } from '@/hooks/networkTopology/usePingSequence';
 import { cn } from '@/lib/utils';
@@ -314,7 +314,7 @@ export function PingPacketInfoPanel({
 
             {isReturn ? (
                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0 ${isDark ? 'bg-warning-900/50 text-warning-300 border border-warning-800/40' : 'bg-warning-50 text-warning-700 border border-warning-200'}`}>
-                    â†© {isMobile ? '' : t.returnLabel}
+                    ↩ {isMobile ? '' : t.returnLabel}
                 </span>
             ) : (
                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0 ${isDark ? 'bg-accent-900/50 text-accent-300 border border-accent-800/40' : 'bg-accent-50 text-accent-700 border border-accent-200'}`}>
@@ -597,7 +597,7 @@ export function PingPacketInfoPanel({
                                                 <div className={`w-2 h-2 rounded-full flex-shrink-0 ${currentInfo.toDevice.type === 'router' ? 'bg-purple-500' : currentInfo.toDevice.type.startsWith('switch') ? 'bg-accent-500' : 'bg-primary-500'}`} />
                                             </div>
                                             {macChanged && (
-                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${isDark ? 'bg-warning-500/20 text-warning-300 border border-warning-500/30' : 'bg-warning-500/15 text-warning-700 border border-warning-500/30'}`}>âš¡ {isMobile ? '' : t.macChanged}</span>
+                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${isDark ? 'bg-warning-500/20 text-warning-300 border border-warning-500/30' : 'bg-warning-500/15 text-warning-700 border border-warning-500/30'}`}>⚡ {isMobile ? '' : t.macChanged}</span>
                                             )}
                                             {ipSame && prevInfo && !isMobile && (
                                                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${isDark ? 'bg-success-500/20 text-success-300 border border-success-500/30' : 'bg-success-500/15 text-success-700 border border-success-500/30'}`}>✓ {t.ipSame}</span>

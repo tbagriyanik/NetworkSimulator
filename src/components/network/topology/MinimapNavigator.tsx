@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { colors } from '@/lib/design-tokens/colors';
@@ -307,7 +307,7 @@ export function MinimapNavigator({
                 }`}
               >
                 <option value="all" className={isDark ? 'bg-slate-900 text-slate-200' : 'bg-white text-slate-800'}>
-                  {isTR ? 'ğŸ” Alt Ağ Odakla (Tümü)' : 'ğŸ” Focus Subnet (All)'}
+                  {isTR ? '🔍 Alt Ağ Odakla (Tümü)' : '🔍 Focus Subnet (All)'}
                 </option>
                 {detectedSubnets.map((sub) => (
                   <option key={sub} value={sub} className={isDark ? 'bg-slate-900 text-slate-200' : 'bg-white text-slate-800'}>

@@ -1,4 +1,4 @@
-﻿import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useAppStore } from '@/lib/store/appStore';
 import { CanvasDevice, CanvasConnection, FirewallRule } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
@@ -39,11 +39,11 @@ export function usePageNetworkLogic({
   setShowFirewallPanel,
   toast,
   t,
-  activeTab,
-  topologyContainerRef,
-  setZoom,
-  focusDeviceInTopology,
-  pendingFocusDeviceRef,
+  activeTab: _activeTab,
+  topologyContainerRef: _topologyContainerRef,
+  setZoom: _setZoom,
+  focusDeviceInTopology: _focusDeviceInTopology,
+  pendingFocusDeviceRef: _pendingFocusDeviceRef,
   graphicsQuality,
 }: UsePageNetworkLogicProps) {
 
@@ -258,15 +258,6 @@ export function usePageNetworkLogic({
       if (!device) return;
 
       setTopologyDevices(prev => [...prev, device]);
-      setFocusDeviceId(device.id);
-
-      if (activeTab === 'topology' && topologyContainerRef.current) {
-        setZoom(1.0); 
-        focusDeviceInTopology(device.id, 1.0, device);
-        pendingFocusDeviceRef.current = null;
-      } else {
-        pendingFocusDeviceRef.current = device.id;
-      }
 
       if (device.type === 'iot') {
         setDeviceStates(prev => {
@@ -319,7 +310,7 @@ export function usePageNetworkLogic({
 
     window.addEventListener('add-topology-device', handleAddDevice as EventListener);
     return () => window.removeEventListener('add-topology-device', handleAddDevice as EventListener);
-  }, [activeTab, setTopologyDevices, setFocusDeviceId, setZoom, focusDeviceInTopology, pendingFocusDeviceRef, setDeviceStates, topologyContainerRef]);
+  }, [setTopologyDevices, setDeviceStates]);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {

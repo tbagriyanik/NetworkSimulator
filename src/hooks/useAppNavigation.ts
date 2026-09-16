@@ -1,9 +1,11 @@
-﻿'use client';
+'use client';
 
 import { useCallback, useRef, useEffect } from 'react';
 import type { CanvasDevice, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import type { TerminalOutput } from '@/components/network/Terminal';
+
+import { useAppStore } from '@/lib/store/appStore';
 
 type TabType = 'topology' | 'cmd' | 'terminal' | 'tasks';
 
@@ -23,9 +25,11 @@ interface UseAppNavigationOptions {
 export function useAppNavigation(options: UseAppNavigationOptions) {
   const {
     setActiveTab, setActiveDeviceId, setActiveDeviceType, setSelectedDevice,
-    setZoom, setPan, topologyDevices,
+    setPan, topologyDevices,
     getOrCreatePCOutputs, getOrCreateDeviceState, getOrCreateDeviceOutputs,
   } = options;
+
+  const zoom = useAppStore(state => state.topology.zoom);
 
   const navigationHistoryRef = useRef<{ tab: TabType; deviceId?: string; program?: string }[]>([{ tab: 'topology' }]);
   const currentNavIndexRef = useRef(0);
@@ -138,7 +142,7 @@ export function useAppNavigation(options: UseAppNavigationOptions) {
       const targetDevice = deviceData ?? topologyDevices.find((device) => device.id === deviceId);
       if (!targetDevice) return;
 
-      const currentZoom = targetZoom ?? 1;
+      const currentZoom = targetZoom ?? zoom;
 
       const deviceWidth = (targetDevice.type === 'pc' || targetDevice.type === 'iot') ? 90 : targetDevice.type === 'router' ? 90 : 130;
       const portsPerRow = 8;
@@ -184,20 +188,18 @@ export function useAppNavigation(options: UseAppNavigationOptions) {
     applyDeviceSelection(device, deviceId, switchModel, deviceName);
 
     if (isNew && deviceId) {
-      setZoom(1.0);
-      focusDeviceInTopology(deviceId, 1.0, deviceData);
+      focusDeviceInTopology(deviceId, undefined, deviceData);
       pendingFocusDeviceRef.current = null;
     }
-  }, [applyDeviceSelection, focusDeviceInTopology, setZoom]);
+  }, [applyDeviceSelection, focusDeviceInTopology]);
 
   const handleDeviceSelectFromMenu = useCallback((device: DeviceType, deviceId?: string, switchModel?: string, deviceName?: string) => {
     applyDeviceSelection(device, deviceId, switchModel, deviceName);
     if (!deviceId) return;
 
-    setZoom(1.0);
-    focusDeviceInTopology(deviceId, 1.0);
+    focusDeviceInTopology(deviceId, undefined);
     pendingFocusDeviceRef.current = null;
-  }, [applyDeviceSelection, focusDeviceInTopology, setZoom]);
+  }, [applyDeviceSelection, focusDeviceInTopology]);
 
   const switchTabOrTopology = useCallback((tabId: TabType, activeDeviceId: string, _activeDeviceType: DeviceType) => {
     if (!activeDeviceId || activeDeviceId.trim() === '') {

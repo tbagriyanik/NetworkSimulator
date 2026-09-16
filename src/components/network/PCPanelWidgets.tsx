@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import type { CanvasDevice } from './NetworkTopology/types/networkTopology.types';
@@ -55,12 +55,12 @@ const getDeviceIcon = (device: CanvasDevice): string => {
     const kind = device.iot?.kind;
     const sensorType = device.iot?.sensorType;
     if (kind === 'lamp') return '💡';
-    if (kind === 'heater') return 'â™¨ï¸';
+    if (kind === 'heater') return '♨️';
     if (kind === 'cooler') return '🧊';
-    if (sensorType === 'temperature') return '🌐¡ï¸';
+    if (sensorType === 'temperature') return '🌡️';
     if (sensorType === 'humidity') return '💧';
-    if (sensorType === 'motion') return 'ğŸƒ';
-    if (sensorType === 'light') return 'â˜€ï¸';
+    if (sensorType === 'motion') return '🏃';
+    if (sensorType === 'light') return '☀️';
     if (sensorType === 'sound') return '🔊';
     return '📟';
 };

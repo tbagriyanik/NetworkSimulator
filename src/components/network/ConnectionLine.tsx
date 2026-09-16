@@ -1,4 +1,4 @@
-﻿import { colors } from '@/lib/design-tokens';
+import { colors } from '@/lib/design-tokens';
 import { getWirelessSignalStrength } from '@/lib/network/connectivity';
 import { memo } from 'react';
 import { CanvasConnection, CanvasDevice } from './NetworkTopology/types/networkTopology.types';
@@ -413,7 +413,7 @@ export const ConnectionLine = memo(function ConnectionLine({
                   fontFamily="monospace"
                   fontWeight="bold"
                 >
-                  {isEffectivelyActive ? 'âš¡ 1 Gbps | UP' : 'â›” Link DOWN'}
+                  {isEffectivelyActive ? '⚡ 1 Gbps | UP' : '⛔ Link DOWN'}
                 </text>
               </g>
             )}

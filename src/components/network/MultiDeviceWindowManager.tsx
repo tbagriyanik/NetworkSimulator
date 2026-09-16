@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import { DraggableWindowWrapper } from './DraggableWindowWrapper';
@@ -241,7 +241,7 @@ export function MultiDeviceWindowManager({
                   }}
                   className="hover:text-red-400 ml-1 rounded p-0.5"
                 >
-                  Ã—
+                  ×
                 </span>
               </button>
             );

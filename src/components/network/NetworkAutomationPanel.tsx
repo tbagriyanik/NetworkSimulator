@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Terminal, Send, Play, Copy, Check, Code, Globe, Server, CheckCircle2, RotateCcw, Sparkles } from 'lucide-react';
 import type { CanvasDevice } from './NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
@@ -301,7 +301,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
               <div className="space-y-1">
                 <label className="text-[10px] font-semibold text-slate-400 flex items-center gap-1">
                   <Sparkles className="w-3 h-3 text-amber-400" />
-                  Hazır YANG RESTCONF Åablonları:
+                  Hazır YANG RESTCONF Şablonları:
                 </label>
                 <div className="flex flex-wrap gap-1.5">
                   <button
@@ -480,7 +480,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                   <button
                     onClick={() => setPythonScript(PYTHON_TEMPLATES[selectedPythonPreset as keyof typeof PYTHON_TEMPLATES] || PYTHON_TEMPLATES.netmiko_provision)}
                     className="text-[11px] text-slate-400 hover:text-slate-200 p-1"
-                    title="Åablonu Sıfırla"
+                    title="Şablonu Sıfırla"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                   </button>

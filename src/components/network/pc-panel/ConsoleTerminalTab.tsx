@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useRef, useEffect } from 'react';
 import { Laptop, CornerDownLeft, X } from 'lucide-react';
@@ -304,7 +304,7 @@ export function ConsoleTerminalTab({
                   )}>
                     <span>{t.cmdSuggestions}</span>
                     <span className={cn("text-[10px] font-bold", isDark ? 'text-accent-300' : 'text-accent-700')}>
-                      Tab â†¹ {t.completeWithTab}
+                      Tab ⇥ {t.completeWithTab}
                     </span>
                   </div>
                   <div className="max-h-40 overflow-y-auto overflow-x-hidden mobile-scroll custom-scrollbar font-geist-mono flex flex-col">

@@ -663,7 +663,7 @@ export function TopologyToolbar({
               }}
               className="text-xs cursor-pointer"
             >
-              {language === 'tr' ? 'ğŸ›ï¸ Hiyerarşik (3-Tier)' : 'ğŸ›ï¸ Hierarchical (3-Tier)'}
+              {language === 'tr' ? '🏛️ Hiyerarşik (3-Tier)' : '🏛️ Hierarchical (3-Tier)'}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
@@ -673,7 +673,7 @@ export function TopologyToolbar({
               }}
               className="text-xs cursor-pointer"
             >
-              {language === 'tr' ? 'â­ Yıldız (Star)' : 'â­ Star Topology'}
+              {language === 'tr' ? '⭐ Yıldız (Star)' : '⭐ Star Topology'}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
@@ -683,7 +683,7 @@ export function TopologyToolbar({
               }}
               className="text-xs cursor-pointer"
             >
-              {language === 'tr' ? 'â­• Halka (Ring)' : 'â­• Ring Topology'}
+              {language === 'tr' ? '⭕ Halka (Ring)' : '⭕ Ring Topology'}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
@@ -693,7 +693,7 @@ export function TopologyToolbar({
               }}
               className="text-xs cursor-pointer"
             >
-              {language === 'tr' ? 'ğŸ“ Matris (Grid)' : 'ğŸ“ Grid Matrix'}
+              {language === 'tr' ? '📍 Matris (Grid)' : '📍 Grid Matrix'}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

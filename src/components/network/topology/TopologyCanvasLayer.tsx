@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import { CABLE_COLORS } from '../NetworkTopology/utils/networkTopology.constants';
@@ -248,52 +248,51 @@ export function TopologyCanvasLayer({
                 <g ref={svgContentGroupRef} data-content-group="true" style={{ transformOrigin: '0 0', transition: 'none', willChange: 'transform' }}>
                     <CanvasDefs isDark={isDark} canvasWidth={canvasSize.width} canvasHeight={canvasSize.height} />
 
-                    <g clipPath="url(#canvasClip)">
-                        {/* Empty State - Welcome Screen */}
-                        {devices.length === 0 && (
-                            <g className="pointer-events-none">
-                                <rect x="0" y="0" width={canvasSize.width} height={canvasSize.height} fill="transparent" />
-                                <foreignObject x="0" y="0" width={canvasSize.width} height={canvasSize.height}>
-                                    <div className="w-full h-full flex flex-col items-center justify-center pointer-events-none">
-                                        <div className={`text-center p-8 rounded-2xl max-w-md ${isDark ? 'bg-secondary-900/50 border border-secondary-700' : 'bg-white/80 border border-gray-200'}`}>
-                                            <div className="text-6xl mb-4">🌐</div>
-                                            <h2 className={`text-2xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                                                {language === 'tr' ? 'Network Simulator\'a Hoş Geldiniz' : 'Welcome to Network Simulator'}
-                                            </h2>
-                                            <p className={`text-sm mb-4 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                                                {language === 'tr'
-                                                    ? 'Ağ topolojisi oluşturmak için bir cihaz ekleyin veya örnek projelerden birini yükleyin.'
-                                                    : 'Add a device to start building your network topology or load an example project.'}
-                                            </p>
-                                            <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                                                {language === 'tr' ? '💡 İpucu: Sol üst köşedeki cihaz paletini kullanın' : '💡 Tip: Use the device palette in the top left corner'}
-                                            </div>
+                    {/* Empty State - Welcome Screen */}
+                    {devices.length === 0 && (
+                        <g className="pointer-events-none">
+                            <rect x="0" y="0" width={canvasSize.width} height={canvasSize.height} fill="transparent" />
+                            <foreignObject x="0" y="0" width={canvasSize.width} height={canvasSize.height}>
+                                <div className="w-full h-full flex flex-col items-center justify-center pointer-events-none">
+                                    <div className={`text-center p-8 rounded-2xl max-w-md ${isDark ? 'bg-secondary-900/50 border border-secondary-700' : 'bg-white/80 border border-gray-200'}`}>
+                                        <div className="text-6xl mb-4">🌐 </div>
+                                        <h2 className={`text-2xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                                            {language === 'tr' ? 'Network Simulator\'a Hoş Geldiniz' : 'Welcome to Network Simulator'}
+                                        </h2>
+                                        <p className={`text-sm mb-4 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                                            {language === 'tr'
+                                                ? 'Ağ topolojisi oluşturmak için bir cihaz ekleyin veya örnek projelerden birini yükleyin.'
+                                                : 'Add a device to start building your network topology or load an example project.'}
+                                        </p>
+                                        <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                                            {language === 'tr' ? '💡 İpucu: Sol üst köşedeki cihaz paletini kullanın' : '💡 Tip: Use the device palette in the top left corner'}
                                         </div>
                                     </div>
-                                </foreignObject>
-                            </g>
-                        )}
-                        <rect x="0" y="0" width={canvasSize.width} height={canvasSize.height} fill="url(#canvasBgGradient)" />
-                        <rect data-export-hide="true" x="0" y="0" width={canvasSize.width} height={canvasSize.height} fill="url(#canvasAmbientGlow)" />
-                        <rect data-export-hide="true" x="0" y="0" width={canvasSize.width} height={canvasSize.height} fill="url(#canvasAmbientGlowSecondary)" />
-                        <rect data-export-hide="true" x="0" y="0" width={canvasSize.width} height={canvasSize.height} fill="url(#majorGridPattern)" />
-                        <rect data-export-hide="true" x="0" y="0" width={canvasSize.width} height={canvasSize.height} fill="url(#gridPattern)" />
+                                </div>
+                            </foreignObject>
+                        </g>
+                    )}
+                    <rect x="0" y="0" width={canvasSize.width} height={canvasSize.height} fill="url(#canvasBgGradient)" />
+                    <rect data-export-hide="true" x="0" y="0" width={canvasSize.width} height={canvasSize.height} fill="url(#canvasAmbientGlow)" />
+                    <rect data-export-hide="true" x="0" y="0" width={canvasSize.width} height={canvasSize.height} fill="url(#canvasAmbientGlowSecondary)" />
+                    <rect data-export-hide="true" x="0" y="0" width={canvasSize.width} height={canvasSize.height} fill="url(#majorGridPattern)" />
+                    <rect data-export-hide="true" x="0" y="0" width={canvasSize.width} height={canvasSize.height} fill="url(#gridPattern)" />
 
-                        <EnvironmentBackgrounds environment={environment} isDark={isDark} t={t} />
+                    <EnvironmentBackgrounds environment={environment} isDark={isDark} t={t} />
 
-                        {/* VLAN, OSPF, BGP Area Overlay Highlighting */}
-                        <TopologyAreaOverlay
-                            devices={devices}
-                            deviceStates={deviceStates}
-                            overlayMode={preferences.areaOverlayMode || 'none'}
-                            zoom={zoom}
-                            isDark={isDark}
-                        />
+                    {/* VLAN, OSPF, BGP Area Overlay Highlighting */}
+                    <TopologyAreaOverlay
+                        devices={devices}
+                        deviceStates={deviceStates}
+                        overlayMode={preferences.areaOverlayMode || 'none'}
+                        zoom={zoom}
+                        isDark={isDark}
+                    />
 
-                        {/* Notes are intentionally below cables and devices in SVG paint order. */}
-                        {visibleNotes.map((note) => (
+                    {/* Notes are intentionally below cables and devices in SVG paint order. */}
+                    {visibleNotes.map((note) => (
+                        <React.Fragment key={note.id}>
                             <NoteNode
-                                key={note.id}
                                 note={note}
                                 isDark={isDark}
                                 selectedNoteIds={selectedNoteIds}
@@ -323,100 +322,103 @@ export function TopologyCanvasLayer({
                                 handleNoteResizeTouchStart={handleNoteResizeTouchStart}
                                 bringNoteToFront={bringNoteToFront}
                             />
-                        ))}
+                        </React.Fragment>
+                    ))}
 
-                        {visibleConnections.map((conn) => {
-                            const sourceDevice = deviceMap.get(conn.sourceDeviceId);
-                            const targetDevice = deviceMap.get(conn.targetDeviceId);
-                            if (!sourceDevice || !targetDevice) return null;
+                    {visibleConnections.map((conn) => {
+                        const sourceDevice = deviceMap.get(conn.sourceDeviceId);
+                        const targetDevice = deviceMap.get(conn.targetDeviceId);
+                        if (!sourceDevice || !targetDevice) return null;
 
-                            const ids = connectionGroups.get(getDevicePairKey(conn.sourceDeviceId, conn.targetDeviceId)) ?? [];
-                            const rawIndex = ids.indexOf(conn.id);
-                            const sameConnIndex = rawIndex >= 0 ? rawIndex : 0;
-                            const totalSameConns = ids.length || 1;
+                        const ids = connectionGroups.get(getDevicePairKey(conn.sourceDeviceId, conn.targetDeviceId)) ?? [];
+                        const rawIndex = ids.indexOf(conn.id);
+                        const sameConnIndex = rawIndex >= 0 ? rawIndex : 0;
+                        const totalSameConns = ids.length || 1;
 
-                            const sourcePos = getPortPosition(sourceDevice, conn.sourcePort);
-                            const targetPos = getPortPosition(targetDevice, conn.targetPort);
-                            const margin = 80;
-                            const currentPan = pan ?? { x: 0, y: 0 };
-                            const sourceScreenX = sourcePos.x * zoom + currentPan.x;
-                            const sourceScreenY = sourcePos.y * zoom + currentPan.y;
-                            const targetScreenX = targetPos.x * zoom + currentPan.x;
-                            const targetScreenY = targetPos.y * zoom + currentPan.y;
-                            const isVisibleInViewport = canvasSize.width > 0 && canvasSize.height > 0 && (
-                                (sourceScreenX + margin >= 0 && sourceScreenX - margin <= canvasSize.width && sourceScreenY + margin >= 0 && sourceScreenY - margin <= canvasSize.height) ||
-                                (targetScreenX + margin >= 0 && targetScreenX - margin <= canvasSize.width && targetScreenY + margin >= 0 && targetScreenY - margin <= canvasSize.height)
-                            );
+                        const sourcePos = getPortPosition(sourceDevice, conn.sourcePort);
+                        const targetPos = getPortPosition(targetDevice, conn.targetPort);
 
-                            return (
-                                <React.Fragment key={`connection-group-${conn.id}`}>
-                                    <ConnectionLine
-                                        connection={conn}
-                                        sourceDevice={sourceDevice}
-                                        targetDevice={targetDevice}
-                                        isDark={isDark}
-                                        isDragging={isActuallyDragging || isTouchDragging}
-                                        totalSameConns={totalSameConns}
-                                        sameConnIndex={sameConnIndex}
-                                        getPortPosition={getPortPosition}
-                                        CABLE_COLORS={CABLE_COLORS}
-                                        zoom={zoom}
-                                        graphicsQuality={graphicsQuality}
-                                        showAnimation={isVisibleInViewport}
-                                        showLabel={preferences.showPortLabels}
-                                        isHovered={hoveredConnectionId === conn.id || activeCaptureConnectionId === conn.id}
-                                        onMouseEnter={(e: React.MouseEvent<SVGPathElement>) => handleConnectionMouseEnter(e, conn.id, sourceDevice.name, conn.sourcePort, targetDevice.name, conn.targetPort, conn.cableType, getConnectionStatusMessage(conn, devices, language))}
-                                        onMouseLeave={handleConnectionMouseLeave}
-                                        onClick={(e: React.MouseEvent) => handleConnectionClick(e, conn.id)}
-                                        deviceStates={deviceStates}
-                                        topologyDevices={devices}
-                                    />
-                                    <ConnectionHandle
-                                        connection={conn}
-                                        sourceDevice={sourceDevice}
-                                        targetDevice={targetDevice}
-                                        isDark={isDark}
-                                        sameConnIndex={sameConnIndex}
-                                        totalSameConns={totalSameConns}
-                                        getPortPosition={getPortPosition}
-                                        onDelete={onDeleteConnection}
-                                    />
-                                </React.Fragment>
-                            );
-                        })}
+                        const margin = 80;
+                        const currentPan = pan ?? { x: 0, y: 0 };
+                        const sourceScreenX = sourcePos.x * zoom + currentPan.x;
+                        const sourceScreenY = sourcePos.y * zoom + currentPan.y;
+                        const targetScreenX = targetPos.x * zoom + currentPan.x;
+                        const targetScreenY = targetPos.y * zoom + currentPan.y;
+                        const isVisibleInViewport = canvasSize.width > 0 && canvasSize.height > 0 && (
+                            (sourceScreenX + margin >= 0 && sourceScreenX - margin <= canvasSize.width && sourceScreenY + margin >= 0 && sourceScreenY - margin <= canvasSize.height) ||
+                            (targetScreenX + margin >= 0 && targetScreenX - margin <= canvasSize.width && targetScreenY + margin >= 0 && targetScreenY - margin <= canvasSize.height)
+                        );
 
-                        <TempConnection
-                            isDrawingConnection={isDrawingConnection}
-                            connectionStart={connectionStart}
-                            mousePos={mousePos}
-                            cableInfo={cableInfo}
-                            CABLE_COLORS={CABLE_COLORS}
-                        />
+                        return (
+                            <React.Fragment key={`connection-group-${conn.id}`}>
+                                <ConnectionLine
+                                    connection={conn}
+                                    sourceDevice={sourceDevice}
+                                    targetDevice={targetDevice}
+                                    isDark={isDark}
+                                    isDragging={isActuallyDragging || isTouchDragging}
+                                    totalSameConns={totalSameConns}
+                                    sameConnIndex={sameConnIndex}
+                                    getPortPosition={getPortPosition}
+                                    CABLE_COLORS={CABLE_COLORS}
+                                    zoom={zoom}
+                                    graphicsQuality={graphicsQuality}
+                                    showAnimation={isVisibleInViewport}
+                                    showLabel={preferences.showPortLabels}
+                                    isHovered={hoveredConnectionId === conn.id || activeCaptureConnectionId === conn.id}
+                                    onMouseEnter={(e: React.MouseEvent<SVGPathElement>) => handleConnectionMouseEnter(e, conn.id, sourceDevice.name, conn.sourcePort, targetDevice.name, conn.targetPort, conn.cableType, getConnectionStatusMessage(conn, devices, language))}
+                                    onMouseLeave={handleConnectionMouseLeave}
+                                    onClick={(e: React.MouseEvent) => handleConnectionClick(e, conn.id)}
+                                    deviceStates={deviceStates}
+                                    topologyDevices={devices}
+                                />
+                                <ConnectionHandle
+                                    connection={conn}
+                                    sourceDevice={sourceDevice}
+                                    targetDevice={targetDevice}
+                                    isDark={isDark}
+                                    sameConnIndex={sameConnIndex}
+                                    totalSameConns={totalSameConns}
+                                    getPortPosition={getPortPosition}
+                                    onDelete={onDeleteConnection}
+                                />
+                            </React.Fragment>
+                        );
+                    })}
 
-                        {devicesSortedForRender.map((device) => (
-                            <React.Fragment key={device.id}>{renderDevice(device, false)}</React.Fragment>
-                        ))}
+                    <TempConnection
+                        isDrawingConnection={isDrawingConnection}
+                        connectionStart={connectionStart}
+                        mousePos={mousePos}
+                        cableInfo={cableInfo}
+                        CABLE_COLORS={CABLE_COLORS}
+                    />
 
-                        <PingAnimationOverlay
-                            pingAnimation={pingAnimation}
-                            deviceMap={deviceMap}
-                            connections={connections}
-                            getPortPosition={getPortPosition}
-                            getDeviceCenter={getDeviceCenter}
-                            graphicsQuality={graphicsQuality}
-                            isDark={isDarkForPing}
-                            t={tForPing}
-                            handleEnvelopeClick={handleEnvelopeClick}
-                        />
+                    {devicesSortedForRender.map((device) => (
+                        <React.Fragment key={device.id}>
+                            {renderDevice(device, false)}
+                        </React.Fragment>
+                    ))}
 
-                        {selectionBox && (
-                            <SelectionBoxOverlay selectionBox={selectionBox} isDark={isDark} zoom={zoom} selectedDeviceCount={selectedDeviceIds.length} />
-                        )}
-                    </g>
+                    <PingAnimationOverlay
+                        pingAnimation={pingAnimation}
+                        deviceMap={deviceMap}
+                        connections={connections}
+                        getPortPosition={getPortPosition}
+                        getDeviceCenter={getDeviceCenter}
+                        graphicsQuality={graphicsQuality}
+                        isDark={isDarkForPing}
+                        t={tForPing}
+                        handleEnvelopeClick={handleEnvelopeClick}
+                    />
+
+                    {selectionBox && (
+                        <SelectionBoxOverlay selectionBox={selectionBox} isDark={isDark} zoom={zoom} selectedDeviceCount={selectedDeviceIds.length} />
+                    )}
 
                     <rect data-export-hide="true" x="0" y="0" width={canvasSize.width} height={canvasSize.height} fill="none" stroke={isDark ? 'var(--color-primary-600)' : 'var(--color-primary-700)'} strokeWidth={2 / zoom} strokeDasharray={`${6 / zoom},${4 / zoom}`} opacity={0.7} />
                     <text data-export-hide="true" x={canvasSize.width - 80} y={canvasSize.height - 10} style={{ fill: 'var(--color-secondary-500)', fontFamily: 'var(--font-geist-mono)' }} fontSize={12 / zoom}>
-                        {canvasSize.width} Ã— {canvasSize.height}
+                        {canvasSize.width} × {canvasSize.height}
                     </text>
                 </g>
             </svg>

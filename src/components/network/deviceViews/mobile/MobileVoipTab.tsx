@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { PhoneCall, PhoneOff, Phone, User, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -291,7 +291,7 @@ export function MobileVoipTab({
                     <div className="truncate">
                       <div className="font-medium text-slate-200 flex items-center gap-1 truncate">
                         <span className={item.type === 'outgoing' ? "text-sky-400 font-bold" : "text-emerald-400 font-bold"}>
-                          {item.type === 'outgoing' ? 'â†—' : 'â†™'}
+                          {item.type === 'outgoing' ? '↗' : '↙'}
                         </span>
                         {item.peerName}
                       </div>

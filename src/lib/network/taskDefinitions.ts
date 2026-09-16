@@ -1,4 +1,4 @@
-﻿// Task definitions with descriptions and tips
+// Task definitions with descriptions and tips
 import { SwitchState, CableInfo } from './types';
 import { CanvasConnection, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
@@ -178,8 +178,8 @@ export const securityTasks: TaskDefinition[] = [
   },
   {
     id: 'password-encryption',
-    name: { tr: 'Åifre Åifreleme', en: 'Password Encryption' },
-    description: { tr: 'Åifreleri şifreli olarak saklayın', en: 'Store passwords in encrypted form' },
+    name: { tr: 'Şifre Şifreleme', en: 'Password Encryption' },
+    description: { tr: 'Şifreleri şifreli olarak saklayın', en: 'Store passwords in encrypted form' },
     tip: { tr: 'service password-encryption komutu ile', en: 'Use service password-encryption command' },
     weight: 15,
     checkFn: (state) => state.security?.servicePasswordEncryption,

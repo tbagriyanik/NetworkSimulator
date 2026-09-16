@@ -1,4 +1,4 @@
-﻿import { createInitialRouterState } from '../initialState';
+import { createInitialRouterState } from '../initialState';
 import { createPcDevice, createRouterDevice, baseProjectData } from './helpers';
 ;
 import type { CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
@@ -142,7 +142,7 @@ const example = (isTr: boolean): ExampleProject => {
       ? 'Router access point mode ile kablosuz istemci bağlantısı sağlanır.'
       : 'Router configured as access point for wireless client connectivity.',
     detail: isTr
-      ? 'SSID: HomeWiFi, Åifre: yok (open), Router AP mode'
+      ? 'SSID: HomeWiFi, Şifre: yok (open), Router AP mode'
       : 'SSID: HomeWiFi, Password: none (open), Router AP mode',
     level: 'intermediate',
     data: baseProjectData(wifiDevices, wifiConnections, wifiNotes, [

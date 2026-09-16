@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { CanvasDevice } from './NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
@@ -151,7 +151,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
         <h1>🔧 ${safeDeviceName}</h1>
         <div class="subtitle">${isTurkish ? 'Kablosuz Ağ Yönetimi & Çoklu SSID Kapısı' : 'Wireless Network Administration & Multi-SSID Portal'}</div>
         <div class="device-info">
-          <span>ğŸ“ IP: ${safeDeviceIp}</span>
+          <span>📍 IP: ${safeDeviceIp}</span>
           <span>📡 WLAN Interface: wlan0</span>
         </div>
       </div>
@@ -163,7 +163,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
     <div class="nav-tabs">
       <button type="button" class="nav-tab${activeTab === 'wireless' ? ' active' : ''}" data-tab="wireless">📶 ${isTurkish ? 'Kablosuz & Çoklu SSID' : 'Wireless & Multi-SSID'}</button>
       <button type="button" class="nav-tab${activeTab === 'status' ? ' active' : ''}" data-tab="status">📊 ${isTurkish ? 'Durum & Bağlı Cihazlar' : 'Status & Connected Clients'}</button>
-      <button type="button" class="nav-tab${activeTab === 'advanced' ? ' active' : ''}" data-tab="advanced">âš™ï¸ ${isTurkish ? 'Gelişmiş' : 'Advanced'}</button>
+      <button type="button" class="nav-tab${activeTab === 'advanced' ? ' active' : ''}" data-tab="advanced">⚙️ ${isTurkish ? 'Gelişmiş' : 'Advanced'}</button>
       <button type="button" class="nav-tab${activeTab === 'iot' ? ' active' : ''}" data-tab="iot">🛠️ ${isTurkish ? 'IoT Cihazları' : 'IoT Devices'}</button>
       <button type="button" class="nav-tab${activeTab === 'admin' ? ' active' : ''}" data-tab="admin">👤 ${isTurkish ? 'Yönetici' : 'Admin'}</button>
     </div>
@@ -382,7 +382,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
             <div style="display:flex;gap:20px;">
               <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
                 <input type="radio" name="macFilterMode" value="allow" ${wifi.macFilterMode !== 'deny' ? 'checked' : ''}>
-                <span>âœ… ${isTurkish ? 'İzin Ver (Yalnızca listedeki MAC adreslerine izin ver)' : 'Allow (Allow only MAC addresses in list)'}</span>
+                <span>✅ ${isTurkish ? 'İzin Ver (Yalnızca listedeki MAC adreslerine izin ver)' : 'Allow (Allow only MAC addresses in list)'}</span>
               </label>
               <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
                 <input type="radio" name="macFilterMode" value="deny" ${wifi.macFilterMode === 'deny' ? 'checked' : ''}>

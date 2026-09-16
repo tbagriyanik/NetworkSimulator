@@ -1,4 +1,4 @@
-﻿import { useCallback } from 'react';
+import { useCallback } from 'react';
 import { CanvasDevice, CanvasNote, CanvasConnection, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { generateRandomLinkLocalIpv4, generateRandomLinkLocalIpv6 } from '@/lib/network/linkLocal';
 import { getDeviceWidth, getDeviceHeight } from '@/components/network/NetworkTopology/utils/networkTopology.helpers';
@@ -549,7 +549,7 @@ export function useCanvasActions({
 
           const activeServices = getActiveServicesForDevice(d, deviceState);
           if (activeServices.length > 0) {
-            summaryText += `    âš™ï¸ ${isTr ? 'Servisler' : 'Services'}: ${activeServices.join(', ')}\n`;
+            summaryText += `    ⚙️ ${isTr ? 'Servisler' : 'Services'}: ${activeServices.join(', ')}\n`;
           }
 
           const cliCmds = getCliCommandsForDevice(d, deviceState);

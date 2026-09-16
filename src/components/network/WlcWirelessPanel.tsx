@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -166,7 +166,7 @@ export function WlcWirelessPanel({
                                 onChange={(e) => setWlanSecurity(e.target.value as 'open' | 'wpa2' | 'wpa3' | '802.1x')}
                                 disabled={isDevicePoweredOff || busy}
                             >
-                                <option value="open" className={isDark ? 'bg-secondary-800 text-secondary-100' : 'bg-white text-secondary-900'}>{tr('Open (None)', 'Açık (Åifresiz)')}</option>
+                                <option value="open" className={isDark ? 'bg-secondary-800 text-secondary-100' : 'bg-white text-secondary-900'}>{tr('Open (None)', 'Açık (Şifresiz)')}</option>
                                 <option value="wpa2" className={isDark ? 'bg-secondary-800 text-secondary-100' : 'bg-white text-secondary-900'}>{tr('WPA2-PSK (AES)', 'WPA2-PSK (AES)')}</option>
                                 <option value="wpa3" className={isDark ? 'bg-secondary-800 text-secondary-100' : 'bg-white text-secondary-900'}>{tr('WPA3-SAE (Personal)', 'WPA3-SAE (Kişisel)')}</option>
                                 <option value="802.1x" className={isDark ? 'bg-secondary-800 text-secondary-100' : 'bg-white text-secondary-900'}>{tr('WPA2/WPA3 Enterprise (802.1X)', 'WPA2/WPA3 Kurumsal (802.1X)')}</option>
@@ -279,7 +279,7 @@ export function WlcWirelessPanel({
                 </CardHeader>
                 <CardContent>
                     {connectedClients.length === 0 ? (
-                        <p className={`text-xs ${muted}`}>{tr('No wireless clients currently connected.', 'Åu anda bağlı kablosuz cihaz yok.')}</p>
+                        <p className={`text-xs ${muted}`}>{tr('No wireless clients currently connected.', 'Şu anda bağlı kablosuz cihaz yok.')}</p>
                     ) : (
                         <div className="space-y-2">
                             {connectedClients.map((client) => {
@@ -333,7 +333,7 @@ export function WlcWirelessPanel({
                                             <Badge variant="outline" className="text-[10px] py-0 px-1 font-mono">{ap.model || 'NS-AP3702I'}</Badge>
                                         </div>
                                         <div className={`text-xs ${muted} font-mono mt-0.5`}>
-                                            MAC: {ap.macAddress} · {tr('Mode: Local', 'Mod: Local')} · {tr('Tunnel: CAPWAP Data Encrypt', 'Tünel: CAPWAP Veri Åifreleme')}
+                                            MAC: {ap.macAddress} · {tr('Mode: Local', 'Mod: Local')} · {tr('Tunnel: CAPWAP Data Encrypt', 'Tünel: CAPWAP Veri Şifreleme')}
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-1.5">
