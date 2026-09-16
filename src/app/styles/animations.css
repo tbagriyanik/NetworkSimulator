@@ -1,0 +1,130 @@
+/* Network Simulator Animations */
+/* Ping and IoT Animation Definitions */
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes motion-ping {
+  0% {
+    transform: scale(0.5);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+@keyframes sound-pulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes cable-source-scale {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.333);
+  }
+}
+
+@keyframes cable-end-scale {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.25);
+  }
+}
+
+@keyframes ping-trail-opacity {
+  0%, 100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@keyframes ping-glow-opacity {
+  0%, 100% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes ping-glow-opacity-low {
+  0%, 100% {
+    opacity: 0.08;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
+/* Animation Classes */
+.ping-envelope {
+  will-change: opacity;
+  animation: pulse-subtle 2s ease-in-out infinite;
+  transition: all 0.2s ease;
+}
+
+.iot-sound-pulse {
+  will-change: transform, opacity;
+  animation: sound-pulse 2s ease-in-out infinite;
+}
+
+.iot-motion-ping {
+  will-change: transform, opacity;
+  animation: motion-ping 1.5s ease-out infinite;
+}
+
+.iot-motion-ping-delayed {
+  will-change: transform, opacity;
+  animation: motion-ping 1.5s ease-out infinite;
+  animation-delay: 0.75s;
+}
+
+.animate-cable-source {
+  will-change: transform;
+  animation: cable-source-scale 1.5s ease-in-out infinite;
+}
+
+.animate-cable-end {
+  will-change: transform;
+  animation: cable-end-scale 1.5s ease-in-out infinite;
+}
+
+.animate-ping-trail {
+  will-change: opacity;
+  animation: ping-trail-opacity 1.5s ease-in-out infinite;
+}
+
+.animate-ping-glow {
+  will-change: opacity;
+  animation: ping-glow-opacity 1.5s ease-in-out infinite;
+}
+
+.animate-ping-glow-low {
+  will-change: opacity;
+  animation: ping-glow-opacity-low 1.5s ease-in-out infinite;
+}
+
+.ping-element {
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}

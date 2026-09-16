@@ -1,0 +1,40 @@
+/* Network Simulator High Contrast Theme */
+/* High contrast mode for accessibility */
+
+.dark.high-contrast {
+  --background: #000000;
+  --foreground: #ffffff;
+  --card: #000000;
+  --card-foreground: #ffffff;
+  --popover: #000000;
+  --popover-foreground: #ffffff;
+  --primary: #ffffff;
+  --primary-foreground: #000000;
+  --secondary: #ffffff;
+  --secondary-foreground: #000000;
+  --muted: #1a1a1a;
+  --muted-foreground: #ffffff;
+  --accent: #ffffff;
+  --accent-foreground: #000000;
+  --destructive: #ff0000;
+  --destructive-foreground: #ffffff;
+  --border: #ffffff;
+  --input: #ffffff;
+  --ring: #ffffff;
+  --chart-1: #00ffff;
+  --chart-2: #00ff00;
+  --chart-3: #ffff00;
+  --chart-4: #ff00ff;
+  --chart-5: #ff0000;
+  --note-purple: 300 100% 50%;
+  --note-red: 0 100% 50%;
+  --note-blue: 180 100% 50%;
+  --note-green: 120 100% 50%;
+  
+  /* Canvas background gradient stops (high contrast dark mode) */
+  --canvas-bg-0: #000000;
+  --canvas-bg-1: #0a0a0a;
+  --canvas-bg-2: #141414;
+  --canvas-bg-3: #1a1a1a;
+  --canvas-bg-4: #000000;
+}

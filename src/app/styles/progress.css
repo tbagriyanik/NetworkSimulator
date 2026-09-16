@@ -1,0 +1,15 @@
+/* Network Simulator Progress Styles */
+/* Progress bar fill animation */
+
+@keyframes progress-width-fill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: var(--progress-width, 100%);
+  }
+}
+
+.progress-fill {
+  animation: progress-width-fill 0.3s ease-out forwards;
+}

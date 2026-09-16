@@ -294,6 +294,9 @@ export function buildRunningConfig(state: SwitchState): string[] {
                 if (c.matchRules.interface) lines.push(` match interface ${c.matchRules.interface}`);
                 if (c.setRules.metric !== undefined) lines.push(` set metric ${c.setRules.metric}`);
                 if (c.setRules.nextHop) lines.push(` set ip next-hop ${c.setRules.nextHop}`);
+                if (c.setRules.interface) lines.push(` set interface ${c.setRules.interface}`);
+                if (c.setRules.precedence !== undefined) lines.push(` set ip precedence ${c.setRules.precedence}`);
+                if (c.setRules.dscp !== undefined) lines.push(` set ip dscp ${c.setRules.dscp}`);
                 if (c.setRules.localPreference !== undefined) lines.push(` set local-preference ${c.setRules.localPreference}`);
                 if (c.setRules.weight !== undefined) lines.push(` set weight ${c.setRules.weight}`);
                 if (Array.isArray(c.setRules.asPathPrepend) && c.setRules.asPathPrepend.length) lines.push(` set as-path prepend ${c.setRules.asPathPrepend.join(' ')}`);
@@ -584,6 +587,10 @@ export function buildRunningConfig(state: SwitchState): string[] {
             }
             if (port.ipv6DhcpServer) {
                 lines.push(` ipv6 dhcp server ${port.ipv6DhcpServer}`);
+            }
+            // PBR (Policy-Based Routing)
+            if (port.policyRouteMap) {
+                lines.push(` ip policy route-map ${port.policyRouteMap}`);
             }
             // HSRP (Standby)
             if (port.hsrp?.groups) {

@@ -6,6 +6,7 @@ import { cmdShowMonitor } from '@/lib/network/core/showCommands';
 import type { CommandContext } from '@/lib/network/core/commandTypes';
 import { buildRunningConfig } from '@/lib/network/core/configBuilder';
 import { runHopPipeline } from '@/lib/network/forwarding/packetPipeline';
+import type { NetworkPacketFrame } from '@/lib/network/forwarding/packetFrame';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/networkTopology.types';
 
 describe('portMirroring (SPAN / RSPAN)', () => {
@@ -99,14 +100,14 @@ describe('portMirroring (SPAN / RSPAN)', () => {
     setSpanSourceInterface(state, 1, port1);
     setSpanDestinationInterface(state, 1, port3);
 
-    const frame: any = {
+    const frame: NetworkPacketFrame = {
       id: 'frame-1',
       timestamp: Date.now(),
       srcMac: '00:00:00:00:00:01',
       dstMac: '00:00:00:00:00:02',
       srcIp: '10.0.0.1',
       dstIp: '10.0.0.2',
-      protocol: 'IP',
+      protocol: 'IPV4',
       etherType: '0x0800',
       length: 64,
       info: 'IP packet',
@@ -179,14 +180,14 @@ describe('portMirroring (SPAN / RSPAN)', () => {
     setSpanSourceInterface(state, 1, port1);
     setSpanRemoteVlan(state, 1, 100, false);
 
-    const frame: any = {
+    const frame: NetworkPacketFrame = {
       id: 'frame-rspan',
       timestamp: Date.now(),
       srcMac: '00:00:00:00:00:01',
       dstMac: '00:00:00:00:00:02',
       srcIp: '10.0.0.1',
       dstIp: '10.0.0.2',
-      protocol: 'IP',
+      protocol: 'IPV4',
       etherType: '0x0800',
       length: 64,
       info: 'IP packet',
@@ -232,13 +233,14 @@ describe('portMirroring (SPAN / RSPAN)', () => {
     setSpanRemoteVlan(state, 1, 100, true);
     setSpanDestinationInterface(state, 1, port2);
 
-    const frame: any = {
+    const frame: NetworkPacketFrame = {
       id: 'frame-rspan-dst',
       timestamp: Date.now(),
       srcMac: '00:00:00:00:00:01',
       dstMac: 'ff:ff:ff:ff:ff:ff',
-      data: 'Mirrored frame',
-      protocol: 'IP',
+      srcIp: '10.0.1.1',
+      dstIp: '10.0.1.2',
+      protocol: 'IPV4',
       etherType: '0x0800',
       length: 64,
       info: 'RSPAN mirrored frame',

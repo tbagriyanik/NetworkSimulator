@@ -82,7 +82,7 @@ export function generateIotPanelStyles(): string {
     }
     .login-button {
       background-color: var(--color-success-500);
-      color: white;
+      color: ${colors.common.white};
       border: none;
       border-radius: 5px;
       padding: 12px 25px;
@@ -236,7 +236,7 @@ export function generateIotPanelStyles(): string {
     }
     .connect-button {
       background-color: var(--color-primary-500);
-      color: white;
+      color: ${colors.common.white};
       border: none;
       border-radius: 5px;
       padding: 8px 15px;
@@ -261,7 +261,7 @@ export function generateIotPanelStyles(): string {
       top: 20px;
       right: 20px;
       background-color: var(--color-error-500);
-      color: white;
+      color: ${colors.common.white};
       border: none;
       border-radius: 5px;
       padding: 8px 15px;
@@ -278,7 +278,7 @@ export function generateIotPanelStyles(): string {
       top: 20px;
       right: 20px;
       background-color: var(--color-secondary-500);
-      color: white;
+      color: ${colors.common.white};
       border: none;
       border-radius: 5px;
       padding: 8px 12px;
@@ -343,7 +343,7 @@ export function generateIotPanelStyles(): string {
     .settings-button {
       width: 100%;
       background-color: var(--color-primary-500);
-      color: white;
+      color: ${colors.common.white};
       border: none;
       border-radius: 5px;
       padding: 8px 12px;

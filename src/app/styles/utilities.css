@@ -1,0 +1,31 @@
+/* Network Simulator Utility Classes */
+/* Custom utility classes and font definitions */
+
+@layer utilities {
+  .font-inria {
+    font-family: var(--font-inria-sans);
+  }
+
+  .font-geist-mono {
+    font-family: var(--font-geist-mono), "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  }
+
+  /* Unified hover surface for toolbar/header icon buttons */
+  .ui-hover-surface {
+    @apply transition-colors duration-150 hover:bg-secondary-100 dark:hover:bg-secondary-800;
+  }
+
+  /* Safe-area padding utilities for notch/home-bar devices */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .px-safe {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+}

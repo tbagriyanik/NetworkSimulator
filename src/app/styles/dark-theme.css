@@ -1,0 +1,40 @@
+/* Network Simulator Dark Theme */
+/* Dark mode color variables and canvas background */
+
+.dark {
+  --background: #09090b;
+  --foreground: #fafafa;
+  --card: #09090b;
+  --card-foreground: #fafafa;
+  --popover: #09090b;
+  --popover-foreground: #fafafa;
+  --primary: #fafafa;
+  --primary-foreground: #18181b;
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --accent: #27272a;
+  --accent-foreground: #fafafa;
+  --destructive: #7f1d1d;
+  --destructive-foreground: #fafafa;
+  --border: #27272a;
+  --input: #27272a;
+  --ring: #d4d4d8;
+  --chart-1: #3b82f6;
+  --chart-2: #10b981;
+  --chart-3: #f59e0b;
+  --chart-4: #8b5cf6;
+  --chart-5: #f43f5e;
+  --note-purple: 270 60% 70%;
+  --note-red: 0 70% 70%;
+  --note-blue: 220 70% 70%;
+  --note-green: 120 60% 60%;
+  
+  /* Canvas background gradient stops (dark mode) */
+  --canvas-bg-0: #1d2a4a;
+  --canvas-bg-1: #17223d;
+  --canvas-bg-2: #121a31;
+  --canvas-bg-3: #0e1427;
+  --canvas-bg-4: #080c1a;
+}

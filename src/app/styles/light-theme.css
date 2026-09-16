@@ -1,0 +1,41 @@
+/* Network Simulator Light Theme */
+/* Light mode color variables and canvas background */
+
+:root {
+  --background: #ffffff;
+  --foreground: #09090b;
+  --card: #ffffff;
+  --card-foreground: #09090b;
+  --popover: #ffffff;
+  --popover-foreground: #09090b;
+  --primary: #18181b;
+  --primary-foreground: #fafafa;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #f4f4f5;
+  --accent-foreground: #18181b;
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #3b82f6;
+  --chart-1: #f97316;
+  --chart-2: #06b6d4;
+  --chart-3: #18181b;
+  --chart-4: #eab308;
+  --chart-5: #f97316;
+  --note-purple: 270 70% 50%;
+  --note-red: 0 80% 60%;
+  --note-blue: 220 80% 50%;
+  --note-green: 120 70% 40%;
+  --radius: 0.5rem;
+  
+  /* Canvas background gradient stops (light mode) */
+  --canvas-bg-0: #f7f9ff;
+  --canvas-bg-1: #eef3fe;
+  --canvas-bg-2: #e3ebfa;
+  --canvas-bg-3: #d7e3f7;
+  --canvas-bg-4: #ccd9f3;
+}

@@ -154,7 +154,7 @@ export const generateIotWebPanelContent = (
           }
           .login-button {
             background-color: var(--color-success-500);
-            color: white;
+            color: ${colors.common.white};
             border: none;
             border-radius: 5px;
             padding: 12px 25px;
@@ -313,7 +313,7 @@ export const generateIotWebPanelContent = (
           }
           .connect-button {
             background-color: var(--color-primary-500);
-            color: white;
+            color: ${colors.common.white};
             border: none;
             border-radius: 5px;
             padding: 8px 15px;
@@ -338,7 +338,7 @@ export const generateIotWebPanelContent = (
             top: 20px;
             right: 20px;
             background-color: var(--color-error-500);
-            color: white;
+            color: ${colors.common.white};
             border: none;
             border-radius: 5px;
             padding: 8px 15px;
@@ -355,7 +355,7 @@ export const generateIotWebPanelContent = (
             top: 20px;
             right: 20px;
             background-color: var(--color-secondary-500);
-            color: white;
+            color: ${colors.common.white};
             border: none;
             border-radius: 5px;
             padding: 8px 12px;
@@ -420,7 +420,7 @@ export const generateIotWebPanelContent = (
           .settings-button {
             width: 100%;
             background-color: var(--color-primary-500);
-            color: white;
+            color: ${colors.common.white};
             border: none;
             border-radius: 5px;
             padding: 8px 12px;
@@ -660,7 +660,7 @@ export const generateIotDevicePageContent = (
             width: 26px;
             left: 4px;
             bottom: 4px;
-            background-color: white;
+            background-color: ${colors.common.white};
             transition: .4s;
             border-radius: 50%;
           }
@@ -698,7 +698,7 @@ export const generateIotDevicePageContent = (
           }
           .back-button {
             background-color: var(--color-secondary-500);
-            color: white;
+            color: ${colors.common.white};
             border: none;
             border-radius: 5px;
             padding: 12px 25px;
@@ -743,7 +743,7 @@ export const generateIotDevicePageContent = (
           }
           .add-rule-btn {
             background: var(--color-primary-500);
-            color: white;
+            color: ${colors.common.white};
             border: none;
             padding: 8px;
             border-radius: 4px;

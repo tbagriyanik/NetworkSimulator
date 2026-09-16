@@ -1,0 +1,13 @@
+/* Network Simulator Selection Styles */
+/* Text selection and highlighting colors */
+
+/* Metin seçme rengi */
+::selection {
+  background-color: hsl(142, 76%, 36%);
+  color: hsl(0, 0%, 100%);
+}
+
+::-moz-selection {
+  background-color: hsl(142, 76%, 36%);
+  color: hsl(0, 0%, 100%);
+}
