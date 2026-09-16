@@ -49,6 +49,7 @@ export interface TopologyCanvasLayerProps {
     iotUpdateTrigger: number;
     graphicsQuality: 'high' | 'low';
     zoom: number;
+    pan?: { x: number; y: number };
     environment: { background?: 'none' | 'house' | 'twoStoryGarage' | 'greenhouse' } | null;
     t: Record<string, string>;
     language: 'tr' | 'en';
@@ -128,6 +129,7 @@ export function TopologyCanvasLayer({
     iotUpdateTrigger: _iotUpdateTrigger,
     graphicsQuality,
     zoom,
+    pan,
     environment,
     t,
     language,
@@ -212,23 +214,7 @@ export function TopologyCanvasLayer({
                     resetView();
                 } else {
                     setZoom(1.0);
-                    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
-                    const topMargin = isMobile ? 110 : 55;
-                    const sideMargin = isMobile ? 16 : 24;
-                    if (devices.length === 0 && notes.length === 0) {
-                        setPan({ x: sideMargin, y: topMargin });
-                    } else {
-                        const minDeviceX = devices.length ? Math.min(...devices.map(d => d.x)) : Infinity;
-                        const minDeviceY = devices.length ? Math.min(...devices.map(d => d.y)) : Infinity;
-                        const minNoteX = notes.length ? Math.min(...notes.map(n => n.x)) : Infinity;
-                        const minNoteY = notes.length ? Math.min(...notes.map(n => n.y)) : Infinity;
-                        const minX = Math.min(minDeviceX, minNoteX);
-                        const minY = Math.min(minDeviceY, minNoteY);
-                        setPan({
-                            x: sideMargin - minX,
-                            y: topMargin - minY
-                        });
-                    }
+                    setPan({ x: 0, y: 0 });
                 }
             }}
             onClick={() => {
@@ -349,6 +335,19 @@ export function TopologyCanvasLayer({
                             const sameConnIndex = rawIndex >= 0 ? rawIndex : 0;
                             const totalSameConns = ids.length || 1;
 
+                            const sourcePos = getPortPosition(sourceDevice, conn.sourcePort);
+                            const targetPos = getPortPosition(targetDevice, conn.targetPort);
+                            const margin = 80;
+                            const currentPan = pan ?? { x: 0, y: 0 };
+                            const sourceScreenX = sourcePos.x * zoom + currentPan.x;
+                            const sourceScreenY = sourcePos.y * zoom + currentPan.y;
+                            const targetScreenX = targetPos.x * zoom + currentPan.x;
+                            const targetScreenY = targetPos.y * zoom + currentPan.y;
+                            const isVisibleInViewport = canvasSize.width > 0 && canvasSize.height > 0 && (
+                                (sourceScreenX + margin >= 0 && sourceScreenX - margin <= canvasSize.width && sourceScreenY + margin >= 0 && sourceScreenY - margin <= canvasSize.height) ||
+                                (targetScreenX + margin >= 0 && targetScreenX - margin <= canvasSize.width && targetScreenY + margin >= 0 && targetScreenY - margin <= canvasSize.height)
+                            );
+
                             return (
                                 <React.Fragment key={`connection-group-${conn.id}`}>
                                     <ConnectionLine
@@ -363,6 +362,7 @@ export function TopologyCanvasLayer({
                                         CABLE_COLORS={CABLE_COLORS}
                                         zoom={zoom}
                                         graphicsQuality={graphicsQuality}
+                                        showAnimation={isVisibleInViewport}
                                         showLabel={preferences.showPortLabels}
                                         isHovered={hoveredConnectionId === conn.id || activeCaptureConnectionId === conn.id}
                                         onMouseEnter={(e: React.MouseEvent<SVGPathElement>) => handleConnectionMouseEnter(e, conn.id, sourceDevice.name, conn.sourcePort, targetDevice.name, conn.targetPort, conn.cableType, getConnectionStatusMessage(conn, devices, language))}

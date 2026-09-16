@@ -457,6 +457,7 @@ export function TopologyCanvasArea(props: TopologyCanvasAreaProps) {
             iotUpdateTrigger={iotUpdateTrigger}
             graphicsQuality={graphicsQuality}
             zoom={zoom}
+            pan={pan}
             environment={environment}
             t={t}
             language={language}

@@ -14,6 +14,25 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  /* Global scrollbar styling: 30% thinner scrollbars */
+  ::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.5);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(107, 114, 128, 0.8);
+  }
+
   /* Improved focus styles for accessibility */
   *:focus-visible {
     outline: 2px solid hsl(var(--ring));

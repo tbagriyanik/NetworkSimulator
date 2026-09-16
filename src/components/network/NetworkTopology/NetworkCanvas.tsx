@@ -32,6 +32,7 @@ export const NetworkCanvas: React.FC<any> = ({
   iotUpdateTrigger,
   graphicsQuality,
   zoom,
+  pan,
   environment,
   t,
   language,
@@ -114,6 +115,7 @@ export const NetworkCanvas: React.FC<any> = ({
         iotUpdateTrigger={iotUpdateTrigger}
         graphicsQuality={graphicsQuality}
         zoom={zoom}
+        pan={pan}
         environment={environment}
         t={t}
         language={language}

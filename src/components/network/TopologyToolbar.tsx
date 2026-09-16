@@ -530,7 +530,7 @@ export function TopologyToolbar({
                 : 'text-secondary-500 hover:bg-secondary-500/10'}`}
               onClick={() => setSimulationMode(!isSimulationMode)}
             >
-              <Activity className={`w-4 h-4 ${isSimulationMode ? 'animate-pulse' : ''} ${toolbarGlowClass}`} />
+              <Activity className={`w-4 h-4 ${toolbarGlowClass}`} />
             </Button>
           </TooltipTrigger>
           <TooltipContent className="flex items-center gap-2">

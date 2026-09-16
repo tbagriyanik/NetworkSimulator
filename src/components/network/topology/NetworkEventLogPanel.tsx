@@ -98,14 +98,14 @@ export function NetworkEventLogPanel({ isOpen, onClose, isDark }: NetworkEventLo
       <div className="flex flex-col flex-1 min-h-0 h-full overflow-hidden">
         {/* Filter Bar */}
         <div className={cn(
-          "p-2.5 flex items-center justify-between border-b gap-2 shrink-0",
+          "p-2 flex items-center justify-between border-b gap-1.5 shrink-0 overflow-x-auto",
           isDark ? "border-slate-800 bg-slate-800/50" : "border-slate-100 bg-slate-50"
         )}>
-          <div className="flex items-center gap-1 flex-1 min-w-0">
-            <Filter className={cn("w-4 h-4 mr-1 shrink-0", isDark ? "text-slate-400" : "text-slate-500")} />
+          <div className="flex items-center gap-1.5 flex-1 min-w-0">
+            <Filter className={cn("w-3.5 h-3.5 shrink-0", isDark ? "text-slate-400" : "text-slate-500")} />
             <Select value={filter} onValueChange={(val) => setFilter(val as 'all' | 'error' | 'warning' | 'info')}>
               <SelectTrigger className={cn(
-                "h-8 text-xs font-medium border px-2.5 py-1 flex-1 min-w-0 cursor-pointer shadow-sm tracking-wide",
+                "h-7 text-[11px] font-medium border px-1.5 py-0.5 flex-1 min-w-0 cursor-pointer shadow-sm tracking-tight truncate",
                 isDark
                   ? "bg-slate-900 border-slate-700 text-slate-100 hover:border-slate-600 focus:ring-1 focus:ring-primary/60"
                   : "bg-white border-slate-300 text-slate-800 hover:border-slate-400 focus:ring-1 focus:ring-primary/60"
@@ -124,7 +124,7 @@ export function NetworkEventLogPanel({ isOpen, onClose, isDark }: NetworkEventLo
             </Select>
             <Select value={categoryFilter} onValueChange={(val) => setCategoryFilter(val as string)}>
               <SelectTrigger className={cn(
-                "h-8 text-xs font-medium border px-2.5 py-1 w-[118px] shrink-0 cursor-pointer shadow-sm tracking-wide",
+                "h-7 text-[11px] font-medium border px-1.5 py-0.5 flex-1 min-w-0 cursor-pointer shadow-sm tracking-tight truncate",
                 isDark
                   ? "bg-slate-900 border-slate-700 text-slate-100 hover:border-slate-600 focus:ring-1 focus:ring-primary/60"
                   : "bg-white border-slate-300 text-slate-800 hover:border-slate-400 focus:ring-1 focus:ring-primary/60"
@@ -145,7 +145,7 @@ export function NetworkEventLogPanel({ isOpen, onClose, isDark }: NetworkEventLo
           <Button
             variant="outline"
             size="sm"
-            className="h-7 text-xs shrink-0"
+            className="h-7 text-[11px] px-2 shrink-0"
             onClick={clearLogs}
             disabled={logs.length === 0}
           >

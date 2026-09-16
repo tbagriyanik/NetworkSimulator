@@ -175,34 +175,12 @@ export function useCanvasZoomPan({
     }, 80);
   }, []);  // Empty deps - uses only refs, stable for the lifetime of the component
 
-  // Reset view
+  // Reset view to (0,0) at top-left corner
   const resetView = useCallback(() => {
     setZoom(DEFAULT_ZOOM);
-    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
-    // Keep the reset viewport clear of the fixed topology toolbar. The
-    // toolbar is taller on desktop than the old 55px margin assumed.
-    const topMargin = 110;
-    const sideMargin = isMobile ? 16 : 24;
-
-    if (devices.length === 0 && notes.length === 0) {
-      setPan({ x: isMobile ? sideMargin : sideMargin, y: isMobile ? topMargin : topMargin });
-      return;
-    }
-
-    const minDeviceX = devices.length ? Math.min(...devices.map(d => d.x)) : Infinity;
-    const minDeviceY = devices.length ? Math.min(...devices.map(d => d.y)) : Infinity;
-    const minNoteX = notes.length ? Math.min(...notes.map(n => n.x)) : Infinity;
-    const minNoteY = notes.length ? Math.min(...notes.map(n => n.y)) : Infinity;
-
-    const minX = Math.min(minDeviceX, minNoteX);
-    const minY = Math.min(minDeviceY, minNoteY);
-
-    setPan({
-      x: sideMargin - minX * DEFAULT_ZOOM,
-      y: topMargin - minY * DEFAULT_ZOOM
-    });
+    setPan({ x: 0, y: 0 });
     window.scrollTo(0, 0);
-  }, [devices, notes, setZoom, setPan]);
+  }, [setZoom, setPan]);
 
   const [isDraggingZoom, setIsDraggingZoom] = useState(false);
   const zoomDragRef = useRef({ isDragging: false, startX: 0, startZoom: 1 });

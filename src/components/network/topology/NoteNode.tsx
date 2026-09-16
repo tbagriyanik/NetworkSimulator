@@ -399,6 +399,10 @@ export const NoteNode = memo(function NoteNode({
               // böylece canvas sürüklenmez ama scrollbar çalışır
               e.stopPropagation();
             }}
+            onPointerDown={(e) => {
+              // Fare veya dokunmatik ile scrollbar tutamacına basıldığında kapsayıcının (onPointerDown) notu sürüklemesini engeller
+              e.stopPropagation();
+            }}
             onTouchStart={(e) => {
               // Mobilde textarea'ya dokunuş - drag'i durdur
               e.stopPropagation();

@@ -195,11 +195,12 @@ export function NetworkTopologyPortSelectorModal({
                     const isSelectedSource = selectedSourcePort?.deviceId === device.id && selectedSourcePort?.portId === port.id && selectedSourcePort?.portId !== '';
                     
                     // In the first step (source selection):
-                    // If we already predefined the source device (e.g. from mobile tap-tap), 
+                    // If we already predefined the source device with a selected portId, 
                     // then only that source device's ports should be enabled. All other devices' ports are disabled.
-                    // If selectedSourcePort is null (e.g. opened from toolbar), any device's ports are enabled.
+                    // If selectedSourcePort is null or has empty portId, any device's ports are enabled.
+                    const hasValidSourcePort = selectedSourcePort && selectedSourcePort.portId !== '';
                     const isSelectable = portSelectorStep === 'source'
-                      ? (selectedSourcePort ? selectedSourcePort.deviceId === device.id : true)
+                      ? (hasValidSourcePort ? selectedSourcePort.deviceId === device.id : true)
                       : (selectedSourcePort ? selectedSourcePort.deviceId !== device.id : true);
 
                     const pid = port.id.toLowerCase();
