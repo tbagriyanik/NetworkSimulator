@@ -32,18 +32,18 @@ const example = (isTr: boolean): ExampleProject => {
     id: 'trouble-ivr',
     tag: isTr ? 'ARIZA' : 'TROUBLE',
     title: isTr ? 'Bozuk Inter-VLAN' : 'Broken Inter-VLAN',
-    description: isTr ? 'VLANlar arasÄ± iletiÅŸim saÄŸlanamÄ±yor. Trunk hattÄ±nÄ± kontrol edin.' : 'Inter-VLAN communication is failing. Check the trunk line.',
+    description: isTr ? 'VLANlar arası iletişim sağlanamıyor. Trunk hattını kontrol edin.' : 'Inter-VLAN communication is failing. Check the trunk line.',
     level: 'intermediate',
     injectedFaults: [
       {
         id: 'fault-ivr-trunk',
         deviceId: 'switch-1',
         faultType: 'wrongVlan',
-        description: { tr: 'Gi0/1 portu trunk modunda deÄŸil.', en: 'Port Gi0/1 is not in trunk mode.' },
+        description: { tr: 'Gi0/1 portu trunk modunda değil.', en: 'Port Gi0/1 is not in trunk mode.' },
         configKey: 'ports.gi0/1.mode',
         faultValue: 'access',
         correctValue: 'trunk',
-        hint: { tr: 'Switch-Router arasÄ± baÄŸlantÄ± trunk olmalÄ±dÄ±r.', en: 'Connection between Switch and Router must be trunk.' }
+        hint: { tr: 'Switch-Router arası bağlantı trunk olmalıdır.', en: 'Connection between Switch and Router must be trunk.' }
       }
     ],
     data: baseProjectData(ivrDevices, ivrConnections, [], [

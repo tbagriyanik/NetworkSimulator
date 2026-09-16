@@ -60,7 +60,7 @@ export function PhysicalDeviceView({
     if (powerOn) {
       setPowerError(
         isTR
-          ? 'GÃ¼venlik UyarÄ±sÄ±: ModÃ¼l takmadan Ã¶nce cihazÄ±n gÃ¼Ã§ anahtarÄ±nÄ± (Power Switch) KAPATIN!'
+          ? 'Güvenlik Uyarısı: Modül takmadan önce cihazın güç anahtarını (Power Switch) KAPATIN!'
           : 'Safety Warning: Turn the device power OFF before inserting expansion cards!'
       );
       return;
@@ -80,7 +80,7 @@ export function PhysicalDeviceView({
     if (powerOn) {
       setPowerError(
         isTR
-          ? 'GÃ¼venlik UyarÄ±sÄ±: ModÃ¼l Ã§Ä±karmadan Ã¶nce cihazÄ±n gÃ¼Ã§ anahtarÄ±nÄ± (Power Switch) KAPATIN!'
+          ? 'Güvenlik Uyarısı: Modül çıkarmadan önce cihazın güç anahtarını (Power Switch) KAPATIN!'
           : 'Safety Warning: Turn the device power OFF before removing expansion cards!'
       );
       return;
@@ -107,12 +107,12 @@ export function PhysicalDeviceView({
               </span>
               <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${powerOn ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
                 }`}>
-                {powerOn ? (isTR ? 'GÃœÃ‡ AÃ‡IK' : 'POWER ON') : (isTR ? 'GÃœÃ‡ KAPALI' : 'POWER OFF')}
+                {powerOn ? (isTR ? 'GÜÇ AÇIK' : 'POWER ON') : (isTR ? 'GÜÇ KAPALI' : 'POWER OFF')}
               </span>
             </div>
             <div className="text-xs text-slate-400">
               {isTR
-                ? 'DonanÄ±m YuvalarÄ± (Slots) & WIC/HWIC/SFP ModÃ¼l YÃ¶netimi'
+                ? 'Donanım Yuvaları (Slots) & WIC/HWIC/SFP Modül Yönetimi'
                 : 'Chassis Slots & WIC/HWIC/SFP Module Management'}
             </div>
           </div>
@@ -122,10 +122,10 @@ export function PhysicalDeviceView({
         <div className="flex items-center gap-3">
           <div className="text-right">
             <div className="text-[11px] font-semibold text-slate-400">
-              {isTR ? 'Åasi GÃ¼Ã§ AnahtarÄ±' : 'Chassis Power Switch'}
+              {isTR ? 'Åasi Güç Anahtarı' : 'Chassis Power Switch'}
             </div>
             <div className="text-[10px] text-slate-500">
-              {isTR ? '(ModÃ¼l deÄŸiÅŸimi iÃ§in kapatÄ±n)' : '(Turn off for hot-swap)'}
+              {isTR ? '(Modül değişimi için kapatın)' : '(Turn off for hot-swap)'}
             </div>
           </div>
           <button
@@ -250,14 +250,14 @@ export function PhysicalDeviceView({
                         className="mt-2 w-full py-1 text-[10px] font-bold text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded flex items-center justify-center gap-1 transition-colors"
                       >
                         <Trash2 className="w-3 h-3" />
-                        <span>{isTR ? 'ModÃ¼lÃ¼ Ã‡Ä±kar' : 'Remove Module'}</span>
+                        <span>{isTR ? 'Modülü Çıkar' : 'Remove Module'}</span>
                       </button>
                     </div>
                   ) : (
                     <div className="my-4 flex flex-col items-center justify-center text-center text-slate-500 space-y-1">
                       <Plus className="w-5 h-5 text-slate-400 group-hover:text-primary-400 transition-colors" />
                       <span className="text-[10px] font-medium group-hover:text-slate-300">
-                        {isTR ? 'Kart Takmak Ä°Ã§in TÄ±kla' : 'Click to Insert Card'}
+                        {isTR ? 'Kart Takmak İçin Tıkla' : 'Click to Insert Card'}
                       </span>
                     </div>
                   )}
@@ -275,13 +275,13 @@ export function PhysicalDeviceView({
           <div className="flex items-center gap-2">
             <Layers className="w-4 h-4 text-primary-400" />
             <h4 className="text-xs font-bold uppercase tracking-wider">
-              {isTR ? 'KullanÄ±labilir GeniÅŸletme ModÃ¼lleri (Module Catalog)' : 'Available Expansion Modules'}
+              {isTR ? 'Kullanılabilir Genişletme Modülleri (Module Catalog)' : 'Available Expansion Modules'}
             </h4>
           </div>
           <span className="text-[10px] text-slate-400">
             {selectedSlot
-              ? (isTR ? `SeÃ§ili Yuva: Slot 0/${selectedSlot}` : `Target: Slot 0/${selectedSlot}`)
-              : (isTR ? 'LÃ¼tfen yukarÄ±dan boÅŸ bir yuva seÃ§in' : 'Select an empty bay above to install')}
+              ? (isTR ? `Seçili Yuva: Slot 0/${selectedSlot}` : `Target: Slot 0/${selectedSlot}`)
+              : (isTR ? 'Lütfen yukarıdan boş bir yuva seçin' : 'Select an empty bay above to install')}
           </span>
         </div>
 
@@ -339,7 +339,7 @@ export function PhysicalDeviceView({
             </h4>
           </div>
           <span className="text-[11px] font-mono text-slate-400">
-            {device.ports?.length || 0} {isTR ? 'Port KayÄ±tlÄ±' : 'Ports Active'}
+            {device.ports?.length || 0} {isTR ? 'Port Kayıtlı' : 'Ports Active'}
           </span>
         </div>
 
@@ -348,8 +348,8 @@ export function PhysicalDeviceView({
             <thead className={isDark ? 'bg-slate-900/90 text-slate-400' : 'bg-slate-100 text-slate-600'}>
               <tr>
                 <th className="p-2">Port ID</th>
-                <th className="p-2">{isTR ? 'TÃ¼r' : 'Type'}</th>
-                <th className="p-2">{isTR ? 'HÄ±z' : 'Speed'}</th>
+                <th className="p-2">{isTR ? 'Tür' : 'Type'}</th>
+                <th className="p-2">{isTR ? 'Hız' : 'Speed'}</th>
                 <th className="p-2">{isTR ? 'Mod' : 'Mode'}</th>
                 <th className="p-2">{isTR ? 'Durum' : 'Status'}</th>
               </tr>
@@ -369,7 +369,7 @@ export function PhysicalDeviceView({
                       <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold ${isConn ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-500'
                         }`}>
                         {isConn ? <CheckCircle2 className="w-2.5 h-2.5" /> : null}
-                        {isConn ? (isTR ? 'BaÄŸlÄ±' : 'Connected') : (isTR ? 'BoÅŸ' : 'Unused')}
+                        {isConn ? (isTR ? 'Bağlı' : 'Connected') : (isTR ? 'Boş' : 'Unused')}
                       </span>
                     </td>
                   </tr>

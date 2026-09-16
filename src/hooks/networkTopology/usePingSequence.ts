@@ -105,7 +105,7 @@ export const buildBroadcastAnimTargets = ({
     const neighbor = deviceMap.get(neighborId);
     if (!neighbor || neighbor.status === 'offline') continue;
 
-    // Hub: L1 flood â€” no STP, no VLAN filtering applied
+    // Hub: L1 flood — no STP, no VLAN filtering applied
     if (!isHub) {
       const simPort = switchState?.ports?.[portId];
       const isSTPBlocked = simPort?.spanningTree?.state === 'blocking' || simPort?.spanningTree?.role === 'alternate';
@@ -244,8 +244,8 @@ export function usePingSequence(deps: PingSequenceDeps) {
     const targetIp = getDevicePrimaryIp(targetId);
     if (!isIpValid(sourceIp) || !isIpValid(targetIp)) {
       const errorMessage = !isIpValid(sourceIp)
-        ? (isTR ? 'Kaynak cihazÄ±n IP adresi geÃ§ersiz' : 'Source device IP is invalid')
-        : (isTR ? 'Hedef cihazÄ±n IP adresi geÃ§ersiz' : 'Target device IP is invalid');
+        ? (isTR ? 'Kaynak cihazın IP adresi geçersiz' : 'Source device IP is invalid')
+        : (isTR ? 'Hedef cihazın IP adresi geçersiz' : 'Target device IP is invalid');
 
       setPingAnimation({
         sourceId,
@@ -262,7 +262,7 @@ export function usePingSequence(deps: PingSequenceDeps) {
         broadcastAnim: [],
         broadcastProgress: 0
       });
-      setErrorToast({ message: isTR ? 'Ping baÅŸarÄ±sÄ±z!' : 'Ping failed!', details: errorMessage });
+      setErrorToast({ message: isTR ? 'Ping başarısız!' : 'Ping failed!', details: errorMessage });
       pingCleanupTimeoutRef.current = setTimeout(() => { setPingAnimation(null); setPingMode(false); }, 3000);
       return;
     }
@@ -310,7 +310,7 @@ export function usePingSequence(deps: PingSequenceDeps) {
 
     if (!connectivity.success) {
       const diagnostics = getPingDiagnostics(sourceId, targetIp, devices, connections, deviceStates, isTR ? 'tr' : 'en', { protocol: 'icmp' });
-      const errorMessage = diagnostics.reasons?.length > 0 ? diagnostics.reasons[0] : (isTR ? 'Ping baÅŸarÄ±sÄ±z' : 'Ping failed');
+      const errorMessage = diagnostics.reasons?.length > 0 ? diagnostics.reasons[0] : (isTR ? 'Ping başarısız' : 'Ping failed');
       const partialPath = connectivity.hopIds?.length >= 1 ? connectivity.hopIds : [sourceId];
       pingPathRef.current = partialPath;
       setHopPacketInfos(buildHopPacketInfosFn(partialPath, devices, connections, targetIp));
@@ -357,14 +357,14 @@ export function usePingSequence(deps: PingSequenceDeps) {
           pingResumeCallbackRef.current = () => { startTime = Date.now(); pingAnimationRef.current = requestAnimationFrame(animateFailed); };
           if (pingIsPausedRef.current) return;
           if (partialPath.some((id: string) => !latestDevicesRef.current.find(dd => dd.id === id) || latestDevicesRef.current.find(dd => dd.id === id)?.status === 'offline')) {
-            cancelPingDueToInterruptionRef.current?.(isTR ? 'Cihaz kapatÄ±ldÄ±ÄŸÄ± iÃ§in ping iptal edildi.' : 'Ping cancelled because a device was powered off.');
+            cancelPingDueToInterruptionRef.current?.(isTR ? 'Cihaz kapatıldığı için ping iptal edildi.' : 'Ping cancelled because a device was powered off.');
             return;
           }
           const fromId = partialPath[currentHop];
           const toId = partialPath[currentHop + 1];
           if (!toId) {
             flushSync(() => { setPingAnimation((prev: PingAnimationState | null) => prev ? { ...prev, success: false, isPaused: false } : null); });
-            setErrorToast({ message: isTR ? 'Ping baÅŸarÄ±sÄ±z!' : 'Ping failed!', details: errorMessage });
+            setErrorToast({ message: isTR ? 'Ping başarısız!' : 'Ping failed!', details: errorMessage });
             setPingMode(false);
             return;
           }
@@ -373,7 +373,7 @@ export function usePingSequence(deps: PingSequenceDeps) {
               (c.sourceDeviceId === toId && c.targetDeviceId === fromId)) && c.active !== false
           );
           if (!failedSegConn && !isWirelessHop(fromId, toId)) {
-            cancelPingDueToInterruptionRef.current?.(isTR ? 'BaÄŸlantÄ± koptuÄŸu iÃ§in ping iptal edildi.' : 'Ping cancelled because a connection was lost.');
+            cancelPingDueToInterruptionRef.current?.(isTR ? 'Bağlantı koptuğu için ping iptal edildi.' : 'Ping cancelled because a connection was lost.');
             return;
           }
           const fromDev = deviceMap.get(fromId);
@@ -410,7 +410,7 @@ export function usePingSequence(deps: PingSequenceDeps) {
             dispatchCapturedPackets(lastFailedHopPackets);
           }
           flushSync(() => { setPingAnimation((prev: PingAnimationState | null) => prev ? { ...prev, currentHopIndex: currentHop, progress: 1, frame: frameCount, success: false, isPaused: false } : null); });
-          setErrorToast({ message: isTR ? 'Ping baÅŸarÄ±sÄ±z!' : 'Ping failed!', details: errorMessage });
+          setErrorToast({ message: isTR ? 'Ping başarısız!' : 'Ping failed!', details: errorMessage });
           setPingMode(false);
         };
 
@@ -461,10 +461,10 @@ export function usePingSequence(deps: PingSequenceDeps) {
     }
 
     if (!path || path.length < 2) {
-      const errorMessage = isTR ? 'Fiziksel baÄŸlantÄ± yok' : 'No physical connection';
+      const errorMessage = isTR ? 'Fiziksel bağlantı yok' : 'No physical connection';
       setHopPacketInfos([]);
       setPingAnimation({ sourceId, targetId, path: [sourceId], currentHopIndex: 0, progress: 0, success: false, frame: 0, error: errorMessage, hopCount: 0, isPaused: false, showPacketPanel: shouldOpenPanel, broadcastTargets: [], broadcastAnim: [], broadcastProgress: 0 });
-      setErrorToast({ message: isTR ? 'Ping baÅŸarÄ±sÄ±z!' : 'Ping failed!', details: errorMessage });
+      setErrorToast({ message: isTR ? 'Ping başarısız!' : 'Ping failed!', details: errorMessage });
       pingCleanupTimeoutRef.current = setTimeout(() => { setPingAnimation(null); setPingMode(false); setErrorToast(null); }, 3000);
       return;
     }
@@ -614,7 +614,7 @@ export function usePingSequence(deps: PingSequenceDeps) {
       pingResumeCallbackRef.current = () => { startTime = Date.now(); pingAnimationRef.current = requestAnimationFrame(animate); };
       if (pingIsPausedRef.current) return;
       if (path.some((id: string) => !latestDevicesRef.current.find(dd => dd.id === id) || latestDevicesRef.current.find(dd => dd.id === id)?.status === 'offline')) {
-        cancelPingDueToInterruptionRef.current?.(isTR ? 'Cihaz kapatÄ±ldÄ±ÄŸÄ± iÃ§in ping iptal edildi.' : 'Ping cancelled because a device was powered off.');
+        cancelPingDueToInterruptionRef.current?.(isTR ? 'Cihaz kapatıldığı için ping iptal edildi.' : 'Ping cancelled because a device was powered off.');
         return;
       }
       const currentFromId = path[currentHop];
@@ -625,7 +625,7 @@ export function usePingSequence(deps: PingSequenceDeps) {
             (c.sourceDeviceId === currentToId && c.targetDeviceId === currentFromId)) && c.active !== false
         );
         if (!segmentConn && !isWirelessHop(currentFromId, currentToId)) {
-          cancelPingDueToInterruptionRef.current?.(isTR ? 'BaÄŸlantÄ± koptuÄŸu iÃ§in ping iptal edildi.' : 'Ping cancelled because a connection was lost.');
+          cancelPingDueToInterruptionRef.current?.(isTR ? 'Bağlantı koptuğu için ping iptal edildi.' : 'Ping cancelled because a connection was lost.');
           return;
         }
       }

@@ -619,9 +619,9 @@ export function usePCPanelDhcp({
     } else {
       if (lease && lease.serverName === 'link-local' && prevIpConfigModeRef.current !== 'dhcp') {
         toast({
-          title: language === 'tr' ? 'DHCP bulunamadÄ±' : 'DHCP not found',
+          title: language === 'tr' ? 'DHCP bulunamadı' : 'DHCP not found',
           description: language === 'tr'
-            ? `Link-local IP atandÄ±: ${lease.ip}`
+            ? `Link-local IP atandı: ${lease.ip}`
             : `Assigned link-local IP: ${lease.ip}`,
         });
       } else if (prevIpConfigModeRef.current !== 'dhcp') {
@@ -631,11 +631,11 @@ export function usePCPanelDhcp({
           let errorMessage = t.dhcpFailureDescription;
           if (dhcpCheck.reason === 'all_pools_full') {
             errorMessage = language === 'tr'
-              ? 'DHCP havuzlarÄ± dolu! Maksimum IP sayÄ±sÄ±na ulaÅŸÄ±ldÄ±.'
+              ? 'DHCP havuzları dolu! Maksimum IP sayısına ulaşıldı.'
               : 'All DHCP pools are full! Maximum number of IP addresses reached.';
           } else if (dhcpCheck.reason === 'no_dhcp_service') {
             errorMessage = language === 'tr'
-              ? 'AÄŸda DHCP hizmeti bulunamadÄ±! LÃ¼tfen bir DHCP sunucusu yapÄ±landÄ±rÄ±n.'
+              ? 'Ağda DHCP hizmeti bulunamadı! Lütfen bir DHCP sunucusu yapılandırın.'
               : 'No DHCP service found on the network! Please configure a DHCP server.';
           }
           toast({

@@ -157,7 +157,7 @@ export function validateVlanAndL2(deps: L2ChecksDeps): L2ChecksResult {
             hopIds: path.slice(0, i + 2),
             targetId: targetDevice.id,
             error: language === 'tr'
-              ? `Trunk kurulamadÄ±: ${a.name} ${aPortId} ve ${b.name} ${bPortId} portlarÄ±nÄ±n ikisi de trunk modunda olmalÄ±.`
+              ? `Trunk kurulamadı: ${a.name} ${aPortId} ve ${b.name} ${bPortId} portlarının ikisi de trunk modunda olmalı.`
               : `Trunk failed: both ${a.name} ${aPortId} and ${b.name} ${bPortId} must be in trunk mode.`
           }
         };
@@ -174,7 +174,7 @@ export function validateVlanAndL2(deps: L2ChecksDeps): L2ChecksResult {
               hopIds: path.slice(0, i + 2),
               targetId: targetDevice.id,
               error: language === 'tr'
-                ? `Trunk VLAN filtresi: ${a.name} ${aPortId} ve ${b.name} ${bPortId} Ã¼zerinde VLAN ${activeVlan} izinli deÄŸil.`
+                ? `Trunk VLAN filtresi: ${a.name} ${aPortId} ve ${b.name} ${bPortId} üzerinde VLAN ${activeVlan} izinli değil.`
                 : `Trunk VLAN filter: VLAN ${activeVlan} is not allowed on ${a.name} ${aPortId} or ${b.name} ${bPortId}.`
             }
           };

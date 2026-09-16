@@ -1,5 +1,5 @@
 ﻿/**
- * flexLinks.ts â€” Flex-Links Engine
+ * flexLinks.ts — Flex-Links Engine
  *
  * Implements Flex-Links: a pair of Layer 2 interfaces where one
  * acts as the active link and the other as a standby backup.
@@ -53,7 +53,7 @@ export function evaluateFlexLinks(
       const previousActiveState = port.flexLinkActive;
 
       if (primaryUp) {
-        // Primary is up â†’ primary active, backup standby
+        // Primary is up → primary active, backup standby
         if (port.flexLinkActive !== true || backupPort.flexLinkActive !== false) {
           newState.ports[portId] = { ...port, flexLinkActive: true };
           newState.ports[backupPortId] = { ...backupPort, flexLinkActive: false };
@@ -72,7 +72,7 @@ export function evaluateFlexLinks(
           stateModified = true;
         }
       } else {
-        // Both down â€” primary remains designated active (just both down)
+        // Both down — primary remains designated active (just both down)
         if (port.flexLinkActive === undefined) {
           newState.ports[portId] = { ...port, flexLinkActive: true };
           newState.ports[backupPortId] = { ...backupPort, flexLinkActive: false };

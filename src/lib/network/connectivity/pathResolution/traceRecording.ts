@@ -69,7 +69,7 @@ export function recordTrace(deps: TraceRecordingDeps): TraceRecordingResult {
               hops: path.slice(0, i + 1).map(id => deviceMap.get(id)?.name || id),
               hopIds: path.slice(0, i + 1),
               targetId: targetDevice.id,
-              error: language === 'tr' ? 'ICMP Zaman AÅŸÄ±mÄ± (TTL exceeded)' : 'ICMP Time Exceeded (TTL expired)'
+              error: language === 'tr' ? 'ICMP Zaman Aşımı (TTL exceeded)' : 'ICMP Time Exceeded (TTL expired)'
             }
           };
         }
@@ -261,7 +261,7 @@ export function recordTrace(deps: TraceRecordingDeps): TraceRecordingResult {
         hopIds: path,
         targetId: targetDevice.id,
         error: language === 'tr'
-          ? 'Console baÄŸlantÄ±sÄ± Ã¼zerinden ping yapÄ±lamaz.'
+          ? 'Console bağlantısı üzerinden ping yapılamaz.'
           : 'Ping cannot be sent over a console connection.'
       }
     };

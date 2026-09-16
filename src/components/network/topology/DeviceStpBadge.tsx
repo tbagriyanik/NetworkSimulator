@@ -41,7 +41,7 @@ export function DeviceStpBadge({ device, deviceWidth, isDark, deviceStates }: De
           dominantBaseline="middle"
           style={{ userSelect: 'none', pointerEvents: 'none' }}
         >
-          ğŸ‘‘ ROOT
+          👑 ROOT
         </text>
       </g>
     );

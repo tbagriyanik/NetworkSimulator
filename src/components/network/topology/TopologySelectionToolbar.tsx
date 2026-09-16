@@ -97,10 +97,10 @@ export const TopologySelectionToolbar: React.FC<TopologySelectionToolbarProps> =
         </button>
       </TooltipWrapper>
 
-      {/* SaÄŸa Hizala (Align Right) */}
-      <TooltipWrapper title={t.alignRight || 'SaÄŸa Hizala'}>
+      {/* Sağa Hizala (Align Right) */}
+      <TooltipWrapper title={t.alignRight || 'Sağa Hizala'}>
         <button
-          aria-label={t.alignRight || 'SaÄŸa Hizala'}
+          aria-label={t.alignRight || 'Sağa Hizala'}
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
@@ -118,10 +118,10 @@ export const TopologySelectionToolbar: React.FC<TopologySelectionToolbarProps> =
         </button>
       </TooltipWrapper>
 
-      {/* Ãœste Hizala (Align Top) */}
-      <TooltipWrapper title={t.alignTop || 'Ãœste Hizala'}>
+      {/* Üste Hizala (Align Top) */}
+      <TooltipWrapper title={t.alignTop || 'Üste Hizala'}>
         <button
-          aria-label={t.alignTop || 'Ãœste Hizala'}
+          aria-label={t.alignTop || 'Üste Hizala'}
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
@@ -160,11 +160,11 @@ export const TopologySelectionToolbar: React.FC<TopologySelectionToolbarProps> =
         </button>
       </TooltipWrapper>
 
-      {/* Yatay EÅŸit DaÄŸÄ±t (Distribute Horizontally) */}
+      {/* Yatay Eşit Dağıt (Distribute Horizontally) */}
       {selectedDeviceIds.length >= 3 && (
-        <TooltipWrapper title={language === 'tr' ? 'Yatay EÅŸit DaÄŸÄ±t' : 'Distribute Horizontally'}>
+        <TooltipWrapper title={language === 'tr' ? 'Yatay Eşit Dağıt' : 'Distribute Horizontally'}>
           <button
-            aria-label={language === 'tr' ? 'Yatay EÅŸit DaÄŸÄ±t' : 'Distribute Horizontally'}
+            aria-label={language === 'tr' ? 'Yatay Eşit Dağıt' : 'Distribute Horizontally'}
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
@@ -182,11 +182,11 @@ export const TopologySelectionToolbar: React.FC<TopologySelectionToolbarProps> =
         </TooltipWrapper>
       )}
 
-      {/* Dikey EÅŸit DaÄŸÄ±t (Distribute Vertically) */}
+      {/* Dikey Eşit Dağıt (Distribute Vertically) */}
       {selectedDeviceIds.length >= 3 && (
-        <TooltipWrapper title={language === 'tr' ? 'Dikey EÅŸit DaÄŸÄ±t' : 'Distribute Vertically'}>
+        <TooltipWrapper title={language === 'tr' ? 'Dikey Eşit Dağıt' : 'Distribute Vertically'}>
           <button
-            aria-label={language === 'tr' ? 'Dikey EÅŸit DaÄŸÄ±t' : 'Distribute Vertically'}
+            aria-label={language === 'tr' ? 'Dikey Eşit Dağıt' : 'Distribute Vertically'}
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();

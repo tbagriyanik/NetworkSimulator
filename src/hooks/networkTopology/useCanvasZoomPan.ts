@@ -53,7 +53,7 @@ export function useCanvasZoomPan({
   syncingPanFromPropRef
 }: CanvasZoomPanProps) {
 
-  // Sync zoom and pan state from props (parent controls) â€” no setTimeout to avoid 1-frame lag
+  // Sync zoom and pan state from props (parent controls) — no setTimeout to avoid 1-frame lag
   useEffect(() => {
     if (zoomProp !== undefined && zoomProp !== zoom) {
       syncingZoomFromPropRef.current = true;
@@ -236,7 +236,7 @@ export function useCanvasZoomPan({
     document.addEventListener('mouseup', handleMouseUp);
   }, [zoom, setZoom, setPan, canvasRef, zoomRef]);
 
-  // Zoom to Fit (TÃ¼mÃ¼nÃ¼ Ekrana SÄ±ÄŸdÄ±r)
+  // Zoom to Fit (Tümünü Ekrana Sığdır)
   const zoomToFit = useCallback(() => {
     if (devices.length === 0 && notes.length === 0) {
       resetView();

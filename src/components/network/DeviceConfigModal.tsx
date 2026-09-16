@@ -76,13 +76,13 @@ export function DeviceConfigModal({
       URL.revokeObjectURL(url);
 
       setConfigMessage({
-        text: language === 'tr' ? 'KonfigÃ¼rasyon dosyasÄ± (.cfg) baÅŸarÄ±yla indirildi.' : 'Configuration file (.cfg) downloaded successfully.',
+        text: language === 'tr' ? 'Konfigürasyon dosyası (.cfg) başarıyla indirildi.' : 'Configuration file (.cfg) downloaded successfully.',
         type: 'success'
       });
       setTimeout(() => setConfigMessage(null), 4000);
     } catch {
       setConfigMessage({
-        text: language === 'tr' ? 'KonfigÃ¼rasyon dÄ±ÅŸa aktarÄ±lamadÄ±.' : 'Failed to export configuration.',
+        text: language === 'tr' ? 'Konfigürasyon dışa aktarılamadı.' : 'Failed to export configuration.',
         type: 'error'
       });
     }
@@ -143,7 +143,7 @@ export function DeviceConfigModal({
 
           setConfigMessage({
             text: language === 'tr'
-              ? `KonfigÃ¼rasyon uygulandÄ±! (${appliedCount} komut iÅŸlendi)`
+              ? `Konfigürasyon uygulandı! (${appliedCount} komut işlendi)`
               : `Configuration applied! (${appliedCount} commands processed)`,
             type: 'success'
           });
@@ -194,14 +194,14 @@ export function DeviceConfigModal({
           });
 
           setConfigMessage({
-            text: language === 'tr' ? 'PC yapÄ±landÄ±rmasÄ± baÅŸarÄ±yla yÃ¼klendi ve uygulandÄ±!' : 'PC configuration loaded and applied successfully!',
+            text: language === 'tr' ? 'PC yapılandırması başarıyla yüklendi ve uygulandı!' : 'PC configuration loaded and applied successfully!',
             type: 'success'
           });
         }
         setTimeout(() => setConfigMessage(null), 4000);
       } catch {
         setConfigMessage({
-          text: language === 'tr' ? 'Dosya ayrÄ±ÅŸtÄ±rÄ±lÄ±rken hata oluÅŸtu.' : 'Failed to parse configuration file.',
+          text: language === 'tr' ? 'Dosya ayrıştırılırken hata oluştu.' : 'Failed to parse configuration file.',
           type: 'error'
         });
       }
@@ -366,7 +366,7 @@ export function DeviceConfigModal({
                   ? 'bg-secondary-950/50 border-secondary-800 text-white placeholder-secondary-700 focus:border-accent-500/50 focus:bg-secondary-950 focus:ring-4 focus:ring-accent-500/10'
                   : 'bg-secondary-50 border-secondary-200 text-secondary-900 placeholder-secondary-400 focus:border-accent-500/50 focus:bg-white focus:ring-4 focus:ring-accent-500/10'
                   } outline-none`}
-                placeholder={language === 'tr' ? 'Ã–rn: Router-X' : 'e.g. Router-X'}
+                placeholder={language === 'tr' ? 'Örn: Router-X' : 'e.g. Router-X'}
               />
             </div>
           </div>
@@ -413,7 +413,7 @@ export function DeviceConfigModal({
 
                 <div className="space-y-1">
                   <label className={`text-[10px] font-bold tracking-widest ml-1 ${isDark ? 'text-secondary-500' : 'text-secondary-400'}`}>
-                    {language === 'tr' ? 'Alt AÄŸ Maskesi' : 'Subnet Mask'}
+                    {language === 'tr' ? 'Alt Ağ Maskesi' : 'Subnet Mask'}
                   </label>
                   <input
                     type="text"
@@ -432,7 +432,7 @@ export function DeviceConfigModal({
 
                 <div className="space-y-1">
                   <label className={`text-[10px] font-bold tracking-widest ml-1 ${isDark ? 'text-secondary-500' : 'text-secondary-400'}`}>
-                    {language === 'tr' ? 'AÄŸ GeÃ§idi' : 'Gateway'}
+                    {language === 'tr' ? 'Ağ Geçidi' : 'Gateway'}
                   </label>
                   <input
                     type="text"
@@ -491,7 +491,7 @@ export function DeviceConfigModal({
           <div className={`p-3.5 rounded-2xl border ${isDark ? 'bg-secondary-800/30 border-secondary-800/50' : 'bg-secondary-50 border-secondary-200/50'}`}>
             <div className="flex items-center justify-between mb-2.5">
               <div className={`text-[10px] font-black tracking-widest uppercase opacity-70 ${isDark ? 'text-accent-400' : 'text-accent-600'}`}>
-                {language === 'tr' ? 'HÄ±zlÄ± KonfigÃ¼rasyon (.cfg / .txt)' : 'Quick Configuration (.cfg / .txt)'}
+                {language === 'tr' ? 'Hızlı Konfigürasyon (.cfg / .txt)' : 'Quick Configuration (.cfg / .txt)'}
               </div>
               <span className={`text-[10px] font-mono px-2 py-0.5 rounded-md ${isDark ? 'bg-secondary-800 text-secondary-300' : 'bg-secondary-200 text-secondary-700'}`}>
                 {isSwitchOrRouter ? 'Running-Config' : 'Host Config'}
@@ -507,12 +507,12 @@ export function DeviceConfigModal({
                     ? 'bg-secondary-900/60 hover:bg-secondary-800 border-secondary-700/60 text-secondary-200 hover:text-white'
                     : 'bg-white hover:bg-secondary-100 border-secondary-200 text-secondary-800 shadow-sm'
                 }`}
-                title={language === 'tr' ? 'CihazÄ±n mevcut konfigÃ¼rasyonunu .cfg dosyasÄ± olarak indir' : 'Download device configuration as .cfg file'}
+                title={language === 'tr' ? 'Cihazın mevcut konfigürasyonunu .cfg dosyası olarak indir' : 'Download device configuration as .cfg file'}
               >
                 <svg className="w-4 h-4 text-accent-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
-                <span>{language === 'tr' ? 'Config Ä°ndir (.cfg)' : 'Export (.cfg)'}</span>
+                <span>{language === 'tr' ? 'Config İndir (.cfg)' : 'Export (.cfg)'}</span>
               </button>
 
               <button
@@ -523,12 +523,12 @@ export function DeviceConfigModal({
                     ? 'bg-secondary-900/60 hover:bg-secondary-800 border-secondary-700/60 text-secondary-200 hover:text-white'
                     : 'bg-white hover:bg-secondary-100 border-secondary-200 text-secondary-800 shadow-sm'
                 }`}
-                title={language === 'tr' ? 'HazÄ±r bir .cfg veya .txt konfigÃ¼rasyon dosyasÄ± yÃ¼kle' : 'Upload a .cfg or .txt configuration file'}
+                title={language === 'tr' ? 'Hazır bir .cfg veya .txt konfigürasyon dosyası yükle' : 'Upload a .cfg or .txt configuration file'}
               >
                 <svg className="w-4 h-4 text-primary-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l4-4m0 0l4 4m-4-4v12" />
                 </svg>
-                <span>{language === 'tr' ? 'Config YÃ¼kle' : 'Import Config'}</span>
+                <span>{language === 'tr' ? 'Config Yükle' : 'Import Config'}</span>
               </button>
             </div>
 

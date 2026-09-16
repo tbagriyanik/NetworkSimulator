@@ -141,9 +141,9 @@ export function usePCPanelNetworkSupport({
     const isIp = !startAddress || isValidIpv4(startAddress) || isValidIpv6(startAddress);
     const recordType = isIp
       ? (isValidIpv6(startAddress)
-        ? (language === 'tr' ? 'AAAA KaydÄ±' : 'AAAA Record')
-        : (language === 'tr' ? 'A KaydÄ±' : 'A Record'))
-      : (language === 'tr' ? 'CNAME KaydÄ±' : 'CNAME Record');
+        ? (language === 'tr' ? 'AAAA Kaydı' : 'AAAA Record')
+        : (language === 'tr' ? 'A Kaydı' : 'A Record'))
+      : (language === 'tr' ? 'CNAME Kaydı' : 'CNAME Record');
     if (isIp) {
       return `${recordType}: ${chain.join(' -> ')}`;
     }

@@ -18,8 +18,8 @@ const example = (isTr: boolean): ExampleProject => {
   return {
     id: 'trouble-shutdown',
     tag: isTr ? 'ARIZA' : 'TROUBLE',
-    title: isTr ? 'KapalÄ± ArayÃ¼z' : 'Shutdown Interface',
-    description: isTr ? 'Fiziksel baÄŸlantÄ± var ama LED\'ler sÃ¶nÃ¼k. Sorunu bulun.' : 'Physical connection exists but LEDs are off. Find the issue.',
+    title: isTr ? 'Kapalı Arayüz' : 'Shutdown Interface',
+    description: isTr ? 'Fiziksel bağlantı var ama LED\'ler sönük. Sorunu bulun.' : 'Physical connection exists but LEDs are off. Find the issue.',
     level: 'basic',
     injectedFaults: [
       {

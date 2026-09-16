@@ -353,7 +353,7 @@ export function useLoadProjectData({
           isExam: true,
           data: projectData,
           tag: 'EDIT',
-          description: { tr: 'DÃ¼zenleniyor...', en: 'Editing...' }
+          description: { tr: 'Düzenleniyor...', en: 'Editing...' }
         }) as unknown as ExamProject);
       }
 

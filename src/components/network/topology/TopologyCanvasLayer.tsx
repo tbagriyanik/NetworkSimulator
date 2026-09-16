@@ -256,17 +256,17 @@ export function TopologyCanvasLayer({
                                 <foreignObject x="0" y="0" width={canvasSize.width} height={canvasSize.height}>
                                     <div className="w-full h-full flex flex-col items-center justify-center pointer-events-none">
                                         <div className={`text-center p-8 rounded-2xl max-w-md ${isDark ? 'bg-secondary-900/50 border border-secondary-700' : 'bg-white/80 border border-gray-200'}`}>
-                                            <div className="text-6xl mb-4">ğŸŒ</div>
+                                            <div className="text-6xl mb-4">🌐</div>
                                             <h2 className={`text-2xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                                                {language === 'tr' ? 'Network Simulator\'a HoÅŸ Geldiniz' : 'Welcome to Network Simulator'}
+                                                {language === 'tr' ? 'Network Simulator\'a Hoş Geldiniz' : 'Welcome to Network Simulator'}
                                             </h2>
                                             <p className={`text-sm mb-4 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                                                 {language === 'tr'
-                                                    ? 'AÄŸ topolojisi oluÅŸturmak iÃ§in bir cihaz ekleyin veya Ã¶rnek projelerden birini yÃ¼kleyin.'
+                                                    ? 'Ağ topolojisi oluşturmak için bir cihaz ekleyin veya örnek projelerden birini yükleyin.'
                                                     : 'Add a device to start building your network topology or load an example project.'}
                                             </p>
                                             <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                                                {language === 'tr' ? 'ğŸ’¡ Ä°pucu: Sol Ã¼st kÃ¶ÅŸedeki cihaz paletini kullanÄ±n' : 'ğŸ’¡ Tip: Use the device palette in the top left corner'}
+                                                {language === 'tr' ? '💡 İpucu: Sol üst köşedeki cihaz paletini kullanın' : '💡 Tip: Use the device palette in the top left corner'}
                                             </div>
                                         </div>
                                     </div>

@@ -325,7 +325,7 @@ describe('Packet Capture Backend', () => {
       deviceStates: new Map([[sw.id, switchState]]),
     });
 
-    // pc-1 (kaynak) hariÃ§, VLAN 10'daki pc-2 ve pc-4 hedeflenir; VLAN 20'deki pc-3 hariÃ§ tutulur.
+    // pc-1 (kaynak) hariç, VLAN 10'daki pc-2 ve pc-4 hedeflenir; VLAN 20'deki pc-3 hariç tutulur.
     expect(targets.map(target => target.targetId)).toEqual(['pc-2', 'pc-4']);
   });
 

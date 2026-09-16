@@ -80,7 +80,7 @@ export function validateL3Routing(deps: L3RoutingDeps): L3RoutingResult {
               hopIds: path.slice(0, 1),
               targetId: targetDevice.id,
               error: language === 'tr'
-                ? `AÄŸ geÃ§idi (Default Gateway) yapÄ±landÄ±rÄ±lmamÄ±ÅŸ.`
+                ? `Ağ geçidi (Default Gateway) yapılandırılmamış.`
                 : `Default Gateway is not configured on source host.`
             }
           };
@@ -96,7 +96,7 @@ export function validateL3Routing(deps: L3RoutingDeps): L3RoutingResult {
               hopIds: path.slice(0, 1),
               targetId: targetDevice.id,
               error: language === 'tr'
-                ? `AÄŸ geÃ§idi (Default Gateway) kaynak cihaz ile aynÄ± aÄŸ bloÄŸunda deÄŸil.`
+                ? `Ağ geçidi (Default Gateway) kaynak cihaz ile aynı ağ bloğunda değil.`
                 : `Default Gateway is not in the same subnet as the source host.`
             }
           };
@@ -118,7 +118,7 @@ export function validateL3Routing(deps: L3RoutingDeps): L3RoutingResult {
               hopIds: path,
               targetId: targetDevice.id,
               error: language === 'tr'
-                ? `Hedef cihazÄ±n AÄŸ GeÃ§idi (Default Gateway) yapÄ±landÄ±rÄ±lmamÄ±ÅŸ.`
+                ? `Hedef cihazın Ağ Geçidi (Default Gateway) yapılandırılmamış.`
                 : `Default Gateway is not configured on target host.`
             }
           };
@@ -132,7 +132,7 @@ export function validateL3Routing(deps: L3RoutingDeps): L3RoutingResult {
               hopIds: path,
               targetId: targetDevice.id,
               error: language === 'tr'
-                ? `Hedef cihazÄ±n AÄŸ GeÃ§idi (Default Gateway) hedef aÄŸ bloÄŸunda deÄŸil.`
+                ? `Hedef cihazın Ağ Geçidi (Default Gateway) hedef ağ bloğunda değil.`
                 : `Default Gateway is not in the same subnet as the target host.`
             }
           };
@@ -177,7 +177,7 @@ export function validateL3Routing(deps: L3RoutingDeps): L3RoutingResult {
                 hopIds: path,
                 targetId: targetDevice.id,
                 error: language === 'tr'
-                  ? `Hedefe rota bulunamadÄ±. Statik rota yapÄ±landÄ±rmasÄ± gerekli.`
+                  ? `Hedefe rota bulunamadı. Statik rota yapılandırması gerekli.`
                   : `No route to destination. Static route configuration required.`
               }
             };
@@ -226,7 +226,7 @@ export function validateL3Routing(deps: L3RoutingDeps): L3RoutingResult {
             hopIds: path,
             targetId: targetDevice.id,
             error: language === 'tr'
-              ? `Hedefe rota bulunamadÄ±. Statik rota yapÄ±landÄ±rmasÄ± gerekli.`
+              ? `Hedefe rota bulunamadı. Statik rota yapılandırması gerekli.`
               : `No route to destination. Static route configuration required.`
           }
         };
@@ -319,7 +319,7 @@ export function checkL3Connectivity(deps: L3ConnectivityDeps): L3ConnectivityRes
           hopIds: path,
           targetId: targetDevice.id,
           error: language === 'tr'
-            ? 'YÃ¶nlendirme baÅŸarÄ±sÄ±z: GeÃ§erli bir rota bulunamadÄ±.'
+            ? 'Yönlendirme başarısız: Geçerli bir rota bulunamadı.'
             : 'Routing failed: No valid route found.'
         }
       };

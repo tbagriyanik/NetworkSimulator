@@ -26,7 +26,7 @@ const example = (isTr: boolean): ExampleProject => {
   const ospfTroubleNotes: CanvasNote[] = [{
     id: 'ospf-area-mismatch-note',
     text: isTr
-      ? 'OSPF ALAN HATASI\n\nR1 Area 0, R2 ise hatalÄ± olarak Area 1 kullanÄ±yor. AynÄ± baÄŸlantÄ± Ã¼zerindeki OSPF routerâ€™larÄ± komÅŸuluk kurabilmek iÃ§in aynÄ± area iÃ§inde olmalÄ±dÄ±r.\n\nDÃœZELTME:\nR2 Ã¼zerinde OSPF aÄŸ bildirimindeki area deÄŸerini 1â€™den 0â€™a deÄŸiÅŸtirin. ArdÄ±ndan komÅŸuluk yeniden kurulmalÄ± ve rotalar Ã¶ÄŸrenilmelidir.'
+      ? 'OSPF ALAN HATASI\n\nR1 Area 0, R2 ise hatalı olarak Area 1 kullanıyor. Aynı bağlantı üzerindeki OSPF router’ları komşuluk kurabilmek için aynı area içinde olmalıdır.\n\nDÜZELTME:\nR2 üzerinde OSPF ağ bildirimindeki area değerini 1’den 0’a değiştirin. Ardından komşuluk yeniden kurulmalı ve rotalar öğrenilmelidir.'
       : 'OSPF AREA MISMATCH\n\nR1 uses Area 0, while R2 incorrectly uses Area 1. OSPF routers on the same link must use the same area to form an adjacency.\n\nFIX:\nChange the OSPF network statement area on R2 from 1 to 0. The adjacency should then form and routes should be learned again.',
     x: 80,
     y: 40,
@@ -41,10 +41,10 @@ const example = (isTr: boolean): ExampleProject => {
   return {
     id: 'trouble-ospf-area',
     tag: isTr ? 'ARIZA' : 'TROUBLE',
-    title: isTr ? 'OSPF Alan HatasÄ±' : 'OSPF Area Mismatch',
-    description: isTr ? 'Routerlar komÅŸuluk kuramÄ±yor. OSPF alanlarÄ±nÄ± (area) kontrol edin.' : 'Routers cannot establish adjacency. Check OSPF areas.',
+    title: isTr ? 'OSPF Alan Hatası' : 'OSPF Area Mismatch',
+    description: isTr ? 'Routerlar komşuluk kuramıyor. OSPF alanlarını (area) kontrol edin.' : 'Routers cannot establish adjacency. Check OSPF areas.',
     detail: isTr
-      ? 'R1 ve R2 arasÄ±ndaki baÄŸlantÄ± Ã§alÄ±ÅŸÄ±yor; ancak R1 Area 0, R2 Area 1 kullandÄ±ÄŸÄ± iÃ§in OSPF komÅŸuluÄŸu oluÅŸmuyor. R2 Ã¼zerindeki OSPF area deÄŸerini Area 0 yaparak hatayÄ± giderin.'
+      ? 'R1 ve R2 arasındaki bağlantı çalışıyor; ancak R1 Area 0, R2 Area 1 kullandığı için OSPF komşuluğu oluşmuyor. R2 üzerindeki OSPF area değerini Area 0 yaparak hatayı giderin.'
       : 'The link between R1 and R2 is operational, but OSPF adjacency fails because R1 uses Area 0 and R2 uses Area 1. Change R2 to Area 0 to resolve the fault.',
     level: 'intermediate',
     injectedFaults: [
@@ -52,13 +52,13 @@ const example = (isTr: boolean): ExampleProject => {
         id: 'fault-ospf-area',
         deviceId: 'router-2',
         faultType: 'wrongVlan',
-        description: { tr: 'R2 OSPF alanÄ± 1 olarak ayarlanmÄ±ÅŸ (0 olmalÄ±).', en: 'R2 OSPF area is set to 1 (should be 0).' },
+        description: { tr: 'R2 OSPF alanı 1 olarak ayarlanmış (0 olmalı).', en: 'R2 OSPF area is set to 1 (should be 0).' },
         configKey: 'dynamicRoutes.0.area',
         faultValue: 1,
         correctValue: 0,
         hint: {
-          tr: 'Komut ipucu: R2# configure terminal â†’ R2(config)# router ospf 1 â†’ R2(config-router)# network 10.0.0.0 0.0.0.3 area 0. Area 1 yerine Area 0 kullanÄ±n.\nKontrol: show ip ospf neighbor ve show ip route ospf',
-          en: 'Command hint: R2# configure terminal â†’ R2(config)# router ospf 1 â†’ R2(config-router)# network 10.0.0.0 0.0.0.3 area 0. Use Area 0 instead of Area 1.\nVerify: show ip ospf neighbor and show ip route ospf'
+          tr: 'Komut ipucu: R2# configure terminal → R2(config)# router ospf 1 → R2(config-router)# network 10.0.0.0 0.0.0.3 area 0. Area 1 yerine Area 0 kullanın.\nKontrol: show ip ospf neighbor ve show ip route ospf',
+          en: 'Command hint: R2# configure terminal → R2(config)# router ospf 1 → R2(config-router)# network 10.0.0.0 0.0.0.3 area 0. Use Area 0 instead of Area 1.\nVerify: show ip ospf neighbor and show ip route ospf'
         }
       }
     ],

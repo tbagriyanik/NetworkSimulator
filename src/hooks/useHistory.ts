@@ -169,7 +169,7 @@ export function useHistory(initialState: ProjectState) {
     operationType: 'all',
     signature: getStateSignature(initialState, 'all'),
     estimatedBytes: estimateStateBytes(initialState),
-    description: 'BaÅŸlangÄ±Ã§ Durumu'
+    description: 'Başlangıç Durumu'
   };
   const [state, setState] = useState<HistoryState>(() => {
     if (typeof window !== 'undefined') {
@@ -253,7 +253,7 @@ export function useHistory(initialState: ProjectState) {
       const signature = getStateSignature(stateToPush, operationType);
 
       const prevState = prev.items[prev.index]?.state;
-      let description = explicitDescription || 'DeÄŸiÅŸiklik';
+      let description = explicitDescription || 'Değişiklik';
       if (!explicitDescription && prevState) {
         if (stateToPush.topologyDevices.length > prevState.topologyDevices.length) {
           const newDev = stateToPush.topologyDevices.find(d => !prevState.topologyDevices.some(pd => pd.id === d.id));
@@ -266,18 +266,18 @@ export function useHistory(initialState: ProjectState) {
           if (newConn) {
             const sDev = stateToPush.topologyDevices.find(d => d.id === newConn.sourceDeviceId)?.name || newConn.sourceDeviceId;
             const tDev = stateToPush.topologyDevices.find(d => d.id === newConn.targetDeviceId)?.name || newConn.targetDeviceId;
-            description = `${sDev} ve ${tDev} arasÄ±na baÄŸlantÄ± eklendi`;
+            description = `${sDev} ve ${tDev} arasına bağlantı eklendi`;
           } else {
-            description = 'BaÄŸlantÄ± Eklendi';
+            description = 'Bağlantı Eklendi';
           }
         } else if (stateToPush.topologyConnections.length < prevState.topologyConnections.length) {
           const removedConn = prevState.topologyConnections.find(c => !stateToPush.topologyConnections.some(pc => pc.id === c.id));
           if (removedConn) {
             const sDev = prevState.topologyDevices.find(d => d.id === removedConn.sourceDeviceId)?.name || removedConn.sourceDeviceId;
             const tDev = prevState.topologyDevices.find(d => d.id === removedConn.targetDeviceId)?.name || removedConn.targetDeviceId;
-            description = `${sDev} ve ${tDev} arasÄ±ndaki baÄŸlantÄ± silindi`;
+            description = `${sDev} ve ${tDev} arasındaki bağlantı silindi`;
           } else {
-            description = 'BaÄŸlantÄ± Silindi';
+            description = 'Bağlantı Silindi';
           }
         } else if (stateToPush.topologyNotes.length > prevState.topologyNotes.length) {
           description = 'Not Eklendi';
@@ -285,14 +285,14 @@ export function useHistory(initialState: ProjectState) {
           description = 'Not Silindi';
         }
 
-        if (description === 'DeÄŸiÅŸiklik') {
+        if (description === 'Değişiklik') {
           if (operationType === 'topology') {
             const movedDev = stateToPush.topologyDevices.find(d => {
               const pd = prevState.topologyDevices.find(old => old.id === d.id);
               return pd && (pd.x !== d.x || pd.y !== d.y);
             });
             if (movedDev) {
-              description = `${movedDev.name} taÅŸÄ±ndÄ± (Yeni Konum: ${Math.round(movedDev.x)}, ${Math.round(movedDev.y)})`;
+              description = `${movedDev.name} taşındı (Yeni Konum: ${Math.round(movedDev.x)}, ${Math.round(movedDev.y)})`;
             } else {
               const changedDev = stateToPush.topologyDevices.find(d => {
                 const pd = prevState.topologyDevices.find(old => old.id === d.id);
@@ -304,26 +304,26 @@ export function useHistory(initialState: ProjectState) {
                 if (pd) {
                   if (pd.name !== changedDev.name) changes.push(`hostname '${changedDev.name}' olarak`);
                   if (pd.ip !== changedDev.ip) changes.push('IP adresi');
-                  if (pd.subnet !== changedDev.subnet) changes.push('Alt AÄŸ Maskesi');
-                  if (pd.gateway !== changedDev.gateway) changes.push('AÄŸ GeÃ§idi');
+                  if (pd.subnet !== changedDev.subnet) changes.push('Alt Ağ Maskesi');
+                  if (pd.gateway !== changedDev.gateway) changes.push('Ağ Geçidi');
                   if (pd.dns !== changedDev.dns) changes.push('DNS');
-                  if (pd.ipConfigMode !== changedDev.ipConfigMode) changes.push('IP yapÄ±landÄ±rma modu');
+                  if (pd.ipConfigMode !== changedDev.ipConfigMode) changes.push('IP yapılandırma modu');
                   if (pd.status !== changedDev.status) changes.push('Cihaz durumu');
-                  if (JSON.stringify(pd.ports) !== JSON.stringify(changedDev.ports)) changes.push('Port ayarlarÄ±');
-                  if (JSON.stringify(pd.wifi) !== JSON.stringify(changedDev.wifi)) changes.push('Wi-Fi ayarlarÄ±');
+                  if (JSON.stringify(pd.ports) !== JSON.stringify(changedDev.ports)) changes.push('Port ayarları');
+                  if (JSON.stringify(pd.wifi) !== JSON.stringify(changedDev.wifi)) changes.push('Wi-Fi ayarları');
                   if (JSON.stringify(pd.services) !== JSON.stringify(changedDev.services)) changes.push('Servisler');
-                  if (JSON.stringify(pd.iot) !== JSON.stringify(changedDev.iot)) changes.push('IoT ayarlarÄ±');
-                  if (JSON.stringify(pd.firewallRules) !== JSON.stringify(changedDev.firewallRules)) changes.push('Firewall kurallarÄ±');
+                  if (JSON.stringify(pd.iot) !== JSON.stringify(changedDev.iot)) changes.push('IoT ayarları');
+                  if (JSON.stringify(pd.firewallRules) !== JSON.stringify(changedDev.firewallRules)) changes.push('Firewall kuralları');
                   if (pd.vlan !== changedDev.vlan) changes.push('VLAN');
                   if (pd.macAddress !== changedDev.macAddress) changes.push('MAC adresi');
                 }
                 if (changes.length > 0) {
-                  description = `${changedDev.name}: ${changes.join(', ')} deÄŸiÅŸtirildi`;
+                  description = `${changedDev.name}: ${changes.join(', ')} değiştirildi`;
                 } else {
-                  description = `${changedDev.name} yapÄ±landÄ±rmasÄ± gÃ¼ncellendi`;
+                  description = `${changedDev.name} yapılandırması güncellendi`;
                 }
               } else {
-                description = 'Topoloji gÃ¼ncellendi';
+                description = 'Topoloji güncellendi';
               }
             }
           } else if (operationType === 'device') {
@@ -381,13 +381,13 @@ export function useHistory(initialState: ProjectState) {
                 }
 
                 if (cmdDetail && diffDetail) {
-                  description = `${changedDevice}: ${diffDetail} deÄŸiÅŸtirildi ('${cmdDetail}')`;
+                  description = `${changedDevice}: ${diffDetail} değiştirildi ('${cmdDetail}')`;
                 } else if (cmdDetail) {
                   description = `${changedDevice}: '${cmdDetail}' komutu girildi`;
                 } else if (diffDetail) {
-                  description = `${changedDevice}: ${diffDetail} deÄŸiÅŸtirildi`;
+                  description = `${changedDevice}: ${diffDetail} değiştirildi`;
                 } else {
-                  description = `${changedDevice} yapÄ±landÄ±rmasÄ± gÃ¼ncellendi`;
+                  description = `${changedDevice} yapılandırması güncellendi`;
                 }
                 break;
               }
@@ -407,9 +407,9 @@ export function useHistory(initialState: ProjectState) {
               }
             }
 
-            if (!changedDevice) description = 'Cihaz DeÄŸiÅŸikliÄŸi';
+            if (!changedDevice) description = 'Cihaz Değişikliği';
           } else if (operationType === 'ui') {
-            description = 'ArayÃ¼z DeÄŸiÅŸikliÄŸi';
+            description = 'Arayüz Değişikliği';
           }
         }
       }
@@ -480,7 +480,7 @@ export function useHistory(initialState: ProjectState) {
       operationType: 'all',
       signature: getStateSignature(newState, 'all'),
       estimatedBytes: estimateStateBytes(newState),
-      description: 'BaÅŸlangÄ±Ã§ Durumu'
+      description: 'Başlangıç Durumu'
     };
     localStorage.removeItem('netsim_history');
     setState({

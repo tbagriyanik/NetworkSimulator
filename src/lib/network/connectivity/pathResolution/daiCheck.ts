@@ -81,7 +81,7 @@ export function enforceDai(deps: DaiCheckDeps): DaiCheckResult {
           hopIds: path.slice(0, i + 1),
           targetId: targetDevice.id,
           error: language === 'tr'
-            ? `DAI: ${device.name} cihazÄ±nda ${normalizedPortId} portunda ARP paketi engellendi. ${result.reason ?? ''}`
+            ? `DAI: ${device.name} cihazında ${normalizedPortId} portunda ARP paketi engellendi. ${result.reason ?? ''}`
             : `DAI: ARP packet blocked on ${device.name} port ${normalizedPortId}. ${result.reason ?? ''}`,
         },
       };

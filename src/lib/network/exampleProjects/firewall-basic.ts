@@ -19,8 +19,8 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'firewall-basic-note',
       text: isTr
-        ? 'ğŸ›¡ï¸ Firewall Temel LaboratuvarÄ±:\n\n1) PC-1 (192.168.1.10) â†’ FW-1 â†’ PC-2 (192.168.1.20)\n2) ICMP (ping) ENGELLENMÄ°Å - Rule 1\n3) DiÄŸer tÃ¼m trafiÄŸe Ä°ZÄ°N VERÄ°LMÄ°Å - Rule 2\n\nTest:\nâ€¢ PC-1 > ping 192.168.1.20 (BAÅARISIZ - ICMP engelli)\nâ€¢ PC-1 > wget 192.168.1.20 (BAÅARILI - HTTP izinli)\n\nKurallar sÄ±ralamaya gÃ¶re iÅŸlenir. ICMP deny kuralÄ± eÅŸleÅŸir ve engeller. HTTP/HTTPS gibi diÄŸer protokoller allow kuralÄ±na dÃ¼ÅŸer.'
-        : 'ğŸ›¡ï¸ Firewall Basic Lab:\n\n1) PC-1 (192.168.1.10) â†’ FW-1 â†’ PC-2 (192.168.1.20)\n2) ICMP (ping) BLOCKED - Rule 1\n3) All other traffic ALLOWED - Rule 2\n\nTest:\nâ€¢ PC-1 > ping 192.168.1.20 (FAIL - ICMP blocked)\nâ€¢ PC-1 > wget 192.168.1.20 (SUCCESS - HTTP allowed)\n\nRules are processed in order. ICMP deny rule matches and blocks. Other protocols like HTTP/HTTPS fall through to allow rule.',
+        ? '🛡️ Firewall Temel Laboratuvarı:\n\n1) PC-1 (192.168.1.10) → FW-1 → PC-2 (192.168.1.20)\n2) ICMP (ping) ENGELLENMİÅ - Rule 1\n3) Diğer tüm trafiğe İZİN VERİLMİÅ - Rule 2\n\nTest:\n• PC-1 > ping 192.168.1.20 (BAÅARISIZ - ICMP engelli)\n• PC-1 > wget 192.168.1.20 (BAÅARILI - HTTP izinli)\n\nKurallar sıralamaya göre işlenir. ICMP deny kuralı eşleşir ve engeller. HTTP/HTTPS gibi diğer protokoller allow kuralına düşer.'
+        : '🛡️ Firewall Basic Lab:\n\n1) PC-1 (192.168.1.10) → FW-1 → PC-2 (192.168.1.20)\n2) ICMP (ping) BLOCKED - Rule 1\n3) All other traffic ALLOWED - Rule 2\n\nTest:\n• PC-1 > ping 192.168.1.20 (FAIL - ICMP blocked)\n• PC-1 > wget 192.168.1.20 (SUCCESS - HTTP allowed)\n\nRules are processed in order. ICMP deny rule matches and blocks. Other protocols like HTTP/HTTPS fall through to allow rule.',
       x: 50,
       y: 50,
       width: 550,
@@ -39,7 +39,7 @@ const example = (isTr: boolean): ExampleProject => {
     tag: isTr ? 'FIREWALL' : 'FIREWALL',
     title: isTr ? 'Firewall Temel (ICMP Bloke)' : 'Firewall Basic (ICMP Block)',
     description: isTr
-      ? 'ICMP (ping) engellenmiÅŸ, diÄŸer tÃ¼m trafiÄŸe izin verilmiÅŸ basit firewall.'
+      ? 'ICMP (ping) engellenmiş, diğer tüm trafiğe izin verilmiş basit firewall.'
       : 'Simple firewall with ICMP (ping) blocked, all other traffic allowed.',
     detail: isTr
       ? 'Kural 1: DENY ICMP | Kural 2: ALLOW ANY | PC-1 ping BAÅARISIZ, wget BAÅARILI'

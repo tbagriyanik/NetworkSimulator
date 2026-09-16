@@ -116,7 +116,7 @@ export function TerminalHeaderActions({
           <Search className="w-4 h-4" aria-hidden="true" />
         </Button>
       </TooltipWrapper>
-      <TooltipWrapper title={copied ? (language === 'tr' ? 'KopyalandÄ±!' : 'Copied!') : (language === 'tr' ? 'Ã‡Ä±ktÄ±yÄ± Kopyala' : (t.copy || 'Copy Output'))}>
+      <TooltipWrapper title={copied ? (language === 'tr' ? 'Kopyalandı!' : 'Copied!') : (language === 'tr' ? 'Çıktıyı Kopyala' : (t.copy || 'Copy Output'))}>
         <Button variant="ghost" size="icon" onClick={() => {
           handleCopyAll();
           setCopied(true);
@@ -125,23 +125,23 @@ export function TerminalHeaderActions({
           {copied ? <Check className="w-4 h-4" aria-hidden="true" /> : <Copy className="w-4 h-4" aria-hidden="true" />}
         </Button>
       </TooltipWrapper>
-      <TooltipWrapper title={t.exportLabel || (language === 'tr' ? 'DÄ±ÅŸa Aktar' : 'Export')}>
+      <TooltipWrapper title={t.exportLabel || (language === 'tr' ? 'Dışa Aktar' : 'Export')}>
         <Button variant="ghost" size="icon" onClick={exportTerminal} className={btnClass}>
           <Download className="w-4 h-4" aria-hidden="true" />
         </Button>
       </TooltipWrapper>
-      <TooltipWrapper title={language === 'tr' ? 'Ã‡Ä±ktÄ±yÄ± Temizle' : (t.clearTerminalBtn || 'Clear Output')}>
+      <TooltipWrapper title={language === 'tr' ? 'Çıktıyı Temizle' : (t.clearTerminalBtn || 'Clear Output')}>
         <Button
           variant="ghost"
           size="icon"
           onClick={clearTerminalView}
           className="h-9 w-9 md:h-8 md:w-8 rounded-lg text-error-500 hover:text-error-600 hover:bg-error-500/10"
-          aria-label={language === 'tr' ? 'Ã‡Ä±ktÄ±yÄ± Temizle' : (t.clearTerminalBtn || 'Clear')}
+          aria-label={language === 'tr' ? 'Çıktıyı Temizle' : (t.clearTerminalBtn || 'Clear')}
         >
           <Trash2 className="w-4 h-4" aria-hidden="true" />
         </Button>
       </TooltipWrapper>
-      <TooltipWrapper title={language === 'tr' ? 'YazÄ± Boyutunu KÃ¼Ã§Ã¼lt (A-)' : 'Decrease Font Size (A-)'}>
+      <TooltipWrapper title={language === 'tr' ? 'Yazı Boyutunu Küçült (A-)' : 'Decrease Font Size (A-)'}>
         <Button
           variant="ghost"
           size="icon"
@@ -156,7 +156,7 @@ export function TerminalHeaderActions({
           A-
         </Button>
       </TooltipWrapper>
-      <TooltipWrapper title={language === 'tr' ? 'YazÄ± Boyutunu BÃ¼yÃ¼t (A+)' : 'Increase Font Size (A+)'}>
+      <TooltipWrapper title={language === 'tr' ? 'Yazı Boyutunu Büyüt (A+)' : 'Increase Font Size (A+)'}>
         <Button
           variant="ghost"
           size="icon"

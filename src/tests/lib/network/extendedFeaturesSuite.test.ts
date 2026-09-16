@@ -140,7 +140,7 @@ describe('Features 11 - 15: Decision Explanations, ACL Trace, Clear Commands & I
     const aclDrop = res.allTraces.find(t => t.stage === 'acl-ingress' && t.action === 'drop');
     expect(aclDrop).toBeDefined();
     expect(aclDrop!.reason).toContain('[ACL]');
-    expect(aclDrop!.reason).toMatch(/ACL 100 denied 10\.0\.0\.2â†’192\.168\.1\.2/);
+    expect(aclDrop!.reason).toMatch(/ACL 100 denied 10\.0\.0\.2→192\.168\.1\.2/);
     expect(res.dropReason).toMatch(/Dropped at R1/);
   });
 
@@ -188,7 +188,7 @@ describe('Features 11 - 15: Decision Explanations, ACL Trace, Clear Commands & I
     expect(clearedGi0.statistics?.resets).toBe(1);
     expect(clearedGi0.statistics?.lastCleared).toBeGreaterThan(0);
 
-    // Case-insensitive per-interface clear â€” only the named interface is reset
+    // Case-insensitive per-interface clear — only the named interface is reset
     r1State.ports['Gi0/1'].statistics = { inputPackets: 9, outputPackets: 9, lastCleared: 0 };
     r1State.ports['Gi0/1'].stats = { rxPackets: 9, rxBytes: 576, txPackets: 9, txBytes: 576, rxDrops: 0, txDrops: 0, rxErrors: 0, txErrors: 0 };
     const intfRes = cmdClearCounters(r1State, 'clear counters gi0/0', ctx);

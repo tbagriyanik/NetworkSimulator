@@ -59,7 +59,7 @@ function extractShowMeCommand(step: GuidedStep, topologyDevices: CanvasDevice[] 
 
   let cleanCommand = '';
 
-  const quoteMatch = rawStr.match(/["'â€œâ€]([^"'â€œâ€]+)["'â€œâ€]/);
+  const quoteMatch = rawStr.match(/["'“”]([^"'“”]+)["'“”]/);
   if (quoteMatch && quoteMatch[1].trim()) {
     cleanCommand = quoteMatch[1].trim();
   } else {
@@ -70,10 +70,10 @@ function extractShowMeCommand(step: GuidedStep, topologyDevices: CanvasDevice[] 
     .replace(/[\^$()]/g, '')
     .replace(/^[^:]{1,40}:\s*/i, '')
     .replace(/^[a-zA-Z0-9_-]+(\([^)]+\))?[>#]\s*/, '')
-    .replace(/^(type|yazÄ±n|yazin)\s+/i, '')
-    .replace(/\s+(yazÄ±n|yazin)\.?$/i, '')
+    .replace(/^(type|yazın|yazin)\s+/i, '')
+    .replace(/\s+(yazın|yazin)\.?$/i, '')
     .replace(/\s+(and press enter|press enter)\.?$/i, '')
-    .replace(/^["'â€œâ€]+|["'â€œâ€.,!?]+$/g, '')
+    .replace(/^["'“”]+|["'“”.,!?]+$/g, '')
     .trim();
 
   if (!cleanCommand && commandPattern) {
@@ -105,7 +105,7 @@ function extractShowMeCommand(step: GuidedStep, topologyDevices: CanvasDevice[] 
   return { cleanCommand, deviceId, targetDeviceType: resolvedTargetType };
 }
 
-describe('All Guided Lessons "Bana GÃ¶ster" Audit', () => {
+describe('All Guided Lessons "Bana Göster" Audit', () => {
   const allLessonCollections: { name: string; steps: GuidedStep[] }[] = [
     { name: 'addDevice', steps: addDeviceGuidedSteps },
     { name: 'pcCmd', steps: pcCmdGuidedSteps },
@@ -144,7 +144,7 @@ describe('All Guided Lessons "Bana GÃ¶ster" Audit', () => {
           expect(result.cleanCommand).not.toMatch(/^[a-zA-Z0-9_-]+[>#]/);
 
           // 3. Clean command must not end with prose punctuation or quotes
-          expect(result.cleanCommand).not.toMatch(/["'â€œâ€]$/);
+          expect(result.cleanCommand).not.toMatch(/["'“”]$/);
         }
       }
     }

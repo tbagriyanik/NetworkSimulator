@@ -627,7 +627,7 @@ export function useTopologyTouch({
       setTouchDragStartPos(null);
       touchDragStartPosRef.current = null;
 
-      // Touch sÃ¼rÃ¼kleme olduysa ve kablo Ã§izimi baÅŸlamÄ±ÅŸsa iptal et
+      // Touch sürükleme olduysa ve kablo çizimi başlamışsa iptal et
       if (currentIsTouchDragging && isDrawingConnectionRef.current) {
         setIsDrawingConnection(false);
         setConnectionStart(null);

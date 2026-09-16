@@ -9,8 +9,8 @@ export interface LayoutOptions {
 }
 
 /**
- * Otomatik Topoloji DÃ¼zenleme Motoru (Auto Layout Engine)
- * CihazlarÄ± rollerine ve katmanlarÄ±na gÃ¶re hiyerarÅŸik (Core/Dist/Access), yÄ±ldÄ±z, halka veya grid dÃ¼zenine dizer.
+ * Otomatik Topoloji Düzenleme Motoru (Auto Layout Engine)
+ * Cihazları rollerine ve katmanlarına göre hiyerarşik (Core/Dist/Access), yıldız, halka veya grid düzenine dizer.
  */
 export function applyAutoLayout(
   devices: CanvasDevice[],
@@ -37,7 +37,7 @@ export function applyAutoLayout(
 }
 
 /**
- * 3-Tier HiyerarÅŸik DÃ¼zen (Core -> Distribution -> Access -> Endpoints)
+ * 3-Tier Hiyerarşik Düzen (Core -> Distribution -> Access -> Endpoints)
  */
 function layoutHierarchical(
   devices: CanvasDevice[],
@@ -78,7 +78,7 @@ function layoutHierarchical(
 }
 
 /**
- * YÄ±ldÄ±z (Star) Topolojisi DÃ¼zenlemesi
+ * Yıldız (Star) Topolojisi Düzenlemesi
  */
 function layoutStar(
   devices: CanvasDevice[],
@@ -86,7 +86,7 @@ function layoutStar(
   width: number,
   height: number
 ): CanvasDevice[] {
-  // En Ã§ok baÄŸlantÄ±ya sahip cihazÄ± merkez seÃ§
+  // En çok bağlantıya sahip cihazı merkez seç
   const connCounts = new Map<string, number>();
   connections.forEach(c => {
     connCounts.set(c.sourceDeviceId, (connCounts.get(c.sourceDeviceId) || 0) + 1);
@@ -124,7 +124,7 @@ function layoutStar(
 }
 
 /**
- * Halka (Ring) Topolojisi DÃ¼zenlemesi
+ * Halka (Ring) Topolojisi Düzenlemesi
  */
 function layoutRing(devices: CanvasDevice[], width: number, height: number): CanvasDevice[] {
   const centerX = width / 2;
@@ -141,7 +141,7 @@ function layoutRing(devices: CanvasDevice[], width: number, height: number): Can
 }
 
 /**
- * Grid / Matris DÃ¼zenlemesi
+ * Grid / Matris Düzenlemesi
  */
 function layoutGrid(devices: CanvasDevice[], width: number, _height: number): CanvasDevice[] {
   const cols = Math.max(1, Math.ceil(Math.sqrt(devices.length)));

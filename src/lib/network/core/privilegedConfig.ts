@@ -220,8 +220,8 @@ export function cmdCopyTftp(state: SwitchState, input: string, ctx: CommandConte
     }
 
     const verb = isRestore
-        ? (lang === 'tr' ? 'YÃ¼kleniyor' : 'Loading')
-        : (lang === 'tr' ? 'YazÄ±lÄ±yor' : 'Writing');
+        ? (lang === 'tr' ? 'Yükleniyor' : 'Loading')
+        : (lang === 'tr' ? 'Yazılıyor' : 'Writing');
     const source = isRestore ? `tftp://${targetIp}/${filename}` : 'running-config';
     const dest = isRestore ? 'running-config' : `tftp://${targetIp}/${filename}`;
 

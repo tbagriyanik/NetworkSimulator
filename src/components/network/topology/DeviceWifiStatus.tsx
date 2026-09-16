@@ -115,7 +115,7 @@ export const DeviceWifiStatus: React.FC<DeviceWifiStatusProps> = React.memo(({
 
     return (
       <g transform={`translate(${deviceWidth - 23}, 7)`}>
-        <title>{[`SSID: ${pcWifi?.ssid ?? 'N/A'}`, isConnected ? 'BaÄŸlÄ±' : 'BaÄŸlÄ± deÄŸil', `Sinyal: ${strength}/5`, `GÃ¼venlik: ${pcWifi?.security ?? 'open'}`, `Kanal: ${pcWifi?.channel ?? 'N/A'}`, `Parola: ${pcWifi?.password ? 'Evet' : 'HayÄ±r'}`].join(' â€¢ ')}</title>
+        <title>{[`SSID: ${pcWifi?.ssid ?? 'N/A'}`, isConnected ? 'Bağlı' : 'Bağlı değil', `Sinyal: ${strength}/5`, `Güvenlik: ${pcWifi?.security ?? 'open'}`, `Kanal: ${pcWifi?.channel ?? 'N/A'}`, `Parola: ${pcWifi?.password ? 'Evet' : 'Hayır'}`].join(' • ')}</title>
         <svg x="-2" y="1" width="22" height="14" viewBox="0 0 22 14" className="pointer-events-none">
           {wifiBarRects.map((bar, index) => (
             <rect

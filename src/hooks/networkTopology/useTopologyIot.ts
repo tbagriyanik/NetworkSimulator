@@ -64,13 +64,13 @@ export function useTopologyIot({
 
   const getIotPowerStatus = useCallback((device: CanvasDevice) => {
     return device.status === 'offline'
-      ? (language === 'tr' ? 'KapalÄ±' : 'Off')
-      : (language === 'tr' ? 'AÃ§Ä±k' : 'On');
+      ? (language === 'tr' ? 'Kapalı' : 'Off')
+      : (language === 'tr' ? 'Açık' : 'On');
   }, [language]);
 
   const getIotOpenCloseStatus = useCallback((device: CanvasDevice) => {
     const isOn = device.status !== 'offline' && device.iot?.collaborationEnabled !== false && (device.iot?.value ?? false);
-    return language === 'tr' ? (isOn ? 'AÃ§Ä±k' : 'KapalÄ±') : (isOn ? 'On' : 'Off');
+    return language === 'tr' ? (isOn ? 'Açık' : 'Kapalı') : (isOn ? 'On' : 'Off');
   }, [language]);
 
   const getIotMeasuredValue = useCallback((device: CanvasDevice) => {
@@ -87,7 +87,7 @@ export function useTopologyIot({
     }
 
     if (device.status === 'offline') {
-      return language === 'tr' ? 'KapalÄ±' : 'Off';
+      return language === 'tr' ? 'Kapalı' : 'Off';
     }
 
     const { passive, motionYes, motionNo } = t as Record<string, string>;
@@ -127,7 +127,7 @@ export function useTopologyIot({
     const device = deviceMap.get(deviceId);
     const livePort = getLivePort(deviceId, portId);
     if (!device || !livePort) return '1';
-    if (device.type === 'hub') return language === 'tr' ? 'Yok (L1 TekrarlayÄ±cÄ±)' : 'None (L1 Repeater)';
+    if (device.type === 'hub') return language === 'tr' ? 'Yok (L1 Tekrarlayıcı)' : 'None (L1 Repeater)';
 
 
     if (device.type === 'pc' || device.type === 'iot') {

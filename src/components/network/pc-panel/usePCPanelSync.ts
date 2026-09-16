@@ -133,14 +133,14 @@ export function usePCPanelSync({
 
   const syncToGlobal = useCallback(() => {
     const newErrors: PCPanelErrorMap = {};
-    if (!validateIP(pcIP)) newErrors.ip = 'GeÃ§ersiz IP';
-    if (!isValidMAC(pcMAC)) newErrors.mac = 'GeÃ§ersiz MAC';
+    if (!validateIP(pcIP)) newErrors.ip = 'Geçersiz IP';
+    if (!isValidMAC(pcMAC)) newErrors.mac = 'Geçersiz MAC';
     if (ipConfigMode === 'static') {
-      if (pcSubnet && !validateIP(pcSubnet)) newErrors.subnet = 'GeÃ§ersiz Subnet';
-      if (pcGateway && !validateIP(pcGateway)) newErrors.gateway = 'GeÃ§ersiz Gateway';
-      if (pcDNS && !validateIP(pcDNS)) newErrors.dns = 'GeÃ§ersiz DNS';
+      if (pcSubnet && !validateIP(pcSubnet)) newErrors.subnet = 'Geçersiz Subnet';
+      if (pcGateway && !validateIP(pcGateway)) newErrors.gateway = 'Geçersiz Gateway';
+      if (pcDNS && !validateIP(pcDNS)) newErrors.dns = 'Geçersiz DNS';
     }
-    if (pcIPv6 && !validateIPv6(pcIPv6)) newErrors.ipv6 = 'GeÃ§ersiz IPv6';
+    if (pcIPv6 && !validateIPv6(pcIPv6)) newErrors.ipv6 = 'Geçersiz IPv6';
 
     setErrors(newErrors);
 

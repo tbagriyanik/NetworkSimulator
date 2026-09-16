@@ -88,10 +88,10 @@ export function MultiDeviceWindowManager({
 
   return (
     <>
-      {/* Sol Ortadaki AÃ§Ä±k Pencereler Simgeleri (Left-Middle Open Windows Dock - mobilde tek pencere olduÄŸu iÃ§in gizlenir) */}
+      {/* Sol Ortadaki Açık Pencereler Simgeleri (Left-Middle Open Windows Dock - mobilde tek pencere olduğu için gizlenir) */}
       {openWindows.length > 0 && (
         <aside
-          aria-label={language === 'tr' ? 'AÃ§Ä±k Pencereler' : 'Open Windows'}
+          aria-label={language === 'tr' ? 'Açık Pencereler' : 'Open Windows'}
           className={`hidden md:flex fixed left-0 top-1/2 -translate-y-1/2 z-[9995] flex-col items-center p-1 rounded-r-xl border border-l-0 shadow-xl backdrop-blur-xl transition-all select-none animate-in slide-in-from-left duration-200 ${
             isDark
               ? 'bg-secondary-950/90 border-secondary-800/80 shadow-black/50'
@@ -201,14 +201,14 @@ export function MultiDeviceWindowManager({
             onClick={() => splitViewSideBySide()}
             className={`px-2.5 py-1 rounded-full font-medium transition-all ${layoutMode === 'split' ? 'bg-blue-500 text-white shadow' : 'hover:bg-secondary-800 text-secondary-300'}`}
           >
-            {language === 'tr' ? 'Yan Yana (BÃ¶l)' : 'Side-by-Side'}
+            {language === 'tr' ? 'Yan Yana (Böl)' : 'Side-by-Side'}
           </button>
           <button
             type="button"
             onClick={() => setLayoutMode('tabs')}
             className={`px-2.5 py-1 rounded-full font-medium transition-all ${layoutMode === 'tabs' ? 'bg-purple-500 text-white shadow' : 'hover:bg-secondary-800 text-secondary-300'}`}
           >
-            {language === 'tr' ? 'Sekmeli GÃ¶rÃ¼nÃ¼m' : 'Tabbed View'}
+            {language === 'tr' ? 'Sekmeli Görünüm' : 'Tabbed View'}
           </button>
         </div>
       )}

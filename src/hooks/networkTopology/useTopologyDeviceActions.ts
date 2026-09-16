@@ -193,15 +193,15 @@ export function useTopologyDeviceActions({
     saveToHistory();
     const conn = connections.find((c) => c.id === connectionId);
     if (conn) {
-      // Port durumlarÄ±nÄ± gÃ¼ncelle - her iki cihazda da
+      // Port durumlarını güncelle - her iki cihazda da
       setDevices((prev) =>
         prev.map((d) => {
-          // Source veya target device ise port'larÄ± gÃ¼ncelle
+          // Source veya target device ise port'ları güncelle
           if (d.id === conn.sourceDeviceId || d.id === conn.targetDeviceId) {
             return {
               ...d,
               ports: d.ports.map((p) => {
-                // Bu baÄŸlantÄ±ya ait portlarÄ± disconnected yap
+                // Bu bağlantıya ait portları disconnected yap
                 if (p.id === conn.sourcePort || p.id === conn.targetPort) {
                   return { ...p, status: 'disconnected' as const };
                 }
@@ -212,7 +212,7 @@ export function useTopologyDeviceActions({
           return d;
         })
       );
-      // BaÄŸlantÄ±yÄ± sil
+      // Bağlantıyı sil
       const remainingConnections = connections.filter((c) => c.id !== connectionId);
       setConnections(remainingConnections);
 

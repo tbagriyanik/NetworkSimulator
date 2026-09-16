@@ -577,7 +577,7 @@ export function TopologyToolbar({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              aria-label={language === 'tr' ? 'Topoloji AnlÄ±k GÃ¶rÃ¼ntÃ¼sÃ¼ Al & Geri YÃ¼kle' : 'Snapshot & Restore Topology'}
+              aria-label={language === 'tr' ? 'Topoloji Anlık Görüntüsü Al & Geri Yükle' : 'Snapshot & Restore Topology'}
               variant="ghost"
               size="icon"
               disabled={isExamActive}
@@ -594,8 +594,8 @@ export function TopologyToolbar({
           <TooltipContent className="flex items-center gap-2">
             <span>
               {isExamActive
-                ? (language === 'tr' ? 'SÄ±nav sÄ±rasÄ±nda anlÄ±k kayÄ±t desteÄŸi devre dÄ±ÅŸÄ±dÄ±r' : 'Snapshot & Restore is disabled during exam')
-                : (language === 'tr' ? 'AnlÄ±k KayÄ±t & Geri YÃ¼kle' : 'Snapshot & Restore')}
+                ? (language === 'tr' ? 'Sınav sırasında anlık kayıt desteği devre dışıdır' : 'Snapshot & Restore is disabled during exam')
+                : (language === 'tr' ? 'Anlık Kayıt & Geri Yükle' : 'Snapshot & Restore')}
             </span>
           </TooltipContent>
         </Tooltip>
@@ -636,7 +636,7 @@ export function TopologyToolbar({
             <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
                 <Button
-                  aria-label={language === 'tr' ? 'Otomatik DÃ¼zenle' : 'Auto Layout'}
+                  aria-label={language === 'tr' ? 'Otomatik Düzenle' : 'Auto Layout'}
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 text-sky-500 hover:bg-sky-500/10 hover:text-sky-400"
@@ -645,14 +645,14 @@ export function TopologyToolbar({
                 </Button>
               </DropdownMenuTrigger>
             </TooltipTrigger>
-            <TooltipContent>{language === 'tr' ? 'Topolojiyi Otomatik DÃ¼zenle' : 'Auto Layout Topology'}</TooltipContent>
+            <TooltipContent>{language === 'tr' ? 'Topolojiyi Otomatik Düzenle' : 'Auto Layout Topology'}</TooltipContent>
           </Tooltip>
           <DropdownMenuContent
             align="end"
             className={`w-48 p-1.5 z-50 ${isDark ? 'bg-secondary-900 border-secondary-800 text-secondary-200' : 'bg-white border-secondary-200 text-secondary-800'}`}
           >
             <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-secondary-400 px-2 py-1">
-              {language === 'tr' ? 'DÃ¼zen AlgoritmasÄ±' : 'Layout Algorithm'}
+              {language === 'tr' ? 'Düzen Algoritması' : 'Layout Algorithm'}
             </DropdownMenuLabel>
             <DropdownMenuSeparator className={isDark ? 'bg-secondary-800' : 'bg-secondary-100'} />
             <DropdownMenuItem
@@ -663,7 +663,7 @@ export function TopologyToolbar({
               }}
               className="text-xs cursor-pointer"
             >
-              {language === 'tr' ? 'ğŸ›ï¸ HiyerarÅŸik (3-Tier)' : 'ğŸ›ï¸ Hierarchical (3-Tier)'}
+              {language === 'tr' ? 'ğŸ›ï¸ Hiyerarşik (3-Tier)' : 'ğŸ›ï¸ Hierarchical (3-Tier)'}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
@@ -673,7 +673,7 @@ export function TopologyToolbar({
               }}
               className="text-xs cursor-pointer"
             >
-              {language === 'tr' ? 'â­ YÄ±ldÄ±z (Star)' : 'â­ Star Topology'}
+              {language === 'tr' ? 'â­ Yıldız (Star)' : 'â­ Star Topology'}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
@@ -704,7 +704,7 @@ export function TopologyToolbar({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                aria-label={language === 'tr' ? 'AÄŸ Sorun Neden Analizcisi' : 'Network Diagnostics & Root Cause'}
+                aria-label={language === 'tr' ? 'Ağ Sorun Neden Analizcisi' : 'Network Diagnostics & Root Cause'}
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-amber-500 hover:bg-amber-500/10 hover:text-amber-400"
@@ -713,7 +713,7 @@ export function TopologyToolbar({
                 <Stethoscope className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{language === 'tr' ? 'AÄŸ Sorun Neden Analizcisi' : 'Network Diagnostics Analyzer'}</TooltipContent>
+            <TooltipContent>{language === 'tr' ? 'Ağ Sorun Neden Analizcisi' : 'Network Diagnostics Analyzer'}</TooltipContent>
           </Tooltip>
         )}
 

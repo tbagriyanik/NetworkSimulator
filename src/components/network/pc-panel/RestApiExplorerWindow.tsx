@@ -260,7 +260,7 @@ export function RestApiExplorerWindow({
                     isDark ? 'bg-secondary-900 border-secondary-700 text-sky-400' : 'bg-secondary-100 border-secondary-300 text-sky-700'
                   }`}
                 >
-                  <option value="">{isTr ? '-- Hedef Cihaz SeÃ§ --' : '-- Select Target Device --'}</option>
+                  <option value="">{isTr ? '-- Hedef Cihaz Seç --' : '-- Select Target Device --'}</option>
                   {devices.map((d) => (
                     <option key={d.id} value={d.id}>
                       {d.name || d.id} ({d.type})
@@ -274,13 +274,13 @@ export function RestApiExplorerWindow({
             <div className="flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               <select
-                aria-label={isTr ? 'HazÄ±r Åablonlar' : 'Preset Templates'}
+                aria-label={isTr ? 'Hazır Åablonlar' : 'Preset Templates'}
                 onChange={(e) => handleSelectTemplate(e.target.value)}
                 className={`text-xs px-2.5 py-1.5 rounded-lg border outline-none font-mono ${
                   isDark ? 'bg-secondary-900 border-secondary-700 text-emerald-400' : 'bg-secondary-100 border-secondary-300 text-emerald-700'
                 }`}
               >
-                <option value="">{isTr ? '-- HazÄ±r Åablon SeÃ§ --' : '-- Preset Template --'}</option>
+                <option value="">{isTr ? '-- Hazır Åablon Seç --' : '-- Preset Template --'}</option>
                 {TEMPLATE_ENDPOINTS.map((tpl, i) => (
                   <option key={i} value={tpl.url}>{tpl.label}</option>
                 ))}
@@ -326,7 +326,7 @@ export function RestApiExplorerWindow({
             className="bg-emerald-600 hover:bg-emerald-700 text-slate-950 font-bold text-xs gap-1.5 shadow"
           >
             <Send className="w-3.5 h-3.5 fill-current" />
-            <span>{isTr ? 'Ä°stek GÃ¶nder' : 'Send'}</span>
+            <span>{isTr ? 'İstek Gönder' : 'Send'}</span>
           </Button>
         </div>
 
@@ -368,7 +368,7 @@ export function RestApiExplorerWindow({
                 className="flex items-center gap-1 text-[10px] text-sky-400 font-mono hover:underline"
               >
                 {copiedSnippet === 'python' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                <span>{copiedSnippet === 'python' ? (isTr ? 'KopyalandÄ±' : 'Copied') : (isTr ? 'Python Kodu Kopyala' : 'Copy Python')}</span>
+                <span>{copiedSnippet === 'python' ? (isTr ? 'Kopyalandı' : 'Copied') : (isTr ? 'Python Kodu Kopyala' : 'Copy Python')}</span>
               </button>
             )}
 
@@ -378,7 +378,7 @@ export function RestApiExplorerWindow({
                 className="flex items-center gap-1 text-[10px] text-amber-400 font-mono hover:underline"
               >
                 {copiedSnippet === 'curl' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                <span>{copiedSnippet === 'curl' ? (isTr ? 'KopyalandÄ±' : 'Copied') : (isTr ? 'cURL Kopyala' : 'Copy cURL')}</span>
+                <span>{copiedSnippet === 'curl' ? (isTr ? 'Kopyalandı' : 'Copied') : (isTr ? 'cURL Kopyala' : 'Copy cURL')}</span>
               </button>
             )}
 
@@ -422,7 +422,7 @@ export function RestApiExplorerWindow({
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5">
                 <FileJson className="w-3.5 h-3.5 text-amber-400" />
-                <span>{isTr ? 'Sunucu YanÄ±tÄ± (Response)' : 'Response'}</span>
+                <span>{isTr ? 'Sunucu Yanıtı (Response)' : 'Response'}</span>
               </div>
 
               {response && (
@@ -463,7 +463,7 @@ export function RestApiExplorerWindow({
                   className="flex items-center gap-1 text-[10px] opacity-70 hover:opacity-100 transition-opacity ml-1"
                 >
                   {isCopied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                  <span>{isCopied ? (isTr ? 'KopyalandÄ±' : 'Copied') : (isTr ? 'JSON Kopyala' : 'Copy JSON')}</span>
+                  <span>{isCopied ? (isTr ? 'Kopyalandı' : 'Copied') : (isTr ? 'JSON Kopyala' : 'Copy JSON')}</span>
                 </button>
               )}
             </div>
@@ -481,7 +481,7 @@ export function RestApiExplorerWindow({
             ) : (
               <div className="flex flex-col items-center justify-center h-full opacity-35 gap-2 select-none">
                 <Server className="w-8 h-8 text-emerald-400" />
-                <span className="text-xs">{isTr ? 'Ä°stek gÃ¶ndermek iÃ§in "Ä°stek GÃ¶nder" butonuna veya bir ÅŸablona tÄ±klayÄ±n' : 'Select a preset template or click "Send" to execute API request'}</span>
+                <span className="text-xs">{isTr ? 'İstek göndermek için "İstek Gönder" butonuna veya bir şablona tıklayın' : 'Select a preset template or click "Send" to execute API request'}</span>
               </div>
             )}
           </div>

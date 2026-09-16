@@ -53,7 +53,7 @@ export function DeviceLabels({ device, deviceWidth, isSelected, isDark, isTR, t,
             const completedCount = (device.printJobs || []).filter(j => j.status === 'completed').length;
             const activeCount = (device.printJobs || []).filter(j => j.status === 'printing' || j.status === 'queued').length;
             return isTR
-              ? `${completedCount} GÃ¶rev TamamlandÄ±${activeCount > 0 ? ` (${activeCount} YazdÄ±rÄ±lÄ±yor)` : ''}`
+              ? `${completedCount} Görev Tamamlandı${activeCount > 0 ? ` (${activeCount} Yazdırılıyor)` : ''}`
               : `${completedCount} Jobs Completed${activeCount > 0 ? ` (${activeCount} Printing)` : ''}`;
           })()}
         </text>
@@ -64,7 +64,7 @@ export function DeviceLabels({ device, deviceWidth, isSelected, isDark, isTR, t,
         (() => {
           const kind = device.iot?.kind || 'sensor';
           const kindLabel = isTR
-            ? (kind === 'lamp' ? 'Lamba' : kind === 'heater' ? 'IsÄ±tÄ±cÄ±' : kind === 'cooler' ? 'SoÄŸutucu' : 'SensÃ¶r')
+            ? (kind === 'lamp' ? 'Lamba' : kind === 'heater' ? 'Isıtıcı' : kind === 'cooler' ? 'Soğutucu' : 'Sensör')
             : (kind === 'lamp' ? 'Lamp' : kind === 'heater' ? 'Heater' : kind === 'cooler' ? 'Cooler' : 'Sensor');
 
           return (
@@ -90,7 +90,7 @@ export function DeviceLabels({ device, deviceWidth, isSelected, isDark, isTR, t,
           if (isIotPoweredOff) {
             return (
               <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
-                <tspan x={deviceWidth / 2} dy="6">{isTR ? 'KapalÄ±' : 'Off'}</tspan>
+                <tspan x={deviceWidth / 2} dy="6">{isTR ? 'Kapalı' : 'Off'}</tspan>
               </text>
             );
           }

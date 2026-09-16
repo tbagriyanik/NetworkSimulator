@@ -144,7 +144,7 @@ export function applyForwardingControls(deps: ForwardingControlsDeps): Forwardin
         );
         if (aclResult === 'deny') {
           const errMsg = language === 'tr'
-            ? `Paket ${device?.name} ingress port ${ingressPortId} ACL kuralÄ± nedeniyle engellendi.`
+            ? `Paket ${device?.name} ingress port ${ingressPortId} ACL kuralı nedeniyle engellendi.`
             : `Packet blocked by inbound ACL on ${device?.name} interface ${ingressPortId}.`;
           return handleDrop(i, ingressConn?.id || currentHopConnId, errMsg, `Blocked by Inbound ACL (${ingressPort.accessGroupIn}) on ${device?.name || stepDeviceId}`);
         }
@@ -160,7 +160,7 @@ export function applyForwardingControls(deps: ForwardingControlsDeps): Forwardin
         );
         if (aclResult === 'deny') {
           const errMsg = language === 'tr'
-            ? `Paket ${device?.name} ingress port ${ingressPortId} IPv6 ACL kuralÄ± nedeniyle engellendi.`
+            ? `Paket ${device?.name} ingress port ${ingressPortId} IPv6 ACL kuralı nedeniyle engellendi.`
             : `Packet blocked by inbound IPv6 ACL on ${device?.name} interface ${ingressPortId}.`;
           return handleDrop(i, ingressConn?.id || currentHopConnId, errMsg, `Blocked by Inbound IPv6 ACL (${ingressPort.ipv6TrafficFilterIn}) on ${device?.name || stepDeviceId}`);
         }
@@ -197,7 +197,7 @@ export function applyForwardingControls(deps: ForwardingControlsDeps): Forwardin
         );
         if (aclResult === 'deny') {
           const errMsg = language === 'tr'
-            ? `Paket ${device?.name} egress port ${egressPortId} ACL kuralÄ± nedeniyle engellendi.`
+            ? `Paket ${device?.name} egress port ${egressPortId} ACL kuralı nedeniyle engellendi.`
             : `Packet blocked by outbound ACL on ${device?.name} interface ${egressPortId}.`;
           return handleDrop(i, ingressConn?.id || currentHopConnId, errMsg, `Blocked by Outbound ACL (${egressPort.accessGroupOut}) on ${device?.name || stepDeviceId}`);
         }
@@ -213,7 +213,7 @@ export function applyForwardingControls(deps: ForwardingControlsDeps): Forwardin
         );
         if (aclResult === 'deny') {
           const errMsg = language === 'tr'
-            ? `Paket ${device?.name} egress port ${egressPortId} IPv6 ACL kuralÄ± nedeniyle engellendi.`
+            ? `Paket ${device?.name} egress port ${egressPortId} IPv6 ACL kuralı nedeniyle engellendi.`
             : `Packet blocked by outbound IPv6 ACL on ${device?.name} interface ${egressPortId}.`;
           return handleDrop(i, ingressConn?.id || currentHopConnId, errMsg, `Blocked by Outbound IPv6 ACL (${egressPort.ipv6TrafficFilterOut}) on ${device?.name || stepDeviceId}`);
         }
@@ -280,7 +280,7 @@ export function applyForwardingControls(deps: ForwardingControlsDeps): Forwardin
       if (!allowed) {
         const devName = device?.name || state?.hostname || 'Firewall';
         const errMsg = language === 'tr'
-          ? `Paket firewall (${devName}) kuralÄ± nedeniyle engellendi.`
+          ? `Paket firewall (${devName}) kuralı nedeniyle engellendi.`
           : `Packet blocked by firewall (${devName}) rule.`;
         const dropTag = `Blocked by Firewall (${devName})${matchedRuleDesc ? `: ${matchedRuleDesc}` : ''}`;
         return handleDrop(i, ingressConn?.id || currentHopConnId, errMsg, dropTag);

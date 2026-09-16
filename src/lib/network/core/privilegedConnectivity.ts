@@ -21,7 +21,7 @@ export function deterministicRandom(): number {
 /**
  * Generate ping latencies proportional to WiFi distance.
  * Uses exponential curve: close = very fast, far = much slower (realistic WiFi behavior).
- * distance 0px â†’ ~1ms, 450px (signal 1) â†’ ~150ms, 549px â†’ ~210ms
+ * distance 0px → ~1ms, 450px (signal 1) → ~150ms, 549px → ~210ms
  */
 export function generatePingLatencies(distance: number): { min: number; avg: number; max: number } {
     const jitter = (base: number, pct: number) =>
@@ -196,8 +196,8 @@ export function cmdPing(state: SwitchState, input: string, ctx: CommandContext):
             const srcDist = getWirelessDistance(sourceDevice, devices, ctx.deviceStates);
             const dstDist = getWirelessDistance(targetDevice, devices, ctx.deviceStates);
 
-            // Both wired â†’ <1ms
-            // One or both wireless â†’ sum their distances for total path latency
+            // Both wired → <1ms
+            // One or both wireless → sum their distances for total path latency
             const srcWired = srcDist === Infinity;
             const dstWired = dstDist === Infinity;
 

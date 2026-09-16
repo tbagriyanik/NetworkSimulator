@@ -118,10 +118,10 @@ describe('WifiControlPanel', () => {
 
     expect(htmlTr).toContain('id="wifi-channel"');
     expect(htmlTr).toContain('optgroup');
-    expect(htmlTr).toContain('2.4 GHz BandÄ±');
-    expect(htmlTr).toContain('<option value="6" selected>Kanal 6 (2.437 GHz) - Ã–nerilen</option>');
-    expect(htmlTr).toContain('<option value="11" >Kanal 11 (2.462 GHz) - Ã–nerilen</option>');
-    expect(htmlTr).toContain('5 GHz BandÄ±');
+    expect(htmlTr).toContain('2.4 GHz Bandı');
+    expect(htmlTr).toContain('<option value="6" selected>Kanal 6 (2.437 GHz) - Önerilen</option>');
+    expect(htmlTr).toContain('<option value="11" >Kanal 11 (2.462 GHz) - Önerilen</option>');
+    expect(htmlTr).toContain('5 GHz Bandı');
     expect(htmlTr).toContain('<option value="36" >Kanal 36 (5.180 GHz)</option>');
 
     // Status tab formatting
@@ -164,7 +164,7 @@ describe('WifiControlPanel', () => {
     expect(htmlTr).toContain('value="allow" checked');
     expect(htmlTr).toContain('00:11:22:33:44:55');
     expect(htmlTr).toContain('AA:BB:CC:DD:EE:FF');
-    expect(htmlTr).toContain('Etkin (EriÅŸim: 2 adres)');
+    expect(htmlTr).toContain('Etkin (Erişim: 2 adres)');
 
     const htmlDenyEn = generateRouterAdminPage({
       ...baseDevice,
@@ -197,7 +197,7 @@ describe('WifiControlPanel', () => {
       },
     }, 'tr');
 
-    expect(htmlDisabled).toContain('â—‹ Devre DÄ±ÅŸÄ±');
+    expect(htmlDisabled).toContain('â—‹ Devre Dışı');
   });
 
   it('renders multi-SSID management section and default profiles', () => {
@@ -211,13 +211,13 @@ describe('WifiControlPanel', () => {
         channel: '2.4GHz',
         mode: 'ap',
         ssids: [
-          { id: 'ssid-1', name: 'Ana AÄŸ (Primary)', ssid: 'Primary_SSID', security: 'wpa2', password: 'pass1', band: 'both', enabled: true },
-          { id: 'ssid-2', name: 'Misafir AÄŸ (Guest)', ssid: 'Guest_SSID', security: 'open', band: '2.4GHz', enabled: true },
+          { id: 'ssid-1', name: 'Ana Ağ (Primary)', ssid: 'Primary_SSID', security: 'wpa2', password: 'pass1', band: 'both', enabled: true },
+          { id: 'ssid-2', name: 'Misafir Ağ (Guest)', ssid: 'Guest_SSID', security: 'open', band: '2.4GHz', enabled: true },
         ],
       },
     }, 'tr');
 
-    expect(html).toContain('Ã‡oklu SSID &amp; Misafir AÄŸ Profilleri');
+    expect(html).toContain('Çoklu SSID &amp; Misafir Ağ Profilleri');
     expect(html).toContain('ssid-profiles-container');
     expect(html).toContain('profile-ssid');
     expect(html).toContain('profile-band');
@@ -239,7 +239,7 @@ describe('WifiControlPanel', () => {
       { id: 'iot-1', name: 'Smart Plug 1', sensorType: 'light', connected: true, ip: '192.168.1.105' },
     ]);
 
-    expect(html).toContain('BaÄŸlÄ± Kablosuz Ä°stemciler Listesi');
+    expect(html).toContain('Bağlı Kablosuz İstemciler Listesi');
     expect(html).toContain('connected-wireless-clients-container');
     expect(html).toContain('Smart Plug 1');
   });

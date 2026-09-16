@@ -1,14 +1,14 @@
 ﻿/**
- * packetPipeline.e2e.test.ts â€” End-to-End Packet Pipeline Integration Tests
+ * packetPipeline.e2e.test.ts — End-to-End Packet Pipeline Integration Tests
  *
  * Scenarios:
- * 1. PC â†’ Switch â†’ Router â†’ WAN Cloud (Unicast routing with VLAN, MAC lookup, Route lookup)
- * 2. DHCP DORA: PC Discover â†’ Router Relay â†’ DHCP Server â†’ ACK (stateful DHCP FSM)
- * 3. STP Topology Change: Loop detection â†’ blocked port â†’ convergence
- * 4. OSPF Neighbor Formation: Hello exchange â†’ 2-Way â†’ Full state via FSM
- * 5. ACL Drop: Extended ACL deny â†’ pipeline trace shows acl-ingress: drop
- * 6. EIGRP Neighbor: AS match â†’ Up state; AS mismatch â†’ Down state
- * 7. LACP Port Bundle: Key match â†’ Distributing state
+ * 1. PC → Switch → Router → WAN Cloud (Unicast routing with VLAN, MAC lookup, Route lookup)
+ * 2. DHCP DORA: PC Discover → Router Relay → DHCP Server → ACK (stateful DHCP FSM)
+ * 3. STP Topology Change: Loop detection → blocked port → convergence
+ * 4. OSPF Neighbor Formation: Hello exchange → 2-Way → Full state via FSM
+ * 5. ACL Drop: Extended ACL deny → pipeline trace shows acl-ingress: drop
+ * 6. EIGRP Neighbor: AS match → Up state; AS mismatch → Down state
+ * 7. LACP Port Bundle: Key match → Distributing state
  */
 
 import { describe, it, expect } from 'vitest';
@@ -30,9 +30,9 @@ import type { NetworkPacketFrame } from '@/lib/network/forwarding/packetFrame';
 import type { SwitchState } from '@/lib/network/types';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 // Shared test fixtures
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 
 const NOW = 1700000000000;
 
@@ -99,11 +99,11 @@ function makeSwitchState(hostname: string, overrides: Partial<SwitchState> = {})
   } as SwitchState;
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Scenario 1: PC â†’ Switch â†’ Router â†’ WAN Cloud
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
+// Scenario 1: PC → Switch → Router → WAN Cloud
+// ─────────────────────────────────────────────────────────────────────────────
 
-describe('Scenario 1: PC â†’ Switch â†’ Router â†’ WAN Cloud unicast pipeline', () => {
+describe('Scenario 1: PC → Switch → Router → WAN Cloud unicast pipeline', () => {
   const pc = makeDevice('pc1', 'pc', '192.168.1.10', { macAddress: '00:aa:bb:cc:dd:01' });
   const sw = makeDevice('sw1', 'switchL2', '192.168.1.254', { macAddress: '00:aa:bb:cc:dd:02' });
   const router = makeDevice('r1', 'router', '192.168.1.1', { macAddress: '00:aa:bb:cc:dd:03' });
@@ -164,7 +164,7 @@ describe('Scenario 1: PC â†’ Switch â†’ Router â†’ WAN Cloud unic
     ipProtocol: 1,
     vlanId: 1,
     length: 84,
-    info: 'ICMP Echo 192.168.1.10 â†’ 8.8.8.8',
+    info: 'ICMP Echo 192.168.1.10 → 8.8.8.8',
   };
 
   it('should process the frame at the switch hop with MAC lookup stage', () => {
@@ -182,7 +182,7 @@ describe('Scenario 1: PC â†’ Switch â†’ Router â†’ WAN Cloud unic
     expect(stageNames).toContain('mac-lookup');
     expect(stageNames).toContain('egress');
 
-    // MAC lookup should find fa0/24 (â†’ router) via mac address table
+    // MAC lookup should find fa0/24 (→ router) via mac address table
     const macTrace = hopResult.traces.find(t => t.stage === 'mac-lookup');
     expect(macTrace).toBeDefined();
     expect(macTrace?.action).not.toBe('drop');
@@ -238,9 +238,9 @@ describe('Scenario 1: PC â†’ Switch â†’ Router â†’ WAN Cloud unic
   });
 });
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Scenario 2: ACL Drop â€” Extended ACL deny on ingress
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
+// Scenario 2: ACL Drop — Extended ACL deny on ingress
+// ─────────────────────────────────────────────────────────────────────────────
 
 describe('Scenario 2: ACL Ingress Drop', () => {
   const pc = makeDevice('pc2', 'pc', '192.168.2.10');
@@ -312,9 +312,9 @@ describe('Scenario 2: ACL Ingress Drop', () => {
   });
 });
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 // Scenario 3: OSPF Neighbor State Machine
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 
 describe('Scenario 3: OSPF Neighbor State Machine', () => {
   const now = NOW;
@@ -332,13 +332,13 @@ describe('Scenario 3: OSPF Neighbor State Machine', () => {
     lastHelloAt: now,
   };
 
-  it('Down â†’ Init on HelloReceived', () => {
+  it('Down → Init on HelloReceived', () => {
     const result = ospfNeighborTransition(baseNeighbor, 'HelloReceived', now, '1.1.1.1');
     expect(result.nextState.state).toBe('Init');
     expect(result.events.some(e => e.type === 'LogEvent')).toBe(true);
   });
 
-  it('Init â†’ ExStart on 2-WayReceived (immediate adjacency on P2P)', () => {
+  it('Init → ExStart on 2-WayReceived (immediate adjacency on P2P)', () => {
     const initNeighbor: OspfNeighborRecord = { ...baseNeighbor, state: 'Init' };
     const result = ospfNeighborTransition(initNeighbor, '2-WayReceived', now, '1.1.1.1');
     expect(result.nextState.state).toBe('ExStart');
@@ -346,20 +346,20 @@ describe('Scenario 3: OSPF Neighbor State Machine', () => {
     expect(result.events.some(e => e.type === 'SendDD')).toBe(true);
   });
 
-  it('ExStart â†’ Exchange on NegotiationDone', () => {
+  it('ExStart → Exchange on NegotiationDone', () => {
     const exstartNeighbor: OspfNeighborRecord = { ...baseNeighbor, state: 'ExStart' };
     const result = ospfNeighborTransition(exstartNeighbor, 'NegotiationDone', now, '1.1.1.1');
     expect(result.nextState.state).toBe('Exchange');
   });
 
-  it('Exchange â†’ Full on ExchangeDone (no LSA requests)', () => {
+  it('Exchange → Full on ExchangeDone (no LSA requests)', () => {
     const exchangeNeighbor: OspfNeighborRecord = { ...baseNeighbor, state: 'Exchange', lsaCount: 0 };
     const result = ospfNeighborTransition(exchangeNeighbor, 'ExchangeDone', now, '1.1.1.1');
     expect(result.nextState.state).toBe('Full');
     expect(result.events.some(e => e.type === 'RouteUpdate')).toBe(true);
   });
 
-  it('Full â†’ Down on InactivityTimer (dead timer expired)', () => {
+  it('Full → Down on InactivityTimer (dead timer expired)', () => {
     const fullNeighbor: OspfNeighborRecord = { ...baseNeighbor, state: 'Full', deadTimer: 0 };
     const result = ospfNeighborTransition(fullNeighbor, 'InactivityTimer', now, '1.1.1.1');
     expect(result.nextState.state).toBe('Down');
@@ -395,9 +395,9 @@ describe('Scenario 3: OSPF Neighbor State Machine', () => {
   });
 });
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 // Scenario 4: EIGRP Neighbor State Machine
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 
 describe('Scenario 4: EIGRP Neighbor State Machine', () => {
   const baseNeighbor: EigrpNeighborRecord = {
@@ -414,19 +414,19 @@ describe('Scenario 4: EIGRP Neighbor State Machine', () => {
     lastHelloAt: NOW,
   };
 
-  it('Down â†’ Up on HelloReceived with matching K-values', () => {
+  it('Down → Up on HelloReceived with matching K-values', () => {
     const result = eigrpNeighborTransition(baseNeighbor, 'HelloReceived', NOW, [1, 0, 1, 0, 0]);
     expect(result.nextNeighbor.state).toBe('Up');
     expect(result.neighborGained).toBe(true);
   });
 
-  it('Down â†’ Down on HelloReceived with mismatched K-values', () => {
+  it('Down → Down on HelloReceived with mismatched K-values', () => {
     const result = eigrpNeighborTransition(baseNeighbor, 'KValueMismatch', NOW);
     expect(result.nextNeighbor.state).toBe('Down');
     expect(result.neighborGained).toBe(false);
   });
 
-  it('Up â†’ Down on HoldExpired', () => {
+  it('Up → Down on HoldExpired', () => {
     const upNeighbor: EigrpNeighborRecord = { ...baseNeighbor, state: 'Up', holdTimer: 0 };
     const result = eigrpNeighborTransition(upNeighbor, 'HoldExpired', NOW);
     expect(result.nextNeighbor.state).toBe('Down');
@@ -454,9 +454,9 @@ describe('Scenario 4: EIGRP Neighbor State Machine', () => {
   });
 });
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 // Scenario 5: DHCP Client State Machine (DORA)
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 
 describe('Scenario 5: DHCP Client State Machine DORA', () => {
   const baseClient: DhcpClientRecord = {
@@ -472,13 +472,13 @@ describe('Scenario 5: DHCP Client State Machine DORA', () => {
     lastEventAt: NOW,
   };
 
-  it('INIT â†’ SELECTING on Discover (sends DISCOVER frame)', () => {
+  it('INIT → SELECTING on Discover (sends DISCOVER frame)', () => {
     const result = dhcpClientTransition(baseClient, 'Discover', NOW);
     expect(result.nextClient.state).toBe('SELECTING');
     expect(result.frameToSend).toBe('DISCOVER');
   });
 
-  it('SELECTING â†’ REQUESTING on OfferReceived (sends REQUEST)', () => {
+  it('SELECTING → REQUESTING on OfferReceived (sends REQUEST)', () => {
     const selecting: DhcpClientRecord = { ...baseClient, state: 'SELECTING' };
     const result = dhcpClientTransition(selecting, 'OfferReceived', NOW, {
       ip: '192.168.1.100', mask: '255.255.255.0', gw: '192.168.1.1', lease: 86400, serverIp: '192.168.1.1'
@@ -488,7 +488,7 @@ describe('Scenario 5: DHCP Client State Machine DORA', () => {
     expect(result.frameToSend).toBe('REQUEST');
   });
 
-  it('REQUESTING â†’ BOUND on AckReceived (IP assigned)', () => {
+  it('REQUESTING → BOUND on AckReceived (IP assigned)', () => {
     const requesting: DhcpClientRecord = { ...baseClient, state: 'REQUESTING', offeredIp: '192.168.1.100' };
     const result = dhcpClientTransition(requesting, 'AckReceived', NOW, {
       ip: '192.168.1.100', mask: '255.255.255.0', gw: '192.168.1.1', lease: 86400, serverIp: '192.168.1.1'
@@ -500,7 +500,7 @@ describe('Scenario 5: DHCP Client State Machine DORA', () => {
     expect(result.nextClient.t2).toBeCloseTo(75600, 0);
   });
 
-  it('BOUND â†’ RENEWING on T1Expired', () => {
+  it('BOUND → RENEWING on T1Expired', () => {
     const bound: DhcpClientRecord = {
       ...baseClient,
       state: 'BOUND',
@@ -512,13 +512,13 @@ describe('Scenario 5: DHCP Client State Machine DORA', () => {
     expect(result.frameToSend).toBe('REQUEST');
   });
 
-  it('RENEWING â†’ REBINDING on T2Expired', () => {
+  it('RENEWING → REBINDING on T2Expired', () => {
     const renewing: DhcpClientRecord = { ...baseClient, state: 'RENEWING', assignedIp: '192.168.1.100' };
     const result = dhcpClientTransition(renewing, 'T2Expired', NOW);
     expect(result.nextClient.state).toBe('REBINDING');
   });
 
-  it('BOUND â†’ INIT on NakReceived', () => {
+  it('BOUND → INIT on NakReceived', () => {
     const requesting: DhcpClientRecord = { ...baseClient, state: 'REQUESTING' };
     const result = dhcpClientTransition(requesting, 'NakReceived', NOW);
     expect(result.nextClient.state).toBe('INIT');
@@ -526,9 +526,9 @@ describe('Scenario 5: DHCP Client State Machine DORA', () => {
   });
 });
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 // Scenario 6: STP Port State Machine
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 
 describe('Scenario 6: STP Port State Machine', () => {
   const basePort: StpPortRecord = {
@@ -545,26 +545,26 @@ describe('Scenario 6: STP Port State Machine', () => {
     isRstp: false,
   };
 
-  it('PortEnabled â†’ Blocking (STP) without PortFast', () => {
+  it('PortEnabled → Blocking (STP) without PortFast', () => {
     const result = stpPortTransition({ ...basePort, state: 'Disabled' }, 'PortEnabled');
     expect(result.nextPort.state).toBe('Blocking');
     expect(result.stateChanged).toBe(true);
   });
 
-  it('PortEnabled â†’ Forwarding immediately with PortFast', () => {
+  it('PortEnabled → Forwarding immediately with PortFast', () => {
     const pfPort: StpPortRecord = { ...basePort, portFast: true, state: 'Disabled' };
     const result = stpPortTransition(pfPort, 'PortEnabled');
     expect(result.nextPort.state).toBe('Forwarding');
     expect(result.nextPort.role).toBe('Designated');
   });
 
-  it('SelectedAsAlternate â†’ Blocking state', () => {
+  it('SelectedAsAlternate → Blocking state', () => {
     const result = stpPortTransition(basePort, 'SelectedAsAlternate');
     expect(result.nextPort.role).toBe('Alternate');
     expect(result.nextPort.state).toBe('Blocking');
   });
 
-  it('ForwardDelayExpired: Listening â†’ Learning â†’ Forwarding chain', () => {
+  it('ForwardDelayExpired: Listening → Learning → Forwarding chain', () => {
     const listening: StpPortRecord = { ...basePort, state: 'Listening', stateTimer: 0 };
     const toLearning = stpPortTransition(listening, 'ForwardDelayExpired');
     expect(toLearning.nextPort.state).toBe('Learning');
@@ -580,16 +580,16 @@ describe('Scenario 6: STP Port State Machine', () => {
     expect(result.nextPort.state).toBe('Blocking');
   });
 
-  it('RSTP: PortEnabled â†’ Discarding', () => {
+  it('RSTP: PortEnabled → Discarding', () => {
     const rstpPort: StpPortRecord = { ...basePort, isRstp: true, state: 'Disabled' };
     const result = stpPortTransition(rstpPort, 'PortEnabled');
     expect(result.nextPort.state).toBe('Discarding');
   });
 });
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 // Scenario 7: LACP Port State Machine
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 
 describe('Scenario 7: LACP Port Bundle Formation', () => {
   const basePort: LacpPortRecord = {
@@ -605,7 +605,7 @@ describe('Scenario 7: LACP Port Bundle Formation', () => {
     isActive: true,
   };
 
-  it('Detached â†’ Waiting on LacpduReceived with matching key', () => {
+  it('Detached → Waiting on LacpduReceived with matching key', () => {
     const result = lacpPortTransition(basePort, 'LacpduReceived', {
       key: 100, priority: 32768, systemId: '00:aa:bb:cc:dd:ee', state: 0b01000101
     });
@@ -613,7 +613,7 @@ describe('Scenario 7: LACP Port Bundle Formation', () => {
     expect(result.nextPort.partnerKey).toBe(100);
   });
 
-  it('Waiting â†’ Attached on second LacpduReceived', () => {
+  it('Waiting → Attached on second LacpduReceived', () => {
     const waiting: LacpPortRecord = { ...basePort, state: 'Waiting', partnerKey: 100 };
     const result = lacpPortTransition(waiting, 'LacpduReceived', {
       key: 100, priority: 32768, systemId: '00:aa:bb:cc:dd:ee', state: 0b01000101
@@ -621,7 +621,7 @@ describe('Scenario 7: LACP Port Bundle Formation', () => {
     expect(result.nextPort.state).toBe('Attached');
   });
 
-  it('Attached â†’ Collecting â†’ Distributing on Selected events', () => {
+  it('Attached → Collecting → Distributing on Selected events', () => {
     const attached: LacpPortRecord = { ...basePort, state: 'Attached', partnerKey: 100 };
     const collecting = lacpPortTransition(attached, 'Selected');
     expect(collecting.nextPort.state).toBe('Collecting');
@@ -631,14 +631,14 @@ describe('Scenario 7: LACP Port Bundle Formation', () => {
     expect(distributing.inBundle).toBe(true);
   });
 
-  it('LacpduTimeout â†’ Expired state (bundle lost)', () => {
+  it('LacpduTimeout → Expired state (bundle lost)', () => {
     const distributing: LacpPortRecord = { ...basePort, state: 'Distributing', lacpduTimer: 0 };
     const result = lacpPortTransition(distributing, 'LacpduTimeout');
     expect(result.nextPort.state).toBe('Expired');
     expect(result.inBundle).toBe(false);
   });
 
-  it('PortDisabled â†’ Detached (leaves bundle)', () => {
+  it('PortDisabled → Detached (leaves bundle)', () => {
     const distributing: LacpPortRecord = { ...basePort, state: 'Distributing' };
     const result = lacpPortTransition(distributing, 'PortDisabled');
     expect(result.nextPort.state).toBe('Detached');
@@ -647,9 +647,9 @@ describe('Scenario 7: LACP Port Bundle Formation', () => {
   });
 });
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 // Scenario 8: Port Security Drop
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 
 describe('Scenario 8: Port Security Violation Drop', () => {
   const router = makeDevice('r3', 'router', '192.168.3.1', { macAddress: '00:aa:bb:cc:dd:20' });

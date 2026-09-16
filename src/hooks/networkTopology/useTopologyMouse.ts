@@ -682,7 +682,7 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
         if (!isOnDevice && !isOnNote && !isOnMenu) {
           setSelectedDeviceIds([]);
           selectedDeviceIdsRef.current = [];
-          // onDeviceSelect is intentionally not called here â€” clearing selection is handled by setSelectedDeviceIds([]).
+          // onDeviceSelect is intentionally not called here — clearing selection is handled by setSelectedDeviceIds([]).
           setSelectedNoteIds([]);
           setPingMode(false);
           setPingSource(null);

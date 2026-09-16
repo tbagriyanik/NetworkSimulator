@@ -37,7 +37,7 @@ describe('iotWebPanel', () => {
       const result = generateIotWebPanelContent([createIotDevice()], 'tr');
 
       expect(result).toContain('IoT Web Paneli');
-      expect(result).toContain('GiriÅŸ Yap');
+      expect(result).toContain('Giriş Yap');
     });
 
     it('should include English text when language is en', () => {
@@ -235,9 +235,9 @@ describe('iotWebPanel', () => {
     it('should show Turkish text when language is tr', () => {
       const result = generateIotDevicePageContent('sensor-1', 'Test', 'tr');
 
-      expect(result).toContain('IoT Cihaz YÃ¶netimi');
+      expect(result).toContain('IoT Cihaz Yönetimi');
       expect(result).toContain('Cihaz ID');
-      expect(result).toContain('Listeye DÃ¶n');
+      expect(result).toContain('Listeye Dön');
     });
 
     it('should show powered off warning when device is off', () => {

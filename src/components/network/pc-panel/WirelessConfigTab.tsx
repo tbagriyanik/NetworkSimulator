@@ -93,7 +93,7 @@ export function WirelessConfigTab({
           <div className="flex items-center gap-3 text-purple-500">
             <Network className="w-5 h-5" />
             <h3 className="text-sm font-black tracking-widest ">
-              {language === 'tr' ? 'Wi-Fi BaÄŸlantÄ±sÄ±' : 'Wi-Fi Connection'}
+              {language === 'tr' ? 'Wi-Fi Bağlantısı' : 'Wi-Fi Connection'}
             </h3>
           </div>
           <div className="flex items-center gap-2">
@@ -121,7 +121,7 @@ export function WirelessConfigTab({
                 }, 300);
               }}
             >
-              {language === 'tr' ? 'Kablosuz AyarlarÄ± AÃ§' : 'Open Wireless Settings'}
+              {language === 'tr' ? 'Kablosuz Ayarları Aç' : 'Open Wireless Settings'}
             </Button>
             <button
               type="button"
@@ -192,7 +192,7 @@ export function WirelessConfigTab({
                   }}
                   onFocus={() => setSsidDropdownOpen(true)}
                   onBlur={() => setTimeout(() => setSsidDropdownOpen(false), 150)}
-                  placeholder={language === 'tr' ? 'AÄŸ seÃ§in veya yazÄ±n...' : 'Select or type SSID...'}
+                  placeholder={language === 'tr' ? 'Ağ seçin veya yazın...' : 'Select or type SSID...'}
                   className={cn(
                     "flex-1 bg-transparent outline-none text-sm",
                     isDark ? 'text-white placeholder:text-secondary-500' : 'text-secondary-900 placeholder:text-secondary-400'
@@ -210,7 +210,7 @@ export function WirelessConfigTab({
                 )}>
                   {filteredSSIDs.length === 0 && (
                     <div className={cn("px-3 py-2 text-xs", isDark ? 'text-secondary-200' : 'text-secondary-400')}>
-                      {language === 'tr' ? 'AÄŸ bulunamadÄ±' : 'No networks found'}
+                      {language === 'tr' ? 'Ağ bulunamadı' : 'No networks found'}
                     </div>
                   )}
                   {filteredSSIDs.map(entry => {
@@ -218,7 +218,7 @@ export function WirelessConfigTab({
                     const apDevice = topologyDevices.find(d => d.id === entry.deviceId);
                     const apWifi = apDevice ? getDeviceWifiConfig(apDevice, safeStates) : undefined;
                     const apChannelStr = apWifi?.channel || entry.channel;
-                    const channelInfo = apChannelStr ? ` â€¢ ${formatChannelDisplay(apChannelStr, language)}` : '';
+                    const channelInfo = apChannelStr ? ` • ${formatChannelDisplay(apChannelStr, language)}` : '';
                     const hasDupe = availableSSIDs.filter(e => e.ssid === entry.ssid).length > 1;
                     const label = hasDupe ? `${entry.ssid} (${entry.deviceName}${channelInfo})` : `${entry.ssid} (${entry.deviceName}${channelInfo})`;
                     return (
@@ -248,7 +248,7 @@ export function WirelessConfigTab({
                           isDark ? 'text-white' : 'text-secondary-900'
                         )}
                       >
-                        ğŸ“¶ {label}
+                        📶 {label}
                       </button>
                     );
                   })}
@@ -259,7 +259,7 @@ export function WirelessConfigTab({
 
           <div className="space-y-2">
             <label className="text-[10px] font-black tracking-widest text-secondary-500 ml-1">
-              {language === 'tr' ? 'GÃ¼venlik' : 'Security'}
+              {language === 'tr' ? 'Güvenlik' : 'Security'}
             </label>
             <Select
               value={wifiSecurity}
@@ -284,7 +284,7 @@ export function WirelessConfigTab({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="open">{language === 'tr' ? 'AÃ§Ä±k' : 'Open'}</SelectItem>
+                <SelectItem value="open">{language === 'tr' ? 'Açık' : 'Open'}</SelectItem>
                 <SelectItem value="wep">WEP</SelectItem>
                 <SelectItem value="wpa">WPA</SelectItem>
                 <SelectItem value="wpa2">WPA2 Personal</SelectItem>
@@ -296,7 +296,7 @@ export function WirelessConfigTab({
           {wifiSecurity !== 'open' && (
             <div className="space-y-2">
               <label className="text-[10px] font-black tracking-widest text-secondary-500 ml-1">
-                {language === 'tr' ? (wifiSecurity === 'wep' ? 'WEP AnahtarÄ±' : 'Parola') : (wifiSecurity === 'wep' ? 'WEP Key' : 'Password')}
+                {language === 'tr' ? (wifiSecurity === 'wep' ? 'WEP Anahtarı' : 'Parola') : (wifiSecurity === 'wep' ? 'WEP Key' : 'Password')}
               </label>
               <div className="relative">
                 <Input
@@ -317,7 +317,7 @@ export function WirelessConfigTab({
                       }
                     });
                   }}
-                  placeholder={wifiSecurity === 'wep' ? (language === 'tr' ? 'WEP anahtarÄ± girin (en az 5 karakter veya 10/26 hex hane)' : 'Enter WEP key (min 5 chars or 10/26 hex digits)') : t.securityKey}
+                  placeholder={wifiSecurity === 'wep' ? (language === 'tr' ? 'WEP anahtarı girin (en az 5 karakter veya 10/26 hex hane)' : 'Enter WEP key (min 5 chars or 10/26 hex digits)') : t.securityKey}
                   disabled={!wifiEnabled}
                   className="bg-background pr-9"
                 />
@@ -335,7 +335,7 @@ export function WirelessConfigTab({
 
           <div className="space-y-2">
             <label className="text-[10px] font-black tracking-widest text-secondary-500 ml-1">
-              {language === 'tr' ? 'YayÄ±n KanalÄ± (Kanal / Frekans)' : 'Broadcast Channel (Channel / Frequency)'}
+              {language === 'tr' ? 'Yayın Kanalı (Kanal / Frekans)' : 'Broadcast Channel (Channel / Frequency)'}
             </label>
             <Select
               value={normalizeChannel(wifiChannel)}
@@ -359,14 +359,14 @@ export function WirelessConfigTab({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="max-h-60">
-                <SelectItem value="auto">{language === 'tr' ? 'ğŸŒ Otomatik (TÃ¼m Kanallar)' : 'ğŸŒ Auto (All Channels)'}</SelectItem>
-                <SelectItem value="2.4GHz">ğŸ“¡ 2.4 GHz ({language === 'tr' ? 'VarsayÄ±lan / TÃ¼m 2.4G' : 'Default / All 2.4G'})</SelectItem>
+                <SelectItem value="auto">{language === 'tr' ? '🌐 Otomatik (Tüm Kanallar)' : '🌐 Auto (All Channels)'}</SelectItem>
+                <SelectItem value="2.4GHz">📡 2.4 GHz ({language === 'tr' ? 'Varsayılan / Tüm 2.4G' : 'Default / All 2.4G'})</SelectItem>
                 {WIRELESS_CHANNELS_2_4GHZ.map(ch => (
                   <SelectItem key={ch.value} value={ch.value}>
                     {language === 'tr' ? ch.labelTr : ch.labelEn}
                   </SelectItem>
                 ))}
-                <SelectItem value="5GHz">âš¡ 5 GHz ({language === 'tr' ? 'VarsayÄ±lan / TÃ¼m 5G' : 'Default / All 5G'})</SelectItem>
+                <SelectItem value="5GHz">âš¡ 5 GHz ({language === 'tr' ? 'Varsayılan / Tüm 5G' : 'Default / All 5G'})</SelectItem>
                 {WIRELESS_CHANNELS_5GHZ.map(ch => (
                   <SelectItem key={ch.value} value={ch.value}>
                     {language === 'tr' ? ch.labelTr : ch.labelEn}
@@ -507,9 +507,9 @@ export function WirelessConfigTab({
             </div>
             <div className="opacity-80">
               {!wifiEnabled
-                ? (language === 'tr' ? 'Kablosuz alÄ±cÄ± kapalÄ±' : 'Wireless receiver disabled')
+                ? (language === 'tr' ? 'Kablosuz alıcı kapalı' : 'Wireless receiver disabled')
                 : (() => {
-                  if (!wifiSSID) return language === 'tr' ? 'WLAN0 aktif, aÄŸ seÃ§ilmedi' : 'WLAN0 active, no network selected';
+                  if (!wifiSSID) return language === 'tr' ? 'WLAN0 aktif, ağ seçilmedi' : 'WLAN0 active, no network selected';
                   const safeStates = ensureDeviceStatesMap(deviceStates);
                   const currentDevice = topologyDevices.find(d => d.id === deviceId);
                   const clientWifi: DeviceWifiConfig = {
@@ -594,24 +594,24 @@ export function WirelessConfigTab({
                   const isConnected = wifiEnabled && (!!foundInStates || !!foundInTopology);
                   if (isConnected && wifiSSID) {
                     const chLabel = formatChannelDisplay(wifiChannel, language);
-                    return language === 'tr' ? `BaÄŸlÄ± â€¢ SSID: ${wifiSSID} (${chLabel})` : `Connected â€¢ SSID: ${wifiSSID} (${chLabel})`;
+                    return language === 'tr' ? `Bağlı • SSID: ${wifiSSID} (${chLabel})` : `Connected • SSID: ${wifiSSID} (${chLabel})`;
                   }
                   if (isBlockedByMac) {
                     const clientMac = getDeviceMacAddress(currentDevice, safeStates) || (language === 'tr' ? 'Bilinmiyor' : 'Unknown');
                     return language === 'tr'
-                      ? `MAC Filtresi Engelledi â€¢ PC MAC: ${clientMac}`
-                      : `Blocked by AP MAC Filter â€¢ PC MAC: ${clientMac}`;
+                      ? `MAC Filtresi Engelledi • PC MAC: ${clientMac}`
+                      : `Blocked by AP MAC Filter • PC MAC: ${clientMac}`;
                   }
                   if (mismatchedApChannel) {
                     const apCh = formatChannelDisplay(mismatchedApChannel, language);
                     const clientCh = formatChannelDisplay(wifiChannel, language);
                     return language === 'tr'
-                      ? `Kanal UyuÅŸmazlÄ±ÄŸÄ±: AP (${apCh}) â‰  PC (${clientCh})`
+                      ? `Kanal Uyuşmazlığı: AP (${apCh}) â‰  PC (${clientCh})`
                       : `Channel Mismatch: AP (${apCh}) â‰  PC (${clientCh})`;
                   }
                   return wifiSSID
-                    ? (language === 'tr' ? `AÄŸ bulunamadÄ±: ${wifiSSID}` : `Network not found: ${wifiSSID}`)
-                    : (language === 'tr' ? 'WLAN0 aktif, aÄŸ seÃ§ilmedi' : 'WLAN0 active, no network selected');
+                    ? (language === 'tr' ? `Ağ bulunamadı: ${wifiSSID}` : `Network not found: ${wifiSSID}`)
+                    : (language === 'tr' ? 'WLAN0 aktif, ağ seçilmedi' : 'WLAN0 active, no network selected');
                 })()
               }
             </div>
@@ -628,7 +628,7 @@ export function WirelessConfigTab({
             </div>
             <div>
               <div className="font-bold tracking-wider mb-0.5">
-                {language === 'tr' ? 'Sinyal GÃ¼cÃ¼' : 'Signal Strength'}
+                {language === 'tr' ? 'Sinyal Gücü' : 'Signal Strength'}
               </div>
               <div className="opacity-90">
                 {(() => {
@@ -636,7 +636,7 @@ export function WirelessConfigTab({
                   const percentMap: Record<number, number> = { 0: 0, 1: 1, 2: 25, 3: 50, 4: 75, 5: 100 };
                   const percentage = percentMap[strength] || 0;
                   const levelMap = {
-                    tr: { 0: 'Sinyal yok', 1: 'Ã‡ok ZayÄ±f', 2: 'ZayÄ±f', 3: 'Orta', 4: 'Ä°yi', 5: 'MÃ¼kemmel' },
+                    tr: { 0: 'Sinyal yok', 1: 'Çok Zayıf', 2: 'Zayıf', 3: 'Orta', 4: 'İyi', 5: 'Mükemmel' },
                     en: { 0: 'No signal', 1: 'Very Weak', 2: 'Weak', 3: 'Fair', 4: 'Good', 5: 'Excellent' }
                   };
                   const level = levelMap[language === 'tr' ? 'tr' : 'en'][strength as keyof typeof levelMap['en']] || 'Unknown';

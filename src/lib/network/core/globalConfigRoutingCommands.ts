@@ -166,7 +166,7 @@ export function cmdRouterRip(state: SwitchState, _input: string, ctx: CommandCon
   return {
     success: true,
     output: lang === 'tr' ?
-      'RIP Routing Protocol etkinleÅŸtirildi' :
+      'RIP Routing Protocol etkinleştirildi' :
       'RIP Routing Protocol enabled',
     newState: {
       routingProtocol: 'rip',
@@ -219,7 +219,7 @@ export function cmdNoRouterRip(state: SwitchState, _input: string, ctx: CommandC
   return {
     success: true,
     output: lang === 'tr' ?
-      'RIP Routing Protocol devre dÄ±ÅŸÄ± bÄ±rakÄ±ldÄ±' :
+      'RIP Routing Protocol devre dışı bırakıldı' :
       'RIP Routing Protocol disabled',
     newState: {
       routingProtocol: 'none',
@@ -237,7 +237,7 @@ export function cmdNoRouterOspf(state: SwitchState, _input: string, ctx: Command
   return {
     success: true,
     output: lang === 'tr' ?
-      'OSPF Routing Protocol devre dÄ±ÅŸÄ± bÄ±rakÄ±ldÄ±' :
+      'OSPF Routing Protocol devre dışı bırakıldı' :
       'OSPF Routing Protocol disabled',
     newState: {
       routingProtocol: 'none',

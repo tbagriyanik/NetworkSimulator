@@ -58,8 +58,8 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'wifi-note',
       text: isTr
-        ? 'AmaÃ§: Router AP modunda kablosuz aÄŸ oluÅŸturarak PC\'lerin kablosuz baÄŸlanmasÄ±nÄ± saÄŸlamak.\n\nWiFi LaboratuvarÄ± (Orta Seviye):\n1) R1 (Router) wlan0 Ã¼zerinde AP modunda SSID: HomeWiFi yayÄ±nlar.\n2) PC-1 ve PC-2 kablosuz aÄŸa (SSID match) baÄŸlÄ±dÄ±r.\n3) TÃ¼m cihazlar aynÄ± subnet (192.168.1.x) iÃ§indedir.\n4) PC-1 > ping 192.168.1.11 ile kablosuz iletiÅŸimi test edin.\n5) PC-1 > wget 192.168.1.1 ile Wifi kontrol panelini gÃ¶rÃ¼n.\n\nâš ï¸ Not: AÄŸÄ± Yenile (F5)'
-        : 'WiFi Lab (Intermediate):\n1) R1 (Router) broadcasts SSID: HomeWiFi on wlan0 in AP mode.\n2) PC-1 and PC-2 are connected wirelessly (SSID match).\n3) All devices are on the same subnet (192.168.1.x).\n4) Test wireless connectivity with PC-1 > ping 192.168.1.11.\n5) PC-1 > wget 192.168.1.1 for Wifi control panel.\n\nâš ï¸ Note: Refresh Network (F5)',
+        ? 'Amaç: Router AP modunda kablosuz ağ oluşturarak PC\'lerin kablosuz bağlanmasını sağlamak.\n\nWiFi Laboratuvarı (Orta Seviye):\n1) R1 (Router) wlan0 üzerinde AP modunda SSID: HomeWiFi yayınlar.\n2) PC-1 ve PC-2 kablosuz ağa (SSID match) bağlıdır.\n3) Tüm cihazlar aynı subnet (192.168.1.x) içindedir.\n4) PC-1 > ping 192.168.1.11 ile kablosuz iletişimi test edin.\n5) PC-1 > wget 192.168.1.1 ile Wifi kontrol panelini görün.\n\n⚠️ Not: Ağı Yenile (F5)'
+        : 'WiFi Lab (Intermediate):\n1) R1 (Router) broadcasts SSID: HomeWiFi on wlan0 in AP mode.\n2) PC-1 and PC-2 are connected wirelessly (SSID match).\n3) All devices are on the same subnet (192.168.1.x).\n4) Test wireless connectivity with PC-1 > ping 192.168.1.11.\n5) PC-1 > wget 192.168.1.1 for Wifi control panel.\n\n⚠️ Note: Refresh Network (F5)',
       x: 300,
       y: 400,
       width: 450,
@@ -137,9 +137,9 @@ const example = (isTr: boolean): ExampleProject => {
   return {
     id: 'wifi-intermediate',
     tag: isTr ? 'WiFi' : 'WiFi',
-    title: isTr ? 'Kablosuz AÄŸ (WiFi)' : 'Wireless Network (WiFi)',
+    title: isTr ? 'Kablosuz Ağ (WiFi)' : 'Wireless Network (WiFi)',
     description: isTr
-      ? 'Router access point mode ile kablosuz istemci baÄŸlantÄ±sÄ± saÄŸlanÄ±r.'
+      ? 'Router access point mode ile kablosuz istemci bağlantısı sağlanır.'
       : 'Router configured as access point for wireless client connectivity.',
     detail: isTr
       ? 'SSID: HomeWiFi, Åifre: yok (open), Router AP mode'

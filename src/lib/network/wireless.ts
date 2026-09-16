@@ -17,12 +17,12 @@ export const WIRELESS_CHANNELS_2_4GHZ: WirelessChannelOption[] = [
   { value: '3', channelNumber: 3, frequencyGhz: 2.422, band: '2.4GHz', labelTr: 'Kanal 3 (2.422 GHz)', labelEn: 'Channel 3 (2.422 GHz)' },
   { value: '4', channelNumber: 4, frequencyGhz: 2.427, band: '2.4GHz', labelTr: 'Kanal 4 (2.427 GHz)', labelEn: 'Channel 4 (2.427 GHz)' },
   { value: '5', channelNumber: 5, frequencyGhz: 2.432, band: '2.4GHz', labelTr: 'Kanal 5 (2.432 GHz)', labelEn: 'Channel 5 (2.432 GHz)' },
-  { value: '6', channelNumber: 6, frequencyGhz: 2.437, band: '2.4GHz', labelTr: 'Kanal 6 (2.437 GHz) - Ã–nerilen', labelEn: 'Channel 6 (2.437 GHz) - Recommended' },
+  { value: '6', channelNumber: 6, frequencyGhz: 2.437, band: '2.4GHz', labelTr: 'Kanal 6 (2.437 GHz) - Önerilen', labelEn: 'Channel 6 (2.437 GHz) - Recommended' },
   { value: '7', channelNumber: 7, frequencyGhz: 2.442, band: '2.4GHz', labelTr: 'Kanal 7 (2.442 GHz)', labelEn: 'Channel 7 (2.442 GHz)' },
   { value: '8', channelNumber: 8, frequencyGhz: 2.447, band: '2.4GHz', labelTr: 'Kanal 8 (2.447 GHz)', labelEn: 'Channel 8 (2.447 GHz)' },
   { value: '9', channelNumber: 9, frequencyGhz: 2.452, band: '2.4GHz', labelTr: 'Kanal 9 (2.452 GHz)', labelEn: 'Channel 9 (2.452 GHz)' },
   { value: '10', channelNumber: 10, frequencyGhz: 2.457, band: '2.4GHz', labelTr: 'Kanal 10 (2.457 GHz)', labelEn: 'Channel 10 (2.457 GHz)' },
-  { value: '11', channelNumber: 11, frequencyGhz: 2.462, band: '2.4GHz', labelTr: 'Kanal 11 (2.462 GHz) - Ã–nerilen', labelEn: 'Channel 11 (2.462 GHz) - Recommended' },
+  { value: '11', channelNumber: 11, frequencyGhz: 2.462, band: '2.4GHz', labelTr: 'Kanal 11 (2.462 GHz) - Önerilen', labelEn: 'Channel 11 (2.462 GHz) - Recommended' },
 ];
 
 export const WIRELESS_CHANNELS_5GHZ: WirelessChannelOption[] = [

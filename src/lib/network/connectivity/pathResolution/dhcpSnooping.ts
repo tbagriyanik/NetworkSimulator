@@ -51,7 +51,7 @@ export function enforceDhcpSnooping(deps: DhcpSnoopingDeps): DhcpSnoopingResult 
         if (snoopingVlans.length > 0 && !snoopingVlans.includes(String(portVlan))) continue;
 
         if (!ingressPort.dhcpSnoopingTrust) {
-          // Untrusted port â€” block DHCP OFFER/ACK from any source
+          // Untrusted port — block DHCP OFFER/ACK from any source
           // Allow DHCP DISCOVER/REQUEST from clients to pass through to trusted servers
           const isDhcpServerResponse = options?.dhcpMessage === 'offer' || options?.dhcpMessage === 'ack';
 
@@ -72,7 +72,7 @@ export function enforceDhcpSnooping(deps: DhcpSnoopingDeps): DhcpSnoopingResult 
                   hopIds: path.slice(0, i + 1),
                   targetId: targetDevice.id,
                   error: language === 'tr'
-                    ? `DHCP snooping: Yetkisiz DHCP sunucusu ${device.name} port ${normalizedId} Ã¼zerinden engellendi.`
+                    ? `DHCP snooping: Yetkisiz DHCP sunucusu ${device.name} port ${normalizedId} üzerinden engellendi.`
                     : `DHCP snooping: Rogue DHCP server blocked on ${device.name} port ${normalizedId}.`
                 }
               };
@@ -85,7 +85,7 @@ export function enforceDhcpSnooping(deps: DhcpSnoopingDeps): DhcpSnoopingResult 
                   hopIds: path.slice(0, i + 1),
                   targetId: targetDevice.id,
                   error: language === 'tr'
-                    ? `DHCP snooping: DHCP OFFER/ACK paketi yetkisiz port ${normalizedId} Ã¼zerinden engellendi.`
+                    ? `DHCP snooping: DHCP OFFER/ACK paketi yetkisiz port ${normalizedId} üzerinden engellendi.`
                     : `DHCP snooping: DHCP OFFER/ACK packet blocked on untrusted port ${normalizedId}.`
                 }
               };

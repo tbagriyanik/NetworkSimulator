@@ -59,30 +59,30 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'dmz-firewall-note',
       text: isTr
-        ? 'ğŸ›¡ï¸ Kurumsal DMZ ve Ã‡ok KatmanlÄ± GÃ¼venlik DuvarÄ± LaboratuvarÄ±\n\n' +
-          'ğŸ¯ AmaÃ§ ve Senaryo Ã–zeti:\n' +
-          'Ä°Ã§ aÄŸ (LAN 192.168.1.0/24), arÄ±ndÄ±rÄ±lmÄ±ÅŸ bÃ¶lge (DMZ 172.16.1.0/24) ve dÄ±ÅŸ aÄŸ (WAN 203.0.113.0/24) arasÄ±ndaki gÃ¼venlik kurallarÄ±nÄ± NGFW Ã¼zerinde denetleme.\n\n' +
-          'ğŸ“‹ GÃ¼venlik DuvarÄ± Filtreleme KurallarÄ±:\n' +
-          '1. [ALLOW] LAN (192.168.1.0/24) â†’ DMZ Web (172.16.1.10:80 TCP)\n' +
-          '2. [ALLOW] LAN (192.168.1.0/24) â†’ DMZ DNS (172.16.1.20:53 UDP)\n' +
-          '3. [DENY] WAN (203.0.113.0/24) â†’ LAN (192.168.1.0/24 ANY)\n' +
-          '4. [ALLOW] TÃ¼m diÄŸer izinli yÃ¶nlendirmeler\n\n' +
-          'ğŸ§ª DoÄŸrulama ve Test:\n' +
-          '1. LAN-Workstation-1 Ã¼zerinden "curl 172.16.1.10" ile Web Portala eriÅŸin (BAÅARILI).\n' +
-          '2. LAN-Workstation-1 Ã¼zerinden "nslookup portal.company.local 172.16.1.20" sorgulayÄ±n (BAÅARILI).\n' +
-          '3. WAN Test cihazÄ±ndan LAN IP adreslerine gelen paketlerin engellendiÄŸini doÄŸrulayÄ±n.'
-        : 'ğŸ›¡ï¸ Enterprise DMZ & Multi-Tier Firewall Architecture Lab\n\n' +
-          'ğŸ¯ Objective & Scenario Overview:\n' +
-          'Segment and enforce traffic policies across Internal LAN (192.168.1.0/24), Demilitarized Zone (DMZ 172.16.1.0/24), and External WAN perimeter on NGFW.\n\n' +
-          'ğŸ“‹ Firewall Rule Hierarchy:\n' +
-          '1. [ALLOW] LAN (192.168.1.0/24) â†’ DMZ Web (172.16.1.10:80 TCP)\n' +
-          '2. [ALLOW] LAN (192.168.1.0/24) â†’ DMZ DNS (172.16.1.20:53 UDP)\n' +
-          '3. [DENY] WAN (203.0.113.0/24) â†’ LAN (192.168.1.0/24 ANY)\n' +
-          '4. [ALLOW] Default transit traffic\n\n' +
-          'ğŸ§ª Verification & Testing:\n' +
-          '1. From LAN-Workstation-1 test Web portal: "curl 172.16.1.10" (SUCCESS).\n' +
-          '2. Query DMZ DNS: "nslookup portal.company.local 172.16.1.20" (SUCCESS).\n' +
-          '3. Verify inbound WAN scans to LAN clients are filtered by default policy.',
+        ? '🛡️ Kurumsal DMZ ve Çok Katmanlı Güvenlik Duvarı Laboratuvarı\n\n' +
+        'ğŸ¯ Amaç ve Senaryo Özeti:\n' +
+        'İç ağ (LAN 192.168.1.0/24), arındırılmış bölge (DMZ 172.16.1.0/24) ve dış ağ (WAN 203.0.113.0/24) arasındaki güvenlik kurallarını NGFW üzerinde denetleme.\n\n' +
+        '📋 Güvenlik Duvarı Filtreleme Kuralları:\n' +
+        '1. [ALLOW] LAN (192.168.1.0/24) → DMZ Web (172.16.1.10:80 TCP)\n' +
+        '2. [ALLOW] LAN (192.168.1.0/24) → DMZ DNS (172.16.1.20:53 UDP)\n' +
+        '3. [DENY] WAN (203.0.113.0/24) → LAN (192.168.1.0/24 ANY)\n' +
+        '4. [ALLOW] Tüm diğer izinli yönlendirmeler\n\n' +
+        '🧪 Doğrulama ve Test:\n' +
+        '1. LAN-Workstation-1 üzerinden "curl 172.16.1.10" ile Web Portala erişin (BAÅARILI).\n' +
+        '2. LAN-Workstation-1 üzerinden "nslookup portal.company.local 172.16.1.20" sorgulayın (BAÅARILI).\n' +
+        '3. WAN Test cihazından LAN IP adreslerine gelen paketlerin engellendiğini doğrulayın.'
+        : '🛡️ Enterprise DMZ & Multi-Tier Firewall Architecture Lab\n\n' +
+        'ğŸ¯ Objective & Scenario Overview:\n' +
+        'Segment and enforce traffic policies across Internal LAN (192.168.1.0/24), Demilitarized Zone (DMZ 172.16.1.0/24), and External WAN perimeter on NGFW.\n\n' +
+        '📋 Firewall Rule Hierarchy:\n' +
+        '1. [ALLOW] LAN (192.168.1.0/24) → DMZ Web (172.16.1.10:80 TCP)\n' +
+        '2. [ALLOW] LAN (192.168.1.0/24) → DMZ DNS (172.16.1.20:53 UDP)\n' +
+        '3. [DENY] WAN (203.0.113.0/24) → LAN (192.168.1.0/24 ANY)\n' +
+        '4. [ALLOW] Default transit traffic\n\n' +
+        '🧪 Verification & Testing:\n' +
+        '1. From LAN-Workstation-1 test Web portal: "curl 172.16.1.10" (SUCCESS).\n' +
+        '2. Query DMZ DNS: "nslookup portal.company.local 172.16.1.20" (SUCCESS).\n' +
+        '3. Verify inbound WAN scans to LAN clients are filtered by default policy.',
       x: 50,
       y: 470,
       width: 750,
@@ -96,13 +96,13 @@ const example = (isTr: boolean): ExampleProject => {
 
   return {
     id: 'dmz-firewall-enterprise',
-    tag: isTr ? 'GÃœVENLÄ°K' : 'SECURITY',
-    title: isTr ? 'Kurumsal DMZ ve Ã‡ok BÃ¶lgeli GÃ¼venlik DuvarÄ±' : 'Enterprise DMZ & Multi-Zone Firewall',
+    tag: isTr ? 'GÜVENLİK' : 'SECURITY',
+    title: isTr ? 'Kurumsal DMZ ve Çok Bölgeli Güvenlik Duvarı' : 'Enterprise DMZ & Multi-Zone Firewall',
     description: isTr
-      ? 'LAN, DMZ sunucu Ã§iftliÄŸi ve WAN bÃ¶lgeleri arasÄ±nda durum denetimli gÃ¼venlik kurallarÄ±nÄ± iÃ§eren geliÅŸmiÅŸ firewall laboratuvarÄ±.'
+      ? 'LAN, DMZ sunucu çiftliği ve WAN bölgeleri arasında durum denetimli güvenlik kurallarını içeren gelişmiş firewall laboratuvarı.'
       : 'Advanced firewall lab featuring LAN, DMZ server farm and WAN security zones with stateful policy rules.',
     detail: isTr
-      ? 'HTTP/DNS kural izinleri, DMZ izolasyonu ve dÄ±ÅŸ eriÅŸim engelleme politikalarÄ±.'
+      ? 'HTTP/DNS kural izinleri, DMZ izolasyonu ve dış erişim engelleme politikaları.'
       : 'HTTP/DNS service policies, DMZ server isolation, and ingress filtering.',
     level: 'advanced',
     data: baseProjectData(devices, connections, notes, [])

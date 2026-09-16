@@ -266,7 +266,7 @@ export function MinimapNavigator({
               {zoomToFit && (
                 <button
                   onClick={zoomToFit}
-                  title={isTR ? 'TÃ¼m Topolojiyi Ekrana SÄ±ÄŸdÄ±r' : 'Fit Topology to Screen'}
+                  title={isTR ? 'Tüm Topolojiyi Ekrana Sığdır' : 'Fit Topology to Screen'}
                   className="p-1 rounded hover:bg-slate-700/50 text-slate-300 hover:text-white transition-colors"
                 >
                   <Scan className="w-3.5 h-3.5" />
@@ -276,7 +276,7 @@ export function MinimapNavigator({
               {/* Expand/Collapse Map Size Toggle */}
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                title={isExpanded ? (isTR ? 'KÃ¼Ã§Ã¼lt' : 'Shrink') : (isTR ? 'GeniÅŸlet' : 'Expand')}
+                title={isExpanded ? (isTR ? 'Küçült' : 'Shrink') : (isTR ? 'Genişlet' : 'Expand')}
                 className="p-1 rounded hover:bg-slate-700/50 text-slate-300 hover:text-white transition-colors"
               >
                 {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
@@ -307,7 +307,7 @@ export function MinimapNavigator({
                 }`}
               >
                 <option value="all" className={isDark ? 'bg-slate-900 text-slate-200' : 'bg-white text-slate-800'}>
-                  {isTR ? 'ğŸ” Alt AÄŸ Odakla (TÃ¼mÃ¼)' : 'ğŸ” Focus Subnet (All)'}
+                  {isTR ? 'ğŸ” Alt Ağ Odakla (Tümü)' : 'ğŸ” Focus Subnet (All)'}
                 </option>
                 {detectedSubnets.map((sub) => (
                   <option key={sub} value={sub} className={isDark ? 'bg-slate-900 text-slate-200' : 'bg-white text-slate-800'}>

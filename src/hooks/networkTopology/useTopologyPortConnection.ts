@@ -92,7 +92,7 @@ export function useTopologyPortConnection({
       // Check if trying to connect to itself
       if (connectionStart.deviceId === deviceId) {
         const errorMsg = language === 'tr'
-          ? 'Bir cihaz kendisine baÄŸlanamaz!'
+          ? 'Bir cihaz kendisine bağlanamaz!'
           : 'A device cannot connect to itself!';
         setConnectionError(errorMsg);
         setTimeout(() => setConnectionError(null), 3000);
@@ -123,7 +123,7 @@ export function useTopologyPortConnection({
 
         if (!isCableCompatible(cableCheck)) {
           const errorMsg = language === 'tr'
-            ? 'Bu cihaz tÃ¼rÃ¼ seÃ§ilen baÄŸlantÄ± tipini desteklememektedir!'
+            ? 'Bu cihaz türü seçilen bağlantı tipini desteklememektedir!'
             : 'This device type does not support the selected connection type!';
           setConnectionError(errorMsg);
           setTimeout(() => setConnectionError(null), 3000);

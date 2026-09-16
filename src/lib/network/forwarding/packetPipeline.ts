@@ -1,21 +1,21 @@
 ﻿/**
- * packetPipeline.ts â€” Unified Packet Processing Pipeline
+ * packetPipeline.ts — Unified Packet Processing Pipeline
  *
  * Implements the single canonical packet forwarding chain:
  *
  *   Ingress
- *     â†’ L1 Physical Check (shutdown, link status)
- *     â†’ Port Security
- *     â†’ DHCP Snooping (untrusted port drops non-DHCP)
- *     â†’ STP Port State (Discarding/Blocking ports drop data frames)
- *     â†’ VLAN Check (access VLAN match / trunk allowed-VLAN)
- *     â†’ ACL Ingress (ip access-group <name> in)
- *     â†’ ARP Resolution (if next-hop MAC unknown)
- *     â†’ MAC Lookup (L2) / Route Lookup (L3)
- *     â†’ ACL Egress (ip access-group <name> out)
- *     â†’ QoS Scheduling
- *     â†’ Egress Port
- *     â†’ Packet Capture Recording
+ *     → L1 Physical Check (shutdown, link status)
+ *     → Port Security
+ *     → DHCP Snooping (untrusted port drops non-DHCP)
+ *     → STP Port State (Discarding/Blocking ports drop data frames)
+ *     → VLAN Check (access VLAN match / trunk allowed-VLAN)
+ *     → ACL Ingress (ip access-group <name> in)
+ *     → ARP Resolution (if next-hop MAC unknown)
+ *     → MAC Lookup (L2) / Route Lookup (L3)
+ *     → ACL Egress (ip access-group <name> out)
+ *     → QoS Scheduling
+ *     → Egress Port
+ *     → Packet Capture Recording
  *
  * Each stage produces a `PacketTrace` entry; all traces are returned
  * in `PipelineResult` so the UI can display exactly what happened at
@@ -44,9 +44,9 @@ import { evaluateZbf } from './zbfEngine';
 import { evaluateIpv6FirstHopSecurity } from './ipv6FirstHopSecurity';
 import { getSpanMirrorDestinations, getRspanDestinationSessions } from '@/lib/network/portMirroring';
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ---------------------------------------------
 // Pipeline Trace Types
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ---------------------------------------------
 
 export type PipelineStage =
   | 'ingress-l1'
@@ -106,9 +106,9 @@ export interface PipelineResult {
   dropReason?: string;
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ---------------------------------------------
 // Internal helpers
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ---------------------------------------------
 
 function makeTrace(
   hopIndex: number,
@@ -152,7 +152,7 @@ function checkVlan(port: Port, frame: NetworkPacketFrame): { allowed: boolean; r
     };
   }
 
-  // Access port â€” tag or native VLAN must match
+  // Access port — tag or native VLAN must match
   const portVlan = port.accessVlan ?? port.vlan ?? 1;
   const allowed = fvlan === portVlan || fvlan === 1;
   return {
@@ -221,7 +221,7 @@ function resolveEgress(
           egressPorts.push(p.id);
         }
       });
-      routeDecision = 'L2 Broadcast/Multicast â€” Flooding frame to all active ports';
+      routeDecision = 'L2 Broadcast/Multicast — Flooding frame to all active ports';
     } else {
       const match = state.macAddressTable?.find(m => m.mac.toLowerCase() === frame.dstMac?.toLowerCase());
       if (match?.port && match.port !== frame.ingressPortId && !state.ports?.[match.port]?.shutdown) {
@@ -232,13 +232,13 @@ function resolveEgress(
           nextDeviceId = conn.sourceDeviceId === device.id ? conn.targetDeviceId : conn.sourceDeviceId;
         }
       } else {
-        // Unicast miss â€” flood
+        // Unicast miss — flood
         Object.values(state.ports || {}).forEach(p => {
           if (p.id !== frame.ingressPortId && !p.shutdown && p.status === 'connected') {
             egressPorts.push(p.id);
           }
         });
-        routeDecision = `L2 Unicast miss for MAC ${frame.dstMac} â€” Flooding frame across VLAN ${frame.vlanId || 1}`;
+        routeDecision = `L2 Unicast miss for MAC ${frame.dstMac} — Flooding frame across VLAN ${frame.vlanId || 1}`;
       }
     }
   } else if (device.type === 'router' || device.type === 'firewall') {
@@ -272,9 +272,9 @@ function resolveEgress(
   return { egressPorts, nextDeviceId, routeDecision };
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ---------------------------------------------
 // Core: Per-Hop Pipeline
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ---------------------------------------------
 
 /**
  * Run the full pipeline for a single hop (one device).
@@ -325,12 +325,12 @@ export function runHopPipeline(
     };
   };
 
-  // â”€â”€ Stage 1: L1 Physical / Ingress Sanity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // -- Stage 1: L1 Physical / Ingress Sanity -----------------------------
   const l1 = checkIngressSanity(frame, device, state, ingressPort);
   if (!l1.allowed) return drop('ingress-l1', formatDropReason(DropReasonCode.L1_PORT_SHUTDOWN, l1.reason));
   traces.push(makeTrace(hopIndex, device, ingressPortId, 'ingress-l1', 'pass', l1.reason, frame));
 
-  // â”€â”€ Stage 2: Port Security â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // -- Stage 2: Port Security ---------------------------------------------
   if (ingressPort?.portSecurity?.enabled && ingressPort.portSecurity.macAddress) {
     if (ingressPort.portSecurity.macAddress !== frame.srcMac) {
       return drop('port-security', formatDropReason(DropReasonCode.L2_PORT_SECURITY_VIOLATION, `unexpected MAC ${frame.srcMac}`));
@@ -338,7 +338,7 @@ export function runHopPipeline(
   }
   traces.push(makeTrace(hopIndex, device, ingressPortId, 'port-security', 'pass', 'Port security OK', frame));
 
-  // â”€â”€ Stage 3: DHCP Snooping â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // -- Stage 3: DHCP Snooping ---------------------------------------------
   if (state?.dhcpSnoopingEnabled && !ingressPort?.dhcpSnoopingTrust) {
     const isDhcpServer = frame.protocol === 'DHCP' && frame.dhcpPayload &&
       (frame.dhcpPayload.messageType === 'offer' || frame.dhcpPayload.messageType === 'ack');
@@ -348,7 +348,7 @@ export function runHopPipeline(
   }
   traces.push(makeTrace(hopIndex, device, ingressPortId, 'dhcp-snooping', 'pass', 'DHCP snooping OK', frame));
 
-  // â”€â”€ Stage 3b: IPv6 First-Hop Security (RA Guard & DHCPv6 Guard) â”€â”€â”€â”€â”€â”€â”€â”€
+  // -- Stage 3b: IPv6 First-Hop Security (RA Guard & DHCPv6 Guard) --------
   const fhsResult = evaluateIpv6FirstHopSecurity(ingressPort, frame);
   if (fhsResult.isViolation) {
     return drop('ipv6-fhs', fhsResult.dropReason || 'IPv6 First-Hop Security Violation');
@@ -356,7 +356,7 @@ export function runHopPipeline(
   traces.push(makeTrace(hopIndex, device, ingressPortId, 'ipv6-fhs', 'pass', 'IPv6 First-Hop Security OK', frame));
 
 
-  // â”€â”€ Stage 4: STP Port State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // -- Stage 4: STP Port State --------------------------------------------
   if (frame.protocol !== 'STP') {
     const stpState = ingressPort?.spanningTree?.state;
     if (stpState === 'blocking' || stpState === 'listening') {
@@ -365,16 +365,16 @@ export function runHopPipeline(
   }
   traces.push(makeTrace(hopIndex, device, ingressPortId, 'stp-state', 'pass', 'STP port forwarding/disabled for STP frames', frame));
 
-  // â”€â”€ Stage 5: VLAN Check â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // -- Stage 5: VLAN Check ------------------------------------------------
   if (ingressPort && (device.type === 'switchL2' || device.type === 'switchL3')) {
     const vlanCheck = checkVlan(ingressPort, frame);
     if (!vlanCheck.allowed) return drop('vlan-check', formatDropReason(DropReasonCode.L2_VLAN_MISMATCH, vlanCheck.reason));
     traces.push(makeTrace(hopIndex, device, ingressPortId, 'vlan-check', 'pass', vlanCheck.reason, frame));
   } else {
-    traces.push(makeTrace(hopIndex, device, ingressPortId, 'vlan-check', 'skip', 'Not a switch â€” VLAN check skipped', frame));
+    traces.push(makeTrace(hopIndex, device, ingressPortId, 'vlan-check', 'skip', 'Not a switch — VLAN check skipped', frame));
   }
 
-  // â”€â”€ Stage 6: ACL Ingress â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // -- Stage 6: ACL Ingress ----------------------------------------------
   if (ingressPort?.accessGroupIn && state && frame.srcIp && frame.dstIp) {
     const aclResult = evaluateAcl(
       ingressPort.accessGroupIn, state,
@@ -382,7 +382,7 @@ export function runHopPipeline(
       frame.ipProtocol === 6 ? 'tcp' : frame.ipProtocol === 17 ? 'udp' : 'icmp'
     );
     if (aclResult === 'deny') {
-      return drop('acl-ingress', formatDropReason(DropReasonCode.ACL_DENY_INGRESS, `ACL ${ingressPort.accessGroupIn} denied ${frame.srcIp}â†’${frame.dstIp}`), 13);
+      return drop('acl-ingress', formatDropReason(DropReasonCode.ACL_DENY_INGRESS, `ACL ${ingressPort.accessGroupIn} denied ${frame.srcIp}→${frame.dstIp}`), 13);
     }
     traces.push(makeTrace(hopIndex, device, ingressPortId, 'acl-ingress', 'pass',
       `ACL ${ingressPort.accessGroupIn} (in) ${aclResult === 'none' ? 'implicit permit' : 'permit'}`, frame));
@@ -390,7 +390,7 @@ export function runHopPipeline(
     traces.push(makeTrace(hopIndex, device, ingressPortId, 'acl-ingress', 'skip', 'No ingress ACL configured', frame));
   }
 
-  // â”€â”€ Stage 7: Control Plane Trap â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // -- Stage 7: Control Plane Trap --------------------------------------
   const cpResult = processControlPlaneProtocols(frame, device, state, now);
   if (cpResult.handled) {
     traces.push(makeTrace(hopIndex, device, ingressPortId, 'control-plane', 'trap',
@@ -404,15 +404,15 @@ export function runHopPipeline(
       traces
     };
   }
-  traces.push(makeTrace(hopIndex, device, ingressPortId, 'control-plane', 'pass', 'Not a control plane frame â€” continue to data plane', frame));
+  traces.push(makeTrace(hopIndex, device, ingressPortId, 'control-plane', 'pass', 'Not a control plane frame — continue to data plane', frame));
 
-  // â”€â”€ Stage 8: MAC Learning (switches only) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // -- Stage 8: MAC Learning (switches only) ----------------------------
   if (state && (device.type === 'switchL2' || device.type === 'switchL3') && ingressPortId) {
     const stateMap = new Map<string, SwitchState>([[device.id, state]]);
     learnMacAddress(device.id, frame.srcMac, ingressPortId, frame.vlanId || 1, stateMap);
   }
 
-  // â”€â”€ Stage 9: MAC Lookup / Route Lookup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // -- Stage 9: MAC Lookup / Route Lookup ------------------------------
   const { egressPorts, nextDeviceId, routeDecision } = resolveEgress(frame, device, state!, connections, deviceMap);
 
   if (egressPorts.length === 0) {
@@ -426,7 +426,7 @@ export function runHopPipeline(
   const reasonText = routeDecision || `${forwardAction === 'flood' ? 'Flooding' : 'Forwarding'} to ${egressPorts.join(', ')}`;
   traces.push(makeTrace(hopIndex, device, ingressPortId, forwardStage, forwardAction, reasonText, frame));
 
-  // â”€â”€ Stage 9b: NAT / PAT Translation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // -- Stage 9b: NAT / PAT Translation --------------------------------
   if ((device.type === 'router' || device.type === 'firewall') && state && egressPorts[0] && frame.srcIp && frame.dstIp) {
     const natRes = processNatPacket(
       state,
@@ -465,7 +465,7 @@ export function runHopPipeline(
     }
   }
 
-  // â”€â”€ Stage 9c: Zone-Based Firewall (ZBFW) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // -- Stage 9c: Zone-Based Firewall (ZBFW) -----------------------------
   if (state && egressPorts[0] && frame.srcIp && frame.dstIp) {
     const egressPort: Port | undefined = state.ports?.[egressPorts[0]];
     const zbfResult = evaluateZbf(state, ingressPort, egressPort, frame.srcIp, frame.dstIp, frame.protocol, undefined, undefined, now);
@@ -483,7 +483,7 @@ export function runHopPipeline(
     ));
   }
 
-  // â”€â”€ Stage 10: ACL Egress â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // -- Stage 10: ACL Egress ---------------------------------------------
 
   for (const egressPortId of egressPorts) {
     const egressPort: Port | undefined = state?.ports?.[egressPortId];
@@ -495,14 +495,14 @@ export function runHopPipeline(
       );
       if (aclResult === 'deny') {
         updatePortStats(egressPort, 'txdrop');
-        return drop('acl-egress', formatDropReason(DropReasonCode.ACL_DENY_EGRESS, `ACL ${egressPort.accessGroupOut} denied ${frame.srcIp}â†’${frame.dstIp}`), 13);
+        return drop('acl-egress', formatDropReason(DropReasonCode.ACL_DENY_EGRESS, `ACL ${egressPort.accessGroupOut} denied ${frame.srcIp}→${frame.dstIp}`), 13);
       }
       traces.push(makeTrace(hopIndex, device, egressPortId, 'acl-egress', 'pass',
         `ACL ${egressPort.accessGroupOut} (out) permit`, frame));
     }
   }
 
-  // â”€â”€ Stage 10b: QoS Queue & Policing Check â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // -- Stage 10b: QoS Queue & Policing Check ----------------------------
   for (const egressPortId of egressPorts) {
     const egressPort: Port | undefined = state?.ports?.[egressPortId];
     if (egressPort?.qos) {
@@ -526,14 +526,14 @@ export function runHopPipeline(
   }
 
 
-  // â”€â”€ Stage 10c: NetFlow Accounting â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // -- Stage 10c: NetFlow Accounting -------------------------------------
   if (state) {
     captureNetFlow(state, frame, ingressPortId, egressPorts, now);
     traces.push(makeTrace(hopIndex, device, ingressPortId, 'netflow', 'pass',
-      `NetFlow accounting: ${frame.srcIp || ''}â†’${frame.dstIp || ''} (${egressPorts.length} egress)`, frame));
+      `NetFlow accounting: ${frame.srcIp || ''}→${frame.dstIp || ''} (${egressPorts.length} egress)`, frame));
   }
 
-  // â”€â”€ Stage 10d: SPAN / RSPAN Port Mirroring â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // -- Stage 10d: SPAN / RSPAN Port Mirroring ------------------------------
   if (state && ingressPortId) {
     const spanDests = getSpanMirrorDestinations(state, ingressPortId);
     for (const dest of spanDests) {
@@ -578,7 +578,7 @@ export function runHopPipeline(
     }
   }
 
-  // â”€â”€ Stage 11: Egress + Packet Capture â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // -- Stage 11: Egress + Packet Capture --------------------------------
   const capturedOnLinks: string[] = [];
   const connectionIndex = buildConnectionIndex(connections);
 
@@ -772,7 +772,7 @@ export function runFullPacketPipeline(
     hopResults,
     allTraces,
     capturedOnLinks,
-    dropReason: formatDropReason(DropReasonCode.MAX_HOPS_EXCEEDED, `Maximum hop count (${maxHops}) exceeded â€” possible routing loop`)
+    dropReason: formatDropReason(DropReasonCode.MAX_HOPS_EXCEEDED, `Maximum hop count (${maxHops}) exceeded — possible routing loop`)
   };
 }
 

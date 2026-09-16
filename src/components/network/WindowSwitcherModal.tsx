@@ -187,9 +187,9 @@ export const WindowSwitcherModal: React.FC<WindowSwitcherModalProps> = ({
             </div>
             <div>
               <h3 className="text-base font-bold tracking-tight">
-                {language === 'tr' ? 'GÃ¶rev YÃ¶neticisi Pencere Listesi' : 'Task Switcher Windows'}
+                {language === 'tr' ? 'Görev Yöneticisi Pencere Listesi' : 'Task Switcher Windows'}
               </h3>
-              <p className="text-[11px] text-secondary-400 mt-0.5">{language === 'tr' ? 'AÃ§Ä±k cihaz pencereleri' : 'Open device windows'}</p>
+              <p className="text-[11px] text-secondary-400 mt-0.5">{language === 'tr' ? 'Açık cihaz pencereleri' : 'Open device windows'}</p>
             </div>
           </div>
           <div className="ml-auto flex items-center gap-2">
@@ -200,9 +200,9 @@ export const WindowSwitcherModal: React.FC<WindowSwitcherModalProps> = ({
                 closeSwitcher();
               }}
               className="inline-flex items-center gap-1 rounded border border-blue-400/40 bg-blue-500/10 px-2 py-1 text-xs font-medium text-blue-400 transition-colors hover:bg-blue-500/20"
-              title={language === 'tr' ? 'Pencereleri Yan Yana (BÃ¶lÃ¼nmÃ¼ÅŸ Ekran) YerleÅŸtir' : 'Arrange Windows Side-by-Side'}
+              title={language === 'tr' ? 'Pencereleri Yan Yana (Bölünmüş Ekran) Yerleştir' : 'Arrange Windows Side-by-Side'}
             >
-              {language === 'tr' ? 'Yan Yana (BÃ¶l)' : 'Side-by-Side'}
+              {language === 'tr' ? 'Yan Yana (Böl)' : 'Side-by-Side'}
             </button>
             <button
               type="button"
@@ -211,12 +211,12 @@ export const WindowSwitcherModal: React.FC<WindowSwitcherModalProps> = ({
                 closeSwitcher();
               }}
               className="inline-flex items-center gap-1 rounded border border-emerald-400/40 bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-400 transition-colors hover:bg-emerald-500/20"
-              title={language === 'tr' ? 'Sekmeli GÃ¶rÃ¼nÃ¼m Moduna GeÃ§' : 'Switch to Tabbed Layout'}
+              title={language === 'tr' ? 'Sekmeli Görünüm Moduna Geç' : 'Switch to Tabbed Layout'}
             >
-              {language === 'tr' ? 'Sekmeli GÃ¶rÃ¼nÃ¼m' : 'Tabbed View'}
+              {language === 'tr' ? 'Sekmeli Görünüm' : 'Tabbed View'}
             </button>
             <span className="text-xs font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-              {displayList.length} {language === 'tr' ? 'Ã–ÄŸe' : 'Items'}
+              {displayList.length} {language === 'tr' ? 'Öğe' : 'Items'}
             </span>
             {openWindows.length > 0 && (
               <button
@@ -228,7 +228,7 @@ export const WindowSwitcherModal: React.FC<WindowSwitcherModalProps> = ({
                 className="ml-1 inline-flex items-center gap-1 rounded border border-red-300 px-2 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 dark:hover:bg-red-950/40"
               >
                 <X className="h-3 w-3" />
-                {language === 'tr' ? 'TÃ¼mÃ¼nÃ¼ kapat' : 'Close all'}
+                {language === 'tr' ? 'Tümünü kapat' : 'Close all'}
               </button>
             )}
           </div>
@@ -306,12 +306,12 @@ export const WindowSwitcherModal: React.FC<WindowSwitcherModalProps> = ({
             <span className="px-1.5 py-0.5 rounded bg-secondary-800 font-mono text-[10px] text-secondary-300">
               Shift + Tab
             </span>
-            <span>{language === 'tr' ? 'Pencere listesini aÃ§ / seÃ§' : 'Open / select window'}</span>
+            <span>{language === 'tr' ? 'Pencere listesini aç / seç' : 'Open / select window'}</span>
           </div>
 
           <span className="hidden sm:inline italic">
             {language === 'tr'
-              ? 'TÄ±klayabilir veya Shift tuÅŸunu bÄ±rakabilirsiniz'
+              ? 'Tıklayabilir veya Shift tuşunu bırakabilirsiniz'
               : 'Click or release Shift to open'}
           </span>
         </div>

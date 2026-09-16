@@ -125,9 +125,9 @@ export function TroubleshootingPanel({
     if (!project) return;
     const result = await openPrompt({
       title: language === 'tr' ? 'Sertifika' : 'Certificate',
-      message: language === 'tr' ? 'Sertifika iÃ§in adÄ±nÄ±zÄ± girin:' : 'Enter your name for the certificate:',
-      confirmLabel: language === 'tr' ? 'Ä°ndir' : 'Download',
-      cancelLabel: language === 'tr' ? 'VazgeÃ§' : 'Cancel',
+      message: language === 'tr' ? 'Sertifika için adınızı girin:' : 'Enter your name for the certificate:',
+      confirmLabel: language === 'tr' ? 'İndir' : 'Download',
+      cancelLabel: language === 'tr' ? 'Vazgeç' : 'Cancel',
     });
     const studentName = result.confirmed && result.value.trim() ? result.value.trim() : 'Student';
 
@@ -176,7 +176,7 @@ export function TroubleshootingPanel({
             "font-semibold text-sm tracking-wide",
             "text-secondary-900 dark:text-secondary-100"
           )}>
-            {language === 'tr' ? 'ArÄ±za Giderme' : 'Troubleshooting'}
+            {language === 'tr' ? 'Arıza Giderme' : 'Troubleshooting'}
           </span>
         </div>
         <div className="flex items-center gap-1">
@@ -228,7 +228,7 @@ export function TroubleshootingPanel({
                 <div className="space-y-2">
                   <h4 className="text-xs font-semibold text-secondary-500 uppercase tracking-wider flex items-center gap-1.5">
                     <Wrench className="w-3.5 h-3.5" />
-                    {language === 'tr' ? 'ArÄ±zalar' : 'Faults'}
+                    {language === 'tr' ? 'Arızalar' : 'Faults'}
                   </h4>
                   {faults.map((fault, index) => {
                     const isResolved = getResolvedStatus(fault);
@@ -263,7 +263,7 @@ export function TroubleshootingPanel({
                             </div>
                             {fault.hint && !isResolved && (
                               <div className="text-xs mt-1 italic text-warning-700 dark:text-warning-300/80">
-                                {language === 'tr' ? 'Ä°pucu:' : 'Hint:'} {fault.hint[language] || fault.hint.en}
+                                {language === 'tr' ? 'İpucu:' : 'Hint:'} {fault.hint[language] || fault.hint.en}
                               </div>
                             )}
                           </div>
@@ -278,7 +278,7 @@ export function TroubleshootingPanel({
                 <div className="space-y-2 mt-4">
                   <h4 className="text-xs font-semibold text-primary-500/80 uppercase tracking-wider flex items-center gap-1.5">
                     <Target className="w-3.5 h-3.5" />
-                    {language === 'tr' ? 'Hedefli GÃ¶revler' : 'Targeted Tasks'}
+                    {language === 'tr' ? 'Hedefli Görevler' : 'Targeted Tasks'}
                   </h4>
                   {tasks.map((task, index) => {
                     const isResolved = task.completed;
@@ -313,7 +313,7 @@ export function TroubleshootingPanel({
                             </div>
                             {task.hint && !isResolved && (
                               <div className="text-xs text-warning-300/80 mt-1.5 italic">
-                                {language === 'tr' ? 'Ä°pucu:' : 'Hint:'} {task.hint[language as 'tr' | 'en'] || task.hint.en}
+                                {language === 'tr' ? 'İpucu:' : 'Hint:'} {task.hint[language as 'tr' | 'en'] || task.hint.en}
                               </div>
                             )}
                           </div>
@@ -331,20 +331,20 @@ export function TroubleshootingPanel({
                   {language === 'tr' ? 'Tebrikler!' : 'Congratulations!'}
                 </div>
                 <div className="text-success-300/80 text-sm mb-4">
-                  {language === 'tr' ? 'TÃ¼m gÃ¶revleri ve arÄ±zalarÄ± baÅŸarÄ±yla tamamladÄ±nÄ±z.' : 'You successfully completed all tasks and faults.'}
+                  {language === 'tr' ? 'Tüm görevleri ve arızaları başarıyla tamamladınız.' : 'You successfully completed all tasks and faults.'}
                 </div>
                 <button
                   onClick={handleDownloadCertificate}
                   disabled={progressPercentage < 50}
-                  title={progressPercentage < 50 ? (language === 'tr' ? 'Sertifika iÃ§in en az %50 tamamlama gereklidir.' : 'At least 50% completion is required for a certificate.') : undefined}
+                  title={progressPercentage < 50 ? (language === 'tr' ? 'Sertifika için en az %50 tamamlama gereklidir.' : 'At least 50% completion is required for a certificate.') : undefined}
                   className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-success-600 hover:bg-success-700 text-white rounded-lg font-bold text-sm transition-all shadow-lg shadow-success-900/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-success-600"
                 >
                   <Award className="w-5 h-5" />
-                  {language === 'tr' ? 'SertifikayÄ± Ä°ndir' : 'Download Certificate'}
+                  {language === 'tr' ? 'Sertifikayı İndir' : 'Download Certificate'}
                 </button>
                 {progressPercentage < 50 && (
                   <p className="text-center text-xs text-warning-400 mt-1.5">
-                    {language === 'tr' ? `Sertifika iÃ§in en az %50 gerekli (Mevcut: %${progressPercentage})` : `Min. 50% required (Current: ${progressPercentage}%)`}
+                    {language === 'tr' ? `Sertifika için en az %50 gerekli (Mevcut: %${progressPercentage})` : `Min. 50% required (Current: ${progressPercentage}%)`}
                   </p>
                 )}
 

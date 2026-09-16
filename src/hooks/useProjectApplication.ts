@@ -227,8 +227,8 @@ export function useProjectApplication({
       loadProjectData(projectData);
       toggleEditor(true);
       toast({
-        title: language === 'tr' ? 'Proje DÃ¶nÃ¼ÅŸtÃ¼rÃ¼ldÃ¼' : 'Project Converted',
-        description: language === 'tr' ? 'GÃ¶revler otomatik olarak Ã§Ä±karÄ±ldÄ± ve SÄ±nav DÃ¼zenleyici aÃ§Ä±ldÄ±.' : 'Tasks were automatically extracted and the Exam Editor was opened.',
+        title: language === 'tr' ? 'Proje Dönüştürüldü' : 'Project Converted',
+        description: language === 'tr' ? 'Görevler otomatik olarak çıkarıldı ve Sınav Düzenleyici açıldı.' : 'Tasks were automatically extracted and the Exam Editor was opened.',
       });
     } finally {
       document.body.style.cursor = '';

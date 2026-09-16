@@ -33,7 +33,7 @@ function getConnectedPortsForDevice(deviceId: string, connections: CanvasConnect
 
 function getActiveServicesForDevice(device: CanvasDevice, state?: SwitchState): string[] {
   const serviceList: string[] = [];
-  
+
   // Physical Layer 1 Hubs and WAN Cloud bridges do not host application server services
   if (device.type === 'hub' || device.type === 'cloud') {
     return serviceList;
@@ -43,12 +43,12 @@ function getActiveServicesForDevice(device: CanvasDevice, state?: SwitchState): 
 
   if (services?.http?.enabled) {
     // HTTP service is hosted on PCs, WLCs, IoTs, Printers, Firewalls, Routers
-    const isWebCapableDevice = 
-      device.type === 'pc' || 
-      device.type === 'wlc' || 
-      device.type === 'iot' || 
-      device.type === 'printer' || 
-      device.type === 'router' || 
+    const isWebCapableDevice =
+      device.type === 'pc' ||
+      device.type === 'wlc' ||
+      device.type === 'iot' ||
+      device.type === 'printer' ||
+      device.type === 'router' ||
       device.type === 'firewall';
 
     if (isWebCapableDevice) {
@@ -59,7 +59,7 @@ function getActiveServicesForDevice(device: CanvasDevice, state?: SwitchState): 
   }
   if (services?.dns?.enabled) {
     const recordCount = services.dns.records?.length || 0;
-    serviceList.push(`DNS Server (${recordCount} KayÄ±t)`);
+    serviceList.push(`DNS Server (${recordCount} Kayıt)`);
   }
   if (services?.dhcp?.enabled) {
     const poolCount = services.dhcp.pools?.length || 0;
@@ -486,38 +486,38 @@ export function useCanvasActions({
 
     const lastProjectDesc = typeof window !== 'undefined' ? localStorage.getItem('lastProjectDescription') : null;
 
-    let summaryText = isTr ? `ğŸ“‹ TOPOLOJÄ° VE SENARYO REHBERÄ°\n` : `ğŸ“‹ TOPOLOGY & SCENARIO GUIDE\n`;
-    summaryText += 'â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n';
+    let summaryText = isTr ? `📋 TOPOLOJİ VE SENARYO REHBERİ\n` : `📋 TOPOLOGY & SCENARIO GUIDE\n`;
+    summaryText += '------------------------------------------------\n';
 
     if (lastProjectDesc) {
       summaryText += `${lastProjectDesc.trim()}\n`;
-      summaryText += 'â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€\n';
+      summaryText += '------------------------------------------------\n';
     }
 
     if (devices.length === 0) {
-      summaryText += isTr ? 'Cihaz bulunamadÄ±.' : 'No devices found.';
+      summaryText += isTr ? 'Cihaz bulunamadı.' : 'No devices found.';
     } else {
-      summaryText += isTr ? `ğŸ“Š CÄ°HAZ VE PORT YAPILANDIRMASI (${devices.length} Cihaz):\n` : `ğŸ“Š DEVICE & PORT CONFIGURATION (${devices.length} Devices):\n`;
+      summaryText += isTr ? `📊 CİHAZ VE PORT YAPILANDIRMASI (${devices.length} Cihaz):\n` : `📊 DEVICE & PORT CONFIGURATION (${devices.length} Devices):\n`;
 
       const groups: Record<string, CanvasDevice[]> = {
-        '[ PC / Ä°stemciler ]': [],
+        '[ PC / İstemciler ]': [],
         '[ L2 Anahtarlar ]': [],
         '[ L3 Omurga Anahtarlar ]': [],
-        '[ YÃ¶nlendiriciler (Router) ]': [],
-        '[ GÃ¼venlik DuvarÄ± (Firewall) ]': [],
+        '[ Yönlendiriciler (Router) ]': [],
+        '[ Güvenlik Duvarı (Firewall) ]': [],
         '[ Kablosuz Denetleyici (WLC) ]': [],
-        '[ DiÄŸer / Ã‡evre Birimleri ]': []
+        '[ Diğer / Çevre Birimleri ]': []
       };
 
       devices.forEach(d => {
         const grp = getTopologyGroup(d.type);
-        if (grp === 'PC') groups['[ PC / Ä°stemciler ]'].push(d);
+        if (grp === 'PC') groups['[ PC / İstemciler ]'].push(d);
         else if (grp === 'Switch L2') groups['[ L2 Anahtarlar ]'].push(d);
         else if (grp === 'Switch L3') groups['[ L3 Omurga Anahtarlar ]'].push(d);
-        else if (grp === 'Router') groups['[ YÃ¶nlendiriciler (Router) ]'].push(d);
-        else if (grp === 'Firewall') groups['[ GÃ¼venlik DuvarÄ± (Firewall) ]'].push(d);
+        else if (grp === 'Router') groups['[ Yönlendiriciler (Router) ]'].push(d);
+        else if (grp === 'Firewall') groups['[ Güvenlik Duvarı (Firewall) ]'].push(d);
         else if (grp === 'WLC') groups['[ Kablosuz Denetleyici (WLC) ]'].push(d);
-        else groups['[ DiÄŸer / Ã‡evre Birimleri ]'].push(d);
+        else groups['[ Diğer / Çevre Birimleri ]'].push(d);
       });
 
       Object.entries(groups).forEach(([groupHeader, groupedDevices]) => {
@@ -528,7 +528,7 @@ export function useCanvasActions({
           const deviceState = deviceStates?.get(d.id) as SwitchState | undefined;
           const subnetMask = d.subnet || '255.255.255.0';
 
-          let devHeader = `  â€¢ ${d.name}`;
+          let devHeader = `  • ${d.name}`;
           const details: string[] = [];
 
           if (d.ip) details.push(`IP: ${d.ip}/${subnetMask}`);
@@ -544,7 +544,7 @@ export function useCanvasActions({
 
           const connectedPorts = getConnectedPortsForDevice(d.id, connections);
           if (connectedPorts.length > 0) {
-            summaryText += `    ğŸ”Œ ${isTr ? 'BaÄŸlantÄ±lar' : 'Links'}: ${connectedPorts.join(', ')}\n`;
+            summaryText += `    🔌 ${isTr ? 'Bağlantılar' : 'Links'}: ${connectedPorts.join(', ')}\n`;
           }
 
           const activeServices = getActiveServicesForDevice(d, deviceState);
@@ -554,7 +554,7 @@ export function useCanvasActions({
 
           const cliCmds = getCliCommandsForDevice(d, deviceState);
           if (cliCmds.length > 0) {
-            summaryText += `    ğŸ’» CLI: ${cliCmds.join('; ')}\n`;
+            summaryText += `    💻 CLI: ${cliCmds.join('; ')}\n`;
           }
         });
       });

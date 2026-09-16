@@ -16,7 +16,7 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'vtp-note-1',
       text: isTr
-        ? 'AmaÃ§: Ä°ki switch arasÄ±nda VTP kullanarak VLAN bilgilerinin otomatik yayÄ±lÄ±mÄ±nÄ± saÄŸlamak.\n\nTrunk + VTP:\nSW1 (server): vtp mode server, vtp domain LAB\nSW2 (client): vtp mode client, vtp domain LAB\nGi0/1 trunk olmalÄ±.\nSW1\'de VLAN 10/20 aÃ§ -> SW2\'ye otomatik gelmeli.\nshow interface trunk ve show vlan brief ile doÄŸrula.'
+        ? 'Amaç: İki switch arasında VTP kullanarak VLAN bilgilerinin otomatik yayılımını sağlamak.\n\nTrunk + VTP:\nSW1 (server): vtp mode server, vtp domain LAB\nSW2 (client): vtp mode client, vtp domain LAB\nGi0/1 trunk olmalı.\nSW1\'de VLAN 10/20 aç -> SW2\'ye otomatik gelmeli.\nshow interface trunk ve show vlan brief ile doğrula.'
         : 'Goal: Automate VLAN propagation between two switches using VTP.\n\nTrunk + VTP:\nSW1 (server): vtp mode server, vtp domain LAB\nSW2 (client): vtp mode client, vtp domain LAB\nGi0/1 must be trunk.\nCreate VLAN 10/20 on SW1 -> should appear on SW2.\nVerify with show interface trunk and show vlan brief.',
       x: 600,
       y: 40,
@@ -49,10 +49,10 @@ const example = (isTr: boolean): ExampleProject => {
     tag: isTr ? 'TRUNK/VTP' : 'TRUNK/VTP',
     title: isTr ? '2 Switch Trunk + VTP' : 'Two Switch Trunk + VTP',
     description: isTr
-      ? 'Ä°ki switch arasÄ± trunk baÄŸlantÄ±sÄ± ve VTP domain ile VLAN yayÄ±lÄ±mÄ± saÄŸlanÄ±r.'
+      ? 'İki switch arası trunk bağlantısı ve VTP domain ile VLAN yayılımı sağlanır.'
       : 'Trunk connection between two switches with VTP domain for VLAN propagation.',
     detail: isTr
-      ? 'VTP domain: LAB, Gi0/1 trunk, VLAN 10/20 otomatik yayÄ±lÄ±r'
+      ? 'VTP domain: LAB, Gi0/1 trunk, VLAN 10/20 otomatik yayılır'
       : 'VTP domain: LAB, Gi0/1 trunk, VLAN 10/20 auto-propagated',
     level: 'intermediate',
     data: baseProjectData(vtpDevices, vtpConnections, vtpNotes, [

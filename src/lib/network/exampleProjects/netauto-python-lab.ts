@@ -82,27 +82,27 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'netauto-python-note',
       text: isTr
-        ? 'ğŸ Python & AÄŸ Otomasyonu LaboratuvarÄ± (Netmiko / RESTCONF / SSH)\n\n' +
-          'ğŸ¯ AmaÃ§ ve Senaryo Ã–zeti:\n' +
-          'Python otomasyon istasyonundan OOBM (Out-of-Band Management) anahtarÄ± Ã¼zerinden 3 adet yÃ¶nlendiriciye (Edge-R1, Core-R2, Dist-R3) SSH/Telnet ile baÄŸlanÄ±p toplu konfigÃ¼rasyon ve envanter toplama senaryosu.\n\n' +
-          'ğŸ“‹ YÃ¶netim AÄŸ Parametreleri (VLAN 1):\n' +
-          'â€¢ Python Ä°stasyonu: 192.168.100.10 /24\n' +
-          'â€¢ Edge-R1: 192.168.100.11 (KullanÄ±cÄ±: admin / Åifre: password)\n' +
-          'â€¢ Core-R2: 192.168.100.12 (KullanÄ±cÄ±: admin / Åifre: password)\n' +
-          'â€¢ Dist-R3: 192.168.100.13 (KullanÄ±cÄ±: admin / Åifre: password)\n\n' +
-          'ğŸ§ª DoÄŸrulama ve Test:\n' +
-          '1. Python istasyonundan "ping 192.168.100.11" ile yÃ¶nlendirici eriÅŸilebilirliÄŸini test edin.\n' +
-          '2. "ssh admin@192.168.100.11" ile SSH baÄŸlantÄ±sÄ± saÄŸlayÄ±p "show ip int brief" Ã§Ä±ktÄ±sÄ±nÄ± alÄ±n.\n' +
-          '3. Python betikleri ile tÃ¼m yÃ¶nlendiricilere eÅŸzamanlÄ± VLAN ve rota daÄŸÄ±tÄ±mÄ± simÃ¼le edin.'
+        ? 'ğŸ Python & Ağ Otomasyonu Laboratuvarı (Netmiko / RESTCONF / SSH)\n\n' +
+          'ğŸ¯ Amaç ve Senaryo Özeti:\n' +
+          'Python otomasyon istasyonundan OOBM (Out-of-Band Management) anahtarı üzerinden 3 adet yönlendiriciye (Edge-R1, Core-R2, Dist-R3) SSH/Telnet ile bağlanıp toplu konfigürasyon ve envanter toplama senaryosu.\n\n' +
+          '📋 Yönetim Ağ Parametreleri (VLAN 1):\n' +
+          '• Python İstasyonu: 192.168.100.10 /24\n' +
+          '• Edge-R1: 192.168.100.11 (Kullanıcı: admin / Åifre: password)\n' +
+          '• Core-R2: 192.168.100.12 (Kullanıcı: admin / Åifre: password)\n' +
+          '• Dist-R3: 192.168.100.13 (Kullanıcı: admin / Åifre: password)\n\n' +
+          '🧪 Doğrulama ve Test:\n' +
+          '1. Python istasyonundan "ping 192.168.100.11" ile yönlendirici erişilebilirliğini test edin.\n' +
+          '2. "ssh admin@192.168.100.11" ile SSH bağlantısı sağlayıp "show ip int brief" çıktısını alın.\n' +
+          '3. Python betikleri ile tüm yönlendiricilere eşzamanlı VLAN ve rota dağıtımı simüle edin.'
         : 'ğŸ Python Network Automation Lab (Netmiko / RESTCONF / SSH)\n\n' +
           'ğŸ¯ Objective & Scenario Overview:\n' +
           'Centralized fleet configuration and automated inventory collection from a Python automation node across 3 routers over Out-of-Band Management (OOBM) switch.\n\n' +
-          'ğŸ“‹ Out-of-Band Management Fleet:\n' +
-          'â€¢ Python Station: 192.168.100.10 /24\n' +
-          'â€¢ Edge-R1: 192.168.100.11 (User: admin / Pass: password)\n' +
-          'â€¢ Core-R2: 192.168.100.12 (User: admin / Pass: password)\n' +
-          'â€¢ Dist-R3: 192.168.100.13 (User: admin / Pass: password)\n\n' +
-          'ğŸ§ª Verification & Testing:\n' +
+          '📋 Out-of-Band Management Fleet:\n' +
+          '• Python Station: 192.168.100.10 /24\n' +
+          '• Edge-R1: 192.168.100.11 (User: admin / Pass: password)\n' +
+          '• Core-R2: 192.168.100.12 (User: admin / Pass: password)\n' +
+          '• Dist-R3: 192.168.100.13 (User: admin / Pass: password)\n\n' +
+          '🧪 Verification & Testing:\n' +
           '1. Check connectivity from Python station: "ping 192.168.100.11".\n' +
           '2. Test SSH connectivity: "ssh admin@192.168.100.11" and view running configuration.\n' +
           '3. Execute automation commands to push configuration changes across the fleet.',
@@ -120,12 +120,12 @@ const example = (isTr: boolean): ExampleProject => {
   return {
     id: 'netauto-python-lab',
     tag: isTr ? 'OTOMASYON' : 'AUTOMATION',
-    title: isTr ? 'Python AÄŸ Otomasyonu ve OOBM Filosu' : 'Python Network Automation & OOBM Fleet',
+    title: isTr ? 'Python Ağ Otomasyonu ve OOBM Filosu' : 'Python Network Automation & OOBM Fleet',
     description: isTr
-      ? 'Python otomasyon istasyonu, OOBM anahtarÄ± ve SSH Ã¶zellikli yÃ¶nlendirici filosundan oluÅŸan modern otomasyon laboratuvarÄ±.'
+      ? 'Python otomasyon istasyonu, OOBM anahtarı ve SSH özellikli yönlendirici filosundan oluşan modern otomasyon laboratuvarı.'
       : 'Modern automation lab with Python workstation, out-of-band management switch, and SSH-enabled router fleet.',
     detail: isTr
-      ? 'SSH/Telnet vty kimlik doÄŸrulama, toplu yapÄ±landÄ±rma ve telemetri toplama ortamÄ±.'
+      ? 'SSH/Telnet vty kimlik doğrulama, toplu yapılandırma ve telemetri toplama ortamı.'
       : 'Batch provisioning, SSH/Telnet vty authentication, and telemetry collection testbed.',
     level: 'advanced',
     data: baseProjectData(devices, connections, notes, [

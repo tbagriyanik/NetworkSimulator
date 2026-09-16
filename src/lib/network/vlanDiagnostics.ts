@@ -1,5 +1,5 @@
 ﻿/**
- * vlanDiagnostics.ts â€” VLAN and Trunk Mismatch Diagnostic Utility
+ * vlanDiagnostics.ts — VLAN and Trunk Mismatch Diagnostic Utility
  *
  * Scans network topology connections and identifies:
  * - Native VLAN Mismatch between connected trunk ports

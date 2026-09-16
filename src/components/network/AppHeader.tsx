@@ -267,9 +267,9 @@ export function AppHeader({
 
               {/* Settings & Theme */}
               <div className={`w-px h-4 mx-1 ${isDark ? 'bg-secondary-700' : 'bg-secondary-300'} hidden md:block`} />
-              <TooltipWrapper title={language === 'tr' ? 'Switch to English' : "TÃ¼rkÃ§e'ye GeÃ§"}>
+              <TooltipWrapper title={language === 'tr' ? 'Switch to English' : "Türkçe'ye Geç"}>
                 <button
-                  aria-label={`${language.toUpperCase()}: ${language === 'tr' ? 'Switch to English' : "TÃ¼rkÃ§e'ye GeÃ§"}`}
+                  aria-label={`${language.toUpperCase()}: ${language === 'tr' ? 'Switch to English' : "Türkçe'ye Geç"}`}
                   onClick={() => setLanguage(language === 'tr' ? 'en' : 'tr')}
                   className={cn("text-[10px] font-bold h-8 px-1.5 flex items-center gap-1 rounded transition-all ui-hover-surface", isDark ? 'text-secondary-300 hover:text-purple-300' : 'text-secondary-700 hover:text-purple-700')}
                 >
@@ -334,10 +334,10 @@ export function AppHeader({
                     <span className="font-bold">{t.helpLevelLabel}</span>
                     <span className="text-[10px] opacity-80">
                       {helpLevel === 'beginner'
-                        ? `ğŸŸ¢ ${t.beginnerLevel}`
+                        ? `🟢 ${t.beginnerLevel}`
                         : helpLevel === 'intermediate'
-                          ? `ğŸŸ¡ ${t.intermediateLevel}`
-                          : `ğŸ”´ ${t.advancedLevel}`}
+                          ? `🟡 ${t.intermediateLevel}`
+                          : `🔴 ${t.advancedLevel}`}
                     </span>
                   </div>
                 </TooltipContent>

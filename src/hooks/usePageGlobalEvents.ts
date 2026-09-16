@@ -124,7 +124,7 @@ export function usePageGlobalEvents({
       let cleanCommand = '';
 
       // Check if rawStr contains a quoted command like "ipconfig" or "show ip int brief"
-      const quoteMatch = rawStr.match(/["'â€œâ€]([^"'â€œâ€]+)["'â€œâ€]/);
+      const quoteMatch = rawStr.match(/["'“”]([^"'“”]+)["'“”]/);
       if (quoteMatch && quoteMatch[1].trim()) {
         cleanCommand = quoteMatch[1].trim();
       } else {
@@ -136,10 +136,10 @@ export function usePageGlobalEvents({
         .replace(/[\^$()]/g, '')
         .replace(/^[^:]{1,40}:\s*/i, '')
         .replace(/^[a-zA-Z0-9_-]+(\([^)]+\))?[>#]\s*/, '')
-        .replace(/^(type|yazÄ±n|yazin)\s+/i, '')
-        .replace(/\s+(yazÄ±n|yazin)\.?$/i, '')
+        .replace(/^(type|yazın|yazin)\s+/i, '')
+        .replace(/\s+(yazın|yazin)\.?$/i, '')
         .replace(/\s+(and press enter|press enter)\.?$/i, '')
-        .replace(/^["'â€œâ€]+|["'â€œâ€.,!?]+$/g, '')
+        .replace(/^["'“”]+|["'“”.,!?]+$/g, '')
         .trim();
 
       if (!cleanCommand && commandPattern) {

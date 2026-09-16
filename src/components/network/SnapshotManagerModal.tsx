@@ -113,7 +113,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
   };
 
   const handleCreateSnapshot = () => {
-    const defaultTitle = isTr ? `KayÄ±t #${checkpoints.length + 1}` : `Snapshot #${checkpoints.length + 1}`;
+    const defaultTitle = isTr ? `Kayıt #${checkpoints.length + 1}` : `Snapshot #${checkpoints.length + 1}`;
     const name = newSnapshotName.trim() || `${defaultTitle} (${new Date().toLocaleTimeString(isTr ? 'tr-TR' : 'en-US')})`;
 
     const curDevices = devices.length > 0 ? devices : (useAppStore.getState().topology.devices || []);
@@ -135,22 +135,22 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
     setNewSnapshotName('');
     setNewSnapshotDesc('');
     setIsCreating(false);
-    showNotification(isTr ? `"${checkpoint.name}" kaydÄ± baÅŸarÄ±yla oluÅŸturuldu!` : `"${checkpoint.name}" snapshot successfully saved!`);
+    showNotification(isTr ? `"${checkpoint.name}" kaydı başarıyla oluşturuldu!` : `"${checkpoint.name}" snapshot successfully saved!`);
   };
 
   const handleDelete = (id: string, name: string) => {
     const updated = deleteCheckpointFromList(checkpoints, id);
     setCheckpoints(updated);
     if (selectedCheckpoint?.id === id) setSelectedCheckpoint(null);
-    showNotification(isTr ? `"${name}" kaydÄ± silindi.` : `"${name}" snapshot deleted.`);
+    showNotification(isTr ? `"${name}" kaydı silindi.` : `"${name}" snapshot deleted.`);
   };
 
   const handleClearAll = () => {
-    const msg = isTr ? 'TÃ¼m topoloji kayÄ±tlarÄ±nÄ± silmek istediÄŸinize emin misiniz?' : 'Are you sure you want to clear all topology snapshots?';
+    const msg = isTr ? 'Tüm topoloji kayıtlarını silmek istediğinize emin misiniz?' : 'Are you sure you want to clear all topology snapshots?';
     if (confirm(msg)) {
       setCheckpoints([]);
       saveCheckpointsToStorage([]);
-      showNotification(isTr ? 'TÃ¼m topoloji kayÄ±tlarÄ± temizlendi.' : 'All topology snapshot records cleared.');
+      showNotification(isTr ? 'Tüm topoloji kayıtları temizlendi.' : 'All topology snapshot records cleared.');
     }
   };
 
@@ -178,7 +178,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
     }
 
     setShowConfirmRollback(false);
-    showNotification(isTr ? `Topoloji "${cp.name}" anÄ±na baÅŸarÄ±yla geri yÃ¼klendi!` : `Topology successfully restored to "${cp.name}"!`);
+    showNotification(isTr ? `Topoloji "${cp.name}" anına başarıyla geri yüklendi!` : `Topology successfully restored to "${cp.name}"!`);
     setTimeout(() => {
       onClose();
     }, 700);
@@ -206,7 +206,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
             const imported: TopologyCheckpoint = {
               ...parsed,
               id: `checkpoint-imp-${Date.now()}`,
-              name: `${parsed.name || (isTr ? 'Ä°Ã§e AktarÄ±lan' : 'Imported')} (${isTr ? 'Ä°Ã§e AktarÄ±ldÄ±' : 'Imported'})`,
+              name: `${parsed.name || (isTr ? 'İçe Aktarılan' : 'Imported')} (${isTr ? 'İçe Aktarıldı' : 'Imported'})`,
               createdAt: Date.now(),
               deviceCount: parsed.devices.length,
               connectionCount: Array.isArray(parsed.connections) ? parsed.connections.length : 0,
@@ -218,15 +218,15 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
             const updated = [imported, ...checkpoints];
             setCheckpoints(updated);
             saveCheckpointsToStorage(updated);
-            showNotification(isTr ? `"${imported.name}" baÅŸarÄ±yla iÃ§e aktarÄ±ldÄ±!` : `"${imported.name}" successfully imported!`);
+            showNotification(isTr ? `"${imported.name}" başarıyla içe aktarıldı!` : `"${imported.name}" successfully imported!`);
           } else {
             const errMsg = validation.error
               ? (isTr ? `Uyumsuz JSON: ${validation.error}` : `Incompatible JSON: ${validation.error}`)
-              : (isTr ? 'GeÃ§ersiz veya uyumsuz checkpoint JSON formatÄ±.' : 'Invalid or incompatible checkpoint JSON format.');
+              : (isTr ? 'Geçersiz veya uyumsuz checkpoint JSON formatı.' : 'Invalid or incompatible checkpoint JSON format.');
             showNotification(errMsg, 'error');
           }
         } catch {
-          showNotification(isTr ? 'JSON dosyasÄ± okunamadÄ± veya ayrÄ±ÅŸtÄ±rÄ±lamadÄ±.' : 'Failed to read or parse JSON file.', 'error');
+          showNotification(isTr ? 'JSON dosyası okunamadı veya ayrıştırılamadı.' : 'Failed to read or parse JSON file.', 'error');
         }
       };
     }
@@ -263,15 +263,15 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-bold tracking-tight">
-                  {isTr ? 'Topoloji AnlÄ±k GÃ¶rÃ¼ntÃ¼ & Geri YÃ¼kleme YÃ¶neticisi' : 'Topology Snapshot & Restore Manager'}
+                  {isTr ? 'Topoloji Anlık Görüntü & Geri Yükleme Yöneticisi' : 'Topology Snapshot & Restore Manager'}
                 </h3>
                 <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                  {isTr ? 'Geri YÃ¼kleme NoktasÄ±' : 'Checkpoint'}
+                  {isTr ? 'Geri Yükleme Noktası' : 'Checkpoint'}
                 </span>
               </div>
               <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                 {isTr
-                  ? 'AÄŸ topolojinizin anlÄ±k durumunu dondurun, kaydedin ve istediÄŸiniz an tek tÄ±kla geri yÃ¼kleyin.'
+                  ? 'Ağ topolojinizin anlık durumunu dondurun, kaydedin ve istediğiniz an tek tıkla geri yükleyin.'
                   : 'Freeze, save, and restore your network topology state instantly at any point in time.'}
               </p>
             </div>
@@ -280,7 +280,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
           <div className="flex items-center gap-2">
             <label className="cursor-pointer px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-700 hover:bg-slate-800 text-slate-300 flex items-center gap-1.5 transition active:scale-95 shadow-sm">
               <Upload className="w-3.5 h-3.5 text-indigo-400" />
-              <span>{isTr ? 'JSON Ä°Ã§e Aktar' : 'Import JSON'}</span>
+              <span>{isTr ? 'JSON İçe Aktar' : 'Import JSON'}</span>
               <input type="file" accept=".json" onChange={handleImportJson} className="hidden" />
             </label>
             <button
@@ -318,7 +318,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={isTr ? 'KayÄ±t ara (isim veya aÃ§Ä±klama)...' : 'Search snapshots (name or description)...'}
+                placeholder={isTr ? 'Kayıt ara (isim veya açıklama)...' : 'Search snapshots (name or description)...'}
                 className={`w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border focus:outline-none transition ${isDark
                     ? 'bg-slate-950/70 border-slate-700 text-slate-200 placeholder-slate-500 focus:border-indigo-500'
                     : 'bg-white border-slate-300 text-slate-800 placeholder-slate-400 focus:border-indigo-500'
@@ -333,7 +333,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
                 onClick={handleClearAll}
                 className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-rose-500/30 hover:bg-rose-500/10 text-rose-400 transition"
               >
-                {isTr ? 'TÃ¼mÃ¼nÃ¼ Temizle' : 'Clear All'}
+                {isTr ? 'Tümünü Temizle' : 'Clear All'}
               </button>
             )}
 
@@ -342,7 +342,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
               className="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-md active:scale-95"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>{isTr ? 'Yeni KayÄ±t Al' : 'Take New Snapshot'}</span>
+              <span>{isTr ? 'Yeni Kayıt Al' : 'Take New Snapshot'}</span>
             </button>
           </div>
         </div>
@@ -357,11 +357,11 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-indigo-400" />
                 <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-300">
-                  {isTr ? 'Mevcut Topolojinin AnlÄ±k Durumunu Kaydet' : 'Capture Current Topology State'}
+                  {isTr ? 'Mevcut Topolojinin Anlık Durumunu Kaydet' : 'Capture Current Topology State'}
                 </h4>
               </div>
               <span className="text-[11px] text-slate-400 font-mono">
-                {devices.length} {isTr ? 'Cihaz' : 'Devices'} â€¢ {connections.length} {isTr ? 'BaÄŸlantÄ± Donduruluyor' : 'Links Freezing'}
+                {devices.length} {isTr ? 'Cihaz' : 'Devices'} • {connections.length} {isTr ? 'Bağlantı Donduruluyor' : 'Links Freezing'}
               </span>
             </div>
 
@@ -370,7 +370,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
                 type="text"
                 value={newSnapshotName}
                 onChange={(e) => setNewSnapshotName(e.target.value)}
-                placeholder={isTr ? 'KayÄ±t AdÄ± (Ã–rn: OSPF & BGP KonfigÃ¼rasyonu Ã–ncesi)' : 'Snapshot Name (e.g. Pre-OSPF Config)'}
+                placeholder={isTr ? 'Kayıt Adı (Örn: OSPF & BGP Konfigürasyonu Öncesi)' : 'Snapshot Name (e.g. Pre-OSPF Config)'}
                 className={`px-3 py-2 text-xs rounded-lg border focus:outline-none ${isDark
                     ? 'bg-slate-950 border-slate-700 text-slate-100 focus:border-indigo-500'
                     : 'bg-white border-slate-300 focus:border-indigo-500'
@@ -380,7 +380,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
                 type="text"
                 value={newSnapshotDesc}
                 onChange={(e) => setNewSnapshotDesc(e.target.value)}
-                placeholder={isTr ? 'AÃ§Ä±klama / Notlar (Opsiyonel)' : 'Description / Notes (Optional)'}
+                placeholder={isTr ? 'Açıklama / Notlar (Opsiyonel)' : 'Description / Notes (Optional)'}
                 className={`px-3 py-2 text-xs rounded-lg border focus:outline-none ${isDark
                     ? 'bg-slate-950 border-slate-700 text-slate-100 focus:border-indigo-500'
                     : 'bg-white border-slate-300 focus:border-indigo-500'
@@ -394,13 +394,13 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
                 className={`px-3 py-1.5 text-xs font-medium rounded-lg border ${isDark ? 'border-slate-700 text-slate-400 hover:bg-slate-800' : 'border-slate-300 text-slate-600'
                   }`}
               >
-                {isTr ? 'VazgeÃ§' : 'Cancel'}
+                {isTr ? 'Vazgeç' : 'Cancel'}
               </button>
               <button
                 onClick={handleCreateSnapshot}
                 className="px-4 py-1.5 text-xs font-bold rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition shadow active:scale-95"
               >
-                {isTr ? 'KaydÄ± OluÅŸtur' : 'Create Snapshot'}
+                {isTr ? 'Kaydı Oluştur' : 'Create Snapshot'}
               </button>
             </div>
           </div>
@@ -415,11 +415,11 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
               </div>
               <div>
                 <div className="font-bold text-sm text-slate-300">
-                  {isTr ? 'KayÄ±tlÄ± Topoloji BulunamadÄ±' : 'No Saved Snapshots Found'}
+                  {isTr ? 'Kayıtlı Topoloji Bulunamadı' : 'No Saved Snapshots Found'}
                 </div>
                 <p className="max-w-md mx-auto mt-1 text-slate-400 leading-relaxed">
                   {isTr
-                    ? 'AÄŸ Ã¼zerinde deÄŸiÅŸiklik yapmadan Ã¶nce "Yeni KayÄ±t Al" diyerek topolojinin o anki halini dondurabilir ve bir sorun Ã§Ä±ktÄ±ÄŸÄ±nda tek tÄ±kla o ana geri dÃ¶nebilirsiniz.'
+                    ? 'Ağ üzerinde değişiklik yapmadan önce "Yeni Kayıt Al" diyerek topolojinin o anki halini dondurabilir ve bir sorun çıktığında tek tıkla o ana geri dönebilirsiniz.'
                     : 'Take a snapshot before making network changes to freeze topology state and instantly roll back if any issue occurs.'}
                 </p>
               </div>
@@ -437,7 +437,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-bold text-sm text-slate-100">{cp.name}</span>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 font-mono">
-                      {cp.deviceCount} {isTr ? 'Cihaz' : 'Devices'} â€¢ {cp.connectionCount} {isTr ? 'BaÄŸlantÄ±' : 'Links'}
+                      {cp.deviceCount} {isTr ? 'Cihaz' : 'Devices'} • {cp.connectionCount} {isTr ? 'Bağlantı' : 'Links'}
                     </span>
                   </div>
                   {cp.description && <p className="text-xs text-slate-400 truncate">{cp.description}</p>}
@@ -450,7 +450,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
                 <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
                   <button
                     onClick={() => handleExportJson(cp)}
-                    title={isTr ? 'JSON Olarak Ä°ndir' : 'Export as JSON'}
+                    title={isTr ? 'JSON Olarak İndir' : 'Export as JSON'}
                     className={`p-2 rounded-lg border text-xs transition ${isDark
                         ? 'border-slate-800 hover:bg-slate-800 text-slate-400 hover:text-slate-200'
                         : 'border-slate-300 hover:bg-slate-100 text-slate-600'
@@ -460,7 +460,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
                   </button>
                   <button
                     onClick={() => handleDelete(cp.id, cp.name)}
-                    title={isTr ? 'KaydÄ± Sil' : 'Delete Snapshot'}
+                    title={isTr ? 'Kaydı Sil' : 'Delete Snapshot'}
                     className="p-2 rounded-lg border border-rose-500/20 hover:bg-rose-500/10 text-rose-400 transition"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -473,7 +473,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
                     className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 transition shadow active:scale-95"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
-                    {isTr ? 'Geri YÃ¼kle' : 'Restore State'}
+                    {isTr ? 'Geri Yükle' : 'Restore State'}
                   </button>
                 </div>
               </div>
@@ -491,14 +491,14 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
               <div className="flex items-center gap-3 text-amber-400">
                 <AlertCircle className="w-6 h-6 shrink-0" />
                 <div>
-                  <h4 className="font-bold text-sm">{isTr ? 'Geri YÃ¼klemeyi Onayla' : 'Confirm Restoration'}</h4>
+                  <h4 className="font-bold text-sm">{isTr ? 'Geri Yüklemeyi Onayla' : 'Confirm Restoration'}</h4>
                   <span className="text-[10px] text-slate-400 font-mono">{isTr ? 'Hedef: ' : 'Target: '}{selectedCheckpoint.name}</span>
                 </div>
               </div>
 
               <p className="text-xs text-slate-300 leading-relaxed">
                 {isTr
-                  ? <>Mevcut topoloji ve tÃ¼m cihazlarÄ±n port/IP konfigÃ¼rasyonlarÄ± <strong>"{selectedCheckpoint.name}"</strong> anÄ±ndaki durumuna geri yÃ¼klenecektir.</>
+                  ? <>Mevcut topoloji ve tüm cihazların port/IP konfigürasyonları <strong>"{selectedCheckpoint.name}"</strong> anındaki durumuna geri yüklenecektir.</>
                   : <>Current topology and device configs will be restored to state <strong>"{selectedCheckpoint.name}"</strong>.</>}
               </p>
 
@@ -508,14 +508,14 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
                   className={`px-3 py-1.5 text-xs font-medium rounded-lg border ${isDark ? 'border-slate-700 hover:bg-slate-800 text-slate-400' : 'border-slate-300 text-slate-600'
                     }`}
                 >
-                  {isTr ? 'VazgeÃ§' : 'Cancel'}
+                  {isTr ? 'Vazgeç' : 'Cancel'}
                 </button>
                 <button
                   onClick={() => handleRollback(selectedCheckpoint)}
                   className="px-4 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition shadow active:scale-95 flex items-center gap-1.5"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
-                  {isTr ? 'Evet, Geri YÃ¼kle' : 'Yes, Restore'}
+                  {isTr ? 'Evet, Geri Yükle' : 'Yes, Restore'}
                 </button>
               </div>
             </div>

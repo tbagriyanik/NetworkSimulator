@@ -178,7 +178,7 @@ export function FirewallPanel({
                 className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-error-500 data-[state=active]:shadow-none rounded-none px-1 sm:px-2 h-10 gap-1 sm:gap-2 font-bold text-xs flex-1 sm:flex-none min-w-0 visible"
               >
                 <Filter className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">{t.language === 'tr' ? 'HÄ±zlÄ± Ayarlar' : 'Quick Settings'}</span>
+                <span className="hidden sm:inline">{t.language === 'tr' ? 'Hızlı Ayarlar' : 'Quick Settings'}</span>
                 <span className="sm:hidden">{t.language === 'tr' ? 'Ayarlar' : 'Settings'}</span>
               </TabsTrigger>
             </TabsList>
@@ -218,7 +218,7 @@ export function FirewallPanel({
             <div className="space-y-4">
               {isDevicePoweredOff && (
                 <div className="p-2 rounded bg-error-500/10 text-error-500 text-xs text-center border border-error-500/20">
-                  {t.language === 'tr' ? 'Cihaz kapalÄ±. Kural yÃ¶netimi devre dÄ±ÅŸÄ±.' : 'Device is offline. Rule management disabled.'}
+                  {t.language === 'tr' ? 'Cihaz kapalı. Kural yönetimi devre dışı.' : 'Device is offline. Rule management disabled.'}
                 </div>
               )}
 
@@ -312,7 +312,7 @@ export function FirewallPanel({
               <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
                 {rules.length === 0 ? (
                   <div className="text-center py-8 text-secondary-500 text-xs italic">
-                    {t.language === 'tr' ? 'HenÃ¼z kural tanÄ±mlanmamÄ±ÅŸ. VarsayÄ±lan: Her ÅŸeye izin ver.' : 'No rules defined. Default: Allow all.'}
+                    {t.language === 'tr' ? 'Henüz kural tanımlanmamış. Varsayılan: Her şeye izin ver.' : 'No rules defined. Default: Allow all.'}
                   </div>
                 ) : (
                   rules.map((rule, index) => (
@@ -453,7 +453,7 @@ function DraggableRuleItem({
         <button
           className="p-1.5 rounded-md hover:bg-secondary-700/50 text-secondary-500 transition-colors"
           disabled={isDevicePoweredOff}
-          title={t.language === 'tr' ? 'SÃ¼rÃ¼klemek iÃ§in tutun' : 'Hold to drag'}
+          title={t.language === 'tr' ? 'Sürüklemek için tutun' : 'Hold to drag'}
         >
           <GripVertical className="w-4 h-4" />
         </button>

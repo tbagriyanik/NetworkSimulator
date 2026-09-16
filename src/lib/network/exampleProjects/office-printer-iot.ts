@@ -72,29 +72,29 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'office-printer-iot-note',
       text: isTr
-        ? 'ğŸ¢ Modern Ofis: AÄŸ YazÄ±cÄ±sÄ±, AkÄ±llÄ± IoT SensÃ¶r & Mobil Cihaz Entegrasyonu\n\n' +
-          'ğŸ¯ AmaÃ§ ve Senaryo Ã–zeti:\n' +
-          'Modern ofis ortamÄ±nda kablolu iÅŸ istasyonlarÄ±, aÄŸ yazÄ±cÄ±sÄ± (JetDirect/LPD), HVAC Ã§evre denetim IoT sensÃ¶rÃ¼ ve mobil tablet cihazlarÄ±nÄ±n ortak aÄŸ mimarisinde Ã§alÄ±ÅŸmasÄ±nÄ± test etme.\n\n' +
-          'ğŸ“‹ Cihaz YapÄ±landÄ±rmasÄ±:\n' +
-          'â€¢ Gateway-R1 (192.168.1.1) DHCP Havuzu: OfficePool (192.168.1.100 - .200)\n' +
-          'â€¢ Floor1-Printer (192.168.1.20): AÄŸ YazÄ±cÄ± ArayÃ¼zÃ¼ & HTTP YÃ¶netim Konsolu\n' +
-          'â€¢ HVAC-Temp-Sensor (192.168.1.30): SÄ±caklÄ±k & Ä°klim SensÃ¶rÃ¼\n' +
-          'â€¢ Admin-Workstation (192.168.1.101): Ofis YÃ¶neticisi PC\n' +
-          'â€¢ Staff-Tablet (192.168.1.150): Kablosuz Mobil Tablet\n\n' +
-          'ğŸ§ª DoÄŸrulama ve Test:\n' +
-          '1. Admin PC Ã¼zerinden "ping 192.168.1.20" ile yazÄ±cÄ±ya eriÅŸimi test edin.\n' +
-          '2. Admin PC web tarayÄ±cÄ±sÄ± veya "curl 192.168.1.20" ile yazÄ±cÄ± durum sayfasÄ±nÄ± gÃ¶rÃ¼ntÃ¼leyin.\n' +
-          '3. "curl 192.168.1.30" ile IoT sensÃ¶rÃ¼nÃ¼n iklim telemetri verilerini okuyun.'
+        ? 'ğŸ¢ Modern Ofis: Ağ Yazıcısı, Akıllı IoT Sensör & Mobil Cihaz Entegrasyonu\n\n' +
+          'ğŸ¯ Amaç ve Senaryo Özeti:\n' +
+          'Modern ofis ortamında kablolu iş istasyonları, ağ yazıcısı (JetDirect/LPD), HVAC çevre denetim IoT sensörü ve mobil tablet cihazlarının ortak ağ mimarisinde çalışmasını test etme.\n\n' +
+          '📋 Cihaz Yapılandırması:\n' +
+          '• Gateway-R1 (192.168.1.1) DHCP Havuzu: OfficePool (192.168.1.100 - .200)\n' +
+          '• Floor1-Printer (192.168.1.20): Ağ Yazıcı Arayüzü & HTTP Yönetim Konsolu\n' +
+          '• HVAC-Temp-Sensor (192.168.1.30): Sıcaklık & İklim Sensörü\n' +
+          '• Admin-Workstation (192.168.1.101): Ofis Yöneticisi PC\n' +
+          '• Staff-Tablet (192.168.1.150): Kablosuz Mobil Tablet\n\n' +
+          '🧪 Doğrulama ve Test:\n' +
+          '1. Admin PC üzerinden "ping 192.168.1.20" ile yazıcıya erişimi test edin.\n' +
+          '2. Admin PC web tarayıcısı veya "curl 192.168.1.20" ile yazıcı durum sayfasını görüntüleyin.\n' +
+          '3. "curl 192.168.1.30" ile IoT sensörünün iklim telemetri verilerini okuyun.'
         : 'ğŸ¢ Modern Office: Network Printer, Smart IoT Sensor & Mobile Device Integration\n\n' +
           'ğŸ¯ Objective & Scenario Overview:\n' +
           'Validate enterprise office convergence with dedicated network printers, environment IoT telemetry, wired workstations, and mobile devices over standard TCP/IP architecture.\n\n' +
-          'ğŸ“‹ Device Configurations:\n' +
-          'â€¢ Gateway-R1 (192.168.1.1) DHCP Pool: OfficePool (192.168.1.100 - .200)\n' +
-          'â€¢ Floor1-Printer (192.168.1.20): Dedicated Network Printer & HTTP Web Console\n' +
-          'â€¢ HVAC-Temp-Sensor (192.168.1.30): Climate Telemetry Sensor\n' +
-          'â€¢ Admin-Workstation (192.168.1.101): Administrator PC\n' +
-          'â€¢ Staff-Tablet (192.168.1.150): Mobile Endpoint Client\n\n' +
-          'ğŸ§ª Verification & Testing:\n' +
+          '📋 Device Configurations:\n' +
+          '• Gateway-R1 (192.168.1.1) DHCP Pool: OfficePool (192.168.1.100 - .200)\n' +
+          '• Floor1-Printer (192.168.1.20): Dedicated Network Printer & HTTP Web Console\n' +
+          '• HVAC-Temp-Sensor (192.168.1.30): Climate Telemetry Sensor\n' +
+          '• Admin-Workstation (192.168.1.101): Administrator PC\n' +
+          '• Staff-Tablet (192.168.1.150): Mobile Endpoint Client\n\n' +
+          '🧪 Verification & Testing:\n' +
           '1. Ping the network printer: "ping 192.168.1.20" from Admin-Workstation.\n' +
           '2. Query printer status via HTTP: "curl 192.168.1.20".\n' +
           '3. Read telemetry from the HVAC sensor: "curl 192.168.1.30".',
@@ -111,13 +111,13 @@ const example = (isTr: boolean): ExampleProject => {
 
   return {
     id: 'office-printer-iot',
-    tag: isTr ? 'OFÄ°S & IOT' : 'OFFICE & IOT',
-    title: isTr ? 'Ofis AÄŸÄ±: YazÄ±cÄ±, IoT SensÃ¶r ve Tablet' : 'Office Network: Printer, IoT Sensor & Tablet',
+    tag: isTr ? 'OFİS & IOT' : 'OFFICE & IOT',
+    title: isTr ? 'Ofis Ağı: Yazıcı, IoT Sensör ve Tablet' : 'Office Network: Printer, IoT Sensor & Tablet',
     description: isTr
-      ? 'AÄŸ yazÄ±cÄ±sÄ±, IoT ortam sensÃ¶rÃ¼, masaÃ¼stÃ¼ PC ve mobil cihazlarÄ±n entegre Ã§alÄ±ÅŸtÄ±ÄŸÄ± ofis aÄŸÄ± laboratuvarÄ±.'
+      ? 'Ağ yazıcısı, IoT ortam sensörü, masaüstü PC ve mobil cihazların entegre çalıştığı ofis ağı laboratuvarı.'
       : 'Modern office lab integrating dedicated network printer, IoT environmental sensor, desktop PC and mobile tablet.',
     detail: isTr
-      ? 'YazÄ±cÄ± web konsolu, IoT telemetrisi ve DHCP aÄŸ geÃ§idi ile tam uÃ§tan uca ofis topolojisi.'
+      ? 'Yazıcı web konsolu, IoT telemetrisi ve DHCP ağ geçidi ile tam uçtan uca ofis topolojisi.'
       : 'End-to-end office convergence with printer web UI, IoT telemetry, and central router gateway.',
     level: 'intermediate',
     data: baseProjectData(devices, connections, notes, [

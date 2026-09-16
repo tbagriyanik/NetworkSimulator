@@ -278,7 +278,7 @@ export function computeEtherChannelChanges(
     const prevBundled = !!prev?.bundled;
     const nextBundled = !!next?.bundled;
 
-    // Whole-bundle transition â€” emit only the bundle-level event to avoid noise.
+    // Whole-bundle transition — emit only the bundle-level event to avoid noise.
     if (!prevBundled && nextBundled) {
       const counts = next ? `${next.upMemberCount} port(s) aggregated` : '';
       for (const deviceId of [devA, devB]) {
@@ -319,7 +319,7 @@ export function computeEtherChannelChanges(
       continue;
     }
 
-    // Bundle stayed up in both snapshots â€” diff members for join/leave events.
+    // Bundle stayed up in both snapshots — diff members for join/leave events.
     if (!prev || !next) continue;
 
     const prevMembers = new Map(prev.members.map(m => [m.connectionId, m]));

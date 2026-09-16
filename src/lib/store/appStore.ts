@@ -617,7 +617,7 @@ export const useAppStore = create<AppState>()(
 // Each tab now maintains its own isolated data to prevent conflicts.
 // If cross-tab sync is needed in the future, implement a separate mechanism.
 
-// â”€â”€â”€ Selectors for granular state access â”€â”€â”€
+// --- Selectors for granular state access ---
 // These selectors prevent cascading re-renders by allowing components to subscribe to specific state slices
 
 // Topology selectors

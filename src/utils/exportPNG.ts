@@ -54,7 +54,7 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
     clone.querySelectorAll('foreignObject').forEach(el => el.remove());
     // Remove connections (will rebuild all with proper port positions)
     clone.querySelectorAll('[data-connection-id]').forEach(el => el.remove());
-    // Remove device elements not in DOM (culled ones left a stale placeholder) â€” keep full-rendered ones
+    // Remove device elements not in DOM (culled ones left a stale placeholder) — keep full-rendered ones
     clone.querySelectorAll('[data-device-id]').forEach(el => {
       const id = el.getAttribute('data-device-id');
       if (id && !domDeviceIds.has(id)) el.remove();
@@ -382,7 +382,7 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
       contentGroup.style.willChange = '';
 
       // Re-append simplified devices inside the content group (same coordinate space as full-rendered ones)
-      // (We already called addSimplifiedDevice above which appended to clone root â€” move them into contentGroup)
+      // (We already called addSimplifiedDevice above which appended to clone root — move them into contentGroup)
       clone.querySelectorAll('[data-device-id][data-simplified="true"]').forEach(el => {
         contentGroup.appendChild(el);
       });
@@ -450,7 +450,7 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
             await navigator.share({
               files: [file],
               title: 'Network Topology',
-              text: 'AÄŸ topolojimi paylaÅŸÄ±yorum'
+              text: 'Ağ topolojimi paylaşıyorum'
             });
             return; // Shared successfully
           }

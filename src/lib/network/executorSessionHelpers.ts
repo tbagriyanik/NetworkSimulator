@@ -156,7 +156,7 @@ function handleConfigSourceInput(_state: SwitchState, input: string, language: '
     return {
       success: true,
       output: language === 'tr'
-        ? `% ${answer === 'memory' ? 'Bellekten' : 'AÄŸdan'} yapÄ±landÄ±rma yÃ¼kleme desteklenmiyor.\n`
+        ? `% ${answer === 'memory' ? 'Bellekten' : 'Ağdan'} yapılandırma yükleme desteklenmiyor.\n`
         : `% Configuration from ${answer} is not supported.\n`,
       newState: {
         awaitingConfigSource: false
@@ -168,7 +168,7 @@ function handleConfigSourceInput(_state: SwitchState, input: string, language: '
   return {
     success: true,
     output: language === 'tr'
-      ? '% GeÃ§ersiz seÃ§enek. terminal, memory veya network girin.\nConfiguring from terminal, memory, or network [terminal]? '
+      ? '% Geçersiz seçenek. terminal, memory veya network girin.\nConfiguring from terminal, memory, or network [terminal]? '
       : '% Invalid option. Enter terminal, memory, or network.\nConfiguring from terminal, memory, or network [terminal]? ',
     newState: {
       awaitingConfigSource: true
@@ -184,7 +184,7 @@ function handlePasswordInput(state: SwitchState, password: string, language: 'tr
     if (!hasEnablePassword) {
       return {
         success: false,
-        error: language === 'tr' ? '% Parola ayarlanmamÄ±ÅŸ' : '% No password set',
+        error: language === 'tr' ? '% Parola ayarlanmamış' : '% No password set',
         newState: {
           awaitingPassword: false,
           passwordContext: undefined
@@ -238,7 +238,7 @@ function handlePasswordInput(state: SwitchState, password: string, language: 'tr
     } else {
       return {
         success: false,
-        error: language === 'tr' ? '% EriÅŸim reddedildi' : '% Access denied',
+        error: language === 'tr' ? '% Erişim reddedildi' : '% Access denied',
         newState: {
           awaitingPassword: true,
           passwordContext: 'enable'
@@ -271,7 +271,7 @@ function handlePasswordInput(state: SwitchState, password: string, language: 'tr
     } else {
       return {
         success: false,
-        error: language === 'tr' ? '% EriÅŸim reddedildi' : '% Access denied',
+        error: language === 'tr' ? '% Erişim reddedildi' : '% Access denied',
         newState: {
           awaitingPassword: true,
           passwordContext: 'console'
@@ -319,7 +319,7 @@ function handlePasswordInput(state: SwitchState, password: string, language: 'tr
     } else {
       return {
         success: false,
-        error: language === 'tr' ? '% EriÅŸim reddedildi' : '% Access denied',
+        error: language === 'tr' ? '% Erişim reddedildi' : '% Access denied',
         newState: {
           awaitingPassword: true,
           passwordContext: 'vty'

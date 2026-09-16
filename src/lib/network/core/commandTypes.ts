@@ -1,7 +1,7 @@
 ﻿import type { SwitchState, CommandResult } from '../types';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
-// Ortak komut Ã§alÄ±ÅŸma baÄŸlamÄ±
+// Ortak komut çalışma bağlamı
 export interface CommandContext {
   language: 'tr' | 'en';
   devices?: CanvasDevice[];
@@ -11,7 +11,7 @@ export interface CommandContext {
   skipConfirm?: boolean;
 }
 
-// TÃ¼m komut handler'larÄ± iÃ§in standart imza
+// Tüm komut handler'ları için standart imza
 export type CommandHandler = (
   state: SwitchState,
   input: string,

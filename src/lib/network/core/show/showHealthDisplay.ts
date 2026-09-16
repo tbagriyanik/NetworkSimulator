@@ -74,7 +74,7 @@ function diagnoseStpIsolation(deviceStates: Map<string, SwitchState>): string[] 
     const forwardingPorts = Object.values(state.ports || {})
       .filter(p => (p.spanningTree?.state === 'forwarding') || (p.status === 'connected' && !p.spanningTree?.state));
     if (forwardingPorts.length === 0) {
-      issues.push(`Switch ${deviceId}: STP is enabled but no port is in forwarding state â€” switch is isolated`);
+      issues.push(`Switch ${deviceId}: STP is enabled but no port is in forwarding state — switch is isolated`);
     }
   });
 
@@ -137,7 +137,7 @@ function diagnoseRouteReachability(
         const net = networkLabel.get(key) || netIp;
         if (net.toLowerCase().startsWith('0.0.0.0')) return;
         if (!findRoute('0.0.0.0', table) && table.length === 0) {
-          warnings.push(`${device.name}: no routes configured at all â€” network ${net} is unreachable`);
+          warnings.push(`${device.name}: no routes configured at all — network ${net} is unreachable`);
         } else {
           errors.push(`${device.name}: no route to ${net}`);
         }

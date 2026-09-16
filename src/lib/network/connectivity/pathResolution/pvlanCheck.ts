@@ -78,7 +78,7 @@ export function enforcePvlan(deps: PvlanCheckDeps): PvlanCheckResult {
           hopIds: path.slice(0, i + 1),
           targetId: targetDevice.id,
           error: language === 'tr'
-            ? `PVLAN: ${device.name} cihazÄ±nda Ã¶zel VLAN izolasyonu trafiÄŸi engelledi. ${pvlanResult.reason ?? ''}`
+            ? `PVLAN: ${device.name} cihazında özel VLAN izolasyonu trafiği engelledi. ${pvlanResult.reason ?? ''}`
             : `PVLAN: Private VLAN isolation blocked traffic on ${device.name}. ${pvlanResult.reason ?? ''}`,
         },
       };

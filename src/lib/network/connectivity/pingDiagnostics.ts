@@ -120,12 +120,12 @@ export function getPingDiagnostics(
 
   // 1. Check source device exists and is powered on
   if (!sourceDevice) {
-    reasons.push('Kaynak cihaz bulunamadÄ±');
+    reasons.push('Kaynak cihaz bulunamadı');
     return { success: false, reasons };
   }
 
   if (sourceDevice.status === 'offline') {
-    reasons.push('Kaynak cihaz kapalÄ± (offline)');
+    reasons.push('Kaynak cihaz kapalı (offline)');
     return { success: false, reasons };
   }
 
@@ -143,7 +143,7 @@ export function getPingDiagnostics(
     }
   }
   if (!sourceIp) {
-    reasons.push('Kaynak cihazÄ±n IP adresi yok');
+    reasons.push('Kaynak cihazın IP adresi yok');
     return { success: false, reasons };
   }
 
@@ -154,23 +154,23 @@ export function getPingDiagnostics(
     if (cloudDev && (resolvedTargetIp === '8.8.8.8' || resolvedTargetIp === '8.8.4.4' || resolvedTargetIp === '1.1.1.1' || resolvedTargetIp === '1.0.0.1')) {
       targetDevice = cloudDev;
     } else {
-      reasons.push('Hedef IP adresi bulunamadÄ±');
+      reasons.push('Hedef IP adresi bulunamadı');
       return { success: false, reasons };
     }
   }
 
   if (targetDevice.status === 'offline') {
-    reasons.push('Hedef cihaz kapalÄ± (offline)');
+    reasons.push('Hedef cihaz kapalı (offline)');
     return { success: false, reasons };
   }
 
   // 4. Check target has IP address
   if (!resolvedTargetIp) {
-    reasons.push('Hedef cihazÄ±n IP adresi yok');
+    reasons.push('Hedef cihazın IP adresi yok');
     return { success: false, reasons };
   }
 
-  // 5. Check subnet compatibility (IPv4 only â€” IPv6 routing handled separately)
+  // 5. Check subnet compatibility (IPv4 only — IPv6 routing handled separately)
   let isSourceInSameSubnet = true;
   let isTargetInSameSubnet = true;
   if (!isTargetIpv6 && targetDevice.type !== 'cloud') {
@@ -182,7 +182,7 @@ export function getPingDiagnostics(
     const hasRouterInTopology = devices.some(d => d.type === 'router' || d.type === 'switchL3');
     if (!isSourceInSameSubnet && !isTargetInSameSubnet && !hasRouterInTopology) {
       reasons.push(language === 'tr'
-        ? `Subnet uyumsuzluÄŸu: Kaynak ${sourceIp}/${sourceSubnet}, Hedef ${resolvedTargetIp}/${targetSubnet}. Router ile routing gerekli.`
+        ? `Subnet uyumsuzluğu: Kaynak ${sourceIp}/${sourceSubnet}, Hedef ${resolvedTargetIp}/${targetSubnet}. Router ile routing gerekli.`
         : `Subnet mismatch: Source ${sourceIp}/${sourceSubnet}, Target ${resolvedTargetIp}/${targetSubnet}. Router required for routing.`);
       return { success: false, reasons };
     }
@@ -190,17 +190,17 @@ export function getPingDiagnostics(
     // 6. Check gateway configuration if different subnets
     if (!isSourceInSameSubnet) {
       if (!sourceDevice.gateway) {
-        reasons.push(language === 'tr' ? "Kaynak cihazÄ±n varsayÄ±lan aÄŸ geÃ§idi (Default Gateway) yok" : "Source device has no default gateway configured");
+        reasons.push(language === 'tr' ? "Kaynak cihazın varsayılan ağ geçidi (Default Gateway) yok" : "Source device has no default gateway configured");
       } else if (!isIpInSubnet(sourceIp, sourceDevice.gateway, sourceSubnet)) {
-        reasons.push(language === 'tr' ? "Kaynak cihazÄ±n varsayÄ±lan aÄŸ geÃ§idi aynÄ± aÄŸ bloÄŸunda deÄŸil" : "Source default gateway is not in the same subnet");
+        reasons.push(language === 'tr' ? "Kaynak cihazın varsayılan ağ geçidi aynı ağ bloğunda değil" : "Source default gateway is not in the same subnet");
       }
     }
 
     if (!isTargetInSameSubnet) {
       if (!targetDevice.gateway) {
-        reasons.push(language === 'tr' ? "Hedef cihazÄ±n varsayÄ±lan aÄŸ geÃ§idi (Default Gateway) yok" : "Target device has no default gateway configured");
+        reasons.push(language === 'tr' ? "Hedef cihazın varsayılan ağ geçidi (Default Gateway) yok" : "Target device has no default gateway configured");
       } else if (!isIpInSubnet(resolvedTargetIp, targetDevice.gateway, targetSubnet)) {
-        reasons.push(language === 'tr' ? "Hedef cihazÄ±n varsayÄ±lan aÄŸ geÃ§idi aynÄ± aÄŸ bloÄŸunda deÄŸil" : "Target default gateway is not in the same subnet");
+        reasons.push(language === 'tr' ? "Hedef cihazın varsayılan ağ geçidi aynı ağ bloğunda değil" : "Target default gateway is not in the same subnet");
       }
     }
   }
@@ -212,7 +212,7 @@ export function getPingDiagnostics(
     if (result.error) {
       reasons.push(result.error);
     } else {
-      reasons.push('Fiziksel baÄŸlantÄ± yok');
+      reasons.push('Fiziksel bağlantı yok');
     }
     return { success: false, reasons };
   }
@@ -225,7 +225,7 @@ export function getPingDiagnostics(
     const sourcePortId = sourceConn.sourceDeviceId === sourceId ? sourceConn.sourcePort : sourceConn.targetPort;
     // BOLT: Use pre-resolved safeDeviceStates
     if (isPortShutdown(sourceId, sourcePortId, devices, safeDeviceStates)) {
-      reasons.push(`Kaynak interface kapalÄ±: ${sourcePortId}`);
+      reasons.push(`Kaynak interface kapalı: ${sourcePortId}`);
       return { success: false, reasons };
     }
   }
@@ -235,7 +235,7 @@ export function getPingDiagnostics(
     const targetPortId = targetConn.sourceDeviceId === targetDevice.id ? targetConn.targetPort : targetConn.sourcePort;
     // BOLT: Use pre-resolved safeDeviceStates
     if (isPortShutdown(targetDevice.id, targetPortId, devices, safeDeviceStates)) {
-      reasons.push(`Hedef interface kapalÄ±: ${targetPortId}`);
+      reasons.push(`Hedef interface kapalı: ${targetPortId}`);
       return { success: false, reasons };
     }
   }
@@ -255,7 +255,7 @@ export function getPingDiagnostics(
     }
 
     if (!hasL3RouterInPath) {
-      reasons.push(`VLAN uyumsuzluÄŸu: Kaynak VLAN ${sourceDevice.vlan}, Hedef VLAN ${targetDevice.vlan}`);
+      reasons.push(`VLAN uyumsuzluğu: Kaynak VLAN ${sourceDevice.vlan}, Hedef VLAN ${targetDevice.vlan}`);
       return { success: false, reasons };
     }
   }
@@ -270,7 +270,7 @@ export function getPingDiagnostics(
       // BOLT: Use pre-resolved safeDeviceStates
       const sourceState = safeDeviceStates.get(sourceId);
       if (!sourceState?.ipRouting) {
-        reasons.push(language === 'tr' ? 'Kaynak cihazda IP routing etkin deÄŸil' : 'IP routing is not enabled on the source device');
+        reasons.push(language === 'tr' ? 'Kaynak cihazda IP routing etkin değil' : 'IP routing is not enabled on the source device');
         return { success: false, reasons };
       }
     }
@@ -289,7 +289,7 @@ export function getPingDiagnostics(
 
     // If source is not a router, there must be a router/L3-switch in the path
     if (!hasL3RouterInPath && !isSourceL3Capable) {
-      reasons.push(language === 'tr' ? 'FarklÄ± subnetler arasÄ± iletiÅŸim iÃ§in bir router/L3-switch gereklidir' : 'A router/L3-switch is required for communication between different subnets');
+      reasons.push(language === 'tr' ? 'Farklı subnetler arası iletişim için bir router/L3-switch gereklidir' : 'A router/L3-switch is required for communication between different subnets');
       return { success: false, reasons };
     }
   }

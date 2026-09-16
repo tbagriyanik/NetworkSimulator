@@ -38,7 +38,7 @@ export const getDeviceHeight = (deviceType: DeviceType | string, portCount: numb
 export function getConnectionStatusMessage(conn: CanvasConnection, devices: CanvasDevice[], language: 'tr' | 'en'): string {
   const sourceDevice = devices.find(d => d.id === conn.sourceDeviceId);
   const targetDevice = devices.find(d => d.id === conn.targetDeviceId);
-  if (!sourceDevice || !targetDevice) return language === 'tr' ? 'Cihaz bulunamadÄ±' : 'Device not found';
+  if (!sourceDevice || !targetDevice) return language === 'tr' ? 'Cihaz bulunamadı' : 'Device not found';
 
   const sourcePort = sourceDevice.ports.find(p => p.id === conn.sourcePort);
   const targetPort = targetDevice.ports.find(p => p.id === conn.targetPort);
@@ -47,7 +47,7 @@ export function getConnectionStatusMessage(conn: CanvasConnection, devices: Canv
   const isCableOk = isCableCompatible(cableInfo);
 
   if (!isCableOk) {
-    if (conn.cableType === 'wireless') return language === 'tr' ? 'BaÄŸlantÄ± sorunsuz' : 'Connection OK';
+    if (conn.cableType === 'wireless') return language === 'tr' ? 'Bağlantı sorunsuz' : 'Connection OK';
     const normalize = (t: string) =>
       t === 'switchL2' || t === 'switchL3' || t === 'hub'
         ? 'switch'
@@ -55,20 +55,20 @@ export function getConnectionStatusMessage(conn: CanvasConnection, devices: Canv
           ? 'pc'
           : t;
     const key = `${normalize(sourceDevice.type)}-${normalize(targetDevice.type)}`;
-    if (!CABLE_COMPATIBILITY[key]) return language === 'tr' ? 'Bu cihaz Ã§ifti desteklenmiyor' : 'Device pair not supported';
-    return language === 'tr' ? 'Kablo tÃ¼rÃ¼ bu cihazlar iÃ§in uygun deÄŸil' : 'Cable type not suitable for these devices';
+    if (!CABLE_COMPATIBILITY[key]) return language === 'tr' ? 'Bu cihaz çifti desteklenmiyor' : 'Device pair not supported';
+    return language === 'tr' ? 'Kablo türü bu cihazlar için uygun değil' : 'Cable type not suitable for these devices';
   }
 
-  if (sourceDevice.status === 'offline' || targetDevice.status === 'offline') return language === 'tr' ? 'Cihaz kapalÄ±' : 'Device is offline';
+  if (sourceDevice.status === 'offline' || targetDevice.status === 'offline') return language === 'tr' ? 'Cihaz kapalı' : 'Device is offline';
   // Wireless links use the Wi-Fi association state, not the physical
   // wlan0 placeholder port. PCs/IoT devices keep that placeholder shutdown
   // until an association is established, and WLCs do not expose a physical
   // wlan0 port at all.
-  if (conn.cableType === 'wireless') return language === 'tr' ? 'BaÄŸlantÄ± sorunsuz' : 'Connection OK';
-  if (sourcePort?.shutdown || targetPort?.shutdown) return language === 'tr' ? 'Port kapalÄ± (shutdown)' : 'Port is shutdown';
+  if (conn.cableType === 'wireless') return language === 'tr' ? 'Bağlantı sorunsuz' : 'Connection OK';
+  if (sourcePort?.shutdown || targetPort?.shutdown) return language === 'tr' ? 'Port kapalı (shutdown)' : 'Port is shutdown';
   if (sourcePort?.spanningTree?.state === 'blocking' || targetPort?.spanningTree?.state === 'blocking') return language === 'tr' ? 'STP engelliyor (blocking)' : 'STP blocking';
 
-  return language === 'tr' ? 'BaÄŸlantÄ± sorunsuz' : 'Connection OK';
+  return language === 'tr' ? 'Bağlantı sorunsuz' : 'Connection OK';
 }
 
 export const isSwitchDeviceType = (type: DeviceType | string): boolean => {

@@ -224,8 +224,8 @@ export function ConsoleTerminalTab({
             {isConsoleConnected && (consoleNeedsPassword || consoleConfirmDialog?.show || consoleReloadPending) && (
               <div className="absolute -top-7 left-4 right-4 text-[10px] font-black tracking-widest text-warning-400 animate-pulse">
                 {consoleNeedsPassword
-                  ? (t.language === 'tr' ? 'Parola girin ve Enter\'a basÄ±n' : 'Enter password and press Enter')
-                  : (t.language === 'tr' ? 'Onaylamak iÃ§in Enter\'a basÄ±n' : 'Press Enter to confirm')}
+                  ? (t.language === 'tr' ? 'Parola girin ve Enter\'a basın' : 'Enter password and press Enter')
+                  : (t.language === 'tr' ? 'Onaylamak için Enter\'a basın' : 'Press Enter to confirm')}
               </div>
             )}
             <div
@@ -278,8 +278,8 @@ export function ConsoleTerminalTab({
                 placeholder={
                   isConsoleConnected && (consoleNeedsPassword || consoleConfirmDialog?.show || consoleReloadPending)
                     ? (consoleNeedsPassword
-                      ? (t.language === 'tr' ? 'ParolayÄ± girin...' : 'Enter password...')
-                      : (t.language === 'tr' ? 'Enter\'a basÄ±n veya yazÄ±n...' : 'Press Enter or type...'))
+                      ? (t.language === 'tr' ? 'Parolayı girin...' : 'Enter password...')
+                      : (t.language === 'tr' ? 'Enter\'a basın veya yazın...' : 'Press Enter or type...'))
                     : t.typeCommand
                 }
                 aria-label={t.typeCommand}
@@ -350,10 +350,10 @@ export function ConsoleTerminalTab({
                   setConnectedDeviceId(null);
                   setInput('');
                 }}
-                title={t.language === 'tr' ? 'Ä°ptal' : 'Cancel'}
+                title={t.language === 'tr' ? 'İptal' : 'Cancel'}
               >
                 <X className={cn("w-4 h-4 mr-1", isMobile && "w-3 h-3")} />
-                <span className="text-error-600 dark:text-error-400 font-medium">{t.language === 'tr' ? 'Ä°ptal' : 'Cancel'}</span>
+                <span className="text-error-600 dark:text-error-400 font-medium">{t.language === 'tr' ? 'İptal' : 'Cancel'}</span>
               </Button>
             )}
 

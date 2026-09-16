@@ -79,7 +79,7 @@ export function executeCommand(
       // Password dialog was cancelled (ESC, back, outside click)
       return {
         success: false,
-        error: language === 'tr' ? '% EriÅŸim reddedildi' : '% Access denied',
+        error: language === 'tr' ? '% Erişim reddedildi' : '% Access denied',
         newState: {
           awaitingPassword: false,
           passwordContext: undefined,
@@ -95,7 +95,7 @@ export function executeCommand(
     if (input === '__CONFIG_SOURCE_CANCEL__') {
       return {
         success: false,
-        error: language === 'tr' ? '% YapÄ±landÄ±rma iptal edildi' : '% Configuration cancelled',
+        error: language === 'tr' ? '% Yapılandırma iptal edildi' : '% Configuration cancelled',
         newState: {
           awaitingConfigSource: false
         }
@@ -144,7 +144,7 @@ export function executeCommand(
       if (!hasEnablePassword) {
         return {
           success: false,
-          error: language === 'tr' ? '% EriÅŸim reddedildi' : '% Access denied'
+          error: language === 'tr' ? '% Erişim reddedildi' : '% Access denied'
         };
       }
     }

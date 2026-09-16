@@ -19,15 +19,15 @@ const example = (isTr: boolean): ExampleProject => {
   return {
     id: 'trouble-gateway',
     tag: isTr ? 'ARIZA' : 'TROUBLE',
-    title: isTr ? 'YanlÄ±ÅŸ AÄŸ GeÃ§idi' : 'Wrong Default Gateway',
-    description: isTr ? 'PC1 router\'a ulaÅŸamÄ±yor. Gateway ayarlarÄ±nÄ± kontrol edin.' : 'PC1 cannot reach the router. Check gateway settings.',
+    title: isTr ? 'Yanlış Ağ Geçidi' : 'Wrong Default Gateway',
+    description: isTr ? 'PC1 router\'a ulaşamıyor. Gateway ayarlarını kontrol edin.' : 'PC1 cannot reach the router. Check gateway settings.',
     level: 'basic',
     injectedFaults: [
       {
         id: 'fault-gw-pc1',
         deviceId: 'pc-1',
         faultType: 'wrongDefaultGateway',
-        description: { tr: 'PC1\'in gateway adresi yanlÄ±ÅŸ (192.168.1.254).', en: 'PC1 gateway address is wrong (192.168.1.254).' },
+        description: { tr: 'PC1\'in gateway adresi yanlış (192.168.1.254).', en: 'PC1 gateway address is wrong (192.168.1.254).' },
         configKey: 'pc.pc-1.gateway',
         faultValue: '192.168.1.254',
         correctValue: '192.168.1.1'

@@ -71,9 +71,9 @@ export const generateIotWebPanelContent = (
 
       const cardClass = isPoweredOff ? 'powered-off' : isConnectedToNetwork ? (isActive ? 'connected' : 'connected-inactive') : (isActive ? 'active' : 'inactive');
       const statusText = isPoweredOff
-        ? (isTurkish ? 'KapalÄ±' : 'Offline')
+        ? (isTurkish ? 'Kapalı' : 'Offline')
         : isConnectedToNetwork
-          ? (isActive ? (isTurkish ? 'Ã‡evrimiÃ§i' : 'Online') : (isTurkish ? 'Ã‡evrimiÃ§i (Pasif)' : 'Online (Inactive)'))
+          ? (isActive ? (isTurkish ? 'Çevrimiçi' : 'Online') : (isTurkish ? 'Çevrimiçi (Pasif)' : 'Online (Inactive)'))
           : (isActive ? (isTurkish ? 'Aktif' : 'Active') : (isTurkish ? 'Pasif' : 'Inactive'));
       const statusClass = isPoweredOff ? 'offline' : isConnectedToNetwork ? (isActive ? 'online' : 'online-inactive') : (isActive ? 'active' : 'inactive');
 
@@ -91,18 +91,18 @@ export const generateIotWebPanelContent = (
             <span class="device-mac">${isTurkish ? 'MAC' : 'MAC'}: ${sanitizeHTML(device.macAddress || '-')}</span>
             ${hasSimpleProgramming ? `
             <span class="device-rules">${isTurkish ? 'Basit Programlama' : 'Simple Programming'}: ${isTurkish ? 'Var' : 'Yes'}</span>
-            <span class="device-rule-count">${isTurkish ? 'Kural SayÄ±sÄ±' : 'Rule Count'}: ${ruleCount}</span>
+            <span class="device-rule-count">${isTurkish ? 'Kural Sayısı' : 'Rule Count'}: ${ruleCount}</span>
             ` : ''}
           </div>
           <div class="device-status ${statusClass}">${statusText}</div>
         </div>
         <button type="button" data-iot-device-id="${safeDeviceId}" class="connect-button">
-          ${isTurkish ? 'BaÄŸlan' : 'Connect'}
+          ${isTurkish ? 'Bağlan' : 'Connect'}
         </button>
       </div>
     `;
     }).join('')
-    : `<p class="no-devices">${isTurkish ? 'HiÃ§ IoT cihazÄ± bulunamadÄ±.' : 'No IoT devices found.'}</p>`;
+    : `<p class="no-devices">${isTurkish ? 'Hiç IoT cihazı bulunamadı.' : 'No IoT devices found.'}</p>`;
 
   return `
     <!DOCTYPE html>
@@ -453,18 +453,18 @@ export const generateIotWebPanelContent = (
           
           <form id="loginSection" class="login-form ${isAuth ? 'hidden' : ''}" action="javascript:void(0);">
             <div class="form-group">
-              <label for="username">${isTurkish ? 'KullanÄ±cÄ± AdÄ±' : 'Username'}:</label>
-              <input type="text" id="username" value="admin" placeholder="${isTurkish ? 'KullanÄ±cÄ± adÄ± girin' : 'Enter username'}" autocapitalize="none" autocorrect="off" />
+              <label for="username">${isTurkish ? 'Kullanıcı Adı' : 'Username'}:</label>
+              <input type="text" id="username" value="admin" placeholder="${isTurkish ? 'Kullanıcı adı girin' : 'Enter username'}" autocapitalize="none" autocorrect="off" />
             </div>
             <div class="form-group">
               <label for="password">${isTurkish ? 'Parola' : 'Password'}:</label>
               <input type="password" id="password" placeholder="${isTurkish ? 'Parola girin' : 'Enter password'}" autocapitalize="none" autocorrect="off" />
             </div>
             <button type="submit" id="iotLoginButton" class="login-button">
-              ${isTurkish ? 'GiriÅŸ Yap' : 'Login'}
+              ${isTurkish ? 'Giriş Yap' : 'Login'}
             </button>
             <div id="errorMessage" class="error-message">
-              ${isTurkish ? 'HatalÄ± kullanÄ±cÄ± adÄ± veya parola!' : 'Incorrect username or password!'}
+              ${isTurkish ? 'Hatalı kullanıcı adı veya parola!' : 'Incorrect username or password!'}
             </div>
           </form>
 
@@ -475,18 +475,18 @@ export const generateIotWebPanelContent = (
             <div id="settingsPopup" class="settings-popup">
               <div class="settings-popup-title">${isTurkish ? 'Ayarlar' : 'Settings'}</div>
               <div class="settings-option">
-                <label>${isTurkish ? 'Parola DeÄŸiÅŸtir' : 'Change Password'}</label>
+                <label>${isTurkish ? 'Parola Değiştir' : 'Change Password'}</label>
                 <input type="password" id="newPassword" class="settings-input" placeholder="${isTurkish ? 'Yeni parola' : 'New password'}" />
-                <input type="password" id="confirmPassword" class="settings-input" style="margin-top: 5px;" placeholder="${isTurkish ? 'ParolayÄ± onayla' : 'Confirm password'}" />
+                <input type="password" id="confirmPassword" class="settings-input" style="margin-top: 5px;" placeholder="${isTurkish ? 'Parolayı onayla' : 'Confirm password'}" />
                 <button type="button" class="settings-button" id="changePasswordButton">
-                  ${isTurkish ? 'DeÄŸiÅŸtir' : 'Change'}
+                  ${isTurkish ? 'Değiştir' : 'Change'}
                 </button>
-                <div id="passwordSuccess" class="password-success">${isTurkish ? 'Parola baÅŸarÄ±yla deÄŸiÅŸtirildi!' : 'Password changed successfully!'}</div>
-                <div id="passwordError" class="password-error">${isTurkish ? 'Parolalar eÅŸleÅŸmiyor!' : 'Passwords do not match!'}</div>
+                <div id="passwordSuccess" class="password-success">${isTurkish ? 'Parola başarıyla değiştirildi!' : 'Password changed successfully!'}</div>
+                <div id="passwordError" class="password-error">${isTurkish ? 'Parolalar eşleşmiyor!' : 'Passwords do not match!'}</div>
               </div>
               <div class="settings-option">
                 <button type="button" class="settings-button logout" id="logoutButton">
-                  ${isTurkish ? 'Ã‡Ä±kÄ±ÅŸ Yap' : 'Logout'}
+                  ${isTurkish ? 'Çıkış Yap' : 'Logout'}
                 </button>
               </div>
             </div>
@@ -523,8 +523,8 @@ export const generateIotDevicePageContent = (
   // Use safeJSONForHTML for embedding strings in <script> blocks to prevent XSS and logic corruption.
   const jsId = safeJSONForHTML(deviceId);
   const sensorTypeLabels: Record<string, string> = {
-    temperature: isTurkish ? 'IsÄ± (SÄ±caklÄ±k)' : 'Temperature',
-    light: isTurkish ? 'IÅŸÄ±k' : 'Light',
+    temperature: isTurkish ? 'Isı (Sıcaklık)' : 'Temperature',
+    light: isTurkish ? 'Işık' : 'Light',
     humidity: isTurkish ? 'Nem' : 'Humidity',
     sound: isTurkish ? 'Ses' : 'Sound',
     motion: isTurkish ? 'Hareket' : 'Motion',
@@ -555,7 +555,7 @@ export const generateIotDevicePageContent = (
       <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>${isTurkish ? 'IoT Cihaz YÃ¶netimi' : 'IoT Device Management'}: ${safeName}</title>
+        <title>${isTurkish ? 'IoT Cihaz Yönetimi' : 'IoT Device Management'}: ${safeName}</title>
         <style>
           ${IFRAME_FONT_FACES_CSS}
           :root {
@@ -783,18 +783,18 @@ export const generateIotDevicePageContent = (
       </head>
       <body>
         <div class="device-panel">
-          <h1>${safeName} ${isTurkish ? 'YÃ¶netimi' : 'Management'}</h1>
+          <h1>${safeName} ${isTurkish ? 'Yönetimi' : 'Management'}</h1>
           
           <div class="device-info">
             <p><strong>${isTurkish ? 'Cihaz ID' : 'Device ID'}:</strong> ${safeId}</p>
-            <p><strong>${isTurkish ? 'Cihaz AdÄ±' : 'Device Name'}:</strong> ${safeName}</p>
-            <p><strong>${isTurkish ? 'GÃ¼Ã§ Durumu' : 'Power Status'}:</strong> ${isPoweredOff ? (isTurkish ? 'KapalÄ±' : 'Off') : (isTurkish ? 'AÃ§Ä±k' : 'On')}</p>
+            <p><strong>${isTurkish ? 'Cihaz Adı' : 'Device Name'}:</strong> ${safeName}</p>
+            <p><strong>${isTurkish ? 'Güç Durumu' : 'Power Status'}:</strong> ${isPoweredOff ? (isTurkish ? 'Kapalı' : 'Off') : (isTurkish ? 'Açık' : 'On')}</p>
             <p><strong>${isTurkish ? 'Durum' : 'Status'}:</strong> <span id="statusText" class="${isActive ? 'status-active' : 'status-inactive'}">${isActive ? (isTurkish ? 'Aktif' : 'Active') : (isTurkish ? 'Pasif' : 'Inactive')}</span></p>
           </div>
 
           ${isPoweredOff ? `
           <div class="power-off-message">
-            ${isTurkish ? 'âš ï¸ Cihaz kapalÄ±. AyarlarÄ± deÄŸiÅŸtirmek iÃ§in Ã¶nce cihazÄ± aÃ§Ä±n.' : 'âš ï¸ Device is powered off. Turn on the device to change settings.'}
+            ${isTurkish ? '⚠️ Cihaz kapalı. Ayarları değiştirmek için önce cihazı açın.' : '⚠️ Device is powered off. Turn on the device to change settings.'}
           </div>
           ` : ''}
 
@@ -835,11 +835,11 @@ export const generateIotDevicePageContent = (
                   <select id="targetDeviceSelect" style="flex: 1;">
                     <option value="this">${isTurkish ? 'Bu Cihaz' : 'This Device'}</option>
                     ${allDevices.filter(d => d.id !== deviceId && d.type === 'iot' && (d.iot?.dataFlowDirection === 'output' || d.iot?.dataFlowDirection === 'input/output' || d.iot?.kind === 'cooler' || d.iot?.kind === 'lamp' || d.iot?.kind === 'heater')).map(d => `
-                      <option value="${sanitizeHTML(d.id)}">${sanitizeHTML(d.name || d.id)} ${d.iot?.kind ? '(' + sanitizeHTML(isTurkish ? (d.iot.kind === 'cooler' ? 'SoÄŸutucu' : d.iot.kind === 'lamp' ? 'Lamba' : d.iot.kind === 'heater' ? 'IsÄ±tÄ±cÄ±' : d.iot.kind) : d.iot.kind) + ')' : ''}</option>
+                      <option value="${sanitizeHTML(d.id)}">${sanitizeHTML(d.name || d.id)} ${d.iot?.kind ? '(' + sanitizeHTML(isTurkish ? (d.iot.kind === 'cooler' ? 'Soğutucu' : d.iot.kind === 'lamp' ? 'Lamba' : d.iot.kind === 'heater' ? 'Isıtıcı' : d.iot.kind) : d.iot.kind) + ')' : ''}</option>
                     `).join('')}
                   </select>
                   <select id="actionSelect">
-                    <option value="ON">${isTurkish ? 'AÃ‡' : 'TURN ON'}</option>
+                    <option value="ON">${isTurkish ? 'AÇ' : 'TURN ON'}</option>
                     <option value="OFF">${isTurkish ? 'KAPAT' : 'TURN OFF'}</option>
                   </select>
                 </div>
@@ -864,7 +864,7 @@ export const generateIotDevicePageContent = (
           `}
 
           <button type="button" class="back-button" onclick="goBack()" style="margin-top: 20px;">
-            ${isTurkish ? 'Listeye DÃ¶n' : 'Back to List'}
+            ${isTurkish ? 'Listeye Dön' : 'Back to List'}
           </button>
         </div>
 
@@ -923,7 +923,7 @@ export const generateIotDevicePageContent = (
               row.className = 'rule-item';
 
               const label = document.createElement('span');
-              label.textContent = rule.condition + ' â†’ ' + rule.action;
+              label.textContent = rule.condition + ' → ' + rule.action;
 
               const delBtn = document.createElement('button');
               delBtn.className = 'delete-rule-btn';

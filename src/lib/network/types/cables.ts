@@ -13,7 +13,7 @@ export interface CableInfo {
   targetPort?: string;  // Port ID
 }
 
-// Kablo uyumluluk kurallarÄ±
+// Kablo uyumluluk kuralları
 export const CABLE_COMPATIBILITY: Record<string, CableType[]> = {
   'pc-switch': ['straight', 'crossover'],
   'iot-switch': ['straight', 'crossover'],
@@ -50,7 +50,7 @@ export const CABLE_COMPATIBILITY: Record<string, CableType[]> = {
   'pc-wlc': ['straight', 'crossover'],
 };
 
-// Console portu olup olmadÄ±ÄŸÄ±nÄ± kontrol et
+// Console portu olup olmadığını kontrol et
 function isConsolePort(portId: string | undefined): boolean {
   if (!portId) return false;
   const port = portId.toLowerCase();
@@ -69,19 +69,19 @@ export function isCableCompatible(cable: CableInfo): boolean {
   // Physical cables cannot be plugged into a WLAN port.
   if (sourceIsWireless || targetIsWireless) return false;
 
-  // Console portu baÄŸlantÄ±larÄ± iÃ§in Ã¶zel kontrol
+  // Console portu bağlantıları için özel kontrol
   // Console kablosu: PC COM1 <-> Switch Console portu
   const sourceIsConsole = isConsolePort(cable.sourcePort);
   const targetIsConsole = isConsolePort(cable.targetPort);
 
   if (sourceIsConsole || targetIsConsole) {
-    // Console portlarÄ± iÃ§in sadece console kablosu geÃ§erli
+    // Console portları için sadece console kablosu geçerli
     if (cable.cableType !== 'console') return false;
-    // Bir taraf console portu ise diÄŸer taraf da console portu olmalÄ±
+    // Bir taraf console portu ise diğer taraf da console portu olmalı
     return sourceIsConsole && targetIsConsole;
   }
 
-  // Normal Ethernet baÄŸlantÄ±larÄ± iÃ§in standart kurallar
+  // Normal Ethernet bağlantıları için standart kurallar
   const normalize = (t: CableInfo['sourceDevice']): 'pc' | 'switch' | 'router' | 'firewall' | 'wlc' =>
     t === 'switchL2' || t === 'switchL3' || t === 'hub'
       ? 'switch'

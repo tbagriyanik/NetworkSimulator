@@ -44,7 +44,7 @@ const example = (isTr: boolean): ExampleProject => {
     id: 'ipv6-master-lab',
     tag: 'IPv6',
     title: isTr ? 'IPv6 Master Lab (Dual-Stack & ACL)' : 'IPv6 Master Lab (Dual-Stack & ACL)',
-    description: isTr ? 'Hem IPv4 hem IPv6 kullanÄ±lan (dual-stack) karmaÅŸÄ±k bir aÄŸda OSPFv3 ve IPv6 ACL yapÄ±landÄ±rÄ±n.' : 'Configure OSPFv3 and IPv6 ACLs in a complex dual-stack network using both IPv4 and IPv6.',
+    description: isTr ? 'Hem IPv4 hem IPv6 kullanılan (dual-stack) karmaşık bir ağda OSPFv3 ve IPv6 ACL yapılandırın.' : 'Configure OSPFv3 and IPv6 ACLs in a complex dual-stack network using both IPv4 and IPv6.',
     detail: 'Dual-stack, OSPFv3, IPv6 Access Lists (Traffic filtering).',
     level: 'advanced',
     data: baseProjectData(ipv6MasterDevices, ipv6MasterConnections, [], [
