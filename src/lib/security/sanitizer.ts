@@ -1,11 +1,5 @@
 
 
-import DOMPurify from 'dompurify';
-
-/**
- * Security utilities for input sanitization and data protection
- */
-
 export function sanitizeHTML(input: string): string {
     if (!input) return '';
     let safe = input
@@ -38,20 +32,27 @@ export function decodeHTMLEntities(input: string): string {
 }
 
 /**
- * Sanitize HTML content for HTTP service content using DOMPurify.
+ * Sanitize HTML content for HTTP service content without external libraries.
  * Allows basic formatting and layout tags while preventing XSS.
  */
 export function sanitizeHTTPContent(input: string): string {
     if (!input) return '';
 
-    return DOMPurify.sanitize(input, {
-        ALLOWED_TAGS: ['b', 'i', 'u', 'br', 'p', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'a'],
-        ALLOWED_ATTR: ['href', 'target', 'rel'],
-        ALLOW_DATA_ATTR: false,
-        FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed', 'form', 'input', 'button'],
-        FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur'],
-        SANITIZE_DOM: true,
-        ADD_ATTR: ['target'],
+    // Strip out all dangerous tags like script, style, iframe, object, embed, form, etc.
+    let cleaned = input.replace(/<(script|style|iframe|object|embed|form|input|button|link|meta)[\s\S]*?>[\s\S]*?<\/\1>/gi, '');
+    cleaned = cleaned.replace(/<[^>]+(on\w+|javascript:|data:)[^>]*>/gi, '');
+
+    // Escape unallowed HTML tags while preserving basic formatting tags (b, i, u, br, p, span, h1-h6, a)
+    const allowedTags = /^(?:b|i|u|br|p|span|h1|h2|h3|h4|h5|h6|a|\/b|\/i|\/u|\/br|\/p|\/span|\/h1|\/h2|\/h3|\/h4|\/h5|\/h6|\/a)$/i;
+
+    return cleaned.replace(/<(\/?[a-z0-9]+)([^>]*)>/gi, (match, tag, attrs) => {
+        if (!allowedTags.test(tag)) {
+            return match.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+        // Sanitize attributes to prevent XSS via onload/onerror/etc.
+        const cleanAttrs = attrs.replace(/\s*on\w+\s*=\s*(['"]).*?\1/gi, '')
+                                .replace(/\s*href\s*=\s*(['"])\s*javascript:.*?\1/gi, '');
+        return `<${tag}${cleanAttrs}>`;
     });
 }
 

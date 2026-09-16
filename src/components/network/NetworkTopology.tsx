@@ -1,10 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo, MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from 'react';
-import { useAppStore, useTopologyDevices, useTopologyConnections, useTopologyNotes, useGraphicsQuality, useIsSimulationMode, useEnvironment, useNetworkEventLogs } from '@/lib/store/appStore';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useIsMobile } from '@/hooks/use-breakpoint';
+import { useRef, useEffect, useLayoutEffect, useCallback, useMemo, MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from 'react';
 import { useNetworkRefreshWithPositions } from '@/hooks/useNetworkRefreshWithPositions';
 import { toast } from '@/hooks/use-toast';
 import { CanvasDevice, ContextMenuState, NetworkTopologyProps } from './networkTopology.types';
@@ -15,7 +11,7 @@ import {
   getCounterKey,
   getDistance,
 } from './networkTopology.helpers';
-import { CABLE_COLORS, DRAG_THRESHOLD, LONG_PRESS_DURATION, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, NOTE_FONTS_DESKTOP as NOTE_FONTS } from './networkTopology.constants';
+import { CABLE_COLORS, DRAG_THRESHOLD, LONG_PRESS_DURATION, MIN_ZOOM, MAX_ZOOM, NOTE_FONTS_DESKTOP as NOTE_FONTS } from './networkTopology.constants';
 
 import { useCanvasActions } from '../../hooks/useCanvasActions';
 import { exportTopologyToPNG } from '../../utils/exportPNG';
@@ -49,77 +45,117 @@ import type { PingAnimationState } from './hooks/usePingSequence';
 
 import { TopologyCanvasArea } from './topology/TopologyCanvasArea';
 import { TopologyDeviceRenderer } from './topology/TopologyDeviceRenderer';
-import { useUiPreferences } from '@/hooks/useUiPreferences';
 import { useTopologyCanvasLifecycle } from './hooks/useTopologyCanvasLifecycle';
 import { useTopologyKeyboardShortcuts } from './hooks/useTopologyKeyboardShortcuts';
 
-export function NetworkTopology({
-  cableInfo,
-  onCableChange,
-  onDeviceSelect,
-  onDeviceDoubleClick,
-  onTopologyChange,
-  onDeviceDelete,
-  isActive = true,
-  activeDeviceId,
-  deviceStates,
-  onDeviceStatesChange,
-  onRefreshNetwork,
-  focusDeviceId,
-  zoom: zoomProp,
-  onZoomChange,
-  pan: panProp,
-  onPanChange,
-  isFullscreen = false,
-  onFullscreenChange,
-  onOpenTasks,
-  clearSelectionTrigger,
-  onPacketPanelFocus,
-  packetPanelZIndex,
-  isExamActive = false,
-  isExamEditorOpen = false,
-  onPingPanelOpenChange,
-}: NetworkTopologyProps) {
-  const { language, t } = useLanguage();
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
-  const isTR = language === 'tr';
+import { useTopologyStateHandlers } from './hooks/useTopologyStateHandlers';
 
-  const [isExporting, setIsExporting] = useState(false);
-  const [isMinimapOpen, setIsMinimapOpen] = useState(false);
+export function NetworkTopology(props: NetworkTopologyProps) {
+  const {
+    cableInfo,
+    onCableChange,
+    onDeviceSelect,
+    onDeviceDoubleClick,
+    onTopologyChange,
+    onDeviceDelete,
+    isActive = true,
+    activeDeviceId,
+    deviceStates,
+    onDeviceStatesChange,
+    onRefreshNetwork,
+    focusDeviceId,
+    zoom: zoomProp,
+    onZoomChange,
+    pan: panProp,
+    onPanChange,
+    isFullscreen = false,
+    onFullscreenChange,
+    onOpenTasks,
+    clearSelectionTrigger,
+    onPacketPanelFocus,
+    packetPanelZIndex,
+    isExamActive = false,
+    isExamEditorOpen = false,
+    onPingPanelOpenChange,
+  } = props;
 
-  // Zustand store state
-  const topologyDevices = useTopologyDevices();
-  const topologyConnections = useTopologyConnections();
-  const topologyNotes = useTopologyNotes();
-  const setDevices = useAppStore((state) => state.setDevices);
-  const setConnections = useAppStore((state) => state.setConnections);
-  const setNotes = useAppStore((state) => state.setNotes);
-  const graphicsQuality = useGraphicsQuality();
-  const isSimulationMode = useIsSimulationMode();
-  const activeCaptureConnectionId = useAppStore((state) => state.topology.activeCaptureConnectionId);
-  const setActiveCaptureConnection = useAppStore((state) => state.setActiveCaptureConnection);
-  const capturedPacketsMap = useAppStore((state) => state.topology.capturedPackets);
-  const clearCapturedPackets = useAppStore((state) => state.clearCapturedPackets);
-  const clearAllCapturedPackets = useAppStore((state) => state.clearAllCapturedPackets);
-  const networkEventLogs = useNetworkEventLogs();
-  const [showLogPanel, setShowLogPanel] = useState(false);
-  const [showShortcutsModal, setShowShortcutsModal] = useState(false);
-  const { preferences, updatePreference } = useUiPreferences();
-  const snapToGrid = preferences.snapToGrid;
-  const setSnapToGrid = useCallback((value: boolean | ((prev: boolean) => boolean)) => {
-    const nextVal = typeof value === 'function' ? value(preferences.snapToGrid) : value;
-    updatePreference('snapToGrid', nextVal);
-  }, [preferences.snapToGrid, updatePreference]);
-
-  // Zoom & Pan state
-  const [zoom, setZoom] = useState(zoomProp ?? DEFAULT_ZOOM);
-  const [pan, setPan] = useState(panProp ?? { x: 0, y: 0 });
-  const isMobile = useIsMobile();
-
-  const [selectedDeviceIds, setSelectedDeviceIds] = useState<string[]>(activeDeviceId ? [activeDeviceId] : []);
-  const selectedDeviceSet = useMemo(() => new Set(selectedDeviceIds), [selectedDeviceIds]);
-  const [selectedNoteIds, setSelectedNoteIds] = useState<string[]>([]);
+  const {
+    language,
+    t,
+    isDark,
+    isTR,
+    isExporting,
+    setIsExporting,
+    isMinimapOpen,
+    setIsMinimapOpen,
+    topologyDevices,
+    topologyConnections,
+    topologyNotes,
+    setDevices,
+    setConnections,
+    setNotes,
+    graphicsQuality,
+    isSimulationMode,
+    activeCaptureConnectionId,
+    setActiveCaptureConnection,
+    capturedPacketsMap,
+    clearCapturedPackets,
+    clearAllCapturedPackets,
+    networkEventLogs,
+    showLogPanel,
+    setShowLogPanel,
+    showShortcutsModal,
+    setShowShortcutsModal,
+    preferences,
+    snapToGrid,
+    setSnapToGrid,
+    zoom,
+    setZoom,
+    pan,
+    setPan,
+    isMobile,
+    selectedDeviceIds,
+    setSelectedDeviceIds,
+    selectedDeviceSet,
+    selectedNoteIds,
+    setSelectedNoteIds,
+    environment,
+    iotUpdateTrigger,
+    isPanning,
+    setIsPanning,
+    panStart,
+    setPanStart,
+    setSelectAllMode,
+    selectionBox,
+    setSelectionBox,
+    isSelecting,
+    setIsSelecting,
+    isDrawingConnection,
+    setIsDrawingConnection,
+    connectionStart,
+    setConnectionStart,
+    mousePos,
+    setMousePos,
+    contextMenu,
+    setContextMenu,
+    configuringDevice,
+    setConfiguringDevice,
+    isPaletteOpen,
+    setIsPaletteOpen,
+    mobilePaletteOpen,
+    setMobilePaletteOpen,
+    mobileConnectionSource,
+    setMobileConnectionSource,
+    showPortSelector,
+    setShowPortSelector,
+    portSelectorStep,
+    setPortSelectorStep,
+    selectedSourcePort,
+    setSelectedSourcePort,
+    connectionError,
+    setConnectionError,
+    toggleFullscreen,
+  } = useTopologyStateHandlers(props);
 
   // Canvas Lifecycle & Window Resize Hook
   const {
@@ -173,18 +209,6 @@ export function NetworkTopology({
   // Use hook to preserve window positions during network refresh
   useNetworkRefreshWithPositions(onRefreshNetwork || (() => {}));
 
-  // Environment settings
-  const environment = useEnvironment();
-
-  // Force continuous updates for IoT measurements
-  const [iotUpdateTrigger, setIotUpdateTrigger] = useState(0);
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIotUpdateTrigger((prev) => prev + 1);
-    }, 250);
-    return () => clearInterval(interval);
-  }, []);
-
   const mousePosRef = useRef({ x: 0, y: 0 });
 
   useIotSensorDetection({
@@ -198,9 +222,6 @@ export function NetworkTopology({
     deviceStates,
     onDeviceStatesChange,
   });
-
-  const [isPanning, setIsPanning] = useState(false);
-  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
 
   // Ping Mode State Hook
   const {
@@ -232,8 +253,6 @@ export function NetworkTopology({
     isPingPanelVisible,
     handlePingClose,
   } = useTopologyPingState({ onPingPanelOpenChange });
-
-  const [_selectAllMode, setSelectAllMode] = useState(false);
 
   useEffect(() => {
     selectedDeviceIdsRef.current = [...selectedDeviceIds];
@@ -308,17 +327,6 @@ export function NetworkTopology({
     previousCableTypeRef,
   } = useTopologyInteractionState();
 
-  const [selectionBox, setSelectionBox] = useState<{ start: { x: number; y: number }; current: { x: number; y: number } } | null>(null);
-  const [isSelecting, setIsSelecting] = useState(false);
-  const [isDrawingConnection, setIsDrawingConnection] = useState(false);
-  const [connectionStart, setConnectionStart] = useState<{
-    deviceId: string;
-    portId: string;
-    point: { x: number; y: number };
-  } | null>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
-
   const {
     saveToHistory,
     handleUndo,
@@ -361,17 +369,6 @@ export function NetworkTopology({
     syncingZoomFromPropRef,
     syncingPanFromPropRef,
   });
-
-  const [configuringDevice, setConfiguringDevice] = useState<string | null>(null);
-
-  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
-  const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
-  const [mobileConnectionSource, setMobileConnectionSource] = useState<string | null>(null);
-
-  const [showPortSelector, setShowPortSelector] = useState(false);
-  const [portSelectorStep, setPortSelectorStep] = useState<'source' | 'target'>('source');
-  const [selectedSourcePort, setSelectedSourcePort] = useState<{ deviceId: string; portId: string } | null>(null);
-  const [connectionError, setConnectionError] = useState<string | null>(null);
 
   const handleRefresh = useCallback(() => {
     setPacketPopupHop(null);
@@ -992,12 +989,6 @@ export function NetworkTopology({
     getCounterKey,
     deviceCounterRef,
   });
-
-  const toggleFullscreen = useCallback(() => {
-    if (onFullscreenChange) {
-      onFullscreenChange(!isFullscreen);
-    }
-  }, [isFullscreen, onFullscreenChange]);
 
   const {
     clipboard,

@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { useCallback, useRef, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 
-import { CableInfo } from '@/lib/network/types';
 import { useDeviceManager } from '@/hooks/useDeviceManager';
 import { useNetworkLogic } from '@/hooks/useNetworkLogic';
 import { usePageNetworkLogic } from '@/hooks/usePageNetworkLogic';
@@ -49,7 +48,6 @@ import {
   TaskContext,
   getTaskStatus
 } from '@/lib/network/taskDefinitions';
-import type { ExampleProject, ExampleProjectLevel } from '@/lib/network/exampleProjects';
 import { useGuidedMode } from '@/hooks/useGuidedMode';
 import { useExamMode } from '@/hooks/useExamMode';
 import { useMultiWindowStore } from '@/hooks/useMultiWindowStore';
@@ -105,6 +103,8 @@ import { PageOverlayPanels } from './PageOverlayPanels';
 import { PageDialogs } from './PageDialogs';
 import { PagePanelWindows } from './PagePanelWindows';
 
+import { usePageViewState } from './usePageViewState';
+
 export default function Home({ initialProjectId }: { initialProjectId?: string }) {
   const { t, language, setLanguage } = useLanguage();
   const { theme, effectiveTheme, setTheme } = useTheme();
@@ -151,20 +151,43 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
   } = useDeviceSelection();
 
   const { projectName, setProjectName, loadedExampleId, setLoadedExampleId } = usePageProjectStorage();
-  const [topologyKey, setTopologyKey] = useState(0);
-  const [lastCommand, setLastCommand] = useState<string>('');
-  const [lastOutput, setLastOutput] = useState<string>('');
 
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [lastSaveTime, setLastSaveTime] = useState<string | null>(null);
-  const [projectSearchQuery, setProjectSearchQuery] = useState('');
-  const [showBasarilarim, setShowBasarilarim] = useState(false);
-  const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
+  const {
+    topologyKey,
+    setTopologyKey,
+    lastCommand,
+    setLastCommand,
+    lastOutput,
+    setLastOutput,
+    hasUnsavedChanges,
+    setHasUnsavedChanges,
+    lastSaveTime,
+    setLastSaveTime,
+    projectSearchQuery,
+    setProjectSearchQuery,
+    showBasarilarim,
+    setShowBasarilarim,
+    isGeneratorOpen,
+    setIsGeneratorOpen,
+    sessionStart,
+    focusedOverlay,
+    setFocusedOverlay,
+    cableInfo,
+    setCableInfo,
+    setLastTaskEvent,
+    isPingPanelOpen,
+    setIsPingPanelOpen,
+    isExamLoadedFromFile,
+    setIsExamLoadedFromFile,
+    isTimelineMinimized,
+    setIsTimelineMinimized,
+    toggleTimelineMinimize,
+    saveDialog,
+    setSaveDialog,
+    groupedExampleProjects,
+  } = usePageViewState(language);
 
   usePWA();
-
-  const [sessionStart] = useState(() => Date.now());
-  const [focusedOverlay, setFocusedOverlay] = useState<'refresh' | 'packet' | 'pc-info' | 'router-info' | 'switch-info'>('packet');
 
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
@@ -223,17 +246,6 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     getAvailableExams
   } = useExamMode();
 
-  const [cableInfo, setCableInfo] = useState<CableInfo>({
-    connected: true,
-    cableType: 'straight',
-    sourceDevice: 'pc',
-    targetDevice: 'switchL2',
-  });
-  const [, setLastTaskEvent] = useState<{ type: 'completed' | 'failed'; taskName: string; timestamp: number } | null>(null);
-  const [isPingPanelOpen, setIsPingPanelOpen] = useState(false);
-  const [isExamLoadedFromFile, setIsExamLoadedFromFile] = useState(false);
-  const [isTimelineMinimized, setIsTimelineMinimized] = useState(true);
-  const toggleTimelineMinimize = useCallback(() => setIsTimelineMinimized(prev => !prev), []);
   const { preferences } = useUiPreferences();
 
   const setActiveTab = useAppStore((state) => state.setActiveTab);
@@ -283,24 +295,6 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
     setLoadedExampleId, setLastCommand, setLastOutput, setIsPingPanelOpen, setCableInfo,
     setFocusedOverlay, setLastTaskEvent
   ]);
-
-  const [saveDialog, setSaveDialog] = useState<{
-    show: boolean;
-    message: string;
-    onConfirm: (save: boolean) => void;
-  } | null>(null);
-
-  const [groupedExampleProjects, setGroupedExampleProjects] = useState<Record<ExampleProjectLevel, ExampleProject[]>>(
-    () => ({ basic: [], intermediate: [], advanced: [] })
-  );
-
-  useEffect(() => {
-    import('@/lib/network/exampleProjects').then(({ exampleProjects }) => {
-      const grouping: Record<ExampleProjectLevel, ExampleProject[]> = { basic: [], intermediate: [], advanced: [] };
-      exampleProjects(language).forEach((project) => grouping[project.level].push(project));
-      setGroupedExampleProjects(grouping);
-    });
-  }, [language]);
 
   const {
     deviceStates, setDeviceStates,

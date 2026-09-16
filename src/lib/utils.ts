@@ -23,10 +23,8 @@ export function clsx(...inputs: ClassValue[]): string {
   return str
 }
 
-import { twMerge } from "tailwind-merge"
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+export function cn(...inputs: ClassValue[]): string {
+  return clsx(...inputs)
 }
 
 export function isValidMAC(mac: string): boolean {

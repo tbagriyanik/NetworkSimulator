@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "next build",
-    "start": "cross-env NODE_ENV=production next start",
+    "start": "next start",
     "lint": "oxlint",
     "test": "vitest run",
     "update-readme": "node scripts/update-readme-badges.cjs",
@@ -22,17 +22,13 @@
     "@radix-ui/react-toast": "^1.2.15",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@upstash/redis": "^1.38.0",
-    "dompurify": "^3.4.14",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.7.0",
     "next": "^16.3.3",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "tailwind-merge": "^3.5.0",
     "tailwindcss-animate": "^1.0.7",
-    "zustand": "^5.0.12",
-    "i18next": "^23.0.0",
-    "react-i18next": "^14.0.0"
+    "zustand": "^5.0.12"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
@@ -42,7 +38,6 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitest/coverage-v8": "^4.1.8",
-    "cross-env": "^10.1.0",
     "jsdom": "^29.1.1",
     "oxlint": "^1.79.0",
     "postcss": "^8.5.26",
