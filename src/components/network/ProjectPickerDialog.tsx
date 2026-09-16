@@ -184,8 +184,8 @@ export function ProjectPickerDialog({
     <Dialog open={open} onOpenChange={(open) => { onOpenChange(open); if (!open) setProjectSearchQuery(''); }}>
       <DialogContent className={`${isDark ? 'bg-secondary-900 border-success-500/30' : 'bg-white border-success-500'} sm:max-w-2xl md:max-w-3xl w-[98vw] max-w-[1400px] h-[90vh] md:h-[95vh] max-h-[90vh] md:max-h-[1000px] p-0 overflow-hidden flex flex-col shadow-2xl rounded-none md:rounded-3xl liquid-glass-light`}>
         <div className='flex flex-col flex-1 overflow-hidden h-full max-w-full'>
-          <div className='p-4 md:p-8 pb-2 md:pb-4 space-y-4'>
-            <DialogHeader className='rounded-2xl md:rounded-3xl border border-transparent bg-gradient-to-r p-4 md:p-6 flex items-start md:items-center justify-between flex-col md:flex-row gap-4'>
+          <div className='p-3 md:p-5 pb-2 md:pb-3 space-y-2.5'>
+            <DialogHeader className='rounded-2xl md:rounded-3xl border border-transparent bg-gradient-to-r p-3 md:p-4 flex items-start md:items-center justify-between flex-col md:flex-row gap-3'>
               <div className="flex items-center justify-between w-full">
                 <DialogTitle className='text-xl bg-gradient-to-br from-white to-secondary-900 bg-clip-text text-transparent break-words'>{t.openNewProject}</DialogTitle>
                 <div className='flex items-center gap-2'>
@@ -329,7 +329,7 @@ export function ProjectPickerDialog({
             </div>
 
             {/* Search Box */}
-            <div className={`relative rounded-xl border px-4 py-2.5 flex items-center gap-2 ${isDark ? 'bg-secondary-900/40 border-secondary-800/60' : 'bg-white/50 border-secondary-200/60'}`}>
+            <div className={`relative rounded-xl border px-3 py-1.5 flex items-center gap-2 ${isDark ? 'bg-secondary-900/40 border-secondary-800/60' : 'bg-white/50 border-secondary-200/60'}`}>
               <Search className="w-4 h-4 text-secondary-400" />
               <input
                 ref={searchInputRef}
@@ -391,9 +391,9 @@ export function ProjectPickerDialog({
             ref={scrollRef}
             tabIndex={0}
             onKeyDown={handleGridKeyDown}
-            className='flex-1 overflow-y-auto overflow-x-hidden px-4 md:px-12 pb-12 custom-scrollbar focus:outline-none focus:ring-2 focus:ring-accent-400/50 focus:ring-inset'
+            className='flex-1 overflow-y-auto overflow-x-hidden px-3 md:px-6 pb-6 custom-scrollbar focus:outline-none focus:ring-2 focus:ring-accent-400/50 focus:ring-inset'
           >
-            <div className='flex flex-col gap-12 max-w-full'>
+            <div className='flex flex-col gap-6 max-w-full'>
               {/* Guided Mode Projects Section */}
               {projectPickerTab === 'guided' && (
                 <div className='flex flex-col gap-8'>
@@ -424,7 +424,7 @@ export function ProjectPickerDialog({
                             key={guidedProject.id}
                             data-project-id={guidedProject.id}
                             variant='ghost'
-                            className={`group h-auto min-h-[140px] md:min-h-[180px] flex-col items-start gap-3 md:gap-5 p-5 md:p-8 rounded-2xl md:rounded-[2rem] border-2 text-left transition-all duration-300 hover:translate-y-[-4px] active:scale-[0.98] ${isDark ? 'border-success-800/40 bg-success-900/10 hover:bg-success-900/30 hover:border-success-500/50' : 'border-success-200/50 bg-success-50/30 hover:bg-success-50 hover:border-success-500/40'} w-full overflow-hidden shadow-sm hover:shadow-2xl relative ${selectedProjectId === guidedProject.id ? (isDark ? 'ring-2 ring-success-400 ring-offset-2 ring-offset-secondary-900' : 'ring-2 ring-success-500 ring-offset-2 ring-offset-white') : ''}`}
+                            className={`group h-auto min-h-[120px] md:min-h-[150px] flex-col items-start gap-2.5 md:gap-4 p-3.5 md:p-5 rounded-2xl md:rounded-3xl border-2 text-left transition-all duration-300 hover:translate-y-[-4px] active:scale-[0.98] ${isDark ? 'border-success-800/40 bg-success-900/10 hover:bg-success-900/30 hover:border-success-500/50' : 'border-success-200/50 bg-success-50/30 hover:bg-success-50 hover:border-success-500/40'} w-full overflow-hidden shadow-sm hover:shadow-2xl relative ${selectedProjectId === guidedProject.id ? (isDark ? 'ring-2 ring-success-400 ring-offset-2 ring-offset-secondary-900' : 'ring-2 ring-success-500 ring-offset-2 ring-offset-white') : ''}`}
                             onClick={() => {
                               closeProjectPicker();
                               resetToEmptyProject();

@@ -177,7 +177,7 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
             <X className="w-3 h-3" />
           </button>
         </TooltipWrapper>
-        <DialogHeader className="p-4 pb-2 shrink-0">
+        <DialogHeader className="p-2.5 pb-1 shrink-0">
           <DialogTitle className="sr-only">
             {activeTab === 'about' ? t.aboutTitle : activeTab === 'contact' ? t.contactTitle : t.commandReference}
           </DialogTitle>
@@ -214,9 +214,9 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 flex flex-col min-h-0 overflow-hidden border rounded-md mx-4 mb-2">
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden border rounded-md mx-2.5 mb-2">
           {activeTab === 'help' && !isExamActive && (
-            <div className={cn('p-3 space-y-2 border-b-2 shrink-0', isDark ? 'bg-secondary-700 border-secondary-500/60' : 'bg-secondary-100 border-secondary-300')}>
+            <div className={cn('p-2 space-y-1.5 border-b-2 shrink-0', isDark ? 'bg-secondary-700 border-secondary-500/60' : 'bg-secondary-100 border-secondary-300')}>
               {/* Search */}
               <div className="relative">
                 <Search className={cn('absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4', isDark ? 'text-secondary-500' : 'text-secondary-400')} />

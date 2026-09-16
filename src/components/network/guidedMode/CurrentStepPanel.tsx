@@ -39,7 +39,7 @@ export function CurrentStepPanel({
     t
 }: CurrentStepPanelProps) {
     return (
-        <div className="p-3 bg-primary-50 dark:bg-primary-900/20 border-b border-primary-100 dark:border-primary-800">
+        <div className="p-2 bg-primary-50 dark:bg-primary-900/20 border-b border-primary-100 dark:border-primary-800">
             <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                     <Target className="w-4 h-4 text-primary-500" />

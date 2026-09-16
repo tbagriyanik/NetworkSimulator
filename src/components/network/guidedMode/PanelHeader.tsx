@@ -22,7 +22,7 @@ export function PanelHeader({
         <div
             data-drag-handle
             className={cn(
-                "flex items-center justify-between p-4 bg-gradient-to-r from-primary-600 via-primary-500 to-primary-600 text-white",
+                "flex items-center justify-between px-3 py-2 bg-gradient-to-r from-primary-600 via-primary-500 to-primary-600 text-white",
                 "cursor-grab active:cursor-grabbing select-none shadow-inner"
             )}
             onMouseDown={handleMouseDown}
