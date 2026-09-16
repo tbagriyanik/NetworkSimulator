@@ -1,11 +1,12 @@
 # NetworkSimulator — Tam Özellik Envanteri / Full Feature Inventory
 
-**Sürüm / Version:** 5.7.0 · **Son doğrulama / Last verified:** 2026-09-16
+**Sürüm / Version:** 5.7.1 · **Son doğrulama / Last verified:** 2026-09-16
 
-## Son Ağ Simülasyonu Geliştirmeleri (2026-09-16 - v5.7.0)
+## Son Ağ Simülasyonu & Güvenlik Geliştirmeleri (2026-09-16 - v5.7.1)
 
 | Özellik | Güncel kapsam ve sınır |
 |---|---|
+| **CodeQL Security Hardening & Multi-Character Sanitization** | `sanitizeHTTPContent` motorunda iç içe HTML etiketlerinin atlatılmasını engellemek için sabitleşim döngüsü (`do { ... } while (cleaned !== prev)`) ve HTML nitelikleri için key-value ayrıştırma fonksiyonu (`sanitizeAttributes`) geliştirildi. CodeQL #72, #73, #74 "Incomplete multi-character sanitization" yüksek öncelikli güvenlik uyarıları kapatıldı. |
 | **Otomatik Topoloji Üretici Kataloğu (28 Senaryo, 8 Kategori)** | 8 Kategori (Temel, Topoloji, Veri Merkezi, Kablosuz, Servisler, Anahtarlama, Yönlendirme, Güvenlik) altında 28 hazır topoloji senaryosu (`scenarioGenerators.ts`, `topologyScenarios.ts`, `TopologyGeneratorDialog.tsx`). Portlar varsayılan olarak `no shutdown` açık ve servisler entegre gelir. |
 | **Genişletilmiş Örnek Projeler Kataloğu (49 Proje)** | Modern Ofis (Ağ Yazıcısı, Akıllı İklim IoT Sensörü, Mobil Tablet), Python Ağ Otomasyonu (OOBM Yönetim Switch'i & 3 Router Filosu) ve Kurumsal DMZ Güvenlik Duvarı (NGFW Web & DNS Bölgesi) projeleri eklendi (`office-printer-iot.ts`, `netauto-python-lab.ts`, `dmz-firewall-enterprise.ts`). |
 | **Gelişmiş Yapılandırılmış Açıklamalar & Kılavuz Notları** | Tüm örnek projeler ve üretilen topolojiler için 🎯 Amaç, ⚙️ Mimari Yapılandırma, ⚠️ Arıza Belirtisi ve 🧪 Test & Doğrulama adımlarını içeren zengin kanvas kılavuz notları. |

@@ -31,6 +31,43 @@ export function decodeHTMLEntities(input: string): string {
         .replace(/&amp;/g, '&');
 }
 
+function sanitizeAttributes(attrs: string): string {
+    if (!attrs || !attrs.trim()) return '';
+
+    const attrRegex = /([a-z0-9:-]+)(?:\s*=\s*(?:(["'])(.*?)\2|([^\s>]+)))?/gi;
+    let result = '';
+    let match: RegExpExecArray | null;
+
+    while ((match = attrRegex.exec(attrs)) !== null) {
+        const key = match[1];
+        const val = match[3] ?? match[4] ?? '';
+
+        // Strip event handlers (onload, onerror, onclick, etc.)
+        if (/^on/i.test(key)) {
+            continue;
+        }
+
+        // For URI attributes, inspect scheme for dangerous protocols
+        if (/^(?:href|src|action|formaction)$/i.test(key)) {
+            // eslint-disable-next-line no-control-regex
+            const normalizedVal = val.replace(/[\s\x00-\x1F]/g, '').toLowerCase();
+            if (/^(?:javascript|vbscript|data|file):/i.test(normalizedVal)) {
+                continue;
+            }
+        }
+
+        // Sanitize style attribute if present
+        let safeVal = val;
+        if (/^style$/i.test(key)) {
+            safeVal = val.replace(/(?:javascript|expression|url\s*\(\s*["']?\s*javascript)/gi, '');
+        }
+
+        result += ` ${key}="${safeVal.replace(/"/g, '&quot;')}"`;
+    }
+
+    return result;
+}
+
 /**
  * Sanitize HTML content for HTTP service content without external libraries.
  * Allows basic formatting and layout tags while preventing XSS.
@@ -38,20 +75,26 @@ export function decodeHTMLEntities(input: string): string {
 export function sanitizeHTTPContent(input: string): string {
     if (!input) return '';
 
-    // Strip out all dangerous tags like script, style, iframe, object, embed, form, etc.
-    let cleaned = input.replace(/<(script|style|iframe|object|embed|form|input|button|link|meta)[\s\S]*?>[\s\S]*?<\/\1>/gi, '');
-    cleaned = cleaned.replace(/<[^>]+(on\w+|javascript:|data:)[^>]*>/gi, '');
+    // Strip out dangerous tags to a fixpoint to prevent evasion via nested tags
+    const DANGEROUS_TAGS_RE = /<(script|style|iframe|object|embed|form|input|button|link|meta)[\s\S]*?>[\s\S]*?<\/\1>/gi;
+    let prev: string;
+    let cleaned = input;
+    do {
+        prev = cleaned;
+        cleaned = cleaned.replace(DANGEROUS_TAGS_RE, '');
+    } while (cleaned !== prev);
 
-    // Escape unallowed HTML tags while preserving basic formatting tags (b, i, u, br, p, span, h1-h6, a)
-    const allowedTags = /^(?:b|i|u|br|p|span|h1|h2|h3|h4|h5|h6|a|\/b|\/i|\/u|\/br|\/p|\/span|\/h1|\/h2|\/h3|\/h4|\/h5|\/h6|\/a)$/i;
+    // Escape unallowed HTML tags while preserving basic formatting tags
+    const allowedTags = /^(?:b|i|u|br|p|span|h1|h2|h3|h4|h5|h6|a|img|\/b|\/i|\/u|\/br|\/p|\/span|\/h1|\/h2|\/h3|\/h4|\/h5|\/h6|\/a|\/img)$/i;
 
     return cleaned.replace(/<(\/?[a-z0-9]+)([^>]*)>/gi, (match, tag, attrs) => {
         if (!allowedTags.test(tag)) {
             return match.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
-        // Sanitize attributes to prevent XSS via onload/onerror/etc.
-        const cleanAttrs = attrs.replace(/\s*on\w+\s*=\s*(['"]).*?\1/gi, '')
-                                .replace(/\s*href\s*=\s*(['"])\s*javascript:.*?\1/gi, '');
+        if (tag.startsWith('/')) {
+            return `<${tag}>`;
+        }
+        const cleanAttrs = sanitizeAttributes(attrs);
         return `<${tag}${cleanAttrs}>`;
     });
 }

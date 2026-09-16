@@ -2,6 +2,14 @@
 
 Yeniden eskiye, tarih mevcuttur.
 
+## v5.7.1 — 2026-09-16
+
+**CodeQL Güvenlik İyileştirmeleri & Multi-Character Sanitization Düzeltmesi** —
+- **🛡️ `sanitizeHTTPContent` Güvenlik Sertleştirmesi (`sanitizer.ts`)**:
+  - İç içe veya çakışan tehlikeli HTML etiketlerinin (`<script>`, `<style>`, `<iframe>`, `<form>` vb.) atlatılmasını önlemek amacıyla tek geçişli regex değiştirme yerine sabitleşim döngüsü (`do { ... } while (cleaned !== prev)`) uygulandı.
+  - HTML nitelikleri (attributes) için tek geçişli metin temizleme yerine key-value ayrıştırma fonksiyonu (`sanitizeAttributes`) geliştirildi; inline olay işleyicileri (`on*`) ve tehlikeli protokol şemaları (`javascript:`, `vbscript:`, `data:`, `file:`) tamamen temizlenerek CodeQL #72, #73, #74 ("Incomplete multi-character sanitization") güvenlik uyarıları çözüldü.
+- **🧪 Birim Test Kapsamı (`sanitizer.test.ts`)**: `sanitizeHTTPContent` için izin verilen HTML etiketleri, iç içe etiket temizleme, nitelik ve şema filtreleme test senaryoları eklendi. Tüm 75 test sorunsuz şekilde doğrulandı.
+
 ## v5.4.1 — 2026-09-13
 
 **Kod Mimarisi Modüler Ayrıştırma Dalgası (Monolit Dosyaların Tek Sorumluluk Modüllerine Bölünmesi) ve Gereksiz Kod Denetimi** —

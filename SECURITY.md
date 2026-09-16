@@ -22,7 +22,7 @@ This project implements the following security measures:
 
 - **Content Security Policy (CSP)** with per-request nonces
 - **CSRF protection** via double-submit cookie pattern
-- **Input sanitization** against XSS and prototype pollution
+- **Input sanitization** against XSS and prototype pollution with fixpoint iteration (`sanitizeHTTPContent`, `sanitizeInput`) and key-by-key attribute parsing
 - **Rate limiting** on all API endpoints (Redis-backed with in-memory fallback)
 - **HMAC-signed tokens** for certificate score verification (server-side secret)
 - **Client-side data obfuscation** (XOR + Base64) for sensitive localStorage data — not a substitute for server-side encryption

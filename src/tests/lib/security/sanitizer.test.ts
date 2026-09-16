@@ -1,5 +1,47 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeInput, sanitizeObject, generateSecureId } from '@/lib/security/sanitizer';
+import { sanitizeInput, sanitizeObject, generateSecureId, sanitizeHTTPContent } from '@/lib/security/sanitizer';
+
+describe('sanitizeHTTPContent', () => {
+  it('should preserve allowed basic HTML tags', () => {
+    const input = '<h1>Title</h1><p>Paragraph with <b>bold</b> and <i>italic</i></p>';
+    expect(sanitizeHTTPContent(input)).toBe(input);
+  });
+
+  it('should strip script, style, and iframe tags iteratively', () => {
+    const nestedScript = '<scr<script>ipt>alert(1)</script></script>';
+    expect(sanitizeHTTPContent(nestedScript)).not.toContain('<script>');
+  });
+
+  it('should escape non-whitelisted tags', () => {
+    const input = '<custom-tag>content</custom-tag><svg onload="alert(1)">';
+    const result = sanitizeHTTPContent(input);
+    expect(result).toContain('&lt;custom-tag&gt;');
+    expect(result).toContain('&lt;svg');
+  });
+
+  it('should strip event handlers and dangerous scheme attributes from allowed tags', () => {
+    const input = '<a href="javascript:alert(1)" onclick="alert(2)" target="_blank">Link</a><img src="x" onerror="alert(3)" />';
+    const result = sanitizeHTTPContent(input);
+    expect(result).not.toContain('javascript:');
+    expect(result).not.toContain('onclick');
+    expect(result).not.toContain('onerror');
+    expect(result).toContain('target="_blank"');
+  });
+});
+
+describe('generateSecureId', () => {
+  it('should generate a valid string representation of UUID/ID', () => {
+    const id = generateSecureId();
+    expect(typeof id).toBe('string');
+    expect(id.length).toBeGreaterThanOrEqual(10);
+  });
+
+  it('should generate unique values on sequential calls', () => {
+    const id1 = generateSecureId();
+    const id2 = generateSecureId();
+    expect(id1).not.toBe(id2);
+  });
+});
 
 describe('sanitizeInput (XSS Protection)', () => {
   it('should remove javascript: schemes', () => {

@@ -421,6 +421,7 @@ doc/
 - [x] Router & Switch 3-Satırlı Port Çizim Düzeni (v5.2) belgelendi
 - [x] L3 Switch Sabit Port Koruma & Modül Entegrasyonu (v5.2) güncellendi
 - [x] Çevresel Ayarlar & UI Başlık Güncellemeleri (v5.2) eklendi
+- [x] CodeQL Güvenlik Sertleştirmesi & Multi-Character Sanitization (v5.7.1) belgelendi
 
 ---
 
