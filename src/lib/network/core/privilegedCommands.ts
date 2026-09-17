@@ -27,7 +27,8 @@ import {
     cmdClearMacAddressTable,
     cmdClearCounters,
     cmdClearLine,
-    cmdClearInterface
+    cmdClearInterface,
+    cmdClearIpOspfProcess
 } from './privilegedClear';
 import {
     cmdReload,
@@ -71,6 +72,7 @@ export const privilegedHandlers: Record<string, CommandHandler> = {
     'delete nvram': cmdEraseNvram,
     'clear line': cmdClearLine,
     'clear interface': cmdClearInterface,
+    'clear ip ospf process': cmdClearIpOspfProcess,
     'terminal': cmdTerminal,
     'terminal length': cmdTerminal,
     'terminal width': cmdTerminal,

@@ -33,6 +33,73 @@ const cmdIpv6Eigrp: CommandHandler = (state, input, _ctx) => {
   };
 };
 
+const cmdIpBandwidthPercentEigrp: CommandHandler = (state, input, _ctx) => {
+  const match = input.match(/^ip\s+bandwidth-percent\s+eigrp\s+(\d+)\s+(\d+)$/i);
+  const portKey = getTargetPortKey(state);
+  if (!match || !portKey) return { success: false, error: '% Invalid command or interface not selected' };
+  const asNum = parseInt(match[1], 10);
+  const percent = parseInt(match[2], 10);
+  const ports = { ...state.ports };
+  const port = ports[portKey];
+  if (!port) return { success: false, error: '% Interface not found' };
+  const eigrpBandwidthPercent = { ...port.eigrpBandwidthPercent, [asNum]: percent };
+  ports[portKey] = { ...port, eigrpBandwidthPercent };
+  const newState = { ports };
+  return { success: true, output: '', newState: { ...newState, runningConfig: buildRunningConfig({ ...state, ...newState }) } };
+};
+
+const cmdNoIpBandwidthPercentEigrp: CommandHandler = (state, input, _ctx) => {
+  const match = input.match(/^(?:no\s+)?ip\s+bandwidth-percent\s+eigrp\s+(\d+)/i);
+  const portKey = getTargetPortKey(state);
+  if (!match || !portKey) return { success: false, error: '% Invalid command or interface not selected' };
+  const asNum = parseInt(match[1], 10);
+  const ports = { ...state.ports };
+  const port = ports[portKey];
+  if (!port) return { success: false, error: '% Interface not found' };
+  const eigrpBandwidthPercent = { ...port.eigrpBandwidthPercent };
+  delete eigrpBandwidthPercent[asNum];
+  ports[portKey] = { ...port, eigrpBandwidthPercent };
+  const newState = { ports };
+  return { success: true, output: '', newState: { ...newState, runningConfig: buildRunningConfig({ ...state, ...newState }) } };
+};
+
+const cmdIpSummaryAddressEigrp: CommandHandler = (state, input, _ctx) => {
+  const match = input.match(/^ip\s+summary-address\s+eigrp\s+(\d+)\s+([0-9.]+)\s+([0-9.]+)(?:\s+(\d+))?$/i);
+  const portKey = getTargetPortKey(state);
+  if (!match || !portKey) return { success: false, error: '% Incomplete command' };
+  const asNum = parseInt(match[1], 10);
+  const ip = match[2];
+  const mask = match[3];
+  const distance = match[4] ? parseInt(match[4], 10) : undefined;
+  const ports = { ...state.ports };
+  const port = ports[portKey];
+  if (!port) return { success: false, error: '% Interface not found' };
+
+  const existing = (port.eigrpSummaryAddresses || []).filter(s => !(s.as === asNum && s.ip === ip && s.mask === mask));
+  existing.push({ as: asNum, ip, mask, distance });
+
+  ports[portKey] = { ...port, eigrpSummaryAddresses: existing };
+  const newState = { ports };
+  return { success: true, output: '', newState: { ...newState, runningConfig: buildRunningConfig({ ...state, ...newState }) } };
+};
+
+const cmdNoIpSummaryAddressEigrp: CommandHandler = (state, input, _ctx) => {
+  const match = input.match(/^(?:no\s+)?ip\s+summary-address\s+eigrp\s+(\d+)\s+([0-9.]+)\s+([0-9.]+)/i);
+  const portKey = getTargetPortKey(state);
+  if (!match || !portKey) return { success: false, error: '% Incomplete command' };
+  const asNum = parseInt(match[1], 10);
+  const ip = match[2];
+  const mask = match[3];
+  const ports = { ...state.ports };
+  const port = ports[portKey];
+  if (!port) return { success: false, error: '% Interface not found' };
+
+  const existing = (port.eigrpSummaryAddresses || []).filter(s => !(s.as === asNum && s.ip === ip && s.mask === mask));
+  ports[portKey] = { ...port, eigrpSummaryAddresses: existing };
+  const newState = { ports };
+  return { success: true, output: '', newState: { ...newState, runningConfig: buildRunningConfig({ ...state, ...newState }) } };
+};
+
 const cmdGlbp: CommandHandler = (state, input, _ctx) => {
   const portKey = getTargetPortKey(state);
   if (!portKey) return { success: false, error: '% No interface selected' };
@@ -479,6 +546,10 @@ export const interfaceHandlers: Record<string, CommandHandler> = {
   'no ip flow monitor': cmdIpFlowInterface,
   'mac access-group': cmdMacAccessGroup,
   'no mac access-group': cmdNoMacAccessGroup,
+  'ip bandwidth-percent eigrp': cmdIpBandwidthPercentEigrp,
+  'no ip bandwidth-percent eigrp': cmdNoIpBandwidthPercentEigrp,
+  'ip summary-address eigrp': cmdIpSummaryAddressEigrp,
+  'no ip summary-address eigrp': cmdNoIpSummaryAddressEigrp,
   'source template': cmdSourceTemplate,
   ...ospfInterfaceHandlers,
 };

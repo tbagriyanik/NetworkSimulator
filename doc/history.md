@@ -1,6 +1,19 @@
 # 📅 Network Simulator — Proje Geçmişi
 
-Yeniden eskiye, tarih mevcuttur.
+## v5.8.0 — 2026-09-17
+
+**Cisco CLI EIGRP, OSPF & Donanım Komutları Tamamlama Paketi** —
+- **📡 EIGRP Arayüz Geliştirmeleri (`interfaceCommands.ts`, `interfacePatterns.ts`)**:
+  - `ip bandwidth-percent eigrp <as> <percent>` ve `no ip bandwidth-percent eigrp <as>` komutları arayüz düzeyinde eklendi.
+  - `ip summary-address eigrp <as> <ip> <maskcaps> [<distance>]` ve `no` varyantı Cisco referans syntax'ı ile tam uyumlu hale getirildi.
+- **🔄 OSPF Süreç & Kimlik Doğrulama (`privilegedClear.ts`, `ospfRouterCommands.ts`, `systemPatterns.ts`)**:
+  - Privileged EXEC modunda `clear ip ospf [<process-id>] process` komutu ile OSPF sürecini, komşuluk veritabanını ve rotaları sıfırlama desteği sağlandı.
+  - OSPF router modunda `area <id> authentication` ve `area <id> authentication message-digest` komutları entegre edildi.
+  - Arayüz seviyesinde `ip ospf authentication-key <key>` düz metin şifre kontrolü ve doğrulama altyapısı teyit edildi.
+- **📊 Gelişmiş Show Komut Gösterimleri (`showOspfDisplay.ts`, `showMiscDisplay.ts`)**:
+  - `show ip ospf interface [<interface>]`: Arayüz IP/subnet, Cost, State (DR/BDR), Hello/Dead zamanlayıcıları ve Authentication durumlarının detaylı gösterimi eklendi.
+  - `show ip ospf neighbor`: `detail` parametresi, arayüz filtrelemesi ve neighbor router ID filtrelemesi desteklendi.
+  - `show environment`: Gerçekçi güç kaynağı, fan modülü, kasa/CPU sıcaklık dereceleri ve voltaj hatları durum tablosu formatlandı.
 
 ## v5.7.1 — 2026-09-16
 

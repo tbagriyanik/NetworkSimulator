@@ -165,3 +165,25 @@ export function cmdClearInterface(_state: SwitchState, input: string, _ctx: Comm
         output: `[confirm]\n% Resetting interface ${intf}\n`
     };
 }
+
+/**
+ * Clear IP OSPF Process
+ */
+export function cmdClearIpOspfProcess(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+    const match = input.trim().match(/^clear\s+ip\s+ospf(?:\s+(\d+))?\s+process$/i);
+    const pid = match?.[1] || state.ospfProcessId || '1';
+
+    if (state.routingProtocol !== 'ospf') {
+        return { success: true, output: '\n% OSPF process is not running\n' };
+    }
+
+    return {
+        success: true,
+        output: `Reset OSPF process ${pid}? [no]: yes\n% Resetting OSPF process ${pid}...\n`,
+        newState: {
+            ...state,
+            ospfNeighbors: [],
+            dynamicRoutes: (state.dynamicRoutes || []).filter(r => r.area === undefined && r.code !== 'O')
+        }
+    };
+}

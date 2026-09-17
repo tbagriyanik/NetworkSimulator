@@ -422,6 +422,7 @@ doc/
 - [x] L3 Switch Sabit Port Koruma & Modül Entegrasyonu (v5.2) güncellendi
 - [x] Çevresel Ayarlar & UI Başlık Güncellemeleri (v5.2) eklendi
 - [x] CodeQL Güvenlik Sertleştirmesi & Multi-Character Sanitization (v5.7.1) belgelendi
+- [x] Cisco CLI EIGRP, OSPF & Donanım Komutları Tamamlama Paketi (v5.8.0) belgelendi
 
 ---
 

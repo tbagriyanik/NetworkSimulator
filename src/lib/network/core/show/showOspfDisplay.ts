@@ -159,46 +159,70 @@ export function cmdShowIpProtocols(state: SwitchState, _input: string, _ctx: Com
 /**
  * Show IP OSPF Neighbor
  */
-export function cmdShowIpOspfNeighbor(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+export function cmdShowIpOspfNeighbor(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.routingProtocol !== 'ospf') {
     return { success: true, output: '\n% OSPF is not enabled\n' };
   }
 
-  let output = '\nNeighbor ID     Pri   State           Dead Time   Address         Interface\n';
+  const match = input.match(/show\s+ip\s+ospf\s+neighbor(?:\s+(\S+))?/i);
+  const arg = match?.[1]?.toLowerCase();
+  const isDetail = arg === 'detail';
+
+  const candidateList: OspfCandidate[] = [];
+  const neighborList: { address: string; intf: string; routerId: string; priority: number }[] = [];
 
   if (state.dynamicRoutes && state.dynamicRoutes.length > 0) {
-    const candidateList: OspfCandidate[] = [];
-    const neighborMap = new Map<string, { address: string; intf: string; routerId: string; priority: number }>();
-
+    const seen = new Set<string>();
     state.dynamicRoutes.forEach((r, idx) => {
-      if (r.nextHop && !neighborMap.has(r.nextHop)) {
+      if (r.nextHop && !seen.has(r.nextHop)) {
+        seen.add(r.nextHop);
         const routerId = `10.0.0.${(idx + 1) * 2}`;
         const address = r.nextHop;
         const intf = r.interface || 'FastEthernet0/0';
         const priority = 1;
-        neighborMap.set(r.nextHop, { address, intf, routerId, priority });
+        neighborList.push({ address, intf, routerId, priority });
         candidateList.push({ routerId, drPriority: priority, ipAddress: address, interfaceName: intf });
       }
     });
+  }
 
-    const election = electOspfDrBdr(candidateList);
+  const election = electOspfDrBdr(candidateList);
 
-    neighborMap.forEach((neighbor) => {
-      const deadTimer = `00:00:35`;
+  let filtered = neighborList;
+  if (arg && !isDetail) {
+    filtered = neighborList.filter(n => n.intf.toLowerCase() === arg || n.routerId === arg || n.address === arg);
+  }
+
+  if (filtered.length === 0) {
+    return { success: true, output: '\nNeighbor ID     Pri   State           Dead Time   Address         Interface\n(no neighbors found)\n' };
+  }
+
+  if (isDetail) {
+    let output = '\n';
+    filtered.forEach(neighbor => {
       let drBdrRole = 'DROTHER';
-      if (election.dr?.routerId === neighbor.routerId) {
-        drBdrRole = 'DR';
-      } else if (election.bdr?.routerId === neighbor.routerId) {
-        drBdrRole = 'BDR';
-      }
-      const stateStr = `FULL/${drBdrRole}`;
-      output += `${neighbor.routerId.padEnd(15)} ${String(neighbor.priority).padEnd(5)} ${stateStr.padEnd(15)} ${deadTimer}    ${neighbor.address.padEnd(15)} ${neighbor.intf}\n`;
+      if (election.dr?.routerId === neighbor.routerId) drBdrRole = 'DR';
+      else if (election.bdr?.routerId === neighbor.routerId) drBdrRole = 'BDR';
+      output += ` Neighbor ${neighbor.routerId}, interface address ${neighbor.address}\n`;
+      output += `    In the area 0 via interface ${neighbor.intf}\n`;
+      output += `    Neighbor priority is ${neighbor.priority}, State is FULL/${drBdrRole}, 6 state changes\n`;
+      output += `    DR is ${election.dr?.ipAddress || neighbor.address}, BDR is ${election.bdr?.ipAddress || '0.0.0.0'}\n`;
+      output += `    Options is 0x52 in Hello (E-bit, O-bit, L-bit)\n`;
+      output += `    Dead timer due in 00:00:35\n`;
+      output += `    Neighbor is up for 00:15:42\n\n`;
     });
+    return { success: true, output };
   }
 
-  if (output === '\nNeighbor ID     Pri   State           Dead Time   Address         Interface\n') {
-    output += '(no neighbors found)\n';
-  }
+  let output = '\nNeighbor ID     Pri   State           Dead Time   Address         Interface\n';
+  filtered.forEach((neighbor) => {
+    const deadTimer = `00:00:35`;
+    let drBdrRole = 'DROTHER';
+    if (election.dr?.routerId === neighbor.routerId) drBdrRole = 'DR';
+    else if (election.bdr?.routerId === neighbor.routerId) drBdrRole = 'BDR';
+    const stateStr = `FULL/${drBdrRole}`;
+    output += `${neighbor.routerId.padEnd(15)} ${String(neighbor.priority).padEnd(5)} ${stateStr.padEnd(15)} ${deadTimer}    ${neighbor.address.padEnd(15)} ${neighbor.intf}\n`;
+  });
 
   return { success: true, output };
 }

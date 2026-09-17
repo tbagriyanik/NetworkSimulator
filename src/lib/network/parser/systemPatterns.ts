@@ -204,6 +204,12 @@ export const systemPatterns: Record<string, CommandPattern> = {
     minArgs: 1,
     maxArgs: 1
   },
+  'clear ip ospf process': {
+    pattern: /^clear\s+ip\s+ospf(?:\s+(\d+))?\s+process$/i,
+    modes: ['privileged'],
+    minArgs: 0,
+    maxArgs: 1
+  },
 
   // Debug commands
   'debug': {

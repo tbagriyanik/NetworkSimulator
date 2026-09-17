@@ -150,6 +150,33 @@ export function cmdNoAreaNssa(state: SwitchState, input: string): CommandResult 
     };
 }
 
+export function cmdAreaAuthentication(state: SwitchState, input: string): CommandResult {
+    const match = input.match(/^area\s+(\d+)\s+authentication(?:\s+(message-digest))?$/i);
+    if (!match) return { success: false, error: '% Incomplete command.' };
+    const areaId = match[1];
+    const isMd5 = !!match[2];
+    const authType = isMd5 ? 'md5' : 'simple';
+    const areaAuth = { ...state.ospfAreaAuth, [areaId]: authType };
+    return {
+        success: true,
+        output: `Area ${areaId} authentication ${isMd5 ? 'message-digest ' : ''}enabled`,
+        newState: { ospfAreaAuth: areaAuth }
+    };
+}
+
+export function cmdNoAreaAuthentication(state: SwitchState, input: string): CommandResult {
+    const match = input.match(/^no\s+area\s+(\d+)\s+authentication(?:\s+message-digest)?$/i);
+    if (!match) return { success: false, error: '% Incomplete command.' };
+    const areaId = match[1];
+    const areaAuth = { ...state.ospfAreaAuth };
+    delete areaAuth[areaId];
+    return {
+        success: true,
+        output: `Area ${areaId} authentication disabled`,
+        newState: { ospfAreaAuth: areaAuth }
+    };
+}
+
 export const ospfRouterHandlers: Record<string, CommandHandler> = {
     'router-id': cmdRouterId,
     'no router-id': cmdNoRouterId,
@@ -164,4 +191,6 @@ export const ospfRouterHandlers: Record<string, CommandHandler> = {
     'area nssa no-summary': cmdAreaNssaNoSummary,
     'no area stub': cmdNoAreaStub,
     'no area nssa': cmdNoAreaNssa,
+    'area authentication': cmdAreaAuthentication,
+    'no area authentication': cmdNoAreaAuthentication,
 };

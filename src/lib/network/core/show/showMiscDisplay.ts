@@ -16,7 +16,18 @@ export function cmdShowUsers(_state: SwitchState, _input: string, _ctx: CommandC
 }
 
 export function cmdShowEnvironment(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  return { success: true, output: '\nSystem Temperature Value: 36 Degree Celsius\nSystem Temperature State: GREEN\nYellow Threshold : 46 Degree Celsius\nRed Threshold    : 56 Degree Celsius\n' };
+  let output = '\nClass item         Value                   Status\n';
+  output += '------------------------------------------------------\n';
+  output += 'Power Supply 1     AC (OK)                 Normal\n';
+  output += 'Power Supply 2     AC (OK)                 Normal\n';
+  output += 'Fan 1              System Fan 1 (OK)       Normal\n';
+  output += 'Fan 2              System Fan 2 (OK)       Normal\n';
+  output += 'Temperature 1      Chassis Temp (34 C)     Normal\n';
+  output += 'Temperature 2      CPU Temp (42 C)         Normal\n';
+  output += 'Voltage 1          +12V Rail (12.02 V)    Normal\n';
+  output += 'Voltage 2          +5V Rail (5.01 V)      Normal\n';
+  output += 'Voltage 3          +3.3V Rail (3.30 V)    Normal\n';
+  return { success: true, output };
 }
 
 export function cmdShowInventory(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {

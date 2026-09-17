@@ -610,6 +610,48 @@ export const routingPatterns: Record<string, CommandPattern> = {
     minArgs: 2,
     maxArgs: 2
   },
+  'area authentication': {
+    pattern: /^area\s+(\d+)\s+authentication(?:\s+(message-digest))?$/i,
+    modes: ['router-config'],
+    minArgs: 1,
+    maxArgs: 2
+  },
+  'no area authentication': {
+    pattern: /^no\s+area\s+(\d+)\s+authentication(?:\s+(message-digest))?$/i,
+    modes: ['router-config'],
+    minArgs: 1,
+    maxArgs: 2
+  },
+  'area range': {
+    pattern: /^area\s+(\d+)\s+range\s+([0-9.]+)\s+([0-9.]+)$/i,
+    modes: ['router-config'],
+    minArgs: 3,
+    maxArgs: 3
+  },
+  'area stub': {
+    pattern: /^area\s+(\d+)\s+stub(?:\s+(no-summary))?$/i,
+    modes: ['router-config'],
+    minArgs: 1,
+    maxArgs: 2
+  },
+  'no area stub': {
+    pattern: /^no\s+area\s+(\d+)\s+stub$/i,
+    modes: ['router-config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'area nssa': {
+    pattern: /^area\s+(\d+)\s+nssa(?:\s+(no-summary))?$/i,
+    modes: ['router-config'],
+    minArgs: 1,
+    maxArgs: 2
+  },
+  'no area nssa': {
+    pattern: /^no\s+area\s+(\d+)\s+nssa$/i,
+    modes: ['router-config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
   'errdisable recovery cause': {
     pattern: /^errdisable\s+recovery\s+cause\s+(all|bpduguard|channel-misconfig|dhcp-rate-limit|dtp-flap|gbic-invalid|l2ptguard|linkstate|loopback|mac-limit|pagp-flap|port-mode-failure|port-security|psecure-violation|security-violation|sfp-config-mismatch|small-frame|storm-control|udld|unicast-flood)$/i,
     modes: ['config'],

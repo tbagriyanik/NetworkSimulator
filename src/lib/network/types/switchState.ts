@@ -148,6 +148,7 @@ export interface SwitchState {
   coppConfig?: CoppConfig;
   eigrpNamedInstances?: Record<string, EigrpNamedInstance>;
   ospfVirtualLinks?: Record<string, OspfVirtualLinkConfig>;
+  ospfAreaAuth?: Record<string, string>;
   bootTime: number;
   // New optional properties for extended features
   domainName?: string;

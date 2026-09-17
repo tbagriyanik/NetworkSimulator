@@ -1,6 +1,14 @@
 # NetworkSimulator — Tam Özellik Envanteri / Full Feature Inventory
 
-**Sürüm / Version:** 5.7.1 · **Son doğrulama / Last verified:** 2026-09-16
+**Sürüm / Version:** 5.8.0 · **Son doğrulama / Last verified:** 2026-09-17
+
+## Cisco CLI EIGRP, OSPF & Donanım Komutları Tamamlama Paketi (2026-09-17 - v5.8.0)
+
+| Özellik | Güncel kapsam ve sınır |
+|---|---|
+| **EIGRP Arayüz Komutları** | `ip bandwidth-percent eigrp <as> <percent>` ve `no ip bandwidth-percent eigrp <as>` desteği arayüz düzeyine eklendi. `ip summary-address eigrp <as> <ip> <maskcaps> [<distance>]` Cisco referans kalıbı ve özet rota oluşturması sağlandı. |
+| **OSPF Süreç Sıfırlama & Authentication** | Privileged EXEC modunda `clear ip ospf [<pid>] process` ile OSPF sürecini sıfırlama desteği eklendi. Router OSPF modunda `area <id> authentication [message-digest]` ve arayüzde `ip ospf authentication-key <key>` şifreleme alt yapısı doğrulandı. |
+| **Zengin OSPF & Donanım Show Çıktıları** | `show ip ospf interface [<int>]`, `show ip ospf`, `show ip ospf neighbor [detail | <int> | <id>]` ve gerçekçi donanım durum takibi sunan `show environment` (Power Supply, Fan, Sıcaklık, Voltaj) komutları entegre edildi. |
 
 ## Son Ağ Simülasyonu & Güvenlik Geliştirmeleri (2026-09-16 - v5.7.1)
 

@@ -917,4 +917,112 @@ export const interfacePatterns: Record<string, CommandPattern> = {
     minArgs: 1,
     maxArgs: 1
   },
+  'ip bandwidth-percent eigrp': {
+    pattern: /^ip\s+bandwidth-percent\s+eigrp\s+(\d+)\s+(\d+)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 2,
+    maxArgs: 2
+  },
+  'no ip bandwidth-percent eigrp': {
+    pattern: /^no\s+ip\s+bandwidth-percent\s+eigrp\s+(\d+)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'ip summary-address eigrp': {
+    pattern: /^ip\s+summary-address\s+eigrp\s+(\d+)\s+([0-9.]+)\s+([0-9.]+)(?:\s+(\d+))?$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 3,
+    maxArgs: 4
+  },
+  'no ip summary-address eigrp': {
+    pattern: /^no\s+ip\s+summary-address\s+eigrp\s+(\d+)\s+([0-9.]+)\s+([0-9.]+)/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 3,
+    maxArgs: 3
+  },
+  'ip ospf authentication': {
+    pattern: /^ip\s+ospf\s+authentication(?:\s+(message-digest|null))?$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 0,
+    maxArgs: 1
+  },
+  'no ip ospf authentication': {
+    pattern: /^no\s+ip\s+ospf\s+authentication$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'ip ospf authentication-key': {
+    pattern: /^ip\s+ospf\s+authentication-key\s+(\S+)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'no ip ospf authentication-key': {
+    pattern: /^no\s+ip\s+ospf\s+authentication-key$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'ip ospf message-digest-key': {
+    pattern: /^ip\s+ospf\s+message-digest-key\s+(\d+)\s+md5\s+(\S+)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 3,
+    maxArgs: 3
+  },
+  'no ip ospf message-digest-key': {
+    pattern: /^no\s+ip\s+ospf\s+message-digest-key\s+(\d+)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'ip ospf cost': {
+    pattern: /^ip\s+ospf\s+cost\s+(\d+)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'no ip ospf cost': {
+    pattern: /^no\s+ip\s+ospf\s+cost$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'ip ospf hello-interval': {
+    pattern: /^ip\s+ospf\s+hello-interval\s+(\d+)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'no ip ospf hello-interval': {
+    pattern: /^no\s+ip\s+ospf\s+hello-interval$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'ip ospf dead-interval': {
+    pattern: /^ip\s+ospf\s+dead-interval\s+(\d+)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'no ip ospf dead-interval': {
+    pattern: /^no\s+ip\s+ospf\s+dead-interval$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'ip ospf priority': {
+    pattern: /^ip\s+ospf\s+priority\s+(\d+)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'no ip ospf priority': {
+    pattern: /^no\s+ip\s+ospf\s+priority$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 0,
+    maxArgs: 0
+  },
 };

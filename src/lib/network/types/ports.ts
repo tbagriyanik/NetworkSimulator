@@ -106,6 +106,8 @@ export interface Port {
   ospfAuthType?: 'none' | 'simple' | 'md5';
   ospfAuthKey?: string;
   ospfMd5KeyId?: number;
+  eigrpBandwidthPercent?: Record<number, number>;
+  eigrpSummaryAddresses?: Array<{ as: number; ip: string; mask: string; distance?: number }>;
   passiveInterface?: boolean;
   ipv6DhcpServer?: string;
   ipv6DhcpServerPool?: string; // Pool name for 'ipv6 dhcp server <pool>' on interface

@@ -23,8 +23,9 @@ A browser-based network simulator for learning switching, routing, wireless, IoT
 
 Bu kitapçık projenin tüm kullanıcı, CLI, protokol, laboratuvar ve özellik bilgilerinin birincil kaynağıdır. Diğer Markdown dosyaları yalnızca kısa başvuru, kurulum veya geliştirici ayrıntısı içerir; aynı bilginin güncel sürümü burada tutulmalıdır.
 
-### Güncel özellik durumu (v5.7.0)
+### Güncel özellik durumu (v5.8.0)
 
+- **📡 Cisco CLI EIGRP, OSPF & Donanım Komutları Tamamlama Paketi (v5.8.0):** `ip bandwidth-percent eigrp`, `ip summary-address eigrp`, `clear ip ospf process`, `area <id> authentication [message-digest]`, `show ip ospf interface`, `show ip ospf neighbor detail` ve gerçekçi donanım takibi sunan `show environment` (Power Supply, Fan, Sıcaklık, Voltaj) komutları eklendi.
 - **🏗️ 28 Kategori ve 49+ Örnek Proje Kataloğu (v5.7.0):** Otomatik Topoloji Üretici penceresinde 8 ana kategori (Temel, Topoloji, Veri Merkezi, Kablosuz, Servisler, Anahtarlama, Yönlendirme, Güvenlik) ve 28 hazır mimari senaryo (`scenarioGenerators.ts`, `topologyScenarios.ts`). Ofis Yazıcısı & Akıllı IoT Sensör, Python Ağ Otomasyonu (OOBM Filosu) ve Kurumsal DMZ Güvenlik Duvarı laboratuvarları (`office-printer-iot.ts`, `netauto-python-lab.ts`, `dmz-firewall-enterprise.ts`).
 - **📝 Yapılandırılmış Kılavuz & Açıklama Şablonu (v5.7.0):** Tüm örnek projeler ve üretilen senaryolar için 🎯 Amaç ve Senaryo Özeti, ⚙️ Yapılandırma Detayları, ⚠️ Arıza Belirtisi ve 🧪 Test & Doğrulama adımlarını içeren iki dilli (TR/EN) kanvas kılavuz notları.
 - **🛡️ Layer 2 Güvenlik Paketi (v5.5.0):** Dynamic ARP Inspection (`dai.ts`), IP Source Guard (`ipsg.ts`), Private VLAN (`pvlan.ts`), STP Root Guard / BPDU Filter ve Flex-Links active/standby failover paket engelleme motorları entegre edildi.
@@ -268,7 +269,7 @@ npm install && npm run dev
 
 | Metric / Metrik | Value / Değer |
 | --- | ---: |
-| Version / Sürüm | 5.7.0 |
+| Version / Sürüm | 5.8.0 |
 | Total Lines / Toplam Satır (src/) | ~202,800 |
 | Source Files / Kaynak Dosya | 908 |
 | Documentation Files / Dokümantasyon Dosya | 23 |
