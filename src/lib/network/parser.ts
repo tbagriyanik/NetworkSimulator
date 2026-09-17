@@ -1,4 +1,4 @@
-﻿// Network Command Parser
+// Network Command Parser
 import { CommandMode, ParsedCommand, CommandValidationResult, SwitchState } from './types';
 import { commandAliases } from './initialState';
 import { useAppStore } from '../store/appStore';
@@ -505,7 +505,7 @@ export function getInvalidCommandError(
     if (smartHint) {
       errorMsg += `\n\n📋 ${isTr ? 'Kullanım Formatı' : 'Syntax'}: ${smartHint.template}`;
       errorMsg += `\n💡 ${isTr ? 'Örnek' : 'Example'}: ${smartHint.example}`;
-      errorMsg += `\nâ„¹ï¸  ${smartHint.explanation[language]}`;
+      errorMsg += `\nℹ️  ${smartHint.explanation[language]}`;
     } else if (firstWord === 'interface' || firstWord === 'int') {
       errorMsg += isTr
         ? `\n💡 İpucu: "interface" komutundan sonra bir arayüz adı bekleniyor (Örn: "fa0/1").`

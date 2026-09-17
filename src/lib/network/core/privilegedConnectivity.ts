@@ -1,4 +1,4 @@
-﻿import { cliModeError } from './cliErrors';
+import { cliModeError } from './cliErrors';
 import type { CommandContext } from './commandTypes';
 import { checkConnectivity, getWirelessDistance } from '../connectivity';
 import type { PortSecurityViolation, TraversedPort } from '../connectivity/pathResolution/types';
@@ -40,7 +40,7 @@ export function generatePingLatencies(distance: number): { min: number; avg: num
 /**
  * Three probe times for a single traceroute hop, consistent with the path latency.
  * Wired hops stay at 1ms (<1 msec); wireless paths grow toward the destination RTT.
- * Only a bounded Â±1ms jitter is applied so the timing reflects the actual link.
+ * Only a bounded ±1ms jitter is applied so the timing reflects the actual link.
  */
 export function formatHopTimes(base: number): string {
     const fmt = (ms: number) => ms <= 1 ? '<1' : String(ms);
@@ -58,14 +58,38 @@ export function cmdPing(state: SwitchState, input: string, ctx: CommandContext):
         return { success: false, error: cliModeError() };
     }
 
-    const match = input.match(/^ping\s+([0-9a-fA-F:.]+|[\w.-]+)(?:\s+(\d+))?(?:\s+(\d+))?$/i);
-    if (!match) {
+    const vrfMatch = input.match(/\bvrf\s+(\S+)/i);
+    const sourceMatch = input.match(/\bsource\s+(\S+)/i);
+    const repeatMatch = input.match(/\brepeat\s+(\d+)/i);
+    const timeoutMatch = input.match(/\btimeout\s+(\d+)/i);
+    const sizeMatch = input.match(/\bsize\s+(\d+)/i);
+
+    const vrf = vrfMatch?.[1];
+    const source = sourceMatch?.[1];
+    const count = repeatMatch?.[1] || '5';
+    const timeout = timeoutMatch?.[1] || '2';
+    const size = sizeMatch?.[1] || '56';
+
+    // Extract target host by removing options
+    let cleanInput = input
+        .replace(/^ping\s+/i, '')
+        .replace(/\bvrf\s+\S+/gi, '')
+        .replace(/\bsource\s+\S+/gi, '')
+        .replace(/\brepeat\s+\d+/gi, '')
+        .replace(/\btimeout\s+\d+/gi, '')
+        .replace(/\bsize\s+\d+/gi, '')
+        .trim();
+
+    const positionalTokens = cleanInput.split(/\s+/).filter(Boolean);
+    const host = positionalTokens[0];
+
+    if (!host) {
         return { success: false, error: "% Invalid input detected at '^' marker." };
     }
 
-    const host = match[1];
-    const size = match[2] || '56';
-    const count = match[3] || '5';
+    // Positional fallback: ping <host> [size] [count]
+    const finalSize = sizeMatch ? size : (positionalTokens[1] || size);
+    const finalCount = repeatMatch ? count : (positionalTokens[2] || count);
 
     // If target looks like a dotted IPv4 (and is not purely a name), enforce octet range 0-255.
     if (/^[\d.]+$/.test(host) && host.split('.').length >= 2 && !isValidIPv4Format(host)) {
@@ -116,8 +140,8 @@ export function cmdPing(state: SwitchState, input: string, ctx: CommandContext):
 
         // Update interface statistics for all traversed ports
         if (connectivity.traversedPorts && connectivity.traversedPorts.length > 0) {
-            const numPackets = parseInt(count, 10) || 5;
-            const bytesPerPacket = parseInt(size, 10) || 56;
+            const numPackets = parseInt(finalCount, 10) || 5;
+            const bytesPerPacket = parseInt(finalSize, 10) || 56;
             const totalBytes = numPackets * bytesPerPacket;
 
             connectivity.traversedPorts.forEach((traversed: TraversedPort) => {
@@ -155,7 +179,9 @@ export function cmdPing(state: SwitchState, input: string, ctx: CommandContext):
 
         if (connectivity.success) {
             let output = `\nType escape sequence to abort.\n`;
-            output += `Sending ${count}, ${size}-byte ICMP Echos to ${host}, timeout is 2 seconds:\n`;
+            output += `Sending ${finalCount}, ${finalSize}-byte ICMP Echos to ${host}, timeout is ${timeout} seconds:\n`;
+            if (vrf) output += `VRF: ${vrf}\n`;
+            if (source) output += `Packet sent with a source address of ${source}\n`;
             const debugLines: string[] = [];
             const devices = (ctx.devices || []) as CanvasDevice[];
             const sourceDevice = ctx.sourceDeviceId ? devices.find(d => d.id === ctx.sourceDeviceId) : undefined;
@@ -422,12 +448,27 @@ export function cmdTraceroute(state: SwitchState, input: string, ctx: CommandCon
         return { success: false, error: cliModeError() };
     }
 
-    const match = input.match(/^traceroute\s+([0-9.]+|[\w.-]+)$/i);
-    if (!match) {
+    const numeric = /\bnumeric\b/i.test(input);
+    const sourceMatch = input.match(/\bsource\s+(\S+)/i);
+    const probeMatch = input.match(/\bprobe\s+(\d+)/i);
+    const ttlMatch = input.match(/\bttl\s+(\d+)(?:\s+(\d+))?/i);
+
+    const source = sourceMatch?.[1];
+    const maxTtl = ttlMatch?.[2] || ttlMatch?.[1] || '30';
+
+    let cleanInput = input
+        .replace(/^traceroute(?:\s+ip)?\s+/i, '')
+        .replace(/\bsource\s+\S+/gi, '')
+        .replace(/\bnumeric\b/gi, '')
+        .replace(/\btimeout\s+\d+/gi, '')
+        .replace(/\bprobe\s+\d+/gi, '')
+        .replace(/\bttl\s+\d+(\s+\d+)?/gi, '')
+        .trim();
+
+    const host = cleanInput.split(/\s+/).filter(Boolean)[0];
+    if (!host) {
         return { success: false, error: "% Invalid input detected at '^' marker." };
     }
-
-    const host = match[1];
 
     if (ctx?.sourceDeviceId && Array.isArray(ctx.devices)) {
         const connectivity = checkConnectivity(
@@ -446,7 +487,7 @@ export function cmdTraceroute(state: SwitchState, input: string, ctx: CommandCon
         // Update interface statistics for all traversed ports
         if (connectivity.traversedPorts && connectivity.traversedPorts.length > 0) {
             // traceroute sends 3 packets per hop by default
-            const numPackets = 3;
+            const numPackets = probeMatch?.[1] ? parseInt(probeMatch[1], 10) : 3;
             const bytesPerPacket = 40; // approx
             const totalBytes = numPackets * bytesPerPacket;
 
@@ -500,7 +541,8 @@ export function cmdTraceroute(state: SwitchState, input: string, ctx: CommandCon
             }
 
             let output = `\nType escape sequence to abort.\n`;
-            output += `Tracing the route to ${host} (${resolvedIp})\n`;
+            output += `Tracing the route to ${numeric ? resolvedIp : host} (${resolvedIp}), ${maxTtl} hops max, 40 byte packets\n`;
+            if (source) output += `Source interface: ${source}\n`;
 
             // Use the L3 routing hops
             const l3Hops = getL3Hops(

@@ -1,4 +1,4 @@
-﻿import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { generateRouterAdminPage } from '@/components/network/WifiControlPanel';
 import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
@@ -197,7 +197,7 @@ describe('WifiControlPanel', () => {
       },
     }, 'tr');
 
-    expect(htmlDisabled).toContain('â—‹ Devre Dışı');
+    expect(htmlDisabled).toContain('○ Devre Dışı');
   });
 
   it('renders multi-SSID management section and default profiles', () => {

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * eventPipeline.ts — Periodic Network Event Pipeline
  *
  * This module drives the simulation tick. On each call it:
@@ -32,7 +32,7 @@ import {
   type EigrpNeighborRecord,
 } from '@/lib/network/protocols';
 
-/** Simulated seconds per pipeline tick (wall-clock 250 ms â‰ˆ 0.25 simulated seconds) */
+/** Simulated seconds per pipeline tick (wall-clock 250 ms ≈ 0.25 simulated seconds) */
 const SIM_SECONDS_PER_TICK = 0.25;
 
 export function runNetworkEventPipeline(

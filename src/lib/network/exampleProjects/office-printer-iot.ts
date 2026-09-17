@@ -1,4 +1,4 @@
-﻿import {
+import {
   createSwitchDevice,
   createRouterDevice,
   createPcDevice,
@@ -58,7 +58,7 @@ const example = (isTr: boolean): ExampleProject => {
     http: {
       enabled: true,
       mode: 'simple',
-      content: '<h1>Office Climate Sensor</h1><p>Temperature: 22.5Â°C | Status: Optimal</p>'
+      content: '<h1>Office Climate Sensor</h1><p>Temperature: 22.5°C | Status: Optimal</p>'
     }
   };
 

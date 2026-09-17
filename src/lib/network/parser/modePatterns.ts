@@ -390,10 +390,10 @@ export const modePatterns: Record<string, CommandPattern> = {
     maxArgs: 1
   },
   'show ip ospf database': {
-    pattern: /^show\s+ip\s+ospf\s+database(?:\s+(\S+))?$/i,
+    pattern: /^show\s+ip\s+ospf\s+database(?:\s+([\w.-]+))?(?:\s+([\w.-]+))?(?:\s+([\w.-]+))?$/i,
     modes: ['user', 'privileged'],
     minArgs: 0,
-    maxArgs: 1
+    maxArgs: 3
   },
   'show ip eigrp': {
     pattern: /^show\s+ip\s+eigrp(?:\s+(\d+))?$/i,

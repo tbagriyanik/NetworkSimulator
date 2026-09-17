@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useCallback } from 'react';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
@@ -97,13 +97,13 @@ export function useTopologyIot({
     }
 
     // Add small random fluctuation to simulate real sensor readings
-    const tempFluctuation = (Math.random() - 0.5) * 2; // Â±1Â°C
-    const humidityFluctuation = (Math.random() - 0.5) * 4; // Â±2%
-    const lightFluctuation = (Math.random() - 0.5) * 10; // Â±5%
+    const tempFluctuation = (Math.random() - 0.5) * 2; // ±1°C
+    const humidityFluctuation = (Math.random() - 0.5) * 4; // ±2%
+    const lightFluctuation = (Math.random() - 0.5) * 10; // ±5%
 
     switch (sensorType) {
       case 'temperature':
-        return `${(baseTemp + tempFluctuation).toFixed(1)} Â°C`;
+        return `${(baseTemp + tempFluctuation).toFixed(1)} °C`;
       case 'humidity':
         return `${(baseHumidity + humidityFluctuation).toFixed(1)} %`;
       case 'light':

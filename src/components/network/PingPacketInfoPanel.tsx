@@ -338,7 +338,7 @@ export function PingPacketInfoPanel({
 
             {isPaused && !isDone && (
                 <span className={`${isMobile ? 'w-2 h-2 bg-warning-500 rounded-full animate-pulse shrink-0' : 'text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0 ' + (isDark ? 'bg-warning-900/50 text-warning-300 border border-warning-800/40' : 'bg-warning-50 text-warning-700 border border-warning-200')}`}>
-                    {!isMobile && <>{'â¸ '}{t.paused}</>}
+                    {!isMobile && <>{'⏸ '}{t.paused}</>}
                 </span>
             )}
         </div>

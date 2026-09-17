@@ -62,7 +62,7 @@ const example = (isTr: boolean): ExampleProject => {
       ? 'Temel ağ güvenliği için console, VTY ve enable parolaları yapılandırılmıştır.'
       : 'Basic network security with console, VTY, and enable passwords configured.',
     detail: isTr
-      ? 'Åifreler: enable secret: class, enable password: paswd, console: console, vty: vty123'
+      ? 'Şifreler: enable secret: class, enable password: paswd, console: console, vty: vty123'
       : 'Passwords: enable secret: class, enable password: paswd, console: console, vty: vty123',
     level: 'basic',
     data: baseProjectData(basicDevices, basicConnections, basicNotes, [{ id: 'switch-1', state: basicState }])

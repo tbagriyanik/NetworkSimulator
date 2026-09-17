@@ -140,7 +140,7 @@ export const ConnectionLine = memo(function ConnectionLine({
   const activeWirelessColor = isWireless && typeof connection.ssidIndex === 'number'
     ? wirelessSsidColors[connection.ssidIndex % wirelessSsidColors.length]
     : (CABLE_COLORS.wireless?.primary || colors.wirelessSsid[0]);
-  // Compute signal strength for wireless connections to sync cable visual with device Wiâ€‘Fi status.
+  // Compute signal strength for wireless connections to sync cable visual with device Wi-Fi status.
   // DeviceRenderer evaluates the client against ALL topology devices (nearest matching AP), so the
   // drawn link must use the same inputs — otherwise the cable and the device bars disagree. Both ends
   // are probed because a wireless cable can be drawn in either direction (client→AP or AP→client).

@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { Code, Copy, Check, Server, FileJson, Sparkles, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { handleRestApiRequest, type RestApiResponse } from '@/lib/network/restApiMock';
@@ -274,13 +274,13 @@ export function RestApiExplorerWindow({
             <div className="flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               <select
-                aria-label={isTr ? 'Hazır Åablonlar' : 'Preset Templates'}
+                aria-label={isTr ? 'Hazır Şablonlar' : 'Preset Templates'}
                 onChange={(e) => handleSelectTemplate(e.target.value)}
                 className={`text-xs px-2.5 py-1.5 rounded-lg border outline-none font-mono ${
                   isDark ? 'bg-secondary-900 border-secondary-700 text-emerald-400' : 'bg-secondary-100 border-secondary-300 text-emerald-700'
                 }`}
               >
-                <option value="">{isTr ? '-- Hazır Åablon Seç --' : '-- Preset Template --'}</option>
+                <option value="">{isTr ? '-- Hazır Şablon Seç --' : '-- Preset Template --'}</option>
                 {TEMPLATE_ENDPOINTS.map((tpl, i) => (
                   <option key={i} value={tpl.url}>{tpl.label}</option>
                 ))}

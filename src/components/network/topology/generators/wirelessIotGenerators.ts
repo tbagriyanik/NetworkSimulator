@@ -1,4 +1,4 @@
-﻿import type { CanvasDevice } from '../../NetworkTopology/types/networkTopology.types';
+import type { CanvasDevice } from '../../NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { createInitialState } from '@/lib/network/initialState';
 import { generateRouterPorts } from '../../networkTopology.portGenerators';
@@ -300,7 +300,7 @@ export function generateOfficePrinterIot(_pcCount: number): Ctx {
     y: 340,
     status: 'online',
     ports: [{ id: 'eth0', label: 'Eth0', status: 'connected' }],
-    services: { http: { enabled: true, mode: 'simple', content: '<h1>Climate Sensor Panel</h1><p>Temperature: 22.4Â°C | Humidity: 45%</p>' } },
+    services: { http: { enabled: true, mode: 'simple', content: '<h1>Climate Sensor Panel</h1><p>Temperature: 22.4°C | Humidity: 45%</p>' } },
   };
   ctx.devices.push(iotDev);
   connect(ctx, 'conn-sw-iot', 'iot-temp', 'eth0', null, 'sw-office', 'fa0/3', swState);

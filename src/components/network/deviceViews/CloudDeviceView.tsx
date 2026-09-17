@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useMemo } from 'react';
 import { Globe, Radio, Server, Activity, ArrowRightLeft, ShieldCheck } from 'lucide-react';
@@ -190,7 +190,7 @@ export function CloudDeviceView({
                     "text-[10px] px-2 py-0.5 rounded font-mono font-semibold",
                     isConnected ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "bg-secondary-800 text-secondary-400"
                   )}>
-                    {isConnected ? (isTr ? 'BAÄLI / UP' : 'CONNECTED / UP') : (isTr ? 'BOÅTA / DOWN' : 'DISCONNECTED')}
+                    {isConnected ? (isTr ? 'BAĞLI / UP' : 'CONNECTED / UP') : (isTr ? 'BOŞTA / DOWN' : 'DISCONNECTED')}
                   </span>
                 </div>
 

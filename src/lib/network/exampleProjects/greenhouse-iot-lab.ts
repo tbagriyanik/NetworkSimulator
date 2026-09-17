@@ -1,4 +1,4 @@
-﻿import { createInitialRouterState } from '../initialState';
+import { createInitialRouterState } from '../initialState';
 import { createPcDevice, createRouterDevice, createIotDevice, baseProjectData } from './helpers';
 ;
 ;
@@ -345,12 +345,12 @@ const example = (isTr: boolean): ExampleProject => {
   return {
     id: 'greenhouse-iot-lab',
     tag: isTr ? 'ÇEVRE' : 'ENV',
-    title: isTr ? '🌐± Sera Krokisi (Akıllı Tarım)' : '🌐± Greenhouse Sketch (Smart Farm)',
+    title: isTr ? '🌿 Sera Krokisi (Akıllı Tarım)' : '🌿 Greenhouse Sketch (Smart Farm)',
     description: isTr
       ? 'Dört çevresel sensör WPA2 güvenli WiFi ile sera izleme yapar.'
       : 'Four environmental sensors use WPA2 WiFi for greenhouse monitoring.',
     detail: isTr
-      ? 'SSID: GreenHouse-Network, Åifre: sera (WPA2), 4 sensör'
+      ? 'SSID: GreenHouse-Network, Şifre: sera (WPA2), 4 sensör'
       : 'SSID: GreenHouse-Network, Password: sera (WPA2), 4 sensors',
     level: 'intermediate',
     data: baseProjectData(greenhouseDevices, greenhouseConnections, greenhouseNotes, [

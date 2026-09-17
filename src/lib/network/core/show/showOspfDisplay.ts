@@ -231,18 +231,180 @@ export function cmdShowIpOspfNeighbor(state: SwitchState, input: string, _ctx: C
 /**
  * Show IP OSPF Database
  */
-export function cmdShowIpOspfDatabase(state: SwitchState, _input: string, ctx: CommandContext): CommandResult {
+export function cmdShowIpOspfDatabase(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
   if (state.routingProtocol !== 'ospf') {
     return { success: true, output: '\n% OSPF is not enabled\n' };
   }
 
   const routerId = state.ospfRouterId || state.ip || '192.168.1.1';
-  const areas = state.ospfAreas || [0];
+  const areas = state.ospfAreas && state.ospfAreas.length > 0 ? state.ospfAreas : [0];
   const deviceStates = ensureDeviceStatesMap(ctx.deviceStates);
+
+  // If local device isn't in deviceStates, ensure it's evaluated
+  if (ctx.sourceDeviceId && !deviceStates.has(ctx.sourceDeviceId)) {
+    deviceStates.set(ctx.sourceDeviceId, state);
+  }
 
   const lsdb = buildOSPFLinkStateDatabase(deviceStates);
 
+  // Fallback: If LSDB is empty for area 0, populate local router LSA
+  areas.forEach(area => {
+    if (!lsdb[area]) {
+      lsdb[area] = {
+        routerLSAs: new Map(),
+        summaryLSAs: new Map()
+      };
+    }
+    if (lsdb[area].routerLSAs.size === 0) {
+      const links = Object.values(state.ports || {}).filter(p => p.ipAddress && !p.shutdown).map(p => ({
+        id: p.ipAddress || '192.168.1.1',
+        data: p.subnetMask || '255.255.255.0',
+        type: 'stub' as const,
+        metric: p.ospfCost || 1
+      }));
+      lsdb[area].routerLSAs.set(routerId, {
+        id: routerId,
+        advRouter: routerId,
+        type: 1,
+        area,
+        sequence: 0x80000001,
+        ageNumber: 120,
+        isAbr: !!state.isAbr,
+        isAsbr: false,
+        links
+      });
+    }
+  });
+
+  const match = input.match(/show\s+ip\s+ospf\s+database(?:\s+(\S+))?(?:\s+(\S+))?/i);
+  const filterType = match?.[1]?.toLowerCase();
+  const filterId = match?.[2];
+
   let output = '\n            OSPF Router with ID (' + routerId + ') (Process ID 1)\n\n';
+
+  // 1. database-summary
+  if (filterType === 'database-summary' || filterType === 'summary-database') {
+    let totalRouters = 0;
+    let totalSummaries = 0;
+    areas.forEach(area => {
+      const areaData = lsdb[area];
+      const rCount = areaData?.routerLSAs.size || 0;
+      const sCount = areaData?.summaryLSAs.size || 0;
+      totalRouters += rCount;
+      totalSummaries += sCount;
+      output += `Area ${area} database summary\n`;
+      output += '  LSA Type           Count    Delete   Maxage\n';
+      output += `  Router             ${String(rCount).padEnd(8)} 0        0\n`;
+      output += `  Network            0        0        0\n`;
+      output += `  Summary Net        ${String(sCount).padEnd(8)} 0        0\n`;
+      output += `  Summary ASBR       0        0        0\n`;
+      output += `  Type-7 NSSA        0        0        0\n`;
+      output += `  Prefix             0        0        0\n`;
+      output += `  Total              ${String(rCount + sCount).padEnd(8)} 0        0\n\n`;
+    });
+    output += 'Process subtotal\n';
+    output += '  LSA Type           Count    Delete   Maxage\n';
+    output += `  Router             ${String(totalRouters).padEnd(8)} 0        0\n`;
+    output += `  Network            0        0        0\n`;
+    output += `  Summary Net        ${String(totalSummaries).padEnd(8)} 0        0\n`;
+    output += `  Summary ASBR       0        0        0\n`;
+    output += `  Type-5 AS External 0        0        0\n`;
+    output += `  Total              ${String(totalRouters + totalSummaries).padEnd(8)} 0        0\n`;
+    return { success: true, output };
+  }
+
+  // 2. router filter
+  if (filterType === 'router') {
+    areas.forEach(area => {
+      const areaData = lsdb[area];
+      if (!areaData) return;
+      output += `                Router Link States (Area ${area})\n\n`;
+      areaData.routerLSAs.forEach(lsa => {
+        if (filterId && lsa.id !== filterId && lsa.advRouter !== filterId) return;
+        output += `  LS age: ${lsa.ageNumber || 100}\n`;
+        output += `  Options: (No TOS-capability, DC)\n`;
+        output += `  LS Type: Router Links\n`;
+        output += `  Link State ID: ${lsa.id}\n`;
+        output += `  Advertising Router: ${lsa.advRouter}\n`;
+        output += `  LS Seq Number: 80000001\n`;
+        output += `  Checksum: 0x0000\n`;
+        output += `  Length: ${24 + (lsa.links.length * 12)}\n`;
+        output += `  Number of Links: ${lsa.links.length}\n\n`;
+        lsa.links.forEach(link => {
+          output += `    Link connected to: a Stub Network\n`;
+          output += `     (Link ID) Network/subnet number: ${link.id}\n`;
+          output += `     (Link Data) Network Mask: ${link.data}\n`;
+          output += `      Number of MTID metrics: 0\n`;
+          output += `       TOS 0 Metrics: ${link.metric}\n\n`;
+        });
+      });
+    });
+    return { success: true, output };
+  }
+
+  // 3. summary / asbr-summary filter
+  if (filterType === 'summary' || filterType === 'asbr-summary') {
+    areas.forEach(area => {
+      const areaData = lsdb[area];
+      if (!areaData) return;
+      output += `                Summary Net Link States (Area ${area})\n\n`;
+      if (areaData.summaryLSAs.size === 0) {
+        output += '  (No summary LSAs present in this area)\n\n';
+      }
+      areaData.summaryLSAs.forEach(lsa => {
+        if (filterId && lsa.id !== filterId && lsa.advRouter !== filterId) return;
+        output += `  LS age: ${lsa.ageNumber || 150}\n`;
+        output += `  Options: (No TOS-capability, DC)\n`;
+        output += `  LS Type: Summary Links(Network)\n`;
+        output += `  Link State ID: ${lsa.id} (Summary Network Number)\n`;
+        output += `  Advertising Router: ${lsa.advRouter}\n`;
+        output += `  LS Seq Number: 80000001\n`;
+        output += `  Checksum: 0x0000\n`;
+        output += `  Length: 28\n`;
+        output += `  Network Mask: /${getPrefixLength(lsa.mask)}\n`;
+        output += `  MTID: 0         Metric: ${lsa.metric}\n\n`;
+      });
+    });
+    return { success: true, output };
+  }
+
+  // 4. external filter
+  if (filterType === 'external') {
+    output += '                Type-5 AS External Link States\n\n';
+    const hasDefaultOrig = state.ospfDefaultOriginate?.enabled || state.defaultInformation === 'originate';
+    if (hasDefaultOrig) {
+      const metric = state.ospfDefaultOriginate?.metric ?? 20;
+      const metricType = state.ospfDefaultOriginate?.metricType ?? 2;
+      output += `  LS age: 80\n`;
+      output += `  Options: (No TOS-capability, DC)\n`;
+      output += `  LS Type: AS External Link\n`;
+      output += `  Link State ID: 0.0.0.0 (External Network Number)\n`;
+      output += `  Advertising Router: ${routerId}\n`;
+      output += `  LS Seq Number: 80000001\n`;
+      output += `  Checksum: 0x0000\n`;
+      output += `  Length: 36\n`;
+      output += `  Network Mask: /0\n`;
+      output += `  Metric Type: ${metricType} (Larger than any link state path)\n`;
+      output += `  MTID: 0         Metric: ${metric}\n`;
+      output += `  Forward Address: 0.0.0.0\n`;
+      output += `  External Route Tag: 0\n\n`;
+    } else {
+      output += '  (No AS external LSAs)\n\n';
+    }
+    return { success: true, output };
+  }
+
+  // 5. nssa-external filter
+  if (filterType === 'nssa-external') {
+    areas.forEach(area => {
+      output += `                Type-7 AS External Link States (Area ${area})\n\n`;
+      output += `  (No Type-7 NSSA external LSAs)\n\n`;
+    });
+    return { success: true, output };
+  }
+
+  // 6. self-originate filter or default overview
+  const isSelfOriginate = filterType === 'self-originate';
 
   areas.forEach(area => {
     const areaData = lsdb[area];
@@ -252,6 +414,7 @@ export function cmdShowIpOspfDatabase(state: SwitchState, _input: string, ctx: C
     output += 'Link ID         ADV Router      Age         Seq#       Checksum Link count\n';
 
     areaData.routerLSAs.forEach((lsa) => {
+      if (isSelfOriginate && lsa.advRouter !== routerId) return;
       output += `${lsa.id.padEnd(15)} ${lsa.advRouter.padEnd(15)} ${lsa.ageNumber.toString().padEnd(11)} 0x80000001 0x0000   ${lsa.links.length}\n`;
     });
 
@@ -259,10 +422,17 @@ export function cmdShowIpOspfDatabase(state: SwitchState, _input: string, ctx: C
       output += `\n                Summary Net Link States (Area ${area})\n\n`;
       output += 'Link ID         ADV Router      Age         Seq#       Checksum\n';
       areaData.summaryLSAs.forEach((lsa) => {
+        if (isSelfOriginate && lsa.advRouter !== routerId) return;
         output += `${lsa.id.padEnd(15)} ${lsa.advRouter.padEnd(15)} ${lsa.ageNumber.toString().padEnd(11)} 0x80000001 0x0000\n`;
       });
     }
   });
+
+  if (state.ospfDefaultOriginate?.enabled || state.defaultInformation === 'originate') {
+    output += '\n                Type-5 AS External Link States\n\n';
+    output += 'Link ID         ADV Router      Age         Seq#       Checksum Tag\n';
+    output += `${'0.0.0.0'.padEnd(15)} ${routerId.padEnd(15)} 80          0x80000001 0x0000   0\n`;
+  }
 
   return { success: true, output };
 }

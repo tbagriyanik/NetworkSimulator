@@ -1,4 +1,4 @@
-﻿import { createSwitchDevice, createPcDevice, createRouterDevice, connectPorts, baseProjectData } from './helpers';
+import { createSwitchDevice, createPcDevice, createRouterDevice, connectPorts, baseProjectData } from './helpers';
 import { createInitialState, createInitialRouterState } from '../initialState';
 import type { ExampleProject } from './types';
 import type { CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
@@ -9,7 +9,7 @@ import type { CanvasConnection, CanvasNote } from '@/components/network/NetworkT
  *   PC-1 (192.168.10.10) ve PC-2 (192.168.10.11) iç ağdadır.
  *   R1 gi0/0 → inside (192.168.10.1)
  *   R1 gi0/1 → outside (203.0.113.1)
- *   Statik NAT: PC-1 192.168.10.10 â†” 203.0.113.10 (birebir)
+ *   Statik NAT: PC-1 192.168.10.10 ↔ 203.0.113.10 (birebir)
  *   Dış ağda "Server" (203.0.113.100) bulunur.
  *
  * Test:
@@ -45,8 +45,8 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'nat-static-note',
       text: isTr
-        ? 'Amaç: Statik NAT ile iç IP adresini dış IP adresine birebir çevirmek.\n\nStatik NAT Kuralı:\n  PC-1 (192.168.10.10) â†” 203.0.113.10\n\nâœ… TEST ADIMLARI:\n\n1) R1 terminalinde NAT tablosunu gör:\n   R1# show ip nat translations\n\n2) PC-1\'den Server\'a ping at:\n   ping 203.0.113.100\n   → Başarılı olmalı (kaynak IP 203.0.113.10\'a çevrilir)\n\n3) Server\'dan PC-1\'e ping at:\n   ping 203.0.113.10\n   → PC-1\'e (192.168.10.10) ulaşmalı\n\n4) PC-2\'den Server\'a ping at:\n   ping 203.0.113.100\n   → Başarısız (PC-2 için NAT kaydı yok)\n\n5) NAT istatistikleri:\n   R1# show ip nat statistics'
-        : 'Goal: Map internal IP to external IP one-to-one with static NAT.\n\nStatic NAT Rule:\n  PC-1 (192.168.10.10) â†” 203.0.113.10\n\nâœ… TEST STEPS:\n\n1) View NAT table on R1:\n   R1# show ip nat translations\n\n2) From PC-1, ping Server:\n   ping 203.0.113.100\n   → Should succeed (source translated to 203.0.113.10)\n\n3) From Server, ping PC-1 via global IP:\n   ping 203.0.113.10\n   → Should reach PC-1 (192.168.10.10)\n\n4) From PC-2, ping Server:\n   ping 203.0.113.100\n   → Should fail (no NAT entry for PC-2)\n\n5) Check stats:\n   R1# show ip nat statistics',
+        ? 'Amaç: Statik NAT ile iç IP adresini dış IP adresine birebir çevirmek.\n\nStatik NAT Kuralı:\n  PC-1 (192.168.10.10) ↔ 203.0.113.10\n\n✅ TEST ADIMLARI:\n\n1) R1 terminalinde NAT tablosunu gör:\n   R1# show ip nat translations\n\n2) PC-1\'den Server\'a ping at:\n   ping 203.0.113.100\n   → Başarılı olmalı (kaynak IP 203.0.113.10\'a çevrilir)\n\n3) Server\'dan PC-1\'e ping at:\n   ping 203.0.113.10\n   → PC-1\'e (192.168.10.10) ulaşmalı\n\n4) PC-2\'den Server\'a ping at:\n   ping 203.0.113.100\n   → Başarısız (PC-2 için NAT kaydı yok)\n\n5) NAT istatistikleri:\n   R1# show ip nat statistics'
+        : 'Goal: Map internal IP to external IP one-to-one with static NAT.\n\nStatic NAT Rule:\n  PC-1 (192.168.10.10) ↔ 203.0.113.10\n\n✅ TEST STEPS:\n\n1) View NAT table on R1:\n   R1# show ip nat translations\n\n2) From PC-1, ping Server:\n   ping 203.0.113.100\n   → Should succeed (source translated to 203.0.113.10)\n\n3) From Server, ping PC-1 via global IP:\n   ping 203.0.113.10\n   → Should reach PC-1 (192.168.10.10)\n\n4) From PC-2, ping Server:\n   ping 203.0.113.100\n   → Should fail (no NAT entry for PC-2)\n\n5) Check stats:\n   R1# show ip nat statistics',
       x: 770,
       y: 50,
       width: 520,
@@ -119,8 +119,8 @@ const example = (isTr: boolean): ExampleProject => {
     tag: 'NAT',
     title: isTr ? 'NAT Static' : 'NAT Static',
     description: isTr
-      ? 'Static NAT ile birebir adres eşlemesi (PC-1 â†” 203.0.113.10).'
-      : 'One-to-one address mapping with static NAT (PC-1 â†” 203.0.113.10).',
+      ? 'Static NAT ile birebir adres eşlemesi (PC-1 ↔ 203.0.113.10).'
+      : 'One-to-one address mapping with static NAT (PC-1 ↔ 203.0.113.10).',
     detail: 'ip nat inside source static 192.168.10.10 203.0.113.10',
     level: 'intermediate',
     data: baseProjectData(devices, connections, notes, [

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * packetPipeline.ts — Unified Packet Processing Pipeline
  *
  * Implements the single canonical packet forwarding chain:
@@ -159,7 +159,7 @@ function checkVlan(port: Port, frame: NetworkPacketFrame): { allowed: boolean; r
     allowed,
     reason: allowed
       ? `Access port VLAN ${portVlan} OK`
-      : `VLAN mismatch: frame VLAN ${fvlan} â‰  access VLAN ${portVlan}`
+      : `VLAN mismatch: frame VLAN ${fvlan} ≠ access VLAN ${portVlan}`
   };
 }
 
@@ -279,7 +279,7 @@ function resolveEgress(
 /**
  * Run the full pipeline for a single hop (one device).
  *
- * @param hopIndex  Position in the path (0 = source, 1 = first intermediate, â€¦)
+ * @param hopIndex  Position in the path (0 = source, 1 = first intermediate, ...)
  * @param frame     The packet frame arriving at this device
  * @param device    The CanvasDevice for this hop
  * @param state     The SwitchState for this hop

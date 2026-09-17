@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import {
@@ -122,7 +122,7 @@ export function PhysicalDeviceView({
         <div className="flex items-center gap-3">
           <div className="text-right">
             <div className="text-[11px] font-semibold text-slate-400">
-              {isTR ? 'Åasi Güç Anahtarı' : 'Chassis Power Switch'}
+              {isTR ? 'Şasi Güç Anahtarı' : 'Chassis Power Switch'}
             </div>
             <div className="text-[10px] text-slate-500">
               {isTR ? '(Modül değişimi için kapatın)' : '(Turn off for hot-swap)'}
@@ -223,7 +223,7 @@ export function PhysicalDeviceView({
                         {installedMod.badge}
                       </span>
                     ) : (
-                      <span className="text-slate-500 italic text-[9px]">{isTR ? 'BOÅ YUVA' : 'EMPTY BAY'}</span>
+                      <span className="text-slate-500 italic text-[9px]">{isTR ? 'BOŞ YUVA' : 'EMPTY BAY'}</span>
                     )}
                   </div>
 

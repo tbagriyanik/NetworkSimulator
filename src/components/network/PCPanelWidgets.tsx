@@ -205,7 +205,7 @@ export const IoTSensorDisplay = ({
         displayStr = language === 'tr' ? 'PASİF' : 'PASSIVE';
     } else {
         switch (sensorType) {
-            case 'temperature': displayStr = `${latestVal.toFixed(1)} Â°C`; break;
+            case 'temperature': displayStr = `${latestVal.toFixed(1)} °C`; break;
             case 'humidity': displayStr = `${latestVal.toFixed(1)} %`; break;
             case 'light': displayStr = `${Math.round(latestVal)} lx`; break;
             case 'sound': displayStr = `${Math.round(latestVal)} dB`; break;
@@ -268,7 +268,7 @@ export const IoTSensorDisplay = ({
                     {!isPassive && (
                         <div className="text-xs text-accent-500/80 font-mono">
                             {latestVal.toFixed(isDigital ? 0 : 1)}{' '}
-                            {isDigital ? '' : (sensorType === 'temperature' ? 'Â°C' : sensorType === 'humidity' ? '%' : sensorType === 'light' ? 'lx' : 'dB')}
+                            {isDigital ? '' : (sensorType === 'temperature' ? '°C' : sensorType === 'humidity' ? '%' : sensorType === 'light' ? 'lx' : 'dB')}
                         </div>
                     )}
                 </div>

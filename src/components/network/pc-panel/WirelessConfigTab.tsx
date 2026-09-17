@@ -201,7 +201,7 @@ export function WirelessConfigTab({
                 {wifiSSID && (
                   <button type="button" onClick={() => { setWifiSSID(''); setWifiBSSID(''); setSsidDropdownOpen(false); }} className="text-secondary-200 hover:text-white text-xs">✕</button>
                 )}
-                <button type="button" onClick={() => setSsidDropdownOpen(o => !o)} className="text-secondary-200 hover:text-white text-xs">â–¾</button>
+                <button type="button" onClick={() => setSsidDropdownOpen(o => !o)} className="text-secondary-200 hover:text-white text-xs">▾</button>
               </div>
               {ssidDropdownOpen && (
                 <div className={cn(
@@ -606,8 +606,8 @@ export function WirelessConfigTab({
                     const apCh = formatChannelDisplay(mismatchedApChannel, language);
                     const clientCh = formatChannelDisplay(wifiChannel, language);
                     return language === 'tr'
-                      ? `Kanal Uyuşmazlığı: AP (${apCh}) â‰  PC (${clientCh})`
-                      : `Channel Mismatch: AP (${apCh}) â‰  PC (${clientCh})`;
+                      ? `Kanal Uyuşmazlığı: AP (${apCh}) ≠ PC (${clientCh})`
+                      : `Channel Mismatch: AP (${apCh}) ≠ PC (${clientCh})`;
                   }
                   return wifiSSID
                     ? (language === 'tr' ? `Ağ bulunamadı: ${wifiSSID}` : `Network not found: ${wifiSSID}`)

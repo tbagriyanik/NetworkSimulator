@@ -148,7 +148,6 @@ export interface SwitchState {
   coppConfig?: CoppConfig;
   eigrpNamedInstances?: Record<string, EigrpNamedInstance>;
   ospfVirtualLinks?: Record<string, OspfVirtualLinkConfig>;
-  ospfAreaAuth?: Record<string, string>;
   bootTime: number;
   // New optional properties for extended features
   domainName?: string;
@@ -280,6 +279,22 @@ export interface SwitchState {
   routingProtocol?: 'none' | 'rip' | 'ospf' | 'ripng' | 'ospfv3' | 'eigrp' | 'bgp'; // Routing protocol
   ripVersion?: 1 | 2;                 // RIP version configured in router mode
   autoSummary?: boolean;           // Auto-summary for routing protocols
+  ospfProcessId?: string | number; // OSPF process ID
+  ospfRouterId?: string;           // OSPF Router ID
+  ospfAreas?: number[];            // OSPF active areas
+  ospfAreaAuth?: Record<string, 'simple' | 'md5'>; // OSPF area authentication configuration
+  ospfStubAreas?: string[];        // OSPF stub areas
+  ospfTotallyStubAreas?: string[]; // OSPF totally stubby areas (stub no-summary)
+  ospfNssaAreas?: string[];        // OSPF NSSA areas
+  ospfTotallyNssaAreas?: string[]; // OSPF totally NSSA areas (nssa no-summary)
+  ospfDefaultOriginate?: {         // OSPF default-information originate
+    enabled: boolean;
+    always?: boolean;
+    metric?: number;
+    metricType?: 1 | 2;
+  };
+  isAbr?: boolean;                 // Area Border Router flag
+  ip?: string;                     // Device primary IP
   ospfNeighbors?: string[];        // OSPF neighbor IDs/IPs
   eigrpAs?: string;                // EIGRP AS number
   eigrpStub?: {                    // EIGRP Stub Routing (eigrp stub [connected|summary|static|redistributed|receive-only])
@@ -423,10 +438,7 @@ export interface SwitchState {
     name: string;
     ssid: string;
   }>;
-  ip?: string; // Device management/primary IP
-  ospfProcessId?: string;
   ospfv3ProcessId?: string;
-  ospfRouterId?: string;
   sshTimeout?: number;
   sshAuthenticationRetries?: number;
   dhcpOption82?: boolean;
@@ -485,13 +497,6 @@ export interface SwitchState {
     action: 'inspect' | 'pass' | 'drop';
   }>;
 
-  // OSPF areas
-  ospfAreas?: number[];
-  ospfStubAreas?: string[];
-  ospfTotallyStubAreas?: string[];
-  ospfNssaAreas?: string[];
-  ospfTotallyNssaAreas?: string[];
-  isAbr?: boolean;
   // World mode for dot11d
   worldModeDot11d?: string;
   // IoT specific configuration

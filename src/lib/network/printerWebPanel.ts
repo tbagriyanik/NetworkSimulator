@@ -1,4 +1,4 @@
-﻿import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
+import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { colors, withAlpha } from '@/lib/design-tokens/colors';
 
 export function generatePrinterWebPanelContent(device: CanvasDevice, language: string): string {
@@ -29,7 +29,7 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
           </div>
           <div style="text-align:right;display:flex;align-items:center;gap:10px;">
             <span style="display:inline-block;padding:4px 12px;border-radius:9999px;background:${device.status === 'offline' ? withAlpha(colors.status.offline, 0.2) : withAlpha(colors.status.online, 0.2)};color:${device.status === 'offline' ? colors.terminal.error : colors.status.online};font-size:12px;font-weight:600;">
-              â— ${device.status === 'offline' ? (isTr ? 'Çevrimdışı / Kapalı' : 'Offline / Disabled') : (isTr ? 'Çevrimiçi / Hazır' : 'Online / Ready')}
+              ● ${device.status === 'offline' ? (isTr ? 'Çevrimdışı / Kapalı' : 'Offline / Disabled') : (isTr ? 'Çevrimiçi / Hazır' : 'Online / Ready')}
             </span>
             <button type="button"
               onclick="if(window.parent) window.parent.postMessage({type:'TOGGLE_PRINTER_WIFI',deviceId:'${device.id}'},'*')"
@@ -37,7 +37,7 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
               onmouseover="this.style.opacity='0.8'"
               onmouseout="this.style.opacity='1'"
             >
-              <span>${device.wifi?.enabled !== false ? '🔌' : 'âš¡'}</span>
+              <span>${device.wifi?.enabled !== false ? '🔌' : '⚡'}</span>
               ${isTr ? (device.wifi?.enabled !== false ? 'Bağlantıyı Kapat' : 'Bağlantıyı Aç') : (device.wifi?.enabled !== false ? 'Disconnect Network' : 'Connect Network')}
             </button>
           </div>
@@ -55,7 +55,7 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
           </div>
           <div style="background:${colors.topology.bg};border:1px solid ${colors.topology.gridLine};border-radius:10px;padding:12px;display:flex;flex-direction:column;justify-content:space-between;">
             <div>
-              <div style="font-size:11px;color:${colors.cables.console};text-transform:uppercase;font-weight:600;">Wiâ€‘Fi Network (SSID)</div>
+              <div style="font-size:11px;color:${colors.cables.console};text-transform:uppercase;font-weight:600;">Wi-Fi Network (SSID)</div>
               <div style="font-family:'Geist Mono','Courier New',monospace;font-size:14px;color:${device.wifi?.enabled !== false ? colors.purple[500] : colors.topology.subText};margin-top:4px;font-weight:600;">
                 📶 ${wifiSsid || (isTr ? '(Devre Dışı)' : '(Disabled)')}
               </div>
@@ -66,7 +66,7 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
               onmouseover="this.style.opacity='0.8'"
               onmouseout="this.style.opacity='1'"
             >
-              ${isTr ? (device.wifi?.enabled !== false ? 'âŒ Wiâ€‘Fi (SSID) Kapat' : 'âœ… Wiâ€‘Fi (SSID) Aç') : (device.wifi?.enabled !== false ? 'âŒ Disable Wiâ€‘Fi SSID' : 'âœ… Enable Wiâ€‘Fi SSID')}
+              ${isTr ? (device.wifi?.enabled !== false ? '❌ Wi-Fi (SSID) Kapat' : '✅ Wi-Fi (SSID) Aç') : (device.wifi?.enabled !== false ? '❌ Disable Wi-Fi SSID' : '✅ Enable Wi-Fi SSID')}
             </button>
           </div>
           <div style="background:${colors.topology.bg};border:1px solid ${colors.topology.gridLine};border-radius:10px;padding:12px;">
@@ -103,7 +103,7 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
         <!-- Print Server Settings & Configuration -->
         <div style="background:${colors.topology.bg};border:1px solid ${colors.topology.gridLine};border-radius:12px;padding:16px;margin-bottom:24px;">
           <h2 style="margin:0 0 12px 0;font-size:14px;font-weight:600;color:${colors.topology.noteText};display:flex;align-items:center;gap:8px;">
-            <span>âš™ï¸</span> ${isTr ? 'Yazıcı Sunucusu Yapılandırması & Ayarlar' : 'Print Server Configuration & Settings'}
+            <span>⚙️</span> ${isTr ? 'Yazıcı Sunucusu Yapılandırması & Ayarlar' : 'Print Server Configuration & Settings'}
           </h2>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;font-size:12px;">
             <div style="background:${colors.topology.canvasBg};border:1px solid ${colors.topology.gridLine};border-radius:8px;padding:12px;">

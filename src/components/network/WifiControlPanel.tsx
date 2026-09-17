@@ -186,7 +186,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
           <h3>${isTurkish ? 'Mevcut Durum' : 'Current Status'}</h3>
           <p>${wifi.enabled ? (isTurkish ? 'WiFi aktif ve çoklu SSID yayınları açık' : 'WiFi is active and multi-SSID broadcasting is live') : (isTurkish ? 'WiFi şu anda devre dışı' : 'WiFi is currently disabled')}</p>
         </div>
-        <span class="status-badge">${wifi.enabled ? (isTurkish ? 'â— Çevrimiçi' : 'â— Online') : (isTurkish ? 'â—‹ Çevrimdışı' : 'â—‹ Offline')}</span>
+        <span class="status-badge">${wifi.enabled ? (isTurkish ? '● Çevrimiçi' : '● Online') : (isTurkish ? '○ Çevrimdışı' : '○ Offline')}</span>
       </div>
       
       <h2 class="panel-title">${isTurkish ? 'Temel Kablosuz Ayarları' : 'Basic Wireless Settings (Primary SSID)'}</h2>
@@ -233,7 +233,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
         
         <div class="actions">
           <button type="submit" class="btn btn-primary">💾 ${isTurkish ? 'Ana Ayarları Kaydet' : 'Save Primary Settings'}</button>
-          <button type="button" class="btn btn-secondary" onclick="location.reload()">â†º ${isTurkish ? 'Sıfırla' : 'Reset'}</button>
+          <button type="button" class="btn btn-secondary" onclick="location.reload()">↺ ${isTurkish ? 'Sıfırla' : 'Reset'}</button>
         </div>
       </form>
 
@@ -247,7 +247,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
 
       <div style="background:${colors.common.white};padding:20px;border-radius:10px;border:1px solid var(--color-secondary-200);margin-bottom:25px;">
         <h3 style="margin:0 0 12px 0;font-size:14px;color:var(--color-secondary-900);" id="ssid-form-title">
-          â• ${isTurkish ? 'Yeni SSID Profili Ekle' : 'Add New SSID Profile'}
+          ➕ ${isTurkish ? 'Yeni SSID Profili Ekle' : 'Add New SSID Profile'}
         </h3>
         <input type="hidden" id="edit-ssid-id" value="">
         
@@ -276,7 +276,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
             <select id="profile-security" onchange="var pWrap = document.getElementById('profile-password-wrap'); if(pWrap) pWrap.style.display = this.value === 'open' ? 'none' : 'block';">
               <option value="wpa2">${isTurkish ? 'WPA2-PSK (Kişisel)' : 'WPA2-PSK (Personal)'}</option>
               <option value="wpa3">${isTurkish ? 'WPA3-SAE (Yüksek Güvenlik)' : 'WPA3-SAE (High Security)'}</option>
-              <option value="open">${isTurkish ? 'Açık (Åifresiz)' : 'Open (No password)'}</option>
+              <option value="open">${isTurkish ? 'Açık (Şifresiz)' : 'Open (No password)'}</option>
               <option value="wep">WEP</option>
             </select>
           </div>
@@ -303,7 +303,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
             💾 ${isTurkish ? 'SSID Profilini Kaydet' : 'Save SSID Profile'}
           </button>
           <button type="button" class="btn btn-secondary" onclick="resetSsidForm()">
-            â†º ${isTurkish ? 'Formu Temizle' : 'Clear Form'}
+            ↺ ${isTurkish ? 'Formu Temizle' : 'Clear Form'}
           </button>
         </div>
       </div>
@@ -328,7 +328,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
             <h3>${isTurkish ? 'WiFi Durumu' : 'WiFi Status'}</h3>
             <p>${wifi.enabled ? (isTurkish ? 'Aktif ve Yayın Yapıyor' : 'Active and Broadcasting') : (isTurkish ? 'Devre Dışı' : 'Disabled')}</p>
           </div>
-          <span class="status-badge">${wifi.enabled ? (isTurkish ? 'â— Çevrimiçi' : 'â— Online') : (isTurkish ? 'â—‹ Çevrimdışı' : 'â—‹ Offline')}</span>
+          <span class="status-badge">${wifi.enabled ? (isTurkish ? '● Çevrimiçi' : '● Online') : (isTurkish ? '○ Çevrimdışı' : '○ Offline')}</span>
         </div>
         <div class="status-card">
           <div class="status-info">
@@ -354,7 +354,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
           <div><strong>${isTurkish ? 'Güvenlik' : 'Security'}:</strong> ${sanitizeHTML(wifi.security.toUpperCase())}</div>
           <div><strong>${isTurkish ? 'Kanal' : 'Channel'}:</strong> ${sanitizeHTML(wifi.channel || 'Auto')}</div>
           <div><strong>${isTurkish ? 'Mod' : 'Mode'}:</strong> ${sanitizeHTML(wifi.mode.toUpperCase())}</div>
-          <div style="grid-column: 1 / -1;"><strong>${isTurkish ? 'MAC Filtresi' : 'MAC Filter'}:</strong> ${wifi.macFilterEnabled ? (wifi.macFilterMode === 'deny' ? (isTurkish ? 'â— Etkin (Engelleme: ' + (wifi.macFilterList?.length || 0) + ' adres)' : 'â— Enabled (Deny: ' + (wifi.macFilterList?.length || 0) + ' items)') : (isTurkish ? 'â— Etkin (Erişim: ' + (wifi.macFilterList?.length || 0) + ' adres)' : 'â— Enabled (Allow: ' + (wifi.macFilterList?.length || 0) + ' items)')) : (isTurkish ? 'â—‹ Devre Dışı' : 'â—‹ Disabled')}</div>
+          <div style="grid-column: 1 / -1;"><strong>${isTurkish ? 'MAC Filtresi' : 'MAC Filter'}:</strong> ${wifi.macFilterEnabled ? (wifi.macFilterMode === 'deny' ? (isTurkish ? '● Etkin (Engelleme: ' + (wifi.macFilterList?.length || 0) + ' adres)' : '● Enabled (Deny: ' + (wifi.macFilterList?.length || 0) + ' items)') : (isTurkish ? '● Etkin (Erişim: ' + (wifi.macFilterList?.length || 0) + ' adres)' : '● Enabled (Allow: ' + (wifi.macFilterList?.length || 0) + ' items)')) : (isTurkish ? '○ Devre Dışı' : '○ Disabled')}</div>
         </div>
       </div>
     </div>
@@ -367,7 +367,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
       <div style="background:${colors.common.white};border:1px solid var(--color-secondary-200);border-radius:10px;padding:20px;margin-bottom:24px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
           <div>
-            <h3 style="margin:0 0 4px 0;font-size:16px;color:var(--color-secondary-900);">🛡️ ${isTurkish ? 'Kablosuz MAC Adresi Filtreleme' : 'Wireless MAC Address Filtering'}</h3>
+            <h3 style="margin:0 0 4px 0;font-size:16px;color:var(--color-secondary-900);">🛡️  ${isTurkish ? 'Kablosuz MAC Adresi Filtreleme' : 'Wireless MAC Address Filtering'}</h3>
             <p style="margin:0;font-size:13px;color:var(--color-secondary-500);">${isTurkish ? 'Kablosuz ağa yalnızca izin verilen cihazların erişmesini sağlayın veya belirli cihazları engelleyin.' : 'Allow only permitted devices to access the wireless network or block specific devices.'}</p>
           </div>
           <label class="switch">
@@ -395,7 +395,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
             <label style="display:block;font-weight:600;font-size:13px;margin-bottom:6px;">${isTurkish ? 'MAC Adresi Ekle:' : 'Add MAC Address:'}</label>
             <div style="display:flex;gap:8px;">
               <input type="text" id="manual-mac-input" placeholder="00:11:22:33:44:55">
-              <button type="button" class="btn btn-secondary" onclick="addManualMac()">â• ${isTurkish ? 'Ekle' : 'Add'}</button>
+              <button type="button" class="btn btn-secondary" onclick="addManualMac()">➕ ${isTurkish ? 'Ekle' : 'Add'}</button>
             </div>
           </div>
 

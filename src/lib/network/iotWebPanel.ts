@@ -470,7 +470,7 @@ export const generateIotWebPanelContent = (
 
           <div id="deviceSection" class="${isAuth ? '' : 'hidden'}">
             <button type="button" class="settings-icon" id="settingsToggle">
-              âš™ï¸
+              ⚙️ 
             </button>
             <div id="settingsPopup" class="settings-popup">
               <div class="settings-popup-title">${isTurkish ? 'Ayarlar' : 'Settings'}</div>
@@ -812,7 +812,7 @@ export const generateIotDevicePageContent = (
           ${`
           <div class="programming-section ${isPoweredOff ? 'toggle-disabled' : ''}">
             <div class="programming-title">
-              <span>âš™ï¸ ${isTurkish ? 'Basit Programlama' : 'Simple Programming'}</span>
+              <span>⚙️ ${isTurkish ? 'Basit Programlama' : 'Simple Programming'}</span>
             </div>
 
             <div class="rule-form">

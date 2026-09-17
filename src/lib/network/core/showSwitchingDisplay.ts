@@ -1,4 +1,4 @@
-﻿import type { CommandContext } from './commandTypes';
+import type { CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult } from '../types';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { detectEtherChannelBundles, getLoadBalanceAlgorithm, formatLoadBalance } from '../etherchannel';
@@ -225,6 +225,7 @@ export function cmdShowCdpNeighbors(
           managementIp = '0.0.0.0';
         }
 
+        const nativeVlan = neighborState?.ports?.[remotePort]?.vlan || 1;
         output += `-------------------------\n`;
         output += `Device ID: ${connectedDevice.name}\n`;
         output += `Entry address(es):\n`;
@@ -235,6 +236,8 @@ export function cmdShowCdpNeighbors(
         output += `Version :\n${version}\n\n`;
         output += `advertisement version: 2\n`;
         output += `Duplex: full\n`;
+        output += `Native VLAN: ${nativeVlan}\n`;
+        output += `VTP Management Domain: ''\n`;
       }
     });
 

@@ -95,18 +95,18 @@ export const systemPatterns: Record<string, CommandPattern> = {
 
   // Ping
   'ping': {
-    pattern: /^ping\s+([0-9a-fA-F:.]+|[\w.-]+)(\s+(repeat\s+\d+|size\s+\d+|timeout\s+\d+))*$/i,
+    pattern: /^ping(?:\s+vrf\s+\S+)?\s+([0-9a-fA-F:.]+|[\w.-]+)(.*)$/i,
     modes: ['user', 'privileged'],
     minArgs: 1,
-    maxArgs: 6
+    maxArgs: 10
   },
 
   // Traceroute
   'traceroute': {
-    pattern: /^traceroute\s+([0-9a-fA-F:.]+|[\w.-]+)$/i,
+    pattern: /^traceroute(?:\s+ip)?\s+([0-9a-fA-F:.]+|[\w.-]+)(.*)$/i,
     modes: ['privileged'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 10
   },
 
   // Tracert (traceroute equivalent)
