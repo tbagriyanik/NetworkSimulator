@@ -10,6 +10,7 @@ describe('Extended CLI Command Audit Fixes Tests', () => {
     const base = createInitialState('Router-Test', 'NS-L3-24PS');
     return {
       ...base,
+      deviceType: 'router',
       currentMode: 'privileged',
       ipRouting: true,
       routingProtocol: 'ospf',
@@ -17,9 +18,9 @@ describe('Extended CLI Command Audit Fixes Tests', () => {
       ospfRouterId: '10.0.0.1',
       ports: {
         ...base.ports,
-        'GigabitEthernet0/0': {
-          id: 'gigabitethernet0/0',
-          name: 'GigabitEthernet0/0',
+        'gi0/1': {
+          id: 'gi0/1',
+          name: 'GigabitEthernet0/1',
           status: 'connected',
           vlan: 1,
           mode: 'routed',
@@ -167,11 +168,11 @@ describe('Extended CLI Command Audit Fixes Tests', () => {
     it('should output rich Cisco details for connected devices', () => {
       const state = createBaseState();
       const devices: CanvasDevice[] = [
-        { id: 'dev-1', name: 'R1', type: 'router', x: 0, y: 0, ip: '192.168.1.1', status: 'online', ports: [] },
-        { id: 'dev-2', name: 'SW1', type: 'switchL2', x: 100, y: 100, ip: '', status: 'online', ports: [] }
+        { id: 'dev-1', name: 'R1', type: 'router', x: 0, y: 0, ip: '192.168.1.1', status: 'online', ports: [{ id: 'gi0/1', label: 'GigabitEthernet0/1', status: 'connected' }] },
+        { id: 'dev-2', name: 'SW1', type: 'switchL2', x: 100, y: 100, ip: '', status: 'online', ports: [{ id: 'fa0/1', label: 'FastEthernet0/1', status: 'connected' }] }
       ];
       const connections: CanvasConnection[] = [
-        { id: 'c1', sourceDeviceId: 'dev-1', sourcePort: 'GigabitEthernet0/0', targetDeviceId: 'dev-2', targetPort: 'GigabitEthernet0/1', cableType: 'straight', active: true }
+        { id: 'c1', sourceDeviceId: 'dev-1', sourcePort: 'gi0/1', targetDeviceId: 'dev-2', targetPort: 'fa0/1', cableType: 'straight', active: true }
       ];
       const deviceStates = new Map<string, SwitchState>([
         ['dev-1', state],
@@ -183,7 +184,7 @@ describe('Extended CLI Command Audit Fixes Tests', () => {
       expect(res.output).toContain('Device ID: SW1');
       expect(res.output).toContain('Entry address(es):');
       expect(res.output).toContain('Platform: NS-L2-24TT-L');
-      expect(res.output).toContain('Interface: GigabitEthernet0/0,  Port ID (outgoing port): GigabitEthernet0/1');
+      expect(res.output).toContain('Interface: gi0/1,  Port ID (outgoing port): fa0/1');
       expect(res.output).toContain('Native VLAN: 1');
       expect(res.output).toContain('Total cdp entries displayed : 1');
     });
@@ -192,57 +193,103 @@ describe('Extended CLI Command Audit Fixes Tests', () => {
   describe('5. traceroute extended options', () => {
     it('should parse and execute traceroute with source, numeric, timeout', () => {
       const state = createBaseState();
+      const dev2State: SwitchState = {
+        ...createBaseState(),
+        hostname: 'R2',
+        ip: '192.168.1.2',
+        ports: {
+          ...createBaseState().ports,
+          'gi0/1': {
+            id: 'gi0/1',
+            name: 'GigabitEthernet0/1',
+            status: 'connected',
+            vlan: 1,
+            mode: 'routed',
+            duplex: 'auto',
+            speed: 'auto',
+            shutdown: false,
+            type: 'gigabitethernet',
+            ipAddress: '192.168.1.2',
+            subnetMask: '255.255.255.0'
+          }
+        }
+      };
       const devices: CanvasDevice[] = [
-        { id: 'dev-1', name: 'R1', type: 'router', x: 0, y: 0, ip: '192.168.1.1', status: 'online', ports: [] },
-        { id: 'dev-2', name: 'R2', type: 'router', x: 100, y: 100, ip: '192.168.1.2', status: 'online', ports: [] }
+        { id: 'dev-1', name: 'R1', type: 'router', x: 0, y: 0, ip: '192.168.1.1', status: 'online', ports: [{ id: 'gi0/1', label: 'GigabitEthernet0/1', status: 'connected' }] },
+        { id: 'dev-2', name: 'R2', type: 'router', x: 100, y: 100, ip: '192.168.1.2', status: 'online', ports: [{ id: 'gi0/1', label: 'GigabitEthernet0/1', status: 'connected' }] }
       ];
       const connections: CanvasConnection[] = [
-        { id: 'c1', sourceDeviceId: 'dev-1', sourcePort: 'GigabitEthernet0/0', targetDeviceId: 'dev-2', targetPort: 'GigabitEthernet0/0', cableType: 'straight', active: true }
+        { id: 'c1', sourceDeviceId: 'dev-1', sourcePort: 'gi0/1', targetDeviceId: 'dev-2', targetPort: 'gi0/1', cableType: 'straight', active: true }
       ];
       const deviceStates = new Map<string, SwitchState>([
         ['dev-1', state],
-        ['dev-2', { ...createBaseState(), hostname: 'R2', ip: '192.168.1.2' }]
+        ['dev-2', dev2State]
       ]);
 
-      const parsed = parseCommand('traceroute 192.168.1.2 source GigabitEthernet0/0 numeric timeout 2 probe 3', 'privileged');
+      const parsed = parseCommand('traceroute 192.168.1.2 source GigabitEthernet0/1 numeric timeout 2 probe 3', 'privileged');
       expect(parsed).not.toBeNull();
       if (parsed) {
         expect(validateCommand(parsed, 'privileged').valid).toBe(true);
       }
 
-      const res = executeCommand(state, 'traceroute 192.168.1.2 source GigabitEthernet0/0 numeric timeout 2 probe 3', 'tr', devices, connections, deviceStates, 'dev-1');
+      const res = executeCommand(state, 'traceroute 192.168.1.2 source GigabitEthernet0/1 numeric timeout 2 probe 3', 'tr', devices, connections, deviceStates, 'dev-1');
+      if (!res.success) {
+        console.log('TRACEROUTE ERROR:', res.error);
+        console.log('TRACEROUTE OUTPUT:', res.output);
+      }
       expect(res.success).toBe(true);
       expect(res.output).toContain('Tracing the route to 192.168.1.2 (192.168.1.2)');
-      expect(res.output).toContain('Source interface: GigabitEthernet0/0');
+      expect(res.output).toContain('Source interface: GigabitEthernet0/1');
     });
   });
 
   describe('6. ping vrf and extended options', () => {
     it('should parse and execute ping with vrf, source, repeat, timeout, size', () => {
       const state = createBaseState();
+      const dev2State: SwitchState = {
+        ...createBaseState(),
+        hostname: 'R2',
+        ip: '192.168.1.2',
+        ports: {
+          ...createBaseState().ports,
+          'gi0/1': {
+            id: 'gi0/1',
+            name: 'GigabitEthernet0/1',
+            status: 'connected',
+            vlan: 1,
+            mode: 'routed',
+            duplex: 'auto',
+            speed: 'auto',
+            shutdown: false,
+            type: 'gigabitethernet',
+            ipAddress: '192.168.1.2',
+            subnetMask: '255.255.255.0'
+          }
+        }
+      };
       const devices: CanvasDevice[] = [
-        { id: 'dev-1', name: 'R1', type: 'router', x: 0, y: 0, ip: '192.168.1.1', status: 'online', ports: [] },
-        { id: 'dev-2', name: 'R2', type: 'router', x: 100, y: 100, ip: '192.168.1.2', status: 'online', ports: [] }
+        { id: 'dev-1', name: 'R1', type: 'router', x: 0, y: 0, ip: '192.168.1.1', status: 'online', ports: [{ id: 'gi0/1', label: 'GigabitEthernet0/1', status: 'connected' }] },
+        { id: 'dev-2', name: 'R2', type: 'router', x: 100, y: 100, ip: '192.168.1.2', status: 'online', ports: [{ id: 'gi0/1', label: 'GigabitEthernet0/1', status: 'connected' }] }
       ];
       const connections: CanvasConnection[] = [
-        { id: 'c1', sourceDeviceId: 'dev-1', sourcePort: 'GigabitEthernet0/0', targetDeviceId: 'dev-2', targetPort: 'GigabitEthernet0/0', cableType: 'straight', active: true }
+        { id: 'c1', sourceDeviceId: 'dev-1', sourcePort: 'gi0/1', targetDeviceId: 'dev-2', targetPort: 'gi0/1', cableType: 'straight', active: true }
       ];
       const deviceStates = new Map<string, SwitchState>([
         ['dev-1', state],
-        ['dev-2', { ...createBaseState(), hostname: 'R2', ip: '192.168.1.2' }]
+        ['dev-2', dev2State]
       ]);
 
-      const parsed = parseCommand('ping vrf RED 192.168.1.2 source GigabitEthernet0/0 repeat 10 timeout 3 size 100', 'privileged');
+      const parsed = parseCommand('ping vrf RED 192.168.1.2 source GigabitEthernet0/1 repeat 10 timeout 3 size 100', 'privileged');
       expect(parsed).not.toBeNull();
       if (parsed) {
         expect(validateCommand(parsed, 'privileged').valid).toBe(true);
       }
 
-      const res = executeCommand(state, 'ping vrf RED 192.168.1.2 source GigabitEthernet0/0 repeat 10 timeout 3 size 100', 'tr', devices, connections, deviceStates, 'dev-1');
+      const res = executeCommand(state, 'ping vrf RED 192.168.1.2 source GigabitEthernet0/1 repeat 10 timeout 3 size 100', 'tr', devices, connections, deviceStates, 'dev-1');
       expect(res.success).toBe(true);
       expect(res.output).toContain('Sending 10, 100-byte ICMP Echos to 192.168.1.2, timeout is 3 seconds:');
       expect(res.output).toContain('VRF: RED');
-      expect(res.output).toContain('Packet sent with a source address of GigabitEthernet0/0');
+      expect(res.output).toContain('Packet sent with a source address of GigabitEthernet0/1');
       expect(res.output).toContain('Success rate is 100 percent (10/10)');
     });
   });
