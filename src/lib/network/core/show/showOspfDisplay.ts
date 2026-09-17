@@ -17,8 +17,9 @@ export function cmdShowIpOspfInterface(state: SwitchState, input: string, _ctx: 
 
   let output = '\n';
 
+  const matchedPortKey = interfaceName ? Object.keys(state.ports || {}).find(k => k.toLowerCase() === interfaceName.toLowerCase()) : undefined;
   const portEntries = interfaceName
-    ? (state.ports?.[interfaceName.toLowerCase()] ? [[interfaceName.toLowerCase(), state.ports[interfaceName.toLowerCase()]]] : [])
+    ? (matchedPortKey && state.ports?.[matchedPortKey] ? [[matchedPortKey, state.ports[matchedPortKey]]] : [])
     : Object.entries(state.ports || {});
 
   if (interfaceName && portEntries.length === 0) {

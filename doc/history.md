@@ -2,10 +2,10 @@
 
 ## v5.8.0 — 2026-09-17
 
-**Cisco CLI EIGRP, OSPF & Donanım Komutları Tamamlama Paketi** —
+**CLI EIGRP, OSPF & Donanım Komutları Tamamlama Paketi** —
 - **📡 EIGRP Arayüz Geliştirmeleri (`interfaceCommands.ts`, `interfacePatterns.ts`)**:
   - `ip bandwidth-percent eigrp <as> <percent>` ve `no ip bandwidth-percent eigrp <as>` komutları arayüz düzeyinde eklendi.
-  - `ip summary-address eigrp <as> <ip> <maskcaps> [<distance>]` ve `no` varyantı Cisco referans syntax'ı ile tam uyumlu hale getirildi.
+  - `ip summary-address eigrp <as> <ip> <maskcaps> [<distance>]` ve `no` varyantı referans syntax'ı ile tam uyumlu hale getirildi.
 - **🔄 OSPF Süreç & Kimlik Doğrulama (`privilegedClear.ts`, `ospfRouterCommands.ts`, `systemPatterns.ts`)**:
   - Privileged EXEC modunda `clear ip ospf [<process-id>] process` komutu ile OSPF sürecini, komşuluk veritabanını ve rotaları sıfırlama desteği sağlandı.
   - OSPF router modunda `area <id> authentication` ve `area <id> authentication message-digest` komutları entegre edildi.
