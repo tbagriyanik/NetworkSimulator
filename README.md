@@ -51,7 +51,7 @@ npm run check
 | Metrik / Metric | Değer / Value |
 | --- | --- |
 | Version / Sürüm | 5.8.0 |
-| Total Lines / Toplam Satır (`src/`) | ~204,466 |
+| Total Lines / Toplam Satır (`src/`) | ~204,458 |
 | Source Files / Kaynak Dosya | 995 |
 | Documentation Files / Dokümantasyon Dosya | 32 |
 | Example Projects / Örnek Proje | 49 |
