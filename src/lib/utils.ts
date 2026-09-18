@@ -27,6 +27,15 @@ export function cn(...inputs: ClassValue[]): string {
   return clsx(...inputs)
 }
 
+export function trCaseFold(value: string): string {
+  return value
+    .trim()
+    .replace(/İ/g, 'i')
+    .replace(/I/g, 'i')
+    .replace(/ı/g, 'i')
+    .toLowerCase();
+}
+
 export function isValidMAC(mac: string): boolean {
   // Canonical: 00-40-96-99-88-77, Dots: 950B.ACBE.D015
   const canonicalRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;

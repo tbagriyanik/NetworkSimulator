@@ -3,7 +3,7 @@ import { CanvasDevice, CanvasNote, CanvasConnection, DeviceType } from '@/compon
 import { generateRandomLinkLocalIpv4, generateRandomLinkLocalIpv6 } from '@/lib/network/linkLocal';
 import { getDeviceWidth, getDeviceHeight } from '@/components/network/NetworkTopology/utils/networkTopology.helpers';
 import { generateSwitchPorts, generateL3SwitchPorts, generateRouterPorts, generateWLCPorts, generateFirewallPorts, generateHubPorts } from '../components/network/networkTopology.portGenerators';
-import { generateUniqueMacAddress } from '@/lib/utils';
+import { generateUniqueMacAddress, trCaseFold } from '@/lib/utils';
 import type { SwitchState } from '@/lib/network/types';
 
 function getTopologyGroup(type: DeviceType): string {
@@ -238,7 +238,7 @@ export function useCanvasActions({
   }, [devices]);
 
   const generateUniqueHostname = useCallback((baseName: string, reservedNames: string[] = []) => {
-    const normalize = (value: string) => value.trim().toLowerCase();
+    const normalize = (value: string) => trCaseFold(value);
     const usedNames = new Set<string>();
 
     devices.forEach((d) => usedNames.add(normalize(d.name)));

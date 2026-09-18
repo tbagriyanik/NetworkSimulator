@@ -2,6 +2,7 @@
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { CanvasNote, CanvasDevice, CanvasConnection, ContextMenuState } from '../NetworkTopology/types/networkTopology.types';
 import { colors, withAlpha } from '@/lib/design-tokens/colors';
+import { trCaseFold } from '@/lib/utils';
 
 export interface NoteNodeProps {
   note: CanvasNote;
@@ -80,12 +81,8 @@ export const NoteNode = memo(function NoteNode({
     const textarea = noteTextareaRefs.current[note.id];
     if (!textarea || !searchQuery) return;
 
-    const turkishLowerCase = (str: string) => {
-      return str.replace(/İ/g, 'i').replace(/I/g, 'ı').toLowerCase();
-    };
-
-    const textNormalized = turkishLowerCase(textarea.value);
-    const queryNormalized = turkishLowerCase(searchQuery);
+    const textNormalized = trCaseFold(textarea.value);
+    const queryNormalized = trCaseFold(searchQuery);
 
     // Find all start indices of matches
     const indices: number[] = [];

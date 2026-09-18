@@ -282,6 +282,7 @@ export interface SwitchState {
   ospfProcessId?: string | number; // OSPF process ID
   ospfRouterId?: string;           // OSPF Router ID
   ospfAreas?: number[];            // OSPF active areas
+  ospfNetworks?: { network: string; wildcard: string; area: number }[]; // Explicit OSPF network statements
   ospfAreaAuth?: Record<string, 'simple' | 'md5'>; // OSPF area authentication configuration
   ospfStubAreas?: string[];        // OSPF stub areas
   ospfTotallyStubAreas?: string[]; // OSPF totally stubby areas (stub no-summary)

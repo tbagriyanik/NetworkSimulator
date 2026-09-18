@@ -105,14 +105,25 @@ export function cmdRouterNetwork(state: SwitchState, input: string): CommandResu
         return { success: false, error: '% Invalid IP address or wildcard mask.' };
     }
 
+    const areaNum = parseInt(area);
+    const alreadyExists = (state.ospfNetworks || []).some(
+        n => n.network === network && n.wildcard === wildcard && n.area === areaNum
+    );
+
     return {
         success: true,
         output: `${network}/${wildcard} added to OSPF area ${area}`,
         newState: {
             dynamicRoutes: [
                 ...(state.dynamicRoutes || []),
-                { destination: network, subnetMask: wildcard, nextHop: 'directly connected', metric: 1, type: 'dynamic', area: parseInt(area) }
-            ]
+                { destination: network, subnetMask: wildcard, nextHop: 'directly connected', metric: 1, type: 'dynamic', area: areaNum }
+            ],
+            ospfNetworks: alreadyExists
+                ? (state.ospfNetworks || [])
+                : [
+                    ...(state.ospfNetworks || []),
+                    { network, wildcard, area: areaNum }
+                  ]
         }
     };
 }
@@ -134,10 +145,15 @@ export function cmdNoRouterNetwork(state: SwitchState, input: string): CommandRe
 
     const dynamicRoutes = (state.dynamicRoutes || []).filter((r: Route) => r.destination !== network);
     const bgpNetworks = (state.bgpNetworks || []).filter((n: { network: string }) => n.network !== network);
+    const ospfNetworks = (state.ospfNetworks || []).filter(n => n.network !== network);
 
     return {
         success: true,
-        newState: { dynamicRoutes, bgpNetworks: bgpNetworks.length > 0 ? bgpNetworks : undefined }
+        newState: {
+            dynamicRoutes,
+            bgpNetworks: bgpNetworks.length > 0 ? bgpNetworks : undefined,
+            ospfNetworks
+        }
     };
 }
 

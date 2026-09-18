@@ -212,6 +212,39 @@ function isOspfInterfacePassive(state: SwitchState, portId: string): boolean {
   return (state.passiveInterfaces || []).some(p => p.toLowerCase() === portId.toLowerCase());
 }
 
+/**
+ * Convert a dotted-decimal IP string to a 32-bit integer.
+ */
+function ipToInt(ip: string): number {
+  return ip.split('.').reduce((acc, octet) => (acc << 8) | parseInt(octet, 10), 0) >>> 0;
+}
+
+/**
+ * Check whether a port's IP address is covered by any of the router's
+ * explicit OSPF network statements (wildcard mask matching) for a given area.
+ * If the router has no ospfNetworks defined, all ports are included (legacy
+ * behaviour — all interfaces with an IP participate in OSPF).
+ */
+function isPortCoveredByOspfNetworks(
+  portIp: string,
+  targetArea: number,
+  state: SwitchState
+): boolean {
+  const ospfNetworks = state.ospfNetworks;
+  if (!ospfNetworks || ospfNetworks.length === 0) {
+    // No explicit network statements → legacy: include all ports
+    return true;
+  }
+  const portInt = ipToInt(portIp);
+  return ospfNetworks.some(entry => {
+    if (entry.area !== targetArea) return false;
+    const networkInt = ipToInt(entry.network);
+    const wildcardInt = ipToInt(entry.wildcard);
+    const mask = ~wildcardInt >>> 0;
+    return (portInt & mask) === (networkInt & mask);
+  });
+}
+
 export function buildOSPFLinkStateDatabase(
   deviceStates: Map<string, SwitchState>
 ): LSDB {
@@ -290,6 +323,9 @@ export function buildOSPFLinkStateDatabase(
 
           const portArea = port.ospfArea !== undefined ? parseInt(port.ospfArea) : area;
           if (portArea !== area) return;
+
+          // Only include this port if covered by an explicit OSPF network statement
+          if (!isPortCoveredByOspfNetworks(port.ipAddress, area, state)) return;
 
           const networkAddr = getNetworkAddress(port.ipAddress, port.subnetMask);
           links.push({

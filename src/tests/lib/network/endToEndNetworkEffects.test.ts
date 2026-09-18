@@ -317,38 +317,52 @@ describe('CLI -> State -> RIB -> Forwarding Engine Gerçek Ağ Etkisi Doğrulama
     });
   });
 
-  // ─── 5. OSPF network -> no network ──────────────────────────────────────
-  describe('router ospf network / no network ağ iletim etkisi', () => {
-    it('5. OSPF ağı eklendiğinde rota oluşmalı, no network ile silinmeli', () => {
-      const { deviceStates } = buildTestTopology();
+  // ─── 5. OSPF adjacency -> remote ping -> no network -> ping fail ──────
+  describe('OSPF Adjacency, Dijkstra ve Forwarding E2E ağ etkisi', () => {
+    it('5. İki router arasında OSPF komşuluğu kurulunca uzak PC\'ye ping atılabilmeli, no network ile rota düşüp ping fail olmalı', () => {
+      const { devices, connections, deviceStates } = buildTestTopology();
 
+      // Başlangıç: Statik rota yok, R1 -> PC1 (192.168.2.10) ping FAIL olmalı
+      const resNoOspf = checkConnectivity('R1', '192.168.2.10', devices, connections, deviceStates, 'en');
+      expect(resNoOspf.success).toBe(false);
+
+      // CLI: R1 üzerinde OSPF yapılandır (Bağlantı ağı: 10.0.0.0/24)
       let r1 = deviceStates.get('R1')!;
       r1 = execSeq(r1, [
         'enable',
         'configure terminal',
         'router ospf 1',
+        'network 10.0.0.0 0.0.0.255 area 0',
+      ], deviceStates, 'R1');
+      deviceStates.set('R1', r1);
+
+      // CLI: R2 üzerinde OSPF yapılandır (Bağlantı ağı: 10.0.0.0/24 ve Uzak PC ağı: 192.168.2.0/24)
+      let r2 = deviceStates.get('R2')!;
+      r2 = execSeq(r2, [
+        'enable',
+        'configure terminal',
+        'router ospf 1',
+        'network 10.0.0.0 0.0.0.255 area 0',
         'network 192.168.2.0 0.0.0.255 area 0',
-      ], deviceStates, 'R1');
-      deviceStates.set('R1', r1);
+      ], deviceStates, 'R2');
+      deviceStates.set('R2', r2);
 
-      // Rota dinamik olarak eklendi mi?
-      const hasOspfRoute = (r1.dynamicRoutes || []).some(
-        r => r.destination === '192.168.2.0' && r.type === 'dynamic'
-      );
-      expect(hasOspfRoute).toBe(true);
+      // Ağ Etkisi: OSPF LSDB & Dijkstra sayesinde R1, R2 üzerinden 192.168.2.0/24 ağını öğrenir
+      // ve R1 -> PC1 (192.168.2.10) ping SUCCESS olur.
+      const resOspfUp = checkConnectivity('R1', '192.168.2.10', devices, connections, deviceStates, 'en');
+      expect(resOspfUp.success).toBe(true);
 
-      // CLI: no network komutu çalıştır
-      r1 = execSeq(r1, [
+      // CLI: R2 üzerinde PC ağının OSPF duyurusunu kaldır (no network)
+      r2 = execSeq(r2, [
         'no network 192.168.2.0',
-      ], deviceStates, 'R1');
-      deviceStates.set('R1', r1);
+      ], deviceStates, 'R2');
+      deviceStates.set('R2', r2);
 
-      // Ağ Etkisi: OSPF rotası tablodan düşmeli
-      const routeStillExists = (r1.dynamicRoutes || []).some(
-        r => r.destination === '192.168.2.0'
-      );
-      expect(routeStillExists).toBe(false);
+      // Ağ Etkisi: OSPF rotası tablodan düşer, paket iletimi FAIL olur.
+      const resOspfDown = checkConnectivity('R1', '192.168.2.10', devices, connections, deviceStates, 'en');
+      expect(resOspfDown.success).toBe(false);
     });
   });
 
 });
+
