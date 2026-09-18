@@ -53,8 +53,8 @@ export function RefreshReportPanel({
         ? 'top-[84px] left-1/2 -translate-x-1/2 w-[calc(100%-24px)] max-w-[360px] rounded-xl border shadow-2xl'
         : 'top-20 right-4 w-full max-w-sm rounded-xl border shadow-2xl'
         } animate-in slide-in-from-right-full duration-300 ${isDark
-          ? (focusedOverlay === 'refresh' ? 'bg-secondary-950/70 border-emerald-400 text-secondary-100 shadow-[0_0_0_1px_rgba(52,211,153,0.35),0_20px_40px_rgba(0,0,0,0.4)]' : 'bg-secondary-950/70 border-secondary-850/80 text-secondary-100 shadow-black/40')
-          : (focusedOverlay === 'refresh' ? 'bg-white/70 border-emerald-500 text-secondary-900 shadow-[0_0_0_1px_rgba(34,197,94,0.24),0_20px_40px_rgba(15,23,42,0.12)]' : 'bg-white/70 border-secondary-200/80 text-secondary-900 shadow-secondary-200/50')
+          ? (focusedOverlay === 'refresh' ? 'bg-secondary-950/85 border-emerald-400 text-secondary-100 shadow-[0_0_0_1px_rgba(52,211,153,0.35),0_20px_40px_rgba(0,0,0,0.4)]' : 'bg-secondary-950/85 border-secondary-850/80 text-secondary-100 shadow-black/40')
+          : (focusedOverlay === 'refresh' ? 'bg-white/85 border-emerald-500 text-secondary-900 shadow-[0_0_0_1px_rgba(34,197,94,0.24),0_20px_40px_rgba(15,23,42,0.12)]' : 'bg-white/85 border-secondary-200/80 text-secondary-900 shadow-secondary-200/50')
         }`}
       style={{
         zIndex: 100,

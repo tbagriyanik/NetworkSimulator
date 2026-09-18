@@ -102,7 +102,7 @@ export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zInde
         zIndex
       }}
     >
-      <div className={`rounded-2xl overflow-hidden border shadow-2xl min-w-[200px] max-w-[260px] backdrop-blur-md ${isDark ? (isFocused ? 'bg-secondary-950/40 border-emerald-400 shadow-[0_0_0_1px_rgba(52,211,153,0.35),0_20px_40px_rgba(0,0,0,0.4)]' : 'bg-secondary-950/40 border-emerald-950/80 shadow-black/40') : (isFocused ? 'bg-white/40 border-emerald-500 shadow-[0_0_0_1px_rgba(34,197,94,0.24),0_20px_40px_rgba(15,23,42,0.12)]' : 'bg-white/40 border-emerald-950/80 shadow-secondary-200/50')}`}>
+      <div className={`rounded-2xl overflow-hidden border shadow-2xl min-w-[200px] max-w-[260px] backdrop-blur-md ${isDark ? (isFocused ? 'bg-secondary-950/75 border-emerald-400 shadow-[0_0_0_1px_rgba(52,211,153,0.35),0_20px_40px_rgba(0,0,0,0.4)]' : 'bg-secondary-950/75 border-emerald-950/80 shadow-black/40') : (isFocused ? 'bg-white/75 border-emerald-500 shadow-[0_0_0_1px_rgba(34,197,94,0.24),0_20px_40px_rgba(15,23,42,0.12)]' : 'bg-white/75 border-emerald-950/80 shadow-secondary-200/50')}`}>
         <div
           className={`flex items-center justify-between px-3 py-2 border-b select-none cursor-grab active:cursor-grabbing ${isDark ? 'bg-white/5 border-success-500/20' : 'bg-black/5 border-success-500/30'}`}
           onPointerDown={(e) => { onFocus(); handleDragStart(e); }}
@@ -375,7 +375,7 @@ export function RouterInfoPopover({ router, routerState, t, language, isDark, on
         zIndex
       }}
     >
-      <div className={`rounded-2xl overflow-hidden border shadow-2xl min-w-[200px] max-w-[280px] backdrop-blur-md ${isDark ? 'bg-secondary-950/40 border-success-500/30 shadow-black/40' : 'bg-white/40 border-success-500/50 shadow-secondary-200/50'}`}>
+      <div className={`rounded-2xl overflow-hidden border shadow-2xl min-w-[200px] max-w-[280px] backdrop-blur-md ${isDark ? 'bg-secondary-950/75 border-success-500/30 shadow-black/40' : 'bg-white/75 border-success-500/50 shadow-secondary-200/50'}`}>
         <div
           className={`flex items-center justify-between px-3 py-2 border-b select-none cursor-grab active:cursor-grabbing ${isDark ? 'bg-white/5 border-success-500/20' : 'bg-black/5 border-success-500/30'}`}
           onPointerDown={(e) => { onFocus(); handleDragStart(e); }}
