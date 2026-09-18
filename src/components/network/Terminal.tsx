@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useRef, useEffect, KeyboardEvent, useCallback, useMemo } from 'react';
 import { SwitchState } from '@/lib/network/types';
@@ -183,6 +183,19 @@ export function Terminal({
       inputRef.current?.focus();
     }
   }, [searchOpen, isBooted, isInputDisabled]);
+
+  // Yeni komut / çıktı geldiğinde terminali en alta scroll et
+  useEffect(() => {
+    const el = terminalRef.current;
+    if (!el) return;
+    const scroll = () => {
+      el.scrollTop = el.scrollHeight;
+    };
+    scroll();
+    // DOM'un tam olarak render edilip layout'un hesaplanması için requestAnimationFrame
+    const frameId = requestAnimationFrame(scroll);
+    return () => cancelAnimationFrame(frameId);
+  }, [displayedLines, output]);
 
   useEffect(() => {
     if (!device || !devices || !deviceStates) return;

@@ -128,3 +128,21 @@
 .ping-element {
   transition: transform 0.15s ease, opacity 0.15s ease;
 }
+
+/* Low graphics mode: turn off cosmetic micro-animations and transitions for a
+   snappier, lighter render. Functional one-shot animations that carry layout
+   state (e.g. the progress bar fill) are kept. */
+body.graphics-low *,
+body.graphics-low *::before,
+body.graphics-low *::after {
+  animation: none !important;
+  animation-duration: 0.01ms !important;
+  animation-delay: 0ms !important;
+  transition: none !important;
+  transition-delay: 0ms !important;
+  transition-duration: 0ms !important;
+}
+
+body.graphics-low .progress-fill {
+  animation: progress-width-fill 0.3s ease-out forwards !important;
+}

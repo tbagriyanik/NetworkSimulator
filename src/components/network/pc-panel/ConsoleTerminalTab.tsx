@@ -361,14 +361,14 @@ export function ConsoleTerminalTab({
               type="submit"
               disabled={isConsoleInputDisabled}
               className={cn(
-                "shrink-0 rounded-xl shadow-lg px-3 bg-secondary-800 text-white hover:bg-secondary-700 dark:bg-white dark:text-secondary-900 dark:hover:bg-secondary-200",
+                "shrink-0 rounded-xl shadow-lg px-3 bg-white text-black border border-secondary-200 hover:bg-secondary-100 dark:hover:bg-secondary-200",
                 isMobile ? "h-9 text-xs" : "h-11 text-sm",
                 isConsoleConnected && (consoleNeedsPassword || consoleConfirmDialog?.show || consoleReloadPending)
                 && "bg-warning-500 hover:bg-warning-600 text-white"
               )}
             >
               <span className="rounded-md p-1">
-                <CornerDownLeft className={cn("w-4 h-4 text-white dark:text-secondary-900", isMobile && "w-3 h-3")} />
+                <CornerDownLeft className={cn("w-4 h-4", isConsoleConnected && (consoleNeedsPassword || consoleConfirmDialog?.show || consoleReloadPending) ? "text-white" : "text-black", isMobile && "w-3 h-3")} />
               </span>
             </Button>
           </form>

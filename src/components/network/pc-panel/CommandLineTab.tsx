@@ -998,15 +998,15 @@ export function CommandLineTab({
               disabled={isCmdInputDisabled}
               aria-label={t.typeCommand}
               className={cn(
-                "shrink-0 rounded-xl shadow-lg px-3 text-white transition-colors",
+                "shrink-0 rounded-xl shadow-lg px-3 bg-white text-black border-2 transition-colors",
                 activeTerminalTab === 'cmd'
-                  ? "bg-secondary-800 hover:bg-secondary-700 dark:bg-orange-600 dark:hover:bg-orange-500"
-                  : "bg-emerald-700 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500",
+                  ? "border-orange-500/60 hover:bg-orange-50 dark:hover:bg-orange-100"
+                  : "border-emerald-500/60 hover:bg-emerald-50 dark:hover:bg-emerald-100",
                 isMobile ? "h-9 text-xs" : "h-11 text-sm"
               )}
             >
               <span className="rounded-md p-1">
-                <CornerDownLeft className={cn("w-4 h-4 text-white", isMobile && "w-3 h-3")} />
+                <CornerDownLeft className={cn("w-4 h-4 text-black", isMobile && "w-3 h-3")} />
               </span>
             </Button>
           </form>

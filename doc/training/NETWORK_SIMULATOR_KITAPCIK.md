@@ -23,8 +23,9 @@ A browser-based network simulator for learning switching, routing, wireless, IoT
 
 Bu kitapçık projenin tüm kullanıcı, CLI, protokol, laboratuvar ve özellik bilgilerinin birincil kaynağıdır. Diğer Markdown dosyaları yalnızca kısa başvuru, kurulum veya geliştirici ayrıntısı içerir; aynı bilginin güncel sürümü burada tutulmalıdır.
 
-### Güncel özellik durumu (v5.8.0)
+### Güncel özellik durumu (v5.9.0)
 
+- **🌐 OSPF E2E Network Etkileri & CLI Terminal Otomatik Scroll (v5.9.0):** `no network` komutunun OSPF LSDB LSA linklerini kaldırıp E2E ping iletimini düşürmesi doğrulandı; CLI terminal ekranına yeni komut girildiğinde otomatik olarak en alta scroll etme özelliği entegre edildi.
 - **📡 CLI EIGRP, OSPF & Donanım Komutları Tamamlama Paketi (v5.8.0):** `ip bandwidth-percent eigrp`, `ip summary-address eigrp`, `clear ip ospf process`, `area <id> authentication [message-digest]`, `show ip ospf interface`, `show ip ospf neighbor detail` ve gerçekçi donanım takibi sunan `show environment` (Power Supply, Fan, Sıcaklık, Voltaj) komutları eklendi.
 - **🏗️ 28 Kategori ve 49+ Örnek Proje Kataloğu (v5.7.0):** Otomatik Topoloji Üretici penceresinde 8 ana kategori (Temel, Topoloji, Veri Merkezi, Kablosuz, Servisler, Anahtarlama, Yönlendirme, Güvenlik) ve 28 hazır mimari senaryo (`scenarioGenerators.ts`, `topologyScenarios.ts`). Ofis Yazıcısı & Akıllı IoT Sensör, Python Ağ Otomasyonu (OOBM Filosu) ve Kurumsal DMZ Güvenlik Duvarı laboratuvarları (`office-printer-iot.ts`, `netauto-python-lab.ts`, `dmz-firewall-enterprise.ts`).
 - **📝 Yapılandırılmış Kılavuz & Açıklama Şablonu (v5.7.0):** Tüm örnek projeler ve üretilen senaryolar için 🎯 Amaç ve Senaryo Özeti, ⚙️ Yapılandırma Detayları, ⚠️ Arıza Belirtisi ve 🧪 Test & Doğrulama adımlarını içeren iki dilli (TR/EN) kanvas kılavuz notları.
@@ -269,7 +270,7 @@ npm install && npm run dev
 
 | Metric / Metrik | Value / Değer |
 | --- | ---: |
-| Version / Sürüm | 5.8.0 |
+| Version / Sürüm | 5.9.0 |
 | Total Lines / Toplam Satır (src/) | ~202,800 |
 | Source Files / Kaynak Dosya | 908 |
 | Documentation Files / Dokümantasyon Dosya | 23 |
@@ -872,7 +873,7 @@ The simulator supports **280+ commands** across multiple configuration modes.
 | Command | Description |
 |---------|-------------|
 | `network <ip> [wildcard] area <id>` | Add network to OSPF area |
-| `no network <ip> [wildcard] area <id>` | Remove network from OSPF |
+| `no network <ip> [wildcard] area <id>` | Remove network from OSPF (triggers LSA withdrawal in LSDB & immediate RIB/Forwarding route drop) |
 | `network <ip>` | Add RIP network |
 | `no network <ip>` | Remove RIP network |
 | `router-id <ip>` | Set router ID |
@@ -1800,11 +1801,11 @@ ICMP echo reply received from 192.168.1.2
 **Beklenen Sonuç:** OSPF rotaları gösterilir
 
 #### 📝 Notlar
-- `router ospf <id>` OSPF yönlendirmesini etkinleştirir
-- `router-id` OSPF router kimliğini ayarlar
-- `network` komutu wildcard maskesi kullanır
+- `network` komutu wildcard maskesi kullanır ve port IP adresini `ospfNetworks` veritabanına ekler
+- `no network` komutu ilanı kaldırır; LSDB'deki LSA linkleri güncellenir ve E2E ping iletimi derhal kesilir
 - `area` OSPF alanını belirler
 - OSPF daha hızlı yakınsama sağlar
+- CLI Terminali, yeni komut girildiğinde otomatik olarak en alta (`scrollTop = scrollHeight`) kaydırılır
 
 ---
 

@@ -1,6 +1,6 @@
 # Network Simulator — Kapsamlı Uygulama ve Kullanım Rehberi
 
-**Sürüm / Version:** 5.8.0  
+**Sürüm / Version:** 5.9.0  
 **Doküman Tipi:** Kullanım, Mimari, Komut Referansı ve Laboratuvar Kılavuzu  
 **Dil:** Türkçe (Turkish)
 
@@ -38,6 +38,7 @@ Network Simulator; bilgisayar ağları, anahtarlama (switching), yönlendirme (r
 - **🌐 BGP / MP-BGP & MPLS LDP Motorları:** Autonomous System (AS) yönlendirmesi, eBGP/iBGP durum makineleri (`Established`), VRF/RD/RT taşıma, LDP oturumları, LFIB etiket takası ve PHP `Implicit-Null` desteği.
 - **📱 Sekmeli Paket Analizi & Mobil Geri Tuşu Uyumlu Pencere Mimarisi:** Paket Analizi penceresi içinde entegre sekmeli (Paket Akışı / İzleme Detayları) görünüm, mobil tam ekran responsive düzen ve tüm sürüklenebilir/modal pencerelerin mobil tarayıcı/donanım Geri düğmesi (`mobile-back-pressed` / `popstate`) ve `Escape` tuşu ile sorunsuz kapatılma altyapısı.
 - **📋 Fare Seçimi İle Otomatik Panoya Kopyalama (Auto-Copy):** PC CMD, Linux Terminali, Cihaz Konsol Sekmesi ve Ana CLI Terminal pencerelerinde komut geçmişinden fare ile metin seçilip bırakıldığı anda (`onMouseUp`) otomatik panoya (clipboard) kopyalama.
+- **📜 CLI Terminal Otomatik Akış & Scroll Mantığı:** CLI Konsolu, PC Terminali ve Komut Satırı ekranlarına yeni komut girildiğinde veya çıktı üretildiğinde `scrollTop = scrollHeight` ve `requestAnimationFrame` senkronizasyonu ile otomatik en alta kaydırma (Auto-scroll to bottom).
 - **☁️ Fonksiyonel Bulut / WAN Geçit Cihazı (`cloud`) & ICMP Ping:** Topolojideki Bulut cihazı `203.0.113.1` genel WAN IP adresi, `eth0..eth3` portları, kamu DNS/WAN IP'leri (`8.8.8.8`, `1.1.1.1`) için hem Web hem de ICMP Ping yönlendirme ve NTP (`pool.ntp.org`) desteği.
 - **📱 Mobil Web Tarayıcı & Web Yönetim:** Akıllı telefon cihazında canlı Adres Çubuğu, Hızlı Yer İmleri (`192.168.1.1`, `8.8.8.8`, `http://iot-panel`) ve TCP port 80 denetimi ile Router/WLC Web Yönetimi, Yazıcı Paneli, IoT Kontrol Paneli ve PC HTTP Sunucusu web sayfalarını render eden Web Tarayıcısı.
 - **🖨️ Ağ Yazıcısı & Print Server (Web Management, LPD/IPP Packet Capture & Wi-Fi):** Dual-interface Ethernet/Wi-Fi destekli Ağ Yazıcısı. Dahili Web Yönetim Paneli üzerinden LPD, IPP, JetDirect, AirPrint, SNMP ve TLS protokol yetkilendirmesi, Wi-Fi SSID katılımı, tuval sinyal göstergeleri ve canlı Yazdırma Kuyruğu (`printJobs`) yönetimi. Web tarayıcılardan "Belgeyi Yazdır" butonu ile canlı paket yakalama (`PacketCapturePanel`) ekranına LPD/IPP paket akışlarının yansıtılması.
@@ -67,7 +68,7 @@ Network Simulator; bilgisayar ağları, anahtarlama (switching), yönlendirme (r
 ### 🌐 Yönlendirme & Politika Motoru (Routing & Policy Engine)
 - **Static & Default Routing:** Statik rotalar, varsayılan rotalar (`0.0.0.0 0.0.0.0`), Administrative Distance ve Floating Static yedeği.
 - **RIPv2 & RIPng:** Metrik hesabı (hop count), `no auto-summary`, passive-interface.
-- **OSPFv2 & OSPFv3:** Single-Area ve Multi-Area OSPF yapılandırması, Router ID, wildcard maskeler, DR/BDR seçimi ve cost hesabı. OSPF area türleri: stub, NSSA, totally-stub.
+- **OSPFv2 & OSPFv3:** Single-Area ve Multi-Area OSPF yapılandırması, Router ID, wildcard maskeler, DR/BDR seçimi ve cost hesabı. OSPF area türleri: stub, NSSA, totally-stub. **Semantik OSPF Adjacency -> Forwarding E2E Zinciri:** `network` ve `no network` komutlarının CLI -> State (`ospfNetworks`) -> LSDB -> Dijkstra -> RIB -> Forwarding Engine -> Packet Result zincirinde dinamik ağ iletimi ve ping sonucu üzerindeki anlık doğruluk doğrulaması.
 - **EIGRP & EIGRP for IPv6:** IPv4/IPv6 AS numarası, `ipv6 router eigrp <as>`, router-id tanımı, arayüz bazlı `ipv6 eigrp <as>` aktifleştirme, DUAL IPv6 metric hesaplaması ve `show ipv6 eigrp neighbors/topology` raporlaması.
 - **BGP (Border Gateway Protocol):** eBGP ve iBGP komşuluk tanımları, AS path ve prefix duyuruları.
 - **Rota Yeniden Dağıtımı (Route Redistribution):** `redistribute <protocol>` ile OSPF, RIP, EIGRP, BGP, static ve connected rotalar arasında çapraz dağıtım.

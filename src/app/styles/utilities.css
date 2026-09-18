@@ -46,4 +46,37 @@
     backdrop-filter: blur(32px) saturate(200%);
     background-color: color-mix(in srgb, var(--background) 92%, transparent);
   }
+
+  /* Standard window border: 2px solid green (flat) applied to every
+     draggable window surface and liquid-glass panel/dialog. The top app
+     header is excluded (no frame). */
+  [data-modal-content="true"],
+  .liquid-glass:not(header):not(.history-panel),
+  .liquid-glass-light:not(header):not(.history-panel):not(.tooltip-framed),
+  .liquid-glass-strong:not(header):not(.history-panel) {
+    border-style: solid !important;
+    border-width: 2px !important;
+    border-color: var(--color-success-500, #22c55e);
+  }
+
+  /* "İşlem Geçmişi" (history) bar: no green frame, just a thin theme border. */
+  .history-panel {
+    border-width: 1px !important;
+  }
+
+  /* Tooltips: no green frame, keep the thin theme-tinted border from the
+     component. */
+  .tooltip-framed {
+    border-width: 1px !important;
+  }
+
+  /* Selected window: bright green border + glow shadow set in the component.
+     Background windows: pale green so the active one stays obvious. */
+  [data-modal-content="true"][data-window-active="true"] {
+    border-color: var(--color-success-500, #22c55e) !important;
+  }
+
+  [data-modal-content="true"][data-window-active="false"] {
+    border-color: color-mix(in srgb, var(--color-success-500, #22c55e) 38%, var(--background)) !important;
+  }
 }

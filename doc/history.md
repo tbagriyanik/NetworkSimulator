@@ -1,5 +1,11 @@
 # 📅 Network Simulator — Proje Geçmişi
 
+## v5.9.0 — 2026-09-18
+
+**OSPF E2E Network Etkileri & Terminal Otomatik Scroll İyileştirmeleri** —
+- **🌐 CLI -> State -> LSDB -> Forwarding Doğrulaması**: `no network` komutunun OSPF LSDB veritabanında LSA linklerini güncelleyerek forwarding engine üzerinde paket iletimini ve uçtan uca (E2E) ping sonuçlarını dinamik olarak etkilemesi sağlandı.
+- **🖥️ CLI Terminal Otomatik Scroll**: Terminal paneline yeni komutlar veya sistem çıktıları eklendiğinde pencerenin otomatik olarak en alta kaydırılması sağlandı (`scrollTop = scrollHeight`).
+
 ## v5.8.0 — 2026-09-17
 
 **CLI EIGRP, OSPF & Donanım Komutları Tamamlama Paketi** —

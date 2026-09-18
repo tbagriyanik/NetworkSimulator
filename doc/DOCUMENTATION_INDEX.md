@@ -423,6 +423,7 @@ doc/
 - [x] Çevresel Ayarlar & UI Başlık Güncellemeleri (v5.2) eklendi
 - [x] CodeQL Güvenlik Sertleştirmesi & Multi-Character Sanitization (v5.7.1) belgelendi
 - [x] CLI EIGRP, OSPF & Donanım Komutları Tamamlama Paketi (v5.8.0) belgelendi
+- [x] OSPF E2E Network Etkileri & CLI Terminal Otomatik Scroll (v5.9.0) belgelendi
 
 ---
 

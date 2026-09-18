@@ -1,6 +1,6 @@
 # NetworkSimulator — Tam Özellik Envanteri / Full Feature Inventory
 
-**Sürüm / Version:** 5.8.0 · **Son doğrulama / Last verified:** 2026-09-17
+**Sürüm / Version:** 5.9.0 · **Son doğrulama / Last verified:** 2026-09-18
 
 ## CLI EIGRP, OSPF & Donanım Komutları Tamamlama Paketi (2026-09-17 - v5.8.0)
 

@@ -176,15 +176,17 @@ export function DraggableWindowWrapper({
       ref={containerRef}
       data-modal-id={id}
       data-modal-content="true"
+      data-window-active={isActive ? 'true' : 'false'}
       style={wrapperStyle}
       className={cn(
         'flex flex-col overflow-hidden shadow-2xl transition-shadow',
-        isMobileFullScreen ? 'rounded-none' : 'rounded-xl border',
+        isMobileFullScreen ? 'rounded-none' : 'rounded-xl border-2',
         isDark ? 'bg-secondary-900' : 'bg-white',
-        // Green border when active (on desktop or floating on mobile)
+        // Active window: bright green border + glow; background windows get a
+        // pale green border (enforced by CSS on [data-window-active]).
         isActive && (!isMobile || !isMobileFullScreen)
-          ? (isDark ? 'border-success-500/70 shadow-success-500/20' : 'border-success-500/80 shadow-success-500/30')
-          : (isDark ? 'border-secondary-700' : 'border-secondary-200'),
+          ? 'border-success-500 shadow-success-500/20'
+          : (isDark ? 'border-success-500/25 shadow-black/30' : 'border-success-500/30 shadow-secondary-200/50'),
         className
       )}
       onPointerDownCapture={handleFocus}
@@ -215,9 +217,9 @@ export function DraggableWindowWrapper({
           // mobile layouts; action controls stop propagation below.
           'cursor-grab active:cursor-grabbing',
           isDark
-            ? 'bg-secondary-700 border-b-2 border-secondary-500/60'
-            : 'bg-secondary-100 border-b-2 border-secondary-300',
-          isActive && !isMobile && (isDark ? 'bg-success-900/20' : 'bg-success-100/50')
+            ? 'bg-secondary-800/80'
+            : 'bg-secondary-100',
+          isActive && !isMobile && (isDark ? 'bg-success-900/30' : 'bg-success-100/60')
         )}
       >
         <div className="flex items-center gap-2 overflow-hidden w-full">
