@@ -58,10 +58,10 @@ export const routingPatterns: Record<string, CommandPattern> = {
     maxArgs: 1
   },
   'no router ospf': {
-    pattern: /^no\s+router\s+ospf$/i,
+    pattern: /^no\s+router\s+ospf\s*(\d*)$/i,
     modes: ['config'],
     minArgs: 0,
-    maxArgs: 0
+    maxArgs: 1
   },
   'no router eigrp': {
     pattern: /^no\s+router\s+eigrp\s*(\d*)$/i,

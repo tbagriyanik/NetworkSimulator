@@ -737,8 +737,20 @@ export const systemPatterns: Record<string, CommandPattern> = {
     minArgs: 0,
     maxArgs: 0
   },
+  'no ip nat inside': {
+    pattern: /^no\s+ip\s+nat\s+inside$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 0,
+    maxArgs: 0
+  },
   'ip nat outside': {
     pattern: /^ip\s+nat\s+outside$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'no ip nat outside': {
+    pattern: /^no\s+ip\s+nat\s+outside$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 0,
     maxArgs: 0

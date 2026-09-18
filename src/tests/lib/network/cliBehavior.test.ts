@@ -172,8 +172,20 @@ describe('No counterparts undo configuration', () => {
     let s = toPrivileged(createInitialState('00:11:22:33:44:07', 'NS-L3-24PS'));
     s = apply(s, run(s, 'configure terminal'));
     s = apply(s, run(s, 'ip route 10.0.0.0 255.255.255.0 192.168.1.1'));
+    // Route eklendi mi?
+    expect((s.staticRoutes ?? []).length).toBeGreaterThan(0);
+    const added = (s.staticRoutes ?? []).find(
+      (r) => r.destination === '10.0.0.0' && r.nextHop === '192.168.1.1',
+    );
+    expect(added).toBeDefined();
+
     s = apply(s, run(s, 'no ip route 10.0.0.0 255.255.255.0 192.168.1.1'));
-    expect(s.staticRoutes).toBeDefined();
+    // Route gerçekten silindi mi?
+    const removed = (s.staticRoutes ?? []).find(
+      (r) => r.destination === '10.0.0.0' && r.nextHop === '192.168.1.1',
+    );
+    expect(removed).toBeUndefined();
+    expect((s.staticRoutes ?? []).length).toBe(0);
   });
 
   it('ip default-gateway / no ip default-gateway', () => {
