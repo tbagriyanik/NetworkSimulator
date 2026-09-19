@@ -12,10 +12,12 @@ const {
   PCWindow,
   FirewallWindow,
 } = {
-  RouterPanel: dynamic(() => import('@/components/network/panels').then((m) => m.RouterPanel)),
-  UnifiedDevicePanel: dynamic(() => import('@/components/network/panels').then((m) => m.UnifiedDevicePanel)),
-  PCWindow: dynamic(() => import('@/components/network/panels').then((m) => m.PCWindow), { ssr: false }),
-  FirewallWindow: dynamic(() => import('@/components/network/panels').then((m) => m.FirewallWindow), { ssr: false }),
+  // Import concrete modules (not the panels barrel) so the initial bundle
+  // stays lean: the barrel also re-exports certificate panels which pull in jsPDF.
+  RouterPanel: dynamic(() => import('@/components/network/RouterPanel').then((m) => m.RouterPanel)),
+  UnifiedDevicePanel: dynamic(() => import('@/components/network/UnifiedDevicePanel').then((m) => m.UnifiedDevicePanel)),
+  PCWindow: dynamic(() => import('@/components/network/PCWindow').then((m) => m.PCWindow), { ssr: false }),
+  FirewallWindow: dynamic(() => import('@/components/network/FirewallWindow').then((m) => m.FirewallWindow), { ssr: false }),
 };
 
 interface PagePanelWindowsProps {

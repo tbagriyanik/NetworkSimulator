@@ -819,7 +819,7 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `show ip bgp` | Display BGP routing table (RIB) |
 | `show ip bgp <prefix>` | Display detailed BGP path information, origin, localpref, weight for specific prefix |
 | `show ip bgp summary` | Display BGP neighbor status, AS numbers and state |
-| `show ip cef [prefix] [detail]` | Display Cisco Express Forwarding (CEF) FIB table and adjacency details |
+| `show ip cef [prefix] [detail]` | Display Express Forwarding (CEF) FIB table and adjacency details |
 | `show interfaces counters [errors]` | Display RX/TX packet, byte, drop, and error counters table for all interfaces |
 | `show ip dhcp snooping statistics` | Display DHCP Snooping interface forwarding and drop statistics |
 | `show mpls forwarding-table` | Display MPLS LFIB forwarding table |

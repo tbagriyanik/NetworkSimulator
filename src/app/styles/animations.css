@@ -129,6 +129,94 @@
   transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
+/* Startup splash effects: these classes were referenced by the loading screen
+   but their keyframes were lost during the globals.css split, so the elements
+   were rendered with the literal `animation-name` unresolvable (dead CSS). */
+@keyframes glitch {
+  0%, 100% { transform: translate(0); opacity: 1; }
+  20% { transform: translate(-2px, 1px); opacity: 0.85; }
+  40% { transform: translate(2px, -1px); opacity: 0.9; }
+  60% { transform: translate(-1px, 2px); opacity: 0.8; }
+  80% { transform: translate(1px, -2px); opacity: 0.95; }
+}
+
+@keyframes glitch-skew {
+  0%, 100% { transform: skewX(0deg) scale(1); opacity: 0.25; }
+  30% { transform: skewX(8deg) scale(1.02); opacity: 0.35; }
+  60% { transform: skewX(-6deg) scale(0.98); opacity: 0.2; }
+}
+
+.animate-glitch {
+  animation: glitch 0.6s ease-in-out infinite;
+}
+
+.animate-glitch-skew {
+  animation: glitch-skew 0.9s ease-in-out infinite;
+}
+
+.glitch-text {
+  position: relative;
+}
+
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.glitch-text::before {
+  color: #ef4444;
+  animation: glitch 1.2s steps(2) infinite;
+  clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+}
+
+.glitch-text::after {
+  color: #22d3ee;
+  animation: glitch 0.8s steps(2) infinite reverse;
+  clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
+}
+
+/* Ambient mesh-gradient backdrop of the main workspace. */
+@keyframes liquid {
+  0%, 100% { transform: translate(0, 0) rotate(12deg) scale(1.5); }
+  33% { transform: translate(2%, -3%) rotate(9deg) scale(1.55); }
+  66% { transform: translate(-3%, 2%) rotate(14deg) scale(1.48); }
+}
+
+.animate-liquid {
+  animation: liquid 18s ease-in-out infinite;
+}
+
+/* Shared entrance animations used by page, popovers and toasts. */
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.15s ease-out;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out;
+}
+
+.mesh-gradient {
+  background-image:
+    radial-gradient(at 20% 20%, rgba(6, 182, 212, 0.35) 0px, transparent 50%),
+    radial-gradient(at 80% 10%, rgba(59, 130, 246, 0.3) 0px, transparent 50%),
+    radial-gradient(at 70% 80%, rgba(168, 85, 247, 0.25) 0px, transparent 50%),
+    radial-gradient(at 10% 90%, rgba(16, 185, 129, 0.2) 0px, transparent 50%);
+  background-size: 200% 200%;
+}
+
 /* Low graphics mode: turn off cosmetic micro-animations and transitions for a
    snappier, lighter render. Functional one-shot animations that carry layout
    state (e.g. the progress bar fill) are kept. */

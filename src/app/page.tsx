@@ -1,19 +1,20 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import Image from 'next/image';
 
 import { cn } from '@/lib/utils';
 import type { PcOutputsSetter } from '@/components/network/pc-panel/PCPanel.types';
 
 import { AppHeader } from '@/components/network/AppHeader';
 import { AppFooter } from '@/components/network/AppFooter';
-import { AppSkeleton } from '@/components/ui/AppSkeleton';
 import { AppErrorBoundary } from '@/components/ui/AppErrorBoundary';
+import { AppLoadingScreen } from './sections/AppLoadingScreen';
 
 const { TabletSplitView, RefreshReportPanel } = {
-  TabletSplitView: dynamic(() => import('@/components/network/panels').then((m) => m.TabletSplitView), { ssr: false }),
-  RefreshReportPanel: dynamic(() => import('@/components/network/panels').then((m) => m.RefreshReportPanel), { ssr: false }),
+  // Import concrete modules (not the panels barrel) so the initial bundle
+  // stays lean: the barrel also re-exports certificate panels which pull in jsPDF.
+  TabletSplitView: dynamic(() => import('@/components/network/TabletSplitView').then((m) => m.TabletSplitView), { ssr: false }),
+  RefreshReportPanel: dynamic(() => import('@/components/network/RefreshReportPanel').then((m) => m.RefreshReportPanel), { ssr: false }),
 };
 
 import { exampleLevelOrder } from './page.types';
@@ -41,37 +42,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
         )}
 
         {/* App Loading Screen */}
-        {page.isAppLoading && (
-          <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-secondary-950">
-            <div className="flex flex-col items-center animate-scale-in">
-              <div className="relative mb-8">
-                <div className="p-2 animate-glitch">
-                  <Image src="/app.png" alt="Logo" width={64} height={64} className="w-16 h-16 object-contain" priority />
-                </div>
-                <div className="absolute inset-0 p-4 rounded-2xl bg-error-500/30 animate-glitch-skew mix-blend-screen" />
-                <div className="absolute inset-0 p-4 rounded-2xl bg-primary-500/30 animate-glitch mix-blend-screen" style={{ animationDelay: '0.1s' }} />
-              </div>
-
-              <h1 className="text-3xl font-black tracking-tighter text-white glitch-text mb-2 text-center" data-text="NETWORK SIMULATOR">
-                NETWORK SIMULATOR
-              </h1>
-
-              <div className="flex items-center gap-2 mt-4">
-                <span className="text-xs font-bold tracking-widest text-accent-500">
-                  {page.t.initializingSystem}
-                </span>
-              </div>
-            </div>
-            <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,255,0,0.01),rgba(0,0,255,0.03))] bg-[length:100%_4px,3px_100%]" />
-          </div>
-        )}
-
-        {/* Skeleton Loading State */}
-        {page.showSkeleton && !page.isAppLoading && (
-          <div className="fixed inset-0 z-[9998] bg-background">
-            <AppSkeleton />
-          </div>
-        )}
+        <AppLoadingScreen isAppLoading={page.isAppLoading} t={page.t} />
 
         {/* Main Content */}
         <div className="flex flex-col flex-1 animate-fade-in w-full max-w-[1920px] mx-auto">

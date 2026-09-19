@@ -15,12 +15,14 @@ const {
   TroubleshootingPanel,
   TimelinePanel,
 } = {
-  GuidedModePanel: dynamic(() => import('@/components/network/panels').then((m) => m.GuidedModePanel)),
-  ExamModePanel: dynamic(() => import('@/components/network/panels').then((m) => m.ExamModePanel)),
-  EnvironmentSettingsPanel: dynamic(() => import('@/components/network/panels').then((m) => m.EnvironmentSettingsPanel)),
-  ExamEditorPanel: dynamic(() => import('@/components/network/panels').then((m) => m.ExamEditorPanel)),
-  TroubleshootingPanel: dynamic(() => import('@/components/network/panels').then((m) => m.TroubleshootingPanel)),
-  TimelinePanel: dynamic(() => import('@/components/network/panels').then((m) => m.TimelinePanel)),
+  // Import concrete modules (not the panels barrel) so the initial bundle
+  // stays lean: the barrel merges every panel into one chunk (jsPDF included).
+  GuidedModePanel: dynamic(() => import('@/components/network/GuidedModePanel').then((m) => m.GuidedModePanel)),
+  ExamModePanel: dynamic(() => import('@/components/network/ExamModePanel').then((m) => m.ExamModePanel)),
+  EnvironmentSettingsPanel: dynamic(() => import('@/components/network/EnvironmentSettingsPanel').then((m) => m.EnvironmentSettingsPanel)),
+  ExamEditorPanel: dynamic(() => import('@/components/network/ExamEditorPanel').then((m) => m.ExamEditorPanel)),
+  TroubleshootingPanel: dynamic(() => import('@/components/network/TroubleshootingPanel').then((m) => m.TroubleshootingPanel)),
+  TimelinePanel: dynamic(() => import('@/components/network/TimelinePanel').then((m) => m.TimelinePanel)),
 };
 
 interface PageOverlayPanelsProps {

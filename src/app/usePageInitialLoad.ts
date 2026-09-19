@@ -24,7 +24,9 @@ export function usePageInitialLoad({
   setLastSaveTime,
 }: UsePageInitialLoadOptions) {
   const [isAppLoading, setIsLoading] = useState(true);
-  const [showSkeleton, setShowSkeleton] = useState(true);
+  // Kept for API compatibility: the skeleton overlay phase was removed to
+  // unblock LCP (the extra artificial delay covered no real work).
+  const [showSkeleton] = useState(false);
   const [hasHydrated, setHasHydrated] = useState(false);
   const hasLoadedRef = useRef(false);
 
@@ -45,23 +47,19 @@ export function usePageInitialLoad({
     }
   }, [isAppLoading]);
 
-  // Initial loading sequence: short splash, then skeleton, then content
+  // Initial loading sequence: brief splash (respects reduced motion), then content.
+  // The skeleton phase was removed: the extra overlay delayed LCP by ~1.1s
+  // (artificial setTimeout delays) without covering any real work.
   useEffect(() => {
     const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-    const splashMs = prefersReducedMotion ? 300 : 700;
-    const skeletonMs = splashMs + 400;
+    const splashMs = prefersReducedMotion ? 0 : 350;
 
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, splashMs);
 
-    const skeletonTimer = setTimeout(() => {
-      setShowSkeleton(false);
-    }, skeletonMs);
-
     return () => {
       clearTimeout(timer);
-      clearTimeout(skeletonTimer);
     };
   }, []);
 
