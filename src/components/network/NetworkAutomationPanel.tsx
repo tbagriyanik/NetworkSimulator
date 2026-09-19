@@ -177,13 +177,11 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
   const [selectedPythonPreset, setSelectedPythonPreset] = useState<string>('netmiko_provision');
 
   useEffect(() => {
-    if (defaultDeviceId) {
     if (selectedDeviceId && devices.some(d => d.id === selectedDeviceId)) {
       return;
     }
     if (defaultDeviceId && devices.some(d => d.id === defaultDeviceId)) {
       setSelectedDeviceId(defaultDeviceId);
-    } else if (!selectedDeviceId && devices.length > 0) {
     } else if (devices.length > 0) {
       setSelectedDeviceId(devices[0].id);
     }
@@ -295,22 +293,20 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
         <div className="flex rounded-lg p-0.5 border border-slate-700/60 bg-slate-950/40 text-xs mr-2">
           <button
             onClick={() => setActiveTab('restconf')}
-            className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-semibold transition-all ${
-              activeTab === 'restconf'
+            className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-semibold transition-all ${activeTab === 'restconf'
                 ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
                 : 'text-slate-400 hover:text-slate-200'
-            }`}
+              }`}
           >
             <Globe className="w-3 h-3" />
             RESTCONF (YANG)
           </button>
           <button
             onClick={() => setActiveTab('python')}
-            className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-semibold transition-all ${
-              activeTab === 'python'
+            className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-semibold transition-all ${activeTab === 'python'
                 ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
                 : 'text-slate-400 hover:text-slate-200'
-            }`}
+              }`}
           >
             <Code className="w-3 h-3" />
             Netmiko & Requests (Python)
@@ -381,9 +377,8 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                   <select
                     value={restconfMethod}
                     onChange={(e) => setRestconfMethod(e.target.value as 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE')}
-                    className={`w-full px-2.5 py-1.5 text-xs font-bold rounded-lg border focus:outline-none ${
-                      isDark ? 'bg-slate-950 border-slate-700 text-emerald-400' : 'bg-white border-slate-300 text-emerald-600'
-                    }`}
+                    className={`w-full px-2.5 py-1.5 text-xs font-bold rounded-lg border focus:outline-none ${isDark ? 'bg-slate-950 border-slate-700 text-emerald-400' : 'bg-white border-slate-300 text-emerald-600'
+                      }`}
                   >
                     <option value="GET">GET</option>
                     <option value="POST">POST</option>
@@ -398,14 +393,10 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                   <select
                     value={selectedDeviceId}
                     onChange={(e) => setSelectedDeviceId(e.target.value)}
-                    className={`w-full px-2.5 py-1.5 text-xs rounded-lg border focus:outline-none ${
-                      isDark ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300'
-                    className={`w-full px-2.5 py-1.5 text-xs rounded-lg border focus:outline-none cursor-pointer relative z-10 no-drag ${
-                      isDark ? 'bg-slate-950 border-slate-700 text-slate-200 hover:border-emerald-500/50' : 'bg-white border-slate-300 hover:border-emerald-500/50'
-                    }`}
+                    className={`w-full px-2.5 py-1.5 text-xs rounded-lg border focus:outline-none cursor-pointer relative z-10 no-drag ${isDark ? 'bg-slate-950 border-slate-700 text-slate-200 hover:border-emerald-500/50' : 'bg-white border-slate-300 hover:border-emerald-500/50'
+                      }`}
                   >
                     {devices.map((d) => (
-                      <option key={d.id} value={d.id}>
                       <option key={d.id} value={d.id} className={isDark ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-900'}>
                         {d.name || d.id} ({d.type})
                       </option>
@@ -420,9 +411,8 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                   type="text"
                   value={restconfUri}
                   onChange={(e) => setRestconfUri(e.target.value)}
-                  className={`w-full px-3 py-1.5 text-xs font-mono rounded-lg border focus:outline-none ${
-                    isDark ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300'
-                  }`}
+                  className={`w-full px-3 py-1.5 text-xs font-mono rounded-lg border focus:outline-none ${isDark ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300'
+                    }`}
                 />
               </div>
 
@@ -433,9 +423,8 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                     value={restconfBody}
                     onChange={(e) => setRestconfBody(e.target.value)}
                     rows={7}
-                    className={`w-full p-2.5 text-xs font-mono rounded-lg border focus:outline-none ${
-                      isDark ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300'
-                    }`}
+                    className={`w-full p-2.5 text-xs font-mono rounded-lg border focus:outline-none ${isDark ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300'
+                      }`}
                   />
                 </div>
               )}
@@ -460,11 +449,10 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                 {restconfResponse && (
                   <div className="flex items-center gap-2">
                     <span
-                      className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold border ${
-                        restconfResponse.status >= 200 && restconfResponse.status < 300
+                      className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold border ${restconfResponse.status >= 200 && restconfResponse.status < 300
                           ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
                           : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
-                      }`}
+                        }`}
                     >
                       {restconfResponse.status} {restconfResponse.statusText}
                     </span>
@@ -480,9 +468,8 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
               </div>
 
               <pre
-                className={`flex-1 p-4 rounded-lg border font-mono text-xs overflow-auto leading-relaxed custom-scrollbar ${
-                  isDark ? 'bg-slate-950 border-slate-800 text-emerald-400' : 'bg-slate-900 text-emerald-300'
-                }`}
+                className={`flex-1 p-4 rounded-lg border font-mono text-xs overflow-auto leading-relaxed custom-scrollbar ${isDark ? 'bg-slate-950 border-slate-800 text-emerald-400' : 'bg-slate-900 text-emerald-300'
+                  }`}
               >
                 {restconfResponse
                   ? JSON.stringify(restconfResponse.data, null, 2)
@@ -511,9 +498,8 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                         setPythonScript(PYTHON_TEMPLATES[key]);
                       }
                     }}
-                    className={`text-[11px] px-2 py-1 rounded border outline-none font-mono ${
-                      isDark ? 'bg-slate-950 border-slate-700 text-emerald-400' : 'bg-white border-slate-300 text-emerald-700'
-                    }`}
+                    className={`text-[11px] px-2 py-1 rounded border outline-none font-mono ${isDark ? 'bg-slate-950 border-slate-700 text-emerald-400' : 'bg-white border-slate-300 text-emerald-700'
+                      }`}
                   >
                     <option value="netmiko_provision">Netmiko Toplu Yapılandırma</option>
                     <option value="netmiko_audit">Ağ & IP Sağlık Denetimi</option>
@@ -533,9 +519,8 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
               <textarea
                 value={pythonScript}
                 onChange={(e) => setPythonScript(e.target.value)}
-                className={`flex-1 p-3 text-xs font-mono rounded-lg border focus:outline-none resize-none leading-relaxed ${
-                  isDark ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300'
-                }`}
+                className={`flex-1 p-3 text-xs font-mono rounded-lg border focus:outline-none resize-none leading-relaxed ${isDark ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300'
+                  }`}
               />
 
               <button
@@ -560,9 +545,8 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
               </div>
 
               <pre
-                className={`flex-1 p-4 rounded-lg border font-mono text-xs overflow-auto leading-relaxed custom-scrollbar ${
-                  isDark ? 'bg-slate-950 border-slate-800 text-slate-200' : 'bg-slate-900 text-slate-200'
-                }`}
+                className={`flex-1 p-4 rounded-lg border font-mono text-xs overflow-auto leading-relaxed custom-scrollbar ${isDark ? 'bg-slate-950 border-slate-800 text-slate-200' : 'bg-slate-900 text-slate-200'
+                  }`}
               >
                 {pythonOutput || '// Betiği çalıştırmak için "Python Betiğini Çalıştır" butonuna basın.'}
               </pre>
