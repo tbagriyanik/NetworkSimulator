@@ -57,8 +57,8 @@ export function CanvasToolbar({
   const { preferences } = useUiPreferences();
   return (
     <div
-      className={`fixed ${preferences.showFooter ? 'bottom-[64px]' : 'bottom-[14px]'} right-[12px] items-center gap-1 px-2 py-1 rounded-xl border ${isDark ? 'bg-secondary-800/90 border-secondary-700/50 shadow-lg' : 'bg-white/95 border-secondary-200/60 shadow-md'
-        } flex z-40 transition-all duration-200`}
+      className={`fixed ${preferences.showFooter ? 'bottom-[64px]' : 'bottom-[14px]'} right-[12px] max-w-[calc(100vw-24px)] items-center gap-1 px-2 py-1 rounded-xl border ${isDark ? 'bg-secondary-800/90 border-secondary-700/50 shadow-lg' : 'bg-white/95 border-secondary-200/60 shadow-md'
+        } flex z-40 transition-all duration-200 overflow-x-auto whitespace-nowrap custom-scrollbar`}
     >
       <TooltipWrapper
         title={
@@ -85,7 +85,7 @@ export function CanvasToolbar({
             })
           }
           className={`w-8 h-8 flex items-center justify-center rounded text-lg font-bold ${isDark ? 'hover:bg-secondary-700 text-secondary-300' : 'hover:bg-secondary-100 text-secondary-600'
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500`}
         >
           −
         </button>
@@ -101,7 +101,8 @@ export function CanvasToolbar({
           : isDark
             ? 'text-secondary-300 hover:bg-secondary-700'
             : 'text-secondary-600 hover:bg-secondary-100'
-          }`}
+          } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500`}
+        aria-label={language === 'tr' ? 'Yakınlaştırma yüzdesi; sıfırlamak için tıklayın' : 'Zoom percentage; click to reset'}
         title={t.dragToZoomOrScroll}
       >
         {Math.round(zoom * 100)}%
@@ -132,7 +133,7 @@ export function CanvasToolbar({
             })
           }
           className={`w-8 h-8 flex items-center justify-center rounded text-lg font-bold ${isDark ? 'hover:bg-secondary-700 text-secondary-300' : 'hover:bg-secondary-100 text-secondary-600'
-            }`}
+            } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500`}
         >
           +
         </button>
@@ -144,7 +145,8 @@ export function CanvasToolbar({
         <TooltipTrigger asChild>
           <button
             onClick={resetView}
-            className={`px-2 py-1 text-xs rounded ui-hover-surface ${isDark ? 'text-secondary-300 hover:text-secondary-100' : 'text-secondary-600 hover:text-secondary-900'
+            aria-label={t.reset}
+            className={`px-2 py-1 text-xs rounded ui-hover-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${isDark ? 'text-secondary-300 hover:text-secondary-100' : 'text-secondary-600 hover:text-secondary-900'
               }`}
           >
             {t.reset}

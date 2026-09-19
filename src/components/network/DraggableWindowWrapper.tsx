@@ -185,8 +185,8 @@ export function DraggableWindowWrapper({
         // Active window: bright green border + glow; background windows get a
         // pale green border (enforced by CSS on [data-window-active]).
         isActive && (!isMobile || !isMobileFullScreen)
-          ? 'border-success-500 shadow-success-500/20'
-          : (isDark ? 'border-success-500/25 shadow-black/30' : 'border-success-500/30 shadow-secondary-200/50'),
+          ? 'border-secondary-400 shadow-secondary-500/20'
+          : (isDark ? 'border-secondary-700 shadow-black/30' : 'border-secondary-300 shadow-secondary-200/50'),
         className
       )}
       onPointerDownCapture={handleFocus}

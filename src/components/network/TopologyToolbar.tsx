@@ -243,7 +243,7 @@ export function TopologyToolbar({
             <ChevronDown className="w-3 h-3 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className={`${isDark ? 'bg-secondary-900 border-secondary-800' : 'bg-white'} w-48`}>
+        <DropdownMenuContent align="start" className={`${isDark ? 'bg-secondary-900 !border-secondary-800' : 'bg-white !border-secondary-200'} w-48`}>
           <DropdownMenuLabel className="text-[11px] font-bold tracking-widest text-secondary-500 py-2">
             {topologyDevices.length > 0 ? t.selectDevice : t.addDevicesFirst}
           </DropdownMenuLabel>
@@ -649,7 +649,7 @@ export function TopologyToolbar({
           </Tooltip>
           <DropdownMenuContent
             align="end"
-            className={`w-48 p-1.5 z-50 ${isDark ? 'bg-secondary-900 border-secondary-800 text-secondary-200' : 'bg-white border-secondary-200 text-secondary-800'}`}
+            className={`w-48 p-1.5 z-50 ${isDark ? 'bg-secondary-900 !border-secondary-800 text-secondary-200' : 'bg-white !border-secondary-200 text-secondary-800'}`}
           >
             <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-secondary-400 px-2 py-1">
               {language === 'tr' ? 'Düzen Algoritması' : 'Layout Algorithm'}

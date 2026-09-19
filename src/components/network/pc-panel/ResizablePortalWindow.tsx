@@ -301,11 +301,11 @@ export function ResizablePortalWindow({
 
   const defaultBorder = isLowGraphics
     ? (isDark ? 'border-secondary-700 bg-secondary-950 text-secondary-100' : 'border-secondary-300 bg-white text-secondary-900')
-    : (borderColorClass || (isDark ? 'border-success-500/30 bg-secondary-900 text-secondary-100' : 'border-success-500 bg-white text-secondary-900'));
+    : (borderColorClass || (isDark ? 'border-secondary-700 bg-secondary-900 text-secondary-100' : 'border-secondary-300 bg-white text-secondary-900'));
 
   const defaultHeaderBg = isLowGraphics
     ? (isDark ? 'border-secondary-800 bg-secondary-900 text-secondary-100' : 'border-secondary-300 bg-secondary-100 text-secondary-900')
-    : (headerBgClass || (isDark ? 'border-success-500/30 bg-secondary-950 text-secondary-100' : 'border-success-500/50 bg-secondary-50 text-secondary-900'));
+    : (headerBgClass || (isDark ? 'border-secondary-800 bg-secondary-950 text-secondary-100' : 'border-secondary-200 bg-secondary-50 text-secondary-900'));
 
   return createPortal(
     <div

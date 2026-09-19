@@ -93,6 +93,8 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | Command | Description |
 |---------|-------------|
 | `ping <host> [size] [count]` | Test connectivity to host with ICMP |
+| `ping tcp <host> [port <port>] [source <src-ip>] [repeat <n>]` | Extended Ping: Test TCP port connectivity and SYN response |
+| `ping udp <host> [port <port>] [source <src-ip>] [repeat <n>]` | Extended Ping: Test UDP port connectivity (default port 53) |
 | `traceroute <host>` | Trace route to destination |
 | `telnet <host> [port]` | Connect to remote device via Telnet |
 | `ssh -l <username> <host>` | Connect via SSH (with username) |
@@ -132,6 +134,8 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `clear counters` | Reset interface packet, byte, drop, and error counters |
 | `clear line <n>` | Clear a terminal line session |
 | `clear interface <name>` | Clear interface counters and state |
+| `clear ip bgp {*|<neighbor-ip>} [soft]` | Reset BGP neighbor session or all sessions and clear learned BGP routes |
+| `write erase` | Erase NVRAM filesystem and startup configuration (alias for `erase startup-config`) |
 | `do <command>` | Execute privileged command from config mode |
 | `help` | Display help system information |
 | `show network health` / `show health` | Run comprehensive network diagnostic check and generate consolidated status report |
@@ -813,7 +817,11 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `show standby [brief]` | Display HSRP status |
 | `show glbp [brief]` | Display GLBP status and AVG election |
 | `show ip bgp` | Display BGP routing table (RIB) |
+| `show ip bgp <prefix>` | Display detailed BGP path information, origin, localpref, weight for specific prefix |
 | `show ip bgp summary` | Display BGP neighbor status, AS numbers and state |
+| `show ip cef [prefix] [detail]` | Display Cisco Express Forwarding (CEF) FIB table and adjacency details |
+| `show interfaces counters [errors]` | Display RX/TX packet, byte, drop, and error counters table for all interfaces |
+| `show ip dhcp snooping statistics` | Display DHCP Snooping interface forwarding and drop statistics |
 | `show mpls forwarding-table` | Display MPLS LFIB forwarding table |
 | `show mpls ldp neighbor` | Display MPLS LDP neighbor sessions |
 | `show ip cache flow` | Display NetFlow active flow cache table |

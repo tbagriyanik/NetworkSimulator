@@ -183,7 +183,7 @@ export function MultiDeviceWindowManager({
 
       {/* Floating Window Controls / Layout Toolbar when multiple windows open */}
       {openWindows.length > 1 && (
-        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-[9990] flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary-900/90 text-white border border-secondary-700/60 shadow-xl backdrop-blur-md text-xs select-none">
+        <div className="fixed top-2 left-1/2 -translate-x-1/2 z-[9990] flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary-900/90 text-white border border-secondary-700/60 shadow-xl backdrop-blur-md text-xs select-none">
           <span className="font-semibold text-emerald-400 mr-1 flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             {openWindows.length} {language === 'tr' ? 'Pencere' : 'Windows'}
@@ -215,7 +215,7 @@ export function MultiDeviceWindowManager({
 
       {/* Tabbed View Navigation Bar when Tabs layout mode is enabled */}
       {layoutMode === 'tabs' && openWindows.length > 0 && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[9989] flex items-center gap-1 p-1 rounded-xl bg-secondary-950/95 text-white border border-secondary-800 shadow-2xl backdrop-blur-lg max-w-4xl overflow-x-auto custom-scrollbar">
+        <div className="fixed top-12 left-1/2 -translate-x-1/2 z-[9989] flex items-center gap-1 p-1 rounded-xl bg-secondary-950/95 text-white border border-secondary-800 shadow-2xl backdrop-blur-lg max-w-4xl overflow-x-auto custom-scrollbar">
           {openWindows.map((win) => {
             const devObj = topologyDevices.find((d) => d.id === win.id);
             const devName = devObj?.name || win.id;

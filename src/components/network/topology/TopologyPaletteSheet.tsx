@@ -107,6 +107,8 @@ export const TopologyPaletteSheet: React.FC<TopologyPaletteSheetProps> = ({
                         if (type === 'switchL3') { addDevice('switch', 'L3'); return; }
                         addDevice(type);
                       }}
+                      type="button"
+                      aria-label={getDeviceTooltip(type)}
                       className={`flex flex-col items-center justify-center p-3 rounded-md border transition-all duration-200 group ${isDark
                         ? 'border-secondary-700 bg-secondary-800/70 hover:bg-secondary-700 hover:border-secondary-500'
                         : 'border-secondary-300 bg-secondary-100 hover:bg-secondary-200 hover:border-secondary-400'
@@ -157,7 +159,9 @@ export const TopologyPaletteSheet: React.FC<TopologyPaletteSheetProps> = ({
                     <TooltipTrigger asChild>
                       <button
                         onClick={() => onCableChange({ ...cableInfo, cableType: type })}
-                        className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200 group ${isActive
+                        type="button"
+                        aria-label={getCableLabel(type)}
+                        className={`flex flex-col items-center justify-center p-3 rounded-md border transition-all duration-200 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${isActive
                             ? isDark
                               ? 'border-secondary-600 bg-secondary-700/60'
                               : 'border-secondary-300 bg-secondary-200/80'

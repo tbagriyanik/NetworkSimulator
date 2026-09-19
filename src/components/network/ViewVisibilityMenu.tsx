@@ -48,7 +48,7 @@ export function ViewVisibilityMenu({ isDark = true }: ViewVisibilityMenuProps) {
 
       <DropdownMenuContent
         align="end"
-        className={`w-56 p-1.5 z-50 ${isDark ? 'bg-secondary-900 border-secondary-800 text-secondary-200' : 'bg-white border-secondary-200 text-secondary-800'}`}
+        className={`w-56 p-1.5 z-50 ${isDark ? 'bg-secondary-900 !border-secondary-800 text-secondary-200' : 'bg-white !border-secondary-200 text-secondary-800'}`}
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
         <DropdownMenuLabel className="text-[11px] font-bold uppercase tracking-wider text-secondary-400 px-2 py-1">

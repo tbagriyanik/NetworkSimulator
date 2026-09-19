@@ -794,7 +794,7 @@ export function cmdShowControlPlane(state: SwitchState, _input: string, _ctx: Co
 }
 
 /**
- * Show IP CEF - Cisco Express Forwarding table
+ * Show IP CEF - Express Forwarding table
  * Syntax: show ip cef | show ip cef <prefix> | show ip cef detail
  */
 export function cmdShowIpCef(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
