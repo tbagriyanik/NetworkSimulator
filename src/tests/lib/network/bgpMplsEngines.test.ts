@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getOrCreateBgpConfig, configureBgpNeighbor, addBgpNetwork, exchangeBgpRoutes } from '@/lib/network/bgpEngine';
-import { getOrCreateMplsConfig, enableMplsOnInterface, generateLfib, establishLdpSession } from '@/lib/network/mplsLdpEngine';
+import { getOrCreateMplsConfig, enableMplsOnInterface, generateLfib, establishLdpSession, discoverLdpNeighbors, forwardMplsPacket } from '@/lib/network/mplsLdpEngine';
 import type { SwitchState } from '@/lib/network/types';
 
 describe('BGP & MP-BGP Engine', () => {
@@ -75,5 +75,24 @@ describe('MPLS & LDP Core Engine', () => {
 
     const ldpPeer = establishLdpSession(state, '2.2.2.2', '10.1.1.2', 'Gi0/0');
     expect(ldpPeer.tcpState).toBe('Operational');
+  });
+
+  it('discovers only real connected MPLS peers and creates a reciprocal session', () => {
+    const r1 = { routerId: '1.1.1.1', ports: { 'Gi0/0': { id: 'Gi0/0', ipAddress: '10.0.0.1', subnetMask: '255.255.255.0', shutdown: false } } } as unknown as SwitchState;
+    const r2 = { routerId: '2.2.2.2', ports: { 'Gi0/0': { id: 'Gi0/0', ipAddress: '10.0.0.2', subnetMask: '255.255.255.0', shutdown: false } } } as unknown as SwitchState;
+    enableMplsOnInterface(r1, 'Gi0/0');
+    enableMplsOnInterface(r2, 'Gi0/0');
+    const states = new Map([['r1', r1], ['r2', r2]]);
+    discoverLdpNeighbors(r1, states, [{ id: 'c1', sourceDeviceId: 'r1', sourcePort: 'Gi0/0', targetDeviceId: 'r2', targetPort: 'Gi0/0', cableType: 'ethernet', active: true }] as never);
+    expect(getOrCreateMplsConfig(r1).neighbors['10.0.0.2']?.peerLdpId).toBe('2.2.2.2:0');
+    expect(getOrCreateMplsConfig(r2).neighbors['10.0.0.1']?.peerLdpId).toBe('1.1.1.1:0');
+  });
+
+  it('forwards a labeled packet using the LFIB and counts switched packets', () => {
+    const state = { routerId: '1.1.1.1', ports: {} } as unknown as SwitchState;
+    getOrCreateMplsConfig(state).lfib = [{ inLabel: 16000, outLabel: 17000, prefix: '10.10.0.0/16', outInterface: 'Gi0/0', nextHop: '10.0.0.2' }];
+    const result = forwardMplsPacket(state, { label: 16000, destinationPrefix: '10.10.0.0/16', payload: 'packet' });
+    expect(result).toMatchObject({ action: 'forward', outLabel: 17000, nextHop: '10.0.0.2', payload: 'packet' });
+    expect(getOrCreateMplsConfig(state).lfib[0].packetsSwitched).toBe(1);
   });
 });

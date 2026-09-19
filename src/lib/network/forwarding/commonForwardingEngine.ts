@@ -5,6 +5,7 @@ import { getRoutingTable, findRoute, Route } from '@/lib/network/routing';
 import { learnMacAddress } from '@/lib/network/macLearning';
 import { generateIcmpUnreachable } from './icmpUtils';
 import { deterministicIdWithPrefix } from '@/lib/network/randomServices';
+import { processSnmpPacket } from '@/lib/network/snmp';
 
 export interface ForwardingEngineResult {
   accepted: boolean;
@@ -99,6 +100,22 @@ export function processControlPlaneProtocols(
   const updatedState = { ...state };
   let handled = false;
   let responseFrame: NetworkPacketFrame | undefined;
+
+  // SNMP requests terminate at the management plane (UDP/161) and produce a
+  // real response frame from the current device state.
+  if (frame.protocol === 'UDP' && frame.dstPort === 161 && frame.snmpPayload) {
+    handled = true;
+    const response = processSnmpPacket(device.id, frame.snmpPayload, new Map([[device.id, state]]));
+    responseFrame = {
+      id: deterministicIdWithPrefix('snmp-response'), protocol: 'UDP', timestamp: now,
+      ingressDeviceId: device.id, srcMac: device.macAddress || '00:00:00:00:00:00', dstMac: frame.srcMac,
+      etherType: '0x0800', srcIp: frame.dstIp, dstIp: frame.srcIp, srcPort: 161, dstPort: frame.srcPort,
+      snmpPayload: { pdu: frame.snmpPayload.pdu, version: frame.snmpPayload.version, community: frame.snmpPayload.community,
+        requestId: response.requestId, oids: frame.snmpPayload.oids,
+        varBinds: response.varBinds.map(v => ({ oid: v.oid, value: v.value })), error: response.error },
+      length: 80, info: `SNMP response ${response.error}`
+    };
+  }
 
   // 1. ARP Protocol Trap
   if (frame.protocol === 'ARP' && frame.arpPayload) {

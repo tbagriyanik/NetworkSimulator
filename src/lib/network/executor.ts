@@ -8,6 +8,7 @@ import { ensureDeviceStatesMap } from './networkUtils';
 import { CLI_ERRORS, cliModeError } from './core/cliErrors';
 import { buildRunningConfig } from './core/configBuilder';
 import { getCommandCapabilityError } from './core/commandCapabilityCheck';
+import { dispatchEemEvent } from './eemEngine';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 // Import modular components
@@ -240,6 +241,14 @@ export function executeCommand(
   let result = handler(state, commandInput, ctx);
   if (pipeFilter && result.success && typeof result.output === 'string') {
     result = { ...result, output: applyPipeFilterOutputExternal(result.output, pipeFilter) };
+  }
+  // Feed user-issued CLI commands into EEM after the command itself succeeds.
+  // skipConfirm is also used by EEM actions, preventing recursive self-triggering.
+  if (result.success && !skipConfirm && state.eemApplets && Object.keys(state.eemApplets).length > 0) {
+    const eem = dispatchEemEvent({ ...state, ...result.newState }, 'cli', cmdToProcess, language);
+    if (eem.firedApplets.length > 0) {
+      result = { ...result, newState: eem.state, output: [result.output, ...eem.logs].filter(Boolean).join('\n') };
+    }
   }
   return processCommandResultExternal(result, cmdToProcess, state.currentMode, state, language, getEstimatedSuggestions);
 }

@@ -1,5 +1,12 @@
 import type { SwitchState } from './types';
 import { getDevicePrimaryIp } from './bgpEngine';
+type LdpConnection = {
+  sourceDeviceId: string;
+  sourcePort: string;
+  targetDeviceId: string;
+  targetPort: string;
+  active: boolean;
+};
 
 export interface LdpNeighbor {
   peerLdpId: string; // e.g. "2.2.2.2:0"
@@ -29,6 +36,20 @@ export interface LibEntry {
   remoteLabel?: number;
   peerIp?: string;
   labelType: 'implicit-null' | 'explicit-null' | 'regular';
+}
+
+export interface MplsPacket {
+  label: number;
+  destinationPrefix: string;
+  payload?: unknown;
+}
+
+export interface MplsForwardResult {
+  action: 'forward' | 'pop' | 'untagged' | 'drop';
+  outLabel?: number;
+  outInterface?: string;
+  nextHop?: string;
+  payload?: unknown;
 }
 
 export interface MplsConfig {
@@ -148,7 +169,7 @@ export function generateLfib(state: SwitchState): LfibEntry[] {
         
         lfib.push({
           inLabel: labelCounter++,
-          outLabel: neighborEntry ? 1000 + Math.floor(Math.random() * 100) : 'Pop',
+          outLabel: neighborEntry ? remoteLabelFor(prefix, neighborEntry.peerIp) : 'Pop',
           prefix,
           outInterface,
           nextHop,
@@ -185,15 +206,17 @@ export function generateLib(state: SwitchState): LibEntry[] {
   // Add remote label bindings from neighbors
   Object.values(mpls.neighbors).forEach(neighbor => {
     if (neighbor.tcpState === 'Operational') {
-      // Simulate receiving label mappings from neighbor
-      neighbor.labelsReceived = Math.floor(Math.random() * 50) + 10;
-      neighbor.labelsAdvertised = Math.floor(Math.random() * 50) + 10;
-      
-      for (let i = 0; i < 5; i++) {
+      const remotePrefixes = Object.values(state.ports || {})
+        .filter(port => port.ipAddress && port.subnetMask && !port.shutdown && port.mplsEnabled)
+        .map(port => `${port.ipAddress}/${port.subnetMask}`);
+      neighbor.labelsReceived = remotePrefixes.length;
+      neighbor.labelsAdvertised = remotePrefixes.length;
+
+      for (const prefix of remotePrefixes) {
         lib.push({
-          prefix: `10.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.0/24`,
+          prefix,
           localLabel: labelCounter++,
-          remoteLabel: 1000 + Math.floor(Math.random() * 100),
+          remoteLabel: remoteLabelFor(prefix, neighbor.peerIp),
           peerIp: neighbor.peerIp,
           labelType: 'regular'
         });
@@ -203,6 +226,28 @@ export function generateLib(state: SwitchState): LibEntry[] {
 
   mpls.lib = lib;
   return lib;
+}
+
+function remoteLabelFor(prefix: string, peerIp = ''): number {
+  let hash = 2166136261;
+  for (const char of `${prefix}|${peerIp}`) hash = Math.imul(hash ^ char.charCodeAt(0), 16777619);
+  return 1000 + (hash >>> 0) % 90000;
+}
+
+/** Look up an incoming label and apply the LFIB action. */
+export function forwardMplsPacket(state: SwitchState, packet: MplsPacket): MplsForwardResult {
+  const entry = getOrCreateMplsConfig(state).lfib.find(item => item.inLabel === packet.label && item.prefix === packet.destinationPrefix)
+    || getOrCreateMplsConfig(state).lfib.find(item => item.inLabel === packet.label);
+  if (!entry) return { action: 'drop' };
+  entry.packetsSwitched = (entry.packetsSwitched || 0) + 1;
+  if (entry.outLabel === 'Implicit-Null' || entry.outLabel === 'Pop') {
+    return { action: 'pop', outInterface: entry.outInterface, nextHop: entry.nextHop, payload: packet.payload };
+  }
+  if (entry.outLabel === 'Untagged') {
+    return { action: 'untagged', outInterface: entry.outInterface, nextHop: entry.nextHop, payload: packet.payload };
+  }
+  entry.bytesSwitched = (entry.bytesSwitched || 0) + 1;
+  return { action: 'forward', outLabel: entry.outLabel, outInterface: entry.outInterface, nextHop: entry.nextHop, payload: packet.payload };
 }
 
 /**
@@ -234,45 +279,54 @@ export function establishLdpSession(
 /**
  * Simulate LDP neighbor discovery on MPLS-enabled interfaces
  */
-export function discoverLdpNeighbors(state: SwitchState): void {
+export function discoverLdpNeighbors(
+  state: SwitchState,
+  topologyStates?: Map<string, SwitchState>,
+  connections: LdpConnection[] = []
+): void {
   const mpls = getOrCreateMplsConfig(state);
   
   if (!mpls.enabled || !mpls.ldpEnabled) {
     return;
   }
 
-  // Simulate discovery on interfaces with MPLS enabled
-  mpls.discoveryInterfaces.forEach(ifName => {
-    const port = Object.values(state.ports || {}).find(p => 
-      p.id.toLowerCase() === ifName.toLowerCase() && p.mplsEnabled
-    );
-    
-    if (port && port.ipAddress && !port.shutdown) {
-      // Simulate discovering neighbors on connected networks
-      // In a real simulator, this would check actual connected devices
-      const simulatedNeighborIp = `10.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 254) + 1}`;
-      const simulatedRouterId = `1.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 254) + 1}`;
-      
-      if (!mpls.neighbors[simulatedNeighborIp]) {
-        establishLdpSession(state, simulatedRouterId, simulatedNeighborIp, ifName);
-      }
-    }
-  });
+  // Discovery must come from an actual connected peer. The old implementation
+  // generated random addresses, which made `show mpls ldp neighbor` look valid
+  // while no packet could ever use that adjacency.
+  if (topologyStates && connections.length > 0) {
+    const localId = [...topologyStates.entries()].find(([, candidate]) => candidate === state)?.[0];
+    if (localId) {
+      connections.filter(c => c.active && (c.sourceDeviceId === localId || c.targetDeviceId === localId)).forEach(conn => {
+        const localPortId = conn.sourceDeviceId === localId ? conn.sourcePort : conn.targetPort;
+        const peerId = conn.sourceDeviceId === localId ? conn.targetDeviceId : conn.sourceDeviceId;
+        const peerPortId = conn.sourceDeviceId === localId ? conn.targetPort : conn.sourcePort;
+        const peer = topologyStates.get(peerId);
+        const localPort = Object.values(state.ports || {}).find(p => p.id.toLowerCase() === localPortId.toLowerCase());
+        const peerPort = peer && Object.values(peer.ports || {}).find(p => p.id.toLowerCase() === peerPortId.toLowerCase());
+        if (!peer || !localPort || !peerPort || !localPort.mplsEnabled || !peerPort.mplsEnabled ||
+            localPort.shutdown || peerPort.shutdown || !localPort.ipAddress || !peerPort.ipAddress ||
+            !sameSubnet(localPort.ipAddress, localPort.subnetMask, peerPort.ipAddress, peerPort.subnetMask)) return;
 
-  // Update neighbor uptimes and simulate TCP state transitions
-  Object.values(mpls.neighbors).forEach(neighbor => {
-    if (neighbor.tcpState === 'Operational') {
-      neighbor.uptimeSeconds += 1;
-    } else {
-      // Simulate TCP state machine progression
-      const states: Array<'NonExistent' | 'Initialized' | 'OpenRec' | 'OpenSent' | 'Operational'> = 
-        ['NonExistent', 'Initialized', 'OpenSent', 'OpenRec', 'Operational'];
-      const currentIndex = states.indexOf(neighbor.tcpState);
-      if (currentIndex < states.length - 1 && Math.random() > 0.7) {
-        neighbor.tcpState = states[currentIndex + 1];
-      }
+        const peerMpls = getOrCreateMplsConfig(peer);
+        establishLdpSession(state, peerMpls.routerId || peer.routerId || getDevicePrimaryIp(peer), peerPort.ipAddress, localPortId);
+        const localMpls = getOrCreateMplsConfig(state);
+        establishLdpSession(peer, localMpls.routerId || state.routerId || getDevicePrimaryIp(state), localPort.ipAddress, peerPortId);
+      });
+      return;
     }
-  });
+  }
+
+  // Without topology context there is no safe way to discover a neighbor.
+  // Keep this path side-effect free for callers that only hold one device.
+  if (!topologyStates) return;
+
+}
+
+function sameSubnet(a: string, maskA: string | undefined, b: string, maskB: string | undefined): boolean {
+  if (!maskA || !maskB) return false;
+  const toInt = (ip: string) => ip.split('.').reduce((n, octet) => ((n << 8) | Number(octet)) >>> 0, 0);
+  const mask = toInt(maskA);
+  return (toInt(a) & mask) === (toInt(b) & mask) && mask === toInt(maskB);
 }
 
 /**

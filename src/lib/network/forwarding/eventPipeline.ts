@@ -24,6 +24,9 @@ import { runAgingTick } from '@/lib/network/agingEngine';
 import { evaluateIpSlaOperations } from '@/lib/network/ipSlaEngine';
 import { evaluateDhcpv6ForDevice } from '@/lib/network/eui64';
 import { evaluatePppoeSessions } from '@/lib/network/pppoeEngine';
+import { dispatchEemEvent } from '@/lib/network/eemEngine';
+import { discoverLdpNeighbors, generateLib, generateLfib } from '@/lib/network/mplsLdpEngine';
+import { buildMstBpdu } from '@/lib/network/mstp';
 import {
   ospfTickDeadTimer,
   eigrpTickHoldTimer,
@@ -138,6 +141,13 @@ export function runNetworkEventPipeline(
     }
 
     if ((device.type === 'switchL2' || device.type === 'switchL3') && state.spanningTreePriority) {
+      const isMst = state.spanningTreeMode === 'mst';
+      const mstBpdu = isMst ? buildMstBpdu({
+        id: device.id,
+        priority: state.spanningTreePriority,
+        mac: state.macAddress || '0000.0000.0000',
+        config: state.mstConfig || { name: '', revision: 0, instances: {} }
+      }) : undefined;
       const stpFrame: NetworkPacketFrame = {
         id: `stp-bpdu-${device.id}-${now}`,
         protocol: 'STP',
@@ -147,7 +157,7 @@ export function runNetworkEventPipeline(
         dstMac: '01:80:c2:00:00:00',
         etherType: '0x4242',
         stpPayload: {
-          protocolVersion: 'stp',
+          protocolVersion: isMst ? 'mstp' : 'stp',
           rootId: state.macAddress || '0000.0000.0000',
           rootPathCost: 0,
           bridgeId: state.macAddress || '0000.0000.0000',
@@ -155,7 +165,12 @@ export function runNetworkEventPipeline(
           messageAge: 0,
           maxAge: 20,
           helloTime: 2,
-          forwardDelay: 15
+          forwardDelay: 15,
+          mstRegionName: mstBpdu?.regionName,
+          mstRevision: mstBpdu?.revision,
+          mstDigest: mstBpdu?.digest,
+          mstRecords: mstBpdu?.records,
+          mstBoundary: mstBpdu?.boundary
         },
         length: 52,
         info: `STP BPDU Root: ${state.macAddress || 'Self'}`
@@ -252,6 +267,32 @@ export function runNetworkEventPipeline(
   // 6. Process incoming OSPF/EIGRP Hellos: create/update neighbor FSM records
   // when we detect that two active protocol routers are directly connected.
   _processProtocolNeighborDiscovery(updatedStates, devices, connections, now);
+
+  // LDP is driven by the same live topology tick as the other control-plane protocols.
+  updatedStates.forEach(state => {
+    discoverLdpNeighbors(state, updatedStates, connections);
+    generateLib(state);
+    generateLfib(state);
+  });
+
+  // Convert protocol/timer activity into the same event channel used by EEM.
+  devices.forEach(device => {
+    const state = updatedStates.get(device.id);
+    if (!state) return;
+    const runtime = state as SwitchState & { eemTimerElapsed?: number };
+    const elapsed = (runtime.eemTimerElapsed || 0) + SIM_SECONDS_PER_TICK;
+    let next = { ...state, eemTimerElapsed: elapsed } as SwitchState;
+    const previousLogs = prevStates.get(device.id)?.eventLogs || [];
+    const newLogs = (state.eventLogs || []).slice(previousLogs.length);
+    for (const message of newLogs) next = dispatchEemEvent(next, 'syslog', message, 'en').state;
+    const eem = dispatchEemEvent(next, 'timer', String(elapsed), 'en');
+    if (eem.firedApplets.length > 0 || newLogs.length > 0) {
+      const timerReset = eem.firedApplets.length > 0 ? { ...eem.state, eemTimerElapsed: 0 } : eem.state;
+      updatedStates.set(device.id, timerReset);
+    } else {
+      updatedStates.set(device.id, next);
+    }
+  });
 
   // 7. Diff prior vs updated OSPF/EIGRP neighbor states and surface adjacency
   // changes (Full/Up established, Dead/Hold expiry) as timeline events.
@@ -578,5 +619,3 @@ function _upsertEigrpNeighbor(
     };
   }
 }
-
-

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { getDeviceSnmpOids, snmpGet, snmpGetNext, snmpWalk, type SnmpOidEntry } from '../../../../src/lib/network/snmp';
+import { getDeviceSnmpOids, snmpGet, snmpGetNext, snmpWalk, processSnmpPacket, type SnmpOidEntry } from '../../../../src/lib/network/snmp';
 import { SwitchState } from '../../../../src/lib/network/types';
 
 describe('SNMP Engine', () => {
@@ -85,5 +85,14 @@ describe('SNMP Engine', () => {
     const result = snmpGetNext('device1', '.1.3.6.1.2.1.1.1.0', 'public', deviceStates);
     expect(result).toBeDefined();
     expect(result?.oid).toBe('.1.3.6.1.2.1.1.3.0'); // sysUpTime is logically next here based on provided OIDs
+  });
+
+  it('processes a real request/response packet against live state', () => {
+    const response = processSnmpPacket('device1', {
+      version: '2c', pdu: 'GET', community: 'public', requestId: 42,
+      oids: ['.1.3.6.1.2.1.1.5.0']
+    }, deviceStates);
+    expect(response).toMatchObject({ requestId: 42, error: 'none' });
+    expect(response.varBinds[0].value).toBe('Switch1');
   });
 });

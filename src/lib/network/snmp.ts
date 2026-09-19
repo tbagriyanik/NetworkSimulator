@@ -16,6 +16,34 @@ export interface SnmpTrapEntry {
   message: string;
 }
 
+export interface SnmpPacket {
+  version: '1' | '2c';
+  pdu: 'GET' | 'GETNEXT' | 'WALK';
+  community: string;
+  requestId: number;
+  oids: string[];
+}
+
+export interface SnmpResponsePacket {
+  requestId: number;
+  error: 'none' | 'authorizationError' | 'noSuchName';
+  varBinds: SnmpOidEntry[];
+}
+
+/** Processes an SNMP packet against the live device state. */
+export function processSnmpPacket(deviceId: string, packet: SnmpPacket, deviceStates: Map<string, SwitchState>): SnmpResponsePacket {
+  const state = deviceStates.get(deviceId);
+  if (!state || !state.snmpCommunities?.[packet.community]) {
+    return { requestId: packet.requestId, error: 'authorizationError', varBinds: [] };
+  }
+  const varBinds = packet.pdu === 'GET'
+    ? packet.oids.map(oid => snmpGet(deviceId, oid, packet.community, deviceStates)).filter((entry): entry is SnmpOidEntry => !!entry)
+    : packet.pdu === 'GETNEXT'
+      ? packet.oids.map(oid => snmpGetNext(deviceId, oid, packet.community, deviceStates)).filter((entry): entry is SnmpOidEntry => !!entry)
+      : packet.oids.flatMap(oid => snmpWalk(deviceId, oid, packet.community, deviceStates));
+  return { requestId: packet.requestId, error: varBinds.length > 0 ? 'none' : 'noSuchName', varBinds };
+}
+
 export function getDeviceSnmpOids(deviceId: string, deviceStates: Map<string, SwitchState>): SnmpOidEntry[] {
   const state = deviceStates.get(deviceId);
   if (!state) return [];

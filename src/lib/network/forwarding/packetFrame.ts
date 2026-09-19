@@ -17,6 +17,16 @@ export type PacketProtocolType =
   | 'TCP'
   | 'UDP';
 
+export interface SnmpFramePayload {
+  pdu: 'GET' | 'GETNEXT' | 'WALK';
+  version: '1' | '2c';
+  community: string;
+  requestId: number;
+  oids: string[];
+  varBinds?: Array<{ oid: string; value: string | number }>;
+  error?: string;
+}
+
 
 export interface ArpPayload {
   operation: 'request' | 'reply';
@@ -47,6 +57,11 @@ export interface StpPayload {
   maxAge: number;
   helloTime: number;
   forwardDelay: number;
+  mstRegionName?: string;
+  mstRevision?: number;
+  mstDigest?: string;
+  mstRecords?: Array<{ instance: number; vlans: number[]; regionalRoot: string; internalCost: number }>;
+  mstBoundary?: boolean;
 }
 
 export interface OspfPayload {
@@ -108,6 +123,7 @@ export interface NetworkPacketFrame {
   ospfPayload?: OspfPayload;
   eigrpPayload?: EigrpPayload;
   ipSlaPayload?: IpSlaPayload;
+  snmpPayload?: SnmpFramePayload;
 
   // Layer 4 Ports (used by NetFlow accounting / firewalls)
   srcPort?: number;

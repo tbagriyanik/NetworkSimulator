@@ -10,6 +10,23 @@ export interface RestconfResponse {
   updatedState?: SwitchState;
 }
 
+type StateWithRevision = SwitchState & { networkStateRevision?: number };
+
+/** Invalidate derived forwarding state after a model-driven interface edit. */
+function applyRestconfStateMutation(state: SwitchState, ports: SwitchState['ports']): SwitchState {
+  const current = state as StateWithRevision;
+  return {
+    ...state,
+    ports,
+    arpCache: [],
+    ndpCache: [],
+    macAddressTable: [],
+    dynamicRoutes: [],
+    mplsConfig: state.mplsConfig ? { ...state.mplsConfig, neighbors: {}, lfib: [], lib: [] } : state.mplsConfig,
+    networkStateRevision: (current.networkStateRevision || 0) + 1,
+  } as SwitchState;
+}
+
 /**
  * Normalizes port name for robust matching (e.g., 'GigabitEthernet0/0' <=> 'Gi0/0' <=> 'gi0/0')
  */
@@ -151,10 +168,7 @@ export function handleRestconfRequest(
         shutdown: newShutdown,
       };
 
-      const updatedState: SwitchState = {
-        ...state,
-        ports: updatedPorts,
-      };
+      const updatedState = applyRestconfStateMutation(state, updatedPorts);
 
       return {
         status: 204,
@@ -193,10 +207,7 @@ export function handleRestconfRequest(
         description: '',
       };
 
-      const updatedState: SwitchState = {
-        ...state,
-        ports: updatedPorts,
-      };
+      const updatedState = applyRestconfStateMutation(state, updatedPorts);
 
       return {
         status: 204,
@@ -271,10 +282,7 @@ export function handleRestconfRequest(
         },
       };
 
-      const updatedState: SwitchState = {
-        ...state,
-        ports: updatedPorts,
-      };
+      const updatedState = applyRestconfStateMutation(state, updatedPorts);
 
       return {
         status: upperMethod === 'POST' ? 201 : 204,
