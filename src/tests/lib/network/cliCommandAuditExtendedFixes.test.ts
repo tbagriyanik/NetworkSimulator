@@ -165,7 +165,7 @@ describe('Extended CLI Command Audit Fixes Tests', () => {
   });
 
   describe('4. show cdp neighbors detail', () => {
-    it('should output rich Cisco details for connected devices', () => {
+    it('should output details for connected devices', () => {
       const state = createBaseState();
       const devices: CanvasDevice[] = [
         { id: 'dev-1', name: 'R1', type: 'router', x: 0, y: 0, ip: '192.168.1.1', status: 'online', ports: [{ id: 'gi0/1', label: 'GigabitEthernet0/1', status: 'connected' }] },

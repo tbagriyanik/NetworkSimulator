@@ -850,6 +850,57 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `ip flow-export version <5\|9>` | Config | Set NetFlow export protocol version (5 or 9) |
 | `ip flow ingress` / `ip flow egress` | Interface | Enable NetFlow traffic monitoring on interface |
 
+### Multicast, PIM & IGMP (v6.0.0)
+
+| Command | Mode | Description |
+|---------|------|-------------|
+| `ip multicast-routing` | Config | Enable IP multicast routing globally |
+| `no ip multicast-routing` | Config | Disable IP multicast routing globally |
+| `ip pim sparse-mode` | Interface | Enable PIM Sparse Mode on interface |
+| `ip pim dense-mode` | Interface | Enable PIM Dense Mode on interface |
+| `ip pim sparse-dense-mode` | Interface | Enable PIM Sparse-Dense Mode on interface |
+| `no ip pim` | Interface | Disable PIM on interface |
+| `ip igmp join-group <ip-address>` | Interface | Join interface to an IGMP multicast group |
+| `no ip igmp join-group <ip-address>` | Interface | Leave IGMP multicast group |
+| `ip igmp version <1\|2\|3>` | Interface | Set IGMP protocol version (1, 2, or 3) |
+| `show ip mroute` | Privileged | Display IP Multicast Routing Table (*, G) and (S, G) |
+| `show ip pim interface` | Privileged | Display PIM enabled interfaces and status |
+| `show ip pim neighbor` | Privileged | Display PIM neighbors table |
+| `show ip igmp groups` | Privileged | Display connected IGMP multicast group membership |
+
+### Advanced Services, SNMPv3, CBAC, EEM & NETCONF (v6.0.0)
+
+| Command | Mode | Description |
+|---------|------|-------------|
+| `snmp-server group <name> <v1\|v2c\|v3> [noauth\|auth\|priv]` | Config | Define SNMPv3 group and security level |
+| `snmp-server user <user> <group> v3 [auth <md5\|sha> <pass>] [priv <des\|3des\|aes> <pass>]` | Config | Configure SNMPv3 user with authentication and privacy credentials |
+| `snmp-server host <ip> [traps\|informs] [version <1\|2c\|3>] <community\|user>` | Config | Configure SNMP notification recipient host |
+| `show snmp group` | Privileged | Display configured SNMP security groups |
+| `show snmp user` | Privileged | Display configured SNMPv3 users |
+| `ip sla responder` | Config | Enable IP SLA measurement responder |
+| `show ip sla responder` | Privileged | Display IP SLA responder status |
+| `ip inspect name <name> <protocol> [alert on\|alert off\|timeout <sec>]` | Config | Define CBAC firewall inspection rule |
+| `ip inspect <name> <in\|out>` | Interface | Apply CBAC inspection rule to interface direction |
+| `show ip inspect` / `show ip inspect config` | Privileged | Display CBAC firewall inspect configuration |
+| `show ip inspect interfaces` | Privileged | Display interfaces with applied CBAC inspection |
+| `tunnel protection ipsec profile <profile-name>` | Interface | Apply IPSec encryption profile to GRE tunnel |
+| `spanning-tree uplinkfast` | Config | Enable STP UplinkFast for accelerated access-layer failover |
+| `spanning-tree backbonefast` | Config | Enable STP BackboneFast for accelerated indirect link failure convergence |
+| `bgp confederation identifier <as-number>` | Router Config | Configure BGP confederation autonomous system identifier |
+| `bgp confederation peers <as-list...>` | Router Config | Configure autonomous systems within the BGP confederation |
+| `bgp always-compare-med` | Router Config | Compare Multi-Exit Discriminator (MED) from different AS |
+| `bgp bestpath as-path ignore` | Router Config | Ignore AS-Path length in BGP best-path decision algorithm |
+| `event manager applet <name>` | Config | Create EEM (Embedded Event Manager) applet and enter `(config-applet)#` mode |
+| `event syslog pattern <regex>` | Config-Applet | Trigger EEM applet on matching syslog message |
+| `event cli pattern <regex>` | Config-Applet | Trigger EEM applet on matching CLI command |
+| `event timer countdown <seconds>` | Config-Applet | Trigger EEM applet after timer expiration |
+| `action <id> syslog msg <message>` | Config-Applet | Generate syslog alert action from EEM applet |
+| `action <id> cli command <cmd>` | Config-Applet | Execute CLI command action from EEM applet |
+| `show event manager applet all` | Privileged | Display all registered EEM applets and trigger-action bindings |
+| `netconf-yang` | Config | Initialize and enable NETCONF-YANG model-driven management |
+| `netconf ssh` | Config | Enable NETCONF SSH listening server on standard port 830 |
+| `show netconf-yang status` | Privileged | Display NETCONF-YANG engine and SSH server operational status |
+
 ## Command Modes
 - **User Mode** (`>`) - Basic monitoring commands
 - **Privileged Mode** (`#`) - All show/debug commands

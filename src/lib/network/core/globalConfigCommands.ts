@@ -132,8 +132,34 @@ import {
   cmdSnmpCommunity,
   cmdSnmpContact,
   cmdSnmpLocation,
-  cmdDefaultInterface
+  cmdDefaultInterface,
+  cmdSpanningTreeUplinkfast,
+  cmdNoSpanningTreeUplinkfast,
+  cmdSpanningTreeBackbonefast,
+  cmdNoSpanningTreeBackbonefast,
+  cmdSnmpGroup,
+  cmdNoSnmpGroup,
+  cmdSnmpUser,
+  cmdNoSnmpUser,
+  cmdSnmpHost,
+  cmdNoSnmpHost,
+  cmdIpSlaResponder,
+  cmdNoIpSlaResponder
 } from './globalConfigMiscCommands';
+import { cmdIpMulticastRouting, cmdNoIpMulticastRouting } from './multicastCommands';
+import { cmdIpInspectName, cmdNoIpInspect } from './cbacCommands';
+import {
+  cmdEventManagerApplet,
+  cmdNoEventManagerApplet,
+  cmdEemEvent,
+  cmdNoEemEvent,
+  cmdEemAction,
+  cmdNoEemAction,
+  cmdNetconfYang,
+  cmdNoNetconfYang,
+  cmdNetconfSsh,
+  cmdNoNetconfSsh
+} from './eemCommands';
 
 export { cmdIpRoute, cmdNoIpRoute };
 
@@ -167,6 +193,10 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'spanning-tree mode': cmdSpanningTreeMode,
   'spanning-tree vlan': cmdSpanningTreeVlan,
   'spanning-tree portfast': cmdSpanningTreePortfastDefault,
+  'spanning-tree uplinkfast': cmdSpanningTreeUplinkfast,
+  'no spanning-tree uplinkfast': cmdNoSpanningTreeUplinkfast,
+  'spanning-tree backbonefast': cmdSpanningTreeBackbonefast,
+  'no spanning-tree backbonefast': cmdNoSpanningTreeBackbonefast,
   'no spanning-tree': cmdNoSpanningTree,
   'service password-encryption': cmdServicePasswordEncryption,
   'no service password-encryption': cmdNoServicePasswordEncryption,
@@ -189,6 +219,10 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'no ip domain-name': cmdNoIpDomainName,
   'ip routing': cmdIpRouting,
   'no ip routing': cmdNoIpRouting,
+  'ip multicast-routing': cmdIpMulticastRouting,
+  'no ip multicast-routing': cmdNoIpMulticastRouting,
+  'ip inspect name': cmdIpInspectName,
+  'no ip inspect name': cmdNoIpInspect,
   'ip route': cmdIpRoute,
   'no ip route': cmdNoIpRoute,
   'ip ssh time-out': cmdIpSshTimeOut,
@@ -290,6 +324,14 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'snmp-server community': cmdSnmpCommunity,
   'snmp-server contact': cmdSnmpContact,
   'snmp-server location': cmdSnmpLocation,
+  'snmp-server group': cmdSnmpGroup,
+  'no snmp-server group': cmdNoSnmpGroup,
+  'snmp-server user': cmdSnmpUser,
+  'no snmp-server user': cmdNoSnmpUser,
+  'snmp-server host': cmdSnmpHost,
+  'no snmp-server host': cmdNoSnmpHost,
+  'ip sla responder': cmdIpSlaResponder,
+  'no ip sla responder': cmdNoIpSlaResponder,
   'archive': cmdArchive,
   'alias': cmdAliasExec,
   'no alias': cmdNoAliasExec,
@@ -347,4 +389,14 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'no router lisp': cmdLispRouter,
   'database-mapping': cmdLispEidTable,
   'control-plane': cmdControlPlane,
+  'event manager applet': cmdEventManagerApplet,
+  'no event manager applet': cmdNoEventManagerApplet,
+  'event': cmdEemEvent,
+  'no event': cmdNoEemEvent,
+  'action': cmdEemAction,
+  'no action': cmdNoEemAction,
+  'netconf-yang': cmdNetconfYang,
+  'no netconf-yang': cmdNoNetconfYang,
+  'netconf ssh': cmdNetconfSsh,
+  'no netconf ssh': cmdNoNetconfSsh,
 };

@@ -534,6 +534,72 @@ export function cmdNoNeighborMed(state: SwitchState, input: string): CommandResu
     return { success: true, output: `BGP neighbor ${match[1]} MED reset`, newState: { bgpNeighbors: neighbors } };
 }
 
+export function cmdBgpConfederationIdentifier(state: SwitchState, input: string): CommandResult {
+    const err = requireBgp(state);
+    if (err) return err;
+    const match = input.match(/^bgp\s+confederation\s+identifier\s+(\d+)$/i);
+    if (!match) return { success: false, error: '% Invalid BGP confederation identifier' };
+    const confId = parseInt(match[1], 10);
+    return {
+        success: true,
+        output: `BGP confederation identifier set to ${confId}`,
+        newState: { bgpConfederationId: confId }
+    };
+}
+
+export function cmdBgpConfederationPeers(state: SwitchState, input: string): CommandResult {
+    const err = requireBgp(state);
+    if (err) return err;
+    const match = input.match(/^bgp\s+confederation\s+peers\s+([0-9\s]+)$/i);
+    if (!match) return { success: false, error: '% Invalid BGP confederation peers command' };
+    const peers = match[1].trim().split(/\s+/).map(p => parseInt(p, 10)).filter(p => !isNaN(p));
+    const currentPeers = [...(state.bgpConfederationPeers || [])];
+    for (const p of peers) {
+        if (!currentPeers.includes(p)) currentPeers.push(p);
+    }
+    return {
+        success: true,
+        output: `BGP confederation peers configured`,
+        newState: { bgpConfederationPeers: currentPeers }
+    };
+}
+
+export function cmdBgpAlwaysCompareMed(state: SwitchState, _input: string): CommandResult {
+    const err = requireBgp(state);
+    if (err) return err;
+    return {
+        success: true,
+        output: '',
+        newState: { bgpAlwaysCompareMed: true }
+    };
+}
+
+export function cmdNoBgpAlwaysCompareMed(state: SwitchState, _input: string): CommandResult {
+    const err = requireBgp(state);
+    if (err) return err;
+    return {
+        success: true,
+        output: '',
+        newState: { bgpAlwaysCompareMed: false }
+    };
+}
+
+export function cmdBgpBestpath(state: SwitchState, input: string): CommandResult {
+    const err = requireBgp(state);
+    if (err) return err;
+    const currentConfig = { ...state.bgpBestpathConfig };
+    if (/as-path\s+ignore/i.test(input)) {
+        currentConfig.asPathIgnore = true;
+    } else if (/compare-routerid/i.test(input)) {
+        currentConfig.compareRouterId = true;
+    }
+    return {
+        success: true,
+        output: '',
+        newState: { bgpBestpathConfig: currentConfig }
+    };
+}
+
 export const bgpRouterHandlers: Record<string, CommandHandler> = {
     'neighbor remote-as': cmdNeighborRemoteAs,
     'neighbor route-map': cmdNeighborRouteMap,
@@ -587,4 +653,9 @@ export const bgpRouterHandlers: Record<string, CommandHandler> = {
     'no synchronization': cmdNoBgpSynchronization,
     'timers bgp': cmdBgpTimers,
     'no timers bgp': cmdNoBgpTimers,
+    'bgp confederation identifier': cmdBgpConfederationIdentifier,
+    'bgp confederation peers': cmdBgpConfederationPeers,
+    'bgp always-compare-med': cmdBgpAlwaysCompareMed,
+    'no bgp always-compare-med': cmdNoBgpAlwaysCompareMed,
+    'bgp bestpath': cmdBgpBestpath,
 };

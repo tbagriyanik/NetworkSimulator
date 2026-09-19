@@ -1,8 +1,8 @@
 # Network Simulator
 
-![Version](https://img.shields.io/badge/version-5.9.0-blue)
+![Version](https://img.shields.io/badge/version-6.0.0-blue)
 ![Next.js](https://img.shields.io/badge/Next.js-16.3.5-black?logo=next.js)
-![React](https://img.shields.io/badge/React-19.2.8-61DAFB?logo=react&logoColor=black)
+![React](https://img.shields.io/badge/React-19.3.0-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-7.0.2-3178C6?logo=typescript&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-4.3.3-06B6D4?logo=tailwindcss&logoColor=white)
 ![FOSS](https://img.shields.io/badge/FOSS-Free%20Open%20Source-brightgreen)
@@ -34,12 +34,11 @@ npm run check
 
 ## 🚀 Key Features / Öne Çıkan Özellikler
 
-- **🏗️ 28 Kategori ve 49+ Örnek Proje Kataloğu (v5.7.0):** Otomatik Topoloji Üretici penceresinde 8 ana kategori (Temel, Topoloji, Veri Merkezi, Kablosuz, Servisler, Anahtarlama, Yönlendirme, Güvenlik) ve 28 hazır mimari senaryo. Ofis Yazıcısı & Akıllı IoT Sensör, Python Ağ Otomasyonu (OOBM Filosu) ve Kurumsal DMZ Güvenlik Duvarı laboratuvarları.
-- **💻 Gelişmiş CLI & Ağ İşletim Sistemi (NOS) Simülasyonu:** Switch (L2/L3), Router, Güvenlik Duvarı (Firewall), WLC, PC, IoT ve Hub cihazları için tam kapsamlı terminal ve komut motoru.
-- **🛡️ L2 Güvenlik Paketi:** Dynamic ARP Inspection (DAI), IP Source Guard (IPSG), Private VLAN (PVLAN), STP Root Guard / BPDU Filter ve Flex-Links aktif paket engelleme motorları.
-- **🛣️ Gelişmiş Yönlendirme & L3 Servisleri:** PBR (Policy-Based Routing), LISP (Locator/ID Separation), CoPP (Control Plane Policing CPU koruması), OSPF Auth/Stub, EIGRP Stub ve iBGP / BGP Path Attributes.
+- **🏗️ 28 Kategori ve 49+ Örnek Proje Kataloğu:** Otomatik Topoloji Üretici penceresinde 8 ana kategori (Temel, Topoloji, Veri Merkezi, Kablosuz, Servisler, Anahtarlama, Yönlendirme, Güvenlik) ve 28 hazır mimari senaryo. Ofis Yazıcısı & Akıllı IoT Sensör, Python Ağ Otomasyonu (OOBM Filosu) ve Kurumsal DMZ Güvenlik Duvarı laboratuvarları.
+- **💻 Gelişmiş CLI & Ağ İşletim Sistemi Simülasyonu:** Switch (L2/L3), Router, Güvenlik Duvarı (Firewall), WLC, PC, IoT ve Hub cihazları için 780+ benzersiz komut içeren tam kapsamlı terminal ve komut motoru.
+- **📡 Multicast (PIM & IGMP) ve Gelişmiş Servisler:** Global ve arayüz seviyesinde PIM (Sparse/Dense/Sparse-Dense), IGMP v1/v2/v3 ve grup üyelikleri (`show ip mroute`, `show ip pim`), SNMPv3 (User, Group, Host traps/informs), IP SLA responder, klasik CBAC stateful firewall (`ip inspect`) ve GRE over IPSec tünel koruması.
+- **⚡ EEM (Embedded Event Manager) & NETCONF:** Syslog, CLI ve zamanlayıcı tabanlı EEM applet otomasyon motoru (`event manager applet`), NETCONF-YANG veri deposu ve SSH port 830 sunucu desteği.
 - **🤖 NetDevOps, RESTCONF & Intent API Explorer:** IETF YANG modelleri üzerinden canlı RESTCONF CRUD işlemleri, Netmiko & Python RESTCONF script yürütme motoru ve PC üzerinden çalışan interaktif REST API / Controller Intent Explorer.
-- **🌐 Geniş Protokol Desteği:** VLAN, VTP, STP/RSTP/MSTP, EtherChannel, Zone-Based Policy Firewall (ZBF), VRF-Lite, MPLS & LDP, VXLAN/EVPN, L3 Rotalama (OSPF, EIGRP, BGP, Static), RESTCONF API, DHCP, NAT, ACL (IPv4/IPv6/MAC), Port Security, IP SLA ve QoS.
 - **📸 Topoloji Anlık Görüntü & Geri Yükleme:** Ağ topolojisini tek tıkla dondurma, kontrol noktaları (Checkpoint) oluşturma, JSON dışa/içe aktarma ve anlık geri yükleme.
 - **🐍 Python Yorumlayıcısı, Dosya & GUI/Ses/3D İşlemleri:** PC terminalinde OOP, Decorator, Generator, `open()` ile sanal dosya I/O; `tkinter`/`form` ile görsel pencereli form uygulamaları; Web Audio API tabanlı dinamik nota/akor/müzik ve ses efekti (`audio`/`music`/`synth`) sentezleme; `scene3d`/`three3d` ile interaktif 3D sahne, katı geometri (CSG) ve ışıklandırma motoru; soket ağ programlama.
 - **🔍 Gelişmiş Teşhis & Sağlık Denetimi:** Native VLAN mismatch, çakışan IP/MAC tespiti, routing loop tespiti, orphan port denetimi ve tek komutla `show network health` raporu.
@@ -50,10 +49,10 @@ npm run check
 
 | Metrik / Metric | Değer / Value |
 | --- | --- |
-| Version / Sürüm | 5.9.0 |
-| Total Lines / Toplam Satır (`src/`) | ~205,588 |
-| Source Files / Kaynak Dosya | 998 |
-| Documentation Files / Dokümantasyon Dosya | 32 |
+| Version / Sürüm | 6.0.0 |
+| Total Lines / Toplam Satır (`src/`) | ~205,805 |
+| Source Files / Kaynak Dosya | 1002 |
+| Documentation Files / Dokümantasyon Dosya | 30 |
 | Example Projects / Örnek Proje | 49 |
 | Guided Lessons / Rehberli Ders | 19 |
 | Exams / Sınavlar | 6 |

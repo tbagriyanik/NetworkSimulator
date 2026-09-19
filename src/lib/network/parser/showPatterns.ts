@@ -290,7 +290,7 @@ export const showPatterns: Record<string, CommandPattern> = {
     maxArgs: 1
   },
   'show snmp': {
-    pattern: /^show\s+snmp(\s+(community|contact|location|host|user|group))?$/i,
+    pattern: /^show\s+snmp(?:\s+(community|contact|location|host))?$/i,
     modes: ['privileged'],
     minArgs: 0,
     maxArgs: 1
@@ -568,6 +568,72 @@ export const showPatterns: Record<string, CommandPattern> = {
   'show flow monitor': {
     pattern: /^show\s+flow\s+monitor(?:\s+(\S+))?$/i,
     modes: ['privileged'],
+    minArgs: 0,
+    maxArgs: 1
+  },
+  'show snmp user': {
+    pattern: /^show\s+snmp\s+user(?:\s+(\S+))?$/i,
+    modes: ['user', 'privileged'],
+    minArgs: 0,
+    maxArgs: 1
+  },
+  'show snmp group': {
+    pattern: /^show\s+snmp\s+group(?:\s+(\S+))?$/i,
+    modes: ['user', 'privileged'],
+    minArgs: 0,
+    maxArgs: 1
+  },
+  'show ip sla responder': {
+    pattern: /^show\s+ip\s+sla\s+responder$/i,
+    modes: ['user', 'privileged'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'show ip inspect': {
+    pattern: /^show\s+ip\s+inspect(?:\s+(config|interfaces|sessions|all))?$/i,
+    modes: ['user', 'privileged'],
+    minArgs: 0,
+    maxArgs: 1
+  },
+  'show event manager': {
+    pattern: /^show\s+event\s+manager(?:\s+applet\s+all)?$/i,
+    modes: ['user', 'privileged'],
+    minArgs: 0,
+    maxArgs: 2
+  },
+  'show netconf-yang': {
+    pattern: /^show\s+netconf-yang(?:\s+status)?$/i,
+    modes: ['user', 'privileged'],
+    minArgs: 0,
+    maxArgs: 1
+  },
+  'show ip mroute': {
+    pattern: /^show\s+ip\s+mroute(?:\s+(\S+))?$/i,
+    modes: ['user', 'privileged'],
+    minArgs: 0,
+    maxArgs: 2
+  },
+  'show ip pim interface': {
+    pattern: /^show\s+ip\s+pim\s+interface(?:\s+\S+)?$/i,
+    modes: ['user', 'privileged'],
+    minArgs: 0,
+    maxArgs: 1
+  },
+  'show ip pim neighbor': {
+    pattern: /^show\s+ip\s+pim\s+neighbor(?:\s+\S+)?$/i,
+    modes: ['user', 'privileged'],
+    minArgs: 0,
+    maxArgs: 1
+  },
+  'show ip igmp groups': {
+    pattern: /^show\s+ip\s+igmp\s+groups(?:\s+\S+)?$/i,
+    modes: ['user', 'privileged'],
+    minArgs: 0,
+    maxArgs: 1
+  },
+  'show ip igmp interface': {
+    pattern: /^show\s+ip\s+igmp\s+interface(?:\s+\S+)?$/i,
+    modes: ['user', 'privileged'],
     minArgs: 0,
     maxArgs: 1
   },

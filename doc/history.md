@@ -1,5 +1,22 @@
 # 📅 Network Simulator — Proje Geçmişi
 
+## v6.0.0 — 2026-09-19
+
+**Kapsamlı CLI Genişletme, Çoklu Protokol Desteği & Dokümantasyon Optimizasyonu** —
+- **📡 Multicast / PIM & IGMP Desteği (`routingCommands.ts`, `interfaceCommands.ts`, `showMiscDisplay.ts`)**:
+  - `ip multicast-routing`, `ip pim sparse-mode`, `ip pim dense-mode`, `ip pim sparse-dense-mode` ve `ip igmp join-group`, `ip igmp version` komutları tam motor ve durum desteğiyle eklendi.
+  - `show ip mroute`, `show ip pim interface/neighbor`, `show ip igmp groups` komutları zengin çıktılarla entegre edildi.
+- **🛡️ Gelişmiş STP & Güvenli Tünel**:
+  - `spanning-tree uplinkfast`, `spanning-tree backbonefast` ve `tunnel protection ipsec profile <name>` komutları arayüz/şasi düzeyinde etkinleştirildi.
+- **🔐 SNMPv3 Güvenlik Modeli**:
+  - `snmp-server group <name> v3 noauth|auth|priv`, `snmp-server user <user> <group> v3 auth ... priv ...`, `snmp-server host <ip>` yapılandırması ve `show snmp user/group` komutları eklendi.
+- **🌐 BGP Gelişmiş Özellikler & IP SLA**:
+  - `bgp confederation identifier <asn>`, `bgp confederation peers <asns>`, `bgp always-compare-med`, `bgp bestpath` ve `ip sla responder` komutları tamamlandı.
+- **🔥 CBAC Güvenlik Duvarı, EEM & NETCONF**:
+  - `ip inspect name <rule> <protocol>`, `ip inspect <rule> in|out`, `event manager applet <name>` (event/action), `netconf-yang` ve `netconf ssh` komutları entegre edildi.
+- **📚 Dokümantasyon Konsolidasyonu & Sürüm Senkronizasyonu**:
+  - Mükerrer içerik barındıran dokümantasyon dosyaları (PDU inceleme ve Entegrasyon rehberleri) ana kanonik belgelere birleştirildi. Master indeks ve tüm proje metrikleri güncellendi.
+
 ## v5.9.0 — 2026-09-18
 
 **OSPF E2E Network Etkileri & Terminal Otomatik Scroll İyileştirmeleri** —

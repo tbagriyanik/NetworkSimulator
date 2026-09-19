@@ -1,4 +1,4 @@
-﻿import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
 import type { CanvasDevice, CanvasConnection, ContextMenuState, ContextMenuMode, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { areArraysEqual } from '@/lib/network/equality';
@@ -567,7 +567,7 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
       activePointerDragRef.current = false;
       activeDragPointerIdRef.current = null;
 
-      if (draggedDeviceRef.current && canvasRef.current && dragStartPosRef.current) {
+      if (isActuallyDraggingRef.current && draggedDeviceRef.current && canvasRef.current && dragStartPosRef.current) {
         const rect = canvasRef.current.getBoundingClientRect();
         const currentPan = panRef.current;
         const currentZoom = zoomRef.current;

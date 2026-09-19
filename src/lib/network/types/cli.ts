@@ -22,7 +22,8 @@ export type CommandMode =
   | 'config-route-map'  // Router(config-route-map)# - Route-map configuration mode
   | 'config-flow-record'   // Router(config-flow-record)# - Flexible NetFlow record mode
   | 'config-flow-exporter' // Router(config-flow-exporter)# - Flexible NetFlow exporter mode
-  | 'config-flow-monitor'; // Router(config-flow-monitor)# - Flexible NetFlow monitor mode
+  | 'config-flow-monitor'  // Router(config-flow-monitor)# - Flexible NetFlow monitor mode
+  | 'config-applet';       // Router(config-applet)# - EEM applet mode
 
 export interface CommandResult {
   success: boolean;

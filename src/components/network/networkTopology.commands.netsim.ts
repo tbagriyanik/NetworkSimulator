@@ -1,4 +1,4 @@
-import { Settings, Eye, Radio, Zap, Shield, LucideIcon } from 'lucide-react';
+import { Settings, Eye, Radio, Zap, Shield, Share2, Activity, LucideIcon } from 'lucide-react';
 
 export interface CommandDefinition {
   id: string;
@@ -74,8 +74,53 @@ export function getNetSimCommands(isTR: boolean): CommandDefinition[] {
       cmds: [
         ['router bgp <as>', isTR ? 'BGP sürecini başlat' : 'Start BGP process', '(config)#'],
         ['neighbor <ip> remote-as <as>', isTR ? 'Komşu ekle' : 'Add neighbor', '(config-router)#'],
+        ['bgp confederation identifier <as>', isTR ? 'BGP konfederasyon AS tanımla' : 'Set BGP confederation AS', '(config-router)#'],
+        ['bgp always-compare-med', isTR ? 'Tüm yollarda MED karşılaştır' : 'Always compare MED', '(config-router)#'],
         ['mpls ip', isTR ? 'MPLS etkinleştir' : 'Enable MPLS', '(config-if)#'],
         ['mpls ldp router-id <ip>', isTR ? 'LDP router ID ayarla' : 'Set LDP router ID', '(config)#'],
+      ]
+    },
+    {
+      id: 'multicast_pim',
+      icon: Share2,
+      title: isTR ? 'Multicast & PIM / IGMP' : 'Multicast & PIM / IGMP',
+      type: 'commands',
+      cmds: [
+        ['ip multicast-routing', isTR ? 'Global multicast yönlendirmeyi aç' : 'Enable multicast routing', '(config)#'],
+        ['ip pim sparse-mode', isTR ? 'Arayüzde PIM sparse mod aç' : 'Enable PIM sparse mode', '(config-if)#'],
+        ['ip pim dense-mode', isTR ? 'Arayüzde PIM dense mod aç' : 'Enable PIM dense mode', '(config-if)#'],
+        ['ip igmp join-group <ip>', isTR ? 'IGMP multicast grubuna katıl' : 'Join IGMP multicast group', '(config-if)#'],
+        ['ip igmp version <1|2|3>', isTR ? 'IGMP sürümünü ayarla' : 'Set IGMP version', '(config-if)#'],
+        ['show ip mroute', isTR ? 'Multicast yönlendirme tablosunu göster' : 'Show multicast routing table', '#'],
+        ['show ip pim interface', isTR ? 'PIM arayüz durumunu göster' : 'Show PIM interfaces', '#'],
+        ['show ip pim neighbor', isTR ? 'PIM komşu tablosunu göster' : 'Show PIM neighbors', '#'],
+        ['show ip igmp groups', isTR ? 'IGMP grup üyeliklerini göster' : 'Show IGMP groups', '#'],
+      ]
+    },
+    {
+      id: 'adv_network',
+      icon: Activity,
+      title: isTR ? 'Gelişmiş Servisler & EEM' : 'Advanced Services & EEM',
+      type: 'commands',
+      cmds: [
+        ['snmp-server group <name> v3 priv', isTR ? 'SNMPv3 grubu tanımla' : 'Create SNMPv3 group', '(config)#'],
+        ['snmp-server user <user> <group> v3 auth sha <p> priv aes <p>', isTR ? 'SNMPv3 kullanıcısı oluştur' : 'Create SNMPv3 user', '(config)#'],
+        ['snmp-server host <ip> traps version 3 <user>', isTR ? 'SNMPv3 trap hedefi ata' : 'Set SNMPv3 trap host', '(config)#'],
+        ['ip sla responder', isTR ? 'IP SLA responder servisini aç' : 'Enable IP SLA responder', '(config)#'],
+        ['ip inspect name <name> <proto> alert on', isTR ? 'CBAC denetim kuralı tanımla' : 'Define CBAC inspect rule', '(config)#'],
+        ['ip inspect <name> in|out', isTR ? 'Arayüze CBAC denetimi uygula' : 'Apply CBAC inspection on interface', '(config-if)#'],
+        ['tunnel protection ipsec profile <name>', isTR ? 'Tunnel arayüzüne IPSec koruma profili ata' : 'Assign IPSec profile to tunnel', '(config-if)#'],
+        ['spanning-tree uplinkfast', isTR ? 'STP UplinkFast hızlandırmayı aç' : 'Enable STP UplinkFast', '(config)#'],
+        ['spanning-tree backbonefast', isTR ? 'STP BackboneFast hızlandırmayı aç' : 'Enable STP BackboneFast', '(config)#'],
+        ['event manager applet <name>', isTR ? 'EEM applet yapılandırma moduna gir' : 'Enter EEM applet mode', '(config)#'],
+        ['event syslog pattern <regex>', isTR ? 'EEM syslog tetikleyicisi' : 'EEM syslog event trigger', '(config-applet)#'],
+        ['action <id> syslog msg <msg>', isTR ? 'EEM aksiyonu tanımla' : 'Define EEM action', '(config-applet)#'],
+        ['netconf-yang', isTR ? 'NETCONF-YANG veri deposunu başlat' : 'Initialize NETCONF-YANG', '(config)#'],
+        ['netconf ssh', isTR ? 'NETCONF SSH sunucusunu (port 830) aç' : 'Enable NETCONF SSH server (port 830)', '(config)#'],
+        ['show snmp group | show snmp user', isTR ? 'SNMPv3 grup ve kullanıcıları göster' : 'Show SNMPv3 groups and users', '#'],
+        ['show ip inspect config', isTR ? 'CBAC yapılandırmasını göster' : 'Show CBAC inspect config', '#'],
+        ['show event manager applet all', isTR ? 'EEM applet listesini göster' : 'Show all EEM applets', '#'],
+        ['show netconf-yang status', isTR ? 'NETCONF servis durumunu göster' : 'Show NETCONF-YANG status', '#'],
       ]
     }
   ];

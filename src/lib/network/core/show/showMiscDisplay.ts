@@ -229,6 +229,36 @@ export function cmdShowSnmp(state: SwitchState, _input: string, _ctx: CommandCon
   return { success: true, output };
 }
 
+export function cmdShowSnmpGroup(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  const groups = state.snmpGroups || [];
+  if (groups.length === 0) {
+    return { success: true, output: 'No SNMP groups configured' };
+  }
+  let output = 'GROUP NAME                  VERSION   SECURITY LEVEL\n';
+  output += '--------------------------  --------  --------------\n';
+  for (const g of groups) {
+    output += `${g.name.padEnd(28)}${g.version.padEnd(10)}${(g.secLevel || 'noauth')}\n`;
+  }
+  return { success: true, output: output.trimEnd() };
+}
+
+export function cmdShowSnmpUser(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  const users = state.snmpUsers || [];
+  if (users.length === 0) {
+    return { success: true, output: 'No SNMP users configured' };
+  }
+  let output = 'User name: ';
+  for (const u of users) {
+    output += `${u.username}\n`;
+    output += `Engine ID: 800000090300001BD56CD5\n`;
+    output += `storage-type: nonvolatile active\n`;
+    output += `Group-name: ${u.group}\n`;
+    output += `Authentication Protocol: ${u.authProto || 'None'}\n`;
+    output += `Privacy Protocol: ${u.privProto || 'None'}\n\n`;
+  }
+  return { success: true, output: output.trimEnd() };
+}
+
 export function cmdShowDiag(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   const ports = state.ports || {};
   const portKeys = Object.keys(ports);

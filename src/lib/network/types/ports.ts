@@ -356,4 +356,9 @@ export interface Port {
   pppPapPassword?: string;
   lapGroup?: number;        // Lightweight AP group (WLC)
   mplsEnabled?: boolean;    // MPLS / LDP enabled on interface
+  pimMode?: 'sparse-mode' | 'dense-mode' | 'sparse-dense-mode';
+  igmpVersion?: 1 | 2 | 3;
+  igmpGroups?: string[];
+  tunnelProtectionProfile?: string;
+  inspectRules?: { in?: string; out?: string };
 }

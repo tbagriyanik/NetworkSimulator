@@ -124,13 +124,39 @@ Simülatör, gerçek ağlarda otomatik olarak oluşan aşağıdaki paketleri **o
 
 ## 💡 İpuçları
 
-- Paket yakalamayı belirli bir kablo/bağlantıya özel başlatmak için o kabloya sağ tıklayın.
-- Yüksek trafik senaryolarında dışlama filtresi arama performansını artırır.
-- Ping animasyonu sırasında **N** tuşuna basarak hop-hop ilerleme yapabilirsiniz; her hop PDU Analiz panelinde detaylandırılır.
+---
+
+## 🔍 Görsel PDU & Canlı Paket İnceleyici (Visual PDU Inspector)
+
+Paket yakalamanın yanı sıra, paketlerin ağ üzerindeki iletimini, OSI katman detaylarını, protokol ağacı çözümlemesini ve ham Ethernet çerçeve (hex dump) dökümünü adım adım görselleştiren **Görsel PDU & Canlı Paket İnceleyici** sistemini içerir.
+
+### 🎯 Özellikler ve Genel Bakış
+1. **Gömülü ve Bağımsız PDU Analizi**:
+   - **Gömülü Sekme**: Ping & Paket Bilgi Paneli içerisindeki "🔍 Görsel PDU İnceleme" sekmesi üzerinden doğrudan pencere içinde analiz.
+   - **Tam Ekran Modal**: Bağımsız modal pencere üzerinden genişletilmiş analiz imkanı.
+2. **OSI Katman Analizi (Layer 1 - Layer 7)**:
+   - **Giriş Katmanları (Inbound PDU Layers)**: Paketin arayüze girişindeki port, kablo sinyali, MAC başlıkları, IP alanları, TTL, protokol ve uygulama yükü.
+   - **Çıkış Katmanları (Outbound PDU Layers)**: Cihazın yönlendirme sonrası paketi egress portuna aktarırken yeniden kapsüllediği yeni kaynak/hedef MAC, azaltılmış TTL ve güncellenen checksum alanları.
+3. **Cihaz Karar Günlüğü (Device Decision Log)**:
+   - Paketin her bir atlama noktasında (Hop) cihazın verdiği yönlendirme, anahtarlama, NAT, ACL filtreleme veya paket düşürme (DROP) kararlarının adım adım dökümü.
+4. **Protokol Ağacı Çözümlemesi (Protocol Tree)**:
+   - `Ethernet II` → `802.1Q VLAN` → `IPv4 / IPv6 / ARP` → `ICMP / TCP / UDP / OSPF / DHCP` hiyerarşik protokol ağacı.
+5. **Ham Hex & ASCII Dökümü (Raw Hex Dump)**:
+   - Gerçek 16-baytlık ofset, hex baytları ve ASCII karşılıkları dökümü.
+6. **Hop İlerleme & Simülasyon Oynatıcı**:
+   - Başa dön, oynat/durdur, sonraki atlamaya geç ve `0.5x`, `1x`, `2x` oynatma hızı ayarı.
+
+### 🖥️ Kullanım Adımları
+- **Canlı Paket Analizi Penceresinden Erişim**: Tuval üzerinde herhangi bir cihazdan diğerine Ping gönderin. Açılan Paket Analizi penceresinde "🔍 Görsel PDU İnceleme" sekmesine tıklayın.
+- **Sekmeler**:
+  - **OSI Modeli (OSI Model)**: Giriş (Inbound) ve Çıkış (Outbound) katman alanlarını, MAC, IP, TTL ve port detaylarını gösterir.
+  - **Protokol Ağacı (Protocol Tree)**: Paket başlıklarının kapsülleme yapısını ağaç görünümünde hiyerarşik olarak listeler.
+  - **Hex Dökümü (Hex Dump)**: Ham Ethernet çerçevesinin gerçek bayt dökümünü ve ASCII karakter haritasını sunar.
+- **Pencere Boyutlandırma**: Pencerelerin boyutlandırma tutamaçları (`resize handles`), içerik kaydırma çubuklarının (`scrollbar`) tıklanmasını engellemeyecek şekilde optimize edilmiştir.
 
 ---
 
 ## 📘 İlgili Dokümanlar
 
-- [USAGE.md](USAGE.md) — Genel kullanım kılavuzu
+- [USAGE.md](../getting-started/USAGE.md) — Genel kullanım kılavuzu
 - [CLI_COMMANDS.md](../cli/CLI_COMMANDS.md) — CLI komut referansı

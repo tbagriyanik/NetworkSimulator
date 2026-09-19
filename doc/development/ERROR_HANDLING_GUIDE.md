@@ -316,13 +316,105 @@ function DataLoader() {
 3. **Disable interactions during loading** - Prevent duplicate submissions
 4. **Show meaningful messages** - "Loading..." is better than nothing
 
+## 🔨 UI/UX Entegrasyon Örnekleri (Integration Walkthrough)
+
+### 1. Browser Alert'leri Toast'a Dönüştürme
+❌ **Eski Yöntem:**
+```typescript
+alert('❌ Lütfen bir ağ adı (SSID) girin');
+```
+
+✅ **Yeni Yöntem (Toast Notification):**
+```typescript
+import { useNotifications } from '@/lib/notifications/notificationManager';
+
+function MyComponent() {
+  const { error, success } = useNotifications();
+
+  const handleValidation = (ssid: string) => {
+    if (!ssid) {
+      error({
+        title: 'Geçersiz SSID',
+        description: 'Lütfen bir ağ adı (SSID) girin',
+        code: 'INVALID_SSID',
+      });
+      return;
+    }
+    success({
+      title: 'Başarılı!',
+      description: 'WiFi ayarları kaydedildi.',
+    });
+  };
+}
+```
+
+### 2. Async İşlemlere Hata Kontrolü (Try-Catch)
+```typescript
+import { apiClient, ApiError } from '@/lib/api/apiClient';
+import { useNotifications } from '@/lib/notifications/notificationManager';
+
+const handleSave = async (payload: unknown) => {
+  try {
+    const response = await apiClient.post('/api/data', payload);
+    if (response.success) {
+      success({ title: 'Başarılı!', description: 'Veriler kaydedildi.' });
+    }
+  } catch (err) {
+    if (err instanceof ApiError) {
+      error({ title: 'Hata', description: err.message, code: err.code });
+    } else {
+      error({ title: 'Bilinmeyen Hata', description: 'Beklenmeyen bir hata oluştu.' });
+    }
+  }
+};
+```
+
+### 3. Onay Dialog'u Entegrasyonu
+```typescript
+import { ConfirmationDialog, useConfirmationDialog } from '@/components/ui/ConfirmationDialog';
+
+function DeleteButton() {
+  const { open, setOpen, confirm, ...dialogProps } = useConfirmationDialog();
+
+  const handleDelete = () => {
+    confirm({
+      title: 'Silmek İstiyor Musunuz?',
+      description: 'Bu işlem geri alınamaz.',
+      variant: 'danger',
+      confirmText: 'Sil',
+      onConfirm: async () => {
+        await deleteDevice();
+      },
+    });
+  };
+
+  return (
+    <>
+      <button onClick={handleDelete}>Sil</button>
+      <ConfirmationDialog open={open} onOpenChange={setOpen} {...dialogProps} />
+    </>
+  );
+}
+```
+
+### 🎯 Entegrasyon Kontrol Listesi
+- [ ] Tüm `alert()` çağrılarını `error()`, `success()`, `warning()` ile değiştirin.
+- [ ] Form alanlarına `validateForm()` veya `sanitizer` fonksiyonları ekleyin.
+- [ ] Async işlemleri `try-catch` ve `apiClient` ile sarın.
+- [ ] Silme / sıfırlama gibi kritik işlemler için `ConfirmationDialog` kullanın.
+- [ ] Bileşen render hataları için `AppErrorBoundary` sarmalamasını koruyun.
+
+---
+
 ## 🔗 Related Files
 
 - Error Handler: `src/lib/errors/errorHandler.ts`
-- Accessibility: `src/lib/accessibility/`
-- Toast Hook: `src/hooks/use-toast.ts`
-- Theme Context: `src/contexts/ThemeContext.tsx`
-- Language Context: `src/contexts/LanguageContext.tsx`
+- Sanitizer & Form Validation: `src/lib/security/sanitizer.ts`
+- Toast Hook & Notifications: `src/components/ui/toast.tsx`, `src/hooks/use-toast.ts`
+- Form Input: `src/components/ui/FormInput.tsx`
+- Confirmation Dialog: `src/components/ui/alert-dialog.tsx`
+- Error Boundary: `src/components/ui/AppErrorBoundary.tsx`
+- API Client: `src/lib/api/withErrorHandling.ts`
 
 ## 📚 Additional Resources
 
@@ -348,10 +440,3 @@ function DataLoader() {
 - Verify notification manager is imported correctly
 - Check browser console for errors
 
-## 📞 Support
-
-For questions or issues with error handling:
-1. Check this guide first
-2. Review example code in components
-3. Check browser console for error details
-4. Review error logs in development mode

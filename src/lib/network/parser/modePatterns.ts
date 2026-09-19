@@ -59,13 +59,13 @@ export const modePatterns: Record<string, CommandPattern> = {
   },
   'exit': {
     pattern: /^exit$/i,
-    modes: ['privileged', 'config', 'interface', 'config-if-range', 'line', 'vlan', 'dhcp-config', 'router-config', 'config-std-nacl', 'config-ext-nacl', 'config-ipv6-acl', 'ap-config', 'dot11-config', 'ssid-config', 'config-mst', 'config-route-map', 'config-flow-record', 'config-flow-exporter', 'config-flow-monitor'],
+    modes: ['privileged', 'config', 'interface', 'config-if-range', 'line', 'vlan', 'dhcp-config', 'router-config', 'config-std-nacl', 'config-ext-nacl', 'config-ipv6-acl', 'ap-config', 'dot11-config', 'ssid-config', 'config-mst', 'config-route-map', 'config-flow-record', 'config-flow-exporter', 'config-flow-monitor', 'config-applet'],
     minArgs: 0,
     maxArgs: 0
   },
   'end': {
     pattern: /^end$/i,
-    modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'dhcp-config', 'router-config', 'config-std-nacl', 'config-ext-nacl', 'config-ipv6-acl', 'ap-config', 'dot11-config', 'ssid-config', 'config-mst', 'config-route-map', 'config-flow-record', 'config-flow-exporter', 'config-flow-monitor'],
+    modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'dhcp-config', 'router-config', 'config-std-nacl', 'config-ext-nacl', 'config-ipv6-acl', 'ap-config', 'dot11-config', 'ssid-config', 'config-mst', 'config-route-map', 'config-flow-record', 'config-flow-exporter', 'config-flow-monitor', 'config-applet'],
     minArgs: 0,
     maxArgs: 0
   },
@@ -293,6 +293,18 @@ export const modePatterns: Record<string, CommandPattern> = {
     minArgs: 0,
     maxArgs: 0
   },
+  'ip multicast-routing': {
+    pattern: /^ip\s+multicast-routing$/i,
+    modes: ['config'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'no ip multicast-routing': {
+    pattern: /^no\s+ip\s+multicast-routing$/i,
+    modes: ['config'],
+    minArgs: 0,
+    maxArgs: 0
+  },
   'ip route': {
     pattern: /^ip\s+route\s+([0-9.]+)\s+([0-9.]+)\s+(\S+)(?:\s+(\d+))?$/i,
     modes: ['config'],
@@ -447,6 +459,126 @@ export const modePatterns: Record<string, CommandPattern> = {
   'macro apply': {
     pattern: /^macro\s+apply\s+(\S+)$/i,
     modes: ['privileged', 'config', 'interface', 'config-if-range'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'snmp-server group': {
+    pattern: /^snmp-server\s+group\s+(\S+)\s+v3\s+(noauth|auth|priv)(?:\s+(?:read|write|notify)\s+\S+)*$/i,
+    modes: ['config'],
+    minArgs: 3,
+    maxArgs: 7
+  },
+  'no snmp-server group': {
+    pattern: /^no\s+snmp-server\s+group\s+(\S+)$/i,
+    modes: ['config'],
+    minArgs: 3,
+    maxArgs: 3
+  },
+  'snmp-server user': {
+    pattern: /^snmp-server\s+user\s+(\S+)\s+(\S+)\s+v3(?:\s+auth\s+(md5|sha)\s+(\S+))?(?:\s+priv\s+(des|3des|aes(?:\s+128)?)\s+(\S+))?$/i,
+    modes: ['config'],
+    minArgs: 3,
+    maxArgs: 9
+  },
+  'no snmp-server user': {
+    pattern: /^no\s+snmp-server\s+user\s+(\S+)$/i,
+    modes: ['config'],
+    minArgs: 3,
+    maxArgs: 3
+  },
+  'snmp-server host': {
+    pattern: /^snmp-server\s+host\s+(\S+)(?:\s+(traps|informs))?\s+version\s+(1|2c|3(?:\s+(?:noauth|auth|priv))?)\s+(\S+)$/i,
+    modes: ['config'],
+    minArgs: 4,
+    maxArgs: 7
+  },
+  'no snmp-server host': {
+    pattern: /^no\s+snmp-server\s+host\s+(\S+)$/i,
+    modes: ['config'],
+    minArgs: 3,
+    maxArgs: 3
+  },
+  'ip sla responder': {
+    pattern: /^ip\s+sla\s+responder$/i,
+    modes: ['config'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'no ip sla responder': {
+    pattern: /^no\s+ip\s+sla\s+responder$/i,
+    modes: ['config'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'ip inspect name': {
+    pattern: /^ip\s+inspect\s+name\s+(\S+)\s+(\S+)(?:\s+(?:alert|audit-trail|timeout)\s+(?:on|off|\d+))*$/i,
+    modes: ['config'],
+    minArgs: 3,
+    maxArgs: 8
+  },
+  'no ip inspect name': {
+    pattern: /^no\s+ip\s+inspect\s+name\s+(\S+)$/i,
+    modes: ['config'],
+    minArgs: 4,
+    maxArgs: 4
+  },
+  'event manager applet': {
+    pattern: /^event\s+manager\s+applet\s+(\S+)$/i,
+    modes: ['config'],
+    minArgs: 3,
+    maxArgs: 3
+  },
+  'no event manager applet': {
+    pattern: /^no\s+event\s+manager\s+applet\s+(\S+)$/i,
+    modes: ['config'],
+    minArgs: 4,
+    maxArgs: 4
+  },
+  'netconf-yang': {
+    pattern: /^netconf-yang$/i,
+    modes: ['config'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'no netconf-yang': {
+    pattern: /^no\s+netconf-yang$/i,
+    modes: ['config'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'netconf ssh': {
+    pattern: /^netconf\s+ssh$/i,
+    modes: ['config'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'no netconf ssh': {
+    pattern: /^no\s+netconf\s+ssh$/i,
+    modes: ['config'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'event': {
+    pattern: /^event\s+(syslog|cli|timer)\s+(.+)$/i,
+    modes: ['config-applet'],
+    minArgs: 2,
+    maxArgs: 5
+  },
+  'no event': {
+    pattern: /^no\s+event(?:\s+(syslog|cli|timer))?$/i,
+    modes: ['config-applet'],
+    minArgs: 0,
+    maxArgs: 2
+  },
+  'action': {
+    pattern: /^action\s+(\S+)\s+(syslog|cli)\s+(.+)$/i,
+    modes: ['config-applet'],
+    minArgs: 3,
+    maxArgs: 8
+  },
+  'no action': {
+    pattern: /^no\s+action\s+(\S+)$/i,
+    modes: ['config-applet'],
     minArgs: 1,
     maxArgs: 1
   },

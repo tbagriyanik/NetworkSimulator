@@ -288,6 +288,8 @@ import {
   cmdTunnelSource,
   cmdTunnelDestination,
   cmdTunnelMode,
+  cmdTunnelProtection,
+  cmdNoTunnelProtection,
   cmdMplsIpInterface,
   cmdIpVrfForwarding,
   cmdZoneMember,
@@ -300,6 +302,8 @@ import {
   cmdIpPolicyRouteMap,
   cmdNoIpPolicyRouteMap,
 } from './interface/cmd.ipAddress';
+import { cmdIpPim, cmdNoIpPim, cmdIpIgmp, cmdNoIpIgmp } from './multicastCommands';
+import { cmdIpInspectInterface, cmdNoIpInspectInterface } from './cbacCommands';
 
 import {
   cmdSpanningTreePortfast,
@@ -487,6 +491,14 @@ export const interfaceHandlers: Record<string, CommandHandler> = {
   'tunnel source': cmdTunnelSource,
   'tunnel destination': cmdTunnelDestination,
   'tunnel mode': cmdTunnelMode,
+  'tunnel protection': cmdTunnelProtection,
+  'no tunnel protection': cmdNoTunnelProtection,
+  'ip pim': cmdIpPim,
+  'no ip pim': cmdNoIpPim,
+  'ip igmp': cmdIpIgmp,
+  'no ip igmp': cmdNoIpIgmp,
+  'ip inspect': cmdIpInspectInterface,
+  'no ip inspect': cmdNoIpInspectInterface,
   'mpls ip': cmdMplsIpInterface,
   'no mpls ip': cmdMplsIpInterface,
   'ip vrf forwarding': cmdIpVrfForwarding,

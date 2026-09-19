@@ -618,4 +618,46 @@ export interface SwitchState {
    * LACP port FSM records keyed by port ID.
    */
   lacpPortStates?: Record<string, LacpPortRecord>;
+
+  // Multicast & PIM state
+  multicastRoutingEnabled?: boolean;
+  mrouteEntries?: Array<{
+    source: string;
+    group: string;
+    incomingInterface: string;
+    outgoingInterfaces: string[];
+    flags?: string;
+  }>;
+
+  // Spanning Tree features
+  stpUplinkFast?: boolean;
+  stpBackboneFast?: boolean;
+
+  // SNMPv3 configuration
+  snmpGroups?: Array<{ name: string; version: 'v1' | 'v2c' | 'v3'; secLevel?: 'noauth' | 'auth' | 'priv' }>;
+  snmpUsers?: Array<{ username: string; group: string; authProto?: string; authPass?: string; privProto?: string; privPass?: string }>;
+  snmpHosts?: Array<{ host: string; version?: string; communityOrUser?: string; informs?: boolean }>;
+
+  // BGP Advanced features
+  bgpConfederationId?: number;
+  bgpConfederationPeers?: number[];
+  bgpAlwaysCompareMed?: boolean;
+  bgpBestpathConfig?: { asPathIgnore?: boolean; compareRouterId?: boolean };
+
+  // IP SLA Responder
+  ipSlaResponder?: boolean;
+
+  // CBAC (Context-Based Access Control) inspect rules
+  inspectRules?: Record<string, Array<{ protocol: string; timeout?: number; alert?: boolean; auditTrail?: boolean }>>;
+
+  // EEM (Embedded Event Manager)
+  eemApplets?: Record<string, {
+    events?: Array<{ type: string; pattern?: string }>;
+    actions?: Array<{ id: string; command?: string; message?: string; type: string }>;
+  }>;
+  currentEemApplet?: string;
+
+  // NETCONF / Programmability
+  netconfYangEnabled?: boolean;
+  netconfSshEnabled?: boolean;
 }

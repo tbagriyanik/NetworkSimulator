@@ -370,6 +370,36 @@ export const routingPatterns: Record<string, CommandPattern> = {
     minArgs: 0,
     maxArgs: 0
   },
+  'bgp confederation identifier': {
+    pattern: /^bgp\s+confederation\s+identifier\s+(\d+)$/i,
+    modes: ['router-config'],
+    minArgs: 3,
+    maxArgs: 3
+  },
+  'bgp confederation peers': {
+    pattern: /^bgp\s+confederation\s+peers\s+(.+)$/i,
+    modes: ['router-config'],
+    minArgs: 3,
+    maxArgs: 10
+  },
+  'bgp always-compare-med': {
+    pattern: /^bgp\s+always-compare-med$/i,
+    modes: ['router-config'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'no bgp always-compare-med': {
+    pattern: /^no\s+bgp\s+always-compare-med$/i,
+    modes: ['router-config'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'bgp bestpath': {
+    pattern: /^bgp\s+bestpath\s+(as-path\s+ignore|compare-routerid)$/i,
+    modes: ['router-config'],
+    minArgs: 2,
+    maxArgs: 3
+  },
   'ipv6 dhcp pool': {
     pattern: /^ipv6\s+dhcp\s+pool\s+(\S+)$/i,
     modes: ['config'],
@@ -616,6 +646,30 @@ export const routingPatterns: Record<string, CommandPattern> = {
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
     maxArgs: 1
+  },
+  'spanning-tree uplinkfast': {
+    pattern: /^spanning-tree\s+uplinkfast$/i,
+    modes: ['config'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'no spanning-tree uplinkfast': {
+    pattern: /^no\s+spanning-tree\s+uplinkfast$/i,
+    modes: ['config'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'spanning-tree backbonefast': {
+    pattern: /^spanning-tree\s+backbonefast$/i,
+    modes: ['config'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'no spanning-tree backbonefast': {
+    pattern: /^no\s+spanning-tree\s+backbonefast$/i,
+    modes: ['config'],
+    minArgs: 0,
+    maxArgs: 0
   },
   'no spanning-tree': {
     pattern: /^no\s+spanning-tree(\s+vlan\s+(\d+))?$/i,

@@ -73,9 +73,18 @@ import {
   cmdShowErrdisableRecovery, cmdShowStormControl, cmdShowUdld,
   cmdShowMonitor, cmdShowDebug, cmdShowProcesses, cmdShowMemory,
   cmdShowSdmPrefer, cmdShowSystemMtu, cmdShowSessions, cmdShowSnmp,
+  cmdShowSnmpGroup, cmdShowSnmpUser,
   cmdShowDiag, cmdShowPrivilege, cmdShowBannerMotd, cmdShowAlias,
   cmdShowRedundancy, cmdShowArchive, cmdShowLogging,
 } from './show/showMiscDisplay';
+import {
+  cmdShowIpMroute,
+  cmdShowIpPimInterface,
+  cmdShowIpPimNeighbor,
+  cmdShowIpIgmpGroups
+} from './multicastCommands';
+import { cmdShowIpInspect } from './cbacCommands';
+import { cmdShowEventManager, cmdShowNetconfYang } from './eemCommands';
 
 export { cmdShowNtp } from './show/showNtpDisplay';
 
@@ -230,6 +239,8 @@ export const showHandlers: Record<string, CommandHandler> = {
   'show ntp status': cmdShowNtpDisplay,
   'show ntp': cmdShowNtpDisplay,
   'show snmp': cmdShowSnmp,
+  'show snmp group': cmdShowSnmpGroup,
+  'show snmp user': cmdShowSnmpUser,
   'show class-map': cmdShowClassMap,
   'show mac access-lists': cmdShowMacAcl,
   'show controllers': cmdShowControllers,
@@ -246,12 +257,25 @@ export const showHandlers: Record<string, CommandHandler> = {
   'show ip ospf interface': cmdShowIpOspfInterface,
   'show standby': cmdShowStandby,
   'show hosts': cmdShowHosts,
+  'show ip mroute': cmdShowIpMroute,
+  'show ip pim interface': cmdShowIpPimInterface,
+  'show ip pim neighbor': cmdShowIpPimNeighbor,
+  'show ip pim': cmdShowIpPimInterface,
+  'show ip igmp groups': cmdShowIpIgmpGroups,
+  'show ip igmp interface': cmdShowIpPimInterface,
   'show ip nat translations': cmdShowIpNatTranslations,
   'show ip nat statistics': cmdShowIpNatStatistics,
   'show ip sla statistics': cmdShowIpSlaStatistics,
   'show ip sla summary': cmdShowIpSlaSummary,
   'show ip sla configuration': cmdShowIpSlaConfiguration,
   'show ip sla application': cmdShowIpSlaConfiguration,
+  'show ip sla responder': (state) => ({
+    success: true,
+    output: state.ipSlaResponder ? 'IP SLA Responder is: Enabled' : 'IP SLA Responder is: Disabled'
+  }),
+  'show ip inspect config': cmdShowIpInspect,
+  'show ip inspect interfaces': cmdShowIpInspect,
+  'show ip inspect': cmdShowIpInspect,
   'show track': cmdShowTrack,
 
   'show nameif': cmdShowNameif,
@@ -302,6 +326,10 @@ export const showHandlers: Record<string, CommandHandler> = {
   'show flow record': cmdShowFlowRecord,
   'show flow exporter': cmdShowFlowExporter,
   'show flow monitor': cmdShowFlowMonitor,
+  'show event manager applet all': cmdShowEventManager,
+  'show event manager': cmdShowEventManager,
+  'show netconf-yang status': cmdShowNetconfYang,
+  'show netconf-yang': cmdShowNetconfYang,
 };
 
 import { cmdShowNtp as cmdShowNtpDisplay } from './show/showNtpDisplay';

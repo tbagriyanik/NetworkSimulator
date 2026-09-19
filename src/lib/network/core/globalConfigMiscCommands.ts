@@ -252,3 +252,186 @@ export function cmdDefaultInterface(state: SwitchState, input: string, _ctx: Com
   }
   return { success: true, output: `Interface ${interfaceName} reset to default configuration`, newState: { ports: { ...state.ports, [interfaceName]: defaultPort } } };
 }
+
+export function cmdSpanningTreeUplinkfast(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const updatedState = { ...state, stpUplinkFast: true };
+  return {
+    success: true,
+    output: '',
+    newState: {
+      stpUplinkFast: true,
+      runningConfig: buildRunningConfig(updatedState)
+    }
+  };
+}
+
+export function cmdNoSpanningTreeUplinkfast(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const updatedState = { ...state, stpUplinkFast: false };
+  return {
+    success: true,
+    output: '',
+    newState: {
+      stpUplinkFast: false,
+      runningConfig: buildRunningConfig(updatedState)
+    }
+  };
+}
+
+export function cmdSpanningTreeBackbonefast(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const updatedState = { ...state, stpBackboneFast: true };
+  return {
+    success: true,
+    output: '',
+    newState: {
+      stpBackboneFast: true,
+      runningConfig: buildRunningConfig(updatedState)
+    }
+  };
+}
+
+export function cmdNoSpanningTreeBackbonefast(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const updatedState = { ...state, stpBackboneFast: false };
+  return {
+    success: true,
+    output: '',
+    newState: {
+      stpBackboneFast: false,
+      runningConfig: buildRunningConfig(updatedState)
+    }
+  };
+}
+
+// SNMPv3 commands
+export function cmdSnmpGroup(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const match = input.match(/^snmp-server\s+group\s+(\S+)\s+(v1|v2c|v3)(?:\s+(noauth|auth|priv))?/i);
+  if (!match) return { success: false, error: '% Invalid snmp-server group command. Usage: snmp-server group <name> <v1|v2c|v3> [noauth|auth|priv]' };
+
+  const name = match[1];
+  const version = match[2].toLowerCase() as 'v1' | 'v2c' | 'v3';
+  const secLevel = (match[3]?.toLowerCase() || 'noauth') as 'noauth' | 'auth' | 'priv';
+
+  const groups = (state.snmpGroups || []).filter(g => g.name !== name);
+  groups.push({ name, version, secLevel });
+
+  const updatedState = { ...state, snmpGroups: groups };
+  return {
+    success: true,
+    output: `SNMP group ${name} configured`,
+    newState: { snmpGroups: groups, runningConfig: buildRunningConfig(updatedState) }
+  };
+}
+
+export function cmdNoSnmpGroup(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const match = input.match(/^no\s+snmp-server\s+group\s+(\S+)/i);
+  if (!match) return { success: false, error: '% Invalid no snmp-server group command' };
+
+  const name = match[1];
+  const groups = (state.snmpGroups || []).filter(g => g.name !== name);
+  const updatedState = { ...state, snmpGroups: groups };
+  return {
+    success: true,
+    output: `SNMP group ${name} removed`,
+    newState: { snmpGroups: groups, runningConfig: buildRunningConfig(updatedState) }
+  };
+}
+
+export function cmdSnmpUser(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const match = input.match(/^snmp-server\s+user\s+(\S+)\s+(\S+)\s+v3(?:\s+auth\s+(md5|sha)\s+(\S+))?(?:\s+priv\s+(des|3des|aes)\s+(\S+))?/i);
+  if (!match) return { success: false, error: '% Invalid snmp-server user command. Usage: snmp-server user <user> <group> v3 [auth <md5|sha> <pass>] [priv <des|3des|aes> <pass>]' };
+
+  const username = match[1];
+  const group = match[2];
+  const authProto = match[3];
+  const authPass = match[4];
+  const privProto = match[5];
+  const privPass = match[6];
+
+  const users = (state.snmpUsers || []).filter(u => u.username !== username);
+  users.push({ username, group, authProto, authPass, privProto, privPass });
+
+  const updatedState = { ...state, snmpUsers: users };
+  return {
+    success: true,
+    output: `SNMP user ${username} configured`,
+    newState: { snmpUsers: users, runningConfig: buildRunningConfig(updatedState) }
+  };
+}
+
+export function cmdNoSnmpUser(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const match = input.match(/^no\s+snmp-server\s+user\s+(\S+)/i);
+  if (!match) return { success: false, error: '% Invalid no snmp-server user command' };
+
+  const username = match[1];
+  const users = (state.snmpUsers || []).filter(u => u.username !== username);
+  const updatedState = { ...state, snmpUsers: users };
+  return {
+    success: true,
+    output: `SNMP user ${username} removed`,
+    newState: { snmpUsers: users, runningConfig: buildRunningConfig(updatedState) }
+  };
+}
+
+export function cmdSnmpHost(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const match = input.match(/^snmp-server\s+host\s+([0-9.]+)(?:\s+(traps|informs))?(?:\s+version\s+(1|2c|3))?\s+(\S+)/i);
+  if (!match) return { success: false, error: '% Invalid snmp-server host command. Usage: snmp-server host <ip> [traps|informs] [version <1|2c|3>] <community|user>' };
+
+  const host = match[1];
+  const informs = match[2]?.toLowerCase() === 'informs';
+  const version = match[3] || '2c';
+  const communityOrUser = match[4];
+
+  const hosts = (state.snmpHosts || []).filter(h => h.host !== host);
+  hosts.push({ host, version, communityOrUser, informs });
+
+  const updatedState = { ...state, snmpHosts: hosts };
+  return {
+    success: true,
+    output: `SNMP host ${host} configured`,
+    newState: { snmpHosts: hosts, runningConfig: buildRunningConfig(updatedState) }
+  };
+}
+
+export function cmdNoSnmpHost(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const match = input.match(/^no\s+snmp-server\s+host\s+([0-9.]+)/i);
+  if (!match) return { success: false, error: '% Invalid no snmp-server host command' };
+
+  const host = match[1];
+  const hosts = (state.snmpHosts || []).filter(h => h.host !== host);
+  const updatedState = { ...state, snmpHosts: hosts };
+  return {
+    success: true,
+    output: `SNMP host ${host} removed`,
+    newState: { snmpHosts: hosts, runningConfig: buildRunningConfig(updatedState) }
+  };
+}
+
+// IP SLA Responder
+export function cmdIpSlaResponder(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const updatedState = { ...state, ipSlaResponder: true };
+  return {
+    success: true,
+    output: 'IP SLA responder enabled',
+    newState: { ipSlaResponder: true, runningConfig: buildRunningConfig(updatedState) }
+  };
+}
+
+export function cmdNoIpSlaResponder(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const updatedState = { ...state, ipSlaResponder: false };
+  return {
+    success: true,
+    output: 'IP SLA responder disabled',
+    newState: { ipSlaResponder: false, runningConfig: buildRunningConfig(updatedState) }
+  };
+}

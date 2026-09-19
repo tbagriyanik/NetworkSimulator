@@ -722,6 +722,42 @@ export function cmdTunnelMode(state: SwitchState, input: string, _ctx: CommandCo
   };
 }
 
+export function cmdTunnelProtection(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (!isInInterfaceMode(state) || !state.currentInterface?.startsWith('tunnel')) return { success: false, error: cliModeError() };
+  const match = input.match(/^tunnel\s+protection\s+ipsec\s+profile\s+(\S+)$/i);
+  if (!match) return { success: false, error: '% Invalid tunnel protection syntax. Usage: tunnel protection ipsec profile <profile-name>' };
+  const profile = match[1];
+  const port = state.ports[state.currentInterface];
+  return {
+    success: true,
+    newState: {
+      ports: {
+        ...state.ports,
+        [state.currentInterface]: {
+          ...port,
+          tunnelProtectionProfile: profile
+        }
+      }
+    }
+  };
+}
+
+export function cmdNoTunnelProtection(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  if (!isInInterfaceMode(state) || !state.currentInterface?.startsWith('tunnel')) return { success: false, error: cliModeError() };
+  const port = state.ports[state.currentInterface];
+  const newPort = { ...port };
+  delete newPort.tunnelProtectionProfile;
+  return {
+    success: true,
+    newState: {
+      ports: {
+        ...state.ports,
+        [state.currentInterface]: newPort
+      }
+    }
+  };
+}
+
 export function cmdNoIpDhcpSnoopingTrust(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
   const newPorts = applyToSelectedPorts(state, (port: Port) => ({ ...port, dhcpSnoopingTrust: false }));

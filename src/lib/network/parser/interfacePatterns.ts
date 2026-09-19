@@ -1025,4 +1025,52 @@ export const interfacePatterns: Record<string, CommandPattern> = {
     minArgs: 0,
     maxArgs: 0
   },
+  'tunnel protection': {
+    pattern: /^tunnel\s+protection\s+ipsec\s+profile\s+(\S+)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 3,
+    maxArgs: 3
+  },
+  'no tunnel protection': {
+    pattern: /^no\s+tunnel\s+protection(?:\s+ipsec\s+profile(?:\s+\S+)?)?$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 0,
+    maxArgs: 4
+  },
+  'ip pim': {
+    pattern: /^ip\s+pim\s+(sparse-mode|dense-mode|sparse-dense-mode)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'no ip pim': {
+    pattern: /^no\s+ip\s+pim(?:\s+(?:sparse-mode|dense-mode|sparse-dense-mode))?$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 0,
+    maxArgs: 1
+  },
+  'ip igmp': {
+    pattern: /^ip\s+igmp\s+(?:join-group\s+([0-9.]+)|version\s+(1|2|3))$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 1,
+    maxArgs: 2
+  },
+  'no ip igmp': {
+    pattern: /^no\s+ip\s+igmp\s+(?:join-group\s+([0-9.]+)|version)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 1,
+    maxArgs: 2
+  },
+  'ip inspect': {
+    pattern: /^ip\s+inspect\s+(\S+)\s+(in|out)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 2,
+    maxArgs: 2
+  },
+  'no ip inspect': {
+    pattern: /^no\s+ip\s+inspect\s+(\S+)\s+(in|out)$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 2,
+    maxArgs: 2
+  },
 };

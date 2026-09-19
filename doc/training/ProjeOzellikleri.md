@@ -1,6 +1,16 @@
 # NetworkSimulator — Tam Özellik Envanteri / Full Feature Inventory
 
-**Sürüm / Version:** 5.9.0 · **Son doğrulama / Last verified:** 2026-09-18
+**Sürüm / Version:** 6.0.0 · **Son doğrulama / Last verified:** 2026-09-19
+
+## Kapsamlı CLI Genişletme & Çoklu Protokol Desteği (2026-09-19 - v6.0.0)
+
+| Özellik | Güncel kapsam ve sınır |
+|---|---|
+| **Multicast & PIM/IGMP Motoru** | `ip multicast-routing`, `ip pim sparse-mode`, `ip pim dense-mode`, `ip pim sparse-dense-mode`, `ip igmp join-group`, `ip igmp version 1|2|3`, `show ip mroute`, `show ip pim interface/neighbor`. |
+| **Gelişmiş STP & IPSec Tünel** | `spanning-tree uplinkfast`, `spanning-tree backbonefast`, `tunnel protection ipsec profile <name>`. |
+| **SNMPv3 Güvenlik Modeli** | `snmp-server group <name> v3 noauth|auth|priv`, `snmp-server user <user> <group> v3 auth ... priv ...`, `snmp-server host <ip> [traps|informs] version 3 ...`, `show snmp user`, `show snmp group`. |
+| **BGP Gelişmiş Özellikler & IP SLA** | `bgp confederation identifier <asn>`, `bgp confederation peers <asns>`, `bgp always-compare-med`, `bgp bestpath as-path ignore|compare-routerid`, `ip sla responder`, `show ip sla responder`. |
+| **CBAC Güvenlik Duvarı, EEM & NETCONF** | `ip inspect name <rule> <protocol>`, `ip inspect <rule> in|out`, `show ip inspect`, `event manager applet <name>`, `event syslog|cli|timer`, `action <id> syslog|cli`, `show event manager`, `netconf-yang`, `netconf ssh`, `show netconf-yang`. |
 
 ## CLI EIGRP, OSPF & Donanım Komutları Tamamlama Paketi (2026-09-17 - v5.8.0)
 

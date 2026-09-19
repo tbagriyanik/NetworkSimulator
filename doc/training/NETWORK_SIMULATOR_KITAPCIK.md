@@ -23,8 +23,14 @@ A browser-based network simulator for learning switching, routing, wireless, IoT
 
 Bu kitapçık projenin tüm kullanıcı, CLI, protokol, laboratuvar ve özellik bilgilerinin birincil kaynağıdır. Diğer Markdown dosyaları yalnızca kısa başvuru, kurulum veya geliştirici ayrıntısı içerir; aynı bilginin güncel sürümü burada tutulmalıdır.
 
-### Güncel özellik durumu (v5.9.0)
+### Güncel özellik durumu (v6.0.0)
 
+- **🚀 Kapsamlı CLI Genişletme & Çoklu Protokol Desteği (v6.0.0):**
+  - **Multicast / PIM & IGMP:** `ip multicast-routing`, `ip pim sparse-mode`, `ip pim dense-mode`, `ip pim sparse-dense-mode`, `ip igmp join-group`, `ip igmp version 1|2|3`, `show ip mroute`, `show ip pim interface/neighbor`.
+  - **Gelişmiş STP & IPSec Tünel:** `spanning-tree uplinkfast`, `spanning-tree backbonefast`, `tunnel protection ipsec profile <name>`.
+  - **SNMPv3 Güvenlik Modeli:** `snmp-server group <name> v3 noauth|auth|priv`, `snmp-server user <user> <group> v3 auth ... priv ...`, `snmp-server host <ip> [traps|informs] version 3 ...`, `show snmp user`, `show snmp group`.
+  - **BGP Advanced & IP SLA:** `bgp confederation identifier <asn>`, `bgp confederation peers <asns>`, `bgp always-compare-med`, `bgp bestpath as-path ignore|compare-routerid`, `ip sla responder`, `show ip sla responder`.
+  - **CBAC Güvenlik Duvarı, EEM & NETCONF:** `ip inspect name <rule> <protocol>`, `ip inspect <rule> in|out`, `show ip inspect`, `event manager applet <name>`, `event syslog|cli|timer`, `action <id> syslog|cli`, `show event manager`, `netconf-yang`, `netconf ssh`, `show netconf-yang`.
 - **🌐 OSPF E2E Network Etkileri & CLI Terminal Otomatik Scroll (v5.9.0):** `no network` komutunun OSPF LSDB LSA linklerini kaldırıp E2E ping iletimini düşürmesi doğrulandı; CLI terminal ekranına yeni komut girildiğinde otomatik olarak en alta scroll etme özelliği entegre edildi.
 - **📡 CLI EIGRP, OSPF & Donanım Komutları Tamamlama Paketi (v5.8.0):** `ip bandwidth-percent eigrp`, `ip summary-address eigrp`, `clear ip ospf process`, `area <id> authentication [message-digest]`, `show ip ospf interface`, `show ip ospf neighbor detail` ve gerçekçi donanım takibi sunan `show environment` (Power Supply, Fan, Sıcaklık, Voltaj) komutları eklendi.
 - **🏗️ 28 Kategori ve 49+ Örnek Proje Kataloğu (v5.7.0):** Otomatik Topoloji Üretici penceresinde 8 ana kategori (Temel, Topoloji, Veri Merkezi, Kablosuz, Servisler, Anahtarlama, Yönlendirme, Güvenlik) ve 28 hazır mimari senaryo (`scenarioGenerators.ts`, `topologyScenarios.ts`). Ofis Yazıcısı & Akıllı IoT Sensör, Python Ağ Otomasyonu (OOBM Filosu) ve Kurumsal DMZ Güvenlik Duvarı laboratuvarları (`office-printer-iot.ts`, `netauto-python-lab.ts`, `dmz-firewall-enterprise.ts`).
@@ -270,10 +276,10 @@ npm install && npm run dev
 
 | Metric / Metrik | Value / Değer |
 | --- | ---: |
-| Version / Sürüm | 5.9.0 |
-| Total Lines / Toplam Satır (src/) | ~202,800 |
-| Source Files / Kaynak Dosya | 908 |
-| Documentation Files / Dokümantasyon Dosya | 23 |
+| Version / Sürüm | 6.0.0 |
+| Total Lines / Toplam Satır (src/) | ~205,800 |
+| Source Files / Kaynak Dosya | 1002 |
+| Documentation Files / Dokümantasyon Dosya | 30 |
 | Example Projects / Örnek Proje | 49 |
 | Guided Lessons / Rehberli Ders | 19 |
 | Exams / Sınav | 6 |
