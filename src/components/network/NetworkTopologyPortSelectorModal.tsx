@@ -59,10 +59,10 @@ export function NetworkTopologyPortSelectorModal({
       <div className={graphicsQuality === 'low' ? 'absolute inset-0 bg-transparent' : 'absolute inset-0 bg-secondary-950/10'} />
       <div
         data-cable-port-selector="true"
-        className={`liquid-glass-light relative w-full max-w-2xl rounded-[2.5rem] ${isDark ? 'bg-secondary-900/75 border-white/10 backdrop-blur-xl' : 'bg-white/70 border-white/70 backdrop-blur-xl'} border shadow-2xl overflow-hidden flex flex-col transition-all duration-500`}
+        className={`liquid-glass-light relative w-full max-w-2xl max-h-[90vh] rounded-2xl ${isDark ? 'bg-secondary-900/95 !border-secondary-800 backdrop-blur-xl' : 'bg-white/95 !border-secondary-200 backdrop-blur-xl'} border shadow-2xl overflow-hidden flex flex-col transition-all duration-300`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className={`px-8 py-6 border-b ${isDark ? 'border-secondary-800/50 bg-secondary-800/30' : 'border-secondary-100 bg-secondary-50/50'}`}>
+        <div className={`px-5 py-4 border-b ${isDark ? 'border-secondary-800 bg-secondary-800/30' : 'border-secondary-200 bg-secondary-50/50'}`}>
           <div className="flex items-center justify-between gap-6">
             <div className="flex items-center gap-4">
               <div className={`p-3 rounded-2xl shadow-inner ${isDark ? 'bg-warning-500/10 text-warning-500 border border-warning-500/20' : 'bg-warning-50 text-warning-600 border border-warning-100'}`}>

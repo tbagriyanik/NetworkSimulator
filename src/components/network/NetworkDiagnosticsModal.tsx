@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -40,6 +40,27 @@ export function NetworkDiagnosticsModal({
 }: NetworkDiagnosticsModalProps) {
   const isTr = language === 'tr';
 
+  useEffect(() => {
+    if (!open) return;
+
+    const handleMobileBack = () => {
+      onOpenChange(false);
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onOpenChange(false);
+      }
+    };
+
+    window.addEventListener('mobile-back-pressed', handleMobileBack);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('mobile-back-pressed', handleMobileBack);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [open, onOpenChange]);
+
   const eligibleDevices = useMemo(() => {
     return devices.filter(d => d.type !== 'cloud');
   }, [devices]);
@@ -62,7 +83,7 @@ export function NetworkDiagnosticsModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className={`max-w-2xl max-h-[85vh] overflow-y-auto p-6 rounded-2xl border shadow-2xl ${isDark ? 'bg-secondary-950 border-secondary-800 text-secondary-100' : 'bg-white border-secondary-200 text-secondary-900'
+        className={`max-w-2xl max-h-[90vh] overflow-y-auto p-5 rounded-2xl !border shadow-2xl ${isDark ? 'bg-secondary-950 border-secondary-800 text-secondary-100' : 'bg-white border-secondary-200 text-secondary-900'
           }`}
       >
         <DialogHeader className="border-b pb-3 border-secondary-800/60">
@@ -127,8 +148,8 @@ export function NetworkDiagnosticsModal({
         {/* Status Banner */}
         <div
           className={`p-3.5 rounded-xl border flex items-center gap-3 transition-all ${diagnosticResult.canCommunicate
-              ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300'
-              : 'bg-rose-950/30 border-rose-500/40 text-rose-300'
+            ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300'
+            : 'bg-rose-950/30 border-rose-500/40 text-rose-300'
             }`}
         >
           {diagnosticResult.canCommunicate ? (
@@ -179,11 +200,11 @@ export function NetworkDiagnosticsModal({
                     </span>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 font-mono font-bold">
                       {issue.category === 'ip' ? 'IP' :
-                       issue.category === 'physical' ? (isTr ? 'Fiziksel' : 'Physical') :
-                       issue.category === 'gateway' ? (isTr ? 'Gateway' : 'Gateway') :
-                       issue.category === 'vlan' ? 'VLAN' :
-                       issue.category === 'routing' ? (isTr ? 'Yönlendirme' : 'Routing') :
-                       issue.category.toUpperCase()}
+                        issue.category === 'physical' ? (isTr ? 'Fiziksel' : 'Physical') :
+                          issue.category === 'gateway' ? (isTr ? 'Gateway' : 'Gateway') :
+                            issue.category === 'vlan' ? 'VLAN' :
+                              issue.category === 'routing' ? (isTr ? 'Yönlendirme' : 'Routing') :
+                                issue.category.toUpperCase()}
                     </span>
                   </div>
                   <p className="text-xs text-secondary-300 mt-1">{issue.description[language]}</p>
@@ -266,4 +287,3 @@ export function NetworkDiagnosticsModal({
     </Dialog>
   );
 }
-
