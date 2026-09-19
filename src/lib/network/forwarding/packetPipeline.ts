@@ -30,7 +30,8 @@ import type { CanvasDevice, CanvasConnection } from '@/components/network/Networ
 import type { SwitchState, Port } from '@/lib/network/types';
 import type { NetworkPacketFrame } from './packetFrame';
 import { checkIngressSanity, processControlPlaneProtocols } from './commonForwardingEngine';
-import { captureNetFlow } from './netflowEngine';
+import { buildNetflowExportFrame, captureNetFlow } from './netflowEngine';
+import { buildSflowExportFrame, captureSflow } from './sflowEngine';
 import { evaluateAcl } from '@/lib/network/connectivity/acl';
 import { learnMacAddress } from '@/lib/network/macLearning';
 import { getRoutingTable, findRouteDetailed } from '@/lib/network/routing';
@@ -92,6 +93,7 @@ export interface HopResult {
   egressPorts: string[];
   nextDeviceId?: string;
   responseFrame?: NetworkPacketFrame;
+  telemetryFrames?: NetworkPacketFrame[];
   /** All pipeline stage traces for this hop */
   traces: PacketTrace[];
 }
@@ -104,6 +106,7 @@ export interface PipelineResult {
   capturedOnLinks: string[];
   finalFrame?: NetworkPacketFrame;
   dropReason?: string;
+  telemetryFrames?: NetworkPacketFrame[];
 }
 
 // ---------------------------------------------
@@ -567,10 +570,21 @@ export function runHopPipeline(
 
 
   // -- Stage 10c: NetFlow Accounting -------------------------------------
+  const telemetryFrames: NetworkPacketFrame[] = [];
   if (state) {
     captureNetFlow(state, frame, ingressPortId, egressPorts, now);
+    const sflow = captureSflow(state, frame, ingressPortId, egressPorts, now);
+    const telemetryFrames: NetworkPacketFrame[] = [];
+    if (sflow) {
+      const exportFrame = buildSflowExportFrame(state, sflow);
+      if (exportFrame) telemetryFrames.push(exportFrame);
+    }
+    if (state.netflowConfig?.exportDestination) {
+      telemetryFrames.push(buildNetflowExportFrame(state, `${state.netflowConfig.exportDestination}:${state.netflowConfig.exportPort || 2055}`, state.netflowConfig.version || 5, now));
+    }
     traces.push(makeTrace(hopIndex, device, ingressPortId, 'netflow', 'pass',
       `NetFlow accounting: ${frame.srcIp || ''}→${frame.dstIp || ''} (${egressPorts.length} egress)`, frame));
+    if (sflow) traces.push(makeTrace(hopIndex, device, ingressPortId, 'netflow', 'pass', `sFlow sample #${sflow.sequence} exported`, frame));
   }
 
   // -- Stage 10d: SPAN / RSPAN Port Mirroring ------------------------------
@@ -654,6 +668,7 @@ export function runHopPipeline(
     trapToControlPlane: false,
     egressPorts,
     nextDeviceId,
+    telemetryFrames,
     traces,
   };
 }
@@ -674,6 +689,7 @@ export function runFullPacketPipeline(
   const allTraces: PacketTrace[] = [];
   const hopResults: HopResult[] = [];
   const capturedOnLinks: string[] = [];
+  const telemetryFrames: NetworkPacketFrame[] = [];
   const deviceMap = new Map<string, CanvasDevice>(devices.map(d => [d.id, d]));
 
   let currentDeviceId = sourceDeviceId;
@@ -731,6 +747,7 @@ export function runFullPacketPipeline(
 
     const hopResult = runHopPipeline(hopIndex, currentFrame, device, state, devices, connections, now);
     hopResults.push(hopResult);
+    telemetryFrames.push(...(hopResult.telemetryFrames || []));
     allTraces.push(...hopResult.traces);
 
     if (hopResult.traces.some(t => t.action === 'drop')) {
@@ -798,10 +815,10 @@ export function runFullPacketPipeline(
         currentFrame = { ...currentFrame, ingressDeviceId: hopResult.nextDeviceId, ingressPortId: nextPortId };
         currentDeviceId = hopResult.nextDeviceId;
       } else {
-        return { success: true, hopResults, allTraces, capturedOnLinks, finalFrame: currentFrame };
+        return { success: true, hopResults, allTraces, capturedOnLinks, finalFrame: currentFrame, telemetryFrames };
       }
     } else {
-      return { success: true, hopResults, allTraces, capturedOnLinks, finalFrame: currentFrame };
+      return { success: true, hopResults, allTraces, capturedOnLinks, finalFrame: currentFrame, telemetryFrames };
     }
 
     hopIndex++;
@@ -812,6 +829,7 @@ export function runFullPacketPipeline(
     hopResults,
     allTraces,
     capturedOnLinks,
+    telemetryFrames,
     dropReason: formatDropReason(DropReasonCode.MAX_HOPS_EXCEEDED, `Maximum hop count (${maxHops}) exceeded — possible routing loop`)
   };
 }

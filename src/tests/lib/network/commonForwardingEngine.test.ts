@@ -76,6 +76,16 @@ describe('Common Forwarding Engine & Event Pipeline', () => {
     expect(ospfHello).toBeDefined();
     expect(ospfHello?.ospfPayload?.routerId).toBe('1.1.1.1');
   });
+
+  it('terminates MQTT/CoAP/NETCONF packets only on their service ports', () => {
+    const device = { id: 'gw', name: 'GW', type: 'router', status: 'online', macAddress: '00:00:00:00:00:01' } as unknown as CanvasDevice;
+    const state = { hostname: 'GW', ports: {}, mqttClients: {}, coapResources: {} } as unknown as SwitchState;
+    const base = { id: 'app-1', protocol: 'UDP' as const, timestamp: 1, srcMac: '00:00:00:00:00:02', dstMac: '00:00:00:00:00:01', etherType: '0x0800', srcIp: '10.0.0.2', dstIp: '10.0.0.1', srcPort: 50000, length: 80, info: 'app' };
+    const mqtt = processControlPlaneProtocols({ ...base, dstPort: 1883, mqttPayload: { type: 'CONNECT', clientId: 'sensor-1' } }, device, state);
+    expect(mqtt.responseFrame?.mqttPayload?.type).toBe('CONNACK');
+    const wrongPort = processControlPlaneProtocols({ ...base, dstPort: 9999, mqttPayload: { type: 'CONNECT', clientId: 'sensor-2' } }, device, state);
+    expect(wrongPort.handled).toBe(false);
+  });
 });
 
 

@@ -9,6 +9,8 @@ import { processSnmpPacket } from '@/lib/network/snmp';
 import { establishIpsecSa, decapsulateEsp } from '@/lib/network/ipsec';
 import { isFrameAllowedOnDot1xPort } from '@/lib/network/dot1x';
 import { processEapolFrame } from '@/lib/network/dot1x';
+import { processMqtt, processCoap } from '@/lib/network/applicationProtocols';
+import { processNetconfFrame } from '@/lib/network/netconfTransport';
 
 export interface ForwardingEngineResult {
   accepted: boolean;
@@ -107,6 +109,29 @@ export function processControlPlaneProtocols(
   const updatedState = { ...state };
   let handled = false;
   let responseFrame: NetworkPacketFrame | undefined;
+
+  if (frame.mqttPayload && (frame.dstPort === undefined || frame.dstPort === 1883 || frame.dstPort === 8883)) {
+    handled = true;
+    const mqtt = processMqtt(state, frame.mqttPayload);
+    responseFrame = mqtt.response ? { ...frame, id: `mqtt-response-${Date.now()}`, srcMac: frame.dstMac, dstMac: frame.srcMac,
+      srcIp: frame.dstIp, dstIp: frame.srcIp, mqttPayload: mqtt.response, info: `MQTT ${mqtt.response.type}` } : undefined;
+    return { handled, updatedState: mqtt.state, responseFrame };
+  }
+  if (frame.coapPayload && (frame.dstPort === undefined || frame.dstPort === 5683 || frame.dstPort === 5684)) {
+    handled = true;
+    const coap = processCoap(state, frame.coapPayload);
+    responseFrame = { ...frame, id: `coap-response-${Date.now()}`, srcMac: frame.dstMac, dstMac: frame.srcMac,
+      srcIp: frame.dstIp, dstIp: frame.srcIp, coapPayload: coap.response, info: `CoAP ${coap.response.code} ${coap.response.path}` };
+    return { handled, updatedState: coap.state, responseFrame };
+  }
+  if (frame.netconfPayload && (frame.dstPort === undefined || frame.dstPort === 830)) {
+    handled = true;
+    const netconf = processNetconfFrame(state, frame.srcIp || frame.srcMac, frame.netconfPayload);
+    responseFrame = { ...frame, id: `netconf-response-${Date.now()}`, srcMac: frame.dstMac, dstMac: frame.srcMac,
+      srcIp: frame.dstIp, dstIp: frame.srcIp, srcPort: 830, dstPort: frame.srcPort, netconfPayload: netconf.response,
+      info: `NETCONF ${netconf.response.operation}` };
+    return { handled, updatedState: netconf.state, responseFrame };
+  }
 
   if (frame.eapolPayload && frame.ingressPortId) {
     handled = true;

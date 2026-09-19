@@ -9,6 +9,17 @@ export interface NetflowCaptureOptions {
   inactiveTimeout?: number;
 }
 
+export function buildNetflowExportFrame(state: SwitchState, destination: string, version = 5, now = Date.now()): NetworkPacketFrame {
+  const [dstIp, portText] = destination.split(':');
+  return {
+    id: `netflow-export-${now}`, protocol: 'UDP', timestamp: now,
+    srcMac: state.macAddress || '00:00:00:00:00:00', dstMac: 'ff:ff:ff:ff:ff:ff', etherType: '0x0800',
+    srcIp: Object.values(state.ports || {}).find(port => port.ipAddress)?.ipAddress,
+    dstIp, srcPort: 0, dstPort: Number(portText) || 2055, length: 128,
+    info: `NetFlow v${version} export to ${destination}`
+  };
+}
+
 const DEFAULT_INACTIVE_TIMEOUT = 15;
 
 const IP_PROTOCOL_NAMES: Record<number, string> = {
@@ -138,6 +149,12 @@ export function captureNetFlow(
     const cfg = state.netflowConfig;
     const before = cfg.exportedPackets || 0;
     cfg.exportedPackets = before + flowsToCount.length;
+    const runtime = state as SwitchState & { netflowExports?: Array<{ destination: string; version: number; flows: typeof cache }> };
+    runtime.netflowExports = [...(runtime.netflowExports || []), {
+      destination: `${cfg.exportDestination}:${cfg.exportPort || 2055}`,
+      version: cfg.version || 5,
+      flows: flowsToCount.map(flow => cache.find(entry => entry.srcIf === flow.srcIf && entry.dstIf === flow.dstIf)).filter(Boolean) as typeof cache
+    }].slice(-100);
   }
 }
 

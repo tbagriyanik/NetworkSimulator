@@ -19,6 +19,32 @@ export type PacketProtocolType =
   | 'IPSEC'
   | 'CAPWAP';
 
+export interface MqttFramePayload {
+  type: 'CONNECT' | 'CONNACK' | 'PUBLISH' | 'PUBACK' | 'SUBSCRIBE' | 'SUBACK' | 'PINGREQ' | 'PINGRESP';
+  clientId?: string;
+  topic?: string;
+  payload?: string;
+  qos?: 0 | 1 | 2;
+  packetId?: number;
+}
+
+export interface CoapFramePayload {
+  type: 'CON' | 'ACK' | 'RST';
+  code: 'GET' | 'POST' | 'PUT' | 'DELETE' | '2.05' | '2.04' | '4.04' | '4.00';
+  messageId: number;
+  path: string;
+  payload?: string;
+  token?: string;
+  retry?: number;
+}
+
+export interface NetconfFramePayload {
+  messageId: string;
+  operation: 'hello' | 'get' | 'get-config' | 'edit-config' | 'commit' | 'close-session';
+  path?: string;
+  data?: Record<string, string | number | boolean>;
+}
+
 export type EapolFramePayload = import('@/lib/network/dot1x').EapolFrame;
 
 export interface SnmpFramePayload {
@@ -147,6 +173,9 @@ export interface NetworkPacketFrame {
   ipsecPayload?: IpsecFramePayload;
   eapolPayload?: EapolFramePayload;
   capwapPayload?: CapwapFramePayload;
+  mqttPayload?: MqttFramePayload;
+  coapPayload?: CoapFramePayload;
+  netconfPayload?: NetconfFramePayload;
 
   // Layer 4 Ports (used by NetFlow accounting / firewalls)
   srcPort?: number;

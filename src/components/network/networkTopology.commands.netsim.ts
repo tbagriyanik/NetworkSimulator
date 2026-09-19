@@ -122,6 +122,19 @@ export function getNetSimCommands(isTR: boolean): CommandDefinition[] {
         ['show event manager applet all', isTR ? 'EEM applet listesini göster' : 'Show all EEM applets', '#'],
         ['show netconf-yang status', isTR ? 'NETCONF servis durumunu göster' : 'Show NETCONF-YANG status', '#'],
       ]
+    },
+    {
+      id: 'telemetry_iot',
+      icon: Activity,
+      title: isTR ? 'Telemetry & IoT Protocol Akışları' : 'Telemetry & IoT Protocol Flows',
+      type: 'info',
+      cmds: [
+        ['sFlow / NetFlow', isTR ? 'Forward edilen paketlerden sample/flow export üretir' : 'Creates sample/flow exports from forwarded packets', 'pipeline'],
+        ['MQTT 1883 / 8883', isTR ? 'CONNECT, PUBLISH, SUBSCRIBE ve QoS 1 PUBACK akışı' : 'CONNECT, PUBLISH, SUBSCRIBE and QoS 1 PUBACK flow', 'TCP'],
+        ['CoAP 5683 / 5684', isTR ? 'GET/PUT/POST/DELETE, ACK ve transaction state' : 'GET/PUT/POST/DELETE, ACK and transaction state', 'UDP'],
+        ['NETCONF 830', isTR ? 'Hello, get, edit-config, commit ve close-session frame akışı' : 'Hello, get, edit-config, commit and close-session frame flow', 'TCP'],
+        ['CAPWAP', isTR ? 'Discovery → Join → Config → Data → Run state machine' : 'Discovery → Join → Config → Data → Run state machine', 'control/data'],
+      ]
     }
   ];
 }
