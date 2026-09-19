@@ -36,7 +36,7 @@ export function cmdShowIpArpInspection(state: SwitchState, input: string, _ctx: 
       return { success: true, output: '\n Vlan      Forwarded        Dropped     DHCP Drops      ACL Drops\n ----      ---------        -------     ----------      ---------\n (No statistics available)\n' };
     }
     let output = '\n Vlan      Forwarded        Dropped     DHCP Drops      ACL Drops\n';
-    output +=    ' ----      ---------        -------     ----------      ---------\n';
+    output += ' ----      ---------        -------     ----------      ---------\n';
     for (const stat of Object.values(state.daiStats)) {
       output += ` ${String(stat.vlan).padEnd(9)} ${String(stat.forwarded).padEnd(16)} ${String(stat.dropped).padEnd(11)} ${String(0).padEnd(15)} ${0}\n`;
     }
@@ -611,7 +611,7 @@ export function cmdShowMpls(state: SwitchState, input: string, _ctx: CommandCont
   // Update LFIB and LIB before showing
   generateLfib(state);
   generateLib(state);
-  
+
   const mpls = getOrCreateMplsConfig(state);
   if (!mpls || !mpls.enabled) {
     return { success: true, output: '\n% MPLS is not enabled\n' };
@@ -623,10 +623,10 @@ export function cmdShowMpls(state: SwitchState, input: string, _ctx: CommandCont
   output += `Label Range: ${mpls.labelRange.min} - ${mpls.labelRange.max}\n`;
   output += `Graceful Restart: ${mpls.gracefulRestartEnabled ? 'Enabled' : 'Disabled'}\n`;
   output += `Session Protection: ${mpls.sessionProtectionEnabled ? 'Enabled' : 'Disabled'}\n`;
-  
+
   // Parse input to determine what to show
   const inputLower = input.toLowerCase();
-  
+
   if (inputLower.includes('ldp neighbor')) {
     output += getLdpNeighborTable(state);
   } else if (inputLower.includes('ldp discovery')) {
@@ -641,7 +641,7 @@ export function cmdShowMpls(state: SwitchState, input: string, _ctx: CommandCont
     output += `\n${getLdpNeighborTable(state)}`;
     output += `\n${getLfibTable(state)}`;
   }
-  
+
   return { success: true, output };
 }
 
@@ -695,8 +695,8 @@ export function cmdShowVlanPrivateVlan(state: SwitchState, _input: string, _ctx:
  */
 export function cmdShowInterfacesBackup(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   let output = '\n';
-  output +=   'Interface   Backup-Interface         State        Preemption  Bandwidth\n';
-  output +=   '---------   ----------------         -----        ----------  ---------\n';
+  output += 'Interface   Backup-Interface         State        Preemption  Bandwidth\n';
+  output += '---------   ----------------         -----        ----------  ---------\n';
 
   let hasPairs = false;
 
@@ -723,7 +723,7 @@ export function cmdShowInterfacesBackup(state: SwitchState, _input: string, _ctx
  */
 export function cmdShowNveInterface(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   const vxlan = getOrCreateVxlanConfig(state);
-  
+
   if (!vxlan.enabled) {
     return { success: true, output: '% VXLAN is not enabled' };
   }
@@ -736,16 +736,16 @@ export function cmdShowNveInterface(state: SwitchState, _input: string, _ctx: Co
  */
 export function cmdShowEvpn(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   const vxlan = getOrCreateVxlanConfig(state);
-  
+
   if (!vxlan.enabled) {
     return { success: true, output: '% VXLAN-EVPN is not enabled' };
   }
 
   let output = '\nVXLAN-EVPN Status: Enabled\n';
   output += `BGP EVPN: ${vxlan.bgpEvpnEnabled ? 'Enabled' : 'Disabled'}\n`;
-  
+
   const inputLower = input.toLowerCase();
-  
+
   if (inputLower.includes('mac') || inputLower.includes('mac-table')) {
     output += getEvpnMacTable(state);
   } else if (inputLower.includes('neighbor') || inputLower.includes('neighbor')) {
@@ -755,7 +755,7 @@ export function cmdShowEvpn(state: SwitchState, input: string, _ctx: CommandCont
     output += `\n${getEvpnNeighborTable(state)}`;
     output += `\n${getEvpnMacTable(state)}`;
   }
-  
+
   return { success: true, output };
 }
 
@@ -793,5 +793,76 @@ export function cmdShowControlPlane(state: SwitchState, _input: string, _ctx: Co
   return { success: true, output };
 }
 
+/**
+ * Show IP CEF - Cisco Express Forwarding table
+ * Syntax: show ip cef | show ip cef <prefix> | show ip cef detail
+ */
+export function cmdShowIpCef(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  const isCefEnabled = state.switchLayer === 'L3' || state.deviceType === 'router' || state.deviceType === 'switchL3';
+  if (!isCefEnabled) {
+    return { success: true, output: '\n% CEF is not supported on this device\n' };
+  }
 
+  const isDetail = /\bdetail\b/i.test(input);
+  const prefixMatch = input.match(/cef\s+([0-9.]+(?:\/\d+)?)\s*(?:detail)?$/i);
+  const filterPrefix = prefixMatch ? prefixMatch[1] : null;
 
+  // Build CEF table from connected and static/dynamic routes
+  const routes: Array<{ prefix: string; mask: string; nextHop: string; outIf: string; adjType: string }> = [];
+
+  // Connected routes from ports
+  Object.entries(state.ports || {}).forEach(([portName, port]) => {
+    if (port.ipAddress && port.subnetMask && !port.shutdown) {
+      routes.push({
+        prefix: port.ipAddress,
+        mask: port.subnetMask,
+        nextHop: 'directly connected',
+        outIf: portName,
+        adjType: 'receive',
+      });
+    }
+  });
+
+  // Static and dynamic routes
+  const rawState = state as { ipRoutes?: unknown[] };
+  const allRoutes = [
+    ...(state.staticRoutes || []),
+    ...(state.dynamicRoutes || []),
+    ...((rawState.ipRoutes as Array<{ destination?: string; network?: string; subnetMask?: string; mask?: string; nextHop?: string; exitInterface?: string }>) || []),
+  ];
+  allRoutes.forEach((r: { destination?: string; network?: string; subnetMask?: string; mask?: string; nextHop?: string; exitInterface?: string }) => {
+    const dest = r.destination || r.network || '0.0.0.0';
+    const mask = r.subnetMask || r.mask || '255.255.255.0';
+    const nh = r.nextHop || 'directly connected';
+    const outIf = r.exitInterface || '';
+    routes.push({ prefix: dest, mask, nextHop: nh, outIf, adjType: nh === 'directly connected' ? 'receive' : 'adjacency' });
+  });
+
+  // Filter by prefix if given
+  const displayed = filterPrefix
+    ? routes.filter(r => {
+      const query = filterPrefix.includes('/') ? filterPrefix.split('/')[0] : filterPrefix;
+      return r.prefix === query;
+    })
+    : routes;
+
+  if (displayed.length === 0) {
+    if (filterPrefix) return { success: true, output: `\n% Prefix ${filterPrefix} not found in CEF table\n` };
+    return { success: true, output: '\n% CEF table is empty\n' };
+  }
+
+  let output = '\n';
+  output += 'IP CEF Table - Prefix          Next Hop          Interface         Type\n';
+  output += '-----------------------------  ----------------  ----------------  -----------\n';
+
+  displayed.forEach(r => {
+    const pl = getPrefixLength(r.mask);
+    const prefixStr = `${r.prefix}/${pl}`;
+    output += `${prefixStr.padEnd(31)} ${r.nextHop.padEnd(18)} ${r.outIf.padEnd(18)} ${r.adjType}\n`;
+    if (isDetail && r.adjType === 'adjacency') {
+      output += `    Adjacency: IP adj out of ${r.outIf || 'unknown'}, addr ${r.nextHop}\n`;
+    }
+  });
+
+  return { success: true, output };
+}

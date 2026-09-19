@@ -201,6 +201,17 @@ export function cmdSnmpCommunity(state: SwitchState, input: string, _ctx: Comman
   return { success: true, output: `SNMP community ${match[1]} configured`, newState: { snmpCommunities: { ...state.snmpCommunities, [match[1]]: (match[2] || 'RO').toUpperCase() as 'RO' | 'RW' } } };
 }
 
+export function cmdNoSnmpCommunity(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  const match = input.match(/^no\s+snmp-server\s+community\s+(\S+)$/i);
+  if (!match) return { success: false, error: '% Invalid no SNMP community command' };
+  const communities = { ...state.snmpCommunities };
+  if (!Object.prototype.hasOwnProperty.call(communities, match[1])) {
+    return { success: false, error: `% SNMP community ${match[1]} not found` };
+  }
+  delete communities[match[1]];
+  return { success: true, output: `SNMP community ${match[1]} removed`, newState: { snmpCommunities: communities } };
+}
+
 export function cmdSnmpContact(_state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   const match = input.match(/^snmp-server\s+contact\s+(.+)$/i);
   if (!match) return { success: false, error: '% Invalid SNMP contact command' };

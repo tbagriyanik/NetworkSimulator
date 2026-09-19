@@ -33,6 +33,18 @@ export const systemPatterns: Record<string, CommandPattern> = {
     minArgs: 0,
     maxArgs: 1
   },
+  'service dhcp': {
+    pattern: /^service\s+dhcp$/i,
+    modes: ['config'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'no service dhcp': {
+    pattern: /^no\s+service\s+dhcp$/i,
+    modes: ['config'],
+    minArgs: 0,
+    maxArgs: 0
+  },
 
   'copy startup-config running-config': {
     pattern: /^copy\s+startup-config\s+running-config$/i,
@@ -104,7 +116,7 @@ export const systemPatterns: Record<string, CommandPattern> = {
   // Traceroute
   'traceroute': {
     pattern: /^traceroute(?:\s+ip)?\s+([0-9a-fA-F:.]+|[\w.-]+)(.*)$/i,
-    modes: ['privileged'],
+    modes: ['user', 'privileged'],
     minArgs: 1,
     maxArgs: 10
   },

@@ -3,6 +3,16 @@ import type { CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult } from '../types';
 import { isLayer3Switch } from '../switchModels';
 
+export function cmdServiceDhcp(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  return { success: true, output: 'DHCP service enabled', newState: { services: { ...state.services, dhcp: { ...(state.services?.dhcp || { pools: [] }), enabled: true } } } };
+}
+
+export function cmdNoServiceDhcp(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  return { success: true, output: 'DHCP service disabled', newState: { services: { ...state.services, dhcp: { ...(state.services?.dhcp || { pools: [] }), enabled: false } } } };
+}
+
 /**
  * No IP HTTP Server - Disable HTTP server
  */

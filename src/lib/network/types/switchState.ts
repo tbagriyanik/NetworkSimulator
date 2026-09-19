@@ -371,6 +371,7 @@ export interface SwitchState {
         name: string;
         size: number;
         modifiedAt?: string;
+        content?: string;
       }>;
     };
     http?: {

@@ -57,12 +57,72 @@ export function cmdShowIpBgpSummary(state: SwitchState, _input: string, ctx?: Co
 }
 
 /**
- * Show IP BGP Table
+ * Show IP BGP Table (optionally filtered by prefix)
+ * show ip bgp            — full table
+ * show ip bgp <prefix>   — specific prefix detail
  */
 export function cmdShowIpBgp(state: SwitchState, input: string, ctx?: CommandContext): CommandResult {
   const routerId = state.routerId || state.defaultGateway || '1.1.1.1';
   const bgpNetworks = state.bgpNetworks || [];
   const dynamicRoutes = state.dynamicRoutes || [];
+
+  // --- Specific prefix query: show ip bgp 192.168.1.0/24 or show ip bgp 192.168.1.0
+  const prefixMatch = input.match(/^show\s+ip\s+bgp\s+([0-9.]+(?:\/\d+)?)$/i);
+  if (prefixMatch) {
+    const prefixQuery = prefixMatch[1].trim().toLowerCase();
+    const queryNet = prefixQuery.includes('/') ? prefixQuery.split('/')[0] : prefixQuery;
+    const queryLen = prefixQuery.includes('/') ? parseInt(prefixQuery.split('/')[1]) : undefined;
+
+    const allEntries = [
+      ...bgpNetworks.map(n => ({
+        network: n.network,
+        prefixLength: getPrefixLength(n.mask),
+        nextHop: '0.0.0.0',
+        metric: 0,
+        asPath: 'i',
+        weight: 32768,
+        localPref: 100,
+        internal: false,
+      })),
+      ...(ctx?.deviceStates && ctx?.sourceDeviceId
+        ? calculateBgpRoutes(ctx.sourceDeviceId, ctx.deviceStates)
+        : dynamicRoutes.filter(r => r.code === 'B')
+      ).map((r: Route) => ({
+        network: r.destination,
+        prefixLength: r.prefixLength || getPrefixLength(r.mask || r.subnetMask || '255.255.255.0'),
+        nextHop: r.nextHop || '0.0.0.0',
+        metric: r.metric ?? 0,
+        asPath: r.asPath || 'i',
+        weight: r.weight ?? 0,
+        localPref: r.localPreference ?? 100,
+        internal: r.administrativeDistance === 200,
+      })),
+    ];
+
+    const matched = allEntries.filter(e => {
+      if (e.network.toLowerCase() !== queryNet) return false;
+      if (queryLen !== undefined) return e.prefixLength === queryLen;
+      return true;
+    });
+
+    if (matched.length === 0) {
+      return { success: true, output: `\n% Network not in table: ${prefixQuery}\n` };
+    }
+
+    let output = `BGP routing table entry for ${matched[0].network}/${matched[0].prefixLength}, version 1\n`;
+    output += `Paths: (${matched.length} available, best #1, table Default-IP-Routing-Table)\n`;
+    matched.forEach((e, idx) => {
+      const isIbgp = e.internal;
+      output += `  ${isIbgp ? 'Local' : e.asPath !== 'i' ? e.asPath : `${state.bgpAs || 65000}`}\n`;
+      output += `    ${e.nextHop} from ${e.nextHop} (${routerId})\n`;
+      output += `      Origin ${e.asPath === 'i' ? 'IGP' : 'EGP'}, metric ${e.metric}, `;
+      output += `localpref ${e.localPref}, weight ${e.weight}`;
+      if (idx === 0) output += `, valid, best`;
+      output += `\n`;
+    });
+    void input;
+    return { success: true, output };
+  }
 
   const entries: Array<{ network: string; prefixLength: number; nextHop: string; metric: number; asPath?: string; localPref?: number; weight?: number; internal?: boolean }>
     = bgpNetworks.map(n => ({

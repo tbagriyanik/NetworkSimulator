@@ -552,3 +552,8 @@ export function cmdNoBannerExec(state: SwitchState, _input: string, _ctx: Comman
     newState: { bannerExec: undefined }
   };
 }
+
+export function cmdNoSpanningTreePortfastDefault(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  return { success: true, output: 'PortFast default disabled', newState: { spanningTreePortfastDefault: false } };
+}

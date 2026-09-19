@@ -189,16 +189,26 @@ export function cmdCopyTftp(state: SwitchState, input: string, ctx: CommandConte
         }
     }
 
-    // Require FTP service enabled on target for backup
-    if (!isRestore && !targetDevice?.services?.ftp?.enabled) {
-        return { success: false, error: `% Error: FTP service is not enabled on ${targetIp}.` };
+    // The simulator models TFTP storage through the device file service.
+    if (!targetDevice?.services?.ftp?.enabled) {
+        return { success: false, error: `% Error: TFTP service is not enabled on ${targetIp}.` };
     }
 
-    // Store the backup file on the target device's FTP service
+    const configContent = Array.isArray(state.runningConfig) ? state.runningConfig.join('\n') : '';
+    const remoteFiles = targetDevice.services?.ftp?.files || [];
+    const remoteFile = remoteFiles.find((file: { name: string }) => file.name.toLowerCase() === filename.toLowerCase());
+
+    if (isRestore && !remoteFile) {
+        return { success: false, error: `% TFTP file ${filename} not found on ${targetIp}.` };
+    }
+    if (isRestore && typeof remoteFile?.content !== 'string') {
+        return { success: false, error: `% TFTP file ${filename} has no configuration payload.` };
+    }
+
+    // Store the backup file on the target device and retain its configuration payload.
     if (!isRestore && typeof window !== 'undefined' && targetDevice) {
         try {
-            const configContent = Array.isArray(state.runningConfig) ? state.runningConfig.join('\n') : '';
-            const newFile = { name: filename, size: configContent.length || 4096, modifiedAt: new Date().toISOString() };
+            const newFile = { name: filename, size: configContent.length, content: configContent, modifiedAt: new Date().toISOString() };
             window.dispatchEvent(new CustomEvent('update-topology-device-config', {
                 detail: {
                     deviceId: targetDevice.id,
@@ -227,7 +237,8 @@ export function cmdCopyTftp(state: SwitchState, input: string, ctx: CommandConte
 
     return {
         success: true,
-        output: `\n${verb} ${source} to ${dest} ...\nBuilding configuration...\n[OK]\n`
+        output: `\n${verb} ${source} to ${dest} ...\nBuilding configuration...\n[OK]\n`,
+        ...(isRestore ? { newState: { runningConfig: remoteFile?.content?.split('\n') || [] } } : {})
     };
 }
 

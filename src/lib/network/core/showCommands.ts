@@ -20,6 +20,7 @@ import {
   cmdShowIpInterfaceBrief, cmdShowInterfacesStatus,
   cmdShowIpInterface, cmdShowIpv6InterfaceBrief,
   cmdShowNameif, cmdShowControllers, cmdShowIpAccessGroup,
+  cmdShowInterfacesCounters,
 } from './showInterfaceDisplay';
 
 import {
@@ -49,6 +50,7 @@ import {
   cmdShowIpv6DhcpBinding, cmdShowPppoeSession, cmdShowCaller,
   cmdShowTrack, cmdShowIpSlaSummary, cmdShowIpSlaConfiguration,
   cmdShowVrf, cmdShowMpls,
+  cmdShowIpCef,
 } from './showRoutingDisplay';
 
 import {
@@ -330,6 +332,11 @@ export const showHandlers: Record<string, CommandHandler> = {
   'show event manager': cmdShowEventManager,
   'show netconf-yang status': cmdShowNetconfYang,
   'show netconf-yang': cmdShowNetconfYang,
+  'show interfaces counters': cmdShowInterfacesCounters,
+  'show interfaces counters errors': cmdShowInterfacesCounters,
+  'show ip cef': cmdShowIpCef,
+  'show ip cef detail': cmdShowIpCef,
+  'show ip dhcp snooping statistics': cmdShowIpDhcpSnooping,
 };
 
 import { cmdShowNtp as cmdShowNtpDisplay } from './show/showNtpDisplay';

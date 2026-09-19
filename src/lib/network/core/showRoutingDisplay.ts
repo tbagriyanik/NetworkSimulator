@@ -58,6 +58,7 @@ export {
   cmdShowInterfacesBackup,
   cmdShowNveInterface,
   cmdShowEvpn,
+  cmdShowIpCef,
 } from './showServicesDisplay';
 
 export {

@@ -57,7 +57,7 @@ export function CanvasToolbar({
   const { preferences } = useUiPreferences();
   return (
     <div
-      className={`fixed ${preferences.showFooter ? 'bottom-[50px]' : 'bottom-[12px]'} right-[10px] items-center gap-1 px-2 py-1 rounded-xl border ${isDark ? 'bg-secondary-800/90 border-secondary-700/50 shadow-lg' : 'bg-white/95 border-secondary-200/60 shadow-md'
+      className={`fixed ${preferences.showFooter ? 'bottom-[64px]' : 'bottom-[14px]'} right-[12px] items-center gap-1 px-2 py-1 rounded-xl border ${isDark ? 'bg-secondary-800/90 border-secondary-700/50 shadow-lg' : 'bg-white/95 border-secondary-200/60 shadow-md'
         } flex z-40 transition-all duration-200`}
     >
       <TooltipWrapper
@@ -97,10 +97,10 @@ export function CanvasToolbar({
         onMouseDown={handleZoomMouseDown}
         onWheel={handleZoomWheel}
         className={`text-xs font-mono w-12 text-center cursor-pointer select-none rounded transition-colors ${isDraggingZoom
-            ? 'text-primary-400'
-            : isDark
-              ? 'text-secondary-300 hover:bg-secondary-700'
-              : 'text-secondary-600 hover:bg-secondary-100'
+          ? 'text-primary-400'
+          : isDark
+            ? 'text-secondary-300 hover:bg-secondary-700'
+            : 'text-secondary-600 hover:bg-secondary-100'
           }`}
         title={t.dragToZoomOrScroll}
       >
@@ -181,10 +181,10 @@ export function CanvasToolbar({
             aria-label={language === 'tr' ? 'Izgaraya Hizala (Snap to Grid)' : 'Snap to Grid'}
             onClick={onToggleSnapToGrid}
             className={`w-8 h-8 flex items-center justify-center rounded transition-colors ${snapToGrid
-                ? 'bg-primary-500 text-white'
-                : isDark
-                  ? 'hover:bg-secondary-700 text-secondary-300'
-                  : 'hover:bg-secondary-100 text-secondary-600'
+              ? 'bg-primary-500 text-white'
+              : isDark
+                ? 'hover:bg-secondary-700 text-secondary-300'
+                : 'hover:bg-secondary-100 text-secondary-600'
               }`}
           >
             <Grid className="w-4 h-4" />
@@ -218,10 +218,10 @@ export function CanvasToolbar({
               aria-label={language === 'tr' ? 'Mini Haritayı Aç/Kapat' : 'Toggle Mini-map'}
               onClick={onToggleMinimap}
               className={`w-8 h-8 flex items-center justify-center rounded transition-colors ${isMinimapOpen
-                  ? 'bg-primary-500 text-white'
-                  : isDark
-                    ? 'hover:bg-secondary-700 text-secondary-300'
-                    : 'hover:bg-secondary-100 text-secondary-600'
+                ? 'bg-primary-500 text-white'
+                : isDark
+                  ? 'hover:bg-secondary-700 text-secondary-300'
+                  : 'hover:bg-secondary-100 text-secondary-600'
                 }`}
             >
               <Map className="w-4 h-4" />

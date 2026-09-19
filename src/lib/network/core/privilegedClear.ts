@@ -187,3 +187,77 @@ export function cmdClearIpOspfProcess(state: SwitchState, input: string, _ctx: C
         }
     };
 }
+
+/**
+ * Clear IP BGP - Reset BGP sessions and learned routes
+ * Syntax: clear ip bgp * | clear ip bgp <neighbor-ip> | clear ip bgp * soft
+ */
+export function cmdClearIpBgp(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+    if (state.currentMode !== 'privileged') {
+        return { success: false, error: '% Command available only in privileged EXEC mode.' };
+    }
+
+    if (state.routingProtocol !== 'bgp' && !(state.bgpAs || state.bgpNeighbors?.length)) {
+        return { success: true, output: '\n% BGP is not configured on this device\n' };
+    }
+
+    // Soft reset (no hard session drop)
+    const isSoft = /\bsoft\b/i.test(input);
+
+    // Specific neighbor reset
+    const neighborMatch = input.match(/clear\s+ip\s+bgp\s+([0-9.]+)(?:\s+soft)?/i);
+    if (neighborMatch && neighborMatch[1] !== '*') {
+        const neighborIp = neighborMatch[1];
+        const neighbors = Array.isArray(state.bgpNeighbors) ? state.bgpNeighbors : [];
+        const found = neighbors.find(n => n.ip === neighborIp);
+        if (!found) {
+            return { success: false, error: `% BGP: No such neighbor: ${neighborIp}` };
+        }
+        if (isSoft) {
+            return {
+                success: true,
+                output: `\n% Soft reset of BGP neighbor ${neighborIp} initiated\n`
+            };
+        }
+        // Hard reset: clear learned routes from that neighbor
+        const clearedRoutes = (state.dynamicRoutes || []).filter(
+            r => !(r.code === 'B' && r.nextHop === neighborIp)
+        );
+        return {
+            success: true,
+            output: `\n% Resetting BGP neighbor ${neighborIp}...\n`,
+            newState: {
+                ...state,
+                dynamicRoutes: clearedRoutes,
+                bgpNeighborState: {
+                    ...state.bgpNeighborState,
+                    [neighborIp]: 'Idle'
+                }
+            }
+        };
+    }
+
+    // Global reset: clear ip bgp *
+    if (isSoft) {
+        return {
+            success: true,
+            output: '\n% Soft reset of all BGP sessions initiated\n'
+        };
+    }
+
+    const clearedBgpRoutes = (state.dynamicRoutes || []).filter(r => r.code !== 'B');
+    const resetNeighborState: Record<string, string> = {};
+    (Array.isArray(state.bgpNeighbors) ? state.bgpNeighbors : []).forEach(n => {
+        resetNeighborState[n.ip] = 'Idle';
+    });
+
+    return {
+        success: true,
+        output: `\n% Resetting all BGP sessions... [confirm]\n% BGP sessions reset. All learned routes cleared.\n`,
+        newState: {
+            ...state,
+            dynamicRoutes: clearedBgpRoutes,
+            bgpNeighborState: resetNeighborState
+        }
+    };
+}

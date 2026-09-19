@@ -3,7 +3,9 @@ import {
     cmdPing,
     cmdTelnet,
     cmdSsh,
-    cmdTraceroute
+    cmdTraceroute,
+    cmdPingTcp,
+    cmdPingUdp
 } from './privilegedConnectivity';
 import {
     cmdWriteMemory,
@@ -28,7 +30,8 @@ import {
     cmdClearCounters,
     cmdClearLine,
     cmdClearInterface,
-    cmdClearIpOspfProcess
+    cmdClearIpOspfProcess,
+    cmdClearIpBgp
 } from './privilegedClear';
 import {
     cmdReload,
@@ -86,4 +89,8 @@ export const privilegedHandlers: Record<string, CommandHandler> = {
     'clock set': cmdClockSet,
     'no debug all': cmdUndebugAll,
     'help': cmdHelp,
+    'clear ip bgp': cmdClearIpBgp,
+    'write erase': cmdEraseStartupConfig,
+    'ping tcp': cmdPingTcp,
+    'ping udp': cmdPingUdp,
 };

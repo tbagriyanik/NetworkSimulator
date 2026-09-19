@@ -1,4 +1,4 @@
-﻿import type { CommandContext } from './commandTypes';
+import type { CommandContext } from './commandTypes';
 import type { CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState, CommandResult, Port } from '../types';
 import { normalizePortId } from '../initialState';
@@ -94,7 +94,7 @@ export function cmdShowInterfaces(
     const ingressQ = port.qos?.ingressQueue || 75;
     const egressQ = port.qos?.egressQueue || 40;
     output += `  Queueing strategy: fifo\n`;
-output += `  Output queue 0/${egressQ}, ${s.txDrops || 0} drops; input queue 0/${ingressQ}, ${s.rxDrops || 0} drops\n`;
+    output += `  Output queue 0/${egressQ}, ${s.txDrops || 0} drops; input queue 0/${ingressQ}, ${s.rxDrops || 0} drops\n`;
 
     output += `  5 minute input rate ${stats.inputBytes || 0} bits/sec, ${stats.inputPackets || 0} packets/sec\n`;
     output += `  5 minute output rate ${stats.outputBytes || 0} bits/sec, ${stats.outputPackets || 0} packets/sec\n`;
@@ -667,4 +667,70 @@ export function cmdShowIpAccessGroup(state: SwitchState, _input: string, _ctx: C
   return { success: true, output };
 }
 
+/**
+ * Show Interfaces Counters
+ * Displays per-port RX/TX packet/byte/error counters in a compact table format.
+ * Syntax: show interfaces counters | show interfaces counters errors | show interfaces counters <if>
+ */
+export function cmdShowInterfacesCounters(
+  state: SwitchState,
+  input: string,
+  _ctx: CommandContext
+): CommandResult {
+  const errorsOnly = /\berrors\b/i.test(input);
 
+  // Optional specific interface filter
+  const ifMatch = input.match(/counters\s+(?!errors)(\S+)/i);
+  const filterIf = ifMatch ? ifMatch[1].toLowerCase().replace(/\s+/g, '') : null;
+
+  const ports = Object.keys(state.ports || {}).filter(portName => {
+    const pl = portName.toLowerCase();
+    if (pl.startsWith('console') || pl.startsWith('vty') || pl.startsWith('aux')) return false;
+    if (filterIf) return pl.replace(/\s+/g, '').includes(filterIf);
+    return true;
+  });
+
+  if (errorsOnly) {
+    let output = '\n';
+    output += `Port            InOctets InUcastPkts InMcastPkts InBcastPkts InDiscards InErrors\n`;
+    output += `--------------- -------- ----------- ----------- ----------- ---------- --------\n`;
+    ports.forEach(portName => {
+      const stats = state.ports[portName]?.statistics || {};
+      output += `${portName.padEnd(15)} `;
+      output += `${String(stats.inputBytes || 0).padEnd(8)} `;
+      output += `${String(stats.inputPackets || 0).padEnd(11)} `;
+      output += `0           0           `;
+      output += `${String(stats.drops || 0).padEnd(10)} `;
+      output += `${String(stats.inputErrors || 0)}\n`;
+    });
+    output += '\n';
+    output += `Port            OutOctets OutUcastPkts OutMcastPkts OutBcastPkts OutDiscards OutErrors\n`;
+    output += `--------------- --------- ------------ ------------ ------------ ----------- ---------\n`;
+    ports.forEach(portName => {
+      const stats = state.ports[portName]?.statistics || {};
+      output += `${portName.padEnd(15)} `;
+      output += `${String(stats.outputBytes || 0).padEnd(9)} `;
+      output += `${String(stats.outputPackets || 0).padEnd(12)} `;
+      output += `0            0            `;
+      output += `${String(stats.underruns || 0).padEnd(11)} `;
+      output += `${String(stats.outputErrors || 0)}\n`;
+    });
+    return { success: true, output };
+  }
+
+  let output = '\n';
+  output += `Port            InOctets    InPkts      OutOctets   OutPkts     InErr   OutErr  Drops\n`;
+  output += `--------------- ----------- ----------- ----------- ----------- ------- ------- -------\n`;
+  ports.forEach(portName => {
+    const stats = state.ports[portName]?.statistics || {};
+    output += `${portName.padEnd(15)} `;
+    output += `${String(stats.inputBytes || 0).padEnd(11)} `;
+    output += `${String(stats.inputPackets || 0).padEnd(11)} `;
+    output += `${String(stats.outputBytes || 0).padEnd(11)} `;
+    output += `${String(stats.outputPackets || 0).padEnd(11)} `;
+    output += `${String(stats.inputErrors || 0).padEnd(7)} `;
+    output += `${String(stats.outputErrors || 0).padEnd(7)} `;
+    output += `${String(stats.drops || 0)}\n`;
+  });
+  return { success: true, output };
+}

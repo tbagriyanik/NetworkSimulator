@@ -6,7 +6,7 @@ import { dispatchCapturedPackets } from '../../../utils/packetCapture';
 import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState, CommandResult } from '../types';
 import { getL3Hops } from '../routing';
-import { isValidIPv4Format } from '../dns';
+import { isValidIPv4Format, resolveHostname } from '../dns';
 
 let _seed = 42;
 export function resetDeterministicRandomSeed(seed = 42): void {
@@ -368,16 +368,7 @@ export function cmdSsh(state: SwitchState, input: string, ctx: CommandContext): 
     // Resolve hostname to show IP address
     let resolvedIp = host;
     if (!isValidIPv4Format(host)) {
-        const knownDomains: Record<string, string> = {
-            'a10.com': '52.8.34.123',
-            'portal.local': '192.0.2.10',
-            'docs.local': '192.0.2.20',
-            'search.local': '192.0.2.30',
-            'mail.local': '192.0.2.40',
-            'files.local': '192.0.2.50',
-            'social.local': '192.0.2.70',
-        };
-        resolvedIp = knownDomains[host.toLowerCase()] || host;
+        resolvedIp = resolveHostname(host, ctx.devices || [], ctx.deviceStates) || host;
     }
 
     // Connectivity logic
@@ -444,7 +435,7 @@ export function cmdSsh(state: SwitchState, input: string, ctx: CommandContext): 
  * Traceroute - Trace route to destination (Unix/Linux style)
  */
 export function cmdTraceroute(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
-    if (state.currentMode !== 'privileged') {
+    if (state.currentMode !== 'user' && state.currentMode !== 'privileged') {
         return { success: false, error: cliModeError() };
     }
 
@@ -528,16 +519,7 @@ export function cmdTraceroute(state: SwitchState, input: string, ctx: CommandCon
             let resolvedIp = host;
             if (!isValidIPv4Format(host)) {
                 // For external domains, we'll simulate the IP
-                const knownDomains: Record<string, string> = {
-                    'a10.com': '52.8.34.123',
-                    'portal.local': '192.0.2.10',
-                    'docs.local': '192.0.2.20',
-                    'search.local': '192.0.2.30',
-                    'mail.local': '192.0.2.40',
-                    'files.local': '192.0.2.50',
-                    'social.local': '192.0.2.70',
-                };
-                resolvedIp = knownDomains[host.toLowerCase()] || 'Unknown';
+                resolvedIp = resolveHostname(host, ctx.devices || [], ctx.deviceStates) || 'Unknown';
             }
 
             let output = `\nType escape sequence to abort.\n`;
@@ -587,16 +569,7 @@ export function cmdTraceroute(state: SwitchState, input: string, ctx: CommandCon
             // For failed connections, still try to show resolved IP
             let resolvedIp = host;
             if (!isValidIPv4Format(host)) {
-                const knownDomains: Record<string, string> = {
-                    'a10.com': '52.8.34.123',
-                    'portal.local': '192.0.2.10',
-                    'docs.local': '192.0.2.20',
-                    'search.local': '192.0.2.30',
-                    'mail.local': '192.0.2.40',
-                    'files.local': '192.0.2.50',
-                    'social.local': '192.0.2.70',
-                };
-                resolvedIp = knownDomains[host.toLowerCase()] || 'Unknown';
+                resolvedIp = resolveHostname(host, ctx.devices || [], ctx.deviceStates) || 'Unknown';
             }
 
             let output = `\nType escape sequence to abort.\nTracing the route to ${host} (${resolvedIp})\n`;
@@ -617,3 +590,128 @@ export function cmdTraceroute(state: SwitchState, input: string, ctx: CommandCon
     return { success: false, error: '% Traceroute requires network context' };
 }
 
+/**
+ * Extended Ping TCP - Test TCP port connectivity
+ * Syntax: ping tcp <host> [port <port>] [source <src-ip>] [repeat <n>]
+ */
+export function cmdPingTcp(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
+    if (state.currentMode !== 'user' && state.currentMode !== 'privileged') {
+        return { success: false, error: cliModeError() };
+    }
+
+    const hostMatch = input.match(/^ping\s+tcp\s+([0-9.]+|[\w.-]+)(?:\s+port\s+(\d+))?(?:\s+source\s+(\S+))?/i);
+    if (!hostMatch) {
+        return { success: false, error: "% Usage: ping tcp <host> [port <port>] [source <src-ip>] [repeat <n>]" };
+    }
+
+    const host = hostMatch[1];
+    const port = hostMatch[2] || '80';
+    const source = hostMatch[3];
+    const repeatMatch = input.match(/repeat\s+(\d+)/i);
+    const count = parseInt(repeatMatch?.[1] || '5', 10);
+
+    if (ctx?.sourceDeviceId && Array.isArray(ctx.devices)) {
+        const connectivity = checkConnectivity(
+            ctx.sourceDeviceId,
+            host,
+            ctx.devices,
+            ctx.connections || [],
+            ctx.deviceStates,
+            ctx.language,
+            { protocol: 'tcp', port }
+        );
+        dispatchCapturedPackets(connectivity.capturedPackets);
+
+        const devices = ctx.devices as CanvasDevice[];
+        const srcDev = devices.find(d => d.id === ctx.sourceDeviceId);
+        const dstDev = connectivity.targetId ? devices.find(d => d.id === connectivity.targetId) : undefined;
+        const srcDist = getWirelessDistance(srcDev, devices, ctx.deviceStates);
+        const dstDist = getWirelessDistance(dstDev, devices, ctx.deviceStates);
+        const latency = (srcDist === Infinity && dstDist === Infinity)
+            ? { min: 1, avg: 1, max: 2 }
+            : generatePingLatencies((srcDist === Infinity ? 0 : srcDist) + (dstDist === Infinity ? 0 : dstDist));
+        const fmtMs = (ms: number) => ms <= 1 ? '<1' : String(ms);
+
+        if (connectivity.success) {
+            let output = `\nType escape sequence to abort.\n`;
+            output += `Sending ${count} TCP SYN packets to ${host}:${port}, timeout is 2 seconds:\n`;
+            if (source) output += `Packet sent with a source address of ${source}\n`;
+            output += '!'.repeat(count);
+            output += `\n\nSuccess rate is 100 percent (${count}/${count})`;
+            output += `, round-trip min/avg/max = ${fmtMs(latency.min)}/${fmtMs(latency.avg)}/${fmtMs(latency.max)} ms\n`;
+            return { success: true, output };
+        } else {
+            const sym = connectivity.error?.toLowerCase().includes('unreachable') ? 'U' : '.';
+            let output = `\nType escape sequence to abort.\n`;
+            output += `Sending ${count} TCP SYN packets to ${host}:${port}, timeout is 2 seconds:\n`;
+            output += sym.repeat(count);
+            output += `\n\nSuccess rate is 0 percent (0/${count})\n`;
+            output += `% ${connectivity.error || 'Destination host unreachable.'}\n`;
+            return { success: false, output };
+        }
+    }
+    return { success: false, error: '% Ping TCP requires network context' };
+}
+
+/**
+ * Extended Ping UDP - Test UDP port connectivity
+ * Syntax: ping udp <host> [port <port>] [source <src-ip>] [repeat <n>]
+ */
+export function cmdPingUdp(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
+    if (state.currentMode !== 'user' && state.currentMode !== 'privileged') {
+        return { success: false, error: cliModeError() };
+    }
+
+    const hostMatch = input.match(/^ping\s+udp\s+([0-9.]+|[\w.-]+)(?:\s+port\s+(\d+))?(?:\s+source\s+(\S+))?/i);
+    if (!hostMatch) {
+        return { success: false, error: "% Usage: ping udp <host> [port <port>] [source <src-ip>] [repeat <n>]" };
+    }
+
+    const host = hostMatch[1];
+    const port = hostMatch[2] || '53';
+    const source = hostMatch[3];
+    const repeatMatch = input.match(/repeat\s+(\d+)/i);
+    const count = parseInt(repeatMatch?.[1] || '5', 10);
+
+    if (ctx?.sourceDeviceId && Array.isArray(ctx.devices)) {
+        const connectivity = checkConnectivity(
+            ctx.sourceDeviceId,
+            host,
+            ctx.devices,
+            ctx.connections || [],
+            ctx.deviceStates,
+            ctx.language,
+            { protocol: 'udp', port }
+        );
+        dispatchCapturedPackets(connectivity.capturedPackets);
+
+        const devices = ctx.devices as CanvasDevice[];
+        const srcDev = devices.find(d => d.id === ctx.sourceDeviceId);
+        const dstDev = connectivity.targetId ? devices.find(d => d.id === connectivity.targetId) : undefined;
+        const srcDist = getWirelessDistance(srcDev, devices, ctx.deviceStates);
+        const dstDist = getWirelessDistance(dstDev, devices, ctx.deviceStates);
+        const latency = (srcDist === Infinity && dstDist === Infinity)
+            ? { min: 1, avg: 1, max: 2 }
+            : generatePingLatencies((srcDist === Infinity ? 0 : srcDist) + (dstDist === Infinity ? 0 : dstDist));
+        const fmtMs = (ms: number) => ms <= 1 ? '<1' : String(ms);
+
+        if (connectivity.success) {
+            let output = `\nType escape sequence to abort.\n`;
+            output += `Sending ${count} UDP packets to ${host}:${port}, timeout is 2 seconds:\n`;
+            if (source) output += `Packet sent with a source address of ${source}\n`;
+            output += '!'.repeat(count);
+            output += `\n\nSuccess rate is 100 percent (${count}/${count})`;
+            output += `, round-trip min/avg/max = ${fmtMs(latency.min)}/${fmtMs(latency.avg)}/${fmtMs(latency.max)} ms\n`;
+            return { success: true, output };
+        } else {
+            const sym = connectivity.error?.toLowerCase().includes('unreachable') ? 'U' : '.';
+            let output = `\nType escape sequence to abort.\n`;
+            output += `Sending ${count} UDP packets to ${host}:${port}, timeout is 2 seconds:\n`;
+            output += sym.repeat(count);
+            output += `\n\nSuccess rate is 0 percent (0/${count})\n`;
+            output += `% ${connectivity.error || 'Destination host unreachable.'}\n`;
+            return { success: false, output };
+        }
+    }
+    return { success: false, error: '% Ping UDP requires network context' };
+}

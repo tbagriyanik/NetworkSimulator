@@ -126,6 +126,7 @@ export interface CanvasDevice {
         name: string;
         size: number;
         modifiedAt?: string;
+        content?: string;
       }>;
     };
     http?: {

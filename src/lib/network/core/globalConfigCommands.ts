@@ -17,6 +17,8 @@ import {
   cmdSystemMtu,
   cmdSdmPrefer,
   cmdIpSshAuthRetries
+  ,cmdServiceDhcp
+  ,cmdNoServiceDhcp
 } from './globalConfigServiceCommands';
 import {
   cmdNoSpanningTree,
@@ -25,6 +27,7 @@ import {
   cmdNoInterface,
   cmdSpanningTreeVlan,
   cmdSpanningTreePortfastDefault,
+  cmdNoSpanningTreePortfastDefault,
   cmdErrdisableRecovery,
   cmdVtpPassword,
   cmdIpArpInspection,
@@ -130,6 +133,7 @@ import {
   cmdLldpHoldtime,
   cmdLldpReinit,
   cmdSnmpCommunity,
+  cmdNoSnmpCommunity,
   cmdSnmpContact,
   cmdSnmpLocation,
   cmdDefaultInterface,
@@ -193,6 +197,9 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'spanning-tree mode': cmdSpanningTreeMode,
   'spanning-tree vlan': cmdSpanningTreeVlan,
   'spanning-tree portfast': cmdSpanningTreePortfastDefault,
+  'no spanning-tree portfast default': cmdNoSpanningTreePortfastDefault,
+  'service dhcp': cmdServiceDhcp,
+  'no service dhcp': cmdNoServiceDhcp,
   'spanning-tree uplinkfast': cmdSpanningTreeUplinkfast,
   'no spanning-tree uplinkfast': cmdNoSpanningTreeUplinkfast,
   'spanning-tree backbonefast': cmdSpanningTreeBackbonefast,
@@ -322,6 +329,7 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'lldp holdtime': cmdLldpHoldtime,
   'lldp reinit': cmdLldpReinit,
   'snmp-server community': cmdSnmpCommunity,
+  'no snmp-server community': cmdNoSnmpCommunity,
   'snmp-server contact': cmdSnmpContact,
   'snmp-server location': cmdSnmpLocation,
   'snmp-server group': cmdSnmpGroup,

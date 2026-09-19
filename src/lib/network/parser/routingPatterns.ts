@@ -809,6 +809,18 @@ export const routingPatterns: Record<string, CommandPattern> = {
     minArgs: 1,
     maxArgs: 2
   },
+  'no spanning-tree portfast default': {
+    pattern: /^no\s+spanning-tree\s+portfast\s+default$/i,
+    modes: ['config'],
+    minArgs: 0,
+    maxArgs: 0
+  },
+  'no snmp-server community': {
+    pattern: /^no\s+snmp-server\s+community\s+(\S+)$/i,
+    modes: ['config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
   'snmp-server contact': {
     pattern: /^snmp-server\s+contact\s+(.+)$/i,
     modes: ['config'],

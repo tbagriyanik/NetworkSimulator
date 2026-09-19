@@ -36,6 +36,31 @@ export function cmdShowIpDhcpSnooping(state: SwitchState, input: string, _ctx: C
   const vlans: string[] = state.dhcpSnoopingVlans ?? [];
   const bindings = getDhcpSnoopingBindingsList(state);
 
+  // Subcommand: show ip dhcp snooping statistics
+  if (/\bstatistics\b/i.test(input)) {
+    const ports = Object.keys(state.ports || {}).filter(p => {
+      const pl = p.toLowerCase();
+      return !pl.startsWith('console') && !pl.startsWith('line') && !pl.startsWith('aux') && !pl.startsWith('vty');
+    });
+    let output = '\n';
+    output += 'DHCP Snooping statistics for interface counters since last clear:\n\n';
+    output += 'Packets Forwarded                                   = 0\n';
+    output += 'Packets Dropped                                     = 0\n';
+    output += 'Packets Dropped From untrusted ports                = 0\n\n';
+    output += `Interface           Forward    Drop       Limit    Exceeded\n`;
+    output += `------------------- ---------- ---------- -------- --------\n`;
+    ports.forEach(portName => {
+      const port = state.ports[portName];
+      const fwd = port?.statistics?.outputPackets || 0;
+      const drp = port?.statistics?.inputErrors || 0;
+      const limit = port?.dhcpSnoopingLimitRate !== undefined ? String(port.dhcpSnoopingLimitRate) : 'unlimited';
+      const exceeded = port?.dhcpSnoopingLimitRate !== undefined && drp > 0 ? '1' : '0';
+      output += `${portName.padEnd(19)} ${String(fwd).padEnd(10)} ${String(drp).padEnd(10)} ${limit.padEnd(8)} ${exceeded}\n`;
+    });
+    output += '!\n';
+    return { success: true, output };
+  }
+
   // Subcommand: show ip dhcp snooping binding
   if (/\bbinding\b/i.test(input)) {
     let output = '\nMacAddress          IpAddress        Lease(sec)  Type    VLAN  Interface\n';
