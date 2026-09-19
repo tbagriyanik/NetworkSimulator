@@ -1,5 +1,9 @@
 # 📅 Network Simulator — Proje Geçmişi
 
+## v6.1.0 — 2026-09-19
+
+- UI/UX, REST/RESTCONF pencereleri, MQTT paket yakalama ve IoT otomasyon trafiği iyileştirildi; MPLS LDP port doğrulaması güvenli hale getirildi.
+
 ## v6.0.0 — 2026-09-19
 
 **Kapsamlı CLI Genişletme, İnteraktif Motorlar, Çoklu Protokol Desteği & Dokümantasyon Optimizasyonu** —

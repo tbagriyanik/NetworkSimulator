@@ -23,9 +23,9 @@ A browser-based network simulator for learning switching, routing, wireless, IoT
 
 Bu kitapçık projenin tüm kullanıcı, CLI, protokol, laboratuvar ve özellik bilgilerinin birincil kaynağıdır. Diğer Markdown dosyaları yalnızca kısa başvuru, kurulum veya geliştirici ayrıntısı içerir; aynı bilginin güncel sürümü burada tutulmalıdır.
 
-### Güncel özellik durumu (v6.0.0)
+### Güncel özellik durumu (v6.1.0)
 
-- **🚀 Kapsamlı CLI Genişletme & Çoklu Protokol Desteği (v6.0.0):**
+- **🚀 Kapsamlı CLI Genişletme & Çoklu Protokol Desteği (v6.1.0):**
   - **Multicast / PIM & IGMP:** `ip multicast-routing`, `ip pim sparse-mode`, `ip pim dense-mode`, `ip pim sparse-dense-mode`, `ip igmp join-group`, `ip igmp version 1|2|3`, `show ip mroute`, `show ip pim interface/neighbor`.
   - **Gelişmiş STP & IPSec Tünel:** `spanning-tree uplinkfast`, `spanning-tree backbonefast`, `tunnel protection ipsec profile <name>`.
   - **SNMPv3 Güvenlik Modeli:** `snmp-server group <name> v3 noauth|auth|priv`, `snmp-server user <user> <group> v3 auth ... priv ...`, `snmp-server host <ip> [traps|informs] version 3 ...`, `show snmp user`, `show snmp group`.
@@ -276,7 +276,7 @@ npm install && npm run dev
 
 | Metric / Metrik | Value / Değer |
 | --- | ---: |
-| Version / Sürüm | 6.0.0 |
+| Version / Sürüm | 6.1.0 |
 | Total Lines / Toplam Satır (src/) | ~205,800 |
 | Source Files / Kaynak Dosya | 1002 |
 | Documentation Files / Dokümantasyon Dosya | 30 |

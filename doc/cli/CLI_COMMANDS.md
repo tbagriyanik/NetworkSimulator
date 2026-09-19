@@ -859,7 +859,7 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `ip flow-export version <5\|9>` | Config | Set NetFlow export protocol version (5 or 9) |
 | `ip flow ingress` / `ip flow egress` | Interface | Enable NetFlow traffic monitoring on interface |
 
-### Multicast, PIM & IGMP (v6.0.0)
+### Multicast, PIM & IGMP (v6.1.0)
 
 | Command | Mode | Description |
 |---------|------|-------------|
@@ -877,7 +877,7 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `show ip pim neighbor` | Privileged | Display PIM neighbors table |
 | `show ip igmp groups` | Privileged | Display connected IGMP multicast group membership |
 
-### Advanced Services, SNMPv3, CBAC, EEM & NETCONF (v6.0.0)
+### Advanced Services, SNMPv3, CBAC, EEM & NETCONF (v6.1.0)
 
 | Command | Mode | Description |
 |---------|------|-------------|

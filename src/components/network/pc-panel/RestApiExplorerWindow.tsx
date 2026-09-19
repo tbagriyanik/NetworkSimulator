@@ -351,7 +351,7 @@ export function RestApiExplorerWindow({
         </div>
 
         {/* Request Options & Tabs */}
-        <div className="flex-1 min-h-0 border rounded-lg overflow-hidden dark:border-secondary-800">
+        <div className="flex-1 min-h-0 flex flex-col border rounded-lg overflow-hidden dark:border-secondary-800">
           <div className={`flex items-center justify-between border-b px-2 py-1 text-[11px] font-bold ${
             isDark ? 'bg-secondary-900 border-secondary-800' : 'bg-secondary-100 border-secondary-200'
           }`}>
@@ -422,27 +422,27 @@ export function RestApiExplorerWindow({
             )}
           </div>
 
-          <div className="flex-1 p-2 min-h-0 overflow-auto">
+          <div className="flex-1 min-h-0 p-2 overflow-hidden flex flex-col">
             {activeReqTab === 'headers' ? (
               <textarea
                 value={headers}
                 onChange={(e) => setHeaders(e.target.value)}
                 placeholder="Content-Type: application/json&#10;x-auth-token: demo_token_123"
-                className={`w-full h-full text-xs font-mono bg-transparent outline-none resize-none leading-relaxed ${isDark ? 'text-slate-200' : 'text-slate-800'}`}
+                className={`w-full flex-1 min-h-0 text-xs font-mono bg-transparent outline-none resize-none leading-relaxed ${isDark ? 'text-slate-200' : 'text-slate-800'}`}
               />
             ) : activeReqTab === 'body' ? (
               <textarea
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 placeholder='{ "key": "value" }'
-                className={`w-full h-full text-xs font-mono bg-transparent outline-none resize-none leading-relaxed ${isDark ? 'text-slate-200' : 'text-slate-800'}`}
+                className={`w-full flex-1 min-h-0 text-xs font-mono bg-transparent outline-none resize-none leading-relaxed ${isDark ? 'text-slate-200' : 'text-slate-800'}`}
               />
             ) : activeReqTab === 'python' ? (
-              <pre className="text-xs font-mono text-sky-300 select-text whitespace-pre-wrap leading-relaxed">
+              <pre className="flex-1 min-h-0 overflow-y-auto overflow-x-auto custom-scrollbar text-xs font-mono text-sky-300 select-text whitespace-pre-wrap leading-relaxed">
                 {generatePythonSnippet()}
               </pre>
             ) : (
-              <pre className="text-xs font-mono text-amber-300 select-text whitespace-pre-wrap leading-relaxed">
+              <pre className="flex-1 min-h-0 overflow-y-auto overflow-x-auto custom-scrollbar text-xs font-mono text-amber-300 select-text whitespace-pre-wrap leading-relaxed">
                 {generateCurlSnippet()}
               </pre>
             )}

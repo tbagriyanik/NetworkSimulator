@@ -304,8 +304,12 @@ export function discoverLdpNeighbors(
         const peerId = conn.sourceDeviceId === localId ? conn.targetDeviceId : conn.sourceDeviceId;
         const peerPortId = conn.sourceDeviceId === localId ? conn.targetPort : conn.sourcePort;
         const peer = topologyStates.get(peerId);
-        const localPort = Object.values(state.ports || {}).find(p => p.id.toLowerCase() === localPortId.toLowerCase());
-        const peerPort = peer && Object.values(peer.ports || {}).find(p => p.id.toLowerCase() === peerPortId.toLowerCase());
+        const localPort = typeof localPortId === 'string'
+          ? Object.values(state.ports || {}).find(p => typeof p?.id === 'string' && p.id.toLowerCase() === localPortId.toLowerCase())
+          : undefined;
+        const peerPort = peer && typeof peerPortId === 'string'
+          ? Object.values(peer.ports || {}).find(p => typeof p?.id === 'string' && p.id.toLowerCase() === peerPortId.toLowerCase())
+          : undefined;
         if (!peer || !localPort || !peerPort || !localPort.mplsEnabled || !peerPort.mplsEnabled ||
             localPort.shutdown || peerPort.shutdown || !localPort.ipAddress || !peerPort.ipAddress ||
             !sameSubnet(localPort.ipAddress, localPort.subnetMask, peerPort.ipAddress, peerPort.subnetMask)) return;

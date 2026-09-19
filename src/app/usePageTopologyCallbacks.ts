@@ -12,6 +12,7 @@ interface PageTopologyCallbackOptions {
   closeRouter: (value: boolean) => void;
   closeFirewall: (value: boolean) => void;
   closePC: (value: boolean) => void;
+  setActiveDeviceId: (id: string) => void;
   checkStepCompletion: GuidedCheck;
   deviceStates: Map<string, unknown>;
   topologyConnections: CanvasConnection[];
@@ -26,22 +27,22 @@ function getAccessedType(device: DeviceType): 'switch' | 'router' | 'pc' | null 
 }
 
 export function usePageTopologyCallbacks(options: PageTopologyCallbackOptions) {
-  const { selectFromCanvas, selectFromMenu, restoreSelectedWindow, closeUnified, closeRouter, closeFirewall, closePC, checkStepCompletion, deviceStates, topologyConnections, topologyDevices } = options;
+  const { selectFromCanvas, selectFromMenu, restoreSelectedWindow, closeUnified, closeRouter, closeFirewall, closePC, setActiveDeviceId, checkStepCompletion, deviceStates, topologyConnections, topologyDevices } = options;
 
   const handleDeviceSelectFromCanvas = useCallback<DeviceSelector>((device, deviceId, switchModel, deviceName, isNew, deviceData) => {
-    if (device === 'pc') { closeUnified(false); closeRouter(false); closeFirewall(false); }
+    if (device === 'pc') { closeUnified(false); closeRouter(false); closeFirewall(false); setActiveDeviceId(''); }
     else if (device === 'switchL2' || device === 'switchL3' || device === 'router' || device === 'firewall' || device === 'wlc') closePC(false);
     selectFromCanvas(device, deviceId, switchModel, deviceName, isNew, deviceData);
     if (deviceId) checkStepCompletion({ deviceAccessed: getAccessedType(device), deviceAccessedId: deviceId, deviceStates, topologyConnections, topologyDevices });
-  }, [selectFromCanvas, closeUnified, closeRouter, closeFirewall, closePC, checkStepCompletion, deviceStates, topologyConnections, topologyDevices]);
+  }, [selectFromCanvas, closeUnified, closeRouter, closeFirewall, closePC, setActiveDeviceId, checkStepCompletion, deviceStates, topologyConnections, topologyDevices]);
 
   const handleDeviceSelectFromMenu = useCallback<DeviceSelector>((device, deviceId, switchModel, deviceName) => {
-    if (device === 'pc') { closeUnified(false); closeRouter(false); closeFirewall(false); }
+    if (device === 'pc') { closeUnified(false); closeRouter(false); closeFirewall(false); setActiveDeviceId(''); }
     else if (device === 'switchL2' || device === 'switchL3' || device === 'router' || device === 'firewall' || device === 'wlc') closePC(false);
     selectFromMenu(device, deviceId, switchModel, deviceName);
     if (deviceId) restoreSelectedWindow?.(deviceId);
     if (deviceId) checkStepCompletion({ deviceAccessed: getAccessedType(device), deviceAccessedId: deviceId, deviceStates, topologyConnections, topologyDevices });
-  }, [selectFromMenu, restoreSelectedWindow, closeUnified, closeRouter, closeFirewall, closePC, checkStepCompletion, deviceStates, topologyConnections, topologyDevices]);
+  }, [selectFromMenu, restoreSelectedWindow, closeUnified, closeRouter, closeFirewall, closePC, setActiveDeviceId, checkStepCompletion, deviceStates, topologyConnections, topologyDevices]);
 
   return { handleDeviceSelectFromCanvas, handleDeviceSelectFromMenu };
 }

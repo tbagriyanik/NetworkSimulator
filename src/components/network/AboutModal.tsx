@@ -329,6 +329,14 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
             {activeTab === 'about' ? (
               <div className="space-y-3">
                 <h4 className="text-base font-bold">{t.termsAndConditions}</h4>
+                <div className="p-2.5 rounded-lg border border-primary-500/20 bg-primary-500/5 text-xs">
+                  <div className="font-bold text-primary-500">Network Simulator v6.1.0</div>
+                  <p className="mt-1 text-secondary-500 dark:text-secondary-400">
+                    {isTR
+                      ? 'REST/RESTCONF pencereleri, MQTT paket yakalama, IoT otomasyon trafiği ve daha güvenli pencere yönetimi güncellendi.'
+                      : 'REST/RESTCONF panes, MQTT packet capture, IoT automation traffic and safer window management were updated.'}
+                  </p>
+                </div>
                 <p className="text-xs leading-relaxed">{t.termsText}</p>
                 <div className="p-2.5 bg-accent-500/5 rounded-lg border border-accent-500/20">
                   <p className="mt-1 text-xs text-secondary-500 dark:text-secondary-400">{t.openSourceInfo}</p>
@@ -353,7 +361,7 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
                       {isTR ? 'Sürüm' : 'Version'}
                     </span>
                     <span className="text-xs font-semibold text-secondary-800 dark:text-secondary-200">
-                      {process.env.APP_VERSION || '6.0.0'}
+                      {process.env.APP_VERSION || '6.1.0'}
                     </span>
                   </div>
                   <div className="flex flex-col">

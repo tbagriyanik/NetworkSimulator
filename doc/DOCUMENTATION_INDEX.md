@@ -410,9 +410,8 @@ doc/
 - [x] CodeQL Güvenlik Sertleştirmesi & Multi-Character Sanitization (v5.7.1) belgelendi
 - [x] CLI EIGRP, OSPF & Donanım Komutları Tamamlama Paketi (v5.8.0) belgelendi
 - [x] OSPF E2E Network Etkileri & CLI Terminal Otomatik Scroll (v5.9.0) belgelendi
-- [x] Kapsamlı CLI Genişletme (Multicast, STP, IPSec, SNMPv3, BGP, CBAC, EEM, NETCONF) & Dokümantasyon Konsolidasyonu (v6.0.0) belgelendi
+- [x] Kapsamlı CLI Genişletme (Multicast, STP, IPSec, SNMPv3, BGP, CBAC, EEM, NETCONF) & Dokümantasyon Konsolidasyonu (v6.1.0) belgelendi
 
 ---
 
 *Tüm dokümantasyon dosyaları `doc/` klasöründe bulunur.*
-

@@ -178,8 +178,13 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
 
   useEffect(() => {
     if (defaultDeviceId) {
+    if (selectedDeviceId && devices.some(d => d.id === selectedDeviceId)) {
+      return;
+    }
+    if (defaultDeviceId && devices.some(d => d.id === defaultDeviceId)) {
       setSelectedDeviceId(defaultDeviceId);
     } else if (!selectedDeviceId && devices.length > 0) {
+    } else if (devices.length > 0) {
       setSelectedDeviceId(devices[0].id);
     }
   }, [defaultDeviceId, devices, selectedDeviceId]);
@@ -285,6 +290,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
       handleResizeStart={automationDrag.handleResizeStart}
       collapsible
       onEscapeKeyDown={onClose}
+      escapeRestoreWindowId={defaultDeviceId}
       headerActions={
         <div className="flex rounded-lg p-0.5 border border-slate-700/60 bg-slate-950/40 text-xs mr-2">
           <button
@@ -394,10 +400,13 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                     onChange={(e) => setSelectedDeviceId(e.target.value)}
                     className={`w-full px-2.5 py-1.5 text-xs rounded-lg border focus:outline-none ${
                       isDark ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300'
+                    className={`w-full px-2.5 py-1.5 text-xs rounded-lg border focus:outline-none cursor-pointer relative z-10 no-drag ${
+                      isDark ? 'bg-slate-950 border-slate-700 text-slate-200 hover:border-emerald-500/50' : 'bg-white border-slate-300 hover:border-emerald-500/50'
                     }`}
                   >
                     {devices.map((d) => (
                       <option key={d.id} value={d.id}>
+                      <option key={d.id} value={d.id} className={isDark ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-900'}>
                         {d.name || d.id} ({d.type})
                       </option>
                     ))}

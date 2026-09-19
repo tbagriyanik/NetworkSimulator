@@ -23,6 +23,7 @@ interface DraggableWindowWrapperProps {
   hideCloseButton?: boolean;
   contentClassName?: string;
   onEscapeKeyDown?: () => void;
+  escapeRestoreWindowId?: string;
   mobileFullScreen?: boolean;
   headerActions?: React.ReactNode;
   collapsible?: boolean;
@@ -48,6 +49,7 @@ export function DraggableWindowWrapper({
   hideCloseButton = false,
   contentClassName,
   onEscapeKeyDown,
+  escapeRestoreWindowId,
   mobileFullScreen = true,
   headerActions,
   collapsible = false,
@@ -88,18 +90,21 @@ export function DraggableWindowWrapper({
   // Handle escape key and mobile back button
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === 'Escape' && isOpen && isActive) {
+        e.stopImmediatePropagation();
         if (onEscapeKeyDown) {
           onEscapeKeyDown();
         } else {
           onClose();
         }
+        if (escapeRestoreWindowId) setActiveWindow(escapeRestoreWindowId);
       }
     };
 
     const handleMobileBack = () => {
-      if (isOpen) {
+      if (isOpen && isActive) {
         onClose();
+        if (escapeRestoreWindowId) setActiveWindow(escapeRestoreWindowId);
       }
     };
 
@@ -109,7 +114,7 @@ export function DraggableWindowWrapper({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('mobile-back-pressed', handleMobileBack);
     };
-  }, [isOpen, onClose, onEscapeKeyDown]);
+  }, [isOpen, isActive, onClose, onEscapeKeyDown, escapeRestoreWindowId, setActiveWindow]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -301,7 +306,7 @@ export function DraggableWindowWrapper({
         <>
           {/* Corners */}
           <div className={cn("absolute bottom-0 right-0 w-3.5 h-3.5 cursor-se-resize z-50 flex items-end justify-end opacity-60 hover:opacity-100 transition-opacity select-none")} onPointerDown={(e) => handleResizePointerDown(e, 'se')}>
-            <div className={cn("w-2 h-2 rounded-br-sm border-b-2 border-r-2 bg-transparent mr-0.5 mb-0.5", isDark ? "border-secondary-400" : "border-secondary-600", isActive && "border-success-500")} />
+            <div className={cn("w-2 h-2 rounded-br-xl border-b-2 border-r-2 bg-transparent mr-0.5 mb-0.5", isDark ? "border-secondary-400" : "border-secondary-600", isActive && "border-success-500")} />
           </div>
           <div className="absolute left-0 bottom-0 w-2.5 h-2.5 cursor-sw-resize z-50 hover:bg-success-500/20" onPointerDown={(e) => handleResizePointerDown(e, 'sw')} />
           <div className="absolute right-0 top-0 w-2.5 h-2.5 cursor-ne-resize z-50 hover:bg-success-500/20" onPointerDown={(e) => handleResizePointerDown(e, 'ne')} />

@@ -1,12 +1,12 @@
 # NetworkSimulator — Tam Özellik Envanteri / Full Feature Inventory
 
-**Sürüm / Version:** 6.0.0 · **Son doğrulama / Last verified:** 2026-09-19
+**Sürüm / Version:** 6.1.0 · **Son doğrulama / Last verified:** 2026-09-19
 
 ## Packet/Control-Plane Entegrasyon Özeti
 
 MPLS/LDP, IPSec, SNMP, NETCONF/RESTCONF, EEM, MST, IP SLA, QoS MQC, 802.1X, CAPWAP, sFlow/NetFlow, MQTT ve CoAP akışları ortak state/packet pipeline ile doğrulanır. Telemetry export’ları collector frame olarak, MQTT/CoAP/NETCONF işlemleri servis portlarına bağlı request-response frame olarak modellenir.
 
-## Kapsamlı CLI Genişletme, İnteraktif Motorlar & Çoklu Protokol Desteği (2026-09-19 - v6.0.0)
+## Kapsamlı CLI Genişletme, İnteraktif Motorlar & Çoklu Protokol Desteği (2026-09-19 - v6.1.0)
 
 | Özellik | Güncel kapsam ve sınır |
 |---|---|

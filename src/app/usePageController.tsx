@@ -384,6 +384,7 @@ export function usePageController({ initialProjectId }: { initialProjectId?: str
     closeRouter: setShowRouterPanel,
     closeFirewall: setShowFirewallPanel,
     closePC: setShowPCPanel,
+    setActiveDeviceId,
     checkStepCompletion: checkStepCompletionWithContext,
     deviceStates,
     topologyConnections,

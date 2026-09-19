@@ -18,7 +18,7 @@ export function getKeyboardShortcuts(isTR: boolean): CommandDefinition {
       ['F1', isTR ? 'Yardım / Kısayollar panelini aç' : 'Open Help / Shortcuts panel'],
       ['Shift + ? / Shift + /', isTR ? 'Klavye & Tuval Kısayol Kılavuzu modalını aç' : 'Open Keyboard & Canvas Shortcuts guide modal'],
       ['F5', isTR ? 'Ağı yenile' : 'Refresh network'],
-      ['Escape', isTR ? 'Pencereleri kapat / Seçimi kaldır' : 'Close windows / Clear selection'],
+      ['Escape', isTR ? 'Önce aktif üst pencereyi, tekrar basınca alttaki pencereyi kapat' : 'Close the active top window first, then the window below'],
       ['Tab', isTR ? 'Cihazlar arasında gezin' : 'Navigate between devices'],
       ['Shift + Tab', isTR ? 'Görev Yöneticisi (Pencere listesi ve pencereler arası geçiş)' : 'Open Task Switcher and switch between device windows'],
       ['Enter', isTR ? 'Seçili cihaz penceresini aç' : 'Open selected device window'],
@@ -55,6 +55,8 @@ export function getKeyboardShortcuts(isTR: boolean): CommandDefinition {
       ['Çoklu Cihaz Dağıtım', isTR ? '3+ cihaz seçilince Araç Çubuğunda Yatay / Dikey Eşit Dağıt' : 'Distribute Horizontally / Vertically on 3+ devices selected'],
       ['Çevresel Ayarlar', isTR ? 'Gelişmiş Çevresel Ayarlar panelini aç' : 'Open Environmental Settings panel'],
       ['Topoloji Kayıt Yöneticisi', isTR ? 'Anlık görüntü al, JSON içe/dışa aktar (Uyumsuz JSON doğrulama & hata korumalı)' : 'Take topology snapshot, import/export JSON (with strict structure validation)'],
+      ['MQTT Paket Yakalama', isTR ? 'MQTT CONNECT, PUBLISH, SUBSCRIBE, Topic, QoS ve Payload bilgilerini incele' : 'Inspect MQTT CONNECT, PUBLISH, SUBSCRIBE, Topic, QoS and Payload details'],
+      ['REST / RESTCONF', isTR ? 'İstek ve yanıt panellerini ayraçtan sürükleyerek yeniden boyutlandır' : 'Resize request and response panes using the draggable divider'],
     ]
   };
 }
