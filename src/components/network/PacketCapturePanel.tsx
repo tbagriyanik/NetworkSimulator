@@ -183,6 +183,7 @@ export const PacketCapturePanel = ({
     IMAP: '143',
     DNS: '53',
     DHCP: '67',
+    MQTT: '1883 / 8883',
     SSH: '22',
     TELNET: '23',
     NTP: '123',
@@ -293,6 +294,7 @@ export const PacketCapturePanel = ({
               { label: 'DNS', val: 'dns' },
               { label: 'HTTP', val: 'http' },
               { label: 'DHCP', val: 'dhcp' },
+              { label: 'MQTT', val: 'mqtt' },
               { label: 'OSPF', val: 'ospf' },
             ].map(p => (
               <button

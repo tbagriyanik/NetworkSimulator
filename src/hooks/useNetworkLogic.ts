@@ -375,7 +375,7 @@ export function useNetworkLogic(
       if (nextDevices === devices) nextDevices = [...devices];
       const index = nextDevices.findIndex((item) => item.id === deviceId);
       if (index >= 0) nextDevices[index] = { ...device, ...updates, iot: updates.iot ? { ...device.iot, ...updates.iot } : device.iot };
-    });
+    }, topologyConnectionsRef.current);
     return didUpdate ? nextDevices : devices;
   }, []);
 

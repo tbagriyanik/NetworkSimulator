@@ -73,6 +73,11 @@ export function ProtocolTreeDetails({ packet, isDark, language }: ProtocolTreeDe
 
   const srcMac = packet.srcMac || '00:1A:2B:3C:4D:5E';
   const dstMac = packet.dstMac || '00:5E:4D:3C:2B:1A';
+  const mqttType = packet.info.match(/MQTT\s+(CONNECT|CONNACK|PUBLISH|PUBACK|SUBSCRIBE|SUBACK|UNSUBSCRIBE|UNSUBACK|PINGREQ|PINGRESP|DISCONNECT)/i)?.[1]?.toUpperCase() || 'PUBLISH';
+  const mqttTopic = packet.info.match(/(?:topic|konu)\s*[:=]\s*([^,;]+)/i)?.[1]?.trim() || 'sensors/telemetry';
+  const mqttClientId = packet.info.match(/(?:client(?:Id| ID)|istemci)\s*[:=]\s*([^,;]+)/i)?.[1]?.trim() || 'netsim-client';
+  const mqttQos = packet.info.match(/QoS\s*[:=]?\s*(0|1|2)/i)?.[1] || '0';
+  const qosLabel = (qos: string) => `${qos} (${qos === '0' ? 'At most once' : qos === '1' ? 'At least once' : 'Exactly once'})`;
 
   const isDropped =
     packet.info.toLowerCase().includes('[drop]') ||
@@ -167,7 +172,7 @@ export function ProtocolTreeDetails({ packet, isDark, language }: ProtocolTreeDe
         </TreeNode>
       )}
 
-      {(proto === 'TCP' || proto === 'HTTP' || proto === 'HTTPS' || proto === 'SSH') && (
+      {(proto === 'TCP' || proto === 'HTTP' || proto === 'HTTPS' || proto === 'SSH' || proto === 'MQTT') && (
         <TreeNode title={`Transmission Control Protocol, Src Port: 54321, Dst Port: ${proto === 'HTTP' ? 80 : proto === 'HTTPS' ? 443 : proto === 'SSH' ? 22 : 80}`} isDark={isDark}>
           <TreeLeaf label="Source Port" value="54321" isDark={isDark} />
           <TreeLeaf label="Destination Port" value={proto === 'HTTP' ? '80' : proto === 'HTTPS' ? '443' : proto === 'SSH' ? '22' : '80'} isDark={isDark} />
@@ -176,6 +181,19 @@ export function ProtocolTreeDetails({ packet, isDark, language }: ProtocolTreeDe
           <TreeLeaf label="Flags" value="0x018 (PSH, ACK)" isDark={isDark} />
           <TreeLeaf label="Window" value="64240" isDark={isDark} />
           <TreeLeaf label="Checksum" value="0xe3f1 [valid]" isDark={isDark} />
+        </TreeNode>
+      )}
+
+      {proto === 'MQTT' && (
+        <TreeNode title={`Message Queuing Telemetry Transport (${mqttType})`} isDark={isDark}>
+          <TreeLeaf label={isTr ? 'Mesaj Türü' : 'Message Type'} value={mqttType} isDark={isDark} />
+          <TreeLeaf label="MQTT Version" value="3.1.1" isDark={isDark} />
+          <TreeLeaf label="Client ID" value={mqttClientId} isDark={isDark} />
+          <TreeLeaf label="Topic" value={mqttTopic} isDark={isDark} />
+          <TreeLeaf label="QoS" value={qosLabel(mqttQos)} isDark={isDark} />
+          <TreeLeaf label="Retain" value={/retain/i.test(packet.info) ? 'true' : 'false'} isDark={isDark} />
+          <TreeLeaf label="Duplicate" value={/duplicate|dup/i.test(packet.info) ? 'true' : 'false'} isDark={isDark} />
+          <TreeLeaf label="Payload" value={packet.info || '{}'} isDark={isDark} />
         </TreeNode>
       )}
 

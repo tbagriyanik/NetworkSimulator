@@ -68,9 +68,12 @@
     font-family: var(--font-sans);
   }
 
-  /* Ensure native dropdown lists use the app font too */
-  option {
-    font-family: var(--font-sans);
+  /* Keep native and Radix dropdown text on the app font on Windows too. */
+  select,
+  option,
+  [role="listbox"],
+  [role="option"] {
+    font-family: var(--font-inria-sans), "Segoe UI", Tahoma, sans-serif !important;
   }
 
   input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"])::placeholder,

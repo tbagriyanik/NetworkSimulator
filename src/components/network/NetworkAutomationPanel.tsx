@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Terminal, Send, Play, Copy, Check, Code, Globe, Server, CheckCircle2, RotateCcw, Sparkles } from 'lucide-react';
 import type { CanvasDevice } from './NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
@@ -119,6 +119,38 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
   onUpdateDeviceStates,
 }) => {
   const [activeTab, setActiveTab] = useState<'restconf' | 'python'>('restconf');
+  const [restconfSplitPercent, setRestconfSplitPercent] = useState(50);
+  const restconfSplitRef = useRef<HTMLDivElement>(null);
+  const [pythonSplitPercent, setPythonSplitPercent] = useState(50);
+  const pythonSplitRef = useRef<HTMLDivElement>(null);
+  const startRestconfSplitResize = (event: React.PointerEvent<HTMLDivElement>) => {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    const move = (moveEvent: PointerEvent) => {
+      const rect = restconfSplitRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      setRestconfSplitPercent(Math.min(75, Math.max(25, ((moveEvent.clientX - rect.left) / rect.width) * 100)));
+    };
+    const stop = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', stop);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', stop, { once: true });
+  };
+  const startPythonSplitResize = (event: React.PointerEvent<HTMLDivElement>) => {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    const move = (moveEvent: PointerEvent) => {
+      const rect = pythonSplitRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      setPythonSplitPercent(Math.min(75, Math.max(25, ((moveEvent.clientX - rect.left) / rect.width) * 100)));
+    };
+    const stop = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', stop);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', stop, { once: true });
+  };
 
   const automationDrag = useDrag({
     storageKey: 'netdevops_automation_window',
@@ -282,9 +314,9 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
     >
       <div className={`flex-1 min-h-0 overflow-hidden flex flex-col ${isDark ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-800'}`}>
         {activeTab === 'restconf' && (
-          <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden divide-y md:divide-y-0 md:divide-x divide-slate-800">
+          <div ref={restconfSplitRef} className="flex-1 flex flex-col md:grid min-h-0 overflow-hidden" style={{ gridTemplateColumns: `${restconfSplitPercent}% 6px minmax(0, ${100 - restconfSplitPercent}%)` }}>
             {/* Left: Request Builder */}
-            <div className="w-full md:w-1/2 p-4 overflow-y-auto space-y-3.5 min-h-0">
+            <div className="w-full md:w-auto p-4 overflow-y-auto space-y-3.5 min-h-0">
               <div className="flex items-center justify-between">
                 <div className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                   <Server className="w-3.5 h-3.5 text-emerald-400" />
@@ -408,8 +440,10 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
               </button>
             </div>
 
+            <div role="separator" aria-label="RESTCONF istek ve yanıt bölmesi genişliğini ayarla" onPointerDown={startRestconfSplitResize} className="hidden md:block w-1.5 mx-1 rounded-full bg-slate-700/60 hover:bg-emerald-500/70 cursor-col-resize transition-colors" />
+
             {/* Right: Response Viewer */}
-            <div className="flex-1 p-4 overflow-y-auto space-y-3 min-h-0 flex flex-col">
+            <div className="w-full md:w-auto p-4 overflow-y-auto space-y-3 min-h-0 flex flex-col">
               <div className="flex items-center justify-between">
                 <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
                   Sunucu Yanıtı (YANG JSON Output)
@@ -450,9 +484,9 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
         )}
 
         {activeTab === 'python' && (
-          <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden divide-y md:divide-y-0 md:divide-x divide-slate-800">
+          <div ref={pythonSplitRef} className="flex-1 flex flex-col md:grid min-h-0 overflow-hidden" style={{ gridTemplateColumns: `${pythonSplitPercent}% 6px minmax(0, ${100 - pythonSplitPercent}%)` }}>
             {/* Left: Code Editor */}
-            <div className="w-full md:w-1/2 p-4 overflow-y-auto space-y-3 min-h-0 flex flex-col">
+            <div className="w-full md:w-auto p-4 overflow-y-auto space-y-3 min-h-0 flex flex-col">
               <div className="flex items-center justify-between">
                 <div className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                   <Code className="w-3.5 h-3.5 text-emerald-400" />
@@ -505,8 +539,10 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
               </button>
             </div>
 
+            <div role="separator" aria-label="Python editör ve konsol genişliğini ayarla" onPointerDown={startPythonSplitResize} className="hidden md:block w-1.5 mx-1 rounded-full bg-slate-700/60 hover:bg-emerald-500/70 cursor-col-resize transition-colors" />
+
             {/* Right: Execution Console Output */}
-            <div className="flex-1 p-4 overflow-y-auto space-y-3 min-h-0 flex flex-col">
+            <div className="w-full md:w-auto p-4 overflow-y-auto space-y-3 min-h-0 flex flex-col">
               <div className="flex items-center justify-between">
                 <div className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />

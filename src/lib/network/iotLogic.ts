@@ -1,6 +1,7 @@
 ﻿
 import { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { EnvironmentSettings } from '@/lib/store/appStore';
+import type { CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 const getSensorReading = (sensor: string, environment: EnvironmentSettings): number => {
   switch (sensor) {
@@ -70,7 +71,8 @@ const getRuleSensorReading = (
 export const processIotRules = (
   devices: CanvasDevice[],
   environment: EnvironmentSettings,
-  updateDevice: (deviceId: string, updates: Partial<CanvasDevice>) => void
+  updateDevice: (deviceId: string, updates: Partial<CanvasDevice>) => void,
+  connections: CanvasConnection[] = []
 ) => {
   let deviceUpdated = false;
   
@@ -117,11 +119,13 @@ export const processIotRules = (
               iot: { ...targetDevice.iot, value: true }
             });
             deviceUpdated = true;
+            dispatchIotMqttTraffic(device, targetDevice, connections, `MQTT PUBLISH topic=iot/${targetId}/command payload=ON QoS=1 clientId=${device.id}`);
           } else if (finalAction === 'OFF' && isCurrentlyPoweredOn) {
             updateDevice(targetId, {
               iot: { ...targetDevice.iot, value: false }
             });
             deviceUpdated = true;
+            dispatchIotMqttTraffic(device, targetDevice, connections, `MQTT PUBLISH topic=iot/${targetId}/command payload=OFF QoS=1 clientId=${device.id}`);
           }
         }
       });
@@ -131,5 +135,29 @@ export const processIotRules = (
   // Return flag to trigger topology re-render if any device was updated
   return deviceUpdated;
 };
+
+function dispatchIotMqttTraffic(
+  source: CanvasDevice,
+  target: CanvasDevice,
+  connections: CanvasConnection[],
+  info: string
+) {
+  if (typeof window === 'undefined') return;
+  const relatedConnections = connections.filter(connection =>
+    connection.sourceDeviceId === source.id || connection.targetDeviceId === source.id ||
+    connection.sourceDeviceId === target.id || connection.targetDeviceId === target.id
+  );
+  relatedConnections.forEach(connection => {
+    window.dispatchEvent(new CustomEvent('packet-captured', {
+      detail: {
+        connectionId: connection.id,
+        sourceIp: source.ip || source.id,
+        targetIp: target.ip || target.id,
+        protocol: 'MQTT',
+        info,
+      },
+    }));
+  });
+}
 
 

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Code, Copy, Check, Server, FileJson, Sparkles, Send } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Code, Copy, Check, Server, FileJson, Sparkles, Send, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { handleRestApiRequest, type RestApiResponse } from '@/lib/network/restApiMock';
 import { usePCPanel } from './PCPanelContext';
@@ -117,6 +117,24 @@ export function RestApiExplorerWindow({
   const [response, setResponse] = useState<RestApiResponse | null>(null);
   const [isCopied, setIsCopied] = useState(false);
   const [copiedSnippet, setCopiedSnippet] = useState<string | null>(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [splitPercent, setSplitPercent] = useState(50);
+  const splitRef = useRef<HTMLDivElement>(null);
+
+  const startSplitResize = (event: React.PointerEvent<HTMLDivElement>) => {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    const move = (moveEvent: PointerEvent) => {
+      const rect = splitRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      setSplitPercent(Math.min(75, Math.max(25, ((moveEvent.clientX - rect.left) / rect.width) * 100)));
+    };
+    const stop = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', stop);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', stop, { once: true });
+  };
 
   const isTr = language === 'tr';
 
@@ -226,13 +244,13 @@ export function RestApiExplorerWindow({
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-xs font-bold uppercase tracking-wider">
-                  REST API Explorer & Intent Controller Tester
+                  {isTr ? 'REST API Gezgini' : 'REST API Explorer'}
                 </h2>
                 <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold">
                   Intent API / RESTCONF
                 </span>
               </div>
-              <p className="text-[10px] opacity-60">Controller Intent API, Network Device Telemetry & YANG Models</p>
+              <p className="text-[10px] opacity-60">{isTr ? 'İstek gönder, yanıtı incele ve cihaz durumunu güncelle.' : 'Send requests, inspect responses, and update device state.'}</p>
             </div>
           </div>
 
@@ -289,6 +307,8 @@ export function RestApiExplorerWindow({
           </div>
         </div>
 
+        <div ref={splitRef} className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_6px_minmax(0,1fr)] gap-0" style={{ gridTemplateColumns: `${splitPercent}% 6px minmax(0, ${100 - splitPercent}%)` }}>
+        <div className="min-w-0 min-h-0 flex flex-col gap-3">
         {/* Request Address Bar */}
         <div className="flex items-center gap-2">
           <select
@@ -331,7 +351,7 @@ export function RestApiExplorerWindow({
         </div>
 
         {/* Request Options & Tabs */}
-        <div className="flex flex-col h-[35%] min-h-0 border rounded-lg overflow-hidden dark:border-secondary-800">
+        <div className="flex-1 min-h-0 border rounded-lg overflow-hidden dark:border-secondary-800">
           <div className={`flex items-center justify-between border-b px-2 py-1 text-[11px] font-bold ${
             isDark ? 'bg-secondary-900 border-secondary-800' : 'bg-secondary-100 border-secondary-200'
           }`}>
@@ -349,17 +369,32 @@ export function RestApiExplorerWindow({
                 Body (JSON Payload)
               </button>
               <button
-                onClick={() => setActiveReqTab('python')}
-                className={`px-2 py-0.5 rounded transition-colors ${activeReqTab === 'python' ? 'bg-sky-500 text-slate-950 font-bold' : 'opacity-60 hover:opacity-100 text-sky-400'}`}
+                onClick={() => {
+                  setShowAdvanced(prev => {
+                    if (prev && (activeReqTab === 'python' || activeReqTab === 'curl')) setActiveReqTab('headers');
+                    return !prev;
+                  });
+                }}
+                className={`px-2 py-0.5 rounded transition-colors flex items-center gap-1 ${showAdvanced ? 'bg-secondary-700 text-white' : 'opacity-60 hover:opacity-100'}`}
+                aria-expanded={showAdvanced}
               >
-                Python (requests)
+                {isTr ? 'Gelişmiş' : 'Advanced'}
+                <ChevronDown className={`w-3 h-3 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
               </button>
-              <button
-                onClick={() => setActiveReqTab('curl')}
-                className={`px-2 py-0.5 rounded transition-colors ${activeReqTab === 'curl' ? 'bg-amber-500 text-slate-950 font-bold' : 'opacity-60 hover:opacity-100 text-amber-400'}`}
-              >
-                cURL Snippet
-              </button>
+              {showAdvanced && <>
+                <button
+                  onClick={() => setActiveReqTab('python')}
+                  className={`px-2 py-0.5 rounded transition-colors ${activeReqTab === 'python' ? 'bg-sky-500 text-slate-950 font-bold' : 'opacity-60 hover:opacity-100 text-sky-400'}`}
+                >
+                  Python
+                </button>
+                <button
+                  onClick={() => setActiveReqTab('curl')}
+                  className={`px-2 py-0.5 rounded transition-colors ${activeReqTab === 'curl' ? 'bg-amber-500 text-slate-950 font-bold' : 'opacity-60 hover:opacity-100 text-amber-400'}`}
+                >
+                  cURL
+                </button>
+              </>}
             </div>
             
             {activeReqTab === 'python' && (
@@ -414,8 +449,15 @@ export function RestApiExplorerWindow({
           </div>
         </div>
 
+        </div>
+        <div
+          role="separator"
+          aria-label={isTr ? 'İstek ve yanıt bölmesi genişliğini ayarla' : 'Resize request and response panes'}
+          onPointerDown={startSplitResize}
+          className="hidden md:block w-1.5 mx-1 rounded-full bg-secondary-700/50 hover:bg-primary-500/70 cursor-col-resize transition-colors"
+        />
         {/* Response Viewer */}
-        <div className="flex-1 flex flex-col min-h-0 border rounded-lg overflow-hidden dark:border-secondary-800">
+        <div className="min-w-0 min-h-0 flex flex-col border rounded-lg overflow-hidden dark:border-secondary-800">
           <div className={`flex items-center justify-between px-3 py-1.5 border-b text-[11px] font-bold ${
             isDark ? 'bg-secondary-900 border-secondary-800' : 'bg-secondary-100 border-secondary-200'
           }`}>
@@ -485,6 +527,7 @@ export function RestApiExplorerWindow({
               </div>
             )}
           </div>
+        </div>
         </div>
 
       </div>
