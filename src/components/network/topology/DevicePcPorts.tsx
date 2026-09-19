@@ -99,7 +99,7 @@ export function DevicePcPorts({
               opacity={hasProblem && !isTargetPort ? 0.45 : 1}
               style={{ pointerEvents: 'none' }}
             />
-            <text y={1} fill="var(--color-background)" fontSize="7" fontWeight="700" textAnchor="middle" dominantBaseline="middle" style={{ userSelect: 'none', pointerEvents: 'none' }}>
+            <text y={1} fill="var(--color-background)" fontSize="9" fontWeight="700" textAnchor="middle" dominantBaseline="middle" style={{ userSelect: 'none', pointerEvents: 'none' }}>
               {portLabel}
             </text>
           </g>

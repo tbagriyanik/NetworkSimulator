@@ -12,6 +12,9 @@
   * {
     @apply border-border outline-ring/50;
     -webkit-font-smoothing: antialiased;
+    /* Firefox equivalent of the WebKit scrollbar rules below. */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
   }
 
   /* Global scrollbar styling: 30% thinner scrollbars */

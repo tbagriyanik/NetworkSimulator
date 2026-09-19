@@ -107,9 +107,9 @@ export const TopologyPaletteSheet: React.FC<TopologyPaletteSheetProps> = ({
                         if (type === 'switchL3') { addDevice('switch', 'L3'); return; }
                         addDevice(type);
                       }}
-                      className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200 group ${isDark
-                        ? 'border-secondary-800 bg-secondary-800/30 hover:bg-secondary-800/60 hover:border-secondary-700'
-                        : 'border-secondary-200 bg-secondary-50 hover:bg-secondary-100 hover:border-secondary-300'
+                      className={`flex flex-col items-center justify-center p-3 rounded-md border transition-all duration-200 group ${isDark
+                        ? 'border-secondary-700 bg-secondary-800/70 hover:bg-secondary-700 hover:border-secondary-500'
+                        : 'border-secondary-300 bg-secondary-100 hover:bg-secondary-200 hover:border-secondary-400'
                         }`}
                     >
                       <div className="relative mb-2 transition-transform duration-200 group-hover:scale-110 w-8 h-8 flex items-center justify-center">

@@ -63,7 +63,7 @@ export const DEVICE_ICONS = {
   router: (
     <svg className="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke={DEVICE_ICON_COLORS.router} viewBox="0 0 24 24">
       <circle strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} cx={DEVICE_ICON_PATHS.router.circle.cx} cy={DEVICE_ICON_PATHS.router.circle.cy} r={DEVICE_ICON_PATHS.router.circle.r} />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={DEVICE_ICON_PATHS.router.paths} />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d={DEVICE_ICON_PATHS.router.paths} />
     </svg>
   ),
   firewall: (
@@ -101,7 +101,7 @@ export const DEVICE_ICONS = {
   wlc: (
     <svg className="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke={DEVICE_ICON_COLORS.wlc} viewBox="0 0 24 24" strokeWidth={1.5}>
       <circle cx="12" cy="12" r="9" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14M12 5l-2 2m2-2l2 2m-2 12l-2-2m2 2l2-2M5 12l2-2m-2 2l2 2M19 12l-2-2m2 2l-2 2" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 5v14M5 12h14M12 5l-2 2m2-2l2 2m-2 12l-2-2m2 2l2-2M5 12l2-2m-2 2l2 2M19 12l-2-2m2 2l-2 2" />
       <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.3" />
     </svg>
   ),

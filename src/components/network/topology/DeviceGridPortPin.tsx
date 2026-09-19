@@ -113,7 +113,15 @@ export function DeviceGridPortPin({
         opacity={hasProblem && !isBlocked && !isTargetPort ? 0.45 : 1}
         style={{ pointerEvents: 'none' }}
       />
-      <text y={1} style={{ fill: 'var(--color-background)', userSelect: 'none', pointerEvents: 'none' }} fontSize="6" textAnchor="middle" dominantBaseline="middle">
+      <text
+        y={1}
+        style={{ fill: 'var(--color-background)', userSelect: 'none', pointerEvents: 'none' }}
+        fontSize="8"
+        textAnchor="middle"
+        dominantBaseline="middle"
+        textLength={displayNum.length > 2 ? 10 : undefined}
+        lengthAdjust={displayNum.length > 2 ? 'spacingAndGlyphs' : undefined}
+      >
         {displayNum}
       </text>
       {hasStpInfo && roleAbbr && (

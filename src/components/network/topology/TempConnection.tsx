@@ -70,26 +70,30 @@ export function TempConnection({
       />
 
       {/* Source port highlight glow */}
-      <circle
-        cx={source.x}
-        cy={source.y}
-        r={12}
-        fill={cableColor}
-        opacity="0.15"
-        className="pointer-events-none animate-cable-source"
-        style={{ transformOrigin: `${source.x}px ${source.y}px` }}
-      />
+      {(source.x !== 0 || source.y !== 0) && (
+        <circle
+          cx={source.x}
+          cy={source.y}
+          r={12}
+          fill={cableColor}
+          opacity="0.15"
+          className="pointer-events-none animate-cable-source"
+          style={{ transformOrigin: `${source.x}px ${source.y}px` }}
+        />
+      )}
 
       {/* End point circle pointer */}
-      <circle
-        cx={mp.x}
-        cy={mp.y}
-        r={8}
-        fill={cableColor}
-        opacity="0.4"
-        className="pointer-events-none animate-cable-end"
-        style={{ transformOrigin: `${mp.x}px ${mp.y}px` }}
-      />
+      {(mp.x !== 0 || mp.y !== 0) && (
+        <circle
+          cx={mp.x}
+          cy={mp.y}
+          r={8}
+          fill={cableColor}
+          opacity="0.4"
+          className="pointer-events-none animate-cable-end"
+          style={{ transformOrigin: `${mp.x}px ${mp.y}px` }}
+        />
+      )}
 
       {/* Cable type label indicator */}
       <g transform={`translate(${(source.x + mp.x) / 2}, ${(source.y + mp.y) / 2 - 20})`}>

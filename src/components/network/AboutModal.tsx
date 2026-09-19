@@ -206,7 +206,7 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
             <X className="w-3 h-3" />
           </button>
         </TooltipWrapper>
-        <DialogHeader className="p-2.5 pb-1 shrink-0">
+        <DialogHeader className="p-0 pb-1 shrink-0">
           <DialogTitle className="sr-only">
             {activeTab === 'about' ? t.aboutTitle : activeTab === 'contact' ? t.contactTitle : t.commandReference}
           </DialogTitle>

@@ -257,7 +257,7 @@ export function PythonCodeEditor({ value, onChange, onKeyDown, isDark, placehold
 
   return (
     <div ref={editorRef} data-code-editor="true" className={`relative flex-1 min-h-0 overflow-hidden ${isDark ? 'bg-secondary-950 text-secondary-100' : 'bg-white text-secondary-900'}`}>
-      <div ref={gutterRef} aria-hidden="true" className={`absolute inset-y-0 left-0 z-20 w-12 overflow-hidden border-r p-4 pr-2 text-right font-mono text-xs leading-relaxed select-none ${isDark ? 'border-secondary-800 bg-secondary-900/70 text-secondary-600' : 'border-secondary-200 bg-secondary-100/70 text-secondary-500'}`} style={{ fontSize, lineHeight: String(Math.round(fontSize * 1.5)) + 'px' }}>
+      <div ref={gutterRef} aria-hidden="true" className={`absolute inset-y-0 left-0 z-20 w-12 overflow-hidden border-r p-2 pr-1 text-right font-mono text-xs leading-relaxed select-none ${isDark ? 'border-secondary-800 bg-secondary-900/70 text-secondary-600' : 'border-secondary-200 bg-secondary-100/70 text-secondary-500'}`} style={{ fontSize, lineHeight: String(Math.round(fontSize * 1.5)) + 'px' }}>
         {gutterRows.map((row, index) => (
           <button key={row.lineIndex + '-' + index} type="button" tabIndex={-1}
             onPointerDown={(event) => {
@@ -276,7 +276,7 @@ export function PythonCodeEditor({ value, onChange, onKeyDown, isDark, placehold
           </button>
         ))}
       </div>
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-[5] overflow-hidden pl-16 pt-4">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-[5] overflow-hidden pl-16 pt-2">
         {value.split('\n').map((line, lineIndex) => {
           const indentation = line.match(/^[ \t]+/)?.[0] || '';
           const level = Math.floor(indentation.replace(/\t/g, '    ').length / 4);
@@ -291,7 +291,7 @@ export function PythonCodeEditor({ value, onChange, onKeyDown, isDark, placehold
         })}
       </div>
       {wordWrap && (
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-[6] overflow-hidden pl-16 pt-4">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-[6] overflow-hidden pl-16 pt-2">
           {value.split('\n').map((line, lineIndex) => line.length > wrapThreshold ? (
             <span
               key={lineIndex}
@@ -308,7 +308,7 @@ export function PythonCodeEditor({ value, onChange, onKeyDown, isDark, placehold
       <pre
         ref={preRef}
         aria-hidden="true"
-        className={`pointer-events-none absolute inset-0 m-0 overflow-hidden p-4 pl-16 font-mono text-xs leading-relaxed sm:text-sm ${wordWrap ? 'whitespace-pre-wrap break-words' : 'whitespace-pre'} ${isDark ? 'text-secondary-200' : 'text-secondary-900'
+        className={`pointer-events-none absolute inset-0 m-0 overflow-hidden p-2 pl-16 font-mono text-xs leading-relaxed sm:text-sm ${wordWrap ? 'whitespace-pre-wrap break-words' : 'whitespace-pre'} ${isDark ? 'text-secondary-200' : 'text-secondary-900'
           }`}
         style={{
           tabSize: 4,
@@ -345,7 +345,7 @@ export function PythonCodeEditor({ value, onChange, onKeyDown, isDark, placehold
         placeholder={placeholder}
         spellCheck={false}
         style={{ tabSize: 4, fontSize, lineHeight: String(Math.round(fontSize * 1.5)) + 'px', fontFamily: 'var(--font-geist-mono)', color: 'transparent', WebkitTextFillColor: 'transparent' }}
-        className={`relative z-10 h-full w-full resize-none bg-transparent p-4 pl-16 font-mono text-xs leading-relaxed caret-primary-400 outline-none sm:text-sm ${isDark
+        className={`relative z-10 h-full w-full resize-none bg-transparent p-2 pl-16 font-mono text-xs leading-relaxed caret-primary-400 outline-none sm:text-sm ${isDark
             ? 'text-transparent placeholder:text-secondary-600 selection:bg-primary-800/50'
             : 'text-transparent placeholder:text-secondary-400 selection:bg-primary-200/60'
           }`}

@@ -123,6 +123,26 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
     // Set default font on SVG root so inherited text uses app sans-serif
     clone.setAttribute('font-family', sansFont);
 
+    // The SVG is rendered from a Blob, so it does not inherit the app's
+    // next/font styles. Embed the app font faces with absolute URLs to avoid
+    // the browser falling back to Times New Roman on Windows.
+    const fontStyle = document.createElementNS(ns, 'style');
+    fontStyle.textContent = `
+      @font-face {
+        font-family: 'Inria Sans';
+        src: url('${window.location.origin}/fonts/InriaSans-Regular.woff2') format('woff2');
+        font-weight: 400;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: 'Inria Sans';
+        src: url('${window.location.origin}/fonts/InriaSans-Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-style: normal;
+      }
+    `;
+    clone.insertBefore(fontStyle, clone.firstChild);
+
     // Apply app font to ALL text elements in the clone, except those inside note groups.
     // Notes use their own font (note.font) which is intentionally preserved.
     // We collect note group elements first so we can skip them.
