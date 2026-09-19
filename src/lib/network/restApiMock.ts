@@ -1,6 +1,8 @@
 ﻿import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { handleRestconfRequest } from '@/lib/network/netdevopsEngine';
+import { recalculateStp } from '@/lib/network/stp';
+import { discoverLdpNeighbors, generateLib, generateLfib } from '@/lib/network/mplsLdpEngine';
 
 export interface RestApiResponse {
   status: number;
@@ -283,6 +285,18 @@ export function handleRestApiRequest(
       curState,
       parsedBody
     );
+
+    if (restconfRes.updatedState && deviceStates) {
+      deviceStates.set(targetDev.id, restconfRes.updatedState);
+      const recalculated = recalculateStp(deviceStates, topologyConnections, { silent: true });
+      recalculated.forEach((next, id) => deviceStates.set(id, next));
+      deviceStates.forEach(state => {
+        discoverLdpNeighbors(state, deviceStates, topologyConnections);
+        generateLib(state, deviceStates);
+        generateLfib(state);
+      });
+      restconfRes.updatedState = deviceStates.get(targetDev.id) || restconfRes.updatedState;
+    }
 
     return {
       status: restconfRes.status,

@@ -39,7 +39,7 @@ import { buildConnectionIndex } from '@/lib/network/connectionIndex';
 import { generateIcmpUnreachable } from './icmpUtils';
 import { DropReasonCode, formatDropReason } from './dropReasons';
 import { processNatPacket } from './natEngine';
-import { evaluateWredDrop } from '@/lib/network/qosScheduler';
+import { evaluateWredDrop, scheduleQosPackets, shapePacketQueue, type QosClass } from '@/lib/network/qosScheduler';
 import { evaluateZbf } from './zbfEngine';
 import { evaluateIpv6FirstHopSecurity } from './ipv6FirstHopSecurity';
 import { getSpanMirrorDestinations, getRspanDestinationSessions } from '@/lib/network/portMirroring';
@@ -393,6 +393,9 @@ export function runHopPipeline(
   // -- Stage 7: Control Plane Trap --------------------------------------
   const cpResult = processControlPlaneProtocols(frame, device, state, now);
   if (cpResult.handled) {
+    if (cpResult.rejected) {
+      return drop('control-plane', `IPSec packet rejected by control plane`, 15);
+    }
     traces.push(makeTrace(hopIndex, device, ingressPortId, 'control-plane', 'trap',
       'Handled by control plane protocol engine', frame));
     return {
@@ -506,6 +509,43 @@ export function runHopPipeline(
   for (const egressPortId of egressPorts) {
     const egressPort: Port | undefined = state?.ports?.[egressPortId];
     if (egressPort?.qos) {
+      const policyName = egressPort.qos.policyMap || state?.qosServicePolicies && Object.values(state.qosServicePolicies)
+        .find(service => service.direction === 'output' && service.policy === egressPort.qos?.policyMap)?.policy;
+      const policy = policyName ? state?.qosPolicyMaps?.[policyName] : undefined;
+      if (policy) {
+        const classes: QosClass[] = Object.entries(policy.classes).map(([name, config]) => ({
+          name,
+          priority: config.priority,
+          bandwidthPercent: config.bandwidthPercent,
+          ...(config.policeRate ? { policeConfig: { cirBps: config.policeRate, burstBytes: Math.max(frame.length * 2, 1500), conformAction: 'transmit' as const, exceedAction: 'drop' as const } } : {})
+        }));
+        const className = classes.find(cls => {
+          const criteria = state?.qosClassMaps?.[cls.name]?.criteria || [];
+          return criteria.some(criteriaItem => criteriaItem.toLowerCase().includes(frame.protocol.toLowerCase()) || criteriaItem.toLowerCase() === 'match-any');
+        })?.name || classes[0]?.name;
+        const qosResult = scheduleQosPackets('cbwfq', [{ id: frame.id, className, bytes: frame.length, cos: frame.priority }], Math.max(frame.length, 1500), classes);
+        if (qosResult.dropped.length > 0) {
+          updatePortStats(egressPort, 'txdrop');
+          return drop('qos', `MQC policy ${policyName} dropped packet in class ${className || 'default'}`);
+        }
+        const selectedConfig = className ? policy.classes[className] : undefined;
+        if (selectedConfig?.setDscp !== undefined) {
+          const dscpValue = Number(String(selectedConfig.setDscp).replace(/^af|^cs/i, ''));
+          if (Number.isFinite(dscpValue)) frame.dscp = dscpValue;
+        }
+        if (selectedConfig?.setCos !== undefined) frame.cos = selectedConfig.setCos;
+        traces.push(makeTrace(hopIndex, device, egressPortId, 'qos', 'pass', `MQC policy ${policyName} class ${className || 'default'} admitted packet`, frame));
+      }
+      if (egressPort.qos.shaping?.enabled) {
+        const rate = egressPort.qos.shaping.rate || 0;
+        if (rate <= 0) {
+          updatePortStats(egressPort, 'txdrop');
+          return drop('qos', 'QoS shaping rate is zero; packet held/dropped');
+        }
+        const shaped = shapePacketQueue([{ id: frame.id, bytes: frame.length }], { type: 'average', rateBps: rate });
+        frame.qosDelayMs = shaped.totalDelayMs;
+        traces.push(makeTrace(hopIndex, device, egressPortId, 'qos', 'pass', `Traffic shaped at ${rate}bps; delay ${shaped.totalDelayMs}ms`, frame));
+      }
       const qDepth = (egressPort.stats?.txPackets || 0) % 50; // simulated buffer occupancy
       const wredRes = evaluateWredDrop(qDepth, {
         dscpOrPrec: egressPort.qosCos || 0,
@@ -775,5 +815,3 @@ export function runFullPacketPipeline(
     dropReason: formatDropReason(DropReasonCode.MAX_HOPS_EXCEEDED, `Maximum hop count (${maxHops}) exceeded — possible routing loop`)
   };
 }
-
-

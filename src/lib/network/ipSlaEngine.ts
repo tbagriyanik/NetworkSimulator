@@ -1,6 +1,8 @@
 ﻿import { SwitchState, IpSlaOperation } from './types';
 import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { checkConnectivity } from './connectivity/pathResolution/algorithm';
+import { forwardPacketFrame } from './forwarding/commonForwardingEngine';
+import type { NetworkPacketFrame } from './forwarding/packetFrame';
 
 export function createIpSlaOperation(id: string, target: string, type: 'icmp-echo'|'jitter' = 'icmp-echo', frequency = 60, timeout = 5000): IpSlaOperation {
   return { id, target, type, frequency, timeout, running: false,
@@ -81,7 +83,25 @@ export function evaluateIpSlaOperations(
         { protocol: 'icmp' }
       );
 
-      const reachable = pathRes.success;
+      const sourceDevice = devices.find(device => device.id === deviceId);
+      const sourceIp = Object.values(state.ports || {}).find(port => port.ipAddress && !port.shutdown)?.ipAddress || state.hostname || '1.1.1.1';
+      const probeFrame: NetworkPacketFrame = {
+        id: `ip-sla-${slaId}-${now}`,
+        protocol: 'ICMP',
+        timestamp: now,
+        ingressDeviceId: deviceId,
+        srcMac: sourceDevice?.macAddress || state.macAddress || '00:00:00:00:00:00',
+        dstMac: 'ff:ff:ff:ff:ff:ff',
+        etherType: '0x0800',
+        srcIp: sourceIp,
+        dstIp: op.target,
+        ttl: 64,
+        ipProtocol: 1,
+        length: op.type === 'jitter' ? 128 : 64,
+        info: `ICMP Echo Request (IP SLA ${slaId})`
+      };
+      const forwarding = sourceDevice ? forwardPacketFrame(probeFrame, sourceDevice, state, devices, connections) : undefined;
+      const reachable = pathRes.success && (forwarding ? forwarding.accepted : true);
       // Calculate deterministic latency based strictly on path hop count (2ms per hop)
       const hopCount = pathRes.hops?.length || 1;
       const latency = reachable ? Math.max(1, hopCount * 2) : undefined;
@@ -102,14 +122,25 @@ export function evaluateIpSlaOperations(
               (c.sourceDeviceId === h2 && c.targetDeviceId === h1))
         );
         if (conn) {
+          const capture = pathRes.capturedPackets || [];
           dispatchedPackets.push({
             connectionId: conn.id || `${conn.sourceDeviceId}-${conn.targetDeviceId}`,
-            sourceIp: state.ports?.gi0_0?.ipAddress || state.hostname || '1.1.1.1',
+            sourceIp,
             targetIp: op.target,
-            protocol: 'IP SLA',
+            protocol: 'ICMP',
             length: op.type === 'jitter' ? 128 : 64,
-            info: `IP SLA Probe #${slaId} ${op.type.toUpperCase()} -> ${op.target} (${reachable ? `RTT ${latency}ms` : 'Timeout'})`
+            info: `ICMP Echo Request (IP SLA ${slaId}) -> ${op.target}`
           });
+          if (reachable) {
+            dispatchedPackets.push({
+              connectionId: conn.id || `${conn.sourceDeviceId}-${conn.targetDeviceId}`,
+              sourceIp: op.target,
+              targetIp: sourceIp,
+              protocol: 'ICMP',
+              length: op.type === 'jitter' ? 128 : 64,
+              info: `ICMP Echo Reply (IP SLA ${slaId}) <- ${op.target}; RTT ${latency}ms${capture.length ? `; ${capture.length} captured hops` : ''}`
+            });
+          }
         }
       }
 

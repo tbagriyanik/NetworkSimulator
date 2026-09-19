@@ -6,6 +6,9 @@ import { learnMacAddress } from '@/lib/network/macLearning';
 import { generateIcmpUnreachable } from './icmpUtils';
 import { deterministicIdWithPrefix } from '@/lib/network/randomServices';
 import { processSnmpPacket } from '@/lib/network/snmp';
+import { establishIpsecSa, decapsulateEsp } from '@/lib/network/ipsec';
+import { isFrameAllowedOnDot1xPort } from '@/lib/network/dot1x';
+import { processEapolFrame } from '@/lib/network/dot1x';
 
 export interface ForwardingEngineResult {
   accepted: boolean;
@@ -35,6 +38,10 @@ export function checkIngressSanity(
 
   if (ingressPort.shutdown) {
     return { allowed: false, reason: `Port ${ingressPort.name || ingressPort.id} is shutdown` };
+  }
+
+  if (_state && !isFrameAllowedOnDot1xPort(_state, ingressPort.id, parseInt(frame.etherType, 16), frame.dstMac)) {
+    return { allowed: false, reason: `802.1X port ${ingressPort.id} is unauthorized` };
   }
 
   // STP State check: Allow BPDUs even when port is Discarding/Learning
@@ -94,12 +101,44 @@ export function processControlPlaneProtocols(
   device: CanvasDevice,
   state: SwitchState | undefined,
   now: number = Date.now()
-): { handled: boolean; updatedState?: SwitchState; responseFrame?: NetworkPacketFrame } {
+): { handled: boolean; rejected?: boolean; updatedState?: SwitchState; responseFrame?: NetworkPacketFrame } {
   if (!state) return { handled: false };
 
   const updatedState = { ...state };
   let handled = false;
   let responseFrame: NetworkPacketFrame | undefined;
+
+  if (frame.eapolPayload && frame.ingressPortId) {
+    handled = true;
+    const portId = frame.ingressPortId;
+    const session = state.dot1xSessions?.[portId] || { port: portId, portControl: 'auto', state: 'unauthorized' as const };
+    const radius = state.radiusServers?.[0];
+    const exchange = processEapolFrame(session, frame.eapolPayload, radius ? { ip: radius.host, secret: radius.key || state.radiusKey || '' } : undefined);
+    updatedState.dot1xSessions = { ...updatedState.dot1xSessions, [portId]: exchange.nextSession };
+    updatedState.eventLogs = [...(updatedState.eventLogs || []), exchange.logMessage];
+    if (exchange.responseFrame) {
+      responseFrame = { id: `eapol-response-${Date.now()}`, protocol: 'IPV4', timestamp: now, ingressDeviceId: device.id,
+        srcMac: device.macAddress || '00:00:00:00:00:00', dstMac: frame.srcMac, etherType: '0x888e',
+        eapolPayload: exchange.responseFrame, length: 64, info: exchange.logMessage };
+    }
+  }
+
+  if (frame.protocol === 'IPSEC' && frame.ipsecPayload) {
+    handled = true;
+    const profile = Object.values(state.cryptoMaps || {})
+      .flatMap(entries => Object.values(entries))
+      .find(entry => entry.setPeer && entry.setTransformSet);
+    if (profile?.setPeer && profile.setTransformSet) {
+      const clear = decapsulateEsp({ protocol: 50, ...frame.ipsecPayload }, establishIpsecSa(profile.setPeer, profile.setTransformSet));
+      if (clear) {
+        updatedState.eventLogs = [...(updatedState.eventLogs || []), `%IPSEC-5-REPLAY: ESP packet decapsulated (${clear.protocol})`];
+      } else {
+        return { handled: true, rejected: true, updatedState: { ...updatedState, eventLogs: [...(updatedState.eventLogs || []), '%IPSEC-4-ERROR: ESP packet rejected (SA/SPI mismatch)'] } };
+      }
+    } else {
+      return { handled: true, rejected: true, updatedState: { ...updatedState, eventLogs: [...(updatedState.eventLogs || []), '%IPSEC-4-ERROR: No matching IPsec profile'] } };
+    }
+  }
 
   // SNMP requests terminate at the management plane (UDP/161) and produce a
   // real response frame from the current device state.

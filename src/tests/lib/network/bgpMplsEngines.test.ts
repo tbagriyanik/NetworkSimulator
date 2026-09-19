@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getOrCreateBgpConfig, configureBgpNeighbor, addBgpNetwork, exchangeBgpRoutes } from '@/lib/network/bgpEngine';
-import { getOrCreateMplsConfig, enableMplsOnInterface, generateLfib, establishLdpSession, discoverLdpNeighbors, forwardMplsPacket } from '@/lib/network/mplsLdpEngine';
+import { getOrCreateMplsConfig, enableMplsOnInterface, generateLfib, generateLib, establishLdpSession, discoverLdpNeighbors, forwardMplsPacket } from '@/lib/network/mplsLdpEngine';
 import type { SwitchState } from '@/lib/network/types';
 
 describe('BGP & MP-BGP Engine', () => {
@@ -94,5 +94,17 @@ describe('MPLS & LDP Core Engine', () => {
     const result = forwardMplsPacket(state, { label: 16000, destinationPrefix: '10.10.0.0/16', payload: 'packet' });
     expect(result).toMatchObject({ action: 'forward', outLabel: 17000, nextHop: '10.0.0.2', payload: 'packet' });
     expect(getOrCreateMplsConfig(state).lfib[0].packetsSwitched).toBe(1);
+  });
+
+  it('advertises connected prefixes from the real LDP peer', () => {
+    const r1 = { routerId: '1.1.1.1', ports: { 'Gi0/0': { id: 'Gi0/0', ipAddress: '10.0.0.1', subnetMask: '255.255.255.0', mplsEnabled: true, shutdown: false } } } as unknown as SwitchState;
+    const r2 = { routerId: '2.2.2.2', ports: {
+      'Gi0/0': { id: 'Gi0/0', ipAddress: '10.0.0.2', subnetMask: '255.255.255.0', mplsEnabled: true, shutdown: false },
+      'Gi0/1': { id: 'Gi0/1', ipAddress: '192.0.2.1', subnetMask: '255.255.255.0', mplsEnabled: true, shutdown: false }
+    } } as unknown as SwitchState;
+    enableMplsOnInterface(r1, 'Gi0/0');
+    getOrCreateMplsConfig(r1).neighbors['10.0.0.2'] = { peerLdpId: '2.2.2.2:0', peerIp: '10.0.0.2', tcpState: 'Operational', uptimeSeconds: 1, addresses: ['10.0.0.2'], discoverySource: 'Gi0/0', holdTime: 180, labelsReceived: 0, labelsAdvertised: 0 };
+    const lib = generateLib(r1, new Map([['r1', r1], ['r2', r2]]));
+    expect(lib.some(entry => entry.prefix === '192.0.2.1/255.255.255.0')).toBe(true);
   });
 });

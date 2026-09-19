@@ -27,6 +27,7 @@ import { evaluatePppoeSessions } from '@/lib/network/pppoeEngine';
 import { dispatchEemEvent } from '@/lib/network/eemEngine';
 import { discoverLdpNeighbors, generateLib, generateLfib } from '@/lib/network/mplsLdpEngine';
 import { buildMstBpdu } from '@/lib/network/mstp';
+import { tickCapwap } from '@/lib/network/capwap';
 import {
   ospfTickDeadTimer,
   eigrpTickHoldTimer,
@@ -77,6 +78,25 @@ export function runNetworkEventPipeline(
   devices.forEach(device => {
     const state = updatedStates.get(device.id);
     if (!state || device.status === 'offline') return;
+
+    if (device.type === 'wlc' && state.wlcAps) {
+      const capwap = tickCapwap(state, now);
+      updatedStates.set(device.id, capwap.state);
+      if (capwap.events.length > 0) {
+        capwap.state.eventLogs = [...(capwap.state.eventLogs || []), ...capwap.events];
+        Object.values(capwap.sessions).forEach(session => {
+          const message = session.state === 'joining' ? 'join' : session.state === 'configuring' ? 'config' : session.state === 'data' ? 'data' : session.state === 'failed' ? 'reset' : 'keepalive';
+          processedFrames.push({
+            id: `capwap-${device.id}-${session.apName}-${now}`,
+            protocol: 'CAPWAP', timestamp: now, ingressDeviceId: device.id,
+            srcMac: state.macAddress || '00:00:00:00:00:00', dstMac: 'ff:ff:ff:ff:ff:ff',
+            etherType: '0x0800', srcIp: device.ip, dstIp: state.ports?.gi0_0?.ipAddress,
+            capwapPayload: { apName: session.apName, message, state: session.state },
+            length: 96, info: `CAPWAP ${message.toUpperCase()} ${session.apName} (${session.state})`
+          });
+        });
+      }
+    }
 
     const isOspfActive = Boolean(state.ospfRouterId || state.routingProtocol === 'ospf');
     if (isOspfActive) {
@@ -271,7 +291,7 @@ export function runNetworkEventPipeline(
   // LDP is driven by the same live topology tick as the other control-plane protocols.
   updatedStates.forEach(state => {
     discoverLdpNeighbors(state, updatedStates, connections);
-    generateLib(state);
+    generateLib(state, updatedStates);
     generateLfib(state);
   });
 

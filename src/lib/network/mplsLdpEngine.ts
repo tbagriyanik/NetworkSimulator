@@ -187,7 +187,7 @@ export function generateLfib(state: SwitchState): LfibEntry[] {
 /**
  * Build LIB (Label Information Base) from local and remote label bindings
  */
-export function generateLib(state: SwitchState): LibEntry[] {
+export function generateLib(state: SwitchState, topologyStates?: Map<string, SwitchState>): LibEntry[] {
   const mpls = getOrCreateMplsConfig(state);
   const lib: LibEntry[] = [];
   let labelCounter = mpls.labelRange.min;
@@ -206,7 +206,10 @@ export function generateLib(state: SwitchState): LibEntry[] {
   // Add remote label bindings from neighbors
   Object.values(mpls.neighbors).forEach(neighbor => {
     if (neighbor.tcpState === 'Operational') {
-      const remotePrefixes = Object.values(state.ports || {})
+      const peerState = topologyStates && [...topologyStates.values()].find(candidate =>
+        Object.values(candidate.ports || {}).some(port => port.ipAddress === neighbor.peerIp)
+      );
+      const remotePrefixes = Object.values(peerState?.ports || {})
         .filter(port => port.ipAddress && port.subnetMask && !port.shutdown && port.mplsEnabled)
         .map(port => `${port.ipAddress}/${port.subnetMask}`);
       neighbor.labelsReceived = remotePrefixes.length;

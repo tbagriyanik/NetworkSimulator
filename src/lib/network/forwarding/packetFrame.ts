@@ -15,7 +15,11 @@ export type PacketProtocolType =
   | 'IPV4'
   | 'IPV6'
   | 'TCP'
-  | 'UDP';
+  | 'UDP'
+  | 'IPSEC'
+  | 'CAPWAP';
+
+export type EapolFramePayload = import('@/lib/network/dot1x').EapolFrame;
 
 export interface SnmpFramePayload {
   pdu: 'GET' | 'GETNEXT' | 'WALK';
@@ -25,6 +29,19 @@ export interface SnmpFramePayload {
   oids: string[];
   varBinds?: Array<{ oid: string; value: string | number }>;
   error?: string;
+}
+
+export interface IpsecFramePayload {
+  spi: string;
+  encrypted: boolean;
+  originalProtocol: string;
+  payload?: unknown;
+}
+
+export interface CapwapFramePayload {
+  apName: string;
+  message: 'discovery' | 'join' | 'config' | 'data' | 'keepalive' | 'reset';
+  state: string;
 }
 
 
@@ -109,6 +126,9 @@ export interface NetworkPacketFrame {
   etherType: string;
   vlanId?: number;
   priority?: number;
+  dscp?: number;
+  cos?: number;
+  qosDelayMs?: number;
 
   // Layer 3 IP Packet
   srcIp?: string;
@@ -124,6 +144,9 @@ export interface NetworkPacketFrame {
   eigrpPayload?: EigrpPayload;
   ipSlaPayload?: IpSlaPayload;
   snmpPayload?: SnmpFramePayload;
+  ipsecPayload?: IpsecFramePayload;
+  eapolPayload?: EapolFramePayload;
+  capwapPayload?: CapwapFramePayload;
 
   // Layer 4 Ports (used by NetFlow accounting / firewalls)
   srcPort?: number;
