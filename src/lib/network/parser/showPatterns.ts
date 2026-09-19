@@ -434,10 +434,10 @@ export const showPatterns: Record<string, CommandPattern> = {
     maxArgs: 0
   },
   'show alias': {
-    pattern: /^show\s+alias$/i,
+    pattern: /^show\s+alias(\s+(exec|configure|interface|line))?$/i,
     modes: ['privileged'],
     minArgs: 0,
-    maxArgs: 0
+    maxArgs: 1
   },
   'show history': {
     pattern: /^show\s+history$/i,

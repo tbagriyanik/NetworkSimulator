@@ -154,25 +154,31 @@ export function cmdAliasExec(state: SwitchState, input: string, _ctx: CommandCon
 
   const match = input.match(/^alias\s+(exec|configure|interface|line)\s+(\S+)\s+(.+)$/i);
   if (!match) {
-    return { success: false, error: '% Invalid alias command' };
+    return { success: false, error: '% Invalid alias command. Usage: alias <exec|configure|interface|line> <alias-name> <command>' };
   }
 
-  const mode = match[1].toLowerCase();
-  const aliasName = match[2];
-  const aliasCommand = match[3];
+  const mode = match[1].toLowerCase() as 'exec' | 'configure' | 'interface' | 'line';
+  const aliasName = match[2].toLowerCase();
+  const aliasCommand = match[3].trim();
 
-  if (mode !== 'exec') {
-    return { success: true, output: `% ${mode} mode aliases not supported yet` };
-  }
+  const aliases = {
+    exec: { ...state.aliases?.exec, ...state.execAliases },
+    configure: { ...state.aliases?.configure },
+    interface: { ...state.aliases?.interface },
+    line: { ...state.aliases?.line },
+  };
 
-  const execAliases = { ...state.execAliases };
-  execAliases[aliasName.toLowerCase()] = aliasCommand;
+  aliases[mode][aliasName] = aliasCommand;
 
-  const updatedState = { ...state, execAliases };
+  // Keep backward compatible execAliases
+  const execAliases = { ...aliases.exec };
+
+  const updatedState = { ...state, aliases, execAliases };
   return {
     success: true,
-    output: `% ${input.trim()} configured`,
+    output: `% alias ${mode} ${aliasName} "${aliasCommand}" configured`,
     newState: {
+      aliases,
       execAliases,
       runningConfig: buildRunningConfig(updatedState)
     }
@@ -186,28 +192,32 @@ export function cmdNoAliasExec(state: SwitchState, input: string, _ctx: CommandC
 
   const match = input.match(/^no\s+alias\s+(exec|configure|interface|line)\s+(\S+)$/i);
   if (!match) {
-    return { success: false, error: '% Invalid no alias command' };
+    return { success: false, error: '% Invalid no alias command. Usage: no alias <exec|configure|interface|line> <alias-name>' };
   }
 
-  const mode = match[1].toLowerCase();
+  const mode = match[1].toLowerCase() as 'exec' | 'configure' | 'interface' | 'line';
   const aliasName = match[2].toLowerCase();
 
-  if (mode !== 'exec') {
-    return { success: true, output: `% ${mode} mode aliases not supported yet` };
+  const aliases = {
+    exec: { ...state.aliases?.exec, ...state.execAliases },
+    configure: { ...state.aliases?.configure },
+    interface: { ...state.aliases?.interface },
+    line: { ...state.aliases?.line },
+  };
+
+  if (!aliases[mode] || !aliases[mode][aliasName]) {
+    return { success: false, error: `% Alias ${aliasName} not found in ${mode} mode` };
   }
 
-  if (!state.execAliases || !state.execAliases[aliasName]) {
-    return { success: false, error: `% Alias ${aliasName} not found` };
-  }
+  delete aliases[mode][aliasName];
+  const execAliases = { ...aliases.exec };
 
-  const execAliases = { ...state.execAliases };
-  delete execAliases[aliasName];
-
-  const updatedState = { ...state, execAliases };
+  const updatedState = { ...state, aliases, execAliases };
   return {
     success: true,
-    output: `% no alias exec ${aliasName} configured`,
+    output: `% no alias ${mode} ${aliasName} configured`,
     newState: {
+      aliases,
       execAliases,
       runningConfig: buildRunningConfig(updatedState)
     }

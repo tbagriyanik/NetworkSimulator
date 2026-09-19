@@ -1,4 +1,4 @@
-﻿// Network Command Executor (refactored with handler map)
+// Network Command Executor (refactored with handler map)
 import { SwitchState, CommandResult } from './types';
 import { useAppStore } from '../store/appStore';
 import { parseCommand, validateCommand } from './parser';
@@ -20,7 +20,8 @@ import {
   handleConfigSourceInput,
   handlePasswordInput,
   handleFtpSessionCommand,
-  handleMailSessionCommand
+  handleMailSessionCommand,
+  handleSetupDialogInput
 } from './executorSessionHelpers';
 
 // Import command handlers from modular files
@@ -110,6 +111,10 @@ export function executeCommand(
 
   if (state.mailSession) {
     return handleMailSessionCommand(state, input, language, { devices, connections, deviceStates, sourceDeviceId });
+  }
+
+  if (state.setupDialog) {
+    return handleSetupDialogInput(state, input, language);
   }
 
   let cmdToProcess = input.trim();

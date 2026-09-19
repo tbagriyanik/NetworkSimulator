@@ -660,4 +660,29 @@ export interface SwitchState {
   // NETCONF / Programmability
   netconfYangEnabled?: boolean;
   netconfSshEnabled?: boolean;
+
+  // Multi-mode CLI Aliases
+  aliases?: {
+    exec?: Record<string, string>;
+    configure?: Record<string, string>;
+    interface?: Record<string, string>;
+    line?: Record<string, string>;
+  };
+
+  // Interactive Initial Configuration Dialog (Setup)
+  setupDialog?: {
+    step: 'enter_dialog' | 'basic_mgmt' | 'hostname' | 'enable_secret' | 'enable_password' | 'vty_password' | 'mgmt_interface' | 'mgmt_ip' | 'mgmt_mask' | 'save_nvram' | 'completed';
+    answers: Record<string, string>;
+  };
+
+  // Remote Outgoing Sessions (Telnet/SSH Suspension & Resume)
+  activeSessions?: Array<{
+    id: number;
+    host: string;
+    port?: string;
+    protocol: 'telnet' | 'ssh';
+    user?: string;
+    status: 'active' | 'suspended';
+    lastActive?: string;
+  }>;
 }

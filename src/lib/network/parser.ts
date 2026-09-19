@@ -36,7 +36,7 @@ const cachedSortedAliases = Object.entries(commandAliases || {})
   .sort((a, b) => b[0].length - a[0].length);
 
 // Komut alias'larını çöz - Gelişmiş versiyon
-export function resolveAliases(input: string, state?: Partial<SwitchState>): string {
+export function resolveAliases(input: string, state?: Partial<SwitchState>, currentMode?: CommandMode): string {
   const trimmed = input.trim().toLowerCase();
 
   // Abbreviation: "int gi0/0" is equivalent to
@@ -48,26 +48,41 @@ export function resolveAliases(input: string, state?: Partial<SwitchState>): str
   // Special handling for "do <subcommand>" — delegate alias resolution to privileged mode
   if (trimmed.startsWith('do ')) {
     const subInput = input.trim().substring(3);
-    const resolvedSub = resolveAliases(subInput, state);
+    const resolvedSub = resolveAliases(subInput, state, 'privileged');
     return `do ${resolvedSub}`;
   }
 
-  // Exec aliases: built-in defaults + user-defined (runtime)
-  const builtInExecAliases: Record<string, string> = {
-    h: 'show history',
-    lo: 'exit'
-  };
-  const execAliases = { ...builtInExecAliases, ...state?.execAliases };
+  // Determine active mode category
+  const modeKey: 'exec' | 'configure' | 'interface' | 'line' =
+    currentMode === 'config'
+      ? 'configure'
+      : currentMode === 'interface' || currentMode === 'config-if-range'
+        ? 'interface'
+        : currentMode === 'line'
+          ? 'line'
+          : 'exec';
 
-  // 1. Tam eşleşme (kullanıcı + built-in exec alias)
-  if (execAliases[trimmed]) {
-    return execAliases[trimmed];
+  const modeCustomAliases: Record<string, string> = {
+    ...state?.aliases?.[modeKey]
+  };
+
+  if (modeKey === 'exec') {
+    const builtInExecAliases: Record<string, string> = {
+      h: 'show history',
+      lo: 'exit'
+    };
+    Object.assign(modeCustomAliases, builtInExecAliases, state?.execAliases || {});
+  }
+
+  // 1. Tam eşleşme (kullanıcı + built-in alias)
+  if (modeCustomAliases[trimmed]) {
+    return modeCustomAliases[trimmed];
   }
 
   // 2. Kısmi eşleşme (prefix match: örn. 'lo ...' veya parametreli alias)
-  const sortedExecAliases = Object.entries(execAliases)
+  const sortedModeAliases = Object.entries(modeCustomAliases)
     .sort((a, b) => b[0].length - a[0].length);
-  for (const [alias, full] of sortedExecAliases as [string, string][]) {
+  for (const [alias, full] of sortedModeAliases as [string, string][]) {
     const aliasLower = alias.toLowerCase();
     const fullLower = full.toLowerCase();
     if (trimmed === aliasLower) {
@@ -173,7 +188,7 @@ export function parseCommand(input: string, currentMode: CommandMode, state?: Pa
       : state.deviceType || (state.switchLayer === 'FW' ? 'firewall' : state.switchLayer === 'L3' ? 'switchL3' : 'switchL2'))
     : 'switchL2';
   const capabilities = state ? getDeviceCapabilities({ type: inferredDeviceType as DeviceType }, state.switchModel) : undefined;
-  const resolvedInput = expandKeywordPrefixes(resolveAliases(normalizedInput, state), currentMode, capabilities);
+  const resolvedInput = expandKeywordPrefixes(resolveAliases(normalizedInput, state, currentMode), currentMode, capabilities);
 
   if (!resolvedInput) return null;
 
@@ -375,7 +390,7 @@ export function validateCommand(
     };
   }
 
-  const resolvedInput = parsed.resolvedInput || resolveAliases(parsed.rawInput, state);
+  const resolvedInput = parsed.resolvedInput || resolveAliases(parsed.rawInput, state, currentMode);
   const inferredDeviceType = state
     ? (state.deviceType === 'switch'
       ? (state.switchLayer === 'L3' ? 'switchL3' : 'switchL2')

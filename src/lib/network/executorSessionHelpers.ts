@@ -1,4 +1,4 @@
-﻿import { SwitchState, CommandResult } from './types';
+import { SwitchState, CommandResult } from './types';
 import { getPrompt } from './executorPrompt';
 import { generateBootMessages } from './executorBootMessages';
 import { findDeviceByHost, formatBytes } from './executorSessionUtils';
@@ -508,6 +508,279 @@ function handleMailSessionCommand(
   return { success: true, output: '\nCommands: inbox, send <to> <subject>, quit\nmail> ' };
 }
 
+function handleSetupDialogInput(state: SwitchState, input: string, language: 'tr' | 'en'): CommandResult {
+  const text = input.trim();
+  const currentSetup = state.setupDialog || { step: 'enter_dialog' as const, answers: {} };
+  const step = currentSetup.step;
+  const answers = { ...currentSetup.answers };
+
+  const isAbort = text.toLowerCase() === 'ctrl-c' || text.toLowerCase() === 'abort' || text.toLowerCase() === 'exit';
+  if (isAbort) {
+    return {
+      success: true,
+      output: language === 'tr' ? '\n% Kurulum sihirbazı iptal edildi.\n' : '\n% Aborting setup.\n',
+      newState: { setupDialog: undefined }
+    };
+  }
+
+  switch (step) {
+    case 'enter_dialog': {
+      const lower = text.toLowerCase();
+      if (lower === 'no' || lower === 'n') {
+        return {
+          success: true,
+          output: language === 'tr' ? '\n% Kurulum sihirbazı sonlandırıldı.\n' : '\n% Aborting setup.\n',
+          newState: { setupDialog: undefined }
+        };
+      }
+      if (lower === 'yes' || lower === 'y' || lower === '') {
+        return {
+          success: true,
+          output: '\nWould you like to enter basic management setup? [yes/no]: ',
+          newState: {
+            setupDialog: {
+              step: 'basic_mgmt',
+              answers
+            }
+          }
+        };
+      }
+      return {
+        success: true,
+        output: 'Please answer \'yes\' or \'no\'.\nWould you like to enter the initial configuration dialog? [yes/no]: ',
+        newState: { setupDialog: { step: 'enter_dialog', answers } }
+      };
+    }
+
+    case 'basic_mgmt': {
+      const lower = text.toLowerCase();
+      if (lower === 'no' || lower === 'n') {
+        return {
+          success: true,
+          output: '\n% Aborting setup.\n',
+          newState: { setupDialog: undefined }
+        };
+      }
+      const defaultHost = state.hostname || 'Router';
+      return {
+        success: true,
+        output: `\nEnter host name [${defaultHost}]: `,
+        newState: {
+          setupDialog: {
+            step: 'hostname',
+            answers
+          }
+        }
+      };
+    }
+
+    case 'hostname': {
+      const hostname = text || state.hostname || 'Router';
+      answers.hostname = hostname;
+      return {
+        success: true,
+        output: '\nEnter enable secret: ',
+        newState: {
+          setupDialog: {
+            step: 'enable_secret',
+            answers
+          }
+        }
+      };
+    }
+
+    case 'enable_secret': {
+      answers.enableSecret = text;
+      return {
+        success: true,
+        output: '\nEnter enable password: ',
+        newState: {
+          setupDialog: {
+            step: 'enable_password',
+            answers
+          }
+        }
+      };
+    }
+
+    case 'enable_password': {
+      answers.enablePassword = text;
+      return {
+        success: true,
+        output: '\nEnter virtual terminal password: ',
+        newState: {
+          setupDialog: {
+            step: 'vty_password',
+            answers
+          }
+        }
+      };
+    }
+
+    case 'vty_password': {
+      answers.vtyPassword = text;
+      const portNames = Object.keys(state.ports || {});
+      const defaultIntf = portNames.length > 0 ? portNames[0] : 'FastEthernet0/1';
+      return {
+        success: true,
+        output: `\nEnter interface name used to connect to the management network [${defaultIntf}]: `,
+        newState: {
+          setupDialog: {
+            step: 'mgmt_interface',
+            answers
+          }
+        }
+      };
+    }
+
+    case 'mgmt_interface': {
+      const portNames = Object.keys(state.ports || {});
+      const defaultIntf = portNames.length > 0 ? portNames[0] : 'FastEthernet0/1';
+      const intf = text || defaultIntf;
+      answers.mgmtInterface = intf;
+      return {
+        success: true,
+        output: '\nConfigure IP on this interface? [yes/no]: ',
+        newState: {
+          setupDialog: {
+            step: 'mgmt_ip',
+            answers
+          }
+        }
+      };
+    }
+
+    case 'mgmt_ip': {
+      const lower = text.toLowerCase();
+      if (lower === 'no' || lower === 'n') {
+        answers.mgmtIp = '';
+        answers.mgmtMask = '';
+        return {
+          success: true,
+          output: `\n[0] Go to the IOS command prompt without saving this config.\n[1] Return back to the setup facility.\n[2] Save this configuration to nvram and exit.\n\nEnter your selection [2]: `,
+          newState: {
+            setupDialog: {
+              step: 'save_nvram',
+              answers
+            }
+          }
+        };
+      }
+      return {
+        success: true,
+        output: '\nIP address for this interface: ',
+        newState: {
+          setupDialog: {
+            step: 'mgmt_mask',
+            answers
+          }
+        }
+      };
+    }
+
+    case 'mgmt_mask': {
+      if (!answers.mgmtIp) {
+        answers.mgmtIp = text;
+        return {
+          success: true,
+          output: '\nSubnet mask for this interface [255.255.255.0]: ',
+          newState: {
+            setupDialog: {
+              step: 'mgmt_mask',
+              answers
+            }
+          }
+        };
+      }
+      answers.mgmtMask = text || '255.255.255.0';
+      return {
+        success: true,
+        output: `\n[0] Go to the IOS command prompt without saving this config.\n[1] Return back to the setup facility.\n[2] Save this configuration to nvram and exit.\n\nEnter your selection [2]: `,
+        newState: {
+          setupDialog: {
+            step: 'save_nvram',
+            answers
+          }
+        }
+      };
+    }
+
+    case 'save_nvram': {
+      const sel = text || '2';
+      if (sel === '0') {
+        return {
+          success: true,
+          output: '\n% Setup aborted. Configuration not saved.\n',
+          newState: { setupDialog: undefined }
+        };
+      }
+      if (sel === '1') {
+        return {
+          success: true,
+          output: '\nWould you like to enter basic management setup? [yes/no]: ',
+          newState: { setupDialog: { step: 'basic_mgmt', answers: {} } }
+        };
+      }
+
+      // Option 2: Apply configuration and save to nvram
+      const nextPorts = { ...state.ports };
+      if (answers.mgmtInterface && (answers.mgmtIp || answers.mgmtMask)) {
+        const portKey = answers.mgmtInterface.toLowerCase();
+        const existingPort = nextPorts[portKey] || {
+          name: answers.mgmtInterface,
+          status: 'down' as const,
+          mode: 'routed' as const,
+          speed: '100' as const,
+          duplex: 'auto' as const,
+          shutdown: false,
+          macAddress: state.macAddress || '00:00:00:00:00:00'
+        };
+        nextPorts[portKey] = {
+          ...existingPort,
+          ipAddress: answers.mgmtIp || existingPort.ipAddress,
+          subnetMask: answers.mgmtMask || existingPort.subnetMask,
+          shutdown: false,
+        };
+      }
+
+      const nextSecurity = {
+        ...state.security,
+        enableSecret: answers.enableSecret || state.security?.enableSecret,
+        enablePassword: answers.enablePassword || state.security?.enablePassword,
+        vtyLines: {
+          ...(state.security?.vtyLines || { login: false, transportInput: ['all'] }),
+          password: answers.vtyPassword || state.security?.vtyLines?.password,
+          login: !!(answers.vtyPassword || state.security?.vtyLines?.password)
+        }
+      };
+
+      const updatedState: SwitchState = {
+        ...state,
+        hostname: answers.hostname || state.hostname,
+        ports: nextPorts,
+        security: nextSecurity,
+        setupDialog: undefined
+      };
+
+      return {
+        success: true,
+        output: '\n[OK]\nBuilding configuration...\n[OK]\n',
+        newState: {
+          ...updatedState,
+          setupDialog: undefined
+        }
+      };
+    }
+
+    default:
+      return {
+        success: true,
+        output: '\n% Aborting setup.\n',
+        newState: { setupDialog: undefined }
+      };
+  }
+}
+
 // Import encryption functions
 import { verifyMd5Password, encryptType7Password } from './crypto';
 import { CLI_ERRORS } from './core/cliErrors';
@@ -519,6 +792,7 @@ export {
   handleConfigSourceInput,
   handlePasswordInput,
   handleFtpSessionCommand,
-  handleMailSessionCommand
+  handleMailSessionCommand,
+  handleSetupDialogInput
 };
 

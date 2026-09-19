@@ -140,6 +140,33 @@ export function buildRunningConfig(state: SwitchState): string[] {
         lines.push('!');
     }
 
+    // CLI Aliases
+    const execAliases = state.aliases?.exec || state.execAliases || {};
+    const configAliases = state.aliases?.configure || {};
+    const intfAliases = state.aliases?.interface || {};
+    const lineAliases = state.aliases?.line || {};
+
+    let hasAliases = false;
+    Object.entries(execAliases).forEach(([name, target]) => {
+        lines.push(`alias exec ${name} ${target}`);
+        hasAliases = true;
+    });
+    Object.entries(configAliases).forEach(([name, target]) => {
+        lines.push(`alias configure ${name} ${target}`);
+        hasAliases = true;
+    });
+    Object.entries(intfAliases).forEach(([name, target]) => {
+        lines.push(`alias interface ${name} ${target}`);
+        hasAliases = true;
+    });
+    Object.entries(lineAliases).forEach(([name, target]) => {
+        lines.push(`alias line ${name} ${target}`);
+        hasAliases = true;
+    });
+    if (hasAliases) {
+        lines.push('!');
+    }
+
     // NTP Server
     if (state.ntpServers && state.ntpServers.length > 0) {
         state.ntpServers.forEach(server => {

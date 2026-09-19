@@ -2,7 +2,12 @@
 
 ## v6.0.0 — 2026-09-19
 
-**Kapsamlı CLI Genişletme, Çoklu Protokol Desteği & Dokümantasyon Optimizasyonu** —
+**Kapsamlı CLI Genişletme, İnteraktif Motorlar, Çoklu Protokol Desteği & Dokümantasyon Optimizasyonu** —
+- **⚙️ Çok Modlu CLI Alias & Dinamik Oturum Yönetimi**:
+  - `alias exec`, `alias configure`, `alias interface`, `alias line` ile mod bazlı alias tanımlama, silme (`no alias`), CLI parser çözümlemesi ve `show alias [mode]` listelemesi tamamlandı.
+  - `setup` komutu ile hostname, enable secret/password, VTY password ve yönetim IP/mask adımlarını içeren etkileşimli kurulum sihirbazı (setup dialog state machine) entegre edildi.
+  - `suspend`, `resume [id]`, `disconnect [id]` ve `show sessions` ile arka plan uzak Telnet/SSH oturum yaşam döngüsü yönetimi sağlandı.
+  - `test memory`, `test interfaces [intf]`, `test cable-diagnostics tdr interface <name>` ve `test vlan <id>` komutları ile dinamik donanım ve kablo tanılama motoru eklendi.
 - **📡 Multicast / PIM & IGMP Desteği (`routingCommands.ts`, `interfaceCommands.ts`, `showMiscDisplay.ts`)**:
   - `ip multicast-routing`, `ip pim sparse-mode`, `ip pim dense-mode`, `ip pim sparse-dense-mode` ve `ip igmp join-group`, `ip igmp version` komutları tam motor ve durum desteğiyle eklendi.
   - `show ip mroute`, `show ip pim interface/neighbor`, `show ip igmp groups` komutları zengin çıktılarla entegre edildi.
@@ -15,7 +20,7 @@
 - **🔥 CBAC Güvenlik Duvarı, EEM & NETCONF**:
   - `ip inspect name <rule> <protocol>`, `ip inspect <rule> in|out`, `event manager applet <name>` (event/action), `netconf-yang` ve `netconf ssh` komutları entegre edildi.
 - **📚 Dokümantasyon Konsolidasyonu & Sürüm Senkronizasyonu**:
-  - Mükerrer içerik barındıran dokümantasyon dosyaları (PDU inceleme ve Entegrasyon rehberleri) ana kanonik belgelere birleştirildi. Master indeks ve tüm proje metrikleri güncellendi.
+  - Mükerrer içerik barındıran dokümantasyon dosyaları ana kanonik belgelere birleştirildi. Master indeks ve tüm proje metrikleri güncellendi.
 
 ## v5.9.0 — 2026-09-18
 

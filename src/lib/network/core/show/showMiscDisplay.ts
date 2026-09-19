@@ -185,8 +185,24 @@ export function cmdShowSystemMtu(_state: SwitchState, _input: string, _ctx: Comm
   return { success: true, output: '\nSystem MTU size is 1500 bytes\nSystem Jumbo MTU size is 1500 bytes\nRouting MTU size is 1500 bytes\n' };
 }
 
-export function cmdShowSessions(_state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  return { success: true, output: '\n% No active sessions.\n' };
+export function cmdShowSessions(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  const sessions = state.activeSessions || [];
+  if (sessions.length === 0) {
+    return { success: true, output: '\n% No active sessions.\n' };
+  }
+
+  let output = '\nConn Host                Address          Byte  Idle Conn Name\n';
+  sessions.forEach((s) => {
+    const mark = s.status === 'active' ? '*' : ' ';
+    const connStr = `${mark}  ${s.id}`.padEnd(5);
+    const hostStr = s.host.padEnd(20);
+    const addrStr = (s.port ? `${s.host}:${s.port}` : s.host).padEnd(17);
+    const byteStr = '0'.padEnd(6);
+    const idleStr = '0'.padEnd(6);
+    const nameStr = s.host;
+    output += `${connStr}${hostStr}${addrStr}${byteStr}${idleStr}${nameStr}\n`;
+  });
+  return { success: true, output };
 }
 
 export function cmdShowSnmp(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
@@ -295,17 +311,42 @@ export function cmdShowBannerMotd(state: SwitchState, _input: string, _ctx: Comm
   return { success: true, output: state.bannerMOTD ? `\n${state.bannerMOTD}\n` : '\n% Banner not set\n' };
 }
 
-export function cmdShowAlias(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
-  let output = '\nExec aliases:\n';
-  const builtIn: Record<string, string> = { 'h': 'show history', 'lo': 'exit' };
-  const allAliases = { ...builtIn, ...state.execAliases };
-  if (Object.keys(allAliases).length === 0) {
-    output += '  (none)\n';
-  } else {
-    for (const [name, cmd] of Object.entries(allAliases)) {
-      output += `  ${name.padEnd(20)} ${cmd}\n`;
+export function cmdShowAlias(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  const match = input.match(/show\s+alias(?:\s+(exec|configure|interface|line))?/i);
+  const modeFilter = match?.[1]?.toLowerCase();
+
+  const builtInExec: Record<string, string> = { 'h': 'show history', 'lo': 'exit' };
+  const execAliases = { ...builtInExec, ...state.aliases?.exec, ...state.execAliases };
+  const configAliases = state.aliases?.configure || {};
+  const intfAliases = state.aliases?.interface || {};
+  const lineAliases = state.aliases?.line || {};
+
+  const printSection = (title: string, map: Record<string, string>) => {
+    let sec = `\n${title} aliases:\n`;
+    if (Object.keys(map).length === 0) {
+      sec += '  (none)\n';
+    } else {
+      for (const [name, cmd] of Object.entries(map)) {
+        sec += `  ${name.padEnd(20)} ${cmd}\n`;
+      }
     }
+    return sec;
+  };
+
+  let output = '';
+  if (!modeFilter || modeFilter === 'exec') {
+    output += printSection('Exec', execAliases);
   }
+  if (!modeFilter || modeFilter === 'configure' || modeFilter === 'config') {
+    output += printSection('Configure', configAliases);
+  }
+  if (!modeFilter || modeFilter === 'interface') {
+    output += printSection('Interface', intfAliases);
+  }
+  if (!modeFilter || modeFilter === 'line') {
+    output += printSection('Line', lineAliases);
+  }
+
   return { success: true, output };
 }
 

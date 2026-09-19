@@ -253,9 +253,9 @@ export const systemPatterns: Record<string, CommandPattern> = {
 
   // Test
   'test': {
-    pattern: /^test\s+(.+)$/i,
+    pattern: /^test(\s+(.+))?$/i,
     modes: ['privileged'],
-    minArgs: 1,
+    minArgs: 0,
     maxArgs: 1
   },
 

@@ -112,12 +112,12 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `reload` | Reload the device |
 | `clock set <hh:mm:ss> <day> <month> <year>` | Set system clock |
 | `more <filename>` | Display contents of a file or configuration (`running-config`, `startup-config`, `vlan.dat`) |
-| `setup` | Enter initial setup dialog |
-| `test <type>` | Run diagnostics |
+| `setup` | Launch interactive step-by-step system configuration dialog wizard |
+| `test <interfaces | memory | loopback | cable-diagnostics | vlan>` | Run dynamic hardware, cable, and interface diagnostic test engine |
 | `configure replace <url>` | Replace running config with file |
-| `disconnect` | Disconnect network connection |
-| `resume <n>` | Resume a suspended session |
-| `suspend` | Suspend current Telnet/SSH session (Ctrl+Shift+6 then X) |
+| `disconnect [<session-id>]` | Close an active or background remote Telnet/SSH session |
+| `resume [<session-id>]` | Resume a suspended background Telnet/SSH session |
+| `suspend` | Suspend active remote session and return to local prompt |
 | `debug <type>` | Enable debugging (requires argument, e.g., `debug ip packet`) |
 | `no debug <type>` | Disable specific debugging |
 | `no debug all` | Disable all debugging |
@@ -264,8 +264,8 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `snmp-server contact <text>` | Set SNMP contact information |
 | `snmp-server location <text>` | Set SNMP location information |
 | `archive` | Enter archive config mode |
-| `alias <mode> <name> <cmd>` | Create command alias |
-| `no alias <name>` | Remove command alias |
+| `alias {exec\|configure\|interface\|line} <name> <cmd>` | Create mode-specific command alias |
+| `no alias {exec\|configure\|interface\|line} <name>` | Remove mode-specific command alias |
 | `macro name <name>` | Define command macro |
 | `sdm prefer <template>` | Set SDM template |
 | `ip arp inspection vlan <id>` | Enable Dynamic ARP Inspection (DAI) on VLAN |
@@ -802,7 +802,8 @@ The simulator supports **400+ commands** across multiple configuration modes.
 | `show logging` | Display logging (syslog) configuration and trap severity level |
 | `show snmp` | Display SNMP info |
 | `show archive` | Display archive status |
-| `show alias` | Display command aliases |
+| `show alias [exec|configure|interface|line]` | Display command aliases (overall or filtered by mode) |
+| `show sessions` | Display active and suspended outgoing Telnet/SSH sessions |
 | `show diagnostic` | Display diagnostic results |
 | `show lldp` | Display LLDP neighbors |
 | `show authentication` | Display auth sessions |

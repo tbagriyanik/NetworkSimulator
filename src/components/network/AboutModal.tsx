@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { csrfHeaders } from '@/lib/security/csrf';
@@ -15,7 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { cn } from '@/lib/utils';
-import { Info, Terminal, Search, X, ChevronDown, Compass, Mail, Loader2, MessageSquare, Bug, Lightbulb, Check, Play, Cpu } from 'lucide-react';
+import { Info, Terminal, Search, X, ChevronDown, Compass, Mail, Loader2, MessageSquare, Bug, Lightbulb, Check, Play, Cpu, Copy, ChevronsUpDown } from 'lucide-react';
 import Image from 'next/image';
 import { getCommandCategories } from './networkTopology.commands';
 import { TutorialAnimationPlayer } from './TutorialAnimationPlayer';
@@ -46,6 +46,8 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
 
   const [selectedAnimId, setSelectedAnimId] = useState<string>('broadcast-vis');
   const [animationKey, setAnimationKey] = useState<number>(0);
+  const [copiedCmd, setCopiedCmd] = useState<string | null>(null);
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all');
 
   // Help content data - memoized to prevent infinite loops
   const helpCategories = useMemo(() => getCommandCategories(isTR), [isTR]);
@@ -59,6 +61,23 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
   const toggleHelp = (id: string) => {
     setExpandedHelp(prev => ({ ...prev, [id]: !prev[id] }));
   };
+
+  const toggleExpandAll = () => {
+    const allExpanded = helpCategories.every(cat => expandedHelp[cat.id]);
+    const nextState: Record<string, boolean> = {};
+    helpCategories.forEach(cat => {
+      nextState[cat.id] = !allExpanded;
+    });
+    setExpandedHelp(nextState);
+  };
+
+  const handleCopyCommand = useCallback((cmd: string) => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(cmd);
+      setCopiedCmd(cmd);
+      setTimeout(() => setCopiedCmd(null), 1500);
+    }
+  }, []);
 
   const [contactData, setContactData] = useState({
     name: '',
@@ -95,8 +114,6 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
     setSubmitStatus('idle');
 
     try {
-      // Theoretically sending to a Apps Script Web App
-      // Or a Next.js API route
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...csrfHeaders() },
@@ -121,19 +138,31 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
     }
   };
 
-  // Filter categories based on search query
+  // Filter categories based on search query and category filter
   const filteredHelpCategories = useMemo(() => {
-    if (!searchQuery.trim()) return helpCategories;
+    let list = helpCategories;
+
+    if (selectedCategoryFilter === 'commands') {
+      list = list.filter(cat => cat.type === 'commands' || (!cat.type && cat.id !== 'keyboard_shortcuts'));
+    } else if (selectedCategoryFilter === 'shortcuts') {
+      list = list.filter(cat => cat.id === 'keyboard_shortcuts');
+    } else if (selectedCategoryFilter === 'examples') {
+      list = list.filter(cat => cat.type === 'examples');
+    } else if (selectedCategoryFilter === 'info') {
+      list = list.filter(cat => cat.type === 'info' && cat.id !== 'keyboard_shortcuts');
+    }
+
+    if (!searchQuery.trim()) return list;
 
     const query = searchQuery.toLowerCase();
-    return helpCategories.map(cat => ({
+    return list.map(cat => ({
       ...cat,
       cmds: cat.cmds.filter(([cmd, desc]) =>
         cmd.toLowerCase().includes(query) ||
         desc.toLowerCase().includes(query)
       )
     })).filter(cat => cat.cmds.length > 0);
-  }, [searchQuery, helpCategories]);
+  }, [searchQuery, helpCategories, selectedCategoryFilter]);
 
   const tabButtonClass = (tab: TabType) => cn(
     'relative inline-flex items-center gap-2 rounded-t-xl border border-b-0 px-4 py-2 text-sm font-semibold transition-all',
@@ -216,43 +245,83 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
 
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden border rounded-md mx-2.5 mb-2">
           {activeTab === 'help' && !isExamActive && (
-            <div className={cn('p-2 space-y-1.5 border-b-2 shrink-0', isDark ? 'bg-secondary-700 border-secondary-500/60' : 'bg-secondary-100 border-secondary-300')}>
-              {/* Search */}
-              <div className="relative">
-                <Search className={cn('absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4', isDark ? 'text-secondary-500' : 'text-secondary-400')} />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={t.search}
-                  autoFocus
-                  className={cn(
-                    'w-full pl-9 pr-9 py-2 rounded-lg text-sm border outline-none transition-all',
-                    isDark
-                      ? 'bg-secondary-900 border-secondary-700 text-secondary-200 placeholder:text-secondary-500 focus:border-success-500/50'
-                      : 'bg-white border-secondary-200 text-secondary-900 placeholder:text-secondary-400 focus:border-success-500'
+            <div className={cn('p-2 space-y-2 border-b-2 shrink-0', isDark ? 'bg-secondary-700 border-secondary-500/60' : 'bg-secondary-100 border-secondary-300')}>
+              {/* Search & Action Bar */}
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search className={cn('absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4', isDark ? 'text-secondary-500' : 'text-secondary-400')} />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder={t.search}
+                    autoFocus
+                    className={cn(
+                      'w-full pl-9 pr-9 py-2 rounded-lg text-sm border outline-none transition-all',
+                      isDark
+                        ? 'bg-secondary-900 border-secondary-700 text-secondary-200 placeholder:text-secondary-500 focus:border-success-500/50'
+                        : 'bg-white border-secondary-200 text-secondary-900 placeholder:text-secondary-400 focus:border-success-500'
+                    )}
+                  />
+                  {searchQuery && (
+                    <TooltipWrapper title={t.clearSearch}>
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        className={cn('absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full transition-colors', isDark ? 'hover:bg-secondary-800 text-secondary-400' : 'hover:bg-secondary-100 text-secondary-500')}
+                        aria-label={t.clearSearch}
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </TooltipWrapper>
                   )}
-                />
-                {searchQuery && (
-                  <TooltipWrapper title={t.clearSearch}>
-                    <button
-                      onClick={() => setSearchQuery('')}
-                      className={cn('absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full transition-colors', isDark ? 'hover:bg-secondary-800 text-secondary-400' : 'hover:bg-secondary-100 text-secondary-500')}
-                      aria-label={t.clearSearch}
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </TooltipWrapper>
-                )}
+                </div>
+                <TooltipWrapper title={isTR ? "Tümünü Aç / Kapat" : "Expand / Collapse All"}>
+                  <button
+                    onClick={toggleExpandAll}
+                    className={cn(
+                      'p-2 rounded-lg border text-xs font-semibold flex items-center gap-1 transition-colors',
+                      isDark ? 'bg-secondary-900 border-secondary-700 hover:bg-secondary-800 text-secondary-300' : 'bg-white border-secondary-200 hover:bg-secondary-50 text-secondary-700'
+                    )}
+                  >
+                    <ChevronsUpDown className="w-4 h-4" />
+                  </button>
+                </TooltipWrapper>
               </div>
 
-              {/* Search Results Info */}
-              {searchQuery.trim() && (
-                <div className={cn('text-xs px-1', isDark ? 'text-secondary-400' : 'text-secondary-500')}>
+              {/* Quick Filter Badges */}
+              <div className="flex flex-wrap items-center justify-between gap-1 text-xs">
+                <div className="flex flex-wrap items-center gap-1">
+                  {[
+                    { id: 'all', label: isTR ? 'Tümü' : 'All' },
+                    { id: 'commands', label: isTR ? 'Komutlar' : 'Commands' },
+                    { id: 'shortcuts', label: isTR ? 'Kısayollar' : 'Shortcuts' },
+                    { id: 'examples', label: isTR ? 'Örnekler' : 'Examples' },
+                    { id: 'info', label: isTR ? 'Bilgi & Terimler' : 'Info & Terms' }
+                  ].map(badge => (
+                    <button
+                      key={badge.id}
+                      onClick={() => setSelectedCategoryFilter(badge.id)}
+                      className={cn(
+                        'px-2 py-0.5 rounded-md text-[11px] font-semibold border transition-all',
+                        selectedCategoryFilter === badge.id
+                          ? isDark
+                            ? 'bg-success-500/20 border-success-500/60 text-success-300 shadow-sm'
+                            : 'bg-success-100 border-success-400 text-success-800 shadow-sm'
+                          : isDark
+                            ? 'bg-secondary-900/60 border-secondary-700 text-secondary-400 hover:text-secondary-200'
+                            : 'bg-white border-secondary-200 text-secondary-600 hover:text-secondary-800'
+                      )}
+                    >
+                      {badge.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Search Results Count */}
+                <div className={cn('text-[11px] px-1 font-medium', isDark ? 'text-secondary-400' : 'text-secondary-500')}>
                   {filteredHelpCategories.reduce((acc, cat) => acc + cat.cmds.length, 0)} {t.commandsFound}
                 </div>
-              )}
-
+              </div>
             </div>
           )}
 
@@ -284,7 +353,7 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
                       {isTR ? 'Sürüm' : 'Version'}
                     </span>
                     <span className="text-xs font-semibold text-secondary-800 dark:text-secondary-200">
-                      {process.env.APP_VERSION || '5.0.0'}
+                      {process.env.APP_VERSION || '6.0.0'}
                     </span>
                   </div>
                   <div className="flex flex-col">
@@ -456,7 +525,7 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
                   const Icon = cat.icon;
                   const isExp = expandedHelp[cat.id];
                   return (
-                    <div key={cat.id} className={cn('rounded-lg border overflow-hidden', isDark ? 'bg-secondary-900 border-secondary-700' : 'bg-white border border-secondary-200')}>
+                    <div key={cat.id} className={cn('rounded-lg border overflow-hidden transition-all', isDark ? 'bg-secondary-900 border-secondary-700' : 'bg-white border border-secondary-200')}>
                       <button
                         onClick={() => toggleHelp(cat.id)}
                         className={cn('w-full flex items-center justify-between p-2.5 text-left transition-colors', isDark ? 'hover:bg-secondary-800' : 'hover:bg-secondary-50')}
@@ -489,20 +558,38 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
                             <table className="w-full text-xs">
                               <tbody>
                                 {cat.cmds.map(([cmd, desc, mode], idx) => (
-                                  <tr key={idx} className={cn('border-b last:border-b-0', isDark ? 'border-secondary-800 hover:bg-secondary-800/50' : 'border-secondary-100 hover:bg-secondary-50')}>
-                                    <td className="p-2 w-[45%]">
-                                      <div className="flex flex-wrap items-center gap-1.5">
-                                        {mode && (
-                                          <span className={cn(
-                                            'font-mono text-[10px] px-1 rounded',
-                                            isDark ? 'bg-secondary-950 text-secondary-500' : 'bg-secondary-100 text-secondary-400'
-                                          )}>
-                                            {mode}
-                                          </span>
-                                        )}
-                                        <code className={cn('font-mono text-[11px] break-all', isDark ? 'text-success-400' : 'text-success-600')}>
-                                          {cmd}
-                                        </code>
+                                  <tr key={idx} className={cn('border-b last:border-b-0 group transition-colors', isDark ? 'border-secondary-800 hover:bg-secondary-800/60' : 'border-secondary-100 hover:bg-secondary-50')}>
+                                    <td className="p-2 w-[48%]">
+                                      <div className="flex items-center justify-between gap-1.5">
+                                        <div className="flex flex-wrap items-center gap-1.5">
+                                          {mode && (
+                                            <span className={cn(
+                                              'font-mono text-[10px] px-1 rounded',
+                                              isDark ? 'bg-secondary-950 text-secondary-500' : 'bg-secondary-100 text-secondary-400'
+                                            )}>
+                                              {mode}
+                                            </span>
+                                          )}
+                                          <code className={cn('font-mono text-[11px] break-all', isDark ? 'text-success-400' : 'text-success-600')}>
+                                            {cmd}
+                                          </code>
+                                        </div>
+                                        <TooltipWrapper title={isTR ? "Kopyala" : "Copy"}>
+                                          <button
+                                            onClick={() => handleCopyCommand(cmd)}
+                                            className={cn(
+                                              'opacity-0 group-hover:opacity-100 p-1 rounded transition-all shrink-0',
+                                              isDark ? 'hover:bg-secondary-700 text-secondary-400 hover:text-white' : 'hover:bg-secondary-200 text-secondary-500 hover:text-secondary-900'
+                                            )}
+                                            aria-label={isTR ? "Komutu kopyala" : "Copy command"}
+                                          >
+                                            {copiedCmd === cmd ? (
+                                              <Check className="w-3.5 h-3.5 text-success-500" />
+                                            ) : (
+                                              <Copy className="w-3.5 h-3.5" />
+                                            )}
+                                          </button>
+                                        </TooltipWrapper>
                                       </div>
                                     </td>
                                     <td className={cn('p-2 align-top', isDark ? 'text-secondary-200' : 'text-secondary-600')}>{desc}</td>
