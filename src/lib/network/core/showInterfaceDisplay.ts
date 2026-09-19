@@ -75,7 +75,7 @@ export function cmdShowInterfaces(
       }
     }
 
-    output += `  input flow-control is off, output flow-control is unsupported\n`;
+    output += `  input flow-control is ${port.congestion?.flowControl ? 'on' : 'off'}, output flow-control is ${port.congestion?.flowControl ? 'on' : 'off'}\n`;
     output += `  ARP type: ARPA, ARP Timeout ${port.arpTimeout || '04:00:00'}\n`;
     // Last input/output times - nOS uses elapsed HH:MM:SS format, not locale time
     const fmtElapsed = (ts: number | undefined): string => {
@@ -292,7 +292,7 @@ export function cmdShowInterface(
     output += `  Encapsulation ${port.encapsulation}\n`;
   }
 
-  output += `  input flow-control is off, output flow-control is unsupported\n`;
+  output += `  input flow-control is ${port.congestion?.flowControl ? 'on' : 'off'}, output flow-control is ${port.congestion?.flowControl ? 'on' : 'off'}\n`;
   output += `  ARP type: ARPA, ARP Timeout ${port.arpTimeout || '04:00:00'}\n`;
 
   const fmtElapsedIface = (ts: number | undefined): string => {

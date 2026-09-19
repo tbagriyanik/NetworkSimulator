@@ -84,10 +84,13 @@ export function cmdTerminal(_state: SwitchState, input: string, _ctx: CommandCon
     const match = input.match(/^terminal\s+(length|width|monitor|no\s+monitor)\s*(\d*)$/i);
     if (!match) return { success: false, error: '% Invalid terminal command' };
     const param = match[1].toLowerCase();
-    if (param === 'length') return { success: true, output: '' };
-    if (param === 'width') return { success: true, output: '' };
-    if (param === 'monitor') return { success: true, output: '%LINK-5-CHANGED: Interface, changed state to monitoring' };
-    return { success: true, output: '' };
+    if (param === 'length' || param === 'width') {
+        const value = Number(match[2]);
+        if (!Number.isInteger(value) || value < 0 || value > 512) return { success: false, error: '% Invalid terminal range' };
+        return { success: true, output: '', newState: { [param === 'length' ? 'terminalLength' : 'terminalWidth']: value } };
+    }
+    if (param === 'monitor') return { success: true, output: '%LINK-5-CHANGED: Interface, changed state to monitoring', newState: { terminalMonitor: true } };
+    return { success: true, output: '', newState: { terminalMonitor: false } };
 }
 
 /**

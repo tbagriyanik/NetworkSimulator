@@ -128,15 +128,15 @@ describe('Interactive and Diagnostic CLI Commands Implementation', () => {
       expect(state.setupDialog?.answers.hostname).toBe('CoreRouter');
       expect(state.setupDialog?.step).toBe('enable_secret');
 
-      // Step: enable_secret -> cisco123
-      const res4 = executeCommand(state, 'cisco123');
+      // Step: enable_secret -> netsim123
+      const res4 = executeCommand(state, 'netsim123');
       expect(res4.success).toBe(true);
       expect(res4.output).toContain('Enter enable password');
       state = { ...state, ...res4.newState };
       expect(state.setupDialog?.step).toBe('enable_password');
 
-      // Step: enable_password -> cisco
-      const res5 = executeCommand(state, 'cisco');
+      // Step: enable_password -> netsim
+      const res5 = executeCommand(state, 'netsim');
       expect(res5.success).toBe(true);
       expect(res5.output).toContain('Enter virtual terminal password');
       state = { ...state, ...res5.newState };
@@ -183,7 +183,7 @@ describe('Interactive and Diagnostic CLI Commands Implementation', () => {
       state = { ...state, ...res11.newState };
       expect(state.setupDialog).toBeUndefined();
       expect(state.hostname).toBe('CoreRouter');
-      expect(state.security.enableSecret).toBe('cisco123');
+      expect(state.security.enableSecret).toBe('netsim123');
       expect(state.ports['fastethernet0/1'].ipAddress).toBe('10.10.10.1');
     });
 

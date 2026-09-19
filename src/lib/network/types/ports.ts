@@ -254,7 +254,7 @@ export interface Port {
   // Congestion & Flow Control
   congestion?: {
     level?: 'low' | 'medium' | 'high';
-    flowControl?: boolean;
+  flowControl?: boolean;
     pauseFrames?: number;
   };
   // Link aggregation details

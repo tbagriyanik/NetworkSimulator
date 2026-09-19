@@ -85,6 +85,9 @@ export interface SwitchState {
   switchLayer: SwitchLayer; // Layer 2 or Layer 3
   deviceType?: 'pc' | 'router' | 'switch' | 'switchL2' | 'switchL3' | 'iot' | 'firewall' | 'wlc'; // Device type for identification
   currentMode: CommandMode;
+  terminalLength?: number;
+  terminalWidth?: number;
+  terminalMonitor?: boolean;
   currentInterface?: string;
   selectedInterfaces?: string[];  // interface range için çoklu port seçimi
   currentLine?: string;

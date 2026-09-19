@@ -574,7 +574,6 @@ export function runHopPipeline(
   if (state) {
     captureNetFlow(state, frame, ingressPortId, egressPorts, now);
     const sflow = captureSflow(state, frame, ingressPortId, egressPorts, now);
-    const telemetryFrames: NetworkPacketFrame[] = [];
     if (sflow) {
       const exportFrame = buildSflowExportFrame(state, sflow);
       if (exportFrame) telemetryFrames.push(exportFrame);
@@ -711,6 +710,7 @@ export function runFullPacketPipeline(
         hopResults,
         allTraces,
         capturedOnLinks,
+        telemetryFrames,
         dropReason: formatDropReason(DropReasonCode.DEVICE_NOT_FOUND, `Device ${currentDeviceId} not found in topology`)
       };
     }
@@ -738,6 +738,7 @@ export function runFullPacketPipeline(
           hopResults,
           allTraces,
           capturedOnLinks,
+          telemetryFrames,
           dropReason: loopReason,
           finalFrame: icmpErr
         };
@@ -770,6 +771,7 @@ export function runFullPacketPipeline(
         hopResults,
         allTraces,
         capturedOnLinks,
+        telemetryFrames,
         dropReason: `Dropped at ${device.name}: ${dropTrace.reason}`,
         finalFrame: hopResult.responseFrame || currentFrame,
       };
@@ -781,6 +783,7 @@ export function runFullPacketPipeline(
         hopResults,
         allTraces,
         capturedOnLinks,
+        telemetryFrames,
         finalFrame: hopResult.responseFrame || currentFrame,
       };
     }
@@ -806,6 +809,7 @@ export function runFullPacketPipeline(
               hopResults,
               allTraces,
               capturedOnLinks,
+              telemetryFrames,
               dropReason: ttlReason,
               finalFrame: icmpErr
             };
