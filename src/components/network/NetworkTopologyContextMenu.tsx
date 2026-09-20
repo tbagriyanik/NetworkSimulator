@@ -337,7 +337,7 @@ export default function NetworkTopologyContextMenu({
                   disabled: !device
 
                 })}
-                {renderMenuItem({
+                {!isExamActive && renderMenuItem({
                   label: t.rename || (language === 'tr' ? 'Yeniden Adlandır' : 'Rename'),
                   shortcut: 'F2',
                   icon: 'edit',

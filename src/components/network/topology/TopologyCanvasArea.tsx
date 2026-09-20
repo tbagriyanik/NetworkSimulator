@@ -378,6 +378,7 @@ export function TopologyCanvasArea(props: TopologyCanvasAreaProps) {
 
   React.useEffect(() => {
     const handleStartConfig = (e: Event) => {
+      if (isExamActive) return;
       const customEvent = e as CustomEvent<{ deviceId: string }>;
       if (customEvent.detail?.deviceId && startDeviceConfig) {
         startDeviceConfig(customEvent.detail.deviceId);
@@ -385,7 +386,7 @@ export function TopologyCanvasArea(props: TopologyCanvasAreaProps) {
     };
     window.addEventListener('trigger-start-device-config', handleStartConfig);
     return () => window.removeEventListener('trigger-start-device-config', handleStartConfig);
-  }, [startDeviceConfig]);
+  }, [startDeviceConfig, isExamActive]);
 
   return (
     <div

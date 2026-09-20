@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import LazyNetworkTopologyContextMenu from '../LazyNetworkTopologyContextMenu';
@@ -356,6 +356,7 @@ export const TopologyModalsContainer: React.FC<TopologyModalsContainerProps> = (
         saveDeviceConfig={saveDeviceConfig}
         isMobile={isMobile}
         isDark={isDark}
+        isExamActive={isExamActive}
         pingAnimation={pingAnimation}
         hopPacketInfos={hopPacketInfos}
         handlePingPlay={handlePingPlay}

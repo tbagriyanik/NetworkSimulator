@@ -1,5 +1,13 @@
 # 📅 Network Simulator — Proje Geçmişi
 
+## v6.3.0 — 2026-09-20
+
+- **🔌 Cihaz Gövdesine Tıklayarak Otomatik Kablo Bağlama**: Kablo çekme modundayken hedef cihazın gövdesine tıklandığında boşta olan ilk uygun port otomatik seçilerek bağlantı kurulur.
+- **📟 Akıllı Console / RS-232 Port Eşleme**: Kaynak bağlantı PC'nin `COM1` / `RS-232` veya `Console` portundan başladığında hedef cihaz gövdesine tıklandığında hedef cihazın boşta olan `Console` portu otomatik tespit edilip bağlanır; normal ethernet kablolarında ise console portu filtrelenir.
+- **🔲 Router Seçim Vurgusu (Glow Highlight) İyileştirmesi**: Router cihazı seçildiğinde ortaya çıkan elips/daire highlight efekti, router gövdesini saran estetik yuvarlatılmış dikdörtgen (`rect`) biçimine dönüştürüldü.
+- **⚡ Cihaz Güç Kapatıp Açma (Power Toggle) İsim Koruma Düzeltmesi**: Yazıcı (`Printer`), `PC`, `IoT`, `Mobile`, `Hub`, `Cloud` ve `Firewall` gibi cihazların gücü kapatılıp açıldığında adlarının yanlışlıkla `Switch`'e dönüşmesi sorunu giderildi; orijinal hostname ve cihaz kimlikleri korundu.
+- **⌨️ `F2` Yeniden Adlandırma & Switch / Router Doğrulama Düzeltmesi**: Switch ve Router cihazlarının isimleri `DeviceConfigModal` (F2) üzerinden IP zorunluluğu olmadan kaydedilecek şekilde güncellendi; topoloji sağ tık menüsüne "Yeniden Adlandır (F2)" seçeneği eklendi.
+
 ## v6.2.1 — 2026-09-20
 
 - **⚡ Terminal Sağ Tık Yapıştırma (Right-Click Paste)**: Terminal çıktı alanına sağ tıklandığında panodaki metin doğrudan komut satırına yapıştırılır; çok satırlı metinler otomatik olarak komut kuyruğuna alınır.

@@ -1,4 +1,4 @@
-﻿import { SetStateAction, Dispatch, useRef } from 'react';
+import { SetStateAction, Dispatch, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Cable, LineSquiggle, Plug, TrendingUpDown, Wifi } from "lucide-react";
@@ -32,6 +32,7 @@ interface TopologyModalsProps {
   saveDeviceConfig: (deviceId: string, updates: Partial<CanvasDevice>) => void;
   isMobile: boolean;
   isDark: boolean;
+  isExamActive?: boolean;
 
   pingAnimation: PingAnimationState | null;
   hopPacketInfos: HopPacketInfo[];
@@ -85,6 +86,7 @@ export function TopologyModals({
   saveDeviceConfig,
   isMobile,
   isDark,
+  isExamActive = false,
 
   pingAnimation,
   hopPacketInfos,
@@ -136,7 +138,7 @@ export function TopologyModals({
     <>
       {/* Device Configuration Modal (Name & IP) */}
       {(() => {
-        if (!configuringDevice) return null;
+        if (!configuringDevice || isExamActive) return null;
         const d = deviceMap.get(configuringDevice);
         return d ? (
           <DeviceConfigModal

@@ -68,42 +68,44 @@
 ### Canvas / Tuval
 | Shortcut / Kısayol | EN | TR |
 |---|---|---|
+| `F5` | Refresh network topology | Ağ topolojisini yenile |
+| `Alt + L` | Toggle Network Log panel | Ağ Olay Günlüğü panelini aç / kapat |
+| `Space + Drag` | Pan canvas | Canvas'ı kaydır |
+| `Page Down` | Scroll canvas down | Canvas'ı aşağı kaydır |
+| `Page Up` | Scroll canvas up | Canvas'ı yukarı kaydır |
+| `Double-click (Device)` | Open collapsible device panel | Daraltılabilir cihaz panelini aç |
+| `Ctrl + M` | Minimize the active device window | Etkin cihaz penceresini küçült |
 | `Ctrl + Z` | Undo | Geri al |
-| `Ctrl + Y` | Redo | Yeniden yap |
+| `Alt + R` | Reset zoom/pan view | Görünümü sıfırla |
+| `Ctrl + Drag` | Snap devices to grid | Izgaraya yapıştır |
+| `Click Device (Cable mode)` | Auto-connect port on device click | Kablo çekerken gövdeye tıkla (İlk boş porta bağla) |
+| `Alt + M` | Toggle Minimap display | Minimap (Harita) göster / gizle |
+| `Shift + Tab` | Open Window Switcher (Task Switcher) | Pencere değiştiriciyi aç (Açık cihaz pencereleri) |
+| `Side-by-Side (Böl)` | Arrange windows side-by-side (Split View) | Pencereleri ekranda yan yana / bölünmüş döşe |
+| `Ctrl + O` | Open project file | Proje dosyasını aç |
+| `Ctrl + S` | Save project | Projeyi kaydet |
+| `Tabbed View (Sekme)` | Switch windows to tabbed layout mode | Açık pencereleri sekme modunda birleştir |
+| `F2` | Rename / configure selected device | Seçili cihazı yeniden adlandır / yapılandır |
 | `Ctrl + C` | Copy selected device | Seçili cihazı kopyala |
 | `Ctrl + X` | Cut selected device | Seçili cihazı kes |
-| `Ctrl + V` | Paste | Yapıştır |
-| `Ctrl + A` | Select all | Tümünü seç |
-| `Delete` / `Backspace` | Delete selected | Seçili öğeyi sil |
-| `Escape` | Cancel selection / Close mode | Seçimi iptal et / Modu kapat |
-| `Ctrl + Scroll` | Zoom in / out | Yakınlaştır / Uzaklaştır |
-| `Space + Drag` | Pan canvas | Canvas'ı kaydır |
 | `Arrow Keys` | Move selected device(s) | Seçili cihaz(lar)ı taşı |
 | `Shift + Arrow Keys` | Move selected device(s) faster | Seçili cihaz(lar)ı daha hızlı taşı |
-| `F1` | Open / close help panel | Yardım panelini aç / kapat |
-| `F2` | Rename / configure selected device | Seçili cihazı yeniden adlandır / yapılandır |
-| `F5` | Refresh network topology | Ağ topolojisini yenile |
-| `Home` | Reset topology view | Topoloji görünümünü sıfırla |
-| `End` | Focus last element | Son öğeye odaklan |
-| `Page Up` | Scroll canvas up | Canvas'ı yukarı kaydır |
-| `Page Down` | Scroll canvas down | Canvas'ı aşağı kaydır |
-| `Double-click (Empty Space)` | Reset topology view | Topoloji görünümünü sıfırla |
-| `Double-click (Device)` | Open collapsible device panel | Daraltılabilir cihaz panelini aç |
-| `Double-click (Window Title)` | Collapse / expand floating panel | Yüzen pencereyi daralt / genişlet |
-| `Ctrl + S` | Save project | Projeyi kaydet |
-| `Ctrl + O` | Open project file | Proje dosyasını aç |
-| `Alt + N` | New project | Yeni proje |
-| `Ctrl + P` | Print topology | Topolojiyi yazdır |
-| `Ctrl + F` | Toggle fullscreen | Tam ekrana geç / çık |
-| `Alt + M` | Toggle Minimap display | Minimap (Harita) göster / gizle |
-| `Alt + L` | Toggle Network Log panel | Ağ Olay Günlüğü panelini aç / kapat |
-| `Alt + F` | Zoom to fit all devices | Tüm cihazları ekrana sığdır (Fit View) |
-| `Alt + R` | Reset zoom/pan view | Görünümü sıfırla |
+| `Delete` / `Backspace` | Delete selected | Seçili öğeyi sil |
+| `Escape` | Cancel selection / Close mode | Seçimi iptal et / Modu kapat |
+| `Shift + Click / Drag` | Multi-select devices | Çoklu seçim |
 | `Tab` | Focus the next device / window | Sonraki cihazı / pencereyi odakla |
-| `Shift + Tab` | Open Window Switcher (Görev Yöneticisi) | Cihaz pencereleri açıkken pencere değiştiriciyi aç |
-| `Ctrl + M` | Minimize the active device window | Etkin cihaz penceresini küçült |
-| `Side-by-Side (Böl)` | Arrange windows side-by-side (Split View) | Pencereleri ekranda yan yana / bölünmüş döşe |
-| `Tabbed View (Sekme)` | Switch windows to tabbed layout mode | Açık pencereleri sekme modunda birleştir |
+| `End` | Focus last element | Son öğeye odaklan |
+| `Ctrl + F` | Toggle fullscreen | Tam ekrana geç / çık |
+| `Alt + F` | Zoom to fit all devices | Tüm cihazları ekrana sığdır (Fit View) |
+| `Ctrl + A` | Select all | Tümünü seç |
+| `Home` / `Double-click (Empty)` | Reset topology view | Topoloji görünümünü sıfırla |
+| `Ctrl + P` | Print topology | Topolojiyi yazdır |
+| `Ctrl + Scroll` | Zoom in / out | Yakınlaştır / Uzaklaştır |
+| `Ctrl + V` | Paste | Yapıştır |
+| `F1` / `Shift + ?` | Open / close help panel | Yardım panelini aç / kapat |
+| `Alt + N` | New project | Yeni proje |
+| `Ctrl + Y` | Redo | Yeniden yap |
+| `Double-click (Window Title)` | Collapse / expand floating panel | Yüzen pencereyi daralt / genişlet |
 
 ### Ping Packet Analysis / Ping Paket Analizi
 | Shortcut / Kısayol | EN | TR |
@@ -173,6 +175,7 @@ Tüm parametreler ve detaylı kullanım için → [PC_CMD_REFERENCE.md](PC_CMD_R
 
 - **F1** anywhere toggles the help panel / Her yerde F1 yardım panelini açar
 - **F2** renames and configures selected device / `F2` seçili cihazı yeniden adlandırır ve yapılandırır
+- **Auto Cabling**: When drawing a cable, click any target device body to auto-connect to the first free network or console port / Kablo çekerken hedef cihaz gövdesine tıklandığında uygun ilk boş ethernet veya console portuna otomatik bağlanır
 - **Right-Click** in terminal pastes clipboard content / Terminale sağ tık panodaki metni yapıştırır
 - **Enter** in device search immediately selects and focuses first match / Cihaz aramasında `Enter` ilk eşleşene anında odaklanır
 - **ESC** closes modals and deselects / ESC modal kapatır ve seçimi iptal eder
