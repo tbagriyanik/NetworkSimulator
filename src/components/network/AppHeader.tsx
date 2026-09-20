@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -268,11 +268,11 @@ export function AppHeader({
 
               {setShowStoryMode && <Tooltip>
                 <TooltipTrigger asChild>
-                  <button aria-label="Etkileşimli Düzen" className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50", isDark ? 'text-secondary-300 hover:text-primary-400 hover:bg-secondary-700/50' : 'text-secondary-500 hover:text-primary-600')} onClick={() => setShowStoryMode(true)}>
+                  <button aria-label={t.storyMode || (language === 'tr' ? 'Etkileşimli Senaryo Modu' : 'Interactive Story Mode')} className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50", isDark ? 'text-secondary-300 hover:text-primary-400 hover:bg-secondary-700/50' : 'text-secondary-500 hover:text-primary-600')} onClick={() => setShowStoryMode(true)}>
                     <Gamepad2 className="w-4 h-4" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent>Etkileşimli Düzen</TooltipContent>
+                <TooltipContent>{t.storyMode || (language === 'tr' ? 'Etkileşimli Senaryo Modu' : 'Interactive Story Mode')}</TooltipContent>
               </Tooltip>}
 
 

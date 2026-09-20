@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -20,7 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Plus, Undo2, Redo2, Search, X, Cable, LineSquiggle, Leaf, Plug, TrendingUpDown, Users, UserKey, Activity, Stethoscope, LayoutGrid, Camera } from 'lucide-react';
+import { ChevronDown, Plus, Undo2, Redo2, Search, X, Cable, LineSquiggle, Leaf, Plug, TrendingUpDown, Users, UserKey, Activity, Stethoscope, LayoutGrid, Camera, Layers, Sparkles, CircleDot, Grid, RotateCcw } from 'lucide-react';
 import type { Translations } from '@/contexts/LanguageContext';
 import type { CanvasDevice, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState, CableType, CableInfo } from '@/lib/network/types';
@@ -30,10 +30,9 @@ import { ViewVisibilityMenu } from './ViewVisibilityMenu';
 import { DeviceIcon } from './DeviceIcon';
 import { NetworkDiagnosticsModal } from './NetworkDiagnosticsModal';
 import { SnapshotManagerModal } from './SnapshotManagerModal';
-import { applyAutoLayout } from '@/lib/network/autoLayoutEngine';
+import { applyAutoLayout, type LayoutAlgorithm } from '@/lib/network/autoLayoutEngine';
 import { useUiPreferences } from '@/hooks/useUiPreferences';
 import { getDeviceCenter } from '@/components/network/NetworkTopology/utils/networkTopology.helpers';
-
 
 interface TopologyToolbarProps {
   t: Translations;
@@ -84,13 +83,12 @@ const TOOLBAR_ITEMS: Array<{ type: DeviceType; labelKey: keyof Translations; col
   { type: 'iot', labelKey: 'addIoT', colorClass: 'text-warning-500 hover:bg-warning-500/10' },
 ];
 
-
 export function TopologyToolbar({
   t, isDark, language = 'tr',
   topologyDevices, deviceStates,
   activeDeviceId, activeDeviceType,
   cableInfo, deviceSearchQuery,
-  canUndo, canRedo, hasHydrated,
+  canUndo, canRedo, hasHydrated: _hasHydrated,
   isExamActive,
   setDeviceSearchQuery, setCableInfo,
   setZoom, setPan, resetView,
@@ -107,9 +105,45 @@ export function TopologyToolbar({
   const topologyZoom = useAppStore((state) => state.topology.zoom);
 
   const isHighQuality = graphicsQuality === 'high';
+  const [deviceTypeFilter, setDeviceTypeFilter] = useState<'all' | 'pc' | 'sw' | 'router'>('all');
   const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState(false);
   const [isSnapshotModalOpen, setIsSnapshotModalOpen] = useState(false);
-  // Register Home key shortcut for reset view
+  const preAutoLayoutDevicesRef = useRef<CanvasDevice[] | null>(null);
+
+  const applyLayoutAlgorithm = (algorithm: LayoutAlgorithm) => {
+    if (topologyDevices.length === 0) return;
+    if (!preAutoLayoutDevicesRef.current) {
+      preAutoLayoutDevicesRef.current = JSON.parse(JSON.stringify(topologyDevices));
+    }
+    const store = useAppStore.getState();
+    const connections = store.topology.connections || [];
+    const updated = applyAutoLayout(topologyDevices, connections, { algorithm });
+    store.setDevices(updated);
+  };
+
+  const restoreOriginalLayout = () => {
+    if (preAutoLayoutDevicesRef.current && preAutoLayoutDevicesRef.current.length > 0) {
+      useAppStore.getState().setDevices(preAutoLayoutDevicesRef.current);
+      preAutoLayoutDevicesRef.current = null;
+    } else {
+      handleUndo();
+    }
+  };
+
+  const availableCategoryCounts = useMemo(() => {
+    const counts = { all: topologyDevices.length, pc: 0, sw: 0, router: 0 };
+    topologyDevices.forEach((dev) => {
+      if (['pc', 'mobile', 'printer', 'iot', 'server'].includes(dev.type)) {
+        counts.pc++;
+      } else if (['switchL2', 'switchL3', 'hub', 'wlc'].includes(dev.type)) {
+        counts.sw++;
+      } else if (['router', 'firewall', 'cloud'].includes(dev.type)) {
+        counts.router++;
+      }
+    });
+    return counts;
+  }, [topologyDevices]);
+
   const toolbarGlowClass = isHighQuality
     ? 'drop-shadow-[0_0_2px_rgba(34,211,238,0.15)] dark:drop-shadow-[0_0_2px_rgba(34,211,238,0.12)]'
     : '';
@@ -185,7 +219,7 @@ export function TopologyToolbar({
       </div>
 
       {/* Active Device Dropdown */}
-      <DropdownMenu onOpenChange={(open) => { if (!open) setDeviceSearchQuery(''); }}>
+      <DropdownMenu onOpenChange={(open) => { if (!open) { setDeviceSearchQuery(''); setDeviceTypeFilter('all'); } }}>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
@@ -243,47 +277,91 @@ export function TopologyToolbar({
             <ChevronDown className="w-3 h-3 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className={`${isDark ? 'bg-secondary-900 !border-secondary-800' : 'bg-white !border-secondary-200'} w-48`}>
+        <DropdownMenuContent align="start" className={`${isDark ? 'bg-secondary-900 !border-secondary-800' : 'bg-white !border-secondary-200'} w-64 sm:w-72`}>
           <DropdownMenuLabel className="text-[11px] font-bold tracking-widest text-secondary-500 py-2">
             {topologyDevices.length > 0 ? t.selectDevice : t.addDevicesFirst}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
+
           {topologyDevices.length > 0 && (
-            <div className="px-2 pb-1.5">
-              <div className="relative">
-                <Search className={`absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-secondary-400 pointer-events-none ${toolbarGlowClass}`} />
-                <Input
-                  value={deviceSearchQuery}
-                  onChange={e => setDeviceSearchQuery(e.target.value)}
-                  placeholder={t.searchShort}
-                  aria-label={t.searchShort}
-                  className="h-7 pl-6 pr-7 text-xs"
-                  autoFocus
-                  onKeyDown={e => e.stopPropagation()}
-                />
-                {deviceSearchQuery && (
+            <>
+              {/* Smart Type Filter Pills with dynamic device counts */}
+              <div className="px-2 pt-1 pb-1.5 flex flex-wrap gap-1">
+                {[
+                  { id: 'all', label: `${t.filterAll || (language === 'tr' ? 'Tümü' : 'All')} (${availableCategoryCounts.all})` },
+                  ...(availableCategoryCounts.pc > 0 ? [{ id: 'pc', label: `PC (${availableCategoryCounts.pc})` }] : []),
+                  ...(availableCategoryCounts.sw > 0 ? [{ id: 'sw', label: `SW (${availableCategoryCounts.sw})` }] : []),
+                  ...(availableCategoryCounts.router > 0 ? [{ id: 'router', label: `Router (${availableCategoryCounts.router})` }] : []),
+                ].map((filter) => (
                   <button
-                    onClick={() => setDeviceSearchQuery('')}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-secondary-200 dark:hover:bg-secondary-700 text-secondary-400 hover:text-secondary-600 dark:hover:text-secondary-300 transition-colors"
+                    key={filter.id}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeviceTypeFilter(filter.id as 'all' | 'pc' | 'sw' | 'router');
+                    }}
+                    className={cn(
+                      'flex-1 min-w-[36px] py-0.5 px-1 text-[10px] font-bold rounded transition-all text-center border whitespace-nowrap',
+                      deviceTypeFilter === filter.id
+                        ? 'bg-primary-500 text-white border-primary-500 shadow-xs'
+                        : isDark
+                          ? 'bg-secondary-800/80 text-secondary-300 border-secondary-700 hover:bg-secondary-700 hover:text-white'
+                          : 'bg-secondary-100 text-secondary-700 border-secondary-200 hover:bg-secondary-200 hover:text-secondary-900'
+                    )}
                   >
-                    <X className={`w-3 h-3 ${toolbarGlowClass}`} />
+                    {filter.label}
                   </button>
-                )}
+                ))}
               </div>
-            </div>
+
+              {/* Search Box */}
+              <div className="px-2 pb-1.5">
+                <div className="relative">
+                  <Search className={`absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-secondary-400 pointer-events-none ${toolbarGlowClass}`} />
+                  <Input
+                    value={deviceSearchQuery}
+                    onChange={e => setDeviceSearchQuery(e.target.value)}
+                    placeholder={t.searchShort}
+                    aria-label={t.searchShort}
+                    className="h-7 pl-6 pr-7 text-xs"
+                    autoFocus
+                    onKeyDown={e => e.stopPropagation()}
+                  />
+                  {deviceSearchQuery && (
+                    <button
+                      onClick={() => setDeviceSearchQuery('')}
+                      className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-secondary-200 dark:hover:bg-secondary-700 text-secondary-400 hover:text-secondary-600 dark:hover:text-secondary-300 transition-colors"
+                    >
+                      <X className={`w-3 h-3 ${toolbarGlowClass}`} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </>
           )}
+
           <ScrollArea className={topologyDevices.length > 0 ? "h-56" : "h-auto"}>
             {topologyDevices.length > 0 ? (
               (() => {
                 const filtered = topologyDevices
-                  .filter(device => {
+                  .filter((device) => {
+                    // Filter by device type category
+                    if (deviceTypeFilter === 'pc') {
+                      if (!['pc', 'mobile', 'printer', 'iot'].includes(device.type)) return false;
+                    } else if (deviceTypeFilter === 'sw') {
+                      if (!['switchL2', 'switchL3', 'hub', 'wlc'].includes(device.type)) return false;
+                    } else if (deviceTypeFilter === 'router') {
+                      if (!['router', 'firewall', 'cloud'].includes(device.type)) return false;
+                    }
+
+                    // Filter by search query
                     if (!deviceSearchQuery.trim()) return true;
                     const q = deviceSearchQuery.toLowerCase();
                     const name = (deviceStates.get(device.id)?.hostname || device.name).toLowerCase();
                     return name.includes(q) || device.type.toLowerCase().includes(q);
                   });
 
-                if (filtered.length === 0 && deviceSearchQuery.trim()) {
+                if (filtered.length === 0) {
                   return (
                     <div className="p-4 text-center text-[11px] text-secondary-500 italic">
                       {t.noResultsFound}
@@ -321,21 +399,19 @@ export function TopologyToolbar({
                   return (
                     <DropdownMenuItem
                       key={device.id}
-                      className={`flex items-center gap-2 py-1.5 cursor-pointer ${activeDeviceId === device.id ? 'bg-purple-500/10 text-purple-400' : ''}`}
+                      className={`flex items-center justify-between py-1.5 px-2 cursor-pointer ${activeDeviceId === device.id ? 'bg-purple-500/10 text-purple-400 font-semibold' : ''}`}
                       onClick={() => selectAndFocusDevice(device)}
                     >
-                      <div className="flex items-center gap-2 cursor-pointer">
-                        <span className={`w-1.5 h-1.5 rounded-full ${statusColor}`} />
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusColor}`} />
                         <DeviceIcon
                           type={device.type}
                           switchModel={device.switchModel}
-                          className="w-5 h-5"
+                          className="w-4 h-4 shrink-0"
                         />
-                        <div className="flex flex-col">
-                          <span className="text-xs font-bold leading-none">{truncateWithEllipsis(displayName, 12)}</span>
-                          <span className="text-[10px] opacity-50 capitalize">{device.type}</span>
-                        </div>
+                        <span className="text-xs font-bold truncate">{displayName}</span>
                       </div>
+                      <span className="text-[10px] opacity-50 capitalize shrink-0 ml-2">{device.type}</span>
                     </DropdownMenuItem>
                   );
                 });
@@ -376,8 +452,6 @@ export function TopologyToolbar({
           ))}
         </div>
       )}
-
-
 
       {/* Cable Type Buttons */}
       <div className={`flex items-center gap-0.5 p-1 rounded-xl border shrink-0 ${isDark ? 'bg-secondary-900/40 border-secondary-700/30' : 'bg-primary-50/50 border-primary-100/50'}`}>
@@ -531,257 +605,224 @@ export function TopologyToolbar({
         </Tooltip>
       </div>
 
-      {/* History Group (Undo / Redo) */}
-      <div className={`flex items-center gap-0 p-1 rounded-xl border shrink-0 ${isDark ? 'bg-secondary-900/40 border-secondary-700/30' : 'bg-primary-50/50 border-primary-100/50'}`}>
-        {/* Undo Button */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              aria-label={t.undo}
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 p-0 text-secondary-500 hover:bg-secondary-500/10"
-              onClick={handleUndo}
-              disabled={hasHydrated && !canUndo}
-            >
-              <Undo2 className={`w-4 h-4 ${toolbarGlowClass} ${!canUndo ? 'opacity-100' : ''}`} />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent className="flex items-center gap-2">
-            <span>{t.undo}</span>
-            <ShortcutBadge shortcut="Ctrl+Z" variant="primary" />
-          </TooltipContent>
-        </Tooltip>
-
-        {/* Redo Button */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              aria-label={t.redo}
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 p-0 text-secondary-500 hover:bg-secondary-500/10"
-              onClick={handleRedo}
-              disabled={hasHydrated && !canRedo}
-            >
-              <Redo2 className={`w-4 h-4 ${toolbarGlowClass} ${!canRedo ? 'opacity-100' : ''}`} />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent className="flex items-center gap-2">
-            <span>{t.redo}</span>
-            <ShortcutBadge shortcut="Ctrl+Y" variant="primary" />
-          </TooltipContent>
-        </Tooltip>
-
-        {/* Snapshot / Checkpoint Button */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              aria-label={language === 'tr' ? 'Topoloji Anlık Görüntüsü Al & Geri Yükle' : 'Snapshot & Restore Topology'}
-              variant="ghost"
-              size="icon"
-              disabled={isExamActive}
-              className={`h-8 w-8 p-0 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 ${isExamActive ? 'opacity-40 cursor-not-allowed' : ''}`}
-              onClick={() => {
-                if (!isExamActive) {
-                  setIsSnapshotModalOpen(true);
-                }
-              }}
-            >
-              <Camera className={`w-4 h-4 ${toolbarGlowClass}`} />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent className="flex items-center gap-2">
-            <span>
-              {isExamActive
-                ? (language === 'tr' ? 'Sınav sırasında anlık kayıt desteği devre dışıdır' : 'Snapshot & Restore is disabled during exam')
-                : (language === 'tr' ? 'Anlık Kayıt & Geri Yükle' : 'Snapshot & Restore')}
-            </span>
-          </TooltipContent>
-        </Tooltip>
-      </div>
-
-
-      <div className={`w-px h-4 ${isDark ? 'bg-secondary-700' : 'bg-secondary-200'}`} />
-
-      {/* Refresh Network Button */}
-      <div className="hidden md:block">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              aria-label={t.refreshNetworkF5}
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-pink-500 hover:bg-pink-500/10"
-              onClick={handleRefreshNetwork}
-            >
-              <svg className={`w-4 h-4 ${toolbarGlowClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent className="flex items-center gap-2">
-            <span>{t.refreshNetworkF5}</span>
-            <ShortcutBadge shortcut="F5" variant="danger" />
-          </TooltipContent>
-        </Tooltip>
-      </div>
-
-
-
-      {/* Auto Layout Menu */}
-      <div className="hidden sm:block">
+      {/* Auxiliary Tools: Auto-Layout, Diagnostics, Snapshots */}
+      <div className={`flex items-center gap-0.5 p-1 rounded-xl border shrink-0 ${isDark ? 'bg-secondary-900/40 border-secondary-700/30' : 'bg-primary-50/50 border-primary-100/50'}`}>
         <DropdownMenu>
           <Tooltip>
             <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
                 <Button
-                  aria-label={language === 'tr' ? 'Otomatik Düzenle' : 'Auto Layout'}
+                  aria-label={t.autoLayout || 'Otomatik Hizala'}
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-sky-500 hover:bg-sky-500/10 hover:text-sky-400"
+                  className="h-8 w-8 p-0 text-indigo-400 hover:bg-indigo-500/10"
                 >
-                  <LayoutGrid className="w-4 h-4" />
+                  <LayoutGrid className={`w-4 h-4 ${toolbarGlowClass}`} />
                 </Button>
               </DropdownMenuTrigger>
             </TooltipTrigger>
-            <TooltipContent>{language === 'tr' ? 'Topolojiyi Otomatik Düzenle' : 'Auto Layout Topology'}</TooltipContent>
+            <TooltipContent className="z-50">{t.autoLayout || 'Otomatik Hizala'}</TooltipContent>
           </Tooltip>
-          <DropdownMenuContent
-            align="end"
-            className={`w-48 p-1.5 z-50 ${isDark ? 'bg-secondary-900 !border-secondary-800 text-secondary-200' : 'bg-white !border-secondary-200 text-secondary-800'}`}
-          >
-            <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-secondary-400 px-2 py-1">
-              {language === 'tr' ? 'Düzen Algoritması' : 'Layout Algorithm'}
+          <DropdownMenuContent align="start" className={`${isDark ? 'bg-secondary-900 !border-secondary-800' : 'bg-white !border-secondary-200'} w-52`}>
+            <DropdownMenuLabel className="text-[11px] font-bold tracking-widest text-secondary-500 py-1.5 px-2">
+              {t.autoLayoutHeader || 'Otomatik Hizalama Düzeni'}
             </DropdownMenuLabel>
-            <DropdownMenuSeparator className={isDark ? 'bg-secondary-800' : 'bg-secondary-100'} />
+            <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => {
-                const conns = useAppStore.getState().topology.connections;
-                const newDevices = applyAutoLayout(topologyDevices, conns, { algorithm: 'hierarchical' });
-                useAppStore.getState().setDevices(newDevices);
-              }}
-              className="text-xs cursor-pointer"
+              className="flex items-center gap-2 py-2 px-2.5 cursor-pointer text-xs font-semibold"
+              onSelect={() => applyLayoutAlgorithm('hierarchical')}
             >
-              {language === 'tr' ? '🏛️ Hiyerarşik (3-Tier)' : '🏛️ Hierarchical (3-Tier)'}
+              <Layers className="w-4 h-4 text-indigo-400 shrink-0" />
+              <div className="flex flex-col">
+                <span>{t.layoutHierarchical || 'Hiyerarşik (Katmanlı)'}</span>
+                <span className="text-[10px] text-secondary-500 font-normal">{t.layoutHierarchicalDesc || 'Core, Switch ve PC katmanları'}</span>
+              </div>
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => {
-                const conns = useAppStore.getState().topology.connections;
-                const newDevices = applyAutoLayout(topologyDevices, conns, { algorithm: 'star' });
-                useAppStore.getState().setDevices(newDevices);
-              }}
-              className="text-xs cursor-pointer"
+              className="flex items-center gap-2 py-2 px-2.5 cursor-pointer text-xs font-semibold"
+              onSelect={() => applyLayoutAlgorithm('star')}
             >
-              {language === 'tr' ? '⭐ Yıldız (Star)' : '⭐ Star Topology'}
+              <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+              <div className="flex flex-col">
+                <span>{t.layoutStar || 'Yıldız (Star)'}</span>
+                <span className="text-[10px] text-secondary-500 font-normal">{t.layoutStarDesc || 'Merkezi bir cihaz etrafında'}</span>
+              </div>
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => {
-                const conns = useAppStore.getState().topology.connections;
-                const newDevices = applyAutoLayout(topologyDevices, conns, { algorithm: 'ring' });
-                useAppStore.getState().setDevices(newDevices);
-              }}
-              className="text-xs cursor-pointer"
+              className="flex items-center gap-2 py-2 px-2.5 cursor-pointer text-xs font-semibold"
+              onSelect={() => applyLayoutAlgorithm('ring')}
             >
-              {language === 'tr' ? '⭕ Halka (Ring)' : '⭕ Ring Topology'}
+              <CircleDot className="w-4 h-4 text-cyan-400 shrink-0" />
+              <div className="flex flex-col">
+                <span>{t.layoutRing || 'Halka (Ring)'}</span>
+                <span className="text-[10px] text-secondary-500 font-normal">{t.layoutRingDesc || 'Dairesel dikey halka dizilimi'}</span>
+              </div>
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => {
-                const conns = useAppStore.getState().topology.connections;
-                const newDevices = applyAutoLayout(topologyDevices, conns, { algorithm: 'grid' });
-                useAppStore.getState().setDevices(newDevices);
-              }}
-              className="text-xs cursor-pointer"
+              className="flex items-center gap-2 py-2 px-2.5 cursor-pointer text-xs font-semibold"
+              onSelect={() => applyLayoutAlgorithm('grid')}
             >
-              {language === 'tr' ? '📍 Matris (Grid)' : '📍 Grid Matrix'}
+              <Grid className="w-4 h-4 text-emerald-400 shrink-0" />
+              <div className="flex flex-col">
+                <span>{t.layoutGrid || 'Izgara (Grid)'}</span>
+                <span className="text-[10px] text-secondary-500 font-normal">{t.layoutGridDesc || 'Düzenli matris düzeni'}</span>
+              </div>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="flex items-center gap-2 py-2 px-2.5 cursor-pointer text-xs font-semibold text-rose-400 hover:text-rose-300"
+              onSelect={() => restoreOriginalLayout()}
+            >
+              <RotateCcw className="w-4 h-4 text-rose-400 shrink-0" />
+              <div className="flex flex-col">
+                <span>{t.restoreOriginalLayout || 'Eski Haline Geri Al'}</span>
+                <span className="text-[10px] opacity-70 font-normal">{t.restoreOriginalLayoutDesc || 'İlk konumlara dön'}</span>
+              </div>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
 
-      <div className="ml-auto flex items-center gap-1">
-        {!isExamActive && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                aria-label={language === 'tr' ? 'Ağ Sorun Neden Analizcisi' : 'Network Diagnostics & Root Cause'}
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-amber-500 hover:bg-amber-500/10 hover:text-amber-400"
-                onClick={() => setIsDiagnosticsOpen(true)}
-              >
-                <Stethoscope className="w-4 h-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>{language === 'tr' ? 'Ağ Sorun Neden Analizcisi' : 'Network Diagnostics Analyzer'}</TooltipContent>
-          </Tooltip>
-        )}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              aria-label={t.networkDiagnostics || 'Ağ Teşhisi ve Sorun Giderme'}
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 p-0 text-cyan-400 hover:bg-cyan-500/10"
+              onClick={() => setIsDiagnosticsOpen(true)}
+            >
+              <Stethoscope className={`w-4 h-4 ${toolbarGlowClass}`} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="z-50">{t.networkDiagnostics || 'Ağ Teşhisi ve Sorun Giderme'}</TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              aria-label={t.snapshotManager || 'Anlık Görüntü (Snapshot) Yöneticisi'}
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 p-0 text-emerald-400 hover:bg-emerald-500/10"
+              onClick={() => setIsSnapshotModalOpen(true)}
+            >
+              <Camera className={`w-4 h-4 ${toolbarGlowClass}`} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="z-50">{t.snapshotManager || 'Anlık Görüntü (Snapshot) Yöneticisi'}</TooltipContent>
+        </Tooltip>
 
         <ViewVisibilityMenu isDark={isDark} />
-
-        {onOpenStudentJoin && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                aria-label={t.roomStudentJoin}
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-primary-500 hover:bg-primary-500/10 hover:text-primary-600"
-                onClick={onOpenStudentJoin}
-              >
-                <Users className="w-4 h-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>{t.roomStudentJoin}</TooltipContent>
-          </Tooltip>
-        )}
-        {onOpenTeacherPanel && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                aria-label={t.roomTeacherOpen}
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-purple-500 hover:bg-purple-500/10 hover:text-purple-600"
-                onClick={onOpenTeacherPanel}
-              >
-                <UserKey className="w-4 h-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>{t.roomTeacherOpen}</TooltipContent>
-          </Tooltip>
-        )}
       </div>
 
-      <NetworkDiagnosticsModal
-        open={isDiagnosticsOpen}
-        onOpenChange={setIsDiagnosticsOpen}
-        devices={topologyDevices}
-        connections={useAppStore.getState().topology.connections}
-        deviceStates={deviceStates}
-        isDark={isDark}
-        language={language}
-        defaultSourceId={activeDeviceId}
-      />
+      {/* Undo / Redo */}
+      <div className={`flex items-center gap-0 p-1 rounded-xl border shrink-0 ${isDark ? 'bg-secondary-900/40 border-secondary-700/30' : 'bg-primary-50/50 border-primary-100/50'}`}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="inline-block">
+              <Button
+                aria-label={t.undo || 'Geri Al'}
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 p-0 text-secondary-400 hover:bg-secondary-500/10 disabled:opacity-30"
+                disabled={!canUndo}
+                onClick={handleUndo}
+              >
+                <Undo2 className={`w-4 h-4 ${toolbarGlowClass}`} />
+              </Button>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent className="flex items-center gap-2 z-50">
+            <span>{t.undo || 'Geri Al'}</span>
+            <ShortcutBadge shortcut="Ctrl+Z" variant="default" />
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="inline-block">
+              <Button
+                aria-label={t.redo || 'Yinele'}
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 p-0 text-secondary-400 hover:bg-secondary-500/10 disabled:opacity-30"
+                disabled={!canRedo}
+                onClick={handleRedo}
+              >
+                <Redo2 className={`w-4 h-4 ${toolbarGlowClass}`} />
+              </Button>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent className="flex items-center gap-2 z-50">
+            <span>{t.redo || 'Yinele'}</span>
+            <ShortcutBadge shortcut="Ctrl+Y" variant="default" />
+          </TooltipContent>
+        </Tooltip>
+      </div>
 
-      <SnapshotManagerModal
-        isOpen={isSnapshotModalOpen}
-        onClose={() => setIsSnapshotModalOpen(false)}
-        devices={topologyDevices}
-        connections={useAppStore.getState().topology.connections}
-        deviceStates={Object.fromEntries(deviceStates.entries())}
-        isDark={isDark}
-        language={language}
-        onRestoreCheckpoint={(checkpoint) => {
-          if (typeof window !== 'undefined') {
-            const event = new CustomEvent('restore-checkpoint', { detail: checkpoint });
-            window.dispatchEvent(event);
-          }
-        }}
-      />
+      {/* Classroom Teacher / Student Actions - Right aligned grouped buttons */}
+      {(onOpenStudentJoin || onOpenTeacherPanel) && (
+        <div className={`ml-auto flex items-center gap-0.5 p-1 rounded-xl border shrink-0 ${isDark ? 'bg-secondary-900/40 border-secondary-700/30' : 'bg-primary-50/50 border-primary-100/50'}`}>
+          {onOpenStudentJoin && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  aria-label={t.studentJoin || "Sınıfa Katıl"}
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 p-0 text-emerald-400 hover:bg-emerald-500/10 shrink-0"
+                  onClick={onOpenStudentJoin}
+                >
+                  <Users className={`w-4 h-4 ${toolbarGlowClass}`} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t.studentJoinTooltip || "Canlı Sınıf Oturumuna Öğrenci Olarak Katıl"}</TooltipContent>
+            </Tooltip>
+          )}
+
+          {onOpenTeacherPanel && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  aria-label={t.teacherPanel || "Öğretmen Paneli"}
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 p-0 text-purple-400 hover:bg-purple-500/10 shrink-0"
+                  onClick={onOpenTeacherPanel}
+                >
+                  <UserKey className={`w-4 h-4 ${toolbarGlowClass}`} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t.teacherPanelTooltip || "Canlı Sınıf Yönetim Paneli"}</TooltipContent>
+            </Tooltip>
+          )}
+        </div>
+      )}
+
+      {/* Diagnostics & Snapshot Modals */}
+      {isDiagnosticsOpen && (
+        <NetworkDiagnosticsModal
+          open={isDiagnosticsOpen}
+          onOpenChange={setIsDiagnosticsOpen}
+          devices={topologyDevices}
+          connections={[]}
+          deviceStates={deviceStates}
+          isDark={isDark}
+          language={language}
+        />
+      )}
+
+      {isSnapshotModalOpen && (
+        <SnapshotManagerModal
+          isOpen={isSnapshotModalOpen}
+          onClose={() => setIsSnapshotModalOpen(false)}
+          devices={topologyDevices}
+          connections={[]}
+          deviceStates={deviceStates ? Object.fromEntries(deviceStates) : undefined}
+          isDark={isDark}
+          language={language}
+          isExamActive={isExamActive}
+        />
+      )}
     </div>
   );
 }
-
-
-
