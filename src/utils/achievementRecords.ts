@@ -1,5 +1,7 @@
 'use client';
 
+import { secureStorage } from '@/lib/storage/secureStorage';
+
 interface SummaryProject {
   name: string;
   lastDate: string;
@@ -19,23 +21,32 @@ interface SummaryExam {
   completedAt: string;
 }
 
+export interface SummaryStoryCampaign {
+  id: string;
+  name: string;
+  score: number;
+  rank: string;
+  completedAt: string;
+}
+
 export interface AchievementSummary {
   totalSessionSeconds: number;
   projects: SummaryProject[];
   guidedLessons: SummaryGuidedLesson[];
   exams: SummaryExam[];
+  storyCampaigns?: SummaryStoryCampaign[];
 }
 
 const STORAGE_KEY = 'netsim_achievement_summary';
 
-import { secureStorage } from '@/lib/storage/secureStorage';
-
 export function getSummary(): AchievementSummary {
   try {
     const stored = secureStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : { totalSessionSeconds: 0, projects: [], guidedLessons: [], exams: [] };
+    return stored
+      ? JSON.parse(stored)
+      : { totalSessionSeconds: 0, projects: [], guidedLessons: [], exams: [], storyCampaigns: [] };
   } catch {
-    return { totalSessionSeconds: 0, projects: [], guidedLessons: [], exams: [] };
+    return { totalSessionSeconds: 0, projects: [], guidedLessons: [], exams: [], storyCampaigns: [] };
   }
 }
 
@@ -62,7 +73,7 @@ export function addSessionDuration(seconds: number): void {
 
 export function addProjectRecord(name: string): void {
   const summary = getSummary();
-  const existing = summary.projects.find(p => p.name === name);
+  const existing = summary.projects.find((p) => p.name === name);
   if (existing) {
     existing.lastDate = new Date().toISOString();
   } else {
@@ -73,7 +84,7 @@ export function addProjectRecord(name: string): void {
 
 export function addGuidedLessonRecord(name: string, points: number, totalPoints: number): void {
   const summary = getSummary();
-  const existing = summary.guidedLessons.find(l => l.name === name);
+  const existing = summary.guidedLessons.find((l) => l.name === name);
   if (existing) {
     if (points > existing.points) {
       existing.points = points;
@@ -88,7 +99,7 @@ export function addGuidedLessonRecord(name: string, points: number, totalPoints:
 
 export function addExamRecord(name: string, score: number, maxScore: number): void {
   const summary = getSummary();
-  const existing = summary.exams.find(e => e.name === name);
+  const existing = summary.exams.find((e) => e.name === name);
   if (existing) {
     if (score > existing.score) {
       existing.score = score;
@@ -97,6 +108,22 @@ export function addExamRecord(name: string, score: number, maxScore: number): vo
     }
   } else {
     summary.exams.push({ name, score, maxScore, completedAt: new Date().toISOString() });
+  }
+  saveSummary(summary);
+}
+
+export function addStoryCampaignRecord(id: string, name: string, score: number, rank: string): void {
+  const summary = getSummary();
+  if (!summary.storyCampaigns) summary.storyCampaigns = [];
+  const existing = summary.storyCampaigns.find((s) => s.id === id || s.name === name);
+  if (existing) {
+    if (score >= existing.score) {
+      existing.score = score;
+      existing.rank = rank;
+      existing.completedAt = new Date().toISOString();
+    }
+  } else {
+    summary.storyCampaigns.push({ id, name, score, rank, completedAt: new Date().toISOString() });
   }
   saveSummary(summary);
 }

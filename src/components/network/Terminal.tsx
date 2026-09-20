@@ -329,13 +329,8 @@ export function Terminal({
   };
 
   const handleQuickCommand = (cmd: string) => {
-    if (cmd.endsWith(' ')) {
-      setInput(cmd);
-      inputRef.current?.focus();
-    } else {
-      setInput('');
-      void handleSubmit(cmd);
-    }
+    handleInputChange(cmd);
+    inputRef.current?.focus();
   };
 
   const handlePaste = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => {
