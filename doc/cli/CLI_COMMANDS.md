@@ -1,6 +1,6 @@
 # 💻 Network CLI Commands Reference
 
-The simulator supports **400+ commands** across multiple configuration modes.
+The simulator supports **729+ commands** across multiple configuration modes.
 
 ## Keyboard Shortcuts
 

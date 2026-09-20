@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { getModePrompt, normalizePortId } from '@/lib/network/initialState';
+import {
+  getModePrompt,
+  normalizePortId,
+  createInitialState,
+  createInitialRouterState,
+  createInitialFirewallState,
+  createInitialWLCState,
+} from '@/lib/network/initialState';
 
 describe('getModePrompt', () => {
   it('should return user EXEC prompt', () => {
@@ -118,5 +125,47 @@ describe('normalizePortId', () => {
 
   it('should handle firewall format GigabitEthernet1/1', () => {
     expect(normalizePortId('GigabitEthernet1/1')).toBe('gi1/1');
+  });
+});
+
+describe('device state factories (unified contract)', () => {
+  const factories = [
+    { name: 'createInitialState', make: () => createInitialState(), deviceType: 'switchL2', layer: 'L2', hostname: 'Switch' },
+    { name: 'createInitialRouterState', make: () => createInitialRouterState(), deviceType: 'router', layer: 'L3', hostname: 'Router' },
+    { name: 'createInitialFirewallState', make: () => createInitialFirewallState(), deviceType: 'firewall', layer: 'FW', hostname: 'asa' },
+    { name: 'createInitialWLCState', make: () => createInitialWLCState(), deviceType: 'wlc', layer: 'WLC', hostname: 'WLC' },
+  ];
+
+  for (const { name, make, deviceType, layer, hostname } of factories) {
+    it(`${name} produces a well-formed, deterministic state`, () => {
+      const a = make();
+      const b = make();
+      expect(a.deviceType).toBe(deviceType);
+      expect(a.switchLayer).toBe(layer);
+      expect(a.hostname).toBe(hostname);
+      expect(a.currentMode).toBe('user');
+      expect(a.consoleAuthenticated).toBe(false);
+      expect(Object.keys(a.ports).length).toBeGreaterThan(0);
+      expect(a.security?.vtyLines?.transportInput).toBeDefined();
+      expect(a.bootTime).toBe(1715600000000);
+      expect(a.macAddress).toEqual(b.macAddress);
+    });
+
+    it(`${name} honors the shared options bag (bootTime)`, () => {
+      const state = name === 'createInitialState'
+        ? createInitialState(undefined, 'NS-L2-24TT-L', { bootTime: 12345 })
+        : name === 'createInitialRouterState'
+          ? createInitialRouterState(undefined, { bootTime: 12345 })
+          : name === 'createInitialFirewallState'
+            ? createInitialFirewallState(undefined, { bootTime: 12345 })
+            : createInitialWLCState(undefined, { bootTime: 12345 });
+      expect(state.bootTime).toBe(12345);
+    });
+  }
+
+  it('creates a deterministic physical address per device family when no MAC is given', () => {
+    expect(createInitialRouterState().macAddress).not.toBe(createInitialFirewallState().macAddress);
+    expect(createInitialFirewallState().macAddress).not.toBe(createInitialWLCState().macAddress);
+    expect(createInitialState().macAddress).not.toBe(createInitialRouterState().macAddress);
   });
 });

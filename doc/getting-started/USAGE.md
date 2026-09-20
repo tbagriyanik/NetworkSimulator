@@ -81,6 +81,7 @@
 | `Arrow Keys` | Move selected device(s) | Seçili cihaz(lar)ı taşı |
 | `Shift + Arrow Keys` | Move selected device(s) faster | Seçili cihaz(lar)ı daha hızlı taşı |
 | `F1` | Open / close help panel | Yardım panelini aç / kapat |
+| `F2` | Rename / configure selected device | Seçili cihazı yeniden adlandır / yapılandır |
 | `F5` | Refresh network topology | Ağ topolojisini yenile |
 | `Home` | Reset topology view | Topoloji görünümünü sıfırla |
 | `End` | Focus last element | Son öğeye odaklan |
@@ -171,6 +172,9 @@ Tüm parametreler ve detaylı kullanım için → [PC_CMD_REFERENCE.md](PC_CMD_R
 ## EN: Tips / TR: İpuçları
 
 - **F1** anywhere toggles the help panel / Her yerde F1 yardım panelini açar
+- **F2** renames and configures selected device / `F2` seçili cihazı yeniden adlandırır ve yapılandırır
+- **Right-Click** in terminal pastes clipboard content / Terminale sağ tık panodaki metni yapıştırır
+- **Enter** in device search immediately selects and focuses first match / Cihaz aramasında `Enter` ilk eşleşene anında odaklanır
 - **ESC** closes modals and deselects / ESC modal kapatır ve seçimi iptal eder
 - **?** in CLI or CMD shows available commands / CLI veya CMD'de `?` komutları gösterir
 - **CLI Suggestions** show valid commands when you make a typo / CLI hataları yaptığınızda benzer geçerli komutları önerir

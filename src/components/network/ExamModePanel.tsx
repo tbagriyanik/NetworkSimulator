@@ -21,6 +21,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/use-breakpoint';
 import { generateCertificate } from '@/lib/utils/certificateGenerator';
 import { usePrompt } from '@/contexts/PromptContext';
+import { toast } from '@/hooks/use-toast';
 
 interface ExamModePanelProps {
   project: ExamProject | null;
@@ -107,6 +108,9 @@ export function ExamModePanel({
     });
   };
 
+  const warned5MinRef = useRef(false);
+  const warned1MinRef = useRef(false);
+
   useEffect(() => {
     if (!project?.startedAt) return;
 
@@ -114,8 +118,24 @@ export function ExamModePanel({
 
     const update = (nowMs: number = Date.now()) => {
       const diff = Math.floor((nowMs - new Date(project.startedAt as unknown as string | number).getTime()) / 1000);
+      const remaining = Math.max(0, limitSec - diff);
       setElapsedSeconds(diff);
-      setTimeLimit(Math.max(0, limitSec - diff));
+      setTimeLimit(remaining);
+
+      if (remaining <= 300 && remaining > 290 && !warned5MinRef.current) {
+        warned5MinRef.current = true;
+        toast({
+          title: language === 'tr' ? '⚠️ Sınav Süresi Uyarısı' : '⚠️ Exam Time Warning',
+          description: language === 'tr' ? 'Sınavın bitmesine son 5 dakika kaldı!' : '5 minutes remaining in the exam!',
+        });
+      }
+      if (remaining <= 60 && remaining > 50 && !warned1MinRef.current) {
+        warned1MinRef.current = true;
+        toast({
+          title: language === 'tr' ? '🚨 Kritik Süre Uyarısı' : '🚨 Critical Time Warning',
+          description: language === 'tr' ? 'Sınavın bitmesine son 1 dakika kaldı! Lütfen işlemlerinizi tamamlayın.' : '1 minute remaining! Please complete your tasks.',
+        });
+      }
     };
 
     // Stop timer immediately when exam is finished (with or without finishedAt persisted yet)
@@ -128,9 +148,11 @@ export function ExamModePanel({
     update();
     const id = window.setInterval(update, 1000);
     return () => window.clearInterval(id);
-  }, [project?.startedAt, project?.durationMinutes, project?.finishedAt, isFinishedState]);
+  }, [project?.startedAt, project?.durationMinutes, project?.finishedAt, isFinishedState, language]);
 
   useEffect(() => {
+    warned5MinRef.current = false;
+    warned1MinRef.current = false;
     setTimeout(() => setHasAutoFinished(false), 0);
   }, [project?.startedAt, project?.finishedAt]);
 

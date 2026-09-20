@@ -1,6 +1,7 @@
 import { cliModeError } from './cliErrors';
 import type { CommandContext } from './commandTypes';
 import { checkConnectivity, getWirelessDistance } from '../connectivity';
+import { lineAllowsProtocol } from './lineCommands';
 import type { PortSecurityViolation, TraversedPort } from '../connectivity/pathResolution/types';
 import { dispatchCapturedPackets } from '../../../utils/packetCapture';
 import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
@@ -328,7 +329,7 @@ export function cmdTelnet(state: SwitchState, input: string, ctx: CommandContext
 
         if (targetState) {
             const transportInput = targetState.security?.vtyLines?.transportInput || [];
-            const isTelnetActive = transportInput.includes('all') || transportInput.includes('telnet');
+            const isTelnetActive = lineAllowsProtocol(transportInput, 'telnet');
 
             if (!isTelnetActive) {
                 return {
@@ -399,7 +400,7 @@ export function cmdSsh(state: SwitchState, input: string, ctx: CommandContext): 
 
         if (targetState) {
             const transportInput = targetState.security?.vtyLines?.transportInput || [];
-            const isSshActive = transportInput.includes('all') || transportInput.includes('ssh');
+            const isSshActive = lineAllowsProtocol(transportInput, 'ssh');
 
             if (!isSshActive) {
                 return {

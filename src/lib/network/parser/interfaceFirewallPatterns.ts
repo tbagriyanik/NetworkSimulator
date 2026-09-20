@@ -146,15 +146,15 @@ export const interfaceFirewallPatterns: Record<string, CommandPattern> = {
   'same-security-traffic': {
     pattern: /^same-security-traffic\s+permit\s+inter-interface$/i,
     modes: ['config'],
-    minArgs: 0,
-    maxArgs: 0,
+    minArgs: 2,
+    maxArgs: 2,
     capability: 'firewall'
   },
   'no same-security-traffic': {
     pattern: /^no\s+same-security-traffic\s+permit\s+inter-interface$/i,
     modes: ['config'],
-    minArgs: 0,
-    maxArgs: 0,
+    minArgs: 2,
+    maxArgs: 2,
     capability: 'firewall'
   },
 

@@ -106,6 +106,7 @@ export function TopologyToolbar({
 
   const isHighQuality = graphicsQuality === 'high';
   const [deviceTypeFilter, setDeviceTypeFilter] = useState<'all' | 'pc' | 'sw' | 'router'>('all');
+  const [isDeviceDropdownOpen, setIsDeviceDropdownOpen] = useState(false);
   const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState(false);
   const [isSnapshotModalOpen, setIsSnapshotModalOpen] = useState(false);
   const preAutoLayoutDevicesRef = useRef<CanvasDevice[] | null>(null);
@@ -219,7 +220,16 @@ export function TopologyToolbar({
       </div>
 
       {/* Active Device Dropdown */}
-      <DropdownMenu onOpenChange={(open) => { if (!open) { setDeviceSearchQuery(''); setDeviceTypeFilter('all'); } }}>
+      <DropdownMenu
+        open={isDeviceDropdownOpen}
+        onOpenChange={(open) => {
+          setIsDeviceDropdownOpen(open);
+          if (!open) {
+            setDeviceSearchQuery('');
+            setDeviceTypeFilter('all');
+          }
+        }}
+      >
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
@@ -277,14 +287,84 @@ export function TopologyToolbar({
             <ChevronDown className="w-3 h-3 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className={`${isDark ? 'bg-secondary-900 !border-secondary-800' : 'bg-white !border-secondary-200'} w-64 sm:w-72`}>
-          <DropdownMenuLabel className="text-[11px] font-bold tracking-widest text-secondary-500 py-2">
-            {topologyDevices.length > 0 ? t.selectDevice : t.addDevicesFirst}
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-
+        <DropdownMenuContent align="start" className={`${isDark ? 'bg-secondary-900 !border-secondary-800' : 'bg-white !border-secondary-200'} w-64 sm:w-72 pt-2`}>
           {topologyDevices.length > 0 && (
             <>
+              {/* Search Box */}
+              <div className="px-2 pt-1 pb-1">
+                <div className="relative">
+                  <Search className={`absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-secondary-400 pointer-events-none ${toolbarGlowClass}`} />
+                  <Input
+                    value={deviceSearchQuery}
+                    onChange={e => setDeviceSearchQuery(e.target.value)}
+                    placeholder={t.searchShort}
+                    aria-label={t.searchShort}
+                    className="h-7 pl-6 pr-7 text-xs"
+                    autoFocus
+                    onKeyDown={e => {
+                      e.stopPropagation();
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const q = deviceSearchQuery.toLowerCase().trim();
+                        const firstMatch = topologyDevices.find((device) => {
+                          if (deviceTypeFilter === 'pc') {
+                            if (!['pc', 'mobile', 'printer', 'iot'].includes(device.type)) return false;
+                          } else if (deviceTypeFilter === 'sw') {
+                            if (!['switchL2', 'switchL3', 'hub', 'wlc'].includes(device.type)) return false;
+                          } else if (deviceTypeFilter === 'router') {
+                            if (!['router', 'firewall', 'cloud'].includes(device.type)) return false;
+                          }
+                          if (!q) return true;
+                          const state = deviceStates.get(device.id);
+                          const name = (state?.hostname || device.name).toLowerCase();
+                          const type = device.type.toLowerCase();
+                          const mac = (device.macAddress || state?.macAddress || '').toLowerCase();
+                          const ip = (device.ip || '').toLowerCase();
+                          const portIps = state?.ports
+                            ? Object.values(state.ports).map((p: { ipAddress?: string }) => p.ipAddress?.toLowerCase() || '')
+                            : [];
+                          const vlanMatches = state?.vlans
+                            ? Object.keys(state.vlans).some(v => v.includes(q) || `vlan${v}`.includes(q) || `vlan ${v}`.includes(q))
+                            : false;
+                          return (
+                            name.includes(q) ||
+                            type.includes(q) ||
+                            mac.includes(q) ||
+                            ip.includes(q) ||
+                            portIps.some(pIp => pIp.includes(q)) ||
+                            vlanMatches
+                          );
+                        });
+
+                        if (firstMatch) {
+                          if (typeof window !== 'undefined') {
+                            const canvasW = window.innerWidth;
+                            const canvasH = window.innerHeight;
+                            const center = getDeviceCenter(firstMatch);
+                            const zoomLevel = topologyZoom || 1.0;
+                            const targetPanX = canvasW / 2 - center.x * zoomLevel;
+                            const targetPanY = canvasH / 2 - center.y * zoomLevel;
+                            setPan({ x: targetPanX, y: targetPanY });
+                            window.dispatchEvent(new CustomEvent('focus-device', { detail: { deviceId: firstMatch.id } }));
+                          }
+                          handleDeviceSelectFromMenu(firstMatch.type, firstMatch.id, firstMatch.switchModel, firstMatch.name);
+                          setDeviceSearchQuery('');
+                          setIsDeviceDropdownOpen(false);
+                        }
+                      }
+                    }}
+                  />
+                  {deviceSearchQuery && (
+                    <button
+                      onClick={() => setDeviceSearchQuery('')}
+                      className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-secondary-200 dark:hover:bg-secondary-700 text-secondary-400 hover:text-secondary-600 dark:hover:text-secondary-300 transition-colors"
+                    >
+                      <X className={`w-3 h-3 ${toolbarGlowClass}`} />
+                    </button>
+                  )}
+                </div>
+              </div>
+
               {/* Smart Type Filter Pills with dynamic device counts */}
               <div className="px-2 pt-1 pb-1.5 flex flex-wrap gap-1">
                 {[
@@ -313,30 +393,6 @@ export function TopologyToolbar({
                   </button>
                 ))}
               </div>
-
-              {/* Search Box */}
-              <div className="px-2 pb-1.5">
-                <div className="relative">
-                  <Search className={`absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-secondary-400 pointer-events-none ${toolbarGlowClass}`} />
-                  <Input
-                    value={deviceSearchQuery}
-                    onChange={e => setDeviceSearchQuery(e.target.value)}
-                    placeholder={t.searchShort}
-                    aria-label={t.searchShort}
-                    className="h-7 pl-6 pr-7 text-xs"
-                    autoFocus
-                    onKeyDown={e => e.stopPropagation()}
-                  />
-                  {deviceSearchQuery && (
-                    <button
-                      onClick={() => setDeviceSearchQuery('')}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-secondary-200 dark:hover:bg-secondary-700 text-secondary-400 hover:text-secondary-600 dark:hover:text-secondary-300 transition-colors"
-                    >
-                      <X className={`w-3 h-3 ${toolbarGlowClass}`} />
-                    </button>
-                  )}
-                </div>
-              </div>
             </>
           )}
 
@@ -356,9 +412,27 @@ export function TopologyToolbar({
 
                     // Filter by search query
                     if (!deviceSearchQuery.trim()) return true;
-                    const q = deviceSearchQuery.toLowerCase();
-                    const name = (deviceStates.get(device.id)?.hostname || device.name).toLowerCase();
-                    return name.includes(q) || device.type.toLowerCase().includes(q);
+                    const q = deviceSearchQuery.toLowerCase().trim();
+                    const state = deviceStates.get(device.id);
+                    const name = (state?.hostname || device.name).toLowerCase();
+                    const type = device.type.toLowerCase();
+                    const mac = (device.macAddress || state?.macAddress || '').toLowerCase();
+                    const ip = (device.ip || '').toLowerCase();
+                    const portIps = state?.ports
+                      ? Object.values(state.ports).map((p: { ipAddress?: string }) => p.ipAddress?.toLowerCase() || '')
+                      : [];
+                    const vlanMatches = state?.vlans
+                      ? Object.keys(state.vlans).some(v => v.includes(q) || `vlan${v}`.includes(q) || `vlan ${v}`.includes(q))
+                      : false;
+
+                    return (
+                      name.includes(q) ||
+                      type.includes(q) ||
+                      mac.includes(q) ||
+                      ip.includes(q) ||
+                      portIps.some(pIp => pIp.includes(q)) ||
+                      vlanMatches
+                    );
                   });
 
                 if (filtered.length === 0) {

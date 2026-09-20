@@ -18,7 +18,7 @@ export const systemPatterns: Record<string, CommandPattern> = {
   'copy running-config flash': {
     pattern: /^cop[y]*\s+run[ning\-config]*\s+flash:(\S+)?$/i,
     modes: ['privileged'],
-    minArgs: 0,
+    minArgs: 1,
     maxArgs: 1
   },
   'copy running-config tftp': {
@@ -55,7 +55,7 @@ export const systemPatterns: Record<string, CommandPattern> = {
   'copy flash startup-config': {
     pattern: /^copy\s+flash:(\S+)?\s+startup-config$/i,
     modes: ['privileged'],
-    minArgs: 0,
+    minArgs: 1,
     maxArgs: 1
   },
   'erase startup-config': {
@@ -101,7 +101,7 @@ export const systemPatterns: Record<string, CommandPattern> = {
   'do': {
     pattern: /^do\s+(.*)$/i,
     modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'router-config', 'dhcp-config', 'config-std-nacl', 'config-ext-nacl', 'config-ipv6-acl', 'config-mst', 'config-route-map'],
-    minArgs: 0,
+    minArgs: 1,
     maxArgs: 10
   },
 

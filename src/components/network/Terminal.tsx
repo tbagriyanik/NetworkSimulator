@@ -590,6 +590,26 @@ export function Terminal({
           aria-live="polite"
           aria-label={t.typeCommand}
           onClick={() => inputRef.current?.focus()}
+          onContextMenu={async (e) => {
+            e.preventDefault();
+            try {
+              if (navigator.clipboard?.readText) {
+                const text = await navigator.clipboard.readText();
+                if (text) {
+                  if (text.includes('\n')) {
+                    queueCommands(text.split('\n'));
+                    setInput('');
+                    void processCommandQueue();
+                  } else {
+                    handleInputChange(input + text);
+                    inputRef.current?.focus();
+                  }
+                }
+              }
+            } catch {
+              // Ignore clipboard permissions denial
+            }
+          }}
           onMouseUp={() => {
             const selectedText = window.getSelection()?.toString();
             if (selectedText && selectedText.trim().length > 0) {

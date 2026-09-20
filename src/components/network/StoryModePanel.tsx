@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   ChevronRight,
   Cpu,
+  Crosshair,
   Gamepad2,
   Lightbulb,
   Maximize2,
@@ -786,6 +787,34 @@ export function StoryModePanel({
                       <Button onClick={handleManualCheck} size="sm" className="gap-1.5">
                         <CheckCircle2 className="w-4 h-4" /> {isTr ? 'Görevi Doğrula' : 'Verify Objective'}
                       </Button>
+                      {topologyDevices.length > 0 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const firstDev = topologyDevices[0];
+                            if (firstDev) {
+                              window.dispatchEvent(new CustomEvent('focus-device', {
+                                detail: {
+                                  deviceId: firstDev.id,
+                                  x: firstDev.x,
+                                  y: firstDev.y
+                                }
+                              }));
+                              toast({
+                                title: isTr ? "Cihaz Odaklandı" : "Device Focused",
+                                description: `${firstDev.name} (${firstDev.type})`
+                              });
+                            }
+                          }}
+                          className={`gap-1.5 ${
+                            isDark ? 'border-primary-500/30 text-primary-300 hover:bg-primary-500/20' : 'border-primary-300 text-primary-700 hover:bg-primary-50'
+                          }`}
+                          title={isTr ? "Topolojideki cihazı ortala ve odaklan" : "Pan and focus on topology device"}
+                        >
+                          <Crosshair className="w-4 h-4 text-primary-500" /> {isTr ? 'Cihaza Odaklan' : 'Focus Device'}
+                        </Button>
+                      )}
                       <Button
                         variant="outline"
                         size="sm"

@@ -2,6 +2,7 @@
 import type { SwitchState } from '@/lib/network/types';
 import type { OutputLine, FtpSession, PCActiveTab } from './PCPanel.types';
 import { checkConnectivity } from '@/lib/network/connectivity';
+import { lineAllowsProtocol } from '@/lib/network/core/lineCommands';
 import { dispatchCapturedPackets } from '../../../utils/packetCapture';
 import { handleRestApiRequest } from '@/lib/network/restApiMock';
 
@@ -203,13 +204,13 @@ export async function handlePcApplicationCommand(
                 emit('error', `Connecting to ${targetIp}...VTY is not configured for local login`);
                 return true;
               }
-              const isSshActive = transportInput.includes('all') || transportInput.includes('ssh');
+const isSshActive = lineAllowsProtocol(transportInput, 'ssh');
               if (!isSshActive) {
                 emit('error', `Connecting to ${targetIp}...Could not open connection to the host, on port 22: Connect failed`);
                 return true;
               }
             } else {
-              const isTelnetActive = transportInput.includes('all') || transportInput.includes('telnet');
+              const isTelnetActive = lineAllowsProtocol(transportInput, 'telnet');
               if (!isTelnetActive) {
                 emit('error', `Connecting to ${targetIp}...Could not open connection to the host, on port 23: Connect failed`);
                 return true;

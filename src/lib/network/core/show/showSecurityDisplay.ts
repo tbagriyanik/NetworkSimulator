@@ -1,5 +1,6 @@
 import type { CommandContext } from '../commandTypes';
 import type { SwitchState, CommandResult } from '../../types';
+import { lineAllowsProtocol } from '../lineCommands';
 
 export function cmdShowAccessLists(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   const hasClassicAcls = !!state.accessLists && Object.keys(state.accessLists).length > 0;
@@ -107,7 +108,7 @@ export function cmdShowSsh(
 ): CommandResult {
   const version = state.sshVersion || 2;
   const transportInput = state.security?.vtyLines?.transportInput || [];
-  const sshEnabled = version > 0 && (transportInput.includes('ssh') || transportInput.includes('all'));
+  const sshEnabled = version > 0 && lineAllowsProtocol(transportInput, 'ssh');
   const timeout = state.sshTimeout || 60;
   const retries = state.sshAuthenticationRetries || 3;
   const domainName = state.domainName || 'not set';

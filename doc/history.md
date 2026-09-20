@@ -1,5 +1,14 @@
 # 📅 Network Simulator — Proje Geçmişi
 
+## v6.2.1 — 2026-09-20
+
+- **⚡ Terminal Sağ Tık Yapıştırma (Right-Click Paste)**: Terminal çıktı alanına sağ tıklandığında panodaki metin doğrudan komut satırına yapıştırılır; çok satırlı metinler otomatik olarak komut kuyruğuna alınır.
+- **⌨️ `F2` Cihaz Yeniden Adlandırma & Responsive Modal**: Topolojide seçili cihaz varken `F2` tuşuna basıldığında cihazın yeniden adlandırma penceresi anında açılır; pencere dikey ekran sınırına (`max-h-[90vh]`) ve tam kaydırma (`scroll`) desteğine kavuşturuldu.
+- **🔍 Gelişmiş Cihaz Arama & Enter ile Odaklanma**: Dropdown arama kutusu en üste taşındı; isim, MAC, IP, port IP ve VLAN'a göre filtreleme ve `Enter` ile filtrelenen ilk cihaza kamera ortalama ve odaklama özelliği eklendi.
+- **🎯 Senaryo Modu Hedef Cihaza Odaklanma (`Crosshair`)**: Senaryo görev kartına eklenen "Cihaza Odaklan" butonu ile hedeflenen cihaza topoloji kamerası anında ortalanır.
+- **⏰ Sınav Modu Kalan Süre Uyarıları**: Sınav bitimine son 5 dakika ve son 1 dakika kala kullanıcıya mini toast uyarı bildirimleri gösterilir.
+- **🗺️ Kablo Canlı Bilgi Kartı**: Kabloların üzerine gelindiğinde kaynak-hedef portlar (`Fa0/1 ↔ Fa0/24`), kablo tipi ve hat durumu gösterilir.
+
 ## v6.2.0 — 2026-09-20
 
 - **🧹 Kod Modülarizasyonu & 1500 Satır Limiti Uyumlaştırması**: `routingPatterns.ts`, `interfacePatterns.ts`, `commandAliases.ts`, `useDeviceManager.ts` ve `usePageController.tsx` modüler bileşenlere bölünerek 1500 satır sınırı korundu ve projedeki tüm dokümantasyon dosyalarının sürüm/güncelleme tarihleri senkronize edildi.

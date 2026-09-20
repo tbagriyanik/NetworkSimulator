@@ -3,6 +3,16 @@ import { SwitchState, Port, Vlan, SecurityConfig, CommandMode, StartupConfig, Sw
 import { getSwitchLayer } from './switchModels';
 export { normalizePortId } from './portUtils';
 
+/**
+ * Tüm cihaz fabrika fonksiyonları için ortak seçenek penceresi.
+ * createInitialState bu bankerörü (mac?, switchModel?, options?) ile,
+ * router/firewall/WLC fabrikaları ise (mac?, options?) imzasıyla kullanır.
+ */
+export interface InitialStateOptions {
+  bootTime?: number;
+  now?: Date;
+}
+
 function formatMacFromNumber(value: number): string {
   const base = value.toString(16).padStart(12, '0').toUpperCase();
   return `${base.slice(0, 4)}.${base.slice(4, 8)}.${base.slice(8, 12)}`;
@@ -213,7 +223,7 @@ function createInitialSecurity(): SecurityConfig {
 export function createInitialState(
   mac?: string,
   switchModel: 'NS-L2-24TT-L' | 'NS-L3-24PS' = 'NS-L2-24TT-L',
-  options: { bootTime?: number; now?: Date } = {}
+  options: InitialStateOptions = {}
 ): SwitchState {
   const { bootTime = 1715600000000, now = new Date(1715600000000) } = options;
 
@@ -411,7 +421,7 @@ function createInitialRouterPorts(baseMac?: string): Record<string, Port> {
 // Router için başlangıç durumu
 export function createInitialRouterState(
   mac?: string,
-  options: { bootTime?: number } = {}
+  options: InitialStateOptions = {}
 ): SwitchState {
   const { bootTime = 1715600000000 } = options;
   const macAddress = reserveMacAddress(mac, 0x005000000000);
@@ -471,7 +481,7 @@ export function createInitialRouterState(
 // Firewall için başlangıç durumu
 export function createInitialFirewallState(
   mac?: string,
-  options: { bootTime?: number } = {}
+  options: InitialStateOptions = {}
 ): SwitchState {
   const { bootTime = 1715600000000 } = options;
   const macAddress = reserveMacAddress(mac, 0x00A000000000);
@@ -587,7 +597,7 @@ function createInitialWLCPorts(baseMac?: string): Record<string, Port> {
 // WLC için başlangıç durumu
 export function createInitialWLCState(
   mac?: string,
-  options: { bootTime?: number } = {}
+  options: InitialStateOptions = {}
 ): SwitchState {
   const { bootTime = 1715600000000 } = options;
   const macAddress = reserveMacAddress(mac, 0x00C000000000);

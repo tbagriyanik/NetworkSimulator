@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { SwitchState } from '@/lib/network/types';
 import { normalizeMAC } from '@/lib/utils';
+import { lineAllowsProtocol } from '@/lib/network/core/lineCommands';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -793,8 +794,8 @@ export function LiveDeviceList({
     if (device.services?.ntp?.enabled || state?.services?.ntp?.enabled) services.add('NTP');
     const effectiveWifi = getEffectiveWifi(device);
     if (effectiveWifi?.enabled) services.add(effectiveWifi.mode === 'ap' ? 'WiFi AP' : 'WiFi Client');
-    if (state?.security?.vtyLines?.transportInput?.some((input) => input === 'ssh' || input === 'all')) services.add('SSH');
-    if (state?.security?.vtyLines?.transportInput?.some((input) => input === 'telnet' || input === 'all')) services.add('Telnet');
+    if (state?.security?.vtyLines?.transportInput && lineAllowsProtocol(state.security.vtyLines.transportInput, 'ssh')) services.add('SSH');
+    if (state?.security?.vtyLines?.transportInput && lineAllowsProtocol(state.security.vtyLines.transportInput, 'telnet')) services.add('Telnet');
     return Array.from(services).join(', ') || t.none;
   };
 

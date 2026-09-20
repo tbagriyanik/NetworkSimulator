@@ -1,6 +1,6 @@
 # Network Simulator
 
-![Version](https://img.shields.io/badge/version-6.2.0-blue)
+![Version](https://img.shields.io/badge/version-6.3.0-blue)
 ![Next.js](https://img.shields.io/badge/Next.js-16.3.5-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19.3.0-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-7.0.2-3178C6?logo=typescript&logoColor=white)
@@ -35,7 +35,7 @@ npm run check
 ## 🚀 Key Features / Öne Çıkan Özellikler
 
 - **🏗️ 28 Kategori ve 49+ Örnek Proje Kataloğu:** Otomatik Topoloji Üretici penceresinde 8 ana kategori (Temel, Topoloji, Veri Merkezi, Kablosuz, Servisler, Anahtarlama, Yönlendirme, Güvenlik) ve 28 hazır mimari senaryo. Ofis Yazıcısı & Akıllı IoT Sensör, Python Ağ Otomasyonu (OOBM Filosu) ve Kurumsal DMZ Güvenlik Duvarı laboratuvarları.
-- **💻 Gelişmiş CLI & Ağ İşletim Sistemi Simülasyonu:** Switch (L2/L3), Router, Güvenlik Duvarı (Firewall), WLC, PC, IoT ve Hub cihazları için 780+ benzersiz komut içeren terminal ve komut motoru. Komut kapsamı ile gerçek protokol/iletim davranışı özellik bazında değişebilir.
+- **💻 Gelişmiş CLI & Ağ İşletim Sistemi Simülasyonu:** Switch (L2/L3), Router, Güvenlik Duvarı (Firewall), WLC, PC, IoT ve Hub cihazları için 729+ benzersiz komut içeren terminal ve komut motoru. Komut kapsamı ile gerçek protokol/iletim davranışı özellik bazında değişebilir.
 - **📡 Multicast (PIM & IGMP) ve Gelişmiş Servisler:** Global ve arayüz seviyesinde PIM (Sparse/Dense/Sparse-Dense), IGMP v1/v2/v3 ve grup üyelikleri (`show ip mroute`, `show ip pim`), SNMPv3 (User, Group, Host traps/informs), IP SLA responder, klasik CBAC stateful firewall (`ip inspect`) ve GRE over IPSec tünel koruması.
 - **📈 Telemetry & IoT Simülasyonu:** NetFlow/sFlow için CLI, durum ve paket yakalama/collector senaryolarının destek düzeyi özellik bazında değişir. MQTT CONNECT/PUBLISH/SUBSCRIBE ve QoS 1 PUBACK ile CoAP resource CRUD/ACK akışları simüle edilir; bunlar tam üretim protokol yığını yerine eğitim amaçlı model ve forwarding-pipeline etkileşimleridir.
 - **⚡ EEM (Embedded Event Manager) & NETCONF:** Syslog, CLI ve zamanlayıcı tabanlı EEM applet otomasyonu (`event manager applet`) ile NETCONF-YANG veri modeli ve SSH 830 senaryoları bulunur. NETCONF desteği komut, durum ve simülasyon kapsamındadır; tam harici NETCONF sunucusu değildir.
@@ -53,7 +53,7 @@ npm run check
 
 | Metrik / Metric | Değer / Value |
 | --- | --- |
-| Version / Sürüm | 6.2.0 |
+| Version / Sürüm | 6.3.0 |
 | Total Lines / Toplam Satır (`src/`) | ~212,975 |
 | Source Files / Kaynak Dosya | 1036 |
 | Documentation Files / Dokümantasyon Dosya | 30 |
@@ -121,6 +121,7 @@ Simülatör kontrollerine hızlıca göz atmak için aşağıdaki listeyi geniş
 | <kbd>Shift</kbd> + <kbd>Arrow Keys</kbd> | Move selected device(s) faster | Seçili cihaz(lar)ı daha hızlı taşı |
 | <kbd>Mouse Selection</kbd> | Auto-Copy text on mouse selection | CMD, CLI & Konsol geçmişinden metin seçilince otomatik kopyalama |
 | <kbd>F1</kbd> | Open / close help panel | Yardım panelini aç / kapat |
+| <kbd>F2</kbd> | Rename / configure selected device | Seçili cihazı yeniden adlandır / yapılandır |
 | <kbd>F5</kbd> | Refresh network topology | Ağ topolojisini yenile |
 | <kbd>Tab</kbd> | Focus next device | Sonraki cihaza odaklan |
 | <kbd>Shift</kbd> + <kbd>Tab</kbd> | Open window switcher when windows are open | Açık pencereler arasında geçiş yap |

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from 'react';
 import { CanvasDevice, CanvasConnection, ContextMenuState } from '../NetworkTopology/types/networkTopology.types';
@@ -376,6 +376,17 @@ export function TopologyCanvasArea(props: TopologyCanvasAreaProps) {
     showLogPanel,
   } = props;
 
+  React.useEffect(() => {
+    const handleStartConfig = (e: Event) => {
+      const customEvent = e as CustomEvent<{ deviceId: string }>;
+      if (customEvent.detail?.deviceId && startDeviceConfig) {
+        startDeviceConfig(customEvent.detail.deviceId);
+      }
+    };
+    window.addEventListener('trigger-start-device-config', handleStartConfig);
+    return () => window.removeEventListener('trigger-start-device-config', handleStartConfig);
+  }, [startDeviceConfig]);
+
   return (
     <div
       onContextMenu={(e) => e.preventDefault()}
@@ -424,6 +435,7 @@ export function TopologyCanvasArea(props: TopologyCanvasAreaProps) {
             onDeviceSelect={onDeviceSelect || (() => {})}
             saveToHistory={saveToHistory}
             deleteDevice={deleteDevice}
+            togglePowerDevices={togglePowerDevices}
           />
 
           <NetworkCanvas

@@ -35,6 +35,12 @@ export const commandPatterns: Record<string, CommandPattern> = {
 const cachedSortedAliases = Object.entries(commandAliases || {})
   .sort((a, b) => b[0].length - a[0].length);
 
+// Pattern names sorted longest-first, used to prevent alias/prefix expansion
+// from hijacking a real, distinct command key (e.g. the "ip domain" alias for
+// "ip domain-name" must not swallow "ip domain lookup").
+const cachedSortedPatternNames = Object.keys(commandPatterns)
+  .sort((a, b) => b.length - a.length);
+
 // Komut alias'larını çöz - Gelişmiş versiyon
 export function resolveAliases(input: string, state?: Partial<SwitchState>, currentMode?: CommandMode): string {
   const trimmed = input.trim().toLowerCase();
@@ -92,6 +98,12 @@ export function resolveAliases(input: string, state?: Partial<SwitchState>, curr
       if (trimmed === fullLower || trimmed.startsWith(fullLower + ' ')) {
         continue;
       }
+      // If the typed text is itself a full command key (or the prefix of a
+      // longer key), expanding the alias here would hijack a real command.
+      const hijackedCommand = cachedSortedPatternNames.find(k => k !== fullLower && (trimmed === k || trimmed.startsWith(k + ' ')));
+      if (hijackedCommand) {
+        continue;
+      }
       const rest = input.trim().substring(alias.length).trim();
       return rest ? full + ' ' + rest : full;
     }
@@ -121,7 +133,12 @@ export function resolveAliases(input: string, state?: Partial<SwitchState>, curr
       if (trimmed === fullLower || trimmed.startsWith(fullLower + ' ')) {
         continue;
       }
-
+      // If the typed text is itself a full command key (or the prefix of a
+      // longer key), expanding the alias here would hijack a real command.
+      const hijackedCommand = cachedSortedPatternNames.find(k => k !== fullLower && (trimmed === k || trimmed.startsWith(k + ' ')));
+      if (hijackedCommand) {
+        continue;
+      }
       const rest = input.trim().substring(alias.length).trim();
       if (rest) {
         // "sh cdp neighbors" gibi, expansion'ın son token'ı kullanıcı tarafından

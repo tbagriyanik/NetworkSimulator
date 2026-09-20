@@ -157,10 +157,10 @@ export const interfacePortPatterns: Record<string, CommandPattern> = {
     maxArgs: 1
   },
   'wlan': {
-    pattern: /^wlan\s+(\S+)\s+(\d+)\s+(\S+)$/i,
+    pattern: /^wlan\s+(\S+)\s+(\d+)\s+(\S+)(?:\s+vlan\s+(\d+))?(?:\s+security\s+(\S+))?(?:\s+password\s+(\S+))?$/i,
     modes: ['config'],
     minArgs: 3,
-    maxArgs: 3
+    maxArgs: 7
   },
   'wlan shutdown': {
     pattern: /^wlan\s+shutdown$/i,

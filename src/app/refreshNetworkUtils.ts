@@ -1,4 +1,5 @@
 ﻿import type { SwitchState } from '@/lib/network/types';
+import { lineAllowsProtocol } from '@/lib/network/core/lineCommands';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { REFRESH_DEVICE_TYPE_ORDER, type RefreshDeviceSummary } from '@/components/network/LiveDeviceList';
 
@@ -242,8 +243,8 @@ export const getOpenServices = (device: CanvasDevice, state: SwitchState | undef
   if (device.services?.http?.enabled || state?.services?.http?.enabled) services.add('HTTP');
   const effectiveWifi = getEffectiveWifi(device, deviceStates);
   if (effectiveWifi?.enabled) services.add(effectiveWifi.mode === 'ap' ? 'WiFi AP' : 'WiFi Client');
-  if (state?.security?.vtyLines?.transportInput?.some((input) => input === 'ssh' || input === 'all')) services.add('SSH');
-  if (state?.security?.vtyLines?.transportInput?.some((input) => input === 'telnet' || input === 'all')) services.add('Telnet');
+  if (state?.security?.vtyLines?.transportInput && lineAllowsProtocol(state.security.vtyLines.transportInput, 'ssh')) services.add('SSH');
+  if (state?.security?.vtyLines?.transportInput && lineAllowsProtocol(state.security.vtyLines.transportInput, 'telnet')) services.add('Telnet');
   return Array.from(services).join(', ') || noneText;
 };
 

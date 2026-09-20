@@ -268,9 +268,20 @@ export function AppHeader({
 
               {setShowStoryMode && <Tooltip>
                 <TooltipTrigger asChild>
-                  <button aria-label={t.storyMode || (language === 'tr' ? 'Etkileşimli Senaryo Modu' : 'Interactive Story Mode')} className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50", isDark ? 'text-secondary-300 hover:text-primary-400 hover:bg-secondary-700/50' : 'text-secondary-500 hover:text-primary-600')} onClick={() => setShowStoryMode(true)}>
-                    <Gamepad2 className="w-4 h-4" />
-                  </button>
+                  <span className="inline-block">
+                    <button
+                      disabled={isExamActive}
+                      aria-label={t.storyMode || (language === 'tr' ? 'Etkileşimli Senaryo Modu' : 'Interactive Story Mode')}
+                      className={cn(
+                        "h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50",
+                        isDark ? 'text-secondary-300 hover:text-primary-400 hover:bg-secondary-700/50' : 'text-secondary-500 hover:text-primary-600',
+                        isExamActive && "opacity-40 cursor-not-allowed hover:bg-transparent hover:text-secondary-300"
+                      )}
+                      onClick={() => !isExamActive && setShowStoryMode(true)}
+                    >
+                      <Gamepad2 className="w-4 h-4" />
+                    </button>
+                  </span>
                 </TooltipTrigger>
                 <TooltipContent>{t.storyMode || (language === 'tr' ? 'Etkileşimli Senaryo Modu' : 'Interactive Story Mode')}</TooltipContent>
               </Tooltip>}

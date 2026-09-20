@@ -2,6 +2,20 @@ import { cliModeError } from './cliErrors';
 import type { CommandHandler, CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult } from '../types';
 
+export type TransportProtocol = 'ssh' | 'telnet' | 'all' | 'none';
+
+/**
+ * Tek kaynak doğruluk: bir hattın belirtilen protokolü kabul edip etmediği.
+ * 'all' her iki protokolü de açar; 'none' ve boş liste hiçbirini açmaz.
+ */
+export function lineAllowsProtocol(
+  transportInput: TransportProtocol[] | undefined,
+  protocol: 'ssh' | 'telnet'
+): boolean {
+  const inputs = transportInput ?? [];
+  return inputs.includes('all') || inputs.includes(protocol);
+}
+
 // Line (console/vty) komutları (line console, password, login, transport input, vs.)
 
 export const lineHandlers: Record<string, CommandHandler> = {
@@ -191,20 +205,41 @@ function cmdTransportInput(state: SwitchState, input: string, _ctx: CommandConte
   }
 
   const parts = match[1].toLowerCase().split(/\s+/);
-  const protocols = parts.filter(p => ['ssh', 'telnet', 'all', 'none'].includes(p));
+  const protocols: TransportProtocol[] = parts.filter((p): p is TransportProtocol =>
+    ['ssh', 'telnet', 'all', 'none'].includes(p)
+  );
 
   if (protocols.length === 0) {
     return { success: false, error: '% Invalid transport input protocol' };
   }
 
-  // If 'all' or 'none' is present, it usually takes precedence or clears others but we'll just store the list for simplicity.
-  const finalProtocols = (protocols.includes('all') ? ['all'] : protocols.includes('none') ? ['none'] : protocols) as ('none' | 'all' | 'ssh' | 'telnet')[];
+  const containsAll = protocols.includes('all');
+  const containsNone = protocols.includes('none');
+  const specific = protocols.filter((p): p is 'ssh' | 'telnet' => p === 'ssh' || p === 'telnet');
+
+  // 'all' ve 'none' birbirleriyle ya da belirli protokollerle birleştirilemez.
+  if (containsAll || containsNone) {
+    if (specific.length > 0 || (containsAll && containsNone)) {
+      return { success: false, error: '% Invalid transport input: all/none cannot be combined with other protocols' };
+    }
+  }
+
+  const finalProtocols: TransportProtocol[] = containsAll
+    ? ['all']
+    : containsNone
+      ? ['none']
+      : Array.from(new Set(specific));
 
   const newSecurity = { ...state.security };
 
   if (state.currentLine.startsWith('vty')) {
     newSecurity.vtyLines = {
       ...newSecurity.vtyLines,
+      transportInput: finalProtocols
+    };
+  } else if (state.currentLine.startsWith('console') || state.currentLine.startsWith('aux')) {
+    newSecurity.consoleLine = {
+      ...newSecurity.consoleLine,
       transportInput: finalProtocols
     };
   }
@@ -315,6 +350,11 @@ function cmdNoTransportInput(state: SwitchState, _input: string, _ctx: CommandCo
   if (state.currentLine.startsWith('vty')) {
     newSecurity.vtyLines = {
       ...newSecurity.vtyLines,
+      transportInput: []
+    };
+  } else if (state.currentLine.startsWith('console') || state.currentLine.startsWith('aux')) {
+    newSecurity.consoleLine = {
+      ...newSecurity.consoleLine,
       transportInput: []
     };
   }

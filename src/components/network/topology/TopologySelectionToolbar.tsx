@@ -1,5 +1,5 @@
-﻿import React from 'react';
-import { X, Trash2 } from "lucide-react";
+import React from 'react';
+import { X, Trash2, Power } from "lucide-react";
 import { TooltipWrapper } from "@/components/ui/TooltipWrapper";
 import { logger } from '@/lib/logger';
 import { triggerHapticFeedback } from '@/lib/utils';
@@ -16,6 +16,7 @@ export interface TopologySelectionToolbarProps {
   onDeviceSelect: (type: DeviceType, id: string | undefined, model: string | undefined, name: string | undefined) => void;
   saveToHistory: () => void;
   deleteDevice: (id: string) => void;
+  togglePowerDevices?: (ids: string[]) => void;
 }
 
 export const TopologySelectionToolbar: React.FC<TopologySelectionToolbarProps> = ({
@@ -27,7 +28,8 @@ export const TopologySelectionToolbar: React.FC<TopologySelectionToolbarProps> =
   setSelectedDeviceIds,
   onDeviceSelect,
   saveToHistory,
-  deleteDevice
+  deleteDevice,
+  togglePowerDevices,
 }) => {
   const { language } = useLanguage();
   if (selectedDeviceIds.length <= 1) return null;
@@ -208,6 +210,25 @@ export const TopologySelectionToolbar: React.FC<TopologySelectionToolbarProps> =
       <span className="text-xs font-semibold whitespace-nowrap bg-secondary-700/30 px-2 py-0.5 rounded">
         {selectedDeviceIds.length}
       </span>
+      {togglePowerDevices && (
+        <TooltipWrapper title={language === 'tr' ? 'Seçililerin Gücünü Değiştir (Aç/Kapat)' : 'Toggle Power for Selected'}>
+          <button
+            aria-label={language === 'tr' ? 'Seçililerin Gücünü Değiştir' : 'Toggle Power'}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              triggerHapticFeedback('light');
+              togglePowerDevices(selectedDeviceIds);
+            }}
+            className={`p-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
+              isDark ? 'hover:bg-secondary-700 text-warning-400' : 'hover:bg-secondary-100 text-warning-600'
+            }`}
+          >
+            <Power className="w-4 h-4" />
+          </button>
+        </TooltipWrapper>
+      )}
+
       <TooltipWrapper title={t.cancel}>
         <button
           aria-label={t.cancel || 'Clear Selection'}

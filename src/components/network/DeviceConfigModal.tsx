@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { CanvasDevice } from './NetworkTopology/types/networkTopology.types';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { normalizeMAC } from '../../lib/utils';
@@ -306,11 +306,11 @@ export function DeviceConfigModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 modal" onClick={onClose}>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 modal" onClick={onClose}>
       <div className="absolute inset-0 bg-secondary-950/40" />
       <div
         ref={modalRef}
-        className={`relative w-full max-w-md overflow-hidden rounded-[2rem] border transition-all duration-500 hover:shadow-accent-500/10 ${isDark ? 'bg-secondary-900/80 border-secondary-800/50 shadow-2xl' : 'bg-white/90 border-secondary-200/50 shadow-2xl'
+        className={`relative w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden rounded-[2rem] border transition-all duration-500 hover:shadow-accent-500/10 ${isDark ? 'bg-secondary-900/90 border-secondary-800/50 shadow-2xl backdrop-blur-md' : 'bg-white/95 border-secondary-200/50 shadow-2xl backdrop-blur-md'
           }`}
         onClick={e => e.stopPropagation()}
         onTouchEnd={(e) => e.stopPropagation()}
@@ -329,7 +329,7 @@ export function DeviceConfigModal({
         aria-labelledby="device-config-title"
       >
         {/* Modal Header */}
-        <div className={`${isMobile ? 'px-4 pt-4 pb-3' : 'px-6 pt-6 pb-4'} border-b ${isDark ? 'border-secondary-500/60 bg-secondary-700' : 'border-secondary-100 bg-secondary-50/50'}`}>
+        <div className={`shrink-0 ${isMobile ? 'px-4 pt-4 pb-3' : 'px-6 pt-6 pb-4'} border-b ${isDark ? 'border-secondary-500/60 bg-secondary-700' : 'border-secondary-100 bg-secondary-50/50'}`}>
           <div className="flex items-center gap-4">
             <div className={`${isMobile ? 'p-2' : 'p-3'} rounded-2xl shadow-inner ${isDark ? 'bg-accent-500/10 text-accent-400 border border-accent-500/20' : 'bg-accent-50 text-accent-600 border border-accent-100'}`}>
               <svg className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'} drop-shadow-sm`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -348,7 +348,7 @@ export function DeviceConfigModal({
           </div>
         </div>
 
-        <div className={`${isMobile ? 'p-4 space-y-4' : 'p-6 space-y-6'}`}>
+        <div className={`flex-1 overflow-y-auto overscroll-contain custom-scrollbar ${isMobile ? 'p-4 space-y-4' : 'p-6 space-y-6'}`}>
           {/* Hostname */}
           <div className="space-y-2">
             <label className={`text-[10px] font-black tracking-widest ml-1 ${isDark ? 'text-secondary-500' : 'text-secondary-400'}`}>
@@ -579,7 +579,7 @@ export function DeviceConfigModal({
         </div>
 
         {/* Modal Actions */}
-        <div className={`${isMobile ? 'p-4' : 'p-6'} bg-secondary-950/20 border-t ${isDark ? 'border-secondary-800/50' : 'border-secondary-100'}`}>
+        <div className={`shrink-0 ${isMobile ? 'p-4' : 'p-6'} bg-secondary-950/20 border-t ${isDark ? 'border-secondary-800/50' : 'border-secondary-100'}`}>
           <div className="flex gap-3">
             <button
               onClick={onClose}

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, type RefObject, type Dispatch, type SetStateAction } from 'react';
 import type { CanvasDevice, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
@@ -361,6 +361,19 @@ export function useKeyboardShortcuts({
           }
 
         }
+      }
+
+      if (e.key === 'F2' && !isModalOrWindowActive && !isEditable) {
+        if (activeTab === 'topology' && activeDeviceId && !activeDeviceId.startsWith('note-')) {
+          e.preventDefault();
+          window.dispatchEvent(new CustomEvent('trigger-start-device-config', { detail: { deviceId: activeDeviceId } }));
+          return;
+        }
+      }
+
+      if ((e.key === '?' || (e.shiftKey && e.key === '/')) && !isModalOrWindowActive && !isEditable) {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('trigger-topology-toggle-shortcuts'));
       }
     };
     window.addEventListener('keydown', handleKeyDown, true);

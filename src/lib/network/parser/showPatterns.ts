@@ -81,6 +81,14 @@ export const showPatterns: Record<string, CommandPattern> = {
     minArgs: 0,
     maxArgs: 0
   },
+  // NOTE: must stay BEFORE 'show mac address-table' — that pattern's regex
+  // (/^show\s+mac...(.+)?$/) would otherwise swallow "show mac access-lists".
+  'show mac access-lists': {
+    pattern: /^show\s+mac\s+access-lists?(\s+(\S+))?$/i,
+    modes: ['privileged'],
+    minArgs: 0,
+    maxArgs: 1
+  },
   'show mac address-table': {
     pattern: /^show\s+mac(?:\s*(?:address-table|address|addr))?(\s+(.+)?)?$/i,
     modes: ['user', 'privileged'],
@@ -369,12 +377,6 @@ export const showPatterns: Record<string, CommandPattern> = {
   },
   'show access-lists': {
     pattern: /^show\s+access-lists?(\s+(\S+))?$/i,
-    modes: ['privileged'],
-    minArgs: 0,
-    maxArgs: 1
-  },
-  'show mac access-lists': {
-    pattern: /^show\s+mac\s+access-lists?(\s+(\S+))?$/i,
     modes: ['privileged'],
     minArgs: 0,
     maxArgs: 1
