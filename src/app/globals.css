@@ -14,3 +14,70 @@
 @import "./styles/utilities.css";
 @import "./styles/selection.css";
 @import "./styles/progress.css";
+
+/* CSS uppercase is not locale-aware in every browser. Keep Turkish UI
+   labels from becoming the incorrect GÖREVI form. */
+html[lang="tr-TR"] .uppercase {
+  text-transform: none !important;
+}
+
+/* The activity label is intentionally sentence case. */
+html[lang="tr-TR"] [aria-label="Etkileşimli Düzen"] .uppercase {
+  text-transform: none !important;
+}
+
+/* Compact action row inside the interactive layout panel. */
+[aria-label="Etkileşimli Düzen"] > div:last-child button {
+  height: 2rem;
+  padding-inline: 0.55rem;
+  font-size: 0;
+  white-space: nowrap;
+}
+
+[aria-label="Etkileşimli Düzen"] > div:last-child div.flex.flex-wrap button:nth-child(1)::after {
+  content: "Kontrol";
+}
+[aria-label="Etkileşimli Düzen"] > div:last-child div.flex.flex-wrap button:nth-child(2)::after {
+  content: "İpucu";
+}
+[aria-label="Etkileşimli Düzen"] > div:last-child div.flex.flex-wrap button:nth-child(3)::after {
+  content: "Geç";
+}
+[aria-label="Etkileşimli Düzen"] > div:last-child div.flex.flex-wrap button::after {
+  font-size: 0.72rem;
+  margin-left: 0.2rem;
+}
+
+[aria-label="Etkileşimli Düzen"] > div:last-child div.flex.flex-wrap button {
+  min-width: 4.7rem;
+  justify-content: center;
+  border: 1px solid rgb(99 102 241 / 0.45) !important;
+  border-radius: 0.5rem;
+  background: rgb(99 102 241 / 0.12) !important;
+  color: rgb(199 210 254) !important;
+}
+[aria-label="Etkileşimli Düzen"] > div:last-child div.flex.flex-wrap button:hover {
+  background: rgb(99 102 241 / 0.28) !important;
+  border-color: rgb(129 140 248 / 0.8) !important;
+}
+
+[aria-label="Etkileşimli Düzen"] > div:first-child button {
+  height: 2rem;
+  width: 2rem;
+  border-radius: 0.5rem;
+}
+[aria-label="Etkileşimli Düzen"] > div:last-child > div:last-child {
+  color: rgb(129 140 248);
+  font-size: 0.9rem;
+  line-height: 1;
+  user-select: none;
+}
+
+[aria-label="Etkileşimli Düzen"] > div:last-child div.flex.flex-wrap {
+  flex-wrap: nowrap !important;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid rgb(99 102 241 / 0.25);
+  border-radius: 0.65rem;
+  background: rgb(15 23 42 / 0.45);
+}

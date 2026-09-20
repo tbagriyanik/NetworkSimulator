@@ -7,6 +7,7 @@ export function sanitizeHTML(input: string): string {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
+        // Intentional HTML entity: apostrophes are escaped before rendering untrusted HTML.
         .replace(/'/g, '&#039;');
 
     // Unescape safe syntax highlight span tags safely (only styling attributes)
@@ -26,6 +27,7 @@ export function decodeHTMLEntities(input: string): string {
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>')
         .replace(/&quot;/g, '"')
+        // Intentional inverse of the escape above; restore apostrophes only after sanitization.
         .replace(/&#039;/g, "'")
         .replace(/&#39;/g, "'")
         .replace(/&amp;/g, '&');

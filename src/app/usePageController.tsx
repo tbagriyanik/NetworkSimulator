@@ -13,11 +13,10 @@ import { useMobileBack } from '@/hooks/useMobileBack';
 import { usePanels } from '@/hooks/usePanels';
 import { useRefreshReport } from '@/hooks/useRefreshReport';
 import { useDeviceSelection } from '@/hooks/useDeviceSelection';
-import { useAppStore, useTopologyDevices, useTopologyConnections, useTopologyNotes, useZoom, usePan, useActiveTab, useEnvironment } from '@/lib/store/appStore';
-import { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
+import { useAppStore } from '@/lib/store/appStore';
+import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { getPrompt } from '@/lib/network/executor';
 import { createInitialState } from '@/lib/network/initialState';
-import { buildRunningConfig } from '@/lib/network/core/configBuilder';
 import { addProjectRecord } from '@/utils/achievementRecords';
 import type { TerminalOutput } from '@/components/network/Terminal';
 
@@ -75,6 +74,8 @@ import { usePageHistoryManager } from './usePageHistoryManager';
 import { usePageSyncEffects } from './usePageSyncEffects';
 import { usePageInitialLoad } from './usePageInitialLoad';
 import { usePageViewState } from './usePageViewState';
+import { useDeviceEdit } from './useDeviceEdit';
+import { usePageWorkspaceState } from '@/hooks/usePageWorkspaceState';
 
 export function usePageController({ initialProjectId }: { initialProjectId?: string }) {
   const { t, language, setLanguage } = useLanguage();
@@ -280,24 +281,7 @@ export function usePageController({ initialProjectId }: { initialProjectId?: str
     handleCommandForDevice,
   } = useDeviceManager();
 
-  const topologyDevices = useTopologyDevices();
-  const topologyConnections = useTopologyConnections();
-  const topologyNotes = useTopologyNotes();
-  const zoom = useZoom();
-  const pan = usePan();
-  const activeTab = useActiveTab();
-  const environment = useEnvironment();
-
-  const helpLevel = useAppStore(state => state.helpLevel);
-  const setHelpLevel = useAppStore((state) => state.setHelpLevel);
-
-  const setDevices = useAppStore((state) => state.setDevices);
-  const setConnections = useAppStore((state) => state.setConnections);
-  const setNotes = useAppStore((state) => state.setNotes);
-  const setZoom = useAppStore((state) => state.setZoom);
-  const setPan = useAppStore((state) => state.setPan);
-  const graphicsQuality = useAppStore((state) => state.graphicsQuality);
-  const setGraphicsQuality = useAppStore((state) => state.setGraphicsQuality);
+  const { topologyDevices, topologyConnections, topologyNotes, zoom, pan, activeTab, environment, helpLevel, setHelpLevel, setDevices, setConnections, setNotes, setZoom, setPan, graphicsQuality, setGraphicsQuality } = usePageWorkspaceState();
 
   const nav = useAppNavigation({
     setActiveTab: (tab: TabType) => setActiveTab(tab),
@@ -651,28 +635,7 @@ export function usePageController({ initialProjectId }: { initialProjectId?: str
     });
   }, []);
 
-  const handleDeviceDoubleClick = useCallback((device: DeviceType, deviceId: string) => {
-    const { openDeviceWindow, restoreWindow } = useMultiWindowStore.getState();
-
-    if (device === 'pc') {
-      setShowPCDeviceId(deviceId);
-      getOrCreatePCOutputs(deviceId, topologyDevices);
-      setPcPanelInitialTab('home');
-      openDeviceWindow(deviceId, 'pc', 'home');
-    } else if (device === 'iot' || device === 'router' || device === 'switchL2' || device === 'switchL3' || device === 'wlc' || device === 'hub' || device === 'cloud' || device === 'printer' || device === 'mobile' || device === 'firewall') {
-      const deviceObj = topologyDevices?.find(d => d.id === deviceId);
-      const deviceState = getOrCreateDeviceState(deviceId, device, deviceObj?.name, deviceObj?.macAddress, deviceObj?.switchModel, deviceObj?.services);
-      getOrCreateDeviceOutputs(deviceId, deviceState);
-
-      setActiveDeviceId(deviceId);
-      setActiveDeviceType(device);
-      setUnifiedDeviceActiveTab('console');
-      openDeviceWindow(deviceId, device, 'console');
-    }
-
-    restoreWindow(deviceId);
-    useWindowStore.getState().setActiveWindow(deviceId);
-  }, [getOrCreateDeviceState, getOrCreateDeviceOutputs, topologyDevices, setShowPCDeviceId, setActiveDeviceId, setActiveDeviceType, setPcPanelInitialTab, setUnifiedDeviceActiveTab, setActiveFirewallId, setShowFirewallPanel]);
+  const { handleDeviceDoubleClick, handleDeviceRename, handleUpdateHistory, handleUpdatePCHistory } = useDeviceEdit({ topologyDevices, setActiveDeviceId, setActiveDeviceType, setShowPCDeviceId, setPcPanelInitialTab, setUnifiedDeviceActiveTab, setDeviceStates, setPcHistories, getOrCreatePCOutputs, getOrCreateDeviceState, getOrCreateDeviceOutputs });
 
   const handleDeviceDelete = useDeviceDelete({
     showPCDeviceId, showRouterDeviceId, activeDeviceId, selectedDevice, setShowPCPanel, setShowPCDeviceId, setShowRouterPanel,
@@ -680,29 +643,6 @@ export function usePageController({ initialProjectId }: { initialProjectId?: str
     setDeviceOutputs, setPcOutputs, setTopologyDevices, setActiveTab, setHasUnsavedChanges,
   });
 
-  const handleDeviceRename = useCallback((deviceId: string, newName: string) => {
-    setDeviceStates(prev => {
-      const state = prev.get(deviceId);
-      if (!state) return prev;
-      const updated = { ...state, hostname: newName };
-      updated.runningConfig = buildRunningConfig(updated);
-      return new Map(prev).set(deviceId, updated);
-    });
-  }, [setDeviceStates]);
-
-  const handleUpdateHistory = useCallback((deviceId: string, history: string[]) => {
-    setDeviceStates(prev => {
-      const state = prev.get(deviceId);
-      if (state) {
-        return new Map(prev).set(deviceId, { ...state, commandHistory: history });
-      }
-      return prev;
-    });
-  }, [setDeviceStates]);
-
-  const handleUpdatePCHistory = useCallback((deviceId: string, history: string[]) => {
-    setPcHistories(prev => new Map(prev).set(deviceId, history));
-  }, [setPcHistories]);
 
   const { handleSaveProject, getFullProjectData } = useProjectExport({
     deviceStates, deviceOutputs, pcOutputs, pcHistories, topologyDevices, topologyConnections, topologyNotes, cableInfo,

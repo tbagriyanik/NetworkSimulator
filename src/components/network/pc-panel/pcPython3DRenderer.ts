@@ -13,6 +13,7 @@ function escapeHtml(str: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
+    // Intentional HTML entity: generated iframe HTML must not receive raw apostrophes.
     .replace(/'/g, '&#039;');
 }
 

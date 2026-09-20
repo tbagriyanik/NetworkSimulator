@@ -422,9 +422,21 @@ export function forwardPacketFrame(
 
   // Stage 3: Switching / Routing Forwarding Logic
   const egressPorts: string[] = [];
+  const multicastGroup = frame.dstIp && frame.dstIp.split('.').length === 4
+    ? Number(frame.dstIp.split('.')[0]) >= 224 && Number(frame.dstIp.split('.')[0]) <= 239
+    : false;
 
   if (device.type === 'switchL2' || device.type === 'switchL3' || device.type === 'hub') {
-    if (device.type === 'hub' || frame.dstMac === 'ff:ff:ff:ff:ff:ff' || !frame.dstMac) {
+    if (multicastGroup && state?.multicastRoutingEnabled) {
+      // Multicast forwarding follows receiver state instead of unicast MAC flooding.
+      Object.values(state.ports || {}).forEach((port) => {
+        const joined = port.igmpGroups?.includes(frame.dstIp as string);
+        const pimForwarding = Boolean(port.pimMode);
+        if (port.id !== frame.ingressPortId && !port.shutdown && port.status === 'connected' && (joined || pimForwarding)) {
+          egressPorts.push(port.id);
+        }
+      });
+    } else if (device.type === 'hub' || frame.dstMac === 'ff:ff:ff:ff:ff:ff' || !frame.dstMac) {
       // L1 Flood to all active forwarding ports (except ingress port)
       Object.values(state?.ports || {}).forEach(p => {
         if (p.id !== frame.ingressPortId && !p.shutdown && p.status === 'connected') {

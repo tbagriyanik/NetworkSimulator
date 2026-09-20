@@ -27,9 +27,12 @@ import { PagePanelWindows } from './PagePanelWindows';
 import { TopologySection } from './sections/TopologySection';
 import { usePageController } from './usePageController';
 import { useAppStore } from '@/lib/store/appStore';
+import { StoryModePanel } from '@/components/network/StoryModePanel';
+import { useState } from 'react';
 
 export default function Home({ initialProjectId }: { initialProjectId?: string }) {
   const page = usePageController({ initialProjectId });
+  const [showStoryMode, setShowStoryMode] = useState(false);
 
   return (
     <AppErrorBoundary fallbackTitle={page.t.applicationError}>
@@ -82,7 +85,10 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
             setShowBasarilarim={page.setShowBasarilarim}
             helpLevel={page.helpLevel}
             setHelpLevel={useAppStore.getState().setHelpLevel}
+            setShowStoryMode={setShowStoryMode}
           />
+
+          <StoryModePanel open={showStoryMode} onClose={() => setShowStoryMode(false)} topologyDevices={page.topologyDevices} topologyConnections={page.topologyConnections} deviceStates={page.deviceStates} />
 
           <PageDialogs
             t={page.t}

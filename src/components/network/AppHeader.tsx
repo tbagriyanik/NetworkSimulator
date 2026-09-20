@@ -22,7 +22,7 @@ import {
 import { cn } from '@/lib/utils';
 import {
   Menu, Plus, Save, FolderOpen, Languages, Sun, Moon, File, BookOpen, Leaf, Compass, Info, Sparkles, Cloud, Trophy,
-  Mail, GraduationCap, ImageDown, FileText, Wand2
+  Mail, GraduationCap, ImageDown, FileText, Wand2, Gamepad2
 } from 'lucide-react';
 import type { Translations } from '@/contexts/LanguageContext';
 import type { CanvasDevice, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
@@ -65,6 +65,7 @@ interface AppHeaderProps {
   setShowBasarilarim: (v: boolean) => void;
   isPingPanelOpen?: boolean;
   isExamActive?: boolean;
+  setShowStoryMode?: (v: boolean) => void;
 }
 
 export function AppHeader({
@@ -81,8 +82,9 @@ export function AppHeader({
   showBasarilarim, setShowBasarilarim,
   helpLevel, setHelpLevel,
   isPingPanelOpen,
-  isExamActive = false
+  isExamActive = false, setShowStoryMode
 }: AppHeaderProps) {
+  const showLabProgress = false;
   return (
     <header className={cn("fixed top-0 left-0 right-0 z-[50] border-b px-3 sm:px-5 h-14 sm:h-16 flex items-center", isDark ? "liquid-glass border-secondary-800" : "bg-white/90 backdrop-blur-md border-secondary-200")}>
       <div className="w-full">
@@ -112,7 +114,7 @@ export function AppHeader({
           </TooltipWrapper>
 
           {/* Total Score - Desktop */}
-          {activeDeviceType !== 'pc' && activeDeviceType !== 'iot' && activeDeviceType !== 'firewall' && topologyDevices && topologyDevices.length > 0 && activeDeviceId && maxScore > 0 && (
+          {showLabProgress && activeDeviceType !== 'pc' && activeDeviceType !== 'iot' && activeDeviceType !== 'firewall' && topologyDevices && topologyDevices.length > 0 && activeDeviceId && maxScore > 0 && (
             <div className="hidden md:flex items-center gap-4">
               <div className="flex flex-col items-end gap-1">
                 <div className="flex items-center gap-2">
@@ -263,6 +265,15 @@ export function AppHeader({
                   <span>{t.basarilarim}</span>
                 </TooltipContent>
               </Tooltip>
+
+              {setShowStoryMode && <Tooltip>
+                <TooltipTrigger asChild>
+                  <button aria-label="Etkileşimli Düzen" className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50", isDark ? 'text-secondary-300 hover:text-primary-400 hover:bg-secondary-700/50' : 'text-secondary-500 hover:text-primary-600')} onClick={() => setShowStoryMode(true)}>
+                    <Gamepad2 className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>Etkileşimli Düzen</TooltipContent>
+              </Tooltip>}
 
 
               {/* Settings & Theme */}
@@ -569,7 +580,7 @@ export function AppHeader({
                   </div>
 
                   {/* Lab Progress Mobile */}
-                  {activeDeviceType !== 'pc' && activeDeviceType !== 'iot' && activeDeviceType !== 'firewall' && topologyDevices && topologyDevices.length > 0 && activeDeviceId && maxScore > 0 && (
+                  {showLabProgress && activeDeviceType !== 'pc' && activeDeviceType !== 'iot' && activeDeviceType !== 'firewall' && topologyDevices && topologyDevices.length > 0 && activeDeviceId && maxScore > 0 && (
                     <div className={`p-3 rounded-xl ${isDark ? 'bg-secondary-800/30' : 'bg-secondary-50'} border ${isDark ? 'border-secondary-800/50' : 'border-secondary-200'}`}>
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-xs font-bold tracking-[0.15em] text-secondary-500">{t.labProgress}</span>

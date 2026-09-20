@@ -12,10 +12,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { logger } from '@/lib/logger';
 
 import { runFhrpElection } from '@/lib/network/fhrp';
-
-const isSwitchDeviceType = (type?: DeviceType | string) => type === 'switchL2' || type === 'switchL3';
-const resolveSwitchBootType = (switchModel?: string): 'switchL2' | 'switchL3' =>
-  switchModel === 'NS-L3-24PS' ? 'switchL3' : 'switchL2';
+import { isSwitchDeviceType, resolveSwitchBootType } from './deviceManager.rules';
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 

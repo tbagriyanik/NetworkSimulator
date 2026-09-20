@@ -363,6 +363,7 @@ function escapeHtml(str: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
+    // Intentional HTML entity: generated form HTML is escaped before insertion.
     .replace(/'/g, '&#039;');
 }
 
