@@ -23,7 +23,7 @@ A browser-based network simulator for learning switching, routing, wireless, IoT
 
 Bu kitapçık projenin tüm kullanıcı, CLI, protokol, laboratuvar ve özellik bilgilerinin birincil kaynağıdır. Diğer Markdown dosyaları yalnızca kısa başvuru, kurulum veya geliştirici ayrıntısı içerir; aynı bilginin güncel sürümü burada tutulmalıdır.
 
-### Güncel özellik durumu (v6.1.0)
+### Güncel özellik durumu (v6.2.0)
 
 - **🚀 Kapsamlı CLI Genişletme & Çoklu Protokol Desteği (v6.1.0):**
   - **Multicast / PIM & IGMP:** `ip multicast-routing`, `ip pim sparse-mode`, `ip pim dense-mode`, `ip pim sparse-dense-mode`, `ip igmp join-group`, `ip igmp version 1|2|3`, `show ip mroute`, `show ip pim interface/neighbor`.

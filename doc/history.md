@@ -1,5 +1,9 @@
 # 📅 Network Simulator — Proje Geçmişi
 
+## v6.2.0 — 2026-09-20
+
+- **🧹 Kod Modülarizasyonu & 1500 Satır Limiti Uyumlaştırması**: `routingPatterns.ts`, `interfacePatterns.ts`, `commandAliases.ts`, `useDeviceManager.ts` ve `usePageController.tsx` modüler bileşenlere bölünerek 1500 satır sınırı korundu ve projedeki tüm dokümantasyon dosyalarının sürüm/güncelleme tarihleri senkronize edildi.
+
 ## v6.1.0 — 2026-09-19
 
 - UI/UX, REST/RESTCONF pencereleri, MQTT paket yakalama ve IoT otomasyon trafiği iyileştirildi; MPLS LDP port doğrulaması güvenli hale getirildi.

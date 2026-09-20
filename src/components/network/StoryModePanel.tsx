@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { CheckCircle2, Gamepad2, Lightbulb, Maximize2, Minus, RotateCcw, Shield, SkipForward, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import type { CanvasConnection, CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
+import type { SwitchState } from '@/lib/network/types';
 
 type StoryState = { step: number; score: number; skipped: number; seed: number; completed: boolean };
 const KEY = 'netsim_story_mode_v3';
@@ -67,7 +69,7 @@ const subtaskVariants = [
 
 function initialState(): StoryState { return { step: 0, score: 0, skipped: 0, seed: Math.floor(Math.random() * 3), completed: false }; }
 
-export function StoryModePanel({ open, onClose, topologyDevices = [], topologyConnections = [], deviceStates }: { open: boolean; onClose: () => void; topologyDevices?: any[]; topologyConnections?: any; deviceStates?: Map<string, any> }) {
+export function StoryModePanel({ open, onClose, topologyDevices = [], topologyConnections = [], deviceStates }: { open: boolean; onClose: () => void; topologyDevices?: CanvasDevice[]; topologyConnections?: CanvasConnection[]; deviceStates?: Map<string, SwitchState> }) {
   const [state, setState] = useState<StoryState>(initialState);
   const [collapsed, setCollapsed] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -96,15 +98,15 @@ export function StoryModePanel({ open, onClose, topologyDevices = [], topologyCo
   const greeting = useMemo(() => ['Merhaba!', 'Sistem seni bekliyor. Hazır mısın?'][state.seed], [state.seed]);
   const scenario = ['Küçük ofis ağı', 'Ev laboratuvarı', 'Siber güvenlik eğitim ağı'][state.seed];
   const isValidIpv4 = (value: unknown) => typeof value === 'string' && /^(25[0-5]|2[0-4]\d|1?\d?\d)(\.(25[0-5]|2[0-4]\d|1?\d?\d)){3}$/.test(value.trim());
-  const hasConfiguredIp = (device: any) => {
+  const hasConfiguredIp = (device: CanvasDevice) => {
     if (isValidIpv4(device?.ip)) return true;
     const state = deviceStates?.get(device?.id);
-    return Object.values(state?.ports ?? {}).some((port: any) => isValidIpv4(port?.ipAddress ?? port?.ip));
+    return Object.values(state?.ports ?? {}).some((port) => isValidIpv4(port?.ipAddress));
   };
-  const hasConfiguredPcNetwork = (device: any) => isValidIpv4(device?.ip) && isValidIpv4(device?.subnet) && (device?.ipConfigMode === 'static' || device?.ipConfigMode === 'dhcp');
+  const hasConfiguredPcNetwork = (device: CanvasDevice) => isValidIpv4(device.ip) && isValidIpv4(device.subnet) && (device.ipConfigMode === 'static' || device.ipConfigMode === 'dhcp');
   const types = topologyDevices.map((device) => device.type);
-  const hasSwitch = types.includes('switch') || types.includes('switchL2') || types.includes('switchL3');
-  const connectionCount = Array.isArray(topologyConnections) ? topologyConnections.length : (topologyConnections?.size ?? 0);
+  const hasSwitch = types.includes('switchL2') || types.includes('switchL3');
+  const connectionCount = topologyConnections.length;
   const activityComplete = [
     types.includes('pc'),
     topologyDevices.some((device) => device.type === 'pc' && hasConfiguredPcNetwork(device)),

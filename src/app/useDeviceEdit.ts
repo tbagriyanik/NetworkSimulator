@@ -3,15 +3,16 @@
 import { useCallback } from 'react';
 import type { DeviceType, CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
+import type { TerminalOutput } from '@/components/network/Terminal';
 import { buildRunningConfig } from '@/lib/network/core/configBuilder';
 import { useMultiWindowStore } from '@/hooks/useMultiWindowStore';
 import { useWindowStore } from '@/hooks/useWindowStore';
 
 export function useDeviceEdit({ topologyDevices, setActiveDeviceId, setActiveDeviceType, setShowPCDeviceId, setPcPanelInitialTab, setUnifiedDeviceActiveTab, setDeviceStates, setPcHistories, getOrCreatePCOutputs, getOrCreateDeviceState, getOrCreateDeviceOutputs }: {
   topologyDevices: CanvasDevice[]; setActiveDeviceId: (id: string) => void; setActiveDeviceType: (type: DeviceType) => void;
-  setShowPCDeviceId: (id: string) => void; setPcPanelInitialTab: (tab: any) => void; setUnifiedDeviceActiveTab: (tab: any) => void;
+  setShowPCDeviceId: (id: string) => void; setPcPanelInitialTab: (tab: 'home' | 'desktop' | 'terminal' | 'settings' | 'services' | 'wireless' | 'iot') => void; setUnifiedDeviceActiveTab: (tab: 'console' | 'settings' | 'stp' | 'physical') => void;
   setDeviceStates: React.Dispatch<React.SetStateAction<Map<string, SwitchState>>>; setPcHistories: React.Dispatch<React.SetStateAction<Map<string, string[]>>>;
-  getOrCreatePCOutputs: (id: string, devices?: CanvasDevice[]) => unknown; getOrCreateDeviceState: (...args: any[]) => SwitchState; getOrCreateDeviceOutputs: (...args: any[]) => unknown;
+  getOrCreatePCOutputs: (id: string, devices?: CanvasDevice[]) => unknown[]; getOrCreateDeviceState: (deviceId: string, deviceType: DeviceType, initialHostname?: string, initialMac?: string, switchModel?: string, initialServices?: CanvasDevice['services']) => SwitchState; getOrCreateDeviceOutputs: (deviceId: string, deviceStateArg?: SwitchState) => TerminalOutput[];
 }) {
   const handleDeviceDoubleClick = useCallback((device: DeviceType, deviceId: string) => {
     const { openDeviceWindow, restoreWindow } = useMultiWindowStore.getState();

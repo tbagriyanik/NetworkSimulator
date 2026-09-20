@@ -5,7 +5,6 @@ import { useDeviceManager } from '@/hooks/useDeviceManager';
 import { useNetworkLogic } from '@/hooks/useNetworkLogic';
 import { usePageNetworkLogic } from '@/hooks/usePageNetworkLogic';
 import { useAppNavigation } from '@/hooks/useAppNavigation';
-import { useDrag } from '@/hooks/useDrag';
 import { useMultiTabWarning } from '@/hooks/useMultiTabWarning';
 import { useLoadProjectData } from '@/hooks/useLoadProjectData';
 import { useIsMobile, useIsTablet } from '@/hooks/use-breakpoint';
@@ -19,6 +18,7 @@ import { getPrompt } from '@/lib/network/executor';
 import { createInitialState } from '@/lib/network/initialState';
 import { addProjectRecord } from '@/utils/achievementRecords';
 import type { TerminalOutput } from '@/components/network/Terminal';
+import type { SwitchState } from '@/lib/network/types';
 
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -76,6 +76,7 @@ import { usePageInitialLoad } from './usePageInitialLoad';
 import { usePageViewState } from './usePageViewState';
 import { useDeviceEdit } from './useDeviceEdit';
 import { usePageWorkspaceState } from '@/hooks/usePageWorkspaceState';
+import { usePageModalDrags } from './usePageModalDrags';
 
 export function usePageController({ initialProjectId }: { initialProjectId?: string }) {
   const { t, language, setLanguage } = useLanguage();
@@ -451,10 +452,7 @@ export function usePageController({ initialProjectId }: { initialProjectId?: str
     }
   }, [topologyKey, topologyContainerRef]);
 
-  const pcDrag = useDrag({ mode: 'drag-resize', storageKey: 'pc-modal-position', defaultSize: { width: 800, height: 600 }, disableSnap: true });
-  const firewallDrag = useDrag({ mode: 'drag-resize', storageKey: 'firewall-modal-position', defaultSize: { width: 600, height: 500 }, disableSnap: true });
-  const unifiedDrag = useDrag({ mode: 'drag-resize', storageKey: 'unified-modal-position', defaultSize: { width: 800, height: 600 }, disableSnap: true });
-  const routerDrag = useDrag({ mode: 'drag-resize', storageKey: 'router-modal-position', defaultSize: { width: 800, height: 600 }, disableSnap: true });
+  const { pcDrag, firewallDrag, unifiedDrag, routerDrag } = usePageModalDrags();
 
   const {
     isAppLoading,
@@ -678,7 +676,7 @@ export function usePageController({ initialProjectId }: { initialProjectId?: str
   const handleGeneratedTopology = useCallback((data: {
     devices: CanvasDevice[];
     connections: CanvasConnection[];
-    deviceStates: Map<string, any>;
+    deviceStates: Map<string, SwitchState>;
     projectName?: string;
     projectDescription?: string;
   }) => {

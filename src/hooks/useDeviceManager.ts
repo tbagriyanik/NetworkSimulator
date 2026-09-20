@@ -1,4 +1,4 @@
-﻿import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { SwitchState, SwitchModel, Port, CommandResult } from '@/lib/network/types';
 import { createInitialState, createInitialRouterState, createInitialFirewallState, createInitialWLCState, applyStartupConfig, buildStartupConfig } from '@/lib/network/initialState';
@@ -13,6 +13,7 @@ import { logger } from '@/lib/logger';
 
 import { runFhrpElection } from '@/lib/network/fhrp';
 import { isSwitchDeviceType, resolveSwitchBootType } from './deviceManager.rules';
+import { useDeviceManagerHelpers } from './useDeviceManagerHelpers';
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -26,6 +27,7 @@ interface PCOutputLine {
 export function useDeviceManager() {
   const { toast } = useToast();
   const { language } = useLanguage();
+  const { getBootMessage, ensureSwitchModelConsistency } = useDeviceManagerHelpers();
 
   const [deviceStates, rawSetDeviceStates] = useState<Map<string, SwitchState>>(new Map());
   const setDeviceStates = useCallback((updater: Map<string, SwitchState> | ((prev: Map<string, SwitchState>) => Map<string, SwitchState>)) => {
@@ -78,131 +80,6 @@ export function useDeviceManager() {
     isMounted.current = true;
     return () => {
       isMounted.current = false;
-    };
-  }, []);
-
-  const getBootMessage = useCallback((deviceType: Exclude<DeviceType, 'pc'>, switchModel?: string, language: 'tr' | 'en' = 'en') => {
-    const isRouter = deviceType === 'router';
-    const isFirewall = deviceType === 'firewall' || switchModel?.includes('NS-FW');
-    const isL3Switch = deviceType === 'switchL3' || switchModel?.includes('NS-L3');
-    const isWLC = deviceType === 'wlc' || switchModel?.includes('NS-WLC');
-
-    if (isFirewall) {
-      return {
-        boot1: `\n\nNetSim Firewall Software\n\n`,
-        boot2: `Compiled on Mon 21-Mar-16 11:52 PDT by builders\nSystem Bootstrap\n\nNS-FW-5506 platform with 4096 K bytes of memory\n`,
-        boot3: `\nReading from flash... OK\nValidating image checksum... OK\n\n`,
-        initMessage: language === 'tr' ? 'Firewall başlatılıyor' : 'Firewall is starting'
-      };
-    }
-
-    if (isRouter) {
-      const syslog = language === 'tr' ? '*** Syslog istemcisi başlatıldı' : '*** Syslog client started';
-      return {
-        boot1: `\n\nSystem Bootstrap\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1996-2026 by Network Systems, Inc.\n`,
-        boot2: `NS-R-4451 platform with 4096 K bytes of memory\n\n${syslog}\nLoad/bootstrap symbols loaded, NetSim OS initialization\nReading all bootflash vectors\nPOST: CPU PCIe port Check PASS\nCPU memory test . . . . . . . . . . . . . OK\nBoard initialization completed\nInitializing flash file system\n`,
-        boot3: `\nBooting flash:ns-r-universalk9-mz.SPA.154-3.M.bin...OK!\nExtracting files from flash:ns-r-universalk9-mz.SPA.154-3.M.bin...\n  ########## [OK]\n  0 bytes remaining in flash device\n`,
-        initMessage: language === 'tr' ? 'Sistem başlatılıyor' : 'Initializing system'
-      };
-    }
-
-    if (isWLC) {
-      const syslog = language === 'tr' ? '*** Syslog istemcisi başlatıldı' : '*** Syslog client started';
-      return {
-        boot1: `\n\nSystem Bootstrap\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1996-2026 by Network Systems, Inc.\n`,
-        boot2: `NS-WLC-2504 platform with 2097152 K bytes of memory\n\n${syslog}\nLoad/bootstrap symbols loaded\nReading all bootflash vectors\nPOST: CPU PCIe port Check PASS\nCPU memory test . . . . . . . . . . . . . OK\nBoard initialization completed\nInitializing flash file system\n`,
-        boot3: `\nBooting flash:ns-wlc-8-0-125-0.bin...OK!\nExtracting files from flash:ns-wlc-8-0-125-0.bin...\n  ########## [OK]\n  0 bytes remaining in flash device\n`,
-        initMessage: language === 'tr' ? 'WLC başlatılıyor' : 'WLC is starting'
-      };
-    }
-
-    if (isL3Switch) {
-      const syslog = language === 'tr' ? '*** Syslog istemcisi başlatıldı' : '*** Syslog client started';
-      return {
-        boot1: `\n\nSystem Bootstrap\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1996-2026 by Network Systems, Inc.\n`,
-        boot2: `NS-L3 platform with 131072 K bytes of memory\n\n${syslog}\nLoad/bootstrap symbols loaded\nReading all bootflash vectors\nPOST: CPU PCIe port Check PASS\nCPU memory test . . . . . . . . . . . . . OK\nBoard initialization completed\nInitializing flash file system\n`,
-        boot3: `\nBooting flash:ns-l3-ipbase-mz.152-2.SE4.bin...OK!\nExtracting files from flash:ns-l3-ipbase-mz.152-2.SE4.bin...\n  ########## [OK]\n  0 bytes remaining in flash device\n`,
-        initMessage: language === 'tr' ? 'Sistem açıldı' : 'System is powered on'
-      };
-    }
-
-    const syslog = language === 'tr' ? '*** Syslog istemcisi başlatıldı' : '*** Syslog client started';
-    return {
-      boot1: `\n\nSystem Bootstrap\nTechnical Support: http://yunus.sf.net\nCopyright (c) 1996-2026 by Network Systems, Inc.\n`,
-      boot2: `NS-L2 platform with 65536 K bytes of memory\n\n${syslog}\nLoad/bootstrap symbols loaded\nReading all bootflash vectors\nPOST: CPU Ethernet port Check PASS\nCPU memory test . . . . . . . . . . . . . OK\nBoard initialization completed\nInitializing flash file system\n`,
-      boot3: `\nBooting flash:ns-l2-lanbase-mz.152-2.E6.bin...OK!\nExtracting files from flash:ns-l2-lanbase-mz.152-2.E6.bin...\n  ########## [OK]\n  0 bytes remaining in flash device\n`,
-      initMessage: language === 'tr' ? 'Sistem açıldı' : 'System is powered on'
-    };
-  }, []);
-
-  const ensureSwitchModelConsistency = useCallback((state: SwitchState, model?: string, macAddress?: string, isRouter?: boolean): SwitchState => {
-    if (!model) return state;
-
-    const normalizedModel = model as string;
-    const baseState = isRouter ? createInitialRouterState(macAddress || state.macAddress) : createInitialState(macAddress || state.macAddress, normalizedModel as 'NS-L2-24TT-L' | 'NS-L3-24PS');
-
-    // Model changed? If so, we need to be careful about merging ports
-    const modelChanged = state.switchModel !== normalizedModel;
-
-    let mergedPorts: Record<string, Port> = {} as Record<string, Port>;
-
-    if (modelChanged) {
-      // If switching between L2 (Fa0/x) and L3 (Gi1/0/x), or to Firewall (Gi1/0/x)
-      // we should prefer the new model's ports but try to preserve SVI (Vlan) and Console
-
-      const newPortIds = Object.keys(baseState.ports);
-
-      // Start with the new model's default ports
-      mergedPorts = { ...baseState.ports };
-
-      // Merge only compatible or essential ports from old state
-      Object.entries(state.ports).forEach(([id, port]) => {
-        // Always preserve console and SVI (Vlan) interfaces
-        if (id === 'console' || id.toLowerCase().startsWith('vlan')) {
-          mergedPorts[id] = { ...mergedPorts[id], ...port, id }; // Keep old config but ensure ID matches
-          return;
-        }
-
-        // Preserve WLAN0 if it exists in both or we are moving to a model with WLAN
-        if (id === 'wlan0' && newPortIds.includes('wlan0')) {
-          mergedPorts[id] = { ...mergedPorts[id], ...port, id };
-          return;
-        }
-
-        // If port ID exists in new model, preserve its config (but don't let old type override new model type)
-        if (newPortIds.includes(id)) {
-          const oldType = port.type;
-          const newType = mergedPorts[id]?.type;
-          // Skip merge if old and new states have different port types for the same numeric port
-          // This prevents L2 FastEthernet ports (fa0/x) from corrupting L3 GigabitEthernet ports (gi1/0/x)
-          if (oldType && newType && oldType !== newType && /^[a-z]+\d*\/\d+$/.test(id)) {
-            return; // Use new state's port type exclusively
-          }
-          mergedPorts[id] = { ...mergedPorts[id], ...port, id };
-        }
-
-        // Subinterfaces (e.g. gi0/0.10) - preserve if parent exists
-        if (id.includes('.')) {
-          const parentId = id.split('.')[0];
-          if (newPortIds.includes(parentId)) {
-            mergedPorts[id] = port;
-          }
-        }
-      });
-    } else {
-      // Standard heal (ports missing but model is same)
-      mergedPorts = { ...baseState.ports, ...state.ports };
-    }
-
-    return {
-      ...state,
-      switchModel: normalizedModel as SwitchModel,
-      switchLayer: baseState.switchLayer,
-      ports: mergedPorts,
-      version: {
-        ...state.version,
-        modelName: normalizedModel,
-      },
     };
   }, []);
 

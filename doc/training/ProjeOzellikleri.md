@@ -1,6 +1,6 @@
 # NetworkSimulator — Tam Özellik Envanteri / Full Feature Inventory
 
-**Sürüm / Version:** 6.1.0 · **Son doğrulama / Last verified:** 2026-09-19
+**Sürüm / Version:** 6.2.0 · **Son doğrulama / Last verified:** 2026-09-20
 
 ## Packet/Control-Plane Entegrasyon Özeti
 

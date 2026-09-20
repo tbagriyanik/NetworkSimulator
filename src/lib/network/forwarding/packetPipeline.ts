@@ -650,9 +650,11 @@ export function runHopPipeline(
         connectionId: conn.id,
         sourceIp: frame.srcIp || '',
         targetIp: frame.dstIp || '',
-        protocol: frame.protocol,
+        // Keep application protocols visible in the capture UI instead of
+        // collapsing MQTT/CoAP into their transport (TCP/UDP).
+        protocol: frame.mqttPayload ? 'MQTT' : frame.coapPayload ? 'CoAP' : frame.protocol,
         length: frame.length,
-        info: frame.info,
+        info: frame.mqttPayload ? `MQTT ${frame.mqttPayload.type}${frame.mqttPayload.topic ? ` topic=${frame.mqttPayload.topic}` : ''}` : frame.coapPayload ? `CoAP ${frame.coapPayload.code} ${frame.coapPayload.path}` : frame.info,
       }]);
       traces.push(makeTrace(hopIndex, device, egressPortId, 'capture', 'pass',
         `Captured on link ${conn.id}`, frame));

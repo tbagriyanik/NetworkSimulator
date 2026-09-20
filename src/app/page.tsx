@@ -28,11 +28,22 @@ import { TopologySection } from './sections/TopologySection';
 import { usePageController } from './usePageController';
 import { useAppStore } from '@/lib/store/appStore';
 import { StoryModePanel } from '@/components/network/StoryModePanel';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function Home({ initialProjectId }: { initialProjectId?: string }) {
   const page = usePageController({ initialProjectId });
   const [showStoryMode, setShowStoryMode] = useState(false);
+  useEffect(() => {
+    const closeForWorkspaceChange = () => setShowStoryMode(false);
+    window.addEventListener('new-project-reset', closeForWorkspaceChange);
+    window.addEventListener('restore-checkpoint', closeForWorkspaceChange);
+    window.addEventListener('network-refresh', closeForWorkspaceChange);
+    return () => {
+      window.removeEventListener('new-project-reset', closeForWorkspaceChange);
+      window.removeEventListener('restore-checkpoint', closeForWorkspaceChange);
+      window.removeEventListener('network-refresh', closeForWorkspaceChange);
+    };
+  }, []);
 
   return (
     <AppErrorBoundary fallbackTitle={page.t.applicationError}>
