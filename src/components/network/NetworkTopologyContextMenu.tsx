@@ -1,8 +1,8 @@
-﻿import { useState, useEffect, type RefObject } from 'react';
+import { useState, useEffect, type RefObject } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Trash2, Undo2, Redo2, Scissors, Copy, ClipboardPaste,
-  RefreshCw, CheckSquare, ExternalLink, Mail, Power, ListTodo, ImageDown
+  RefreshCw, CheckSquare, ExternalLink, Mail, Power, ListTodo, ImageDown, Edit3
 } from 'lucide-react';
 import { NOTE_COLORS, NOTE_FONT_SIZES, NOTE_OPACITY } from './NetworkTopology/utils/networkTopology.constants';
 import { CanvasDevice, CanvasNote, ContextMenuState } from './NetworkTopology/types/networkTopology.types';
@@ -33,6 +33,7 @@ interface NetworkTopologyContextMenuProps {
   onCopyDevices: (ids: string[]) => void;
   onPasteDevice?: () => void;
   onDeleteDevices: (ids: string[]) => void;
+  onStartConfig?: (id: string) => void;
   onStartPing: (id: string) => void;
   onTogglePowerDevices: (ids: string[]) => void;
   onSaveToHistory: () => void;
@@ -68,6 +69,7 @@ export default function NetworkTopologyContextMenu({
   onCopyDevices,
   onPasteDevice,
   onDeleteDevices,
+  onStartConfig,
   onStartPing,
   onTogglePowerDevices,
   onSaveToHistory,
@@ -76,7 +78,7 @@ export default function NetworkTopologyContextMenu({
   onRefreshNetwork,
   isPingPanelOpen,
 }: NetworkTopologyContextMenuProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [position, setPosition] = useState({ x: contextMenu?.x || 0, y: contextMenu?.y || 0 });
 
   const renderIcon = (iconName: string) => {
@@ -90,6 +92,7 @@ export default function NetworkTopologyContextMenu({
       case 'paste': return <ClipboardPaste className="w-4 h-4" />;
       case 'select': return <CheckSquare className="w-4 h-4" />;
       case 'open': return <ExternalLink className="w-4 h-4" />;
+      case 'edit': return <Edit3 className="w-4 h-4" />;
       case 'ping': return <Mail className="w-4 h-4" />;
       case 'refresh': return <RefreshCw className="w-4 h-4" />;
       case 'power': return <Power className="w-4 h-4" />;
@@ -333,6 +336,13 @@ export default function NetworkTopologyContextMenu({
                   onClick: () => { if (device) onOpenDevice(device); onClose(); },
                   disabled: !device
 
+                })}
+                {renderMenuItem({
+                  label: t.rename || (language === 'tr' ? 'Yeniden Adlandır' : 'Rename'),
+                  shortcut: 'F2',
+                  icon: 'edit',
+                  onClick: () => { if (contextMenu.deviceId && onStartConfig) onStartConfig(contextMenu.deviceId); onClose(); },
+                  disabled: !device
                 })}
                 {isRouterOrSwitch && onOpenTasks && renderMenuItem({
                   label: t.tasks,

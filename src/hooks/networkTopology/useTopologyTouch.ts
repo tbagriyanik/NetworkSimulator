@@ -1,7 +1,8 @@
-﻿import React, { useCallback, useState } from 'react';
-import type { TouchEvent as ReactTouchEvent } from 'react';
-import type { CanvasDevice, ContextMenuMode, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
+import React, { useCallback, useState } from 'react';
+import type { MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from 'react';
+import type { CanvasConnection, CanvasDevice, ContextMenuMode, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { MOMENTUM_DECAY, MOMENTUM_MIN_SPEED, MOMENTUM_THRESHOLD } from '@/components/network/NetworkTopology/utils/networkTopology.constants';
+import { getOptimalTargetPort } from '@/components/network/NetworkTopology/utils/networkTopology.helpers';
 
 export interface UseTopologyTouchProps {
   canvasRef: React.RefObject<HTMLDivElement | null>;
@@ -52,6 +53,9 @@ export interface UseTopologyTouchProps {
   pingSource?: CanvasDevice | null;
   pingModeRef?: React.MutableRefObject<boolean>;
   pingSourceRef?: React.MutableRefObject<CanvasDevice | null>;
+  connectionStartRef?: React.MutableRefObject<{ deviceId: string; portId: string; point: { x: number; y: number } } | null>;
+  topologyConnections?: CanvasConnection[];
+  handlePortClick?: (e: ReactMouseEvent, deviceId: string, portId: string) => void;
 }
 
 export function useTopologyTouch({
@@ -103,6 +107,9 @@ export function useTopologyTouch({
   pingSource = null,
   pingModeRef,
   pingSourceRef,
+  connectionStartRef,
+  topologyConnections,
+  handlePortClick,
 }: UseTopologyTouchProps) {
   const [isTouchDragging, setIsTouchDragging] = useState(false);
   const [touchDraggedDevice, setTouchDraggedDevice] = useState<CanvasDevice | null>(null);
@@ -151,6 +158,28 @@ export function useTopologyTouch({
 
     if (e.touches.length !== 1) return;
     e.stopPropagation();
+
+    if (isDrawingConnectionRef?.current && connectionStartRef?.current) {
+      const targetDevice = deviceMap.get(deviceId);
+      if (targetDevice) {
+        if (connectionStartRef.current.deviceId === deviceId) {
+          if (targetDevice.ports[0] && handlePortClick) {
+            handlePortClick(e as unknown as ReactMouseEvent, deviceId, targetDevice.ports[0].id);
+          }
+          return;
+        }
+
+        const sourceDevice = deviceMap.get(connectionStartRef.current.deviceId);
+        const targetPort = getOptimalTargetPort(targetDevice, connectionStartRef.current, topologyConnections, sourceDevice);
+
+        if (targetPort && handlePortClick) {
+          handlePortClick(e as unknown as ReactMouseEvent, targetDevice.id, targetPort.id);
+        } else if (targetDevice.ports[0] && handlePortClick) {
+          handlePortClick(e as unknown as ReactMouseEvent, targetDevice.id, targetDevice.ports[0].id);
+        }
+      }
+      return;
+    }
 
     if (!canvasRef.current) return;
 
@@ -210,7 +239,25 @@ export function useTopologyTouch({
       }, LONG_PRESS_DURATION);
       setLongPressTimer(timer);
     }
-  }, [devices, pan, zoom, longPressTimer, handleDeviceDoubleClick, selectedDeviceIds, openContextMenu]);
+  }, [
+    devices,
+    pan,
+    zoom,
+    longPressTimer,
+    handleDeviceDoubleClick,
+    selectedDeviceIds,
+    openContextMenu,
+    isDrawingConnectionRef,
+    connectionStartRef,
+    deviceMap,
+    handlePortClick,
+    topologyConnections,
+    saveToHistory,
+    setSelectedDeviceIds,
+    canvasRef,
+    activePointerDragRef,
+    dragStartDevicePositionsRef,
+  ]);
 
   const handleDeviceTouchMove = useCallback((e: ReactTouchEvent) => {
     if (e.touches.length !== 1 || !touchDraggedDevice || !canvasRef.current) return;

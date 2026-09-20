@@ -1,4 +1,4 @@
-﻿import { useCallback, Dispatch, SetStateAction } from 'react';
+import { useCallback, Dispatch, SetStateAction } from 'react';
 import { CanvasDevice, CanvasConnection, ContextMenuState } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { logger } from '@/lib/logger';
 
@@ -49,6 +49,11 @@ export function useTopologyDeviceActions({
           : d
       )
     );
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('update-topology-device-config', {
+        detail: { deviceId, config: updates }
+      }));
+    }
     setConfiguringDevice(null);
   }, [saveToHistory, setDevices, setConfiguringDevice]);
 

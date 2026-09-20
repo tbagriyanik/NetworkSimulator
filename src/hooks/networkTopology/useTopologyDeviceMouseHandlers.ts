@@ -1,9 +1,9 @@
-﻿import { useCallback, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from 'react';
-import type { CanvasDevice, DeviceType, ContextMenuState } from '@/components/network/NetworkTopology/types/networkTopology.types';
+import type { CanvasConnection, CanvasDevice, DeviceType, ContextMenuState } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { PingAnimationState } from './usePingSequence';
 import type { HopPacketInfo } from '@/components/network/PingPacketInfoPanel';
-import { isSwitchDeviceType } from '@/components/network/NetworkTopology/utils/networkTopology.helpers';
+import { isSwitchDeviceType, getOptimalTargetPort } from '@/components/network/NetworkTopology/utils/networkTopology.helpers';
 
 export interface UseTopologyDeviceMouseHandlersOptions {
   devices: CanvasDevice[];
@@ -36,6 +36,10 @@ export interface UseTopologyDeviceMouseHandlersOptions {
   setPingAnimation: React.Dispatch<React.SetStateAction<PingAnimationState | null>>;
   setHopPacketInfos: React.Dispatch<React.SetStateAction<HopPacketInfo[]>>;
   setPacketPopupHop: React.Dispatch<React.SetStateAction<number | null>>;
+  isDrawingConnectionRef?: React.MutableRefObject<boolean>;
+  connectionStartRef?: React.MutableRefObject<{ deviceId: string; portId: string; point: { x: number; y: number } } | null>;
+  topologyConnections?: CanvasConnection[];
+  handlePortClick?: (e: ReactMouseEvent, deviceId: string, portId: string) => void;
 }
 
 export function useTopologyDeviceMouseHandlers({
@@ -69,6 +73,10 @@ export function useTopologyDeviceMouseHandlers({
   setPingAnimation,
   setHopPacketInfos,
   setPacketPopupHop,
+  isDrawingConnectionRef,
+  connectionStartRef,
+  topologyConnections,
+  handlePortClick,
 }: UseTopologyDeviceMouseHandlersOptions) {
   const lastTapTimeRef = useRef(0);
   const lastTappedDeviceRef = useRef<string | null>(null);
@@ -77,6 +85,10 @@ export function useTopologyDeviceMouseHandlers({
     (e: ReactMouseEvent, deviceId: string) => {
       e.stopPropagation();
       if (!canvasRef.current) return;
+
+      if (isDrawingConnectionRef?.current && connectionStartRef?.current) {
+        return;
+      }
 
       const device = deviceMap.get(deviceId);
       if (!device) return;
@@ -172,6 +184,8 @@ export function useTopologyDeviceMouseHandlers({
       setHopPacketInfos,
       setPacketPopupHop,
       setPingMode,
+      isDrawingConnectionRef,
+      connectionStartRef,
     ]
   );
 
@@ -180,6 +194,25 @@ export function useTopologyDeviceMouseHandlers({
       e.stopPropagation();
 
       setContextMenu(null);
+
+      if (isDrawingConnectionRef?.current && connectionStartRef?.current) {
+        if (connectionStartRef.current.deviceId === device.id) {
+          if (device.ports[0] && handlePortClick) {
+            handlePortClick(e, device.id, device.ports[0].id);
+          }
+          return;
+        }
+
+        const sourceDevice = deviceMap.get(connectionStartRef.current.deviceId);
+        const targetPort = getOptimalTargetPort(device, connectionStartRef.current, topologyConnections, sourceDevice);
+
+        if (targetPort && handlePortClick) {
+          handlePortClick(e, device.id, targetPort.id);
+        } else if (device.ports[0] && handlePortClick) {
+          handlePortClick(e, device.id, device.ports[0].id);
+        }
+        return;
+      }
 
       if (wasDraggingRef.current) return;
 
@@ -197,7 +230,22 @@ export function useTopologyDeviceMouseHandlers({
       }
       canvasRef.current?.focus();
     },
-    [onDeviceSelect, pingMode, pingSource, setContextMenu]
+    [
+      onDeviceSelect,
+      pingMode,
+      pingSource,
+      setContextMenu,
+      isDrawingConnectionRef,
+      connectionStartRef,
+      topologyConnections,
+      handlePortClick,
+      setSelectedNoteIds,
+      setSelectedDeviceIds,
+      canvasRef,
+      wasDraggingRef,
+      pingModeRef,
+      pingSourceRef,
+    ]
   );
 
   const handleDeviceDoubleClick = useCallback(
@@ -219,6 +267,36 @@ export function useTopologyDeviceMouseHandlers({
     (e: ReactPointerEvent<SVGGElement>, deviceId: string) => {
       if (e.pointerType === 'mouse') return;
       if (activeDragPointerIdRef.current !== null) return;
+
+      if (isDrawingConnectionRef?.current && connectionStartRef?.current) {
+        e.preventDefault();
+        e.stopPropagation();
+        const device = deviceMap.get(deviceId);
+        if (device) {
+          if (connectionStartRef.current.deviceId === deviceId) {
+            if (device.ports[0] && handlePortClick) {
+              handlePortClick(e as unknown as ReactMouseEvent, deviceId, device.ports[0].id);
+            }
+            return;
+          }
+
+          const availablePort = device.ports.find((p) => {
+            const isConnected = topologyConnections?.some(
+              (c) =>
+                (c.sourceDeviceId === device.id && c.sourcePort === p.id) ||
+                (c.targetDeviceId === device.id && c.targetPort === p.id)
+            ) || p.status === 'connected';
+            return !isConnected;
+          });
+
+          if (availablePort && handlePortClick) {
+            handlePortClick(e as unknown as ReactMouseEvent, device.id, availablePort.id);
+          } else if (device.ports[0] && handlePortClick) {
+            handlePortClick(e as unknown as ReactMouseEvent, device.id, device.ports[0].id);
+          }
+        }
+        return;
+      }
 
       e.preventDefault();
       e.stopPropagation();
@@ -246,7 +324,17 @@ export function useTopologyDeviceMouseHandlers({
 
       handleDeviceMouseDown(e as unknown as ReactMouseEvent, deviceId);
     },
-    [handleDeviceMouseDown, deviceMap, handleDeviceDoubleClick]
+    [
+      handleDeviceMouseDown,
+      deviceMap,
+      handleDeviceDoubleClick,
+      isDrawingConnectionRef,
+      connectionStartRef,
+      topologyConnections,
+      handlePortClick,
+      activeDragPointerIdRef,
+      activePointerDragRef,
+    ]
   );
 
   return { handleDeviceMouseDown, handleDeviceClick, handleDeviceDoubleClick, handleDevicePointerDown };

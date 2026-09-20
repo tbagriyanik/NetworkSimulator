@@ -49,12 +49,13 @@ export function DeviceSelectionGlow({ device, deviceWidth, deviceHeight, isDark 
         </>
       ) : device.type === 'router' ? (
         <>
-          {/* Circular/Oval highlight matching rounded router shape */}
-          <ellipse
-            cx={deviceWidth / 2}
-            cy={deviceHeight / 2}
-            rx={deviceWidth / 2 + pad + 2}
-            ry={deviceHeight / 2 + pad + 2}
+          {/* Rounded rectangle highlight matching router shape */}
+          <rect
+            x={x}
+            y={y}
+            width={w}
+            height={h}
+            rx={16}
             fill="none"
             stroke={SELECTION_HIGHLIGHT_COLOR}
             strokeWidth="3.5"
@@ -62,11 +63,12 @@ export function DeviceSelectionGlow({ device, deviceWidth, deviceHeight, isDark 
             filter="url(#selectionGlowFilter)"
             className="selection-glow"
           />
-          <ellipse
-            cx={deviceWidth / 2}
-            cy={deviceHeight / 2}
-            rx={deviceWidth / 2 + pad + 4}
-            ry={deviceHeight / 2 + pad + 4}
+          <rect
+            x={x - 2}
+            y={y - 2}
+            width={w + 4}
+            height={h + 4}
+            rx={18}
             fill="none"
             stroke={SELECTION_HIGHLIGHT_COLOR}
             strokeWidth="1.5"

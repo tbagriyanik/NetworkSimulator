@@ -633,7 +633,7 @@ export function usePageController({ initialProjectId }: { initialProjectId?: str
     });
   }, []);
 
-  const { handleDeviceDoubleClick, handleDeviceRename, handleUpdateHistory, handleUpdatePCHistory } = useDeviceEdit({ topologyDevices, setActiveDeviceId, setActiveDeviceType, setShowPCDeviceId, setPcPanelInitialTab, setUnifiedDeviceActiveTab, setDeviceStates, setPcHistories, getOrCreatePCOutputs, getOrCreateDeviceState, getOrCreateDeviceOutputs });
+  const { handleDeviceDoubleClick, handleDeviceRename, handleUpdateHistory, handleUpdatePCHistory } = useDeviceEdit({ topologyDevices, setActiveDeviceId, setActiveDeviceType, setShowPCDeviceId, setPcPanelInitialTab, setUnifiedDeviceActiveTab, setDeviceStates, setPcHistories, getOrCreatePCOutputs, getOrCreateDeviceState, getOrCreateDeviceOutputs, setTopologyDevices });
 
   const handleDeviceDelete = useDeviceDelete({
     showPCDeviceId, showRouterDeviceId, activeDeviceId, selectedDevice, setShowPCPanel, setShowPCDeviceId, setShowRouterPanel,

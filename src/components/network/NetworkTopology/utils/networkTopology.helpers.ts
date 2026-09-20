@@ -1,6 +1,5 @@
-﻿import { DeviceType } from '../types/networkTopology.types';
+import { DeviceType, CanvasPort, CanvasDevice, CanvasConnection } from '../types/networkTopology.types';
 import { PORT_SPACING, PORT_START_X, PORT_START_Y, PC_PORT_SPACING } from './networkTopology.constants';
-import { CanvasDevice, CanvasConnection } from '../types/networkTopology.types';
 import { isCableCompatible, CABLE_COMPATIBILITY } from '@/lib/network/types';
 import { isModulePort } from '@/lib/network/portUtils';
 
@@ -246,5 +245,71 @@ export const mergeSelectionIds = (boxSelectedIds: string[], isAdditive: boolean,
   if (!isAdditive) return boxSelectedIds;
   return Array.from(new Set([...baseIds, ...boxSelectedIds]));
 };
+
+/**
+ * Finds the optimal target port on a device based on whether the source connection is a console port.
+ * If the source is a console/RS232 port or cable is console, prefers an available console port.
+ * Otherwise, prefers an available standard (non-console/non-serial) network port.
+ */
+export const getOptimalTargetPort = (
+  targetDevice: CanvasDevice,
+  sourceConnection: { deviceId: string; portId: string } | null,
+  topologyConnections: CanvasConnection[] | undefined,
+  sourceDevice?: CanvasDevice | null
+): CanvasPort | undefined => {
+  if (!targetDevice.ports || targetDevice.ports.length === 0) return undefined;
+
+  const isPortBusy = (portId: string) => {
+    return (
+      topologyConnections?.some(
+        (c) =>
+          (c.sourceDeviceId === targetDevice.id && c.sourcePort === portId) ||
+          (c.targetDeviceId === targetDevice.id && c.targetPort === portId)
+      ) || false
+    );
+  };
+
+  const isConsolePort = (portId: string | undefined, portType?: string) => {
+    if (!portId) return false;
+    const lower = portId.toLowerCase();
+    return (
+      lower === 'console' ||
+      lower === 'com1' ||
+      lower === 'com2' ||
+      lower === 'com' ||
+      lower === 'rs232' ||
+      portType === 'console'
+    );
+  };
+
+  const sourcePortId = sourceConnection?.portId;
+  const sourcePortType = sourceDevice?.ports?.find((p) => p.id === sourcePortId)?.type;
+  const isSourceConsole = isConsolePort(sourcePortId, sourcePortType);
+
+  if (isSourceConsole) {
+    // Look for an available console port on target device
+    const availableConsolePort = targetDevice.ports.find((p) => {
+      if (!isConsolePort(p.id, p.type)) return false;
+      if (p.status === 'connected' || isPortBusy(p.id)) return false;
+      return true;
+    });
+    if (availableConsolePort) return availableConsolePort;
+  } else {
+    // Look for an available standard network port (exclude console, rs232, serial, wlan)
+    const availableStandardPort = targetDevice.ports.find((p) => {
+      if (isConsolePort(p.id, p.type)) return false;
+      const lower = p.id.toLowerCase();
+      if (lower.startsWith('wlan') || p.type === 'wireless') return false;
+      if (p.status === 'connected' || isPortBusy(p.id)) return false;
+      return true;
+    });
+    if (availableStandardPort) return availableStandardPort;
+  }
+
+  // Fallback to any first free port
+  const anyFreePort = targetDevice.ports.find((p) => p.status !== 'connected' && !isPortBusy(p.id));
+  return anyFreePort || targetDevice.ports[0];
+};
+
 
 

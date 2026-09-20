@@ -267,42 +267,55 @@ export function DeviceConfigModal({
   }, [onClose]);
 
   const handleSave = () => {
-    const nextIp = ipValue.trim();
-    const nextSubnet = subnetValue.trim();
-    const nextGateway = gatewayValue.trim();
-    const nextDns = dnsValue.trim();
-    const nextIpv6 = ipv6Value.trim();
-
-    if (!isValidIpv4(nextIp)) {
-      setConfigError(t.invalidIpv4Address || 'Enter a valid IPv4 address.');
-      return;
-    }
-    if (!isValidIpv4(nextSubnet)) {
-      setConfigError(t.invalidSubnetMask);
-      return;
-    }
-    if (!isValidIpv4(nextGateway)) {
-      setConfigError(t.invalidGatewayAddress);
-      return;
-    }
-    if (!isValidIpv4(nextDns)) {
-      setConfigError(t.invalidDnsAddress);
-      return;
-    }
-    if (!isValidIpv6(nextIpv6)) {
-      setConfigError(t.invalidIpv6Address);
+    const nextName = tempNameValue.trim() || device.name;
+    if (!nextName) {
+      setConfigError(language === 'tr' ? 'Cihaz adı boş olamaz.' : 'Device name cannot be empty.');
       return;
     }
 
-    setConfigError('');
-    onSave(device.id, {
-      name: tempNameValue.trim() || device.name,
-      ip: nextIp,
-      subnet: nextSubnet,
-      ipv6: nextIpv6,
-      gateway: nextGateway,
-      dns: nextDns
-    });
+    if (device.type === 'pc' || device.type === 'iot') {
+      const nextIp = ipValue.trim();
+      const nextSubnet = subnetValue.trim();
+      const nextGateway = gatewayValue.trim();
+      const nextDns = dnsValue.trim();
+      const nextIpv6 = ipv6Value.trim();
+
+      if (!isValidIpv4(nextIp)) {
+        setConfigError(t.invalidIpv4Address || 'Enter a valid IPv4 address.');
+        return;
+      }
+      if (!isValidIpv4(nextSubnet)) {
+        setConfigError(t.invalidSubnetMask);
+        return;
+      }
+      if (!isValidIpv4(nextGateway)) {
+        setConfigError(t.invalidGatewayAddress);
+        return;
+      }
+      if (!isValidIpv4(nextDns)) {
+        setConfigError(t.invalidDnsAddress);
+        return;
+      }
+      if (!isValidIpv6(nextIpv6)) {
+        setConfigError(t.invalidIpv6Address);
+        return;
+      }
+
+      setConfigError('');
+      onSave(device.id, {
+        name: nextName,
+        ip: nextIp,
+        subnet: nextSubnet,
+        ipv6: nextIpv6,
+        gateway: nextGateway,
+        dns: nextDns
+      });
+    } else {
+      setConfigError('');
+      onSave(device.id, {
+        name: nextName
+      });
+    }
   };
 
   return (

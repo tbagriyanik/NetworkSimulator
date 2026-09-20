@@ -8,11 +8,12 @@ import { buildRunningConfig } from '@/lib/network/core/configBuilder';
 import { useMultiWindowStore } from '@/hooks/useMultiWindowStore';
 import { useWindowStore } from '@/hooks/useWindowStore';
 
-export function useDeviceEdit({ topologyDevices, setActiveDeviceId, setActiveDeviceType, setShowPCDeviceId, setPcPanelInitialTab, setUnifiedDeviceActiveTab, setDeviceStates, setPcHistories, getOrCreatePCOutputs, getOrCreateDeviceState, getOrCreateDeviceOutputs }: {
+export function useDeviceEdit({ topologyDevices, setActiveDeviceId, setActiveDeviceType, setShowPCDeviceId, setPcPanelInitialTab, setUnifiedDeviceActiveTab, setDeviceStates, setPcHistories, getOrCreatePCOutputs, getOrCreateDeviceState, getOrCreateDeviceOutputs, setTopologyDevices }: {
   topologyDevices: CanvasDevice[]; setActiveDeviceId: (id: string) => void; setActiveDeviceType: (type: DeviceType) => void;
   setShowPCDeviceId: (id: string) => void; setPcPanelInitialTab: (tab: 'home' | 'desktop' | 'terminal' | 'settings' | 'services' | 'wireless' | 'iot') => void; setUnifiedDeviceActiveTab: (tab: 'console' | 'settings' | 'stp' | 'physical') => void;
   setDeviceStates: React.Dispatch<React.SetStateAction<Map<string, SwitchState>>>; setPcHistories: React.Dispatch<React.SetStateAction<Map<string, string[]>>>;
   getOrCreatePCOutputs: (id: string, devices?: CanvasDevice[]) => unknown[]; getOrCreateDeviceState: (deviceId: string, deviceType: DeviceType, initialHostname?: string, initialMac?: string, switchModel?: string, initialServices?: CanvasDevice['services']) => SwitchState; getOrCreateDeviceOutputs: (deviceId: string, deviceStateArg?: SwitchState) => TerminalOutput[];
+  setTopologyDevices?: React.Dispatch<React.SetStateAction<CanvasDevice[]>>;
 }) {
   const handleDeviceDoubleClick = useCallback((device: DeviceType, deviceId: string) => {
     const { openDeviceWindow, restoreWindow } = useMultiWindowStore.getState();
@@ -27,8 +28,24 @@ export function useDeviceEdit({ topologyDevices, setActiveDeviceId, setActiveDev
   }, [getOrCreateDeviceOutputs, getOrCreateDeviceState, getOrCreatePCOutputs, setActiveDeviceId, setActiveDeviceType, setPcPanelInitialTab, setShowPCDeviceId, setUnifiedDeviceActiveTab, topologyDevices]);
 
   const handleDeviceRename = useCallback((deviceId: string, newName: string) => {
-    setDeviceStates((previous) => { const state = previous.get(deviceId); if (!state) return previous; const updated = { ...state, hostname: newName }; updated.runningConfig = buildRunningConfig(updated); return new Map(previous).set(deviceId, updated); });
-  }, [setDeviceStates]);
+    const trimmed = newName.trim();
+    if (!trimmed) return;
+    setDeviceStates((previous) => {
+      const state = previous.get(deviceId);
+      if (!state) return previous;
+      const updated = { ...state, hostname: trimmed };
+      updated.runningConfig = buildRunningConfig(updated);
+      return new Map(previous).set(deviceId, updated);
+    });
+    setTopologyDevices?.((prev) =>
+      prev.map((d) => (d.id === deviceId ? { ...d, name: trimmed } : d))
+    );
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('update-topology-device-config', {
+        detail: { deviceId, config: { name: trimmed } }
+      }));
+    }
+  }, [setDeviceStates, setTopologyDevices]);
   const handleUpdateHistory = useCallback((deviceId: string, history: string[]) => setDeviceStates((previous) => { const state = previous.get(deviceId); return state ? new Map(previous).set(deviceId, { ...state, commandHistory: history }) : previous; }), [setDeviceStates]);
   const handleUpdatePCHistory = useCallback((deviceId: string, history: string[]) => setPcHistories((previous) => new Map(previous).set(deviceId, history)), [setPcHistories]);
   return { handleDeviceDoubleClick, handleDeviceRename, handleUpdateHistory, handleUpdatePCHistory };

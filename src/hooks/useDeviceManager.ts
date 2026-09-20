@@ -89,12 +89,18 @@ export function useDeviceManager() {
       const { deviceId, nextStatus, switchModel: incomingModel, deviceType } = event.detail;
 
       if (nextStatus === 'online') {
-        // PC and IoT devices should not get switch boot messages
-        if (deviceType === 'pc' || deviceId.includes('pc-') || deviceType === 'iot' || deviceId.includes('iot-')) {
-          // Initialize PC/IoT outputs instead of switch boot sequence
+        // Non-CLI / end devices should not get switch boot messages or switch state reset
+        const isEndDevice = deviceType === 'pc' || deviceId.includes('pc-') ||
+          deviceType === 'iot' || deviceId.includes('iot-') ||
+          deviceType === 'printer' || deviceId.includes('printer') ||
+          deviceType === 'mobile' || deviceId.includes('mobile') ||
+          deviceType === 'hub' || deviceId.includes('hub') ||
+          deviceType === 'cloud' || deviceId.includes('cloud');
+
+        if (isEndDevice) {
+          // Initialize end device outputs if not present
           const existingOutputs = pcOutputs.get(deviceId);
           if (!existingOutputs) {
-            // PC/IoT outputs will be created when panel is opened
             setPcOutputs(prev => new Map(prev).set(deviceId, []));
           }
           return;
@@ -105,19 +111,22 @@ export function useDeviceManager() {
         const isRouter = deviceType === 'router' || deviceId.includes('router') || existingState?.switchLayer === 'L3';
         const isSwitchL3 = deviceType === 'switchL3' || existingState?.switchLayer === 'L3' || existingState?.switchModel === 'NS-L3-24PS';
         const isWLC = deviceType === 'wlc' || deviceId.includes('wlc') || existingState?.switchLayer === 'WLC';
+        const isFirewall = deviceType === 'firewall' || deviceId.includes('firewall') || deviceId.includes('fw');
 
         // Get the switch model from existing state or default. L3 switches use the NS-L3-24PS model.
-        const switchModel = existingState?.switchModel || incomingModel || (isWLC ? 'NS-WLC-2504' : isRouter || isSwitchL3 ? 'NS-L3-24PS' : 'NS-L2-24TT-L');
+        const switchModel = existingState?.switchModel || incomingModel || (isWLC ? 'NS-WLC-2504' : isRouter || isSwitchL3 ? 'NS-L3-24PS' : isFirewall ? 'NS-FW-5506' : 'NS-L2-24TT-L');
         const baseState = isRouter
           ? createInitialRouterState(existingState?.macAddress)
           : isWLC
             ? createInitialWLCState(existingState?.macAddress)
-            : createInitialState(existingState?.macAddress, switchModel as 'NS-L2-24TT-L' | 'NS-L3-24PS');
+            : isFirewall
+              ? createInitialFirewallState(existingState?.macAddress)
+              : createInitialState(existingState?.macAddress, switchModel as 'NS-L2-24TT-L' | 'NS-L3-24PS');
 
         // Get existing state to preserve saved configuration and identity
         const startupConfig = existingState?.startupConfig;
-        const defaultHostname = isRouter ? 'Router' : isWLC ? 'WLC' : 'Switch';
-        const hostname = startupConfig ? (existingState?.hostname || defaultHostname) : defaultHostname;
+        const defaultHostname = isRouter ? 'Router' : isWLC ? 'WLC' : isFirewall ? 'asa' : 'Switch';
+        const hostname = startupConfig ? (existingState?.hostname || defaultHostname) : (existingState?.hostname || defaultHostname);
 
         const baseIdentityState: SwitchState = {
           ...baseState,
@@ -549,6 +558,13 @@ export function useDeviceManager() {
         }
 
         if (newState) {
+          const currentState = deviceStatesRef.current.get(deviceId) || deviceState;
+          if (newState.hostname && newState.hostname !== currentState.hostname) {
+            window.dispatchEvent(new CustomEvent('update-topology-device-config', {
+              detail: { deviceId, config: { name: newState.hostname } }
+            }));
+          }
+
           const shouldPropagateVlans = !!topologyConnections && !!topologyDevices && (
             /^(no\s+)?vlan\s+\d+/i.test(command.trim()) ||
             /^switchport\s+access\s+vlan\s+\d+/i.test(command.trim())
@@ -556,8 +572,8 @@ export function useDeviceManager() {
           setDeviceStates(prev => {
             const next = new Map(prev);
             // Use deviceStatesRef to get fresh state
-            const currentState = deviceStatesRef.current.get(deviceId) || deviceState;
-            const mergedState = { ...currentState, ...newState, runningConfig: buildRunningConfig({ ...currentState, ...newState }) };
+            const current = deviceStatesRef.current.get(deviceId) || deviceState;
+            const mergedState = { ...current, ...newState, runningConfig: buildRunningConfig({ ...current, ...newState }) };
             next.set(deviceId, mergedState);
             // Update ref immediately
             deviceStatesRef.current = next;

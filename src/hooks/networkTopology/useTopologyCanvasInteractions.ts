@@ -313,6 +313,29 @@ export function useTopologyCanvasInteractions(
     previousCableTypeRef,
   });
 
+  const portConnection = useTopologyPortConnection({
+    deviceMap,
+    topologyConnections,
+    connections,
+    devices,
+    cableInfo,
+    onCableChange,
+    saveToHistory,
+    setConnections,
+    setDevices,
+    setIsDrawingConnection,
+    setConnectionStart,
+    setConnectionError,
+    cancelConnectionDrawing: connectionDrawing.cancelConnectionDrawing,
+    isDrawingConnectionRef,
+    connectionStartRef,
+    isActuallyDraggingRef,
+    isTouchDraggingRef,
+    language,
+    t: { portInUse: t.portInUse },
+    previousCableTypeRef,
+  });
+
   const pingController = useTopologyPingController({
     connections,
     deviceStates,
@@ -427,6 +450,10 @@ export function useTopologyCanvasInteractions(
     setPingAnimation,
     setHopPacketInfos,
     setPacketPopupHop,
+    isDrawingConnectionRef,
+    connectionStartRef,
+    topologyConnections,
+    handlePortClick: portConnection.handlePortClick,
   });
 
   const deviceNavigation = useDeviceNavigation({
@@ -491,6 +518,9 @@ export function useTopologyCanvasInteractions(
     pingSource,
     pingModeRef,
     pingSourceRef,
+    connectionStartRef,
+    topologyConnections,
+    handlePortClick: portConnection.handlePortClick,
   });
 
   useLayoutEffect(() => {
@@ -569,29 +599,6 @@ export function useTopologyCanvasInteractions(
     pingMode,
     pingSource,
     language,
-  });
-
-  const portConnection = useTopologyPortConnection({
-    deviceMap,
-    topologyConnections,
-    connections,
-    devices,
-    cableInfo,
-    onCableChange,
-    saveToHistory,
-    setConnections,
-    setDevices,
-    setIsDrawingConnection,
-    setConnectionStart,
-    setConnectionError,
-    cancelConnectionDrawing: connectionDrawing.cancelConnectionDrawing,
-    isDrawingConnectionRef,
-    connectionStartRef,
-    isActuallyDraggingRef,
-    isTouchDraggingRef,
-    language,
-    t: { portInUse: t.portInUse },
-    previousCableTypeRef,
   });
 
   const noteActions = useTopologyNoteActions({
