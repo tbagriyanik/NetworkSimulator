@@ -67,7 +67,7 @@ describe('Parser module pattern overlaps', () => {
  * bare, so it must validate to a command (not "invalid input") from a device
  * fixture that supports its capability, in one of its declared modes.
  *
- * Two allowed exceptions keep the test honest about Cisco-style prefix
+ * Two allowed exceptions keep the test honest about prefix
  * nesting without permitting silent regressions:
  *
  *  1. FIXTURE_GAP — the fixture used cannot satisfy the pattern (e.g. the
