@@ -4,6 +4,7 @@
 
 - **🧹 Kod Modülarizasyonu & 1500 Satır Limiti Uyumlaştırması**: `routingPatterns.ts`, `interfacePatterns.ts`, `commandAliases.ts`, `useDeviceManager.ts` ve `usePageController.tsx` modüler bileşenlere bölünerek 1500 satır sınırı korundu ve projedeki tüm dokümantasyon dosyalarının sürüm/güncelleme tarihleri senkronize edildi.
 - **🎮 Etkileşimli Düzen:** Test formu yerine çalışma alanı üzerinde oynanabilir görev akışı eklendi. PC, switch ve router ekleme/bağlama, IP inceleme-yapılandırma, cihaz arayüzünü etkinleştirme ve siber güvenlik senaryoları gerçek ağ durumundan doğrulanıyor. Görev türleri ve parametreleri çeşitleniyor; ipucu, sonraki görev ve aşamayı geç seçenekleri, otomatik kayıt, puan/kademe saklama ve yeniden başlatma desteği sunuluyor. Pencere sürükleme, yeniden boyutlandırma, daraltma, ESC/mobil geri ile kapanma ve proje/snapshot işlemlerinden sonra otomatik kapanma davranışları da eklendi.
+- **📋 Dokümantasyon Kapsam Düzeltmesi:** NetFlow/sFlow, MQTT, CoAP, NETCONF-YANG ve RESTCONF özelliklerinin CLI/parser, state, paket etkileşimi ve gerçek protokol davranışı bakımından aynı seviyede olmadığı README’de açıkça belirtildi. Bu özellikler tam üretim protokol yığını yerine eğitim amaçlı simülasyon kapsamı olarak tanımlandı.
 
 ## v6.1.0 — 2026-09-19
 
