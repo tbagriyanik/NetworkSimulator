@@ -1,13 +1,16 @@
 'use client';
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { Laptop, Terminal as TerminalIcon, CornerDownLeft, Trash2, Pin } from 'lucide-react';
+import { Terminal as TerminalIcon, CornerDownLeft, Pin, Laptop } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ShortcutBadge } from '@/components/ui/ShortcutBadge';
-import { cn, triggerHapticFeedback } from '@/lib/utils';
+import { cn } from '@/lib/utils';
+
 import { secureStorage } from '@/lib/storage/secureStorage';
 import type { OutputLine, FtpSession, PythonSession } from './PCPanel.types';
 import { executeLinuxCommand, formatLinuxPath, getLinuxSuggestions } from './pcLinuxExecutor';
+import { CommandLineSettingsBar } from './CommandLineSettingsBar';
+import { CommandLineAutocompleteBox } from './CommandLineAutocompleteBox';
+
 
 interface CommandLineTabProps {
   isDark: boolean;
@@ -85,7 +88,7 @@ export function CommandLineTab({
   shouldShowAutocomplete,
   renderAutocompleteSuggestions,
   autocompleteIndex = 0,
-  completeAutocompleteSelection = () => {},
+  completeAutocompleteSelection = () => { },
   executeCommand,
   handleInputChange,
   handleKeyDown,
@@ -563,36 +566,16 @@ export function CommandLineTab({
       </div>
 
       {/* Settings Bar */}
-      {showCmdSettings && (
-        <div className="px-3 md:px-4 py-2 border-b bg-muted/30 flex items-center gap-4 animate-in slide-in-from-top-2 shrink-0">
-          <label className="text-[10px] font-black tracking-widest text-muted-foreground whitespace-nowrap">
-            {t.fontSizeLabel}: {fontSize}px
-          </label>
-          <input
-            type="range" min="10" max="20" value={fontSize}
-            aria-label={t.fontSizeLabel}
-            onChange={(e) => handleFontSizeChange(parseInt(e.target.value, 10))}
-            className="flex-1 h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-          />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              triggerHapticFeedback('light');
-              if (activeTerminalTab === 'cmd') {
-                setPcOutput([]);
-              } else {
-                setLinuxOutput([]);
-              }
-            }}
-            className="h-7 text-[10px] font-black tracking-widest text-error-500 gap-1.5"
-          >
-            <Trash2 className="w-3 h-3" />
-            {t.clearTerminalBtn}
-            <ShortcutBadge shortcut="Ctrl+L" variant="danger" className="scale-75 origin-right" />
-          </Button>
-        </div>
-      )}
+      <CommandLineSettingsBar
+        showCmdSettings={showCmdSettings}
+        fontSize={fontSize}
+        handleFontSizeChange={handleFontSizeChange}
+        activeTerminalTab={activeTerminalTab}
+        setPcOutput={setPcOutput}
+        setLinuxOutput={setLinuxOutput}
+        t={t}
+      />
+
 
       {/* Output History Area - Font size slider applies HERE ONLY */}
       <div
@@ -603,7 +586,7 @@ export function CommandLineTab({
         onMouseUp={() => {
           const selectedText = window.getSelection()?.toString();
           if (selectedText && selectedText.trim().length > 0) {
-            navigator.clipboard?.writeText(selectedText)?.catch?.(() => {});
+            navigator.clipboard?.writeText(selectedText)?.catch?.(() => { });
           }
         }}
         onWheel={(event) => {
@@ -911,87 +894,25 @@ export function CommandLineTab({
             </div>
 
             {isAutocompleteVisible && (
-              <div
-                ref={autocompleteRef}
-                className="absolute bottom-20 left-4 z-20 w-[min(420px,calc(100%-2rem))]"
-              >
-                <div className={cn(
-                  "rounded-lg border shadow-xl overflow-hidden",
-                  isDark ? "bg-secondary-800 border-secondary-700" : "bg-white border-secondary-200"
-                )}>
-                  <div className={cn(
-                    "flex items-center justify-between px-3 py-2 text-[11px] font-geist-mono font-semibold",
-                    isDark ? 'text-secondary-200 bg-secondary-900/60' : 'text-secondary-700 bg-secondary-50'
-                  )}>
-                    <span>{activeTerminalTab === 'cmd' ? t.cmdSuggestions : (language === 'tr' ? 'Linux Komut ve Dosya Önerileri' : 'Linux Suggestions')}</span>
-                    <span className={cn("text-[10px] font-bold", isDark ? 'text-accent-300' : 'text-accent-700')}>
-                      ↑↓ {language === 'tr' ? 'Seç' : 'Navigate'} | Tab ↹ {t.completeWithTab}
-                    </span>
-                  </div>
-                  <div className="max-h-40 overflow-y-auto overflow-x-hidden mobile-scroll custom-scrollbar font-geist-mono flex flex-col">
-                    {activeTerminalTab === 'cmd' ? (
-                      Array.isArray(renderAutocompleteSuggestions) ? (
-                        (renderAutocompleteSuggestions as string[]).map((cmd, idx) => (
-                          <button
-                            key={`${cmd}-${idx}`}
-                            type="button"
-                            data-autocomplete-index={idx}
-                            onClick={() => {
-                              completeAutocompleteSelection(cmd);
-                              inputRef.current?.focus();
-                            }}
-                            className={cn(
-                              "w-full text-left px-3 py-1.5 text-xs transition-colors flex items-center justify-between font-geist-mono",
-                              idx === autocompleteIndex
-                                ? (isDark ? "bg-accent-500/20 text-accent-300 font-semibold" : "bg-accent-50 text-accent-700 font-semibold")
-                                : (isDark ? "text-secondary-300 hover:bg-secondary-700/50" : "text-secondary-700 hover:bg-secondary-100")
-                            )}
-                          >
-                            <span>{cmd}</span>
-                            {idx === autocompleteIndex && (
-                              <span className="text-[10px] opacity-75">{language === 'tr' ? 'Seçildi' : 'Selected'}</span>
-                            )}
-                          </button>
-                        ))
-                      ) : (
-                        renderAutocompleteSuggestions
-                      )
-                    ) : (
-                      linuxFilteredSuggestions.map((cmd, idx) => (
-                        <button
-                          key={`${cmd}-${idx}`}
-                          type="button"
-                          data-autocomplete-index={idx}
-                          onMouseEnter={() => setLinuxAutocompleteIndex(idx)}
-                          onClick={() => {
-                            let completedText = cmd;
-                            if (cmd.includes(' ')) {
-                              const parts = input.trim().split(/\s+/);
-                              parts[parts.length - 1] = cmd;
-                              completedText = parts.join(' ');
-                            }
-                            setInput(completedText + ' ');
-                            setIsLinuxAutocompleteDismissed(true);
-                            setLinuxAutocompleteIndex(-1);
-                          }}
-                          className={cn(
-                            "w-full text-left px-3 py-1.5 text-xs transition-colors flex items-center justify-between font-geist-mono",
-                            idx === linuxAutocompleteIndex
-                              ? (isDark ? "bg-accent-500/20 text-accent-300 font-semibold" : "bg-accent-50 text-accent-700 font-semibold")
-                              : (isDark ? "text-secondary-300 hover:bg-secondary-700/50" : "text-secondary-700 hover:bg-secondary-100")
-                          )}
-                        >
-                          <span>{cmd}</span>
-                          {idx === linuxAutocompleteIndex && (
-                            <span className="text-[10px] opacity-75">{language === 'tr' ? 'Seçildi' : 'Selected'}</span>
-                          )}
-                        </button>
-                      ))
-                    )}
-                  </div>
-                </div>
-              </div>
+              <CommandLineAutocompleteBox
+                isDark={isDark}
+                language={language}
+                activeTerminalTab={activeTerminalTab}
+                autocompleteRef={autocompleteRef}
+                renderAutocompleteSuggestions={renderAutocompleteSuggestions}
+                autocompleteIndex={autocompleteIndex}
+                completeAutocompleteSelection={completeAutocompleteSelection}
+                inputRef={inputRef}
+                linuxFilteredSuggestions={linuxFilteredSuggestions}
+                linuxAutocompleteIndex={linuxAutocompleteIndex}
+                setLinuxAutocompleteIndex={setLinuxAutocompleteIndex}
+                setInput={setInput}
+                setIsLinuxAutocompleteDismissed={setIsLinuxAutocompleteDismissed}
+                input={input}
+                t={t}
+              />
             )}
+
 
             <Button
               type="submit"

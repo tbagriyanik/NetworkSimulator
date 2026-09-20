@@ -3,6 +3,7 @@
 ## v6.2.0 — 2026-09-20
 
 - **🧹 Kod Modülarizasyonu & 1500 Satır Limiti Uyumlaştırması**: `routingPatterns.ts`, `interfacePatterns.ts`, `commandAliases.ts`, `useDeviceManager.ts` ve `usePageController.tsx` modüler bileşenlere bölünerek 1500 satır sınırı korundu ve projedeki tüm dokümantasyon dosyalarının sürüm/güncelleme tarihleri senkronize edildi.
+- **🎮 Etkileşimli Düzen:** Test formu yerine çalışma alanı üzerinde oynanabilir görev akışı eklendi. PC, switch ve router ekleme/bağlama, IP inceleme-yapılandırma, cihaz arayüzünü etkinleştirme ve siber güvenlik senaryoları gerçek ağ durumundan doğrulanıyor. Görev türleri ve parametreleri çeşitleniyor; ipucu, sonraki görev ve aşamayı geç seçenekleri, otomatik kayıt, puan/kademe saklama ve yeniden başlatma desteği sunuluyor. Pencere sürükleme, yeniden boyutlandırma, daraltma, ESC/mobil geri ile kapanma ve proje/snapshot işlemlerinden sonra otomatik kapanma davranışları da eklendi.
 
 ## v6.1.0 — 2026-09-19
 

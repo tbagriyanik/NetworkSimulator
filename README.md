@@ -43,6 +43,7 @@ npm run check
 - **📸 Topoloji Anlık Görüntü & Geri Yükleme:** Ağ topolojisini tek tıkla dondurma, kontrol noktaları (Checkpoint) oluşturma, JSON dışa/içe aktarma ve anlık geri yükleme.
 - **🐍 Python Yorumlayıcısı, Dosya & GUI/Ses/3D İşlemleri:** PC terminalinde OOP, Decorator, Generator, `open()` ile sanal dosya I/O; `tkinter`/`form` ile görsel pencereli form uygulamaları; Web Audio API tabanlı dinamik nota/akor/müzik ve ses efekti (`audio`/`music`/`synth`) sentezleme; `scene3d`/`three3d` ile interaktif 3D sahne, katı geometri (CSG) ve ışıklandırma motoru; soket ağ programlama.
 - **🔍 Gelişmiş Teşhis & Sağlık Denetimi:** Native VLAN mismatch, çakışan IP/MAC tespiti, routing loop tespiti, orphan port denetimi ve tek komutla `show network health` raporu.
+- **🎮 Etkileşimli Düzen:** Ağ cihazlarını çalışma alanına ekleyip bağlayarak ilerlenen, gerçek network durumunu doğrulayan çeşitli görevler; ipucu, sonraki görev ve geç seçenekleri; farklı parametrelerle değişen öğrenme akışı; otomatik ilerleme kaydı, puan/kademe saklama ve kaldığı yerden devam desteği.
 
 ---
 
