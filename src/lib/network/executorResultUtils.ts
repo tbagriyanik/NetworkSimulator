@@ -16,12 +16,66 @@ export function processCommandResult(result: CommandResult, input: string, mode:
   return result;
 }
 
-export function applyPipeFilterOutput(output: string, filter: { type: 'include' | 'exclude' | 'begin' | 'section'; query: string }): string {
-  const lines = output.split('\n'); const q = filter.query.toLowerCase(); const match = (line: string) => line.toLowerCase().includes(q);
-  if (filter.type === 'include') return lines.filter(match).join('\n');
-  if (filter.type === 'exclude') return lines.filter(line => !match(line)).join('\n');
-  if (filter.type === 'begin') { const idx = lines.findIndex(match); return idx >= 0 ? lines.slice(idx).join('\n') : ''; }
-  const out: string[] = [];
-  for (let i = 0; i < lines.length; i++) { if (!match(lines[i])) continue; out.push(lines[i]); for (let j = i + 1; j < lines.length; j++) { const line = lines[j]; if (line.startsWith(' ') || line.startsWith('\t') || line.trim() === '!') out.push(line); else break; } }
-  return out.join('\n');
+export function applyPipeFilterOutput(
+  output: string,
+  filter: { type: 'include' | 'exclude' | 'begin' | 'section'; query: string }
+): string {
+  if (!output) return '';
+  const lines = output.split('\n');
+  const rawQuery = filter.query.trim();
+  if (!rawQuery) return output;
+
+  // Build safe case-insensitive matcher (supports regex if valid, otherwise literal substring)
+  let regex: RegExp | null = null;
+  try {
+    regex = new RegExp(rawQuery, 'i');
+  } catch {
+    regex = null;
+  }
+  const qLower = rawQuery.toLowerCase();
+  const match = (line: string): boolean => {
+    if (regex) return regex.test(line);
+    return line.toLowerCase().includes(qLower);
+  };
+
+  if (filter.type === 'include') {
+    return lines.filter(match).join('\n');
+  }
+
+  if (filter.type === 'exclude') {
+    return lines.filter(line => !match(line)).join('\n');
+  }
+
+  if (filter.type === 'begin') {
+    const idx = lines.findIndex(match);
+    return idx >= 0 ? lines.slice(idx).join('\n') : '';
+  }
+
+  if (filter.type === 'section') {
+    const out: string[] = [];
+    let i = 0;
+    while (i < lines.length) {
+      if (match(lines[i])) {
+        out.push(lines[i]);
+        i++;
+        // Capture indented sub-lines, comments, and empty lines belonging to this section
+        while (i < lines.length) {
+          const currentLine = lines[i];
+          const isIndented = currentLine.startsWith(' ') || currentLine.startsWith('\t');
+          const isDelim = currentLine.trim() === '!' || currentLine.trim() === '';
+          if (isIndented || (isDelim && i + 1 < lines.length && (lines[i + 1].startsWith(' ') || lines[i + 1].startsWith('\t')))) {
+            out.push(currentLine);
+            i++;
+          } else {
+            break;
+          }
+        }
+      } else {
+        i++;
+      }
+    }
+    return out.join('\n');
+  }
+
+  return output;
 }

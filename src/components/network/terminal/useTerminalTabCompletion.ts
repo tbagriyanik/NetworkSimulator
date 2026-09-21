@@ -30,6 +30,23 @@ export function useTerminalTabCompletion({
       candidates = helpTree[contextKey];
     }
 
+    // Pipe filter autocomplete (e.g. "show run | inc" -> include, exclude, begin, section)
+    const pipeIdx = value.lastIndexOf('|');
+    if (pipeIdx !== -1) {
+      const pipePart = value.substring(pipeIdx + 1).trimStart();
+      const pipeModifiers = ['include', 'exclude', 'begin', 'section'];
+      const currentPipeWord = pipePart.split(/\s+/)[0]?.toLowerCase() || '';
+      const filtered = currentPipeWord
+        ? pipeModifiers.filter(m => m.startsWith(currentPipeWord))
+        : pipeModifiers;
+      return {
+        ...base,
+        candidates: filtered,
+        allCandidates: pipeModifiers,
+        currentWord: currentPipeWord,
+      };
+    }
+
     const isInterfaceContext = base.contextTokens.some(t => ['interface', 'int'].includes(t.toLowerCase()));
     if (isInterfaceContext) {
       const ifaceNames = state.ports ? Object.keys(state.ports) : ['GigabitEthernet0/0', 'GigabitEthernet0/1', 'FastEthernet0/1', 'Vlan1', 'Loopback0'];

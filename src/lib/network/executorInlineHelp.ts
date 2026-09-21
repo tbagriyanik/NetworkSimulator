@@ -1,4 +1,4 @@
-﻿import { SwitchState, CommandMode } from './types';
+import { SwitchState, CommandMode } from './types';
 import { commandHelp, commandDescriptions } from './executorCommandHelp';
 import { commandPatterns, getLevenshteinDistance, expandKeywordPrefixes, resolveAliases } from './parser';
 import { CLI_ERRORS } from './core/cliErrors';
@@ -16,6 +16,28 @@ function getInlineHelp(mode: CommandMode, partialInput: string, prompt: string, 
   const lower = lowerRaw.trim();
 
   let suggestions: string[] = [];
+
+  // Pipe inline help handling (e.g. "show run | ?" or "show ip route | i?")
+  const pipeHelpMatch = lowerRaw.match(/^(.*?)\|\s*(.*)$/);
+  if (pipeHelpMatch) {
+    const afterPipe = pipeHelpMatch[2].trim();
+    const pipeKeywords = ['include', 'exclude', 'begin', 'section'];
+    if (afterPipe === '') {
+      suggestions = pipeKeywords;
+    } else {
+      suggestions = pipeKeywords.filter(k => k.startsWith(afterPipe));
+    }
+    const lines: string[] = [
+      prompt + partialInput + '?',
+      '',
+      '  Filtreleme Seçenekleri (Output Modifiers):',
+      '    include              - Belirtilen ifadeyi içeren satırları göster',
+      '    exclude              - Belirtilen ifadeyi içermeyen satırları göster',
+      '    begin                - Belirtilen ifadeden başlayarak çıktıyı göster',
+      '    section              - Eşleşen konfigürasyon bloğunu/bölümünü göster',
+    ];
+    return lines.join('\n');
+  }
 
   // Special handling for "do <subcommand>" — delegate to privileged mode tree
   // e.g. "do ?" → privileged top-level, "do show ?" → privileged show subtree

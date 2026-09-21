@@ -6,6 +6,15 @@
 
 MPLS/LDP, IPSec, SNMP, NETCONF/RESTCONF, EEM, MST, IP SLA, QoS MQC, 802.1X, CAPWAP, sFlow/NetFlow, MQTT ve CoAP akışları ortak state/packet pipeline ile doğrulanır. Telemetry export’ları collector frame olarak, MQTT/CoAP/NETCONF işlemleri servis portlarına bağlı request-response frame olarak modellenir.
 
+## CLI Pipe Filtreleme, Akıllı Kavisli Kablolar & UX İyileştirmeleri (2026-09-21 - v6.4.0)
+
+| Özellik | Güncel kapsam ve sınır |
+|---|---|
+| **CLI Pipe Operatörleri (`\| include / exclude / begin / section`)** | `show` ve sistem komutlarında çıktıyı satır/blok bazında filtreleme (`executor.ts`, `executorResultUtils.ts`). Regex ve kısayol takma adları (`\| i`, `\| ex`, `\| b`, `\| s`) desteklenir. `?` yardım menüsünde ve `Tab` otomatik tamamlamada filtreler önerilir. |
+| **Paralel Kablolar İçin Akıllı Kavis (Smart Curved Links)** | İki cihaz arasında birden fazla kablo çekildiğinde çakışmaları önleyen dinamik SVG Bézier yay eğrisi (`ConnectionLine.tsx`, `ConnectionHandle.tsx`). Paralel hatlar doğal ve estetik mesafelerle ayrışır. |
+| **Topoloji & Paket Filtre Sıfırlama Butonları ve ESC Desteği** | Cihaz arama kutusunda ve PDU analiz penceresinde tek tıkla filtre temizleme ve `ESC` klavye kısayolu ile anında sıfırlama. |
+| **Terminal Temizleme Kılavuz Notu** | `Ctrl+L` veya ekran temizleme sonrası kullanıcılara terminal durumunu hatırlatan hafif rehber satırı (`useTerminalOutputSync.ts`). |
+
 ## Katılımcı Rehberli Dersler, Protokol Detay Ağacı & Otomatik Kablo Eşleme (2026-09-20 - v6.3.0)
 
 | Özellik | Güncel kapsam ve sınır |

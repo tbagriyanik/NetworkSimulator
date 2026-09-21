@@ -223,7 +223,7 @@ export function AppHeader({
                       </button>
                     </TooltipTrigger>
                     <TooltipContent className="flex items-center gap-2">
-                      <span>{t.topologyGenerator}</span>
+                      <span>{t.topologyGenerator || (language === 'tr' ? 'Otomatik Topoloji Üretici' : 'Automatic Topology Generator')}</span>
                     </TooltipContent>
                   </Tooltip>
                   <Tooltip>
@@ -409,7 +409,7 @@ export function AppHeader({
                         }}
                       >
                         <Wand2 className="w-3.5 h-3.5 flex-shrink-0 text-purple-500" />
-                        <span>{t.topologyGenerator}</span>
+                        <span className="truncate">{t.topologyGenerator || (language === 'tr' ? 'Otomatik Topoloji Üretici' : 'Automatic Topology Generator')}</span>
                       </Button>
                       <Button
                         variant="outline"

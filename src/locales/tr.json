@@ -794,5 +794,6 @@
   "exportAsPNG": "PNG Olarak Dışa Aktar",
   "generateSummary": "Özet Notu Oluştur",
   "saveAsPNG": "PNG Kaydet",
+  "topologyGenerator": "Otomatik Topoloji Üretici",
   "unknown": "Bilinmeyen"
 }

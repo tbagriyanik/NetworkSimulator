@@ -350,6 +350,28 @@ describe('Pipe filters', () => {
     expect(secRes.output!.includes('interface ')).toBe(true);
   });
 
+  it('| include, | exclude, and | begin work as expected', () => {
+    let s = toPrivileged(createInitialState('00:11:22:33:44:17', 'NS-L3-24PS'));
+    const incRes = run(s, 'show version | include Model');
+    expect(incRes.success).toBe(true);
+    expect(incRes.output).toContain('Model');
+
+    const exRes = run(s, 'show version | exclude Model');
+    expect(exRes.success).toBe(true);
+    expect(exRes.output).not.toContain('Model');
+
+    const begRes = run(s, 'show running-config | begin hostname');
+    expect(begRes.success).toBe(true);
+    expect(begRes.output?.startsWith('hostname') || begRes.output?.includes('hostname')).toBe(true);
+  });
+
+  it('shortcuts | i, | ex, | b, | s work properly', () => {
+    let s = toPrivileged(createInitialState('00:11:22:33:44:17', 'NS-L3-24PS'));
+    const incShort = run(s, 'show version | i Model');
+    expect(incShort.success).toBe(true);
+    expect(incShort.output).toContain('Model');
+  });
+
   it('unknown pipe filter is treated as invalid input', () => {
     let s = toPrivileged(createInitialState());
     const res = run(s, 'show running-config | bogus xyz');

@@ -1,4 +1,4 @@
-﻿import { memo } from 'react';
+import { memo } from 'react';
 import { CanvasConnection, CanvasDevice } from './NetworkTopology/types/networkTopology.types';
 import { isCableCompatible, CableInfo } from '@/lib/network/types';
 import { Trash2 } from 'lucide-react';
@@ -30,25 +30,26 @@ const ConnectionHandle = memo(function ConnectionHandle({
   const source = getPortPosition(sourceDevice, connection.sourcePort);
   const target = getPortPosition(targetDevice, connection.targetPort);
 
-  const maxOffset = 20;
-  const offset = totalSameConns > 1
-    ? (sameConnIndex - (totalSameConns - 1) / 2) * (maxOffset / Math.max(totalSameConns - 1, 1))
-    : 0;
-
   const dx = target.x - source.x;
   const dy = target.y - source.y;
   const len = Math.sqrt(dx * dx + dy * dy) || 1;
   const midX = (source.x + target.x) / 2;
-  const perpX = -dy / len * offset;
-  const perpY = dx / len * offset;
+
+  const baseSpacing = Math.min(36, Math.max(24, len * 0.12));
+  const offset = totalSameConns > 1
+    ? (sameConnIndex - (totalSameConns - 1) / 2) * baseSpacing
+    : 0;
+
+  const perpX = (-dy / len) * offset;
+  const perpY = (dx / len) * offset;
 
   const controlPoint1 = {
-    x: midX + perpX,
-    y: source.y + perpY + Math.abs(offset) * 0.5,
+    x: source.x + (dx * 0.28) + perpX * 1.15,
+    y: source.y + (dy * 0.28) + perpY * 1.15,
   };
   const controlPoint2 = {
-    x: midX + perpX,
-    y: target.y + perpY - Math.abs(offset) * 0.5,
+    x: target.x - (dx * 0.28) + perpX * 1.15,
+    y: target.y - (dy * 0.28) + perpY * 1.15,
   };
 
   const tTrash = 0.5;

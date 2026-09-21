@@ -794,5 +794,6 @@
   "exportAsPNG": "Export as PNG",
   "generateSummary": "Generate Summary Note",
   "saveAsPNG": "Save as PNG",
+  "topologyGenerator": "Automatic Topology Generator",
   "unknown": "Unknown"
 }

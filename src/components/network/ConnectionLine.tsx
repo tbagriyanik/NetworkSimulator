@@ -163,30 +163,33 @@ export const ConnectionLine = memo(function ConnectionLine({
   }
   const color = baseColor;
 
-  // Calculate offset for parallel lines (spread out from center)
-  const maxOffset = 20;
-  const offset = totalSameConns > 1
-    ? (sameConnIndex - (totalSameConns - 1) / 2) * (maxOffset / Math.max(totalSameConns - 1, 1))
-    : 0;
-
-  // Calculate control points for smooth curve with offset
-  const midX = (source.x + target.x) / 2;
-  const midY = (source.y + target.y) / 2;
-
   // Apply perpendicular offset for parallel lines
   const dx = target.x - source.x;
   const dy = target.y - source.y;
   const len = Math.sqrt(dx * dx + dy * dy) || 1;
-  const perpX = -dy / len * offset;
-  const perpY = dx / len * offset;
 
+  // Calculate offset for parallel lines (spread out smoothly from center)
+  // Give distinct, graceful arch curvature when 2 or more cables connect the same pair of devices
+  const baseSpacing = Math.min(36, Math.max(24, len * 0.12));
+  const offset = totalSameConns > 1
+    ? (sameConnIndex - (totalSameConns - 1) / 2) * baseSpacing
+    : 0;
+
+  // Calculate control points for smooth natural curve with perpendicular offset
+  const midX = (source.x + target.x) / 2;
+  const midY = (source.y + target.y) / 2;
+
+  const perpX = (-dy / len) * offset;
+  const perpY = (dx / len) * offset;
+
+  // Curvature bowing: control points arc outward around the midpoint
   const controlPoint1 = {
-    x: midX + perpX,
-    y: source.y + perpY + Math.abs(offset) * 0.5
+    x: source.x + (dx * 0.28) + perpX * 1.15,
+    y: source.y + (dy * 0.28) + perpY * 1.15,
   };
   const controlPoint2 = {
-    x: midX + perpX,
-    y: target.y + perpY - Math.abs(offset) * 0.5
+    x: target.x - (dx * 0.28) + perpX * 1.15,
+    y: target.y - (dy * 0.28) + perpY * 1.15,
   };
 
   // For wireless connections, generate a sinusoidal wave path

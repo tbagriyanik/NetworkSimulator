@@ -2,6 +2,8 @@
 
 ## v6.4.0 — 2026-09-21
 
+- **📟 Gelişmiş CLI Pipe Filtreleme (`| include / exclude / begin / section`)**: Terminal komut çıktılarında standart pipe operatörü ve kısayolları (`| i`, `| ex`, `| b`, `| s`) ile regex/anahtar kelime tabanlı filtreleme desteği eklendi; inline help (`?`) ve tab tamamlama entegre edildi.
+- **🔀 Paralel Kablolar İçin Akıllı Kavisli Hatlar (Smart Curved Link Arcs)**: Aynı iki cihaz arasında birden fazla hat (EtherChannel, yedekli trunk) olduğunda kabloların üst üste binmesini önleyen dinamik kavis/yay geometrisi (`ConnectionLine.tsx`, `ConnectionHandle.tsx`) geliştirildi.
 - **🔍 Topoloji Arama Kutusunda Temizleme Butonu & ESC Kısayolu (`TopologyToolbar.tsx`)**: Cihaz arama kutusuna tek tıkla arama sıfırlama ("X") butonu ve `ESC` tuşuyla arama temizleme desteği eklendi.
 - **🔍 PDU / Paket İnceleme Panelinde Tek Tıkla Filtre Sıfırlama (`EmbeddedPduInspector.tsx`)**: Paket yakalama detay arama kutusuna `ESC` kısayolu ve filtre temizleme aksiyonu eklendi.
 - **📟 Terminal Temizleme Sonrası Mini İpucu Görselleştirmesi (`useTerminalOutputSync.ts`)**: `Ctrl+L` veya temizleme aksiyonları sonrasında kullanıcılara kılavuzluk eden bilgilendirme satırı entegre edildi.
