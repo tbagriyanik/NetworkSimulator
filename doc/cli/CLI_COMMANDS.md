@@ -972,10 +972,25 @@ Switch(config)# ip sla schedule 1 life forever start now
 Switch# show ip sla statistics
 ```
 
-The simulator reports sent, received, lost, minimum/average/maximum RTT, and jitter values for synthetic probes.
+## CLI Output Pipe Filters / Çıktı Filtreleme Boruları (`|`)
+
+The simulator supports standard pipe filtering for all `show`, `more`, and display commands:
+
+| Pipe Filter | Alias | Description | Example |
+|-------------|-------|-------------|---------|
+| `\| include <pattern>` | `\| i <pattern>` | Display only lines matching pattern or regex | `show run \| include interface` |
+| `\| exclude <pattern>` | `\| ex <pattern>` | Display lines that do NOT match pattern | `show ip int brief \| exclude unassigned` |
+| `\| begin <pattern>` | `\| b <pattern>` | Begin output at the first line matching pattern | `show run \| begin router ospf` |
+| `\| section <pattern>` | `\| s <pattern>` | Display configuration section matching pattern | `show run \| section line vty` |
+
+> 💡 **Tip:** Press `| ?` at any prompt to see available pipe filter keywords, or use `Tab` for autocomplete.
 
 ## Features
-- **Tab Completion**: Auto-complete commands with TAB
-- **Command History**: Up/Arrow keys for previous commands
-- **Context Help**: Use `?` for command help
+- **Tab Completion**: Auto-complete commands, interfaces, and pipe filters (`| include`, etc.) with TAB
+- **Command History**: Up/Down Arrow keys for previous commands
+- **Context Help**: Use `?` for inline and command help
+- **Safe Multi-line Batch Paste**: Paste large multi-line configuration scripts safely with sequential queue execution, progress counter, and cancel button
+- **Output Search**: Press `Ctrl+F` to search through scrollback terminal output
+- **Clear Terminal**: Press `Ctrl+L` or click Clear for a fresh terminal screen with contextual hint
+- **Tabbed & Split Device Consoles**: Manage multiple router/switch/PC sessions in Free, Side-by-Side Split, or Tabbed layout modes
 - **Error Checking**: Detailed error messages for invalid commands

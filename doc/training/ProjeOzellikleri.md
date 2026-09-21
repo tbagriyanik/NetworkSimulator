@@ -6,13 +6,17 @@
 
 MPLS/LDP, IPSec, SNMP, NETCONF/RESTCONF, EEM, MST, IP SLA, QoS MQC, 802.1X, CAPWAP, sFlow/NetFlow, MQTT ve CoAP akışları ortak state/packet pipeline ile doğrulanır. Telemetry export’ları collector frame olarak, MQTT/CoAP/NETCONF işlemleri servis portlarına bağlı request-response frame olarak modellenir.
 
-## CLI Pipe Filtreleme, Akıllı Kavisli Kablolar & UX İyileştirmeleri (2026-09-21 - v6.4.0)
+## CLI Pipe Filtreleme, Akıllı Kavisli Kablolar, Toplu Komut Kuyruğu & UX İyileştirmeleri (2026-09-21 - v6.4.0)
 
 | Özellik | Güncel kapsam ve sınır |
 |---|---|
 | **CLI Pipe Operatörleri (`\| include / exclude / begin / section`)** | `show` ve sistem komutlarında çıktıyı satır/blok bazında filtreleme (`executor.ts`, `executorResultUtils.ts`). Regex ve kısayol takma adları (`\| i`, `\| ex`, `\| b`, `\| s`) desteklenir. `?` yardım menüsünde ve `Tab` otomatik tamamlamada filtreler önerilir. |
 | **Paralel Kablolar İçin Akıllı Kavis (Smart Curved Links)** | İki cihaz arasında birden fazla kablo çekildiğinde çakışmaları önleyen dinamik SVG Bézier yay eğrisi (`ConnectionLine.tsx`, `ConnectionHandle.tsx`). Paralel hatlar doğal ve estetik mesafelerle ayrışır. |
-| **Topoloji & Paket Filtre Sıfırlama Butonları ve ESC Desteği** | Cihaz arama kutusunda ve PDU analiz penceresinde tek tıkla filtre temizleme ve `ESC` klavye kısayolu ile anında sıfırlama. |
+| **Güvenli Toplu Komut Kuyruğu & İlerleme Paneli** | Çok satırlı komut/konfigürasyon blokları yapıştırıldığında kuyruğa alınıp sıra tabanlı yürütülmesi (`useTerminalCommandQueue.ts`). Anlık `Toplu komut işleniyor: X / Y` ilerleme banner'ı ve canlı iptal butonu (`Terminal.tsx`). |
+| **Donanım Port LED Göstergeleri** | Cihaz portları üzerinde Link/Activity, STP Blocking (amber) ve Forwarding (yeşil) durumlarını anlık yansıtan donanım tarzı mini LED indikatörleri ve nabız animasyonları (`DeviceGridPortPin.tsx`). |
+| **Sekmeli Konsol ve Çoklu Cihaz Pencereleri** | Serbest (`free`), yan yana bölme (`split`) ve sekmeli (`tabs`) pencere yöneticisi ile açık router/switch/PC oturumları arasında kesintisiz geçiş ve yönetim (`MultiDeviceWindowManager.tsx`). |
+| **Canlı Hat & Paket İzi Vurgulama (Path Glow)** | Ağ bağlantılarında aktif rota ve paket geçiş yolları için yüksek kontrastlı neon akış animasyonu ve hat parıltısı desteği (`ConnectionLine.tsx`). |
+| **Topoloji & Paket Filtre Sıfırlama Butonları ve ESC Desteği** | Cihaz arama kutusunda ve PDU analiz penceresinde tek tıkla filtre temizleme ve `ESC` klavye kısayolu ile anında sıfırlama (`TopologyToolbar.tsx`, `EmbeddedPduInspector.tsx`). |
 | **Terminal Temizleme Kılavuz Notu** | `Ctrl+L` veya ekran temizleme sonrası kullanıcılara terminal durumunu hatırlatan hafif rehber satırı (`useTerminalOutputSync.ts`). |
 
 ## Katılımcı Rehberli Dersler, Protokol Detay Ağacı & Otomatik Kablo Eşleme (2026-09-20 - v6.3.0)

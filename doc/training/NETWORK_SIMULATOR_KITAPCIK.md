@@ -25,6 +25,31 @@ Bu kitapçık projenin tüm kullanıcı, CLI, protokol, laboratuvar ve özellik 
 
 ### Güncel özellik durumu (v6.4.0)
 
+- **📟 Gelişmiş CLI Pipe Filtreleme (`| include / exclude / begin / section`) (v6.4.0):**
+  - `show` ve sistem komut çıktılarında standart pipe operatörü (`|`) ve kısayolları (`| i`, `| ex`, `| b`, `| s`) ile regex/anahtar kelime tabanlı filtreleme desteği.
+  - `| ?` inline yardım menüsü ve `Tab` otomatik tamamlama önerileri.
+- **🔀 Paralel Kablolar İçin Akıllı Kavisli Hatlar (Smart Curved Link Arcs) (v6.4.0):**
+  - Aynı iki cihaz arasında birden fazla kablo (EtherChannel, yedekli trunk) çekildiğinde üst üste binmeyi önleyen dinamik Bézier yay eğrisi geometrisi (`ConnectionLine.tsx`, `ConnectionHandle.tsx`).
+  - Kablo silme ve durum rozetlerinin yay merkezine senkronize konumlandırılması.
+- **📋 Güvenli Toplu Komut Kuyruğu & İlerleme Paneli (v6.4.0):**
+  - Çok satırlı yapılandırma metinleri yapıştırıldığında kuyruğa alınıp sıra tabanlı yürütülmesi (`useTerminalCommandQueue.ts`).
+  - Canlı `Toplu komut işleniyor: X / Y` ilerleme banner'ı ve tek tıkla iptal etme aksiyonu (`Terminal.tsx`).
+- **💡 Donanım Port LED Göstergeleri (v6.4.0):**
+  - Cihaz portları üzerinde Link/Activity, STP Blocking (amber) ve Forwarding (yeşil) durumlarını anlık yansıtan donanım tarzı mini LED indikatörleri ve nabız animasyonları (`DeviceGridPortPin.tsx`).
+- **🗂️ Sekmeli Konsol ve Çoklu Cihaz Pencereleri (v6.4.0):**
+  - Serbest (`free`), yan yana bölmeli (`split`) ve sekmeli (`tabs`) pencere yöneticisi ile açık router/switch/PC konsolları arasında hızlı ve kesintisiz geçiş (`MultiDeviceWindowManager.tsx`).
+- **✨ Canlı Hat & Paket İzi Vurgulama (v6.4.0):**
+  - Ağ bağlantılarında aktif rota ve izleme için yüksek kontrastlı neon akış animasyonu ve hat parıltısı desteği (`ConnectionLine.tsx`).
+- **🔍 Topoloji & Paket Filtre Sıfırlama Butonları ve ESC Desteği (v6.4.0):**
+  - Cihaz arama kutusunda ve PDU analiz penceresinde tek tıkla filtre temizleme ("X") ve `ESC` klavye kısayolu ile anında sıfırlama (`TopologyToolbar.tsx`, `EmbeddedPduInspector.tsx`).
+- **🎓 19 Rehberli Ders & Ağ Müfredatı (v6.3.0):**
+  - Başlangıç, Orta ve İleri seviyelerde adım adım etkileşimli ağ dersleri ve durum doğrulama (`cliGuidedLessons.ts`).
+- **🌳 Protokol Detay Ağacı & Engellendi Uyarısı (v6.3.0):**
+  - PDU/Paket yakalama ekranında detay hiyerarşisi ve engellenen/düşen paketler için kırmızı "ENGELLENDİ / DROPPED" uyarı rozeti (`ProtocolTreeDetails.tsx`).
+- **🔌 Otomatik Kablo Bağlama & Akıllı RS-232/Console Eşleme (v6.3.0):**
+  - Cihaz gövdesine tıklandığında boşta olan ilk uygun portun seçilmesi; PC Console/RS-232 portundan başlayan hatlarda hedef cihazın Console portunun otomatik tespiti.
+- **⚡ Terminal Sağ Tık Yapıştırma & F2 Yeniden Adlandırma (v6.2.1):**
+  - Terminal çıktısına sağ tıklandığında panodaki metni yapıştırma; topolojide seçili cihaza `F2` tuşuna basarak hızlı yeniden adlandırma penceresini açma.
 - **🚀 Kapsamlı CLI Genişletme & Çoklu Protokol Desteği (v6.1.0):**
   - **Multicast / PIM & IGMP:** `ip multicast-routing`, `ip pim sparse-mode`, `ip pim dense-mode`, `ip pim sparse-dense-mode`, `ip igmp join-group`, `ip igmp version 1|2|3`, `show ip mroute`, `show ip pim interface/neighbor`.
   - **Gelişmiş STP & IPSec Tünel:** `spanning-tree uplinkfast`, `spanning-tree backbonefast`, `tunnel protection ipsec profile <name>`.
