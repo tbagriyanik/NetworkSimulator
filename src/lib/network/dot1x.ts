@@ -183,7 +183,7 @@ export function processEapolFrame(
       return {
         nextSession,
         responseFrame,
-        logMessage: `802.1X: Authentication Success for user "${username}". Port state: AUTHORIZED.`
+        logMessage: `802.1X: RADIUS Access-Accept received. Authentication Success for user "${username}". Port state: AUTHORIZED.`
       };
     } else {
       const nextSession: Dot1xSession = {
@@ -202,7 +202,7 @@ export function processEapolFrame(
       return {
         nextSession,
         responseFrame,
-        logMessage: `802.1X: Authentication Failure for user "${username}". Port state: UNAUTHORIZED.`
+        logMessage: `802.1X: RADIUS Access-Reject received. Authentication Failure for user "${username}". Port state: UNAUTHORIZED.`
       };
     }
   }

@@ -68,7 +68,7 @@ import {
   cmdShowQosInterface, cmdShowQueuingInterface, cmdShowClassMap,
 } from './show/showQosDisplay';
 import {
-  cmdShowAccessLists, cmdShowMacAcl, cmdShowAuth, cmdShowSsh,
+  cmdShowAccessLists, cmdShowMacAcl, cmdShowAuth, cmdShowDot1x, cmdShowSsh,
 } from './show/showSecurityDisplay';
 import {
   cmdShowHistory, cmdShowUsers, cmdShowEnvironment, cmdShowInventory,
@@ -236,6 +236,8 @@ export const showHandlers: Record<string, CommandHandler> = {
 
   'show mac address-table static': cmdShowMacStatic,
   'show authentication': cmdShowAuth,
+  'show dot1x': cmdShowDot1x,
+  'show dot1x all': cmdShowDot1x,
   'show sessions': cmdShowSessions,
   'show ntp associations': cmdShowNtpDisplay,
   'show ntp status': cmdShowNtpDisplay,

@@ -101,6 +101,34 @@ export function cmdShowAuth(state: SwitchState, _input: string, _ctx: CommandCon
   return { success: true, output };
 }
 
+export function cmdShowDot1x(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  const enabled = state.dot1xSystemAuthControl;
+  let output = `Sysauthcontrol: ${enabled ? 'Enabled' : 'Disabled'}\n`;
+  output += `Dot1x Info for all interfaces\n`;
+  output += `------------------------------------\n`;
+  
+  const sessions = state.dot1xSessions || {};
+  const ports = Object.keys(state.ports || {});
+  
+  if (ports.length === 0 && Object.keys(sessions).length === 0) {
+    return { success: true, output: output + 'No 802.1X interfaces configured.\n' };
+  }
+
+  const allPortIds = [...new Set([...ports, ...Object.keys(sessions)])];
+  allPortIds.forEach((pId) => {
+    const s = sessions[pId];
+    const portCtrl = s?.portControl || 'auto';
+    const status = s?.state || 'unauthorized';
+    output += `Interface: ${pId}\n`;
+    output += `  PAE = AUTHENTICATOR\n`;
+    output += `  PortControl = ${portCtrl}\n`;
+    output += `  ControlState = ${status.toUpperCase()}\n`;
+    if (s?.identity) output += `  Supplicant = ${s.identity}\n`;
+  });
+
+  return { success: true, output };
+}
+
 export function cmdShowSsh(
   state: SwitchState,
   _input: string,
