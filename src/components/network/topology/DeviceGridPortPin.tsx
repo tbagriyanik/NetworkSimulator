@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
@@ -124,6 +124,21 @@ export function DeviceGridPortPin({
       >
         {displayNum}
       </text>
+
+      {/* Hardware Link / Activity / STP LED indicator */}
+      {isConnected && !isShutdown && !isDeviceOffline && (
+        <circle
+          cx={4}
+          cy={-4}
+          r={1.8}
+          fill={isBlocked ? 'var(--color-amber-500)' : connectionHealthy ? 'var(--color-emerald-400)' : 'var(--color-rose-500)'}
+          stroke={isDark ? 'var(--color-secondary-950)' : 'var(--color-secondary-50)'}
+          strokeWidth={0.5}
+          className={!isBlocked && connectionHealthy ? 'animate-pulse' : undefined}
+          style={{ pointerEvents: 'none', filter: 'drop-shadow(0 0 1px currentColor)' }}
+        />
+      )}
+
       {hasStpInfo && roleAbbr && (
         <g transform={`translate(0, ${row === 0 ? -11 : 11})`}>
           <rect

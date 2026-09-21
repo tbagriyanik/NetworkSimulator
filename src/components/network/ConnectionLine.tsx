@@ -25,6 +25,7 @@ interface ConnectionLineProps {
   graphicsQuality?: 'high' | 'low';
   deviceStates?: Map<string, SwitchState>;
   topologyDevices?: CanvasDevice[];
+  isPathHighlighted?: boolean;
 }
 
 /**
@@ -92,7 +93,8 @@ export const ConnectionLine = memo(function ConnectionLine({
   zoom = 1, // Default zoom level
   graphicsQuality = 'high',
   deviceStates,
-  topologyDevices
+  topologyDevices,
+  isPathHighlighted = false,
 }: ConnectionLineProps) {
   // Get port positions for more accurate connection lines
   const source = getPortPosition(sourceDevice, connection.sourcePort);
@@ -259,20 +261,22 @@ export const ConnectionLine = memo(function ConnectionLine({
       {/* Visual Connection line */}
       <path
         d={pathD}
-        stroke={isCompatible && connection.active !== false ? color : 'var(--color-error-500)'}
-        strokeWidth={isHovered ? 7 : 3}
+        stroke={isPathHighlighted ? 'var(--color-emerald-400)' : (isCompatible && connection.active !== false ? color : 'var(--color-error-500)')}
+        strokeWidth={isPathHighlighted ? 6 : (isHovered ? 7 : 3)}
         fill="none"
         strokeDasharray={isCompatible && connection.active !== false ? 'none' : '6,3'}
         className="pointer-events-none"
         vectorEffect="non-scaling-stroke"
         style={{
           // Inactive cables (powered off / shutdown) get higher opacity so they're visible in dark mode
-          opacity: isHovered ? 0.9 : (isEffectivelyActive ? (
+          opacity: isPathHighlighted ? 1 : (isHovered ? 0.9 : (isEffectivelyActive ? (
             isWireless ? (wirelessStrength !== undefined ? (0.2 + (wirelessStrength / 5) * 0.6) : 0.1) : 0.4
-          ) : 0.65),
-          filter: isHovered || (graphicsQuality === 'high' && isEffectivelyActive && !isWireless) ?
-            'drop-shadow(0 0 0.5px ' + color + ') drop-shadow(0 0 1px ' + color + ')' :
-            'none',
+          ) : 0.65)),
+          filter: isPathHighlighted
+            ? 'drop-shadow(0 0 3px var(--color-emerald-400)) drop-shadow(0 0 8px var(--color-emerald-500))'
+            : (isHovered || (graphicsQuality === 'high' && isEffectivelyActive && !isWireless) ?
+              'drop-shadow(0 0 0.5px ' + color + ') drop-shadow(0 0 1px ' + color + ')' :
+              'none'),
           transition: isDragging ? 'none' : 'stroke 0.2s ease, stroke-width 0.2s ease, opacity 0.2s ease, filter 0.2s ease'
         }}
       />
@@ -284,32 +288,32 @@ export const ConnectionLine = memo(function ConnectionLine({
       {graphicsQuality === 'high' && isEffectivelyActive && !isHovered && !isWireless && (
         <path
           d={pathD}
-          stroke={color}
-          strokeWidth={0.4}
+          stroke={isPathHighlighted ? 'var(--color-emerald-400)' : color}
+          strokeWidth={isPathHighlighted ? 2 : 0.4}
           fill="none"
           className="pointer-events-none"
           vectorEffect="non-scaling-stroke"
           style={{
-            opacity: 0.004,
+            opacity: isPathHighlighted ? 0.8 : 0.004,
             filter: 'url(#connectionGlowFilter)',
           }}
         />
       )}
 
       {/* Animated data flow - subtle glowing particles */}
-      {showAnimation && graphicsQuality === 'high' && isEffectivelyActive && !isDragging && (
+      {(showAnimation || isPathHighlighted) && graphicsQuality === 'high' && isEffectivelyActive && !isDragging && (
         <>
-          <circle r={Math.max(1.8, 3.2 / zoom)} fill={color} className="animate-pulse" style={{ filter: isDark ? `drop-shadow(0 0 2px ${color})` : 'none', opacity: isDark ? 0.9 : 0.8 }}>
+          <circle r={isPathHighlighted ? Math.max(2.8, 4.5 / zoom) : Math.max(1.8, 3.2 / zoom)} fill={isPathHighlighted ? 'var(--color-emerald-300)' : color} className="animate-pulse" style={{ filter: isDark || isPathHighlighted ? `drop-shadow(0 0 4px ${isPathHighlighted ? 'var(--color-emerald-400)' : color})` : 'none', opacity: isPathHighlighted ? 1 : (isDark ? 0.9 : 0.8) }}>
             <animateMotion
-              dur={animationDuration}
+              dur={isPathHighlighted ? `${(parseFloat(durationSec.toString()) * 0.4).toFixed(2)}s` : animationDuration}
               repeatCount="indefinite"
             >
               <mpath href={`#${motionPathId}`} />
             </animateMotion>
           </circle>
-          <circle r={Math.max(1.8, 3.2 / zoom)} fill={color} className="animate-pulse" style={{ filter: isDark ? `drop-shadow(0 0 2px ${color})` : 'none', opacity: isDark ? 0.9 : 0.8 }}>
+          <circle r={isPathHighlighted ? Math.max(2.8, 4.5 / zoom) : Math.max(1.8, 3.2 / zoom)} fill={isPathHighlighted ? 'var(--color-emerald-300)' : color} className="animate-pulse" style={{ filter: isDark || isPathHighlighted ? `drop-shadow(0 0 4px ${isPathHighlighted ? 'var(--color-emerald-400)' : color})` : 'none', opacity: isPathHighlighted ? 1 : (isDark ? 0.9 : 0.8) }}>
             <animateMotion
-              dur={animationDuration}
+              dur={isPathHighlighted ? `${(parseFloat(durationSec.toString()) * 0.4).toFixed(2)}s` : animationDuration}
               repeatCount="indefinite"
               begin={reverseBeginOffset}
             >
@@ -447,6 +451,7 @@ export const ConnectionLine = memo(function ConnectionLine({
     prevProps.isDark === nextProps.isDark &&
     prevProps.isDragging === nextProps.isDragging &&
     prevProps.isHovered === nextProps.isHovered &&
+    prevProps.isPathHighlighted === nextProps.isPathHighlighted &&
     prevProps.showAnimation === nextProps.showAnimation &&
     prevProps.showLabel === nextProps.showLabel &&
     prevProps.zoom === nextProps.zoom &&

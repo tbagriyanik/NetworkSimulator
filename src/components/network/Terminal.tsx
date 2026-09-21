@@ -227,7 +227,7 @@ export function Terminal({
 
   const { handleUndo, handleRedo, pushUndo } = useTerminalUndoRedo(input, setInput);
 
-  const { queueCommands, processCommandQueue } = useTerminalCommandQueue({
+  const { queueCommands, processCommandQueue, queueProgress, cancelQueue } = useTerminalCommandQueue({
     deviceId,
     history,
     addHistoryCommand,
@@ -657,6 +657,25 @@ export function Terminal({
               />
             )}
             <form onSubmit={handleFormSubmit} className="flex items-center gap-3 relative">
+              {queueProgress && (
+                <div className="absolute -top-8 left-2 right-2 flex items-center justify-between px-3 py-1 rounded-md bg-secondary-900/90 text-white text-xs border border-secondary-700 shadow-md backdrop-blur-sm z-30 animate-in fade-in slide-in-from-bottom-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>
+                      {language === 'tr'
+                        ? `Toplu komut işleniyor: ${queueProgress.current} / ${queueProgress.total}`
+                        : `Processing batch commands: ${queueProgress.current} / ${queueProgress.total}`}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={cancelQueue}
+                    className="text-[11px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 hover:bg-rose-500 hover:text-white transition-colors"
+                  >
+                    {language === 'tr' ? 'İptal Et' : 'Cancel'}
+                  </button>
+                </div>
+              )}
               {(confirmDialog?.show || isReloadConfirmationPending) && helpLevel !== 'exam' && (
                 <div className="absolute -top-7 left-4 right-4 text-[10px] font-black tracking-widest text-warning-400 animate-pulse">
                   {confirmDialog?.show

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 
 interface UseTerminalCommandQueueOptions {
@@ -16,6 +16,11 @@ interface UseTerminalCommandQueueOptions {
   setTabCycleIndex: Dispatch<SetStateAction<number>>;
   setShowAutocomplete: Dispatch<SetStateAction<boolean>>;
   setAutocompleteIndex: Dispatch<SetStateAction<number>>;
+}
+
+export interface BatchQueueProgress {
+  current: number;
+  total: number;
 }
 
 export function useTerminalCommandQueue({
@@ -38,6 +43,7 @@ export function useTerminalCommandQueue({
   const awaitingPasswordRef = useRef<boolean>(awaitingPassword);
   const awaitingConfigSourceRef = useRef<boolean>(awaitingConfigSource);
   const confirmDialogOpenRef = useRef<boolean>(confirmDialogOpen);
+  const [queueProgress, setQueueProgress] = useState<BatchQueueProgress | null>(null);
 
   useEffect(() => {
     isLoadingRef.current = isLoading;
@@ -58,6 +64,7 @@ export function useTerminalCommandQueue({
   useEffect(() => {
     commandQueueRef.current = [];
     isProcessingQueueRef.current = false;
+    setQueueProgress(null);
   }, [deviceId]);
 
   const queueCommands = useCallback((commands: string[]) => {
@@ -69,15 +76,32 @@ export function useTerminalCommandQueue({
     commandQueueRef.current.push(...sanitized);
   }, []);
 
+  const cancelQueue = useCallback(() => {
+    commandQueueRef.current = [];
+    setQueueProgress(null);
+  }, []);
+
   const processCommandQueue = useCallback(async () => {
     if (isProcessingQueueRef.current) return;
     isProcessingQueueRef.current = true;
+
+    const initialTotal = commandQueueRef.current.length;
+    let executedCount = 0;
+
+    if (initialTotal > 1) {
+      setQueueProgress({ current: 0, total: initialTotal });
+    }
 
     try {
       let currentHistory = history;
       while (commandQueueRef.current.length > 0) {
         const nextCommand = commandQueueRef.current.shift();
         if (!nextCommand) continue;
+
+        executedCount++;
+        if (initialTotal > 1) {
+          setQueueProgress({ current: executedCount, total: initialTotal });
+        }
 
         const updatedHistory = addHistoryCommand(nextCommand);
         if (updatedHistory !== currentHistory) {
@@ -106,8 +130,9 @@ export function useTerminalCommandQueue({
       }
     } finally {
       isProcessingQueueRef.current = false;
+      setQueueProgress(null);
     }
   }, [history, addHistoryCommand, deviceId, onCommand, onUpdateHistory, setTabCycleIndex, setShowAutocomplete, setAutocompleteIndex]);
 
-  return { queueCommands, processCommandQueue };
+  return { queueCommands, processCommandQueue, queueProgress, cancelQueue };
 }
