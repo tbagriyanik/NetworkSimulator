@@ -625,6 +625,7 @@ export interface SwitchState {
 
   // Multicast & PIM state
   multicastRoutingEnabled?: boolean;
+  igmpSnoopingEnabled?: boolean;
   mrouteEntries?: Array<{
     source: string;
     group: string;

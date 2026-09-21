@@ -365,11 +365,10 @@ export function StoryModePanel({
       }}
     >
       <section
-        className={`relative h-full rounded-2xl border shadow-2xl overflow-hidden pointer-events-auto flex flex-col transition-colors ${
-          isDark
+        className={`relative h-full rounded-2xl border shadow-2xl overflow-hidden pointer-events-auto flex flex-col transition-colors ${isDark
             ? 'border-primary-500/30 bg-secondary-950/95 text-white'
             : 'border-primary-500/40 bg-white/95 text-secondary-900'
-        }`}
+          }`}
         role="dialog"
         aria-modal="false"
         aria-label="Etkileşimli Hikaye Modu"
@@ -377,11 +376,10 @@ export function StoryModePanel({
         {/* Header / Drag Bar */}
         <div
           onMouseDown={beginDrag}
-          className={`h-[58px] px-4 py-3 border-b flex items-center justify-between cursor-move select-none shrink-0 ${
-            isDark
+          className={`h-[58px] px-4 py-3 border-b flex items-center justify-between cursor-move select-none shrink-0 ${isDark
               ? 'border-white/10 bg-gradient-to-r from-primary-950 via-secondary-950 to-primary-950 text-white'
               : 'border-secondary-200 bg-gradient-to-r from-primary-50 via-secondary-50 to-primary-50 text-secondary-900'
-          }`}
+            }`}
         >
           <div className="flex items-center gap-2 text-primary-500 font-bold text-xs tracking-widest">
             <Gamepad2 className="w-4 h-4 text-primary-500 animate-pulse" />
@@ -391,11 +389,10 @@ export function StoryModePanel({
             <Button
               variant="ghost"
               size="sm"
-              className={`h-7 text-xs px-2 ${
-                isDark
+              className={`h-7 text-xs px-2 ${isDark
                   ? 'text-primary-300 hover:text-primary-100 hover:bg-white/10'
                   : 'text-primary-700 hover:text-primary-900 hover:bg-primary-50'
-              }`}
+                }`}
               onClick={() => setShowCampaignSelector((v) => !v)}
               title={isTr ? "Senaryo Değiştir" : "Change Scenario"}
             >
@@ -439,9 +436,8 @@ export function StoryModePanel({
                 </div>
 
                 {/* Category Filter Pills */}
-                <div className={`flex gap-1.5 p-1 rounded-xl border text-xs ${
-                  isDark ? 'bg-secondary-900/80 border-white/10' : 'bg-secondary-100 border-secondary-200'
-                }`}>
+                <div className={`flex gap-1.5 p-1 rounded-xl border text-xs ${isDark ? 'bg-secondary-900/80 border-white/10' : 'bg-secondary-100 border-secondary-200'
+                  }`}>
                   {[
                     { id: 'Tümü', label: t.filterAll || (isTr ? 'Tümü' : 'All') },
                     { id: 'Basit', label: t.filterBasic || (isTr ? 'Basit' : 'Basic') },
@@ -451,13 +447,12 @@ export function StoryModePanel({
                     <button
                       key={cat.id}
                       onClick={() => setSelectedCategory(cat.id as 'Tümü' | 'Basit' | 'Orta' | 'İleri')}
-                      className={`flex-1 py-1 px-2 rounded-lg font-bold transition-all text-center ${
-                        selectedCategory === cat.id
+                      className={`flex-1 py-1 px-2 rounded-lg font-bold transition-all text-center ${selectedCategory === cat.id
                           ? 'bg-primary-500 text-white shadow-sm'
                           : isDark
-                          ? 'text-secondary-400 hover:text-white hover:bg-white/5'
-                          : 'text-secondary-600 hover:text-secondary-900 hover:bg-secondary-200'
-                      }`}
+                            ? 'text-secondary-400 hover:text-white hover:bg-white/5'
+                            : 'text-secondary-600 hover:text-secondary-900 hover:bg-secondary-200'
+                        }`}
                     >
                       {cat.label}
                     </button>
@@ -476,33 +471,32 @@ export function StoryModePanel({
                       campaign.category === 'Basit'
                         ? (isTr ? 'Basit' : 'Basic')
                         : campaign.category === 'Orta'
-                        ? (isTr ? 'Orta' : 'Intermediate')
-                        : (isTr ? 'İleri' : 'Advanced');
+                          ? (isTr ? 'Orta' : 'Intermediate')
+                          : (isTr ? 'İleri' : 'Advanced');
 
                     const categoryBadgeColor =
                       campaign.category === 'Basit'
                         ? isDark ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : 'bg-emerald-100 text-emerald-800 border-emerald-300'
                         : campaign.category === 'Orta'
-                        ? isDark ? 'bg-sky-500/20 text-sky-300 border-sky-500/40' : 'bg-sky-100 text-sky-800 border-sky-300'
-                        : isDark ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-amber-100 text-amber-800 border-amber-300';
+                          ? isDark ? 'bg-sky-500/20 text-sky-300 border-sky-500/40' : 'bg-sky-100 text-sky-800 border-sky-300'
+                          : isDark ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-amber-100 text-amber-800 border-amber-300';
 
                     return (
                       <div
                         key={campaign.id}
                         onClick={() => handleSelectCampaign(campaign.id)}
-                        className={`p-4 rounded-xl border transition-all cursor-pointer ${
-                          campaign.id === state.campaignId
+                        className={`p-4 rounded-xl border transition-all cursor-pointer ${campaign.id === state.campaignId
                             ? isDark
                               ? 'border-primary-500 bg-primary-950/50 shadow-lg'
                               : 'border-primary-500 bg-primary-50/80 shadow-lg'
                             : isCompleted
-                            ? isDark
-                              ? 'border-success-500/40 bg-success-950/20 hover:border-success-400/80 hover:bg-success-950/30'
-                              : 'border-success-300 bg-success-50/80 hover:border-success-400'
-                            : isDark
-                            ? 'border-white/10 bg-secondary-900/60 hover:border-primary-400/80 hover:bg-primary-500/10'
-                            : 'border-secondary-200 bg-secondary-50/60 hover:border-primary-400 hover:bg-primary-50/50'
-                        }`}
+                              ? isDark
+                                ? 'border-success-500/40 bg-success-950/20 hover:border-success-400/80 hover:bg-success-950/30'
+                                : 'border-success-300 bg-success-50/80 hover:border-success-400'
+                              : isDark
+                                ? 'border-white/10 bg-secondary-900/60 hover:border-primary-400/80 hover:bg-primary-500/10'
+                                : 'border-secondary-200 bg-secondary-50/60 hover:border-primary-400 hover:bg-primary-50/50'
+                          }`}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
@@ -521,11 +515,10 @@ export function StoryModePanel({
                               {categoryLabel}
                             </span>
                             {isCompleted && (
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border flex items-center gap-1 ${
-                                isDark
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border flex items-center gap-1 ${isDark
                                   ? 'bg-success-500/20 text-success-300 border-success-500/40'
                                   : 'bg-success-100 text-success-700 border-success-300'
-                              }`}>
+                                }`}>
                                 {isTr ? 'TAMAMLANDI' : 'COMPLETED'}
                               </span>
                             )}
@@ -534,9 +527,8 @@ export function StoryModePanel({
                         <p className={`text-xs mt-2 leading-relaxed ${isDark ? 'text-secondary-300' : 'text-secondary-600'}`}>
                           {(!isTr && campaign.descriptionEn) ? campaign.descriptionEn : campaign.description}
                         </p>
-                        <div className={`mt-3 flex items-center justify-between text-[11px] border-t pt-2 ${
-                          isDark ? 'text-secondary-400 border-white/5' : 'text-secondary-500 border-secondary-200'
-                        }`}>
+                        <div className={`mt-3 flex items-center justify-between text-[11px] border-t pt-2 ${isDark ? 'text-secondary-400 border-white/5' : 'text-secondary-500 border-secondary-200'
+                          }`}>
                           <span>{isTr ? 'Rol' : 'Role'}: {(!isTr && campaign.roleEn) ? campaign.roleEn : campaign.role}</span>
                           <span className="flex items-center font-semibold">
                             {isCompleted ? (
@@ -565,11 +557,10 @@ export function StoryModePanel({
                         {(!isTr && activeCampaign.titleEn) ? activeCampaign.titleEn : activeCampaign.title}
                       </span>
                       {state.completedCampaigns?.includes(activeCampaign.id) && (
-                        <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border shrink-0 ${
-                          isDark
+                        <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border shrink-0 ${isDark
                             ? 'bg-success-500/20 text-success-300 border-success-500/30'
                             : 'bg-success-100 text-success-800 border-success-300'
-                        }`}>
+                          }`}>
                           {isTr ? 'Tamamlandı' : 'Completed'}
                         </span>
                       )}
@@ -604,15 +595,13 @@ export function StoryModePanel({
 
                 {/* Main Step Display or Completion Card */}
                 {state.completed ? (
-                  <div className={`rounded-xl border p-6 text-center space-y-3 ${
-                    isDark ? 'bg-success-500/10 border-success-500/30' : 'bg-success-50 border-success-300'
-                  }`}>
+                  <div className={`rounded-xl border p-6 text-center space-y-3 ${isDark ? 'bg-success-500/10 border-success-500/30' : 'bg-success-50 border-success-300'
+                    }`}>
                     <div className="mx-auto w-14 h-14 rounded-full bg-success-500/20 border border-success-500/40 flex items-center justify-center text-3xl shadow-lg animate-bounce">
                       👍
                     </div>
-                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border font-bold text-xs ${
-                      isDark ? 'bg-amber-500/20 border-amber-500/40 text-amber-300' : 'bg-amber-100 border-amber-300 text-amber-800'
-                    }`}>
+                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border font-bold text-xs ${isDark ? 'bg-amber-500/20 border-amber-500/40 text-amber-300' : 'bg-amber-100 border-amber-300 text-amber-800'
+                      }`}>
                       <CheckCircle2 className="w-4 h-4 text-success-500" /> {isTr ? 'SENARYO TAMAMLANDI 👍' : 'CAMPAIGN COMPLETED 👍'}
                     </div>
                     <h3 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-secondary-900'}`}>
@@ -625,9 +614,8 @@ export function StoryModePanel({
                         <>Successfully completed the <strong>{(!isTr && activeCampaign.titleEn) ? activeCampaign.titleEn : activeCampaign.title}</strong> operation.</>
                       )}
                     </p>
-                    <div className={`p-3 rounded-lg border text-xs space-y-1 ${
-                      isDark ? 'bg-secondary-900/80 border-white/10' : 'bg-white border-secondary-200'
-                    }`}>
+                    <div className={`p-3 rounded-lg border text-xs space-y-1 ${isDark ? 'bg-secondary-900/80 border-white/10' : 'bg-white border-secondary-200'
+                      }`}>
                       <div>
                         {isTr ? 'Toplam Skor:' : 'Total Score:'} <strong className={isDark ? 'text-amber-300' : 'text-amber-600'}>{state.score} {isTr ? 'Puan' : 'Points'}</strong>
                       </div>
@@ -639,22 +627,20 @@ export function StoryModePanel({
                     <div className="flex gap-2 mt-3 pt-2">
                       <Button
                         variant="outline"
-                        className={`flex-1 text-xs ${
-                          isDark
+                        className={`flex-1 text-xs ${isDark
                             ? 'border-primary-500/40 text-primary-300 hover:bg-primary-500/20'
                             : 'border-primary-400 text-primary-700 hover:bg-primary-50'
-                        }`}
+                          }`}
                         onClick={() => setShowCampaignSelector(true)}
                       >
                         <Sparkles className="w-3.5 h-3.5 mr-1" /> {isTr ? 'Yeni Senaryo Seç' : 'Select New Campaign'}
                       </Button>
                       <Button
                         variant="outline"
-                        className={`flex-1 text-xs ${
-                          isDark
+                        className={`flex-1 text-xs ${isDark
                             ? 'border-white/20 text-secondary-200 hover:bg-white/10'
                             : 'border-secondary-300 text-secondary-700 hover:bg-secondary-100'
-                        }`}
+                          }`}
                         onClick={handleResetCampaign}
                       >
                         <RotateCcw className="w-3.5 h-3.5 mr-1 text-amber-500" /> {isTr ? 'Baştan Başla' : 'Restart Campaign'}
@@ -665,15 +651,13 @@ export function StoryModePanel({
                   <>
                     {/* Telsiz / Incident Broadcast Banner */}
                     {currentStep.incidentEvent && (
-                      <div className={`rounded-xl border p-3.5 flex items-start gap-3 ${
-                        isDark ? 'border-amber-500/30 bg-amber-950/40' : 'border-amber-300 bg-amber-50/80'
-                      }`}>
+                      <div className={`rounded-xl border p-3.5 flex items-start gap-3 ${isDark ? 'border-amber-500/30 bg-amber-950/40' : 'border-amber-300 bg-amber-50/80'
+                        }`}>
                         <Radio className="w-5 h-5 text-amber-500 shrink-0 mt-0.5 animate-pulse" />
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${
-                              isDark ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-amber-100 text-amber-800 border-amber-300'
-                            }`}>
+                            <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${isDark ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-amber-100 text-amber-800 border-amber-300'
+                              }`}>
                               {(!isTr && currentStep.incidentEvent.titleEn) ? currentStep.incidentEvent.titleEn : currentStep.incidentEvent.title}
                             </span>
                           </div>
@@ -690,23 +674,20 @@ export function StoryModePanel({
                         {renderIcon(activeCampaign.iconName)}
                         <span>{(!isTr && currentStep.titleEn) ? currentStep.titleEn : currentStep.title}</span>
                       </div>
-                      <p className={`text-sm leading-relaxed border-l-2 pl-3 py-1 rounded-r-lg ${
-                        isDark
+                      <p className={`text-sm leading-relaxed border-l-2 pl-3 py-1 rounded-r-lg ${isDark
                           ? 'border-primary-500/40 text-secondary-200 bg-primary-950/20'
                           : 'border-primary-400 text-secondary-700 bg-primary-50/50'
-                      }`}>
+                        }`}>
                         {(!isTr && currentStep.narrativeEn) ? currentStep.narrativeEn : currentStep.narrative}
                       </p>
                     </div>
 
                     {/* Objective Card */}
-                    <div className={`rounded-xl border p-4 space-y-2 ${
-                      isDark ? 'border-primary-400/30 bg-primary-950/30' : 'border-primary-200 bg-primary-50/40'
-                    }`}>
+                    <div className={`rounded-xl border p-4 space-y-2 ${isDark ? 'border-primary-400/30 bg-primary-950/30' : 'border-primary-200 bg-primary-50/40'
+                      }`}>
                       <div className="flex items-center justify-between text-xs">
-                        <span className={`uppercase tracking-widest font-bold flex items-center gap-1.5 ${
-                          isDark ? 'text-primary-300' : 'text-primary-700'
-                        }`}>
+                        <span className={`uppercase tracking-widest font-bold flex items-center gap-1.5 ${isDark ? 'text-primary-300' : 'text-primary-700'
+                          }`}>
                           <Shield className="w-3.5 h-3.5" /> {isTr ? 'GÖREV HEDEFİ' : 'MISSION OBJECTIVE'}
                         </span>
                         <span className={`font-semibold ${isDark ? 'text-amber-300' : 'text-amber-700'}`}>
@@ -716,9 +697,8 @@ export function StoryModePanel({
                       <p className={`text-sm font-medium ${isDark ? 'text-white' : 'text-secondary-900'}`}>
                         {(!isTr && currentStep.objectiveEn) ? currentStep.objectiveEn : currentStep.objective}
                       </p>
-                      <div className={`flex items-center justify-between pt-2 border-t text-xs ${
-                        isDark ? 'border-white/10 text-secondary-400' : 'border-secondary-200 text-secondary-500'
-                      }`}>
+                      <div className={`flex items-center justify-between pt-2 border-t text-xs ${isDark ? 'border-white/10 text-secondary-400' : 'border-secondary-200 text-secondary-500'
+                        }`}>
                         <span>{isTr ? 'Canlı Ağ Durumu:' : 'Live Network State:'}</span>
                         <span className={`font-semibold ${isDark ? 'text-primary-300' : 'text-primary-700'}`}>
                           {topologyDevices.length} {isTr ? 'Cihaz' : 'Devices'} · {topologyConnections.length} {isTr ? 'Bağlantı' : 'Connections'}
@@ -728,9 +708,8 @@ export function StoryModePanel({
 
                     {/* Choice Event if present */}
                     {currentStep.choice && (
-                      <div className={`rounded-xl border p-3.5 space-y-2 ${
-                        isDark ? 'border-sky-500/30 bg-sky-950/30' : 'border-sky-300 bg-sky-50/60'
-                      }`}>
+                      <div className={`rounded-xl border p-3.5 space-y-2 ${isDark ? 'border-sky-500/30 bg-sky-950/30' : 'border-sky-300 bg-sky-50/60'
+                        }`}>
                         <p className={`text-xs font-bold flex items-center gap-1.5 ${isDark ? 'text-sky-300' : 'text-sky-800'}`}>
                           <AlertTriangle className="w-3.5 h-3.5 text-sky-500" />
                           {isTr ? 'KARAR NOKTASI:' : 'DECISION POINT:'} {(!isTr && currentStep.choice.questionEn) ? currentStep.choice.questionEn : currentStep.choice.question}
@@ -746,19 +725,18 @@ export function StoryModePanel({
                                 key={idx}
                                 disabled={isChosenAny}
                                 onClick={() => handleChoiceSelect(idx)}
-                                className={`text-left text-xs p-2.5 rounded-lg border transition-all ${
-                                  isSelected
+                                className={`text-left text-xs p-2.5 rounded-lg border transition-all ${isSelected
                                     ? isDark
                                       ? 'bg-sky-500/20 border-sky-400 text-sky-100 font-semibold'
                                       : 'bg-sky-100 border-sky-400 text-sky-900 font-semibold'
                                     : isChosenAny
-                                    ? isDark
-                                      ? 'bg-secondary-900/40 border-white/5 text-secondary-500 cursor-not-allowed'
-                                      : 'bg-secondary-100 border-secondary-200 text-secondary-400 cursor-not-allowed'
-                                    : isDark
-                                    ? 'bg-secondary-900/80 border-white/10 text-secondary-200 hover:border-sky-400/50 hover:bg-sky-950/50'
-                                    : 'bg-white border-secondary-200 text-secondary-700 hover:border-sky-400 hover:bg-sky-50'
-                                }`}
+                                      ? isDark
+                                        ? 'bg-secondary-900/40 border-white/5 text-secondary-500 cursor-not-allowed'
+                                        : 'bg-secondary-100 border-secondary-200 text-secondary-400 cursor-not-allowed'
+                                      : isDark
+                                        ? 'bg-secondary-900/80 border-white/10 text-secondary-200 hover:border-sky-400/50 hover:bg-sky-950/50'
+                                        : 'bg-white border-secondary-200 text-secondary-700 hover:border-sky-400 hover:bg-sky-50'
+                                  }`}
                               >
                                 <div className="flex items-center justify-between">
                                   <span>{(!isTr && option.labelEn) ? option.labelEn : option.label}</span>
@@ -775,9 +753,8 @@ export function StoryModePanel({
 
                     {/* Status Feedback Message */}
                     {message && (
-                      <div className={`p-3 rounded-lg border text-xs leading-relaxed ${
-                        isDark ? 'bg-primary-500/10 border-primary-500/20 text-primary-200' : 'bg-primary-50 border-primary-200 text-primary-900'
-                      }`}>
+                      <div className={`p-3 rounded-lg border text-xs leading-relaxed ${isDark ? 'bg-primary-500/10 border-primary-500/20 text-primary-200' : 'bg-primary-50 border-primary-200 text-primary-900'
+                        }`}>
                         {message}
                       </div>
                     )}
@@ -807,9 +784,8 @@ export function StoryModePanel({
                               });
                             }
                           }}
-                          className={`gap-1.5 ${
-                            isDark ? 'border-primary-500/30 text-primary-300 hover:bg-primary-500/20' : 'border-primary-300 text-primary-700 hover:bg-primary-50'
-                          }`}
+                          className={`gap-1.5 ${isDark ? 'border-primary-500/30 text-primary-300 hover:bg-primary-500/20' : 'border-primary-300 text-primary-700 hover:bg-primary-50'
+                            }`}
                           title={isTr ? "Topolojideki cihazı ortala ve odaklan" : "Pan and focus on topology device"}
                         >
                           <Crosshair className="w-4 h-4 text-primary-500" /> {isTr ? 'Cihaza Odaklan' : 'Focus Device'}
@@ -822,9 +798,8 @@ export function StoryModePanel({
                           const hintText = (!isTr && currentStep.hintEn) ? currentStep.hintEn : currentStep.hint;
                           setMessage(`${isTr ? 'İpucu:' : 'Hint:'} ${hintText}`);
                         }}
-                        className={`gap-1.5 ${
-                          isDark ? 'border-white/20 text-secondary-200 hover:bg-white/10' : 'border-secondary-300 text-secondary-700 hover:bg-secondary-100'
-                        }`}
+                        className={`gap-1.5 ${isDark ? 'border-white/20 text-secondary-200 hover:bg-white/10' : 'border-secondary-300 text-secondary-700 hover:bg-secondary-100'
+                          }`}
                       >
                         <Lightbulb className="w-4 h-4 text-amber-500" /> {isTr ? 'İpucu' : 'Hint'}
                       </Button>
@@ -841,18 +816,16 @@ export function StoryModePanel({
                 )}
 
                 {/* Footer Controls */}
-                <div className={`flex items-center justify-between border-t pt-3 text-xs ${
-                  isDark ? 'border-white/10 text-secondary-400' : 'border-secondary-200 text-secondary-500'
-                }`}>
+                <div className={`flex items-center justify-between border-t pt-3 text-xs ${isDark ? 'border-white/10 text-secondary-400' : 'border-secondary-200 text-secondary-500'
+                  }`}>
                   <span>{state.skipped} {isTr ? 'Aşama Atlandı' : 'Stages Skipped'}</span>
                   <div className="flex items-center gap-1.5">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => setShowCampaignSelector(true)}
-                      className={`h-7 text-xs ${
-                        isDark ? 'text-primary-300 hover:text-primary-100 hover:bg-white/10' : 'text-primary-700 hover:text-primary-900 hover:bg-primary-50'
-                      }`}
+                      className={`h-7 text-xs ${isDark ? 'text-primary-300 hover:text-primary-100 hover:bg-white/10' : 'text-primary-700 hover:text-primary-900 hover:bg-primary-50'
+                        }`}
                     >
                       <Sparkles className="w-3 h-3 mr-1 text-primary-500" /> {isTr ? 'Senaryo Seç' : 'Select Scenario'}
                     </Button>
@@ -860,9 +833,8 @@ export function StoryModePanel({
                       variant="ghost"
                       size="sm"
                       onClick={handleResetCampaign}
-                      className={`h-7 text-xs ${
-                        isDark ? 'text-secondary-400 hover:text-error-400' : 'text-secondary-500 hover:text-error-600'
-                      }`}
+                      className={`h-7 text-xs ${isDark ? 'text-secondary-400 hover:text-error-400' : 'text-secondary-500 hover:text-error-600'
+                        }`}
                     >
                       <RotateCcw className="w-3 h-3 mr-1" /> {isTr ? 'Baştan Başla' : 'Restart'}
                     </Button>
@@ -881,9 +853,8 @@ export function StoryModePanel({
             aria-label="Pencereyi yeniden boyutlandır"
             title="Boyutlandır"
           >
-            <div className={`w-2.5 h-2.5 rounded-br-full border-b-2 border-r-2 bg-transparent ${
-              isDark ? 'border-secondary-400' : 'border-secondary-600'
-            }`} />
+            <div className={`w-2.5 h-2.5 rounded-br-full border-b-2 border-r-2 bg-transparent ${isDark ? 'border-secondary-400' : 'border-secondary-600'
+              }`} />
           </div>
         )}
       </section>

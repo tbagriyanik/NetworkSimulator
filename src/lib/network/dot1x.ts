@@ -58,12 +58,12 @@ export function isFrameAllowedOnDot1xPort(
 
   if (session.portControl === 'force-authorized') return true;
   if (session.portControl === 'force-unauthorized') {
-    return etherType === EAPOL_ETHERTYPE || dstMac?.toLowerCase() === EAPOL_MULTICAST_MAC;
+    return etherType === EAPOL_ETHERTYPE || dstMac?.toLowerCase() === EAPOL_MULTICAST_MAC.toLowerCase();
   }
 
   if (session.state === 'authorized') return true;
 
-  return etherType === EAPOL_ETHERTYPE || dstMac?.toLowerCase() === EAPOL_MULTICAST_MAC;
+  return etherType === EAPOL_ETHERTYPE || dstMac?.toLowerCase() === EAPOL_MULTICAST_MAC.toLowerCase();
 }
 
 export function processEapol(

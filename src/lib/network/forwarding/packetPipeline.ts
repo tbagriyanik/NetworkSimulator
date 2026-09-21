@@ -216,8 +216,39 @@ function resolveEgress(
   let routeDecision: string | undefined;
   const connectionIndex = buildConnectionIndex(connections);
 
+  const multicastGroup = frame.dstIp && frame.dstIp.split('.').length === 4
+    ? Number(frame.dstIp.split('.')[0]) >= 224 && Number(frame.dstIp.split('.')[0]) <= 239
+    : false;
+
   if (device.type === 'switchL2' || device.type === 'switchL3' || device.type === 'hub') {
-    if (device.type === 'hub' || frame.dstMac === 'ff:ff:ff:ff:ff:ff' || !frame.dstMac) {
+    if (multicastGroup && (state.multicastRoutingEnabled || state.igmpSnoopingEnabled !== false)) {
+      // Multicast forwarding to joined IGMP receiver ports or PIM interfaces
+      Object.values(state.ports || {}).forEach((port) => {
+        const joined = port.igmpGroups?.includes(frame.dstIp as string);
+        const pimForwarding = Boolean(port.pimMode);
+        if (port.id !== frame.ingressPortId && !port.shutdown && port.status === 'connected' && (joined || pimForwarding)) {
+          egressPorts.push(port.id);
+        }
+      });
+      if (egressPorts.length > 0) {
+        routeDecision = `L2 Multicast IGMP/PIM forwarding to joined ports: ${egressPorts.join(', ')}`;
+        const firstPort = egressPorts[0];
+        const conn = connectionIndex.byPort.get(`${device.id}:${firstPort}`);
+        if (conn) {
+          nextDeviceId = conn.sourceDeviceId === device.id ? conn.targetDeviceId : conn.sourceDeviceId;
+        }
+      } else if (state.multicastRoutingEnabled) {
+        routeDecision = `L2 Multicast drop: No active IGMP members or PIM neighbors for group ${frame.dstIp}`;
+      } else {
+        // Plain L2 broadcast flood fallback for un-snooped multicast
+        Object.values(state.ports || {}).forEach((p) => {
+          if (p.id !== frame.ingressPortId && !p.shutdown && p.status === 'connected') {
+            egressPorts.push(p.id);
+          }
+        });
+        routeDecision = `L2 Multicast Flood across active ports for group ${frame.dstIp}`;
+      }
+    } else if (device.type === 'hub' || frame.dstMac === 'ff:ff:ff:ff:ff:ff' || !frame.dstMac) {
       // Flood to all active ports except ingress
       Object.values(state.ports || {}).forEach(p => {
         if (p.id !== frame.ingressPortId && !p.shutdown && p.status === 'connected') {
@@ -245,7 +276,45 @@ function resolveEgress(
       }
     }
   } else if (device.type === 'router' || device.type === 'firewall') {
-    if (frame.dstIp) {
+    if (multicastGroup) {
+      if (state.multicastRoutingEnabled) {
+        Object.values(state.ports || {}).forEach((port) => {
+          const joined = port.igmpGroups?.includes(frame.dstIp as string);
+          const pimForwarding = Boolean(port.pimMode);
+          if (port.id !== frame.ingressPortId && !port.shutdown && (joined || pimForwarding)) {
+            egressPorts.push(port.id);
+          }
+        });
+        if (state.mrouteEntries && Array.isArray(state.mrouteEntries)) {
+          state.mrouteEntries.forEach((entry) => {
+            if (entry.group === frame.dstIp || entry.group === '224.0.0.0/4' || entry.group === '*') {
+              (entry.outgoingInterfaces || []).forEach((outPort: string) => {
+                const portKey = Object.keys(state.ports || {}).find((k) => k.toLowerCase() === outPort.toLowerCase()) || outPort;
+                if (portKey !== frame.ingressPortId && !state.ports?.[portKey]?.shutdown && !egressPorts.includes(portKey)) {
+                  egressPorts.push(portKey);
+                }
+              });
+            }
+          });
+        }
+        if (egressPorts.length > 0) {
+          routeDecision = `L3 Multicast forwarding for group ${frame.dstIp} via PIM/IGMP OIL (${egressPorts.join(', ')})`;
+          const firstPort = egressPorts[0];
+          const conn = connectionIndex.byPort.get(`${device.id}:${firstPort}`);
+          if (conn) {
+            nextDeviceId = conn.sourceDeviceId === device.id ? conn.targetDeviceId : conn.sourceDeviceId;
+            if (nextDeviceId) {
+              const nextDevice = deviceMap.get(nextDeviceId);
+              if (!nextDevice) nextDeviceId = undefined;
+            }
+          }
+        } else {
+          routeDecision = `L3 Multicast drop: No active PIM/IGMP receivers or mroute OIL for group ${frame.dstIp}`;
+        }
+      } else {
+        routeDecision = `L3 Multicast drop: 'ip multicast-routing' is disabled on router`;
+      }
+    } else if (frame.dstIp) {
       const deviceMap2 = new Map<string, SwitchState>([[device.id, state]]);
       const table = getRoutingTable(device.id, deviceMap2);
       const detailed = findRouteDetailed(frame.dstIp, table);
@@ -424,7 +493,7 @@ export function runHopPipeline(
   if (egressPorts.length === 0) {
     const isRouter = (device.type === 'router' || device.type === 'firewall');
     const code = isRouter ? DropReasonCode.L3_NO_ROUTE : DropReasonCode.L2_UNKNOWN_MAC_NO_EGRESS;
-    return drop(isRouter ? 'route-lookup' : 'mac-lookup', formatDropReason(code, `No path for dst ${frame.dstIp || frame.dstMac}`), 0);
+    return drop(isRouter ? 'route-lookup' : 'mac-lookup', routeDecision || formatDropReason(code, `No path for dst ${frame.dstIp || frame.dstMac}`), 0);
   }
 
   const forwardStage: PipelineStage = (device.type === 'router' || device.type === 'firewall') ? 'route-lookup' : 'mac-lookup';

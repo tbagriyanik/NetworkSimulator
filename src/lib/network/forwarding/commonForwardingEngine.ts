@@ -1,4 +1,4 @@
-﻿import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState, Port } from '@/lib/network/types';
 import type { NetworkPacketFrame } from './packetFrame';
 import { getRoutingTable, findRoute, Route } from '@/lib/network/routing';
@@ -457,8 +457,31 @@ export function forwardPacketFrame(
       }
     }
   } else if (device.type === 'router' || device.type === 'firewall') {
-    // Router Layer 3 Route Lookup
-    if (frame.dstIp && state) {
+    // Router Multicast Forwarding (PIM + IGMP OIL replication) vs Unicast Route Lookup
+    if (multicastGroup) {
+      if (state?.multicastRoutingEnabled) {
+        Object.values(state.ports || {}).forEach((port) => {
+          const joined = port.igmpGroups?.includes(frame.dstIp as string);
+          const pimForwarding = Boolean(port.pimMode);
+          if (port.id !== frame.ingressPortId && !port.shutdown && (joined || pimForwarding)) {
+            egressPorts.push(port.id);
+          }
+        });
+        if (state.mrouteEntries && Array.isArray(state.mrouteEntries)) {
+          state.mrouteEntries.forEach((entry) => {
+            if (entry.group === frame.dstIp || entry.group === '224.0.0.0/4' || entry.group === '*') {
+              (entry.outgoingInterfaces || []).forEach((outPort: string) => {
+                const portKey = Object.keys(state.ports || {}).find((k) => k.toLowerCase() === outPort.toLowerCase()) || outPort;
+                if (portKey !== frame.ingressPortId && !state.ports?.[portKey]?.shutdown && !egressPorts.includes(portKey)) {
+                  egressPorts.push(portKey);
+                }
+              });
+            }
+          });
+        }
+      }
+      // If multicastRoutingEnabled is disabled, router drops multicast packets between L3 interfaces
+    } else if (frame.dstIp && state) {
       const deviceMap = new Map<string, SwitchState>([[device.id, state]]);
       const fullTable = getRoutingTable(device.id, deviceMap);
       const route = findRoute(frame.dstIp, fullTable);
@@ -486,5 +509,3 @@ export function forwardPacketFrame(
     actionReason: `Forwarded to ${egressPorts.length} egress ports`
   };
 }
-
-

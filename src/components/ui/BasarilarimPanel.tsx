@@ -113,7 +113,7 @@ export function BasarilarimPanel({ t, language, isDark, onClose, zIndex }: Basar
       for (const sc of summary.storyCampaigns) {
         result.push({
           type: 'story-campaign',
-          label: language === 'tr' ? 'Etkileşimli Senaryo' : 'Interactive Story',
+          label: language === 'tr' ? 'Etkileşimli Senaryo' : 'Interactive Scenario',
           date: sc.completedAt,
           detail: sc.name,
           scoreText: `${sc.score} Pn · ${sc.rank}`,

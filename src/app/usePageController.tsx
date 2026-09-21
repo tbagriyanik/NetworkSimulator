@@ -13,28 +13,14 @@ import { usePanels } from '@/hooks/usePanels';
 import { useRefreshReport } from '@/hooks/useRefreshReport';
 import { useDeviceSelection } from '@/hooks/useDeviceSelection';
 import { useAppStore } from '@/lib/store/appStore';
-import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { getPrompt } from '@/lib/network/executor';
 import { createInitialState } from '@/lib/network/initialState';
 import { addProjectRecord } from '@/utils/achievementRecords';
 import type { TerminalOutput } from '@/components/network/Terminal';
-import type { SwitchState } from '@/lib/network/types';
 
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
-import {
-  topologyTasks,
-  portTasks,
-  vlanTasks,
-  securityTasks,
-  wirelessTasks,
-  routingTasks,
-  dhcpTasks,
-  calculateTaskScore,
-  TaskContext,
-  getTaskStatus
-} from '@/lib/network/taskDefinitions';
 import { useGuidedMode } from '@/hooks/useGuidedMode';
 import { useExamMode } from '@/hooks/useExamMode';
 import { useMultiWindowStore } from '@/hooks/useMultiWindowStore';
@@ -43,7 +29,6 @@ import { useWindowStore } from '@/hooks/useWindowStore';
 import { bringElementToFront } from '@/lib/utils/zIndex';
 import { useUiPreferences } from '@/hooks/useUiPreferences';
 import { useRoom } from '@/contexts/RoomContext';
-import { useRoomSync } from '@/hooks/useRoomSync';
 import { useToast } from '@/hooks/use-toast';
 
 import { useNetworkSimulation } from '@/hooks/useNetworkSimulation';
@@ -59,7 +44,6 @@ import { useAutoDhcpRenewal } from '@/hooks/useAutoDhcpRenewal';
 import { useProjectAutosave } from '@/hooks/useProjectAutosave';
 import { useCommandExecution } from '@/hooks/useCommandExecution';
 import { usePageGlobalEvents } from '@/hooks/usePageGlobalEvents';
-import { useTaskSync } from '@/hooks/useTaskSync';
 import { useDeviceDelete } from '@/hooks/useDeviceDelete';
 import { useNetworkEventListeners } from '@/hooks/useNetworkEventListeners';
 import { usePWA } from '@/hooks/usePWA';
@@ -77,6 +61,8 @@ import { usePageViewState } from './usePageViewState';
 import { useDeviceEdit } from './useDeviceEdit';
 import { usePageWorkspaceState } from '@/hooks/usePageWorkspaceState';
 import { usePageModalDrags } from './usePageModalDrags';
+import { usePageRoomAndTaskSync } from './usePageRoomAndTaskSync';
+import { usePageTopologyActions } from './usePageTopologyActions';
 
 export function usePageController({ initialProjectId }: { initialProjectId?: string }) {
   const { t, language, setLanguage } = useLanguage();
@@ -192,7 +178,7 @@ export function usePageController({ initialProjectId }: { initialProjectId?: str
     getAvailableProjects,
     isAllCompleted,
     currentPoints,
-    totalPoints
+    totalPoints,
   } = useGuidedMode();
 
   // Exam Mode hook
@@ -216,7 +202,7 @@ export function usePageController({ initialProjectId }: { initialProjectId?: str
     exportExamFile,
     checkTasks: checkExamTasks,
     currentScore: examScore,
-    getAvailableExams
+    getAvailableExams,
   } = useExamMode();
 
   const { preferences } = useUiPreferences();
@@ -344,7 +330,7 @@ export function usePageController({ initialProjectId }: { initialProjectId?: str
   const {
     isTroubleshootingMinimized, setIsTroubleshootingMinimized,
     showTroubleshootingPanel, setShowTroubleshootingPanel,
-    activeTroubleshootingProject
+    activeTroubleshootingProject,
   } = useTroubleshootingMode({
     activeExam,
     loadedExampleId,
@@ -352,7 +338,7 @@ export function usePageController({ initialProjectId }: { initialProjectId?: str
     groupedExampleProjects,
     deviceStates,
     language,
-    toast
+    toast,
   });
 
   const { handleDeviceSelectFromCanvas, handleDeviceSelectFromMenu } = usePageTopologyCallbacks({
@@ -379,35 +365,6 @@ export function usePageController({ initialProjectId }: { initialProjectId?: str
   const handlePCPanelNavigateWrapper = useCallback((program: string) => {
     handlePCPanelNavigate(program, activeDeviceId);
   }, [handlePCPanelNavigate, activeDeviceId]);
-
-  const closeEscLikeWindows = useCallback(() => {
-    setShowMobileMenu(false);
-    setConfirmDialog(null);
-    setSaveDialog(null);
-    setShowPCPanel(false);
-    setShowRouterPanel(false);
-    setShowUnifiedDeviceModal(false);
-    setShowAboutModal(false);
-    setShowProjectPicker(false);
-    setShowOnboarding(false);
-    setShowBasarilarim(false);
-    setShowTeacherPanel(false);
-    setShowRoomJoinDialog(false);
-    setIsGeneratorOpen(false);
-    if (!isExamActive) {
-      setRefreshNetworkReport(prev => prev ? { ...prev, show: false } : null);
-    }
-    window.dispatchEvent(new CustomEvent('close-menus-broadcast', { detail: { source: 'escape' } }));
-  }, [isExamActive, setRefreshNetworkReport, setShowTeacherPanel, setShowRoomJoinDialog, setShowMobileMenu, setConfirmDialog, setSaveDialog, setShowPCPanel, setShowRouterPanel, setShowUnifiedDeviceModal, setShowAboutModal, setShowProjectPicker, setShowOnboarding, setShowBasarilarim, setIsGeneratorOpen]);
-
-  useEffect(() => {
-    const handleMobileBack = () => {
-      closeEscLikeWindows();
-      closeAllPanels();
-    };
-    window.addEventListener('mobile-back-pressed', handleMobileBack as EventListener);
-    return () => window.removeEventListener('mobile-back-pressed', handleMobileBack as EventListener);
-  }, [closeAllPanels, closeEscLikeWindows]);
 
   usePageModalManagement({
     hasUnsavedChanges,
@@ -499,43 +456,30 @@ export function usePageController({ initialProjectId }: { initialProjectId?: str
     return getOrCreateDeviceOutputs(activeDeviceId, state);
   }, [activeDeviceId, state, getOrCreateDeviceOutputs]);
 
-  const isTaskSystemEnabled = activeDeviceType === 'switchL2' || activeDeviceType === 'switchL3' || activeDeviceType === 'router';
-  const activeDeviceTasks = useMemo(
-    () => isTaskSystemEnabled
-      ? [...topologyTasks, ...portTasks, ...vlanTasks, ...securityTasks, ...dhcpTasks, ...(activeDeviceType === 'router' || activeDeviceType === 'switchL3' ? routingTasks : []), ...(activeDeviceType !== 'switchL2' ? wirelessTasks : [])]
-      : [],
-    [activeDeviceType, isTaskSystemEnabled]
-  );
-
   useEffect(() => {
     activeTabRef.current = activeTab;
   }, [activeTab, activeTabRef]);
 
-  const taskContext: TaskContext = {
-    cableInfo, showPCPanel, showRouterPanel, selectedDevice, language, deviceStates, topologyConnections,
-  };
-
-  useTaskSync({
-    isTaskSystemEnabled, activeDeviceTasks, state, taskContext, language, activeDeviceType, setLastTaskEvent,
-  });
-
-  const totalScore = isTaskSystemEnabled ? calculateTaskScore(activeDeviceTasks, state, taskContext) : 0;
-  const maxScore = activeDeviceTasks.reduce((acc, task) => acc + task.weight, 0);
-
-  const completedTaskCount = activeDeviceTasks.filter(t => getTaskStatus(t, state, taskContext)).length;
-  const totalTaskCount = activeDeviceTasks.length;
-  const currentTaskName = activeDeviceTasks.length > 0
-    ? activeDeviceTasks.find(t => !getTaskStatus(t, state, taskContext))?.name[language] ?? activeDeviceTasks[activeDeviceTasks.length - 1].name[language]
-    : '';
-
-  useRoomSync({
-    roomCode: studentRoomCode,
-    displayName: studentDisplayName,
-    currentTask: currentTaskName,
-    completedTasks: completedTaskCount,
-    totalTasks: totalTaskCount,
-    projectFile: projectName !== 'Untitled' ? projectName : undefined,
-    durationMinutes: activeExam?.durationMinutes,
+  const {
+    activeDeviceTasks,
+    taskContext,
+    totalScore,
+    maxScore,
+  } = usePageRoomAndTaskSync({
+    activeDeviceType,
+    cableInfo,
+    showPCPanel,
+    showRouterPanel,
+    selectedDevice,
+    language,
+    deviceStates,
+    topologyConnections,
+    state,
+    setLastTaskEvent,
+    studentRoomCode,
+    studentDisplayName,
+    projectName,
+    activeExam,
   });
 
   const { normalizeDeviceType, isValidIpv4, isSameSubnetByMask,
@@ -546,31 +490,6 @@ export function usePageController({ initialProjectId }: { initialProjectId?: str
     isAppLoading, topologyDevices, topologyConnections, topologyNotes, deviceStates, deviceOutputs, pcOutputs, pcHistories,
     cableInfo, activeDeviceId, activeDeviceType, activeTab, zoom, pan, setLastSaveTime, setHasUnsavedChanges,
   });
-
-  useEffect(() => {
-    if (!refreshNetworkReport?.show || !refreshReportRef.current) return;
-    if (isMobile) return;
-    try {
-      const saved = localStorage.getItem('draggable_position_refresh-network-report');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (typeof parsed.x === 'number' && typeof parsed.y === 'number') {
-          const vw = window.innerWidth;
-          const vh = window.innerHeight;
-          const el = refreshReportRef.current;
-          const rect = el.getBoundingClientRect();
-          const safeX = Math.max(4, Math.min(parsed.x, vw - rect.width - 4));
-          const safeY = Math.max(128, Math.min(parsed.y, vh - rect.height - 4));
-          el.style.position = 'fixed';
-          el.style.left = `${safeX}px`;
-          el.style.top = `${safeY}px`;
-          el.style.right = 'auto';
-          el.style.bottom = 'auto';
-          el.style.transform = 'none';
-        }
-      }
-    } catch { /* ignore */ }
-  }, [refreshNetworkReport?.show, isMobile]);
 
   const loadProjectData = useLoadProjectData({
     setDeviceStates, setDeviceOutputs, setPcOutputs, setPcHistories, setActiveDeviceId, setActiveDeviceType,
@@ -641,7 +560,6 @@ export function usePageController({ initialProjectId }: { initialProjectId?: str
     setDeviceOutputs, setPcOutputs, setTopologyDevices, setActiveTab, setHasUnsavedChanges,
   });
 
-
   const { handleSaveProject, getFullProjectData } = useProjectExport({
     deviceStates, deviceOutputs, pcOutputs, pcHistories, topologyDevices, topologyConnections, topologyNotes, cableInfo,
     activeDeviceId, activeDeviceType, historyItems, historyIndex, activeExam, language, projectName, setProjectName,
@@ -655,66 +573,45 @@ export function usePageController({ initialProjectId }: { initialProjectId?: str
     setRefreshNetworkReport, resetHistory,
   });
 
-  const runWithSaveGuard = useCallback((action: () => void) => {
-    if (hasUnsavedChanges) {
-      setSaveDialog({
-        show: true,
-        message: t.unsavedChangesConfirm,
-        onConfirm: (save: boolean) => {
-          setSaveDialog(null);
-          if (save) {
-            handleSaveProject();
-          }
-          action();
-        }
-      });
-      return;
-    }
-    action();
-  }, [hasUnsavedChanges, handleSaveProject, setSaveDialog, t.unsavedChangesConfirm]);
-
-  const handleGeneratedTopology = useCallback((data: {
-    devices: CanvasDevice[];
-    connections: CanvasConnection[];
-    deviceStates: Map<string, SwitchState>;
-    projectName?: string;
-    projectDescription?: string;
-  }) => {
-    resetWorkspaceUiState();
-    resetToEmptyProject();
-    setDevices(data.devices);
-    setConnections(data.connections);
-    setDeviceStates(data.deviceStates);
-    setNotes([]);
-    setZoom(1.0);
-    setPan({ x: 0, y: 0 });
-    if (data.projectName) {
-      setProjectName(data.projectName);
-    }
-
-    if (data.projectDescription) {
-      localStorage.setItem('lastProjectDescription', data.projectDescription);
-    } else {
-      localStorage.removeItem('lastProjectDescription');
-    }
-
-    setTimeout(() => {
-      window.dispatchEvent(new CustomEvent('add-summary-note'));
-    }, 500);
-  }, [resetWorkspaceUiState, resetToEmptyProject, setDevices, setConnections, setDeviceStates, setNotes, setZoom, setPan, setProjectName]);
-
-  useEffect(() => {
-    const handleOpenGenerator = () => setIsGeneratorOpen(true);
-    window.addEventListener('trigger-topology-generator', handleOpenGenerator);
-    return () => window.removeEventListener('trigger-topology-generator', handleOpenGenerator);
-  }, [setIsGeneratorOpen]);
-
-  function handleNewProject() {
-    setProjectSearchQuery('');
-    closeExam();
-    resetWorkspaceUiState();
-    runWithSaveGuard(() => setShowProjectPicker(true));
-  }
+  const {
+    closeEscLikeWindows,
+    handleGeneratedTopology,
+    handleNewProject,
+  } = usePageTopologyActions({
+    t,
+    hasUnsavedChanges,
+    isExamActive,
+    handleSaveProject,
+    closeExam,
+    resetWorkspaceUiState,
+    resetToEmptyProject,
+    closeAllPanels,
+    setDevices,
+    setConnections,
+    setDeviceStates,
+    setNotes,
+    setZoom,
+    setPan,
+    setProjectName,
+    setProjectSearchQuery,
+    setShowProjectPicker,
+    setShowMobileMenu,
+    setConfirmDialog,
+    setSaveDialog,
+    setShowPCPanel,
+    setShowRouterPanel,
+    setShowUnifiedDeviceModal,
+    setShowAboutModal,
+    setShowOnboarding,
+    setShowBasarilarim,
+    setShowTeacherPanel,
+    setShowRoomJoinDialog,
+    setIsGeneratorOpen,
+    setRefreshNetworkReport,
+    refreshNetworkReport,
+    refreshReportRef,
+    isMobile,
+  });
 
   usePageSyncEffects({
     sessionStart, activeGuidedProject, isAllCompleted, currentPoints, totalPoints, isExamFinished, activeExam, examScore,

@@ -55,7 +55,7 @@ npm run check
 | --- | --- |
 | Version / Sürüm | 6.3.0 |
 | Total Lines / Toplam Satır (`src/`) | ~213,599 |
-| Source Files / Kaynak Dosya | 1038 |
+| Source Files / Kaynak Dosya | 1026 |
 | Documentation Files / Dokümantasyon Dosya | 30 |
 | Example Projects / Örnek Proje | 49 |
 | Guided Lessons / Rehberli Ders | 19 |
