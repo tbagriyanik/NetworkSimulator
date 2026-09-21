@@ -411,6 +411,11 @@ doc/
 - [x] CLI EIGRP, OSPF & Donanım Komutları Tamamlama Paketi (v5.8.0) belgelendi
 - [x] OSPF E2E Network Etkileri & CLI Terminal Otomatik Scroll (v5.9.0) belgelendi
 - [x] Kapsamlı CLI Genişletme (Multicast, STP, IPSec, SNMPv3, BGP, CBAC, EEM, NETCONF) & Dokümantasyon Konsolidasyonu (v6.1.0) belgelendi
+- [x] Etkileşimli Görev Düzeni, 1500 Satır Kural Uyumlaştırması & Simülasyon Kapsam Bildirimi (v6.2.0) belgelendi
+- [x] Terminal Sağ Tık Yapıştırma, F2 Cihaz Yeniden Adlandırma & Arama Odaklanma (v6.2.1) belgelendi
+- [x] Otomatik Kablo Bağlama, Console/RS-232 Eşleme, 19 Rehberli Ders, Protokol Detay Ağacı & Engellendi Rozeti (v6.3.0) belgelendi
+- [x] Topoloji & Paket İnceleme Arama Temizleme Butonları, ESC Kısayolları, Terminal Temizleme Notu & Proje Sürümü Yükseltme (v6.4.0) belgelendi
+- [x] Klavye & Tuval Yardım Penceresi İçeriği (ShortcutsModal, F1/Shift+?) Tüm Yeni Kısayollarla Güncellendi
 
 ---
 

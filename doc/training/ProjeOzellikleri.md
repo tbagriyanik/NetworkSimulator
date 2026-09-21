@@ -1,10 +1,20 @@
 # Network Simulator — Özellik ve Yetenek Envanteri
 
-**Sürüm / Version:** 6.3.0 · **Son doğrulama / Last verified:** 2026-09-20
+**Sürüm / Version:** 6.4.0 · **Son doğrulama / Last verified:** 2026-09-21
 
 ## Packet/Control-Plane Entegrasyon Özeti
 
 MPLS/LDP, IPSec, SNMP, NETCONF/RESTCONF, EEM, MST, IP SLA, QoS MQC, 802.1X, CAPWAP, sFlow/NetFlow, MQTT ve CoAP akışları ortak state/packet pipeline ile doğrulanır. Telemetry export’ları collector frame olarak, MQTT/CoAP/NETCONF işlemleri servis portlarına bağlı request-response frame olarak modellenir.
+
+## Katılımcı Rehberli Dersler, Protokol Detay Ağacı & Otomatik Kablo Eşleme (2026-09-20 - v6.3.0)
+
+| Özellik | Güncel kapsam ve sınır |
+|---|---|
+| **Etkileşimli Rehberli Dersler (19 Ders)** | Başlangıç, Orta ve İleri seviyelerde 19 adet adım adım etkileşimli ağ dersi (`cliGuidedLessons.ts`). Cihaza bağlanma, switch/router konfigürasyonu, IP atama, OSPF ve ACL kurulum adımlarını canlı doğrulama. |
+| **Protokol Detay Ağacı & Engellendi Uyarısı** | PDU/Paket yakalama ekranında detay hiyerarşisi (`ProtocolTreeDetails.tsx`). Dropped/Engellendi durumundaki paketlerde (ACL, Port Security, Firewall) dikkat çekici kırmızı renkli "ENGELLENDİ / DROPPED" uyarı paneli. |
+| **Otomatik Kablo Bağlama & RS-232/Console Eşleme** | Kablo modundayken hedef cihaz gövdesine tıklandığında ilk boş portun otomatik seçilmesi. PC RS-232/Console portundan başlayan hatlarda hedef cihazın Console portunun otomatik tespiti. |
+| **Cihaz Yeniden Adlandırma (F2) & Arama Odaklanma** | `F2` kısayolu ve topoloji menüsü ile cihaz adı değiştirme. Cihaz arama kutusuna `Enter` basıldığında ilk sonuca otomatik kamera ortalaması ve neon halkanın odaklanması. |
+| **Sınav Kalan Süre Uyarıları & Kablo Canlı Kartı** | Sınav modunda son 5 dk ve 1 dk kala toast bildirimi. Kablo üzerine gelindiğinde `Fa0/1 ↔ Fa0/24` canlı port ve hat durumu kartı. |
 
 ## Kapsamlı CLI Genişletme, İnteraktif Motorlar & Çoklu Protokol Desteği (2026-09-19 - v6.1.0)
 

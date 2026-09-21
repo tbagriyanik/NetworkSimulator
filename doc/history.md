@@ -1,9 +1,19 @@
 # 📅 Network Simulator — Proje Geçmişi
 
+## v6.4.0 — 2026-09-21
+
+- **🔍 Topoloji Arama Kutusunda Temizleme Butonu & ESC Kısayolu (`TopologyToolbar.tsx`)**: Cihaz arama kutusuna tek tıkla arama sıfırlama ("X") butonu ve `ESC` tuşuyla arama temizleme desteği eklendi.
+- **🔍 PDU / Paket İnceleme Panelinde Tek Tıkla Filtre Sıfırlama (`EmbeddedPduInspector.tsx`)**: Paket yakalama detay arama kutusuna `ESC` kısayolu ve filtre temizleme aksiyonu eklendi.
+- **📟 Terminal Temizleme Sonrası Mini İpucu Görselleştirmesi (`useTerminalOutputSync.ts`)**: `Ctrl+L` veya temizleme aksiyonları sonrasında kullanıcılara kılavuzluk eden bilgilendirme satırı entegre edildi.
+- **⌨️ Kısayol & Yardım Modalı Genişletmesi (`ShortcutsModal.tsx`)**: Tüm tuval, cihaz, arama ve paket analiz kısayolları rehber modalına dahil edildi.
+- **🔖 Sürüm Güncellemesi**: Tüm proje paketi, bileşenler ve dokümantasyon v6.4.0 sürümüne yükseltildi.
+
 ## v6.3.0 — 2026-09-20
 
 - **🔌 Cihaz Gövdesine Tıklayarak Otomatik Kablo Bağlama**: Kablo çekme modundayken hedef cihazın gövdesine tıklandığında boşta olan ilk uygun port otomatik seçilerek bağlantı kurulur.
 - **📟 Akıllı Console / RS-232 Port Eşleme**: Kaynak bağlantı PC'nin `COM1` / `RS-232` veya `Console` portundan başladığında hedef cihaz gövdesine tıklandığında hedef cihazın boşta olan `Console` portu otomatik tespit edilip bağlanır; normal ethernet kablolarında ise console portu filtrelenir.
+- **🌳 Protokol Detay Ağacı & Düşen Paket Uyarısı (`ProtocolTreeDetails.tsx`)**: Canlı paket/PDU yakalama detay ağacı iyileştirildi; ACL, Port Security veya Güvenlik Duvarı tarafından engellenen paketler için kırmızı "ENGELLENDİ / DROPPED" uyarı rozeti eklendi.
+- **🎓 19 Rehberli Ders & Ağ Müfredatı Entegrasyonu (`cliGuidedLessons.ts`)**: Başlangıç, Orta ve İleri seviye Switch/Router konfigürasyonu, IP atama, OSPF ve ACL adımlarını kapsayan etkileşimli 19 ders adımı tamamlandı.
 - **🔲 Router Seçim Vurgusu (Glow Highlight) İyileştirmesi**: Router cihazı seçildiğinde ortaya çıkan elips/daire highlight efekti, router gövdesini saran estetik yuvarlatılmış dikdörtgen (`rect`) biçimine dönüştürüldü.
 - **⚡ Cihaz Güç Kapatıp Açma (Power Toggle) İsim Koruma Düzeltmesi**: Yazıcı (`Printer`), `PC`, `IoT`, `Mobile`, `Hub`, `Cloud` ve `Firewall` gibi cihazların gücü kapatılıp açıldığında adlarının yanlışlıkla `Switch`'e dönüşmesi sorunu giderildi; orijinal hostname ve cihaz kimlikleri korundu.
 - **⌨️ `F2` Yeniden Adlandırma & Switch / Router Doğrulama Düzeltmesi**: Switch ve Router cihazlarının isimleri `DeviceConfigModal` (F2) üzerinden IP zorunluluğu olmadan kaydedilecek şekilde güncellendi; topoloji sağ tık menüsüne "Yeniden Adlandır (F2)" seçeneği eklendi.

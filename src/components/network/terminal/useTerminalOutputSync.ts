@@ -136,7 +136,14 @@ export function useTerminalOutputSync({ output, deviceId }: UseTerminalOutputSyn
   const clearTerminalLines = useCallback(() => {
     cancelOutputRef.current = true;
     processedOutputIdsRef.current.clear();
-    setDisplayedLines([]);
+    setDisplayedLines([
+      {
+        id: `cleared-${Date.now()}`,
+        type: 'output',
+        content: '[Terminal ekranı temizlendi. Komut listesi için \'?\' yazabilirsiniz.]',
+        realismLevel: 'sim-only',
+      },
+    ]);
   }, []);
 
   return { displayedLines, clearTerminalLines };

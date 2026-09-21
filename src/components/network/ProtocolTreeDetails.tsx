@@ -91,11 +91,10 @@ export function ProtocolTreeDetails({ packet, isDark, language }: ProtocolTreeDe
 
       {/* Dropped Frame Banner */}
       {isDropped && (
-        <div className={`p-2 mb-1.5 rounded border flex items-start gap-2 text-[11px] font-mono ${
-          isDark
+        <div className={`p-2 mb-1.5 rounded border flex items-start gap-2 text-[11px] font-mono ${isDark
             ? 'bg-rose-950/40 border-rose-600/50 text-rose-200'
             : 'bg-rose-50 border-rose-300 text-rose-900'
-        }`}>
+          }`}>
           <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-rose-600 text-white shrink-0">
             {isTr ? 'ENGELLENDİ' : 'DROPPED'}
           </span>
@@ -283,7 +282,7 @@ export function ProtocolTreeDetails({ packet, isDark, language }: ProtocolTreeDe
             <TreeLeaf label={isTr ? 'Kaynak' : 'Source'} value={src} isDark={isDark} />
             <TreeLeaf label="Message ID" value="101" isDark={isDark} />
             <TreeLeaf label="Datastore" value="running" isDark={isDark} />
-            <TreeLeaf label="YANG Model" value="Cisco-IOS-XE-native" isDark={isDark} />
+            <TreeLeaf label="YANG Model" value="NOS-XE-native" isDark={isDark} />
             <TreeLeaf label="Capabilities" value=":writable-running, :candidate, :rollback-on-error" isDark={isDark} />
           </TreeNode>
         );

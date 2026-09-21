@@ -181,6 +181,12 @@ export const EmbeddedPduInspector: React.FC<EmbeddedPduInspectorProps> = ({
             type="text"
             value={filterQuery}
             onChange={(e) => setFilterQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                e.stopPropagation();
+                setFilterQuery('');
+              }
+            }}
             placeholder={t.filterPlaceholder}
             className={`w-full pl-8 pr-7 py-1 text-xs rounded-md border outline-none font-mono transition-all ${
               isDark
@@ -190,10 +196,13 @@ export const EmbeddedPduInspector: React.FC<EmbeddedPduInspectorProps> = ({
           />
           {filterQuery && (
             <button
+              type="button"
               onClick={() => setFilterQuery('')}
-              className="absolute right-2 text-slate-400 hover:text-slate-200"
+              title={language === 'en' ? 'Reset Filter (ESC)' : 'Filtreyi Sıfırla (ESC)'}
+              aria-label={language === 'en' ? 'Reset Filter' : 'Filtreyi Sıfırla'}
+              className="absolute right-2 text-slate-400 hover:text-cyan-400 transition-colors"
             >
-              <X className="w-3 h-3" />
+              <X className="w-3.5 h-3.5" />
             </button>
           )}
         </div>

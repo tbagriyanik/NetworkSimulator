@@ -303,7 +303,10 @@ export function TopologyToolbar({
                     autoFocus
                     onKeyDown={e => {
                       e.stopPropagation();
-                      if (e.key === 'Enter') {
+                      if (e.key === 'Escape') {
+                        e.preventDefault();
+                        setDeviceSearchQuery('');
+                      } else if (e.key === 'Enter') {
                         e.preventDefault();
                         const q = deviceSearchQuery.toLowerCase().trim();
                         const firstMatch = topologyDevices.find((device) => {
@@ -356,7 +359,10 @@ export function TopologyToolbar({
                   />
                   {deviceSearchQuery && (
                     <button
+                      type="button"
                       onClick={() => setDeviceSearchQuery('')}
+                      title={language === 'tr' ? 'Aramayı Temizle (ESC)' : 'Clear Search (ESC)'}
+                      aria-label={language === 'tr' ? 'Aramayı Temizle' : 'Clear Search'}
                       className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-secondary-200 dark:hover:bg-secondary-700 text-secondary-400 hover:text-secondary-600 dark:hover:text-secondary-300 transition-colors"
                     >
                       <X className={`w-3 h-3 ${toolbarGlowClass}`} />
