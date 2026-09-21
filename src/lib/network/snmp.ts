@@ -16,31 +16,81 @@ export interface SnmpTrapEntry {
   message: string;
 }
 
+export interface SnmpUser {
+  username: string;
+  authProtocol?: 'MD5' | 'SHA';
+  authPassword?: string;
+  privProtocol?: 'DES' | 'AES';
+  privPassword?: string;
+  securityLevel: 'noAuthNoPriv' | 'authNoPriv' | 'authPriv';
+}
+
 export interface SnmpPacket {
-  version: '1' | '2c';
-  pdu: 'GET' | 'GETNEXT' | 'WALK';
-  community: string;
+  version: '1' | '2c' | '3';
+  pdu: 'GET' | 'GETNEXT' | 'WALK' | 'SET';
+  community?: string;
+  user?: string;
+  authKey?: string;
+  privKey?: string;
+  securityLevel?: 'noAuthNoPriv' | 'authNoPriv' | 'authPriv';
   requestId: number;
   oids: string[];
+  setValue?: string | number;
 }
 
 export interface SnmpResponsePacket {
   requestId: number;
-  error: 'none' | 'authorizationError' | 'noSuchName';
+  error: 'none' | 'authorizationError' | 'noSuchName' | 'authError' | 'privError';
   varBinds: SnmpOidEntry[];
 }
 
-/** Processes an SNMP packet against the live device state. */
+/** Processes an SNMP packet against the live device state (v1, v2c, v3). */
 export function processSnmpPacket(deviceId: string, packet: SnmpPacket, deviceStates: Map<string, SwitchState>): SnmpResponsePacket {
   const state = deviceStates.get(deviceId);
-  if (!state || !state.snmpCommunities?.[packet.community]) {
+  if (!state) {
+    return { requestId: packet.requestId, error: 'authorizationError', varBinds: [] };
+  }
+
+  // Handle SNMPv3
+  if (packet.version === '3') {
+    const snmpv3Users = (state as SwitchState & { snmpv3Users?: Record<string, SnmpUser> }).snmpv3Users;
+    const user = packet.user ? snmpv3Users?.[packet.user] : undefined;
+
+    if (!user) {
+      return { requestId: packet.requestId, error: 'authError', varBinds: [] };
+    }
+
+    if (user.securityLevel === 'authNoPriv' || user.securityLevel === 'authPriv') {
+      if (!packet.authKey || (user.authPassword && packet.authKey !== user.authPassword)) {
+        return { requestId: packet.requestId, error: 'authError', varBinds: [] };
+      }
+    }
+
+    if (user.securityLevel === 'authPriv') {
+      if (!packet.privKey || (user.privPassword && packet.privKey !== user.privPassword)) {
+        return { requestId: packet.requestId, error: 'privError', varBinds: [] };
+      }
+    }
+
+    const varBinds = packet.pdu === 'GET'
+      ? packet.oids.map(oid => snmpGet(deviceId, oid, '', deviceStates, true)).filter((entry): entry is SnmpOidEntry => !!entry)
+      : packet.pdu === 'GETNEXT'
+        ? packet.oids.map(oid => snmpGetNext(deviceId, oid, '', deviceStates, true)).filter((entry): entry is SnmpOidEntry => !!entry)
+        : packet.oids.flatMap(oid => snmpWalk(deviceId, oid, '', deviceStates, true));
+
+    return { requestId: packet.requestId, error: varBinds.length > 0 ? 'none' : 'noSuchName', varBinds };
+  }
+
+  // Handle SNMPv1 / SNMPv2c
+  const community = packet.community || '';
+  if (!state.snmpCommunities?.[community]) {
     return { requestId: packet.requestId, error: 'authorizationError', varBinds: [] };
   }
   const varBinds = packet.pdu === 'GET'
-    ? packet.oids.map(oid => snmpGet(deviceId, oid, packet.community, deviceStates)).filter((entry): entry is SnmpOidEntry => !!entry)
+    ? packet.oids.map(oid => snmpGet(deviceId, oid, community, deviceStates)).filter((entry): entry is SnmpOidEntry => !!entry)
     : packet.pdu === 'GETNEXT'
-      ? packet.oids.map(oid => snmpGetNext(deviceId, oid, packet.community, deviceStates)).filter((entry): entry is SnmpOidEntry => !!entry)
-      : packet.oids.flatMap(oid => snmpWalk(deviceId, oid, packet.community, deviceStates));
+      ? packet.oids.map(oid => snmpGetNext(deviceId, oid, community, deviceStates)).filter((entry): entry is SnmpOidEntry => !!entry)
+      : packet.oids.flatMap(oid => snmpWalk(deviceId, oid, community, deviceStates));
   return { requestId: packet.requestId, error: varBinds.length > 0 ? 'none' : 'noSuchName', varBinds };
 }
 
@@ -59,9 +109,6 @@ export function getDeviceSnmpOids(deviceId: string, deviceStates: Map<string, Sw
   });
 
   // sysUpTime
-  // sysUpTime
-  // simple parse to ticks or just use a dummy if not easy
-  // Wait, let's just use state.bootTime if available or some dummy
   const uptimeTicks = state.bootTime ? Math.floor((Date.now() - state.bootTime) / 10) : 0;
 
   oids.push({
@@ -138,12 +185,12 @@ export function getDeviceSnmpOids(deviceId: string, deviceStates: Map<string, Sw
   return oids;
 }
 
-export function snmpGet(deviceId: string, oid: string, community: string, deviceStates: Map<string, SwitchState>): SnmpOidEntry | null {
+export function snmpGet(deviceId: string, oid: string, community: string, deviceStates: Map<string, SwitchState>, bypassCommunityCheck = false): SnmpOidEntry | null {
   const state = deviceStates.get(deviceId);
   if (!state) return null;
 
   // Check community
-  if (!state.snmpCommunities || !state.snmpCommunities[community]) {
+  if (!bypassCommunityCheck && (!state.snmpCommunities || !state.snmpCommunities[community])) {
     return null; // Community not found or not allowed
   }
 
@@ -151,11 +198,11 @@ export function snmpGet(deviceId: string, oid: string, community: string, device
   return oids.find(o => o.oid === oid) || null;
 }
 
-export function snmpGetNext(deviceId: string, oid: string, community: string, deviceStates: Map<string, SwitchState>): SnmpOidEntry | null {
+export function snmpGetNext(deviceId: string, oid: string, community: string, deviceStates: Map<string, SwitchState>, bypassCommunityCheck = false): SnmpOidEntry | null {
   const state = deviceStates.get(deviceId);
   if (!state) return null;
 
-  if (!state.snmpCommunities || !state.snmpCommunities[community]) {
+  if (!bypassCommunityCheck && (!state.snmpCommunities || !state.snmpCommunities[community])) {
     return null;
   }
 
@@ -184,11 +231,11 @@ export function snmpGetNext(deviceId: string, oid: string, community: string, de
   return null;
 }
 
-export function snmpWalk(deviceId: string, baseOid: string, community: string, deviceStates: Map<string, SwitchState>): SnmpOidEntry[] {
+export function snmpWalk(deviceId: string, baseOid: string, community: string, deviceStates: Map<string, SwitchState>, bypassCommunityCheck = false): SnmpOidEntry[] {
   const state = deviceStates.get(deviceId);
   if (!state) return [];
 
-  if (!state.snmpCommunities || !state.snmpCommunities[community]) {
+  if (!bypassCommunityCheck && (!state.snmpCommunities || !state.snmpCommunities[community])) {
     return [];
   }
 

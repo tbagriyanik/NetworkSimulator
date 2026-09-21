@@ -121,4 +121,84 @@ describe('IoT Application Protocols & NETCONF Transport E2E Pipeline', () => {
       expect(closeRes.response.operation).toBe('close-session');
     });
   });
+
+  describe('SNMP / SNMPv3 Security & MIB Subsystem', () => {
+    it('authenticates SNMPv3 authPriv and rejects invalid credentials', async () => {
+      const { processSnmpPacket } = await import('@/lib/network/snmp');
+
+      const mockRouterState = {
+        hostname: 'Edge-Router-01',
+        version: { modelName: 'Enterprise-Router', nosVersion: '17.3' },
+        bootTime: Date.now() - 100000,
+        ports: {
+          'GigabitEthernet0/1': { id: 'GigabitEthernet0/1', operStatus: 'up' },
+        },
+        snmpv3Users: {
+          adminUser: {
+            username: 'adminUser',
+            authProtocol: 'SHA',
+            authPassword: 'SecretAuthPassword',
+            privProtocol: 'AES',
+            privPassword: 'SecretPrivPassword',
+            securityLevel: 'authPriv',
+          },
+        },
+      } as unknown as SwitchState;
+
+      const deviceMap = new Map<string, SwitchState>([['router-1', mockRouterState]]);
+
+      // 1. Valid SNMPv3 GET with authPriv
+      const validRes = processSnmpPacket(
+        'router-1',
+        {
+          version: '3',
+          pdu: 'GET',
+          user: 'adminUser',
+          authKey: 'SecretAuthPassword',
+          privKey: 'SecretPrivPassword',
+          securityLevel: 'authPriv',
+          requestId: 301,
+          oids: ['.1.3.6.1.2.1.1.5.0'], // sysName
+        },
+        deviceMap
+      );
+
+      expect(validRes.error).toBe('none');
+      expect(validRes.varBinds).toHaveLength(1);
+      expect(validRes.varBinds[0].value).toBe('Edge-Router-01');
+
+      // 2. Invalid auth password
+      const invalidAuthRes = processSnmpPacket(
+        'router-1',
+        {
+          version: '3',
+          pdu: 'GET',
+          user: 'adminUser',
+          authKey: 'WrongPassword',
+          privKey: 'SecretPrivPassword',
+          requestId: 302,
+          oids: ['.1.3.6.1.2.1.1.5.0'],
+        },
+        deviceMap
+      );
+      expect(invalidAuthRes.error).toBe('authError');
+
+      // 3. Invalid priv password
+      const invalidPrivRes = processSnmpPacket(
+        'router-1',
+        {
+          version: '3',
+          pdu: 'GET',
+          user: 'adminUser',
+          authKey: 'SecretAuthPassword',
+          privKey: 'WrongPrivPassword',
+          requestId: 303,
+          oids: ['.1.3.6.1.2.1.1.5.0'],
+        },
+        deviceMap
+      );
+      expect(invalidPrivRes.error).toBe('privError');
+    });
+  });
 });
+

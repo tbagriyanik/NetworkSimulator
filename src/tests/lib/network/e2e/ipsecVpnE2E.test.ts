@@ -7,7 +7,13 @@ import {
   cmdShowCryptoIpsecSa,
   cmdShowCryptoMap,
 } from '@/lib/network/core/cryptoCommands';
-import { establishIpsecSa, encapsulateEsp, decapsulateEsp } from '@/lib/network/ipsec';
+import {
+  establishIpsecSa,
+  encapsulateEsp,
+  decapsulateEsp,
+  encapsulateGreOverIpsec,
+  decapsulateGreOverIpsec,
+} from '@/lib/network/ipsec';
 import type { SwitchState } from '@/lib/network/types';
 import type { CommandContext } from '@/lib/network/core/commandTypes';
 
@@ -96,4 +102,39 @@ describe('IPsec VPN E2E Pipeline (CLI -> State -> IKE/SA -> ESP Encapsulation ->
     const rejected = decapsulateEsp(packet, saB);
     expect(rejected).toBeUndefined();
   });
+
+  it('performs end-to-end GRE over IPsec encapsulation and decapsulation', () => {
+    const sa = establishIpsecSa('198.51.100.2', 'TS-AES-SHA');
+    const greSource = '198.51.100.1';
+    const greDestination = '198.51.100.2';
+    const innerPayload = { type: 'OSPF_HELLO', area: 0, routerId: '10.0.0.1' };
+
+    // Encapsulate into GRE over IPsec
+    const greIpsecPacket = encapsulateGreOverIpsec(
+      sa,
+      greSource,
+      greDestination,
+      'OSPF',
+      innerPayload
+    );
+
+    expect(greIpsecPacket.outerProtocol).toBe(50); // ESP
+    expect(greIpsecPacket.innerProtocol).toBe('GRE');
+    expect(greIpsecPacket.esp.encrypted).toBe(true);
+    expect(greIpsecPacket.esp.originalProtocol).toBe('GRE');
+
+    // Decapsulate at the peer
+    const decapsulated = decapsulateGreOverIpsec(greIpsecPacket, sa);
+    expect(decapsulated).toBeDefined();
+    expect(decapsulated?.source).toBe('198.51.100.1');
+    expect(decapsulated?.destination).toBe('198.51.100.2');
+    expect(decapsulated?.protocol).toBe('OSPF');
+    expect(decapsulated?.data).toEqual(innerPayload);
+
+    // Reject on mismatched SA
+    const invalidSa = establishIpsecSa('198.51.100.99', 'TS-OTHER');
+    const invalidDecap = decapsulateGreOverIpsec(greIpsecPacket, invalidSa);
+    expect(invalidDecap).toBeUndefined();
+  });
 });
+
