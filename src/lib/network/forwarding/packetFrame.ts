@@ -62,6 +62,11 @@ export interface IpsecFramePayload {
   encrypted: boolean;
   originalProtocol: string;
   payload?: unknown;
+  phase?: 'phase1' | 'phase2';
+  isakmpPolicy?: number;
+  transformSet?: string;
+  peer?: string;
+  mapName?: string;
 }
 
 export interface CapwapFramePayload {
@@ -69,7 +74,6 @@ export interface CapwapFramePayload {
   message: 'discovery' | 'join' | 'config' | 'data' | 'keepalive' | 'reset';
   state: string;
 }
-
 
 export interface ArpPayload {
   operation: 'request' | 'reply';
@@ -180,6 +184,7 @@ export interface NetworkPacketFrame {
   // Layer 4 Ports (used by NetFlow accounting / firewalls)
   srcPort?: number;
   dstPort?: number;
+  tcpFlags?: string;
 
   // Raw length & description info
   length: number;
@@ -220,4 +225,3 @@ export interface PipelineExecutionResult {
   protocolEvents?: ProtocolNeighborChangeEvent[];
   agingEvents?: AgingChangeEvent[];
 }
-

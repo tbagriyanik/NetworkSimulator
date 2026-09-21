@@ -199,6 +199,106 @@ export function runNetworkEventPipeline(
       processedFrames.push(stpFrame);
       forwardPacketFrame(stpFrame, device, state, devices, connections);
     }
+
+    // IPsec: SA keepalive / Dead-Peer Detection (DPD) for crypto map configured devices
+    if (state.cryptoMaps && Object.keys(state.cryptoMaps).length > 0) {
+      for (const [mapName, mapSeqs] of Object.entries(state.cryptoMaps)) {
+        for (const [seqStr, entry] of Object.entries(mapSeqs)) {
+          const peer = entry.setPeer;
+          if (!peer) continue;
+          const transformSet = entry.setTransformSet || 'esp-aes';
+          processedFrames.push({
+            id: `ipsec-dpd-${device.id}-${seqStr}-${now}`,
+            protocol: 'IPSEC',
+            timestamp: now,
+            ingressDeviceId: device.id,
+            srcMac: state.macAddress || '00:00:00:00:00:00',
+            dstMac: 'ff:ff:ff:ff:ff:ff',
+            etherType: '0x0800',
+            srcIp: device.ip || '0.0.0.0',
+            dstIp: peer,
+            ipProtocol: 50,
+            ipsecPayload: {
+              spi: `0x${Math.floor(Math.random() * 0xFFFFFFFF).toString(16).toUpperCase().padStart(8, '0')}`,
+              encrypted: true,
+              originalProtocol: 'ESP',
+              phase: 'phase2',
+              isakmpPolicy: 10,
+              transformSet,
+              peer,
+              mapName,
+            },
+            length: 76,
+            info: `IPsec ESP keepalive: Crypto Map ${mapName} seq ${seqStr} peer ${peer} (${transformSet})`,
+          });
+        }
+      }
+    }
+
+    // GRE Tunnel: Keepalive heartbeat for configured GRE interfaces
+    if (state.greTunnels && Object.keys(state.greTunnels).length > 0) {
+      for (const [tunId, tun] of Object.entries(state.greTunnels)) {
+        if (!tun.source || !tun.destination) continue;
+        processedFrames.push({
+          id: `gre-ka-${device.id}-${tunId}-${now}`,
+          protocol: 'IPV4',
+          timestamp: now,
+          ingressDeviceId: device.id,
+          srcMac: state.macAddress || '00:00:00:00:00:00',
+          dstMac: 'ff:ff:ff:ff:ff:ff',
+          etherType: '0x0800',
+          srcIp: tun.source,
+          dstIp: tun.destination,
+          ipProtocol: 47,
+          length: 24,
+          info: `GRE Keepalive: Tunnel ${tunId} source ${tun.source} → dest ${tun.destination} (Protocol 47)`,
+        });
+      }
+    }
+
+    // BGP: Keepalive messages for established BGP neighbors
+    if (state.bgpNeighbors && state.bgpNeighbors.length > 0) {
+      for (const nbr of state.bgpNeighbors) {
+        const nbrState = state.bgpNeighborState?.[nbr.ip] || nbr.state || 'Established';
+        if (nbrState !== 'Established') continue;
+        processedFrames.push({
+          id: `bgp-ka-${device.id}-${nbr.ip}-${now}`,
+          protocol: 'TCP',
+          timestamp: now,
+          ingressDeviceId: device.id,
+          srcMac: state.macAddress || '00:00:00:00:00:00',
+          dstMac: 'ff:ff:ff:ff:ff:ff',
+          etherType: '0x0800',
+          srcIp: device.ip || '10.0.0.1',
+          dstIp: nbr.ip,
+          srcPort: 179,
+          dstPort: 179,
+          tcpFlags: 'KEEPALIVE',
+          length: 19,
+          info: `BGP KEEPALIVE: AS${state.bgpAs} → neighbor ${nbr.ip} (AS${nbr.remoteAs ?? nbr.as}) [Established]`,
+        });
+      }
+    }
+
+    // MPLS LDP: Hello discovery messages
+    const mplsCfg = state.mplsConfig as (typeof state.mplsConfig & { enabled?: boolean; routerId?: string; ldpEnabled?: boolean }) | undefined;
+    if (mplsCfg?.enabled && mplsCfg.ldpEnabled) {
+      processedFrames.push({
+        id: `ldp-hello-${device.id}-${now}`,
+        protocol: 'UDP',
+        timestamp: now,
+        ingressDeviceId: device.id,
+        srcMac: state.macAddress || '00:00:00:00:00:00',
+        dstMac: '01:00:5e:00:00:02',
+        etherType: '0x0800',
+        srcIp: device.ip || '10.0.0.1',
+        dstIp: '224.0.0.2',
+        srcPort: 646,
+        dstPort: 646,
+        length: 34,
+        info: `LDP Hello: Router ${device.name} LSR-ID ${mplsCfg.routerId || device.ip || '0.0.0.0'}:0 (link discovery multicast)`,
+      });
+    }
   });
 
   // 5. Tick Protocol State Machine Timers

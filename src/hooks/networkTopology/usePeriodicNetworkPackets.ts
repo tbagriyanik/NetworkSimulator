@@ -307,6 +307,154 @@ export function usePeriodicNetworkPackets({
             info: `WLAN Beacon: SSID "${devA.name}-WiFi" Channel 6`,
           });
         }
+
+        // 5. MQTT: Broker keepalive PINGREQ/PINGRESP for IoT devices
+        const mqttStateA = stateA as unknown as { mqttClients?: Record<string, { connected: boolean }> };
+        const mqttStateB = stateB as unknown as { mqttClients?: Record<string, { connected: boolean }> };
+        if (mqttStateA?.mqttClients && Object.values(mqttStateA.mqttClients).some(c => c.connected)) {
+          packetsToDispatch.push({
+            connectionId: connId,
+            sourceIp: devA.ip || devA.name,
+            targetIp: devB.ip || devB.name,
+            protocol: 'TCP',
+            length: 2,
+            info: `MQTT PINGREQ: Client keepalive from ${devA.name} → broker (TCP/1883)`,
+          });
+          packetsToDispatch.push({
+            connectionId: connId,
+            sourceIp: devB.ip || devB.name,
+            targetIp: devA.ip || devA.name,
+            protocol: 'TCP',
+            length: 2,
+            info: `MQTT PINGRESP: Broker ${devB.name} → client keepalive ACK (TCP/1883)`,
+          });
+        }
+        if (mqttStateB?.mqttClients && Object.values(mqttStateB.mqttClients).some(c => c.connected)) {
+          packetsToDispatch.push({
+            connectionId: connId,
+            sourceIp: devB.ip || devB.name,
+            targetIp: devA.ip || devA.name,
+            protocol: 'TCP',
+            length: 2,
+            info: `MQTT PINGREQ: Client keepalive from ${devB.name} → broker (TCP/1883)`,
+          });
+        }
+
+        // 6. CoAP: Confirmable ping for IoT resource polling
+        const coapStateA = stateA as unknown as { coapResources?: Record<string, string> };
+        const coapStateB = stateB as unknown as { coapResources?: Record<string, string> };
+        if (coapStateA?.coapResources && Object.keys(coapStateA.coapResources).length > 0) {
+          const resource = Object.keys(coapStateA.coapResources)[0];
+          packetsToDispatch.push({
+            connectionId: connId,
+            sourceIp: devA.ip || devA.name,
+            targetIp: devB.ip || devB.name,
+            protocol: 'UDP',
+            length: 12,
+            info: `CoAP CON GET ${resource}: ${devA.name} → server ${devB.name} (UDP/5683)`,
+          });
+        }
+        if (coapStateB?.coapResources && Object.keys(coapStateB.coapResources).length > 0) {
+          const resource = Object.keys(coapStateB.coapResources)[0];
+          packetsToDispatch.push({
+            connectionId: connId,
+            sourceIp: devB.ip || devB.name,
+            targetIp: devA.ip || devA.name,
+            protocol: 'UDP',
+            length: 12,
+            info: `CoAP CON GET ${resource}: ${devB.name} → server ${devA.name} (UDP/5683)`,
+          });
+        }
+
+        // 7. SNMP: Periodic polling if SNMP communities configured
+        if (stateA?.snmpCommunities && Object.keys(stateA.snmpCommunities).length > 0) {
+          const community = Object.keys(stateA.snmpCommunities)[0];
+          packetsToDispatch.push({
+            connectionId: connId,
+            sourceIp: devB.ip || devB.name,
+            targetIp: devA.ip || devA.name,
+            protocol: 'UDP',
+            length: 40,
+            info: `SNMPv2c GET: community "${community}" OID .1.3.6.1.2.1.1.3.0 (sysUpTime) → ${devA.name}`,
+          });
+          packetsToDispatch.push({
+            connectionId: connId,
+            sourceIp: devA.ip || devA.name,
+            targetIp: devB.ip || devB.name,
+            protocol: 'UDP',
+            length: 56,
+            info: `SNMPv2c RESPONSE: ${devA.name} sysUpTime reply (UDP/161)`,
+          });
+        }
+        const snmpv3StateA = stateA as unknown as { snmpv3Users?: Record<string, unknown> };
+        if (snmpv3StateA?.snmpv3Users && Object.keys(snmpv3StateA.snmpv3Users).length > 0) {
+          const user = Object.keys(snmpv3StateA.snmpv3Users)[0];
+          packetsToDispatch.push({
+            connectionId: connId,
+            sourceIp: devB.ip || devB.name,
+            targetIp: devA.ip || devA.name,
+            protocol: 'UDP',
+            length: 88,
+            info: `SNMPv3 authPriv GET: user "${user}" OID .1.3.6.1.2.1.1.5.0 (sysName) → ${devA.name}`,
+          });
+        }
+
+        // 8. NETCONF: Session keepalive / RPC heartbeat
+        const netconfStateA = stateA as unknown as { netconfSessions?: Record<string, { established: boolean }> };
+        const netconfStateB = stateB as unknown as { netconfSessions?: Record<string, { established: boolean }> };
+        const activeSessionA = Object.entries(netconfStateA?.netconfSessions || {}).find(([, s]) => s.established);
+        if (activeSessionA) {
+          packetsToDispatch.push({
+            connectionId: connId,
+            sourceIp: activeSessionA[0],
+            targetIp: devA.ip || devA.name,
+            protocol: 'TCP',
+            length: 60,
+            info: `NETCONF RPC: <get> session active on ${devA.name} from ${activeSessionA[0]} (TCP/830)`,
+          });
+        }
+        const activeSessionB = Object.entries(netconfStateB?.netconfSessions || {}).find(([, s]) => s.established);
+        if (activeSessionB) {
+          packetsToDispatch.push({
+            connectionId: connId,
+            sourceIp: activeSessionB[0],
+            targetIp: devB.ip || devB.name,
+            protocol: 'TCP',
+            length: 60,
+            info: `NETCONF RPC: <get> session active on ${devB.name} from ${activeSessionB[0]} (TCP/830)`,
+          });
+        }
+
+        // 9. IPsec IKE Phase 1 Negotiation / Maintenance
+        if (stateA?.cryptoIsakmpPolicies && Object.keys(stateA.cryptoIsakmpPolicies).length > 0) {
+          const peerIp = Object.keys(stateA.cryptoIsakmpKeys || {})[0];
+          if (peerIp) {
+            packetsToDispatch.push({
+              connectionId: connId,
+              sourceIp: devA.ip || devA.name,
+              targetIp: peerIp,
+              protocol: 'UDP',
+              length: 228,
+              info: `IKE Phase 1: ISAKMP Main Mode from ${devA.name} → peer ${peerIp} (UDP/500)`,
+            });
+          }
+        }
+
+        // 10. BGP OPEN / KEEPALIVE on established peers
+        if (stateA?.bgpNeighbors && stateA.bgpNeighbors.length > 0) {
+          for (const nbr of stateA.bgpNeighbors) {
+            const nbrState = stateA.bgpNeighborState?.[nbr.ip] || nbr.state;
+            if (!nbrState || nbrState !== 'Established') continue;
+            packetsToDispatch.push({
+              connectionId: connId,
+              sourceIp: devA.ip || devA.name,
+              targetIp: nbr.ip,
+              protocol: 'TCP',
+              length: 19,
+              info: `BGP KEEPALIVE: AS${stateA.bgpAs} → neighbor ${nbr.ip} (AS${nbr.remoteAs ?? nbr.as}) (TCP/179)`,
+            });
+          }
+        }
       });
 
       if (packetsToDispatch.length > 0) {
@@ -314,9 +462,7 @@ export function usePeriodicNetworkPackets({
       }
     }, 10000);
 
+
     return () => clearInterval(interval);
   }, [onDeviceStatesChange]);
 }
-
-
-

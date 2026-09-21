@@ -216,6 +216,147 @@ export function ProtocolTreeDetails({ packet, isDark, language }: ProtocolTreeDe
         </TreeNode>
       )}
 
+      {/* CoAP */}
+      {(proto === 'UDP' && packet.info.includes('CoAP')) && (() => {
+        const coapMethod = packet.info.match(/CoAP\s+(?:CON|ACK)?\s*(GET|POST|PUT|DELETE)/i)?.[1] || 'GET';
+        const coapPath = packet.info.match(/CON\s+(?:GET|POST|PUT|DELETE)\s+(\S+)/i)?.[1] || '/api/resource';
+        const coapMsgId = packet.info.match(/message[:\s]*(\d+)/i)?.[1] || '0x7d10';
+        return (
+          <TreeNode title={`Constrained Application Protocol (CoAP ${coapMethod})`} isDark={isDark}>
+            <TreeLeaf label="Version" value="1" isDark={isDark} />
+            <TreeLeaf label={isTr ? 'Tür' : 'Type'} value="Confirmable (0)" isDark={isDark} />
+            <TreeLeaf label="Token Length" value="4" isDark={isDark} />
+            <TreeLeaf label={isTr ? 'Kod' : 'Code'} value={`0.01 ${coapMethod}`} isDark={isDark} />
+            <TreeLeaf label="Message ID" value={coapMsgId} isDark={isDark} />
+            <TreeLeaf label="Token" value="0xa4b3c2d1" isDark={isDark} />
+            <TreeLeaf label="Uri-Path" value={coapPath} isDark={isDark} />
+            <TreeLeaf label={isTr ? 'Port' : 'Port'} value="5683 (UDP)" isDark={isDark} />
+          </TreeNode>
+        );
+      })()}
+
+      {/* SNMP v1/v2c */}
+      {(proto === 'UDP' && packet.info.toLowerCase().includes('snmp') && !packet.info.toLowerCase().includes('snmpv3')) && (() => {
+        const oid = packet.info.match(/OID\s+([\d.]+)/i)?.[1] || '.1.3.6.1.2.1.1.3.0';
+        const community = packet.info.match(/community\s+"?([^"\s]+)"?/i)?.[1] || 'public';
+        const pduType = packet.info.includes('RESPONSE') ? 'GetResponse' : 'GetRequest';
+        return (
+          <TreeNode title={`Simple Network Management Protocol (SNMPv2c ${pduType})`} isDark={isDark}>
+            <TreeLeaf label="Version" value="v2c (1)" isDark={isDark} />
+            <TreeLeaf label="Community" value={community} isDark={isDark} />
+            <TreeLeaf label="PDU Type" value={pduType} isDark={isDark} />
+            <TreeLeaf label="Request ID" value="0x4f" isDark={isDark} />
+            <TreeLeaf label="Error Status" value="noError (0)" isDark={isDark} />
+            <TreeLeaf label="Error Index" value="0" isDark={isDark} />
+            <TreeLeaf label="OID" value={oid} isDark={isDark} />
+            <TreeLeaf label={isTr ? 'Port' : 'Port'} value="161 (UDP)" isDark={isDark} />
+          </TreeNode>
+        );
+      })()}
+
+      {/* SNMPv3 */}
+      {(proto === 'UDP' && packet.info.toLowerCase().includes('snmpv3')) && (() => {
+        const user = packet.info.match(/user\s+"?([^"\s]+)"?/i)?.[1] || 'adminUser';
+        const oid = packet.info.match(/OID\s+([\d.]+)/i)?.[1] || '.1.3.6.1.2.1.1.5.0';
+        return (
+          <TreeNode title="Simple Network Management Protocol v3 (SNMPv3 authPriv)" isDark={isDark}>
+            <TreeLeaf label="Version" value="v3 (3)" isDark={isDark} />
+            <TreeLeaf label={isTr ? 'Güvenlik Seviyesi' : 'Security Level'} value="authPriv" isDark={isDark} />
+            <TreeLeaf label={isTr ? 'Kullanıcı' : 'Username'} value={user} isDark={isDark} />
+            <TreeLeaf label="Auth Protocol" value="HMAC-SHA" isDark={isDark} />
+            <TreeLeaf label="Privacy Protocol" value="AES-128" isDark={isDark} />
+            <TreeLeaf label="OID" value={oid} isDark={isDark} />
+            <TreeLeaf label="Request ID" value="0x2f3a" isDark={isDark} />
+            <TreeLeaf label={isTr ? 'Port' : 'Port'} value="161 (UDP)" isDark={isDark} />
+          </TreeNode>
+        );
+      })()}
+
+      {/* NETCONF */}
+      {(proto === 'TCP' && packet.info.toLowerCase().includes('netconf')) && (() => {
+        const op = packet.info.match(/<(\w[\w-]+)>/)?.[1] || 'get';
+        const src = packet.info.match(/from\s+([\d.]+)/)?.[1] || packet.sourceIp;
+        return (
+          <TreeNode title={`NETCONF Protocol (RFC 6241) — <${op}>`} isDark={isDark}>
+            <TreeLeaf label={isTr ? 'Taşıma' : 'Transport'} value="SSHv2 (TCP/830)" isDark={isDark} />
+            <TreeLeaf label={isTr ? 'Operasyon' : 'Operation'} value={`<${op}>`} isDark={isDark} />
+            <TreeLeaf label={isTr ? 'Kaynak' : 'Source'} value={src} isDark={isDark} />
+            <TreeLeaf label="Message ID" value="101" isDark={isDark} />
+            <TreeLeaf label="Datastore" value="running" isDark={isDark} />
+            <TreeLeaf label="YANG Model" value="Cisco-IOS-XE-native" isDark={isDark} />
+            <TreeLeaf label="Capabilities" value=":writable-running, :candidate, :rollback-on-error" isDark={isDark} />
+          </TreeNode>
+        );
+      })()}
+
+      {/* IPsec IKE / ISAKMP */}
+      {(proto === 'UDP' && (packet.info.toLowerCase().includes('ike') || packet.info.toLowerCase().includes('isakmp'))) && (() => {
+        const peer = packet.info.match(/peer\s+([\d.]+)/i)?.[1] || packet.targetIp;
+        return (
+          <TreeNode title="Internet Key Exchange (IKEv1 / ISAKMP)" isDark={isDark}>
+            <TreeLeaf label={isTr ? 'Aşama' : 'Phase'} value="Phase 1 (Main Mode)" isDark={isDark} />
+            <TreeLeaf label="Initiator SPI" value="0xa1b2c3d4e5f60718" isDark={isDark} />
+            <TreeLeaf label="Responder SPI" value="0x0000000000000000" isDark={isDark} />
+            <TreeLeaf label="Next Payload" value="Security Association (33)" isDark={isDark} />
+            <TreeLeaf label={isTr ? 'Şifreleme' : 'Encryption'} value="AES-128 CBC" isDark={isDark} />
+            <TreeLeaf label="Hash" value="SHA-1" isDark={isDark} />
+            <TreeLeaf label={isTr ? 'DH Grubu' : 'DH Group'} value="Group 2 (1024-bit)" isDark={isDark} />
+            <TreeLeaf label={isTr ? 'Uzak Peer' : 'Remote Peer'} value={peer} isDark={isDark} />
+            <TreeLeaf label="Port" value="500 (UDP)" isDark={isDark} />
+          </TreeNode>
+        );
+      })()}
+
+      {/* GRE Tunnel */}
+      {(packet.info.toLowerCase().includes('gre')) && (() => {
+        const tunSrc = packet.info.match(/source\s+([\d.]+)/i)?.[1] || packet.sourceIp;
+        const tunDst = packet.info.match(/dest[ination]*\s+([\d.]+)/i)?.[1] || packet.targetIp;
+        return (
+          <TreeNode title="Generic Routing Encapsulation (GRE) — Protocol 47" isDark={isDark}>
+            <TreeLeaf label={isTr ? 'Bayraklar' : 'Flags'} value="0x0000 (No Key, No Seq)" isDark={isDark} />
+            <TreeLeaf label="Protocol Type" value="IPv4 (0x0800)" isDark={isDark} />
+            <TreeLeaf label={isTr ? 'Tünel Kaynak' : 'Tunnel Source'} value={tunSrc} isDark={isDark} />
+            <TreeLeaf label={isTr ? 'Tünel Hedef' : 'Tunnel Destination'} value={tunDst} isDark={isDark} />
+            <TreeLeaf label="Outer IP Protocol" value="47 (GRE)" isDark={isDark} />
+            <TreeLeaf label="Encapsulated Protocol" value="IPv4" isDark={isDark} />
+          </TreeNode>
+        );
+      })()}
+
+      {/* BGP KEEPALIVE */}
+      {(proto === 'TCP' && packet.info.toUpperCase().includes('BGP')) && (() => {
+        const asSrc = packet.info.match(/AS(\d+)\s*→/i)?.[1] || '65000';
+        const asDst = packet.info.match(/\(AS(\d+)\)/i)?.[1] || '65001';
+        const msgType = packet.info.includes('KEEPALIVE') ? 'KEEPALIVE' : 'UPDATE';
+        return (
+          <TreeNode title={`Border Gateway Protocol 4 (BGP-4 ${msgType})`} isDark={isDark}>
+            <TreeLeaf label="Marker" value="ffffffffffffffffffffffffffffffff" isDark={isDark} />
+            <TreeLeaf label="Length" value={msgType === 'KEEPALIVE' ? '19' : '43'} isDark={isDark} />
+            <TreeLeaf label={isTr ? 'Mesaj Türü' : 'Type'} value={`${msgType === 'KEEPALIVE' ? '4' : '2'} (${msgType})`} isDark={isDark} />
+            <TreeLeaf label={isTr ? 'Yerel AS' : 'Local AS'} value={asSrc} isDark={isDark} />
+            <TreeLeaf label={isTr ? 'Uzak AS' : 'Remote AS'} value={asDst} isDark={isDark} />
+            <TreeLeaf label="Hold Time" value="90s" isDark={isDark} />
+            <TreeLeaf label="Port" value="179 (TCP)" isDark={isDark} />
+          </TreeNode>
+        );
+      })()}
+
+      {/* LDP / MPLS */}
+      {(packet.info.toLowerCase().includes('ldp')) && (() => {
+        const lsrId = packet.info.match(/LSR-ID\s+([\d.]+)/i)?.[1] || packet.sourceIp;
+        return (
+          <TreeNode title="Label Distribution Protocol (LDP — RFC 5036)" isDark={isDark}>
+            <TreeLeaf label="Version" value="1" isDark={isDark} />
+            <TreeLeaf label="PDU Length" value="26" isDark={isDark} />
+            <TreeLeaf label="LSR ID" value={lsrId} isDark={isDark} />
+            <TreeLeaf label="Label Space" value="0" isDark={isDark} />
+            <TreeLeaf label="Message Type" value="0x0100 (Hello)" isDark={isDark} />
+            <TreeLeaf label="Common Hello Params" value="Hold Time: 15s, T-bit: 0" isDark={isDark} />
+            <TreeLeaf label={isTr ? 'Çok Noktalı Adres' : 'Multicast Address'} value="224.0.0.2 (UDP/646)" isDark={isDark} />
+          </TreeNode>
+        );
+      })()}
+
       {packet.info && (
         <TreeNode title={`Packet Info / Summary Payload`} isDark={isDark}>
           <TreeLeaf label={isTr ? 'Özet Bilgi' : 'Info Details'} value={packet.info} isDark={isDark} />
