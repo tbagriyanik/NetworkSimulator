@@ -357,8 +357,12 @@ export interface Port {
   lapGroup?: number;        // Lightweight AP group (WLC)
   mplsEnabled?: boolean;    // MPLS / LDP enabled on interface
   pimMode?: 'sparse-mode' | 'dense-mode' | 'sparse-dense-mode';
+  pimDrPriority?: number;          // ip pim dr-priority <N>
+  pimQueryInterval?: number;       // ip pim query-interval <seconds>
   igmpVersion?: 1 | 2 | 3;
   igmpGroups?: string[];
+  igmpQueryInterval?: number;      // ip igmp query-interval <seconds>
+  igmpLastMemberInterval?: number; // ip igmp last-member-query-interval <ms>
   tunnelProtectionProfile?: string;
   inspectRules?: { in?: string; out?: string };
 }

@@ -13,7 +13,7 @@ export interface SflowSample {
 }
 
 export function buildSflowExportFrame(state: SwitchState, sample: SflowSample): NetworkPacketFrame | undefined {
-  const config = (state as SflowState).sflowConfig;
+  const config = state.sflowConfig;
   if (!config?.collector) return undefined;
   return {
     id: `sflow-export-${sample.sequence}`, protocol: 'UDP', timestamp: sample.sampledAt,
@@ -24,11 +24,8 @@ export function buildSflowExportFrame(state: SwitchState, sample: SflowSample): 
   };
 }
 
-type SflowState = SwitchState & { sflowConfig?: { enabled?: boolean; sampleRate?: number; collector?: string; samples?: SflowSample[]; exportedSamples?: number; exportQueue?: Array<{ collector: string; sample: SflowSample }>; sequence?: number } };
-
 export function captureSflow(state: SwitchState, frame: NetworkPacketFrame, ingressPort: string | undefined, egressPorts: string[], now = Date.now()): SflowSample | undefined {
-  const runtime = state as SflowState;
-  const config = runtime.sflowConfig;
+  const config = state.sflowConfig;
   if (!config?.enabled) return undefined;
   const rate = Math.max(1, config.sampleRate || 1);
   const counter = (config.sequence || 0) + 1;

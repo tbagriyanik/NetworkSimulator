@@ -28,6 +28,7 @@ import { dispatchEemEvent } from '@/lib/network/eemEngine';
 import { discoverLdpNeighbors, generateLib, generateLfib } from '@/lib/network/mplsLdpEngine';
 import { buildMstBpdu } from '@/lib/network/mstp';
 import { tickCapwap } from '@/lib/network/capwap';
+import { tickMulticast } from './multicastEngine';
 import {
   ospfTickDeadTimer,
   eigrpTickHoldTimer,
@@ -96,6 +97,14 @@ export function runNetworkEventPipeline(
           });
         });
       }
+    }
+
+    // Multicast PIM/IGMP tick — generates PIM Hello & IGMP Query frames,
+    // builds mroute entries, updates pimNeighbors/igmpMemberships tables.
+    if (state.multicastRoutingEnabled || state.igmpSnoopingEnabled) {
+      const mcResult = tickMulticast(state, device.id, now);
+      updatedStates.set(device.id, mcResult.state);
+      processedFrames.push(...mcResult.frames);
     }
 
     const isOspfActive = Boolean(state.ospfRouterId || state.routingProtocol === 'ospf');

@@ -3,6 +3,26 @@ import type { CommandResult, SwitchState } from '../types';
 import type { CommandContext, CommandHandler } from './commandTypes';
 import { buildRunningConfig } from './configBuilder';
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function formatUptime(uptimeMs: number, now: number): string {
+  const elapsed = Math.max(0, now - uptimeMs);
+  const secs = Math.floor(elapsed / 1000);
+  const h = Math.floor(secs / 3600).toString().padStart(2, '0');
+  const m = Math.floor((secs % 3600) / 60).toString().padStart(2, '0');
+  const s = (secs % 60).toString().padStart(2, '0');
+  return `${h}:${m}:${s}`;
+}
+
+function formatExpiry(expiresMs: number, now: number): string {
+  const remaining = Math.max(0, expiresMs - now);
+  const secs = Math.floor(remaining / 1000);
+  const h = Math.floor(secs / 3600).toString().padStart(2, '0');
+  const m = Math.floor((secs % 3600) / 60).toString().padStart(2, '0');
+  const s = (secs % 60).toString().padStart(2, '0');
+  return `${h}:${m}:${s}`;
+}
+
 const getTargetPortKey = (state: SwitchState): string | undefined => {
   if (!state.currentInterface) return undefined;
   const target = state.currentInterface.toLowerCase();
@@ -37,7 +57,31 @@ export function cmdNoIpMulticastRouting(state: SwitchState, _input: string, _ctx
   };
 }
 
-// Interface: ip pim <sparse-mode|dense-mode|sparse-dense-mode>
+// Global: ip pim rp-address <ip>
+export const cmdIpPimRpAddress: CommandHandler = (state, input, _ctx) => {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const match = input.match(/^ip\s+pim\s+rp-address\s+([\d.]+)$/i);
+  if (!match) return { success: false, error: '% Usage: ip pim rp-address <ip-address>' };
+  const rpAddress = match[1];
+  const updatedState = { ...state, pimRpAddress: rpAddress };
+  return {
+    success: true,
+    output: '',
+    newState: { pimRpAddress: rpAddress, runningConfig: buildRunningConfig(updatedState) }
+  };
+};
+
+export const cmdNoIpPimRpAddress: CommandHandler = (state, _input, _ctx) => {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const updatedState = { ...state, pimRpAddress: undefined };
+  return {
+    success: true,
+    output: '',
+    newState: { pimRpAddress: undefined, runningConfig: buildRunningConfig(updatedState) }
+  };
+};
+
+// Interface: ip pim sparse-mode / dense-mode / sparse-dense-mode
 export const cmdIpPim: CommandHandler = (state, input, _ctx) => {
   if (state.currentMode !== 'interface' && state.currentMode !== 'config-if-range') {
     return { success: false, error: cliModeError() };
@@ -222,7 +266,12 @@ export const cmdShowIpPimInterface: CommandHandler = (state, _input, _ctx) => {
       count++;
       const ip = p.ipAddress || '0.0.0.0';
       const mode = p.pimMode.replace('-mode', '');
-      output += `${ip.padEnd(17)}${pName.padEnd(25)}${mode.padEnd(6)}0               30\n`;
+      const queryInterval = p.pimQueryInterval ?? 30;
+      // Count neighbors on this interface from dynamic pimNeighbors table
+      const neighborCount = Object.values(state.pimNeighbors ?? {}).filter(
+        n => n.interface === pName
+      ).length;
+      output += `${ip.padEnd(17)}${pName.padEnd(25)}${mode.padEnd(6)}${String(neighborCount).padEnd(16)}${queryInterval}\n`;
     }
   }
   if (count === 0) {
@@ -231,27 +280,52 @@ export const cmdShowIpPimInterface: CommandHandler = (state, _input, _ctx) => {
   return { success: true, output: output.trimEnd() };
 };
 
-export const cmdShowIpPimNeighbor: CommandHandler = (_state, _input, _ctx) => {
+export const cmdShowIpPimNeighbor: CommandHandler = (state, _input, _ctx) => {
+  const header = 'PIM Neighbor Table\nMode: B - Bidir Capable, DR - Designated Router, N - Default Network, S - State Refresh Capable\n' +
+    'Neighbor          Interface                Uptime/Expires    Ver   DR\n' +
+    'Address                                                            Prio/Mode\n';
+
+  const neighbors = state.pimNeighbors ?? {};
+  const now = Date.now();
+  const rows = Object.values(neighbors).map(nbr => {
+    const uptime = formatUptime(nbr.uptime, now);
+    const expires = formatExpiry(nbr.expires, now);
+    return `${nbr.ip.padEnd(18)}${nbr.interface.padEnd(25)}${uptime}/${expires}  v${nbr.version ?? 2}     ${nbr.drPriority ?? 1}/DR`;
+  });
+
   return {
     success: true,
-    output: 'PIM Neighbor Table\nMode: B - Bidir Capable, DR - Designated Router, N - Default Network, S - State Refresh Capable\nNeighbor          Interface                Uptime/Expires    Ver   DR\nAddress                                                            Prio/Mode\n'
+    output: (header + (rows.length > 0 ? rows.join('\n') : '(no PIM neighbors learned yet)')).trimEnd()
   };
 };
 
 export const cmdShowIpIgmpGroups: CommandHandler = (state, _input, _ctx) => {
   let output = 'IGMP Connected Group Membership\nGroup Address    Interface                Uptime    Expires   Last Reporter\n';
-  let found = false;
-  for (const [pName, p] of Object.entries(state.ports || {})) {
-    if (p.igmpGroups && p.igmpGroups.length > 0) {
-      for (const g of p.igmpGroups) {
-        found = true;
-        const reporter = p.ipAddress || '127.0.0.1';
-        output += `${g.padEnd(17)}${pName.padEnd(25)}00:02:15  00:02:45  ${reporter}\n`;
+  const now = Date.now();
+
+  // Prefer dynamic igmpMemberships table (populated by tickMulticast)
+  const memberships = state.igmpMemberships;
+  if (memberships && Object.keys(memberships).length > 0) {
+    for (const [group, m] of Object.entries(memberships)) {
+      const uptime = formatUptime(now - (m.expires - 180_000), now); // approximate
+      const expires = formatExpiry(m.expires, now);
+      output += `${group.padEnd(17)}${m.interface.padEnd(25)}${uptime}  ${expires}  ${m.lastReporter}\n`;
+    }
+  } else {
+    // Fallback: derive from per-port igmpGroups config
+    let found = false;
+    for (const [pName, p] of Object.entries(state.ports || {})) {
+      if (p.igmpGroups && p.igmpGroups.length > 0) {
+        for (const g of p.igmpGroups) {
+          found = true;
+          const reporter = p.ipAddress || '127.0.0.1';
+          output += `${g.padEnd(17)}${pName.padEnd(25)}00:02:15  00:02:45  ${reporter}\n`;
+        }
       }
     }
-  }
-  if (!found) {
-    output += '224.0.1.40       Loopback0                00:05:22  stopped   0.0.0.0\n';
+    if (!found) {
+      output += '224.0.1.40       Loopback0                00:05:22  stopped   0.0.0.0\n';
+    }
   }
   return { success: true, output: output.trimEnd() };
 };

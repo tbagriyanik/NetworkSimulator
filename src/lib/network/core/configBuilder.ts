@@ -140,6 +140,15 @@ export function buildRunningConfig(state: SwitchState): string[] {
         lines.push('!');
     }
 
+    // IP Multicast Routing
+    if (state.multicastRoutingEnabled) {
+        lines.push('ip multicast-routing');
+        if (state.pimRpAddress) {
+            lines.push(`ip pim rp-address ${state.pimRpAddress}`);
+        }
+        lines.push('!');
+    }
+
     // CLI Aliases
     const execAliases = state.aliases?.exec || state.execAliases || {};
     const configAliases = state.aliases?.configure || {};
@@ -677,6 +686,18 @@ export function buildRunningConfig(state: SwitchState): string[] {
             }
             const svcPolicy = state.qosServicePolicies?.[portKey];
             if (svcPolicy) lines.push(` service-policy ${svcPolicy.direction} ${svcPolicy.policy}`);
+
+            if (port.pimMode) {
+                lines.push(` ip pim ${port.pimMode}`);
+            }
+            if (port.igmpGroups && port.igmpGroups.length > 0) {
+                port.igmpGroups.forEach(g => {
+                    lines.push(` ip igmp join-group ${g}`);
+                });
+            }
+            if (port.igmpVersion) {
+                lines.push(` ip igmp version ${port.igmpVersion}`);
+            }
 
             if (port.shutdown) {
                 lines.push(' shutdown');

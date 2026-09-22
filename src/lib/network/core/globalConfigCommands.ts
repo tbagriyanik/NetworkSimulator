@@ -150,7 +150,7 @@ import {
   cmdIpSlaResponder,
   cmdNoIpSlaResponder
 } from './globalConfigMiscCommands';
-import { cmdIpMulticastRouting, cmdNoIpMulticastRouting } from './multicastCommands';
+import { cmdIpMulticastRouting, cmdNoIpMulticastRouting, cmdIpPimRpAddress, cmdNoIpPimRpAddress } from './multicastCommands';
 import { cmdIpInspectName, cmdNoIpInspect } from './cbacCommands';
 import {
   cmdEventManagerApplet,
@@ -228,6 +228,8 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'no ip routing': cmdNoIpRouting,
   'ip multicast-routing': cmdIpMulticastRouting,
   'no ip multicast-routing': cmdNoIpMulticastRouting,
+  'ip pim rp-address': cmdIpPimRpAddress,
+  'no ip pim rp-address': cmdNoIpPimRpAddress,
   'ip inspect name': cmdIpInspectName,
   'no ip inspect name': cmdNoIpInspect,
   'ip route': cmdIpRoute,

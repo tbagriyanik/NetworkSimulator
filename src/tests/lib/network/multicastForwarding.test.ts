@@ -159,4 +159,59 @@ describe('Multicast Forwarding Pipeline (PIM & IGMP)', () => {
     const res = runHopPipeline(0, frame, routerDevice, routerState, [routerDevice], connections);
     expect(res.egressPorts).toEqual(['GigabitEthernet0/2']);
   });
+
+  it('drops multicast packets when RPF check fails', () => {
+    const routerState = {
+      multicastRoutingEnabled: true,
+      staticRoutes: [
+        { destination: '10.0.0.0', subnetMask: '255.255.255.0', nextHop: '10.0.0.1', interface: 'GigabitEthernet0/0' }
+      ],
+      ports: {
+        'GigabitEthernet0/0': { id: 'GigabitEthernet0/0', status: 'connected', shutdown: false, pimMode: 'sparse-mode', ipAddress: '10.0.0.1', subnetMask: '255.255.255.0' },
+        'GigabitEthernet0/1': { id: 'GigabitEthernet0/1', status: 'connected', shutdown: false, pimMode: 'sparse-mode', ipAddress: '192.168.1.1', subnetMask: '255.255.255.0' },
+        'GigabitEthernet0/2': { id: 'GigabitEthernet0/2', status: 'connected', shutdown: false, igmpGroups: ['239.1.1.100'] },
+      },
+    } as unknown as SwitchState;
+
+    // Arrives on Gi0/1 instead of Gi0/0 (RPF failure)
+    const incomingFrame = createMockFrame({
+      id: 'f-rpf-fail',
+      srcMac: '00:aa:bb:cc:dd:ee',
+      dstMac: '01:00:5e:01:01:64',
+      srcIp: '10.0.0.5',
+      dstIp: '239.1.1.100',
+      ingressPortId: 'GigabitEthernet0/1',
+      ttl: 64,
+    });
+
+    const res = runHopPipeline(0, incomingFrame, routerDevice, routerState, [routerDevice], connections);
+    expect(res.egressPorts).toEqual([]);
+    const routeTrace = res.traces.find((t) => t.stage === 'route-lookup');
+    expect(routeTrace?.reason).toContain('RPF check failed');
+  });
+
+  it('drops multicast packets when TTL is 1 (TTL exhaustion)', () => {
+    const routerState = {
+      multicastRoutingEnabled: true,
+      ports: {
+        'GigabitEthernet0/0': { id: 'GigabitEthernet0/0', status: 'connected', shutdown: false, pimMode: 'sparse-mode' },
+        'GigabitEthernet0/1': { id: 'GigabitEthernet0/1', status: 'connected', shutdown: false, pimMode: 'sparse-mode' },
+      },
+    } as unknown as SwitchState;
+
+    const incomingFrame = createMockFrame({
+      id: 'f-ttl-drop',
+      srcMac: '00:aa:bb:cc:dd:ee',
+      dstMac: '01:00:5e:01:01:64',
+      srcIp: '10.0.0.5',
+      dstIp: '239.1.1.100',
+      ingressPortId: 'GigabitEthernet0/0',
+      ttl: 1,
+    });
+
+    const res = runHopPipeline(0, incomingFrame, routerDevice, routerState, [routerDevice], connections);
+    expect(res.egressPorts).toEqual([]);
+    const routeTrace = res.traces.find((t) => t.stage === 'route-lookup');
+    expect(routeTrace?.reason).toContain('TTL exhausted');
+  });
 });

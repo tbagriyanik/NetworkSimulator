@@ -19,7 +19,7 @@ export interface CapwapTickResult {
 
 /** Advances CAPWAP control/data channels for APs registered on a WLC. */
 export function tickCapwap(state: SwitchState, now = Date.now()): CapwapTickResult {
-  const sessions: Record<string, CapwapSession> = (state as SwitchState & { capwapSessions?: Record<string, CapwapSession> }).capwapSessions ?? {};
+  const sessions: Record<string, CapwapSession> = state.capwapSessions ?? {};
   const events: string[] = [];
   const aps = state.wlcAps ?? {};
   Object.entries(aps).forEach(([name, ap]) => {
@@ -42,5 +42,5 @@ export function tickCapwap(state: SwitchState, now = Date.now()): CapwapTickResu
     sessions[name] = next;
     if (next.state === 'run' && ap.status !== 'joined') aps[name] = { ...ap, status: 'joined' };
   });
-  return { state: { ...state, wlcAps: aps, capwapSessions: sessions } as SwitchState, sessions, events };
+  return { state: { ...state, wlcAps: aps, capwapSessions: sessions }, sessions, events };
 }

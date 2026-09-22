@@ -1,7 +1,7 @@
 # Network Simulator
 
 ![Version](https://img.shields.io/badge/version-6.4.0-blue)
-![Next.js](https://img.shields.io/badge/Next.js-16.3.5-black?logo=next.js)
+![Next.js](https://img.shields.io/badge/Next.js-16.3.6-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19.3.0-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-7.0.2-3178C6?logo=typescript&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-4.3.3-06B6D4?logo=tailwindcss&logoColor=white)
@@ -36,14 +36,10 @@ npm run check
 
 - **🏗️ 28 Kategori ve 49+ Örnek Proje Kataloğu:** Otomatik Topoloji Üretici penceresinde 8 ana kategori (Temel, Topoloji, Veri Merkezi, Kablosuz, Servisler, Anahtarlama, Yönlendirme, Güvenlik) ve 28 hazır mimari senaryo. Ofis Yazıcısı & Akıllı IoT Sensör, Python Ağ Otomasyonu (OOBM Filosu) ve Kurumsal DMZ Güvenlik Duvarı laboratuvarları.
 - **💻 Gelişmiş CLI & Ağ İşletim Sistemi Simülasyonu:** Switch (L2/L3), Router, Güvenlik Duvarı (Firewall), WLC, PC, IoT ve Hub cihazları için 729+ benzersiz komut içeren terminal ve komut motoru. Komut kapsamı ile gerçek protokol/iletim davranışı özellik bazında değişebilir.
-- **📡 Multicast (PIM & IGMP) ve Gelişmiş Servisler:** Global ve arayüz seviyesinde PIM (Sparse/Dense/Sparse-Dense), IGMP v1/v2/v3 ve grup üyelikleri (`show ip mroute`, `show ip pim`), SNMPv3 (User, Group, Host traps/informs), IP SLA responder, klasik CBAC stateful firewall (`ip inspect`) ve GRE over IPSec tünel koruması.
-- **📈 Telemetry & IoT Simülasyonu:** NetFlow/sFlow için CLI, durum ve paket yakalama/collector senaryolarının destek düzeyi özellik bazında değişir. MQTT CONNECT/PUBLISH/SUBSCRIBE ve QoS 1 PUBACK ile CoAP resource CRUD/ACK akışları simüle edilir; bunlar tam üretim protokol yığını yerine eğitim amaçlı model ve forwarding-pipeline etkileşimleridir.
 - **⚡ EEM (Embedded Event Manager) & NETCONF:** Syslog, CLI ve zamanlayıcı tabanlı EEM applet otomasyonu (`event manager applet`) ile NETCONF-YANG veri modeli ve SSH 830 senaryoları bulunur. NETCONF desteği komut, durum ve simülasyon kapsamındadır; tam harici NETCONF sunucusu değildir.
-- **🤖 NetDevOps, RESTCONF & Intent API Explorer:** YANG tabanlı RESTCONF CRUD, Netmiko/Python RESTCONF komutları ve PC üzerindeki REST API / Controller Intent Explorer eğitim amaçlı simülasyon olarak sunulur; gerçek ağ cihazlarına bağlanan tam RESTCONF servisi olarak değerlendirilmemelidir.
 - **📸 Topoloji Anlık Görüntü & Geri Yükleme:** Ağ topolojisini tek tıkla dondurma, kontrol noktaları (Checkpoint) oluşturma, JSON dışa/içe aktarma ve anlık geri yükleme.
 - **🐍 Python Yorumlayıcısı, Dosya & GUI/Ses/3D İşlemleri:** PC terminalinde OOP, Decorator, Generator, `open()` ile sanal dosya I/O; `tkinter`/`form` ile görsel pencereli form uygulamaları; Web Audio API tabanlı dinamik nota/akor/müzik ve ses efekti (`audio`/`music`/`synth`) sentezleme; `scene3d`/`three3d` ile interaktif 3D sahne, katı geometri (CSG) ve ışıklandırma motoru; soket ağ programlama.
 - **🔍 Gelişmiş Teşhis & Sağlık Denetimi:** Native VLAN mismatch, çakışan IP/MAC tespiti, routing loop tespiti, orphan port denetimi ve tek komutla `show network health` raporu.
-- **🎮 Etkileşimli Düzen:** Ağ cihazlarını çalışma alanına ekleyip bağlayarak ilerlenen, gerçek network durumunu doğrulayan çeşitli görevler; ipucu, sonraki görev ve geç seçenekleri; farklı parametrelerle değişen öğrenme akışı; otomatik ilerleme kaydı, puan/kademe saklama ve kaldığı yerden devam desteği.
 
 > **Kapsam notu:** README’de listelenen CLI, parser, state, paket yakalama ve forwarding özellikleri her protokolde aynı olgunluk seviyesinde değildir. NetFlow/sFlow, MQTT, CoAP, NETCONF-YANG ve RESTCONF için mevcut davranışlar eğitim amaçlı simülasyon kapsamındadır; “destekleniyor” ifadesi tek başına tam üretim protokol uygulaması veya gerçek harici collector/server uyumluluğu anlamına gelmez.
 

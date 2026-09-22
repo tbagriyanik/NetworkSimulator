@@ -626,13 +626,37 @@ export interface SwitchState {
   // Multicast & PIM state
   multicastRoutingEnabled?: boolean;
   igmpSnoopingEnabled?: boolean;
+  /** Static RP address for PIM sparse-mode (ip pim rp-address X.X.X.X) */
+  pimRpAddress?: string;
   mrouteEntries?: Array<{
-    source: string;
+    source: string;           // '*' for (*,G) shared-tree entries
     group: string;
     incomingInterface: string;
     outgoingInterfaces: string[];
     flags?: string;
+    uptime?: number;          // creation timestamp (ms)
+    expires?: number;         // expiry timestamp (ms)
+    rpfNeighbor?: string;     // RPF neighbor IP address
+    rpAddress?: string;       // RP address for (*,G) entries
   }>;
+  /** Dynamic PIM neighbor table, keyed by neighbor IP */
+  pimNeighbors?: Record<string, {
+    interface: string;
+    ip: string;
+    uptime: number;
+    expires: number;
+    drPriority?: number;
+    version?: number;
+  }>;
+  /** Dynamic IGMP group membership table, keyed by group IP */
+  igmpMemberships?: Record<string, {
+    interface: string;
+    lastReporter: string;
+    expires: number;
+    version: 1 | 2 | 3;
+  }>;
+  /** Dense-mode pruned interfaces per group — group → port IDs that are pruned */
+  pimPrunedInterfaces?: Record<string, string[]>;
 
   // Spanning Tree features
   stpUplinkFast?: boolean;
@@ -689,5 +713,47 @@ export interface SwitchState {
     user?: string;
     status: 'active' | 'suspended';
     lastActive?: string;
+  }>;
+
+  // sFlow sampling configuration and runtime state
+  sflowConfig?: {
+    enabled?: boolean;
+    sampleRate?: number;
+    collector?: string;
+    samples?: Array<{
+      sequence: number;
+      sourceIp?: string;
+      destinationIp?: string;
+      protocol: string;
+      inputInterface?: string;
+      outputInterfaces: string[];
+      bytes: number;
+      sampledAt: number;
+    }>;
+    exportedSamples?: number;
+    exportQueue?: Array<{
+      collector: string;
+      sample: {
+        sequence: number;
+        sourceIp?: string;
+        destinationIp?: string;
+        protocol: string;
+        inputInterface?: string;
+        outputInterfaces: string[];
+        bytes: number;
+        sampledAt: number;
+      };
+    }>;
+    sequence?: number;
+  };
+
+  // CAPWAP session state (WLC)
+  capwapSessions?: Record<string, {
+    apName: string;
+    state: 'discovery' | 'joining' | 'configuring' | 'data' | 'run' | 'failed';
+    controlChannel: boolean;
+    dataChannel: boolean;
+    lastTransition: number;
+    retries: number;
   }>;
 }

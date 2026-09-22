@@ -44,6 +44,7 @@ import { evaluateWredDrop, scheduleQosPackets, shapePacketQueue, type QosClass }
 import { evaluateZbf } from './zbfEngine';
 import { evaluateIpv6FirstHopSecurity } from './ipv6FirstHopSecurity';
 import { getSpanMirrorDestinations, getRspanDestinationSessions } from '@/lib/network/portMirroring';
+import { checkRpf, getPrunedPorts } from './multicastEngine';
 
 // ---------------------------------------------
 // Pipeline Trace Types
@@ -67,6 +68,7 @@ export type PipelineStage =
   | 'qos'
   | 'netflow'
   | 'span-mirror'
+  | 'multicast-rpf'
   | 'egress'
   | 'capture';
 
@@ -278,10 +280,33 @@ function resolveEgress(
   } else if (device.type === 'router' || device.type === 'firewall') {
     if (multicastGroup) {
       if (state.multicastRoutingEnabled) {
+        // RPF check: drop if packet arrives on wrong interface
+        if (frame.srcIp && frame.ingressPortId) {
+          const rpf = checkRpf(state, frame.srcIp, frame.ingressPortId);
+          if (!rpf.passed) {
+            routeDecision = `L3 Multicast RPF check failed: expected ingress on ${rpf.expectedInterface ?? '?'}, got ${frame.ingressPortId}. Packet dropped.`;
+            return { egressPorts: [], routeDecision };
+          }
+        }
+
+        // TTL decrement check
+        if (frame.ttl !== undefined && frame.ttl <= 1) {
+          routeDecision = `L3 Multicast TTL exhausted (TTL=${frame.ttl}). Packet dropped.`;
+          return { egressPorts: [], routeDecision };
+        }
+
+        const prunedPorts = getPrunedPorts(state, frame.dstIp as string);
+
         Object.values(state.ports || {}).forEach((port) => {
           const joined = port.igmpGroups?.includes(frame.dstIp as string);
           const pimForwarding = Boolean(port.pimMode);
-          if (port.id !== frame.ingressPortId && !port.shutdown && (joined || pimForwarding)) {
+          const isDensePruned = prunedPorts.includes(port.id);
+          if (
+            port.id !== frame.ingressPortId &&
+            !port.shutdown &&
+            (joined || pimForwarding) &&
+            !isDensePruned
+          ) {
             egressPorts.push(port.id);
           }
         });

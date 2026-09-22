@@ -17,7 +17,9 @@ export type PacketProtocolType =
   | 'TCP'
   | 'UDP'
   | 'IPSEC'
-  | 'CAPWAP';
+  | 'CAPWAP'
+  | 'PIM'
+  | 'IGMP';
 
 export interface MqttFramePayload {
   type: 'CONNECT' | 'CONNACK' | 'PUBLISH' | 'PUBACK' | 'SUBSCRIBE' | 'SUBACK' | 'PINGREQ' | 'PINGRESP';
