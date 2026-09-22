@@ -83,7 +83,8 @@ export function getGlobalConfigCommands(isTR: boolean): CommandDefinition {
       ['zone-pair security <name> source <src> destination <dst>', isTR ? 'ZBF bölge çifti politikası tanımla' : 'Create ZBF zone-pair policy', '(config)#'],
       ['mpls ldp router-id <intf|ip>', isTR ? 'MPLS LDP Router ID ayarla' : 'Configure MPLS LDP router-id', '(config)#'],
       ['alias {exec|configure|interface|line} <name> <cmd>', isTR ? 'Mod bazlı komut kısayolu (alias) tanımla' : 'Define mode-specific command alias', '(config)#'],
-      ['no alias {exec|configure|interface|line} <name>', isTR ? 'Komut kısayolunu sil' : 'Remove mode-specific command alias', '(config)#'],
+      ['ip multicast-routing', isTR ? 'Global multicast yönlendirmeyi aç' : 'Enable multicast routing', '(config)#'],
+      ['ip pim rp-address <ip>', isTR ? 'PIM statik RP (Rendezvous Point) adresi ata' : 'Set static PIM RP address', '(config)#'],
       ['ip restconf', isTR ? 'RESTCONF / HTTP RESTful API servisini aç' : 'Enable RESTCONF HTTP API server', '(config)#'],
     ]
   };

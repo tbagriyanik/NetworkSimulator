@@ -865,6 +865,8 @@ The simulator supports **729+ commands** across multiple configuration modes.
 |---------|------|-------------|
 | `ip multicast-routing` | Config | Enable IP multicast routing globally |
 | `no ip multicast-routing` | Config | Disable IP multicast routing globally |
+| `ip pim rp-address <ip-address>` | Config | Configure static Rendezvous Point (RP) address for PIM-SM |
+| `no ip pim rp-address` | Config | Remove static PIM RP address |
 | `ip pim sparse-mode` | Interface | Enable PIM Sparse Mode on interface |
 | `ip pim dense-mode` | Interface | Enable PIM Dense Mode on interface |
 | `ip pim sparse-dense-mode` | Interface | Enable PIM Sparse-Dense Mode on interface |

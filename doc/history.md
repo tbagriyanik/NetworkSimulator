@@ -2,6 +2,8 @@
 
 ## v6.4.0 — 2026-09-21
 
+- **📡 PIM & IGMP Multicast Simülasyon Motoru & RPF Doğrulaması (`multicastEngine.ts`, `packetPipeline.ts`)**: PIM Sparse/Dense-Mode (Hello 224.0.0.13), IGMP General Query (224.0.0.1), dinamik `(*,G)` ve `(S,G)` mroute kayıtları, Reverse Path Forwarding (RPF) doğrulaması, TTL dekrementasyonu ve dense-mode prune mekanizması entegre edildi.
+- **🔄 Topoloji Araç Çubuğu Canlı Ağ Yenileme Butonu (`TopologyToolbar.tsx`)**: Araç çubuğuna F5 kısayol rozetiyle doğrudan tetiklenebilen pembe aksanlı "Ağı Yenile (Refresh Network)" butonu eklendi.
 - **📟 Gelişmiş CLI Pipe Filtreleme (`| include / exclude / begin / section`)**: Terminal komut çıktılarında standart pipe operatörü ve kısayolları (`| i`, `| ex`, `| b`, `| s`) ile regex/anahtar kelime tabanlı filtreleme desteği eklendi; inline help (`?`) ve tab tamamlama entegre edildi.
 - **🔀 Paralel Kablolar İçin Akıllı Kavisli Hatlar (Smart Curved Link Arcs)**: Aynı iki cihaz arasında birden fazla hat (EtherChannel, yedekli trunk) olduğunda kabloların üst üste binmesini önleyen dinamik Bézier kavis/yay geometrisi (`ConnectionLine.tsx`, `ConnectionHandle.tsx`) geliştirildi.
 - **📋 Güvenli Toplu Komut Yapıştırma & İlerleme Çubuğu (`Terminal.tsx`, `useTerminalCommandQueue.ts`)**: Çok satırlı metin ve komut blokları yapıştırıldığında komutların sırayla ve güvenle yürütülmesini sağlayan ilerleme göstergesi ve canlı iptal mekanizması entegre edildi.

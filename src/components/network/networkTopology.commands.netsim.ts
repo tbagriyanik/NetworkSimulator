@@ -87,14 +87,15 @@ export function getNetSimCommands(isTR: boolean): CommandDefinition[] {
       type: 'commands',
       cmds: [
         ['ip multicast-routing', isTR ? 'Global multicast yönlendirmeyi aç' : 'Enable multicast routing', '(config)#'],
+        ['ip pim rp-address <ip>', isTR ? 'PIM statik RP (Rendezvous Point) adresi ata' : 'Set static PIM RP address', '(config)#'],
         ['ip pim sparse-mode', isTR ? 'Arayüzde PIM sparse mod aç' : 'Enable PIM sparse mode', '(config-if)#'],
         ['ip pim dense-mode', isTR ? 'Arayüzde PIM dense mod aç' : 'Enable PIM dense mode', '(config-if)#'],
         ['ip igmp join-group <ip>', isTR ? 'IGMP multicast grubuna katıl' : 'Join IGMP multicast group', '(config-if)#'],
         ['ip igmp version <1|2|3>', isTR ? 'IGMP sürümünü ayarla' : 'Set IGMP version', '(config-if)#'],
-        ['show ip mroute', isTR ? 'Multicast yönlendirme tablosunu göster' : 'Show multicast routing table', '#'],
+        ['show ip mroute', isTR ? 'Multicast yönlendirme tablosunu (*,G)/(S,G) göster' : 'Show multicast routing table', '#'],
         ['show ip pim interface', isTR ? 'PIM arayüz durumunu göster' : 'Show PIM interfaces', '#'],
-        ['show ip pim neighbor', isTR ? 'PIM komşu tablosunu göster' : 'Show PIM neighbors', '#'],
-        ['show ip igmp groups', isTR ? 'IGMP grup üyeliklerini göster' : 'Show IGMP groups', '#'],
+        ['show ip pim neighbor', isTR ? 'Dinamik PIM komşu tablosunu göster' : 'Show dynamic PIM neighbors', '#'],
+        ['show ip igmp groups', isTR ? 'Dinamik IGMP grup üyeliklerini göster' : 'Show dynamic IGMP groups', '#'],
       ]
     },
     {
