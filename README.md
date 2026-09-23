@@ -63,7 +63,7 @@ npm run build:exe
 | Metrik / Metric | Değer / Value |
 | --- | --- |
 | Version / Sürüm | 6.5.0 |
-| Total Lines / Toplam Satır (`src/`) | ~217,823 |
+| Total Lines / Toplam Satır (`src/`) | ~217,827 |
 | Source Files / Kaynak Dosya | 1054 |
 | Documentation Files / Dokümantasyon Dosya | 30 |
 | Example Projects / Örnek Proje | 49 |
