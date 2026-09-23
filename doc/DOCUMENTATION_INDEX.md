@@ -415,6 +415,7 @@ doc/
 - [x] Terminal Sağ Tık Yapıştırma, F2 Cihaz Yeniden Adlandırma & Arama Odaklanma (v6.2.1) belgelendi
 - [x] Otomatik Kablo Bağlama, Console/RS-232 Eşleme, 19 Rehberli Ders, Protokol Detay Ağacı & Engellendi Rozeti (v6.3.0) belgelendi
 - [x] Topoloji & Paket İnceleme Arama Temizleme Butonları, ESC Kısayolları, Terminal Temizleme Notu & Proje Sürümü Yükseltme (v6.4.0) belgelendi
+- [x] Masaüstü (.exe / Tauri v2) Desteği, SVG İkon Paketi, Hibrit Export Mimarisi & Proje Sürümü Yükseltme (v6.5.0) belgelendi
 - [x] Klavye & Tuval Yardım Penceresi İçeriği (ShortcutsModal, F1/Shift+?) Tüm Yeni Kısayollarla Güncellendi
 
 ---

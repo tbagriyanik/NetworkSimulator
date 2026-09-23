@@ -1,11 +1,17 @@
-'use client';
-
-import { useParams } from 'next/navigation';
 import Home from '../page';
+import { exampleProjects } from '@/lib/network/exampleProjects';
 
-export default function DynamicPage() {
-  const params = useParams();
-  const id = params.id as string;
+export function generateStaticParams() {
+  const projects = exampleProjects('en');
+  return projects.map((p) => ({ id: p.id }));
+}
 
+interface DynamicPageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function DynamicPage({ params }: DynamicPageProps) {
+  const { id } = await params;
   return <Home initialProjectId={id} />;
 }
+

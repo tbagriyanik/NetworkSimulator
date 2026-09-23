@@ -18,9 +18,23 @@ Tarayıcıda açın: [http://localhost:3000](http://localhost:3000)
 
 ## 📋 Sistem Gereksinimleri
 
+### Web Geliştirme (Web / Local Dev)
 - **Node.js**: 20.9 veya üzeri (Next.js 16 gereksinimi)
 - **npm**: 10 veya üzeri (veya pnpm)
-- **Tarayıcı**: Modern tarayıcı 
+- **Tarayıcı**: Modern Chromium, Firefox veya Safari
+
+### Masaüstü Sürümü (Desktop / Windows .exe)
+
+#### 1. Son Kullanıcı Bilgisayarı (Setup / Exe'nin Çalışacağı PC)
+- **İşletim Sistemi:** Windows 10 (güncel) veya Windows 11 (64-bit).
+- **Microsoft Edge WebView2 Runtime:** Windows 10 ve Windows 11 üzerinde zaten yerleşik olarak yüklü gelir. Kullanıcının bilgisayarında **Node.js, Rust, Git veya başka bir bağımlılık bulunmasına gerek yoktur**.
+- Setup (.msi / .exe) dosyasına çift tıklanarak doğrudan kurulur ve çalışır.
+
+#### 2. Geliştirici Bilgisayarı (`npm run build:exe` ile EXE Derlemek İçin)
+- **Rust & Cargo:** [https://rustup.rs/](https://rustup.rs/) (Terminalde `cargo --version` çalışmalıdır).
+- **Microsoft C++ Build Tools:** Visual Studio Installer üzerinden *"Desktop development with C++"* paketi kurulu olmalıdır.
+- **Node.js & npm:** Proje bağımlılıkları için.
+
 
 ## 📦 Yüklü Paketler
 
@@ -58,8 +72,23 @@ npx tsc --noEmit
 
 ### Build
 ```bash
+# Web üretim derlemesi
 npm run build
+
+# Masaüstü (.exe / .msi) yerel derlemesi
+npm run build:exe
 ```
+
+### GitHub Releases ile Otomatik .exe Dağıtımı
+Projede `.github/workflows/release.yml` GitHub Actions iş akışı tanımlıdır. Yeni bir sürüm etiketi (tag) gönderdiğinizde GitHub otomatik olarak Windows üzerinde `.exe` derleyip GitHub Release'e ekler:
+
+```bash
+git add .
+git commit -m "chore: release v6.5.0"
+git tag v6.5.0
+git push origin main --tags
+```
+
 
 ### Test
 ```bash

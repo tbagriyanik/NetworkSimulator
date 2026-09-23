@@ -84,7 +84,10 @@ const config = async () => {
   const loc = getLinesOfCode("src");
   const version = getAppVersion();
 
+  const isExport = process.env.NEXT_EXPORT === 'true';
+
   const nextConfig: NextConfig = {
+    ...(isExport ? { output: "export" as const } : {}),
     productionBrowserSourceMaps: false,
     experimental: {
       optimizePackageImports: ["lucide-react"],
@@ -94,35 +97,38 @@ const config = async () => {
     },
     reactStrictMode: true,
     devIndicators: false,
-    async headers() {
-      return [
-        {
-          source: "/fonts/:path*",
-          headers: [
-            { key: "Access-Control-Allow-Origin", value: "*" },
-            { key: "Access-Control-Allow-Methods", value: "GET, OPTIONS" },
-            { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-          ],
-        },
-        {
-          source: "/(.*)",
-          headers: [
-            { key: "X-Frame-Options", value: "DENY" },
-            { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
-            { key: "X-Content-Type-Options", value: "nosniff" },
-            { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-            { key: "X-XSS-Protection", value: "1; mode=block" },
-            { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" }
-          ],
-        },
-      ];
-    },
+    ...(!isExport ? {
+      async headers() {
+        return [
+          {
+            source: "/fonts/:path*",
+            headers: [
+              { key: "Access-Control-Allow-Origin", value: "*" },
+              { key: "Access-Control-Allow-Methods", value: "GET, OPTIONS" },
+              { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+            ],
+          },
+          {
+            source: "/(.*)",
+            headers: [
+              { key: "X-Frame-Options", value: "DENY" },
+              { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+              { key: "X-Content-Type-Options", value: "nosniff" },
+              { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+              { key: "X-XSS-Protection", value: "1; mode=block" },
+              { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" }
+            ],
+          },
+        ];
+      },
+    } : {}),
+
     env: {
       NEXT_PUBLIC_GIT_COMMIT_COUNT: String(commitCount),
       NEXT_PUBLIC_LOC: String(loc),
       APP_VERSION: String(version),
-      NEXT_PUBLIC_IS_ROOM_ENABLED: String(!!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)),
-      NEXT_PUBLIC_IS_CONTACT_ENABLED: String(!!process.env.GOOGLE_SHEETS_CONTACT_URL),
+      NEXT_PUBLIC_IS_ROOM_ENABLED: isExport ? 'false' : String(!!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)),
+      NEXT_PUBLIC_IS_CONTACT_ENABLED: isExport ? 'false' : String(!!process.env.GOOGLE_SHEETS_CONTACT_URL),
     },
   };
 

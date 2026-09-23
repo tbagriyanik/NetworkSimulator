@@ -1,6 +1,6 @@
 {
   "name": "network-simulator",
-  "version": "6.4.0",
+  "version": "6.5.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,7 +10,10 @@
     "lint": "oxlint",
     "test": "vitest run",
     "update-readme": "node scripts/update-readme-badges.cjs",
-    "check": "tsc --noEmit && next build && oxlint && vitest run"
+    "check": "tsc --noEmit && next build && oxlint && vitest run",
+    "build:desktop": "node scripts/build-desktop.cjs",
+    "tauri": "tauri",
+    "build:exe": "tauri build"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.15",
@@ -21,6 +24,7 @@
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-toast": "^1.2.15",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@tauri-apps/api": "^2.11.1",
     "@upstash/redis": "^1.38.0",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.7.0",
@@ -32,6 +36,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
+    "@tauri-apps/cli": "^2.11.5",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^26.6.2",

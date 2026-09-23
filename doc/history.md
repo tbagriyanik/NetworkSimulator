@@ -1,6 +1,14 @@
 # 📅 Network Simulator — Proje Geçmişi
 
+## v6.5.0 — 2026-09-23
+
+- **🖥️ Masaüstü (.exe / Tauri v2) Desteği**: Network Simulator için tam yerel Windows masaüstü uygulama mimarisi (`src-tauri`) kuruldu; statik export pipeline'ı (`scripts/build-desktop.cjs`) ve `npm run build:exe` derleme altyapısı hazırlandı.
+- **🎨 Özelleştirilmiş Masaüstü İkon Paketi**: `public/icon192.svg` vektör kaynağından tam çözünürlüklü Windows `.ico`, macOS `.icns`, Android/iOS ve Windows Store logoları üretildi.
+- **🌐 Akıllı Hibrit Export Modeli**: Web sürümünde öğrenci-öğretmen canlı sınıf modülü ve sunucu özellikleri korunurken masaüstü export'unda bağımsız yerel çalışma sağlandı.
+- **🔖 Sürüm Güncellemesi**: Tüm proje paketi, bileşenler ve dokümantasyon v6.5.0 sürümüne yükseltildi.
+
 ## v6.4.0 — 2026-09-21
+
 
 - **📡 PIM & IGMP Multicast Simülasyon Motoru & RPF Doğrulaması (`multicastEngine.ts`, `packetPipeline.ts`)**: PIM Sparse/Dense-Mode (Hello 224.0.0.13), IGMP General Query (224.0.0.1), dinamik `(*,G)` ve `(S,G)` mroute kayıtları, Reverse Path Forwarding (RPF) doğrulaması, TTL dekrementasyonu ve dense-mode prune mekanizması entegre edildi.
 - **🔄 Topoloji Araç Çubuğu Canlı Ağ Yenileme Butonu (`TopologyToolbar.tsx`)**: Araç çubuğuna F5 kısayol rozetiyle doğrudan tetiklenebilen pembe aksanlı "Ağı Yenile (Refresh Network)" butonu eklendi.

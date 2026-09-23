@@ -1,6 +1,6 @@
 # Network Simulator
 
-![Version](https://img.shields.io/badge/version-6.4.0-blue)
+![Version](https://img.shields.io/badge/version-6.5.0-blue)
 ![Next.js](https://img.shields.io/badge/Next.js-16.3.6-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19.3.0-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-7.0.2-3178C6?logo=typescript&logoColor=white)
@@ -30,7 +30,20 @@ npm run dev
 # Tip kontrolü, lint ve testleri çalıştırın
 npx tsc --noEmit
 npm run check
+
+# Masaüstü (Windows .exe) derlemesi
+npm run build:exe
 ```
+
+### 🖥️ Masaüstü / Desktop Gereksinimleri
+- **Kullanıcı Bilgisayarı (Son Kullanıcı):**
+  - **İşletim Sistemi:** Windows 10 (güncel) veya Windows 11.
+  - **Runtime:** Microsoft Edge WebView2 (Windows 10/11'de varsayılan yüklüdür). Node.js, Rust veya harici bağımlılık gerekmez.
+- **Geliştirici Bilgisayarı (`npm run build:exe` derlemesi için):**
+  - Node.js (>= 20.9)
+  - Rust & Cargo ([rustup.rs](https://rustup.rs/))
+  - C++ Build Tools (Visual Studio Build Tools - Desktop development with C++)
+
 
 ## 🚀 Key Features / Öne Çıkan Özellikler
 
@@ -49,7 +62,7 @@ npm run check
 
 | Metrik / Metric | Değer / Value |
 | --- | --- |
-| Version / Sürüm | 6.4.0 |
+| Version / Sürüm | 6.5.0 |
 | Total Lines / Toplam Satır (`src/`) | ~217,823 |
 | Source Files / Kaynak Dosya | 1054 |
 | Documentation Files / Dokümantasyon Dosya | 30 |
