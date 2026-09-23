@@ -1,4 +1,4 @@
-﻿import { create } from 'zustand';
+import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { CanvasDevice, CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
@@ -122,6 +122,7 @@ interface AppState {
     clearCapturedPackets: (connectionId: string) => void;
     clearAllCapturedPackets: () => void;
     addNetworkEventLog: (log: Omit<NetworkEventLog, 'id' | 'timestamp'>) => void;
+    addNetworkEventLogs: (logs: Array<Omit<NetworkEventLog, 'id' | 'timestamp'>>) => void;
     removeNetworkEventLog: (logId: string) => void;
     clearNetworkEventLogs: () => void;
     setNotes: (notes: CanvasNote[] | ((prev: CanvasNote[]) => CanvasNote[])) => void;
@@ -373,6 +374,21 @@ const createActions = (set: (partial: Partial<AppState> | ((state: AppState) => 
             topology: {
                 ...get().topology,
                 networkEventLogs: [newLog, ...get().topology.networkEventLogs].slice(0, 200),
+            }
+        });
+    },
+    addNetworkEventLogs: (logs: Array<Omit<NetworkEventLog, 'id' | 'timestamp'>>) => {
+        if (!logs.length) return;
+        const now = Date.now();
+        const newLogs: NetworkEventLog[] = logs.map((log, idx) => ({
+            ...log,
+            id: `nel-${now}-${idx}-${Math.random().toString(36).substr(2, 9)}`,
+            timestamp: now,
+        }));
+        set({
+            topology: {
+                ...get().topology,
+                networkEventLogs: [...newLogs.reverse(), ...get().topology.networkEventLogs].slice(0, 200),
             }
         });
     },

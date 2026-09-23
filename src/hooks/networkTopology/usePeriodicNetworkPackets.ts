@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useRef } from 'react';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
@@ -36,11 +36,12 @@ export function usePeriodicNetworkPackets({
 
     // Periodic timer every 2 seconds for active VoIP call connectivity validation and 10 seconds for protocols
     const interval = setInterval(() => {
-      const currentDevices = devicesRef.current;
-      const currentConnections = connectionsRef.current;
-      const currentStates = deviceStatesRef.current;
+      const executePeriodicPass = () => {
+        const currentDevices = devicesRef.current;
+        const currentConnections = connectionsRef.current;
+        const currentStates = deviceStatesRef.current;
 
-      if (!currentDevices.length) return;
+        if (!currentDevices.length) return;
 
       // 1. Audit all activeVoipCalls across topology devices: if network connectivity is broken, clear activeVoipCall on BOTH sides
       const devicesToDisconnect = new Set<string>();
@@ -112,11 +113,12 @@ export function usePeriodicNetworkPackets({
         updatedStates = pipelineRes.updatedStates;
         packetsToDispatch.push(...pipelineRes.dispatchedPackets);
 
+        const pendingLogs: Array<{ level: 'info' | 'warning' | 'error'; category: string; message: string; detail?: string }> = [];
+
         // Surface OSPF/EIGRP adjacency state changes into the Network Event Log timeline
         if (pipelineRes.protocolEvents && pipelineRes.protocolEvents.length > 0) {
-          const addNetworkEventLog = useAppStore.getState().addNetworkEventLog;
           for (const ev of pipelineRes.protocolEvents) {
-            addNetworkEventLog({
+            pendingLogs.push({
               level: ev.level,
               category: ev.protocol,
               message: ev.message,
@@ -127,15 +129,18 @@ export function usePeriodicNetworkPackets({
 
         // Surface real-time ARP/MAC aging events (entries timed out) into the timeline
         if (pipelineRes.agingEvents && pipelineRes.agingEvents.length > 0) {
-          const addNetworkEventLog = useAppStore.getState().addNetworkEventLog;
           for (const ev of pipelineRes.agingEvents) {
-            addNetworkEventLog({
+            pendingLogs.push({
               level: ev.level,
               category: ev.category,
               message: ev.message,
               detail: ev.detail,
             });
           }
+        }
+
+        if (pendingLogs.length > 0) {
+          useAppStore.getState().addNetworkEventLogs(pendingLogs);
         }
       }
 
@@ -460,7 +465,14 @@ export function usePeriodicNetworkPackets({
       if (packetsToDispatch.length > 0) {
         dispatchCapturedPackets(packetsToDispatch);
       }
-    }, 10000);
+    };
+
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      window.requestIdleCallback(() => executePeriodicPass(), { timeout: 1000 });
+    } else {
+      setTimeout(executePeriodicPass, 0);
+    }
+  }, 10000);
 
 
     return () => clearInterval(interval);

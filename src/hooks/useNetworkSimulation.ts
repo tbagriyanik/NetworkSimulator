@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { updateChangedDevices } from '@/lib/simulation/partialDeviceUpdates';
@@ -47,54 +47,60 @@ export function useNetworkSimulation(
     let lastTick = performance.now();
     let ntpAccumulator = 0;
     const interval = window.setInterval(() => {
-      const now = performance.now();
-      const elapsed = Math.min(now - lastTick, 1000);
-      lastTick = now;
-      ntpAccumulator += elapsed;
-      const shouldAdvanceNtp = ntpAccumulator >= 1000;
-      if (shouldAdvanceNtp) ntpAccumulator %= 1000;
+      const scheduleWork = typeof window !== 'undefined' && 'requestIdleCallback' in window
+        ? window.requestIdleCallback
+        : (cb: () => void) => setTimeout(cb, 0);
 
-      setTopologyDevices((previousDevices) => {
-        let devices = networkLogic.applyIotAutomationPass(previousDevices);
-        let changed = devices !== previousDevices;
+      scheduleWork(() => {
+        const now = performance.now();
+        const elapsed = Math.min(now - lastTick, 1000);
+        lastTick = now;
+        ntpAccumulator += elapsed;
+        const shouldAdvanceNtp = ntpAccumulator >= 1000;
+        if (shouldAdvanceNtp) ntpAccumulator %= 1000;
 
-        if (!shouldAdvanceNtp) return changed ? devices : previousDevices;
+        setTopologyDevices((previousDevices) => {
+          let devices = networkLogic.applyIotAutomationPass(previousDevices);
+          let changed = devices !== previousDevices;
 
-        const ntpUpdates = new Map<string, Partial<CanvasDevice>>();
-        const devicesByIp = new Map<string, CanvasDevice>();
-        devices.forEach((candidate) => {
-          if (candidate.ip) devicesByIp.set(candidate.ip, candidate);
-        });
-        devices.forEach((device) => {
-          const ntp = device.services?.ntp;
-          const stateNtp = deviceStatesRef.current.get(device.id)?.services?.ntp;
-          const effectiveNtp = ntp?.enabled ? ntp : stateNtp?.enabled ? stateNtp : undefined;
-          if (!effectiveNtp?.enabled) return;
+          if (!shouldAdvanceNtp) return changed ? devices : previousDevices;
 
-          const serverIp = effectiveNtp.server?.trim();
-          const upstreamDevice = serverIp && isValidIpv4Address(serverIp)
-            ? devicesByIp.get(serverIp)
-            : undefined;
-          const upstreamNtp = upstreamDevice?.services?.ntp?.enabled ? upstreamDevice.services.ntp : undefined;
-          const nextNtp = upstreamNtp?.enabled
-            ? { ...effectiveNtp, enabled: true, date: upstreamNtp.date || formatLocalDate(new Date()), time: upstreamNtp.time || new Date().toTimeString().slice(0, 8) }
-            : (() => {
-                const nextTime = advanceNtpDateTime(effectiveNtp.date, effectiveNtp.time);
-                return { ...effectiveNtp, enabled: true, date: nextTime.date, time: nextTime.time };
-              })();
-
-          const currentNtp = device.services?.ntp;
-          if (currentNtp?.date === nextNtp.date && currentNtp?.time === nextNtp.time && currentNtp?.enabled) return;
-          ntpUpdates.set(device.id, {
-            services: { ...device.services, ntp: nextNtp }
+          const ntpUpdates = new Map<string, Partial<CanvasDevice>>();
+          const devicesByIp = new Map<string, CanvasDevice>();
+          devices.forEach((candidate) => {
+            if (candidate.ip) devicesByIp.set(candidate.ip, candidate);
           });
-        });
+          devices.forEach((device) => {
+            const ntp = device.services?.ntp;
+            const stateNtp = deviceStatesRef.current.get(device.id)?.services?.ntp;
+            const effectiveNtp = ntp?.enabled ? ntp : stateNtp?.enabled ? stateNtp : undefined;
+            if (!effectiveNtp?.enabled) return;
 
-        if (ntpUpdates.size > 0) {
-          devices = updateChangedDevices(devices, ntpUpdates).devices;
-          changed = true;
-        }
-        return changed ? devices : previousDevices;
+            const serverIp = effectiveNtp.server?.trim();
+            const upstreamDevice = serverIp && isValidIpv4Address(serverIp)
+              ? devicesByIp.get(serverIp)
+              : undefined;
+            const upstreamNtp = upstreamDevice?.services?.ntp?.enabled ? upstreamDevice.services.ntp : undefined;
+            const nextNtp = upstreamNtp?.enabled
+              ? { ...effectiveNtp, enabled: true, date: upstreamNtp.date || formatLocalDate(new Date()), time: upstreamNtp.time || new Date().toTimeString().slice(0, 8) }
+              : (() => {
+                  const nextTime = advanceNtpDateTime(effectiveNtp.date, effectiveNtp.time);
+                  return { ...effectiveNtp, enabled: true, date: nextTime.date, time: nextTime.time };
+                })();
+
+            const currentNtp = device.services?.ntp;
+            if (currentNtp?.date === nextNtp.date && currentNtp?.time === nextNtp.time && currentNtp?.enabled) return;
+            ntpUpdates.set(device.id, {
+              services: { ...device.services, ntp: nextNtp }
+            });
+          });
+
+          if (ntpUpdates.size > 0) {
+            devices = updateChangedDevices(devices, ntpUpdates).devices;
+            changed = true;
+          }
+          return changed ? devices : previousDevices;
+        });
       });
     }, 250);
 
