@@ -88,6 +88,9 @@ const config = async () => {
 
   const nextConfig: NextConfig = {
     ...(isExport ? { output: "export" as const } : {}),
+    images: {
+      unoptimized: true,
+    },
     productionBrowserSourceMaps: false,
     experimental: {
       optimizePackageImports: ["lucide-react"],

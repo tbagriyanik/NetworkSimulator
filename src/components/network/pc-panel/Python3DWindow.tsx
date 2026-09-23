@@ -86,7 +86,7 @@ export const Python3DWindow: React.FC<Python3DWindowProps> = ({
             </span>
           </div>
           <div className="flex items-center gap-2 text-[10px] text-slate-500 font-mono">
-            <span className="hidden sm:inline">Orbit 3D WebGL</span>
+            <span className="hidden sm:inline">WebGL</span>
             <RotateCw className="w-2.5 h-2.5 text-cyan-400 animate-spin" style={{ animationDuration: '6s' }} />
           </div>
         </div>

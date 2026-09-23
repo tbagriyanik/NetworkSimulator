@@ -344,7 +344,7 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
                   </a>
                 </div>
                 <div className="flex justify-center py-1">
-                  <Image src="/app.png" alt="Logo" width={56} height={56} className="w-14 h-14 object-contain" />
+                  <Image src="/app.png" alt="Logo" width={56} height={56} className="w-14 h-14 object-contain" unoptimized priority />
                 </div>
                 <div className="grid grid-cols-3 gap-2 p-2.5 bg-secondary-100/50 dark:bg-secondary-900/50 rounded-lg text-center border border-secondary-200 dark:border-secondary-800 text-xs animate-in fade-in duration-300">
                   <div className="flex flex-col">

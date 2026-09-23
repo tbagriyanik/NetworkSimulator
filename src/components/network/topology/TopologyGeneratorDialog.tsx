@@ -13,12 +13,22 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Loader2, Monitor, Wand2, Search, Sparkles, Info } from 'lucide-react';
+import {
+  Loader2,
+  Monitor,
+  Wand2,
+  Search,
+  Sparkles,
+  Info,
+  FlaskConical,
+  Layers,
+} from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { SCENARIOS, CATEGORY_LABELS, type ScenarioType, type ScenarioCategory } from './topologyScenarios';
 import { generateTopology } from './scenarioGenerators';
+import { TEST_TOPOLOGY_SCENARIOS, type TestTopologyScenario } from './testTopologyScenarios';
 
 interface TopologyGeneratorDialogProps {
   open: boolean;
@@ -32,6 +42,9 @@ interface TopologyGeneratorDialogProps {
   }) => void;
 }
 
+type GeneratorTab = 'architectures' | 'testLabs';
+type TestCategoryFilter = 'all' | 'switching' | 'routing' | 'e2e' | 'security' | 'ipv6' | 'wireless' | 'diagnostics';
+
 export function TopologyGeneratorDialog({
   open,
   onOpenChange,
@@ -42,15 +55,27 @@ export function TopologyGeneratorDialog({
   const isDark = theme === 'dark';
   const isTr = language === 'tr';
 
+  const [activeTab, setActiveTab] = useState<GeneratorTab>('architectures');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ScenarioCategory | 'all'>('all');
+  const [selectedTestCategory, setSelectedTestCategory] = useState<TestCategoryFilter>('all');
   const [scenario, setScenario] = useState<ScenarioType>('soho');
+  const [selectedTestId, setSelectedTestId] = useState<string>('test-stp-triangle');
   const [pcCount, setPcCount] = useState<number>(2);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Exclusive list of test fixture scenarios extracted directly from src/tests/
+  const testScenarios = useMemo<TestTopologyScenario[]>(() => {
+    return TEST_TOPOLOGY_SCENARIOS;
+  }, []);
 
   const selectedDef = useMemo(() => {
     return SCENARIOS.find(s => s.id === scenario) ?? SCENARIOS[0];
   }, [scenario]);
+
+  const selectedTest = useMemo(() => {
+    return testScenarios.find(p => p.id === selectedTestId) ?? testScenarios[0];
+  }, [testScenarios, selectedTestId]);
 
   const handleClose = useCallback(() => {
     if (!isLoading) onOpenChange(false);
@@ -67,45 +92,134 @@ export function TopologyGeneratorDialog({
     };
   }, [open, handleClose]);
 
+  // Category labels for test scenarios
+  const testCategoryLabels: Record<TestCategoryFilter, { tr: string; en: string }> = {
+    all: { tr: 'Tüm Testler', en: 'All Tests' },
+    switching: { tr: 'Anahtarlama', en: 'Switching' },
+    routing: { tr: 'Yönlendirme', en: 'Routing' },
+    e2e: { tr: 'Uçtan Uca (E2E)', en: 'End-to-End (E2E)' },
+    security: { tr: 'Güvenlik', en: 'Security' },
+    ipv6: { tr: 'IPv6', en: 'IPv6' },
+    wireless: { tr: 'Kablosuz (WLC)', en: 'Wireless (WLC)' },
+    diagnostics: { tr: 'Teşhis (Diagnostics)', en: 'Diagnostics' },
+  };
+
+  // Filtered standard scenarios
+  const filteredScenarios = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return SCENARIOS.filter(s => {
+      if (selectedCategory !== 'all' && s.category !== selectedCategory) return false;
+      if (!q) return true;
+      return (
+        s.labelTr.toLowerCase().includes(q) ||
+        s.labelEn.toLowerCase().includes(q) ||
+        s.descTr.toLowerCase().includes(q) ||
+        s.descEn.toLowerCase().includes(q) ||
+        CATEGORY_LABELS[s.category].tr.toLowerCase().includes(q) ||
+        CATEGORY_LABELS[s.category].en.toLowerCase().includes(q)
+      );
+    });
+  }, [searchQuery, selectedCategory]);
+
+  // Filtered test scenarios (strictly from src/tests)
+  const filteredTestScenarios = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return testScenarios.filter(p => {
+      if (selectedTestCategory !== 'all' && p.category !== selectedTestCategory) return false;
+      if (!q) return true;
+      return (
+        p.titleTr.toLowerCase().includes(q) ||
+        p.titleEn.toLowerCase().includes(q) ||
+        p.descTr.toLowerCase().includes(q) ||
+        p.descEn.toLowerCase().includes(q) ||
+        p.id.toLowerCase().includes(q) ||
+        p.testFile.toLowerCase().includes(q) ||
+        p.tags.some(tag => tag.toLowerCase().includes(q))
+      );
+    });
+  }, [testScenarios, selectedTestCategory, searchQuery]);
+
+  const allCategories: ScenarioCategory[] = [
+    'basic',
+    'topology',
+    'datacenter',
+    'wireless',
+    'switching',
+    'routing',
+    'security'
+  ];
+
   const handleGenerate = useCallback(() => {
     setIsLoading(true);
     setTimeout(() => {
       try {
-        const result = generateTopology(scenario, pcCount);
-        const name = isTr ? selectedDef.labelTr : selectedDef.labelEn;
-        const description = isTr ? selectedDef.descTr : selectedDef.descEn;
-        const objective = isTr ? selectedDef.objectiveTr : selectedDef.objectiveEn;
-        
-        // Structured, rich, and clear project description text for summary notes and documentation
-        const formattedDescription = [
-          `📌 ${name}`,
-          `🎯 ${isTr ? 'Amaç' : 'Objective'}: ${objective || description}`,
-          `📋 ${isTr ? 'Ağ Yapısı' : 'Architecture'}: ${description}`,
-        ].join('\n\n');
+        if (activeTab === 'architectures') {
+          const result = generateTopology(scenario, pcCount);
+          const name = isTr ? selectedDef.labelTr : selectedDef.labelEn;
+          const description = isTr ? selectedDef.descTr : selectedDef.descEn;
+          const objective = isTr ? selectedDef.objectiveTr : selectedDef.objectiveEn;
+          
+          const formattedDescription = [
+            `📌 ${name}`,
+            `🎯 ${isTr ? 'Amaç' : 'Objective'}: ${objective || description}`,
+            `📋 ${isTr ? 'Ağ Yapısı' : 'Architecture'}: ${description}`,
+          ].join('\n\n');
 
-        onGenerate({
-          ...result,
-          projectName: name,
-          projectDescription: formattedDescription,
-        });
-        toast({
-          title: isTr ? 'Topoloji Üretildi! 🚀' : 'Topology Generated! 🚀',
-          description: isTr
-            ? `${name} başarıyla oluşturuldu ve özet bilgileri tuvale aktarıldı.`
-            : `${name} successfully generated and summary added to canvas.`,
-        });
+          onGenerate({
+            ...result,
+            projectName: name,
+            projectDescription: formattedDescription,
+          });
+          toast({
+            title: isTr ? 'Topoloji Üretildi! 🚀' : 'Topology Generated! 🚀',
+            description: isTr
+              ? `${name} başarıyla oluşturuldu ve tuvale aktarıldı.`
+              : `${name} successfully generated and added to canvas.`,
+          });
+        } else {
+          // Generate Test scenario (strictly from src/tests)
+          if (!selectedTest) return;
+
+          const built = selectedTest.build(isTr);
+          const title = isTr ? selectedTest.titleTr : selectedTest.titleEn;
+          const desc = isTr ? selectedTest.descTr : selectedTest.descEn;
+          const objective = isTr ? selectedTest.objectiveTr : selectedTest.objectiveEn;
+
+          const formattedDescription = [
+            `🧪 ${title}`,
+            `📁 Test Dosyası: ${selectedTest.testFile}`,
+            `🎯 Amaç: ${objective}`,
+            `📋 Açıklama: ${desc}`,
+            `⚙️ Doğrulama: ${isTr ? built.detailTr : built.detailEn}`,
+          ].join('\n\n');
+
+          onGenerate({
+            devices: built.devices,
+            connections: built.connections,
+            deviceStates: built.deviceStates,
+            projectName: title,
+            projectDescription: formattedDescription,
+          });
+
+          toast({
+            title: isTr ? 'Test Topolojisi Yüklendi! 🧪' : 'Test Topology Loaded! 🧪',
+            description: isTr
+              ? `"${title}" (${selectedTest.testFile.split('/').pop()}) başarıyla tuvale aktarıldı.`
+              : `"${title}" loaded from ${selectedTest.testFile}.`,
+          });
+        }
         onOpenChange(false);
-      } catch (err) {
+      } catch {
         toast({
           title: isTr ? 'Hata' : 'Error',
-          description: String(err),
+          description: isTr ? 'Topoloji oluşturulurken bir sorun oluştu.' : 'Failed to generate topology.',
           variant: 'destructive',
         });
       } finally {
         setIsLoading(false);
       }
-    }, 350);
-  }, [scenario, pcCount, onGenerate, onOpenChange, isTr, selectedDef]);
+    }, 150);
+  }, [activeTab, scenario, pcCount, selectedDef, selectedTest, isTr, onGenerate, onOpenChange]);
 
   // Enter key trigger
   useEffect(() => {
@@ -126,26 +240,6 @@ export function TopologyGeneratorDialog({
     };
   }, [open, isLoading, handleGenerate]);
 
-  const allCategories: ScenarioCategory[] = [
-    'basic', 'topology', 'datacenter', 'wireless', 'switching', 'routing', 'security'
-  ];
-
-  const filteredScenarios = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    return SCENARIOS.filter(s => {
-      if (selectedCategory !== 'all' && s.category !== selectedCategory) return false;
-      if (!q) return true;
-      return (
-        s.labelTr.toLowerCase().includes(q) ||
-        s.labelEn.toLowerCase().includes(q) ||
-        s.descTr.toLowerCase().includes(q) ||
-        s.descEn.toLowerCase().includes(q) ||
-        CATEGORY_LABELS[s.category].tr.toLowerCase().includes(q) ||
-        CATEGORY_LABELS[s.category].en.toLowerCase().includes(q)
-      );
-    });
-  }, [searchQuery, selectedCategory]);
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -153,7 +247,7 @@ export function TopologyGeneratorDialog({
           isDark
             ? 'bg-secondary-900 border-secondary-700/80 text-white'
             : 'bg-white border-secondary-200 text-secondary-900'
-        } sm:max-w-2xl w-[94vw] rounded-2xl md:rounded-3xl shadow-2xl h-[85vh] max-h-[85vh] !flex !flex-col p-3 sm:p-5 !overflow-hidden !gap-0`}
+        } sm:max-w-3xl w-[95vw] rounded-2xl md:rounded-3xl shadow-2xl h-[88vh] max-h-[88vh] !flex !flex-col p-3 sm:p-5 !overflow-hidden !gap-0`}
         onEscapeKeyDown={isLoading ? undefined : () => handleClose()}
         onPointerDownOutside={isLoading ? undefined : () => handleClose()}
       >
@@ -166,26 +260,71 @@ export function TopologyGeneratorDialog({
               </div>
               <span className="truncate">{isTr ? 'Otomatik Topoloji Üretici' : 'Automatic Topology Generator'}</span>
             </DialogTitle>
-            <span className="text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 shrink-0">
-              {SCENARIOS.length} {isTr ? 'Mimari' : 'Architectures'}
-            </span>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                {activeTab === 'architectures' ? `${SCENARIOS.length} ${isTr ? 'Mimari' : 'Architectures'}` : `${testScenarios.length} ${isTr ? 'Test Topolojisi' : 'Test Topologies'}`}
+              </span>
+            </div>
           </div>
           <DialogDescription className={`text-[11px] sm:text-xs leading-tight ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
             {isTr
-              ? 'Standart topolojiler, veri merkezleri ve güvenlik senaryolarını tek tıkla otomatik oluşturun.'
-              : 'Instantly generate standard topologies, data centers and security architectures with one click.'}
+              ? 'Standart ağ mimarilerini veya src/tests içerisindeki hazır doğrulama topolojilerini tek tıkla üretin.'
+              : 'Instantly generate standard network architectures or verified test topologies from src/tests with one click.'}
           </DialogDescription>
         </DialogHeader>
 
+        {/* Top Tab Switcher */}
+        <div className="shrink-0 pt-2 pb-1.5">
+          <div className={`grid grid-cols-2 p-1 rounded-xl border ${isDark ? 'bg-secondary-950/70 border-secondary-800' : 'bg-secondary-100 border-secondary-200'}`}>
+            <button
+              onClick={() => setActiveTab('architectures')}
+              className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                activeTab === 'architectures'
+                  ? 'bg-purple-600 text-white shadow-md shadow-purple-900/30'
+                  : isDark
+                    ? 'text-secondary-400 hover:text-secondary-200 hover:bg-secondary-800/60'
+                    : 'text-secondary-600 hover:text-secondary-900 hover:bg-white/60'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>{isTr ? 'Standart Mimariler' : 'Standard Architectures'}</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/20 ml-0.5">
+                {SCENARIOS.length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('testLabs')}
+              className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                activeTab === 'testLabs'
+                  ? 'bg-purple-600 text-white shadow-md shadow-purple-900/30'
+                  : isDark
+                    ? 'text-secondary-400 hover:text-secondary-200 hover:bg-secondary-800/60'
+                    : 'text-secondary-600 hover:text-secondary-900 hover:bg-white/60'
+              }`}
+            >
+              <FlaskConical className="w-3.5 h-3.5" />
+              <span>{isTr ? 'Test Topolojileri (src/tests)' : 'Test Topologies (src/tests)'}</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/20 ml-0.5">
+                {testScenarios.length}
+              </span>
+            </button>
+          </div>
+        </div>
+
         {/* Filter bar: Search + Category Pills */}
-        <div className="shrink-0 space-y-1.5 py-1.5">
+        <div className="shrink-0 space-y-1.5 py-1">
           {/* Search bar */}
           <div className="relative">
             <Search className={`absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${isDark ? 'text-secondary-500' : 'text-secondary-400'}`} />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={isTr ? 'Örnek veya mimari ara (Spine-Leaf, OSPF, BGP)...' : 'Search scenario (Spine-Leaf, OSPF, BGP)...'}
+              placeholder={
+                activeTab === 'architectures'
+                  ? (isTr ? 'Mimari ara (Spine-Leaf, OSPF, BGP, SOHO, DMZ)...' : 'Search scenario (Spine-Leaf, OSPF, BGP)...')
+                  : (isTr ? 'Test dosyası veya senaryo ara (stp.test.ts, vxlanEvpn, OSPF, HSRP)...' : 'Search test file or scenario (stp.test.ts, vxlanEvpn, OSPF)...')
+              }
               className={`pl-8 pr-7 h-8 text-[11px] sm:text-xs rounded-lg ${
                 isDark
                   ? 'bg-secondary-800/80 border-secondary-700 text-white placeholder:text-secondary-500 focus-visible:ring-purple-500/40'
@@ -204,113 +343,216 @@ export function TopologyGeneratorDialog({
 
           {/* Category Pills */}
           <div className="flex items-center gap-1 overflow-x-auto pb-1 text-[11px] no-scrollbar">
-            <button
-              onClick={() => setSelectedCategory('all')}
-              className={`px-2 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap transition-all ${
-                selectedCategory === 'all'
-                  ? 'bg-purple-600 text-white shadow-sm'
-                  : isDark
-                    ? 'bg-secondary-800 text-secondary-400 hover:text-secondary-200 hover:bg-secondary-700/60'
-                    : 'bg-secondary-100 text-secondary-600 hover:text-secondary-900 hover:bg-secondary-200'
-              }`}
-            >
-              {isTr ? 'Tümü' : 'All'} ({SCENARIOS.length})
-            </button>
-            {allCategories.map(cat => {
-              const count = SCENARIOS.filter(s => s.category === cat).length;
-              const isSelected = selectedCategory === cat;
-              return (
+            {activeTab === 'architectures' ? (
+              <>
                 <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
+                  onClick={() => setSelectedCategory('all')}
                   className={`px-2 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap transition-all ${
-                    isSelected
+                    selectedCategory === 'all'
                       ? 'bg-purple-600 text-white shadow-sm'
                       : isDark
                         ? 'bg-secondary-800 text-secondary-400 hover:text-secondary-200 hover:bg-secondary-700/60'
                         : 'bg-secondary-100 text-secondary-600 hover:text-secondary-900 hover:bg-secondary-200'
                   }`}
                 >
-                  {isTr ? CATEGORY_LABELS[cat].tr : CATEGORY_LABELS[cat].en} ({count})
+                  {isTr ? 'Tümü' : 'All'} ({SCENARIOS.length})
                 </button>
-              );
-            })}
+                {allCategories.map(cat => {
+                  const count = SCENARIOS.filter(s => s.category === cat).length;
+                  const isSelected = selectedCategory === cat;
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-2 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap transition-all ${
+                        isSelected
+                          ? 'bg-purple-600 text-white shadow-sm'
+                          : isDark
+                            ? 'bg-secondary-800 text-secondary-400 hover:text-secondary-200 hover:bg-secondary-700/60'
+                            : 'bg-secondary-100 text-secondary-600 hover:text-secondary-900 hover:bg-secondary-200'
+                      }`}
+                    >
+                      {isTr ? CATEGORY_LABELS[cat].tr : CATEGORY_LABELS[cat].en} ({count})
+                    </button>
+                  );
+                })}
+              </>
+            ) : (
+              (Object.keys(testCategoryLabels) as TestCategoryFilter[]).map(cat => {
+                const count = cat === 'all' ? testScenarios.length : testScenarios.filter(p => p.category === cat).length;
+                const isSelected = selectedTestCategory === cat;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedTestCategory(cat)}
+                    className={`px-2 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap transition-all ${
+                      isSelected
+                        ? 'bg-purple-600 text-white shadow-sm'
+                        : isDark
+                          ? 'bg-secondary-800 text-secondary-400 hover:text-secondary-200 hover:bg-secondary-700/60'
+                          : 'bg-secondary-100 text-secondary-600 hover:text-secondary-900 hover:bg-secondary-200'
+                    }`}
+                  >
+                    {isTr ? testCategoryLabels[cat].tr : testCategoryLabels[cat].en} ({count})
+                  </button>
+                );
+              })
+            )}
           </div>
         </div>
 
-        {/* Scenarios Grid / List - Flex child that takes remaining vertical space */}
+        {/* Content List Area */}
         <div className="flex-1 overflow-y-auto min-h-0 py-1 space-y-2 custom-scrollbar">
-          {filteredScenarios.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full min-w-0">
-              {filteredScenarios.map(s => {
-                const Icon = s.icon;
-                const isSelected = scenario === s.id;
-                const badge = isTr ? s.badgeTr : s.badgeEn;
-                return (
-                  <button
-                    key={s.id}
-                    onClick={() => setScenario(s.id)}
-                    className={`flex flex-col justify-between p-2 sm:p-2.5 rounded-xl text-left transition-all duration-150 border relative group w-full min-w-0 box-border ${
-                      isSelected
-                        ? isDark
-                          ? 'border-purple-500 bg-purple-500/15 ring-1 ring-purple-500/50 shadow-md shadow-purple-950/20'
-                          : 'border-purple-500 bg-purple-50/90 ring-1 ring-purple-400/50 shadow-sm'
-                        : isDark
-                          ? 'border-secondary-800 hover:border-secondary-700 bg-secondary-800/40 hover:bg-secondary-800/80'
-                          : 'border-secondary-200/90 hover:border-secondary-300 bg-secondary-50/60 hover:bg-secondary-100/80'
-                    }`}
-                  >
-                    <div className="flex items-start gap-2 w-full min-w-0">
-                      <div className={`p-1.5 rounded-lg shrink-0 transition-colors ${
+          {activeTab === 'architectures' ? (
+            filteredScenarios.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full min-w-0">
+                {filteredScenarios.map(s => {
+                  const Icon = s.icon;
+                  const isSelected = scenario === s.id;
+                  const badge = isTr ? s.badgeTr : s.badgeEn;
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={() => setScenario(s.id)}
+                      className={`flex flex-col justify-between p-2.5 rounded-xl text-left transition-all duration-150 border relative group w-full min-w-0 box-border ${
                         isSelected
-                          ? 'bg-purple-500 text-white'
+                          ? isDark
+                            ? 'border-purple-500 bg-purple-500/15 ring-1 ring-purple-500/50 shadow-md shadow-purple-950/20'
+                            : 'border-purple-500 bg-purple-50/90 ring-1 ring-purple-400/50 shadow-sm'
                           : isDark
-                            ? 'bg-secondary-700/70 text-secondary-300 group-hover:text-purple-400'
-                            : 'bg-secondary-200/80 text-secondary-700 group-hover:text-purple-600'
-                      }`}>
-                        <Icon className="w-3.5 h-3.5" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1 justify-between min-w-0">
-                          <div className={`text-xs font-bold truncate min-w-0 flex-1 ${
-                            isSelected
-                              ? isDark ? 'text-purple-200' : 'text-purple-900'
-                              : isDark ? 'text-white' : 'text-secondary-900'
-                          }`}>
-                            {isTr ? s.labelTr : s.labelEn}
-                          </div>
-                          {badge && (
-                            <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-medium shrink-0 ml-1 ${
+                            ? 'border-secondary-800 hover:border-secondary-700 bg-secondary-800/40 hover:bg-secondary-800/80'
+                            : 'border-secondary-200/90 hover:border-secondary-300 bg-secondary-50/60 hover:bg-secondary-100/80'
+                      }`}
+                    >
+                      <div className="flex items-start gap-2.5 w-full min-w-0">
+                        <div className={`p-2 rounded-lg shrink-0 transition-colors ${
+                          isSelected
+                            ? 'bg-purple-500 text-white'
+                            : isDark
+                              ? 'bg-secondary-700/70 text-secondary-300 group-hover:text-purple-400'
+                              : 'bg-secondary-200/80 text-secondary-700 group-hover:text-purple-600'
+                        }`}>
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1 justify-between min-w-0">
+                            <div className={`text-xs font-bold truncate min-w-0 flex-1 ${
                               isSelected
-                                ? 'bg-purple-500/30 text-purple-300 border border-purple-400/30'
-                                : isDark
-                                  ? 'bg-secondary-700 text-secondary-400'
-                                  : 'bg-secondary-200 text-secondary-600'
+                                ? isDark ? 'text-purple-200' : 'text-purple-900'
+                                : isDark ? 'text-white' : 'text-secondary-900'
                             }`}>
-                              {badge}
-                            </span>
+                              {isTr ? s.labelTr : s.labelEn}
+                            </div>
+                            {badge && (
+                              <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-medium shrink-0 ml-1 ${
+                                isSelected
+                                  ? 'bg-purple-500/30 text-purple-300 border border-purple-400/30'
+                                  : isDark
+                                    ? 'bg-secondary-700 text-secondary-400'
+                                    : 'bg-secondary-200 text-secondary-600'
+                              }`}>
+                                {badge}
+                              </span>
+                            )}
+                          </div>
+                          <p className={`text-[10px] leading-tight mt-0.5 line-clamp-2 ${
+                            isDark ? 'text-secondary-400' : 'text-secondary-600'
+                          }`}>
+                            {isTr ? s.descTr : s.descEn}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className={`text-center py-8 text-xs flex flex-col items-center justify-center gap-1.5 ${isDark ? 'text-secondary-500' : 'text-secondary-400'}`}>
+                <Info className="w-5 h-5 opacity-60" />
+                <span>{isTr ? 'Aradığınız kriterlere uygun mimari bulunamadı.' : 'No scenarios match your search.'}</span>
+              </div>
+            )
+          ) : (
+            filteredTestScenarios.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full min-w-0">
+                {filteredTestScenarios.map(p => {
+                  const isSelected = selectedTestId === p.id;
+                  const title = isTr ? p.titleTr : p.titleEn;
+                  const desc = isTr ? p.descTr : p.descEn;
+                  const fileName = p.testFile.split('/').pop() || p.testFile;
+                  
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => setSelectedTestId(p.id)}
+                      className={`flex flex-col justify-between p-2.5 rounded-xl text-left transition-all duration-150 border relative group w-full min-w-0 box-border ${
+                        isSelected
+                          ? isDark
+                            ? 'border-purple-500 bg-purple-500/15 ring-1 ring-purple-500/50 shadow-md shadow-purple-950/20'
+                            : 'border-purple-500 bg-purple-50/90 ring-1 ring-purple-400/50 shadow-sm'
+                          : isDark
+                            ? 'border-secondary-800 hover:border-secondary-700 bg-secondary-800/40 hover:bg-secondary-800/80'
+                            : 'border-secondary-200/90 hover:border-secondary-300 bg-secondary-50/60 hover:bg-secondary-100/80'
+                      }`}
+                    >
+                      <div className="flex items-start gap-2.5 w-full min-w-0">
+                        <div className={`p-2 rounded-lg shrink-0 transition-colors ${
+                          isSelected
+                            ? 'bg-purple-500 text-white'
+                            : 'bg-indigo-500/20 text-indigo-400'
+                        }`}>
+                          <FlaskConical className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1 justify-between min-w-0">
+                            <div className={`text-xs font-bold truncate min-w-0 flex-1 ${
+                              isSelected
+                                ? isDark ? 'text-purple-200' : 'text-purple-900'
+                                : isDark ? 'text-white' : 'text-secondary-900'
+                            }`}>
+                              {title}
+                            </div>
+                            <div className="flex items-center gap-1 shrink-0">
+                              <span className="text-[8px] px-1.5 py-0.2 rounded-full font-mono bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                                {fileName}
+                              </span>
+                            </div>
+                          </div>
+                          <p className={`text-[10px] leading-tight mt-1 line-clamp-2 ${
+                            isDark ? 'text-secondary-400' : 'text-secondary-600'
+                          }`}>
+                            {desc}
+                          </p>
+                          {p.tags && p.tags.length > 0 && (
+                            <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+                              {p.tags.slice(0, 3).map(tag => (
+                                <span
+                                  key={tag}
+                                  className={`text-[8px] px-1 py-0.2 rounded font-mono ${
+                                    isDark ? 'bg-secondary-800 text-secondary-400' : 'bg-secondary-200 text-secondary-600'
+                                  }`}
+                                >
+                                  #{tag}
+                                </span>
+                              ))}
+                            </div>
                           )}
                         </div>
-                        <p className={`text-[10px] leading-tight mt-0.5 line-clamp-2 ${
-                          isDark ? 'text-secondary-400' : 'text-secondary-600'
-                        }`}>
-                          {isTr ? s.descTr : s.descEn}
-                        </p>
                       </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            <div className={`text-center py-8 text-xs flex flex-col items-center justify-center gap-1.5 ${isDark ? 'text-secondary-500' : 'text-secondary-400'}`}>
-              <Info className="w-5 h-5 opacity-60" />
-              <span>{isTr ? 'Aradığınız kriterlere uygun senaryo bulunamadı.' : 'No scenarios match your search.'}</span>
-            </div>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className={`text-center py-8 text-xs flex flex-col items-center justify-center gap-1.5 ${isDark ? 'text-secondary-500' : 'text-secondary-400'}`}>
+                <Info className="w-5 h-5 opacity-60" />
+                <span>{isTr ? 'Aradığınız kriterlere uygun test senaryosu bulunamadı.' : 'No test scenarios match your search.'}</span>
+              </div>
+            )
           )}
         </div>
 
-        {/* Selected Scenario Preview & Customization (PC Count) & Fixed Footer Action Buttons */}
+        {/* Selected Preview & Actions */}
         <div className={`shrink-0 pt-2.5 mt-auto border-t ${isDark ? 'border-secondary-800 bg-secondary-900' : 'border-secondary-200 bg-white'} space-y-2`}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             {/* Selected description pill */}
@@ -319,15 +561,28 @@ export function TopologyGeneratorDialog({
                 <Sparkles className="w-3 h-3" />
               </div>
               <div className="text-[10px] sm:text-[11px] leading-tight min-w-0 truncate">
-                <span className="font-semibold text-purple-400">{isTr ? selectedDef.labelTr : selectedDef.labelEn}: </span>
-                <span className={isDark ? 'text-secondary-300' : 'text-secondary-600'}>
-                  {isTr ? selectedDef.descTr : selectedDef.descEn}
-                </span>
+                {activeTab === 'architectures' ? (
+                  <>
+                    <span className="font-semibold text-purple-400">{isTr ? selectedDef.labelTr : selectedDef.labelEn}: </span>
+                    <span className={isDark ? 'text-secondary-300' : 'text-secondary-600'}>
+                      {isTr ? selectedDef.descTr : selectedDef.descEn}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-semibold text-purple-400">
+                      {isTr ? selectedTest?.titleTr : selectedTest?.titleEn} ({selectedTest?.testFile.split('/').pop()}):{' '}
+                    </span>
+                    <span className={isDark ? 'text-secondary-300' : 'text-secondary-600'}>
+                      {isTr ? selectedTest?.descTr : selectedTest?.descEn}
+                    </span>
+                  </>
+                )}
               </div>
             </div>
 
-            {/* PC Count Selector if applicable */}
-            {selectedDef.showPcCount && (
+            {/* PC Count Selector if applicable (Only in standard architectures) */}
+            {activeTab === 'architectures' && selectedDef.showPcCount && (
               <div className="flex items-center gap-1 shrink-0">
                 <Label className="text-[10px] font-bold shrink-0">{isTr ? 'Uç Cihaz:' : 'Clients:'}</Label>
                 <div className="flex gap-1">
@@ -354,7 +609,7 @@ export function TopologyGeneratorDialog({
             )}
           </div>
 
-          {/* Action buttons - Always pinned at bottom */}
+          {/* Action buttons */}
           <div className="flex items-center justify-end gap-2 pt-1">
             <Button
               variant="ghost"

@@ -187,7 +187,13 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
 
     (function() {
       const canvas = document.getElementById('render-canvas');
-      const gl = canvas.getContext('webgl', { antialias: true, preserveDrawingBuffer: true }) || canvas.getContext('experimental-webgl');
+      const gl = canvas.getContext('webgl', {
+        antialias: true,
+        powerPreference: 'high-performance',
+        preserveDrawingBuffer: true
+      }) || canvas.getContext('experimental-webgl', {
+        powerPreference: 'high-performance'
+      });
       
       let width = canvas.clientWidth;
       let height = canvas.clientHeight;
@@ -195,26 +201,35 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
       let showWireframe = false;
       let showGrid = sceneData.environment && sceneData.environment.grid ? sceneData.environment.grid.enabled !== false : true;
 
-      // Camera & Orbit State
+      // Camera & Orbit State with Smooth Inertial Damping
       let camDistance = 14;
+      let targetDistance = 14;
       let camTheta = Math.PI / 4;
+      let targetTheta = Math.PI / 4;
       let camPhi = Math.PI / 6;
+      let targetPhi = Math.PI / 6;
       let camTarget = [0, 0, 0];
+      let targetPan = [0, 0, 0];
       let isDragging = false;
       let dragButton = 0;
       let lastMouseX = 0;
       let lastMouseY = 0;
 
       function resize() {
-        width = canvas.parentElement.clientWidth;
-        height = canvas.parentElement.clientHeight;
-        canvas.width = width * (window.devicePixelRatio || 1);
-        canvas.height = height * (window.devicePixelRatio || 1);
+        if (!canvas.parentElement) return;
+        width = Math.max(1, canvas.parentElement.clientWidth);
+        height = Math.max(1, canvas.parentElement.clientHeight);
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.round(width * dpr);
+        canvas.height = Math.round(height * dpr);
         if (gl) {
           gl.viewport(0, 0, canvas.width, canvas.height);
         }
       }
       window.addEventListener('resize', resize);
+      if (typeof ResizeObserver !== 'undefined' && canvas.parentElement) {
+        new ResizeObserver(resize).observe(canvas.parentElement);
+      }
       resize();
 
       // UI Button hooks
@@ -245,82 +260,78 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
       }
       if (btnReset) {
         btnReset.addEventListener('click', () => {
-          camDistance = 14;
-          camTheta = Math.PI / 4;
-          camPhi = Math.PI / 6;
-          camTarget = [0, 0, 0];
+          targetDistance = 14;
+          targetTheta = Math.PI / 4;
+          targetPhi = Math.PI / 6;
+          targetPan = [0, 0, 0];
         });
       }
 
-      // Touch & Mouse Orbit Controls
-      canvas.addEventListener('mousedown', (e) => {
+      // Pointer Capture & Smooth Orbit/Pan Controls
+      canvas.addEventListener('pointerdown', (e) => {
+        try { canvas.setPointerCapture(e.pointerId); } catch {}
         isDragging = true;
         dragButton = e.button;
         lastMouseX = e.clientX;
         lastMouseY = e.clientY;
       });
-      window.addEventListener('mouseup', () => { isDragging = false; });
-      window.addEventListener('mousemove', (e) => {
+
+      canvas.addEventListener('pointerup', (e) => {
+        try { canvas.releasePointerCapture(e.pointerId); } catch {}
+        isDragging = false;
+      });
+
+      canvas.addEventListener('pointercancel', () => {
+        isDragging = false;
+      });
+
+      canvas.addEventListener('pointermove', (e) => {
         if (!isDragging) return;
         const dx = e.clientX - lastMouseX;
         const dy = e.clientY - lastMouseY;
         lastMouseX = e.clientX;
         lastMouseY = e.clientY;
 
-        if (dragButton === 0) { // Rotate
-          camTheta -= dx * 0.008;
-          camPhi = Math.max(-Math.PI / 2.1, Math.min(Math.PI / 2.1, camPhi + dy * 0.008));
+        if (dragButton === 0) { // Rotate Orbit
+          targetTheta -= dx * 0.006;
+          targetPhi = Math.max(-Math.PI / 2.1, Math.min(Math.PI / 2.1, targetPhi + dy * 0.006));
         } else { // Pan
-          const panSpeed = camDistance * 0.0015;
-          const forwardX = -Math.sin(camTheta);
-          const forwardZ = -Math.cos(camTheta);
-          const rightX = Math.cos(camTheta);
-          const rightZ = -Math.sin(camTheta);
-          camTarget[0] -= (rightX * dx) * panSpeed;
-          camTarget[2] -= (rightZ * dx) * panSpeed;
-          camTarget[1] += dy * panSpeed;
+          const panSpeed = targetDistance * 0.0012;
+          const rightX = Math.cos(targetTheta);
+          const rightZ = -Math.sin(targetTheta);
+          targetPan[0] -= (rightX * dx) * panSpeed;
+          targetPan[2] -= (rightZ * dx) * panSpeed;
+          targetPan[1] += dy * panSpeed;
         }
       });
+
       canvas.addEventListener('wheel', (e) => {
         e.preventDefault();
-        camDistance = Math.max(2, Math.min(100, camDistance * (1 + e.deltaY * 0.0015)));
+        targetDistance = Math.max(2, Math.min(100, targetDistance * (1 + e.deltaY * 0.0012)));
       }, { passive: false });
 
-      // Touch support
+      // Touch Pinch-to-Zoom and Dual-finger Pan
       let touchStartDist = 0;
       canvas.addEventListener('touchstart', (e) => {
-        if (e.touches.length === 1) {
-          isDragging = true;
-          dragButton = 0;
-          lastMouseX = e.touches[0].clientX;
-          lastMouseY = e.touches[0].clientY;
-        } else if (e.touches.length === 2) {
-          isDragging = false;
+        if (e.touches.length === 2) {
           const dx = e.touches[0].clientX - e.touches[1].clientX;
           const dy = e.touches[0].clientY - e.touches[1].clientY;
           touchStartDist = Math.hypot(dx, dy);
         }
       }, { passive: true });
+
       canvas.addEventListener('touchmove', (e) => {
-        if (e.touches.length === 1 && isDragging) {
-          const dx = e.touches[0].clientX - lastMouseX;
-          const dy = e.touches[0].clientY - lastMouseY;
-          lastMouseX = e.touches[0].clientX;
-          lastMouseY = e.touches[0].clientY;
-          camTheta -= dx * 0.008;
-          camPhi = Math.max(-Math.PI / 2.1, Math.min(Math.PI / 2.1, camPhi + dy * 0.008));
-        } else if (e.touches.length === 2) {
+        if (e.touches.length === 2) {
           const dx = e.touches[0].clientX - e.touches[1].clientX;
           const dy = e.touches[0].clientY - e.touches[1].clientY;
           const dist = Math.hypot(dx, dy);
           if (touchStartDist > 0) {
             const factor = touchStartDist / dist;
-            camDistance = Math.max(2, Math.min(100, camDistance * factor));
+            targetDistance = Math.max(2, Math.min(100, targetDistance * factor));
             touchStartDist = dist;
           }
         }
       }, { passive: true });
-      canvas.addEventListener('touchend', () => { isDragging = false; });
 
       // Matrix utilities
       function mat4Create() {
@@ -456,14 +467,20 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
       function createPlaneGeometry(w = 10, h = 10) {
         const hw = w / 2, hh = h / 2;
         const positions = [
-          -hw, 0, -hh,   hw, 0, -hh,   hw, 0, hh,
-          -hw, 0, -hh,   hw, 0, hh,   -hw, 0, hh
+          // Top face (CCW viewed from +Y)
+          -hw, 0, -hh,   -hw, 0, hh,    hw, 0, -hh,
+          hw, 0, -hh,    -hw, 0, hh,    hw, 0, hh,
+          // Bottom face (CCW viewed from -Y)
+          -hw, 0, -hh,   hw, 0, -hh,    -hw, 0, hh,
+          hw, 0, -hh,    hw, 0, hh,     -hw, 0, hh
         ];
         const normals = [
           0, 1, 0,  0, 1, 0,  0, 1, 0,
-          0, 1, 0,  0, 1, 0,  0, 1, 0
+          0, 1, 0,  0, 1, 0,  0, 1, 0,
+          0, -1, 0, 0, -1, 0, 0, -1, 0,
+          0, -1, 0, 0, -1, 0, 0, -1, 0
         ];
-        return { positions: new Float32Array(positions), normals: new Float32Array(normals), count: 6 };
+        return { positions: new Float32Array(positions), normals: new Float32Array(normals), count: 12 };
       }
 
       function createCubeGeometry(w = 2, h = 2, d = 2) {
@@ -524,27 +541,60 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
           const cos1 = Math.cos(phi1), sin1 = Math.sin(phi1);
           const cos2 = Math.cos(phi2), sin2 = Math.sin(phi2);
 
-          // Side quad
+          // Side quad (CCW outward winding)
           const p1 = [radius * cos1, -hh, radius * sin1];
           const p2 = [radius * cos2, -hh, radius * sin2];
           const p3 = [radius * cos2, hh, radius * sin2];
           const p4 = [radius * cos1, hh, radius * sin1];
-          pos.push(...p1, ...p2, ...p3, ...p1, ...p3, ...p4);
-          nor.push(cos1, 0, sin1,  cos2, 0, sin2,  cos2, 0, sin2,  cos1, 0, sin1,  cos2, 0, sin2,  cos1, 0, sin1);
+          pos.push(...p1, ...p4, ...p3, ...p1, ...p3, ...p2);
+          nor.push(
+            cos1, 0, sin1,  cos1, 0, sin1,  cos2, 0, sin2,
+            cos1, 0, sin1,  cos2, 0, sin2,  cos2, 0, sin2
+          );
 
-          // Top cap
-          pos.push(0, hh, 0, radius * cos1, hh, radius * sin1, radius * cos2, hh, radius * sin2);
-          nor.push(0, 1, 0, 0, 1, 0, 0, 1, 0);
+          // Top cap (CCW viewed from above +Y)
+          pos.push(0, hh, 0, radius * cos2, hh, radius * sin2, radius * cos1, hh, radius * sin1);
+          nor.push(0, 1, 0,  0, 1, 0,  0, 1, 0);
 
-          // Bottom cap
-          pos.push(0, -hh, 0, radius * cos2, -hh, radius * sin2, radius * cos1, -hh, radius * sin1);
-          nor.push(0, -1, 0, 0, -1, 0, 0, -1, 0);
+          // Bottom cap (CCW viewed from below -Y)
+          pos.push(0, -hh, 0, radius * cos1, -hh, radius * sin1, radius * cos2, -hh, radius * sin2);
+          nor.push(0, -1, 0,  0, -1, 0,  0, -1, 0);
         }
         return { positions: new Float32Array(pos), normals: new Float32Array(nor), count: pos.length / 3 };
       }
 
       function createPrismGeometry(sides = 3, radius = 1.5, height = 2) {
-        return createCylinderGeometry(radius, height, Math.max(3, Math.floor(sides)));
+        const numSides = Math.max(3, Math.floor(sides));
+        const pos = [];
+        const nor = [];
+        const hh = height / 2;
+        for (let s = 0; s < numSides; s++) {
+          const phi1 = (s / numSides) * 2 * Math.PI;
+          const phi2 = ((s + 1) / numSides) * 2 * Math.PI;
+          const midPhi = (phi1 + phi2) / 2;
+          const cos1 = Math.cos(phi1), sin1 = Math.sin(phi1);
+          const cos2 = Math.cos(phi2), sin2 = Math.sin(phi2);
+          const nCos = Math.cos(midPhi), nSin = Math.sin(midPhi);
+
+          // Side quad (CCW outward winding)
+          const p1 = [radius * cos1, -hh, radius * sin1];
+          const p2 = [radius * cos2, -hh, radius * sin2];
+          const p3 = [radius * cos2, hh, radius * sin2];
+          const p4 = [radius * cos1, hh, radius * sin1];
+          pos.push(...p1, ...p4, ...p3, ...p1, ...p3, ...p2);
+          for (let i = 0; i < 6; i++) {
+            nor.push(nCos, 0, nSin);
+          }
+
+          // Top cap (CCW viewed from above +Y)
+          pos.push(0, hh, 0, radius * cos2, hh, radius * sin2, radius * cos1, hh, radius * sin1);
+          nor.push(0, 1, 0,  0, 1, 0,  0, 1, 0);
+
+          // Bottom cap (CCW viewed from below -Y)
+          pos.push(0, -hh, 0, radius * cos1, -hh, radius * sin1, radius * cos2, -hh, radius * sin2);
+          nor.push(0, -1, 0,  0, -1, 0,  0, -1, 0);
+        }
+        return { positions: new Float32Array(pos), normals: new Float32Array(nor), count: pos.length / 3 };
       }
 
       // Grid geometry
@@ -664,6 +714,31 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
       const prog = createProgram(compileShader(gl.VERTEX_SHADER, vsSource), compileShader(gl.FRAGMENT_SHADER, fsSource));
       const lineProg = createProgram(compileShader(gl.VERTEX_SHADER, lineVsSource), compileShader(gl.FRAGMENT_SHADER, lineFsSource));
 
+      // Pre-cached Uniform and Attribute locations to eliminate 60 FPS string lookup overhead
+      const progLoc = {
+        uModel: gl.getUniformLocation(prog, 'uModel'),
+        uView: gl.getUniformLocation(prog, 'uView'),
+        uProjection: gl.getUniformLocation(prog, 'uProjection'),
+        uColor: gl.getUniformLocation(prog, 'uColor'),
+        uSunDir: gl.getUniformLocation(prog, 'uSunDir'),
+        uSunColor: gl.getUniformLocation(prog, 'uSunColor'),
+        uLampPos: gl.getUniformLocation(prog, 'uLampPos'),
+        uLampColor: gl.getUniformLocation(prog, 'uLampColor'),
+        uAmbientColor: gl.getUniformLocation(prog, 'uAmbientColor'),
+        uRoughness: gl.getUniformLocation(prog, 'uRoughness'),
+        uMetalness: gl.getUniformLocation(prog, 'uMetalness'),
+        uIsWireframe: gl.getUniformLocation(prog, 'uIsWireframe'),
+        aPosition: gl.getAttribLocation(prog, 'aPosition'),
+        aNormal: gl.getAttribLocation(prog, 'aNormal'),
+      };
+
+      const lineLoc = {
+        uView: gl.getUniformLocation(lineProg, 'uView'),
+        uProjection: gl.getUniformLocation(lineProg, 'uProjection'),
+        uLineColor: gl.getUniformLocation(lineProg, 'uLineColor'),
+        aPosition: gl.getAttribLocation(lineProg, 'aPosition'),
+      };
+
       // Buffer cache
       function makeMeshBuffers(geom) {
         const pb = gl.createBuffer();
@@ -734,20 +809,35 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
         }
       }
 
-      // Render Loop
+      // Render Loop with Delta-time & Smooth Interpolation
       const projMat = mat4Create();
       const viewMat = mat4Create();
       const modelMat = mat4Create();
+      let lastTime = performance.now();
 
       function render() {
-        if (autoRotate) {
-          camTheta += 0.005;
+        const now = performance.now();
+        const dt = Math.min((now - lastTime) / 1000, 0.1);
+        lastTime = now;
+
+        if (autoRotate && !isDragging) {
+          targetTheta += 0.5 * dt; // 0.5 rad/s smooth constant rotation
         }
+
+        // Smooth Exponential Damping (Lerp) for Camera Orbit, Distance & Pan
+        const lerpFactor = 1.0 - Math.exp(-22 * dt);
+        camTheta += (targetTheta - camTheta) * lerpFactor;
+        camPhi += (targetPhi - camPhi) * lerpFactor;
+        camDistance += (targetDistance - camDistance) * lerpFactor;
+        camTarget[0] += (targetPan[0] - camTarget[0]) * lerpFactor;
+        camTarget[1] += (targetPan[1] - camTarget[1]) * lerpFactor;
+        camTarget[2] += (targetPan[2] - camTarget[2]) * lerpFactor;
 
         gl.viewport(0, 0, canvas.width, canvas.height);
         gl.clearColor(skyTop[0], skyTop[1], skyTop[2], 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST);
+        gl.depthFunc(gl.LEQUAL);
 
         // Compute camera matrices
         const eyeX = camTarget[0] + camDistance * Math.cos(camPhi) * Math.sin(camTheta);
@@ -758,32 +848,32 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
 
         // 1. Draw Grid
         if (showGrid) {
+          gl.disable(gl.CULL_FACE);
           gl.useProgram(lineProg);
-          gl.uniformMatrix4fv(gl.getUniformLocation(lineProg, 'uView'), false, viewMat);
-          gl.uniformMatrix4fv(gl.getUniformLocation(lineProg, 'uProjection'), false, projMat);
-          gl.uniform4f(gl.getUniformLocation(lineProg, 'uLineColor'), 0.3, 0.4, 0.5, 0.4);
+          gl.uniformMatrix4fv(lineLoc.uView, false, viewMat);
+          gl.uniformMatrix4fv(lineLoc.uProjection, false, projMat);
+          gl.uniform4f(lineLoc.uLineColor, 0.3, 0.4, 0.5, 0.4);
 
           gl.bindBuffer(gl.ARRAY_BUFFER, gridBuffers.pb);
-          const aPosLine = gl.getAttribLocation(lineProg, 'aPosition');
-          gl.enableVertexAttribArray(aPosLine);
-          gl.vertexAttribPointer(aPosLine, 3, gl.FLOAT, false, 0, 0);
+          gl.enableVertexAttribArray(lineLoc.aPosition);
+          gl.vertexAttribPointer(lineLoc.aPosition, 3, gl.FLOAT, false, 0, 0);
           gl.drawArrays(gl.LINES, 0, gridBuffers.count);
         }
 
         // 2. Draw 3D Objects
         gl.useProgram(prog);
-        gl.uniformMatrix4fv(gl.getUniformLocation(prog, 'uView'), false, viewMat);
-        gl.uniformMatrix4fv(gl.getUniformLocation(prog, 'uProjection'), false, projMat);
+        gl.uniformMatrix4fv(progLoc.uView, false, viewMat);
+        gl.uniformMatrix4fv(progLoc.uProjection, false, projMat);
 
-        // Lights
-        gl.uniform3f(gl.getUniformLocation(prog, 'uSunDir'), 5.0, 10.0, 5.0);
-        gl.uniform3f(gl.getUniformLocation(prog, 'uSunColor'), 0.9, 0.9, 0.95);
-        gl.uniform3f(gl.getUniformLocation(prog, 'uLampPos'), 0.0, 5.0, 0.0);
-        gl.uniform3f(gl.getUniformLocation(prog, 'uLampColor'), 1.0, 0.85, 0.6);
-        gl.uniform3f(gl.getUniformLocation(prog, 'uAmbientColor'), 0.25, 0.28, 0.35);
+        // Lights (Set once per frame)
+        gl.uniform3f(progLoc.uSunDir, 5.0, 10.0, 5.0);
+        gl.uniform3f(progLoc.uSunColor, 0.9, 0.9, 0.95);
+        gl.uniform3f(progLoc.uLampPos, 0.0, 5.0, 0.0);
+        gl.uniform3f(progLoc.uLampColor, 1.0, 0.85, 0.6);
+        gl.uniform3f(progLoc.uAmbientColor, 0.25, 0.28, 0.35);
 
-        const aPos = gl.getAttribLocation(prog, 'aPosition');
-        const aNor = gl.getAttribLocation(prog, 'aNormal');
+        gl.enableVertexAttribArray(progLoc.aPosition);
+        gl.enableVertexAttribArray(progLoc.aNormal);
 
         renderables.forEach(item => {
           mat4FromTranslationRotationScale(
@@ -792,27 +882,33 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
             item.data.rotation || [0, 0, 0],
             item.data.scale || [1, 1, 1]
           );
-          gl.uniformMatrix4fv(gl.getUniformLocation(prog, 'uModel'), false, modelMat);
+          gl.uniformMatrix4fv(progLoc.uModel, false, modelMat);
 
           const isSub = item.operation === 'subtract';
           const col = isSub ? [0.95, 0.2, 0.2, 0.7] : item.color;
+          const isWire = showWireframe || item.data.material?.wireframe;
 
-          gl.uniform4fv(gl.getUniformLocation(prog, 'uColor'), col);
-          gl.uniform1f(gl.getUniformLocation(prog, 'uRoughness'), item.roughness);
-          gl.uniform1f(gl.getUniformLocation(prog, 'uMetalness'), item.metalness);
-          gl.uniform1i(gl.getUniformLocation(prog, 'uIsWireframe'), showWireframe || item.data.material?.wireframe ? 1 : 0);
+          if (isWire) {
+            gl.disable(gl.CULL_FACE);
+          } else {
+            gl.enable(gl.CULL_FACE);
+            gl.cullFace(gl.BACK);
+          }
+
+          gl.uniform4fv(progLoc.uColor, col);
+          gl.uniform1f(progLoc.uRoughness, item.roughness);
+          gl.uniform1f(progLoc.uMetalness, item.metalness);
+          gl.uniform1i(progLoc.uIsWireframe, isWire ? 1 : 0);
 
           gl.bindBuffer(gl.ARRAY_BUFFER, item.buffers.pb);
-          gl.enableVertexAttribArray(aPos);
-          gl.vertexAttribPointer(aPos, 3, gl.FLOAT, false, 0, 0);
+          gl.vertexAttribPointer(progLoc.aPosition, 3, gl.FLOAT, false, 0, 0);
 
           if (item.buffers.nb) {
             gl.bindBuffer(gl.ARRAY_BUFFER, item.buffers.nb);
-            gl.enableVertexAttribArray(aNor);
-            gl.vertexAttribPointer(aNor, 3, gl.FLOAT, false, 0, 0);
+            gl.vertexAttribPointer(progLoc.aNormal, 3, gl.FLOAT, false, 0, 0);
           }
 
-          const mode = showWireframe || item.data.material?.wireframe ? gl.LINES : gl.TRIANGLES;
+          const mode = isWire ? gl.LINES : gl.TRIANGLES;
           gl.drawArrays(mode, 0, item.buffers.count);
         });
 

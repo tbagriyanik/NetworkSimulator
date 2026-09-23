@@ -47,16 +47,11 @@ export function usePageInitialLoad({
     }
   }, [isAppLoading]);
 
-  // Initial loading sequence: brief splash (respects reduced motion), then content.
-  // The skeleton phase was removed: the extra overlay delayed LCP by ~1.1s
-  // (artificial setTimeout delays) without covering any real work.
+  // Initial loading: finishes immediately on mount so the app opens instantly.
   useEffect(() => {
-    const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-    const splashMs = prefersReducedMotion ? 0 : 350;
-
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, splashMs);
+    }, 0);
 
     return () => {
       clearTimeout(timer);
