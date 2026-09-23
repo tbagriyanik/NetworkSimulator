@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">"network-simulator"</string>
+    <string name="main_activity_title">"network-simulator"</string>
+</resources>
