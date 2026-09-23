@@ -1,6 +1,6 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "network-simulator",
+  "productName": "Network Simulator",
   "version": "6.5.0",
   "identifier": "com.networksimulator.desktop",
   "build": {
@@ -36,9 +36,6 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ],
-    "android": {
-      "debugApplicationIdSuffix": ".debug"
-    }
+    ]
   }
 }
