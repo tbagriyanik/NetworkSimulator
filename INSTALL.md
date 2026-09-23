@@ -23,17 +23,18 @@ Tarayıcıda açın: [http://localhost:3000](http://localhost:3000)
 - **npm**: 10 veya üzeri (veya pnpm)
 - **Tarayıcı**: Modern Chromium, Firefox veya Safari
 
-### Masaüstü Sürümü (Desktop / Windows .exe)
+### Masaüstü Sürümleri (Desktop: Windows, macOS, Linux)
 
-#### 1. Son Kullanıcı Bilgisayarı (Setup / Exe'nin Çalışacağı PC)
-- **İşletim Sistemi:** Windows 10 (güncel) veya Windows 11 (64-bit).
-- **Microsoft Edge WebView2 Runtime:** Windows 10 ve Windows 11 üzerinde zaten yerleşik olarak yüklü gelir. Kullanıcının bilgisayarında **Node.js, Rust, Git veya başka bir bağımlılık bulunmasına gerek yoktur**.
-- Setup (.msi / .exe) dosyasına çift tıklanarak doğrudan kurulur ve çalışır.
+#### 1. Son Kullanıcı Bilgisayarı
+- **Windows:** Windows 10 (güncel) veya Windows 11 (64-bit). Microsoft Edge WebView2 yerleşiktir. Setup (.exe / .msi) ile doğrudan kurulur.
+- **macOS:** macOS 10.15+ (Intel & Apple Silicon). `.dmg` dosyası açılarak Applications klasörüne sürüklenir.
+- **Linux:** Ubuntu, Debian, Fedora, Arch vb. `.deb` paketi kurulabilir veya `.AppImage` doğrudan çift tıklanarak çalıştırılır.
+- *Son kullanıcının bilgisayarında Node.js, Rust veya Git bulunmasına gerek yoktur.*
 
-#### 2. Geliştirici Bilgisayarı (`npm run build:exe` ile EXE Derlemek İçin)
-- **Rust & Cargo:** [https://rustup.rs/](https://rustup.rs/) (Terminalde `cargo --version` çalışmalıdır).
-- **Microsoft C++ Build Tools:** Visual Studio Installer üzerinden *"Desktop development with C++"* paketi kurulu olmalıdır.
-- **Node.js & npm:** Proje bağımlılıkları için.
+#### 2. Geliştirici Bilgisayarı (Yerel Derleme İçin)
+- **Rust & Cargo:** [https://rustup.rs/](https://rustup.rs/)
+- **C++ Derleme Araçları:** Windows için Visual Studio C++ Build Tools, Mac için Xcode CLI, Linux için `build-essential` & `libwebkit2gtk-4.1-dev`.
+- **Node.js & npm / pnpm:** Proje bağımlılıkları için.
 
 
 ## 📦 Yüklü Paketler

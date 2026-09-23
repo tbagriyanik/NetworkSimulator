@@ -37,12 +37,14 @@ npm run build:exe
 
 ### 🖥️ Masaüstü / Desktop Gereksinimleri
 - **Kullanıcı Bilgisayarı (Son Kullanıcı):**
-  - **İşletim Sistemi:** Windows 10 (güncel) veya Windows 11.
-  - **Runtime:** Microsoft Edge WebView2 (Windows 10/11'de varsayılan yüklüdür). Node.js, Rust veya harici bağımlılık gerekmez.
-- **Geliştirici Bilgisayarı (`npm run build:exe` derlemesi için):**
+  - **Windows:** Windows 10 (güncel) veya Windows 11 (Microsoft Edge WebView2 varsayılan yüklüdür).
+  - **macOS:** macOS Catalina (10.15) veya üzeri (WebKit yerleşik gelir, ek kurulum gerekmez).
+  - **Linux:** Ubuntu, Debian, Fedora, Arch vb. (`webkit2gtk` paketine ihtiyaç duyar).
+  - *Son kullanıcının bilgisayarında Node.js, Rust veya Git kurulumu gerekmez.*
+- **Geliştirici Bilgisayarı (`npm run build:exe` yerel derlemesi için):**
   - Node.js (>= 20.9)
   - Rust & Cargo ([rustup.rs](https://rustup.rs/))
-  - C++ Build Tools (Visual Studio Build Tools - Desktop development with C++)
+  - C++ Build Tools (Windows için Visual Studio C++ / Mac için Xcode CLI / Linux için build-essential)
 
 
 ## 🚀 Key Features / Öne Çıkan Özellikler
