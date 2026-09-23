@@ -5,7 +5,7 @@ KURULUM, TANITIM VE KULLANIM REHBERİ / USER & SETUP GUIDE
 
 1. UYGULAMA TANITIMI (HAKKINDA)
 --------------------------------------------------------------------------------
-Network Simulator; Cisco tarzı IOS CLI komutları, L2/L3 anahtarlama, yönlendirme 
+Network Simulator; endüstri standardı CLI komutları, L2/L3 anahtarlama, yönlendirme 
 protokolleri, kablosuz ağlar (WLC & AP), ağ güvenliği, durum denetimli güvenlik 
 duvarı (Stateful Firewall), IoT cihazları, Python otomasyon betikleri ve Linux 
 terminali dahil olmak üzere zengin bir ağ laboratuvarı ortamı sunar.
