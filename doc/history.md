@@ -1,5 +1,12 @@
 # 📅 Network Simulator — Proje Geçmişi
 
+## v6.5.1 — 2026-09-23
+
+- **🧪 Otomatik Topoloji Üretici Test Topolojileri Sekmesi (`TopologyGeneratorDialog.tsx`, `testTopologyScenarios.ts`)**: `src/tests` klasöründeki test senaryoları (STP, MSTP, LACP EtherChannel, OSPF Multi-Area, BGP Advanced, VXLAN EVPN, VRF-Lite, FHRP/HSRP, NAT/PAT, 802.1X RADIUS, Stateful Firewall, IPsec VPN, QoS, IPv6 SLAAC/NDP, WLC CAPWAP, Packet Trace) bağımsız bir sekme olarak otomatik üreticiye eklendi.
+- **🎨 3D Görünüm & WebGL Optimizasyonu (`pcPython3DRenderer.ts`)**: Pürüzsüz delta-time rotasyon, DPR sınırlandırma, donanım ivmeli yüksek performans render modu ve düzeltilmiş geometrik yüzey normalleri (Plane, Silindir, Prizma) uygulandı.
+- **🖼️ Masaüstü Varlık & Logo Entegrasyonu**: Yükleme ekranı sabit logoya geçirildi, `public/app.png` uygulama simgesi senkronize edildi ve Next.js unoptimized görsel ihracı sağlandı.
+- **🔖 Sürüm Güncellemesi**: Tüm proje paketi, bileşenler ve masaüstü derleme konfigürasyonu v6.5.1 sürümüne yükseltildi.
+
 ## v6.5.0 — 2026-09-23
 
 - **🖥️ Masaüstü (.exe / Tauri v2) Desteği**: Network Simulator için tam yerel Windows masaüstü uygulama mimarisi (`src-tauri`) kuruldu; statik export pipeline'ı (`scripts/build-desktop.cjs`) ve `npm run build:exe` derleme altyapısı hazırlandı.
