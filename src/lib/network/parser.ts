@@ -75,9 +75,20 @@ export function resolveAliases(input: string, state?: Partial<SwitchState>, curr
   if (modeKey === 'exec') {
     const builtInExecAliases: Record<string, string> = {
       h: 'show history',
-      lo: 'exit'
+      lo: 'exit',
+      sh: 'show',
+      en: 'enable'
     };
     Object.assign(modeCustomAliases, builtInExecAliases, state?.execAliases || {});
+  }
+
+  if (modeKey === 'configure') {
+    const builtInConfigAliases: Record<string, string> = {
+      conf: 'configure terminal',
+      cfg: 'configure terminal',
+      int: 'interface'
+    };
+    Object.assign(modeCustomAliases, builtInConfigAliases, state?.aliases?.configure || {});
   }
 
   // 1. Tam eşleşme (kullanıcı + built-in alias)

@@ -64,6 +64,25 @@ describe('CLI aliases, abbreviations and tab-completion', () => {
     expect(res.output!.length).toBeGreaterThan(0);
   });
 
+  it('common vendor aliases resolve to equivalent style commands', () => {
+    let s = toPrivileged(createInitialState());
+    const systemView = run(s, 'system-view');
+    expect(systemView.success).toBe(true);
+    expect(systemView.newState?.currentMode).toBe('config');
+
+    const cfg = run(toPrivileged(createInitialState()), 'display current-configuration');
+    expect(cfg.success).toBe(true);
+    expect(cfg.output!.length).toBeGreaterThan(0);
+
+    const terse = run(toPrivileged(createInitialState()), 'show interfaces terse');
+    expect(terse.success).toBe(true);
+    expect(terse.output!.length).toBeGreaterThan(0);
+
+    const route = run(toPrivileged(createInitialState('00:11:22:33:44:99', 'NS-L3-24PS')), 'show route');
+    expect(route.success).toBe(true);
+    expect(route.output!.length).toBeGreaterThan(0);
+  });
+
   it('"int gi0/0" expands to "interface gi0/0"', () => {
     let s = toPrivileged(createInitialState('00:11:22:33:44:01', 'NS-L3-24PS'));
     s = apply(s, run(s, 'configure terminal'));

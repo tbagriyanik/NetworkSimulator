@@ -34,6 +34,12 @@ npm run check
 
 ---
 
+### 🧩 CLI Varyasyon Desteği / CLI Alias Compatibility
+
+Simülatör, standart komut formatının yanı sıra yaygın olarak kullanılan alternatif CLI biçimlerini de tanır. `configure terminal` gibi ana komutlar yanında; `system-view`, `show config` ve `display interface brief` gibi kısa veya farklı yazım biçimleri de aynı akışta çalışır. Bu sayede öğrenciler daha tanıdık komut kalıplarıyla pratik yapabilir, ancak sistem yine tek bir standart komut modeline dayanır.
+
+---
+
 ## 📦 Derleme & Dağıtım / Build & Releases
 
 ### 🌐 1. Web Sürümü (Web Production)

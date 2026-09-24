@@ -49,6 +49,12 @@ describe('Command Parser Functions', () => {
       expect(resolveAliases('EN', {})).toBe('enable');
       expect(resolveAliases('En', {})).toBe('enable');
     });
+
+    it('should resolve the built-in shortcut aliases used in show alias output', () => {
+      expect(resolveAliases('sh', {})).toBe('show');
+      expect(resolveAliases('conf', {}, 'config')).toBe('configure terminal');
+      expect(resolveAliases('int', {}, 'config')).toBe('interface');
+    });
   });
 
   describe('expandKeywordPrefixes', () => {

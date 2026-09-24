@@ -66,6 +66,8 @@ describe('Interactive and Diagnostic CLI Commands Implementation', () => {
       expect(showAll.output).toContain('Interface aliases:');
       expect(showAll.output).toContain('Line aliases:');
       expect(showAll.output).toContain('Exec aliases:');
+      expect(showAll.output).toContain('sh');
+      expect(showAll.output).toContain('conf');
 
       // 3. show alias configure
       const showConfig = executeCommand(state, 'show alias configure');

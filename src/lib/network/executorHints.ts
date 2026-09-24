@@ -2,11 +2,14 @@ import type { Port, SwitchState, CommandMode } from './types';
 
 export function getSmartHint(state: SwitchState, lang: 'tr' | 'en'): string {
   const isTr = lang === 'tr';
+  const aliasSupport = isTr
+    ? "\n💡 CLI uyumluluğu: 'system-view', 'show config', 'display interface brief' gibi yaygın alternatif komut biçimleri de tanınır."
+    : "\n💡 CLI compatibility: common alternative command forms such as 'system-view', 'show config', and 'display interface brief' are also recognized.";
   const mode: CommandMode = state.currentMode;
-  if (mode === 'user') return isTr ? "\n💡 İpucu: Yapılandırma yapmak için 'enable' komutuyla ayrıcalıklı moda geçin." : "\n💡 Hint: Enter privileged mode with 'enable' command to start configuration.";
+  if (mode === 'user') return isTr ? `\n💡 İpucu: Yapılandırma yapmak için 'enable' komutuyla ayrıcalıklı moda geçin.${aliasSupport}` : `\n💡 Hint: Enter privileged mode with 'enable' command to start configuration.${aliasSupport}`;
   if (mode === 'privileged') {
-    if (!state.hostname || state.hostname === 'Switch' || state.hostname === 'Router') return isTr ? "\n💡 İpucu: Cihaza isim vermek için 'conf t' yazıp 'hostname <isim>' komutunu kullanın." : "\n💡 Hint: Use 'conf t' followed by 'hostname <name>' to name your device.";
-    return isTr ? "\n💡 İpucu: Yapılandırma moduna girmek için 'configure terminal' kullanın." : "\n💡 Hint: Use 'configure terminal' to enter configuration mode.";
+    if (!state.hostname || state.hostname === 'Switch' || state.hostname === 'Router') return isTr ? `\n💡 İpucu: Cihaza isim vermek için 'conf t' yazıp 'hostname <isim>' komutunu kullanın.${aliasSupport}` : `\n💡 Hint: Use 'conf t' followed by 'hostname <name>' to name your device.${aliasSupport}`;
+    return isTr ? `\n💡 İpucu: Yapılandırma moduna girmek için 'configure terminal' kullanın.${aliasSupport}` : `\n💡 Hint: Use 'configure terminal' to enter configuration mode.${aliasSupport}`;
   }
   if (mode === 'config') {
     const hasVlans = Object.keys(state.vlans || {}).length > 1;

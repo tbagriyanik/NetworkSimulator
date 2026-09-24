@@ -9,6 +9,8 @@ export const commandAliasesBasic: Record<string, string> = {
 
   // Configure
   'conf': 'configure',
+  'system-view': 'configure terminal',
+  'sys-view': 'configure terminal',
   'conf t': 'configure terminal',
   'config t': 'configure terminal',
   'conf te': 'configure terminal',
@@ -47,6 +49,9 @@ export const commandAliasesBasic: Record<string, string> = {
   'sh running-conf': 'show running-config',
   'sh runn-c': 'show running-config',
   'sh runn-co': 'show running-config',
+  'display current-configuration': 'show running-config',
+  'display running-config': 'show running-config',
+  'display config': 'show running-config',
 
   // Show startup-config commands
   'sh st': 'show startup-config',
@@ -143,8 +148,14 @@ export const commandAliasesBasic: Record<string, string> = {
   'sh ip interface brief': 'show ip interface brief',
   'show ip interfaces br': 'show ip interface brief',
   'show ip interfaces brief': 'show ip interface brief',
+  'display ip interface brief': 'show ip interface brief',
+  'display interface brief': 'show interfaces status',
+  'display interface': 'show interfaces',
   'sh ip int': 'show ip interface brief',
   'show interface trunk': 'show interfaces trunk',
+  'show interfaces terse': 'show interfaces',
+  'show interface terse': 'show interfaces',
+  'show route': 'show ip route',
   'show cdp neighbor': 'show cdp neighbors',
   'show lldp neighbor': 'show lldp neighbors',
   'show mac address': 'show mac address-table',

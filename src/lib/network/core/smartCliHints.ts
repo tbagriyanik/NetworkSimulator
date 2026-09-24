@@ -8,6 +8,16 @@ export interface CliHint {
 
 export const SMART_CLI_HINTS: CliHint[] = [
   {
+    pattern: /^(system-view|sys-view|display\s+current-configuration|show\s+config|display\s+interface\s+brief|show\s+interfaces\s+brief)$/i,
+    template: 'configure terminal / show running-config / show interfaces status',
+    example: 'system-view',
+    explanation: {
+      tr: 'Simülatör yaygın alternatif CLI biçimlerini tanır; aynı görev standart komut formatıyla da çalışır.',
+      en: 'The simulator recognizes common alternative CLI forms; the same task also works with the standard command syntax.'
+    },
+    missingArgs: []
+  },
+  {
     pattern: /^ip\s+address$/i,
     template: 'ip address <IP_ADRESI> <ALT_AG_MASKESI>',
     example: 'ip address 192.168.1.1 255.255.255.0',

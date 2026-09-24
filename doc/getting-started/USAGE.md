@@ -61,6 +61,10 @@
 | `WLC(config-wlan)#` | WLAN Config | WLAN profile (`wlan`, `security`, `shutdown`) |
 | `PC>` | CMD | Windows-style commands (`ipconfig`, `ping`, `nslookup`) |
 
+### CLI Alias Compatibility / CLI Takma Ad Uyumluluğu
+
+Simülatör, tek bir standart komut modelini korurken yaygın alternatif CLI biçimlerini de tanır. `configure terminal` gibi standart formun yanında; `system-view`, `show config`, `display interface brief` ve benzeri sık kullanılan varyasyonlar otomatik olarak normalleştirilir. Böylece öğrenciler tanıdık komut kalıplarıyla çalışmaya devam ederken yine aynı simülasyon davranışını görür.
+
 ---
 
 ## EN: Keyboard Shortcuts / TR: Klavye Kısayolları

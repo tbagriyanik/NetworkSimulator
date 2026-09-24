@@ -16,3 +16,7 @@ Bu klasör, Network Simulator projesi için tüm dokümantasyon dosyalarını i�
 | Geliştirici belgeleri | `development/` altındaki rehberler | [CONTRIBUTING.md](development/CONTRIBUTING.md) |
 
 Yeni bilgi eklerken önce birincil kaynağa ekleyin; tamamlayıcı dosyada aynı metni kopyalamak yerine bağlantı ve kısa bağlam kullanın.
+
+## CLI uyumluluğu ve alternatif komut biçimleri
+
+Dokümanlar, simülatörün temel Cisco benzeri komut modelinin yanı sıra yaygın alternatif komut varyasyonlarını da desteklediğini belirtir. `show config`, `system-view`, `display interface brief` gibi kısa veya farklı yazım biçimleri otomatik olarak normalleştirilir; böylece öğrenme süreci daha geniş bir CLI kullanım deneyimiyle örtüşür.

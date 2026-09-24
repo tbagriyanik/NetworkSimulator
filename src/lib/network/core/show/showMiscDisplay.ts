@@ -315,9 +315,19 @@ export function cmdShowAlias(state: SwitchState, input: string, _ctx: CommandCon
   const match = input.match(/show\s+alias(?:\s+(exec|configure|interface|line))?/i);
   const modeFilter = match?.[1]?.toLowerCase();
 
-  const builtInExec: Record<string, string> = { 'h': 'show history', 'lo': 'exit' };
+  const builtInExec: Record<string, string> = {
+    h: 'show history',
+    lo: 'exit',
+    sh: 'show',
+    en: 'enable'
+  };
+  const builtInConfig: Record<string, string> = {
+    conf: 'configure terminal',
+    cfg: 'configure terminal',
+    int: 'interface'
+  };
   const execAliases = { ...builtInExec, ...state.aliases?.exec, ...state.execAliases };
-  const configAliases = state.aliases?.configure || {};
+  const configAliases = { ...builtInConfig, ...state.aliases?.configure || {} };
   const intfAliases = state.aliases?.interface || {};
   const lineAliases = state.aliases?.line || {};
 
