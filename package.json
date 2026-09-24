@@ -13,7 +13,10 @@
     "check": "tsc --noEmit && next build && oxlint && vitest run",
     "build:desktop": "node scripts/build-desktop.cjs",
     "tauri": "tauri",
-    "build:exe": "tauri build"
+    "build:exe": "tauri build",
+    "clean": "rimraf .next out",
+    "clean:desktop": "rimraf src-tauri/target",
+    "clean:all": "rimraf .next out src-tauri/target"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.15",
