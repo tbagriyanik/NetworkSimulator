@@ -68,12 +68,20 @@ describe('Interactive and Diagnostic CLI Commands Implementation', () => {
       expect(showAll.output).toContain('Exec aliases:');
       expect(showAll.output).toContain('sh');
       expect(showAll.output).toContain('conf');
+      // VRP & Comware compatibility aliases
+      expect(showAll.output).toContain('system-view');
+      expect(showAll.output).toContain('display saved-configuration');
+      expect(showAll.output).toContain('dis cur');
+      expect(showAll.output).toContain('undo <command>');
 
       // 3. show alias configure
       const showConfig = executeCommand(state, 'show alias configure');
       expect(showConfig.success).toBe(true);
       expect(showConfig.output).toContain('Configure aliases:');
+      expect(showConfig.output).toContain('system-view');
       expect(showConfig.output).not.toContain('Interface aliases:');
+      // VRP exec aliases must not leak into the configure filter
+      expect(showConfig.output).not.toContain('display saved-configuration');
 
       // 4. Config builder serialization
       const configStr = buildRunningConfig(state);

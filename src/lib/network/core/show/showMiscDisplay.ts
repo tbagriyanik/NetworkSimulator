@@ -319,12 +319,37 @@ export function cmdShowAlias(state: SwitchState, input: string, _ctx: CommandCon
     h: 'show history',
     lo: 'exit',
     sh: 'show',
-    en: 'enable'
+    en: 'enable',
+    // VRP & Comware CLI compatibility aliases
+    return: 'end',
+    quit: 'exit',
+    q: 'exit',
+    'undo <command>': 'no <command>',
+    'display current-configuration': 'show running-config',
+    'dis cur': 'show running-config',
+    'display saved-configuration': 'show startup-config',
+    'display ip interface brief': 'show ip interface brief',
+    'dis ip int br': 'show ip interface brief',
+    'display ip routing-table': 'show ip route',
+    'display arp': 'show ip arp',
+    'display mac-address': 'show mac address-table',
+    'display vlan': 'show vlan brief',
+    'display stp': 'show spanning-tree',
+    'display version': 'show version',
+    'dis ver': 'show version',
+    'display clock': 'show clock',
+    'display lldp neighbor': 'show lldp neighbors',
+    'display ip pool': 'show ip dhcp pool'
   };
   const builtInConfig: Record<string, string> = {
     conf: 'configure terminal',
     cfg: 'configure terminal',
-    int: 'interface'
+    int: 'interface',
+    // VRP & Comware CLI compatibility aliases (enter global configuration mode)
+    'system-view': 'configure terminal',
+    'sys-view': 'configure terminal',
+    sys: 'configure terminal',
+    sy: 'configure terminal'
   };
   const execAliases = { ...builtInExec, ...state.aliases?.exec, ...state.execAliases };
   const configAliases = { ...builtInConfig, ...state.aliases?.configure };
