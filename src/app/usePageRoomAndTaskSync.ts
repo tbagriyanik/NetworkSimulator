@@ -16,6 +16,7 @@ import { useRoomSync } from '@/hooks/useRoomSync';
 import type { SwitchState, CableInfo } from '@/lib/network/types';
 import type { CanvasConnection, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { ExamProject } from '@/lib/network/examTypes';
+import type { GuidedProject } from '@/lib/network/guidedMode.types';
 
 interface UsePageRoomAndTaskSyncParams {
   activeDeviceType: string;
@@ -32,6 +33,9 @@ interface UsePageRoomAndTaskSyncParams {
   studentDisplayName: string;
   projectName: string;
   activeExam: ExamProject | null;
+  isGuidedModeActive?: boolean;
+  activeGuidedProject?: GuidedProject | null;
+  guidedStepIndex?: number;
 }
 
 export function usePageRoomAndTaskSync({
@@ -49,6 +53,9 @@ export function usePageRoomAndTaskSync({
   studentDisplayName,
   projectName,
   activeExam,
+  isGuidedModeActive,
+  activeGuidedProject,
+  guidedStepIndex,
 }: UsePageRoomAndTaskSyncParams) {
   const isTaskSystemEnabled = activeDeviceType === 'switchL2' || activeDeviceType === 'switchL3' || activeDeviceType === 'router';
   
@@ -90,11 +97,23 @@ export function usePageRoomAndTaskSync({
   const totalScore = isTaskSystemEnabled ? calculateTaskScore(activeDeviceTasks, state, taskContext) : 0;
   const maxScore = activeDeviceTasks.reduce((acc, task) => acc + task.weight, 0);
 
-  const completedTaskCount = activeDeviceTasks.filter(t => getTaskStatus(t, state, taskContext)).length;
-  const totalTaskCount = activeDeviceTasks.length;
-  const currentTaskName = activeDeviceTasks.length > 0
-    ? activeDeviceTasks.find(t => !getTaskStatus(t, state, taskContext))?.name[language] ?? activeDeviceTasks[activeDeviceTasks.length - 1].name[language]
-    : '';
+  const isGuided = Boolean(isGuidedModeActive && activeGuidedProject && activeGuidedProject.steps.length > 0);
+
+  const completedTaskCount = isGuided
+    ? Math.min(guidedStepIndex ?? 0, activeGuidedProject!.steps.length)
+    : activeDeviceTasks.filter(t => getTaskStatus(t, state, taskContext)).length;
+
+  const totalTaskCount = isGuided
+    ? activeGuidedProject!.steps.length
+    : activeDeviceTasks.length;
+
+  const currentTaskName = isGuided
+    ? (guidedStepIndex !== undefined && guidedStepIndex < activeGuidedProject!.steps.length
+        ? `${language === 'tr' ? 'Adım' : 'Step'} ${guidedStepIndex + 1}`
+        : `${language === 'tr' ? 'Tamamlandı' : 'Completed'}`)
+    : (activeDeviceTasks.length > 0
+        ? activeDeviceTasks.find(t => !getTaskStatus(t, state, taskContext))?.name[language] ?? activeDeviceTasks[activeDeviceTasks.length - 1].name[language]
+        : '');
 
   useRoomSync({
     roomCode: studentRoomCode,
@@ -102,7 +121,7 @@ export function usePageRoomAndTaskSync({
     currentTask: currentTaskName,
     completedTasks: completedTaskCount,
     totalTasks: totalTaskCount,
-    projectFile: projectName !== 'Untitled' ? projectName : undefined,
+    projectFile: isGuided ? activeGuidedProject!.title : (projectName !== 'Untitled' ? projectName : undefined),
     durationMinutes: activeExam?.durationMinutes,
   });
 

@@ -1,6 +1,6 @@
 # Network Simulator — Özellik ve Yetenek Envanteri
 
-**Sürüm / Version:** 6.5.0 · **Son doğrulama / Last verified:** 2026-09-23
+**Sürüm / Version:** 6.6.0 · **Son doğrulama / Last verified:** 2026-09-24
 
 ## Packet/Control-Plane Entegrasyon Özeti
 

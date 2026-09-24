@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, useEffect, useRef } from 'react';
-import { Trophy, X, Clock, BookOpen, FileText, GraduationCap, Gamepad2 } from 'lucide-react';
+import { Trophy, X, Clock, BookOpen, FileText, GraduationCap, Gamepad2, Network } from 'lucide-react';
 import { useDrag } from '@/hooks/useDrag';
 import { useIsMobile } from '@/hooks/use-breakpoint';
 import { getSummary } from '@/utils/achievementRecords';
@@ -38,7 +38,7 @@ function formatDuration(totalSeconds: number): string {
 }
 
 interface FlatItem {
-  type: 'session' | 'project' | 'guided-lesson' | 'exam' | 'story-campaign';
+  type: 'session' | 'project' | 'guided-lesson' | 'exam' | 'story-campaign' | 'topology';
   label: string;
   date: string;
   detail: string;
@@ -122,6 +122,19 @@ export function BasarilarimPanel({ t, language, isDark, onClose, zIndex }: Basar
       }
     }
 
+    if (summary.topologies) {
+      for (const top of summary.topologies) {
+        result.push({
+          type: 'topology',
+          label: language === 'tr' ? 'Topoloji Oluşturma' : 'Topology Created',
+          date: top.completedAt,
+          detail: top.name,
+          scoreText: top.category,
+          iconColor: 'text-cyan-400',
+        });
+      }
+    }
+
     result.sort((a, b) => {
       if (!a.date) return -1;
       if (!b.date) return 1;
@@ -149,6 +162,7 @@ export function BasarilarimPanel({ t, language, isDark, onClose, zIndex }: Basar
     'guided-lesson': BookOpen,
     exam: GraduationCap,
     'story-campaign': Gamepad2,
+    topology: Network,
   };
 
   const [size, setSize] = useState({ width: 340, height: 320 });

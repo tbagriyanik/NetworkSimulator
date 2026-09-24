@@ -1,6 +1,6 @@
 # Network Simulator
 
-![Version](https://img.shields.io/badge/version-6.5.1-blue)
+![Version](https://img.shields.io/badge/version-6.6.0-blue)
 ![Next.js](https://img.shields.io/badge/Next.js-16.3.6-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19.3.0-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-7.0.2-3178C6?logo=typescript&logoColor=white)
@@ -112,7 +112,7 @@ git push origin main --tags
 
 | Metrik / Metric | Değer / Value |
 | --- | --- |
-| Version / Sürüm | 6.5.1 |
+| Version / Sürüm | 6.6.0 |
 | Total Lines / Toplam Satır (`src/`) | ~219,067 |
 | Source Files / Kaynak Dosya | 1056 |
 | Documentation Files / Dokümantasyon Dosya | 30 |

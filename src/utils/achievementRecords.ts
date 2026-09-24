@@ -29,12 +29,19 @@ export interface SummaryStoryCampaign {
   completedAt: string;
 }
 
+export interface SummaryTopology {
+  name: string;
+  category: string;
+  completedAt: string;
+}
+
 export interface AchievementSummary {
   totalSessionSeconds: number;
   projects: SummaryProject[];
   guidedLessons: SummaryGuidedLesson[];
   exams: SummaryExam[];
   storyCampaigns?: SummaryStoryCampaign[];
+  topologies?: SummaryTopology[];
 }
 
 const STORAGE_KEY = 'netsim_achievement_summary';
@@ -44,9 +51,9 @@ export function getSummary(): AchievementSummary {
     const stored = secureStorage.getItem(STORAGE_KEY);
     return stored
       ? JSON.parse(stored)
-      : { totalSessionSeconds: 0, projects: [], guidedLessons: [], exams: [], storyCampaigns: [] };
+      : { totalSessionSeconds: 0, projects: [], guidedLessons: [], exams: [], storyCampaigns: [], topologies: [] };
   } catch {
-    return { totalSessionSeconds: 0, projects: [], guidedLessons: [], exams: [], storyCampaigns: [] };
+    return { totalSessionSeconds: 0, projects: [], guidedLessons: [], exams: [], storyCampaigns: [], topologies: [] };
   }
 }
 
@@ -124,6 +131,18 @@ export function addStoryCampaignRecord(id: string, name: string, score: number, 
     }
   } else {
     summary.storyCampaigns.push({ id, name, score, rank, completedAt: new Date().toISOString() });
+  }
+  saveSummary(summary);
+}
+
+export function addTopologyRecord(name: string, category: string): void {
+  const summary = getSummary();
+  if (!summary.topologies) summary.topologies = [];
+  const existing = summary.topologies.find((t) => t.name === name);
+  if (existing) {
+    existing.completedAt = new Date().toISOString();
+  } else {
+    summary.topologies.push({ name, category, completedAt: new Date().toISOString() });
   }
   saveSummary(summary);
 }

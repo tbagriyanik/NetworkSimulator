@@ -1,5 +1,12 @@
 # 📅 Network Simulator — Proje Geçmişi
 
+## v6.6.0 — 2026-09-24
+
+- **🏆 Bütünsel Başarılarım Sistemi Entegrasyonu (`achievementRecords.ts`, `BasarilarimPanel.tsx`, `TopologyGeneratorDialog.tsx`)**: Yeni topoloji üretimi (`addTopologyRecord`), rehberli dersler, sınavlar, projeler ve etkileşimli senaryolar Başarılarım paneline bağlandı.
+- **👥 Canlı Sınıf Öğretmen Takip Paneli İyileştirmeleri (`TeacherRoomPanel.tsx`, `roomTypes.ts`)**: Canlı dersteki öğrencilerin isimlerinin yanına yaptıkları çalışma/topoloji detayları ve başarı durumu rozetleri eklendi.
+- **🏷️ Alternatif CLI Komut Uyumluluğu & Temizliği (`CLI_COMMANDS.md`, `testTopologyScenarios.ts`)**: Satır içi dosya isimleri ve test yolları temizlendi; marka/firma bağımsız alternatif CLI komutları rehber ve yardım modallarına işlendi.
+- **🔖 Sürüm Güncellemesi**: Tüm proje paketi, bileşenler ve dokümantasyon v6.6.0 sürümüne yükseltildi.
+
 ## v6.5.1 — 2026-09-23
 
 - **🧪 Otomatik Topoloji Üretici Test Topolojileri Sekmesi (`TopologyGeneratorDialog.tsx`, `testTopologyScenarios.ts`)**: `src/tests` klasöründeki test senaryoları (STP, MSTP, LACP EtherChannel, OSPF Multi-Area, BGP Advanced, VXLAN EVPN, VRF-Lite, FHRP/HSRP, NAT/PAT, 802.1X RADIUS, Stateful Firewall, IPsec VPN, QoS, IPv6 SLAAC/NDP, WLC CAPWAP, Packet Trace) bağımsız bir sekme olarak otomatik üreticiye eklendi.

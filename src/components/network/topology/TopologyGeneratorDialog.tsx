@@ -29,6 +29,7 @@ import { SwitchState } from '@/lib/network/types';
 import { SCENARIOS, CATEGORY_LABELS, type ScenarioType, type ScenarioCategory } from './topologyScenarios';
 import { generateTopology } from './scenarioGenerators';
 import { TEST_TOPOLOGY_SCENARIOS, type TestTopologyScenario } from './testTopologyScenarios';
+import { addTopologyRecord } from '@/utils/achievementRecords';
 
 interface TopologyGeneratorDialogProps {
   open: boolean;
@@ -64,7 +65,7 @@ export function TopologyGeneratorDialog({
   const [pcCount, setPcCount] = useState<number>(2);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Exclusive list of test fixture scenarios extracted directly from src/tests/
+  // List of test topology scenarios
   const testScenarios = useMemo<TestTopologyScenario[]>(() => {
     return TEST_TOPOLOGY_SCENARIOS;
   }, []);
@@ -121,7 +122,7 @@ export function TopologyGeneratorDialog({
     });
   }, [searchQuery, selectedCategory]);
 
-  // Filtered test scenarios (strictly from src/tests)
+  // Filtered test scenarios
   const filteredTestScenarios = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return testScenarios.filter(p => {
@@ -133,7 +134,6 @@ export function TopologyGeneratorDialog({
         p.descTr.toLowerCase().includes(q) ||
         p.descEn.toLowerCase().includes(q) ||
         p.id.toLowerCase().includes(q) ||
-        p.testFile.toLowerCase().includes(q) ||
         p.tags.some(tag => tag.toLowerCase().includes(q))
       );
     });
@@ -158,7 +158,7 @@ export function TopologyGeneratorDialog({
           const name = isTr ? selectedDef.labelTr : selectedDef.labelEn;
           const description = isTr ? selectedDef.descTr : selectedDef.descEn;
           const objective = isTr ? selectedDef.objectiveTr : selectedDef.objectiveEn;
-          
+
           const formattedDescription = [
             `📌 ${name}`,
             `🎯 ${isTr ? 'Amaç' : 'Objective'}: ${objective || description}`,
@@ -170,6 +170,7 @@ export function TopologyGeneratorDialog({
             projectName: name,
             projectDescription: formattedDescription,
           });
+          addTopologyRecord(name, selectedDef.category);
           toast({
             title: isTr ? 'Topoloji Üretildi! 🚀' : 'Topology Generated! 🚀',
             description: isTr
@@ -177,7 +178,7 @@ export function TopologyGeneratorDialog({
               : `${name} successfully generated and added to canvas.`,
           });
         } else {
-          // Generate Test scenario (strictly from src/tests)
+          // Generate Test scenario
           if (!selectedTest) return;
 
           const built = selectedTest.build(isTr);
@@ -187,7 +188,6 @@ export function TopologyGeneratorDialog({
 
           const formattedDescription = [
             `🧪 ${title}`,
-            `📁 Test Dosyası: ${selectedTest.testFile}`,
             `🎯 Amaç: ${objective}`,
             `📋 Açıklama: ${desc}`,
             `⚙️ Doğrulama: ${isTr ? built.detailTr : built.detailEn}`,
@@ -200,12 +200,13 @@ export function TopologyGeneratorDialog({
             projectName: title,
             projectDescription: formattedDescription,
           });
+          addTopologyRecord(title, selectedTest.category);
 
           toast({
             title: isTr ? 'Test Topolojisi Yüklendi! 🧪' : 'Test Topology Loaded! 🧪',
             description: isTr
-              ? `"${title}" (${selectedTest.testFile.split('/').pop()}) başarıyla tuvale aktarıldı.`
-              : `"${title}" loaded from ${selectedTest.testFile}.`,
+              ? `"${title}" başarıyla tuvale aktarıldı.`
+              : `"${title}" successfully loaded.`,
           });
         }
         onOpenChange(false);
@@ -243,11 +244,10 @@ export function TopologyGeneratorDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className={`${
-          isDark
+        className={`${isDark
             ? 'bg-secondary-900 border-secondary-700/80 text-white'
             : 'bg-white border-secondary-200 text-secondary-900'
-        } sm:max-w-3xl w-[95vw] rounded-2xl md:rounded-3xl shadow-2xl h-[88vh] max-h-[88vh] !flex !flex-col p-3 sm:p-5 !overflow-hidden !gap-0`}
+          } sm:max-w-3xl w-[95vw] rounded-2xl md:rounded-3xl shadow-2xl h-[88vh] max-h-[88vh] !flex !flex-col p-3 sm:p-5 !overflow-hidden !gap-0`}
         onEscapeKeyDown={isLoading ? undefined : () => handleClose()}
         onPointerDownOutside={isLoading ? undefined : () => handleClose()}
       >
@@ -268,8 +268,8 @@ export function TopologyGeneratorDialog({
           </div>
           <DialogDescription className={`text-[11px] sm:text-xs leading-tight ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
             {isTr
-              ? 'Standart ağ mimarilerini veya src/tests içerisindeki hazır doğrulama topolojilerini tek tıkla üretin.'
-              : 'Instantly generate standard network architectures or verified test topologies from src/tests with one click.'}
+              ? 'Standart ağ mimarilerini hazır doğrulama topolojilerini tek tıkla üretin.'
+              : 'Instantly generate standard network architectures or verified test topologies with one click.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -278,13 +278,12 @@ export function TopologyGeneratorDialog({
           <div className={`grid grid-cols-2 p-1 rounded-xl border ${isDark ? 'bg-secondary-950/70 border-secondary-800' : 'bg-secondary-100 border-secondary-200'}`}>
             <button
               onClick={() => setActiveTab('architectures')}
-              className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
-                activeTab === 'architectures'
+              className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'architectures'
                   ? 'bg-purple-600 text-white shadow-md shadow-purple-900/30'
                   : isDark
                     ? 'text-secondary-400 hover:text-secondary-200 hover:bg-secondary-800/60'
                     : 'text-secondary-600 hover:text-secondary-900 hover:bg-white/60'
-              }`}
+                }`}
             >
               <Layers className="w-3.5 h-3.5" />
               <span>{isTr ? 'Standart Mimariler' : 'Standard Architectures'}</span>
@@ -295,16 +294,15 @@ export function TopologyGeneratorDialog({
 
             <button
               onClick={() => setActiveTab('testLabs')}
-              className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
-                activeTab === 'testLabs'
+              className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'testLabs'
                   ? 'bg-purple-600 text-white shadow-md shadow-purple-900/30'
                   : isDark
                     ? 'text-secondary-400 hover:text-secondary-200 hover:bg-secondary-800/60'
                     : 'text-secondary-600 hover:text-secondary-900 hover:bg-white/60'
-              }`}
+                }`}
             >
               <FlaskConical className="w-3.5 h-3.5" />
-              <span>{isTr ? 'Test Topolojileri (src/tests)' : 'Test Topologies (src/tests)'}</span>
+              <span>{isTr ? 'Test Topolojileri' : 'Test Topologies'}</span>
               <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/20 ml-0.5">
                 {testScenarios.length}
               </span>
@@ -323,13 +321,12 @@ export function TopologyGeneratorDialog({
               placeholder={
                 activeTab === 'architectures'
                   ? (isTr ? 'Mimari ara (Spine-Leaf, OSPF, BGP, SOHO, DMZ)...' : 'Search scenario (Spine-Leaf, OSPF, BGP)...')
-                  : (isTr ? 'Test dosyası veya senaryo ara (stp.test.ts, vxlanEvpn, OSPF, HSRP)...' : 'Search test file or scenario (stp.test.ts, vxlanEvpn, OSPF)...')
+                  : (isTr ? 'Test senaryosu ara (STP, VXLAN EVPN, OSPF, HSRP)...' : 'Search test scenario (STP, VXLAN EVPN, OSPF)...')
               }
-              className={`pl-8 pr-7 h-8 text-[11px] sm:text-xs rounded-lg ${
-                isDark
+              className={`pl-8 pr-7 h-8 text-[11px] sm:text-xs rounded-lg ${isDark
                   ? 'bg-secondary-800/80 border-secondary-700 text-white placeholder:text-secondary-500 focus-visible:ring-purple-500/40'
                   : 'bg-secondary-50 border-secondary-200 text-secondary-900 placeholder:text-secondary-400 focus-visible:ring-purple-500/40'
-              }`}
+                }`}
             />
             {searchQuery && (
               <button
@@ -347,13 +344,12 @@ export function TopologyGeneratorDialog({
               <>
                 <button
                   onClick={() => setSelectedCategory('all')}
-                  className={`px-2 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap transition-all ${
-                    selectedCategory === 'all'
+                  className={`px-2 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap transition-all ${selectedCategory === 'all'
                       ? 'bg-purple-600 text-white shadow-sm'
                       : isDark
                         ? 'bg-secondary-800 text-secondary-400 hover:text-secondary-200 hover:bg-secondary-700/60'
                         : 'bg-secondary-100 text-secondary-600 hover:text-secondary-900 hover:bg-secondary-200'
-                  }`}
+                    }`}
                 >
                   {isTr ? 'Tümü' : 'All'} ({SCENARIOS.length})
                 </button>
@@ -364,13 +360,12 @@ export function TopologyGeneratorDialog({
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
-                      className={`px-2 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap transition-all ${
-                        isSelected
+                      className={`px-2 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap transition-all ${isSelected
                           ? 'bg-purple-600 text-white shadow-sm'
                           : isDark
                             ? 'bg-secondary-800 text-secondary-400 hover:text-secondary-200 hover:bg-secondary-700/60'
                             : 'bg-secondary-100 text-secondary-600 hover:text-secondary-900 hover:bg-secondary-200'
-                      }`}
+                        }`}
                     >
                       {isTr ? CATEGORY_LABELS[cat].tr : CATEGORY_LABELS[cat].en} ({count})
                     </button>
@@ -385,13 +380,12 @@ export function TopologyGeneratorDialog({
                   <button
                     key={cat}
                     onClick={() => setSelectedTestCategory(cat)}
-                    className={`px-2 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap transition-all ${
-                      isSelected
+                    className={`px-2 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap transition-all ${isSelected
                         ? 'bg-purple-600 text-white shadow-sm'
                         : isDark
                           ? 'bg-secondary-800 text-secondary-400 hover:text-secondary-200 hover:bg-secondary-700/60'
                           : 'bg-secondary-100 text-secondary-600 hover:text-secondary-900 hover:bg-secondary-200'
-                    }`}
+                      }`}
                   >
                     {isTr ? testCategoryLabels[cat].tr : testCategoryLabels[cat].en} ({count})
                   </button>
@@ -414,50 +408,45 @@ export function TopologyGeneratorDialog({
                     <button
                       key={s.id}
                       onClick={() => setScenario(s.id)}
-                      className={`flex flex-col justify-between p-2.5 rounded-xl text-left transition-all duration-150 border relative group w-full min-w-0 box-border ${
-                        isSelected
+                      className={`flex flex-col justify-between p-2.5 rounded-xl text-left transition-all duration-150 border relative group w-full min-w-0 box-border ${isSelected
                           ? isDark
                             ? 'border-purple-500 bg-purple-500/15 ring-1 ring-purple-500/50 shadow-md shadow-purple-950/20'
                             : 'border-purple-500 bg-purple-50/90 ring-1 ring-purple-400/50 shadow-sm'
                           : isDark
                             ? 'border-secondary-800 hover:border-secondary-700 bg-secondary-800/40 hover:bg-secondary-800/80'
                             : 'border-secondary-200/90 hover:border-secondary-300 bg-secondary-50/60 hover:bg-secondary-100/80'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-start gap-2.5 w-full min-w-0">
-                        <div className={`p-2 rounded-lg shrink-0 transition-colors ${
-                          isSelected
+                        <div className={`p-2 rounded-lg shrink-0 transition-colors ${isSelected
                             ? 'bg-purple-500 text-white'
                             : isDark
                               ? 'bg-secondary-700/70 text-secondary-300 group-hover:text-purple-400'
                               : 'bg-secondary-200/80 text-secondary-700 group-hover:text-purple-600'
-                        }`}>
+                          }`}>
                           <Icon className="w-4 h-4" />
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1 justify-between min-w-0">
-                            <div className={`text-xs font-bold truncate min-w-0 flex-1 ${
-                              isSelected
+                            <div className={`text-xs font-bold truncate min-w-0 flex-1 ${isSelected
                                 ? isDark ? 'text-purple-200' : 'text-purple-900'
                                 : isDark ? 'text-white' : 'text-secondary-900'
-                            }`}>
+                              }`}>
                               {isTr ? s.labelTr : s.labelEn}
                             </div>
                             {badge && (
-                              <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-medium shrink-0 ml-1 ${
-                                isSelected
+                              <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-medium shrink-0 ml-1 ${isSelected
                                   ? 'bg-purple-500/30 text-purple-300 border border-purple-400/30'
                                   : isDark
                                     ? 'bg-secondary-700 text-secondary-400'
                                     : 'bg-secondary-200 text-secondary-600'
-                              }`}>
+                                }`}>
                                 {badge}
                               </span>
                             )}
                           </div>
-                          <p className={`text-[10px] leading-tight mt-0.5 line-clamp-2 ${
-                            isDark ? 'text-secondary-400' : 'text-secondary-600'
-                          }`}>
+                          <p className={`text-[10px] leading-tight mt-0.5 line-clamp-2 ${isDark ? 'text-secondary-400' : 'text-secondary-600'
+                            }`}>
                             {isTr ? s.descTr : s.descEn}
                           </p>
                         </div>
@@ -479,48 +468,38 @@ export function TopologyGeneratorDialog({
                   const isSelected = selectedTestId === p.id;
                   const title = isTr ? p.titleTr : p.titleEn;
                   const desc = isTr ? p.descTr : p.descEn;
-                  const fileName = p.testFile.split('/').pop() || p.testFile;
-                  
+
                   return (
                     <button
                       key={p.id}
                       onClick={() => setSelectedTestId(p.id)}
-                      className={`flex flex-col justify-between p-2.5 rounded-xl text-left transition-all duration-150 border relative group w-full min-w-0 box-border ${
-                        isSelected
+                      className={`flex flex-col justify-between p-2.5 rounded-xl text-left transition-all duration-150 border relative group w-full min-w-0 box-border ${isSelected
                           ? isDark
                             ? 'border-purple-500 bg-purple-500/15 ring-1 ring-purple-500/50 shadow-md shadow-purple-950/20'
                             : 'border-purple-500 bg-purple-50/90 ring-1 ring-purple-400/50 shadow-sm'
                           : isDark
                             ? 'border-secondary-800 hover:border-secondary-700 bg-secondary-800/40 hover:bg-secondary-800/80'
                             : 'border-secondary-200/90 hover:border-secondary-300 bg-secondary-50/60 hover:bg-secondary-100/80'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-start gap-2.5 w-full min-w-0">
-                        <div className={`p-2 rounded-lg shrink-0 transition-colors ${
-                          isSelected
+                        <div className={`p-2 rounded-lg shrink-0 transition-colors ${isSelected
                             ? 'bg-purple-500 text-white'
                             : 'bg-indigo-500/20 text-indigo-400'
-                        }`}>
+                          }`}>
                           <FlaskConical className="w-4 h-4" />
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1 justify-between min-w-0">
-                            <div className={`text-xs font-bold truncate min-w-0 flex-1 ${
-                              isSelected
+                            <div className={`text-xs font-bold truncate min-w-0 flex-1 ${isSelected
                                 ? isDark ? 'text-purple-200' : 'text-purple-900'
                                 : isDark ? 'text-white' : 'text-secondary-900'
-                            }`}>
+                              }`}>
                               {title}
                             </div>
-                            <div className="flex items-center gap-1 shrink-0">
-                              <span className="text-[8px] px-1.5 py-0.2 rounded-full font-mono bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                                {fileName}
-                              </span>
-                            </div>
                           </div>
-                          <p className={`text-[10px] leading-tight mt-1 line-clamp-2 ${
-                            isDark ? 'text-secondary-400' : 'text-secondary-600'
-                          }`}>
+                          <p className={`text-[10px] leading-tight mt-1 line-clamp-2 ${isDark ? 'text-secondary-400' : 'text-secondary-600'
+                            }`}>
                             {desc}
                           </p>
                           {p.tags && p.tags.length > 0 && (
@@ -528,9 +507,8 @@ export function TopologyGeneratorDialog({
                               {p.tags.slice(0, 3).map(tag => (
                                 <span
                                   key={tag}
-                                  className={`text-[8px] px-1 py-0.2 rounded font-mono ${
-                                    isDark ? 'bg-secondary-800 text-secondary-400' : 'bg-secondary-200 text-secondary-600'
-                                  }`}
+                                  className={`text-[8px] px-1 py-0.2 rounded font-mono ${isDark ? 'bg-secondary-800 text-secondary-400' : 'bg-secondary-200 text-secondary-600'
+                                    }`}
                                 >
                                   #{tag}
                                 </span>
@@ -571,7 +549,7 @@ export function TopologyGeneratorDialog({
                 ) : (
                   <>
                     <span className="font-semibold text-purple-400">
-                      {isTr ? selectedTest?.titleTr : selectedTest?.titleEn} ({selectedTest?.testFile.split('/').pop()}):{' '}
+                      {isTr ? selectedTest?.titleTr : selectedTest?.titleEn}:{' '}
                     </span>
                     <span className={isDark ? 'text-secondary-300' : 'text-secondary-600'}>
                       {isTr ? selectedTest?.descTr : selectedTest?.descEn}
@@ -591,13 +569,12 @@ export function TopologyGeneratorDialog({
                       key={num}
                       size="sm"
                       variant={pcCount === num ? 'default' : 'outline'}
-                      className={`h-6 px-1.5 text-[10px] rounded-md ${
-                        pcCount === num
+                      className={`h-6 px-1.5 text-[10px] rounded-md ${pcCount === num
                           ? 'bg-purple-600 hover:bg-purple-700 text-white'
                           : isDark
                             ? 'border-secondary-700 hover:bg-secondary-800'
                             : 'border-secondary-300 hover:bg-secondary-100'
-                      }`}
+                        }`}
                       onClick={() => setPcCount(num)}
                     >
                       <Monitor className="w-2.5 h-2.5 mr-0.5" />

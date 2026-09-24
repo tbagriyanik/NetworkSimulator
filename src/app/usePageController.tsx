@@ -480,6 +480,9 @@ export function usePageController({ initialProjectId }: { initialProjectId?: str
     studentDisplayName,
     projectName,
     activeExam,
+    isGuidedModeActive,
+    activeGuidedProject,
+    guidedStepIndex,
   });
 
   const { normalizeDeviceType, isValidIpv4, isSameSubnetByMask,

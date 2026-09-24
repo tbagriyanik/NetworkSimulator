@@ -171,9 +171,23 @@ function RoomMonitor({ roomCode, onClose }: { roomCode: string; onClose: () => v
                 return (
                   <tr key={s.studentId} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
                     <td className="px-2 py-2">
-                      <span className="font-medium truncate block max-w-[180px]" title={s.displayName}>
-                        {s.displayName}
-                      </span>
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-medium truncate max-w-[150px]" title={s.displayName}>
+                            {s.displayName}
+                          </span>
+                          {s.projectFile && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium truncate max-w-[130px]" title={s.projectFile}>
+                              {s.projectFile}
+                            </span>
+                          )}
+                        </div>
+                        {s.currentTask && (
+                          <span className="text-[10px] text-muted-foreground truncate max-w-[200px]" title={s.currentTask}>
+                            {s.currentTask}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-2 py-2 tabular-nums text-muted-foreground">
                       {duration} {t.roomDuration}

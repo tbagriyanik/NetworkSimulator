@@ -23,8 +23,10 @@ A browser-based network simulator for learning switching, routing, wireless, IoT
 
 Bu kitapçık projenin tüm kullanıcı, CLI, protokol, laboratuvar ve özellik bilgilerinin birincil kaynağıdır. Diğer Markdown dosyaları yalnızca kısa başvuru, kurulum veya geliştirici ayrıntısı içerir; aynı bilginin güncel sürümü burada tutulmalıdır.
 
-### Güncel özellik durumu (v6.5.0)
+### Güncel özellik durumu (v6.6.0)
 
+- **🏆 Bütünsel Başarılarım & Canlı Sınıf Takip Geliştirmeleri (v6.6.0):**
+  - Rehberli dersler, sınavlar, projeler ve topoloji oluşturma başarılarım paneline işlenir. Canlı dersteki öğrencilerin isimlerinin yanına yaptıkları çalışma detayları yansıtılır.
 - **🖥️ Masaüstü (.exe / Tauri v2) Desteği (v6.5.0):**
   - Tam yerel Windows masaüstü uygulama mimarisi, `npm run build:exe` derleme altyapısı ve `public/icon192.svg` kaynaklı masaüstü ikon paketi.
 - **📟 Gelişmiş CLI Pipe Filtreleme (`| include / exclude / begin / section`) (v6.4.0):**
