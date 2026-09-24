@@ -31,6 +31,7 @@ import {
 import { getInfoCategories } from './networkTopology.commands.info';
 import { getNetSimCommands } from './networkTopology.commands.netsim';
 import { getDesktopCommands } from './networkTopology.commands.desktop';
+import { getAlternativeCliCommands } from './networkTopology.commands.compat';
 
 export function getCommandCategories(isTR: boolean): CommandDefinition[] {
   return [
@@ -38,6 +39,7 @@ export function getCommandCategories(isTR: boolean): CommandDefinition[] {
     getCommandModes(isTR),
     getNetworkingCommands(isTR),
     getSystemCommands(isTR),
+    getAlternativeCliCommands(isTR),
     getLinuxCommands(isTR),
     getPrivilegedCommands(isTR),
     getGlobalConfigCommands(isTR),

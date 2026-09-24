@@ -386,7 +386,9 @@ export const commandAliasesAdvanced: Record<string, string> = {
   'clock timezon': 'clock timezone',
 
   // System MTU
-  'sys': 'system',
+  // NOTE: 'sys' is intentionally not mapped to 'system' here — commandAliasesBasic
+  // maps 'sys' -> 'configure terminal' (VRP compatibility) and Advanced would
+  // shadow it in the merge (commandAliases.ts spreads Advanced last).
   'syst': 'system',
   'syste': 'system',
   'system m': 'system mtu',

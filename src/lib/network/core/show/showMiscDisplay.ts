@@ -327,7 +327,7 @@ export function cmdShowAlias(state: SwitchState, input: string, _ctx: CommandCon
     int: 'interface'
   };
   const execAliases = { ...builtInExec, ...state.aliases?.exec, ...state.execAliases };
-  const configAliases = { ...builtInConfig, ...state.aliases?.configure || {} };
+  const configAliases = { ...builtInConfig, ...state.aliases?.configure };
   const intfAliases = state.aliases?.interface || {};
   const lineAliases = state.aliases?.line || {};
 

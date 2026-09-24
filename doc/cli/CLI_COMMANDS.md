@@ -141,6 +141,28 @@ The simulator supports **729+ commands** across multiple configuration modes.
 | `show network health` / `show health` | Run comprehensive network diagnostic check and generate consolidated status report |
 | `show access-lists` | Display all access lists |
 
+### Alternative CLI Compatibility
+The simulator automatically parses and maps alternative network operating system CLI syntax to equivalent standard commands:
+
+| Alternative Command | Equivalent | Description |
+|---------------------|------------|-------------|
+| `system-view` / `sys-view` / `sys` / `sy` | `configure terminal` | Enter global configuration mode |
+| `return` | `end` | Exit to privileged mode |
+| `quit` / `q` | `exit` | Exit current sub-mode |
+| `undo <command>` | `no <command>` | Dynamic negation (e.g. `undo shutdown` $\rightarrow$ `no shutdown`, `undo ip address ...` $\rightarrow$ `no ip address ...`) |
+| `display current-configuration` / `dis cur` | `show running-config` | Display active configuration |
+| `display saved-configuration` / `dis saved` | `show startup-config` | Display saved startup configuration |
+| `display ip interface brief` / `dis ip int br` | `show ip interface brief` | Display interface IP status summary |
+| `display ip routing-table` / `dis ip ro` | `show ip route` | Display IP routing table |
+| `display arp` / `dis arp` | `show ip arp` | Display ARP table |
+| `display mac-address` / `dis mac` | `show mac address-table` | Display MAC address forwarding table |
+| `display vlan` / `dis vlan` | `show vlan brief` | Display VLAN summary table |
+| `display stp` / `dis stp` | `show spanning-tree` | Display Spanning Tree status |
+| `display version` / `dis ver` | `show version` | Display system software version |
+| `display clock` / `dis clock` | `show clock` | Display system time |
+| `display lldp neighbor` / `dis lldp neighbor` | `show lldp neighbors` | Display LLDP neighbors |
+| `display ip pool` / `dis ip pool` | `show ip dhcp pool` | Display DHCP pool status |
+
 ### Global Configuration Commands
 | Command | Description |
 |---------|-------------|

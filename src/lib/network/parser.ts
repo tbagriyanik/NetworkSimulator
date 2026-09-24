@@ -45,6 +45,16 @@ const cachedSortedPatternNames = Object.keys(commandPatterns)
 export function resolveAliases(input: string, state?: Partial<SwitchState>, currentMode?: CommandMode): string {
   const trimmed = input.trim().toLowerCase();
 
+  // Alternatif 'undo <komut>' -> 'no <komut>'
+  if (trimmed.startsWith('undo ')) {
+    const subInput = input.trim().substring(5);
+    const resolvedSub = resolveAliases(subInput, state, currentMode);
+    return `no ${resolvedSub}`;
+  }
+  if (trimmed === 'undo') {
+    return 'no';
+  }
+
   // Abbreviation: "int gi0/0" is equivalent to
   // "interface gi0/0". Keep the shorthand valid for all interface steps.
   if (/^int\s+\S+/i.test(trimmed)) {

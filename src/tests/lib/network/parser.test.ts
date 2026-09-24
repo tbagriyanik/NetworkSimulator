@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { parseCommand, validateCommand, resolveAliases, getLevenshteinDistance, expandKeywordPrefixes, getInvalidCommandError } from '@/lib/network/parser';
 import type { ParsedCommand } from '@/lib/network/types';
 
