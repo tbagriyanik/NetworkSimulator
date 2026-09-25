@@ -1,4 +1,4 @@
-﻿import React, { memo } from 'react';
+import React, { memo } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { CanvasNote, CanvasDevice, CanvasConnection, ContextMenuState } from '../NetworkTopology/types/networkTopology.types';
 import { colors, withAlpha } from '@/lib/design-tokens/colors';
@@ -372,8 +372,14 @@ export const NoteNode = memo(function NoteNode({
             scrollBehavior: 'smooth',
           }}
           onWheel={(e) => {
-            // Allow scroll within note without affecting canvas zoom
-            e.stopPropagation();
+            // Allow zoom (Ctrl/Meta + Wheel or trackpad pinch) to bubble up to canvas
+            if (e.ctrlKey || e.metaKey) return;
+            const target = e.currentTarget;
+            const isScrollable = target.scrollHeight > target.clientHeight;
+            // Only stop propagation if the note itself can scroll vertically
+            if (isScrollable) {
+              e.stopPropagation();
+            }
           }}
           onTouchMove={(e) => {
             // Allow touch scroll within note

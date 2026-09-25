@@ -244,7 +244,7 @@ export function TopologyCanvasLayer({
                 }
             }}
         >
-            <svg width="100%" height="100%" className="block select-none print:w-full print:h-auto print:block">
+            <svg width="100%" height="100%" className="block select-none print:w-full print:h-auto print:block overflow-visible">
                 <g ref={svgContentGroupRef} data-content-group="true" style={{ transformOrigin: '0 0', transition: 'none', willChange: 'transform' }}>
                     <CanvasDefs isDark={isDark} canvasWidth={canvasSize.width} canvasHeight={canvasSize.height} />
 
