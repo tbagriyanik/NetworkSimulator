@@ -1,4 +1,4 @@
-﻿import { CLI_ERRORS, cliModeError } from './cliErrors';
+import { CLI_ERRORS, cliModeError } from './cliErrors';
 import type { CommandResult, Route, SwitchState } from '../types';
 import type { CommandContext } from './commandTypes';
 import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
@@ -241,6 +241,7 @@ export function cmdNoRouterOspf(state: SwitchState, _input: string, ctx: Command
       'OSPF Routing Protocol disabled',
     newState: {
       routingProtocol: 'none',
+      ospfProcessId: undefined,
       dynamicRoutes: []
     }
   };

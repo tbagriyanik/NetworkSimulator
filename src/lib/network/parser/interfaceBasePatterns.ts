@@ -4,7 +4,7 @@ export const interfaceBasePatterns: Record<string, CommandPattern> = {
   // Interface komutları
   'interface': {
     pattern: /^interface\s+(?!r(?:ange)?\s)(f(?:a(?:st(?:ethernet)?)?)?|g(?:i(?:g(?:abit(?:ethernet)?)?)?)?|e(?:thernet)?|se(?:rial)?|po(?:\s*port-channel)?|vlan|loopback|lo)?\s*(.+)$/i,
-    modes: ['config'],
+    modes: ['config', 'interface', 'config-if-range'],
     minArgs: 1,
     maxArgs: 1
   },

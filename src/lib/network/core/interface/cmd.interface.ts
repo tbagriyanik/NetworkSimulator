@@ -15,7 +15,7 @@ import {
  * Interface - Enter interface configuration mode
  */
 export function cmdInterface(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') {
+  if (state.currentMode !== 'config' && state.currentMode !== 'interface' && state.currentMode !== 'config-if-range') {
     return { success: false, error: cliModeError() };
   }
 

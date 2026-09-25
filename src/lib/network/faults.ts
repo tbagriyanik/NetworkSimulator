@@ -8,7 +8,11 @@ export type FaultType =
   | 'aclBlocking'
   | 'duplicateIp'
   | 'wrongIpAddress'
-  | 'missingRoute';
+  | 'missingRoute'
+  | 'brokenTrunk'
+  | 'ospfIssue'
+  | 'natIssue'
+  | 'stpIssue';
 
 export interface FaultDefinition {
   id: string;

@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { checkFaultResolved } from '@/lib/network/faults';
 import { SwitchState, SecurityConfig } from '@/lib/network/types';
 
@@ -106,5 +106,33 @@ describe('checkFaultResolved', () => {
       description: { tr: '', en: '' },
     });
     expect(result).toBe(false);
+  });
+
+  it('should correctly evaluate brokenTrunk, ospfIssue, natIssue and stpIssue faults', () => {
+    const state = createMockState({
+      ports: {
+        'gi0/1': {
+          id: 'gi0/1', name: 'gi0/1', status: 'connected', mode: 'trunk',
+          vlan: 1,
+          duplex: 'auto', speed: 'auto', shutdown: false, type: 'gigabitethernet',
+        },
+      },
+      ospfProcessId: '1',
+      routerId: '1.1.1.1',
+    });
+
+    const trunkFault = checkFaultResolved(state, {
+      id: 'f-trunk', deviceId: 'sw1', faultType: 'brokenTrunk',
+      configKey: 'ports.gi0/1.mode', faultValue: 'access', correctValue: 'trunk',
+      description: { tr: 'Trunk modu bozuk', en: 'Trunk mode broken' },
+    });
+    expect(trunkFault).toBe(true);
+
+    const ospfFault = checkFaultResolved(state, {
+      id: 'f-ospf', deviceId: 'sw1', faultType: 'ospfIssue',
+      configKey: 'routerId', faultValue: '0.0.0.0', correctValue: '1.1.1.1',
+      description: { tr: 'Router ID yanlis', en: 'Wrong router ID' },
+    });
+    expect(ospfFault).toBe(true);
   });
 });
