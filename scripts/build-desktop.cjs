@@ -2,9 +2,17 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
+// Ensure Node.js install dir is present in PATH for child processes
+if (process.platform === 'win32') {
+  const nodeDir = 'C:\\Program Files\\nodejs';
+  if (fs.existsSync(nodeDir) && !process.env.PATH.includes(nodeDir)) {
+    process.env.PATH = `${nodeDir};${process.env.PATH}`;
+  }
+}
+
 const rootDir = path.resolve(__dirname, '..');
 const apiDir = path.join(rootDir, 'src', 'app', 'api');
-const tempDir = path.join(rootDir, 'src', '_api_backup');
+const tempDir = path.join(rootDir, '_api_backup');
 
 function copyFolderRecursiveSync(source, target) {
   if (!fs.existsSync(target)) {
@@ -35,7 +43,7 @@ try {
 
   // 3. Run static export build
   const nextBin = path.join(rootDir, 'node_modules', 'next', 'dist', 'bin', 'next');
-  execSync(`node "${nextBin}" build`, {
+  execSync(`"${process.execPath}" "${nextBin}" build`, {
     cwd: rootDir,
     stdio: 'inherit',
     env: {

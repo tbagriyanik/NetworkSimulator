@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import packageJson from '../../../../package.json';
 
 export async function GET() {
   return NextResponse.json({
-    latestVersion: packageJson.version,
+    latestVersion: process.env.APP_VERSION || '6.6.1',
     releaseNotesUrl: 'https://github.com/tbagriyanik/NetworkSimulator/releases',
   });
 }
