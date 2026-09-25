@@ -29,12 +29,16 @@ export const PythonFormWindow: React.FC<PythonFormWindowProps> = ({
   const triggerUpdate = () => setRerender(n => n + 1);
 
   const handleElementClick = (elem: FormElement) => {
-    if (elem.commandId && form.callbacks[elem.commandId]) {
-      form.callbacks[elem.commandId]();
-      triggerUpdate();
-    } else if (form.callbacks[elem.id]) {
-      form.callbacks[elem.id]();
-      triggerUpdate();
+    try {
+      if (elem.commandId && form.callbacks[elem.commandId]) {
+        form.callbacks[elem.commandId]();
+        triggerUpdate();
+      } else if (form.callbacks[elem.id]) {
+        form.callbacks[elem.id]();
+        triggerUpdate();
+      }
+    } catch (err) {
+      console.warn('Python Form Callback Error:', err);
     }
   };
 
