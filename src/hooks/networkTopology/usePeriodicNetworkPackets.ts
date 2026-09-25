@@ -8,6 +8,27 @@ import { runNetworkEventPipeline } from '@/lib/network/forwarding/eventPipeline'
 import { checkConnectivity } from '@/lib/network/connectivity/pathResolution';
 import { useAppStore } from '@/lib/store/appStore';
 
+/**
+ * Protocol engines write their per-device feature flags onto the shared
+ * `SwitchState` at runtime, but those fields are not declared on it. The
+ * periodic probes below assert the extension shape once, here, instead of
+ * casting each expression through `unknown` — the same `SwitchState & { ... }`
+ * pattern already used in `src/lib/network/snmp.ts`.
+ *
+ * `routingProtocol`, `ospfProcessId` and `eigrpAs` are declared on
+ * `SwitchState` and so are not repeated. `ospfEnabled` / `ospfArea` are
+ * declared on the per-port type in `src/lib/network/types/ports.ts`, which is
+ * a different object from the device state probed here.
+ */
+type ProtocolProbeState = SwitchState & {
+  ospfEnabled?: boolean;
+  ospfArea?: string;
+  mqttClients?: Record<string, { connected: boolean }>;
+  coapResources?: Record<string, string>;
+  snmpv3Users?: Record<string, unknown>;
+  netconfSessions?: Record<string, { established: boolean }>;
+};
+
 interface UsePeriodicNetworkPacketsOptions {
   devices: CanvasDevice[];
   connections: CanvasConnection[];
@@ -251,8 +272,8 @@ export function usePeriodicNetworkPackets({
         }
 
         // 2. OSPF Hello Periodic Packets (Router/SwitchL3 with OSPF enabled)
-        const stA = stateA as unknown as { ospfEnabled?: boolean; routingProtocol?: string; ospfProcessId?: string; ospfArea?: string };
-        const stB = stateB as unknown as { ospfEnabled?: boolean; routingProtocol?: string; ospfProcessId?: string; ospfArea?: string };
+        const stA = stateA as ProtocolProbeState | undefined;
+        const stB = stateB as ProtocolProbeState | undefined;
 
         const isOspfA = (devA.type === 'router' || devA.type === 'switchL3') && (stA?.ospfEnabled || stA?.routingProtocol === 'ospf');
         if (isOspfA) {
@@ -290,7 +311,7 @@ export function usePeriodicNetworkPackets({
           });
         }
         if (stateA?.routingProtocol === 'eigrp') {
-          const eigrpAsNum = (stateA as unknown as { eigrpAs?: string | number }).eigrpAs || '100';
+          const eigrpAsNum = (stateA as ProtocolProbeState | undefined)?.eigrpAs || '100';
           packetsToDispatch.push({
             connectionId: connId,
             sourceIp: devA.ip || '192.168.1.1',
@@ -314,8 +335,8 @@ export function usePeriodicNetworkPackets({
         }
 
         // 5. MQTT: Broker keepalive PINGREQ/PINGRESP for IoT devices
-        const mqttStateA = stateA as unknown as { mqttClients?: Record<string, { connected: boolean }> };
-        const mqttStateB = stateB as unknown as { mqttClients?: Record<string, { connected: boolean }> };
+        const mqttStateA = stateA as ProtocolProbeState | undefined;
+        const mqttStateB = stateB as ProtocolProbeState | undefined;
         if (mqttStateA?.mqttClients && Object.values(mqttStateA.mqttClients).some(c => c.connected)) {
           packetsToDispatch.push({
             connectionId: connId,
@@ -346,8 +367,8 @@ export function usePeriodicNetworkPackets({
         }
 
         // 6. CoAP: Confirmable ping for IoT resource polling
-        const coapStateA = stateA as unknown as { coapResources?: Record<string, string> };
-        const coapStateB = stateB as unknown as { coapResources?: Record<string, string> };
+        const coapStateA = stateA as ProtocolProbeState | undefined;
+        const coapStateB = stateB as ProtocolProbeState | undefined;
         if (coapStateA?.coapResources && Object.keys(coapStateA.coapResources).length > 0) {
           const resource = Object.keys(coapStateA.coapResources)[0];
           packetsToDispatch.push({
@@ -391,7 +412,7 @@ export function usePeriodicNetworkPackets({
             info: `SNMPv2c RESPONSE: ${devA.name} sysUpTime reply (UDP/161)`,
           });
         }
-        const snmpv3StateA = stateA as unknown as { snmpv3Users?: Record<string, unknown> };
+        const snmpv3StateA = stateA as ProtocolProbeState | undefined;
         if (snmpv3StateA?.snmpv3Users && Object.keys(snmpv3StateA.snmpv3Users).length > 0) {
           const user = Object.keys(snmpv3StateA.snmpv3Users)[0];
           packetsToDispatch.push({
@@ -405,8 +426,8 @@ export function usePeriodicNetworkPackets({
         }
 
         // 8. NETCONF: Session keepalive / RPC heartbeat
-        const netconfStateA = stateA as unknown as { netconfSessions?: Record<string, { established: boolean }> };
-        const netconfStateB = stateB as unknown as { netconfSessions?: Record<string, { established: boolean }> };
+        const netconfStateA = stateA as ProtocolProbeState | undefined;
+        const netconfStateB = stateB as ProtocolProbeState | undefined;
         const activeSessionA = Object.entries(netconfStateA?.netconfSessions || {}).find(([, s]) => s.established);
         if (activeSessionA) {
           packetsToDispatch.push({

@@ -1,5 +1,20 @@
 # 📅 Network Simulator — Proje Geçmişi
 
+## v6.6.1 — 2026-09-25
+
+- **🎵 Dinamik Müzik & Ses Motoru Yenilemesi (`pcAudioTheory.ts`, `pcAudioRender.ts`, `pcAudioPlayer.ts`, `pcPythonAudioModule.ts`, `bindPythonArguments`)**:
+  - **Kritik kwargs hatası giderildi**: `play_chord(..., wave="triangle")`, `play_melody(..., bpm=130)` ve `save_wav(..., bpm=120)` çağrılarında anahtar sözcükler sessizce düşüyor, `Number({})` ile `NaN` üretiyor ve kompozisyonun tamamını susturuyordu (`save_wav` 44 baytlık boş dosya yazıyor, `play_melody` notaları aynı anda 1ms'de çalıyordu). Native modül fonksiyonlarına `__pythonParamNames` etiketi eklendi ve `bindPythonArguments` yardımcısı hem fonksiyon çağrısına hem de **metot çağrısına** (`Synth`/`Track`) uygulandı.
+  - **Nota teorisi katmanı** (`pcAudioTheory.ts`) eklendi: tam perdeler (`Bb`, `Db`, `C-1`), oktavsız nota (`C` = C4), sent kaydırmalı mikrotonal nota (`A4+50`), 16 farklı gam (majör, minör, harmonik minör, mavi, pentatonik, dorian, lydian...), 30+ akor kalitesi (`Cmaj7`, `F#dim7`, `G7sus4`, `add9`) ve akor aralama çözümleyicisi.
+  - **Yeni çalma işlevleri**: `play_scale` (tonlama), `play_progression` (akor ilerlemesi), `play_arpeggio` (`up`/`down`/`updown`), `set_wave`, `mute`/`unmute`, `list_sfx`/`list_scales`/`list_chords`/`list_waves`, `scale_notes`/`chord_notes`/`note_to_freq`.
+  - **Tam ADSR zarfı**: `Synth.set_adsr(attack, decay, sustain, release)` ile dört aşamalı zarf ayarlanabilir hale geldi; önceden yalnızca attack/release mevcuttu.
+  - **Numune hassasiyetinde sıralama**: Melodi ve akorlar `setTimeout` zinciri yerine `AudioContext` saatine karşı planlanıyor; hızlı tempolarda sapma ve senkron kayması giderildi. `gate` parametresiyle legato/staccato kontrolü eklendi.
+  - **WAV dışa aktarımı düzeltildi ve genişletildi**: Boş/sessiz dosya yazma hatası giderildi, akor (`"C4+E4+G4:1"`) ve akor simgesi desteği, `noise` dalga formu, yumuşak sınırlayıcı (soft clip) ve bayt→string dönüşümünde kare parçalı (chunked) yazma ile O(n²) kilitlenme sorunu çözüldü.
+  - **WAV okuma/çalma eklendi (`play_wav`, `play_file`)**: Sanal diske yazılan WAV dosyaları artık geri okunup çalınabiliyor. RIFF parça tabanlı bir çözücü (`decodeWav`) eklendi; sabit 44 baytlık başlık varsayımı yerine `LIST`/`fact` gibi ek parçaları atlayarak 8/16/24/32 bit tam sayı PCM ile 32/64 bit kayan nokta, mono'dan 8 kanala kadar destekleniyor. `AudioBufferSourceNode` üzerinden çalındığı için örnekleme hızı farkı otomatik telafi ediliyor. Dosya bulunamaz veya çözümlenemezse sessize düşmek yerine CMD çıktısında açık hata veriliyor.
+  - **Dayanıklılık**: Tüm ses argümanları sanitize edilir; geçersiz değerler `NaN` yerine belgelenmiş varsayılana düşer. `set_volume(0)` artık gerçekten sessize alır (eskiden `|| 0.5` ifadesi 0'ı yok sayıyordu). Ünlü olmayan nota/ses efekti hata fırlatmak yerine güvenli karşılığa düşer; yazılamayan yol başarı gibi bildirilmez.
+  - **Polifoni koruması**: Sınırlı ses havuzu (en eski ses çalınarak devre dışı bırakılır) ve master zincirinde kompresör (limiter) ile yoğun akorlarda kırpılma engellendi.
+  - `winsound` uyumluluk katmanı `MessageBeep`, `PlaySound` ve `SND_*` sabitleriyle genişletildi. `PlaySound` artık gerçek Python davranışına uyuyor: hazır efekt adı çalınır, yol verilirse dosya sanal diskten okunur (eskiden yol verildiğinde sessizce `beep`'e düşüyordu).
+  - **Dokümantasyon**: `PYTHON_PROGRAMMING_GUIDE.md` içindeki var olmayan parametreler (`duration`, `speed`, `notes=`) gerçek API ile değiştirildi; `FileEditorModal` müzik şablonu yeni yetenekleri sergileyecek şekilde güncellendi.
+
 ## v6.6.0 — 2026-09-24
 
 - **🏆 Bütünsel Başarılarım Sistemi Entegrasyonu (`achievementRecords.ts`, `BasarilarimPanel.tsx`, `TopologyGeneratorDialog.tsx`)**: Yeni topoloji üretimi (`addTopologyRecord`), rehberli dersler, sınavlar, projeler ve etkileşimli senaryolar Başarılarım paneline bağlandı.
@@ -142,10 +157,11 @@
   - Renk (`color`), pürüzsüzlük (`roughness`), metaliklik (`metalness`), tel kafes (`wireframe`) ve şeffaflık (`opacity`) gibi gelişmiş materyal yönetimi sunuldu.
   - Özelleştirilebilir gökyüzü temaları (`gradient`, `dark`, `sunset`), zemin ızgarası (`grid`), ortam (`ambient`), güneş (`sun`) ve nokta (`lamp`) ışık kaynakları desteklendi.
   - Masaüstünde sürüklenebilir interaktif 3D pencere (`Python3DWindow`) ve web browser içinde 3D görünüm entegrasyonu sağlandı.
-- **🎵 Web Audio API Tabanlı Dinamik Müzik & Ses Motoru (`audio` / `music` / `sound` / `synth` / `winsound`, `pcAudioPlayer.ts`, `pcPythonAudioModule.ts`)**:
+- **🎵 Web Audio API Tabanlı Dinamik Müzik & Ses Motoru (`audio` / `music` / `sound` / `synth` / `winsound`, `pcAudioTheory.ts`, `pcAudioRender.ts`, `pcAudioPlayer.ts`, `pcPythonAudioModule.ts`)**:
   - Gömülü Python scriptleri üzerinden canlı ses sentezleme ve müzik besteleme altyapısı kuruldu.
   - Notaları frekansa dönüştüren (C0-B8) monofonik/polifonik sentezleyici, hazır akor dizilimleri (`play_chord`), melodi dizileri (`play_melody`) ve oyun ses efektleri (`coin`, `laser`, `jump`, `explosion`, `powerup`) eklendi.
-  - ADSR zarfı (Attack, Decay, Sustain, Release) ile sentezlenen ses ve müziklerin ham WAV formatında sanal diske (`C:\*.wav`) aktarılabilmesi sağlandı.
+  - Tam ADSR zarfı (Attack, Decay, Sustain, Release) sentezleyici üzerinde `Synth.set_adsr()` ile ayarlanabilir hale getirildi.
+  - Sentezlenen ses ve müzikler ham WAV formatında sanal diske (`C:\*.wav`) aktarılabilmesi sağlandı.
 - **🛠️ Hata Düzeltmeleri & Kararlılık İyileştirmeleri**:
   - Kwargs yalnız çağrılan Python metotlarındaki parametre hizalama hatası düzeltildi.
   - Browser audio kanallarında non-finite `linearRampToValueAtTime` hataları için finite kontrolleri ve try-catch koruması eklendi.

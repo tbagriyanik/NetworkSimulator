@@ -340,25 +340,86 @@ c1.position = (1, 2, 3)
 ```
 
 ### F. Dinamik Ses ve Müzik Sentetörü (`audio` / `music` / `synth` / `winsound`)
-Web Audio API sentezleyicisi üzerinden ses efekti, nota, polifonik akor ve melodi üretip diske kaydetme modülü:
+Web Audio API sentezleyicisi üzerinden ses efekti, nota, polifonik akor, melodi, tonlama ve akor ilerlemesi üretip diske kaydedip geri okutarak çalma modülü.
+
+Tüm fonksiyonlar hem konumsal hem de **adlandırılmış parametre** (`keyword argument`) kabul eder. Süreler `duration_ms` (milisaniye), melodi/kor belirteçlerindeki sayılar ise **vuruş** (`beat`) cinsindendir.
 
 ```python
 import audio
 
 # Tekil Nota ve Frekans Çalma
-audio.play_tone(frequency=440, duration=0.5, volume=0.8) # 440Hz A4
-audio.play_note("C4", duration=0.4)                       # Do 4
+audio.play_tone(frequency=440, duration_ms=500, volume=0.8)  # 440Hz = A4
+audio.play_note("C4", duration_ms=400)                      # Do 4 (oktav belirtmeden "C" de yazılabilir)
+audio.play_note("A4+50")                                     # 50 sent yukarı mikrotonal nota
+audio.play_note("REST")                                      # sessizlik (takvim süresi korunur)
 
-# Polifonik Akor ve Melodi Dizileri
-audio.play_chord(["C4", "E4", "G4"], duration=1.0)       # C Major Akoru
-audio.play_melody(["C4", "D4", "E4", "F4", "G4"], speed=1.2)
+# Polifonik Akor: nota listesi veya akor simgesiyle
+audio.play_chord(["C4", "E4", "G4"], duration_ms=1000)      # C Major
+audio.play_chord("Cmaj7", wave="triangle")                  # C Major 7
+audio.play_chord("F#dim7", octave=3)                        # F# yarım azaltılmış 7'lik
+
+# Melodi: "nota:vuruş" gösterimi, akor kısaltması (+), gate ve transpozisyon
+audio.play_melody("C4:1 D4:1 E4:1 C4:1 E4:1 F4:1 G4:2", bpm=130, wave="sawtooth")
+audio.play_melody("C4+E4+G4:1", gate=0.5)                  # akor + staccato
+audio.play_melody(["C4", ["E4", 2], {"note": "G4", "beats": 1}], bpm=140)
+audio.play_melody("C4:1 D4:1", transpose=12)                # bir oktav yukarı
+
+# Tonlama Skalaları ve Akor İlerlemeleri
+audio.play_scale("C", scale="major", count=8, bpm=140)     # minör, blues, pentatonik, dorian, lydian...
+audio.play_progression("C:1 Am:1 F:1 G:1", bpm=100)        # I - vi - IV - V
+audio.play_arpeggio("Aminor", bpm=160, mode="updown")      # up / down / updown
+
+# ADSR Zarflı Sentetik Enstrüman
+lead = audio.Synth("sawtooth", 0.6)
+lead.set_adsr(attack=20, decay=120, sustain=0.4, release=250)
+lead.play_melody("A4:1 C5:1 E5:1 D5:2", bpm=120)
+
+# Parça (Track) Oluşturma
+song = audio.Track("Demo", 120)
+song.add("C4", 1)
+song.add("E4", 1)
+song.add_melody("G4:1 A4:1")
+song.play()
+print(song.duration_ms())
 
 # Oyun ve Arayüz Ses Efektleri
-audio.play_sfx("coin")      # 'coin', 'laser', 'jump', 'explosion', 'powerup'
+audio.play_sfx("coin")   # coin, laser, jump, explosion, powerup, ding, alarm, siren...
+print(audio.list_sfx())  # kullanılabilir tüm efektler
 
-# WAV Dosyası Oluşturup Diske Kaydetme
-audio.save_wav("C:\\music\\melody.wav", notes=["C4", "E4", "G4", "C5"])
+# Nota Teorisi Yardımcıları
+print(audio.note_to_freq("A4"))          # 440
+print(audio.scale_notes("A", "major"))   # ['A4', 'B4', 'C#5', ...]
+print(audio.chord_notes("G7"))           # ['G4', 'B4', 'D5', 'F5']
+print(audio.list_scales(), audio.list_chords())
+
+# Genel Ses Ayarları
+audio.set_volume(0.4)    # 0.0 sessiz, 1.0 tam
+audio.set_wave("triangle")
+audio.mute(); audio.unmute()
+audio.stop()             # çalan tüm sesleri durdur
+
+# WAV Dosyası Oluşturup Sanal Diske Kaydetme
+print(audio.save_wav("C:\\music\\melody.wav", "C4:1 E4:1 G4:1 C5:2", bpm=120, wave="triangle"))
+print(audio.save_wav("kayit.wav", notes=["C4", "E4", "G4"], sample_rate=44100))
+
+# Sanal Diskteki WAV Dosyasını Çal
+print(audio.play_wav("C:\\music\\melody.wav"))   # -> Playing C:\music\melody.wav (1.20s, 22050 Hz, mono, 16-bit pcm)
+print(audio.play_wav("kayit.wav", volume=0.8))   # drive öneki isteğe bağlı
+
+import winsound
+winsound.PlaySound("C:\\music\\melody.wav")      # gerçek Python ile aynı: yol veya hazır efekt adı
+winsound.PlaySound("coin")                       # hazır efekt adları da çalışır
 ```
+
+> **Not:** `duration` yerine daima `duration_ms` kullanın. Nota adları çıktıda diyez (`#`) ile yazılır; bemol (`b`) ile yazılan kökler aynı perdelere çevrilir. Tanınmayan bir nota sessize düşer (0 Hz), hata fırlatmaz.
+
+`play_wav` yalnızca sıkıştırmasız WAV okur: 8/16/24/32 bit tam sayı PCM ve 32/64 bit kayan nokta, mono'dan 8 kanala kadar. Dosya bulunamazsa veya çözümlenemezse sessize düşmez, CMD çıktısında açık bir hata mesajı verir:
+
+```python
+print(audio.play_wav("yok.wav"))   # play_wav: cannot read C:\yok.wav (file not found)
+```
+
+> `save_wav` var olmayan bir klasöre yazamaz (sanal diskte `os.mkdir` çalışmaz). Önce `mkdir` komutunu CMD'de çalıştırın ya da kök dizine (`C:\`) kaydedin.
 
 ### G. Görsel Form ve Arayüz Penceresi (`tkinter` / `form` / `ttk`)
 PC Masaüstünde interaktif grafik form pencereleri (`PythonFormWindow`) tasarlamak, buton tıklama callback'leri bağlamak, girdi kutuları ve seçim listeleri yönetmek için form modülü:

@@ -20,6 +20,7 @@ import { ExamProject } from '@/lib/network/examMode';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/use-breakpoint';
 import { generateCertificate } from '@/lib/utils/certificateGenerator';
+import { isDesktopApp } from '@/lib/utils/desktopDetection';
 import { usePrompt } from '@/contexts/PromptContext';
 import { toast } from '@/hooks/use-toast';
 
@@ -469,7 +470,7 @@ export function ExamModePanel({
           </div>
         )}
 
-        {isFinishedState && (
+        {isFinishedState && !isDesktopApp() && (
           <div className="p-3 bg-secondary-50 dark:bg-secondary-900/50 border-t border-secondary-200 dark:border-secondary-700">
             <Button
               className="w-full bg-success-600 hover:bg-success-700 text-white font-bold h-9 rounded-lg gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-auto"

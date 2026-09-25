@@ -725,9 +725,14 @@ export function createPythonFormModule(
     public id: string;
     private val: string;
 
-    constructor(value: unknown = '') {
+    constructor(valueOrOpts: unknown = '') {
       this.id = `var_${++elementCounter}`;
-      this.val = String(value || '');
+      // Accept both positional (StringVar("x")) and keyword (StringVar(value="x"))
+      // forms — the evaluator passes only-kwargs calls as a single options object.
+      const value = (valueOrOpts && typeof valueOrOpts === 'object' && 'value' in valueOrOpts)
+        ? (valueOrOpts as { value?: unknown }).value
+        : valueOrOpts;
+      this.val = String(value ?? '');
       formState.variables[this.id] = this.val;
     }
 
@@ -746,9 +751,12 @@ export function createPythonFormModule(
     public id: string;
     private val: number;
 
-    constructor(value: unknown = 0) {
+    constructor(valueOrOpts: unknown = 0) {
       this.id = `var_${++elementCounter}`;
-      this.val = Number(value || 0);
+      const value = (valueOrOpts && typeof valueOrOpts === 'object' && 'value' in valueOrOpts)
+        ? (valueOrOpts as { value?: unknown }).value
+        : valueOrOpts;
+      this.val = Number(value ?? 0);
       formState.variables[this.id] = this.val;
     }
 
@@ -757,7 +765,7 @@ export function createPythonFormModule(
     }
 
     set(v: unknown) {
-      this.val = Number(v || 0);
+      this.val = Number(v ?? 0);
       formState.variables[this.id] = this.val;
       notifyFormChange(deviceId, formState);
     }
@@ -767,8 +775,11 @@ export function createPythonFormModule(
     public id: string;
     private val: boolean;
 
-    constructor(value: unknown = false) {
+    constructor(valueOrOpts: unknown = false) {
       this.id = `var_${++elementCounter}`;
+      const value = (valueOrOpts && typeof valueOrOpts === 'object' && 'value' in valueOrOpts)
+        ? (valueOrOpts as { value?: unknown }).value
+        : valueOrOpts;
       this.val = Boolean(value);
       formState.variables[this.id] = this.val;
     }

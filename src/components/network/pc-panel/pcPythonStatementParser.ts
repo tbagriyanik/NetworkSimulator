@@ -147,16 +147,20 @@ export function executeSinglePythonLine(
     return;
   }
 
+  // List-mutator helpers below only claim the statement when the receiver is a
+  // real list. Otherwise (Entry/Text/Listbox .insert(), dict .clear()/.pop(),
+  // ...) we fall through to the generic member-call evaluation so the actual
+  // method on the object is invoked instead of silently doing nothing.
   const removeMatch = /^([a-zA-Z_][a-zA-Z0-9_]*)\s*\.\s*remove\s*\((.*)\)$/.exec(trimmed);
   if (removeMatch) {
     const listVar = removeMatch[1];
-    const val = evaluateExpr(removeMatch[2]);
     const arr = scope[listVar];
     if (Array.isArray(arr)) {
+      const val = evaluateExpr(removeMatch[2]);
       const idx = arr.indexOf(val);
       if (idx !== -1) arr.splice(idx, 1);
+      return;
     }
-    return;
   }
 
   const popMatch = /^([a-zA-Z_][a-zA-Z0-9_]*)\s*\.\s*pop\s*\((.*)\)$/.exec(trimmed);
@@ -167,16 +171,16 @@ export function executeSinglePythonLine(
       const argStr = popMatch[2].trim();
       const idx = argStr ? Number(evaluateExpr(argStr)) : arr.length - 1;
       arr.splice(idx, 1);
+      return;
     }
-    return;
   }
 
   const extendMatch = /^([a-zA-Z_][a-zA-Z0-9_]*)\s*\.\s*extend\s*\((.*)\)$/.exec(trimmed);
   if (extendMatch) {
     const listVar = extendMatch[1];
-    const val = evaluateExpr(extendMatch[2]);
     const arr = scope[listVar];
     if (Array.isArray(arr)) {
+      const val = evaluateExpr(extendMatch[2]);
       const items = Array.isArray(val)
         ? val
         : val instanceof Set
@@ -185,23 +189,23 @@ export function executeSinglePythonLine(
             ? val.split('')
             : [];
       arr.push(...items);
+      return;
     }
-    return;
   }
 
   const insertMatch = /^([a-zA-Z_][a-zA-Z0-9_]*)\s*\.\s*insert\s*\((.*)\)$/.exec(trimmed);
   if (insertMatch) {
     const listVar = insertMatch[1];
-    const parts = splitOutsideQuotesAndParens(insertMatch[2], ',');
-    if (parts.length >= 2) {
-      const idx = Number(evaluateExpr(parts[0]));
-      const val = evaluateExpr(parts[1]);
-      const arr = scope[listVar];
-      if (Array.isArray(arr)) {
+    const arr = scope[listVar];
+    if (Array.isArray(arr)) {
+      const parts = splitOutsideQuotesAndParens(insertMatch[2], ',');
+      if (parts.length >= 2) {
+        const idx = Number(evaluateExpr(parts[0]));
+        const val = evaluateExpr(parts[1]);
         arr.splice(idx, 0, val);
       }
+      return;
     }
-    return;
   }
 
   const clearMatch = /^([a-zA-Z_][a-zA-Z0-9_]*)\s*\.\s*clear\s*\(\s*\)$/.exec(trimmed);
@@ -210,8 +214,8 @@ export function executeSinglePythonLine(
     const arr = scope[listVar];
     if (Array.isArray(arr)) {
       arr.length = 0;
+      return;
     }
-    return;
   }
 
   const sortMatch = /^([a-zA-Z_][a-zA-Z0-9_]*)\s*\.\s*sort\s*\((.*)\)$/.exec(trimmed);
@@ -229,8 +233,8 @@ export function executeSinglePythonLine(
         const sB = String(b);
         return reverse ? sB.localeCompare(sA) : sA.localeCompare(sB);
       });
+      return;
     }
-    return;
   }
 
   const reverseMatch = /^([a-zA-Z_][a-zA-Z0-9_]*)\s*\.\s*reverse\s*\((.*)\)$/.exec(trimmed);
@@ -239,8 +243,8 @@ export function executeSinglePythonLine(
     const arr = scope[listVar];
     if (Array.isArray(arr)) {
       arr.reverse();
+      return;
     }
-    return;
   }
 
   const indexedSwapSyncMatch = /^([a-zA-Z_][a-zA-Z0-9_]*)\s*\[(.+)\]\s*,\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\[(.+)\]\s*=\s*(.+)$/.exec(trimmed);

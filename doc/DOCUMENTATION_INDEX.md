@@ -49,7 +49,7 @@ Bu indeks, Network Simulator projesinin tüm dokümantasyon dosyalarını ve iç
 - Fonksiyonlar, Generator'lar ve Decorator'lar
 - Nesne Yönelimli Programlama (OOP)
 - 3D Sahne Motoru (`scene3d` / `vpython`) & CSG katı geometri
-- Web Audio API Tabanlı Müzik ve Ses Sentetörü (`audio` / `winsound`)
+- Web Audio API Tabanlı Müzik ve Ses Sentetörü (`audio` / `music` / `synth` / `winsound`) — nota, akor, melodi, tonlama, akor ilerlemesi, arpej, ADSR, ses efektleri, WAV kaydetme
 - Görsel Form & GUI Pencere Motoru (`tkinter` / `form` / `ttk`)
 - Standart Modüller & Soket Programlama Simülasyonu
 

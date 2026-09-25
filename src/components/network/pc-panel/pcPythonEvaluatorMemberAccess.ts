@@ -9,6 +9,7 @@ import {
   PySuper,
   splitOutsideQuotesAndParens,
   parseFormatArgs,
+  bindPythonArguments,
   formatStringTemplate,
   findOperatorIndex,
 } from './pcPythonRunnerHelpers';
@@ -143,7 +144,12 @@ export function evaluatePythonMemberCall(
 
   // Dict / plain-object methods
   const objectValue = obj as Record<string, unknown> | undefined;
-  if (objectValue && typeof obj === 'object' && obj !== null && !Array.isArray(obj) && !(obj instanceof Set)) {
+  // Skip dict-style dispatch when the receiver is a real class instance that
+  // defines `methodName` on its prototype (Entry.get(), StringVar.get(), ...).
+  // Otherwise the dict 'get' handler below would intercept those widget and
+  // variable readers and always return null instead of the stored value.
+  const hasOwnMethod = !!(objectValue && typeof objectValue[methodName] === 'function');
+  if (!hasOwnMethod && objectValue && typeof obj === 'object' && obj !== null && !Array.isArray(obj) && !(obj instanceof Set)) {
     const argList = rawArgs ? splitOutsideQuotesAndParens(rawArgs, ',').map(a => evaluateExpr(a)) : [];
     const dictResult = evalDictMethod(objectValue, methodName, argList);
     if (dictResult.handled) return dictResult;
@@ -176,11 +182,9 @@ export function evaluatePythonMemberCall(
       ? parseFormatArgs(rawArgs, evaluateExpr)
       : { positional: [], kwargs: {} as Record<string, unknown> };
 
-    const finalArgs = Object.keys(kwargs).length > 0 && positional.length === 0
-      ? [kwargs]
-      : Object.keys(kwargs).length > 0
-        ? [...positional, kwargs]
-        : positional;
+    // Honour __pythonParamNames so keyword arguments reach native methods
+    // (e.g. `synth.play_note("A4", duration_ms=400)`).
+    const finalArgs = bindPythonArguments(fn, positional, kwargs);
 
     const isConstructable = fn.prototype && fn.prototype.constructor === fn && Object.getOwnPropertyNames(fn.prototype).length > 1;
     if (isConstructable) {

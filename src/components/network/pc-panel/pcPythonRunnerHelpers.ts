@@ -553,6 +553,47 @@ export function parseFormatArgs(
   return { positional, kwargs };
 }
 
+/**
+ * Maps parsed Python call arguments onto a native function's parameter list.
+ *
+ * A function may advertise its parameter names through `__pythonParamNames`
+ * (the convention used by user-defined `def` functions and by the native
+ * modules in `pc-panel`). When it does, keyword arguments are matched by name
+ * instead of being appended as a stray object, which previously turned
+ * `play_chord(notes, wave="triangle")` into a NaN duration.
+ *
+ * Gaps are filled with `undefined` rather than removed, so a keyword can bind
+ * to a later parameter (`play_note("A4", wave="saw")`) while skipped
+ * parameters still fall back to their JavaScript default values.
+ */
+export function bindPythonArguments(
+  fn: unknown,
+  positional: unknown[],
+  kwargs: Record<string, unknown>
+): unknown[] {
+  if (Object.keys(kwargs).length === 0) return [...positional];
+
+  const paramNames = (fn as { __pythonParamNames?: string[] } | null | undefined)?.__pythonParamNames;
+  if (!Array.isArray(paramNames) || paramNames.length === 0) {
+    return positional.length > 0 ? [...positional, kwargs] : [kwargs];
+  }
+
+  const bound: unknown[] = [];
+  const remaining = [...positional];
+  paramNames.forEach(name => {
+    if (Object.prototype.hasOwnProperty.call(kwargs, name)) {
+      bound.push(kwargs[name]);
+      delete kwargs[name];
+    } else if (remaining.length > 0) {
+      bound.push(remaining.shift());
+    } else {
+      bound.push(undefined);
+    }
+  });
+  if (remaining.length > 0) bound.push(...remaining);
+  return bound;
+}
+
 export function formatStringTemplate(
   template: string,
   positional: unknown[],

@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import type { SwitchState } from '@/lib/network/types';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { getRoutingTable } from '@/lib/network/routing';
@@ -32,17 +32,16 @@ describe('Routing Table Building', () => {
   });
 
   it('should return connected routes from device state', () => {
-    const state: SwitchState = {
-      id: 'R1',
+    const state = {
       hostname: 'R1',
       mode: 'privileged',
       ports: {
         'gi0/0': {
-          id: 'gi0/0', ipAddress: '192.168.1.1', subnetMask: '255.255.255.0',
+          id: 'gi0/0', name: 'gi0/0', ipAddress: '192.168.1.1', subnetMask: '255.255.255.0',
           status: 'connected', vlan: 1, mode: 'routed', duplex: 'auto', speed: 'auto', shutdown: false, type: 'gigabitethernet',
         },
         'gi0/1': {
-          id: 'gi0/1', ipAddress: '10.0.0.1', subnetMask: '255.0.0.0',
+          id: 'gi0/1', name: 'gi0/1', ipAddress: '10.0.0.1', subnetMask: '255.0.0.0',
           status: 'connected', vlan: 1, mode: 'routed', duplex: 'auto', speed: 'auto', shutdown: false, type: 'gigabitethernet',
         },
       },
@@ -55,11 +54,11 @@ describe('Routing Table Building', () => {
   });
 
   it('should include IPv6 connected routes', () => {
-    const state: SwitchState = {
-      id: 'R1', hostname: 'R1', mode: 'privileged',
+    const state = {
+      hostname: 'R1', mode: 'privileged',
       ports: {
         'gi0/0': {
-          id: 'gi0/0', ipAddress: '192.168.1.1', subnetMask: '255.255.255.0',
+          id: 'gi0/0', name: 'gi0/0', ipAddress: '192.168.1.1', subnetMask: '255.255.255.0',
           ipv6Address: '2001:db8:1::1', ipv6Prefix: 64,
           status: 'connected', vlan: 1, mode: 'routed', duplex: 'auto', speed: 'auto', shutdown: false, type: 'gigabitethernet',
         },
@@ -71,11 +70,11 @@ describe('Routing Table Building', () => {
   });
 
   it('should include HSRP virtual IP routes when active', () => {
-    const state: SwitchState = {
-      id: 'R1', hostname: 'R1', mode: 'privileged',
+    const state = {
+      hostname: 'R1', mode: 'privileged',
       ports: {
         'gi0/0': {
-          id: 'gi0/0', ipAddress: '192.168.1.1', subnetMask: '255.255.255.0',
+          id: 'gi0/0', name: 'gi0/0', ipAddress: '192.168.1.1', subnetMask: '255.255.255.0',
           hsrp: { groups: { '1': { state: 'Active', virtualIp: '192.168.1.254' } } },
           status: 'connected', vlan: 1, mode: 'routed', duplex: 'auto', speed: 'auto', shutdown: false, type: 'gigabitethernet',
         },
@@ -105,11 +104,11 @@ describe('Routing Table Building', () => {
   });
 
   it('should not include ports without IP addresses', () => {
-    const state: SwitchState = {
-      id: 'SW1', hostname: 'SW1', mode: 'privileged',
+    const state = {
+      hostname: 'SW1', mode: 'privileged',
       ports: {
         'fa0/1': {
-          id: 'fa0/1',
+          id: 'fa0/1', name: 'fa0/1',
           status: 'connected', vlan: 1, mode: 'access', duplex: 'auto', speed: 'auto', shutdown: false, type: 'fastethernet',
         },
       },
@@ -131,7 +130,6 @@ describe('RIP Dynamic Routing', () => {
     ] as unknown as CanvasConnection[];
 
     const r1State = {
-      id: 'R1',
       hostname: 'R1',
       deviceType: 'router',
       routingProtocol: 'rip',
@@ -155,7 +153,6 @@ describe('RIP Dynamic Routing', () => {
     } as unknown as SwitchState;
 
     const r2State = {
-      id: 'R2',
       hostname: 'R2',
       deviceType: 'router',
       routingProtocol: 'rip',

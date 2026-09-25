@@ -130,6 +130,7 @@ const config = async () => {
       NEXT_PUBLIC_GIT_COMMIT_COUNT: String(commitCount),
       NEXT_PUBLIC_LOC: String(loc),
       APP_VERSION: String(version),
+      NEXT_PUBLIC_IS_DESKTOP: isExport ? 'true' : String(process.env.TAURI_ENV_PLATFORM !== undefined || process.env.NEXT_PUBLIC_IS_DESKTOP === 'true'),
       NEXT_PUBLIC_IS_ROOM_ENABLED: isExport ? 'false' : String(!!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)),
       NEXT_PUBLIC_IS_CONTACT_ENABLED: isExport ? 'false' : String(!!process.env.GOOGLE_SHEETS_CONTACT_URL),
     },

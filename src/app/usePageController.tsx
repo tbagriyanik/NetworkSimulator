@@ -64,10 +64,15 @@ import { usePageModalDrags } from './usePageModalDrags';
 import { usePageRoomAndTaskSync } from './usePageRoomAndTaskSync';
 import { usePageTopologyActions } from './usePageTopologyActions';
 
+import { useVersionCheck } from '@/hooks/useVersionCheck';
+
 export function usePageController({ initialProjectId }: { initialProjectId?: string }) {
   const { t, language, setLanguage } = useLanguage();
   const { theme, effectiveTheme, setTheme } = useTheme();
   const isTR = language === 'tr';
+
+  // Check for new app version updates
+  useVersionCheck(language);
 
   // Multi-tab warning system
   const { showWarning, tabCount, acknowledgeWarning, clearCurrentTabData } = useMultiTabWarning();
