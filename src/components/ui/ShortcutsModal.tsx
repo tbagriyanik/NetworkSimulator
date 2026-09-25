@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ShortcutBadge } from '@/components/ui/ShortcutBadge';
 import { Keyboard, Command, MousePointer, Cpu } from 'lucide-react';
+import { isMacPlatform, formatShortcutLabel } from '@/lib/utils/platform';
 
 interface ShortcutsModalProps {
   open: boolean;
@@ -19,6 +20,8 @@ export function ShortcutsModal({
   language,
 }: ShortcutsModalProps) {
   const isTr = language === 'tr';
+  const isMac = isMacPlatform();
+  const modText = isMac ? '⌘' : 'Ctrl';
 
   useEffect(() => {
     if (!open) return;
@@ -42,7 +45,7 @@ export function ShortcutsModal({
         { label: isTr ? 'Cihazı Sil' : 'Delete Device', key: 'Delete' },
         { label: isTr ? 'Cihazı Yeniden Adlandır' : 'Rename Device', key: 'F2' },
         { label: isTr ? 'Çoklu Seçim' : 'Multi-Select', key: 'Shift + Click / Box' },
-        { label: isTr ? 'Hizalama Izgarası (Snap)' : 'Snap to Grid', key: 'Ctrl (Hold / Basılı)' },
+        { label: isTr ? 'Hizalama Izgarası (Snap)' : 'Snap to Grid', key: `${modText} (Hold / Basılı)` },
         { label: isTr ? 'Kablo Takarken Gövdeye Tıkla' : 'Auto-Connect Port', key: 'Click Device' },
         { label: isTr ? 'Cihaza Odaklan & Kamera Ortalama' : 'Focus Device', key: 'Enter (Search / Görev)' },
       ],
@@ -51,11 +54,11 @@ export function ShortcutsModal({
       title: isTr ? 'Genel & Proje' : 'General & Project',
       icon: Command,
       shortcuts: [
-        { label: isTr ? 'İşlemi Yeniden Yap' : 'Redo', key: 'Ctrl+Y' },
-        { label: isTr ? 'Proje Aç' : 'Open Project', key: 'Ctrl+O' },
-        { label: isTr ? 'Proje Kaydet' : 'Save Project', key: 'Ctrl+S' },
-        { label: isTr ? 'Son İşlemi Geri Al' : 'Undo', key: 'Ctrl+Z' },
-        { label: isTr ? 'Tam Ekrana Geç/Çık' : 'Toggle Fullscreen', key: 'Ctrl+F' },
+        { label: isTr ? 'İşlemi Yeniden Yap' : 'Redo', key: formatShortcutLabel('Y') },
+        { label: isTr ? 'Proje Aç' : 'Open Project', key: formatShortcutLabel('O') },
+        { label: isTr ? 'Proje Kaydet' : 'Save Project', key: formatShortcutLabel('S') },
+        { label: isTr ? 'Son İşlemi Geri Al' : 'Undo', key: formatShortcutLabel('Z') },
+        { label: isTr ? 'Tam Ekrana Geç/Çık' : 'Toggle Fullscreen', key: formatShortcutLabel('F') },
         { label: isTr ? 'Yardım & Kısayol Rehberi' : 'Help & Guide', key: 'F1 / Shift+?' },
         { label: isTr ? 'Yeni Proje' : 'New Project', key: 'Alt+N' },
       ],
@@ -72,20 +75,20 @@ export function ShortcutsModal({
         { label: isTr ? 'Paket Analizini Oynat/Duraklat' : 'Play/Pause Packet Anim', key: 'P' },
         { label: isTr ? 'Sonraki Hop Adımı' : 'Next Hop Step', key: 'N' },
         { label: isTr ? 'Tuvali Kaydır' : 'Pan Canvas', key: 'Space + Drag' },
-        { label: isTr ? 'Yakınlaştır / Uzaklaştır' : 'Zoom In / Out', key: 'Ctrl + Scroll' },
+        { label: isTr ? 'Yakınlaştır / Uzaklaştır' : 'Zoom In / Out', key: `${modText} + Scroll` },
       ],
     },
     {
       title: isTr ? 'Pencere & Terminal' : 'Window & Terminal',
       icon: Keyboard,
       shortcuts: [
-        { label: isTr ? 'Etkin Pencereyi Küçült' : 'Minimize Window', key: 'Ctrl+M' },
+        { label: isTr ? 'Etkin Pencereyi Küçült' : 'Minimize Window', key: formatShortcutLabel('M') },
         { label: isTr ? 'Komut Tamamlama' : 'Auto-Complete', key: 'Tab' },
         { label: isTr ? 'Komut Geçmişi' : 'Command History', key: '↑ / ↓' },
         { label: isTr ? 'Pencere Değiştirici' : 'Window Switcher', key: 'Shift+Tab' },
         { label: isTr ? 'Sağ Tık Yapıştır' : 'Right-Click Paste', key: 'Right Click' },
         { label: isTr ? 'Sonraki Cihaza Odaklan' : 'Focus Next Device', key: 'Tab' },
-        { label: isTr ? 'Terminali Temizle' : 'Clear Terminal', key: 'Ctrl+L' },
+        { label: isTr ? 'Terminali Temizle' : 'Clear Terminal', key: formatShortcutLabel('L') },
         { label: isTr ? 'Yüzen Pencereyi Daralt/Genişlet' : 'Collapse/Expand Window', key: 'Title Double-Click' },
       ],
     },

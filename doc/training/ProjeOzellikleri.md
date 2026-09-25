@@ -1,10 +1,20 @@
 # Network Simulator — Özellik ve Yetenek Envanteri
 
-**Sürüm / Version:** 6.6.0 · **Son doğrulama / Last verified:** 2026-09-24
+**Sürüm / Version:** 6.6.1 · **Son doğrulama / Last verified:** 2026-09-25
 
 ## Packet/Control-Plane Entegrasyon Özeti
 
 MPLS/LDP, IPSec, SNMP, NETCONF/RESTCONF, EEM, MST, IP SLA, QoS MQC, 802.1X, CAPWAP, sFlow/NetFlow, MQTT ve CoAP akışları ortak state/packet pipeline ile doğrulanır. Telemetry export’ları collector frame olarak, MQTT/CoAP/NETCONF işlemleri servis portlarına bağlı request-response frame olarak modellenir.
+
+## Kurumsal CLI Regresyon Matrisi, Arıza Enjeksiyonu, Durum Makineleri & Hop Paket Yolculuğu (2026-09-25 - v6.6.1)
+
+| Özellik | Güncel kapsam ve sınır |
+|---|---|
+| **Kurumsal CLI Regresyon Matrisi (`cliBehaviorRegressionMatrix.test.ts`)** | `CLI → State → Engine → Packet → Show → no` tam yaşam döngüsü doğrulaması. `no shutdown`, `no ip address`, `no ip route`, `no access-group`, `no switchport access vlan`, `no ip nat`, OSPF/EIGRP/BGP sıfırlamaları için otomatik E2E testleri. |
+| **Arıza Enjeksiyonu & Sorun Giderme Modu (`faults.ts`, `networkTroubleshooter.ts`)** | Eğitim/sınavlar için bozuk topoloji üretimi ve arıza enjeksiyonu (`wrongVlan`, `wrongGateway`, `shutdownPort`, `aclDeny`, `brokenTrunk`, `ospfIssue`, `natIssue`, `stpIssue`). Öğrencinin arızaları bağımsız teşhis etmesi ve düzeltmesi sağlanır. |
+| **Sekme Sekme (Hop-by-Hop) Paket Yolculuğu & Drop Registry** | Kaynaktan hedefe her sıçramada (hop) ARP, VLAN, Routing, ACL, NAT, TTL ve Loop denetimleri. Standardize RFC uyumlu Paket Düşme Nedenleri (Drop Reason Registry: `Unreachable`, `ACL Blocked`, `Port Security Violation`, `Interface Down`, `TTL Expired`, `NAT Translation Failed`, `STP Blocking`, `Trunk Mismatch`). |
+| **Gerçek Zamanlı Durum Makineleri & Yaşlanma Engine** | OSPF (Down...Full), BGP (Idle...Established), LACP ve DHCP lease durum makineleri (`protocolStateMachines.ts`). ARP önbellek, CAM/MAC tablosu, STP TCN flushes ve Dynamic NAT kayıtları için otomatik yaşlanma ve zaman aşımı motoru (`agingEngine.ts`). |
+| **Çapraz Platform Özellik Eşitliği & Otomasyonu** | macOS (`Cmd`) / Windows & Linux (`Ctrl`) kısayol standardizasyonu (`platform.ts`), native dosya diyalogları ve çevrimdışı masaüstü çalışma doğrulama testleri (`platformFeatureParity.test.ts`). |
 
 ## CLI Pipe Filtreleme, Akıllı Kavisli Kablolar, Toplu Komut Kuyruğu & UX İyileştirmeleri (2026-09-21 - v6.4.0)
 

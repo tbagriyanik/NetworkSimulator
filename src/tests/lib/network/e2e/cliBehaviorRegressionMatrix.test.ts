@@ -47,7 +47,7 @@ function toConfig(state: SwitchState): SwitchState {
   return s;
 }
 
-describe('Cisco Behavior Regression Matrix: CLI -> State -> Engine -> Packet -> Show -> No', () => {
+describe('Enterprise CLI Behavior Regression Matrix: CLI -> State -> Engine -> Packet -> Show -> No', () => {
 
   describe('1. Interface Lifecycle & Connected Routes (shutdown / no shutdown, no ip address)', () => {
     it('handles shutdown and no shutdown correctly across state and show output', () => {

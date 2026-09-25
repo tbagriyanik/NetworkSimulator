@@ -1,6 +1,6 @@
 # 📚 Network Simulator — Uygulama & Kullanım Rehberi
 
-**Sürüm / Version:** 6.6.0  
+**Sürüm / Version:** 6.6.1  
 **Doküman Tipi:** Kullanım, Mimari, Komut Referansı ve Laboratuvar Kılavuzu  
 **Dil:** Türkçe (Turkish)
 

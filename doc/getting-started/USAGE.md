@@ -173,6 +173,11 @@ Tüm parametreler ve detaylı kullanım için → [PC_CMD_REFERENCE.md](PC_CMD_R
 - Arka plan trafik (DHCP DORA, STP BPDU, CDP, OSPF Hello vb.) otomatik yakalanır.
 - Detaylı bilgi için → [PACKET_CAPTURE_GUIDE.md](../network/PACKET_CAPTURE_GUIDE.md)
 
+### Troubleshooting & Fault Injection / Sorun Giderme & Arıza Enjeksiyonu
+- **Sorun Giderme Modu** öğrencilere otomatik olarak bozuk veya yanlış yapılandırılmış topolojiler sunar.
+- **Arıza Türleri:** Yanlış VLAN (`wrongVlan`), Yanlış Gateway (`wrongGateway`), Kapatılmış Port (`shutdownPort`), ACL Engelleme (`aclDeny`), Uyumsuz Trunk (`brokenTrunk`), OSPF Alan Uyuşmazlığı (`ospfIssue`), NAT Çeviri Hatası (`natIssue`), STP Uyuşmazlığı (`stpIssue`).
+- Öğrencilerin CLI komutları, durum kontrolleri ve paket izleme ile arızaları bağımsız olarak teşhis edip gidermesi beklenir.
+
 ---
 
 ## EN: Tips / TR: İpuçları

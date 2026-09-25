@@ -2,6 +2,51 @@
 
 ## v6.6.1 — 2026-09-25
 
+- **🧪 Kurumsal CLI Davranış Regresyon Matrisi & E2E Otomasyon Test Grubu (`cliBehaviorRegressionMatrix.test.ts`)**:
+  - **Tam Yaşam Döngüsü Uçtan Uca Doğrulama (`CLI → State → Engine → Packet → Show → no`)**: CLI komut diziliminin cihaz durumu (state), simülasyon motoru (engine), paket işleme hattı (packet pipeline) ve show çıktıları üzerindeki etkileri uçtan uca otomatik test matrisine bağlandı.
+  - **Otomatik E2E `no` Komut Doğrulamaları**: Komutların iptal ve geri alma (`no`) davranışları uçtan uca test edildi:
+    - `no shutdown` (Arayüzlerin aktifleştirilmesi, donanım link status ve STP/ARP tetiklenmesi)
+    - `no ip address` (İlgili arayüzün IP adresi ve subnet maskesinin sıfırlanması)
+    - `no ip route` (Statik yönlendirme tablosu kayıtlarının silinmesi)
+    - `no access-group` (Arayüz ACL filtre bağının kaldırılması)
+    - `no switchport access vlan` (Arayüz VLAN yapılandırmasının varsayılana dönmesi)
+    - NAT / OSPF / EIGRP / BGP dinamik protokol sıfırlama (`no ip nat`, `no router ospf`, `no router eigrp`, `no router bgp`).
+  - **CLI Sözdizimi & Hata Yönetimi Ayrıştırması**: Geçersiz girdi (`Invalid input detected`), eksik komut (`Incomplete command`), çakışan girdi (`Ambiguous command`) ve durum hataları belirgin sözdizimi hata mesajlarıyla ayrıştırıldı; `?` yardım ve `Tab` tamamlama matris ile doğrulandı.
+
+- **🕵️ Gelişmiş Arıza Enjeksiyonu (Fault Injection) & Sorun Giderme (Troubleshooting) Modu (`faults.ts`, `networkTroubleshooter.ts`, `faults.test.ts`)**:
+  - **Eğitim & Sınavlar İçin Etkileşimli Arıza Senaryoları**: Öğrencilere otomatik olarak yapılandırması veya bağlantısı bozulmuş topolojiler sunularak kök nedeni bağımsız olarak bulmaları sağlandı.
+  - **Yeni Arıza Türleri**:
+    - Yanlış VLAN Yapılandırması (`wrongVlan`)
+    - Yanlış Varsayılan Ağ Geçidi (`wrongGateway`)
+    - Kapatılmış Arayüz (`shutdownPort`)
+    - ACL Engelleme Kuralı (`aclDeny`)
+    - Kopuk / Uyumsuz Trunk Bağlantısı (`brokenTrunk`)
+    - OSPF Alan / Ağ Uyuşmazlığı (`ospfIssue`)
+    - NAT Çeviri / Havuz Hatası (`natIssue`)
+    - STP Engelleme / Port Uyuşmazlığı (`stpIssue`).
+
+- **🧭 Hop-by-Hop Paket Yolculuğu (Packet Journey) & Standardize Düşen Paket Nedeni Kaydı (`packetPipeline.ts`, `dropReasons.ts`)**:
+  - **Adım Adım Paket İzi & Hop Analizi**: Paketlerin kaynak cihazdan hedef cihaza kadar geçtiği tüm sıçramalar (hops) üzerinde ARP önbellek denetimi, VLAN 802.1Q etiketleme/erişim kontrolü, RIB/FIB routing yönlendirmesi, Giriş/Çıkış ACL denetimi, Dinamik/Statik NAT çevirileri, TTL dekrementasyonu ve döngü (loop) algılaması izlenebilir hale getirildi.
+  - **Standardize RFC Uyumlu Düşme Nedenleri (Drop Reason Registry)**: Paket düşme durumlarında (`Unreachable`, `ACL Blocked`, `Port Security Violation`, `Interface Down`, `TTL Expired`, `NAT Translation Failed`, `STP Blocking`, `Trunk Mismatch`) açıklayıcı teşhis kodları üretildi.
+
+- **⚙️ Gerçek Zamanlı Ağ Motoru, Durum Makineleri & Yaşlanma Zamanlayıcısı (`protocolStateMachines.ts`, `agingEngine.ts`)**:
+  - **Protokol Durum Makineleri (State Machines)**:
+    - OSPF Komşuluk Durum Makinesi (`Down`, `Init`, `2-Way`, `ExStart`, `Exchange`, `Loading`, `Full`)
+    - BGP Durum Makinesi (`Idle`, `Connect`, `Active`, `OpenSent`, `OpenConfirm`, `Established`)
+    - LACP Port Kanalı Durum Makinesi & DHCP Lease Yaşam Döngüsü Yönetimi.
+  - **Dinamik Yaşlanma Engine (Aging Engine)**:
+    - ARP Önbellek Yaşlanması (Aging) & Dinamik Öğrenme
+    - MAC / CAM Tablosu Yaşlanması & Arayüz Kapanma (Interface Down) İmpakt Analizi
+    - STP Topology Change Notification (TCN) ve MAC Temizleme Davranışı
+    - Dynamic NAT Translation Yaşam Döngüsü & Timeout Zaman aşımı temizliği.
+
+- **🖥️ Çapraz Platform (Windows / macOS / Linux) Özellik Eşitliği & Otomasyonu (`platform.ts`, `platformFeatureParity.test.ts`)**:
+  - **Kısayol Standardizasyonu**: macOS işletim sisteminde `Cmd` tuşu, Windows ve Linux üzerinde `Ctrl` tuşu kısayol standardizasyonu sağlandı (`modKey`, `formatShortcut`).
+  - **Native Dosya Diyalogları Testleri & Fallback Mekanizmaları**: Dosya kaydetme/açma iletişim kutuları masaüstü ve web ortamında otomatik fallback yetenekleriyle doğrulandı.
+  - **Sürükle & Bırak (Drag & Drop) & Masaüstü Çevrimdışı Modu**: Çevrimdışı masaüstü çalışma ve yerel depolama tutarlılığı test matrisine dahil edildi.
+
+- **🔖 Sürüm Güncellemesi**: Tüm proje paketi, bileşenler, test suite'leri ve dokümantasyon v6.6.1 sürümüne yükseltildi.
+
 - **🎵 Dinamik Müzik & Ses Motoru Yenilemesi (`pcAudioTheory.ts`, `pcAudioRender.ts`, `pcAudioPlayer.ts`, `pcPythonAudioModule.ts`, `bindPythonArguments`)**:
   - **Kritik kwargs hatası giderildi**: `play_chord(..., wave="triangle")`, `play_melody(..., bpm=130)` ve `save_wav(..., bpm=120)` çağrılarında anahtar sözcükler sessizce düşüyor, `Number({})` ile `NaN` üretiyor ve kompozisyonun tamamını susturuyordu (`save_wav` 44 baytlık boş dosya yazıyor, `play_melody` notaları aynı anda 1ms'de çalıyordu). Native modül fonksiyonlarına `__pythonParamNames` etiketi eklendi ve `bindPythonArguments` yardımcısı hem fonksiyon çağrısına hem de **metot çağrısına** (`Synth`/`Track`) uygulandı.
   - **Nota teorisi katmanı** (`pcAudioTheory.ts`) eklendi: tam perdeler (`Bb`, `Db`, `C-1`), oktavsız nota (`C` = C4), sent kaydırmalı mikrotonal nota (`A4+50`), 16 farklı gam (majör, minör, harmonik minör, mavi, pentatonik, dorian, lydian...), 30+ akor kalitesi (`Cmaj7`, `F#dim7`, `G7sus4`, `add9`) ve akor aralama çözümleyicisi.

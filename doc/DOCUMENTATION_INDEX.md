@@ -318,6 +318,9 @@ doc/
 | Bildirimler | development/ERROR_HANDLING_GUIDE.md | Notification Manager |
 | API İstemcisi | development/INTEGRATION_GUIDE.md | Async İşlemlere Try-Catch |
 | L3 Anahtarlama | network/L3_SWITCH_CONFIGURATION.md | Tüm bölümler |
+| CLI Regresyon Matrisi | cli/CLI_COMMANDS.md | Automatic E2E `no` Command Matrix |
+| Arıza Enjeksiyonu & Troubleshooting | getting-started/USAGE.md | Troubleshooting & Fault Injection |
+| Hop Paket Yolculuğu & Drop Registry | training/ProjeOzellikleri.md | v6.6.1 Özellik Kataloğu |
 
 ---
 

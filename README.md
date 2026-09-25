@@ -1,6 +1,6 @@
 # Network Simulator
 
-![Version](https://img.shields.io/badge/version-6.6.0-blue)
+![Version](https://img.shields.io/badge/version-6.6.1-blue)
 ![Next.js](https://img.shields.io/badge/Next.js-16.3.6-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19.3.0-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-7.0.2-3178C6?logo=typescript&logoColor=white)
@@ -97,11 +97,13 @@ git push origin main --tags
 
 ## 🚀 Key Features / Öne Çıkan Özellikler
 
+- **🧪 Kurumsal CLI Regresyon Matrisi & Sorun Giderme (Troubleshooting) Modu:** CLI `no` komutları (`no shutdown`, `no ip address`, `no ip route`, `no access-group`, `no switchport access vlan` vb.) için uçtan uca E2E test matrisi, bozuk topoloji üretimi ile etkileşimli arıza enjeksiyonu (`wrongVlan`, `wrongGateway`, `shutdownPort`, `aclDeny`, `brokenTrunk`, `ospfIssue`, `natIssue`, `stpIssue`), hop-by-hop paket yolculuğu (ARP, VLAN, Routing, ACL, NAT, TTL) ve RFC uyumlu paket düşme nedenleri kaydı.
 - **🏗️ 28 Kategori ve 49+ Örnek Proje Kataloğu:** Otomatik Topoloji Üretici penceresinde 8 ana kategori (Temel, Topoloji, Veri Merkezi, Kablosuz, Servisler, Anahtarlama, Yönlendirme, Güvenlik) ve 28 hazır mimari senaryo. Ofis Yazıcısı & Akıllı IoT Sensör, Python Ağ Otomasyonu (OOBM Filosu) ve Kurumsal DMZ Güvenlik Duvarı laboratuvarları.
 - **💻 Gelişmiş CLI & Ağ İşletim Sistemi Simülasyonu:** Switch (L2/L3), Router, Güvenlik Duvarı (Firewall), WLC, PC, IoT ve Hub cihazları için 729+ benzersiz komut içeren terminal ve komut motoru. Komut kapsamı ile gerçek protokol/iletim davranışı özellik bazında değişebilir.
-- **⚡ EEM (Embedded Event Manager) & NETCONF:** Syslog, CLI ve zamanlayıcı tabanlı EEM applet otomasyonu (`event manager applet`) ile NETCONF-YANG veri modeli ve SSH 830 senaryoları bulunur. NETCONF desteği komut, durum ve simülasyon kapsamındadır; tam harici NETCONF sunucusu değildir.
+- **⚙️ Gerçek Zamanlı Protokol Durum Makineleri & Yaşlanma Engine:** OSPF (Down...Full), BGP (Idle...Established) ve LACP durum makineleri; ARP, CAM/MAC tablosu ve Dynamic NAT kaydı otomatik yaşlanma (aging) ve temizleme mekanizmaları.
 - **📸 Topoloji Anlık Görüntü & Geri Yükleme:** Ağ topolojisini tek tıkla dondurma, kontrol noktaları (Checkpoint) oluşturma, JSON dışa/içe aktarma ve anlık geri yükleme.
 - **🐍 Python Yorumlayıcısı, Dosya & GUI/Ses/3D İşlemleri:** PC terminalinde OOP, Decorator, Generator, `open()` ile sanal dosya I/O; `tkinter`/`form` ile görsel pencereli form uygulamaları; Web Audio API tabanlı dinamik nota/akor/müzik ve ses efekti (`audio`/`music`/`synth`) sentezleme; `scene3d`/`three3d` ile interaktif 3D sahne, katı geometri (CSG) ve ışıklandırma motoru; soket ağ programlama.
+- **🖥️ Çapraz Platform Özellik Eşitliği:** macOS (`Cmd`) ve Windows/Linux (`Ctrl`) kısayol standardizasyonu, native dosya diyalogları ve çevrimdışı çalışma doğrulamaları.
 - **🔍 Gelişmiş Teşhis & Sağlık Denetimi:** Native VLAN mismatch, çakışan IP/MAC tespiti, routing loop tespiti, orphan port denetimi ve tek komutla `show network health` raporu.
 
 > **Kapsam notu:** README’de listelenen CLI, parser, state, paket yakalama ve forwarding özellikleri her protokolde aynı olgunluk seviyesinde değildir. NetFlow/sFlow, MQTT, CoAP, NETCONF-YANG ve RESTCONF için mevcut davranışlar eğitim amaçlı simülasyon kapsamındadır; “destekleniyor” ifadesi tek başına tam üretim protokol uygulaması veya gerçek harici collector/server uyumluluğu anlamına gelmez.
@@ -112,7 +114,7 @@ git push origin main --tags
 
 | Metrik / Metric | Değer / Value |
 | --- | --- |
-| Version / Sürüm | 6.6.0 |
+| Version / Sürüm | 6.6.1 |
 | Total Lines / Toplam Satır (`src/`) | ~222,554 |
 | Source Files / Kaynak Dosya | 1067 |
 | Documentation Files / Dokümantasyon Dosya | 30 |

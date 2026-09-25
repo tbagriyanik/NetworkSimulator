@@ -23,8 +23,14 @@ A browser-based network simulator for learning switching, routing, wireless, IoT
 
 Bu kitapçık projenin tüm kullanıcı, CLI, protokol, laboratuvar ve özellik bilgilerinin birincil kaynağıdır. Diğer Markdown dosyaları yalnızca kısa başvuru, kurulum veya geliştirici ayrıntısı içerir; aynı bilginin güncel sürümü burada tutulmalıdır.
 
-### Güncel özellik durumu (v6.6.0)
+### Güncel özellik durumu (v6.6.1)
 
+- **🧪 Kurumsal CLI Regresyon Matrisi & Sorun Giderme Modu (v6.6.1):**
+  - **CLI `no` Komut Regresyon Matrisi:** `no shutdown`, `no ip address`, `no ip route`, `no access-group`, `no switchport access vlan`, `no ip nat`, OSPF/EIGRP/BGP sıfırlamaları için uçtan uca E2E testleri (`cliBehaviorRegressionMatrix.test.ts`).
+  - **Gelişmiş Arıza Enjeksiyonu (Fault Injection):** Öğrenciler için bozuk topoloji üretimi ve arıza teşhisi (`wrongVlan`, `wrongGateway`, `shutdownPort`, `aclDeny`, `brokenTrunk`, `ospfIssue`, `natIssue`, `stpIssue`).
+  - **Sekme Sekme Paket Yolculuğu (Hop-by-Hop Packet Journey):** ARP, VLAN, Routing, ACL, NAT, TTL adımları ve RFC uyumlu Paket Düşme Nedeni Kaydı (`dropReasons.ts`).
+  - **Gerçek Zamanlı Durum Makineleri & Yaşlanma Engine:** OSPF/BGP/LACP/DHCP durum makineleri (`protocolStateMachines.ts`) ve ARP/CAM/NAT otomatik yaşlanma zamanlayıcısı (`agingEngine.ts`).
+  - **Çapraz Platform Eşitliği:** macOS (`Cmd`) / Windows (`Ctrl`) kısayol standardizasyonu ve native dosya diyalog doğrulamaları.
 - **🏆 Bütünsel Başarılarım & Canlı Sınıf Takip Geliştirmeleri (v6.6.0):**
   - Rehberli dersler, sınavlar, projeler ve topoloji oluşturma başarılarım paneline işlenir. Canlı dersteki öğrencilerin isimlerinin yanına yaptıkları çalışma detayları yansıtılır.
 - **🖥️ Masaüstü (.exe / Tauri v2) Desteği (v6.5.0):**

@@ -53,6 +53,21 @@ The simulator supports **729+ commands** across multiple configuration modes.
 
 ## Command Overview
 
+### Automatic E2E `no` Command & State Regression Matrix
+The simulator implements full life-cycle behavior validation (`CLI → State → Engine → Packet → Show → no`) with automated regression tests:
+
+| Command | `no` Form | State & Engine Impact | Verification (`show`) |
+|---------|-----------|------------------------|-----------------------|
+| `shutdown` | `no shutdown` | Brings interface UP, triggers ARP/STP BPDU | `show interfaces brief` (up/up) |
+| `ip address <ip> <mask>` | `no ip address` | Resets interface IP & subnet mask to null | `show ip interface brief` (unassigned) |
+| `ip route <prefix> <mask> <next-hop>` | `no ip route <prefix> <mask>` | Removes static route from RIB/FIB routing table | `show ip route` (route removed) |
+| `ip access-group <acl> in\|out` | `no ip access-group` | Unbinds ACL filter from interface pipeline | `show running-config` (no acl bound) |
+| `switchport access vlan <vlan-id>` | `no switchport access vlan` | Resets port to default VLAN 1 | `show vlan` (port in VLAN 1) |
+| `ip nat inside source static` | `no ip nat inside source static` | Purges static NAT translation entry | `show ip nat translations` (empty) |
+| `router ospf <process-id>` | `no router ospf` | Destroys OSPF instance, flushes LSDB & adjacencies | `show ip ospf neighbor` (no neighbors) |
+| `router eigrp <as-number>` | `no router eigrp` | Destroys EIGRP instance & neighbor sessions | `show ip eigrp neighbors` (empty) |
+| `router bgp <as-number>` | `no router bgp` | Destroys BGP instance, terminates BGP state machine | `show ip bgp summary` (disabled) |
+
 ### Desktop Computer & Device Commands
 | Command | Description |
 |---------|-------------|
