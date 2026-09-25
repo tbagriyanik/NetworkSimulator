@@ -345,7 +345,19 @@ export function cmdStormControl(state: SwitchState, input: string, _ctx: Command
   if (!match) return { success: false, error: '% Invalid storm-control command. Use: storm-control {broadcast|multicast|unicast} level <rising> [falling]' };
   if (!state.currentInterface) return { success: false, error: '% No interface selected' };
   const newPorts = { ...state.ports };
-  newPorts[state.currentInterface] = { ...(newPorts[state.currentInterface] || {} as Port), stormControl: { type: match[1], rising: match[2], falling: match[3] } as unknown as Port['stormControl'] } as Port;
+  const currentPort = newPorts[state.currentInterface] || ({} as Port);
+  const typeKey = match[1].toLowerCase() as 'broadcast' | 'multicast' | 'unicast';
+  const threshold = parseFloat(match[2]);
+  newPorts[state.currentInterface] = {
+    ...currentPort,
+    stormControl: {
+      ...currentPort.stormControl,
+      [typeKey]: {
+        enabled: true,
+        threshold: isNaN(threshold) ? undefined : threshold,
+      },
+    },
+  } as Port;
   return { success: true, output: `Storm-control ${match[1]} level ${match[2]} configured`, newState: { ports: newPorts } };
 }
 

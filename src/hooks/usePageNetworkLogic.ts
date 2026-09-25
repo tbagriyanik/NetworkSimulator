@@ -313,6 +313,7 @@ export function usePageNetworkLogic({
   }, [setTopologyDevices, setDeviceStates]);
 
   useEffect(() => {
+    let timerId: ReturnType<typeof setTimeout> | null = null;
     const handleMessage = (event: MessageEvent) => {
       if (event.origin !== window.location.origin && event.origin !== 'null') {
         return;
@@ -320,13 +321,20 @@ export function usePageNetworkLogic({
       if (event.data && event.data.type === 'router-admin-focus-device') {
         const deviceId = event.data.deviceId;
         if (deviceId) {
+          if (timerId) clearTimeout(timerId);
           setFocusDeviceId(deviceId);
-          setTimeout(() => setFocusDeviceId(null), 500);
+          timerId = setTimeout(() => {
+            setFocusDeviceId(null);
+            timerId = null;
+          }, 500);
         }
       }
     };
     window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
+    return () => {
+      if (timerId) clearTimeout(timerId);
+      window.removeEventListener('message', handleMessage);
+    };
   }, [setFocusDeviceId]);
 
   // Listen for global packet capture events

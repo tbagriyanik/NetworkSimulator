@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useCallback, useEffect } from 'react';
 import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
@@ -37,7 +37,7 @@ interface UsePCPanelDhcpOptions {
   ) => boolean;
   checkDhcpAvailabilityRef: React.RefObject<(() => { available: boolean; reason: string }) | null>;
   applyDhcpLeaseRef: React.RefObject<((force?: boolean) => { ip: string; subnetMask: string; gateway: string; dns: string; serverName: string; poolName: string } | null) | null>;
-  manualDhcpClickRef: React.RefObject<boolean>;
+  manualDhcpClickRef: React.MutableRefObject<boolean>;
   prevIpConfigModeRef: React.RefObject<string>;
   addLocalOutput: (type: 'error' | 'html' | 'output' | 'command' | 'success' | 'prompt', content: string, prompt?: string) => void;
   toast: (opts: { title: string; description?: string; variant?: 'default' | 'destructive' | null; duration?: number }) => void;

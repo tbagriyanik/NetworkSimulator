@@ -517,14 +517,8 @@ export function useDeviceManager() {
         return result;
       }
 
-      // Trigger VTP propagation after VLAN-related commands
+      // Check if command is VLAN-related
       const isVlanCommand = /^vlan\s+\d+$|^no\s+vlan\s+\d+$|^name\s+.+$|^state\s+(active|suspend)$/i.test(trimmedCommand);
-      if (success && newState && isVlanCommand) {
-        // Trigger VTP propagation by dispatching a custom event
-        window.dispatchEvent(new CustomEvent('vtp-propagation-needed', {
-          detail: { deviceId, topologyDevices, topologyConnections, deviceStates }
-        }));
-      }
 
       const newOutputs: TerminalOutput[] = [];
       const now = Date.now();
@@ -617,7 +611,8 @@ export function useDeviceManager() {
 
                     const isAllowed = (port: typeof sourcePort, vlanId: number) => {
                       if (!port.allowedVlans || port.allowedVlans === 'all') return true;
-                      return port.allowedVlans.includes(vlanId);
+                      if (Array.isArray(port.allowedVlans)) return port.allowedVlans.includes(vlanId);
+                      return port.allowedVlans.split(',').map(s => parseInt(s.trim(), 10)).includes(vlanId);
                     };
 
                     const nextVlans = { ...neighborState.vlans };
@@ -657,6 +652,12 @@ export function useDeviceManager() {
 
             return next;
           });
+
+          if (isVlanCommand && topologyDevices && topologyConnections) {
+            window.dispatchEvent(new CustomEvent('vtp-propagation-needed', {
+              detail: { deviceId, topologyDevices, topologyConnections, deviceStates: deviceStatesRef.current }
+            }));
+          }
         }
         if (result.saveConfig) {
           setDeviceStates(prev => {

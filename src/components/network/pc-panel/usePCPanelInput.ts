@@ -319,7 +319,7 @@ export function usePCPanelInput(params: UsePCPanelInputParams) {
         setInput(effectiveContext ? `${effectiveContext} ${completion}` : completion);
       }
     } else if (value.trim() && activeTab === 'terminal' && isConsoleConnected) {
-      void executeCommand(value.trim() + ' ?');
+      void executeCommand(value.trim() + ' ?').catch(err => console.error('[PCPanelInput] Help command error:', err));
     }
   }, [input, tabCycleIndex, lastTabInput, getCommandMode, executeCommand, isConsoleConnected, activeTab, setTabCycleIndex, setLastTabInput, setInput]);
 
@@ -349,7 +349,7 @@ export function usePCPanelInput(params: UsePCPanelInputParams) {
       setUndoStack([...undoStack, input]);
       setRedoStack([]);
       setInput(partialCommand);
-      void executeCommand(newValue);
+      void executeCommand(newValue).catch(err => console.error('[PCPanelInput] Help command error:', err));
       return;
     }
 
@@ -488,10 +488,10 @@ export function usePCPanelInput(params: UsePCPanelInputParams) {
       e.preventDefault();
       if (canUseAutocomplete && autocompleteNavigated) {
         const completed = completeAutocompleteSelection(renderAutocompleteSuggestions[autocompleteIndex] || renderAutocompleteSuggestions[0]);
-        void executeCommand(completed);
+        void executeCommand(completed).catch(err => console.error('[PCPanelInput] Execution error:', err));
         return;
       }
-      void executeCommand();
+      void executeCommand().catch(err => console.error('[PCPanelInput] Execution error:', err));
     } else if (e.key === 'Tab' && !e.ctrlKey && !e.metaKey) {
       e.preventDefault();
       if (canUseAutocomplete) {

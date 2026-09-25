@@ -127,7 +127,11 @@ export function cmdNoVlan(state: SwitchState, input: string, ctx: CommandContext
     return { success: false, error: `% VLAN ${vlanId} does not exist` };
   }
 
+  const vlanNum = Number(vlanId);
   delete newVlans[vlanId];
+
+  // Flush CAM / MAC address table entries belonging to the removed VLAN
+  const newMacTable = (state.macAddressTable || []).filter(e => e.vlan !== vlanNum);
 
   const shouldBumpVtp = (state.vtpMode === 'server') && !!state.vtpDomain;
   const nextVtpRevision = shouldBumpVtp ? ((state.vtpRevision || 0) + 1) : state.vtpRevision;
@@ -135,6 +139,7 @@ export function cmdNoVlan(state: SwitchState, input: string, ctx: CommandContext
   const updatedCurrentState = {
     ...state,
     vlans: newVlans,
+    macAddressTable: newMacTable,
     vtpRevision: nextVtpRevision,
   };
 

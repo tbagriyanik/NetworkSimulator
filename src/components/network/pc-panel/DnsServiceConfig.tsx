@@ -4,6 +4,8 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { FormInput } from '@/components/ui/FormInput';
 
+import type { DhcpPoolConfig } from './PCPanel.types';
+
 interface DnsServiceConfigProps {
   isDark: boolean;
   language: string;
@@ -29,8 +31,8 @@ interface DnsServiceConfigProps {
   serviceMailInbox: Array<{ from: string; subject: string; body: string; timestamp?: string }>;
   serviceMailSent: Array<{ to: string; subject: string; body: string; timestamp?: string }>;
   serviceDhcpEnabled: boolean;
-  serviceDhcpPools: Array<{ poolName: string; defaultGateway: string; dnsServer: string; startIp: string; subnetMask: string; maxUsers: number }>;
-  isDnsEditingRef: React.RefObject<boolean>;
+  serviceDhcpPools: DhcpPoolConfig[];
+  isDnsEditingRef: React.MutableRefObject<boolean>;
 }
 
 export function DnsServiceConfig({
@@ -150,7 +152,6 @@ export function DnsServiceConfig({
                 variant="outline"
                 onClick={() => {
                   if (isDnsEditingRef.current !== null) {
-                    // @ts-ignore
                     isDnsEditingRef.current = true;
                   }
                   const newRecords = serviceDnsRecords.filter((r) => !(r.domain === record.domain && r.address === record.address));
@@ -166,7 +167,6 @@ export function DnsServiceConfig({
                   });
                   setTimeout(() => {
                     if (isDnsEditingRef.current !== null) {
-                      // @ts-ignore
                       isDnsEditingRef.current = false;
                     }
                   }, 1000);

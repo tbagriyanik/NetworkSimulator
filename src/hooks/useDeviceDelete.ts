@@ -1,4 +1,4 @@
-﻿import { useCallback } from 'react';
+import { useCallback } from 'react';
 import type { SwitchState } from '@/lib/network/types';
 import type { TerminalOutput } from '@/components/network/Terminal';
 import type { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
@@ -99,9 +99,11 @@ export function useDeviceDelete(params: UseDeviceDeleteParams) {
                 ...portToReset,
                 status: 'notconnect'
               };
+              const updatedMacTable = (targetState.macAddressTable || []).filter(e => e.port !== p.portId);
               newMap.set(p.deviceId, {
                 ...targetState,
-                ports: updatedPorts
+                ports: updatedPorts,
+                macAddressTable: updatedMacTable,
               });
             }
           }

@@ -349,7 +349,9 @@ export const generateCertificate = async (data: CertificateData): Promise<boolea
       try {
         const json = await res.json();
         errMsg = json.error || errMsg;
-      } catch { }
+      } catch {
+        errMsg = res.statusText || errMsg;
+      }
       throw new Error(errMsg);
     }
 

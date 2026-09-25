@@ -22,7 +22,7 @@ interface DhcpServiceConfigProps {
   serviceDnsRecords: Array<{ domain: string; address: string }>;
   serviceHttpEnabled: boolean;
   serviceHttpContent: string;
-  isDhcpEditingRef: React.RefObject<boolean>;
+  isDhcpEditingRef: React.MutableRefObject<boolean>;
 }
 
 export function DhcpServiceConfig({
@@ -56,14 +56,12 @@ export function DhcpServiceConfig({
     });
     setEditingDhcpIndex(null);
     if (isDhcpEditingRef.current !== null) {
-      // @ts-ignore
       isDhcpEditingRef.current = false;
     }
   };
 
   const saveDhcpPool = () => {
     if (isDhcpEditingRef.current !== null) {
-      // @ts-ignore
       isDhcpEditingRef.current = true;
     }
     const name = dhcpForm.poolName.trim();
@@ -212,7 +210,6 @@ export function DhcpServiceConfig({
                   variant="outline"
                   onClick={() => {
                     if (isDhcpEditingRef.current !== null) {
-                      // @ts-ignore
                       isDhcpEditingRef.current = true;
                     }
                     setDhcpForm(pool);
@@ -226,7 +223,6 @@ export function DhcpServiceConfig({
                   variant="outline"
                   onClick={() => {
                     if (isDhcpEditingRef.current !== null) {
-                      // @ts-ignore
                       isDhcpEditingRef.current = true;
                     }
                     const newPools = serviceDhcpPools.filter((_, i) => i !== index);

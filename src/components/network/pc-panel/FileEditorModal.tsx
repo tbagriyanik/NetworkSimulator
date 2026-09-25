@@ -408,6 +408,8 @@ export function FileEditorModal({
             setContent(text);
             setHistory([text]);
             setHistoryIndex(0);
+          }).catch(err => {
+            console.error('Failed to read file text:', err);
           });
           event.target.value = '';
         }}

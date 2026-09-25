@@ -253,12 +253,16 @@ export function cmdNoIpDefaultGateway(state: SwitchState, _input: string, _ctx: 
 
 export function cmdDefaultInterface(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   const match = input.match(/^default\s+interface\s+(\S+)$/i);
-  if (!match) return { success: false, error: '% Invalid interface name' };
+  if (!match) return { success: false, error: '% Invalid command. Use: default interface <interface-id>' };
   const interfaceName = match[1];
   const port = state.ports?.[interfaceName];
   if (!port) return { success: false, error: `% Interface ${interfaceName} not found` };
   const defaultPort = { ...port };
-  for (const key of ['description', 'ipAddress', 'ipv6Address', 'nativeVlan', 'allowedVlans', 'qos', 'bandwidth', 'delay', 'stpPriority', 'dhcpSnoopingTrust', 'dhcpSnoopingLimitRate', 'arpInspectionTrust', 'carrierDelay', 'loadInterval', 'directedBroadcast', 'powerInline', 'channelGroup', 'encapsulation', 'clockRate', 'pppAuthentication', 'pppUsername', 'helperAddress', 'proxyArp', 'ipVerifySource']) {
+  defaultPort.vlan = 1;
+  defaultPort.mode = state.deviceType === 'router' ? 'routed' : 'dynamic-auto';
+  defaultPort.shutdown = false;
+  defaultPort.allowedVlans = 'all';
+  for (const key of ['description', 'ipAddress', 'ipv6Address', 'nativeVlan', 'voiceVlan', 'qos', 'bandwidth', 'delay', 'stpPriority', 'dhcpSnoopingTrust', 'dhcpSnoopingLimitRate', 'arpInspectionTrust', 'carrierDelay', 'loadInterval', 'directedBroadcast', 'powerInline', 'channelGroup', 'channelMode', 'channelProtocol', 'portSecurity', 'staticMacs', 'stickyMacs', 'stormControl', 'stormControlAction', 'encapsulation', 'clockRate', 'pppAuthentication', 'pppUsername', 'helperAddress', 'proxyArp', 'ipVerifySource', 'inspectRules', 'accessGroupIn', 'accessGroupOut', 'macAccessGroupIn', 'macAccessGroupOut']) {
     delete (defaultPort as Record<string, unknown>)[key];
   }
   return { success: true, output: `Interface ${interfaceName} reset to default configuration`, newState: { ports: { ...state.ports, [interfaceName]: defaultPort } } };

@@ -54,7 +54,7 @@ export interface Port {
   stpCost?: number;             // Manual STP path cost
   arpTimeout?: string;          // ARP timeout setting
   macAddress?: string;         // Per-port MAC address (for router ports)
-  allowedVlans?: number[] | 'all'; // For trunk ports
+  allowedVlans?: number[] | string; // For trunk ports ('all', '10,20' or number[])
   accessGroupIn?: string;       // Inbound ACL name/ID
   accessGroupOut?: string;      // Outbound ACL name/ID
   macAccessGroupIn?: string;    // Inbound MAC ACL name
@@ -80,6 +80,7 @@ export interface Port {
   protected?: boolean; // Protected port (PVLAN edge)
   ipv6Address?: string;
   zoneMember?: string; // Zone-Based Firewall security zone member
+  stormControlAction?: string;
   ipv6RaGuard?: boolean; // IPv6 First-Hop Security RA Guard
   ipv6DhcpGuard?: boolean; // IPv6 First-Hop Security DHCPv6 Guard
 

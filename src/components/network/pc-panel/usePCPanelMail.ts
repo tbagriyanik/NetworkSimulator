@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useCallback } from 'react';
 import type { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
@@ -131,7 +131,9 @@ export function usePCPanelMail({
         try {
           const stored = secureStorage.getItem(`mail_inbox_${targetDevice.id}`);
           if (stored) existingInbox = JSON.parse(stored);
-        } catch { }
+        } catch (err) {
+          console.debug('[usePCPanelMail] Failed to parse cached inbox:', err);
+        }
       }
       const updatedInbox = [newInboxEntry, ...existingInbox];
       if (typeof window !== 'undefined')
@@ -284,7 +286,9 @@ export function usePCPanelMail({
               existingInbox = parsed;
             }
           }
-        } catch { }
+        } catch (err) {
+          console.debug('[usePCPanelMail] Failed to parse cached target inbox:', err);
+        }
       }
       const updatedInbox = [newInboxEntry, ...existingInbox];
       if (typeof window !== 'undefined')

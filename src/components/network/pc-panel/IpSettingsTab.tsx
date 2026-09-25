@@ -48,7 +48,7 @@ interface IpSettingsTabProps {
   isValidIpAddress: (ip: string) => boolean;
   applyNtpServerTime: (serverAddress: string) => { date: string; time: string } | null;
   deviceId: string;
-  manualDhcpClickRef: React.RefObject<boolean>;
+  manualDhcpClickRef: React.MutableRefObject<boolean>;
   applyDhcpLeaseRef: React.RefObject<((force?: boolean) => { ip: string; subnetMask: string; gateway: string; dns: string; serverName: string; poolName: string; } | null) | null>;
 }
 
@@ -138,7 +138,6 @@ export function IpSettingsTab({
                 const manualDhcpClick = manualDhcpClickRef.current;
                 if (manualDhcpClick) return;
                 if (manualDhcpClickRef.current !== null) {
-                  // @ts-ignore
                   manualDhcpClickRef.current = true;
                 }
                 setIpConfigMode('dhcp');
@@ -165,7 +164,6 @@ export function IpSettingsTab({
                 }
                 setTimeout(() => {
                   if (manualDhcpClickRef.current !== null) {
-                    // @ts-ignore
                     manualDhcpClickRef.current = false;
                   }
                 }, 100);

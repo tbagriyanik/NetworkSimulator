@@ -1,6 +1,6 @@
-﻿'use client';
+'use client';
 
-import { createContext, useContext, type RefObject, type CSSProperties, type Dispatch, type SetStateAction, type PointerEvent, type KeyboardEvent, type ReactNode } from 'react';
+import { createContext, useContext, type RefObject, type MutableRefObject, type CSSProperties, type Dispatch, type SetStateAction, type PointerEvent, type KeyboardEvent, type ReactNode } from 'react';
 import type { SwitchState } from '@/lib/network/types';
 import type { CanvasConnection, CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import type { TerminalOutput } from '../Terminal';
@@ -172,9 +172,9 @@ export interface PCPanelContextValue {
 
   // Refs needed by tabs
   applyDhcpLeaseRef: RefObject<((force?: boolean) => { ip: string; subnetMask: string; gateway: string; dns: string; serverName: string; poolName: string } | null) | null>;
-  manualDhcpClickRef: RefObject<boolean>;
-  isDnsEditingRef: RefObject<boolean>;
-  isDhcpEditingRef: RefObject<boolean>;
+  manualDhcpClickRef: MutableRefObject<boolean>;
+  isDnsEditingRef: MutableRefObject<boolean>;
+  isDhcpEditingRef: MutableRefObject<boolean>;
 
   // Active service sub-tab
   activeServiceTab: ServiceTabType;

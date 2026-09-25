@@ -1,4 +1,4 @@
-﻿import { useCallback } from 'react';
+import { useCallback } from 'react';
 import { useAppStore } from '@/lib/store/appStore';
 import type { SwitchState, CableInfo } from '@/lib/network/types';
 import type { CanvasDevice, CanvasNote, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
@@ -116,8 +116,8 @@ export function useLoadProjectData({
       // Load device states
       if (safeDevices.length > 0) {
         const newDeviceStates = new Map<string, SwitchState>();
-        safeDevices.forEach((item: { id: string; state: SwitchState }) => {
-          if (item.id && item.id.trim() !== '') {
+        safeDevices.forEach((item: { id: string; state?: SwitchState }) => {
+          if (item && item.id && item.id.trim() !== '' && item.state && typeof item.state === 'object') {
             newDeviceStates.set(item.id, item.state);
           }
         });

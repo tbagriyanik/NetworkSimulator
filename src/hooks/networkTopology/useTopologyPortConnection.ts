@@ -1,6 +1,6 @@
-﻿'use client';
+'use client';
 
-import { useCallback, useRef, MouseEvent as ReactMouseEvent } from 'react';
+import { useCallback, useRef, useEffect, MouseEvent as ReactMouseEvent } from 'react';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { CableInfo, CableType } from '@/lib/network/types';
 import { isCableCompatible } from '@/lib/network/types';
@@ -55,6 +55,26 @@ export function useTopologyPortConnection({
 }: UseTopologyPortConnectionProps) {
   const localRef = useRef<CableType | null>(null);
   const previousCableTypeRef = externalPreviousCableTypeRef || localRef;
+  const errorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (errorTimeoutRef.current) {
+        clearTimeout(errorTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const triggerConnectionError = useCallback((errorMsg: string) => {
+    if (errorTimeoutRef.current) {
+      clearTimeout(errorTimeoutRef.current);
+    }
+    setConnectionError(errorMsg);
+    errorTimeoutRef.current = setTimeout(() => {
+      setConnectionError(null);
+      errorTimeoutRef.current = null;
+    }, 3000);
+  }, [setConnectionError]);
 
   const handlePortClick = useCallback((e: ReactMouseEvent, deviceId: string, portId: string) => {
     e.stopPropagation();
@@ -76,8 +96,7 @@ export function useTopologyPortConnection({
     );
     if (port.status === 'connected' && hasPersistedPortConnection) {
       if (isDrawingConnection) {
-        setConnectionError(t.portInUse);
-        setTimeout(() => setConnectionError(null), 3000);
+        triggerConnectionError(t.portInUse);
         if (previousCableTypeRef.current) {
           onCableChange({ ...cableInfo, cableType: previousCableTypeRef.current });
           previousCableTypeRef.current = null;
@@ -94,8 +113,7 @@ export function useTopologyPortConnection({
         const errorMsg = language === 'tr'
           ? 'Bir cihaz kendisine bağlanamaz!'
           : 'A device cannot connect to itself!';
-        setConnectionError(errorMsg);
-        setTimeout(() => setConnectionError(null), 3000);
+        triggerConnectionError(errorMsg);
         if (previousCableTypeRef.current) {
           onCableChange({ ...cableInfo, cableType: previousCableTypeRef.current });
           previousCableTypeRef.current = null;
@@ -125,8 +143,7 @@ export function useTopologyPortConnection({
           const errorMsg = language === 'tr'
             ? 'Bu cihaz türü seçilen bağlantı tipini desteklememektedir!'
             : 'This device type does not support the selected connection type!';
-          setConnectionError(errorMsg);
-          setTimeout(() => setConnectionError(null), 3000);
+          triggerConnectionError(errorMsg);
           if (previousCableTypeRef.current) {
             onCableChange({ ...cableInfo, cableType: previousCableTypeRef.current });
             previousCableTypeRef.current = null;

@@ -312,8 +312,11 @@ export function Terminal({
     setTabCycleIndex(-1);
     setInput('');
     setShowAutocomplete(false);
-    setAutocompleteIndex(-1);
-    await onCommand(command);
+    try {
+      await onCommand(command);
+    } catch (err) {
+      console.error('Terminal command execution failed:', err);
+    }
     setTimeout(() => {
       inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 100);

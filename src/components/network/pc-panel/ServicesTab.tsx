@@ -37,7 +37,7 @@ interface ServicesTabProps {
   setDnsFormAddress: (val: string) => void;
   handleAddDnsRecord: () => void;
   getDnsRecordDisplay: (record: { domain: string; address: string }) => string;
-  isDnsEditingRef: React.RefObject<boolean>;
+  isDnsEditingRef: React.MutableRefObject<boolean>;
 
   // HTTP
   serviceHttpEnabled: boolean;
@@ -60,7 +60,7 @@ interface ServicesTabProps {
   setDhcpForm: React.Dispatch<React.SetStateAction<DhcpPoolConfig>>;
   editingDhcpIndex: number | null;
   setEditingDhcpIndex: (val: number | null) => void;
-  isDhcpEditingRef: React.RefObject<boolean>;
+  isDhcpEditingRef: React.MutableRefObject<boolean>;
 
   // NTP
   serviceNtpEnabled: boolean;

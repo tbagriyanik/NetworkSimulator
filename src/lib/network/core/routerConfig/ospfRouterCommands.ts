@@ -94,7 +94,7 @@ export function cmdAreaRange(_state: SwitchState, input: string): CommandResult 
     return {
         success: true,
         output: `Area ${match[1]} range ${match[2]} ${match[3]} configured`,
-        newState: { areaRange: { area: match[1], network: match[2], mask: match[3] } } as unknown as Partial<SwitchState>
+        newState: { areaRange: { area: match[1], network: match[2], mask: match[3] } }
     };
 }
 

@@ -7,19 +7,31 @@
 const authenticatedRouters = new Set<string>();
 let isIotAuthenticated = false;
 
+function safeStorage(action: () => void): void {
+  try {
+    if (typeof window !== 'undefined') {
+      action();
+    }
+  } catch (err) {
+    // Storage access may be restricted in sandboxed contexts or private mode
+    if (process.env.NODE_ENV !== 'production') {
+      console.debug('[adminSessionManager] Storage operation suppressed:', err);
+    }
+  }
+}
+
 export function isRouterAuthenticated(deviceId: string): boolean {
   if (!deviceId) return false;
   if (authenticatedRouters.has(deviceId)) return true;
-  try {
-    if (typeof window !== 'undefined') {
-      const key = `router_admin_auth_${deviceId}`;
-      if (window.sessionStorage?.getItem(key) === 'true' || window.localStorage?.getItem(key) === 'true') {
-        authenticatedRouters.add(deviceId);
-        return true;
-      }
+  let authenticated = false;
+  safeStorage(() => {
+    const key = `router_admin_auth_${deviceId}`;
+    if (window.sessionStorage?.getItem(key) === 'true' || window.localStorage?.getItem(key) === 'true') {
+      authenticatedRouters.add(deviceId);
+      authenticated = true;
     }
-  } catch {}
-  return false;
+  });
+  return authenticated;
 }
 
 export function setRouterAuthenticated(deviceId: string, authenticated: boolean): void {
@@ -29,74 +41,65 @@ export function setRouterAuthenticated(deviceId: string, authenticated: boolean)
   } else {
     authenticatedRouters.delete(deviceId);
   }
-  try {
-    if (typeof window !== 'undefined') {
-      const key = `router_admin_auth_${deviceId}`;
-      if (authenticated) {
-        window.sessionStorage?.setItem(key, 'true');
-        window.localStorage?.setItem(key, 'true');
-      } else {
-        window.sessionStorage?.removeItem(key);
-        window.localStorage?.removeItem(key);
-      }
+  safeStorage(() => {
+    const key = `router_admin_auth_${deviceId}`;
+    if (authenticated) {
+      window.sessionStorage?.setItem(key, 'true');
+      window.localStorage?.setItem(key, 'true');
+    } else {
+      window.sessionStorage?.removeItem(key);
+      window.localStorage?.removeItem(key);
     }
-  } catch {}
+  });
 }
 
 export function isIotPanelAuthenticated(): boolean {
   if (isIotAuthenticated) return true;
-  try {
-    if (typeof window !== 'undefined') {
-      if (window.sessionStorage?.getItem('iotPanelAuthenticated') === 'true' || window.localStorage?.getItem('iotPanelAuthenticated') === 'true') {
-        isIotAuthenticated = true;
-        return true;
-      }
+  let authenticated = false;
+  safeStorage(() => {
+    if (window.sessionStorage?.getItem('iotPanelAuthenticated') === 'true' || window.localStorage?.getItem('iotPanelAuthenticated') === 'true') {
+      isIotAuthenticated = true;
+      authenticated = true;
     }
-  } catch {}
-  return false;
+  });
+  return authenticated;
 }
 
 export function setIotPanelAuthenticated(authenticated: boolean): void {
   isIotAuthenticated = authenticated;
-  try {
-    if (typeof window !== 'undefined') {
-      if (authenticated) {
-        window.sessionStorage?.setItem('iotPanelAuthenticated', 'true');
-        window.localStorage?.setItem('iotPanelAuthenticated', 'true');
-      } else {
-        window.sessionStorage?.removeItem('iotPanelAuthenticated');
-        window.localStorage?.removeItem('iotPanelAuthenticated');
-      }
+  safeStorage(() => {
+    if (authenticated) {
+      window.sessionStorage?.setItem('iotPanelAuthenticated', 'true');
+      window.localStorage?.setItem('iotPanelAuthenticated', 'true');
+    } else {
+      window.sessionStorage?.removeItem('iotPanelAuthenticated');
+      window.localStorage?.removeItem('iotPanelAuthenticated');
     }
-  } catch {}
+  });
 }
 
 export function clearAllAdminSessions(): void {
   authenticatedRouters.forEach((deviceId) => {
-    try {
-      if (typeof window !== 'undefined') {
-        const key = `router_admin_auth_${deviceId}`;
-        window.sessionStorage?.removeItem(key);
-        window.localStorage?.removeItem(key);
-      }
-    } catch {}
+    safeStorage(() => {
+      const key = `router_admin_auth_${deviceId}`;
+      window.sessionStorage?.removeItem(key);
+      window.localStorage?.removeItem(key);
+    });
   });
   authenticatedRouters.clear();
   isIotAuthenticated = false;
-  try {
-    if (typeof window !== 'undefined') {
-      window.sessionStorage?.removeItem('iotPanelAuthenticated');
-      window.localStorage?.removeItem('iotPanelAuthenticated');
-      if (window.sessionStorage) {
-        Object.keys(window.sessionStorage).forEach((key) => {
-          if (key.startsWith('router_admin_auth_')) window.sessionStorage.removeItem(key);
-        });
-      }
-      if (window.localStorage) {
-        Object.keys(window.localStorage).forEach((key) => {
-          if (key.startsWith('router_admin_auth_')) window.localStorage.removeItem(key);
-        });
-      }
+  safeStorage(() => {
+    window.sessionStorage?.removeItem('iotPanelAuthenticated');
+    window.localStorage?.removeItem('iotPanelAuthenticated');
+    if (window.sessionStorage) {
+      Object.keys(window.sessionStorage).forEach((key) => {
+        if (key.startsWith('router_admin_auth_')) window.sessionStorage.removeItem(key);
+      });
     }
-  } catch {}
+    if (window.localStorage) {
+      Object.keys(window.localStorage).forEach((key) => {
+        if (key.startsWith('router_admin_auth_')) window.localStorage.removeItem(key);
+      });
+    }
+  });
 }

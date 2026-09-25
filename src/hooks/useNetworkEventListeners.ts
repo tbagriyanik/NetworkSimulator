@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import type { SwitchState } from '@/lib/network/types';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { isSwitchDeviceType } from '@/app/refreshNetworkUtils';
@@ -18,6 +18,11 @@ interface UseNetworkEventListenersParams {
 export function useNetworkEventListeners(params: UseNetworkEventListenersParams) {
   const { setDeviceStates, deviceStates, activeTabRef, setActiveTab } = params;
   const addNetworkEventLog = useAppStore(state => state.addNetworkEventLog);
+
+  const deviceStatesRef = useRef(deviceStates);
+  useEffect(() => {
+    deviceStatesRef.current = deviceStates;
+  }, [deviceStates]);
 
   // Last-seen topology connections, used to diff EtherChannel bundle membership
   // across cable power / deletion events (the event itself only carries the new list).
@@ -79,7 +84,7 @@ export function useNetworkEventListeners(params: UseNetworkEventListenersParams)
     const handleSTPRecalculation = (event: Event) => {
       const { topologyConnections: updatedConnections } = (event as CustomEvent).detail;
       if (updatedConnections) {
-        const prevStates = deviceStates;
+        const prevStates = deviceStatesRef.current;
         const allUpdatedStates = recalculateStp(prevStates, updatedConnections);
         for (const change of computeStpTopologyChanges(prevStates, allUpdatedStates)) {
           const isForwardingTransition =
@@ -123,7 +128,7 @@ export function useNetworkEventListeners(params: UseNetworkEventListenersParams)
       }>).detail;
       if (!detail?.connection || !detail.topologyDevices) return;
 
-      const nextStates = learnMacsOnNewConnection(deviceStates, detail.connection, detail.topologyDevices);
+      const nextStates = learnMacsOnNewConnection(deviceStatesRef.current, detail.connection, detail.topologyDevices);
       setDeviceStates(nextStates);
     };
     window.addEventListener('connection-created', handleConnectionCreated);
@@ -159,7 +164,7 @@ export function useNetworkEventListeners(params: UseNetworkEventListenersParams)
       window.removeEventListener('update-device-state', handleUpdateDeviceState);
       window.removeEventListener('beforeprint', handleBeforePrint);
     };
-  }, [setDeviceStates, deviceStates, activeTabRef, setActiveTab, addNetworkEventLog]);
+  }, [setDeviceStates, activeTabRef, setActiveTab, addNetworkEventLog]);
 }
 
 

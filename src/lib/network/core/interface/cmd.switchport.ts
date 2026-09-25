@@ -363,7 +363,7 @@ export function cmdSwitchportTrunkAllowedVlan(state: SwitchState, input: string,
     newAllowed = vlanSpec;
   }
 
-  const newPorts = applyToSelectedPorts(state, (port: Port) => ({ ...port, allowedVlans: newAllowed as unknown as number[] | 'all' }));
+  const newPorts = applyToSelectedPorts(state, (port: Port) => ({ ...port, allowedVlans: newAllowed }));
 
   return {
     success: true,

@@ -288,6 +288,7 @@ export interface SwitchState {
   ospfNetworks?: { network: string; wildcard: string; area: number }[]; // Explicit OSPF network statements
   ospfAreaAuth?: Record<string, 'simple' | 'md5'>; // OSPF area authentication configuration
   ospfStubAreas?: string[];        // OSPF stub areas
+  areaRange?: { area: string; network: string; mask: string }; // OSPF area range summary
   ospfTotallyStubAreas?: string[]; // OSPF totally stubby areas (stub no-summary)
   ospfNssaAreas?: string[];        // OSPF NSSA areas
   ospfTotallyNssaAreas?: string[]; // OSPF totally NSSA areas (nssa no-summary)
