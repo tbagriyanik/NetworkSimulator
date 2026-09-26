@@ -1,59 +1,61 @@
 'use client';
 
-import { useMemo, type RefObject } from 'react';
+import { useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import type { ExampleProject, ExampleProjectLevel } from '@/lib/network/exampleProjects';
+import type { ExampleProjectLevel } from '@/lib/network/exampleProjects';
+import type { usePageController } from './usePageController';
 
 const ProjectPickerDialog = dynamic(() => import('@/components/network/ProjectPickerDialog').then((m) => m.ProjectPickerDialog));
 const OnboardingDialog = dynamic(() => import('@/components/network/OnboardingDialog').then((m) => m.OnboardingDialog));
 const TopologyGeneratorDialog = dynamic(() => import('@/components/network/topology/TopologyGeneratorDialog').then(m => m.TopologyGeneratorDialog), { ssr: false });
 
-interface PageDialogsProps {
-  t: any;
-  isDark: boolean;
-  language: 'tr' | 'en';
+type PageController = ReturnType<typeof usePageController>;
 
+/**
+ * Everything except `exampleLevelOrder` is forwarded verbatim from the page
+ * controller in page.tsx, so those types are derived from that controller
+ * rather than restated. `exampleLevelOrder` is a module constant in
+ * page.types.ts, so it keeps its own (narrow) type.
+ */
+export type PageDialogsProps = Pick<
+  PageController,
+  | 't'
+  | 'isDark'
+  | 'language'
   // Topology generator
-  isGeneratorOpen: boolean;
-  setIsGeneratorOpen: (open: boolean) => void;
-  handleGeneratedTopology: (data: {
-    devices: any[];
-    connections: any[];
-    deviceStates: Map<string, any>;
-    projectName?: string;
-    projectDescription?: string;
-  }) => void;
-
+  | 'isGeneratorOpen'
+  | 'setIsGeneratorOpen'
+  | 'handleGeneratedTopology'
   // Project picker
-  showProjectPicker: boolean;
-  setShowProjectPicker: (show: boolean) => void;
-  projectPickerTab: any;
-  setProjectPickerTab: (tab: any) => void;
-  projectSearchQuery: any;
-  setProjectSearchQuery: (query: any) => void;
-  groupedExampleProjects: Record<ExampleProjectLevel, ExampleProject[]>;
-  exampleLevelOrder: any;
-  getAvailableProjects: any;
-  getAvailableExams: any;
-  resetToEmptyProject: any;
-  applyExampleProject: any;
-  applyExampleProjectAsTemplate: any;
-  handleStartGuidedProject: any;
-  startExamFromCatalog: any;
-  loadProjectData: any;
-  setZoom: (zoom: number) => void;
-  setPan: (pan: any) => void;
-  handleConvertProjectToExam: any;
-  fileInputRef: RefObject<HTMLInputElement | null>;
-
+  | 'showProjectPicker'
+  | 'setShowProjectPicker'
+  | 'projectPickerTab'
+  | 'setProjectPickerTab'
+  | 'projectSearchQuery'
+  | 'setProjectSearchQuery'
+  | 'groupedExampleProjects'
+  | 'getAvailableProjects'
+  | 'getAvailableExams'
+  | 'resetToEmptyProject'
+  | 'applyExampleProject'
+  | 'applyExampleProjectAsTemplate'
+  | 'handleStartGuidedProject'
+  | 'startExamFromCatalog'
+  | 'loadProjectData'
+  | 'setZoom'
+  | 'setPan'
+  | 'handleConvertProjectToExam'
+  | 'fileInputRef'
   // Onboarding
-  showOnboarding: boolean;
-  onboardingStep: number;
-  onboardingSteps: any[];
-  closeOnboardingForever: any;
-  prevOnboarding: () => void;
-  nextOnboarding: () => void;
-}
+  | 'showOnboarding'
+  | 'onboardingStep'
+  | 'onboardingSteps'
+  | 'closeOnboardingForever'
+  | 'prevOnboarding'
+  | 'nextOnboarding'
+> & {
+  exampleLevelOrder: ExampleProjectLevel[];
+};
 
 export function PageDialogs({
   t,

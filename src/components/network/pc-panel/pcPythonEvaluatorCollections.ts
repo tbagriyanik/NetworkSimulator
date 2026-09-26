@@ -7,6 +7,7 @@ import {
   splitOutsideQuotesAndParens,
   parseFormatArgs,
 } from './pcPythonRunnerHelpers';
+import { markPyTuple } from './pcPythonTags';
 
 /** Normalise an iterable value (array / Set / string) into a plain array */
 function toIterableItems(iterVal: unknown): unknown[] {
@@ -246,9 +247,7 @@ export function evaluatePythonCollections(
           ? Array.from(iterVal as Iterable<unknown>)
           : [];
       const result = items.map((item, idx) => {
-        const pair: unknown[] = [startVal + idx, item];
-        (pair as unknown as { __isTuple__: boolean }).__isTuple__ = true;
-        return pair;
+        return markPyTuple([startVal + idx, item]);
       });
       return { handled: true, value: result };
     }
@@ -273,9 +272,7 @@ export function evaluatePythonCollections(
       const minLen = Math.min(...iterables.map(it => it.length));
       const zipped: unknown[][] = [];
       for (let i = 0; i < minLen; i++) {
-        const tup: unknown[] = iterables.map(it => it[i]);
-        (tup as unknown as { __isTuple__: boolean }).__isTuple__ = true;
-        zipped.push(tup);
+        zipped.push(markPyTuple(iterables.map(it => it[i])));
       }
       return { handled: true, value: zipped };
     }

@@ -25,6 +25,7 @@ import {
   evaluatePythonPropertyAccess,
 } from './pcPythonEvaluatorMemberAccess';
 import { evaluatePythonArithmetic } from './pcPythonEvaluatorArithmetic';
+import { markPyTuple } from './pcPythonTags';
 
 import { setupPythonStdLib } from './pcPythonStdLib';
 
@@ -175,14 +176,10 @@ export function createExpressionEvaluator(
       }
       if (current.trim()) parts.push(current.trim());
       if (parts.length > 1) {
-        const tupleArr = parts.map(p => evaluateExpr(p));
-        (tupleArr as unknown as { __isTuple__: boolean }).__isTuple__ = true;
-        return tupleArr;
+        return markPyTuple(parts.map(p => evaluateExpr(p)));
       } else if (parts.length === 1) {
         if (inner.endsWith(',')) {
-          const tupleArr = [evaluateExpr(parts[0])];
-          (tupleArr as unknown as { __isTuple__: boolean }).__isTuple__ = true;
-          return tupleArr;
+          return markPyTuple([evaluateExpr(parts[0])]);
         }
         return evaluateExpr(parts[0]);
       }

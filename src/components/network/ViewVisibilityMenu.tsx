@@ -34,12 +34,13 @@ export function ViewVisibilityMenu({ isDark = true }: ViewVisibilityMenuProps) {
             <Button
               variant="ghost"
               size="sm"
+              aria-label={isTr ? 'Bölümleri Gizle / Göster' : 'Toggle Sections Visibility'}
               className={`h-8 px-2 flex items-center gap-1.5 rounded-lg border text-xs font-semibold transition-all ${isDark
                 ? 'bg-secondary-900 border-secondary-800 text-secondary-300 hover:text-white hover:border-secondary-600'
                 : 'bg-white border-secondary-200 text-secondary-700 hover:text-secondary-900 hover:border-secondary-400'
                 }`}
             >
-              <Eye className="w-3.5 h-3.5 text-primary-400" />
+              <Eye className="w-3.5 h-3.5 text-primary-400" aria-hidden="true" />
             </Button>
           </DropdownMenuTrigger>
         </TooltipTrigger>

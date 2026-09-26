@@ -219,8 +219,14 @@ export function ExamEditorPanel({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="outline" size="icon" className="h-7 w-7" onClick={smartBalanceWeights}>
-                        <Scale className="w-3.5 h-3.5" />
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={smartBalanceWeights}
+                        aria-label={isTr ? 'Puanları otomatik dengele' : 'Auto-balance points'}
+                      >
+                        <Scale className="w-3.5 h-3.5" aria-hidden="true" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>

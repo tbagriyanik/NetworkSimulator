@@ -1,4 +1,4 @@
-﻿import { CableType } from '@/lib/network/types';
+import { CableType } from '@/lib/network/types';
 import type { CanvasNote } from '../types/networkTopology.types';
 
 const DEVICE_ICON_PATHS = {
@@ -16,18 +16,18 @@ const DEVICE_ICON_PATHS = {
 };
 
 export const DEVICE_ICON_COLORS = {
-  pc: 'var(--color-primary-500)',
-  iot: 'var(--color-warning-500)',
-  switch: 'var(--color-accent-500)',
-  switchL2: 'var(--color-success-500)',
-  switchL3: 'var(--color-purple-500)',
-  router: 'var(--color-warning-600)',
-  firewall: 'var(--color-error-500)',
-  wlc: 'var(--color-indigo-500)',
-  hub: 'var(--color-teal-500)',
-  cloud: 'var(--color-sky-500)',
-  mobile: 'var(--color-sky-400)',
-  printer: 'var(--color-pink-500)',
+  pc: 'var(--color-primary-400)',
+  iot: 'var(--color-warning-400)',
+  switch: 'var(--color-accent-400)',
+  switchL2: 'var(--color-success-400)',
+  switchL3: 'var(--color-purple-400)',
+  router: 'var(--color-warning-400)',
+  firewall: 'var(--color-error-400)',
+  wlc: 'var(--color-indigo-400)',
+  hub: 'var(--color-teal-400)',
+  cloud: 'var(--color-sky-400)',
+  mobile: 'var(--color-sky-300)',
+  printer: 'var(--color-pink-400)',
 } as const;
 
 export const DEVICE_ICONS = {

@@ -3,72 +3,82 @@ import dynamic from 'next/dynamic';
 import { TopologyToolbar } from '@/components/network/TopologyToolbar';
 import { PageDevicePopovers } from '../PageDevicePopovers';
 import { cn } from '@/lib/utils';
+import type { usePageController } from '../usePageController';
 
 const NetworkTopology = dynamic(
   () => import('@/components/network/NetworkTopology/NetworkTopology').then((m) => m.NetworkTopology),
   { ssr: false }
 );
 
-interface TopologySectionProps {
-  preferences: any;
-  activeTab: any;
-  isTablet: boolean;
-  showPCPanel: boolean;
-  showUnifiedDeviceModal: boolean;
-  showRouterPanel: boolean;
-  isPingPanelOpen: boolean;
-  t: any;
-  isDark: boolean;
-  language: any;
-  topologyDevices: any;
-  deviceStates: any;
-  activeDeviceId: string;
-  activeDeviceType: any;
-  cableInfo: any;
-  deviceSearchQuery: string;
-  canUndo: boolean;
-  canRedo: boolean;
-  hasHydrated: boolean;
-  isExamActive: boolean;
-  setDeviceSearchQuery: any;
-  setCableInfo: any;
-  setZoom: any;
-  setPan: any;
-  handleDeviceSelectFromMenu: any;
-  handleUndo: any;
-  handleRedo: any;
-  handleRefreshNetwork: any;
-  setIsEnvironmentPanelOpen: any;
-  onOpenStudentJoin?: any;
-  onOpenTeacherPanel?: any;
-  topologyContainerRef: any;
-  topologyKey: any;
-  selectedDevice: any;
-  handleDeviceSelectFromCanvas: any;
-  handleDeviceDoubleClick: any;
-  handleDeviceDelete: any;
-  handleDeviceRename: any;
-  topologyConnections: any;
-  topologyNotes: any;
-  setDeviceStates: any;
-  zoom: number;
-  pan: any;
-  focusDeviceId: string | null;
-  isEditorOpen: boolean;
-  setActiveDeviceId: any;
-  setActiveDeviceType: any;
-  setUnifiedDeviceActiveTab: any;
-  setShowUnifiedDeviceModal: any;
-  clearSelectionTrigger: number;
-  setFocusedOverlay: any;
-  focusedOverlay: any;
-  commitAction: any;
-  setSelectedDevice: any;
-  setShowPCDeviceId: any;
-  setPcPanelInitialTab: any;
-  getOrCreatePCOutputs: any;
-  setIsPingPanelOpen: any;
-}
+type PageController = ReturnType<typeof usePageController>;
+
+/**
+ * Every prop below is forwarded verbatim from the page controller in page.tsx,
+ * so the types are derived from that controller rather than restated here. This
+ * keeps the component honest: a prop can no longer drift away from the value
+ * page.tsx actually supplies, which is exactly what `any` allowed before.
+ */
+export type TopologySectionProps = Pick<
+  PageController,
+  | 'preferences'
+  | 'activeTab'
+  | 'isTablet'
+  | 'showPCPanel'
+  | 'showUnifiedDeviceModal'
+  | 'showRouterPanel'
+  | 'isPingPanelOpen'
+  | 't'
+  | 'isDark'
+  | 'language'
+  | 'topologyDevices'
+  | 'deviceStates'
+  | 'activeDeviceId'
+  | 'activeDeviceType'
+  | 'cableInfo'
+  | 'deviceSearchQuery'
+  | 'canUndo'
+  | 'canRedo'
+  | 'hasHydrated'
+  | 'isExamActive'
+  | 'setDeviceSearchQuery'
+  | 'setCableInfo'
+  | 'setZoom'
+  | 'setPan'
+  | 'handleDeviceSelectFromMenu'
+  | 'handleUndo'
+  | 'handleRedo'
+  | 'handleRefreshNetwork'
+  | 'setIsEnvironmentPanelOpen'
+  | 'onOpenStudentJoin'
+  | 'onOpenTeacherPanel'
+  | 'topologyContainerRef'
+  | 'topologyKey'
+  | 'selectedDevice'
+  | 'handleDeviceSelectFromCanvas'
+  | 'handleDeviceDoubleClick'
+  | 'handleDeviceDelete'
+  | 'handleDeviceRename'
+  | 'topologyConnections'
+  | 'topologyNotes'
+  | 'setDeviceStates'
+  | 'zoom'
+  | 'pan'
+  | 'focusDeviceId'
+  | 'isEditorOpen'
+  | 'setActiveDeviceId'
+  | 'setActiveDeviceType'
+  | 'setUnifiedDeviceActiveTab'
+  | 'setShowUnifiedDeviceModal'
+  | 'clearSelectionTrigger'
+  | 'setFocusedOverlay'
+  | 'focusedOverlay'
+  | 'commitAction'
+  | 'setSelectedDevice'
+  | 'setShowPCDeviceId'
+  | 'setPcPanelInitialTab'
+  | 'getOrCreatePCOutputs'
+  | 'setIsPingPanelOpen'
+>;
 
 export function TopologySection({
   preferences,
@@ -199,7 +209,7 @@ export function TopologySection({
               isExamEditorOpen={isEditorOpen}
               onOpenTasks={(deviceId: string) => {
                 setActiveDeviceId(deviceId);
-                const device = topologyDevices?.find((d: any) => d.id === deviceId);
+                const device = topologyDevices?.find((d) => d.id === deviceId);
                 if (!device || device.type === 'pc') return;
                 setActiveDeviceType(device.type);
                 setUnifiedDeviceActiveTab('settings');

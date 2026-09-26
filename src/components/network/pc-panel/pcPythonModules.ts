@@ -1,4 +1,5 @@
 import { PyComplex, pythonRange } from './pcPythonRunnerHelpers';
+import { markPyTuple } from './pcPythonTags';
 import { createPythonGraphicsApi } from './pcPythonGraphicsApi';
 import { createPythonNetworkApi } from './pcPythonNetworkApi';
 
@@ -80,9 +81,7 @@ export const PYTHON_MODULES: Record<string, Record<string, unknown>> = {
         const nextResult: unknown[][] = [];
         for (const x of result) {
           for (const y of pool) {
-            const tupleItem = [...x, y];
-            (tupleItem as unknown as { __isTuple__: boolean }).__isTuple__ = true;
-            nextResult.push(tupleItem);
+            nextResult.push(markPyTuple([...x, y]));
           }
         }
         result = nextResult;

@@ -370,8 +370,14 @@ export function AppHeader({
           {/* Mobile Menu */}
           <Sheet open={showMobileMenu} onOpenChange={setShowMobileMenu}>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="md:hidden">
-                <Menu className="w-5 h-5" />
+              <Button
+                variant="outline"
+                size="icon"
+                className="md:hidden"
+                aria-label={t.menu || (language === 'tr' ? 'Menü' : 'Menu')}
+                title={t.menu || (language === 'tr' ? 'Menü' : 'Menu')}
+              >
+                <Menu className="w-5 h-5" aria-hidden="true" />
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className={`${isDark ? 'bg-secondary-900 border-secondary-800' : 'bg-white'} p-0 w-72 h-dvh overflow-hidden`}>

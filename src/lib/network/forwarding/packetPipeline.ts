@@ -1,31 +1,3 @@
-/**
- * packetPipeline.ts — Unified Packet Processing Pipeline
- *
- * Implements the single canonical packet forwarding chain:
- *
- *   Ingress
- *     → L1 Physical Check (shutdown, link status)
- *     → Port Security
- *     → DHCP Snooping (untrusted port drops non-DHCP)
- *     → STP Port State (Discarding/Blocking ports drop data frames)
- *     → VLAN Check (access VLAN match / trunk allowed-VLAN)
- *     → ACL Ingress (ip access-group <name> in)
- *     → ARP Resolution (if next-hop MAC unknown)
- *     → MAC Lookup (L2) / Route Lookup (L3)
- *     → ACL Egress (ip access-group <name> out)
- *     → QoS Scheduling
- *     → Egress Port
- *     → Packet Capture Recording
- *
- * Each stage produces a `PacketTrace` entry; all traces are returned
- * in `PipelineResult` so the UI can display exactly what happened at
- * each hop.
- *
- * This pipeline is composable: callers (pathResolution, eventPipeline)
- * can invoke `runHopPipeline()` per hop, or `runFullPacketPipeline()`
- * to traverse the entire path from source to destination.
- */
-
 import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState, Port } from '@/lib/network/types';
 import type { NetworkPacketFrame } from './packetFrame';
@@ -34,7 +6,6 @@ import { buildNetflowExportFrame, captureNetFlow } from './netflowEngine';
 import { buildSflowExportFrame, captureSflow } from './sflowEngine';
 import { evaluateAcl } from '@/lib/network/connectivity/acl';
 import { learnMacAddress } from '@/lib/network/macLearning';
-import { getRoutingTable, findRouteDetailed } from '@/lib/network/routing';
 import { dispatchCapturedPackets } from '@/utils/packetCapture';
 import { buildConnectionIndex } from '@/lib/network/connectionIndex';
 import { generateIcmpUnreachable } from './icmpUtils';
@@ -44,365 +15,32 @@ import { evaluateWredDrop, scheduleQosPackets, shapePacketQueue, type QosClass }
 import { evaluateZbf } from './zbfEngine';
 import { evaluateIpv6FirstHopSecurity } from './ipv6FirstHopSecurity';
 import { getSpanMirrorDestinations, getRspanDestinationSessions } from '@/lib/network/portMirroring';
-import { checkRpf, getPrunedPorts } from './multicastEngine';
+import {
+  PipelineStage,
+  PipelineAction,
+  PacketTrace,
+  HopResult,
+  PipelineResult,
+  PacketHopTrace,
+  PacketSimulationResult,
+  makeTrace,
+  checkVlan,
+  updatePortStats
+} from './packetPipelineTypes';
+import { resolveEgress } from './packetPipelineResolution';
 
-// ---------------------------------------------
-// Pipeline Trace Types
-// ---------------------------------------------
-
-export type PipelineStage =
-  | 'ingress-l1'
-  | 'port-security'
-  | 'dhcp-snooping'
-  | 'ipv6-fhs'
-  | 'stp-state'
-  | 'vlan-check'
-  | 'acl-ingress'
-  | 'control-plane'
-  | 'arp-resolution'
-  | 'mac-lookup'
-  | 'route-lookup'
-  | 'nat-translation'
-  | 'zbf'
-  | 'acl-egress'
-  | 'qos'
-  | 'netflow'
-  | 'span-mirror'
-  | 'multicast-rpf'
-  | 'egress'
-  | 'capture';
-
-
-
-export type PipelineAction = 'pass' | 'drop' | 'trap' | 'flood' | 'forward' | 'skip';
-
-export interface PacketTrace {
-  hopIndex: number;
-  deviceId: string;
-  deviceName: string;
-  portId: string;
-  stage: PipelineStage;
-  action: PipelineAction;
-  reason: string;
-  /** Snapshot of the frame state at this stage */
-  frameSnapshot: Readonly<NetworkPacketFrame>;
-}
-
-export interface HopResult {
-  deviceId: string;
-  accepted: boolean;
-  trapToControlPlane: boolean;
-  egressPorts: string[];
-  nextDeviceId?: string;
-  responseFrame?: NetworkPacketFrame;
-  telemetryFrames?: NetworkPacketFrame[];
-  /** All pipeline stage traces for this hop */
-  traces: PacketTrace[];
-}
-
-export interface PipelineResult {
-  success: boolean;
-  hopResults: HopResult[];
-  /** Flat list of all traces across all hops */
-  allTraces: PacketTrace[];
-  capturedOnLinks: string[];
-  finalFrame?: NetworkPacketFrame;
-  dropReason?: string;
-  telemetryFrames?: NetworkPacketFrame[];
-}
-
-// ---------------------------------------------
-// Internal helpers
-// ---------------------------------------------
-
-function makeTrace(
-  hopIndex: number,
-  device: CanvasDevice,
-  portId: string,
-  stage: PipelineStage,
-  action: PipelineAction,
-  reason: string,
-  frame: NetworkPacketFrame
-): PacketTrace {
-  return {
-    hopIndex,
-    deviceId: device.id,
-    deviceName: device.name,
-    portId,
-    stage,
-    action,
-    reason,
-    frameSnapshot: Object.freeze({ ...frame }),
-  };
-}
-
-/**
- * Check if a VLAN is allowed through a port.
- * - Access port: frame.vlanId must match port.vlan (or 1 for untagged)
- * - Trunk port: frame.vlanId must be in port.allowedVlans (or 'all')
- */
-function checkVlan(port: Port, frame: NetworkPacketFrame): { allowed: boolean; reason: string } {
-  const fvlan = frame.vlanId ?? 1;
-
-  if (port.mode === 'trunk') {
-    if (port.allowedVlans === 'all') {
-      return { allowed: true, reason: `Trunk allows all VLANs (frame VLAN ${fvlan})` };
-    }
-    const allowed = Array.isArray(port.allowedVlans) && port.allowedVlans.includes(fvlan);
-    return {
-      allowed,
-      reason: allowed
-        ? `Trunk: VLAN ${fvlan} allowed`
-        : `Trunk: VLAN ${fvlan} not in allowed-vlans`
-    };
-  }
-
-  // Access port — tag or native VLAN must match
-  const portVlan = port.accessVlan ?? port.vlan ?? 1;
-  const allowed = fvlan === portVlan || fvlan === 1;
-  return {
-    allowed,
-    reason: allowed
-      ? `Access port VLAN ${portVlan} OK`
-      : `VLAN mismatch: frame VLAN ${fvlan} ≠ access VLAN ${portVlan}`
-  };
-}
-
-type PortStatKind = 'rx' | 'tx' | 'drop' | 'txdrop';
-
-function updatePortStats(port: Port | undefined, type: PortStatKind, bytes: number = 64): void {
-  if (!port) return;
-  if (!port.stats) {
-    port.stats = { rxPackets: 0, rxBytes: 0, txPackets: 0, txBytes: 0, rxDrops: 0, txDrops: 0, rxErrors: 0, txErrors: 0 };
-  }
-  if (!port.statistics) {
-    port.statistics = {};
-  }
-  const s = port.stats;
-  const st = port.statistics;
-  const now = Date.now();
-  if (type === 'rx') {
-    s.rxPackets = (s.rxPackets ?? 0) + 1;
-    s.rxBytes = (s.rxBytes ?? 0) + bytes;
-    st.inputPackets = (st.inputPackets ?? 0) + 1;
-    st.inputBytes = (st.inputBytes ?? 0) + bytes;
-    st.lastInput = now;
-  } else if (type === 'tx') {
-    s.txPackets = (s.txPackets ?? 0) + 1;
-    s.txBytes = (s.txBytes ?? 0) + bytes;
-    st.outputPackets = (st.outputPackets ?? 0) + 1;
-    st.outputBytes = (st.outputBytes ?? 0) + bytes;
-    st.lastOutput = now;
-  } else if (type === 'drop') {
-    s.rxDrops = (s.rxDrops ?? 0) + 1;
-    st.drops = (st.drops ?? 0) + 1;
-  } else if (type === 'txdrop') {
-    s.txDrops = (s.txDrops ?? 0) + 1;
-    st.drops = (st.drops ?? 0) + 1;
-  }
-}
-
-/**
- * Determine egress ports for a frame on a device.
- * Returns port IDs, next-hop device ID, and route decision details if applicable.
- */
-function resolveEgress(
-  frame: NetworkPacketFrame,
-  device: CanvasDevice,
-  state: SwitchState,
-  connections: CanvasConnection[],
-  deviceMap: Map<string, CanvasDevice>
-): { egressPorts: string[]; nextDeviceId?: string; routeDecision?: string } {
-  const egressPorts: string[] = [];
-  let nextDeviceId: string | undefined;
-  let routeDecision: string | undefined;
-  const connectionIndex = buildConnectionIndex(connections);
-
-  // Check if frame reached its final destination host
-  if ((device.type === 'pc' || device.type === 'iot' || device.type === 'printer') && frame.ingressDeviceId === device.id) {
-    return { egressPorts: [], nextDeviceId: undefined, routeDecision: `Packet delivered to destination host ${device.name}` };
-  }
-
-  const multicastGroup = frame.dstIp && frame.dstIp.split('.').length === 4
-    ? Number(frame.dstIp.split('.')[0]) >= 224 && Number(frame.dstIp.split('.')[0]) <= 239
-    : false;
-
-  if (device.type === 'switchL2' || device.type === 'switchL3' || device.type === 'hub') {
-    if (multicastGroup && (state.multicastRoutingEnabled || state.igmpSnoopingEnabled !== false)) {
-      // Multicast forwarding to joined IGMP receiver ports or PIM interfaces
-      Object.values(state.ports || {}).forEach((port) => {
-        const joined = port.igmpGroups?.includes(frame.dstIp as string);
-        const pimForwarding = Boolean(port.pimMode);
-        if (port.id !== frame.ingressPortId && !port.shutdown && port.status === 'connected' && (joined || pimForwarding)) {
-          egressPorts.push(port.id);
-        }
-      });
-      if (egressPorts.length > 0) {
-        routeDecision = `L2 Multicast IGMP/PIM forwarding to joined ports: ${egressPorts.join(', ')}`;
-        const firstPort = egressPorts[0];
-        const conn = connectionIndex.byPort.get(`${device.id}:${firstPort}`);
-        if (conn) {
-          nextDeviceId = conn.sourceDeviceId === device.id ? conn.targetDeviceId : conn.sourceDeviceId;
-        }
-      } else if (state.multicastRoutingEnabled) {
-        routeDecision = `L2 Multicast drop: No active IGMP members or PIM neighbors for group ${frame.dstIp}`;
-      } else {
-        // Plain L2 broadcast flood fallback for un-snooped multicast
-        Object.values(state.ports || {}).forEach((p) => {
-          if (p.id !== frame.ingressPortId && !p.shutdown && p.status === 'connected') {
-            egressPorts.push(p.id);
-          }
-        });
-        routeDecision = `L2 Multicast Flood across active ports for group ${frame.dstIp}`;
-      }
-    } else if (device.type === 'hub' || frame.dstMac === 'ff:ff:ff:ff:ff:ff' || !frame.dstMac) {
-      // Flood to all active ports except ingress
-      Object.values(state.ports || {}).forEach(p => {
-        if (p.id !== frame.ingressPortId && !p.shutdown && p.status === 'connected') {
-          egressPorts.push(p.id);
-        }
-      });
-      routeDecision = 'L2 Broadcast/Multicast — Flooding frame to all active ports';
-    } else {
-      const match = state.macAddressTable?.find(m => m.mac.toLowerCase() === frame.dstMac?.toLowerCase());
-      if (match?.port && match.port !== frame.ingressPortId && !state.ports?.[match.port]?.shutdown) {
-        egressPorts.push(match.port);
-        routeDecision = `L2 Unicast match: MAC ${frame.dstMac} learned on port ${match.port} (VLAN ${match.vlan})`;
-        const conn = connectionIndex.byPort.get(`${device.id}:${match.port}`);
-        if (conn) {
-          nextDeviceId = conn.sourceDeviceId === device.id ? conn.targetDeviceId : conn.sourceDeviceId;
-        }
-      } else {
-        // Unicast miss — flood
-        Object.values(state.ports || {}).forEach(p => {
-          if (p.id !== frame.ingressPortId && !p.shutdown && p.status === 'connected') {
-            egressPorts.push(p.id);
-          }
-        });
-        routeDecision = `L2 Unicast miss for MAC ${frame.dstMac} — Flooding frame across VLAN ${frame.vlanId || 1}`;
-      }
-    }
-  } else if (device.type === 'router' || device.type === 'firewall') {
-    if (multicastGroup) {
-      if (state.multicastRoutingEnabled) {
-        // RPF check: drop if packet arrives on wrong interface
-        if (frame.srcIp && frame.ingressPortId) {
-          const rpf = checkRpf(state, frame.srcIp, frame.ingressPortId);
-          if (!rpf.passed) {
-            routeDecision = `L3 Multicast RPF check failed: expected ingress on ${rpf.expectedInterface ?? '?'}, got ${frame.ingressPortId}. Packet dropped.`;
-            return { egressPorts: [], routeDecision };
-          }
-        }
-
-        // TTL decrement check
-        if (frame.ttl !== undefined && frame.ttl <= 1) {
-          routeDecision = `L3 Multicast TTL exhausted (TTL=${frame.ttl}). Packet dropped.`;
-          return { egressPorts: [], routeDecision };
-        }
-
-        const prunedPorts = getPrunedPorts(state, frame.dstIp as string);
-
-        Object.values(state.ports || {}).forEach((port) => {
-          const joined = port.igmpGroups?.includes(frame.dstIp as string);
-          const pimForwarding = Boolean(port.pimMode);
-          const isDensePruned = prunedPorts.includes(port.id);
-          if (
-            port.id !== frame.ingressPortId &&
-            !port.shutdown &&
-            (joined || pimForwarding) &&
-            !isDensePruned
-          ) {
-            egressPorts.push(port.id);
-          }
-        });
-        if (state.mrouteEntries && Array.isArray(state.mrouteEntries)) {
-          state.mrouteEntries.forEach((entry) => {
-            if (entry.group === frame.dstIp || entry.group === '224.0.0.0/4' || entry.group === '*') {
-              (entry.outgoingInterfaces || []).forEach((outPort: string) => {
-                const portKey = Object.keys(state.ports || {}).find((k) => k.toLowerCase() === outPort.toLowerCase()) || outPort;
-                if (portKey !== frame.ingressPortId && !state.ports?.[portKey]?.shutdown && !egressPorts.includes(portKey)) {
-                  egressPorts.push(portKey);
-                }
-              });
-            }
-          });
-        }
-        if (egressPorts.length > 0) {
-          routeDecision = `L3 Multicast forwarding for group ${frame.dstIp} via PIM/IGMP OIL (${egressPorts.join(', ')})`;
-          const firstPort = egressPorts[0];
-          const conn = connectionIndex.byPort.get(`${device.id}:${firstPort}`);
-          if (conn) {
-            nextDeviceId = conn.sourceDeviceId === device.id ? conn.targetDeviceId : conn.sourceDeviceId;
-            if (nextDeviceId) {
-              const nextDevice = deviceMap.get(nextDeviceId);
-              if (!nextDevice) nextDeviceId = undefined;
-            }
-          }
-        } else {
-          routeDecision = `L3 Multicast drop: No active PIM/IGMP receivers or mroute OIL for group ${frame.dstIp}`;
-        }
-      } else {
-        routeDecision = `L3 Multicast drop: 'ip multicast-routing' is disabled on router`;
-      }
-    } else if (frame.dstIp) {
-      const deviceMap2 = new Map<string, SwitchState>([[device.id, state]]);
-      const table = getRoutingTable(device.id, deviceMap2);
-      const detailed = findRouteDetailed(frame.dstIp, table);
-      if (detailed && (detailed.route.interfaceId || detailed.route.nextHop)) {
-        const portId = detailed.route.interfaceId || detailed.route.nextHop;
-        egressPorts.push(portId);
-        routeDecision = detailed.explanation;
-        const conn = connectionIndex.byPort.get(`${device.id}:${portId}`);
-        if (conn) {
-          nextDeviceId = conn.sourceDeviceId === device.id ? conn.targetDeviceId : conn.sourceDeviceId;
-          if (nextDeviceId) {
-            const nextDevice = deviceMap.get(nextDeviceId);
-            if (!nextDevice) nextDeviceId = undefined;
-          }
-        }
-      }
-    }
-  } else if (device.type === 'cloud') {
-    (device.ports || []).forEach(p => {
-      if (p.id !== frame.ingressPortId && !p.shutdown && p.status === 'connected') {
-        egressPorts.push(p.id);
-      }
-    });
-    routeDecision = 'Cloud hub forwarding to attached interfaces';
-  } else {
-    // End devices (PC, IoT, Server, etc.): send via connected active link
-    const conn = connections.find(c => c.active && (c.sourceDeviceId === device.id || c.targetDeviceId === device.id));
-    if (conn) {
-      const portId = conn.sourceDeviceId === device.id ? conn.sourcePort : conn.targetPort;
-      egressPorts.push(portId);
-      nextDeviceId = conn.sourceDeviceId === device.id ? conn.targetDeviceId : conn.sourceDeviceId;
-      routeDecision = `Host egress via port ${portId} toward ${nextDeviceId}`;
-    } else if (device.ports && device.ports.length > 0) {
-      const p = device.ports.find(pt => pt.status === 'connected' && !pt.shutdown) || device.ports[0];
-      if (p) {
-        egressPorts.push(p.id);
-        routeDecision = `Host egress via port ${p.id}`;
-      }
-    }
-  }
-
-  return { egressPorts, nextDeviceId, routeDecision };
-}
-
-// ---------------------------------------------
-// Core: Per-Hop Pipeline
-// ---------------------------------------------
+export type {
+  PipelineStage,
+  PipelineAction,
+  PacketTrace,
+  HopResult,
+  PipelineResult,
+  PacketHopTrace,
+  PacketSimulationResult,
+};
 
 /**
  * Run the full pipeline for a single hop (one device).
- *
- * @param hopIndex  Position in the path (0 = source, 1 = first intermediate, ...)
- * @param frame     The packet frame arriving at this device
- * @param device    The CanvasDevice for this hop
- * @param state     The SwitchState for this hop
- * @param devices   All devices in topology (for next-hop resolution)
- * @param connections All connections in topology
- * @param now       Current timestamp (ms)
  */
 export function runHopPipeline(
   hopIndex: number,
@@ -471,7 +109,6 @@ export function runHopPipeline(
     return drop('ipv6-fhs', fhsResult.dropReason || 'IPv6 First-Hop Security Violation');
   }
   traces.push(makeTrace(hopIndex, device, ingressPortId, 'ipv6-fhs', 'pass', 'IPv6 First-Hop Security OK', frame));
-
 
   // -- Stage 4: STP Port State --------------------------------------------
   if (frame.protocol !== 'STP') {
@@ -614,7 +251,6 @@ export function runHopPipeline(
   }
 
   // -- Stage 10: ACL Egress ---------------------------------------------
-
   for (const egressPortId of egressPorts) {
     const egressPort: Port | undefined = state?.ports?.[egressPortId];
     if (egressPort?.accessGroupOut && state && frame.srcIp && frame.dstIp) {
@@ -691,7 +327,6 @@ export function runHopPipeline(
       traces.push(makeTrace(hopIndex, device, egressPortId, 'qos', 'skip', 'Best-effort queue (No QoS policy active)', frame));
     }
   }
-
 
   // -- Stage 10c: NetFlow Accounting -------------------------------------
   const telemetryFrames: NetworkPacketFrame[] = [];
@@ -774,8 +409,6 @@ export function runHopPipeline(
         connectionId: conn.id,
         sourceIp: frame.srcIp || '',
         targetIp: frame.dstIp || '',
-        // Keep application protocols visible in the capture UI instead of
-        // collapsing MQTT/CoAP into their transport (TCP/UDP).
         protocol: frame.mqttPayload ? 'MQTT' : frame.coapPayload ? 'CoAP' : frame.protocol,
         length: frame.length,
         info: frame.mqttPayload ? `MQTT ${frame.mqttPayload.type}${frame.mqttPayload.topic ? ` topic=${frame.mqttPayload.topic}` : ''}` : frame.coapPayload ? `CoAP ${frame.coapPayload.code} ${frame.coapPayload.path}` : frame.info,
@@ -822,7 +455,6 @@ export function runFullPacketPipeline(
   let hopIndex = 0;
 
   const connectionIndex = buildConnectionIndex(connections);
-
   const visitedRouteKeys = new Map<string, number>();
   const visitOrder: string[] = [];
 
@@ -841,9 +473,6 @@ export function runFullPacketPipeline(
       };
     }
 
-    // Routing loop detection check. Key by destination so a device legitimately
-    // traversed twice for different flows is not flagged as a loop. Reaching the
-    // same (device, destination) twice means the packet is cycling.
     const isL3 = device.type === 'router' || device.type === 'firewall' || device.type === 'switchL3';
     if (isL3) {
       const dstKey = currentFrame.dstIp || currentFrame.dstMac || 'unknown';
@@ -922,7 +551,6 @@ export function runFullPacketPipeline(
         capturedOnLinks.push(conn.id);
         const nextPortId = conn.sourceDeviceId === currentDeviceId ? conn.targetPort : conn.sourcePort;
 
-        // Decrement TTL for routed hops
         if (isL3) {
           const newTtl = (currentFrame.ttl ?? 64) - 1;
           currentFrame = { ...currentFrame, ttl: newTtl };
@@ -962,20 +590,6 @@ export function runFullPacketPipeline(
     telemetryFrames,
     dropReason: formatDropReason(DropReasonCode.MAX_HOPS_EXCEEDED, `Maximum hop count (${maxHops}) exceeded — possible routing loop`)
   };
-}
-
-export interface PacketHopTrace {
-  deviceId: string;
-  portId?: string;
-  vlan?: number;
-  nextHopDevice?: string;
-  details?: string;
-}
-
-export interface PacketSimulationResult {
-  success: boolean;
-  dropReason?: string;
-  hops: PacketHopTrace[];
 }
 
 export function simulatePacketFlow(

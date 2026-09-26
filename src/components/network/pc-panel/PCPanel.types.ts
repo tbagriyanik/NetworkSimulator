@@ -1,7 +1,7 @@
 ﻿import type React from 'react';
 import type { CableInfo, SwitchState } from '@/lib/network/types';
 import type { TerminalOutput } from '../Terminal';
-import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
+import type { CanvasConnection, CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 
 export type PCActiveTab = 'home' | 'desktop' | 'terminal' | 'settings' | 'services' | 'wireless' | 'iot' | 'rest-api';
 
@@ -48,14 +48,7 @@ export interface PCPanelProps {
   onClose: () => void;
   onTogglePower?: (deviceId: string) => void;
   topologyDevices?: CanvasDevice[];
-  topologyConnections?: {
-    sourceDeviceId: string;
-    sourcePort: string;
-    targetDeviceId: string;
-    targetPort: string;
-    cableType?: string;
-    active?: boolean;
-  }[];
+  topologyConnections?: CanvasConnection[];
   deviceStates?: Map<string, SwitchState>;
   deviceOutputs?: Map<string, TerminalOutput[]>;
   pcOutputs?: Map<string, OutputLine[]>;

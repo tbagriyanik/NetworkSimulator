@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import type { TopologyPositionedEvent } from './topologyEventTypes';
 interface DeviceDragProps {
   saveToHistory: () => void;
   draggedDeviceRef: React.MutableRefObject<string | null>;
@@ -20,7 +21,7 @@ export function useDeviceDrag({
   const [isActuallyDragging, setIsActuallyDragging] = useState(false);
 
   const startDeviceDrag = (
-    e: React.MouseEvent,
+    e: TopologyPositionedEvent,
     deviceId: string,
     selectedDeviceIds: string[],
     initialPositions: { [key: string]: { x: number; y: number } }

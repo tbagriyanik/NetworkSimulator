@@ -1,21 +1,20 @@
-﻿'use client';
+'use client';
 
 import { useCallback } from 'react';
-import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
+import type { CanvasConnection, CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import type { OutputLine, FtpSession, PythonSession, PcFile, PCActiveTab } from './PCPanel.types';
 import { errorHandler, DEVICE_ERRORS } from '@/lib/errors/errorHandler';
-import {
-  loadFs, saveFs, resolvePath, isDir, listDir, makeDir, removeDir,
-  readFile, deleteFile, getNodeDetails,
-  copyFile, moveNode, renameNode,
-} from './pcFileSystem';
+import { loadFs, readFile, resolvePath } from './pcFileSystem';
 import { executePythonScript, executePythonScriptAsync } from './pcPythonRunner';
 import { resolveBatchFilePath, executeBatchScript } from './pcBatchRunner';
 import { usePCPanelFtpCommands } from './usePCPanelFtpCommands';
 import { handlePcDiagnosticCommand } from './pcDiagnosticCommands';
 import { handlePcInterfaceCommand } from './pcInterfaceCommands';
 import { handlePcApplicationCommand } from './pcApplicationCommands';
+import { handlePcHelpCommand } from './pcHelpCommands';
+import { handlePcSystemCommand } from './pcSystemCommands';
+import { handlePcFsCommand } from './pcFileSystemCommands';
 
 // Per-device previous working directory (cd -). Mirrors the Linux OLDPWD support.
 const winPrevDirMap = new Map<string, string>();
@@ -54,7 +53,7 @@ export interface UsePCPanelCommandsParams {
   language: string;
   t: Record<string, string>;
   topologyDevices: CanvasDevice[];
-  topologyConnections: { sourceDeviceId: string; sourcePort: string; targetDeviceId: string; targetPort: string; cableType?: string; active?: boolean }[];
+  topologyConnections: CanvasConnection[];
   deviceStates: Map<string, SwitchState> | undefined;
   deviceFromTopology: CanvasDevice | undefined;
   isCmdInputDisabled: boolean;
@@ -105,14 +104,13 @@ export interface UsePCPanelCommandsParams {
 // Supports: find /i "pattern", findstr /i "pattern", grep -i pattern
 // ---------------------------------------------------------------------------
 function applyPcPipeFilter(output: string, pipeExpr: string): string {
-  // find [/i] "term"  OR  findstr [/i] [/v] "term"  OR  grep [-i] [-v] term
   const m = pipeExpr.match(
     /^(?:find(?:str)?|grep)\s+((?:\/[ivIV]\s+)*)("[^"]*"|'[^']*'|\S+)/i
   );
-  if (!m) return output; // unrecognised pipe – pass through unchanged
+  if (!m) return output;
 
   const flags = m[1].toLowerCase();
-  const rawTerm = m[2].replace(/^["']|["']$/g, ''); // strip surrounding quotes
+  const rawTerm = m[2].replace(/^["']|["']$/g, '');
   const caseInsensitive = flags.includes('/i') || flags.includes('-i');
   const invert = flags.includes('/v') || flags.includes('-v');
 
@@ -327,7 +325,6 @@ export function usePCPanelCommands(params: UsePCPanelCommandsParams) {
           continue;
         }
 
-        // --- Pipe detection: split token at first '|' outside quotes ---
         let activeToken = token;
         let pipeExpr: string | null = null;
         let pipeIdx = -1;
@@ -348,8 +345,6 @@ export function usePCPanelCommands(params: UsePCPanelCommandsParams) {
           pipeExpr = token.slice(pipeIdx + 1).trim();
         }
 
-        // Pipe-aware output helpers — filter ALL command output when a pipe expression is present.
-        // This means every command automatically supports  cmd | find /i "x"  without per-command changes.
         const emit = (type: OutputLine['type'], content: string, prompt?: string) =>
           addLocalOutput(type, pipeExpr ? applyPcPipeFilter(content, pipeExpr) : content, prompt);
         const emitMulti = async (type: OutputLine['type'], content: string, delayMs?: number) =>
@@ -442,344 +437,27 @@ export function usePCPanelCommands(params: UsePCPanelCommandsParams) {
           emitMulti,
         })) {
           // Handled by application command module
-        } else if (cmd === 'help' || cmd === '?') {
-          const isTR = language === 'tr';
-          const helpDict: Record<string, string> = isTR ? {
-            'IPCONFIG': 'Ağ arayüzlerinin IP, alt ağ maskesi ve ağ geçidi yapılandırmasını gösterir.',
-            'PING': 'Hedef IP veya bilgisayara ICMP yankı istekleri göndererek ağ bağlantısını test eder.',
-            'TRACERT': 'Hedef adrese giden paketlerin izlediği yönlendirici rotasını görüntüler.',
-            'NSLOOKUP': 'DNS sunucusuna bağlanarak alan adı IP adresi karşılığını sorgular.',
-            'TELNET': 'Uzak ağ cihazına Telnet protokolü ile terminal bağlantısı kurar.',
-            'SSH': 'Uzak ağ cihazına güvenli SSH protokolü ile terminal bağlantısı kurar.',
-            'FTP': 'Ağdaki hedef cihaza FTP ile bağlanıp dosya transfer ekranını açar.',
-            'NETSTAT': 'Aktif ağ bağlantılarını ve dinlenen port istatistiklerini görüntüler.',
-            'NBTSTAT': 'NetBIOS protokol istatistiklerini ve aktif isim tablosunu gösterir.',
-            'GETMAC': 'Bilgisayardaki ağ kartlarının MAC (fiziksel) adreslerini görüntüler.',
-            'ARP': 'IP-MAC adresi eşleşmelerini içeren ARP önbellek tablosunu gösterir.',
-            'CURL': 'Web sunucusundan HTTP isteği göndererek içerik indirir veya görüntüler.',
-            'WGET': 'Web sunucusundan dosya veya içerik indirir.',
-            'HOSTNAME': 'Bilgisayar adını görüntüler veya yeni bilgisayar adı atar (örn: hostname PC-1).',
-            'CD': 'Mevcut dizini gösterir veya değiştirir (örn: cd \\code, cd ..).',
-            'DIR': 'Mevcut dizindeki dosya ve klasörlerin listesini görüntüler.',
-            'MD': 'Yeni bir klasör/dizin oluşturur.',
-            'RD': 'Var olan bir klasörü/dizini siler.',
-            'TYPE': 'Metin dosyasının içeriğini ekrana yazdırır.',
-            'COPY': 'Dosyayı başka bir konuma veya isimle kopyalar.',
-            'MOVE': 'Dosyayı başka bir klasöre taşır.',
-            'REN': 'Dosyanın veya klasörün adını değiştirir.',
-            'DEL': 'Bir veya daha fazla dosyayı siler.',
-            'EDIT': 'Gelişmiş metin düzenleyiciyi açarak dosyayı düzenler.',
-            'PYTHON': 'Python betiği çalıştırır veya etkileşimli Python ortamını açar.',
-            'VER': 'İşletim sistemi sürüm bilgilerini görüntüler.',
-            'CLS': 'Komut satırı ekranındaki tüm yazıları temizler.',
-            'EXIT': 'Komut satırı penceresini kapatır.'
-          } : {
-            'IPCONFIG': 'Displays all current TCP/IP network configuration values.',
-            'PING': 'Tests network connectivity to a target IP or hostname using ICMP.',
-            'TRACERT': 'Traces the route to a remote target destination.',
-            'NSLOOKUP': 'Displays information to diagnose Domain Name System (DNS) infrastructure.',
-            'TELNET': 'Connects to a remote network device via Telnet protocol.',
-            'SSH': 'Connects securely to a remote network device via SSH.',
-            'FTP': 'Connects to remote FTP server and opens file transfer panel.',
-            'NETSTAT': 'Displays active TCP connections and listening ports.',
-            'NBTSTAT': 'Displays NetBIOS over TCP/IP protocol statistics and name tables.',
-            'GETMAC': 'Displays the Media Access Control (MAC) addresses for network adapters.',
-            'ARP': 'Displays and modifies the IP-to-Physical address translation tables.',
-            'CURL': 'Fetches or displays content from a web server via HTTP requests.',
-            'WGET': 'Downloads files or content from a web server.',
-            'HOSTNAME': 'Displays or sets the computer hostname (e.g. hostname PC-1).',
-            'CD': 'Displays the name of or changes the current directory.',
-            'DIR': 'Displays a list of files and subdirectories in a directory.',
-            'MD': 'Creates a directory.',
-            'RD': 'Removes a directory.',
-            'TYPE': 'Displays the contents of a text file.',
-            'COPY': 'Copies one or more files to another location.',
-            'MOVE': 'Moves one or more files from one directory to another.',
-            'REN': 'Renames a file or files.',
-            'DEL': 'Deletes one or more files.',
-            'EDIT': 'Opens the text editor to create or modify text files.',
-            'PYTHON': 'Executes Python scripts or enters interactive Python mode.',
-            'VER': 'Displays the OS version information.',
-            'CLS': 'Clears the terminal screen.',
-            'EXIT': 'Quits the command prompt window.'
-          };
-
-          const targetSubCmd = args[0]?.toUpperCase();
-          if (targetSubCmd && helpDict[targetSubCmd]) {
-            emit('output', `${targetSubCmd}\n  ${helpDict[targetSubCmd]}`);
-          } else {
-            const header = isTR
-              ? `Windows Command Prompt Simülatörü [Sürüm 10.0.19045.3803]\nDesteklenen komutlar ve açıklamaları:\n`
-              : `Windows Command Prompt Simulator [Version 10.0.19045.3803]\nSupported commands and descriptions:\n`;
-            const lines = Object.entries(helpDict).map(([k, v]) => `  ${k.padEnd(16)} ${v}`);
-            emit('output', header + lines.join('\n'));
-          }
+        } else if (handlePcHelpCommand(cmd, args, language, emit)) {
+          // Handled by help command module
+        } else if (handlePcSystemCommand(cmd, args, { deviceId, internalPcHostname, setPcHostname, getNtpNow, emit })) {
+          // Handled by system command module
+        } else if (handlePcFsCommand(cmd, args, {
+          deviceId,
+          language,
+          t,
+          currentPath,
+          setCurrentPath,
+          winPrevDirMap,
+          pcLocalFiles,
+          setPcLocalFiles,
+          setEditingFile,
+          emit,
+        })) {
+          // Handled by file system command module
         } else if (cmd === 'cls') {
           setPcOutput([]);
         } else if (cmd === 'exit' || cmd === 'quit') {
           onClose();
-        } else if (cmd === 'hostname') {
-          if (args[0]) {
-            const newHostname = args[0].trim().slice(0, 20);
-            setPcHostname(newHostname);
-            if (typeof window !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('update-topology-device-config', {
-                detail: {
-                  deviceId,
-                  config: { name: newHostname }
-                }
-              }));
-            }
-            emit('success', `Hostname set to ${newHostname}`);
-          } else {
-            emit('output', internalPcHostname);
-          }
-        } else if (cmd === 'ver') {
-          emit('output', `OS [Version 10.0.26200.8037]`);
-        } else if (cmd === 'date') {
-          const now = getNtpNow ? getNtpNow() : null;
-          const effectiveNow = now && !Number.isNaN(now.getTime()) ? now : new Date();
-          const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-          const dayName = days[effectiveNow.getDay()];
-          const monthStr = String(effectiveNow.getMonth() + 1).padStart(2, '0');
-          const dateStr = String(effectiveNow.getDate()).padStart(2, '0');
-          const yearStr = effectiveNow.getFullYear();
-          if (args.includes('-u') || args.includes('--utc')) {
-            emit('output', effectiveNow.toUTCString());
-          } else {
-            emit('output', `The current date is: ${dayName} ${monthStr}/${dateStr}/${yearStr}`);
-          }
-        } else if (cmd === 'time') {
-          const now = getNtpNow ? getNtpNow() : null;
-          const effectiveNow = now && !Number.isNaN(now.getTime()) ? now : new Date();
-          const hours = String(effectiveNow.getHours()).padStart(2, '0');
-          const mins = String(effectiveNow.getMinutes()).padStart(2, '0');
-          const secs = String(effectiveNow.getSeconds()).padStart(2, '0');
-          const ms = String(effectiveNow.getMilliseconds()).slice(0, 2).padStart(2, '0');
-          emit('output', `The current time is: ${hours}:${mins}:${secs}.${ms}`);
-        } else if (cmd === 'uptime') {
-          const now = getNtpNow ? getNtpNow() : null;
-          const effectiveNow = now && !Number.isNaN(now.getTime()) ? now : new Date();
-          const hours = String(effectiveNow.getHours()).padStart(2, '0');
-          const mins = String(effectiveNow.getMinutes()).padStart(2, '0');
-          const secs = String(effectiveNow.getSeconds()).padStart(2, '0');
-          emit('output', ` ${hours}:${mins}:${secs} up 1 day, 4:20, 1 user, load average: 0.08, 0.03, 0.01`);
-        } else if (cmd === 'cd' || cmd === 'chdir') {
-          const targetArg = args.join(' ').trim();
-          if (targetArg === '-') {
-            const prev = winPrevDirMap.get(deviceId);
-            if (!prev) {
-              emit('error', 'The system cannot find the previous directory path.');
-              return;
-            }
-            winPrevDirMap.set(deviceId, currentPath);
-            setCurrentPath(prev);
-            emit('output', prev);
-          } else if (!targetArg || targetArg === '.') {
-            emit('output', currentPath);
-          } else {
-            const fs = loadFs(deviceId);
-            const targetPath = resolvePath(currentPath, targetArg);
-            if (isDir(fs, targetPath)) {
-              winPrevDirMap.set(deviceId, currentPath);
-              setCurrentPath(targetPath);
-            } else {
-              emit('error', t.pathNotFound);
-            }
-          }
-        } else if (cmd === 'md' || cmd === 'mkdir') {
-          const folderName = args.join(' ').trim();
-          if (!folderName) {
-            emit('output', t.commandSyntaxError);
-          } else {
-            const fs = loadFs(deviceId);
-            const targetPath = resolvePath(currentPath, folderName);
-            const success = makeDir(fs, targetPath);
-            if (success) {
-              saveFs(deviceId, fs);
-              emit('success', `Directory ${folderName} created.`);
-            } else {
-              emit('error', `A subdirectory or file ${folderName} already exists or path is invalid.`);
-            }
-          }
-        } else if (cmd === 'rd' || cmd === 'rmdir') {
-          const folderName = args.join(' ').trim();
-          if (!folderName) {
-            emit('output', t.commandSyntaxError);
-          } else {
-            const fs = loadFs(deviceId);
-            const targetPath = resolvePath(currentPath, folderName);
-            const success = removeDir(fs, targetPath);
-            if (success) {
-              saveFs(deviceId, fs);
-              emit('success', `Directory ${folderName} removed.`);
-            } else {
-              emit('error', 'Directory not empty or cannot be found.');
-            }
-          }
-        } else if (cmd === 'dir' || cmd === 'ls') {
-          const fs = loadFs(deviceId);
-          const flagArgs = args.filter(arg => /^[-/]/.test(arg));
-          const showAll = flagArgs.some(flag => flag.toLowerCase().includes('a'));
-          const targetArgs = args.filter(arg => !/^[-/]/.test(arg));
-          const targetPath = targetArgs.length > 0 ? resolvePath(currentPath, targetArgs.join(' ')) : currentPath;
-
-          if (!isDir(fs, targetPath)) {
-            emit('error', t.pathNotFound);
-          } else {
-            const allEntries = listDir(fs, targetPath);
-            const entries = allEntries.filter(name => showAll || !name.startsWith('.'));
-            let totalFiles = 0;
-            let totalSize = 0;
-            let totalDirs = 2; // '.' and '..'
-            const dirLines: string[] = [];
-
-            const formatDate = (isoStr?: string) => {
-              if (!isoStr) return '08/25/2026  08:00 AM';
-              try {
-                const d = new Date(isoStr);
-                if (isNaN(d.getTime())) return '08/25/2026  08:00 AM';
-                const mm = String(d.getMonth() + 1).padStart(2, '0');
-                const dd = String(d.getDate()).padStart(2, '0');
-                const yyyy = d.getFullYear();
-                let hours = d.getHours();
-                const ampm = hours >= 12 ? 'PM' : 'AM';
-                hours = hours % 12 || 12;
-                const hh = String(hours).padStart(2, '0');
-                const min = String(d.getMinutes()).padStart(2, '0');
-                return `${mm}/${dd}/${yyyy}  ${hh}:${min} ${ampm}`;
-              } catch {
-                return '08/25/2026  08:00 AM';
-              }
-            };
-
-            const rootDetails = getNodeDetails(fs, targetPath);
-            const parentDetails = getNodeDetails(fs, resolvePath(targetPath, '..'));
-
-            dirLines.push(`${formatDate(rootDetails?.modifiedAt)}    <DIR>          .`);
-            dirLines.push(`${formatDate(parentDetails?.modifiedAt)}    <DIR>          ..`);
-
-            for (const entryName of entries) {
-              const fullEntryPath = resolvePath(targetPath, entryName);
-              const details = getNodeDetails(fs, fullEntryPath);
-              if (details) {
-                const dateStr = formatDate(details.modifiedAt);
-                if (details.type === 'file') {
-                  totalFiles++;
-                  totalSize += details.size;
-                  dirLines.push(`${dateStr}             ${details.size.toString().padStart(12)} ${entryName}`);
-                } else {
-                  totalDirs++;
-                  dirLines.push(`${dateStr}    <DIR>          ${entryName}`);
-                }
-              }
-            }
-
-            const displayDir = targetPath.endsWith('\\') ? targetPath : `${targetPath}\\`;
-            const dirOutput = ` Volume in drive C is OS\n Volume Serial Number is 1234-5678\n\n Directory of ${displayDir}\n\n${dirLines.join('\n')}\n               ${totalFiles} File(s)          ${totalSize.toLocaleString()} bytes\n               ${totalDirs} Dir(s)  100,000,000,000 bytes free`;
-            emit('output', dirOutput);
-          }
-        } else if (cmd === 'type' || cmd === 'cat') {
-          const fileArgs = args.filter(arg => !/^[-/]/.test(arg));
-          if (fileArgs.length === 0) {
-            emit('output', t.commandSyntaxError);
-          } else {
-            const fs = loadFs(deviceId);
-            const outputs: string[] = [];
-            const missing: string[] = [];
-            for (const fileName of fileArgs) {
-              const targetPath = resolvePath(currentPath, fileName);
-              const content = readFile(fs, targetPath);
-              if (content !== null) {
-                outputs.push(content);
-                continue;
-              }
-              const isRoot = currentPath === 'C:\\' || currentPath === 'C:';
-              const localFile = isRoot ? pcLocalFiles.find(f => f.name.toLowerCase() === fileName.toLowerCase()) : null;
-              if (localFile) {
-                outputs.push(`[File ${localFile.name} (${localFile.size} bytes)]`);
-              } else {
-                missing.push(fileName);
-              }
-            }
-            if (outputs.length > 0) emit('output', outputs.join('\n'));
-            if (missing.length > 0) {
-              emit('error', missing.length === 1 ? t.fileNotFound : `${t.fileNotFound}: ${missing.join(', ')}`);
-            }
-          }
-        } else if (cmd === 'del' || cmd === 'delete' || cmd === 'rm') {
-          const fileName = args.join(' ').trim();
-          if (!fileName) {
-            emit('output', t.commandSyntaxError);
-          } else {
-            const fs = loadFs(deviceId);
-            const targetPath = resolvePath(currentPath, fileName);
-            const deletedFS = deleteFile(fs, targetPath);
-            const isRoot = currentPath === 'C:\\' || currentPath === 'C:';
-            const localFileExists = isRoot && pcLocalFiles.some(f => f.name.toLowerCase() === fileName.toLowerCase());
-            if (localFileExists) {
-              setPcLocalFiles(prev => prev.filter(f => f.name.toLowerCase() !== fileName.toLowerCase()));
-            }
-            if (deletedFS || localFileExists) {
-              if (deletedFS) saveFs(deviceId, fs);
-              emit('success', 'File deleted successfully.');
-            } else {
-              emit('error', t.fileNotFound);
-            }
-          }
-        } else if (cmd === 'copy') {
-          if (args.length < 2) {
-            emit('output', t.commandSyntaxError);
-          } else {
-            const fs = loadFs(deviceId);
-            const srcPath = resolvePath(currentPath, args[0]);
-            const destPath = resolvePath(currentPath, args[1]);
-            const copied = copyFile(fs, srcPath, destPath);
-            if (copied) {
-              saveFs(deviceId, fs);
-              emit('output', t.copySuccess);
-            } else {
-              emit('error', t.fileNotFound);
-            }
-          }
-        } else if (cmd === 'move') {
-          if (args.length < 2) {
-            emit('output', t.commandSyntaxError);
-          } else {
-            const fs = loadFs(deviceId);
-            const srcPath = resolvePath(currentPath, args[0]);
-            const destPath = resolvePath(currentPath, args[1]);
-            const moved = moveNode(fs, srcPath, destPath);
-            if (moved) {
-              saveFs(deviceId, fs);
-              emit('output', t.moveSuccess);
-            } else {
-              emit('error', t.fileNotFound);
-            }
-          }
-        } else if (cmd === 'ren' || cmd === 'rename') {
-          if (args.length < 2) {
-            emit('output', t.commandSyntaxError);
-          } else {
-            const fs = loadFs(deviceId);
-            const targetPath = resolvePath(currentPath, args[0]);
-            const res = renameNode(fs, targetPath, args[1]);
-            if (res.success) {
-              saveFs(deviceId, fs);
-            } else if (res.error === 'exists') {
-              emit('error', t.duplicateFileError);
-            } else {
-              emit('error', t.fileNotFound);
-            }
-          }
-        } else if (cmd === 'edit' || cmd === 'notepad' || cmd === 'nano' || cmd === 'vim' || cmd === 'vi') {
-          const rawFileName = args.join(' ').trim();
-          const fileName = rawFileName || (language === 'tr' ? 'yeni_dosya.txt' : 'new_file.txt');
-          const fs = loadFs(deviceId);
-          const targetPath = resolvePath(currentPath, fileName);
-          const existingContent = rawFileName ? (readFile(fs, targetPath) ?? '') : '';
-          setEditingFile({ path: targetPath, content: existingContent });
-          emit('output', rawFileName ? `Opening editor for ${fileName}...` : (language === 'tr' ? `Boş metin düzenleyicisi açılıyor (${fileName})...` : `Opening empty text editor (${fileName})...`));
         } else if (cmd === 'python' || cmd === 'python3' || cmd === 'py') {
           const firstArg = args[0];
           const streamOutput = (chunk: string, replaceLastLine?: boolean) => {
@@ -968,4 +646,3 @@ export function usePCPanelCommands(params: UsePCPanelCommandsParams) {
     handleFtpSessionCommand,
   };
 }
-

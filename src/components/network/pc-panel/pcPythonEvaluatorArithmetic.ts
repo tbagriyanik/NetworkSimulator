@@ -10,6 +10,7 @@ import {
   formatPrintfString,
   findOperatorIndex,
 } from './pcPythonRunnerHelpers';
+import { isPyTuple, markPyTuple } from './pcPythonTags';
 
 export interface ArithmeticResult {
   handled: boolean;
@@ -165,14 +166,14 @@ export function evaluatePythonArithmetic(
         const count = Math.max(0, Math.floor(b));
         const res: unknown[] = [];
         for (let i = 0; i < count; i++) res.push(...a);
-        if ((a as unknown as { __isTuple__?: boolean }).__isTuple__) (res as unknown as { __isTuple__: boolean }).__isTuple__ = true;
+        if (isPyTuple(a)) markPyTuple(res);
         return { handled: true, value: res };
       }
       if (Array.isArray(b) && typeof a === 'number') {
         const count = Math.max(0, Math.floor(a));
         const res: unknown[] = [];
         for (let i = 0; i < count; i++) res.push(...b);
-        if ((b as unknown as { __isTuple__?: boolean }).__isTuple__) (res as unknown as { __isTuple__: boolean }).__isTuple__ = true;
+        if (isPyTuple(b)) markPyTuple(res);
         return { handled: true, value: res };
       }
     }

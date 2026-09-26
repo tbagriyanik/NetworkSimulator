@@ -24,7 +24,7 @@ interface PhysicalDeviceViewProps {
   device: CanvasDevice;
   switchState?: SwitchState;
   connections: CanvasConnection[];
-  onUpdateDevice: (updatedDevice: CanvasDevice, updatedSwitchState?: SwitchState, removedConnections?: string[]) => void;
+  onUpdateDevice?: (updatedDevice: CanvasDevice, updatedSwitchState?: SwitchState, removedConnections?: string[]) => void;
   isDark?: boolean;
   language?: string;
 }
@@ -53,7 +53,7 @@ export function PhysicalDeviceView({
       ...device,
       status: nextPower ? 'online' : 'offline',
     };
-    onUpdateDevice(updatedDevice, switchState, []);
+    onUpdateDevice?.(updatedDevice, switchState, []);
   };
 
   const handleInstall = (slotIndex: number, moduleId: string) => {
@@ -68,7 +68,7 @@ export function PhysicalDeviceView({
     setPowerError(null);
     try {
       const res = installExpansionModule(device, slotIndex, moduleId, switchState);
-      onUpdateDevice(res.updatedDevice, res.updatedSwitchState, []);
+      onUpdateDevice?.(res.updatedDevice, res.updatedSwitchState, []);
       setSelectedSlot(null);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -87,7 +87,7 @@ export function PhysicalDeviceView({
     }
     setPowerError(null);
     const res = removeExpansionModule(device, slotIndex, connections, switchState);
-    onUpdateDevice(res.updatedDevice, res.updatedSwitchState, res.removedConnections);
+    onUpdateDevice?.(res.updatedDevice, res.updatedSwitchState, res.removedConnections);
     setSelectedSlot(null);
   };
 

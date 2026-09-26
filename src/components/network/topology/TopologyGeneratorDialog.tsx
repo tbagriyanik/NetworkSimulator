@@ -331,6 +331,8 @@ export function TopologyGeneratorDialog({
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
+                aria-label={language === 'tr' ? 'Aramayı temizle' : 'Clear search'}
+                title={language === 'tr' ? 'Aramayı temizle' : 'Clear search'}
                 className={`absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-semibold ${isDark ? 'text-secondary-400 hover:text-white' : 'text-secondary-500 hover:text-secondary-900'}`}
               >
                 ✕

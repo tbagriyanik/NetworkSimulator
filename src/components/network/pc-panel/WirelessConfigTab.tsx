@@ -201,9 +201,9 @@ export function WirelessConfigTab({
                   )}
                 />
                 {wifiSSID && (
-                  <button type="button" onClick={() => { setWifiSSID(''); setWifiBSSID(''); setSsidDropdownOpen(false); }} className="text-secondary-200 hover:text-white text-xs">✕</button>
+                  <button type="button" onClick={() => { setWifiSSID(''); setWifiBSSID(''); setSsidDropdownOpen(false); }} aria-label={language === 'tr' ? 'SSID seçimini temizle' : 'Clear SSID selection'} title={language === 'tr' ? 'SSID seçimini temizle' : 'Clear SSID selection'} className="text-secondary-200 hover:text-white text-xs">✕</button>
                 )}
-                <button type="button" onClick={() => setSsidDropdownOpen(o => !o)} className="text-secondary-200 hover:text-white text-xs">▾</button>
+                <button type="button" onClick={() => setSsidDropdownOpen(o => !o)} aria-label={language === 'tr' ? 'SSID listesini aç/kapat' : 'Toggle SSID list'} title={language === 'tr' ? 'SSID listesini aç/kapat' : 'Toggle SSID list'} className="text-secondary-200 hover:text-white text-xs">▾</button>
               </div>
               {ssidDropdownOpen && (
                 <div className={cn(

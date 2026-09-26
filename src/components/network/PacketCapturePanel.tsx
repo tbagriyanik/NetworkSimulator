@@ -265,6 +265,8 @@ export const PacketCapturePanel = ({
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
+                aria-label={language === 'tr' ? 'Aramayı temizle' : 'Clear search'}
+                title={language === 'tr' ? 'Aramayı temizle' : 'Clear search'}
                 className="p-0.5 rounded-full hover:bg-secondary-200 dark:hover:bg-secondary-700 opacity-60 hover:opacity-100"
               >
                 <X className="w-3 h-3" />
@@ -335,6 +337,8 @@ export const PacketCapturePanel = ({
               {excludeQuery && (
                 <button
                   onClick={() => setExcludeQuery('')}
+                  aria-label={language === 'tr' ? 'Dışlama aramasını temizle' : 'Clear exclude search'}
+                  title={language === 'tr' ? 'Dışlama aramasını temizle' : 'Clear exclude search'}
                   className="p-0.5 rounded-full hover:bg-secondary-200 dark:hover:bg-secondary-700 opacity-60 hover:opacity-100"
                 >
                   <X className="w-3 h-3" />
@@ -464,17 +468,21 @@ export const PacketCapturePanel = ({
                   <button
                     disabled={currentPage <= 1}
                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    aria-label={language === 'tr' ? 'Önceki sayfa' : 'Previous page'}
+                    title={language === 'tr' ? 'Önceki sayfa' : 'Previous page'}
                     className="p-0.5 rounded hover:bg-secondary-200 dark:hover:bg-secondary-700 disabled:opacity-30 disabled:pointer-events-none transition-colors"
                   >
-                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <ChevronLeft className="w-3.5 h-3.5" aria-hidden="true" />
                   </button>
                   <span className="px-1.5 font-bold font-mono text-[10px]">{currentPage}</span>
                   <button
                     disabled={currentPage >= totalPages}
                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    aria-label={language === 'tr' ? 'Sonraki sayfa' : 'Next page'}
+                    title={language === 'tr' ? 'Sonraki sayfa' : 'Next page'}
                     className="p-0.5 rounded hover:bg-secondary-200 dark:hover:bg-secondary-700 disabled:opacity-30 disabled:pointer-events-none transition-colors"
                   >
-                    <ChevronRight className="w-3.5 h-3.5" />
+                    <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
                   </button>
                 </div>
               </div>

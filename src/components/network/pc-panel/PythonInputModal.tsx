@@ -94,9 +94,11 @@ export function PythonInputModal({
               type="button"
               size="sm"
               onClick={handleSubmit}
+              aria-label={language === 'tr' ? 'Gönder' : 'Submit'}
+              title={language === 'tr' ? 'Gönder' : 'Submit'}
               className="shrink-0 rounded-lg px-3 h-9 bg-primary text-white hover:bg-primary/90"
             >
-              <CornerDownLeft className="w-4 h-4" />
+              <CornerDownLeft className="w-4 h-4" aria-hidden="true" />
             </Button>
           </div>
           <div className="text-[10px] text-secondary-500">

@@ -360,6 +360,8 @@ export function ConsoleTerminalTab({
             <Button
               type="submit"
               disabled={isConsoleInputDisabled}
+              aria-label={t.language === 'tr' ? 'Komutu çalıştır' : 'Run command'}
+              title={t.language === 'tr' ? 'Komutu çalıştır' : 'Run command'}
               className={cn(
                 "shrink-0 rounded-xl shadow-lg px-3 bg-white text-black border border-secondary-200 hover:bg-secondary-100 dark:hover:bg-secondary-200",
                 isMobile ? "h-9 text-xs" : "h-11 text-sm",
@@ -368,7 +370,7 @@ export function ConsoleTerminalTab({
               )}
             >
               <span className="rounded-md p-1">
-                <CornerDownLeft className={cn("w-4 h-4", isConsoleConnected && (consoleNeedsPassword || consoleConfirmDialog?.show || consoleReloadPending) ? "text-white" : "text-black", isMobile && "w-3 h-3")} />
+                <CornerDownLeft aria-hidden="true" className={cn("w-4 h-4", isConsoleConnected && (consoleNeedsPassword || consoleConfirmDialog?.show || consoleReloadPending) ? "text-white" : "text-black", isMobile && "w-3 h-3")} />
               </span>
             </Button>
           </form>

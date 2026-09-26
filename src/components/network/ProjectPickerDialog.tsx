@@ -353,9 +353,11 @@ export function ProjectPickerDialog({
               {projectSearchQuery && (
                 <button
                   onClick={() => setProjectSearchQuery('')}
+                  aria-label={language === 'tr' ? 'Aramayı temizle' : 'Clear search'}
+                  title={language === 'tr' ? 'Aramayı temizle' : 'Clear search'}
                   className="p-1 rounded hover:bg-secondary-200 dark:hover:bg-secondary-700 text-secondary-400 hover:text-secondary-600 dark:hover:text-secondary-300 transition-colors"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-4 h-4" aria-hidden="true" />
                 </button>
               )}
             </div>

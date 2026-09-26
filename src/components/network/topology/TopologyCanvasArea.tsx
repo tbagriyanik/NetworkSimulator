@@ -1,9 +1,7 @@
 'use client';
 
-import React, { MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from 'react';
-import { CanvasDevice, CanvasConnection, ContextMenuState } from '../NetworkTopology/types/networkTopology.types';
-import { SwitchState, CableInfo } from '@/lib/network/types';
-import { PingAnimationState } from '@/hooks/networkTopology/usePingSequence';
+import React from 'react';
+import type { useNetworkTopologyController } from '@/hooks/networkTopology/useNetworkTopologyController';
 
 import { TopologyFullscreenButton } from './TopologyFullscreenButton';
 import { TopologyPaletteSheet } from './TopologyPaletteSheet';
@@ -14,186 +12,18 @@ import { CanvasToolbar } from './CanvasToolbar';
 import { TopologyModalsContainer } from './TopologyModalsContainer';
 import { DEVICE_ICONS } from './DeviceIcons';
 
-export interface TopologyCanvasAreaProps {
-  isFullscreen: boolean;
-  isDark: boolean;
-  t: Record<string, any>;
-  language: string;
-  toggleFullscreen: () => void;
-  isPaletteOpen: boolean;
-  setIsPaletteOpen: (open: boolean) => void;
-  isTR: boolean;
-  addDevice: (type: 'pc' | 'iot' | 'switch' | 'router' | 'firewall' | 'wlc' | 'hub' | 'cloud' | 'mobile' | 'printer', layer?: 'L2' | 'L3') => void;
-  cableInfo: CableInfo;
-  onCableChange?: (cable: CableInfo) => void;
-  pingMode: boolean;
-  setPingMode: (active: boolean) => void;
-  pingCursorPos: { x: number; y: number } | null;
-  pingSource: CanvasDevice | null;
-  selectedDeviceIds: string[];
-  deviceMap: Map<string, CanvasDevice>;
-  handleAlign: (alignment: any) => void;
-  setSelectedDeviceIds: React.Dispatch<React.SetStateAction<string[]>>;
-  onDeviceSelect?: any;
-  saveToHistory: () => void;
-  deleteDevice: (id: string) => void;
 
-  canvasRef: React.RefObject<HTMLDivElement | null>;
-  svgContentGroupRef: React.RefObject<SVGGElement | null>;
-  isPanning: boolean;
-  isSelecting: boolean;
-  selectedDeviceSet: Set<string>;
-  selectedNoteIds: string[];
-  connectionStart: { deviceId: string; portId: string; point: { x: number; y: number } } | null;
-  mousePos: { x: number; y: number };
-  isDrawingConnection: boolean;
-  contextMenu: ContextMenuState | null;
-  noteTextareaRefs: React.MutableRefObject<Record<string, HTMLTextAreaElement | null>>;
-  isActuallyDragging: boolean;
-  isTouchDragging: boolean;
-  deviceStates?: Map<string, SwitchState>;
-  devices: CanvasDevice[];
-  connections: CanvasConnection[];
-  notes: any[];
-  visibleConnections: CanvasConnection[];
-  visibleNotes: any[];
-  devicesSortedForRender: CanvasDevice[];
-  activeDeviceId?: string | null;
-  iotUpdateTrigger: number;
-  graphicsQuality: string;
-  zoom: number;
-  environment: any;
-  selectionBox: { start: { x: number; y: number }; current: { x: number; y: number } } | null;
-  hoveredConnectionId: string | null;
-
-  handleCanvasMouseDown: (e: ReactMouseEvent) => void;
-  handleTouchStart: (e: ReactTouchEvent) => void;
-  handleTouchMove: (e: ReactTouchEvent) => void;
-  handleTouchEnd: (e: ReactTouchEvent) => void;
-  handleContextMenu: (e: ReactMouseEvent) => void;
-  handleNoteHeaderMouseDown: (e: ReactMouseEvent, id: string) => void;
-  handleNoteHeaderTouchStart: (e: ReactTouchEvent, id: string) => void;
-  cycleNoteColor: (id: string) => void;
-  cycleNoteFont: (id: string) => void;
-  cycleNoteFontSize: (id: string) => void;
-  cycleNoteOpacity: (id: string) => void;
-  duplicateNote: (id: string) => void;
-  deleteNote: (id: string) => void;
-  updateNoteText: (id: string, text: string) => void;
-  setNoteTextSelection: any;
-  handleNoteResizeStart: (e: ReactMouseEvent, id: string, dir: string) => void;
-  handleNoteResizeTouchStart: (e: ReactTouchEvent, id: string, dir: string) => void;
-  bringNoteToFront: (id: string) => void;
-  setSelectedNoteIds: React.Dispatch<React.SetStateAction<string[]>>;
-  setContextMenu: React.Dispatch<React.SetStateAction<ContextMenuState | null>>;
-  setSelectAllMode: React.Dispatch<React.SetStateAction<boolean>>;
-  cancelConnectionDrawing: () => void;
-  setPingCursorPos: (pos: { x: number; y: number } | null) => void;
-  setZoom: (zoom: number | ((prev: number) => number)) => void;
-  setPan: (pan: { x: number; y: number } | ((prev: { x: number; y: number }) => { x: number; y: number })) => void;
-  handleZoomWheel: (e: React.WheelEvent) => void;
-  resetView: () => void;
-  getCanvasDimensions: () => { width: number; height: number };
-  renderDevice: (device: CanvasDevice, isDragging?: boolean) => React.ReactNode;
-  handleConnectionMouseEnter: any;
-  handleConnectionMouseLeave: () => void;
-  handleConnectionClick: any;
-  onDeleteConnection: (connId: string) => void;
-  onToggleConnectionActive: (connId: string) => void;
-  pingAnimation: PingAnimationState | null;
-  handleEnvelopeClick: (packet: any) => void;
-
-  showZoomToolbar: boolean;
-  zoomToFit: () => void;
-  handleZoomMouseDown: (e: ReactMouseEvent) => void;
-  isDraggingZoom: boolean;
-  MIN_ZOOM: number;
-  MAX_ZOOM: number;
-  setShowLogPanel: React.Dispatch<React.SetStateAction<boolean>>;
-  networkEventLogsCount: number;
-  setIsMinimapOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  isMinimapOpen: boolean;
-  snapToGrid: boolean;
-  setSnapToGrid: React.Dispatch<React.SetStateAction<boolean>>;
-  setShowShortcutsModal: React.Dispatch<React.SetStateAction<boolean>>;
-
-  // Modals Container Props
-  contextMenuRef: React.RefObject<HTMLDivElement | null>;
-  NOTE_FONTS: string[];
-  clipboardLength: number;
-  noteClipboardLength: number;
-  historyIndex: number;
-  historyLength: number;
-  isExamActive: boolean;
-  isPingPanelVisible: boolean;
-  updateNoteStyle: (id: string, style: any) => void;
-  handleNoteTextCut: (id: string) => void;
-  handleNoteTextCopy: (id: string) => void;
-  handleNoteTextPaste: (id: string) => void;
-  handleNoteTextDelete: (id: string) => void;
-  handleNoteTextSelectAll: (id: string) => void;
-  pasteNotes: (x: number, y: number) => void;
-  handleUndo: () => void;
-  handleRedo: () => void;
-  selectAllDevices: () => void;
-  handleDeviceDoubleClick: (d: CanvasDevice) => void;
-  cutDevice: (ids: string[]) => void;
-  copyDevice: (ids: string[]) => void;
-  pasteDevice: () => void;
-  startDeviceConfig: (id: string) => void;
-  pingModeRef: React.MutableRefObject<boolean>;
-  setPingSource: (src: CanvasDevice | null) => void;
-  pingSourceRef: React.MutableRefObject<CanvasDevice | null>;
-  setPingResult: (res: any) => void;
-  togglePowerDevices: (ids: string[]) => void;
-  onOpenTasks?: (deviceId: string) => void;
-  handleRefresh?: () => void;
-  portTooltip: any;
-  getIotDeviceStatus: (d: CanvasDevice) => any;
-  getIotPowerStatus: (d: CanvasDevice) => any;
-  getIotOpenCloseStatus: (d: CanvasDevice) => any;
-  getLivePortVlanText: (deviceId: string, portId: string) => string;
-  connectionTooltip: any;
-  CABLE_COLORS: any;
-  deviceTooltip: any;
-  isDraggingInteractionDisabled: boolean;
-  configuringDevice: string | null;
-  cancelDeviceConfig: () => void;
-  saveDeviceConfig: (deviceId: string, updates: Partial<CanvasDevice>) => void;
-  isMobile: boolean;
-  hopPacketInfos: any[];
-  handlePingPlay: () => void;
-  handlePingPause: () => void;
-  handlePingNext: () => void;
-  handlePingClose: () => void;
-  onPacketPanelFocus?: () => void;
-  packetPanelZIndex?: number;
-  packetPopupHop: number | null;
-  setPacketPopupHop: (hop: number | null) => void;
-  errorToast: any;
-  setErrorToast: (toast: any) => void;
-  connectionError: any;
-  mobilePaletteOpen: boolean;
-  setMobilePaletteOpen: (open: boolean) => void;
-  showPortSelector: boolean;
-  portSelectorStep: any;
-  selectedSourcePort: any;
-  setShowPortSelector: (show: boolean) => void;
-  setPortSelectorStep: (step: any) => void;
-  setSelectedSourcePort: (port: any) => void;
-  setConnections: React.Dispatch<React.SetStateAction<CanvasConnection[]>>;
-  setDevices: React.Dispatch<React.SetStateAction<CanvasDevice[]>>;
-  activeCaptureConnectionId: string | null;
-  clearCapturedPackets: (id: string) => void;
-  clearAllCapturedPackets: () => void;
-  setActiveCaptureConnection: (id: string | null) => void;
-  capturedPacketsMap: any;
-  showMinimap: boolean;
-  pan: { x: number; y: number };
-  showShortcutsModal: boolean;
-  showEventLogs: boolean;
-  showLogPanel: boolean;
-}
+/**
+ * The canvas props are exactly the topology controller's return value: NetworkTopology.tsx
+ * computes `useNetworkTopologyController(props)` and spreads the result straight
+ * into this component. Deriving the type from that controller therefore describes the
+ * real contract instead of a hand-maintained copy of it.
+ *
+ * This previously mattered: 28 of the ~173 props were declared `any` (tooltips,
+ * captured packets, the port-selector state, the IoT status callbacks), so nothing
+ * checked what the controller actually handed over.
+ */
+export type TopologyCanvasAreaProps = ReturnType<typeof useNetworkTopologyController>;
 
 export function TopologyCanvasArea(props: TopologyCanvasAreaProps) {
   const {

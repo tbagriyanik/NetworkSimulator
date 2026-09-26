@@ -95,8 +95,8 @@ export function MailServiceConfig({
         <div className="flex items-center justify-between gap-3">
           {composeMode || viewingMsg ? (
             <>
-              <button onClick={() => { setComposeMode(false); setViewingMsg(null); setViewReplyBody(''); }} className={`p-1.5 rounded transition-colors ${isDark ? 'hover:bg-secondary-800 text-secondary-300' : 'hover:bg-secondary-100 text-secondary-600'}`}>
-                <ArrowLeft className="w-4 h-4" />
+              <button onClick={() => { setComposeMode(false); setViewingMsg(null); setViewReplyBody(''); }} aria-label={language === 'tr' ? 'Geri dön' : 'Go back'} title={language === 'tr' ? 'Geri dön' : 'Go back'} className={`p-1.5 rounded transition-colors ${isDark ? 'hover:bg-secondary-800 text-secondary-300' : 'hover:bg-secondary-100 text-secondary-600'}`}>
+                <ArrowLeft className="w-4 h-4" aria-hidden="true" />
               </button>
               <h3 className="text-sm font-bold flex-1">
                 {composeMode ? (language === 'tr' ? 'Yeni Posta' : 'New Message') : (language === 'tr' ? 'Posta' : 'Message')}

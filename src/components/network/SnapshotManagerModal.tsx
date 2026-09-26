@@ -295,10 +295,12 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
             </label>
             <button
               onClick={onClose}
+              aria-label={isTr ? 'Kapat' : 'Close'}
+              title={isTr ? 'Kapat' : 'Close'}
               className={`p-1.5 rounded-lg border transition ${isDark ? 'border-slate-700 hover:bg-slate-800 text-slate-400 hover:text-white' : 'border-slate-300 hover:bg-slate-100 text-slate-600'
                 }`}
             >
-              <X className="w-4 h-4" />
+              <X className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
         </div>

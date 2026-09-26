@@ -6,7 +6,10 @@ import { executePythonScript } from './pcPythonRunner';
 import { formatLinuxPath, formatWinToUnixPath } from './pcLinuxPathUtils';
 import { expandShellVariables, parseGrepFlags, parseLogicalChain, parseOutputRedirection, parseShellAssignment, setShellVariable, splitPipeline, splitShellWords } from './pcLinuxShellParser';
 import { executeLinuxFileCommand } from './pcLinuxFileCommands';
+import { executeLinuxNetworkCommand } from './linux/pcLinuxNetworkCommands';
+
 export { formatLinuxPath, formatWinToUnixPath } from './pcLinuxPathUtils';
+export { getLinuxSuggestions, LINUX_SUGGESTIONS } from './linux/pcLinuxSuggestions';
 
 export interface LinuxExecutorParams {
   deviceId: string;
@@ -37,102 +40,11 @@ export interface LinuxExecutorParams {
   executionDeadline?: number;
 }
 
-export const LINUX_SUGGESTIONS = [
-  'ls', 'ls -l', 'ls -la', 'pwd', 'cd', 'cat', 'touch', 'mkdir', 'rm', 'cp', 'mv', 'chmod', 'chown', 'grep', 'wc', 'nano', 'vim', 'vi', 'notepad',
-  'ifconfig', 'ip addr', 'dhclient', 'dhclient -r eth0', 'ping', 'traceroute', 'nslookup', 'netstat', 'arp', 'ftp', 'ssh', 'telnet', 'curl', 'wget',
-  'whoami', 'hostname', 'hostnamectl', 'uname -a', 'clear', 'history', 'echo', 'sudo', 'help', 'date', 'uptime',
-  'for', 'while', 'if', 'python3', 'python'
-];
-
-const FILE_COMMANDS = new Set([
-  'cd', 'ls', 'dir', 'cat', 'touch', 'mkdir', 'rm', 'cp', 'mv', 'chmod', 'chown', 'nano', 'vim', 'vi', 'notepad', 'python', 'python3', 'sh', 'bash'
-]);
-
 const UNSUPPORTED_LINUX_COMMANDS = new Set(['type', 'edit', 'ipconfig']);
 
 function isUnsafeRegexPattern(pattern: string): boolean {
   if (pattern.length > 256) return true;
   return /\([^)]*[+*?](?:[^()]|\([^)]*\))*\)[+*?{]/.test(pattern);
-}
-
-export function getLinuxSuggestions(
-  inputVal: string,
-  currentPath: string,
-  deviceId: string
-): string[] {
-  const trimmed = inputVal.trimStart();
-  const parts = trimmed.split(/\s+/);
-
-  // If typing the command itself (no trailing space yet)
-  if (parts.length <= 1 && !inputVal.endsWith(' ')) {
-    const typed = parts[0] || '';
-    if (!typed) return [];
-    return LINUX_SUGGESTIONS.filter(s => s.toLowerCase().startsWith(typed.toLowerCase()));
-  }
-
-  const command = parts[0].toLowerCase();
-  let effectiveCmd = command;
-
-  // Handle sudo subcommands
-  if (command === 'sudo') {
-    const subCmd = parts[1]?.toLowerCase();
-    if (!subCmd || (parts.length === 2 && !inputVal.endsWith(' '))) {
-      const typed = subCmd || '';
-      return LINUX_SUGGESTIONS.filter(s => s.toLowerCase().startsWith(typed.toLowerCase()) && s !== 'sudo');
-    }
-    effectiveCmd = subCmd;
-    if (!FILE_COMMANDS.has(subCmd)) {
-      return [];
-    }
-  } else if (!FILE_COMMANDS.has(command)) {
-    // Commands that don't take file arguments (clear, pwd, whoami, hostname, date, uptime, ifconfig, help, etc.)
-    return [];
-  }
-
-  // Determine last argument being typed
-  const lastArg = inputVal.endsWith(' ') ? '' : (parts[parts.length - 1] || '');
-
-  // If typing option flags (e.g. -l, -la), offer flag suggestions for ls
-  if (lastArg.startsWith('-')) {
-    if (effectiveCmd === 'ls') {
-      const flags = ['-l', '-la', '-a', '-lh', '-t', '-r', '-S'];
-      return flags.filter(f => f.startsWith(lastArg));
-    }
-    return [];
-  }
-
-  // Separate path directory prefix from current filename search query
-  let dirPrefix = '';
-  let searchPrefix = lastArg;
-  let targetSearchDir = currentPath;
-
-  const lastSlashIdx = Math.max(lastArg.lastIndexOf('/'), lastArg.lastIndexOf('\\'));
-  if (lastSlashIdx !== -1) {
-    dirPrefix = lastArg.substring(0, lastSlashIdx + 1);
-    searchPrefix = lastArg.substring(lastSlashIdx + 1);
-    const relDir = lastArg.substring(0, lastSlashIdx);
-    targetSearchDir = resolvePath(currentPath, relDir);
-  }
-
-  const fs = loadFs(deviceId);
-  const dirNode = getNode(fs, targetSearchDir);
-  if (!dirNode || dirNode.type !== 'dir') return [];
-
-  const isDirOnlyCmd = ['cd', 'chdir', 'mkdir', 'rmdir'].includes(effectiveCmd);
-  const candidates: string[] = [];
-
-  Object.entries(dirNode.children).forEach(([name, child]) => {
-    if (name.toLowerCase().startsWith(searchPrefix.toLowerCase())) {
-      const isDir = child.type === 'dir';
-      if (isDir) {
-        candidates.push(dirPrefix + name + '/');
-      } else if (!isDirOnlyCmd) {
-        candidates.push(dirPrefix + name);
-      }
-    }
-  });
-
-  return candidates;
 }
 
 export async function executeLinuxCommand(
@@ -151,19 +63,8 @@ export async function executeLinuxCommand(
     internalPcHostname,
     setPcHostname,
     setEditingFile,
-    pcIP,
-    setPcIP,
-    applyDhcpLease,
-    pcSubnet,
-    pcMAC,
-    pcGateway,
-    pcDNS,
-    pcIPv6,
-    wifiEnabled,
     currentPath,
     setCurrentPath,
-    canReachTargetIp,
-    resolveDeviceNameTargetCallback,
     openWebPage,
     addLocalOutput,
     setLinuxOutput,
@@ -289,7 +190,6 @@ export async function executeLinuxCommand(
             stageOutput = `  ${lines.length}  ${words}  ${bytes}`;
           }
         } else {
-          // Execute stage command collecting output
           await executeLinuxCommand(stageCmd, {
             ...params,
             executionDeadline,
@@ -300,7 +200,6 @@ export async function executeLinuxCommand(
 
         if (stageError) {
           addLocalOutput('error', stageError);
-          // In bash, stderr goes to terminal while stdout goes to the next pipe stage
         }
         pipeData = stageOutput;
       }
@@ -312,7 +211,7 @@ export async function executeLinuxCommand(
     }
   }
 
-  // 2. Handle Output Redirection (> and >>) for any command (e.g., ifconfig > ifconfig.txt, ping 127.0.0.1 >> log.txt)
+  // 2. Handle Output Redirection (> and >>)
   const redirection = parseOutputRedirection(cleanCmd);
   if (redirection && !cleanCmd.startsWith('echo ')) {
     const targetCmdStr = redirection.command;
@@ -352,7 +251,7 @@ export async function executeLinuxCommand(
     }
   }
 
-  // Log command entry (unless running sub-command inside loop/script silently)
+  // Log command entry
   if (!params.silent) {
     addLocalOutput('command', rawCmd, linuxPrompt);
   }
@@ -362,7 +261,7 @@ export async function executeLinuxCommand(
     return;
   }
 
-  // Shell variable assignment: NAME=value, export NAME=value
+  // Shell variable assignment
   const assignment = parseShellAssignment(cleanCmd);
   if (assignment) {
     setShellVariable(deviceId, assignment.name, assignment.value);
@@ -378,7 +277,7 @@ export async function executeLinuxCommand(
     return;
   }
 
-  // Handle Bash For Loops (e.g., for i in 1 2 3; do ping 192.168.1.$i; done OR for i in {1..5}; do echo $i; done)
+  // Handle Bash For Loops
   if (cleanCmd.startsWith('for ')) {
     const forMatch = cleanCmd.match(/^for\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+in\s+(.+?)\s*;\s*do\s+(.+?)\s*;\s*done$/i)
       || cleanCmd.match(/^for\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+in\s+(.+?)\s*\n\s*do\s*\n\s*(.+?)\s*\n\s*done$/i);
@@ -407,7 +306,6 @@ export async function executeLinuxCommand(
           addLocalOutput('error', 'bash: loop terminated: execution timed out (exceeded 3s limit)');
           return;
         }
-        // Replace $varName or ${varName} in body with current item value
         const subCmd = loopBody.replace(new RegExp(`\\$${varName}\\b|\\$\\{${varName}\\}`, 'g'), item);
         await executeLinuxCommand(subCmd, { ...params, executionDeadline, silent: false });
       }
@@ -415,7 +313,7 @@ export async function executeLinuxCommand(
     }
   }
 
-  // Handle Bash While Loops (e.g., while true; do echo ping; done OR while [ condition ]; do ...; done)
+  // Handle Bash While Loops
   if (cleanCmd.startsWith('while ')) {
     const whileMatch = cleanCmd.match(/^while\s+(.+?)\s*;\s*do\s+(.+?)\s*;\s*done$/i)
       || cleanCmd.match(/^while\s+(.+?)\s*\n\s*do\s*\n\s*(.+?)\s*\n\s*done$/i);
@@ -456,7 +354,7 @@ export async function executeLinuxCommand(
     }
   }
 
-  // Handle Bash If Conditionals (e.g. if [ "$x" = "1" ]; then echo yes; else echo no; fi)
+  // Handle Bash If Conditionals
   if (cleanCmd.startsWith('if ')) {
     const ifMatch = cleanCmd.match(/^if\s+\[\s*(.+?)\s*\]\s*;\s*then\s+(.+?)(?:\s*;\s*elif\s+\[\s*(.+?)\s*\]\s*;\s*then\s+(.+?))?(?:\s*;\s*else\s+(.+?))?\s*;\s*fi$/i);
     if (ifMatch) {
@@ -466,7 +364,6 @@ export async function executeLinuxCommand(
       const elifBody = ifMatch[4]?.trim();
       const elseBody = ifMatch[5]?.trim();
 
-      // Simple condition evaluator
       let condResult = false;
       const eqMatch = cond.match(/^"?(.*?)"?\s*(==|=|!=)\s*"?(.*?)"?$/);
       if (eqMatch) {
@@ -545,7 +442,6 @@ export async function executeLinuxCommand(
     return;
   }
 
-  // Text editor command (nano, vim, vi, edit, notepad -> opens Notepad editor modal)
   if (command === 'nano' || command === 'vim' || command === 'vi' || command === 'notepad') {
     const rawFileName = args.join(' ').trim();
     const fileName = rawFileName || 'new_file.txt';
@@ -559,7 +455,6 @@ export async function executeLinuxCommand(
     return;
   }
 
-  // Fully functional hostname command (hostname or hostname <name> or hostnamectl set-hostname <name>)
   if (command === 'hostname' || command === 'hostnamectl') {
     const targetName = command === 'hostnamectl' && args[0] === 'set-hostname' ? args[1] : args[0];
     if (targetName) {
@@ -601,7 +496,6 @@ export async function executeLinuxCommand(
     if (historyList.length === 0) {
       addLocalOutput('output', '   1  history');
     } else {
-      // Reverse array so oldest commands are at top (standard history order)
       const formatted = [...historyList].reverse().map((hCmd, idx) => ` ${(idx + 1).toString().padStart(4)}  ${hCmd}`).join('\n');
       addLocalOutput('output', formatted);
     }
@@ -666,7 +560,8 @@ export async function executeLinuxCommand(
   })) {
     return;
   }
-  // Execute Shell / Bash / Direct executable scripts on PC file system
+
+  // Execute Shell / Bash / Direct executable scripts
   if (command === 'bash' || command === 'sh' || command.startsWith('./') || command.startsWith('.\\')) {
     const scriptArg = (command === 'bash' || command === 'sh') ? args[0] : command;
     if (!scriptArg) {
@@ -688,7 +583,6 @@ export async function executeLinuxCommand(
       return;
     }
 
-    // Direct invocation (./script.sh) requires executable permission unless explicit bash/sh or root (sudo)
     const isDirectExec = command.startsWith('./') || command.startsWith('.\\');
     if (isDirectExec && !isSudo) {
       const hasExecPerm = node.isExecutable !== undefined ? node.isExecutable : (scriptArg.endsWith('.sh') || scriptArg.endsWith('.py'));
@@ -701,7 +595,6 @@ export async function executeLinuxCommand(
     const content = node.content.trim();
     if (!content) return;
 
-    // Check if it is a python script or has python shebang
     const isPython = scriptArg.endsWith('.py') || content.startsWith('#!/usr/bin/env python') || content.startsWith('#!/usr/bin/python');
     if (isPython) {
       const pyArgs = [scriptArg, ...(command === 'bash' || command === 'sh' ? args.slice(1) : args)];
@@ -711,7 +604,6 @@ export async function executeLinuxCommand(
       return;
     }
 
-    // Process line by line for shell script commands
     const lines: string[] = [];
     let pending = '';
     for (const sourceLine of content.split(/\r?\n/)) {
@@ -729,7 +621,7 @@ export async function executeLinuxCommand(
     return;
   }
 
-  // Execute Python scripts on PC file system
+  // Execute Python scripts
   if (command === 'python' || command === 'python3') {
     const scriptArg = args[0];
     if (!scriptArg) {
@@ -757,161 +649,9 @@ export async function executeLinuxCommand(
     return;
   }
 
-  // Network commands
-  if (command === 'ifconfig') {
-    const ifconfigOut =
-      `eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
-        inet ${pcIP}  netmask ${pcSubnet}  broadcast ${pcGateway || '0.0.0.0'}
-        inet6 ${pcIPv6 || 'fe80::1'}  prefixlen 64  scopeid 0x20<link>
-        ether ${pcMAC}  txqueuelen 1000  (Ethernet)
-        RX packets 1542  bytes 134210 (134.2 KB)
-        TX packets 1204  bytes 105820 (105.8 KB)
-
-${wifiEnabled ? `wlan0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
-        inet ${pcIP}  netmask ${pcSubnet}
-        ether ${pcMAC}  txqueuelen 1000  (Wireless)
-` : ''}lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
-        inet 127.0.0.1  netmask 255.0.0.0
-        inet6 ::1  prefixlen 128  scopeid 0x10<host>
-        loop  txqueuelen 1000  (Local Loopback)`;
-    addLocalOutput('output', ifconfigOut);
-    return;
-  }
-
-  if (command === 'dhclient') {
-    if (args.includes('-r')) {
-      setPcIP?.('0.0.0.0');
-      addLocalOutput('success', `DHCP lease released for ${args.find(a => !a.startsWith('-')) || 'eth0'}.`);
-    } else {
-      const lease = applyDhcpLease?.(true);
-      if (lease) {
-        setPcIP?.(lease.ip);
-        addLocalOutput('success', `DHCP lease renewed for ${args.find(a => !a.startsWith('-')) || 'eth0'}. Current IP: ${lease.ip}`);
-      } else addLocalOutput('error', 'dhclient: DHCP server not available');
-    }
-    return;
-  }
-
-  if (command === 'ip') {
-    const sub = args[0]?.toLowerCase();
-    if (sub === 'a' || sub === 'addr' || sub === 'address') {
-      const ipOut =
-        `1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default
-    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-    inet 127.0.0.1/8 scope host lo
-    inet6 ::1/128 scope host
-2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default
-    link/ether ${pcMAC} brd ff:ff:ff:ff:ff:ff
-    inet ${pcIP}/${pcSubnet === '255.255.255.0' ? '24' : '16'} brd ${pcGateway || '0.0.0.0'} scope global eth0
-    inet6 ${pcIPv6 || 'fe80::1'}/64 scope link`;
-      addLocalOutput('output', ipOut);
-      return;
-    }
-    if (sub === 'route' || sub === 'r') {
-      addLocalOutput('output', `default via ${pcGateway} dev eth0 proto dhcp src ${pcIP} metric 100\n127.0.0.0/8 dev lo scope link\n${pcIP.replace(/\.\d+$/, '.0')}/24 dev eth0 proto kernel scope link src ${pcIP}`);
-      return;
-    }
-    if (sub === 'neigh' || sub === 'n') {
-      addLocalOutput('output', `${pcGateway} dev eth0 lladdr 00:1a:2b:3c:4d:5e REACHABLE`);
-      return;
-    }
-    addLocalOutput('output', 'Usage: ip [ addr | route | neigh ]');
-    return;
-  }
-
-  if (command === 'ping') {
-    const rawTarget = args.find(a => !a.startsWith('-'));
-    if (!rawTarget) {
-      addLocalOutput('error', 'ping: usage error: Destination address required');
-      return;
-    }
-    let targetIp = rawTarget;
-    const resolved = resolveDeviceNameTargetCallback(rawTarget);
-    if (resolved) targetIp = resolved.ip;
-
-    const isLoopback = targetIp.startsWith('127.') || targetIp === '::1' || targetIp.toLowerCase() === 'localhost';
-    const reachable = isLoopback || canReachTargetIp(targetIp);
-    if (reachable) {
-      const out =
-        `PING ${rawTarget} (${targetIp}) 56(84) bytes of data.
-64 bytes from ${targetIp}: icmp_seq=1 ttl=64 time=0.82 ms
-64 bytes from ${targetIp}: icmp_seq=2 ttl=64 time=0.79 ms
-64 bytes from ${targetIp}: icmp_seq=3 ttl=64 time=0.81 ms
-64 bytes from ${targetIp}: icmp_seq=4 ttl=64 time=0.76 ms
-
---- ${rawTarget} ping statistics ---
-4 packets transmitted, 4 received, 0% packet loss, time 3004ms
-rtt min/avg/max/mdev = 0.76/0.80/0.84/0.03 ms`;
-      addLocalOutput('output', out);
-    } else {
-      const out =
-        `PING ${rawTarget} (${targetIp}) 56(84) bytes of data.
-From ${pcIP || '127.0.0.1'} icmp_seq=1 Destination Host Unreachable
-From ${pcIP || '127.0.0.1'} icmp_seq=2 Destination Host Unreachable
-
---- ${rawTarget} ping statistics ---
-4 packets transmitted, 0 received, +2 errors, 100% packet loss, time 3008ms`;
-      addLocalOutput('error', out);
-    }
-    return;
-  }
-
-  if (command === 'traceroute' || command === 'tracert') {
-    const rawTarget = args.find(a => !a.startsWith('-'));
-    if (!rawTarget) {
-      addLocalOutput('error', 'traceroute: usage error: Destination required');
-      return;
-    }
-    let targetIp = rawTarget;
-    const resolved = resolveDeviceNameTargetCallback(rawTarget);
-    if (resolved) targetIp = resolved.ip;
-
-    const reachable = canReachTargetIp(targetIp);
-    if (reachable) {
-      const out =
-        `traceroute to ${rawTarget} (${targetIp}), 30 hops max, 60 byte packets
- 1  ${pcGateway || '192.168.1.1'} (${pcGateway || '192.168.1.1'})  0.892 ms  0.781 ms  0.745 ms
- 2  ${targetIp} (${targetIp})  1.234 ms  1.102 ms  1.089 ms`;
-      addLocalOutput('output', out);
-    } else {
-      const out =
-        `traceroute to ${rawTarget} (${targetIp}), 30 hops max, 60 byte packets
- 1  ${pcGateway || '192.168.1.1'} (${pcGateway || '192.168.1.1'})  0.892 ms  0.781 ms  0.745 ms
- 2  * * *
- 3  * * *`;
-      addLocalOutput('error', out);
-    }
-    return;
-  }
-
-  if (command === 'nslookup') {
-    const domain = args[0] || 'deneme.site';
-    const out =
-      `Server:		${pcDNS || '8.8.8.8'}
-Address:	${pcDNS || '8.8.8.8'}#53
-
-Non-authoritative answer:
-Name:	${domain}
-Address: 142.250.180.206`;
-    addLocalOutput('output', out);
-    return;
-  }
-
-  if (command === 'netstat' || command === 'arp') {
-    if (command === 'arp' && params.buildArpTableOutput) {
-      addLocalOutput('output', params.buildArpTableOutput());
-    } else {
-      addLocalOutput('output', `Address                  HWtype  HWaddress           Flags Mask            Iface\n${pcGateway || '192.168.1.1'}          ether   00:11:22:33:44:55   C                     eth0`);
-    }
-    return;
-  }
-
-  if (command === 'ftp' || command === 'ssh' || command === 'telnet') {
-    if (params.executeCommand) {
-      await params.executeCommand(cleanCmd);
-      return;
-    }
-  }
+  // Network commands delegation
+  const handledNetwork = await executeLinuxNetworkCommand(command, args, cleanCmd, params);
+  if (handledNetwork) return;
 
   // Command not recognized
   addLocalOutput('error', `bash: ${command}: command not found`);

@@ -1,5 +1,6 @@
 import type { PythonFormState, FormElement, FormElementType, FormElementLayout } from './pcPythonFormTypes';
 import { colors, withAlpha } from '@/lib/design-tokens/colors';
+import { markPyTuple } from './pcPythonTags';
 
 // Global registry of active forms per device
 const activeForms = new Map<string, PythonFormState>();
@@ -628,9 +629,7 @@ export function createPythonFormModule(
     }
 
     curselection() {
-      const sel = [this.selectedIndex];
-      (sel as unknown as { __isTuple__: boolean }).__isTuple__ = true;
-      return sel;
+      return markPyTuple([this.selectedIndex]);
     }
 
     delete(_first: unknown, _last?: unknown) {

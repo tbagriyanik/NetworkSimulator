@@ -1,4 +1,4 @@
-﻿import type { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import type { OutputLine } from './PCPanel.types';
 import { checkConnectivity, getWirelessDistance } from '@/lib/network/connectivity';
@@ -12,7 +12,7 @@ export interface PcDiagnosticCommandsContext {
   t: Record<string, string>;
   pcDNS: string;
   topologyDevices: CanvasDevice[];
-  topologyConnections: { sourceDeviceId: string; sourcePort: string; targetDeviceId: string; targetPort: string; cableType?: string; active?: boolean }[];
+  topologyConnections: CanvasConnection[];
   deviceStates: Map<string, SwitchState> | undefined;
   deviceFromTopology: CanvasDevice | undefined;
   resolveDeviceNameTargetCallback: (raw: string) => { ip: string; label?: string } | null;
@@ -138,7 +138,7 @@ export async function handlePcDiagnosticCommand(
         return;
       }
 
-      const result = checkConnectivity(deviceId, targetIp, topologyDevices, topologyConnections as unknown as CanvasConnection[], deviceStates || new Map(), language as 'tr' | 'en', { protocol: 'icmp' });
+      const result = checkConnectivity(deviceId, targetIp, topologyDevices, topologyConnections, deviceStates || new Map(), language as 'tr' | 'en', { protocol: 'icmp' });
 
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('pc-command-executed', {
@@ -221,7 +221,7 @@ export async function handlePcDiagnosticCommand(
       return true;
     }
     emit('output', `Tracing route to ${target} over a maximum of ${maxHops} hops:\n`);
-    const result = checkConnectivity(deviceId, resolvedTarget, topologyDevices, topologyConnections as unknown as CanvasConnection[], deviceStates || new Map(), language as 'tr' | 'en', { protocol: 'icmp' });
+    const result = checkConnectivity(deviceId, resolvedTarget, topologyDevices, topologyConnections, deviceStates || new Map(), language as 'tr' | 'en', { protocol: 'icmp' });
 
     dispatchCapturedPackets(result.capturedPackets);
 
@@ -232,7 +232,7 @@ export async function handlePcDiagnosticCommand(
           addPcArpEntry?.(resolvedTarget, tracertTarget.macAddress, tracertTarget.type === 'iot');
         }
       }
-      const l3Hops = getL3Hops(deviceId, resolvedTarget, topologyDevices, topologyConnections as unknown as CanvasConnection[], deviceStates || new Map());
+      const l3Hops = getL3Hops(deviceId, resolvedTarget, topologyDevices, topologyConnections, deviceStates || new Map());
       const limitedHops = l3Hops && l3Hops.length > 0 ? l3Hops.slice(0, maxHops) : [];
       if (limitedHops.length > 0) {
         let hopOutput = '';
@@ -298,7 +298,7 @@ export async function handlePcDiagnosticCommand(
     } else {
       const dnsResult = resolveDomainWithDnsServicesCallback(targetDomain);
       if (dnsResult?.server?.ip) {
-        const connectivity = checkConnectivity(deviceId, dnsResult.server.ip, topologyDevices, topologyConnections as unknown as CanvasConnection[], deviceStates || new Map(), language as 'tr' | 'en', { protocol: 'udp', port: '53' });
+        const connectivity = checkConnectivity(deviceId, dnsResult.server.ip, topologyDevices, topologyConnections, deviceStates || new Map(), language as 'tr' | 'en', { protocol: 'udp', port: '53' });
         const dnsPackets = (connectivity.capturedPackets || []).map(p => ({
           ...p,
           protocol: 'DNS',

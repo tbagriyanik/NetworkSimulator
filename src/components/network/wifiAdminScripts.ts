@@ -1,6 +1,25 @@
 import { colors } from '@/lib/design-tokens/colors';
 import { safeJSONForHTML } from '@/lib/security/sanitizer';
 
+/**
+ * Parameters for the generated router admin <script> block.
+ *
+ * IMPORTANT: every `js*` field MUST already be encoded with
+ * `safeJSONForHTML()` by the caller (see WifiControlPanel.tsx). They are
+ * interpolated verbatim into the script body, so they are expected to be
+ * complete JSON literals such as `"router-1"`.
+ *
+ * Do NOT call `safeJSONForHTML()` on these values again inside this module:
+ * that double-encodes them, and the browser then sees the literal string
+ * `"\"router-1\""` instead of `router-1`, which silently breaks every
+ * deviceId / credential comparison at runtime.
+ *
+ * The single `deviceId` field is the opposite: it is the raw value and is
+ * encoded here at the point of use.
+ *
+ * Regression coverage: src/tests/components/network/WifiControlPanel.test.ts
+ * ("wifi admin script JSON embedding").
+ */
 interface WifiAdminScriptParams {
   isTurkish: boolean;
   jsCurrentSsidList: string;
@@ -419,8 +438,8 @@ export function getWifiControlPanelScripts(params: WifiAdminScriptParams): strin
           '<div style="display:flex;align-items:center;gap:6px;shrink:0;">' +
             statusBadge +
             '<button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px;" onclick="editSsidProfile(' + idx + ')">✏️ ' + (isTurkish ? 'Düzenle' : 'Edit') + '</button>' +
-            '<button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px;" onclick="toggleSsidProfile(' + idx + ')">⚡</button>' +
-            (!isPrimary ? '<button type="button" class="btn btn-danger" style="padding:4px 10px;font-size:12px;" onclick="deleteSsidProfile(' + idx + ')">🗑️</button>' : '') +
+            '<button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px;" title="' + (isTurkish ? 'Etkinleştir / Devre Dışı Bırak' : 'Enable / Disable') + '" aria-label="' + (isTurkish ? 'Etkinleştir / Devre Dışı Bırak: ' : 'Enable / Disable: ') + safeSsid + '" onclick="toggleSsidProfile(' + idx + ')">⚡</button>' +
+            (!isPrimary ? '<button type="button" class="btn btn-danger" style="padding:4px 10px;font-size:12px;" title="' + (isTurkish ? 'Sil' : 'Delete') + '" aria-label="' + (isTurkish ? 'Sil: ' : 'Delete: ') + safeSsid + '" onclick="deleteSsidProfile(' + idx + ')">🗑️</button>' : '') +
           '</div>' +
         '</div>';
       }).join('');

@@ -1,4 +1,5 @@
 import { PyClass, PyInstance, bindPythonArguments, parseFormatArgs } from './pcPythonRunnerHelpers';
+import { asPyConstructor, pyParamNames } from './pcPythonTags';
 import type { PythonEvaluationResult } from './pcPythonEvaluatorLiterals';
 
 /** Evaluates user-defined Python functions and class constructors. */
@@ -25,7 +26,7 @@ export function evaluatePythonFunctionCall(
     const instance = new PyInstance(fn);
     const initMethod = fn.findMethod('__init__');
     if (typeof initMethod === 'function') {
-      const paramNames = (initMethod as unknown as Record<string, unknown>).__pythonParamNames as string[] | undefined;
+      const paramNames = pyParamNames(initMethod);
       const orderedArgs = paramNames ? (() => {
         const bound: unknown[] = [];
         const remaining = [...positional];
@@ -46,15 +47,12 @@ export function evaluatePythonFunctionCall(
   }
 
   // Check if fn is a native JavaScript class constructor (e.g. Tk, PyButton, etc.)
-  const isConstructable = typeof fn === 'function' && (
-    fn.prototype && fn.prototype.constructor === fn && Object.getOwnPropertyNames(fn.prototype).length > 1
-  );
+  const Ctor = asPyConstructor(fn);
 
   const orderedArgs = bindPythonArguments(fn, positional, kwargs);
 
-  if (isConstructable) {
+  if (Ctor) {
     try {
-      const Ctor = fn as unknown as new (...args: unknown[]) => unknown;
       return { handled: true, value: new Ctor(...orderedArgs) };
     } catch {
       // Fallback to normal function call if constructor fails
@@ -65,8 +63,10 @@ export function evaluatePythonFunctionCall(
     return { handled: true, value: (fn as (...args: unknown[]) => unknown)(...orderedArgs) };
   } catch (callErr: unknown) {
     if (callErr instanceof Error && callErr.message.includes("must be invoked with 'new'")) {
-      const Ctor = fn as unknown as new (...args: unknown[]) => unknown;
-      return { handled: true, value: new Ctor(...orderedArgs) };
+      // The engine reports this callable is a class after all, so it is
+      // constructable even though asPyConstructor() could not prove it.
+      const ClassCtor = Ctor ?? (fn as new (...args: unknown[]) => unknown);
+      return { handled: true, value: new ClassCtor(...orderedArgs) };
     }
     throw callErr;
   }

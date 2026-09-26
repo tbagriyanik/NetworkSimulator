@@ -1,8 +1,6 @@
 ﻿import dynamic from 'next/dynamic';
-import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
-import { SwitchState } from '@/lib/network/types';
-import { ExamTask } from '@/lib/network/examMode';
 import { BasarilarimPanel } from '@/components/ui/BasarilarimPanel';
+import type { usePageController } from './usePageController';
 
 const LazyAboutModal = dynamic(() => import('@/components/network/LazyAboutModal').then((m) => m.LazyAboutModal));
 const PageModals = dynamic(() => import('@/components/network/panels/PageModals').then((m) => m.PageModals), { ssr: false });
@@ -25,90 +23,100 @@ const {
   TimelinePanel: dynamic(() => import('@/components/network/TimelinePanel').then((m) => m.TimelinePanel)),
 };
 
-interface PageOverlayPanelsProps {
-  t: any;
-  isDark: boolean;
-  language: 'tr' | 'en';
-  showAboutModal: boolean;
-  setShowAboutModal: (show: boolean) => void;
-  isExamActive: boolean;
-  setShowOnboarding: (show: boolean) => void;
-  setOnboardingStep: (step: number) => void;
-  showBasarilarim: boolean;
-  setShowBasarilarim: (show: boolean) => void;
-  isEnvironmentPanelOpen: boolean;
-  setIsEnvironmentPanelOpen: (open: boolean) => void;
+type PageController = ReturnType<typeof usePageController>;
 
+/**
+ * Every prop is forwarded verbatim from the page controller in page.tsx, so the
+ * types are derived from that controller rather than restated. Roughly twenty
+ * props here were `any`, which meant the controller could supply any shape at
+ * all — the exam editor callbacks, the guided-mode handlers and the dialog
+ * state objects were all unchecked.
+ */
+export type PageOverlayPanelsProps = Pick<
+  PageController,
+  | 't'
+  | 'isDark'
+  | 'language'
+  | 'showAboutModal'
+  | 'setShowAboutModal'
+  | 'isExamActive'
+  | 'setShowOnboarding'
+  | 'setOnboardingStep'
+  | 'showBasarilarim'
+  | 'setShowBasarilarim'
+  | 'isEnvironmentPanelOpen'
+  | 'setIsEnvironmentPanelOpen'
   // Guided Mode
-  isGuidedModeActive: boolean;
-  activeGuidedProject: any;
-  guidedStepIndex: number;
-  completeStep: (stepId: string) => void;
-  uncompleteStep: (stepId: string) => void;
-  toggleGuidedMinimize: () => void;
-  isGuidedPanelMinimized: boolean;
-  lastCompletedStep: string | null;
-  isCurrentStepReady: boolean;
-  lastCommand: string;
-  lastOutput: string;
-  showUnifiedDeviceModal: boolean;
-  activeDeviceType: string;
-  activeDeviceId: string;
-  state: any;
-  deviceStates: Map<string, SwitchState>;
-  topologyConnections: CanvasConnection[];
-  topologyDevices: CanvasDevice[];
-  checkStepCompletionWithContext: any;
-
+  | 'isGuidedModeActive'
+  | 'activeGuidedProject'
+  | 'guidedStepIndex'
+  | 'completeStep'
+  | 'uncompleteStep'
+  | 'lastCompletedStep'
+  | 'isCurrentStepReady'
+  | 'lastCommand'
+  | 'lastOutput'
+  | 'showUnifiedDeviceModal'
+  | 'activeDeviceType'
+  | 'activeDeviceId'
+  | 'state'
+  | 'deviceStates'
+  | 'topologyConnections'
+  | 'topologyDevices'
+  | 'checkStepCompletionWithContext'
   // Exam Mode
-  activeExam: any;
-  closeExam: () => void;
-  toggleExamPanelMinimize: () => void;
-  isExamPanelMinimized: boolean;
-  isExamFinished: boolean;
-  finishExam: () => void;
-  examScore: number;
-  checkExamTasks: any;
-  isExamLoadedFromFile: boolean;
-  toggleEditor: (open?: boolean) => void;
-  isEditorOpen: boolean;
-
+  | 'activeExam'
+  | 'closeExam'
+  | 'toggleExamPanelMinimize'
+  | 'isExamPanelMinimized'
+  | 'isExamFinished'
+  | 'finishExam'
+  | 'examScore'
+  | 'checkExamTasks'
+  | 'isExamLoadedFromFile'
+  | 'toggleEditor'
+  | 'isEditorOpen'
   // Troubleshooting Mode
-  activeTroubleshootingProject: any;
-  showTroubleshootingPanel: boolean;
-  setShowTroubleshootingPanel: (show: boolean) => void;
-  isTroubleshootingMinimized: boolean;
-  setIsTroubleshootingMinimized: (minimized: boolean) => void;
-
+  | 'activeTroubleshootingProject'
+  | 'showTroubleshootingPanel'
+  | 'setShowTroubleshootingPanel'
+  | 'isTroubleshootingMinimized'
+  | 'setIsTroubleshootingMinimized'
   // Timeline
-  historyItems: any[];
-  historyIndex: number;
-  handleJumpTo: (index: number) => void;
-  isTimelineMinimized: boolean;
-  toggleTimelineMinimize: () => void;
-  isMobile: boolean;
-
+  | 'historyItems'
+  | 'historyIndex'
+  | 'handleJumpTo'
+  | 'isTimelineMinimized'
+  | 'toggleTimelineMinimize'
+  | 'isMobile'
   // Exam Editor
-  addTask: any;
-  updateTask: any;
-  deleteTask: any;
-  updateExamMeta: any;
-  moveTask: any;
-  smartBalanceWeights: any;
-  exportExamFile: any;
-  getFullProjectData: () => any;
-
+  | 'addTask'
+  | 'updateTask'
+  | 'deleteTask'
+  | 'updateExamMeta'
+  | 'moveTask'
+  | 'smartBalanceWeights'
+  | 'exportExamFile'
+  | 'getFullProjectData'
   // Page Modals (warnings/confirmations)
-  showWarning: boolean;
-  tabCount: number;
-  clearCurrentTabData: () => void;
-  acknowledgeWarning: () => void;
-  confirmDialog: any;
-  setConfirmDialog: any;
-  saveDialog: any;
-  setSaveDialog: any;
-  focusActiveTerminalInput: () => void;
-}
+  | 'showWarning'
+  | 'tabCount'
+  | 'clearCurrentTabData'
+  | 'acknowledgeWarning'
+  | 'confirmDialog'
+  | 'setConfirmDialog'
+  | 'saveDialog'
+  | 'setSaveDialog'
+  | 'focusActiveTerminalInput'
+> & {
+  /**
+   * page.tsx renames these two at the call site
+   * (`togglePanelMinimize` -> `toggleGuidedMinimize`), so they cannot be picked
+   * directly. The mapping is kept here as part of the prop contract.
+   */
+  toggleGuidedMinimize: PageController['togglePanelMinimize'];
+  isGuidedPanelMinimized: PageController['isPanelMinimized'];
+};
 
 export function PageOverlayPanels({
   t,
@@ -295,7 +303,7 @@ export function PageOverlayPanels({
           project={activeTroubleshootingProject}
           deviceStates={deviceStates}
           topologyDevices={topologyDevices}
-          tasks={'tasks' in activeTroubleshootingProject ? (activeTroubleshootingProject as unknown as { tasks: ExamTask[] }).tasks : []}
+          tasks={'tasks' in activeTroubleshootingProject ? activeTroubleshootingProject.tasks : []}
           onClose={() => setShowTroubleshootingPanel(false)}
           onMinimize={() => setIsTroubleshootingMinimized(!isTroubleshootingMinimized)}
           isMinimized={isTroubleshootingMinimized}
@@ -324,9 +332,7 @@ export function PageOverlayPanels({
           updateExamMeta={updateExamMeta}
           moveTask={moveTask}
           smartBalanceWeights={smartBalanceWeights}
-          exportExamFile={(projData: any) => {
-            exportExamFile(projData);
-          }}
+          exportExamFile={exportExamFile}
           projectData={getFullProjectData()}
           isDark={isDark}
         />

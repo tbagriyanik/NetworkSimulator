@@ -1,10 +1,9 @@
 ﻿'use client';
 
 import dynamic from 'next/dynamic';
-import type { PcOutputsSetter } from '@/components/network/pc-panel/PCPanel.types';
-import type { DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { MultiDeviceWindowManager } from '@/components/network/MultiDeviceWindowManager';
 import { WindowSwitcherModal } from '@/components/network/WindowSwitcherModal';
+import type { usePageController } from './usePageController';
 
 const {
   RouterPanel,
@@ -20,71 +19,76 @@ const {
   FirewallWindow: dynamic(() => import('@/components/network/FirewallWindow').then((m) => m.FirewallWindow), { ssr: false }),
 };
 
-interface PagePanelWindowsProps {
-  t: any;
-  theme: any;
-  isDark: boolean;
-  isTR: boolean;
-  language: 'tr' | 'en';
-  isTablet: boolean;
-  helpLevel: any;
+type PageController = ReturnType<typeof usePageController>;
 
+/**
+ * All props are forwarded verbatim from the page controller in page.tsx, so the
+ * types are derived from that controller instead of being restated. Previously
+ * every handler and collection here was `any`, which meant the page controller
+ * could hand this component any shape at all without a compile error.
+ */
+export type PagePanelWindowsProps = Pick<
+  PageController,
+  | 't'
+  | 'theme'
+  | 'isDark'
+  | 'isTR'
+  | 'language'
+  | 'isTablet'
+  | 'helpLevel'
   // Unified device panel
-  showUnifiedDeviceModal: boolean;
-  setShowUnifiedDeviceModal: (show: boolean) => void;
-  unifiedDeviceActiveTab: any;
-  setUnifiedDeviceActiveTab: (tab: any) => void;
-  activeDeviceId: string;
-  activeDeviceType: DeviceType;
-  deviceStates: any;
-  deviceOutputs: any;
-  topologyDevices: any[];
-  topologyConnections: any[];
-  handleCommand: any;
-  handleClearTerminal: () => void;
-  handleUpdateHistory: (deviceId: string, history: string[]) => void;
-  confirmDialog: any;
-  setConfirmDialog: any;
-  isExecutingCommand: boolean;
-  output: any;
-  prompt: string;
-  state: any;
-  activeDeviceTasks: any[];
-  taskContext: any;
-  unifiedDrag: any;
-  firewallDrag: any;
-
+  | 'showUnifiedDeviceModal'
+  | 'setShowUnifiedDeviceModal'
+  | 'unifiedDeviceActiveTab'
+  | 'setUnifiedDeviceActiveTab'
+  | 'activeDeviceId'
+  | 'activeDeviceType'
+  | 'deviceStates'
+  | 'deviceOutputs'
+  | 'topologyDevices'
+  | 'topologyConnections'
+  | 'handleCommand'
+  | 'handleClearTerminal'
+  | 'handleUpdateHistory'
+  | 'confirmDialog'
+  | 'setConfirmDialog'
+  | 'isExecutingCommand'
+  | 'output'
+  | 'prompt'
+  | 'state'
+  | 'activeDeviceTasks'
+  | 'taskContext'
+  | 'unifiedDrag'
+  | 'firewallDrag'
   // Firewall
-  showFirewallPanel: boolean;
-  setShowFirewallPanel: (show: boolean) => void;
-  activeFirewallId: string | null;
-  firewallActiveTab: any;
-  setFirewallActiveTab: (tab: any) => void;
-  handleExecuteCommand: any;
-  toggleDevicePower: any;
-  updateDeviceConfig: any;
-
+  | 'showFirewallPanel'
+  | 'setShowFirewallPanel'
+  | 'activeFirewallId'
+  | 'firewallActiveTab'
+  | 'setFirewallActiveTab'
+  | 'handleExecuteCommand'
+  | 'toggleDevicePower'
+  | 'updateDeviceConfig'
   // PC window
-  showPCPanel: boolean;
-  setShowPCPanel: (show: boolean) => void;
-  showPCDeviceId: string;
-  cableInfo: any;
-  pcPanelInitialTab: any;
-  pcOutputs: any;
-  setPcOutputs: PcOutputsSetter;
-  pcHistories: any;
-  handleUpdatePCHistory: (deviceId: string, history: string[]) => void;
-  handlePCPanelNavigateWrapper: (program: string) => void;
-  handleDeviceDelete: any;
-  focusedOverlay: string;
-  pcDrag: any;
-
+  | 'showPCPanel'
+  | 'setShowPCPanel'
+  | 'showPCDeviceId'
+  | 'cableInfo'
+  | 'pcPanelInitialTab'
+  | 'pcOutputs'
+  | 'setPcOutputs'
+  | 'pcHistories'
+  | 'handleUpdatePCHistory'
+  | 'handlePCPanelNavigateWrapper'
+  | 'handleDeviceDelete'
+  | 'focusedOverlay'
+  | 'pcDrag'
   // Router
-  showRouterPanel: boolean;
-  setShowRouterPanel: (show: boolean) => void;
-  showRouterDeviceId: string;
-  routerDrag: any;
-}
+  | 'showRouterPanel'
+  | 'setShowRouterPanel'
+  | 'showRouterDeviceId'
+  | 'routerDrag'
+>;
 
 export function PagePanelWindows({
   t,

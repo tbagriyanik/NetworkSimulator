@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
-import type { MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from 'react';
+import type { TouchEvent as ReactTouchEvent } from 'react';
+import type { TopologyActivationEvent } from './topologyEventTypes';
 import type { CanvasConnection, CanvasDevice, ContextMenuMode, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { MOMENTUM_DECAY, MOMENTUM_MIN_SPEED, MOMENTUM_THRESHOLD } from '@/components/network/NetworkTopology/utils/networkTopology.constants';
 import { getOptimalTargetPort } from '@/components/network/NetworkTopology/utils/networkTopology.helpers';
@@ -55,7 +56,7 @@ export interface UseTopologyTouchProps {
   pingSourceRef?: React.MutableRefObject<CanvasDevice | null>;
   connectionStartRef?: React.MutableRefObject<{ deviceId: string; portId: string; point: { x: number; y: number } } | null>;
   topologyConnections?: CanvasConnection[];
-  handlePortClick?: (e: ReactMouseEvent, deviceId: string, portId: string) => void;
+  handlePortClick?: (e: TopologyActivationEvent, deviceId: string, portId: string) => void;
 }
 
 export function useTopologyTouch({
@@ -164,7 +165,7 @@ export function useTopologyTouch({
       if (targetDevice) {
         if (connectionStartRef.current.deviceId === deviceId) {
           if (targetDevice.ports[0] && handlePortClick) {
-            handlePortClick(e as unknown as ReactMouseEvent, deviceId, targetDevice.ports[0].id);
+            handlePortClick(e, deviceId, targetDevice.ports[0].id);
           }
           return;
         }
@@ -173,9 +174,9 @@ export function useTopologyTouch({
         const targetPort = getOptimalTargetPort(targetDevice, connectionStartRef.current, topologyConnections, sourceDevice);
 
         if (targetPort && handlePortClick) {
-          handlePortClick(e as unknown as ReactMouseEvent, targetDevice.id, targetPort.id);
+          handlePortClick(e, targetDevice.id, targetPort.id);
         } else if (targetDevice.ports[0] && handlePortClick) {
-          handlePortClick(e as unknown as ReactMouseEvent, targetDevice.id, targetDevice.ports[0].id);
+          handlePortClick(e, targetDevice.id, targetDevice.ports[0].id);
         }
       }
       return;

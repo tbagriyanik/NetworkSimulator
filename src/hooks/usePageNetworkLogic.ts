@@ -4,6 +4,7 @@ import { CanvasDevice, CanvasConnection, FirewallRule } from '@/components/netwo
 import { SwitchState } from '@/lib/network/types';
 import { buildRunningConfig } from '@/lib/network/core/configBuilder';
 import { TerminalOutput } from '@/components/network/Terminal';
+import type { PCOutputLine } from '@/types/pageTypes';
 
 interface UsePageNetworkLogicProps {
   setDeviceStates: React.Dispatch<React.SetStateAction<Map<string, SwitchState>>>;
@@ -11,7 +12,7 @@ interface UsePageNetworkLogicProps {
   setTopologyDevices: (devices: CanvasDevice[] | ((prev: CanvasDevice[]) => CanvasDevice[])) => void;
   setTopologyConnections: (connections: CanvasConnection[] | ((prev: CanvasConnection[]) => CanvasConnection[])) => void;
   setDeviceOutputs: React.Dispatch<React.SetStateAction<Map<string, TerminalOutput[]>>>;
-  setPcOutputs: React.Dispatch<React.SetStateAction<Map<string, { id: string; type: 'command' | 'output' | 'error' | 'success'; content: string }[]>>>;
+  setPcOutputs: React.Dispatch<React.SetStateAction<Map<string, PCOutputLine[]>>>;
   setPcHistories: React.Dispatch<React.SetStateAction<Map<string, string[]>>>;
   setFocusDeviceId: (id: string | null) => void;
   setActiveFirewallId: (id: string | null) => void;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, MouseEvent as ReactMouseEvent, TouchEvent as ReactTouchEvent } from 'react';
+import { useCallback } from 'react';
 import { CanvasDevice, NetworkTopologyProps } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { getPortPosition } from '@/components/network/NetworkTopology/utils/networkTopology.helpers';
 import { CABLE_COLORS, MIN_ZOOM, MAX_ZOOM, NOTE_FONTS_DESKTOP as NOTE_FONTS } from '@/components/network/NetworkTopology/utils/networkTopology.constants';
@@ -160,13 +160,13 @@ export function useNetworkTopologyController(props: NetworkTopologyProps) {
         handlePortHover={tooltipHandlers.handlePortHover}
         handlePortMouseLeave={tooltipHandlers.handlePortMouseLeave}
         handlePortClick={interactions.portConnection.handlePortClick}
-        handleDeviceMouseDown={(e, id) => deviceMouseHandlers.handleDeviceMouseDown(e as unknown as ReactMouseEvent, id)}
+        handleDeviceMouseDown={deviceMouseHandlers.handleDeviceMouseDown}
         handleDevicePointerDown={deviceMouseHandlers.handleDevicePointerDown}
-        handleDeviceClick={(e, selectedDevice) => deviceMouseHandlers.handleDeviceClick(e as unknown as ReactMouseEvent, selectedDevice)}
+        handleDeviceClick={deviceMouseHandlers.handleDeviceClick}
         handleDeviceKeyDown={interactions.deviceNavigation.handleDeviceKeyDown}
         handleDeviceDoubleClick={deviceMouseHandlers.handleDeviceDoubleClick}
         handleDeviceMouseLeave={tooltipHandlers.handleDeviceMouseLeave}
-        handleDeviceTouchStart={(e, id) => touchHandlers.handleDeviceTouchStart(e as unknown as ReactTouchEvent, id)}
+        handleDeviceTouchStart={touchHandlers.handleDeviceTouchStart}
         handleDeviceTouchMove={touchHandlers.handleDeviceTouchMove}
         handleDeviceTouchEnd={touchHandlers.handleDeviceTouchEnd}
         _mousePosRef={mousePosRef}

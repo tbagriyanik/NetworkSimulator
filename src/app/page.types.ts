@@ -3,11 +3,8 @@ import type { ExampleProjectLevel } from '@/lib/network/exampleProjects';
 
 export type TabType = 'topology' | 'cmd' | 'terminal' | 'tasks';
 
-export interface PCOutputLine {
-  id: string;
-  type: 'command' | 'output' | 'error' | 'success';
-  content: string;
-}
+/** Alias of the PC panel's canonical `OutputLine`; see deviceManagerDefaults. */
+export type { OutputLine as PCOutputLine } from '@/components/network/pc-panel/PCPanel.types';
 
 export const SWITCH_DEVICE_TYPES: DeviceType[] = ['switchL2', 'switchL3'];
 

@@ -85,8 +85,10 @@ export function NetworkTopologyPortSelectorModal({
             <button
               onClick={onClose}
               className="w-5 h-5 rounded-md bg-error-500 hover:bg-error-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0"
+              aria-label={t.close || 'Close'}
+              title={t.close || 'Close'}
             >
-              <X className="w-3 h-3 text-white pointer-events-none" />
+              <X className="w-3 h-3 text-white pointer-events-none" aria-hidden="true" />
             </button>
           </div>
 

@@ -475,6 +475,12 @@ function DraggableRuleItem({
           onClick={onToggle}
           className={`p-2 rounded-md hover:bg-secondary-700/50 transition-colors ${rule.enabled ? 'text-success-500 hover:bg-success-500/20' : 'text-secondary-500 hover:bg-secondary-700/30'}`}
           disabled={isDevicePoweredOff}
+          title={t.language === 'tr'
+            ? (rule.enabled ? 'Kuralı devre dışı bırak' : 'Kuralı etkinleştir')
+            : (rule.enabled ? 'Disable rule' : 'Enable rule')}
+          aria-label={`${t.language === 'tr'
+            ? (rule.enabled ? 'Kuralı devre dışı bırak' : 'Kuralı etkinleştir')
+            : (rule.enabled ? 'Disable rule' : 'Enable rule')}: ${displayName}`}
         >
           {rule.enabled ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
         </button>
@@ -482,6 +488,8 @@ function DraggableRuleItem({
           onClick={onDelete}
           className="p-2 rounded-md hover:bg-error-500/20 text-secondary-500 hover:text-error-500 transition-colors"
           disabled={isDevicePoweredOff}
+          title={t.language === 'tr' ? 'Kuralı sil' : 'Delete rule'}
+          aria-label={`${t.language === 'tr' ? 'Kuralı sil' : 'Delete rule'}: ${displayName}`}
         >
           <Trash2 className="w-4 h-4 text-error-500" />
         </button>

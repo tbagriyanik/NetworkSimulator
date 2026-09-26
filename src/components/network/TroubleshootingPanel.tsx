@@ -19,19 +19,36 @@ import { SwitchState } from '@/lib/network/types';
 import type { CanvasDevice } from './NetworkTopology/types/networkTopology.types';
 import { checkFaultResolved, FaultDefinition } from '@/lib/network/faults';
 import { ExamTask } from '@/lib/network/examMode';
+import type { ExamProject } from '@/lib/network/examTypes';
 import { bringElementToFront } from '@/lib/utils/zIndex';
 import { generateCertificate } from '@/lib/utils/certificateGenerator';
 import { isDesktopApp } from '@/lib/utils/desktopDetection';
 import { usePrompt } from '@/contexts/PromptContext';
 
 interface TroubleshootingPanelProps {
-  project: ExampleProject | null;
+  /**
+   * Both an example project and an exam project can be shown here: an exam
+   * project's `title`/`description` are localised (`{ tr, en }`) where an
+   * example project's are plain strings, and the panel renders both. The
+   * declared type is the union the component actually handles, which also lets
+   * `resolveProjectText` below read the localised form without a cast.
+   */
+  project: ExampleProject | ExamProject | null;
   deviceStates: Map<string, SwitchState> | undefined;
   topologyDevices?: CanvasDevice[];
   tasks?: ExamTask[];
   onClose: () => void;
   onMinimize: () => void;
   isMinimized: boolean;
+}
+
+/**
+ * Reads a project field that may be either a plain string (example project) or
+ * a localised `{ tr, en }` pair (exam project), falling back to English.
+ */
+function resolveProjectText(value: string | { tr: string; en: string }, language: string): string {
+  if (typeof value === 'string') return value;
+  return value[language === 'tr' ? 'tr' : 'en'] || value.en;
 }
 
 export function TroubleshootingPanel({
@@ -134,7 +151,7 @@ export function TroubleshootingPanel({
 
     await generateCertificate({
       studentName,
-      projectTitle: typeof project.title === 'string' ? project.title : (project.title as Record<string, string>)[language] || (project.title as Record<string, string>).en,
+      projectTitle: resolveProjectText(project.title, language),
       score: totalResolved,
       totalScore: totalItems,
       date: new Date().toLocaleDateString(language === 'tr' ? 'tr-TR' : 'en-US'),
@@ -219,9 +236,7 @@ export function TroubleshootingPanel({
             <div className={cn(
               "text-sm leading-relaxed mb-4 text-secondary-600 dark:text-secondary-400"
             )}>
-              {typeof project.title === 'string' 
-                ? project.title 
-                : (project.title as Record<string, string>)[language] || (project.title as Record<string, string>).en}
+              {resolveProjectText(project.title, language)}
             </div>
 
             <div className="space-y-4">

@@ -12,6 +12,7 @@ import {
 } from './pcPythonRunnerHelpers';
 import { Statement } from './pcPythonParser';
 import { executeSinglePythonLine } from './pcPythonStatementParser';
+import { markPyTuple } from './pcPythonTags';
 
 // ── Shared types ───────────────────────────────────────────────────────────
 export type ExecResult = 'normal' | 'break' | 'continue' | { type: 'return'; value: unknown };
@@ -117,8 +118,7 @@ export function createSyncExecutor(
           if (retExpr) {
             const retParts = splitOutsideQuotesAndParens(retExpr, ',');
             if (retParts.length > 1) {
-              retVal = retParts.map(p => evaluateExpr(p));
-              (retVal as unknown as { __isTuple__?: boolean }).__isTuple__ = true;
+              retVal = markPyTuple(retParts.map(p => evaluateExpr(p)));
             } else {
               retVal = evaluateExpr(retExpr);
             }

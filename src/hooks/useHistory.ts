@@ -2,14 +2,12 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import { SwitchState, CableInfo } from '@/lib/network/types';
 import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { TerminalOutput } from '@/components/network/Terminal';
+import type { OutputLine } from '@/components/network/pc-panel/PCPanel.types';
 import { logger } from '@/lib/logger';
 import { secureStorage } from '@/lib/storage/secureStorage';
 
-interface PCOutputLine {
-  id: string;
-  type: 'command' | 'output' | 'error' | 'success';
-  content: string;
-}
+/** Alias of the PC panel's canonical `OutputLine`; see deviceManagerDefaults. */
+type PCOutputLine = OutputLine;
 
 export interface ProjectState {
   topologyDevices: CanvasDevice[];

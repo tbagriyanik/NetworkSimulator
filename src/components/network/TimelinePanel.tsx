@@ -357,8 +357,10 @@ export function TimelinePanel({
               className={cn("h-9 w-9", isDark ? "text-secondary-400 hover:text-white hover:bg-secondary-800" : "text-secondary-500 hover:text-secondary-900 hover:bg-secondary-100")}
               onClick={() => onJumpTo(historyIndex - 1)}
               disabled={historyIndex === 0}
+              aria-label={language === 'tr' ? 'Önceki adım' : 'Previous step'}
+              title={language === 'tr' ? 'Önceki adım' : 'Previous step'}
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-5 h-5" aria-hidden="true" />
             </Button>
             <Button
               variant="ghost"
@@ -366,8 +368,10 @@ export function TimelinePanel({
               className={cn("h-9 w-9", isDark ? "text-secondary-400 hover:text-white hover:bg-secondary-800" : "text-secondary-500 hover:text-secondary-900 hover:bg-secondary-100")}
               onClick={() => onJumpTo(historyIndex + 1)}
               disabled={historyIndex >= historyItems.length - 1}
+              aria-label={language === 'tr' ? 'Sonraki adım' : 'Next step'}
+              title={language === 'tr' ? 'Sonraki adım' : 'Next step'}
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-5 h-5" aria-hidden="true" />
             </Button>
           </div>
         </div>

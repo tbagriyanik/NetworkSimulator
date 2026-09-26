@@ -38,6 +38,20 @@ const DEFAULT_THRESHOLDS: PerformanceThresholds = {
     longTaskTime: 50, // long task budget
 };
 
+/**
+ * Narrow an arbitrary value (Web API entry, vendor extension, ...) to a plain
+ * record so individual fields can be read without a double type assertion.
+ */
+function asRecord(value: unknown): Record<string, unknown> {
+    return (typeof value === 'object' && value !== null) ? (value as Record<string, unknown>) : {};
+}
+
+/** Read a numeric field from an entry, falling back when it is absent. */
+function numField(value: unknown, key: string, fallback: number): number {
+    const raw = asRecord(value)[key];
+    return typeof raw === 'number' && Number.isFinite(raw) ? raw : fallback;
+}
+
 class PerformanceMonitor {
     private metrics: PerformanceMetrics = {
         fcp: null,
@@ -72,8 +86,9 @@ class PerformanceMonitor {
 
         // Observe Paint Timing (FCP)
         if ('PerformanceObserver' in window) {
-            const supportedEntryTypes = (PerformanceObserver as unknown as { supportedEntryTypes: string[] }).supportedEntryTypes || [];
-            const supports = (entryType: string) => supportedEntryTypes.includes(entryType);
+            const supportedEntryTypes = asRecord(PerformanceObserver).supportedEntryTypes;
+            const supported = Array.isArray(supportedEntryTypes) ? supportedEntryTypes : [];
+            const supports = (entryType: string) => supported.includes(entryType);
 
             try {
                 const paintObserver = new PerformanceObserver((list) => {
@@ -112,8 +127,8 @@ class PerformanceMonitor {
                 let clsValue = 0;
                 const clsObserver = new PerformanceObserver((list) => {
                     for (const entry of list.getEntries()) {
-                        if (!(entry as unknown as { hadRecentInput: boolean }).hadRecentInput) {
-                            clsValue += (entry as unknown as { value: number }).value;
+                        if (asRecord(entry).hadRecentInput !== true) {
+                            clsValue += numField(entry, 'value', 0);
                             this.metrics.cls = clsValue;
                         }
                     }
@@ -130,7 +145,7 @@ class PerformanceMonitor {
             try {
                 const fidObserver = new PerformanceObserver((list) => {
                     for (const entry of list.getEntries()) {
-                        this.metrics.fid = (entry as unknown as { processingDuration: number }).processingDuration;
+                        this.metrics.fid = numField(entry, 'processingDuration', this.metrics.fid ?? 0);
                     }
                 });
                 if (supports('first-input')) {
@@ -144,8 +159,8 @@ class PerformanceMonitor {
             // Observe interaction timing (INP approximation)
             try {
                 const inpObserver = new PerformanceObserver((list) => {
-                    for (const entry of list.getEntries() as unknown as PerformanceEntry[]) {
-                        const duration = Number(entry.duration || 0);
+                    for (const entry of list.getEntries()) {
+                        const duration = numField(entry, 'duration', 0);
                         if (duration > 0) {
                             this.metrics.inp = Math.max(this.metrics.inp ?? 0, duration);
                         }
@@ -214,8 +229,9 @@ class PerformanceMonitor {
     }
 
     updateMemoryUsage() {
-        if ('memory' in performance) {
-            this.metrics.memoryUsage = (performance as unknown as { memory: { usedJSHeapSize: number } }).memory.usedJSHeapSize;
+        const used = asRecord(asRecord(performance).memory).usedJSHeapSize;
+        if (typeof used === 'number') {
+            this.metrics.memoryUsage = used;
         }
     }
 

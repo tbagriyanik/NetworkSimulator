@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useRef } from 'react';
+import { useState, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -8,20 +8,9 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
-import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { ShortcutBadge } from '@/components/ui/ShortcutBadge';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardNavigation';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
-} from "@/components/ui/dropdown-menu";
-import { ChevronDown, Plus, Undo2, Redo2, Search, X, Cable, LineSquiggle, Leaf, Plug, TrendingUpDown, Users, UserKey, Activity, Stethoscope, LayoutGrid, Camera, Layers, Sparkles, CircleDot, Grid, RotateCcw, RefreshCw } from 'lucide-react';
+import { Undo2, Redo2, Cable, LineSquiggle, Leaf, Plug, TrendingUpDown, Users, UserKey, Activity, Stethoscope, Camera, RefreshCw } from 'lucide-react';
 import type { Translations } from '@/contexts/LanguageContext';
 import type { CanvasDevice, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState, CableType, CableInfo } from '@/lib/network/types';
@@ -33,7 +22,8 @@ import { NetworkDiagnosticsModal } from './NetworkDiagnosticsModal';
 import { SnapshotManagerModal } from './SnapshotManagerModal';
 import { applyAutoLayout, type LayoutAlgorithm } from '@/lib/network/autoLayoutEngine';
 import { useUiPreferences } from '@/hooks/useUiPreferences';
-import { getDeviceCenter } from '@/components/network/NetworkTopology/utils/networkTopology.helpers';
+import { TopologyDeviceDropdown } from './topology-toolbar/TopologyDeviceDropdown';
+import { TopologyAutoLayoutMenu } from './topology-toolbar/TopologyAutoLayoutMenu';
 
 interface TopologyToolbarProps {
   t: Translations;
@@ -64,24 +54,18 @@ interface TopologyToolbarProps {
   isPingPanelOpen?: boolean;
 }
 
-function truncateWithEllipsis(text: string | undefined | null, maxLength: number) {
-  if (!text) return '';
-  if (text.length <= maxLength) return text;
-  return `${text.slice(0, maxLength)}...`;
-}
-
 const TOOLBAR_ITEMS: Array<{ type: DeviceType; labelKey: keyof Translations; colorClass: string }> = [
-  { type: 'pc', labelKey: 'addPC', colorClass: 'text-primary-500 hover:bg-primary-500/10' },
-  { type: 'switchL2', labelKey: 'addL2Switch', colorClass: 'text-accent-500 hover:bg-accent-500/10' },
-  { type: 'switchL3', labelKey: 'addL3Switch', colorClass: 'text-purple-500 hover:bg-purple-500/10' },
-  { type: 'router', labelKey: 'addRouter', colorClass: 'text-purple-500 hover:bg-purple-500/10' },
-  { type: 'firewall', labelKey: 'addFirewall', colorClass: 'text-error-500 hover:bg-error-500/10' },
-  { type: 'wlc', labelKey: 'addWLC', colorClass: 'text-yellow-500 hover:bg-yellow-500/10' },
-  { type: 'hub', labelKey: 'addHub', colorClass: 'text-cyan-500 hover:bg-cyan-500/10' },
-  { type: 'cloud', labelKey: 'addCloud', colorClass: 'text-sky-500 hover:bg-sky-500/10' },
-  { type: 'mobile', labelKey: 'addMobile', colorClass: 'text-emerald-500 hover:bg-emerald-500/10' },
-  { type: 'printer', labelKey: 'addPrinter', colorClass: 'text-amber-500 hover:bg-amber-500/10' },
-  { type: 'iot', labelKey: 'addIoT', colorClass: 'text-warning-500 hover:bg-warning-500/10' },
+  { type: 'pc', labelKey: 'addPC', colorClass: 'text-primary-400 hover:bg-primary-400/10' },
+  { type: 'switchL2', labelKey: 'addL2Switch', colorClass: 'text-accent-400 hover:bg-accent-400/10' },
+  { type: 'switchL3', labelKey: 'addL3Switch', colorClass: 'text-purple-400 hover:bg-purple-400/10' },
+  { type: 'router', labelKey: 'addRouter', colorClass: 'text-purple-400 hover:bg-purple-400/10' },
+  { type: 'firewall', labelKey: 'addFirewall', colorClass: 'text-error-400 hover:bg-error-400/10' },
+  { type: 'wlc', labelKey: 'addWLC', colorClass: 'text-yellow-400 hover:bg-yellow-400/10' },
+  { type: 'hub', labelKey: 'addHub', colorClass: 'text-cyan-400 hover:bg-cyan-400/10' },
+  { type: 'cloud', labelKey: 'addCloud', colorClass: 'text-sky-400 hover:bg-sky-400/10' },
+  { type: 'mobile', labelKey: 'addMobile', colorClass: 'text-emerald-400 hover:bg-emerald-400/10' },
+  { type: 'printer', labelKey: 'addPrinter', colorClass: 'text-amber-400 hover:bg-amber-400/10' },
+  { type: 'iot', labelKey: 'addIoT', colorClass: 'text-warning-400 hover:bg-warning-400/10' },
 ];
 
 export function TopologyToolbar({
@@ -106,8 +90,6 @@ export function TopologyToolbar({
   const topologyZoom = useAppStore((state) => state.topology.zoom);
 
   const isHighQuality = graphicsQuality === 'high';
-  const [deviceTypeFilter, setDeviceTypeFilter] = useState<'all' | 'pc' | 'sw' | 'router'>('all');
-  const [isDeviceDropdownOpen, setIsDeviceDropdownOpen] = useState(false);
   const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState(false);
   const [isSnapshotModalOpen, setIsSnapshotModalOpen] = useState(false);
   const preAutoLayoutDevicesRef = useRef<CanvasDevice[] | null>(null);
@@ -131,20 +113,6 @@ export function TopologyToolbar({
       handleUndo();
     }
   };
-
-  const availableCategoryCounts = useMemo(() => {
-    const counts = { all: topologyDevices.length, pc: 0, sw: 0, router: 0 };
-    topologyDevices.forEach((dev) => {
-      if (['pc', 'mobile', 'printer', 'iot', 'server'].includes(dev.type)) {
-        counts.pc++;
-      } else if (['switchL2', 'switchL3', 'hub', 'wlc'].includes(dev.type)) {
-        counts.sw++;
-      } else if (['router', 'firewall', 'cloud'].includes(dev.type)) {
-        counts.router++;
-      }
-    });
-    return counts;
-  }, [topologyDevices]);
 
   const toolbarGlowClass = isHighQuality
     ? 'drop-shadow-[0_0_2px_rgba(34,211,238,0.15)] dark:drop-shadow-[0_0_2px_rgba(34,211,238,0.12)]'
@@ -224,294 +192,25 @@ export function TopologyToolbar({
       </Tooltip>
 
       {/* Active Device Dropdown */}
-      <DropdownMenu
-        open={isDeviceDropdownOpen}
-        onOpenChange={(open) => {
-          setIsDeviceDropdownOpen(open);
-          if (!open) {
-            setDeviceSearchQuery('');
-            setDeviceTypeFilter('all');
-          }
-        }}
-      >
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className={`w-36 sm:w-48 flex items-center gap-2 px-2 sm:px-2.5 py-1.5 rounded-lg border transition-all shrink-0 ${isDark
-              ? 'bg-secondary-900 border-secondary-800 text-secondary-300 hover:text-white hover:border-secondary-600'
-              : 'bg-white border-secondary-200 text-secondary-700 hover:text-secondary-900 hover:border-secondary-400'
-              }`}
-          >
-            <div className="flex items-center gap-2">
-              {activeDeviceId && (topologyDevices.some(d => d.id === activeDeviceId)) ? (
-                <>
-                  {(() => {
-                    const activeTopologyDevice = topologyDevices.find(d => d.id === activeDeviceId);
-                    const status = activeTopologyDevice?.status || 'online';
-                    const statusColor =
-                      status === 'offline'
-                        ? 'bg-error-500'
-                        : status === 'online'
-                          ? 'bg-success-400'
-                          : 'bg-warning-400';
-                    const statusLabel =
-                      status === 'offline'
-                        ? t.offline
-                        : status === 'online'
-                          ? t.online
-                          : t.unknown;
-                    return (
-                      <>
-                        <TooltipWrapper title={statusLabel}>
-                          <span className="w-2 h-2 rounded-full mr-0.5">
-                            <span className={`block w-2 h-2 rounded-full ${statusColor} shadow-[0_0_2px_rgba(45,212,191,0.3)]`} />
-                          </span>
-                        </TooltipWrapper>
-                        <DeviceIcon
-                          type={activeDeviceType}
-                          switchModel={activeTopologyDevice?.switchModel}
-                          className="w-5 h-5"
-                        />
-                        <span className="text-xs font-bold">
-                          {truncateWithEllipsis(deviceStates.get(activeDeviceId)?.hostname || activeDeviceId, 15)}
-                        </span>
-                      </>
-                    );
-                  })()}
-                </>
-              ) : (
-                <>
-                  <Plus className={`w-4 h-4 text-secondary-500 ${toolbarGlowClass}`} />
-                  <span className="text-sm font-bold text-secondary-500">
-                    {t.selectDeviceDropdown}
-                  </span>
-                </>
-              )}
-            </div>
-            <ChevronDown className="w-3 h-3 opacity-50" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className={`${isDark ? 'bg-secondary-900 !border-secondary-800' : 'bg-white !border-secondary-200'} w-64 sm:w-72 pt-2`}>
-          {topologyDevices.length > 0 && (
-            <>
-              {/* Search Box */}
-              <div className="px-2 pt-1 pb-1">
-                <div className="relative">
-                  <Search className={`absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-secondary-400 pointer-events-none ${toolbarGlowClass}`} />
-                  <Input
-                    value={deviceSearchQuery}
-                    onChange={e => setDeviceSearchQuery(e.target.value)}
-                    placeholder={t.searchShort}
-                    aria-label={t.searchShort}
-                    className="h-7 pl-6 pr-7 text-xs"
-                    autoFocus
-                    onKeyDown={e => {
-                      e.stopPropagation();
-                      if (e.key === 'Escape') {
-                        e.preventDefault();
-                        setDeviceSearchQuery('');
-                      } else if (e.key === 'Enter') {
-                        e.preventDefault();
-                        const q = deviceSearchQuery.toLowerCase().trim();
-                        const firstMatch = topologyDevices.find((device) => {
-                          if (deviceTypeFilter === 'pc') {
-                            if (!['pc', 'mobile', 'printer', 'iot'].includes(device.type)) return false;
-                          } else if (deviceTypeFilter === 'sw') {
-                            if (!['switchL2', 'switchL3', 'hub', 'wlc'].includes(device.type)) return false;
-                          } else if (deviceTypeFilter === 'router') {
-                            if (!['router', 'firewall', 'cloud'].includes(device.type)) return false;
-                          }
-                          if (!q) return true;
-                          const state = deviceStates.get(device.id);
-                          const name = (state?.hostname || device.name).toLowerCase();
-                          const type = device.type.toLowerCase();
-                          const mac = (device.macAddress || state?.macAddress || '').toLowerCase();
-                          const ip = (device.ip || '').toLowerCase();
-                          const portIps = state?.ports
-                            ? Object.values(state.ports).map((p: { ipAddress?: string }) => p.ipAddress?.toLowerCase() || '')
-                            : [];
-                          const vlanMatches = state?.vlans
-                            ? Object.keys(state.vlans).some(v => v.includes(q) || `vlan${v}`.includes(q) || `vlan ${v}`.includes(q))
-                            : false;
-                          return (
-                            name.includes(q) ||
-                            type.includes(q) ||
-                            mac.includes(q) ||
-                            ip.includes(q) ||
-                            portIps.some(pIp => pIp.includes(q)) ||
-                            vlanMatches
-                          );
-                        });
-
-                        if (firstMatch) {
-                          if (typeof window !== 'undefined') {
-                            const canvasW = window.innerWidth;
-                            const canvasH = window.innerHeight;
-                            const center = getDeviceCenter(firstMatch);
-                            const zoomLevel = topologyZoom || 1.0;
-                            const targetPanX = canvasW / 2 - center.x * zoomLevel;
-                            const targetPanY = canvasH / 2 - center.y * zoomLevel;
-                            setPan({ x: targetPanX, y: targetPanY });
-                            window.dispatchEvent(new CustomEvent('focus-device', { detail: { deviceId: firstMatch.id } }));
-                          }
-                          handleDeviceSelectFromMenu(firstMatch.type, firstMatch.id, firstMatch.switchModel, firstMatch.name);
-                          setDeviceSearchQuery('');
-                          setIsDeviceDropdownOpen(false);
-                        }
-                      }
-                    }}
-                  />
-                  {deviceSearchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => setDeviceSearchQuery('')}
-                      title={language === 'tr' ? 'Aramayı Temizle (ESC)' : 'Clear Search (ESC)'}
-                      aria-label={language === 'tr' ? 'Aramayı Temizle' : 'Clear Search'}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-secondary-200 dark:hover:bg-secondary-700 text-secondary-400 hover:text-secondary-600 dark:hover:text-secondary-300 transition-colors"
-                    >
-                      <X className={`w-3 h-3 ${toolbarGlowClass}`} />
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Smart Type Filter Pills with dynamic device counts */}
-              <div className="px-2 pt-1 pb-1.5 flex flex-wrap gap-1">
-                {[
-                  { id: 'all', label: `${t.filterAll || (language === 'tr' ? 'Tümü' : 'All')} (${availableCategoryCounts.all})` },
-                  ...(availableCategoryCounts.pc > 0 ? [{ id: 'pc', label: `PC (${availableCategoryCounts.pc})` }] : []),
-                  ...(availableCategoryCounts.sw > 0 ? [{ id: 'sw', label: `SW (${availableCategoryCounts.sw})` }] : []),
-                  ...(availableCategoryCounts.router > 0 ? [{ id: 'router', label: `Router (${availableCategoryCounts.router})` }] : []),
-                ].map((filter) => (
-                  <button
-                    key={filter.id}
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDeviceTypeFilter(filter.id as 'all' | 'pc' | 'sw' | 'router');
-                    }}
-                    className={cn(
-                      'flex-1 min-w-[36px] py-0.5 px-1 text-[10px] font-bold rounded transition-all text-center border whitespace-nowrap',
-                      deviceTypeFilter === filter.id
-                        ? 'bg-primary-500 text-white border-primary-500 shadow-xs'
-                        : isDark
-                          ? 'bg-secondary-800/80 text-secondary-300 border-secondary-700 hover:bg-secondary-700 hover:text-white'
-                          : 'bg-secondary-100 text-secondary-700 border-secondary-200 hover:bg-secondary-200 hover:text-secondary-900'
-                    )}
-                  >
-                    {filter.label}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-
-          <ScrollArea className={topologyDevices.length > 0 ? "h-56" : "h-auto"}>
-            {topologyDevices.length > 0 ? (
-              (() => {
-                const filtered = topologyDevices
-                  .filter((device) => {
-                    // Filter by device type category
-                    if (deviceTypeFilter === 'pc') {
-                      if (!['pc', 'mobile', 'printer', 'iot'].includes(device.type)) return false;
-                    } else if (deviceTypeFilter === 'sw') {
-                      if (!['switchL2', 'switchL3', 'hub', 'wlc'].includes(device.type)) return false;
-                    } else if (deviceTypeFilter === 'router') {
-                      if (!['router', 'firewall', 'cloud'].includes(device.type)) return false;
-                    }
-
-                    // Filter by search query
-                    if (!deviceSearchQuery.trim()) return true;
-                    const q = deviceSearchQuery.toLowerCase().trim();
-                    const state = deviceStates.get(device.id);
-                    const name = (state?.hostname || device.name).toLowerCase();
-                    const type = device.type.toLowerCase();
-                    const mac = (device.macAddress || state?.macAddress || '').toLowerCase();
-                    const ip = (device.ip || '').toLowerCase();
-                    const portIps = state?.ports
-                      ? Object.values(state.ports).map((p: { ipAddress?: string }) => p.ipAddress?.toLowerCase() || '')
-                      : [];
-                    const vlanMatches = state?.vlans
-                      ? Object.keys(state.vlans).some(v => v.includes(q) || `vlan${v}`.includes(q) || `vlan ${v}`.includes(q))
-                      : false;
-
-                    return (
-                      name.includes(q) ||
-                      type.includes(q) ||
-                      mac.includes(q) ||
-                      ip.includes(q) ||
-                      portIps.some(pIp => pIp.includes(q)) ||
-                      vlanMatches
-                    );
-                  });
-
-                if (filtered.length === 0) {
-                  return (
-                    <div className="p-4 text-center text-[11px] text-secondary-500 italic">
-                      {t.noResultsFound}
-                    </div>
-                  );
-                }
-
-                const selectAndFocusDevice = (device: CanvasDevice) => {
-                  // Pan & Center canvas camera on target device
-                  if (typeof window !== 'undefined') {
-                    const canvasW = window.innerWidth;
-                    const canvasH = window.innerHeight;
-                    const center = getDeviceCenter(device);
-                    const zoomLevel = topologyZoom || 1.0;
-                    const targetPanX = canvasW / 2 - center.x * zoomLevel;
-                    const targetPanY = canvasH / 2 - center.y * zoomLevel;
-                    setPan({ x: targetPanX, y: targetPanY });
-                    window.dispatchEvent(new CustomEvent('focus-device', { detail: { deviceId: device.id } }));
-                  }
-                  handleDeviceSelectFromMenu(device.type, device.id, device.switchModel, device.name);
-                  setDeviceSearchQuery('');
-                };
-
-                return filtered.map((device) => {
-                  const currentDeviceState = deviceStates.get(device.id);
-                  const displayName = currentDeviceState?.hostname || device.name;
-                  const status = device.status || 'online';
-                  const statusColor =
-                    status === 'offline'
-                      ? 'bg-error-500'
-                      : status === 'online'
-                        ? 'bg-success-400'
-                        : 'bg-warning-400';
-
-                  return (
-                    <DropdownMenuItem
-                      key={device.id}
-                      className={`flex items-center justify-between py-1.5 px-2 cursor-pointer ${activeDeviceId === device.id ? 'bg-purple-500/10 text-purple-400 font-semibold' : ''}`}
-                      onClick={() => selectAndFocusDevice(device)}
-                    >
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusColor}`} />
-                        <DeviceIcon
-                          type={device.type}
-                          switchModel={device.switchModel}
-                          className="w-4 h-4 shrink-0"
-                        />
-                        <span className="text-xs font-bold truncate">{displayName}</span>
-                      </div>
-                      <span className="text-[10px] opacity-50 capitalize shrink-0 ml-2">{device.type}</span>
-                    </DropdownMenuItem>
-                  );
-                });
-              })()
-            ) : (
-              <div className="p-3 text-center text-[11px] text-secondary-500 italic">
-                {t.noDevicesInTopology}
-              </div>
-            )}
-          </ScrollArea>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <TopologyDeviceDropdown
+        t={t}
+        isDark={isDark}
+        language={language}
+        topologyDevices={topologyDevices}
+        deviceStates={deviceStates}
+        activeDeviceId={activeDeviceId}
+        activeDeviceType={activeDeviceType}
+        deviceSearchQuery={deviceSearchQuery}
+        setDeviceSearchQuery={setDeviceSearchQuery}
+        setPan={setPan}
+        handleDeviceSelectFromMenu={handleDeviceSelectFromMenu}
+        toolbarGlowClass={toolbarGlowClass}
+        topologyZoom={topologyZoom}
+      />
 
       {/* Device Buttons - Compact 2-Row grid - hidden during exam */}
       {!isExamActive && (
-        <div className={`grid grid-rows-2 grid-flow-col auto-cols-max items-center gap-0.5 p-0.5 rounded-lg border shrink-0 ${isDark ? 'bg-secondary-900/40 border-secondary-700/30' : 'bg-primary-50/50 border-primary-100/50'}`}>
+        <div className={`grid grid-rows-2 grid-flow-col auto-cols-max items-center gap-0.5 p-1 rounded-xl border shrink-0 transition-colors ${isDark ? 'bg-secondary-950/70 border-secondary-700/50 shadow-inner' : 'bg-primary-100/60 border-primary-200/70 shadow-xs'}`}>
           {TOOLBAR_ITEMS.map((item) => (
             <Tooltip key={item.type}>
               <TooltipTrigger asChild>
@@ -526,7 +225,7 @@ export function TopologyToolbar({
                     }
                   }}
                 >
-                  <DeviceIcon type={item.type} size={15} />
+                  <DeviceIcon type={item.type} size={15} color="currentColor" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="text-xs font-medium">
@@ -695,80 +394,13 @@ export function TopologyToolbar({
 
       {/* Auxiliary Tools: Auto-Layout, Diagnostics, Snapshots */}
       <div className={`flex items-center gap-0.5 p-1 rounded-xl border shrink-0 ${isDark ? 'bg-secondary-900/40 border-secondary-700/30' : 'bg-primary-50/50 border-primary-100/50'}`}>
-        <DropdownMenu>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  aria-label={t.autoLayout || 'Otomatik Hizala'}
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 p-0 text-indigo-400 hover:bg-indigo-500/10"
-                >
-                  <LayoutGrid className={`w-4 h-4 ${toolbarGlowClass}`} />
-                </Button>
-              </DropdownMenuTrigger>
-            </TooltipTrigger>
-            <TooltipContent className="z-50">{t.autoLayout || 'Otomatik Hizala'}</TooltipContent>
-          </Tooltip>
-          <DropdownMenuContent align="start" className={`${isDark ? 'bg-secondary-900 !border-secondary-800' : 'bg-white !border-secondary-200'} w-52`}>
-            <DropdownMenuLabel className="text-[11px] font-bold tracking-widest text-secondary-500 py-1.5 px-2">
-              {t.autoLayoutHeader || 'Otomatik Hizalama Düzeni'}
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="flex items-center gap-2 py-2 px-2.5 cursor-pointer text-xs font-semibold"
-              onSelect={() => applyLayoutAlgorithm('hierarchical')}
-            >
-              <Layers className="w-4 h-4 text-indigo-400 shrink-0" />
-              <div className="flex flex-col">
-                <span>{t.layoutHierarchical || 'Hiyerarşik (Katmanlı)'}</span>
-                <span className="text-[10px] text-secondary-500 font-normal">{t.layoutHierarchicalDesc || 'Core, Switch ve PC katmanları'}</span>
-              </div>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="flex items-center gap-2 py-2 px-2.5 cursor-pointer text-xs font-semibold"
-              onSelect={() => applyLayoutAlgorithm('star')}
-            >
-              <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
-              <div className="flex flex-col">
-                <span>{t.layoutStar || 'Yıldız (Star)'}</span>
-                <span className="text-[10px] text-secondary-500 font-normal">{t.layoutStarDesc || 'Merkezi bir cihaz etrafında'}</span>
-              </div>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="flex items-center gap-2 py-2 px-2.5 cursor-pointer text-xs font-semibold"
-              onSelect={() => applyLayoutAlgorithm('ring')}
-            >
-              <CircleDot className="w-4 h-4 text-cyan-400 shrink-0" />
-              <div className="flex flex-col">
-                <span>{t.layoutRing || 'Halka (Ring)'}</span>
-                <span className="text-[10px] text-secondary-500 font-normal">{t.layoutRingDesc || 'Dairesel dikey halka dizilimi'}</span>
-              </div>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="flex items-center gap-2 py-2 px-2.5 cursor-pointer text-xs font-semibold"
-              onSelect={() => applyLayoutAlgorithm('grid')}
-            >
-              <Grid className="w-4 h-4 text-emerald-400 shrink-0" />
-              <div className="flex flex-col">
-                <span>{t.layoutGrid || 'Izgara (Grid)'}</span>
-                <span className="text-[10px] text-secondary-500 font-normal">{t.layoutGridDesc || 'Düzenli matris düzeni'}</span>
-              </div>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="flex items-center gap-2 py-2 px-2.5 cursor-pointer text-xs font-semibold text-rose-400 hover:text-rose-300"
-              onSelect={() => restoreOriginalLayout()}
-            >
-              <RotateCcw className="w-4 h-4 text-rose-400 shrink-0" />
-              <div className="flex flex-col">
-                <span>{t.restoreOriginalLayout || 'Eski Haline Geri Al'}</span>
-                <span className="text-[10px] opacity-70 font-normal">{t.restoreOriginalLayoutDesc || 'İlk konumlara dön'}</span>
-              </div>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <TopologyAutoLayoutMenu
+          t={t}
+          isDark={isDark}
+          toolbarGlowClass={toolbarGlowClass}
+          onApplyLayout={applyLayoutAlgorithm}
+          onRestoreOriginalLayout={restoreOriginalLayout}
+        />
 
         <Tooltip>
           <TooltipTrigger asChild>
@@ -847,7 +479,7 @@ export function TopologyToolbar({
         </Tooltip>
       </div>
 
-      {/* Classroom Teacher / Student Actions - Right aligned grouped buttons */}
+      {/* Classroom Teacher / Student Actions */}
       {(onOpenStudentJoin || onOpenTeacherPanel) && (
         <div className={`ml-auto flex items-center gap-0.5 p-1 rounded-xl border shrink-0 ${isDark ? 'bg-secondary-900/40 border-secondary-700/30' : 'bg-primary-50/50 border-primary-100/50'}`}>
           {onOpenStudentJoin && (

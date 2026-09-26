@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useRef, useEffect, MouseEvent as ReactMouseEvent } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
+import type { TopologyActivationEvent } from './topologyEventTypes';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { CableInfo, CableType } from '@/lib/network/types';
 import { isCableCompatible } from '@/lib/network/types';
@@ -76,7 +77,7 @@ export function useTopologyPortConnection({
     }, 3000);
   }, [setConnectionError]);
 
-  const handlePortClick = useCallback((e: ReactMouseEvent, deviceId: string, portId: string) => {
+  const handlePortClick = useCallback((e: TopologyActivationEvent, deviceId: string, portId: string) => {
     e.stopPropagation();
     if (isActuallyDraggingRef.current || isTouchDraggingRef.current) return;
 

@@ -91,6 +91,8 @@ export function FaultInjectionCard({ activeExam, topologyDevices, updateExamMeta
                                         variant="ghost"
                                         size="icon"
                                         className="h-6 w-6 text-error-500 hover:bg-error-500/10"
+                                        aria-label={isTr ? 'Hatayı kaldır' : 'Remove fault'}
+                                        title={isTr ? 'Hatayı kaldır' : 'Remove fault'}
                                         onClick={() => {
                                             updateExamMeta({
                                                 injectedFaults: (activeExam.injectedFaults || []).filter(f => f.id !== fault.id)

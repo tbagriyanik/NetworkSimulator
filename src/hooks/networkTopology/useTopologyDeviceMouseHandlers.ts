@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react';
-import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from 'react';
+import type { PointerEvent as ReactPointerEvent } from 'react';
 import type { CanvasConnection, CanvasDevice, DeviceType, ContextMenuState } from '@/components/network/NetworkTopology/types/networkTopology.types';
+import type { TopologyActivationEvent, TopologyPositionedEvent } from './topologyEventTypes';
 import type { PingAnimationState } from './usePingSequence';
 import type { HopPacketInfo } from '@/components/network/PingPacketInfoPanel';
 import { isSwitchDeviceType, getOptimalTargetPort } from '@/components/network/NetworkTopology/utils/networkTopology.helpers';
@@ -20,7 +21,7 @@ export interface UseTopologyDeviceMouseHandlersOptions {
   onDeviceSelect: (type: DeviceType, id?: string, model?: string, name?: string) => void;
   onDeviceDoubleClick?: (type: DeviceType, id: string) => void;
   saveToHistory: () => void;
-  startDeviceDrag: (e: ReactMouseEvent, deviceId: string, newSelectedIds: string[], initialPositions: { [key: string]: { x: number; y: number } }) => void;
+  startDeviceDrag: (e: TopologyPositionedEvent, deviceId: string, newSelectedIds: string[], initialPositions: { [key: string]: { x: number; y: number } }) => void;
   startPingAnimationRef: React.MutableRefObject<((sourceId: string, targetId: string) => void) | null>;
   pingMode: boolean;
   pingModeRef: React.MutableRefObject<boolean>;
@@ -39,7 +40,7 @@ export interface UseTopologyDeviceMouseHandlersOptions {
   isDrawingConnectionRef?: React.MutableRefObject<boolean>;
   connectionStartRef?: React.MutableRefObject<{ deviceId: string; portId: string; point: { x: number; y: number } } | null>;
   topologyConnections?: CanvasConnection[];
-  handlePortClick?: (e: ReactMouseEvent, deviceId: string, portId: string) => void;
+  handlePortClick?: (e: TopologyActivationEvent, deviceId: string, portId: string) => void;
 }
 
 export function useTopologyDeviceMouseHandlers({
@@ -82,7 +83,7 @@ export function useTopologyDeviceMouseHandlers({
   const lastTappedDeviceRef = useRef<string | null>(null);
 
   const handleDeviceMouseDown = useCallback(
-    (e: ReactMouseEvent, deviceId: string) => {
+    (e: TopologyPositionedEvent, deviceId: string) => {
       e.stopPropagation();
       if (!canvasRef.current) return;
 
@@ -145,9 +146,13 @@ export function useTopologyDeviceMouseHandlers({
           if (firstSelectedDevice) {
             onDeviceSelect(firstSelectedDevice.type, newSelectedIds[0], undefined, firstSelectedDevice.name);
           }
-        } else if (onDeviceSelect) {
-          onDeviceSelect(null as unknown as DeviceType, null as unknown as string | undefined, undefined, null as unknown as string | undefined);
         }
+        // Deselecting the last shifted device needs no onDeviceSelect() call:
+        // the selection is already cleared by setSelectedDeviceIds below, and
+        // every implementation of onDeviceSelect returns early on a falsy
+        // deviceId (see applyDeviceSelection in useAppNavigation.ts). The old
+        // call passed nulls through three `as unknown as` assertions to reach
+        // that no-op; keeping it would mean keeping those type lies.
 
         setSelectedDeviceIds(newSelectedIds);
         document.body.style.cursor = 'copy';
@@ -190,7 +195,7 @@ export function useTopologyDeviceMouseHandlers({
   );
 
   const handleDeviceClick = useCallback(
-    (e: ReactMouseEvent, device: CanvasDevice) => {
+    (e: TopologyActivationEvent, device: CanvasDevice) => {
       e.stopPropagation();
 
       setContextMenu(null);
@@ -275,7 +280,7 @@ export function useTopologyDeviceMouseHandlers({
         if (device) {
           if (connectionStartRef.current.deviceId === deviceId) {
             if (device.ports[0] && handlePortClick) {
-              handlePortClick(e as unknown as ReactMouseEvent, deviceId, device.ports[0].id);
+              handlePortClick(e, deviceId, device.ports[0].id);
             }
             return;
           }
@@ -290,9 +295,9 @@ export function useTopologyDeviceMouseHandlers({
           });
 
           if (availablePort && handlePortClick) {
-            handlePortClick(e as unknown as ReactMouseEvent, device.id, availablePort.id);
+            handlePortClick(e, device.id, availablePort.id);
           } else if (device.ports[0] && handlePortClick) {
-            handlePortClick(e as unknown as ReactMouseEvent, device.id, device.ports[0].id);
+            handlePortClick(e, device.id, device.ports[0].id);
           }
         }
         return;
@@ -322,7 +327,7 @@ export function useTopologyDeviceMouseHandlers({
         }
       }
 
-      handleDeviceMouseDown(e as unknown as ReactMouseEvent, deviceId);
+      handleDeviceMouseDown(e, deviceId);
     },
     [
       handleDeviceMouseDown,

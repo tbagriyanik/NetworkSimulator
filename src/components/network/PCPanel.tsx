@@ -370,7 +370,7 @@ export function PCPanel({
   } = usePCPanelConsole({
     deviceId,
     topologyDevices,
-    topologyConnections: topologyConnections as unknown as CanvasConnection[],
+    topologyConnections,
     deviceStates,
     deviceOutputs,
     isPcPoweredOff,
@@ -413,7 +413,7 @@ export function PCPanel({
   // Regenerate IoT panel content when dependencies change
   useEffect(() => {
     if (!httpAppDeviceId && (httpAppUrl === 'iot-panel' || httpAppUrl === 'http://iot-panel')) {
-      const iotPanelContent = generateIotWebPanelContent(iotDevices, language, undefined, undefined, topologyConnections as unknown as { sourceDeviceId: string; targetDeviceId: string }[]);
+      const iotPanelContent = generateIotWebPanelContent(iotDevices, language, undefined, undefined, topologyConnections);
       setTimeout(() => setHttpAppContent(iotPanelContent), 0);
     }
   }, [iotDevices, topologyConnections, language, httpAppUrl, httpAppDeviceId]);
