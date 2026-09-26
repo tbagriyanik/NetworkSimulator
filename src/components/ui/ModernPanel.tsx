@@ -119,11 +119,11 @@ export function ModernPanel({
         document.body.style.userSelect = 'none';
 
         // Implement pointer capture for smooth tracking during fast movements
-        if ('setPointerCapture' in panelRef.current && e instanceof PointerEvent) {
+        if (panelRef.current && 'setPointerCapture' in panelRef.current && e.nativeEvent instanceof PointerEvent) {
             try {
-                panelRef.current.setPointerCapture((e as PointerEvent).pointerId);
-            } catch {
-                // Ignore if not a PointerEvent
+                panelRef.current.setPointerCapture(e.nativeEvent.pointerId);
+            } catch (err: unknown) {
+                if (!(err instanceof DOMException)) throw err;
             }
         }
 
@@ -167,9 +167,9 @@ export function ModernPanel({
             // Release pointer capture
             if (panelRef.current && 'releasePointerCapture' in panelRef.current && upEvent instanceof PointerEvent) {
                 try {
-                    panelRef.current.releasePointerCapture((upEvent as PointerEvent).pointerId);
-                } catch {
-                    // Ignore if not a PointerEvent
+                    panelRef.current.releasePointerCapture(upEvent.pointerId);
+                } catch (err: unknown) {
+                    if (!(err instanceof DOMException)) throw err;
                 }
             }
 
@@ -222,11 +222,11 @@ export function ModernPanel({
         if (!panelRef.current) return;
 
         // Implement pointer capture for smooth tracking during fast movements
-        if ('setPointerCapture' in panelRef.current && e instanceof PointerEvent) {
+        if (panelRef.current && 'setPointerCapture' in panelRef.current && e.nativeEvent instanceof PointerEvent) {
             try {
-                panelRef.current.setPointerCapture((e as PointerEvent).pointerId);
-            } catch {
-                // Ignore if not a PointerEvent
+                panelRef.current.setPointerCapture(e.nativeEvent.pointerId);
+            } catch (err: unknown) {
+                if (!(err instanceof DOMException)) throw err;
             }
         }
 
@@ -267,9 +267,9 @@ export function ModernPanel({
             // Release pointer capture
             if (panelRef.current && 'releasePointerCapture' in panelRef.current && upEvent instanceof PointerEvent) {
                 try {
-                    panelRef.current.releasePointerCapture((upEvent as PointerEvent).pointerId);
-                } catch {
-                    // Ignore if not a PointerEvent
+                    panelRef.current.releasePointerCapture(upEvent.pointerId);
+                } catch (err: unknown) {
+                    if (!(err instanceof DOMException)) throw err;
                 }
             }
 

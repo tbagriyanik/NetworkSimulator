@@ -6,6 +6,7 @@ import { CLI_ERRORS } from "./core/cliErrors";
 import { getDeviceCapabilities, type DeviceCapabilities } from './capabilities';
 import { getSmartCliHint } from './core/smartCliHints';
 import type { DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
+import { safeGetItem } from '@/lib/storage/safeStorage';
 
 // Modüler komut pattern'leri
 import type { CommandPattern } from './parser/commandPatterns.types';
@@ -530,7 +531,7 @@ export function getInvalidCommandError(
   if (typeof window !== 'undefined') {
     try {
       helpLevel = useAppStore.getState().helpLevel;
-      const storedLang = localStorage.getItem('netsim_language');
+      const storedLang = safeGetItem('netsim_language');
       if (storedLang === 'en' || storedLang === 'tr') {
         language = storedLang;
       }

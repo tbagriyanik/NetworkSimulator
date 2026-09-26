@@ -1,10 +1,11 @@
-﻿'use client';
+'use client';
 
 import { useState, useRef, useEffect, useCallback, type CSSProperties } from 'react';
 import { useEnvironment } from '@/lib/store/appStore';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { CanvasConnection } from './NetworkTopology/types/networkTopology.types';
+import { safeSetItem } from '@/lib/storage/safeStorage';
 
 import { toast } from "@/hooks/use-toast";
 import { useOutputSearch } from '@/hooks/useOutputSearch';
@@ -142,11 +143,7 @@ export function PCPanel({
 
   // Save currentPath per deviceId
   useEffect(() => {
-    if (typeof localStorage !== 'undefined') {
-      try {
-        localStorage.setItem(`pc_cwd_${deviceId}`, currentPath);
-      } catch { }
-    }
+    safeSetItem(`pc_cwd_${deviceId}`, currentPath);
   }, [deviceId, currentPath]);
 
   const {
@@ -390,7 +387,7 @@ export function PCPanel({
     if (prevPoweredOffRef.current && !isPcPoweredOff) {
       setPcOutput(getInitialPcOutput(deviceFromTopology, deviceId));
       setCurrentPath('C:\\');
-      try { localStorage.setItem(`pc_cwd_${deviceId}`, 'C:\\'); } catch { }
+      safeSetItem(`pc_cwd_${deviceId}`, 'C:\\');
     }
     prevPoweredOffRef.current = isPcPoweredOff;
   }, [isPcPoweredOff, deviceFromTopology, deviceId]);
@@ -714,7 +711,7 @@ export function PCPanel({
     deviceFromTopology,
     isCmdInputDisabled,
     isConsoleInputDisabled,
-    connectionErrorText,
+    connectionErrorText: connectionErrorText || '',
     isConsoleConnected,
     connectedDeviceId,
     setConnectedDeviceId,

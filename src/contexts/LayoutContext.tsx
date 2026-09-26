@@ -1,11 +1,15 @@
 'use client';
 
-import { logger } from '@/lib/logger';
-import { secureStorage } from '@/lib/storage/secureStorage';
+import { safeGetJSON, safeSetJSON } from '@/lib/storage/safeStorage';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Breakpoint, getBreakpointFromWidth } from '@/lib/design-tokens';
 import { LayoutConfig, DEFAULT_LAYOUT_CONFIG } from '@/lib/layout/responsive';
+
+interface LayoutPreferences {
+    sidebarCollapsed?: boolean;
+    panelLayout?: 'overlay' | 'docked' | 'stacked';
+}
 
 interface LayoutContextType {
     breakpoint: Breakpoint;
@@ -47,45 +51,26 @@ export function LayoutProvider({ children }: { children: ReactNode }) {
         }
     }, [breakpoint]);
 
-    // Load preferences from localStorage
+    // Load preferences from safeStorage
     useEffect(() => {
-        if (typeof window !== 'undefined' && window.localStorage) {
-            const saved = localStorage.getItem('layoutPreferences');
-            if (saved) {
-                try {
-                    const prefs = JSON.parse(saved);
-                    if (prefs.sidebarCollapsed !== undefined) setTimeout(() => setSidebarCollapsed(prefs.sidebarCollapsed), 0);
-                } catch (e) {
-                    logger.error('Failed to restore layout preferences:', e);
-                }
-            }
+        const prefs = safeGetJSON<LayoutPreferences | null>('layoutPreferences', null);
+        if (prefs && prefs.sidebarCollapsed !== undefined) {
+            setTimeout(() => setSidebarCollapsed(prefs.sidebarCollapsed ?? false), 0);
         }
     }, []);
 
     const saveLayoutPreferences = () => {
-        if (typeof window !== 'undefined') {
-            secureStorage.setItem(
-                'layoutPreferences',
-                JSON.stringify({
-                    sidebarCollapsed,
-                    panelLayout,
-                })
-            );
-        }
+        safeSetJSON('layoutPreferences', {
+            sidebarCollapsed,
+            panelLayout,
+        });
     };
 
     const restoreLayoutPreferences = () => {
-        if (typeof window !== 'undefined' && window.localStorage) {
-            const saved = localStorage.getItem('layoutPreferences');
-            if (saved) {
-                try {
-                    const prefs = JSON.parse(saved);
-                    if (prefs.sidebarCollapsed !== undefined) setSidebarCollapsed(prefs.sidebarCollapsed);
-                    if (prefs.panelLayout !== undefined) setPanelLayout(prefs.panelLayout);
-                } catch (e) {
-                    logger.error('Failed to restore layout preferences:', e);
-                }
-            }
+        const prefs = safeGetJSON<LayoutPreferences | null>('layoutPreferences', null);
+        if (prefs) {
+            if (prefs.sidebarCollapsed !== undefined) setSidebarCollapsed(prefs.sidebarCollapsed);
+            if (prefs.panelLayout !== undefined) setPanelLayout(prefs.panelLayout);
         }
     };
 

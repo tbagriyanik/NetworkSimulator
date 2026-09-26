@@ -10,12 +10,55 @@ import { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network
 import { useLanguage } from '@/contexts/LanguageContext';
 
 import { logger } from '@/lib/logger';
+import { safeGetItem } from '@/lib/storage/safeStorage';
 
 import { runFhrpElection } from '@/lib/network/fhrp';
 import { isSwitchDeviceType, resolveSwitchBootType } from './deviceManager.rules';
 import { useDeviceManagerHelpers } from './useDeviceManagerHelpers';
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+function getDefaultDeviceName(deviceType: DeviceType): string {
+  switch (deviceType) {
+    case 'router': return 'Router';
+    case 'firewall': return 'asa';
+    case 'iot': return 'IoT';
+    case 'wlc': return 'WLC';
+    case 'hub': return 'Hub';
+    case 'cloud': return 'Cloud';
+    case 'printer': return 'Printer';
+    case 'mobile': return 'Mobile';
+    case 'pc': return 'PC';
+    default: return 'Switch';
+  }
+}
+
+function getDefaultDeviceModel(deviceType: DeviceType): SwitchModel {
+  switch (deviceType) {
+    case 'router':
+    case 'switchL3':
+      return 'NS-L3-24PS';
+    case 'firewall':
+      return 'NS-FW-5506';
+    case 'wlc':
+      return 'NS-WLC-2504';
+    default:
+      return 'NS-L2-24TT-L';
+  }
+}
+
+function resolvePowerOnModel(
+  existingModel?: string,
+  incomingModel?: string,
+  flags?: { isWLC?: boolean; isRouterOrL3?: boolean; isFirewall?: boolean }
+): SwitchModel {
+  if (existingModel) return existingModel as SwitchModel;
+  if (incomingModel) return incomingModel as SwitchModel;
+  if (flags?.isWLC) return 'NS-WLC-2504';
+  if (flags?.isRouterOrL3) return 'NS-L3-24PS';
+  if (flags?.isFirewall) return 'NS-FW-5506';
+  return 'NS-L2-24TT-L';
+}
 
 interface PCOutputLine {
   id: string;
@@ -44,10 +87,10 @@ export function useDeviceManager() {
   const [pcOutputs, setPcOutputs] = useState<Map<string, PCOutputLine[]>>(new Map());
   const [pcHistories, setPcHistories] = useState<Map<string, string[]>>(new Map());
 
-  // Handle initial hydration from localStorage safely to avoid SSR mismatches
+  // Handle initial hydration safely to avoid SSR mismatches
   useEffect(() => {
     try {
-      const savedData = localStorage.getItem('netsim_autosave');
+      const savedData = safeGetItem('netsim_autosave');
       if (savedData) {
         const projectData = JSON.parse(savedData);
 
@@ -114,7 +157,11 @@ export function useDeviceManager() {
         const isFirewall = deviceType === 'firewall' || deviceId.includes('firewall') || deviceId.includes('fw');
 
         // Get the switch model from existing state or default. L3 switches use the NS-L3-24PS model.
-        const switchModel = existingState?.switchModel || incomingModel || (isWLC ? 'NS-WLC-2504' : isRouter || isSwitchL3 ? 'NS-L3-24PS' : isFirewall ? 'NS-FW-5506' : 'NS-L2-24TT-L');
+        const switchModel = resolvePowerOnModel(existingState?.switchModel, incomingModel, {
+          isWLC,
+          isRouterOrL3: isRouter || isSwitchL3,
+          isFirewall,
+        });
         const baseState = isRouter
           ? createInitialRouterState(existingState?.macAddress)
           : isWLC
@@ -125,7 +172,7 @@ export function useDeviceManager() {
 
         // Get existing state to preserve saved configuration and identity
         const startupConfig = existingState?.startupConfig;
-        const defaultHostname = isRouter ? 'Router' : isWLC ? 'WLC' : isFirewall ? 'asa' : 'Switch';
+        const defaultHostname = getDefaultDeviceName(deviceType || (isRouter ? 'router' : isWLC ? 'wlc' : isFirewall ? 'firewall' : 'switchL2'));
         const hostname = startupConfig ? (existingState?.hostname || defaultHostname) : (existingState?.hostname || defaultHostname);
 
         const baseIdentityState: SwitchState = {
@@ -205,11 +252,11 @@ export function useDeviceManager() {
     }
 
     let deviceState = deviceStates.get(deviceId);
-    const defaultName = deviceType === 'router' ? 'Router' : deviceType === 'firewall' ? 'asa' : deviceType === 'iot' ? 'IoT' : deviceType === 'wlc' ? 'WLC' : deviceType === 'hub' ? 'Hub' : deviceType === 'cloud' ? 'Cloud' : deviceType === 'printer' ? 'Printer' : deviceType === 'mobile' ? 'Mobile' : 'Switch';
+    const defaultName = getDefaultDeviceName(deviceType);
 
     if (!deviceState) {
       // Use the provided switchModel, default to L2 for switches, L3 for routers, NS-FW-5506 for firewall, or NS-WLC-2504 for WLC
-      const model = switchModel || (deviceType === 'router' ? 'NS-L3-24PS' : deviceType === 'switchL3' ? 'NS-L3-24PS' : deviceType === 'firewall' ? 'NS-FW-5506' : deviceType === 'wlc' ? 'NS-WLC-2504' : 'NS-L2-24TT-L');
+      const model = switchModel || getDefaultDeviceModel(deviceType);
 
       let newState: SwitchState;
       if (deviceType === 'firewall') {
@@ -311,7 +358,7 @@ export function useDeviceManager() {
       }
 
       if (!deviceState.switchModel) {
-        const fallbackModel = switchModel || (deviceType === 'router' ? 'NS-L3-24PS' : deviceType === 'switchL3' ? 'NS-L3-24PS' : deviceType === 'wlc' ? 'NS-WLC-2504' : 'NS-L2-24TT-L');
+        const fallbackModel = switchModel || getDefaultDeviceModel(deviceType);
         const updatedState = ensureSwitchModelConsistency(deviceState, fallbackModel, initialMac, deviceType === 'router');
         setTimeout(() => {
           if (isMounted.current) {

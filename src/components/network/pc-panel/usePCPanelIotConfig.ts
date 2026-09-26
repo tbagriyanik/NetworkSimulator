@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import { toast } from '@/hooks/use-toast';
 
@@ -6,8 +6,9 @@ export type IotSensorType = 'temperature' | 'sound' | 'motion' | 'humidity' | 'l
 export type IotKind = 'cooler' | 'lamp' | 'heater' | 'sensor';
 
 interface UsePCPanelIotConfigTexts {
-  iotSaved: string;
-  iotSavedDescription: string;
+  iotSaved?: string;
+  iotSavedDescription?: string;
+  [key: string]: string | undefined;
 }
 
 interface UsePCPanelIotConfigOptions {

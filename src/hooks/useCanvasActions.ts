@@ -5,6 +5,7 @@ import { getDeviceWidth, getDeviceHeight } from '@/components/network/NetworkTop
 import { generateSwitchPorts, generateL3SwitchPorts, generateRouterPorts, generateWLCPorts, generateFirewallPorts, generateHubPorts } from '../components/network/networkTopology.portGenerators';
 import { generateUniqueMacAddress, trCaseFold } from '@/lib/utils';
 import type { SwitchState } from '@/lib/network/types';
+import { safeGetItem } from '@/lib/storage/safeStorage';
 
 function getTopologyGroup(type: DeviceType): string {
   if (type === 'pc' || type === 'iot') return 'PC';
@@ -193,7 +194,7 @@ export interface UseCanvasActionsProps {
   setIsDrawingConnection: React.Dispatch<React.SetStateAction<boolean>>;
   language: string;
 
-  t: (key: string) => string;
+  t?: Record<string, string> | ((key: string) => string);
 }
 
 export function useCanvasActions({
@@ -484,7 +485,7 @@ export function useCanvasActions({
     saveToHistory();
     const isTr = language === 'tr';
 
-    const lastProjectDesc = typeof window !== 'undefined' ? localStorage.getItem('lastProjectDescription') : null;
+    const lastProjectDesc = safeGetItem('lastProjectDescription');
 
     let summaryText = isTr ? `📋 TOPOLOJİ VE SENARYO REHBERİ\n` : `📋 TOPOLOGY & SCENARIO GUIDE\n`;
     summaryText += '------------------------------------------------\n';

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 
@@ -110,6 +110,7 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
       data-device-id={device.id}
       role="button"
       tabIndex={0}
+      aria-label={`${device.name || device.type} (${device.type})`}
       style={{ transition: isDragging ? 'none' : 'transform 0.12s ease-out' }}
       onMouseDown={(e) => handleDeviceMouseDown(e, device.id)}
       onPointerDown={(e) => handleDevicePointerDown(e, device.id)}

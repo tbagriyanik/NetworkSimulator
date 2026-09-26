@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { safeGetItem, safeSetItem } from '@/lib/storage/safeStorage';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LiveDeviceList } from '@/components/network/LiveDeviceList';
@@ -28,19 +29,12 @@ export function RefreshReportPanel({
   isExamActive = false,
 }: RefreshReportPanelProps) {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    try {
-      const saved = localStorage.getItem('refresh-report-collapsed');
-      return saved === 'true';
-    } catch {
-      return false;
-    }
+    const saved = safeGetItem('refresh-report-collapsed');
+    return saved === 'true';
   });
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('refresh-report-collapsed', String(isCollapsed));
-    }
+    safeSetItem('refresh-report-collapsed', String(isCollapsed));
   }, [isCollapsed]);
 
   if (!refreshNetworkReport?.show) return null;

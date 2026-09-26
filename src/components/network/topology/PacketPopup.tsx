@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { X } from 'lucide-react';
 import type { HopPacketInfo } from '../PingPacketInfoPanel';
+import { safeGetJSON, safeSetJSON } from '@/lib/storage/safeStorage';
 
 interface PacketPopupProps {
   hopIndex: number;
@@ -16,20 +17,15 @@ interface PacketPopupProps {
 export function PacketPopup({ hopIndex, info, language, onClose, isDark, isFocused = false }: PacketPopupProps) {
   const HEADER_SAFE_TOP = 72;
   const [pos, setPos] = useState<{ x: number; y: number }>(() => {
-    try {
-      const saved = localStorage.getItem('draggable_position_packet-popup');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (typeof parsed.x === 'number' && typeof parsed.y === 'number') {
-          const vw = window.innerWidth;
-          const vh = window.innerHeight;
-          return {
-            x: Math.max(0, Math.min(parsed.x, vw - 320)),
-            y: Math.max(HEADER_SAFE_TOP, Math.min(parsed.y, vh - 200)),
-          };
-        }
-      }
-    } catch { }
+    const saved = safeGetJSON<{ x: number; y: number } | null>('draggable_position_packet-popup', null);
+    if (saved && typeof saved.x === 'number' && typeof saved.y === 'number') {
+      const vw = typeof window !== 'undefined' ? window.innerWidth : 1200;
+      const vh = typeof window !== 'undefined' ? window.innerHeight : 800;
+      return {
+        x: Math.max(0, Math.min(saved.x, vw - 320)),
+        y: Math.max(HEADER_SAFE_TOP, Math.min(saved.y, vh - 200)),
+      };
+    }
     return typeof window !== 'undefined'
       ? { x: Math.max(16, (window.innerWidth - 320) / 2), y: Math.max(HEADER_SAFE_TOP, (window.innerHeight - 340) / 2) }
       : { x: 100, y: 100 };
@@ -116,7 +112,7 @@ export function PacketPopup({ hopIndex, info, language, onClose, isDark, isFocus
   }, [dragging]);
 
   useEffect(() => {
-    try { localStorage.setItem('draggable_position_packet-popup', JSON.stringify(pos)); } catch { }
+    safeSetJSON('draggable_position_packet-popup', pos);
   }, [pos]);
 
   useEffect(() => {

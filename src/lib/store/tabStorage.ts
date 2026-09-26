@@ -1,4 +1,12 @@
 import { createJSONStorage } from 'zustand/middleware';
+import {
+  safeGetItem,
+  safeSetItem,
+  safeRemoveItem,
+  safeGetSessionItem,
+  safeSetSessionItem,
+  safeGetStorageKeys,
+} from '@/lib/storage/safeStorage';
 
 const TAB_STORAGE_PREFIX = 'netsim-tab-';
 const TAB_ID_KEY = 'netsim-current-tab-id';
@@ -6,10 +14,10 @@ const TAB_ID_KEY = 'netsim-current-tab-id';
 export function getTabId(): string {
   if (typeof window === 'undefined') return 'server';
   
-  let tabId = sessionStorage.getItem(TAB_ID_KEY);
+  let tabId = safeGetSessionItem(TAB_ID_KEY);
   if (!tabId) {
     tabId = `tab-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    sessionStorage.setItem(TAB_ID_KEY, tabId);
+    safeSetSessionItem(TAB_ID_KEY, tabId);
   }
   return tabId;
 }
@@ -33,52 +41,36 @@ export function createTabSpecificStorage() {
     return {
       getItem: (name: string) => {
         const tabKey = getTabSpecificKey(name);
-        return localStorage.getItem(tabKey);
+        return safeGetItem(tabKey);
       },
       setItem: (name: string, value: string) => {
         const tabKey = getTabSpecificKey(name);
-        localStorage.setItem(tabKey, value);
+        safeSetItem(tabKey, value);
       },
       removeItem: (name: string) => {
         const tabKey = getTabSpecificKey(name);
-        localStorage.removeItem(tabKey);
+        safeRemoveItem(tabKey);
       },
     };
   });
 }
 
-
 export function clearTabData(tabId?: string): void {
-  if (typeof window === 'undefined') return;
-  
   const targetTabId = tabId || getTabId();
   const prefix = `${TAB_STORAGE_PREFIX}${targetTabId}-`;
-  
-  const keysToRemove: string[] = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key && key.startsWith(prefix)) {
-      keysToRemove.push(key);
-    }
-  }
-  
-  keysToRemove.forEach(key => localStorage.removeItem(key));
+  const keysToRemove = safeGetStorageKeys(prefix);
+  keysToRemove.forEach(key => safeRemoveItem(key));
 }
 
 export function getActiveTabCount(): number {
-  if (typeof window === 'undefined') return 1;
-  
   const tabIds = new Set<string>();
-  const prefix = TAB_STORAGE_PREFIX;
+  const keys = safeGetStorageKeys(TAB_STORAGE_PREFIX);
   
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key && key.startsWith(prefix)) {
-      // Extract tab ID from key format: netsim-tab-{tabId}-{baseKey}
-      const match = key.match(/^netsim-tab-([^-]+)-/);
-      if (match) {
-        tabIds.add(match[1]);
-      }
+  for (const key of keys) {
+    // Extract tab ID from key format: netsim-tab-{tabId}-{baseKey}
+    const match = key.match(/^netsim-tab-([^-]+)-/);
+    if (match) {
+      tabIds.add(match[1]);
     }
   }
   

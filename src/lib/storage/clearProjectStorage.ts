@@ -27,29 +27,17 @@ const PROJECT_STORAGE_PREFIXES = [
   'netsim_window_',
 ];
 
+import { safeRemoveItem, safeGetStorageKeys } from './safeStorage';
+
 export function clearProjectLocalStorage(): void {
-  if (typeof window === 'undefined') return;
-
   for (const key of PROJECT_STORAGE_KEYS) {
-    try {
-      localStorage.removeItem(key);
-    } catch {
-      /* storage unavailable — nothing to do */
-    }
+    safeRemoveItem(key);
   }
 
-  const prefixed: string[] = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key && PROJECT_STORAGE_PREFIXES.some((prefix) => key.startsWith(prefix))) {
-      prefixed.push(key);
-    }
-  }
-  for (const key of prefixed) {
-    try {
-      localStorage.removeItem(key);
-    } catch {
-      /* storage unavailable — nothing to do */
+  for (const prefix of PROJECT_STORAGE_PREFIXES) {
+    const prefixedKeys = safeGetStorageKeys(prefix);
+    for (const key of prefixedKeys) {
+      safeRemoveItem(key);
     }
   }
 }

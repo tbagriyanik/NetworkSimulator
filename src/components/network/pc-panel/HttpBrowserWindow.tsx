@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo, useEffect, type MutableRefObject } from 'react';
+import React, { useState, useMemo, useEffect, type MutableRefObject } from 'react';
 import { Printer, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -395,7 +395,7 @@ export function HttpBrowserWindow({
           >
             {suggestions.slice(0, 10).map((suggestion, index) => (
               <button
-                key={index}
+                key={suggestion}
                 type="button"
                 onClick={() => {
                   onUrlChange(suggestion);

@@ -1,4 +1,4 @@
-﻿import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { SwitchState, CableInfo } from '@/lib/network/types';
 import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { TerminalOutput } from '@/components/network/Terminal';
@@ -482,7 +482,7 @@ export function useHistory(initialState: ProjectState) {
       estimatedBytes: estimateStateBytes(newState),
       description: 'Başlangıç Durumu'
     };
-    localStorage.removeItem('netsim_history');
+    secureStorage.removeItem('netsim_history');
     setState({
       items: [resetEntry],
       index: 0

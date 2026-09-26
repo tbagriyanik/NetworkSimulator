@@ -2,6 +2,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { safeGetItem, safeSetItem } from '@/lib/storage/safeStorage';
 // Import translation JSON files
 import en from '@/locales/en.json';
 import tr from '@/locales/tr.json';
@@ -9,7 +10,7 @@ import tr from '@/locales/tr.json';
 export type Language = 'tr' | 'en';
 
 // Translations type representing the translation key-value map used throughout the UI.
-export type Translations = any;
+export type Translations = typeof en & Record<string, string>;
 
 interface LanguageContextType {
   language: Language;
@@ -21,7 +22,8 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 /** Detects the browser language and maps it to a supported language. */
 function getSystemLanguage(): Language {
-  const browserLang = navigator.language.toLowerCase();
+  if (typeof navigator === 'undefined') return 'en';
+  const browserLang = navigator.language?.toLowerCase() || '';
   return browserLang.startsWith('tr') ? 'tr' : 'en';
 }
 
@@ -31,24 +33,24 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   // Initialise language from storage or system on mount
   useEffect(() => {
-    const saved = localStorage.getItem('language') as Language | null;
+    const saved = safeGetItem('language') as Language | null;
     if (saved && (saved === 'tr' || saved === 'en')) {
       setLanguage(saved);
     } else {
       const systemLang = getSystemLanguage();
       setLanguage(systemLang);
-      localStorage.setItem('language', systemLang);
+      safeSetItem('language', systemLang);
     }
     setMounted(true);
   }, []);
 
   // Determine current translations based on language
-  const translationsMap: Record<Language, Translations> = { en, tr };
+  const translationsMap: Record<Language, Translations> = { en: en as Translations, tr: tr as unknown as Translations };
   const t: Translations = translationsMap[language];
 
   const handleSetLanguage = (lang: Language) => {
     setLanguage(lang);
-    localStorage.setItem('language', lang);
+    safeSetItem('language', lang);
   };
 
   if (!mounted) return <></>;

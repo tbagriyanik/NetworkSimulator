@@ -1,4 +1,4 @@
-﻿import type React from 'react';
+import type React from 'react';
 import { useCallback, useEffect, useMemo, useState, type RefObject } from 'react';
 import type { SwitchState } from '@/lib/network/types';
 import type { TerminalOutput } from '../Terminal';
@@ -8,9 +8,10 @@ import { getConsoleDevice } from './pcTerminal.utils';
 import { toast } from '@/hooks/use-toast';
 
 interface UsePCPanelConsoleTexts {
-  consolePasswordErrorTitle: string;
-  consolePasswordErrorDescription: string;
-  pcConnectionError: string;
+  consolePasswordErrorTitle?: string;
+  consolePasswordErrorDescription?: string;
+  pcConnectionError?: string;
+  [key: string]: string | undefined;
 }
 
 interface UsePCPanelConsoleOptions {
@@ -156,7 +157,7 @@ export function usePCPanelConsole({
 
   const connectionErrorText = useMemo(() => {
     if (!isPcPoweredOff && !isConsoleTargetPoweredOff) return '';
-    return t.pcConnectionError;
+    return t.pcConnectionError || '';
   }, [isPcPoweredOff, isConsoleTargetPoweredOff, t]);
 
   const handleConnect = async () => {

@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import { SwitchState, Port } from '@/lib/network/types';
 import { getWirelessSignalStrength } from '@/lib/network/connectivity';
@@ -119,7 +119,7 @@ export const DeviceWifiStatus: React.FC<DeviceWifiStatusProps> = React.memo(({
         <svg x="-2" y="1" width="22" height="14" viewBox="0 0 22 14" className="pointer-events-none">
           {wifiBarRects.map((bar, index) => (
             <rect
-              key={index}
+              key={bar.x}
               x={bar.x}
               y={bar.y}
               width={bar.width}

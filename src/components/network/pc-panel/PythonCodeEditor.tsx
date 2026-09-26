@@ -13,6 +13,7 @@ interface PythonCodeEditorProps {
   placeholder?: string;
   fontSize?: number;
   wordWrap?: boolean;
+  textareaRef?: React.RefObject<HTMLTextAreaElement | null>;
 }
 
 const CODE_WORDS = [
@@ -71,8 +72,9 @@ function highlightCode(code: string): string {
   return result;
 }
 
-export function PythonCodeEditor({ value, onChange, onKeyDown, isDark, placeholder, fontSize = 14, wordWrap = true }: PythonCodeEditorProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+export function PythonCodeEditor({ value, onChange, onKeyDown, isDark, placeholder, fontSize = 14, wordWrap = true, textareaRef: externalTextareaRef }: PythonCodeEditorProps) {
+  const internalTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = externalTextareaRef || internalTextareaRef;
   const preRef = useRef<HTMLPreElement>(null);
   const editorRef = useRef<HTMLDivElement>(null);
   const gutterRef = useRef<HTMLDivElement>(null);

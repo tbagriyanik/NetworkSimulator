@@ -1,9 +1,10 @@
-﻿import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import type { SwitchState, CableInfo } from '@/lib/network/types';
 import type { CanvasDevice, CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { TerminalOutput } from '@/components/network/Terminal';
 import type { TabType } from '@/app/page.types';
 import { safeStringify } from '@/lib/network/serialization';
+import { safeSetItem } from '@/lib/storage/safeStorage';
 
 export interface UseProjectAutosaveParams {
   isAppLoading: boolean;
@@ -87,10 +88,10 @@ export function useProjectAutosave({
         cableInfo: topologyDevices.length > 0 ? cableInfo : { connected: false, cableType: 'straight', sourceDevice: 'pc', targetDevice: 'switchL2' },
         activeDeviceId: topologyDevices.find(d => d.id === activeDeviceId)?.id || '',
         activeDeviceType,
-        activeTab
+        activeTab,
       };
 
-      try { localStorage.setItem('netsim_autosave', safeStringify(projectData)); } catch { /* storage unavailable */ }
+      safeSetItem('netsim_autosave', safeStringify(projectData));
       autosaveTimerRef.current = null;
       setLastSaveTime(new Date().toLocaleTimeString());
       setHasUnsavedChanges(false);

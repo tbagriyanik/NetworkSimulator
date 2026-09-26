@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { isDesktopApp } from '@/lib/utils/desktopDetection';
 
 interface CertificateRecord {
   verifyCode: string;
@@ -21,7 +22,7 @@ function VerifyContent() {
   const initialCode = rawCode.toUpperCase().startsWith('CERT:') ? rawCode.toUpperCase().replace('CERT:', '') : rawCode;
 
   const [inputCode, setInputCode] = useState(initialCode);
-  const [status, setStatus] = useState<'idle' | 'loading' | 'found' | 'notfound' | 'error'>('idle');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'found' | 'notfound' | 'error' | 'desktop'>('idle');
   const [record, setRecord] = useState<CertificateRecord | null>(null);
   const [lang, setLang] = useState<'tr' | 'en'>('tr');
 
@@ -35,6 +36,7 @@ function VerifyContent() {
       found: 'Sertifika Geçerli',
       notfound: 'Sertifika Bulunamadı',
       error: 'Bir hata oluştu, lütfen tekrar deneyin.',
+      desktop: 'Masaüstü uygulamasında sertifika kontrolü için internet ve web sürümü gereklidir.',
       student: 'Öğrenci',
       module: 'Modül',
       score: 'Puan',
@@ -53,6 +55,7 @@ function VerifyContent() {
       found: 'Certificate Valid',
       notfound: 'Certificate Not Found',
       error: 'An error occurred, please try again.',
+      desktop: 'Certificate verification requires the web version and an active internet connection.',
       student: 'Student',
       module: 'Module',
       score: 'Score',
@@ -71,6 +74,11 @@ function VerifyContent() {
       trimmed = trimmed.replace('CERT:', '');
     }
     if (!trimmed) return;
+    if (isDesktopApp()) {
+      setStatus('desktop');
+      setRecord(null);
+      return;
+    }
     setStatus('loading');
     setRecord(null);
     try {
@@ -226,6 +234,18 @@ function VerifyContent() {
               <div>
                 <h2 className="text-red-300 font-bold">{tx.notfound}</h2>
                 <p className="text-white/40 text-sm mt-1">{tx.invalid}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {status === 'desktop' && (
+          <div className="mt-6 bg-sky-500/10 border border-sky-400/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">💻</span>
+              <div>
+                <h2 className="text-sky-300 font-bold">{tx.title}</h2>
+                <p className="text-white/80 text-sm mt-1">{tx.desktop}</p>
               </div>
             </div>
           </div>

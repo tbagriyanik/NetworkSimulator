@@ -1,7 +1,6 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
-
-import { secureStorage } from '@/lib/storage/secureStorage';
+import { safeGetJSON, safeSetJSON } from '@/lib/storage/safeStorage';
 
 export interface UsePCPanelBrowserStateParams {
   topologyDevices: CanvasDevice[];
@@ -46,27 +45,18 @@ export function usePCPanelBrowserState({
 
   const [browserWindow, setBrowserWindow] = useState(() => {
     const defaultValue = { x: 40, y: 140, width: 960, height: 400 };
-    if (typeof localStorage !== 'undefined') {
-      const saved = secureStorage.getItem('pc-browser-window-state');
-      if (!saved) return defaultValue;
-      try {
-        const parsed = JSON.parse(saved);
-        return {
-          x: typeof parsed.x === 'number' ? parsed.x : defaultValue.x,
-          y: typeof parsed.y === 'number' ? parsed.y : defaultValue.y,
-          width: typeof parsed.width === 'number' ? parsed.width : defaultValue.width,
-          height: typeof parsed.height === 'number' ? parsed.height : defaultValue.height,
-        };
-      } catch {
-        secureStorage.removeItem('pc-browser-window-state');
-        return defaultValue;
-      }
-    }
-    return defaultValue;
+    const saved = safeGetJSON<typeof defaultValue | null>('pc-browser-window-state', null);
+    if (!saved) return defaultValue;
+    return {
+      x: typeof saved.x === 'number' ? saved.x : defaultValue.x,
+      y: typeof saved.y === 'number' ? saved.y : defaultValue.y,
+      width: typeof saved.width === 'number' ? saved.width : defaultValue.width,
+      height: typeof saved.height === 'number' ? saved.height : defaultValue.height,
+    };
   });
 
   useEffect(() => {
-    secureStorage.setItem('pc-browser-window-state', JSON.stringify(browserWindow));
+    safeSetJSON('pc-browser-window-state', browserWindow);
   }, [browserWindow]);
 
   useEffect(() => {

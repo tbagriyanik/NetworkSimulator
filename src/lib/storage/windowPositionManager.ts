@@ -1,5 +1,6 @@
 import { logger } from '@/lib/logger';
 import { secureStorage } from '@/lib/storage/secureStorage';
+import { safeGetItem, safeGetStorageKeys } from '@/lib/storage/safeStorage';
 
 // Window Position Manager
 // Preserves and restores modal/dialog window positions during network refresh
@@ -34,8 +35,6 @@ const WINDOW_POSITIONS_KEY = 'netsim_window_positions_backup';
  */
 export function saveWindowPositions(): void {
     try {
-        if (typeof window === 'undefined') return;
-
         const layouts: AllWindowLayouts = {};
 
         // Save modal positions from useModalDragResize
@@ -44,8 +43,8 @@ export function saveWindowPositions(): void {
         const modalNames = ['tasks', 'cli', 'pc'] as const;
 
         modalNames.forEach((name, index) => {
-            const posData = localStorage.getItem(modalKeys[index]);
-            const sizeData = localStorage.getItem(sizeKeys[index]);
+            const posData = safeGetItem(modalKeys[index]);
+            const sizeData = safeGetItem(sizeKeys[index]);
 
             if (posData && sizeData) {
                 try {
@@ -60,21 +59,19 @@ export function saveWindowPositions(): void {
         });
 
         // Save draggable dialog positions
-        const allKeys = Object.keys(localStorage);
+        const allKeys = safeGetStorageKeys('draggable_position_');
         allKeys.forEach((key) => {
-            if (key.startsWith('draggable_position_')) {
-                const dialogId = key.replace('draggable_position_', '');
-                try {
-                    const posData = localStorage.getItem(key);
-                    if (posData) {
-                        layouts[`draggable_${dialogId}`] = {
-                            position: JSON.parse(posData),
-                            size: { width: 0, height: 0 }, // Draggable dialogs don't track size
-                        };
-                    }
-                } catch (e) {
-                    logger.warn(`Failed to parse draggable dialog ${dialogId} position:`, e);
+            const dialogId = key.replace('draggable_position_', '');
+            try {
+                const posData = safeGetItem(key);
+                if (posData) {
+                    layouts[`draggable_${dialogId}`] = {
+                        position: JSON.parse(posData),
+                        size: { width: 0, height: 0 }, // Draggable dialogs don't track size
+                    };
                 }
+            } catch (e) {
+                logger.warn(`Failed to parse draggable dialog ${dialogId} position:`, e);
             }
         });
 

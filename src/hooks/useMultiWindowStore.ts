@@ -1,6 +1,7 @@
 'use client';
 
 import { create } from 'zustand';
+import { safeGetJSON, safeSetJSON } from '@/lib/storage/safeStorage';
 
 export interface DeviceWindowItem {
   id: string; // deviceId e.g. "pc-1", "router-1", "sw-1"
@@ -47,23 +48,13 @@ const MULTI_WINDOW_STORAGE_KEY = 'netsim_multi_device_windows';
 type PersistedWindowState = Pick<MultiWindowStoreState, 'openWindows' | 'windowPositions' | 'windowSizes'>;
 
 const readPersistedWindowState = (): PersistedWindowState => {
-  if (typeof window === 'undefined') {
-    return { openWindows: [], windowPositions: {}, windowSizes: {} };
-  }
-
-  try {
-    const stored = localStorage.getItem(MULTI_WINDOW_STORAGE_KEY);
-    if (!stored) return { openWindows: [], windowPositions: {}, windowSizes: {} };
-
-    const parsed = JSON.parse(stored) as Partial<PersistedWindowState>;
-    return {
-      openWindows: Array.isArray(parsed.openWindows) ? parsed.openWindows : [],
-      windowPositions: parsed.windowPositions && typeof parsed.windowPositions === 'object' ? parsed.windowPositions : {},
-      windowSizes: parsed.windowSizes && typeof parsed.windowSizes === 'object' ? parsed.windowSizes : {},
-    };
-  } catch {
-    return { openWindows: [], windowPositions: {}, windowSizes: {} };
-  }
+  const fallback: PersistedWindowState = { openWindows: [], windowPositions: {}, windowSizes: {} };
+  const parsed = safeGetJSON<Partial<PersistedWindowState>>(MULTI_WINDOW_STORAGE_KEY, fallback);
+  return {
+    openWindows: Array.isArray(parsed.openWindows) ? parsed.openWindows : [],
+    windowPositions: parsed.windowPositions && typeof parsed.windowPositions === 'object' ? parsed.windowPositions : {},
+    windowSizes: parsed.windowSizes && typeof parsed.windowSizes === 'object' ? parsed.windowSizes : {},
+  };
 };
 
 const initialWindowState = readPersistedWindowState();
@@ -266,15 +257,11 @@ export const useMultiWindowStore = create<MultiWindowStoreState>((set, get) => (
 
 if (typeof window !== 'undefined') {
   useMultiWindowStore.subscribe((state) => {
-    try {
-      const persistedState: PersistedWindowState = {
-        openWindows: state.openWindows,
-        windowPositions: state.windowPositions,
-        windowSizes: state.windowSizes,
-      };
-      localStorage.setItem(MULTI_WINDOW_STORAGE_KEY, JSON.stringify(persistedState));
-    } catch {
-      // Storage may be unavailable in private or restricted browsing contexts.
-    }
+    const persistedState: PersistedWindowState = {
+      openWindows: state.openWindows,
+      windowPositions: state.windowPositions,
+      windowSizes: state.windowSizes,
+    };
+    safeSetJSON(MULTI_WINDOW_STORAGE_KEY, persistedState);
   });
 }

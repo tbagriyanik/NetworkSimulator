@@ -1,4 +1,4 @@
-﻿import type { CanvasDevice, CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
+import type { CanvasDevice, CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { deterministicIdWithPrefix } from '@/lib/network/randomServices';
 
@@ -39,28 +39,15 @@ export function createCheckpoint(
   };
 }
 
+import { safeGetJSON, safeSetJSON } from '@/lib/storage/safeStorage';
+
 export function saveCheckpointsToStorage(checkpoints: TopologyCheckpoint[]): boolean {
-  if (typeof window === 'undefined' || !window.localStorage) return false;
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(checkpoints));
-    return true;
-  } catch (err) {
-    console.warn('Failed to persist checkpoints to storage:', err);
-    return false;
-  }
+  return safeSetJSON(STORAGE_KEY, checkpoints);
 }
 
 export function loadCheckpointsFromStorage(): TopologyCheckpoint[] {
-  if (typeof window === 'undefined' || !window.localStorage) return [];
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (err) {
-    console.warn('Failed to load checkpoints from storage:', err);
-    return [];
-  }
+  const parsed = safeGetJSON<TopologyCheckpoint[]>(STORAGE_KEY, []);
+  return Array.isArray(parsed) ? parsed : [];
 }
 
 export function validateTopologyCheckpoint(data: unknown): { valid: boolean; error?: string } {

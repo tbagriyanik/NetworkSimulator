@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import { SwitchState } from '@/lib/network/types';
@@ -486,8 +486,8 @@ function RefreshDeviceListToast({
                 <div className="p-2 space-y-1.5 bg-white/50 dark:bg-secondary-900/30">
                   {servicesList.length > 0 ? (
                     <div className="space-y-1">
-                      {servicesList.map((svc, i) => (
-                        <div key={i} className="flex items-center justify-between p-1.5 rounded bg-secondary-100/60 dark:bg-secondary-800/60 text-[11px]">
+                      {servicesList.map((svc) => (
+                        <div key={svc.name} className="flex items-center justify-between p-1.5 rounded bg-secondary-100/60 dark:bg-secondary-800/60 text-[11px]">
                           <div className="flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-success-500 animate-pulse" />
                             <span className="font-bold text-secondary-800 dark:text-secondary-200">{svc.name}</span>
@@ -565,9 +565,9 @@ function RefreshDeviceListToast({
                     <div className="space-y-0.5">
                       <span className="text-[10px] font-semibold opacity-60 uppercase">{isTR ? 'Aktif Arayüz IP\'leri:' : 'Active Interface IPs:'}</span>
                       <div className="flex flex-wrap gap-1">
-                        {switchRouterSummary.activeIps.map((ipStr, i) => (
+                        {switchRouterSummary.activeIps.map((ipStr) => (
                           <span
-                            key={i}
+                            key={ipStr}
                             onClick={() => copyToClipboard(ipStr.split(': ')[1] || ipStr)}
                             className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 cursor-pointer hover:bg-emerald-500/20 transition-colors"
                             title={isTR ? 'IP adresini kopyala' : 'Copy IP address'}

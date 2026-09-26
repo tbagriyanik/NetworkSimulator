@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { safeGetJSON, safeSetJSON } from '@/lib/storage/safeStorage';
 import type { CanvasConnection, CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { STORY_CAMPAIGNS, type StoryCampaign, type StoryStep } from '@/lib/network/storyScenarios';
@@ -83,29 +84,18 @@ export function StoryModePanel({
   const completedKey = useRef<string | null>(null);
   const { toast } = useToast();
 
-  // Load state from localStorage
+  // Load state from safeStorage
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed && typeof parsed === 'object') {
-          setState((prev) => ({ ...prev, ...parsed }));
-        }
-      }
-    } catch {
-      // Ignore storage read errors
+    const saved = safeGetJSON<Partial<typeof state> | null>(STORAGE_KEY, null);
+    if (saved && typeof saved === 'object') {
+      setState((prev) => ({ ...prev, ...saved }));
     }
   }, []);
 
-  // Persist state to localStorage
+  // Persist state to safeStorage
   useEffect(() => {
     if (open) {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      } catch {
-        // Ignore storage write errors
-      }
+      safeSetJSON(STORAGE_KEY, state);
     }
   }, [state, open]);
 

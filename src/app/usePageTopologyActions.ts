@@ -3,6 +3,7 @@ import type { CanvasDevice, CanvasConnection, CanvasNote } from '@/components/ne
 import type { SwitchState } from '@/lib/network/types';
 import type { Translations } from '@/contexts/LanguageContext';
 import type { RefreshNetworkReport } from '@/hooks/useRefreshReport';
+import { safeSetItem, safeRemoveItem, safeGetJSON } from '@/lib/storage/safeStorage';
 
 interface UsePageTopologyActionsParams {
   t: Translations;
@@ -162,9 +163,9 @@ export function usePageTopologyActions({
       }
 
       if (data.projectDescription) {
-        localStorage.setItem('lastProjectDescription', data.projectDescription);
+        safeSetItem('lastProjectDescription', data.projectDescription);
       } else {
-        localStorage.removeItem('lastProjectDescription');
+        safeRemoveItem('lastProjectDescription');
       }
 
       setTimeout(() => {
@@ -201,27 +202,20 @@ export function usePageTopologyActions({
   useEffect(() => {
     if (!refreshNetworkReport?.show || !refreshReportRef.current) return;
     if (isMobile) return;
-    try {
-      const saved = localStorage.getItem('draggable_position_refresh-network-report');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (typeof parsed.x === 'number' && typeof parsed.y === 'number') {
-          const vw = window.innerWidth;
-          const vh = window.innerHeight;
-          const el = refreshReportRef.current;
-          const rect = el.getBoundingClientRect();
-          const safeX = Math.max(4, Math.min(parsed.x, vw - rect.width - 4));
-          const safeY = Math.max(128, Math.min(parsed.y, vh - rect.height - 4));
-          el.style.position = 'fixed';
-          el.style.left = `${safeX}px`;
-          el.style.top = `${safeY}px`;
-          el.style.right = 'auto';
-          el.style.bottom = 'auto';
-          el.style.transform = 'none';
-        }
-      }
-    } catch {
-      // ignore parsing error
+    const parsed = safeGetJSON<{ x: number; y: number } | null>('draggable_position_refresh-network-report', null);
+    if (parsed && typeof parsed.x === 'number' && typeof parsed.y === 'number') {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const el = refreshReportRef.current;
+      const rect = el.getBoundingClientRect();
+      const safeX = Math.max(4, Math.min(parsed.x, vw - rect.width - 4));
+      const safeY = Math.max(128, Math.min(parsed.y, vh - rect.height - 4));
+      el.style.position = 'fixed';
+      el.style.left = `${safeX}px`;
+      el.style.top = `${safeY}px`;
+      el.style.right = 'auto';
+      el.style.bottom = 'auto';
+      el.style.transform = 'none';
     }
   }, [refreshNetworkReport?.show, isMobile, refreshReportRef]);
 

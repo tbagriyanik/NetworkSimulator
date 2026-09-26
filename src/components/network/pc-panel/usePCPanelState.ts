@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
+import { safeGetItem, safeSetItem } from '@/lib/storage/safeStorage';
 
 export function usePCPanelState() {
   const [activeServiceTab, setActiveServiceTab] = useState<'dns' | 'http' | 'dhcp' | 'ftp' | 'mail' | 'ntp' | 'syslog'>('http');
@@ -8,22 +8,14 @@ export function usePCPanelState() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const [fontSize, setFontSize] = useState<number>(() => {
-    try {
-      const parsed = parseInt(localStorage.getItem('terminal-font-size') || '13', 10);
-      return Math.max(12, Math.min(20, isNaN(parsed) ? 13 : parsed));
-    } catch {
-      errorHandler.logError(STORAGE_ERRORS.LOCAL_STORAGE_UNAVAILABLE({ key: 'terminal-font-size', operation: 'read' }));
-      return 13;
-    }
+    const raw = safeGetItem('terminal-font-size');
+    const parsed = parseInt(raw || '13', 10);
+    return Math.max(12, Math.min(20, isNaN(parsed) ? 13 : parsed));
   });
 
   const handleFontSizeChange = (val: number) => {
     setFontSize(val);
-    try {
-      localStorage.setItem('terminal-font-size', String(val));
-    } catch {
-      errorHandler.logError(STORAGE_ERRORS.LOCAL_STORAGE_UNAVAILABLE({ key: 'terminal-font-size', operation: 'write', value: val }));
-    }
+    safeSetItem('terminal-font-size', String(val));
   };
 
   return {

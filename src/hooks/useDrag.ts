@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { safeGetJSON, safeSetJSON } from '@/lib/storage/safeStorage';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -95,45 +96,37 @@ export function useDrag(options: UseDragOptions = {}): UseDragReturn {
   // ── State ──
   const [position, setPosition] = useState<DragPosition>(() => {
     if (storageKey && typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem(storageKey);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (typeof parsed.x === 'number' && typeof parsed.y === 'number' && isFinite(parsed.x) && isFinite(parsed.y)) {
-            if (disableSnap) return parsed;
-            const vw = window.innerWidth;
-            const vh = window.innerHeight;
-            const approxW = mode === 'drag-resize' ? (defaultSize?.width || 800) : 280;
-            const approxH = mode === 'drag-resize' ? (defaultSize?.height || 600) : 120;
-            const margin = 16;
-            if (origin === 'bottom-right' || origin === 'bottom-left') {
-              return {
-                x: Math.max(0, Math.min(parsed.x, vw - approxW)),
-                y: Math.max(0, Math.min(parsed.y, vh - approxH)),
-              };
-            } else {
-              return {
-                x: Math.max(margin - approxW, Math.min(parsed.x, vw - margin)),
-                y: Math.max(TOP_SAFE_OFFSET, Math.min(parsed.y, vh - margin)),
-              };
-            }
-          }
+      const parsed = safeGetJSON<DragPosition | null>(storageKey, null);
+      if (parsed && typeof parsed.x === 'number' && typeof parsed.y === 'number' && isFinite(parsed.x) && isFinite(parsed.y)) {
+        if (disableSnap) return parsed;
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const approxW = mode === 'drag-resize' ? (defaultSize?.width || 800) : 280;
+        const approxH = mode === 'drag-resize' ? (defaultSize?.height || 600) : 120;
+        const margin = 16;
+        if (origin === 'bottom-right' || origin === 'bottom-left') {
+          return {
+            x: Math.max(0, Math.min(parsed.x, vw - approxW)),
+            y: Math.max(0, Math.min(parsed.y, vh - approxH)),
+          };
+        } else {
+          return {
+            x: Math.max(margin - approxW, Math.min(parsed.x, vw - margin)),
+            y: Math.max(TOP_SAFE_OFFSET, Math.min(parsed.y, vh - margin)),
+          };
         }
-      } catch { /* ignore */ }
+      }
     }
     return defaultPosition;
   });
 
   const [size, setSize] = useState<DragSize>(() => {
     if (mode === 'drag-resize' && storageKey && typeof window !== 'undefined') {
-      try {
-        const sizeKey = `${storageKey}-size`;
-        const saved = localStorage.getItem(sizeKey);
-        if (saved) {
-          const p = JSON.parse(saved);
-          return { width: Math.max(minSize.width, p.width), height: Math.max(minSize.height, p.height) };
-        }
-      } catch { /* ignore */ }
+      const sizeKey = `${storageKey}-size`;
+      const p = safeGetJSON<DragSize | null>(sizeKey, null);
+      if (p && typeof p.width === 'number' && typeof p.height === 'number') {
+        return { width: Math.max(minSize.width, p.width), height: Math.max(minSize.height, p.height) };
+      }
     }
     return defaultSize;
   });
@@ -153,13 +146,11 @@ export function useDrag(options: UseDragOptions = {}): UseDragReturn {
   // ── Persistence ──
   const persist = useCallback((pos: DragPosition, sz?: DragSize) => {
     if (storageKey && typeof window !== 'undefined') {
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(pos));
-        if (sz) {
-          const sizeKey = `${storageKey}-size`;
-          localStorage.setItem(sizeKey, JSON.stringify(sz));
-        }
-      } catch { /* ignore */ }
+      safeSetJSON(storageKey, pos);
+      if (sz) {
+        const sizeKey = `${storageKey}-size`;
+        safeSetJSON(sizeKey, sz);
+      }
     }
   }, [storageKey]);
 
@@ -547,7 +538,7 @@ export function GlobalDragManager() {
         state.el.style.transition = '';
       }
       if (state.id) {
-        try { localStorage.setItem(`draggable_position_${state.id}`, JSON.stringify({ x: clampedLeft, y: clampedTop })); } catch { }
+        safeSetJSON(`draggable_position_${state.id}`, { x: clampedLeft, y: clampedTop });
       }
       state.active = false;
       state.el = null;

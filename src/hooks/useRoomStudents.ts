@@ -3,16 +3,23 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { StudentProgress } from '@/lib/roomTypes';
 import { generateSecureId } from '@/lib/security/sanitizer';
+import {
+  safeGetItem,
+  safeSetItem,
+  safeGetSessionItem,
+  safeSetSessionItem,
+  safeRemoveSessionItem,
+} from '@/lib/storage/safeStorage';
 
 export function useRoomStudents(roomCode: string | null) {
   const [students, setStudents] = useState<StudentProgress[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const getTeacherId = (): string => {
-    const stored = localStorage.getItem('teacher-browser-id');
+    const stored = safeGetItem('teacher-browser-id');
     if (stored) return stored;
     const id = generateSecureId();
-    localStorage.setItem('teacher-browser-id', id);
+    safeSetItem('teacher-browser-id', id);
     return id;
   };
 
@@ -21,7 +28,7 @@ export function useRoomStudents(roomCode: string | null) {
     const currentRoomCode = roomCode;
     const teacherId = getTeacherId();
     try {
-      let sessionToken = sessionStorage.getItem(`room-session-token-${currentRoomCode}`);
+      let sessionToken = safeGetSessionItem(`room-session-token-${currentRoomCode}`);
       if (!sessionToken) {
         const tokenRes = await fetch(`/api/room/${currentRoomCode}/session`, {
           method: 'POST',
@@ -33,7 +40,7 @@ export function useRoomStudents(roomCode: string | null) {
           const token = tokenJson.data?.sessionToken;
           if (tokenJson.success && typeof token === 'string') {
             sessionToken = token;
-            sessionStorage.setItem(`room-session-token-${currentRoomCode}`, token);
+            safeSetSessionItem(`room-session-token-${currentRoomCode}`, token);
           }
         }
       }
@@ -43,7 +50,7 @@ export function useRoomStudents(roomCode: string | null) {
       }
       const res = await fetch(`/api/room/${currentRoomCode}/students?teacherId=${encodeURIComponent(teacherId)}`, { headers });
       if (res.status === 403 || res.status === 401) {
-        sessionStorage.removeItem(`room-session-token-${currentRoomCode}`);
+        safeRemoveSessionItem(`room-session-token-${currentRoomCode}`);
         setStudents([]);
         setError('unauthorized');
         return;

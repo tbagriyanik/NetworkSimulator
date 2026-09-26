@@ -40,45 +40,39 @@ export const logger = {
   },
 };
 
-function safeLocalStorage(): Storage | null {
-  try {
-    const test = '__storage_test__';
-    localStorage.setItem(test, test);
-    localStorage.removeItem(test);
-    return localStorage;
-  } catch {
-    return null;
-  }
-}
+import { safeGetItem, safeSetItem, safeRemoveItem } from '@/lib/storage/safeStorage';
 
 export function getFromStorage(key: string, storage: Storage | null = null): string | null {
-  try {
-    const s = storage ?? safeLocalStorage();
-    if (!s) return null;
-    return s.getItem(key);
-  } catch {
-    return null;
+  if (storage) {
+    try {
+      return storage.getItem(key);
+    } catch {
+      return null;
+    }
   }
+  return safeGetItem(key);
 }
 
 export function setToStorage(key: string, value: string, storage: Storage | null = null): boolean {
-  try {
-    const s = storage ?? safeLocalStorage();
-    if (!s) return false;
-    s.setItem(key, value);
-    return true;
-  } catch {
-    return false;
+  if (storage) {
+    try {
+      storage.setItem(key, value);
+      return true;
+    } catch {
+      return false;
+    }
   }
+  return safeSetItem(key, value);
 }
 
 export function removeFromStorage(key: string, storage: Storage | null = null): boolean {
-  try {
-    const s = storage ?? safeLocalStorage();
-    if (!s) return false;
-    s.removeItem(key);
-    return true;
-  } catch {
-    return false;
+  if (storage) {
+    try {
+      storage.removeItem(key);
+      return true;
+    } catch {
+      return false;
+    }
   }
+  return safeRemoveItem(key);
 }

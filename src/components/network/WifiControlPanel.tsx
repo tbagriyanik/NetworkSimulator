@@ -273,7 +273,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
           </div>
           <div class="form-group" style="margin-bottom:0;">
             <label for="profile-security">${isTurkish ? 'Güvenlik Türü' : 'Security Type'}</label>
-            <select id="profile-security" onchange="var pWrap = document.getElementById('profile-password-wrap'); if(pWrap) pWrap.style.display = this.value === 'open' ? 'none' : 'block';">
+            <select id="profile-security" onchange="handleProfileSecurityChange(this.value)">
               <option value="wpa2">${isTurkish ? 'WPA2-PSK (Kişisel)' : 'WPA2-PSK (Personal)'}</option>
               <option value="wpa3">${isTurkish ? 'WPA3-SAE (Yüksek Güvenlik)' : 'WPA3-SAE (High Security)'}</option>
               <option value="open">${isTurkish ? 'Açık (Şifresiz)' : 'Open (No password)'}</option>

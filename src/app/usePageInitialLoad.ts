@@ -1,16 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
-import { getGuidedProjects } from '@/lib/network/guidedMode';
-import { getExamProjects } from '@/lib/network/examMode';
+import { getGuidedProjects, type GuidedProject } from '@/lib/network/guidedMode';
+import { getExamProjects, type ExamProject } from '@/lib/network/examMode';
 import { safeParse } from '@/lib/network/serialization';
 import { errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
+import { safeGetItem, safeRemoveItem } from '@/lib/storage/safeStorage';
 
 interface UsePageInitialLoadOptions {
   initialProjectId?: string;
   language: 'tr' | 'en';
-  applyExampleProject: (data: any, id: string) => void;
-  handleStartGuidedProject: (lesson: any) => void;
-  startExamFromCatalog: (exam: any) => void;
-  loadProjectData: (data: any, options?: { keepActiveDevice?: boolean }) => void;
+  applyExampleProject: (data: unknown, id: string) => void;
+  handleStartGuidedProject: (lesson: GuidedProject) => void;
+  startExamFromCatalog: (exam: ExamProject) => void;
+  loadProjectData: (data: unknown, options?: { keepActiveDevice?: boolean }) => void;
   setLastSaveTime: (time: string | null) => void;
 }
 
@@ -91,8 +92,7 @@ export function usePageInitialLoad({
       }
     }
 
-    let savedData: string | null = null;
-    try { savedData = localStorage.getItem('netsim_autosave'); } catch { /* storage unavailable */ }
+    const savedData = safeGetItem('netsim_autosave');
     if (savedData && savedData.trim() !== '' && savedData !== 'undefined' && savedData !== 'null') {
       try {
         const projectData = safeParse<unknown>(savedData);
@@ -108,7 +108,7 @@ export function usePageInitialLoad({
         }
       } catch (e) {
         errorHandler.logError(STORAGE_ERRORS.LOAD_FAILED({ operation: 'autosave', error: String(e) }));
-        try { localStorage.removeItem('netsim_autosave'); } catch { /* ignore */ }
+        safeRemoveItem('netsim_autosave');
       }
     }
   }, [initialProjectId, language, applyExampleProject, handleStartGuidedProject, startExamFromCatalog, loadProjectData, setLastSaveTime]);

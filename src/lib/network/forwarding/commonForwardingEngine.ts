@@ -11,6 +11,7 @@ import { isFrameAllowedOnDot1xPort } from '@/lib/network/dot1x';
 import { processEapolFrame } from '@/lib/network/dot1x';
 import { processMqtt, processCoap } from '@/lib/network/applicationProtocols';
 import { processNetconfFrame } from '@/lib/network/netconfTransport';
+import { STP_DEFAULT_PRIORITY } from '@/lib/network/stp';
 
 export interface ForwardingEngineResult {
   accepted: boolean;
@@ -288,7 +289,7 @@ export function processControlPlaneProtocols(
   if (frame.protocol === 'STP' && frame.stpPayload) {
     handled = true;
     if (frame.stpPayload.rootId) {
-      updatedState.spanningTreePriority = Math.min(updatedState.spanningTreePriority || 32768, 32768);
+      updatedState.spanningTreePriority = Math.min(updatedState.spanningTreePriority || STP_DEFAULT_PRIORITY, STP_DEFAULT_PRIORITY);
     }
   }
 

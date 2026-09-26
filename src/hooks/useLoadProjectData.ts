@@ -14,6 +14,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { logger } from '@/lib/logger';
 import { useMultiWindowStore } from '@/hooks/useMultiWindowStore';
 import { clearPcLinuxSessions } from '@/components/network/pc-panel/pcLinuxSessionStorage';
+import { safeRemoveItem } from '@/lib/storage/safeStorage';
 
 export interface UseLoadProjectDataProps {
   setDeviceStates: (states: Map<string, SwitchState>) => void;
@@ -429,7 +430,7 @@ export function useLoadProjectData({
       logger.error('Failed to load project data:', error);
       errorHandler.logError(STORAGE_ERRORS.LOAD_FAILED({ operation: 'loadProjectData', error: String(error) }));
 
-      try { localStorage.removeItem('netsim_autosave'); } catch { /* ignore */ }
+      safeRemoveItem('netsim_autosave');
       toast({
         variant: 'destructive',
         title: t.invalidProject,

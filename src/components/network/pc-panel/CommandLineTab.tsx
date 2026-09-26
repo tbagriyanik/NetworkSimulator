@@ -5,7 +5,7 @@ import { Terminal as TerminalIcon, CornerDownLeft, Pin, Laptop } from 'lucide-re
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-import { secureStorage } from '@/lib/storage/secureStorage';
+import { safeGetItem, safeSetItem, safeRemoveItem, safeGetJSON, safeSetJSON } from '@/lib/storage/safeStorage';
 import type { OutputLine, FtpSession, PythonSession } from './PCPanel.types';
 import { executeLinuxCommand, formatLinuxPath, getLinuxSuggestions } from './pcLinuxExecutor';
 import { CommandLineSettingsBar } from './CommandLineSettingsBar';
@@ -119,23 +119,19 @@ export function CommandLineTab({
   const inputRef = externalInputRef;
   const autocompleteRef = useRef<HTMLDivElement>(null);
 
-  // Pinned terminal tab state (persist in localStorage per device and globally)
+  // Pinned terminal tab state (persist in safeStorage per device and globally)
   const [pinnedTerminalTab, setPinnedTerminalTab] = useState<'cmd' | 'linux' | null>(() => {
-    if (typeof localStorage !== 'undefined') {
-      const pinned = localStorage.getItem(`pc_pinned_terminal_tab_${deviceId}`) || localStorage.getItem('pc_pinned_terminal_tab');
-      if (pinned === 'cmd' || pinned === 'linux') return pinned;
-    }
+    const pinned = safeGetItem(`pc_pinned_terminal_tab_${deviceId}`) || safeGetItem('pc_pinned_terminal_tab');
+    if (pinned === 'cmd' || pinned === 'linux') return pinned;
     return null;
   });
 
   // Terminal active tab state: 'cmd' vs 'linux' (loads pinned or last used terminal tab)
   const [activeTerminalTab, setActiveTerminalTab] = useState<'cmd' | 'linux'>(() => {
-    if (typeof localStorage !== 'undefined') {
-      const pinned = localStorage.getItem(`pc_pinned_terminal_tab_${deviceId}`) || localStorage.getItem('pc_pinned_terminal_tab');
-      if (pinned === 'cmd' || pinned === 'linux') return pinned;
-      const last = localStorage.getItem(`pc_last_terminal_tab_${deviceId}`);
-      if (last === 'cmd' || last === 'linux') return last;
-    }
+    const pinned = safeGetItem(`pc_pinned_terminal_tab_${deviceId}`) || safeGetItem('pc_pinned_terminal_tab');
+    if (pinned === 'cmd' || pinned === 'linux') return pinned;
+    const last = safeGetItem(`pc_last_terminal_tab_${deviceId}`);
+    if (last === 'cmd' || last === 'linux') return last;
     return 'cmd';
   });
 
@@ -144,17 +140,10 @@ export function CommandLineTab({
   const [isLinuxAutocompleteDismissed, setIsLinuxAutocompleteDismissed] = useState(false);
   const [linuxTabCycleIndex, setLinuxTabCycleIndex] = useState(-1);
 
-  // Separate Linux output state & history (persisted per device in localStorage)
+  // Separate Linux output state & history (persisted per device in safeStorage)
   const [linuxOutput, setLinuxOutput] = useState<OutputLine[]>(() => {
-    if (typeof localStorage !== 'undefined') {
-      try {
-        const saved = secureStorage.getItem(`pc_linux_output_${deviceId}`);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-        }
-      } catch { }
-    }
+    const parsed = safeGetJSON<OutputLine[] | null>(`pc_linux_output_${deviceId}`, null);
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     return [
       {
         id: 'linux-welcome',
@@ -165,15 +154,8 @@ export function CommandLineTab({
   });
 
   const [linuxHistory, setLinuxHistory] = useState<string[]>(() => {
-    if (typeof localStorage !== 'undefined') {
-      try {
-        const saved = secureStorage.getItem(`pc_linux_history_${deviceId}`);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed)) return parsed;
-        }
-      } catch { }
-    }
+    const parsed = safeGetJSON<string[] | null>(`pc_linux_history_${deviceId}`, null);
+    if (Array.isArray(parsed)) return parsed;
     return [];
   });
 
@@ -191,36 +173,24 @@ export function CommandLineTab({
         },
       ];
       setLinuxOutput(defaultOutput);
-      if (typeof localStorage !== 'undefined') {
-        try {
-          secureStorage.removeItem(`pc_linux_output_${deviceId}`);
-        } catch { }
-      }
+      safeRemoveItem(`pc_linux_output_${deviceId}`);
     }
     prevPoweredOffRef.current = isPcPoweredOff;
   }, [isPcPoweredOff, internalPcHostname, deviceId]);
 
-  // Persist Linux output history to localStorage when changed
+  // Persist Linux output history to safeStorage when changed
   useEffect(() => {
-    if (typeof localStorage !== 'undefined') {
-      try {
-        secureStorage.setItem(`pc_linux_output_${deviceId}`, JSON.stringify(linuxOutput.slice(-200)));
-      } catch { }
-    }
+    safeSetJSON(`pc_linux_output_${deviceId}`, linuxOutput.slice(-200));
   }, [linuxOutput, deviceId]);
 
-  // Persist Linux command history to localStorage when changed
+  // Persist Linux command history to safeStorage when changed
   useEffect(() => {
-    if (typeof localStorage !== 'undefined') {
-      try {
-        secureStorage.setItem(`pc_linux_history_${deviceId}`, JSON.stringify(linuxHistory.slice(0, 50)));
-      } catch { }
-    }
+    safeSetJSON(`pc_linux_history_${deviceId}`, linuxHistory.slice(0, 50));
   }, [linuxHistory, deviceId]);
 
   // A project reset can happen while the PC panel is still mounted. Reset
   // the in-memory Linux session too, otherwise its persistence effects can
-  // immediately write the old output/history back to localStorage.
+  // immediately write the old output/history back to safeStorage.
   useEffect(() => {
     const handleNewProjectReset = () => {
       const defaultOutput: OutputLine[] = [{
@@ -232,10 +202,8 @@ export function CommandLineTab({
       setLinuxHistory([]);
       setLinuxHistoryIndex(-1);
       setInput('');
-      try {
-        localStorage.removeItem(`pc_linux_output_${deviceId}`);
-        localStorage.removeItem(`pc_linux_history_${deviceId}`);
-      } catch { }
+      safeRemoveItem(`pc_linux_output_${deviceId}`);
+      safeRemoveItem(`pc_linux_history_${deviceId}`);
     };
 
     window.addEventListener('new-project-reset', handleNewProjectReset);
@@ -337,11 +305,7 @@ export function CommandLineTab({
     setLinuxAutocompleteIndex(-1);
     setIsLinuxAutocompleteDismissed(false);
     setLinuxHistoryIndex(-1);
-    if (typeof localStorage !== 'undefined') {
-      try {
-        localStorage.setItem(`pc_last_terminal_tab_${deviceId}`, tab);
-      } catch { }
-    }
+    safeSetItem(`pc_last_terminal_tab_${deviceId}`, tab);
   }, [deviceId, setInput]);
 
   // Toggle pin/unpin for a tab
@@ -349,16 +313,12 @@ export function CommandLineTab({
     e.stopPropagation();
     setPinnedTerminalTab(prev => {
       const next = prev === tab ? null : tab;
-      if (typeof localStorage !== 'undefined') {
-        try {
-          if (next) {
-            localStorage.setItem(`pc_pinned_terminal_tab_${deviceId}`, next);
-            localStorage.setItem('pc_pinned_terminal_tab', next);
-          } else {
-            localStorage.removeItem(`pc_pinned_terminal_tab_${deviceId}`);
-            localStorage.removeItem('pc_pinned_terminal_tab');
-          }
-        } catch { }
+      if (next) {
+        safeSetItem(`pc_pinned_terminal_tab_${deviceId}`, next);
+        safeSetItem('pc_pinned_terminal_tab', next);
+      } else {
+        safeRemoveItem(`pc_pinned_terminal_tab_${deviceId}`);
+        safeRemoveItem('pc_pinned_terminal_tab');
       }
       return next;
     });

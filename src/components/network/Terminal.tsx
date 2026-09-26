@@ -28,6 +28,7 @@ import { useTerminalUndoRedo } from './terminal/useTerminalUndoRedo';
 import { useTerminalAutocomplete } from './terminal/useTerminalAutocomplete';
 import { TerminalOutputLines, type DeviceIconInfo } from './terminal/TerminalOutputLines';
 import { QuickCommandsBar } from './terminal/QuickCommandsBar';
+import { safeGetItem } from '@/lib/storage/safeStorage';
 import { TerminalAutocompleteDropdown } from './terminal/TerminalAutocompleteDropdown';
 import { TerminalSettingsBar } from './terminal/TerminalSettingsBar';
 
@@ -111,7 +112,9 @@ export function Terminal({
   const [searchQuery, setSearchQuery] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const [fontSize, setFontSize] = useState<number>(() => {
-    try { return parseInt(localStorage.getItem('terminal-font-size') || '13', 10); } catch { return 13; }
+    const raw = safeGetItem('terminal-font-size');
+    const parsed = parseInt(raw || '13', 10);
+    return isNaN(parsed) ? 13 : parsed;
   });
   const currentPrompt = state
     ? getModePrompt(state.currentMode, state.hostname || 'Switch')

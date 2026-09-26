@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 import { ShortcutBadge } from '@/components/ui/ShortcutBadge';
 import type { Translations } from '@/contexts/LanguageContext';
+import { safeSetItem } from '@/lib/storage/safeStorage';
 
 interface TerminalSettingsBarProps {
   t: Translations;
@@ -21,7 +22,7 @@ export function TerminalSettingsBar({ t, fontSize, setFontSize, onClear }: Termi
       <input
         type="range" min="10" max="20" value={fontSize}
         aria-label={t.fontSizeLabel}
-        onChange={(e) => { const v = parseInt(e.target.value); setFontSize(v); try { localStorage.setItem('terminal-font-size', String(v)); } catch { } }}
+        onChange={(e) => { const v = parseInt(e.target.value); setFontSize(v); safeSetItem('terminal-font-size', String(v)); }}
         className="flex-1 h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
       />
       <Button variant="ghost" size="sm" onClick={onClear} className="h-7 text-[10px] font-black tracking-widest text-error-500 gap-1.5">

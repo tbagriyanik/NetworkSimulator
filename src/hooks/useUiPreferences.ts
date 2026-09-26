@@ -30,22 +30,17 @@ interface UiPreferencesStore {
   resetPreferences: () => void;
 }
 
-const memoryStore = new Map<string, string>();
+import { safeGetItem, safeSetItem, safeRemoveItem } from '@/lib/storage/safeStorage';
 
-const safeStorage = createJSONStorage(() => {
-  if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
-    return window.localStorage;
-  }
-  return {
-    getItem: (key: string) => memoryStore.get(key) ?? null,
-    setItem: (key: string, value: string) => {
-      memoryStore.set(key, value);
-    },
-    removeItem: (key: string) => {
-      memoryStore.delete(key);
-    },
-  };
-});
+const safeStorage = createJSONStorage(() => ({
+  getItem: (key: string) => safeGetItem(key),
+  setItem: (key: string, value: string) => {
+    safeSetItem(key, value);
+  },
+  removeItem: (key: string) => {
+    safeRemoveItem(key);
+  },
+}));
 
 export const useUiPreferencesStore = create<UiPreferencesStore>()(
   persist(

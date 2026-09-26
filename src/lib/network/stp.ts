@@ -1,10 +1,11 @@
-﻿import type { SwitchState, StpVlanState, Port } from './types';
+import type { SwitchState, StpVlanState, Port } from './types';
 import type { CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { dispatchCapturedPackets } from '../../utils/packetCapture';
 import { detectEtherChannelBundles } from './etherchannel';
 import { buildConnectionIndex, getConnectionAtPort, type ConnectionIndex } from './connectionIndex';
 import { areSameMstRegion } from './mstp';
 
+export const STP_DEFAULT_PRIORITY = 32768;
 
 /**
  * Spanning Tree Protocol Bridge Protocol Data Unit (BPDU)
@@ -188,10 +189,10 @@ function getVlanPriority(state: SwitchState, vlanId: number): number {
     if (state.mstConfig?.instancePriorities?.[instId] !== undefined) {
       return state.mstConfig.instancePriorities[instId];
     }
-    return state.spanningTreePriority || 32768;
+    return state.spanningTreePriority || STP_DEFAULT_PRIORITY;
   }
   const vlanConfig = state.spanningTreeVlans?.[vlanId];
-  return vlanConfig?.priority ? parseInt(vlanConfig.priority, 10) : (state.spanningTreePriority || 32768);
+  return vlanConfig?.priority ? parseInt(vlanConfig.priority, 10) : (state.spanningTreePriority || STP_DEFAULT_PRIORITY);
 }
 
 function getBridgePriority(state: SwitchState, vlanId: number): number {

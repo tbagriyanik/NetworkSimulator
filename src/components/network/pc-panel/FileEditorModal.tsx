@@ -41,6 +41,7 @@ export function FileEditorModal({
   const [historyIndex, setHistoryIndex] = useState(0);
   const historyReady = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     const raw = decodeHTMLEntities(initialContent);
@@ -91,8 +92,7 @@ export function FileEditorModal({
   useEffect(() => {
     if (open) {
       const timer = setTimeout(() => {
-        const textarea = document.querySelector<HTMLTextAreaElement>('div[data-code-editor="true"] textarea');
-        textarea?.focus();
+        textareaRef.current?.focus();
       }, 50);
       return () => clearTimeout(timer);
     }
@@ -105,7 +105,7 @@ export function FileEditorModal({
   const isBatFile = fileName.toLowerCase().endsWith('.bat') || fileName.toLowerCase().endsWith('.cmd');
 
   const applyHtmlTag = (tag: string, selfClosing = false) => {
-    const textarea = document.querySelector<HTMLTextAreaElement>('div[data-code-editor="true"] textarea');
+    const textarea = textareaRef.current;
     if (!textarea) return;
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
@@ -159,7 +159,7 @@ export function FileEditorModal({
   const handleOpenFile = () => fileInputRef.current?.click();
 
   const editSelected = async (action: 'cut' | 'copy' | 'paste' | 'delete' | 'selectAll') => {
-    const textarea = document.querySelector<HTMLTextAreaElement>('div[data-code-editor="true"] textarea');
+    const textarea = textareaRef.current;
     if (!textarea) return;
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
@@ -558,6 +558,7 @@ export function FileEditorModal({
       )}
       <div data-code-editor="true" className="flex-1 relative flex flex-col font-mono text-sm overflow-hidden">
         <PythonCodeEditor
+          textareaRef={textareaRef}
           value={content}
           onChange={updateContent}
           onKeyDown={handleTextareaKeyDown}

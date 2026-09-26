@@ -2,6 +2,7 @@ import { logger } from '../lib/logger';
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { getActiveTabCount, clearTabData } from '@/lib/store/tabStorage';
+import { safeGetItem, safeSetItem } from '@/lib/storage/safeStorage';
 
 interface TabWarningState {
   showWarning: boolean;
@@ -20,11 +21,9 @@ export function useMultiTabWarning() {
   const { toast } = useToast();
 
   const checkTabCount = useCallback(() => {
-    if (typeof window === 'undefined') return;
-    
     try {
       const tabCount = getActiveTabCount();
-      const hasAcknowledged = localStorage.getItem(TAB_WARNING_KEY) === 'true';
+      const hasAcknowledged = safeGetItem(TAB_WARNING_KEY) === 'true';
 
       setWarningState(prev => {
         const newShowWarning = tabCount > 1 && !hasAcknowledged;
@@ -55,10 +54,8 @@ export function useMultiTabWarning() {
   }, [toast]);
 
   const acknowledgeWarning = useCallback(() => {
-    if (typeof window === 'undefined') return;
-    
     try {
-      localStorage.setItem(TAB_WARNING_KEY, 'true');
+      safeSetItem(TAB_WARNING_KEY, 'true');
       setWarningState(prev => ({
         ...prev,
         showWarning: false,

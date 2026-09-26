@@ -1,4 +1,4 @@
-﻿import { useCallback } from 'react';
+import { useCallback } from 'react';
 import type { SwitchState, CommandResult } from '@/lib/network/types';
 import type { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { TabType } from '@/app/page.types';
@@ -13,6 +13,14 @@ type GuidedModeContext = {
   topologyConnections?: unknown[];
   topologyDevices?: unknown[];
 };
+
+function mapDeviceAccessedType(deviceType?: DeviceType | string | null): 'switch' | 'router' | 'pc' | null {
+  if (!deviceType) return null;
+  if (deviceType === 'switchL2' || deviceType === 'switchL3' || deviceType === 'switch') return 'switch';
+  if (deviceType === 'router') return 'router';
+  if (deviceType === 'pc') return 'pc';
+  return null;
+}
 
 export interface UseCommandExecutionParams {
   activeDeviceId: string;
@@ -96,7 +104,7 @@ export function useCommandExecution({
       checkStepCompletionWithContext({
         lastCommand: command,
         lastOutput: currentOutput,
-        deviceAccessed: showUnifiedDeviceModal ? (activeDeviceType === 'switchL2' || activeDeviceType === 'switchL3' ? 'switch' : activeDeviceType === 'router' ? 'router' : 'pc') : null,
+        deviceAccessed: showUnifiedDeviceModal ? mapDeviceAccessedType(activeDeviceType) : null,
         deviceAccessedId: showUnifiedDeviceModal ? activeDeviceId : null,
         deviceState: currentDeviceState,
         deviceStates: finalDeviceStates,
@@ -156,7 +164,7 @@ export function useCommandExecution({
       checkStepCompletionWithContext({
         lastCommand: command,
         lastOutput: currentOutput,
-        deviceAccessed: devType === 'pc' ? 'pc' : (devType === 'router' ? 'router' : (devType === 'switchL2' || devType === 'switchL3' ? 'switch' : null)),
+        deviceAccessed: mapDeviceAccessedType(devType),
         deviceAccessedId: deviceId,
         deviceState: currentDeviceState,
         deviceStates: finalDeviceStates,

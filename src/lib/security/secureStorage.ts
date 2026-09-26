@@ -10,6 +10,8 @@ const IV_LENGTH_BYTES = 12;
 const SALT_BYTES = 16;
 const PBKDF2_ITERATIONS = 100000;
 
+import { safeGetItem, safeSetItem } from '@/lib/storage/safeStorage';
+
 // Device-bound salt stored in localStorage to keep consistent key derivation
 const SALT_STORAGE_KEY = '__ns_sec_salt__';
 
@@ -18,16 +20,12 @@ function getOrCreateSalt(): Uint8Array {
     return new Uint8Array(SALT_BYTES);
   }
 
-  let existing = localStorage.getItem(SALT_STORAGE_KEY);
+  let existing = safeGetItem(SALT_STORAGE_KEY);
   if (!existing) {
     const saltBytes = new Uint8Array(SALT_BYTES);
     crypto.getRandomValues(saltBytes);
     existing = Array.from(saltBytes).map(b => b.toString(16).padStart(2, '0')).join('');
-    try {
-      localStorage.setItem(SALT_STORAGE_KEY, existing);
-    } catch {
-      // Ignore quota errors
-    }
+    safeSetItem(SALT_STORAGE_KEY, existing);
   }
 
   const matches = existing.match(/.{1,2}/g);
@@ -149,7 +147,7 @@ export async function setSecureItem(key: string, value: unknown): Promise<void> 
   if (typeof window === 'undefined') return;
   const jsonString = JSON.stringify(value);
   const encrypted = await encryptData(jsonString);
-  localStorage.setItem(key, encrypted);
+  safeSetItem(key, encrypted);
 }
 
 /**
@@ -157,7 +155,7 @@ export async function setSecureItem(key: string, value: unknown): Promise<void> 
  */
 export async function getSecureItem<T>(key: string): Promise<T | null> {
   if (typeof window === 'undefined') return null;
-  const raw = localStorage.getItem(key);
+  const raw = safeGetItem(key);
   if (!raw) return null;
 
   const decrypted = await decryptData(raw);

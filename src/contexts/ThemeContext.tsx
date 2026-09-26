@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
+import { safeGetItem, safeSetItem } from '@/lib/storage/safeStorage';
 
 type Theme = 'dark' | 'light' | 'high-contrast' | 'auto';
 
@@ -100,30 +101,23 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (initialized) return;
 
-    try {
-      // Load saved theme preference
-      const saved = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
-      
-      // If no saved theme, default to dark for new visitors
-      const validTheme = saved && ['dark', 'light', 'high-contrast', 'auto'].includes(saved) ? saved : 'dark';
+    // Load saved theme preference
+    const saved = safeGetItem(THEME_STORAGE_KEY) as Theme | null;
+    
+    // If no saved theme, default to dark for new visitors
+    const validTheme = saved && ['dark', 'light', 'high-contrast', 'auto'].includes(saved) ? saved : 'dark';
 
-      // Detect system theme
-      const systemTheme = detectSystemTheme();
-      setTimeout(() => setSystemThemePreference(systemTheme), 0);
+    // Detect system theme
+    const systemTheme = detectSystemTheme();
+    setTimeout(() => setSystemThemePreference(systemTheme), 0);
 
-      // Determine effective theme (only use system theme if explicitly set to 'auto')
-      const effective = validTheme === 'auto' ? systemTheme : validTheme;
-      setTimeout(() => setEffectiveTheme(effective), 0);
-      setTimeout(() => setThemeState(validTheme), 0);
+    // Determine effective theme (only use system theme if explicitly set to 'auto')
+    const effective = validTheme === 'auto' ? systemTheme : validTheme;
+    setTimeout(() => setEffectiveTheme(effective), 0);
+    setTimeout(() => setThemeState(validTheme), 0);
 
-      // Apply theme immediately without transition on first load
-      applyTheme(effective);
-    } catch {
-      // Fallback to dark theme
-      setTimeout(() => setEffectiveTheme('dark'), 0);
-      setTimeout(() => setThemeState('dark'), 0);
-      applyTheme('dark');
-    }
+    // Apply theme immediately without transition on first load
+    applyTheme(effective);
 
     setTimeout(() => setInitialized(true), 0);
   }, [initialized]);
@@ -163,21 +157,17 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!initialized) return;
 
-    try {
-      // Determine effective theme
-      const effective = theme === 'auto' ? (systemThemePreference || 'light') : theme;
+    // Determine effective theme
+    const effective = theme === 'auto' ? (systemThemePreference || 'light') : theme;
 
-      // Only apply if effective theme changed
-      if (effective !== effectiveTheme) {
-        setTimeout(() => setEffectiveTheme(effective), 0);
-        applyTheme(effective, () => setIsTransitioning(true), () => setIsTransitioning(false));
-      }
-
-      // Persist theme preference
-      localStorage.setItem(THEME_STORAGE_KEY, theme);
-    } catch {
-      // localStorage not available
+    // Only apply if effective theme changed
+    if (effective !== effectiveTheme) {
+      setTimeout(() => setEffectiveTheme(effective), 0);
+      applyTheme(effective, () => setIsTransitioning(true), () => setIsTransitioning(false));
     }
+
+    // Persist theme preference
+    safeSetItem(THEME_STORAGE_KEY, theme);
   }, [theme, initialized, systemThemePreference, effectiveTheme]);
 
   const setTheme = useCallback((newTheme: Theme) => {

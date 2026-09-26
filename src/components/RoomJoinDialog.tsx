@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { useRoom } from '@/contexts/RoomContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { secureStorage } from '@/lib/storage/secureStorage';
+import { isDesktopApp } from '@/lib/utils/desktopDetection';
 
 export function RoomJoinDialog() {
   const { showRoomJoinDialog, setShowRoomJoinDialog, joinRoom, studentRoomCode, studentDisplayName, leaveRoom } = useRoom();
@@ -63,10 +64,22 @@ export function RoomJoinDialog() {
 
   const handleJoin = async () => {
     if (code.trim().length >= 4 && name.trim().length > 0) {
+      if (isDesktopApp()) {
+        setError(
+          t.language === 'tr'
+            ? 'Masaüstü sürümünde canlı sınıf/oda özellikleri için internet ve web sürümü gereklidir.'
+            : 'Live classroom rooms require the web version and internet access.'
+        );
+        return;
+      }
       setIsLoading(true);
       setError(null);
       try {
         const res = await fetch(`/api/room/${code.trim().toUpperCase()}`);
+        if (res.status === 404) {
+          setError(t.language === 'tr' ? 'Oda bulunamadı...' : 'Room not found...');
+          return;
+        }
         const json = await res.json();
         if (json.success && json.data.exists) {
           joinRoom(code.trim(), name.trim());

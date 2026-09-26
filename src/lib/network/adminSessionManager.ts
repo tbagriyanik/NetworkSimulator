@@ -4,34 +4,28 @@
  * so that srcDoc iframe reloads / re-renders / navigation do not kick the user back to the login screen.
  */
 
+import {
+  safeGetItem,
+  safeSetItem,
+  safeRemoveItem,
+  safeGetSessionItem,
+  safeSetSessionItem,
+  safeRemoveSessionItem,
+  safeGetStorageKeys,
+} from '@/lib/storage/safeStorage';
+
 const authenticatedRouters = new Set<string>();
 let isIotAuthenticated = false;
-
-function safeStorage(action: () => void): void {
-  try {
-    if (typeof window !== 'undefined') {
-      action();
-    }
-  } catch (err) {
-    // Storage access may be restricted in sandboxed contexts or private mode
-    if (process.env.NODE_ENV !== 'production') {
-      console.debug('[adminSessionManager] Storage operation suppressed:', err);
-    }
-  }
-}
 
 export function isRouterAuthenticated(deviceId: string): boolean {
   if (!deviceId) return false;
   if (authenticatedRouters.has(deviceId)) return true;
-  let authenticated = false;
-  safeStorage(() => {
-    const key = `router_admin_auth_${deviceId}`;
-    if (window.sessionStorage?.getItem(key) === 'true' || window.localStorage?.getItem(key) === 'true') {
-      authenticatedRouters.add(deviceId);
-      authenticated = true;
-    }
-  });
-  return authenticated;
+  const key = `router_admin_auth_${deviceId}`;
+  if (safeGetSessionItem(key) === 'true' || safeGetItem(key) === 'true') {
+    authenticatedRouters.add(deviceId);
+    return true;
+  }
+  return false;
 }
 
 export function setRouterAuthenticated(deviceId: string, authenticated: boolean): void {
@@ -41,65 +35,50 @@ export function setRouterAuthenticated(deviceId: string, authenticated: boolean)
   } else {
     authenticatedRouters.delete(deviceId);
   }
-  safeStorage(() => {
-    const key = `router_admin_auth_${deviceId}`;
-    if (authenticated) {
-      window.sessionStorage?.setItem(key, 'true');
-      window.localStorage?.setItem(key, 'true');
-    } else {
-      window.sessionStorage?.removeItem(key);
-      window.localStorage?.removeItem(key);
-    }
-  });
+  const key = `router_admin_auth_${deviceId}`;
+  if (authenticated) {
+    safeSetSessionItem(key, 'true');
+    safeSetItem(key, 'true');
+  } else {
+    safeRemoveSessionItem(key);
+    safeRemoveItem(key);
+  }
 }
 
 export function isIotPanelAuthenticated(): boolean {
   if (isIotAuthenticated) return true;
-  let authenticated = false;
-  safeStorage(() => {
-    if (window.sessionStorage?.getItem('iotPanelAuthenticated') === 'true' || window.localStorage?.getItem('iotPanelAuthenticated') === 'true') {
-      isIotAuthenticated = true;
-      authenticated = true;
-    }
-  });
-  return authenticated;
+  if (safeGetSessionItem('iotPanelAuthenticated') === 'true' || safeGetItem('iotPanelAuthenticated') === 'true') {
+    isIotAuthenticated = true;
+    return true;
+  }
+  return false;
 }
 
 export function setIotPanelAuthenticated(authenticated: boolean): void {
   isIotAuthenticated = authenticated;
-  safeStorage(() => {
-    if (authenticated) {
-      window.sessionStorage?.setItem('iotPanelAuthenticated', 'true');
-      window.localStorage?.setItem('iotPanelAuthenticated', 'true');
-    } else {
-      window.sessionStorage?.removeItem('iotPanelAuthenticated');
-      window.localStorage?.removeItem('iotPanelAuthenticated');
-    }
-  });
+  if (authenticated) {
+    safeSetSessionItem('iotPanelAuthenticated', 'true');
+    safeSetItem('iotPanelAuthenticated', 'true');
+  } else {
+    safeRemoveSessionItem('iotPanelAuthenticated');
+    safeRemoveItem('iotPanelAuthenticated');
+  }
 }
 
 export function clearAllAdminSessions(): void {
   authenticatedRouters.forEach((deviceId) => {
-    safeStorage(() => {
-      const key = `router_admin_auth_${deviceId}`;
-      window.sessionStorage?.removeItem(key);
-      window.localStorage?.removeItem(key);
-    });
+    const key = `router_admin_auth_${deviceId}`;
+    safeRemoveSessionItem(key);
+    safeRemoveItem(key);
   });
   authenticatedRouters.clear();
   isIotAuthenticated = false;
-  safeStorage(() => {
-    window.sessionStorage?.removeItem('iotPanelAuthenticated');
-    window.localStorage?.removeItem('iotPanelAuthenticated');
-    if (window.sessionStorage) {
-      Object.keys(window.sessionStorage).forEach((key) => {
-        if (key.startsWith('router_admin_auth_')) window.sessionStorage.removeItem(key);
-      });
-    }
-    if (window.localStorage) {
-      Object.keys(window.localStorage).forEach((key) => {
-        if (key.startsWith('router_admin_auth_')) window.localStorage.removeItem(key);
-      });
-    }
+  safeRemoveSessionItem('iotPanelAuthenticated');
+  safeRemoveItem('iotPanelAuthenticated');
+
+  const routerAuthKeys = safeGetStorageKeys('router_admin_auth_');
+  routerAuthKeys.forEach((key) => {
+    safeRemoveSessionItem(key);
+    safeRemoveItem(key);
   });
 }

@@ -47,6 +47,11 @@ export function getWifiControlPanelScripts(params: WifiAdminScriptParams): strin
     if (!Array.isArray(currentMacFilterList)) currentMacFilterList = [];
     window.currentMacFilterList = currentMacFilterList;
 
+    window.handleProfileSecurityChange = function(val) {
+      var pWrap = document.getElementById('profile-password-wrap');
+      if (pWrap) pWrap.style.display = val === 'open' ? 'none' : 'block';
+    };
+
     window.toggleMacFilterSection = function() {
       var enabled = !!document.getElementById('mac-filter-enabled')?.checked;
       var body = document.getElementById('mac-filter-body');

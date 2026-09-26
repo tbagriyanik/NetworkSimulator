@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { ShortcutBadge } from '@/components/ui/ShortcutBadge';
 import { cn } from '@/lib/utils';
+import { safeSetItem } from '@/lib/storage/safeStorage';
 import type { Translations } from '@/contexts/LanguageContext';
 import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 
@@ -148,7 +149,7 @@ export function TerminalHeaderActions({
           onClick={() => {
             const next = Math.max(10, fontSize - 1);
             setFontSize(next);
-            try { localStorage.setItem('terminal-font-size', String(next)); } catch { }
+            safeSetItem('terminal-font-size', String(next));
           }}
           className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-secondary-600 hover:text-secondary-900 font-bold text-xs select-none", isDark && "text-secondary-300 hover:text-secondary-100")}
           aria-label="A-"
@@ -163,7 +164,7 @@ export function TerminalHeaderActions({
           onClick={() => {
             const next = Math.min(20, fontSize + 1);
             setFontSize(next);
-            try { localStorage.setItem('terminal-font-size', String(next)); } catch { }
+            safeSetItem('terminal-font-size', String(next));
           }}
           className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-secondary-600 hover:text-secondary-900 font-bold text-xs select-none", isDark && "text-secondary-300 hover:text-secondary-100")}
           aria-label="A+"

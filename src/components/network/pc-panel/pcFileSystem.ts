@@ -1,7 +1,7 @@
 // pcFileSystem.ts
 // Simple in‑memory file system persisted in localStorage per PC device.
 
-import { secureStorage } from '@/lib/storage/secureStorage';
+import { safeGetJSON, safeSetJSON } from '@/lib/storage/safeStorage';
 
 export type FSNode =
   | { type: 'dir'; children: Record<string, FSNode>; modifiedAt?: string }
@@ -295,17 +295,7 @@ export function loadFs(deviceId: string): FSNode {
   if (fsStore[deviceId]) {
     return fsStore[deviceId];
   }
-  let fs: FSNode | null = null;
-  if (typeof localStorage !== 'undefined') {
-    try {
-      const raw = secureStorage.getItem(`pc_fs_${deviceId}`);
-      if (raw) {
-        fs = JSON.parse(raw) as FSNode;
-      }
-    } catch {
-      // ignore corrupted data or storage restrictions
-    }
-  }
+  let fs = safeGetJSON<FSNode | null>(`pc_fs_${deviceId}`, null);
 
   if (!fs || fs.type !== 'dir') {
     fs = createDefaultFs();
@@ -321,13 +311,7 @@ export function loadFs(deviceId: string): FSNode {
 /** Persist the file system for a given deviceId. */
 export function saveFs(deviceId: string, fs: FSNode): void {
   fsStore[deviceId] = fs;
-  if (typeof localStorage !== 'undefined') {
-    try {
-      secureStorage.setItem(`pc_fs_${deviceId}`, JSON.stringify(fs));
-    } catch {
-      // ignore storage errors
-    }
-  }
+  safeSetJSON(`pc_fs_${deviceId}`, fs);
 }
 
 /** Get list of files in C:\upload directory for FTP service. */

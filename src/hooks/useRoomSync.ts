@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { generateSecureId } from '@/lib/security/sanitizer';
 import { csrfHeaders } from '@/lib/security/csrf';
+import { safeGetItem, safeSetItem, safeGetSessionItem, safeSetSessionItem } from '@/lib/storage/safeStorage';
 
 interface UseRoomSyncOptions {
   roomCode: string | null;
@@ -31,12 +32,12 @@ export function useRoomSync({
     const currentRoomCode = roomCode;
 
     if (!studentIdRef.current) {
-      const stored = localStorage.getItem('room-student-id');
+      const stored = safeGetItem('room-student-id');
       if (stored) {
         studentIdRef.current = stored;
       } else {
         studentIdRef.current = generateSecureId();
-        localStorage.setItem('room-student-id', studentIdRef.current);
+        safeSetItem('room-student-id', studentIdRef.current);
       }
     }
 
@@ -46,7 +47,7 @@ export function useRoomSync({
 
     const timeoutId = setTimeout(async () => {
       try {
-        let sessionToken = sessionStorage.getItem(`room-session-token-${currentRoomCode}`);
+        let sessionToken = safeGetSessionItem(`room-session-token-${currentRoomCode}`);
         if (!sessionToken) {
           const tokenRes = await fetch(`/api/room/${currentRoomCode}/session`, {
             method: 'POST',
@@ -58,7 +59,7 @@ export function useRoomSync({
             const token = tokenJson.data?.sessionToken;
             if (tokenJson.success && typeof token === 'string') {
               sessionToken = token;
-              sessionStorage.setItem(`room-session-token-${currentRoomCode}`, token);
+              safeSetSessionItem(`room-session-token-${currentRoomCode}`, token);
             }
           }
         }

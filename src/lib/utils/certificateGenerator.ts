@@ -2,6 +2,8 @@ import jsPDF from 'jspdf';
 import { toast } from '@/hooks/use-toast';
 import { csrfHeaders } from '@/lib/security/csrf';
 import { colors } from '@/lib/design-tokens/colors';
+import { isDesktopApp } from '@/lib/utils/desktopDetection';
+import { safeGetItem } from '@/lib/storage/safeStorage';
 
 interface CertificateData {
   studentName: string;
@@ -302,12 +304,42 @@ export const generateCertificate = async (data: CertificateData): Promise<boolea
   let verifyUrl = '';
 
   try {
-    const roomCode = data.roomCode || (typeof localStorage !== 'undefined' ? localStorage.getItem('room-joined-code') : undefined);
-    const studentId = data.studentId || (typeof localStorage !== 'undefined' ? localStorage.getItem('room-student-id') : undefined);
+    const roomCode = data.roomCode || safeGetItem('room-joined-code') || undefined;
+    const studentId = data.studentId || safeGetItem('room-student-id') || undefined;
 
-    let scoreToken: string | undefined = undefined;
-    if (!roomCode) {
-      const signRes = await fetch('/api/certificate/sign-score', {
+    if (isDesktopApp()) {
+      toast({
+        title: isTr ? 'Masaüstü Sürümü Bildirimi' : 'Desktop Edition Notice',
+        description: isTr
+          ? 'Masaüstü sürümünde çevrimiçi doğrulama kodu kaydı yerine yerel sertifika doğrulaması oluşturulmaktadır.'
+          : 'In desktop edition, local verification is used instead of online registration.',
+      });
+      verifyUrl = `${PRODUCTION_URL}/verify?code=${verifyCode}`;
+    } else {
+      let scoreToken: string | undefined = undefined;
+      if (!roomCode) {
+        const signRes = await fetch('/api/certificate/sign-score', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...csrfHeaders() },
+          body: JSON.stringify({
+            studentName: data.studentName,
+            projectTitle: data.projectTitle,
+            score,
+            totalScore,
+          }),
+        });
+        let signJson: { success?: boolean; data?: { scoreToken?: string }; error?: string } = {};
+        try {
+          signJson = await signRes.json();
+        } catch {
+        }
+        if (!signRes.ok || !signJson.success || !signJson.data?.scoreToken) {
+          throw new Error(signJson.error || `Score signing failed (${signRes.status})`);
+        }
+        scoreToken = signJson.data.scoreToken;
+      }
+
+      const res = await fetch('/api/certificate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...csrfHeaders() },
         body: JSON.stringify({
@@ -315,63 +347,42 @@ export const generateCertificate = async (data: CertificateData): Promise<boolea
           projectTitle: data.projectTitle,
           score,
           totalScore,
+          date: data.date,
+          language,
+          roomCode,
+          studentId,
+          scoreToken,
         }),
       });
-      let signJson: { success?: boolean; data?: { scoreToken?: string }; error?: string } = {};
-      try {
-        signJson = await signRes.json();
-      } catch {
+
+      if (!res.ok) {
+        let errMsg = 'Registration failed';
+        try {
+          const json = await res.json();
+          errMsg = json.error || errMsg;
+        } catch {
+          errMsg = res.statusText || errMsg;
+        }
+        throw new Error(errMsg);
       }
-      if (!signRes.ok || !signJson.success || !signJson.data?.scoreToken) {
-        throw new Error(signJson.error || `Score signing failed (${signRes.status})`);
+
+      const json = await res.json();
+      if (!json.success || !json.data?.verifyCode) {
+        throw new Error(json.error || 'Failed to register certificate');
       }
-      scoreToken = signJson.data.scoreToken;
+
+      verifyCode = json.data.verifyCode;
+      verifyUrl = `${PRODUCTION_URL}/verify?code=${verifyCode}`;
     }
-
-    const res = await fetch('/api/certificate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...csrfHeaders() },
-      body: JSON.stringify({
-        studentName: data.studentName,
-        projectTitle: data.projectTitle,
-        score,
-        totalScore,
-        date: data.date,
-        language,
-        roomCode,
-        studentId,
-        scoreToken,
-      }),
-    });
-
-    if (!res.ok) {
-      let errMsg = 'Registration failed';
-      try {
-        const json = await res.json();
-        errMsg = json.error || errMsg;
-      } catch {
-        errMsg = res.statusText || errMsg;
-      }
-      throw new Error(errMsg);
-    }
-
-    const json = await res.json();
-    if (!json.success || !json.data?.verifyCode) {
-      throw new Error(json.error || 'Failed to register certificate');
-    }
-
-    verifyCode = json.data.verifyCode;
-    verifyUrl = `${PRODUCTION_URL}/verify?code=${verifyCode}`;
   } catch (error: unknown) {
     const errMsg = error instanceof Error ? error.message : String(error);
     toast({
-      title: isTr ? 'Sertifika Hatası' : 'Certificate Error',
+      title: isTr ? 'Sertifika Uyarısı' : 'Certificate Notice',
       description: isTr
-        ? `Sertifika sunucuya kaydedilemedi: ${errMsg}`
-        : `Failed to register certificate on server: ${errMsg}`,
-      variant: 'destructive',
+        ? `Çevrimiçi sunucu kaydı yapılamadı (${errMsg}). Sertifikanız yerel kodla oluşturuluyor.`
+        : `Online server registration failed (${errMsg}). Generating certificate with local code.`,
     });
-    return false;
+    verifyUrl = `${PRODUCTION_URL}/verify?code=${verifyCode}`;
   }
 
   try {

@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { safeGetItem, safeSetItem, safeRemoveItem, safeClearStorage } from './safeStorage';
 
 /**
  * Secure Storage Wrapper
@@ -20,12 +21,14 @@ function hashKey(input: string): string {
 
 function getDeviceSalt(): string {
   try {
-    const stored = window.localStorage.getItem(DEVICE_SALT_KEY);
+    const stored = safeGetItem(DEVICE_SALT_KEY);
     if (stored) return stored;
     const bytes = new Uint8Array(32);
-    if (window.crypto?.getRandomValues) window.crypto.getRandomValues(bytes);
+    if (typeof window !== 'undefined' && window.crypto?.getRandomValues) {
+      window.crypto.getRandomValues(bytes);
+    }
     const salt = Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
-    window.localStorage.setItem(DEVICE_SALT_KEY, salt);
+    safeSetItem(DEVICE_SALT_KEY, salt);
     return salt;
   } catch {
     return 'fallback-device-salt';
@@ -33,6 +36,7 @@ function getDeviceSalt(): string {
 }
 
 function getSecretKey(): string {
+  if (typeof window === 'undefined') return LEGACY_SECRET_KEY;
   const fingerprint = [
     navigator.userAgent,
     navigator.platform,
@@ -98,37 +102,17 @@ function decode(data: string): string {
 
 export const secureStorage = {
   setItem(key: string, value: string): void {
-    if (typeof window === 'undefined' || !window.localStorage) return;
     try {
       const encoded = encode(value);
-      window.localStorage.setItem(key, encoded);
+      safeSetItem(key, encoded);
     } catch (e) {
-      if (e instanceof DOMException && (e.name === 'QuotaExceededError' || e.code === 22 || e.code === 1014)) {
-        // Attempt emergency cleanup of heavy non-critical storage items
-        try {
-          if (key !== 'netsim_history') {
-            window.localStorage.removeItem('netsim_history');
-          }
-        } catch { /* ignore */ }
-
-        try {
-          const encoded = encode(value);
-          window.localStorage.setItem(key, encoded);
-          return;
-        } catch {
-          // Retry failed - throw so caller can reduce payload size if supported
-        }
-      } else {
-        logger.error(`Error setting secureStorage key ${key}`, e);
-      }
-      throw e;
+      logger.error(`Error setting secureStorage key ${key}`, e);
     }
   },
 
   getItem(key: string): string | null {
-    if (typeof window === 'undefined' || !window.localStorage) return null;
     try {
-      const value = window.localStorage.getItem(key);
+      const value = safeGetItem(key);
       if (value === null) return null;
       return decode(value);
     } catch (e) {
@@ -138,20 +122,19 @@ export const secureStorage = {
   },
 
   removeItem(key: string): void {
-    if (typeof window === 'undefined' || !window.localStorage) return;
     try {
-      window.localStorage.removeItem(key);
+      safeRemoveItem(key);
     } catch (e) {
       logger.error(`Error removing secureStorage key ${key}`, e);
     }
   },
 
   clear(): void {
-    if (typeof window === 'undefined' || !window.localStorage) return;
     try {
-      window.localStorage.clear();
+      safeClearStorage();
     } catch (e) {
       logger.error('Error clearing secureStorage', e);
     }
   }
 };
+

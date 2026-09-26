@@ -149,7 +149,7 @@ export function addTopologyRecord(name: string, category: string): void {
 
 export function clearSummary(): void {
   try {
-    localStorage.removeItem(STORAGE_KEY);
+    secureStorage.removeItem(STORAGE_KEY);
   } catch {
     // storage error
   }

@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
+import { safeGetItem, safeSetItem } from '@/lib/storage/safeStorage';
 
 interface UseOnboardingProps {
   t: Record<string, string>;
@@ -22,7 +23,7 @@ export function useOnboarding({
   useEffect(() => {
     if (isAppLoading || !hasHydrated) return;
     try {
-      const seen = localStorage.getItem('netsim_onboarding_seen');
+      const seen = safeGetItem('netsim_onboarding_seen');
       if (!seen) {
         setShowOnboarding(true);
         setOnboardingStep(0);
@@ -78,7 +79,7 @@ export function useOnboarding({
 
   const closeOnboardingForever = useCallback(() => {
     try {
-      localStorage.setItem('netsim_onboarding_seen', '1');
+      safeSetItem('netsim_onboarding_seen', '1');
     } catch (err) {
       errorHandler.logError(
         STORAGE_ERRORS.LOCAL_STORAGE_UNAVAILABLE({

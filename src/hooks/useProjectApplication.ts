@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useCallback } from 'react';
 import type { CanvasDevice, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
@@ -8,6 +8,7 @@ import type { GuidedProject } from '@/lib/network/guidedMode';
 import type { ExampleProject } from '@/lib/network/exampleProjects';
 import { createInitialState, createInitialRouterState, createInitialFirewallState, createInitialWLCState } from '@/lib/network/initialState';
 import { addProjectRecord } from '../utils/achievementRecords';
+import { safeSetItem, safeRemoveItem } from '@/lib/storage/safeStorage';
 
 export function useProjectApplication({
   loadProjectData,
@@ -145,12 +146,12 @@ export function useProjectApplication({
         }
       }
       if (foundDesc) {
-        localStorage.setItem('lastProjectDescription', foundDesc);
+        safeSetItem('lastProjectDescription', foundDesc);
       } else {
-        localStorage.removeItem('lastProjectDescription');
+        safeRemoveItem('lastProjectDescription');
       }
     } else {
-      localStorage.removeItem('lastProjectDescription');
+      safeRemoveItem('lastProjectDescription');
     }
     setShowProjectPicker(false);
     closeGuidedMode();
@@ -184,12 +185,12 @@ export function useProjectApplication({
         }
       }
       if (foundDesc) {
-        localStorage.setItem('lastProjectDescription', foundDesc);
+        safeSetItem('lastProjectDescription', foundDesc);
       } else {
-        localStorage.removeItem('lastProjectDescription');
+        safeRemoveItem('lastProjectDescription');
       }
     } else {
-      localStorage.removeItem('lastProjectDescription');
+      safeRemoveItem('lastProjectDescription');
     }
     setShowProjectPicker(false);
     closeGuidedMode();

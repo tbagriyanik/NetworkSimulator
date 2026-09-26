@@ -11,6 +11,8 @@ import { useRoom } from '@/contexts/RoomContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { generateSecureId } from '@/lib/security/sanitizer';
 import { csrfHeaders } from '@/lib/security/csrf';
+import { safeGetItem, safeSetItem, safeSetSessionItem } from '@/lib/storage/safeStorage';
+import { isDesktopApp } from '@/lib/utils/desktopDetection';
 
 type SortField = 'name' | 'duration' | 'tasks' | 'score';
 type SortDir = 'asc' | 'desc';
@@ -55,7 +57,9 @@ function RoomMonitor({ roomCode, onClose }: { roomCode: string; onClose: () => v
       await navigator.clipboard.writeText(roomCode);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch { }
+    } catch (err: unknown) {
+      console.warn('Oda kodu panoya kopyalanamadı:', err);
+    }
   };
 
   const toAscii = (s: string) => s.replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c').replace(/İ/g, 'I').replace(/Ğ/g, 'G').replace(/Ü/g, 'U').replace(/Ş/g, 'S').replace(/Ö/g, 'O').replace(/Ç/g, 'C');
@@ -256,14 +260,22 @@ export function TeacherRoomPanel() {
   }, [showTeacherPanel, activeCode]);
 
   const getTeacherId = (): string => {
-    const stored = localStorage.getItem('teacher-browser-id');
+    const stored = safeGetItem('teacher-browser-id');
     if (stored) return stored;
     const id = generateSecureId();
-    localStorage.setItem('teacher-browser-id', id);
+    safeSetItem('teacher-browser-id', id);
     return id;
   };
 
   const handleCreate = async () => {
+    if (isDesktopApp()) {
+      setError(
+        t.language === 'tr'
+          ? 'Öğretmen oda yönetimi ve canlı sınıf özellikleri için lütfen web sürümünü kullanınız.'
+          : 'Teacher room creation and live classroom features require the web version.'
+      );
+      return;
+    }
     const code = generateRoomCode();
     setIsLoading(true);
     setError(null);
@@ -279,7 +291,7 @@ export function TeacherRoomPanel() {
         setActiveCode(code);
         const sessionToken = json.data?.sessionToken;
         if (typeof sessionToken === 'string') {
-          sessionStorage.setItem(`room-session-token-${code}`, sessionToken);
+          safeSetSessionItem(`room-session-token-${code}`, sessionToken);
         }
       } else {
         setError(json.error || 'Failed to create room');
@@ -292,6 +304,14 @@ export function TeacherRoomPanel() {
   };
 
   const handleJoinMonitor = async () => {
+    if (isDesktopApp()) {
+      setError(
+        t.language === 'tr'
+          ? 'Öğretmen oda yönetimi ve canlı sınıf özellikleri için lütfen web sürümünü kullanınız.'
+          : 'Teacher room creation and live classroom features require the web version.'
+      );
+      return;
+    }
     const code = roomCodeInput.trim().toUpperCase();
     if (code.length < 4) return;
     setIsLoading(true);
