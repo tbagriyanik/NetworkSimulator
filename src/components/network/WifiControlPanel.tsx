@@ -156,7 +156,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
           <span>📡 WLAN Interface: wlan0</span>
         </div>
       </div>
-      <button type="button" class="btn btn-secondary" onclick="handleLogout()" style="padding:8px 16px;font-size:12px;background:${colors.common.white};border:1px solid var(--color-secondary-300);color:var(--color-secondary-700);cursor:pointer;shrink:0;border-radius:6px;" title="${isTurkish ? 'Oturumu Kapat' : 'Logout'}">
+      <button type="button" class="btn btn-secondary" id="btn-logout" style="padding:8px 16px;font-size:12px;background:${colors.common.white};border:1px solid var(--color-secondary-300);color:var(--color-secondary-700);cursor:pointer;shrink:0;border-radius:6px;" title="${isTurkish ? 'Oturumu Kapat' : 'Logout'}">
         🚪 ${isTurkish ? 'Çıkış Yap' : 'Logout'}
       </button>
     </div>
@@ -234,7 +234,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
         
         <div class="actions">
           <button type="submit" class="btn btn-primary">💾 ${isTurkish ? 'Ana Ayarları Kaydet' : 'Save Primary Settings'}</button>
-          <button type="button" class="btn btn-secondary" onclick="location.reload()">↺ ${isTurkish ? 'Sıfırla' : 'Reset'}</button>
+          <button type="button" class="btn btn-secondary" id="btn-reset-primary">↺ ${isTurkish ? 'Sıfırla' : 'Reset'}</button>
         </div>
       </form>
 
@@ -274,7 +274,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
           </div>
           <div class="form-group" style="margin-bottom:0;">
             <label for="profile-security">${isTurkish ? 'Güvenlik Türü' : 'Security Type'}</label>
-            <select id="profile-security" onchange="handleProfileSecurityChange(this.value)">
+            <select id="profile-security">
               <option value="wpa2">${isTurkish ? 'WPA2-PSK (Kişisel)' : 'WPA2-PSK (Personal)'}</option>
               <option value="wpa3">${isTurkish ? 'WPA3-SAE (Yüksek Güvenlik)' : 'WPA3-SAE (High Security)'}</option>
               <option value="open">${isTurkish ? 'Açık (Şifresiz)' : 'Open (No password)'}</option>
@@ -300,10 +300,10 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
         </div>
 
         <div style="display:flex;gap:10px;">
-          <button type="button" class="btn btn-primary" onclick="saveSsidProfile()" id="btn-save-ssid-profile">
+          <button type="button" class="btn btn-primary" id="btn-save-ssid-profile">
             💾 ${isTurkish ? 'SSID Profilini Kaydet' : 'Save SSID Profile'}
           </button>
-          <button type="button" class="btn btn-secondary" onclick="resetSsidForm()">
+          <button type="button" class="btn btn-secondary" id="btn-reset-ssid-form">
             ↺ ${isTurkish ? 'Formu Temizle' : 'Clear Form'}
           </button>
         </div>
@@ -372,7 +372,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
             <p style="margin:0;font-size:13px;color:var(--color-secondary-500);">${isTurkish ? 'Kablosuz ağa yalnızca izin verilen cihazların erişmesini sağlayın veya belirli cihazları engelleyin.' : 'Allow only permitted devices to access the wireless network or block specific devices.'}</p>
           </div>
           <label class="switch">
-            <input type="checkbox" id="mac-filter-enabled" ${wifi.macFilterEnabled ? 'checked' : ''} onchange="toggleMacFilterSection()">
+            <input type="checkbox" id="mac-filter-enabled" ${wifi.macFilterEnabled ? 'checked' : ''}>
             <span class="slider"></span>
           </label>
         </div>
@@ -396,7 +396,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
             <label style="display:block;font-weight:600;font-size:13px;margin-bottom:6px;">${isTurkish ? 'MAC Adresi Ekle:' : 'Add MAC Address:'}</label>
             <div style="display:flex;gap:8px;">
               <input type="text" id="manual-mac-input" placeholder="00:11:22:33:44:55">
-              <button type="button" class="btn btn-secondary" onclick="addManualMac()">➕ ${isTurkish ? 'Ekle' : 'Add'}</button>
+              <button type="button" class="btn btn-secondary" id="btn-add-manual-mac">➕ ${isTurkish ? 'Ekle' : 'Add'}</button>
             </div>
           </div>
 
@@ -417,7 +417,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
             <p style="margin:0;font-size:13px;color:var(--color-secondary-500);">${isTurkish ? 'Ağa bağlanan cihazlara otomatik IP adresi dağıtımını ve ağ parametrelerini yapılandırın.' : 'Configure automatic IP assignment and network parameters for connected devices.'}</p>
           </div>
           <label class="switch">
-            <input type="checkbox" id="dhcp-server-enabled" ${dhcpServerEnabled ? 'checked' : ''} onchange="toggleDhcpServerSection()">
+            <input type="checkbox" id="dhcp-server-enabled" ${dhcpServerEnabled ? 'checked' : ''}>
             <span class="slider"></span>
           </label>
         </div>
@@ -459,7 +459,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
       </div>
 
       <div class="actions">
-        <button type="button" class="btn btn-primary" id="save-advanced-btn" onclick="saveMacFilterSettings()">💾 ${isTurkish ? 'Gelişmiş Ayarları Kaydet' : 'Save Advanced Settings'}</button>
+        <button type="button" class="btn btn-primary" id="save-advanced-btn">💾 ${isTurkish ? 'Gelişmiş Ayarları Kaydet' : 'Save Advanced Settings'}</button>
       </div>
     </div>
   </div>

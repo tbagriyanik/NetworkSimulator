@@ -1,6 +1,6 @@
 # 📚 Network Simulator — Uygulama & Kullanım Rehberi
 
-**Sürüm / Version:** 6.6.1  
+**Sürüm / Version:** 6.7.0  
 **Doküman Tipi:** Kullanım, Mimari, Komut Referansı ve Laboratuvar Kılavuzu  
 **Dil:** Türkçe (Turkish)
 
@@ -26,8 +26,12 @@
 Network Simulator; bilgisayar ağları, anahtarlama (switching), yönlendirme (routing), kablosuz ağlar (wireless), IoT (Nesnelerin İnterneti), siber güvenlik ve sistem yönetimi konularını interaktif ve görsel olarak öğretmek için tasarlanmış tarayıcı tabanlı (client-side) tam kapsamlı bir ağ simülatörüdür.
 
 - **%100 İstemci Taraflı (Client-Side) ve Hızlı:** React 19, Next.js 16 ve TypeScript altyapısıyla herhangi bir sunucu kurulumu gerektirmeden tarayıcıda çalışır.
+- **🎯 Davranış Regresyon Motoru & E2E Test Matrisi:** Komutların parsed edildiği, cihaz durumunu güncellediği, protokol motorlarını (STP, ARP, MAC, Routing, ACL, NAT, BGP) tetiklediği ve paket iletim izini oluşturduğu 4 aşamalı uçtan uca doğrulama altyapısı.
+- **🛠️ Sorun Giderme (Troubleshooting) & Arıza Enjeksiyonu Motoru:** Öğrenciler için otomatik olarak arızalandırılmış topolojiler (shutdown portlar, hatalı VLAN/Subnet, ACL engellemeleri, kopuk trunk, OSPF uyuşmazlığı) ve 3 kademeli ipucu sistemi.
+- **⌨️ CLI Abbreviation, TAB Ototamlama & Caret Hata İletimi:** `sh ip ro`, `conf t`, `int fa0/1` kısaltma desteği, TAB ototamlama ve caret imleci (`^`) ile tam yerel hata konumlandırma.
+- **📊 Hop-by-Hop Paket Yolculuğu (Packet Journey) & Drop Reason Registry:** Sıçrama bazında L1-L7 katman detayları, paket başlık dökümleri ve standardize düşme nedenleri (`Interface Down`, `ACL Blocked`, `Port Security Violation`, `STP Blocking`, `TTL Expired`, `NAT Translation Failed`).
 - **🧊 3D Grafik Sahne Motoru & Görselleştirme:** Gömülü Python scriptleri üzerinden interaktif 3D nesneler (`Plane`, `Cube`, `Sphere`, `Cylinder`, `Prism`), CSG mantıksal katı geometri (`union`/`subtract`), materyal kaplamaları, ışıklandırma ve sürüklenebilir 3D portal penceresi (`Python3DWindow`).
-- **🎵 Web Audio API Tabanlı Dinamik Müzik & Ses Sentetörü:** Gömülü Python ile nota, polifonik akor, melodi, tonlama skalası, akor ilerlemesi, arpej, ADSR zarfı ve ses efekti (`coin`, `laser`, `jump`, `explosion`, `powerup`) sentezleme ve WAV formatında diske (`C:\*.wav`) aktarabilme.
+- **🎵 Web Audio API Tabanlı Dinamik Müzik & Ses Sentetörü:** Gömülü Python ile nota, polifonik akor, melodi, tonlama skalası, akor ilerlemesi, arpej, ADSR zarfı ve ses efekti sentezleme ve WAV formatında diske aktarma.
 - **🖼️ Görsel Form & GUI Pencere Motoru (`tkinter` / `form`):** PC Python ortamında interaktif form pencereleri (`PythonFormWindow`), düğmeler (Button), metin girişleri (Entry), çok satırlı metin kutuları (Text), açılır menüler (Combobox), onay kutuları (Checkbutton) ve düzen yöneticileri (`pack`, `grid`, `place`).
 - **11 Tam Donanımlı Cihaz Tipi:** Router, L2/L3 Switch, Firewall, WLC, AP, PC, IoT, Multiport Hub (`hub`), Aktif Bulut WAN Geçidi (`cloud`), Kablosuz Akıllı Telefon (`mobile`) ve Ağ Yazıcısı (`printer`).
 - **🧩 NetSim Modüler Donanım Şasisi & Yuva Yönetimi:** Router ve Switch cihazlarında fiziksel yuvalara (Slots) NetSim WIC-2T (Serial), NetSim HWIC-4ESW (Switch), NetSim SFP-10G-LR (Fiber), NetSim NM-1GE (Copper) modülleri takıp çıkarabilme, Donanım Güç Anahtarı (Power Switch) ile sıcak değişim koruması ve dinamik port tablosu.

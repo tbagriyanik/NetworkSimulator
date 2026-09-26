@@ -134,34 +134,54 @@ export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zInde
           <div className="overflow-hidden cursor-default">
             <div className="p-2 space-y-1 text-xs">
               <TooltipWrapper title={t.copy}>
-                <div className="flex justify-between items-center cursor-pointer hover:bg-secondary-500/10 rounded px-1 transition-colors" onClick={() => navigator.clipboard.writeText(pc?.ip || '0.0.0.0')}>
+                <button
+                  type="button"
+                  className="w-full flex justify-between items-center text-left font-[inherit] bg-transparent border-0 p-0 cursor-pointer hover:bg-secondary-500/10 rounded px-1 transition-colors"
+                  onClick={() => navigator.clipboard.writeText(pc?.ip || '0.0.0.0')}
+                >
                   <span className="opacity-50">{language === 'tr' ? 'IP Adresi' : 'IP'}</span>
                   <span className="font-mono text-primary-500">{pc?.ip || '0.0.0.0'}</span>
-                </div>
+                </button>
               </TooltipWrapper>
               <TooltipWrapper title={t.copy}>
-                <div className="flex justify-between items-center cursor-pointer hover:bg-secondary-500/10 rounded px-1 transition-colors" onClick={() => navigator.clipboard.writeText(pc?.subnet || '255.255.255.0')}>
+                <button
+                  type="button"
+                  className="w-full flex justify-between items-center text-left font-[inherit] bg-transparent border-0 p-0 cursor-pointer hover:bg-secondary-500/10 rounded px-1 transition-colors"
+                  onClick={() => navigator.clipboard.writeText(pc?.subnet || '255.255.255.0')}
+                >
                   <span className="opacity-50">{language === 'tr' ? 'Alt Ağ' : 'Subnet'}</span>
                   <span className="font-mono opacity-80">{pc?.subnet || '255.255.255.0'}</span>
-                </div>
+                </button>
               </TooltipWrapper>
               <TooltipWrapper title={t.copy}>
-                <div className="flex justify-between items-center cursor-pointer hover:bg-secondary-500/10 rounded px-1 transition-colors" onClick={() => navigator.clipboard.writeText(pc?.gateway || '0.0.0.0')}>
+                <button
+                  type="button"
+                  className="w-full flex justify-between items-center text-left font-[inherit] bg-transparent border-0 p-0 cursor-pointer hover:bg-secondary-500/10 rounded px-1 transition-colors"
+                  onClick={() => navigator.clipboard.writeText(pc?.gateway || '0.0.0.0')}
+                >
                   <span className="opacity-50">{language === 'tr' ? 'Ağ Geçidi' : 'GW'}</span>
                   <span className="font-mono opacity-80">{pc?.gateway || '0.0.0.0'}</span>
-                </div>
+                </button>
               </TooltipWrapper>
               <TooltipWrapper title={t.copy}>
-                <div className="flex justify-between items-center cursor-pointer hover:bg-secondary-500/10 rounded px-1 transition-colors" onClick={() => navigator.clipboard.writeText(`${pc?.ipv6 || '2001:db8:acad:1::10'}/${pc?.ipv6Prefix || '64'}`)}>
+                <button
+                  type="button"
+                  className="w-full flex justify-between items-center text-left font-[inherit] bg-transparent border-0 p-0 cursor-pointer hover:bg-secondary-500/10 rounded px-1 transition-colors"
+                  onClick={() => navigator.clipboard.writeText(`${pc?.ipv6 || '2001:db8:acad:1::10'}/${pc?.ipv6Prefix || '64'}`)}
+                >
                   <span className="opacity-50">{language === 'tr' ? 'IPv6 Adresi' : 'IPv6'}</span>
                   <span className="font-mono opacity-80">{pc?.ipv6 || '2001:db8:acad:1::10'}<span className="opacity-50">/{pc?.ipv6Prefix || '64'}</span></span>
-                </div>
+                </button>
               </TooltipWrapper>
               <TooltipWrapper title={t.copy}>
-                <div className="flex justify-between items-center cursor-pointer hover:bg-secondary-500/10 rounded px-1 transition-colors" onClick={() => navigator.clipboard.writeText(pc?.macAddress ? normalizeMAC(pc.macAddress) : 'N/A')}>
+                <button
+                  type="button"
+                  className="w-full flex justify-between items-center text-left font-[inherit] bg-transparent border-0 p-0 cursor-pointer hover:bg-secondary-500/10 rounded px-1 transition-colors"
+                  onClick={() => navigator.clipboard.writeText(pc?.macAddress ? normalizeMAC(pc.macAddress) : 'N/A')}
+                >
                   <span className="opacity-50">{language === 'tr' ? 'MAC Adresi' : 'MAC'}</span>
                   <span className="font-mono opacity-30 text-xs">{pc?.macAddress ? normalizeMAC(pc.macAddress) : (language === 'tr' ? 'Yok' : 'N/A')}</span>
-                </div>
+                </button>
               </TooltipWrapper>
               {pc?.wifi && pc.wifi.enabled && !(pc.wifi.powerDisabled ?? false) && (
                 <Collapsible open={!collapsedSections.wifi} onOpenChange={(open) => setCollapsedSections(prev => ({ ...prev, wifi: !open }))}>
@@ -480,12 +500,13 @@ export function RouterInfoPopover({ router, routerState, t, language, isDark, on
                   <CollapsibleContent>
                     {ipAddresses.map((addr: string, i: number) => (
                       <TooltipWrapper key={addr || `ip-${i}`} title={t.copy}>
-                        <div
-                          className="font-mono text-xs opacity-70 truncate cursor-pointer hover:bg-secondary-500/10 rounded px-1 transition-colors"
+                        <button
+                          type="button"
+                          className="w-full text-left font-mono text-xs font-[inherit] opacity-70 truncate cursor-pointer hover:bg-secondary-500/10 rounded px-1 transition-colors"
                           onClick={() => navigator.clipboard.writeText(addr)}
                         >
                           {addr}
-                        </div>
+                        </button>
                       </TooltipWrapper>
                     ))}
                   </CollapsibleContent>

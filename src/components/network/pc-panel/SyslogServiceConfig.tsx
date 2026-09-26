@@ -181,6 +181,9 @@ export function SyslogServiceConfig({
               type="button"
               role="switch"
               aria-checked={serviceSyslogEnabled}
+            aria-label={serviceSyslogEnabled
+              ? (language === 'tr' ? 'Syslog hizmetini kapat' : 'Disable syslog service')
+              : (language === 'tr' ? 'Syslog hizmetini aç' : 'Enable syslog service')}
               onClick={() => {
                 const enabled = !serviceSyslogEnabled;
                 setServiceSyslogEnabled(enabled);
@@ -206,7 +209,6 @@ export function SyslogServiceConfig({
         <div className="flex gap-3">
           <div className="flex-1">
             <select
-              role="combobox"
               value={filterSeverity}
               onChange={(e) => setFilterSeverity(e.target.value)}
               className={`w-full text-xs rounded-md border p-1.5 ${isDark ? 'bg-secondary-800 border-secondary-700 text-white' : 'bg-white border-secondary-300'}`}

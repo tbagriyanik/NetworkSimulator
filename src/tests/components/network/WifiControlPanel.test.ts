@@ -284,5 +284,65 @@ describe('WifiControlPanel', () => {
   });
 });
 
+/**
+ * Regression guard for the <script> embedding contract.
+ *
+ * The `js*` params of getWifiControlPanelScripts are ALREADY encoded by
+ * WifiControlPanel via safeJSONForHTML(). Encoding them a second time inside
+ * wifiAdminScripts.ts would double-quote every value and silently break
+ * deviceId/credential comparisons at runtime, so these tests assert both
+ * directions: no script breakout AND no double encoding.
+ */
+describe('wifi admin script JSON embedding', () => {
+  const XSS = '</script><img src=x onerror=alert(1)>';
+
+  /** Read `var NAME = <json>;` from the generated script and parse it back. */
+  function readVar(html: string, name: string): unknown {
+    const match = html.match(new RegExp(`var ${name} = (.*?);\\r?\\n`));
+    expect(match, `expected "var ${name} = ...;" in generated script`).toBeTruthy();
+    return JSON.parse(match![1]) as unknown;
+  }
+
+  function pageWithPayloads() {
+    return generateRouterAdminPage(
+      { ...baseDevice, id: XSS },
+      'en',
+      undefined,
+      undefined,
+      undefined,
+      `adm"in${XSS}`,
+      `pw'${XSS}`,
+    );
+  }
+
+  it('does not allow a script breakout via deviceId / username / password', () => {
+    const html = pageWithPayloads();
+
+    // The raw payload must never reach the document verbatim.
+    expect(html).not.toContain('</script><img src=x onerror=alert(1)>');
+    expect(html).not.toContain("onerror=alert(1)>");
+    // <, >, & and ' are unicode-escaped by safeJSONForHTML.
+    expect(html).toContain('\\u003c');
+    expect(html).toContain('\\u003e');
+  });
+
+  it('embeds deviceId / username / password exactly once (no double encoding)', () => {
+    const html = pageWithPayloads();
+
+    expect(readVar(html, 'currentDeviceId')).toBe(XSS);
+    expect(readVar(html, 'currentAdminUser')).toBe(`adm"in${XSS}`);
+    expect(readVar(html, 'currentAdminPass')).toBe(`pw'${XSS}`);
+  });
+
+  it('keeps the postMessage deviceId equal to the raw router id', () => {
+    const html = pageWithPayloads();
+    // deviceId is interpolated in postMessage payloads; it must be a plain
+    // JSON string, not a string that itself contains quotes.
+    const occurrences = html.match(/deviceId: "\\u003c\/script\\u003e/g) || [];
+    expect(occurrences.length).toBeGreaterThan(0);
+    expect(html).not.toContain('deviceId: "\\"');
+  });
+});
+
 
 

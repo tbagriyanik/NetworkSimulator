@@ -142,19 +142,38 @@ The simulator implements full life-cycle behavior validation (`CLI → State →
 | `undebug` | Disable all debugging (alias) |
 | `terminal length <n>` | Set terminal page length |
 | `terminal width <n>` | Set terminal width |
+| `terminal history size <1-500>` | Set terminal command history buffer capacity |
 | `terminal monitor` | Enable terminal monitoring |
 | `terminal no monitor` | Disable terminal monitoring |
 | `clear arp-cache` / `clear arp` | Clear dynamic ARP table entries and trigger state reset |
-| `clear mac address-table` / `clear mac` | Clear MAC address table entries and reset dynamic cache |
-| `clear counters` | Reset interface packet, byte, drop, and error counters |
+| `clear mac address-table [dynamic\|static]` / `clear mac` | Clear MAC address table entries by type and reset dynamic cache |
+| `clear counters [interface <name>]` | Reset interface packet, byte, drop, and error counters |
 | `clear line <n>` | Clear a terminal line session |
 | `clear interface <name>` | Clear interface counters and state |
-| `clear ip bgp {*|<neighbor-ip>} [soft]` | Reset BGP neighbor session or all sessions and clear learned BGP routes |
+| `clear ip bgp {*\|<neighbor-ip>} [soft]` | Reset BGP neighbor session or all sessions and clear learned BGP routes |
+| `clear ip ospf [<process-id>] process` | Reset OSPF process, database, LSDB and neighbor relationships |
+| `clear ip nat translation {*\|<global-ip>}` | Clear active dynamic/static NAT translation entries |
 | `write erase` | Erase NVRAM filesystem and startup configuration (alias for `erase startup-config`) |
-| `do <command>` | Execute privileged command from config mode |
+| `do <command>` | Execute privileged command from any sub-configuration mode with inline help (`do ?`) |
 | `help` | Display help system information |
 | `show network health` / `show health` | Run comprehensive network diagnostic check and generate consolidated status report |
 | `show access-lists` | Display all access lists |
+
+### CLI Output Modifiers & Pipe Filters
+Output filtering can be applied to `show` commands using pipe `|` syntax:
+
+| Modifier | Description | Example |
+|----------|-------------|---------|
+| `\| include <pattern>` | Display lines matching the specified pattern | `show running-config \| include interface` |
+| `\| exclude <pattern>` | Display lines not matching the specified pattern | `show ip interface brief \| exclude unassigned` |
+| `\| begin <pattern>` | Display output starting from the first line matching pattern | `show running-config \| begin router ospf` |
+| `\| section <pattern>` | Display entire configuration block/section matching pattern | `show running-config \| section line vty` |
+
+### CLI Abbreviations & TAB Autocompletion
+- **Abbreviation Support**: Standard command prefixes are resolved automatically (e.g. `sh ip ro` $\rightarrow$ `show ip route`, `conf t` $\rightarrow$ `configure terminal`, `int fa0/1` $\rightarrow$ `interface FastEthernet0/1`, `no sh` $\rightarrow$ `no shutdown`).
+- **TAB Autocompletion**: Press `Tab` to auto-complete keywords, interface names, and sub-mode parameters.
+- **Caret Error Positioning**: Syntax errors display exact error location with caretaker imlec `^`: `% Invalid input detected at '^' marker.`.
+
 
 ### Alternative CLI Compatibility
 The simulator automatically parses and maps alternative network operating system CLI syntax to equivalent standard commands:

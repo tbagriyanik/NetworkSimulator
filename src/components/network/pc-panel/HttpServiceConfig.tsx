@@ -117,6 +117,9 @@ export function HttpServiceConfig({
               type="button"
               role="switch"
               aria-checked={serviceHttpEnabled}
+              aria-label={serviceHttpEnabled
+                ? (language === 'tr' ? 'HTTP hizmetini kapat' : 'Disable HTTP service')
+                : (language === 'tr' ? 'HTTP hizmetini aç' : 'Enable HTTP service')}
               onClick={() => {
                 const enabled = !serviceHttpEnabled;
                 setServiceHttpEnabled(enabled);
@@ -145,7 +148,7 @@ export function HttpServiceConfig({
 
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            <label className="text-xs font-bold tracking-wide text-secondary-500">HTTP Content (C:\www\index.html)</label>
+            <label htmlFor="http-content-textarea" className="text-xs font-bold tracking-wide text-secondary-500">HTTP Content (C:\www\index.html)</label>
             {onEditFile && (
               <Button
                 type="button"
@@ -170,6 +173,7 @@ export function HttpServiceConfig({
             <span className="text-[10px] text-secondary-500">{language === 'tr' ? 'Seçili metni biçimlendir' : 'Format selected text'}</span>
           </div>
           <textarea
+            id="http-content-textarea"
             ref={httpContentRef}
             value={serviceHttpContent}
             onChange={(e) => updateContent(e.target.value)}

@@ -51,7 +51,11 @@ export const commandHelp: Record<string, Record<string, string[]>> = {
   },
   'privileged': {
     '': ['clear', 'clock', 'configure', 'copy', 'debug', 'delete', 'disable', 'disconnect', 'erase', 'exit', 'help', 'more', 'no', 'ping', 'reload', 'resume', 'setup', 'show', 'ssh', 'suspend', 'telnet', 'terminal', 'test', 'traceroute', 'undebug', 'write'],
-    ...pfx('clear', ['arp-cache', 'counters', 'interface', 'ipv6', 'line', 'mac']),
+    ...pfx('clear', ['arp-cache', 'counters', 'interface', 'ip', 'ipv6', 'line', 'mac']),
+    'clear ip': ['bgp', 'dhcp', 'nat', 'ospf', 'route'],
+    'clear ip bgp': ['*'],
+    'clear ip nat': ['translation'],
+    'clear ip ospf': ['process'],
     'clear ipv6': ['neighbors'],
     'clear mac': ['address-table'],
     ...pfx('clock', ['set']),

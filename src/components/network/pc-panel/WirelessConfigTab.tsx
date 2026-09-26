@@ -127,6 +127,7 @@ export function WirelessConfigTab({
               type="button"
               role="switch"
               aria-checked={wifiEnabled}
+            aria-label={language === 'tr' ? 'Kablosuz (WiFi)' : 'Wireless (WiFi)'}
               onClick={() => {
                 const enabled = !wifiEnabled;
                 setWifiEnabled(enabled);
@@ -163,7 +164,7 @@ export function WirelessConfigTab({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="space-y-2">
-            <label className="text-[10px] font-black tracking-widest text-secondary-500 ml-1">SSID (Service Set Identifier)</label>
+            <label htmlFor="wifi-ssid-input" className="text-[10px] font-black tracking-widest text-secondary-500 ml-1">SSID (Service Set Identifier)</label>
             <div className="relative">
               <div className={cn(
                 "flex items-center border rounded-md px-3 h-9 gap-2",
@@ -171,6 +172,7 @@ export function WirelessConfigTab({
                 isDark ? 'bg-background border-secondary-800' : 'bg-white border-secondary-200'
               )}>
                 <input
+                  id="wifi-ssid-input"
                   type="text"
                   value={wifiSSID}
                   onChange={e => {

@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { colors } from '@/lib/design-tokens/colors';
+import { activateOnKey } from '@/lib/utils/keyboardActivation';
 import {
   Map,
   ChevronDown,
@@ -251,7 +252,14 @@ export function MinimapNavigator({
             : 'bg-white/95 border-secondary-200/80'
         }`}
       >
-        <div onClick={toggleOpen} className="flex items-center gap-1.5 cursor-pointer">
+        <div
+          role="button"
+          tabIndex={0}
+          aria-expanded={isOpen}
+          onClick={toggleOpen}
+          onKeyDown={activateOnKey(toggleOpen)}
+          className="flex items-center gap-1.5 cursor-pointer"
+        >
           <Map className="w-3.5 h-3.5 text-primary-500" />
           <span className="text-[11px] font-bold">
             {isTR ? 'Mini Harita' : 'Mini-map'}

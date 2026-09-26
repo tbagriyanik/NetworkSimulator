@@ -333,10 +333,10 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
 
               {/* Preset Buttons */}
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold text-slate-400 flex items-center gap-1">
+                <span className="text-[10px] font-semibold text-slate-400 flex items-center gap-1">
                   <Sparkles className="w-3 h-3 text-amber-400" />
                   Hazır YANG RESTCONF Şablonları:
-                </label>
+                </span>
                 <div className="flex flex-wrap gap-1.5">
                   <button
                     onClick={() => handleSelectRestconfPreset('get_interfaces')}
@@ -373,8 +373,9 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
 
               <div className="grid grid-cols-3 gap-2">
                 <div className="col-span-1">
-                  <label className="text-[11px] font-semibold text-slate-400 mb-1 block">Metod</label>
+                  <label htmlFor="restconf-method-select" className="text-[11px] font-semibold text-slate-400 mb-1 block">Metod</label>
                   <select
+                    id="restconf-method-select"
                     value={restconfMethod}
                     onChange={(e) => setRestconfMethod(e.target.value as 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE')}
                     className={`w-full px-2.5 py-1.5 text-xs font-bold rounded-lg border focus:outline-none ${isDark ? 'bg-slate-950 border-slate-700 text-emerald-400' : 'bg-white border-slate-300 text-emerald-600'
@@ -389,8 +390,9 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                 </div>
 
                 <div className="col-span-2">
-                  <label className="text-[11px] font-semibold text-slate-400 mb-1 block">Hedef Cihaz</label>
+                  <label htmlFor="restconf-device-select" className="text-[11px] font-semibold text-slate-400 mb-1 block">Hedef Cihaz</label>
                   <select
+                    id="restconf-device-select"
                     value={selectedDeviceId}
                     onChange={(e) => setSelectedDeviceId(e.target.value)}
                     className={`w-full px-2.5 py-1.5 text-xs rounded-lg border focus:outline-none cursor-pointer relative z-10 no-drag ${isDark ? 'bg-slate-950 border-slate-700 text-slate-200 hover:border-emerald-500/50' : 'bg-white border-slate-300 hover:border-emerald-500/50'
@@ -406,8 +408,9 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
               </div>
 
               <div>
-                <label className="text-[11px] font-semibold text-slate-400 mb-1 block">YANG Endpoint URI</label>
+                <label htmlFor="restconf-uri-input" className="text-[11px] font-semibold text-slate-400 mb-1 block">YANG Endpoint URI</label>
                 <input
+                  id="restconf-uri-input"
                   type="text"
                   value={restconfUri}
                   onChange={(e) => setRestconfUri(e.target.value)}
@@ -418,8 +421,9 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
 
               {restconfMethod !== 'GET' && restconfMethod !== 'DELETE' && (
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-400 mb-1 block">Request Body (JSON Payload)</label>
+                  <label htmlFor="restconf-body-textarea" className="text-[11px] font-semibold text-slate-400 mb-1 block">Request Body (JSON Payload)</label>
                   <textarea
+                    id="restconf-body-textarea"
                     value={restconfBody}
                     onChange={(e) => setRestconfBody(e.target.value)}
                     rows={7}

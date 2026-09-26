@@ -85,6 +85,9 @@ export function DnsServiceConfig({
               type="button"
               role="switch"
               aria-checked={serviceDnsEnabled}
+              aria-label={serviceDnsEnabled
+                ? (language === 'tr' ? 'DNS hizmetini kapat' : 'Disable DNS service')
+                : (language === 'tr' ? 'DNS hizmetini aç' : 'Enable DNS service')}
               onClick={() => {
                 const enabled = !serviceDnsEnabled;
                 setServiceDnsEnabled(enabled);

@@ -312,7 +312,6 @@ export function RestApiExplorerWindow({
         {/* Request Address Bar */}
         <div className="flex items-center gap-2">
           <select
-            role="combobox"
             value={method}
             onChange={(e) => setMethod(e.target.value as 'GET')}
             className={`text-xs font-bold px-2.5 py-1.5 rounded-lg border outline-none font-mono ${

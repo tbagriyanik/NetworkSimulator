@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { SwitchState } from '@/lib/network/types';
 import { normalizeMAC } from '@/lib/utils';
+import { activateOnKey } from '@/lib/utils/keyboardActivation';
 import { lineAllowsProtocol } from '@/lib/network/core/lineCommands';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -566,14 +567,15 @@ function RefreshDeviceListToast({
                       <span className="text-[10px] font-semibold opacity-60 uppercase">{isTR ? 'Aktif Arayüz IP\'leri:' : 'Active Interface IPs:'}</span>
                       <div className="flex flex-wrap gap-1">
                         {switchRouterSummary.activeIps.map((ipStr) => (
-                          <span
+                          <button
                             key={ipStr}
+                            type="button"
                             onClick={() => copyToClipboard(ipStr.split(': ')[1] || ipStr)}
                             className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 cursor-pointer hover:bg-emerald-500/20 transition-colors"
                             title={isTR ? 'IP adresini kopyala' : 'Copy IP address'}
                           >
                             {ipStr}
-                          </span>
+                          </button>
                         ))}
                       </div>
                     </div>
@@ -587,7 +589,10 @@ function RefreshDeviceListToast({
                         const isCopied = copiedCmd === activeCommand.cmd;
                         return (
                           <div
+                            role="button"
+                            tabIndex={0}
                             onClick={() => copyToClipboard(activeCommand.cmd)}
+                            onKeyDown={activateOnKey(() => copyToClipboard(activeCommand.cmd))}
                             className="flex items-center justify-between p-1.5 rounded bg-secondary-100/70 dark:bg-secondary-800/70 hover:bg-secondary-200 dark:hover:bg-secondary-700/90 cursor-pointer transition-all border border-transparent hover:border-primary-500/30 group"
                           >
                             <div className="flex flex-col min-w-0 pr-2">
@@ -598,13 +603,12 @@ function RefreshDeviceListToast({
                                 {activeCommand.desc}
                               </span>
                             </div>
-                            <button
-                              type="button"
-                              className="shrink-0 p-1 rounded hover:bg-primary-500/20 text-secondary-400 group-hover:text-primary-500 transition-colors"
-                              title={t.copy}
+                            <span
+                              aria-hidden="true"
+                              className="shrink-0 p-1 rounded text-secondary-400 group-hover:text-primary-500 transition-colors"
                             >
                               {isCopied ? <Check className="w-3 h-3 text-success-500" /> : <Copy className="w-3 h-3" />}
-                            </button>
+                            </span>
                           </div>
                         );
                       })()}
@@ -668,7 +672,10 @@ function RefreshDeviceListToast({
                     const isCopied = copiedCmd === activeCommand.cmd;
                     return (
                       <div
+                        role="button"
+                        tabIndex={0}
                         onClick={() => copyToClipboard(activeCommand.cmd)}
+                        onKeyDown={activateOnKey(() => copyToClipboard(activeCommand.cmd))}
                         className="flex items-center justify-between p-1.5 rounded bg-secondary-100/70 dark:bg-secondary-800/70 hover:bg-secondary-200 dark:hover:bg-secondary-700/90 cursor-pointer transition-all border border-transparent hover:border-primary-500/30 group"
                       >
                         <div className="flex flex-col min-w-0 pr-2">
@@ -679,13 +686,12 @@ function RefreshDeviceListToast({
                             {activeCommand.desc}
                           </span>
                         </div>
-                        <button
-                          type="button"
-                          className="shrink-0 p-1 rounded hover:bg-primary-500/20 text-secondary-400 group-hover:text-primary-500 transition-colors"
-                          title={t.copy}
+                        <span
+                          aria-hidden="true"
+                          className="shrink-0 p-1 rounded text-secondary-400 group-hover:text-primary-500 transition-colors"
                         >
                           {isCopied ? <Check className="w-3 h-3 text-success-500" /> : <Copy className="w-3 h-3" />}
-                        </button>
+                        </span>
                       </div>
                     );
                   })()}

@@ -1,20 +1,21 @@
 # Network Simulator — Özellik ve Yetenek Envanteri
 
-**Sürüm / Version:** 6.6.1 · **Son doğrulama / Last verified:** 2026-09-25
+**Sürüm / Version:** 6.7.0 · **Son doğrulama / Last verified:** 2026-09-26
 
 ## Packet/Control-Plane Entegrasyon Özeti
 
 MPLS/LDP, IPSec, SNMP, NETCONF/RESTCONF, EEM, MST, IP SLA, QoS MQC, 802.1X, CAPWAP, sFlow/NetFlow, MQTT ve CoAP akışları ortak state/packet pipeline ile doğrulanır. Telemetry export’ları collector frame olarak, MQTT/CoAP/NETCONF işlemleri servis portlarına bağlı request-response frame olarak modellenir.
 
-## Kurumsal CLI Regresyon Matrisi, Arıza Enjeksiyonu, Durum Makineleri & Hop Paket Yolculuğu (2026-09-25 - v6.6.1)
+## Davranış Regresyonu, Arıza Enjeksiyonu, CLI Ototamlama & Hop Paket Yolculuğu (2026-09-26 - v6.7.0)
 
 | Özellik | Güncel kapsam ve sınır |
 |---|---|
-| **Kurumsal CLI Regresyon Matrisi (`cliBehaviorRegressionMatrix.test.ts`)** | `CLI → State → Engine → Packet → Show → no` tam yaşam döngüsü doğrulaması. `no shutdown`, `no ip address`, `no ip route`, `no access-group`, `no switchport access vlan`, `no ip nat`, OSPF/EIGRP/BGP sıfırlamaları için otomatik E2E testleri. |
-| **Arıza Enjeksiyonu & Sorun Giderme Modu (`faults.ts`, `networkTroubleshooter.ts`)** | Eğitim/sınavlar için bozuk topoloji üretimi ve arıza enjeksiyonu (`wrongVlan`, `wrongGateway`, `shutdownPort`, `aclDeny`, `brokenTrunk`, `ospfIssue`, `natIssue`, `stpIssue`). Öğrencinin arızaları bağımsız teşhis etmesi ve düzeltmesi sağlanır. |
-| **Sekme Sekme (Hop-by-Hop) Paket Yolculuğu & Drop Registry** | Kaynaktan hedefe her sıçramada (hop) ARP, VLAN, Routing, ACL, NAT, TTL ve Loop denetimleri. Standardize RFC uyumlu Paket Düşme Nedenleri (Drop Reason Registry: `Unreachable`, `ACL Blocked`, `Port Security Violation`, `Interface Down`, `TTL Expired`, `NAT Translation Failed`, `STP Blocking`, `Trunk Mismatch`). |
-| **Gerçek Zamanlı Durum Makineleri & Yaşlanma Engine** | OSPF (Down...Full), BGP (Idle...Established), LACP ve DHCP lease durum makineleri (`protocolStateMachines.ts`). ARP önbellek, CAM/MAC tablosu, STP TCN flushes ve Dynamic NAT kayıtları için otomatik yaşlanma ve zaman aşımı motoru (`agingEngine.ts`). |
-| **Çapraz Platform Özellik Eşitliği & Otomasyonu** | macOS (`Cmd`) / Windows & Linux (`Ctrl`) kısayol standardizasyonu (`platform.ts`), native dosya diyalogları ve çevrimdışı masaüstü çalışma doğrulama testleri (`platformFeatureParity.test.ts`). |
+| **Davranış Regresyon Motoru & E2E Test Matrisi (`behavioralRegressionEngine.ts`, `cliStateEnginePacketVerifier.ts`)** | `CLI → State → Engine → Packet → Show → no` 4 aşamalı uçtan uca yaşam döngüsü doğrulaması. `no shutdown`, `no ip address`, `no ip route`, `no access-group`, `no switchport access vlan`, `no ip nat`, OSPF/EIGRP/BGP sıfırlamaları için otomatize E2E test matrisi. |
+| **Arıza Enjeksiyonu & Etkileşimli Sorun Giderme Modu (`faultInjectionSystem.ts`, `troubleshootingModeEngine.ts`)** | Otomatik topoloji arızalandırma (`wrongVlan`, `wrongGateway`, `shutdownPort`, `aclDeny`, `brokenTrunk`, `ospfIssue`, `natIssue`, `stpIssue`) ve öğrenciler için 3 kademeli ipucu ureten sorun giderme seans motoru. |
+| **CLI Abbreviation, TAB Ototamlama & Caret Hata İletimi (`cliAutocomplete.ts`, `cliErrors.ts`)** | CLI komut kısaltmaları (`sh ip ro`, `conf t`, `int fa0/1`, `no sh`) ve TAB ototamlama motoru. Hata durumlarında caret imleç konumlandırması ve otantik CLI mesajları (`% Invalid input detected at '^' marker.`, `% Ambiguous command`, `% Incomplete command`). |
+| **CLI Borulama Filtreleri (`\| include / exclude / begin / section`) & `do` Alt Mod Desteği** | `show` komut çıktılarında borulama süzgeçleri (`show run \| section router ospf`, `show ip int br \| exclude unassigned`) ve alt yapılandırma modlarından `do ?` ve `do <subcommand>` çalıştırma desteği. |
+| **Hop-by-Hop Paket Yolculuğu & Drop Reason Registry (`packetPipeline.ts`, `dropReasons.ts`)** | Kaynaktan hedefe her sıçramada (hop) ARP, VLAN, Routing, ACL, NAT, TTL ve Loop denetimleri. Standardize RFC uyumlu Paket Düşme Nedenleri (Drop Reason Registry: `Interface Down`, `ACL Blocked`, `Port Security Violation`, `STP Blocking`, `TTL Expired`, `NAT Translation Failed`, `Trunk Mismatch`). |
+| **Gelişmiş Temizleme (Clear) Komut Dizisi (`privilegedClear.ts`)** | `clear ip bgp * [soft]`, `clear ip ospf process`, `clear ip nat translation *`, `clear mac address-table [dynamic\|static]`, `clear arp-cache`, `clear counters [interface]`, `terminal history size <1-500>` komut yetenekleri. |
 
 ## CLI Pipe Filtreleme, Akıllı Kavisli Kablolar, Toplu Komut Kuyruğu & UX İyileştirmeleri (2026-09-21 - v6.4.0)
 

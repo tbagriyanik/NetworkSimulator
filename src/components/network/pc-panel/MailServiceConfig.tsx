@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Send, Reply, Trash2, Plus } from 'lucide-react';
 import { FormInput } from '@/components/ui/FormInput';
+import { activateOnKey } from '@/lib/utils/keyboardActivation';
 
 interface MailServiceConfigProps {
   isDark: boolean;
@@ -117,6 +118,9 @@ export function MailServiceConfig({
                   type="button"
                   role="switch"
                   aria-checked={serviceMailEnabled}
+                  aria-label={serviceMailEnabled
+                    ? (language === 'tr' ? 'Mail hizmetini kapat' : 'Disable mail service')
+                    : (language === 'tr' ? 'Mail hizmetini aç' : 'Enable mail service')}
                   onClick={() => {
                     const enabled = !serviceMailEnabled;
                     setServiceMailEnabled(enabled);
@@ -288,7 +292,10 @@ export function MailServiceConfig({
                     serviceMailInbox.map((msg, idx) => (
                       <div
                         key={`inbox-${msg.timestamp || idx}-${msg.from}-${idx}`}
+                        role="button"
+                        tabIndex={0}
                         onClick={() => setViewingMsg({ type: 'inbox', msg, idx })}
+                        onKeyDown={activateOnKey(() => setViewingMsg({ type: 'inbox', msg, idx }))}
                         className={`p-2 rounded border text-[10px] flex items-start justify-between gap-2 cursor-pointer transition-colors ${isDark ? 'border-secondary-800 bg-secondary-900/50 hover:bg-secondary-800' : 'border-secondary-200 bg-white hover:bg-secondary-100'}`}
                       >
                         <div className="min-w-0 flex-1">
@@ -296,17 +303,25 @@ export function MailServiceConfig({
                           <div className="truncate opacity-80" title={msg.subject}>{msg.subject}</div>
                           {msg.timestamp && <div className="text-[8px] opacity-50 mt-1">{new Date(msg.timestamp).toLocaleString()}</div>}
                         </div>
-                        <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-1 flex-shrink-0">
                           <button
+                            type="button"
                             title={language === 'tr' ? 'Yanıtla' : 'Reply'}
-                            onClick={() => setViewingMsg({ type: 'inbox', msg, idx })}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setViewingMsg({ type: 'inbox', msg, idx });
+                            }}
                             className="p-1 rounded transition-colors text-secondary-400 hover:text-accent-500 hover:bg-accent-500/20"
                           >
                             <Reply className="w-3.5 h-3.5" />
                           </button>
                           <button
+                            type="button"
                             title={language === 'tr' ? 'Sil' : 'Delete'}
-                            onClick={() => handleDeleteInbox(idx)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteInbox(idx);
+                            }}
                             className="p-1 rounded hover:bg-error-500/20 text-secondary-400 hover:text-error-500 transition-colors flex-shrink-0"
                           >
                             <Trash2 className="w-3.5 h-3.5 text-error-500" />

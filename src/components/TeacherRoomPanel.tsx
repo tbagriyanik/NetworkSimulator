@@ -202,7 +202,14 @@ function RoomMonitor({ roomCode, onClose }: { roomCode: string; onClose: () => v
                     <td className="px-2 py-2 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <span className="tabular-nums font-medium text-right">{Math.round(progress)}%</span>
-                        <div className="h-2 w-12 overflow-hidden rounded-full bg-muted shrink-0">
+                        <div
+                      role="progressbar"
+                      aria-label={t.roomSortScore}
+                      aria-valuenow={Math.round(progress)}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      className="h-2 w-12 overflow-hidden rounded-full bg-muted shrink-0"
+                    >
                           <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${progress}%` }} />
                         </div>
                       </div>

@@ -72,6 +72,9 @@ export function NtpServiceConfig({
               type="button"
               role="switch"
               aria-checked={serviceNtpEnabled}
+              aria-label={serviceNtpEnabled
+                ? (language === 'tr' ? 'NTP hizmetini kapat' : 'Disable NTP service')
+                : (language === 'tr' ? 'NTP hizmetini aç' : 'Enable NTP service')}
               onClick={() => {
                 const enabled = !serviceNtpEnabled;
                 setServiceNtpEnabled(enabled);

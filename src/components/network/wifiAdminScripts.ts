@@ -701,23 +701,58 @@ export function getWifiControlPanelScripts(params: WifiAdminScriptParams): strin
       }
     }
 
+    function initWifiControlPanelBindings() {
+      var clickTargets = [
+        ['btn-logout', function() { window.handleLogout(); }],
+        ['btn-reset-primary', function() { location.reload(); }],
+        ['btn-save-ssid-profile', function() { window.saveSsidProfile(); }],
+        ['btn-reset-ssid-form', function() { window.resetSsidForm(); }],
+        ['btn-add-manual-mac', function() { window.addManualMac(); }],
+        ['save-advanced-btn', function() { window.saveMacFilterSettings(); }]
+      ];
+      clickTargets.forEach(function(pair) {
+        var el = document.getElementById(pair[0]);
+        if (el && !el.__bound) {
+          el.__bound = true;
+          el.addEventListener('click', pair[1]);
+        }
+      });
+
+      var changeTargets = [
+        ['profile-security', function(el) { window.handleProfileSecurityChange(el.value); }],
+        ['mac-filter-enabled', function() { window.toggleMacFilterSection(); }],
+        ['dhcp-server-enabled', function() { window.toggleDhcpServerSection(); }]
+      ];
+      changeTargets.forEach(function(pair) {
+        var el = document.getElementById(pair[0]);
+        if (el && !el.__bound) {
+          el.__bound = true;
+          el.addEventListener('change', function() { pair[1](el); });
+        }
+      });
+    }
+
     // Initialize lists & session state on document ready
     renderSsidList();
     renderConnectedWirelessClients();
     renderMacFilterList();
     initRouterLoginForm();
+    initWifiControlPanelBindings();
     checkRouterAuth();
 
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
       initRouterLoginForm();
+      initWifiControlPanelBindings();
       checkRouterAuth();
     } else {
       window.addEventListener('load', function() {
         initRouterLoginForm();
+        initWifiControlPanelBindings();
         checkRouterAuth();
       });
       document.addEventListener('DOMContentLoaded', function() {
         initRouterLoginForm();
+        initWifiControlPanelBindings();
         checkRouterAuth();
       });
     }

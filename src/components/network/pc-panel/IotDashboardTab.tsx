@@ -207,6 +207,7 @@ export function IotDashboardTab({
                 type="button"
                 role="switch"
                 aria-checked={iotCollaborationEnabled}
+                aria-label={language === 'tr' ? 'Cihaz Durumu' : 'Device Status'}
                 onClick={() => {
                   const nextValue = !iotCollaborationEnabled;
                   setIotCollaborationEnabled(nextValue);
@@ -247,6 +248,7 @@ export function IotDashboardTab({
                 type="button"
                 role="switch"
                 aria-checked={selectedIotDevice?.status !== 'offline'}
+                aria-label={language === 'tr' ? 'Güç Durumu' : 'Power Status'}
                 onClick={() => {
                   if (selectedIotDevice) {
                     const newStatus = selectedIotDevice.status === 'offline' ? 'online' : 'offline';

@@ -463,6 +463,7 @@ export function IotDeviceView({
             type="button"
             role="switch"
             aria-checked={isCollaborationEnabled}
+            aria-label={isTr ? 'Cihaz Durumu' : 'Device Status'}
             onClick={handleToggleCollaboration}
             className={cn(
               "relative inline-flex h-6 w-11 items-center rounded-full border transition-colors shrink-0 px-0.5",
@@ -552,8 +553,9 @@ export function IotDeviceView({
             </div>
 
             <div className="space-y-1">
-              <label className="text-[11px] text-muted-foreground">DNS Server</label>
+              <label htmlFor="iot-dns-input" className="text-[11px] text-muted-foreground">DNS Server</label>
               <input
+                id="iot-dns-input"
                 type="text"
                 value={dns}
                 onChange={e => setDns(e.target.value)}

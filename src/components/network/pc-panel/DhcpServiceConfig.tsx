@@ -109,6 +109,9 @@ export function DhcpServiceConfig({
               type="button"
               role="switch"
               aria-checked={serviceDhcpEnabled}
+              aria-label={serviceDhcpEnabled
+                ? (language === 'tr' ? 'DHCP hizmetini kapat' : 'Disable DHCP service')
+                : (language === 'tr' ? 'DHCP hizmetini aç' : 'Enable DHCP service')}
               onClick={() => {
                 const enabled = !serviceDhcpEnabled;
                 setServiceDhcpEnabled(enabled);

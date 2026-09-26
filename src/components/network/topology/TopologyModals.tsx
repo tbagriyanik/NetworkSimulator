@@ -209,6 +209,8 @@ export function TopologyModals({
             </div>
             <TooltipWrapper title={t.close}>
               <button
+                type="button"
+                aria-label={t.close}
                 onClick={() => setErrorToast(null)}
                 className="flex-shrink-0 ml-2 hover:bg-error-700 rounded p-1 transition-colors"
               >

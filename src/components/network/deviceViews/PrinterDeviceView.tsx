@@ -451,8 +451,9 @@ export function PrinterDeviceView({
               />
             </div>
             <div>
-              <label className="block mb-1 font-medium opacity-80">DNS Server</label>
+              <label htmlFor="printer-dns-input" className="block mb-1 font-medium opacity-80">DNS Server</label>
               <input
+                id="printer-dns-input"
                 type="text"
                 disabled={ipMode === 'dhcp'}
                 value={dns}

@@ -160,7 +160,6 @@ export function WlcWirelessPanel({
                         <div>
                             <label className="text-[11px] font-medium block mb-1">{tr('Security & Key Mgmt', 'Güvenlik & Anahtar Yönetimi')}</label>
                             <select
-                                role="combobox"
                                 className={`flex h-9 w-full rounded-md border px-3 py-1 text-xs font-medium shadow-sm transition-colors outline-none cursor-pointer ${isDark ? 'bg-secondary-800 text-secondary-100 border-secondary-700 focus:border-primary-500' : 'bg-white text-secondary-900 border-secondary-300 focus:border-primary-500'}`}
                                 value={wlanSecurity}
                                 onChange={(e) => setWlanSecurity(e.target.value as 'open' | 'wpa2' | 'wpa3' | '802.1x')}

@@ -342,6 +342,9 @@ export function ServicesTab({
                     type="button"
                     role="switch"
                     aria-checked={serviceFtpEnabled}
+                    aria-label={serviceFtpEnabled
+                      ? (language === 'tr' ? 'FTP hizmetini kapat' : 'Disable FTP service')
+                      : (language === 'tr' ? 'FTP hizmetini aç' : 'Enable FTP service')}
                     onClick={() => {
                       const enabled = !serviceFtpEnabled;
                       setServiceFtpEnabled(enabled);

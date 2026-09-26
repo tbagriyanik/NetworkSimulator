@@ -22,7 +22,7 @@ function VerifyContent() {
   const initialCode = rawCode.toUpperCase().startsWith('CERT:') ? rawCode.toUpperCase().replace('CERT:', '') : rawCode;
 
   const [inputCode, setInputCode] = useState(initialCode);
-  const [status, setStatus] = useState<'idle' | 'loading' | 'found' | 'notfound' | 'error' | 'desktop'>('idle');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'found' | 'notfound' | 'error' | 'desktop' | 'ratelimited'>('idle');
   const [record, setRecord] = useState<CertificateRecord | null>(null);
   const [lang, setLang] = useState<'tr' | 'en'>('tr');
 
@@ -36,6 +36,7 @@ function VerifyContent() {
       found: 'Sertifika Geçerli',
       notfound: 'Sertifika Bulunamadı',
       error: 'Bir hata oluştu, lütfen tekrar deneyin.',
+      rateLimited: 'Çok fazla doğrulama denemesi yapıldı. Lütfen bir saat sonra tekrar deneyin.',
       desktop: 'Masaüstü uygulamasında sertifika kontrolü için internet ve web sürümü gereklidir.',
       student: 'Öğrenci',
       module: 'Modül',
@@ -55,6 +56,7 @@ function VerifyContent() {
       found: 'Certificate Valid',
       notfound: 'Certificate Not Found',
       error: 'An error occurred, please try again.',
+      rateLimited: 'Too many verification attempts. Please try again in an hour.',
       desktop: 'Certificate verification requires the web version and an active internet connection.',
       student: 'Student',
       module: 'Module',
@@ -67,6 +69,17 @@ function VerifyContent() {
     },
   };
   const tx = t[lang];
+
+  // Screen-reader announcement for the current verification state.
+  const statusMessage: Record<typeof status, string> = {
+    idle: '',
+    loading: tx.loading,
+    found: tx.found,
+    notfound: tx.notfound,
+    ratelimited: tx.rateLimited,
+    error: tx.error,
+    desktop: tx.desktop,
+  };
 
   const verify = async (verifyCode: string) => {
     let trimmed = verifyCode.trim().toUpperCase();
@@ -83,7 +96,13 @@ function VerifyContent() {
     setRecord(null);
     try {
       const res = await fetch(`/api/certificate/${encodeURIComponent(trimmed)}`);
-      if (res.status === 404) {
+      if (res.status === 429) {
+        setStatus('ratelimited');
+        return;
+      }
+      // 400 (INVALID_CODE / INVALID_CODE_FORMAT) and 404 (NOT_FOUND) both mean the
+      // submitted code is unusable, so they share the "invalid code" message.
+      if (res.status === 400 || res.status === 404) {
         setStatus('notfound');
         return;
       }
@@ -151,9 +170,10 @@ function VerifyContent() {
       {/* Verify Form */}
       <div className="w-full max-w-md">
         <form onSubmit={handleSubmit} className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-2xl p-6 shadow-2xl">
-          <label className="block text-white/70 text-sm font-medium mb-2">{tx.codeLabel}</label>
+          <label htmlFor="verify-code" className="block text-white/70 text-sm font-medium mb-2">{tx.codeLabel}</label>
           <div className="flex gap-2">
             <input
+              id="verify-code"
               type="text"
               value={inputCode}
               onChange={(e) => setInputCode(e.target.value.toUpperCase())}
@@ -175,6 +195,11 @@ function VerifyContent() {
             </button>
           </div>
         </form>
+
+        {/* Screen-reader announcements for async verification state */}
+        <p className="sr-only" role="status" aria-live="polite">
+          {statusMessage[status]}
+        </p>
 
         {/* Result */}
         {status === 'found' && record && (
@@ -247,6 +272,15 @@ function VerifyContent() {
                 <h2 className="text-sky-300 font-bold">{tx.title}</h2>
                 <p className="text-white/80 text-sm mt-1">{tx.desktop}</p>
               </div>
+            </div>
+          </div>
+        )}
+
+        {status === 'ratelimited' && (
+          <div className="mt-6 bg-amber-500/10 border border-amber-400/30 backdrop-blur-xl rounded-2xl p-6 shadow-2xl">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">⏳</span>
+              <p className="text-amber-300 text-sm">{tx.rateLimited}</p>
             </div>
           </div>
         )}

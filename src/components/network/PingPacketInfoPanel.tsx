@@ -374,6 +374,7 @@ export function PingPacketInfoPanel({
                             onMouseDown={(e) => e.stopPropagation()}
                             className="p-1.5 rounded bg-success-500 hover:bg-success-600 text-white transition-all shadow-sm flex items-center justify-center active:scale-95"
                             title={t.play}
+                            aria-label={t.play}
                         >
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21" /></svg>
                         </button>
@@ -387,6 +388,7 @@ export function PingPacketInfoPanel({
                             onMouseDown={(e) => e.stopPropagation()}
                             className="p-1.5 rounded bg-warning-500 hover:bg-warning-600 text-white transition-all shadow-sm flex items-center justify-center active:scale-95"
                             title={t.pause}
+                            aria-label={t.pause}
                         >
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                                 <rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" />
@@ -403,6 +405,7 @@ export function PingPacketInfoPanel({
                         onMouseDown={(e) => e.stopPropagation()}
                         className={`p-1.5 rounded transition-all shadow-sm flex items-center justify-center ${isPaused ? 'bg-primary-500 hover:bg-primary-600 text-white active:scale-95' : 'bg-secondary-200 dark:bg-secondary-800 text-secondary-400 dark:text-secondary-600 cursor-not-allowed opacity-50'}`}
                         title={t.next}
+                        aria-label={t.next}
                     >
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                             <polygon points="5,3 14,12 5,21" /><rect x="16" y="3" width="3" height="18" />

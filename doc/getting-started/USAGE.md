@@ -120,12 +120,16 @@ Simülatör, tek bir standart komut modelini korurken yaygın alternatif CLI bi�
 ### CLI / CMD
 | Shortcut / Kısayol | EN | TR |
 |---|---|---|
-| `Tab` | Auto-complete command | Komut tamamlama |
-| `Arrow Up / Down` | Command history | Komut geçmişi |
-| `Enter` | Execute command | Komutu çalıştır |
-| `Ctrl + L` | Clear terminal | Terminali temizle |
-| `?` | Show available commands | Kullanılabilir komutları göster |
-| `Ctrl + C` | Cancel command (CLI) | Komutu iptal et |
+| `Tab` | Auto-complete command / TAB ile komut ototamlama |
+| `Arrow Up / Down` | Command history / Komut geçmişi |
+| `Enter` | Execute command / Komutu çalıştır |
+| `Ctrl + L` | Clear terminal / Terminali temizle |
+| `?` | Show available commands & inline help / Kullanılabilir komutlar ve inline yardım |
+| `do <cmd>` | Run privileged command from sub-mode / Alt modlardan ayrıcalıklı komut çalıştırma |
+| `\| include/exclude/begin/section` | Filter `show` output / `show` çıktılarını borulama filtresiyle süzme |
+| `terminal history size <1-500>` | Set command history capacity / Komut geçmişi kapasitesini ayarlama |
+| `clear ip bgp/ospf/nat/mac/arp` | Clear routing, ARP, MAC & NAT states / Protokol, ARP, MAC ve NAT durumlarını temizleme |
+| `Ctrl + C` | Cancel command (CLI) / Komutu iptal et |
 
 ---
 

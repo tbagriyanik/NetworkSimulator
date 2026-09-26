@@ -247,8 +247,9 @@ export function FirewallPanel({
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-secondary-500 uppercase">Port</label>
+                    <label htmlFor="firewall-rule-port-input" className="text-[10px] font-bold text-secondary-500 uppercase">Port</label>
                     <Input
+                      id="firewall-rule-port-input"
                       value={newRule.port}
                       onChange={e => setNewRule({ ...newRule, port: e.target.value })}
                       placeholder="*"

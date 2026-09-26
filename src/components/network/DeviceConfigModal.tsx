@@ -463,10 +463,11 @@ export function DeviceConfigModal({
                 </div>
 
                 <div className="space-y-1">
-                  <label className={`text-[10px] font-bold tracking-widest ml-1 ${isDark ? 'text-secondary-500' : 'text-secondary-400'}`}>
+                  <label htmlFor="device-ipv6-input" className={`text-[10px] font-bold tracking-widest ml-1 ${isDark ? 'text-secondary-500' : 'text-secondary-400'}`}>
                     IPv6
                   </label>
                   <input
+                    id="device-ipv6-input"
                     type="text"
                     inputMode="text"
                     autoCapitalize="off"
@@ -482,10 +483,11 @@ export function DeviceConfigModal({
                 </div>
 
                 <div className="space-y-1">
-                  <label className={`text-[10px] font-bold tracking-widest ml-1 ${isDark ? 'text-secondary-500' : 'text-secondary-400'}`}>
+                  <label htmlFor="device-dns-input" className={`text-[10px] font-bold tracking-widest ml-1 ${isDark ? 'text-secondary-500' : 'text-secondary-400'}`}>
                     DNS Server
                   </label>
                   <input
+                    id="device-dns-input"
                     type="text"
                     value={dnsValue}
                     onChange={(e) => setDnsValue(e.target.value)}
